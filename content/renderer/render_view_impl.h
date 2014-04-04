@@ -285,6 +285,8 @@ class CONTENT_EXPORT RenderViewImpl
 
   void FrameDidChangeLoadProgress(blink::WebFrame* frame,
                                   double load_progress);
+  void FrameDidCommitProvisionalLoad(blink::WebFrame* frame,
+                                     bool is_new_navigation);
 
   // Plugin-related functions --------------------------------------------------
 
@@ -539,8 +541,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame);
   virtual void didFailProvisionalLoad(blink::WebLocalFrame* frame,
                                       const blink::WebURLError& error);
-  virtual void didCommitProvisionalLoad(blink::WebLocalFrame* frame,
-                                        bool is_new_navigation);
   virtual void didClearWindowObject(blink::WebLocalFrame* frame, int world_id);
   virtual void didCreateDocumentElement(blink::WebLocalFrame* frame);
   virtual void didReceiveTitle(blink::WebLocalFrame* frame,
@@ -552,8 +552,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didFailLoad(blink::WebLocalFrame* frame,
                            const blink::WebURLError& error);
   virtual void didFinishLoad(blink::WebLocalFrame* frame);
-  virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
-                                     bool is_new_navigation);
   virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   virtual void willSendRequest(blink::WebLocalFrame* frame,
                                unsigned identifier,

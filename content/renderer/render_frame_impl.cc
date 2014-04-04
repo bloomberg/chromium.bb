@@ -1805,7 +1805,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(blink::WebLocalFrame* frame,
     }
   }
 
-  render_view_->didCommitProvisionalLoad(frame, is_new_navigation);
+  render_view_->FrameDidCommitProvisionalLoad(frame, is_new_navigation);
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
                     DidCommitProvisionalLoad(is_new_navigation));
 

@@ -2463,8 +2463,8 @@ void RenderViewImpl::didFailProvisionalLoad(WebLocalFrame* frame,
       RenderViewObserver, observers_, DidFailProvisionalLoad(frame, error));
 }
 
-void RenderViewImpl::didCommitProvisionalLoad(WebLocalFrame* frame,
-                                              bool is_new_navigation) {
+void RenderViewImpl::FrameDidCommitProvisionalLoad(WebFrame* frame,
+                                                   bool is_new_navigation) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
                     DidCommitProvisionalLoad(frame, is_new_navigation));
 
@@ -2555,13 +2555,6 @@ void RenderViewImpl::didFailLoad(WebLocalFrame* frame,
 
 void RenderViewImpl::didFinishLoad(WebLocalFrame* frame) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidFinishLoad(frame));
-}
-
-void RenderViewImpl::didNavigateWithinPage(WebLocalFrame* frame,
-                                           bool is_new_navigation) {
-  // TODO(nasko): Forward calls to the main RenderFrameImpl until all
-  // callers of this method on RenderView are removed.
-  main_render_frame_->didNavigateWithinPage(frame, is_new_navigation);
 }
 
 void RenderViewImpl::didUpdateCurrentHistoryItem(WebLocalFrame* frame) {

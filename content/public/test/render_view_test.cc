@@ -360,7 +360,11 @@ bool RenderViewTest::OnMessageReceived(const IPC::Message& msg) {
 void RenderViewTest::DidNavigateWithinPage(blink::WebLocalFrame* frame,
                                            bool is_new_navigation) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->didNavigateWithinPage(frame, is_new_navigation);
+  impl->main_render_frame()->didNavigateWithinPage(
+      frame,
+      blink::WebHistoryItem(),
+      is_new_navigation ? blink::WebStandardCommit
+                        : blink::WebHistoryInertCommit);
 }
 
 void RenderViewTest::SendContentStateImmediately() {

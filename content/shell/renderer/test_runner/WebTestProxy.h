@@ -379,11 +379,6 @@ public:
             return;
         Base::didFailProvisionalLoad(frame, error);
     }
-    virtual void didCommitProvisionalLoad(blink::WebLocalFrame* frame, bool isNewNavigation)
-    {
-        WebTestProxyBase::didCommitProvisionalLoad(frame, isNewNavigation);
-        Base::didCommitProvisionalLoad(frame, isNewNavigation);
-    }
     virtual void didReceiveTitle(blink::WebLocalFrame* frame, const blink::WebString& title, blink::WebTextDirection direction)
     {
         WebTestProxyBase::didReceiveTitle(frame, title, direction);

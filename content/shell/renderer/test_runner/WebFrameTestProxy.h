@@ -71,6 +71,7 @@ public:
     }
     virtual void didCommitProvisionalLoad(blink::WebLocalFrame* frame, bool isNewNavigation)
     {
+        m_baseProxy->didCommitProvisionalLoad(frame, isNewNavigation);
         Base::didCommitProvisionalLoad(frame, isNewNavigation);
     }
     virtual void didReceiveTitle(blink::WebLocalFrame* frame, const blink::WebString& title, blink::WebTextDirection direction)
