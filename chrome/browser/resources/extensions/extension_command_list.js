@@ -467,6 +467,7 @@ cr.define('options', function() {
       var keystroke = keystrokeToString(event);
       shortcutNode.textContent = keystroke;
       event.target.classList.add('contains-chars');
+      this.currentKeyEvent_ = event;
 
       if (validChar(event.keyCode)) {
         var node = event.target;
@@ -482,8 +483,6 @@ cr.define('options', function() {
         chrome.send('setExtensionCommandShortcut',
                     [parsed.extensionId, parsed.commandName, keystroke]);
       }
-
-      this.currentKeyEvent_ = event;
     },
 
     /**
