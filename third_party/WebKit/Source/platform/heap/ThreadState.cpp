@@ -43,6 +43,10 @@
 extern "C" void* __libc_stack_end;  // NOLINT
 #endif
 
+#if defined(ADDRESS_SANITIZER) && !OS(WIN)
+#include <sanitizer/asan_interface.h>
+#endif
+
 namespace WebCore {
 
 static void* getStackStart()
