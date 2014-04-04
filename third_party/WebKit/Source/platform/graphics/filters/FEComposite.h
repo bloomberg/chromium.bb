@@ -65,14 +65,16 @@ public:
     virtual TextStream& externalRepresentation(TextStream&, int indention) const OVERRIDE;
 
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
+    virtual PassRefPtr<SkImageFilter> createImageFilterWithoutValidation(SkiaImageFilterBuilder*) OVERRIDE;
 
 protected:
-    virtual bool requiresValidPreMultipliedPixels() OVERRIDE { return m_type != FECOMPOSITE_OPERATOR_ARITHMETIC; }
+    virtual bool mayProduceInvalidPreMultipliedPixels() OVERRIDE { return m_type == FECOMPOSITE_OPERATOR_ARITHMETIC; }
 
 private:
     FEComposite(Filter*, const CompositeOperationType&, float, float, float, float);
 
     virtual void applySoftware() OVERRIDE;
+    PassRefPtr<SkImageFilter> createImageFilterInternal(SkiaImageFilterBuilder*, bool requiresPMColorValidation);
 
     inline void platformArithmeticSoftware(Uint8ClampedArray* source, Uint8ClampedArray* destination,
         float k1, float k2, float k3, float k4);

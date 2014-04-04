@@ -198,7 +198,7 @@ void FilterEffect::applyRecursive()
     if (!isFilterSizeValid(m_absolutePaintRect))
         return;
 
-    if (requiresValidPreMultipliedPixels()) {
+    if (!mayProduceInvalidPreMultipliedPixels()) {
         for (unsigned i = 0; i < size; ++i)
             inputEffect(i)->correctFilterResultIfNeeded();
     }
@@ -537,6 +537,11 @@ FloatRect FilterEffect::determineFilterPrimitiveSubregion(DetermineSubregionFlag
 PassRefPtr<SkImageFilter> FilterEffect::createImageFilter(SkiaImageFilterBuilder* builder)
 {
     return nullptr;
+}
+
+PassRefPtr<SkImageFilter> FilterEffect::createImageFilterWithoutValidation(SkiaImageFilterBuilder* builder)
+{
+    return createImageFilter(builder);
 }
 
 SkImageFilter::CropRect FilterEffect::getCropRect(const FloatSize& cropOffset) const

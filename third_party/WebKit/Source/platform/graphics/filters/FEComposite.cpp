@@ -378,12 +378,22 @@ SkXfermode::Mode toXfermode(WebCore::CompositeOperationType mode)
 
 PassRefPtr<SkImageFilter> FEComposite::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    RefPtr<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace()));
-    RefPtr<SkImageFilter> background(builder->build(inputEffect(1), operatingColorSpace()));
+    return createImageFilterInternal(builder, true);
+}
+
+PassRefPtr<SkImageFilter> FEComposite::createImageFilterWithoutValidation(SkiaImageFilterBuilder* builder)
+{
+    return createImageFilterInternal(builder, false);
+}
+
+PassRefPtr<SkImageFilter> FEComposite::createImageFilterInternal(SkiaImageFilterBuilder* builder, bool requiresPMColorValidation)
+{
+    RefPtr<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace(), !mayProduceInvalidPreMultipliedPixels()));
+    RefPtr<SkImageFilter> background(builder->build(inputEffect(1), operatingColorSpace(), !mayProduceInvalidPreMultipliedPixels()));
     SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
     RefPtr<SkXfermode> mode;
     if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC)
-        mode = adoptRef(SkArithmeticMode::Create(SkFloatToScalar(m_k1), SkFloatToScalar(m_k2), SkFloatToScalar(m_k3), SkFloatToScalar(m_k4)));
+        mode = adoptRef(SkArithmeticMode::Create(SkFloatToScalar(m_k1), SkFloatToScalar(m_k2), SkFloatToScalar(m_k3), SkFloatToScalar(m_k4), requiresPMColorValidation));
     else
         mode = adoptRef(SkXfermode::Create(toXfermode(m_type)));
     return adoptRef(new SkXfermodeImageFilter(mode.get(), background.get(), foreground.get(), &cropRect));

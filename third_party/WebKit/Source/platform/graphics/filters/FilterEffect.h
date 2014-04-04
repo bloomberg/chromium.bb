@@ -111,6 +111,7 @@ public:
     virtual void correctFilterResultIfNeeded() { }
 
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*);
+    virtual PassRefPtr<SkImageFilter> createImageFilterWithoutValidation(SkiaImageFilterBuilder*);
 
     // Mapping a rect forwards determines which which destination pixels a
     // given source rect would affect. Mapping a rect backwards determines
@@ -178,6 +179,10 @@ public:
     virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedAbsoluteRect);
     virtual bool affectsTransparentPixels() { return false; }
 
+    // Return false if the filter will only operate correctly on valid RGBA values, with
+    // alpha in [0,255] and each color component in [0, alpha].
+    virtual bool mayProduceInvalidPreMultipliedPixels() { return false; }
+
 protected:
     FilterEffect(Filter*);
     ImageBuffer* createImageBufferResult();
@@ -185,10 +190,6 @@ protected:
     Uint8ClampedArray* createPremultipliedImageResult();
 
     Color adaptColorToOperatingColorSpace(const Color& deviceColor);
-
-    // Return true if the filter will only operate correctly on valid RGBA values, with
-    // alpha in [0,255] and each color component in [0, alpha].
-    virtual bool requiresValidPreMultipliedPixels() { return true; }
 
     // If a pre-multiplied image, check every pixel for validity and correct if necessary.
     void forceValidPreMultipliedPixels();

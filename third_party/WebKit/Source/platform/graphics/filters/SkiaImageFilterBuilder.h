@@ -46,7 +46,7 @@ public:
     explicit SkiaImageFilterBuilder(GraphicsContext*);
     ~SkiaImageFilterBuilder();
 
-    PassRefPtr<SkImageFilter> build(FilterEffect*, ColorSpace);
+    PassRefPtr<SkImageFilter> build(FilterEffect*, ColorSpace, bool requiresPMColorValidation = true);
     bool buildFilterOperations(const FilterOperations&, blink::WebFilterOperations*);
     PassRefPtr<SkImageFilter> buildTransform(const AffineTransform&, SkImageFilter* input);
 
@@ -58,8 +58,9 @@ public:
     GraphicsContext* context() { return m_context; }
 
 private:
-    typedef std::pair<FilterEffect*, ColorSpace> FilterColorSpacePair;
-    typedef HashMap<FilterColorSpacePair, RefPtr<SkImageFilter> > FilterBuilderHashMap;
+    enum { PMColorValidationFlag = 0x100 };
+    typedef std::pair<FilterEffect*, unsigned> FilterHashKey;
+    typedef HashMap<FilterHashKey, RefPtr<SkImageFilter> > FilterBuilderHashMap;
     FilterBuilderHashMap m_map;
     FloatSize m_cropOffset;
     GraphicsContext* m_context;
