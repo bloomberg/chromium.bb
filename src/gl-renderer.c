@@ -1069,9 +1069,9 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 		glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, 0);
 		glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, 0);
 		wl_shm_buffer_begin_access(buffer->shm_buffer);
-		glTexSubImage2D(GL_TEXTURE_2D, 0,
-				0, 0, gs->pitch, buffer->height,
-				format, pixel_type, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, format,
+			     gs->pitch, buffer->height, 0,
+			     format, pixel_type, data);
 		wl_shm_buffer_end_access(buffer->shm_buffer);
 		goto done;
 	}
@@ -1168,10 +1168,6 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 		gs->surface = es;
 
 		ensure_textures(gs, 1);
-		glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-			     gs->pitch, buffer->height, 0,
-			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
 	}
 }
 
