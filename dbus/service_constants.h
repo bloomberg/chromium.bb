@@ -1670,6 +1670,7 @@ const char kNumberOfActiveStreamsChanged[] = "NumberOfActiveStreamsChanged";
 }  // namespace cras
 
 namespace lorgnette {
+const char kManagerServiceName[] = "org.chromium.lorgnette";
 const char kManagerServiceInterface[] = "org.chromium.lorgnette.Manager";
 const char kManagerServicePath[] = "/org/chromium/lorgnette/Manager";
 const char kManagerServiceError[] = "org.chromium.lorgnette.Error";
