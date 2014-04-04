@@ -298,10 +298,16 @@ void VideoCaptureDeviceMac::ReceiveFrame(
     }
   }
 
-  DCHECK_EQ(capture_format_.frame_size.width(),
-            frame_format.frame_size.width());
-  DCHECK_EQ(capture_format_.frame_size.height(),
-            frame_format.frame_size.height());
+  // QTKit capture source can change resolution if someone else reconfigures the
+  // camera, and that is fine: http://crbug.com/353620. In AVFoundation, this
+  // should not happen, it should resize internally.
+  if (!AVFoundationGlue::IsAVFoundationSupported()) {
+    capture_format_.frame_size = frame_format.frame_size;
+  } else if (capture_format_.frame_size != frame_format.frame_size) {
+    ReceiveError("Captured resolution " + frame_format.frame_size.ToString() +
+        ", and expected " + capture_format_.frame_size.ToString());
+    return;
+  }
 
   client_->OnIncomingCapturedData(video_frame,
                                   video_frame_length,
