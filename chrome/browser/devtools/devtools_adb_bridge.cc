@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
@@ -686,8 +688,8 @@ typedef std::map<std::string, AgentHostDelegate*> AgentHostDelegates;
 base::LazyInstance<AgentHostDelegates>::Leaky g_host_delegates =
     LAZY_INSTANCE_INITIALIZER;
 
-DevToolsAdbBridge::Wrapper::Wrapper() {
-  bridge_ = new DevToolsAdbBridge();
+DevToolsAdbBridge::Wrapper::Wrapper(content::BrowserContext* context) {
+  bridge_ = new DevToolsAdbBridge(Profile::FromBrowserContext(context));
 }
 
 DevToolsAdbBridge::Wrapper::~Wrapper() {
@@ -720,7 +722,7 @@ DevToolsAdbBridge::Factory::~Factory() {}
 
 KeyedService* DevToolsAdbBridge::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new DevToolsAdbBridge::Wrapper();
+  return new DevToolsAdbBridge::Wrapper(context);
 }
 
 
@@ -1087,15 +1089,16 @@ DevToolsAdbBridge::RemoteDevice::~RemoteDevice() {
 
 // DevToolsAdbBridge ----------------------------------------------------------
 
-DevToolsAdbBridge::DevToolsAdbBridge()
-    : adb_thread_(RefCountedAdbThread::GetInstance()),
+DevToolsAdbBridge::DevToolsAdbBridge(Profile* profile)
+    : profile_(profile),
+      adb_thread_(RefCountedAdbThread::GetInstance()),
       has_message_loop_(adb_thread_->message_loop() != NULL) {
-}
-
-void DevToolsAdbBridge::set_device_provider_for_test(
-    scoped_refptr<AndroidDeviceProvider> device_provider) {
-  device_providers_for_test_.clear();
-  device_providers_for_test_.push_back(device_provider);
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kDevToolsDiscoverUsbDevicesEnabled,
+      base::Bind(&DevToolsAdbBridge::CreateDeviceProviders,
+                 base::Unretained(this)));
+  CreateDeviceProviders();
 }
 
 void DevToolsAdbBridge::AddListener(Listener* listener) {
@@ -1113,6 +1116,7 @@ void DevToolsAdbBridge::RemoveListener(Listener* listener) {
   listeners_.erase(it);
 }
 
+// static
 bool DevToolsAdbBridge::HasDevToolsWindow(const std::string& agent_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return g_host_delegates.Get().find(agent_id) != g_host_delegates.Get().end();
@@ -1130,9 +1134,7 @@ void DevToolsAdbBridge::RequestRemoteDevices() {
 
   new AdbPagesCommand(
       adb_thread_,
-      device_providers_for_test_.size() ?
-          device_providers_for_test_ :
-          device_providers_,
+      device_providers_,
       base::Bind(&DevToolsAdbBridge::ReceivedRemoteDevices, this));
 }
 
@@ -1153,4 +1155,25 @@ void DevToolsAdbBridge::ReceivedRemoteDevices(RemoteDevices* devices_ptr) {
       FROM_HERE,
       base::Bind(&DevToolsAdbBridge::RequestRemoteDevices, this),
       base::TimeDelta::FromMilliseconds(kAdbPollingIntervalMs));
+}
+
+void DevToolsAdbBridge::CreateDeviceProviders() {
+  DevToolsAdbBridge::DeviceProviders device_providers;
+#if defined(DEBUG_DEVTOOLS)
+  device_providers.push_back(AndroidDeviceProvider::GetSelfAsDeviceProvider());
+#endif
+  device_providers.push_back(AndroidDeviceProvider::GetAdbDeviceProvider());
+
+  PrefService* service = profile_->GetPrefs();
+  const PrefService::Preference* pref =
+      service->FindPreference(prefs::kDevToolsDiscoverUsbDevicesEnabled);
+  const base::Value* pref_value = pref->GetValue();
+
+  bool enabled;
+  if (pref_value->GetAsBoolean(&enabled) && enabled) {
+    device_providers.push_back(
+        AndroidDeviceProvider::GetUsbDeviceProvider(profile_));
+  }
+
+  set_device_providers(device_providers);
 }

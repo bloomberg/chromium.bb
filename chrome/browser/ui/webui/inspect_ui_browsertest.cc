@@ -68,12 +68,13 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, SharedWorker) {
 }
 
 IN_PROC_BROWSER_TEST_F(InspectUITest, AdbTargets) {
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIInspectURL));
-
   scoped_refptr<DevToolsAdbBridge> adb_bridge =
       DevToolsAdbBridge::Factory::GetForProfile(browser()->profile());
-  adb_bridge->set_device_provider_for_test(
-      AndroidDeviceProvider::GetMockDeviceProviderForTest());
+  DevToolsAdbBridge::DeviceProviders providers;
+  providers.push_back(AndroidDeviceProvider::GetMockDeviceProviderForTest());
+  adb_bridge->set_device_providers(providers);
+
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIInspectURL));
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest("testAdbTargetsListed"));
 }

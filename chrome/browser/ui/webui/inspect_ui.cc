@@ -304,44 +304,20 @@ content::WebUIDataSource* InspectUI::CreateInspectUIHTMLSource() {
 }
 
 void InspectUI::UpdateDiscoverUsbDevicesEnabled() {
-  const base::Value* value =
-      GetPrefValue(prefs::kDevToolsDiscoverUsbDevicesEnabled);
-  web_ui()->CallJavascriptFunction("updateDiscoverUsbDevicesEnabled", *value);
-
-  // Configure adb bridge.
-  Profile* profile = Profile::FromWebUI(web_ui());
-  DevToolsAdbBridge* adb_bridge =
-      DevToolsAdbBridge::Factory::GetForProfile(profile);
-  if (adb_bridge) {
-    bool enabled = false;
-    value->GetAsBoolean(&enabled);
-
-    DevToolsAdbBridge::DeviceProviders device_providers;
-
-#if defined(DEBUG_DEVTOOLS)
-    device_providers.push_back(
-        AndroidDeviceProvider::GetSelfAsDeviceProvider());
-#endif
-
-    device_providers.push_back(AndroidDeviceProvider::GetAdbDeviceProvider());
-
-    if (enabled) {
-      device_providers.push_back(
-          AndroidDeviceProvider::GetUsbDeviceProvider(profile));
-    }
-
-    adb_bridge->set_device_providers(device_providers);
-  }
+  web_ui()->CallJavascriptFunction(
+      "updateDiscoverUsbDevicesEnabled",
+      *GetPrefValue(prefs::kDevToolsDiscoverUsbDevicesEnabled));
 }
 
 void InspectUI::UpdatePortForwardingEnabled() {
-  web_ui()->CallJavascriptFunction("updatePortForwardingEnabled",
+  web_ui()->CallJavascriptFunction(
+      "updatePortForwardingEnabled",
       *GetPrefValue(prefs::kDevToolsPortForwardingEnabled));
-
 }
 
 void InspectUI::UpdatePortForwardingConfig() {
-  web_ui()->CallJavascriptFunction("updatePortForwardingConfig",
+  web_ui()->CallJavascriptFunction(
+      "updatePortForwardingConfig",
       *GetPrefValue(prefs::kDevToolsPortForwardingConfig));
 }
 
