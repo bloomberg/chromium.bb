@@ -86,7 +86,8 @@
       dst_width, dst_height. The source (rectangle) is scaled to exactly
       this size. This overrides whatever the attached wl_buffer size is,
       unless the wl_buffer is NULL. If the wl_buffer is NULL, the surface
-      has no content and therefore no size.
+      has no content and therefore no size. Otherwise, the size is always
+      at least 1x1 in surface coordinates.
 
       If the source rectangle is set, it defines what area of the
       wl_buffer is taken as the source. If the source rectangle is set and
@@ -131,7 +132,7 @@
 
     <enum name="error">
       <entry name="bad_value" value="0"
-             summary="negative values in width or height"/>
+             summary="negative or zero values in width or height"/>
     </enum>
 
     <request name="set">
@@ -167,8 +168,10 @@
 	wl_viewport for the description, and relation to the wl_buffer
 	size.
 
-	If width and/or height are negative, the source rectangle is unset
-	instead.
+	If width is -1.0 and height is -1.0, the destination size is unset
+	instead. Any other pair of values for width and height that
+	contains zero or negative values raises the bad_value protocol
+	error.
 
 	The crop and scale state is double-buffered state, and will be
 	applied on the next wl_surface.commit.
@@ -186,8 +189,10 @@
 	wl_viewport for the description, and relation to the wl_buffer
 	size.
 
-	If width and/or height are negative or zero, the destination size
-	is unset instead.
+	If width is -1 and height is -1, the destination size is unset
+	instead. Any other pair of values for width and height that
+	contains zero or negative values raises the bad_value protocol
+	error.
 
 	The crop and scale state is double-buffered state, and will be
 	applied on the next wl_surface.commit.

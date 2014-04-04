@@ -3452,16 +3452,27 @@ viewport_set_source(struct wl_client *client,
 
 	assert(surface->viewport_resource != NULL);
 
-	if (wl_fixed_to_double(src_width) < 0 ||
-	    wl_fixed_to_double(src_height) < 0) {
+	if (src_width == wl_fixed_from_int(-1) &&
+	    src_height == wl_fixed_from_int(-1)) {
+		/* unset source size */
 		surface->pending.buffer_viewport.buffer.src_width =
 			wl_fixed_from_int(-1);
-	} else {
-		surface->pending.buffer_viewport.buffer.src_x = src_x;
-		surface->pending.buffer_viewport.buffer.src_y = src_y;
-		surface->pending.buffer_viewport.buffer.src_width = src_width;
-		surface->pending.buffer_viewport.buffer.src_height = src_height;
+		return;
 	}
+
+	if (src_width <= 0 || src_height <= 0) {
+		wl_resource_post_error(resource,
+			WL_VIEWPORT_ERROR_BAD_VALUE,
+			"source size must be positive (%fx%f)",
+			wl_fixed_to_double(src_width),
+			wl_fixed_to_double(src_height));
+		return;
+	}
+
+	surface->pending.buffer_viewport.buffer.src_x = src_x;
+	surface->pending.buffer_viewport.buffer.src_y = src_y;
+	surface->pending.buffer_viewport.buffer.src_width = src_width;
+	surface->pending.buffer_viewport.buffer.src_height = src_height;
 }
 
 static void
@@ -3475,12 +3486,22 @@ viewport_set_destination(struct wl_client *client,
 
 	assert(surface->viewport_resource != NULL);
 
-	if (dst_width <= 0 || dst_height <= 0) {
+	if (dst_width == -1 && dst_height == -1) {
+		/* unset destination size */
 		surface->pending.buffer_viewport.surface.width = -1;
-	} else {
-		surface->pending.buffer_viewport.surface.width = dst_width;
-		surface->pending.buffer_viewport.surface.height = dst_height;
+		return;
 	}
+
+	if (dst_width <= 0 || dst_height <= 0) {
+		wl_resource_post_error(resource,
+			WL_VIEWPORT_ERROR_BAD_VALUE,
+			"destination size must be positive (%dx%d)",
+			dst_width, dst_height);
+		return;
+	}
+
+	surface->pending.buffer_viewport.surface.width = dst_width;
+	surface->pending.buffer_viewport.surface.height = dst_height;
 }
 
 static const struct wl_viewport_interface viewport_interface = {
