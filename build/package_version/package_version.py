@@ -52,6 +52,7 @@ import pynacl.file_tools
 import pynacl.gsd_storage
 import pynacl.log_tools
 import pynacl.platform
+import pynacl.working_directory
 
 import archive_info
 import package_info
@@ -132,8 +133,7 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
   local_package_file = package_locations.GetLocalPackageFile(
       tar_dir,
       package_target,
-      package_name
-  )
+      package_name)
   # To ensure that we do not redownload extra archives that we already have,
   # create a dictionary of old package archives that contains the hash of each
   # package archive.
@@ -141,14 +141,15 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
   if os.path.isfile(local_package_file):
     old_package_desc = package_info.PackageInfo(local_package_file)
     old_archives_list = old_package_desc.GetArchiveList()
-    old_archive_names = [archive.name for archive in old_archives_list]
+    old_archive_names = [archive.GetArchiveData().name
+                         for archive
+                         in old_archives_list]
     for archive_name in old_archive_names:
       archive_file = package_locations.GetLocalPackageArchiveFile(
           tar_dir,
           package_target,
           package_name,
-          archive_name
-      )
+          archive_name)
 
       archive_hash = archive_info.GetArchiveHash(archive_file)
       if archive_hash is not None:
@@ -193,9 +194,11 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
         tar_dir,
         package_target,
         package_name,
-        old_archive
-    )
+        old_archive)
     os.unlink(archive_file)
+
+  # Save the package file so we know what we currently have.
+  package_desc.SavePackageFile(local_package_file)
 
   return downloaded_files
 
@@ -621,12 +624,10 @@ def _DoSyncCmd(arguments):
       # revision number found in the revision directory.
       revision_file = package_locations.GetRevisionFile(
           arguments.revisions_dir,
-          package_name
-      )
+          package_name)
       revision_desc = revision_info.RevisionInfo(
           arguments.packages_desc,
-          revision_file
-      )
+          revision_file)
       package_desc = revision_desc.GetPackageInfo(package_target)
     else:
       # When the sync revision number is specified, find the package to
@@ -635,26 +636,24 @@ def _DoSyncCmd(arguments):
           arguments.packages_desc.IsSharedPackage(package_name),
           arguments.sync__revision,
           package_target,
-          package_name
-      )
-      temp_package_file = os.path.join(
-          arguments.tar_dir,
-          os.path.basename(remote_package_key) + TEMP_SUFFIX
-      )
-      pynacl.file_tools.MakeParentDirectoryIfAbsent(temp_package_file)
-      url = arguments.gsd_store.GetFile(remote_package_key, temp_package_file)
-      if url is None:
-        raise IOError('Could not sync file: %s' % remote_package_key)
+          package_name)
+      with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
+        temp_package_file = os.path.join(
+            work_dir,
+            os.path.basename(remote_package_key) + TEMP_SUFFIX)
 
-      package_desc = package_info.PackageInfo(temp_package_file)
+        package_info.DownloadPackageInfoFiles(
+            temp_package_file,
+            remote_package_key,
+            downloader=arguments.gsd_store.GetFile)
+
+        package_desc = package_info.PackageInfo(temp_package_file)
 
     DownloadPackageArchives(
-        arguments.gsd_store,
         arguments.tar_dir,
         package_target,
         package_name,
-        package_desc
-    )
+        package_desc)
 
   CleanTempFiles(arguments.tar_dir)
 
@@ -662,8 +661,7 @@ def _DoSyncCmd(arguments):
     ExtractPackageTargets(
         arguments.package_target_packages,
         arguments.tar_dir,
-        arguments.dest_dir
-    )
+        arguments.dest_dir)
 
 
 def _SetRevisionCmdArgParser(subparser):
@@ -683,38 +681,39 @@ def _DoSetRevisionCmd(arguments):
   revision_num = arguments.setrevision__revision
 
   revision_desc = revision_info.RevisionInfo(arguments.packages_desc)
+  revision_desc.SetRevisionNumber(revision_num)
   package_targets = arguments.packages_desc.GetPackageTargetsForPackage(
-      package_name
-  )
+      package_name)
 
-  for package_target in package_targets:
-    remote_package_key = package_locations.GetRemotePackageKey(
-        arguments.packages_desc.IsSharedPackage(package_name),
-        revision_num,
-        package_target,
-        package_name
-    )
-    temp_package_file = os.path.join(
-        arguments.revisions_dir,
-        os.path.basename(remote_package_key) + TEMP_SUFFIX)
-    pynacl.file_tools.MakeParentDirectoryIfAbsent(temp_package_file)
-    url = arguments.gsd_store.GetFile(remote_package_key, temp_package_file)
-    if url is None:
-      raise IOError('Could not download package file: %s' % remote_package_key)
+  with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
+    for package_target in package_targets:
+      remote_package_key = package_locations.GetRemotePackageKey(
+          arguments.packages_desc.IsSharedPackage(package_name),
+          revision_num,
+          package_target,
+          package_name)
 
-    package_desc = package_info.PackageInfo(temp_package_file)
-    logging.info('Setting %s:%s to revision %s',
-                 package_target, package_name, revision_num)
-    revision_desc.SetTargetRevision(
-        package_name,
-        package_target,
-        package_desc
-    )
+      temp_package_file = os.path.join(
+          work_dir,
+          os.path.basename(remote_package_key) + TEMP_SUFFIX)
+
+      package_info.DownloadPackageInfoFiles(
+          temp_package_file,
+          remote_package_key,
+          downloader=arguments.gsd_store.GetFile)
+
+      package_desc = package_info.PackageInfo(temp_package_file)
+
+      logging.info('Setting %s:%s to revision %s',
+                   package_target, package_name, revision_num)
+      revision_desc.SetTargetRevision(
+          package_name,
+          package_target,
+          package_desc)
 
   revision_file = package_locations.GetRevisionFile(
       arguments.revisions_dir,
-      package_name
-  )
+      package_name)
   pynacl.file_tools.MakeParentDirectoryIfAbsent(revision_file)
   revision_desc.SaveRevisionFile(revision_file)
 

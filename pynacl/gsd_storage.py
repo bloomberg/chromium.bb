@@ -39,8 +39,8 @@ def LegalizeName(name):
 
 def HttpDownload(url, target):
   """Default download route."""
-  http_download.HttpDownload(url, os.path.abspath(target),
-                             logger=logging.info)
+  http_download.HttpDownload(url, os.path.abspath(target), verbose=False,
+                             logger=logging.debug)
 
 
 class GSDStorageError(Exception):

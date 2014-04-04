@@ -81,6 +81,7 @@ def GetLocalPackageArchiveFile(tar_dir, package_target, package_name,
   return os.path.join(
       tar_dir,
       package_target,
+      package_name,
       archive_name
   )
 
