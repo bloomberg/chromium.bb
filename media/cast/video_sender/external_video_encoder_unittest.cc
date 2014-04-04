@@ -161,5 +161,41 @@ TEST_F(ExternalVideoEncoderTest, EncodePattern30fpsRunningOutOfAck) {
   task_runner_->RunTasks();
 }
 
+TEST_F(ExternalVideoEncoderTest, SkipNextFrame) {
+  task_runner_->RunTasks();  // Run the initializer on the correct thread.
+
+  VideoEncoder::FrameEncodedCallback frame_encoded_callback =
+      base::Bind(&TestVideoEncoderCallback::DeliverEncodedVideoFrame,
+                 test_video_encoder_callback_.get());
+
+  base::TimeTicks capture_time;
+  capture_time += base::TimeDelta::FromMilliseconds(33);
+  test_video_encoder_callback_->SetExpectedResult(true, 0, 0, capture_time);
+  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+      video_frame_, capture_time, frame_encoded_callback));
+  task_runner_->RunTasks();
+
+  video_encoder_->SkipNextFrame(true);
+  for (int i = 0; i < 2; ++i) {
+    capture_time += base::TimeDelta::FromMilliseconds(33);
+    EXPECT_FALSE(video_encoder_->EncodeVideoFrame(
+        video_frame_, capture_time, frame_encoded_callback));
+    task_runner_->RunTasks();
+  }
+
+  video_encoder_->SkipNextFrame(false);
+  for (int i = 0; i < 2; ++i) {
+    capture_time += base::TimeDelta::FromMilliseconds(33);
+    test_video_encoder_callback_->SetExpectedResult(
+        false, i + 1, i, capture_time);
+    EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+        video_frame_, capture_time, frame_encoded_callback));
+    task_runner_->RunTasks();
+  }
+  // We need to run the task to cleanup the GPU instance.
+  video_encoder_.reset(NULL);
+  task_runner_->RunTasks();
+}
+
 }  // namespace cast
 }  // namespace media

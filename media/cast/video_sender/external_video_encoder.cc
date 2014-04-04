@@ -381,7 +381,6 @@ bool ExternalVideoEncoder::EncodeVideoFrame(
   if (skip_next_frame_) {
     VLOG(1) << "Skip encoding frame";
     ++skip_count_;
-    skip_next_frame_ = false;
     return false;
   }
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
