@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 #include "base/logging.h"
+#include "net/quic/congestion_control/tcp_receiver.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_data_reader.h"
@@ -96,6 +97,24 @@ bool QuicClient::Initialize() {
     DLOG(WARNING) << "Socket overflow detection not supported";
   } else {
     overflow_supported_ = true;
+  }
+
+  // Set the receive buffer size.
+  rc = setsockopt(fd_, SOL_SOCKET, SO_RCVBUF,
+                  &TcpReceiver::kReceiveWindowTCP,
+                  sizeof(TcpReceiver::kReceiveWindowTCP));
+  if (rc != 0) {
+    LOG(ERROR) << "Failed to set socket recv size";
+    return false;
+  }
+
+  // Set the send buffer size.
+  rc = setsockopt(fd_, SOL_SOCKET, SO_SNDBUF,
+                  &TcpReceiver::kReceiveWindowTCP,
+                  sizeof(TcpReceiver::kReceiveWindowTCP));
+  if (rc != 0) {
+    LOG(ERROR) << "Failed to set socket send size";
+    return false;
   }
 
   int get_local_ip = 1;

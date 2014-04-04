@@ -12,6 +12,7 @@
 #include <sys/socket.h>
 
 #include "net/base/ip_endpoint.h"
+#include "net/quic/congestion_control/tcp_receiver.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_clock.h"
@@ -124,6 +125,24 @@ bool QuicServer::Listen(const IPEndPoint& address) {
   }
   if (rc != 0) {
     LOG(ERROR) << "Failed to set required socket options";
+    return false;
+  }
+
+  // Set the receive buffer size.
+  rc = setsockopt(fd_, SOL_SOCKET, SO_RCVBUF,
+                  &TcpReceiver::kReceiveWindowTCP,
+                  sizeof(TcpReceiver::kReceiveWindowTCP));
+  if (rc != 0) {
+    LOG(ERROR) << "Failed to set socket recv size";
+    return false;
+  }
+
+  // Set the send buffer size.
+  rc = setsockopt(fd_, SOL_SOCKET, SO_SNDBUF,
+                  &TcpReceiver::kReceiveWindowTCP,
+                  sizeof(TcpReceiver::kReceiveWindowTCP));
+  if (rc != 0) {
+    LOG(ERROR) << "Failed to set socket send size";
     return false;
   }
 
