@@ -18,13 +18,13 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/layers/delegated_frame_provider.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
+#include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/compositor/owned_mailbox.h"
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/browser/renderer_host/software_frame_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/gpu/client/gl_helper.h"
@@ -99,7 +99,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public aura::client::CursorClientObserver,
       public ImageTransportFactoryObserver,
       public BrowserAccessibilityDelegate,
-      public SoftwareFrameManagerClient,
       public DelegatedFrameEvictorClient,
       public base::SupportsWeakPtr<RenderWidgetHostViewAura>,
       public cc::DelegatedFrameResourceCollectionClient {
@@ -328,11 +327,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Overridden from aura::WindowTreeHostObserver:
   virtual void OnHostMoved(const aura::WindowTreeHost* host,
                            const gfx::Point& new_origin) OVERRIDE;
-
-  // SoftwareFrameManagerClient implementation:
-  virtual void SoftwareFrameWasFreed(
-      uint32 output_surface_id, unsigned frame_id) OVERRIDE;
-  virtual void ReleaseReferencesToSoftwareFrame() OVERRIDE;
 
   bool CanCopyToBitmap() const;
 
@@ -576,15 +570,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // cc::DelegatedFrameProviderClient implementation.
   virtual void UnusedResourcesAreAvailable() OVERRIDE;
 
-  void SwapSoftwareFrame(uint32 output_surface_id,
-                         scoped_ptr<cc::SoftwareFrameData> frame_data,
-                         float frame_device_scale_factor,
-                         const std::vector<ui::LatencyInfo>& latency_info);
-  void SendSoftwareFrameAck(uint32 output_surface_id);
-  void SendReclaimSoftwareFrames();
-  void ReleaseSoftwareFrame(uint32 output_surface_id,
-                            unsigned software_frame_id);
-
   void DidReceiveFrameFromRenderer();
 
   // Helper function to set keyboard focus to the main window.
@@ -657,9 +642,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // The current frontbuffer texture.
   scoped_refptr<ui::Texture> current_surface_;
-
-  // This holds the current software framebuffer, if any.
-  scoped_ptr<SoftwareFrameManager> software_frame_manager_;
 
   // The vsync manager we are observing for changes, if any.
   scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
@@ -786,13 +768,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   std::vector<ui::LatencyInfo> software_latency_info_;
 
-  struct ReleasedFrameInfo {
-    ReleasedFrameInfo(uint32 output_id, unsigned software_frame_id)
-        : output_surface_id(output_id), frame_id(software_frame_id) {}
-    uint32 output_surface_id;
-    unsigned frame_id;
-  };
-  scoped_ptr<ReleasedFrameInfo> released_software_frame_;
   scoped_ptr<DelegatedFrameEvictor> delegated_frame_evictor_;
 
   scoped_ptr<aura::client::ScopedTooltipDisabler> tooltip_disabler_;

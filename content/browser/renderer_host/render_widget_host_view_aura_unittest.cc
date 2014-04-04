@@ -1028,17 +1028,6 @@ TEST_F(RenderWidgetHostViewAuraTest, SwapNotifiesWindow) {
       MakeGLFrame(1.f, view_size, gfx::Rect(5, 5, 5, 5), owned_mailbox.get()));
   testing::Mock::VerifyAndClearExpectations(&observer);
 
-  // Software path
-  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
-  view_->OnSwapCompositorFrame(0, MakeSoftwareFrame(1.f, view_size, view_rect));
-  testing::Mock::VerifyAndClearExpectations(&observer);
-
-  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_,
-                                               gfx::Rect(5, 5, 5, 5)));
-  view_->OnSwapCompositorFrame(
-      0, MakeSoftwareFrame(1.f, view_size, gfx::Rect(5, 5, 5, 5)));
-  testing::Mock::VerifyAndClearExpectations(&observer);
-
   // Delegated renderer path
   EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
   view_->OnSwapCompositorFrame(

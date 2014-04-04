@@ -110,12 +110,6 @@ namespace content {
 
 namespace {
 
-void MailboxReleaseCallback(scoped_ptr<base::SharedMemory> shared_memory,
-                            uint32 sync_point,
-                            bool lost_resource) {
-  // NOTE: shared_memory will get released when we go out of scope.
-}
-
 // In mouse lock mode, we need to prevent the (invisible) cursor from hitting
 // the border of the view, in order to get valid movement information. However,
 // forcing the cursor back to the center of the view after each mouse move
@@ -507,8 +501,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
   aura::client::SetFocusChangeObserver(window_, this);
   window_->set_layer_owner_delegate(this);
   gfx::Screen::GetScreenFor(window_)->AddObserver(this);
-  software_frame_manager_.reset(new SoftwareFrameManager(
-      weak_ptr_factory_.GetWeakPtr()));
   ImageTransportFactory::GetInstance()->AddObserver(this);
 }
 
@@ -619,7 +611,6 @@ void RenderWidgetHostViewAura::WasShown() {
   if (!host_->is_hidden())
     return;
   host_->WasShown();
-  software_frame_manager_->SetVisibility(true);
   delegated_frame_evictor_->SetVisible(true);
 
   aura::Window* root = window_->GetRootWindow();
@@ -657,7 +648,6 @@ void RenderWidgetHostViewAura::WasHidden() {
   if (!host_ || host_->is_hidden())
     return;
   host_->WasHidden();
-  software_frame_manager_->SetVisibility(false);
   delegated_frame_evictor_->SetVisible(false);
   released_front_lock_ = NULL;
 
@@ -1318,23 +1308,10 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
     current_frame_size_ = ConvertSizeToDIP(
         current_surface_->device_scale_factor(), current_surface_->size());
     CheckResizeLock();
-    software_frame_manager_->DiscardCurrentFrame();
-  } else if (is_compositing_active &&
-             software_frame_manager_->HasCurrentFrame()) {
-    cc::TextureMailbox mailbox;
-    scoped_ptr<cc::SingleReleaseCallback> callback;
-    software_frame_manager_->GetCurrentFrameMailbox(&mailbox, &callback);
-    window_->layer()->SetTextureMailbox(mailbox,
-                                        callback.Pass(),
-                                        last_swapped_surface_scale_factor_);
-    current_frame_size_ = ConvertSizeToDIP(last_swapped_surface_scale_factor_,
-                                           mailbox.shared_memory_size());
-    CheckResizeLock();
   } else {
     window_->layer()->SetShowPaintedContent();
     resize_lock_.reset();
     host_->WasResized();
-    software_frame_manager_->DiscardCurrentFrame();
   }
 }
 
@@ -1471,8 +1448,6 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
   gfx::Rect damage_rect_in_dip =
       ConvertRectToDIP(frame_device_scale_factor, damage_rect);
 
-  software_frame_manager_->DiscardCurrentFrame();
-
   if (ShouldSkipFrame(frame_size_in_dip)) {
     cc::CompositorFrameAck ack;
     cc::TransferableResource::ReturnResources(frame_data->resource_list,
@@ -1604,106 +1579,6 @@ void RenderWidgetHostViewAura::EvictDelegatedFrame() {
   delegated_frame_evictor_->DiscardedFrame();
 }
 
-void RenderWidgetHostViewAura::SwapSoftwareFrame(
-    uint32 output_surface_id,
-    scoped_ptr<cc::SoftwareFrameData> frame_data,
-    float frame_device_scale_factor,
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  const gfx::Size& frame_size = frame_data->size;
-  const gfx::Rect& damage_rect = frame_data->damage_rect;
-  gfx::Size frame_size_in_dip =
-      ConvertSizeToDIP(frame_device_scale_factor, frame_size);
-  if (ShouldSkipFrame(frame_size_in_dip)) {
-    ReleaseSoftwareFrame(output_surface_id, frame_data->id);
-    SendSoftwareFrameAck(output_surface_id);
-    return;
-  }
-
-  if (!software_frame_manager_->SwapToNewFrame(
-          output_surface_id,
-          frame_data.get(),
-          frame_device_scale_factor,
-          host_->GetProcess()->GetHandle())) {
-    ReleaseSoftwareFrame(output_surface_id, frame_data->id);
-    SendSoftwareFrameAck(output_surface_id);
-    return;
-  }
-
-  if (last_swapped_surface_size_ != frame_size) {
-    DLOG_IF(ERROR, damage_rect != gfx::Rect(frame_size))
-        << "Expected full damage rect";
-  }
-  last_swapped_surface_size_ = frame_size;
-  last_swapped_surface_scale_factor_ = frame_device_scale_factor;
-
-  cc::TextureMailbox mailbox;
-  scoped_ptr<cc::SingleReleaseCallback> callback;
-  software_frame_manager_->GetCurrentFrameMailbox(&mailbox, &callback);
-  DCHECK(mailbox.IsSharedMemory());
-  current_frame_size_ = frame_size_in_dip;
-
-  released_front_lock_ = NULL;
-  CheckResizeLock();
-  window_->layer()->SetTextureMailbox(mailbox,
-                                      callback.Pass(),
-                                      frame_device_scale_factor);
-  window_->SchedulePaintInRect(
-      ConvertRectToDIP(frame_device_scale_factor, damage_rect));
-
-  ui::Compositor* compositor = GetCompositor();
-  if (compositor) {
-    for (size_t i = 0; i < latency_info.size(); i++)
-      compositor->SetLatencyInfo(latency_info[i]);
-    AddOnCommitCallbackAndDisableLocks(
-        base::Bind(&RenderWidgetHostViewAura::SendSoftwareFrameAck,
-                   AsWeakPtr(),
-                   output_surface_id));
-  } else {
-    SendSoftwareFrameAck(output_surface_id);
-  }
-  DidReceiveFrameFromRenderer();
-
-  software_frame_manager_->SwapToNewFrameComplete(!host_->is_hidden());
-}
-
-void RenderWidgetHostViewAura::SendSoftwareFrameAck(uint32 output_surface_id) {
-  unsigned software_frame_id = 0;
-  if (released_software_frame_ &&
-      released_software_frame_->output_surface_id == output_surface_id) {
-    software_frame_id = released_software_frame_->frame_id;
-    released_software_frame_.reset();
-  }
-
-  cc::CompositorFrameAck ack;
-  ack.last_software_frame_id = software_frame_id;
-  RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-      host_->GetRoutingID(), output_surface_id,
-      host_->GetProcess()->GetID(), ack);
-  SendReclaimSoftwareFrames();
-}
-
-void RenderWidgetHostViewAura::SendReclaimSoftwareFrames() {
-  if (!released_software_frame_)
-    return;
-  cc::CompositorFrameAck ack;
-  ack.last_software_frame_id = released_software_frame_->frame_id;
-  RenderWidgetHostImpl::SendReclaimCompositorResources(
-      host_->GetRoutingID(),
-      released_software_frame_->output_surface_id,
-      host_->GetProcess()->GetID(),
-      ack);
-  released_software_frame_.reset();
-}
-
-void RenderWidgetHostViewAura::ReleaseSoftwareFrame(
-    uint32 output_surface_id,
-    unsigned software_frame_id) {
-  SendReclaimSoftwareFrames();
-  DCHECK(!released_software_frame_);
-  released_software_frame_.reset(new ReleasedFrameInfo(
-      output_surface_id, software_frame_id));
-}
-
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
@@ -1717,10 +1592,10 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
   }
 
   if (frame->software_frame_data) {
-    SwapSoftwareFrame(output_surface_id,
-                      frame->software_frame_data.Pass(),
-                      frame->metadata.device_scale_factor,
-                      frame->metadata.latency_info);
+    DLOG(ERROR) << "Unable to use software frame in aura";
+    RecordAction(
+        base::UserMetricsAction("BadMessageTerminate_SharedMemoryAura"));
+    host_->GetProcess()->ReceivedBadMessage();
     return;
   }
 
@@ -1777,7 +1652,6 @@ void RenderWidgetHostViewAura::BuffersSwapped(
     const BufferPresentedCallback& ack_callback) {
   scoped_refptr<ui::Texture> previous_texture(current_surface_);
   const gfx::Rect surface_rect = gfx::Rect(surface_size);
-  software_frame_manager_->DiscardCurrentFrame();
 
   if (!SwapBuffersPrepare(surface_rect,
                           surface_scale_factor,
@@ -3172,23 +3046,6 @@ void RenderWidgetHostViewAura::OnHostMoved(const aura::WindowTreeHost* host,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewAura, SoftwareFrameManagerClient implementation:
-
-void RenderWidgetHostViewAura::SoftwareFrameWasFreed(
-    uint32 output_surface_id, unsigned frame_id) {
-  ReleaseSoftwareFrame(output_surface_id, frame_id);
-}
-
-void RenderWidgetHostViewAura::ReleaseReferencesToSoftwareFrame() {
-  ui::Compositor* compositor = GetCompositor();
-  if (compositor) {
-    AddOnCommitCallbackAndDisableLocks(base::Bind(
-        &RenderWidgetHostViewAura::SendReclaimSoftwareFrames, AsWeakPtr()));
-  }
-  UpdateExternalTexture();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, ui::CompositorObserver implementation:
 
 void RenderWidgetHostViewAura::OnCompositingDidCommit(
@@ -3631,9 +3488,6 @@ SkBitmap::Config RenderWidgetHostViewAura::PreferredReadbackFormat() {
 
 void RenderWidgetHostViewAura::OnLayerRecreated(ui::Layer* old_layer,
                                                 ui::Layer* new_layer) {
-  float mailbox_scale_factor;
-  cc::TextureMailbox old_mailbox =
-      old_layer->GetTextureMailbox(&mailbox_scale_factor);
   scoped_refptr<ui::Texture> old_texture = old_layer->external_texture();
   // The new_layer is the one that will be used by our Window, so that's the one
   // that should keep our texture. old_layer will be returned to the
@@ -3658,25 +3512,6 @@ void RenderWidgetHostViewAura::OnLayerRecreated(ui::Layer* old_layer,
     else
       old_layer->SetShowPaintedContent();
     new_layer->SetExternalTexture(old_texture.get());
-  } else if (old_mailbox.IsSharedMemory()) {
-    base::SharedMemory* old_buffer = old_mailbox.shared_memory();
-    const size_t size = old_mailbox.SharedMemorySizeInBytes();
-
-    scoped_ptr<base::SharedMemory> new_buffer(new base::SharedMemory);
-    new_buffer->CreateAndMapAnonymous(size);
-
-    if (old_buffer->memory() && new_buffer->memory()) {
-      memcpy(new_buffer->memory(), old_buffer->memory(), size);
-      base::SharedMemory* new_buffer_raw_ptr = new_buffer.get();
-      scoped_ptr<cc::SingleReleaseCallback> callback =
-          cc::SingleReleaseCallback::Create(base::Bind(MailboxReleaseCallback,
-                                                       Passed(&new_buffer)));
-      cc::TextureMailbox new_mailbox(new_buffer_raw_ptr,
-                                     old_mailbox.shared_memory_size());
-      new_layer->SetTextureMailbox(new_mailbox,
-                                   callback.Pass(),
-                                   mailbox_scale_factor);
-    }
   } else if (frame_provider_.get()) {
     new_layer->SetShowDelegatedContent(frame_provider_.get(),
                                        current_frame_size_);
