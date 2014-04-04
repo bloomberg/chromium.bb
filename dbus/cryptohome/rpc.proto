@@ -42,6 +42,8 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_BACKING_STORE_FAILURE = 13;
   CRYPTOHOME_ERROR_UPDATE_SIGNATURE_INVALID = 14;
   CRYPTOHOME_ERROR_KEY_NOT_FOUND = 15;
+  CRYPTOHOME_ERROR_LOCKBOX_SIGNATURE_INVALID = 16;
+  CRYPTOHOME_ERROR_LOCKBOX_CANNOT_SIGN = 17;
 }
 
 message AccountIdentifier {
@@ -128,3 +130,26 @@ message RemoveKeyRequest {
   // Only key.data().label() is used at present.
   optional Key key = 1;
 }
+
+message SignBootLockboxRequest {
+  // The data to be signed.
+  optional bytes data = 1;
+}
+
+message SignBootLockboxReply {
+  extend BaseReply {
+    optional SignBootLockboxReply reply = 1001;
+  }
+  optional bytes signature = 1;
+}
+
+message VerifyBootLockboxRequest {
+  // The signed data to be verified.
+  optional bytes data = 1;
+  // The signature to be verified.
+  optional bytes signature = 2;
+}
+
+message FinalizeBootLockboxRequest {
+}
+
