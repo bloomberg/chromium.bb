@@ -1367,6 +1367,7 @@ RenderLayerModelObject* RenderObject::containerForRepaint() const
 
 void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintContainer, const IntRect& r, InvalidationReason invalidationReason) const
 {
+    // FIXME: This should use a ConvertableToTraceFormat when they are available in Blink.
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::repaintUsingContainer()",
         "object", TRACE_STR_COPY(this->debugName().ascii().data()),
         "info", TRACE_STR_COPY(String::format("rect: %d,%d %dx%d, invalidation_reason: %s",
@@ -1519,6 +1520,13 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
     // This ASSERT fails due to animations.  See https://bugs.webkit.org/show_bug.cgi?id=37048
     // ASSERT(!newBoundsPtr || *newBoundsPtr == clippedOverflowRectForRepaint(repaintContainer));
     LayoutRect newBounds = newBoundsPtr ? *newBoundsPtr : clippedOverflowRectForRepaint(repaintContainer);
+
+    // FIXME: This should use a ConvertableToTraceFormat when they are available in Blink.
+    TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::repaintAfterLayoutIfNeeded()",
+        "object", TRACE_STR_COPY(this->debugName().ascii().data()),
+        "info", TRACE_STR_COPY(String::format("oldBounds: %d,%d %dx%d newBounds: %d,%d %dx%d",
+            oldBounds.x().toInt(), oldBounds.y().toInt(), oldBounds.width().toInt(), oldBounds.height().toInt(),
+            newBounds.x().toInt(), newBounds.y().toInt(), newBounds.width().toInt(), newBounds.height().toInt()).ascii().data()));
 
     InvalidationReason invalidationReason = wasSelfLayout ? InvalidationSelfLayout : InvalidationIncremental;
 
