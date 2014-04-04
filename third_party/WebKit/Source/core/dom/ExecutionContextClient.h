@@ -54,7 +54,6 @@ public:
     virtual bool isWorkerGlobalScope() const { return false; }
     virtual bool isJSExecutionForbidden() const = 0;
     virtual DOMWindow* executingWindow() { return 0; }
-    virtual void userEventWasHandled() { }
     virtual String userAgent(const KURL&) const = 0;
     virtual void disableEval(const String& errorMessage) = 0;
     virtual SecurityContext& securityContext() = 0;

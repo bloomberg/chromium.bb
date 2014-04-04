@@ -73,7 +73,6 @@ public:
     ContentSecurityPolicy* contentSecurityPolicy() const;
     const KURL& url() const;
     KURL completeURL(const String& url) const;
-    void userEventWasHandled();
     void disableEval(const String& errorMessage);
     DOMWindow* executingWindow() const;
     String userAgent(const KURL&) const;

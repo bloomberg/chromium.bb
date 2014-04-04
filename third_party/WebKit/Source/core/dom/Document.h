@@ -953,9 +953,6 @@ public:
 
     void initDNSPrefetch();
 
-    double lastHandledUserGestureTimestamp() const { return m_lastHandledUserGestureTimestamp; }
-    void resetLastHandledUserGestureTimestamp();
-
     bool hasTouchEventHandlers() const { return (m_touchEventTargets.get()) ? m_touchEventTargets->size() : false; }
 
     // Called when a single touch event handler has been added or removed for a node.
@@ -1034,7 +1031,6 @@ public:
     void addConsoleMessageWithRequestIdentifier(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier);
 
     virtual DOMWindow* executingWindow() OVERRIDE FINAL;
-    virtual void userEventWasHandled() OVERRIDE FINAL { resetLastHandledUserGestureTimestamp(); }
     LocalFrame* executingFrame();
 
     DocumentLifecycleNotifier& lifecycleNotifier();
@@ -1334,8 +1330,6 @@ private:
     unsigned m_writeRecursionDepth;
 
     OwnPtr<TouchEventTargetSet> m_touchEventTargets;
-
-    double m_lastHandledUserGestureTimestamp;
 
     RefPtr<ScriptedAnimationController> m_scriptedAnimationController;
     OwnPtr<MainThreadTaskRunner> m_taskRunner;

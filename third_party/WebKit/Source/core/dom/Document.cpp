@@ -464,7 +464,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_writingModeSetOnDocumentElement(false)
     , m_writeRecursionIsTooDeep(false)
     , m_writeRecursionDepth(0)
-    , m_lastHandledUserGestureTimestamp(0)
     , m_taskRunner(MainThreadTaskRunner::create(this))
     , m_registrationContext(initializer.registrationContext(this))
     , m_elementDataCacheClearTimer(this, &Document::elementDataCacheClearTimerFired)
@@ -5095,11 +5094,6 @@ void Document::didRemoveTouchEventHandler(Node* handler, bool clearAll)
                 scrollingCoordinator->touchEventTargetRectsDidChange();
         }
     }
-}
-
-void Document::resetLastHandledUserGestureTimestamp()
-{
-    m_lastHandledUserGestureTimestamp = currentTime();
 }
 
 DocumentLoader* Document::loader() const

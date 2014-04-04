@@ -38,7 +38,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/DOMWindow.h"
-#include "platform/UserGestureIndicator.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
@@ -305,7 +304,6 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
             UseCounter::count(executingWindow->document(), UseCounter::DocumentUnloadFired);
     }
 
-    bool userEventWasHandled = false;
     size_t i = 0;
     size_t size = entry.size();
     if (!d->firingEventIterators)
@@ -331,15 +329,9 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
         // event listeners, even though that violates some versions of the DOM spec.
         registeredListener.listener->handleEvent(context, event);
-        if (!userEventWasHandled && UserGestureIndicator::processingUserGesture())
-            userEventWasHandled = true;
         InspectorInstrumentation::didHandleEvent(cookie);
     }
     d->firingEventIterators->removeLast();
-    if (userEventWasHandled) {
-        if (ExecutionContext* context = executionContext())
-            context->userEventWasHandled();
-    }
 }
 
 const EventListenerVector& EventTarget::getEventListeners(const AtomicString& eventType)

@@ -264,13 +264,6 @@ KURL ExecutionContext::completeURL(const String& url) const
     return m_client->virtualCompleteURL(url);
 }
 
-void ExecutionContext::userEventWasHandled()
-{
-    if (!m_client)
-        return;
-    m_client->userEventWasHandled();
-}
-
 void ExecutionContext::disableEval(const String& errorMessage)
 {
     if (!m_client)
