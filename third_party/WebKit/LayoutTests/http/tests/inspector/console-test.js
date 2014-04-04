@@ -39,7 +39,7 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
             if (dumpClassNames)
                 InspectorTest.addResult(classNames.join(" > "));
         } else {
-            var messageText = InspectorTest.prepareConsoleMessageText(element)
+            var messageText = InspectorTest.prepareConsoleMessageText(element);
             InspectorTest.addResult(messageText + (dumpClassNames ? " " + classNames.join(" > ") : ""));
         }
 
@@ -101,7 +101,7 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
     var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
         var element = messageViews[i].toMessageElement();
-        var messageText = InspectorTest.prepareConsoleMessageText(element)
+        var messageText = InspectorTest.prepareConsoleMessageText(element);
         result.push(messageText + " " + element.getAttribute("class"));
     }
     if (sortMessages)
@@ -167,5 +167,24 @@ InspectorTest.waitUntilNthMessageReceived = function(count, callback)
     }
     InspectorTest.addSniffer(WebInspector.console, "addMessage", override, false);
 }
+
+InspectorTest.changeExecutionContext = function(namePrefix)
+{
+    WebInspector.inspectorView.panel("console");
+    var selector = WebInspector.ConsolePanel._view()._executionContextSelector._selectElement;
+    var option = selector.firstChild;
+    while (option) {
+        if (option.textContent && option.textContent.startsWith(namePrefix))
+            break;
+        option = option.nextSibling;
+    }
+    if (!option) {
+        InspectorTest.addResult("FAILED: context with prefix: "  + namePrefix + " not found in the context list");
+        return;
+    }
+    option.selected = true;
+    WebInspector.ConsolePanel._view()._executionContextChanged();
+}
+
 
 }

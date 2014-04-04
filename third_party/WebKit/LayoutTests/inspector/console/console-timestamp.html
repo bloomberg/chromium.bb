@@ -29,17 +29,17 @@ function test()
 
     InspectorTest.addResult("Console messages with timestamps disabled:");
     addMessageWithFixedTimestamp("<Before>");
-    addMessageWithFixedTimestamp("<Before>");
     addMessageWithFixedTimestamp("<Before>", baseTimestamp + 456);
+    addMessageWithFixedTimestamp("<Before>");
 
     InspectorTest.dumpConsoleMessages();
 
     InspectorTest.addResult("Console messages with timestamps enabled:");
     WebInspector.settings.consoleTimestampsEnabled.set(true);
 
-    addMessageWithFixedTimestamp("<After>");
-    addMessageWithFixedTimestamp("<After>");
-    addMessageWithFixedTimestamp("<After>", baseTimestamp + 456);
+    addMessageWithFixedTimestamp("<After>", baseTimestamp + 1000);
+    addMessageWithFixedTimestamp("<After>", baseTimestamp + 1000);
+    addMessageWithFixedTimestamp("<After>", baseTimestamp + 1456);
 
     WebInspector.settings.consoleTimestampsEnabled.set(false);
     WebInspector.settings.consoleTimestampsEnabled.set(true);

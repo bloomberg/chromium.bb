@@ -8,21 +8,7 @@
 function test()
 {
     InspectorTest.showConsolePanel();
-    var selector = WebInspector.ConsolePanel._view()._executionContextSelector._selectElement;
-    var option = selector.firstChild;
-    while (option) {
-        if (option.textContent && option.textContent.startsWith("myIFrame"))
-            break;
-        option = option.nextSibling;
-    }
-    if (!option) {
-        InspectorTest.addResult("FAILED: myIFrame not found in the context list");
-        InspectorTest.completeTest();
-        return;
-    }
-    option.selected = true;
-    WebInspector.ConsolePanel._view()._executionContextChanged();
-
+    InspectorTest.changeExecutionContext("myIFrame");
     InspectorTest.evaluateInConsoleAndDump("foo", finish);
     function finish()
     {
