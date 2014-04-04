@@ -144,6 +144,9 @@ class Plugin : public pp::Instance {
   // Report the error code that sel_ldr produces when starting a nexe.
   void ReportSelLdrLoadStatus(int status);
 
+  // Report nexe death after load to JS and shut down the proxy.
+  void ReportDeadNexe();
+
   // URL resolution support.
   // plugin_base_url is the URL used for resolving relative URLs used in
   // src="...".
@@ -328,6 +331,12 @@ class Plugin : public pp::Instance {
                                  FileDownloader* url_downloader,
                                  pp::CompletionCallback pp_callback);
 
+  // Copy the main service runtime's most recent NaClLog output to the
+  // JavaScript console.  Valid to use only after a crash, e.g., via a
+  // detail level LOG_FATAL NaClLog entry.  If the crash was not due
+  // to a LOG_FATAL this method will do nothing.
+  void CopyCrashLogToJsConsole();
+
   // Open an app file by requesting a file descriptor from the browser. This
   // method first checks that the url is for an installed file before making the
   // request so it won't slow down non-installed file downloads.
@@ -400,7 +409,6 @@ class Plugin : public pp::Instance {
   int64_t load_start_;
 
   int64_t init_time_;
-  int64_t ready_time_;
   size_t nexe_size_;
 
   // Callback to receive .nexe and .dso download progress notifications.

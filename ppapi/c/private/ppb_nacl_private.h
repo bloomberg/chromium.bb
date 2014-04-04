@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Apr  4 08:16:11 2014. */
+/* From private/ppb_nacl_private.idl modified Wed Apr  2 10:41:10 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -296,8 +296,8 @@ struct PPB_NaCl_Private_1_0 {
                           const char* console_message);
   /* Reports that loading a nexe was aborted. */
   void (*ReportLoadAbort)(PP_Instance instance);
-  /* Reports that the nexe has crashed. */
-  void (*NexeDidCrash)(PP_Instance instance, const char* crash_log);
+  /* Reports that the nexe has crashed or is otherwise dead. */
+  void (*ReportDeadNexe)(PP_Instance instance, int64_t crash_time);
   /* Performs internal setup when an instance is created. */
   void (*InstanceCreated)(PP_Instance instance);
   /* Performs internal cleanup when an instance is destroyed. */
@@ -314,6 +314,8 @@ struct PPB_NaCl_Private_1_0 {
   PP_UrlSchemeType (*GetUrlScheme)(struct PP_Var url);
   /* Logs the message to the console. */
   void (*LogToConsole)(PP_Instance instance, const char* message);
+  /* Returns PP_TRUE if an error has been reported loading the nexe. */
+  PP_Bool (*GetNexeErrorReported)(PP_Instance instance);
   /* Returns the NaCl readiness status for this instance. */
   PP_NaClReadyState (*GetNaClReadyState)(PP_Instance instance);
   /* Sets the NaCl readiness status for this instance. */
@@ -323,8 +325,10 @@ struct PPB_NaCl_Private_1_0 {
   PP_Bool (*GetIsInstalled)(PP_Instance instance);
   /* Sets whether the plugin is an installed app. */
   void (*SetIsInstalled)(PP_Instance instance, PP_Bool is_installed);
+  /* Returns the time the nexe became ready. */
+  int64_t (*GetReadyTime)(PP_Instance instance);
   /* Sets the time the nexe became ready. */
-  void (*SetReadyTime)(PP_Instance instance);
+  void (*SetReadyTime)(PP_Instance instance, int64_t ready_time);
   /* Returns the exit status of the plugin process. */
   int32_t (*GetExitStatus)(PP_Instance instance);
   /* Sets the exit status of the plugin process. */

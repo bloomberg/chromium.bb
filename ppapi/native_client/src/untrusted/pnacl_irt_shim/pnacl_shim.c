@@ -2064,6 +2064,10 @@ static int32_t Pnacl_M14_PPB_Font_Dev_PixelOffsetForCharacter(PP_Resource font, 
 
 /* End wrapper methods for PPB_Font_Dev_0_6 */
 
+/* Not generating wrapper methods for PPB_Graphics2D_Dev_0_1 */
+
+/* Not generating wrapper methods for PPB_Graphics2D_Dev_0_2 */
+
 /* Begin wrapper methods for PPB_IMEInputEvent_Dev_0_1 */
 
 static PP_Bool Pnacl_M16_PPB_IMEInputEvent_Dev_IsIMEInputEvent(PP_Resource resource) {
@@ -3167,9 +3171,9 @@ static void Pnacl_M25_PPB_NaCl_Private_ReportLoadAbort(PP_Instance instance) {
   iface->ReportLoadAbort(instance);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_NexeDidCrash(PP_Instance instance, const char* crash_log) {
+static void Pnacl_M25_PPB_NaCl_Private_ReportDeadNexe(PP_Instance instance, int64_t crash_time) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->NexeDidCrash(instance, crash_log);
+  iface->ReportDeadNexe(instance, crash_time);
 }
 
 static void Pnacl_M25_PPB_NaCl_Private_InstanceCreated(PP_Instance instance) {
@@ -3202,6 +3206,11 @@ static void Pnacl_M25_PPB_NaCl_Private_LogToConsole(PP_Instance instance, const 
   iface->LogToConsole(instance, message);
 }
 
+static PP_Bool Pnacl_M25_PPB_NaCl_Private_GetNexeErrorReported(PP_Instance instance) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  return iface->GetNexeErrorReported(instance);
+}
+
 static PP_NaClReadyState Pnacl_M25_PPB_NaCl_Private_GetNaClReadyState(PP_Instance instance) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->GetNaClReadyState(instance);
@@ -3222,9 +3231,14 @@ static void Pnacl_M25_PPB_NaCl_Private_SetIsInstalled(PP_Instance instance, PP_B
   iface->SetIsInstalled(instance, is_installed);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_SetReadyTime(PP_Instance instance) {
+static int64_t Pnacl_M25_PPB_NaCl_Private_GetReadyTime(PP_Instance instance) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->SetReadyTime(instance);
+  return iface->GetReadyTime(instance);
+}
+
+static void Pnacl_M25_PPB_NaCl_Private_SetReadyTime(PP_Instance instance, int64_t ready_time) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  iface->SetReadyTime(instance, ready_time);
 }
 
 static int32_t Pnacl_M25_PPB_NaCl_Private_GetExitStatus(PP_Instance instance) {
@@ -4805,6 +4819,10 @@ static const struct PPB_Font_Dev_0_6 Pnacl_Wrappers_PPB_Font_Dev_0_6 = {
     .PixelOffsetForCharacter = (int32_t (*)(PP_Resource font, const struct PP_TextRun_Dev* text, uint32_t char_offset))&Pnacl_M14_PPB_Font_Dev_PixelOffsetForCharacter
 };
 
+/* Not generating wrapper interface for PPB_Graphics2D_Dev_0_1 */
+
+/* Not generating wrapper interface for PPB_Graphics2D_Dev_0_2 */
+
 static const struct PPB_IMEInputEvent_Dev_0_1 Pnacl_Wrappers_PPB_IMEInputEvent_Dev_0_1 = {
     .IsIMEInputEvent = (PP_Bool (*)(PP_Resource resource))&Pnacl_M16_PPB_IMEInputEvent_Dev_IsIMEInputEvent,
     .GetText = (struct PP_Var (*)(PP_Resource ime_event))&Pnacl_M16_PPB_IMEInputEvent_Dev_GetText,
@@ -5127,18 +5145,20 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .ReportLoadSuccess = (void (*)(PP_Instance instance, const char* url, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_ReportLoadSuccess,
     .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, const char* error_message, const char* console_message))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError,
     .ReportLoadAbort = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_ReportLoadAbort,
-    .NexeDidCrash = (void (*)(PP_Instance instance, const char* crash_log))&Pnacl_M25_PPB_NaCl_Private_NexeDidCrash,
+    .ReportDeadNexe = (void (*)(PP_Instance instance, int64_t crash_time))&Pnacl_M25_PPB_NaCl_Private_ReportDeadNexe,
     .InstanceCreated = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceCreated,
     .InstanceDestroyed = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed,
     .NaClDebugEnabledForURL = (PP_Bool (*)(const char* alleged_nmf_url))&Pnacl_M25_PPB_NaCl_Private_NaClDebugEnabledForURL,
     .GetSandboxArch = (const char* (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetSandboxArch,
     .GetUrlScheme = (PP_UrlSchemeType (*)(struct PP_Var url))&Pnacl_M25_PPB_NaCl_Private_GetUrlScheme,
     .LogToConsole = (void (*)(PP_Instance instance, const char* message))&Pnacl_M25_PPB_NaCl_Private_LogToConsole,
+    .GetNexeErrorReported = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetNexeErrorReported,
     .GetNaClReadyState = (PP_NaClReadyState (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetNaClReadyState,
     .SetNaClReadyState = (void (*)(PP_Instance instance, PP_NaClReadyState ready_state))&Pnacl_M25_PPB_NaCl_Private_SetNaClReadyState,
     .GetIsInstalled = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetIsInstalled,
     .SetIsInstalled = (void (*)(PP_Instance instance, PP_Bool is_installed))&Pnacl_M25_PPB_NaCl_Private_SetIsInstalled,
-    .SetReadyTime = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_SetReadyTime,
+    .GetReadyTime = (int64_t (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetReadyTime,
+    .SetReadyTime = (void (*)(PP_Instance instance, int64_t ready_time))&Pnacl_M25_PPB_NaCl_Private_SetReadyTime,
     .GetExitStatus = (int32_t (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetExitStatus,
     .SetExitStatus = (void (*)(PP_Instance instance, int32_t exit_status))&Pnacl_M25_PPB_NaCl_Private_SetExitStatus
 };

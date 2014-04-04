@@ -80,6 +80,11 @@ const int64_t kTimeMediumMin = 10;         // in ms
 const int64_t kTimeMediumMax = 200000;     // in ms
 const uint32_t kTimeMediumBuckets = 100;
 
+// Up to 33 minutes.
+const int64_t kTimeLargeMin = 100;         // in ms
+const int64_t kTimeLargeMax = 2000000;     // in ms
+const uint32_t kTimeLargeBuckets = 100;
+
 const int64_t kSizeKBMin = 1;
 const int64_t kSizeKBMax = 512*1024;     // very large .nexe
 const uint32_t kSizeKBBuckets = 100;
@@ -156,6 +161,15 @@ void Plugin::HistogramTimeMedium(const std::string& name,
                                       ms,
                                       kTimeMediumMin, kTimeMediumMax,
                                       kTimeMediumBuckets);
+}
+
+void Plugin::HistogramTimeLarge(const std::string& name,
+                                int64_t ms) {
+  if (ms < 0) return;
+  uma_interface_.HistogramCustomTimes(name,
+                                      ms,
+                                      kTimeLargeMin, kTimeLargeMax,
+                                      kTimeLargeBuckets);
 }
 
 void Plugin::HistogramSizeKB(const std::string& name,
@@ -531,7 +545,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       wrapper_factory_(NULL),
       enable_dev_interfaces_(false),
       init_time_(0),
-      ready_time_(0),
       nexe_size_(0),
       time_of_last_progress_event_(0),
       nacl_interface_(NULL),
@@ -559,6 +572,13 @@ Plugin::~Plugin() {
                  static_cast<void*>(this)));
   // Destroy the coordinator while the rest of the data is still there
   pnacl_coordinator_.reset(NULL);
+
+  int64_t ready_time = nacl_interface_->GetReadyTime(pp_instance());
+  if (!nacl_interface_->GetNexeErrorReported(pp_instance())) {
+    HistogramTimeLarge(
+        "NaCl.ModuleUptime.Normal",
+        (shutdown_start - ready_time) / NACL_MICROS_PER_MILLI);
+  }
 
   for (std::map<nacl::string, NaClFileInfoAutoCloser*>::iterator it =
            url_file_info_map_.begin();
@@ -707,14 +727,14 @@ void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
   if (was_successful) {
     NaClLog(4, "NexeFileDidOpenContinuation: success;"
             " setting histograms\n");
-    ready_time_ = NaClGetTimeOfDayMicroseconds();
-    nacl_interface_->SetReadyTime(pp_instance());
+    int64_t ready_time = NaClGetTimeOfDayMicroseconds();
+    nacl_interface_->SetReadyTime(pp_instance(), ready_time);
     HistogramStartupTimeSmall(
         "NaCl.Perf.StartupTime.LoadModule",
-        static_cast<float>(ready_time_ - load_start_) / NACL_MICROS_PER_MILLI);
+        static_cast<float>(ready_time - load_start_) / NACL_MICROS_PER_MILLI);
     HistogramStartupTimeMedium(
         "NaCl.Perf.StartupTime.Total",
-        static_cast<float>(ready_time_ - init_time_) / NACL_MICROS_PER_MILLI);
+        static_cast<float>(ready_time - init_time_) / NACL_MICROS_PER_MILLI);
 
     ReportLoadSuccess(nexe_size_, nexe_size_);
   } else {
@@ -724,6 +744,29 @@ void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
   NaClLog(4, "Leaving NexeFileDidOpenContinuation\n");
 }
 
+static void LogLineToConsole(Plugin* plugin, const nacl::string& one_line) {
+  PLUGIN_PRINTF(("LogLineToConsole: %s\n",
+                 one_line.c_str()));
+  plugin->nacl_interface()->LogToConsole(plugin->pp_instance(),
+                                         one_line.c_str());
+}
+
+void Plugin::CopyCrashLogToJsConsole() {
+  nacl::string fatal_msg(main_service_runtime()->GetCrashLogOutput());
+  size_t ix_start = 0;
+  size_t ix_end;
+
+  PLUGIN_PRINTF(("Plugin::CopyCrashLogToJsConsole: got %" NACL_PRIuS " bytes\n",
+                 fatal_msg.size()));
+  while (nacl::string::npos != (ix_end = fatal_msg.find('\n', ix_start))) {
+    LogLineToConsole(this, fatal_msg.substr(ix_start, ix_end - ix_start));
+    ix_start = ix_end + 1;
+  }
+  if (ix_start != fatal_msg.size()) {
+    LogLineToConsole(this, fatal_msg.substr(ix_start));
+  }
+}
+
 void Plugin::NexeDidCrash(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::NexeDidCrash (pp_error=%" NACL_PRId32 ")\n",
                  pp_error));
@@ -731,8 +774,45 @@ void Plugin::NexeDidCrash(int32_t pp_error) {
     PLUGIN_PRINTF(("Plugin::NexeDidCrash: CallOnMainThread callback with"
                    " non-PP_OK arg -- SHOULD NOT HAPPEN\n"));
   }
-  const char* crash_log = main_service_runtime()->GetCrashLogOutput().c_str();
-  nacl_interface_->NexeDidCrash(pp_instance(), crash_log);
+  PLUGIN_PRINTF(("Plugin::NexeDidCrash: crash event!\n"));
+  int exit_status = nacl_interface_->GetExitStatus(pp_instance());
+  if (exit_status != -1) {
+    // The NaCl module voluntarily exited.  However, this is still a
+    // crash from the point of view of Pepper, since PPAPI plugins are
+    // event handlers and should never exit.
+    PLUGIN_PRINTF((("Plugin::NexeDidCrash: nexe exited with status %d"
+                    " so this is a \"controlled crash\".\n"),
+                   exit_status));
+  }
+  // If the crash occurs during load, we just want to report an error
+  // that fits into our load progress event grammar.  If the crash
+  // occurs after loaded/loadend, then we use ReportDeadNexe to send a
+  // "crash" event.
+  if (nacl_interface_->GetNexeErrorReported(pp_instance())) {
+    PLUGIN_PRINTF(("Plugin::NexeDidCrash: error already reported;"
+                   " suppressing\n"));
+  } else {
+    if (nacl_interface_->GetNaClReadyState(pp_instance()) ==
+        PP_NACL_READY_STATE_DONE) {
+      ReportDeadNexe();
+    } else {
+      ErrorInfo error_info;
+      // The error is not quite right.  In particular, the crash
+      // reported by this path could be due to NaCl application
+      // crashes that occur after the PPAPI proxy has started.
+      error_info.SetReport(PP_NACL_ERROR_START_PROXY_CRASH,
+                           "Nexe crashed during startup");
+      ReportLoadError(error_info);
+    }
+  }
+
+  // In all cases, try to grab the crash log.  The first error
+  // reported may have come from the start_module RPC reply indicating
+  // a validation error or something similar, which wouldn't grab the
+  // crash log.  In the event that this is called twice, the second
+  // invocation will just be a no-op, since all the crash log will
+  // have been received and we'll just get an EOF indication.
+  CopyCrashLogToJsConsole();
 }
 
 void Plugin::BitcodeDidTranslate(int32_t pp_error) {
@@ -771,6 +851,11 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
   } else {
     ReportLoadError(error_info);
   }
+}
+
+void Plugin::ReportDeadNexe() {
+  nacl_interface_->ReportDeadNexe(
+      pp_instance(), NaClGetTimeOfDayMicroseconds());
 }
 
 void Plugin::NaClManifestBufferReady(int32_t pp_error) {
