@@ -692,9 +692,6 @@ private:
     // current drop target in this WebView (the drop target can accept the drop).
     WebDragOperation m_dragOperation;
 
-    // Context-based feature switches.
-    OwnPtr<ContextFeaturesClientImpl> m_featureSwitchClient;
-
     // The popup associated with a select element.
     RefPtr<PopupContainer> m_selectPopup;
 
@@ -739,7 +736,6 @@ private:
 
     UserMediaClientImpl m_userMediaClientImpl;
     MediaKeysClientImpl m_mediaKeysClientImpl;
-    OwnPtr<MIDIClientProxy> m_midiClientProxy;
     OwnPtr<WebActiveGestureAnimation> m_gestureAnimation;
     WebPoint m_positionOnFlingStart;
     WebPoint m_globalPositionOnFlingStart;

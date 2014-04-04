@@ -33,10 +33,9 @@
 
 namespace WebCore {
 
-ContextFeaturesClient* ContextFeaturesClient::empty()
+PassOwnPtr<ContextFeaturesClient> ContextFeaturesClient::empty()
 {
-    DEFINE_STATIC_LOCAL(ContextFeaturesClient, empty, ());
-    return &empty;
+    return adoptPtr(new ContextFeaturesClient());
 }
 
 const char* ContextFeatures::supplementName()
@@ -84,7 +83,7 @@ bool ContextFeatures::pushStateEnabled(Document* document)
     return document->contextFeatures().isEnabled(document, PushState, true);
 }
 
-void provideContextFeaturesTo(Page& page, ContextFeaturesClient* client)
+void provideContextFeaturesTo(Page& page, PassOwnPtr<ContextFeaturesClient> client)
 {
     RefCountedSupplement<Page, ContextFeatures>::provideTo(page, ContextFeatures::supplementName(), ContextFeatures::create(client));
 }

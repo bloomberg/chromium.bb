@@ -37,12 +37,17 @@ namespace blink {
 
 class ContextFeaturesClientImpl FINAL : public WebCore::ContextFeaturesClient {
 public:
-    ContextFeaturesClientImpl() { }
+    static PassOwnPtr<ContextFeaturesClientImpl> create()
+    {
+        return adoptPtr(new ContextFeaturesClientImpl());
+    }
 
     virtual bool isEnabled(WebCore::Document*, WebCore::ContextFeatures::FeatureType, bool defaultValue) OVERRIDE;
     virtual void urlDidChange(WebCore::Document*) OVERRIDE;
 
 private:
+    ContextFeaturesClientImpl() { }
+
     bool askIfIsEnabled(WebCore::Document*, WebCore::ContextFeatures::FeatureType, bool defaultValue);
 };
 

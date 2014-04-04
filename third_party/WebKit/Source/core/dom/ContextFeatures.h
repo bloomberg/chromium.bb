@@ -48,7 +48,7 @@ public:
 
     static const char* supplementName();
     static ContextFeatures* defaultSwitch();
-    static PassRefPtr<ContextFeatures> create(ContextFeaturesClient*);
+    static PassRefPtr<ContextFeatures> create(PassOwnPtr<ContextFeaturesClient>);
 
     static bool dialogElementEnabled(Document*);
     static bool styleScopedEnabled(Document*);
@@ -60,35 +60,27 @@ public:
     void urlDidChange(Document*);
 
 private:
-    explicit ContextFeatures(ContextFeaturesClient* client)
+    explicit ContextFeatures(PassOwnPtr<ContextFeaturesClient> client)
         : m_client(client)
     { }
 
-    virtual void hostDestroyed() OVERRIDE;
-
-    ContextFeaturesClient* m_client;
+    OwnPtr<ContextFeaturesClient> m_client;
 };
-
-inline void ContextFeatures::hostDestroyed()
-{
-    m_client = 0;
-}
-
 
 class ContextFeaturesClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static ContextFeaturesClient* empty();
+    static PassOwnPtr<ContextFeaturesClient> empty();
 
     virtual ~ContextFeaturesClient() { }
     virtual bool isEnabled(Document*, ContextFeatures::FeatureType, bool defaultValue) { return defaultValue; }
     virtual void urlDidChange(Document*) { }
 };
 
-void provideContextFeaturesTo(Page&, ContextFeaturesClient*);
+void provideContextFeaturesTo(Page&, PassOwnPtr<ContextFeaturesClient>);
 void provideContextFeaturesToDocumentFrom(Document&, Page&);
 
-inline PassRefPtr<ContextFeatures> ContextFeatures::create(ContextFeaturesClient* client)
+inline PassRefPtr<ContextFeatures> ContextFeatures::create(PassOwnPtr<ContextFeaturesClient> client)
 {
     return adoptRef(new ContextFeatures(client));
 }

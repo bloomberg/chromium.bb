@@ -348,7 +348,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_imeAcceptEvents(true)
     , m_operationsAllowed(WebDragOperationNone)
     , m_dragOperation(WebDragOperationNone)
-    , m_featureSwitchClient(adoptPtr(new ContextFeaturesClientImpl()))
     , m_isTransparent(false)
     , m_tabsToLinks(false)
     , m_layerTreeView(0)
@@ -395,7 +394,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     provideNotification(*m_page, notificationPresenterImpl());
     provideNavigatorContentUtilsTo(*m_page, NavigatorContentUtilsClientImpl::create(this));
 
-    provideContextFeaturesTo(*m_page, m_featureSwitchClient.get());
+    provideContextFeaturesTo(*m_page, ContextFeaturesClientImpl::create());
     if (RuntimeEnabledFeatures::deviceOrientationEnabled())
         DeviceOrientationInspectorAgent::provideTo(*m_page);
     provideGeolocationTo(*m_page, m_geolocationClientProxy.get());

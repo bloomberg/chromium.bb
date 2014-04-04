@@ -210,8 +210,7 @@ bool WebPagePopupImpl::initializePage()
     m_page->setDeviceScaleFactor(m_webView->deviceScaleFactor());
     m_page->settings().setDeviceSupportsTouch(m_webView->page()->settings().deviceSupportsTouch());
 
-    static ContextFeaturesClient* pagePopupFeaturesClient =  new PagePopupFeaturesClient();
-    provideContextFeaturesTo(*m_page, pagePopupFeaturesClient);
+    provideContextFeaturesTo(*m_page, adoptPtr(new PagePopupFeaturesClient()));
     static FrameLoaderClient* emptyFrameLoaderClient =  new EmptyFrameLoaderClient();
     RefPtr<LocalFrame> frame = LocalFrame::create(emptyFrameLoaderClient, &m_page->frameHost(), 0);
     frame->setView(FrameView::create(frame.get()));
