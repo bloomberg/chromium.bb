@@ -47,6 +47,7 @@ class _Generator(object):
       .Append('#include "base/strings/utf_string_conversions.h"')
       .Append('#include "%s/%s.h"' %
               (self._namespace.source_file_dir, self._namespace.short_filename))
+      .Append('#include <set>')
       .Cblock(self._type_helper.GenerateIncludes(include_soft=True))
       .Append()
       .Append('using base::UTF8ToUTF16;')
@@ -219,10 +220,24 @@ class _Generator(object):
       if type_.properties or type_.additional_properties is not None:
         c.Append('const base::DictionaryValue* dict = '
                      'static_cast<const base::DictionaryValue*>(&value);')
-      for prop in type_.properties.values():
+        if self._generate_error_messages:
+            c.Append('std::set<std::string> keys;')
+      for prop in type_.properties.itervalues():
         c.Concat(self._InitializePropertyToDefault(prop, 'out'))
-      for prop in type_.properties.values():
+      for prop in type_.properties.itervalues():
+        if self._generate_error_messages:
+          c.Append('keys.insert("%s");' % (prop.name))
         c.Concat(self._GenerateTypePopulateProperty(prop, 'dict', 'out'))
+      # Check for extra values.
+      if self._generate_error_messages:
+        (c.Sblock('for (base::DictionaryValue::Iterator it(*dict); '
+                       '!it.IsAtEnd(); it.Advance()) {')
+          .Sblock('if (!keys.count(it.key())) {')
+          .Concat(self._GenerateError('"found unexpected key \'" + '
+                                          'it.key() + "\'"'))
+          .Eblock('}')
+          .Eblock('}')
+        )
       if type_.additional_properties is not None:
         if type_.additional_properties.property_type == PropertyType.ANY:
           c.Append('out->additional_properties.MergeDictionary(dict);')
