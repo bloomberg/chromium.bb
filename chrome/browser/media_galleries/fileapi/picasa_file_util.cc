@@ -89,26 +89,40 @@ void PicasaFileUtil::GetFileInfoOnTaskRunnerThread(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
-  GetDataProvider()->RefreshData(
-      GetDataTypeForURL(url),
-      base::Bind(&PicasaFileUtil::GetFileInfoWithFreshDataProvider,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(&context),
-                 url,
-                 callback));
+  PicasaDataProvider* data_provider = GetDataProvider();
+  // |data_provider| may be NULL if the file system was revoked before this
+  // operation had a chance to run.
+  if (!data_provider) {
+    GetFileInfoWithFreshDataProvider(context.Pass(), url, callback, false);
+  } else {
+    data_provider->RefreshData(
+        GetDataTypeForURL(url),
+        base::Bind(&PicasaFileUtil::GetFileInfoWithFreshDataProvider,
+                   weak_factory_.GetWeakPtr(),
+                   base::Passed(&context),
+                   url,
+                   callback));
+  }
 }
 
 void PicasaFileUtil::ReadDirectoryOnTaskRunnerThread(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
-  GetDataProvider()->RefreshData(
-      GetDataTypeForURL(url),
-      base::Bind(&PicasaFileUtil::ReadDirectoryWithFreshDataProvider,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(&context),
-                 url,
-                 callback));
+  PicasaDataProvider* data_provider = GetDataProvider();
+  // |data_provider| may be NULL if the file system was revoked before this
+  // operation had a chance to run.
+  if (!data_provider) {
+    ReadDirectoryWithFreshDataProvider(context.Pass(), url, callback, false);
+  } else {
+    data_provider->RefreshData(
+        GetDataTypeForURL(url),
+        base::Bind(&PicasaFileUtil::ReadDirectoryWithFreshDataProvider,
+                   weak_factory_.GetWeakPtr(),
+                   base::Passed(&context),
+                   url,
+                   callback));
+  }
 }
 
 base::File::Error PicasaFileUtil::GetFileInfoSync(

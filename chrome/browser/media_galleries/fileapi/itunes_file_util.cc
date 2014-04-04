@@ -69,30 +69,52 @@ void ITunesFileUtil::GetFileInfoOnTaskRunnerThread(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
-  GetDataProvider()->RefreshData(
-      base::Bind(&ITunesFileUtil::GetFileInfoWithFreshDataProvider,
-                 weak_factory_.GetWeakPtr(), base::Passed(&context), url,
-                 callback));
+  ITunesDataProvider* data_provider = GetDataProvider();
+  // |data_provider| may be NULL if the file system was revoked before this
+  // operation had a chance to run.
+  if (!data_provider) {
+    GetFileInfoWithFreshDataProvider(context.Pass(), url, callback, false);
+  } else {
+    data_provider->RefreshData(
+        base::Bind(&ITunesFileUtil::GetFileInfoWithFreshDataProvider,
+                   weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                   callback));
+  }
 }
 
 void ITunesFileUtil::ReadDirectoryOnTaskRunnerThread(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
-  GetDataProvider()->RefreshData(
-      base::Bind(&ITunesFileUtil::ReadDirectoryWithFreshDataProvider,
-                 weak_factory_.GetWeakPtr(), base::Passed(&context), url,
-                 callback));
+  ITunesDataProvider* data_provider = GetDataProvider();
+  // |data_provider| may be NULL if the file system was revoked before this
+  // operation had a chance to run.
+  if (!data_provider) {
+    ReadDirectoryWithFreshDataProvider(context.Pass(), url, callback, false);
+  } else {
+    data_provider->RefreshData(
+        base::Bind(&ITunesFileUtil::ReadDirectoryWithFreshDataProvider,
+                   weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                   callback));
+  }
 }
 
 void ITunesFileUtil::CreateSnapshotFileOnTaskRunnerThread(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
-  GetDataProvider()->RefreshData(
-      base::Bind(&ITunesFileUtil::CreateSnapshotFileWithFreshDataProvider,
-                 weak_factory_.GetWeakPtr(), base::Passed(&context), url,
-                 callback));
+  ITunesDataProvider* data_provider = GetDataProvider();
+  // |data_provider| may be NULL if the file system was revoked before this
+  // operation had a chance to run.
+  if (!data_provider) {
+    CreateSnapshotFileWithFreshDataProvider(context.Pass(), url, callback,
+                                            false);
+  } else {
+    data_provider->RefreshData(
+        base::Bind(&ITunesFileUtil::CreateSnapshotFileWithFreshDataProvider,
+                   weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                   callback));
+  }
 }
 
 // Contents of the iTunes media gallery:

@@ -80,30 +80,52 @@ void IPhotoFileUtil::GetFileInfoOnTaskRunnerThread(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
-  GetDataProvider()->RefreshData(
-      base::Bind(&IPhotoFileUtil::GetFileInfoWithFreshDataProvider,
-                 weak_factory_.GetWeakPtr(), base::Passed(&context), url,
-                 callback));
+  IPhotoDataProvider* data_provider = GetDataProvider();
+  // |data_provider| may be NULL if the file system was revoked before this
+  // operation had a chance to run.
+  if (!data_provider) {
+    GetFileInfoWithFreshDataProvider(context.Pass(), url, callback, false);
+  } else {
+    data_provider->RefreshData(
+        base::Bind(&IPhotoFileUtil::GetFileInfoWithFreshDataProvider,
+                   weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                   callback));
+  }
 }
 
 void IPhotoFileUtil::ReadDirectoryOnTaskRunnerThread(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
-  GetDataProvider()->RefreshData(
-      base::Bind(&IPhotoFileUtil::ReadDirectoryWithFreshDataProvider,
-                 weak_factory_.GetWeakPtr(), base::Passed(&context), url,
-                 callback));
+  IPhotoDataProvider* data_provider = GetDataProvider();
+  // |data_provider| may be NULL if the file system was revoked before this
+  // operation had a chance to run.
+  if (!data_provider) {
+    ReadDirectoryWithFreshDataProvider(context.Pass(), url, callback, false);
+  } else {
+    data_provider->RefreshData(
+        base::Bind(&IPhotoFileUtil::ReadDirectoryWithFreshDataProvider,
+                   weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                   callback));
+  }
 }
 
 void IPhotoFileUtil::CreateSnapshotFileOnTaskRunnerThread(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
-  GetDataProvider()->RefreshData(
-      base::Bind(&IPhotoFileUtil::CreateSnapshotFileWithFreshDataProvider,
-                 weak_factory_.GetWeakPtr(), base::Passed(&context), url,
-                 callback));
+  IPhotoDataProvider* data_provider = GetDataProvider();
+  // |data_provider| may be NULL if the file system was revoked before this
+  // operation had a chance to run.
+  if (!data_provider) {
+    CreateSnapshotFileWithFreshDataProvider(context.Pass(), url, callback,
+                                            false);
+  } else {
+    data_provider->RefreshData(
+        base::Bind(&IPhotoFileUtil::CreateSnapshotFileWithFreshDataProvider,
+                   weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                   callback));
+  }
 }
 
 void IPhotoFileUtil::GetFileInfoWithFreshDataProvider(
