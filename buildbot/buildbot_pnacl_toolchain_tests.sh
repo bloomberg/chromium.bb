@@ -28,7 +28,7 @@ ARCHIVED_PEXE_TRANSLATOR_REV=12177
 # test. The toolchain downloader expects this information in a specially
 # formatted file. We generate that file in this script from this information,
 # to keep all our versions in one place
-ARCHIVED_TOOLCHAIN_REV=12276
+ARCHIVED_TOOLCHAIN_REV=12922
 
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly TOOLCHAIN_BUILD="toolchain_build/toolchain_build_pnacl.py"
@@ -56,11 +56,12 @@ export PNACL_VERBOSE=true
 # export HOST_ARCH="x86_32"
 # TODO(pnacl-team): Figure out what to do about this.
 # Export this so that the test scripts know where to find the toolchain.
-export PNACL_TOOLCHAIN_DIR=linux_x86/pnacl_newlib
+export TOOLCHAIN_BASE_DIR=toolchain/linux_x86
+export PNACL_TOOLCHAIN_DIR=${TOOLCHAIN_BASE_DIR}/pnacl_newlib
 export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
 # This picks the TC which we just built, even if scons doesn't know
 # how to find a 64-bit host toolchain.
-readonly SCONS_PICK_TC="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_DIR}"
+readonly SCONS_PICK_TC="pnaclsdk_mode=custom:${PNACL_TOOLCHAIN_DIR}"
 
 # download-old-tc -
 # Download the archived frontend toolchain, if we haven't already
@@ -75,9 +76,9 @@ download-old-tc() {
     ${UP_DOWN_LOAD} DownloadPnaclToolchains ${ARCHIVED_TOOLCHAIN_REV} \
       ${PNACL_TOOLCHAIN_LABEL} \
       ${dst}/${PNACL_TOOLCHAIN_LABEL}.tgz
-    mkdir -p ${dst}/${PNACL_TOOLCHAIN_DIR}
-    tar xz -C ${dst}/${PNACL_TOOLCHAIN_DIR} \
-      -f ${dst}/${PNACL_TOOLCHAIN_DIR}.tgz
+    mkdir -p ${dst}/${PNACL_TOOLCHAIN_LABEL}
+    tar xz -C ${dst}/${PNACL_TOOLCHAIN_LABEL} \
+      -f ${dst}/${PNACL_TOOLCHAIN_LABEL}.tgz
     touch "${dst}/${ARCHIVED_TOOLCHAIN_REV}.stamp"
   fi
 }
@@ -225,26 +226,26 @@ archived-frontend-test() {
   # Get the archived frontend.
   # If the correct cached frontend is in place, the hash will match and the
   # download will be a no-op. Otherwise the downloader will fix it.
-  download-old-tc toolchain/archived_tc
+  download-old-tc ${TOOLCHAIN_BASE_DIR}/archived_tc
 
   # Save the current toolchain.
-  mkdir -p toolchain/current_tc
-  rm -rf toolchain/current_tc/*
-  mv toolchain/${PNACL_TOOLCHAIN_DIR} \
-    toolchain/current_tc/${PNACL_TOOLCHAIN_DIR}
+  mkdir -p ${TOOLCHAIN_BASE_DIR}/current_tc
+  rm -rf ${TOOLCHAIN_BASE_DIR}current_tc/*
+  mv ${PNACL_TOOLCHAIN_DIR} \
+    ${TOOLCHAIN_BASE_DIR}/current_tc/${PNACL_TOOLCHAIN_LABEL}
 
   # Link the old frontend into place. If we just use pnaclsdk_mode to select a
   # different toolchain, SCons will attempt to rebuild the IRT.
-  ln -s archived_tc/${PNACL_TOOLCHAIN_DIR} toolchain/${PNACL_TOOLCHAIN_DIR}
+  ln -s archived_tc/${PNACL_TOOLCHAIN_LABEL} ${PNACL_TOOLCHAIN_DIR}
 
   # Build the pexes with the old frontend.
   ${SCONS_COMMON} ${SCONS_PICK_TC} \
     do_not_run_tests=1 ${flags} ${targets} || handle-error
 
   # Put the current toolchain back in place.
-  rm toolchain/${PNACL_TOOLCHAIN_DIR}
-  mv toolchain/current_tc/${PNACL_TOOLCHAIN_DIR} \
-    toolchain/${PNACL_TOOLCHAIN_DIR}
+  rm ${PNACL_TOOLCHAIN_DIR}
+  mv ${TOOLCHAIN_BASE_DIR}/current_tc/${PNACL_TOOLCHAIN_LABEL} \
+    ${PNACL_TOOLCHAIN_DIR}
 
   # Translate them with the new translator, and run the tests.
   # Use the sandboxed translator, which runs the newer ABI verifier
