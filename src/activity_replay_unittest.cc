@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 
-#include <base/command_line.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/activity_replay.h"
+#include "gestures/include/command_line.h"
 #include "gestures/include/file_util.h"
 #include "gestures/include/finger_metrics.h"
 #include "gestures/include/logging_filter_interpreter.h"
