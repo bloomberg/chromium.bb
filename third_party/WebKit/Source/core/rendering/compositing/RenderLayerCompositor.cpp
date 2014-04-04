@@ -866,13 +866,12 @@ void RenderLayerCompositor::repaintInCompositedAncestor(RenderLayer* layer, cons
 
 // The bounds of the GraphicsLayer created for a compositing layer is the union of the bounds of all the descendant
 // RenderLayers that are rendered by the composited RenderLayer.
-LayoutRect RenderLayerCompositor::calculateCompositedBounds(const RenderLayer* layer, const RenderLayer* ancestorLayer) const
+LayoutRect RenderLayerCompositor::calculateCompositedBounds(const RenderLayer* layer) const
 {
     if (!canBeComposited(layer))
         return LayoutRect();
 
-    RenderLayer::CalculateLayerBoundsFlags flags = RenderLayer::DefaultCalculateLayerBoundsFlags | RenderLayer::ExcludeHiddenDescendants;
-    return layer->calculateLayerBounds(ancestorLayer, 0, flags);
+    return layer->calculateLayerBounds(layer, 0, RenderLayer::DefaultCalculateLayerBoundsFlags | RenderLayer::ExcludeHiddenDescendants);
 }
 
 void RenderLayerCompositor::layerWasAdded(RenderLayer* /*parent*/, RenderLayer* /*child*/)
