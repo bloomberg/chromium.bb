@@ -137,7 +137,7 @@ public:
 #endif
 #endif
 
-    operator SkPoint() const;
+    SkPoint data() const;
 
 private:
     float m_x, m_y;

@@ -749,7 +749,7 @@ void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2)
     }
 
     adjustLineToPixelBoundaries(p1, p2, width, penStyle);
-    SkPoint pts[2] = { (SkPoint)p1, (SkPoint)p2 };
+    SkPoint pts[2] = { p1.data(), p2.data() };
 
     m_canvas->drawPoints(SkCanvas::kLines_PointMode, 2, pts, paint);
 

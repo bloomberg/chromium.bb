@@ -84,7 +84,7 @@ void FloatPoint::moveBy(const LayoutPoint& point)
     m_y += point.y();
 }
 
-FloatPoint::operator SkPoint() const
+SkPoint FloatPoint::data() const
 {
     SkPoint p = { WebCoreFloatToSkScalar(m_x), WebCoreFloatToSkScalar(m_y) };
     return p;
