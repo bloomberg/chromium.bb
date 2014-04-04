@@ -64,6 +64,8 @@ class JavaBoundObject {
 
   void EnsureMethodsAreSetUp() const;
 
+  static void ThrowSecurityException(const char* message);
+
   // The weak ref to the underlying Java object that this JavaBoundObject
   // instance represents.
   JavaObjectWeakGlobalRef java_object_;
@@ -80,6 +82,7 @@ class JavaBoundObject {
   typedef std::multimap<std::string, linked_ptr<JavaMethod> > JavaMethodMap;
   mutable JavaMethodMap methods_;
   mutable bool are_methods_set_up_;
+  mutable jmethodID object_get_class_method_id_;
   const bool can_enumerate_methods_;
 
   base::android::ScopedJavaGlobalRef<jclass> safe_annotation_clazz_;

@@ -39,6 +39,7 @@ namespace {
 const char kJavaLangClass[] = "java/lang/Class";
 const char kJavaLangObject[] = "java/lang/Object";
 const char kJavaLangReflectMethod[] = "java/lang/reflect/Method";
+const char kJavaLangSecurityExceptionClass[] = "java/lang/SecurityException";
 const char kGetClass[] = "getClass";
 const char kGetMethods[] = "getMethods";
 const char kIsAnnotationPresent[] = "isAnnotationPresent";
@@ -46,6 +47,9 @@ const char kReturningJavaLangClass[] = "()Ljava/lang/Class;";
 const char kReturningJavaLangReflectMethodArray[] =
     "()[Ljava/lang/reflect/Method;";
 const char kTakesJavaLangClassReturningBoolean[] = "(Ljava/lang/Class;)Z";
+// This is an exception message, so no need to localize.
+const char kAccessToObjectGetClassIsBlocked[] =
+    "Access to java.lang.Object.getClass is blocked";
 
 // Our special NPObject type.  We extend an NPObject with a pointer to a
 // JavaBoundObject.  We also add static methods for each of the NPObject
@@ -820,6 +824,7 @@ JavaBoundObject::JavaBoundObject(
     : java_object_(AttachCurrentThread(), object.obj()),
       manager_(manager),
       are_methods_set_up_(false),
+      object_get_class_method_id_(NULL),
       can_enumerate_methods_(can_enumerate_methods),
       safe_annotation_clazz_(safe_annotation_clazz) {
   BrowserThread::PostTask(
@@ -896,7 +901,18 @@ bool JavaBoundObject::Invoke(const std::string& name, const NPVariant* args,
                                                      true);
   }
 
-  ScopedJavaLocalRef<jobject> obj = java_object_.get(AttachCurrentThread());
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_object_.get(env);
+
+  // Block access to java.lang.Object.getClass.
+  // As it is declared to be final, it is sufficient to compare methodIDs.
+  if (method->id() == object_get_class_method_id_) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&JavaBoundObject::ThrowSecurityException,
+                   kAccessToObjectGetClassIsBlocked));
+    return false;
+  }
 
   bool ok = false;
   if (!obj.is_null()) {
@@ -910,7 +926,6 @@ bool JavaBoundObject::Invoke(const std::string& name, const NPVariant* args,
 
   // Now that we're done with the jvalue, release any local references created
   // by CoerceJavaScriptValueToJavaValue().
-  JNIEnv* env = AttachCurrentThread();
   for (size_t i = 0; i < arg_count; ++i) {
     ReleaseJavaValueIfRequired(env, &parameters[i], method->parameter_type(i));
   }
@@ -924,6 +939,13 @@ void JavaBoundObject::EnsureMethodsAreSetUp() const {
   are_methods_set_up_ = true;
 
   JNIEnv* env = AttachCurrentThread();
+
+  object_get_class_method_id_ = GetMethodIDFromClassName(
+      env,
+      kJavaLangObject,
+      kGetClass,
+      kReturningJavaLangClass);
+
   ScopedJavaLocalRef<jobject> obj = java_object_.get(env);
 
   if (obj.is_null()) {
@@ -931,11 +953,7 @@ void JavaBoundObject::EnsureMethodsAreSetUp() const {
   }
 
   ScopedJavaLocalRef<jclass> clazz(env, static_cast<jclass>(
-      env->CallObjectMethod(obj.obj(),  GetMethodIDFromClassName(
-          env,
-          kJavaLangObject,
-          kGetClass,
-          kReturningJavaLangClass))));
+      env->CallObjectMethod(obj.obj(), object_get_class_method_id_)));
 
   ScopedJavaLocalRef<jobjectArray> methods(env, static_cast<jobjectArray>(
       env->CallObjectMethod(clazz.obj(), GetMethodIDFromClassName(
@@ -969,6 +987,15 @@ void JavaBoundObject::EnsureMethodsAreSetUp() const {
     JavaMethod* method = new JavaMethod(java_method);
     methods_.insert(std::make_pair(method->name(), method));
   }
+}
+
+// static
+void JavaBoundObject::ThrowSecurityException(const char* message) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  JNIEnv* env = AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jclass> clazz(
+      env, env->FindClass(kJavaLangSecurityExceptionClass));
+  env->ThrowNew(clazz.obj(), message);
 }
 
 }  // namespace content
