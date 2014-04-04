@@ -107,6 +107,7 @@
     'public/common/ssl_status.cc',
     'public/common/ssl_status.h',
     'public/common/stop_find_action.h',
+    'public/common/storage_quota_params.h',
     'public/common/three_d_api_types.h',
     'public/common/top_controls_state.h',
     'public/common/top_controls_state_list.h',

@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "content/public/common/storage_quota_params.h"
 #include "webkit/common/quota/quota_types.h"
 
 class GURL;
@@ -26,11 +27,8 @@ class QuotaPermissionContext
   typedef base::Callback<void(QuotaPermissionResponse)> PermissionCallback;
 
   virtual void RequestQuotaPermission(
-      const GURL& origin_url,
-      quota::StorageType type,
-      int64 new_quota,
+      const StorageQuotaParams& params,
       int render_process_id,
-      int render_view_id,
       const PermissionCallback& callback) = 0;
 
  protected:

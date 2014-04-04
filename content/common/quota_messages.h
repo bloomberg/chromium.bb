@@ -5,6 +5,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "base/basictypes.h"
+#include "content/public/common/storage_quota_params.h"
 #include "ipc/ipc_message_macros.h"
 #include "url/gurl.h"
 #include "webkit/common/quota/quota_types.h"
@@ -13,6 +14,15 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(quota::StorageType, quota::kStorageTypeLast)
 IPC_ENUM_TRAITS(quota::QuotaStatusCode)
+
+IPC_STRUCT_TRAITS_BEGIN(content::StorageQuotaParams)
+  IPC_STRUCT_TRAITS_MEMBER(render_view_id)
+  IPC_STRUCT_TRAITS_MEMBER(request_id)
+  IPC_STRUCT_TRAITS_MEMBER(origin_url)
+  IPC_STRUCT_TRAITS_MEMBER(storage_type)
+  IPC_STRUCT_TRAITS_MEMBER(requested_size)
+  IPC_STRUCT_TRAITS_MEMBER(user_gesture)
+IPC_STRUCT_TRAITS_END()
 
 // Quota messages sent from the browser to the child process.
 
@@ -37,9 +47,5 @@ IPC_MESSAGE_CONTROL3(QuotaHostMsg_QueryStorageUsageAndQuota,
                      GURL /* origin_url */,
                      quota::StorageType /* type */)
 
-IPC_MESSAGE_CONTROL5(QuotaHostMsg_RequestStorageQuota,
-                     int /* render_view_id */,
-                     int /* request_id */,
-                     GURL /* origin_url */,
-                     quota::StorageType /* type */,
-                     uint64 /* requested_size */)
+IPC_MESSAGE_CONTROL1(QuotaHostMsg_RequestStorageQuota,
+                     content::StorageQuotaParams)

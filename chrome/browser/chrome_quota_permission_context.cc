@@ -42,6 +42,7 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
       ChromeQuotaPermissionContext* context,
       const GURL& origin_url,
       int64 requested_quota,
+      bool user_gesture,
       const std::string& display_languages,
       const content::QuotaPermissionContext::PermissionCallback& callback);
 
@@ -63,6 +64,7 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
   GURL origin_url_;
   std::string display_languages_;
   int64 requested_quota_;
+  bool user_gesture_;
   content::QuotaPermissionContext::PermissionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaPermissionRequest);
@@ -72,12 +74,14 @@ QuotaPermissionRequest::QuotaPermissionRequest(
     ChromeQuotaPermissionContext* context,
     const GURL& origin_url,
     int64 requested_quota,
+    bool user_gesture,
     const std::string& display_languages,
     const content::QuotaPermissionContext::PermissionCallback& callback)
     : context_(context),
       origin_url_(origin_url),
       display_languages_(display_languages),
       requested_quota_(requested_quota),
+      user_gesture_(user_gesture),
       callback_(callback) {}
 
 QuotaPermissionRequest::~QuotaPermissionRequest() {}
@@ -100,8 +104,7 @@ base::string16 QuotaPermissionRequest::GetMessageTextFragment() const {
 }
 
 bool QuotaPermissionRequest::HasUserGesture() const {
-  // TODO(gbillock): plumb this through
-  return false;
+  return user_gesture_;
 }
 
 GURL QuotaPermissionRequest::GetRequestingHostname() const {
@@ -248,13 +251,10 @@ ChromeQuotaPermissionContext::ChromeQuotaPermissionContext() {
 }
 
 void ChromeQuotaPermissionContext::RequestQuotaPermission(
-    const GURL& origin_url,
-    quota::StorageType type,
-    int64 requested_quota,
+    const content::StorageQuotaParams& params,
     int render_process_id,
-    int render_view_id,
     const PermissionCallback& callback) {
-  if (type != quota::kStorageTypePersistent) {
+  if (params.storage_type != quota::kStorageTypePersistent) {
     // For now we only support requesting quota with this interface
     // for Persistent storage type.
     callback.Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);
@@ -265,17 +265,17 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(&ChromeQuotaPermissionContext::RequestQuotaPermission, this,
-                   origin_url, type, requested_quota, render_process_id,
-                   render_view_id, callback));
+                   params, render_process_id, callback));
     return;
   }
 
   content::WebContents* web_contents =
-      tab_util::GetWebContentsByID(render_process_id, render_view_id);
+      tab_util::GetWebContentsByID(render_process_id,
+                                   params.render_view_id);
   if (!web_contents) {
     // The tab may have gone away or the request may not be from a tab.
     LOG(WARNING) << "Attempt to request quota tabless renderer: "
-                 << render_process_id << "," << render_view_id;
+                 << render_process_id << "," << params.render_view_id;
     DispatchCallbackOnIOThread(callback, QUOTA_PERMISSION_RESPONSE_CANCELLED);
     return;
   }
@@ -284,7 +284,7 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
     PermissionBubbleManager* bubble_manager =
         PermissionBubbleManager::FromWebContents(web_contents);
     bubble_manager->AddRequest(new QuotaPermissionRequest(this,
-            origin_url, requested_quota,
+            params.origin_url, params.requested_size, params.user_gesture,
             Profile::FromBrowserContext(web_contents->GetBrowserContext())->
                 GetPrefs()->GetString(prefs::kAcceptLanguages),
             callback));
@@ -296,12 +296,12 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
   if (!infobar_service) {
     // The tab has no infobar service.
     LOG(WARNING) << "Attempt to request quota from a background page: "
-                 << render_process_id << "," << render_view_id;
+                 << render_process_id << "," << params.render_view_id;
     DispatchCallbackOnIOThread(callback, QUOTA_PERMISSION_RESPONSE_CANCELLED);
     return;
   }
   RequestQuotaInfoBarDelegate::Create(
-      infobar_service, this, origin_url, requested_quota,
+      infobar_service, this, params.origin_url, params.requested_size,
       Profile::FromBrowserContext(web_contents->GetBrowserContext())->
           GetPrefs()->GetString(prefs::kAcceptLanguages),
       callback);

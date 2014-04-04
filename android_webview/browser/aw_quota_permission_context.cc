@@ -17,11 +17,8 @@ AwQuotaPermissionContext::~AwQuotaPermissionContext() {
 }
 
 void AwQuotaPermissionContext::RequestQuotaPermission(
-    const GURL& origin_url,
-    quota::StorageType type,
-    int64 new_quota,
+    const content::StorageQuotaParams& params,
     int render_process_id,
-    int render_view_id,
     const PermissionCallback& callback) {
   // Android WebView only uses quota::kStorageTypeTemporary type of storage
   // with quota managed automatically, not through this interface. Therefore

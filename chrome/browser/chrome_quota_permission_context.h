@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "content/public/browser/quota_permission_context.h"
+#include "webkit/common/quota/quota_types.h"
 
 class ChromeQuotaPermissionContext : public content::QuotaPermissionContext {
  public:
@@ -14,11 +15,8 @@ class ChromeQuotaPermissionContext : public content::QuotaPermissionContext {
 
   // The callback will be dispatched on the IO thread.
   virtual void RequestQuotaPermission(
-      const GURL& origin_url,
-      quota::StorageType type,
-      int64 new_quota,
+      const content::StorageQuotaParams& params,
       int render_process_id,
-      int render_view_id,
       const PermissionCallback& callback) OVERRIDE;
 
   void DispatchCallbackOnIOThread(

@@ -11,13 +11,10 @@ namespace content {
 ShellQuotaPermissionContext::ShellQuotaPermissionContext() {}
 
 void ShellQuotaPermissionContext::RequestQuotaPermission(
-    const GURL& origin_url,
-    quota::StorageType type,
-    int64 requested_quota,
+    const StorageQuotaParams& params,
     int render_process_id,
-    int render_view_id,
     const PermissionCallback& callback) {
-  if (type != quota::kStorageTypePersistent) {
+  if (params.storage_type != quota::kStorageTypePersistent) {
     // For now we only support requesting quota with this interface
     // for Persistent storage type.
     callback.Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);

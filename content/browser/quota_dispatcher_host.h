@@ -22,6 +22,7 @@ class QuotaManager;
 
 namespace content {
 class QuotaPermissionContext;
+struct StorageQuotaParams;
 
 class QuotaDispatcherHost : public BrowserMessageFilter {
  public:
@@ -45,12 +46,7 @@ class QuotaDispatcherHost : public BrowserMessageFilter {
       int request_id,
       const GURL& origin_url,
       quota::StorageType type);
-  void OnRequestStorageQuota(
-      int render_view_id,
-      int request_id,
-      const GURL& origin_url,
-      quota::StorageType type,
-      uint64 requested_size);
+  void OnRequestStorageQuota(const StorageQuotaParams& params);
 
   // The ID of this process.
   int process_id_;

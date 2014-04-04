@@ -100,40 +100,34 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
   typedef RequestQuotaDispatcher self_type;
 
   RequestQuotaDispatcher(base::WeakPtr<QuotaDispatcherHost> dispatcher_host,
-                         int request_id,
-                         const GURL& origin,
-                         StorageType type,
-                         uint64 requested_quota,
-                         int render_view_id)
-      : RequestDispatcher(dispatcher_host, request_id),
-        origin_(origin),
-        type_(type),
+                         const StorageQuotaParams& params)
+      : RequestDispatcher(dispatcher_host, params.request_id),
+        params_(params),
         current_usage_(0),
         current_quota_(0),
         requested_quota_(0),
-        render_view_id_(render_view_id),
         weak_factory_(this) {
     // Convert the requested size from uint64 to int64 since the quota backend
     // requires int64 values.
     // TODO(nhiroki): The backend should accept uint64 values.
-    requested_quota_ = base::saturated_cast<int64>(requested_quota);
+    requested_quota_ = base::saturated_cast<int64>(params_.requested_size);
   }
   virtual ~RequestQuotaDispatcher() {}
 
   void Start() {
     DCHECK(dispatcher_host());
 
-    DCHECK(type_ == quota::kStorageTypeTemporary ||
-           type_ == quota::kStorageTypePersistent ||
-           type_ == quota::kStorageTypeSyncable);
-    if (type_ == quota::kStorageTypePersistent) {
+    DCHECK(params_.storage_type == quota::kStorageTypeTemporary ||
+           params_.storage_type == quota::kStorageTypePersistent ||
+           params_.storage_type == quota::kStorageTypeSyncable);
+    if (params_.storage_type == quota::kStorageTypePersistent) {
       quota_manager()->GetUsageAndQuotaForWebApps(
-          origin_, type_,
+          params_.origin_url, params_.storage_type,
           base::Bind(&self_type::DidGetPersistentUsageAndQuota,
                      weak_factory_.GetWeakPtr()));
     } else {
       quota_manager()->GetUsageAndQuotaForWebApps(
-          origin_, type_,
+          params_.origin_url, params_.storage_type,
           base::Bind(&self_type::DidGetTemporaryUsageAndQuota,
                      weak_factory_.GetWeakPtr()));
     }
@@ -150,20 +144,20 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
       return;
     }
 
-    if (quota_manager()->IsStorageUnlimited(origin_, type_) ||
+    if (quota_manager()->IsStorageUnlimited(params_.origin_url,
+                                            params_.storage_type) ||
         requested_quota_ <= quota) {
       // Seems like we can just let it go.
-      DidFinish(quota::kQuotaStatusOk, usage, requested_quota_);
+      DidFinish(quota::kQuotaStatusOk, usage, params_.requested_size);
       return;
     }
     current_usage_ = usage;
     current_quota_ = quota;
 
     // Otherwise we need to consult with the permission context and
-    // possibly show an infobar.
+    // possibly show a prompt.
     DCHECK(permission_context());
-    permission_context()->RequestQuotaPermission(
-        origin_, type_, requested_quota_, render_process_id(), render_view_id_,
+    permission_context()->RequestQuotaPermission(params_, render_process_id(),
         base::Bind(&self_type::DidGetPermissionResponse,
                    weak_factory_.GetWeakPtr()));
   }
@@ -185,7 +179,7 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
     }
     // Now we're allowed to set the new quota.
     quota_manager()->SetPersistentHostQuota(
-        net::GetHostOrSpecFromURL(origin_), requested_quota_,
+        net::GetHostOrSpecFromURL(params_.origin_url), params_.requested_size,
         base::Bind(&self_type::DidSetHostQuota, weak_factory_.GetWeakPtr()));
   }
 
@@ -208,12 +202,10 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
     Completed();
   }
 
-  const GURL origin_;
-  const StorageType type_;
+  StorageQuotaParams params_;
   int64 current_usage_;
   int64 current_quota_;
   int64 requested_quota_;
-  const int render_view_id_;
   base::WeakPtrFactory<self_type> weak_factory_;
 };
 
@@ -254,21 +246,18 @@ void QuotaDispatcherHost::OnQueryStorageUsageAndQuota(
 }
 
 void QuotaDispatcherHost::OnRequestStorageQuota(
-    int render_view_id,
-    int request_id,
-    const GURL& origin,
-    StorageType type,
-    uint64 requested_size) {
-  if (type != quota::kStorageTypeTemporary &&
-      type != quota::kStorageTypePersistent) {
+    const StorageQuotaParams& params) {
+  if (params.storage_type != quota::kStorageTypeTemporary &&
+      params.storage_type != quota::kStorageTypePersistent) {
     // Unsupported storage types.
-    Send(new QuotaMsg_DidFail(request_id, quota::kQuotaErrorNotSupported));
+    Send(new QuotaMsg_DidFail(params.request_id,
+                              quota::kQuotaErrorNotSupported));
     return;
   }
 
-  RequestQuotaDispatcher* dispatcher = new RequestQuotaDispatcher(
-      weak_factory_.GetWeakPtr(), request_id, origin, type,
-      requested_size, render_view_id);
+  RequestQuotaDispatcher* dispatcher =
+      new RequestQuotaDispatcher(weak_factory_.GetWeakPtr(),
+                                 params);
   dispatcher->Start();
 }
 
