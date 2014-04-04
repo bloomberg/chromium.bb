@@ -103,12 +103,24 @@ public:
     ScriptStateProtectedPtr(ScriptState* scriptState)
         : m_scriptState(scriptState)
     {
+        if (!scriptState)
+            return;
+
         v8::HandleScope handleScope(scriptState->isolate());
         // Keep the context from being GC'ed. ScriptState is guaranteed to be live while the context is live.
         m_context.set(scriptState->isolate(), scriptState->context());
     }
 
     ScriptState* get() const { return m_scriptState; }
+
+    void clear()
+    {
+        if (!m_scriptState)
+            return;
+
+        m_context.clear();
+        m_scriptState = 0;
+    }
 
 private:
     ScriptState* m_scriptState;

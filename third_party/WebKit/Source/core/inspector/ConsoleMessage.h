@@ -72,7 +72,7 @@ private:
     MessageType m_type;
     MessageLevel m_level;
     String m_message;
-    ScriptState* m_scriptState;
+    ScriptStateProtectedPtr m_scriptState;
     RefPtr<ScriptArguments> m_arguments;
     RefPtr<ScriptCallStack> m_callStack;
     String m_url;

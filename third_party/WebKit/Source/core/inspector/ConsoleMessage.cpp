@@ -51,6 +51,7 @@ ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, 
     , m_type(type)
     , m_level(level)
     , m_message(message)
+    , m_scriptState()
     , m_url()
     , m_line(0)
     , m_column(0)
@@ -80,7 +81,7 @@ ConsoleMessage::ConsoleMessage(bool, MessageSource source, MessageType type, Mes
     , m_type(type)
     , m_level(level)
     , m_message(message)
-    , m_scriptState(0)
+    , m_scriptState()
     , m_arguments(nullptr)
     , m_line(0)
     , m_column(0)
@@ -198,8 +199,9 @@ void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, Injecte
     jsonObj->setLine(static_cast<int>(m_line));
     jsonObj->setColumn(static_cast<int>(m_column));
     jsonObj->setUrl(m_url);
-    if (m_scriptState && m_scriptState->executionContext()->isDocument())
-        jsonObj->setExecutionContextId(injectedScriptManager->injectedScriptIdFor(m_scriptState));
+    ScriptState* scriptState = m_scriptState.get();
+    if (scriptState && scriptState->executionContext()->isDocument())
+        jsonObj->setExecutionContextId(injectedScriptManager->injectedScriptIdFor(scriptState));
     if (m_source == NetworkMessageSource && !m_requestId.isEmpty())
         jsonObj->setNetworkRequestId(m_requestId);
     if (m_arguments && m_arguments->argumentCount()) {
@@ -235,8 +237,8 @@ void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, Injecte
 
 void ConsoleMessage::windowCleared(DOMWindow* window)
 {
-    if (m_scriptState && m_scriptState->domWindow() == window)
-        m_scriptState = 0;
+    if (m_scriptState.get() && m_scriptState.get()->domWindow() == window)
+        m_scriptState.clear();
 
     if (!m_arguments)
         return;
