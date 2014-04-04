@@ -200,8 +200,8 @@ bool RenderBlockFlow::updateLogicalWidthAndColumnWidth()
 void RenderBlockFlow::checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight)
 {
     if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
-        // We don't actually update any of the variables. We just subclassed to adjust our column height.
         updateLogicalHeight();
+        pageLogicalHeightChanged = contentLogicalHeight() != flowThread->columnHeightAvailable();
         flowThread->setColumnHeightAvailable(std::max<LayoutUnit>(contentLogicalHeight(), 0));
         setLogicalHeight(0);
     } else if (hasColumns()) {
@@ -351,6 +351,8 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     bool pageLogicalHeightChanged = false;
     bool hasSpecifiedPageLogicalHeight = false;
     checkForPaginationLogicalHeightChange(pageLogicalHeight, pageLogicalHeightChanged, hasSpecifiedPageLogicalHeight);
+    if (pageLogicalHeightChanged)
+        relayoutChildren = true;
 
     LayoutStateMaintainer statePusher(*this, locationOffset(), pageLogicalHeight, pageLogicalHeightChanged, columnInfo());
 
