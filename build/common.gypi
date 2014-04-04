@@ -3806,12 +3806,13 @@
           ['linux_dump_symbols==1', {
             'cflags': [ '-g' ],
             'conditions': [
-              ['target_arch=="ia32" and OS!="android"', {
+              ['linux_use_gold_flags==0 and OS!="android"', {
                 'target_conditions': [
                   ['_toolset=="target"', {
                     'ldflags': [
-                      # Workaround for linker OOM.
+                      # Workarounds for linker OOM.
                       '-Wl,--no-keep-memory',
+                      '-Wl,--reduce-memory-overheads',
                     ],
                   }],
                 ],
