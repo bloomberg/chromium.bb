@@ -189,18 +189,30 @@ void HidServiceWin::PlatformAddDevice(const std::string& device_path) {
       if (HidP_GetValueCaps(HidP_Input, &value_caps[0], &value_caps_length,
                             preparsed_data) == HIDP_STATUS_SUCCESS) {
         device_info.has_report_id = (value_caps[0].ReportID != 0);
-        // If report IDs are supported, adjust all the expected report sizes
-        // down by one byte. This is because Windows will always provide sizes
-        // which assume the presence of a report ID.
-        if (device_info.has_report_id) {
-          if (device_info.input_report_size > 0)
-            device_info.input_report_size -= 1;
-          if (device_info.output_report_size > 0)
-            device_info.output_report_size -= 1;
-          if (device_info.feature_report_size > 0)
-            device_info.feature_report_size -= 1;
-        }
       }
+    }
+    if (!device_info.has_report_id && capabilities.NumberInputButtonCaps > 0)
+    {
+      scoped_ptr<HIDP_BUTTON_CAPS[]> button_caps(
+        new HIDP_BUTTON_CAPS[capabilities.NumberInputButtonCaps]);
+      USHORT button_caps_length = capabilities.NumberInputButtonCaps;
+      if (HidP_GetButtonCaps(HidP_Input,
+                             &button_caps[0],
+                             &button_caps_length,
+                             preparsed_data) == HIDP_STATUS_SUCCESS) {
+        device_info.has_report_id = (button_caps[0].ReportID != 0);
+      }
+    }
+    // If report IDs are supported, adjust all the expected report sizes
+    // down by one byte. This is because Windows will always provide sizes
+    // which assume the presence of a report ID.
+    if (device_info.has_report_id) {
+      if (device_info.input_report_size > 0)
+        device_info.input_report_size -= 1;
+      if (device_info.output_report_size > 0)
+        device_info.output_report_size -= 1;
+      if (device_info.feature_report_size > 0)
+        device_info.feature_report_size -= 1;
     }
     HidD_FreePreparsedData(preparsed_data);
   }
