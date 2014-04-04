@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/platform_thread.h"
 #include "content/browser/device_orientation/data_fetcher_shared_memory.h"
 #include "content/browser/device_orientation/device_inertial_sensor_service.h"
 #include "content/common/device_orientation/device_motion_hardware_buffer.h"
@@ -13,7 +14,10 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_javascript_dialog_manager.h"
 
 namespace content {
 
@@ -25,7 +29,8 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
       : started_orientation_(false, false),
         stopped_orientation_(false, false),
         started_motion_(false, false),
-        stopped_motion_(false, false) {
+        stopped_motion_(false, false),
+        sensor_data_available_(true) {
   }
   virtual ~FakeDataFetcher() { }
 
@@ -34,13 +39,24 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
 
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
-        UpdateMotion(static_cast<DeviceMotionHardwareBuffer*>(buffer));
-        started_motion_.Signal();
+        {
+          DeviceMotionHardwareBuffer* motion_buffer =
+              static_cast<DeviceMotionHardwareBuffer*>(buffer);
+          if (sensor_data_available_)
+            UpdateMotion(motion_buffer);
+          SetMotionBufferReady(motion_buffer);
+          started_motion_.Signal();
+        }
         break;
       case CONSUMER_TYPE_ORIENTATION:
-        UpdateOrientation(
-            static_cast<DeviceOrientationHardwareBuffer*>(buffer));
-        started_orientation_.Signal();
+        {
+          DeviceOrientationHardwareBuffer* orientation_buffer =
+              static_cast<DeviceOrientationHardwareBuffer*>(buffer);
+          if (sensor_data_available_)
+            UpdateOrientation(orientation_buffer);
+          SetOrientationBufferReady(orientation_buffer);
+          started_orientation_.Signal();
+        }
         break;
       default:
         return false;
@@ -68,6 +84,22 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
 
   virtual FetcherType GetType() const OVERRIDE {
     return FETCHER_TYPE_DEFAULT;
+  }
+
+  void SetSensorDataAvailable(bool available) {
+    sensor_data_available_ = available;
+  }
+
+  void SetMotionBufferReady(DeviceMotionHardwareBuffer* buffer) {
+    buffer->seqlock.WriteBegin();
+    buffer->data.allAvailableSensorsAreActive = true;
+    buffer->seqlock.WriteEnd();
+  }
+
+  void SetOrientationBufferReady(DeviceOrientationHardwareBuffer* buffer) {
+    buffer->seqlock.WriteBegin();
+    buffer->data.allAvailableSensorsAreActive = true;
+    buffer->seqlock.WriteEnd();
   }
 
   void UpdateMotion(DeviceMotionHardwareBuffer* buffer) {
@@ -114,6 +146,7 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
   base::WaitableEvent stopped_orientation_;
   base::WaitableEvent started_motion_;
   base::WaitableEvent stopped_motion_;
+  bool sensor_data_available_;
 
  private:
 
@@ -140,6 +173,23 @@ class DeviceInertialSensorBrowserTest : public ContentBrowserTest  {
     DeviceInertialSensorService::GetInstance()->
         SetDataFetcherForTests(fetcher_);
     io_loop_finished_event_.Signal();
+  }
+
+  void DelayAndQuit(base::TimeDelta delay) {
+    base::PlatformThread::Sleep(delay);
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
+
+  void WaitForAlertDialogAndQuitAfterDelay(base::TimeDelta delay) {
+    ShellJavaScriptDialogManager* dialog_manager=
+        static_cast<ShellJavaScriptDialogManager*>(
+            shell()->GetJavaScriptDialogManager());
+
+    scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
+    dialog_manager->set_dialog_request_callback(
+        base::Bind(&DeviceInertialSensorBrowserTest::DelayAndQuit, this,
+            delay));
+    runner->Run();
   }
 
   FakeDataFetcher* fetcher_;
@@ -173,6 +223,54 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, MotionTest) {
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
   fetcher_->started_motion_.Wait();
   fetcher_->stopped_motion_.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
+    OrientationNullTestWithAlert) {
+  // The test page will register an event handler for orientation events,
+  // expects to get an event with null values. The test raises a modal alert
+  // dialog with a delay to test that the one-off null-event still propagates
+  // to window after the alert is dismissed and the callback is invoked which
+  // navigates to #pass.
+  fetcher_->SetSensorDataAvailable(false);
+  TestNavigationObserver same_tab_observer(shell()->web_contents(), 2);
+
+  GURL test_url = GetTestUrl(
+      "device_orientation", "device_orientation_null_test_with_alert.html");
+  shell()->LoadURL(test_url);
+
+  // TODO(timvolodine): investigate if it is possible to test this without
+  // delay, crbug.com/360044.
+  WaitForAlertDialogAndQuitAfterDelay(base::TimeDelta::FromMilliseconds(1000));
+
+  fetcher_->started_orientation_.Wait();
+  fetcher_->stopped_orientation_.Wait();
+  same_tab_observer.Wait();
+  EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
+    MotionNullTestWithAlert) {
+  // The test page will register an event handler for motion events,
+  // expects to get an event with null values. The test raises a modal alert
+  // dialog with a delay to test that the one-off null-event still propagates
+  // to window after the alert is dismissed and the callback is invoked which
+  // navigates to #pass.
+  fetcher_->SetSensorDataAvailable(false);
+  TestNavigationObserver same_tab_observer(shell()->web_contents(), 2);
+
+  GURL test_url = GetTestUrl(
+      "device_orientation", "device_motion_null_test_with_alert.html");
+  shell()->LoadURL(test_url);
+
+  // TODO(timvolodine): investigate if it is possible to test this without
+  // delay, crbug.com/360044.
+  WaitForAlertDialogAndQuitAfterDelay(base::TimeDelta::FromMilliseconds(1000));
+
+  fetcher_->started_motion_.Wait();
+  fetcher_->stopped_motion_.Wait();
+  same_tab_observer.Wait();
+  EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
 }
 
 } //  namespace
