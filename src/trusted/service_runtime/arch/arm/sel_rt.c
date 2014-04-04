@@ -15,6 +15,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
+#include "native_client/src/trusted/service_runtime/arch/arm/tramp_arm.h"
 
 
 uint32_t nacl_guard_token;
@@ -44,6 +45,7 @@ int NaClAppThreadInitArchSpecific(struct NaClAppThread *natp,
   if (ntcp->tls_idx == NACL_TLS_INDEX_INVALID)
     return 0;
   ntcp->r9 = (uintptr_t) &ntcp->tls_value1;
+  ntcp->syscall_routine = (uintptr_t) NaClSyscallSeg;
   ntcp->guard_token = nacl_guard_token;
 
   /*

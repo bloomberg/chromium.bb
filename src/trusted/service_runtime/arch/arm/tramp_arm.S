@@ -5,6 +5,7 @@
  */
 
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
         /*
@@ -69,17 +70,18 @@ DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_trampoline_seg_code):
   /* Save the return address. */
   str lr, [sp, #-0x14]
 
-  /* this accesses the data item immediately after the halt */
-  ldr r0, NaCl_trampoline_syscall_seg_addr
+  ldr r0, [r9, #NACL_R9_OFFSET(NACL_THREAD_CONTEXT_OFFSET_SYSCALL_ROUTINE)]
   /* NOTE: we use the blx instead of bx because the return addres */
   /*       is used to determine which trampoline was used */
 
   blx r0
 
   /* NORETURN */
-  .word NACL_HALT_WORD
-DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_trampoline_syscall_seg_addr):
-  /* a DATA item will be patched in here */
-  .word   0
+
+  /* Fill second bundle: */
+  .word NACL_INSTR_ARM_HALT_FILL
+  .word NACL_INSTR_ARM_HALT_FILL
+  .word NACL_INSTR_ARM_HALT_FILL
+  .word NACL_INSTR_ARM_HALT_FILL
 
 DEFINE_GLOBAL_HIDDEN_LOCATION(NaCl_trampoline_seg_end):

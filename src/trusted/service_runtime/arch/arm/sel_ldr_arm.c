@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#include <string.h>
+
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -17,40 +19,16 @@
  * 5 instr + one data item
  */
 
-/*
- * Install a syscall trampoline at target_addr.  NB: Thread-safe.
- * The code being patched is from tramp.S
- */
-void  NaClPatchOneTrampolineCall(uintptr_t call_target_addr,
-                                 uintptr_t target_addr) {
-  struct NaClPatchInfo patch_info;
-  struct NaClPatch patch_syscall_seg;
-
-  /*
-   * For ARM we only need to patch in the address of NaClSyscallSeg.
-   * We only do even that in case we're PIC (to avoid a TEXTREL).
-   */
-
-  NaClPatchInfoCtor(&patch_info);
-
-  patch_info.dst = target_addr;
-  patch_info.src = (uintptr_t) &NaCl_trampoline_seg_code;
-  patch_info.nbytes = ((uintptr_t) &NaCl_trampoline_seg_end
-                       - (uintptr_t) &NaCl_trampoline_seg_code) - 4;
-
-  patch_info.num_abs32 = 1;
-  patch_info.abs32 = &patch_syscall_seg;
-  patch_syscall_seg.target = (uintptr_t) &NaCl_trampoline_syscall_seg_addr;
-  patch_syscall_seg.value = call_target_addr;
-
-  NaClApplyPatchToMemory(&patch_info);
-}
-
 void  NaClPatchOneTrampoline(struct NaClApp *nap,
                              uintptr_t      target_addr) {
+  size_t trampoline_size = ((uintptr_t) &NaCl_trampoline_seg_end
+                            - (uintptr_t) &NaCl_trampoline_seg_code);
+
   UNREFERENCED_PARAMETER(nap);
 
-  NaClPatchOneTrampolineCall((uintptr_t) &NaClSyscallSeg, target_addr);
+  CHECK(trampoline_size == NACL_SYSCALL_BLOCK_SIZE);
+  memcpy((void *) target_addr, &NaCl_trampoline_seg_code,
+         NACL_SYSCALL_BLOCK_SIZE);
 }
 
 

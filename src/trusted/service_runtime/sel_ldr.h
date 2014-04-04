@@ -763,11 +763,6 @@ int NaClMakePcrelThunk(struct NaClApp *nap, enum NaClAslrMode aslr_mode);
 
 int NaClMakeDispatchAddrs(struct NaClApp *nap);
 
-#endif
-
-#if ((NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64) || \
-     NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm)
-
 void NaClPatchOneTrampolineCall(uintptr_t call_target_addr,
                                 uintptr_t target_addr);
 
