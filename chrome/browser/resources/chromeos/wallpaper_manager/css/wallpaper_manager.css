@@ -122,6 +122,40 @@ body {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
   display: -webkit-box;
+  position: relative;
+}
+
+#spinner-container {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  height: 287px;
+  padding-bottom: 15px;
+  padding-top: 5px;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+@-webkit-keyframes spin {
+  from {
+    -webkit-transform: rotate(0);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+#spinner-container #spinner {
+  -webkit-animation-duration: 1s;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-name: spin;
+  -webkit-animation-timing-function: linear;
+  background-image: url('../images/ui/spinner.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 16px;
+  width: 16px;
 }
 
 .image-picker {
