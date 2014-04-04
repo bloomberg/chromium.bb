@@ -1043,12 +1043,6 @@ void BrowserPluginGuest::DragSourceEndedAt(int client_x, int client_y,
       screen_x, screen_y, operation);
 }
 
-void BrowserPluginGuest::DragSourceMovedTo(int client_x, int client_y,
-                                           int screen_x, int screen_y) {
-  web_contents()->GetRenderViewHost()->DragSourceMovedTo(client_x, client_y,
-                                                         screen_x, screen_y);
-}
-
 void BrowserPluginGuest::EndSystemDrag() {
   RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
       GetWebContents()->GetRenderViewHost());

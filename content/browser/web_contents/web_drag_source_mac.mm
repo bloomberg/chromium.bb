@@ -291,27 +291,6 @@ void PromiseWriterHelper(const DropData& drop_data,
   [pasteboard_ declareTypes:[NSArray array] owner:nil];
 }
 
-- (void)moveDragTo:(NSPoint)screenPoint {
-  if (!contents_)
-    return;
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      contents_->GetRenderViewHost());
-  if (rvh) {
-    // Convert |screenPoint| to view coordinates and flip it.
-    NSPoint localPoint = NSZeroPoint;
-    if ([contentsView_ window])
-      localPoint = [self convertScreenPoint:screenPoint];
-    NSRect viewFrame = [contentsView_ frame];
-    localPoint.y = viewFrame.size.height - localPoint.y;
-    // Flip |screenPoint|.
-    NSRect screenFrame = [[[contentsView_ window] screen] frame];
-    screenPoint.y = screenFrame.size.height - screenPoint.y;
-
-    contents_->DragSourceMovedTo(localPoint.x, localPoint.y,
-                                 screenPoint.x, screenPoint.y);
-  }
-}
-
 - (NSString*)dragPromisedFileTo:(NSString*)path {
   // Be extra paranoid; avoid crashing.
   if (!dropData_) {

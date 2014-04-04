@@ -38,12 +38,10 @@ IPC_MESSAGE_ROUTED3(DragMsg_TargetDrop,
                     gfx::Point /* screen_pt */,
                     int /* key_modifiers */)
 
-// Notifies the renderer of updates in mouse position of an in-progress
-// drag.  if |ended| is true, then the user has ended the drag operation.
-IPC_MESSAGE_ROUTED4(DragMsg_SourceEndedOrMoved,
+// Notifies the renderer when and where the mouse-drag ended.
+IPC_MESSAGE_ROUTED3(DragMsg_SourceEnded,
                     gfx::Point /* client_pt */,
                     gfx::Point /* screen_pt */,
-                    bool /* ended */,
                     blink::WebDragOperation /* drag_operation */)
 
 // Notifies the renderer that the system DoDragDrop call has ended.

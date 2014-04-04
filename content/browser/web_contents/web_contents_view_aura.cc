@@ -174,52 +174,20 @@ class OverscrollWindowDelegate : public ImageWindowDelegate {
 
 // Listens to all mouse drag events during a drag and drop and sends them to
 // the renderer.
-class WebDragSourceAura : public base::MessageLoopForUI::Observer,
-                          public NotificationObserver {
+class WebDragSourceAura : public NotificationObserver {
  public:
   WebDragSourceAura(aura::Window* window, WebContentsImpl* contents)
       : window_(window),
         contents_(contents) {
-    base::MessageLoopForUI::current()->AddObserver(this);
     registrar_.Add(this,
                    NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                    Source<WebContents>(contents));
   }
 
   virtual ~WebDragSourceAura() {
-    base::MessageLoopForUI::current()->RemoveObserver(this);
   }
 
-  // MessageLoop::Observer implementation:
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE {
-    return base::EVENT_CONTINUE;
-  }
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
-    if (!contents_)
-      return;
-    ui::EventType type = ui::EventTypeFromNative(event);
-    RenderViewHost* rvh = NULL;
-    switch (type) {
-      case ui::ET_MOUSE_DRAGGED:
-        rvh = contents_->GetRenderViewHost();
-        if (rvh) {
-          gfx::Point screen_loc_in_pixel = ui::EventLocationFromNative(event);
-          gfx::Point screen_loc = ConvertViewPointToDIP(rvh->GetView(),
-              screen_loc_in_pixel);
-          gfx::Point client_loc = screen_loc;
-          aura::Window* window = rvh->GetView()->GetNativeView();
-          aura::Window::ConvertPointToTarget(window->GetRootWindow(),
-              window, &client_loc);
-          contents_->DragSourceMovedTo(client_loc.x(), client_loc.y(),
-              screen_loc.x(), screen_loc.y());
-        }
-        break;
-      default:
-        break;
-    }
-  }
-
+  // NotificationObserver:
   virtual void Observe(int type,
       const NotificationSource& source,
       const NotificationDetails& details) OVERRIDE {

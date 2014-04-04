@@ -166,11 +166,6 @@ class CONTENT_EXPORT WebContentsImpl
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
       int screen_y, blink::WebDragOperation operation);
 
-  // Informs the render view host and the BrowserPluginEmbedder, if present, of
-  // a Drag Source Move.
-  void DragSourceMovedTo(int client_x, int client_y,
-                         int screen_x, int screen_y);
-
   // A response has been received for a resource request.
   void DidGetResourceResponseStart(
       const ResourceRequestDetails& details);

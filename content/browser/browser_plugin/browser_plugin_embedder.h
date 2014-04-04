@@ -71,9 +71,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
       int screen_y, blink::WebDragOperation operation);
 
-  void DragSourceMovedTo(int client_x, int client_y,
-                         int screen_x, int screen_y);
-
   void OnUpdateDragCursor(bool* handled);
 
   void DragEnteredGuest(BrowserPluginGuest* guest);

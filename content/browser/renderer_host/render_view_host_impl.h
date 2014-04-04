@@ -175,8 +175,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void DragSourceEndedAt(
       int client_x, int client_y, int screen_x, int screen_y,
       blink::WebDragOperation operation) OVERRIDE;
-  virtual void DragSourceMovedTo(
-      int client_x, int client_y, int screen_x, int screen_y) OVERRIDE;
   virtual void DragSourceSystemDragEnded() OVERRIDE;
   virtual void DragTargetDragEnter(
       const DropData& drop_data,

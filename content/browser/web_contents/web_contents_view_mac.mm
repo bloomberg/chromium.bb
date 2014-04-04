@@ -565,7 +565,6 @@ void WebContentsViewMac::CloseTab() {
 
 // Called when a drag initiated in our view moves.
 - (void)draggedImage:(NSImage*)draggedImage movedTo:(NSPoint)screenPoint {
-  [dragSource_ moveDragTo:screenPoint];
 }
 
 // Called when a file drag is dropped and the promised files need to be written.

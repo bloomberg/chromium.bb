@@ -311,9 +311,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
       int screen_y, blink::WebDragOperation operation);
 
-  void DragSourceMovedTo(int client_x, int client_y,
-                         int screen_x, int screen_y);
-
   // Called when the drag started by this guest ends at an OS-level.
   void EndSystemDrag();
 

@@ -862,10 +862,9 @@ class CONTENT_EXPORT RenderViewImpl
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(
       const gfx::Size& disable_scrollbars_size_limit);
-  void OnDragSourceEndedOrMoved(const gfx::Point& client_point,
-                                const gfx::Point& screen_point,
-                                bool ended,
-                                blink::WebDragOperation drag_operation);
+  void OnDragSourceEnded(const gfx::Point& client_point,
+                         const gfx::Point& screen_point,
+                         blink::WebDragOperation drag_operation);
   void OnDragSourceSystemDragEnded();
   void OnDragTargetDrop(const gfx::Point& client_pt,
                         const gfx::Point& screen_pt,

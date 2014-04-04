@@ -1093,7 +1093,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragLeave, OnDragTargetDragLeave)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDrop, OnDragTargetDrop)
-    IPC_MESSAGE_HANDLER(DragMsg_SourceEndedOrMoved, OnDragSourceEndedOrMoved)
+    IPC_MESSAGE_HANDLER(DragMsg_SourceEnded, OnDragSourceEnded)
     IPC_MESSAGE_HANDLER(DragMsg_SourceSystemDragEnded,
                         OnDragSourceSystemDragEnded)
     IPC_MESSAGE_HANDLER(ViewMsg_AllowBindings, OnAllowBindings)
@@ -3406,15 +3406,10 @@ void RenderViewImpl::OnDragTargetDrop(const gfx::Point& client_point,
   Send(new DragHostMsg_TargetDrop_ACK(routing_id_));
 }
 
-void RenderViewImpl::OnDragSourceEndedOrMoved(const gfx::Point& client_point,
-                                              const gfx::Point& screen_point,
-                                              bool ended,
-                                              WebDragOperation op) {
-  if (ended) {
-    webview()->dragSourceEndedAt(client_point, screen_point, op);
-  } else {
-    webview()->dragSourceMovedTo(client_point, screen_point, op);
-  }
+void RenderViewImpl::OnDragSourceEnded(const gfx::Point& client_point,
+                                       const gfx::Point& screen_point,
+                                       WebDragOperation op) {
+  webview()->dragSourceEndedAt(client_point, screen_point, op);
 }
 
 void RenderViewImpl::OnDragSourceSystemDragEnded() {

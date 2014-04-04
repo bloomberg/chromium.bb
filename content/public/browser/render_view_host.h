@@ -119,11 +119,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
       int client_x, int client_y, int screen_x, int screen_y,
       blink::WebDragOperation operation) = 0;
 
-  // Notifies the renderer that a drag and drop operation is in progress, with
-  // droppable items positioned over the renderer's view.
-  virtual void DragSourceMovedTo(
-      int client_x, int client_y, int screen_x, int screen_y) = 0;
-
   // Notifies the renderer that we're done with the drag and drop operation.
   // This allows the renderer to reset some state.
   virtual void DragSourceSystemDragEnded() = 0;

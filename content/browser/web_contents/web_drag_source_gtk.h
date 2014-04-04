@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents.h"
@@ -30,8 +29,7 @@ struct DropData;
 
 // WebDragSourceGtk takes care of managing the drag from a WebContents
 // with Gtk.
-class CONTENT_EXPORT WebDragSourceGtk :
-    public base::MessageLoopForUI::Observer {
+class CONTENT_EXPORT WebDragSourceGtk {
  public:
   explicit WebDragSourceGtk(WebContents* web_contents);
   virtual ~WebDragSourceGtk();
@@ -43,10 +41,6 @@ class CONTENT_EXPORT WebDragSourceGtk :
                      GdkEventButton* last_mouse_down,
                      const SkBitmap& image,
                      const gfx::Vector2d& image_offset);
-
-  // MessageLoop::Observer implementation:
-  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
-  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_2(WebDragSourceGtk, gboolean, OnDragFailed,

@@ -137,16 +137,6 @@ void BrowserPluginEmbedder::DragSourceEndedAt(int client_x, int client_y,
   }
 }
 
-void BrowserPluginEmbedder::DragSourceMovedTo(int client_x, int client_y,
-                                              int screen_x, int screen_y) {
-  if (guest_started_drag_.get()) {
-    gfx::Point guest_offset =
-        guest_started_drag_->GetScreenCoordinates(gfx::Point());
-    guest_started_drag_->DragSourceMovedTo(client_x - guest_offset.x(),
-        client_y - guest_offset.y(), screen_x, screen_y);
-  }
-}
-
 void BrowserPluginEmbedder::SystemDragEnded() {
   // When the embedder's drag/drop operation ends, we need to pass the message
   // to the guest that initiated the drag/drop operation. This will ensure that
