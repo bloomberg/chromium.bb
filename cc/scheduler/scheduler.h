@@ -99,7 +99,7 @@ class CC_EXPORT Scheduler {
     return state_machine_.MainThreadIsInHighLatencyMode();
   }
   bool BeginImplFrameDeadlinePending() const {
-    return !begin_impl_frame_deadline_closure_.IsCancelled();
+    return !begin_impl_frame_deadline_task_.IsCancelled();
   }
 
   bool WillDrawIfNeeded() const;
@@ -153,9 +153,13 @@ class CC_EXPORT Scheduler {
 
   bool last_set_needs_begin_impl_frame_;
   BeginFrameArgs last_begin_impl_frame_args_;
-  base::CancelableClosure begin_impl_frame_deadline_closure_;
-  base::CancelableClosure poll_for_draw_triggers_closure_;
-  base::CancelableClosure advance_commit_state_closure_;
+
+  base::Closure begin_impl_frame_deadline_closure_;
+  base::Closure poll_for_draw_triggers_closure_;
+  base::Closure advance_commit_state_closure_;
+  base::CancelableClosure begin_impl_frame_deadline_task_;
+  base::CancelableClosure poll_for_draw_triggers_task_;
+  base::CancelableClosure advance_commit_state_task_;
 
   SchedulerStateMachine state_machine_;
   bool inside_process_scheduled_actions_;
