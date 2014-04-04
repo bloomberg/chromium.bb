@@ -22,7 +22,6 @@
 #include "content/shell/browser/webkit_test_controller.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/webkit_test_helpers.h"
-#include "content/test/webkit_support.h"
 #include "net/base/net_util.h"
 
 #if defined(OS_ANDROID)
