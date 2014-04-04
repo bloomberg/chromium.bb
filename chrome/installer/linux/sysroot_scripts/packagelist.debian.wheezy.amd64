@@ -61,6 +61,8 @@ main/libc/libcap2/libcap-dev_2.22-1.2_amd64.deb
 main/libe/libexif/libexif12_0.6.20-3_amd64.deb
 main/libe/libexif/libexif-dev_0.6.20-3_amd64.deb
 main/libf/libffi/libffi5_3.0.10-3_amd64.deb
+main/libe/libexif/libexif12_0.6.20-3_amd64.deb
+main/libe/libexif/libexif-dev_0.6.20-3_amd64.deb
 main/libg/libgcrypt11/libgcrypt11_1.5.0-5+deb7u1_amd64.deb
 main/libg/libgcrypt11/libgcrypt11-dev_1.5.0-5+deb7u1_amd64.deb
 main/libg/libgnome-keyring/libgnome-keyring0_3.4.1-1_amd64.deb

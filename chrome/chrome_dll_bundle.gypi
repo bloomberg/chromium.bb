@@ -37,6 +37,10 @@
         '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(WRAPPER_NAME)/$(PRODUCT_NAME)',
 
     'INFOPLIST_FILE': 'app/framework-Info.plist',
+    'LD_RUNPATH_SEARCH_PATHS': [
+      # To find dylibs such as libexif.
+      '@loader_path/Libraries/.',
+    ],
   },
   'includes': [
     'chrome_nibs.gypi',
@@ -138,10 +142,10 @@
   ],
   'copies': [
     {
-      # Copy FFmpeg binaries for audio/video support.
       'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
       'files': [
-        '<(PRODUCT_DIR)/ffmpegsumo.so',
+        '<(PRODUCT_DIR)/ffmpegsumo.so', # Copy FFmpeg binaries for audio/video support.
+        '<(PRODUCT_DIR)/libexif.dylib',
       ],
     },
     {

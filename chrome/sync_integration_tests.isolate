@@ -56,6 +56,7 @@
         ],
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.so',
+          '<(PRODUCT_DIR)/libexif.dylib',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',

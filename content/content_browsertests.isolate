@@ -60,6 +60,7 @@
           '<(PRODUCT_DIR)/clearkeycdmadapter.plugin',
           '<(PRODUCT_DIR)/content_resources.pak',
           '<(PRODUCT_DIR)/ffmpegsumo.so',
+          '<(PRODUCT_DIR)/libexif.dylib',
           '<(PRODUCT_DIR)/plugins/TestNestscapePlugin.plugin',
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.plugin',
         ],
@@ -81,6 +82,7 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
+          '<(PRODUCT_DIR)/libexif.dll',
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/clearkeycdm.dll',
           '<(PRODUCT_DIR)/clearkeycdmadapter.dll',

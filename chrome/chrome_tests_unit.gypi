@@ -1944,6 +1944,7 @@
         'utility/importer/firefox_importer_unittest_utils.h',
         'utility/importer/firefox_importer_unittest_utils_mac.cc',
         'utility/importer/safari_importer_unittest.mm',
+        'utility/media_galleries/image_metadata_extractor_unittest.cc',
 
         # Duplicate these tests here because PathService has more items in
         # unit_tests than in base_unittests.
@@ -2614,6 +2615,7 @@
             ['exclude', '^browser/ui/webui/sync_promo'],
             ['exclude', '^tools/profile_reset/'],
             ['exclude', '^utility/importer/'],
+            ['exclude', '^utility/media_galleries/'],
           ],
           'conditions': [
             ['gtest_target_type == "shared_library"', {
