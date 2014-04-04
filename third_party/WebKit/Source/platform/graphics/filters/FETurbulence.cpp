@@ -404,8 +404,14 @@ void FETurbulence::applySoftware()
 SkShader* FETurbulence::createShader(const IntRect& filterRegion)
 {
     const SkISize size = SkISize::Make(filterRegion.width(), filterRegion.height());
-    float baseFrequencyX = 1.0f / filter()->applyHorizontalScale(1.0f / m_baseFrequencyX);
-    const float baseFrequencyY = 1.0f / filter()->applyVerticalScale(1.0f / m_baseFrequencyY);
+    // Frequency should be scaled by page zoom, but not by primitiveUnits.
+    // So we apply only the transform scale (as Filter::apply*Scale() do)
+    // and not the target bounding box scale (as SVGFilter::apply*Scale()
+    // would do). Note also that we divide by the scale since this is
+    // a frequency, not a period.
+    const AffineTransform& absoluteTransform = filter()->absoluteTransform();
+    float baseFrequencyX = m_baseFrequencyX / absoluteTransform.a();
+    float baseFrequencyY = m_baseFrequencyY / absoluteTransform.d();
     return (type() == FETURBULENCE_TYPE_FRACTALNOISE) ?
         SkPerlinNoiseShader::CreateFractalNoise(SkFloatToScalar(baseFrequencyX),
             SkFloatToScalar(baseFrequencyY), numOctaves(), SkFloatToScalar(seed()),
