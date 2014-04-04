@@ -122,6 +122,24 @@
             'translate/content/browser/content_translate_driver.h',
            ],
         },
+        {
+          'target_name': 'translate_content_common',
+          'type': 'static_library',
+          'dependencies': [
+            'translate_core_common',
+            'translate_language_detection',
+            '../base/base.gyp:base',
+            '../content/content.gyp:content_common',
+            '../ipc/ipc.gyp:ipc',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'translate/content/common/translate_messages.cc',
+            'translate/content/common/translate_messages.h',
+           ],
+        },
       ],
     }],
   ],

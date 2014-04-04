@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/time/time.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/renderer/translate/translate_helper.h"
 #include "chrome/test/base/chrome_render_view_test.h"
+#include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "content/public/renderer/render_view.h"
 #include "testing/gmock/include/gmock/gmock.h"

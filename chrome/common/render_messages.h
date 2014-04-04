@@ -25,8 +25,6 @@
 #include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/search_provider.h"
 #include "components/nacl/common/nacl_types.h"
-#include "components/translate/core/common/language_detection_details.h"
-#include "components/translate/core/common/translate_errors.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/top_controls_state.h"
@@ -115,7 +113,6 @@ IPC_ENUM_TRAITS(search_provider::OSDDType)
 IPC_ENUM_TRAITS(search_provider::InstallState)
 IPC_ENUM_TRAITS(ThemeBackgroundImageAlignment)
 IPC_ENUM_TRAITS(ThemeBackgroundImageTiling)
-IPC_ENUM_TRAITS(TranslateErrors::Type)
 IPC_ENUM_TRAITS(blink::WebConsoleMessage::Level)
 IPC_ENUM_TRAITS(content::TopControlsState)
 
@@ -213,17 +210,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebCache::UsageStats)
   IPC_STRUCT_TRAITS_MEMBER(deadSize)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(LanguageDetectionDetails)
-  IPC_STRUCT_TRAITS_MEMBER(time)
-  IPC_STRUCT_TRAITS_MEMBER(url)
-  IPC_STRUCT_TRAITS_MEMBER(content_language)
-  IPC_STRUCT_TRAITS_MEMBER(cld_language)
-  IPC_STRUCT_TRAITS_MEMBER(is_cld_reliable)
-  IPC_STRUCT_TRAITS_MEMBER(html_root_language)
-  IPC_STRUCT_TRAITS_MEMBER(adopted_language)
-  IPC_STRUCT_TRAITS_MEMBER(contents)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(extensions::StackFrame)
   IPC_STRUCT_TRAITS_MEMBER(line_number)
   IPC_STRUCT_TRAITS_MEMBER(column_number)
@@ -315,21 +301,6 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxToggleVoiceSearch)
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetVisuallyDeemphasized,
                     bool /* deemphazied */)
 
-// Tells the renderer to translate the page contents from one language to
-// another.
-IPC_MESSAGE_ROUTED4(ChromeViewMsg_TranslatePage,
-                    int /* page id */,
-                    std::string, /* the script injected in the page */
-                    std::string, /* BCP 47/RFC 5646 language code the page
-                                    is in */
-                    std::string /* BCP 47/RFC 5646 language code to translate
-                                   to */)
-
-// Tells the renderer to revert the text of translated page to its original
-// contents.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_RevertTranslation,
-                    int /* page id */)
-
 // Sent on process startup to indicate whether this process is running in
 // incognito mode.
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetIsIncognitoProcess,
@@ -387,17 +358,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_RetrieveMetaTagContent,
                     std::string /* tag_name */ )
 #endif  // defined(OS_ANDROID)
 
-#if defined(CLD2_DYNAMIC_MODE)
-// Informs the renderer process that Compact Language Detector (CLD) data is
-// available and provides an IPC::PlatformFileForTransit obtained from
-// IPC::GetFileHandleForProcess(...)
-// See also: ChromeViewHostMsg_NeedCLDData
-IPC_MESSAGE_ROUTED3(ChromeViewMsg_CLDDataAvailable,
-                    IPC::PlatformFileForTransit /* ipc_file_handle */,
-                    uint64 /* data_offset */,
-                    uint64 /* data_length */)
-#endif
-
 // chrome.principals messages ------------------------------------------------
 
 // Message sent from the renderer to the browser to get the list of browser
@@ -437,11 +397,6 @@ IPC_MESSAGE_ROUTED5(ChromeViewMsg_SetNavigationCorrectionInfo,
 //-----------------------------------------------------------------------------
 // Misc messages
 // These are messages sent from the renderer to the browser process.
-
-// Notification that the language for the tab has been determined.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_TranslateLanguageDetermined,
-                    LanguageDetectionDetails /* details about lang detection */,
-                    bool /* whether the page needs translation */)
 
 IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_UpdatedCacheStats,
                      blink::WebCache::UsageStats /* stats */)
@@ -610,13 +565,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
 IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_ResourceTypeStats,
                      blink::WebCache::ResourceTypeStats)
 
-// Notifies the browser that a page has been translated.
-IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_PageTranslated,
-                    int,                  /* page id */
-                    std::string           /* the original language */,
-                    std::string           /* the translated language */,
-                    TranslateErrors::Type /* the error type if available */)
-
 // Message sent from the renderer to the browser to notify it of a
 // window.print() call which should cancel the prerender. The message is sent
 // only when the renderer is prerendering.
@@ -769,12 +717,3 @@ IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_DetailedConsoleMessageAdded,
 // Sent by the renderer to check if crash reporting is enabled.
 IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_IsCrashReportingEnabled,
                             bool /* enabled */)
-
-#if defined(CLD2_DYNAMIC_MODE)
-// Informs the browser process that Compact Language Detector (CLD) data is
-// required by the originating renderer. The browser process should respond
-// with a ChromeViewMsg_CLDDataAvailable if the data is available, else it
-// should go unanswered (the renderer will ask again later).
-// See also: ChromeViewMsg_CLDDataAvailable
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_NeedCLDData)
-#endif

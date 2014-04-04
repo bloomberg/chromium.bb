@@ -390,6 +390,7 @@
             '<(DEPTH)/components/components.gyp:autofill_content_common',
             '<(DEPTH)/components/components.gyp:password_manager_core_common',
             '<(DEPTH)/components/components.gyp:signin_core_common',
+            '<(DEPTH)/components/components.gyp:translate_content_common',
             '<(DEPTH)/components/nacl.gyp:nacl_common',
             '<(DEPTH)/components/components.gyp:visitedlink_common',
             '<(DEPTH)/extensions/common/api/api.gyp:extensions_api',

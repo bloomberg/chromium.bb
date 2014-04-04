@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
+#include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_prefs.h"

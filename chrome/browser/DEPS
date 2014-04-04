@@ -32,6 +32,7 @@ include_rules = [
   "+components/startup_metric_utils",
   "+components/storage_monitor",
   "+components/translate/content/browser",
+  "+components/translate/content/common",
   "+components/translate/core/browser",
   "+components/translate/core/common",
   "+components/url_matcher",
