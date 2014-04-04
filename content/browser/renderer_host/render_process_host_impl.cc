@@ -21,12 +21,12 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/files/file.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/platform_file.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -211,17 +211,14 @@ IPC::PlatformFileForTransit CreateAecDumpFileForProcess(
     base::FilePath file_path,
     base::ProcessHandle process) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  base::PlatformFile aec_dump_file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_APPEND,
-      NULL,
-      &error);
-  if (error != base::PLATFORM_FILE_OK) {
-    VLOG(1) << "Could not open AEC dump file, error=" << error;
+  base::File dump_file(file_path,
+                       base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND);
+  if (!dump_file.IsValid()) {
+    VLOG(1) << "Could not open AEC dump file, error=" <<
+               dump_file.error_details();
     return IPC::InvalidPlatformFileForTransit();
   }
-  return IPC::GetFileHandleForProcess(aec_dump_file, process, true);
+  return IPC::TakeFileHandleForProcess(dump_file.Pass(), process);
 }
 
 // Does nothing. Just to avoid races between enable and disable.
