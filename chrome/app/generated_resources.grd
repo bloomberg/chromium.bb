@@ -7771,7 +7771,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Never for this site
         </message>
         <message name="IDS_PASSWORD_MANAGER_CANCEL_BUTTON" desc="Text for the 'Manage Passwords' bubble's 'Not now' option">
-          Not now
+          Nope
         </message>
         <message name="IDS_PASSWORD_MANAGER_TOOLTIP_SAVE" desc="Text for the 'Manage Passwords' icon's 'password to be saved' state">
           Save your password

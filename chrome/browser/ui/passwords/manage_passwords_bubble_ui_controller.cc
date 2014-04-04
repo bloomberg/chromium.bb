@@ -70,6 +70,11 @@ void ManagePasswordsBubbleUIController::SavePassword() {
   form_manager_->Save();
 }
 
+void ManagePasswordsBubbleUIController::NeverSavePassword() {
+  DCHECK(form_manager_.get());
+  form_manager_->PermanentlyBlacklist();
+}
+
 void ManagePasswordsBubbleUIController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {

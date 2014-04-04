@@ -24,13 +24,18 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   enum ManagePasswordsBubbleState {
     PASSWORD_TO_BE_SAVED,
     MANAGE_PASSWORDS_AFTER_SAVING,
-    MANAGE_PASSWORDS
+    MANAGE_PASSWORDS,
+    NEVER_SAVE_PASSWORDS,
   };
 
   enum PasswordAction { REMOVE_PASSWORD, ADD_PASSWORD };
 
-  // Called by the view code when the cancel button in clicked by the user.
-  void OnCancelClicked();
+  // Called by the view code when the "Nope" button in clicked by the user.
+  void OnNopeClicked();
+
+  // Called by the view code when the "Never for this site." button in clicked
+  // by the user.
+  void OnNeverForThisSiteClicked();
 
   // Called by the view code when the save button in clicked by the user.
   void OnSaveClicked();
@@ -40,7 +45,7 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
 
   // Called by the view code to delete or add a password form to the
   // PasswordStore.
-  void OnPasswordAction(autofill::PasswordForm password_form,
+  void OnPasswordAction(const autofill::PasswordForm& password_form,
                         PasswordAction action);
 
   // Called by the view code when the ManagePasswordItemView is destroyed and

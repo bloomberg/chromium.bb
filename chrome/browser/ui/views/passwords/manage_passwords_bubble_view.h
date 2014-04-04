@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 
@@ -26,6 +28,7 @@ class GridLayout;
 
 class ManagePasswordsBubbleView : public views::BubbleDelegateView,
                                   public views::ButtonListener,
+                                  public views::ComboboxListener,
                                   public views::LinkListener {
  public:
   enum FieldType { USERNAME_FIELD, PASSWORD_FIELD };
@@ -103,6 +106,9 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
+  // Handles the event when the user changes an index of a combobox.
+  virtual void OnPerformAction(views::Combobox* source) OVERRIDE;
+
   // Singleton instance of the Password bubble. The Password bubble can only be
   // shown on the active browser window, so there is no case in which it will be
   // shown twice at the same time.
@@ -113,7 +119,8 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
 
   // The buttons that are shown in the bubble.
   views::BlueButton* save_button_;
-  views::LabelButton* cancel_button_;
+  views::Combobox* refuse_combobox_;
+
   views::Link* manage_link_;
   views::LabelButton* done_button_;
 

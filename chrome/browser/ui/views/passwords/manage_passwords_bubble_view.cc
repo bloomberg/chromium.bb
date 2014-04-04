@@ -18,10 +18,12 @@
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
@@ -29,6 +31,14 @@
 // Helpers --------------------------------------------------------------------
 
 namespace {
+
+// Metrics: "PasswordBubble.DisplayDisposition"
+enum BubbleDisplayDisposition {
+  AUTOMATIC_WITH_PASSWORD_PENDING = 0,
+  MANUAL_WITH_PASSWORD_PENDING,
+  MANUAL_MANAGE_PASSWORDS,
+  NUM_DISPLAY_DISPOSITIONS
+};
 
 // Upper limit on the length of fields displayed in the manage passwords bubble.
 const int kMaxDisplayableStringWidth = 22;
@@ -48,11 +58,30 @@ int GetFieldWidth(const autofill::PasswordForm& password_form,
       gfx::GetStringWidth(display_string, font_list));
 }
 
-enum BubbleDisplayDisposition {
-  AUTOMATIC_WITH_PASSWORD_PENDING = 0,
-  MANUAL_WITH_PASSWORD_PENDING,
-  MANUAL_MANAGE_PASSWORDS,
-  NUM_DISPLAY_DISPOSITIONS
+class SavePasswordRefusalComboboxModel : public ui::ComboboxModel {
+ public:
+  enum { INDEX_NOPE = 0, INDEX_NEVER_FOR_THIS_SITE = 1, };
+
+  SavePasswordRefusalComboboxModel() {
+    items_.push_back(
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
+    items_.push_back(
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON));
+  }
+  virtual ~SavePasswordRefusalComboboxModel() {}
+
+ private:
+  // Overridden from ui::ComboboxModel:
+  virtual int GetItemCount() const OVERRIDE { return items_.size(); }
+  virtual base::string16 GetItemAt(int index) OVERRIDE { return items_[index]; }
+  virtual bool IsItemSeparatorAt(int index) OVERRIDE {
+    return items_[index].empty();
+  }
+  virtual int GetDefaultIndex() const OVERRIDE { return 0; }
+
+  std::vector<base::string16> items_;
+
+  DISALLOW_COPY_AND_ASSIGN(SavePasswordRefusalComboboxModel);
 };
 
 }  // namespace
@@ -220,6 +249,9 @@ void ManagePasswordsBubbleView::AdjustForFullscreen(
 
 void ManagePasswordsBubbleView::Close(BubbleDismissalReason reason) {
   dismissal_reason_ = reason;
+  icon_view_->SetTooltip(
+      manage_passwords_bubble_model_->manage_passwords_bubble_state() ==
+      ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED);
   GetWidget()->Close();
 }
 
@@ -276,16 +308,18 @@ void ManagePasswordsBubbleView::Init() {
     layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
     layout->AddView(item);
 
-    cancel_button_ = new views::LabelButton(
-        this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
-    cancel_button_->SetStyle(views::Button::STYLE_BUTTON);
+    refuse_combobox_ =
+        new views::Combobox(new SavePasswordRefusalComboboxModel());
+    refuse_combobox_->set_listener(this);
+    refuse_combobox_->SetStyle(views::Combobox::STYLE_ACTION);
+
     save_button_ = new views::BlueButton(
         this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
 
     layout->StartRowWithPadding(
         0, DOUBLE_VIEW_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
     layout->AddView(save_button_);
-    layout->AddView(cancel_button_);
+    layout->AddView(refuse_combobox_);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   } else {
     // If we have a list of passwords to store for the current site, display
@@ -365,20 +399,15 @@ void ManagePasswordsBubbleView::WindowClosing() {
 
 void ManagePasswordsBubbleView::ButtonPressed(views::Button* sender,
                                               const ui::Event& event) {
+  DCHECK(sender == save_button_ || sender == done_button_);
+
   BubbleDismissalReason reason;
   if (sender == save_button_) {
     manage_passwords_bubble_model_->OnSaveClicked();
     reason = CLICKED_SAVE;
-  } else if (sender == cancel_button_) {
-    manage_passwords_bubble_model_->OnCancelClicked();
-    reason = CLICKED_NOPE;
   } else {
-    DCHECK_EQ(done_button_, sender);
     reason = CLICKED_DONE;
   }
-  icon_view_->SetTooltip(
-      manage_passwords_bubble_model_->manage_passwords_bubble_state() ==
-          ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED);
   Close(reason);
 }
 
@@ -387,4 +416,23 @@ void ManagePasswordsBubbleView::LinkClicked(views::Link* source,
   DCHECK_EQ(source, manage_link_);
   manage_passwords_bubble_model_->OnManageLinkClicked();
   Close(CLICKED_MANAGE);
+}
+
+void ManagePasswordsBubbleView::OnPerformAction(views::Combobox* source) {
+  DCHECK_EQ(source, refuse_combobox_);
+  BubbleDismissalReason reason = NOT_DISPLAYED;
+  switch (refuse_combobox_->selected_index()) {
+    case SavePasswordRefusalComboboxModel::INDEX_NOPE:
+      manage_passwords_bubble_model_->OnNopeClicked();
+      reason = CLICKED_NOPE;
+      break;
+    case SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE:
+      manage_passwords_bubble_model_->OnNeverForThisSiteClicked();
+      reason = CLICKED_NEVER;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  Close(reason);
 }

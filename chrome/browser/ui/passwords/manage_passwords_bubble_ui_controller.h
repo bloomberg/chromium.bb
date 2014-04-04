@@ -42,6 +42,8 @@ class ManagePasswordsBubbleUIController
 
   void SavePassword();
 
+  void NeverSavePassword();
+
   // Called when the bubble is opened after the icon gets displayed. We change
   // the state to know that we do not need to pop up the bubble again.
   void OnBubbleShown();
