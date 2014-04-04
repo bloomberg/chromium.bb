@@ -133,11 +133,13 @@ void VideoSender::InsertRawVideoFrame(
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(video_encoder_.get()) << "Invalid state";
 
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  RtpTimestamp rtp_timestamp = GetVideoRtpTimestamp(capture_time);
   cast_environment_->Logging()->InsertFrameEvent(
-      now,
+      capture_time, kVideoFrameCaptured, rtp_timestamp, kFrameIdUnknown);
+  cast_environment_->Logging()->InsertFrameEvent(
+      cast_environment_->Clock()->NowTicks(),
       kVideoFrameReceived,
-      GetVideoRtpTimestamp(capture_time),
+      rtp_timestamp,
       kFrameIdUnknown);
 
   // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc

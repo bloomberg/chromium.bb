@@ -1076,6 +1076,10 @@ TEST_F(End2EndTest, VideoLogging) {
 
     int expected_event_count_for_frame = 0;
 
+    EXPECT_EQ(1, map_it->second.counter[kVideoFrameCaptured]);
+    expected_event_count_for_frame +=
+        map_it->second.counter[kVideoFrameCaptured];
+
     EXPECT_EQ(1, map_it->second.counter[kVideoFrameSentToEncoder]);
     expected_event_count_for_frame +=
         map_it->second.counter[kVideoFrameSentToEncoder];
