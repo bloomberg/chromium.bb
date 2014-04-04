@@ -4,7 +4,11 @@
 
 #include <signal.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
+#include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
 namespace sandbox {
@@ -27,6 +31,23 @@ SANDBOX_DEATH_TEST(UnitTests,
                    DeathBySignal,
                    DEATH_BY_SIGNAL(kExpectedSignalNumber)) {
   raise(kExpectedSignalNumber);
+}
+
+// Test that a subprocess can be forked() and can use exit(3) instead of
+// _exit(2).
+TEST(UnitTests, SubProcessCanExit) {
+  pid_t child = fork();
+  ASSERT_NE(-1, child);
+
+  if (!child) {
+    exit(kExpectedExitCode);
+  }
+
+  int status = 0;
+  pid_t waitpid_ret = HANDLE_EINTR(waitpid(child, &status, 0));
+  EXPECT_EQ(child, waitpid_ret);
+  EXPECT_TRUE(WIFEXITED(status));
+  EXPECT_EQ(kExpectedExitCode, WEXITSTATUS(status));
 }
 
 }  // namespace
