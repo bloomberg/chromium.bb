@@ -4,7 +4,7 @@
 
 #include <linux/limits.h>
 
-#include <base/basictypes.h>
+#include "gestures/include/macros.h"
 
 #ifndef GESTURES_TRACE_MARKER_H__
 #define GESTURES_TRACE_MARKER_H__

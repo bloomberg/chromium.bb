@@ -8,6 +8,7 @@
 #include <new>
 
 #include "gestures/include/logging.h"
+#include "gestures/include/macros.h"
 
 namespace gestures {
 

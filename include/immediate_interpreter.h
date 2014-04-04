@@ -7,6 +7,7 @@
 #include "gestures/include/finger_metrics.h"
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
+#include "gestures/include/macros.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/map.h"
 #include "gestures/include/set.h"

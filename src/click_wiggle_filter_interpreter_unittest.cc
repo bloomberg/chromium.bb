@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "gestures/include/gestures.h"
+#include "gestures/include/macros.h"
 #include "gestures/include/click_wiggle_filter_interpreter.h"
 #include "gestures/include/unittest_util.h"
 

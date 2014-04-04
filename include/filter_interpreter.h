@@ -6,6 +6,7 @@
 #include <base/values.h>
 
 #include "gestures/include/interpreter.h"
+#include "gestures/include/macros.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/tracer.h"
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <stdarg.h>
 #include <utility>
 
 #include <gtest/gtest.h>

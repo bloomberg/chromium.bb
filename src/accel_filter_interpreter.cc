@@ -10,6 +10,7 @@
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
 #include "gestures/include/logging.h"
+#include "gestures/include/macros.h"
 #include "gestures/include/tracer.h"
 
 namespace gestures {

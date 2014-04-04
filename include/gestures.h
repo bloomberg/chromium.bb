@@ -12,7 +12,6 @@
 #ifdef __cplusplus
 #include <string>
 
-#include <base/basictypes.h>
 #include <memory>
 
 extern "C" {
@@ -513,7 +512,9 @@ struct GestureInterpreter {
   std::unique_ptr<GestureInterpreterConsumer> consumer_;
   HardwareProperties hwprops_;
 
-  DISALLOW_COPY_AND_ASSIGN(GestureInterpreter);
+  // Disallow copy & assign;
+  GestureInterpreter(const GestureInterpreter&);
+  void operator=(const GestureInterpreter&);
 };
 
 }  // namespace gestures
