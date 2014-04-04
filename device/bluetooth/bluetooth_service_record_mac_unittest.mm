@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -25,8 +26,9 @@ const BluetoothSDPServiceAttributeID kServiceNameAttributeId = 0x0100;
 const uint8 kRfcommChannel = 0x0c;
 const char kServiceName[] = "Headset Audio Gateway";
 
-const char kExpectedRfcommUuid[] = "01234567-89ab-cdef-0123-456789abcdef";
-const char kExpectedSerialUuid[] = "00001101-0000-1000-8000-00805f9b34fb";
+const device::BluetoothUUID kExpectedRfcommUuid(
+    "01234567-89ab-cdef-0123-456789abcdef");
+const device::BluetoothUUID kExpectedSerialUuid("1101");
 
 const int kMaxUuidSize = 16;
 
@@ -146,7 +148,7 @@ TEST_F(BluetoothServiceRecordMacTest, UpperCaseUuid) {
 
 TEST_F(BluetoothServiceRecordMacTest, InvalidUuid) {
   BluetoothServiceRecordMac record(GetServiceRecord(nil, false));
-  EXPECT_EQ("", record.uuid());
+  EXPECT_FALSE(record.uuid().IsValid());
 }
 
 }  // namespace device

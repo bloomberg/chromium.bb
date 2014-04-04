@@ -75,8 +75,8 @@
         'bluetooth_socket_win.h',
         'bluetooth_task_manager_win.cc',
         'bluetooth_task_manager_win.h',
-        'bluetooth_utils.cc',
-        'bluetooth_utils.h',
+        'bluetooth_uuid.cc',
+        'bluetooth_uuid.h',
       ],
       'conditions': [
         ['chromeos==1', {

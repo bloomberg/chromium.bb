@@ -19,6 +19,7 @@
 #include "device/bluetooth/bluetooth_profile_chromeos.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_socket_chromeos.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,6 +27,7 @@ using device::BluetoothAdapter;
 using device::BluetoothDevice;
 using device::BluetoothProfile;
 using device::BluetoothSocket;
+using device::BluetoothUUID;
 
 namespace chromeos {
 
@@ -124,7 +126,7 @@ TEST_F(BluetoothProfileChromeOSTest, L2capEndToEnd) {
   // callback.
   BluetoothProfile::Options options;
   BluetoothProfile::Register(
-      FakeBluetoothProfileManagerClient::kL2capUuid,
+      BluetoothUUID(FakeBluetoothProfileManagerClient::kL2capUuid),
       options,
       base::Bind(&BluetoothProfileChromeOSTest::ProfileCallback,
                  base::Unretained(this)));
@@ -250,7 +252,7 @@ TEST_F(BluetoothProfileChromeOSTest, RfcommEndToEnd) {
   // callback.
   BluetoothProfile::Options options;
   BluetoothProfile::Register(
-      FakeBluetoothProfileManagerClient::kRfcommUuid,
+      BluetoothUUID(FakeBluetoothProfileManagerClient::kRfcommUuid),
       options,
       base::Bind(&BluetoothProfileChromeOSTest::ProfileCallback,
                  base::Unretained(this)));

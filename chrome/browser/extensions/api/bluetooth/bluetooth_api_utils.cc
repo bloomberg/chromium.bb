@@ -112,7 +112,12 @@ void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
   out->paired.reset(new bool(device.IsPaired()));
   out->connected.reset(new bool(device.IsConnected()));
 
-  out->uuids.reset(new std::vector<std::string>(device.GetUUIDs()));
+  std::vector<std::string>* string_uuids = new std::vector<std::string>();
+  const device::BluetoothDevice::UUIDList& uuids = device.GetUUIDs();
+  for (device::BluetoothDevice::UUIDList::const_iterator iter = uuids.begin();
+       iter != uuids.end(); ++iter)
+    string_uuids->push_back(iter->canonical_value());
+  out->uuids.reset(string_uuids);
 }
 
 void PopulateAdapterState(const device::BluetoothAdapter& adapter,

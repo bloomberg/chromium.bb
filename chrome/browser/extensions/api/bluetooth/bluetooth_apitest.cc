@@ -16,6 +16,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_discovery_session.h"
@@ -28,6 +29,7 @@ using device::BluetoothDevice;
 using device::BluetoothDiscoverySession;
 using device::BluetoothOutOfBandPairingData;
 using device::BluetoothProfile;
+using device::BluetoothUUID;
 using device::MockBluetoothAdapter;
 using device::MockBluetoothDevice;
 using device::MockBluetoothDiscoverySession;
@@ -560,13 +562,15 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, OnConnection) {
   scoped_refptr<device::MockBluetoothSocket> socket =
       new device::MockBluetoothSocket();
 
-  event_router()->AddProfile("1234", extension->id(), profile1_.get());
+  event_router()->AddProfile(
+      BluetoothUUID("1234"),
+      extension->id(), profile1_.get());
   event_router()->DispatchConnectionEvent(
-      extension->id(), "1234", device1_.get(), socket);
+      extension->id(), BluetoothUUID("1234"), device1_.get(), socket);
 
   listener.Reply("go");
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  event_router()->RemoveProfile("1234");
+  event_router()->RemoveProfile(BluetoothUUID("1234"));
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
@@ -640,8 +644,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceInfo) {
     .WillRepeatedly(testing::Return(0x0400));
 
   BluetoothDevice::UUIDList uuids;
-  uuids.push_back("00001105-0000-1000-8000-00805f9b34fb");
-  uuids.push_back("00001106-0000-1000-8000-00805f9b34fb");
+  uuids.push_back(BluetoothUUID("1105"));
+  uuids.push_back(BluetoothUUID("1106"));
 
   EXPECT_CALL(*device1_.get(), GetUUIDs())
       .WillOnce(testing::Return(uuids));

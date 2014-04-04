@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "chrome/common/extensions/api/bluetooth/bluetooth_manifest_data.h"
 #include "chrome/common/extensions/api/manifest_types.h"
-#include "device/bluetooth/bluetooth_utils.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
@@ -31,8 +31,8 @@ namespace {
 bool ParseUuid(BluetoothManifestPermission* permission,
                const std::string& uuid,
                base::string16* error) {
-  std::string canonical_uuid = device::bluetooth_utils::CanonicalUuid(uuid);
-  if (canonical_uuid.empty()) {
+  device::BluetoothUUID bt_uuid(uuid);
+  if (!bt_uuid.IsValid()) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kErrorInvalidUuid, uuid);
     return false;
@@ -83,13 +83,12 @@ bool BluetoothManifestPermission::CheckRequest(
     const Extension* extension,
     const BluetoothPermissionRequest& request) const {
 
-  std::string canonical_param_uuid =
-      device::bluetooth_utils::CanonicalUuid(request.uuid);
+  device::BluetoothUUID param_uuid(request.uuid);
   for (BluetoothUuidSet::const_iterator it = uuids_.begin();
        it != uuids_.end();
        ++it) {
-    std::string canonical_uuid = device::bluetooth_utils::CanonicalUuid(*it);
-    if (canonical_uuid == canonical_param_uuid)
+    device::BluetoothUUID uuid(*it);
+    if (param_uuid == uuid)
       return true;
   }
   return false;

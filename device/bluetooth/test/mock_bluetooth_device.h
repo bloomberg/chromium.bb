@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
@@ -58,7 +59,7 @@ class MockBluetoothDevice : public BluetoothDevice {
                     const BluetoothDevice::ErrorCallback& error_callback));
   MOCK_METHOD1(Forget, void(const BluetoothDevice::ErrorCallback&));
   MOCK_METHOD2(ConnectToService,
-               void(const std::string&,
+               void(const BluetoothUUID&,
                     const BluetoothDevice::SocketCallback&));
   MOCK_METHOD3(ConnectToProfile,
                void(BluetoothProfile*,
