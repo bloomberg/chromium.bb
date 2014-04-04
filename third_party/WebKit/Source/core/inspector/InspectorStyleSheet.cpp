@@ -913,13 +913,13 @@ bool InspectorStyleSheetBase::findPropertyByRange(const SourceRange& sourceRange
     if (!ensureParsedDataReady())
         return false;
     for (size_t i = 0; i < ruleCount(); ++i) {
-        RefPtr<CSSRuleSourceData> ruleSourceData = ruleSourceDataAt(i);
-        RefPtr<CSSStyleSourceData> styleSourceData = ruleSourceData->styleSourceData;
+        RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = ruleSourceDataAt(i);
+        RefPtrWillBeRawPtr<CSSStyleSourceData> styleSourceData = ruleSourceData->styleSourceData;
         if (!styleSourceData)
             continue;
         if (ruleSourceData->ruleBodyRange.end < sourceRange.start || sourceRange.end < ruleSourceData->ruleBodyRange.start)
             continue;
-        Vector<CSSPropertySourceData>& propertyData = styleSourceData->propertyData;
+        WillBeHeapVector<CSSPropertySourceData>& propertyData = styleSourceData->propertyData;
         for (size_t j = 0; j < propertyData.size(); ++j) {
             CSSPropertySourceData& property = propertyData.at(j);
             unsigned styleStart = ruleSourceData->ruleBodyRange.start;
