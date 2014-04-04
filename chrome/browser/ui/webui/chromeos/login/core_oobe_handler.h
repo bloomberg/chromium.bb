@@ -76,6 +76,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   virtual void SetTpmPassword(const std::string& tmp_password) OVERRIDE;
   virtual void ClearErrors() OVERRIDE;
   virtual void ReloadContent(const base::DictionaryValue& dictionary) OVERRIDE;
+  virtual void ShowControlBar(bool show) OVERRIDE;
 
   // Handlers for JS WebUI messages.
   void HandleEnableLargeCursor(bool enabled);

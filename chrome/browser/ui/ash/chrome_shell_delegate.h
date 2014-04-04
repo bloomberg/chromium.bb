@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -55,6 +56,11 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual void Exit() OVERRIDE;
   virtual keyboard::KeyboardControllerProxy*
       CreateKeyboardControllerProxy() OVERRIDE;
+  virtual void VirtualKeyboardActivated(bool activated) OVERRIDE;
+  virtual void AddVirtualKeyboardStateObserver(
+      ash::VirtualKeyboardStateObserver* observer) OVERRIDE;
+  virtual void RemoveVirtualKeyboardStateObserver(
+      ash::VirtualKeyboardStateObserver* observer) OVERRIDE;
   virtual content::BrowserContext* GetActiveBrowserContext() OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual ash::ShelfDelegate* CreateShelfDelegate(
@@ -86,6 +92,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   content::NotificationRegistrar registrar_;
 
   ChromeLauncherController* shelf_delegate_;
+
+  ObserverList<ash::VirtualKeyboardStateObserver> keyboard_state_observer_list_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::DisplayConfigurationObserver>

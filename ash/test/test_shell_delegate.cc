@@ -92,6 +92,17 @@ keyboard::KeyboardControllerProxy*
   return new KeyboardControllerProxyStub();
 }
 
+void TestShellDelegate::VirtualKeyboardActivated(bool activated) {
+}
+
+void TestShellDelegate::AddVirtualKeyboardStateObserver(
+    VirtualKeyboardStateObserver* observer) {
+}
+
+void TestShellDelegate::RemoveVirtualKeyboardStateObserver(
+    VirtualKeyboardStateObserver* observer) {
+}
+
 content::BrowserContext* TestShellDelegate::GetActiveBrowserContext() {
   active_browser_context_.reset(new content::TestBrowserContext());
   return active_browser_context_.get();

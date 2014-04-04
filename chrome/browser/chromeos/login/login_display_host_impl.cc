@@ -82,8 +82,10 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_animations.h"
 #include "url/gurl.h"
 
@@ -250,6 +252,36 @@ void AddToSetIfIsGaiaAuthIframe(std::set<content::RenderFrameHost*>* frame_set,
     frame_set->insert(frame);
 }
 
+// A login implementation of WidgetDelegate.
+class LoginWidgetDelegate : public views::WidgetDelegate {
+ public:
+  explicit LoginWidgetDelegate(views::Widget* widget) : widget_(widget) {
+  }
+  virtual ~LoginWidgetDelegate() {}
+
+  // Overridden from WidgetDelegate:
+  virtual void DeleteDelegate() OVERRIDE {
+    delete this;
+  }
+  virtual views::Widget* GetWidget() OVERRIDE {
+    return widget_;
+  }
+  virtual const views::Widget* GetWidget() const OVERRIDE {
+    return widget_;
+  }
+  virtual bool CanActivate() const OVERRIDE {
+    return true;
+  }
+  virtual bool ShouldAdvanceFocusToTopLevelWidget() const OVERRIDE {
+    return true;
+  }
+
+ private:
+  views::Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoginWidgetDelegate);
+};
+
 }  // namespace
 
 namespace chromeos {
@@ -290,9 +322,16 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
       finalize_animation_type_(ANIMATION_WORKSPACE),
       animation_weak_ptr_factory_(this),
       startup_sound_played_(false),
-      startup_sound_honors_spoken_feedback_(false) {
+      startup_sound_honors_spoken_feedback_(false),
+      is_observing_keyboard_(false) {
   DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
   CrasAudioHandler::Get()->AddAudioObserver(this);
+  if (ash::Shell::GetInstance()->keyboard_controller()) {
+    ash::Shell::GetInstance()->keyboard_controller()->AddObserver(this);
+    is_observing_keyboard_ = true;
+  }
+
+  ash::Shell::GetInstance()->delegate()->AddVirtualKeyboardStateObserver(this);
 
   // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATING
   // because/ APP_TERMINATING will never be fired as long as this keeps
@@ -388,6 +427,14 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
 LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
+  if (ash::Shell::GetInstance()->keyboard_controller() &&
+      is_observing_keyboard_) {
+    ash::Shell::GetInstance()->keyboard_controller()->RemoveObserver(this);
+    is_observing_keyboard_ = false;
+  }
+
+  ash::Shell::GetInstance()->delegate()->
+      RemoveVirtualKeyboardStateObserver(this);
 
   views::FocusManager::set_arrow_key_traversal_enabled(false);
   ResetLoginWindowAndView();
@@ -796,8 +843,49 @@ void LoginDisplayHostImpl::EmitLoginPromptVisibleCalled() {
   OnLoginPromptVisible();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// LoginDisplayHostImpl, chromeos::CrasAudioHandler::AudioObserver
+// implementation:
+
 void LoginDisplayHostImpl::OnActiveOutputNodeChanged() {
   TryToPlayStartupSound();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LoginDisplayHostImpl, ash::KeyboardStateObserver:
+// implementation:
+
+void LoginDisplayHostImpl::OnVirtualKeyboardStateChanged(bool activated) {
+  if (ash::Shell::GetInstance()->keyboard_controller()) {
+    if (activated) {
+      if (!is_observing_keyboard_) {
+        ash::Shell::GetInstance()->keyboard_controller()->AddObserver(this);
+        is_observing_keyboard_ = true;
+      }
+    } else {
+      ash::Shell::GetInstance()->keyboard_controller()->RemoveObserver(this);
+      is_observing_keyboard_ = false;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LoginDisplayHostImpl, keyboard::KeyboardControllerObserver:
+// implementation:
+
+void LoginDisplayHostImpl::OnKeyboardBoundsChanging(
+    const gfx::Rect& new_bounds) {
+  if (new_bounds.IsEmpty() && !keyboard_bounds_.IsEmpty()) {
+    // Keyboard has been hidden.
+    if (webui_login_display_)
+      webui_login_display_->ShowControlBar(true);
+  } else if (!new_bounds.IsEmpty() && keyboard_bounds_.IsEmpty()) {
+    // Keyboard has been shown.
+    if (webui_login_display_)
+      webui_login_display_->ShowControlBar(false);
+  }
+
+  keyboard_bounds_ = new_bounds;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -934,14 +1022,16 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = background_bounds();
-  params.show_state = ui::SHOW_STATE_FULLSCREEN;
+  params.show_state = ui::SHOW_STATE_MAXIMIZED;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent =
       ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                ash::kShellWindowId_LockScreenContainer);
 
   login_window_ = new views::Widget;
+  params.delegate = new LoginWidgetDelegate(login_window_);
   login_window_->Init(params);
+
   login_view_ = new WebUILoginView();
   login_view_->Init();
   if (login_view_->webui_visible())

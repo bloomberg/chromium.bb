@@ -285,6 +285,14 @@ cr.define('cr.ui', function() {
     chrome.send('setDeviceRequisition', ['remora']);
   };
 
+
+  /**
+   * Shows/hides login UI control bar with buttons like [Shut down].
+   */
+  Oobe.showControlBar = function(show) {
+    Oobe.getInstance().headerHidden = !show;
+  };
+
   // Export
   return {
     Oobe: Oobe

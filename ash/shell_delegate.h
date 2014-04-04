@@ -51,6 +51,15 @@ class SystemTrayDelegate;
 class UserWallpaperDelegate;
 struct ShelfItem;
 
+class ASH_EXPORT VirtualKeyboardStateObserver {
+ public:
+  // Called when keyboard is activated/deactivated.
+  virtual void OnVirtualKeyboardStateChanged(bool activated) {}
+
+ protected:
+  virtual ~VirtualKeyboardStateObserver() {}
+};
+
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
  public:
@@ -86,6 +95,15 @@ class ASH_EXPORT ShellDelegate {
   // Create a shell-specific keyboard::KeyboardControllerProxy
   virtual keyboard::KeyboardControllerProxy*
       CreateKeyboardControllerProxy() = 0;
+
+  // Called when virtual keyboard has been activated/deactivated.
+  virtual void VirtualKeyboardActivated(bool activated) = 0;
+
+  // Adds or removes virtual keyboard state observer.
+  virtual void AddVirtualKeyboardStateObserver(
+      VirtualKeyboardStateObserver* observer) = 0;
+  virtual void RemoveVirtualKeyboardStateObserver(
+      VirtualKeyboardStateObserver* observer) = 0;
 
   // Get the active browser context. This will get us the active profile
   // in chrome.

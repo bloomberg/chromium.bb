@@ -246,6 +246,11 @@ void WebUILoginDisplay::ShowSigninUI(const std::string& email) {
     webui_handler_->ShowSigninUI(email);
 }
 
+void WebUILoginDisplay::ShowControlBar(bool show) {
+  if (webui_handler_)
+    webui_handler_->ShowControlBar(show);
+}
+
 // WebUILoginDisplay, NativeWindowDelegate implementation: ---------------------
 gfx::NativeWindow WebUILoginDisplay::GetNativeWindow() const {
   return parent_window();

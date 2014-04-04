@@ -43,6 +43,11 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual void Exit() OVERRIDE;
   virtual keyboard::KeyboardControllerProxy*
       CreateKeyboardControllerProxy() OVERRIDE;
+  virtual void VirtualKeyboardActivated(bool activated) OVERRIDE;
+  virtual void AddVirtualKeyboardStateObserver(
+      VirtualKeyboardStateObserver* observer) OVERRIDE;
+  virtual void RemoveVirtualKeyboardStateObserver(
+      VirtualKeyboardStateObserver* observer) OVERRIDE;
   virtual content::BrowserContext* GetActiveBrowserContext() OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual ShelfDelegate* CreateShelfDelegate(ShelfModel* model) OVERRIDE;

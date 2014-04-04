@@ -67,6 +67,8 @@ const char kAshEnableMagnifierKeyScroller[] =
 const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
 
 // Enables touch view testing.
+// TODO(skuhne): Remove TOGGLE_TOUCH_VIEW_TESTING accelerator once this
+// flag is removed.
 const char kAshEnableTouchViewTesting[] = "ash-enable-touch-view-testing";
 
 // When this flag is set, system sounds will be played whether the

@@ -188,6 +188,10 @@ void CoreOobeHandler::ReloadContent(const base::DictionaryValue& dictionary) {
   CallJS("reloadContent", dictionary);
 }
 
+void CoreOobeHandler::ShowControlBar(bool show) {
+  CallJS("showControlBar", show);
+}
+
 void CoreOobeHandler::HandleInitialized() {
   oobe_ui_->InitializeHandlers();
 }

@@ -328,8 +328,7 @@ class ASH_EXPORT ShelfLayoutManager :
   gfx::Rect GetAvailableBounds() const;
 
   // Overridden from keyboard::KeyboardControllerObserver:
-  virtual void OnKeyboardBoundsChanging(
-      const gfx::Rect& keyboard_bounds) OVERRIDE;
+  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) OVERRIDE;
 
   // Overridden from DockedWindowLayoutManagerObserver:
   virtual void OnDockBoundsChanging(

@@ -81,6 +81,9 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Force the keyboard to show up if not showing and lock the keyboard.
   void ShowAndLockKeyboard();
 
+  // Returns true if keyboard is currently visible.
+  bool keyboard_visible() { return keyboard_visible_; }
+
  private:
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;
