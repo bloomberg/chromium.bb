@@ -792,7 +792,7 @@ bool NaClProcessHost::StartNaClExecution() {
       NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
   // Enable PPAPI proxy channel creation only for renderer processes.
   params.enable_ipc_proxy = enable_ppapi_proxy();
-  params.uses_irt = uses_irt_;
+  params.uses_irt = uses_irt_ && !uses_nonsfi_mode_;
   params.enable_dyncode_syscalls = enable_dyncode_syscalls_;
 
   const ChildProcessData& data = process_->GetData();

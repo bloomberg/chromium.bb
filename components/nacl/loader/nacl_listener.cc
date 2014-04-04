@@ -270,17 +270,14 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   NaClChromeMainSetUrandomFd(urandom_fd);
 #endif
 
-  NaClChromeMainInit();
-  struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
-  if (args == NULL) {
-    LOG(ERROR) << "NaClChromeMainArgsCreate() failed";
-    return;
-  }
-
-  struct NaClApp *nap = NaClAppCreate();
-  if (nap == NULL) {
-    LOG(ERROR) << "NaClAppCreate() failed";
-    return;
+  struct NaClApp* nap = NULL;
+  if (!uses_nonsfi_mode_) {
+    NaClChromeMainInit();
+    nap = NaClAppCreate();
+    if (nap == NULL) {
+      LOG(ERROR) << "NaClAppCreate() failed";
+      return;
+    }
   }
 
   IPC::ChannelHandle browser_handle;
@@ -353,6 +350,25 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 
   std::vector<nacl::FileDescriptor> handles = params.handles;
 
+#if defined(OS_LINUX)
+  if (uses_nonsfi_mode_) {
+    if (params.uses_irt) {
+      LOG(ERROR) << "IRT must not be used for non-SFI NaCl.";
+      return;
+    }
+    CHECK(handles.size() == 1);
+    int imc_bootstrap_handle = nacl::ToNativeHandle(handles[0]);
+    nacl::nonsfi::MainStart(imc_bootstrap_handle);
+    return;
+  }
+#endif
+
+  struct NaClChromeMainArgs* args = NaClChromeMainArgsCreate();
+  if (args == NULL) {
+    LOG(ERROR) << "NaClChromeMainArgsCreate() failed";
+    return;
+  }
+
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   args->number_of_cores = number_of_cores_;
   args->create_memory_object_func = CreateMemoryObject;
@@ -424,12 +440,6 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   args->prereserved_sandbox_size = prereserved_sandbox_size_;
 #endif
 
-#if defined(OS_LINUX)
-  if (uses_nonsfi_mode_) {
-    nacl::nonsfi::MainStart(args->imc_bootstrap_handle);
-    return;
-  }
-#endif
   NaClChromeMainStartApp(nap, args);
   NOTREACHED();
 }
