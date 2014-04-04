@@ -268,6 +268,7 @@ def AddAndroidActions(actions):
   actions.add('MobileMenuFindInPage')
   actions.add('MobileMenuForward')
   actions.add('MobileMenuFullscreen')
+  actions.add('MobileMenuHistory')
   actions.add('MobileMenuNewIncognitoTab')
   actions.add('MobileMenuNewTab')
   actions.add('MobileMenuOpenTabs')
