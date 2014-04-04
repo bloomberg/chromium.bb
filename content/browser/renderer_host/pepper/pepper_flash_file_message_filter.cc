@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -123,31 +124,26 @@ int32_t PepperFlashFileMessageFilter::OnOpenFile(
     return base::File::FILE_ERROR_FAILED;
   }
 
-  // TODO(rvargas): Convert this code to base::File.
-  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-  base::PlatformFile file_handle = base::CreatePlatformFile(
-      full_path, platform_file_flags, NULL, &error);
-  if (error != base::PLATFORM_FILE_OK) {
-    DCHECK_EQ(file_handle, base::kInvalidPlatformFileValue);
-    return ppapi::FileErrorToPepperError(static_cast<base::File::Error>(error));
+  base::File file(full_path, platform_file_flags);
+  if (!file.IsValid()) {
+    return ppapi::FileErrorToPepperError(file.error_details());
   }
 
   // Make sure we didn't try to open a directory: directory fd shouldn't be
   // passed to untrusted processes because they open security holes.
-  base::PlatformFileInfo info;
-  if (!base::GetPlatformFileInfo(file_handle, &info) || info.is_directory) {
+  base::File::Info info;
+  if (!file.GetInfo(&info) || info.is_directory) {
     // When in doubt, throw it out.
-    base::ClosePlatformFile(file_handle);
     return ppapi::FileErrorToPepperError(
         base::File::FILE_ERROR_ACCESS_DENIED);
   }
 
-  IPC::PlatformFileForTransit file = IPC::GetFileHandleForProcess(file_handle,
-      plugin_process_handle_, true);
+  IPC::PlatformFileForTransit transit_file =
+      IPC::TakeFileHandleForProcess(file.Pass(), plugin_process_handle_);
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
   reply_context.params.AppendHandle(ppapi::proxy::SerializedHandle(
-      ppapi::proxy::SerializedHandle::FILE, file));
+      ppapi::proxy::SerializedHandle::FILE, transit_file));
   SendReply(reply_context, IPC::Message());
   return PP_OK_COMPLETIONPENDING;
 }
@@ -265,25 +261,20 @@ int32_t PepperFlashFileMessageFilter::OnCreateTemporaryFile(
         base::File::FILE_ERROR_FAILED);
   }
 
-  // TODO(rvargas): Convert this code to base::File.
-  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-  base::PlatformFile file_handle = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_TEMPORARY |
-      base::PLATFORM_FILE_DELETE_ON_CLOSE, NULL, &error);
+  base::File file(file_path,
+                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_READ |
+                      base::File::FLAG_WRITE | base::File::FLAG_TEMPORARY |
+                      base::File::FLAG_DELETE_ON_CLOSE);
 
-  if (error != base::PLATFORM_FILE_OK) {
-    DCHECK_EQ(file_handle, base::kInvalidPlatformFileValue);
-    return ppapi::FileErrorToPepperError(static_cast<base::File::Error>(error));
-  }
+  if (!file.IsValid())
+    return ppapi::FileErrorToPepperError(file.error_details());
 
-  IPC::PlatformFileForTransit file = IPC::GetFileHandleForProcess(file_handle,
-      plugin_process_handle_, true);
+  IPC::PlatformFileForTransit transit_file =
+      IPC::TakeFileHandleForProcess(file.Pass(), plugin_process_handle_);
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
   reply_context.params.AppendHandle(ppapi::proxy::SerializedHandle(
-      ppapi::proxy::SerializedHandle::FILE, file));
+      ppapi::proxy::SerializedHandle::FILE, transit_file));
   SendReply(reply_context, IPC::Message());
   return PP_OK_COMPLETIONPENDING;
 }
