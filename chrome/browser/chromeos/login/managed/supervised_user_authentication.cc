@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/signed_secret.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/hmac.h"
@@ -135,7 +137,11 @@ void OnPasswordDataLoaded(
 SupervisedUserAuthentication::SupervisedUserAuthentication(
     SupervisedUserManager* owner)
       : owner_(owner),
-        stable_schema_(SCHEMA_SALT_HASHED) {
+        stable_schema_(SCHEMA_PLAIN) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSupervisedPasswordSync)) {
+    stable_schema_ = SCHEMA_SALT_HASHED;
+  }
 }
 
 SupervisedUserAuthentication::~SupervisedUserAuthentication() {}

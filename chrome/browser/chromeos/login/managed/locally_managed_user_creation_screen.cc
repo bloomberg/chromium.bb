@@ -6,6 +6,7 @@
 
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "base/rand_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/camera_detector.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chromeos/network/network_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
@@ -340,6 +342,10 @@ void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated(
     actor_->ShowUsernamePage();
 
   last_page_ = kNameOfNewUserParametersScreen;
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(::switches::kAllowCreateExistingManagedUsers))
+    return;
 
   ManagedUserSyncServiceFactory::GetForProfile(manager_profile)->
       GetManagedUsersAsync(base::Bind(
