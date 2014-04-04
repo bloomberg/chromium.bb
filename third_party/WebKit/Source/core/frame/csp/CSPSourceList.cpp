@@ -11,37 +11,8 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/HashSet.h"
-#include "wtf/StringHasher.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/WTFString.h"
-
-namespace WTF {
-
-struct DigestValueHash {
-    static unsigned hash(const WebCore::DigestValue& v)
-    {
-        return StringHasher::computeHash(v.data(), v.size());
-    }
-    static bool equal(const WebCore::DigestValue& a, const WebCore::DigestValue& b)
-    {
-        return a == b;
-    };
-    static const bool safeToCompareToEmptyOrDeleted = true;
-};
-template <>
-struct DefaultHash<WebCore::DigestValue> {
-    typedef DigestValueHash Hash;
-};
-
-template <>
-struct DefaultHash<WebCore::ContentSecurityPolicyHashAlgorithm> {
-    typedef IntHash<WebCore::ContentSecurityPolicyHashAlgorithm> Hash;
-};
-template <>
-struct HashTraits<WebCore::ContentSecurityPolicyHashAlgorithm> : UnsignedWithZeroKeyHashTraits<WebCore::ContentSecurityPolicyHashAlgorithm> {
-};
-
-} // namespace WTF
 
 namespace WebCore {
 

@@ -44,6 +44,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/PingLoader.h"
+#include "platform/Crypto.h"
 #include "platform/JSONValues.h"
 #include "platform/NotImplemented.h"
 #include "platform/ParsingUtilities.h"
@@ -59,7 +60,6 @@
 #include "public/platform/WebArrayBuffer.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
-#include "wtf/HashMap.h"
 #include "wtf/StringHasher.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringUTF8Adaptor.h"
@@ -300,20 +300,6 @@ bool isAllowedByAllWithFrame(const CSPDirectiveListVector& policies, LocalFrame*
     return true;
 }
 
-void computeDigest(const char* source, size_t length, blink::WebCryptoAlgorithmId algorithmId, DigestValue& digest)
-{
-    blink::WebCrypto* crypto = blink::Platform::current()->crypto();
-    blink::WebArrayBuffer result;
-
-    ASSERT(crypto);
-
-    crypto->digestSynchronous(algorithmId, reinterpret_cast<const unsigned char*>(source), length, result);
-
-    ASSERT(!result.isNull());
-
-    digest.append(reinterpret_cast<uint8_t*>(result.data()), result.byteLength());
-}
-
 template<bool (CSPDirectiveList::*allowed)(const CSPHashValue&) const>
 bool checkDigest(const String& source, uint8_t hashAlgorithmsUsed, const CSPDirectiveListVector& policies)
 {
@@ -322,12 +308,12 @@ bool checkDigest(const String& source, uint8_t hashAlgorithmsUsed, const CSPDire
     // CSPSourceList::parseHash().
     static const struct {
         ContentSecurityPolicyHashAlgorithm cspHashAlgorithm;
-        blink::WebCryptoAlgorithmId webCryptoAlgorithmId;
+        HashAlgorithm algorithm;
     } kAlgorithmMap[] = {
-        { ContentSecurityPolicyHashAlgorithmSha1, blink::WebCryptoAlgorithmIdSha1 },
-        { ContentSecurityPolicyHashAlgorithmSha256, blink::WebCryptoAlgorithmIdSha256 },
-        { ContentSecurityPolicyHashAlgorithmSha384, blink::WebCryptoAlgorithmIdSha384 },
-        { ContentSecurityPolicyHashAlgorithmSha512, blink::WebCryptoAlgorithmIdSha512 }
+        { ContentSecurityPolicyHashAlgorithmSha1, HashAlgorithmSha1 },
+        { ContentSecurityPolicyHashAlgorithmSha256, HashAlgorithmSha256 },
+        { ContentSecurityPolicyHashAlgorithmSha384, HashAlgorithmSha384 },
+        { ContentSecurityPolicyHashAlgorithmSha512, HashAlgorithmSha512 }
     };
 
     // Only bother normalizing the source/computing digests if there are any checks to be done.
@@ -341,7 +327,7 @@ bool checkDigest(const String& source, uint8_t hashAlgorithmsUsed, const CSPDire
     for (size_t i = 0; i < (sizeof(kAlgorithmMap) / sizeof(kAlgorithmMap[0])); i++) {
         DigestValue digest;
         if (kAlgorithmMap[i].cspHashAlgorithm & hashAlgorithmsUsed) {
-            computeDigest(normalizedSource.data(), normalizedSource.length(), kAlgorithmMap[i].webCryptoAlgorithmId, digest);
+            computeDigest(kAlgorithmMap[i].algorithm, normalizedSource.data(), normalizedSource.length(), digest);
             if (isAllowedByAllWithHash<allowed>(policies, CSPHashValue(kAlgorithmMap[i].cspHashAlgorithm, digest)))
                 return true;
         }

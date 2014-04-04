@@ -46,10 +46,11 @@
 #include "core/inspector/DOMEditor.h"
 #include "core/inspector/InspectorHistory.h"
 #include "core/xml/parser/XMLDocumentParser.h"
+#include "platform/Crypto.h"
+#include "public/platform/Platform.h"
 #include "wtf/Deque.h"
 #include "wtf/HashTraits.h"
 #include "wtf/RefPtr.h"
-#include "wtf/SHA1.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/CString.h"
 
@@ -402,28 +403,28 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const Vector
     return true;
 }
 
-static void addStringToSHA1(SHA1& sha1, const String& string)
+static void addStringToDigestor(blink::WebCryptoDigestor* digestor, const String& string)
 {
-    CString cString = string.utf8();
-    sha1.addBytes(reinterpret_cast<const uint8_t*>(cString.data()), cString.length());
+    digestor->consume(reinterpret_cast<const unsigned char*>(string.utf8().data()), string.length());
 }
 
 PassOwnPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(Node* node, UnusedNodesMap* unusedNodesMap)
 {
     Digest* digest = new Digest(node);
 
-    SHA1 sha1;
+    OwnPtr<blink::WebCryptoDigestor> digestor = createDigestor(HashAlgorithmSha1);
+    DigestValue digestResult;
 
     Node::NodeType nodeType = node->nodeType();
-    sha1.addBytes(reinterpret_cast<const uint8_t*>(&nodeType), sizeof(nodeType));
-    addStringToSHA1(sha1, node->nodeName());
-    addStringToSHA1(sha1, node->nodeValue());
+    digestor->consume(reinterpret_cast<const unsigned char*>(&nodeType), sizeof(nodeType));
+    addStringToDigestor(digestor.get(), node->nodeName());
+    addStringToDigestor(digestor.get(), node->nodeValue());
 
     if (node->nodeType() == Node::ELEMENT_NODE) {
         Node* child = node->firstChild();
         while (child) {
             OwnPtr<Digest> childInfo = createDigest(child, unusedNodesMap);
-            addStringToSHA1(sha1, childInfo->m_sha1);
+            addStringToDigestor(digestor.get(), childInfo->m_sha1);
             child = child->nextSibling();
             digest->m_children.append(childInfo.release());
         }
@@ -431,22 +432,21 @@ PassOwnPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(Node* node, Un
 
         if (element->hasAttributesWithoutUpdate()) {
             size_t numAttrs = element->attributeCount();
-            SHA1 attrsSHA1;
+            OwnPtr<blink::WebCryptoDigestor> attrsDigestor = createDigestor(HashAlgorithmSha1);
             for (size_t i = 0; i < numAttrs; ++i) {
                 const Attribute& attribute = element->attributeItem(i);
-                addStringToSHA1(attrsSHA1, attribute.name().toString());
-                addStringToSHA1(attrsSHA1, attribute.value());
+                addStringToDigestor(attrsDigestor.get(), attribute.name().toString());
+                addStringToDigestor(attrsDigestor.get(), attribute.value().string());
             }
-            Vector<uint8_t, 20> attrsHash;
-            attrsSHA1.computeHash(attrsHash);
-            digest->m_attrsSHA1 = base64Encode(reinterpret_cast<const char*>(attrsHash.data()), 10);
-            addStringToSHA1(sha1, digest->m_attrsSHA1);
+            finishDigestor(attrsDigestor.get(), digestResult);
+            digest->m_attrsSHA1 = base64Encode(reinterpret_cast<const char*>(digestResult.data()), 10);
+            addStringToDigestor(digestor.get(), digest->m_attrsSHA1);
+            digestResult.clear();
         }
     }
+    finishDigestor(digestor.get(), digestResult);
+    digest->m_sha1 = base64Encode(reinterpret_cast<const char*>(digestResult.data()), 10);
 
-    Vector<uint8_t, 20> hash;
-    sha1.computeHash(hash);
-    digest->m_sha1 = base64Encode(reinterpret_cast<const char*>(hash.data()), 10);
     if (unusedNodesMap)
         unusedNodesMap->add(digest->m_sha1, digest);
     return adoptPtr(digest);

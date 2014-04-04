@@ -6,6 +6,7 @@
 #define CSPSourceList_h
 
 #include "core/frame/csp/CSPSource.h"
+#include "platform/Crypto.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"

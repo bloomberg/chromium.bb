@@ -38,13 +38,13 @@
 #include "core/loader/CookieJar.h"
 #include "modules/websockets/WebSocket.h"
 #include "platform/Cookie.h"
+#include "platform/Crypto.h"
 #include "platform/Logging.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "wtf/CryptographicallyRandomNumber.h"
-#include "wtf/SHA1.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/StringExtras.h"
 #include "wtf/Vector.h"
@@ -119,14 +119,16 @@ static String generateSecWebSocketKey()
 String WebSocketHandshake::getExpectedWebSocketAccept(const String& secWebSocketKey)
 {
     static const char webSocketKeyGUID[] = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-    SHA1 sha1;
     CString keyData = secWebSocketKey.ascii();
-    sha1.addBytes(reinterpret_cast<const uint8_t*>(keyData.data()), keyData.length());
-    sha1.addBytes(reinterpret_cast<const uint8_t*>(webSocketKeyGUID), strlen(webSocketKeyGUID));
-    Vector<uint8_t, SHA1::outputSizeBytes> hash;
-    sha1.computeHash(hash);
-    return base64Encode(reinterpret_cast<const char*>(hash.data()),
-        SHA1::outputSizeBytes);
+
+    StringBuilder digestable;
+    digestable.append(secWebSocketKey);
+    digestable.append(webSocketKeyGUID, strlen(webSocketKeyGUID));
+    CString digestableCString = digestable.toString().utf8();
+    DigestValue digest;
+    computeDigest(HashAlgorithmSha1, digestableCString.data(), digestableCString.length(), digest);
+
+    return base64Encode(reinterpret_cast<const char*>(digest.data()), sha1HashSize);
 }
 
 WebSocketHandshake::WebSocketHandshake(const KURL& url, const String& protocol, Document* document)

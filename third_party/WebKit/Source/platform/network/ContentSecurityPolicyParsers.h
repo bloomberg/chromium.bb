@@ -5,14 +5,13 @@
 #ifndef ContentSecurityPolicyParsers_h
 #define ContentSecurityPolicyParsers_h
 
+#include "platform/Crypto.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Vector.h"
 #include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 
-static const size_t kMaxDigestSize = 64;
-typedef Vector<uint8_t, kMaxDigestSize> DigestValue;
 typedef std::pair<unsigned, DigestValue> CSPHashValue;
 
 enum ContentSecurityPolicyHeaderType {

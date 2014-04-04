@@ -21,6 +21,8 @@
       'CrossThreadCopier.cpp',
       'CrossThreadCopier.h',
       'CryptoResult.h',
+      'Crypto.cpp',
+      'Crypto.h',
       'Cursor.cpp',
       'Cursor.h',
       'DateComponents.cpp',
