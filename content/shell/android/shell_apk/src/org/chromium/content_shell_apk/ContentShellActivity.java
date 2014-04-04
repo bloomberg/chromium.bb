@@ -143,12 +143,12 @@ public class ContentShellActivity extends Activity {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (keyCode != KeyEvent.KEYCODE_BACK) return super.onKeyUp(keyCode, event);
-
-        Shell activeView = getActiveShell();
-        if (activeView != null && activeView.getContentView().canGoBack()) {
-            activeView.getContentView().goBack();
-            return true;
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            ContentView contentView = getActiveContentView();
+            if (contentView != null && contentView.canGoBack()) {
+                contentView.goBack();
+                return true;
+            }
         }
 
         return super.onKeyUp(keyCode, event);
