@@ -681,7 +681,6 @@ xf_peer_post_connect(freerdp_peer* client)
 			if (!settings->DesktopResize) {
 				/* peer does not support desktop resize */
 				weston_log("%s: client doesn't support resizing, closing connection\n", __FUNCTION__);
-				client->Close(client);
 				return FALSE;
 			} else {
 				settings->DesktopWidth = output->base.width;
