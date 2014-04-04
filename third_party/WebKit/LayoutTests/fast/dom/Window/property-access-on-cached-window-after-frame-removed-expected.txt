@@ -63,6 +63,8 @@ PASS childWindow.onabort is null
 PASS childWindow.onanimationend is null
 PASS childWindow.onanimationiteration is null
 PASS childWindow.onanimationstart is null
+PASS childWindow.onautocomplete is null
+PASS childWindow.onautocompleteerror is null
 PASS childWindow.onbeforeunload is null
 PASS childWindow.onblur is null
 PASS childWindow.oncancel is null

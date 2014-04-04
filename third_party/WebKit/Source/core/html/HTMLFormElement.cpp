@@ -437,7 +437,7 @@ void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)
 {
     RefPtrWillBeRawPtr<Event> event = nullptr;
     if (result == AutocompleteResultSuccess)
-        event = Event::create(EventTypeNames::autocomplete);
+        event = Event::createBubble(EventTypeNames::autocomplete);
     else if (result == AutocompleteResultErrorDisabled)
         event = AutocompleteErrorEvent::create("disabled");
     else if (result == AutocompleteResultErrorCancel)

@@ -41,6 +41,4 @@
     boolean checkValidity();
 
     [RuntimeEnabled=RequestAutocomplete] void requestAutocomplete();
-    [RuntimeEnabled=RequestAutocomplete] attribute EventHandler onautocomplete;
-    [RuntimeEnabled=RequestAutocomplete] attribute EventHandler onautocompleteerror;
 };

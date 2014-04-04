@@ -64,6 +64,8 @@ PASS oldChildWindow.onabort is newChildWindow.onabort
 PASS oldChildWindow.onanimationend is newChildWindow.onanimationend
 PASS oldChildWindow.onanimationiteration is newChildWindow.onanimationiteration
 PASS oldChildWindow.onanimationstart is newChildWindow.onanimationstart
+PASS oldChildWindow.onautocomplete is newChildWindow.onautocomplete
+PASS oldChildWindow.onautocompleteerror is newChildWindow.onautocompleteerror
 PASS oldChildWindow.onbeforeunload is newChildWindow.onbeforeunload
 PASS oldChildWindow.onblur is newChildWindow.onblur
 PASS oldChildWindow.oncancel is newChildWindow.oncancel

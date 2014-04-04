@@ -6,19 +6,17 @@
 jsTestIsAsync = true;
 
 var numErrors = 0;
-var numErrorsExpected = 3;
+var numErrorsExpected = 4;
+var eventsBubbleToBody = false;
+var eventsBubbleToDocument = false;
+var eventsBubbleToWindow = false;
 
 function runTests()
 {
-    if (typeof HTMLFormElement.prototype.requestAutocomplete != 'function') {
-        testFailed('no requestAutocomplete function');
-        finishJSTest();
-        return;
-    }
-
     checkDynamicAttributes();
     checkNonUserGesture();
     checkParsedAttributes();
+    checkEventsBubble();
 }
 
 function checkForEnumerableProperties(form)
@@ -65,6 +63,35 @@ function checkParsedAttributes()
     form.requestAutocomplete();
 }
 
+function checkEventsBubble()
+{
+    var form = document.createElement('form');
+    form.autocomplete = 'off';
+
+    document.body.onautocompleteerror = function(event) {
+        eventsBubbleToBody = true;
+        if (event.target == form) {
+            event.stopPropagation();
+            setTimeout(onError);
+        }
+    };
+
+    document.onautocompleteerror = function(event) {
+        eventsBubbleToDocument = true;
+        if (event.target == form)
+            testFailed("event should've been cancelled");
+    };
+
+    window.onautocompleteerror = function(event) {
+        eventsBubbleToWindow = true;
+        if (event.target == form)
+            testFailed("event should've been cancelled");
+    };
+
+    document.body.appendChild(form);
+    form.requestAutocomplete();
+}
+
 function errorWithReason(reason)
 {
     return function(event) {
@@ -85,9 +112,17 @@ function errorWithReason(reason)
 function onError()
 {
     numErrors += 1;
-    if (numErrors > numErrorsExpected)
+    if (numErrors > numErrorsExpected) {
         testFailed('too many error events');
-    else if (numErrors == numErrorsExpected) {
+    } else if (numErrors == numErrorsExpected) {
+        if (!eventsBubbleToBody)
+            testFailed('no events bubbled to body');
+        if (!eventsBubbleToDocument)
+            testFailed('no events bubbled to document');
+        if (!eventsBubbleToWindow)
+            testFailed('no events bubbled to window');
+        if (eventsBubbleToBody && eventsBubbleToDocument && eventsBubbleToWindow)
+            testPassed('events bubbled as expected');
         testPassed('got expected number of error events (' + numErrorsExpected + ')');
         finishJSTest();
     }

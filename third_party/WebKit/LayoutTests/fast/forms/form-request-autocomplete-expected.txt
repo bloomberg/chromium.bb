@@ -9,8 +9,10 @@ PASS event is an AutocompleteErrorEvent
 PASS got expected reason: disabled
 PASS event is an AutocompleteErrorEvent
 PASS got expected reason: disabled
-PASS got expected number of error events (3)
+PASS events bubbled as expected
+PASS got expected number of error events (4)
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 
