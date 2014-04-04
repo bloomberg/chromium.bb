@@ -28,6 +28,8 @@ void MockHomedirMethods::SetUp(bool success, MountError return_code) {
       WithArgs<4>(Invoke(this, &MockHomedirMethods::DoCallback)));
   ON_CALL(*this, UpdateKeyEx(_, _, _, _, _)).WillByDefault(
       WithArgs<4>(Invoke(this, &MockHomedirMethods::DoCallback)));
+  ON_CALL(*this, RemoveKeyEx(_, _, _, _)).WillByDefault(
+      WithArgs<3>(Invoke(this, &MockHomedirMethods::DoCallback)));
 }
 
 void MockHomedirMethods::DoCallback(const Callback& callback) {

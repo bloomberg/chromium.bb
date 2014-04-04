@@ -36,6 +36,11 @@ class CHROMEOS_EXPORT MockHomedirMethods : public HomedirMethods {
                     const KeyDefinition& key,
                     bool clobber_if_exist,
                     const Callback& callback));
+  MOCK_METHOD4(RemoveKeyEx,
+               void(const Identification& id,
+                    const Authorization& auth,
+                    const std::string& label,
+                    const Callback& callback));
   MOCK_METHOD5(UpdateKeyEx,
                void(const Identification& id,
                     const Authorization& auth,

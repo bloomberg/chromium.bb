@@ -19,6 +19,7 @@
 #include "chrome/browser/managed_mode/managed_user_registration_utility.h"
 #include "chrome/browser/managed_mode/managed_user_registration_utility_stub.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
+#include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -44,6 +45,7 @@ class SupervisedUserTest : public chromeos::LoginManagerTest {
  protected:
   SupervisedUserTest() : LoginManagerTest(true),
                          mock_async_method_caller_(NULL),
+                         mock_homedir_methods_(NULL),
                          network_portal_detector_(NULL),
                          registration_utility_stub_(NULL) {
   }
@@ -54,6 +56,10 @@ class SupervisedUserTest : public chromeos::LoginManagerTest {
     mock_async_method_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
     cryptohome::AsyncMethodCaller::InitializeForTesting(
         mock_async_method_caller_);
+
+    mock_homedir_methods_ = new cryptohome::MockHomedirMethods;
+    mock_homedir_methods_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
+    cryptohome::HomedirMethods::InitializeForTesting(mock_homedir_methods_);
 
     registration_utility_stub_ = new ManagedUserRegistrationUtilityStub();
     scoped_utility_.reset(
@@ -81,6 +87,8 @@ class SupervisedUserTest : public chromeos::LoginManagerTest {
 
   virtual void TearDown() OVERRIDE {
     cryptohome::AsyncMethodCaller::Shutdown();
+    cryptohome::HomedirMethods::Shutdown();
+    mock_homedir_methods_ = NULL;
     mock_async_method_caller_ = NULL;
     LoginManagerTest::TearDown();
   }
@@ -123,6 +131,7 @@ class SupervisedUserTest : public chromeos::LoginManagerTest {
 
  protected:
    cryptohome::MockAsyncMethodCaller* mock_async_method_caller_;
+   cryptohome::MockHomedirMethods* mock_homedir_methods_;
    NetworkPortalDetectorTestImpl* network_portal_detector_;
    ManagedUserRegistrationUtilityStub* registration_utility_stub_;
    scoped_ptr<ScopedTestingManagedUserRegistrationUtility> scoped_utility_;
@@ -209,16 +218,12 @@ void SupervisedUserTest::LogInAsManagerAndFillUserData() {
 void SupervisedUserTest::CreateSupervisedUser() {
   LogInAsManagerAndFillUserData();
 
-  EXPECT_CALL(*mock_async_method_caller_, AsyncMount(_, _, _, _))
-      .Times(1);
-  EXPECT_CALL(*mock_async_method_caller_, AsyncGetSanitizedUsername(_, _))
-      .Times(1);
-  EXPECT_CALL(*mock_async_method_caller_, AsyncAddKey(_, _, _, _))
-      .Times(1);
+  EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
+  EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _, _)).Times(1);
 
   JSEval("$('managed-user-creation-next-button').click()");
 
-  testing::Mock::VerifyAndClearExpectations(mock_async_method_caller_);
+  testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 
   EXPECT_TRUE(registration_utility_stub_->register_was_called());
   EXPECT_EQ(registration_utility_stub_->display_name(),
@@ -236,6 +241,7 @@ void SupervisedUserTest::CreateSupervisedUser() {
 }
 
 void SupervisedUserTest::SigninAsSupervisedUser() {
+  EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
   // Log in as supervised user, make sure that everything works.
   ASSERT_EQ(3UL, UserManager::Get()->GetUsers().size());
   // Created supervised user have to be first in a list.
@@ -243,6 +249,7 @@ void SupervisedUserTest::SigninAsSupervisedUser() {
   ASSERT_EQ(base::UTF8ToUTF16(kSupervisedUserDisplayName),
             user->display_name());
   LoginUser(user->email());
+  testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 }
 
 void SupervisedUserTest::RemoveSupervisedUser() {
@@ -355,16 +362,12 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTransactionCleanupTest,
     PRE_CreateAndCancelSupervisedUser) {
   LogInAsManagerAndFillUserData();
 
-  EXPECT_CALL(*mock_async_method_caller_, AsyncMount(_, _, _, _))
-      .Times(1);
-  EXPECT_CALL(*mock_async_method_caller_, AsyncGetSanitizedUsername(_, _))
-      .Times(1);
-  EXPECT_CALL(*mock_async_method_caller_, AsyncAddKey(_, _, _, _))
-      .Times(1);
+  EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
+  EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _, _)).Times(1);
 
   JSEval("$('managed-user-creation-next-button').click()");
 
-  testing::Mock::VerifyAndClearExpectations(mock_async_method_caller_);
+  testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 
   EXPECT_TRUE(registration_utility_stub_->register_was_called());
   EXPECT_EQ(registration_utility_stub_->display_name(),

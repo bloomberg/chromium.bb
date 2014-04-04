@@ -204,8 +204,5 @@ const char kForceFirstRunUI[] = "force-first-run-ui";
 // Enables testing for auto update UI.
 const char kTestAutoUpdateUI[] = "test-auto-update-ui";
 
-// Enables features required for supervised user sync,
-const char kEnableSupervisedPasswordSync[] = "enable-supervised-password-sync";
-
 }  // namespace switches
 }  // namespace chromeos

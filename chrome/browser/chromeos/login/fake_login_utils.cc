@@ -61,7 +61,7 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
                                     LoginUtils::Delegate* delegate) {
   UserManager::Get()->UserLoggedIn(
       user_context.username, user_context.username_hash, false);
-  Profile* profile = CreateProfile(user_context.username);
+  Profile* profile = CreateProfile(user_context.username_hash);
 
   if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
     User* active_user = UserManager::Get()->GetActiveUser();
