@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/renderer/extensions/scoped_persistent.h"
-#include "chrome/renderer/extensions/unsafe_persistent.h"
+#include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -36,17 +36,12 @@ class V8SchemaRegistry {
 
  private:
   // Gets the separate context that backs the registry, creating a new one if
-  // if necessary.
+  // if necessary. Will also initialize schema_cache_.
   v8::Handle<v8::Context> GetOrCreateContext(v8::Isolate* isolate);
 
-  // Cache of schemas.
-  //
-  // Storing UnsafePersistents is safe here, because the corresponding
-  // Persistent handle is created in GetSchema(), and it keeps the data pointed
-  // by the UnsafePersistent alive. It's not made weak or disposed, and nobody
-  // else has access to it. The Persistent is then disposed in the dtor.
-  typedef std::map<std::string, UnsafePersistent<v8::Object> > SchemaCache;
-  SchemaCache schema_cache_;
+  // Cache of schemas. Created lazily by GetOrCreateContext.
+  typedef v8::StdPersistentValueMap<std::string, v8::Object> SchemaCache;
+  scoped_ptr<SchemaCache> schema_cache_;
 
   // Single per-instance v8::Context to create v8::Values.
   // Created lazily via GetOrCreateContext.

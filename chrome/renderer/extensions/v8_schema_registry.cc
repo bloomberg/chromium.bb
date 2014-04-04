@@ -46,12 +46,7 @@ class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
 
 V8SchemaRegistry::V8SchemaRegistry() {}
 
-V8SchemaRegistry::~V8SchemaRegistry() {
-  for (SchemaCache::iterator i = schema_cache_.begin();
-       i != schema_cache_.end(); ++i) {
-    i->second.dispose();
-  }
-}
+V8SchemaRegistry::~V8SchemaRegistry() {}
 
 scoped_ptr<NativeHandler> V8SchemaRegistry::AsNativeHandler() {
   scoped_ptr<ChromeV8Context> context(new ChromeV8Context(
@@ -79,10 +74,14 @@ v8::Handle<v8::Array> V8SchemaRegistry::GetSchemas(
 }
 
 v8::Handle<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
+  if (schema_cache_ != NULL) {
+    v8::Local<v8::Object> cached_schema = schema_cache_->Get(api);
+    if (!cached_schema.IsEmpty()) {
+      return cached_schema;
+    }
+  }
 
-  SchemaCache::iterator maybe_schema = schema_cache_.find(api);
-  if (maybe_schema != schema_cache_.end())
-    return maybe_schema->second.newLocal(v8::Isolate::GetCurrent());
+  // Slow path: Need to build schema first.
 
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::EscapableHandleScope handle_scope(isolate);
@@ -96,12 +95,10 @@ v8::Handle<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
   v8::Handle<v8::Value> value = v8_value_converter->ToV8Value(schema, context);
   CHECK(!value.IsEmpty());
 
-  v8::Persistent<v8::Object> v8_schema(context->GetIsolate(),
-                                       v8::Handle<v8::Object>::Cast(value));
-  v8::Local<v8::Object> to_return =
-      v8::Local<v8::Object>::New(isolate, v8_schema);
-  schema_cache_[api] = UnsafePersistent<v8::Object>(&v8_schema);
-  return handle_scope.Escape(to_return);
+  v8::Local<v8::Object> v8_schema(v8::Handle<v8::Object>::Cast(value));
+  schema_cache_->Set(api, v8_schema);
+
+  return handle_scope.Escape(v8_schema);
 }
 
 v8::Handle<v8::Context> V8SchemaRegistry::GetOrCreateContext(
@@ -111,6 +108,7 @@ v8::Handle<v8::Context> V8SchemaRegistry::GetOrCreateContext(
   if (context_.IsEmpty()) {
     v8::Handle<v8::Context> context = v8::Context::New(isolate);
     context_.reset(context);
+    schema_cache_.reset(new SchemaCache(isolate));
     return context;
   }
   return context_.NewHandle(isolate);
