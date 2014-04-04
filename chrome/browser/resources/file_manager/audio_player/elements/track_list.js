@@ -232,8 +232,20 @@
           break;
         }
       }
-      if (index >= 0)
-        this.currentTrackIndex = index;
+      if (index >= 0) {
+        // TODO(yoshiki): Clean up the flow and the code around here.
+        if (this.currentTrackIndex == index)
+          this.replayCurrentTrack();
+        else
+          this.currentTrackIndex = index;
+      }
+    },
+
+    /**
+     * Request to replay the current music.
+     */
+    replayCurrentTrack: function() {
+      this.fire('replay');
     },
 
     /**

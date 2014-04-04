@@ -192,6 +192,17 @@ Polymer('audio-player', {
   },
 
   /**
+   * Invoked when receiving a request to replay the current music from the track
+   * list element.
+   */
+  onReplayCurrentTrack: function() {
+    // Changes the current time back to the beggining, regardless of the current
+    // status (playing or paused).
+    this.audioElement.currentTime = 0;
+    this.audioController.time = 0;
+  },
+
+  /**
    * Goes to the previous or the next track.
    * @param {boolean} forward True if next, false if previous.
    * @param {boolean} repeat True if repeat-mode is enabled. False otherwise.
