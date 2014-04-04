@@ -20,6 +20,77 @@ namespace {
 // Theme colors returned by GetSystemColor().
 const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
 
+const GdkColor kURLTextColor = GDK_COLOR_RGB(0x00, 0x88, 0x00);
+
+GdkColor GdkAlphaBlend(GdkColor foreground,
+                       GdkColor background,
+                       SkAlpha alpha) {
+  return libgtk2ui::SkColorToGdkColor(
+      color_utils::AlphaBlend(libgtk2ui::GdkColorToSkColor(foreground),
+                              libgtk2ui::GdkColorToSkColor(background), alpha));
+}
+
+// Generates the normal URL color, a green color used in unhighlighted URL
+// text. It is a mix of |kURLTextColor| and the current text color.  Unlike the
+// selected text color, it is more important to match the qualities of the
+// foreground typeface color instead of taking the background into account.
+GdkColor NormalURLColor(GdkColor foreground) {
+  color_utils::HSL fg_hsl;
+  color_utils::SkColorToHSL(libgtk2ui::GdkColorToSkColor(foreground), &fg_hsl);
+
+  color_utils::HSL hue_hsl;
+  color_utils::SkColorToHSL(libgtk2ui::GdkColorToSkColor(kURLTextColor),
+                            &hue_hsl);
+
+  // Only allow colors that have a fair amount of saturation in them (color vs
+  // white). This means that our output color will always be fairly green.
+  double s = std::max(0.5, fg_hsl.s);
+
+  // Make sure the luminance is at least as bright as the |kURLTextColor| green
+  // would be if we were to use that.
+  double l;
+  if (fg_hsl.l < hue_hsl.l)
+    l = hue_hsl.l;
+  else
+    l = (fg_hsl.l + hue_hsl.l) / 2;
+
+  color_utils::HSL output = { hue_hsl.h, s, l };
+  return libgtk2ui::SkColorToGdkColor(color_utils::HSLToSkColor(output, 255));
+}
+
+// Generates the selected URL color, a green color used on URL text in the
+// currently highlighted entry in the autocomplete popup. It's a mix of
+// |kURLTextColor|, the current text color, and the background color (the
+// select highlight). It is more important to contrast with the background
+// saturation than to look exactly like the foreground color.
+GdkColor SelectedURLColor(GdkColor foreground, GdkColor background) {
+  color_utils::HSL fg_hsl;
+  color_utils::SkColorToHSL(libgtk2ui::GdkColorToSkColor(foreground),
+                            &fg_hsl);
+
+  color_utils::HSL bg_hsl;
+  color_utils::SkColorToHSL(libgtk2ui::GdkColorToSkColor(background),
+                            &bg_hsl);
+
+  color_utils::HSL hue_hsl;
+  color_utils::SkColorToHSL(libgtk2ui::GdkColorToSkColor(kURLTextColor),
+                            &hue_hsl);
+
+  // The saturation of the text should be opposite of the background, clamped
+  // to 0.2-0.8. We make sure it's greater than 0.2 so there's some color, but
+  // less than 0.8 so it's not the oversaturated neon-color.
+  double opposite_s = 1 - bg_hsl.s;
+  double s = std::max(0.2, std::min(0.8, opposite_s));
+
+  // The luminance should match the luminance of the foreground text.  Again,
+  // we clamp so as to have at some amount of color (green) in the text.
+  double opposite_l = fg_hsl.l;
+  double l = std::max(0.1, std::min(0.9, opposite_l));
+
+  color_utils::HSL output = { hue_hsl.h, s, l };
+  return libgtk2ui::SkColorToGdkColor(color_utils::HSLToSkColor(output, 255));
+}
+
 }  // namespace
 
 
@@ -174,7 +245,7 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
     case kColorId_TextfieldSelectionBackgroundFocused:
       return GetEntryStyle()->base[GTK_STATE_SELECTED];
 
-    // Trees and Tables (implemented on GTK using the same class)
+      // Trees and Tables (implemented on GTK using the same class)
     case kColorId_TableBackground:
     case kColorId_TreeBackground:
       return GetTreeStyle()->bg[GTK_STATE_NORMAL];
@@ -196,6 +267,59 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
     case kColorId_TableGroupingIndicatorColor:
       return GetTreeStyle()->text_aa[GTK_STATE_NORMAL];
 
+      // Results Table
+    case kColorId_ResultsTableNormalBackground:
+      return GetEntryStyle()->base[GTK_STATE_NORMAL];
+    case kColorId_ResultsTableHoveredBackground: {
+      GtkStyle* entry_style = GetEntryStyle();
+      return GdkAlphaBlend(
+          entry_style->base[GTK_STATE_NORMAL],
+          entry_style->base[GTK_STATE_SELECTED], 0x80);
+    }
+    case kColorId_ResultsTableSelectedBackground:
+      return GetEntryStyle()->base[GTK_STATE_SELECTED];
+    case kColorId_ResultsTableNormalText:
+    case kColorId_ResultsTableHoveredText:
+      return GetEntryStyle()->text[GTK_STATE_NORMAL];
+    case kColorId_ResultsTableSelectedText:
+      return GetEntryStyle()->text[GTK_STATE_SELECTED];
+    case kColorId_ResultsTableNormalDimmedText:
+    case kColorId_ResultsTableHoveredDimmedText: {
+      GtkStyle* entry_style = GetEntryStyle();
+      return GdkAlphaBlend(
+          entry_style->text[GTK_STATE_NORMAL],
+          entry_style->base[GTK_STATE_NORMAL], 0x80);
+    }
+    case kColorId_ResultsTableSelectedDimmedText: {
+      GtkStyle* entry_style = GetEntryStyle();
+      return GdkAlphaBlend(
+          entry_style->text[GTK_STATE_SELECTED],
+          entry_style->base[GTK_STATE_NORMAL], 0x80);
+    }
+    case kColorId_ResultsTableNormalUrl:
+    case kColorId_ResultsTableHoveredUrl: {
+      return NormalURLColor(GetEntryStyle()->text[GTK_STATE_NORMAL]);
+    }
+    case kColorId_ResultsTableSelectedUrl: {
+      GtkStyle* entry_style = GetEntryStyle();
+      return SelectedURLColor(entry_style->text[GTK_STATE_SELECTED],
+                              entry_style->base[GTK_STATE_SELECTED]);
+    }
+    case kColorId_ResultsTableNormalDivider: {
+      GtkStyle* win_style = GetWindowStyle();
+      return GdkAlphaBlend(win_style->text[GTK_STATE_NORMAL],
+                           win_style->bg[GTK_STATE_NORMAL], 0x34);
+    }
+    case kColorId_ResultsTableHoveredDivider: {
+      GtkStyle* win_style = GetWindowStyle();
+      return GdkAlphaBlend(win_style->text[GTK_STATE_PRELIGHT],
+                           win_style->bg[GTK_STATE_PRELIGHT], 0x34);
+    }
+    case kColorId_ResultsTableSelectedDivider: {
+      GtkStyle* win_style = GetWindowStyle();
+      return GdkAlphaBlend(win_style->text[GTK_STATE_SELECTED],
+                           win_style->bg[GTK_STATE_SELECTED], 0x34);
+    }
     default:
       // Fall through
       break;

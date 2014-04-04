@@ -602,6 +602,50 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_TableGroupingIndicatorColor:
       return system_colors_[COLOR_GRAYTEXT];
 
+    // Results Tables
+    case kColorId_ResultsTableNormalBackground:
+      return system_colors_[COLOR_WINDOW];
+    case kColorId_ResultsTableHoveredBackground:
+      return color_utils::AlphaBlend(system_colors_[COLOR_HIGHLIGHT],
+                                     system_colors_[COLOR_WINDOW], 0x40);
+    case kColorId_ResultsTableSelectedBackground:
+      return system_colors_[COLOR_HIGHLIGHT];
+    case kColorId_ResultsTableNormalText:
+    case kColorId_ResultsTableHoveredText:
+      return system_colors_[COLOR_WINDOWTEXT];
+    case kColorId_ResultsTableSelectedText:
+      return system_colors_[COLOR_HIGHLIGHTTEXT];
+    case kColorId_ResultsTableNormalDimmedText:
+      return color_utils::AlphaBlend(system_colors_[COLOR_WINDOWTEXT],
+                                     system_colors_[COLOR_WINDOW], 0x80);
+    case kColorId_ResultsTableHoveredDimmedText:
+      return color_utils::AlphaBlend(
+          system_colors_[COLOR_WINDOWTEXT],
+          GetSystemColor(kColorId_ResultsTableHoveredBackground), 0x80);
+    case kColorId_ResultsTableSelectedDimmedText:
+      return color_utils::AlphaBlend(system_colors_[COLOR_HIGHLIGHTTEXT],
+                                     system_colors_[COLOR_HIGHLIGHT], 0x80);
+    case kColorId_ResultsTableNormalUrl:
+      return color_utils::GetReadableColor(SkColorSetRGB(0, 128, 0),
+                                           system_colors_[COLOR_WINDOW]);
+    case kColorId_ResultsTableHoveredUrl:
+      return color_utils::GetReadableColor(
+          SkColorSetRGB(0, 128, 0),
+          GetSystemColor(kColorId_ResultsTableHoveredBackground));
+    case kColorId_ResultsTableSelectedUrl:
+      return color_utils::GetReadableColor(SkColorSetRGB(0, 128, 0),
+                                           system_colors_[COLOR_HIGHLIGHT]);
+    case kColorId_ResultsTableNormalDivider:
+      return color_utils::AlphaBlend(system_colors_[COLOR_WINDOWTEXT],
+                                     system_colors_[COLOR_WINDOW], 0x34);
+    case kColorId_ResultsTableHoveredDivider:
+      return color_utils::AlphaBlend(
+          system_colors_[COLOR_WINDOWTEXT],
+          GetSystemColor(kColorId_ResultsTableHoveredBackground), 0x34);
+    case kColorId_ResultsTableSelectedDivider:
+      return color_utils::AlphaBlend(system_colors_[COLOR_HIGHLIGHTTEXT],
+                                     system_colors_[COLOR_HIGHLIGHT], 0x34);
+
     default:
       NOTREACHED();
       break;

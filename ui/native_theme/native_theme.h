@@ -281,6 +281,22 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_TableSelectionBackgroundFocused,
     kColorId_TableSelectionBackgroundUnfocused,
     kColorId_TableGroupingIndicatorColor,
+    // Results Tables, such as the chrome omnibox.
+    kColorId_ResultsTableNormalBackground,
+    kColorId_ResultsTableHoveredBackground,
+    kColorId_ResultsTableSelectedBackground,
+    kColorId_ResultsTableNormalText,
+    kColorId_ResultsTableHoveredText,
+    kColorId_ResultsTableSelectedText,
+    kColorId_ResultsTableNormalDimmedText,
+    kColorId_ResultsTableHoveredDimmedText,
+    kColorId_ResultsTableSelectedDimmedText,
+    kColorId_ResultsTableNormalUrl,
+    kColorId_ResultsTableHoveredUrl,
+    kColorId_ResultsTableSelectedUrl,
+    kColorId_ResultsTableNormalDivider,
+    kColorId_ResultsTableHoveredDivider,
+    kColorId_ResultsTableSelectedDivider,
     // TODO(benrg): move other hardcoded colors here.
   };
 

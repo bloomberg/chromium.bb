@@ -118,10 +118,6 @@ class OmniboxResultView : public views::View,
   }
 
  private:
-  // Common initialization code of the colors returned by GetColors().
-  static void CommonInitColors(const ui::NativeTheme* theme,
-                               SkColor colors[][NUM_KINDS]);
-
   gfx::ImageSkia GetIcon() const;
   const gfx::ImageSkia* GetKeywordIcon() const;
 

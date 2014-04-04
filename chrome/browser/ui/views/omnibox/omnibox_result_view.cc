@@ -41,12 +41,53 @@
 #include "ui/native_theme/native_theme_aura.h"
 #endif
 
+using ui::NativeTheme;
+
 namespace {
 
 // The minimum distance between the top and bottom of the {icon|text} and the
 // top or bottom of the row.
 const int kMinimumIconVerticalPadding = 2;
 const int kMinimumTextVerticalPadding = 3;
+
+// A mapping from OmniboxResultView's ResultViewState/ColorKind types to
+// NativeTheme colors.
+struct TranslationTable {
+  ui::NativeTheme::ColorId id;
+  OmniboxResultView::ResultViewState state;
+  OmniboxResultView::ColorKind kind;
+} static const kTranslationTable[] = {
+  { NativeTheme::kColorId_ResultsTableNormalBackground,
+    OmniboxResultView::NORMAL, OmniboxResultView::BACKGROUND },
+  { NativeTheme::kColorId_ResultsTableHoveredBackground,
+    OmniboxResultView::HOVERED, OmniboxResultView::BACKGROUND },
+  { NativeTheme::kColorId_ResultsTableSelectedBackground,
+    OmniboxResultView::SELECTED, OmniboxResultView::BACKGROUND },
+  { NativeTheme::kColorId_ResultsTableNormalText,
+    OmniboxResultView::NORMAL, OmniboxResultView::TEXT },
+  { NativeTheme::kColorId_ResultsTableHoveredText,
+    OmniboxResultView::HOVERED, OmniboxResultView::TEXT },
+  { NativeTheme::kColorId_ResultsTableSelectedText,
+    OmniboxResultView::SELECTED, OmniboxResultView::TEXT },
+  { NativeTheme::kColorId_ResultsTableNormalDimmedText,
+    OmniboxResultView::NORMAL, OmniboxResultView::DIMMED_TEXT },
+  { NativeTheme::kColorId_ResultsTableHoveredDimmedText,
+    OmniboxResultView::HOVERED, OmniboxResultView::DIMMED_TEXT },
+  { NativeTheme::kColorId_ResultsTableSelectedDimmedText,
+    OmniboxResultView::SELECTED, OmniboxResultView::DIMMED_TEXT },
+  { NativeTheme::kColorId_ResultsTableNormalUrl,
+    OmniboxResultView::NORMAL, OmniboxResultView::URL },
+  { NativeTheme::kColorId_ResultsTableHoveredUrl,
+    OmniboxResultView::HOVERED, OmniboxResultView::URL },
+  { NativeTheme::kColorId_ResultsTableSelectedUrl,
+    OmniboxResultView::SELECTED, OmniboxResultView::URL },
+  { NativeTheme::kColorId_ResultsTableNormalDivider,
+    OmniboxResultView::NORMAL, OmniboxResultView::DIVIDER },
+  { NativeTheme::kColorId_ResultsTableHoveredDivider,
+    OmniboxResultView::HOVERED, OmniboxResultView::DIVIDER },
+  { NativeTheme::kColorId_ResultsTableSelectedDivider,
+    OmniboxResultView::SELECTED, OmniboxResultView::DIVIDER },
+};
 
 }  // namespace
 
@@ -125,42 +166,15 @@ OmniboxResultView::~OmniboxResultView() {
 SkColor OmniboxResultView::GetColor(
     ResultViewState state,
     ColorKind kind) const {
-  const ui::NativeTheme* theme = GetNativeTheme();
-#if defined(OS_WIN)
-  if (theme == ui::NativeThemeWin::instance()) {
-    static bool win_initialized = false;
-    static SkColor win_colors[NUM_STATES][NUM_KINDS];
-    if (!win_initialized) {
-      win_colors[NORMAL][BACKGROUND] = color_utils::GetSysSkColor(COLOR_WINDOW);
-      win_colors[SELECTED][BACKGROUND] =
-          color_utils::GetSysSkColor(COLOR_HIGHLIGHT);
-      win_colors[NORMAL][TEXT] = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
-      win_colors[SELECTED][TEXT] =
-          color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
-      CommonInitColors(theme, win_colors);
-      win_initialized = true;
+  for (size_t i = 0; i < arraysize(kTranslationTable); ++i) {
+    if (kTranslationTable[i].state == state &&
+        kTranslationTable[i].kind == kind) {
+      return GetNativeTheme()->GetSystemColor(kTranslationTable[i].id);
     }
-    return win_colors[state][kind];
   }
-#endif
-  static bool initialized = false;
-  static SkColor colors[NUM_STATES][NUM_KINDS];
-  if (!initialized) {
-    colors[NORMAL][BACKGROUND] = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_TextfieldDefaultBackground);
-    colors[NORMAL][TEXT] = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_TextfieldDefaultColor);
-    colors[NORMAL][URL] = SkColorSetARGB(0xff, 0x00, 0x99, 0x33);
-    colors[SELECTED][BACKGROUND] = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
-    colors[SELECTED][TEXT] = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_TextfieldSelectionColor);
-    colors[SELECTED][URL] = SkColorSetARGB(0xff, 0x00, 0x66, 0x22);
-    colors[HOVERED][URL] = SkColorSetARGB(0xff, 0x00, 0x66, 0x22);
-    CommonInitColors(theme, colors);
-    initialized = true;
-  }
-  return colors[state][kind];
+
+  NOTREACHED();
+  return SK_ColorRED;
 }
 
 void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
@@ -412,39 +426,6 @@ int OmniboxResultView::GetDisplayOffset(
 
   return is_ui_rtl ?
       (input_render_text->GetContentWidth() - start_padding) : start_padding;
-}
-
-// static
-void OmniboxResultView::CommonInitColors(const ui::NativeTheme* theme,
-                                         SkColor colors[][NUM_KINDS]) {
-  colors[HOVERED][BACKGROUND] =
-      color_utils::AlphaBlend(colors[SELECTED][BACKGROUND],
-                              colors[NORMAL][BACKGROUND], 64);
-  colors[HOVERED][TEXT] = colors[NORMAL][TEXT];
-#if defined(USE_AURA)
-  const bool is_aura = theme == ui::NativeThemeAura::instance();
-#else
-  const bool is_aura = false;
-#endif
-  for (int i = 0; i < NUM_STATES; ++i) {
-    if (is_aura) {
-      colors[i][TEXT] =
-          color_utils::AlphaBlend(SK_ColorBLACK, colors[i][BACKGROUND], 0xdd);
-      colors[i][DIMMED_TEXT] =
-          color_utils::AlphaBlend(SK_ColorBLACK, colors[i][BACKGROUND], 0xbb);
-    } else {
-      colors[i][DIMMED_TEXT] =
-          color_utils::AlphaBlend(colors[i][TEXT], colors[i][BACKGROUND], 128);
-      colors[i][URL] = color_utils::GetReadableColor(SkColorSetRGB(0, 128, 0),
-                                                     colors[i][BACKGROUND]);
-    }
-
-    // TODO(joi): Programmatically draw the dropdown border using
-    // this color as well. (Right now it's drawn as black with 25%
-    // alpha.)
-    colors[i][DIVIDER] =
-        color_utils::AlphaBlend(colors[i][TEXT], colors[i][BACKGROUND], 0x34);
-  }
 }
 
 // static

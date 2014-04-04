@@ -13,8 +13,6 @@
 
 namespace libgtk2ui {
 
-const int kSkiaToGDKMultiplier = 257;
-
 // GDK_COLOR_RGB multiplies by 257 (= 0x10001) to distribute the bits evenly
 // See: http://www.mindcontrol.org/~hplus/graphics/expand-bits.html
 // To get back, we can just right shift by eight

@@ -12,7 +12,17 @@ typedef struct _GdkPixbuf GdkPixbuf;
 
 class SkBitmap;
 
+// Define a macro for creating GdkColors from RGB values.  This is a macro to
+// allow static construction of literals, etc.  Use this like:
+//   GdkColor white = GDK_COLOR_RGB(0xff, 0xff, 0xff);
+#define GDK_COLOR_RGB(r, g, b) {0, r * ::libgtk2ui::kSkiaToGDKMultiplier,  \
+        g * ::libgtk2ui::kSkiaToGDKMultiplier,                          \
+        b * ::libgtk2ui::kSkiaToGDKMultiplier}
+
 namespace libgtk2ui {
+
+// Multiply uint8 color components by this.
+const int kSkiaToGDKMultiplier = 257;
 
 // Converts GdkColors to the ARGB layout Skia expects.
 SkColor GdkColorToSkColor(GdkColor color);
