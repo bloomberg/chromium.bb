@@ -341,6 +341,9 @@ class _Results(object):
         if name:
           named_url = '%s: %s' % (name, url)
           link_name = 'Artifacts[%s]' % name
+
+        # Output the bot-id/version used in the archive url.
+        link_name = '%s: %s' % (link_name, '/'.join(url.split('/')[-3:-1]))
         out.write('%s  %s' % (edge, named_url))
         cros_build_lib.PrintBuildbotLink(link_name, url, handle=out)
       out.write(line)

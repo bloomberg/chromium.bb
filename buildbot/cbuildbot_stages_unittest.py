@@ -2529,9 +2529,9 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     """Tests Release Tag entry in stages report."""
 
     current_version = "release_tag_string"
-    archive_urls = {'board1': 'result_url1',
-                    'board2': 'result_url2'}
-
+    archive_urls = {
+        'board1': 'http://foo.com/bucket/bot-id1/version/index.html',
+        'board2': 'http://foo.com/bucket/bot-id2/version/index.html',}
     # Store off a known set of results and generate a report
     results_lib.Results.Record('Pass', results_lib.Results.SUCCESS, time=1)
 
@@ -2548,11 +2548,13 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
         "** PASS Pass (0:00:01)\n"
         "************************************************************\n"
         "** BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:\n"
-        "**  board1: result_url1\n"
-        "@@@STEP_LINK@Artifacts[board1]@result_url1@@@\n"
-        "**  board2: result_url2\n"
-        "@@@STEP_LINK@Artifacts[board2]@result_url2@@@\n"
-        "************************************************************\n")
+        "**  board1: %s\n"
+        "@@@STEP_LINK@Artifacts[board1]: bot-id1/version@%s@@@\n"
+        "**  board2: %s\n"
+        "@@@STEP_LINK@Artifacts[board2]: bot-id2/version@%s@@@\n"
+        "************************************************************\n"
+        % (archive_urls['board1'], archive_urls['board1'],
+           archive_urls['board2'], archive_urls['board2']))
 
     expectedLines = expectedResults.split('\n')
     actualLines = results.getvalue().split('\n')
