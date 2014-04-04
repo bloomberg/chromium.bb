@@ -35,6 +35,7 @@
         'mojo_common_unittests',
         'mojo_js',
         'mojo_js_unittests',
+        'mojo_message_generator',
         'mojo_pepper_container_app',
         'mojo_public_test_utils',
         'mojo_public_bindings_unittests',
@@ -516,6 +517,22 @@
       ],
       'sources': [
         'bindings/js/run_js_tests.cc',
+      ],
+    },
+    {
+      'target_name': 'mojo_message_generator',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+        'mojo_bindings',
+        'mojo_common_lib',
+        'mojo_environment_chromium',
+        'mojo_system',
+        'mojo_system_impl',
+      ],
+      'sources': [
+        'tools/message_generator.cc',
       ],
     },
   ],
