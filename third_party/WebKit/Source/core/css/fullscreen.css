@@ -31,6 +31,7 @@ video:-webkit-full-screen, audio:-webkit-full-screen {
     width: 100% !important;
     flex: 1 !important;
     display: block !important;
+    -webkit-transform: none !important;
 }
 
 img:-webkit-full-screen {
