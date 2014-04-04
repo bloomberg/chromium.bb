@@ -117,6 +117,7 @@ const char* kPrefsToObserve[] = {
   prefs::kRailBreakProportion,
   prefs::kRailStartProportion,
   prefs::kSemiLongPressTimeInSeconds,
+  prefs::kShowPressDelayInMS,
 };
 
 const char* kFlingTouchpadPrefs[] = {
