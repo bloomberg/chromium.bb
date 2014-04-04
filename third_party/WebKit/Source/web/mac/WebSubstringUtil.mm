@@ -113,6 +113,8 @@ namespace blink {
 NSAttributedString* WebSubstringUtil::attributedWordAtPoint(WebView* view, WebPoint point, WebPoint& baselinePoint)
 {
     HitTestResult result = view->hitTestResultAt(point);
+    if (!result.targetNode())
+      return nil;
     LocalFrame* frame = result.targetNode()->document().frame();
     FrameView* frameView = frame->view();
 
