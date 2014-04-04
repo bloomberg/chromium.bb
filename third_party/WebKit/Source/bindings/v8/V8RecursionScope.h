@@ -100,7 +100,9 @@ public:
         }
 
     private:
+#ifndef NDEBUG
         v8::Isolate* m_isolate;
+#endif
     };
 
 private:
