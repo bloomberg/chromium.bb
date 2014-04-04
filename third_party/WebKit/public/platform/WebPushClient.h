@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class WebPushRegistration;
+struct WebPushRegistration;
 
 typedef WebCallbacks<WebPushRegistration, WebPushError> WebPushRegistrationCallbacks;
 
