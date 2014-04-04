@@ -14,7 +14,6 @@ class AdbWebSocket : public base::RefCountedThreadSafe<AdbWebSocket> {
     virtual void OnSocketOpened() = 0;
     virtual void OnFrameRead(const std::string& message) = 0;
     virtual void OnSocketClosed(bool closed_by_device) = 0;
-    virtual bool ProcessIncomingMessage(const std::string& message) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -30,8 +29,6 @@ class AdbWebSocket : public base::RefCountedThreadSafe<AdbWebSocket> {
 
   void SendFrame(const std::string& message);
 
-  void SendFrameOnHandlerThread(const std::string& message);
-
  private:
   friend class base::RefCountedThreadSafe<AdbWebSocket>;
 
@@ -41,6 +38,7 @@ class AdbWebSocket : public base::RefCountedThreadSafe<AdbWebSocket> {
   void ConnectedOnHandlerThread(int result, net::StreamSocket* socket);
   void StartListeningOnHandlerThread();
   void OnBytesRead(scoped_refptr<net::IOBuffer> response_buffer, int result);
+  void SendFrameOnHandlerThread(const std::string& message);
   void SendPendingRequests(int result);
   void DisconnectOnHandlerThread(bool closed_by_device);
 

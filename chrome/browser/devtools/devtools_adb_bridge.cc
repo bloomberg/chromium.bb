@@ -644,7 +644,6 @@ class AdbProtocolCommand : public AdbWebSocket::Delegate {
   virtual void OnSocketOpened() OVERRIDE;
   virtual void OnFrameRead(const std::string& message) OVERRIDE;
   virtual void OnSocketClosed(bool closed_by_device) OVERRIDE;
-  virtual bool ProcessIncomingMessage(const std::string& message) OVERRIDE;
 
   scoped_refptr<RefCountedAdbThread> adb_thread_;
   const std::string command_;
@@ -674,10 +673,6 @@ void AdbProtocolCommand::OnFrameRead(const std::string& message) {}
 
 void AdbProtocolCommand::OnSocketClosed(bool closed_by_device) {
   delete this;
-}
-
-bool AdbProtocolCommand::ProcessIncomingMessage(const std::string& message) {
-  return false;
 }
 
 }  // namespace
@@ -810,10 +805,6 @@ class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate,
     if (proxy_ && closed_by_device)
       proxy_->ConnectionClosed();
     delete this;
-  }
-
-  virtual bool ProcessIncomingMessage(const std::string& message) OVERRIDE {
-    return false;
   }
 
   const std::string id_;

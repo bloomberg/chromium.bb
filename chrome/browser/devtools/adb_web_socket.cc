@@ -113,10 +113,8 @@ void AdbWebSocket::OnBytesRead(
 
   while (parse_result == WebSocket::FRAME_OK) {
     response_buffer_ = response_buffer_.substr(bytes_consumed);
-    if (!delegate_ || !delegate_->ProcessIncomingMessage(output)) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          base::Bind(&AdbWebSocket::OnFrameRead, this, output));
-    }
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&AdbWebSocket::OnFrameRead, this, output));
     parse_result = WebSocket::DecodeFrameHybi17(
         response_buffer_, false, &bytes_consumed, &output);
   }
