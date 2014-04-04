@@ -73,6 +73,7 @@ def _SendToCarbon(builds, token_funcs):
   graphite.SendToCarbon(lines)
 
 
+# TODO(dgarrett): Discover list from Json. Will better track slave changes.
 def _GetSlavesOfMaster(master_target):
   """Returns list of slave config names for given master config name.
 
@@ -146,8 +147,6 @@ class CQMasterTable(CQStatsTable):
   # It is required that the ID_COL be an integer value.
   ID_COL = COL_BUILD_NUMBER
 
-  SLAVES = tuple(_GetSlavesOfMaster(CQ_MASTER))
-
   COLUMNS = (
       COL_BUILD_NUMBER,
       COL_BUILD_LINK,
@@ -159,12 +158,14 @@ class CQMasterTable(CQStatsTable):
       COL_CHROMEOS_VERSION,
       COL_CHROME_VERSION,
       COL_FAILED_STAGES,
-  ) + SLAVES
+  )
 
   def __init__(self):
     super(CQMasterTable, self).__init__(CQMasterTable.TARGET,
                                         CQMasterTable.WATERFALL,
-                                        CQMasterTable.COLUMNS)
+                                        list(CQMasterTable.COLUMNS))
+
+    self._slaves = []
 
   def _CreateAbortedRowDict(self, build_number):
     """Create a row dict to represent an aborted run of |build_number|."""
@@ -224,6 +225,10 @@ class CQMasterTable(CQStatsTable):
       translate_dict = {'fail': 'failed', 'pass': 'passed'}
       slave_status = translate_dict.get(slave['status'], slave['status'])
 
+      # This adds the slave to our local data, but doesn't add a missing
+      # column to the spreadsheet itself.
+      self._EnsureSlaveKnown(slave_name)
+
       # Bizarrely, dashboard_url is not always set for slaves that pass.
       # Only sometimes.  crbug.com/350939.
       if slave_url:
@@ -234,6 +239,26 @@ class CQMasterTable(CQStatsTable):
     # Now add the finished row to this table.
     self.AppendRow(row)
 
+  def _EnsureSlaveKnown(self, slave_name):
+    """Ensure that a slave builder name is known.
+
+    Args:
+      slave_name: The name of the slave builder (aka spreadsheet column name).
+    """
+    if not self.HasColumn(slave_name):
+      self._slaves.append(slave_name)
+      self.AppendColumn(slave_name)
+
+  def GetSlaves(self):
+    """Get the list of slave builders which has been discovered so far.
+
+    This list is only fully populated when all row data has been fully
+    populated.
+
+    Returns:
+      List of column names for slave builders.
+    """
+    return self._slaves[:]
 
 class SSUploader(object):
   """Uploads data from table object to Google spreadsheet."""
