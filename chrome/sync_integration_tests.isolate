@@ -44,7 +44,6 @@
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'isolate_dependency_untracked': [
-          '../tools/swarming_client/',
           '<(PRODUCT_DIR)/pyproto/',
         ],
       },

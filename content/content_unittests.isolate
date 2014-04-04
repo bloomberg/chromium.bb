@@ -25,9 +25,6 @@
           '../testing/test_env.py',
           '<(PRODUCT_DIR)/content_unittests<(EXECUTABLE_SUFFIX)',
         ],
-        'isolate_dependency_untracked': [
-          '../tools/swarming_client/',
-        ],
       },
     }],
     ['OS=="linux"', {

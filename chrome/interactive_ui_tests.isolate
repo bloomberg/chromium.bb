@@ -38,7 +38,6 @@
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/src/mod_pywebsocket/',
           '../third_party/tlslite/tlslite/',
-          '../tools/swarming_client/',
           'test/data/',
         ],
         'read_only': 1,

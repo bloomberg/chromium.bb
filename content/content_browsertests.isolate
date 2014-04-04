@@ -51,7 +51,6 @@
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
-          '../tools/swarming_client/',
         ],
       },
     }],

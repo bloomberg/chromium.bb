@@ -47,6 +47,7 @@
       'extension': 'isolate',
       'inputs': [
         # Files that are known to be involved in this step.
+        '<(DEPTH)/tools/isolate_driver.py',
         '<(DEPTH)/tools/swarming_client/isolate.py',
         '<(DEPTH)/tools/swarming_client/run_isolated.py',
 
@@ -67,9 +68,9 @@
       ],
       'action': [
         'python',
-        '<(DEPTH)/tools/swarming_client/isolate.py',
+        '<(DEPTH)/tools/isolate_driver.py',
         '<(test_isolation_mode)',
-        '--result', '<@(_outputs)',
+        '--isolated', '<@(_outputs)',
         '--isolate', '<(RULE_INPUT_PATH)',
 
         # Variables should use the -V FOO=<(FOO) form so frequent values,

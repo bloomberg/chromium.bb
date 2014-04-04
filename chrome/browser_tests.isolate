@@ -75,7 +75,6 @@
           '../third_party/safe_browsing/',
           '../third_party/simplejson/',
           '../third_party/tlslite/',
-          '../tools/swarming_client/',
           '<(PRODUCT_DIR)/nacl_test_data/',
           '<(PRODUCT_DIR)/pnacl/',
           '<(PRODUCT_DIR)/pseudo_locales/',

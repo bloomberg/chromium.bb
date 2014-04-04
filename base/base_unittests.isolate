@@ -32,9 +32,6 @@
           '../testing/test_env.py',
           '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
         ],
-        'isolate_dependency_untracked': [
-          '../tools/swarming_client/',
-        ],
         'read_only': 1,
       },
     }],
