@@ -129,10 +129,10 @@ const char kInAppPaymentsSupportAppId[] = "nmmhkkegccagdldgiimedpiccmgmieda";
 const char kAppLaunchHistogram[] = "Extensions.AppLaunch";
 const char kPlatformAppLaunchHistogram[] = "Apps.AppLaunch";
 #if defined(OS_CHROMEOS)
-const char kChromeVoxExtensionPath[] = "chromeos/chromevox";
 // The extension id for the built-in component extension.
 const char kChromeVoxExtensionId[] =
     "mndnfokpggljbaajbnioimlmbfngpief";
+const char kChromeVoxExtensionPath[] = "chromeos/chromevox";
 const char kConnectivityDiagnosticsPath[] =
     "/usr/share/chromeos-assets/connectivity_diagnostics";
 const char kConnectivityDiagnosticsLauncherPath[] =
@@ -157,29 +157,5 @@ const char kAppStateCannotRun[] = "cannot_run";
 const char kAppStateReadyToRun[] = "ready_to_run";
 
 const char kMediaFileSystemPathPart[] = "_";
-
-const int kExtensionIconSizes[] = {
-  EXTENSION_ICON_GIGANTOR,  // 512
-  EXTENSION_ICON_EXTRA_LARGE,  // 256
-  EXTENSION_ICON_LARGE,  // 128
-  EXTENSION_ICON_MEDIUM,  // 48
-  EXTENSION_ICON_SMALL,  // 32
-  EXTENSION_ICON_SMALLISH,  // 24
-  EXTENSION_ICON_BITTY,  // 16
-  // Additional 2x resources to load.
-  2 * EXTENSION_ICON_MEDIUM,  // 96
-  2 * EXTENSION_ICON_SMALL  // 64
-};
-
-const size_t kNumExtensionIconSizes =
-    arraysize(kExtensionIconSizes);
-
-const int kExtensionActionIconSizes[] = {
-  EXTENSION_ICON_ACTION,  // 19,
-  2 * EXTENSION_ICON_ACTION  // 38
-};
-
-const size_t kNumExtensionActionIconSizes =
-    arraysize(kExtensionActionIconSizes);
 
 }  // namespace extension_misc

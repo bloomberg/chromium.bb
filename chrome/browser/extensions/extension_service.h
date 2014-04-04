@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
