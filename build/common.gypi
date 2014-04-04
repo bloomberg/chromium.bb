@@ -1895,7 +1895,7 @@
         'grit_defines': ['-D', 'enable_notifications'],
       }],
       ['enable_resource_whitelist_generation==1', {
-        'grit_rc_header_format': ['-h', '#define {textual_id} _Pragma("{textual_id}") {numeric_id}'],
+        'grit_rc_header_format': ['-h', '#define {textual_id} _Pragma("whitelisted_resource_{numeric_id}") {numeric_id}'],
       }],
       ['enable_mdns==1 or OS=="mac"', {
         'grit_defines': ['-D', 'enable_service_discovery'],

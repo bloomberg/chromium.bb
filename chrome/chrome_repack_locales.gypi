@@ -7,6 +7,7 @@
 {
   'variables': {
     'repack_locales_path': 'tools/build/repack_locales.py',
+    'repack_options%': [],
     'conditions': [
       ['branding=="Chrome"', {
         'branding_flag': ['-b', 'google_chrome',],
@@ -31,6 +32,7 @@
     '-s', '<(SHARED_INTERMEDIATE_DIR)',
     '-x', '<(SHARED_INTERMEDIATE_DIR)/.',
     '--use-ash', '<(use_ash)',
+    '<@(repack_options)',
     '<@(pak_locales)',
   ],
 }

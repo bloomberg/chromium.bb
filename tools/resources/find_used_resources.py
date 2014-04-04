@@ -18,7 +18,8 @@ script parses out the list of used resource ids. These resource ids show up in
 the build output after building Chrome with gyp variable
 enable_resource_whitelist_generation set to 1. This gyp flag causes the compiler
 to print out a UnknownPragma message every time a resource id is used. E.g.:
-foo.cc:22:0: warning: ignoring #pragma IDS_FOO_BAR  [-Wunknown-pragmas]
+foo.cc:22:0: warning: ignoring #pragma whitelisted_resource_12345
+[-Wunknown-pragmas]
 
 """
 
@@ -29,7 +30,7 @@ def GetResourceIdsInPragmaWarnings(input):
   """
   used_resources = set()
   unknown_pragma_warning_pattern = re.compile('warning: ignoring #pragma '
-      '(?P<resource_id>[A-Z0-9_]*)  \[-Wunknown-pragmas\]')
+      'whitelisted_resource_(?P<resource_id>[0-9]*)  \[-Wunknown-pragmas\]')
   for ln in input:
     match = unknown_pragma_warning_pattern.search(ln)
     if match:

@@ -31,6 +31,8 @@ OS = None
 
 USE_ASH = False
 
+WHITELIST = None
+
 # Extra input files.
 EXTRA_INPUT_FILES = []
 
@@ -153,7 +155,7 @@ def repack_locales(locales):
     inputs = []
     inputs += calc_inputs(locale)
     output = calc_output(locale)
-    data_pack.DataPack.RePack(output, inputs)
+    data_pack.DataPack.RePack(output, inputs, whitelist_file=WHITELIST)
 
 
 def DoMain(argv):
@@ -163,6 +165,7 @@ def DoMain(argv):
   global INT_DIR
   global OS
   global USE_ASH
+  global WHITELIST
   global EXTRA_INPUT_FILES
 
   parser = optparse.OptionParser("usage: %prog [options] locales")
@@ -185,6 +188,8 @@ def DoMain(argv):
                     help="The target OS. (e.g. mac, linux, win, etc.)")
   parser.add_option("--use-ash", action="store", dest="use_ash",
                     help="Whether to include ash strings")
+  parser.add_option("--whitelist", action="store", help="Full path to the "
+                    "whitelist used to filter output pak file resource IDs")
   options, locales = parser.parse_args(argv)
 
   if not locales:
@@ -199,6 +204,7 @@ def DoMain(argv):
   EXTRA_INPUT_FILES = options.extra_input
   OS = options.os
   USE_ASH = options.use_ash == '1'
+  WHITELIST = options.whitelist
 
   if not OS:
     if sys.platform == 'darwin':
