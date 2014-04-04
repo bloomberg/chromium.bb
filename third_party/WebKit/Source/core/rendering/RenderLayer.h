@@ -255,7 +255,6 @@ public:
     RenderLayer* ancestorScrollingLayer() const;
 
     RenderLayer* enclosingFilterLayer(IncludeSelfOrNot = IncludeSelf) const;
-    RenderLayer* enclosingFilterRepaintLayer() const;
     bool hasAncestorWithFilterOutsets() const;
 
     bool canUseConvertToLayerCoords() const
