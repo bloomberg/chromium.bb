@@ -157,8 +157,10 @@
 #if defined(__clang__)
 #define FINAL final
 #elif defined(COMPILER_MSVC)
-// TODO(jered): Change this to "final" when chromium no longer uses MSVC 2010.
-#define FINAL sealed
+// TODO(thakis): Remove if !defined() once Blink is updated too.
+#if !defined(FINAL)
+#define FINAL final
+#endif
 #elif defined(COMPILER_GCC) && __cplusplus >= 201103 && \
       (__GNUC__ * 10000 + __GNUC_MINOR__ * 100) >= 40700
 // GCC 4.7 supports explicit virtual overrides when C++11 support is enabled.
