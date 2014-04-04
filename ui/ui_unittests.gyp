@@ -141,7 +141,6 @@
         'base/text/bytes_formatting_unittest.cc',
         'base/view_prop_unittest.cc',
         'base/webui/web_ui_util_unittest.cc',
-        'base/x/x11_util_unittest.cc',
         'gfx/animation/tween_unittest.cc',
         'gfx/blit_unittest.cc',
         'gfx/break_list_unittest.cc',

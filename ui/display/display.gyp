@@ -47,6 +47,8 @@
         'display_export.h',
         'display_switches.cc',
         'display_switches.h',
+        'display_util.cc',
+        'display_util.h',
         'edid_parser.cc',
         'edid_parser.h',
         'x11/edid_parser_x11.cc',

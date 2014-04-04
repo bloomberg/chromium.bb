@@ -324,11 +324,6 @@ UI_BASE_EXPORT void SetDefaultX11ErrorHandlers();
 // Return true if a given window is in full-screen mode.
 UI_BASE_EXPORT bool IsX11WindowFullScreen(XID window);
 
-// Returns true if a given size is in list of bogus sizes in mm that X detects
-// that should be ignored.
-UI_BASE_EXPORT bool IsXDisplaySizeBlackListed(unsigned long mm_width,
-                                              unsigned long mm_height);
-
 // Manages a piece of X11 allocated memory as a RefCountedMemory segment. This
 // object takes ownership over the passed in memory and will free it with the
 // X11 allocator when done.

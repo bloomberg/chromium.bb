@@ -261,16 +261,6 @@ bool IsShapeAvailable() {
 
 }
 
-// A list of bogus sizes in mm that X detects that should be ignored.
-// See crbug.com/136533. The first element maintains the minimum
-// size required to be valid size.
-const unsigned long kInvalidDisplaySizeList[][2] = {
-  {40, 30},
-  {50, 40},
-  {160, 90},
-  {160, 100},
-};
-
 }  // namespace
 
 bool XDisplayExists() {
@@ -1426,25 +1416,6 @@ bool IsX11WindowFullScreen(XID window) {
   int height = HeightOfScreen(screen);
   return window_rect.size() == gfx::Size(width, height);
 #endif
-}
-
-bool IsXDisplaySizeBlackListed(unsigned long mm_width,
-                               unsigned long mm_height) {
-  // Ignore if the reported display is smaller than minimum size.
-  if (mm_width <= kInvalidDisplaySizeList[0][0] ||
-      mm_height <= kInvalidDisplaySizeList[0][1]) {
-    LOG(WARNING) << "Smaller than minimum display size";
-    return true;
-  }
-  for (unsigned long i = 1 ; i < arraysize(kInvalidDisplaySizeList); ++i) {
-    const unsigned long* size = kInvalidDisplaySizeList[i];
-    if (mm_width == size[0] && mm_height == size[1]) {
-      LOG(WARNING) << "Black listed display size detected:"
-                   << size[0] << "x" << size[1];
-      return true;
-    }
-  }
-  return false;
 }
 
 const unsigned char* XRefcountedMemory::front() const {

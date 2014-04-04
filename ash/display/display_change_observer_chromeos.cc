@@ -18,10 +18,10 @@
 #include "base/logging.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/display/chromeos/display_mode.h"
 #include "ui/display/chromeos/display_snapshot.h"
+#include "ui/display/display_util.h"
 #include "ui/gfx/display.h"
 
 namespace ash {
@@ -134,9 +134,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
       continue;
 
     float device_scale_factor = 1.0f;
-    if (!ui::IsXDisplaySizeBlackListed(
-            output.display->physical_size().width(),
-            output.display->physical_size().height()) &&
+    if (!ui::IsDisplaySizeBlackListed(output.display->physical_size()) &&
         (kInchInMm * mode_info->size().width() /
          output.display->physical_size().width()) > kHighDensityDPIThreshold) {
       device_scale_factor = 2.0f;
