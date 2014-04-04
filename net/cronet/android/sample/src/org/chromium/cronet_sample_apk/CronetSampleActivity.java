@@ -18,6 +18,7 @@ import org.chromium.net.HttpUrlRequestFactory;
 import org.chromium.net.HttpUrlRequestListener;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlRequestContext;
+import org.chromium.net.UrlRequestPriority;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -185,7 +186,7 @@ public class CronetSampleActivity extends Activity {
 
         HttpUrlRequest request = HttpUrlRequestFactory.newRequest(
                 getApplicationContext(), url,
-                UrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
+                UrlRequestPriority.MEDIUM, headers, listener);
         request.start();
     }
 
@@ -197,7 +198,7 @@ public class CronetSampleActivity extends Activity {
         HashMap<String, String> headers = new HashMap<String, String>();
         WritableByteChannel sink = Channels.newChannel(System.out);
         UrlRequest request = new SampleRequest(mRequestContext, url,
-                UrlRequest.REQUEST_PRIORITY_MEDIUM, headers, sink);
+                UrlRequestPriority.MEDIUM, headers, sink);
         applyCommandLineToRequest(request);
         request.start();
     }

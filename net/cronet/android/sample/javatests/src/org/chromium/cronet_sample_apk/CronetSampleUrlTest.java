@@ -61,7 +61,6 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
 
         // Make sure that the URL is set as expected.
         assertEquals(URL, activity.getUrl());
-        // TODO(mef): The test server doesn't seem to work with chunked uploads.
-        assertEquals(411, activity.getHttpStatusCode());
+        assertEquals(200, activity.getHttpStatusCode());
     }
 }

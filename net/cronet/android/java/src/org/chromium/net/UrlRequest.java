@@ -5,8 +5,8 @@
 package org.chromium.net;
 
 import org.apache.http.conn.ConnectTimeoutException;
-import org.chromium.base.AccessedByNative;
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -23,32 +23,13 @@ import java.util.concurrent.Semaphore;
 /**
  * Network request using the native http stack implementation.
  */
+@JNINamespace("net")
 public class UrlRequest {
     private static final class ContextLock {
     }
 
-    /**
-     * Must match definitions in the native source.
-     */
-    public static final int REQUEST_PRIORITY_IDLE = 0;
-    public static final int REQUEST_PRIORITY_LOWEST = 1;
-    public static final int REQUEST_PRIORITY_LOW = 2;
-    public static final int REQUEST_PRIORITY_MEDIUM = 3;
-    public static final int REQUEST_PRIORITY_HIGHEST = 4;
-
-    /**
-     * Must match definitions in the native source.
-     */
-    private static final int SUCCESS = 0;
-    private static final int UNKNOWN_ERROR = 1;
-    private static final int MALFORMED_URL_ERROR = 2;
-    private static final int CONNECTION_TIMED_OUT = 3;
-    private static final int UNKNOWN_HOST = 4;
     private static final int UPLOAD_BYTE_BUFFER_SIZE = 32768;
 
-    // TODO(mef) : Rename to follow Google Java style guide:
-    // In Google Style special prefixes or suffixes, like those seen in the
-    // examples name_, mName, s_name and kName, are not used.
     private final UrlRequestContext mRequestContext;
     private final String mUrl;
     private final int mPriority;
@@ -69,11 +50,9 @@ public class UrlRequest {
     private final ContextLock mLock;
 
     /**
-     * This field is accessed exclusively from the native layer.
+     * Native peer object, owned by UrlRequest.
      */
-    @AccessedByNative
-    @SuppressWarnings("unused")
-    private long mRequest;
+    private long mUrlRequestPeer;
 
     /**
      * Constructor.
@@ -88,13 +67,20 @@ public class UrlRequest {
     public UrlRequest(UrlRequestContext requestContext, String url,
             int priority, Map<String, String> headers,
             WritableByteChannel sink) {
+        if (requestContext == null) {
+            throw new NullPointerException("Context is required");
+        }
+        if (url == null) {
+            throw new NullPointerException("URL is required");
+        }
         mRequestContext = requestContext;
         mUrl = url;
         mPriority = priority;
         mHeaders = headers;
         mSink = sink;
         mLock = new ContextLock();
-        nativeInit(mRequestContext, mUrl, mPriority);
+        mUrlRequestPeer = nativeCreateRequestPeer(
+                mRequestContext.getUrlRequestContextPeer(), mUrl, mPriority);
         mPostBodySet = false;
     }
 
@@ -121,7 +107,7 @@ public class UrlRequest {
         synchronized (mLock) {
             validateNotStarted();
             validatePostBodyNotSet();
-            nativeSetPostData(contentType, data);
+            nativeSetPostData(mUrlRequestPeer, contentType, data);
             mPostBodySet = true;
         }
     }
@@ -139,7 +125,7 @@ public class UrlRequest {
         synchronized (mLock) {
             validateNotStarted();
             validatePostBodyNotSet();
-            nativeBeginChunkedUpload(contentType);
+            nativeBeginChunkedUpload(mUrlRequestPeer, contentType);
             mPostBodyChannel = channel;
             mPostBodySet = true;
         }
@@ -163,18 +149,20 @@ public class UrlRequest {
 
             if (mHeaders != null && !mHeaders.isEmpty()) {
                 for (Entry<String, String> entry : mHeaders.entrySet()) {
-                    nativeAddHeader(entry.getKey(), entry.getValue());
+                    nativeAddHeader(mUrlRequestPeer, entry.getKey(),
+                            entry.getValue());
                 }
             }
 
             if (mAdditionalHeaders != null && !mAdditionalHeaders.isEmpty()) {
                 for (Entry<String, String> entry :
                         mAdditionalHeaders.entrySet()) {
-                    nativeAddHeader(entry.getKey(), entry.getValue());
+                    nativeAddHeader(mUrlRequestPeer, entry.getKey(),
+                            entry.getValue());
                 }
             }
 
-            nativeStart();
+            nativeStart(mUrlRequestPeer);
         }
 
         if (mPostBodyChannel != null) {
@@ -212,7 +200,8 @@ public class UrlRequest {
                 channel.read(buffer);
                 lastChunk = channel.read(checkForEnd) <= 0;
                 buffer.flip();
-                nativeAppendChunk(buffer, buffer.limit(), lastChunk);
+                nativeAppendChunk(mUrlRequestPeer, buffer, buffer.limit(),
+                        lastChunk);
 
                 if (lastChunk) {
                     break;
@@ -246,7 +235,7 @@ public class UrlRequest {
             mCanceled = true;
 
             if (!mRecycled) {
-                nativeCancel();
+                nativeCancel(mUrlRequestPeer);
             }
         }
     }
@@ -274,17 +263,17 @@ public class UrlRequest {
 
         validateNotRecycled();
 
-        int errorCode = nativeGetErrorCode();
+        int errorCode = nativeGetErrorCode(mUrlRequestPeer);
         switch (errorCode) {
-            case SUCCESS:
+            case UrlRequestError.SUCCESS:
                 return null;
-            case UNKNOWN_ERROR:
-                return new IOException(nativeGetErrorString());
-            case MALFORMED_URL_ERROR:
+            case UrlRequestError.UNKNOWN:
+                return new IOException(nativeGetErrorString(mUrlRequestPeer));
+            case UrlRequestError.MALFORMED_URL:
                 return new MalformedURLException("Malformed URL: " + mUrl);
-            case CONNECTION_TIMED_OUT:
+            case UrlRequestError.CONNECTION_TIMED_OUT:
                 return new ConnectTimeoutException("Connection timed out");
-            case UNKNOWN_HOST:
+            case UrlRequestError.UNKNOWN_HOST:
                 String host;
                 try {
                     host = new URL(mUrl).getHost();
@@ -298,7 +287,9 @@ public class UrlRequest {
         }
     }
 
-    public native int getHttpStatusCode();
+    public int getHttpStatusCode() {
+        return nativeGetHttpStatusCode(mUrlRequestPeer);
+    }
 
     /**
      * Content length as reported by the server. May be -1 or incorrect if the
@@ -325,8 +316,8 @@ public class UrlRequest {
      */
     @CalledByNative
     protected void onResponseStarted() {
-        mContentType = nativeGetContentType();
-        mContentLength = nativeGetContentLength();
+        mContentType = nativeGetContentType(mUrlRequestPeer);
+        mContentLength = nativeGetContentLength(mUrlRequestPeer);
     }
 
     /**
@@ -375,7 +366,8 @@ public class UrlRequest {
                 // Ignore
             }
             onRequestComplete();
-            nativeRecycle();
+            nativeDestroyRequestPeer(mUrlRequestPeer);
+            mUrlRequestPeer = 0;
             mRecycled = true;
         }
     }
@@ -402,29 +394,34 @@ public class UrlRequest {
         return mUrl;
     }
 
-    private native void nativeInit(UrlRequestContext requestContext, String url,
-            int priority);
+    private native long nativeCreateRequestPeer(long urlRequestContextPeer,
+            String url, int priority);
 
-    private native void nativeAddHeader(String name, String value);
+    private native void nativeAddHeader(long urlRequestPeer, String name,
+            String value);
 
-    private native void nativeSetPostData(String contentType, byte[] content);
+    private native void nativeSetPostData(long urlRequestPeer,
+            String contentType, byte[] content);
 
-    private native void nativeBeginChunkedUpload(String contentType);
+    private native void nativeBeginChunkedUpload(long urlRequestPeer,
+            String contentType);
 
-    private native void nativeAppendChunk(ByteBuffer chunk, int chunkSize,
-            boolean isLastChunk);
+    private native void nativeAppendChunk(long urlRequestPeer, ByteBuffer chunk,
+            int chunkSize, boolean isLastChunk);
 
-    private native void nativeStart();
+    private native void nativeStart(long urlRequestPeer);
 
-    private native void nativeCancel();
+    private native void nativeCancel(long urlRequestPeer);
 
-    private native void nativeRecycle();
+    private native void nativeDestroyRequestPeer(long urlRequestPeer);
 
-    private native int nativeGetErrorCode();
+    private native int nativeGetErrorCode(long urlRequestPeer);
 
-    private native String nativeGetErrorString();
+    private native int nativeGetHttpStatusCode(long urlRequestPeer);
 
-    private native String nativeGetContentType();
+    private native String nativeGetErrorString(long urlRequestPeer);
 
-    private native long nativeGetContentLength();
+    private native String nativeGetContentType(long urlRequestPeer);
+
+    private native long nativeGetContentLength(long urlRequestPeer);
 }

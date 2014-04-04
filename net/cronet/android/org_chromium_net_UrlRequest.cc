@@ -4,27 +4,16 @@
 
 #include "net/cronet/android/org_chromium_net_UrlRequest.h"
 
-#include <stdio.h>
-
+#include "base/android/jni_android.h"
 #include "base/macros.h"
+#include "jni/UrlRequest_jni.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
-#include "net/cronet/android/org_chromium_net_UrlRequestContext.h"
 #include "net/cronet/android/url_request_context_peer.h"
 #include "net/cronet/android/url_request_peer.h"
 
-// TODO(mef): Replace following definitions with generated UrlRequest_jni.h
-//#include "jni/UrlRequest_jni.h"
+namespace net {
 namespace {
-
-jclass g_class;
-jmethodID g_method_finish;
-jmethodID g_method_onAppendChunkCompleted;
-jmethodID g_method_onResponseStarted;
-jmethodID g_method_onReadBytes;
-jclass g_class_OutputStream;
-jmethodID g_method_write;
-jfieldID g_request_field;
 
 net::RequestPriority ConvertRequestPriority(jint request_priority) {
   switch (request_priority) {
@@ -41,18 +30,6 @@ net::RequestPriority ConvertRequestPriority(jint request_priority) {
     default:
       return net::LOWEST;
   }
-}
-
-// Stores a reference to the request in a java field.
-void SetNativeObject(JNIEnv* env, jobject object, URLRequestPeer* request) {
-  env->SetLongField(object, g_request_field, reinterpret_cast<jlong>(request));
-}
-
-// Returns a reference to the request, which is stored in a field of the Java
-// object.
-URLRequestPeer* GetNativeObject(JNIEnv* env, jobject object) {
-  return reinterpret_cast<URLRequestPeer*>(
-      env->GetLongField(object, g_request_field));
 }
 
 void SetPostContentType(JNIEnv* env,
@@ -72,101 +49,63 @@ void SetPostContentType(JNIEnv* env,
   request->AddHeader(content_type_header, content_type_string);
 }
 
-}  // namespace
-
-// Find Java classes and retain them.
-bool UrlRequestRegisterJni(JNIEnv* env) {
-  g_class = reinterpret_cast<jclass>(
-      env->NewGlobalRef(env->FindClass("org/chromium/net/UrlRequest")));
-  g_method_finish = env->GetMethodID(g_class, "finish", "()V");
-  g_method_onAppendChunkCompleted =
-      env->GetMethodID(g_class, "onAppendChunkCompleted", "()V");
-  g_method_onResponseStarted =
-      env->GetMethodID(g_class, "onResponseStarted", "()V");
-  g_method_onReadBytes =
-      env->GetMethodID(g_class, "onBytesRead", "(Ljava/nio/ByteBuffer;)V");
-  g_request_field = env->GetFieldID(g_class, "mRequest", "J");
-
-  g_class_OutputStream = reinterpret_cast<jclass>(
-      env->NewGlobalRef(env->FindClass("java/io/OutputStream")));
-  g_method_write = env->GetMethodID(g_class_OutputStream, "write", "([BII)V");
-
-  if (!g_class || !g_method_finish || !g_method_onAppendChunkCompleted ||
-      !g_method_onResponseStarted || !g_method_onReadBytes ||
-      !g_request_field || !g_class_OutputStream || !g_method_write) {
-    return false;
-  }
-  return true;
-}
-
 // A delegate of URLRequestPeer that delivers callbacks to the Java layer.
 class JniURLRequestPeerDelegate
     : public URLRequestPeer::URLRequestPeerDelegate {
  public:
   JniURLRequestPeerDelegate(JNIEnv* env, jobject owner) {
     owner_ = env->NewGlobalRef(owner);
-    env->GetJavaVM(&vm_);
   }
 
   virtual void OnAppendChunkCompleted(URLRequestPeer* request) OVERRIDE {
-    JNIEnv* env = GetEnv(vm_);
-    env->CallVoidMethod(owner_, g_method_onAppendChunkCompleted);
-    if (env->ExceptionOccurred()) {
-      env->ExceptionDescribe();
-      env->ExceptionClear();
-    }
+    JNIEnv* env = base::android::AttachCurrentThread();
+    net::Java_UrlRequest_onAppendChunkCompleted(env, owner_);
   }
 
   virtual void OnResponseStarted(URLRequestPeer* request) OVERRIDE {
-    JNIEnv* env = GetEnv(vm_);
-    env->CallVoidMethod(owner_, g_method_onResponseStarted);
-    if (env->ExceptionOccurred()) {
-      env->ExceptionDescribe();
-      env->ExceptionClear();
-    }
+    JNIEnv* env = base::android::AttachCurrentThread();
+    net::Java_UrlRequest_onResponseStarted(env, owner_);
   }
 
   virtual void OnBytesRead(URLRequestPeer* request) OVERRIDE {
     int bytes_read = request->bytes_read();
     if (bytes_read != 0) {
-      JNIEnv* env = GetEnv(vm_);
+      JNIEnv* env = base::android::AttachCurrentThread();
       jobject bytebuf = env->NewDirectByteBuffer(request->Data(), bytes_read);
-      env->CallVoidMethod(owner_, g_method_onReadBytes, bytebuf);
+      net::Java_UrlRequest_onBytesRead(env, owner_, bytebuf);
       env->DeleteLocalRef(bytebuf);
-      if (env->ExceptionOccurred()) {
-        env->ExceptionDescribe();
-        env->ExceptionClear();
-      }
     }
   }
 
   virtual void OnRequestFinished(URLRequestPeer* request) OVERRIDE {
-    JNIEnv* env = GetEnv(vm_);
-    env->CallVoidMethod(owner_, g_method_finish);
-    if (env->ExceptionOccurred()) {
-      env->ExceptionDescribe();
-      env->ExceptionClear();
-    }
+    JNIEnv* env = base::android::AttachCurrentThread();
+    net::Java_UrlRequest_finish(env, owner_);
   }
 
  protected:
-  virtual ~JniURLRequestPeerDelegate() { GetEnv(vm_)->DeleteGlobalRef(owner_); }
+  virtual ~JniURLRequestPeerDelegate() {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    env->DeleteGlobalRef(owner_);
+  }
 
  private:
   jobject owner_;
-  JavaVM* vm_;
 
   DISALLOW_COPY_AND_ASSIGN(JniURLRequestPeerDelegate);
 };
 
-JNIEXPORT void JNICALL
-Java_org_chromium_net_UrlRequest_nativeInit(JNIEnv* env,
-                                            jobject object,
-                                            jobject request_context,
-                                            jstring url_string,
-                                            jint priority) {
+}  // namespace
+
+// Explicitly register static JNI functions.
+bool UrlRequestRegisterJni(JNIEnv* env) { return RegisterNativesImpl(env); }
+
+static jlong CreateRequestPeer(JNIEnv* env,
+                               jobject object,
+                               jlong urlRequestContextPeer,
+                               jstring url_string,
+                               jint priority) {
   URLRequestContextPeer* context =
-      GetURLRequestContextPeer(env, request_context);
+      reinterpret_cast<URLRequestContextPeer*>(urlRequestContextPeer);
   DCHECK(context != NULL);
 
   const char* url_utf8 = env->GetStringUTFChars(url_string, NULL);
@@ -178,22 +117,22 @@ Java_org_chromium_net_UrlRequest_nativeInit(JNIEnv* env,
 
   env->ReleaseStringUTFChars(url_string, url_utf8);
 
-  URLRequestPeer* request =
+  URLRequestPeer* peer =
       new URLRequestPeer(context,
                          new JniURLRequestPeerDelegate(env, object),
                          url,
                          ConvertRequestPriority(priority));
 
-  SetNativeObject(env, object, request);
+  return reinterpret_cast<jlong>(peer);
 }
 
 // synchronized
-JNIEXPORT void JNICALL
-Java_org_chromium_net_UrlRequest_nativeAddHeader(JNIEnv* env,
-                                                 jobject object,
-                                                 jstring name,
-                                                 jstring value) {
-  URLRequestPeer* request = GetNativeObject(env, object);
+static void AddHeader(JNIEnv* env,
+                      jobject object,
+                      jlong urlRequestPeer,
+                      jstring name,
+                      jstring value) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
   DCHECK(request != NULL);
 
   const char* name_utf8 = env->GetStringUTFChars(name, NULL);
@@ -207,12 +146,12 @@ Java_org_chromium_net_UrlRequest_nativeAddHeader(JNIEnv* env,
   request->AddHeader(name_string, value_string);
 }
 
-JNIEXPORT void JNICALL
-Java_org_chromium_net_UrlRequest_nativeSetPostData(JNIEnv* env,
-                                                   jobject object,
-                                                   jstring content_type,
-                                                   jbyteArray content) {
-  URLRequestPeer* request = GetNativeObject(env, object);
+static void SetPostData(JNIEnv* env,
+                        jobject object,
+                        jlong urlRequestPeer,
+                        jstring content_type,
+                        jbyteArray content) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
   SetPostContentType(env, request, content_type);
 
   if (content != NULL) {
@@ -226,24 +165,23 @@ Java_org_chromium_net_UrlRequest_nativeSetPostData(JNIEnv* env,
   }
 }
 
-JNIEXPORT void JNICALL
-Java_org_chromium_net_UrlRequest_nativeBeginChunkedUpload(
-    JNIEnv* env,
-    jobject object,
-    jstring content_type) {
-  URLRequestPeer* request = GetNativeObject(env, object);
+static void BeginChunkedUpload(JNIEnv* env,
+                               jobject object,
+                               jlong urlRequestPeer,
+                               jstring content_type) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
   SetPostContentType(env, request, content_type);
 
   request->EnableStreamingUpload();
 }
 
-JNIEXPORT void JNICALL
-Java_org_chromium_net_UrlRequest_nativeAppendChunk(JNIEnv* env,
-                                                   jobject object,
-                                                   jobject chunk_byte_buffer,
-                                                   jint chunk_size,
-                                                   jboolean is_last_chunk) {
-  URLRequestPeer* request = GetNativeObject(env, object);
+static void AppendChunk(JNIEnv* env,
+                        jobject object,
+                        jlong urlRequestPeer,
+                        jobject chunk_byte_buffer,
+                        jint chunk_size,
+                        jboolean is_last_chunk) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
   CHECK(request != NULL);
 
   if (chunk_byte_buffer != NULL) {
@@ -254,44 +192,39 @@ Java_org_chromium_net_UrlRequest_nativeAppendChunk(JNIEnv* env,
 }
 
 /* synchronized */
-JNIEXPORT void JNICALL
-Java_org_chromium_net_UrlRequest_nativeStart(JNIEnv* env, jobject object) {
-  URLRequestPeer* request = GetNativeObject(env, object);
+static void Start(JNIEnv* env, jobject object, jlong urlRequestPeer) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
   if (request != NULL) {
     request->Start();
   }
 }
 
 /* synchronized */
-JNIEXPORT void JNICALL
-Java_org_chromium_net_UrlRequest_nativeRecycle(JNIEnv* env, jobject object) {
-  URLRequestPeer* request = GetNativeObject(env, object);
+static void DestroyRequestPeer(JNIEnv* env,
+                               jobject object,
+                               jlong urlRequestPeer) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
   if (request != NULL) {
     request->Destroy();
   }
-
-  SetNativeObject(env, object, NULL);
 }
 
 /* synchronized */
-JNIEXPORT void JNICALL
-Java_org_chromium_net_UrlRequest_nativeCancel(JNIEnv* env, jobject object) {
-  URLRequestPeer* request = GetNativeObject(env, object);
+static void Cancel(JNIEnv* env, jobject object, jlong urlRequestPeer) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
   if (request != NULL) {
     request->Cancel();
   }
 }
 
-JNIEXPORT jint JNICALL
-Java_org_chromium_net_UrlRequest_nativeGetErrorCode(JNIEnv* env,
-                                                    jobject object) {
-  URLRequestPeer* request = GetNativeObject(env, object);
+static jint GetErrorCode(JNIEnv* env, jobject object, jlong urlRequestPeer) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
   int error_code = request->error_code();
   switch (error_code) {
     // TODO(mef): Investigate returning success on positive values, too, as
     // they technically indicate success.
     case net::OK:
-      return ERROR_SUCCESS;
+      return REQUEST_ERROR_SUCCESS;
 
     // TODO(mef): Investigate this. The fact is that Chrome does not do this,
     // and this library is not just being used for downloads.
@@ -303,26 +236,27 @@ Java_org_chromium_net_UrlRequest_nativeGetErrorCode(JNIEnv* env,
     // treat downloads as complete in both cases, so we follow their lead.
     case net::ERR_CONTENT_LENGTH_MISMATCH:
     case net::ERR_INCOMPLETE_CHUNKED_ENCODING:
-      return ERROR_SUCCESS;
+      return REQUEST_ERROR_SUCCESS;
 
     case net::ERR_INVALID_URL:
     case net::ERR_DISALLOWED_URL_SCHEME:
     case net::ERR_UNKNOWN_URL_SCHEME:
-      return ERROR_MALFORMED_URL;
+      return REQUEST_ERROR_MALFORMED_URL;
 
     case net::ERR_CONNECTION_TIMED_OUT:
-      return ERROR_CONNECTION_TIMED_OUT;
+      return REQUEST_ERROR_CONNECTION_TIMED_OUT;
 
     case net::ERR_NAME_NOT_RESOLVED:
-      return ERROR_UNKNOWN_HOST;
+      return REQUEST_ERROR_UNKNOWN_HOST;
   }
-  return ERROR_UNKNOWN;
+  return REQUEST_ERROR_UNKNOWN;
 }
 
-JNIEXPORT jstring JNICALL
-Java_org_chromium_net_UrlRequest_nativeGetErrorString(JNIEnv* env,
-                                                      jobject object) {
-  int error_code = GetNativeObject(env, object)->error_code();
+static jstring GetErrorString(JNIEnv* env,
+                              jobject object,
+                              jlong urlRequestPeer) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+  int error_code = request->error_code();
   char buffer[200];
   snprintf(buffer,
            sizeof(buffer),
@@ -332,16 +266,17 @@ Java_org_chromium_net_UrlRequest_nativeGetErrorString(JNIEnv* env,
   return env->NewStringUTF(buffer);
 }
 
-JNIEXPORT jint JNICALL
-Java_org_chromium_net_UrlRequest_getHttpStatusCode(JNIEnv* env,
-                                                   jobject object) {
-  return GetNativeObject(env, object)->http_status_code();
+static jint GetHttpStatusCode(JNIEnv* env,
+                              jobject object,
+                              jlong urlRequestPeer) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+  return request->http_status_code();
 }
 
-JNIEXPORT jstring JNICALL
-Java_org_chromium_net_UrlRequest_nativeGetContentType(JNIEnv* env,
-                                                      jobject object) {
-  URLRequestPeer* request = GetNativeObject(env, object);
+static jstring GetContentType(JNIEnv* env,
+                              jobject object,
+                              jlong urlRequestPeer) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
   if (request == NULL) {
     return NULL;
   }
@@ -353,12 +288,14 @@ Java_org_chromium_net_UrlRequest_nativeGetContentType(JNIEnv* env,
   }
 }
 
-JNIEXPORT jlong JNICALL
-Java_org_chromium_net_UrlRequest_nativeGetContentLength(JNIEnv* env,
-                                                        jobject object) {
-  URLRequestPeer* request = GetNativeObject(env, object);
+static jlong GetContentLength(JNIEnv* env,
+                              jobject object,
+                              jlong urlRequestPeer) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
   if (request == NULL) {
     return 0;
   }
   return request->content_length();
 }
+
+}  // namespace net

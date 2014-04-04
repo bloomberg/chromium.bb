@@ -3251,6 +3251,30 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
+          'target_name': 'cronet_url_request_error_list',
+          'type': 'none',
+          'sources': [
+            'cronet/android/java/src/org/chromium/net/UrlRequestError.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/cronet',
+            'template_deps': ['cronet/android/org_chromium_net_UrlRequest_error_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
+        {
+          'target_name': 'cronet_url_request_priority_list',
+          'type': 'none',
+          'sources': [
+            'cronet/android/java/src/org/chromium/net/UrlRequestPriority.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/cronet',
+            'template_deps': ['cronet/android/org_chromium_net_UrlRequest_priority_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
+        {
           'target_name': 'libcronet',
           'type': 'shared_library',
           'dependencies': [
@@ -3260,13 +3284,16 @@
             '../third_party/icu/icu.gyp:icuuc',
             '../url/url.gyp:url_lib',
             'cronet_jni_headers',
+            'cronet_url_request_error_list',
+            'cronet_url_request_priority_list',
             'net',
           ],
           'sources': [
             'cronet/android/org_chromium_net_UrlRequest.cc',
             'cronet/android/org_chromium_net_UrlRequest.h',
+            'cronet/android/org_chromium_net_UrlRequest_error_list.h',
+            'cronet/android/org_chromium_net_UrlRequest_priority_list.h',
             'cronet/android/org_chromium_net_UrlRequestContext.cc',
-            'cronet/android/org_chromium_net_UrlRequestContext.h',
             'cronet/android/url_request_context_peer.cc',
             'cronet/android/url_request_context_peer.h',
             'cronet/android/url_request_peer.cc',
@@ -3297,6 +3324,8 @@
           'dependencies': [
             '../base/base.gyp:base',
             'libcronet',
+            'cronet_url_request_error_list',
+            'cronet_url_request_priority_list',
           ],
           'variables': {
             'java_in_dir': 'cronet/android/java',

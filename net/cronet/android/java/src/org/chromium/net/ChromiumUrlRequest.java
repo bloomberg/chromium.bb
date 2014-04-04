@@ -45,29 +45,23 @@ class ChromiumUrlRequest extends UrlRequest implements HttpUrlRequest {
             WritableByteChannel sink, HttpUrlRequestListener listener) {
         super(requestContext, url, convertRequestPriority(priority), headers,
                 sink);
-        if (requestContext == null) {
-            throw new NullPointerException("Context is required");
-        }
-        if (url == null) {
-            throw new NullPointerException("URL is required");
-        }
         mListener = listener;
     }
 
     private static int convertRequestPriority(int priority) {
         switch (priority) {
             case HttpUrlRequest.REQUEST_PRIORITY_IDLE:
-                return UrlRequest.REQUEST_PRIORITY_IDLE;
+                return UrlRequestPriority.IDLE;
             case HttpUrlRequest.REQUEST_PRIORITY_LOWEST:
-                return UrlRequest.REQUEST_PRIORITY_LOWEST;
+                return UrlRequestPriority.LOWEST;
             case HttpUrlRequest.REQUEST_PRIORITY_LOW:
-                return UrlRequest.REQUEST_PRIORITY_LOW;
+                return UrlRequestPriority.LOW;
             case HttpUrlRequest.REQUEST_PRIORITY_MEDIUM:
-                return UrlRequest.REQUEST_PRIORITY_MEDIUM;
+                return UrlRequestPriority.MEDIUM;
             case HttpUrlRequest.REQUEST_PRIORITY_HIGHEST:
-                return UrlRequest.REQUEST_PRIORITY_HIGHEST;
+                return UrlRequestPriority.HIGHEST;
             default:
-                return UrlRequest.REQUEST_PRIORITY_MEDIUM;
+                return UrlRequestPriority.MEDIUM;
         }
     }
 

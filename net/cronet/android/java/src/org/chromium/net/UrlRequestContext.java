@@ -8,24 +8,22 @@ import android.content.Context;
 import android.os.ConditionVariable;
 import android.os.Process;
 
-import org.chromium.base.AccessedByNative;
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 
 /**
  * Provides context for the native HTTP operations.
  */
+@JNINamespace("net")
 public class UrlRequestContext {
     protected static final int LOG_NONE = 0;
-
     protected static final int LOG_DEBUG = 1;
-
     protected static final int LOG_VERBOSE = 2;
 
     /**
-     * This field is accessed exclusively from the native layer.
+     * Native peer object, owned by UrlRequestContext.
      */
-    @AccessedByNative
-    private long mRequestContext;
+    private long mUrlRequestContextPeer;
 
     private final ConditionVariable mStarted = new ConditionVariable();
 
@@ -37,7 +35,9 @@ public class UrlRequestContext {
      */
     protected UrlRequestContext(Context context, String userAgent,
             int loggingLevel) {
-        nativeInitialize(context, userAgent, loggingLevel);
+        mUrlRequestContextPeer = nativeCreateRequestContextPeer(context,
+                userAgent, loggingLevel);
+        // TODO(mef): Revisit the need of block here.
         mStarted.block(2000);
     }
 
@@ -45,7 +45,9 @@ public class UrlRequestContext {
      * Returns the version of this network stack formatted as N.N.N.N/X where
      * N.N.N.N is the version of Chromium and X is the version of the JNI layer.
      */
-    public static native String getVersion();
+    public static String getVersion() {
+        return nativeGetVersion();
+    }
 
     @CalledByNative
     private void initNetworkThread() {
@@ -56,12 +58,21 @@ public class UrlRequestContext {
 
     @Override
     protected void finalize() throws Throwable {
-        nativeFinalize();
+        nativeReleaseRequestContextPeer(mUrlRequestContextPeer);
         super.finalize();
     }
 
-    private native void nativeInitialize(Context context, String userAgent,
-            int loggingLevel);
+    protected long getUrlRequestContextPeer() {
+        return mUrlRequestContextPeer;
+    }
 
-    private native void nativeFinalize();
+    private static native String nativeGetVersion();
+
+    // Returns an instance URLRequestContextPeer to be stored in
+    // mUrlRequestContextPeer.
+    private native long nativeCreateRequestContextPeer(Context context,
+            String userAgent, int loggingLevel);
+
+    private native void nativeReleaseRequestContextPeer(
+            long urlRequestContextPeer);
 }
