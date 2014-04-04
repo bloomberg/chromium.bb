@@ -3485,14 +3485,6 @@ LayoutRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, c
     // This applies to all z-order lists below.
     RenderLayerStackingNodeIterator iterator(*m_stackingNode.get(), AllChildren);
     while (RenderLayerStackingNode* node = iterator.next()) {
-        // Node's compositing ancestor may have changed its draw content status
-        // prior to updating its bounds. The requires-own-backing-store-for-ancestor-reasons
-        // could be stale. Refresh them now.
-        if (node->layer()->hasCompositedLayerMapping()) {
-            RenderLayer* enclosingCompositingLayer = node->layer()->enclosingCompositingLayer(ExcludeSelf);
-            node->layer()->compositedLayerMapping()->updateRequiresOwnBackingStoreForAncestorReasons(enclosingCompositingLayer);
-        }
-
         if (flags & IncludeCompositedDescendants || !node->layer()->hasCompositedLayerMapping()) {
             LayoutRect childUnionBounds = node->layer()->calculateLayerBounds(this, 0, descendantFlags);
             unionBounds.unite(childUnionBounds);
