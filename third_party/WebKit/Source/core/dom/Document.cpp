@@ -1562,8 +1562,6 @@ bool Document::shouldScheduleRenderTreeUpdate() const
 {
     if (!isActive())
         return false;
-    if (hasPendingStyleRecalc())
-        return false;
     if (inStyleRecalc())
         return false;
     // InPreLayout will recalc style itself. There's no reason to schedule another recalc.
@@ -1576,9 +1574,8 @@ bool Document::shouldScheduleRenderTreeUpdate() const
 
 void Document::scheduleRenderTreeUpdate()
 {
-    if (!shouldScheduleRenderTreeUpdate())
-        return;
-
+    ASSERT(!hasPendingStyleRecalc());
+    ASSERT(shouldScheduleRenderTreeUpdate());
     ASSERT(needsRenderTreeUpdate());
 
     page()->animator().scheduleVisualUpdate();
@@ -2026,7 +2023,7 @@ void Document::scheduleLayerUpdate(Element& element)
         return;
     element.setNeedsLayerUpdate();
     m_layerUpdateElements.add(&element);
-    scheduleRenderTreeUpdate();
+    scheduleRenderTreeUpdateIfNeeded();
 }
 
 void Document::unscheduleLayerUpdate(Element& element)
@@ -2038,7 +2035,7 @@ void Document::unscheduleLayerUpdate(Element& element)
 void Document::scheduleUseShadowTreeUpdate(SVGUseElement& element)
 {
     m_useElementsNeedingUpdate.add(&element);
-    scheduleRenderTreeUpdate();
+    scheduleRenderTreeUpdateIfNeeded();
 }
 
 void Document::unscheduleUseShadowTreeUpdate(SVGUseElement& element)

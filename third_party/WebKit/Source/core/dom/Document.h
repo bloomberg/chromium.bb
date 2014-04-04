@@ -652,9 +652,8 @@ public:
     void setCSSTarget(Element*);
     Element* cssTarget() const { return m_cssTarget; }
 
-    void scheduleRenderTreeUpdate();
+    void scheduleRenderTreeUpdateIfNeeded();
     bool hasPendingForcedStyleRecalc() const;
-    bool hasPendingStyleRecalc() const { return m_lifecycle.state() == DocumentLifecycle::StyleRecalcPending; }
 
     void registerNodeList(LiveNodeListBase*);
     void unregisterNodeList(LiveNodeListBase*);
@@ -1086,6 +1085,11 @@ private:
     virtual SecurityContext& securityContext() OVERRIDE FINAL { return *this; }
     virtual EventQueue* eventQueue() const OVERRIDE FINAL;
 
+    void scheduleRenderTreeUpdate();
+
+    // FIXME: Rename the StyleRecalc state to RenderTreeUpdate.
+    bool hasPendingStyleRecalc() const { return m_lifecycle.state() == DocumentLifecycle::StyleRecalcPending; }
+
     void inheritHtmlAndBodyElementStyles(StyleRecalcChange);
 
     bool dirtyElementsForLayerUpdate();
@@ -1394,6 +1398,15 @@ inline void Document::decrementNodeListWithIdNameCacheCount()
 {
     ASSERT(m_nodeListCounts[InvalidateOnIdNameAttrChange] > 0);
     m_nodeListCounts[InvalidateOnIdNameAttrChange]--;
+}
+
+inline void Document::scheduleRenderTreeUpdateIfNeeded()
+{
+    // Inline early out to avoid the function calls below.
+    if (hasPendingStyleRecalc())
+        return;
+    if (shouldScheduleRenderTreeUpdate() && needsRenderTreeUpdate())
+        scheduleRenderTreeUpdate();
 }
 
 DEFINE_TYPE_CASTS(Document, ExecutionContextClient, client, client->isDocument(), client.isDocument());

@@ -651,16 +651,14 @@ void Node::markAncestorsWithChildNeedsStyleInvalidation()
 {
     for (Node* node = parentOrShadowHostNode(); node && !node->childNeedsStyleInvalidation(); node = node->parentOrShadowHostNode())
         node->setChildNeedsStyleInvalidation();
-    if (document().childNeedsStyleInvalidation())
-        document().scheduleRenderTreeUpdate();
+    document().scheduleRenderTreeUpdateIfNeeded();
 }
 
 void Node::markAncestorsWithChildNeedsDistributionRecalc()
 {
     for (Node* node = this; node && !node->childNeedsDistributionRecalc(); node = node->parentOrShadowHostNode())
         node->setChildNeedsDistributionRecalc();
-    if (document().childNeedsDistributionRecalc())
-        document().scheduleRenderTreeUpdate();
+    document().scheduleRenderTreeUpdateIfNeeded();
 }
 
 namespace {
@@ -745,12 +743,7 @@ void Node::markAncestorsWithChildNeedsStyleRecalc()
 {
     for (ContainerNode* p = parentOrShadowHostNode(); p && !p->childNeedsStyleRecalc(); p = p->parentOrShadowHostNode())
         p->setChildNeedsStyleRecalc();
-
-    if (document().hasPendingStyleRecalc())
-        return;
-
-    if (document().needsStyleRecalc() || document().childNeedsStyleRecalc())
-        document().scheduleRenderTreeUpdate();
+    document().scheduleRenderTreeUpdateIfNeeded();
 }
 
 void Node::setNeedsStyleRecalc(StyleChangeType changeType)
