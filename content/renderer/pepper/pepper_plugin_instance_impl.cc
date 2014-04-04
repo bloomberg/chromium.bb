@@ -1518,14 +1518,17 @@ void PepperPluginInstanceImpl::UpdateLayerTransform() {
   // stretched when a plugin is resized while waiting for a new frame from the
   // plugin to be rendered, then flickering behavior occurs as in
   // crbug.com/353453.
-  gfx::Size graphics_2d_size(bound_graphics_2d_platform_->Size());
-  float scale = bound_graphics_2d_platform_->GetScale();
-  gfx::SizeF plugin_size(view_data_.rect.size.width * scale,
-                         view_data_.rect.size.height * scale);
+  gfx::SizeF graphics_2d_size_in_dip =
+      gfx::ScaleSize(bound_graphics_2d_platform_->Size(),
+                     bound_graphics_2d_platform_->GetScale());
+  gfx::Size plugin_size_in_dip(view_data_.rect.size.width,
+                               view_data_.rect.size.height);
+
   texture_layer_->SetUV(
       gfx::PointF(0.0f, 0.0f),
-      gfx::PointF(plugin_size.width() / graphics_2d_size.width(),
-                  plugin_size.height() / graphics_2d_size.height()));
+      gfx::PointF(
+          plugin_size_in_dip.width() / graphics_2d_size_in_dip.width(),
+          plugin_size_in_dip.height() / graphics_2d_size_in_dip.height()));
 }
 
 bool PepperPluginInstanceImpl::PluginHasFocus() const {
