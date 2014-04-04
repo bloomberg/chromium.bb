@@ -59,7 +59,9 @@ short V8NodeFilterCondition::acceptNode(ScriptState* state, Node* node) const
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> filter = m_filter.newLocal(isolate);
     ASSERT(!filter.IsEmpty());
-    if (!filter->IsObject())
+    // FIXME: Remove the filter.IsEmpty() check because |filter| must not be empty.
+    // See crbug.com/358858 for more details.
+    if (filter.IsEmpty() || !filter->IsObject())
         return NodeFilter::FILTER_ACCEPT;
 
     v8::TryCatch exceptionCatcher;
