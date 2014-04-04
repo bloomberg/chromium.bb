@@ -40,6 +40,14 @@ class IndexedDBTransactionTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(IndexedDBTransactionTest);
 };
 
+class IndexedDBTransactionTestMode : public IndexedDBTransactionTest,
+  public testing::WithParamInterface<indexed_db::TransactionMode> {
+ public:
+  IndexedDBTransactionTestMode() {}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBTransactionTestMode);
+};
+
 TEST_F(IndexedDBTransactionTest, Timeout) {
   const int64 id = 0;
   const std::set<int64> scope;
@@ -124,7 +132,7 @@ class AbortObserver {
   DISALLOW_COPY_AND_ASSIGN(AbortObserver);
 };
 
-TEST_F(IndexedDBTransactionTest, AbortTasks) {
+TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
   const int64 id = 0;
   const std::set<int64> scope;
   const bool commit_failure = false;
@@ -132,7 +140,7 @@ TEST_F(IndexedDBTransactionTest, AbortTasks) {
       id,
       new MockIndexedDBDatabaseCallbacks(),
       scope,
-      indexed_db::TRANSACTION_READ_ONLY,
+      GetParam(),
       db_,
       new IndexedDBFakeBackingStore::FakeTransaction(commit_failure));
   db_->TransactionCreated(transaction);
@@ -150,7 +158,19 @@ TEST_F(IndexedDBTransactionTest, AbortTasks) {
   EXPECT_FALSE(observer.abort_task_called());
   transaction->Commit();
   EXPECT_TRUE(observer.abort_task_called());
+  EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
+  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
 }
+
+static const indexed_db::TransactionMode kTestModes[] = {
+  indexed_db::TRANSACTION_READ_ONLY,
+  indexed_db::TRANSACTION_READ_WRITE,
+  indexed_db::TRANSACTION_VERSION_CHANGE
+};
+
+INSTANTIATE_TEST_CASE_P(IndexedDBTransactions,
+                        IndexedDBTransactionTestMode,
+                        ::testing::ValuesIn(kTestModes));
 
 }  // namespace
 
