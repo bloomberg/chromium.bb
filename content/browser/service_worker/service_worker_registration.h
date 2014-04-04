@@ -69,6 +69,10 @@ class CONTENT_EXPORT ServiceWorkerRegistration
 
   ServiceWorkerRegistrationInfo GetInfo();
 
+  // Returns the active version, if it is not null; otherwise, returns the
+  // pending version.
+  ServiceWorkerVersion* GetNewestVersion();
+
   // The final synchronous switchover after all events have been
   // fired, and the old "active version" is being shut down.
   void ActivatePendingVersion();

@@ -204,7 +204,7 @@ void ServiceWorkerDispatcherHost::PostMessageFoundRegistration(
   DCHECK(result);
 
   // TODO(jsbell): Route message to appropriate version. crbug.com/351797
-  ServiceWorkerVersion* version = result->active_version();
+  ServiceWorkerVersion* version = result->GetNewestVersion();
   if (!version)
     return;
   version->SendMessage(

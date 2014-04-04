@@ -53,6 +53,12 @@ ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
                        : ServiceWorkerVersionInfo());
 }
 
+ServiceWorkerVersion* ServiceWorkerRegistration::GetNewestVersion() {
+  if (active_version())
+    return active_version();
+  return pending_version();
+}
+
 void ServiceWorkerRegistration::ActivatePendingVersion() {
   active_version_->SetStatus(ServiceWorkerVersion::DEACTIVATED);
   active_version_->Shutdown();
