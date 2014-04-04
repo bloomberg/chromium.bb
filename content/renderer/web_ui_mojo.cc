@@ -65,7 +65,8 @@ WebUIMojo::~WebUIMojo() {
 
 void WebUIMojo::CreateContextState() {
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
-  blink::WebFrame* frame = render_view()->GetWebView()->mainFrame();
+  blink::WebFrame* frame =
+      render_view()->GetWebView()->mainFrame()->toWebLocalFrame();
   v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
   gin::PerContextData* context_data = gin::PerContextData::From(context);
   WebUIMojoContextStateData* data = new WebUIMojoContextStateData;
@@ -96,7 +97,8 @@ void WebUIMojo::SetHandleOnContextState(mojo::ScopedMessagePipeHandle handle) {
 }
 
 WebUIMojoContextState* WebUIMojo::GetContextState() {
-  blink::WebFrame* frame = render_view()->GetWebView()->mainFrame();
+  blink::WebLocalFrame* frame =
+      render_view()->GetWebView()->mainFrame()->toWebLocalFrame();
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
   v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
   gin::PerContextData* context_data = gin::PerContextData::From(context);
@@ -108,7 +110,8 @@ WebUIMojoContextState* WebUIMojo::GetContextState() {
   return context_state ? context_state->state.get() : NULL;
 }
 
-void WebUIMojo::DidClearWindowObject(blink::WebFrame* frame, int world_id) {
+void WebUIMojo::DidClearWindowObject(blink::WebLocalFrame* frame,
+                                     int world_id) {
   if (frame != render_view()->GetWebView()->mainFrame())
     return;
 

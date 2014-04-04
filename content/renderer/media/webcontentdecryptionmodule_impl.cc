@@ -31,7 +31,7 @@ class WebFrame;
 namespace content {
 
 WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const blink::WebSecurityOrigin& security_origin,
     const base::string16& key_system) {
   DCHECK(frame);

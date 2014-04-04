@@ -21,7 +21,7 @@ void WebHelperPluginDeleter::operator()(blink::WebHelperPlugin* plugin) const {
 }
 
 scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const std::string& pluginType) {
   DCHECK(frame);
   ScopedHelperPlugin helper_plugin(blink::WebHelperPlugin::create(

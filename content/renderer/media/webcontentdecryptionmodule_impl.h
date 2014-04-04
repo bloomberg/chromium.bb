@@ -11,9 +11,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
+// TODO(dcheng): Remove and convert back to a forward declare.
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace blink {
-class WebFrame;
 class WebSecurityOrigin;
 }
 
@@ -31,7 +32,7 @@ class WebContentDecryptionModuleImpl
     : public blink::WebContentDecryptionModule {
  public:
   static WebContentDecryptionModuleImpl* Create(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       const blink::WebSecurityOrigin& security_origin,
       const base::string16& key_system);
 

@@ -28,7 +28,8 @@ LeakDetector::LeakDetector()
       previous_number_of_live_nodes_(kInitialNumberOfLiveNodes) {
 }
 
-LeakDetectionResult LeakDetector::TryLeakDetection(blink::WebFrame* frame) {
+LeakDetectionResult LeakDetector::TryLeakDetection(
+    blink::WebLocalFrame* frame) {
   LeakDetectionResult result;
   unsigned number_of_live_documents = 0;
   unsigned number_of_live_nodes = 0;

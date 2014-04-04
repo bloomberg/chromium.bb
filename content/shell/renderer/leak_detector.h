@@ -7,10 +7,8 @@
 
 #include "base/basictypes.h"
 #include "content/shell/common/leak_detection_result.h"
-
-namespace blink {
-class WebFrame;
-}
+// TODO(dcheng): Temporary. Convert back to a forward declare.
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
 
@@ -24,7 +22,7 @@ class LeakDetector {
   // specific page, like about:blank is loaded to compare the previous
   // circumstance of DOM objects. If the number of objects increses, there
   // should be a leak.
-  LeakDetectionResult TryLeakDetection(blink::WebFrame* frame);
+  LeakDetectionResult TryLeakDetection(blink::WebLocalFrame* frame);
 
  private:
   // The number of the live documents last time.

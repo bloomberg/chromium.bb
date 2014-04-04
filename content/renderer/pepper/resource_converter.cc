@@ -132,7 +132,7 @@ bool ResourceHostToDOMFileSystem(
   blink::WebFileSystemType blink_type;
   if (!FileApiFileSystemTypeToWebFileSystemType(type, &blink_type))
     return false;
-  blink::WebFrame* frame = blink::WebFrame::frameForContext(context);
+  blink::WebLocalFrame* frame = blink::WebLocalFrame::frameForContext(context);
   blink::WebDOMFileSystem web_dom_file_system = blink::WebDOMFileSystem::create(
       frame,
       blink_type,

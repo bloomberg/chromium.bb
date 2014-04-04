@@ -92,7 +92,7 @@ void RendererAccessibilityComplete::FocusedNodeChanged(const WebNode& node) {
   }
 }
 
-void RendererAccessibilityComplete::DidFinishLoad(blink::WebFrame* frame) {
+void RendererAccessibilityComplete::DidFinishLoad(blink::WebLocalFrame* frame) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;

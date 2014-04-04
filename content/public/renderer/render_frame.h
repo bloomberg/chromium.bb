@@ -9,6 +9,8 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+// TODO(dcheng): Convert back to a forward declare.
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 
 struct WebPreferences;
@@ -77,10 +79,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
       const blink::WebPluginParams& params) = 0;
 
   // The client should handle the navigation externally.
-  virtual void LoadURLExternally(
-      blink::WebFrame* frame,
-      const blink::WebURLRequest& request,
-      blink::WebNavigationPolicy policy) = 0;
+  virtual void LoadURLExternally(blink::WebLocalFrame* frame,
+                                 const blink::WebURLRequest& request,
+                                 blink::WebNavigationPolicy policy) = 0;
 
   // Execute a string of JavaScript in this frame's context.
   virtual void ExecuteJavaScript(const base::string16& javascript) = 0;

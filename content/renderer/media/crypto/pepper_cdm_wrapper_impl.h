@@ -13,9 +13,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/media/crypto/pepper_cdm_wrapper.h"
+// TODO(dcheng): Temporary. Convert back to a forward declare.
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace blink {
-class WebFrame;
 class WebHelperPlugin;
 }
 
@@ -40,7 +41,7 @@ struct WebHelperPluginDeleter {
 // blink:: objects.
 class PepperCdmWrapperImpl : public PepperCdmWrapper {
  public:
-  static scoped_ptr<PepperCdmWrapper> Create(blink::WebFrame* frame,
+  static scoped_ptr<PepperCdmWrapper> Create(blink::WebLocalFrame* frame,
                                              const std::string& pluginType);
 
   virtual ~PepperCdmWrapperImpl();

@@ -119,7 +119,8 @@ class RenderViewTest : public testing::Test {
 
   // These are all methods from RenderViewImpl that we expose to testing code.
   bool OnMessageReceived(const IPC::Message& msg);
-  void DidNavigateWithinPage(blink::WebFrame* frame, bool is_new_navigation);
+  void DidNavigateWithinPage(blink::WebLocalFrame* frame,
+                             bool is_new_navigation);
   void SendContentStateImmediately();
   blink::WebWidget* GetWebWidget();
 

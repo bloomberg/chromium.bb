@@ -43,7 +43,7 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   // RenderView::Observer implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
-  virtual void DidFinishLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidFinishLoad(blink::WebLocalFrame* frame) OVERRIDE;
 
   // RendererAccessibility.
   virtual void HandleWebAccessibilityEvent(

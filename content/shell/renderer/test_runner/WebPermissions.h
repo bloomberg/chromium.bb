@@ -19,12 +19,12 @@ public:
 
     // Override WebPermissionClient methods.
     // TODO(jam): remove all these methods after Blink rolls.
-    virtual bool allowImage(blink::WebFrame*, bool enabledPerSettings, const blink::WebURL& imageURL);
-    virtual bool allowScriptFromSource(blink::WebFrame*, bool enabledPerSettings, const blink::WebURL& scriptURL);
-    virtual bool allowStorage(blink::WebFrame*, bool local);
-    virtual bool allowPlugins(blink::WebFrame*, bool enabledPerSettings);
-    virtual bool allowDisplayingInsecureContent(blink::WebFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&);
-    virtual bool allowRunningInsecureContent(blink::WebFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&);
+    virtual bool allowImage(blink::WebLocalFrame*, bool enabledPerSettings, const blink::WebURL& imageURL);
+    virtual bool allowScriptFromSource(blink::WebLocalFrame*, bool enabledPerSettings, const blink::WebURL& scriptURL);
+    virtual bool allowStorage(blink::WebLocalFrame*, bool local);
+    virtual bool allowPlugins(blink::WebLocalFrame*, bool enabledPerSettings);
+    virtual bool allowDisplayingInsecureContent(blink::WebLocalFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&);
+    virtual bool allowRunningInsecureContent(blink::WebLocalFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&);
 
     virtual bool allowImage(bool enabledPerSettings, const blink::WebURL& imageURL);
     virtual bool allowScriptFromSource(bool enabledPerSettings, const blink::WebURL& scriptURL);

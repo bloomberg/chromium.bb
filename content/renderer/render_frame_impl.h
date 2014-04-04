@@ -92,8 +92,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // Returns the RenderWidget associated with this frame.
   RenderWidget* GetRenderWidget();
 
-  // This is called right after creation with the WebFrame for this RenderFrame.
-  void SetWebFrame(blink::WebFrame* web_frame);
+  // This is called right after creation with the WebLocalFrame for this
+  // RenderFrame.
+  void SetWebFrame(blink::WebLocalFrame* web_frame);
 
   // Notification from RenderView.
   virtual void OnStop();
@@ -182,43 +183,41 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebFrame* frame,
       const WebPluginInfo& info,
       const blink::WebPluginParams& params) OVERRIDE;
-  virtual void LoadURLExternally(
-      blink::WebFrame* frame,
-      const blink::WebURLRequest& request,
-      blink::WebNavigationPolicy policy) OVERRIDE;
+  virtual void LoadURLExternally(blink::WebLocalFrame* frame,
+                                 const blink::WebURLRequest& request,
+                                 blink::WebNavigationPolicy policy) OVERRIDE;
   virtual void ExecuteJavaScript(const base::string16& javascript) OVERRIDE;
 
   // blink::WebFrameClient implementation -------------------------------------
-  virtual blink::WebPlugin* createPlugin(
-      blink::WebFrame* frame,
-      const blink::WebPluginParams& params);
+  virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
+                                         const blink::WebPluginParams& params);
   virtual blink::WebMediaPlayer* createMediaPlayer(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client);
   virtual blink::WebContentDecryptionModule* createContentDecryptionModule(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       const blink::WebSecurityOrigin& security_origin,
       const blink::WebString& key_system);
   virtual blink::WebApplicationCacheHost* createApplicationCacheHost(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       blink::WebApplicationCacheHostClient* client);
   virtual blink::WebWorkerPermissionClientProxy*
-      createWorkerPermissionClientProxy(blink::WebFrame* frame);
-  virtual blink::WebCookieJar* cookieJar(blink::WebFrame* frame);
+      createWorkerPermissionClientProxy(blink::WebLocalFrame* frame);
+  virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);
   virtual blink::WebServiceWorkerProvider* createServiceWorkerProvider(
-      blink::WebFrame* frame);
-  virtual void didAccessInitialDocument(blink::WebFrame* frame);
-  virtual blink::WebFrame* createChildFrame(blink::WebFrame* parent,
-                                             const blink::WebString& name);
-  virtual void didDisownOpener(blink::WebFrame* frame);
+      blink::WebLocalFrame* frame);
+  virtual void didAccessInitialDocument(blink::WebLocalFrame* frame);
+  virtual blink::WebFrame* createChildFrame(blink::WebLocalFrame* parent,
+                                            const blink::WebString& name);
+  virtual void didDisownOpener(blink::WebLocalFrame* frame);
   virtual void frameDetached(blink::WebFrame* frame);
   virtual void frameFocused();
   virtual void willClose(blink::WebFrame* frame);
-  virtual void didChangeName(blink::WebFrame* frame,
+  virtual void didChangeName(blink::WebLocalFrame* frame,
                              const blink::WebString& name);
   virtual void didMatchCSS(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors);
   virtual bool shouldReportDetailedMessageForSource(
@@ -227,17 +226,16 @@ class CONTENT_EXPORT RenderFrameImpl
                                       const blink::WebString& source_name,
                                       unsigned source_line,
                                       const blink::WebString& stack_trace);
-  virtual void loadURLExternally(blink::WebFrame* frame,
+  virtual void loadURLExternally(blink::WebLocalFrame* frame,
                                  const blink::WebURLRequest& request,
                                  blink::WebNavigationPolicy policy);
-  virtual void loadURLExternally(
-      blink::WebFrame* frame,
-      const blink::WebURLRequest& request,
-      blink::WebNavigationPolicy policy,
-      const blink::WebString& suggested_name);
+  virtual void loadURLExternally(blink::WebLocalFrame* frame,
+                                 const blink::WebURLRequest& request,
+                                 blink::WebNavigationPolicy policy,
+                                 const blink::WebString& suggested_name);
   // The WebDataSource::ExtraData* is assumed to be a DocumentState* subclass.
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       blink::WebDataSource::ExtraData* extra_data,
       const blink::WebURLRequest& request,
       blink::WebNavigationType type,
@@ -245,13 +243,13 @@ class CONTENT_EXPORT RenderFrameImpl
       bool is_redirect);
   virtual blink::WebHistoryItem historyItemForNewChildFrame(
       blink::WebFrame* frame);
-  virtual void willSendSubmitEvent(blink::WebFrame* frame,
+  virtual void willSendSubmitEvent(blink::WebLocalFrame* frame,
                                    const blink::WebFormElement& form);
-  virtual void willSubmitForm(blink::WebFrame* frame,
+  virtual void willSubmitForm(blink::WebLocalFrame* frame,
                               const blink::WebFormElement& form);
-  virtual void didCreateDataSource(blink::WebFrame* frame,
+  virtual void didCreateDataSource(blink::WebLocalFrame* frame,
                                    blink::WebDataSource* datasource);
-  virtual void didStartProvisionalLoad(blink::WebFrame* frame);
+  virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame);
   virtual void didReceiveServerRedirectForProvisionalLoad(
       blink::WebFrame* frame);
   virtual void didFailProvisionalLoad(
@@ -262,91 +260,87 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebHistoryItem& item,
       blink::WebHistoryCommitType commit_type);
   // DEPRECATED
-  virtual void didCommitProvisionalLoad(blink::WebFrame* frame,
+  virtual void didCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                         bool is_new_navigation);
-  virtual void didClearWindowObject(blink::WebFrame* frame, int world_id);
-  virtual void didCreateDocumentElement(blink::WebFrame* frame);
-  virtual void didReceiveTitle(blink::WebFrame* frame,
+  virtual void didClearWindowObject(blink::WebLocalFrame* frame, int world_id);
+  virtual void didCreateDocumentElement(blink::WebLocalFrame* frame);
+  virtual void didReceiveTitle(blink::WebLocalFrame* frame,
                                const blink::WebString& title,
                                blink::WebTextDirection direction);
-  virtual void didChangeIcon(blink::WebFrame* frame,
+  virtual void didChangeIcon(blink::WebLocalFrame* frame,
                              blink::WebIconURL::Type icon_type);
-  virtual void didFinishDocumentLoad(blink::WebFrame* frame);
-  virtual void didHandleOnloadEvents(blink::WebFrame* frame);
-  virtual void didFailLoad(blink::WebFrame* frame,
+  virtual void didFinishDocumentLoad(blink::WebLocalFrame* frame);
+  virtual void didHandleOnloadEvents(blink::WebLocalFrame* frame);
+  virtual void didFailLoad(blink::WebLocalFrame* frame,
                            const blink::WebURLError& error);
   virtual void didFinishLoad(blink::WebFrame* frame);
   virtual void didNavigateWithinPage(blink::WebFrame* frame,
                                      const blink::WebHistoryItem& item,
                                      blink::WebHistoryCommitType commit_type);
   // DEPRECATED
-  virtual void didNavigateWithinPage(blink::WebFrame* frame,
+  virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
                                      bool is_new_navigation);
-  virtual void didUpdateCurrentHistoryItem(blink::WebFrame* frame);
+  virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   virtual void didChangeSelection(bool is_empty_selection);
   virtual void showContextMenu(const blink::WebContextMenuData& data);
   virtual void clearContextMenu();
-  virtual void willRequestAfterPreconnect(blink::WebFrame* frame,
+  virtual void willRequestAfterPreconnect(blink::WebLocalFrame* frame,
                                           blink::WebURLRequest& request);
-  virtual void willSendRequest(
-      blink::WebFrame* frame,
-      unsigned identifier,
-      blink::WebURLRequest& request,
-      const blink::WebURLResponse& redirect_response);
-  virtual void didReceiveResponse(
-      blink::WebFrame* frame,
-      unsigned identifier,
-      const blink::WebURLResponse& response);
-  virtual void didFinishResourceLoad(blink::WebFrame* frame,
+  virtual void willSendRequest(blink::WebLocalFrame* frame,
+                               unsigned identifier,
+                               blink::WebURLRequest& request,
+                               const blink::WebURLResponse& redirect_response);
+  virtual void didReceiveResponse(blink::WebLocalFrame* frame,
+                                  unsigned identifier,
+                                  const blink::WebURLResponse& response);
+  virtual void didFinishResourceLoad(blink::WebLocalFrame* frame,
                                      unsigned identifier);
   virtual void didLoadResourceFromMemoryCache(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       const blink::WebURLRequest& request,
       const blink::WebURLResponse& response);
-  virtual void didDisplayInsecureContent(blink::WebFrame* frame);
-  virtual void didRunInsecureContent(blink::WebFrame* frame,
+  virtual void didDisplayInsecureContent(blink::WebLocalFrame* frame);
+  virtual void didRunInsecureContent(blink::WebLocalFrame* frame,
                                      const blink::WebSecurityOrigin& origin,
                                      const blink::WebURL& target);
-  virtual void didAbortLoading(blink::WebFrame* frame);
-  virtual void didCreateScriptContext(blink::WebFrame* frame,
+  virtual void didAbortLoading(blink::WebLocalFrame* frame);
+  virtual void didCreateScriptContext(blink::WebLocalFrame* frame,
                                       v8::Handle<v8::Context> context,
                                       int extension_group,
                                       int world_id);
-  virtual void willReleaseScriptContext(blink::WebFrame* frame,
+  virtual void willReleaseScriptContext(blink::WebLocalFrame* frame,
                                         v8::Handle<v8::Context> context,
                                         int world_id);
-  virtual void didFirstVisuallyNonEmptyLayout(blink::WebFrame* frame);
-  virtual void didChangeContentsSize(blink::WebFrame* frame,
+  virtual void didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame* frame);
+  virtual void didChangeContentsSize(blink::WebLocalFrame* frame,
                                      const blink::WebSize& size);
-  virtual void didChangeScrollOffset(blink::WebFrame* frame);
-  virtual void willInsertBody(blink::WebFrame* frame);
+  virtual void didChangeScrollOffset(blink::WebLocalFrame* frame);
+  virtual void willInsertBody(blink::WebLocalFrame* frame);
   virtual void reportFindInPageMatchCount(int request_id,
                                           int count,
                                           bool final_update);
   virtual void reportFindInPageSelection(int request_id,
                                          int active_match_ordinal,
                                          const blink::WebRect& sel);
-  virtual void requestStorageQuota(
-      blink::WebFrame* frame,
-      blink::WebStorageQuotaType type,
-      unsigned long long requested_size,
-      blink::WebStorageQuotaCallbacks callbacks);
+  virtual void requestStorageQuota(blink::WebLocalFrame* frame,
+                                   blink::WebStorageQuotaType type,
+                                   unsigned long long requested_size,
+                                   blink::WebStorageQuotaCallbacks callbacks);
   virtual void willOpenSocketStream(
       blink::WebSocketStreamHandle* handle);
   virtual void willStartUsingPeerConnectionHandler(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       blink::WebRTCPeerConnectionHandler* handler);
   virtual bool willCheckAndDispatchMessageEvent(
-      blink::WebFrame* sourceFrame,
+      blink::WebLocalFrame* sourceFrame,
       blink::WebFrame* targetFrame,
       blink::WebSecurityOrigin targetOrigin,
       blink::WebDOMMessageEvent event);
-  virtual blink::WebString userAgentOverride(
-      blink::WebFrame* frame,
-      const blink::WebURL& url);
-  virtual blink::WebString doNotTrackValue(blink::WebFrame* frame);
-  virtual bool allowWebGL(blink::WebFrame* frame, bool default_value);
-  virtual void didLoseWebGLContext(blink::WebFrame* frame,
+  virtual blink::WebString userAgentOverride(blink::WebLocalFrame* frame,
+                                             const blink::WebURL& url);
+  virtual blink::WebString doNotTrackValue(blink::WebLocalFrame* frame);
+  virtual bool allowWebGL(blink::WebLocalFrame* frame, bool default_value);
+  virtual void didLoseWebGLContext(blink::WebLocalFrame* frame,
                                    int arb_robustness_status_code);
   virtual void forwardInputEvent(const blink::WebInputEvent* event);
   virtual void initializeChildFrame(const blink::WebRect& frame_rect,
@@ -451,8 +445,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const gfx::Range& selection_range,
       const ContextMenuParams& params);
 
-  // Stores the WebFrame we are associated with.
-  blink::WebFrame* frame_;
+  // Stores the WebLocalFrame we are associated with.
+  blink::WebLocalFrame* frame_;
 
   base::WeakPtr<RenderViewImpl> render_view_;
   int routing_id_;

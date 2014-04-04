@@ -59,7 +59,7 @@ class RendererAccessibilityFocusOnly : public RendererAccessibility {
 
   // RenderView::Observer implementation.
   virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
-  virtual void DidFinishLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidFinishLoad(blink::WebLocalFrame* frame) OVERRIDE;
 
  private:
   void HandleFocusedNodeChanged(const blink::WebNode& node,

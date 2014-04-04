@@ -55,10 +55,10 @@
 #include "third_party/WebKit/public/web/WebDevToolsAgent.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebTestingSupport.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -72,9 +72,10 @@ using blink::WebDevToolsAgent;
 using blink::WebDeviceMotionData;
 using blink::WebDeviceOrientationData;
 using blink::WebElement;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebGamepads;
 using blink::WebHistoryItem;
+using blink::WebLocalFrame;
 using blink::WebPoint;
 using blink::WebRect;
 using blink::WebScriptSource;
@@ -570,7 +571,8 @@ void WebKitTestRunner::captureHistoryForWindow(
 
 // RenderViewObserver  --------------------------------------------------------
 
-void WebKitTestRunner::DidClearWindowObject(WebFrame* frame, int world_id) {
+void WebKitTestRunner::DidClearWindowObject(WebLocalFrame* frame,
+                                            int world_id) {
   WebTestingSupport::injectInternalsObject(frame);
   if (world_id == 0) {
     ShellRenderProcessObserver::GetInstance()->test_interfaces()->bindTo(frame);
@@ -605,7 +607,7 @@ void WebKitTestRunner::Navigate(const GURL& url) {
   }
 }
 
-void WebKitTestRunner::DidCommitProvisionalLoad(WebFrame* frame,
+void WebKitTestRunner::DidCommitProvisionalLoad(WebLocalFrame* frame,
                                                 bool is_new_navigation) {
   if (!focus_on_next_commit_)
     return;
@@ -613,7 +615,7 @@ void WebKitTestRunner::DidCommitProvisionalLoad(WebFrame* frame,
   render_view()->GetWebView()->setFocusedFrame(frame);
 }
 
-void WebKitTestRunner::DidFailProvisionalLoad(WebFrame* frame,
+void WebKitTestRunner::DidFailProvisionalLoad(WebLocalFrame* frame,
                                               const WebURLError& error) {
   focus_on_next_commit_ = false;
 }
@@ -638,7 +640,7 @@ void WebKitTestRunner::Reset() {
   // Resetting the internals object also overrides the WebPreferences, so we
   // have to sync them to WebKit again.
   WebTestingSupport::resetInternalsObject(
-      render_view()->GetWebView()->mainFrame());
+      render_view()->GetWebView()->mainFrame()->toWebLocalFrame());
   render_view()->SetWebkitPreferences(render_view()->GetWebkitPreferences());
 }
 
@@ -735,12 +737,12 @@ void WebKitTestRunner::OnTryLeakDetection() {
 }
 
 void WebKitTestRunner::TryLeakDetection() {
-  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
+  WebLocalFrame* main_frame =
+      render_view()->GetWebView()->mainFrame()->toWebLocalFrame();
   DCHECK_EQ(GURL(kAboutBlankURL), GURL(main_frame->document().url()));
   DCHECK(!main_frame->isLoading());
 
-  LeakDetectionResult result = leak_detector_->TryLeakDetection(
-      render_view()->GetWebView()->mainFrame());
+  LeakDetectionResult result = leak_detector_->TryLeakDetection(main_frame);
   Send(new ShellViewHostMsg_LeakDetectionDone(routing_id(), result));
 }
 

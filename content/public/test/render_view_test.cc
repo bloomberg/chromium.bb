@@ -357,7 +357,7 @@ bool RenderViewTest::OnMessageReceived(const IPC::Message& msg) {
   return impl->OnMessageReceived(msg);
 }
 
-void RenderViewTest::DidNavigateWithinPage(blink::WebFrame* frame,
+void RenderViewTest::DidNavigateWithinPage(blink::WebLocalFrame* frame,
                                            bool is_new_navigation) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->didNavigateWithinPage(frame, is_new_navigation);

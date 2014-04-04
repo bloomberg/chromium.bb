@@ -49,7 +49,8 @@ void RendererAccessibilityFocusOnly::FocusedNodeChanged(const WebNode& node) {
   HandleFocusedNodeChanged(node, true);
 }
 
-void RendererAccessibilityFocusOnly::DidFinishLoad(blink::WebFrame* frame) {
+void RendererAccessibilityFocusOnly::DidFinishLoad(
+    blink::WebLocalFrame* frame) {
   WebView* view = render_view()->GetWebView();
   if (view->focusedFrame() != frame)
     return;

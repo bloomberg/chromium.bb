@@ -44,13 +44,13 @@ class WebKitTestRunner : public RenderViewObserver,
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidClearWindowObject(blink::WebFrame* frame,
+  virtual void DidClearWindowObject(blink::WebLocalFrame* frame,
                                     int world_id) OVERRIDE;
   virtual void Navigate(const GURL& url) OVERRIDE;
-  virtual void DidCommitProvisionalLoad(blink::WebFrame* frame,
+  virtual void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
-  virtual void DidFailProvisionalLoad(
-      blink::WebFrame* frame, const blink::WebURLError& error) OVERRIDE;
+  virtual void DidFailProvisionalLoad(blink::WebLocalFrame* frame,
+                                      const blink::WebURLError& error) OVERRIDE;
 
   // WebTestDelegate implementation.
   virtual void clearEditCommand() OVERRIDE;

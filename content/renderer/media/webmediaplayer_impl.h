@@ -27,13 +27,14 @@
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
+// TODO(dcheng): Convert back to forward declare.
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
 
 class RenderAudioSourceProvider;
 
 namespace blink {
 class WebContentDecryptionModule;
-class WebFrame;
 }
 
 namespace base {
@@ -68,11 +69,10 @@ class WebMediaPlayerImpl
  public:
   // Constructs a WebMediaPlayer implementation using Chromium's media stack.
   // |delegate| may be null.
-  WebMediaPlayerImpl(
-      blink::WebFrame* frame,
-      blink::WebMediaPlayerClient* client,
-      base::WeakPtr<WebMediaPlayerDelegate> delegate,
-      const WebMediaPlayerParams& params);
+  WebMediaPlayerImpl(blink::WebLocalFrame* frame,
+                     blink::WebMediaPlayerClient* client,
+                     base::WeakPtr<WebMediaPlayerDelegate> delegate,
+                     const WebMediaPlayerParams& params);
   virtual ~WebMediaPlayerImpl();
 
   virtual void load(LoadType load_type,
@@ -238,7 +238,7 @@ class WebMediaPlayerImpl
   // NULL immediately and reset.
   void SetDecryptorReadyCB(const media::DecryptorReadyCB& decryptor_ready_cb);
 
-  blink::WebFrame* frame_;
+  blink::WebLocalFrame* frame_;
 
   // TODO(hclam): get rid of these members and read from the pipeline directly.
   blink::WebMediaPlayer::NetworkState network_state_;

@@ -65,7 +65,7 @@ class WebUIMojo
   WebUIMojoContextState* GetContextState();
 
   // RenderViewObserver overrides:
-  virtual void DidClearWindowObject(blink::WebFrame* frame,
+  virtual void DidClearWindowObject(blink::WebLocalFrame* frame,
                                     int world_id) OVERRIDE;
 
   MainFrameObserver main_frame_observer_;

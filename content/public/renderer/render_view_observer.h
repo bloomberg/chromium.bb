@@ -12,6 +12,8 @@
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebIconURL.h"
+// TODO(dcheng): Temporary. Convert back to a forward declare.
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 class GURL;
 
@@ -52,37 +54,38 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   // These match the WebKit API notifications
   virtual void DidStartLoading() {}
   virtual void DidStopLoading() {}
-  virtual void DidFinishDocumentLoad(blink::WebFrame* frame) {}
-  virtual void DidFailLoad(blink::WebFrame* frame,
+  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) {}
+  virtual void DidFailLoad(blink::WebLocalFrame* frame,
                            const blink::WebURLError& error) {}
-  virtual void DidFinishLoad(blink::WebFrame* frame) {}
-  virtual void DidStartProvisionalLoad(blink::WebFrame* frame) {}
-  virtual void DidFailProvisionalLoad(blink::WebFrame* frame,
+  virtual void DidFinishLoad(blink::WebLocalFrame* frame) {}
+  virtual void DidStartProvisionalLoad(blink::WebLocalFrame* frame) {}
+  virtual void DidFailProvisionalLoad(blink::WebLocalFrame* frame,
                                       const blink::WebURLError& error) {}
-  virtual void DidCommitProvisionalLoad(blink::WebFrame* frame,
+  virtual void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                         bool is_new_navigation) {}
-  virtual void DidClearWindowObject(blink::WebFrame* frame, int world_id) {}
-  virtual void DidCreateDocumentElement(blink::WebFrame* frame) {}
-  virtual void FrameCreated(blink::WebFrame* parent,
+  virtual void DidClearWindowObject(blink::WebLocalFrame* frame, int world_id) {
+  }
+  virtual void DidCreateDocumentElement(blink::WebLocalFrame* frame) {}
+  virtual void FrameCreated(blink::WebLocalFrame* parent,
                             blink::WebFrame* frame) {}
   virtual void FrameDetached(blink::WebFrame* frame) {}
   virtual void FrameWillClose(blink::WebFrame* frame) {}
   virtual void DidMatchCSS(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors) {}
-  virtual void WillSendSubmitEvent(blink::WebFrame* frame,
+  virtual void WillSendSubmitEvent(blink::WebLocalFrame* frame,
                                    const blink::WebFormElement& form) {}
-  virtual void WillSubmitForm(blink::WebFrame* frame,
+  virtual void WillSubmitForm(blink::WebLocalFrame* frame,
                               const blink::WebFormElement& form) {}
-  virtual void DidCreateDataSource(blink::WebFrame* frame,
+  virtual void DidCreateDataSource(blink::WebLocalFrame* frame,
                                    blink::WebDataSource* ds) {}
-  virtual void PrintPage(blink::WebFrame* frame, bool user_initiated) {}
+  virtual void PrintPage(blink::WebLocalFrame* frame, bool user_initiated) {}
   virtual void FocusedNodeChanged(const blink::WebNode& node) {}
-  virtual void WillCreateMediaPlayer(blink::WebFrame* frame,
+  virtual void WillCreateMediaPlayer(blink::WebLocalFrame* frame,
                                      blink::WebMediaPlayerClient* client) {}
   virtual void ZoomLevelChanged() {};
-  virtual void DidChangeScrollOffset(blink::WebFrame* frame) {}
+  virtual void DidChangeScrollOffset(blink::WebLocalFrame* frame) {}
   virtual void DraggableRegionsChanged(blink::WebFrame* frame) {}
   virtual void DidCommitCompositorFrame() {}
   virtual void DidUpdateLayout() {}

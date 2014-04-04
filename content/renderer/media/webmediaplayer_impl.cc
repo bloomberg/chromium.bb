@@ -140,7 +140,7 @@ static void LogMediaSourceError(const scoped_refptr<media::MediaLog>& media_log,
 }
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     blink::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
     const WebMediaPlayerParams& params)

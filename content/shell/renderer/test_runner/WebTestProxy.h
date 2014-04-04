@@ -18,7 +18,10 @@
 #include "third_party/WebKit/public/web/WebDOMMessageEvent.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebIconURL.h"
+// TODO(dcheng): Temporary. Delete once forward declarable.
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebNavigationType.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
@@ -139,17 +142,17 @@ protected:
     void show(blink::WebNavigationPolicy);
     void didAutoResize(const blink::WebSize&);
     void postAccessibilityEvent(const blink::WebAXObject&, blink::WebAXEvent);
-    void startDragging(blink::WebFrame*, const blink::WebDragData&, blink::WebDragOperationsMask, const blink::WebImage&, const blink::WebPoint&);
+    void startDragging(blink::WebLocalFrame*, const blink::WebDragData&, blink::WebDragOperationsMask, const blink::WebImage&, const blink::WebPoint&);
     void didChangeSelection(bool isEmptySelection);
     void didChangeContents();
     void didEndEditing();
-    bool createView(blink::WebFrame* creator, const blink::WebURLRequest&, const blink::WebWindowFeatures&, const blink::WebString& frameName, blink::WebNavigationPolicy, bool suppressOpener);
-    blink::WebPlugin* createPlugin(blink::WebFrame*, const blink::WebPluginParams&);
+    bool createView(blink::WebLocalFrame* creator, const blink::WebURLRequest&, const blink::WebWindowFeatures&, const blink::WebString& frameName, blink::WebNavigationPolicy, bool suppressOpener);
+    blink::WebPlugin* createPlugin(blink::WebLocalFrame*, const blink::WebPluginParams&);
     void setStatusText(const blink::WebString&);
     void didStopLoading();
-    void showContextMenu(blink::WebFrame*, const blink::WebContextMenuData&);
+    void showContextMenu(blink::WebLocalFrame*, const blink::WebContextMenuData&);
     blink::WebUserMediaClient* userMediaClient();
-    void printPage(blink::WebFrame*);
+    void printPage(blink::WebLocalFrame*);
     blink::WebNotificationPresenter* notificationPresenter();
     blink::WebMIDIClient* webMIDIClient();
     blink::WebSpeechInputController* speechInputController(blink::WebSpeechInputListener*);
@@ -161,31 +164,31 @@ protected:
     void didBlur();
     void setToolTipText(const blink::WebString&, blink::WebTextDirection);
     void didAddMessageToConsole(const blink::WebConsoleMessage&, const blink::WebString& sourceName, unsigned sourceLine);
-    void runModalAlertDialog(blink::WebFrame*, const blink::WebString&);
-    bool runModalConfirmDialog(blink::WebFrame*, const blink::WebString&);
-    bool runModalPromptDialog(blink::WebFrame*, const blink::WebString& message, const blink::WebString& defaultValue, blink::WebString* actualValue);
-    bool runModalBeforeUnloadDialog(blink::WebFrame*, const blink::WebString&);
+    void runModalAlertDialog(blink::WebLocalFrame*, const blink::WebString&);
+    bool runModalConfirmDialog(blink::WebLocalFrame*, const blink::WebString&);
+    bool runModalPromptDialog(blink::WebLocalFrame*, const blink::WebString& message, const blink::WebString& defaultValue, blink::WebString* actualValue);
+    bool runModalBeforeUnloadDialog(blink::WebLocalFrame*, const blink::WebString&);
 
-    void didStartProvisionalLoad(blink::WebFrame*);
-    void didReceiveServerRedirectForProvisionalLoad(blink::WebFrame*);
-    bool didFailProvisionalLoad(blink::WebFrame*, const blink::WebURLError&);
-    void didCommitProvisionalLoad(blink::WebFrame*, bool isNewNavigation);
-    void didReceiveTitle(blink::WebFrame*, const blink::WebString& title, blink::WebTextDirection);
-    void didChangeIcon(blink::WebFrame*, blink::WebIconURL::Type);
-    void didFinishDocumentLoad(blink::WebFrame*);
-    void didHandleOnloadEvents(blink::WebFrame*);
-    void didFailLoad(blink::WebFrame*, const blink::WebURLError&);
-    void didFinishLoad(blink::WebFrame*);
-    void didChangeLocationWithinPage(blink::WebFrame*);
-    void didDetectXSS(blink::WebFrame*, const blink::WebURL& insecureURL, bool didBlockEntirePage);
-    void didDispatchPingLoader(blink::WebFrame*, const blink::WebURL&);
-    void willRequestResource(blink::WebFrame*, const blink::WebCachedURLRequest&);
-    void willSendRequest(blink::WebFrame*, unsigned identifier, blink::WebURLRequest&, const blink::WebURLResponse& redirectResponse);
-    void didReceiveResponse(blink::WebFrame*, unsigned identifier, const blink::WebURLResponse&);
-    void didChangeResourcePriority(blink::WebFrame*, unsigned identifier, const blink::WebURLRequest::Priority&);
-    void didFinishResourceLoad(blink::WebFrame*, unsigned identifier);
-    blink::WebNavigationPolicy decidePolicyForNavigation(blink::WebFrame*, blink::WebDataSource::ExtraData*, const blink::WebURLRequest&, blink::WebNavigationType, blink::WebNavigationPolicy defaultPolicy, bool isRedirect);
-    bool willCheckAndDispatchMessageEvent(blink::WebFrame* sourceFrame, blink::WebFrame* targetFrame, blink::WebSecurityOrigin target, blink::WebDOMMessageEvent);
+    void didStartProvisionalLoad(blink::WebLocalFrame*);
+    void didReceiveServerRedirectForProvisionalLoad(blink::WebLocalFrame*);
+    bool didFailProvisionalLoad(blink::WebLocalFrame*, const blink::WebURLError&);
+    void didCommitProvisionalLoad(blink::WebLocalFrame*, bool isNewNavigation);
+    void didReceiveTitle(blink::WebLocalFrame*, const blink::WebString& title, blink::WebTextDirection);
+    void didChangeIcon(blink::WebLocalFrame*, blink::WebIconURL::Type);
+    void didFinishDocumentLoad(blink::WebLocalFrame*);
+    void didHandleOnloadEvents(blink::WebLocalFrame*);
+    void didFailLoad(blink::WebLocalFrame*, const blink::WebURLError&);
+    void didFinishLoad(blink::WebLocalFrame*);
+    void didChangeLocationWithinPage(blink::WebLocalFrame*);
+    void didDetectXSS(blink::WebLocalFrame*, const blink::WebURL& insecureURL, bool didBlockEntirePage);
+    void didDispatchPingLoader(blink::WebLocalFrame*, const blink::WebURL&);
+    void willRequestResource(blink::WebLocalFrame*, const blink::WebCachedURLRequest&);
+    void willSendRequest(blink::WebLocalFrame*, unsigned identifier, blink::WebURLRequest&, const blink::WebURLResponse& redirectResponse);
+    void didReceiveResponse(blink::WebLocalFrame*, unsigned identifier, const blink::WebURLResponse&);
+    void didChangeResourcePriority(blink::WebLocalFrame*, unsigned identifier, const blink::WebURLRequest::Priority&);
+    void didFinishResourceLoad(blink::WebLocalFrame*, unsigned identifier);
+    blink::WebNavigationPolicy decidePolicyForNavigation(blink::WebLocalFrame*, blink::WebDataSource::ExtraData*, const blink::WebURLRequest&, blink::WebNavigationType, blink::WebNavigationPolicy defaultPolicy, bool isRedirect);
+    bool willCheckAndDispatchMessageEvent(blink::WebLocalFrame* sourceFrame, blink::WebFrame* targetFrame, blink::WebSecurityOrigin target, blink::WebDOMMessageEvent);
     void resetInputMethod();
 
 private:
@@ -282,7 +285,7 @@ public:
         WebTestProxyBase::postAccessibilityEvent(object, event);
         Base::postAccessibilityEvent(object, event);
     }
-    virtual void startDragging(blink::WebFrame* frame, const blink::WebDragData& data, blink::WebDragOperationsMask mask, const blink::WebImage& image, const blink::WebPoint& point)
+    virtual void startDragging(blink::WebLocalFrame* frame, const blink::WebDragData& data, blink::WebDragOperationsMask mask, const blink::WebImage& image, const blink::WebPoint& point)
     {
         WebTestProxyBase::startDragging(frame, data, mask, image, point);
         // Don't forward this call to Base because we don't want to do a real drag-and-drop.
@@ -292,7 +295,7 @@ public:
         WebTestProxyBase::didChangeContents();
         Base::didChangeContents();
     }
-    virtual blink::WebView* createView(blink::WebFrame* creator, const blink::WebURLRequest& request, const blink::WebWindowFeatures& features, const blink::WebString& frameName, blink::WebNavigationPolicy policy, bool suppressOpener)
+    virtual blink::WebView* createView(blink::WebLocalFrame* creator, const blink::WebURLRequest& request, const blink::WebWindowFeatures& features, const blink::WebString& frameName, blink::WebNavigationPolicy policy, bool suppressOpener)
     {
         if (!WebTestProxyBase::createView(creator, request, features, frameName, policy, suppressOpener))
             return 0;
@@ -307,7 +310,7 @@ public:
     {
         return WebTestProxyBase::userMediaClient();
     }
-    virtual void printPage(blink::WebFrame* frame)
+    virtual void printPage(blink::WebLocalFrame* frame)
     {
         WebTestProxyBase::printPage(frame);
     }
@@ -359,17 +362,17 @@ public:
         WebTestProxyBase::resetInputMethod();
     }
 
-    virtual void didStartProvisionalLoad(blink::WebFrame* frame)
+    virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame)
     {
         WebTestProxyBase::didStartProvisionalLoad(frame);
         Base::didStartProvisionalLoad(frame);
     }
-    virtual void didReceiveServerRedirectForProvisionalLoad(blink::WebFrame* frame)
+    virtual void didReceiveServerRedirectForProvisionalLoad(blink::WebLocalFrame* frame)
     {
         WebTestProxyBase::didReceiveServerRedirectForProvisionalLoad(frame);
         Base::didReceiveServerRedirectForProvisionalLoad(frame);
     }
-    virtual void didFailProvisionalLoad(blink::WebFrame* frame, const blink::WebURLError& error)
+    virtual void didFailProvisionalLoad(blink::WebLocalFrame* frame, const blink::WebURLError& error)
     {
         // If the test finished, don't notify the embedder of the failed load,
         // as we already destroyed the document loader.
@@ -377,91 +380,91 @@ public:
             return;
         Base::didFailProvisionalLoad(frame, error);
     }
-    virtual void didCommitProvisionalLoad(blink::WebFrame* frame, bool isNewNavigation)
+    virtual void didCommitProvisionalLoad(blink::WebLocalFrame* frame, bool isNewNavigation)
     {
         WebTestProxyBase::didCommitProvisionalLoad(frame, isNewNavigation);
         Base::didCommitProvisionalLoad(frame, isNewNavigation);
     }
-    virtual void didReceiveTitle(blink::WebFrame* frame, const blink::WebString& title, blink::WebTextDirection direction)
+    virtual void didReceiveTitle(blink::WebLocalFrame* frame, const blink::WebString& title, blink::WebTextDirection direction)
     {
         WebTestProxyBase::didReceiveTitle(frame, title, direction);
         Base::didReceiveTitle(frame, title, direction);
     }
-    virtual void didChangeIcon(blink::WebFrame* frame, blink::WebIconURL::Type iconType)
+    virtual void didChangeIcon(blink::WebLocalFrame* frame, blink::WebIconURL::Type iconType)
     {
         WebTestProxyBase::didChangeIcon(frame, iconType);
         Base::didChangeIcon(frame, iconType);
     }
-    virtual void didFinishDocumentLoad(blink::WebFrame* frame)
+    virtual void didFinishDocumentLoad(blink::WebLocalFrame* frame)
     {
         WebTestProxyBase::didFinishDocumentLoad(frame);
         Base::didFinishDocumentLoad(frame);
     }
-    virtual void didHandleOnloadEvents(blink::WebFrame* frame)
+    virtual void didHandleOnloadEvents(blink::WebLocalFrame* frame)
     {
         WebTestProxyBase::didHandleOnloadEvents(frame);
         Base::didHandleOnloadEvents(frame);
     }
-    virtual void didFailLoad(blink::WebFrame* frame, const blink::WebURLError& error)
+    virtual void didFailLoad(blink::WebLocalFrame* frame, const blink::WebURLError& error)
     {
         WebTestProxyBase::didFailLoad(frame, error);
         Base::didFailLoad(frame, error);
     }
-    virtual void didFinishLoad(blink::WebFrame* frame)
+    virtual void didFinishLoad(blink::WebLocalFrame* frame)
     {
         WebTestProxyBase::didFinishLoad(frame);
         Base::didFinishLoad(frame);
     }
-    virtual void didDetectXSS(blink::WebFrame* frame, const blink::WebURL& insecureURL, bool didBlockEntirePage)
+    virtual void didDetectXSS(blink::WebLocalFrame* frame, const blink::WebURL& insecureURL, bool didBlockEntirePage)
     {
         WebTestProxyBase::didDetectXSS(frame, insecureURL, didBlockEntirePage);
         Base::didDetectXSS(frame, insecureURL, didBlockEntirePage);
     }
-    virtual void willRequestResource(blink::WebFrame* frame, const blink::WebCachedURLRequest& request)
+    virtual void willRequestResource(blink::WebLocalFrame* frame, const blink::WebCachedURLRequest& request)
     {
         WebTestProxyBase::willRequestResource(frame, request);
         Base::willRequestResource(frame, request);
     }
-    virtual void willSendRequest(blink::WebFrame* frame, unsigned identifier, blink::WebURLRequest& request, const blink::WebURLResponse& redirectResponse)
+    virtual void willSendRequest(blink::WebLocalFrame* frame, unsigned identifier, blink::WebURLRequest& request, const blink::WebURLResponse& redirectResponse)
     {
         WebTestProxyBase::willSendRequest(frame, identifier, request, redirectResponse);
         Base::willSendRequest(frame, identifier, request, redirectResponse);
     }
-    virtual void didReceiveResponse(blink::WebFrame* frame, unsigned identifier, const blink::WebURLResponse& response)
+    virtual void didReceiveResponse(blink::WebLocalFrame* frame, unsigned identifier, const blink::WebURLResponse& response)
     {
         WebTestProxyBase::didReceiveResponse(frame, identifier, response);
         Base::didReceiveResponse(frame, identifier, response);
     }
-    virtual void didChangeResourcePriority(blink::WebFrame* frame, unsigned identifier, const blink::WebURLRequest::Priority& priority)
+    virtual void didChangeResourcePriority(blink::WebLocalFrame* frame, unsigned identifier, const blink::WebURLRequest::Priority& priority)
     {
         WebTestProxyBase::didChangeResourcePriority(frame, identifier, priority);
         Base::didChangeResourcePriority(frame, identifier, priority);
     }
-    virtual void didFinishResourceLoad(blink::WebFrame* frame, unsigned identifier)
+    virtual void didFinishResourceLoad(blink::WebLocalFrame* frame, unsigned identifier)
     {
         WebTestProxyBase::didFinishResourceLoad(frame, identifier);
         Base::didFinishResourceLoad(frame, identifier);
     }
-    virtual void runModalAlertDialog(blink::WebFrame* frame, const blink::WebString& message)
+    virtual void runModalAlertDialog(blink::WebLocalFrame* frame, const blink::WebString& message)
     {
         WebTestProxyBase::runModalAlertDialog(frame, message);
         Base::runModalAlertDialog(frame, message);
     }
-    virtual bool runModalConfirmDialog(blink::WebFrame* frame, const blink::WebString& message)
+    virtual bool runModalConfirmDialog(blink::WebLocalFrame* frame, const blink::WebString& message)
     {
         WebTestProxyBase::runModalConfirmDialog(frame, message);
         return Base::runModalConfirmDialog(frame, message);
     }
-    virtual bool runModalPromptDialog(blink::WebFrame* frame, const blink::WebString& message, const blink::WebString& defaultValue, blink::WebString* actualValue)
+    virtual bool runModalPromptDialog(blink::WebLocalFrame* frame, const blink::WebString& message, const blink::WebString& defaultValue, blink::WebString* actualValue)
     {
         WebTestProxyBase::runModalPromptDialog(frame, message, defaultValue, actualValue);
         return Base::runModalPromptDialog(frame, message, defaultValue, actualValue);
     }
-    virtual bool runModalBeforeUnloadDialog(blink::WebFrame* frame, const blink::WebString& message)
+    virtual bool runModalBeforeUnloadDialog(blink::WebLocalFrame* frame, const blink::WebString& message)
     {
         return WebTestProxyBase::runModalBeforeUnloadDialog(frame, message);
     }
-    virtual bool willCheckAndDispatchMessageEvent(blink::WebFrame* sourceFrame, blink::WebFrame* targetFrame, blink::WebSecurityOrigin target, blink::WebDOMMessageEvent event)
+    virtual bool willCheckAndDispatchMessageEvent(blink::WebLocalFrame* sourceFrame, blink::WebFrame* targetFrame, blink::WebSecurityOrigin target, blink::WebDOMMessageEvent event)
     {
         if (WebTestProxyBase::willCheckAndDispatchMessageEvent(sourceFrame, targetFrame, target, event))
             return true;
