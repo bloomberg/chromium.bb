@@ -6,7 +6,7 @@ define([
     'console',
     'monotonic_clock',
     'timer',
-    'mojo/public/bindings/js/connection',
+    'mojo/public/js/bindings/connection',
     'mojo/bindings/js/core',
     'mojo/apps/js/bindings/gl',
     'mojo/apps/js/bindings/threading',

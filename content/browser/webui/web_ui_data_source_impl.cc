@@ -15,7 +15,7 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if defined(USE_MOJO)
-#include "mojo/public/bindings/js/constants.h"
+#include "mojo/public/js/bindings/constants.h"
 #endif
 
 namespace content {

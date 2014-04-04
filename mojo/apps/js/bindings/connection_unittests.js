@@ -50,7 +50,7 @@ define([
     "gin/test/expect",
     "mojo/bindings/js/support",
     "mojo/bindings/js/core",
-    "mojo/public/bindings/js/connection",
+    "mojo/public/js/bindings/connection",
     "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom",
     "mojo/public/interfaces/bindings/tests/sample_service.mojom",
     "gc",

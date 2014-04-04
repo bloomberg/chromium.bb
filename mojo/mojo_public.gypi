@@ -246,8 +246,6 @@
         '..'
       ],
       'sources': [
-        'public/bindings/js/constants.cc',
-        'public/bindings/js/constants.h',
         'public/cpp/bindings/allocation_scope.h',
         'public/cpp/bindings/array.h',
         'public/cpp/bindings/buffer.h',
@@ -285,6 +283,8 @@
         'public/cpp/bindings/lib/shared_data.h',
         'public/cpp/bindings/lib/shared_ptr.h',
         'public/cpp/bindings/lib/sync_dispatcher.cc',
+        'public/js/bindings/constants.cc',
+        'public/js/bindings/constants.h',
       ],
     },
     {

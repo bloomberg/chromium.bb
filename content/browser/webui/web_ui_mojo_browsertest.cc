@@ -22,8 +22,8 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
 #include "grit/content_resources.h"
-#include "mojo/public/bindings/js/constants.h"
 #include "mojo/public/cpp/bindings/remote_ptr.h"
+#include "mojo/public/js/bindings/constants.h"
 
 namespace content {
 namespace {

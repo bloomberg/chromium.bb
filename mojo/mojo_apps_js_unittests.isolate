@@ -23,7 +23,7 @@
           '<(PRODUCT_DIR)/gen/mojo/public/interfaces/bindings/tests/',
           'apps/js/',
           'bindings/js/',
-          'public/bindings/js/',
+          'public/js/bindings/',
         ],
       },
     }],
