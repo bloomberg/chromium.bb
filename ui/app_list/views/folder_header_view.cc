@@ -47,12 +47,6 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
   virtual ~FolderNameView() {
   }
 
-  void Update() {
-    SetBackgroundColor(text().size() <= kMaxFolderNameChars
-                           ? kContentsBackgroundColor
-                           : SK_ColorRED);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(FolderNameView);
 };
@@ -120,7 +114,6 @@ void FolderHeaderView::Update() {
   folder_name_view_->SetVisible(folder_name_visible_);
   if (folder_name_visible_) {
     folder_name_view_->SetText(base::UTF8ToUTF16(folder_item_->name()));
-    folder_name_view_->Update();
   }
 
   Layout();
@@ -193,7 +186,6 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
   if (!folder_item_)
     return;
 
-  folder_name_view_->Update();
   folder_item_->RemoveObserver(this);
   // Enforce the maximum folder name length in UI.
   std::string name = base::UTF16ToUTF8(
