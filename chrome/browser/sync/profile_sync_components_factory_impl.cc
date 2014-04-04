@@ -388,13 +388,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
               profile_,
               pss));
 
-    // Synced Notification App Infos are enabled by default.
-    // For now we only enable it on Dev and Canary.
-    // TODO(petewil): Enable on stable once we have tested on stable.
-    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-    if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
-        channel == chrome::VersionInfo::CHANNEL_DEV ||
-        channel == chrome::VersionInfo::CHANNEL_CANARY) {
+    // Synced Notification App Infos are disabled by default.
+    if (command_line_->HasSwitch(switches::kEnableSyncSyncedNotifications)) {
       pss->RegisterDataTypeController(new UIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),

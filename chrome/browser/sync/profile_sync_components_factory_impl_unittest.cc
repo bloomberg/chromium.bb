@@ -63,13 +63,6 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
     datatypes.push_back(syncer::FAVICON_TRACKING);
     datatypes.push_back(syncer::FAVICON_IMAGES);
     datatypes.push_back(syncer::SYNCED_NOTIFICATIONS);
-    // TODO(petewil): Enable on stable once we have tested on stable.
-    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-    if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
-        channel == chrome::VersionInfo::CHANNEL_DEV ||
-        channel == chrome::VersionInfo::CHANNEL_CANARY) {
-      datatypes.push_back(syncer::SYNCED_NOTIFICATION_APP_INFO);
-    }
     datatypes.push_back(syncer::MANAGED_USERS);
     datatypes.push_back(syncer::MANAGED_USER_SHARED_SETTINGS);
 
