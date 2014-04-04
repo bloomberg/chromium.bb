@@ -8,7 +8,6 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
@@ -118,7 +117,7 @@ bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
 }
 
 bool GoogleURLTrackerInfoBarDelegate::ShouldExpireInternal(
-    const content::LoadCommittedDetails& details) const {
-  int unique_id = details.entry->GetUniqueID();
-  return (unique_id != contents_unique_id()) && (unique_id != pending_id_);
+    const NavigationDetails& details) const {
+  return (details.entry_id != contents_unique_id()) &&
+      (details.entry_id != pending_id_);
 }

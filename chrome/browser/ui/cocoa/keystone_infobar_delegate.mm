@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -58,7 +57,7 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool ShouldExpireInternal(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
+      const NavigationDetails& details) const OVERRIDE;
 
   // The prefs to use.
   PrefService* prefs_;  // weak
@@ -132,7 +131,7 @@ bool KeystonePromotionInfoBarDelegate::Cancel() {
 }
 
 bool KeystonePromotionInfoBarDelegate::ShouldExpireInternal(
-    const content::LoadCommittedDetails& details) const {
+    const NavigationDetails& details) const {
   return can_expire_;
 }
 

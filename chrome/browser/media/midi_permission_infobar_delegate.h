@@ -40,7 +40,7 @@ class MidiPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual int GetIconID() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual bool ShouldExpireInternal(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
+      const NavigationDetails& details) const OVERRIDE;
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;

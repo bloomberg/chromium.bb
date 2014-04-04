@@ -91,8 +91,7 @@ class ManagedModeWarningInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~ManagedModeWarningInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual bool ShouldExpire(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
+  virtual bool ShouldExpire(const NavigationDetails& details) const OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
@@ -118,7 +117,7 @@ ManagedModeWarningInfoBarDelegate::~ManagedModeWarningInfoBarDelegate() {
 }
 
 bool ManagedModeWarningInfoBarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
+    const NavigationDetails& details) const {
   // ManagedModeNavigationObserver removes us below.
   return false;
 }

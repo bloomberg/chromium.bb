@@ -80,7 +80,7 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool ShouldExpireInternal(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
+      const NavigationDetails& details) const OVERRIDE;
 
   // The prefs to use.
   PrefService* prefs_;
@@ -171,7 +171,7 @@ bool DefaultBrowserInfoBarDelegate::Cancel() {
 }
 
 bool DefaultBrowserInfoBarDelegate::ShouldExpireInternal(
-    const content::LoadCommittedDetails& details) const {
+    const NavigationDetails& details) const {
   return should_expire_;
 }
 

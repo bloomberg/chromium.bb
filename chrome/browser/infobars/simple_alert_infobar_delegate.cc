@@ -44,6 +44,6 @@ int SimpleAlertInfoBarDelegate::GetButtons() const {
 }
 
 bool SimpleAlertInfoBarDelegate::ShouldExpireInternal(
-      const content::LoadCommittedDetails& details) const {
+    const NavigationDetails& details) const {
   return auto_expire_ && ConfirmInfoBarDelegate::ShouldExpireInternal(details);
 }

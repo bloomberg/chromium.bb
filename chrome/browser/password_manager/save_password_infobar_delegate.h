@@ -12,7 +12,6 @@
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
-#include "content/public/browser/navigation_details.h"
 
 namespace content {
 class WebContents;
@@ -60,8 +59,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
       scoped_ptr<SavePasswordInfoBarDelegate> delegate);
 
   // InfoBarDelegate
-  virtual bool ShouldExpire(const content::LoadCommittedDetails& details)
-      const OVERRIDE;
+  virtual bool ShouldExpire(const NavigationDetails& details) const OVERRIDE;
 
   // ConfirmInfoBarDelegate
   virtual int GetIconID() const OVERRIDE;

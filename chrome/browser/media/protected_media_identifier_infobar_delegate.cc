@@ -6,7 +6,7 @@
 
 #include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "content/public/browser/navigation_details.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -81,14 +81,11 @@ InfoBarDelegate::Type
 }
 
 bool ProtectedMediaIdentifierInfoBarDelegate::ShouldExpireInternal(
-    const content::LoadCommittedDetails& details) const {
+    const NavigationDetails& details) const {
   // This implementation matches InfoBarDelegate::ShouldExpireInternal(), but
   // uses the unique ID we set in the constructor instead of that stored in the
   // base class.
-  return (contents_unique_id_ != details.entry->GetUniqueID()) ||
-      (content::PageTransitionStripQualifier(
-          details.entry->GetTransitionType()) ==
-              content::PAGE_TRANSITION_RELOAD);
+  return (contents_unique_id_ != details.entry_id) || details.is_reload;
 }
 
 base::string16 ProtectedMediaIdentifierInfoBarDelegate::GetMessageText() const {

@@ -186,8 +186,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   virtual void InfoBarDismissed() OVERRIDE;
   virtual int GetIconID() const OVERRIDE;
   virtual InfoBarDelegate::Type GetInfoBarType() const OVERRIDE;
-  virtual bool ShouldExpire(
-       const content::LoadCommittedDetails& details) const OVERRIDE;
+  virtual bool ShouldExpire(const NavigationDetails& details) const OVERRIDE;
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() OVERRIDE;
 
   TranslateTabHelper::TranslateStep step_;

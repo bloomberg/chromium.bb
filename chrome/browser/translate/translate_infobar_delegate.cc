@@ -19,7 +19,6 @@
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/translate_constants.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -368,10 +367,10 @@ InfoBarDelegate::Type TranslateInfoBarDelegate::GetInfoBarType() const {
 }
 
 bool TranslateInfoBarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
+    const NavigationDetails& details) const {
   // Note: we allow closing this infobar even if the main frame navigation
   // was programmatic and not initiated by the user - crbug.com/70261 .
-  if (!details.is_navigation_to_different_page() && !details.is_main_frame)
+  if (!details.is_navigation_to_different_page && !details.is_main_frame)
     return false;
 
   return InfoBarDelegate::ShouldExpireInternal(details);

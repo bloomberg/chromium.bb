@@ -9,9 +9,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 
 namespace content {
-struct LoadCommittedDetails;
 class WebContents;
 }
 
@@ -82,7 +82,7 @@ class InfoBarManager {
   content::WebContents* web_contents() { return web_contents_; }
 
   // Must be called when a navigation happens.
-  void OnNavigation(const content::LoadCommittedDetails& load_details);
+  void OnNavigation(const InfoBarDelegate::NavigationDetails& details);
 
   // Called when the associated WebContents is being destroyed.
   void OnWebContentsDestroyed();

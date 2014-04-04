@@ -22,7 +22,6 @@
 #include "chrome/installer/util/auto_launch_util.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -54,7 +53,7 @@ class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool ShouldExpireInternal(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
+      const NavigationDetails& details) const OVERRIDE;
 
   // Weak pointer to the profile, not owned by us.
   Profile* profile_;
@@ -125,7 +124,7 @@ bool AutolaunchInfoBarDelegate::Cancel() {
 }
 
 bool AutolaunchInfoBarDelegate::ShouldExpireInternal(
-    const content::LoadCommittedDetails& details) const {
+    const NavigationDetails& details) const {
   return should_expire_;
 }
 

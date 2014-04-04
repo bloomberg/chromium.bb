@@ -133,14 +133,11 @@ InfoBarDelegate::Type GeolocationInfoBarDelegate::GetInfoBarType() const {
 }
 
 bool GeolocationInfoBarDelegate::ShouldExpireInternal(
-    const content::LoadCommittedDetails& details) const {
+    const NavigationDetails& details) const {
   // This implementation matches InfoBarDelegate::ShouldExpireInternal(), but
   // uses the unique ID we set in the constructor instead of that stored in the
   // base class.
-  return (contents_unique_id_ != details.entry->GetUniqueID()) ||
-      (content::PageTransitionStripQualifier(
-          details.entry->GetTransitionType()) ==
-              content::PAGE_TRANSITION_RELOAD);
+  return (contents_unique_id_ != details.entry_id) || details.is_reload;
 }
 
 base::string16 GeolocationInfoBarDelegate::GetMessageText() const {

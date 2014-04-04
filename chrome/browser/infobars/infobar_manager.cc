@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/common/chrome_switches.h"
 
 InfoBar* InfoBarManager::AddInfoBar(scoped_ptr<InfoBar> infobar) {
@@ -91,13 +90,13 @@ InfoBarManager::~InfoBarManager() {
 }
 
 void InfoBarManager::OnNavigation(
-    const content::LoadCommittedDetails& load_details) {
+    const InfoBarDelegate::NavigationDetails& details) {
   // NOTE: It is not safe to change the following code to count upwards or
   // use iterators, as the RemoveInfoBar() call synchronously modifies our
   // delegate list.
   for (size_t i = infobars_.size(); i > 0; --i) {
     InfoBar* infobar = infobars_[i - 1];
-    if (infobar->delegate()->ShouldExpire(load_details))
+    if (infobar->delegate()->ShouldExpire(details))
       RemoveInfoBar(infobar);
   }
 }

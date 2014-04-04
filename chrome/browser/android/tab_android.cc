@@ -14,6 +14,8 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/infobars/infobar_container.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"

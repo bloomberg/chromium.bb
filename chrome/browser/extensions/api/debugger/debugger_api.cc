@@ -159,7 +159,7 @@ class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual void InfoBarDismissed() OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual bool ShouldExpireInternal(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
+      const NavigationDetails& details) const OVERRIDE;
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
@@ -211,7 +211,7 @@ InfoBarDelegate::Type ExtensionDevToolsInfoBarDelegate::GetInfoBarType() const {
 }
 
 bool ExtensionDevToolsInfoBarDelegate::ShouldExpireInternal(
-    const content::LoadCommittedDetails& details) const {
+    const NavigationDetails& details) const {
   return false;
 }
 

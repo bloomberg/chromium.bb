@@ -108,10 +108,8 @@ scoped_ptr<InfoBar> SavePasswordInfoBarDelegate::CreateInfoBar(
 #endif
 
 bool SavePasswordInfoBarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
-  bool is_not_redirect = !(details.entry->GetTransitionType() &
-                           content::PAGE_TRANSITION_IS_REDIRECT_MASK);
-  return is_not_redirect && InfoBarDelegate::ShouldExpire(details);
+    const NavigationDetails& details) const {
+  return !details.is_redirect && InfoBarDelegate::ShouldExpire(details);
 }
 
 int SavePasswordInfoBarDelegate::GetIconID() const {

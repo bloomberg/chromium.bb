@@ -25,10 +25,13 @@ class InfoBarService : public content::WebContentsObserver,
                        public content::WebContentsUserData<InfoBarService>,
                        public InfoBarManager::Observer {
  public:
-
   // Helper function to get the InfoBarManager attached to |web_contents|.
   static InfoBarManager* InfoBarManagerFromWebContents(
       content::WebContents* web_contents);
+
+  static InfoBarDelegate::NavigationDetails
+      NavigationDetailsFromLoadCommittedDetails(
+          const content::LoadCommittedDetails& details);
 
   // These methods are simple pass-throughs to InfoBarManager, and are here to
   // prepare for the componentization of Infobars, see http://crbug.com/354379.

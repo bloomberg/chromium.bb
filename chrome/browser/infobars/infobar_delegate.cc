@@ -32,9 +32,8 @@ bool InfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
   return false;
 }
 
-bool InfoBarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
-  if (!details.is_navigation_to_different_page())
+bool InfoBarDelegate::ShouldExpire(const NavigationDetails& details) const {
+  if (!details.is_navigation_to_different_page)
     return false;
 
   return ShouldExpireInternal(details);
@@ -117,11 +116,8 @@ InfoBarDelegate::InfoBarDelegate() : contents_unique_id_(0) {
 }
 
 bool InfoBarDelegate::ShouldExpireInternal(
-    const content::LoadCommittedDetails& details) const {
+    const NavigationDetails& details) const {
   // NOTE: If you change this, be sure to check and adjust the behavior of
   // anyone who overrides this as necessary!
-  return (contents_unique_id_ != details.entry->GetUniqueID()) ||
-      (content::PageTransitionStripQualifier(
-          details.entry->GetTransitionType()) ==
-              content::PAGE_TRANSITION_RELOAD);
+  return (contents_unique_id_ != details.entry_id) || details.is_reload;
 }

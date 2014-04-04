@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/startup/session_crashed_infobar_delegate.h"
 
 #include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"

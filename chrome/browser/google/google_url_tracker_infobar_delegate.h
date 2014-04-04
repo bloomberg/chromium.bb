@@ -9,6 +9,7 @@
 #include "url/gurl.h"
 
 class GoogleURLTracker;
+class InfoBarService;
 
 // This infobar is shown by the GoogleURLTracker when the Google base URL has
 // changed.
@@ -46,7 +47,7 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual base::string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
   virtual bool ShouldExpireInternal(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
+      const NavigationDetails& details) const OVERRIDE;
 
   GoogleURLTracker* google_url_tracker_;
   GURL search_url_;

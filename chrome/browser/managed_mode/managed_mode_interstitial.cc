@@ -70,8 +70,11 @@ ManagedModeInterstitial::ManagedModeInterstitial(
     }
     details.type = content::NAVIGATION_TYPE_NEW_PAGE;
     for (int i = infobar_manager->infobar_count() - 1; i >= 0; --i) {
-      if (infobar_manager->infobar_at(i)->delegate()->ShouldExpire(details))
-        infobar_manager->RemoveInfoBar(infobar_manager->infobar_at(i));
+      InfoBar* infobar = infobar_manager->infobar_at(i);
+      if (infobar->delegate()->ShouldExpire(
+              InfoBarService::NavigationDetailsFromLoadCommittedDetails(
+                  details)))
+        infobar_manager->RemoveInfoBar(infobar);
     }
   }
 

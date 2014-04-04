@@ -68,7 +68,7 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
       scoped_ptr<ConfirmInfoBarDelegate> delegate);
 
   virtual bool ShouldExpireInternal(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
+      const NavigationDetails& details) const OVERRIDE;
 
  private:
   // InfoBarDelegate:

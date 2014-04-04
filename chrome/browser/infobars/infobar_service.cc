@@ -9,6 +9,8 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/insecure_content_infobar_delegate.h"
 #include "chrome/common/render_messages.h"
+#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
@@ -22,6 +24,27 @@ InfoBarManager* InfoBarService::InfoBarManagerFromWebContents(
   if (!infobar_service)
     return NULL;
   return infobar_service->infobar_manager();
+}
+
+// static
+InfoBarDelegate::NavigationDetails
+    InfoBarService::NavigationDetailsFromLoadCommittedDetails(
+        const content::LoadCommittedDetails& details) {
+  InfoBarDelegate::NavigationDetails navigation_details;
+  navigation_details.entry_id = details.entry->GetUniqueID();
+  navigation_details.is_navigation_to_different_page =
+      details.is_navigation_to_different_page();
+  navigation_details.did_replace_entry = details.did_replace_entry;
+  navigation_details.is_main_frame = details.is_main_frame;
+
+  const content::PageTransition transition = details.entry->GetTransitionType();
+  navigation_details.is_reload =
+      content::PageTransitionStripQualifier(transition) ==
+      content::PAGE_TRANSITION_RELOAD;
+  navigation_details.is_redirect =
+      (transition & content::PAGE_TRANSITION_IS_REDIRECT_MASK) != 0;
+
+  return navigation_details;
 }
 
 InfoBar* InfoBarService::AddInfoBar(scoped_ptr<InfoBar> infobar) {
@@ -48,7 +71,8 @@ void InfoBarService::RenderProcessGone(base::TerminationStatus status) {
 
 void InfoBarService::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
-  infobar_manager_.OnNavigation(load_details);
+  infobar_manager_.OnNavigation(
+      NavigationDetailsFromLoadCommittedDetails(load_details));
 }
 
 void InfoBarService::WebContentsDestroyed(content::WebContents* web_contents) {

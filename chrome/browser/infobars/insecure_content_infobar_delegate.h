@@ -7,6 +7,8 @@
 
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 
+class InfoBarService;
+
 // Base class for delegates that show warnings on HTTPS pages which try to
 // display or run insecure content.
 class InsecureContentInfoBarDelegate : public ConfirmInfoBarDelegate {

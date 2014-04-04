@@ -26,6 +26,7 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"

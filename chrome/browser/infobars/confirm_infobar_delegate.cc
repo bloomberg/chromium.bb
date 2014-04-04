@@ -4,7 +4,6 @@
 
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 
-#include "content/public/browser/navigation_details.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -50,7 +49,7 @@ ConfirmInfoBarDelegate::ConfirmInfoBarDelegate()
 }
 
 bool ConfirmInfoBarDelegate::ShouldExpireInternal(
-    const content::LoadCommittedDetails& details) const {
+    const NavigationDetails& details) const {
   return !details.did_replace_entry &&
       InfoBarDelegate::ShouldExpireInternal(details);
 }
