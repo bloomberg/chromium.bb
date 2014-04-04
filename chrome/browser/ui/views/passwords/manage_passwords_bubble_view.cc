@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
+#include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -47,6 +48,13 @@ int GetFieldWidth(const autofill::PasswordForm& password_form,
       gfx::GetStringWidth(display_string, font_list));
 }
 
+enum BubbleDisplayDisposition {
+  AUTOMATIC_WITH_PASSWORD_PENDING = 0,
+  MANUAL_WITH_PASSWORD_PENDING,
+  MANUAL_MANAGE_PASSWORDS,
+  NUM_DISPLAY_DISPOSITIONS
+};
+
 }  // namespace
 
 
@@ -58,7 +66,8 @@ ManagePasswordsBubbleView* ManagePasswordsBubbleView::manage_passwords_bubble_ =
 
 // static
 void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
-                                           ManagePasswordsIconView* icon_view) {
+                                           ManagePasswordsIconView* icon_view,
+                                           BubbleDisplayReason reason) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   DCHECK(browser);
   DCHECK(browser->window());
@@ -69,8 +78,8 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
   bool is_fullscreen = browser_view->IsFullscreen();
   views::View* anchor_view = is_fullscreen ?
       NULL : browser_view->GetLocationBarView()->manage_passwords_icon_view();
-  manage_passwords_bubble_ =
-      new ManagePasswordsBubbleView(web_contents, anchor_view, icon_view);
+  manage_passwords_bubble_ = new ManagePasswordsBubbleView(
+      web_contents, anchor_view, icon_view, reason);
 
   if (is_fullscreen) {
     manage_passwords_bubble_->set_parent_window(
@@ -89,9 +98,9 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
 }
 
 // static
-void ManagePasswordsBubbleView::CloseBubble() {
+void ManagePasswordsBubbleView::CloseBubble(BubbleDismissalReason reason) {
   if (manage_passwords_bubble_)
-   manage_passwords_bubble_->Close();
+    manage_passwords_bubble_->Close(reason);
 }
 
 // static
@@ -104,20 +113,42 @@ bool ManagePasswordsBubbleView::IsShowing() {
 ManagePasswordsBubbleView::ManagePasswordsBubbleView(
     content::WebContents* web_contents,
     views::View* anchor_view,
-    ManagePasswordsIconView* icon_view)
-    : BubbleDelegateView(
-          anchor_view,
-          anchor_view ?
-              views::BubbleBorder::TOP_RIGHT : views::BubbleBorder::NONE),
+    ManagePasswordsIconView* icon_view,
+    BubbleDisplayReason reason)
+    : BubbleDelegateView(anchor_view,
+                         anchor_view ? views::BubbleBorder::TOP_RIGHT
+                                     : views::BubbleBorder::NONE),
       manage_passwords_bubble_model_(
           new ManagePasswordsBubbleModel(web_contents)),
       icon_view_(icon_view) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
   set_notify_enter_exit_on_child(true);
+
+  BubbleDisplayDisposition disposition = AUTOMATIC_WITH_PASSWORD_PENDING;
+  if (reason == USER_ACTION) {
+    // TODO(mkwst): Deal with "Never save passwords" once we've decided how that
+    // flow should work.
+    disposition = manage_passwords_bubble_model_->WaitingToSavePassword()
+                      ? MANUAL_WITH_PASSWORD_PENDING
+                      : MANUAL_MANAGE_PASSWORDS;
+  } else {
+    DCHECK(manage_passwords_bubble_model_->WaitingToSavePassword());
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("PasswordBubble.DisplayDisposition",
+                            disposition,
+                            NUM_DISPLAY_DISPOSITIONS);
 }
 
-ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {}
+ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {
+  if (dismissal_reason_ == NOT_DISPLAYED)
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION("PasswordBubble.DismissalReason",
+                            dismissal_reason_,
+                            NUM_DISMISSAL_REASONS);
+}
 
 void ManagePasswordsBubbleView::BuildColumnSet(views::GridLayout* layout,
                                                ColumnSetType type) {
@@ -187,12 +218,18 @@ void ManagePasswordsBubbleView::AdjustForFullscreen(
   SetAnchorRect(gfx::Rect(x_pos, screen_bounds.y(), 0, 0));
 }
 
-void ManagePasswordsBubbleView::Close() {
+void ManagePasswordsBubbleView::Close(BubbleDismissalReason reason) {
+  dismissal_reason_ = reason;
   GetWidget()->Close();
 }
 
 void ManagePasswordsBubbleView::Init() {
   using views::GridLayout;
+
+  // Default to a dismissal reason of "lost focus". If the user interacts with
+  // the button in such a way that it closes, we'll reset this value
+  // accordingly.
+  dismissal_reason_ = BUBBLE_LOST_FOCUS;
 
   GridLayout* layout = new GridLayout(this);
   SetFocusable(true);
@@ -328,20 +365,26 @@ void ManagePasswordsBubbleView::WindowClosing() {
 
 void ManagePasswordsBubbleView::ButtonPressed(views::Button* sender,
                                               const ui::Event& event) {
-  if (sender == save_button_)
+  BubbleDismissalReason reason;
+  if (sender == save_button_) {
     manage_passwords_bubble_model_->OnSaveClicked();
-  else if (sender == cancel_button_)
+    reason = CLICKED_SAVE;
+  } else if (sender == cancel_button_) {
     manage_passwords_bubble_model_->OnCancelClicked();
-  else
+    reason = CLICKED_NOPE;
+  } else {
     DCHECK_EQ(done_button_, sender);
+    reason = CLICKED_DONE;
+  }
   icon_view_->SetTooltip(
       manage_passwords_bubble_model_->manage_passwords_bubble_state() ==
           ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED);
-  Close();
+  Close(reason);
 }
 
 void ManagePasswordsBubbleView::LinkClicked(views::Link* source,
                                             int event_flags) {
   DCHECK_EQ(source, manage_link_);
   manage_passwords_bubble_model_->OnManageLinkClicked();
+  Close(CLICKED_MANAGE);
 }

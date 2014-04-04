@@ -16333,6 +16333,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PasswordBubble.DismissalReason"
+    enum="PasswordBubbleDismissalReason">
+  <owner>mkwst@chromium.org</owner>
+  <owner>markusheintz@chromium.org</owner>
+  <summary>Why did we close the password management bubble?</summary>
+</histogram>
+
+<histogram name="PasswordBubble.DisplayDisposition"
+    enum="PasswordBubbleDisplayDisposition">
+  <owner>mkwst@chromium.org</owner>
+  <owner>markusheintz@chromium.org</owner>
+  <summary>
+    When the password management bubble opened, what state was it in?
+  </summary>
+</histogram>
+
 <histogram name="PasswordGeneration.Event" enum="PasswordGenerationEvent">
   <owner>gcasto@chromium.org</owner>
   <summary>
@@ -37098,6 +37114,21 @@ other types of suffix sets.
   <int value="1" label="Cookie contains control chars"/>
   <int value="2" label="Cookie is invalid"/>
   <int value="3" label="Cookie contains both control chars and is invalid"/>
+</enum>
+
+<enum name="PasswordBubbleDismissalReason" type="int">
+  <int value="0" label="Bubble lost focus"/>
+  <int value="1" label="Clicked 'Save'"/>
+  <int value="2" label="Clicked 'Nope'"/>
+  <int value="3" label="Clicked 'Never'"/>
+  <int value="4" label="Clicked 'Manage passwords'"/>
+  <int value="5" label="Clicked 'Done'"/>
+</enum>
+
+<enum name="PasswordBubbleDisplayDisposition" type="int">
+  <int value="0" label="Opened automatically / Offering a password to save"/>
+  <int value="1" label="Opened manually / Offering a password to save"/>
+  <int value="2" label="Opened manually / Managing saved passwords"/>
 </enum>
 
 <enum name="PasswordGenerationEvent" type="int">
