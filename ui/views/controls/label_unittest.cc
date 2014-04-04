@@ -98,6 +98,43 @@ TEST(LabelTest, MultiLineProperty) {
   EXPECT_FALSE(label.is_multi_line());
 }
 
+TEST(LabelTest, ObscuredProperty) {
+  Label label;
+  base::string16 test_text(ASCIIToUTF16("Password!"));
+  label.SetText(test_text);
+
+  // Should be false by default...
+  EXPECT_FALSE(label.is_obscured());
+  EXPECT_EQ(test_text, label.layout_text());
+  EXPECT_EQ(test_text, label.text());
+
+  label.SetObscured(true);
+  EXPECT_TRUE(label.is_obscured());
+  EXPECT_EQ(ASCIIToUTF16("*********"), label.layout_text());
+  EXPECT_EQ(test_text, label.text());
+
+  label.SetText(test_text + test_text);
+  EXPECT_EQ(ASCIIToUTF16("******************"), label.layout_text());
+  EXPECT_EQ(test_text + test_text, label.text());
+
+  label.SetObscured(false);
+  EXPECT_FALSE(label.is_obscured());
+  EXPECT_EQ(test_text + test_text, label.layout_text());
+  EXPECT_EQ(test_text + test_text, label.text());
+}
+
+TEST(LabelTest, ObscuredSurrogatePair) {
+  // 'MUSICAL SYMBOL G CLEF': represented in UTF-16 as two characters
+  // forming the surrogate pair 0x0001D11E.
+  Label label;
+  base::string16 test_text = base::UTF8ToUTF16("\xF0\x9D\x84\x9E");
+  label.SetText(test_text);
+
+  label.SetObscured(true);
+  EXPECT_EQ(ASCIIToUTF16("*"), label.layout_text());
+  EXPECT_EQ(test_text, label.text());
+}
+
 TEST(LabelTest, TooltipProperty) {
   Label label;
   base::string16 test_text(ASCIIToUTF16("My cool string."));
@@ -133,7 +170,15 @@ TEST(LabelTest, TooltipProperty) {
   label.SetBounds(0, 0, 1, 1);
   EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
 
-  // Make the label multiline and there is no tooltip again.
+  // Make the label obscured and there is no tooltip.
+  label.SetObscured(true);
+  EXPECT_FALSE(label.GetTooltipText(gfx::Point(), &tooltip));
+
+  // Obscuring the text shouldn't permanently clobber the tooltip.
+  label.SetObscured(false);
+  EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
+
+  // Make the label multiline and there is no tooltip.
   label.SetMultiLine(true);
   EXPECT_FALSE(label.GetTooltipText(gfx::Point(), &tooltip));
 

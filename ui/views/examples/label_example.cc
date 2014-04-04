@@ -82,6 +82,10 @@ void LabelExample::CreateExampleView(View* container) {
       "lines if the text's width exceeds the label's available width."));
   label->SetMultiLine(true);
   container->AddChildView(label);
+
+  label = new Label(WideToUTF16(L"Password!"));
+  label->SetObscured(true);
+  container->AddChildView(label);
 }
 
 }  // namespace examples
