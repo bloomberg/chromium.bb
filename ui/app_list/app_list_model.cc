@@ -87,8 +87,17 @@ const std::string AppListModel::MergeItems(const std::string& target_item_id,
   DVLOG(2) << "MergeItems: " << source_item_id << " -> " << target_item_id;
   // Find the target item.
   AppListItem* target_item = FindItem(target_item_id);
-  DCHECK(target_item);
-  DCHECK(target_item->folder_id().empty());
+  if (!target_item) {
+    LOG(ERROR) << "MergeItems: Target no longer exists.";
+    return "";
+  }
+  CHECK(target_item->folder_id().empty());
+
+  AppListItem* source_item = FindItem(source_item_id);
+  if (!source_item) {
+    LOG(ERROR) << "MergeItems: Source no longer exists.";
+    return "";
+  }
 
   // If the target item is a folder, just add the source item to it.
   if (target_item->GetItemType() == AppListFolderItem::kItemType) {
@@ -98,8 +107,7 @@ const std::string AppListModel::MergeItems(const std::string& target_item_id,
       LOG(WARNING) << "MergeItems called with OEM folder as target";
       return "";
     }
-    scoped_ptr<AppListItem> source_item_ptr =
-        RemoveItem(FindItem(source_item_id));
+    scoped_ptr<AppListItem> source_item_ptr = RemoveItem(source_item);
     source_item_ptr->set_position(
         target_folder->item_list()->CreatePositionBefore(
             syncer::StringOrdinal()));
@@ -109,17 +117,18 @@ const std::string AppListModel::MergeItems(const std::string& target_item_id,
 
   // Otherwise remove the source item and target item from their current
   // location, they will become owned by the new folder.
-  scoped_ptr<AppListItem> source_item_ptr =
-      RemoveItem(FindItem(source_item_id));
+  scoped_ptr<AppListItem> source_item_ptr = RemoveItem(source_item);
+  CHECK(source_item_ptr);
   scoped_ptr<AppListItem> target_item_ptr =
       top_level_item_list_->RemoveItem(target_item_id);
+  CHECK(target_item_ptr);
 
   // Create a new folder in the same location as the target item.
   std::string new_folder_id = AppListFolderItem::GenerateId();
   DVLOG(2) << "Creating folder for merge: " << new_folder_id;
   scoped_ptr<AppListItem> new_folder_ptr(new AppListFolderItem(
       new_folder_id, AppListFolderItem::FOLDER_TYPE_NORMAL));
-  new_folder_ptr->set_position(target_item->position());
+  new_folder_ptr->set_position(target_item_ptr->position());
   AppListFolderItem* new_folder = static_cast<AppListFolderItem*>(
       AddItemToItemListAndNotify(new_folder_ptr.Pass()));
 
