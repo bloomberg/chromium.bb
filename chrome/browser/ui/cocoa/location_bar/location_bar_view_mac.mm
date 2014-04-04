@@ -30,6 +30,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -760,6 +761,9 @@ void LocationBarViewMac::ShowFirstRunBubbleInternal() {
 }
 
 void LocationBarViewMac::UpdateTranslateDecoration() {
+  if (!TranslateService::IsTranslateBubbleEnabled())
+    return;
+
   WebContents* web_contents = GetWebContents();
   if (!web_contents)
     return;
