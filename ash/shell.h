@@ -102,6 +102,7 @@ class LocaleNotificationController;
 class LockStateController;
 class LogoutConfirmationController;
 class MagnificationController;
+class MaximizeModeController;
 class MaximizeModeWindowManager;
 class MediaDelegate;
 class MouseCursorEventFilter;
@@ -496,6 +497,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return accelerometer_controller_.get();
   }
 
+  MaximizeModeController* maximize_mode_controller() {
+    return maximize_mode_controller_.get();
+  }
+
 #if defined(OS_CHROMEOS)
   // TODO(oshima): Move these objects to DisplayController.
   ui::OutputConfigurator* output_configurator() {
@@ -718,6 +723,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   scoped_ptr<ui::EventHandler> speech_feedback_handler_;
 #endif  // defined(USE_X11)
 #endif  // defined(OS_CHROMEOS)
+
+  scoped_ptr<MaximizeModeController> maximize_mode_controller_;
 
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
   // pointer to vend to test code.

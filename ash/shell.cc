@@ -59,6 +59,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overlay_event_filter.h"
@@ -661,6 +662,7 @@ Shell::~Shell() {
 
   // Destroy maximize window manager early on since it has some observers which
   // need to be removed.
+  maximize_mode_controller_.reset();
   maximize_mode_window_manager_.reset();
 
   // AppList needs to be released before shelf layout manager, which is
@@ -852,6 +854,7 @@ void Shell::Init() {
 
   nested_dispatcher_controller_.reset(new NestedDispatcherController);
   accelerator_controller_.reset(new AcceleratorController);
+  maximize_mode_controller_.reset(new MaximizeModeController());
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler().Pass();
