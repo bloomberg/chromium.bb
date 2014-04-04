@@ -63,8 +63,6 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
     fake_drive_service_ = new drive::FakeDriveService();
     fake_drive_service_->Initialize("test_user@gmail.com");
-    ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
-        "sync_file_system/account_metadata.json"));
     ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json"));
 

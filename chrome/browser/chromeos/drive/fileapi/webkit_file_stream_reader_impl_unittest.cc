@@ -42,8 +42,6 @@ class WebkitFileStreamReaderImplTest : public ::testing::Test {
     fake_drive_service_.reset(new FakeDriveService);
     ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json"));
-    ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
-        "gdata/account_metadata.json"));
 
     // Create a testee instance.
     fake_file_system_.reset(

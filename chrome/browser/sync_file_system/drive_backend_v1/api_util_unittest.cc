@@ -71,9 +71,6 @@ class APIUtilTest : public testing::Test {
         temp_dir_.path(),
         scoped_ptr<DriveServiceInterface>(fake_drive_service_),
         scoped_ptr<DriveUploaderInterface>(fake_drive_uploader_));
-
-    fake_drive_service_->LoadResourceListForWapi(
-        "sync_file_system/initialize.json");
   }
 
   virtual void TearDown() OVERRIDE {
@@ -116,11 +113,6 @@ class APIUtilTest : public testing::Test {
               fake_drive_helper_->GetResourceEntry(
                   file_resource_id,
                   entry));
-  }
-
-  void LoadAccountMetadata() {
-    fake_drive_service_->LoadAccountMetadataForWapi(
-        "sync_file_system/account_metadata.json");
   }
 
   void VerifyTitleUniqueness(const std::string& parent_resource_id,
@@ -241,7 +233,6 @@ void DidDeleteFile(GDataErrorCode* error_out,
 }
 
 void APIUtilTest::TestGetSyncRoot() {
-  LoadAccountMetadata();
   const std::string sync_root_id = SetUpSyncRootDirectory();
 
   Output output;
@@ -254,8 +245,6 @@ void APIUtilTest::TestGetSyncRoot() {
 }
 
 void APIUtilTest::TestCreateSyncRoot() {
-  LoadAccountMetadata();
-
   Output output;
   api_util()->GetDriveDirectoryForSyncRoot(
       base::Bind(&DidGetResourceID, &output));
@@ -271,7 +260,6 @@ void APIUtilTest::TestCreateSyncRoot() {
 }
 
 void APIUtilTest::TestCreateSyncRoot_Conflict() {
-  LoadAccountMetadata();
   fake_drive_service()->set_make_directory_conflict(true);
 
   Output output;
@@ -345,15 +333,14 @@ void APIUtilTest::TestCreateOriginDirectory_Conflict() {
 }
 
 void APIUtilTest::TestGetLargestChangeStamp() {
-  LoadAccountMetadata();
-
   Output output;
   api_util()->GetLargestChangeStamp(
       base::Bind(&DidGetLargestChangeStamp, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(google_apis::HTTP_SUCCESS, output.error);
-  EXPECT_EQ(654321, output.largest_changestamp);
+  EXPECT_EQ(fake_drive_service()->about_resource().largest_change_id(),
+            output.largest_changestamp);
 }
 
 void APIUtilTest::TestListFiles() {

@@ -377,15 +377,11 @@ TEST_F(FakeDriveServiceTest, SearchByTitle_Offline) {
 TEST_F(FakeDriveServiceTest, GetChangeList_NoNewEntries) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  // Load the account_metadata.json as well to add the largest changestamp
-  // (654321) to the existing entries.
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetChangeList(
-      654321 + 1,  // start_changestamp
+      fake_service_.about_resource().largest_change_id() + 1,
       test_util::CreateCopyResultCallback(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
 
@@ -403,20 +399,18 @@ TEST_F(FakeDriveServiceTest, GetChangeList_NoNewEntries) {
 TEST_F(FakeDriveServiceTest, GetChangeList_WithNewEntry) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  // Load the account_metadata.json as well to add the largest changestamp
-  // (654321) to the existing entries.
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
-  // Add a new directory in the root directory. The new directory will have
-  // the changestamp of 654322.
+  const int64 old_largest_change_id =
+      fake_service_.about_resource().largest_change_id();
+
+  // Add a new directory in the root directory.
   ASSERT_TRUE(AddNewDirectory(
       fake_service_.GetRootResourceId(), "new directory"));
 
-  // Get the resource list newer than 654321.
+  // Get the resource list newer than old_largest_change_id.
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetChangeList(
-      654321 + 1,  // start_changestamp
+      old_largest_change_id + 1,
       test_util::CreateCopyResultCallback(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
 
@@ -449,11 +443,9 @@ TEST_F(FakeDriveServiceTest, GetChangeList_Offline) {
 TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  // Load the account_metadata.json as well to add the largest changestamp
-  // (654321) to the existing entries.
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
   ASSERT_TRUE(Exists("file:2_file_resource_id"));
+  const int64 old_largest_change_id =
+      fake_service_.about_resource().largest_change_id();
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.DeleteResource("file:2_file_resource_id",
@@ -463,11 +455,11 @@ TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
   ASSERT_EQ(HTTP_NO_CONTENT, error);
   ASSERT_FALSE(Exists("file:2_file_resource_id"));
 
-  // Get the resource list newer than 654321.
+  // Get the resource list newer than old_largest_change_id.
   error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetChangeList(
-      654321 + 1,  // start_changestamp
+      old_largest_change_id + 1,
       test_util::CreateCopyResultCallback(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
 
@@ -487,11 +479,9 @@ TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
 TEST_F(FakeDriveServiceTest, GetChangeList_TrashedEntry) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  // Load the account_metadata.json as well to add the largest changestamp
-  // (654321) to the existing entries.
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
   ASSERT_TRUE(Exists("file:2_file_resource_id"));
+  const int64 old_largest_change_id =
+      fake_service_.about_resource().largest_change_id();
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.TrashResource("file:2_file_resource_id",
@@ -500,11 +490,11 @@ TEST_F(FakeDriveServiceTest, GetChangeList_TrashedEntry) {
   ASSERT_EQ(HTTP_SUCCESS, error);
   ASSERT_FALSE(Exists("file:2_file_resource_id"));
 
-  // Get the resource list newer than 654321.
+  // Get the resource list newer than old_largest_change_id.
   error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetChangeList(
-      654321 + 1,  // start_changestamp
+      old_largest_change_id + 1,
       test_util::CreateCopyResultCallback(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
 
@@ -681,13 +671,10 @@ TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetChangeList) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
   fake_service_.set_default_max_results(2);
+  const int64 old_largest_change_id =
+      fake_service_.about_resource().largest_change_id();
 
-  // Load the account_metadata.json as well to add the largest changestamp
-  // (654321) to the existing entries.
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
-  // Add 5 new directory in the root directory. The new directory will have
-  // the changestamp of 654326.
+  // Add 5 new directory in the root directory.
   for (int i = 0; i < 5; ++i) {
     ASSERT_TRUE(AddNewDirectory(
         fake_service_.GetRootResourceId(),
@@ -697,7 +684,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetChangeList) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetChangeList(
-      654321 + 1,  // start_changestamp
+      old_largest_change_id + 1,  // start_changestamp
       test_util::CreateCopyResultCallback(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -749,9 +736,6 @@ TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetChangeList) {
 }
 
 TEST_F(FakeDriveServiceTest, GetAboutResource) {
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
-
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<AboutResource> about_resource;
   fake_service_.GetAboutResource(
@@ -768,8 +752,6 @@ TEST_F(FakeDriveServiceTest, GetAboutResource) {
 }
 
 TEST_F(FakeDriveServiceTest, GetAboutResource_Offline) {
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -1099,8 +1081,6 @@ TEST_F(FakeDriveServiceTest, CopyResource) {
 
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1151,8 +1131,6 @@ TEST_F(FakeDriveServiceTest, CopyResource_NonExisting) {
 TEST_F(FakeDriveServiceTest, CopyResource_EmptyParentResourceId) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1205,8 +1183,6 @@ TEST_F(FakeDriveServiceTest, UpdateResource) {
 
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1261,8 +1237,6 @@ TEST_F(FakeDriveServiceTest, UpdateResource_NonExisting) {
 TEST_F(FakeDriveServiceTest, UpdateResource_EmptyParentResourceId) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1318,8 +1292,6 @@ TEST_F(FakeDriveServiceTest, UpdateResource_Offline) {
 TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1376,8 +1348,6 @@ TEST_F(FakeDriveServiceTest, RenameResource_Offline) {
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1410,8 +1380,6 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1461,8 +1429,6 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_NonexistingFile) {
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_OrphanFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1512,8 +1478,6 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_Offline) {
 TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1602,8 +1566,6 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_Offline) {
 TEST_F(FakeDriveServiceTest, AddNewDirectory_EmptyParent) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1632,8 +1594,6 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_EmptyParent) {
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1660,11 +1620,6 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
 }
 
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectoryOnEmptyFileSystem) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/empty_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
-
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -1692,8 +1647,6 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectoryOnEmptyFileSystem) {
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -2104,8 +2057,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
 TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -2142,11 +2093,6 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
 }
 
 TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectoryOnEmptyFileSystem) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/empty_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
-
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kContentType = "text/plain";
@@ -2184,8 +2130,6 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectoryOnEmptyFileSystem) {
 TEST_F(FakeDriveServiceTest, AddNewFile_ToNonRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -2272,8 +2216,6 @@ TEST_F(FakeDriveServiceTest, AddNewFile_Offline) {
 TEST_F(FakeDriveServiceTest, AddNewFile_SharedWithMeLabel) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
-  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json"));
 
   const std::string kContentType = "text/plain";
   const std::string kContentData = "This is some test content.";

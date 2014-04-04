@@ -58,10 +58,6 @@ class LocalToRemoteSyncerTest : public testing::Test {
 
     scoped_ptr<FakeDriveServiceWrapper>
         fake_drive_service(new FakeDriveServiceWrapper);
-    ASSERT_TRUE(fake_drive_service->LoadAccountMetadataForWapi(
-        "sync_file_system/account_metadata.json"));
-    ASSERT_TRUE(fake_drive_service->LoadResourceListForWapi(
-        "gdata/empty_feed.json"));
 
     scoped_ptr<drive::DriveUploaderInterface>
         drive_uploader(new FakeDriveUploader(fake_drive_service.get()));

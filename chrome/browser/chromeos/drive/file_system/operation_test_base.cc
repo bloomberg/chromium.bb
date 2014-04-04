@@ -68,8 +68,6 @@ void OperationTestBase::SetUp() {
   fake_drive_service_.reset(new FakeDriveService);
   fake_drive_service_->LoadResourceListForWapi(
       "gdata/root_feed.json");
-  fake_drive_service_->LoadAccountMetadataForWapi(
-      "gdata/account_metadata.json");
 
   scheduler_.reset(new JobScheduler(
       pref_service_.get(),

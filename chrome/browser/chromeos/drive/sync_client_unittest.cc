@@ -116,9 +116,6 @@ class SyncClientTest : public testing::Test {
     logger_.reset(new EventLogger);
 
     drive_service_.reset(new SyncClientTestDriveService);
-    drive_service_->LoadResourceListForWapi("gdata/empty_feed.json");
-    drive_service_->LoadAccountMetadataForWapi(
-        "gdata/account_metadata.json");
 
     scheduler_.reset(new JobScheduler(pref_service_.get(),
                                       logger_.get(),

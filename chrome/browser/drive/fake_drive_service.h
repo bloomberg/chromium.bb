@@ -32,15 +32,6 @@ class FakeDriveService : public DriveServiceInterface {
   // Loads the resource list for WAPI. Returns true on success.
   bool LoadResourceListForWapi(const std::string& relative_path);
 
-  // DEPRECATED DO NOT USE
-  //
-  // Loads the account metadata for WAPI. Returns true on success.  Also adds
-  // the largest changestamp in the account metadata to the existing
-  // entries. The changestamp information will be used to generate change
-  // lists in GetResourceList() when non-zero |start_changestamp| is
-  // specified.
-  bool LoadAccountMetadataForWapi(const std::string& relative_path);
-
   // Loads the app list for Drive API. Returns true on success.
   bool LoadAppListForDriveApi(const std::string& relative_path);
 

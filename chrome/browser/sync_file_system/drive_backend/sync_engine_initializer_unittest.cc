@@ -50,10 +50,6 @@ class SyncEngineInitializerTest : public testing::Test {
 
     scoped_ptr<drive::FakeDriveService> fake_drive_service(
         new drive::FakeDriveService());
-    ASSERT_TRUE(fake_drive_service->LoadAccountMetadataForWapi(
-        "sync_file_system/account_metadata.json"));
-    ASSERT_TRUE(fake_drive_service->LoadResourceListForWapi(
-        "gdata/empty_feed.json"));
 
     sync_context_.reset(new SyncEngineContext(
         fake_drive_service.PassAs<drive::DriveServiceInterface>(),

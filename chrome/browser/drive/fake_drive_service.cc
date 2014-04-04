@@ -220,7 +220,7 @@ bool FakeDriveService::LoadResourceListForWapi(
           EntryInfo* new_entry = it->second;
 
           ChangeResource* change = &new_entry->change_resource;
-          change->set_change_id(resource_entry->changestamp());
+          change->set_change_id(about_resource_->largest_change_id());
           change->set_file_id(resource_id);
           change->set_file(
               util::ConvertResourceEntryToFileResource(*resource_entry));
@@ -237,29 +237,6 @@ bool FakeDriveService::LoadResourceListForWapi(
   }
 
   return feed_as_dict;
-}
-
-bool FakeDriveService::LoadAccountMetadataForWapi(
-    const std::string& relative_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  scoped_ptr<base::Value> value = test_util::LoadJSONFile(relative_path);
-  if (!value)
-    return false;
-
-  about_resource_ = util::ConvertAccountMetadataToAboutResource(
-      *AccountMetadata::CreateFrom(*value), GetRootResourceId());
-  if (!about_resource_)
-    return false;
-
-  // Add the largest changestamp to the existing entries.
-  // This will be used to generate change lists in GetResourceList().
-  for (EntryInfoMap::iterator it = entries_.begin(); it != entries_.end();
-       ++it) {
-    it->second->change_resource.set_change_id(
-        about_resource_->largest_change_id());
-  }
-  return true;
 }
 
 bool FakeDriveService::LoadAppListForDriveApi(

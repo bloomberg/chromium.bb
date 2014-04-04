@@ -86,8 +86,6 @@ class FileSystemTest : public testing::Test {
     fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json");
-    fake_drive_service_->LoadAccountMetadataForWapi(
-        "gdata/account_metadata.json");
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
@@ -210,8 +208,8 @@ class FileSystemTest : public testing::Test {
   // Sets up a filesystem with directories: drive/root, drive/root/Dir1,
   // drive/root/Dir1/SubDir2 and files drive/root/File1, drive/root/Dir1/File2,
   // drive/root/Dir1/SubDir2/File3. If |use_up_to_date_timestamp| is true, sets
-  // the changestamp to 654321, equal to that of "account_metadata.json" test
-  // data, indicating the cache is holding the latest file system info.
+  // the changestamp to that of FakeDriveService, indicating the cache is
+  // holding the latest file system info.
   void SetUpTestFileSystem(SetUpTestFileSystemParam param) {
     // Destroy the existing resource metadata to close DB.
     resource_metadata_.reset();
@@ -229,7 +227,8 @@ class FileSystemTest : public testing::Test {
 
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata->Initialize());
 
-    const int64 changestamp = param == USE_SERVER_TIMESTAMP ? 654321 : 1;
+    const int64 changestamp = param == USE_SERVER_TIMESTAMP ?
+        fake_drive_service_->about_resource().largest_change_id() : 1;
     ASSERT_EQ(FILE_ERROR_OK,
               resource_metadata->SetLargestChangestamp(changestamp));
 
@@ -662,7 +661,7 @@ TEST_F(FileSystemTest, LoadFileSystemFromUpToDateCache) {
   // Kicks loading of cached file system and query for server update.
   EXPECT_TRUE(ReadDirectorySync(util::GetDriveMyDriveRootPath()));
 
-  // SetUpTestFileSystem and "account_metadata.json" have the same
+  // SetUpTestFileSystem and FakeDriveService have the same
   // changestamp (i.e. the local metadata is up-to-date), so no request for
   // new resource list (i.e., call to GetResourceList) should happen.
   EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());

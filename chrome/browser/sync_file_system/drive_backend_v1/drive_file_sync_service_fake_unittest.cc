@@ -206,11 +206,6 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(done);
 
-    fake_drive_service_->LoadResourceListForWapi(
-        "sync_file_system/initialize.json");
-    fake_drive_service()->LoadAccountMetadataForWapi(
-        "sync_file_system/account_metadata.json");
-
     // Setup the sync root directory.
     EXPECT_EQ(google_apis::HTTP_CREATED,
               fake_drive_helper_->AddOrphanedFolder(

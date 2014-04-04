@@ -83,8 +83,6 @@ class ChangeListLoaderTest : public testing::Test {
     drive_service_.reset(new FakeDriveService);
     ASSERT_TRUE(drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json"));
-    ASSERT_TRUE(drive_service_->LoadAccountMetadataForWapi(
-        "gdata/account_metadata.json"));
 
     scheduler_.reset(new JobScheduler(pref_service_.get(),
                                       logger_.get(),

@@ -292,8 +292,6 @@ class DriveFileStreamReaderTest : public ::testing::Test {
     fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json");
-    fake_drive_service_->LoadAccountMetadataForWapi(
-        "gdata/account_metadata.json");
 
     // Create a testee instance.
     fake_file_system_.reset(
