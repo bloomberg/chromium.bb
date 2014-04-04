@@ -168,6 +168,35 @@ URLID URLDatabase::AddURLInternal(const history::URLRow& info,
   return GetDB().GetLastInsertRowId();
 }
 
+bool URLDatabase::InsertOrUpdateURLRowByID(const history::URLRow& info) {
+  // SQLite does not support INSERT OR UPDATE, however, it does have INSERT OR
+  // REPLACE, which is feasible to use, because of the following.
+  //  * Before INSERTing, REPLACE will delete all pre-existing rows that cause
+  //    constraint violations. Here, we only have a PRIMARY KEY constraint, so
+  //    the only row that might get deleted is an old one with the same ID.
+  //  * Another difference between the two flavors is that the latter actually
+  //    deletes the old row, and thus the old values are lost in columns which
+  //    are not explicitly assigned new values. This is not an issue, however,
+  //    as we assign values to all columns.
+  //  * When rows are deleted due to constraint violations, the delete triggers
+  //    may not be invoked. As of now, we do not have any delete triggers.
+  // For more details, see: http://www.sqlite.org/lang_conflict.html.
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "INSERT OR REPLACE INTO urls "
+      "(id, url, title, visit_count, typed_count, last_visit_time, hidden) "
+      "VALUES (?, ?, ?, ?, ?, ?, ?)"));
+
+  statement.BindInt64(0, info.id());
+  statement.BindString(1, GURLToDatabaseURL(info.url()));
+  statement.BindString16(2, info.title());
+  statement.BindInt(3, info.visit_count());
+  statement.BindInt(4, info.typed_count());
+  statement.BindInt64(5, info.last_visit().ToInternalValue());
+  statement.BindInt(6, info.hidden() ? 1 : 0);
+
+  return statement.Run();
+}
+
 bool URLDatabase::DeleteURLRow(URLID id) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM urls WHERE id = ?"));
@@ -569,6 +598,8 @@ bool URLDatabase::CreateURLTable(bool is_temporary) {
   if (GetDB().DoesTableExist(name))
     return true;
 
+  // Note: revise implementation for InsertOrUpdateURLRowByID() if you add any
+  // new constraints to the schema.
   std::string sql;
   sql.append("CREATE TABLE ");
   sql.append(name);

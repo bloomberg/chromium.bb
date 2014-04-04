@@ -66,8 +66,8 @@ class URLDatabaseTest : public testing::Test,
   sql::Connection db_;
 };
 
-// Test add and query for the URL table in the HistoryDatabase.
-TEST_F(URLDatabaseTest, AddURL) {
+// Test add, update, upsert, and query for the URL table in the HistoryDatabase.
+TEST_F(URLDatabaseTest, AddAndUpdateURL) {
   // First, add two URLs.
   const GURL url1("http://www.google.com/");
   URLRow url_info1(url1);
@@ -76,7 +76,8 @@ TEST_F(URLDatabaseTest, AddURL) {
   url_info1.set_typed_count(2);
   url_info1.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
   url_info1.set_hidden(false);
-  EXPECT_TRUE(AddURL(url_info1));
+  URLID id1_initially = AddURL(url_info1);
+  EXPECT_TRUE(id1_initially);
 
   const GURL url2("http://mail.google.com/");
   URLRow url_info2(url2);
@@ -107,6 +108,33 @@ TEST_F(URLDatabaseTest, AddURL) {
   URLRow info2;
   EXPECT_TRUE(GetRowForURL(url2, &info2));
   EXPECT_TRUE(IsURLRowEqual(url_info2, info2));
+
+  // Update an existing URL and insert a new one using the upsert operation.
+  url_info1.set_id(id1_initially);
+  url_info1.set_title(base::UTF8ToUTF16("Google Again!"));
+  url_info1.set_visit_count(5);
+  url_info1.set_typed_count(3);
+  url_info1.set_last_visit(Time::Now());
+  url_info1.set_hidden(true);
+  EXPECT_TRUE(InsertOrUpdateURLRowByID(url_info1));
+
+  const GURL url3("http://maps.google.com/");
+  URLRow url_info3(url3);
+  url_info3.set_id(42);
+  url_info3.set_title(base::UTF8ToUTF16("Google Maps"));
+  url_info3.set_visit_count(7);
+  url_info3.set_typed_count(6);
+  url_info3.set_last_visit(Time::Now() - TimeDelta::FromDays(3));
+  url_info3.set_hidden(false);
+  EXPECT_TRUE(InsertOrUpdateURLRowByID(url_info3));
+
+  // Query both of these as well.
+  URLID id1 = GetRowForURL(url1, &info);
+  EXPECT_EQ(id1, id1);
+  EXPECT_TRUE(IsURLRowEqual(url_info1, info));
+  URLID id3 = GetRowForURL(url3, &info);
+  EXPECT_EQ(42, id3);
+  EXPECT_TRUE(IsURLRowEqual(url_info3, info));
 
   // Query a nonexistent URL.
   EXPECT_EQ(0, GetRowForURL(GURL("http://news.google.com/"), &info));

@@ -73,7 +73,8 @@ class URLDatabase {
   bool UpdateURLRow(URLID url_id, const URLRow& info);
 
   // Adds a line to the URL database with the given information and returns the
-  // row ID. A row with the given URL must not exist. Returns 0 on error.
+  // newly generated ID for the row (the |id| in |info| is ignored). A row with
+  // the given URL must not exist. Returns 0 on error.
   //
   // This does NOT add a row to the full text search database. Use
   // HistoryDatabase::SetPageIndexedData to do this.
@@ -81,9 +82,15 @@ class URLDatabase {
     return AddURLInternal(info, false);
   }
 
-  // Delete the row of the corresponding URL. Only the row in the URL table
-  // will be deleted, not any other data that may refer to it. Returns true if
-  // the row existed and was deleted.
+  // Either adds a new row to the URL table with the given information (with the
+  // the |id| as specified in |info|), or updates the pre-existing row with this
+  // |id| if there is one already. This is also known as an "upsert" or "merge"
+  // operation. Returns true on success.
+  bool InsertOrUpdateURLRowByID(const URLRow& info);
+
+  // Delete the row of the corresponding URL. Only the row in the URL table and
+  // corresponding keyword search terms will be deleted, not any other data that
+  // may refer to the URL row. Returns true if the row existed and was deleted.
   bool DeleteURLRow(URLID id);
 
   // URL mass-deleting ---------------------------------------------------------
@@ -264,8 +271,10 @@ class URLDatabase {
 
   // Inserts the given URL row into the URLs table, using the regular table
   // if is_temporary is false, or the temporary URL table if is temporary is
-  // true. The temporary table may only be used in between
-  // CreateTemporaryURLTable() and CommitTemporaryURLTable().
+  // true. The current |id| of |info| will be ignored in both cases and a new ID
+  // will be generated, which will also constitute the return value, except in
+  // case of an error, when the return value is 0. The temporary table may only
+  // be used in between CreateTemporaryURLTable() and CommitTemporaryURLTable().
   URLID AddURLInternal(const URLRow& info, bool is_temporary);
 
   // Convenience to fill a history::URLRow. Must be in sync with the fields in
