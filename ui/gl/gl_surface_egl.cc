@@ -18,6 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -319,6 +320,12 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
 #if defined(OS_ANDROID)
   if (window)
     ANativeWindow_acquire(window);
+#endif
+
+#if defined(OS_WIN)
+  RECT windowRect;
+  if (GetClientRect(window_, &windowRect))
+    size_ = gfx::Rect(windowRect).size();
 #endif
 }
 
