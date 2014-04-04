@@ -44,12 +44,20 @@ class CC_EXPORT Picture
   typedef std::vector<SkPixelRef*> PixelRefs;
   typedef base::hash_map<PixelRefMapKey, PixelRefs> PixelRefMap;
 
+  enum RecordingMode {
+    RECORD_NORMALLY,
+    RECORD_WITH_SK_NULL_CANVAS,
+    RECORD_WITH_PAINTING_DISABLED,
+    RECORDING_MODE_COUNT,  // Must be the last entry.
+  };
+
   static scoped_refptr<Picture> Create(
       const gfx::Rect& layer_rect,
       ContentLayerClient* client,
       const SkTileGridPicture::TileGridInfo& tile_grid_info,
       bool gather_pixels_refs,
-      int num_raster_threads);
+      int num_raster_threads,
+      RecordingMode recording_mode);
   static scoped_refptr<Picture> CreateFromValue(const base::Value* value);
   static scoped_refptr<Picture> CreateFromSkpValue(const base::Value* value);
 
@@ -136,7 +144,8 @@ class CC_EXPORT Picture
   // Record a paint operation. To be able to safely use this SkPicture for
   // playback on a different thread this can only be called once.
   void Record(ContentLayerClient* client,
-              const SkTileGridPicture::TileGridInfo& tile_grid_info);
+              const SkTileGridPicture::TileGridInfo& tile_grid_info,
+              RecordingMode recording_mode);
 
   // Gather pixel refs from recording.
   void GatherPixelRefs(const SkTileGridPicture::TileGridInfo& tile_grid_info);
