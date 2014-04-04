@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/default_clock.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
@@ -222,8 +221,6 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
   device_checkin_info_.android_id = result->device_android_id;
   device_checkin_info_.secret = result->device_security_token;
   base::Time last_checkin_time = result->last_checkin_time;
-  gservices_settings_ = result->gservices_settings;
-  gservices_digest_ = result->gservices_digest;
   InitializeMCSClient(result.Pass());
 
   if (device_checkin_info_.IsValid()) {
@@ -296,35 +293,31 @@ void GCMClientImpl::ResetState() {
 }
 
 void GCMClientImpl::StartCheckin() {
-  CheckinRequest::RequestInfo request_info(
-    device_checkin_info_.android_id,
-    device_checkin_info_.secret,
-    gservices_digest_,
-    account_ids_,
-    chrome_build_proto_);
   checkin_request_.reset(
-      new CheckinRequest(request_info,
-                         kDefaultBackoffPolicy,
-                         base::Bind(&GCMClientImpl::OnCheckinCompleted,
+      new CheckinRequest(base::Bind(&GCMClientImpl::OnCheckinCompleted,
                                     weak_ptr_factory_.GetWeakPtr()),
+                         kDefaultBackoffPolicy,
+                         chrome_build_proto_,
+                         device_checkin_info_.android_id,
+                         device_checkin_info_.secret,
+                         account_ids_,
                          url_request_context_getter_));
   checkin_request_->Start();
 }
 
-void GCMClientImpl::OnCheckinCompleted(
-    const checkin_proto::AndroidCheckinResponse& checkin_response) {
+void GCMClientImpl::OnCheckinCompleted(uint64 android_id,
+                                       uint64 security_token) {
   checkin_request_.reset();
 
-  if (!checkin_response.has_android_id() ||
-      !checkin_response.has_security_token()) {
-    // TODO(fgorski): I don't think a retry here will help, we should probably
+  CheckinInfo checkin_info;
+  checkin_info.android_id = android_id;
+  checkin_info.secret = security_token;
+
+  if (!checkin_info.IsValid()) {
+    // TODO(fgorski): I don't think a retry here will help, we should probalby
     // start over. By checking in with (0, 0).
     return;
   }
-
-  CheckinInfo checkin_info;
-  checkin_info.android_id = checkin_response.android_id();
-  checkin_info.secret = checkin_response.security_token();
 
   if (state_ == INITIAL_DEVICE_CHECKIN) {
     OnFirstTimeDeviceCheckinCompleted(checkin_info);
@@ -342,7 +335,6 @@ void GCMClientImpl::OnCheckinCompleted(
         last_checkin_time,
         base::Bind(&GCMClientImpl::SetLastCheckinTimeCallback,
                    weak_ptr_factory_.GetWeakPtr()));
-    UpdateGServicesSettings(checkin_response);
     SchedulePeriodicCheckin(last_checkin_time);
   }
 }
@@ -708,33 +700,6 @@ void GCMClientImpl::HandleIncomingSendError(
 
   delegate_->OnMessageSendError(data_message_stanza.category(),
                                 send_error_details);
-}
-
-void GCMClientImpl::UpdateGServicesSettings(
-    const checkin_proto::AndroidCheckinResponse& checkin_response) {
-  if (!checkin_response.has_digest() ||
-      checkin_response.digest() == gservices_digest_) {
-    return;
-  }
-
-  gservices_digest_ = checkin_response.digest();
-  gservices_settings_.clear();
-
-  for (int i = 0; i < checkin_response.setting_size(); ++i) {
-    std::string name = checkin_response.setting(i).name();
-    std::string value = checkin_response.setting(i).value();
-    gservices_settings_[name] = value;
-  }
-
-  gcm_store_->SetGServicesSettings(
-      gservices_settings_,
-      gservices_digest_,
-      base::Bind(&GCMClientImpl::UpdateGServicesSettingsCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void GCMClientImpl::UpdateGServicesSettingsCallback(bool success) {
-  DCHECK(success);
 }
 
 }  // namespace gcm

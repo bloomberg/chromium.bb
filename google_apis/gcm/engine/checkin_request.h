@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
-#include "google_apis/gcm/protocol/checkin.pb.h"
+#include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -28,35 +28,17 @@ namespace gcm {
 // check-ins.
 class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
  public:
-  // A callback function for the checkin request, accepting |checkin_response|
-  // protobuf.
-  typedef base::Callback<void(const checkin_proto::AndroidCheckinResponse&
-                                  checkin_response)> CheckinRequestCallback;
+  // A callback function for the checkin request, accepting |android_id| and
+  // |security_token|.
+  typedef base::Callback<void(uint64 android_id, uint64 security_token)>
+      CheckinRequestCallback;
 
-  // Checkin request details.
-  struct GCM_EXPORT RequestInfo {
-    RequestInfo(uint64 android_id,
-                uint64 security_token,
-                const std::string& settings_digest,
-                const std::vector<std::string>& account_ids,
-                const checkin_proto::ChromeBuildProto& chrome_build_proto);
-    ~RequestInfo();
-
-    // Android ID of the device.
-    uint64 android_id;
-    // Security token of the device.
-    uint64 security_token;
-    // Digest of GServices settings on the device.
-    std::string settings_digest;
-    // Account IDs of GAIA accounts related to this device.
-    std::vector<std::string> account_ids;
-    // Information of the Chrome build of this device.
-    checkin_proto::ChromeBuildProto chrome_build_proto;
-  };
-
-  CheckinRequest(const RequestInfo& request_info,
+  CheckinRequest(const CheckinRequestCallback& callback,
                  const net::BackoffEntry::Policy& backoff_policy,
-                 const CheckinRequestCallback& callback,
+                 const checkin_proto::ChromeBuildProto& chrome_build_proto,
+                 uint64 android_id,
+                 uint64 security_token,
+                 const std::vector<std::string>& account_ids,
                  net::URLRequestContextGetter* request_context_getter);
   virtual ~CheckinRequest();
 
@@ -75,7 +57,10 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
 
   net::BackoffEntry backoff_entry_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
-  const RequestInfo request_info_;
+  const checkin_proto::ChromeBuildProto chrome_build_proto_;
+  const uint64 android_id_;
+  const uint64 security_token_;
+  const std::vector<std::string> account_ids_;
 
   base::WeakPtrFactory<CheckinRequest> weak_ptr_factory_;
 
