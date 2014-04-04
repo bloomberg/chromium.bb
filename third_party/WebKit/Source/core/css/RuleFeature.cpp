@@ -109,8 +109,9 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::invalidationSetModeForSelect
     bool foundIdent = false;
     for (const CSSSelector* component = &selector; component; component = component->tagHistory()) {
 
-        // FIXME: next up: Tag.
-        if (component->m_match == CSSSelector::Class || component->m_match == CSSSelector::Id || component->isAttributeSelector() || component->isCustomPseudoElement()) {
+        if (component->m_match == CSSSelector::Class || component->m_match == CSSSelector::Id
+            || (component->m_match == CSSSelector::Tag && component->tagQName().localName() != starAtom)
+            || component->isAttributeSelector() || component->isCustomPseudoElement()) {
             if (!foundDescendantRelation)
                 foundIdent = true;
         } else if (component->pseudoType() == CSSSelector::PseudoHost || component->pseudoType() == CSSSelector::PseudoAny) {

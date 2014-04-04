@@ -22,7 +22,7 @@ var parent = document.getElementById("parent");
 parent.className = "a";
 
 if (window.internals) {
-    shouldBe("window.internals.updateStyleAndReturnAffectedElementCount()", "4", true);
+    shouldBe("window.internals.updateStyleAndReturnAffectedElementCount()", "3", true);
     shouldBe("window.internals.needsLayoutCount()", "0", true);
 }
 </script>

@@ -161,6 +161,14 @@ void DescendantInvalidationSet::getIds(Vector<AtomicString>& ids) const
         ids.append(*it);
 }
 
+void DescendantInvalidationSet::getTagNames(Vector<AtomicString>& tagNames) const
+{
+    if (!m_tagNames)
+        return;
+    for (HashSet<AtomicString>::const_iterator it = m_tagNames->begin(); it != m_tagNames->end(); ++it)
+        tagNames.append(*it);
+}
+
 void DescendantInvalidationSet::setWholeSubtreeInvalid()
 {
     if (m_allDescendantsMightBeInvalid)
