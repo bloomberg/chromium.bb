@@ -379,8 +379,9 @@ INSTANTIATE_TEST_CASE_P(WebRtcAudioQualityBrowserTests,
 #define MAYBE_MANUAL_TestAudioQuality DISABLED_MANUAL_TestAudioQuality
 #endif
 
+// Disabled due to crbug.com/359579.
 IN_PROC_BROWSER_TEST_P(WebRtcAudioQualityBrowserTest,
-                       MAYBE_MANUAL_TestAudioQuality) {
+                       DISABLED_MANUAL_TestAudioQuality) {
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     // It would take work to implement this on XP; not prioritized right now.

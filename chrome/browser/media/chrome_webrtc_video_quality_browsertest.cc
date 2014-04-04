@@ -298,8 +298,9 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
   base::FilePath webrtc_reference_video_y4m_;
 };
 
+// Disabled due to crbug.com/360033.
 IN_PROC_BROWSER_TEST_F(WebRtcVideoQualityBrowserTest,
-                       MANUAL_TestVGAVideoQuality) {
+                       DISABLED_MANUAL_TestVGAVideoQuality) {
 #if defined(OS_WIN)
   // Fails on XP. http://crbug.com/353078
   if (base::win::GetVersion() <= base::win::VERSION_XP)
