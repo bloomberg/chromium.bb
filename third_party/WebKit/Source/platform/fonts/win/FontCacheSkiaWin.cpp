@@ -193,7 +193,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     // So, we have to use '<=" rather than '<' to see if we found a font
     // covering the character.
     if (i <= numFonts) {
-        if (s_useDirectWrite)
+        if (s_useDirectWrite && data)
             data->setMinSizeForAntiAlias(minSizeForAntiAlias(script));
         return fontDataFromFontPlatformData(data, DoNotRetain);
     }
