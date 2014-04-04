@@ -89,11 +89,12 @@ public:
 
     void load(ExecutionContext* loadingContext, const KURL& scriptURL, const Closure& receiveResponseCallback, const Closure& finishCallback)
     {
+        ASSERT(loadingContext);
         m_receiveResponseCallback = receiveResponseCallback;
         m_finishCallback = finishCallback;
         m_scriptLoader->setTargetType(ResourceRequest::TargetIsSharedWorker);
         m_scriptLoader->loadAsynchronously(
-            loadingContext, scriptURL, DenyCrossOriginRequests, this);
+            *loadingContext, scriptURL, DenyCrossOriginRequests, this);
     }
 
     void didReceiveResponse(unsigned long identifier, const ResourceResponse& response) OVERRIDE

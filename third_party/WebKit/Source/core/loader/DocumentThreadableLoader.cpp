@@ -52,14 +52,14 @@
 
 namespace WebCore {
 
-void DocumentThreadableLoader::loadResourceSynchronously(Document* document, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options)
+void DocumentThreadableLoader::loadResourceSynchronously(Document& document, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options)
 {
     // The loader will be deleted as soon as this function exits.
     RefPtr<DocumentThreadableLoader> loader = adoptRef(new DocumentThreadableLoader(document, &client, LoadSynchronously, request, options));
     ASSERT(loader->hasOneRef());
 }
 
-PassRefPtr<DocumentThreadableLoader> DocumentThreadableLoader::create(Document* document, ThreadableLoaderClient* client, const ResourceRequest& request, const ThreadableLoaderOptions& options)
+PassRefPtr<DocumentThreadableLoader> DocumentThreadableLoader::create(Document& document, ThreadableLoaderClient* client, const ResourceRequest& request, const ThreadableLoaderOptions& options)
 {
     RefPtr<DocumentThreadableLoader> loader = adoptRef(new DocumentThreadableLoader(document, client, LoadAsynchronously, request, options));
     if (!loader->resource())
@@ -67,7 +67,7 @@ PassRefPtr<DocumentThreadableLoader> DocumentThreadableLoader::create(Document* 
     return loader.release();
 }
 
-DocumentThreadableLoader::DocumentThreadableLoader(Document* document, ThreadableLoaderClient* client, BlockingBehavior blockingBehavior, const ResourceRequest& request, const ThreadableLoaderOptions& options)
+DocumentThreadableLoader::DocumentThreadableLoader(Document& document, ThreadableLoaderClient* client, BlockingBehavior blockingBehavior, const ResourceRequest& request, const ThreadableLoaderOptions& options)
     : m_client(client)
     , m_document(document)
     , m_options(options)
@@ -76,7 +76,6 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document* document, Threadabl
     , m_async(blockingBehavior == LoadAsynchronously)
     , m_timeoutTimer(this, &DocumentThreadableLoader::didTimeout)
 {
-    ASSERT(document);
     ASSERT(client);
     // Setting an outgoing referer is only supported in the async code path.
     ASSERT(m_async || request.httpReferrer().isEmpty());
@@ -182,7 +181,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
     // original request was not same-origin.
     if (m_options.crossOriginRequestPolicy == UseAccessControl) {
 
-        InspectorInstrumentation::didReceiveCORSRedirectResponse(m_document->frame(), resource->identifier(), m_document->frame()->loader().documentLoader(), redirectResponse, 0);
+        InspectorInstrumentation::didReceiveCORSRedirectResponse(m_document.frame(), resource->identifier(), m_document.frame()->loader().documentLoader(), redirectResponse, 0);
 
         bool allowRedirect = false;
         String accessControlErrorDescription;
@@ -264,8 +263,8 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
         // cause the underlying ResourceLoader to be cancelled before it tells the inspector about the response.
         // In that case, if we don't tell the inspector about the response now, the resource type in the inspector
         // will default to "other" instead of something more descriptive.
-        DocumentLoader* loader = m_document->frame()->loader().documentLoader();
-        InspectorInstrumentation::didReceiveResourceResponse(m_document->frame(), identifier, loader, response, resource() ? resource()->loader() : 0);
+        DocumentLoader* loader = m_document.frame()->loader().documentLoader();
+        InspectorInstrumentation::didReceiveResourceResponse(m_document.frame(), identifier, loader, response, resource() ? resource()->loader() : 0);
 
         if (!passesAccessControlCheck(response, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription)) {
             preflightFailure(response.url().string(), accessControlErrorDescription);
@@ -385,21 +384,21 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request)
 
         FetchRequest newRequest(request, m_options.initiator, options);
         ASSERT(!resource());
-        setResource(m_document->fetcher()->fetchRawResource(newRequest));
+        setResource(m_document.fetcher()->fetchRawResource(newRequest));
         if (resource() && resource()->loader()) {
             unsigned long identifier = resource()->identifier();
-            InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(m_document, identifier, m_client);
+            InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(&m_document, identifier, m_client);
         }
         return;
     }
 
     FetchRequest fetchRequest(request, m_options.initiator, options);
-    ResourcePtr<Resource> resource = m_document->fetcher()->fetchSynchronously(fetchRequest);
+    ResourcePtr<Resource> resource = m_document.fetcher()->fetchSynchronously(fetchRequest);
     ResourceResponse response = resource ? resource->response() : ResourceResponse();
     unsigned long identifier = resource ? resource->identifier() : std::numeric_limits<unsigned long>::max();
     ResourceError error = resource ? resource->resourceError() : ResourceError();
 
-    InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(m_document, identifier, m_client);
+    InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(&m_document, identifier, m_client);
 
     if (!resource) {
         m_client->didFail(error);
@@ -442,12 +441,12 @@ bool DocumentThreadableLoader::isAllowedByPolicy(const KURL& url) const
 {
     if (m_options.contentSecurityPolicyEnforcement != EnforceConnectSrcDirective)
         return true;
-    return m_document->contentSecurityPolicy()->allowConnectToSource(url);
+    return m_document.contentSecurityPolicy()->allowConnectToSource(url);
 }
 
 SecurityOrigin* DocumentThreadableLoader::securityOrigin() const
 {
-    return m_options.securityOrigin ? m_options.securityOrigin.get() : m_document->securityOrigin();
+    return m_options.securityOrigin ? m_options.securityOrigin.get() : m_document.securityOrigin();
 }
 
 } // namespace WebCore

@@ -124,7 +124,9 @@ void EventSource::connect()
 {
     ASSERT(m_state == CONNECTING);
     ASSERT(!m_requestInFlight);
+    ASSERT(executionContext());
 
+    ExecutionContext& executionContext = *this->executionContext();
     ResourceRequest request(m_url);
     request.setHTTPMethod("GET");
     request.setHTTPHeaderField("Accept", "text/event-stream");
@@ -132,7 +134,7 @@ void EventSource::connect()
     if (!m_lastEventId.isEmpty())
         request.setHTTPHeaderField("Last-Event-ID", m_lastEventId);
 
-    SecurityOrigin* origin = executionContext()->securityOrigin();
+    SecurityOrigin* origin = executionContext.securityOrigin();
 
     ThreadableLoaderOptions options;
     options.sniffContent = DoNotSniffContent;
@@ -142,9 +144,9 @@ void EventSource::connect()
     options.crossOriginRequestPolicy = UseAccessControl;
     options.dataBufferingPolicy = DoNotBufferData;
     options.securityOrigin = origin;
-    options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
+    options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(&executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
 
-    m_loader = ThreadableLoader::create(executionContext(), this, request, options);
+    m_loader = ThreadableLoader::create(executionContext, this, request, options);
 
     if (m_loader)
         m_requestInFlight = true;

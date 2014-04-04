@@ -74,10 +74,11 @@ public:
 
     void load(ExecutionContext* loadingContext, const KURL& scriptURL, const Closure& callback)
     {
+        ASSERT(loadingContext);
         m_callback = callback;
         m_scriptLoader->setTargetType(ResourceRequest::TargetIsServiceWorker);
         m_scriptLoader->loadAsynchronously(
-            loadingContext, scriptURL, DenyCrossOriginRequests, this);
+            *loadingContext, scriptURL, DenyCrossOriginRequests, this);
     }
 
     virtual void notifyFinished() OVERRIDE

@@ -99,7 +99,7 @@ public:
     void setDataType(const String& dataType) { m_dataType = dataType; }
 
 private:
-    void startInternal(ExecutionContext*, const Stream*, PassRefPtr<BlobDataHandle>);
+    void startInternal(ExecutionContext&, const Stream*, PassRefPtr<BlobDataHandle>);
     void terminate();
     void cleanup();
 

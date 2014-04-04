@@ -54,8 +54,8 @@ class ThreadableLoaderClient;
 class DocumentThreadableLoader FINAL : public RefCounted<DocumentThreadableLoader>, public ThreadableLoader, private ResourceOwner<RawResource>  {
     WTF_MAKE_FAST_ALLOCATED;
     public:
-        static void loadResourceSynchronously(Document*, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&);
-        static PassRefPtr<DocumentThreadableLoader> create(Document*, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&);
+        static void loadResourceSynchronously(Document&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&);
+        static PassRefPtr<DocumentThreadableLoader> create(Document&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&);
         virtual ~DocumentThreadableLoader();
 
         virtual void cancel() OVERRIDE;
@@ -74,7 +74,7 @@ class DocumentThreadableLoader FINAL : public RefCounted<DocumentThreadableLoade
             LoadAsynchronously
         };
 
-        DocumentThreadableLoader(Document*, ThreadableLoaderClient*, BlockingBehavior, const ResourceRequest&, const ThreadableLoaderOptions&);
+        DocumentThreadableLoader(Document&, ThreadableLoaderClient*, BlockingBehavior, const ResourceRequest&, const ThreadableLoaderOptions&);
 
         // RawResourceClient
         virtual void dataSent(Resource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
@@ -100,7 +100,7 @@ class DocumentThreadableLoader FINAL : public RefCounted<DocumentThreadableLoade
         SecurityOrigin* securityOrigin() const;
 
         ThreadableLoaderClient* m_client;
-        Document* m_document;
+        Document& m_document;
         ThreadableLoaderOptions m_options;
         bool m_sameOriginRequest;
         bool m_simpleRequest;

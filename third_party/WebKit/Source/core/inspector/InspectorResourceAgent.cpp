@@ -752,7 +752,7 @@ void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, c
     options.crossOriginRequestPolicy = AllowCrossOriginRequests;
 
     InspectorThreadableLoaderClient* inspectorThreadableLoaderClient = new InspectorThreadableLoaderClient(callback);
-    RefPtr<DocumentThreadableLoader> loader = DocumentThreadableLoader::create(document, inspectorThreadableLoaderClient, request, options);
+    RefPtr<DocumentThreadableLoader> loader = DocumentThreadableLoader::create(*document, inspectorThreadableLoaderClient, request, options);
     if (!loader) {
         inspectorThreadableLoaderClient->didFailLoaderCreation();
         return;

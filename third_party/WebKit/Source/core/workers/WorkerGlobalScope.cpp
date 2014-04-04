@@ -211,10 +211,14 @@ void WorkerGlobalScope::dispose()
 void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState& exceptionState)
 {
     ASSERT(contentSecurityPolicy());
+    ASSERT(executionContext());
+
+    ExecutionContext& executionContext = *this->executionContext();
+
     Vector<String>::const_iterator urlsEnd = urls.end();
     Vector<KURL> completedURLs;
     for (Vector<String>::const_iterator it = urls.begin(); it != urlsEnd; ++it) {
-        const KURL& url = executionContext()->completeURL(*it);
+        const KURL& url = executionContext.completeURL(*it);
         if (!url.isValid()) {
             exceptionState.throwDOMException(SyntaxError, "The URL '" + *it + "' is invalid.");
             return;
@@ -226,7 +230,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
     for (Vector<KURL>::const_iterator it = completedURLs.begin(); it != end; ++it) {
         RefPtr<WorkerScriptLoader> scriptLoader(WorkerScriptLoader::create());
         scriptLoader->setTargetType(ResourceRequest::TargetIsScript);
-        scriptLoader->loadSynchronously(executionContext(), *it, AllowCrossOriginRequests);
+        scriptLoader->loadSynchronously(executionContext, *it, AllowCrossOriginRequests);
 
         // If the fetching attempt failed, throw a NetworkError exception and abort all these steps.
         if (scriptLoader->failed()) {
@@ -234,7 +238,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
             return;
         }
 
-        InspectorInstrumentation::scriptImported(executionContext(), scriptLoader->identifier(), scriptLoader->script());
+        InspectorInstrumentation::scriptImported(&executionContext, scriptLoader->identifier(), scriptLoader->script());
 
         RefPtrWillBeRawPtr<ErrorEvent> errorEvent = nullptr;
         m_script->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->responseURL()), &errorEvent);

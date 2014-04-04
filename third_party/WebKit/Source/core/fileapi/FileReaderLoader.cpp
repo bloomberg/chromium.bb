@@ -81,10 +81,10 @@ FileReaderLoader::~FileReaderLoader()
     }
 }
 
-void FileReaderLoader::startInternal(ExecutionContext* executionContext, const Stream* stream, PassRefPtr<BlobDataHandle> blobData)
+void FileReaderLoader::startInternal(ExecutionContext& executionContext, const Stream* stream, PassRefPtr<BlobDataHandle> blobData)
 {
     // The blob is read by routing through the request handling layer given a temporary public url.
-    m_urlForReading = BlobURL::createPublicURL(executionContext->securityOrigin());
+    m_urlForReading = BlobURL::createPublicURL(executionContext.securityOrigin());
     if (m_urlForReading.isEmpty()) {
         failed(FileError::SECURITY_ERR);
         return;
@@ -92,10 +92,10 @@ void FileReaderLoader::startInternal(ExecutionContext* executionContext, const S
 
     if (blobData) {
         ASSERT(!stream);
-        BlobRegistry::registerPublicBlobURL(executionContext->securityOrigin(), m_urlForReading, blobData);
+        BlobRegistry::registerPublicBlobURL(executionContext.securityOrigin(), m_urlForReading, blobData);
     } else {
         ASSERT(stream);
-        BlobRegistry::registerStreamURL(executionContext->securityOrigin(), m_urlForReading, stream->url());
+        BlobRegistry::registerStreamURL(executionContext.securityOrigin(), m_urlForReading, stream->url());
     }
 
     // Construct and load the request.
@@ -122,12 +122,14 @@ void FileReaderLoader::startInternal(ExecutionContext* executionContext, const S
 
 void FileReaderLoader::start(ExecutionContext* executionContext, PassRefPtr<BlobDataHandle> blobData)
 {
+    ASSERT(executionContext);
     m_urlForReadingIsStream = false;
-    startInternal(executionContext, 0, blobData);
+    startInternal(*executionContext, 0, blobData);
 }
 
 void FileReaderLoader::start(ExecutionContext* executionContext, const Stream& stream, unsigned readSize)
 {
+    ASSERT(executionContext);
     if (readSize > 0) {
         m_hasRange = true;
         m_rangeStart = 0;
@@ -135,7 +137,7 @@ void FileReaderLoader::start(ExecutionContext* executionContext, const Stream& s
     }
 
     m_urlForReadingIsStream = true;
-    startInternal(executionContext, &stream, nullptr);
+    startInternal(*executionContext, &stream, nullptr);
 }
 
 void FileReaderLoader::cancel()

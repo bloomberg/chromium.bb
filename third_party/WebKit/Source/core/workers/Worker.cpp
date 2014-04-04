@@ -74,7 +74,7 @@ PassRefPtrWillBeRawPtr<Worker> Worker::create(ExecutionContext* context, const S
     worker->setPendingActivity(worker.get());
 
     worker->m_scriptLoader = WorkerScriptLoader::create();
-    worker->m_scriptLoader->loadAsynchronously(context, scriptURL, DenyCrossOriginRequests, worker.get());
+    worker->m_scriptLoader->loadAsynchronously(*context, scriptURL, DenyCrossOriginRequests, worker.get());
     worker->m_contextProxy = proxyProvider->createWorkerGlobalScopeProxy(worker.get());
     return worker.release();
 }

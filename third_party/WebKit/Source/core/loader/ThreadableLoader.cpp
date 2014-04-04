@@ -43,26 +43,23 @@
 
 namespace WebCore {
 
-PassRefPtr<ThreadableLoader> ThreadableLoader::create(ExecutionContext* context, ThreadableLoaderClient* client, const ResourceRequest& request, const ThreadableLoaderOptions& options)
+PassRefPtr<ThreadableLoader> ThreadableLoader::create(ExecutionContext& context, ThreadableLoaderClient* client, const ResourceRequest& request, const ThreadableLoaderOptions& options)
 {
     ASSERT(client);
-    ASSERT(context);
 
-    if (context->isWorkerGlobalScope()) {
-        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
+    if (context.isWorkerGlobalScope()) {
+        WorkerGlobalScope& workerGlobalScope = toWorkerGlobalScope(context);
         RefPtr<ThreadableLoaderClientWrapper> clientWrapper(ThreadableLoaderClientWrapper::create(client));
-        OwnPtr<ThreadableLoaderClient> clientBridge(WorkerLoaderClientBridge::create(clientWrapper, workerGlobalScope->thread()->workerLoaderProxy()));
+        OwnPtr<ThreadableLoaderClient> clientBridge(WorkerLoaderClientBridge::create(clientWrapper, workerGlobalScope.thread()->workerLoaderProxy()));
         return WorkerThreadableLoader::create(workerGlobalScope, clientWrapper, clientBridge.release(), request, options);
     }
 
     return DocumentThreadableLoader::create(toDocument(context), client, request, options);
 }
 
-void ThreadableLoader::loadResourceSynchronously(ExecutionContext* context, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options)
+void ThreadableLoader::loadResourceSynchronously(ExecutionContext& context, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options)
 {
-    ASSERT(context);
-
-    if (context->isWorkerGlobalScope()) {
+    if (context.isWorkerGlobalScope()) {
         WorkerThreadableLoader::loadResourceSynchronously(toWorkerGlobalScope(context), request, client, options);
         return;
     }
