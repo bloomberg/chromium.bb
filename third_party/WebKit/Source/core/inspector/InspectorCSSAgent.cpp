@@ -839,17 +839,62 @@ void InspectorCSSAgent::setStyleSheetText(ErrorString* errorString, const String
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);
 }
 
-void InspectorCSSAgent::setPropertyText(ErrorString* errorString, const RefPtr<JSONObject>& fullStyleId, int propertyIndex, const String& text, bool overwrite, RefPtr<TypeBuilder::CSS::CSSStyle>& result)
+static bool extractRangeComponent(ErrorString* errorString, const RefPtr<JSONObject>& range, const String& component, unsigned& result)
 {
-    InspectorCSSId compoundId(fullStyleId);
-    if (compoundId.isEmpty()) {
-        *errorString = "Failed to parse styleId argument";
-        return;
+    int parsedValue;
+    if (!range->getNumber(component, &parsedValue) || parsedValue < 0) {
+        *errorString = "range." + component + " must be a non-negative integer";
+        return false;
+    }
+    result = parsedValue;
+    return true;
+}
+
+static bool jsonRangeToSourceRange(ErrorString* errorString, InspectorStyleSheetBase* inspectorStyleSheet, const RefPtr<JSONObject>& range, SourceRange* sourceRange)
+{
+    unsigned startLineNumber;
+    unsigned startColumn;
+    unsigned endLineNumber;
+    unsigned endColumn;
+    if (!extractRangeComponent(errorString, range, "startLine", startLineNumber)
+        || !extractRangeComponent(errorString, range, "startColumn", startColumn)
+        || !extractRangeComponent(errorString, range, "endLine", endLineNumber)
+        || !extractRangeComponent(errorString, range, "endColumn", endColumn))
+        return false;
+
+    unsigned startOffset;
+    unsigned endOffset;
+    bool success = inspectorStyleSheet->lineNumberAndColumnToOffset(startLineNumber, startColumn, &startOffset)
+        && inspectorStyleSheet->lineNumberAndColumnToOffset(endLineNumber, endColumn, &endOffset);
+    if (!success) {
+        *errorString = "Specified range is out of bounds";
+        return false;
     }
 
-    InspectorStyleSheetBase* inspectorStyleSheet = assertStyleSheetForId(errorString, compoundId.styleSheetId());
+    if (startOffset > endOffset) {
+        *errorString = "Range start must not succeed its end";
+        return false;
+    }
+    sourceRange->start = startOffset;
+    sourceRange->end = endOffset;
+    return true;
+}
+
+void InspectorCSSAgent::setPropertyText(ErrorString* errorString, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<TypeBuilder::CSS::CSSStyle>& result)
+{
+    InspectorStyleSheetBase* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);
     if (!inspectorStyleSheet)
         return;
+    SourceRange propertyRange;
+    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &propertyRange))
+        return;
+    InspectorCSSId compoundId;
+    unsigned propertyIndex;
+    bool overwrite;
+    if (!inspectorStyleSheet->findPropertyByRange(propertyRange, &compoundId, &propertyIndex, &overwrite)) {
+        *errorString = "Source range didn't match any existing property source range nor any property insertion point";
+        return;
+    }
 
     TrackExceptionState exceptionState;
     bool success = m_domAgent->history()->perform(adoptRef(new SetPropertyTextAction(inspectorStyleSheet, compoundId, propertyIndex, text, overwrite)), exceptionState);

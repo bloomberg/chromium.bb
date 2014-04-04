@@ -48,6 +48,12 @@ PassOwnPtr<Vector<unsigned> > lineEndings(const String& text)
     return result.release();
 }
 
+OrdinalNumber TextPosition::toOffset(const Vector<unsigned>& lineEndings)
+{
+    unsigned lineStartOffset = m_line != OrdinalNumber::first() ? lineEndings.at(m_line.zeroBasedInt() - 1) + 1 : 0;
+    return OrdinalNumber::fromZeroBasedInt(lineStartOffset + m_column.zeroBasedInt());
+}
+
 TextPosition TextPosition::fromOffsetAndLineEndings(unsigned offset, const Vector<unsigned>& lineEndings)
 {
     const unsigned* foundLineEnding = std::lower_bound(lineEndings.begin(), lineEndings.end(), offset);
