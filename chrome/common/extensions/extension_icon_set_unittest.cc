@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/extension_icon_set.h"
 
-#include "extensions/common/constants.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

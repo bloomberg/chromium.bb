@@ -50,28 +50,3 @@ const char kStateStoreName[] = "Extension State";
 const char kRulesStoreName[] = "Extension Rules";
 
 }  // namespace extensions
-
-namespace extension_misc {
-
-const int kExtensionIconSizes[] = {EXTENSION_ICON_GIGANTOR,     // 512
-                                   EXTENSION_ICON_EXTRA_LARGE,  // 256
-                                   EXTENSION_ICON_LARGE,        // 128
-                                   EXTENSION_ICON_MEDIUM,       // 48
-                                   EXTENSION_ICON_SMALL,        // 32
-                                   EXTENSION_ICON_SMALLISH,     // 24
-                                   EXTENSION_ICON_BITTY,        // 16
-                                   // Additional 2x resources to load.
-                                   2 * EXTENSION_ICON_MEDIUM,  // 96
-                                   2 * EXTENSION_ICON_SMALL    // 64
-};
-
-const size_t kNumExtensionIconSizes = arraysize(kExtensionIconSizes);
-
-const int kExtensionActionIconSizes[] = {EXTENSION_ICON_ACTION,     // 19,
-                                         2 * EXTENSION_ICON_ACTION  // 38
-};
-
-const size_t kNumExtensionActionIconSizes =
-    arraysize(kExtensionActionIconSizes);
-
-}  // namespace extension_misc

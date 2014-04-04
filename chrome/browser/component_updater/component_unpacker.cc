@@ -19,9 +19,9 @@
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_patcher.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "crypto/secure_hash.h"
 #include "crypto/signature_verifier.h"
-#include "extensions/common/constants.h"
 #include "extensions/common/crx_file.h"
 #include "third_party/zlib/google/zip.h"
 
