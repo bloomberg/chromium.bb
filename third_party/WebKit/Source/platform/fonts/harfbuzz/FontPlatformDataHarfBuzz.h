@@ -117,10 +117,7 @@ public:
 
 private:
     bool static defaultUseSubpixelPositioning();
-#if !OS(WIN)
-    void getRenderStyleForStrike(const char*, int);
     void querySystemForRenderStyle(bool useSkiaSubpixelPositioning);
-#endif
 
     RefPtr<SkTypeface> m_typeface;
 #if !OS(WIN)

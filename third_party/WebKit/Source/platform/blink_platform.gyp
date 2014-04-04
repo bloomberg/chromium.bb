@@ -261,10 +261,19 @@
         'dependencies': [
           '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
         ],
-      }, { # OS!="linux" and OS!="android"
+      }, { # OS!="linux" and OS!="android" and OS!="win"
         'sources/': [
           ['exclude', 'Harfbuzz[^/]+\\.(cpp|h)$'],
         ],
+      }],
+      ['OS=="linux" or OS=="android"', {
+        'sources/': [
+          ['include', 'fonts/linux/FontPlatformDataLinuxHarfBuzz\\.cpp$'],
+        ]
+      }, { # OS!="linux" and OS!="android"
+        'sources/': [
+          ['exclude', 'fonts/linux/FontPlatformDataLinuxHarfBuzz\\.cpp$'],
+        ]
       }],
       ['OS=="mac"', {
         'dependencies': [
@@ -377,7 +386,6 @@
           ['include', 'fonts/win/FontCacheSkiaWin\\.cpp$'],
           ['include', 'fonts/win/FontFallbackWin\\.(cpp|h)$'],
           ['include', 'fonts/win/FontPlatformDataWin\\.cpp$'],
-          ['exclude', 'fonts/harfbuzz/FontPlatformDataHarfBuzz\\.cpp$'],
 
           # SystemInfo.cpp is useful and we don't want to copy it.
           ['include', 'win/SystemInfo\\.cpp$'],
@@ -443,6 +451,7 @@
       ['OS=="android"', {
         'sources/': [
             ['include', 'exported/linux/WebFontRenderStyle\\.cpp$'],
+            ['include', 'fonts/linux/FontPlatformDataLinuxHarfBuzz\\.cpp$'],
         ],
       }],
     ],
