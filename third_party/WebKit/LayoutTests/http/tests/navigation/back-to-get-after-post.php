@@ -13,18 +13,20 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-window.onload = setTimeout(function() {
-    if (sessionStorage.getItem("backToGet") == null) {
-        sessionStorage.setItem("backToGet", "step1");
-        document.forms[0].submit();
-    } else if (sessionStorage.getItem("backToGet") == "step2") {
-        sessionStorage.setItem("backToGet", "step3");
-        history.back();
-    } else {
-        sessionStorage.removeItem("backToGet");
-        if (window.testRunner)
-            testRunner.notifyDone();
-    }
-}, 0);
+window.onload = function() {
+    setTimeout(function() {
+        if (sessionStorage.getItem("backToGet") == null) {
+            sessionStorage.setItem("backToGet", "step1");
+            document.forms[0].submit();
+        } else if (sessionStorage.getItem("backToGet") == "step2") {
+            sessionStorage.setItem("backToGet", "step3");
+            history.back();
+        } else {
+            sessionStorage.removeItem("backToGet");
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }
+    }, 0);
+};
 </script>
 </form>
