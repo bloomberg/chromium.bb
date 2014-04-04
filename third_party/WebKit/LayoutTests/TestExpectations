@@ -985,3 +985,5 @@ crbug.com/359408 [ Mac Win ] http/tests/inspector/network/network-xhr-replay.htm
 # Disabling this for now since Chromium CL changes output. Will re-enable once Chromium side lands.
 Bug(simonhatch) http/tests/loading/promote-img-in-viewport-priority.html [ Skip ]
 Bug(jochen) fast/js/const.html [ NeedsManualRebaseline ]
+
+crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Failure ]
