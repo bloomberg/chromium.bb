@@ -81,8 +81,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
       PictureLayerTiling* tiling = set.AddTiling(scale);
       tiling->CreateAllTilesForTesting();
       std::vector<Tile*> tiles = tiling->AllTilesForTesting();
-      client.tile_manager()->InitializeTilesWithResourcesForTesting(
-          tiles, resource_provider.get());
+      client.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
     }
 
     float max_contents_scale = scale;

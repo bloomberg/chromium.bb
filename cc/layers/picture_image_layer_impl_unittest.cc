@@ -148,8 +148,7 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
   // Create tile and resource.
   active_layer->tilings()->tiling_at(0)->CreateAllTilesForTesting();
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(
-      active_layer->tilings()->tiling_at(0)->AllTilesForTesting(),
-      host_impl_.resource_provider());
+      active_layer->tilings()->tiling_at(0)->AllTilesForTesting());
 
   // Draw.
   active_layer->draw_properties().visible_content_rect =

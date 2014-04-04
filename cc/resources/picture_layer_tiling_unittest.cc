@@ -957,8 +957,7 @@ TEST(PictureLayerTilingTest, TilingEvictionTileIteratorStaticViewport) {
   // Sanity check.
   EXPECT_EQ(64u, all_tiles.size());
 
-  client.tile_manager()->InitializeTilesWithResourcesForTesting(
-      all_tiles, resource_provider.get());
+  client.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
 
   std::set<Tile*> all_tiles_set(all_tiles.begin(), all_tiles.end());
 
