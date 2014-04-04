@@ -44,18 +44,12 @@ public:
         // The Auto value is defined by a null ShapeValue*
         Shape,
         Box,
-        Outside,
         Image
     };
 
     static PassRefPtr<ShapeValue> createShapeValue(PassRefPtr<BasicShape> shape, CSSBoxType cssBox)
     {
         return adoptRef(new ShapeValue(shape, cssBox));
-    }
-
-    static PassRefPtr<ShapeValue> createOutsideValue()
-    {
-        return adoptRef(new ShapeValue(Outside));
     }
 
     static PassRefPtr<ShapeValue> createBoxShapeValue(CSSBoxType cssBox)
@@ -124,8 +118,6 @@ inline bool ShapeValue::operator==(const ShapeValue& other) const
         return shape() == other.shape() && cssBox() == other.cssBox();
     case Box:
         return cssBox() == other.cssBox();
-    case Outside:
-        return true;
     case Image:
         return image() == other.image();
     }

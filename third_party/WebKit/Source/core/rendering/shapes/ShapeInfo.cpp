@@ -135,9 +135,6 @@ const Shape& ShapeInfo<RenderType>::computedShape() const
         m_shape = Shape::createLayoutBoxShape(shapeRect, writingMode, margin);
         break;
     }
-    case ShapeValue::Outside:
-        // Outside should have already resolved to a different shape value.
-        ASSERT_NOT_REACHED();
     }
 
     ASSERT(m_shape);

@@ -48,8 +48,6 @@ bool ShapeOutsideInfo::isEnabledFor(const RenderBox& box)
         return shapeValue->isImageValid() && checkShapeImageOrigin(box.document(), *(shapeValue->image()->cachedImage()));
     case ShapeValue::Box:
         return true;
-    case ShapeValue::Outside:
-        return false;
     }
 
     return false;

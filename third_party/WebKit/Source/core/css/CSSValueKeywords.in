@@ -909,11 +909,9 @@ off
 optimizeQuality
 -webkit-optimize-contrast
 
-// shape-inside
 // shape-outside
 nonzero
 evenodd
-outside-shape
 at
 // closest-side
 // farthest-side

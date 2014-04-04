@@ -1438,8 +1438,6 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForShape(const RenderStyle& style, 
 {
     if (!shapeValue)
         return cssValuePool().createIdentifierValue(CSSValueNone);
-    if (shapeValue->type() == ShapeValue::Outside)
-        return cssValuePool().createIdentifierValue(CSSValueOutsideShape);
     if (shapeValue->type() == ShapeValue::Box)
         return cssValuePool().createValue(shapeValue->cssBox());
     if (shapeValue->type() == ShapeValue::Image) {
