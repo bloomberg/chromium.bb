@@ -175,6 +175,7 @@ input.managed-user-creation-manager-password,
   border: 1px solid #c8c8c8;
   height: 100%;
   margin-top: 20px;
+  overflow-x: hidden;
   overflow-y: auto;
 }
 

@@ -27,6 +27,12 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_flow.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
+
 namespace {
 
 const char kProfileSyncNotificationId[] = "chrome://settings/sync/";
@@ -140,6 +146,19 @@ void SyncErrorNotifier::OnErrorChanged() {
     g_browser_process->notification_ui_manager()->CancelById(notification_id_);
     return;
   }
+
+#if defined(OS_CHROMEOS)
+  if (chromeos::UserManager::IsInitialized()) {
+    chromeos::UserFlow* user_flow =
+        chromeos::UserManager::Get()->GetCurrentUserFlow();
+
+    // Check whether Chrome OS user flow allows launching browser.
+    // Example: Supervised user creation flow which handles token invalidation
+    // itself and notifications should be suppressed. http://crbug.com/359045
+    if (!user_flow->ShouldLaunchBrowser())
+      return;
+  }
+#endif
 
   // Keep the existing notification if there is one.
   if (notification_ui_manager->FindById(notification_id_))

@@ -294,10 +294,14 @@ class BluetoothDetailedView : public TrayDetailsView,
 
   // Add settings entries.
   void AppendSettingsEntries() {
+    if (!ash::Shell::GetInstance()->
+            system_tray_delegate()->ShouldShowSettings()) {
+      return;
+    }
+
     // Add bluetooth device requires a browser window, hide it for non logged in
     // user.
-    if (login_ == user::LOGGED_IN_NONE ||
-        login_ == user::LOGGED_IN_LOCKED)
+    if (login_ == user::LOGGED_IN_NONE || login_ == user::LOGGED_IN_LOCKED)
       return;
 
     ash::SystemTrayDelegate* delegate =
