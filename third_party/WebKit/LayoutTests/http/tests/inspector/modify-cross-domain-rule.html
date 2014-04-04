@@ -67,7 +67,7 @@ function test()
                     InspectorTest.completeTest();
                 } else {
                     dumpProperties(newStyle);
-                    WebInspector.cssModel.setRuleSelector(rule, nodeId, "body", successCallback, failureCallback);
+                    WebInspector.cssModel.setRuleSelector(rule.id, nodeId, "body", successCallback, failureCallback);
                 }
             }
 

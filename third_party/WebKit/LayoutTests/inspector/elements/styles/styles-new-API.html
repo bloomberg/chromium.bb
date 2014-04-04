@@ -195,24 +195,14 @@ function test()
                 loadAndDumpStyleSheet(style.styleId.styleSheetId, next);
             }
 
-            function collapseToStart(range)
-            {
-                return {
-                    startLine: range.startLine,
-                    startColumn: range.startColumn,
-                    endLine: range.startLine,
-                    endColumn: range.startColumn,
-                };
-            }
-
             function setStyleText(rule)
             {
-                CSSAgent.setPropertyText(rule.style.styleId.styleSheetId, rule.style.cssProperties[1].range, "");
-                CSSAgent.setPropertyText(rule.style.styleId.styleSheetId, rule.style.cssProperties[0].range, "");
+                CSSAgent.setPropertyText(rule.style.styleId, 0, "", true);
+                CSSAgent.setPropertyText(rule.style.styleId, 0, "", true);
 
                 // This operation should not update the style as the new property text is not parsable.
-                CSSAgent.setPropertyText(rule.style.styleId.styleSheetId, collapseToStart(rule.style.range), "zzz;");
-                CSSAgent.setPropertyText(rule.style.styleId.styleSheetId, collapseToStart(rule.style.range), "color: white; background: black;", didSetStyleText);
+                CSSAgent.setPropertyText(rule.style.styleId, 0, "zzz;", false);
+                CSSAgent.setPropertyText(rule.style.styleId, 0, "color: white; background: black;", false, didSetStyleText);
             }
 
             function didSetSelector(error, rule)
@@ -229,8 +219,7 @@ function test()
 
             function setRuleSelector(rule)
             {
-                var orm = WebInspector.CSSRule.parsePayload(WebInspector.cssModel, rule);
-                CSSAgent.setRuleSelector(orm.id.styleSheetId, orm.selectorRange, "html *, body[foo=\"bar\"]", didSetSelector);
+                CSSAgent.setRuleSelector(rule.ruleId, "html *, body[foo=\"bar\"]", didSetSelector);
             }
 
             function onMatchedStylesForNode(error, matchedStyles)
@@ -304,12 +293,7 @@ function test()
                     InspectorTest.addResult("error: " + error);
                     return;
                 }
-                CSSAgent.setPropertyText(rule.style.styleId.styleSheetId, {
-                    startLine: rule.style.range.startLine,
-                    startColumn: rule.style.range.startColumn,
-                    endLine: rule.style.range.startLine,
-                    endColumn: rule.style.range.startColumn
-                }, "font-family: serif;", didSetStyleText);
+                CSSAgent.setPropertyText(rule.style.styleId, 0, "font-family: serif;", false, didSetStyleText);
             }
 
             function viaInspectorStyleSheetCreated(error, styleSheetId)
@@ -386,12 +370,12 @@ function test()
 
                 function step2(orm)
                 {
-                    CSSAgent.setPropertyText(orm.id.styleSheetId, orm.propertyAt(7).range.collapseToStart(), "font-size: 12px;", parseStylePayload.bind(null, step3));
+                    CSSAgent.setPropertyText(orm.id, 7, "font-size: 12px;", false, parseStylePayload.bind(null, step3));
                 }
 
                 function step3(orm)
                 {
-                    CSSAgent.setPropertyText(orm.id.styleSheetId, orm.propertyAt(9).range.collapseToStart(), "font-size: 14px;", parseStylePayload.bind(null, step4));
+                    CSSAgent.setPropertyText(orm.id, 9, "font-size: 14px;", false, parseStylePayload.bind(null, step4));
                 }
 
                 function step4(orm)
@@ -401,7 +385,7 @@ function test()
 
                 function step5(orm)
                 {
-                    CSSAgent.setPropertyText(orm.id.styleSheetId, orm.propertyAt(8).range, "border-width: 1px;", parseStylePayload.bind(null, step6));
+                    CSSAgent.setPropertyText(orm.id, 8, "border-width: 1px;", true, parseStylePayload.bind(null, step6));
                 }
 
                 function step6(orm)
@@ -411,7 +395,7 @@ function test()
 
                 function step7(orm)
                 {
-                    CSSAgent.setPropertyText(orm.id.styleSheetId, orm.propertyAt(3).range, "", parseStylePayload.bind(null, step8));
+                    CSSAgent.setPropertyText(orm.id, 3, "", true, parseStylePayload.bind(null, step8));
                 }
 
                 function step8(orm)

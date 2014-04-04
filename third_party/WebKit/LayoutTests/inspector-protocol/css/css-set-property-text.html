@@ -5,6 +5,7 @@
 <script type="text/javascript">
 function test()
 {
+setTimeout(InspectorTest.completeTest.bind(InspectorTest), 2000);
     InspectorTest.eventHandler["CSS.styleSheetAdded"] = styleSheetAdded;
     InspectorTest.sendCommandOrDie("CSS.enable", {});
 
@@ -32,7 +33,9 @@ function test()
         function testEditProperty(next)
         {
             setPropertyText({
-                range: { startLine: 7, startColumn: 4, endLine: 7, endColumn: 14 },
+                styleIndex: 1,
+                propertyIndex: 1,
+                overwrite: true,
                 text: "content: 'EDITED PROPERTY';"
             }, InspectorTest.undoAndNext(next));
         },
@@ -40,7 +43,9 @@ function test()
         function testBreakingCommentEditProperty(next)
         {
             verifyProtocolError({
-                range: { startLine: 8, startColumn: 4, endLine: 8, endColumn: 14 },
+                styleIndex: 1,
+                propertyIndex: 2,
+                overwrite: true,
                 text: "/*<--OPENED COMMENT"
             }, next);
         },
@@ -48,7 +53,9 @@ function test()
         function testInsertFirstProperty(next)
         {
             setPropertyText({
-                range: { startLine: 6, startColumn: 4, endLine: 6, endColumn: 4 },
+                styleIndex: 1,
+                propertyIndex: 0,
+                overwrite: false,
                 text: "content: 'INSERTED PROPERTY';"
             }, InspectorTest.undoAndNext(next));
         },
@@ -56,7 +63,9 @@ function test()
         function testInsertLastProperty(next)
         {
             setPropertyText({
-                range: { startLine: 10, startColumn: 0, endLine: 10, endColumn: 0 },
+                styleIndex: 1,
+                propertyIndex: 4,
+                overwrite: false,
                 text: "content: 'INSERTED PROPERTY';"
             }, InspectorTest.undoAndNext(next));
         },
@@ -64,7 +73,9 @@ function test()
         function testInsertMultipleProperties(next)
         {
             setPropertyText({
-                range: { startLine: 8, startColumn: 0, endLine: 8, endColumn: 0 },
+                styleIndex: 1,
+                propertyIndex: 2,
+                overwrite: false,
                 text: "content: 'INSERTED #1';content: 'INSERTED #2';"
             }, InspectorTest.undoAndNext(next));
         },
@@ -72,23 +83,19 @@ function test()
         function testInsertPropertyInEmptyRule(next)
         {
             setPropertyText({
-                range: { startLine: 16, startColumn: 13, endLine: 16, endColumn: 13 },
+                styleIndex: 3,
+                propertyIndex: 0,
+                overwrite: false,
                 text: "content: 'INSERTED PROPERTY';"
             }, InspectorTest.undoAndNext(next));
-        },
-
-        function testInsertPropertyOutsideRule(next)
-        {
-            verifyProtocolError({
-                range: { startLine: 10, startColumn: 1, endLine: 10, endColumn: 1 },
-                text: "content: 'INSERTED PROPERTY';"
-            }, next);
         },
 
         function testInsertBreakingPropertyInLastEmptyRule(next)
         {
             verifyProtocolError({
-                range: { startLine: 16, startColumn: 13, endLine: 16, endColumn: 13 },
+                styleIndex: 3,
+                propertyIndex: 0,
+                overwrite: false,
                 text: "content: 'INSERTED PROPERTY'/*"
             }, next);
         },
@@ -96,7 +103,9 @@ function test()
         function testDisableProperty(next)
         {
             setPropertyText({
-                range: { startLine: 7, startColumn: 4, endLine: 7, endColumn: 14 },
+                styleIndex: 1,
+                propertyIndex: 1,
+                overwrite: true,
                 text: "/* margin: 0; */"
             }, InspectorTest.undoAndNext(next));
         },
@@ -104,7 +113,9 @@ function test()
         function testRedo(next)
         {
             setPropertyText({
-                range: { startLine: 10, startColumn: 0, endLine: 10, endColumn: 0 },
+                styleIndex: 1,
+                propertyIndex: 4,
+                overwrite: false,
                 text: "align-items: center;"
             }, InspectorTest.undoAndNext(redo));
 
@@ -117,64 +128,10 @@ function test()
         function testInvalidParameters(next)
         {
             verifyProtocolError({
-                range: { startLine: "three", startColumn: 0, endLine: 4, endColumn: 0 },
+                styleIndex: "one",
+                propertyIndex: 4,
+                overwrite: false,
                 text: "no matter what is here"
-            }, next);
-        },
-
-        function testNegativeRangeParameters(next)
-        {
-            verifyProtocolError({
-                range: { startLine: -1, startColumn: -1, endLine: 1, endColumn: 0 },
-                text: "color: blue;"
-            }, next);
-        },
-
-        function testStartLineOutOfBounds(next)
-        {
-            verifyProtocolError({
-                range: { startLine: 100, startColumn: 0, endLine: 100, endColumn: 0 },
-                text: "color: blue;"
-            }, next);
-        },
-
-        function testEndLineOutOfBounds(next)
-        {
-            verifyProtocolError({
-                range: { startLine: 0, startColumn: 0, endLine: 100, endColumn: 0 },
-                text: "color: blue;"
-            }, next);
-        },
-
-        function testStartColumnBeyondLastLineCharacter(next)
-        {
-            verifyProtocolError({
-                range: { startLine: 3, startColumn: 1000, endLine: 3, endColumn: 1000 },
-                text: "color: blue;"
-            }, next);
-        },
-
-        function testEndColumnBeyondLastLineCharacter(next)
-        {
-            verifyProtocolError({
-                range: { startLine: 3, startColumn: 0, endLine: 3, endColumn: 1000 },
-                text: "color: blue;"
-            }, next);
-        },
-
-        function testInsertBeyondLastCharacterOfLastLine(next)
-        {
-            verifyProtocolError({
-                range: { startLine: 3, startColumn: 1, endLine: 3, endColumn: 1 },
-                text: "color: blue;"
-            }, next);
-        },
-
-        function testReversedRange(next)
-        {
-            verifyProtocolError({
-                range: { startLine: 2, startColumn: 0, endLine: 0, endColumn: 0 },
-                text: "color: blue;"
             }, next);
         },
    ];

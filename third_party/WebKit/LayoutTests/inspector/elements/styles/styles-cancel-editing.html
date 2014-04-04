@@ -27,13 +27,8 @@ function test()
 
         // Cancel editing.
         treeElement.valueElement.firstChild.select();
-        InspectorTest.addSniffer(WebInspector.StylePropertyTreeElement.prototype, "styleTextAppliedForTest", onStyleApplied);
-
-        function onStyleApplied()
-        {
-            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B")); // Escape
-            InspectorTest.runAfterPendingDispatches(step2);
-        }
+        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B")); // Escape
+        InspectorTest.runAfterPendingDispatches(step2);
     }
 
     function step2()

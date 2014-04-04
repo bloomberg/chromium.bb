@@ -1,0 +1,5 @@
+Tests that setting CSS property text out of boundaries does not crash.
+
+color: red;
+IndexSizeError The index provided (10) is greater than or equal to the maximum bound (1).
+

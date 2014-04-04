@@ -43,7 +43,9 @@ function test()
         function testEditProperty(next)
         {
             setPropertyText({
-                range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 11 },
+                styleIndex: 0,
+                propertyIndex: 0,
+                overwrite: true,
                 text: "content: 'EDITED PROPERTY';"
             }, InspectorTest.undoAndNext(next));
         },
@@ -51,7 +53,9 @@ function test()
         function testBreakingCommentEditProperty(next)
         {
             verifyProtocolError({
-                range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 11 },
+                styleIndex: 0,
+                propertyIndex: 0,
+                overwrite: true,
                 text: "/*<--OPENED COMMENT"
             }, next);
         },
@@ -59,7 +63,9 @@ function test()
         function testInsertFirstProperty(next)
         {
             setPropertyText({
-                range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 0 },
+                styleIndex: 0,
+                propertyIndex: 0,
+                overwrite: false,
                 text: "content: 'INSERTED PROPERTY';"
             }, InspectorTest.undoAndNext(next));
         },
@@ -67,7 +73,9 @@ function test()
         function testInsertMultipleProperties(next)
         {
             setPropertyText({
-                range: { startLine: 0, startColumn: 11, endLine: 0, endColumn: 11 },
+                styleIndex: 0,
+                propertyIndex: 0,
+                overwrite: true,
                 text: "content: 'INSERTED #1';content: 'INSERTED #2';"
             }, InspectorTest.undoAndNext(next));
         },
@@ -75,7 +83,9 @@ function test()
         function testInsertLastProperty(next)
         {
             setPropertyText({
-                range: { startLine: 0, startColumn: 24, endLine: 0, endColumn: 24 },
+                styleIndex: 0,
+                propertyIndex: 2,
+                overwrite: false,
                 text: "content: 'INSERTED PROPERTY';"
             }, InspectorTest.undoAndNext(next));
         },

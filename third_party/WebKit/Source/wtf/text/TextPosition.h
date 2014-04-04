@@ -68,7 +68,6 @@ public:
     TextPosition() { }
     bool operator==(const TextPosition& other) { return m_line == other.m_line && m_column == other.m_column; }
     bool operator!=(const TextPosition& other) { return !((*this) == other); }
-    OrdinalNumber toOffset(const Vector<unsigned>&);
 
     // A 'minimum' value of position, used as a default value.
     static TextPosition minimumPosition() { return TextPosition(OrdinalNumber::first(), OrdinalNumber::first()); }
