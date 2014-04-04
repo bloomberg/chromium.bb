@@ -284,16 +284,16 @@ public:
         IncludeLayerFilterOutsets = 1 << 2,
         ExcludeHiddenDescendants = 1 << 3,
         IncludeCompositedDescendants = 1 << 4,
-        UseFragmentBoxes = 1 << 5,
-        PretendLayerHasOwnBacking = 1 << 6,
-        DefaultCalculateLayerBoundsFlags =  IncludeSelfTransform | UseLocalClipRectIfPossible | IncludeLayerFilterOutsets | UseFragmentBoxes
+        PretendLayerHasOwnBacking = 1 << 5,
+        DefaultCalculateLayerBoundsFlags =  IncludeSelfTransform | UseLocalClipRectIfPossible | IncludeLayerFilterOutsets
     };
     typedef unsigned CalculateLayerBoundsFlags;
 
     // Bounding box relative to some ancestor layer. Pass offsetFromRoot if known.
-    LayoutRect boundingBox(const RenderLayer* rootLayer, CalculateLayerBoundsFlags = 0, const LayoutPoint* offsetFromRoot = 0) const;
+    LayoutRect physicalBoundingBox(const RenderLayer* ancestorLayer, const LayoutPoint* offsetFromRoot = 0) const;
 
     // Bounds used for layer overlap testing in RenderLayerCompositor.
+    // FIXME: It's likely this function should use physicalBoundingBox rather than logicalBoundingBox.
     LayoutRect overlapBounds() const { return overlapBoundsIncludeChildren() ? calculateLayerBounds(this) : logicalBoundingBox(); }
 
     // If true, this layer's children are included in its bounds for overlap testing.

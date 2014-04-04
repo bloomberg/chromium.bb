@@ -467,6 +467,9 @@ crbug.com/268692 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyF
 
 crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-column-span-all.html [ Crash Pass ]
 
+crbug.com/359877 fast/multicol/mixed-opacity-fixed-test.html [ ImageOnlyFailure ]
+crbug.com/359877 fast/multicol/mixed-opacity-test.html [ ImageOnlyFailure ]
+
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 
 crbug.com/278497 [ SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
