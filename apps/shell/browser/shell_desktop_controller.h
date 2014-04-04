@@ -20,11 +20,17 @@ class TestScreen;
 class WindowTreeHost;
 }
 
+namespace content {
+class BrowserContext;
+}
+
 namespace wm {
 class WMTestHelper;
 }
 
 namespace apps {
+
+class ShellAppWindow;
 
 // Handles desktop-related tasks for app_shell.
 class ShellDesktopController
@@ -35,6 +41,18 @@ class ShellDesktopController
  public:
   ShellDesktopController();
   virtual ~ShellDesktopController();
+
+  // Returns the single instance of the desktop. (Stateless functions like
+  // ShellAppWindowCreateFunction need to be able to access the desktop, so
+  // we need a singleton somewhere).
+  static ShellDesktopController* instance();
+
+  // Creates a new app window and adds it to the desktop. The desktop maintains
+  // ownership of the window.
+  ShellAppWindow* CreateAppWindow(content::BrowserContext* context);
+
+  // Closes and destroys the app window.
+  void CloseAppWindow();
 
   // Returns the host for the Aura window tree.
   aura::WindowTreeHost* GetWindowTreeHost();
@@ -65,6 +83,9 @@ class ShellDesktopController
   scoped_ptr<wm::WMTestHelper> wm_test_helper_;
 
   scoped_ptr<aura::TestScreen> test_screen_;
+
+  // The desktop supports a single app window.
+  scoped_ptr<ShellAppWindow> app_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDesktopController);
 };

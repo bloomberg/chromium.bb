@@ -6,8 +6,10 @@
 
 #include "apps/common/api/generated_api.h"
 #include "apps/shell/browser/shell_app_sorting.h"
+#include "apps/shell/browser/shell_app_window_api.h"
 #include "apps/shell/browser/shell_extension_system_factory.h"
 #include "apps/shell/browser/shell_extension_web_contents_observer.h"
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "base/prefs/testing_pref_store.h"
@@ -16,6 +18,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/api/generated_api.h"
@@ -204,8 +207,17 @@ void ShellExtensionsBrowserClient::RegisterExtensionFunctions(
   apps::api::GeneratedFunctionRegistry::RegisterAll(registry);
 
   // TODO(rockot): Remove dependency on src/chrome once we have some core APIs
-  // moved out. See http://crbug.com/349042.
+  // moved out. Also clean up the comment below. See http://crbug.com/349042.
   extensions::api::GeneratedFunctionRegistry::RegisterAll(registry);
+
+  // Register our simplified implementation for chrome.app.window.create().
+  // By registering it after extensions::api::GeneratedFunctionRegistry above
+  // we override the Chrome version of this function.
+  // TODO(jamescook): Remove the switch when the simple window good enough to
+  // use by default.
+  const std::string kNewAppWindow = "new-app-window";
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kNewAppWindow))
+    registry->RegisterFunction<ShellAppWindowCreateFunction>();
 }
 
 }  // namespace extensions

@@ -143,6 +143,7 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 
 void ShellBrowserMainParts::OnHostCloseRequested(
     const aura::WindowTreeHost* host) {
+  desktop_controller_->CloseAppWindow();
   extension_system_->CloseApp();
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::MessageLoop::QuitClosure());

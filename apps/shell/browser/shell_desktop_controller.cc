@@ -4,9 +4,12 @@
 
 #include "apps/shell/browser/shell_desktop_controller.h"
 
+#include "apps/shell/browser/shell_app_window.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/env.h"
+#include "ui/aura/layout_manager.h"
 #include "ui/aura/test/test_screen.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/gfx/screen.h"
@@ -24,6 +27,40 @@ namespace apps {
 namespace {
 
 const SkColor kBackgroundColor = SK_ColorBLACK;
+
+// A simple layout manager that makes each new window fill its parent.
+class FillLayout : public aura::LayoutManager {
+ public:
+  FillLayout() {}
+  virtual ~FillLayout() {}
+
+ private:
+  // aura::LayoutManager:
+  virtual void OnWindowResized() OVERRIDE {}
+
+  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
+    if (!child->parent())
+      return;
+
+    // Create a rect at 0,0 with the size of the parent.
+    gfx::Size parent_size = child->parent()->bounds().size();
+    child->SetBounds(gfx::Rect(parent_size));
+  }
+
+  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {}
+
+  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {}
+
+  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
+                                              bool visible) OVERRIDE {}
+
+  virtual void SetChildBounds(aura::Window* child,
+                              const gfx::Rect& requested_bounds) OVERRIDE {
+    SetChildBoundsDirect(child, requested_bounds);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(FillLayout);
+};
 
 // A ViewsDelegate to attach new unparented windows to app_shell's root window.
 class ShellViewsDelegate : public views::TestViewsDelegate {
@@ -46,6 +83,8 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
   DISALLOW_COPY_AND_ASSIGN(ShellViewsDelegate);
 };
 
+ShellDesktopController* g_instance = NULL;
+
 }  // namespace
 
 ShellDesktopController::ShellDesktopController() {
@@ -60,14 +99,41 @@ ShellDesktopController::ShellDesktopController() {
   DCHECK(!views::ViewsDelegate::views_delegate);
   views::ViewsDelegate::views_delegate =
       new ShellViewsDelegate(wm_test_helper_->host()->window());
+
+  g_instance = this;
 }
 
 ShellDesktopController::~ShellDesktopController() {
+  // The app window must be explicitly closed before desktop teardown.
+  DCHECK(!app_window_);
+  g_instance = NULL;
   delete views::ViewsDelegate::views_delegate;
   views::ViewsDelegate::views_delegate = NULL;
   DestroyRootWindow();
   aura::Env::DeleteInstance();
 }
+
+// static
+ShellDesktopController* ShellDesktopController::instance() {
+  return g_instance;
+}
+
+ShellAppWindow* ShellDesktopController::CreateAppWindow(
+    content::BrowserContext* context) {
+  aura::Window* root_window = GetWindowTreeHost()->window();
+
+  app_window_.reset(new ShellAppWindow);
+  app_window_->Init(context, root_window->bounds().size());
+
+  // Attach the web contents view to our window hierarchy.
+  aura::Window* content = app_window_->GetNativeWindow();
+  root_window->AddChild(content);
+  content->Show();
+
+  return app_window_.get();
+}
+
+void ShellDesktopController::CloseAppWindow() { app_window_.reset(); }
 
 aura::WindowTreeHost* ShellDesktopController::GetWindowTreeHost() {
   return wm_test_helper_->host();
@@ -94,10 +160,14 @@ void ShellDesktopController::CreateRootWindow() {
   if (size.IsEmpty())
     size = gfx::Size(800, 600);
   wm_test_helper_.reset(new wm::WMTestHelper(size));
-  wm_test_helper_->host()->compositor()->SetBackgroundColor(kBackgroundColor);
+  aura::WindowTreeHost* host = wm_test_helper_->host();
+  host->compositor()->SetBackgroundColor(kBackgroundColor);
+
+  // Ensure new windows fill the display.
+  host->window()->SetLayoutManager(new FillLayout);
 
   // Ensure the X window gets mapped.
-  wm_test_helper_->host()->Show();
+  host->Show();
 }
 
 void ShellDesktopController::DestroyRootWindow() {
