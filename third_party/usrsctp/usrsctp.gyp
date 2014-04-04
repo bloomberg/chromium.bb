@@ -56,6 +56,7 @@
       'target_name': 'usrsctplib',
       'type': 'static_library',
       'sources': [
+        'usrsctplib/netinet/sctp.h',
         'usrsctplib/netinet/sctp_asconf.c',
         'usrsctplib/netinet/sctp_asconf.h',
         'usrsctplib/netinet/sctp_auth.c',
@@ -82,6 +83,7 @@
         'usrsctplib/netinet/sctp_pcb.h',
         'usrsctplib/netinet/sctp_peeloff.c',
         'usrsctplib/netinet/sctp_peeloff.h',
+        'usrsctplib/netinet/sctp_process_lock.h',
         'usrsctplib/netinet/sctp_sha1.c',
         'usrsctplib/netinet/sctp_sha1.h',
         'usrsctplib/netinet/sctp_ss_functions.c',
@@ -96,12 +98,15 @@
         'usrsctplib/netinet/sctp_var.h',
         'usrsctplib/netinet/sctputil.c',
         'usrsctplib/netinet/sctputil.h',
+        'usrsctplib/netinet6/sctp6_usrreq.c',
+        'usrsctplib/netinet6/sctp6_var.h',
         'usrsctplib/user_atomic.h',
         'usrsctplib/user_environment.c',
         'usrsctplib/user_environment.h',
         'usrsctplib/user_inpcb.h',
         'usrsctplib/user_ip6_var.h',
         'usrsctplib/user_ip_icmp.h',
+        'usrsctplib/user_malloc.h',
         'usrsctplib/user_mbuf.c',
         'usrsctplib/user_mbuf.h',
         'usrsctplib/user_queue.h',
@@ -112,7 +117,7 @@
         'usrsctplib/user_socket.c',
         'usrsctplib/user_socketvar.h',
         'usrsctplib/user_uma.h',
-        'usrsctplib/usrsctp.h',
+        'usrsctplib/usrsctp.h'
       ],  # sources
       'conditions': [
         ['OS=="linux" or OS=="android"', {
@@ -151,7 +156,7 @@
           'cflags': [ '/w' ],
           # TODO(ldixon) : Remove this disabling of warnings by pushing a
           # fix upstream to usrsctp
-          'msvs_disabled_warnings': [ 4700, 4013, 4018, 4133, 4267 ],
+          'msvs_disabled_warnings': [ 4002, 4013, 4018, 4133, 4267, 4313, 4700 ],
         }, {  # OS != "win",
           'defines': [
             'NON_WINDOWS_DEFINE',
