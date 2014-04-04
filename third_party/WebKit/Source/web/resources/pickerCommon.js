@@ -217,7 +217,7 @@ function enclosingNodeOrSelfWithClass(selfNode, className)
             return node;
     }
     return null;
-};
+}
 
 /**
  * @constructor
@@ -244,14 +244,14 @@ Picker.Actions = {
 Picker.prototype.submitValue = function(value) {
     window.pagePopupController.setValue(value);
     window.pagePopupController.closePopup();
-}
+};
 
 Picker.prototype.handleCancel = function() {
     window.pagePopupController.closePopup();
-}
+};
 
 Picker.prototype.chooseOtherColor = function() {
     window.pagePopupController.setValueAndClosePopup(Picker.Actions.ChooseOtherColor, "");
-}
+};
 
 Picker.prototype.cleanup = function() {};

@@ -38,7 +38,7 @@ function SuggestionPicker(element, config) {
     this._handleBodyKeyDownBound = this._handleBodyKeyDown.bind(this);
     document.body.addEventListener("keydown", this._handleBodyKeyDownBound);
     this._element.addEventListener("mouseout", this._handleMouseOut.bind(this), false);
-};
+}
 SuggestionPicker.prototype = Object.create(Picker.prototype);
 
 SuggestionPicker.NumberOfVisibleEntries = 20;

@@ -65,7 +65,7 @@ var global = {
 // Utility functions
 
 /**
- * @return {!bool}
+ * @return {!boolean}
  */
 function hasInaccuratePointingDevice() {
     return matchMedia("(pointer: coarse)").matches;
@@ -4038,7 +4038,7 @@ CalendarPicker.prototype.onBodyKeyDown = function(event) {
         event.stopPropagation();
         event.preventDefault();
     }
-}
+};
 
 if (window.dialogArguments) {
     initialize(dialogArguments);
