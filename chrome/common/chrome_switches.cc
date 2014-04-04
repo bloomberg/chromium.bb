@@ -772,9 +772,9 @@ const char kForceAppMode[]                  = "force-app-mode";
 // whether or not it's actually the First Run (this overrides kNoFirstRun).
 const char kForceFirstRun[]                 = "force-first-run";
 
-// Forces additional Chrome Variation Ids that will be sent in
-// X-Client-Data header, specified as a 64-bit encoded list of numeric
-// experiment ids.
+// Forces additional Chrome Variation Ids that will be sent in X-Client-Data
+// header, specified as a 64-bit encoded list of numeric experiment ids. Ids
+// prefixed with the character "t" will be treated as Trigger Variation Ids.
 const char kForceVariationIds[]             = "force-variation-ids";
 
 // Specifies an alternate URL to use for speaking to Google. Useful for testing.

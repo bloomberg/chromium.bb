@@ -19,7 +19,8 @@ namespace {
 
 // Decodes the variations header and extracts the variation ids.
 bool ExtractVariationIds(const std::string& variations,
-                       std::set<VariationID>* variation_ids) {
+                         std::set<VariationID>* variation_ids,
+                         std::set<VariationID>* trigger_ids) {
   std::string serialized_proto;
   if (!base::Base64Decode(variations, &serialized_proto))
     return false;
@@ -28,6 +29,8 @@ bool ExtractVariationIds(const std::string& variations,
     return false;
   for (int i = 0; i < proto.variation_id_size(); ++i)
     variation_ids->insert(proto.variation_id(i));
+  for (int i = 0; i < proto.trigger_variation_id_size(); ++i)
+    trigger_ids->insert(proto.trigger_variation_id(i));
   return true;
 }
 
@@ -95,15 +98,18 @@ TEST(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Valid) {
   std::string variations;
 
   // Valid experiment ids.
-  EXPECT_TRUE(provider.SetDefaultVariationIds("12,456"));
+  EXPECT_TRUE(provider.SetDefaultVariationIds("12,456,t789"));
   provider.InitVariationIDsCacheIfNeeded();
   provider.AppendHeaders(url, false, false, &headers);
   EXPECT_TRUE(headers.HasHeader("X-Client-Data"));
   headers.GetHeader("X-Client-Data", &variations);
   std::set<VariationID> variation_ids;
-  ASSERT_TRUE(ExtractVariationIds(variations, &variation_ids));
+  std::set<VariationID> trigger_ids;
+  ASSERT_TRUE(ExtractVariationIds(variations, &variation_ids, &trigger_ids));
   EXPECT_TRUE(variation_ids.find(12) != variation_ids.end());
   EXPECT_TRUE(variation_ids.find(456) != variation_ids.end());
+  EXPECT_TRUE(trigger_ids.find(789) != trigger_ids.end());
+  EXPECT_FALSE(variation_ids.find(789) != variation_ids.end());
 }
 
 TEST(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Invalid) {
@@ -114,6 +120,12 @@ TEST(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Invalid) {
 
   // Invalid experiment ids.
   EXPECT_FALSE(provider.SetDefaultVariationIds("abcd12,456"));
+  provider.InitVariationIDsCacheIfNeeded();
+  provider.AppendHeaders(url, false, false, &headers);
+  EXPECT_FALSE(headers.HasHeader("X-Client-Data"));
+
+  // Invalid trigger experiment id
+  EXPECT_FALSE(provider.SetDefaultVariationIds("12,tabc456"));
   provider.InitVariationIDsCacheIfNeeded();
   provider.AppendHeaders(url, false, false, &headers);
   EXPECT_FALSE(headers.HasHeader("X-Client-Data"));
