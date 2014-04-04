@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/ash_strings.h"
 #include "grit/generated_resources.h"
@@ -320,6 +321,8 @@ void DisplayOptionsHandler::HandleDisplayInfo(
 
 void DisplayOptionsHandler::HandleMirroring(const base::ListValue* args) {
   DCHECK(!args->empty());
+  content::RecordAction(
+      base::UserMetricsAction("Options_DisplayToggleMirroring"));
   bool is_mirroring = false;
   args->GetBoolean(0, &is_mirroring);
   ash::Shell::GetInstance()->output_configurator_animation()->
@@ -335,6 +338,7 @@ void DisplayOptionsHandler::HandleSetPrimary(const base::ListValue* args) {
   if (display_id == gfx::Display::kInvalidDisplayID)
     return;
 
+  content::RecordAction(base::UserMetricsAction("Options_DisplaySetPrimary"));
   ash::Shell::GetInstance()->display_controller()->
       SetPrimaryDisplayId(display_id);
 }
@@ -349,6 +353,7 @@ void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {
   }
   DCHECK_LE(ash::DisplayLayout::TOP, layout);
   DCHECK_GE(ash::DisplayLayout::LEFT, layout);
+  content::RecordAction(base::UserMetricsAction("Options_DisplayRearrange"));
   ash::Shell::GetInstance()->output_configurator_animation()->
       StartFadeOutAnimation(base::Bind(
           &DisplayOptionsHandler::OnFadeOutForDisplayLayoutFinished,
@@ -379,6 +384,8 @@ void DisplayOptionsHandler::HandleSetResolution(const base::ListValue* args) {
   if (display_id == gfx::Display::kInvalidDisplayID)
     return;
 
+  content::RecordAction(
+      base::UserMetricsAction("Options_DisplaySetResolution"));
   double width = 0.0f;
   double height = 0.0f;
   if (!args->GetDouble(1, &width) || width == 0.0f) {
@@ -444,6 +451,8 @@ void DisplayOptionsHandler::HandleSetOrientation(const base::ListValue* args) {
   else if (rotation_value != "0")
     LOG(ERROR) << "Invalid rotation: " << rotation_value << " Falls back to 0";
 
+  content::RecordAction(
+      base::UserMetricsAction("Options_DisplaySetOrientation"));
   GetDisplayManager()->SetDisplayRotation(display_id, new_rotation);
 }
 

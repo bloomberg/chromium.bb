@@ -28,6 +28,8 @@ cr.define('options', function() {
 
       $('languages-and-input-settings').onclick = function(e) {
         OptionsPage.navigateToPage('languages');
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_KeyboardShowLanguageSettings']);
       };
     },
 

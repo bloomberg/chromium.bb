@@ -188,6 +188,8 @@ cr.define('options', function() {
         var displayOverscan = options.DisplayOverscan.getInstance();
         displayOverscan.setDisplayId(this.displays_[this.focusedIndex_].id);
         OptionsPage.navigateToPage('displayOverscan');
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_DisplaySetOverscan']);
       }.bind(this);
 
       chrome.send('getDisplayInfo');

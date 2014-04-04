@@ -8126,6 +8126,33 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_DisplayRearrange">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Device: Display settings: arrange desktops
+  </description>
+</action>
+
+<action name="Options_DisplaySetOrientation">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Device: Display settings: Orientation</description>
+</action>
+
+<action name="Options_DisplaySetPrimary">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Device: Display settings: Make primary</description>
+</action>
+
+<action name="Options_DisplaySetResolution">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Device: Display settings: Resolution</description>
+</action>
+
+<action name="Options_DisplayToggleMirroring">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Device: Display settings: Start mirroring</description>
+</action>
+
 <action name="Options_DnsPrefetchCheckbox_Disable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -8289,6 +8316,38 @@ should be able to be added at any place in this file.
 <action name="Options_JavaCheckbox_Enable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_KeyboardRemapAltKey">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Keyboard settings: Alt</description>
+</action>
+
+<action name="Options_KeyboardRemapCapsLockKey">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Keyboard settings: CapsLock</description>
+</action>
+
+<action name="Options_KeyboardRemapControlKey">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Keyboard settings: Ctrl</description>
+</action>
+
+<action name="Options_KeyboardRemapDiamondKey">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Keyboard settings: Diamond</description>
+</action>
+
+<action name="Options_KeyboardRemapSearchKey">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Keyboard settings: Search</description>
+</action>
+
+<action name="Options_KeyboardShowLanguageSettings">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Keyboard settings: Change language and input settings
+  </description>
 </action>
 
 <action name="Options_LinkDoctorCheckbox_Disable">
@@ -8607,6 +8666,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_ShowKeyboardSettings">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Keyboard settings</description>
+</action>
+
 <action name="Options_ShowPasswordManager">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -8620,6 +8684,11 @@ should be able to be added at any place in this file.
 <action name="Options_ShowProxySettings">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_ShowTouchpadSettings">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Touchpad settings</description>
 </action>
 
 <action name="Options_SpeedFactorSlider_Changed">

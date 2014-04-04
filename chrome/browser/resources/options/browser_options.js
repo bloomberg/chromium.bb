@@ -204,9 +204,13 @@ cr.define('options', function() {
       if (cr.isChromeOS) {
         $('keyboard-settings-button').onclick = function(evt) {
           OptionsPage.navigateToPage('keyboard-overlay');
+          chrome.send('coreOptionsUserMetricsAction',
+                      ['Options_ShowKeyboardSettings']);
         };
         $('pointer-settings-button').onclick = function(evt) {
           OptionsPage.navigateToPage('pointer-overlay');
+          chrome.send('coreOptionsUserMetricsAction',
+                      ['Options_ShowTouchpadSettings']);
         };
       }
 
