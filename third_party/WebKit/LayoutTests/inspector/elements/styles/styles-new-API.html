@@ -229,7 +229,8 @@ function test()
 
             function setRuleSelector(rule)
             {
-                CSSAgent.setRuleSelector(rule.ruleId, "html *, body[foo=\"bar\"]", didSetSelector);
+                var orm = WebInspector.CSSRule.parsePayload(WebInspector.cssModel, rule);
+                CSSAgent.setRuleSelector(orm.id.styleSheetId, orm.selectorRange, "html *, body[foo=\"bar\"]", didSetSelector);
             }
 
             function onMatchedStylesForNode(error, matchedStyles)

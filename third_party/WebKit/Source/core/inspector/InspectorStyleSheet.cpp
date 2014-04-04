@@ -1371,6 +1371,22 @@ InspectorCSSId InspectorStyleSheet::styleId(CSSStyleDeclaration* style) const
     return InspectorCSSId();
 }
 
+bool InspectorStyleSheet::findRuleBySelectorRange(const SourceRange& sourceRange, InspectorCSSId* ruleId)
+{
+    if (!ensureParsedDataReady())
+        return false;
+    for (size_t i = 0; i < ruleCount(); ++i) {
+        RefPtr<CSSRuleSourceData> ruleSourceData = ruleSourceDataAt(i);
+        if (!ruleSourceData->styleSourceData)
+            continue;
+        if (ruleSourceData->ruleHeaderRange.start == sourceRange.start && ruleSourceData->ruleHeaderRange.end == sourceRange.end) {
+            *ruleId = InspectorCSSId(id(), i);
+            return true;
+        }
+    }
+    return false;
+}
+
 Document* InspectorStyleSheet::ownerDocument() const
 {
     return m_pageStyleSheet->ownerDocument();
