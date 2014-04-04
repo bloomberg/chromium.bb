@@ -619,16 +619,16 @@
         </span>
       </div>
 </if>
-<if expr="not chromeos">
       <div id="auto-open-file-types-section" hidden>
         <div id="auto-open-file-types-container">
-          <div id="auto-open-file-types-label"
+          <div id="auto-open-file-types-label" class="settings-row"
               i18n-content="autoOpenFileTypesInfo"></div>
-          <button id="autoOpenFileTypesResetToDefault"
-              i18n-content="autoOpenFileTypesResetToDefault"></button>
+          <div class="settings-row">
+            <button id="autoOpenFileTypesResetToDefault"
+                i18n-content="autoOpenFileTypesResetToDefault"></button>
+            </div>
         </div>
       </div>
-</if>
     </div>
   </section>
   <section>

@@ -414,10 +414,6 @@ list:not([disabled]) > .network-group[selected] {
   overflow: hidden;
 }
 
-#auto-open-file-types-label {
-  padding: 0.45em 0
-}
-
 .sliding {
   -webkit-transition: height 200ms;
   overflow-y: hidden;

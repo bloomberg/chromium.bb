@@ -442,14 +442,13 @@ cr.define('options', function() {
       $('downloadLocationChangeButton').onclick = function(event) {
         chrome.send('selectDownloadLocation');
       };
-      if (!cr.isChromeOS) {
-        $('autoOpenFileTypesResetToDefault').onclick = function(event) {
-          chrome.send('autoOpenFileTypesAction');
-        };
-      } else {
+      if (cr.isChromeOS) {
         $('disable-drive-row').hidden =
             UIAccountTweaks.loggedInAsLocallyManagedUser();
       }
+      $('autoOpenFileTypesResetToDefault').onclick = function(event) {
+        chrome.send('autoOpenFileTypesAction');
+      };
 
       // HTTPS/SSL section.
       if (cr.isWindows || cr.isMac) {
@@ -1445,9 +1444,6 @@ cr.define('options', function() {
      * @private
      */
     setAutoOpenFileTypesDisplayed_: function(display) {
-      if (cr.isChromeOS)
-        return;
-
       if ($('advanced-settings').hidden) {
         // If the Advanced section is hidden, don't animate the transition.
         $('auto-open-file-types-section').hidden = !display;
