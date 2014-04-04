@@ -146,11 +146,11 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     std::string name =
         output.display->type() == ui::OUTPUT_TYPE_INTERNAL
             ? l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME) :
-              output.display->GetDisplayName();
+              output.display->display_name();
     if (name.empty())
       name = l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
 
-    bool has_overscan = output.display->GetOverscanFlag();
+    bool has_overscan = output.display->has_overscan();
     int64 id = output.display->display_id();
     ids.insert(id);
 

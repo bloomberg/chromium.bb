@@ -28,6 +28,8 @@ DisplaySnapshotX11* CreateOutput(RROutput output, RRCrtc crtc) {
       gfx::Size(0, 0),
       OUTPUT_TYPE_UNKNOWN,
       false,
+      false,
+      std::string(),
       std::vector<const DisplayMode*>(1, &kDefaultDisplayMode),
       &kDefaultDisplayMode,
       NULL,

@@ -26,6 +26,8 @@ class DISPLAY_EXPORT DisplaySnapshot {
                   const gfx::Size& physical_size,
                   OutputType type,
                   bool is_aspect_preserving_scaling,
+                  bool has_overscan,
+                  std::string display_name,
                   const std::vector<const DisplayMode*>& modes,
                   const DisplayMode* current_mode,
                   const DisplayMode* native_mode);
@@ -37,6 +39,9 @@ class DISPLAY_EXPORT DisplaySnapshot {
   bool is_aspect_preserving_scaling() const {
     return is_aspect_preserving_scaling_;
   }
+  bool has_overscan() const { return has_overscan_; }
+  std::string display_name() const { return display_name_; }
+
   int64_t display_id() const { return display_id_; }
   bool has_proper_display_id() const { return has_proper_display_id_; }
 
@@ -48,14 +53,6 @@ class DISPLAY_EXPORT DisplaySnapshot {
   void set_current_mode(const DisplayMode* mode) { current_mode_ = mode; }
   void set_origin(const gfx::Point& origin) { origin_ = origin; }
   void add_mode(const DisplayMode* mode) { modes_.push_back(mode); }
-
-  // Generates the human readable string for this display. Generally this is
-  // parsed from the EDID information.
-  virtual std::string GetDisplayName() = 0;
-
-  // Returns true if the overscan flag is set to true in the display
-  // information. Generally this is read from the EDID flags.
-  virtual bool GetOverscanFlag() = 0;
 
   // Returns a textual representation of this display state.
   virtual std::string ToString() const = 0;
@@ -73,6 +70,10 @@ class DISPLAY_EXPORT DisplaySnapshot {
   OutputType type_;
 
   bool is_aspect_preserving_scaling_;
+
+  bool has_overscan_;
+
+  std::string display_name_;
 
   std::vector<const DisplayMode*> modes_;  // Not owned.
 

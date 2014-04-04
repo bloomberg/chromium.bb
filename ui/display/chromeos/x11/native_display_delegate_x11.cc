@@ -346,6 +346,9 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
   bool has_display_id = GetDisplayId(
       id, static_cast<uint8_t>(index), &display_id);
 
+  bool has_overscan = false;
+  GetOutputOverscanFlag(id, &has_overscan);
+
   OutputType type = GetOutputTypeFromName(info->name);
   if (type == OUTPUT_TYPE_UNKNOWN)
     LOG(ERROR) << "Unknown link type: " << info->name;
@@ -406,6 +409,8 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
                              gfx::Size(info->mm_width, info->mm_height),
                              type,
                              IsOutputAspectPreservingScaling(id),
+                             has_overscan,
+                             GetDisplayName(id),
                              display_modes,
                              current_mode,
                              native_mode,

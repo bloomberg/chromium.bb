@@ -22,6 +22,8 @@ class DISPLAY_EXPORT DisplaySnapshotX11 : public DisplaySnapshot {
                      const gfx::Size& physical_size,
                      OutputType type,
                      bool is_aspect_preserving_scaling,
+                     bool has_overscan,
+                     std::string display_name,
                      const std::vector<const DisplayMode*>& modes,
                      const DisplayMode* current_mode,
                      const DisplayMode* native_mode,
@@ -35,8 +37,6 @@ class DISPLAY_EXPORT DisplaySnapshotX11 : public DisplaySnapshot {
   int index() const { return index_; }
 
   // DisplaySnapshot overrides:
-  virtual std::string GetDisplayName() OVERRIDE;
-  virtual bool GetOverscanFlag() OVERRIDE;
   virtual std::string ToString() const OVERRIDE;
 
  private:

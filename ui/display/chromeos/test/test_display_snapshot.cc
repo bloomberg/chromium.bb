@@ -12,6 +12,8 @@ TestDisplaySnapshot::TestDisplaySnapshot()
                       gfx::Size(0, 0),
                       OUTPUT_TYPE_UNKNOWN,
                       false,
+                      false,
+                      std::string(),
                       std::vector<const DisplayMode*>(),
                       NULL,
                       NULL) {}
@@ -32,15 +34,13 @@ TestDisplaySnapshot::TestDisplaySnapshot(
                       physical_size,
                       type,
                       is_aspect_preserving_scaling,
+                      false,
+                      std::string(),
                       modes,
                       current_mode,
                       native_mode) {}
 
 TestDisplaySnapshot::~TestDisplaySnapshot() {}
-
-std::string TestDisplaySnapshot::GetDisplayName() { return ""; }
-
-bool TestDisplaySnapshot::GetOverscanFlag() { return false; }
 
 std::string TestDisplaySnapshot::ToString() const { return ""; }
 

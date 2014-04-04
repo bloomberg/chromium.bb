@@ -38,8 +38,6 @@ class DISPLAY_EXPORT TestDisplaySnapshot : public DisplaySnapshot {
   }
 
   // DisplaySnapshot overrides:
-  virtual std::string GetDisplayName() OVERRIDE;
-  virtual bool GetOverscanFlag() OVERRIDE;
   virtual std::string ToString() const OVERRIDE;
 
  private:

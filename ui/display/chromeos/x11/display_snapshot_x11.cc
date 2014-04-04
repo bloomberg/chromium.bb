@@ -6,7 +6,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "ui/display/chromeos/x11/display_mode_x11.h"
-#include "ui/display/x11/edid_parser_x11.h"
 
 namespace ui {
 
@@ -17,6 +16,8 @@ DisplaySnapshotX11::DisplaySnapshotX11(
     const gfx::Size& physical_size,
     OutputType type,
     bool is_aspect_preserving_scaling,
+    bool has_overscan,
+    std::string display_name,
     const std::vector<const DisplayMode*>& modes,
     const DisplayMode* current_mode,
     const DisplayMode* native_mode,
@@ -29,6 +30,8 @@ DisplaySnapshotX11::DisplaySnapshotX11(
                       physical_size,
                       type,
                       is_aspect_preserving_scaling,
+                      has_overscan,
+                      display_name,
                       modes,
                       current_mode,
                       native_mode),
@@ -37,17 +40,6 @@ DisplaySnapshotX11::DisplaySnapshotX11(
       index_(index) {}
 
 DisplaySnapshotX11::~DisplaySnapshotX11() {}
-
-std::string DisplaySnapshotX11::GetDisplayName() {
-  return ui::GetDisplayName(output_);
-}
-
-bool DisplaySnapshotX11::GetOverscanFlag() {
-  bool flag = false;
-  GetOutputOverscanFlag(output_, &flag);
-
-  return flag;
-}
 
 std::string DisplaySnapshotX11::ToString() const {
   return base::StringPrintf(
