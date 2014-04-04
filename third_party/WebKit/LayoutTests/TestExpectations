@@ -968,6 +968,7 @@ crbug.com/356148 media/audio-delete-while-slider-thumb-clicked.html [ Pass Crash
 
 crbug.com/344238 inspector/timeline/timeline-auto-record.html [ Pass Failure ]
 crbug.com/344238 virtual/deferred/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
+crbug.com/344238 [ Mac Win Debug ] virtual/deferred/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 crbug.com/344238 virtual/implsidepainting/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
 
 crbug.com/359194 css3/viewport-percentage-lengths/viewport-percentage-lengths-page-zoom.html [ NeedsManualRebaseline ]
