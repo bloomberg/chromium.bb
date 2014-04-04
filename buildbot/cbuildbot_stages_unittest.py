@@ -2813,7 +2813,21 @@ class BaseCQTest(StageTest):
   def PerformSync(self, remote='cros', committed=False, tree_open=True,
                   tree_throttled=False, tracking_branch='master',
                   num_patches=1, runs=0):
-    """Helper to perform a basic sync for master commit queue."""
+    """Helper to perform a basic sync for master commit queue.
+
+    Args:
+      remote: Remote name to use for mock patches. Default: 'cros'.
+      committed: Value to be returned by mock patches' IsChangeCommitted.
+                 Default: False.
+      tree_open: If True, behave as if tree is open. Default: True.
+      tree_throttled: If True, behave as if tree is throttled
+                      (overriding the tree_open arg). Default: False.
+      tracking_branch: Tracking branch name for mock patches.
+      num_patches: The number of mock patches to create. Default: 1.
+      runs: The maximum number of times to allow validation_pool.AcquirePool
+            to wait for additional changes. runs=0 means never wait for
+            additional changes. Default: 0.
+    """
     p = MockPatch(remote=remote, tracking_branch=tracking_branch)
     my_patches = [p] * num_patches
     self.PatchObject(gerrit.GerritHelper, 'IsChangeCommitted',
@@ -2925,14 +2939,27 @@ class CLStatusMock(partial_mock.PartialMock):
   TARGET = 'chromite.buildbot.validation_pool.ValidationPool'
   ATTRS = ('GetCLStatus', 'GetCLStatusCount', 'UpdateCLStatus',)
 
-  def __init__(self):
+  def __init__(self, treat_launching_as_inflight=False):
+    """CLStatusMock constructor.
+
+    Args:
+      treat_launching_as_inflight: When getting a CL's status via
+        GetCLStatus, treat any change with status LAUNCHING as if
+        it has status INFLIGHT. This simulates pre-cq tryjobs getting
+        immediately launched. Default: False.
+    """
     partial_mock.PartialMock.__init__(self)
     self.calls = {}
     self.status = {}
     self.status_count = {}
+    self._treat_launching_as_inflight = treat_launching_as_inflight
 
   def GetCLStatus(self, _bot, change):
-    return self.status.get(change)
+    status = self.status.get(change)
+    if (self._treat_launching_as_inflight and
+        status == validation_pool.ValidationPool.STATUS_LAUNCHING):
+      return validation_pool.ValidationPool.STATUS_INFLIGHT
+    return status
 
   def GetCLStatusCount(self, _bot, change, count, latest_patchset_only=True):
     # pylint: disable=W0613
@@ -2954,7 +2981,10 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
 
   def setUp(self):
     self.PatchObject(time, 'sleep', autospec=True)
-    self.pre_cq = CLStatusMock()
+
+  def _PrepareValidationPoolMock(self, auto_launch=False):
+    # pylint: disable-msg=W0201
+    self.pre_cq = CLStatusMock(treat_launching_as_inflight=auto_launch)
     self.StartPatcher(self.pre_cq)
 
   def _Prepare(self, bot_id=None, **kwargs):
@@ -2964,15 +2994,24 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
 
   def testTreeClosureIsOK(self):
     """Test that tree closures block commits."""
+    self._PrepareValidationPoolMock()
     self.testCommitNonManifestChange(tree_open=False)
 
   def testLaunchTrybot(self):
     """Test launching a trybot."""
+    self._PrepareValidationPoolMock()
     self.testCommitManifestChange()
     self.assertEqual(self.pre_cq.status.values(), [self.STATUS_LAUNCHING])
     self.assertEqual(self.pre_cq.calls.keys(), [self.STATUS_LAUNCHING])
 
   def runTrybotTest(self, launching, waiting, failed, runs):
+    """Helper function for testing PreCQLauncher.
+
+    Create a mock patch to be picked up by the PreCQ. Allow up to
+    |runs|+1 calls to ProcessChanges. Assert that the patch received status
+    LAUNCHING, WAITING, and FAILED |launching|, |waiting|, and |failed| times
+    respectively.
+    """
     self.testCommitManifestChange(runs=runs)
     self.assertEqual(self.pre_cq.calls.get(self.STATUS_LAUNCHING, 0), launching)
     self.assertEqual(self.pre_cq.calls.get(self.STATUS_WAITING, 0), waiting)
@@ -2980,6 +3019,7 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
 
   def testLaunchTrybotTimesOutOnce(self):
     """Test what happens when a trybot launch times out."""
+    self._PrepareValidationPoolMock()
     it = itertools.chain([True], itertools.repeat(False))
     self.PatchObject(stages.PreCQLauncherStage, '_HasLaunchTimedOut',
                      side_effect=it)
@@ -2987,9 +3027,18 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
 
   def testLaunchTrybotTimesOutTwice(self):
     """Test what happens when a trybot launch times out."""
+    self._PrepareValidationPoolMock()
     self.PatchObject(stages.PreCQLauncherStage, '_HasLaunchTimedOut',
                      return_value=True)
     self.runTrybotTest(launching=2, waiting=1, failed=1, runs=3)
+
+  def testInflightTrybotTimesOutOnce(self):
+    """Test what happens when an inflight trybot times out."""
+    self._PrepareValidationPoolMock(auto_launch=True)
+    it = itertools.chain([True], itertools.repeat(False))
+    self.PatchObject(stages.PreCQLauncherStage, '_HasInflightTimedOut',
+                     side_effect=it)
+    self.runTrybotTest(launching=1, waiting=0, failed=1, runs=1)
 
 
 class ChromeSDKStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
