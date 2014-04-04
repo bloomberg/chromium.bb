@@ -17,14 +17,6 @@
 #include "third_party/jsoncpp/source/include/json/value.h"
 
 namespace plugin {
-namespace {
-const PPB_NaCl_Private* GetNaClInterface() {
-  pp::Module *module = pp::Module::Get();
-  CHECK(module);
-  return static_cast<const PPB_NaCl_Private*>(
-      module->GetBrowserInterface(PPB_NACL_PRIVATE_INTERFACE));
-}
-}  // namespace
 
 static const char kPnaclBaseUrl[] = "chrome://pnacl-translator/";
 const char PnaclUrls::kResourceInfoUrl[] = "pnacl.json";
