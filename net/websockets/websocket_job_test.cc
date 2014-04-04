@@ -316,6 +316,74 @@ class MockHttpTransactionFactory : public HttpTransactionFactory {
   SpdySessionKey spdy_session_key_;
 };
 
+class DeletingSocketStreamDelegate : public SocketStream::Delegate {
+ public:
+  DeletingSocketStreamDelegate()
+      : delete_next_(false) {}
+
+  // Since this class needs to be able to delete |job_|, it must be the only
+  // reference holder (except for temporary references). Provide access to the
+  // pointer for tests to use.
+  WebSocketJob* job() { return job_.get(); }
+
+  void set_job(WebSocketJob* job) { job_ = job; }
+
+  // After calling this, the next call to a method on this delegate will delete
+  // the WebSocketJob object.
+  void set_delete_next(bool delete_next) { delete_next_ = delete_next; }
+
+  void DeleteJobMaybe() {
+    if (delete_next_) {
+      job_->DetachContext();
+      job_->DetachDelegate();
+      job_ = NULL;
+    }
+  }
+
+  // SocketStream::Delegate implementation
+
+  // OnStartOpenConnection() is not implemented by SocketStreamDispatcherHost
+
+  virtual void OnConnected(SocketStream* socket,
+                           int max_pending_send_allowed) OVERRIDE {
+    DeleteJobMaybe();
+  }
+
+  virtual void OnSentData(SocketStream* socket, int amount_sent) OVERRIDE {
+    DeleteJobMaybe();
+  }
+
+  virtual void OnReceivedData(SocketStream* socket,
+                              const char* data,
+                              int len) OVERRIDE {
+    DeleteJobMaybe();
+  }
+
+  virtual void OnClose(SocketStream* socket) OVERRIDE { DeleteJobMaybe(); }
+
+  virtual void OnAuthRequired(SocketStream* socket,
+                              AuthChallengeInfo* auth_info) OVERRIDE {
+    DeleteJobMaybe();
+  }
+
+  virtual void OnSSLCertificateError(SocketStream* socket,
+                                     const SSLInfo& ssl_info,
+                                     bool fatal) OVERRIDE {
+    DeleteJobMaybe();
+  }
+
+  virtual void OnError(const SocketStream* socket, int error) OVERRIDE {
+    DeleteJobMaybe();
+  }
+
+  // CanGetCookies() and CanSetCookies() do not appear to be able to delete the
+  // WebSocketJob object.
+
+ private:
+  scoped_refptr<WebSocketJob> job_;
+  bool delete_next_;
+};
+
 }  // namespace
 
 class WebSocketJobTest : public PlatformTest,
@@ -478,6 +546,34 @@ class WebSocketJobTest : public PlatformTest,
   static const size_t kHandshakeResponseWithCookieLength;
   static const size_t kDataHelloLength;
   static const size_t kDataWorldLength;
+};
+
+// Tests using this fixture verify that the WebSocketJob can handle being
+// deleted while calling back to the delegate correctly. These tests need to be
+// run under AddressSanitizer or other systems for detecting use-after-free
+// errors in order to find problems.
+class WebSocketJobDeleteTest : public ::testing::Test {
+ protected:
+  WebSocketJobDeleteTest()
+      : delegate_(new DeletingSocketStreamDelegate),
+        cookie_store_(new MockCookieStore),
+        context_(new MockURLRequestContext(cookie_store_.get())) {
+    WebSocketJob* websocket = new WebSocketJob(delegate_.get());
+    delegate_->set_job(websocket);
+
+    socket_ = new MockSocketStream(
+        GURL("ws://127.0.0.1/"), websocket, context_.get(), NULL);
+
+    websocket->InitSocketStream(socket_.get());
+  }
+
+  void SetDeleteNext() { return delegate_->set_delete_next(true); }
+  WebSocketJob* job() { return delegate_->job(); }
+
+  scoped_ptr<DeletingSocketStreamDelegate> delegate_;
+  scoped_refptr<MockCookieStore> cookie_store_;
+  scoped_ptr<MockURLRequestContext> context_;
+  scoped_refptr<SocketStream> socket_;
 };
 
 const char WebSocketJobTest::kHandshakeRequestWithoutCookie[] =
@@ -1120,6 +1216,76 @@ TEST_P(WebSocketJobTest, ThrottlingSpdy) {
 TEST_P(WebSocketJobTest, ThrottlingSpdySpdyEnabled) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   TestConnectBySpdy(SPDY_ON, THROTTLING_ON);
+}
+
+TEST_F(WebSocketJobDeleteTest, OnClose) {
+  SetDeleteNext();
+  job()->OnClose(socket_.get());
+  // OnClose() sets WebSocketJob::_socket to NULL before we can detach it, so
+  // socket_->delegate is still set at this point. Clear it to avoid hitting
+  // DCHECK(!delegate_) in the SocketStream destructor. SocketStream::Finish()
+  // is the only caller of this method in real code, and it also sets delegate_
+  // to NULL.
+  socket_->DetachDelegate();
+  EXPECT_FALSE(job());
+}
+
+TEST_F(WebSocketJobDeleteTest, OnAuthRequired) {
+  SetDeleteNext();
+  job()->OnAuthRequired(socket_.get(), NULL);
+  EXPECT_FALSE(job());
+}
+
+TEST_F(WebSocketJobDeleteTest, OnSSLCertificateError) {
+  SSLInfo ssl_info;
+  SetDeleteNext();
+  job()->OnSSLCertificateError(socket_.get(), ssl_info, true);
+  EXPECT_FALSE(job());
+}
+
+TEST_F(WebSocketJobDeleteTest, OnError) {
+  SetDeleteNext();
+  job()->OnError(socket_.get(), ERR_CONNECTION_RESET);
+  EXPECT_FALSE(job());
+}
+
+TEST_F(WebSocketJobDeleteTest, OnSentSpdyHeaders) {
+  job()->Connect();
+  SetDeleteNext();
+  job()->OnSentSpdyHeaders();
+  EXPECT_FALSE(job());
+}
+
+TEST_F(WebSocketJobDeleteTest, OnSentHandshakeRequest) {
+  static const char kMinimalRequest[] =
+      "GET /demo HTTP/1.1\r\n"
+      "Host: example.com\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Connection: Upgrade\r\n"
+      "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+      "Origin: http://example.com\r\n"
+      "Sec-WebSocket-Version: 13\r\n"
+      "\r\n";
+  const size_t kMinimalRequestSize = arraysize(kMinimalRequest) - 1;
+  job()->Connect();
+  job()->SendData(kMinimalRequest, kMinimalRequestSize);
+  SetDeleteNext();
+  job()->OnSentData(socket_.get(), kMinimalRequestSize);
+  EXPECT_FALSE(job());
+}
+
+TEST_F(WebSocketJobDeleteTest, NotifyHeadersComplete) {
+  static const char kMinimalResponse[] =
+      "HTTP/1.1 101 Switching Protocols\r\n"
+      "Upgrade: websocket\r\n"
+      "Connection: Upgrade\r\n"
+      "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
+      "\r\n";
+  job()->Connect();
+  SetDeleteNext();
+  job()->OnReceivedData(
+      socket_.get(), kMinimalResponse, arraysize(kMinimalResponse) - 1);
+  EXPECT_FALSE(job());
 }
 
 // TODO(toyoshim): Add tests to verify throttling, SPDY stream limitation.
