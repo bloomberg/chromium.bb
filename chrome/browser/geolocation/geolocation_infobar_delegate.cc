@@ -70,6 +70,7 @@ InfoBar* GeolocationInfoBarDelegate::Create(
     const std::string& display_languages,
     const std::string& accept_button_label) {
   RecordUmaEvent(GEOLOCATION_INFO_BAR_DELEGATE_EVENT_CREATE);
+  CHECK(infobar_service->web_contents());
   const content::NavigationEntry* committed_entry =
       infobar_service->web_contents()->GetController().GetLastCommittedEntry();
   GeolocationInfoBarDelegate* const delegate = new DelegateType(

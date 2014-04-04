@@ -624,7 +624,14 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
   EXPECT_TRUE(closed_infobar_tracker_.Contains(infobar_1));
 }
 
-TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
+#if defined(THREAD_SANITIZER)
+// This test crashes under ThreadSanitizer v2, which builds with libc++.
+// See http://crbug.com/358707.
+#define MAYBE_TabDestroyed DISABLED_TabDestroyed
+#else
+#define MAYBE_TabDestroyed TabDestroyed
+#endif
+TEST_F(GeolocationPermissionContextTests, MAYBE_TabDestroyed) {
   GURL requesting_frame_0("http://www.example.com/geolocation");
   GURL requesting_frame_1("http://www.example-2.com/geolocation");
   EXPECT_EQ(CONTENT_SETTING_ASK,
