@@ -24,17 +24,18 @@
         if (document.documentElement.scrollTop == 0) {
             // FAIL: Above didn't result in overscroll.
             document.getElementById('box').style.background = 'blue';
-        }
+        } else {
 
-        document.getElementById('box').style.background = 'green';
-        // Wait for the timer to restore the position.
-        testRunner.waitUntilDone();
-        var startedScrolling = false;
-        window.onscroll = function() {
-            if (document.documentElement.scrollTop == 0) {
-                testRunner.notifyDone();
-            }
-        };
+            document.getElementById('box').style.background = 'green';
+            // Wait for the timer to restore the position.
+            testRunner.waitUntilDone();
+            var startedScrolling = false;
+            window.onscroll = function() {
+                if (document.documentElement.scrollTop == 0) {
+                    testRunner.notifyDone();
+                }
+            };
+        }
     }
 </script>
 </body>
