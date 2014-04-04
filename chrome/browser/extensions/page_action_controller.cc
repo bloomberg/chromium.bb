@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/page_action_controller.h"
 
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"

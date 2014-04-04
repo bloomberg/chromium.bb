@@ -832,6 +832,8 @@
         'browser/extensions/settings_api_helpers.h',
         'browser/extensions/settings_api_bubble_controller.cc',
         'browser/extensions/settings_api_bubble_controller.h',
+        'browser/extensions/shared_module_service.cc',
+        'browser/extensions/shared_module_service.h',
         'browser/extensions/standard_management_policy_provider.cc',
         'browser/extensions/standard_management_policy_provider.h',
         'browser/extensions/startup_helper.cc',

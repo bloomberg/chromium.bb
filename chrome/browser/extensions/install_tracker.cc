@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/install_tracker_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
@@ -40,6 +42,12 @@ InstallTracker::InstallTracker(Profile* profile,
 }
 
 InstallTracker::~InstallTracker() {
+}
+
+// static
+InstallTracker* InstallTracker::Get(content::BrowserContext* context) {
+  return InstallTrackerFactory::GetForProfile(
+      Profile::FromBrowserContext(context));
 }
 
 void InstallTracker::AddObserver(InstallObserver* observer) {

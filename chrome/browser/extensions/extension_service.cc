@@ -45,6 +45,7 @@
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_cache.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -125,6 +126,7 @@ using extensions::PermissionMessage;
 using extensions::PermissionMessages;
 using extensions::PermissionSet;
 using extensions::SharedModuleInfo;
+using extensions::SharedModuleService;
 using extensions::UnloadedExtensionInfo;
 
 namespace errors = extensions::manifest_errors;
@@ -147,12 +149,9 @@ static const int kMaxExtensionAcknowledgePromptCount = 3;
 // Wait this many seconds after an extensions becomes idle before updating it.
 static const int kUpdateIdleDelay = 5;
 
-static bool IsSharedModule(const Extension* extension) {
-  return SharedModuleInfo::IsSharedModule(extension);
-}
-
 static bool IsCWSSharedModule(const Extension* extension) {
-  return extension->from_webstore() && IsSharedModule(extension);
+  return extension->from_webstore() &&
+         SharedModuleInfo::IsSharedModule(extension);
 }
 
 class SharedModuleProvider : public extensions::ManagementPolicy::Provider {
@@ -330,7 +329,8 @@ ExtensionService::ExtensionService(Profile* profile,
       browser_terminating_(false),
       installs_delayed_for_gc_(false),
       is_first_run_(false),
-      garbage_collector_(new extensions::ExtensionGarbageCollector(this)) {
+      garbage_collector_(new extensions::ExtensionGarbageCollector(this)),
+      shared_module_service_(new extensions::SharedModuleService(profile_)) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Figure out if extension installation should be enabled.
@@ -719,6 +719,12 @@ bool ExtensionService::UninstallExtension(
   // Policy change which triggers an uninstall will always set
   // |external_uninstall| to true so this is the only way to uninstall
   // managed extensions.
+  // Shared modules being uninstalled will also set |external_uninstall| to true
+  // so that we can guarantee users don't uninstall a shared module.
+  // (crbug.com/273300)
+  // TODO(rdevlin.cronin): This is probably not right. We should do something
+  // else, like include an enum IS_INTERNAL_UNINSTALL or IS_USER_UNINSTALL so
+  // we don't do this.
   if (!external_uninstall &&
       !system_->management_policy()->UserMayModifySettings(
         extension.get(), error)) {
@@ -790,8 +796,6 @@ bool ExtensionService::UninstallExtension(
   }
 
   delayed_installs_.Remove(extension_id);
-
-  PruneSharedModulesOnUninstall(extension.get());
 
   extension_prefs_->OnExtensionUninstalled(extension_id, extension->location(),
                                            external_uninstall);
@@ -1180,17 +1184,17 @@ void ExtensionService::CheckManagementPolicy() {
 }
 
 void ExtensionService::CheckForUpdatesSoon() {
-  if (updater()) {
-    if (AreAllExternalProvidersReady()) {
-      updater()->CheckSoon();
-    } else {
-      // Sync can start updating before all the external providers are ready
-      // during startup. Start the update as soon as those providers are ready,
-      // but not before.
-      update_once_all_providers_are_ready_ = true;
-    }
+  // This can legitimately happen in unit tests.
+  if (!updater_.get())
+    return;
+
+  if (AreAllExternalProvidersReady()) {
+    updater_->CheckSoon();
   } else {
-    LOG(WARNING) << "CheckForUpdatesSoon() called with auto-update turned off";
+    // Sync can start updating before all the external providers are ready
+    // during startup. Start the update as soon as those providers are ready,
+    // but not before.
+    update_once_all_providers_are_ready_ = true;
   }
 }
 
@@ -1816,104 +1820,6 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
   crash_keys::SetActiveExtensions(extension_ids);
 }
 
-ExtensionService::ImportStatus ExtensionService::CheckImports(
-    const extensions::Extension* extension,
-    std::list<SharedModuleInfo::ImportInfo>* missing_modules,
-    std::list<SharedModuleInfo::ImportInfo>* outdated_modules) {
-  DCHECK(extension);
-  DCHECK(missing_modules && missing_modules->empty());
-  DCHECK(outdated_modules && outdated_modules->empty());
-  ImportStatus status = IMPORT_STATUS_OK;
-  if (SharedModuleInfo::ImportsModules(extension)) {
-    const std::vector<SharedModuleInfo::ImportInfo>& imports =
-        SharedModuleInfo::GetImports(extension);
-    std::vector<SharedModuleInfo::ImportInfo>::const_iterator i;
-    for (i = imports.begin(); i != imports.end(); ++i) {
-      Version version_required(i->minimum_version);
-      const Extension* imported_module =
-          GetExtensionById(i->extension_id, true);
-      if (!imported_module) {
-        if (extension->from_webstore()) {
-          status = IMPORT_STATUS_UNSATISFIED;
-          missing_modules->push_back(*i);
-        } else {
-          return IMPORT_STATUS_UNRECOVERABLE;
-        }
-      } else if (!SharedModuleInfo::IsSharedModule(imported_module)) {
-        return IMPORT_STATUS_UNRECOVERABLE;
-      } else if (version_required.IsValid() &&
-                 imported_module->version()->CompareTo(version_required) < 0) {
-        if (imported_module->from_webstore()) {
-          outdated_modules->push_back(*i);
-          status = IMPORT_STATUS_UNSATISFIED;
-        } else {
-          return IMPORT_STATUS_UNRECOVERABLE;
-        }
-      }
-    }
-  }
-  return status;
-}
-
-ExtensionService::ImportStatus ExtensionService::SatisfyImports(
-    const Extension* extension) {
-  std::list<SharedModuleInfo::ImportInfo> noinstalled;
-  std::list<SharedModuleInfo::ImportInfo> outdated;
-  ImportStatus status = CheckImports(extension, &noinstalled, &outdated);
-  if (status == IMPORT_STATUS_UNRECOVERABLE)
-    return status;
-  if (status == IMPORT_STATUS_UNSATISFIED) {
-    std::list<SharedModuleInfo::ImportInfo>::const_iterator iter;
-    for (iter = noinstalled.begin(); iter != noinstalled.end(); ++iter) {
-      pending_extension_manager()->AddFromExtensionImport(
-          iter->extension_id,
-          extension_urls::GetWebstoreUpdateUrl(),
-          IsSharedModule);
-    }
-    CheckForUpdatesSoon();
-  }
-  return status;
-}
-
-scoped_ptr<const ExtensionSet>
-    ExtensionService::GetDependentExtensions(const Extension* extension) {
-  scoped_ptr<ExtensionSet> dependents(new ExtensionSet());
-  scoped_ptr<ExtensionSet> set_to_check(new ExtensionSet());
-  if (SharedModuleInfo::IsSharedModule(extension)) {
-    set_to_check->InsertAll(registry_->disabled_extensions());
-    set_to_check->InsertAll(delayed_installs_);
-    set_to_check->InsertAll(registry_->enabled_extensions());
-    for (ExtensionSet::const_iterator iter = set_to_check->begin();
-         iter != set_to_check->end(); ++iter) {
-      if (SharedModuleInfo::ImportsExtensionById(iter->get(),
-                                                 extension->id())) {
-        dependents->Insert(*iter);
-      }
-    }
-  }
-  return dependents.PassAs<const ExtensionSet>();
-}
-
-void ExtensionService::PruneSharedModulesOnUninstall(
-    const Extension* extension) {
-  if (SharedModuleInfo::ImportsModules(extension)) {
-    const std::vector<SharedModuleInfo::ImportInfo>& imports =
-        SharedModuleInfo::GetImports(extension);
-    std::vector<SharedModuleInfo::ImportInfo>::const_iterator i;
-    for (i = imports.begin(); i != imports.end(); ++i) {
-      const Extension* imported_module =
-          GetExtensionById(i->extension_id, true);
-      if (imported_module && imported_module->from_webstore()) {
-        scoped_ptr<const ExtensionSet> dependents =
-            GetDependentExtensions(imported_module);
-        if (dependents->size() == 0) {
-          UninstallExtension(i->extension_id, true, NULL);
-        }
-      }
-    }
-  }
-}
-
 void ExtensionService::OnExtensionInstalled(
     const Extension* extension,
     const syncer::StringOrdinal& page_ordinal,
@@ -2025,7 +1931,8 @@ void ExtensionService::OnExtensionInstalled(
     return;
   }
 
-  ImportStatus status = SatisfyImports(extension);
+  extensions::SharedModuleService::ImportStatus status =
+      shared_module_service_->SatisfyImports(extension);
   if (installs_delayed_for_gc_) {
     extension_prefs_->SetDelayedInstallInfo(
         extension,
@@ -2035,8 +1942,8 @@ void ExtensionService::OnExtensionInstalled(
         page_ordinal,
         install_parameter);
     delayed_installs_.Insert(extension);
-  } else if (status != IMPORT_STATUS_OK) {
-    if (status == IMPORT_STATUS_UNSATISFIED) {
+  } else if (status != SharedModuleService::IMPORT_STATUS_OK) {
+    if (status == SharedModuleService::IMPORT_STATUS_UNSATISFIED) {
       extension_prefs_->SetDelayedInstallInfo(
           extension,
           initial_state,
@@ -2093,9 +2000,10 @@ void ExtensionService::MaybeFinishDelayedInstallation(
 
   const Extension* extension = delayed_installs_.GetByID(extension_id);
   if (reason == extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS) {
-    ImportStatus status = SatisfyImports(extension);
-    if (status != IMPORT_STATUS_OK) {
-      if (status == IMPORT_STATUS_UNRECOVERABLE) {
+    extensions::SharedModuleService::ImportStatus status =
+        shared_module_service_->SatisfyImports(extension);
+    if (status != SharedModuleService::IMPORT_STATUS_OK) {
+      if (status == SharedModuleService::IMPORT_STATUS_UNRECOVERABLE) {
         delayed_installs_.Remove(extension_id);
         // Make sure no version of the extension is actually installed, (i.e.,
         // that this delayed install was not an update).

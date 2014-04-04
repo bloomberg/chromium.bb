@@ -32,7 +32,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
-#include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/one_shot_event.h"
 
 class ExtensionErrorUI;
@@ -57,6 +56,7 @@ class ExtensionToolbarModel;
 class ExtensionUpdater;
 class PendingExtensionManager;
 class RendererStartupHelper;
+class SharedModuleService;
 class UpdateObserver;
 }  // namespace extensions
 
@@ -278,31 +278,6 @@ class ExtensionService
   virtual void AddComponentExtension(const extensions::Extension* extension)
       OVERRIDE;
 
-  enum ImportStatus {
-   IMPORT_STATUS_OK,
-   IMPORT_STATUS_UNSATISFIED,
-   IMPORT_STATUS_UNRECOVERABLE
-  };
-
-  // Checks an extension's imports. No installed and outdated imports will be
-  // stored in |missing_modules| and |outdated_modules|.
-  ImportStatus CheckImports(
-      const extensions::Extension* extension,
-      std::list<extensions::SharedModuleInfo::ImportInfo>* missing_modules,
-      std::list<extensions::SharedModuleInfo::ImportInfo>* outdated_modules);
-
-  // Checks an extension's shared module imports to see if they are satisfied.
-  // If they are not, this function adds the dependencies to the pending install
-  // list if |extension| came from the webstore.
-  ImportStatus SatisfyImports(const extensions::Extension* extension);
-
-  // Returns a set of extensions that import a given extension.
-  scoped_ptr<const extensions::ExtensionSet> GetDependentExtensions(
-      const extensions::Extension* extension);
-
-  // Uninstalls shared modules that were only referenced by |extension|.
-  void PruneSharedModulesOnUninstall(const extensions::Extension* extension);
-
   // Informs the service that an extension's files are in place for loading.
   //
   // |page_ordinal| is the location of the extension in the app launcher.
@@ -508,6 +483,10 @@ class ExtensionService
   }
 
   bool browser_terminating() const { return browser_terminating_; }
+
+  extensions::SharedModuleService* shared_module_service() {
+    return shared_module_service_.get();
+  }
 
   // For testing.
   void set_browser_terminating_for_test(bool value) {
@@ -743,6 +722,9 @@ class ExtensionService
   // The ExtensionGarbageCollector to clean up all the garbage that leaks into
   // the extensions directory.
   scoped_ptr<extensions::ExtensionGarbageCollector> garbage_collector_;
+
+  // The SharedModuleService used to check for import dependencies.
+  scoped_ptr<extensions::SharedModuleService> shared_module_service_;
 
   ObserverList<extensions::UpdateObserver, true> update_observers_;
 

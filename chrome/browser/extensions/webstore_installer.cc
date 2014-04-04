@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/install_verifier.h"
+#include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/omaha_query_params/omaha_query_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -281,11 +282,13 @@ void WebstoreInstaller::Start() {
   ExtensionService* extension_service =
     ExtensionSystem::Get(profile_)->extension_service();
   if (approval_.get() && approval_->dummy_extension) {
-    ExtensionService::ImportStatus status =
-      extension_service->CheckImports(approval_->dummy_extension,
-                                      &pending_modules_, &pending_modules_);
+    SharedModuleService::ImportStatus status =
+        extension_service->shared_module_service()->CheckImports(
+            approval_->dummy_extension,
+            &pending_modules_,
+            &pending_modules_);
     // For this case, it is because some imports are not shared modules.
-    if (status == ExtensionService::IMPORT_STATUS_UNRECOVERABLE) {
+    if (status == SharedModuleService::IMPORT_STATUS_UNRECOVERABLE) {
       ReportFailure(kDependencyNotSharedModuleError,
           FAILURE_REASON_DEPENDENCY_NOT_SHARED_MODULE);
       return;

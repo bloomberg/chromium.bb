@@ -14,6 +14,10 @@
 
 class Profile;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 class ExtensionPrefs;
@@ -24,6 +28,8 @@ class InstallTracker : public KeyedService,
   InstallTracker(Profile* profile,
                  extensions::ExtensionPrefs* prefs);
   virtual ~InstallTracker();
+
+  static InstallTracker* Get(content::BrowserContext* context);
 
   void AddObserver(InstallObserver* observer);
   void RemoveObserver(InstallObserver* observer);
