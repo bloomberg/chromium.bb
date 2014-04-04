@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "content/test/webkit_support.h"
 #include "content/test/weburl_loader_mock.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"

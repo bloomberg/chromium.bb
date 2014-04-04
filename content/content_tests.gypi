@@ -5,40 +5,6 @@
 {
   'targets': [
     {
-      'target_name': 'layouttest_support_content',
-      'type': 'static_library',
-      'conditions': [
-        ['OS=="android"', {
-          'dependencies': [
-            'test_support_content_jni_headers',
-          ],
-        }],
-        ['OS!="ios"', {
-          # layouttest_support_content is not supported nor required on iOS.
-          'dependencies': [
-            '../skia/skia.gyp:skia',
-            '../v8/tools/gyp/v8.gyp:v8',
-            '../webkit/common/webkit_common.gyp:webkit_common',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'public/test/layouttest_support.h',
-            'public/test/nested_message_pump_android.cc',
-            'public/test/nested_message_pump_android.h',
-            'test/layouttest_support.cc',
-            'test/mock_webclipboard_impl.cc',
-            'test/mock_webclipboard_impl.h',
-            'test/test_media_stream_client.cc',
-            'test/test_media_stream_client.h',
-            'test/test_video_frame_provider.cc',
-            'test/test_video_frame_provider.h',
-          ],
-        }],
-      ],
-    },
-    {
       'target_name': 'test_support_content',
       'type': 'static_library',
       'dependencies': [
@@ -92,6 +58,8 @@
         'public/test/mock_render_thread.h',
         'public/test/mock_resource_context.cc',
         'public/test/mock_resource_context.h',
+        'public/test/nested_message_pump_android.cc',
+        'public/test/nested_message_pump_android.h',
         'public/test/render_view_test.cc',
         'public/test/render_view_test.h',
         'public/test/render_widget_test.cc',
@@ -160,6 +128,8 @@
         'test/mock_keyboard_driver_win.h',
         'test/mock_render_process.cc',
         'test/mock_render_process.h',
+        'test/mock_webclipboard_impl.cc',
+        'test/mock_webclipboard_impl.h',
         'test/mock_webframeclient.h',
         'test/mock_weburlloader.cc',
         'test/mock_weburlloader.h',
@@ -183,6 +153,8 @@
         'test/test_content_client.h',
         'test/test_context_provider_factory.cc',
         'test/test_context_provider_factory.h',
+        'test/test_media_stream_client.cc',
+        'test/test_media_stream_client.h',
         'test/test_render_frame_host.cc',
         'test/test_render_frame_host.h',
         'test/test_render_frame_host_factory.cc',
@@ -191,12 +163,20 @@
         'test/test_render_view_host.h',
         'test/test_render_view_host_factory.cc',
         'test/test_render_view_host_factory.h',
+        'test/test_video_frame_provider.cc',
+        'test/test_video_frame_provider.h',
         'test/test_web_contents.cc',
         'test/test_web_contents.h',
         'test/test_web_contents_view.cc',
         'test/test_web_contents_view.h',
+        'test/test_webkit_platform_support.cc',
+        'test/test_webkit_platform_support.h',
         'test/web_gesture_curve_mock.cc',
         'test/web_gesture_curve_mock.h',
+        'test/web_layer_tree_view_impl_for_testing.cc',
+        'test/web_layer_tree_view_impl_for_testing.h',
+        'test/webkit_support.cc',
+        'test/webkit_support.h',
         'test/weburl_loader_mock.cc',
         'test/weburl_loader_mock.h',
         'test/weburl_loader_mock_factory.cc',
@@ -317,6 +297,7 @@
         ['OS=="android"', {
           'dependencies': [
             '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
+            'test_support_content_jni_headers',
           ],
         }],
       ],
@@ -325,10 +306,10 @@
       'target_name': 'content_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
-        'browser/speech/proto/speech_proto.gyp:speech_proto',
         'content.gyp:content_browser',
         'content.gyp:content_common',
         'test_support_content',
+        'browser/speech/proto/speech_proto.gyp:speech_proto',
         '../base/base.gyp:test_support_base',
         '../crypto/crypto.gyp:crypto',
         '../net/net.gyp:net_test_support',
@@ -987,7 +968,6 @@
             'content_resources.gyp:content_resources',
             'content_shell_lib',
             'content_shell_pak',
-            'test_support_content',
             '../base/base.gyp:test_support_base',
             '../gin/gin.gyp:gin',
             '../gpu/gpu.gyp:gpu',
@@ -1344,14 +1324,6 @@
             '..',
           ],
           'sources': [
-            'test/mock_webclipboard_impl.cc',
-            'test/mock_webclipboard_impl.h',
-            'test/test_webkit_platform_support.cc',
-            'test/test_webkit_platform_support.h',
-            'test/web_layer_tree_view_impl_for_testing.cc',
-            'test/web_layer_tree_view_impl_for_testing.h',
-            'test/webkit_support.cc',
-            'test/webkit_support.h',
             'test/webkit_unit_test_support.cc',
             'test/webkit_unit_test_support.h',
           ],
