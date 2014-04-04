@@ -10,6 +10,9 @@
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
@@ -75,7 +78,7 @@ class DeterministicKeyWebSocketHandshakeStreamCreateHelper
 };
 
 class WebSocketStreamCreateTest : public ::testing::Test {
- protected:
+ public:
   WebSocketStreamCreateTest(): has_failed_(false) {}
 
   void CreateAndConnectCustomResponse(
@@ -205,6 +208,28 @@ class WebSocketStreamCreateExtensionTest : public WebSocketStreamCreateTest {
         "",
         "Sec-WebSocket-Extensions: " + extensions_header_value + "\r\n");
     RunUntilIdle();
+  }
+};
+
+class WebSocketStreamCreateUMATest : public ::testing::Test {
+ public:
+  // This enum should match with the enum in Delegate in websocket_stream.cc.
+  enum HandshakeResult {
+    INCOMPLETE,
+    CONNECTED,
+    FAILED,
+    NUM_HANDSHAKE_RESULT_TYPES,
+  };
+
+  class StreamCreation : public WebSocketStreamCreateTest {
+    virtual void TestBody() OVERRIDE {}
+  };
+
+  scoped_ptr<base::HistogramSamples> GetSamples(const std::string& name) {
+    base::HistogramBase* histogram =
+        base::StatisticsRecorder::FindHistogram(name);
+    return histogram ? histogram->SnapshotSamples()
+                     : scoped_ptr<base::HistogramSamples>();
   }
 };
 
@@ -1005,6 +1030,86 @@ TEST_F(WebSocketStreamCreateTest, NoResponse) {
   EXPECT_FALSE(response_info_);
   EXPECT_EQ("Connection closed before receiving a handshake response",
             failure_message());
+}
+
+TEST_F(WebSocketStreamCreateUMATest, Incomplete) {
+  const std::string name("Net.WebSocket.HandshakeResult");
+  scoped_ptr<base::HistogramSamples> original(GetSamples(name));
+
+  {
+    StreamCreation creation;
+    creation.CreateAndConnectStandard("ws://localhost/",
+                                      "/",
+                                      creation.NoSubProtocols(),
+                                      "http://localhost",
+                                      "",
+                                      "");
+  }
+
+  scoped_ptr<base::HistogramSamples> samples(GetSamples(name));
+  ASSERT_TRUE(samples);
+  if (original) {
+    samples->Subtract(*original);  // Cancel the original values.
+  }
+  EXPECT_EQ(1, samples->GetCount(INCOMPLETE));
+  EXPECT_EQ(0, samples->GetCount(CONNECTED));
+  EXPECT_EQ(0, samples->GetCount(FAILED));
+}
+
+TEST_F(WebSocketStreamCreateUMATest, Connected) {
+  const std::string name("Net.WebSocket.HandshakeResult");
+  scoped_ptr<base::HistogramSamples> original(GetSamples(name));
+
+  {
+    StreamCreation creation;
+    creation.CreateAndConnectStandard("ws://localhost/",
+                                      "/",
+                                      creation.NoSubProtocols(),
+                                      "http://localhost",
+                                      "",
+                                      "");
+    creation.RunUntilIdle();
+  }
+
+  scoped_ptr<base::HistogramSamples> samples(GetSamples(name));
+  ASSERT_TRUE(samples);
+  if (original) {
+    samples->Subtract(*original);  // Cancel the original values.
+  }
+  EXPECT_EQ(0, samples->GetCount(INCOMPLETE));
+  EXPECT_EQ(1, samples->GetCount(CONNECTED));
+  EXPECT_EQ(0, samples->GetCount(FAILED));
+}
+
+TEST_F(WebSocketStreamCreateUMATest, Failed) {
+  const std::string name("Net.WebSocket.HandshakeResult");
+  scoped_ptr<base::HistogramSamples> original(GetSamples(name));
+
+  {
+    StreamCreation creation;
+    static const char kInvalidStatusCodeResponse[] =
+        "HTTP/1.1 200 OK\r\n"
+        "Upgrade: websocket\r\n"
+        "Connection: Upgrade\r\n"
+        "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
+        "\r\n";
+    creation.CreateAndConnectCustomResponse("ws://localhost/",
+                                            "/",
+                                            creation.NoSubProtocols(),
+                                            "http://localhost",
+                                            "",
+                                            kInvalidStatusCodeResponse);
+    creation.RunUntilIdle();
+  }
+
+  scoped_ptr<base::HistogramSamples> samples(GetSamples(name));
+  ASSERT_TRUE(samples);
+  if (original) {
+    samples->Subtract(*original);  // Cancel the original values.
+  }
+  EXPECT_EQ(0, samples->GetCount(INCOMPLETE));
+  EXPECT_EQ(0, samples->GetCount(CONNECTED));
+  EXPECT_EQ(1, samples->GetCount(FAILED));
 }
 
 }  // namespace

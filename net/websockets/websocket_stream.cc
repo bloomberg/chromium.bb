@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request.h"
@@ -25,8 +26,19 @@ class StreamRequestImpl;
 
 class Delegate : public URLRequest::Delegate {
  public:
-  explicit Delegate(StreamRequestImpl* owner) : owner_(owner) {}
-  virtual ~Delegate() {}
+  enum HandshakeResult {
+    INCOMPLETE,
+    CONNECTED,
+    FAILED,
+    NUM_HANDSHAKE_RESULT_TYPES,
+  };
+
+  explicit Delegate(StreamRequestImpl* owner)
+      : owner_(owner), result_(INCOMPLETE) {}
+  virtual ~Delegate() {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Net.WebSocket.HandshakeResult", result_, NUM_HANDSHAKE_RESULT_TYPES);
+  }
 
   // Implementation of URLRequest::Delegate methods.
   virtual void OnResponseStarted(URLRequest* request) OVERRIDE;
@@ -46,6 +58,7 @@ class Delegate : public URLRequest::Delegate {
 
  private:
   StreamRequestImpl* owner_;
+  HandshakeResult result_;
 };
 
 class StreamRequestImpl : public WebSocketStreamRequest {
@@ -110,6 +123,7 @@ class StreamRequestImpl : public WebSocketStreamRequest {
 void Delegate::OnResponseStarted(URLRequest* request) {
   switch (request->GetResponseCode()) {
     case HTTP_SWITCHING_PROTOCOLS:
+      result_ = CONNECTED;
       owner_->PerformUpgrade();
       return;
 
@@ -118,6 +132,7 @@ void Delegate::OnResponseStarted(URLRequest* request) {
       return;
 
     default:
+      result_ = FAILED;
       owner_->ReportFailure();
   }
 }
