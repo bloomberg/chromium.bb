@@ -7,7 +7,6 @@
 #include "ash/audio/sounds.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -44,7 +43,6 @@ LocallyManagedUserCreationScreenHandler()
 LocallyManagedUserCreationScreenHandler::
     ~LocallyManagedUserCreationScreenHandler() {
   if (delegate_) {
-    CameraPresenceNotifier::GetInstance()->RemoveObserver(delegate_);
     delegate_->OnActorDestroyed(this);
   }
 }
@@ -234,12 +232,9 @@ void LocallyManagedUserCreationScreenHandler::Show() {
 
   if (!delegate_)
     return;
-  CameraPresenceNotifier::GetInstance()->AddObserver(delegate_);
 }
 
 void LocallyManagedUserCreationScreenHandler::Hide() {
-  if (delegate_)
-    CameraPresenceNotifier::GetInstance()->RemoveObserver(delegate_);
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowIntroPage() {

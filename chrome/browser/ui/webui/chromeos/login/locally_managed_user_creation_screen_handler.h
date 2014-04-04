@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/web_ui.h"
@@ -22,12 +21,9 @@ namespace chromeos {
 
 class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
  public:
-  class Delegate : public CameraPresenceNotifier::Observer {
+  class Delegate {
    public:
     virtual ~Delegate() {}
-
-    // CameraPresenceNotifier::Observer implementation:
-    virtual void OnCameraPresenceCheckDone(bool is_camera_present) = 0;
 
     // This method is called, when actor is being destroyed. Note, if Delegate
     // is destroyed earlier then it has to call SetDelegate(NULL).

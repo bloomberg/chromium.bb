@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
@@ -76,6 +77,7 @@ UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
 }
 
 UserImageScreen::~UserImageScreen() {
+  CameraPresenceNotifier::GetInstance()->RemoveObserver(this);
   if (actor_)
     actor_->SetDelegate(NULL);
   if (image_decoder_.get())
@@ -305,6 +307,7 @@ void UserImageScreen::Show() {
       sync_timer_->Reset();
     }
   }
+  CameraPresenceNotifier::GetInstance()->AddObserver(this);
   actor_->Show();
   actor_->SetProfilePictureEnabled(profile_picture_enabled_);
 
@@ -318,6 +321,7 @@ void UserImageScreen::Show() {
 }
 
 void UserImageScreen::Hide() {
+  CameraPresenceNotifier::GetInstance()->RemoveObserver(this);
   if (actor_)
     actor_->Hide();
 }

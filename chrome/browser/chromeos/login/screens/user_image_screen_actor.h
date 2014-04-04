@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/camera_presence_notifier.h"
-
 class SkBitmap;
 
 namespace gfx {
@@ -21,12 +19,9 @@ namespace chromeos {
 // representation, either views based or WebUI.
 class UserImageScreenActor {
  public:
-  class Delegate : public CameraPresenceNotifier::Observer {
+  class Delegate {
    public:
     virtual ~Delegate() {}
-
-    // CameraPresenceNotifier::Observer implementation:
-    virtual void OnCameraPresenceCheckDone(bool is_camera_present) = 0;
 
     // Called when UI ready to be shown.
     virtual void OnScreenReady() = 0;

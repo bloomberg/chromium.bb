@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -30,7 +31,8 @@ class UserImageScreen: public WizardScreen,
                        public UserImageScreenActor::Delegate,
                        public ImageDecoder::Delegate,
                        public content::NotificationObserver,
-                       public UserImageSyncObserver::Observer {
+                       public UserImageSyncObserver::Observer,
+                       public CameraPresenceNotifier::Observer {
  public:
   UserImageScreen(ScreenObserver* screen_observer,
                   UserImageScreenActor* actor);
@@ -69,6 +71,8 @@ class UserImageScreen: public WizardScreen,
   virtual void OnImageDecoded(const ImageDecoder* decoder,
                               const SkBitmap& decoded_image) OVERRIDE;
   virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
+
+  // CameraPresenceNotifier::Observer implementation:
   virtual void OnCameraPresenceCheckDone(bool is_camera_present) OVERRIDE;
 
   // UserImageSyncObserver::Observer implementation:

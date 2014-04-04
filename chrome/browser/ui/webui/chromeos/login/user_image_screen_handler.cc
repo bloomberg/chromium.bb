@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -48,7 +47,6 @@ UserImageScreenHandler::UserImageScreenHandler()
 
 UserImageScreenHandler::~UserImageScreenHandler() {
   if (screen_) {
-    CameraPresenceNotifier::GetInstance()->RemoveObserver(screen_);
     screen_->OnActorDestroyed(this);
   }
 }
@@ -76,13 +74,11 @@ void UserImageScreenHandler::Show() {
   // When shown, query camera presence.
   if (!screen_)
     return;
-  CameraPresenceNotifier::GetInstance()->AddObserver(screen_);
   if (is_ready_)
     screen_->OnScreenReady();
 }
 
 void UserImageScreenHandler::Hide() {
-  CameraPresenceNotifier::GetInstance()->RemoveObserver(screen_);
 }
 
 void UserImageScreenHandler::PrepareToShow() {

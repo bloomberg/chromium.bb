@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_creation_controller.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
@@ -28,7 +29,8 @@ class LocallyManagedUserCreationScreen
       public LocallyManagedUserCreationScreenHandler::Delegate,
       public ManagedUserCreationController::StatusConsumer,
       public ImageDecoder::Delegate,
-      public NetworkPortalDetector::Observer {
+      public NetworkPortalDetector::Observer,
+      public CameraPresenceNotifier::Observer {
  public:
   LocallyManagedUserCreationScreen(
       ScreenObserver* observer,
@@ -57,6 +59,9 @@ class LocallyManagedUserCreationScreen
   // Shows initial screen where managed user name/password are defined and
   // manager is selected.
   void ShowInitialScreen();
+
+  // CameraPresenceNotifier::Observer implementation:
+  virtual void OnCameraPresenceCheckDone(bool is_camera_present) OVERRIDE;
 
   // WizardScreen implementation:
   virtual void PrepareToShow() OVERRIDE;
@@ -99,7 +104,6 @@ class LocallyManagedUserCreationScreen
   // It should be removed by issue 251179.
 
   // LocallyManagedUserCreationScreenHandler::Delegate (image) implementation:
-  virtual void OnCameraPresenceCheckDone(bool is_camera_present) OVERRIDE;
   virtual void OnPhotoTaken(const std::string& raw_data) OVERRIDE;
   virtual void OnImageSelected(const std::string& image_url,
                                const std::string& image_type) OVERRIDE;
