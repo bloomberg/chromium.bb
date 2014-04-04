@@ -36,7 +36,7 @@ bool IsUnsupportedNetworkProviderUrl(const GURL& url) {
 }
 
 // Loads access tokens and other necessary data on the UI thread, and
-// calls back to the originator on the originating threaad.
+// calls back to the originator on the originating thread.
 class TokenLoadingJob : public base::RefCountedThreadSafe<TokenLoadingJob> {
  public:
   TokenLoadingJob(
