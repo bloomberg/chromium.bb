@@ -283,10 +283,9 @@ public:
         UseLocalClipRectIfPossible = 1 << 1,
         IncludeLayerFilterOutsets = 1 << 2,
         ExcludeHiddenDescendants = 1 << 3,
-        DontConstrainForMask = 1 << 4,
-        IncludeCompositedDescendants = 1 << 5,
-        UseFragmentBoxes = 1 << 6,
-        PretendLayerHasOwnBacking = 1 << 7,
+        IncludeCompositedDescendants = 1 << 4,
+        UseFragmentBoxes = 1 << 5,
+        PretendLayerHasOwnBacking = 1 << 6,
         DefaultCalculateLayerBoundsFlags =  IncludeSelfTransform | UseLocalClipRectIfPossible | IncludeLayerFilterOutsets | UseFragmentBoxes
     };
     typedef unsigned CalculateLayerBoundsFlags;
@@ -295,7 +294,7 @@ public:
     LayoutRect boundingBox(const RenderLayer* rootLayer, CalculateLayerBoundsFlags = 0, const LayoutPoint* offsetFromRoot = 0) const;
 
     // Bounds used for layer overlap testing in RenderLayerCompositor.
-    LayoutRect overlapBounds() const { return overlapBoundsIncludeChildren() ? calculateLayerBounds(this) : localBoundingBox(); }
+    LayoutRect overlapBounds() const { return overlapBoundsIncludeChildren() ? calculateLayerBounds(this) : logicalBoundingBox(); }
 
     // If true, this layer's children are included in its bounds for overlap testing.
     // We can't rely on the children's positions if this layer has a filter that could have moved the children's pixels around.
@@ -546,7 +545,7 @@ private:
     void ensureAncestorDependentPropertyCache() const;
 
     // Bounding box in the coordinates of this layer.
-    LayoutRect localBoundingBox(CalculateLayerBoundsFlags = 0) const;
+    LayoutRect logicalBoundingBox() const;
 
     bool hasOverflowControls() const;
 

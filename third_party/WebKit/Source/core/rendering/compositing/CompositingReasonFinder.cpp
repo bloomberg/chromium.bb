@@ -294,7 +294,6 @@ bool CompositingReasonFinder::requiresCompositingForPosition(RenderObject* rende
         LayoutRect layerBounds = layer->calculateLayerBounds(layer->compositor()->rootRenderLayer(), 0,
             RenderLayer::DefaultCalculateLayerBoundsFlags
             | RenderLayer::ExcludeHiddenDescendants
-            | RenderLayer::DontConstrainForMask
             | RenderLayer::IncludeCompositedDescendants
             | RenderLayer::PretendLayerHasOwnBacking);
         if (!viewBounds.intersects(enclosingIntRect(layerBounds))) {

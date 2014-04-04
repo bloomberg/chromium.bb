@@ -3359,7 +3359,7 @@ bool RenderLayer::intersectsDamageRect(const LayoutRect& layerBounds, const Layo
     return boundingBox(rootLayer, 0, offsetFromRoot).intersects(damageRect);
 }
 
-LayoutRect RenderLayer::localBoundingBox(CalculateLayerBoundsFlags flags) const
+LayoutRect RenderLayer::logicalBoundingBox() const
 {
     // There are three special cases we need to consider.
     // (1) Inline Flows.  For inline flows we will create a bounding box that fully encompasses all of the lines occupied by the
@@ -3371,9 +3371,9 @@ LayoutRect RenderLayer::localBoundingBox(CalculateLayerBoundsFlags flags) const
     // as part of our bounding box.  We do this because we are the responsible layer for both hit testing and painting those
     // floats.
     LayoutRect result;
-    if (renderer()->isInline() && renderer()->isRenderInline())
+    if (renderer()->isInline() && renderer()->isRenderInline()) {
         result = toRenderInline(renderer())->linesVisualOverflowBoundingBox();
-    else if (renderer()->isTableRow()) {
+    } else if (renderer()->isTableRow()) {
         // Our bounding box is just the union of all of our cells' border/overflow rects.
         for (RenderObject* child = renderer()->firstChild(); child; child = child->nextSibling()) {
             if (child->isTableCell()) {
@@ -3387,26 +3387,17 @@ LayoutRect RenderLayer::localBoundingBox(CalculateLayerBoundsFlags flags) const
     } else {
         RenderBox* box = renderBox();
         ASSERT(box);
-        if (!(flags & DontConstrainForMask) && box->hasMask()) {
-            result = box->maskClipRect();
-            box->flipForWritingMode(result); // The mask clip rect is in physical coordinates, so we have to flip, since localBoundingBox is not.
-        } else {
-            LayoutRect bbox = box->borderBoxRect();
-            result = bbox;
-            LayoutRect overflowRect = box->visualOverflowRect();
-            if (bbox != overflowRect)
-                result.unite(overflowRect);
-        }
+        result = box->borderBoxRect();
+        result.unite(box->visualOverflowRect());
     }
 
     ASSERT(renderer()->view());
-
     return result;
 }
 
 LayoutRect RenderLayer::boundingBox(const RenderLayer* ancestorLayer, CalculateLayerBoundsFlags flags, const LayoutPoint* offsetFromRoot) const
 {
-    LayoutRect result = localBoundingBox(flags);
+    LayoutRect result = logicalBoundingBox();
     if (renderer()->isBox())
         renderBox()->flipForWritingMode(result);
     else
@@ -3457,7 +3448,7 @@ LayoutRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, c
         return renderer->view()->unscaledDocumentRect();
     }
 
-    LayoutRect boundingBoxRect = localBoundingBox(flags);
+    LayoutRect boundingBoxRect = logicalBoundingBox();
 
     if (renderer->isBox())
         toRenderBox(renderer)->flipForWritingMode(boundingBoxRect);
@@ -4101,7 +4092,7 @@ void RenderLayer::computeSelfHitTestRects(LayerHitTestRects& rects) const
                 }
             }
         } else {
-            rect.append(localBoundingBox());
+            rect.append(logicalBoundingBox());
             rects.set(this, rect);
         }
     }
