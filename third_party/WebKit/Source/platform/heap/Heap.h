@@ -1059,6 +1059,10 @@ T* adoptRefCountedGarbageCollected(T* ptr)
     private:                                                                        \
         void* operator new(size_t) = delete;
 
+#define STATIC_ONLY(Type) \
+    private:              \
+        Type() = delete;
+
 #else
 
 #define DISALLOW_ALLOCATION()                          \
@@ -1073,6 +1077,10 @@ T* adoptRefCountedGarbageCollected(T* ptr)
         void* operator new(size_t, void* location) { return location; }             \
     private:                                                                        \
         void* operator new(size_t);
+
+#define STATIC_ONLY(Type)  \
+    private:               \
+        Type();
 
 #endif
 

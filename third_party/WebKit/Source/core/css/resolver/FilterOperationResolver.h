@@ -24,6 +24,7 @@
 
 #include "core/css/resolver/StyleResolverState.h"
 #include "platform/graphics/filters/FilterOperations.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 
@@ -31,8 +32,7 @@ class CSSToLengthConversionData;
 class CSSValue;
 
 class FilterOperationResolver {
-private:
-    FilterOperationResolver();
+    STATIC_ONLY(FilterOperationResolver);
 public:
     static bool createFilterOperations(CSSValue* inValue, const CSSToLengthConversionData&, FilterOperations& outOperations, StyleResolverState&);
 };

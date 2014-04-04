@@ -32,6 +32,7 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSTransformValue.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "platform/heap/Handle.h"
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/MatrixTransformOperation.h"
 #include "platform/transforms/PerspectiveTransformOperation.h"
@@ -42,14 +43,6 @@
 #include "platform/transforms/TranslateTransformOperation.h"
 
 namespace WebCore {
-
-TransformBuilder::TransformBuilder()
-{
-}
-
-TransformBuilder::~TransformBuilder()
-{
-}
 
 static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, const CSSToLengthConversionData& conversionData)
 {

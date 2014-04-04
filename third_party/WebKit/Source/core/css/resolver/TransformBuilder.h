@@ -31,6 +31,7 @@
 #ifndef TransformBuilder_h
 #define TransformBuilder_h
 
+#include "platform/heap/Handle.h"
 #include "platform/transforms/TransformOperations.h"
 #include "wtf/Noncopyable.h"
 
@@ -40,11 +41,8 @@ class CSSToLengthConversionData;
 class CSSValue;
 
 class TransformBuilder {
-    WTF_MAKE_NONCOPYABLE(TransformBuilder); WTF_MAKE_FAST_ALLOCATED;
+    STATIC_ONLY(TransformBuilder);
 public:
-    TransformBuilder();
-    ~TransformBuilder();
-
     static bool createTransformOperations(CSSValue* inValue, const CSSToLengthConversionData&, TransformOperations& outOperations);
 };
 

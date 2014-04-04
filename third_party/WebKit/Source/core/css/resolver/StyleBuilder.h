@@ -32,6 +32,7 @@
 #define StyleBuilder_h
 
 #include "CSSPropertyNames.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 
@@ -41,6 +42,7 @@ class RenderStyle;
 class StyleResolverState;
 
 class StyleBuilder {
+    STATIC_ONLY(StyleBuilder);
 public:
     static void applyProperty(CSSPropertyID, StyleResolverState&, CSSValue*);
 

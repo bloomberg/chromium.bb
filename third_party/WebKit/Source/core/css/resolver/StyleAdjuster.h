@@ -22,6 +22,8 @@
 #ifndef StyleAdjuster_h
 #define StyleAdjuster_h
 
+#include "heap/Handle.h"
+
 namespace WebCore {
 
 class CachedUAStyle;
@@ -32,6 +34,7 @@ class RenderStyle;
 // and the web expects that we expose "adjusted" values when
 // for those property/element pairs.
 class StyleAdjuster {
+    STACK_ALLOCATED();
 public:
     StyleAdjuster(const CachedUAStyle& cachedUAStyle, bool useQuirksModeStyles)
         : m_cachedUAStyle(cachedUAStyle)
