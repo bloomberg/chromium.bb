@@ -48,11 +48,10 @@ public:
     static v8::Local<v8::Value> compileAndRunInternalScript(v8::Handle<v8::String>, v8::Isolate*, const String& = String(), const TextPosition& = TextPosition());
     static v8::Local<v8::Value> callInternalFunction(v8::Handle<v8::Function>, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[], v8::Isolate*);
     static v8::Local<v8::Value> callFunction(v8::Handle<v8::Function>, ExecutionContext*, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[], v8::Isolate*);
-    static v8::Local<v8::Value> callAsFunction(v8::Handle<v8::Object>, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[]);
-    static v8::Local<v8::Value> callAsConstructor(v8::Handle<v8::Object>, int argc, v8::Handle<v8::Value> info[]);
-    static v8::Local<v8::Object> instantiateObject(v8::Handle<v8::ObjectTemplate>);
-    static v8::Local<v8::Object> instantiateObject(v8::Handle<v8::Function>, int argc = 0, v8::Handle<v8::Value> argv[] = 0);
-    static v8::Local<v8::Object> instantiateObjectInDocument(v8::Handle<v8::Function>, ExecutionContext*, int argc = 0, v8::Handle<v8::Value> argv[] = 0);
+    static v8::Local<v8::Value> callAsFunction(v8::Isolate*, v8::Handle<v8::Object>, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[]);
+    static v8::Local<v8::Object> instantiateObject(v8::Isolate*, v8::Handle<v8::ObjectTemplate>);
+    static v8::Local<v8::Object> instantiateObject(v8::Isolate*, v8::Handle<v8::Function>, int argc = 0, v8::Handle<v8::Value> argv[] = 0);
+    static v8::Local<v8::Object> instantiateObjectInDocument(v8::Isolate*, v8::Handle<v8::Function>, ExecutionContext*, int argc = 0, v8::Handle<v8::Value> argv[] = 0);
 
 };
 

@@ -96,7 +96,7 @@ static bool generateEntropy(unsigned char* buffer, size_t length)
 #ifndef NDEBUG
 static void assertV8RecursionScope()
 {
-    ASSERT(!isMainThread() || WebCore::V8RecursionScope::properlyUsed());
+    ASSERT(!isMainThread() || WebCore::V8RecursionScope::properlyUsed(v8::Isolate::GetCurrent()));
 }
 #endif
 

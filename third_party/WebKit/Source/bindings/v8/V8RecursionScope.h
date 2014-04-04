@@ -57,50 +57,56 @@ namespace WebCore {
 class V8RecursionScope {
     WTF_MAKE_NONCOPYABLE(V8RecursionScope);
 public:
-    explicit V8RecursionScope(ExecutionContext* context)
-        : m_isDocumentContext(context && context->isDocument())
+    V8RecursionScope(v8::Isolate* isolate, ExecutionContext* context)
+        : m_isolate(isolate)
+        , m_isDocumentContext(context && context->isDocument())
     {
-        V8PerIsolateData::current()->incrementRecursionLevel();
+        V8PerIsolateData::from(m_isolate)->incrementRecursionLevel();
     }
 
     ~V8RecursionScope()
     {
-        if (!V8PerIsolateData::current()->decrementRecursionLevel())
+        if (!V8PerIsolateData::from(m_isolate)->decrementRecursionLevel())
             didLeaveScriptContext();
     }
 
-    static int recursionLevel()
+    static int recursionLevel(v8::Isolate* isolate)
     {
-        return V8PerIsolateData::current()->recursionLevel();
+        return V8PerIsolateData::from(isolate)->recursionLevel();
     }
 
 #ifndef NDEBUG
-    static bool properlyUsed()
+    static bool properlyUsed(v8::Isolate* isolate)
     {
-        return recursionLevel() > 0 || V8PerIsolateData::current()->internalScriptRecursionLevel() > 0;
+        return recursionLevel(isolate) > 0 || V8PerIsolateData::from(isolate)->internalScriptRecursionLevel() > 0;
     }
 #endif
 
     class MicrotaskSuppression {
     public:
-        MicrotaskSuppression()
+        MicrotaskSuppression(v8::Isolate* isolate)
+            : m_isolate(isolate)
         {
 #ifndef NDEBUG
-            V8PerIsolateData::current()->incrementInternalScriptRecursionLevel();
+            V8PerIsolateData::from(m_isolate)->incrementInternalScriptRecursionLevel();
 #endif
         }
 
         ~MicrotaskSuppression()
         {
 #ifndef NDEBUG
-            V8PerIsolateData::current()->decrementInternalScriptRecursionLevel();
+            V8PerIsolateData::from(m_isolate)->decrementInternalScriptRecursionLevel();
 #endif
         }
+
+    private:
+        v8::Isolate* m_isolate;
     };
 
 private:
     void didLeaveScriptContext();
 
+    v8::Isolate* m_isolate;
     bool m_isDocumentContext;
 };
 

@@ -408,7 +408,7 @@ PassRefPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createA
 
 void AsyncCallStackTracker::setCurrentAsyncCallChain(PassRefPtr<AsyncCallChain> chain)
 {
-    if (V8RecursionScope::recursionLevel()) {
+    if (V8RecursionScope::recursionLevel(v8::Isolate::GetCurrent())) {
         if (m_currentAsyncCallChain)
             ++m_nestedAsyncCallCount;
     } else {

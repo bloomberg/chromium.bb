@@ -597,7 +597,7 @@ bool _NPN_Construct(NPP npp, NPObject* npObject, const NPVariant* arguments, uin
             LocalFrame* frame = object->rootObject->frame();
             ASSERT(frame);
             OwnPtr<v8::Handle<v8::Value>[]> argv = createValueListFromVariantArgs(arguments, argumentCount, npObject, isolate);
-            resultObject = V8ObjectConstructor::newInstanceInDocument(ctor, argumentCount, argv.get(), frame ? frame->document() : 0);
+            resultObject = V8ObjectConstructor::newInstanceInDocument(isolate, ctor, argumentCount, argv.get(), frame ? frame->document() : 0);
         }
 
         if (resultObject.IsEmpty())

@@ -58,7 +58,7 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHos
         // Return if allocation failed.
         return v8::Local<v8::Object>();
     }
-    v8::Local<v8::Object> instanceTemplate = V8ObjectConstructor::newInstance(function);
+    v8::Local<v8::Object> instanceTemplate = V8ObjectConstructor::newInstance(isolate, function);
     if (instanceTemplate.IsEmpty()) {
         // Avoid setting the wrapper if allocation failed.
         return v8::Local<v8::Object>();
