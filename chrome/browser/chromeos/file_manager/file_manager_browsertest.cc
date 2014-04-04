@@ -763,13 +763,7 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE,
                                     "createNewFolderDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE,
-                                    "createNewFolderDrive"),
-                      TestParameter(IN_GUEST_MODE,
-                                    "renameFileDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "renameFileDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "renameFileDrive")));
+                                    "createNewFolderDrive")));
 
 INSTANTIATE_TEST_CASE_P(
     DriveSpecific,
