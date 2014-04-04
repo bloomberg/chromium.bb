@@ -417,17 +417,6 @@ ShellIntegration::ShortcutInfo BuildShortcutInfoFromBundle(
   return shortcut_info;
 }
 
-void CreateShortcutsAndRunCallback(
-    const base::Closure& close_callback,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
-  // creation_locations will be ignored by CreatePlatformShortcuts on Mac.
-  ShellIntegration::ShortcutLocations creation_locations;
-  web_app::CreateShortcuts(shortcut_info, creation_locations,
-                           web_app::SHORTCUT_CREATION_BY_USER);
-  if (!close_callback.is_null())
-    close_callback.Run();
-}
-
 }  // namespace
 
 namespace chrome {
@@ -437,10 +426,13 @@ void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow /*parent_window*/,
                                         const extensions::Extension* app,
                                         const base::Closure& close_callback) {
   // Normally we would show a dialog, but since we always create the app
-  // shortcut in /Applications there are no options for the user to choose.
-  web_app::UpdateShortcutInfoAndIconForApp(
-      app, profile,
-      base::Bind(&CreateShortcutsAndRunCallback, close_callback));
+  // shortcut in ~/Applications there are no options for the user to choose.
+  web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
+                           ShellIntegration::ShortcutLocations(),
+                           profile,
+                           app);
+  if (!close_callback.is_null())
+    close_callback.Run();
 }
 
 }  // namespace chrome

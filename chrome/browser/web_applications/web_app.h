@@ -90,33 +90,31 @@ std::string GenerateApplicationNameFromExtensionId(const std::string& id);
 // Extracts the extension id from the app name.
 std::string GetExtensionIdFromApplicationName(const std::string& app_name);
 
-// Creates shortcuts for web application based on given shortcut data.
+// Create shortcuts for web application based on given shortcut data.
 // |shortcut_info| contains information about the shortcuts to create, and
 // |creation_locations| contains information about where to create them.
-void CreateShortcuts(
-    const ShellIntegration::ShortcutInfo& shortcut_info,
-    const ShellIntegration::ShortcutLocations& creation_locations,
-    ShortcutCreationReason creation_reason);
+void CreateShortcutsForShortcutInfo(
+    web_app::ShortcutCreationReason reason,
+    const ShellIntegration::ShortcutLocations& locations,
+    const ShellIntegration::ShortcutInfo& shortcut_info);
 
-// Delete all the shortcuts that have been created for the given
-// |shortcut_data| in the profile with |profile_path|.
-void DeleteAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info);
+// Creates shortcuts for an app.
+void CreateShortcuts(
+    ShortcutCreationReason reason,
+    const ShellIntegration::ShortcutLocations& locations,
+    Profile* profile,
+    const extensions::Extension* app);
+
+// Delete all shortcuts that have been created for the given profile and
+// extension.
+void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app);
 
 // Updates shortcuts for web application based on given shortcut data. This
 // refreshes existing shortcuts and their icons, but does not create new ones.
 // |old_app_title| contains the title of the app prior to this update.
-// |shortcut_info| contains information about the shortcuts to update.
 void UpdateAllShortcuts(const base::string16& old_app_title,
-                        const ShellIntegration::ShortcutInfo& shortcut_info);
-
-// Creates a shortcut. Must be called on the file thread. This is used to
-// implement CreateShortcuts() above, and can also be used directly from the
-// file thread. |shortcut_info| contains info about the shortcut to create, and
-// |creation_locations| contains information about where to create them.
-bool CreateShortcutsOnFileThread(
-    const ShellIntegration::ShortcutInfo& shortcut_info,
-    const ShellIntegration::ShortcutLocations& creation_locations,
-    ShortcutCreationReason creation_reason);
+                        Profile* profile,
+                        const extensions::Extension* app);
 
 // Returns true if given url is a valid web app url.
 bool IsValidUrl(const GURL& url);
@@ -144,6 +142,15 @@ namespace internals {
 std::vector<base::FilePath> GetShortcutPaths(
     const ShellIntegration::ShortcutLocations& creation_locations);
 #endif
+
+// Creates a shortcut. Must be called on the file thread. This is used to
+// implement CreateShortcuts() above, and can also be used directly from the
+// file thread. |shortcut_info| contains info about the shortcut to create, and
+// |creation_locations| contains information about where to create them.
+bool CreateShortcutsOnFileThread(
+    ShortcutCreationReason reason,
+    const ShellIntegration::ShortcutLocations& locations,
+    const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Implemented for each platform, does the platform specific parts of creating
 // shortcuts. Used internally by CreateShortcutsOnFileThread.

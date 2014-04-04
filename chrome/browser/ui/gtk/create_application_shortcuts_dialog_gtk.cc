@@ -357,8 +357,9 @@ void CreateChromeApplicationShortcutsDialogGtk::CreateDesktopShortcut(
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (web_app::CreateShortcutsOnFileThread(
-          shortcut_info, creation_locations,
-          web_app::SHORTCUT_CREATION_BY_USER)) {
+          web_app::SHORTCUT_CREATION_BY_USER,
+          creation_locations,
+          shortcut_info)) {
     Release();
   } else {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
