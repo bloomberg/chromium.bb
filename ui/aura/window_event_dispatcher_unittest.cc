@@ -883,6 +883,50 @@ TEST_F(WindowEventDispatcherTest, DispatchMouseExitWhenCursorHidden) {
   EXPECT_EQ(filter->mouse_location(0).ToString(), translated_point.ToString());
 }
 
+// Tests that a synthetic mouse exit is dispatched to the last known cursor
+// location after mouse events are disabled on the cursor client.
+TEST_F(WindowEventDispatcherTest,
+       DispatchSyntheticMouseExitAfterMouseEventsDisabled) {
+  EventFilterRecorder* filter = new EventFilterRecorder;
+  root_window()->SetEventFilter(filter);  // passes ownership
+
+  test::TestWindowDelegate delegate;
+  gfx::Point window_origin(7, 18);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1234, gfx::Rect(window_origin, gfx::Size(100, 100)),
+      root_window()));
+  window->Show();
+
+  // Dispatch a mouse move event into the window.
+  gfx::Point mouse_location(gfx::Point(15, 25));
+  ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, mouse_location,
+                        mouse_location, 0, 0);
+  EXPECT_TRUE(filter->events().empty());
+  DispatchEventUsingWindowDispatcher(&mouse1);
+  EXPECT_FALSE(filter->events().empty());
+  filter->Reset();
+
+  test::TestCursorClient cursor_client(root_window());
+  cursor_client.DisableMouseEvents();
+
+  gfx::Point mouse_exit_location(gfx::Point(150, 150));
+  ui::MouseEvent mouse2(ui::ET_MOUSE_EXITED, gfx::Point(150, 150),
+                        gfx::Point(150, 150), ui::EF_IS_SYNTHESIZED, 0);
+  DispatchEventUsingWindowDispatcher(&mouse2);
+
+  EXPECT_FALSE(filter->events().empty());
+  // We get the mouse exited event twice in our filter. Once during the
+  // predispatch phase and during the actual dispatch.
+  EXPECT_EQ("MOUSE_EXITED MOUSE_EXITED", EventTypesToString(filter->events()));
+
+  // Verify the mouse exit was dispatched at the correct location
+  // (in the correct coordinate space).
+  int translated_x = mouse_exit_location.x() - window_origin.x();
+  int translated_y = mouse_exit_location.y() - window_origin.y();
+  gfx::Point translated_point(translated_x, translated_y);
+  EXPECT_EQ(filter->mouse_location(0).ToString(), translated_point.ToString());
+}
+
 class DeletingEventFilter : public ui::EventHandler {
  public:
   DeletingEventFilter()

@@ -725,9 +725,13 @@ void WindowEventDispatcher::PreDispatchLocatedEvent(Window* target,
 void WindowEventDispatcher::PreDispatchMouseEvent(Window* target,
                                                   ui::MouseEvent* event) {
   client::CursorClient* cursor_client = client::GetCursorClient(window());
+  // We allow synthesized mouse exit events through even if mouse events are
+  // disabled. This ensures that hover state, etc on controls like buttons is
+  // cleared.
   if (cursor_client &&
       !cursor_client->IsMouseEventsEnabled() &&
-      (event->flags() & ui::EF_IS_SYNTHESIZED)) {
+      (event->flags() & ui::EF_IS_SYNTHESIZED) &&
+      (event->type() != ui::ET_MOUSE_EXITED)) {
     event->SetHandled();
     return;
   }

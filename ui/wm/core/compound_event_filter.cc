@@ -259,10 +259,11 @@ void CompoundEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   // We also update the cursor for mouse enter in case a mouse cursor is sent to
   // outside of the root window and moved back for some reasons (e.g. running on
   // on Desktop for testing, or a bug in pointer barrier).
-  if (event->type() == ui::ET_MOUSE_ENTERED ||
-      event->type() == ui::ET_MOUSE_MOVED ||
-      event->type() == ui::ET_MOUSE_PRESSED ||
-      event->type() == ui::ET_MOUSEWHEEL) {
+  if (!(event->flags() & ui::EF_FROM_TOUCH) &&
+       (event->type() == ui::ET_MOUSE_ENTERED ||
+        event->type() == ui::ET_MOUSE_MOVED ||
+        event->type() == ui::ET_MOUSE_PRESSED ||
+        event->type() == ui::ET_MOUSEWHEEL)) {
     SetMouseEventsEnableStateOnEvent(window, event, true);
     SetCursorVisibilityOnEvent(window, event, true);
     UpdateCursor(window, event);

@@ -462,6 +462,15 @@ class VIEWS_EXPORT HWNDMessageHandler :
                                    LPARAM l_param,
                                    bool track_mouse);
 
+  // Returns true if the mouse message passed in is an OS synthesized mouse
+  // message.
+  // |message| identifies the mouse message.
+  // |message_time| is the time when the message occurred.
+  // |l_param| indicates the location of the mouse message.
+  bool IsSynthesizedMouseMessage(unsigned int message,
+                                 int message_time,
+                                 LPARAM l_param);
+
   HWNDMessageHandlerDelegate* delegate_;
 
   scoped_ptr<FullscreenHandler> fullscreen_handler_;
@@ -584,6 +593,12 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // touch input. This is fine because activation still works correctly via
   // native SetFocus calls invoked in the views code.
   bool touch_down_context_;
+
+  // Time the last touch message was received. Used to flag mouse messages
+  // synthesized by Windows for touch which are not flagged by the OS as
+  // synthesized mouse messages. For more information please refer to
+  // the IsMouseEventFromTouch function.
+  static long last_touch_message_time_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };

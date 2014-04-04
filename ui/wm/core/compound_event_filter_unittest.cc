@@ -203,4 +203,35 @@ TEST_F(CompoundEventFilterTest, DontHideWhenMouseDown) {
   aura::Env::GetInstance()->RemovePreTargetHandler(compound_filter.get());
 }
 
+#if defined(OS_WIN)
+// Windows synthesizes mouse messages for touch events. We should not be
+// showing the cursor when we receive such messages.
+TEST_F(CompoundEventFilterTest, DontShowCursorOnMouseMovesFromTouch) {
+  scoped_ptr<CompoundEventFilter> compound_filter(new CompoundEventFilter);
+  aura::Env::GetInstance()->AddPreTargetHandler(compound_filter.get());
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(&delegate, 1234,
+      gfx::Rect(5, 5, 100, 100), root_window()));
+  window->Show();
+  window->SetCapture();
+
+  aura::test::TestCursorClient cursor_client(root_window());
+  cursor_client.DisableMouseEvents();
+  EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
+
+  ui::MouseEvent mouse0(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
+                        gfx::Point(10, 10), 0, 0);
+  mouse0.set_flags(mouse0.flags() | ui::EF_FROM_TOUCH);
+
+  DispatchEventUsingWindowDispatcher(&mouse0);
+  EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
+
+  mouse0.set_flags(mouse0.flags() & ~ui::EF_FROM_TOUCH);
+  DispatchEventUsingWindowDispatcher(&mouse0);
+  EXPECT_TRUE(cursor_client.IsMouseEventsEnabled());
+
+  aura::Env::GetInstance()->RemovePreTargetHandler(compound_filter.get());
+}
+#endif
+
 }  // namespace wm
