@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <string.h>
+
 #include <vector>
 
 #include "ppapi/c/pp_errors.h"
@@ -15,8 +19,7 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/video_frame.h"
-#include "ppapi/lib/gl/include/GLES2/gl2.h"
-#include "ppapi/lib/gl/include/GLES2/gl2ext.h"
+#include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 // When compiling natively on Windows, PostMessage can be #define-d to
@@ -28,7 +31,7 @@
 // Assert |context_| isn't holding any GL Errors.  Done as a macro instead of a
 // function to preserve line number information in the failure message.
 #define AssertNoGLError() \
-  PP_DCHECK(!gles2_if_->GetError(context_->pp_resource()));
+  PP_DCHECK(!glGetError());
 
 namespace {
 
@@ -69,7 +72,7 @@ class MediaStreamVideoDemoInstance : public pp::Instance,
   void InitGL();
   GLuint CreateTexture(int32_t width, int32_t height, int unit, bool rgba);
   void CreateGLObjects();
-  void CreateShader(GLuint program, GLenum type, const char* source, int size);
+  void CreateShader(GLuint program, GLenum type, const char* source);
   void PaintFinished(int32_t result);
   void CreateTextures();
   void ConfigureTrack();
@@ -100,9 +103,6 @@ class MediaStreamVideoDemoInstance : public pp::Instance,
   int32_t attrib_width_;
   int32_t attrib_height_;
 
-  // Unowned pointers.
-  const struct PPB_OpenGLES2* gles2_if_;
-
   // Owned data.
   pp::Graphics3D* context_;
 
@@ -126,9 +126,10 @@ MediaStreamVideoDemoInstance::MediaStreamVideoDemoInstance(
       attrib_width_(0),
       attrib_height_(0),
       context_(NULL) {
-  gles2_if_ = static_cast<const struct PPB_OpenGLES2*>(
-      module->GetBrowserInterface(PPB_OPENGLES2_INTERFACE));
-  PP_DCHECK(gles2_if_);
+  if (!glInitializePPAPI(pp::Module::Get()->get_browser_interface())) {
+    LogToConsole(PP_LOGLEVEL_ERROR, pp::Var("Unable to initialize GL PPAPI!"));
+    assert(false);
+  }
 }
 
 MediaStreamVideoDemoInstance::~MediaStreamVideoDemoInstance() {
@@ -150,8 +151,10 @@ void MediaStreamVideoDemoInstance::DidChangeView(
 }
 
 void MediaStreamVideoDemoInstance::HandleMessage(const pp::Var& var_message) {
-  if (!var_message.is_dictionary())
+  if (!var_message.is_dictionary()) {
+    LogToConsole(PP_LOGLEVEL_ERROR, pp::Var("Invalid message!"));
     return;
+  }
 
   pp::VarDictionary var_dictionary_message(var_message);
   std::string command = var_dictionary_message.Get("command").AsString();
@@ -164,7 +167,7 @@ void MediaStreamVideoDemoInstance::HandleMessage(const pp::Var& var_message) {
     video_track_ = pp::MediaStreamVideoTrack(resource_track);
     ConfigureTrack();
   } else if (command == "format") {
-    std::string str_format =  var_dictionary_message.Get("format").AsString();
+    std::string str_format = var_dictionary_message.Get("format").AsString();
     if (str_format == "YV12") {
       attrib_format_ = PP_VIDEOFRAME_FORMAT_YV12;
     } else if (str_format == "I420") {
@@ -179,6 +182,8 @@ void MediaStreamVideoDemoInstance::HandleMessage(const pp::Var& var_message) {
     attrib_width_ = var_dictionary_message.Get("width").AsInt();
     attrib_height_ = var_dictionary_message.Get("height").AsInt();
     need_config_ = true;
+  } else {
+    LogToConsole(PP_LOGLEVEL_ERROR, pp::Var("Invalid command!"));
   }
 }
 
@@ -203,11 +208,12 @@ void MediaStreamVideoDemoInstance::InitGL() {
   context_ = new pp::Graphics3D(this, attributes);
   PP_DCHECK(!context_->is_null());
 
+  glSetCurrentContextPPAPI(context_->pp_resource());
+
   // Set viewport window size and clear color bit.
-  gles2_if_->ClearColor(context_->pp_resource(), 1, 0, 0, 1);
-  gles2_if_->Clear(context_->pp_resource(), GL_COLOR_BUFFER_BIT);
-  gles2_if_->Viewport(context_->pp_resource(), 0, 0,
-                      position_size_.width(), position_size_.height());
+  glClearColor(1, 0, 0, 1);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glViewport(0, 0, position_size_.width(), position_size_.height());
 
   BindGraphics(*context_);
   AssertNoGLError();
@@ -216,66 +222,50 @@ void MediaStreamVideoDemoInstance::InitGL() {
 }
 
 void MediaStreamVideoDemoInstance::DrawYUV() {
-  PP_Resource context = context_->pp_resource();
   static const float kColorMatrix[9] = {
     1.1643828125f, 1.1643828125f, 1.1643828125f,
     0.0f, -0.39176171875f, 2.017234375f,
     1.59602734375f, -0.81296875f, 0.0f
   };
 
-  gles2_if_->UseProgram(context, program_yuv_);
-  gles2_if_->Uniform1i(context, gles2_if_->GetUniformLocation(
-        context, program_yuv_, "y_texture"), 0);
-  gles2_if_->Uniform1i(context, gles2_if_->GetUniformLocation(
-        context, program_yuv_, "u_texture"), 1);
-  gles2_if_->Uniform1i(context, gles2_if_->GetUniformLocation(
-        context, program_yuv_, "v_texture"), 2);
-  gles2_if_->UniformMatrix3fv(
-      context,
-      gles2_if_->GetUniformLocation(context, program_yuv_, "color_matrix"),
+  glUseProgram(program_yuv_);
+  glUniform1i(glGetUniformLocation(program_yuv_, "y_texture"), 0);
+  glUniform1i(glGetUniformLocation(program_yuv_, "u_texture"), 1);
+  glUniform1i(glGetUniformLocation(program_yuv_, "v_texture"), 2);
+  glUniformMatrix3fv(glGetUniformLocation(program_yuv_, "color_matrix"),
       1, GL_FALSE, kColorMatrix);
   AssertNoGLError();
 
-  GLint pos_location = gles2_if_->GetAttribLocation(
-      context, program_yuv_, "a_position");
-  GLint tc_location = gles2_if_->GetAttribLocation(
-      context, program_yuv_, "a_texCoord");
+  GLint pos_location = glGetAttribLocation(program_yuv_, "a_position");
+  GLint tc_location = glGetAttribLocation(program_yuv_, "a_texCoord");
   AssertNoGLError();
-  gles2_if_->EnableVertexAttribArray(context, pos_location);
-  gles2_if_->VertexAttribPointer(context, pos_location, 2,
-                                 GL_FLOAT, GL_FALSE, 0, 0);
-  gles2_if_->EnableVertexAttribArray(context, tc_location);
-  gles2_if_->VertexAttribPointer(
-      context, tc_location, 2, GL_FLOAT, GL_FALSE, 0,
+  glEnableVertexAttribArray(pos_location);
+  glVertexAttribPointer(pos_location, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(tc_location);
+  glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0,
       static_cast<float*>(0) + 16);  // Skip position coordinates.
   AssertNoGLError();
 
-  gles2_if_->DrawArrays(context, GL_TRIANGLE_STRIP, 0, 4);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   AssertNoGLError();
 }
 
 void MediaStreamVideoDemoInstance::DrawRGB() {
-  PP_Resource context = context_->pp_resource();
-  gles2_if_->UseProgram(context, program_rgb_);
-  gles2_if_->Uniform1i(context,
-      gles2_if_->GetUniformLocation(context, program_rgb_, "rgb_texture"), 3);
+  glUseProgram(program_rgb_);
+  glUniform1i(glGetUniformLocation(program_rgb_, "rgb_texture"), 3);
   AssertNoGLError();
 
-  GLint pos_location = gles2_if_->GetAttribLocation(
-      context, program_rgb_, "a_position");
-  GLint tc_location = gles2_if_->GetAttribLocation(
-      context, program_rgb_, "a_texCoord");
+  GLint pos_location = glGetAttribLocation(program_rgb_, "a_position");
+  GLint tc_location = glGetAttribLocation(program_rgb_, "a_texCoord");
   AssertNoGLError();
-  gles2_if_->EnableVertexAttribArray(context, pos_location);
-  gles2_if_->VertexAttribPointer(context, pos_location, 2,
-                                 GL_FLOAT, GL_FALSE, 0, 0);
-  gles2_if_->EnableVertexAttribArray(context, tc_location);
-  gles2_if_->VertexAttribPointer(
-      context, tc_location, 2, GL_FLOAT, GL_FALSE, 0,
+  glEnableVertexAttribArray(pos_location);
+  glVertexAttribPointer(pos_location, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(tc_location);
+  glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0,
       static_cast<float*>(0) + 16);  // Skip position coordinates.
   AssertNoGLError();
 
-  gles2_if_->DrawArrays(context, GL_TRIANGLE_STRIP, 4, 4);
+  glDrawArrays(GL_TRIANGLE_STRIP, 4, 4);
 }
 
 void MediaStreamVideoDemoInstance::Render() {
@@ -287,7 +277,7 @@ void MediaStreamVideoDemoInstance::Render() {
     DrawRGB();
     DrawYUV();
   } else {
-    gles2_if_->Clear(context_->pp_resource(), GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
   }
   pp::CompletionCallback cb = callback_factory_.NewCallback(
       &MediaStreamVideoDemoInstance::PaintFinished);
@@ -303,30 +293,21 @@ void MediaStreamVideoDemoInstance::PaintFinished(int32_t result) {
 GLuint MediaStreamVideoDemoInstance::CreateTexture(
     int32_t width, int32_t height, int unit, bool rgba) {
   GLuint texture_id;
-  gles2_if_->GenTextures(context_->pp_resource(), 1, &texture_id);
+  glGenTextures(1, &texture_id);
   AssertNoGLError();
 
   // Assign parameters.
-  gles2_if_->ActiveTexture(context_->pp_resource(), GL_TEXTURE0 + unit);
-  gles2_if_->BindTexture(context_->pp_resource(), GL_TEXTURE_2D, texture_id);
-  gles2_if_->TexParameteri(
-      context_->pp_resource(), GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-      GL_NEAREST);
-  gles2_if_->TexParameteri(
-      context_->pp_resource(), GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-      GL_NEAREST);
-  gles2_if_->TexParameterf(
-      context_->pp_resource(), GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-      GL_CLAMP_TO_EDGE);
-  gles2_if_->TexParameterf(
-      context_->pp_resource(), GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-      GL_CLAMP_TO_EDGE);
+  glActiveTexture(GL_TEXTURE0 + unit);
+  glBindTexture(GL_TEXTURE_2D, texture_id);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   // Allocate texture.
-  gles2_if_->TexImage2D(
-      context_->pp_resource(), GL_TEXTURE_2D, 0,
-      rgba ? GL_BGRA_EXT : GL_LUMINANCE,
-      width, height, 0,
-      rgba ? GL_BGRA_EXT : GL_LUMINANCE, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0,
+               rgba ? GL_BGRA_EXT : GL_LUMINANCE,
+               width, height, 0,
+               rgba ? GL_BGRA_EXT : GL_LUMINANCE, GL_UNSIGNED_BYTE, NULL);
   AssertNoGLError();
   return texture_id;
 }
@@ -369,23 +350,17 @@ void MediaStreamVideoDemoInstance::CreateGLObjects() {
       "  gl_FragColor = texture2D(rgb_texture, v_texCoord);       \n"
       "}";
 
-  PP_Resource context = context_->pp_resource();
-
   // Create shader programs.
-  program_yuv_ = gles2_if_->CreateProgram(context);
-  CreateShader(program_yuv_, GL_VERTEX_SHADER,
-               kVertexShader, sizeof(kVertexShader));
-  CreateShader(program_yuv_, GL_FRAGMENT_SHADER,
-               kFragmentShaderYUV, sizeof(kFragmentShaderYUV));
-  gles2_if_->LinkProgram(context, program_yuv_);
+  program_yuv_ = glCreateProgram();
+  CreateShader(program_yuv_, GL_VERTEX_SHADER, kVertexShader);
+  CreateShader(program_yuv_, GL_FRAGMENT_SHADER, kFragmentShaderYUV);
+  glLinkProgram(program_yuv_);
   AssertNoGLError();
 
-  program_rgb_ = gles2_if_->CreateProgram(context);
-  CreateShader(program_rgb_, GL_VERTEX_SHADER,
-               kVertexShader, sizeof(kVertexShader));
-  CreateShader(program_rgb_, GL_FRAGMENT_SHADER,
-               kFragmentShaderRGB, sizeof(kFragmentShaderRGB));
-  gles2_if_->LinkProgram(context, program_rgb_);
+  program_rgb_ = glCreateProgram();
+  CreateShader(program_rgb_, GL_VERTEX_SHADER, kVertexShader);
+  CreateShader(program_rgb_, GL_FRAGMENT_SHADER, kFragmentShaderRGB);
+  glLinkProgram(program_rgb_);
   AssertNoGLError();
 
   // Assign vertex positions and texture coordinates to buffers for use in
@@ -397,21 +372,20 @@ void MediaStreamVideoDemoInstance::CreateGLObjects() {
     0, 0, 0, 1, 1, 0, 1, 1,  // Texture coordinates.
   };
 
-  gles2_if_->GenBuffers(context, 1, &buffer_);
-  gles2_if_->BindBuffer(context, GL_ARRAY_BUFFER, buffer_);
-  gles2_if_->BufferData(context, GL_ARRAY_BUFFER,
-                        sizeof(kVertices), kVertices, GL_STATIC_DRAW);
+  glGenBuffers(1, &buffer_);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer_);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(kVertices), kVertices, GL_STATIC_DRAW);
   AssertNoGLError();
 }
 
 void MediaStreamVideoDemoInstance::CreateShader(
-    GLuint program, GLenum type, const char* source, int size) {
-  PP_Resource context = context_->pp_resource();
-  GLuint shader = gles2_if_->CreateShader(context, type);
-  gles2_if_->ShaderSource(context, shader, 1, &source, &size);
-  gles2_if_->CompileShader(context, shader);
-  gles2_if_->AttachShader(context, program, shader);
-  gles2_if_->DeleteShader(context, shader);
+    GLuint program, GLenum type, const char* source) {
+  GLuint shader = glCreateShader(type);
+  GLint length = strlen(source) + 1;
+  glShaderSource(shader, 1, &source, &length);
+  glCompileShader(shader);
+  glAttachShader(program, shader);
+  glDeleteShader(shader);
 }
 
 void MediaStreamVideoDemoInstance::CreateTextures() {
@@ -420,13 +394,13 @@ void MediaStreamVideoDemoInstance::CreateTextures() {
   if (width == 0 || height == 0)
     return;
   if (texture_y_)
-    gles2_if_->DeleteTextures(context_->pp_resource(), 1, &texture_y_);
+    glDeleteTextures(1, &texture_y_);
   if (texture_u_)
-    gles2_if_->DeleteTextures(context_->pp_resource(), 1, &texture_u_);
+    glDeleteTextures(1, &texture_u_);
   if (texture_v_)
-    gles2_if_->DeleteTextures(context_->pp_resource(), 1, &texture_v_);
+    glDeleteTextures(1, &texture_v_);
   if (texture_rgb_)
-    gles2_if_->DeleteTextures(context_->pp_resource(), 1, &texture_rgb_);
+    glDeleteTextures(1, &texture_rgb_);
   texture_y_ = CreateTexture(width, height, 0, false);
 
   texture_u_ = CreateTexture(width / 2, height / 2, 1, false);
@@ -468,30 +442,26 @@ void MediaStreamVideoDemoInstance::OnGetFrame(
   int32_t width = frame_size_.width();
   int32_t height = frame_size_.height();
   if (!is_bgra_) {
-    gles2_if_->ActiveTexture(context_->pp_resource(), GL_TEXTURE0);
-    gles2_if_->TexSubImage2D(
-        context_->pp_resource(), GL_TEXTURE_2D, 0, 0, 0, width, height,
-        GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+    glActiveTexture(GL_TEXTURE0);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
+                    GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
 
     data += width * height;
     width /= 2;
     height /= 2;
 
-    gles2_if_->ActiveTexture(context_->pp_resource(), GL_TEXTURE1);
-    gles2_if_->TexSubImage2D(
-        context_->pp_resource(), GL_TEXTURE_2D, 0, 0, 0, width, height,
-        GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+    glActiveTexture(GL_TEXTURE1);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
+                    GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
 
     data += width * height;
-    gles2_if_->ActiveTexture(context_->pp_resource(), GL_TEXTURE2);
-    gles2_if_->TexSubImage2D(
-        context_->pp_resource(), GL_TEXTURE_2D, 0, 0, 0, width, height,
-        GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+    glActiveTexture(GL_TEXTURE2);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
+                    GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
   } else {
-    gles2_if_->ActiveTexture(context_->pp_resource(), GL_TEXTURE3);
-    gles2_if_->TexSubImage2D(
-        context_->pp_resource(), GL_TEXTURE_2D, 0, 0, 0, width, height,
-        GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
+    glActiveTexture(GL_TEXTURE3);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
+                    GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
   }
 
   if (is_painting_)
