@@ -136,6 +136,8 @@ ShellContentRendererClient::OverrideCreateMIDIAccessor(
 WebAudioDevice*
 ShellContentRendererClient::OverrideCreateAudioDevice(
     double sample_rate) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return NULL;
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
   return interfaces->createAudioDevice(sample_rate);
