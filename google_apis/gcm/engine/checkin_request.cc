@@ -46,21 +46,30 @@ void RecordCheckinStatusToUMA(CheckinRequestStatus status) {
 
 }  // namespace
 
-CheckinRequest::CheckinRequest(
-    const CheckinRequestCallback& callback,
-    const net::BackoffEntry::Policy& backoff_policy,
-    const checkin_proto::ChromeBuildProto& chrome_build_proto,
+CheckinRequest::RequestInfo::RequestInfo(
     uint64 android_id,
     uint64 security_token,
+    const std::string& settings_digest,
     const std::vector<std::string>& account_ids,
+    const checkin_proto::ChromeBuildProto& chrome_build_proto)
+    : android_id(android_id),
+      security_token(security_token),
+      settings_digest(settings_digest),
+      account_ids(account_ids),
+      chrome_build_proto(chrome_build_proto) {
+}
+
+CheckinRequest::RequestInfo::~RequestInfo() {}
+
+CheckinRequest::CheckinRequest(
+    const RequestInfo& request_info,
+    const net::BackoffEntry::Policy& backoff_policy,
+    const CheckinRequestCallback& callback,
     net::URLRequestContextGetter* request_context_getter)
     : request_context_getter_(request_context_getter),
       callback_(callback),
       backoff_entry_(&backoff_policy),
-      chrome_build_proto_(chrome_build_proto),
-      android_id_(android_id),
-      security_token_(security_token),
-      account_ids_(account_ids),
+      request_info_(request_info),
       weak_ptr_factory_(this) {
 }
 
@@ -70,21 +79,24 @@ void CheckinRequest::Start() {
   DCHECK(!url_fetcher_.get());
 
   checkin_proto::AndroidCheckinRequest request;
-  request.set_id(android_id_);
-  request.set_security_token(security_token_);
+  request.set_id(request_info_.android_id);
+  request.set_security_token(request_info_.security_token);
   request.set_user_serial_number(kDefaultUserSerialNumber);
   request.set_version(kRequestVersionValue);
+  if (!request_info_.settings_digest.empty())
+    request.set_digest(request_info_.settings_digest);
 
   checkin_proto::AndroidCheckinProto* checkin = request.mutable_checkin();
-  checkin->mutable_chrome_build()->CopyFrom(chrome_build_proto_);
+  checkin->mutable_chrome_build()->CopyFrom(request_info_.chrome_build_proto);
 #if defined(CHROME_OS)
   checkin->set_type(checkin_proto::DEVICE_CHROME_OS);
 #else
   checkin->set_type(checkin_proto::DEVICE_CHROME_BROWSER);
 #endif
 
-  for (std::vector<std::string>::const_iterator iter = account_ids_.begin();
-       iter != account_ids_.end();
+  for (std::vector<std::string>::const_iterator iter =
+           request_info_.account_ids.begin();
+       iter != request_info_.account_ids.end();
        ++iter) {
     request.add_account_cookie("[" + *iter + "]");
   }
@@ -141,7 +153,7 @@ void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
                << response_status << ". Checkin failed.";
     RecordCheckinStatusToUMA(response_status == net::HTTP_BAD_REQUEST ?
         HTTP_BAD_REQUEST : HTTP_UNAUTHORIZED);
-    callback_.Run(0,0);
+    callback_.Run(response_proto);
     return;
   }
 
@@ -167,7 +179,7 @@ void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   RecordCheckinStatusToUMA(SUCCESS);
-  callback_.Run(response_proto.android_id(), response_proto.security_token());
+  callback_.Run(response_proto);
 }
 
 }  // namespace gcm

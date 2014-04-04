@@ -7,6 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"
 #include "components/os_crypt/os_crypt.h"
 #include "google_apis/gcm/base/mcs_message.h"
@@ -38,6 +39,9 @@ enum LastEvent {
 
 const uint64 kDeviceAndroidId = 54321;
 const uint64 kDeviceSecurityToken = 12345;
+const int64 kSettingsCheckinInterval = 0;
+const char kSettingsCheckinIntervalKey[] = "checkin_interval";
+const char kSettingsDefaultDigest[] = "default_digest";
 const char kAppId[] = "app_id";
 const char kSender[] = "project_id";
 const char kSender2[] = "project_id2";
@@ -183,7 +187,11 @@ class GCMClientImplTest : public testing::Test,
   void BuildGCMClient();
   void InitializeGCMClient();
   void ReceiveMessageFromMCS(const MCSMessage& message);
-  void CompleteCheckin(uint64 android_id, uint64 security_token);
+  void CompleteCheckin(
+      uint64 android_id,
+      uint64 security_token,
+      const std::string& digest,
+      const std::map<std::string, std::string>& settings);
   void CompleteRegistration(const std::string& registration_id);
   void CompleteUnregistration(const std::string& app_id);
 
@@ -217,6 +225,12 @@ class GCMClientImplTest : public testing::Test,
   ConnectionFactory* connection_factory() const {
     return gcm_client_->connection_factory_.get();
   }
+  GServicesSettingsMap& services_settings() {
+    return gcm_client_->gservices_settings_;
+  }
+  const std::string& services_digest() {
+    return gcm_client_->gservices_digest_;
+  }
 
   void reset_last_event() {
     last_event_ = NONE;
@@ -239,19 +253,21 @@ class GCMClientImplTest : public testing::Test,
   const GCMClient::SendErrorDetails& last_error_details() const {
     return last_error_details_;
   }
-
-  int64 CurrentTime();
-
- private:
-  // Tooling.
-  void PumpLoop();
-  void PumpLoopUntilIdle();
-  void QuitLoop();
-
   base::SimpleTestClock* clock() const {
     return reinterpret_cast<base::SimpleTestClock*>(gcm_client_->clock_.get());
   }
 
+  int64 CurrentTime();
+
+  // Tooling.
+  void PumpLoop();
+  void PumpLoopUntilIdle();
+  void QuitLoop();
+  void ResetLoop();
+
+  bool CreateUniqueTempDir();
+
+ private:
   // Variables used for verification.
   LastEvent last_event_;
   std::string last_app_id_;
@@ -282,11 +298,14 @@ GCMClientImplTest::GCMClientImplTest()
 GCMClientImplTest::~GCMClientImplTest() {}
 
 void GCMClientImplTest::SetUp() {
-  ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
-  run_loop_.reset(new base::RunLoop);
+  ASSERT_TRUE(CreateUniqueTempDir());
+  ResetLoop();
   BuildGCMClient();
   InitializeGCMClient();
-  CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken);
+  CompleteCheckin(kDeviceAndroidId,
+                  kDeviceSecurityToken,
+                  kSettingsDefaultDigest,
+                  std::map<std::string, std::string>());
 }
 
 void GCMClientImplTest::PumpLoop() {
@@ -304,17 +323,37 @@ void GCMClientImplTest::QuitLoop() {
     run_loop_->Quit();
 }
 
+void GCMClientImplTest::ResetLoop() {
+  run_loop_.reset(new base::RunLoop);
+}
+
+bool GCMClientImplTest::CreateUniqueTempDir() {
+  return temp_directory_.CreateUniqueTempDir();
+}
+
 void GCMClientImplTest::BuildGCMClient() {
   gcm_client_.reset(new GCMClientImpl(
       make_scoped_ptr<GCMInternalsBuilder>(new FakeGCMInternalsBuilder())));
 }
 
-void GCMClientImplTest::CompleteCheckin(uint64 android_id,
-                                        uint64 security_token) {
+void GCMClientImplTest::CompleteCheckin(
+    uint64 android_id,
+    uint64 security_token,
+    const std::string& digest,
+    const std::map<std::string, std::string>& settings) {
   checkin_proto::AndroidCheckinResponse response;
   response.set_stats_ok(true);
   response.set_android_id(android_id);
   response.set_security_token(security_token);
+
+  // For testing GServices settings.
+  response.set_digest(digest);
+  for (std::map<std::string, std::string>::const_iterator it = settings.begin();
+       it != settings.end(); ++it) {
+    checkin_proto::GservicesSetting* setting = response.add_setting();
+    setting->set_name(it->first);
+    setting->set_value(it->second);
+  }
 
   std::string response_string;
   response.SerializeToString(&response_string);
@@ -608,6 +647,93 @@ TEST_F(GCMClientImplTest, SendMessage) {
   EXPECT_EQ("key", mcs_client()->last_data_message_stanza().app_data(0).key());
   EXPECT_EQ("value",
             mcs_client()->last_data_message_stanza().app_data(0).value());
+}
+
+class GCMClientImplCheckinTest : public GCMClientImplTest {
+ public:
+  GCMClientImplCheckinTest();
+  virtual ~GCMClientImplCheckinTest();
+
+  virtual void SetUp() OVERRIDE;
+
+  std::map<std::string, std::string> GenerateSettings();
+};
+
+GCMClientImplCheckinTest::GCMClientImplCheckinTest() {}
+
+GCMClientImplCheckinTest::~GCMClientImplCheckinTest() {}
+
+void GCMClientImplCheckinTest::SetUp() {
+  ASSERT_TRUE(CreateUniqueTempDir());
+  ResetLoop();
+  BuildGCMClient();
+  InitializeGCMClient();
+}
+
+std::map<std::string, std::string>
+GCMClientImplCheckinTest::GenerateSettings() {
+  std::map<std::string, std::string> settings;
+  settings[kSettingsCheckinIntervalKey] =
+      base::Int64ToString(kSettingsCheckinInterval);
+  return settings;
+}
+
+TEST_F(GCMClientImplCheckinTest, GServicesSettingsAfterInitialCheckin) {
+  CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+      kSettingsDefaultDigest, GenerateSettings());
+  EXPECT_EQ(base::Int64ToString(kSettingsCheckinInterval),
+            services_settings()[kSettingsCheckinIntervalKey]);
+}
+
+// This test only checks that periodic checkin happens.
+TEST_F(GCMClientImplCheckinTest, PeriodicCheckin) {
+  std::map<std::string, std::string> settings = GenerateSettings();
+  CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+      kSettingsDefaultDigest, settings);
+  PumpLoopUntilIdle();
+
+  CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+      kSettingsDefaultDigest, settings);
+  }
+
+// This test checks that checkin reponse with the same digest will not update
+// G-services settings.
+TEST_F(GCMClientImplCheckinTest, GServicesSettingsSameDigest) {
+  std::map<std::string, std::string> settings = GenerateSettings();
+  settings["checkin_url"] = "http://checkin.google.com";
+  CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+      kSettingsDefaultDigest, settings);
+  EXPECT_EQ(settings, services_settings());
+  EXPECT_EQ(kSettingsDefaultDigest, services_digest());
+  PumpLoopUntilIdle();
+
+  // Response will carry same digest and no settings.
+  CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+      kSettingsDefaultDigest, std::map<std::string, std::string>());
+  EXPECT_EQ(settings, services_settings());
+  EXPECT_EQ(kSettingsDefaultDigest, services_digest());
+}
+
+// Test that checkin response with a different digest will also update the
+// G-services settings.
+TEST_F(GCMClientImplCheckinTest, GServicesSettingsDifferentDigest) {
+  std::map<std::string, std::string> settings = GenerateSettings();
+  settings["checkin_url"] = "http://checkin.google.com";
+  CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+      kSettingsDefaultDigest, settings);
+  EXPECT_EQ(settings, services_settings());
+  EXPECT_EQ(kSettingsDefaultDigest, services_digest());
+  PumpLoopUntilIdle();
+
+  settings.clear();
+  settings["some_settings"] = "on second checkin";
+  settings[kSettingsCheckinIntervalKey] = "2100";
+  settings["checkin_url"] = "http://checkin.google.com";
+  std::string new_digest = "some_other_digest";
+
+  CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken, new_digest, settings);
+  EXPECT_EQ(settings, services_settings());
+  EXPECT_EQ(new_digest, services_digest());
 }
 
 }  // namespace gcm

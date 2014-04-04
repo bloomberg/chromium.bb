@@ -111,6 +111,7 @@ TEST_F(GCMStoreImplTest, LoadNew) {
   EXPECT_EQ(0U, load_result->device_security_token);
   EXPECT_TRUE(load_result->incoming_messages.empty());
   EXPECT_TRUE(load_result->outgoing_messages.empty());
+  EXPECT_TRUE(load_result->gservices_settings.empty());
   EXPECT_EQ(base::Time::FromInternalValue(0LL), load_result->last_checkin_time);
 }
 
@@ -154,8 +155,55 @@ TEST_F(GCMStoreImplTest, LastCheckinTime) {
   gcm_store->Load(base::Bind(
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
-
   ASSERT_EQ(last_checkin_time, load_result->last_checkin_time);
+}
+
+TEST_F(GCMStoreImplTest, GServicesSettings_ProtocolV2) {
+  scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
+  scoped_ptr<GCMStore::LoadResult> load_result;
+  gcm_store->Load(base::Bind(
+      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
+  PumpLoop();
+
+  std::map<std::string, std::string> settings;
+  settings["checkin_interval"] = "12345";
+  settings["mcs_port"] = "438";
+  settings["checkin_url"] = "http://checkin.google.com";
+  std::string digest = "digest1";
+
+  gcm_store->SetGServicesSettings(
+      settings,
+      digest,
+      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  PumpLoop();
+
+  gcm_store = BuildGCMStore().Pass();
+  gcm_store->Load(base::Bind(
+      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
+  PumpLoop();
+
+  ASSERT_EQ(settings, load_result->gservices_settings);
+  ASSERT_EQ(digest, load_result->gservices_digest);
+
+  // Remove some, and add some.
+  settings.clear();
+  settings["checkin_interval"] = "54321";
+  settings["registration_url"] = "http://registration.google.com";
+  digest = "digest2";
+
+  gcm_store->SetGServicesSettings(
+      settings,
+      digest,
+      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  PumpLoop();
+
+  gcm_store = BuildGCMStore().Pass();
+  gcm_store->Load(base::Bind(
+      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
+  PumpLoop();
+
+  ASSERT_EQ(settings, load_result->gservices_settings);
+  ASSERT_EQ(digest, load_result->gservices_digest);
 }
 
 TEST_F(GCMStoreImplTest, Registrations) {

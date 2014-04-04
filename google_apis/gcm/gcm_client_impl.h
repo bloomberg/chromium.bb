@@ -19,7 +19,7 @@
 #include "google_apis/gcm/engine/registration_request.h"
 #include "google_apis/gcm/engine/unregistration_request.h"
 #include "google_apis/gcm/gcm_client.h"
-#include "google_apis/gcm/protocol/android_checkin.pb.h"
+#include "google_apis/gcm/protocol/checkin.pb.h"
 #include "net/base/net_log.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -39,6 +39,10 @@ namespace gcm {
 class CheckinRequest;
 class ConnectionFactory;
 class GCMClientImplTest;
+
+// Map with GServices settings.
+// TODO(fgorski): Extract services handling to a separate struct/class.
+typedef std::map<std::string, std::string> GServicesSettingsMap;
 
 // Helper class for building GCM internals. Allows tests to inject fake versions
 // as necessary.
@@ -167,13 +171,12 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
 
   // Starts a first time device checkin.
   void StartCheckin();
-  // Completes the device checkin request.
-  // |android_id| and |security_token| are expected to be non-zero or an error
-  // is triggered. Function also cleans up the pending checkin.
-  void OnCheckinCompleted(uint64 android_id,
-                          uint64 security_token);
-  // Schedules next device checkin, based on |last_checkin_time| and default
-  // checkin interval.
+  // Completes the device checkin request by parsing the |checkin_response|.
+  // Function also cleans up the pending checkin.
+  void OnCheckinCompleted(
+      const checkin_proto::AndroidCheckinResponse& checkin_response);
+  // Schedules next device checkin, based on |last_checkin_time| and
+  // checkin_interval specified in GServices settings.
   void SchedulePeriodicCheckin(const base::Time& last_checkin_time);
   // Callback for setting last checkin time in the |gcm_store_|.
   void SetLastCheckinTimeCallback(bool success);
@@ -212,6 +215,13 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
       const mcs_proto::DataMessageStanza& data_message_stanza,
       MessageData& message_data);
 
+  // Updates the G-services settings based on the |checkin_response|. It assumes
+  // base::Time::Now() is the checkin time.
+  void UpdateGServicesSettings(
+      const checkin_proto::AndroidCheckinResponse& checkin_response);
+  // Completes the G-services settings update request.
+  void UpdateGServicesSettingsCallback(bool success);
+
   // Builder for the GCM internals (mcs client, etc.).
   scoped_ptr<GCMInternalsBuilder> internals_builder_;
 
@@ -239,6 +249,12 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   net::BoundNetLog net_log_;
   scoped_ptr<ConnectionFactory> connection_factory_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+
+  // Map with GServices settings, such us checkin_interval, checkin_url, etc.
+  GServicesSettingsMap gservices_settings_;
+
+  // Digest of the |gservices_settings|.
+  std::string gservices_digest_;
 
   // Controls receiving and sending of packets and reliable message queueing.
   scoped_ptr<MCSClient> mcs_client_;
