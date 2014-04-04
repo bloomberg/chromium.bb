@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "sandbox/linux/sandbox_export.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
@@ -41,7 +42,7 @@ class SandboxBPFPolicy;
 class SandboxUnittestHelper;
 struct Instruction;
 
-class SandboxBPF {
+class SANDBOX_EXPORT SandboxBPF {
  public:
   enum SandboxStatus {
     STATUS_UNKNOWN,      // Status prior to calling supportsSeccompSandbox()

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "sandbox/linux/sandbox_export.h"
 
 namespace sandbox {
 
@@ -25,7 +26,7 @@ class ErrorCode;
 //   Preferably, that means that no other threads should be running at that
 //   time. For the purposes of our sandbox, this assertion should always be
 //   true. Threads are incompatible with the seccomp sandbox anyway.
-class Trap {
+class SANDBOX_EXPORT Trap {
  public:
   // TrapFnc is a pointer to a function that handles Seccomp traps in
   // user-space. The seccomp policy can request that a trap handler gets

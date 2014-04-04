@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/basictypes.h"
+#include "sandbox/linux/sandbox_export.h"
 
 namespace sandbox {
 
@@ -31,7 +32,7 @@ namespace sandbox {
 //   }
 //
 // TODO(markus): Make this a classic C++ iterator.
-class SyscallIterator {
+class SANDBOX_EXPORT SyscallIterator {
  public:
   explicit SyscallIterator(bool invalid_only)
       : invalid_only_(invalid_only), done_(false), num_(0) {}

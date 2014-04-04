@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "sandbox/linux/sandbox_export.h"
 #include "sandbox/linux/seccomp-bpf/basicblock.h"
 #include "sandbox/linux/seccomp-bpf/instruction.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
@@ -52,7 +53,7 @@ typedef std::map<const BasicBlock*, int> IncomingBranches;
 //     static_cast<unsigned short>(program->size()), &program[0] };
 //   prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog);
 //
-class CodeGen {
+class SANDBOX_EXPORT CodeGen {
  public:
   CodeGen();
   ~CodeGen();

@@ -5,6 +5,7 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_ERRORCODE_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_ERRORCODE_H__
 
+#include "sandbox/linux/sandbox_export.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
 
@@ -20,7 +21,7 @@ struct arch_seccomp_data;
 // All of the commonly used values are stored in the "err_" field. So, code
 // that is using the ErrorCode class typically operates on a single 32bit
 // field.
-class ErrorCode {
+class SANDBOX_EXPORT ErrorCode {
  public:
   enum {
     // Allow this system call. The value of ERR_ALLOWED is pretty much

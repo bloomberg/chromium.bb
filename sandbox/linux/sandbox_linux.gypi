@@ -82,7 +82,7 @@
     },
     {
       'target_name': 'seccomp_bpf',
-      'type': 'static_library',
+      'type': '<(component)',
       'sources': [
         'seccomp-bpf/basicblock.cc',
         'seccomp-bpf/basicblock.h',
@@ -109,6 +109,9 @@
       'dependencies': [
         '../base/base.gyp:base',
         'sandbox_services_headers',
+      ],
+      'defines': [
+        'SANDBOX_IMPLEMENTATION',
       ],
       'include_dirs': [
         '../..',

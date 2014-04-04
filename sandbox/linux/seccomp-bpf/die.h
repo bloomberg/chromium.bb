@@ -6,6 +6,7 @@
 #define SANDBOX_LINUX_SECCOMP_BPF_DIE_H__
 
 #include "base/basictypes.h"
+#include "sandbox/linux/sandbox_export.h"
 
 namespace sandbox {
 
@@ -20,7 +21,7 @@ namespace sandbox {
 // Adds an informational message to the log file or stderr as appropriate.
 #define SANDBOX_INFO(m) sandbox::Die::SandboxInfo(m, __FILE__, __LINE__)
 
-class Die {
+class SANDBOX_EXPORT Die {
  public:
   // Terminate the program, even if the current sandbox policy prevents some
   // of the more commonly used functions used for exiting.
