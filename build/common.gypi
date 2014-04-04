@@ -864,7 +864,7 @@
           'enable_printing%': 0,
         }],
 
-        ['OS=="win" or OS=="linux" or OS=="mac" or (OS=="android" and android_webview_build==0)', {
+        ['OS=="win" or OS=="linux" or OS=="mac" or OS=="android"', {
           'use_mojo%': 1,
         }],
 
