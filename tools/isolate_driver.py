@@ -118,7 +118,8 @@ def main():
     print >> sys.stderr, 'Internal failure'
     return 1
 
-  if is_component:
+  # http://crbug.com/360223
+  if is_component and False:
     create_wrapper(args, isolate, isolated)
 
   swarming_client = os.path.join(SRC_DIR, 'tools', 'swarming_client')
