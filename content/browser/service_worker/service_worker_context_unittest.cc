@@ -12,8 +12,6 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_storage.h"
-#include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,24 +43,6 @@ ServiceWorkerContextCore::UnregistrationCallback MakeUnregisteredCallback(
   return base::Bind(&CallCompletedCallback, called);
 }
 
-void ExpectRegisteredWorkers(
-    bool expect_pending,
-    bool expect_active,
-    ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
-  ASSERT_EQ(SERVICE_WORKER_OK, status);
-
-  if (expect_pending)
-    EXPECT_TRUE(registration->pending_version());
-  else
-    EXPECT_FALSE(registration->pending_version());
-
-  if (expect_active)
-    EXPECT_TRUE(registration->active_version());
-  else
-    EXPECT_FALSE(registration->active_version());
-}
-
 }  // namespace
 
 class ServiceWorkerContextTest : public testing::Test {
@@ -89,6 +69,12 @@ class ServiceWorkerContextTest : public testing::Test {
   const int render_process_id_;
 };
 
+void RegistrationCallback(
+    scoped_refptr<ServiceWorkerRegistration>* registration,
+    const scoped_refptr<ServiceWorkerRegistration>& result) {
+  *registration = result;
+}
+
 // Make sure basic registration is working.
 TEST_F(ServiceWorkerContextTest, Register) {
   int64 registration_id = -1L;
@@ -103,102 +89,8 @@ TEST_F(ServiceWorkerContextTest, Register) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 
-  EXPECT_EQ(2UL, helper_->ipc_sink()->message_count());
-  EXPECT_TRUE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
-      ServiceWorkerMsg_InstallEvent::ID));
+  EXPECT_EQ(1UL, helper_->ipc_sink()->message_count());
   EXPECT_NE(-1L, registration_id);
-
-  context_->storage()->FindRegistrationForId(
-      registration_id,
-      base::Bind(&ExpectRegisteredWorkers,
-                 false /* expect_pending */,
-                 true /* expect_active */));
-  base::RunLoop().RunUntilIdle();
-}
-
-class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
- public:
-  RejectInstallTestHelper(ServiceWorkerContextCore* context,
-                          int mock_render_process_id)
-      : EmbeddedWorkerTestHelper(context, mock_render_process_id) {}
-
-  virtual void OnInstallEvent(int embedded_worker_id,
-                              int request_id,
-                              int active_version_id) OVERRIDE {
-    SimulateSendMessageToBrowser(
-        embedded_worker_id,
-        request_id,
-        ServiceWorkerHostMsg_InstallEventFinished(
-            blink::WebServiceWorkerEventResultRejected));
-  }
-};
-
-// Test registration when the service worker rejects the install event. The
-// registration callback should indicate success, but there should be no pending
-// or active worker in the registration.
-TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
-  helper_.reset(
-      new RejectInstallTestHelper(context_.get(), render_process_id_));
-  int64 registration_id = -1L;
-  bool called = false;
-  context_->RegisterServiceWorker(
-      GURL("http://www.example.com/*"),
-      GURL("http://www.example.com/service_worker.js"),
-      render_process_id_,
-      MakeRegisteredCallback(&called, &registration_id));
-
-  ASSERT_FALSE(called);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(called);
-
-  EXPECT_EQ(2UL, helper_->ipc_sink()->message_count());
-  EXPECT_TRUE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
-      ServiceWorkerMsg_InstallEvent::ID));
-  EXPECT_NE(-1L, registration_id);
-
-  context_->storage()->FindRegistrationForId(
-      registration_id,
-      base::Bind(&ExpectRegisteredWorkers,
-                 false /* expect_pending */,
-                 false /* expect_active */));
-  base::RunLoop().RunUntilIdle();
-}
-
-// Test registration when there is an existing registration with no pending or
-// active worker.
-TEST_F(ServiceWorkerContextTest, Register_DuplicateScriptNoActiveWorker) {
-  helper_.reset(
-      new RejectInstallTestHelper(context_.get(), render_process_id_));
-  int64 old_registration_id = -1L;
-  bool called = false;
-  context_->RegisterServiceWorker(
-      GURL("http://www.example.com/*"),
-      GURL("http://www.example.com/service_worker.js"),
-      render_process_id_,
-      MakeRegisteredCallback(&called, &old_registration_id));
-
-  ASSERT_FALSE(called);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(called);
-
-  EXPECT_EQ(2UL, helper_->ipc_sink()->message_count());
-
-  int64 new_registration_id = -1L;
-  called = false;
-  context_->RegisterServiceWorker(
-      GURL("http://www.example.com/*"),
-      GURL("http://www.example.com/service_worker.js"),
-      render_process_id_,
-      MakeRegisteredCallback(&called, &new_registration_id));
-
-  ASSERT_FALSE(called);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(called);
-
-  EXPECT_EQ(old_registration_id, new_registration_id);
-  // Our current implementation does the full registration flow on re-register,
-  // so the worker receives another start message and install message.
-  EXPECT_EQ(4UL, helper_->ipc_sink()->message_count());
 }
 
 // Make sure registrations are cleaned up when they are unregistered.

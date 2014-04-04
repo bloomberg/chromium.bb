@@ -77,8 +77,6 @@ bool EmbeddedWorkerTestHelper::OnSendMessageToWorker(
     int request_id,
     const IPC::Message& message) {
   bool handled = true;
-  current_embedded_worker_id_ = embedded_worker_id;
-  current_request_id_ = request_id;
   IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerTestHelper, message)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ActivateEvent, OnActivateEventStub)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEventStub)
@@ -175,6 +173,8 @@ void EmbeddedWorkerTestHelper::OnSendMessageToWorkerStub(
     int embedded_worker_id,
     int request_id,
     const IPC::Message& message) {
+  current_embedded_worker_id_ = embedded_worker_id;
+  current_request_id_ = request_id;
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker != NULL);
   EXPECT_EQ(worker->thread_id(), thread_id);

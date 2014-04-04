@@ -28,8 +28,8 @@ ServiceWorkerRegisterJob::~ServiceWorkerRegisterJob() {}
 
 void ServiceWorkerRegisterJob::AddCallback(const RegistrationCallback& callback,
                                            int process_id) {
-  // If we've created a pending version, associate source_provider it with that,
-  // otherwise queue it up.
+  // If we've created a pending version, associate source_provider it with
+  // that, otherwise queue it up.
   callbacks_.push_back(callback);
   DCHECK_NE(-1, process_id);
   if (pending_version_) {
@@ -60,54 +60,37 @@ RegistrationJobType ServiceWorkerRegisterJob::GetType() {
   return REGISTER;
 }
 
-// This function corresponds to the steps in Register following
-// "Let serviceWorkerRegistration be _GetRegistration(scope)"
-// |registration| corresponds to serviceWorkerRegistration.
-// Throughout this file, comments in quotes are excerpts from the spec.
 void ServiceWorkerRegisterJob::HandleExistingRegistrationAndContinue(
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
-  // On unexpected error, abort this registration job.
-  if (status != SERVICE_WORKER_ERROR_NOT_FOUND && status != SERVICE_WORKER_OK) {
-    Complete(status);
-    return;
-  }
-
-  // "If serviceWorkerRegistration is not null and script is equal to
-  // serviceWorkerRegistration.scriptUrl..." resolve with the existing
-  // registration and abort.
-  if (registration.get() && registration->script_url() == script_url_) {
-    registration_ = registration;
-    // If there's no active version, go ahead to Update (this isn't in the spec
-    // but seems reasonable, and without SoftUpdate implemented we can never
-    // Update otherwise).
-    if (!registration_->active_version()) {
-      UpdateAndContinue(status);
-      return;
-    }
-    Complete(SERVICE_WORKER_OK);
-    return;
-  }
-
-  // "If serviceWorkerRegistration is null..." create a new registration.
-  if (!registration.get()) {
+  if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
+    // A previous registration does not exist.
     RegisterAndContinue(SERVICE_WORKER_OK);
     return;
   }
 
-  // On script URL mismatch, "set serviceWorkerRegistration.scriptUrl to
-  // script." We accomplish this by deleting the existing registration and
-  // registering a new one.
-  // TODO(falken): Match the spec. We now throw away the active_version_ and
-  // pending_version_ of the existing registration, which isn't in the spec.
-  registration->Shutdown();
-  context_->storage()->DeleteRegistration(
-      pattern_,
-      base::Bind(&ServiceWorkerRegisterJob::RegisterAndContinue,
-                 weak_factory_.GetWeakPtr()));
+  if (status != SERVICE_WORKER_OK) {
+    // Abort this registration job.
+    Complete(status);
+    return;
+  }
+
+  if (registration->script_url() != script_url_) {
+    // Script URL mismatch: delete the existing registration and register a new
+    // one.
+    registration->Shutdown();
+    context_->storage()->DeleteRegistration(
+        pattern_,
+        base::Bind(&ServiceWorkerRegisterJob::RegisterAndContinue,
+                   weak_factory_.GetWeakPtr()));
+    return;
+  }
+
+  // Reuse the existing registration.
+  registration_ = registration;
+  StartWorkerAndContinue(SERVICE_WORKER_OK);
 }
 
-// Registers a new ServiceWorkerRegistration.
 void ServiceWorkerRegisterJob::RegisterAndContinue(
     ServiceWorkerStatusCode status) {
   DCHECK(!registration_);
@@ -122,30 +105,21 @@ void ServiceWorkerRegisterJob::RegisterAndContinue(
       context_);
   context_->storage()->StoreRegistration(
       registration_.get(),
-      base::Bind(&ServiceWorkerRegisterJob::UpdateAndContinue,
+      base::Bind(&ServiceWorkerRegisterJob::StartWorkerAndContinue,
                  weak_factory_.GetWeakPtr()));
 }
 
-// This function corresponds to the spec's _Update algorithm.
-void ServiceWorkerRegisterJob::UpdateAndContinue(
+void ServiceWorkerRegisterJob::StartWorkerAndContinue(
     ServiceWorkerStatusCode status) {
+  // TODO(falken): Handle the case where status is an error code.
   DCHECK(registration_);
-  if (status != SERVICE_WORKER_OK) {
-    // Abort this registration job.
-    Complete(status);
+  if (registration_->active_version()) {
+    // We have an active version, so we can complete immediately, even
+    // if the service worker isn't running.
+    Complete(SERVICE_WORKER_OK);
     return;
   }
 
-  // TODO: "If serviceWorkerRegistration.pendingWorker is not null..." then
-  // terminate the pending worker. It doesn't make sense to implement yet since
-  // we always activate the worker if install completed, so there can be no
-  // pending worker at this point.
-  DCHECK(!registration_->pending_version());
-
-  // TODO: Script fetching and comparing the old and new script belongs here.
-
-  // "Let serviceWorker be a newly-created ServiceWorker object..." and start
-  // the worker.
   pending_version_ = new ServiceWorkerVersion(
       registration_, context_->storage()->NewVersionId(), context_);
   for (std::vector<int>::const_iterator it = pending_process_ids_.begin();
@@ -153,93 +127,26 @@ void ServiceWorkerRegisterJob::UpdateAndContinue(
        ++it)
     pending_version_->AddProcessToWorker(*it);
 
-  pending_version_->StartWorker(
-      base::Bind(&ServiceWorkerRegisterJob::OnStartWorkerFinished,
-                 weak_factory_.GetWeakPtr()));
-}
+  // The callback to watch "installation" actually fires as soon as
+  // the worker is up and running, just before the install event is
+  // dispatched. The job will continue to run even though the main
+  // callback has executed.
+  pending_version_->StartWorker(base::Bind(&ServiceWorkerRegisterJob::Complete,
+                                           weak_factory_.GetWeakPtr()));
 
-void ServiceWorkerRegisterJob::OnStartWorkerFinished(
-    ServiceWorkerStatusCode status) {
-  // "If serviceWorker fails to start up..." then reject the promise with an
-  // error and abort.
-  if (status != SERVICE_WORKER_OK) {
-    Complete(status);
-    return;
-  }
-
-  // "Resolve promise with serviceWorker."
-  // Although the spec doesn't set pendingWorker until after resolving the
-  // promise, our system's resolving works by passing ServiceWorkerRegistration
-  // to the callbacks, so pendingWorker must be set first.
-  DCHECK(!registration_->pending_version());
-  registration_->set_pending_version(pending_version_);
-  RunCallbacks(status);
-
-  InstallAndContinue();
-}
-
-// This function corresponds to the spec's _Install algorithm.
-void ServiceWorkerRegisterJob::InstallAndContinue() {
-  // "Set serviceWorkerRegistration.pendingWorker._state to installing."
-  // "Fire install event on the associated ServiceWorkerGlobalScope object."
-  pending_version_->DispatchInstallEvent(
-      -1,
-      base::Bind(&ServiceWorkerRegisterJob::OnInstallFinished,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void ServiceWorkerRegisterJob::OnInstallFinished(
-    ServiceWorkerStatusCode status) {
-  // "If any handler called waitUntil()..." and the resulting promise
-  // is rejected, abort.
-  if (status != SERVICE_WORKER_OK) {
-    registration_->set_pending_version(NULL);
-    Complete(status);
-    return;
-  }
-
-  // TODO: Per spec, only activate if no document is using the registration.
-  ActivateAndContinue();
-}
-
-// This function corresponds to the spec's _Activate algorithm.
-void ServiceWorkerRegisterJob::ActivateAndContinue() {
-  // "Set serviceWorkerRegistration.pendingWorker to null."
-  registration_->set_pending_version(NULL);
-
-  // TODO: Dispatch the activate event.
-  // TODO(michaeln): Persist the newly ACTIVE version.
+  // TODO(falken): Don't set the active version until just before
+  // the activate event is dispatched.
   pending_version_->SetStatus(ServiceWorkerVersion::ACTIVE);
-  DCHECK(!registration_->active_version());
   registration_->set_active_version(pending_version_);
-  pending_version_ = NULL;
-  Complete(SERVICE_WORKER_OK);
 }
 
 void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
-  RunCallbacks(status);
-
-  // If |pending_version_| exists, it was not activated, so we are the sole
-  // owner of it, so it will be destroyed when this job ends, so Shutdown here.
-  // We should be able to remove this code later, when something else holds a
-  // reference to |pending_version_|.
-  // TODO(kinuko): Fix these ownership and shutdown semantics.
-  if (pending_version_) {
-    DCHECK(!registration_->pending_version());
-    DCHECK(!registration_->active_version());
-    pending_version_->Shutdown();
-  }
-
-  context_->job_coordinator()->FinishJob(pattern_, this);
-}
-
-void ServiceWorkerRegisterJob::RunCallbacks(ServiceWorkerStatusCode status) {
   for (std::vector<RegistrationCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end();
        ++it) {
     it->Run(status, status == SERVICE_WORKER_OK ? registration_ : NULL);
   }
-  callbacks_.clear();
+  context_->job_coordinator()->FinishJob(pattern_, this);
 }
 
 }  // namespace content

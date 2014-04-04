@@ -58,12 +58,9 @@ void RunSoon(const base::Closure& callback) {
 }
 
 template <typename CallbackArray, typename Arg>
-void RunCallbacks(ServiceWorkerVersion* version,
-                  CallbackArray* callbacks_ptr,
-                  const Arg& arg) {
+void RunCallbacks(CallbackArray* callbacks_ptr, const Arg& arg) {
   CallbackArray callbacks;
   callbacks.swap(*callbacks_ptr);
-  scoped_refptr<ServiceWorkerVersion> protect(version);
   for (typename CallbackArray::const_iterator i = callbacks.begin();
        i != callbacks.end(); ++i)
     (*i).Run(arg);
@@ -370,19 +367,16 @@ void ServiceWorkerVersion::RemoveProcessToWorker(int process_id) {
 void ServiceWorkerVersion::OnStarted() {
   DCHECK_EQ(RUNNING, running_status());
   // Fire all start callbacks.
-  RunCallbacks(this, &start_callbacks_, SERVICE_WORKER_OK);
+  RunCallbacks(&start_callbacks_, SERVICE_WORKER_OK);
 }
 
 void ServiceWorkerVersion::OnStopped() {
   DCHECK_EQ(STOPPED, running_status());
-  scoped_refptr<ServiceWorkerVersion> protect(this);
-
   // Fire all stop callbacks.
-  RunCallbacks(this, &stop_callbacks_, SERVICE_WORKER_OK);
+  RunCallbacks(&stop_callbacks_, SERVICE_WORKER_OK);
 
   // Let all start callbacks fail.
-  RunCallbacks(
-      this, &start_callbacks_, SERVICE_WORKER_ERROR_START_WORKER_FAILED);
+  RunCallbacks(&start_callbacks_, SERVICE_WORKER_ERROR_START_WORKER_FAILED);
 
   // Let all message callbacks fail (this will also fire and clear all
   // callbacks for events).
@@ -399,8 +393,6 @@ void ServiceWorkerVersion::OnMessageReceived(
     int request_id, const IPC::Message& message) {
   MessageCallback* callback = message_callbacks_.Lookup(request_id);
   if (callback) {
-    // Protect since a callback could destroy |this|.
-    scoped_refptr<ServiceWorkerVersion> protect(this);
     callback->Run(SERVICE_WORKER_OK, message);
     message_callbacks_.Remove(request_id);
     return;
