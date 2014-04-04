@@ -1262,9 +1262,16 @@ bool CompositedLayerMapping::updateForegroundLayer(bool needsForegroundLayer)
             m_foregroundLayer = createGraphicsLayer(CompositingReasonLayerForForeground);
             m_foregroundLayer->setDrawsContent(true);
             m_foregroundLayer->setPaintingPhase(GraphicsLayerPaintForeground);
+            // If the foreground layer pops content out of the graphics
+            // layer, then the graphics layer needs to be repainted.
+            // FIXME: This is conservative, as m_foregroundLayer could
+            // be smaller than m_graphicsLayer due to clipping.
+            m_graphicsLayer->setNeedsDisplay();
             layerChanged = true;
         }
     } else if (m_foregroundLayer) {
+        FloatRect repaintRect(FloatPoint(), m_foregroundLayer->size());
+        m_graphicsLayer->setNeedsDisplayInRect(repaintRect);
         m_foregroundLayer->removeFromParent();
         m_foregroundLayer = nullptr;
         layerChanged = true;
