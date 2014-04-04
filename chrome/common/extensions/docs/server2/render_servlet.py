@@ -130,8 +130,9 @@ class RenderServlet(Servlet):
       # Content was dynamic. The new etag is a hash of the content.
       etag = None
     elif content_and_type.version is not None:
-      # Content was static. The new etag is the version of the content.
-      etag = '"%s"' % content_and_type.version
+      # Content was static. The new etag is the version of the content. Hash it
+      # to make sure it's valid.
+      etag = '"%s"' % hashlib.md5(str(content_and_type.version)).hexdigest()
     else:
       # Sometimes non-dynamic content does not have a version, for example
       # .zip files. The new etag is a hash of the content.
