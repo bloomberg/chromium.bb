@@ -55,9 +55,10 @@ ManagePasswordItemView::ManagePasswordItemView(
 
   // Add the password field: fills the second non-padding column of the layout.
   label_2_ =
-      new views::Link(GetPasswordDisplayString(password_form_.password_value));
+      new views::Link(password_form_.password_value);
   label_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_2_->set_listener(this);
+  label_2_->SetObscured(true);
   label_2_->SetFocusable(false);
   label_2_->SetEnabled(false);
   label_2_->SetUnderline(false);
@@ -115,15 +116,6 @@ void ManagePasswordItemView::BuildColumnSet(views::GridLayout* layout,
   column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
 }
 
-// static
-base::string16 ManagePasswordItemView::GetPasswordDisplayString(
-    const base::string16& password) {
-  const wchar_t kPasswordBullet = 0x2022;
-  const size_t kMaxPasswordChar = 22;
-  return base::string16(std::min(password.length(), kMaxPasswordChar),
-                  kPasswordBullet);
-}
-
 ManagePasswordItemView::~ManagePasswordItemView() {
   if (delete_password_)
     manage_passwords_bubble_model_->DeleteFromBestMatches(password_form_);
@@ -143,6 +135,7 @@ void ManagePasswordItemView::Refresh() {
     // Change the password's text to "Undo", and enable the link.
     label_2_->SetText(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO));
     label_2_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+    label_2_->SetObscured(false);
     label_2_->SetEnabled(true);
     label_2_->SetFocusable(true);
 
@@ -158,12 +151,13 @@ void ManagePasswordItemView::Refresh() {
     // Change the username string back to the username.
     label_1_->SetText(password_form_.username_value);
 
-    // Set the password string to the appropriate number of bullets, and
+    // Change the second column back to the password, obscure and disable it.
     // disable the link.
-    label_2_->SetText(GetPasswordDisplayString(password_form_.password_value));
-    label_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label_2_->SetObscured(true);
     label_2_->SetEnabled(false);
     label_2_->SetFocusable(false);
+    label_2_->SetText(password_form_.password_value);
+    label_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
     if (delete_button_)
       delete_button_->SetVisible(true);

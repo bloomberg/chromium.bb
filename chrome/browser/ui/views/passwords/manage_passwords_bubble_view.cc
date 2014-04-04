@@ -51,8 +51,7 @@ int GetFieldWidth(const autofill::PasswordForm& password_form,
   base::string16 display_string(
       type == ManagePasswordsBubbleView::USERNAME_FIELD
           ? password_form.username_value
-          : ManagePasswordItemView::GetPasswordDisplayString(
-                password_form.password_value));
+          : password_form.password_value);
   return std::min(
       gfx::FontList().GetExpectedTextWidth(kMaxDisplayableStringWidth),
       gfx::GetStringWidth(display_string, font_list));

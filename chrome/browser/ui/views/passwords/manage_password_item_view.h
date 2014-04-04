@@ -28,9 +28,6 @@ class ManagePasswordItemView : public views::View,
       int field_2_width,
       Position position);
 
-  static base::string16 GetPasswordDisplayString(
-      const base::string16& password);
-
  private:
   enum ColumnSets { COLUMN_SET_SAVE = 0, COLUMN_SET_MANAGE = 1, };
 
