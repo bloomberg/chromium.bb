@@ -28,9 +28,9 @@ LOGGER = logging.getLogger()
 TRY_LIMIT = 10
 SLEEP = 0.5
 
-# Controls the transport protocol used to communicate with gerrit.
-# This is parameterized primarily to enable cros_test_lib.GerritTestCase.
-GERRIT_PROTOCOL = 'https'
+# Controls the transport protocol used to communicate with Gerrit servers using
+# git. This is parameterized primarily to enable cros_test_lib.GerritTestCase.
+GIT_PROTOCOL = 'https'
 
 
 class GOBError(Exception):
@@ -55,6 +55,23 @@ def _QueryString(param_dict, first_param=None):
   return '+'.join(q)
 
 
+def GetCookies(_host, _path):
+  """Returns cookies that should be set on a request.
+
+  Used by CreateHttpConn for any requests that do not already specify a Cookie
+  header. All requests made by this library are HTTPS.
+
+  Args:
+    _host: The hostname of the Gerrit service.
+    _path: The path on the Gerrit service, already including /a/ if applicable.
+
+  Returns:
+    A dict of cookie name to value, with no URL encoding applied.
+  """
+  # Default implementation does not use cookies but may be stubbed out in tests.
+  return {}
+
+
 def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   """Opens an https connection to a gerrit service, and sends a request."""
   headers = headers or {}
@@ -65,13 +82,19 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
         base64.b64encode('%s:%s' % (auth[0], auth[2]))))
   else:
     LOGGER.debug('No authorization found')
+
+  if 'Cookie' not in headers:
+    cookies = GetCookies(host, path)
+    headers['Cookie'] = '; '.join('%s=%s' % (urllib.quote(n), urllib.quote(v))
+                                  for n, v in cookies.iteritems())
+
   if body:
     body = json.JSONEncoder().encode(body)
     headers.setdefault('Content-Type', 'application/json')
   if LOGGER.isEnabledFor(logging.DEBUG):
-    LOGGER.debug('%s %s://%s/a/%s' % (reqtype, GERRIT_PROTOCOL, host, path))
+    LOGGER.debug('%s https://%s/a/%s' % (reqtype, host, path))
     for key, val in headers.iteritems():
-      if key == 'Authorization':
+      if key.lower() in ('authorization', 'cookie'):
         val = 'HIDDEN'
       LOGGER.debug('%s: %s' % (key, val))
     if body:
@@ -241,34 +264,38 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
 
 def GetGerritFetchUrl(host):
   """Given a gerrit host name returns URL of a gerrit instance to fetch from."""
-  return '%s://%s/' % (GERRIT_PROTOCOL, host)
+  return 'https://%s/' % host
 
 
 def GetChangePageUrl(host, change_number):
   """Given a gerrit host name and change number, return change page url."""
-  return '%s://%s/#/c/%d/' % (GERRIT_PROTOCOL, host, change_number)
+  return 'https://%s/#/c/%d/' % (host, change_number)
+
+
+def _GetChangePath(change):
+  """Given a change id, return a path prefix for the change."""
+  return 'changes/%s' % str(change).replace('/', '%2F')
 
 
 def GetChangeUrl(host, change):
   """Given a gerrit host name and change id, return an url for the change."""
-  return '%s://%s/a/changes/%s' % (GERRIT_PROTOCOL, host, change)
+  return 'https://%s/a/%s' % (host, _GetChangePath(change))
 
 
 def GetChange(host, change):
   """Query a gerrit server for information about a single change."""
-  path = 'changes/%s' % change
-  return FetchUrlJson(host, path)
+  return FetchUrlJson(host, _GetChangePath(change))
 
 
 def GetChangeReview(host, change, revision='current'):
   """Get the current review information for a change."""
-  path = 'changes/%s/revisions/%s/review' % (change, revision)
+  path = '%s/revisions/%s/review' % (_GetChangePath(change), revision)
   return FetchUrlJson(host, path)
 
 
 def GetChangeCommit(host, change, revision='current'):
   """Get the current review information for a change."""
-  path = 'changes/%s/revisions/%s/commit' % (change, revision)
+  path = '%s/revisions/%s/commit' % (_GetChangePath(change), revision)
   return FetchUrlJson(host, path)
 
 
@@ -281,7 +308,7 @@ def GetChangeCurrentRevision(host, change):
 
 def GetChangeDetail(host, change, o_params=None):
   """Query a gerrit server for extended information about a single change."""
-  path = 'changes/%s/detail' % change
+  path = '%s/detail' % _GetChangePath(change)
   if o_params:
     path = '%s?%s' % (path, '&'.join(['o=%s' % p for p in o_params]))
   return FetchUrlJson(host, path)
@@ -289,27 +316,27 @@ def GetChangeDetail(host, change, o_params=None):
 
 def GetChangeReviewers(host, change):
   """Get information about all reviewers attached to a change."""
-  path = 'changes/%s/reviewers' % change
+  path = '%s/reviewers' % _GetChangePath(change)
   return FetchUrlJson(host, path)
 
 
 def AbandonChange(host, change, msg=''):
   """Abandon a gerrit change."""
-  path = 'changes/%s/abandon' % change
+  path = '%s/abandon' % _GetChangePath(change)
   body = {'message': msg} if msg else None
   return FetchUrlJson(host, path, reqtype='POST', body=body, ignore_404=False)
 
 
 def RestoreChange(host, change, msg=''):
   """Restore a previously abandoned change."""
-  path = 'changes/%s/restore' % change
+  path = '%s/restore' % _GetChangePath(change)
   body = {'message': msg} if msg else None
   return FetchUrlJson(host, path, reqtype='POST', body=body, ignore_404=False)
 
 
 def DeleteDraft(host, change, msg=''):
   """Delete a gerrit draft patch set."""
-  path = 'changes/%s' % change
+  path = _GetChangePath(change)
   body = {'message': msg} if msg else None
   try:
     FetchUrl(host, path, reqtype='DELETE', body=body, ignore_404=False)
@@ -325,14 +352,14 @@ def DeleteDraft(host, change, msg=''):
 
 def SubmitChange(host, change, wait_for_merge=True):
   """Submits a gerrit change via Gerrit."""
-  path = 'changes/%s/submit' % change
+  path = '%s/submit' % _GetChangePath(change)
   body = {'wait_for_merge': wait_for_merge}
   return FetchUrlJson(host, path, reqtype='POST', body=body, ignore_404=False)
 
 
 def GetReviewers(host, change):
   """Get information about all reviewers attached to a change."""
-  path = 'changes/%s/reviewers' % change
+  path = '%s/reviewers' % _GetChangePath(change)
   return FetchUrlJson(host, path)
 
 
@@ -342,7 +369,7 @@ def AddReviewers(host, change, add=None):
     return
   if isinstance(add, basestring):
     add = (add,)
-  path = 'changes/%s/reviewers' % change
+  path = '%s/reviewers' % _GetChangePath(change)
   for r in add:
     body = {'reviewer': r}
     jmsg = FetchUrlJson(host, path, reqtype='POST', body=body, ignore_404=False)
@@ -356,7 +383,7 @@ def RemoveReviewers(host, change, remove=None):
   if isinstance(remove, basestring):
     remove = (remove,)
   for r in remove:
-    path = 'changes/%s/reviewers/%s' % (change, r)
+    path = '%s/reviewers/%s' % (_GetChangePath(change), r)
     try:
       FetchUrl(host, path, reqtype='DELETE', ignore_404=False)
     except GOBError as e:
@@ -374,7 +401,7 @@ def SetReview(host, change, revision='current', msg=None, labels=None,
   """Set labels and/or add a message to a code review."""
   if not msg and not labels:
     return
-  path = 'changes/%s/revisions/%s/review' % (change, revision)
+  path = '%s/revisions/%s/review' % (_GetChangePath(change), revision)
   body = {}
   if msg:
     body['message'] = msg
@@ -406,7 +433,7 @@ def ResetReviewLabels(host, change, label, value='0', revision='current',
   if current:
     revision = jmsg['current_revision']
   value = str(value)
-  path = 'changes/%s/revisions/%s/review' % (change, revision)
+  path = '%s/revisions/%s/review' % (_GetChangePath(change), revision)
   message = message or (
       '%s label set to %s programmatically by chromite.' % (label, value))
   for review in jmsg.get('labels', {}).get(label, {}).get('all', []):

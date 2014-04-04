@@ -7,18 +7,18 @@
 
 from __future__ import print_function
 import collections
+import cookielib
 import cStringIO
-import errno
+import datetime
 import exceptions
 import functools
-import httplib
+import hashlib
 import json
 import logging
 import mox
 import netrc
 import os
 import re
-import signal
 import socket
 import stat
 import sys
@@ -26,9 +26,7 @@ import unittest
 import urllib
 
 from chromite.buildbot import constants
-from chromite.buildbot import repository
 import cros_build_lib
-import git
 import gob_util
 import osutils
 import terminal
@@ -967,190 +965,218 @@ class TempDirTestCase(TestCase):
       self._tempdir_obj = None
 
 
-class GerritTestCase(TempDirTestCase):
-  """Test class for tests that interact with a gerrit server.
+class MockTestCase(TestCase):
+  """Python-mock based test case; compatible with StackedSetup"""
+  def setUp(self):
+    self._patchers = []
 
-  The class setup creates and launches a stand-alone gerrit instance running on
-  localhost, for test methods to interact with.  Class teardown stops and
-  deletes the gerrit instance.
+  def tearDown(self):
+    # We can't just run stopall() by itself, and need to stop our patchers
+    # manually since stopall() doesn't handle repatching.
+    cros_build_lib.SafeRun([p.stop for p in reversed(self._patchers)] +
+                           [mock.patch.stopall])
 
-  Note that there is a single gerrit instance for ALL test methods in a
-  GerritTestCase sub-class.
+  def StartPatcher(self, patcher):
+    """Call start() on the patcher, and stop() in tearDown."""
+    m = patcher.start()
+    self._patchers.append(patcher)
+    return m
+
+  def PatchObject(self, *args, **kwargs):
+    """Create and start a mock.patch.object().
+
+    stop() will be called automatically during tearDown.
+    """
+    return self.StartPatcher(mock.patch.object(*args, **kwargs))
+
+
+# MockTestCase must be before TempDirTestCase in this inheritance order,
+# because MockTestCase.StartPatcher() calls may be for PartialMocks, which
+# create their own temporary directory.  The teardown for those directories
+# occurs during MockTestCase.tearDown(), which needs to be run before
+# TempDirTestCase.tearDown().
+class MockTempDirTestCase(MockTestCase, TempDirTestCase):
+  """Convenience class mixing TempDir and Mock."""
+
+
+class GerritTestCase(MockTempDirTestCase):
+  """Test class for tests that interact with a Gerrit server.
+
+  Configured by default to use a specially-configured test Gerrit server at
+  t3st-chr0m3(-review).googlesource.com. The test server configuration may be
+  altered by setting the following environment variables from the parent
+  process:
+    CROS_TEST_GIT_HOST: host name for git operations; defaults to
+                        t3st-chr0me.googlesource.com.
+    CROS_TEST_GERRIT_HOST: host name for Gerrit operations; defaults to
+                           t3st-chr0me-review.googlesource.com.
+    CROS_TEST_COOKIES_PATH: path to a cookies.txt file to use for git/Gerrit
+                            requests; defaults to none.
+    CROS_TEST_COOKIE_NAMES: comma-separated list of cookie names from
+                            CROS_TEST_COOKIES_PATH to set on requests; defaults
+                            to none. The current implementation only sends
+                            cookies matching the exact host name and the empty
+                            path ("/").
   """
 
   TEST_USERNAME = 'test-username'
   TEST_EMAIL = 'test-username@test.org'
 
-  # To help when debugging test code; setting this to 'False' (which happens if
-  # you provide the '-d' flag at the shell prompt) will leave the test gerrit
-  # instance running on localhost after the script exits.  It is the
-  # responsibility of the user to kill the gerrit process!
-  TEARDOWN = True
-
   GerritInstance = collections.namedtuple('GerritInstance', [
-      'credential_file',
-      'gerrit_dir',
-      'gerrit_exe',
+      'cookie_names',
+      'cookies_path',
       'gerrit_host',
-      'gerrit_pid',
       'gerrit_url',
-      'git_dir',
       'git_host',
       'git_url',
-      'http_port',
       'netrc_file',
-      'ssh_ident',
-      'ssh_port',
+      'project_prefix',
   ])
 
-  @classmethod
-  def _create_gerrit_instance(cls, gerrit_dir):
-    gerrit_init_script = os.path.join(
-        osutils.FindDepotTools(), 'testing_support', 'gerrit-init.sh')
-    http_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    http_sock.bind(('', 0))
-    http_port = str(http_sock.getsockname()[1])
-    ssh_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    ssh_sock.bind(('', 0))
-    ssh_port = str(ssh_sock.getsockname()[1])
+  def _create_gerrit_instance(self, tmp_dir):
+    default_host = 't3st-chr0m3'
+    git_host = os.environ.get('CROS_TEST_GIT_HOST',
+                              '%s.googlesource.com' % default_host)
+    gerrit_host = os.environ.get('CROS_TEST_GERRIT_HOST',
+                                 '%s-review.googlesource.com' % default_host)
+    ip = socket.gethostbyname(socket.gethostname())
+    project_prefix = 'test-%s-%s/' % (
+        datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
+        hashlib.sha1('%s_%s' % (ip, os.getpid())).hexdigest()[:8])
+    cookies_path = os.environ.get('CROS_TEST_COOKIES_PATH')
+    cookie_names_str = os.environ.get('CROS_TEST_COOKIE_NAMES', '')
+    cookie_names = [c for c in cookie_names_str.split(',') if c]
 
-    # NOTE: this is not completely safe.  These port numbers could be
-    # re-assigned by the OS between the calls to socket.close() and gerrit
-    # starting up.  The only safe way to do this would be to pass file
-    # descriptors down to the gerrit process, which is not even remotely
-    # supported.  Alas.
-    http_sock.close()
-    ssh_sock.close()
-    cros_build_lib.RunCommand(
-        ['bash', gerrit_init_script, '--http-port', http_port,
-         '--ssh-port', ssh_port, gerrit_dir], quiet=True)
+    return self.GerritInstance(
+        cookie_names=cookie_names,
+        cookies_path=cookies_path,
+        gerrit_host=gerrit_host,
+        gerrit_url='https://%s/' % gerrit_host,
+        git_host=git_host,
+        git_url='https://%s/' % git_host,
+        # TODO(dborowitz): Ensure this is populated when using role account.
+        netrc_file=os.path.join(tmp_dir, '.netrc'),
+        project_prefix=project_prefix,)
 
-    gerrit_exe = os.path.join(gerrit_dir, 'bin', 'gerrit.sh')
-    cros_build_lib.RunCommand(['bash', '-x', gerrit_exe, 'start'], quiet=True)
-    gerrit_pid = int(osutils.ReadFile(
-        os.path.join(gerrit_dir, 'logs', 'gerrit.pid')).rstrip())
-    return cls.GerritInstance(
-        credential_file=os.path.join(gerrit_dir, 'tmp', '.git-credentials'),
-        gerrit_dir=gerrit_dir,
-        gerrit_exe=gerrit_exe,
-        gerrit_host='localhost:%s' % http_port,
-        gerrit_pid=gerrit_pid,
-        gerrit_url='http://localhost:%s' % http_port,
-        git_dir=os.path.join(gerrit_dir, 'git'),
-        git_host='%s/git' % gerrit_dir,
-        git_url='file://%s/git' % gerrit_dir,
-        http_port=http_port,
-        netrc_file=os.path.join(gerrit_dir, 'tmp', '.netrc'),
-        ssh_ident=os.path.join(gerrit_dir, 'tmp', 'id_rsa'),
-        ssh_port=ssh_port,)
+  def _populate_netrc(self, src):
+    """Sets up a test .netrc file using the given source as a base."""
+    # Heuristic: prefer passwords for @google.com accounts, since test host
+    # permissions tend to refer to those accounts.
+    preferred_account_domains = ['.google.com']
+    needed = [self.gerrit_instance.git_host, self.gerrit_instance.gerrit_host]
+    candidates = collections.defaultdict(list)
+    src_netrc = netrc.netrc(src)
+    for host, v in src_netrc.hosts.iteritems():
+      dot = host.find('.')
+      if dot < 0:
+        continue
+      for n in needed:
+        if n.endswith(host[dot:]):
+          login, _, password = v
+          i = 1
+          for pd in preferred_account_domains:
+            if login.endswith(pd):
+              i = 0
+              break
+          candidates[n].append((i, login, password))
 
-  @classmethod
-  def setUpClass(cls):
+    with open(self.gerrit_instance.netrc_file, 'w') as out:
+      for n in needed:
+        cs = candidates[n]
+        self.assertTrue(len(cs) > 0, 'missing password in ~/.netrc for %s' % n)
+        cs.sort()
+        _, login, password = cs[0]
+        out.write('machine %s login %s password %s\n' % (n, login, password))
+
+  def setUp(self):
     """Sets up the gerrit instances in a class-specific temp dir."""
     # Create gerrit instance.
-    cls.gerritdir_obj = osutils.TempDir(set_global=False)
-    gi = cls.gerrit_instance = cls._create_gerrit_instance(
-        cls.gerritdir_obj.tempdir)
+    gi = self.gerrit_instance = self._create_gerrit_instance(self.tempdir)
+    old_home = os.environ['HOME']
+    os.environ['HOME'] = self.tempdir
+    self._populate_netrc(os.path.join(old_home, '.netrc'))
+
+    if gi.cookies_path:
+      cros_build_lib.RunCommand(
+          ['git', 'config', '--global', 'http.cookiefile', gi.cookies_path],
+          quiet=True)
 
     # Set netrc file for http authentication.
-    cls.netrc_patcher = mock.patch('chromite.lib.gob_util.NETRC',
-                                   netrc.netrc(gi.netrc_file))
-    cls.netrc_patcher.start()
+    self.PatchObject(gob_util, 'NETRC', netrc.netrc(gi.netrc_file))
 
-    # gob_util only knows about https connections, and that's a good thing.
-    # But for testing, it's much simpler to use http connections.
-    cls.httplib_patcher = mock.patch(
-        'httplib.HTTPSConnection', httplib.HTTPConnection)
-    cls.httplib_patcher.start()
-    cls.protocol_patcher = mock.patch(
-        'chromite.lib.gob_util.GERRIT_PROTOCOL', 'http')
-    cls.protocol_patcher.start()
+    # Set cookie file for http authentication
+    if gi.cookies_path:
+      jar = cookielib.MozillaCookieJar(gi.cookies_path)
+      jar.load(ignore_expires=True)
 
-    # Some of the chromite code requires read access to refs/meta/config.
-    # Typically, that access should require http authentication.  However,
-    # because we use plain http to communicate with the test server, libcurl
-    # (and by extension git commands that use it) will not add the
-    # Authorization header to git transactions.  So, we just allow anonymous
-    # read access to refs/meta/config for the test code.
-    clone_path = os.path.join(gi.gerrit_dir, 'tmp', 'All-Projects')
-    cls._CloneProject('All-Projects', clone_path)
-    project_config = os.path.join(clone_path, 'project.config')
-    cros_build_lib.RunCommand(
-        ['git', 'config', '--file', project_config, '--add',
-         'access.refs/meta/config.read', 'group Anonymous Users'], quiet=True)
-    cros_build_lib.RunCommand(
-        ['git', 'add', project_config], cwd=clone_path, quiet=True)
-    cros_build_lib.RunCommand(
-        ['git', 'commit', '-m', 'Anonyous read for refs/meta/config'],
-        cwd=clone_path, quiet=True)
-    cros_build_lib.RunCommand(
-        ['git', 'push', 'origin', 'HEAD:refs/meta/config'], cwd=clone_path,
-        quiet=True)
+      def GetCookies(host, _path):
+        ret = dict(
+            (c.name, urllib.unquote(c.value)) for c in jar
+            if c.domain == host and c.path == '/' and c.name in gi.cookie_names)
+        return ret
+
+      self.PatchObject(gob_util, 'GetCookies', GetCookies)
 
     # Make all chromite code point to the test server.
-    cls.constants_patcher = mock.patch.dict(constants.__dict__, {
-        'EXTERNAL_GOB_HOST': gi.git_host,
-        'EXTERNAL_GERRIT_HOST': gi.gerrit_host,
-        'EXTERNAL_GOB_URL': gi.git_url,
-        'EXTERNAL_GERRIT_URL': gi.gerrit_url,
-        'INTERNAL_GOB_HOST': gi.git_host,
-        'INTERNAL_GERRIT_HOST': gi.gerrit_host,
-        'INTERNAL_GOB_URL': gi.git_url,
-        'INTERNAL_GERRIT_URL': gi.gerrit_url,
-        'MANIFEST_URL': '%s/%s' % (gi.git_url, constants.MANIFEST_PROJECT),
-        'MANIFEST_INT_URL': '%s/%s' % (
-            gi.git_url, constants.MANIFEST_INT_PROJECT),
-        'GIT_REMOTES': {
+    self.PatchObject(constants, 'EXTERNAL_GOB_HOST', gi.git_host)
+    self.PatchObject(constants, 'EXTERNAL_GERRIT_HOST', gi.gerrit_host)
+    self.PatchObject(constants, 'EXTERNAL_GOB_URL', gi.git_url)
+    self.PatchObject(constants, 'EXTERNAL_GERRIT_URL', gi.gerrit_url)
+    self.PatchObject(constants, 'INTERNAL_GOB_HOST', gi.git_host)
+    self.PatchObject(constants, 'INTERNAL_GERRIT_HOST', gi.gerrit_host)
+    self.PatchObject(constants, 'INTERNAL_GOB_URL', gi.git_url)
+    self.PatchObject(constants, 'INTERNAL_GERRIT_URL', gi.gerrit_url)
+    self.PatchObject(constants, 'MANIFEST_URL', '%s/%s' % (
+        gi.git_url, constants.MANIFEST_PROJECT))
+    self.PatchObject(constants, 'MANIFEST_INT_URL', '%s/%s' % (
+        gi.git_url, constants.MANIFEST_INT_PROJECT))
+    self.PatchObject(constants, 'GIT_REMOTES', {
             constants.EXTERNAL_REMOTE: gi.gerrit_url,
             constants.INTERNAL_REMOTE: gi.gerrit_url,
             constants.CHROMIUM_REMOTE: gi.gerrit_url,
             constants.CHROME_REMOTE: gi.gerrit_url,
-        }
-    })
-    cls.constants_patcher.start()
+        })
 
-  @classmethod
-  def createProject(cls, name, description='Test project', owners=None,
+  def createProject(self, suffix, description='Test project', owners=None,
                     submit_type='CHERRY_PICK'):
     """Create a project on the test gerrit server."""
-    if owners is None:
-      owners = ['Administrators']
+    name = self.gerrit_instance.project_prefix + suffix
     body = {
         'description': description,
         'submit_type': submit_type,
-        'owners': owners,
     }
+    if owners is not None:
+      body['owners'] = owners
     path = 'projects/%s' % urllib.quote(name, '')
     conn = gob_util.CreateHttpConn(
-        cls.gerrit_instance.gerrit_host, path, reqtype='PUT', body=body)
+        self.gerrit_instance.gerrit_host, path, reqtype='PUT', body=body)
     response = conn.getresponse()
-    assert response.status == 201
+    self.assertEquals(201, response.status,
+                      'Expected 201, got %s' % response.status)
     s = cStringIO.StringIO(response.read())
-    assert s.readline().rstrip() == ")]}'"
+    self.assertEquals(")]}'", s.readline().rstrip())
     jmsg = json.load(s)
-    assert jmsg['name'] == name
+    self.assertEquals(name, jmsg['name'])
+    return name
 
-  @classmethod
-  def _CloneProject(cls, name, path):
+  def _CloneProject(self, name, path):
     """Clone a project from the test gerrit server."""
     osutils.SafeMakedirs(os.path.dirname(path))
-    url = 'http://%s/%s' % (cls.gerrit_instance.gerrit_host, name)
+    url = '%s://%s/%s' % (
+        gob_util.GIT_PROTOCOL, self.gerrit_instance.git_host, name)
     cros_build_lib.RunCommand(['git', 'clone', url, path], quiet=True)
     # Install commit-msg hook.
     hook_path = os.path.join(path, '.git', 'hooks', 'commit-msg')
-    cros_build_lib.RunCommand(
-        ['curl', '-o', hook_path,
-         'http://%s/tools/hooks/commit-msg' % cls.gerrit_instance.gerrit_host],
-        quiet=True)
+    hook_cmd = ['curl', '-n', '-o', hook_path]
+    if self.gerrit_instance.cookies_path:
+      hook_cmd.extend(['-b', self.gerrit_instance.cookies_path])
+    hook_cmd.append('https://%s/a/tools/hooks/commit-msg'
+                    % self.gerrit_instance.gerrit_host)
+    cros_build_lib.RunCommand(hook_cmd, quiet=True)
     os.chmod(hook_path, stat.S_IRWXU)
     # Set git identity to test account
     cros_build_lib.RunCommand(
-        ['git', 'config', 'user.email', cls.TEST_EMAIL], cwd=path, quiet=True)
-    # Configure non-interactive credentials for git operations.
-    config_path = os.path.join(path, '.git', 'config')
-    cros_build_lib.RunCommand(
-        ['git', 'config', '--file', config_path, 'credential.helper',
-         'store --file=%s' % cls.gerrit_instance.credential_file], quiet=True)
+        ['git', 'config', 'user.email', self.TEST_EMAIL], cwd=path, quiet=True)
     return path
 
   def cloneProject(self, name, path=None):
@@ -1231,8 +1257,7 @@ class GerritTestCase(TempDirTestCase):
     clone_path = os.path.join(self.tempdir, clone_path)
     self._PushBranch(clone_path, branch)
 
-  @classmethod
-  def createAccount(cls, name='Test User', email='test-user@test.org',
+  def createAccount(self, name='Test User', email='test-user@test.org',
                     password=None, groups=None):
     """Create a new user account on gerrit."""
     username = urllib.quote(email.partition('@')[0])
@@ -1249,232 +1274,13 @@ class GerritTestCase(TempDirTestCase):
         groups = [groups]
       body['groups'] = groups
     conn = gob_util.CreateHttpConn(
-        cls.gerrit_instance.gerrit_host, path, reqtype='PUT', body=body)
+        self.gerrit_instance.gerrit_host, path, reqtype='PUT', body=body)
     response = conn.getresponse()
-    assert response.status == 201
+    self.assertEquals(201, response.status)
     s = cStringIO.StringIO(response.read())
-    assert s.readline().rstrip() == ")]}'"
+    self.assertEquals(")]}'", s.readline().rstrip())
     jmsg = json.load(s)
-    assert jmsg['email'] == email
-
-  @staticmethod
-  def _stop_gerrit(gerrit_obj):
-    """Stops the running gerrit instance and deletes it."""
-    try:
-      # This should terminate the gerrit process.
-      cros_build_lib.RunCommand(['bash', gerrit_obj.gerrit_exe, 'stop'],
-                                quiet=True)
-    finally:
-      try:
-        # cls.gerrit_pid should have already terminated.  If it did, then
-        # os.waitpid will raise OSError.
-        os.waitpid(gerrit_obj.gerrit_pid, os.WNOHANG)
-      except OSError as e:
-        if e.errno == errno.ECHILD:
-          # If gerrit shut down cleanly, os.waitpid will land here.
-          # pylint: disable=W0150
-          return
-
-      # If we get here, the gerrit process is still alive.  Send the process
-      # SIGKILL for good measure.
-      try:
-        os.kill(gerrit_obj.gerrit_pid, signal.SIGKILL)
-      except OSError:
-        if e.errno == errno.ESRCH:
-          # os.kill raised an error because the process doesn't exist.  Maybe
-          # gerrit shut down cleanly after all.
-          # pylint: disable=W0150
-          return
-
-      # Expose the fact that gerrit didn't shut down cleanly.
-      cros_build_lib.Warning(
-          'Test gerrit server (pid=%d) did not shut down cleanly.' % (
-              gerrit_obj.gerrit_pid))
-
-  @classmethod
-  def tearDownClass(cls):
-    cls.httplib_patcher.stop()
-    cls.protocol_patcher.stop()
-    cls.constants_patcher.stop()
-    if cls.TEARDOWN:
-      cls._stop_gerrit(cls.gerrit_instance)
-      cls.gerritdir_obj.Cleanup()
-    else:
-      # Prevent gerrit dir from getting cleaned up on interpreter exit.
-      cls.gerritdir_obj.tempdir = None
-
-
-class GerritInternalTestCase(GerritTestCase):
-  """Test class which runs separate internal and external gerrit instances."""
-
-  @classmethod
-  def setUpClass(cls):
-    GerritTestCase.setUpClass()
-    cls.int_gerritdir_obj = osutils.TempDir(set_global=False)
-    pgi = cls.gerrit_instance
-    igi = cls.int_gerrit_instance = cls._create_gerrit_instance(
-        cls.int_gerritdir_obj.tempdir)
-    cls.int_constants_patcher = mock.patch.dict(constants.__dict__, {
-        'INTERNAL_GOB_HOST': igi.git_host,
-        'INTERNAL_GERRIT_HOST': igi.gerrit_host,
-        'INTERNAL_GOB_URL': igi.git_url,
-        'INTERNAL_GERRIT_URL': igi.gerrit_url,
-        'MANIFEST_INT_URL': '%s/%s' % (
-            igi.git_url, constants.MANIFEST_INT_PROJECT),
-        'GIT_REMOTES': {
-            constants.EXTERNAL_REMOTE: pgi.gerrit_url,
-            constants.INTERNAL_REMOTE: igi.gerrit_url,
-            constants.CHROMIUM_REMOTE: pgi.gerrit_url,
-            constants.CHROME_REMOTE: igi.gerrit_url,
-        }
-    })
-    cls.int_constants_patcher.start()
-
-  @classmethod
-  def tearDownClass(cls):
-    cls.int_constants_patcher.stop()
-    if cls.TEARDOWN:
-      cls._stop_gerrit(cls.int_gerrit_instance)
-      cls.int_gerritdir_obj.Cleanup()
-    else:
-      # Prevent gerrit dir from getting cleaned up on interpreter exit.
-      cls.int_gerritdir_obj.tempdir = None
-    GerritTestCase.tearDownClass()
-
-
-class RepoTestCase(GerritTestCase):
-  """Test class which runs in a repo checkout."""
-
-  MANIFEST_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
-<manifest>
-  <remote name="%(EXTERNAL_REMOTE)s"
-          fetch="%(PUBLIC_GOB_URL)s"
-          review="%(PUBLIC_GERRIT_HOST)s" />
-  <remote name="%(INTERNAL_REMOTE)s"
-          fetch="%(INTERNAL_GOB_URL)s"
-          review="%(INTERNAL_GERRIT_HOST)s" />
-  <default revision="refs/heads/master" remote="%(EXTERNAL_REMOTE)s" sync-j="1" />
-  <project remote="%(EXTERNAL_REMOTE)s" path="localpath/testproj1" name="remotepath/testproj1" />
-  <project remote="%(EXTERNAL_REMOTE)s" path="localpath/testproj2" name="remotepath/testproj2" />
-  <project remote="%(INTERNAL_REMOTE)s" path="localpath/testproj3" name="remotepath/testproj3" />
-  <project remote="%(INTERNAL_REMOTE)s" path="localpath/testproj4" name="remotepath/testproj4" />
-</manifest>
-"""
-
-  @classmethod
-  def setUpClass(cls):
-    GerritTestCase.setUpClass()
-
-    # Patch in repo url on the gerrit test server.
-    external_repo_url = constants.REPO_URL
-    cls.repo_patcher = mock.patch.dict(constants.__dict__, {
-        'REPO_URL': '%s/%s' % (
-            cls.gerrit_instance.git_url, constants.REPO_PROJECT),
-    })
-    cls.repo_patcher.start()
-
-    # Create local mirror of repo tool repository.
-    mirror_path = '%s.git' % (
-        os.path.join(cls.gerrit_instance.git_dir, constants.REPO_PROJECT))
-    cros_build_lib.RunCommand(
-      ['git', 'clone', '--mirror', external_repo_url, mirror_path],
-      quiet=True)
-
-    # Check out the top-level repo script; it will be used for invocation.
-    repo_clone_path = os.path.join(
-        cls.gerrit_instance.gerrit_dir, 'tmp', 'repo')
-    cros_build_lib.RunCommand(
-        ['git', 'clone', '-n', constants.REPO_URL, repo_clone_path], quiet=True)
-    cros_build_lib.RunCommand(
-        ['git', 'checkout', 'origin/stable', 'repo'], cwd=repo_clone_path,
-        quiet=True)
-    osutils.RmDir(os.path.join(repo_clone_path, '.git'))
-    cls.repo_exe = os.path.join(repo_clone_path, 'repo')
-
-    # Create manifest repository.
-    clone_path = os.path.join(cls.gerrit_instance.gerrit_dir, 'tmp', 'manifest')
-    osutils.SafeMakedirs(clone_path)
-    cros_build_lib.RunCommand(['git', 'init'], cwd=clone_path, quiet=True)
-    manifest_path = os.path.join(clone_path, 'default.xml')
-    osutils.WriteFile(manifest_path, cls.MANIFEST_TEMPLATE % constants.__dict__)
-    cros_build_lib.RunCommand(
-        ['git', 'add', 'default.xml'], cwd=clone_path, quiet=True)
-    cros_build_lib.RunCommand(
-        ['git', 'commit', '-m', 'Test manifest.'], cwd=clone_path, quiet=True)
-    cls.createProject(constants.MANIFEST_PROJECT)
-    cros_build_lib.RunCommand(
-        ['git', 'push', constants.MANIFEST_URL, 'HEAD:refs/heads/master'],
-        quiet=True, cwd=clone_path)
-    cls.createProject(constants.MANIFEST_INT_PROJECT)
-    cros_build_lib.RunCommand(
-        ['git', 'push', constants.MANIFEST_INT_URL, 'HEAD:refs/heads/master'],
-         cwd=clone_path, quiet=True)
-
-    # Create project repositories.
-    for i in xrange(1, 5):
-      proj = 'testproj%d' % i
-      cls.createProject('remotepath/%s' % proj)
-      clone_path = os.path.join(cls.gerrit_instance.gerrit_dir, 'tmp', proj)
-      cls._CloneProject('remotepath/%s' % proj, clone_path)
-      cls._CreateCommit(clone_path)
-      cls._PushBranch(clone_path, 'master')
-
-  @classmethod
-  def runRepo(cls, *args, **kwargs):
-    # Unfortunately, munging $HOME appears to be the only way to control the
-    # netrc file used by repo.
-    munged_home = os.path.join(cls.gerrit_instance.gerrit_dir, 'tmp')
-    if 'env' not in kwargs:
-      env = kwargs['env'] = os.environ.copy()
-      env['HOME'] = munged_home
-    else:
-      env.setdefault('HOME', munged_home)
-    args[0].insert(0, cls.repo_exe)
-    kwargs.setdefault('quiet', True)
-    return cros_build_lib.RunCommand(*args, **kwargs)
-
-  @classmethod
-  def tearDownClass(cls):
-    cls.repo_patcher.stop()
-    GerritTestCase.tearDownClass()
-
-  def uploadChange(self, clone_path, branch='master', remote='origin'):
-    review_host = cros_build_lib.RunCommand(
-        ['git', 'config', 'remote.%s.review' % remote],
-        print_cmd=False, cwd=clone_path, capture_output=True).output.strip()
-    assert(review_host)
-    projectname = cros_build_lib.RunCommand(
-        ['git', 'config', 'remote.%s.projectname' % remote],
-        print_cmd=False, cwd=clone_path, capture_output=True).output.strip()
-    assert(projectname)
-    GerritTestCase._UploadChange(
-        clone_path, branch=branch, remote='%s://%s/%s' % (
-            gob_util.GERRIT_PROTOCOL, review_host, projectname))
-
-  def setUp(self):
-    cros_build_lib.RunCommand(
-        [self.repo_exe, 'init', '-u', constants.MANIFEST_URL, '--repo-url',
-         constants.REPO_URL, '--no-repo-verify'], cwd=self.tempdir, quiet=True)
-    self.repo = repository.RepoRepository(constants.MANIFEST_URL, self.tempdir)
-    self.repo.Sync()
-    self.manifest = git.ManifestCheckout(self.tempdir)
-    for i in xrange(1, 5):
-      # Configure non-interactive credentials for git operations.
-      proj = 'testproj%d' % i
-      config_path = os.path.join(
-          self.tempdir, 'localpath', proj, '.git', 'config')
-      cros_build_lib.RunCommand(
-          ['git', 'config', '--file', config_path, 'credential.helper',
-           'store --file=%s' % self.gerrit_instance.credential_file],
-          quiet=True)
-      cros_build_lib.RunCommand(
-          ['git', 'config', '--file', config_path, 'review.%s.upload' %
-           self.gerrit_instance.gerrit_host, 'true'], quiet=True)
-
-    # Make all google storage URL's point to the local filesystem.
-    self.gs_url_patcher = mock.patch(
-        'lib.chromite.gs.BASE_GS_URL',
-        'file://%s' % os.path.join(self.tempdir, '.gs'))
+    self.assertEquals(email, jmsg['email'])
 
 
 class _RunCommandMock(mox.MockObject):
@@ -1563,40 +1369,6 @@ class MoxOutputTestCase(OutputTestCase, MoxTestCase):
   """
 
 
-class MockTestCase(TestCase):
-  """Python-mock based test case; compatible with StackedSetup"""
-  def setUp(self):
-    self._patchers = []
-
-  def tearDown(self):
-    # We can't just run stopall() by itself, and need to stop our patchers
-    # manually since stopall() doesn't handle repatching.
-    cros_build_lib.SafeRun([p.stop for p in reversed(self._patchers)] +
-                           [mock.patch.stopall])
-
-  def StartPatcher(self, patcher):
-    """Call start() on the patcher, and stop() in tearDown."""
-    m = patcher.start()
-    self._patchers.append(patcher)
-    return m
-
-  def PatchObject(self, *args, **kwargs):
-    """Create and start a mock.patch.object().
-
-    stop() will be called automatically during tearDown.
-    """
-    return self.StartPatcher(mock.patch.object(*args, **kwargs))
-
-
-# MockTestCase must be before TempDirTestCase in this inheritance order,
-# because MockTestCase.StartPatcher() calls may be for PartialMocks, which
-# create their own temporary directory.  The teardown for those directories
-# occurs during MockTestCase.tearDown(), which needs to be run before
-# TempDirTestCase.tearDown().
-class MockTempDirTestCase(MockTestCase, TempDirTestCase):
-  """Convenience class mixing TempDir and Mock."""
-
-
 class MockOutputTestCase(MockTestCase, OutputTestCase):
   """Convenience class mixing Output and Mock."""
 
@@ -1642,7 +1414,6 @@ def main(**kwargs):
     if flag in sys.argv:
       sys.argv.remove(flag)
       level = logging.DEBUG
-      GerritTestCase.TEARDOWN = False
   cros_build_lib.SetupBasicLogging(level)
   try:
     unittest.main(**kwargs)
