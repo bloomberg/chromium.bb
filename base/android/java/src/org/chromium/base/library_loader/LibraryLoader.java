@@ -47,12 +47,6 @@ public class LibraryLoader {
     // The flag is used to report UMA stats later.
     private static boolean sNativeLibraryHackWasUsed = false;
 
-    // TODO(fqian): Remove this method once downstream CL is
-    // committed.
-    public static void ensureInitialized(Context context) throws ProcessInitException {
-        ensureInitialized(context, true);
-    }
-
     /**
      * The same as ensureInitialized(null, false), should only be called
      * by non-browser processes.
