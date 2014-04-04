@@ -41,7 +41,7 @@ namespace WebCore {
 
 static GCEventData* isolateGCEventData()
 {
-    V8PerIsolateData* isolateData = V8PerIsolateData::from(v8::Isolate::GetCurrent());
+    V8PerIsolateData* isolateData = V8PerIsolateData::current();
     ASSERT(isolateData);
     return isolateData->gcEventData();
 }

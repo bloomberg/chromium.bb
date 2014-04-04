@@ -37,19 +37,13 @@
 namespace blink {
 
 #ifndef NDEBUG
-class WebScopedMicrotaskSuppression::Impl : public WebCore::V8RecursionScope::MicrotaskSuppression {
-public:
-    Impl(v8::Isolate* isolate)
-        : WebCore::V8RecursionScope::MicrotaskSuppression(isolate)
-    {
-    }
-};
+class WebScopedMicrotaskSuppression::Impl : public WebCore::V8RecursionScope::MicrotaskSuppression { };
 #endif
 
 void WebScopedMicrotaskSuppression::initialize()
 {
 #ifndef NDEBUG
-    m_impl.reset(new Impl(v8::Isolate::GetCurrent()));
+    m_impl.reset(new Impl());
 #endif
 }
 

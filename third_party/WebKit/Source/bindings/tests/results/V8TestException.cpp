@@ -109,7 +109,7 @@ static void configureV8TestExceptionTemplate(v8::Handle<v8::FunctionTemplate> fu
     prototypeTemplate->Set(v8AtomicString(isolate, "toString"), v8::FunctionTemplate::New(isolate, TestExceptionV8Internal::toStringMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum));
 
     // Custom toString template
-    functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());
+    functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::current()->toStringTemplate());
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestException::domTemplate(v8::Isolate* isolate)

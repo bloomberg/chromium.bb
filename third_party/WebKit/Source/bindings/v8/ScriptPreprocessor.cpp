@@ -105,7 +105,7 @@ String ScriptPreprocessor::preprocessSourceCode(const String& sourceCode, const 
     v8::TryCatch tryCatch;
     tryCatch.SetVerbose(true);
     TemporaryChange<bool> isPreprocessing(m_isPreprocessing, true);
-    v8::Handle<v8::Value> resultValue = V8ScriptRunner::callAsFunction(m_isolate, m_preprocessorFunction.newLocal(m_isolate), m_context.newLocal(m_isolate)->Global(), WTF_ARRAY_LENGTH(argv), argv);
+    v8::Handle<v8::Value> resultValue = V8ScriptRunner::callAsFunction(m_preprocessorFunction.newLocal(m_isolate), m_context.newLocal(m_isolate)->Global(), WTF_ARRAY_LENGTH(argv), argv);
 
     if (!resultValue.IsEmpty() && resultValue->IsString())
         return toCoreStringWithNullCheck(resultValue.As<v8::String>());

@@ -53,6 +53,10 @@ typedef WTF::Vector<DOMDataStore*> DOMDataStoreList;
 class V8PerIsolateData {
 public:
     static void ensureInitialized(v8::Isolate*);
+    static V8PerIsolateData* current()
+    {
+        return from(v8::Isolate::GetCurrent());
+    }
     static V8PerIsolateData* from(v8::Isolate* isolate)
     {
         ASSERT(isolate);

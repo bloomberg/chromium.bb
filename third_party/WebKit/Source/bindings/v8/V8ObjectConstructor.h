@@ -46,35 +46,31 @@ public:
         CreateNewObject
     };
 
-    ConstructorMode(v8::Isolate* isolate)
-        : m_isolate(isolate)
+    ConstructorMode()
     {
-        V8PerIsolateData* data = V8PerIsolateData::from(m_isolate);
+        V8PerIsolateData* data = V8PerIsolateData::current();
         m_previous = data->m_constructorMode;
         data->m_constructorMode = WrapExistingObject;
     }
 
     ~ConstructorMode()
     {
-        V8PerIsolateData* data = V8PerIsolateData::from(m_isolate);
+        V8PerIsolateData* data = V8PerIsolateData::current();
         data->m_constructorMode = m_previous;
     }
 
-    static bool current(v8::Isolate* isolate)
-    {
-        return V8PerIsolateData::from(isolate)->m_constructorMode;
-    }
+    static bool current() { return V8PerIsolateData::current()->m_constructorMode; }
 
 private:
-    v8::Isolate* m_isolate;
     bool m_previous;
 };
 
 class V8ObjectConstructor {
 public:
-    static v8::Local<v8::Object> newInstance(v8::Isolate*, v8::Handle<v8::Function>);
-    static v8::Local<v8::Object> newInstance(v8::Isolate*, v8::Handle<v8::Function>, int, v8::Handle<v8::Value> argv[]);
-    static v8::Local<v8::Object> newInstanceInDocument(v8::Isolate*, v8::Handle<v8::Function>, int, v8::Handle<v8::Value> argv[], Document*);
+    static v8::Local<v8::Object> newInstance(v8::Handle<v8::Function>);
+    static v8::Local<v8::Object> newInstance(v8::Handle<v8::ObjectTemplate>);
+    static v8::Local<v8::Object> newInstance(v8::Handle<v8::Function>, int, v8::Handle<v8::Value> argv[]);
+    static v8::Local<v8::Object> newInstanceInDocument(v8::Handle<v8::Function>, int, v8::Handle<v8::Value> argv[], Document*);
 
     static void isValidConstructorMode(const v8::FunctionCallbackInfo<v8::Value>&);
 };

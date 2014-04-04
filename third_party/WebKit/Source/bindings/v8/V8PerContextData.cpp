@@ -89,7 +89,7 @@ v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(const Wra
 
     v8::Context::Scope scope(context());
     v8::Local<v8::Function> function = constructorForType(type);
-    v8::Local<v8::Object> instanceTemplate = V8ObjectConstructor::newInstance(m_isolate, function);
+    v8::Local<v8::Object> instanceTemplate = V8ObjectConstructor::newInstance(function);
     if (!instanceTemplate.IsEmpty()) {
         m_wrapperBoilerplates.set(type, UnsafePersistent<v8::Object>(m_isolate, instanceTemplate));
         return instanceTemplate->Clone();

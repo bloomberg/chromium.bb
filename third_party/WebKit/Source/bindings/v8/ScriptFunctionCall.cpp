@@ -182,7 +182,7 @@ ScriptObject ScriptFunctionCall::construct(bool& hadException, bool reportExcept
     for (size_t i = 0; i < m_arguments.size(); ++i)
         info[i] = m_arguments[i].v8Value();
 
-    v8::Local<v8::Object> result = V8ObjectConstructor::newInstance(m_scriptState->isolate(), constructor, m_arguments.size(), info.get());
+    v8::Local<v8::Object> result = V8ObjectConstructor::newInstance(constructor, m_arguments.size(), info.get());
     if (!scope.success()) {
         hadException = true;
         return ScriptObject();

@@ -453,7 +453,7 @@ v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root
     // V8DOMWrapper::associateObjectWithWrapper()
     // to create a wrapper object.
     v8::Handle<v8::Function> v8Function = npObjectDesc.Get(isolate)->GetFunction();
-    v8::Local<v8::Object> value = V8ObjectConstructor::newInstance(isolate, v8Function);
+    v8::Local<v8::Object> value = V8ObjectConstructor::newInstance(v8Function);
     if (value.IsEmpty())
         return value;
 
