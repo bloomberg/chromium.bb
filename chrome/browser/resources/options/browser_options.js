@@ -460,29 +460,8 @@ cr.define('options', function() {
         };
       }
 
-      // Cloud Print section.
-      // 'cloudPrintProxyEnabled' is true for Chrome branded builds on
-      // certain platforms, or could be enabled by a lab.
-      if (!cr.isChromeOS) {
-        $('cloudPrintConnectorSetupButton').onclick = function(event) {
-          if ($('cloudPrintManageButton').style.display == 'none') {
-            // Disable the button, set its text to the intermediate state.
-            $('cloudPrintConnectorSetupButton').textContent =
-              loadTimeData.getString('cloudPrintConnectorEnablingButton');
-            $('cloudPrintConnectorSetupButton').disabled = true;
-            chrome.send('showCloudPrintSetupDialog');
-          } else {
-            chrome.send('disableCloudPrintConnector');
-          }
-        };
-      }
-      $('cloudPrintManageButton').onclick = function(event) {
-        chrome.send('showCloudPrintManagePage');
-      };
-
       if (loadTimeData.getBoolean('cloudPrintShowMDnsOptions')) {
         $('cloudprint-options-mdns').hidden = false;
-        $('cloudprint-options-nomdns').hidden = true;
         $('cloudPrintDevicesPageButton').onclick = function() {
           chrome.send('showCloudPrintDevicesPage');
         };
@@ -1495,37 +1474,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Set the Cloud Print proxy UI to enabled, disabled, or processing.
-     * @private
-     */
-    setupCloudPrintConnectorSection_: function(disabled, label, allowed) {
-      if (!cr.isChromeOS) {
-        $('cloudPrintConnectorLabel').textContent = label;
-        if (disabled || !allowed) {
-          $('cloudPrintConnectorSetupButton').textContent =
-            loadTimeData.getString('cloudPrintConnectorDisabledButton');
-          $('cloudPrintManageButton').style.display = 'none';
-        } else {
-          $('cloudPrintConnectorSetupButton').textContent =
-            loadTimeData.getString('cloudPrintConnectorEnabledButton');
-          $('cloudPrintManageButton').style.display = 'inline';
-        }
-        $('cloudPrintConnectorSetupButton').disabled = !allowed;
-      }
-    },
-
-    /**
-     * @private
-     */
-    removeCloudPrintConnectorSection_: function() {
-     if (!cr.isChromeOS) {
-        var connectorSectionElm = $('cloud-print-connector-section');
-        if (connectorSectionElm)
-          connectorSectionElm.parentNode.removeChild(connectorSectionElm);
-      }
-    },
-
-    /**
      * Set the initial state of the spoken feedback checkbox.
      * @private
      */
@@ -1686,7 +1634,6 @@ cr.define('options', function() {
     'hideBluetoothSettings',
     'notifyInitializationComplete',
     'removeBluetoothDevice',
-    'removeCloudPrintConnectorSection',
     'scrollToSection',
     'setAccountPictureManaged',
     'setWallpaperManaged',
@@ -1701,7 +1648,6 @@ cr.define('options', function() {
     'setSpokenFeedbackCheckboxState',
     'setThemesResetButtonEnabled',
     'setVirtualKeyboardCheckboxState',
-    'setupCloudPrintConnectorSection',
     'setupPageZoomSelector',
     'setupProxySettingsSection',
     'showBluetoothSettings',

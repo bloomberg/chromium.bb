@@ -150,21 +150,6 @@ BrowserOptionsHandler::BrowserOptionsHandler()
   default_browser_worker_ = new ShellIntegration::DefaultBrowserWorker(this);
 #endif
 
-#if defined(ENABLE_FULL_PRINTING)
-#if !defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
-  // On Windows, we need the PDF plugin which is only guaranteed to exist on
-  // Google Chrome builds. Use a command-line switch for Windows non-Google
-  //  Chrome builds.
-  cloud_print_connector_ui_enabled_ =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCloudPrintProxy);
-#elif !defined(OS_CHROMEOS)
-  // Always enabled for Mac, Linux and Google Chrome Windows builds.
-  // Never enabled for Chrome OS, we don't even need to indicate it.
-  cloud_print_connector_ui_enabled_ = true;
-#endif
-#endif  // defined(ENABLE_FULL_PRINTING)
-
 #if defined(ENABLE_SERVICE_DISCOVERY)
   cloud_print_mdns_ui_enabled_ = !CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisableDeviceDiscovery);
@@ -406,10 +391,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "timezone", IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION },
     { "use24HourClock", IDS_OPTIONS_SETTINGS_USE_24HOUR_CLOCK_DESCRIPTION },
 #else
-    { "cloudPrintManageButton",
-      IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_MANAGE_BUTTON},
-    { "cloudPrintConnectorEnablingButton",
-      IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLING_BUTTON },
     { "proxiesConfigureButton", IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON },
 #endif
 #if defined(OS_CHROMEOS) && defined(USE_ASH)
@@ -602,26 +583,6 @@ void BrowserOptionsHandler::RegisterCloudPrintValues(
                         IDS_CLOUD_PRINT_CHROMEOS_OPTION_LABEL,
                         l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
 
-#if defined(OS_CHROMEOS)
-  values->SetString("cloudPrintManageButton",
-      l10n_util::GetStringFUTF16(
-      IDS_CLOUD_PRINT_CHROMEOS_OPTION_BUTTON,
-      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
-#else
-  // TODO(noamsml): Remove all cloud print connector related code from the
-  // settings page as soon as the devices page is supported on all platforms.
-  values->SetString("cloudPrintConnectorDisabledLabel",
-      l10n_util::GetStringFUTF16(
-      IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL,
-      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
-  values->SetString("cloudPrintConnectorDisabledButton",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON));
-  values->SetString("cloudPrintConnectorEnabledButton",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON));
-#endif
-
   values->SetBoolean("showSetDefault", ShouldShowSetDefaultBrowser());
   values->SetBoolean("allowAdvancedSettings", ShouldAllowAdvancedSettings());
 }
@@ -676,12 +637,6 @@ void BrowserOptionsHandler::RegisterMessages() {
       base::Bind(&BrowserOptionsHandler::ShowManageSSLCertificates,
                  base::Unretained(this)));
 #endif
-#if defined(ENABLE_FULL_PRINTING)
-  web_ui()->RegisterMessageCallback(
-      "showCloudPrintManagePage",
-      base::Bind(&BrowserOptionsHandler::ShowCloudPrintManagePage,
-                 base::Unretained(this)));
-#endif
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "openWallpaperManager",
@@ -704,18 +659,6 @@ void BrowserOptionsHandler::RegisterMessages() {
       "restartBrowser",
       base::Bind(&BrowserOptionsHandler::HandleRestartBrowser,
                  base::Unretained(this)));
-#if defined(ENABLE_FULL_PRINTING)
-  if (cloud_print_connector_ui_enabled_) {
-    web_ui()->RegisterMessageCallback(
-        "showCloudPrintSetupDialog",
-        base::Bind(&BrowserOptionsHandler::ShowCloudPrintSetupDialog,
-                   base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
-        "disableCloudPrintConnector",
-        base::Bind(&BrowserOptionsHandler::HandleDisableCloudPrintConnector,
-                   base::Unretained(this)));
-  }
-#endif  // defined(ENABLE_FULL_PRINTING)
   web_ui()->RegisterMessageCallback(
       "showNetworkProxySettings",
       base::Bind(&BrowserOptionsHandler::ShowNetworkProxySettings,
@@ -816,15 +759,6 @@ void BrowserOptionsHandler::InitializeHandler() {
   }
 #endif
 
-#if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
-  base::Closure cloud_print_callback = base::Bind(
-      &BrowserOptionsHandler::OnCloudPrintPrefsChanged, base::Unretained(this));
-  cloud_print_connector_email_.Init(
-      prefs::kCloudPrintEmail, prefs, cloud_print_callback);
-  cloud_print_connector_enabled_.Init(
-      prefs::kCloudPrintProxyEnabled, prefs, cloud_print_callback);
-#endif
-
   auto_open_files_.Init(
       prefs::kDownloadExtensionsToOpen, prefs,
       base::Bind(&BrowserOptionsHandler::SetupAutoOpenFileTypes,
@@ -895,17 +829,6 @@ void BrowserOptionsHandler::InitializePage() {
   SetupManageCertificatesSection();
   SetupManagingSupervisedUsers();
   SetupEasyUnlock();
-
-#if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
-  if (!cloud_print_mdns_ui_enabled_) {
-    if (cloud_print_connector_ui_enabled_) {
-      SetupCloudPrintConnectorSection();
-      RefreshCloudPrintStatusFromService();
-    } else {
-      RemoveCloudPrintConnectorSection();
-    }
-  }
-#endif
 
 #if defined(OS_CHROMEOS)
   SetupAccessibilityFeatures();
@@ -1190,13 +1113,6 @@ void BrowserOptionsHandler::Observe(
       NOTREACHED();
   }
 }
-
-#if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
-void BrowserOptionsHandler::OnCloudPrintPrefsChanged() {
-  if (cloud_print_connector_ui_enabled_)
-    SetupCloudPrintConnectorSection();
-}
-#endif
 
 void BrowserOptionsHandler::ToggleAutoLaunch(const base::ListValue* args) {
 #if defined(OS_WIN)
@@ -1545,90 +1461,6 @@ void BrowserOptionsHandler::ShowCloudPrintDevicesPage(
 }
 
 #endif
-
-#if defined(ENABLE_FULL_PRINTING)
-void BrowserOptionsHandler::ShowCloudPrintManagePage(
-    const base::ListValue* args) {
-  content::RecordAction(UserMetricsAction("Options_ManageCloudPrinters"));
-  // Open a new tab in the current window for the management page.
-  Profile* profile = Profile::FromWebUI(web_ui());
-  OpenURLParams params(
-      CloudPrintURL(profile).GetCloudPrintServiceManageURL(), Referrer(),
-      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false);
-  web_ui()->GetWebContents()->OpenURL(params);
-}
-
-#if !defined(OS_CHROMEOS)
-void BrowserOptionsHandler::ShowCloudPrintSetupDialog(
-    const base::ListValue* args) {
-  content::RecordAction(UserMetricsAction("Options_EnableCloudPrintProxy"));
-  // Open the connector enable page in the current tab.
-  Profile* profile = Profile::FromWebUI(web_ui());
-  OpenURLParams params(
-      CloudPrintURL(profile).GetCloudPrintServiceEnableURL(
-          CloudPrintProxyServiceFactory::GetForProfile(profile)->proxy_id()),
-      Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
-  web_ui()->GetWebContents()->OpenURL(params);
-}
-
-void BrowserOptionsHandler::HandleDisableCloudPrintConnector(
-    const base::ListValue* args) {
-  content::RecordAction(
-      UserMetricsAction("Options_DisableCloudPrintProxy"));
-  CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()))->
-      DisableForUser();
-}
-
-void BrowserOptionsHandler::RefreshCloudPrintStatusFromService() {
-  if (cloud_print_connector_ui_enabled_)
-    CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()))->
-        RefreshStatusFromService();
-}
-
-void BrowserOptionsHandler::SetupCloudPrintConnectorSection() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (!CloudPrintProxyServiceFactory::GetForProfile(profile)) {
-    cloud_print_connector_ui_enabled_ = false;
-    RemoveCloudPrintConnectorSection();
-    return;
-  }
-
-  bool cloud_print_connector_allowed =
-      !cloud_print_connector_enabled_.IsManaged() ||
-      cloud_print_connector_enabled_.GetValue();
-  base::FundamentalValue allowed(cloud_print_connector_allowed);
-
-  std::string email;
-  if (profile->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail) &&
-      cloud_print_connector_allowed) {
-    email = profile->GetPrefs()->GetString(prefs::kCloudPrintEmail);
-  }
-  base::FundamentalValue disabled(email.empty());
-
-  base::string16 label_str;
-  if (email.empty()) {
-    label_str = l10n_util::GetStringFUTF16(
-        IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL,
-        l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT));
-  } else {
-    label_str = l10n_util::GetStringFUTF16(
-        IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_LABEL,
-        l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT),
-        base::UTF8ToUTF16(email));
-  }
-  base::StringValue label(label_str);
-
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setupCloudPrintConnectorSection", disabled, label,
-      allowed);
-}
-
-void BrowserOptionsHandler::RemoveCloudPrintConnectorSection() {
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.removeCloudPrintConnectorSection");
-}
-#endif  // defined(OS_CHROMEOS)
-#endif  // defined(ENABLE_FULL_PRINTING)
 
 void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     const base::ListValue* args) {

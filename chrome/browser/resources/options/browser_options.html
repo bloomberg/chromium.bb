@@ -648,10 +648,9 @@
         </div>
       </div>
   </section>
-  <section id="cloud-print-connector-section">
-    <h3 i18n-content="advancedSectionTitleCloudPrint"></h3>
 <if expr="enable_service_discovery">
-    <div id="cloudprint-options-mdns" hidden>
+    <section id="cloudprint-options-mdns">
+      <h3 i18n-content="advancedSectionTitleCloudPrint"></h3>
       <div class="settings-row">
         <span i18n-content="cloudPrintOptionLabel"></span>
         <a target="_blank" i18n-content="learnMore"
@@ -676,36 +675,10 @@
                   pref="local_discovery.notifications_enabled">
             </span>
           </span>
+        </span>
       </div>
-    </div>
+    </section>
 </if>
-
-    <div id="cloudprint-options-nomdns">
-<if expr="chromeos">
-      <div>
-        <span i18n-content="cloudPrintOptionLabel"></span>
-        <a target="_blank" i18n-content="learnMore"
-           i18n-values="href:cloudPrintLearnMoreURL"></a>
-      </div>
-</if>
-
-<if expr="not chromeos">
-      <p id="cloudPrintConnectorLabel" class="settings-row"
-         i18n-content="cloudPrintConnectorDisabledLabel"></p>
-</if>
-
-      <div class="settings-row">
-<if expr="not chromeos">
-        <button id="cloudPrintConnectorSetupButton"
-                i18n-content="cloudPrintConnectorDisabledButton"></button>
-</if>
-
-        <button id="cloudPrintManageButton"
-                i18n-content="cloudPrintManageButton">
-        </button>
-      </div>
-    </div>
-  </section>
 
 <if expr="chromeos">
   <include src="startup_section.html">

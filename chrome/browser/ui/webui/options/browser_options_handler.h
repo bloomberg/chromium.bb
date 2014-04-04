@@ -253,34 +253,9 @@ class BrowserOptionsHandler
 #endif
 
 #if defined(ENABLE_FULL_PRINTING)
-  // Callback for the Cloud Print manage button. This will open a new
-  // tab pointed at the management URL.
-  void ShowCloudPrintManagePage(const base::ListValue* args);
-
   // Register localized values used by Cloud Print
   void RegisterCloudPrintValues(base::DictionaryValue* values);
-
-#if !defined(OS_CHROMEOS)
-  // Callback for the Sign in to Cloud Print button. This will start
-  // the authentication process.
-  void ShowCloudPrintSetupDialog(const base::ListValue* args);
-
-  // Callback for the Disable Cloud Print button. This will sign out
-  // of cloud print.
-  void HandleDisableCloudPrintConnector(const base::ListValue* args);
-
-  // Pings the service to send us it's current notion of the enabled state.
-  void RefreshCloudPrintStatusFromService();
-
-  // Setup the enabled or disabled state of the cloud print connector
-  // management UI.
-  void SetupCloudPrintConnectorSection();
-
-  // Remove cloud print connector section if cloud print connector management
-  //  UI is disabled.
-  void RemoveCloudPrintConnectorSection();
-#endif  // defined(OS_CHROMEOS)
-#endif  // defined(ENABLE_FULL_PRINTING)
+#endif
 
   // Check if hotword is available. If it is, tell the javascript to show
   // the hotword section of the settings page.
@@ -352,12 +327,6 @@ class BrowserOptionsHandler
   TemplateURLService* template_url_service_;  // Weak.
 
   scoped_refptr<ui::SelectFileDialog> select_folder_dialog_;
-
-#if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
-  StringPrefMember cloud_print_connector_email_;
-  BooleanPrefMember cloud_print_connector_enabled_;
-  bool cloud_print_connector_ui_enabled_;
-#endif
 
   bool cloud_print_mdns_ui_enabled_;
 
