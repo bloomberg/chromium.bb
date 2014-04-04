@@ -169,9 +169,12 @@ static void populateResourceTiming(ResourceTimingInfo* info, Resource* resource,
 {
     info->setInitialRequest(resource->resourceRequest());
     info->setFinalResponse(resource->response());
-    if (clearLoadTimings)
+    if (clearLoadTimings) {
         info->clearLoadTimings();
-    info->setLoadFinishTime(resource->loadFinishTime());
+        info->setLoadFinishTime(info->initialTime());
+    } else {
+        info->setLoadFinishTime(resource->loadFinishTime());
+    }
 }
 
 static void reportResourceTiming(ResourceTimingInfo* info, Document* initiatorDocument, bool isMainResource)

@@ -43,6 +43,8 @@ function onload_test() {
     }
     test_resource_entries(entries, expected_entries);
     test_greater_than(entries[0].requestStart, 0, 'requestStart should non-zero on the same-origin request');
+    test_greater_or_equals(entries[0].responseEnd, entries[0].startTime, 'responseEnd should not be before startTime');
+    test_greater_or_equals(entries[0].duration, 0, 'duration should not be negative');
 
     context.clearResourceTimings();
     start_crossorigin_test();
