@@ -203,9 +203,6 @@ void FilterEffect::applyRecursive()
             inputEffect(i)->correctFilterResultIfNeeded();
     }
 
-    if (applySkia())
-        return;
-
     applySoftware();
 }
 

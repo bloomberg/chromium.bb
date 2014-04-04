@@ -199,7 +199,6 @@ protected:
 private:
     void applyRecursive();
     virtual void applySoftware() = 0;
-    virtual bool applySkia() { return false; }
 
     inline void copyImageBytes(Uint8ClampedArray* source, Uint8ClampedArray* destination, const IntRect&);
 
