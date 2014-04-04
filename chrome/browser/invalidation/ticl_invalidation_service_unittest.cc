@@ -30,7 +30,11 @@ class TiclInvalidationServiceTestDelegate {
   }
 
   void CreateInvalidationService() {
-    fake_invalidator_ = new syncer::FakeInvalidator();
+    CreateUninitializedInvalidationService();
+    InitializeInvalidationService();
+  }
+
+  void CreateUninitializedInvalidationService() {
     profile_.reset(new TestingProfile());
     token_service_.reset(new FakeProfileOAuth2TokenService);
     invalidation_service_.reset(new TiclInvalidationService(
@@ -40,6 +44,10 @@ class TiclInvalidationServiceTestDelegate {
                 token_service_.get(),
                 NULL)),
         profile_.get()));
+  }
+
+  void InitializeInvalidationService() {
+    fake_invalidator_ = new syncer::FakeInvalidator();
     invalidation_service_->InitForTest(fake_invalidator_);
   }
 
@@ -146,4 +154,44 @@ TEST_F(TiclInvalidationServiceChannelTest, ChannelSelectionTest) {
   EXPECT_EQ(TiclInvalidationService::GCM_NETWORK_CHANNEL, GetNetworkChannel());
 }
 
+namespace internal {
+
+class FakeCallbackContainer {
+  public:
+    FakeCallbackContainer()
+        : called_(false),
+          weak_ptr_factory_(this) { }
+
+    void FakeCallback(const base::DictionaryValue& value) {
+      called_ = true;
+    }
+
+    bool called_;
+    base::WeakPtrFactory<FakeCallbackContainer> weak_ptr_factory_;
+};
+}  // namespace internal
+
+// Test that requesting for detailed status doesn't crash even if the
+// underlying invalidator is not initialized.
+TEST(TiclInvalidationServiceLoggingTest, DetailedStatusCallbacksWork) {
+  scoped_ptr<TiclInvalidationServiceTestDelegate> delegate (
+      new TiclInvalidationServiceTestDelegate());
+
+  delegate->CreateUninitializedInvalidationService();
+  invalidation::InvalidationService* const invalidator =
+      delegate->GetInvalidationService();
+
+  internal::FakeCallbackContainer fake_container;
+  invalidator->RequestDetailedStatus(
+    base::Bind(&internal::FakeCallbackContainer::FakeCallback,
+               fake_container.weak_ptr_factory_.GetWeakPtr()));
+  EXPECT_FALSE(fake_container.called_);
+
+  delegate->InitializeInvalidationService();
+
+  invalidator->RequestDetailedStatus(
+    base::Bind(&internal::FakeCallbackContainer::FakeCallback,
+               fake_container.weak_ptr_factory_.GetWeakPtr()));
+  EXPECT_TRUE(fake_container.called_);
+}
 }  // namespace invalidation
