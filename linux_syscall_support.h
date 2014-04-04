@@ -426,7 +426,7 @@ struct kernel_stat {
   uint64_t           st_mtime_nsec_;
   uint64_t           st_ctime_;
   uint64_t           st_ctime_nsec_;
-  int64_t            __unused[3];
+  int64_t            __unused4[3];
 };
 #elif defined(__PPC__)
 struct kernel_stat {
@@ -2241,9 +2241,9 @@ struct kernel_statfs {
         __asm__ __volatile__(/* if (fn == NULL || child_stack == NULL)
                               *   return -EINVAL;
                               */
-#ifdef __thumb2__			     
+#ifdef __thumb2__
 			     "push  {r7}\n"
-#endif			     
+#endif
                              "cmp   %2,#0\n"
                              "it    ne\n"
                              "cmpne %3,#0\n"
@@ -2301,7 +2301,7 @@ struct kernel_statfs {
                            "1:\n"
 #ifdef __thumb2__
 			     "pop {r7}"
-#endif			     
+#endif
                              : "=r" (__res)
                              : "i"(-EINVAL),
                                "r"(fn), "r"(__stack), "r"(__flags), "r"(arg),
@@ -2930,7 +2930,7 @@ struct kernel_statfs {
 
     /* Need to make sure __off64_t isn't truncated to 32-bits under x32.  */
     LSS_INLINE void* LSS_NAME(mmap)(void *s, size_t l, int p, int f, int d,
-                                    __off64_t o) {
+                                    int64_t o) {
       LSS_BODY(6, void*, mmap, LSS_SYSCALL_ARG(s), LSS_SYSCALL_ARG(l),
                                LSS_SYSCALL_ARG(p), LSS_SYSCALL_ARG(f),
                                LSS_SYSCALL_ARG(d), (uint64_t)(o));
