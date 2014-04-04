@@ -13,6 +13,7 @@
 #include "gin/array_buffer.h"
 #include "gin/function_template.h"
 #include "gin/per_isolate_data.h"
+#include "gin/public/v8_platform.h"
 
 namespace gin {
 
@@ -36,6 +37,7 @@ void EnsureV8Initialized(bool gin_managed) {
   if (!gin_managed)
     return;
 
+  v8::V8::InitializePlatform(V8Platform::Get());
   v8::V8::SetArrayBufferAllocator(ArrayBufferAllocator::SharedInstance());
   static const char v8_flags[] = "--use_strict --harmony";
   v8::V8::SetFlagsFromString(v8_flags, sizeof(v8_flags) - 1);

@@ -1317,6 +1317,9 @@
     # Compile d8 for the host toolset.
     'v8_toolset_for_d8': 'host',
 
+    # Compiles v8 without its platform library.
+    'v8_use_default_platform': 0,
+
     # Use the chromium skia by default.
     'use_system_skia%': '0',
 

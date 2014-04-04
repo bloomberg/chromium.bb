@@ -8,9 +8,14 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "gin/gin_export.h"
 #include "gin/public/wrapper_info.h"
 #include "v8/include/v8.h"
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace gin {
 
@@ -60,6 +65,9 @@ class GIN_EXPORT PerIsolateData {
 
   v8::Isolate* isolate() { return isolate_; }
   v8::ArrayBuffer::Allocator* allocator() { return allocator_; }
+  base::MessageLoopProxy* message_loop_proxy() {
+    return message_loop_proxy_.get();
+  }
 
  private:
   typedef std::map<
@@ -79,6 +87,7 @@ class GIN_EXPORT PerIsolateData {
   FunctionTemplateMap function_templates_;
   IndexedPropertyInterceptorMap indexed_interceptors_;
   NamedPropertyInterceptorMap named_interceptors_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(PerIsolateData);
 };

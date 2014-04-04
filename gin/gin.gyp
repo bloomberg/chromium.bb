@@ -12,7 +12,9 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../v8/tools/gyp/v8.gyp:v8',
+
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
@@ -58,6 +60,7 @@
         'public/context_holder.h',
         'public/gin_embedders.h',
         'public/isolate_holder.h',
+        'public/v8_platform.h',
         'public/wrapper_info.h',
         'runner.cc',
         'runner.h',
@@ -65,6 +68,7 @@
         'shell_runner.h',
         'try_catch.cc',
         'try_catch.h',
+        'v8_platform.cc',
         'wrappable.cc',
         'wrappable.h',
         'wrapper_info.cc',
