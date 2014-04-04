@@ -38,7 +38,7 @@ namespace {
 base::LazyInstance<scoped_refptr<PnaclTranslationResourceHost> >
     g_pnacl_resource_host = LAZY_INSTANCE_INITIALIZER;
 
-static bool InitializePnaclResourceHost() {
+bool InitializePnaclResourceHost() {
   // Must run on the main thread.
   content::RenderThread* render_thread = content::RenderThread::Get();
   if (!render_thread)
@@ -79,7 +79,7 @@ nacl::NexeLoadManager* GetNexeLoadManager(PP_Instance instance) {
   return NULL;
 }
 
-static int GetRoutingID(PP_Instance instance) {
+int GetRoutingID(PP_Instance instance) {
   // Check that we are on the main renderer thread.
   DCHECK(content::RenderThread::Get());
   content::RendererPpapiHost *host =
@@ -87,6 +87,21 @@ static int GetRoutingID(PP_Instance instance) {
   if (!host)
     return 0;
   return host->GetRoutingIDForWidget(instance);
+}
+
+// Returns whether the channel_handle is valid or not.
+bool IsValidChannelHandle(const IPC::ChannelHandle& channel_handle) {
+  if (channel_handle.name.empty()) {
+    return false;
+  }
+
+#if defined(OS_POSIX)
+  if (channel_handle.socket.fd == -1) {
+    return false;
+  }
+#endif
+
+  return true;
 }
 
 // Launch NaCl's sel_ldr process.
@@ -168,36 +183,38 @@ void LaunchSelLdr(PP_Instance instance,
   instance_info.channel_handle = launch_result.ppapi_ipc_channel_handle;
   instance_info.plugin_pid = launch_result.plugin_pid;
   instance_info.plugin_child_id = launch_result.plugin_child_id;
-  // Don't save instance_info if channel handle is invalid.
-  bool invalid_handle = instance_info.channel_handle.name.empty();
-#if defined(OS_POSIX)
-  if (!invalid_handle)
-    invalid_handle = (instance_info.channel_handle.socket.fd == -1);
-#endif
-  if (!invalid_handle)
-    g_instance_info.Get()[instance] = instance_info;
 
-  // Stash the trusted handle as well.
-  invalid_handle = launch_result.trusted_ipc_channel_handle.name.empty();
-#if defined(OS_POSIX)
-  if (!invalid_handle)
-    invalid_handle = (launch_result.trusted_ipc_channel_handle.socket.fd == -1);
-#endif
-  if (!invalid_handle) {
-    nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-    DCHECK(load_manager);
-    if (load_manager) {
-      scoped_ptr<nacl::TrustedPluginChannel> trusted_plugin_channel(
-          new nacl::TrustedPluginChannel(
-              launch_result.trusted_ipc_channel_handle,
-              callback,
-              content::RenderThread::Get()->GetShutdownEvent()));
-      load_manager->set_trusted_plugin_channel(trusted_plugin_channel.Pass());
-    }
-  }
+  // Don't save instance_info if channel handle is invalid.
+  if (IsValidChannelHandle(instance_info.channel_handle))
+    g_instance_info.Get()[instance] = instance_info;
 
   *(static_cast<NaClHandle*>(imc_handle)) =
       nacl::ToNativeHandle(result_socket);
+
+  // TODO(hidehiko): We'll add EmbedderServiceChannel here, and it will wait
+  // for the connection in parallel with TrustedPluginChannel.
+  // Thus, the callback will wait for its second invocation to run callback,
+  // then.
+  // Note that PP_CompletionCallback is not designed to be called twice or
+  // more. Thus, it is necessary to create a function to handle multiple
+  // invocation.
+  base::Callback<void(int32_t)> completion_callback =
+      base::Bind(callback.func, callback.user_data);
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+
+  // Stash the trusted handle as well.
+  if (load_manager &&
+      IsValidChannelHandle(launch_result.trusted_ipc_channel_handle)) {
+    scoped_ptr<nacl::TrustedPluginChannel> trusted_plugin_channel(
+        new nacl::TrustedPluginChannel(
+            launch_result.trusted_ipc_channel_handle,
+            completion_callback,
+            content::RenderThread::Get()->GetShutdownEvent()));
+    load_manager->set_trusted_plugin_channel(trusted_plugin_channel.Pass());
+  } else {
+    completion_callback.Run(PP_ERROR_FAILED);
+  }
 }
 
 PP_ExternalPluginResult StartPpapiProxy(PP_Instance instance) {

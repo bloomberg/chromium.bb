@@ -5,20 +5,28 @@
 #ifndef COMPONENTS_NACL_RENDERER_TRUSTED_PLUGIN_CHANNEL_H_
 #define COMPONENTS_NACL_RENDERER_TRUSTED_PLUGIN_CHANNEL_H_
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/waitable_event.h"
-#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_listener.h"
-#include "ipc/ipc_sync_channel.h"
-#include "ppapi/c/pp_completion_callback.h"
+
+namespace base {
+class WaitableEvent;
+}  // namespace base
+
+namespace IPC {
+struct ChannelHandle;
+class Message;
+class SyncChannel;
+}  // namespace IPC
 
 namespace nacl {
 
 class TrustedPluginChannel : public IPC::Listener {
  public:
-  TrustedPluginChannel(const IPC::ChannelHandle& handle,
-                       PP_CompletionCallback connected_callback,
-                       base::WaitableEvent* waitable_event);
+  TrustedPluginChannel(
+      const IPC::ChannelHandle& handle,
+      const base::Callback<void(int32_t)>& connected_callback,
+      base::WaitableEvent* waitable_event);
   virtual ~TrustedPluginChannel();
 
   bool Send(IPC::Message* message);
@@ -29,8 +37,8 @@ class TrustedPluginChannel : public IPC::Listener {
   virtual void OnChannelError() OVERRIDE;
 
  private:
+  base::Callback<void(int32_t)> connected_callback_;
   scoped_ptr<IPC::SyncChannel> channel_;
-  PP_CompletionCallback connected_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TrustedPluginChannel);
 };
