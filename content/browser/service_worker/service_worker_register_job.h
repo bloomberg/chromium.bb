@@ -58,8 +58,14 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
   void RegisterAndContinue(ServiceWorkerStatusCode status);
-  void StartWorkerAndContinue(ServiceWorkerStatusCode status);
+  void UpdateAndContinue(ServiceWorkerStatusCode status);
+  void OnStartWorkerFinished(ServiceWorkerStatusCode status);
+  void InstallAndContinue();
+  void OnInstallFinished(ServiceWorkerStatusCode status);
+  void ActivateAndContinue();
   void Complete(ServiceWorkerStatusCode status);
+
+  void RunCallbacks(ServiceWorkerStatusCode status);
 
   // The ServiceWorkerStorage object should always outlive this.
   base::WeakPtr<ServiceWorkerContextCore> context_;
