@@ -100,10 +100,12 @@ struct NaClChromeMainArgs {
   int debug_stub_server_bound_socket_fd;
 #endif
 
+#if NACL_WINDOWS
   /*
    * Callback called when debug stub port is known.  Optional; may be NULL.
    */
   void (*debug_stub_server_port_selected_handler_func)(uint16_t port);
+#endif
 
   /*
    * Callback to use for creating shared memory objects.  Optional;
