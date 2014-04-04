@@ -227,7 +227,7 @@ def BuildAndTest(options):
   # Download the toolchain(s).
   RunCommand([python,
               os.path.join(nacl_dir, 'build', 'download_toolchains.py'),
-              '--no-arm-trusted', '--no-pnacl', 'TOOL_REVISIONS'],
+              '--keep', '--no-arm-trusted', '--no-pnacl', 'TOOL_REVISIONS'],
              nacl_dir, os.environ)
 
   CleanTempDir()
