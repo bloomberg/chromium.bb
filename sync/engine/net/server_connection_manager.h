@@ -228,13 +228,6 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager : public CancelationObserver {
   // Sets a new auth token and time.
   bool SetAuthToken(const std::string& auth_token);
 
-  // Our out-of-band invalidations channel can encounter auth errors,
-  // and when it does so it tells us via this method to prevent making more
-  // requests with known-bad tokens. This will put the
-  // ServerConnectionManager in an auth error state as if it received an
-  // HTTP 401 from sync servers.
-  void OnInvalidationCredentialsRejected();
-
   bool HasInvalidAuthToken() {
     return auth_token_.empty();
   }

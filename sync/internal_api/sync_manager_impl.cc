@@ -168,7 +168,6 @@ SyncManagerImpl::SyncManagerImpl(const std::string& name)
       initialized_(false),
       observing_network_connectivity_changes_(false),
       invalidator_state_(DEFAULT_INVALIDATION_ERROR),
-      encryptor_(NULL),
       report_unrecoverable_error_function_(NULL),
       weak_ptr_factory_(this) {
   // Pre-fill |notification_info_map_|.
@@ -349,7 +348,6 @@ void SyncManagerImpl::Init(
 
   database_path_ = database_location.Append(
       syncable::Directory::kSyncDatabaseFilename);
-  encryptor_ = encryptor;
   unrecoverable_error_handler_ = unrecoverable_error_handler.Pass();
   report_unrecoverable_error_function_ = report_unrecoverable_error_function;
 

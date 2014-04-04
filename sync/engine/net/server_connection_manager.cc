@@ -244,11 +244,6 @@ bool ServerConnectionManager::SetAuthToken(const std::string& auth_token) {
   return false;
 }
 
-void ServerConnectionManager::OnInvalidationCredentialsRejected() {
-  InvalidateAndClearAuthToken();
-  SetServerStatus(HttpResponse::SYNC_AUTH_ERROR);
-}
-
 void ServerConnectionManager::InvalidateAndClearAuthToken() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Copy over the token to previous invalid token.
