@@ -5,6 +5,7 @@
 #include "cc/resources/texture_mailbox.h"
 
 #include "base/logging.h"
+#include "cc/resources/shared_bitmap.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
@@ -29,8 +30,8 @@ TextureMailbox::TextureMailbox(base::SharedMemory* shared_memory,
       shared_memory_size_(size),
       allow_overlay_(false) {
   // If an embedder of cc gives an invalid TextureMailbox, we should crash
-  // safely rather than overflow.
-  CHECK(CheckedSharedMemorySizeInBytes().IsValid());
+  // here to identify the offender.
+  CHECK(SharedBitmap::VerifySizeInBytes(shared_memory_size_));
 }
 
 TextureMailbox::~TextureMailbox() {}
@@ -50,17 +51,9 @@ bool TextureMailbox::Equals(const TextureMailbox& other) const {
 }
 
 size_t TextureMailbox::SharedMemorySizeInBytes() const {
-  size_t bytes_per_pixel = 4;
-  size_t width = shared_memory_size_.width();
-  size_t height = shared_memory_size_.height();
-  return bytes_per_pixel * width * height;
-}
-
-base::CheckedNumeric<size_t> TextureMailbox::CheckedSharedMemorySizeInBytes()
-    const {
-  return base::CheckedNumeric<size_t>(4) *
-         base::CheckedNumeric<size_t>(shared_memory_size_.width()) *
-         base::CheckedNumeric<size_t>(shared_memory_size_.height());
+  // UncheckedSizeInBytes is okay because we VerifySizeInBytes in the
+  // constructor and the field is immutable.
+  return SharedBitmap::UncheckedSizeInBytes(shared_memory_size_);
 }
 
 }  // namespace cc

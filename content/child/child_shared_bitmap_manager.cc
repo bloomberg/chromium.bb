@@ -25,7 +25,7 @@ scoped_ptr<cc::SharedBitmap> ChildSharedBitmapManager::AllocateSharedBitmap(
                "height",
                size.height());
   size_t memory_size;
-  if (!cc::SharedBitmap::GetSizeInBytes(size, &memory_size))
+  if (!cc::SharedBitmap::SizeInBytes(size, &memory_size))
     return scoped_ptr<cc::SharedBitmap>();
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
   scoped_ptr<base::SharedMemory> memory;

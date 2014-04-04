@@ -702,10 +702,12 @@ ResourceProvider::ResourceId ResourceProvider::CreateBitmap(
     bitmap = shared_bitmap_manager_->AllocateSharedBitmap(size);
 
   uint8_t* pixels;
-  if (bitmap)
+  if (bitmap) {
     pixels = bitmap->pixels();
-  else
-    pixels = new uint8_t[4 * size.GetArea()];
+  } else {
+    size_t bytes = SharedBitmap::CheckedSizeInBytes(size);
+    pixels = new uint8_t[bytes];
+  }
   DCHECK(pixels);
 
   ResourceId id = next_id_++;
@@ -1813,8 +1815,8 @@ void ResourceProvider::AcquirePixelBuffer(Resource* resource) {
     DCHECK_EQ(Bitmap, resource->type);
     if (resource->pixel_buffer)
       return;
-
-    resource->pixel_buffer = new uint8_t[4 * resource->size.GetArea()];
+    size_t bytes = SharedBitmap::CheckedSizeInBytes(resource->size);
+    resource->pixel_buffer = new uint8_t[bytes];
   }
 }
 
@@ -1989,8 +1991,8 @@ void ResourceProvider::BeginSetPixels(ResourceId id) {
     DCHECK(resource->pixel_buffer);
     DCHECK_EQ(RGBA_8888, resource->format);
 
-    memcpy(
-        resource->pixels, resource->pixel_buffer, 4 * resource->size.GetArea());
+    size_t bytes = SharedBitmap::CheckedSizeInBytes(resource->size);
+    memcpy(resource->pixels, resource->pixel_buffer, bytes);
     delete[] resource->pixel_buffer;
     resource->pixel_buffer = NULL;
   }

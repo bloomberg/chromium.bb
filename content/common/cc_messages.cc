@@ -755,7 +755,7 @@ void ParamTraits<cc::DelegatedFrameData>::Log(const param_type& p,
 
 void ParamTraits<cc::SoftwareFrameData>::Write(Message* m,
                                                const param_type& p) {
-  DCHECK(p.CheckedSizeInBytes().IsValid());
+  DCHECK(cc::SharedBitmap::VerifySizeInBytes(p.size));
 
   m->Reserve(sizeof(cc::SoftwareFrameData));
   WriteParam(m, p.id);
@@ -769,7 +769,8 @@ bool ParamTraits<cc::SoftwareFrameData>::Read(const Message* m,
                                               param_type* p) {
   if (!ReadParam(m, iter, &p->id))
     return false;
-  if (!ReadParam(m, iter, &p->size) || !p->CheckedSizeInBytes().IsValid())
+  if (!ReadParam(m, iter, &p->size) ||
+      !cc::SharedBitmap::VerifySizeInBytes(p->size))
     return false;
   if (!ReadParam(m, iter, &p->damage_rect))
     return false;

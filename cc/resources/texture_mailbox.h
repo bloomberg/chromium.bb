@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/memory/shared_memory.h"
-#include "base/numerics/safe_math.h"
 #include "cc/base/cc_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "ui/gfx/size.h"
@@ -46,9 +45,7 @@ class CC_EXPORT TextureMailbox {
 
   base::SharedMemory* shared_memory() const { return shared_memory_; }
   gfx::Size shared_memory_size() const { return shared_memory_size_; }
-
   size_t SharedMemorySizeInBytes() const;
-  base::CheckedNumeric<size_t> CheckedSharedMemorySizeInBytes() const;
 
  private:
   gpu::MailboxHolder mailbox_holder_;

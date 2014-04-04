@@ -62,7 +62,7 @@ scoped_ptr<cc::SharedBitmap> HostSharedBitmapManager::GetSharedBitmapFromId(
   BitmapData* data = it->second.get();
 
   size_t bitmap_size;
-  if (!cc::SharedBitmap::GetSizeInBytes(size, &bitmap_size) ||
+  if (!cc::SharedBitmap::SizeInBytes(size, &bitmap_size) ||
       bitmap_size > data->buffer_size)
     return scoped_ptr<cc::SharedBitmap>();
 
