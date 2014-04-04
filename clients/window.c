@@ -4610,6 +4610,12 @@ window_set_buffer_type(struct window *window, enum window_buffer_type type)
 	window->main_surface->buffer_type = type;
 }
 
+enum window_buffer_type
+window_get_buffer_type(struct window *window)
+{
+	return window->main_surface->buffer_type;
+}
+
 void
 window_set_preferred_format(struct window *window,
 			    enum preferred_format format)
@@ -4627,6 +4633,7 @@ window_add_subsurface(struct window *window, void *data,
 	struct wl_subcompositor *subcompo = window->display->subcompositor;
 
 	surface = surface_create(window);
+	surface->buffer_type = window_get_buffer_type(window);
 	widget = widget_create(window, surface, data);
 	wl_list_init(&widget->link);
 	surface->widget = widget;

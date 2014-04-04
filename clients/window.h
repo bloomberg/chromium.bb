@@ -364,6 +364,9 @@ display_surface_damage(struct display *display, cairo_surface_t *cairo_surface,
 void
 window_set_buffer_type(struct window *window, enum window_buffer_type type);
 
+enum window_buffer_type
+window_get_buffer_type(struct window *window);
+
 int
 window_is_fullscreen(struct window *window);
 
