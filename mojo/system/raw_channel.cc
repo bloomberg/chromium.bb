@@ -150,6 +150,14 @@ void RawChannel::Shutdown() {
 
 // Reminder: This must be thread-safe.
 bool RawChannel::WriteMessage(scoped_ptr<MessageInTransit> message) {
+  DCHECK(message);
+
+  // TODO(vtl)
+  if (message->has_platform_handles()) {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
   base::AutoLock locker(write_lock_);
   if (write_stopped_)
     return false;

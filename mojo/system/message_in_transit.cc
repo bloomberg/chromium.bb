@@ -148,14 +148,8 @@ MessageInTransit::MessageInTransit(const View& message_view)
 MessageInTransit::~MessageInTransit() {
   base::AlignedFree(main_buffer_);
   base::AlignedFree(secondary_buffer_);  // Okay if null.
-#ifndef NDEBUG
-  main_buffer_size_ = 0;
-  main_buffer_ = NULL;
-  secondary_buffer_size_ = 0;
-  secondary_buffer_ = NULL;
-#endif
 
-  if (dispatchers_.get()) {
+  if (dispatchers_) {
     for (size_t i = 0; i < dispatchers_->size(); i++) {
       if (!(*dispatchers_)[i])
         continue;
@@ -163,8 +157,21 @@ MessageInTransit::~MessageInTransit() {
       DCHECK((*dispatchers_)[i]->HasOneRef());
       (*dispatchers_)[i]->Close();
     }
-    dispatchers_.reset();
   }
+
+  if (platform_handles_) {
+    for (size_t i = 0; i < platform_handles_->size(); i++)
+      (*platform_handles_)[i].CloseIfNecessary();
+  }
+
+#ifndef NDEBUG
+  main_buffer_size_ = 0;
+  main_buffer_ = NULL;
+  secondary_buffer_size_ = 0;
+  secondary_buffer_ = NULL;
+  dispatchers_.reset();
+  platform_handles_.reset();
+#endif
 }
 
 // static
@@ -189,8 +196,8 @@ bool MessageInTransit::GetNextMessageSize(const void* buffer,
 
 void MessageInTransit::SetDispatchers(
     scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers) {
-  DCHECK(dispatchers.get());
-  DCHECK(!dispatchers_.get());
+  DCHECK(dispatchers);
+  DCHECK(!dispatchers_);
 
   dispatchers_ = dispatchers.Pass();
 #ifndef NDEBUG
@@ -203,7 +210,7 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   DCHECK(channel);
   DCHECK(!secondary_buffer_);
   CHECK_EQ(num_handles(),
-           dispatchers_.get() ? dispatchers_->size() : static_cast<size_t>(0));
+           dispatchers_ ? dispatchers_->size() : static_cast<size_t>(0));
 
   if (!num_handles())
     return;
@@ -263,7 +270,7 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
 }
 
 void MessageInTransit::DeserializeDispatchers(Channel* channel) {
-  DCHECK(!dispatchers_.get());
+  DCHECK(!dispatchers_);
 
   // This should have been checked by calling |IsValid()| on the |View| first.
   DCHECK_LE(num_handles(), kMaxMessageNumHandles);
