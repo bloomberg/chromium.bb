@@ -47,27 +47,17 @@ class SYNC_EXPORT_PRIVATE DirectoryUpdateHandler : public UpdateHandler {
                          scoped_refptr<ModelSafeWorker> worker);
   virtual ~DirectoryUpdateHandler();
 
-  // Fills the given parameter with the stored progress marker for this type.
+  // UpdateHandler implementation.
   virtual void GetDownloadProgress(
       sync_pb::DataTypeProgressMarker* progress_marker) const OVERRIDE;
-
-  // Processes the contents of a GetUpdates response message.
-  //
-  // Should be invoked with the progress marker and set of SyncEntities from a
-  // single GetUpdates response message.  The progress marker's type must match
-  // this update handler's type, and the set of SyncEntities must include all
-  // entities of this type found in the response message.
+  virtual void GetDataTypeContext(sync_pb::DataTypeContext* context) const
+      OVERRIDE;
   virtual void ProcessGetUpdatesResponse(
       const sync_pb::DataTypeProgressMarker& progress_marker,
+      const sync_pb::DataTypeContext& mutated_context,
       const SyncEntityList& applicable_updates,
       sessions::StatusController* status) OVERRIDE;
-
-  // If there are updates to apply, apply them on the proper thread.
-  // Delegates to ApplyUpdatesImpl().
   virtual void ApplyUpdates(sessions::StatusController* status) OVERRIDE;
-
-  // Apply updates on the sync thread.  This is for use during initial sync
-  // prior to model association.
   virtual void PassiveApplyUpdates(sessions::StatusController* status) OVERRIDE;
 
  private:

@@ -41,8 +41,11 @@ scoped_ptr<DirectoryCommitContribution> DirectoryCommitContribution::Build(
     entry.PutSyncing(true);
   }
 
+  sync_pb::DataTypeContext context;
+  dir->GetDataTypeContext(&trans, type, &context);
+
   return scoped_ptr<DirectoryCommitContribution>(
-      new DirectoryCommitContribution(metahandles, entities, dir));
+      new DirectoryCommitContribution(metahandles, entities, context, dir));
 }
 
 void DirectoryCommitContribution::AddToCommitMessage(
@@ -53,6 +56,8 @@ void DirectoryCommitContribution::AddToCommitMessage(
   std::copy(entities_.begin(),
             entities_.end(),
             RepeatedPtrFieldBackInserter(commit_message->mutable_entries()));
+  if (!context_.context().empty())
+    commit_message->add_client_contexts()->Swap(&context_);
 }
 
 SyncerError DirectoryCommitContribution::ProcessCommitResponse(
@@ -144,13 +149,14 @@ size_t DirectoryCommitContribution::GetNumEntries() const {
 DirectoryCommitContribution::DirectoryCommitContribution(
     const std::vector<int64>& metahandles,
     const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
+    const sync_pb::DataTypeContext& context,
     syncable::Directory* dir)
-  : dir_(dir),
-    metahandles_(metahandles),
-    entities_(entities),
-    entries_start_index_(0xDEADBEEF),
-    syncing_bits_set_(true) {
-}
+    : dir_(dir),
+      metahandles_(metahandles),
+      entities_(entities),
+      context_(context),
+      entries_start_index_(0xDEADBEEF),
+      syncing_bits_set_(true) {}
 
 void DirectoryCommitContribution::UnsetSyncingBits() {
   syncable::ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir_);

@@ -24,10 +24,16 @@ void MockUpdateHandler::GetDownloadProgress(
   progress_marker->CopyFrom(progress_marker_);
 }
 
+void MockUpdateHandler::GetDataTypeContext(
+    sync_pb::DataTypeContext* context) const {
+  context->Clear();
+}
+
 void MockUpdateHandler::ProcessGetUpdatesResponse(
-      const sync_pb::DataTypeProgressMarker& progress_marker,
-      const SyncEntityList& applicable_updates,
-      sessions::StatusController* status) {
+    const sync_pb::DataTypeProgressMarker& progress_marker,
+    const sync_pb::DataTypeContext& mutated_context,
+    const SyncEntityList& applicable_updates,
+    sessions::StatusController* status) {
   progress_marker_.CopyFrom(progress_marker);
 }
 

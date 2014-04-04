@@ -43,6 +43,9 @@ class SYNC_EXPORT WriteTransaction : public BaseTransaction {
   virtual syncable::BaseTransaction* GetWrappedTrans() const OVERRIDE;
   syncable::WriteTransaction* GetWrappedWriteTrans() { return transaction_; }
 
+  // Set's a |type|'s local context. Does not affect any individual entities.
+  void SetDataTypeContext(ModelType type, const std::string& context);
+
  protected:
   WriteTransaction() {}
 

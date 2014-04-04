@@ -66,7 +66,7 @@ class SYNC_EXPORT_PRIVATE DirectoryCommitContribution
       const sync_pb::ClientToServerResponse& response,
       sessions::StatusController* status) OVERRIDE;
 
-  // Cleans up any temproary state associated with the commit.  Must be called
+  // Cleans up any temporary state associated with the commit.  Must be called
   // before destruction.
   virtual void CleanUp() OVERRIDE;
 
@@ -82,6 +82,7 @@ class SYNC_EXPORT_PRIVATE DirectoryCommitContribution
   DirectoryCommitContribution(
       const std::vector<int64>& metahandles,
       const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
+      const sync_pb::DataTypeContext& context,
       syncable::Directory* directory);
 
   void UnsetSyncingBits();
@@ -89,6 +90,7 @@ class SYNC_EXPORT_PRIVATE DirectoryCommitContribution
   syncable::Directory* dir_;
   const std::vector<int64> metahandles_;
   const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity> entities_;
+  sync_pb::DataTypeContext context_;
   size_t entries_start_index_;
 
   // This flag is tracks whether or not the directory entries associated with

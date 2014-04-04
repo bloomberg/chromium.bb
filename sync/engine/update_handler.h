@@ -10,6 +10,7 @@
 #include "sync/base/sync_export.h"
 
 namespace sync_pb {
+class DataTypeContext;
 class DataTypeProgressMarker;
 class SyncEntity;
 }
@@ -35,6 +36,10 @@ class SYNC_EXPORT_PRIVATE UpdateHandler {
   virtual void GetDownloadProgress(
       sync_pb::DataTypeProgressMarker* progress_marker) const = 0;
 
+  // Fills |context| with the per-client datatype context, if one exists. Clears
+  // |context| otherwise.
+  virtual void GetDataTypeContext(sync_pb::DataTypeContext* context) const = 0;
+
   // Processes the contents of a GetUpdates response message.
   //
   // Should be invoked with the progress marker and set of SyncEntities from a
@@ -46,6 +51,7 @@ class SYNC_EXPORT_PRIVATE UpdateHandler {
   // this type.
   virtual void ProcessGetUpdatesResponse(
       const sync_pb::DataTypeProgressMarker& progress_marker,
+      const sync_pb::DataTypeContext& mutated_context,
       const SyncEntityList& applicable_updates,
       sessions::StatusController* status) = 0;
 

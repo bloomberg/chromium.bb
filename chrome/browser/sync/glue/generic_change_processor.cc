@@ -26,6 +26,8 @@ namespace browser_sync {
 
 namespace {
 
+const int kContextSizeLimit = 1024;  // Datatype context size limit.
+
 void SetNodeSpecifics(const sync_pb::EntitySpecifics& entity_specifics,
                       syncer::WriteNode* write_node) {
   if (syncer::GetModelTypeFromSpecifics(entity_specifics) ==
@@ -170,7 +172,18 @@ syncer::SyncDataList GenericChangeProcessor::GetAllSyncData(
 syncer::SyncError GenericChangeProcessor::UpdateDataTypeContext(
     syncer::ModelType type,
     const std::string& context) {
-  NOTIMPLEMENTED();
+  if (context.size() > static_cast<size_t>(kContextSizeLimit)) {
+    return syncer::SyncError(FROM_HERE,
+                             syncer::SyncError::DATATYPE_ERROR,
+                             "Context size limit exceeded.",
+                             type);
+  }
+
+  syncer::WriteTransaction trans(FROM_HERE, share_handle());
+  trans.SetDataTypeContext(type, context);
+
+  // TODO(zea): consider forcing a nudge? For we'll just use the context on
+  // the next organically triggered sync cycle.
   return syncer::SyncError();
 }
 

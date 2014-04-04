@@ -53,6 +53,10 @@ class GetUpdatesProcessorTest : public ::testing::Test {
           response->add_new_progress_marker();
       marker->set_data_type_id(GetSpecificsFieldNumberFromModelType(it.Get()));
       marker->set_token("foobarbaz");
+      sync_pb::DataTypeContext* context = response->add_context_mutations();
+      context->set_data_type_id(GetSpecificsFieldNumberFromModelType(it.Get()));
+      context->set_version(1);
+      context->set_context("context");
     }
 
     response->set_changes_remaining(0);

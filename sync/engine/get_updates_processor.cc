@@ -60,17 +60,16 @@ SyncerError HandleGetEncryptionKeyResponse(
 // divides them according to their type.  Outputs a map from model types to
 // received SyncEntities.  The output map will have entries (possibly empty)
 // for all types in |requested_types|.
-void PartitionUpdatesByType(
-    const sync_pb::GetUpdatesResponse& updates,
-    ModelTypeSet requested_types,
-    TypeSyncEntityMap* updates_by_type) {
-  int update_count = updates.entries().size();
+void PartitionUpdatesByType(const sync_pb::GetUpdatesResponse& gu_response,
+                            ModelTypeSet requested_types,
+                            TypeSyncEntityMap* updates_by_type) {
+  int update_count = gu_response.entries().size();
   for (ModelTypeSet::Iterator it = requested_types.First();
        it.Good(); it.Inc()) {
     updates_by_type->insert(std::make_pair(it.Get(), SyncEntityList()));
   }
   for (int i = 0; i < update_count; ++i) {
-    const sync_pb::SyncEntity& update = updates.entries(i);
+    const sync_pb::SyncEntity& update = gu_response.entries(i);
     ModelType type = GetModelType(update);
     if (!IsRealDataType(type)) {
       NOTREACHED() << "Received update with invalid type.";
@@ -104,6 +103,27 @@ void PartitionProgressMarkersByType(
     if (!request_types.Has(model_type)) {
       DLOG(WARNING)
           << "Skipping unexpected progress marker for non-enabled type "
+          << ModelTypeToString(model_type);
+      continue;
+    }
+    index_map->insert(std::make_pair(model_type, i));
+  }
+}
+
+void PartitionContextMutationsByType(
+    const sync_pb::GetUpdatesResponse& gu_response,
+    ModelTypeSet request_types,
+    TypeToIndexMap* index_map) {
+  for (int i = 0; i < gu_response.context_mutations_size(); ++i) {
+    int field_number = gu_response.context_mutations(i).data_type_id();
+    ModelType model_type = GetModelTypeFromSpecificsFieldNumber(field_number);
+    if (!IsRealDataType(model_type)) {
+      DLOG(WARNING) << "Unknown field number " << field_number;
+      continue;
+    }
+    if (!request_types.Has(model_type)) {
+      DLOG(WARNING)
+          << "Skipping unexpected context mutation for non-enabled type "
           << ModelTypeToString(model_type);
       continue;
     }
@@ -178,7 +198,13 @@ void GetUpdatesProcessor::PrepareGetUpdates(
         get_updates->add_from_progress_marker();
     handler_it->second->GetDownloadProgress(progress_marker);
     progress_marker->clear_gc_directive();
+
+    sync_pb::DataTypeContext context;
+    handler_it->second->GetDataTypeContext(&context);
+    if (!context.context().empty())
+      get_updates->add_client_contexts()->Swap(&context);
   }
+
   delegate_.HelpPopulateGuMessage(get_updates);
 }
 
@@ -286,6 +312,9 @@ bool GetUpdatesProcessor::ProcessGetUpdatesResponse(
     return false;
   }
 
+  TypeToIndexMap context_by_type;
+  PartitionContextMutationsByType(gu_response, gu_types, &context_by_type);
+
   // Iterate over these maps in parallel, processing updates for each type.
   TypeToIndexMap::iterator progress_marker_iter =
       progress_index_by_type.begin();
@@ -299,9 +328,15 @@ bool GetUpdatesProcessor::ProcessGetUpdatesResponse(
     UpdateHandlerMap::iterator update_handler_iter =
         update_handler_map_->find(type);
 
+    sync_pb::DataTypeContext context;
+    TypeToIndexMap::iterator context_iter = context_by_type.find(type);
+    if (context_iter != context_by_type.end())
+      context.CopyFrom(gu_response.context_mutations(context_iter->second));
+
     if (update_handler_iter != update_handler_map_->end()) {
       update_handler_iter->second->ProcessGetUpdatesResponse(
           gu_response.new_progress_marker(progress_marker_iter->second),
+          context,
           updates_iter->second,
           status_controller);
     } else {

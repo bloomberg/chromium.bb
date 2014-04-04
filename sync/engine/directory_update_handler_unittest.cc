@@ -251,6 +251,12 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
   progress.set_token("token");
   progress.mutable_gc_directive()->set_version_watermark(kDefaultVersion + 10);
 
+  sync_pb::DataTypeContext context;
+  context.set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(SYNCED_NOTIFICATIONS));
+  context.set_context("context");
+  context.set_version(1);
+
   scoped_ptr<sync_pb::SyncEntity> type_root =
       CreateUpdate(SyncableIdToProto(syncable::Id::CreateFromServerId("root")),
                    syncable::GetNullId().GetServerId(),
@@ -277,7 +283,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
   updates.push_back(e2.get());
 
   // Process and apply updates.
-  handler.ProcessGetUpdatesResponse(progress, updates, &status);
+  handler.ProcessGetUpdatesResponse(progress, context, updates, &status);
   handler.ApplyUpdates(&status);
 
   // Verify none is deleted because they are unapplied during GC.
@@ -287,7 +293,8 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
 
   // Process and apply again. Old entry is deleted but not root.
   progress.mutable_gc_directive()->set_version_watermark(kDefaultVersion + 20);
-  handler.ProcessGetUpdatesResponse(progress, SyncEntityList(), &status);
+  handler.ProcessGetUpdatesResponse(
+      progress, context, SyncEntityList(), &status);
   handler.ApplyUpdates(&status);
   EXPECT_TRUE(EntryExists(type_root->id_string()));
   EXPECT_FALSE(EntryExists(e1->id_string()));

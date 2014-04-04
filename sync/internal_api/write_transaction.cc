@@ -4,6 +4,7 @@
 
 #include "sync/internal_api/public/write_transaction.h"
 
+#include "sync/syncable/directory.h"
 #include "sync/syncable/syncable_write_transaction.h"
 
 namespace syncer {
@@ -34,6 +35,29 @@ WriteTransaction::~WriteTransaction() {
 
 syncable::BaseTransaction* WriteTransaction::GetWrappedTrans() const {
   return transaction_;
+}
+
+void WriteTransaction::SetDataTypeContext(ModelType type,
+                                          const std::string& context) {
+  sync_pb::DataTypeContext local_context;
+  GetDirectory()->GetDataTypeContext(transaction_,
+                                     type,
+                                     &local_context);
+  if (local_context.context() == context)
+    return;
+
+  if (!local_context.has_data_type_id()) {
+    local_context.set_data_type_id(
+        syncer::GetSpecificsFieldNumberFromModelType(type));
+  }
+  DCHECK_EQ(syncer::GetSpecificsFieldNumberFromModelType(type),
+            local_context.data_type_id());
+  DCHECK_GE(local_context.version(), 0);
+  local_context.set_version(local_context.version() + 1);
+  local_context.set_context(context);
+  GetDirectory()->SetDataTypeContext(transaction_,
+                                     type,
+                                     local_context);
 }
 
 }  // namespace syncer

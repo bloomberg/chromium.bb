@@ -57,8 +57,11 @@ class SYNC_EXPORT NonBlockingTypeProcessorCore
   // UpdateHandler implementation.
   virtual void GetDownloadProgress(
       sync_pb::DataTypeProgressMarker* progress_marker) const OVERRIDE;
+  virtual void GetDataTypeContext(sync_pb::DataTypeContext* context) const
+      OVERRIDE;
   virtual void ProcessGetUpdatesResponse(
       const sync_pb::DataTypeProgressMarker& progress_marker,
+      const sync_pb::DataTypeContext& mutated_context,
       const SyncEntityList& applicable_updates,
       sessions::StatusController* status) OVERRIDE;
   virtual void ApplyUpdates(sessions::StatusController* status) OVERRIDE;
