@@ -4,6 +4,7 @@
 
 #include "content/shell/renderer/test_runner/MockWebMediaStreamCenter.h"
 
+#include "base/logging.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "third_party/WebKit/public/platform/WebAudioDestinationConsumer.h"
@@ -26,7 +27,7 @@ public:
         : WebMethodTask<MockWebMediaStreamCenter>(object)
         , m_stream(stream)
     {
-        BLINK_ASSERT(!m_stream.isNull());
+        DCHECK(!m_stream.isNull());
     }
 
     virtual void runIfValid() OVERRIDE

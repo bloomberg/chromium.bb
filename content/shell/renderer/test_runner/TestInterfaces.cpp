@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
 #include "content/shell/renderer/test_runner/accessibility_controller.h"
@@ -146,7 +147,7 @@ void TestInterfaces::windowClosed(WebTestProxyBase* proxy)
 {
     vector<WebTestProxyBase*>::iterator pos = find(m_windowList.begin(), m_windowList.end(), proxy);
     if (pos == m_windowList.end()) {
-        BLINK_ASSERT_NOT_REACHED();
+        NOTREACHED();
         return;
     }
     m_windowList.erase(pos);

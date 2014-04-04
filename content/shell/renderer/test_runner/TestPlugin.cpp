@@ -162,7 +162,7 @@ TestPlugin::TestPlugin(WebFrame* frame, const WebPluginParams& params, WebTestDe
     const CR_DEFINE_STATIC_LOCAL(WebString, kAttributeCanProcessDrag, ("can-process-drag"));
     const CR_DEFINE_STATIC_LOCAL(WebString, kAttributePrintUserGestureStatus, ("print-user-gesture-status"));
 
-    BLINK_ASSERT(params.attributeNames.size() == params.attributeValues.size());
+    DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
     size_t size = params.attributeNames.size();
     for (size_t i = 0; i < size; ++i) {
         const WebString& attributeName = params.attributeNames[i];
@@ -361,7 +361,7 @@ TestPlugin::Primitive TestPlugin::parsePrimitive(const WebString& string)
     else if (string == kPrimitiveTriangle)
         primitive = PrimitiveTriangle;
     else
-        BLINK_ASSERT_NOT_REACHED();
+        NOTREACHED();
     return primitive;
 }
 
@@ -380,7 +380,7 @@ void TestPlugin::parseColor(const WebString& string, unsigned color[3])
     else if (string == "blue")
         color[2] = 255;
     else
-        BLINK_ASSERT_NOT_REACHED();
+        NOTREACHED();
 }
 
 float TestPlugin::parseOpacity(const WebString& string)
@@ -508,7 +508,7 @@ bool TestPlugin::initProgram()
 
 bool TestPlugin::initPrimitive()
 {
-    BLINK_ASSERT(m_scene.primitive == PrimitiveTriangle);
+    DCHECK_EQ(m_scene.primitive, PrimitiveTriangle);
 
     m_scene.vbo = m_context->createBuffer();
     if (!m_scene.vbo)
@@ -526,9 +526,9 @@ bool TestPlugin::initPrimitive()
 
 void TestPlugin::drawPrimitive()
 {
-    BLINK_ASSERT(m_scene.primitive == PrimitiveTriangle);
-    BLINK_ASSERT(m_scene.vbo);
-    BLINK_ASSERT(m_scene.program);
+    DCHECK_EQ(m_scene.primitive, PrimitiveTriangle);
+    DCHECK(m_scene.vbo);
+    DCHECK(m_scene.program);
 
     m_context->useProgram(m_scene.program);
 
@@ -659,7 +659,7 @@ bool TestPlugin::handleDragStatusUpdate(WebDragStatus dragStatus, const WebDragD
         dragStatusName = "DragDrop";
         break;
     case WebDragStatusUnknown:
-        BLINK_ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     m_delegate->printMessage(std::string("Plugin received event: ") + dragStatusName + "\n");
     return false;

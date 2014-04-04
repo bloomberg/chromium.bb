@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/logging.h"
 #include "content/shell/common/test_runner/WebPreferences.h"
 #include "content/shell/renderer/test_runner/MockWebSpeechInputController.h"
 #include "content/shell/renderer/test_runner/MockWebSpeechRecognizer.h"
@@ -1651,7 +1652,7 @@ WebFrame* TestRunner::topLoadingFrame() const {
 }
 
 void TestRunner::policyDelegateDone() {
-  BLINK_ASSERT(wait_until_done_);
+  DCHECK(wait_until_done_);
   delegate_->testFinished();
   wait_until_done_ = false;
 }
@@ -1688,13 +1689,13 @@ bool TestRunner::RequestPointerLock() {
           0);
       return true;
     case PointerLockWillRespondAsync:
-      BLINK_ASSERT(!pointer_locked_);
+      DCHECK(!pointer_locked_);
       return true;
     case PointerLockWillFailSync:
-      BLINK_ASSERT(!pointer_locked_);
+      DCHECK(!pointer_locked_);
       return false;
     default:
-      BLINK_ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 }
@@ -2291,7 +2292,7 @@ void TestRunner::OverridePreference(const std::string key,
   } else if (key == "WebKitShouldRespectImageOrientation") {
     prefs->shouldRespectImageOrientation = value->BooleanValue();
   } else if (key == "WebKitWebAudioEnabled") {
-    BLINK_ASSERT(value->BooleanValue());
+    DCHECK(value->BooleanValue());
   } else {
     std::string message("Invalid name for preference: ");
     message.append(key);
@@ -2607,7 +2608,7 @@ void TestRunner::DidAcquirePointerLockInternal() {
 }
 
 void TestRunner::DidNotAcquirePointerLockInternal() {
-  BLINK_ASSERT(!pointer_locked_);
+  DCHECK(!pointer_locked_);
   pointer_locked_ = false;
   web_view_->didNotAcquirePointerLock();
 

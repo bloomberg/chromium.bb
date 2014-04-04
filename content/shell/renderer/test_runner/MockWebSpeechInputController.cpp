@@ -4,6 +4,7 @@
 
 #include "content/shell/renderer/test_runner/MockWebSpeechInputController.h"
 
+#include "base/logging.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -98,7 +99,7 @@ bool MockWebSpeechInputController::startRecognition(int requestId, const WebRect
 void MockWebSpeechInputController::cancelRecognition(int requestId)
 {
     if (m_speechTask) {
-        BLINK_ASSERT(requestId == m_requestId);
+        DCHECK_EQ(requestId, m_requestId);
 
         m_speechTask->stop();
         m_recording = false;
@@ -109,7 +110,7 @@ void MockWebSpeechInputController::cancelRecognition(int requestId)
 
 void MockWebSpeechInputController::stopRecording(int requestId)
 {
-    BLINK_ASSERT(requestId == m_requestId);
+    DCHECK_EQ(requestId, m_requestId);
     if (m_speechTask && m_recording) {
         m_speechTask->stop();
         speechTaskFired();

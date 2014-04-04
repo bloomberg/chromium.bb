@@ -6,6 +6,7 @@
 
 #include <cctype>
 
+#include "base/logging.h"
 #include "content/shell/renderer/test_runner/event_sender.h"
 #include "content/shell/renderer/test_runner/MockColorChooser.h"
 #include "content/shell/renderer/test_runner/MockWebSpeechInputController.h"
@@ -405,7 +406,7 @@ WebWidget* WebTestProxyBase::webWidget()
 
 WebView* WebTestProxyBase::webView()
 {
-    BLINK_ASSERT(m_webWidget);
+    DCHECK(m_webWidget);
     // TestRunner does not support popup widgets. So m_webWidget is always a WebView.
     return static_cast<WebView*>(m_webWidget);
 }
@@ -547,8 +548,8 @@ void WebTestProxyBase::setLogConsoleOutput(bool enabled)
 
 void WebTestProxyBase::paintRect(const WebRect& rect)
 {
-    BLINK_ASSERT(!m_isPainting);
-    BLINK_ASSERT(canvas());
+    DCHECK(!m_isPainting);
+    DCHECK(canvas());
     m_isPainting = true;
     float deviceScaleFactor = webView()->deviceScaleFactor();
     int scaledX = static_cast<int>(static_cast<float>(rect.x) * deviceScaleFactor);
@@ -588,13 +589,13 @@ void WebTestProxyBase::paintInvalidatedRegion()
             continue;
         paintRect(rect);
     }
-    BLINK_ASSERT(m_paintRect.isEmpty());
+    DCHECK(m_paintRect.isEmpty());
 }
 
 void WebTestProxyBase::paintPagesWithBoundaries()
 {
-    BLINK_ASSERT(!m_isPainting);
-    BLINK_ASSERT(canvas());
+    DCHECK(!m_isPainting);
+    DCHECK(canvas());
     m_isPainting = true;
 
     WebSize pageSizeInPixels = webWidget()->size();
@@ -664,7 +665,7 @@ WebMIDIClientMock* WebTestProxyBase::midiClientMock()
 #if ENABLE_INPUT_SPEECH
 MockWebSpeechInputController* WebTestProxyBase::speechInputControllerMock()
 {
-    BLINK_ASSERT(m_speechInputController.get());
+    DCHECK(m_speechInputController.get());
     return m_speechInputController.get();
 }
 #endif
@@ -958,7 +959,7 @@ WebSpeechInputController* WebTestProxyBase::speechInputController(WebSpeechInput
     }
     return m_speechInputController.get();
 #else
-    BLINK_ASSERT(listener);
+    DCHECK(listener);
     return 0;
 #endif
 }
@@ -1146,7 +1147,7 @@ void WebTestProxyBase::willSendRequest(WebLocalFrame*, unsigned identifier, blin
     GURL mainDocumentURL = request.firstPartyForCookies();
 
     if (redirectResponse.isNull() && (m_testInterfaces->testRunner()->shouldDumpResourceLoadCallbacks() || m_testInterfaces->testRunner()->shouldDumpResourcePriorities())) {
-        BLINK_ASSERT(m_resourceIdentifierMap.find(identifier) == m_resourceIdentifierMap.end());
+        DCHECK(m_resourceIdentifierMap.find(identifier) == m_resourceIdentifierMap.end());
         m_resourceIdentifierMap[identifier] = descriptionSuitableForTestResult(requestURL);
     }
 

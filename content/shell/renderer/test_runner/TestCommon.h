@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "third_party/WebKit/public/platform/WebCommon.h"
 
 #if defined(WIN32)
 #define snprintf(str, size, ...) _snprintf_s(str, size, size, __VA_ARGS__)
