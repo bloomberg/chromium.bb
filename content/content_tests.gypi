@@ -950,7 +950,7 @@
           'variables': {
             'mojom_base_output_dir': 'content',
           },
-          'includes': [ '../mojo/public/bindings/mojom_bindings_generator.gypi' ],
+          'includes': [ '../mojo/public/tools/bindings/mojom_bindings_generator.gypi' ],
           'export_dependent_settings': [
             '../mojo/mojo.gyp:mojo_bindings',
             '../mojo/mojo.gyp:mojo_system',

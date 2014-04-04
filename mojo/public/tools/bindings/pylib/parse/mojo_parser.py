@@ -17,9 +17,10 @@ try:
   from ply import lex
   from ply import yacc
 except ImportError:
+  # This assumes this file is in src/mojo/public/tools/bindings/pylib/parse/.
   module_path, module_name = os.path.split(__file__)
   third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir,
-                             os.pardir, os.pardir, 'third_party')
+                             os.pardir, os.pardir, os.pardir, 'third_party')
   sys.path.append(third_party)
   # pylint: disable=F0401
   from ply import lex

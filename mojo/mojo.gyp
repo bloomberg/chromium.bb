@@ -395,7 +395,7 @@
       'variables': {
         'mojom_base_output_dir': 'mojo',
       },
-      'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'sources': [
         'shell/app_child_process.cc',
         'shell/app_child_process.h',
@@ -473,7 +473,7 @@
       'variables': {
         'mojom_base_output_dir': 'mojo',
       },
-      'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'sources': [
         'service_manager/service_manager_unittest.cc',
         'service_manager/test.mojom',
