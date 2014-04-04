@@ -304,7 +304,7 @@ const IMAGE_SECTION_HEADER* PeImageReader::FindSectionFromRva(
 }
 
 const uint8_t* PeImageReader::GetImageData(size_t index, size_t* data_length) {
-  // Get the directory entry for the debug data.
+  // Get the requested directory entry.
   const IMAGE_DATA_DIRECTORY* entry = GetDataDirectoryEntryAt(index);
   if (!entry)
     return NULL;
@@ -319,6 +319,12 @@ const uint8_t* PeImageReader::GetImageData(size_t index, size_t* data_length) {
   size_t data_offset = entry->VirtualAddress - header->VirtualAddress;
   if (entry->Size > (header->Misc.VirtualSize - data_offset))
     return NULL;
+
+  // Is the data entirely present on disk (if not it's zeroed out when loaded)?
+  if (data_offset >= header->SizeOfRawData ||
+      header->SizeOfRawData - data_offset < entry->Size) {
+    return NULL;
+  }
 
   *data_length = entry->Size;
   return image_data_ + header->PointerToRawData + data_offset;
