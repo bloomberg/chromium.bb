@@ -193,7 +193,7 @@ TEST(WebInputEventFactoryTest, NumPadConversion)
 
     // Round-trip through the WebCore KeyboardEvent class.
     blink::PlatformKeyboardEventBuilder platformBuilder(webEvent);
-    RefPtr<WebCore::KeyboardEvent> keypress = WebCore::KeyboardEvent::create(platformBuilder, 0);
+    RefPtrWillBeRawPtr<WebCore::KeyboardEvent> keypress = WebCore::KeyboardEvent::create(platformBuilder, 0);
     EXPECT_TRUE(keypress->location() == WebCore::KeyboardEvent::DOM_KEY_LOCATION_NUMPAD);
 
     blink::WebKeyboardEventBuilder builder(*keypress);
