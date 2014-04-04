@@ -5216,8 +5216,12 @@ other types of suffix sets.
 <histogram name="Event.Latency.Renderer2" units="microseconds">
   <owner>rbyers@chromium.org</owner>
   <summary>
-    Time between initiation of the input event and the renderer receiving and
-    starting to process it.
+    Time between input event creation and the renderer receiving and starting to
+    process the event. For touch events on Windows, we measure from when the
+    event reaches Chrome, whereas on other platforms we use the timestamp from
+    the kernel. On Windows, this metric is only reported when
+    |IsHighResNowFastAndReliable| is true, which will introduce some sampling
+    bias.
   </summary>
 </histogram>
 
@@ -5236,9 +5240,12 @@ other types of suffix sets.
     units="microseconds">
   <owner>rbyers@chromium.org</owner>
   <summary>
-    Time between initial creation of touch event and when the resulting
-    ScrollGesture reaches Impl thread. Maximum is 1000ms. This supersedes the
-    Event.Latency.RendererImpl.GestureScroll metric.
+    Time between touch event creation and when the resulting GestureScroll
+    reaches the Impl thread. Maximum is 1000ms. On Windows, we measure from when
+    the touch event reaches Chrome, whereas on other platforms we use the
+    timestamp from the kernel. On Windows, this metric is only reported when
+    |IsHighResNowFastAndReliable| is true, which will introduce some sampling
+    bias. This supersedes the Event.Latency.RendererImpl.GestureScroll metric.
   </summary>
 </histogram>
 

@@ -1069,22 +1069,27 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     latency_info_.push_back(latency_info);
   }
 
-  base::TimeDelta now = base::TimeDelta::FromInternalValue(
-      base::TimeTicks::Now().ToInternalValue());
+  if (base::TimeTicks::IsHighResNowFastAndReliable()) {
+    // If we don't have a high res timer, these metrics won't be accurate enough
+    // to be worth collecting. Note that this does introduce some sampling bias.
 
-  int64 delta = static_cast<int64>(
-      (now.InSecondsF() - input_event->timeStampSeconds) *
-          base::Time::kMicrosecondsPerSecond);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Event.AggregatedLatency.Renderer2",
-                              delta, 1, 10000000, 100);
-  base::HistogramBase* counter_for_type =
-      base::Histogram::FactoryGet(
-          base::StringPrintf("Event.Latency.Renderer2.%s", event_name),
-          1,
-          10000000,
-          100,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
-  counter_for_type->Add(delta);
+    base::TimeDelta now = base::TimeDelta::FromInternalValue(
+        base::TimeTicks::HighResNow().ToInternalValue());
+
+    int64 delta =
+        static_cast<int64>((now.InSecondsF() - input_event->timeStampSeconds) *
+                           base::Time::kMicrosecondsPerSecond);
+
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Event.AggregatedLatency.Renderer2", delta, 1, 10000000, 100);
+    base::HistogramBase* counter_for_type = base::Histogram::FactoryGet(
+        base::StringPrintf("Event.Latency.Renderer2.%s", event_name),
+        1,
+        10000000,
+        100,
+        base::HistogramBase::kUmaTargetedHistogramFlag);
+    counter_for_type->Add(delta);
+  }
 
   if (WebInputEvent::isUserGestureEventType(input_event->type))
     WillProcessUserGesture();

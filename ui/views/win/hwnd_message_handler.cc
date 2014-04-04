@@ -2145,12 +2145,27 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
         touch_event_type = ui::ET_TOUCH_MOVED;
       }
       if (touch_event_type != ui::ET_UNKNOWN) {
-        ui::TouchEvent event(
-            touch_event_type,
-            gfx::Point(point.x, point.y),
-            id_generator_.GetGeneratedID(input[i].dwID),
-            base::TimeDelta::FromMilliseconds(input[i].dwTime));
+        base::TimeTicks now;
+        // input[i].dwTime doesn't necessarily relate to the system time at all,
+        // so use base::TimeTicks::HighResNow() if possible, or
+        // base::TimeTicks::Now() otherwise.
+        if (base::TimeTicks::IsHighResNowFastAndReliable())
+          now = base::TimeTicks::HighResNow();
+        else
+          now = base::TimeTicks::Now();
+        ui::TouchEvent event(touch_event_type,
+                             gfx::Point(point.x, point.y),
+                             id_generator_.GetGeneratedID(input[i].dwID),
+                             now - base::TimeTicks());
         event.set_flags(flags);
+        event.latency()->AddLatencyNumberWithTimestamp(
+            ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+            0,
+            0,
+            base::TimeTicks::FromInternalValue(
+                event.time_stamp().ToInternalValue()),
+            1);
+
         touch_events.push_back(event);
         if (touch_event_type == ui::ET_TOUCH_RELEASED)
           id_generator_.ReleaseNumber(input[i].dwID);
