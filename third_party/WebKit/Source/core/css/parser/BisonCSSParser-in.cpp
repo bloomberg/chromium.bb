@@ -1783,15 +1783,16 @@ ALWAYS_INLINE static void makeLower(const CharacterType* input, CharacterType* o
     }
 }
 
-void BisonCSSParser::tokenToLowerCase(const CSSParserString& token)
+void BisonCSSParser::tokenToLowerCase(CSSParserString& token)
 {
+    // Since it's our internal token, we know that we created it out
+    // of our writable work buffers. Therefore the const_cast is just
+    // ugly and not a potential crash.
     size_t length = token.length();
-    if (m_tokenizer.is8BitSource()) {
-        size_t offset = token.characters8() - m_tokenizer.m_dataStart8.get();
-        makeLower(token.characters8(), m_tokenizer.m_dataStart8.get() + offset, length);
+    if (token.is8Bit()) {
+        makeLower(token.characters8(), const_cast<LChar*>(token.characters8()), length);
     } else {
-        size_t offset = token.characters16() - m_tokenizer.m_dataStart16.get();
-        makeLower(token.characters16(), m_tokenizer.m_dataStart16.get() + offset, length);
+        makeLower(token.characters16(), const_cast<UChar*>(token.characters16()), length);
     }
 }
 

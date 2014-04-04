@@ -218,7 +218,7 @@ public:
     void setLocationLabel(const CSSParserLocation& location) { m_locationLabel = location; }
     const CSSParserLocation& lastLocationLabel() const { return m_locationLabel; }
 
-    void tokenToLowerCase(const CSSParserString& token);
+    void tokenToLowerCase(CSSParserString& token);
 
     void markViewportRuleBodyStart() { m_inViewport = true; }
     void markViewportRuleBodyEnd() { m_inViewport = false; }
