@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
 <body spellcheck="false">
-asdf is misspelled.
+<script src="../editing.js"></script>
+<script src="../../resources/js-test.js"></script>
+<div id="misspelled" onmouseup="checkSpellingMarker()">asd is misspelled.</div>
 <script>
 description("This tests whether WebKit does not spell check in 'designMode' "
-    + "when spellcheck='false'. To test manually, click 'asdf' above. "
-    + "There should be no spelling marker for 'asdf' after the click.");
+    + "when spellcheck='false'. To test manually, click 'asd' and move cursor until '.'. "
+    + "There should be no spelling marker for 'asd'.");
 
 jsTestIsAsync = true;
 
@@ -19,24 +18,32 @@ if (window.internals) {
 
 document.designMode = "on";
 
-document.body.addEventListener('mousedown', function() {
-    if (document.activeElement != document.body) {
-        testFailed('Active element after click is not body element');
-        finishJSTest();
-    }
+function checkSpellingMarker()
+{
+    if (!window.internals)
+        return;
 
-    if (window.internals)
-        shouldBecomeEqual('internals.hasSpellingMarker(document, 0, 4)', 'false', finishJSTest);
-});
+    // First, verify spelling with spellcheck attribute off.
+    // Move selection to the next word to notify WebKit that "asd" has been typed/changed
+    // to give a chance to spellcheck.
+    moveSelectionForwardByWordCommand();
+
+    shouldBecomeEqual('internals.hasSpellingMarker(document, 0, 3)', 'false', function() {
+        evalAndLog('document.body.setAttribute("spellcheck", "true")');
+        // Do any selection change to force spellchecking after attribute change.
+        moveSelectionForwardByLineCommand();
+        shouldBecomeDifferent('internals.hasSpellingMarker(document, 0, 3)', 'false', finishJSTest);
+    });
+}
 
 if (window.eventSender) {
-    var x = document.body.offsetLeft + 10;
-    var y = document.body.offsetTop + 17;
+    var misspelledDiv = document.getElementById("misspelled");
+    var x = misspelledDiv.offsetLeft;
+    var y = misspelledDiv.offsetTop;
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
     eventSender.mouseUp();
 }
-
 </script> 
 </body>
 </html>
