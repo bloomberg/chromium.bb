@@ -17,6 +17,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/view_targeter.h"
 #include "ui/views/views_switches.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -117,6 +118,7 @@ RootView::RootView(Widget* widget)
       event_dispatch_target_(NULL),
       old_dispatch_target_(NULL) {
   AddPreTargetHandler(pre_dispatch_handler_.get());
+  SetEventTargeter(scoped_ptr<ui::EventTargeter>(new ViewTargeter()));
 }
 
 RootView::~RootView() {
@@ -203,7 +205,7 @@ ui::EventDispatchDetails RootView::OnEventFromSource(ui::Event* event) {
   //                   eventually remove this function altogether. See
   //                   crbug.com/348083.
   if (event->IsKeyEvent())
-    DispatchKeyEvent(static_cast<ui::KeyEvent*>(event));
+    return EventProcessor::OnEventFromSource(event);
   else if (event->IsScrollEvent())
     DispatchScrollEvent(static_cast<ui::ScrollEvent*>(event));
   else if (event->IsTouchEvent())
@@ -698,14 +700,6 @@ View::DragInfo* RootView::GetDragInfo() {
 
 // Input -----------------------------------------------------------------------
 
-void RootView::DispatchKeyEvent(ui::KeyEvent* event) {
-  View* v = NULL;
-  if (GetFocusManager())  // Can be NULL in unittests.
-    v = GetFocusManager()->GetFocusedView();
-
-  DispatchKeyEventStartAt(v, event);
-}
-
 void RootView::DispatchScrollEvent(ui::ScrollEvent* event) {
   for (View* v = GetEventHandlerForPoint(event->location());
        v && v != this && !event->stopped_propagation(); v = v->parent()) {
@@ -753,16 +747,6 @@ void RootView::NotifyEnterExitOfDescendant(const ui::MouseEvent& event,
     // incorrect event dispatch.
     MouseEnterExitEvent notify_event(event, type);
     ui::EventDispatchDetails dispatch_details = DispatchEvent(p, &notify_event);
-    if (dispatch_details.dispatcher_destroyed ||
-        dispatch_details.target_destroyed) {
-      return;
-    }
-  }
-}
-
-void RootView::DispatchKeyEventStartAt(View* view, ui::KeyEvent* event) {
-  for (; view && view != this && !event->handled(); view = view->parent()) {
-    ui::EventDispatchDetails dispatch_details = DispatchEvent(view, event);
     if (dispatch_details.dispatcher_destroyed ||
         dispatch_details.target_destroyed) {
       return;

@@ -26,6 +26,7 @@
 #include "ui/compositor/layer_owner.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target.h"
+#include "ui/events/event_targeter.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
@@ -701,6 +702,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // view hierarchy with a Widget.
   virtual InputMethod* GetInputMethod();
   virtual const InputMethod* GetInputMethod() const;
+
+  // Sets a new event-targeter for the view, and returns the previous
+  // event-targeter.
+  scoped_ptr<ui::EventTargeter> SetEventTargeter(
+      scoped_ptr<ui::EventTargeter> targeter);
 
   // Overridden from ui::EventTarget:
   virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
@@ -1546,6 +1552,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Input  --------------------------------------------------------------------
 
   scoped_ptr<internal::PostEventDispatchHandler> post_dispatch_handler_;
+  scoped_ptr<ui::EventTargeter> targeter_;
 
   // Accessibility -------------------------------------------------------------
 

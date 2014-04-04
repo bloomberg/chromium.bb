@@ -4,14 +4,62 @@
 
 #include "ui/views/widget/root_view.h"
 
+#include "ui/events/event_targeter.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/test/views_test_base.h"
-#include "ui/views/widget/root_view_test_helper.h"
+#include "ui/views/view_targeter.h"
+#include "ui/views/widget/root_view.h"
 
 namespace views {
 namespace test {
 
 typedef ViewsTestBase RootViewTest;
+
+// Verifies that the the functions ViewTargeter::FindTargetForEvent()
+// and ViewTargeter::FindNextBestTarget() are implemented correctly
+// for key events.
+TEST_F(RootViewTest, ViewTargeterForKeyEvents) {
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(init_params);
+
+  View* content = new View;
+  View* child = new View;
+  View* grandchild = new View;
+
+  widget.SetContentsView(content);
+  content->AddChildView(child);
+  child->AddChildView(grandchild);
+
+  grandchild->SetFocusable(true);
+  grandchild->RequestFocus();
+
+  ui::EventTargeter* targeter = new ViewTargeter();
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget.GetRootView());
+  root_view->SetEventTargeter(make_scoped_ptr(targeter));
+
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, true);
+
+  // The focused view should be the initial target of the event.
+  ui::EventTarget* current_target = targeter->FindTargetForEvent(root_view,
+                                                                 &key_event);
+  EXPECT_EQ(grandchild, static_cast<View*>(current_target));
+
+  // Verify that FindNextBestTarget() will return the parent view of the
+  // argument (and NULL if the argument has no parent view).
+  current_target = targeter->FindNextBestTarget(grandchild, &key_event);
+  EXPECT_EQ(child, static_cast<View*>(current_target));
+  current_target = targeter->FindNextBestTarget(child, &key_event);
+  EXPECT_EQ(content, static_cast<View*>(current_target));
+  current_target = targeter->FindNextBestTarget(content, &key_event);
+  EXPECT_EQ(widget.GetRootView(), static_cast<View*>(current_target));
+  current_target = targeter->FindNextBestTarget(widget.GetRootView(),
+                                                &key_event);
+  EXPECT_EQ(NULL, static_cast<View*>(current_target));
+}
 
 class DeleteOnKeyEventView : public View {
  public:
@@ -31,7 +79,8 @@ class DeleteOnKeyEventView : public View {
   DISALLOW_COPY_AND_ASSIGN(DeleteOnKeyEventView);
 };
 
-// Verifies deleting a View in OnKeyPressed() doesn't crash.
+// Verifies deleting a View in OnKeyPressed() doesn't crash and that the
+// target is marked as destroyed in the returned EventDispatchDetails.
 TEST_F(RootViewTest, DeleteViewDuringKeyEventDispatch) {
   Widget widget;
   Widget::InitParams init_params =
@@ -47,10 +96,19 @@ TEST_F(RootViewTest, DeleteViewDuringKeyEventDispatch) {
   View* child = new DeleteOnKeyEventView(&got_key_event);
   content->AddChildView(child);
 
+  // Give focus to |child| so that it will be the target of the key event.
+  child->SetFocusable(true);
+  child->RequestFocus();
+
+  ui::EventTargeter* targeter = new ViewTargeter();
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget.GetRootView());
+  root_view->SetEventTargeter(make_scoped_ptr(targeter));
+
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, 0, false);
-  RootViewTestHelper test_helper(
-      static_cast<internal::RootView*>(widget.GetRootView()));
-  test_helper.DispatchKeyEventStartAt(child, &key_event);
+  ui::EventDispatchDetails details = root_view->OnEventFromSource(&key_event);
+  EXPECT_TRUE(details.target_destroyed);
+  EXPECT_FALSE(details.dispatcher_destroyed);
   EXPECT_TRUE(got_key_event);
 }
 

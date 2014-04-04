@@ -303,6 +303,8 @@
         'view_model.h',
         'view_model_utils.cc',
         'view_model_utils.h',
+        'view_targeter.cc',
+        'view_targeter.h',
         'views_switches.cc',
         'views_switches.h',
         'views_delegate.cc',
@@ -540,7 +542,6 @@
         'test/views_test_base.h',
         'test/widget_test.cc',
         'test/widget_test.h',
-        'widget/root_view_test_helper.h',
       ],
       'conditions': [
         ['chromeos==1', {
