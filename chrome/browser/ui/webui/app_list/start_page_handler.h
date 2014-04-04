@@ -45,9 +45,6 @@ class StartPageHandler : public content::WebUIMessageHandler,
   void SendRecommendedApps();
 
 #if defined(OS_CHROMEOS)
-  // Returns true if the hotword is enabled.
-  bool HotwordEnabled();
-
   // Called when the pref has been changed.
   void OnHotwordEnabledChanged();
 #endif

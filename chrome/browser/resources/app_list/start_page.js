@@ -77,9 +77,11 @@ cr.define('appList.startPage', function() {
 
   /**
    * Invoked when the app-list bubble is shown.
+   *
+   * @param {boolean} hotwordEnabled Whether the hotword is enabled or not.
    */
-  function onAppListShown() {
-    speechManager.onShown();
+  function onAppListShown(hotwordEnabled) {
+    speechManager.onShown(hotwordEnabled);
   }
 
   /**

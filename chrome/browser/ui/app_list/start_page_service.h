@@ -39,7 +39,12 @@ class StartPageService : public KeyedService {
   void AddObserver(StartPageObserver* observer);
   void RemoveObserver(StartPageObserver* observer);
 
+  void AppListShown();
+  void AppListHidden();
   void ToggleSpeechRecognition();
+
+  // Returns true if the hotword is enabled in the app-launcher.
+  bool HotwordEnabled();
 
   // They return essentially the same web contents but might return NULL when
   // some flag disables the feature.
@@ -67,6 +72,9 @@ class StartPageService : public KeyedService {
 
   explicit StartPageService(Profile* profile);
   virtual ~StartPageService();
+
+  void LoadContents();
+  void UnloadContents();
 
   // KeyedService overrides:
   virtual void Shutdown() OVERRIDE;

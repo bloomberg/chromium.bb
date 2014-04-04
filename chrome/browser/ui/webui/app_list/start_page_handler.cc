@@ -8,13 +8,11 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
-#include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/recommended_apps.h"
@@ -132,33 +130,12 @@ void StartPageHandler::SendRecommendedApps() {
 }
 
 #if defined(OS_CHROMEOS)
-bool StartPageHandler::HotwordEnabled() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-
-  if (!HotwordService::DoesHotwordSupportLanguage(profile))
-    return false;
-
-  const PrefService::Preference* preference =
-      profile->GetPrefs()->FindPreference(prefs::kHotwordSearchEnabled);
-  if (!preference)
-    return false;
-
-  if (!HotwordServiceFactory::IsServiceAvailable(profile))
-    return false;
-
-  // kHotwordSearchEnabled is off by default, but app-list is on by default.
-  // To achieve this, we'll return true if it's in the default status.
-  if (preference->IsDefaultValue())
-    return true;
-
-  bool isEnabled = false;
-  return preference->GetValue()->GetAsBoolean(&isEnabled) && isEnabled;
-}
-
 void StartPageHandler::OnHotwordEnabledChanged() {
+  StartPageService* service = StartPageService::Get(
+      Profile::FromWebUI(web_ui()));
   web_ui()->CallJavascriptFunction(
       "appList.startPage.setHotwordEnabled",
-      base::FundamentalValue(HotwordEnabled()));
+      base::FundamentalValue(service->HotwordEnabled()));
 }
 #endif
 
@@ -188,6 +165,12 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
                    content::Source<Profile>(profile));
   }
 #endif
+
+  if (!app_list::switches::IsExperimentalAppListEnabled()) {
+    web_ui()->CallJavascriptFunction(
+        "appList.startPage.onAppListShown",
+        base::FundamentalValue(service->HotwordEnabled()));
+  }
 }
 
 void StartPageHandler::HandleLaunchApp(const base::ListValue* args) {

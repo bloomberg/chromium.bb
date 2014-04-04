@@ -288,11 +288,10 @@ void AppListViewDelegate::AutoLaunchCanceled() {
 }
 
 void AppListViewDelegate::ViewInitialized() {
-  content::WebContents* contents = GetSpeechRecognitionContents();
-  if (contents) {
-    contents->GetWebUI()->CallJavascriptFunction(
-        "appList.startPage.onAppListShown");
-  }
+  app_list::StartPageService* service =
+      app_list::StartPageService::Get(profile_);
+  if (service)
+    service->AppListShown();
 }
 
 void AppListViewDelegate::Dismiss()  {
@@ -302,11 +301,10 @@ void AppListViewDelegate::Dismiss()  {
 void AppListViewDelegate::ViewClosing() {
   controller_->ViewClosing();
 
-  content::WebContents* contents = GetSpeechRecognitionContents();
-  if (contents) {
-    contents->GetWebUI()->CallJavascriptFunction(
-        "appList.startPage.onAppListHidden");
-  }
+  app_list::StartPageService* service =
+      app_list::StartPageService::Get(profile_);
+  if (service)
+    service->AppListHidden();
 }
 
 gfx::ImageSkia AppListViewDelegate::GetWindowIcon() {

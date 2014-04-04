@@ -32,9 +32,7 @@ cr.define('speech', function() {
   function SpeechManager() {
     this.audioManager_ = new speech.AudioManager();
     this.audioManager_.addEventListener('audio', this.onAudioLevel_.bind(this));
-    this.shown_ = false;
     this.speechRecognitionManager_ = new speech.SpeechRecognitionManager(this);
-    this.setState_(SpeechState.READY);
   }
 
   /**
@@ -77,14 +75,10 @@ cr.define('speech', function() {
     this.pluginManager_ = pluginManager;
     this.audioManager_.addEventListener(
         'audio', pluginManager.sendAudioData.bind(pluginManager));
-    if (this.shown_) {
-      this.pluginManager_.startRecognizer();
-      this.audioManager_.start();
-      this.setState_(SpeechState.HOTWORD_RECOGNIZING);
-    } else {
-      this.pluginManager_.stopRecognizer();
-      this.setState_(SpeechState.READY);
-    }
+    this.pluginManager_.startRecognizer();
+    this.audioManager_.start();
+    this.setState_(SpeechState.HOTWORD_RECOGNIZING);
+    chrome.send('setHotwordRecognizerState', [true]);
   };
 
   /**
@@ -169,7 +163,6 @@ cr.define('speech', function() {
     if (enabled) {
       if (recognizer)
         return;
-
       var pluginManager = new speech.PluginManager(
           this.onHotwordRecognizerReady_.bind(this),
           this.onHotwordRecognized_.bind(this));
@@ -180,36 +173,32 @@ cr.define('speech', function() {
         return;
       document.body.removeChild(recognizer);
       this.pluginManager_ = null;
-      if (this.state == SpeechState.HOTWORD_RECOGNIZING)
-        this.setState(SpeechState.READY);
+      if (this.state == SpeechState.HOTWORD_RECOGNIZING) {
+        this.audioManager_.stop();
+        this.setState_(SpeechState.READY);
+      }
     }
   };
 
   /**
    * Called when the app-list bubble is shown.
+   *
+   * @param {boolean} hotwordEnabled Whether the hotword is enabled or not.
    */
-  SpeechManager.prototype.onShown = function() {
-    this.shown_ = true;
-    if (!this.pluginManager_)
-      return;
+  SpeechManager.prototype.onShown = function(hotwordEnabled) {
+    this.setHotwordEnabled(hotwordEnabled);
 
-    if (this.state == SpeechState.HOTWORD_RECOGNIZING) {
-      console.warn('Already in recognition state...');
-      return;
-    }
-
-    this.pluginManager_.startRecognizer();
-    this.audioManager_.start();
-    this.setState_(SpeechState.HOTWORD_RECOGNIZING);
+    // No one sets the state if the content is initialized on shown but hotword
+    // is not enabled. Sets the state in such case.
+    if (!this.state && !hotwordEnabled)
+      this.setState_(SpeechState.READY);
   };
 
   /**
    * Called when the app-list bubble is hidden.
    */
   SpeechManager.prototype.onHidden = function() {
-    this.shown_ = false;
-    if (this.pluginManager_)
-      this.pluginManager_.stopRecognizer();
+    this.setHotwordEnabled(false);
 
     // SpeechRecognition is asynchronous.
     this.audioManager_.stop();
