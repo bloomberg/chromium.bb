@@ -596,11 +596,6 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& veloci
     return false;
 }
 
-void WebViewImpl::scrollBy(const WebFloatSize& delta)
-{
-    scrollBy(delta, WebFloatSize());
-}
-
 bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
 {
     bool eventSwallowed = false;
