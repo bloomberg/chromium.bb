@@ -136,6 +136,9 @@ p:first-letter {
 }
 
 
+Running test: testInsertPropertyOutsideRule
+Expected protocol error: Source range didn't match any existing property source range nor any property insertion point
+
 Running test: testInsertBreakingPropertyInLastEmptyRule
 Expected protocol error: SyntaxError The property 'content: 'INSERTED PROPERTY'/*' could not be set.
 
@@ -206,5 +209,26 @@ p:first-letter {
 
 
 Running test: testInvalidParameters
-Expected protocol error: Failed to parse styleId argument
+Expected protocol error: range.startLine must be a non-negative integer
+
+Running test: testNegativeRangeParameters
+Expected protocol error: range.startLine must be a non-negative integer
+
+Running test: testStartLineOutOfBounds
+Expected protocol error: Specified range is out of bounds
+
+Running test: testEndLineOutOfBounds
+Expected protocol error: Specified range is out of bounds
+
+Running test: testStartColumnBeyondLastLineCharacter
+Expected protocol error: Specified range is out of bounds
+
+Running test: testEndColumnBeyondLastLineCharacter
+Expected protocol error: Specified range is out of bounds
+
+Running test: testInsertBeyondLastCharacterOfLastLine
+Expected protocol error: Specified range is out of bounds
+
+Running test: testReversedRange
+Expected protocol error: Range start must not succeed its end
 

@@ -366,6 +366,7 @@ public:
     bool ensureSourceData();
     bool hasSourceData() const { return m_sourceData; }
     PassRefPtrWillBeRawPtr<WebCore::CSSRuleSourceData> ruleSourceDataAt(unsigned) const;
+    unsigned ruleCount() { return m_sourceData->size(); }
 
 private:
     void flattenSourceData(RuleSourceDataList*);
@@ -729,7 +730,7 @@ PassRefPtrWillBeRawPtr<CSSRuleSourceData> InspectorStyle::extractSourceData() co
 {
     if (!m_parentStyleSheet || !m_parentStyleSheet->ensureParsedDataReady())
         return nullptr;
-    return m_parentStyleSheet->ruleSourceDataFor(m_style.get());
+    return m_parentStyleSheet->ruleSourceDataAt(m_styleId.ordinal());
 }
 
 String InspectorStyle::shorthandValue(const String& shorthandProperty) const
@@ -861,7 +862,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyleSheetBase::buildObjectForSt
 {
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = nullptr;
     if (ensureParsedDataReady())
-        sourceData = ruleSourceDataFor(style);
+        sourceData = ruleSourceDataAt(styleId(style).ordinal());
 
     InspectorCSSId id = styleId(style);
     if (id.isEmpty()) {
@@ -892,6 +893,57 @@ PassOwnPtr<Vector<unsigned> > InspectorStyleSheetBase::lineEndings()
     if (!getText(&text))
         return PassOwnPtr<Vector<unsigned> >();
     return WTF::lineEndings(text);
+}
+
+bool InspectorStyleSheetBase::lineNumberAndColumnToOffset(unsigned lineNumber, unsigned columnNumber, unsigned* offset)
+{
+    OwnPtr<Vector<unsigned> > endings = lineEndings();
+    if (lineNumber >= endings->size())
+        return false;
+    unsigned charactersInLine = lineNumber > 0 ? endings->at(lineNumber) - endings->at(lineNumber - 1) - 1 : endings->at(0);
+    if (columnNumber > charactersInLine)
+        return false;
+    TextPosition position(OrdinalNumber::fromZeroBasedInt(lineNumber), OrdinalNumber::fromZeroBasedInt(columnNumber));
+    *offset = position.toOffset(*endings).zeroBasedInt();
+    return true;
+}
+
+bool InspectorStyleSheetBase::findPropertyByRange(const SourceRange& sourceRange, InspectorCSSId* ruleId, unsigned* propertyIndex, bool* overwrite)
+{
+    if (!ensureParsedDataReady())
+        return false;
+    for (size_t i = 0; i < ruleCount(); ++i) {
+        RefPtr<CSSRuleSourceData> ruleSourceData = ruleSourceDataAt(i);
+        RefPtr<CSSStyleSourceData> styleSourceData = ruleSourceData->styleSourceData;
+        if (!styleSourceData)
+            continue;
+        if (ruleSourceData->ruleBodyRange.end < sourceRange.start || sourceRange.end < ruleSourceData->ruleBodyRange.start)
+            continue;
+        Vector<CSSPropertySourceData>& propertyData = styleSourceData->propertyData;
+        for (size_t j = 0; j < propertyData.size(); ++j) {
+            CSSPropertySourceData& property = propertyData.at(j);
+            unsigned styleStart = ruleSourceData->ruleBodyRange.start;
+            if (sourceRange.length() && property.range.start + styleStart == sourceRange.start && property.range.end + styleStart == sourceRange.end) {
+                *ruleId = InspectorCSSId(id(), i);
+                *propertyIndex = j;
+                *overwrite = true;
+                return true;
+            }
+            if (!sourceRange.length() && styleStart <= sourceRange.start && sourceRange.start <= property.range.start + styleStart) {
+                *ruleId = InspectorCSSId(id(), i);
+                *propertyIndex = j;
+                *overwrite = false;
+                return true;
+            }
+        }
+        if (!sourceRange.length() && ruleSourceData->ruleBodyRange.start <= sourceRange.start && sourceRange.start <= ruleSourceData->ruleBodyRange.end) {
+            *ruleId = InspectorCSSId(id(), i);
+            *propertyIndex = propertyData.size();
+            *overwrite = false;
+            return true;
+        }
+    }
+    return false;
 }
 
 PassRefPtr<InspectorStyleSheet> InspectorStyleSheet::create(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, Listener* listener)
@@ -977,7 +1029,7 @@ bool InspectorStyleSheet::setRuleSelector(const InspectorCSSId& id, const String
     }
 
     rule->setSelectorText(selector);
-    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = ruleSourceDataFor(rule->style());
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = ruleSourceDataAt(id.ordinal());
     if (!sourceData) {
         exceptionState.throwDOMException(NotFoundError, "The selector '" + selector + "' could not be set.");
         return false;
@@ -1056,7 +1108,7 @@ bool InspectorStyleSheet::deleteRule(const InspectorCSSId& id, ExceptionState& e
         return false;
     }
 
-    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = ruleSourceDataFor(rule->style());
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = ruleSourceDataAt(id.ordinal());
     if (!sourceData) {
         exceptionState.throwDOMException(NotFoundError, "No style rule could be found for the provided ID.");
         return false;
@@ -1139,7 +1191,7 @@ PassRefPtr<TypeBuilder::CSS::SelectorList> InspectorStyleSheet::buildObjectForSe
 {
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = nullptr;
     if (ensureParsedDataReady())
-        sourceData = ruleSourceDataFor(rule->style());
+        sourceData = ruleSourceDataAt(styleId(rule->style()).ordinal());
     RefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector> > selectors;
 
     // This intentionally does not rely on the source data to avoid catching the trailing comments (before the declaration starting '{').
@@ -1231,6 +1283,11 @@ PassRefPtr<InspectorStyle> InspectorStyleSheet::inspectorStyleForId(const Inspec
     return InspectorStyle::create(id, style, this);
 }
 
+unsigned InspectorStyleSheet::ruleCount()
+{
+    return m_parsedStyleSheet->ruleCount();
+}
+
 String InspectorStyleSheet::sourceURL() const
 {
     if (!m_sourceURL.isNull())
@@ -1319,9 +1376,9 @@ Document* InspectorStyleSheet::ownerDocument() const
     return m_pageStyleSheet->ownerDocument();
 }
 
-PassRefPtrWillBeRawPtr<CSSRuleSourceData> InspectorStyleSheet::ruleSourceDataFor(CSSStyleDeclaration* style) const
+PassRefPtrWillBeRawPtr<CSSRuleSourceData> InspectorStyleSheet::ruleSourceDataAt(unsigned ruleIndex) const
 {
-    return m_parsedStyleSheet->ruleSourceDataAt(ruleIndexByStyle(style));
+    return m_parsedStyleSheet->ruleSourceDataAt(ruleIndex);
 }
 
 unsigned InspectorStyleSheet::ruleIndexByStyle(CSSStyleDeclaration* pageStyle) const
@@ -1418,7 +1475,7 @@ bool InspectorStyleSheet::styleSheetTextWithChangedStyle(CSSStyleDeclaration* st
     if (!ensureParsedDataReady())
         return false;
 
-    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = ruleSourceDataFor(style);
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = ruleSourceDataAt(styleId(style).ordinal());
     unsigned bodyStart = sourceData->ruleBodyRange.start;
     unsigned bodyEnd = sourceData->ruleBodyRange.end;
     ASSERT(bodyStart <= bodyEnd);

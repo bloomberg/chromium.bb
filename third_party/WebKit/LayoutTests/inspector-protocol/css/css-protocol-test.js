@@ -14,9 +14,7 @@ InspectorTest.dumpStyleSheetText = function(styleSheetId, callback)
 
 InspectorTest.setPropertyText = function(styleSheetId, expectError, options, callback)
 {
-    var styleId = { styleSheetId: styleSheetId, ordinal: options.styleIndex };
-    delete options.styleIndex;
-    options.styleId = styleId;
+    options.styleSheetId = styleSheetId;
     if (expectError)
         InspectorTest.sendCommand("CSS.setPropertyText", options, onResponse);
     else

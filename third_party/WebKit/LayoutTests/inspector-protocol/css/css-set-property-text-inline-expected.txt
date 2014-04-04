@@ -15,7 +15,7 @@ content: 'INSERTED PROPERTY';color: red; border: 0px;
 
 Running test: testInsertMultipleProperties
 ==== Style sheet text ====
-content: 'INSERTED #1';content: 'INSERTED #2'; border: 0px;
+color: red; content: 'INSERTED #1';content: 'INSERTED #2';border: 0px;
 
 Running test: testInsertLastProperty
 ==== Style sheet text ====
