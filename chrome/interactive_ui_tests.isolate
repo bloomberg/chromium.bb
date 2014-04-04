@@ -57,7 +57,6 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.so',
-          '<(PRODUCT_DIR)/libexif.dylib',
           '<(PRODUCT_DIR)/osmesa.so',
         ],
         'isolate_dependency_untracked': [
@@ -84,7 +83,6 @@
           '<(PRODUCT_DIR)/d3dcompiler_46.dll',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/libEGL.dll',
-          '<(PRODUCT_DIR)/libexif.dll',
           '<(PRODUCT_DIR)/libGLESv2.dll',
           '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
           '<(PRODUCT_DIR)/osmesa.dll',

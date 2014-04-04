@@ -82,7 +82,6 @@ SRC_NAMES=(
     "crash_inspector"
     "crash_report_sender.app"
     "ffmpegsumo.so"
-    "libexif.dylib"
     "libplugin_carbon_interpose.dylib"
     "ppGoogleNaClPluginChrome.plugin"
     "remoting_host_plugin.plugin"

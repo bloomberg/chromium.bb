@@ -2239,14 +2239,6 @@
       }, {  # else: branding!="Chrome"
         'defines': ['CHROMIUM_BUILD'],
       }],
-      ['OS=="mac"', {
-        'xcode_settings': {
-          'LD_RUNPATH_SEARCH_PATHS': [
-            # To find dylibs such as libexif.
-            '@loader_path/.',
-          ],
-        },
-      }],
       ['OS=="mac" and component=="shared_library"', {
         'xcode_settings': {
           'DYLIB_INSTALL_NAME_BASE': '@rpath',
