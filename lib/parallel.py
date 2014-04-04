@@ -73,9 +73,8 @@ class _BackgroundTask(multiprocessing.Process):
   STARTUP_TIMEOUT = 60 * 5
   EXIT_TIMEOUT = 60 * 10
 
-  # The time we allow processes to be silent. This must be greater than the
-  # hw_test_timeout set in cbuildbot_config.py, and less than the timeout set
-  # by buildbot itself (typically, 150 minutes.)
+  # TODO: crbug.com/360063
+  # The time we allow processes to be silent.
   SILENT_TIMEOUT = 60 * 205
 
   # The amount by which we reduce the SILENT_TIMEOUT every time we launch
