@@ -218,8 +218,8 @@ UserShare* FakeSyncManager::GetUserShare() {
   return test_user_share_.user_share();
 }
 
-syncer::SyncCore* FakeSyncManager::GetSyncCore() {
-  return NULL;
+base::WeakPtr<syncer::SyncCore> FakeSyncManager::GetSyncCore() {
+  return base::WeakPtr<syncer::SyncCore>();
 }
 
 const std::string FakeSyncManager::cache_guid() {

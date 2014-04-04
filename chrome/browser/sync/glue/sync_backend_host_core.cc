@@ -474,16 +474,26 @@ void SyncBackendHostCore::DoInitialProcessControlTypes() {
 }
 
 void SyncBackendHostCore::DoFinishInitialProcessControlTypes() {
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
+
   registrar_->ActivateDataType(syncer::DEVICE_INFO,
                                syncer::GROUP_PASSIVE,
                                synced_device_tracker_.get(),
                                sync_manager_->GetUserShare());
 
+  base::WeakPtr<syncer::SyncCore> sync_core = sync_manager_->GetSyncCore();
+
+  // De-reference the WeakPtr while we're here to signal to the debugging
+  // mechanisms that it belongs to the sync thread.  This helps us DCHECK
+  // earlier if the pointer is misused.
+  sync_core.get();
+
   host_.Call(
       FROM_HERE,
       &SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop,
       js_backend_,
-      debug_info_listener_);
+      debug_info_listener_,
+      syncer::SyncCoreProxy(base::MessageLoopProxy::current(), sync_core));
 
   js_backend_.Reset();
   debug_info_listener_.Reset();

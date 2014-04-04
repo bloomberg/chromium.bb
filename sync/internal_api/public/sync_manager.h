@@ -334,7 +334,7 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
   virtual UserShare* GetUserShare() = 0;
 
   // Returns an instance of the main interface for non-blocking sync types.
-  virtual syncer::SyncCore* GetSyncCore() = 0;
+  virtual base::WeakPtr<syncer::SyncCore> GetSyncCore() = 0;
 
   // Returns the cache_guid of the currently open database.
   // Requires that the SyncManager be initialized.

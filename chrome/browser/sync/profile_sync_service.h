@@ -300,6 +300,12 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   void RegisterDataTypeController(
       browser_sync::DataTypeController* data_type_controller);
 
+  // Registers a type whose sync storage will not be managed by the
+  // ProfileSyncService.  It declares that this sync type may be activated at
+  // some point in the future.  This function call does not enable or activate
+  // the syncing of this type
+  void RegisterNonBlockingType(syncer::ModelType type);
+
   // Returns the session model associator associated with this type, but only if
   // the associator is running.  If it is doing anything else, it will return
   // null.
@@ -578,11 +584,23 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // superset of the active types (see GetActiveDataTypes()).
   virtual syncer::ModelTypeSet GetPreferredDataTypes() const;
 
+  // Returns the set of directory types which are preferred for enabling.
+  virtual syncer::ModelTypeSet GetPreferredDirectoryDataTypes() const;
+
+  // Returns the set of off-thread types which are preferred for enabling.
+  virtual syncer::ModelTypeSet GetPreferredNonBlockingDataTypes() const;
+
   // Gets the set of all data types that could be allowed (the set that
   // should be advertised to the user).  These will typically only change
   // via a command-line option.  See class comment for more on what it means
   // for a datatype to be Registered.
   virtual syncer::ModelTypeSet GetRegisteredDataTypes() const;
+
+  // Gets the set of directory types which could be allowed.
+  virtual syncer::ModelTypeSet GetRegisteredDirectoryDataTypes() const;
+
+  // Gets the set of off-thread types which could be allowed.
+  virtual syncer::ModelTypeSet GetRegisteredNonBlockingDataTypes() const;
 
   // Checks whether the Cryptographer is ready to encrypt and decrypt updates
   // for sensitive data types. Caller must be holding a
@@ -891,6 +909,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // List of available data type controllers.
   browser_sync::DataTypeController::TypeMap data_type_controllers_;
+
+  // List of registered types that use the non-blocking API.
+  syncer::ModelTypeSet non_blocking_types_;
 
   // Whether the SyncBackendHost has been initialized.
   bool backend_initialized_;

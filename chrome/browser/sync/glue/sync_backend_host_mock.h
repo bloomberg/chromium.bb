@@ -72,6 +72,8 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   virtual syncer::UserShare* GetUserShare() const OVERRIDE;
 
+  virtual syncer::SyncCoreProxy GetSyncCoreProxy() OVERRIDE;
+
   virtual Status GetDetailedStatus() OVERRIDE;
 
   virtual syncer::sessions::SyncSessionSnapshot

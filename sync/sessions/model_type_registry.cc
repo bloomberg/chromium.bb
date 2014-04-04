@@ -90,7 +90,7 @@ void ModelTypeRegistry::InitializeNonBlockingType(
   type_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&NonBlockingTypeProcessor::OnConnect,
-                 processor->AsWeakPtr(),
+                 processor,
                  core->AsWeakPtr(),
                  scoped_refptr<base::SequencedTaskRunner>(
                      base::MessageLoopProxy::current())));

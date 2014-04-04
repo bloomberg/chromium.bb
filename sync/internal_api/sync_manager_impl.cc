@@ -1052,9 +1052,9 @@ UserShare* SyncManagerImpl::GetUserShare() {
   return &share_;
 }
 
-syncer::SyncCore* SyncManagerImpl::GetSyncCore() {
+base::WeakPtr<syncer::SyncCore> SyncManagerImpl::GetSyncCore() {
   DCHECK(initialized_);
-  return sync_core_.get();
+  return sync_core_->AsWeakPtr();
 }
 
 const std::string SyncManagerImpl::cache_guid() {

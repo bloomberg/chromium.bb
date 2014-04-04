@@ -69,6 +69,10 @@ syncer::UserShare* SyncBackendHostMock::GetUserShare() const {
   return NULL;
 }
 
+syncer::SyncCoreProxy SyncBackendHostMock::GetSyncCoreProxy() {
+  return syncer::SyncCoreProxy::GetInvalidSyncCoreProxyForTest();
+}
+
 SyncBackendHost::Status SyncBackendHostMock::GetDetailedStatus() {
   return SyncBackendHost::Status();
 }
