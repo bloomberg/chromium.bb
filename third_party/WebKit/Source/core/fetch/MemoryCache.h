@@ -60,19 +60,6 @@ struct SecurityOriginHash;
 // Enable this macro to periodically log information about the memory cache.
 #undef MEMORY_CACHE_STATS
 
-// Determines the order in which CachedResources are evicted
-// from the decoded resources cache.
-enum MemoryCacheLiveResourcePriority {
-    MemoryCacheLiveResourcePriorityLow = 0,
-    MemoryCacheLiveResourcePriorityHigh,
-    MemoryCacheLiveResourcePriorityUnknown
-};
-
-enum UpdateReason {
-    UpdateForAccess,
-    UpdateForPropertyChange
-};
-
 class MemoryCache FINAL : public blink::WebThread::TaskObserver {
     WTF_MAKE_NONCOPYABLE(MemoryCache); WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -86,8 +73,6 @@ public:
         ResourcePtr<Resource> m_resource;
         bool m_inLiveDecodedResourcesList;
         unsigned m_accessCount;
-        MemoryCacheLiveResourcePriority m_liveResourcePriority;
-        double m_lastDecodedAccessTime; // Used as a thrash guard
 
         MemoryCacheEntry* m_previousInLiveResourcesList;
         MemoryCacheEntry* m_nextInLiveResourcesList;
@@ -99,8 +84,6 @@ public:
             : m_resource(resource)
             , m_inLiveDecodedResourcesList(false)
             , m_accessCount(0)
-            , m_liveResourcePriority(MemoryCacheLiveResourcePriorityLow)
-            , m_lastDecodedAccessTime(0.0)
             , m_previousInLiveResourcesList(0)
             , m_nextInLiveResourcesList(0)
             , m_previousInAllResourcesList(0)
@@ -174,10 +157,14 @@ public:
     // Called to adjust a resource's size, lru list position, and access count.
     void update(Resource*, size_t oldSize, size_t newSize, bool wasAccessed = false);
     void updateForAccess(Resource* resource) { update(resource, resource->size(), resource->size(), true); }
-    void updateDecodedResource(Resource*, UpdateReason, MemoryCacheLiveResourcePriority = MemoryCacheLiveResourcePriorityUnknown);
 
-    void makeLive(Resource*);
-    void makeDead(Resource*);
+    // Track decoded resources that are in the cache and referenced by a Web page.
+    void insertInLiveDecodedResourcesList(Resource*);
+    void removeFromLiveDecodedResourcesList(Resource*);
+    bool isInLiveDecodedResourcesList(Resource*);
+
+    void addToLiveResourcesSize(Resource*);
+    void removeFromLiveResourcesSize(Resource*);
 
     static void removeURLFromCache(ExecutionContext*, const KURL&);
 
@@ -188,9 +175,6 @@ public:
     size_t capacity() const { return m_capacity; }
     size_t liveSize() const { return m_liveSize; }
     size_t deadSize() const { return m_deadSize; }
-
-    // Exposed for testing
-    MemoryCacheLiveResourcePriority priority(Resource*) const;
 
     // TaskObserver implementation
     virtual void willProcessTask() OVERRIDE;
@@ -207,10 +191,6 @@ private:
     // Calls to put the cached resource into and out of LRU lists.
     void insertInLRUList(MemoryCacheEntry*, LRUList*);
     void removeFromLRUList(MemoryCacheEntry*, LRUList*);
-
-    // Track decoded resources that are in the cache and referenced by a Web page.
-    void insertInLiveDecodedResourcesList(MemoryCacheEntry*);
-    void removeFromLiveDecodedResourcesList(MemoryCacheEntry*);
 
     size_t liveCapacity() const;
     size_t deadCapacity() const;
@@ -247,7 +227,7 @@ private:
 
     // Lists just for live resources with decoded data. Access to this list is based off of painting the resource.
     // The lists are ordered by decode priority, with higher indices having higher priorities.
-    LRUList m_liveDecodedResources[MemoryCacheLiveResourcePriorityHigh + 1];
+    LRUList m_liveDecodedResources[Resource::CacheLiveResourcePriorityHigh + 1];
 
     // A URL-based map of all resources that are in the cache (including the freshest version of objects that are currently being
     // referenced by a Web page).

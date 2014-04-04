@@ -425,7 +425,12 @@ void ImageResource::didDraw(const WebCore::Image* image)
 {
     if (!image || image != m_image)
         return;
-    Resource::didAccessDecodedData();
+
+    double timeStamp = FrameView::currentFrameTimeStamp();
+    if (!timeStamp) // If didDraw is called outside of a LocalFrame paint.
+        timeStamp = currentTime();
+
+    Resource::didAccessDecodedData(timeStamp);
 }
 
 bool ImageResource::shouldPauseAnimation(const WebCore::Image* image)

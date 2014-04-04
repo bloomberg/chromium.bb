@@ -135,16 +135,16 @@ TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
     memoryCache()->add(cachedImageInteriorCrop.get());
     memoryCache()->add(cachedImageExteriorCrop.get());
     memoryCache()->add(cachedImageOutsideCrop.get());
-    memoryCache()->updateDecodedResource(cachedImageNoCrop.get(), UpdateForPropertyChange);
-    memoryCache()->updateDecodedResource(cachedImageInteriorCrop.get(), UpdateForPropertyChange);
-    memoryCache()->updateDecodedResource(cachedImageExteriorCrop.get(), UpdateForPropertyChange);
-    memoryCache()->updateDecodedResource(cachedImageOutsideCrop.get(), UpdateForPropertyChange);
+    memoryCache()->insertInLiveDecodedResourcesList(cachedImageNoCrop.get());
+    memoryCache()->insertInLiveDecodedResourcesList(cachedImageInteriorCrop.get());
+    memoryCache()->insertInLiveDecodedResourcesList(cachedImageExteriorCrop.get());
+    memoryCache()->insertInLiveDecodedResourcesList(cachedImageOutsideCrop.get());
 
     // HTMLImageElements should default to CacheLiveResourcePriorityLow.
-    ASSERT_EQ(memoryCache()->priority(imageNoCrop->cachedImage()), MemoryCacheLiveResourcePriorityLow);
-    ASSERT_EQ(memoryCache()->priority(imageInteriorCrop->cachedImage()), MemoryCacheLiveResourcePriorityLow);
-    ASSERT_EQ(memoryCache()->priority(imageExteriorCrop->cachedImage()), MemoryCacheLiveResourcePriorityLow);
-    ASSERT_EQ(memoryCache()->priority(imageOutsideCrop->cachedImage()), MemoryCacheLiveResourcePriorityLow);
+    ASSERT_EQ(imageNoCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityLow);
+    ASSERT_EQ(imageInteriorCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityLow);
+    ASSERT_EQ(imageExteriorCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityLow);
+    ASSERT_EQ(imageOutsideCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityLow);
 
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmapInteriorCrop = ImageBitmap::create(imageInteriorCrop.get(), IntRect(m_bitmap.width() / 2, m_bitmap.height() / 2, m_bitmap.width(), m_bitmap.height()));
     {
@@ -154,12 +154,12 @@ TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
         RefPtrWillBeRawPtr<ImageBitmap> imageBitmapOutsideCrop = ImageBitmap::create(imageOutsideCrop.get(), IntRect(-m_bitmap.width(), -m_bitmap.height(), m_bitmap.width(), m_bitmap.height()));
 
         // Images that are referenced by ImageBitmaps have CacheLiveResourcePriorityHigh.
-        ASSERT_EQ(memoryCache()->priority(imageNoCrop->cachedImage()), MemoryCacheLiveResourcePriorityHigh);
-        ASSERT_EQ(memoryCache()->priority(imageInteriorCrop->cachedImage()), MemoryCacheLiveResourcePriorityHigh);
-        ASSERT_EQ(memoryCache()->priority(imageExteriorCrop->cachedImage()), MemoryCacheLiveResourcePriorityHigh);
+        ASSERT_EQ(imageNoCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityHigh);
+        ASSERT_EQ(imageInteriorCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityHigh);
+        ASSERT_EQ(imageExteriorCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityHigh);
 
         // ImageBitmaps that do not contain any of the source image do not elevate CacheLiveResourcePriority.
-        ASSERT_EQ(memoryCache()->priority(imageOutsideCrop->cachedImage()), MemoryCacheLiveResourcePriorityLow);
+        ASSERT_EQ(imageOutsideCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityLow);
 
         // Stub out references to the ImageBitmaps created and force a
         // garbage collection to have the ImageBitmaps be collected and
@@ -172,12 +172,12 @@ TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
     }
 
     // CacheLiveResourcePriroity should return to CacheLiveResourcePriorityLow when no ImageBitmaps reference the image.
-    ASSERT_EQ(memoryCache()->priority(imageNoCrop->cachedImage()), MemoryCacheLiveResourcePriorityLow);
-    ASSERT_EQ(memoryCache()->priority(imageExteriorCrop->cachedImage()), MemoryCacheLiveResourcePriorityLow);
-    ASSERT_EQ(memoryCache()->priority(imageOutsideCrop->cachedImage()), MemoryCacheLiveResourcePriorityLow);
+    ASSERT_EQ(imageNoCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityLow);
+    ASSERT_EQ(imageExteriorCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityLow);
+    ASSERT_EQ(imageOutsideCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityLow);
 
     // There is still an ImageBitmap that references this image.
-    ASSERT_EQ(memoryCache()->priority(imageInteriorCrop->cachedImage()), MemoryCacheLiveResourcePriorityHigh);
+    ASSERT_EQ(imageInteriorCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityHigh);
     imageBitmapInteriorCrop = nullptr;
 }
 

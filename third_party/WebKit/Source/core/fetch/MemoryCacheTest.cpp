@@ -211,7 +211,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
 
             memoryCache()->add(m_dead.get());
             memoryCache()->add(m_live.get());
-            memoryCache()->updateDecodedResource(m_live.get(), UpdateForPropertyChange);
+            memoryCache()->insertInLiveDecodedResourcesList(m_live.get());
             ASSERT_EQ(m_dead->size(), memoryCache()->deadSize());
             ASSERT_EQ(m_live->size(), memoryCache()->liveSize());
             ASSERT_GT(m_live->decodedSize(), 0u);
@@ -345,14 +345,14 @@ TEST_F(MemoryCacheTest, DecodeCacheOrder)
     ASSERT_EQ(memoryCache()->liveSize(), highPrioritySize + lowPrioritySize);
 
     // Insert all items in the decoded items list with the same priority
-    memoryCache()->updateDecodedResource(cachedImageHighPriority.get(), UpdateForPropertyChange);
-    memoryCache()->updateDecodedResource(cachedImageLowPriority.get(), UpdateForPropertyChange);
+    memoryCache()->insertInLiveDecodedResourcesList(cachedImageHighPriority.get());
+    memoryCache()->insertInLiveDecodedResourcesList(cachedImageLowPriority.get());
     ASSERT_EQ(memoryCache()->deadSize(), 0u);
     ASSERT_EQ(memoryCache()->liveSize(), totalSize);
 
     // Now we will assign their priority and make sure they are moved to the correct buckets.
-    memoryCache()->updateDecodedResource(cachedImageLowPriority.get(), UpdateForPropertyChange, MemoryCacheLiveResourcePriorityLow);
-    memoryCache()->updateDecodedResource(cachedImageHighPriority.get(), UpdateForPropertyChange, MemoryCacheLiveResourcePriorityHigh);
+    cachedImageLowPriority->setCacheLiveResourcePriority(Resource::CacheLiveResourcePriorityLow);
+    cachedImageHighPriority->setCacheLiveResourcePriority(Resource::CacheLiveResourcePriorityHigh);
 
     // Should first prune the LowPriority item.
     memoryCache()->setCapacities(memoryCache()->minDeadCapacity(), memoryCache()->liveSize() - 10, memoryCache()->liveSize() - 10);

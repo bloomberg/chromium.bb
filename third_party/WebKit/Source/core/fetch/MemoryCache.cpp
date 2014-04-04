@@ -109,7 +109,7 @@ KURL MemoryCache::removeFragmentIdentifierIfNeeded(const KURL& originalURL)
 void MemoryCache::add(Resource* resource)
 {
     ASSERT(WTF::isMainThread());
-    RELEASE_ASSERT(!m_resources.contains(resource->url()));
+    ASSERT(!m_resources.contains(resource->url()));
     m_resources.set(resource->url(), MemoryCacheEntry::create(resource));
     update(resource, 0, resource->size(), true);
 
@@ -122,7 +122,7 @@ void MemoryCache::replace(Resource* newResource, Resource* oldResource)
         evict(oldEntry);
     add(newResource);
     if (newResource->decodedSize() && newResource->hasClients())
-        insertInLiveDecodedResourcesList(m_resources.get(newResource->url()));
+        insertInLiveDecodedResourcesList(newResource);
 }
 
 void MemoryCache::remove(Resource* resource)
@@ -194,14 +194,14 @@ void MemoryCache::pruneLiveResources()
     // For more details see: https://bugs.webkit.org/show_bug.cgi?id=30209
 
     // Start pruning from the lowest priority list.
-    for (int priority = MemoryCacheLiveResourcePriorityLow; priority <= MemoryCacheLiveResourcePriorityHigh; ++priority) {
+    for (int priority = Resource::CacheLiveResourcePriorityLow; priority <= Resource::CacheLiveResourcePriorityHigh; ++priority) {
         MemoryCacheEntry* current = m_liveDecodedResources[priority].m_tail;
         while (current) {
             MemoryCacheEntry* previous = current->m_previousInLiveResourcesList;
             ASSERT(current->m_resource->hasClients());
             if (current->m_resource->isLoaded() && current->m_resource->decodedSize()) {
                 // Check to see if the remaining resources are too new to prune.
-                double elapsedTime = m_pruneFrameTimeStamp - current->m_lastDecodedAccessTime;
+                double elapsedTime = m_pruneFrameTimeStamp - current->m_resource->m_lastDecodedAccessTime;
                 if (elapsedTime < m_delayBeforeLiveDecodedPrune)
                     return;
 
@@ -314,7 +314,7 @@ bool MemoryCache::evict(MemoryCacheEntry* entry)
     // The resource may have already been removed by someone other than our caller,
     // who needed a fresh copy for a reload. See <http://bugs.webkit.org/show_bug.cgi?id=12479#c6>.
     update(resource, resource->size(), 0, false);
-    removeFromLiveDecodedResourcesList(entry);
+    removeFromLiveDecodedResourcesList(resource);
     m_resources.remove(resource->url());
     return resource->deleteIfPossible();
 }
@@ -383,14 +383,17 @@ void MemoryCache::insertInLRUList(MemoryCacheEntry* entry, LRUList* list)
 #endif
 }
 
-void MemoryCache::removeFromLiveDecodedResourcesList(MemoryCacheEntry* entry)
+void MemoryCache::removeFromLiveDecodedResourcesList(Resource* resource)
 {
+    MemoryCacheEntry* entry = m_resources.get(resource->url());
+    ASSERT(entry->m_resource == resource);
+
     // If we've never been accessed, then we're brand new and not in any list.
     if (!entry->m_inLiveDecodedResourcesList)
         return;
     entry->m_inLiveDecodedResourcesList = false;
 
-    LRUList* list = &m_liveDecodedResources[entry->m_liveResourcePriority];
+    LRUList* list = &m_liveDecodedResources[resource->cacheLiveResourcePriority()];
 
 #if !ASSERT_DISABLED
     // Verify that we are in fact in this list.
@@ -421,13 +424,16 @@ void MemoryCache::removeFromLiveDecodedResourcesList(MemoryCacheEntry* entry)
         list->m_head = next;
 }
 
-void MemoryCache::insertInLiveDecodedResourcesList(MemoryCacheEntry* entry)
+void MemoryCache::insertInLiveDecodedResourcesList(Resource* resource)
 {
+    MemoryCacheEntry* entry = m_resources.get(resource->url());
+    ASSERT(entry->m_resource == resource);
+
     // Make sure we aren't in the list already.
     ASSERT(!entry->m_nextInLiveResourcesList && !entry->m_previousInLiveResourcesList && !entry->m_inLiveDecodedResourcesList);
     entry->m_inLiveDecodedResourcesList = true;
 
-    LRUList* list = &m_liveDecodedResources[entry->m_liveResourcePriority];
+    LRUList* list = &m_liveDecodedResources[resource->cacheLiveResourcePriority()];
     entry->m_nextInLiveResourcesList = list->m_head;
     if (list->m_head)
         list->m_head->m_previousInLiveResourcesList = entry;
@@ -449,28 +455,30 @@ void MemoryCache::insertInLiveDecodedResourcesList(MemoryCacheEntry* entry)
 #endif
 }
 
-void MemoryCache::makeLive(Resource* resource)
+bool MemoryCache::isInLiveDecodedResourcesList(Resource* resource)
 {
-    if (!contains(resource))
-        return;
+    MemoryCacheEntry* entry = m_resources.get(resource->url());
+    ASSERT(entry && entry->m_resource == resource);
+    return entry->m_inLiveDecodedResourcesList;
+}
+
+void MemoryCache::addToLiveResourcesSize(Resource* resource)
+{
     ASSERT(m_deadSize >= resource->size());
     m_liveSize += resource->size();
     m_deadSize -= resource->size();
 }
 
-void MemoryCache::makeDead(Resource* resource)
+void MemoryCache::removeFromLiveResourcesSize(Resource* resource)
 {
-    if (!contains(resource))
-        return;
+    ASSERT(m_liveSize >= resource->size());
     m_liveSize -= resource->size();
     m_deadSize += resource->size();
-    removeFromLiveDecodedResourcesList(m_resources.get(resource->url()));
 }
 
 void MemoryCache::update(Resource* resource, size_t oldSize, size_t newSize, bool wasAccessed)
 {
-    if (!contains(resource))
-        return;
+    ASSERT(contains(resource));
     MemoryCacheEntry* entry = m_resources.get(resource->url());
 
     // The object must now be moved to a different queue, since either its size or its accessCount has been changed,
@@ -490,35 +498,6 @@ void MemoryCache::update(Resource* resource, size_t oldSize, size_t newSize, boo
         ASSERT(delta >= 0 || m_deadSize >= static_cast<size_t>(-delta) );
         m_deadSize += delta;
     }
-}
-
-void MemoryCache::updateDecodedResource(Resource* resource, UpdateReason reason, MemoryCacheLiveResourcePriority priority)
-{
-    if (!contains(resource))
-        return;
-    MemoryCacheEntry* entry = m_resources.get(resource->url());
-
-    removeFromLiveDecodedResourcesList(entry);
-    if (priority != MemoryCacheLiveResourcePriorityUnknown && priority != entry->m_liveResourcePriority)
-        entry->m_liveResourcePriority = priority;
-    if (resource->decodedSize() && resource->hasClients())
-        insertInLiveDecodedResourcesList(entry);
-
-    if (reason != UpdateForAccess)
-        return;
-
-    double timestamp = resource->isImage() ? FrameView::currentFrameTimeStamp() : 0.0;
-    if (!timestamp)
-        timestamp = currentTime();
-    entry->m_lastDecodedAccessTime = timestamp;
-}
-
-MemoryCacheLiveResourcePriority MemoryCache::priority(Resource* resource) const
-{
-    if (!contains(resource))
-        return MemoryCacheLiveResourcePriorityUnknown;
-    MemoryCacheEntry* entry = m_resources.get(resource->url());
-    return entry->m_liveResourcePriority;
 }
 
 void MemoryCache::removeURLFromCache(ExecutionContext* context, const KURL& url)
