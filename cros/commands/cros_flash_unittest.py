@@ -27,31 +27,21 @@ class TestXbuddyHelpers(cros_test_lib.MockTempDirTestCase):
     # Use the latest build when 'latest' is given.
     req = 'xbuddy/latest?for_update=true&return_dir=true'
     self.assertEqual(
-        cros_flash.GenerateXbuddyRequestForUpdate('latest', None), req)
+        cros_flash.GenerateXbuddyRequest('latest', 'update'), req)
 
     # Convert the path starting with 'xbuddy://' to 'xbuddy/'
     path = 'xbuddy://remote/stumpy/version'
     req = 'xbuddy/remote/stumpy/version?for_update=true&return_dir=true'
-    self.assertEqual(cros_flash.GenerateXbuddyRequestForUpdate(path, None), req)
-
-  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
-  @mock.patch('os.path.exists', return_value=True)
-  def testGenerateXbuddyRequestWithSymlink(self, _mock1, _mock2):
-    """Tests that we create symlinks for xbuddy requests."""
-    image_path = '/foo/bar/chromiumos_test_image.bin'
-    link = os.path.join(self.tempdir, 'others',
-                        '2fdcf2f57d2bca72cf2f698363a4da1c')
-    cros_flash.GenerateXbuddyRequestForUpdate(image_path, self.tempdir)
-    self.assertTrue(os.path.lexists(link))
+    self.assertEqual(cros_flash.GenerateXbuddyRequest(path, 'update'), req)
 
   def testGenerateXbuddyRequestForImage(self):
     """Tests that we generate correct requests."""
     image_path = 'foo/bar/taco'
-    self.assertEqual(cros_flash.GenerateXbuddyRequestForImage(image_path),
+    self.assertEqual(cros_flash.GenerateXbuddyRequest(image_path, 'image'),
                      'xbuddy/foo/bar/taco?return_dir=true')
 
     image_path = 'xbuddy://foo/bar/taco'
-    self.assertEqual(cros_flash.GenerateXbuddyRequestForImage(image_path),
+    self.assertEqual(cros_flash.GenerateXbuddyRequest(image_path, 'image'),
                      'xbuddy/foo/bar/taco?return_dir=true')
 
   @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
@@ -126,7 +116,7 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
     """Patches objects."""
     self.cmd_mock = None
     self.updater_mock = self.StartPatcher(RemoteDeviceUpdaterMock())
-    self.PatchObject(cros_flash, 'GenerateXbuddyRequestForUpdate',
+    self.PatchObject(cros_flash, 'GenerateXbuddyRequest',
                      return_value='xbuddy/local/latest')
     self.PatchObject(dev_server_wrapper, 'DevServerWrapper')
     self.PatchObject(remote_access, 'CHECK_INTERVAL', new=0)
@@ -206,7 +196,7 @@ class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
     """Patches objects."""
     self.cmd_mock = None
     self.imager_mock = self.StartPatcher(USBImagerMock())
-    self.PatchObject(cros_flash, 'GenerateXbuddyRequestForImage',
+    self.PatchObject(cros_flash, 'GenerateXbuddyRequest',
                      return_value='xbuddy/local/latest')
 
   def testLocalImagePath(self):

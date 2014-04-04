@@ -5,7 +5,6 @@
 """Install/copy the image to the device."""
 
 import cStringIO
-import hashlib
 import logging
 import os
 import shutil
@@ -23,12 +22,6 @@ from chromite.lib import remote_access
 
 DEVSERVER_STATIC_DIR = cros_build_lib.FromChrootPath(
     os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
-
-# The folder in devserver's static_dir that cros flash uses to store
-# symlinks to local images given by user. Note that this means if
-# there is a board or board-version (e.g. peppy-release) named
-# 'others', there will be a conflict.
-DEVSERVER_LOCAL_IMAGE_SYMLINK_DIR = 'others'
 
 IMAGE_NAME_TO_TYPE = {
     'chromiumos_test_image.bin': 'test',
@@ -70,80 +63,27 @@ def _GetXbuddyPath(path):
     raise ValueError('Do not support scheme %s.', parsed.scheme)
 
 
-def GenerateXbuddyRequestForUpdate(path, static_dir):
+def GenerateXbuddyRequest(path, req_type):
   """Generate an xbuddy request used to retreive payloads.
 
-  This function generates a xbuddy request based on |path|. If the
-  request is sent to the devserver, the server will respond with a
-  URL pointing to the folder of update payloads.
-
-  If |path| is an xbuddy path (xbuddy://subpath), strip the '://"
-  and returns xbuddy/subpath. If |path| is a local path to an image,
-  creates a symlink in the static_dir, so that xbuddy can access the
-  image; returns the corresponding xbuddy path. If |path| can't be found,
-  convert it to an xbuddy path.
+  This function generates a xbuddy request based on |path| and
+  |req_type|, which can be used to query the devserver. For request
+  type 'image' ('update'), the devserver will repond with a URL
+  pointing to the folder where the image (update payloads) is stored.
 
   Args:
-    path: Either a local path to an image or an xbuddy path (with or without
-      xbuddy://).
-    static_dir: static directory of the local devserver.
+    path: An xbuddy path (with or without xbuddy://).
+    req_type: xbuddy request type ('update' or 'image').
 
   Returns:
     A xbuddy request.
   """
-  # Path used to store the string that xbuddy understands when finding an image.
-  xbuddy_path = None
-
-  if not os.path.exists(path):
-    xbuddy_path = _GetXbuddyPath(path)
-    # For xbuddy paths, we should do a sanity check / confirmation
-    # when the xbuddy board doesn't match the board on the
-    # device. Unfortunately this isn't currently possible since we
-    # don't want to duplicate xbuddy code.  TODO(sosa):
-    # crbug.com/340722 and use it to compare boards.
+  if req_type == 'update':
+    return 'xbuddy/%s?for_update=true&return_dir=true' % _GetXbuddyPath(path)
+  elif req_type == 'image':
+    return 'xbuddy/%s?return_dir=true' % _GetXbuddyPath(path)
   else:
-    # We have a list of known image names that are recognized by
-    # devserver. User cannot arbitrarily rename their images.
-    if os.path.basename(path) not in IMAGE_NAME_TO_TYPE:
-      raise ValueError('Unknown image name %s' % os.path.basename(path))
-
-    chroot_path = cros_build_lib.ToChrootPath(path)
-    # Create and link static_dir/DEVSERVER_LOCAL_IMAGE_SYMLINK_DIR/hashed_path
-    # to the image folder, so that xbuddy/devserver can understand the path.
-    # Alternatively, we can to pass '--image' at devserver startup, but this
-    # flag is to be deprecated soon.
-    relative_dir = os.path.join(DEVSERVER_LOCAL_IMAGE_SYMLINK_DIR,
-                                hashlib.md5(chroot_path).hexdigest())
-    abs_dir = os.path.join(static_dir, relative_dir)
-    # Make the parent directory if it doesn't exist.
-    osutils.SafeMakedirsNonRoot(os.path.dirname(abs_dir))
-    # Create the symlink if it doesn't exist.
-    if not os.path.lexists(abs_dir):
-      logging.info('Creating a symlink %s -> %s', abs_dir,
-                   os.path.dirname(chroot_path))
-      os.symlink(os.path.dirname(chroot_path), abs_dir)
-
-    xbuddy_path = os.path.join(relative_dir,
-                               IMAGE_NAME_TO_TYPE[os.path.basename(path)])
-
-  return 'xbuddy/%s?for_update=true&return_dir=true' % xbuddy_path
-
-
-def GenerateXbuddyRequestForImage(path):
-  """Generate an xbuddy request used to retrieve an image.
-
-  This function generates a xbuddy request based on |path|. If the
-  request is sent to the devserver, the server will respond with a
-  URL pointing to the folder of image.
-
-  Args:
-    path: Either a local path to an image or an xbuddy path (with or without
-      xbuddy://).
-
-  Returns:
-    A xbuddy request.
-  """
-  return 'xbuddy/%s?return_dir=true' % _GetXbuddyPath(path)
+    raise ValueError('Does not support xbuddy request type %s' % req_type)
 
 
 def DevserverURLToLocalPath(url, static_dir, file_type):
@@ -273,7 +213,7 @@ class USBImager(object):
       logging.error('Failed to create %s', static_dir)
 
     ds = ds_wrapper.DevServerWrapper(static_dir=static_dir)
-    req = GenerateXbuddyRequestForImage(path)
+    req = GenerateXbuddyRequest(path, 'image')
     logging.info('Starting local devserver to get image path...')
     try:
       ds.Start()
@@ -405,6 +345,11 @@ class RemoteDeviceUpdater(object):
     # Do not wipe if debug is set.
     self.wipe = wipe and not debug
     self.yes = yes
+    # The variables below are set if user passes an local image path.
+    # Used to store a copy of the local image.
+    self.image_tempdir = None
+    # Used to store a symlink in devserver's static_dir.
+    self.static_tempdir = None
 
   @classmethod
   def GetUpdateStatus(cls, device, keys=None):
@@ -561,6 +506,56 @@ class RemoteDeviceUpdater(object):
                             follow_symlinks=True,
                             error_code_ok=True)
 
+  def ConvertLocalPathToXbuddyPath(self, path, static_dir):
+    """Converts |path| to an xbuddy path.
+
+    If |path| is a local image path, this function copies the image
+    into a temprary directory in chroot and creates a symlink in
+    |static_dir| for devserver/xbuddy to access.
+
+    Args:
+      path: Either a local path to an image or an xbuddy path (with or without
+        xbuddy://).
+      static_dir: static directory of the local devserver.
+
+    Returns:
+      If |path| does not exist, returns |path|. Otherwise, returns the xbuddy
+      path for |path|.
+    """
+    if not os.path.exists(path):
+      # For xbuddy paths, we should do a sanity check / confirmation
+      # when the xbuddy board doesn't match the board on the
+      # device. Unfortunately this isn't currently possible since we
+      # don't want to duplicate xbuddy code.  TODO(sosa):
+      # crbug.com/340722 and use it to compare boards.
+      return path
+
+    self.image_tempdir = osutils.TempDir(
+        base_dir=cros_build_lib.FromChrootPath('/tmp'),
+        prefix='cros_flash_local_image',
+        sudo_rm=True)
+
+    tempdir_path = self.image_tempdir.tempdir
+    logging.info('Copying image to temporary directory %s', tempdir_path)
+    # Devserver only knows the image names listed in IMAGE_TYPE_TO_NAME.
+    # Rename the image to chromiumos_test_image.bin when copying.
+    shutil.copy(path, os.path.join(tempdir_path, IMAGE_TYPE_TO_NAME['test']))
+    chroot_path = cros_build_lib.ToChrootPath(tempdir_path)
+    # Create and link static_dir/local_imagexxxx/link to the image
+    # folder, so that xbuddy/devserver can understand the path.
+    # Alternatively, we can to pass '--image' at devserver startup,
+    # but this flag is deprecated.
+    self.static_tempdir = osutils.TempDir(base_dir=static_dir,
+                                          prefix='local_image',
+                                          sudo_rm=True)
+    relative_dir = os.path.join(os.path.basename(self.static_tempdir.tempdir),
+                                'link')
+    symlink_path = os.path.join(static_dir, relative_dir)
+    logging.info('Creating a symlink %s -> %s', symlink_path, chroot_path)
+    os.symlink(chroot_path, symlink_path)
+    return os.path.join(relative_dir,
+                        IMAGE_NAME_TO_TYPE[os.path.basename(path)])
+
   def GetUpdatePayloads(self, path, payload_dir, board=None,
                         src_image_to_delta=None, timeout=60 * 15):
     """Launch devserver to get the update payloads.
@@ -583,7 +578,8 @@ class RemoteDeviceUpdater(object):
 
     ds = ds_wrapper.DevServerWrapper(
         static_dir=static_dir, src_image=src_image_to_delta, board=board)
-    req = GenerateXbuddyRequestForUpdate(path, static_dir)
+    req = GenerateXbuddyRequest(
+        self.ConvertLocalPathToXbuddyPath(path, static_dir), 'update')
     logging.info('Starting local devserver to generate/serve payloads...')
     try:
       ds.Start()
@@ -642,6 +638,12 @@ class RemoteDeviceUpdater(object):
 
   def Cleanup(self):
     """Cleans up the temporary directory."""
+    if self.image_tempdir:
+      self.image_tempdir.Cleanup()
+
+    if self.static_tempdir:
+      self.static_tempdir.Cleanup()
+
     if self.wipe:
       logging.info('Cleaning up temporary working directory...')
       osutils.RmDir(self.tempdir)
@@ -791,14 +793,6 @@ Examples:
   cros flash 192.168.1.7 xbuddy://remote/x86-mario/latest-canary
   cros flash 192.168.1.7 xbuddy://remote/x86-mario-paladin/R32-4830.0.0-rc1
   cros flash usb:// xbuddy://remote/trybot-x86-mario-paladin/R32-5189.0.0-b100
-
-When updating the device, there are certain constraints on the local image path:
-  1. The image path has to be in your source tree.
-  2. The image name should be one of the following:
-       chromiumos_test_image.bin, chromiumos_base_image.bin, or
-       chromiumos_image.bin
-  3. You should create a separate directory for each image as devserve
-    writes temp files to it and reuses payloads it finds.
 
   For more information and known problems/fixes, please see:
   http://dev.chromium.org/chromium-os/build/cros-flash
