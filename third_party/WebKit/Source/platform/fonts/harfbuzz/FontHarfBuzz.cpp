@@ -56,6 +56,7 @@ bool FontPlatformFeatures::canExpandAroundIdeographsInComplexText()
     return false;
 }
 
+
 static void paintGlyphs(GraphicsContext* gc, const SimpleFontData* font,
     const GlyphBufferGlyph* glyphs, unsigned numGlyphs,
     SkPoint* pos, const FloatRect& textRect)
