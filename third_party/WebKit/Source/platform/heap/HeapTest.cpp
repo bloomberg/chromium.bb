@@ -2007,7 +2007,6 @@ TEST(HeapTest, HeapCollectionTypes)
     typedef HeapHashMap<int, Member<IntWrapper> > PrimitiveMember;
 
     typedef HeapHashSet<Member<IntWrapper> > MemberSet;
-    typedef HeapHashSet<WeakMember<IntWrapper> > WeakMemberSet;
 
     typedef HeapVector<Member<IntWrapper>, 2> MemberVector;
 
