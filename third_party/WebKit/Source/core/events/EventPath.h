@@ -29,7 +29,7 @@
 
 #include "core/events/NodeEventContext.h"
 #include "core/events/TreeScopeEventContext.h"
-
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 
@@ -47,7 +47,7 @@ enum EventDispatchBehavior {
     StayInsideShadowDOM
 };
 
-class EventPath {
+class EventPath : public NoBaseWillBeGarbageCollectedFinalized<EventPath> {
 public:
     explicit EventPath(Event*);
     explicit EventPath(Node*);
@@ -64,6 +64,8 @@ public:
     void adjustForTouchEvent(Node*, TouchEvent&);
 
     static EventTarget* eventTargetRespectingTargetRules(Node*);
+
+    void trace(Visitor*);
 
 private:
     EventPath();
@@ -95,7 +97,7 @@ private:
 
     Vector<NodeEventContext, 64> m_nodeEventContexts;
     Node* m_node;
-    Event* m_event;
+    RawPtrWillBeMember<Event> m_event;
     Vector<RefPtr<TreeScopeEventContext> > m_treeScopeEventContexts;
 };
 

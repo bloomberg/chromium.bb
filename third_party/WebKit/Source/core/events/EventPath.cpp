@@ -102,7 +102,7 @@ EventPath::EventPath(Event* event)
 
 EventPath::EventPath(Node* node)
     : m_node(node)
-    , m_event(0)
+    , m_event(nullptr)
 {
     resetWith(node);
 }
@@ -364,5 +364,10 @@ void EventPath::checkReachability(TreeScope& treeScope, TouchList& touchList)
         ASSERT(touchList.item(i)->target()->toNode()->treeScope().isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(treeScope));
 }
 #endif
+
+void EventPath::trace(Visitor* visitor)
+{
+    visitor->trace(m_event);
+}
 
 } // namespace

@@ -192,7 +192,7 @@ void Event::setUnderlyingEvent(PassRefPtrWillBeRawPtr<Event> ue)
 EventPath& Event::ensureEventPath()
 {
     if (!m_eventPath)
-        m_eventPath = adoptPtr(new EventPath(this));
+        m_eventPath = adoptPtrWillBeNoop(new EventPath(this));
     return *m_eventPath;
 }
 
@@ -216,6 +216,7 @@ PassRefPtr<NodeList> Event::path() const
 void Event::trace(Visitor* visitor)
 {
     visitor->trace(m_underlyingEvent);
+    visitor->trace(m_eventPath);
 }
 
 } // namespace WebCore

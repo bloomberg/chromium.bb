@@ -207,7 +207,7 @@ private:
     RefPtr<EventTarget> m_target;
     DOMTimeStamp m_createTime;
     RefPtrWillBeMember<Event> m_underlyingEvent;
-    OwnPtr<EventPath> m_eventPath;
+    OwnPtrWillBeMember<EventPath> m_eventPath;
 };
 
 #define DEFINE_EVENT_TYPE_CASTS(typeName) \
