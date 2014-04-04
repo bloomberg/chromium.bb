@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS Test that cookies set by one WebSocket on opening handshake are sent by another WebSocket on opening handshake 
+Harness: the test ran to completion.
+
