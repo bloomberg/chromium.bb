@@ -66,7 +66,7 @@ def main():
           line = line.rstrip(newline)
           line += ''.join(
               (BRIGHT, WHITE, '    <(%s)' % (', '.join(base_for_branches)),
-               newline))
+               RESET, newline))
           for b in base_for_branches:
             del merge_base_map[b]
 
