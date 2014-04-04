@@ -202,6 +202,12 @@ QuicTestClient::QuicTestClient(
 QuicTestClient::QuicTestClient() {
 }
 
+QuicTestClient::~QuicTestClient() {
+  if (stream_) {
+    stream_->set_visitor(NULL);
+  }
+}
+
 void QuicTestClient::Initialize(bool secure) {
   priority_ = 3;
   connect_attempted_ = false;
@@ -211,12 +217,6 @@ void QuicTestClient::Initialize(bool secure) {
   proof_verifier_ = NULL;
   ClearPerRequestState();
   ExpectCertificates(secure_);
-}
-
-QuicTestClient::~QuicTestClient() {
-  if (stream_) {
-    stream_->set_visitor(NULL);
-  }
 }
 
 void QuicTestClient::ExpectCertificates(bool on) {
@@ -514,23 +514,29 @@ ssize_t QuicTestClient::SendAndWaitForResponse(const void *buffer,
   LOG(DFATAL) << "Not implemented";
   return 0;
 }
+
 void QuicTestClient::Bind(IPEndPoint* local_address) {
   DLOG(WARNING) << "Bind will be done during connect";
 }
+
 string QuicTestClient::SerializeMessage(const HTTPMessage& message) {
   LOG(DFATAL) << "Not implemented";
   return "";
 }
+
 IPAddressNumber QuicTestClient::bind_to_address() const {
   return client_->bind_to_address();
 }
+
 void QuicTestClient::set_bind_to_address(IPAddressNumber address) {
   client_->set_bind_to_address(address);
 }
+
 const IPEndPoint& QuicTestClient::address() const {
   LOG(DFATAL) << "Not implemented";
   return client_->server_address();
 }
+
 size_t QuicTestClient::requests_sent() const {
   LOG(DFATAL) << "Not implemented";
   return 0;

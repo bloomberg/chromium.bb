@@ -40,6 +40,7 @@
 using base::StringPiece;
 using crypto::SecureHash;
 using std::map;
+using std::sort;
 using std::string;
 using std::vector;
 
@@ -767,7 +768,7 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
     return;
   }
 
-  std::sort(configs.begin(), configs.end(), ConfigPrimaryTimeLessThan);
+  sort(configs.begin(), configs.end(), ConfigPrimaryTimeLessThan);
 
   Config* best_candidate = configs[0];
 

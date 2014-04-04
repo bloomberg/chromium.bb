@@ -20,7 +20,6 @@
 namespace net {
 
 class ProofVerifier;
-class QuicServerId;
 
 namespace tools {
 

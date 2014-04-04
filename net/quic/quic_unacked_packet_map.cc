@@ -255,16 +255,17 @@ const QuicUnackedPacketMap::TransmissionInfo&
 
 QuicTime QuicUnackedPacketMap::GetLastPacketSentTime() const {
   UnackedPacketMap::const_reverse_iterator it = unacked_packets_.rbegin();
-  while (it != unacked_packets_.rend() &&
-         (!it->second.pending ||
-          it->second.retransmittable_frames == NULL)) {
+  while (it != unacked_packets_.rend()) {
+    if (it->second.pending) {
+      LOG_IF(DFATAL, it->second.sent_time == QuicTime::Zero())
+          << "Sent time can never be zero for a pending packet.";
+      return it->second.sent_time;
+    }
     ++it;
   }
-  if (it == unacked_packets_.rend()) {
-    LOG(DFATAL) << "Unable to find sent time.";
-    return QuicTime::Zero();
-  }
-  return it->second.sent_time;
+  LOG(DFATAL) << "Unable to find sent time.  "
+              << "This method is only intended when there are pending packets.";
+  return QuicTime::Zero();
 }
 
 QuicTime QuicUnackedPacketMap::GetFirstPendingPacketSentTime() const {

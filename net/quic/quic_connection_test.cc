@@ -2823,10 +2823,34 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPackets) {
                                                  !kFin, NULL).bytes_consumed);
 }
 
-TEST_P(QuicConnectionTest, SendDelayedAckOnTimer) {
+TEST_P(QuicConnectionTest, SendDelayedAck) {
   QuicTime ack_time = clock_.ApproximateNow().Add(DefaultDelayedAckTime());
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  // Process a packet from the non-crypto stream.
+  frame1_.stream_id = 3;
+  ProcessPacket(1);
+  // Check if delayed ack timer is running for the expected interval.
+  EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_EQ(ack_time, connection_.GetAckAlarm()->deadline());
+  // Simulate delayed ack alarm firing.
+  connection_.GetAckAlarm()->Fire();
+  // Check that ack is sent and that delayed ack alarm is reset.
+  if (version() > QUIC_VERSION_15) {
+    EXPECT_EQ(2u, writer_->frame_count());
+    EXPECT_TRUE(writer_->stop_waiting());
+  } else {
+    EXPECT_EQ(1u, writer_->frame_count());
+  }
+  EXPECT_TRUE(writer_->ack());
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+}
+
+TEST_P(QuicConnectionTest, SendEarlyDelayedAckForCrypto) {
+  QuicTime ack_time = clock_.ApproximateNow();
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  // Process a packet from the crypto stream, which is frame1_'s default.
   ProcessPacket(1);
   // Check if delayed ack timer is running for the expected interval.
   EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
@@ -2901,14 +2925,14 @@ TEST_P(QuicConnectionTest, SendDelayedAckOnOutgoingPacket) {
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
 }
 
-TEST_P(QuicConnectionTest, DontSendDelayedAckOnOutgoingCryptoPacket) {
+TEST_P(QuicConnectionTest, SendDelayedAckOnOutgoingCryptoPacket) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   ProcessPacket(1);
   connection_.SendStreamDataWithString(kCryptoStreamId, "foo", 0, !kFin, NULL);
-  // Check that ack is not bundled with outgoing data.
-  EXPECT_EQ(1u, writer_->frame_count());
-  EXPECT_FALSE(writer_->ack());
-  EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
+  // Check that ack is bundled with outgoing crypto data.
+  EXPECT_EQ(version() <= QUIC_VERSION_15 ? 2u : 3u, writer_->frame_count());
+  EXPECT_TRUE(writer_->ack());
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
 }
 
 TEST_P(QuicConnectionTest, BundleAckWithDataOnIncomingAck) {

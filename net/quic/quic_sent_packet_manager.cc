@@ -649,9 +649,6 @@ const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
       // TODO(ianswett): When CWND is available, it would be preferable to
       // set the timer based on the earliest retransmittable packet.
       // Base the updated timer on the send time of the last packet.
-      // TODO(ianswett): I believe this is a subtle mis-implementation of tail
-      // loss probe, since GetLastPacketSentTime actually returns the sent time
-      // of the last pending packet which still has retransmittable frames.
       const QuicTime sent_time = unacked_packets_.GetLastPacketSentTime();
       const QuicTime tlp_time = sent_time.Add(GetTailLossProbeDelay());
       // Ensure the tlp timer never gets set to a time in the past.

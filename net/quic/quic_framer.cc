@@ -182,10 +182,13 @@ QuicFramer::~QuicFramer() {}
 size_t QuicFramer::GetMinStreamFrameSize(QuicVersion version,
                                          QuicStreamId stream_id,
                                          QuicStreamOffset offset,
-                                         bool last_frame_in_packet) {
+                                         bool last_frame_in_packet,
+                                         InFecGroup is_in_fec_group) {
+  bool no_stream_frame_length = last_frame_in_packet &&
+                                is_in_fec_group == NOT_IN_FEC_GROUP;
   return kQuicFrameTypeSize + GetStreamIdSize(stream_id) +
       GetStreamOffsetSize(offset) +
-      (last_frame_in_packet ? 0 : kQuicStreamPayloadLengthSize);
+      (no_stream_frame_length ? 0 : kQuicStreamPayloadLengthSize);
 }
 
 // static
@@ -289,13 +292,15 @@ size_t QuicFramer::GetSerializedFrameLength(
     size_t free_bytes,
     bool first_frame,
     bool last_frame,
+    InFecGroup is_in_fec_group,
     QuicSequenceNumberLength sequence_number_length) {
   if (frame.type == PADDING_FRAME) {
     // PADDING implies end of packet.
     return free_bytes;
   }
   size_t frame_len =
-      ComputeFrameLength(frame, last_frame, sequence_number_length);
+      ComputeFrameLength(frame, last_frame, is_in_fec_group,
+                         sequence_number_length);
   if (frame_len > free_bytes) {
     // Only truncate the first frame in a packet, so if subsequent ones go
     // over, stop including more frames.
@@ -335,6 +340,7 @@ SerializedPacket QuicFramer::BuildUnsizedDataPacket(
     bool last_frame = i == frames.size() - 1;
     const size_t frame_size = GetSerializedFrameLength(
         frames[i], max_plaintext_size - packet_size, first_frame, last_frame,
+        header.is_in_fec_group,
         header.public_header.sequence_number_length);
     DCHECK(frame_size);
     packet_size += frame_size;
@@ -357,8 +363,11 @@ SerializedPacket QuicFramer::BuildDataPacket(
   for (size_t i = 0; i < frames.size(); ++i) {
     const QuicFrame& frame = frames[i];
 
-    const bool last_frame_in_packet = i == (frames.size() - 1);
-    if (!AppendTypeByte(frame, last_frame_in_packet, &writer)) {
+    // Determine if we should write stream frame length in header.
+    const bool no_stream_frame_length =
+        (header.is_in_fec_group == NOT_IN_FEC_GROUP) &&
+        (i == frames.size() - 1);
+    if (!AppendTypeByte(frame, no_stream_frame_length, &writer)) {
       LOG(DFATAL) << "AppendTypeByte failed";
       return kNoPacket;
     }
@@ -369,7 +378,7 @@ SerializedPacket QuicFramer::BuildDataPacket(
         break;
       case STREAM_FRAME:
         if (!AppendStreamFrame(
-            *frame.stream_frame, last_frame_in_packet, &writer)) {
+            *frame.stream_frame, no_stream_frame_length, &writer)) {
           LOG(DFATAL) << "AppendStreamFrame failed";
           return kNoPacket;
         }
@@ -1863,13 +1872,15 @@ size_t QuicFramer::GetAckFrameSize(
 size_t QuicFramer::ComputeFrameLength(
     const QuicFrame& frame,
     bool last_frame_in_packet,
+    InFecGroup is_in_fec_group,
     QuicSequenceNumberLength sequence_number_length) {
   switch (frame.type) {
     case STREAM_FRAME:
       return GetMinStreamFrameSize(quic_version_,
                                    frame.stream_frame->stream_id,
                                    frame.stream_frame->offset,
-                                   last_frame_in_packet) +
+                                   last_frame_in_packet,
+                                   is_in_fec_group) +
           frame.stream_frame->data.TotalBufferSize();
     case ACK_FRAME: {
       return GetAckFrameSize(*frame.ack_frame, sequence_number_length);
@@ -1941,7 +1952,7 @@ size_t QuicFramer::ComputeFrameLength(
 }
 
 bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
-                                bool last_frame_in_packet,
+                                bool no_stream_frame_length,
                                 QuicDataWriter* writer) {
   uint8 type_byte = 0;
   switch (frame.type) {
@@ -1954,7 +1965,7 @@ bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
 
       // Data Length bit.
       type_byte <<= kQuicStreamDataLengthShift;
-      type_byte |= last_frame_in_packet ? 0 : kQuicStreamDataLengthMask;
+      type_byte |= no_stream_frame_length ? 0: kQuicStreamDataLengthMask;
 
       // Offset 3 bits.
       type_byte <<= kQuicStreamOffsetShift;
@@ -2019,21 +2030,25 @@ bool QuicFramer::AppendPacketSequenceNumber(
 
 bool QuicFramer::AppendStreamFrame(
     const QuicStreamFrame& frame,
-    bool last_frame_in_packet,
+    bool no_stream_frame_length,
     QuicDataWriter* writer) {
   if (!writer->WriteBytes(&frame.stream_id, GetStreamIdSize(frame.stream_id))) {
+    LOG(DFATAL) << "Writing stream id size failed.";
     return false;
   }
   if (!writer->WriteBytes(&frame.offset, GetStreamOffsetSize(frame.offset))) {
+    LOG(DFATAL) << "Writing offset size failed.";
     return false;
   }
-  if (!last_frame_in_packet) {
+  if (!no_stream_frame_length) {
     if (!writer->WriteUInt16(frame.data.TotalBufferSize())) {
+      LOG(DFATAL) << "Writing stream frame length failed";
       return false;
     }
   }
 
   if (!writer->WriteIOVector(frame.data)) {
+    LOG(DFATAL) << "Writing frame data failed.";
     return false;
   }
   return true;

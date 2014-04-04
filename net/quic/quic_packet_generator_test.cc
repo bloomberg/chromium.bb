@@ -511,8 +511,10 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
                           NOT_IN_FEC_GROUP) +
       // Add an extra 3 bytes for the payload and 1 byte so BytesFree is larger
       // than the GetMinStreamFrameSize.
-      QuicFramer::GetMinStreamFrameSize(framer_.version(), 1, 0, false) + 3 +
-      QuicFramer::GetMinStreamFrameSize(framer_.version(), 1, 0, true) + 1;
+      QuicFramer::GetMinStreamFrameSize(framer_.version(), 1, 0, false,
+                                        NOT_IN_FEC_GROUP) + 3 +
+      QuicFramer::GetMinStreamFrameSize(framer_.version(), 1, 0, true,
+                                        NOT_IN_FEC_GROUP) + 1;
   delegate_.SetCanWriteAnything();
   {
      InSequence dummy;

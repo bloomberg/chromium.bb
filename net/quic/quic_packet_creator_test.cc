@@ -64,12 +64,12 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
   }
 
   // Returns the number of bytes consumed by the header of packet, including
-  // the version, that is not in an FEC group.
-  size_t GetPacketHeaderOverhead() {
+  // the version.
+  size_t GetPacketHeaderOverhead(InFecGroup is_in_fec_group) {
     return GetPacketHeaderSize(creator_.options()->send_connection_id_length,
                                kIncludeVersion,
                                creator_.options()->send_sequence_number_length,
-                               NOT_IN_FEC_GROUP);
+                               is_in_fec_group);
   }
 
   // Returns the number of bytes of overhead that will be added to a packet
@@ -82,9 +82,9 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
 
   // Returns the number of bytes consumed by the non-data fields of a stream
   // frame, assuming it is the last frame in the packet
-  size_t GetStreamFrameOverhead() {
+  size_t GetStreamFrameOverhead(InFecGroup is_in_fec_group) {
     return QuicFramer::GetMinStreamFrameSize(
-        client_framer_.version(), kStreamId, kOffset, true);
+        client_framer_.version(), kStreamId, kOffset, true, is_in_fec_group);
   }
 
   static const QuicStreamId kStreamId = 1u;
@@ -336,10 +336,12 @@ TEST_F(QuicPacketCreatorTest, CreateStreamFrameFinOnly) {
 }
 
 TEST_F(QuicPacketCreatorTest, CreateAllFreeBytesForStreamFrames) {
-  const size_t overhead = GetPacketHeaderOverhead() + GetEncryptionOverhead();
+  const size_t overhead = GetPacketHeaderOverhead(NOT_IN_FEC_GROUP)
+                          + GetEncryptionOverhead();
   for (size_t i = overhead; i < overhead + 100; ++i) {
     creator_.options()->max_packet_length = i;
-    const bool should_have_room = i > overhead + GetStreamFrameOverhead();
+    const bool should_have_room = i > overhead + GetStreamFrameOverhead(
+        NOT_IN_FEC_GROUP);
     ASSERT_EQ(should_have_room,
               creator_.HasRoomForStreamFrame(kStreamId, kOffset));
     if (should_have_room) {
@@ -358,8 +360,8 @@ TEST_F(QuicPacketCreatorTest, CreateAllFreeBytesForStreamFrames) {
 
 TEST_F(QuicPacketCreatorTest, StreamFrameConsumption) {
   // Compute the total overhead for a single frame in packet.
-  const size_t overhead = GetPacketHeaderOverhead() + GetEncryptionOverhead()
-      + GetStreamFrameOverhead();
+  const size_t overhead = GetPacketHeaderOverhead(NOT_IN_FEC_GROUP)
+      + GetEncryptionOverhead() + GetStreamFrameOverhead(NOT_IN_FEC_GROUP);
   size_t capacity = kDefaultMaxPacketSize - overhead;
   // Now, test various sizes around this size.
   for (int delta = -5; delta <= 5; ++delta) {
@@ -373,7 +375,38 @@ TEST_F(QuicPacketCreatorTest, StreamFrameConsumption) {
     ASSERT_TRUE(creator_.AddSavedFrame(frame));
     // BytesFree() returns bytes available for the next frame, which will
     // be two bytes smaller since the stream frame would need to be grown.
+    EXPECT_EQ(2u, creator_.ExpansionOnNewFrame());
     size_t expected_bytes_free = bytes_free < 3 ? 0 : bytes_free - 2;
+    EXPECT_EQ(expected_bytes_free, creator_.BytesFree()) << "delta: " << delta;
+    SerializedPacket serialized_packet = creator_.SerializePacket();
+    ASSERT_TRUE(serialized_packet.packet);
+    delete serialized_packet.packet;
+    delete serialized_packet.retransmittable_frames;
+  }
+}
+
+TEST_F(QuicPacketCreatorTest, StreamFrameConsumptionInFecProtectedPacket) {
+  // Turn on FEC protection.
+  creator_.options()->max_packets_per_fec_group = 6;
+  // Compute the total overhead for a single frame in packet.
+  const size_t overhead = GetPacketHeaderOverhead(IN_FEC_GROUP)
+      + GetEncryptionOverhead() + GetStreamFrameOverhead(IN_FEC_GROUP);
+  size_t capacity = kDefaultMaxPacketSize - overhead;
+  // Now, test various sizes around this size.
+  for (int delta = -5; delta <= 5; ++delta) {
+    string data(capacity + delta, 'A');
+    size_t bytes_free = delta > 0 ? 0 : 0 - delta;
+    QuicFrame frame;
+    size_t bytes_consumed = creator_.CreateStreamFrame(
+        kStreamId, MakeIOVector(data), kOffset, false, &frame);
+    EXPECT_EQ(capacity - bytes_free, bytes_consumed);
+
+    ASSERT_TRUE(creator_.AddSavedFrame(frame));
+    // BytesFree() returns bytes available for the next frame. Since stream
+    // frame does not grow for FEC protected packets, this should be the same
+    // as bytes_free (bound by 0).
+    EXPECT_EQ(0u, creator_.ExpansionOnNewFrame());
+    size_t expected_bytes_free = bytes_free > 0 ? bytes_free : 0;
     EXPECT_EQ(expected_bytes_free, creator_.BytesFree()) << "delta: " << delta;
     SerializedPacket serialized_packet = creator_.SerializePacket();
     ASSERT_TRUE(serialized_packet.packet);
@@ -384,8 +417,8 @@ TEST_F(QuicPacketCreatorTest, StreamFrameConsumption) {
 
 TEST_F(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
   // Compute the total overhead for a single frame in packet.
-  const size_t overhead = GetPacketHeaderOverhead() + GetEncryptionOverhead()
-      + GetStreamFrameOverhead();
+  const size_t overhead = GetPacketHeaderOverhead(NOT_IN_FEC_GROUP)
+      + GetEncryptionOverhead() + GetStreamFrameOverhead(NOT_IN_FEC_GROUP);
   ASSERT_GT(kMaxPacketSize, overhead);
   size_t capacity = kDefaultMaxPacketSize - overhead;
   // Now, test various sizes around this size.
@@ -417,8 +450,8 @@ TEST_F(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
 
 TEST_F(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
   // Compute the total overhead for a single frame in packet.
-  const size_t overhead = GetPacketHeaderOverhead() + GetEncryptionOverhead()
-      + GetStreamFrameOverhead();
+  const size_t overhead = GetPacketHeaderOverhead(NOT_IN_FEC_GROUP)
+      + GetEncryptionOverhead() + GetStreamFrameOverhead(NOT_IN_FEC_GROUP);
   ASSERT_GT(kDefaultMaxPacketSize, overhead);
   size_t capacity = kDefaultMaxPacketSize - overhead;
   // Now, test various sizes around this size.

@@ -9,6 +9,8 @@
 #include "net/quic/congestion_control/cube_root.h"
 #include "net/quic/quic_protocol.h"
 
+using std::max;
+
 namespace {
 // The following constants are in 2^10 fractions of a second instead of ms to
 // allow a 10 shift right to divide.
@@ -37,8 +39,8 @@ void InterArrivalBitrateRampUp::Reset(QuicBandwidth new_rate,
                                       QuicBandwidth channel_estimate) {
   epoch_ = clock_->ApproximateNow();
   last_update_time_ = epoch_;
-  available_channel_estimate_ = std::max(new_rate, available_channel_estimate);
-  channel_estimate_ = std::max(channel_estimate, available_channel_estimate_);
+  available_channel_estimate_ = max(new_rate, available_channel_estimate);
+  channel_estimate_ = max(channel_estimate, available_channel_estimate_);
 
   halfway_point_ = available_channel_estimate_.Add(
       (channel_estimate_.Subtract(available_channel_estimate_)).Scale(0.5f));

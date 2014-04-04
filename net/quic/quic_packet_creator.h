@@ -121,6 +121,13 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // value than max_packet_size - PacketSize(), in this case.
   size_t BytesFree() const;
 
+  // Returns the number of bytes that the packet will expand by if a new frame
+  // is added to the packet. If the last frame was a stream frame, it will
+  // expand slightly when a new frame is added, and this method returns the
+  // amount of expected expansion. If the packet is in an FEC group, no
+  // expansion happens and this method always returns zero.
+  size_t ExpansionOnNewFrame() const;
+
   // Returns the number of bytes in the current packet, including the header,
   // if serialized with the current frames.  Adding a frame to the packet
   // may change the serialized length of existing frames, as per the comment
@@ -182,7 +189,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   // Starts a new FEC group with the next serialized packet, if FEC is enabled
   // and there is not already an FEC group open.
-  void MaybeStartFEC();
+  InFecGroup MaybeStartFEC();
 
   void FillPacketHeader(QuicFecGroupNumber fec_group,
                         bool fec_flag,

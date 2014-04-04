@@ -16,7 +16,7 @@ namespace net {
 class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
  public:
   struct NET_EXPORT_PRIVATE TransmissionInfo {
-    // Used by STL when assinging into a map.
+    // Used by STL when assigning into a map.
     TransmissionInfo();
 
     // Constructs a Transmission with a new all_tranmissions set

@@ -17,7 +17,6 @@
 #include "net/quic/crypto/p256_key_exchange.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/crypto/quic_encrypter.h"
-#include "net/quic/quic_server_id.h"
 #include "net/quic/quic_utils.h"
 
 using base::StringPiece;

@@ -119,6 +119,7 @@ class QuicNetworkTransactionTest
     request_.method = "GET";
     request_.url = GURL("http://www.google.com/");
     request_.load_flags = 0;
+    clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
   }
 
   virtual void SetUp() {

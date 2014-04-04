@@ -3899,6 +3899,62 @@ TEST_P(QuicFramerTest, BuildStreamFramePacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
+TEST_P(QuicFramerTest, BuildStreamFramePacketInFecGroup) {
+  QuicPacketHeader header;
+  header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = false;
+  header.fec_flag = false;
+  header.entropy_flag = true;
+  header.packet_sequence_number = GG_UINT64_C(0x77123456789ABC);
+  header.is_in_fec_group = IN_FEC_GROUP;
+  header.fec_group = GG_UINT64_C(0x77123456789ABC);
+
+  QuicStreamFrame stream_frame;
+  stream_frame.stream_id = 0x01020304;
+  stream_frame.fin = true;
+  stream_frame.offset = GG_UINT64_C(0xBA98FEDC32107654);
+  stream_frame.data = MakeIOVector("hello world!");
+
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&stream_frame));
+  unsigned char packet[] = {
+    // public flags (8 byte connection_id)
+    0x3C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags (entropy, is_in_fec_group)
+    0x03,
+    // FEC group
+    0x00,
+    // frame type (stream frame with fin and data length field)
+    0xFF,
+    // stream id
+    0x04, 0x03, 0x02, 0x01,
+    // offset
+    0x54, 0x76, 0x10, 0x32,
+    0xDC, 0xFE, 0x98, 0xBA,
+    // data length (since packet is in an FEC group)
+    0x0C, 0x00,
+    // data
+    'h',  'e',  'l',  'l',
+    'o',  ' ',  'w',  'o',
+    'r',  'l',  'd',  '!',
+  };
+
+  scoped_ptr<QuicPacket> data(
+      framer_.BuildUnsizedDataPacket(header, frames).packet);
+  ASSERT_TRUE(data != NULL);
+
+  test::CompareCharArraysWithHexError("constructed packet",
+                                      data->data(), data->length(),
+                                      AsChars(packet), arraysize(packet));
+}
+
 TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
   QuicPacketHeader header;
   header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);

@@ -245,7 +245,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
   static size_t GetMinStreamFrameSize(QuicVersion version,
                                       QuicStreamId stream_id,
                                       QuicStreamOffset offset,
-                                      bool last_frame_in_packet);
+                                      bool last_frame_in_packet,
+                                      InFecGroup is_in_fec_group);
   // Size in bytes of all ack frame fields without the missing packets.
   static size_t GetMinAckFrameSize(
       QuicVersion version,
@@ -278,8 +279,9 @@ class NET_EXPORT_PRIVATE QuicFramer {
   size_t GetSerializedFrameLength(
       const QuicFrame& frame,
       size_t free_bytes,
-      bool first_frame,
-      bool last_frame,
+      bool first_frame_in_packet,
+      bool last_frame_in_packet,
+      InFecGroup is_in_fec_group,
       QuicSequenceNumberLength sequence_number_length);
 
   // Returns the associated data from the encrypted packet |encrypted| as a
@@ -432,6 +434,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Computes the wire size in bytes of the payload of |frame|.
   size_t ComputeFrameLength(const QuicFrame& frame,
                             bool last_frame_in_packet,
+                            InFecGroup is_in_fec_group,
                             QuicSequenceNumberLength sequence_number_length);
 
   static bool AppendPacketSequenceNumber(

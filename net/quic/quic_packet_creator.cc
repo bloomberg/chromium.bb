@@ -88,7 +88,7 @@ bool QuicPacketCreator::ShouldSendFec(bool force_close) const {
        fec_group_->NumReceivedPackets() >= options_.max_packets_per_fec_group);
 }
 
-void QuicPacketCreator::MaybeStartFEC() {
+InFecGroup QuicPacketCreator::MaybeStartFEC() {
   // Don't send FEC until QUIC_VERSION_15.
   if (framer_->version() != QUIC_VERSION_13 &&
       options_.max_packets_per_fec_group > 0 && fec_group_.get() == NULL) {
@@ -97,6 +97,7 @@ void QuicPacketCreator::MaybeStartFEC() {
     fec_group_number_ = sequence_number() + 1;
     fec_group_.reset(new QuicFecGroup());
   }
+  return fec_group_.get() == NULL ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
 }
 
 // Stops serializing version of the protocol in packets sent after this call.
@@ -130,8 +131,14 @@ void QuicPacketCreator::UpdateSequenceNumberLength(
 
 bool QuicPacketCreator::HasRoomForStreamFrame(QuicStreamId id,
                                               QuicStreamOffset offset) const {
+  // TODO(jri): This is a simple safe decision for now, but make
+  // is_in_fec_group a parameter. Same as with all public methods in
+  // QuicPacketCreator.
+  InFecGroup is_in_fec_group = options_.max_packets_per_fec_group == 0 ?
+                               NOT_IN_FEC_GROUP : IN_FEC_GROUP;
   return BytesFree() >
-      QuicFramer::GetMinStreamFrameSize(framer_->version(), id, offset, true);
+      QuicFramer::GetMinStreamFrameSize(framer_->version(), id, offset, true,
+                                        is_in_fec_group);
 }
 
 // static
@@ -144,7 +151,7 @@ size_t QuicPacketCreator::StreamFramePacketOverhead(
   return GetPacketHeaderSize(connection_id_length, include_version,
                              sequence_number_length, is_in_fec_group) +
       // Assumes this is a stream with a single lone packet.
-      QuicFramer::GetMinStreamFrameSize(version, 1u, 0u, true);
+      QuicFramer::GetMinStreamFrameSize(version, 1u, 0u, true, is_in_fec_group);
 }
 
 size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
@@ -156,11 +163,13 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
             StreamFramePacketOverhead(
                 framer_->version(), PACKET_8BYTE_CONNECTION_ID, kIncludeVersion,
                 PACKET_6BYTE_SEQUENCE_NUMBER, IN_FEC_GROUP));
+  InFecGroup is_in_fec_group = MaybeStartFEC();
+
   LOG_IF(DFATAL, !HasRoomForStreamFrame(id, offset))
       << "No room for Stream frame, BytesFree: " << BytesFree()
       << " MinStreamFrameSize: "
       << QuicFramer::GetMinStreamFrameSize(
-          framer_->version(), id, offset, true);
+          framer_->version(), id, offset, true, is_in_fec_group);
 
   if (data.Empty()) {
     LOG_IF(DFATAL, !fin)
@@ -171,10 +180,10 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
   }
 
   const size_t data_size = data.TotalBufferSize();
-  size_t min_last_frame_size = QuicFramer::GetMinStreamFrameSize(
-      framer_->version(), id, offset, /*last_frame_in_packet=*/ true);
-  size_t bytes_consumed =
-      min<size_t>(BytesFree() - min_last_frame_size, data_size);
+  size_t min_frame_size = QuicFramer::GetMinStreamFrameSize(
+      framer_->version(), id, offset, /*last_frame_in_packet=*/ true,
+      is_in_fec_group);
+  size_t bytes_consumed = min<size_t>(BytesFree() - min_frame_size, data_size);
 
   bool set_fin = fin && bytes_consumed == data_size;  // Last frame.
   IOVector frame_data;
@@ -249,23 +258,24 @@ bool QuicPacketCreator::HasPendingFrames() {
   return !queued_frames_.empty();
 }
 
+size_t QuicPacketCreator::ExpansionOnNewFrame() const {
+  // If packet is FEC protected, there's no expansion.
+  if (fec_group_.get() != NULL) {
+      return 0;
+  }
+  // If the last frame in the packet is a stream frame, then it will expand to
+  // include the stream_length field when a new frame is added.
+  bool has_trailing_stream_frame =
+      !queued_frames_.empty() && queued_frames_.back().type == STREAM_FRAME;
+  return has_trailing_stream_frame ? kQuicStreamPayloadLengthSize : 0;
+}
+
 size_t QuicPacketCreator::BytesFree() const {
   const size_t max_plaintext_size =
       framer_->GetMaxPlaintextSize(options_.max_packet_length);
   DCHECK_GE(max_plaintext_size, PacketSize());
-
-  // If the last frame in the packet is a stream frame, then it can be
-  // two bytes smaller than if it were not the last.  So this means that
-  // there are two fewer bytes available to the next frame in this case.
-  bool has_trailing_stream_frame =
-      !queued_frames_.empty() && queued_frames_.back().type == STREAM_FRAME;
-  size_t expanded_packet_size = PacketSize() +
-      (has_trailing_stream_frame ? kQuicStreamPayloadLengthSize : 0);
-
-  if (expanded_packet_size  >= max_plaintext_size) {
-    return 0;
-  }
-  return max_plaintext_size - expanded_packet_size;
+  return max_plaintext_size - min(max_plaintext_size, PacketSize()
+                                  + ExpansionOnNewFrame());
 }
 
 size_t QuicPacketCreator::PacketSize() const {
@@ -392,20 +402,16 @@ bool QuicPacketCreator::ShouldRetransmit(const QuicFrame& frame) {
 bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
                                  bool save_retransmittable_frames) {
   DVLOG(1) << "Adding frame: " << frame;
+  InFecGroup is_in_fec_group = MaybeStartFEC();
   size_t frame_len = framer_->GetSerializedFrameLength(
-      frame, BytesFree(), queued_frames_.empty(), true,
+      frame, BytesFree(), queued_frames_.empty(), true, is_in_fec_group,
       options()->send_sequence_number_length);
   if (frame_len == 0) {
     return false;
   }
   DCHECK_LT(0u, packet_size_);
-  MaybeStartFEC();
-  packet_size_ += frame_len;
-  // If the last frame in the packet was a stream frame, then once we add the
-  // new frame it's serialization will be two bytes larger.
-  if (!queued_frames_.empty() && queued_frames_.back().type == STREAM_FRAME) {
-    packet_size_ += kQuicStreamPayloadLengthSize;
-  }
+  packet_size_ += ExpansionOnNewFrame() + frame_len;
+
   if (save_retransmittable_frames && ShouldRetransmit(frame)) {
     if (queued_retransmittable_frames_.get() == NULL) {
       queued_retransmittable_frames_.reset(new RetransmittableFrames());

@@ -813,8 +813,13 @@ void QuicConnection::MaybeQueueAck() {
     if (ack_alarm_->IsSet()) {
       ack_queued_ = true;
     } else {
-      ack_alarm_->Set(clock_->ApproximateNow().Add(
-          sent_packet_manager_.DelayedAckTime()));
+      // Send an ack much more quickly for crypto handshake packets.
+      QuicTime::Delta delayed_ack_time = sent_packet_manager_.DelayedAckTime();
+      if (last_stream_frames_.size() == 1 &&
+          last_stream_frames_[0].stream_id == kCryptoStreamId) {
+        delayed_ack_time = QuicTime::Delta::Zero();
+      }
+      ack_alarm_->Set(clock_->ApproximateNow().Add(delayed_ack_time));
       DVLOG(1) << "Ack timer set; next packet or timer will trigger ACK.";
     }
   }
@@ -959,10 +964,9 @@ QuicConsumedData QuicConnection::SendStreamData(
     notifier = new QuicAckNotifier(delegate);
   }
 
-  // Opportunistically bundle an ack with every outgoing packet, unless it's the
-  // crypto stream.
-  ScopedPacketBundler ack_bundler(
-      this, id != kCryptoStreamId ? BUNDLE_PENDING_ACK : NO_ACK);
+  // Opportunistically bundle an ack with every outgoing packet.
+  // TODO(ianswett): Consider not bundling an ack when there is no encryption.
+  ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
   QuicConsumedData consumed_data =
       packet_generator_.ConsumeData(id, data, offset, fin, notifier);
 

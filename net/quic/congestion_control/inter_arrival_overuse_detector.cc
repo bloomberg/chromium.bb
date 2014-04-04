@@ -9,6 +9,8 @@
 
 #include <algorithm>
 
+using std::max;
+
 // Initial noise variance, equal to a standard deviation of 1 millisecond.
 static const float kInitialVarianceNoise = 1000000.0;
 
@@ -120,7 +122,7 @@ BandwidthUsage InterArrivalOveruseDetector::GetState(
   int64 sigma_delta = sqrt(static_cast<double>(delta_variance_));
   DetectSlope(sigma_delta);
   DetectDrift(sigma_delta);
-  return std::max(slope_estimate_, delta_estimate_);
+  return max(slope_estimate_, delta_estimate_);
 }
 
 void InterArrivalOveruseDetector::UpdateFilter(QuicTime::Delta received_delta,

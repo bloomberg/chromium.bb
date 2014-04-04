@@ -216,6 +216,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     stream_.reset(use_closing_stream_ ?
                   new AutoClosingStream(session_->GetWeakPtr()) :
                   new QuicHttpStream(session_->GetWeakPtr()));
+    clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
   }
 
   void SetRequest(const std::string& method,

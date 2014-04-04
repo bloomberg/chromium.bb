@@ -366,6 +366,8 @@ ostream& operator<<(ostream& os, const ReceivedPacketInfo& received_info) {
   os << "entropy_hash: " << static_cast<int>(received_info.entropy_hash)
      << " is_truncated: " << received_info.is_truncated
      << " largest_observed: " << received_info.largest_observed
+     << " delta_time_largest_observed: "
+     << received_info.delta_time_largest_observed.ToMicroseconds()
      << " missing_packets: [ ";
   for (SequenceNumberSet::const_iterator it =
            received_info.missing_packets.begin();
