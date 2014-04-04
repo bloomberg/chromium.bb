@@ -160,10 +160,16 @@ void BookmarkIndex::ExtractBookmarkNodePairs(
 
   for (NodeSet::const_iterator i = match.nodes_begin();
        i != match.nodes_end(); ++i) {
+    int typed_count = 0;
+
+    // If |url_db| is the InMemoryDatabase, it might not cache all URLRows, but
+    // it guarantees to contain those with |typed_count| > 0. Thus, if we cannot
+    // fetch the URLRow, it is safe to assume that its |typed_count| is 0.
     history::URLRow url;
-    if (url_db)
-      url_db->GetRowForURL((*i)->url(), &url);
-    NodeTypedCountPair pair(*i, url.typed_count());
+    if (url_db && url_db->GetRowForURL((*i)->url(), &url))
+      typed_count = url.typed_count();
+
+    NodeTypedCountPair pair(*i, typed_count);
     node_typed_counts->push_back(pair);
   }
 }
