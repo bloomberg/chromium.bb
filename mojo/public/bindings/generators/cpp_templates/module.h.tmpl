@@ -16,7 +16,9 @@
 #include "{{import.module.path}}.h"
 {%- endfor %}
 
+{%- if namespace %}
 namespace {{namespace}} {
+{%- endif %}
 
 {#--- Enums #}
 {%  for enum in enums %}
@@ -43,6 +45,8 @@ namespace {{namespace}} {
 {%    include "interface_stub_declaration.tmpl" %}
 {%- endfor %}
 
+{%- if namespace %}
 }  // namespace {{namespace}}
+{%- endif %}
 
 #endif  // {{header_guard}}

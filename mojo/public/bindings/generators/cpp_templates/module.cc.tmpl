@@ -12,7 +12,9 @@
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 
+{%- if namespace %}
 namespace {{namespace}} {
+{%- endif %}
 namespace internal {
 namespace {
 
@@ -57,7 +59,9 @@ const uint32_t {{method_name}} = {{method.ordinal}};
 {%- for interface in interfaces %}
 {%-   include "interface_definition.tmpl" %}
 {%- endfor %}
+{%- if namespace %}
 }  // namespace {{namespace}}
+{%- endif %}
 
 #if defined(__clang__)
 #pragma clang diagnostic pop

@@ -70,11 +70,15 @@ class Parser(object):
 
   def p_root(self, p):
     """root : import root
-            | module"""
+            | module
+            | definitions"""
     if len(p) > 2:
       p[0] = _ListFromConcat(p[1], p[2])
     else:
-      p[0] = [p[1]]
+      if p[1][0] != 'MODULE':
+        p[0] = [('MODULE', '', p[1])]
+      else:
+        p[0] = [p[1]]
 
   def p_import(self, p):
     """import : IMPORT STRING_LITERAL"""
