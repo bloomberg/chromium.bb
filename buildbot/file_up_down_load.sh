@@ -236,14 +236,6 @@ DownloadArchivedPexes() {
   DownloadArchive toolchain/${rev}/${label} ${tarball}
 }
 
-UploadArchivedPexesTranslator() {
-    UploadArchivedPexes $1 "translator" $2
-}
-
-DownloadArchivedPexesTranslator() {
-    DownloadArchivedPexes $1 "translator" $2
-}
-
 UploadArchivedPexesSpec2k() {
     UploadArchivedPexes $1 "spec2k" $2
 }

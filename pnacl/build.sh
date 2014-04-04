@@ -514,58 +514,6 @@ everything-translator() {
   driver-install-translator
 }
 
-#@ translator-archive-pexes <tarball> -archive gold and llc pexes
-#@                      <tarball> should be an absolute pathname,
-#@                      and should have tar.bz2 as the suffix (as that is
-#@                      what will be produced).
-#@
-#@                      This must run before pexes are pruned.
-translator-archive-pexes() {
-  local tarball=$1
-
-  if [[ "${tarball#*.}" != "tar.bz2" ]]; then
-    echo "translator-archive-pexes: ${tarball} not named with .tar.bz2 suffix"
-    exit 1
-  fi
-  local tarball_no_bz2=${tarball%.*}
-
-  # Clear tarball before appending files to it.
-  rm -f ${tarball}
-
-  # Archive LD
-  for arch in ${SBTC_ARCHES_ALL} ; do
-    local pexe_dir="$(GetTranslatorInstallDir ${arch})/bin"
-    echo "pexe_dir is ${pexe_dir}"
-    # Label the pexes by architecture.
-    local pexe_ld="${pexe_dir}/ld.${arch}"
-    cp "${pexe_dir}/ld.pexe" "${pexe_ld}.nonfinal.pexe"
-    ${PNACL_FINALIZE} "${pexe_ld}.nonfinal.pexe" -o "${pexe_ld}.final.pexe"
-    local all="${pexe_ld}.final.pexe"
-    file ${all}
-    ls -l ${all}
-    # strip all path components
-    tar rf ${tarball_no_bz2}  --transform 's!^.*/!!' ${all}
-  done
-
-  # Archive LLC (which combines x86 and x86_64).
-  for arch in ${SBTC_ARCHES_LLVM} ; do
-    local pexe_dir="$(GetTranslatorInstallDir ${arch})/bin"
-    echo "pexe_dir is ${pexe_dir}"
-    # Label the pexes by architecture.
-    local pexe_llc="${pexe_dir}/pnacl-llc.${arch}"
-    cp "${pexe_dir}/pnacl-llc.pexe" "${pexe_llc}.nonfinal.pexe"
-    ${PNACL_FINALIZE} "${pexe_llc}.nonfinal.pexe" \
-      -o "${pexe_llc}.final.pexe"
-    local all="${pexe_llc}.final.pexe"
-    file ${all}
-    ls -l ${all}
-    # strip all path components
-    tar rf ${tarball_no_bz2}  --transform 's!^.*/!!' ${all}
-  done
-  bzip2 ${tarball_no_bz2}
-}
-
-
 #+ translator-clean-all  - Clean all translator install/build directories
 translator-clean-all() {
   StepBanner "TRANSLATOR" "Clean all"

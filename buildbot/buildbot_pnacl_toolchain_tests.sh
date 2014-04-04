@@ -20,10 +20,6 @@ set -o errexit
 # The motivation is to ensure that newer translators can still handle
 # older pexes.
 
-# This hopefully needs to be updated rarely, it contains pexe from
-# the sandboxed llc/gold builds
-ARCHIVED_PEXE_TRANSLATOR_REV=12177
-
 # The frontend from this rev will generate pexes for the archived frontend
 # test. The toolchain downloader expects this information in a specially
 # formatted file. We generate that file in this script from this information,
@@ -280,98 +276,6 @@ archived-frontend-test() {
   fi
 }
 
-archived-pexe-translator-test() {
-  local arch=$1
-  echo "@@@BUILD_STEP archived_pexe_translator \
-        $arch rev ${ARCHIVED_PEXE_TRANSLATOR_REV} @@@"
-  local dir="$(pwd)/pexe_archive"
-  local tarball="${dir}/pexes.tar.bz2"
-  local measure_cmd="/usr/bin/time -v"
-  local sb_translator="${measure_cmd} \
-      ${PNACL_TOOLCHAIN_DIR}/../pnacl_translator/bin/pnacl-translate"
-  rm -rf ${dir}
-  mkdir -p ${dir}
-
-  ${UP_DOWN_LOAD} DownloadArchivedPexesTranslator \
-      ${ARCHIVED_PEXE_TRANSLATOR_REV} ${tarball}
-  tar jxf ${tarball} --directory ${dir}
-
-  local ld_ext=""
-  local llc_ext=""
-  # Pexes are arch specific.
-  case ${arch} in
-    arm)
-      ld_ext=".armv7.final.pexe"
-      llc_ext=".armv7.final.pexe"
-      ;;
-    x86-32)
-      ld_ext=".i686.final.pexe"
-      llc_ext=".i686.final.pexe"
-      ;;
-    x86-64)
-      ld_ext=".x86_64.final.pexe"
-      llc_ext=".i686.final.pexe" # One llc pexe handles both x86-32 and x86-64.
-      ;;
-    *) echo "unknown arch!" && handle-error ;;
-  esac
-
-  # Note, that the arch flag has two functions:
-  # 1) it selects the target arch for the translator
-  # 2) combined with --pnacl-sb it selects the host arch for the
-  #    sandboxed translators
-  local flags="-arch ${arch} --pnacl-sb --pnacl-driver-verbose \
-      -pnaclabi-allow-dev-intrinsics"
-  if [[ ${arch} = arm ]] ; then
-    # We need to enable qemu magic for arm
-    flags="${flags} --pnacl-use-emulator"
-  fi
-  local fast_trans_flags="${flags} -translate-fast"
-
-  # Driver flags for overriding *just* the LLC and LD from
-  # the translator, to test that the LLC and LD generated
-  # from archived pexes may work.  Note that this does not override the
-  # libaries or the driver that are part of the translator,
-  # so it is not a full override and will not work if the interface
-  # has changed.
-  local override_flags="\
-    --pnacl-driver-set-LLC_SB=${dir}/pnacl-llc-${arch}.nexe \
-    --pnacl-driver-set-LD_SB=${dir}/ld-${arch}.nexe"
-  local fast_override_flags="\
-    --pnacl-driver-set-LLC_SB=${dir}/pnacl-llc-${arch}.fast_trans.nexe \
-    --pnacl-driver-set-LD_SB=${dir}/ld-${arch}.fast_trans.nexe"
-
-  echo "=== Translating the archived translator."
-  echo "=== Compiling Old Gold (normal mode) ==="
-  ${sb_translator} ${flags} ${dir}/ld${ld_ext} \
-      -o ${dir}/ld-${arch}.nexe
-  echo "=== Compiling Old Gold (fast mode) ==="
-  ${sb_translator} ${fast_trans_flags} ${dir}/ld${ld_ext} \
-      -o ${dir}/ld-${arch}.fast_trans.nexe
-
-  # Yikes: This takes about 17min on arm with qemu
-  echo "=== Compiling Old pnacl-llc (normal mode) ==="
-  ${sb_translator} ${flags} ${dir}/pnacl-llc${llc_ext} \
-      -o ${dir}/pnacl-llc-${arch}.nexe
-  echo "=== Compiling Old pnacl-llc (fast mode) ==="
-  ${sb_translator} ${fast_trans_flags} ${dir}/pnacl-llc${llc_ext} \
-      -o ${dir}/pnacl-llc-${arch}.fast_trans.nexe
-
-  ls -l ${dir}
-  file ${dir}/*
-
-  echo "=== Running the translated archived translator to test."
-  ${sb_translator} ${flags} ${override_flags} ${dir}/ld${ld_ext} \
-      -o ${dir}/ld-${arch}.2.nexe
-  ${sb_translator} ${flags} ${fast_override_flags} ${dir}/ld${ld_ext} \
-      -o ${dir}/ld-${arch}.3.nexe
-
-  # TODO(robertm): Ideally we would compare the result of translation like so
-  # ${dir}/ld-${arch}.2.nexe == ${dir}/ld-${arch}.3.nexe
-  # but this requires the translator to be deterministic which is not
-  # quite true at the moment - probably due to due hashing inside of
-  # llc based on pointer values.
-}
-
 
 tc-test-bot() {
   local archset="$1"
@@ -463,8 +367,6 @@ tc-test-bot() {
     # because they can sometimes hang on arm, causing buildbot to kill the
     # script without running any more tests.
     scons-tests-translator ${arch}
-
-    archived-pexe-translator-test ${arch}
 
     if [[ ${arch} = x86-64 ]] ; then
       scons-tests-x86-64-zero-based-sandbox
