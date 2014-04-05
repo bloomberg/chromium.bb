@@ -634,11 +634,17 @@ TEST(PicturePileImplTest, PixelRefIteratorDiscardableRefsBaseNonDiscardable) {
   }
 }
 
-TEST(PicturePileImpl, RasterContentsOpaque) {
+class FullContentsTest : public ::testing::TestWithParam<bool> {};
+
+TEST_P(FullContentsTest, RasterFullContents) {
   gfx::Size tile_size(1000, 1000);
   gfx::Size layer_bounds(3, 5);
   float contents_scale = 1.5f;
   float raster_divisions = 2.f;
+  // Param in this case is whether the content is fully opaque
+  // or just filled completely. For this test they should behave the same.
+  bool contents_opaque = GetParam();
+  bool fills_content = !GetParam();
 
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
@@ -650,7 +656,8 @@ TEST(PicturePileImpl, RasterContentsOpaque) {
 
   pile->SetMinContentsScale(contents_scale);
   pile->set_background_color(SK_ColorBLACK);
-  pile->set_contents_opaque(true);
+  pile->set_contents_opaque(contents_opaque);
+  pile->set_contents_fill_bounds_completely(fills_content);
   pile->set_clear_canvas_with_debug_color(false);
   pile->RerecordPile();
 
@@ -702,6 +709,10 @@ TEST(PicturePileImpl, RasterContentsOpaque) {
     }
   }
 }
+
+INSTANTIATE_TEST_CASE_P(PicturePileImpl,
+                        FullContentsTest,
+                        ::testing::Values(false, true));
 
 TEST(PicturePileImpl, RasterContentsTransparent) {
   gfx::Size tile_size(1000, 1000);

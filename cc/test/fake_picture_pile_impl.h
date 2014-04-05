@@ -60,6 +60,10 @@ class FakePicturePileImpl : public PicturePileImpl {
     contents_opaque_ = contents_opaque;
   }
 
+  void set_contents_fill_bounds_completely(bool fills) {
+    contents_fill_bounds_completely_ = fills;
+  }
+
   void set_clear_canvas_with_debug_color(bool clear) {
     clear_canvas_with_debug_color_ = clear;
   }
