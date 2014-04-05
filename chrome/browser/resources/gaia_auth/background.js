@@ -188,7 +188,9 @@ BackgroundBridge.prototype = {
    * script of switching to full tab if necessary.
    */
   onCompleted: function(details) {
-    if (!this.isDesktopFlow_)
+    // Only monitors requests in the gaia frame whose parent frame ID must be
+    // positive.
+    if (!this.isDesktopFlow_ || details.parentFrameId <= 0)
       return;
 
     var msg = null;
