@@ -84,8 +84,7 @@ class BPFTests : public UnitTests {
       sandbox::SandboxBPF sandbox;
       sandbox.set_proc_fd(proc_fd);
       sandbox.SetSandboxPolicyDeprecated(arg->policy(), &arg->aux_);
-      BPF_ASSERT(sandbox.StartSandbox(
-          sandbox::SandboxBPF::PROCESS_SINGLE_THREADED));
+      sandbox.SandboxBPF::StartSandbox();
 
       arg->test()(arg->aux_);
     } else {

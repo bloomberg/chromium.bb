@@ -26,7 +26,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/linux_syscalls.h"
@@ -422,7 +421,7 @@ int main(int argc, char *argv[]) {
   SandboxBPF sandbox;
   sandbox.set_proc_fd(proc_fd);
   sandbox.SetSandboxPolicyDeprecated(Evaluator, NULL);
-  CHECK(sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
+  sandbox.StartSandbox();
 
   // Check that we can create threads
   pthread_t thr;
