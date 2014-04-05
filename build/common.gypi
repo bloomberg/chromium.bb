@@ -3799,7 +3799,10 @@
           ['linux_dump_symbols==1', {
             'cflags': [ '-g' ],
             'conditions': [
-              ['linux_use_gold_binary==0 and OS!="android"', {
+              # TODO(thestig) We should not need to specify chromeos==0 here,
+              # but somehow ChromeOS uses gold despite linux_use_gold_binary==0.
+              # http://crbug.com./360082
+              ['linux_use_gold_binary==0 and chromeos==0 and OS!="android"', {
                 'target_conditions': [
                   ['_toolset=="target"', {
                     'ldflags': [
