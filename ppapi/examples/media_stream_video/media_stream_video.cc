@@ -381,7 +381,7 @@ void MediaStreamVideoDemoInstance::CreateGLObjects() {
 void MediaStreamVideoDemoInstance::CreateShader(
     GLuint program, GLenum type, const char* source) {
   GLuint shader = glCreateShader(type);
-  GLint length = strlen(source) + 1;
+  GLint length = static_cast<GLint>(strlen(source) + 1);
   glShaderSource(shader, 1, &source, &length);
   glCompileShader(shader);
   glAttachShader(program, shader);
