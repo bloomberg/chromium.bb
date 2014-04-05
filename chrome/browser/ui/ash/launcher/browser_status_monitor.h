@@ -88,6 +88,11 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
                             content::WebContents* contents,
                             int index) OVERRIDE;
 
+  // Called from our own |LocalWebContentsObserver| when web contents did go
+  // away without any other notification. This might happen in case of
+  // application uninstalls, page crashes, ...).
+  void WebContentsDestroyed(content::WebContents* web_contents);
+
  protected:
   // Add a V1 application to the shelf. This can get overwritten for multi
   // profile implementations.
@@ -113,6 +118,8 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
     virtual void DidNavigateMainFrame(
         const content::LoadCommittedDetails& details,
         const content::FrameNavigateParams& params) OVERRIDE;
+    virtual void WebContentsDestroyed(
+        content::WebContents* web_contents) OVERRIDE;
 
    private:
     BrowserStatusMonitor* monitor_;

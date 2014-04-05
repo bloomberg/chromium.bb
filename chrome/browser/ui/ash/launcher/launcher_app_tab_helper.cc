@@ -28,12 +28,13 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
   if (!extension_service || !extension_service->extensions_enabled())
     return NULL;
 
+  // Note: It is possible to come here after a tab got removed form the browser
+  // before it gets destroyed, in which case there is no browser.
   Browser* browser = chrome::FindBrowserWithWebContents(tab);
-  DCHECK(browser);
 
   // Use the Browser's app name to determine the extension for app windows and
   // use the tab's url for app tabs.
-  if (browser->is_app()) {
+  if (browser && browser->is_app()) {
     return extension_service->GetInstalledExtension(
         web_app::GetExtensionIdFromApplicationName(browser->app_name()));
   }

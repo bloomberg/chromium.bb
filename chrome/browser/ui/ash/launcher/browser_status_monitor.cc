@@ -55,6 +55,16 @@ void BrowserStatusMonitor::LocalWebContentsObserver::DidNavigateMainFrame(
   }
 }
 
+void BrowserStatusMonitor::LocalWebContentsObserver::WebContentsDestroyed(
+    content::WebContents* web_content) {
+  if (web_content == web_contents()) {
+    // We can only come here when there was a non standard termination like
+    // an app got un-installed while running, etc.
+    monitor_->WebContentsDestroyed(web_content);
+    // |this| is gone now.
+  }
+}
+
 BrowserStatusMonitor::BrowserStatusMonitor(
     ChromeLauncherController* launcher_controller)
     : launcher_controller_(launcher_controller),
@@ -106,9 +116,11 @@ void BrowserStatusMonitor::UpdateAppItemState(
     ChromeLauncherController::AppState app_state) {
   DCHECK(contents);
   // It is possible to come here from Browser::SwapTabContent where the contents
-  // cannot be associated with a browser.
+  // cannot be associated with a browser. A removal however should be properly
+  // processed.
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
-  if (browser && launcher_controller_->IsBrowserFromActiveUser(browser))
+  if (app_state == ChromeLauncherController::APP_STATE_REMOVED ||
+      (browser && launcher_controller_->IsBrowserFromActiveUser(browser)))
     launcher_controller_->UpdateAppState(contents, app_state);
 }
 
@@ -285,6 +297,12 @@ void BrowserStatusMonitor::TabClosingAt(TabStripModel* tab_strip_mode,
                                         int index) {
   UpdateAppItemState(contents,
                      ChromeLauncherController::APP_STATE_REMOVED);
+  RemoveWebContentsObserver(contents);
+}
+
+void BrowserStatusMonitor::WebContentsDestroyed(
+    content::WebContents* contents) {
+  UpdateAppItemState(contents, ChromeLauncherController::APP_STATE_REMOVED);
   RemoveWebContentsObserver(contents);
 }
 

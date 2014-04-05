@@ -1687,10 +1687,11 @@ ash::ShelfItemStatus ChromeLauncherController::GetAppState(
        ++it) {
     if (it->second == app_id) {
       Browser* browser = chrome::FindBrowserWithWebContents(it->first);
-      // There should never be an item in our |web_contents_to_app_id_| list
-      // which got deleted already. If it is, it is likely that
-      // BrowserStatusMonitor forgot to inform us of that change.
-      DCHECK(browser);
+      // Usually there should never be an item in our |web_contents_to_app_id_|
+      // list which got deleted already. However - in some situations e.g.
+      // Browser::SwapTabContent there is temporarily no associated browser.
+      if (!browser)
+        continue;
       if (browser->window()->IsActive()) {
         return browser->tab_strip_model()->GetActiveWebContents() == it->first ?
             ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
