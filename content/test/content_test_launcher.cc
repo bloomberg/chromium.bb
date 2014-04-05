@@ -21,17 +21,13 @@
 
 #if defined(OS_ANDROID)
 #include "base/message_loop/message_loop.h"
+#include "content/app/mojo/mojo_init.h"
 #include "content/common/url_schemes.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/nested_message_pump_android.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/shell_content_client.h"
 #include "ui/base/ui_base_paths.h"
-
-#if defined(USE_MOJO)
-#include "content/app/mojo/mojo_init.h"
-#endif
-
 #endif
 
 namespace content {
@@ -73,10 +69,7 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
     ui::RegisterPathProvider();
     RegisterInProcessThreads();
 
-#if defined(USE_MOJO)
     InitializeMojo();
-#endif
-
 #endif
 
     ContentTestSuiteBase::Initialize();
@@ -85,7 +78,7 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
   virtual void Shutdown() OVERRIDE {
     ContentTestSuiteBase::Shutdown();
 
-#if defined(OS_ANDROID) && defined(USE_MOJO)
+#if defined(OS_ANDROID)
     ShutdownMojo();
 #endif
   }

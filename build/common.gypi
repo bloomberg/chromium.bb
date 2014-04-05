@@ -278,9 +278,6 @@
       'sysroot%': '<(sysroot)',
       'chroot_cmd%': '<(chroot_cmd)',
 
-      # Whether content/chrome is using mojo: see http://crbug.com/353602
-      'use_mojo%': 0,
-
       # Set to 1 to enable fast builds. Set to 2 for even faster builds
       # (it disables debug info for fastest compilation - only for use
       # on compile-only bots).
@@ -859,10 +856,6 @@
           'enable_printing%': 0,
         }],
 
-        ['OS=="win" or OS=="linux" or OS=="mac" or OS=="android"', {
-          'use_mojo%': 1,
-        }],
-
         # By default, use ICU data file (icudtl.dat) on all platforms
         # except when building Android WebView.
         # TODO(jshin): Handle 'use_system_icu' on Linux (Chromium).
@@ -934,7 +927,6 @@
     'use_aura%': '<(use_aura)',
     'use_ash%': '<(use_ash)',
     'use_cras%': '<(use_cras)',
-    'use_mojo%': '<(use_mojo)',
     'use_openssl%': '<(use_openssl)',
     'use_openssl_certs%': '<(use_openssl_certs)',
     'use_nss%': '<(use_nss)',
@@ -1817,9 +1809,6 @@
       ['toolkit_views==1', {
         'grit_defines': ['-D', 'toolkit_views'],
       }],
-      ['use_mojo==1', {
-        'grit_defines': ['-D', 'use_mojo'],
-      }],
       ['toolkit_uses_gtk==1', {
         'grit_defines': ['-D', 'toolkit_uses_gtk'],
       }],
@@ -2312,9 +2301,6 @@
       }],
       ['use_libjpeg_turbo==1', {
         'defines': ['USE_LIBJPEG_TURBO=1'],
-      }],
-      ['use_mojo==1', {
-        'defines': ['USE_MOJO=1'],
       }],
       ['use_x11==1', {
         'defines': ['USE_X11=1'],

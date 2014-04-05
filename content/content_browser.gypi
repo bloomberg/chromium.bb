@@ -1401,18 +1401,6 @@
         'browser/gamepad/gamepad_platform_data_fetcher.cc',
       ]
     }],
-    ['use_mojo==1', {
-      'dependencies': [
-        '../mojo/mojo.gyp:mojo_bindings',
-        '../mojo/mojo.gyp:mojo_system',
-        'content_common_mojo_bindings',
-      ],
-    }, {  # use_mojo==0
-      'sources!': [
-        'browser/renderer_host/render_process_host_mojo_impl.cc',
-        'browser/renderer_host/render_process_host_mojo_impl.h',
-      ],
-    }],
     ['OS=="ios"', {
       'sources/': [
         # iOS only needs a small portion of content; exclude all the
@@ -1442,7 +1430,10 @@
     }, {  # OS!="ios"
       'dependencies': [
         'browser/devtools/devtools_resources.gyp:devtools_resources',
+        'content_common_mojo_bindings',
         '../cc/cc.gyp:cc',
+        '../mojo/mojo.gyp:mojo_bindings',
+        '../mojo/mojo.gyp:mojo_system',
         '../net/net.gyp:http_server',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../ui/surface/surface.gyp:surface',

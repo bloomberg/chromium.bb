@@ -86,6 +86,7 @@
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_renderer_connection.h"
 #include "content/browser/renderer_host/render_message_filter.h"
+#include "content/browser/renderer_host/render_process_host_mojo_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
@@ -158,10 +159,6 @@
 #include "content/browser/renderer_host/media/media_stream_track_metrics_host.h"
 #include "content/browser/renderer_host/media/webrtc_identity_service_host.h"
 #include "content/common/media/media_stream_messages.h"
-#endif
-
-#if defined(USE_MOJO)
-#include "content/browser/renderer_host/render_process_host_mojo_impl.h"
 #endif
 
 extern bool g_exited_main_message_loop;
@@ -1933,9 +1930,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
 
   ClearTransportDIBCache();
 
-#if defined(USE_MOJO)
   render_process_host_mojo_.reset();
-#endif
 
   // It's possible that one of the calls out to the observers might have caused
   // this object to be no longer needed.
@@ -2080,10 +2075,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     EnableAecDump(WebRTCInternals::GetInstance()->aec_dump_file_path());
 #endif
 
-#if defined(USE_MOJO)
   if (render_process_host_mojo_.get())
     render_process_host_mojo_->OnProcessLaunched();
-#endif
 }
 
 scoped_refptr<AudioRendererHost>
@@ -2157,7 +2150,6 @@ void RenderProcessHostImpl::DecrementWorkerRefCount() {
     Cleanup();
 }
 
-#if defined(USE_MOJO)
 void RenderProcessHostImpl::SetWebUIHandle(
     int32 view_routing_id,
     mojo::ScopedMessagePipeHandle handle) {
@@ -2165,6 +2157,5 @@ void RenderProcessHostImpl::SetWebUIHandle(
     render_process_host_mojo_.reset(new RenderProcessHostMojoImpl(this));
   render_process_host_mojo_->SetWebUIHandle(view_routing_id, handle.Pass());
 }
-#endif
 
 }  // namespace content

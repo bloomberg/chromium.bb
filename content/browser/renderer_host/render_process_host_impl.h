@@ -21,11 +21,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
-#include "ui/surface/transport_dib.h"
-
-#if defined(USE_MOJO)
 #include "mojo/public/cpp/system/core.h"
-#endif
+#include "ui/surface/transport_dib.h"
 
 struct ViewHostMsg_CompositorSurfaceBuffersSwapped_Params;
 
@@ -46,6 +43,7 @@ class GpuMessageFilter;
 class MessagePortMessageFilter;
 class PeerConnectionTrackerHost;
 class RendererMainThread;
+class RenderProcessHostMojoImpl;
 class RenderWidgetHelper;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
@@ -53,10 +51,6 @@ class RenderWidgetHostViewFrameSubscriber;
 class ScreenOrientationDispatcherHost;
 class StoragePartition;
 class StoragePartitionImpl;
-
-#if defined(USE_MOJO)
-class RenderProcessHostMojoImpl;
-#endif
 
 // Implements a concrete RenderProcessHost for the browser process for talking
 // to actual renderer processes (as opposed to mocks).
@@ -241,10 +235,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void IncrementWorkerRefCount();
   void DecrementWorkerRefCount();
 
-#if defined(USE_MOJO)
   void SetWebUIHandle(int32 view_routing_id,
                       mojo::ScopedMessagePipeHandle handle);
-#endif
 
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
@@ -438,9 +430,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Records the time when the process starts surviving for workers for UMA.
   base::TimeTicks survive_for_worker_start_time_;
 
-#if defined(USE_MOJO)
   scoped_ptr<RenderProcessHostMojoImpl> render_process_host_mojo_;
-#endif
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 

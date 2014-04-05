@@ -82,6 +82,7 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "content/renderer/media/webrtc_identity_service.h"
+#include "content/renderer/mojo/mojo_render_process_observer.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -144,10 +145,6 @@
 
 #if defined(ENABLE_PLUGINS)
 #include "content/renderer/npapi/plugin_channel_host.h"
-#endif
-
-#if defined(USE_MOJO)
-#include "content/renderer/mojo/mojo_render_process_observer.h"
 #endif
 
 using base::ThreadRestrictions;
@@ -397,10 +394,8 @@ void RenderThreadImpl::Init() {
 
   AddFilter((new EmbeddedWorkerContextMessageFilter())->GetFilter());
 
-#if defined(USE_MOJO)
   // MojoRenderProcessObserver deletes itself as necessary.
   new MojoRenderProcessObserver(this);
-#endif
 
   GetContentClient()->renderer()->RenderThreadStarted();
 

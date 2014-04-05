@@ -220,6 +220,7 @@ class CONTENT_EXPORT RenderViewHostImpl
       const WebPreferences& prefs) OVERRIDE;
   virtual void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const OVERRIDE;
+  virtual void SetWebUIHandle(mojo::ScopedMessagePipeHandle handle) OVERRIDE;
 
 #if defined(OS_ANDROID)
   virtual void ActivateNearestFindResult(int request_id,
@@ -227,10 +228,6 @@ class CONTENT_EXPORT RenderViewHostImpl
                                          float y) OVERRIDE;
   virtual void RequestFindMatchRects(int current_version) OVERRIDE;
   virtual void DisableFullscreenEncryptedMediaPlayback() OVERRIDE;
-#endif
-
-#if defined(USE_MOJO)
-  virtual void SetWebUIHandle(mojo::ScopedMessagePipeHandle handle) OVERRIDE;
 #endif
 
   void set_delegate(RenderViewHostDelegate* d) {

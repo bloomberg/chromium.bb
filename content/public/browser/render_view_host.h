@@ -12,11 +12,8 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/page_zoom.h"
-#include "third_party/WebKit/public/web/WebDragOperation.h"
-
-#if defined(USE_MOJO)
 #include "mojo/public/cpp/system/core.h"
-#endif
+#include "third_party/WebKit/public/web/WebDragOperation.h"
 
 class GURL;
 struct WebPreferences;
@@ -218,6 +215,9 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   virtual void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const = 0;
 
+  // Sets the mojo handle for WebUI pages.
+  virtual void SetWebUIHandle(mojo::ScopedMessagePipeHandle handle) = 0;
+
 #if defined(OS_ANDROID)
   // Selects and zooms to the find result nearest to the point (x,y)
   // defined in find-in-page coordinates.
@@ -228,11 +228,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
 
   // Disables fullscreen media playback for encrypted video.
   virtual void DisableFullscreenEncryptedMediaPlayback() = 0;
-#endif
-
-#if defined(USE_MOJO)
-  // Sets the mojo handle for WebUI pages.
-  virtual void SetWebUIHandle(mojo::ScopedMessagePipeHandle handle) = 0;
 #endif
 
  private:

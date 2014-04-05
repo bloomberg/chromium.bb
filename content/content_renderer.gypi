@@ -4,9 +4,12 @@
 
 {
   'dependencies': [
+    'content_common_mojo_bindings',
     '../gin/gin.gyp:gin',
     '../jingle/jingle.gyp:jingle_glue',
     '../media/media.gyp:media',
+    '../mojo/mojo.gyp:mojo_environment_chromium',
+    '../mojo/mojo.gyp:mojo_js_bindings_lib',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
     '../third_party/WebKit/public/blink.gyp:blink',
@@ -578,24 +581,6 @@
     ['OS=="win" and win_use_allocator_shim==1', {
       'dependencies': [
           '../base/allocator/allocator.gyp:allocator',
-      ],
-    }],
-    ['use_mojo==0', {
-      'sources!': [
-        'renderer/mojo/mojo_render_process_observer.cc',
-        'renderer/mojo/mojo_render_process_observer.h',
-        'renderer/web_ui_mojo.cc',
-        'renderer/web_ui_mojo.h',
-        'renderer/web_ui_mojo_context_state.cc',
-        'renderer/web_ui_mojo_context_state.h',
-        'renderer/web_ui_runner.cc',
-        'renderer/web_ui_runner.h',
-      ],
-    }, {
-      'dependencies': [
-        'content_common_mojo_bindings',
-        '../mojo/mojo.gyp:mojo_environment_chromium',
-        '../mojo/mojo.gyp:mojo_js_bindings_lib',
       ],
     }],
     ['OS=="android"', {

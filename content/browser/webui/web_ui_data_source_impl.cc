@@ -11,12 +11,9 @@
 #include "base/strings/string_util.h"
 #include "content/public/common/content_client.h"
 #include "grit/content_resources.h"
+#include "mojo/public/js/bindings/constants.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
-
-#if defined(USE_MOJO)
-#include "mojo/public/js/bindings/constants.h"
-#endif
 
 namespace content {
 
@@ -25,7 +22,6 @@ WebUIDataSource* WebUIDataSource::Create(const std::string& source_name) {
   return new WebUIDataSourceImpl(source_name);
 }
 
-#if defined(USE_MOJO)
 // static
 WebUIDataSource* WebUIDataSource::AddMojoDataSource(
     BrowserContext* browser_context) {
@@ -46,7 +42,6 @@ WebUIDataSource* WebUIDataSource::AddMojoDataSource(
   URLDataManager::AddWebUIDataSource(browser_context, mojo_source);
   return mojo_source;
 }
-#endif
 
 // static
 void WebUIDataSource::Add(BrowserContext* browser_context,

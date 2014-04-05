@@ -697,24 +697,6 @@ void RenderViewHostImpl::SetHasPendingCrossSiteRequest(
       GetProcess()->GetID(), GetRoutingID(), has_pending_request);
 }
 
-#if defined(OS_ANDROID)
-void RenderViewHostImpl::ActivateNearestFindResult(int request_id,
-                                                   float x,
-                                                   float y) {
-  Send(new InputMsg_ActivateNearestFindResult(GetRoutingID(),
-                                              request_id, x, y));
-}
-
-void RenderViewHostImpl::RequestFindMatchRects(int current_version) {
-  Send(new ViewMsg_FindMatchRects(GetRoutingID(), current_version));
-}
-
-void RenderViewHostImpl::DisableFullscreenEncryptedMediaPlayback() {
-  media_player_manager_->DisableFullscreenEncryptedMediaPlayback();
-}
-#endif
-
-#if defined(USE_MOJO)
 void RenderViewHostImpl::SetWebUIHandle(mojo::ScopedMessagePipeHandle handle) {
   // Never grant any bindings to browser plugin guests.
   if (GetProcess()->IsGuest()) {
@@ -731,6 +713,22 @@ void RenderViewHostImpl::SetWebUIHandle(mojo::ScopedMessagePipeHandle handle) {
   RenderProcessHostImpl* process =
       static_cast<RenderProcessHostImpl*>(GetProcess());
   process->SetWebUIHandle(GetRoutingID(), handle.Pass());
+}
+
+#if defined(OS_ANDROID)
+void RenderViewHostImpl::ActivateNearestFindResult(int request_id,
+                                                   float x,
+                                                   float y) {
+  Send(new InputMsg_ActivateNearestFindResult(GetRoutingID(),
+                                              request_id, x, y));
+}
+
+void RenderViewHostImpl::RequestFindMatchRects(int current_version) {
+  Send(new ViewMsg_FindMatchRects(GetRoutingID(), current_version));
+}
+
+void RenderViewHostImpl::DisableFullscreenEncryptedMediaPlayback() {
+  media_player_manager_->DisableFullscreenEncryptedMediaPlayback();
 }
 #endif
 

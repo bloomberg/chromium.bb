@@ -924,7 +924,7 @@
             'public/test/content_browser_test_utils_mac.mm',
           ],
           'conditions': [
-            ['use_mojo==1 and OS=="android"', {
+            ['OS=="android"', {
               'dependencies': [
                 'content.gyp:content_app_both',
               ],
@@ -968,12 +968,18 @@
             'content_resources.gyp:content_resources',
             'content_shell_lib',
             'content_shell_pak',
+            'web_ui_test_mojo_bindings',
             '../base/base.gyp:test_support_base',
             '../gin/gin.gyp:gin',
             '../gpu/gpu.gyp:gpu',
             '../ipc/ipc.gyp:test_support_ipc',
             '../media/media.gyp:media_test_support',
             '../media/media.gyp:shared_memory_support',
+            '../mojo/mojo.gyp:mojo_bindings',
+            '../mojo/mojo.gyp:mojo_environment_chromium',
+            '../mojo/mojo.gyp:mojo_service_manager',
+            '../mojo/mojo.gyp:mojo_system',
+            '../mojo/mojo.gyp:mojo_system_impl',
             '../net/net.gyp:net_test_support',
             '../ppapi/ppapi_internal.gyp:ppapi_host',
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',
@@ -1102,19 +1108,6 @@
                 'browser/web_contents/touch_editable_impl_aura_browsertest.cc',
               ],
             }],
-            ['use_mojo==0', {
-              'sources!': [
-                'browser/webui/web_ui_mojo_browsertest.cc',
-              ],
-            }, {  # use_mojo==1
-              'dependencies': [
-                'web_ui_test_mojo_bindings',
-                '../mojo/mojo.gyp:mojo_bindings',
-                '../mojo/mojo.gyp:mojo_environment_chromium',
-                '../mojo/mojo.gyp:mojo_system',
-                '../mojo/mojo.gyp:mojo_system_impl',
-              ],
-            }],
             ['OS=="win"', {
               'resource_include_dirs': [
                 '<(SHARED_INTERMEDIATE_DIR)/webkit',
@@ -1200,16 +1193,6 @@
             ['use_aura!=1 and OS!="mac"', {
               'sources/': [
                 ['exclude', '^browser/compositor/'],
-              ],
-            }],
-            ['use_mojo==1', {
-              'dependencies': [
-                '../mojo/mojo.gyp:mojo_environment_chromium',
-                '../mojo/mojo.gyp:mojo_service_manager',
-              ],
-            },{
-              'sources!': [
-                'app/mojo/mojo_browsertest.cc',
               ],
             }],
             ['OS!="android" and OS!="ios"', {

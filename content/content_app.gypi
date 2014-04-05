@@ -62,14 +62,10 @@
     ['OS=="ios"', {
       'sources!': [
         'app/content_main.cc',
-      ],
-    }],
-    ['use_mojo==0', {
-      'sources!': [
         'app/mojo/mojo_init.cc',
         'app/mojo/mojo_init.h',
       ],
-    }, {
+    }, {  # OS!="ios"
       'dependencies': [
         '../mojo/mojo.gyp:mojo_environment_chromium',
         '../mojo/mojo.gyp:mojo_service_manager',

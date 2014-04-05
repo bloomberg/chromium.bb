@@ -90,9 +90,6 @@ should_do_Release() {
 COMPILER=clang
 # Valid values: shared or static.
 COMPONENT=shared
-# TODO(vtl): Remove this. crbug.com/353602
-# Valid values: enabled or disabled.
-USE_MOJO=enabled
 make_gyp_defines() {
   local options=()
   # Always include these options.
@@ -111,14 +108,6 @@ make_gyp_defines() {
       ;;
     static)
       options+=("component=static_library")
-      ;;
-  esac
-  case "$USE_MOJO" in
-    enabled)
-      options+=("use_mojo=1")
-      ;;
-    disabled)
-      options+=("use_mojo=0")
       ;;
   esac
   echo ${options[*]}
@@ -190,12 +179,6 @@ for arg in "$@"; do
       ;;
     --static)
       COMPONENT=static
-      ;;
-    --use-mojo)
-      USE_MOJO=enabled
-      ;;
-    --no-use-mojo)
-      USE_MOJO=disabled
       ;;
     *)
       echo "Unknown command \"${arg}\". Try \"$(basename "$0") help\"."

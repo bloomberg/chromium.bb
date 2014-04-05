@@ -500,6 +500,9 @@
         '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:media',
         '../media/media.gyp:shared_memory_support',
+        '../mojo/mojo.gyp:mojo_environment_chromium',
+        '../mojo/mojo.gyp:mojo_system',
+        '../mojo/mojo.gyp:mojo_system_impl',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../ui/gl/gl.gyp:gl',
         '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
@@ -508,18 +511,6 @@
         '../webkit/storage_common.gyp:webkit_storage_common',
         'content.gyp:webkit_version',
       ],
-    }],
-    ['use_mojo==0', {
-      'sources!': [
-        'common/mojo/mojo_channel_init.cc',
-        'common/mojo/mojo_channel_init.h',
-      ],
-    }, {
-      'dependencies': [
-        '../mojo/mojo.gyp:mojo_environment_chromium',
-        '../mojo/mojo.gyp:mojo_system',
-        '../mojo/mojo.gyp:mojo_system_impl',
-     ],
     }],
     ['OS=="mac"', {
       'dependencies': [

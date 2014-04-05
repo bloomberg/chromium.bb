@@ -61,6 +61,7 @@
 #endif
 
 #if !defined(OS_IOS)
+#include "content/app/mojo/mojo_init.h"
 #include "content/public/plugin/content_plugin_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/utility/content_utility_client.h"
@@ -99,10 +100,6 @@
 extern "C" {
 int tc_set_new_mode(int mode);
 }
-#endif
-
-#if defined(USE_MOJO)
-#include "content/app/mojo/mojo_init.h"
 #endif
 
 namespace content {
@@ -665,7 +662,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     std::string process_type =
         command_line.GetSwitchValueASCII(switches::kProcessType);
 
-#if defined(USE_MOJO)
+#if !defined(OS_IOS)
     // Initialize mojo here so that services can be registered.
     InitializeMojo();
 #endif
@@ -812,7 +809,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       delegate_->ProcessExiting(process_type);
     }
 
-#if defined(USE_MOJO)
+#if !defined(OS_IOS)
     ShutdownMojo();
 #endif
 

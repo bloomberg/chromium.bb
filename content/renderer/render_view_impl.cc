@@ -118,6 +118,7 @@
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/web_ui_extension.h"
 #include "content/renderer/web_ui_extension_data.h"
+#include "content/renderer/web_ui_mojo.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_renderer_mixer_input.h"
@@ -236,10 +237,6 @@
 
 #if defined(ENABLE_WEBRTC)
 #include "content/renderer/media/rtc_peer_connection_handler.h"
-#endif
-
-#if defined(USE_MOJO)
-#include "content/renderer/web_ui_mojo.h"
 #endif
 
 using blink::WebAXObject;
@@ -3354,10 +3351,8 @@ void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
       !(enabled_bindings_ & BINDINGS_POLICY_WEB_UI)) {
     // WebUIExtensionData deletes itself when we're destroyed.
     new WebUIExtensionData(this);
-#if defined(USE_MOJO)
     // WebUIMojo deletes itself when we're destroyed.
     new WebUIMojo(this);
-#endif
   }
 
   enabled_bindings_ |= enabled_bindings_flags;
