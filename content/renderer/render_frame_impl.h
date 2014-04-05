@@ -251,12 +251,12 @@ class CONTENT_EXPORT RenderFrameImpl
                                    blink::WebDataSource* datasource);
   virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame);
   virtual void didReceiveServerRedirectForProvisionalLoad(
-      blink::WebFrame* frame);
+      blink::WebLocalFrame* frame);
   virtual void didFailProvisionalLoad(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       const blink::WebURLError& error);
   virtual void didCommitProvisionalLoad(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       const blink::WebHistoryItem& item,
       blink::WebHistoryCommitType commit_type);
   // DEPRECATED
@@ -273,8 +273,8 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didHandleOnloadEvents(blink::WebLocalFrame* frame);
   virtual void didFailLoad(blink::WebLocalFrame* frame,
                            const blink::WebURLError& error);
-  virtual void didFinishLoad(blink::WebFrame* frame);
-  virtual void didNavigateWithinPage(blink::WebFrame* frame,
+  virtual void didFinishLoad(blink::WebLocalFrame* frame);
+  virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
                                      const blink::WebHistoryItem& item,
                                      blink::WebHistoryCommitType commit_type);
   // DEPRECATED

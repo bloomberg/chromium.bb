@@ -1718,7 +1718,7 @@ void RenderFrameImpl::didFailProvisionalLoad(blink::WebLocalFrame* frame,
 }
 
 void RenderFrameImpl::didCommitProvisionalLoad(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type) {
   DocumentState* document_state =
@@ -1949,7 +1949,7 @@ void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
                                       ds->request().url()));
 }
 
-void RenderFrameImpl::didNavigateWithinPage(blink::WebFrame* frame,
+void RenderFrameImpl::didNavigateWithinPage(blink::WebLocalFrame* frame,
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type) {
   DCHECK(!frame_ || frame_ == frame);
