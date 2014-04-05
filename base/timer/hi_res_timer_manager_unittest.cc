@@ -19,8 +19,7 @@ TEST(HiResTimerManagerTest, DISABLED_ToggleOnOff) {
   base::MessageLoop loop;
   scoped_ptr<base::PowerMonitorSource> power_monitor_source(
       new base::PowerMonitorDeviceSource());
-  scoped_ptr<base::PowerMonitor> power_monitor(
-      new base::PowerMonitor(power_monitor_source.Pass()));
+  base::PowerMonitor::Initialize(power_monitor_source.Pass());
   HighResolutionTimerManager manager;
 
   // At this point, we don't know if the high resolution timers are on or off,
@@ -55,6 +54,8 @@ TEST(HiResTimerManagerTest, DISABLED_ToggleOnOff) {
     // De-activate the high resolution timer.
     base::Time::ActivateHighResolutionTimer(false);
   }
+
+  base::PowerMonitor::ShutdownForTesting();
 }
 #endif  // defined(OS_WIN)
 

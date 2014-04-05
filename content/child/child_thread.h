@@ -244,8 +244,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // starts profiling the tcmalloc heap.
   scoped_ptr<base::debug::TraceMemoryController> trace_memory_controller_;
 
-  scoped_ptr<base::PowerMonitor> power_monitor_;
-
   bool in_browser_process_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildThread);

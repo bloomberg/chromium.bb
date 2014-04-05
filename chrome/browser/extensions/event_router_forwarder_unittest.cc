@@ -97,7 +97,11 @@ class EventRouterForwarderTest : public testing::Test {
 #endif
     scoped_ptr<base::PowerMonitorSource> power_monitor_source(
       new base::PowerMonitorDeviceSource());
-    dummy.reset(new base::PowerMonitor(power_monitor_source.Pass()));
+    base::PowerMonitor::Initialize(power_monitor_source.Pass());
+  }
+
+  virtual ~EventRouterForwarderTest() {
+    base::PowerMonitor::ShutdownForTesting();
   }
 
   virtual void SetUp() {
@@ -114,7 +118,6 @@ class EventRouterForwarderTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   TestingProfileManager profile_manager_;
-  scoped_ptr<base::PowerMonitor> dummy;
   // Profiles are weak pointers, owned by ProfileManager in |browser_process_|.
   TestingProfile* profile1_;
   TestingProfile* profile2_;

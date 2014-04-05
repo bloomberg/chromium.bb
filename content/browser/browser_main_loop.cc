@@ -448,8 +448,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:PowerMonitor")
     scoped_ptr<base::PowerMonitorSource> power_monitor_source(
-      new base::PowerMonitorDeviceSource());
-    power_monitor_.reset(new base::PowerMonitor(power_monitor_source.Pass()));
+        new base::PowerMonitorDeviceSource());
+    base::PowerMonitor::Initialize(power_monitor_source.Pass());
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:HighResTimerManager")

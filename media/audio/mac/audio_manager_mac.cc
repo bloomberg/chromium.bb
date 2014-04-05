@@ -226,20 +226,20 @@ class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
  public:
   AudioPowerObserver()
       : is_suspending_(false),
-        is_monitoring_(base::PowerMonitor::Get()) {
+        is_monitoring_(base::PowerMonitor::IsInitialized()) {
     // The PowerMonitor requires signifcant setup (a CFRunLoop and preallocated
     // IO ports) so it's not available under unit tests.  See the OSX impl of
     // base::PowerMonitorDeviceSource for more details.
     if (!is_monitoring_)
       return;
-    base::PowerMonitor::Get()->AddObserver(this);
+    base::PowerMonitor::AddObserver(this);
   }
 
   virtual ~AudioPowerObserver() {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!is_monitoring_)
       return;
-    base::PowerMonitor::Get()->RemoveObserver(this);
+    base::PowerMonitor::RemoveObserver(this);
   }
 
   bool ShouldDeferOutputStreamStart() {

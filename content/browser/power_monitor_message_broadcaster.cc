@@ -13,15 +13,11 @@ namespace content {
 PowerMonitorMessageBroadcaster::PowerMonitorMessageBroadcaster(
     IPC::Sender* sender)
     : sender_(sender) {
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->AddObserver(this);
+  base::PowerMonitor::AddObserver(this);
 }
 
 PowerMonitorMessageBroadcaster::~PowerMonitorMessageBroadcaster() {
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->RemoveObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 }
 
 void PowerMonitorMessageBroadcaster::OnPowerStateChange(bool on_battery_power) {

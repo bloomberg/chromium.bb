@@ -12,17 +12,17 @@ class PowerMonitorTest : public testing::Test {
  protected:
   PowerMonitorTest() {
     power_monitor_source_ = new PowerMonitorTestSource();
-    power_monitor_.reset(new PowerMonitor(
-        scoped_ptr<PowerMonitorSource>(power_monitor_source_)));
+    PowerMonitor::Initialize(
+        scoped_ptr<PowerMonitorSource>(power_monitor_source_));
   }
-  virtual ~PowerMonitorTest() {};
+  virtual ~PowerMonitorTest() {
+    PowerMonitor::ShutdownForTesting();
+  };
 
   PowerMonitorTestSource* source() { return power_monitor_source_; }
-  PowerMonitor* monitor() { return power_monitor_.get(); }
 
  private:
   PowerMonitorTestSource* power_monitor_source_;
-  scoped_ptr<PowerMonitor> power_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorTest);
 };
@@ -34,7 +34,7 @@ TEST_F(PowerMonitorTest, PowerNotifications) {
 
   PowerMonitorTestObserver observers[kObservers];
   for (int index = 0; index < kObservers; ++index)
-    monitor()->AddObserver(&observers[index]);
+    PowerMonitor::AddObserver(&observers[index]);
 
   // Sending resume when not suspended should have no effect.
   source()->GenerateResumeEvent();

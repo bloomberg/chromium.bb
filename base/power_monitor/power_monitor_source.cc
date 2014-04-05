@@ -22,11 +22,11 @@ bool PowerMonitorSource::IsOnBatteryPower() {
 }
 
 void PowerMonitorSource::ProcessPowerEvent(PowerEvent event_id) {
-  PowerMonitor* monitor = PowerMonitor::Get();
-  if (!monitor)
+  AutoLock lock(*PowerMonitor::GetLock());
+  if (!PowerMonitor::IsInitializedLocked())
     return;
 
-  PowerMonitorSource* source = monitor->Source();
+  PowerMonitorSource* source = PowerMonitor::GetSource();
 
   // Suppress duplicate notifications.  Some platforms may
   // send multiple notifications of the same event.
@@ -45,19 +45,19 @@ void PowerMonitorSource::ProcessPowerEvent(PowerEvent event_id) {
         }
 
         if (changed)
-          monitor->NotifyPowerStateChange(new_on_battery_power);
+          PowerMonitor::NotifyPowerStateChange(new_on_battery_power);
       }
       break;
     case RESUME_EVENT:
       if (source->suspended_) {
         source->suspended_ = false;
-        monitor->NotifyResume();
+        PowerMonitor::NotifyResume();
       }
       break;
     case SUSPEND_EVENT:
       if (!source->suspended_) {
         source->suspended_ = true;
-        monitor->NotifySuspend();
+        PowerMonitor::NotifySuspend();
       }
       break;
   }

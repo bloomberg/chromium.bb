@@ -3,59 +3,108 @@
 // found in the LICENSE file.
 
 #include "base/power_monitor/power_monitor.h"
+
+#include "base/lazy_instance.h"
 #include "base/power_monitor/power_monitor_source.h"
+#include "base/synchronization/lock.h"
 
 namespace base {
 
-static PowerMonitor* g_power_monitor = NULL;
+class PowerMonitorImpl;
 
-PowerMonitor::PowerMonitor(scoped_ptr<PowerMonitorSource> source)
-    : observers_(new ObserverListThreadSafe<PowerObserver>()),
-      source_(source.Pass()) {
+LazyInstance<Lock>::Leaky g_power_monitor_lock = LAZY_INSTANCE_INITIALIZER;
+static PowerMonitorImpl* g_power_monitor = NULL;
+
+// A class used to monitor the power state change and notify the observers about
+// the change event.
+class BASE_EXPORT PowerMonitorImpl {
+ public:
+  explicit PowerMonitorImpl(scoped_ptr<PowerMonitorSource> source)
+      : observers_(new ObserverListThreadSafe<PowerObserver>()),
+      source_(source.Pass()) { }
+
+  ~PowerMonitorImpl()  { }
+
+  scoped_refptr<ObserverListThreadSafe<PowerObserver> > observers_;
+  scoped_ptr<PowerMonitorSource> source_;
+
+  DISALLOW_COPY_AND_ASSIGN(PowerMonitorImpl);
+};
+
+void PowerMonitor::Initialize(scoped_ptr<PowerMonitorSource> source) {
+  AutoLock(g_power_monitor_lock.Get());
   DCHECK(!g_power_monitor);
-  g_power_monitor = this;
+  g_power_monitor = new PowerMonitorImpl(source.Pass());
 }
 
-PowerMonitor::~PowerMonitor() {
-  DCHECK_EQ(this, g_power_monitor);
-  g_power_monitor = NULL;
+void PowerMonitor::ShutdownForTesting() {
+  AutoLock(g_power_monitor_lock.Get());
+  if (g_power_monitor) {
+    delete g_power_monitor;
+    g_power_monitor = NULL;
+  }
 }
 
-// static
-PowerMonitor* PowerMonitor::Get() {
-  return g_power_monitor;
+bool PowerMonitor::IsInitialized() {
+  AutoLock(g_power_monitor_lock.Get());
+  return g_power_monitor != NULL;
 }
 
-void PowerMonitor::AddObserver(PowerObserver* obs) {
-  observers_->AddObserver(obs);
+bool PowerMonitor::AddObserver(PowerObserver* observer) {
+  AutoLock(g_power_monitor_lock.Get());
+  if (!g_power_monitor)
+    return false;
+  g_power_monitor->observers_->AddObserver(observer);
+  return true;
 }
 
-void PowerMonitor::RemoveObserver(PowerObserver* obs) {
-  observers_->RemoveObserver(obs);
-}
-
-PowerMonitorSource* PowerMonitor::Source() {
-  return source_.get();
+bool PowerMonitor::RemoveObserver(PowerObserver* observer) {
+  AutoLock(g_power_monitor_lock.Get());
+  if (!g_power_monitor)
+    return false;
+  g_power_monitor->observers_->RemoveObserver(observer);
+  return true;
 }
 
 bool PowerMonitor::IsOnBatteryPower() {
-  return source_->IsOnBatteryPower();
+  g_power_monitor_lock.Get().AssertAcquired();
+  if (!g_power_monitor)
+    return false;
+  return g_power_monitor->source_->IsOnBatteryPower();
+}
+
+Lock* PowerMonitor::GetLock() {
+  return &g_power_monitor_lock.Get();
+}
+
+bool PowerMonitor::IsInitializedLocked() {
+  g_power_monitor_lock.Get().AssertAcquired();
+  return g_power_monitor != NULL;
+}
+
+PowerMonitorSource* PowerMonitor::GetSource() {
+  g_power_monitor_lock.Get().AssertAcquired();
+  return g_power_monitor->source_.get();
 }
 
 void PowerMonitor::NotifyPowerStateChange(bool battery_in_use) {
   DVLOG(1) << "PowerStateChange: " << (battery_in_use ? "On" : "Off")
            << " battery";
-  observers_->Notify(&PowerObserver::OnPowerStateChange, battery_in_use);
+  g_power_monitor_lock.Get().AssertAcquired();
+  g_power_monitor->observers_->Notify(&PowerObserver::OnPowerStateChange,
+      battery_in_use);
 }
 
 void PowerMonitor::NotifySuspend() {
   DVLOG(1) << "Power Suspending";
-  observers_->Notify(&PowerObserver::OnSuspend);
+  g_power_monitor_lock.Get().AssertAcquired();
+  g_power_monitor->observers_->Notify(&PowerObserver::OnSuspend);
 }
 
 void PowerMonitor::NotifyResume() {
   DVLOG(1) << "Power Resuming";
-  observers_->Notify(&PowerObserver::OnResume);
+  g_power_monitor_lock.Get().AssertAcquired();
+  g_power_monitor->observers_->Notify(&PowerObserver::OnResume);
 }
 
 }  // namespace base

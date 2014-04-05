@@ -36,9 +36,7 @@ URLRequestJob::URLRequestJob(URLRequest* request,
       deferred_redirect_status_code_(-1),
       network_delegate_(network_delegate),
       weak_factory_(this) {
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->AddObserver(this);
+  base::PowerMonitor::AddObserver(this);
 }
 
 void URLRequestJob::SetUpload(UploadDataStream* upload) {
@@ -246,11 +244,7 @@ void URLRequestJob::OnSuspend() {
 void URLRequestJob::NotifyURLRequestDestroyed() {
 }
 
-URLRequestJob::~URLRequestJob() {
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->RemoveObserver(this);
-}
+URLRequestJob::~URLRequestJob() { base::PowerMonitor::RemoveObserver(this); }
 
 void URLRequestJob::NotifyCertificateRequested(
     SSLCertRequestInfo* cert_request_info) {

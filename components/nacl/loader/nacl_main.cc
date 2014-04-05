@@ -24,7 +24,7 @@ int NaClMain(const content::MainFunctionParams& parameters) {
 
   scoped_ptr<base::PowerMonitorSource> power_monitor_source(
       new base::PowerMonitorDeviceSource());
-  base::PowerMonitor power_monitor(power_monitor_source.Pass());
+  base::PowerMonitor::Initialize(power_monitor_source.Pass());
   base::HighResolutionTimerManager hi_res_timer_manager;
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
@@ -49,5 +49,6 @@ int NaClMain(const content::MainFunctionParams& parameters) {
 #else
   NOTIMPLEMENTED() << " not implemented startup, plugin startup dialog etc.";
 #endif
+
   return 0;
 }
