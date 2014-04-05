@@ -29,20 +29,72 @@
 #include "config.h"
 #include "core/css/TreeBoundaryCrossingRules.h"
 
+#include "core/css/ElementRuleCollector.h"
 #include "core/css/RuleFeature.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/shadow/ShadowRoot.h"
 
 namespace WebCore {
 
-void TreeBoundaryCrossingRules::addRule(StyleRule* rule, size_t selectorIndex, ContainerNode* scopingNode, AddRuleFlags addRuleFlags)
+static void addRules(RuleSet* ruleSet, const WillBeHeapVector<MinimalRuleData>& rules)
 {
-    if (m_treeBoundaryCrossingRuleSetMap.contains(scopingNode)) {
-        m_treeBoundaryCrossingRuleSetMap.get(scopingNode)->addRule(rule, selectorIndex, addRuleFlags);
-    } else {
-        OwnPtrWillBeRawPtr<RuleSet> ruleSetForScope = RuleSet::create();
-        ruleSetForScope->addRule(rule, selectorIndex, addRuleFlags);
-        m_treeBoundaryCrossingRuleSetMap.add(scopingNode, ruleSetForScope.release());
-        m_scopingNodes.add(scopingNode);
+    for (unsigned i = 0; i < rules.size(); ++i) {
+        const MinimalRuleData& info = rules[i];
+        ruleSet->addRule(info.m_rule, info.m_selectorIndex, info.m_flags);
+    }
+}
+
+void TreeBoundaryCrossingRules::addTreeBoundaryCrossingRules(const RuleSet& authorRules, ContainerNode& scopingNode, CSSStyleSheet* parentStyleSheet)
+{
+    if (authorRules.treeBoundaryCrossingRules().isEmpty() && (scopingNode.isDocumentNode() || authorRules.shadowDistributedRules().isEmpty()))
+        return;
+    OwnPtrWillBeRawPtr<RuleSet> ruleSetForScope = RuleSet::create();
+    addRules(ruleSetForScope.get(), authorRules.treeBoundaryCrossingRules());
+    if (!scopingNode.isDocumentNode())
+        addRules(ruleSetForScope.get(), authorRules.shadowDistributedRules());
+
+    if (!m_treeBoundaryCrossingRuleSetMap.contains(&scopingNode)) {
+        m_treeBoundaryCrossingRuleSetMap.add(&scopingNode, adoptPtrWillBeNoop(new CSSStyleSheetRuleSubSet()));
+        m_scopingNodes.add(&scopingNode);
+    }
+    CSSStyleSheetRuleSubSet* ruleSubSet = m_treeBoundaryCrossingRuleSetMap.get(&scopingNode);
+    ruleSubSet->append(std::make_pair(parentStyleSheet, ruleSetForScope.release()));
+}
+
+void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
+{
+    if (m_treeBoundaryCrossingRuleSetMap.isEmpty())
+        return;
+
+    RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
+
+    // When comparing rules declared in outer treescopes, outer's rules win.
+    CascadeOrder outerCascadeOrder = size() + size();
+    // When comparing rules declared in inner treescopes, inner's rules win.
+    CascadeOrder innerCascadeOrder = size();
+
+    for (DocumentOrderedList::iterator it = m_scopingNodes.begin(); it != m_scopingNodes.end(); ++it) {
+        const ContainerNode* scopingNode = toContainerNode(*it);
+        CSSStyleSheetRuleSubSet* ruleSubSet = m_treeBoundaryCrossingRuleSetMap.get(scopingNode);
+        unsigned boundaryBehavior = SelectorChecker::ScopeContainsLastMatchedElement;
+        bool isInnerTreeScope = element->treeScope().isInclusiveAncestorOf(scopingNode->treeScope());
+
+        // If a given scoping node is a shadow root and a given element is in a descendant tree of tree hosted by
+        // the scoping node's shadow host, we should use ScopeIsShadowHost.
+        if (scopingNode && scopingNode->isShadowRoot()) {
+            if (element->isInDescendantTreeOf(toShadowRoot(scopingNode)->host()))
+                boundaryBehavior |= SelectorChecker::ScopeIsShadowHost;
+            scopingNode = toShadowRoot(scopingNode)->host();
+        }
+
+        CascadeOrder cascadeOrder = isInnerTreeScope ? innerCascadeOrder : outerCascadeOrder;
+        for (CSSStyleSheetRuleSubSet::iterator it = ruleSubSet->begin(); it != ruleSubSet->end(); ++it) {
+            CSSStyleSheet* parentStyleSheet = it->first;
+            RuleSet* ruleSet = it->second.get();
+            collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, scopingNode, parentStyleSheet), ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(boundaryBehavior), ignoreCascadeScope, cascadeOrder);
+        }
+        ++innerCascadeOrder;
+        --outerCascadeOrder;
     }
 }
 
@@ -52,12 +104,16 @@ void TreeBoundaryCrossingRules::reset(const ContainerNode* scopingNode)
     m_scopingNodes.remove(scopingNode);
 }
 
+void TreeBoundaryCrossingRules::collectFeaturesFromRuleSubSet(CSSStyleSheetRuleSubSet* ruleSubSet, RuleFeatureSet& features)
+{
+    for (CSSStyleSheetRuleSubSet::iterator it = ruleSubSet->begin(); it != ruleSubSet->end(); ++it)
+        features.add(it->second->features());
+}
+
 void TreeBoundaryCrossingRules::collectFeaturesTo(RuleFeatureSet& features)
 {
-    for (TreeBoundaryCrossingRuleSetMap::iterator::Values it = m_treeBoundaryCrossingRuleSetMap.values().begin(); it != m_treeBoundaryCrossingRuleSetMap.values().end(); ++it) {
-        RuleSet* ruleSet = it->get();
-        features.add(ruleSet->features());
-    }
+    for (TreeBoundaryCrossingRuleSetMap::iterator::Values it = m_treeBoundaryCrossingRuleSetMap.values().begin(); it != m_treeBoundaryCrossingRuleSetMap.values().end(); ++it)
+        collectFeaturesFromRuleSubSet(it->get(), features);
 }
 
 } // namespace WebCore

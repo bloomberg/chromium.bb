@@ -142,8 +142,7 @@ public:
     void resetAuthorStyle(const ContainerNode*);
     void finishAppendAuthorStyleSheets();
 
-    TreeBoundaryCrossingRules& treeBoundaryCrossingRules() { return m_treeBoundaryCrossingRules; }
-    void processScopedRules(const RuleSet& authorRules, const KURL&, ContainerNode* scope = 0);
+    void processScopedRules(const RuleSet& authorRules, CSSStyleSheet*, ContainerNode& scope);
 
     void lazyAppendAuthorStyleSheets(unsigned firstNew, const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >&);
     void removePendingAuthorStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >&);
@@ -239,8 +238,6 @@ private:
 private:
     void initWatchedSelectorRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRule> >& watchedSelectors);
 
-    void addTreeBoundaryCrossingRules(const WillBeHeapVector<MinimalRuleData>&, ContainerNode* scope);
-
     // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont(StyleResolverState&);
 
@@ -257,7 +254,6 @@ private:
     // FIXME: watched selectors should be implemented using injected author stylesheets: http://crbug.com/316960
     void matchWatchSelectorRules(ElementRuleCollector&);
     void collectFeatures();
-    void collectTreeBoundaryCrossingRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
     void resetRuleFeatures();
 
     bool fastRejectSelector(const RuleData&) const;

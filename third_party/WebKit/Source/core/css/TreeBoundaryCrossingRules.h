@@ -32,28 +32,29 @@
 
 namespace WebCore {
 
+class CSSStyleSheet;
 class ContainerNode;
+class ElementRuleCollector;
 class RuleFeatureSet;
 
 class TreeBoundaryCrossingRules {
     DISALLOW_ALLOCATION();
 public:
-    void addRule(StyleRule*, size_t selectorIndex, ContainerNode* scopingNode, AddRuleFlags);
-    void clear() { m_treeBoundaryCrossingRuleSetMap.clear(); }
-    void reset(const ContainerNode* scopingNode);
-    bool isEmpty() const { return m_treeBoundaryCrossingRuleSetMap.isEmpty(); }
-    void collectFeaturesTo(RuleFeatureSet&);
+    void addTreeBoundaryCrossingRules(const RuleSet&, ContainerNode& scope, CSSStyleSheet*);
 
-    DocumentOrderedList::iterator begin() { return m_scopingNodes.begin(); }
-    DocumentOrderedList::iterator end() { return m_scopingNodes.end(); }
-    size_t size() const { return m_scopingNodes.size(); }
-    RuleSet* ruleSetScopedBy(const ContainerNode* scopingNode) { return m_treeBoundaryCrossingRuleSetMap.get(scopingNode); }
+    void reset(const ContainerNode* scopingNode);
+    void collectFeaturesTo(RuleFeatureSet&);
+    void collectTreeBoundaryCrossingRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
 
     void trace(Visitor* visitor) { visitor->trace(m_treeBoundaryCrossingRuleSetMap); }
 
 private:
+    size_t size() const { return m_scopingNodes.size(); }
+    typedef WillBeHeapVector<std::pair<CSSStyleSheet*, OwnPtrWillBeMember<RuleSet> > > CSSStyleSheetRuleSubSet;
+    void collectFeaturesFromRuleSubSet(CSSStyleSheetRuleSubSet*, RuleFeatureSet&);
+
     DocumentOrderedList m_scopingNodes;
-    typedef WillBeHeapHashMap<const ContainerNode*, OwnPtrWillBeMember<RuleSet> > TreeBoundaryCrossingRuleSetMap;
+    typedef WillBeHeapHashMap<const ContainerNode*, OwnPtrWillBeMember<CSSStyleSheetRuleSubSet> > TreeBoundaryCrossingRuleSetMap;
     TreeBoundaryCrossingRuleSetMap m_treeBoundaryCrossingRuleSetMap;
 };
 
