@@ -137,8 +137,9 @@ void PermissionBubbleManager::DidFinishLoad(
 
 void PermissionBubbleManager::WebContentsDestroyed(
     content::WebContents* web_contents) {
-  // Synthetic cancel event if the user closes the WebContents.
-  Closing();
+  // If the web contents has been destroyed, do not attempt to notify
+  // the requests of any changes - simply close the bubble.
+  FinalizeBubble();
 
   // The WebContents is going away; be aggressively paranoid and delete
   // ourselves lest other parts of the system attempt to add permission bubbles
