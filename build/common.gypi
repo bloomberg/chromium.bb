@@ -1341,37 +1341,7 @@
       }, {
         'syzygy_optimize%': 0,
       }],
-      # Get binutils version so we can enable debug fission if we can.
-      ['os_posix==1 and OS!="mac" and OS!="ios"', {
-        'conditions': [
-          # compiler_version doesn't work with clang
-          # TODO(mithro): Land https://codereview.chromium.org/199793014/ so
-          # compiler_version works with clang.
-          # TODO(glider): set clang to 1 earlier for ASan and TSan builds so
-          # that it takes effect here.
-          ['clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0', {
-            'binutils_version%': '<!(python <(DEPTH)/build/compiler_version.py assembler)',
-          }],
-          # On Android we know the binutils version in the toolchain.
-          ['OS=="android"', {
-            'binutils_version%': 222,
-          }],
-          # Our version of binutils in third_party/binutils
-          ['linux_use_gold_binary==1', {
-            'binutils_version%': 224,
-            'conditions': [
-              ['host_arch=="x64"', {
-                'binutils_dir%': 'third_party/binutils/Linux_x64/Release/bin',
-              }],
-              ['host_arch=="ia32"', {
-                'binutils_dir%': 'third_party/binutils/Linux_ia32/Release/bin',
-              }],
-            ],
-          }],
-        ],
-      }, {
-        'binutils_version%': 0,
-      }],
+
       # The version of GCC in use, set later in platforms that use GCC and have
       # not explicitly chosen to build with clang. Currently, this means all
       # platforms except Windows, Mac and iOS.
@@ -1388,12 +1358,15 @@
                 'gcc_version%': 46,
               }],
             ],
+            'binutils_version%': 222,
           }, {
             'gcc_version%': '<!(python <(DEPTH)/build/compiler_version.py)',
+            'binutils_version%': '<!(python <(DEPTH)/build/compiler_version.py assembler)',
           }],
         ],
       }, {
         'gcc_version%': 0,
+        'binutils_version%': 0,
       }],
       ['OS=="win" and "<!(python <(DEPTH)/build/dir_exists.py <(windows_sdk_default_path))"=="True"', {
         'windows_sdk_path%': '<(windows_sdk_default_path)',
@@ -3193,7 +3166,7 @@
               }],
               # http://gcc.gnu.org/wiki/DebugFission
               # Requires gold and gcc >= 4.8 or clang.
-              ['linux_use_gold_flags==1 and (clang==1 or gcc_version>=48) and binutils_version>=223 and use_goma==0', {
+              ['linux_use_gold_flags==1 and (clang==1 or gcc_version>=48) and binutils_version>=223', {
                 'cflags': ['-gsplit-dwarf'],
                 'ldflags': ['-Wl,--gdb-index'],
               }],
@@ -3866,15 +3839,13 @@
             ],
           }],
           ['linux_use_gold_binary==1', {
-	    # Put our binutils, which contains gold in the search path. We pass
-	    # the path to gold to the compiler. gyp leaves unspecified what the
-	    # cwd is when running the compiler, so the normal gyp path-munging
-	    # fails us. This hack gets the right path.
-            'cflags': [
-              '-B<!(cd <(DEPTH) && pwd -P)/<(binutils_dir)',
-            ],
             'ldflags': [
-              '-B<!(cd <(DEPTH) && pwd -P)/<(binutils_dir)',
+              # Put our gold binary in the search path for the linker.
+              # We pass the path to gold to the compiler.  gyp leaves
+              # unspecified what the cwd is when running the compiler,
+              # so the normal gyp path-munging fails us.  This hack
+              # gets the right path.
+              '-B<!(cd <(DEPTH) && pwd -P)/third_party/gold',
             ],
           }],
         ],
