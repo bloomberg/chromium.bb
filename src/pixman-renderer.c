@@ -340,9 +340,16 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	if (ps->buffer_ref.buffer)
 		wl_shm_buffer_begin_access(ps->buffer_ref.buffer->shm_buffer);
 
+	pixman_image_t *mask_image;
+	if (ev->alpha < 1.0) {
+		pixman_color_t mask = { 0x0000, 0x0000, 0x0000, 0xffff*ev->alpha };
+		mask_image = pixman_image_create_solid_fill(&mask);
+	} else
+		mask_image = NULL;
+
 	pixman_image_composite32(pixman_op,
 				 ps->image, /* src */
-				 NULL /* mask */,
+				 mask_image, /* mask */
 				 po->shadow_image, /* dest */
 				 0, 0, /* src_x, src_y */
 				 0, 0, /* mask_x, mask_y */
