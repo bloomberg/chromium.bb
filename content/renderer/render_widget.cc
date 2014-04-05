@@ -928,7 +928,11 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   }
 
   if (command_line.HasSwitch(cc::switches::kCompositeToMailbox)) {
-    DCHECK(is_threaded_compositing_enabled_);
+    // Composite-to-mailbox is currently used for layout tests in order to cause
+    // them to draw inside in the renderer to do the readback there. This should
+    // no longer be the case when crbug.com/311404 is fixed.
+    DCHECK(is_threaded_compositing_enabled_ ||
+           RenderThreadImpl::current()->layout_test_mode());
     cc::ResourceFormat format = cc::RGBA_8888;
 #if defined(OS_ANDROID)
     if (base::android::SysUtils::IsLowEndDevice())

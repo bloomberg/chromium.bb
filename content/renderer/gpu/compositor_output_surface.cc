@@ -16,6 +16,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/render_thread_impl.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/ipc_sync_channel.h"
@@ -63,11 +64,12 @@ CompositorOutputSurface::CompositorOutputSurface(
       prefers_smoothness_(false),
 #if defined(OS_WIN)
       // TODO(epenner): Implement PlatformThread::CurrentHandle() on windows.
-      main_thread_handle_(base::PlatformThreadHandle())
+      main_thread_handle_(base::PlatformThreadHandle()),
 #else
-      main_thread_handle_(base::PlatformThread::CurrentHandle())
+      main_thread_handle_(base::PlatformThread::CurrentHandle()),
 #endif
-{
+      layout_test_mode_(RenderThreadImpl::current()->layout_test_mode()),
+      weak_ptrs_(this) {
   DCHECK(output_surface_filter_.get());
   DetachFromThread();
   message_sender_ = RenderThreadImpl::current()->sync_message_filter();
@@ -111,7 +113,54 @@ bool CompositorOutputSurface::BindToClient(
   return true;
 }
 
+void CompositorOutputSurface::ShortcutSwapAck(
+    uint32 output_surface_id,
+    scoped_ptr<cc::GLFrameData> gl_frame_data,
+    scoped_ptr<cc::SoftwareFrameData> software_frame_data) {
+  if (!layout_test_previous_frame_ack_) {
+    layout_test_previous_frame_ack_.reset(new cc::CompositorFrameAck);
+    layout_test_previous_frame_ack_->gl_frame_data.reset(new cc::GLFrameData);
+  }
+
+  OnSwapAck(output_surface_id, *layout_test_previous_frame_ack_);
+
+  layout_test_previous_frame_ack_->gl_frame_data = gl_frame_data.Pass();
+  layout_test_previous_frame_ack_->last_software_frame_id =
+      software_frame_data ? software_frame_data->id : 0;
+}
+
 void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
+  if (layout_test_mode_ && use_swap_compositor_frame_message_) {
+    // This code path is here to support layout tests that are currently
+    // doing a readback in the renderer instead of the browser. So they
+    // are using deprecated code paths in the renderer and don't need to
+    // actually swap anything to the browser. We shortcut the swap to the
+    // browser here and just ack directly within the renderer process.
+    // Once crbug.com/311404 is fixed, this can be removed.
+
+    // This would indicate that crbug.com/311404 is being fixed, and this
+    // block needs to be removed.
+    DCHECK(!frame->delegated_frame_data);
+
+    base::Closure closure =
+        base::Bind(&CompositorOutputSurface::ShortcutSwapAck,
+                   weak_ptrs_.GetWeakPtr(),
+                   output_surface_id_,
+                   base::Passed(&frame->gl_frame_data),
+                   base::Passed(&frame->software_frame_data));
+
+    if (context_provider_) {
+      gpu::gles2::GLES2Interface* context = context_provider_->ContextGL();
+      context->Flush();
+      uint32 sync_point = context->InsertSyncPointCHROMIUM();
+      context_provider_->ContextSupport()->SignalSyncPoint(sync_point, closure);
+    } else {
+      base::MessageLoopProxy::current()->PostTask(FROM_HERE, closure);
+    }
+    DidSwapBuffers();
+    return;
+  }
+
   if (use_swap_compositor_frame_message_) {
     Send(new ViewHostMsg_SwapCompositorFrame(routing_id_,
                                              output_surface_id_,

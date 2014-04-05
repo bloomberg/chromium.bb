@@ -326,58 +326,6 @@ bool PointerEventActivates(const ui::Event& event) {
   return false;
 }
 
-// Swap ack for the renderer when kCompositeToMailbox is enabled.
-void SendCompositorFrameAck(
-    int32 route_id,
-    uint32 output_surface_id,
-    int renderer_host_id,
-    const gpu::Mailbox& received_mailbox,
-    const gfx::Size& received_size,
-    bool skip_frame,
-    const scoped_refptr<ui::Texture>& texture_to_produce) {
-  cc::CompositorFrameAck ack;
-  ack.gl_frame_data.reset(new cc::GLFrameData());
-  DCHECK(!texture_to_produce.get() || !skip_frame);
-  if (texture_to_produce.get()) {
-    GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
-    ack.gl_frame_data->mailbox = texture_to_produce->Produce();
-    ack.gl_frame_data->size = texture_to_produce->size();
-    ack.gl_frame_data->sync_point =
-        gl_helper ? gl_helper->InsertSyncPoint() : 0;
-  } else if (skip_frame) {
-    // Skip the frame, i.e. tell the producer to reuse the same buffer that
-    // we just received.
-    ack.gl_frame_data->size = received_size;
-    ack.gl_frame_data->mailbox = received_mailbox;
-  }
-
-  RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-      route_id, output_surface_id, renderer_host_id, ack);
-}
-
-void AcknowledgeBufferForGpu(
-    int32 route_id,
-    int gpu_host_id,
-    const gpu::Mailbox& received_mailbox,
-    bool skip_frame,
-    const scoped_refptr<ui::Texture>& texture_to_produce) {
-  AcceleratedSurfaceMsg_BufferPresented_Params ack;
-  uint32 sync_point = 0;
-  DCHECK(!texture_to_produce.get() || !skip_frame);
-  if (texture_to_produce.get()) {
-    GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
-    ack.mailbox = texture_to_produce->Produce();
-    sync_point = gl_helper ? gl_helper->InsertSyncPoint() : 0;
-  } else if (skip_frame) {
-    ack.mailbox = received_mailbox;
-    ack.sync_point = 0;
-  }
-
-  ack.sync_point = sync_point;
-  RenderWidgetHostImpl::AcknowledgeBufferPresent(
-      route_id, gpu_host_id, ack);
-}
-
 }  // namespace
 
 // We need to watch for mouse events outside a Web Popup or its parent
@@ -484,10 +432,9 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       last_output_surface_id_(0),
       pending_delegated_ack_count_(0),
       skipped_frames_(false),
-      last_swapped_surface_scale_factor_(1.f),
+      last_swapped_software_frame_scale_factor_(1.f),
       paint_canvas_(NULL),
       synthetic_move_sent_(false),
-      accelerated_compositing_state_changed_(false),
       can_lock_compositor_(YES),
       cursor_visibility_state_in_renderer_(UNKNOWN),
       touch_editing_client_(NULL),
@@ -621,7 +568,7 @@ void RenderWidgetHostViewAura::WasShown() {
       NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
   }
 
-  if (!current_surface_.get() && host_->is_accelerated_compositing_active() &&
+  if (host_->is_accelerated_compositing_active() &&
       !released_front_lock_.get()) {
     ui::Compositor* compositor = GetCompositor();
     if (compositor)
@@ -732,7 +679,7 @@ bool RenderWidgetHostViewAura::ShouldCreateResizeLock() {
     return false;
 
   gfx::Size desired_size = window_->bounds().size();
-  if (desired_size == current_frame_size_)
+  if (desired_size == current_frame_size_in_dip_)
     return false;
 
   aura::WindowTreeHost* host = window_->GetHost();
@@ -983,9 +930,6 @@ void RenderWidgetHostViewAura::DidUpdateBackingStore(
     const gfx::Vector2d& scroll_delta,
     const std::vector<gfx::Rect>& copy_rects,
     const std::vector<ui::LatencyInfo>& latency_info) {
-  if (accelerated_compositing_state_changed_)
-    UpdateExternalTexture();
-
   for (size_t i = 0; i < latency_info.size(); i++)
     software_latency_info_.push_back(latency_info[i]);
 
@@ -993,8 +937,6 @@ void RenderWidgetHostViewAura::DidUpdateBackingStore(
   // differ. In particular if the window is hidden but the renderer isn't and we
   // ignore the update and the window is made visible again the layer isn't
   // marked as dirty and we show the wrong thing.
-  // We do this after UpdateExternalTexture() so that when we become visible
-  // we're not drawing a stale texture.
   if (host_->is_hidden())
     return;
 
@@ -1215,15 +1157,6 @@ void RenderWidgetHostViewAura::EndFrameSubscription() {
 }
 
 void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
-  // Delay processing the state change until we either get a software frame if
-  // switching to software mode or receive a buffers swapped notification
-  // if switching to accelerated mode.
-  // Sometimes (e.g. on a page load) the renderer will spuriously disable then
-  // re-enable accelerated compositing, causing us to flash.
-  // TODO(piman): factor the enable/disable accelerated compositing message into
-  // the UpdateRect/AcceleratedSurfaceBuffersSwapped messages so that we have
-  // fewer inconsistent temporary states.
-  accelerated_compositing_state_changed_ = true;
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceInitialized(int host_id,
@@ -1281,7 +1214,8 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
 }
 
 void RenderWidgetHostViewAura::CheckResizeLock() {
-  if (!resize_lock_ || resize_lock_->expected_size() != current_frame_size_)
+  if (!resize_lock_ ||
+      resize_lock_->expected_size() != current_frame_size_in_dip_)
     return;
 
   // Since we got the size we were looking for, unlock the compositor. But delay
@@ -1295,79 +1229,6 @@ void RenderWidgetHostViewAura::CheckResizeLock() {
   }
 }
 
-void RenderWidgetHostViewAura::UpdateExternalTexture() {
-  // Delay processing accelerated compositing state change till here where we
-  // act upon the state change. (Clear the external texture if switching to
-  // software mode or set the external texture if going to accelerated mode).
-  if (accelerated_compositing_state_changed_)
-    accelerated_compositing_state_changed_ = false;
-
-  bool is_compositing_active = host_->is_accelerated_compositing_active();
-  if (is_compositing_active && current_surface_.get()) {
-    window_->layer()->SetExternalTexture(current_surface_.get());
-    current_frame_size_ = ConvertSizeToDIP(
-        current_surface_->device_scale_factor(), current_surface_->size());
-    CheckResizeLock();
-  } else {
-    window_->layer()->SetShowPaintedContent();
-    resize_lock_.reset();
-    host_->WasResized();
-  }
-}
-
-bool RenderWidgetHostViewAura::SwapBuffersPrepare(
-    const gfx::Rect& surface_rect,
-    float surface_scale_factor,
-    const gfx::Rect& damage_rect,
-    const gpu::Mailbox& mailbox,
-    const BufferPresentedCallback& ack_callback) {
-  if (last_swapped_surface_size_ != surface_rect.size()) {
-    // The surface could have shrunk since we skipped an update, in which
-    // case we can expect a full update.
-    DLOG_IF(ERROR, damage_rect != surface_rect) << "Expected full damage rect";
-    skipped_damage_.setEmpty();
-    last_swapped_surface_size_ = surface_rect.size();
-    last_swapped_surface_scale_factor_ = surface_scale_factor;
-  }
-
-  if (ShouldSkipFrame(ConvertSizeToDIP(surface_scale_factor,
-                                       surface_rect.size())) ||
-      mailbox.IsZero()) {
-    skipped_damage_.op(RectToSkIRect(damage_rect), SkRegion::kUnion_Op);
-    ack_callback.Run(true, scoped_refptr<ui::Texture>());
-    return false;
-  }
-
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  current_surface_ =
-      factory->CreateTransportClient(surface_scale_factor);
-  if (!current_surface_.get()) {
-    LOG(ERROR) << "Failed to create ImageTransport texture";
-    ack_callback.Run(true, scoped_refptr<ui::Texture>());
-    return false;
-  }
-
-  current_surface_->Consume(mailbox, surface_rect.size());
-  released_front_lock_ = NULL;
-  UpdateExternalTexture();
-
-  return true;
-}
-
-void RenderWidgetHostViewAura::SwapBuffersCompleted(
-    const BufferPresentedCallback& ack_callback,
-    const scoped_refptr<ui::Texture>& texture_to_return) {
-  ui::Compositor* compositor = GetCompositor();
-  if (!compositor) {
-    ack_callback.Run(false, texture_to_return);
-  } else {
-    AddOnCommitCallbackAndDisableLocks(
-        base::Bind(ack_callback, false, texture_to_return));
-  }
-
-  DidReceiveFrameFromRenderer();
-}
-
 void RenderWidgetHostViewAura::DidReceiveFrameFromRenderer() {
   if (frame_subscriber() && CanCopyToVideoFrame()) {
     const base::TimeTicks present_time = base::TimeTicks::Now();
@@ -1376,7 +1237,7 @@ void RenderWidgetHostViewAura::DidReceiveFrameFromRenderer() {
     if (frame_subscriber()->ShouldCaptureFrame(present_time,
                                                &frame, &callback)) {
       CopyFromCompositingSurfaceToVideoFrame(
-          gfx::Rect(current_frame_size_),
+          gfx::Rect(current_frame_size_in_dip_),
           frame,
           base::Bind(callback, present_time));
     }
@@ -1417,17 +1278,7 @@ void RenderWidgetHostViewAura::UpdateMouseLockRegion() {
 void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params_in_pixel,
     int gpu_host_id) {
-  BufferPresentedCallback ack_callback = base::Bind(
-      &AcknowledgeBufferForGpu,
-      params_in_pixel.route_id,
-      gpu_host_id,
-      params_in_pixel.mailbox);
-  BuffersSwapped(params_in_pixel.size,
-                 gfx::Rect(params_in_pixel.size),
-                 params_in_pixel.scale_factor,
-                 params_in_pixel.mailbox,
-                 params_in_pixel.latency_info,
-                 ack_callback);
+  // Oldschool composited mode is no longer supported.
 }
 
 void RenderWidgetHostViewAura::SwapDelegatedFrame(
@@ -1505,7 +1356,7 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
     // this by making a new |frame_provider_| also to ensure the scale change
     // is presented in sync with the new frame content.
     if (!frame_provider_.get() || frame_size != frame_provider_->frame_size() ||
-        frame_size_in_dip != current_frame_size_) {
+        frame_size_in_dip != current_frame_size_in_dip_) {
       frame_provider_ = new cc::DelegatedFrameProvider(
           resource_collection_.get(), frame_data.Pass());
       window_->layer()->SetShowDelegatedContent(frame_provider_.get(),
@@ -1515,7 +1366,7 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
     }
   }
   released_front_lock_ = NULL;
-  current_frame_size_ = frame_size_in_dip;
+  current_frame_size_in_dip_ = frame_size_in_dip;
   CheckResizeLock();
 
   window_->SchedulePaintInRect(damage_rect_in_dip);
@@ -1598,30 +1449,6 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     host_->GetProcess()->ReceivedBadMessage();
     return;
   }
-
-  if (!frame->gl_frame_data || frame->gl_frame_data->mailbox.IsZero())
-    return;
-
-  BufferPresentedCallback ack_callback = base::Bind(
-      &SendCompositorFrameAck,
-      host_->GetRoutingID(), output_surface_id, host_->GetProcess()->GetID(),
-      frame->gl_frame_data->mailbox, frame->gl_frame_data->size);
-
-  if (!frame->gl_frame_data->sync_point) {
-    LOG(ERROR) << "CompositorFrame without sync point. Skipping frame...";
-    ack_callback.Run(true, scoped_refptr<ui::Texture>());
-    return;
-  }
-
-  GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
-  gl_helper->WaitSyncPoint(frame->gl_frame_data->sync_point);
-
-  BuffersSwapped(frame->gl_frame_data->size,
-                 frame->gl_frame_data->sub_buffer_rect,
-                 frame->metadata.device_scale_factor,
-                 frame->gl_frame_data->mailbox,
-                 frame->metadata.latency_info,
-                 ack_callback);
 }
 
 #if defined(OS_WIN)
@@ -1643,114 +1470,16 @@ gfx::NativeViewId RenderWidgetHostViewAura::GetParentForWindowlessPlugin()
 }
 #endif
 
-void RenderWidgetHostViewAura::BuffersSwapped(
-    const gfx::Size& surface_size,
-    const gfx::Rect& damage_rect,
-    float surface_scale_factor,
-    const gpu::Mailbox& mailbox,
-    const std::vector<ui::LatencyInfo>& latency_info,
-    const BufferPresentedCallback& ack_callback) {
-  scoped_refptr<ui::Texture> previous_texture(current_surface_);
-  const gfx::Rect surface_rect = gfx::Rect(surface_size);
-
-  if (!SwapBuffersPrepare(surface_rect,
-                          surface_scale_factor,
-                          damage_rect,
-                          mailbox,
-                          ack_callback)) {
-    return;
-  }
-
-  SkRegion damage(RectToSkIRect(damage_rect));
-  if (!skipped_damage_.isEmpty()) {
-    damage.op(skipped_damage_, SkRegion::kUnion_Op);
-    skipped_damage_.setEmpty();
-  }
-
-  DCHECK(surface_rect.Contains(SkIRectToRect(damage.getBounds())));
-  ui::Texture* current_texture = current_surface_.get();
-
-  const gfx::Size surface_size_in_pixel = surface_size;
-  DLOG_IF(ERROR, previous_texture.get() &&
-      previous_texture->size() != current_texture->size() &&
-      SkIRectToRect(damage.getBounds()) != surface_rect) <<
-      "Expected full damage rect after size change";
-  if (previous_texture.get() && !previous_damage_.isEmpty() &&
-      previous_texture->size() == current_texture->size()) {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    GLHelper* gl_helper = factory->GetGLHelper();
-    gl_helper->CopySubBufferDamage(
-        current_texture->PrepareTexture(),
-        previous_texture->PrepareTexture(),
-        damage,
-        previous_damage_);
-  }
-  previous_damage_ = damage;
-
-  ui::Compositor* compositor = GetCompositor();
-  if (compositor) {
-    // Co-ordinates come in OpenGL co-ordinate space.
-    // We need to convert to layer space.
-    gfx::Rect rect_to_paint =
-        ConvertRectToDIP(surface_scale_factor,
-                         gfx::Rect(damage_rect.x(),
-                                   surface_size_in_pixel.height() -
-                                       damage_rect.y() - damage_rect.height(),
-                                   damage_rect.width(),
-                                   damage_rect.height()));
-
-    // Damage may not have been DIP aligned, so inflate damage to compensate
-    // for any round-off error.
-    rect_to_paint.Inset(-1, -1);
-    rect_to_paint.Intersect(window_->bounds());
-
-    window_->SchedulePaintInRect(rect_to_paint);
-    for (size_t i = 0; i < latency_info.size(); i++)
-      compositor->SetLatencyInfo(latency_info[i]);
-  }
-
-  SwapBuffersCompleted(ack_callback, previous_texture);
-}
-
 void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params_in_pixel,
     int gpu_host_id) {
-  gfx::Rect damage_rect(params_in_pixel.x,
-                        params_in_pixel.y,
-                        params_in_pixel.width,
-                        params_in_pixel.height);
-  BufferPresentedCallback ack_callback =
-      base::Bind(&AcknowledgeBufferForGpu,
-                 params_in_pixel.route_id,
-                 gpu_host_id,
-                 params_in_pixel.mailbox);
-  BuffersSwapped(params_in_pixel.surface_size,
-                 damage_rect,
-                 params_in_pixel.surface_scale_factor,
-                 params_in_pixel.mailbox,
-                 params_in_pixel.latency_info,
-                 ack_callback);
+  // Oldschool composited mode is no longer supported.
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceSuspend() {
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceRelease() {
-  // This really tells us to release the frontbuffer.
-  if (current_surface_.get()) {
-    ui::Compositor* compositor = GetCompositor();
-    if (compositor) {
-      // We need to wait for a commit to clear to guarantee that all we
-      // will not issue any more GL referencing the previous surface.
-      AddOnCommitCallbackAndDisableLocks(
-          base::Bind(&RenderWidgetHostViewAura::SetSurfaceNotInUseByCompositor,
-                     AsWeakPtr(),
-                     current_surface_));  // Hold a ref so the texture will not
-                                          // get deleted until after commit.
-    }
-    current_surface_ = NULL;
-    UpdateExternalTexture();
-  }
 }
 
 bool RenderWidgetHostViewAura::HasAcceleratedSurface(
@@ -3056,7 +2785,8 @@ void RenderWidgetHostViewAura::OnCompositingDidCommit(
       can_lock_compositor_ = YES_DID_LOCK;
   }
   RunOnCommitCallbacks();
-  if (resize_lock_ && resize_lock_->expected_size() == current_frame_size_) {
+  if (resize_lock_ &&
+      resize_lock_->expected_size() == current_frame_size_in_dip_) {
     resize_lock_.reset();
     host_->WasResized();
     // We may have had a resize while we had the lock (e.g. if the lock expired,
@@ -3151,16 +2881,11 @@ void RenderWidgetHostViewAura::FatalAccessibilityTreeError() {
 // RenderWidgetHostViewAura, ImageTransportFactoryObserver implementation:
 
 void RenderWidgetHostViewAura::OnLostResources() {
-  current_surface_ = NULL;
-  UpdateExternalTexture();
-
+  if (frame_provider_.get())
+    EvictDelegatedFrame();
   idle_frame_subscriber_textures_.clear();
   yuv_readback_pipeline_.reset();
 
-  // Make sure all ImageTransportClients are deleted now that the context those
-  // are using is becoming invalid. This sends pending ACKs and needs to happen
-  // after calling UpdateExternalTexture() which syncs with the impl thread.
-  RunOnCommitCallbacks();
   host_->ScheduleComposite();
 }
 
@@ -3367,8 +3092,6 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
     cursor_client->AddObserver(this);
     NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
   }
-  if (current_surface_.get())
-    UpdateExternalTexture();
   if (HasFocus()) {
     ui::InputMethod* input_method = GetInputMethod();
     if (input_method)
@@ -3400,19 +3123,10 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   DetachFromInputMethod();
 
   window_->GetHost()->RemoveObserver(this);
-  ui::Compositor* compositor = GetCompositor();
-  if (current_surface_.get()) {
-    // We can't get notification for commits after this point, which would
-    // guarantee that the compositor isn't using an old texture any more, so
-    // instead we force the layer to stop using any external resources which
-    // synchronizes with the compositor thread, and makes it safe to run the
-    // callback.
-    window_->layer()->SetShowPaintedContent();
-  }
   RunOnCommitCallbacks();
   resize_lock_.reset();
   host_->WasResized();
-
+  ui::Compositor* compositor = GetCompositor();
   if (compositor && compositor->HasObserver(this))
     compositor->RemoveObserver(this);
 
@@ -3488,33 +3202,12 @@ SkBitmap::Config RenderWidgetHostViewAura::PreferredReadbackFormat() {
 
 void RenderWidgetHostViewAura::OnLayerRecreated(ui::Layer* old_layer,
                                                 ui::Layer* new_layer) {
-  scoped_refptr<ui::Texture> old_texture = old_layer->external_texture();
   // The new_layer is the one that will be used by our Window, so that's the one
-  // that should keep our texture. old_layer will be returned to the
+  // that should keep our frame. old_layer will be returned to the
   // RecreateLayer caller, and should have a copy.
-  if (old_texture.get()) {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    GLHelper* gl_helper = factory->GetGLHelper();
-    scoped_refptr<ui::Texture> new_texture;
-    if (host_->is_accelerated_compositing_active() &&
-        gl_helper && current_surface_.get()) {
-      GLuint texture_id =
-          gl_helper->CopyTexture(current_surface_->PrepareTexture(),
-                                 current_surface_->size());
-      if (texture_id) {
-        new_texture = factory->CreateOwnedTexture(
-          current_surface_->size(),
-          current_surface_->device_scale_factor(), texture_id);
-      }
-    }
-    if (new_texture.get())
-      old_layer->SetExternalTexture(new_texture.get());
-    else
-      old_layer->SetShowPaintedContent();
-    new_layer->SetExternalTexture(old_texture.get());
-  } else if (frame_provider_.get()) {
+  if (frame_provider_.get()) {
     new_layer->SetShowDelegatedContent(frame_provider_.get(),
-                                       current_frame_size_);
+                                       current_frame_size_in_dip_);
   }
 }
 
