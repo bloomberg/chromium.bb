@@ -209,9 +209,6 @@ TEST_F(FileProxyTest, GetInfo) {
   EXPECT_EQ(expected_info.size, file_info_.size);
   EXPECT_EQ(expected_info.is_directory, file_info_.is_directory);
   EXPECT_EQ(expected_info.is_symbolic_link, file_info_.is_symbolic_link);
-
-  File file = proxy.TakeFile();
-  EXPECT_TRUE(file.GetInfo(&expected_info));
   EXPECT_EQ(expected_info.last_modified, file_info_.last_modified);
   EXPECT_EQ(expected_info.creation_time, file_info_.creation_time);
 }

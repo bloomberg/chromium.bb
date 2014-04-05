@@ -10,6 +10,10 @@
 #include <windows.h>
 #endif
 
+#if defined(OS_POSIX)
+#include <sys/stat.h>
+#endif
+
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/files/scoped_file.h"
@@ -28,8 +32,13 @@ class FilePath;
 typedef HANDLE PlatformFile;
 #elif defined(OS_POSIX)
 typedef int PlatformFile;
-#endif
 
+#if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL)
+typedef struct stat stat_wrapper_t;
+#else
+typedef struct stat64 stat_wrapper_t;
+#endif
+#endif  // defined(OS_POSIX)
 
 // Thin wrapper around an OS-level file.
 // Note that this class does not provide any support for asynchronous IO, other
@@ -120,6 +129,10 @@ class BASE_EXPORT File {
   struct BASE_EXPORT Info {
     Info();
     ~Info();
+#if defined(OS_POSIX)
+    // Fills this struct with values from |stat_info|.
+    void FromStat(const stat_wrapper_t& stat_info);
+#endif
 
     // The size of the file in bytes.  Undefined when is_directory is true.
     int64 size;

@@ -32,13 +32,11 @@ COMPILE_ASSERT(File::FROM_BEGIN   == SEEK_SET &&
 namespace {
 
 #if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL)
-typedef struct stat stat_wrapper_t;
 static int CallFstat(int fd, stat_wrapper_t *sb) {
   base::ThreadRestrictions::AssertIOAllowed();
   return fstat(fd, sb);
 }
 #else
-typedef struct stat64 stat_wrapper_t;
 static int CallFstat(int fd, stat_wrapper_t *sb) {
   base::ThreadRestrictions::AssertIOAllowed();
   return fstat64(fd, sb);
@@ -118,6 +116,57 @@ static File::Error CallFctnlFlock(PlatformFile file, bool do_lock) {
 #endif  // defined(OS_NACL)
 
 }  // namespace
+
+void File::Info::FromStat(const stat_wrapper_t& stat_info) {
+  is_directory = S_ISDIR(stat_info.st_mode);
+  is_symbolic_link = S_ISLNK(stat_info.st_mode);
+  size = stat_info.st_size;
+
+#if defined(OS_LINUX)
+  time_t last_modified_sec = stat_info.st_mtim.tv_sec;
+  int64 last_modified_nsec = stat_info.st_mtim.tv_nsec;
+  time_t last_accessed_sec = stat_info.st_atim.tv_sec;
+  int64 last_accessed_nsec = stat_info.st_atim.tv_nsec;
+  time_t creation_time_sec = stat_info.st_ctim.tv_sec;
+  int64 creation_time_nsec = stat_info.st_ctim.tv_nsec;
+#elif defined(OS_ANDROID)
+  time_t last_modified_sec = stat_info.st_mtime;
+  int64 last_modified_nsec = stat_info.st_mtime_nsec;
+  time_t last_accessed_sec = stat_info.st_atime;
+  int64 last_accessed_nsec = stat_info.st_atime_nsec;
+  time_t creation_time_sec = stat_info.st_ctime;
+  int64 creation_time_nsec = stat_info.st_ctime_nsec;
+#elif defined(OS_MACOSX) || defined(OS_IOS) || defined(OS_BSD)
+  time_t last_modified_sec = stat_info.st_mtimespec.tv_sec;
+  int64 last_modified_nsec = stat_info.st_mtimespec.tv_nsec;
+  time_t last_accessed_sec = stat_info.st_atimespec.tv_sec;
+  int64 last_accessed_nsec = stat_info.st_atimespec.tv_nsec;
+  time_t creation_time_sec = stat_info.st_ctimespec.tv_sec;
+  int64 creation_time_nsec = stat_info.st_ctimespec.tv_nsec;
+#else
+  time_t last_modified_sec = stat_info.st_mtime;
+  int64 last_modified_nsec = 0;
+  time_t last_accessed_sec = stat_info.st_atime;
+  int64 last_accessed_nsec = 0;
+  time_t creation_time_sec = stat_info.st_ctime;
+  int64 creation_time_nsec = 0;
+#endif
+
+  last_modified =
+      Time::FromTimeT(last_modified_sec) +
+      TimeDelta::FromMicroseconds(last_modified_nsec /
+                                  Time::kNanosecondsPerMicrosecond);
+
+  last_accessed =
+      Time::FromTimeT(last_accessed_sec) +
+      TimeDelta::FromMicroseconds(last_accessed_nsec /
+                                  Time::kNanosecondsPerMicrosecond);
+
+  creation_time =
+      Time::FromTimeT(creation_time_sec) +
+      TimeDelta::FromMicroseconds(creation_time_nsec /
+                                  Time::kNanosecondsPerMicrosecond);
+}
 
 // NaCl doesn't implement system calls to open files directly.
 #if !defined(OS_NACL)
@@ -385,53 +434,7 @@ bool File::GetInfo(Info* info) {
   if (CallFstat(file_.get(), &file_info))
     return false;
 
-  info->is_directory = S_ISDIR(file_info.st_mode);
-  info->is_symbolic_link = S_ISLNK(file_info.st_mode);
-  info->size = file_info.st_size;
-
-#if defined(OS_LINUX)
-  const time_t last_modified_sec = file_info.st_mtim.tv_sec;
-  const int64 last_modified_nsec = file_info.st_mtim.tv_nsec;
-  const time_t last_accessed_sec = file_info.st_atim.tv_sec;
-  const int64 last_accessed_nsec = file_info.st_atim.tv_nsec;
-  const time_t creation_time_sec = file_info.st_ctim.tv_sec;
-  const int64 creation_time_nsec = file_info.st_ctim.tv_nsec;
-#elif defined(OS_ANDROID)
-  const time_t last_modified_sec = file_info.st_mtime;
-  const int64 last_modified_nsec = file_info.st_mtime_nsec;
-  const time_t last_accessed_sec = file_info.st_atime;
-  const int64 last_accessed_nsec = file_info.st_atime_nsec;
-  const time_t creation_time_sec = file_info.st_ctime;
-  const int64 creation_time_nsec = file_info.st_ctime_nsec;
-#elif defined(OS_MACOSX) || defined(OS_IOS) || defined(OS_BSD)
-  const time_t last_modified_sec = file_info.st_mtimespec.tv_sec;
-  const int64 last_modified_nsec = file_info.st_mtimespec.tv_nsec;
-  const time_t last_accessed_sec = file_info.st_atimespec.tv_sec;
-  const int64 last_accessed_nsec = file_info.st_atimespec.tv_nsec;
-  const time_t creation_time_sec = file_info.st_ctimespec.tv_sec;
-  const int64 creation_time_nsec = file_info.st_ctimespec.tv_nsec;
-#else
-  // TODO(gavinp): Investigate a good high resolution option for OS_NACL.
-  const time_t last_modified_sec = file_info.st_mtime;
-  const int64 last_modified_nsec = 0;
-  const time_t last_accessed_sec = file_info.st_atime;
-  const int64 last_accessed_nsec = 0;
-  const time_t creation_time_sec = file_info.st_ctime;
-  const int64 creation_time_nsec = 0;
-#endif
-
-  info->last_modified =
-      base::Time::FromTimeT(last_modified_sec) +
-      base::TimeDelta::FromMicroseconds(last_modified_nsec /
-                                        base::Time::kNanosecondsPerMicrosecond);
-  info->last_accessed =
-      base::Time::FromTimeT(last_accessed_sec) +
-      base::TimeDelta::FromMicroseconds(last_accessed_nsec /
-                                        base::Time::kNanosecondsPerMicrosecond);
-  info->creation_time =
-      base::Time::FromTimeT(creation_time_sec) +
-      base::TimeDelta::FromMicroseconds(creation_time_nsec /
-                                        base::Time::kNanosecondsPerMicrosecond);
+  info->FromStat(file_info);
   return true;
 }
 

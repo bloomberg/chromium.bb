@@ -61,8 +61,7 @@ namespace base {
 
 namespace {
 
-#if defined(OS_BSD) || defined(OS_MACOSX)
-typedef struct stat stat_wrapper_t;
+#if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL)
 static int CallStat(const char *path, stat_wrapper_t *sb) {
   ThreadRestrictions::AssertIOAllowed();
   return stat(path, sb);
@@ -71,8 +70,7 @@ static int CallLstat(const char *path, stat_wrapper_t *sb) {
   ThreadRestrictions::AssertIOAllowed();
   return lstat(path, sb);
 }
-#else  // defined(OS_BSD) || defined(OS_MACOSX)
-typedef struct stat64 stat_wrapper_t;
+#else  //  defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL)
 static int CallStat(const char *path, stat_wrapper_t *sb) {
   ThreadRestrictions::AssertIOAllowed();
   return stat64(path, sb);
@@ -81,7 +79,7 @@ static int CallLstat(const char *path, stat_wrapper_t *sb) {
   ThreadRestrictions::AssertIOAllowed();
   return lstat64(path, sb);
 }
-#endif // !(defined(OS_BSD) || defined(OS_MACOSX))
+#endif // !(defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL))
 
 // Helper for NormalizeFilePath(), defined below.
 bool RealPath(const FilePath& path, FilePath* real_path) {
@@ -639,21 +637,8 @@ bool GetFileInfo(const FilePath& file_path, File::Info* results) {
 #if defined(OS_ANDROID)
   }
 #endif  // defined(OS_ANDROID)
-  results->is_directory = S_ISDIR(file_info.st_mode);
-  results->size = file_info.st_size;
-#if defined(OS_MACOSX) || (defined(OS_FREEBSD) && __FreeBSD_version < 900000)
-  results->last_modified = Time::FromTimeSpec(file_info.st_mtimespec);
-  results->last_accessed = Time::FromTimeSpec(file_info.st_atimespec);
-  results->creation_time = Time::FromTimeSpec(file_info.st_ctimespec);
-#elif defined(OS_ANDROID)
-  results->last_modified = Time::FromTimeT(file_info.st_mtime);
-  results->last_accessed = Time::FromTimeT(file_info.st_atime);
-  results->creation_time = Time::FromTimeT(file_info.st_ctime);
-#else
-  results->last_modified = Time::FromTimeSpec(file_info.st_mtim);
-  results->last_accessed = Time::FromTimeSpec(file_info.st_atim);
-  results->creation_time = Time::FromTimeSpec(file_info.st_ctim);
-#endif
+
+  results->FromStat(file_info);
   return true;
 }
 
