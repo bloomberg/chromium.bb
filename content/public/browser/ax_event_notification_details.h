@@ -19,6 +19,7 @@ struct AXEventNotificationDetails {
   AXEventNotificationDetails(const std::vector<ui::AXNodeData>& nodes,
                              ui::AXEvent event_type,
                              int id,
+                             int process_id,
                              int routing_id);
 
   ~AXEventNotificationDetails();
@@ -26,6 +27,7 @@ struct AXEventNotificationDetails {
   std::vector<ui::AXNodeData> nodes;
   ui::AXEvent event_type;
   int id;
+  int process_id;
   int routing_id;
 };
 

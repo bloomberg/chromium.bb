@@ -31,6 +31,16 @@ class AutomationInternalEnableCurrentTabFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
+class AutomationInternalPerformActionFunction
+    : public ChromeAsyncExtensionFunction {
+  DECLARE_EXTENSION_FUNCTION("automationInternal.performAction",
+                             AUTOMATIONINTERNAL_PERFORMACTION)
+ protected:
+  virtual ~AutomationInternalPerformActionFunction() {}
+
+  virtual bool RunImpl() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_AUTOMATION_INTERNAL_AUTOMATION_INTERNAL_API_H_

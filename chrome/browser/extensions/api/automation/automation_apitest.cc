@@ -24,7 +24,13 @@ class AutomationApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, SanityCheck) {
+// TODO(dtseng): See crbug.com/360297.
+#if defined(OS_MACOSX)
+#define MAYBE_SanityCheck DISABLED_SanityCheck
+#else
+#define MAYBE_SanityCheck SanityCheck
+#endif  // defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_SanityCheck) {
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   content::WebContents* const tab =
       browser()->tab_strip_model()->GetWebContentsAt(0);

@@ -15,12 +15,12 @@ var AutomationAttributeDefaults = {
 
 
 var AutomationAttributeTypes = [
-  'bool_attributes',
-  'float_attributes',
-  'html_attributes',
-  'int_attributes',
-  'intlist_attributes',
-  'string_attributes'
+  'boolAttributes',
+  'floatAttributes',
+  'htmlAttributes',
+  'intAttributes',
+  'intlistAttributes',
+  'stringAttributes'
 ];
 
 
@@ -37,18 +37,12 @@ var AutomationAttributeTypes = [
  * AutomationNode object.
  * Thus, tree traversals amount to a lookup in our hash.
  *
+ * The tree itself is identified by the process id and routing id of the
+ * renderer widget host.
  * @constructor
  */
-var AutomationTree = function(routingId) {
-  privates(this).impl = new AutomationTreeImpl(routingId);
-
-  /**
-   * Event fired when a tree update occurs.
-   * @deprecated TODO(aboxhall/dtseng): remove this event; it should not be
-   * exposed in the public API. Replace with EventListener style API which
-   * allows listening for events in the AXEvent enum.
-   */
-  this.onUpdate = new Event();
+var AutomationTree = function(processID, routingID) {
+  privates(this).impl = new AutomationTreeImpl(processID, routingID);
 };
 
 
@@ -63,8 +57,9 @@ AutomationTree.prototype = {
 };
 
 
-var AutomationTreeImpl = function(routingId) {
-  this.routingId = routingId;
+var AutomationTreeImpl = function(processID, routingID) {
+  this.processID = processID;
+  this.routingID = routingID;
 
   /**
    * Our cache of the native AXTree.
@@ -127,29 +122,29 @@ AutomationTreeImpl.prototype = {
       }
 
       // Update children.
-      var old_child_ids = privates(node).impl.child_ids;
-      var new_child_ids = nodeData.child_ids || [];
-      var new_child_ids_hash = {};
+      var oldChildIDs = privates(node).impl.childIDs;
+      var newChildIDs = nodeData.childIDs || [];
+      var newChildIDsHash = {};
 
-      for (var j = 0, newId; newId = new_child_ids[j]; j++) {
+      for (var j = 0, newId; newId = newChildIDs[j]; j++) {
         // Hash the new child ids for faster lookup.
-        new_child_ids_hash[newId] = newId;
+        newChildIDsHash[newId] = newId;
 
-        // We need to update all new children's parent_id regardless.
+        // We need to update all new children's parent id regardless.
         var childNode = this.get(newId);
         if (!childNode) {
           childNode = new AutomationNode(this);
           this.axNodeDataCache_[newId] = childNode;
           childNode.id = newId;
         }
-        privates(childNode).impl.index_in_parent = j;
-        privates(childNode).impl.parent_id = nodeData.id;
+        privates(childNode).impl.indexInParent = j;
+        privates(childNode).impl.parentID = nodeData.id;
       }
 
-      for (var k = 0, oldId; oldId = old_child_ids[k]; k++) {
+      for (var k = 0, oldId; oldId = oldChildIDs[k]; k++) {
         // However, we must invalidate all old child ids that are no longer
         // children.
-        if (!new_child_ids_hash[oldId]) {
+        if (!newChildIDsHash[oldId]) {
           this.invalidate(this.get(oldId));
         }
       }
@@ -171,14 +166,15 @@ AutomationTreeImpl.prototype = {
       for (var attributeTypeIndex = 0;
            attributeTypeIndex < AutomationAttributeTypes.length;
            attributeTypeIndex++) {
-        var attribute_type = AutomationAttributeTypes[attributeTypeIndex];
-        for (var attribute_id in nodeData[attribute_type]) {
-          node.attributes[attribute_id] =
-              nodeData[attribute_type][attribute_id];
+        var attributeType = AutomationAttributeTypes[attributeTypeIndex];
+        for (var attributeID in nodeData[attributeType]) {
+          node.attributes[attributeID] =
+              nodeData[attributeType][attributeID];
         }
       }
-      privates(node).impl.child_ids = new_child_ids;
+      privates(node).impl.childIDs = newChildIDs;
       this.axNodeDataCache_[node.id] = node;
+      privates(node).impl.notifyEventListeners(data.eventType);
     }
     return true;
   }

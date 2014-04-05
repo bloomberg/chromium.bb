@@ -94,6 +94,22 @@ var allTests = [
         });
       });
     });
+  },
+  function testSimpleAction() {
+    function makeAssertions(tree) {
+      var okButton = tree.root.firstChild().firstChild();
+      okButton.addEventListener('focus', function() {
+        chrome.test.succeed();
+      }, true);
+      okButton.focus();
+    }
+    chrome.tabs.create({url: 'test.html'});
+    chrome.automation.getTree(function(tree) {
+      tree.root.addEventListener('load_complete',
+          function() {
+            makeAssertions(tree);
+          }, true);
+    });
   }
 ];
 

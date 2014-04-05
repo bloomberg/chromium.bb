@@ -8,6 +8,10 @@
 // <em>semantic</em> structure of a page, and can be used to programmatically
 // interact with a page.
 [nocompile] namespace automation {
+  // TODO(dtseng/aboxhall): Make this take an |automation.Event| param.
+  // A listener for events on an <code>AutomationNode</code>.
+  callback AutomationListener = void();
+
   // A single node in an <code>AutomationTree</code>.
   [nocompile] dictionary AutomationNode {
     // Unique ID to identify this node.
@@ -28,14 +32,27 @@
 
     // The index of this node in its parent node's list of children. If this is
     // the root node, this will be undefined.
-    long? index_in_parent;
+    long? indexInParent;
 
+    // Traversal.
     static object[] children();
     static object parent();
     static object firstChild();
     static object lastChild();
     static object previousSibling();
     static object nextSibling();
+
+    // Actions.
+    static void doDefault();
+    static void focus();
+    static void makeVisible();
+    static void setSelection(long startIndex, long endIndex);
+
+    // Events.
+    static void addEventListener(DOMString eventType,
+                                 AutomationListener listener,
+                                 bool capture);
+    static void removeEventListener(AutomationListener listener);
   };
 
   // The automation tree for a single page.

@@ -15,38 +15,66 @@ namespace automationInternal {
     DOMString role;
     object state;
     // TODO(aboxhall): include location data;
-    object? bool_attributes;
-    object? float_attributes;
-    object? html_attributes;
-    object? int_attributes;
-    object? intlist_attributes;
-    object? string_attributes;
-    long[] child_ids;
+    object? boolAttributes;
+    object? floatAttributes;
+    object? htmlAttributes;
+    object? intAttributes;
+    object? intlistAttributes;
+    object? stringAttributes;
+    long[] childIDs;
   };
 
   // Data for an accessibility event and/or an atomic change to an accessibility
   // tree. See ui/accessibility/ax_tree_update.h for an extended explanation of
   // the tree update format.
   dictionary AXEventParams {
+    // The process id of the renderer host.
+    long processID;
+
     // The routing id of the web contents that this update is for.
-    long routing_id;
+    long routingID;
 
     // The type of event that this update represents.
-    DOMString event_type;
+    DOMString eventType;
 
     // A vector of nodes to update according to the rules described in
     // ui/ax_tree_update.h.
     AXNodeData[] nodes;
   };
 
-  // Returns the routing_id of the tab whose accessibility was enabled using
-  // enable().
-  callback EnableCallback = void(long routing_id);
+  // All possible actions that can be performed on automation nodes.
+  enum ActionType {
+    focus,
+    do_default,
+    make_visible,
+    set_selection
+  };
+
+  // Arguments required for all actions supplied to performAction.
+  dictionary PerformActionRequiredParams {
+    long processID;
+    long routingID;
+    long automationNodeID;
+    ActionType actionType;
+  };
+
+  // Arguments for the set_selection action supplied to performAction.
+  dictionary SetSelectionParams {
+    long startIndex;
+    long endIndex;
+  };
+
+  // Returns the process id and routing id of the tab whose accessibility was
+  // enabled using enable().
+  callback EnableCallback = void(long processID, long routingID);
 
   interface Functions {
     // Enable automation of the active tab and retrieves its routing id for use
     // in future updates.
     static void enableCurrentTab(EnableCallback callback);
+
+    static void performAction(PerformActionRequiredParams args,
+                              object opt_args);
   };
 
   interface Events {

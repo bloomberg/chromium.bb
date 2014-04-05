@@ -10,8 +10,13 @@ AXEventNotificationDetails::AXEventNotificationDetails(
     const std::vector<ui::AXNodeData>& nodes,
     ui::AXEvent event_type,
     int id,
+    int process_id,
     int routing_id)
-    : nodes(nodes), event_type(event_type), id(id), routing_id(routing_id) {}
+    : nodes(nodes),
+      event_type(event_type),
+      id(id),
+      process_id(process_id),
+      routing_id(routing_id) {}
 
 AXEventNotificationDetails::~AXEventNotificationDetails() {}
 
