@@ -100,12 +100,6 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   bool AddNativeMediaStreamTrack(const blink::WebMediaStream& stream,
                                  const blink::WebMediaStreamTrack& track);
 
-  // Creates and adds libjingle representation of a MediaStreamTrack to |stream|
-  // based on the desired |track_id| and |capturer|.
-  bool AddNativeVideoMediaTrack(const std::string& track_id,
-                                blink::WebMediaStream* stream,
-                                cricket::VideoCapturer* capturer);
-
   // Removes a libjingle MediaStreamTrack from the libjingle representation of
   // |stream|.
   bool RemoveNativeMediaStreamTrack(const blink::WebMediaStream& stream,

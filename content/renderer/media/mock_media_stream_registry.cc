@@ -8,36 +8,52 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream.h"
+#include "content/renderer/media/media_stream_video_track.h"
+#include "content/renderer/media/mock_media_stream_video_source.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/libjingle/source/talk/media/base/videocapturer.h"
 
 namespace content {
 
-static const std::string kTestStreamLabel = "stream_label";
+static const char kTestStreamLabel[] = "stream_label";
 
-MockMediaStreamRegistry::MockMediaStreamRegistry(
-    MockMediaStreamDependencyFactory* factory)
-    : factory_(factory) {
+MockMediaStreamRegistry::MockMediaStreamRegistry() {
 }
 
 void MockMediaStreamRegistry::Init(const std::string& stream_url) {
   stream_url_ = stream_url;
-  scoped_refptr<webrtc::MediaStreamInterface> stream(
-      factory_->CreateLocalMediaStream(kTestStreamLabel));
   blink::WebVector<blink::WebMediaStreamTrack> webkit_audio_tracks;
   blink::WebVector<blink::WebMediaStreamTrack> webkit_video_tracks;
-  blink::WebString webkit_stream_label(base::UTF8ToUTF16(stream->label()));
-  test_stream_.initialize(webkit_stream_label,
-                          webkit_audio_tracks, webkit_video_tracks);
-  test_stream_.setExtraData(new MediaStream(stream.get()));
+  blink::WebString label(kTestStreamLabel);
+  test_stream_.initialize(label, webkit_audio_tracks, webkit_video_tracks);
+  test_stream_.setExtraData(new MediaStream(&dependency_factory_,
+                                            MediaStream::StreamStopCallback(),
+                                            test_stream_));
 }
 
-bool MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
-  cricket::VideoCapturer* capturer = NULL;
-  return factory_->AddNativeVideoMediaTrack(track_id, &test_stream_, capturer);
+void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
+  blink::WebMediaStreamSource blink_source;
+  blink_source.initialize("mock video source id",
+                          blink::WebMediaStreamSource::TypeVideo,
+                          "mock video source name");
+  MockMediaStreamVideoSource* native_source =
+      new MockMediaStreamVideoSource(&dependency_factory_, false);
+  blink_source.setExtraData(native_source);
+  blink::WebMediaStreamTrack blink_track;
+  blink_track.initialize(base::UTF8ToUTF16(track_id), blink_source);
+  blink::WebMediaConstraints constraints;
+  constraints.initialize();
+
+  MediaStreamVideoTrack* native_track =
+      new MediaStreamVideoTrack(native_source,
+                                constraints,
+                                MediaStreamVideoSource::ConstraintsCallback(),
+                                true,
+                                &dependency_factory_);
+  blink_track.setExtraData(native_track);
+  test_stream_.addTrack(blink_track);
 }
 
 blink::WebMediaStream MockMediaStreamRegistry::GetMediaStream(

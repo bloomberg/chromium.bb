@@ -316,41 +316,6 @@ bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
   return false;
 }
 
-bool MediaStreamDependencyFactory::AddNativeVideoMediaTrack(
-    const std::string& track_id,
-    blink::WebMediaStream* stream,
-    cricket::VideoCapturer* capturer) {
-  if (!stream) {
-    LOG(ERROR) << "AddNativeVideoMediaTrack called with null WebMediaStream.";
-    return false;
-  }
-
-  // Create native track from the source.
-  scoped_refptr<webrtc::VideoTrackInterface> native_track =
-      CreateLocalVideoTrack(track_id, capturer);
-
-  // Add the webrtc track to the webrtc stream
-  webrtc::MediaStreamInterface* native_stream =
-      MediaStream::GetAdapter(*stream);
-  DCHECK(native_stream);
-  native_stream->AddTrack(native_track.get());
-
-  // Create a new webkit video track.
-  blink::WebMediaStreamTrack webkit_track;
-  blink::WebMediaStreamSource webkit_source;
-  blink::WebString webkit_track_id(base::UTF8ToUTF16(track_id));
-  blink::WebMediaStreamSource::Type type =
-      blink::WebMediaStreamSource::TypeVideo;
-  webkit_source.initialize(webkit_track_id, type, webkit_track_id);
-
-  webkit_track.initialize(webkit_track_id, webkit_source);
-  AddNativeTrackToBlinkTrack(native_track.get(), webkit_track, true);
-
-  // Add the track to WebMediaStream.
-  stream->addTrack(webkit_track);
-  return true;
-}
-
 bool MediaStreamDependencyFactory::RemoveNativeMediaStreamTrack(
     const blink::WebMediaStream& stream,
     const blink::WebMediaStreamTrack& track) {

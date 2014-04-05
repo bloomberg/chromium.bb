@@ -7,45 +7,32 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/synchronization/lock.h"
+#include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_registry_interface.h"
-#include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
-#include "third_party/libjingle/source/talk/media/base/videoframe.h"
-#include "third_party/libjingle/source/talk/media/base/videorenderer.h"
 #include "url/gurl.h"
-
-using cricket::VideoFrame;
-using cricket::VideoRenderer;
-using webrtc::VideoSourceInterface;
 
 namespace content {
 
-// PpFrameReceiver implements cricket::VideoRenderer so that it can be attached
-// to native video track's video source to receive the captured frame.
+// PpFrameReceiver implements MediaStreamVideoSink so that it can be attached
+// to video track to receive the captured frame.
 // It can be attached to a FrameReaderInterface to output the received frame.
-class PpFrameReceiver : public cricket::VideoRenderer {
+class PpFrameReceiver : public MediaStreamVideoSink {
  public:
   PpFrameReceiver() : reader_(NULL) {}
   virtual ~PpFrameReceiver() {}
 
-  // Implements VideoRenderer.
-  virtual bool SetSize(int width, int height, int reserved) OVERRIDE {
-    return true;
-  }
-  virtual bool RenderFrame(const cricket::VideoFrame* frame) OVERRIDE {
+  // Implements MediaStreamVideoSink.
+  virtual void OnVideoFrame(
+      const scoped_refptr<media::VideoFrame>& frame) OVERRIDE {
     base::AutoLock auto_lock(lock_);
     if (reader_) {
-      // |frame| will be invalid after this function is returned. So keep a copy
-      // before return.
-      cricket::VideoFrame* copied_frame = frame->Copy();
-      copied_frame->MakeExclusive();
-      reader_->GotFrame(copied_frame);
+      reader_->GotFrame(frame);
     }
-    return true;
   }
 
   void SetReader(FrameReaderInterface* reader) {
@@ -75,15 +62,17 @@ VideoSourceHandler::~VideoSourceHandler() {
 
 bool VideoSourceHandler::Open(const std::string& url,
                               FrameReaderInterface* reader) {
-  scoped_refptr<webrtc::VideoSourceInterface> source = GetFirstVideoSource(url);
-  if (!source.get()) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  const blink::WebMediaStreamTrack& track = GetFirstVideoTrack(url);
+  if (track.isNull()) {
     return false;
   }
-  reader_to_receiver_[reader] = new SourceInfo(source, reader);
+  reader_to_receiver_[reader] = new SourceInfo(track, reader);
   return true;
 }
 
 bool VideoSourceHandler::Close(FrameReaderInterface* reader) {
+  DCHECK(thread_checker_. CalledOnValidThread());
   SourceInfoMap::iterator it = reader_to_receiver_.find(reader);
   if (it == reader_to_receiver_.end()) {
     return false;
@@ -93,9 +82,8 @@ bool VideoSourceHandler::Close(FrameReaderInterface* reader) {
   return true;
 }
 
-scoped_refptr<VideoSourceInterface> VideoSourceHandler::GetFirstVideoSource(
+blink::WebMediaStreamTrack VideoSourceHandler::GetFirstVideoTrack(
     const std::string& url) {
-  scoped_refptr<webrtc::VideoSourceInterface> source;
   blink::WebMediaStream stream;
   if (registry_) {
     stream = registry_->GetMediaStream(url);
@@ -103,24 +91,25 @@ scoped_refptr<VideoSourceInterface> VideoSourceHandler::GetFirstVideoSource(
     stream =
         blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));
   }
-  if (stream.isNull() || !stream.extraData()) {
+
+  if (stream.isNull()) {
     LOG(ERROR) << "GetFirstVideoSource - invalid url: " << url;
-    return source;
+    return blink::WebMediaStreamTrack();
   }
 
   // Get the first video track from the stream.
-  webrtc::MediaStreamInterface* native_stream = MediaStream::GetAdapter(stream);
-  webrtc::VideoTrackVector native_video_tracks =
-      native_stream->GetVideoTracks();
-  if (native_video_tracks.empty()) {
-    LOG(ERROR) << "GetFirstVideoSource - stream has no video track.";
-    return source;
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
+  stream.videoTracks(video_tracks);
+  if (video_tracks.isEmpty()) {
+    LOG(ERROR) << "GetFirstVideoSource - non video tracks available."
+               << " url: " << url;
+    return blink::WebMediaStreamTrack();
   }
-  source = native_video_tracks[0]->GetSource();
-  return source;
+
+  return video_tracks[0];
 }
 
-VideoRenderer* VideoSourceHandler::GetReceiver(
+MediaStreamVideoSink* VideoSourceHandler::GetReceiver(
     FrameReaderInterface* reader) {
   SourceInfoMap::iterator it = reader_to_receiver_.find(reader);
   if (it == reader_to_receiver_.end()) {
@@ -130,16 +119,16 @@ VideoRenderer* VideoSourceHandler::GetReceiver(
 }
 
 VideoSourceHandler::SourceInfo::SourceInfo(
-    scoped_refptr<webrtc::VideoSourceInterface> source,
+    const blink::WebMediaStreamTrack& blink_track,
     FrameReaderInterface* reader)
     : receiver_(new PpFrameReceiver()),
-      source_(source) {
-  source_->AddSink(receiver_.get());
+      track_(blink_track) {
+  MediaStreamVideoSink::AddToVideoTrack(receiver_.get(), track_);
   receiver_->SetReader(reader);
 }
 
 VideoSourceHandler::SourceInfo::~SourceInfo() {
-  source_->RemoveSink(receiver_.get());
+  MediaStreamVideoSink::RemoveFromVideoTrack(receiver_.get(), track_);
   receiver_->SetReader(NULL);
 }
 

@@ -25,7 +25,7 @@ static const std::string kUnknownStreamUrl = "unknown_stream_url";
 
 class VideoDestinationHandlerTest : public PpapiUnittest {
  public:
-  VideoDestinationHandlerTest() : registry_(&factory_) {
+  VideoDestinationHandlerTest() : registry_() {
     registry_.Init(kTestStreamUrl);
   }
 

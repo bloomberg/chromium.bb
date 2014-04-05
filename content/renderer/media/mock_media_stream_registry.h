@@ -14,16 +14,16 @@ namespace content {
 
 class MockMediaStreamRegistry : public MediaStreamRegistryInterface {
  public:
-  explicit MockMediaStreamRegistry(MockMediaStreamDependencyFactory* factory);
+  MockMediaStreamRegistry();
 
   void Init(const std::string& stream_label);
-  bool AddVideoTrack(const std::string& track_id);
-  virtual blink::WebMediaStream GetMediaStream(const std::string& url)
-      OVERRIDE;
+  void AddVideoTrack(const std::string& track_id);
+  virtual blink::WebMediaStream GetMediaStream(
+      const std::string& url) OVERRIDE;
   const blink::WebMediaStream test_stream() const;
 
  private:
-  MockMediaStreamDependencyFactory* factory_;
+  MockMediaStreamDependencyFactory dependency_factory_;
   blink::WebMediaStream test_stream_;
   std::string stream_url_;
 };
