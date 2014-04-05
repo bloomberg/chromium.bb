@@ -35,12 +35,7 @@
 #include "SkTypeface.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/fonts/FontCache.h"
-#include "platform/fonts/harfbuzz/HarfBuzzFace.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "public/platform/Platform.h"
-#include "public/platform/win/WebSandboxSupport.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/StdLibExtras.h"
 #include <windows.h>
 
 namespace WebCore {
