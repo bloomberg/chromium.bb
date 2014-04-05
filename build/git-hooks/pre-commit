@@ -49,7 +49,7 @@ gitmodules_diff() {
   git diff-index --cached "$1" .gitmodules
 }
 
-if test "$(git ls-files .gitmodules)" -a "$(gitmodules_diff $head_ref)"; then
+if [ "$(git ls-files .gitmodules)" ] && [ "$(gitmodules_diff $head_ref)" ]; then
   cat <<EOF 1>&2
 You are trying to commit a change to .gitmodules.  That is not allowed.
 To make changes to submodule names/paths, edit DEPS.
