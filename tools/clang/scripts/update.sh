@@ -143,6 +143,12 @@ if [[ -n "$if_needed" ]]; then
     # clang previously downloaded, remove third_party/llvm-build to prevent
     # updating.
     true
+  elif [[ "${OS}" == "Linux" ]]; then
+    # Temporarily use clang on linux. Leave a stamp file behind, so that
+    # this script can remove clang again on machines where it was autoinstalled.
+    mkdir -p "${LLVM_BUILD_DIR}"
+    touch "${LLVM_BUILD_DIR}/autoinstall_stamp"
+    true
   else
     # clang wasn't needed, not doing anything.
     exit 0
