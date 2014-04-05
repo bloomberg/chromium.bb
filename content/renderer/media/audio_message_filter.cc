@@ -222,9 +222,7 @@ void AudioMessageFilter::OnOutputDeviceChanged(int stream_id,
 
   // Ignore the message if an audio hardware config hasn't been created; this
   // can occur if the renderer is using the high latency audio path.
-  // TODO(dalecurtis): After http://crbug.com/173435 is fixed, convert to CHECK.
-  if (!audio_hardware_config_)
-    return;
+  CHECK(audio_hardware_config_);
 
   // TODO(crogers): fix OnOutputDeviceChanged() to pass AudioParameters.
   media::ChannelLayout channel_layout =
