@@ -59,12 +59,7 @@ class ChildProcessLauncher::Context
         termination_status_(base::TERMINATION_STATUS_NORMAL_TERMINATION),
         exit_code_(RESULT_CODE_NORMAL_EXIT),
         starting_(true),
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) || \
-    defined(THREAD_SANITIZER)
-        terminate_child_on_shutdown_(false)
-#else
         terminate_child_on_shutdown_(true)
-#endif
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
         , zygote_(false)
 #endif
