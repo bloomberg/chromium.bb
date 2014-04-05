@@ -6,6 +6,7 @@
 #define SANDBOX_LINUX_SERVICES_INIT_PROCESS_REAPER_H_
 
 #include "base/callback_forward.h"
+#include "sandbox/linux/sandbox_export.h"
 
 namespace sandbox {
 
@@ -16,7 +17,8 @@ namespace sandbox {
 // immediately after fork().
 // Since this function calls fork(), it's very important that the caller has
 // only one thread running.
-bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback);
+SANDBOX_EXPORT bool CreateInitProcessReaper(
+    base::Closure* post_fork_parent_callback);
 
 }  // namespace sandbox.
 

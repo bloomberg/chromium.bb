@@ -6,12 +6,13 @@
 #define SANDBOX_LINUX_SERVICES_THREAD_HELPERS_H_
 
 #include "base/basictypes.h"
+#include "sandbox/linux/sandbox_export.h"
 
 namespace base { class Thread; }
 
 namespace sandbox {
 
-class ThreadHelpers {
+class SANDBOX_EXPORT ThreadHelpers {
  public:
   // Check whether the current process is single threaded. |proc_self_tasks|
   // can be a file descriptor to /proc/self/task/ and remains owned by the

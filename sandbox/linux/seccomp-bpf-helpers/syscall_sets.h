@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
+#include "sandbox/linux/sandbox_export.h"
 
 // These are helpers to build seccomp-bpf policies, i.e. policies for a
 // sandbox that reduces the Linux kernel's attack surface. Given their
@@ -15,7 +16,7 @@
 
 namespace sandbox {
 
-class SyscallSets {
+class SANDBOX_EXPORT SyscallSets {
  public:
   static bool IsKill(int sysno);
   static bool IsAllowedGettime(int sysno);

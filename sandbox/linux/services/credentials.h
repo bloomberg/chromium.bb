@@ -15,13 +15,14 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "sandbox/linux/sandbox_export.h"
 
 namespace sandbox {
 
 // This class should be used to manipulate the current process' credentials.
 // It is currently a stub used to manipulate POSIX.1e capabilities as
 // implemented by the Linux kernel.
-class Credentials {
+class SANDBOX_EXPORT Credentials {
  public:
   Credentials();
   ~Credentials();

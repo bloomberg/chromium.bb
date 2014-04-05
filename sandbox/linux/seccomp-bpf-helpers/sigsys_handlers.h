@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
+#include "sandbox/linux/sandbox_export.h"
 
 // The handlers are suitable for use in Trap() error codes. They are
 // guaranteed to be async-signal safe.
@@ -19,20 +20,24 @@ struct arch_seccomp_data;
 // This handler will crash the currently running process. The crashing address
 // will be the number of the current system call, extracted from |args|.
 // This handler will also print to stderr the number of the crashing syscall.
-intptr_t CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux);
+SANDBOX_EXPORT intptr_t
+    CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux);
 
 // The following three handlers are suitable to report failures with the
 // clone(), prctl() and ioctl() system calls respectively.
 
 // The crashing address will be (clone_flags & 0xFFFFFF), where clone_flags is
 // the clone(2) argument, extracted from |args|.
-intptr_t SIGSYSCloneFailure(const struct arch_seccomp_data& args, void* aux);
+SANDBOX_EXPORT intptr_t
+    SIGSYSCloneFailure(const struct arch_seccomp_data& args, void* aux);
 // The crashing address will be (option & 0xFFF), where option is the prctl(2)
 // argument.
-intptr_t SIGSYSPrctlFailure(const struct arch_seccomp_data& args, void* aux);
+SANDBOX_EXPORT intptr_t
+    SIGSYSPrctlFailure(const struct arch_seccomp_data& args, void* aux);
 // The crashing address will be request & 0xFFFF, where request is the ioctl(2)
 // argument.
-intptr_t SIGSYSIoctlFailure(const struct arch_seccomp_data& args, void* aux);
+SANDBOX_EXPORT intptr_t
+    SIGSYSIoctlFailure(const struct arch_seccomp_data& args, void* aux);
 
 }  // namespace sandbox.
 

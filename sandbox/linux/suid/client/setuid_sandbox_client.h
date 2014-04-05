@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "sandbox/linux/sandbox_export.h"
 
 namespace base { class Environment; }
 
@@ -21,7 +22,7 @@ namespace sandbox {
 // 2. The browser launches a renderer through the setuid sandbox.
 // 3. The renderer requests being chroot-ed through ChrootMe() and
 //    requests other sandboxing status via the status functions.
-class SetuidSandboxClient {
+class SANDBOX_EXPORT SetuidSandboxClient {
  public:
   // All instantation should go through this factory method.
   static class SetuidSandboxClient* Create();

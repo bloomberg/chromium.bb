@@ -119,7 +119,7 @@
     },
     {
       'target_name': 'seccomp_bpf_helpers',
-      'type': 'static_library',
+      'type': '<(component)',
       'sources': [
         'seccomp-bpf-helpers/baseline_policy.cc',
         'seccomp-bpf-helpers/baseline_policy.h',
@@ -131,6 +131,11 @@
         'seccomp-bpf-helpers/syscall_sets.h',
       ],
       'dependencies': [
+        '../base/base.gyp:base',
+        'seccomp_bpf',
+      ],
+      'defines': [
+        'SANDBOX_IMPLEMENTATION',
       ],
       'include_dirs': [
         '../..',
@@ -178,7 +183,7 @@
       ],
     },
     { 'target_name': 'sandbox_services',
-      'type': 'static_library',
+      'type': '<(component)',
       'sources': [
         'services/broker_process.cc',
         'services/broker_process.h',
@@ -193,6 +198,9 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+      ],
+      'defines': [
+        'SANDBOX_IMPLEMENTATION',
       ],
       'conditions': [
         ['compile_credentials==1', {
@@ -243,12 +251,15 @@
     },
     {
       'target_name': 'suid_sandbox_client',
-      'type': 'static_library',
+      'type': '<(component)',
       'sources': [
         'suid/common/sandbox.h',
         'suid/common/suid_unsafe_environment_variables.h',
         'suid/client/setuid_sandbox_client.cc',
         'suid/client/setuid_sandbox_client.h',
+      ],
+      'defines': [
+        'SANDBOX_IMPLEMENTATION',
       ],
       'dependencies': [
         '../base/base.gyp:base',

@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/pickle.h"
 #include "base/process/process.h"
+#include "sandbox/linux/sandbox_export.h"
 
 namespace sandbox {
 
@@ -25,7 +26,7 @@ namespace sandbox {
 // 2. CHECK(open_broker.Init(NULL));
 // 3. Enable sandbox.
 // 4. Use open_broker.Open() to open files.
-class BrokerProcess {
+class SANDBOX_EXPORT BrokerProcess {
  public:
   // |denied_errno| is the error code returned when methods such as Open()
   // or Access() are invoked on a file which is not in the whitelist. EACCESS

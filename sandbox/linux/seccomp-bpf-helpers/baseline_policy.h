@@ -5,6 +5,7 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_HELPERS_BASELINE_POLICY_H_
 #define SANDBOX_LINUX_SECCOMP_BPF_HELPERS_BASELINE_POLICY_H_
 
+#include "sandbox/linux/sandbox_export.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 
@@ -22,7 +23,7 @@ class SandboxBPFPolicy;
 // The "baseline" policy is somewhat arbitrary. All Chromium policies are an
 // alteration of it, and it represents a reasonable common ground to run most
 // code in a sandboxed environment.
-class BaselinePolicy : public SandboxBPFPolicy {
+class SANDBOX_EXPORT BaselinePolicy : public SandboxBPFPolicy {
  public:
   BaselinePolicy();
   // |fs_denied_errno| is the errno returned when a filesystem access system

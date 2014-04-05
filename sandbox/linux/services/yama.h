@@ -7,13 +7,14 @@
 
 #include "base/basictypes.h"
 #include "base/process/process_handle.h"
+#include "sandbox/linux/sandbox_export.h"
 
 namespace sandbox {
 
 // Yama is a LSM kernel module which can restrict ptrace().
 // This class provides ways to detect if Yama is present and enabled
 // and to restrict which processes can ptrace the current process.
-class Yama {
+class SANDBOX_EXPORT Yama {
  public:
   // This enum should be used to set or check a bitmask.
   // A value of 0 would indicate that the status is not known.

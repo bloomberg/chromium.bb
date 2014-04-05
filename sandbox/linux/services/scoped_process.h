@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/process/process_handle.h"
+#include "sandbox/linux/sandbox_export.h"
 
 namespace sandbox {
 
@@ -18,7 +19,7 @@ namespace sandbox {
 // destroy it.
 // This class cannot be instanciated from a multi-threaded process, as it needs
 // to fork().
-class ScopedProcess {
+class SANDBOX_EXPORT ScopedProcess {
  public:
   // A new process will be created and |child_callback| will run in the child
   // process. This callback is allowed to terminate the process or to simply
