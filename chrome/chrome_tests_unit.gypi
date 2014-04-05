@@ -542,7 +542,10 @@
         '../components/autofill/content/renderer/test_password_autofill_agent.h',
         '../components/autofill/content/renderer/test_password_generation_agent.cc',
         '../components/autofill/content/renderer/test_password_generation_agent.h',
-        # TODO: Create an extensions_unittests target. http://crbug.com/348066
+        # TODO(tfarina): Move these entries over to extensions_unittests target.
+        # http://crbug.com/348066. They are duplicated here because we haven't
+        # extensions_unittests running in the bots yet. Until that happens,
+        # they should be kept here.
         '../extensions/browser/admin_policy_unittest.cc',
         '../extensions/browser/api/storage/settings_quota_unittest.cc',
         '../extensions/browser/api/storage/settings_test_util.cc',

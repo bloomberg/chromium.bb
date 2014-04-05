@@ -12,15 +12,24 @@
       'type': 'static_library',
       'dependencies': [
         'common/api/api.gyp:extensions_api',
-        '../third_party/re2/re2.gyp:re2',
         # TODO(benwells): figure out what to do with the api target and
         # api resources compiled into the chrome resource bundle.
         # http://crbug.com/162530
         '../chrome/chrome_resources.gyp:chrome_resources',
         # TODO(jamescook|derat): Pull strings into extensions module.
         '../chrome/chrome_resources.gyp:chrome_strings',
+        # TODO(tfarina): This dep here is for extensions/common/constants.*
+        # We should find a way to compile this module within extensions_common.
+        '../chrome/common_constants.gyp:common_constants',
         '../components/components.gyp:url_matcher',
         '../content/content.gyp:content_common',
+        '../crypto/crypto.gyp:crypto',
+        '../ipc/ipc.gyp:ipc',
+        '../net/net.gyp:net',
+        '../third_party/re2/re2.gyp:re2',
+        '../ui/base/ui_base.gyp:ui_base',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
+        '../url/url.gyp:url_lib',
       ],
       'include_dirs': [
         '..',
@@ -28,10 +37,10 @@
       ],
       'sources': [
         'common/api/messaging/message.h',
-        'common/api/sockets/sockets_manifest_handler.cc',
-        'common/api/sockets/sockets_manifest_handler.h',
         'common/api/sockets/sockets_manifest_data.cc',
         'common/api/sockets/sockets_manifest_data.h',
+        'common/api/sockets/sockets_manifest_handler.cc',
+        'common/api/sockets/sockets_manifest_handler.h',
         'common/api/sockets/sockets_manifest_permission.cc',
         'common/api/sockets/sockets_manifest_permission.h',
         'common/common_manifest_handlers.cc',
@@ -111,8 +120,8 @@
         'common/manifest_handlers/kiosk_mode_info.h',
         'common/manifest_handlers/offline_enabled_info.cc',
         'common/manifest_handlers/offline_enabled_info.h',
-        'common/manifest_handlers/requirements_info.h',
         'common/manifest_handlers/requirements_info.cc',
+        'common/manifest_handlers/requirements_info.h',
         'common/manifest_handlers/sandboxed_page_info.cc',
         'common/manifest_handlers/sandboxed_page_info.h',
         'common/manifest_handlers/shared_module_info.cc',
@@ -426,6 +435,39 @@
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
+    },
+    {
+      # TODO(tfarina): Our plan is to build and run this target on Chromium bots
+      # (TS, CQ, Waterfall). First we will get this target passing all tests,
+      # after that we will start the work on buildbot to get this running there.
+      # When we consider this stable in the bots, we can go to unit_tests target
+      # and remove the duplicated entries from there, otherwise if we just
+      # remove them right now we would be losing coverage.
+      # http://crbug.com/348066
+      'target_name': 'extensions_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:run_all_unittests',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+        'extensions_common',
+        'extensions_test_support',
+      ],
+      'sources': [
+        'common/api/sockets/sockets_manifest_permission_unittest.cc',
+        'common/csp_validator_unittest.cc',
+        'common/event_filter_unittest.cc',
+        'common/file_util_unittest.cc',
+        'common/id_util_unittest.cc',
+        'common/manifest_handler_unittest.cc',
+        'common/one_shot_event_unittest.cc',
+        'common/permissions/api_permission_set_unittest.cc',
+        'common/permissions/manifest_permission_set_unittest.cc',
+        'common/url_pattern_set_unittest.cc',
+        'common/url_pattern_unittest.cc',
+        'common/user_script_unittest.cc',
+      ],
     },
   ]
 }
