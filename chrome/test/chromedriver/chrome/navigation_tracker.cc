@@ -131,8 +131,10 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     // received when navigating.
     // See crbug.com/180742.
     const base::Value* unused_value;
-    if (!params.Get("frame.parentId", &unused_value))
+    if (!params.Get("frame.parentId", &unused_value)) {
+      num_frames_pending_ = 0;
       scheduled_frame_set_.clear();
+    }
   } else if (method == "Inspector.targetCrashed") {
     ResetLoadingState(kNotLoading);
   }
