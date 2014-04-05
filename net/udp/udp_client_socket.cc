@@ -46,11 +46,11 @@ int UDPClientSocket::GetLocalAddress(IPEndPoint* address) const {
   return socket_.GetLocalAddress(address);
 }
 
-bool UDPClientSocket::SetReceiveBufferSize(int32 size) {
+int UDPClientSocket::SetReceiveBufferSize(int32 size) {
   return socket_.SetReceiveBufferSize(size);
 }
 
-bool UDPClientSocket::SetSendBufferSize(int32 size) {
+int UDPClientSocket::SetSendBufferSize(int32 size) {
   return socket_.SetSendBufferSize(size);
 }
 

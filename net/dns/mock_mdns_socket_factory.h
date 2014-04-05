@@ -33,8 +33,8 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
                                    const std::string address,
                                    const CompletionCallback& callback));
 
-  MOCK_METHOD1(SetReceiveBufferSize, bool(int32 size));
-  MOCK_METHOD1(SetSendBufferSize, bool(int32 size));
+  MOCK_METHOD1(SetReceiveBufferSize, int(int32 size));
+  MOCK_METHOD1(SetSendBufferSize, int(int32 size));
 
   MOCK_METHOD0(Close, void());
 

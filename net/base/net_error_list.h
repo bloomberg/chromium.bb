@@ -313,11 +313,19 @@ NET_ERROR(CT_NO_SCTS_VERIFIED_OK, -158)
 // The SSL server sent us a fatal unrecognized_name alert.
 NET_ERROR(SSL_UNRECOGNIZED_NAME_ALERT, -159)
 
-// Failed to set or change the socket's receive buffer size as requested
+// Failed to set the socket's receive buffer size as requested.
 NET_ERROR(SOCKET_SET_RECEIVE_BUFFER_SIZE_ERROR, -160)
 
-// Failed to set or change the socket's send buffer size as requested.
+// Failed to set the socket's send buffer size as requested.
 NET_ERROR(SOCKET_SET_SEND_BUFFER_SIZE_ERROR, -161)
+
+// Failed to set the socket's receive buffer size as requested, despite success
+// return code from setsockopt.
+NET_ERROR(SOCKET_RECEIVE_BUFFER_SIZE_UNCHANGEABLE, -162)
+
+// Failed to set the socket's send buffer size as requested, despite success
+// return code from setsockopt.
+NET_ERROR(SOCKET_SEND_BUFFER_SIZE_UNCHANGEABLE, -163)
 
 // Certificate error codes
 //

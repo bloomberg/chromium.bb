@@ -95,10 +95,12 @@ class NET_EXPORT UDPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe) {
              const CompletionCallback& callback);
 
   // Set the receive buffer size (in bytes) for the socket.
-  bool SetReceiveBufferSize(int32 size);
+  // Returns a net error code.
+  int SetReceiveBufferSize(int32 size);
 
   // Set the send buffer size (in bytes) for the socket.
-  bool SetSendBufferSize(int32 size);
+  // Returns a net error code.
+  int SetSendBufferSize(int32 size);
 
   // Returns true if the socket is already connected or bound.
   bool is_connected() const { return socket_ != INVALID_SOCKET; }

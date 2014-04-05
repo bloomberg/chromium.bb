@@ -238,11 +238,11 @@ int SSLServerSocketNSS::Write(IOBuffer* buf, int buf_len,
   return rv;
 }
 
-bool SSLServerSocketNSS::SetReceiveBufferSize(int32 size) {
+int SSLServerSocketNSS::SetReceiveBufferSize(int32 size) {
   return transport_socket_->SetReceiveBufferSize(size);
 }
 
-bool SSLServerSocketNSS::SetSendBufferSize(int32 size) {
+int SSLServerSocketNSS::SetSendBufferSize(int32 size) {
   return transport_socket_->SetSendBufferSize(size);
 }
 

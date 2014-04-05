@@ -455,17 +455,18 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSetOption(
       if (!value.GetInt32(&integer_value) || integer_value <= 0)
         return PP_ERROR_BADARGUMENT;
 
-      bool result = false;
+      int net_result = net::OK;
       if (name == PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE) {
         if (integer_value > TCPSocketResourceBase::kMaxSendBufferSize)
           return PP_ERROR_BADARGUMENT;
-        result = socket_->SetSendBufferSize(integer_value);
+        net_result = socket_->SetSendBufferSize(integer_value);
       } else {
         if (integer_value > TCPSocketResourceBase::kMaxReceiveBufferSize)
           return PP_ERROR_BADARGUMENT;
-        result = socket_->SetReceiveBufferSize(integer_value);
+        net_result = socket_->SetReceiveBufferSize(integer_value);
       }
-      return result ? PP_OK : PP_ERROR_FAILED;
+      // TODO(wtc): Add error mapping code.
+      return (net_result == net::OK) ? PP_OK : PP_ERROR_FAILED;
     }
     default: {
       NOTREACHED();
