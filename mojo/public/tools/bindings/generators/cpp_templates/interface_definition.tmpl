@@ -67,7 +67,7 @@ class {{class_name}}_{{method.name}}_ForwardToCallback
     return false;
   }
  private:
-  {{interface_macros.declare_callback(method)}} callback_; 
+  {{interface_macros.declare_callback(method)}} callback_;
   MOJO_DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_ForwardToCallback);
 };
 bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
@@ -149,15 +149,15 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
 };
 void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
     {{interface_macros.declare_params(method.response_parameters)}}) const {
-  {{compute_payload_size(params_name, method.response_parameters)}} 
+  {{compute_payload_size(params_name, method.response_parameters)}}
   mojo::internal::ResponseMessageBuilder builder(
       {{message_name}}, payload_size, request_id_);
-  {{build_message(params_name, method.response_parameters)}} 
+  {{build_message(params_name, method.response_parameters)}}
   responder_->Accept(&message);
   delete responder_;
   responder_ = NULL;
 }
-{%-   endif -%} 
+{%-   endif -%}
 {%- endfor %}
 
 {{class_name}}Stub::{{class_name}}Stub({{class_name}}* sink)
@@ -183,7 +183,7 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
       return true;
 {%-     else %}
       break;
-{%-     endif %} 
+{%-     endif %}
     }
 {%-   endfor %}
   }
@@ -214,7 +214,7 @@ bool {{class_name}}Stub::AcceptWithResponder(
       return true;
 {%-     else %}
       break;
-{%-     endif %} 
+{%-     endif %}
     }
 {%-   endfor %}
   }

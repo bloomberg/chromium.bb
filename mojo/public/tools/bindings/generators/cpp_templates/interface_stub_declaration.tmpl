@@ -1,7 +1,7 @@
 class {{interface.name}}Stub : public mojo::MessageReceiver {
  public:
   explicit {{interface.name}}Stub({{interface.name}}* sink);
-  
+
   virtual bool Accept(mojo::Message* message) MOJO_OVERRIDE;
   virtual bool AcceptWithResponder(mojo::Message* message,
                                    mojo::MessageReceiver* responder)
