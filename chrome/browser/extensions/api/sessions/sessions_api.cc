@@ -274,9 +274,9 @@ scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
 
   scoped_ptr<std::vector<linked_ptr<tabs::Tab> > > tabs(
       new std::vector<linked_ptr<tabs::Tab> >);
-  for (size_t i = 0; i < window.tabs.size(); ++i) {
+  for (size_t i = 0; i < tabs_in_window.size(); ++i) {
     tabs->push_back(make_linked_ptr(
-        CreateTabModel(session_tag, *window.tabs[i], i,
+        CreateTabModel(session_tag, *tabs_in_window[i], i,
                        window.selected_tab_index).release()));
   }
 
