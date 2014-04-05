@@ -27,7 +27,6 @@
 #include "crypto/signature_verifier.h"
 #include "extensions/common/crx_file.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/zlib/google/zip.h"
 
 using crypto::SecureHash;
 
