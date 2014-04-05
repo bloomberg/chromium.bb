@@ -281,10 +281,18 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // Everything checks out, so start classification.
     // |web_contents_| is safe to call as we will be destructed
     // before it is.
-    if (ShouldClassifyForPhishing())
+    if (ShouldClassifyForPhishing()) {
       start_phishing_classification_cb_.Run(true);
-    if (ShouldClassifyForMalware())
+      // Reset the callback to make sure ShouldClassifyForPhishing()
+      // returns false.
+      start_phishing_classification_cb_.Reset();
+    }
+    if (ShouldClassifyForMalware()) {
       start_malware_classification_cb_.Run(true);
+      // Reset the callback to make sure ShouldClassifyForMalware()
+      // returns false.
+      start_malware_classification_cb_.Reset();
+    }
   }
 
   content::FrameNavigateParams params_;
