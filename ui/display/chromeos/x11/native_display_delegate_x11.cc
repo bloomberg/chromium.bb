@@ -111,8 +111,7 @@ class NativeDisplayDelegateX11::MessagePumpObserverX11
   virtual ~MessagePumpObserverX11();
 
   // base::MessagePumpObserver overrides:
-  virtual base::EventStatus WillProcessEvent(const base::NativeEvent& event)
-      OVERRIDE;
+  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
  private:
@@ -127,8 +126,7 @@ NativeDisplayDelegateX11::MessagePumpObserverX11::MessagePumpObserverX11(
 
 NativeDisplayDelegateX11::MessagePumpObserverX11::~MessagePumpObserverX11() {}
 
-base::EventStatus
-NativeDisplayDelegateX11::MessagePumpObserverX11::WillProcessEvent(
+void NativeDisplayDelegateX11::MessagePumpObserverX11::WillProcessEvent(
     const base::NativeEvent& event) {
   // XI_HierarchyChanged events are special. There is no window associated with
   // these events. So process them directly from here.
@@ -139,8 +137,6 @@ NativeDisplayDelegateX11::MessagePumpObserverX11::WillProcessEvent(
     // This also takes care of same event being received twice.
     delegate_->NotifyDisplayObservers();
   }
-
-  return base::EVENT_CONTINUE;
 }
 
 void NativeDisplayDelegateX11::MessagePumpObserverX11::DidProcessEvent(

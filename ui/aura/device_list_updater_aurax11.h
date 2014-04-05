@@ -18,10 +18,8 @@ class DeviceListUpdaterAuraX11 : public base::MessagePumpObserver {
   virtual ~DeviceListUpdaterAuraX11();
 
   // Overridden from base::MessagePumpObserver:
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
+  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceListUpdaterAuraX11);

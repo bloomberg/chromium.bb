@@ -54,13 +54,11 @@ class EventWaiter : public base::MessageLoopForUI::Observer {
   }
 
   // MessageLoop::Observer implementation:
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE {
+  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE {
     if ((*matcher_)(event)) {
       base::MessageLoop::current()->PostTask(FROM_HERE, closure_);
       delete this;
     }
-    return base::EVENT_CONTINUE;
   }
 
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {

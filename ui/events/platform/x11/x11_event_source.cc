@@ -196,11 +196,9 @@ uint32_t X11EventSource::DispatchEvent(XEvent* xevent) {
 
   // TODO(sad): Remove this once all MessagePumpObservers are turned into
   // PlatformEventObservers.
-  uint32_t action = ui::POST_DISPATCH_NONE;
-  if (!base::MessagePumpX11::Current()->WillProcessXEvent(xevent)) {
-    action = PlatformEventSource::DispatchEvent(xevent);
-    base::MessagePumpX11::Current()->DidProcessXEvent(xevent);
-  }
+  base::MessagePumpX11::Current()->WillProcessXEvent(xevent);
+  uint32_t action = PlatformEventSource::DispatchEvent(xevent);
+  base::MessagePumpX11::Current()->DidProcessXEvent(xevent);
 
   if (have_cookie)
     XFreeEventData(xevent->xgeneric.display, &xevent->xcookie);

@@ -66,16 +66,8 @@ void MessagePumpX11::RemoveObserver(MessagePumpObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool MessagePumpX11::WillProcessXEvent(XEvent* xevent) {
-  if (!observers_.might_have_observers())
-    return false;
-  ObserverListBase<MessagePumpObserver>::Iterator it(observers_);
-  MessagePumpObserver* obs;
-  while ((obs = it.GetNext()) != NULL) {
-    if (obs->WillProcessEvent(xevent))
-      return true;
-  }
-  return false;
+void MessagePumpX11::WillProcessXEvent(XEvent* xevent) {
+  FOR_EACH_OBSERVER(MessagePumpObserver, observers_, WillProcessEvent(xevent));
 }
 
 void MessagePumpX11::DidProcessXEvent(XEvent* xevent) {

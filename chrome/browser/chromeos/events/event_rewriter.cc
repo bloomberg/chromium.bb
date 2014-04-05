@@ -193,8 +193,7 @@ void EventRewriter::DeviceKeyPressedOrReleased(int device_id) {
   last_device_id_ = device_id;
 }
 
-base::EventStatus EventRewriter::WillProcessEvent(
-    const base::NativeEvent& event) {
+void EventRewriter::WillProcessEvent(const base::NativeEvent& event) {
   XEvent* xevent = event;
   if (xevent->type == KeyPress || xevent->type == KeyRelease) {
     Rewrite(xevent);
@@ -212,7 +211,6 @@ base::EventStatus EventRewriter::WillProcessEvent(
       RefreshKeycodes();
     }
   }
-  return base::EVENT_CONTINUE;
 }
 
 void EventRewriter::DidProcessEvent(const base::NativeEvent& event) {

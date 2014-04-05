@@ -298,10 +298,9 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
     helper_.EndProcessingTimers();
   }
 
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE {
+  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE {
     if (!helper_.MessageWillBeMeasured())
-      return base::EVENT_CONTINUE;
+      return;
     // GetMessageTime returns a LONG (signed 32-bit) and GetTickCount returns
     // a DWORD (unsigned 32-bit). They both wrap around when the time is longer
     // than they can hold. I'm not sure if GetMessageTime wraps around to 0,
@@ -317,7 +316,6 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
         base::TimeDelta::FromMilliseconds(cur_time - cur_message_issue_time);
 
     helper_.StartProcessingTimers(queueing_time);
-    return base::EVENT_CONTINUE;
   }
 
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {

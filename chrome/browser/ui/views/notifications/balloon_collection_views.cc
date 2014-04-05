@@ -44,10 +44,7 @@ void BalloonCollectionImpl::PositionBalloons(bool reposition) {
   PositionBalloonsInternal(reposition);
 }
 
-base::EventStatus BalloonCollectionImpl::WillProcessEvent(
-    const base::NativeEvent& event) {
-  return base::EVENT_CONTINUE;
-}
+void BalloonCollectionImpl::WillProcessEvent(const base::NativeEvent& event) {}
 
 void BalloonCollectionImpl::DidProcessEvent(const base::NativeEvent& event) {
 #if defined(OS_WIN)

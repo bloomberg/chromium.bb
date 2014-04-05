@@ -82,13 +82,9 @@ void XInputHierarchyChangedEventListener::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-base::EventStatus XInputHierarchyChangedEventListener::WillProcessEvent(
+void XInputHierarchyChangedEventListener::WillProcessEvent(
     const base::NativeEvent& event) {
-  // There may be multiple listeners for the XI_HierarchyChanged event. So
-  // always return EVENT_CONTINUE to make sure all the listeners receive the
-  // event.
   ProcessedXEvent(event);
-  return base::EVENT_CONTINUE;
 }
 
 void XInputHierarchyChangedEventListener::DidProcessEvent(

@@ -66,8 +66,7 @@ class EventRewriter : public DeviceHierarchyObserver,
   void DeviceKeyPressedOrReleased(int device_id);
 
   // base::MessagePumpObserver overrides:
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
+  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
   // DeviceHierarchyObserver overrides:

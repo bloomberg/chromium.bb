@@ -73,8 +73,7 @@ class SelectionChangeObserver : public base::MessagePumpObserver {
   virtual ~SelectionChangeObserver();
 
   // Overridden from base::MessagePumpObserver:
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
+  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(
       const base::NativeEvent& event) OVERRIDE {}
 
@@ -120,8 +119,7 @@ SelectionChangeObserver* SelectionChangeObserver::GetInstance() {
   return Singleton<SelectionChangeObserver>::get();
 }
 
-base::EventStatus SelectionChangeObserver::WillProcessEvent(
-    const base::NativeEvent& event) {
+void SelectionChangeObserver::WillProcessEvent(const base::NativeEvent& event) {
   if (event->type == event_base_ + XFixesSelectionNotify) {
     XFixesSelectionNotifyEvent* ev =
         reinterpret_cast<XFixesSelectionNotifyEvent*>(event);
@@ -133,7 +131,6 @@ base::EventStatus SelectionChangeObserver::WillProcessEvent(
       DLOG(ERROR) << "Unexpected selection atom: " << ev->selection;
     }
   }
-  return base::EVENT_CONTINUE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -31,12 +31,10 @@ class SystemKeyEventListener : public base::MessageLoopForUI::Observer {
   virtual ~SystemKeyEventListener();
 
   // MessageLoopForUI::Observer overrides.
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
+  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
-  // Returns true if the event was processed, false otherwise.
-  virtual bool ProcessedXEvent(XEvent* xevent);
+  void ProcessedXEvent(XEvent* xevent);
 
   bool stopped_;
 

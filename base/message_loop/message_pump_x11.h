@@ -49,10 +49,8 @@ class BASE_EXPORT MessagePumpX11 : public MessagePumpGlib {
   // receiving a notification callback.
   void RemoveObserver(MessagePumpObserver* observer);
 
-  // Sends the event to the observers. If an observer returns true, then it does
-  // not send the event to any other observers and returns true. Returns false
-  // if no observer returns true.
-  bool WillProcessXEvent(XEvent* xevent);
+  // Sends the event to the observers.
+  void WillProcessXEvent(XEvent* xevent);
   void DidProcessXEvent(XEvent* xevent);
 
  private:

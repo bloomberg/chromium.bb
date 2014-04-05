@@ -33,8 +33,7 @@ class DeviceUMA : public base::MessageLoopForUI::Observer {
   void RemoveMessageLoopObserver();
 
   // MessageLoopForUI::Observer overrides.
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
+  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
   // Check CrOS touchpad events to see if the metrics gesture is present

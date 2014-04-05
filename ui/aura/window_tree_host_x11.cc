@@ -208,8 +208,7 @@ class TouchEventCalibrate : public base::MessagePumpObserver {
 
  private:
   // Overridden from base::MessagePumpObserver:
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE {
+  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE {
 #if defined(USE_XI2_MT)
     if (event->type == GenericEvent &&
         (event->xgeneric.evtype == XI_TouchBegin ||
@@ -221,7 +220,6 @@ class TouchEventCalibrate : public base::MessagePumpObserver {
       xievent->event_y = xievent->root_y;
     }
 #endif  // defined(USE_XI2_MT)
-    return base::EVENT_CONTINUE;
   }
 
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {

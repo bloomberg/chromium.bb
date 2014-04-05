@@ -14,7 +14,7 @@ DeviceListUpdaterAuraX11::DeviceListUpdaterAuraX11() {}
 
 DeviceListUpdaterAuraX11::~DeviceListUpdaterAuraX11() {}
 
-base::EventStatus DeviceListUpdaterAuraX11::WillProcessEvent(
+void DeviceListUpdaterAuraX11::WillProcessEvent(
     const base::NativeEvent& event) {
   // XI_HierarchyChanged events are special. There is no window associated with
   // these events. So process them directly from here.
@@ -22,8 +22,6 @@ base::EventStatus DeviceListUpdaterAuraX11::WillProcessEvent(
       event->xgeneric.evtype == XI_HierarchyChanged) {
     ui::UpdateDeviceList();
   }
-
-  return base::EVENT_CONTINUE;
 }
 
 void DeviceListUpdaterAuraX11::DidProcessEvent(const base::NativeEvent& event) {

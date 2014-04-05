@@ -58,10 +58,8 @@ void DeviceUMA::RemoveMessageLoopObserver() {
   }
 }
 
-base::EventStatus DeviceUMA::WillProcessEvent(
-    const base::NativeEvent& event) {
+void DeviceUMA::WillProcessEvent(const base::NativeEvent& event) {
   CheckIncomingEvent(event);
-  return base::EVENT_CONTINUE;
 }
 
 void DeviceUMA::DidProcessEvent(

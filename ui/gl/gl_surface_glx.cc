@@ -332,22 +332,20 @@ class XExposeEventForwarder : public base::MessagePumpObserver {
   }
 
  private:
-  virtual base::EventStatus WillProcessEvent (
-      const base::NativeEvent& xevent) OVERRIDE {
+  virtual void WillProcessEvent(const base::NativeEvent& xevent) OVERRIDE {
     if (xevent->type != Expose)
-      return base::EVENT_CONTINUE;
+      return;
 
     WindowMap::const_iterator found = child_to_parent_map_.find(
         xevent->xexpose.window);
     if (found == child_to_parent_map_.end())
-      return base::EVENT_CONTINUE;
+      return;
 
     gfx::AcceleratedWidget target_window = found->second;
     XEvent forwarded_event = *xevent;
     forwarded_event.xexpose.window = target_window;
     XSendEvent(g_display, target_window, False, ExposureMask,
                &forwarded_event);
-    return base::EVENT_CONTINUE;
   }
   virtual void DidProcessEvent(const base::NativeEvent& xevent) OVERRIDE {
   }

@@ -37,8 +37,7 @@ class XInputHierarchyChangedEventListener
   virtual ~XInputHierarchyChangedEventListener();
 
   // MessageLoopForUI::Observer overrides.
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
+  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
   // Returns true if the event was processed, false otherwise.

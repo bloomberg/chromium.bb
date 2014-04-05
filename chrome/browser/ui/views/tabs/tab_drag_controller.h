@@ -239,8 +239,7 @@ class TabDragController : public content::WebContentsDelegate,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from MessageLoop::Observer:
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
+  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
   // Overriden from views::WidgetObserver:

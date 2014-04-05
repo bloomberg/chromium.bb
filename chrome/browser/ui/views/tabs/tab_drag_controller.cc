@@ -493,10 +493,7 @@ void TabDragController::Observe(
 ///////////////////////////////////////////////////////////////////////////////
 // TabDragController, MessageLoop::Observer implementation:
 
-base::EventStatus TabDragController::WillProcessEvent(
-    const base::NativeEvent& event) {
-  return base::EVENT_CONTINUE;
-}
+void TabDragController::WillProcessEvent(const base::NativeEvent& event) {}
 
 void TabDragController::DidProcessEvent(const base::NativeEvent& event) {
   // If the user presses ESC during a drag, we need to abort and revert things

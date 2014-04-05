@@ -65,8 +65,7 @@ class BalloonCollectionImpl : public BalloonCollection,
 
   // MessageLoopForUI::Observer interface.
 #if defined(OS_WIN) || defined(USE_AURA)
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
+  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 #elif defined(TOOLKIT_GTK)
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;

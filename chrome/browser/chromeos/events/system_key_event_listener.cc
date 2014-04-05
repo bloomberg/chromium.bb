@@ -76,15 +76,14 @@ void SystemKeyEventListener::Stop() {
   stopped_ = true;
 }
 
-base::EventStatus SystemKeyEventListener::WillProcessEvent(
-    const base::NativeEvent& event) {
-  return ProcessedXEvent(event) ? base::EVENT_HANDLED : base::EVENT_CONTINUE;
+void SystemKeyEventListener::WillProcessEvent(const base::NativeEvent& event) {
+  ProcessedXEvent(event);
 }
 
 void SystemKeyEventListener::DidProcessEvent(const base::NativeEvent& event) {
 }
 
-bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
+void SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
   input_method::InputMethodManager* input_method_manager =
       input_method::InputMethodManager::Get();
 
@@ -97,10 +96,8 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
         // Force turning off Num Lock (crosbug.com/29169)
         input_method_manager->GetXKeyboard()->DisableNumLock();
       }
-      return true;
     }
   }
-  return false;
 }
 
 }  // namespace chromeos
