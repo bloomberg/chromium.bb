@@ -413,6 +413,25 @@
         "parameters": []
       },
       {
+        "name": "getZoom",
+	"type": "function",
+        "description": "Gets the current zoom factor.",
+	"parameters": [
+	  {
+            "type": "function",
+            "name": "callback",
+            "description": "Called after the current zoom factor is retreived.",
+            "parameters": [
+              {
+                "type": "number",
+                "name": "zoomFactor",
+                "description": "The current zoom factor."
+              }
+            ]
+	  }
+        ]
+      },
+      {
         "name": "go",
         "type": "function",
         "description": "Navigates to a history entry using a history index relative to the current navigation. If the requested navigation is impossible, this method has no effect.",
@@ -464,6 +483,25 @@
             "type": "string",
             "description": "The user agent string to use."
           }
+        ]
+      },
+      {
+        "name": "setZoom",
+        "type": "function",
+        "description": "Changes the zoom factor of the page. This zoom will persist for the page's origin, even after navigation.",
+        "parameters": [
+          {
+            "type": "number",
+            "name": "zoomFactor",
+            "description" : "The new zoom factor."
+          },
+	  {
+            "type": "function",
+            "name": "callback",
+            "description": "Called after the page has been zoomed.",
+            "optional": true,
+            "parameters": []
+	  }
         ]
       },
       {
@@ -806,6 +844,23 @@
             "name": "processID",
             "description": "Chrome's internal ID of the process that has become unresponsive.",
             "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "zoomchange",
+        "options": { "supportsDom": true },
+        "description": "Fired when the page's zoom changes.",
+        "parameters": [
+          {
+            "name": "oldZoomFactor",
+            "type": "number",
+            "description": "The page's previous zoom factor."
+          },
+          {
+            "name": "newZoomFactor",
+            "type": "number",
+            "description": "The new zoom factor that the page was zoomed to."
           }
         ]
       }
