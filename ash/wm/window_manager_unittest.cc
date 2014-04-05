@@ -728,9 +728,8 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   env_filter->RemoveHandler(f2.get());
 }
 
-#if defined(OS_CHROMEOS)
-// Touch visually hides the cursor on ChromeOS and Windows, but we only update
-// our internal tracking of the cursor state on ChromeOS (crbug.com/333952).
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+// Touch visually hides the cursor on ChromeOS and Windows
 TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   aura::test::EventGenerator& generator = GetEventGenerator();
   ::wm::CursorManager* cursor_manager =
@@ -749,7 +748,9 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
 }
+#endif  // defined(OS_CHROMEOS) || defined(OS_WIN)
 
+#if defined(OS_CHROMEOS)
 // ChromeOS is the only platform for which the cursor is hidden on keypress
 // (crbug.com/304296).
 TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
