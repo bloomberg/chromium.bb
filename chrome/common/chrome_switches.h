@@ -379,7 +379,6 @@ extern const char kEnableSpdyProxyAuth[];
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_ANDROID)
-extern const char kDisableAppBanners[];
 extern const char kDisableCast[];
 extern const char kDisableNewNTP[];
 extern const char kDisableZeroSuggest[];

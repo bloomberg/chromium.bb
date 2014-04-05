@@ -152,8 +152,7 @@ jlong Init(JNIEnv* env, jobject obj) {
 }
 
 jboolean IsEnabled(JNIEnv* env, jclass clazz) {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableAppBanners);
+  return false;
 }
 
 // Register native methods
