@@ -26,6 +26,11 @@ class SmoothnessToughWebGLCases(test.Test):
   page_set = 'page_sets/tough_webgl_cases.json'
 
 
+class SmoothnessMaps(test.Test):
+  test = smoothness.Smoothness
+  page_set = 'page_sets/maps.json'
+
+
 class SmoothnessKeyMobileSites(test.Test):
   """Measures rendering statistics while scrolling down the key mobile sites.
 
