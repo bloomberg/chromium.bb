@@ -134,6 +134,9 @@ void EventFactoryEvdev::AttachInputDevice(
 
   // Add initialized device to map.
   converters_[path] = converter.release();
+  converters_[path]->SetDispatchCallback(
+      base::Bind(base::IgnoreResult(&EventFactoryEvdev::DispatchEvent),
+                 base::Unretained(this)));
   converters_[path]->Start();
 }
 
@@ -204,12 +207,12 @@ void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
                                      const gfx::PointF& location) {
   if (cursor_) {
     cursor_->MoveCursorTo(widget, location);
-    scoped_ptr<Event> ev(new MouseEvent(ET_MOUSE_MOVED,
-                                      cursor_->location(),
-                                      cursor_->location(),
-                                      modifiers_.GetModifierFlags(),
-                                      /* changed_button_flags */ 0));
-    DispatchEvent(ev.Pass());
+    MouseEvent mouse_event(ET_MOUSE_MOVED,
+                           cursor_->location(),
+                           cursor_->location(),
+                           modifiers_.GetModifierFlags(),
+                           /* changed_button_flags */ 0);
+    DispatchEvent(&mouse_event);
   }
 }
 

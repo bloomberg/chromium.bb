@@ -7,6 +7,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/ozone/cursor_factory_ozone.h"
 #include "ui/events/ozone/event_factory_ozone.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 #include "ui/ozone/ozone_platform.h"
 
@@ -26,20 +27,28 @@ WindowTreeHostOzone::WindowTreeHostOzone(const gfx::Rect& bounds)
       gfx::SurfaceFactoryOzone::GetInstance();
   widget_ = surface_factory->GetAcceleratedWidget();
 
-  base::MessagePumpOzone::Current()->AddDispatcherForRootWindow(this);
+  ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   CreateCompositor(GetAcceleratedWidget());
 }
 
 WindowTreeHostOzone::~WindowTreeHostOzone() {
-  base::MessagePumpOzone::Current()->RemoveDispatcherForRootWindow(0);
+  ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
   DestroyCompositor();
   DestroyDispatcher();
 }
 
-uint32_t WindowTreeHostOzone::Dispatch(const base::NativeEvent& ne) {
+bool WindowTreeHostOzone::CanDispatchEvent(const ui::PlatformEvent& ne) {
+  CHECK(ne);
+  ui::Event* event = static_cast<ui::Event*>(ne);
+  if (event->IsMouseEvent() || event->IsScrollEvent() || event->IsTouchEvent())
+    return bounds_.Contains(static_cast<ui::LocatedEvent*>(event)->location());
+  return true;
+}
+
+uint32_t WindowTreeHostOzone::DispatchEvent(const ui::PlatformEvent& ne) {
   ui::Event* event = static_cast<ui::Event*>(ne);
   ui::EventDispatchDetails details ALLOW_UNUSED = SendEventToProcessor(event);
-  return POST_DISPATCH_NONE;
+  return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
 
 gfx::AcceleratedWidget WindowTreeHostOzone::GetAcceleratedWidget() {

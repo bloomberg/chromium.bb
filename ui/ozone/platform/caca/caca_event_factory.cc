@@ -177,19 +177,19 @@ void CacaEventFactory::TryProcessingEvent() {
     ui::EventType type = GetEventTypeFromNative(event);
     bool pressed = type == ui::ET_KEY_PRESSED || type == ui::ET_MOUSE_PRESSED;
 
-    scoped_ptr<ui::Event> ui_event;
     switch (type) {
       case ui::ET_KEY_PRESSED:
-      case ui::ET_KEY_RELEASED:
-        if (pressed) {
+      case ui::ET_KEY_RELEASED: {
+        if (pressed)
           modifier_flags_ |= ModifierFromKey(event);
-        } else {
+        else
           modifier_flags_ &= ~ModifierFromKey(event);
-        }
 
-        ui_event.reset(new ui::KeyEvent(
-            type, GetKeyboardCode(event), modifier_flags_, true));
+        ui::KeyEvent key_event(
+            type, GetKeyboardCode(event), modifier_flags_, true);
+        DispatchEvent(&key_event);
         break;
+      }
       case ui::ET_MOUSE_MOVED:
         last_cursor_location_.SetPoint(caca_get_event_mouse_x(&event),
                                        caca_get_event_mouse_y(&event));
@@ -197,9 +197,9 @@ void CacaEventFactory::TryProcessingEvent() {
         caca_gotoxy(caca_get_canvas(connection_->display()),
                     last_cursor_location_.x(),
                     last_cursor_location_.y());
+      // fallthrough
       case ui::ET_MOUSE_PRESSED:
-      case ui::ET_MOUSE_RELEASED:
-      {
+      case ui::ET_MOUSE_RELEASED: {
         int flags = 0;
         int changed_flags = 0;
         if (type != ui::ET_MOUSE_MOVED) {
@@ -215,17 +215,15 @@ void CacaEventFactory::TryProcessingEvent() {
         }
         gfx::PointF location = TranslateLocation(last_cursor_location_,
                                                  connection_);
-        ui_event.reset(new ui::MouseEvent(
-            type, location, location, flags, changed_flags));
-      }
+        ui::MouseEvent mouse_event(
+            type, location, location, flags, changed_flags);
+        DispatchEvent(&mouse_event);
         break;
+      }
       default:
         NOTIMPLEMENTED();
         break;
     }
-
-    if (ui_event)
-      DispatchEvent(ui_event.Pass());
   }
 
   ScheduleEventProcessing();

@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_pump_ozone.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -93,6 +94,7 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
+  ScopedVector<ui::TouchEvent> touch_events;
   for (unsigned i = 0; i < read_size / sizeof(*inputs); i++) {
     const input_event& input = inputs[i];
     if (input.type == EV_ABS) {
@@ -139,7 +141,7 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
           for (int j = 0; j < MAX_FINGERS; j++) {
             if (altered_slots_[j]) {
               // TODO(rjkroege): Support elliptical finger regions.
-              scoped_ptr<TouchEvent> tev(new TouchEvent(
+              touch_events.push_back(new TouchEvent(
                   events_[j].type_,
                   gfx::Point(std::min(x_max_, events_[j].x_),
                              std::min(y_max_, events_[j].y_)),
@@ -151,7 +153,6 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
                   events_[j].pressure_ * kFingerWidth,
                   /* angle */ 0.,
                   events_[j].pressure_));
-              DispatchEvent(tev.PassAs<ui::Event>());
 
               // Subsequent events for this finger will be touch-move until it
               // is released.
@@ -176,6 +177,10 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
     } else {
       NOTIMPLEMENTED() << "invalid type: " << input.type;
     }
+  }
+  for (ScopedVector<ui::TouchEvent>::iterator iter = touch_events.begin();
+       iter != touch_events.end(); ++iter) {
+    DispatchEventToCallback(*iter);
   }
 }
 

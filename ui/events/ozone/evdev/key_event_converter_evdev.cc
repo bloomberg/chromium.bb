@@ -258,9 +258,9 @@ void KeyEventConverterEvdev::ConvertKeyEvent(int key, int value) {
 
   int flags = modifiers_->GetModifierFlags();
 
-  scoped_ptr<KeyEvent> key_event(
-      new KeyEvent(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, code, flags, true));
-  DispatchEvent(key_event.PassAs<ui::Event>());
+  KeyEvent key_event(
+      down ? ET_KEY_PRESSED : ET_KEY_RELEASED, code, flags, true);
+  DispatchEventToCallback(&key_event);
 }
 
 }  // namespace ui

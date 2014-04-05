@@ -6,6 +6,7 @@
 #define UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_EVDEV_H_
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/events_export.h"
 
@@ -20,6 +21,10 @@ class EVENTS_EXPORT EventConverterEvdev {
   EventConverterEvdev();
   virtual ~EventConverterEvdev();
 
+  void SetDispatchCallback(base::Callback<void(void*)> callback) {
+    dispatch_callback_ = callback;
+  }
+
   // Start converting events.
   virtual void Start() = 0;
 
@@ -27,12 +32,13 @@ class EVENTS_EXPORT EventConverterEvdev {
   virtual void Stop() = 0;
 
  protected:
-  // Subclasses should use this method to post a task that will dispatch
-  // |event| from the UI message loop. This method takes ownership of
-  // |event|. |event| will be deleted at the end of the posted task.
-  virtual void DispatchEvent(scoped_ptr<ui::Event> event);
+  // Dispatches an event using the dispatch-callback set using
+  // |SetDispatchCalback()|.
+  virtual void DispatchEventToCallback(ui::Event* event);
 
  private:
+  base::Callback<void(void*)> dispatch_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(EventConverterEvdev);
 };
 

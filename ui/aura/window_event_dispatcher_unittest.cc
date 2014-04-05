@@ -36,15 +36,6 @@
 namespace aura {
 namespace {
 
-bool PlatformSupportsMultipleHosts() {
-#if defined(USE_OZONE)
-  // Creating multiple WindowTreeHostOzone instances is broken.
-  return false;
-#else
-  return true;
-#endif
-}
-
 // A delegate that always returns a non-client component for hit tests.
 class NonClientDelegate : public test::TestWindowDelegate {
  public:
@@ -1363,8 +1354,6 @@ class ValidRootDuringDestructionWindowObserver : public aura::WindowObserver {
 
 // Verifies GetRootWindow() from ~Window returns a valid root.
 TEST_F(WindowEventDispatcherTest, ValidRootDuringDestruction) {
-  if (!PlatformSupportsMultipleHosts())
-    return;
   bool got_destroying = false;
   bool has_valid_root = false;
   ValidRootDuringDestructionWindowObserver observer(&got_destroying,
@@ -1478,8 +1467,6 @@ class DeleteHostFromHeldMouseEventDelegate
 // Verifies if a WindowTreeHost is deleted from dispatching a held mouse event
 // we don't crash.
 TEST_F(WindowEventDispatcherTest, DeleteHostFromHeldMouseEvent) {
-  if (!PlatformSupportsMultipleHosts())
-    return;
   // Should be deleted by |delegate|.
   WindowTreeHost* h2 = WindowTreeHost::Create(gfx::Rect(0, 0, 100, 100));
   h2->InitHost();
@@ -1948,8 +1935,6 @@ class MoveWindowHandler : public ui::EventHandler {
 // event being dispatched is moved to a different dispatcher in response to an
 // event in the inner loop.
 TEST_F(WindowEventDispatcherTest, NestedEventDispatchTargetMoved) {
-  if (!PlatformSupportsMultipleHosts())
-    return;
   scoped_ptr<WindowTreeHost> second_host(
       WindowTreeHost::Create(gfx::Rect(20, 30, 100, 50)));
   second_host->InitHost();
@@ -2006,8 +1991,6 @@ class AlwaysMouseDownInputStateLookup : public InputStateLookup {
 
 TEST_F(WindowEventDispatcherTest,
        CursorVisibilityChangedWhileCaptureWindowInAnotherDispatcher) {
-  if (!PlatformSupportsMultipleHosts())
-    return;
   test::EventCountDelegate delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(&delegate, 123,
       gfx::Rect(20, 10, 10, 20), root_window()));

@@ -11,6 +11,7 @@
 #include "base/message_loop/message_pump_libevent.h"
 #include "base/task_runner.h"
 #include "ui/events/events_export.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -26,7 +27,7 @@ class Event;
 // Ozone presumes that the set of file desctiprtors can vary at runtime so this
 // class supports dynamically adding and removing |EventConverterOzone|
 // instances as necessary.
-class EVENTS_EXPORT EventFactoryOzone {
+class EVENTS_EXPORT EventFactoryOzone : public ui::PlatformEventSource {
  public:
   EventFactoryOzone();
   virtual ~EventFactoryOzone();
@@ -55,11 +56,6 @@ class EVENTS_EXPORT EventFactoryOzone {
 
   // Sets the implementation delegate. Ownership is retained by the caller.
   static void SetInstance(EventFactoryOzone*);
-
-  // Subclasses should use this method to post a task that will dispatch
-  // |event| from the UI message loop. This method takes ownership of
-  // |event|. |event| will be deleted at the end of the posted task.
-  static void DispatchEvent(scoped_ptr<ui::Event> event);
 
  private:
   static EventFactoryOzone* impl_;  // not owned

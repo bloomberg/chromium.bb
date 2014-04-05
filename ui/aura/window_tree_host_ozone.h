@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 
@@ -18,16 +18,17 @@ namespace aura {
 
 class WindowTreeHostOzone : public WindowTreeHost,
                             public ui::EventSource,
-                            public base::MessagePumpDispatcher {
+                            public ui::PlatformEventDispatcher {
  public:
   explicit WindowTreeHostOzone(const gfx::Rect& bounds);
   virtual ~WindowTreeHostOzone();
 
  private:
-  // Overridden from Dispatcher overrides:
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
+  // ui::PlatformEventDispatcher:
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
 
-  // WindowTreeHost Overrides.
+  // WindowTreeHost:
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;

@@ -13,8 +13,8 @@ EventConverterEvdev::EventConverterEvdev() {}
 
 EventConverterEvdev::~EventConverterEvdev() {}
 
-void EventConverterEvdev::DispatchEvent(scoped_ptr<ui::Event> event) {
-  EventFactoryOzone::DispatchEvent(event.Pass());
+void EventConverterEvdev::DispatchEventToCallback(ui::Event* event) {
+  dispatch_callback_.Run(event);
 }
 
 }  // namespace ui

@@ -11,13 +11,14 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_pump_dispatcher.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/events/platform/platform_event_source.h"
 
 namespace {
 
@@ -34,8 +35,7 @@ const char kTestDevicePath[] = "/dev/input/test-device";
 
 namespace ui {
 
-class MockTouchEventConverterEvdev : public TouchEventConverterEvdev,
-                                     public base::MessagePumpDispatcher {
+class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
  public:
   MockTouchEventConverterEvdev(int fd, base::FilePath path);
   virtual ~MockTouchEventConverterEvdev() {};
@@ -53,7 +53,10 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev,
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
+  void DispatchCallback(void* event) {
+    dispatched_events_.push_back(
+        new TouchEvent(*static_cast<TouchEvent*>(event)));
+  }
 
  private:
   int read_pipe_;
@@ -89,13 +92,6 @@ MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(int fd,
   write_pipe_ = fds[1];
 }
 
-uint32_t MockTouchEventConverterEvdev::Dispatch(
-    const base::NativeEvent& event) {
-  ui::TouchEvent* ev = new ui::TouchEvent(event);
-  dispatched_events_.push_back(ev);
-  return POST_DISPATCH_NONE;
-}
-
 void MockTouchEventConverterEvdev::ConfigureReadMock(struct input_event* queue,
                                                      long read_this_many,
                                                      long queue_index) {
@@ -126,8 +122,11 @@ class TouchEventConverterEvdevTest : public testing::Test {
     loop_ = new base::MessageLoopForUI;
     device_ = new ui::MockTouchEventConverterEvdev(
         events_in_, base::FilePath(kTestDevicePath));
-    base::MessagePumpOzone::Current()->AddDispatcherForRootWindow(device_);
+    device_->SetDispatchCallback(
+        base::Bind(&ui::MockTouchEventConverterEvdev::DispatchCallback,
+                   base::Unretained(device_)));
   }
+
   virtual void TearDown() OVERRIDE {
     delete device_;
     delete loop_;
