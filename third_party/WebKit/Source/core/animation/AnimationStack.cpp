@@ -65,6 +65,10 @@ void copyNewAnimationsToActiveInterpolationMap(const Vector<InertAnimation*>& ne
 
 } // namespace
 
+AnimationStack::AnimationStack()
+{
+}
+
 bool AnimationStack::affects(CSSPropertyID property) const
 {
     for (size_t i = 0; i < m_activeAnimations.size(); ++i) {

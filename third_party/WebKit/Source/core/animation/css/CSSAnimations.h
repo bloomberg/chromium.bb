@@ -152,7 +152,10 @@ private:
 };
 
 class CSSAnimations FINAL : public NoBaseWillBeGarbageCollectedFinalized<CSSAnimations> {
+    WTF_MAKE_NONCOPYABLE(CSSAnimations);
 public:
+    CSSAnimations();
+
     // FIXME: This method is only used here and in the legacy animations
     // implementation. It should be made private or file-scope when the legacy
     // engine is removed.

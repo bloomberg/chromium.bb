@@ -50,6 +50,7 @@ bool hasActiveAnimations(const RenderObject&, CSSPropertyID);
 bool hasActiveAnimationsOnCompositor(const RenderObject&, CSSPropertyID);
 
 class ActiveAnimations : public NoBaseWillBeGarbageCollectedFinalized<ActiveAnimations> {
+    WTF_MAKE_NONCOPYABLE(ActiveAnimations);
 public:
     ActiveAnimations()
         : m_animationStyleChange(false)

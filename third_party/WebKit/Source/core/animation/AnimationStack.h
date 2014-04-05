@@ -41,8 +41,10 @@ namespace WebCore {
 class InertAnimation;
 
 class AnimationStack {
-
+    WTF_MAKE_NONCOPYABLE(AnimationStack);
 public:
+    AnimationStack();
+
     void add(Animation* animation) { m_activeAnimations.append(animation); }
     void remove(Animation* animation)
     {

@@ -285,6 +285,10 @@ const StyleRuleKeyframes* CSSAnimations::matchScopedKeyframesRule(StyleResolver*
     return 0;
 }
 
+CSSAnimations::CSSAnimations()
+{
+}
+
 PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, const Element& parentElement, const RenderStyle& style, RenderStyle* parentStyle, StyleResolver* resolver)
 {
     OwnPtrWillBeRawPtr<CSSAnimationUpdate> update = adoptPtrWillBeNoop(new CSSAnimationUpdate());
