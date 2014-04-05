@@ -307,6 +307,9 @@
                   'ui/gfx/transform|'\
                   'ui/gfx/vector2d',
     },
+    'gn': {
+      'filepath': 'tools/gn',
+    },
     'gpu': {
       'filepath': 'gpu/',
     },
@@ -773,6 +776,7 @@
     'geolocation': ['mvanouwerkerk@chromium.org'],
     'gfx_geometry': ['cc-bugs@chromium.org'],
     'gfx_image': ['rsesek+watch@chromium.org'],
+    'gn': ['tfarina@chromium.org'],
     'gpu': ['piman+watch@chromium.org'],
     'history_ui': ['dubroy@chromium.org', 'pam+watch@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
