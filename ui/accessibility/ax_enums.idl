@@ -80,6 +80,7 @@ namespace ui {
     heading,
     help_tag,
     horizontal_rule,
+    iframe,
     ignored,
     image_map_link,
     image_map,

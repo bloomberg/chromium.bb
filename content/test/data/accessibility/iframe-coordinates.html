@@ -7,15 +7,22 @@
 
 @WIN-DENY:title*
 @WIN-ALLOW:location*
-@WIN-ALLOW:size*
+@WIN-ALLOW:size=(300, 150)
+@WIN-ALLOW:size=(300, 100)
+@WIN-ALLOW:size=(250, 50)
+@WIN-ALLOW:size=(150, 50)
 -->
 <html>
 <head>
 <style>
+body {
+  overflow: hidden;
+}
 iframe {
   border: 0;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 div {
   width: 300px;
@@ -37,9 +44,9 @@ div {
   </button>
 </div>
 
-<div><iframe id="frame1" style="width: 300px; height: 100px;"></iframe></div>
+<div><iframe id="frame1" style="width: 300px; height: 100px;" scrolling="no"></iframe></div>
 
-<div><iframe id="frame2" style="width: 150px; height: 50px;"></iframe></div>
+<div><iframe id="frame2" style="width: 150px; height: 50px;" scrolling="no"></iframe></div>
 
 <script>
 var frameCode =

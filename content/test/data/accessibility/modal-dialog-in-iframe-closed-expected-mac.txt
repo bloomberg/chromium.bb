@@ -1,7 +1,7 @@
 AXWebArea
     AXGroup
         AXStaticText AXValue='Test for modal dialog closed in an iframe. '
-        AXUnknown
+        AXGroup
             AXUnknown
                 AXWebArea
                     AXGroup

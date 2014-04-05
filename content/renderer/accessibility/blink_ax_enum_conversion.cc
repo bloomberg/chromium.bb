@@ -154,6 +154,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_HELP_TAG;
     case blink::WebAXRoleHorizontalRule:
       return ui::AX_ROLE_HORIZONTAL_RULE;
+    case blink::WebAXRoleIframe:
+      return ui::AX_ROLE_IFRAME;
     case blink::WebAXRoleIgnored:
       return ui::AX_ROLE_IGNORED;
     case blink::WebAXRoleImage:
