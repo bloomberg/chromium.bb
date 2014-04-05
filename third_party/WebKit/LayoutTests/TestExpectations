@@ -135,29 +135,10 @@ crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass 
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
-crbug.com/251183 w3c/web-platform-tests/html-templates/additions-to-parsing-xhtml-documents/node-document.html [ Failure ]
-crbug.com/251183 w3c/web-platform-tests/html-templates/additions-to-parsing-xhtml-documents/template-child-nodes.html [ Failure ]
-
-crbug.com/330086 w3c/web-platform-tests/html-templates/definitions/template-contents-owner-document-type.html [ Pass Failure ]
-crbug.com/330086 w3c/web-platform-tests/html-templates/definitions/template-contents.html [ Pass Failure ]
-crbug.com/330086 w3c/web-platform-tests/html-templates/parsing-html-templates/creating-an-element-for-the-token/template-owner-document.html [ Pass Timeout ]
-
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/csshostrule-interface/csshostrule-attributes/test-001.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/csshostrule-interface/csshostrule-attributes/test-002.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/attributes/test-002.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/attributes/test-003.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/attributes/test-004.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-event-interface/event-path-003.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-011.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-008.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-009.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-006.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-005.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-006.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-007.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-008.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/event-dispatch/test-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/event-dispatch/test-003.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/event-retargeting/test-002.html [ Failure ]
@@ -168,7 +149,6 @@ crbug.com/330083 w3c/web-platform-tests/shadow-dom/html-elements-and-their-shado
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-002.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-003.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/custom-pseudo-elements/not_apply_css_style_to_child_selector.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/custom-pseudo-elements/test-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/distributed-pseudo-element/test-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/distributed-pseudo-element/test-002.html [ Failure ]
@@ -176,14 +156,9 @@ crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/lower-boundary-e
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/satisfying-matching-criteria/test-007.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/ownerdocument-002.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/at-host-at-rule/matching-specificity-of-css-rules-001.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/at-host-at-rule/test-001.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/css-variables/test-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/test-003.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/test-006.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/test-007.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/test-010.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/test-011.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-002.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-003.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-004.html [ Failure ]
@@ -713,11 +688,6 @@ crbug.com/343892 [ Linux Mac ] fast/workers/shared-worker-name.html [ Pass Crash
 crbug.com/345831 [ Win ] fast/dom/Window/open-window-min-size.html [ Failure ]
 crbug.com/345831 [ Linux Mac ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
 
-# Template tests that need a merge from upstream to match spec (and subsequent Blink) changes
-crbug.com/325442 w3c/web-platform-tests/html-templates/definitions/template-contents-owner-test-001.html [ Failure ]
-crbug.com/325442 w3c/web-platform-tests/html-templates/template-element/node-document-changes.html [ Failure ]
-crbug.com/325442 w3c/web-platform-tests/html-templates/template-element/template-content-node-document.html [ Failure ]
-
 crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFailure ]
 crbug.com/253763 fast/text-autosizing/pseudo-scale-factor.html [ ImageOnlyFailure ]
 crbug.com/253763 virtual/fasttextautosizing/fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFailure ]
@@ -783,13 +753,8 @@ crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-
 
 crbug.com/341331 http/tests/xmlhttprequest/event-listener-gc.html [ Pass Failure ]
 
-crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-001.html [ Skip ]
-crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-002.html [ Skip ]
-crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-003.html [ Skip ]
-crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-004.html [ Skip ]
 crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-001.html [ Skip ]
 crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-002.html [ Skip ]
-crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-004.html [ Skip ]
 
 crbug.com/246077 [ Linux ] virtual/android/fullscreen/parent-flow-inline-with-block-child.html [ Failure ]
 
@@ -939,10 +904,8 @@ crbug.com/357464 [ Win Debug ] virtual/softwarecompositing/visibility/visibility
 crbug.com/357465 [ Debug ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
 crbug.com/357465 [ Linux Release ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
 
-crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-005.html [ Failure ]
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-004.html [ Failure ]
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-003.html [ Failure ]
-crbug.com/353087 w3c/web-platform-tests/shadow-dom/styles/test-012.html [ Failure ]
 crbug.com/353727 virtual/threaded/animations/keyframe-timing-functions-multiple-properties.html [ Pass Timeout ]
 crbug.com/24182 [ Win ] jquery/manipulation.html [ Pass Timeout ]
 crbug.com/353736 [ Linux ] fast/forms/number/number-appearance-spinbutton-disabled-readonly.html [ Pass ImageOnlyFailure ]
