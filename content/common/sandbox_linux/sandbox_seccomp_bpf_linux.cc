@@ -159,7 +159,7 @@ void StartSandboxWithPolicy(sandbox::SandboxBPFPolicy* policy) {
   // doing so does not stop the sandbox.
   SandboxBPF sandbox;
   sandbox.SetSandboxPolicy(policy);
-  sandbox.StartSandbox();
+  CHECK(sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
 }
 
 // nacl_helper needs to be tiny and includes only part of content/

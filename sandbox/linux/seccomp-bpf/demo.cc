@@ -421,7 +421,10 @@ int main(int argc, char *argv[]) {
   SandboxBPF sandbox;
   sandbox.set_proc_fd(proc_fd);
   sandbox.SetSandboxPolicyDeprecated(Evaluator, NULL);
-  sandbox.StartSandbox();
+  if (!sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED)) {
+    fprintf(stderr, "StartSandbox() failed");
+    _exit(1);
+  }
 
   // Check that we can create threads
   pthread_t thr;

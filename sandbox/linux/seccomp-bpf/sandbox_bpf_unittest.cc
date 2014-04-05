@@ -99,7 +99,7 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(VerboseAPITesting)) {
     pid_t test_var = 0;
     SandboxBPF sandbox;
     sandbox.SetSandboxPolicyDeprecated(VerboseAPITestingPolicy, &test_var);
-    sandbox.StartSandbox();
+    BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
 
     BPF_ASSERT(test_var == 0);
     BPF_ASSERT(syscall(__NR_getpid) == 0);
@@ -326,7 +326,7 @@ BPF_TEST(SandboxBPF, StackingPolicy, StackingPolicyPartOne) {
   // restrict filters, but we cannot relax existing filters.
   SandboxBPF sandbox;
   sandbox.SetSandboxPolicyDeprecated(StackingPolicyPartTwo, NULL);
-  sandbox.StartSandbox();
+  BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
 
   errno = 0;
   BPF_ASSERT(syscall(__NR_getppid, 0) == -1);
