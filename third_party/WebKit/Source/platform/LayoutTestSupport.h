@@ -37,6 +37,8 @@ namespace WebCore {
 
 PLATFORM_EXPORT bool isRunningLayoutTest();
 PLATFORM_EXPORT void setIsRunningLayoutTest(bool);
+PLATFORM_EXPORT bool isFontSmoothingEnabledForTest();
+PLATFORM_EXPORT void setFontSmoothingEnabledForTest(bool);
 
 } // namespace WebCore
 

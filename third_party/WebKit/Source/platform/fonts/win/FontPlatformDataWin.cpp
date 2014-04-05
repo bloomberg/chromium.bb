@@ -113,13 +113,17 @@ static bool isWebFont(const String& familyName)
 
 static int computePaintTextFlags(String fontFamilyName)
 {
+    if (isRunningLayoutTest())
+        return isFontSmoothingEnabledForTest() ? SkPaint::kAntiAlias_Flag : 0;
+
     int textFlags = getSystemTextFlags();
 
     // Many web-fonts are so poorly hinted that they are terrible to read when drawn in BW.
     // In these cases, we have decided to FORCE these fonts to be drawn with at least grayscale AA,
     // even when the System (getSystemTextFlags) tells us to draw only in BW.
-    if (isWebFont(fontFamilyName) && !isRunningLayoutTest())
+    if (isWebFont(fontFamilyName))
         textFlags |= SkPaint::kAntiAlias_Flag;
+
     return textFlags;
 }
 

@@ -34,6 +34,7 @@
 namespace WebCore {
 
 static bool s_isRunningLayoutTest = false;
+static bool s_isFontSmoothingEnabled = false;
 
 bool isRunningLayoutTest()
 {
@@ -43,6 +44,16 @@ bool isRunningLayoutTest()
 void setIsRunningLayoutTest(bool value)
 {
     s_isRunningLayoutTest = value;
+}
+
+bool isFontSmoothingEnabledForTest()
+{
+    return s_isFontSmoothingEnabled;
+}
+
+void setFontSmoothingEnabledForTest(bool value)
+{
+    s_isFontSmoothingEnabled = value;
 }
 
 } // namespace WebCore

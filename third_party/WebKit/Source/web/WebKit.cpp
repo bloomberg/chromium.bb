@@ -244,6 +244,16 @@ bool layoutTestMode()
     return WebCore::isRunningLayoutTest();
 }
 
+void setFontSmoothingEnabledForTest(bool value)
+{
+    WebCore::setFontSmoothingEnabledForTest(value);
+}
+
+bool fontSmoothingEnabledForTest()
+{
+    return WebCore::isFontSmoothingEnabledForTest();
+}
+
 void enableLogChannel(const char* name)
 {
 #if !LOG_DISABLED
