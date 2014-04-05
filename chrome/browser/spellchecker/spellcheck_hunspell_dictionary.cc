@@ -26,104 +26,10 @@ using content::BrowserThread;
 
 namespace {
 
-// Close the platform file.
-void CloseDictionary(base::PlatformFile file) {
+// Close the file.
+void CloseDictionary(base::File file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::ClosePlatformFile(file);
-}
-
-}  // namespace
-
-// Dictionary file information to be passed between the FILE and UI threads.
-struct DictionaryFile {
-  DictionaryFile() : descriptor(base::kInvalidPlatformFileValue) {
-  }
-
-  ~DictionaryFile() {
-    if (descriptor != base::kInvalidPlatformFileValue) {
-      BrowserThread::PostTask(
-          BrowserThread::FILE,
-          FROM_HERE,
-          base::Bind(&CloseDictionary, descriptor));
-      descriptor = base::kInvalidPlatformFileValue;
-    }
-  }
-
-  // The desired location of the dictionary file, whether or not it exists.
-  base::FilePath path;
-
-  // The file descriptor/handle for the dictionary file.
-  base::PlatformFile descriptor;
-
-  DISALLOW_COPY_AND_ASSIGN(DictionaryFile);
-};
-
-namespace {
-
-// Figures out the location for the dictionary, verifies its contents, and opens
-// it. The default_dictionary_file can either come from the standard list of
-// hunspell dictionaries (determined in InitializeDictionaryLocation), or it
-// can be passed in via an extension. In either case, the file is checked for
-// existence so that it's not re-downloaded.
-// For systemwide installations on Windows, the default directory may not
-// have permissions for download. In that case, the alternate directory for
-// download is chrome::DIR_USER_DATA.
-// Returns a scoped pointer to avoid leaking the file descriptor if the caller
-// has been destroyed.
-scoped_ptr<DictionaryFile> OpenDictionaryFile(
-    scoped_ptr<DictionaryFile> file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-#if defined(OS_WIN)
-  // Check if the dictionary exists in the fallback location. If so, use it
-  // rather than downloading anew.
-  base::FilePath user_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_dir);
-  base::FilePath fallback = user_dir.Append(file->path.BaseName());
-  if (!base::PathExists(file->path) && base::PathExists(fallback))
-    file->path = fallback;
-#endif
-
-  // Read the dictionary file and scan its data to check for corruption. The
-  // scoping closes the memory-mapped file before it is opened or deleted.
-  bool bdict_is_valid;
-  {
-    base::MemoryMappedFile map;
-    bdict_is_valid = base::PathExists(file->path) &&
-        map.Initialize(file->path) &&
-        hunspell::BDict::Verify(reinterpret_cast<const char*>(map.data()),
-                                map.length());
-  }
-  if (bdict_is_valid) {
-    file->descriptor = base::CreatePlatformFile(
-        file->path,
-        base::PLATFORM_FILE_READ | base::PLATFORM_FILE_OPEN,
-        NULL,
-        NULL);
-  } else {
-    base::DeleteFile(file->path, false);
-  }
-
-  return file.Pass();
-}
-
-// Gets the default location for the dictionary file. The default place where
-// the spellcheck dictionary resides is chrome::DIR_APP_DICTIONARIES.
-// Returns a scoped pointer to avoid leaking the file descriptor if the caller
-// has been destroyed.
-scoped_ptr<DictionaryFile> InitializeDictionaryLocation(
-    const std::string& language) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  scoped_ptr<DictionaryFile> file(new DictionaryFile);
-
-  // Initialize the BDICT path. Initialization should be in the FILE thread
-  // because it checks if there is a "Dictionaries" directory and create it.
-  base::FilePath dict_dir;
-  PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
-  file->path = chrome::spellcheck_common::GetVersionedFileName(
-      language, dict_dir);
-
-  return OpenDictionaryFile(file.Pass());
+  file.Close();
 }
 
 // Saves |data| to file at |path|. Returns true on successful save, otherwise
@@ -158,6 +64,32 @@ bool SaveDictionaryData(scoped_ptr<std::string> data,
 
 }  // namespace
 
+SpellcheckHunspellDictionary::DictionaryFile::DictionaryFile() {
+ }
+
+ SpellcheckHunspellDictionary::DictionaryFile::~DictionaryFile() {
+  if (file.IsValid()) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&CloseDictionary, Passed(&file)));
+  }
+}
+
+SpellcheckHunspellDictionary::DictionaryFile::DictionaryFile(RValue other)
+    : path(other.object->path),
+      file(other.object->file.Pass()) {
+}
+
+SpellcheckHunspellDictionary::DictionaryFile&
+SpellcheckHunspellDictionary::DictionaryFile::operator=(RValue other) {
+  if (this != other.object) {
+    path = other.object->path;
+    file = other.object->file.Pass();
+  }
+  return *this;
+}
+
 SpellcheckHunspellDictionary::SpellcheckHunspellDictionary(
     const std::string& language,
     net::URLRequestContextGetter* request_context_getter,
@@ -167,7 +99,6 @@ SpellcheckHunspellDictionary::SpellcheckHunspellDictionary(
       request_context_getter_(request_context_getter),
       spellcheck_service_(spellcheck_service),
       download_status_(DOWNLOAD_NONE),
-      dictionary_file_(new DictionaryFile),
       weak_ptr_factory_(this) {
 }
 
@@ -211,9 +142,8 @@ bool SpellcheckHunspellDictionary::IsReady() const {
       base::kInvalidPlatformFileValue || IsUsingPlatformChecker();
 }
 
-const base::PlatformFile&
-SpellcheckHunspellDictionary::GetDictionaryFile() const {
-  return dictionary_file_->descriptor;
+base::PlatformFile SpellcheckHunspellDictionary::GetDictionaryFile() const {
+  return dictionary_file_.file.GetPlatformFile();
 }
 
 const std::string& SpellcheckHunspellDictionary::GetLanguage() const {
@@ -278,7 +208,7 @@ void SpellcheckHunspellDictionary::OnURLFetchComplete(
       FROM_HERE,
       base::Bind(&SaveDictionaryData,
                  base::Passed(&data),
-                 dictionary_file_->path),
+                 dictionary_file_.path),
       base::Bind(&SpellcheckHunspellDictionary::SaveDictionaryDataComplete,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -286,7 +216,7 @@ void SpellcheckHunspellDictionary::OnURLFetchComplete(
 GURL SpellcheckHunspellDictionary::GetDictionaryURL() {
   static const char kDownloadServerUrl[] =
       "http://cache.pack.google.com/edgedl/chrome/dict/";
-  std::string bdict_file = dictionary_file_->path.BaseName().MaybeAsASCII();
+  std::string bdict_file = dictionary_file_.path.BaseName().MaybeAsASCII();
 
   DCHECK(!bdict_file.empty());
 
@@ -310,12 +240,76 @@ void SpellcheckHunspellDictionary::DownloadDictionary(GURL url) {
   request_context_getter_ = NULL;
 }
 
+// The default_dictionary_file can either come from the standard list of
+// hunspell dictionaries (determined in InitializeDictionaryLocation), or it
+// can be passed in via an extension. In either case, the file is checked for
+// existence so that it's not re-downloaded.
+// For systemwide installations on Windows, the default directory may not
+// have permissions for download. In that case, the alternate directory for
+// download is chrome::DIR_USER_DATA.
+SpellcheckHunspellDictionary::DictionaryFile
+SpellcheckHunspellDictionary::OpenDictionaryFile(const base::FilePath& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DictionaryFile dictionary;
+
+#if defined(OS_WIN)
+  // Check if the dictionary exists in the fallback location. If so, use it
+  // rather than downloading anew.
+  base::FilePath user_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_dir);
+  base::FilePath fallback = user_dir.Append(path.BaseName());
+  if (!base::PathExists(path) && base::PathExists(fallback))
+    dictionary.path = fallback;
+  else
+    dictionary.path = path;
+#else
+  dictionary.path = path;
+#endif
+
+  // Read the dictionary file and scan its data to check for corruption. The
+  // scoping closes the memory-mapped file before it is opened or deleted.
+  bool bdict_is_valid;
+  {
+    base::MemoryMappedFile map;
+    bdict_is_valid =
+        base::PathExists(dictionary.path) &&
+        map.Initialize(dictionary.path) &&
+        hunspell::BDict::Verify(reinterpret_cast<const char*>(map.data()),
+                                map.length());
+  }
+  if (bdict_is_valid) {
+    dictionary.file.Initialize(dictionary.path,
+                               base::File::FLAG_READ | base::File::FLAG_OPEN);
+  } else {
+    base::DeleteFile(dictionary.path, false);
+  }
+
+  return dictionary.Pass();
+}
+
+// The default place where the spellcheck dictionary resides is
+// chrome::DIR_APP_DICTIONARIES.
+SpellcheckHunspellDictionary::DictionaryFile
+SpellcheckHunspellDictionary::InitializeDictionaryLocation(
+    const std::string& language) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // Initialize the BDICT path. Initialization should be in the FILE thread
+  // because it checks if there is a "Dictionaries" directory and create it.
+  base::FilePath dict_dir;
+  PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
+  base::FilePath dict_path =
+      chrome::spellcheck_common::GetVersionedFileName(language, dict_dir);
+
+  return OpenDictionaryFile(dict_path);
+}
+
 void SpellcheckHunspellDictionary::InitializeDictionaryLocationComplete(
-    scoped_ptr<DictionaryFile> file) {
+    DictionaryFile file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   dictionary_file_ = file.Pass();
 
-  if (dictionary_file_->descriptor == base::kInvalidPlatformFileValue) {
+  if (!dictionary_file_.file.IsValid()) {
 
     // Notify browser tests that this dictionary is corrupted. Skip downloading
     // the dictionary in browser tests.
