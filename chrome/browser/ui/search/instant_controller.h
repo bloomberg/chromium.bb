@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/search/instant_page.h"
-#include "chrome/common/instant_types.h"
 #include "chrome/common/search_types.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -46,9 +45,6 @@ class InstantController : public InstantPage::Delegate {
  public:
   explicit InstantController(BrowserInstantController* browser);
   virtual ~InstantController();
-
-  // Sends the current SearchProvider suggestion to the Instant page if any.
-  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
 
   // Called if the browser is navigating to a search URL for |search_terms| with
   // search-term-replacement enabled. If |instant_tab_| can be used to process

@@ -34,6 +34,8 @@ class OmniboxCurrentPageDelegateImpl : public OmniboxCurrentPageDelegate {
   virtual void OnFocusChanged(OmniboxFocusState state,
                               OmniboxFocusChangeReason reason) OVERRIDE;
   virtual void DoPrerender(const AutocompleteMatch& match) OVERRIDE;
+  virtual void SetSuggestionToPrefetch(
+      const InstantSuggestion& suggestion) OVERRIDE;
 
  private:
   OmniboxEditController* controller_;

@@ -13,6 +13,7 @@
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/omnibox/omnibox_controller.h"
+#include "chrome/common/instant_types.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -328,15 +329,8 @@ class OmniboxEditModel {
   // Called when the current match has changed in the OmniboxController.
   void OnCurrentMatchChanged();
 
-  // TODO(beaudoin): We need this to allow OmniboxController access the
-  // InstantController via OmniboxEditController, because the only valid pointer
-  // to InstantController is kept in Browser. We should try to get rid of this,
-  // maybe by ensuring InstantController lives as long as Browser.
-  //
-  // TODO(kmadhusu): Remove this function and update the callers.
-  //
-  // This method is deprecated and should not be used in new code.
-  InstantController* GetInstantController() const;
+  // Sends the current SearchProvider suggestion to the Instant page if any.
+  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
 
   // Name of the histogram tracking cut or copy omnibox commands.
   static const char kCutOrCopyAllTextHistogram[];

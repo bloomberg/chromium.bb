@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
-#include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/common/instant_types.h"
 #include "extensions/common/constants.h"
 #include "ui/gfx/rect.h"
@@ -105,8 +104,7 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
         DoPreconnect(*match);
       omnibox_edit_model_->OnCurrentMatchChanged();
 
-      if (chrome::IsInstantExtendedAPIEnabled() &&
-          omnibox_edit_model_->GetInstantController()) {
+      if (chrome::IsInstantExtendedAPIEnabled()) {
         InstantSuggestion prefetch_suggestion;
         const AutocompleteMatch* match_to_prefetch = GetMatchToPrefetch(result);
         if (match_to_prefetch) {
@@ -117,8 +115,7 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
         // Send the prefetch suggestion unconditionally to the InstantPage. If
         // there is no suggestion to prefetch, we need to send a blank query to
         // clear the prefetched results.
-        omnibox_edit_model_->GetInstantController()->SetSuggestionToPrefetch(
-            prefetch_suggestion);
+        omnibox_edit_model_->SetSuggestionToPrefetch(prefetch_suggestion);
       }
     } else {
       InvalidateCurrentMatch();

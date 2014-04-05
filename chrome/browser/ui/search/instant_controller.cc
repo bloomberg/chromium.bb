@@ -18,7 +18,6 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
-#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -83,26 +82,6 @@ InstantController::InstantController(BrowserInstantController* browser)
 }
 
 InstantController::~InstantController() {
-}
-
-void InstantController::SetSuggestionToPrefetch(
-    const InstantSuggestion& suggestion) {
-  if (instant_tab_ &&
-      SearchTabHelper::FromWebContents(instant_tab_->contents())->
-          IsSearchResultsPage()) {
-    if (chrome::ShouldPrefetchSearchResultsOnSRP() ||
-        chrome::ShouldPrefetchSearchResults()) {
-      SearchTabHelper::FromWebContents(instant_tab_->contents())->
-          SetSuggestionToPrefetch(suggestion);
-    }
-  } else {
-    if (chrome::ShouldPrefetchSearchResults()) {
-      InstantSearchPrerenderer* prerenderer =
-          InstantSearchPrerenderer::GetForProfile(profile());
-      if (prerenderer)
-        prerenderer->Prerender(suggestion);
-    }
-  }
 }
 
 bool InstantController::SubmitQuery(const base::string16& search_terms) {

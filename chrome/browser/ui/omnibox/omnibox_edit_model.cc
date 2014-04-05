@@ -1248,8 +1248,9 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
   OnPopupDataChanged(inline_autocompletion, NULL, keyword, is_keyword_hint);
 }
 
-InstantController* OmniboxEditModel::GetInstantController() const {
-  return controller_->GetInstant();
+void OmniboxEditModel::SetSuggestionToPrefetch(
+    const InstantSuggestion& suggestion) {
+  delegate_->SetSuggestionToPrefetch(suggestion);
 }
 
 // static

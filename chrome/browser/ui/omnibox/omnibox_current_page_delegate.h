@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CURRENT_PAGE_DELEGATE_H_
 
 #include "base/basictypes.h"
+#include "chrome/common/instant_types.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -64,6 +65,9 @@ class OmniboxCurrentPageDelegate {
 
   // Performs prerendering for |match|.
   virtual void DoPrerender(const AutocompleteMatch& match) = 0;
+
+  // Sends the current SearchProvider suggestion to the Instant page if any.
+  virtual void SetSuggestionToPrefetch(const InstantSuggestion& suggestion) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CURRENT_PAGE_DELEGATE_H_

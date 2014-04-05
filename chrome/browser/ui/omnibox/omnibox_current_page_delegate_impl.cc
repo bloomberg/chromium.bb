@@ -119,3 +119,21 @@ void OmniboxCurrentPageDelegateImpl::DoPrerender(
           web_contents->GetController().GetSessionStorageNamespaceMap(),
           container_bounds.size());
 }
+
+void OmniboxCurrentPageDelegateImpl::SetSuggestionToPrefetch(
+      const InstantSuggestion& suggestion) {
+  content::WebContents* web_contents = controller_->GetWebContents();
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents);
+  if (search_tab_helper->IsSearchResultsPage()) {
+    if (chrome::ShouldPrefetchSearchResultsOnSRP() ||
+        chrome::ShouldPrefetchSearchResults()) {
+      search_tab_helper->SetSuggestionToPrefetch(suggestion);
+    }
+  } else if (chrome::ShouldPrefetchSearchResults()) {
+      InstantSearchPrerenderer* prerenderer =
+          InstantSearchPrerenderer::GetForProfile(profile_);
+      if (prerenderer)
+        prerenderer->Prerender(suggestion);
+  }
+}
