@@ -494,7 +494,7 @@
     },
     {
       'target_name': 'gfx_unittests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'sources': [
         'geometry/box_unittest.cc',
         'geometry/cubic_bezier_unittest.cc',
@@ -538,6 +538,24 @@
          'includes': [ '../../build/jni_generator.gypi' ],
        },
      ],
+    }],
+    # Special target to wrap a gtest_target_type==shared_library
+    # gfx_unittests into an android apk for execution.
+    # See base.gyp for TODO(jrg)s about this strategy.
+    ['OS == "android" and gtest_target_type == "shared_library"', {
+      'targets': [
+        {
+          'target_name': 'gfx_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'gfx_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'gfx_unittests',
+          },
+          'includes': [ '../../build/apk_test.gypi' ],
+        },
+      ],
     }],
   ],
 }

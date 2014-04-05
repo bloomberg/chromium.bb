@@ -775,6 +775,7 @@
                 '../sql/sql.gyp:sql_unittests_apk',
                 '../sync/sync.gyp:sync_unit_tests_apk',
                 '../ui/events/events.gyp:events_unittests_apk',
+                '../ui/gfx/gfx.gyp:gfx_unittests_apk',
                 '../ui/ui_unittests.gyp:ui_unittests_apk',
                 '../android_webview/android_webview.gyp:android_webview_test_apk',
                 '../chrome/chrome.gyp:chrome_shell_test_apk',
