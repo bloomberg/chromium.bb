@@ -8,11 +8,12 @@
 #include <signal.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/uio.h>
 #include <unistd.h>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "build/build_config.h"
+#include "mojo/embedder/platform_channel_utils_posix.h"
 #include "mojo/embedder/scoped_platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,15 +71,18 @@ TEST_F(PlatformChannelPairPosixTest, NoSigPipe) {
   if (result == -1)
     PLOG(WARNING) << "read (expected 0 for EOF)";
 
-  // However, |write()|/|send()| should fail outright.
-  // On Mac, |SIGPIPE| needs to be suppressed on the socket itself and we can
-  // use |write()|/|writev()|. On Linux, we have to suppress it by using
-  // |send()|/|sendmsg()| with |MSG_NOSIGNAL|.
-#if defined(OS_MACOSX)
-  result = write(server_handle.get().fd, kHello, sizeof(kHello));
-#else
-  result = send(server_handle.get().fd, kHello, sizeof(kHello), MSG_NOSIGNAL);
-#endif
+  // Test our replacement for |write()|/|send()|.
+  result = PlatformChannelWrite(server_handle.get(), kHello, sizeof(kHello));
+  EXPECT_EQ(-1, result);
+  if (errno != EPIPE)
+    PLOG(WARNING) << "write (expected EPIPE)";
+
+  // Test our replacement for |writev()|/|sendv()|.
+  struct iovec iov[2] = {
+    { const_cast<char*>(kHello), sizeof(kHello) },
+    { const_cast<char*>(kHello), sizeof(kHello) }
+  };
+  result = PlatformChannelWritev(server_handle.get(), iov, 2);
   EXPECT_EQ(-1, result);
   if (errno != EPIPE)
     PLOG(WARNING) << "write (expected EPIPE)";

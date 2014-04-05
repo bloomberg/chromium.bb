@@ -5,8 +5,6 @@
 #include "mojo/system/raw_channel.h"
 
 #include <errno.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
 
@@ -22,7 +20,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/lock.h"
-#include "build/build_config.h"
+#include "mojo/embedder/platform_channel_utils_posix.h"
 #include "mojo/embedder/platform_handle.h"
 
 namespace mojo {
@@ -145,8 +143,8 @@ RawChannel::IOResult RawChannelPosix::WriteNoLock(size_t* bytes_written) {
 
   ssize_t write_result = -1;
   if (buffers.size() == 1) {
-    write_result = HANDLE_EINTR(
-        write(fd_.get().fd, buffers[0].addr, buffers[0].size));
+    write_result = embedder::PlatformChannelWrite(fd_.get(), buffers[0].addr,
+                                                  buffers[0].size);
   } else {
     // Note that using |writev()|/|sendmsg()| is measurably slower than using
     // |write()| -- at least in a microbenchmark -- but much faster than using
@@ -166,20 +164,8 @@ RawChannel::IOResult RawChannelPosix::WriteNoLock(size_t* bytes_written) {
       iov[i].iov_len = buffers[i].size;
     }
 
-    // On Mac, we can use |writev()|, which is slightly faster, but on Linux we
-    // need to use |sendmsg()|. See comment above.
-    // TODO(vtl): We should have an actual test that |SIGPIPE| is suppressed for
-    // |RawChannelPosix|, since it has to be suppressed at "use" time on Linux.
-    // Or maybe I should abstract out |write()|/|send()| and
-    // |writev()|/|sendmsg()|. crbug.com/356195
-#if defined(OS_MACOSX)
-    write_result = HANDLE_EINTR(writev(fd_.get().fd, iov, buffer_count));
-#else
-    struct msghdr msg = {};
-    msg.msg_iov = iov;
-    msg.msg_iovlen = buffer_count;
-    write_result = HANDLE_EINTR(sendmsg(fd_.get().fd, &msg, MSG_NOSIGNAL));
-#endif
+    write_result = embedder::PlatformChannelWritev(fd_.get(), iov,
+                                                   buffer_count);
   }
 
   if (write_result >= 0) {
