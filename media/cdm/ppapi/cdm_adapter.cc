@@ -307,20 +307,11 @@ void CdmAdapter::LoadSession(uint32_t session_id,
     return;
   }
 
-  if (!cdm_->LoadSession(
-           session_id, web_session_id.data(), web_session_id.size()))
-    OnSessionError(session_id, cdm::kUnknownError, 0);
+  cdm_->LoadSession(session_id, web_session_id.data(), web_session_id.size());
 }
 
 void CdmAdapter::UpdateSession(uint32_t session_id,
                                pp::VarArrayBuffer response) {
-  // TODO(jrummell): In EME WD, AddKey() can only be called on valid sessions.
-  // We should be able to DCHECK(cdm_) when addressing http://crbug.com/249976.
-  if (!cdm_) {
-    OnSessionError(session_id, cdm::kUnknownError, 0);
-    return;
-  }
-
   const uint8_t* response_ptr = static_cast<const uint8_t*>(response.Map());
   const uint32_t response_size = response.ByteLength();
 
@@ -328,39 +319,11 @@ void CdmAdapter::UpdateSession(uint32_t session_id,
     OnSessionError(session_id, cdm::kUnknownError, 0);
     return;
   }
-  CdmWrapper::Result result =
-      cdm_->UpdateSession(session_id, response_ptr, response_size);
-  switch (result) {
-    case CdmWrapper::NO_ACTION:
-      break;
-    case CdmWrapper::CALL_KEY_ADDED:
-      OnSessionReady(session_id);
-      break;
-    case CdmWrapper::CALL_KEY_ERROR:
-      OnSessionError(session_id, cdm::kUnknownError, 0);
-      break;
-  }
+  cdm_->UpdateSession(session_id, response_ptr, response_size);
 }
 
 void CdmAdapter::ReleaseSession(uint32_t session_id) {
-  // TODO(jrummell): In EME WD, AddKey() can only be called on valid sessions.
-  // We should be able to DCHECK(cdm_) when addressing http://crbug.com/249976.
-  if (!cdm_) {
-    OnSessionError(session_id, cdm::kUnknownError, 0);
-    return;
-  }
-
-  CdmWrapper::Result result = cdm_->ReleaseSession(session_id);
-  switch (result) {
-    case CdmWrapper::NO_ACTION:
-      break;
-    case CdmWrapper::CALL_KEY_ADDED:
-      PP_NOTREACHED();
-      break;
-    case CdmWrapper::CALL_KEY_ERROR:
-      OnSessionError(session_id, cdm::kUnknownError, 0);
-      break;
-  }
+  cdm_->ReleaseSession(session_id);
 }
 
 // Note: In the following decryption/decoding related functions, errors are NOT
@@ -559,37 +522,6 @@ void CdmAdapter::TimerExpired(int32_t result, void* context) {
 
 double CdmAdapter::GetCurrentWallTimeInSeconds() {
   return pp::Module::Get()->core()->GetTime();
-}
-
-void CdmAdapter::SendKeyMessage(
-    const char* session_id, uint32_t session_id_length,
-    const char* message, uint32_t message_length,
-    const char* default_url, uint32_t default_url_length) {
-  PP_DCHECK(!key_system_.empty());
-
-  std::string session_id_str(session_id, session_id_length);
-  PP_DCHECK(!session_id_str.empty());
-  uint32_t session_reference_id = cdm_->LookupSessionId(session_id_str);
-
-  OnSessionCreated(session_reference_id, session_id, session_id_length);
-  OnSessionMessage(session_reference_id,
-                   message, message_length,
-                   default_url, default_url_length);
-}
-
-void CdmAdapter::SendKeyError(const char* session_id,
-                              uint32_t session_id_length,
-                              cdm::MediaKeyError error_code,
-                              uint32_t system_code) {
-  std::string session_id_str(session_id, session_id_length);
-  uint32_t session_reference_id = cdm_->LookupSessionId(session_id_str);
-  OnSessionError(session_reference_id, error_code, system_code);
-}
-
-void CdmAdapter::GetPrivateData(int32_t* instance,
-                                GetPrivateInterface* get_interface) {
-  *instance = pp_instance();
-  *get_interface = pp::Module::Get()->get_browser_interface();
 }
 
 void CdmAdapter::OnSessionCreated(uint32_t session_id,
@@ -999,24 +931,24 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
   if (!host_interface_version || !user_data)
     return NULL;
 
-  COMPILE_ASSERT(cdm::ContentDecryptionModule::Host::kVersion ==
-                 cdm::ContentDecryptionModule_4::Host::kVersion,
-                 update_code_below);
+  COMPILE_ASSERT(
+      cdm::ContentDecryptionModule::Host::kVersion == cdm::Host_4::kVersion,
+      update_code_below);
 
   // Ensure IsSupportedCdmHostVersion matches implementation of this function.
   // Always update this DCHECK when updating this function.
   // If this check fails, update this function and DCHECK or update
   // IsSupportedCdmHostVersion.
+
   PP_DCHECK(
       // Future version is not supported.
-      !IsSupportedCdmHostVersion(
-          cdm::ContentDecryptionModule::Host::kVersion + 1) &&
+      !IsSupportedCdmHostVersion(cdm::Host_4::kVersion + 1) &&
       // Current version is supported.
-      IsSupportedCdmHostVersion(cdm::ContentDecryptionModule::Host::kVersion) &&
-      // Include all previous supported versions here.
-      IsSupportedCdmHostVersion(cdm::Host_1::kVersion) &&
+      IsSupportedCdmHostVersion(cdm::Host_4::kVersion) &&
+      // Include all previous supported versions (if any) here.
+      // No supported previous versions.
       // One older than the oldest supported version is not supported.
-      !IsSupportedCdmHostVersion(cdm::Host_1::kVersion - 1));
+      !IsSupportedCdmHostVersion(cdm::Host_4::kVersion - 1));
   PP_DCHECK(IsSupportedCdmHostVersion(host_interface_version));
 
   CdmAdapter* cdm_adapter = static_cast<CdmAdapter*>(user_data);
@@ -1024,10 +956,6 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
   switch (host_interface_version) {
     case cdm::Host_4::kVersion:
       return static_cast<cdm::Host_4*>(cdm_adapter);
-    case cdm::Host_2::kVersion:
-      return static_cast<cdm::Host_2*>(cdm_adapter);
-    case cdm::Host_1::kVersion:
-      return static_cast<cdm::Host_1*>(cdm_adapter);
     default:
       PP_NOTREACHED();
       return NULL;

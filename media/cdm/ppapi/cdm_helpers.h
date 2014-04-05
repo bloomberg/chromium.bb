@@ -189,8 +189,7 @@ class VideoFrameImpl : public cdm::VideoFrame {
   DISALLOW_COPY_AND_ASSIGN(VideoFrameImpl);
 };
 
-class AudioFramesImpl : public cdm::AudioFrames_1,
-                        public cdm::AudioFrames_2 {
+class AudioFramesImpl : public cdm::AudioFrames_2 {
  public:
   AudioFramesImpl() : buffer_(NULL), format_(cdm::kUnknownAudioFormat) {}
   virtual ~AudioFramesImpl() {
