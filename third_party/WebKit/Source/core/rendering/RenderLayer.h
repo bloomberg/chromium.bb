@@ -293,6 +293,7 @@ public:
 
     // Bounding box relative to some ancestor layer. Pass offsetFromRoot if known.
     LayoutRect physicalBoundingBox(const RenderLayer* ancestorLayer, const LayoutPoint* offsetFromRoot = 0) const;
+    LayoutRect physicalBoundingBoxIncludingReflectionAndStackingChildren(const RenderLayer* ancestorLayer, const LayoutPoint& offsetFromRoot) const;
 
     // Bounds used for layer overlap testing in RenderLayerCompositor.
     // FIXME: It's likely this function should use physicalBoundingBox rather than logicalBoundingBox.

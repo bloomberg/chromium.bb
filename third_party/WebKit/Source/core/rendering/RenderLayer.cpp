@@ -2108,7 +2108,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
             ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style->clipPath());
 
             if (!rootRelativeBoundsComputed) {
-                rootRelativeBounds = calculateLayerBounds(paintingInfo.rootLayer, &offsetFromRoot, 0);
+                rootRelativeBounds = physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
                 rootRelativeBoundsComputed = true;
             }
 
@@ -2120,7 +2120,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
             Element* element = document.getElementById(referenceClipPathOperation->fragment());
             if (isSVGClipPathElement(element) && element->renderer()) {
                 if (!rootRelativeBoundsComputed) {
-                    rootRelativeBounds = calculateLayerBounds(paintingInfo.rootLayer, &offsetFromRoot, 0);
+                    rootRelativeBounds = physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
                     rootRelativeBoundsComputed = true;
                 }
 
@@ -2150,7 +2150,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
         filterRepaintRect.move(offsetFromRoot.x(), offsetFromRoot.y());
 
         if (!rootRelativeBoundsComputed)
-            rootRelativeBounds = calculateLayerBounds(paintingInfo.rootLayer, &offsetFromRoot, 0);
+            rootRelativeBounds = physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
 
         if (filterPainter.prepareFilterEffect(this, rootRelativeBounds, paintingInfo.paintDirtyRect, filterRepaintRect)) {
             // Now we know for sure, that the source image will be updated, so we can revert our tracking repaint rect back to zero.
@@ -3418,6 +3418,33 @@ LayoutRect RenderLayer::physicalBoundingBox(const RenderLayer* ancestorLayer, co
         convertToLayerCoords(ancestorLayer, delta);
 
     result.moveBy(delta);
+    return result;
+}
+
+LayoutRect RenderLayer::physicalBoundingBoxIncludingReflectionAndStackingChildren(const RenderLayer* ancestorLayer, const LayoutPoint& offsetFromRoot) const
+{
+    LayoutPoint origin;
+    LayoutRect result = physicalBoundingBox(ancestorLayer, &origin);
+
+    if (m_reflectionInfo && !m_reflectionInfo->reflectionLayer()->hasCompositedLayerMapping())
+        result.unite(m_reflectionInfo->reflectionLayer()->physicalBoundingBox(this));
+
+    ASSERT(m_stackingNode->isStackingContainer() || !m_stackingNode->hasPositiveZOrderList());
+
+    const_cast<RenderLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
+
+#if !ASSERT_DISABLED
+    LayerListMutationDetector mutationChecker(const_cast<RenderLayer*>(this)->stackingNode());
+#endif
+
+    RenderLayerStackingNodeIterator iterator(*m_stackingNode.get(), AllChildren);
+    while (RenderLayerStackingNode* node = iterator.next()) {
+        if (node->layer()->hasCompositedLayerMapping())
+            continue;
+        result.unite(node->layer()->calculateLayerBounds(this));
+    }
+
+    result.moveBy(offsetFromRoot);
     return result;
 }
 
