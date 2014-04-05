@@ -37,6 +37,7 @@ def update_repo(cmd, repo):
         print >>sys.stderr, 'updating %s' % repo
         print >>sys.stderr, ''
 
+    cmd.cd('')
     if cmd.call(['git', 'diff', '--quiet', 'HEAD']):
         print >>sys.stderr, "blink checkout is dirty, exiting"
         sys.exit(1)

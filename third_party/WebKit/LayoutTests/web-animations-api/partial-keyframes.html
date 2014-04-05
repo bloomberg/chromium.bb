@@ -108,7 +108,7 @@ test(function() {
     // Height is missing keyframe at offset: 1
     assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes1); });
     assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes2); });
-}, 'Calling new Animation() with a keyframe that has no offset specified, is followed by other keyframes,\n' +
+}, 'Calling new Animation() with a keyframe that has no offset specified, is followed by other keyframes, ' +
     'and is the last keyframe for a property, should throw a NotSupportedError.');
 
 test(function() {
@@ -126,6 +126,6 @@ test(function() {
     // Height is missing keyframe at offset: 0
     assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes1); });
     assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes2); });
-}, 'Calling new Animation() with a keyframe that has no offset specified, is preceded by other keyframes,\n' +
+}, 'Calling new Animation() with a keyframe that has no offset specified, is preceded by other keyframes, ' +
     'and is the first keyframe for a property, should throw a NotSupportedError.');
 </script>

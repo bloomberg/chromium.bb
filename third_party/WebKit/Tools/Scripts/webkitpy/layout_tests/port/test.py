@@ -147,6 +147,10 @@ def unit_test_list():
             actual_text='This is a testharness.js-based test.\nFAIL: assert fired\n.Harness: the test ran to completion.\n\n', expected_text=None,
               actual_image=None, expected_image=None,
               actual_checksum=None)
+    tests.add('failures/expected/testharness.html',
+            actual_text='CONSOLE LOG: error.\nThis is a testharness.js-based test.\nPASS: things are fine.\n.Harness: the test ran to completion.\n\n', expected_text=None,
+              actual_image=None, expected_image=None,
+              actual_checksum=None)
     tests.add('failures/expected/text.html', actual_text='text_fail-png')
     tests.add('failures/expected/crash_then_text.html')
     tests.add('failures/expected/skip_text.html', actual_text='text diff')

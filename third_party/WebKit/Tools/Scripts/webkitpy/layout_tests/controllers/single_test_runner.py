@@ -262,15 +262,20 @@ class SingleTestRunner(object):
         found_a_pass = False
         text = driver_output.text or ''
         lines = text.strip().splitlines()
-        if not lines or lines[0] != 'This is a testharness.js-based test.':
+        header = 'This is a testharness.js-based test.'
+        footer = 'Harness: the test ran to completion.'
+        if not lines or not header in lines:
             return False, []
-        if lines[-1] != 'Harness: the test ran to completion.':
+        if not footer in lines:
             return True, [test_failures.FailureTestHarnessAssertion()]
 
         for line in lines:
             if line.startswith('FAIL') or line.startswith('TIMEOUT'):
                 return True, [test_failures.FailureTestHarnessAssertion()]
 
+            # Fail the test if there is any unrecognized output.
+            if line != header and line != footer and not line.startswith('PASS'):
+                return True, [test_failures.FailureTestHarnessAssertion()]
         return True, []
 
     def _is_render_tree(self, text):
