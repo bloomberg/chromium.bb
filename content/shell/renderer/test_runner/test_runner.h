@@ -37,6 +37,7 @@ class WebTestProxyBase;
 
 namespace content {
 
+class InvokeCallbackTask;
 class NotificationPresenter;
 class TestPageOverlay;
 
@@ -59,6 +60,8 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
   bool TestIsRunning() const { return test_is_running_; }
 
   bool UseMockTheme() const { return use_mock_theme_; }
+
+  void InvokeCallback(scoped_ptr<InvokeCallbackTask> callback);
 
   // WebTestRunner implementation.
   virtual bool shouldGeneratePixelResults() OVERRIDE;
@@ -503,6 +506,8 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
   void RemoveWebPageOverlay();
 
   void Display();
+  void DisplayAsync();
+  void DisplayAsyncThen(v8::Handle<v8::Function> callback);
 
   ///////////////////////////////////////////////////////////////////////////
   // Internal helpers

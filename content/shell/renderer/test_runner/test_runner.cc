@@ -250,6 +250,8 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void AddWebPageOverlay();
   void RemoveWebPageOverlay();
   void Display();
+  void DisplayAsync();
+  void DisplayAsyncThen(v8::Handle<v8::Function> callback);
 
   bool GlobalFlag();
   void SetGlobalFlag(bool value);
@@ -480,6 +482,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("removeWebPageOverlay",
                  &TestRunnerBindings::RemoveWebPageOverlay)
       .SetMethod("display", &TestRunnerBindings::Display)
+      .SetMethod("displayAsync", &TestRunnerBindings::DisplayAsync)
+      .SetMethod("displayAsyncThen", &TestRunnerBindings::DisplayAsyncThen)
 
       // Properties.
       .SetProperty("globalFlag", &TestRunnerBindings::GlobalFlag,
@@ -1234,6 +1238,16 @@ void TestRunnerBindings::Display() {
     runner_->Display();
 }
 
+void TestRunnerBindings::DisplayAsync() {
+  if (runner_)
+    runner_->DisplayAsync();
+}
+
+void TestRunnerBindings::DisplayAsyncThen(v8::Handle<v8::Function> callback) {
+  if (runner_)
+    runner_->DisplayAsyncThen(callback);
+}
+
 bool TestRunnerBindings::GlobalFlag() {
   if (runner_)
     return runner_->global_flag_;
@@ -1490,6 +1504,10 @@ void TestRunner::Reset() {
 
 void TestRunner::SetTestIsRunning(bool running) {
   test_is_running_ = running;
+}
+
+void TestRunner::InvokeCallback(scoped_ptr<InvokeCallbackTask> task) {
+  delegate_->postTask(task.release());
 }
 
 bool TestRunner::shouldDumpEditingCallbacks() const {
@@ -2567,7 +2585,19 @@ void TestRunner::RemoveWebPageOverlay() {
 }
 
 void TestRunner::Display() {
-  proxy_->display();
+  proxy_->display(base::Closure());
+}
+
+void TestRunner::DisplayAsync() {
+  proxy_->displayAsyncThen(base::Closure());
+}
+
+void TestRunner::DisplayAsyncThen(v8::Handle<v8::Function> callback) {
+  scoped_ptr<InvokeCallbackTask> task(
+      new InvokeCallbackTask(this, callback));
+  proxy_->displayAsyncThen(base::Bind(&TestRunner::InvokeCallback,
+                                      base::Unretained(this),
+                                      base::Passed(&task)));
 }
 
 void TestRunner::LocationChangeDone() {

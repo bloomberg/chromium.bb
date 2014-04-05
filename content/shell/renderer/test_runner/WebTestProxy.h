@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -114,7 +115,9 @@ public:
     void didCloseChooser();
     bool isChooserShown();
 
-    void display();
+    void display(base::Closure callback);
+    void displayAsyncThen(base::Closure callback);
+
     void discardBackingStore();
 
     blink::WebMIDIClientMock* midiClientMock();

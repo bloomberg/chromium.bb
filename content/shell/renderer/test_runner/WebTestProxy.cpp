@@ -65,6 +65,20 @@ private:
     CallbackMethodType m_callback;
 };
 
+class ClosureTask : public WebMethodTask<WebTestProxyBase> {
+ public:
+  ClosureTask(WebTestProxyBase* object, base::Closure callback)
+      : WebMethodTask<WebTestProxyBase>(object), m_callback(callback) {}
+
+  virtual void runIfValid() OVERRIDE {
+    if (!m_callback.is_null())
+      m_callback.Run();
+  }
+
+ private:
+  base::Closure m_callback;
+};
+
 void printFrameDescription(WebTestDelegate* delegate, WebFrame* frame)
 {
     string name8 = frame->uniqueName().utf8();
@@ -634,12 +648,26 @@ SkCanvas* WebTestProxyBase::canvas()
     return m_canvas.get();
 }
 
-void WebTestProxyBase::display()
+void WebTestProxyBase::display(base::Closure callback)
 {
     const blink::WebSize& size = webWidget()->size();
     WebRect rect(0, 0, size.width, size.height);
     m_paintRect = rect;
     paintInvalidatedRegion();
+
+    if (!callback.is_null())
+        callback.Run();
+}
+
+void WebTestProxyBase::displayAsyncThen(base::Closure callback)
+{
+  // TODO(enne): When compositing, this should invoke a real rAF, paint,
+  // and commit.  For now, just make sure that displayAsync is actually
+  // async so that callers can't depend on synchronous behavior.
+  m_delegate->postTask(new ClosureTask(
+      this,
+      base::Bind(
+          &WebTestProxyBase::display, base::Unretained(this), callback)));
 }
 
 void WebTestProxyBase::discardBackingStore()
