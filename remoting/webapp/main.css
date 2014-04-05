@@ -713,6 +713,7 @@ html.apps-v2.scrollable {
 
 .horizontally-centered {
   display: flex;
+  align-items: center;
 }
 
 .vertically-centered {

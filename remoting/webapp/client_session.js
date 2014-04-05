@@ -151,6 +151,8 @@ remoting.ClientSession = function(accessCode, fetchPin, fetchThirdPartyToken,
       'click', this.callSetScreenMode_, false);
   this.fullScreenButton_.addEventListener(
       'click', this.callToggleFullScreen_, false);
+  document.addEventListener(
+      'webkitfullscreenchange', this.onFullScreenChanged_.bind(this), false);
 };
 
 /**
@@ -187,7 +189,7 @@ remoting.ClientSession.prototype.updateScrollbarVisibility = function() {
     }
   }
 
-  var htmlNode = /** @type {HTMLElement} */ (document.body.parentNode);
+  var htmlNode = /** @type {HTMLElement} */ (document.documentElement);
   if (needsHorizontalScroll) {
     htmlNode.classList.remove('no-horizontal-scroll');
   } else {
@@ -750,7 +752,7 @@ remoting.ClientSession.prototype.setScreenMode_ =
 
   this.updateDimensions();
   if (needsScrollReset) {
-    this.scroll_(0, 0);
+    this.resetScroll_();
   }
 
 }
@@ -1046,7 +1048,7 @@ remoting.ClientSession.prototype.onResize = function() {
 
   // If bump-scrolling is enabled, adjust the plugin margins to fully utilize
   // the new window area.
-  this.scroll_(0, 0);
+  this.resetScroll_();
 
   this.updateScrollbarVisibility();
 };
@@ -1228,20 +1230,24 @@ remoting.ClientSession.prototype.requestPairing = function(clientName, onDone) {
  * @private
  */
 remoting.ClientSession.prototype.toggleFullScreen_ = function() {
-  var htmlNode = /** @type {HTMLElement} */ (document.body.parentNode);
   if (document.webkitIsFullScreen) {
     document.webkitCancelFullScreen();
-    this.enableBumpScroll_(false);
-    htmlNode.classList.remove('full-screen');
   } else {
     document.body.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
-    // Don't enable bump scrolling immediately because it can result in
-    // onMouseMove firing before the webkitIsFullScreen property can be
-    // read safely (crbug.com/132180).
-    window.setTimeout(this.enableBumpScroll_.bind(this, true), 0);
-    htmlNode.classList.add('full-screen');
   }
 };
+
+remoting.ClientSession.prototype.onFullScreenChanged_ = function () {
+  var htmlNode = /** @type {HTMLElement} */ (document.documentElement);
+  var isFullScreen = document.webkitIsFullScreen;
+  this.enableBumpScroll_(isFullScreen);
+  if (isFullScreen) {
+    htmlNode.classList.add('full-screen');
+  } else {
+    htmlNode.classList.remove('full-screen');
+  }
+};
+
 
 /**
  * Updates the options menu to reflect the current scale-to-fit and full-screen
@@ -1289,17 +1295,24 @@ remoting.ClientSession.prototype.scroll_ = function(dx, dy) {
     var result = (curr ? parseFloat(curr) : 0) - delta;
     result = Math.min(0, Math.max(minMargin, result));
     stop.stop = (result == 0 || result == minMargin);
-    return result + "px";
+    return result + 'px';
   };
 
   var stopX = { stop: false };
   style.marginLeft = adjustMargin(style.marginLeft, dx,
-                                  window.innerWidth, plugin.width, stopX);
+                                  window.innerWidth, plugin.clientWidth, stopX);
+
   var stopY = { stop: false };
   style.marginTop = adjustMargin(style.marginTop, dy,
-                                 window.innerHeight, plugin.height, stopY);
+                                window.innerHeight, plugin.clientHeight, stopY);
   return stopX.stop && stopY.stop;
-}
+};
+
+remoting.ClientSession.prototype.resetScroll_ = function() {
+  var plugin = this.plugin_.element();
+  plugin.style.marginTop = '0px';
+  plugin.style.marginLeft = '0px';
+};
 
 /**
  * Enable or disable bump-scrolling. When disabling bump scrolling, also reset
@@ -1308,17 +1321,15 @@ remoting.ClientSession.prototype.scroll_ = function(dx, dy) {
  * @param {boolean} enable True to enable bump-scrolling, false to disable it.
  */
 remoting.ClientSession.prototype.enableBumpScroll_ = function(enable) {
+  var element = /*@type{HTMLElement} */ document.documentElement;
   if (enable) {
     /** @type {null|function(Event):void} */
     this.onMouseMoveRef_ = this.onMouseMove_.bind(this);
-    this.plugin_.element().addEventListener(
-        'mousemove', this.onMouseMoveRef_, false);
+    element.addEventListener('mousemove', this.onMouseMoveRef_, false);
   } else {
-    this.plugin_.element().removeEventListener(
-        'mousemove', this.onMouseMoveRef_, false);
+    element.removeEventListener('mousemove', this.onMouseMoveRef_, false);
     this.onMouseMoveRef_ = null;
-    this.plugin_.element().style.marginLeft = 0;
-    this.plugin_.element().style.marginTop = 0;
+    this.resetScroll_();
   }
 };
 
@@ -1330,11 +1341,6 @@ remoting.ClientSession.prototype.onMouseMove_ = function(event) {
   if (this.bumpScrollTimer_) {
     window.clearTimeout(this.bumpScrollTimer_);
     this.bumpScrollTimer_ = null;
-  }
-  // It's possible to leave content full-screen mode without using the Screen
-  // Options menu, so we disable bump scrolling as soon as we detect this.
-  if (!document.webkitIsFullScreen) {
-    this.enableBumpScroll_(false);
   }
 
   /**
