@@ -28,6 +28,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'incremental',
     'telemetry',
     CONFIG_TYPE_FULL,
+    'full-group',
     CONFIG_TYPE_RELEASE,
     'release-group',
     'release-pgo',
@@ -797,7 +798,7 @@ class _config(dict):
     return cls().add_config(name, *args, **kwargs)
 
   @classmethod
-  def add_group(cls, name, *args):
+  def add_group(cls, name, *args, **kwargs):
     """Create a new group of build configurations.
 
     Args:
@@ -811,7 +812,7 @@ class _config(dict):
       A new _config instance.
     """
     child_configs = [_default.derive(x, grouped=True) for x in args]
-    return args[0].add_config(name, child_configs=child_configs)
+    return args[0].add_config(name, child_configs=child_configs, **kwargs)
 
 _default = _config(**_settings)
 
@@ -1261,24 +1262,51 @@ chromium_info_daisy.add_config('daisy-webrtc-chromium-pfq-informational',
 _arm_full_boards = frozenset([
   'arm-generic',
   'daisy',
+  'daisy_skate',
   'daisy_spring',
+  'nyan',
+  'nyan_big',
+  'nyan_blaze',
+  'peach_pi',
+  'peach_pit',
 ])
 
 _x86_full_boards = frozenset([
   'amd64-generic',
   'butterfly',
-  'parrot',
+  'clapper',
+  'enguarde',
+  'expresso',
+  'falco',
+  'falco_li',
+  'glimmer',
+  'gnawty',
+  'kip',
+  'leon',
   'link',
   'lumpy',
+  'monroe',
+  'panther',
+  'parrot',
+  'parrot_ivb',
+  'peppy',
+  'quawks',
+  'rambi',
+  'squawks',
   'stout',
   'stout32',
   'stumpy',
+  'winky',
+  'wolf',
   'x32-generic',
   'x86-alex',
+  'x86-alex_he',
   'x86-generic',
   'x86-mario',
   'x86-pineview',
   'x86-zgb',
+  'x86-zgb_he',
+  'zako',
 ])
 
 def _AddFullConfigs():
@@ -2162,99 +2190,114 @@ _release.add_config('stumpy_moblab-release',
 
 ### Per-chipset release groups
 
+def _AddGroupConfig(name, base_board, group_boards=(), group_variant_boards=()):
+  """Generate full & release group configs."""
+  for group in ('release', 'full'):
+    configs = []
+
+    all_boards = [base_board] + list(group_boards) + list(group_variant_boards)
+    desc = '%s; Group config (boards: %s)' % (
+        config['%s-%s' % (base_board, group)].description,
+        ', '.join(all_boards))
+
+    for board in all_boards:
+      if board in group_boards:
+        subconfig = _grouped_config
+      elif board in group_variant_boards:
+        subconfig = _grouped_variant_config
+      else:
+        subconfig = {}
+      board_config = '%s-%s' % (board, group)
+      configs.append(config[board_config].derive(subconfig))
+
+    config_name = '%s-%s-group' % (name, group)
+    _config.add_group(config_name, *configs, description=desc)
+
 # pineview chipset boards
-_config.add_group('pineview-release-group',
-  config['x86-mario-release'],
-  config['x86-alex-release'].derive(_grouped_config),
-  config['x86-zgb-release'].derive(_grouped_config),
-  config['x86-alex_he-release'].derive(_grouped_variant_config),
-  config['x86-zgb_he-release'].derive(_grouped_variant_config),
-)
+_AddGroupConfig('pineview', 'x86-mario', (
+    'x86-alex',
+    'x86-zgb',
+), (
+    'x86-alex_he',
+    'x86-zgb_he',
+))
 
 # sandybridge chipset boards
-_config.add_group('sandybridge-release-group',
-  config['lumpy-release'],
-  config['stumpy-release'].derive(_grouped_config),
-  config['parrot-release'].derive(_grouped_config),
-  config['butterfly-release'].derive(_grouped_config)
-)
+_AddGroupConfig('sandybridge', 'lumpy', (
+    'butterfly',
+    'parrot',
+    'stumpy',
+))
 
 # ivybridge chipset boards
-_config.add_group('ivybridge-release-group',
-  config['stout-release'],
-  config['parrot_ivb-release'].derive(_grouped_variant_config),
-)
+_AddGroupConfig('ivybridge', 'stout', (), (
+    'parrot_ivb',
+))
 
 # sandybridge / ivybridge chipset boards
 # TODO(davidjames): Remove this once we've transitioned to separate builders for
 # sandybridge / ivybridge.
-_config.add_group('sandybridge-ivybridge-release-group',
-  config['lumpy-release'],
-  config['stumpy-release'].derive(_grouped_config),
-  config['parrot-release'].derive(_grouped_config),
-  config['butterfly-release'].derive(_grouped_config),
-  config['stout-release'].derive(_grouped_config),
-  config['parrot_ivb-release'].derive(_grouped_variant_config),
-)
+_AddGroupConfig('sandybridge-ivybridge', 'lumpy', (
+    'butterfly',
+    'parrot',
+    'stout',
+    'stumpy',
+), (
+    'parrot_ivb',
+))
 
 # slippy-based haswell boards
 # TODO(davidjames): Combine slippy and beltino into haswell canary, once we've
 # optimized our builders more.
 # slippy itself is deprecated in favor of the below boards, so we don't bother
 # building it.
-_config.add_group('slippy-release-group',
-  config['peppy-release'],
-  config['falco-release'].derive(_grouped_config),
-  config['leon-release'].derive(_grouped_config),
-  config['wolf-release'].derive(_grouped_config),
-  config['falco_li-release'].derive(_grouped_variant_config),
-)
+_AddGroupConfig('slippy', 'peppy', (
+    'falco',
+    'leon',
+    'wolf',
+), (
+    'falco_li',
+))
 
 # beltino-based haswell boards
 # beltino itself is deprecated in favor of the below boards, so we don't bother
 # building it.
-_config.add_group('beltino-release-group',
-  config['panther-release'],
-  config['monroe-release'].derive(_grouped_config),
-  config['zako-release'].derive(_grouped_config),
-)
+_AddGroupConfig('beltino', 'panther', (
+    'monroe',
+    'zako',
+))
 
 # rambi-based boards
-_config.add_group('rambi-a-release-group',
-  config['rambi-release'],
-  config['clapper-release'].derive(_grouped_config),
-  config['enguarde-release'].derive(_grouped_config),
-  config['expresso-release'].derive(_grouped_config),
-  config['glimmer-release'].derive(_grouped_config),
-)
+_AddGroupConfig('rambi-a', 'rambi', (
+    'clapper',
+    'enguarde',
+    'expresso',
+    'glimmer',
+))
 
-_config.add_group('rambi-b-release-group',
-  config['gnawty-release'],
-  config['kip-release'].derive(_grouped_config),
-  config['quawks-release'].derive(_grouped_config),
-  config['squawks-release'].derive(_grouped_config),
-  config['winky-release'].derive(_grouped_config),
-)
+_AddGroupConfig('rambi-b', 'gnawty', (
+    'kip',
+    'quawks',
+    'squawks',
+    'winky',
+))
 
 # daisy-based boards
-_config.add_group('daisy-release-group',
-  config['daisy-release'],
-  config['daisy_spring-release'].derive(_grouped_config),
-  config['daisy_skate-release'].derive(_grouped_config),
-)
+_AddGroupConfig('daisy', 'daisy', (
+    'daisy_spring',
+    'daisy_skate',
+))
 
 # peach-based boards
-_config.add_group('peach-release-group',
-  config['peach_pit-release'],
-  config['peach_pi-release'].derive(_grouped_config),
-)
+_AddGroupConfig('peach', 'peach_pit', (
+    'peach_pi',
+))
 
 # nyan-based boards
-_config.add_group('nyan-release-group',
-  config['nyan-release'],
-  config['nyan_big-release'].derive(_grouped_config),
-  config['nyan_blaze-release'].derive(_grouped_config),
-)
+_AddGroupConfig('nyan', 'nyan', (
+    'nyan_big',
+    'nyan_blaze',
+))
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
 # for these release builders should go here.
