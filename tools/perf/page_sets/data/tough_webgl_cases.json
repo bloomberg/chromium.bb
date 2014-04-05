@@ -1,0 +1,17 @@
+{
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "tough_webgl_cases_000.wpr": [
+            "http://montagestudio.com/demos/eco-homes/", 
+            "http://helloracer.com/racer-s/", 
+            "http://www.khronos.org/registry/webgl/sdk/demos/google/nvidia-vertex-buffer-object/index.html", 
+            "http://www.khronos.org/registry/webgl/sdk/demos/google/san-angeles/index.html", 
+            "http://www.khronos.org/registry/webgl/sdk/demos/google/particles/index.html", 
+            "http://www.khronos.org/registry/webgl/sdk/demos/webkit/Earth.html", 
+            "http://www.khronos.org/registry/webgl/sdk/demos/webkit/ManyPlanetsDeep.html", 
+            "http://webglsamples.googlecode.com/hg/aquarium/aquarium.html", 
+            "http://webglsamples.googlecode.com/hg/blob/blob.html", 
+            "http://webglsamples.googlecode.com/hg/dynamic-cubemap/dynamic-cubemap.html"
+        ]
+    }
+}
