@@ -76,7 +76,9 @@ def _DownloadPrebuilts():
   util.MarkBuildStepStart('Download latest chromedriver')
 
   zip_path = os.path.join(util.MakeTempDir(), 'build.zip')
-  if gsutil_download.DownloadLatestFile(GS_PREBUILTS_URL, 'r', zip_path):
+  if gsutil_download.DownloadLatestFile(GS_PREBUILTS_URL,
+                                        GS_PREBUILTS_URL + '/r',
+                                        zip_path):
     util.MarkBuildStepError()
 
   util.Unzip(zip_path, chrome_paths.GetBuildDir(['host_forwarder']))
