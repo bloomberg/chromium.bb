@@ -11,9 +11,6 @@
 {%- for parameter in method.parameters -%}
 {{parameter.name}}{% if not loop.last %}, {% endif %}
 {%- endfor -%}
-{%- if method.response_parameters != None -%}
-, closure
-{%- endif -%}
 ) {
     var params = new {{interface.name}}_{{method.name}}_Params();
 {%- for parameter in method.parameters %}
@@ -28,21 +25,20 @@
     var message = builder.finish();
     this.receiver_.accept(message);
 {%- else %}
-    var builder = new codec.MessageWithRequestIDBuilder(
-        k{{interface.name}}_{{method.name}}_Name,
-        codec.align({{interface.name}}_{{method.name}}_Params.encodedSize),
-        codec.kMessageExpectsResponse, 0);
-    builder.encodeStruct({{interface.name}}_{{method.name}}_Params, params);
-    var message = builder.finish();
-    this.receiver_.acceptWithResponder(message, { accept: function(message) {
-      var reader = new codec.MessageReader(message);
-      var responseParams =
-          reader.decodeStruct({{interface.name}}_{{method.name}}_ResponseParams);
-      closure(
-{%- for parameter in method.response_parameters -%}
-responseParams.{{parameter.name}}{% if not loop.last %}, {% endif %}
-{%- endfor -%});
-    }});
+    return new Promise(function(resolve, reject) {
+      var builder = new codec.MessageWithRequestIDBuilder(
+          k{{interface.name}}_{{method.name}}_Name,
+          codec.align({{interface.name}}_{{method.name}}_Params.encodedSize),
+          codec.kMessageExpectsResponse, 0);
+      builder.encodeStruct({{interface.name}}_{{method.name}}_Params, params);
+      var message = builder.finish();
+      this.receiver_.acceptWithResponder(message, { accept: function(message) {
+        var reader = new codec.MessageReader(message);
+        var responseParams =
+            reader.decodeStruct({{interface.name}}_{{method.name}}_ResponseParams);
+        resolve(responseParams);
+      }});
+    }.bind(this));
 {%- endif %}
   };
 {%- endfor %}
@@ -79,15 +75,12 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif %}
       var params = reader.decodeStruct({{interface.name}}_{{method.name}}_Params);
       this.{{method.name|stylize_method}}(
 {%- for parameter in method.parameters -%}
-params.{{parameter.name}},
-{%- endfor %} function (
-{%- for parameter in method.response_parameters -%}
-{{parameter.name}}{% if not loop.last %}, {% endif -%}
-{%- endfor -%}) {
+params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
+{%- endfor %}).then(function(response) {
         var responseParams =
             new {{interface.name}}_{{method.name}}_ResponseParams();
 {%-     for parameter in method.response_parameters %}
-        responseParams.{{parameter.name}} = {{parameter.name}};
+        responseParams.{{parameter.name}} = response.{{parameter.name}};
 {%-     endfor %}
         var builder = new codec.MessageWithRequestIDBuilder(
             k{{interface.name}}_{{method.name}}_Name,

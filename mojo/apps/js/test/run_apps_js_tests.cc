@@ -65,7 +65,7 @@ TEST(JSTest, MAYBE_sample_test) {
 #define MAYBE_connection connection
 #endif
 TEST(JSTest, MAYBE_connection) {
-  RunTest("connection_unittests.js", true);
+  RunTest("connection_unittests.js", false);
 }
 
 TEST(JSTest, monotonic_clock) {
