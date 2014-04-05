@@ -60,8 +60,8 @@ class NET_EXPORT TCPClientSocket : public StreamSocket {
                    const CompletionCallback& callback) OVERRIDE;
   virtual int Write(IOBuffer* buf, int buf_len,
                     const CompletionCallback& callback) OVERRIDE;
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE;
-  virtual int SetSendBufferSize(int32 size) OVERRIDE;
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
   virtual bool SetKeepAlive(bool enable, int delay);
   virtual bool SetNoDelay(bool no_delay);

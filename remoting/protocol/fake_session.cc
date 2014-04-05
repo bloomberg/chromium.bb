@@ -136,14 +136,13 @@ void FakeSocket::DoWrite(net::IOBuffer* buf, int buf_len) {
   }
 }
 
-int FakeSocket::SetReceiveBufferSize(int32 size) {
+bool FakeSocket::SetReceiveBufferSize(int32 size) {
   NOTIMPLEMENTED();
-  return net::ERR_NOT_IMPLEMENTED;
+  return false;
 }
-
-int FakeSocket::SetSendBufferSize(int32 size) {
+bool FakeSocket::SetSendBufferSize(int32 size) {
   NOTIMPLEMENTED();
-  return net::ERR_NOT_IMPLEMENTED;
+  return false;
 }
 
 int FakeSocket::Connect(const net::CompletionCallback& callback) {
@@ -173,7 +172,7 @@ int FakeSocket::GetPeerAddress(net::IPEndPoint* address) const {
 
 int FakeSocket::GetLocalAddress(net::IPEndPoint* address) const {
   NOTIMPLEMENTED();
-  return net::ERR_NOT_IMPLEMENTED;
+  return net::ERR_FAILED;
 }
 
 const net::BoundNetLog& FakeSocket::NetLog() const {
@@ -264,14 +263,13 @@ int FakeUdpSocket::Write(net::IOBuffer* buf, int buf_len,
   return buf_len;
 }
 
-int FakeUdpSocket::SetReceiveBufferSize(int32 size) {
+bool FakeUdpSocket::SetReceiveBufferSize(int32 size) {
   NOTIMPLEMENTED();
-  return net::ERR_NOT_IMPLEMENTED;
+  return false;
 }
-
-int FakeUdpSocket::SetSendBufferSize(int32 size) {
+bool FakeUdpSocket::SetSendBufferSize(int32 size) {
   NOTIMPLEMENTED();
-  return net::ERR_NOT_IMPLEMENTED;
+  return false;
 }
 
 FakeSession::FakeSession()

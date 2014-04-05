@@ -412,9 +412,9 @@ bool P2PSocketHostTcpBase::SetOption(P2PSocketOption option, int value) {
   DCHECK_EQ(STATE_OPEN, state_);
   switch (option) {
     case P2P_SOCKET_OPT_RCVBUF:
-      return socket_->SetReceiveBufferSize(value) == net::OK;
+      return socket_->SetReceiveBufferSize(value);
     case P2P_SOCKET_OPT_SNDBUF:
-      return socket_->SetSendBufferSize(value) == net::OK;
+      return socket_->SetSendBufferSize(value);
     case P2P_SOCKET_OPT_DSCP:
       return false;  // For TCP sockets DSCP setting is not available.
     default:

@@ -103,11 +103,11 @@ int FakeSSLClientSocket::Write(net::IOBuffer* buf, int buf_len,
   return transport_socket_->Write(buf, buf_len, callback);
 }
 
-int FakeSSLClientSocket::SetReceiveBufferSize(int32 size) {
+bool FakeSSLClientSocket::SetReceiveBufferSize(int32 size) {
   return transport_socket_->SetReceiveBufferSize(size);
 }
 
-int FakeSSLClientSocket::SetSendBufferSize(int32 size) {
+bool FakeSSLClientSocket::SetSendBufferSize(int32 size) {
   return transport_socket_->SetSendBufferSize(size);
 }
 

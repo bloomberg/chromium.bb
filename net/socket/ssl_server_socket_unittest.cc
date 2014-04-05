@@ -178,12 +178,12 @@ class FakeSocket : public StreamSocket {
     return outgoing_->Write(buf, buf_len, callback);
   }
 
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE {
-    return net::OK;
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE {
+    return true;
   }
 
-  virtual int SetSendBufferSize(int32 size) OVERRIDE {
-    return net::OK;
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE {
+    return true;
   }
 
   virtual int Connect(const CompletionCallback& callback) OVERRIDE {

@@ -116,25 +116,25 @@ class ChannelMultiplexer::MuxSocket : public net::StreamSocket,
   virtual int Write(net::IOBuffer* buffer, int buffer_len,
                     const net::CompletionCallback& callback) OVERRIDE;
 
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE {
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE {
     NOTIMPLEMENTED();
-    return net::ERR_NOT_IMPLEMENTED;
+    return false;
   }
-  virtual int SetSendBufferSize(int32 size) OVERRIDE {
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE {
     NOTIMPLEMENTED();
-    return net::ERR_NOT_IMPLEMENTED;
+    return false;
   }
 
   virtual int Connect(const net::CompletionCallback& callback) OVERRIDE {
     NOTIMPLEMENTED();
-    return net::ERR_NOT_IMPLEMENTED;
+    return net::ERR_FAILED;
   }
   virtual void Disconnect() OVERRIDE {
     NOTIMPLEMENTED();
   }
   virtual bool IsConnected() const OVERRIDE {
     NOTIMPLEMENTED();
-    return false;
+    return true;
   }
   virtual bool IsConnectedAndIdle() const OVERRIDE {
     NOTIMPLEMENTED();
@@ -142,11 +142,11 @@ class ChannelMultiplexer::MuxSocket : public net::StreamSocket,
   }
   virtual int GetPeerAddress(net::IPEndPoint* address) const OVERRIDE {
     NOTIMPLEMENTED();
-    return net::ERR_NOT_IMPLEMENTED;
+    return net::ERR_FAILED;
   }
   virtual int GetLocalAddress(net::IPEndPoint* address) const OVERRIDE {
     NOTIMPLEMENTED();
-    return net::ERR_NOT_IMPLEMENTED;
+    return net::ERR_FAILED;
   }
   virtual const net::BoundNetLog& NetLog() const OVERRIDE {
     NOTIMPLEMENTED();

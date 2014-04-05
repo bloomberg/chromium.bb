@@ -137,14 +137,14 @@ int AndroidUsbSocket::Write(net::IOBuffer* buffer,
   return net::ERR_IO_PENDING;
 }
 
-int AndroidUsbSocket::SetReceiveBufferSize(int32 size) {
+bool AndroidUsbSocket::SetReceiveBufferSize(int32 size) {
   NOTIMPLEMENTED();
-  return net::ERR_NOT_IMPLEMENTED;
+  return false;
 }
 
-int AndroidUsbSocket::SetSendBufferSize(int32 size) {
+bool AndroidUsbSocket::SetSendBufferSize(int32 size) {
   NOTIMPLEMENTED();
-  return net::ERR_NOT_IMPLEMENTED;
+  return false;
 }
 
 int AndroidUsbSocket::Connect(const net::CompletionCallback& callback) {
@@ -180,7 +180,7 @@ int AndroidUsbSocket::GetPeerAddress(net::IPEndPoint* address) const {
 
 int AndroidUsbSocket::GetLocalAddress(net::IPEndPoint* address) const {
   NOTIMPLEMENTED();
-  return net::ERR_NOT_IMPLEMENTED;
+  return net::ERR_FAILED;
 }
 
 const net::BoundNetLog& AndroidUsbSocket::NetLog() const {

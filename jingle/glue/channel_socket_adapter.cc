@@ -99,16 +99,14 @@ int TransportChannelSocketAdapter::Write(
   return result;
 }
 
-int TransportChannelSocketAdapter::SetReceiveBufferSize(int32 size) {
+bool TransportChannelSocketAdapter::SetReceiveBufferSize(int32 size) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
-  return (channel_->SetOption(talk_base::Socket::OPT_RCVBUF, size) == 0) ?
-      net::OK : net::ERR_SOCKET_SET_RECEIVE_BUFFER_SIZE_ERROR;
+  return channel_->SetOption(talk_base::Socket::OPT_RCVBUF, size) == 0;
 }
 
-int TransportChannelSocketAdapter::SetSendBufferSize(int32 size) {
+bool TransportChannelSocketAdapter::SetSendBufferSize(int32 size) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
-  return (channel_->SetOption(talk_base::Socket::OPT_SNDBUF, size) == 0) ?
-      net::OK : net::ERR_SOCKET_SET_SEND_BUFFER_SIZE_ERROR;
+  return channel_->SetOption(talk_base::Socket::OPT_SNDBUF, size) == 0;
 }
 
 void TransportChannelSocketAdapter::Close(int error_code) {

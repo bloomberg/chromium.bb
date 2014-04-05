@@ -713,12 +713,12 @@ MockClientSocket::MockClientSocket(const BoundNetLog& net_log)
   peer_addr_ = IPEndPoint(ip, 0);
 }
 
-int MockClientSocket::SetReceiveBufferSize(int32 size) {
-  return OK;
+bool MockClientSocket::SetReceiveBufferSize(int32 size) {
+  return true;
 }
 
-int MockClientSocket::SetSendBufferSize(int32 size) {
-  return OK;
+bool MockClientSocket::SetSendBufferSize(int32 size) {
+  return true;
 }
 
 void MockClientSocket::Disconnect() {
@@ -1162,12 +1162,12 @@ int DeterministicMockUDPClientSocket::Read(
   return helper_.Read(buf, buf_len, callback);
 }
 
-int DeterministicMockUDPClientSocket::SetReceiveBufferSize(int32 size) {
-  return OK;
+bool DeterministicMockUDPClientSocket::SetReceiveBufferSize(int32 size) {
+  return true;
 }
 
-int DeterministicMockUDPClientSocket::SetSendBufferSize(int32 size) {
-  return OK;
+bool DeterministicMockUDPClientSocket::SetSendBufferSize(int32 size) {
+  return true;
 }
 
 void DeterministicMockUDPClientSocket::Close() {
@@ -1508,12 +1508,12 @@ int MockUDPClientSocket::Write(IOBuffer* buf, int buf_len,
   return write_result.result;
 }
 
-int MockUDPClientSocket::SetReceiveBufferSize(int32 size) {
-  return OK;
+bool MockUDPClientSocket::SetReceiveBufferSize(int32 size) {
+  return true;
 }
 
-int MockUDPClientSocket::SetSendBufferSize(int32 size) {
-  return OK;
+bool MockUDPClientSocket::SetSendBufferSize(int32 size) {
+  return true;
 }
 
 void MockUDPClientSocket::Close() {

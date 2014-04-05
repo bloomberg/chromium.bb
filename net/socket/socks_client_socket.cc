@@ -211,11 +211,11 @@ int SOCKSClientSocket::Write(IOBuffer* buf, int buf_len,
   return rv;
 }
 
-int SOCKSClientSocket::SetReceiveBufferSize(int32 size) {
+bool SOCKSClientSocket::SetReceiveBufferSize(int32 size) {
   return transport_->socket()->SetReceiveBufferSize(size);
 }
 
-int SOCKSClientSocket::SetSendBufferSize(int32 size) {
+bool SOCKSClientSocket::SetSendBufferSize(int32 size) {
   return transport_->socket()->SetSendBufferSize(size);
 }
 

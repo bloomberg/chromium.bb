@@ -101,10 +101,10 @@ class WrappedStreamSocket : public StreamSocket {
                     const CompletionCallback& callback) OVERRIDE {
     return transport_->Write(buf, buf_len, callback);
   }
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE {
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE {
     return transport_->SetReceiveBufferSize(size);
   }
-  virtual int SetSendBufferSize(int32 size) OVERRIDE {
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE {
     return transport_->SetSendBufferSize(size);
   }
 

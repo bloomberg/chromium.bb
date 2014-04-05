@@ -722,18 +722,16 @@ int QuicStreamFactory::CreateSession(
   // does not consume "too much" memory.  If we see bursty packet loss, we may
   // revisit this setting and test for its impact.
   const int32 kSocketBufferSize(TcpReceiver::kReceiveWindowTCP);
-  rv = socket->SetReceiveBufferSize(kSocketBufferSize);
-  if (rv != OK) {
+  if (!socket->SetReceiveBufferSize(kSocketBufferSize)) {
     HistogramCreateSessionFailure(CREATION_ERROR_SETTING_RECEIVE_BUFFER);
-    return rv;
+    return ERR_SOCKET_SET_RECEIVE_BUFFER_SIZE_ERROR;
   }
   // Set a buffer large enough to contain the initial CWND's worth of packet
   // to work around the problem with CHLO packets being sent out with the
   // wrong encryption level, when the send buffer is full.
-  rv = socket->SetSendBufferSize(kMaxPacketSize * 20);
-  if (rv != OK) {
+  if (!socket->SetSendBufferSize(kMaxPacketSize * 20)) {
     HistogramCreateSessionFailure(CREATION_ERROR_SETTING_SEND_BUFFER);
-    return rv;
+    return ERR_SOCKET_SET_SEND_BUFFER_SIZE_ERROR;
   }
 
   scoped_ptr<QuicDefaultPacketWriter> writer(

@@ -675,8 +675,8 @@ class MockClientSocket : public SSLClientSocket {
   virtual int Write(IOBuffer* buf,
                     int buf_len,
                     const CompletionCallback& callback) = 0;
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE;
-  virtual int SetSendBufferSize(int32 size) OVERRIDE;
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
   // StreamSocket implementation.
   virtual int Connect(const CompletionCallback& callback) = 0;
@@ -850,8 +850,8 @@ class DeterministicMockUDPClientSocket
   virtual int Write(IOBuffer* buf,
                     int buf_len,
                     const CompletionCallback& callback) OVERRIDE;
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE;
-  virtual int SetSendBufferSize(int32 size) OVERRIDE;
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
   // DatagramSocket implementation.
   virtual void Close() OVERRIDE;
@@ -992,8 +992,8 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   virtual int Write(IOBuffer* buf,
                     int buf_len,
                     const CompletionCallback& callback) OVERRIDE;
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE;
-  virtual int SetSendBufferSize(int32 size) OVERRIDE;
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
   // DatagramSocket implementation.
   virtual void Close() OVERRIDE;

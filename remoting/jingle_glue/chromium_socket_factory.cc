@@ -225,13 +225,13 @@ int UdpPacketSocket::SetOption(talk_base::Socket::Option option, int value) {
       return -1;
 
     case talk_base::Socket::OPT_RCVBUF: {
-      int net_error = socket_->SetReceiveBufferSize(value);
-      return (net_error == net::OK) ? 0 : -1;
+      bool success = socket_->SetReceiveBufferSize(value);
+      return success ? 0 : -1;
     }
 
     case talk_base::Socket::OPT_SNDBUF: {
-      int net_error = socket_->SetSendBufferSize(value);
-      return (net_error == net::OK) ? 0 : -1;
+      bool success = socket_->SetSendBufferSize(value);
+      return success ? 0 : -1;
     }
 
     case talk_base::Socket::OPT_NODELAY:

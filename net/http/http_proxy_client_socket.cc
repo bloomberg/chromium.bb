@@ -237,11 +237,11 @@ int HttpProxyClientSocket::Write(IOBuffer* buf, int buf_len,
   return transport_->socket()->Write(buf, buf_len, callback);
 }
 
-int HttpProxyClientSocket::SetReceiveBufferSize(int32 size) {
+bool HttpProxyClientSocket::SetReceiveBufferSize(int32 size) {
   return transport_->socket()->SetReceiveBufferSize(size);
 }
 
-int HttpProxyClientSocket::SetSendBufferSize(int32 size) {
+bool HttpProxyClientSocket::SetSendBufferSize(int32 size) {
   return transport_->socket()->SetSendBufferSize(size);
 }
 

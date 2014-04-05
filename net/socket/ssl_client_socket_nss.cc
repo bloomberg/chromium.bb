@@ -3084,11 +3084,11 @@ int SSLClientSocketNSS::Write(IOBuffer* buf, int buf_len,
   return rv;
 }
 
-int SSLClientSocketNSS::SetReceiveBufferSize(int32 size) {
+bool SSLClientSocketNSS::SetReceiveBufferSize(int32 size) {
   return transport_->socket()->SetReceiveBufferSize(size);
 }
 
-int SSLClientSocketNSS::SetSendBufferSize(int32 size) {
+bool SSLClientSocketNSS::SetSendBufferSize(int32 size) {
   return transport_->socket()->SetSendBufferSize(size);
 }
 

@@ -37,11 +37,11 @@ int UDPServerSocket::SendTo(IOBuffer* buf,
   return socket_.SendTo(buf, buf_len, address, callback);
 }
 
-int UDPServerSocket::SetReceiveBufferSize(int32 size) {
+bool UDPServerSocket::SetReceiveBufferSize(int32 size) {
   return socket_.SetReceiveBufferSize(size);
 }
 
-int UDPServerSocket::SetSendBufferSize(int32 size) {
+bool UDPServerSocket::SetSendBufferSize(int32 size) {
   return socket_.SetSendBufferSize(size);
 }
 

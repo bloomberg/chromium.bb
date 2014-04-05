@@ -94,12 +94,12 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
     return buf_len;
   }
 
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE {
-    return net::OK;
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE {
+    return true;
   }
 
-  virtual int SetSendBufferSize(int32 size) OVERRIDE {
-    return net::OK;
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE {
+    return true;
   }
 
   void ReceivePacket(const net::IPEndPoint& address, std::vector<char> data) {

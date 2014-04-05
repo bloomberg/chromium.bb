@@ -59,11 +59,11 @@ int BufferedWriteStreamSocket::Write(IOBuffer* buf, int buf_len,
   return buf_len;
 }
 
-int BufferedWriteStreamSocket::SetReceiveBufferSize(int32 size) {
+bool BufferedWriteStreamSocket::SetReceiveBufferSize(int32 size) {
   return wrapped_socket_->SetReceiveBufferSize(size);
 }
 
-int BufferedWriteStreamSocket::SetSendBufferSize(int32 size) {
+bool BufferedWriteStreamSocket::SetSendBufferSize(int32 size) {
   return wrapped_socket_->SetSendBufferSize(size);
 }
 

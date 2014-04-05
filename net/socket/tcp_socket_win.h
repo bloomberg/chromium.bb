@@ -63,8 +63,8 @@ class NET_EXPORT TCPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // - SetKeepAlive(true, 45).
   void SetDefaultOptionsForClient();
   int SetExclusiveAddrUse();
-  int SetReceiveBufferSize(int32 size);
-  int SetSendBufferSize(int32 size);
+  bool SetReceiveBufferSize(int32 size);
+  bool SetSendBufferSize(int32 size);
   bool SetKeepAlive(bool enable, int delay);
   bool SetNoDelay(bool no_delay);
 

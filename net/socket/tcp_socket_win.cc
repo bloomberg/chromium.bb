@@ -28,20 +28,18 @@ namespace {
 
 const int kTCPKeepAliveSeconds = 45;
 
-int SetSocketReceiveBufferSize(SOCKET socket, int32 size) {
+bool SetSocketReceiveBufferSize(SOCKET socket, int32 size) {
   int rv = setsockopt(socket, SOL_SOCKET, SO_RCVBUF,
                       reinterpret_cast<const char*>(&size), sizeof(size));
-  int net_error = (rv == 0) ? OK : MapSystemError(WSAGetLastError());
-  DCHECK(!rv) << "Could not set socket receive buffer size: " << net_error;
-  return net_error;
+  DCHECK(!rv) << "Could not set socket receive buffer size: " << GetLastError();
+  return rv == 0;
 }
 
-int SetSocketSendBufferSize(SOCKET socket, int32 size) {
+bool SetSocketSendBufferSize(SOCKET socket, int32 size) {
   int rv = setsockopt(socket, SOL_SOCKET, SO_SNDBUF,
                       reinterpret_cast<const char*>(&size), sizeof(size));
-  int net_error = (rv == 0) ? OK : MapSystemError(WSAGetLastError());
-  DCHECK(!rv) << "Could not set socket send buffer size: " << net_error;
-  return net_error;
+  DCHECK(!rv) << "Could not set socket send buffer size: " << GetLastError();
+  return rv == 0;
 }
 
 // Disable Nagle.
@@ -601,12 +599,12 @@ int TCPSocketWin::SetExclusiveAddrUse() {
   return OK;
 }
 
-int TCPSocketWin::SetReceiveBufferSize(int32 size) {
+bool TCPSocketWin::SetReceiveBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
   return SetSocketReceiveBufferSize(socket_, size);
 }
 
-int TCPSocketWin::SetSendBufferSize(int32 size) {
+bool TCPSocketWin::SetSendBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
   return SetSocketSendBufferSize(socket_, size);
 }

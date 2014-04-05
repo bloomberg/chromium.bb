@@ -501,18 +501,22 @@ int TCPSocketLibevent::SetAddressReuse(bool allow) {
   return OK;
 }
 
-int TCPSocketLibevent::SetReceiveBufferSize(int32 size) {
+bool TCPSocketLibevent::SetReceiveBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
   int rv = setsockopt(socket_, SOL_SOCKET, SO_RCVBUF,
-                      reinterpret_cast<const char*>(&size), sizeof(size));
-  return (rv == 0) ? OK : MapSystemError(errno);
+      reinterpret_cast<const char*>(&size),
+      sizeof(size));
+  DCHECK(!rv) << "Could not set socket receive buffer size: " << errno;
+  return rv == 0;
 }
 
-int TCPSocketLibevent::SetSendBufferSize(int32 size) {
+bool TCPSocketLibevent::SetSendBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
   int rv = setsockopt(socket_, SOL_SOCKET, SO_SNDBUF,
-                      reinterpret_cast<const char*>(&size), sizeof(size));
-  return (rv == 0) ? OK : MapSystemError(errno);
+      reinterpret_cast<const char*>(&size),
+      sizeof(size));
+  DCHECK(!rv) << "Could not set socket send buffer size: " << errno;
+  return rv == 0;
 }
 
 bool TCPSocketLibevent::SetKeepAlive(bool enable, int delay) {

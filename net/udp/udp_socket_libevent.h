@@ -94,10 +94,10 @@ class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
              const CompletionCallback& callback);
 
   // Set the receive buffer size (in bytes) for the socket.
-  int SetReceiveBufferSize(int32 size);
+  bool SetReceiveBufferSize(int32 size);
 
   // Set the send buffer size (in bytes) for the socket.
-  int SetSendBufferSize(int32 size);
+  bool SetSendBufferSize(int32 size);
 
   // Returns true if the socket is already connected or bound.
   bool is_connected() const { return socket_ != kInvalidSocket; }

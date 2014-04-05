@@ -183,11 +183,11 @@ int SOCKS5ClientSocket::Write(IOBuffer* buf, int buf_len,
   return rv;
 }
 
-int SOCKS5ClientSocket::SetReceiveBufferSize(int32 size) {
+bool SOCKS5ClientSocket::SetReceiveBufferSize(int32 size) {
   return transport_->socket()->SetReceiveBufferSize(size);
 }
 
-int SOCKS5ClientSocket::SetSendBufferSize(int32 size) {
+bool SOCKS5ClientSocket::SetSendBufferSize(int32 size) {
   return transport_->socket()->SetSendBufferSize(size);
 }
 

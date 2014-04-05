@@ -43,11 +43,11 @@ class TestUDPClientSocket : public DatagramClientSocket {
     NOTIMPLEMENTED();
     return OK;
   }
-  virtual int SetReceiveBufferSize(int32) OVERRIDE {
-    return OK;
+  virtual bool SetReceiveBufferSize(int32) OVERRIDE {
+    return true;
   }
-  virtual int SetSendBufferSize(int32) OVERRIDE {
-    return OK;
+  virtual bool SetSendBufferSize(int32) OVERRIDE {
+    return true;
   }
 
   virtual void Close() OVERRIDE {}

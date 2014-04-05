@@ -145,8 +145,8 @@ class MockClientSocket : public StreamSocket {
     was_used_to_convey_data_ = true;
     return len;
   }
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE { return OK; }
-  virtual int SetSendBufferSize(int32 size) OVERRIDE { return OK; }
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE { return true; }
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE { return true; }
 
   // StreamSocket implementation.
   virtual int Connect(const CompletionCallback& callback) OVERRIDE {

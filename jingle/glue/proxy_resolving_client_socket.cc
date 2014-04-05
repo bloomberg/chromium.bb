@@ -107,18 +107,18 @@ int ProxyResolvingClientSocket::Write(
   return net::ERR_SOCKET_NOT_CONNECTED;
 }
 
-int ProxyResolvingClientSocket::SetReceiveBufferSize(int32 size) {
+bool ProxyResolvingClientSocket::SetReceiveBufferSize(int32 size) {
   if (transport_.get() && transport_->socket())
     return transport_->socket()->SetReceiveBufferSize(size);
   NOTREACHED();
-  return net::ERR_SOCKET_NOT_CONNECTED;
+  return false;
 }
 
-int ProxyResolvingClientSocket::SetSendBufferSize(int32 size) {
+bool ProxyResolvingClientSocket::SetSendBufferSize(int32 size) {
   if (transport_.get() && transport_->socket())
     return transport_->socket()->SetSendBufferSize(size);
   NOTREACHED();
-  return net::ERR_SOCKET_NOT_CONNECTED;
+  return false;
 }
 
 int ProxyResolvingClientSocket::Connect(

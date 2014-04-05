@@ -12892,9 +12892,6 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.SocketReceiveBufferUnchangeable" units="Bytes">
-  <obsolete>
-    Replaced by Net.SocketUnchangeableReceiveBuffer 3/31/2014.
-  </obsolete>
   <owner>jar@chromium.org</owner>
   <summary>
     The size of a socket's receive buffer when the attempt to change it via
@@ -12964,14 +12961,6 @@ other types of suffix sets.
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The counts of the type of sockets returned by the socket pools.
-  </summary>
-</histogram>
-
-<histogram name="Net.SocketUnchangeableReceiveBuffer" units="Bytes">
-  <owner>jar@chromium.org</owner>
-  <summary>
-    The size of a socket's receive buffer when the attempt to change it via
-    setsockopt failed.
   </summary>
 </histogram>
 

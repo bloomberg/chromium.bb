@@ -102,8 +102,8 @@ class SSLClientSocketNSS : public SSLClientSocket {
   virtual int Write(IOBuffer* buf,
                     int buf_len,
                     const CompletionCallback& callback) OVERRIDE;
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE;
-  virtual int SetSendBufferSize(int32 size) OVERRIDE;
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE;
   virtual ServerBoundCertService* GetServerBoundCertService() const OVERRIDE;
 
  protected:

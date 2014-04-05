@@ -142,13 +142,13 @@ class FakeSocket : public net::Socket {
     return buf_len;
   }
 
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE {
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE {
     NOTIMPLEMENTED();
-    return net::ERR_NOT_IMPLEMENTED;
+    return false;
   }
-  virtual int SetSendBufferSize(int32 size) OVERRIDE {
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE {
     NOTIMPLEMENTED();
-    return net::ERR_NOT_IMPLEMENTED;
+    return false;
   }
 
  private:

@@ -32,8 +32,8 @@ class NET_EXPORT_PRIVATE UDPClientSocket : public DatagramClientSocket {
   virtual void Close() OVERRIDE;
   virtual int GetPeerAddress(IPEndPoint* address) const OVERRIDE;
   virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE;
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE;
-  virtual int SetSendBufferSize(int32 size) OVERRIDE;
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE;
   virtual const BoundNetLog& NetLog() const OVERRIDE;
 
  private:

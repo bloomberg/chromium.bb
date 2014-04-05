@@ -56,12 +56,10 @@ class NET_EXPORT DatagramServerSocket : public DatagramSocket {
                      const CompletionCallback& callback) = 0;
 
   // Set the receive buffer size (in bytes) for the socket.
-  // Returns a net error code.
-  virtual int SetReceiveBufferSize(int32 size) = 0;
+  virtual bool SetReceiveBufferSize(int32 size) = 0;
 
   // Set the send buffer size (in bytes) for the socket.
-  // Returns a net error code.
-  virtual int SetSendBufferSize(int32 size) = 0;
+  virtual bool SetSendBufferSize(int32 size) = 0;
 
   // Allow the socket to share the local address to which the socket will
   // be bound with other processes. Should be called before Listen().
