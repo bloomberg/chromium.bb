@@ -40,7 +40,7 @@ void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* 
         RenderLayer::AncestorDependentProperties properties;
 
         if (!layer->isRootLayer()) {
-            properties.clippedAbsoluteBoundingBox = enclosingIntRect(m_geometryMap.absoluteRect(layer->overlapBounds()));
+            properties.clippedAbsoluteBoundingBox = enclosingIntRect(m_geometryMap.absoluteRect(layer->boundingBoxForCompositingOverlapTest()));
             // FIXME: Setting the absBounds to 1x1 instead of 0x0 makes very little sense,
             // but removing this code will make JSGameBench sad.
             // See https://codereview.chromium.org/13912020/

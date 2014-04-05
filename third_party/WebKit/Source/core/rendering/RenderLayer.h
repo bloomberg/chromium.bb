@@ -280,31 +280,22 @@ public:
     // Pass offsetFromRoot if known.
     bool intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const RenderLayer* rootLayer, const LayoutPoint* offsetFromRoot = 0) const;
 
-    enum CalculateLayerBoundsFlag {
-        IncludeSelfTransform = 1 << 0,
-        UseLocalClipRectIfPossible = 1 << 1,
-        IncludeLayerFilterOutsets = 1 << 2,
-        ExcludeHiddenDescendants = 1 << 3,
-        IncludeCompositedDescendants = 1 << 4,
-        PretendLayerHasOwnBacking = 1 << 5,
-        DefaultCalculateLayerBoundsFlags =  IncludeSelfTransform | UseLocalClipRectIfPossible | IncludeLayerFilterOutsets | ExcludeHiddenDescendants
-    };
-    typedef unsigned CalculateLayerBoundsFlags;
-
     // Bounding box relative to some ancestor layer. Pass offsetFromRoot if known.
     LayoutRect physicalBoundingBox(const RenderLayer* ancestorLayer, const LayoutPoint* offsetFromRoot = 0) const;
     LayoutRect physicalBoundingBoxIncludingReflectionAndStackingChildren(const RenderLayer* ancestorLayer, const LayoutPoint& offsetFromRoot) const;
 
-    // Bounds used for layer overlap testing in RenderLayerCompositor.
     // FIXME: It's likely this function should use physicalBoundingBox rather than logicalBoundingBox.
-    LayoutRect overlapBounds() const { return overlapBoundsIncludeChildren() ? calculateLayerBounds(this) : logicalBoundingBox(); }
+    LayoutRect boundingBoxForCompositingOverlapTest() const { return overlapBoundsIncludeChildren() ? boundingBoxForCompositing(this) : logicalBoundingBox(); }
 
     // If true, this layer's children are included in its bounds for overlap testing.
     // We can't rely on the children's positions if this layer has a filter that could have moved the children's pixels around.
     bool overlapBoundsIncludeChildren() const { return hasFilter() && renderer()->style()->filter().hasFilterThatMovesPixels(); }
 
-    // Can pass offsetFromRoot if known.
-    LayoutRect calculateLayerBounds(const RenderLayer* ancestorLayer, const LayoutPoint* offsetFromRoot = 0, CalculateLayerBoundsFlags = DefaultCalculateLayerBoundsFlags) const;
+    enum CalculateBoundsOptions {
+        ApplyBoundsChickenEggHacks,
+        DoNotApplyBoundsChickenEggHacks,
+    };
+    LayoutRect boundingBoxForCompositing(const RenderLayer* ancestorLayer, CalculateBoundsOptions = DoNotApplyBoundsChickenEggHacks) const;
 
     // WARNING: This method returns the offset for the parent as this is what updateLayerPositions expects.
     LayoutPoint computeOffsetFromRoot(bool& hasLayerOffset) const;

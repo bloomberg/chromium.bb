@@ -3441,65 +3441,47 @@ LayoutRect RenderLayer::physicalBoundingBoxIncludingReflectionAndStackingChildre
     while (RenderLayerStackingNode* node = iterator.next()) {
         if (node->layer()->hasCompositedLayerMapping())
             continue;
-        result.unite(node->layer()->calculateLayerBounds(this));
+        // FIXME: Can we call physicalBoundingBoxIncludingReflectionAndStackingChildren instead of boundingBoxForCompositing?
+        result.unite(node->layer()->boundingBoxForCompositing(this));
     }
 
     result.moveBy(offsetFromRoot);
     return result;
 }
 
-LayoutRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, const LayoutPoint* offsetFromRoot, CalculateLayerBoundsFlags flags) const
+LayoutRect RenderLayer::boundingBoxForCompositing(const RenderLayer* ancestorLayer, CalculateBoundsOptions options) const
 {
     if (!isSelfPaintingLayer())
         return LayoutRect();
 
     // FIXME: This could be improved to do a check like hasVisibleNonCompositingDescendantLayers() (bug 92580).
-    if ((flags & ExcludeHiddenDescendants) && this != ancestorLayer && !hasVisibleContent() && !hasVisibleDescendant())
+    if (this != ancestorLayer && !hasVisibleContent() && !hasVisibleDescendant())
         return LayoutRect();
 
-    RenderLayerModelObject* renderer = this->renderer();
+    // The root layer is always just the size of the document.
+    if (isRootLayer())
+        return m_renderer->view()->unscaledDocumentRect();
 
-    if (isRootLayer()) {
-        // The root layer is always just the size of the document.
-        return renderer->view()->unscaledDocumentRect();
+    const bool shouldIncludeTransform = paintsWithTransform(PaintBehaviorNormal) || (options == ApplyBoundsChickenEggHacks && transform() && this == ancestorLayer);
+
+    LayoutRect localClipRect = clipper().localClipRect();
+    if (localClipRect != PaintInfo::infiniteRect()) {
+        if (shouldIncludeTransform)
+            localClipRect = transform()->mapRect(localClipRect);
+
+        LayoutPoint delta;
+        convertToLayerCoords(ancestorLayer, delta);
+        localClipRect.moveBy(delta);
+        return localClipRect;
     }
 
-    LayoutRect boundingBoxRect = logicalBoundingBox();
-
-    if (renderer->isBox())
-        toRenderBox(renderer)->flipForWritingMode(boundingBoxRect);
-    else
-        renderer->containingBlock()->flipForWritingMode(boundingBoxRect);
-
-    LayoutRect unionBounds = boundingBoxRect;
-
-    bool shouldIncludeTransform = paintsWithTransform(PaintBehaviorNormal) || (transform() && flags & PretendLayerHasOwnBacking);
-
-    if (flags & UseLocalClipRectIfPossible) {
-        LayoutRect localClipRect = clipper().localClipRect();
-        if (localClipRect != PaintInfo::infiniteRect()) {
-            if ((flags & IncludeSelfTransform) && shouldIncludeTransform)
-                localClipRect = transform()->mapRect(localClipRect);
-
-            LayoutPoint ancestorRelOffset;
-            convertToLayerCoords(ancestorLayer, ancestorRelOffset);
-            localClipRect.moveBy(ancestorRelOffset);
-            return localClipRect;
-        }
-    }
-
-    // FIXME: should probably just pass 'flags' down to descendants.
-    CalculateLayerBoundsFlags descendantFlags = DefaultCalculateLayerBoundsFlags | (flags & IncludeCompositedDescendants);
+    LayoutPoint origin;
+    LayoutRect result = physicalBoundingBox(ancestorLayer, &origin);
 
     const_cast<RenderLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 
-    if (m_reflectionInfo) {
-        RenderLayer* reflectionLayer = m_reflectionInfo->reflectionLayer();
-        if (!reflectionLayer->hasCompositedLayerMapping()) {
-            LayoutRect childUnionBounds = reflectionLayer->calculateLayerBounds(this, 0, descendantFlags);
-            unionBounds.unite(childUnionBounds);
-        }
-    }
+    if (m_reflectionInfo && !m_reflectionInfo->reflectionLayer()->hasCompositedLayerMapping())
+        result.unite(m_reflectionInfo->reflectionLayer()->boundingBoxForCompositing(this));
 
     ASSERT(m_stackingNode->isStackingContainer() || !m_stackingNode->hasPositiveZOrderList());
 
@@ -3507,37 +3489,25 @@ LayoutRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, c
     LayerListMutationDetector mutationChecker(const_cast<RenderLayer*>(this)->stackingNode());
 #endif
 
-    // FIXME: Descendants that are composited should not necessarily be skipped, if they don't paint into their own
-    // separate backing. Instead, they ought to contribute to the bounds of the layer we're trying to compute.
-    // This applies to all z-order lists below.
     RenderLayerStackingNodeIterator iterator(*m_stackingNode.get(), AllChildren);
     while (RenderLayerStackingNode* node = iterator.next()) {
-        if (flags & IncludeCompositedDescendants || !node->layer()->hasCompositedLayerMapping()) {
-            LayoutRect childUnionBounds = node->layer()->calculateLayerBounds(this, 0, descendantFlags);
-            unionBounds.unite(childUnionBounds);
-        }
+        if (node->layer()->hasCompositedLayerMapping() && options != ApplyBoundsChickenEggHacks)
+            continue;
+        result.unite(node->layer()->boundingBoxForCompositing(this, options));
     }
 
     // FIXME: We can optimize the size of the composited layers, by not enlarging
     // filtered areas with the outsets if we know that the filter is going to render in hardware.
     // https://bugs.webkit.org/show_bug.cgi?id=81239
-    if (flags & IncludeLayerFilterOutsets)
-        renderer->style()->filterOutsets().expandRect(unionBounds);
+    m_renderer->style()->filterOutsets().expandRect(result);
 
-    if ((flags & IncludeSelfTransform) && shouldIncludeTransform) {
-        TransformationMatrix* affineTrans = transform();
-        boundingBoxRect = affineTrans->mapRect(boundingBoxRect);
-        unionBounds = affineTrans->mapRect(unionBounds);
-    }
+    if (shouldIncludeTransform)
+        result = transform()->mapRect(result);
 
-    LayoutPoint ancestorRelOffset;
-    if (offsetFromRoot)
-        ancestorRelOffset = *offsetFromRoot;
-    else
-        convertToLayerCoords(ancestorLayer, ancestorRelOffset);
-    unionBounds.moveBy(ancestorRelOffset);
-
-    return unionBounds;
+    LayoutPoint delta;
+    convertToLayerCoords(ancestorLayer, delta);
+    result.moveBy(delta);
+    return result;
 }
 
 CompositingState RenderLayer::compositingState() const
