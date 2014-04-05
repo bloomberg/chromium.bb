@@ -37,7 +37,7 @@ class SafePicasaAlbumTableReader : public content::UtilityProcessHostClient {
       ParserCallback;
 
   // This class takes ownership of |album_table_files| and will close them.
-  explicit SafePicasaAlbumTableReader(const AlbumTableFiles& album_table_files);
+  explicit SafePicasaAlbumTableReader(AlbumTableFiles album_table_files);
 
   void Start(const ParserCallback& callback);
 
@@ -72,7 +72,7 @@ class SafePicasaAlbumTableReader : public content::UtilityProcessHostClient {
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  const AlbumTableFiles album_table_files_;
+  AlbumTableFiles album_table_files_;
 
   // Only accessed on the IO thread.
   base::WeakPtr<content::UtilityProcessHost> utility_process_host_;

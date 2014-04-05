@@ -7,6 +7,7 @@
 #include <cstring>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -26,16 +27,16 @@ PmpColumnReader::PmpColumnReader()
 
 PmpColumnReader::~PmpColumnReader() {}
 
-bool PmpColumnReader::ReadFile(base::PlatformFile file,
+bool PmpColumnReader::ReadFile(base::File* file,
                                const PmpFieldType expected_type) {
   DCHECK(!data_.get());
   base::ThreadRestrictions::AssertIOAllowed();
 
-  if (file == base::kInvalidPlatformFileValue)
+  if (!file->IsValid())
     return false;
 
-  base::PlatformFileInfo info;
-  if (!base::GetPlatformFileInfo(file, &info))
+  base::File::Info info;
+  if (!file->GetInfo(&info))
     return false;
   length_ = info.size;
 
@@ -48,7 +49,7 @@ bool PmpColumnReader::ReadFile(base::PlatformFile file,
 
   DCHECK(length_ < kint32max);  // ReadFile expects an int.
 
-  bool success = base::ReadPlatformFile(file, 0, data_begin, length_) &&
+  bool success = file->Read(0, data_begin, length_) &&
                  ParseData(expected_type);
 
   // If any of the reading or parsing fails, prevent Read* calls.

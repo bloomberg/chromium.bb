@@ -57,7 +57,7 @@ TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
                   filename_vector, name_vector, token_vector, uid_vector);
 
   AlbumTableFiles album_table_files(temp_dir.path());
-  PicasaAlbumTableReader reader(album_table_files);
+  PicasaAlbumTableReader reader(album_table_files.Pass());
 
   ASSERT_TRUE(reader.Init());
 

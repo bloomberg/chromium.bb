@@ -16,8 +16,9 @@ using content::BrowserThread;
 namespace picasa {
 
 SafePicasaAlbumTableReader::SafePicasaAlbumTableReader(
-    const AlbumTableFiles& album_table_files)
-    : album_table_files_(album_table_files), parser_state_(INITIAL_STATE) {
+    AlbumTableFiles album_table_files)
+    : album_table_files_(album_table_files.Pass()),
+      parser_state_(INITIAL_STATE) {
   // TODO(tommycli): Add DCHECK to make sure |album_table_files| are all
   // opened read-only once security adds ability to check PlatformFiles.
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
@@ -30,13 +31,13 @@ void SafePicasaAlbumTableReader::Start(const ParserCallback& callback) {
   callback_ = callback;
 
   // Don't bother spawning process if any of the files are invalid.
-  if (album_table_files_.indicator_file == base::kInvalidPlatformFileValue ||
-      album_table_files_.category_file == base::kInvalidPlatformFileValue ||
-      album_table_files_.date_file == base::kInvalidPlatformFileValue ||
-      album_table_files_.filename_file == base::kInvalidPlatformFileValue ||
-      album_table_files_.name_file == base::kInvalidPlatformFileValue ||
-      album_table_files_.token_file == base::kInvalidPlatformFileValue ||
-      album_table_files_.uid_file == base::kInvalidPlatformFileValue) {
+  if (!album_table_files_.indicator_file.IsValid() ||
+      !album_table_files_.category_file.IsValid() ||
+      !album_table_files_.date_file.IsValid() ||
+      !album_table_files_.filename_file.IsValid() ||
+      !album_table_files_.name_file.IsValid() ||
+      !album_table_files_.token_file.IsValid() ||
+      !album_table_files_.uid_file.IsValid()) {
     MediaFileSystemBackend::MediaTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(callback_,
@@ -78,34 +79,27 @@ void SafePicasaAlbumTableReader::OnProcessStarted() {
     DLOG(ERROR) << "Child process handle is null";
   }
   AlbumTableFilesForTransit files_for_transit;
-  files_for_transit.indicator_file = IPC::GetFileHandleForProcess(
-      album_table_files_.indicator_file,
-      utility_process_host_->GetData().handle,
-      true /* close_source_handle */);
-  files_for_transit.category_file = IPC::GetFileHandleForProcess(
-      album_table_files_.category_file,
-      utility_process_host_->GetData().handle,
-      true /* close_source_handle */);
-  files_for_transit.date_file = IPC::GetFileHandleForProcess(
-      album_table_files_.date_file,
-      utility_process_host_->GetData().handle,
-      true /* close_source_handle */);
-  files_for_transit.filename_file = IPC::GetFileHandleForProcess(
-      album_table_files_.filename_file,
-      utility_process_host_->GetData().handle,
-      true /* close_source_handle */);
-  files_for_transit.name_file = IPC::GetFileHandleForProcess(
-      album_table_files_.name_file,
-      utility_process_host_->GetData().handle,
-      true /* close_source_handle */);
-  files_for_transit.token_file = IPC::GetFileHandleForProcess(
-      album_table_files_.token_file,
-      utility_process_host_->GetData().handle,
-      true /* close_source_handle */);
-  files_for_transit.uid_file = IPC::GetFileHandleForProcess(
-      album_table_files_.uid_file,
-      utility_process_host_->GetData().handle,
-      true /* close_source_handle */);
+  files_for_transit.indicator_file = IPC::TakeFileHandleForProcess(
+      album_table_files_.indicator_file.Pass(),
+      utility_process_host_->GetData().handle);
+  files_for_transit.category_file = IPC::TakeFileHandleForProcess(
+      album_table_files_.category_file.Pass(),
+      utility_process_host_->GetData().handle);
+  files_for_transit.date_file = IPC::TakeFileHandleForProcess(
+      album_table_files_.date_file.Pass(),
+      utility_process_host_->GetData().handle);
+  files_for_transit.filename_file = IPC::TakeFileHandleForProcess(
+      album_table_files_.filename_file.Pass(),
+      utility_process_host_->GetData().handle);
+  files_for_transit.name_file = IPC::TakeFileHandleForProcess(
+      album_table_files_.name_file.Pass(),
+      utility_process_host_->GetData().handle);
+  files_for_transit.token_file = IPC::TakeFileHandleForProcess(
+      album_table_files_.token_file.Pass(),
+      utility_process_host_->GetData().handle);
+  files_for_transit.uid_file = IPC::TakeFileHandleForProcess(
+      album_table_files_.uid_file.Pass(),
+      utility_process_host_->GetData().handle);
   utility_process_host_->Send(new ChromeUtilityMsg_ParsePicasaPMPDatabase(
       files_for_transit));
   parser_state_ = STARTED_PARSING_STATE;

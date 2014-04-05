@@ -11,23 +11,16 @@ namespace picasa {
 
 namespace {
 
-base::PlatformFile OpenPlatformFile(const base::FilePath& directory_path,
-                                    const std::string& suffix) {
+base::File OpenFile(const base::FilePath& directory_path,
+                    const std::string& suffix) {
   base::FilePath path = directory_path.Append(base::FilePath::FromUTF8Unsafe(
       std::string(kPicasaAlbumTableName) + "_" + suffix));
-  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
-  return base::CreatePlatformFile(path, flags, NULL, NULL);
+  return base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
 }
 
-base::PlatformFile OpenColumnPlatformFile(const base::FilePath& directory_path,
-                                          const std::string& column_name) {
-  return OpenPlatformFile(directory_path, column_name + "." + kPmpExtension);
-}
-
-void ClosePlatformFile(base::PlatformFile* platform_file) {
-  DCHECK(platform_file);
-  if (base::ClosePlatformFile(*platform_file))
-    *platform_file = base::kInvalidPlatformFileValue;
+base::File OpenColumnFile(const base::FilePath& directory_path,
+                          const std::string& column_name) {
+  return OpenFile(directory_path, column_name + "." + kPmpExtension);
 }
 
 }  // namespace
@@ -43,7 +36,8 @@ const uint32 kAlbumCategoryAlbum = 0;
 const uint32 kAlbumCategoryFolder = 2;
 const uint32 kAlbumCategoryInvalid = 0xffff;  // Sentinel value.
 
-AlbumInfo::AlbumInfo() {}
+AlbumInfo::AlbumInfo() {
+}
 
 AlbumInfo::AlbumInfo(const std::string& name, const base::Time& timestamp,
                      const std::string& uid, const base::FilePath& path)
@@ -53,26 +47,46 @@ AlbumInfo::AlbumInfo(const std::string& name, const base::Time& timestamp,
       path(path) {
 }
 
-AlbumInfo::~AlbumInfo() {}
+AlbumInfo::~AlbumInfo() {
+}
 
-AlbumTableFiles::AlbumTableFiles()
-    : indicator_file(base::kInvalidPlatformFileValue),
-      category_file(base::kInvalidPlatformFileValue),
-      date_file(base::kInvalidPlatformFileValue),
-      filename_file(base::kInvalidPlatformFileValue),
-      name_file(base::kInvalidPlatformFileValue),
-      token_file(base::kInvalidPlatformFileValue),
-      uid_file(base::kInvalidPlatformFileValue) {
+AlbumTableFiles::AlbumTableFiles() {
 }
 
 AlbumTableFiles::AlbumTableFiles(const base::FilePath& directory_path)
-    : indicator_file(OpenPlatformFile(directory_path, "0")),
-      category_file(OpenColumnPlatformFile(directory_path, "category")),
-      date_file(OpenColumnPlatformFile(directory_path, "date")),
-      filename_file(OpenColumnPlatformFile(directory_path, "filename")),
-      name_file(OpenColumnPlatformFile(directory_path, "name")),
-      token_file(OpenColumnPlatformFile(directory_path, "token")),
-      uid_file(OpenColumnPlatformFile(directory_path, "uid")) {
+    : indicator_file(OpenFile(directory_path, "0")),
+      category_file(OpenColumnFile(directory_path, "category")),
+      date_file(OpenColumnFile(directory_path, "date")),
+      filename_file(OpenColumnFile(directory_path, "filename")),
+      name_file(OpenColumnFile(directory_path, "name")),
+      token_file(OpenColumnFile(directory_path, "token")),
+      uid_file(OpenColumnFile(directory_path, "uid")) {
+}
+
+AlbumTableFiles::~AlbumTableFiles() {
+}
+
+AlbumTableFiles::AlbumTableFiles(RValue other)
+    : indicator_file(other.object->indicator_file.Pass()),
+      category_file(other.object->category_file.Pass()),
+      date_file(other.object->date_file.Pass()),
+      filename_file(other.object->filename_file.Pass()),
+      name_file(other.object->name_file.Pass()),
+      token_file(other.object->token_file.Pass()),
+      uid_file(other.object->uid_file.Pass()) {
+}
+
+AlbumTableFiles& AlbumTableFiles::operator=(RValue other) {
+  if (this != other.object) {
+    indicator_file = other.object->indicator_file.Pass();
+    category_file = other.object->category_file.Pass();
+    date_file = other.object->date_file.Pass();
+    filename_file = other.object->filename_file.Pass();
+    name_file = other.object->name_file.Pass();
+    token_file = other.object->token_file.Pass();
+    uid_file = other.object->uid_file.Pass();
+  }
+  return *this;
 }
 
 AlbumTableFilesForTransit::AlbumTableFilesForTransit()
@@ -83,16 +97,6 @@ AlbumTableFilesForTransit::AlbumTableFilesForTransit()
       name_file(IPC::InvalidPlatformFileForTransit()),
       token_file(IPC::InvalidPlatformFileForTransit()),
       uid_file(IPC::InvalidPlatformFileForTransit()) {
-}
-
-void CloseAlbumTableFiles(AlbumTableFiles* table_files) {
-  ClosePlatformFile(&(table_files->indicator_file));
-  ClosePlatformFile(&(table_files->category_file));
-  ClosePlatformFile(&(table_files->date_file));
-  ClosePlatformFile(&(table_files->filename_file));
-  ClosePlatformFile(&(table_files->name_file));
-  ClosePlatformFile(&(table_files->token_file));
-  ClosePlatformFile(&(table_files->uid_file));
 }
 
 }  // namespace picasa

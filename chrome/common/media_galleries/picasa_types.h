@@ -9,8 +9,9 @@
 #include <set>
 #include <string>
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/platform_file.h"
+#include "base/move.h"
 #include "ipc/ipc_platform_file.h"
 
 namespace picasa {
@@ -54,18 +55,25 @@ struct AlbumInfo {
 };
 
 struct AlbumTableFiles {
+  MOVE_ONLY_TYPE_FOR_CPP_03(AlbumTableFiles, RValue)
+ public:
   AlbumTableFiles();
   explicit AlbumTableFiles(const base::FilePath& directory_path);
+  ~AlbumTableFiles();
+
+  // C++03 move emulation of this type.
+  AlbumTableFiles(RValue other);
+  AlbumTableFiles& operator=(RValue other);
 
   // Special empty file used to confirm existence of table.
-  base::PlatformFile indicator_file;
+  base::File indicator_file;
 
-  base::PlatformFile category_file;
-  base::PlatformFile date_file;
-  base::PlatformFile filename_file;
-  base::PlatformFile name_file;
-  base::PlatformFile token_file;
-  base::PlatformFile uid_file;
+  base::File category_file;
+  base::File date_file;
+  base::File filename_file;
+  base::File name_file;
+  base::File token_file;
+  base::File uid_file;
 };
 
 // A mirror of AlbumTableFiles but for transit.
@@ -89,8 +97,6 @@ struct FolderINIContents {
     return folder_path < that.folder_path;
   }
 };
-
-void CloseAlbumTableFiles(AlbumTableFiles* table_files);
 
 }  // namespace picasa
 

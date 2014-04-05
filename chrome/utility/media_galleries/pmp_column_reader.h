@@ -10,10 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "chrome/common/media_galleries/pmp_constants.h"
 
 namespace base {
+class File;
 class FilePath;
 }
 
@@ -27,7 +27,7 @@ class PmpColumnReader {
 
   // Returns true if read successfully.
   // |rows_read| is undefined if returns false.
-  bool ReadFile(base::PlatformFile file, const PmpFieldType expected_type);
+  bool ReadFile(base::File* file, const PmpFieldType expected_type);
 
   // These functions read the value of that |row| into |result|.
   // Functions return false if the column is of the wrong type or the row

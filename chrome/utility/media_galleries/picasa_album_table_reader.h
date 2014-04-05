@@ -15,7 +15,7 @@ namespace picasa {
 class PicasaAlbumTableReader {
  public:
   // This class takes ownership of |table_files| and will close them.
-  explicit PicasaAlbumTableReader(const AlbumTableFiles& table_files);
+  explicit PicasaAlbumTableReader(AlbumTableFiles table_files);
   ~PicasaAlbumTableReader();
 
   bool Init();

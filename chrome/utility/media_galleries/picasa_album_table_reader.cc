@@ -27,14 +27,12 @@ base::Time TimeFromMicrosoftVariantTime(double variant_time) {
 
 }  // namespace
 
-PicasaAlbumTableReader::PicasaAlbumTableReader(
-    const AlbumTableFiles& table_files)
-    : table_files_(table_files),
+PicasaAlbumTableReader::PicasaAlbumTableReader(AlbumTableFiles table_files)
+    : table_files_(table_files.Pass()),
       initialized_(false) {
 }
 
 PicasaAlbumTableReader::~PicasaAlbumTableReader() {
-  CloseAlbumTableFiles(&table_files_);
 }
 
 const std::vector<AlbumInfo>& PicasaAlbumTableReader::folders() const {
@@ -51,17 +49,17 @@ bool PicasaAlbumTableReader::Init() {
   if (initialized_)
     return true;
 
-  if (table_files_.indicator_file == base::kInvalidPlatformFileValue)
+  if (!table_files_.indicator_file.IsValid())
     return false;
 
   PmpColumnReader category_column, date_column, filename_column, name_column,
                   token_column, uid_column;
-  if (!category_column.ReadFile(table_files_.category_file, PMP_TYPE_UINT32) ||
-      !date_column.ReadFile(table_files_.date_file, PMP_TYPE_DOUBLE64) ||
-      !filename_column.ReadFile(table_files_.filename_file, PMP_TYPE_STRING) ||
-      !name_column.ReadFile(table_files_.name_file, PMP_TYPE_STRING) ||
-      !token_column.ReadFile(table_files_.token_file, PMP_TYPE_STRING) ||
-      !uid_column.ReadFile(table_files_.uid_file, PMP_TYPE_STRING)) {
+  if (!category_column.ReadFile(&table_files_.category_file, PMP_TYPE_UINT32) ||
+      !date_column.ReadFile(&table_files_.date_file, PMP_TYPE_DOUBLE64) ||
+      !filename_column.ReadFile(&table_files_.filename_file, PMP_TYPE_STRING) ||
+      !name_column.ReadFile(&table_files_.name_file, PMP_TYPE_STRING) ||
+      !token_column.ReadFile(&table_files_.token_file, PMP_TYPE_STRING) ||
+      !uid_column.ReadFile(&table_files_.uid_file, PMP_TYPE_STRING)) {
     return false;
   }
 
