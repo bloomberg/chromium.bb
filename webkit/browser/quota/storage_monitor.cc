@@ -116,6 +116,7 @@ HostStorageObservers::HostStorageObservers(QuotaManager* quota_manager)
       initialized_(false),
       initializing_(false),
       event_occurred_before_init_(false),
+      usage_deltas_during_init_(0),
       cached_usage_(0),
       cached_quota_(0),
       weak_factory_(this) {
@@ -164,6 +165,17 @@ void HostStorageObservers::NotifyUsageChange(
   // If a storage change occurs before initialization, ensure all observers will
   // receive an event once initialization is complete.
   event_occurred_before_init_ = true;
+
+  // During QuotaManager::GetUsageAndQuotaForWebApps(), cached data is read
+  // synchronously, but other data may be retrieved asynchronously. A usage
+  // change may occur between the function call and callback. These deltas need
+  // to be added to the usage received by GotHostUsageAndQuota() to ensure
+  // |cached_usage_| is correctly initialized.
+  if (initializing_) {
+    usage_deltas_during_init_ += delta;
+    return;
+  }
+
   StartInitialization(filter);
 }
 
@@ -192,7 +204,7 @@ void HostStorageObservers::GotHostUsageAndQuota(
 
   initialized_ = true;
   cached_quota_ = quota;
-  cached_usage_ = usage;
+  cached_usage_ = usage + usage_deltas_during_init_;
   DispatchEvent(filter, event_occurred_before_init_);
 }
 

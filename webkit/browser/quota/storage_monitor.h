@@ -99,6 +99,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE HostStorageObservers {
   bool initialized_;
   bool initializing_;
   bool event_occurred_before_init_;
+  int64 usage_deltas_during_init_;
 
   // Cached accumulated usage and quota for the host.
   int64 cached_usage_;

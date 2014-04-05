@@ -56,20 +56,29 @@ class UsageMockQuotaManager : public QuotaManager {
             special_storage_policy),
         callback_usage_(0),
         callback_quota_(0),
-        callback_status_(kQuotaStatusOk) {
+        callback_status_(kQuotaStatusOk),
+        initialized_(false) {
   }
 
   void SetCallbackParams(int64 usage, int64 quota, QuotaStatusCode status) {
+    initialized_ = true;
     callback_quota_ = quota;
     callback_usage_ = usage;
     callback_status_ = status;
+  }
+
+  void InvokeCallback() {
+    delayed_callback_.Run(callback_status_, callback_usage_, callback_quota_);
   }
 
   virtual void GetUsageAndQuotaForWebApps(
       const GURL& origin,
       StorageType type,
       const GetUsageAndQuotaCallback& callback) OVERRIDE {
-    callback.Run(callback_status_, callback_usage_, callback_quota_);
+    if (initialized_)
+      callback.Run(callback_status_, callback_usage_, callback_quota_);
+    else
+      delayed_callback_ = callback;
   }
 
  protected:
@@ -79,6 +88,8 @@ class UsageMockQuotaManager : public QuotaManager {
   int64 callback_usage_;
   int64 callback_quota_;
   QuotaStatusCode callback_status_;
+  bool initialized_;
+  GetUsageAndQuotaCallback delayed_callback_;
 };
 
 }  // namespace
@@ -427,6 +438,47 @@ TEST_F(HostStorageObserversTest, RecoverFromBadUsageInit) {
   EXPECT_EQ(1, mock_observer.EventCount());
   EXPECT_EQ(expected_event, mock_observer.LastEvent());
   EXPECT_TRUE(host_observers.is_initialized());
+}
+
+// Verify that HostStorageObservers handle initialization of the cached usage
+// and quota correctly.
+TEST_F(HostStorageObserversTest, AsyncInitialization) {
+  StorageObserver::MonitorParams params(kStorageTypePersistent,
+                                        GURL(kDefaultOrigin),
+                                        base::TimeDelta::FromHours(1),
+                                        false);
+  MockObserver mock_observer;
+  HostStorageObservers host_observers(quota_manager_.get());
+  host_observers.AddObserver(&mock_observer, params);
+
+  // Trigger initialization. Leave the mock quota manager uninitialized so that
+  // the callback is not invoked.
+  host_observers.NotifyUsageChange(params.filter, 7645);
+  EXPECT_EQ(0, mock_observer.EventCount());
+  EXPECT_FALSE(host_observers.is_initialized());
+  EXPECT_EQ(NULL, GetPendingEvent(host_observers));
+  EXPECT_EQ(0, GetRequiredUpdatesCount(host_observers));
+
+  // Simulate notifying |host_observers| of a usage change before initialization
+  // is complete.
+  const int64 kUsage = 6656;
+  const int64 kQuota = 99585556;
+  const int64 kDelta = 327643;
+  host_observers.NotifyUsageChange(params.filter, kDelta);
+  EXPECT_EQ(0, mock_observer.EventCount());
+  EXPECT_FALSE(host_observers.is_initialized());
+  EXPECT_EQ(NULL, GetPendingEvent(host_observers));
+  EXPECT_EQ(0, GetRequiredUpdatesCount(host_observers));
+
+  // Simulate an asynchronous callback from QuotaManager.
+  quota_manager_->SetCallbackParams(kUsage, kQuota, kQuotaStatusOk);
+  quota_manager_->InvokeCallback();
+  StorageObserver::Event expected_event(params.filter, kUsage + kDelta, kQuota);
+  EXPECT_EQ(1, mock_observer.EventCount());
+  EXPECT_EQ(expected_event, mock_observer.LastEvent());
+  EXPECT_TRUE(host_observers.is_initialized());
+  EXPECT_EQ(NULL, GetPendingEvent(host_observers));
+  EXPECT_EQ(0, GetRequiredUpdatesCount(host_observers));
 }
 
 // Tests for StorageTypeObservers:
