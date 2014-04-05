@@ -77,6 +77,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   void OnDidGetDocumentCookie(int cookie);
   void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
+  void OnShowInvalidPrinterSettingsError();
 
   // Processes a NOTIFY_PRINT_JOB_EVENT notification.
   void OnNotifyPrintJobEvent(const JobEventDetails& event_details);

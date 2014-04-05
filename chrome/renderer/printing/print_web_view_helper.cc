@@ -25,7 +25,6 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/web_preferences.h"
 #include "grit/browser_resources.h"
-#include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
@@ -46,7 +45,6 @@
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/common/webpreferences.h"
 
@@ -1424,9 +1422,7 @@ bool PrintWebViewHelper::CalculateNumberOfPages(blink::WebFrame* frame,
   bool fit_to_paper_size = !(PrintingNodeOrPdfFrame(frame, node));
   if (!InitPrintSettings(fit_to_paper_size)) {
     notify_browser_of_print_failure_ = false;
-    render_view()->RunModalAlertDialog(
-        frame,
-        l10n_util::GetStringUTF16(IDS_PRINT_INVALID_PRINTER_SETTINGS));
+    Send(new PrintHostMsg_ShowInvalidPrinterSettingsError(routing_id()));
     return false;
   }
 
@@ -1479,21 +1475,11 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
 
   if (!PrintMsg_Print_Params_IsValid(settings.params)) {
-    if (!print_for_preview_) {
+    if (!print_for_preview_)
       print_preview_context_.set_error(PREVIEW_ERROR_INVALID_PRINTER_SETTINGS);
-    } else {
-      // PrintForPrintPreview
-      blink::WebFrame* print_frame = NULL;
-      // This may not be the right frame, but the alert will be modal,
-      // therefore it works well enough.
-      GetPrintFrame(&print_frame);
-      if (print_frame) {
-        render_view()->RunModalAlertDialog(
-            print_frame,
-            l10n_util::GetStringUTF16(
-                IDS_PRINT_INVALID_PRINTER_SETTINGS));
-      }
-    }
+    else
+      Send(new PrintHostMsg_ShowInvalidPrinterSettingsError(routing_id()));
+
     return false;
   }
 
