@@ -61,19 +61,14 @@ gfx::NativeWindow WebContentsViewGuest::GetTopLevelNativeWindow() const {
 }
 
 void WebContentsViewGuest::OnGuestInitialized(WebContentsView* parent_view) {
-#if defined(USE_AURA) || defined(OS_WIN)
-  // In aura and windows, ScreenPositionClient doesn't work properly if we do
+#if defined(USE_AURA)
+  // In aura, ScreenPositionClient doesn't work properly if we do
   // not have the native view associated with this WebContentsViewGuest in the
   // view hierarchy. We add this view as embedder's child here.
   // This would go in WebContentsViewGuest::CreateView, but that is too early to
   // access embedder_web_contents(). Therefore, we do it here.
-#if defined(USE_AURA)
-  // This can be win aura or chromeos.
   parent_view->GetNativeView()->AddChild(platform_view_->GetNativeView());
-#elif defined(OS_WIN)
-  SetParent(platform_view_->GetNativeView(), parent_view->GetNativeView());
-#endif
-#endif  // defined(USE_AURA) || defined(OS_WIN)
+#endif  // defined(USE_AURA)
 }
 
 void WebContentsViewGuest::GetContainerBounds(gfx::Rect* out) const {
@@ -220,9 +215,9 @@ void WebContentsViewGuest::TakeFocus(bool reverse) {
 
 void WebContentsViewGuest::ShowContextMenu(RenderFrameHost* render_frame_host,
                                            const ContextMenuParams& params) {
-#if defined(USE_AURA) || defined(OS_WIN)
-  // Context menu uses ScreenPositionClient::ConvertPointToScreen() in aura and
-  // windows to calculate popup position. Guest's native view
+#if defined(USE_AURA)
+  // Context menu uses ScreenPositionClient::ConvertPointToScreen() in aura
+  // to calculate popup position. Guest's native view
   // (platform_view_->GetNativeView()) is part of the embedder's view hierarchy,
   // but is placed at (0, 0) w.r.t. the embedder's position. Therefore, |offset|
   // is added to |params|.
@@ -240,7 +235,7 @@ void WebContentsViewGuest::ShowContextMenu(RenderFrameHost* render_frame_host,
       render_frame_host, params_in_embedder);
 #else
   platform_view_delegate_view_->ShowContextMenu(render_frame_host, params);
-#endif  // defined(USE_AURA) || defined(OS_WIN)
+#endif  // defined(USE_AURA)
 }
 
 void WebContentsViewGuest::StartDragging(
