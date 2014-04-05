@@ -283,6 +283,7 @@ void RendererMediaPlayerManager::ReleaseSession(int cdm_id, uint32 session_id) {
 void RendererMediaPlayerManager::DestroyCdm(int cdm_id) {
   DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
   Send(new CdmHostMsg_DestroyCdm(routing_id(), cdm_id));
+  media_keys_.erase(cdm_id);
 }
 
 void RendererMediaPlayerManager::OnSessionCreated(
@@ -345,16 +346,10 @@ int RendererMediaPlayerManager::RegisterMediaPlayer(
 
 void RendererMediaPlayerManager::UnregisterMediaPlayer(int player_id) {
   media_players_.erase(player_id);
-  media_keys_.erase(player_id);
 }
 
 void RendererMediaPlayerManager::RegisterMediaKeys(int cdm_id,
                                                    ProxyMediaKeys* media_keys) {
-  // WebMediaPlayerAndroid must have already been registered for
-  // |cdm_id|. For now |cdm_id| is the same as player_id
-  // used in other methods.
-  DCHECK(media_players_.find(cdm_id) != media_players_.end());
-
   // Only allowed to register once.
   DCHECK(media_keys_.find(cdm_id) == media_keys_.end());
 
