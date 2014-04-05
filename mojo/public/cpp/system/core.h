@@ -113,6 +113,16 @@ class ScopedHandleBase {
 
   const HandleType& get() const { return handle_; }
 
+  template <typename PassedHandleType>
+  static ScopedHandleBase<HandleType> From(
+      ScopedHandleBase<PassedHandleType> other) {
+    MOJO_COMPILE_ASSERT(
+        sizeof(static_cast<PassedHandleType*>(static_cast<HandleType*>(0))),
+        HandleType_is_not_a_subtype_of_PassedHandleType);
+    return ScopedHandleBase<HandleType>(
+        static_cast<HandleType>(other.release().value()));
+  }
+
   void swap(ScopedHandleBase& other) {
     handle_.swap(other.handle_);
   }
