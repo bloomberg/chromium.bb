@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_pump_dispatcher.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vector2d_f.h"
@@ -26,13 +26,14 @@ class Widget;
 
 // Runs a nested message loop and grabs the mouse. This is used to implement
 // dragging.
-class X11WholeScreenMoveLoop : public base::MessagePumpDispatcher {
+class X11WholeScreenMoveLoop : public ui::PlatformEventDispatcher {
  public:
   explicit X11WholeScreenMoveLoop(X11WholeScreenMoveLoopDelegate* delegate);
   virtual ~X11WholeScreenMoveLoop();
 
-  // Overridden from base::MessagePumpDispatcher:
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
+  // ui:::PlatformEventDispatcher:
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
 
   // Runs the nested message loop. While the mouse is grabbed, use |cursor| as
   // the mouse cursor. Returns true if there we were able to grab the pointer

@@ -27,8 +27,8 @@
         '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
         '../compositor/compositor.gyp:compositor',
-        '../events/events.gyp:events_base',
         '../events/events.gyp:events',
+        '../events/events.gyp:events_base',
         '../gfx/gfx.gyp:gfx_geometry',
         '../gfx/gfx.gyp:gfx',
         '../resources/ui_resources.gyp:ui_resources',
@@ -96,6 +96,8 @@
       'dependencies': [
         '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
+        '../events/events.gyp:events',
+        '../events/events.gyp:events_base',
       ],
       'sources': [
         'test/wm_test_helper.cc',
@@ -113,8 +115,8 @@
         '../aura/aura.gyp:aura',
         '../aura/aura.gyp:aura_test_support',
         '../compositor/compositor.gyp:compositor',
-        '../events/events.gyp:events_base',
         '../events/events.gyp:events',
+        '../events/events.gyp:events_base',
         '../gfx/gfx.gyp:gfx_geometry',
         '../gfx/gfx.gyp:gfx',
         '../base/ui_base.gyp:ui_base',

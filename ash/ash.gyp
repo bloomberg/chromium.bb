@@ -57,6 +57,8 @@
         'accelerators/accelerator_controller.h',
         'accelerators/accelerator_dispatcher.cc',
         'accelerators/accelerator_dispatcher.h',
+        'accelerators/accelerator_dispatcher_linux.cc',
+        'accelerators/accelerator_dispatcher_win.cc',
         'accelerators/accelerator_filter.cc',
         'accelerators/accelerator_filter.h',
         'accelerators/accelerator_table.cc',

@@ -141,6 +141,7 @@
         'platform/platform_event_observer.h',
         'platform/platform_event_source.cc',
         'platform/platform_event_source.h',
+        'platform/platform_event_source_stub.cc',
         'platform/platform_event_types.h',
         'platform/scoped_event_dispatcher.cc',
         'platform/scoped_event_dispatcher.h',
@@ -170,6 +171,9 @@
           ],
         }],
         ['use_x11==1', {
+          'sources!': [
+            'platform/platform_event_source_stub.cc',
+          ],
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:x11',
           ],

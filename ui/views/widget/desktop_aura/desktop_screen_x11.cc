@@ -18,6 +18,7 @@
 #include "ui/base/layout.h"
 #include "ui/display/display_util.h"
 #include "ui/display/x11/edid_parser_x11.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -136,7 +137,8 @@ DesktopScreenX11::DesktopScreenX11()
     int error_base_ignored = 0;
     XRRQueryExtension(xdisplay_, &xrandr_event_base_, &error_base_ignored);
 
-    base::MessagePumpX11::Current()->AddDispatcherForRootWindow(this);
+    if (ui::PlatformEventSource::GetInstance())
+      ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
     XRRSelectInput(xdisplay_,
                    x_root_window_,
                    RRScreenChangeNotifyMask | RROutputChangeNotifyMask);
@@ -148,8 +150,8 @@ DesktopScreenX11::DesktopScreenX11()
 }
 
 DesktopScreenX11::~DesktopScreenX11() {
-  if (has_xrandr_)
-    base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(this);
+  if (has_xrandr_ && ui::PlatformEventSource::GetInstance())
+    ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 }
 
 void DesktopScreenX11::ProcessDisplayChange(
@@ -306,7 +308,12 @@ void DesktopScreenX11::RemoveObserver(gfx::DisplayObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-uint32_t DesktopScreenX11::Dispatch(const base::NativeEvent& event) {
+bool DesktopScreenX11::CanDispatchEvent(const ui::PlatformEvent& event) {
+  return event->type - xrandr_event_base_ == RRScreenChangeNotify ||
+         event->type - xrandr_event_base_ == RRNotify;
+}
+
+uint32_t DesktopScreenX11::DispatchEvent(const ui::PlatformEvent& event) {
   if (event->type - xrandr_event_base_ == RRScreenChangeNotify) {
     // Pass the event through to xlib.
     XRRUpdateConfiguration(event);
@@ -323,9 +330,11 @@ uint32_t DesktopScreenX11::Dispatch(const base::NativeEvent& event) {
           this,
           &DesktopScreenX11::ConfigureTimerFired);
     }
+  } else {
+    NOTREACHED();
   }
 
-  return POST_DISPATCH_NONE;
+  return ui::POST_DISPATCH_NONE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

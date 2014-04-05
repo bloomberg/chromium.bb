@@ -131,7 +131,7 @@ void NativeDisplayEventDispatcherX11Test::DispatchScreenChangeEvent() {
   XRRScreenChangeNotifyEvent event = {0};
   event.type = xrandr_event_base_ + RRScreenChangeNotify;
 
-  dispatcher_->Dispatch(reinterpret_cast<const base::NativeEvent>(&event));
+  dispatcher_->DispatchEvent(reinterpret_cast<const PlatformEvent>(&event));
 }
 
 void NativeDisplayEventDispatcherX11Test::DispatchOutputChangeEvent(
@@ -147,7 +147,7 @@ void NativeDisplayEventDispatcherX11Test::DispatchOutputChangeEvent(
   event.mode = mode;
   event.connection = connected ? RR_Connected : RR_Disconnected;
 
-  dispatcher_->Dispatch(reinterpret_cast<const base::NativeEvent>(&event));
+  dispatcher_->DispatchEvent(reinterpret_cast<const PlatformEvent>(&event));
 }
 
 }  // namespace

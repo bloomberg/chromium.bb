@@ -20,6 +20,7 @@
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/wm/public/drag_drop_client.h"
 #include "ui/wm/public/drag_drop_delegate.h"
@@ -159,8 +160,8 @@ namespace views {
 DesktopDragDropClientAuraX11*
 DesktopDragDropClientAuraX11::g_current_drag_drop_client = NULL;
 
-class DesktopDragDropClientAuraX11::X11DragContext :
-    public base::MessagePumpDispatcher {
+class DesktopDragDropClientAuraX11::X11DragContext
+    : public ui::PlatformEventDispatcher {
  public:
   X11DragContext(ui::X11AtomCache* atom_cache,
                  ::Window local_window,
@@ -200,8 +201,9 @@ class DesktopDragDropClientAuraX11::X11DragContext :
   // |drag_operation|.
   void MaskOpeartion(::Atom xdnd_operation, int* drag_operation) const;
 
-  // Overridden from MessagePumpDispatcher:
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
+  // ui::PlatformEventDispatcher:
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
 
   // The atom cache owned by our parent.
   ui::X11AtomCache* atom_cache_;
@@ -271,8 +273,7 @@ DesktopDragDropClientAuraX11::X11DragContext::X11DragContext(
   if (!client) {
     // The window doesn't have a DesktopDragDropClientAuraX11, that means it's
     // created by some other process. Listen for messages on it.
-    base::MessagePumpX11::Current()->AddDispatcherForWindow(
-        this, source_window_);
+    ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
     XSelectInput(gfx::GetXDisplay(), source_window_, PropertyChangeMask);
 
     // We must perform a full sync here because we could be racing
@@ -294,8 +295,7 @@ DesktopDragDropClientAuraX11::X11DragContext::~X11DragContext() {
       DesktopDragDropClientAuraX11::GetForWindow(source_window_);
   if (!client) {
     // Unsubscribe from message events.
-    base::MessagePumpX11::Current()->RemoveDispatcherForWindow(
-        source_window_);
+    ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
   }
 }
 
@@ -398,13 +398,19 @@ void DesktopDragDropClientAuraX11::X11DragContext::MaskOpeartion(
     *drag_operation |= ui::DragDropTypes::DRAG_LINK;
 }
 
-uint32_t DesktopDragDropClientAuraX11::X11DragContext::Dispatch(
-    const base::NativeEvent& event) {
+bool DesktopDragDropClientAuraX11::X11DragContext::CanDispatchEvent(
+    const ui::PlatformEvent& event) {
+  return event->xany.window == source_window_;
+}
+
+uint32_t DesktopDragDropClientAuraX11::X11DragContext::DispatchEvent(
+    const ui::PlatformEvent& event) {
   if (event->type == PropertyNotify &&
       event->xproperty.atom == atom_cache_->GetAtom("XdndActionList")) {
     ReadActions();
+    return ui::POST_DISPATCH_STOP_PROPAGATION;
   }
-  return POST_DISPATCH_NONE;
+  return ui::POST_DISPATCH_NONE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

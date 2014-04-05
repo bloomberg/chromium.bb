@@ -22,6 +22,7 @@
 #include "ui/display/chromeos/x11/display_util_x11.h"
 #include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
 #include "ui/display/x11/edid_parser_x11.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 
 namespace ui {
@@ -154,8 +155,10 @@ NativeDisplayDelegateX11::NativeDisplayDelegateX11()
       screen_(NULL) {}
 
 NativeDisplayDelegateX11::~NativeDisplayDelegateX11() {
-  base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(
-      message_pump_dispatcher_.get());
+  if (ui::PlatformEventSource::GetInstance()) {
+    ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(
+        platform_event_dispatcher_.get());
+  }
   base::MessagePumpX11::Current()->RemoveObserver(message_pump_observer_.get());
 
   STLDeleteContainerPairSecondPointers(modes_.begin(), modes_.end());
@@ -167,13 +170,15 @@ void NativeDisplayDelegateX11::Initialize() {
   XRRQueryExtension(display_, &xrandr_event_base, &error_base_ignored);
 
   helper_delegate_.reset(new HelperDelegateX11(this));
-  message_pump_dispatcher_.reset(new NativeDisplayEventDispatcherX11(
+  platform_event_dispatcher_.reset(new NativeDisplayEventDispatcherX11(
       helper_delegate_.get(), xrandr_event_base));
   message_pump_observer_.reset(
       new MessagePumpObserverX11(helper_delegate_.get()));
 
-  base::MessagePumpX11::Current()->AddDispatcherForRootWindow(
-      message_pump_dispatcher_.get());
+  if (ui::PlatformEventSource::GetInstance()) {
+    ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(
+        platform_event_dispatcher_.get());
+  }
   // We can't do this with a root window listener because XI_HierarchyChanged
   // messages don't have a target window.
   base::MessagePumpX11::Current()->AddObserver(message_pump_observer_.get());

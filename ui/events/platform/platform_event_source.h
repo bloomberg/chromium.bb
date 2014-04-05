@@ -47,6 +47,8 @@ class EVENTS_EXPORT PlatformEventSource {
   void AddPlatformEventObserver(PlatformEventObserver* observer);
   void RemovePlatformEventObserver(PlatformEventObserver* observer);
 
+  static scoped_ptr<PlatformEventSource> CreateDefault();
+
  protected:
   PlatformEventSource();
 

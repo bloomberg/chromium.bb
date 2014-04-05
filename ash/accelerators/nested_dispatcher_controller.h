@@ -12,6 +12,8 @@
 
 namespace ash {
 
+class AcceleratorDispatcher;
+
 // Creates a dispatcher which wraps another dispatcher.
 // The outer dispatcher runs first and performs ash specific handling.
 // If it does not consume the event it forwards the event to the nested
@@ -29,6 +31,7 @@ class ASH_EXPORT NestedDispatcherController
 
  private:
   base::Closure quit_closure_;
+  scoped_ptr<AcceleratorDispatcher> accelerator_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(NestedDispatcherController);
 };

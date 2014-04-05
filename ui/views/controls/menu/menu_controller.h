@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/widget/widget_observer.h"
@@ -28,6 +29,7 @@ class Screen;
 namespace ui {
 class NativeTheme;
 class OSExchangeData;
+class ScopedEventDispatcher;
 }
 namespace views {
 
@@ -39,6 +41,7 @@ class View;
 
 namespace internal {
 class MenuControllerDelegate;
+class MenuEventDispatcher;
 class MenuMessagePumpDispatcher;
 class MenuRunnerImpl;
 }
@@ -142,6 +145,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   static void TurnOffMenuSelectionHoldForTest();
 
  private:
+  friend class internal::MenuEventDispatcher;
   friend class internal::MenuMessagePumpDispatcher;
   friend class internal::MenuRunnerImpl;
   friend class MenuHostRootView;
@@ -587,6 +591,8 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
 
   // Set to true if the menu item was selected by touch.
   bool item_selected_by_touch_;
+
+  scoped_ptr<ui::ScopedEventDispatcher> nested_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuController);
 };

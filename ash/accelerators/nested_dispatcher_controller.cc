@@ -22,19 +22,23 @@ void NestedDispatcherController::RunWithDispatcher(
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
 
-  AcceleratorDispatcher dispatcher(nested_dispatcher);
+  scoped_ptr<AcceleratorDispatcher> old_accelerator_dispatcher =
+      accelerator_dispatcher_.Pass();
+  accelerator_dispatcher_ = AcceleratorDispatcher::Create(nested_dispatcher);
 
   // TODO(jbates) crbug.com/134753 Find quitters of this RunLoop and have them
   //              use run_loop.QuitClosure().
-  base::RunLoop run_loop(&dispatcher);
+  scoped_ptr<base::RunLoop> run_loop = accelerator_dispatcher_->CreateRunLoop();
   base::AutoReset<base::Closure> reset_closure(&quit_closure_,
-                                               run_loop.QuitClosure());
-  run_loop.Run();
+                                               run_loop->QuitClosure());
+  run_loop->Run();
+  accelerator_dispatcher_ = old_accelerator_dispatcher.Pass();
 }
 
 void NestedDispatcherController::QuitNestedMessageLoop() {
   CHECK(!quit_closure_.is_null());
   quit_closure_.Run();
+  accelerator_dispatcher_.reset();
 }
 
 }  // namespace ash

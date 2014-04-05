@@ -8,12 +8,13 @@
 #include <X11/Xlib.h>
 #include <set>
 
-#include "base/message_loop/message_pump_dispatcher.h"
 #include "chrome/browser/extensions/global_shortcut_listener.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
 #include "ui/base/gtk/gtk_signal.h"
+#else
+#include "ui/events/platform/platform_event_dispatcher.h"
 #endif  // defined(TOOLKIT_GTK)
 
 namespace extensions {
@@ -21,19 +22,20 @@ namespace extensions {
 // X11-specific implementation of the GlobalShortcutListener class that
 // listens for global shortcuts. Handles basic keyboard intercepting and
 // forwards its output to the base class for processing.
-class GlobalShortcutListenerX11
-    :
+class GlobalShortcutListenerX11 : public GlobalShortcutListener
 #if !defined(TOOLKIT_GTK)
-      public base::MessagePumpDispatcher,
+                                  ,
+                                  public ui::PlatformEventDispatcher
 #endif
-      public GlobalShortcutListener {
+                                  {
  public:
   GlobalShortcutListenerX11();
   virtual ~GlobalShortcutListenerX11();
 
 #if !defined(TOOLKIT_GTK)
-  // base::MessagePumpDispatcher implementation.
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
+  // ui::PlatformEventDispatcher implementation.
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
 #endif
 
  private:

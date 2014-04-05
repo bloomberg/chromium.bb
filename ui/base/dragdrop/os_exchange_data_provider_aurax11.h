@@ -19,6 +19,7 @@
 #include "ui/base/x/selection_owner.h"
 #include "ui/base/x/selection_requestor.h"
 #include "ui/base/x/selection_utils.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/vector2d.h"
 #include "ui/gfx/x/x11_atom_cache.h"
@@ -32,7 +33,7 @@ class OSExchangeDataProviderAuraX11Test;
 // OSExchangeData::Provider implementation for aura on linux.
 class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
     : public OSExchangeData::Provider,
-      public base::MessagePumpDispatcher {
+      public ui::PlatformEventDispatcher {
  public:
   // |x_window| is the window the cursor is over, and |selection| is the set of
   // data being offered.
@@ -97,8 +98,9 @@ class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
   virtual const gfx::ImageSkia& GetDragImage() const OVERRIDE;
   virtual const gfx::Vector2d& GetDragImageOffset() const OVERRIDE;
 
-  // Overridden from base::MessagePumpDispatcher:
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
+  // ui::PlatformEventDispatcher:
+  virtual bool CanDispatchEvent(const PlatformEvent& event) OVERRIDE;
+  virtual uint32_t DispatchEvent(const PlatformEvent& event) OVERRIDE;
 
  private:
   friend class OSExchangeDataProviderAuraX11Test;

@@ -16,6 +16,9 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/events/platform/platform_event_source.h"
+#include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/wm/public/dispatcher_client.h"
 
 #if defined(USE_X11)
@@ -28,21 +31,27 @@ namespace test {
 
 namespace {
 
-class MockDispatcher : public base::MessagePumpDispatcher {
+class MockDispatcher : public ui::PlatformEventDispatcher {
  public:
   MockDispatcher() : num_key_events_dispatched_(0) {
   }
 
   int num_key_events_dispatched() { return num_key_events_dispatched_; }
 
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE {
+ private:
+  // ui::PlatformEventDispatcher:
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE {
+    return true;
+  }
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE {
     if (ui::EventTypeFromNative(event) == ui::ET_KEY_RELEASED)
       num_key_events_dispatched_++;
-    return POST_DISPATCH_NONE;
+    return ui::POST_DISPATCH_NONE;
   }
 
- private:
   int num_key_events_dispatched_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockDispatcher);
 };
 
 class TestTarget : public ui::AcceleratorTarget {
@@ -111,8 +120,10 @@ TEST_F(NestedDispatcherTest, AssociatedWindowAboveLockScreen) {
 
   DispatchKeyReleaseA();
   aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
-  aura::client::GetDispatcherClient(root_window)->RunWithDispatcher(
-      &inner_dispatcher);
+  scoped_ptr<ui::ScopedEventDispatcher> override_dispatcher =
+      ui::PlatformEventSource::GetInstance()->OverrideDispatcher(
+          &inner_dispatcher);
+  aura::client::GetDispatcherClient(root_window)->RunWithDispatcher(NULL);
   EXPECT_EQ(1, inner_dispatcher.num_key_events_dispatched());
 }
 
@@ -128,8 +139,10 @@ TEST_F(NestedDispatcherTest, AcceleratorsHandled) {
                                                            &target);
 
   DispatchKeyReleaseA();
-  aura::client::GetDispatcherClient(root_window)->RunWithDispatcher(
-      &inner_dispatcher);
+  scoped_ptr<ui::ScopedEventDispatcher> override_dispatcher =
+      ui::PlatformEventSource::GetInstance()->OverrideDispatcher(
+          &inner_dispatcher);
+  aura::client::GetDispatcherClient(root_window)->RunWithDispatcher(NULL);
   EXPECT_EQ(0, inner_dispatcher.num_key_events_dispatched());
   EXPECT_EQ(1, target.accelerator_pressed_count());
 }

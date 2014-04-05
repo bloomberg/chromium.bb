@@ -7,7 +7,16 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/message_loop/message_pump_dispatcher.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace base {
+class MessagePumpDispatcher;
+class RunLoop;
+}
+
+namespace ui {
+class KeyEvent;
+}
 
 namespace ash {
 
@@ -18,17 +27,29 @@ namespace ash {
 // passed back to the default dispatcher.
 // TODO(pkotwicz): Add support for a |nested_dispatcher| which sends
 //  events to a system IME.
-class ASH_EXPORT AcceleratorDispatcher : public base::MessagePumpDispatcher {
+class ASH_EXPORT AcceleratorDispatcher {
  public:
-  explicit AcceleratorDispatcher(base::MessagePumpDispatcher* dispatcher);
-  virtual ~AcceleratorDispatcher();
+  virtual ~AcceleratorDispatcher() {}
 
-  // MessagePumpDispatcher overrides:
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
+  static scoped_ptr<AcceleratorDispatcher> Create(
+      base::MessagePumpDispatcher* nested_dispatcher);
+
+  // Creates a base::RunLoop object to run a nested message loop.
+  virtual scoped_ptr<base::RunLoop> CreateRunLoop() = 0;
+
+ protected:
+  AcceleratorDispatcher() {}
+
+  // Closes any open menu if the key-event could potentially be a system
+  // accelerator.
+  // Returns whether a menu was closed.
+  bool MenuClosedForPossibleAccelerator(const ui::KeyEvent& key_event);
+
+  // Attempts to trigger an accelerator for the key-event.
+  // Returns whether an accelerator was triggered.
+  bool AcceleratorProcessedForKeyEvent(const ui::KeyEvent& key_event);
 
  private:
-  base::MessagePumpDispatcher* nested_dispatcher_;
-
   DISALLOW_COPY_AND_ASSIGN(AcceleratorDispatcher);
 };
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_CONTROLS_MENU_MENU_MESSAGE_PUMP_DISPATCHER_H_
-#define UI_VIEWS_CONTROLS_MENU_MENU_MESSAGE_PUMP_DISPATCHER_H_
+#ifndef UI_VIEWS_CONTROLS_MENU_MENU_MESSAGE_PUMP_DISPATCHER_WIN_H_
+#define UI_VIEWS_CONTROLS_MENU_MENU_MESSAGE_PUMP_DISPATCHER_WIN_H_
 
 #include "base/macros.h"
 #include "base/message_loop/message_pump_dispatcher.h"
@@ -33,4 +33,4 @@ class MenuMessagePumpDispatcher : public base::MessagePumpDispatcher {
 }  // namespace internal
 }  // namespace views
 
-#endif  // UI_VIEWS_CONTROLS_MENU_MENU_MESSAGE_PUMP_DISPATCHER_H_
+#endif  // UI_VIEWS_CONTROLS_MENU_MENU_MESSAGE_PUMP_DISPATCHER_WIN_H_

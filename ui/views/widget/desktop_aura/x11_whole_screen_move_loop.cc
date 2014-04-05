@@ -20,6 +20,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/image_view.h"
@@ -65,9 +66,6 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(
 
 X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() {}
 
-////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostLinux, MessagePumpDispatcher implementation:
-
 void X11WholeScreenMoveLoop::DispatchMouseMovement() {
   if (!weak_factory_.HasWeakPtrs())
     return;
@@ -77,7 +75,14 @@ void X11WholeScreenMoveLoop::DispatchMouseMovement() {
   last_xmotion_.type = LASTEvent;
 }
 
-uint32_t X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
+////////////////////////////////////////////////////////////////////////////////
+// DesktopWindowTreeHostLinux, ui::PlatformEventDispatcher implementation:
+
+bool X11WholeScreenMoveLoop::CanDispatchEvent(const ui::PlatformEvent& event) {
+  return event->xany.window == grab_input_window_;
+}
+
+uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
   XEvent* xev = event;
 
   // Note: the escape key is handled in the tab drag controller, which has
@@ -119,7 +124,7 @@ uint32_t X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
     }
   }
 
-  return POST_DISPATCH_NONE;
+  return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -144,8 +149,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
     grab_input_window_ = CreateDragInputWindow(display);
     if (!drag_image_.isNull() && CheckIfIconValid())
       CreateDragImageWindow();
-    base::MessagePumpX11::Current()->AddDispatcherForWindow(
-        this, grab_input_window_);
+    ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
     // Releasing ScopedCapturer ensures that any other instance of
     // X11ScopedCapture will not prematurely release grab that will be acquired
     // below.
@@ -204,8 +208,7 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
   XUngrabPointer(display, CurrentTime);
   XUngrabKeyboard(display, CurrentTime);
 
-  base::MessagePumpX11::Current()->RemoveDispatcherForWindow(
-      grab_input_window_);
+  ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
   drag_widget_.reset();
   delegate_->OnMoveLoopEnded();
   XDestroyWindow(display, grab_input_window_);
@@ -278,7 +281,7 @@ Window X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
                                 0, CopyFromParent, InputOnly, CopyFromParent,
                                 attribute_mask, &swa);
   XMapRaised(display, window);
-  base::MessagePumpX11::Current()->BlockUntilWindowMapped(window);
+  ui::X11EventSource::GetInstance()->BlockUntilWindowMapped(window);
   return window;
 }
 

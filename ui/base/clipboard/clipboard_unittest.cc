@@ -32,6 +32,10 @@
 #include "base/android/jni_string.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/events/platform/platform_event_source.h"
+#endif
+
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
@@ -40,6 +44,12 @@ namespace ui {
 
 class ClipboardTest : public PlatformTest {
  public:
+#if defined(USE_AURA)
+  ClipboardTest() : event_source_(ui::PlatformEventSource::CreateDefault()) {}
+#else
+  ClipboardTest() {}
+#endif
+
   static void WriteObjectsToClipboard(ui::Clipboard* clipboard,
                                       const Clipboard::ObjectMap& objects) {
     clipboard->WriteObjects(ui::CLIPBOARD_TYPE_COPY_PASTE, objects);
@@ -54,6 +64,9 @@ class ClipboardTest : public PlatformTest {
 
  private:
   base::MessageLoopForUI message_loop_;
+#if defined(USE_AURA)
+  scoped_ptr<PlatformEventSource> event_source_;
+#endif
   Clipboard clipboard_;
 };
 

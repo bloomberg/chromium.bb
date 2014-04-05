@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_pump_x11.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_util.h"
@@ -15,6 +14,7 @@
 #include "ui/base/dragdrop/file_info.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/platform/platform_event_source.h"
 
 // Note: the GetBlah() methods are used immediately by the
 // web_contents_view_aura.cc:PrepareDropData(), while the omnibox is a
@@ -83,12 +83,12 @@ OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11()
 
   XStoreName(x_display_, x_window_, "Chromium Drag & Drop Window");
 
-  base::MessagePumpX11::Current()->AddDispatcherForWindow(this, x_window_);
+  PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 }
 
 OSExchangeDataProviderAuraX11::~OSExchangeDataProviderAuraX11() {
   if (own_window_) {
-    base::MessagePumpX11::Current()->RemoveDispatcherForWindow(x_window_);
+    PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
     XDestroyWindow(x_display_, x_window_);
   }
 }
@@ -494,18 +494,22 @@ const gfx::Vector2d& OSExchangeDataProviderAuraX11::GetDragImageOffset() const {
   return drag_image_offset_;
 }
 
-uint32_t OSExchangeDataProviderAuraX11::Dispatch(
-    const base::NativeEvent& event) {
+bool OSExchangeDataProviderAuraX11::CanDispatchEvent(
+    const PlatformEvent& event) {
+  return event->xany.window == x_window_;
+}
+
+uint32_t OSExchangeDataProviderAuraX11::DispatchEvent(
+    const PlatformEvent& event) {
   XEvent* xev = event;
   switch (xev->type) {
     case SelectionRequest:
       selection_owner_.OnSelectionRequest(xev->xselectionrequest);
-      break;
+      return ui::POST_DISPATCH_STOP_PROPAGATION;
     default:
       NOTIMPLEMENTED();
   }
-
-  return POST_DISPATCH_NONE;
+  return ui::POST_DISPATCH_NONE;
 }
 
 bool OSExchangeDataProviderAuraX11::GetPlainTextURL(GURL* url) const {

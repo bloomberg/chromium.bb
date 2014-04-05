@@ -13,7 +13,7 @@
 #if defined(TOOLKIT_GTK)
 #include <gdk/gdkx.h>
 #else
-#include "base/message_loop/message_pump_x11.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #endif
 
 using content::BrowserThread;
@@ -77,7 +77,7 @@ void GlobalShortcutListenerX11::StartListening() {
                         &GlobalShortcutListenerX11::OnXEventThunk,
                         this);
 #else
-  base::MessagePumpX11::Current()->AddDispatcherForRootWindow(this);
+  ui::X11EventSource::GetInstance()->AddPlatformEventDispatcher(this);
 #endif
 
   is_listening_ = true;
@@ -93,18 +93,24 @@ void GlobalShortcutListenerX11::StopListening() {
                            &GlobalShortcutListenerX11::OnXEventThunk,
                            this);
 #else
-  base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(this);
+  ui::X11EventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 #endif
 
   is_listening_ = false;
 }
 
 #if !defined(TOOLKIT_GTK)
-uint32_t GlobalShortcutListenerX11::Dispatch(const base::NativeEvent& event) {
-  if (event->type == KeyPress)
-    OnXKeyPressEvent(event);
+bool GlobalShortcutListenerX11::CanDispatchEvent(
+    const ui::PlatformEvent& event) {
+  return event->type == KeyPress;
+}
 
-  return POST_DISPATCH_NONE;
+uint32_t GlobalShortcutListenerX11::DispatchEvent(
+    const ui::PlatformEvent& event) {
+  CHECK_EQ(KeyPress, event->type);
+  OnXKeyPressEvent(event);
+
+  return ui::POST_DISPATCH_NONE;
 }
 #endif
 

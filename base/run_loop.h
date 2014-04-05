@@ -31,7 +31,7 @@ class MessagePumpUIApplication;
 class BASE_EXPORT RunLoop {
  public:
   RunLoop();
-#if defined(USE_AURA)
+#if defined(OS_WIN)
   explicit RunLoop(MessagePumpDispatcher* dispatcher);
 #endif
   ~RunLoop();
@@ -93,7 +93,7 @@ class BASE_EXPORT RunLoop {
   // Parent RunLoop or NULL if this is the top-most RunLoop.
   RunLoop* previous_run_loop_;
 
-#if defined(USE_AURA)
+#if defined(OS_WIN)
   MessagePumpDispatcher* dispatcher_;
 #endif
 

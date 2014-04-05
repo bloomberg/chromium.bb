@@ -5,9 +5,9 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_X11_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_X11_H_
 
-#include "base/message_loop/message_pump_dispatcher.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/views_export.h"
 
@@ -24,7 +24,7 @@ class DesktopScreenX11Test;
 
 // Our singleton screen implementation that talks to xrandr.
 class VIEWS_EXPORT DesktopScreenX11 : public gfx::Screen,
-                                      public base::MessagePumpDispatcher {
+                                      public ui::PlatformEventDispatcher {
  public:
   DesktopScreenX11();
 
@@ -52,8 +52,9 @@ class VIEWS_EXPORT DesktopScreenX11 : public gfx::Screen,
   virtual void AddObserver(gfx::DisplayObserver* observer) OVERRIDE;
   virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE;
 
-  // Overridden from MessagePumpDispatcher:
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
+  // ui::PlatformEventDispatcher:
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
 
  private:
   friend class DesktopScreenX11Test;

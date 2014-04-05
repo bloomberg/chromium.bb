@@ -11,8 +11,8 @@
 
 #include <vector>
 
-#include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/aura/env_observer.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/views_export.h"
@@ -24,7 +24,7 @@ namespace views {
 // A singleton that owns global objects related to the desktop and listens for
 // X11 events on the X11 root window. Destroys itself when aura::Env is
 // deleted.
-class VIEWS_EXPORT X11DesktopHandler : public base::MessagePumpDispatcher,
+class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
                                        public aura::EnvObserver {
  public:
   // Returns the singleton handler.
@@ -40,10 +40,11 @@ class VIEWS_EXPORT X11DesktopHandler : public base::MessagePumpDispatcher,
   // Processes activation/focus related events. Some of these events are
   // dispatched to the X11 window dispatcher, and not to the X11 root-window
   // dispatcher. The window dispatcher sends these events to here.
-  void ProcessXEvent(const base::NativeEvent& event);
+  void ProcessXEvent(XEvent* event);
 
-  // Overridden from MessagePumpDispatcher:
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
+  // ui::PlatformEventDispatcher
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
 
   // Overridden from aura::EnvObserver:
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;

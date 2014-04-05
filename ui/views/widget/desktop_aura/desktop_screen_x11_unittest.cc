@@ -12,6 +12,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
@@ -28,7 +30,7 @@ const int64 kSecondDisplay = 928310;
 // the constructor is activated. We cannot listen for the widget's activation
 // because the _NET_ACTIVE_WINDOW property is changed after the widget is
 // activated.
-class ActivationWaiter : public base::MessagePumpDispatcher {
+class ActivationWaiter : public ui::PlatformEventDispatcher {
  public:
   explicit ActivationWaiter(views::Widget* widget)
       : x_root_window_(DefaultRootWindow(gfx::GetXDisplay())),
@@ -41,11 +43,11 @@ class ActivationWaiter : public base::MessagePumpDispatcher {
     atom_cache_.reset(new ui::X11AtomCache(gfx::GetXDisplay(), kAtomToCache));
     widget_xid_ = widget->GetNativeWindow()->GetHost()->
          GetAcceleratedWidget();
-    base::MessagePumpX11::Current()->AddDispatcherForRootWindow(this);
+    ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   }
 
   virtual ~ActivationWaiter() {
-    base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(this);
+    ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
   }
 
   // Blocks till |widget_xid_| becomes active.
@@ -57,18 +59,25 @@ class ActivationWaiter : public base::MessagePumpDispatcher {
     run_loop.Run();
   }
 
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE {
+  // ui::PlatformEventDispatcher:
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE {
+    return event->type == PropertyNotify &&
+           event->xproperty.window == x_root_window_;
+  }
+
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE {
     ::Window xid;
-    if (event->type == PropertyNotify &&
-        event->xproperty.window == x_root_window_ &&
-        event->xproperty.atom == atom_cache_->GetAtom("_NET_ACTIVE_WINDOW") &&
+    CHECK_EQ(PropertyNotify, event->type);
+    CHECK_EQ(x_root_window_, event->xproperty.window);
+
+    if (event->xproperty.atom == atom_cache_->GetAtom("_NET_ACTIVE_WINDOW") &&
         ui::GetXIDProperty(x_root_window_, "_NET_ACTIVE_WINDOW", &xid) &&
         xid == widget_xid_) {
       active_ = true;
       if (!quit_closure_.is_null())
         quit_closure_.Run();
     }
-    return POST_DISPATCH_NONE;
+    return ui::POST_DISPATCH_NONE;
   }
 
  private:

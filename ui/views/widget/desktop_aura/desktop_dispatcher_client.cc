@@ -25,7 +25,12 @@ void DesktopDispatcherClient::RunWithDispatcher(
   base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
 
   base::Closure old_quit_closure = quit_closure_;
+#if defined(OS_WIN)
   base::RunLoop run_loop(nested_dispatcher);
+#else
+  base::RunLoop run_loop;
+#endif
+
   quit_closure_ = run_loop.QuitClosure();
   base::WeakPtr<DesktopDispatcherClient> alive(weak_ptr_factory_.GetWeakPtr());
   run_loop.Run();

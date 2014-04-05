@@ -6,6 +6,7 @@
 #include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
 #include "ui/display/chromeos/x11/display_mode_x11.h"
 #include "ui/display/chromeos/x11/display_snapshot_x11.h"
+#include "ui/events/platform/platform_event_source.h"
 
 #include <X11/extensions/Xrandr.h>
 
@@ -23,26 +24,32 @@ NativeDisplayEventDispatcherX11::NativeDisplayEventDispatcherX11(
 
 NativeDisplayEventDispatcherX11::~NativeDisplayEventDispatcherX11() {}
 
-uint32_t NativeDisplayEventDispatcherX11::Dispatch(
-    const base::NativeEvent& event) {
+bool NativeDisplayEventDispatcherX11::CanDispatchEvent(
+    const PlatformEvent& event) {
+  return (event->type - xrandr_event_base_ == RRScreenChangeNotify) ||
+         (event->type - xrandr_event_base_ == RRNotify);
+}
+
+uint32_t NativeDisplayEventDispatcherX11::DispatchEvent(
+    const PlatformEvent& event) {
   if (event->type - xrandr_event_base_ == RRScreenChangeNotify) {
     VLOG(1) << "Received RRScreenChangeNotify event";
     delegate_->UpdateXRandRConfiguration(event);
-    return POST_DISPATCH_PERFORM_DEFAULT;
+    return ui::POST_DISPATCH_PERFORM_DEFAULT;
   }
 
   // Bail out early for everything except RRNotify_OutputChange events
   // about an output getting connected or disconnected.
   if (event->type - xrandr_event_base_ != RRNotify)
-    return POST_DISPATCH_PERFORM_DEFAULT;
+    return ui::POST_DISPATCH_PERFORM_DEFAULT;
   const XRRNotifyEvent* notify_event = reinterpret_cast<XRRNotifyEvent*>(event);
   if (notify_event->subtype != RRNotify_OutputChange)
-    return POST_DISPATCH_PERFORM_DEFAULT;
+    return ui::POST_DISPATCH_PERFORM_DEFAULT;
   const XRROutputChangeNotifyEvent* output_change_event =
       reinterpret_cast<XRROutputChangeNotifyEvent*>(event);
   const int action = output_change_event->connection;
   if (action != RR_Connected && action != RR_Disconnected)
-    return POST_DISPATCH_PERFORM_DEFAULT;
+    return ui::POST_DISPATCH_PERFORM_DEFAULT;
 
   const bool connected = (action == RR_Connected);
   VLOG(1) << "Received RRNotify_OutputChange event:"
@@ -80,7 +87,7 @@ uint32_t NativeDisplayEventDispatcherX11::Dispatch(
 
     if (!connected && !found_changed_output) {
       VLOG(1) << "Ignoring event describing already-disconnected output";
-      return POST_DISPATCH_PERFORM_DEFAULT;
+      return ui::POST_DISPATCH_PERFORM_DEFAULT;
     }
   }
 
@@ -88,7 +95,7 @@ uint32_t NativeDisplayEventDispatcherX11::Dispatch(
 
   delegate_->NotifyDisplayObservers();
 
-  return POST_DISPATCH_PERFORM_DEFAULT;
+  return ui::POST_DISPATCH_PERFORM_DEFAULT;
 }
 
 void NativeDisplayEventDispatcherX11::SetTickClockForTest(

@@ -21,12 +21,12 @@ RunLoop::RunLoop()
       running_(false),
       quit_when_idle_received_(false),
       weak_factory_(this) {
-#if defined(USE_AURA)
+#if defined(OS_WIN)
    dispatcher_ = NULL;
 #endif
 }
 
-#if defined(USE_AURA)
+#if defined(OS_WIN)
 RunLoop::RunLoop(MessagePumpDispatcher* dispatcher)
     : loop_(MessageLoop::current()),
       previous_run_loop_(NULL),

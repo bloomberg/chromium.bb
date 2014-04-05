@@ -8,6 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/wm/core/wm_core_export.h"
 
+namespace ui {
+class PlatformEventSource;
+}
+
 namespace wm {
 
 class TransientWindowController;
@@ -23,6 +27,7 @@ class WM_CORE_EXPORT WMState {
  private:
   scoped_ptr<TransientWindowStackingClient> window_stacking_client_;
   scoped_ptr<TransientWindowController> transient_window_client_;
+  scoped_ptr<ui::PlatformEventSource> event_source_;
 
   DISALLOW_COPY_AND_ASSIGN(WMState);
 };

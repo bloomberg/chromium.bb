@@ -21,6 +21,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/platform/platform_event_source.h"
+#include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
@@ -30,7 +32,6 @@
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
 #include "ui/views/controls/menu/menu_host_root_view.h"
-#include "ui/views/controls/menu/menu_message_pump_dispatcher.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/drag_utils.h"
@@ -49,7 +50,10 @@
 
 #if defined(OS_WIN)
 #include "ui/base/win/internal_constants.h"
+#include "ui/views/controls/menu/menu_message_pump_dispatcher_win.h"
 #include "ui/views/win/hwnd_util.h"
+#else
+#include "ui/views/controls/menu/menu_event_dispatcher_linux.h"
 #endif
 
 using base::Time;
@@ -1171,6 +1175,7 @@ MenuController::~MenuController() {
   StopCancelAllTimer();
 }
 
+#if defined(OS_WIN)
 void MenuController::RunMessageLoop(bool nested_menu) {
   internal::MenuMessagePumpDispatcher nested_dispatcher(this);
 
@@ -1189,6 +1194,32 @@ void MenuController::RunMessageLoop(bool nested_menu) {
     run_loop.Run();
   }
 }
+#else
+void MenuController::RunMessageLoop(bool nested_menu) {
+  internal::MenuEventDispatcher event_dispatcher(this);
+  scoped_ptr<ui::ScopedEventDispatcher> old_dispatcher =
+      nested_dispatcher_.Pass();
+  if (ui::PlatformEventSource::GetInstance()) {
+    nested_dispatcher_ =
+        ui::PlatformEventSource::GetInstance()->OverrideDispatcher(
+            &event_dispatcher);
+  }
+  // |owner_| may be NULL.
+  aura::Window* root = GetOwnerRootWindow(owner_);
+  if (root) {
+    scoped_ptr<ActivationChangeObserverImpl> observer;
+    if (!nested_menu)
+      observer.reset(new ActivationChangeObserverImpl(this, root));
+    aura::client::GetDispatcherClient(root)->RunWithDispatcher(NULL);
+  } else {
+    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+    base::MessageLoop::ScopedNestableTaskAllower allow(loop);
+    base::RunLoop run_loop;
+    run_loop.Run();
+  }
+  nested_dispatcher_ = old_dispatcher.Pass();
+}
+#endif
 
 MenuController::SendAcceleratorResultType
     MenuController::SendAcceleratorToHotTrackedView() {
@@ -2303,6 +2334,8 @@ void MenuController::SetExitType(ExitType type) {
     } else {
       base::MessageLoop::current()->QuitNow();
     }
+    // Restore the previous dispatcher.
+    nested_dispatcher_.reset();
   }
 }
 

@@ -7,7 +7,8 @@
 #include <X11/Xlib.h>
 
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_x11.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -15,15 +16,14 @@ namespace mojo {
 namespace services {
 
 class NativeViewportX11 : public NativeViewport,
-                          public base::MessagePumpDispatcher {
+                          public ui::PlatformEventDispatcher {
  public:
   NativeViewportX11(NativeViewportDelegate* delegate)
       : delegate_(delegate) {
   }
 
   virtual ~NativeViewportX11() {
-    base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(this);
-    base::MessagePumpX11::Current()->RemoveDispatcherForWindow(window_);
+    ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 
     XDestroyWindow(gfx::GetXDisplay(), window_);
   }
@@ -53,8 +53,7 @@ class NativeViewportX11 : public NativeViewport,
     atom_wm_delete_window_ = XInternAtom(display, "WM_DELETE_WINDOW", 1);
     XSetWMProtocols(display, window_, &atom_wm_delete_window_, 1);
 
-    base::MessagePumpX11::Current()->AddDispatcherForWindow(this, window_);
-    base::MessagePumpX11::Current()->AddDispatcherForRootWindow(this);
+    ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 
     delegate_->OnAcceleratedWidgetAvailable(window_);
   }
@@ -90,19 +89,17 @@ class NativeViewportX11 : public NativeViewport,
     NOTIMPLEMENTED();
   }
 
-  // Overridden from base::MessagePumpDispatcher:
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE {
-    switch (event->type) {
-      case ClientMessage: {
-        if (event->xclient.message_type == atom_wm_protocols_) {
-          Atom protocol = static_cast<Atom>(event->xclient.data.l[0]);
-          if (protocol == atom_wm_delete_window_)
-            delegate_->OnDestroyed();
-        }
-        break;
-      }
-    }
-    return POST_DISPATCH_NONE;
+  // ui::PlatformEventDispatcher:
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE {
+    return event->type == ClientMessage &&
+           event->xclient.message_type == atom_wm_protocols_;
+  }
+
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE {
+    Atom protocol = static_cast<Atom>(event->xclient.data.l[0]);
+    if (protocol == atom_wm_delete_window_)
+      delegate_->OnDestroyed();
+    return ui::POST_DISPATCH_NONE;
   }
 
   NativeViewportDelegate* delegate_;

@@ -13,12 +13,12 @@
 #undef RootWindow
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event_source.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
@@ -34,17 +34,18 @@ class TouchEventCalibrate;
 }
 
 class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
-                                      public base::MessagePumpDispatcher,
                                       public ui::EventSource,
+                                      public ui::PlatformEventDispatcher,
                                       public EnvObserver {
  public:
   explicit WindowTreeHostX11(const gfx::Rect& bounds);
   virtual ~WindowTreeHostX11();
 
-  // Overridden from Dispatcher overrides:
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
+  // ui::PlatformEventDispatcher:
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
 
-  // WindowTreeHost Overrides.
+  // WindowTreeHost:
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;

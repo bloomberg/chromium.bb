@@ -466,6 +466,7 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
 // Verifies when capture is released the TooltipController resets state.
 TEST_F(TooltipControllerCaptureTest, CloseOnCaptureLost) {
   view_->GetWidget()->SetCapture(view_);
+  RunAllPendingInMessageLoop();
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   generator_->MoveMouseToCenterOf(GetWindow());
   base::string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");

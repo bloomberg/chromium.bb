@@ -15,6 +15,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
@@ -24,6 +25,7 @@ class BookmarkNodeDataTest : public testing::Test {
   BookmarkNodeDataTest() : model_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
+    event_source_ = ui::PlatformEventSource::CreateDefault();
     profile_.reset(new TestingProfile);
     profile_->SetID(L"id");
     profile_->CreateBookmarkModel(false);
@@ -33,6 +35,7 @@ class BookmarkNodeDataTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     profile_.reset();
+    event_source_.reset();
   }
 
   Profile* profile() { return profile_.get(); }
@@ -43,6 +46,7 @@ class BookmarkNodeDataTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   BookmarkModel* model_;
+  scoped_ptr<ui::PlatformEventSource> event_source_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNodeDataTest);
 };

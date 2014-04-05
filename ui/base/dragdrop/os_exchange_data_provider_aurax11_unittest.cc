@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/dragdrop/file_info.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "url/gurl.h"
 
 const char kFileURL[] = "file:///home/user/file.txt";
@@ -24,7 +25,7 @@ namespace ui {
 
 class OSExchangeDataProviderAuraX11Test : public testing::Test {
  public:
-  OSExchangeDataProviderAuraX11Test() {}
+  OSExchangeDataProviderAuraX11Test() : event_source(gfx::GetXDisplay()) {}
 
   void AddURLList(const std::string& list_contents) {
     std::string contents_copy = list_contents;
@@ -38,6 +39,7 @@ class OSExchangeDataProviderAuraX11Test : public testing::Test {
 
  protected:
   base::MessageLoopForUI message_loop;
+  X11EventSource event_source;
   ui::OSExchangeDataProviderAuraX11 provider;
 };
 

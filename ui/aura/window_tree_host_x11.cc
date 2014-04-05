@@ -21,7 +21,6 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_x11.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -42,6 +41,7 @@
 #include "ui/events/event_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/x/device_data_manager.h"
 #include "ui/events/x/device_list_cache_x.h"
 #include "ui/events/x/touch_factory_x11.h"
@@ -266,8 +266,8 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
       CopyFromParent,  // visual
       CWBackPixmap | CWOverrideRedirect,
       &swa);
-  base::MessagePumpX11::Current()->AddDispatcherForWindow(this, xwindow_);
-  base::MessagePumpX11::Current()->AddDispatcherForRootWindow(this);
+  if (ui::PlatformEventSource::GetInstance())
+    ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 
   long event_mask = ButtonPressMask | ButtonReleaseMask | FocusChangeMask |
                     KeyPressMask | KeyReleaseMask |
@@ -316,8 +316,8 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
 
 WindowTreeHostX11::~WindowTreeHostX11() {
   Env::GetInstance()->RemoveObserver(this);
-  base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(this);
-  base::MessagePumpX11::Current()->RemoveDispatcherForWindow(xwindow_);
+  if (ui::PlatformEventSource::GetInstance())
+    ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 
   UnConfineCursor();
 
@@ -326,13 +326,17 @@ WindowTreeHostX11::~WindowTreeHostX11() {
   XDestroyWindow(xdisplay_, xwindow_);
 }
 
-uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
-  XEvent* xev = event;
+bool WindowTreeHostX11::CanDispatchEvent(const ui::PlatformEvent& event) {
+  ::Window target = FindEventTarget(event);
+  return target == xwindow_ || target == x_root_window_;
+}
 
-  if (FindEventTarget(event) == x_root_window_) {
-    if (event->type == GenericEvent)
-      DispatchXI2Event(event);
-    return POST_DISPATCH_NONE;
+uint32_t WindowTreeHostX11::DispatchEvent(const ui::PlatformEvent& event) {
+  XEvent* xev = event;
+  if (FindEventTarget(xev) == x_root_window_) {
+    if (xev->type == GenericEvent)
+      DispatchXI2Event(xev);
+    return ui::POST_DISPATCH_NONE;
   }
 
   switch (xev->type) {
@@ -424,7 +428,7 @@ uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
       break;
     }
     case GenericEvent:
-      DispatchXI2Event(event);
+      DispatchXI2Event(xev);
       break;
     case ClientMessage: {
       Atom message_type = static_cast<Atom>(xev->xclient.data.l[0]);
@@ -481,7 +485,7 @@ uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
       break;
     }
   }
-  return POST_DISPATCH_NONE;
+  return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
 
 gfx::AcceleratedWidget WindowTreeHostX11::GetAcceleratedWidget() {
@@ -506,7 +510,8 @@ void WindowTreeHostX11::Show() {
     // We now block until our window is mapped. Some X11 APIs will crash and
     // burn if passed |xwindow_| before the window is mapped, and XMapWindow is
     // asynchronous.
-    base::MessagePumpX11::Current()->BlockUntilWindowMapped(xwindow_);
+    if (ui::X11EventSource::GetInstance())
+      ui::X11EventSource::GetInstance()->BlockUntilWindowMapped(xwindow_);
     window_mapped_ = true;
   }
 }

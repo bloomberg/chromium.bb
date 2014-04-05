@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
@@ -31,11 +32,11 @@ class X11DesktopWindowMoveClient;
 class X11ScopedCapture;
 class X11WindowEventFilter;
 
-class VIEWS_EXPORT DesktopWindowTreeHostX11 :
-    public DesktopWindowTreeHost,
-    public aura::WindowTreeHost,
-    public ui::EventSource,
-    public base::MessagePumpDispatcher {
+class VIEWS_EXPORT DesktopWindowTreeHostX11
+    : public DesktopWindowTreeHost,
+      public aura::WindowTreeHost,
+      public ui::EventSource,
+      public ui::PlatformEventDispatcher {
  public:
   DesktopWindowTreeHostX11(
       internal::NativeWidgetDelegate* native_widget_delegate,
@@ -203,8 +204,9 @@ private:
   // Map the window (shows it) taking into account the given |show_state|.
   void MapWindow(ui::WindowShowState show_state);
 
-  // Overridden from Dispatcher:
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
+  // ui::PlatformEventDispatcher:
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
 
   base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_;
 

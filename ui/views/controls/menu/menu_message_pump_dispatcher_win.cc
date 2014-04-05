@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/controls/menu/menu_message_pump_dispatcher.h"
+#include "ui/views/controls/menu/menu_message_pump_dispatcher_win.h"
 
 #include <windowsx.h>
 
@@ -13,6 +13,11 @@
 
 namespace views {
 namespace internal {
+
+MenuMessagePumpDispatcher::MenuMessagePumpDispatcher(MenuController* controller)
+    : menu_controller_(controller) {}
+
+MenuMessagePumpDispatcher::~MenuMessagePumpDispatcher() {}
 
 uint32_t MenuMessagePumpDispatcher::Dispatch(const MSG& msg) {
   DCHECK(menu_controller_->IsBlockingRun());

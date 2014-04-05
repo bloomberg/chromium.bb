@@ -9,6 +9,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/window.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/input_method_event_filter.h"
 
@@ -16,6 +17,7 @@ namespace wm {
 
 WMTestHelper::WMTestHelper(const gfx::Size& default_window_size) {
   aura::Env::CreateInstance();
+  event_source_ = ui::PlatformEventSource::CreateDefault();
   host_.reset(aura::WindowTreeHost::Create(gfx::Rect(default_window_size)));
   host_->InitHost();
   aura::client::SetWindowTreeClient(host_->window(), this);
