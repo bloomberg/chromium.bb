@@ -323,7 +323,9 @@ bool SandboxBPF::RunFunctionInPolicy(void (*code_in_sandbox)(),
     }
 
     SetSandboxPolicyDeprecated(syscall_evaluator, aux);
-    StartSandbox();
+    if (!StartSandbox(PROCESS_SINGLE_THREADED)) {
+      SANDBOX_DIE(NULL);
+    }
 
     // Run our code in the sandbox.
     code_in_sandbox();
@@ -430,15 +432,20 @@ SandboxBPF::SandboxStatus SandboxBPF::SupportsSeccompSandbox(int proc_fd) {
 
 void SandboxBPF::set_proc_fd(int proc_fd) { proc_fd_ = proc_fd; }
 
-void SandboxBPF::StartSandbox() {
+bool SandboxBPF::StartSandbox(SandboxThreadState thread_state) {
+  CHECK(thread_state == PROCESS_SINGLE_THREADED ||
+        thread_state == PROCESS_MULTI_THREADED);
+
   if (status_ == STATUS_UNSUPPORTED || status_ == STATUS_UNAVAILABLE) {
     SANDBOX_DIE(
         "Trying to start sandbox, even though it is known to be "
         "unavailable");
+    return false;
   } else if (sandbox_has_started_ || !conds_) {
     SANDBOX_DIE(
         "Cannot repeatedly start sandbox. Create a separate Sandbox "
         "object instead.");
+    return false;
   }
   if (proc_fd_ < 0) {
     proc_fd_ = open("/proc", O_RDONLY | O_DIRECTORY);
@@ -447,8 +454,10 @@ void SandboxBPF::StartSandbox() {
     // For now, continue in degraded mode, if we can't access /proc.
     // In the future, we might want to tighten this requirement.
   }
-  if (!IsSingleThreaded(proc_fd_)) {
+
+  if (thread_state == PROCESS_SINGLE_THREADED && !IsSingleThreaded(proc_fd_)) {
     SANDBOX_DIE("Cannot start sandbox, if process is already multi-threaded");
+    return false;
   }
 
   // We no longer need access to any files in /proc. We want to do this
@@ -457,15 +466,18 @@ void SandboxBPF::StartSandbox() {
   if (proc_fd_ >= 0) {
     if (IGNORE_EINTR(close(proc_fd_))) {
       SANDBOX_DIE("Failed to close file descriptor for /proc");
+      return false;
     }
     proc_fd_ = -1;
   }
 
   // Install the filters.
-  InstallFilter();
+  InstallFilter(thread_state);
 
   // We are now inside the sandbox.
   status_ = STATUS_ENABLED;
+
+  return true;
 }
 
 void SandboxBPF::PolicySanityChecks(SandboxBPFPolicy* policy) {
@@ -499,7 +511,7 @@ void SandboxBPF::SetSandboxPolicy(SandboxBPFPolicy* policy) {
   policy_.reset(policy);
 }
 
-void SandboxBPF::InstallFilter() {
+void SandboxBPF::InstallFilter(SandboxThreadState thread_state) {
   // We want to be very careful in not imposing any requirements on the
   // policies that are set with SetSandboxPolicy(). This means, as soon as
   // the sandbox is active, we shouldn't be relying on libraries that could
@@ -535,9 +547,23 @@ void SandboxBPF::InstallFilter() {
     }
   }
 
-  sandbox_has_started_ = true;
+  // TODO(rsesek): Always try to engage the sandbox with the
+  // PROCESS_MULTI_THREADED path first, and if that fails, assert that the
+  // process IsSingleThreaded() or SANDBOX_DIE.
 
-  return;
+  if (thread_state == PROCESS_MULTI_THREADED) {
+    // TODO(rsesek): Move these to a more reasonable place once the kernel
+    // patch has landed upstream and these values are formalized.
+    #define PR_SECCOMP_EXT 41
+    #define SECCOMP_EXT_ACT 1
+    #define SECCOMP_EXT_ACT_TSYNC 1
+    if (prctl(PR_SECCOMP_EXT, SECCOMP_EXT_ACT, SECCOMP_EXT_ACT_TSYNC, 0, 0)) {
+      SANDBOX_DIE(quiet_ ? NULL : "Kernel refuses to synchronize threadgroup "
+                                  "BPF filters.");
+    }
+  }
+
+  sandbox_has_started_ = true;
 }
 
 SandboxBPF::Program* SandboxBPF::AssembleFilter(bool force_verification) {
