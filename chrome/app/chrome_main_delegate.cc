@@ -674,11 +674,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
   logging::InitChromeLogging(command_line, file_state);
 #endif
 
-#if defined(OS_WIN)
-  // TODO(darin): Kill this once http://crbug.com/52609 is fixed.
-  ui::SetResourcesDataDLL(_AtlBaseModule.GetResourceInstance());
-#endif
-
   if (SubprocessNeedsResourceBundle(process_type)) {
     // Initialize ResourceBundle which handles files loaded from external
     // sources.  The language should have been passed in to us from the
