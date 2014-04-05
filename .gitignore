@@ -50,6 +50,7 @@ weston-scaler
 weston-simple-egl
 weston-simple-shm
 weston-simple-touch
+weston-simple-damage
 weston-smoke
 weston-stacking
 weston-subsurfaces
