@@ -379,9 +379,11 @@ def GetGerritPatchInfo(patches):
   patches = [cros_patch.ParsePatchDep(x) for x in patches]
   seen = set()
   results = []
-  for patch in patches:
-    helper = GetGerritHelper(patch.remote)
-    raw_ids = [x.ToGerritQueryText() for x in patches]
+
+  for remote in constants.CHANGE_PREFIX.keys():
+    helper = GetGerritHelper(remote)
+    raw_ids = [x.ToGerritQueryText() for x in patches
+               if x.remote == remote]
     for _k, change in helper.QueryMultipleCurrentPatchset(raw_ids):
       # return a unique list, while maintaining the ordering of the first
       # seen instance of each patch.  Do this to ensure whatever ordering
