@@ -100,8 +100,6 @@ struct WebContextMenuData {
         MediaLoop = 0x8,
         MediaCanSave = 0x10,
         MediaHasAudio = 0x20,
-        // FIXME: Remove once Chromium references MediaCanToggleControls.
-        MediaHasVideo = 0x40,
         MediaCanToggleControls = 0x40,
         MediaControls = 0x80,
         MediaCanPrint = 0x100,
