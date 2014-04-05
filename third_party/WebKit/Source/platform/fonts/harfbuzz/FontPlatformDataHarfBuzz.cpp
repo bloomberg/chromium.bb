@@ -32,11 +32,7 @@
 #include "platform/fonts/harfbuzz/FontPlatformDataHarfBuzz.h"
 
 #include "SkTypeface.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/NotImplemented.h"
-#include "platform/fonts/FontCache.h"
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
-#include "public/platform/Platform.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
