@@ -287,7 +287,7 @@ public:
         ExcludeHiddenDescendants = 1 << 3,
         IncludeCompositedDescendants = 1 << 4,
         PretendLayerHasOwnBacking = 1 << 5,
-        DefaultCalculateLayerBoundsFlags =  IncludeSelfTransform | UseLocalClipRectIfPossible | IncludeLayerFilterOutsets
+        DefaultCalculateLayerBoundsFlags =  IncludeSelfTransform | UseLocalClipRectIfPossible | IncludeLayerFilterOutsets | ExcludeHiddenDescendants
     };
     typedef unsigned CalculateLayerBoundsFlags;
 

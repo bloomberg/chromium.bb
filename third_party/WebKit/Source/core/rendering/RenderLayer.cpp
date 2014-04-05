@@ -3489,7 +3489,7 @@ LayoutRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, c
     }
 
     // FIXME: should probably just pass 'flags' down to descendants.
-    CalculateLayerBoundsFlags descendantFlags = DefaultCalculateLayerBoundsFlags | (flags & ExcludeHiddenDescendants) | (flags & IncludeCompositedDescendants);
+    CalculateLayerBoundsFlags descendantFlags = DefaultCalculateLayerBoundsFlags | (flags & IncludeCompositedDescendants);
 
     const_cast<RenderLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 

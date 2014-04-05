@@ -871,7 +871,7 @@ LayoutRect RenderLayerCompositor::calculateCompositedBounds(const RenderLayer* l
     if (!canBeComposited(layer))
         return LayoutRect();
 
-    return layer->calculateLayerBounds(layer, 0, RenderLayer::DefaultCalculateLayerBoundsFlags | RenderLayer::ExcludeHiddenDescendants);
+    return layer->calculateLayerBounds(layer);
 }
 
 void RenderLayerCompositor::layerWasAdded(RenderLayer* /*parent*/, RenderLayer* /*child*/)
