@@ -207,18 +207,6 @@ void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
 }
 
 void DecryptingAudioDecoder::InitializeDecoder() {
-  // Force to use S16 due to limitations of the CDM. See b/13548512
-  config_.Initialize(config_.codec(),
-                     kSampleFormatS16,
-                     config_.channel_layout(),
-                     config_.samples_per_second(),
-                     config_.extra_data(),
-                     config_.extra_data_size(),
-                     config_.is_encrypted(),
-                     false,
-                     base::TimeDelta(),
-                     base::TimeDelta());
-
   state_ = kPendingDecoderInit;
   decryptor_->InitializeAudioDecoder(
       config_,
