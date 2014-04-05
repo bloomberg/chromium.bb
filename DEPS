@@ -28,10 +28,10 @@ vars = {
   "chromiumos_git": "https://chromium.googlesource.com/chromiumos",
   "skia_git": "https://skia.googlesource.com",
   "swig_revision": "230490",
-  "nacl_revision": "12952",
+  "nacl_revision": "12992",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
-  "nacl_tools_revision": "12760",  # native_client/DEPS: tools_rev
+  "nacl_tools_revision": "12970",  # native_client/DEPS: tools_rev
   "google_toolbox_for_mac_revision": "662",
   "libaddressinput_revision": "176",
   "libphonenumber_revision": "621",

@@ -13,7 +13,8 @@ namespace nacl {
 namespace nonsfi {
 namespace {
 
-bool NaClAbiClockIdToClockId(int nacl_clk_id, clockid_t* host_clk_id) {
+bool NaClAbiClockIdToClockId(nacl_irt_clockid_t nacl_clk_id,
+                             clockid_t* host_clk_id) {
   switch (nacl_clk_id) {
     case NACL_ABI_CLOCK_REALTIME:
       *host_clk_id = CLOCK_REALTIME;
@@ -34,7 +35,7 @@ bool NaClAbiClockIdToClockId(int nacl_clk_id, clockid_t* host_clk_id) {
   return true;
 }
 
-int IrtClockGetRes(int clk_id, struct nacl_abi_timespec* res) {
+int IrtClockGetRes(nacl_irt_clockid_t clk_id, struct nacl_abi_timespec* res) {
   clockid_t host_clk_id;
   if (!NaClAbiClockIdToClockId(clk_id, &host_clk_id))
     return EINVAL;
@@ -49,7 +50,7 @@ int IrtClockGetRes(int clk_id, struct nacl_abi_timespec* res) {
   return 0;
 }
 
-int IrtClockGetTime(int clk_id, struct nacl_abi_timespec* tp) {
+int IrtClockGetTime(nacl_irt_clockid_t clk_id, struct nacl_abi_timespec* tp) {
   clockid_t host_clk_id;
   if (!NaClAbiClockIdToClockId(clk_id, &host_clk_id))
     return EINVAL;
@@ -66,8 +67,10 @@ int IrtClockGetTime(int clk_id, struct nacl_abi_timespec* tp) {
 
 // Cast away the distinction between host types and NaCl ABI types.
 const nacl_irt_clock kIrtClock = {
-  reinterpret_cast<int(*)(clockid_t, struct timespec*)>(IrtClockGetRes),
-  reinterpret_cast<int(*)(clockid_t, struct timespec*)>(IrtClockGetTime),
+  reinterpret_cast<int(*)(nacl_irt_clockid_t, struct timespec*)>(
+      IrtClockGetRes),
+  reinterpret_cast<int(*)(nacl_irt_clockid_t, struct timespec*)>(
+      IrtClockGetTime),
 };
 
 }  // namespace nonsfi
