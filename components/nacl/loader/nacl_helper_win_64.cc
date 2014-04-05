@@ -32,7 +32,7 @@ int NaClBrokerMain(const content::MainFunctionParams& parameters) {
 
   scoped_ptr<base::PowerMonitorSource> power_monitor_source(
       new base::PowerMonitorDeviceSource());
-  base::PowerMonitor::Initialize(power_monitor_source.Pass());
+  base::PowerMonitor power_monitor(power_monitor_source.Pass());
   base::HighResolutionTimerManager hi_res_timer_manager;
 
   NaClBrokerListener listener;

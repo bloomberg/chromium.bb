@@ -114,7 +114,9 @@ GpuWatchdogThread::~GpuWatchdogThread() {
   CloseHandle(watched_thread_handle_);
 #endif
 
-  base::PowerMonitor::RemoveObserver(this);
+  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+  if (power_monitor)
+    power_monitor->RemoveObserver(this);
 
 #if defined(OS_CHROMEOS)
   if (tty_file_)
@@ -264,7 +266,9 @@ void GpuWatchdogThread::AddPowerObserver() {
 }
 
 void GpuWatchdogThread::OnAddPowerObserver() {
-  DCHECK(base::PowerMonitor::AddObserver(this));
+  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+  DCHECK(power_monitor);
+  power_monitor->AddObserver(this);
 }
 
 void GpuWatchdogThread::OnSuspend() {

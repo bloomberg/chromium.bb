@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/power_monitor/power_observer.h"
-#include "base/synchronization/lock.h"
 
 namespace base {
 
@@ -21,31 +20,32 @@ class PowerMonitorSource;
 class BASE_EXPORT PowerMonitor {
  public:
   // Takes ownership of |source|.
-  static void Initialize(scoped_ptr<PowerMonitorSource> source);
-  static void ShutdownForTesting();
+  explicit PowerMonitor(scoped_ptr<PowerMonitorSource> source);
+  ~PowerMonitor();
 
-  // Has the PowerMonitor already been initialized?
-  static bool IsInitialized();
+  // Get the process-wide PowerMonitor (if not present, returns NULL).
+  static PowerMonitor* Get();
 
   // Add and remove an observer.
   // Can be called from any thread.
   // Must not be called from within a notification callback.
-  static bool AddObserver(PowerObserver* observer);
-  static bool RemoveObserver(PowerObserver* observer);
+  void AddObserver(PowerObserver* observer);
+  void RemoveObserver(PowerObserver* observer);
 
   // Is the computer currently on battery power.
-  static bool IsOnBatteryPower();
+  bool IsOnBatteryPower();
 
  private:
   friend class PowerMonitorSource;
 
-  static Lock* GetLock();
-  // Must manually acquire lock before calling any of the following functions.
-  static bool IsInitializedLocked();
-  static PowerMonitorSource* GetSource();
-  static void NotifyPowerStateChange(bool battery_in_use);
-  static void NotifySuspend();
-  static void NotifyResume();
+  PowerMonitorSource* Source();
+
+  void NotifyPowerStateChange(bool battery_in_use);
+  void NotifySuspend();
+  void NotifyResume();
+
+  scoped_refptr<ObserverListThreadSafe<PowerObserver> > observers_;
+  scoped_ptr<PowerMonitorSource> source_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitor);
 };

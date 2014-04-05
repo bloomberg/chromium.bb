@@ -50,17 +50,17 @@ class PowerMonitorMessageBroadcasterTest : public testing::Test {
  protected:
   PowerMonitorMessageBroadcasterTest() {
     power_monitor_source_ = new base::PowerMonitorTestSource();
-    base::PowerMonitor::Initialize(
-        scoped_ptr<base::PowerMonitorSource>(power_monitor_source_));
+    power_monitor_.reset(new base::PowerMonitor(
+        scoped_ptr<base::PowerMonitorSource>(power_monitor_source_)));
   }
-  virtual ~PowerMonitorMessageBroadcasterTest() {
-    base::PowerMonitor::ShutdownForTesting();
-  };
+  virtual ~PowerMonitorMessageBroadcasterTest() {};
 
   base::PowerMonitorTestSource* source() { return power_monitor_source_; }
+  base::PowerMonitor* monitor() { return power_monitor_.get(); }
 
  private:
   base::PowerMonitorTestSource* power_monitor_source_;
+  scoped_ptr<base::PowerMonitor> power_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorMessageBroadcasterTest);
 };

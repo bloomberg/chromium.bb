@@ -25,13 +25,17 @@ HttpNetworkLayer::HttpNetworkLayer(HttpNetworkSession* session)
       suspended_(false) {
   DCHECK(session_.get());
 #if defined(OS_WIN)
-  base::PowerMonitor::AddObserver(this);
+ base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+ if (power_monitor)
+   power_monitor->AddObserver(this);
 #endif
 }
 
 HttpNetworkLayer::~HttpNetworkLayer() {
 #if defined(OS_WIN)
-  base::PowerMonitor::RemoveObserver(this);
+  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+  if (power_monitor)
+    power_monitor->RemoveObserver(this);
 #endif
 }
 

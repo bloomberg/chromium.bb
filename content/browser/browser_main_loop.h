@@ -16,6 +16,7 @@ class CommandLine;
 class FilePath;
 class HighResolutionTimerManager;
 class MessageLoop;
+class PowerMonitor;
 class SystemMonitor;
 namespace debug {
 class TraceMemoryController;
@@ -138,6 +139,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Members initialized in |MainMessageLoopStart()| ---------------------------
   scoped_ptr<base::MessageLoop> main_message_loop_;
   scoped_ptr<base::SystemMonitor> system_monitor_;
+  scoped_ptr<base::PowerMonitor> power_monitor_;
   scoped_ptr<base::HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   // user_input_monitor_ has to outlive audio_manager_, so declared first.

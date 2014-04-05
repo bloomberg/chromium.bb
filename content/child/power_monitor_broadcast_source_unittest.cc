@@ -14,19 +14,19 @@ class PowerMonitorBroadcastSourceTest : public testing::Test {
  protected:
   PowerMonitorBroadcastSourceTest() {
     power_monitor_source_ = new PowerMonitorBroadcastSource();
-    base::PowerMonitor::Initialize(
-        scoped_ptr<base::PowerMonitorSource>(power_monitor_source_));
+    power_monitor_.reset(new base::PowerMonitor(
+        scoped_ptr<base::PowerMonitorSource>(power_monitor_source_)));
   }
-  virtual ~PowerMonitorBroadcastSourceTest() {
-    base::PowerMonitor::ShutdownForTesting();
-  }
+  virtual ~PowerMonitorBroadcastSourceTest() {}
 
   PowerMonitorBroadcastSource* source() { return power_monitor_source_; }
+  base::PowerMonitor* monitor() { return power_monitor_.get(); }
 
   base::MessageLoop message_loop_;
 
  private:
   PowerMonitorBroadcastSource* power_monitor_source_;
+  scoped_ptr<base::PowerMonitor> power_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorBroadcastSourceTest);
 };
@@ -36,7 +36,7 @@ TEST_F(PowerMonitorBroadcastSourceTest, PowerMessageReceiveBroadcast) {
     source()->GetMessageFilter();
 
   base::PowerMonitorTestObserver observer;
-  base::PowerMonitor::AddObserver(&observer);
+  monitor()->AddObserver(&observer);
 
   PowerMonitorMsg_Suspend suspend_msg;
   PowerMonitorMsg_Resume resume_msg;

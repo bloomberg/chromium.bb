@@ -216,13 +216,13 @@ void ChildThread::Init() {
   channel_->AddFilter(service_worker_message_filter_->GetFilter());
 
   // In single process mode we may already have a power monitor
-  if (!base::PowerMonitor::IsInitialized()) {
+  if (!base::PowerMonitor::Get()) {
     scoped_ptr<PowerMonitorBroadcastSource> power_monitor_source(
-        new PowerMonitorBroadcastSource());
+      new PowerMonitorBroadcastSource());
     channel_->AddFilter(power_monitor_source->GetMessageFilter());
 
-    base::PowerMonitor::Initialize(
-        power_monitor_source.PassAs<base::PowerMonitorSource>());
+    power_monitor_.reset(new base::PowerMonitor(
+        power_monitor_source.PassAs<base::PowerMonitorSource>()));
   }
 
 #if defined(OS_POSIX)
