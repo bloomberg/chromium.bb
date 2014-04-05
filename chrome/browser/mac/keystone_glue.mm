@@ -555,11 +555,7 @@ NSString* const kVersionKey = @"KSVersion";
 
   [self updateStatus:kAutoupdateChecking version:nil];
 
-  // All checks from inside Chrome are considered user-initiated, because they
-  // only happen following a user action, such as visiting the about page.
-  // Non-user-initiated checks are the periodic checks automatically made by
-  // Keystone, which don't come through this code path (or even this process).
-  [registration_ checkForUpdateWasUserInitiated:YES];
+  [registration_ checkForUpdate];
 
   // Upon completion, ksr::KSRegistrationCheckForUpdateNotification will be
   // posted, and -checkForUpdateComplete: will be called.
