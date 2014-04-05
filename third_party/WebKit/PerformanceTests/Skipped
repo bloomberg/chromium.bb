@@ -55,6 +55,11 @@ Parser/query-selector-id-deep.html
 # Does not run on Android
 Interactive/window-resize.html
 
+# Times out on Android, crbug.com/358168
+Canvas/draw-video-to-hw-accelerated-canvas-2d.html
+Canvas/upload-video-to-sub-texture.html
+Canvas/upload-video-to-texture.html
+
 # Microbenchmark that we aren't interested in monitoring.
 Bindings/gc-forest.html
 Bindings/gc-mini-tree.html
