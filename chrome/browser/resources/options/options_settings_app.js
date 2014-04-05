@@ -22,7 +22,6 @@
       'downloads-section',
       'handlers-section',
       'languages-section',
-      'media-galleries-section',
       'network-section',
       'notifications-section',
       'sync-section'

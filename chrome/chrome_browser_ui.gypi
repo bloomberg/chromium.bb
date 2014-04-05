@@ -2557,8 +2557,6 @@
         'browser/ui/webui/options/manage_profile_handler.h',
         'browser/ui/webui/options/media_devices_selection_handler.cc',
         'browser/ui/webui/options/media_devices_selection_handler.h',
-        'browser/ui/webui/options/media_galleries_handler.cc',
-        'browser/ui/webui/options/media_galleries_handler.h',
         'browser/ui/webui/options/options_handlers_helper.cc',
         'browser/ui/webui/options/options_handlers_helper.h',
         'browser/ui/webui/options/options_ui.cc',
