@@ -85,6 +85,10 @@ void FakeVideoEncodeAccelerator::RequestEncodingParametersChange(
 
 void FakeVideoEncodeAccelerator::Destroy() { delete this; }
 
+void FakeVideoEncodeAccelerator::SendDummyFrameForTesting(bool key_frame) {
+  DoBitstreamBufferReady(0, 23, key_frame);
+}
+
 void FakeVideoEncodeAccelerator::DoRequireBitstreamBuffers(
     unsigned int input_count,
     const gfx::Size& input_coded_size,

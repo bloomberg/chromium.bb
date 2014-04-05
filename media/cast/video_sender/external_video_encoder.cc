@@ -86,7 +86,8 @@ class LocalVideoEncodeAcceleratorClient
         video_encode_accelerator_(vea.Pass()),
         create_video_encode_memory_cb_(create_video_encode_mem_cb),
         weak_owner_(weak_owner),
-        last_encoded_frame_id_(kStartFrameId) {
+        last_encoded_frame_id_(kStartFrameId),
+        key_frame_encountered_(false) {
     DCHECK(encoder_task_runner_);
   }
 
@@ -208,7 +209,15 @@ class LocalVideoEncodeAcceleratorClient
       NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
-    if (!encoded_frame_data_storage_.empty()) {
+    if (key_frame)
+      key_frame_encountered_ = true;
+    if (!key_frame_encountered_) {
+      // Do not send video until we have encountered the first key frame.
+      // Save the bitstream buffer in |stream_header_| to be sent later along
+      // with the first key frame.
+      stream_header_.append(static_cast<const char*>(output_buffer->memory()),
+                            payload_size);
+    } else if (!encoded_frame_data_storage_.empty()) {
       scoped_ptr<transport::EncodedVideoFrame> encoded_frame(
           new transport::EncodedVideoFrame());
 
@@ -224,8 +233,12 @@ class LocalVideoEncodeAcceleratorClient
         encoded_frame->last_referenced_frame_id = encoded_frame->frame_id;
       }
 
-      encoded_frame->data.insert(
-          0, static_cast<const char*>(output_buffer->memory()), payload_size);
+      if (!stream_header_.empty()) {
+        encoded_frame->data = stream_header_;
+        stream_header_.clear();
+      }
+      encoded_frame->data.append(
+          static_cast<const char*>(output_buffer->memory()), payload_size);
 
       cast_environment_->PostTask(
           CastEnvironment::MAIN,
@@ -302,6 +315,8 @@ class LocalVideoEncodeAcceleratorClient
   int max_frame_rate_;
   transport::VideoCodec codec_;
   uint32 last_encoded_frame_id_;
+  bool key_frame_encountered_;
+  std::string stream_header_;
 
   // Shared memory buffers for output with the VideoAccelerator.
   ScopedVector<base::SharedMemory> output_buffers_;

@@ -42,6 +42,8 @@ class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
 
   virtual void Destroy() OVERRIDE;
 
+  void SendDummyFrameForTesting(bool key_frame);
+
  private:
   void DoRequireBitstreamBuffers(unsigned int input_count,
                                  const gfx::Size& input_coded_size,

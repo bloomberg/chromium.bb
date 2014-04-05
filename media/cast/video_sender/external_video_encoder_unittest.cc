@@ -110,8 +110,9 @@ class ExternalVideoEncoderTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             task_runner_);
-    scoped_ptr<VideoEncodeAccelerator> fake_vea(
-        new test::FakeVideoEncodeAccelerator(task_runner_));
+
+    fake_vea_ = new test::FakeVideoEncodeAccelerator(task_runner_);
+    scoped_ptr<VideoEncodeAccelerator> fake_vea(fake_vea_);
     video_encoder_.reset(
         new ExternalVideoEncoder(cast_environment_,
                                  video_config_,
@@ -124,6 +125,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
   virtual ~ExternalVideoEncoderTest() {}
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
+  test::FakeVideoEncodeAccelerator* fake_vea_;  // Owned by video_encoder_.
   scoped_refptr<TestVideoEncoderCallback> test_video_encoder_callback_;
   VideoSenderConfig video_config_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
@@ -192,6 +194,29 @@ TEST_F(ExternalVideoEncoderTest, SkipNextFrame) {
         video_frame_, capture_time, frame_encoded_callback));
     task_runner_->RunTasks();
   }
+  // We need to run the task to cleanup the GPU instance.
+  video_encoder_.reset(NULL);
+  task_runner_->RunTasks();
+}
+
+TEST_F(ExternalVideoEncoderTest, StreamHeader) {
+  task_runner_->RunTasks();  // Run the initializer on the correct thread.
+
+  VideoEncoder::FrameEncodedCallback frame_encoded_callback =
+      base::Bind(&TestVideoEncoderCallback::DeliverEncodedVideoFrame,
+                 test_video_encoder_callback_.get());
+
+  // Force the FakeVideoEncodeAccelerator to return a dummy non-key frame first.
+  fake_vea_->SendDummyFrameForTesting(false);
+
+  // Verify the first returned bitstream buffer is still a key frame.
+  base::TimeTicks capture_time;
+  capture_time += base::TimeDelta::FromMilliseconds(33);
+  test_video_encoder_callback_->SetExpectedResult(true, 0, 0, capture_time);
+  EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
+      video_frame_, capture_time, frame_encoded_callback));
+  task_runner_->RunTasks();
+
   // We need to run the task to cleanup the GPU instance.
   video_encoder_.reset(NULL);
   task_runner_->RunTasks();
