@@ -79,6 +79,14 @@ void ReceiverRtcpEventSubscriber::OnReceiveGenericEvent(
   // Do nothing as RTP receiver is not interested in generic events for RTCP.
 }
 
+void ReceiverRtcpEventSubscriber::GetRtcpEventsAndReset(
+    RtcpEventMultiMap* rtcp_events) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(rtcp_events);
+  rtcp_events->swap(rtcp_events_);
+  rtcp_events_.clear();
+}
+
 void ReceiverRtcpEventSubscriber::TruncateMapIfNeeded() {
   // If map size has exceeded |max_size_to_retain_|, remove entry with
   // the smallest RTP timestamp.

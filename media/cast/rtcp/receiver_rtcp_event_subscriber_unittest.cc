@@ -95,14 +95,18 @@ TEST_F(ReceiverRtcpEventSubscriberTest, LogVideoEvents) {
   Init(ReceiverRtcpEventSubscriber::kVideoEventSubscriber);
 
   InsertEvents();
-  EXPECT_EQ(3u, event_subscriber_->get_rtcp_events().size());
+  ReceiverRtcpEventSubscriber::RtcpEventMultiMap rtcp_events;
+  event_subscriber_->GetRtcpEventsAndReset(&rtcp_events);
+  EXPECT_EQ(3u, rtcp_events.size());
 }
 
 TEST_F(ReceiverRtcpEventSubscriberTest, LogAudioEvents) {
   Init(ReceiverRtcpEventSubscriber::kAudioEventSubscriber);
 
   InsertEvents();
-  EXPECT_EQ(3u, event_subscriber_->get_rtcp_events().size());
+  ReceiverRtcpEventSubscriber::RtcpEventMultiMap rtcp_events;
+  event_subscriber_->GetRtcpEventsAndReset(&rtcp_events);
+  EXPECT_EQ(3u, rtcp_events.size());
 }
 
 TEST_F(ReceiverRtcpEventSubscriberTest, DropEventsWhenSizeExceeded) {
@@ -113,7 +117,10 @@ TEST_F(ReceiverRtcpEventSubscriberTest, DropEventsWhenSizeExceeded) {
         testing_clock_->NowTicks(), kVideoFrameDecoded,
         /*rtp_timestamp*/ i * 10, /*frame_id*/ i);
   }
-  EXPECT_EQ(10u, event_subscriber_->get_rtcp_events().size());
+
+  ReceiverRtcpEventSubscriber::RtcpEventMultiMap rtcp_events;
+  event_subscriber_->GetRtcpEventsAndReset(&rtcp_events);
+  EXPECT_EQ(10u, rtcp_events.size());
 }
 
 }  // namespace cast

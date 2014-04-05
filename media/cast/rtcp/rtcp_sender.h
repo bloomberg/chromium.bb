@@ -5,6 +5,7 @@
 #ifndef MEDIA_CAST_RTCP_RTCP_SENDER_H_
 #define MEDIA_CAST_RTCP_RTCP_SENDER_H_
 
+#include <deque>
 #include <list>
 #include <string>
 
@@ -19,13 +20,25 @@
 namespace media {
 namespace cast {
 
-// We limit the size of receiver logs to avoid queuing up packets. We also
-// do not need the amount of redundancy that results from filling up every
-// RTCP packet with log messages. This number should give a redundancy of
-// about 2-3 per log message.
+// We limit the size of receiver logs to avoid queuing up packets.
 const size_t kMaxReceiverLogBytes = 200;
 
-class ReceiverRtcpEventSubscriber;
+// The determines how long to hold receiver log events, based on how
+// many "receiver log message reports" ago the events were sent.
+const size_t kReceiveLogMessageHistorySize = 20;
+
+// This determines when to send events the second time.
+const size_t kFirstRedundancyOffset = 10;
+COMPILE_ASSERT(kFirstRedundancyOffset > 0 &&
+                   kFirstRedundancyOffset <= kReceiveLogMessageHistorySize,
+               redundancy_offset_out_of_range);
+
+// When to send events the third time.
+const size_t kSecondRedundancyOffset = 20;
+COMPILE_ASSERT(kSecondRedundancyOffset >
+                   kFirstRedundancyOffset && kSecondRedundancyOffset <=
+                   kReceiveLogMessageHistorySize,
+               redundancy_offset_out_of_range);
 
 // TODO(mikhal): Resolve duplication between this and RtcpBuilder.
 class RtcpSender {
@@ -37,16 +50,12 @@ class RtcpSender {
 
   virtual ~RtcpSender();
 
-  // Returns true if |event| is an interesting receiver event.
-  // Such an event should be sent via RTCP.
-  static bool IsReceiverEvent(const media::cast::CastLoggingEvent& event);
-
   void SendRtcpFromRtpReceiver(
       uint32 packet_type_flags,
       const transport::RtcpReportBlock* report_block,
       const RtcpReceiverReferenceTimeReport* rrtr,
       const RtcpCastMessage* cast_message,
-      const ReceiverRtcpEventSubscriber* event_subscriber,
+      const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events,
       uint16 target_delay_ms);
 
  private:
@@ -77,7 +86,15 @@ class RtcpSender {
 
   void BuildReceiverLog(
       const ReceiverRtcpEventSubscriber::RtcpEventMultiMap& rtcp_events,
-      Packet* packet) const;
+      Packet* packet);
+
+  bool BuildRtcpReceiverLogMessage(
+      const ReceiverRtcpEventSubscriber::RtcpEventMultiMap& rtcp_events,
+      size_t start_size,
+      RtcpReceiverLogMessage* receiver_log_message,
+      size_t* number_of_frames,
+      size_t* total_number_of_messages_to_send,
+      size_t* rtcp_log_size);
 
   inline void BitrateToRembExponentBitrate(uint32 bitrate,
                                            uint8* exponent,
@@ -99,6 +116,8 @@ class RtcpSender {
   // Not owned by this class.
   transport::PacedPacketSender* const transport_;
   scoped_refptr<CastEnvironment> cast_environment_;
+
+  std::deque<RtcpReceiverLogMessage> rtcp_events_history_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcpSender);
 };

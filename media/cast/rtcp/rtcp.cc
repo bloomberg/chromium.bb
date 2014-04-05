@@ -230,7 +230,7 @@ void Rtcp::IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length) {
 
 void Rtcp::SendRtcpFromRtpReceiver(
     const RtcpCastMessage* cast_message,
-    const ReceiverRtcpEventSubscriber* event_subscriber) {
+    const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   uint32 packet_type_flags = 0;
 
@@ -247,7 +247,7 @@ void Rtcp::SendRtcpFromRtpReceiver(
   if (cast_message) {
     packet_type_flags |= transport::kRtcpCast;
   }
-  if (event_subscriber) {
+  if (rtcp_events) {
     packet_type_flags |= transport::kRtcpReceiverLog;
   }
   if (rtcp_mode_ == kRtcpCompound || now >= next_time_to_send_rtcp_) {
@@ -279,9 +279,12 @@ void Rtcp::SendRtcpFromRtpReceiver(
     }
     UpdateNextTimeToSendRtcp();
   }
-  rtcp_sender_->SendRtcpFromRtpReceiver(
-      packet_type_flags, &report_block, &rrtr, cast_message, event_subscriber,
-      target_delay_ms_);
+  rtcp_sender_->SendRtcpFromRtpReceiver(packet_type_flags,
+                                        &report_block,
+                                        &rrtr,
+                                        cast_message,
+                                        rtcp_events,
+                                        target_delay_ms_);
 }
 
 void Rtcp::SendRtcpFromRtpSender(

@@ -447,7 +447,9 @@ void VideoReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   cast_environment_->Logging()->InsertFrameEvent(
       now, kVideoAckSent, rtp_timestamp, cast_message.ack_frame_id_);
 
-  rtcp_->SendRtcpFromRtpReceiver(&cast_message, &event_subscriber_);
+  ReceiverRtcpEventSubscriber::RtcpEventMultiMap rtcp_events;
+  event_subscriber_.GetRtcpEventsAndReset(&rtcp_events);
+  rtcp_->SendRtcpFromRtpReceiver(&cast_message, &rtcp_events);
 }
 
 // Cast messages should be sent within a maximum interval. Schedule a call

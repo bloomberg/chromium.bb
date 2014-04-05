@@ -271,7 +271,9 @@ void AudioReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   cast_environment_->Logging()->InsertFrameEvent(
       now, kAudioAckSent, rtp_timestamp, cast_message.ack_frame_id_);
 
-  rtcp_.SendRtcpFromRtpReceiver(&cast_message, &event_subscriber_);
+  ReceiverRtcpEventSubscriber::RtcpEventMultiMap rtcp_events;
+  event_subscriber_.GetRtcpEventsAndReset(&rtcp_events);
+  rtcp_.SendRtcpFromRtpReceiver(&cast_message, &rtcp_events);
 }
 
 base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,

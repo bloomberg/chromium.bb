@@ -18,6 +18,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/rtcp/receiver_rtcp_event_subscriber.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 #include "media/cast/transport/cast_transport_defines.h"
 #include "media/cast/transport/cast_transport_sender.h"
@@ -29,7 +30,6 @@ namespace cast {
 class LocalRtcpReceiverFeedback;
 class LocalRtcpRttFeedback;
 class PacedPacketSender;
-class ReceiverRtcpEventSubscriber;
 class RtcpReceiver;
 class RtcpSender;
 
@@ -87,13 +87,13 @@ class Rtcp {
       const transport::RtcpSenderLogMessage& sender_log_message,
       transport::RtcpSenderInfo sender_info);
 
-  // |cast_message| and |event_subscriber| is optional; if |cast_message| is
+  // |cast_message| and |rtcp_events| is optional; if |cast_message| is
   // provided the RTCP receiver report will append a Cast message containing
-  // Acks and Nacks; if |event_subscriber| is provided the RTCP receiver report
-  // will append the log messages from the subscriber.
+  // Acks and Nacks; if |rtcp_events| is provided the RTCP receiver report
+  // will append the log messages.
   void SendRtcpFromRtpReceiver(
       const RtcpCastMessage* cast_message,
-      const ReceiverRtcpEventSubscriber* event_subscriber);
+      const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events);
 
   void IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length);
   bool Rtt(base::TimeDelta* rtt,

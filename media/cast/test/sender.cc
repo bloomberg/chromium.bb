@@ -371,17 +371,11 @@ net::IPEndPoint CreateUDPAddress(std::string ip_str, int port) {
   return net::IPEndPoint(ip_number, port);
 }
 
-void DumpLoggingData(
-    scoped_ptr<media::cast::EncodingEventSubscriber> event_subscriber,
-    base::ScopedFILE log_file,
-    bool compress) {
-  media::cast::FrameEventMap frame_events;
-  media::cast::PacketEventMap packet_events;
-  media::cast::proto::LogMetadata log_metadata;
-
-  event_subscriber->GetEventsAndReset(
-      &log_metadata, &frame_events, &packet_events);
-
+void DumpLoggingData(const media::cast::proto::LogMetadata& log_metadata,
+                     const media::cast::FrameEventMap& frame_events,
+                     const media::cast::PacketEventMap& packet_events,
+                     bool compress,
+                     base::ScopedFILE log_file) {
   VLOG(0) << "Frame map size: " << frame_events.size();
   VLOG(0) << "Packet map size: " << packet_events.size();
 
@@ -412,19 +406,33 @@ void WriteLogsToFileAndStopSubscribing(
     base::ScopedFILE video_log_file,
     base::ScopedFILE audio_log_file,
     bool compress) {
-  // Serialize video events.
   cast_environment->Logging()->RemoveRawEventSubscriber(
       video_event_subscriber.get());
   cast_environment->Logging()->RemoveRawEventSubscriber(
       audio_event_subscriber.get());
 
   VLOG(0) << "Dumping logging data for video stream.";
-  DumpLoggingData(
-      video_event_subscriber.Pass(), video_log_file.Pass(), compress);
+  media::cast::proto::LogMetadata log_metadata;
+  media::cast::FrameEventMap frame_events;
+  media::cast::PacketEventMap packet_events;
+  video_event_subscriber->GetEventsAndReset(
+      &log_metadata, &frame_events, &packet_events);
+
+  DumpLoggingData(log_metadata,
+                  frame_events,
+                  packet_events,
+                  compress,
+                  video_log_file.Pass());
 
   VLOG(0) << "Dumping logging data for audio stream.";
-  DumpLoggingData(
-      audio_event_subscriber.Pass(), audio_log_file.Pass(), compress);
+  audio_event_subscriber->GetEventsAndReset(
+      &log_metadata, &frame_events, &packet_events);
+
+  DumpLoggingData(log_metadata,
+                  frame_events,
+                  packet_events,
+                  compress,
+                  audio_log_file.Pass());
 }
 
 }  // namespace
@@ -460,6 +468,7 @@ int main(int argc, char** argv) {
   net::IPEndPoint remote_endpoint =
       CreateUDPAddress(remote_ip_address, remote_port);
   transport_audio_config.base.ssrc = audio_config.sender_ssrc;
+  VLOG(0) << "Audio ssrc: " << transport_audio_config.base.ssrc;
   transport_audio_config.base.rtp_config = audio_config.rtp_config;
   transport_video_config.base.ssrc = video_config.sender_ssrc;
   transport_video_config.base.rtp_config = video_config.rtp_config;
