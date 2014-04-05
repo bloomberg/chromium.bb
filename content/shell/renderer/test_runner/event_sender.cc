@@ -7,11 +7,11 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "content/shell/renderer/test_runner/KeyCodeMapping.h"
 #include "content/shell/renderer/test_runner/MockSpellCheck.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
+#include "content/shell/renderer/test_runner/key_code_mapping.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
@@ -289,16 +289,16 @@ bool GetEditCommand(const WebKeyboardEvent& event, std::string* name) {
     return false;
 
   switch (event.windowsKeyCode) {
-    case WebTestRunner::VKEY_LEFT:
+    case VKEY_LEFT:
       *name = "MoveToBeginningOfLine";
       break;
-    case WebTestRunner::VKEY_RIGHT:
+    case VKEY_RIGHT:
       *name = "MoveToEndOfLine";
       break;
-    case WebTestRunner::VKEY_UP:
+    case VKEY_UP:
       *name = "MoveToBeginningOfDocument";
       break;
-    case WebTestRunner::VKEY_DOWN:
+    case VKEY_DOWN:
       *name = "MoveToEndOfDocument";
       break;
     default:
@@ -1166,45 +1166,45 @@ void EventSender::KeyDown(const std::string& code_str,
 
   if ("\n" == code_str) {
     generate_char = true;
-    text = code = WebTestRunner::VKEY_RETURN;
+    text = code = VKEY_RETURN;
   } else if ("rightArrow" == code_str) {
-    code = WebTestRunner::VKEY_RIGHT;
+    code = VKEY_RIGHT;
   } else if ("downArrow" == code_str) {
-    code = WebTestRunner::VKEY_DOWN;
+    code = VKEY_DOWN;
   } else if ("leftArrow" == code_str) {
-    code = WebTestRunner::VKEY_LEFT;
+    code = VKEY_LEFT;
   } else if ("upArrow" == code_str) {
-    code = WebTestRunner::VKEY_UP;
+    code = VKEY_UP;
   } else if ("insert" == code_str) {
-    code = WebTestRunner::VKEY_INSERT;
+    code = VKEY_INSERT;
   } else if ("delete" == code_str) {
-    code = WebTestRunner::VKEY_DELETE;
+    code = VKEY_DELETE;
   } else if ("pageUp" == code_str) {
-    code = WebTestRunner::VKEY_PRIOR;
+    code = VKEY_PRIOR;
   } else if ("pageDown" == code_str) {
-    code = WebTestRunner::VKEY_NEXT;
+    code = VKEY_NEXT;
   } else if ("home" == code_str) {
-    code = WebTestRunner::VKEY_HOME;
+    code = VKEY_HOME;
   } else if ("end" == code_str) {
-    code = WebTestRunner::VKEY_END;
+    code = VKEY_END;
   } else if ("printScreen" == code_str) {
-    code = WebTestRunner::VKEY_SNAPSHOT;
+    code = VKEY_SNAPSHOT;
   } else if ("menu" == code_str) {
-    code = WebTestRunner::VKEY_APPS;
+    code = VKEY_APPS;
   } else if ("leftControl" == code_str) {
-    code = WebTestRunner::VKEY_LCONTROL;
+    code = VKEY_LCONTROL;
   } else if ("rightControl" == code_str) {
-    code = WebTestRunner::VKEY_RCONTROL;
+    code = VKEY_RCONTROL;
   } else if ("leftShift" == code_str) {
-    code = WebTestRunner::VKEY_LSHIFT;
+    code = VKEY_LSHIFT;
   } else if ("rightShift" == code_str) {
-    code = WebTestRunner::VKEY_RSHIFT;
+    code = VKEY_RSHIFT;
   } else if ("leftAlt" == code_str) {
-    code = WebTestRunner::VKEY_LMENU;
+    code = VKEY_LMENU;
   } else if ("rightAlt" == code_str) {
-    code = WebTestRunner::VKEY_RMENU;
+    code = VKEY_RMENU;
   } else if ("numLock" == code_str) {
-    code = WebTestRunner::VKEY_NUMLOCK;
+    code = VKEY_NUMLOCK;
   } else {
     // Compare the input string with the function-key names defined by the
     // DOM spec (i.e. "F1",...,"F24"). If the input string is a function-key
@@ -1212,7 +1212,7 @@ void EventSender::KeyDown(const std::string& code_str,
     for (int i = 1; i <= 24; ++i) {
       std::string function_key_name = base::StringPrintf("F%d", i);
       if (function_key_name == code_str) {
-        code = WebTestRunner::VKEY_F1 + (i - 1);
+        code = VKEY_F1 + (i - 1);
         break;
       }
     }
@@ -1244,8 +1244,7 @@ void EventSender::KeyDown(const std::string& code_str,
   event_down.windowsKeyCode = code;
 
 #if defined(OS_LINUX) && defined(TOOLKIT_GTK)
-  event_down.nativeKeyCode =
-      WebTestRunner::NativeKeyCodeForWindowsKeyCode(code);
+  event_down.nativeKeyCode = NativeKeyCodeForWindowsKeyCode(code);
 #endif
 
   if (generate_char) {
@@ -1287,7 +1286,7 @@ void EventSender::KeyDown(const std::string& code_str,
 
   view_->handleInputEvent(event_down);
 
-  if (code == WebTestRunner::VKEY_ESCAPE && !current_drag_data_.isNull()) {
+  if (code == VKEY_ESCAPE && !current_drag_data_.isNull()) {
     WebMouseEvent event;
     InitMouseEvent(WebInputEvent::MouseDown,
                    pressed_button_,

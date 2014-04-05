@@ -1,13 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_KEYCODEMAPPING_H_
-#define CONTENT_SHELL_RENDERER_TEST_RUNNER_KEYCODEMAPPING_H_
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_KEY_CODE_MAPPING_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_KEY_CODE_MAPPING_H_
 
-namespace WebTestRunner {
+namespace content {
 
-// The keycodes match the values of the virtual keycodes found here http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
+// The keycodes match the values of the virtual keycodes found here
+// http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
 enum {
     VKEY_RETURN   = 0x0D,
     VKEY_ESCAPE   = 0x1B,
@@ -36,6 +37,6 @@ enum {
 // Map a windows keycode to a native keycode on defined(__linux__) && defined(TOOLKIT_GTK).
 int NativeKeyCodeForWindowsKeyCode(int keysym);
 
-}
+}  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_KEYCODEMAPPING_H_
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_KEY_CODE_MAPPING_H_
