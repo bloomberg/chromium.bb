@@ -149,6 +149,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
 
   void GetPairedPictureLayers(std::vector<PairedPictureLayer>* layers) const;
 
+  ResourcePool* resource_pool() { return resource_pool_.get(); }
+
   void InitializeTilesWithResourcesForTesting(const std::vector<Tile*>& tiles) {
     for (size_t i = 0; i < tiles.size(); ++i) {
       ManagedTileState& mts = tiles[i]->managed_state();

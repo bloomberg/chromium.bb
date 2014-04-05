@@ -1292,6 +1292,16 @@ void LayerTreeHostImpl::ReclaimResources(const CompositorFrameAck* ack) {
   // processing it.
   if (renderer_)
     renderer_->ReceiveSwapBuffersAck(*ack);
+
+  // In OOM, we now might be able to release more resources that were held
+  // because they were exported.
+  if (tile_manager_) {
+    DCHECK(tile_manager_->resource_pool());
+
+    // TODO(vmpstr): Move resource pool to be LTHI member.
+    tile_manager_->resource_pool()->CheckBusyResources();
+    tile_manager_->resource_pool()->ReduceResourceUsage();
+  }
 }
 
 void LayerTreeHostImpl::OnCanDrawStateChangedForTree() {
