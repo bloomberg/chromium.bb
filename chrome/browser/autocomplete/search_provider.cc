@@ -411,7 +411,6 @@ bool SearchProvider::IsKeywordFetcher(const net::URLFetcher* fetcher) const {
 }
 
 void SearchProvider::UpdateMatches() {
-  base::TimeTicks update_matches_start_time(base::TimeTicks::Now());
   ConvertResultsToAutocompleteMatches();
 
   // Check constraints that may be violated by suggested relevances.
@@ -512,8 +511,6 @@ void SearchProvider::UpdateMatches() {
   UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.UpdateStarredTime",
                       base::TimeTicks::Now() - update_starred_start_time);
   UpdateDone();
-  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.UpdateMatchesTime",
-                      base::TimeTicks::Now() - update_matches_start_time);
 }
 
 void SearchProvider::Run() {
@@ -542,8 +539,6 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   if (minimal_changes)
     return;
 
-  base::TimeTicks do_history_query_start_time(base::TimeTicks::Now());
-
   keyword_history_results_.clear();
   default_history_results_.clear();
 
@@ -551,17 +546,10 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
       input_.current_page_classification()))
     return;
 
-  base::TimeTicks start_time(base::TimeTicks::Now());
   HistoryService* const history_service =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  base::TimeTicks now(base::TimeTicks::Now());
-  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.GetHistoryServiceTime",
-                      now - start_time);
-  start_time = now;
   history::URLDatabase* url_db = history_service ?
       history_service->InMemoryDatabase() : NULL;
-  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.InMemoryDatabaseTime",
-                      base::TimeTicks::Now() - start_time);
   if (!url_db)
     return;
 
@@ -577,7 +565,7 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   int num_matches = kMaxMatches * 5;
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   if (default_url) {
-    start_time = base::TimeTicks::Now();
+    const base::TimeTicks start_time = base::TimeTicks::Now();
     url_db->GetMostRecentKeywordSearchTerms(default_url->id(), input_.text(),
         num_matches, &default_history_results_);
     UMA_HISTOGRAM_TIMES(
@@ -589,8 +577,6 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
     url_db->GetMostRecentKeywordSearchTerms(keyword_url->id(),
         keyword_input_.text(), num_matches, &keyword_history_results_);
   }
-  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.DoHistoryQueryTime",
-                      base::TimeTicks::Now() - do_history_query_start_time);
 }
 
 void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
@@ -885,8 +871,6 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   // We will always return any verbatim matches, no matter how we obtained their
   // scores, unless we have already accepted AutocompleteResult::kMaxMatches
   // higher-scoring matches under the conditions above.
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Omnibox.SearchProvider.NumMatchesToSort", matches.size(), 1, 50, 20);
   std::sort(matches.begin(), matches.end(), &AutocompleteMatch::MoreRelevant);
   matches_.clear();
 
