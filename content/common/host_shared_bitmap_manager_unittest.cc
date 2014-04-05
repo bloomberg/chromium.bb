@@ -17,7 +17,7 @@ class HostSharedBitmapManagerTest : public testing::Test {
 TEST_F(HostSharedBitmapManagerTest, TestCreate) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
-  EXPECT_TRUE(cc::SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
+  EXPECT_TRUE(cc::SharedBitmap::GetSizeInBytes(bitmap_size, &size_in_bytes));
   scoped_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);
@@ -76,7 +76,7 @@ TEST_F(HostSharedBitmapManagerTest, TestCreate) {
 TEST_F(HostSharedBitmapManagerTest, TestCreateForChild) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
-  EXPECT_TRUE(cc::SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
+  EXPECT_TRUE(cc::SharedBitmap::GetSizeInBytes(bitmap_size, &size_in_bytes));
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
   base::SharedMemoryHandle handle;
   manager_->AllocateSharedBitmapForChild(
@@ -97,7 +97,7 @@ TEST_F(HostSharedBitmapManagerTest, TestCreateForChild) {
 TEST_F(HostSharedBitmapManagerTest, RemoveProcess) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
-  EXPECT_TRUE(cc::SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
+  EXPECT_TRUE(cc::SharedBitmap::GetSizeInBytes(bitmap_size, &size_in_bytes));
   scoped_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);
@@ -131,7 +131,7 @@ TEST_F(HostSharedBitmapManagerTest, RemoveProcess) {
 TEST_F(HostSharedBitmapManagerTest, AddDuplicate) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
-  EXPECT_TRUE(cc::SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
+  EXPECT_TRUE(cc::SharedBitmap::GetSizeInBytes(bitmap_size, &size_in_bytes));
   scoped_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);

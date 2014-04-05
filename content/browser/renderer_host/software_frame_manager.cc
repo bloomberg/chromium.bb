@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "base/debug/alias.h"
 #include "base/numerics/safe_math.h"
-#include "cc/resources/shared_bitmap.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -98,11 +97,9 @@ bool SoftwareFrameManager::SwapToNewFrame(
 
   // The NULL handle is used in testing.
   if (base::SharedMemory::IsHandleValid(shared_memory->handle())) {
-    DCHECK(cc::SharedBitmap::VerifySizeInBytes(frame_data->size));
-    // UncheckedSizeInBytes is okay because the frame_data size was verified
-    // when frame_data was received over IPC.
-    size_t size_in_bytes =
-        cc::SharedBitmap::UncheckedSizeInBytes(frame_data->size);
+    DCHECK(frame_data->CheckedSizeInBytes().IsValid())
+        << "Integer overflow when computing bytes to map.";
+    size_t size_in_bytes = frame_data->SizeInBytes();
 #ifdef OS_WIN
     if (!shared_memory->Map(0)) {
       DLOG(ERROR) << "Unable to map renderer memory.";

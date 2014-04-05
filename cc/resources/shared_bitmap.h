@@ -21,7 +21,7 @@ class CC_EXPORT SharedBitmap {
  public:
   SharedBitmap(base::SharedMemory* memory,
                const SharedBitmapId& id,
-               const base::Callback<void(SharedBitmap* bitmap)>& free_callback);
+               const base::Callback<void(SharedBitmap*)>& free_callback);
 
   ~SharedBitmap();
 
@@ -40,22 +40,14 @@ class CC_EXPORT SharedBitmap {
   SharedBitmapId id() { return id_; }
 
   // Returns true if the size is valid and false otherwise.
-  static bool SizeInBytes(const gfx::Size& size, size_t* size_in_bytes);
-  // Dies with a CRASH() if the size can not be represented as a positive number
-  // of bytes.
-  static size_t CheckedSizeInBytes(const gfx::Size& size);
-  // Returns the size in bytes but may overflow or return 0. Only do this for
-  // sizes that have already been checked.
-  static size_t UncheckedSizeInBytes(const gfx::Size& size);
-  // Returns true if the size is valid and false otherwise.
-  static bool VerifySizeInBytes(const gfx::Size& size);
+  static bool GetSizeInBytes(const gfx::Size& size, size_t* size_in_bytes);
 
   static SharedBitmapId GenerateId();
 
  private:
   base::SharedMemory* memory_;
   SharedBitmapId id_;
-  base::Callback<void(SharedBitmap* bitmap)> free_callback_;
+  base::Callback<void(SharedBitmap*)> free_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedBitmap);
 };
