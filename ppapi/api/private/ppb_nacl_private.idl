@@ -291,9 +291,9 @@ interface PPB_NaCl_Private {
   /* Reports that loading a nexe was aborted. */
   void ReportLoadAbort([in] PP_Instance instance);
 
-  /* Reports that the nexe has crashed or is otherwise dead. */
-  void ReportDeadNexe([in] PP_Instance instance,
-                      [in] int64_t crash_time);
+  /* Reports that the nexe has crashed. */
+  void NexeDidCrash([in] PP_Instance instance,
+                    [in] str_t crash_log);
 
   /* Performs internal setup when an instance is created. */
   void InstanceCreated([in] PP_Instance instance);
@@ -318,9 +318,6 @@ interface PPB_NaCl_Private {
   void LogToConsole([in] PP_Instance instance,
                     [in] str_t message);
 
-  /* Returns PP_TRUE if an error has been reported loading the nexe. */
-  PP_Bool GetNexeErrorReported([in] PP_Instance instance);
-
   /* Returns the NaCl readiness status for this instance. */
   PP_NaClReadyState GetNaClReadyState([in] PP_Instance instance);
 
@@ -335,12 +332,8 @@ interface PPB_NaCl_Private {
   void SetIsInstalled([in] PP_Instance instance,
                       [in] PP_Bool is_installed);
 
-  /* Returns the time the nexe became ready. */
-  int64_t GetReadyTime([in] PP_Instance instance);
-
   /* Sets the time the nexe became ready. */
-  void SetReadyTime([in] PP_Instance instance,
-                    [in] int64_t ready_time);
+  void SetReadyTime([in] PP_Instance instance);
 
   /* Returns the exit status of the plugin process. */
   int32_t GetExitStatus([in] PP_Instance instance);
