@@ -158,6 +158,7 @@ void ReflectorImpl::CreateSharedTextureOnMainThread(gfx::Size size) {
     shared_texture_ =
         ImageTransportFactory::GetInstance()->CreateOwnedTexture(
             size, 1.0f, texture_id_);
+    ImageTransportFactory::GetInstance()->GetGLHelper()->Flush();
   }
   mirroring_layer_->SetExternalTexture(shared_texture_.get());
   FullRedrawOnMainThread(size);
