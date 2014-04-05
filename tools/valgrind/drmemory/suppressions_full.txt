@@ -28,12 +28,11 @@ GoogleDesktopNetwork3.DLL!DllUnregisterServer
 
 # They deliberately use uninit local var in sqlite random generator.
 # Random bytes may mess up the call stack between randomByte and
-# sqlite3_* frames (http://code.google.com/p/drmemory/issues/detail?id=851).
+# sqlite3_* frames (http://code.google.com/p/drmemory/issues/detail?id=1514)
+# so we just look for randomByte.
 UNINITIALIZED READ
 name=sqlite3_randomness UNINIT
 *!randomByte
-...
-*!sqlite3*
 
 # Intentional leak in WebKit Template Framework for ThreadData.
 LEAK
