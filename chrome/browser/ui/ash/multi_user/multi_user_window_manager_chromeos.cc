@@ -7,13 +7,17 @@
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
 #include "ash/ash_switches.h"
+#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/root_window_controller.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/message_loop/message_loop.h"
@@ -21,11 +25,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -41,18 +46,23 @@
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace {
 
 // The animation time in milliseconds for a single window which is fading
 // in / out.
-const int kAnimationTimeMS = 100;
+static int kAnimationTimeMS = 100;
+
+// The animation time in millseconds for the fade in and / or out when switching
+// users.
+static int kUserFadeTimeMS = 110;
 
 // The animation time in ms for a window which get teleported to another screen.
-const int kTeleportAnimationTimeMS = 300;
+static int kTeleportAnimationTimeMS = 300;
 
 // Checks if a given event is a user event.
-bool IsUserEvent(const ui::Event* e) {
+bool IsUserEvent(ui::Event* e) {
   if (e) {
     ui::EventType type = e->type();
     if (type != ui::ET_CANCEL_MODE &&
@@ -175,6 +185,24 @@ class AnimationSetter {
   const base::TimeDelta previous_animation_time_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationSetter);
+};
+
+// logic while the user gets switched.
+class UserChangeActionDisabler {
+ public:
+  UserChangeActionDisabler() {
+    ash::WindowPositioner::DisableAutoPositioning(true);
+    ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(true);
+  }
+
+  ~UserChangeActionDisabler() {
+    ash::WindowPositioner::DisableAutoPositioning(false);
+    ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(
+        false);
+  }
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(UserChangeActionDisabler);
 };
 
 // This class keeps track of all applications which were started for a user.
@@ -383,11 +411,30 @@ void MultiUserWindowManagerChromeOS::RemoveObserver(Observer* observer) {
 void MultiUserWindowManagerChromeOS::ActiveUserChanged(
     const std::string& user_id) {
   DCHECK(user_id != current_user_id_);
-  // This needs to be set before the animation starts.
   current_user_id_ = user_id;
+  // If there is an animation in progress finish the pending switch which also
+  // kills the timer (if there is one).
+  if (user_changed_animation_timer_.get())
+    TransitionUser(SHOW_NEW_USER);
 
-  animation_.reset(
-      new UserSwichAnimatorChromeOS(this, user_id, animations_disabled_));
+  // Start the animation by hiding the old user.
+  TransitionUser(HIDE_OLD_USER);
+
+  // If animations are disabled we immediately switch to the new user, otherwise
+  // we create a timer which will fade in the new user once the other user has
+  // been faded away.
+  if (animations_disabled_) {
+    TransitionUser(SHOW_NEW_USER);
+  } else {
+    user_changed_animation_timer_.reset(new base::Timer(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kUserFadeTimeMS),
+        base::Bind(&MultiUserWindowManagerChromeOS::TransitionUser,
+                   base::Unretained(this),
+                   SHOW_NEW_USER),
+        false));
+    user_changed_animation_timer_->Reset();
+  }
 }
 
 void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {
@@ -484,7 +531,7 @@ void MultiUserWindowManagerChromeOS::SetAnimationsForTest(bool disable) {
 }
 
 bool MultiUserWindowManagerChromeOS::IsAnimationRunningForTest() {
-  return animation_.get() != NULL && !animation_->IsAnimationFinished();
+  return user_changed_animation_timer_.get() != NULL;
 }
 
 const std::string& MultiUserWindowManagerChromeOS::GetCurrentUserForTest() {
@@ -533,6 +580,149 @@ bool MultiUserWindowManagerChromeOS::ShowWindowForUserIntern(
   return true;
 }
 
+void MultiUserWindowManagerChromeOS::TransitionUser(
+    MultiUserWindowManagerChromeOS::AnimationStep animation_step) {
+  TransitionWallpaper(animation_step);
+  TransitionUserShelf(animation_step);
+
+  // Disable the window position manager and the MRU window tracker temporarily.
+  scoped_ptr<UserChangeActionDisabler> disabler(new UserChangeActionDisabler);
+
+  // We need to show/hide the windows in the same order as they were created in
+  // their parent window(s) to keep the layer / window hierarchy in sync. To
+  // achieve that we first collect all parent windows and then enumerate all
+  // windows in those parent windows and show or hide them accordingly.
+
+  // Create a list of all parent windows we have to check and their parents.
+  std::set<aura::Window*> parent_list;
+  for (WindowToEntryMap::iterator it = window_to_entry_.begin();
+       it != window_to_entry_.end(); ++it) {
+    aura::Window* parent = it->first->parent();
+    if (parent_list.find(parent) == parent_list.end())
+      parent_list.insert(parent);
+  }
+
+  // Traverse the found parent windows to handle their child windows in order of
+  // their appearance.
+  for (std::set<aura::Window*>::iterator it_parents = parent_list.begin();
+       it_parents != parent_list.end(); ++it_parents) {
+    const aura::Window::Windows window_list = (*it_parents)->children();
+    for (aura::Window::Windows::const_iterator it_window = window_list.begin();
+         it_window != window_list.end(); ++it_window) {
+      aura::Window* window = *it_window;
+      WindowToEntryMap::iterator it_map = window_to_entry_.find(window);
+      if (it_map != window_to_entry_.end()) {
+        bool should_be_visible =
+            it_map->second->show_for_user() == current_user_id_ &&
+            it_map->second->show();
+        bool is_visible = window->IsVisible();
+        ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+        if (animation_step == SHOW_NEW_USER &&
+            it_map->second->owner() == current_user_id_ &&
+            it_map->second->show_for_user() != current_user_id_ &&
+            window_state->IsMinimized()) {
+          // Pull back minimized visiting windows to the owners desktop.
+          ShowWindowForUserIntern(window, current_user_id_);
+          window_state->Unminimize();
+        } else if (should_be_visible != is_visible &&
+                   should_be_visible == (animation_step == SHOW_NEW_USER)) {
+          SetWindowVisibility(window, should_be_visible, kUserFadeTimeMS);
+        }
+      }
+    }
+  }
+
+  // Activation and real switch are happening after the other user gets shown.
+  if (animation_step == SHOW_NEW_USER) {
+    // Finally we need to restore the previously active window.
+    ash::MruWindowTracker::WindowList mru_list =
+        ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
+    if (mru_list.size()) {
+      aura::Window* window = mru_list[0];
+      ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+      if (IsWindowOnDesktopOfUser(window, current_user_id_) &&
+          !window_state->IsMinimized()) {
+        aura::client::ActivationClient* client =
+            aura::client::GetActivationClient(window->GetRootWindow());
+        // Several unit tests come here without an activation client.
+        if (client)
+          client->ActivateWindow(window);
+      }
+    }
+
+    // This is called directly here to make sure notification_blocker will see
+    // the new window status.
+    notification_blocker_->ActiveUserChanged(current_user_id_);
+
+    // We can reset the timer at this point.
+    // Note: The timer can be destroyed while it is performing its task.
+    user_changed_animation_timer_.reset();
+  }
+}
+
+void MultiUserWindowManagerChromeOS::TransitionWallpaper(
+    MultiUserWindowManagerChromeOS::AnimationStep animation_step) {
+  // Handle the wallpaper switch.
+  ash::UserWallpaperDelegate* wallpaper_delegate =
+      ash::Shell::GetInstance()->user_wallpaper_delegate();
+  if (animation_step == HIDE_OLD_USER) {
+    // Set the wallpaper cross dissolve animation duration to our complete
+    // animation cycle for a fade in and fade out.
+    wallpaper_delegate->SetAnimationDurationOverride(2 * kUserFadeTimeMS);
+    chromeos::WallpaperManager::Get()->SetUserWallpaperDelayed(
+        current_user_id_);
+  } else {
+    // Revert the wallpaper cross dissolve animation duration back to the
+    // default.
+    wallpaper_delegate->SetAnimationDurationOverride(0);
+  }
+}
+
+void MultiUserWindowManagerChromeOS::TransitionUserShelf(
+    MultiUserWindowManagerChromeOS::AnimationStep animation_step) {
+  // The shelf animation duration override.
+  int duration_override = kUserFadeTimeMS;
+  // Handle the shelf order of items. This is done once the old user is hidden.
+  if (animation_step == SHOW_NEW_USER) {
+    // Some unit tests have no ChromeLauncherController.
+    if (ChromeLauncherController::instance())
+      ChromeLauncherController::instance()->ActiveUserChanged(current_user_id_);
+    // We kicked off the shelf animation in the command above. As such we can
+    // disable the override now again.
+    duration_override = 0;
+  }
+
+  if (animations_disabled_)
+    return;
+
+  ash::Shell::RootWindowControllerList controller =
+      ash::Shell::GetInstance()->GetAllRootWindowControllers();
+  for (ash::Shell::RootWindowControllerList::iterator it1 = controller.begin();
+       it1 != controller.end(); ++it1) {
+    (*it1)->GetShelfLayoutManager()->SetAnimationDurationOverride(
+        duration_override);
+  }
+
+  // For each root window hide the shelf.
+  if (animation_step == HIDE_OLD_USER) {
+    aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
+    for (aura::Window::Windows::const_iterator iter = root_windows.begin();
+         iter != root_windows.end(); ++iter) {
+      ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
+          ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN, *iter);
+    }
+  }
+}
+
+void MultiUserWindowManagerChromeOS::AddBrowserWindow(Browser* browser) {
+  // A unit test (e.g. CrashRestoreComplexTest.RestoreSessionForThreeUsers) can
+  // come here with no valid window.
+  if (!browser->window() || !browser->window()->GetNativeWindow())
+    return;
+  SetWindowOwner(browser->window()->GetNativeWindow(),
+                 multi_user_util::GetUserIDFromProfile(browser->profile()));
+}
+
 void MultiUserWindowManagerChromeOS::SetWindowVisibility(
     aura::Window* window, bool visible, int animation_time_in_ms) {
   if (window->IsVisible() == visible)
@@ -574,15 +764,6 @@ void MultiUserWindowManagerChromeOS::SetWindowVisibility(
       window->Blur();
     SetWindowVisible(window, false, animation_time_in_ms);
   }
-}
-
-void MultiUserWindowManagerChromeOS::AddBrowserWindow(Browser* browser) {
-  // A unit test (e.g. CrashRestoreComplexTest.RestoreSessionForThreeUsers) can
-  // come here with no valid window.
-  if (!browser->window() || !browser->window()->GetNativeWindow())
-    return;
-  SetWindowOwner(browser->window()->GetNativeWindow(),
-                 multi_user_util::GetUserIDFromProfile(browser->profile()));
 }
 
 void MultiUserWindowManagerChromeOS::ShowWithTransientChildrenRecursive(
