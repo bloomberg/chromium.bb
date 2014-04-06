@@ -39,22 +39,33 @@ Value Template::Invoke(Scope* scope,
   if (!EnsureNotProcessingImport(invocation, scope, err))
     return Value();
 
-  // First run the invocation's block.
-  Scope invocation_scope(scope);
+  // First run the invocation's block. Need to allocate the scope on the heap
+  // so we can pass ownership to the template.
+  scoped_ptr<Scope> invocation_scope(new Scope(scope));
   if (!FillTargetBlockScope(scope, invocation,
                             invocation->function().value().as_string(),
-                            block, args, &invocation_scope, err))
+                            block, args, invocation_scope.get(), err))
     return Value();
-  block->ExecuteBlockInScope(&invocation_scope, err);
+  block->ExecuteBlockInScope(invocation_scope.get(), err);
   if (err->has_error())
     return Value();
 
   // Set up the scope to run the template. This should be dependent on the
   // closure, but have the "invoker" and "target_name" values injected, and the
-  // current dir matching the invoker.
+  // current dir matching the invoker. We jump through some hoops to avoid
+  // copying the invocation scope when setting it in the template scope (since
+  // the invocation scope may have large lists of source files in it and could
+  // be expensive to copy).
+  //
+  // Scope.SetValue will copy the value which will in turn copy the scope, but
+  // if we instead create a value and then set the scope on it, the copy can
+  // be avoided.
   Scope template_scope(closure_.get());
-  template_scope.SetValue("invoker", Value(NULL, &invocation_scope),
+  const char kInvoker[] = "invoker";
+  template_scope.SetValue(kInvoker, Value(NULL, scoped_ptr<Scope>()),
                           invocation);
+  Value* invoker_value = template_scope.GetMutableValue(kInvoker, false);
+  invoker_value->SetScopeValue(invocation_scope.Pass());
   template_scope.set_source_dir(scope->GetSourceDir());
 
   const base::StringPiece target_name("target_name");
@@ -65,7 +76,28 @@ Value Template::Invoke(Scope* scope,
   // Run the template code. Don't check for unused variables since the
   // template could be executed in many different ways and it could be that
   // not all executions use all values in the closure.
-  return definition_->block()->ExecuteBlockInScope(&template_scope, err);
+  Value result =
+      definition_->block()->ExecuteBlockInScope(&template_scope, err);
+
+  // Check for unused variables in the invocation scope. This will find typos
+  // of things the caller meant to pass to the template but the template didn't
+  // read out.
+  //
+  // This is a bit tricky because it's theoretically possible for the template
+  // to overwrite the value of "invoker" and free the Scope owned by the
+  // value. So we need to look it up again and don't do anything if it doesn't
+  // exist.
+  invoker_value = template_scope.GetMutableValue(kInvoker, false);
+  if (invoker_value && invoker_value->type() == Value::SCOPE) {
+    if (!invoker_value->scope_value()->CheckForUnusedVars(err))
+      return Value();
+  }
+
+  // Check for unused variables in the template itself.
+  if (!template_scope.CheckForUnusedVars(err))
+    return Value();
+
+  return result;
 }
 
 LocationRange Template::GetDefinitionRange() const {

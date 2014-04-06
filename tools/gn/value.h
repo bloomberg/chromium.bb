@@ -5,8 +5,11 @@
 #ifndef TOOLS_GN_VALUE_H_
 #define TOOLS_GN_VALUE_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "tools/gn/err.h"
 
@@ -22,7 +25,7 @@ class Value {
     INTEGER,
     STRING,
     LIST,
-    SCOPE
+    SCOPE,
   };
 
   Value();
@@ -31,9 +34,17 @@ class Value {
   Value(const ParseNode* origin, int64 int_val);
   Value(const ParseNode* origin, std::string str_val);
   Value(const ParseNode* origin, const char* str_val);
-  Value(const ParseNode* origin, Scope* scope);  // Non-owning ptr.
-                                                 // (must outlive Value.)
+  // Values "shouldn't" have null scopes when type == Scope, so be sure to
+  // always set one. However, this is not asserted since there are some
+  // use-cases for creating values and immediately setting the scope on it. So
+  // you can pass a null scope here if you promise to set it before any other
+  // code gets it (code will generally assume the scope is not null).
+  Value(const ParseNode* origin, scoped_ptr<Scope> scope);
+
+  Value(const Value& other);
   ~Value();
+
+  Value& operator=(const Value& other);
 
   Type type() const { return type_; }
 
@@ -86,12 +97,13 @@ class Value {
 
   Scope* scope_value() {
     DCHECK(type_ == SCOPE);
-    return scope_value_;
+    return scope_value_.get();
   }
   const Scope* scope_value() const {
     DCHECK(type_ == SCOPE);
-    return scope_value_;
+    return scope_value_.get();
   }
+  void SetScopeValue(scoped_ptr<Scope> scope);
 
   // Converts the given value to a string. Returns true if strings should be
   // quoted or the ToString of a string should be the string itself.
@@ -106,12 +118,16 @@ class Value {
   bool operator!=(const Value& other) const;
 
  private:
+  // This are a lot of objects associated with every Value that need
+  // initialization and tear down every time. It might be more efficient to
+  // create a union of ManualConstructor objects (see SmallMap) and only
+  // use the one we care about.
   Type type_;
   std::string string_value_;
   bool boolean_value_;
   int64 int_value_;
   std::vector<Value> list_value_;
-  Scope* scope_value_;  // Non-owning.
+  scoped_ptr<Scope> scope_value_;
 
   const ParseNode* origin_;
 };

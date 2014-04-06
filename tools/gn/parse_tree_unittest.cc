@@ -31,9 +31,9 @@ TEST(ParseTree, Accessor) {
   EXPECT_EQ(Value::NONE, result.type());
 
   // Define a as a Scope. It should still fail because b isn't defined.
-  Scope a_scope(setup.scope());
   err = Err();
-  setup.scope()->SetValue("a", Value(NULL, &a_scope), NULL);
+  setup.scope()->SetValue("a",
+      Value(NULL, scoped_ptr<Scope>(new Scope(setup.scope()))), NULL);
   result = accessor.Execute(setup.scope(), &err);
   EXPECT_TRUE(err.has_error());
   EXPECT_EQ(Value::NONE, result.type());
@@ -41,7 +41,8 @@ TEST(ParseTree, Accessor) {
   // Define b, accessor should succeed now.
   const int64 kBValue = 42;
   err = Err();
-  a_scope.SetValue("b", Value(NULL, kBValue), NULL);
+  setup.scope()->GetMutableValue("a", false)->scope_value()->SetValue(
+      "b", Value(NULL, kBValue), NULL);
   result = accessor.Execute(setup.scope(), &err);
   EXPECT_FALSE(err.has_error());
   ASSERT_EQ(Value::INTEGER, result.type());

@@ -12,6 +12,7 @@
 #include "tools/gn/label.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/parser.h"
+#include "tools/gn/scheduler.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/tokenizer.h"
@@ -19,88 +20,80 @@
 
 namespace {
 
-// When parsing the result as a value, we may get various types of errors.
-// This creates an error message for this case with an optional nested error
-// message to reference. If there is no nested err, pass Err().
-//
-// This code also takes care to rewrite the original error which will reference
-// the temporary InputFile which won't exist when the error is propogated
-// out to a higher level.
-Err MakeParseErr(const std::string& input,
-                 const ParseNode* origin,
-                 const Err& nested) {
-  std::string help_text =
-      "When parsing a result as a \"value\" it should look like a list:\n"
-      "  [ \"a\", \"b\", 5 ]\n"
-      "or a single literal:\n"
-      "  \"my result\"\n"
-      "but instead I got this, which I find very confusing:\n";
-  help_text.append(input);
-  if (nested.has_error())
-    help_text.append("\nThe exact error was:");
-
-  Err result(origin, "Script result wasn't a valid value.", help_text);
-  if (nested.has_error()) {
-    result.AppendSubErr(Err(LocationRange(), nested.message(),
-                            nested.help_text()));
-  }
-  return result;
-}
+enum ValueOrScope {
+  PARSE_VALUE,  // Treat the input as an expression.
+  PARSE_SCOPE,  // Treat the input as code and return the resulting scope.
+};
 
 // Sets the origin of the value and any nested values with the given node.
-Value ParseString(const std::string& input,
-                  const ParseNode* origin,
-                  Err* err) {
-  SourceFile empty_source_for_most_vexing_parse;
-  InputFile input_file(empty_source_for_most_vexing_parse);
-  input_file.SetContents(input);
+Value ParseValueOrScope(const Settings* settings,
+                        const std::string& input,
+                        ValueOrScope what,
+                        const ParseNode* origin,
+                        Err* err) {
+  // The memory for these will be kept around by the input file manager
+  // so the origin parse nodes for the values will be preserved.
+  InputFile* input_file;
+  std::vector<Token>* tokens;
+  scoped_ptr<ParseNode>* parse_root_ptr;
+  g_scheduler->input_file_manager()->AddDynamicInput(
+      &input_file, &tokens, &parse_root_ptr);
 
-  std::vector<Token> tokens = Tokenizer::Tokenize(&input_file, err);
-  if (err->has_error()) {
-    *err = MakeParseErr(input, origin, *err);
-    return Value();
+  input_file->SetContents(input);
+  if (origin) {
+    // This description will be the blame for any error messages caused by
+    // script parsing or if a value is blamed. It will say
+    // "Error at <...>:line:char" so here we try to make a string for <...>
+    // that reads well in this context.
+    input_file->set_friendly_name(
+        "dynamically parsed input that " +
+        origin->GetRange().begin().Describe(true) +
+        " loaded ");
+  } else {
+    input_file->set_friendly_name("dynamic input");
   }
 
-  scoped_ptr<ParseNode> expression = Parser::ParseExpression(tokens, err);
-  if (err->has_error()) {
-    *err = MakeParseErr(input, origin, *err);
+  *tokens = Tokenizer::Tokenize(input_file, err);
+  if (err->has_error())
     return Value();
-  }
+
+  // Parse the file according to what we're looking for.
+  if (what == PARSE_VALUE)
+    *parse_root_ptr = Parser::ParseExpression(*tokens, err);
+  else
+    *parse_root_ptr = Parser::Parse(*tokens, err);  // Will return a Block.
+  if (err->has_error())
+    return Value();
+  ParseNode* parse_root = parse_root_ptr->get();  // For nicer syntax below.
 
   // It's valid for the result to be a null pointer, this just means that the
   // script returned nothing.
-  if (!expression)
+  if (!parse_root)
     return Value();
 
-  // The result should either be a list or a literal, anything else is
-  // invalid.
-  if (!expression->AsList() && !expression->AsLiteral()) {
-    *err = MakeParseErr(input, origin, Err());
-    return Value();
+  // When parsing as a value, the result should either be a list or a literal,
+  // anything else is invalid.
+  if (what == PARSE_VALUE) {
+    if (!parse_root->AsList() && !parse_root->AsLiteral())
+      return Value();
   }
 
-  BuildSettings build_settings;
-  Settings settings(&build_settings, std::string());
-  Scope scope(&settings);
+  scoped_ptr<Scope> scope(new Scope(settings));
 
-  Err nested_err;
-  Value result = expression->Execute(&scope, &nested_err);
-  if (nested_err.has_error()) {
-    *err = MakeParseErr(input, origin, nested_err);
+  Value result = parse_root->Execute(scope.get(), err);
+  if (err->has_error())
     return Value();
-  }
 
-  // The returned value will have references to the temporary parse nodes we
-  // made on the stack. If the values are used in an error message in the
-  // future, this will crash. Reset the origin of all values to be our
-  // containing origin.
-  result.RecursivelySetOrigin(origin);
+  // When we want the result as a scope, the result is actually the scope
+  // we made, rather than the result of running the block (which will be empty).
+  if (what == PARSE_SCOPE) {
+    DCHECK(result.type() == Value::NONE);
+    result = Value(origin, scope.Pass());
+  }
   return result;
 }
 
-Value ParseList(const std::string& input,
-                const ParseNode* origin,
-                Err* err) {
+Value ParseList(const std::string& input, const ParseNode* origin, Err* err) {
   Value ret(origin, Value::LIST);
   std::vector<std::string> as_lines;
   base::SplitString(input, '\n', &as_lines);
@@ -121,7 +114,8 @@ Value ParseList(const std::string& input,
 // input conversion so we can recursively call ourselves to handle the optional
 // "trim" prefix. This original value is also kept for the purposes of throwing
 // errors.
-Value DoConvertInputToValue(const std::string& input,
+Value DoConvertInputToValue(const Settings* settings,
+                            const std::string& input,
                             const ParseNode* origin,
                             const Value& original_input_conversion,
                             const std::string& input_conversion,
@@ -136,16 +130,18 @@ Value DoConvertInputToValue(const std::string& input,
 
     // Remove "trim" prefix from the input conversion and re-run.
     return DoConvertInputToValue(
-        trimmed, origin, original_input_conversion,
+        settings, trimmed, origin, original_input_conversion,
         input_conversion.substr(arraysize(kTrimPrefix) - 1), err);
   }
 
   if (input_conversion == "value")
-    return ParseString(input, origin, err);
+    return ParseValueOrScope(settings, input, PARSE_VALUE, origin, err);
   if (input_conversion == "string")
     return Value(origin, input);
   if (input_conversion == "list lines")
     return ParseList(input, origin, err);
+  if (input_conversion == "scope")
+    return ParseValueOrScope(settings, input, PARSE_SCOPE, origin, err);
 
   *err = Err(original_input_conversion, "Not a valid input_conversion.",
              "Have you considered a career in retail?");
@@ -172,6 +168,19 @@ extern const char kInputConversion_Help[] =
     "      After splitting, each individual line will be trimmed of\n"
     "      whitespace on both ends.\n"
     "\n"
+    "  \"scope\"\n"
+    "      Execute the block as GN code and return a scope with the\n"
+    "      resulting values in it. If the input was:\n"
+    "        a = [ \"hello.cc\", \"world.cc\" ]\n"
+    "        b = 26\n"
+    "      and you read the result into a variable named \"val\", then you\n"
+    "      could access contents the \".\" operator on \"val\":\n"
+    "        sources = val.a\n"
+    "        some_count = val.b\n"
+    "\n"
+    "  \"string\"\n"
+    "      Return the file contents into a single string.\n"
+    "\n"
     "  \"value\"\n"
     "      Parse the input as if it was a literal rvalue in a buildfile.\n"
     "      Examples of typical program output using this mode:\n"
@@ -184,9 +193,6 @@ extern const char kInputConversion_Help[] =
     "      Note that if the input is empty, the result will be a null value\n"
     "      which will produce an error if assigned to a variable.\n"
     "\n"
-    "  \"string\"\n"
-    "      Return the file contents into a single string.\n"
-    "\n"
     "  \"trim ...\"\n"
     "      Prefixing any of the other transformations with the word \"trim\"\n"
     "      will result in whitespace being trimmed from the beginning and end\n"
@@ -197,7 +203,8 @@ extern const char kInputConversion_Help[] =
     "      Note that \"trim value\" is useless because the value parser skips\n"
     "      whitespace anyway.\n";
 
-Value ConvertInputToValue(const std::string& input,
+Value ConvertInputToValue(const Settings* settings,
+                          const std::string& input,
                           const ParseNode* origin,
                           const Value& input_conversion_value,
                           Err* err) {
@@ -205,6 +212,6 @@ Value ConvertInputToValue(const std::string& input,
     return Value();  // Allow null inputs to mean discard the result.
   if (!input_conversion_value.VerifyTypeIs(Value::STRING, err))
     return Value();
-  return DoConvertInputToValue(input, origin, input_conversion_value,
+  return DoConvertInputToValue(settings, input, origin, input_conversion_value,
                                input_conversion_value.string_value(), err);
 }

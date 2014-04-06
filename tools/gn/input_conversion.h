@@ -9,6 +9,7 @@
 
 class Err;
 class ParseNode;
+class Settings;
 class Value;
 
 extern const char kInputConversion_Help[];
@@ -20,7 +21,8 @@ extern const char kInputConversion_Help[];
 //
 // If the conversion string is invalid, the error will be set and an empty
 // value will be returned.
-Value ConvertInputToValue(const std::string& input,
+Value ConvertInputToValue(const Settings* settings,
+                          const std::string& input,
                           const ParseNode* origin,
                           const Value& input_conversion_value,
                           Err* err);

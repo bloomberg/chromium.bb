@@ -64,6 +64,26 @@ class InputFileManager : public base::RefCountedThreadSafe<InputFileManager> {
                                 const SourceFile& file_name,
                                 Err* err);
 
+  // Creates an entry to manage the memory associated with keeping a parsed
+  // set of code in memory.
+  //
+  // The values pointed to by the parameters will be filled with pointers to
+  // the file, tokens, and parse node that this class created. The calling
+  // code is responsible for populating these values and maintaining
+  // threadsafety. This class' only job is to hold onto the memory and delete
+  // it when the program exits.
+  //
+  // This solves the problem that sometimes we need to execute something
+  // dynamic and save the result, but the values all have references to the
+  // nodes and file that created it. Either we need to reset the origin of
+  // the values and lose context for error reporting, or somehow keep the
+  // associated parse nodes, tokens, and file data in memory. This function
+  // allows the latter.
+  void AddDynamicInput(InputFile** file,
+                       std::vector<Token>** tokens,
+                       scoped_ptr<ParseNode>** parse_root);
+
+  // Does not count dynamic input.
   int GetInputFileCount() const;
 
   // Fills the vector with all input files.
@@ -117,6 +137,16 @@ class InputFileManager : public base::RefCountedThreadSafe<InputFileManager> {
   // Maps repo-relative filenames to the corresponding owned pointer.
   typedef base::hash_map<SourceFile, InputFileData*> InputFileMap;
   InputFileMap input_files_;
+
+  // Tracks all dynamic inputs. The data are holders for memory management
+  // purposes and should not be read or modified by this class. The values
+  // will be vended out to the code creating the dynamic input, who is in
+  // charge of the threadsafety requirements.
+  //
+  // See AddDynamicInput().
+  //
+  // Owning pointers.
+  std::vector<InputFileData*> dynamic_inputs_;
 
   DISALLOW_COPY_AND_ASSIGN(InputFileManager);
 };

@@ -11,7 +11,6 @@
 TEST(Functions, Defined) {
   TestWithScope setup;
 
-  //InputFile input_file(SourceFile("//foo"));
   FunctionCallNode function_call;
   Err err;
 
@@ -27,8 +26,9 @@ TEST(Functions, Defined) {
 
   // Define a value that's itself a scope value.
   const char kDef[] = "def";  // Defined variable name.
-  Scope nested(setup.scope());
-  setup.scope()->SetValue(kDef, Value(NULL, &nested), NULL);
+  setup.scope()->SetValue(kDef,
+      Value(NULL, scoped_ptr<Scope>(new Scope(setup.scope()))),
+      NULL);
 
   // Test the defined identifier.
   Token defined_token(Location(), Token::IDENTIFIER, kDef);

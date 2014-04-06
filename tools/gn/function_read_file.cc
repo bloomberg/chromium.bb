@@ -68,7 +68,8 @@ Value RunReadFile(Scope* scope,
     return Value();
   }
 
-  return ConvertInputToValue(file_contents, function, args[1], err);
+  return ConvertInputToValue(scope->settings(), file_contents, function,
+                             args[1], err);
 }
 
 }  // namespace functions

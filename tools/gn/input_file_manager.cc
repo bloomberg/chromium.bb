@@ -38,6 +38,7 @@ InputFileManager::~InputFileManager() {
   // Should be single-threaded by now.
   STLDeleteContainerPairSecondPointers(input_files_.begin(),
                                        input_files_.end());
+  STLDeleteContainerPointers(dynamic_inputs_.begin(), dynamic_inputs_.end());
 }
 
 bool InputFileManager::AsyncLoadFile(const LocationRange& origin,
@@ -164,6 +165,19 @@ const ParseNode* InputFileManager::SyncLoadFile(
   if (!data->parsed_root)
     *err = Err(origin, "File parse failed");
   return data->parsed_root.get();
+}
+
+void InputFileManager::AddDynamicInput(InputFile** file,
+                                       std::vector<Token>** tokens,
+                                       scoped_ptr<ParseNode>** parse_root) {
+  InputFileData* data = new InputFileData(SourceFile());
+  {
+    base::AutoLock lock(lock_);
+    dynamic_inputs_.push_back(data);
+  }
+  *file = &data->file;
+  *tokens = &data->tokens;
+  *parse_root = &data->parsed_root;
 }
 
 int InputFileManager::GetInputFileCount() const {
