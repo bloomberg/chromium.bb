@@ -267,15 +267,10 @@ double ProcessMetrics::GetCPUUsage() {
   timeradd(&user_timeval, &task_timeval, &task_timeval);
   timeradd(&system_timeval, &task_timeval, &task_timeval);
 
-  struct timeval now;
-  int retval = gettimeofday(&now, NULL);
-  if (retval)
-    return 0;
-
-  int64 time = TimeValToMicroseconds(now);
+  TimeTicks time = TimeTicks::Now();
   int64 task_time = TimeValToMicroseconds(task_timeval);
 
-  if (last_cpu_time_ == 0) {
+  if (last_system_time_ == 0) {
     // First call, just set the last values.
     last_cpu_time_ = time;
     last_system_time_ = task_time;
@@ -283,7 +278,7 @@ double ProcessMetrics::GetCPUUsage() {
   }
 
   int64 system_time_delta = task_time - last_system_time_;
-  int64 time_delta = time - last_cpu_time_;
+  int64 time_delta = (time - last_cpu_time_).InMicroseconds();
   DCHECK_NE(0U, time_delta);
   if (time_delta == 0)
     return 0;
@@ -314,14 +309,9 @@ int ProcessMetrics::GetIdleWakeupsPerSecond() {
   }
   uint64_t absolute_idle_wakeups = power_info_data.task_platform_idle_wakeups;
 
-  struct timeval now;
-  int retval = gettimeofday(&now, NULL);
-  if (retval)
-    return 0;
+  TimeTicks time = TimeTicks::Now();
 
-  int64 time = TimeValToMicroseconds(now);
-
-  if (last_idle_wakeups_time_ == 0) {
+  if (last_absolute_idle_wakeups_ == 0) {
     // First call, just set the last values.
     last_idle_wakeups_time_ = time;
     last_absolute_idle_wakeups_ = absolute_idle_wakeups;
@@ -329,7 +319,7 @@ int ProcessMetrics::GetIdleWakeupsPerSecond() {
   }
 
   int64 wakeups_delta = absolute_idle_wakeups - last_absolute_idle_wakeups_;
-  int64 time_delta = time - last_idle_wakeups_time_;
+  int64 time_delta = (time - last_idle_wakeups_time_).InMicroseconds();
   DCHECK_NE(0U, time_delta);
   if (time_delta == 0)
     return 0;
@@ -349,9 +339,7 @@ bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
 ProcessMetrics::ProcessMetrics(ProcessHandle process,
                                ProcessMetrics::PortProvider* port_provider)
     : process_(process),
-      last_cpu_time_(0),
       last_system_time_(0),
-      last_idle_wakeups_time_(0),
       last_absolute_idle_wakeups_(0),
       port_provider_(port_provider) {
   processor_count_ = SysInfo::NumberOfProcessors();

@@ -195,13 +195,10 @@ static uint64 FileTimeToUTC(const FILETIME& ftime) {
 }
 
 double ProcessMetrics::GetCPUUsage() {
-  FILETIME now;
   FILETIME creation_time;
   FILETIME exit_time;
   FILETIME kernel_time;
   FILETIME user_time;
-
-  GetSystemTimeAsFileTime(&now);
 
   if (!GetProcessTimes(process_, &creation_time, &exit_time,
                        &kernel_time, &user_time)) {
@@ -212,9 +209,9 @@ double ProcessMetrics::GetCPUUsage() {
   }
   int64 system_time = (FileTimeToUTC(kernel_time) + FileTimeToUTC(user_time)) /
                         processor_count_;
-  int64 time = FileTimeToUTC(now);
+  TimeTicks time = TimeTicks::Now();
 
-  if ((last_system_time_ == 0) || (last_cpu_time_ == 0)) {
+  if (last_system_time_ == 0) {
     // First call, just set the last values.
     last_system_time_ = system_time;
     last_cpu_time_ = time;
@@ -222,7 +219,8 @@ double ProcessMetrics::GetCPUUsage() {
   }
 
   int64 system_time_delta = system_time - last_system_time_;
-  int64 time_delta = time - last_cpu_time_;
+  // FILETIME is in 100-nanosecond units, so this needs microseconds times 10.
+  int64 time_delta = (time - last_cpu_time_).InMicroseconds() * 10;
   DCHECK_NE(0U, time_delta);
   if (time_delta == 0)
     return 0;
@@ -269,7 +267,6 @@ bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
 ProcessMetrics::ProcessMetrics(ProcessHandle process)
     : process_(process),
       processor_count_(base::SysInfo::NumberOfProcessors()),
-      last_cpu_time_(0),
       last_system_time_(0) {
 }
 

@@ -106,22 +106,16 @@ static int GetProcessCPU(pid_t pid) {
 }
 
 double ProcessMetrics::GetCPUUsage() {
-  struct timeval now;
+  TimeTicks time = TimeTicks::Now();
 
-  int retval = gettimeofday(&now, NULL);
-  if (retval)
-    return 0;
-
-  int64 time = TimeValToMicroseconds(now);
-
-  if (last_cpu_time_ == 0) {
+  if (last_cpu_ == 0) {
     // First call, just set the last values.
     last_cpu_time_ = time;
     last_cpu_ = GetProcessCPU(process_);
     return 0;
   }
 
-  int64 time_delta = time - last_cpu_time_;
+  int64 time_delta = (time - last_cpu_time_).InMicroseconds();
   DCHECK_NE(time_delta, 0);
 
   if (time_delta == 0)
@@ -139,7 +133,6 @@ double ProcessMetrics::GetCPUUsage() {
 
 ProcessMetrics::ProcessMetrics(ProcessHandle process)
     : process_(process),
-      last_cpu_time_(0),
       last_system_time_(0),
       last_cpu_(0) {
 
