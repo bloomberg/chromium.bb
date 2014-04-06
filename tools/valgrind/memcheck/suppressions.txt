@@ -1412,7 +1412,7 @@
    fun:_ZN7testing*PrintByteSegmentInObjectTo*
    ...
    fun:_ZN7testing*PrintBytesInObjectTo*
-   fun:_ZN7testing9internal220PrintBytesInObjectToEPKhjPSo
+   fun:_ZN7testing9internal220PrintBytesInObjectToEPKh*
    fun:_ZN7testing9internal220TypeWithoutFormatter*
    fun:_ZN7testing9internal2lsIcSt11char_traitsIcE*
    fun:_ZN16testing_internal26DefaultPrintNonContainerTo*
@@ -4728,7 +4728,7 @@
    fun:gnutls_pkcs11_init
    fun:gnutls_global_init
    fun:_ZN12_GLOBAL__N_117GcryptInitializer4InitEv
-   fun:_ZN12_GLOBAL__N_117GcryptInitializerC1Ev
+   fun:_ZN12_GLOBAL__N_117GcryptInitializerC*
    fun:_ZN4base25DefaultLazyInstanceTraitsIN12_GLOBAL__N_117GcryptInitializerEE3NewEPv
 }
 {
