@@ -1205,7 +1205,6 @@
             }],
             ['enable_webrtc==1', {
               'sources': [
-                'browser/media/webrtc_aecdump_browsertest.cc',
                 'browser/media/webrtc_browsertest.cc',
                 'browser/media/webrtc_getusermedia_browsertest.cc',
                 'test/webrtc_content_browsertest_base.cc',

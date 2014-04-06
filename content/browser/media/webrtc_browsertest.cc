@@ -342,11 +342,10 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, CallAndVerifyVideoMutingWorks) {
 
 // This tests will make a complete PeerConnection-based call, verify that
 // video is playing for the call, and verify that a non-empty AEC dump file
-// exists. The AEC dump is enabled through webrtc-internals, in contrast to
-// using a command line flag (tested in webrtc_aecdump_browsertest.cc). The HTML
-// and Javascript is bypassed since it would trigger a file picker dialog.
-// Instead, the dialog callback FileSelected() is invoked directly. In fact,
-// there's never a webrtc-internals page opened at all since that's not needed.
+// exists. The AEC dump is enabled through webrtc-internals. The HTML and
+// Javascript is bypassed since it would trigger a file picker dialog. Instead,
+// the dialog callback FileSelected() is invoked directly. In fact, there's
+// never a webrtc-internals page opened at all since that's not needed.
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CallWithAecDump) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 

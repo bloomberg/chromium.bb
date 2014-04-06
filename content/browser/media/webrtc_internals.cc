@@ -40,12 +40,6 @@ WebRTCInternals::WebRTCInternals()
 // TODO(grunell): Shouldn't all the webrtc_internals* files be excluded from the
 // build if WebRTC is disabled?
 #if defined(ENABLE_WEBRTC)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebRtcAecRecordings)) {
-    aec_dump_enabled_ = true;
-    aec_dump_file_path_ = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-        switches::kEnableWebRtcAecRecordings);
-  } else {
 #if defined(OS_CHROMEOS)
     aec_dump_file_path_ =
         base::FilePath(FILE_PATH_LITERAL("/tmp/audio.aecdump"));
@@ -55,7 +49,6 @@ WebRTCInternals::WebRTCInternals()
 #else
     aec_dump_file_path_ = base::FilePath(FILE_PATH_LITERAL("audio.aecdump"));
 #endif
-  }
 #endif  // defined(ENABLE_WEBRTC)
 }
 
