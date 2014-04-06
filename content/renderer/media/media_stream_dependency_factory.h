@@ -136,7 +136,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
 
   WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
 
-  static void AddNativeTrackToBlinkTrack(
+  static void AddNativeAudioTrackToBlinkTrack(
       webrtc::MediaStreamTrackInterface* native_track,
       const blink::WebMediaStreamTrack& webkit_track,
       bool is_local_track);

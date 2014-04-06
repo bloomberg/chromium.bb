@@ -22,7 +22,6 @@ class VideoTrackInterface;
 namespace content {
 
 class MediaStreamDependencyFactory;
-class WebRtcVideoSinkAdapter;
 
 // MediaStreamVideoTrack is a video specific representation of a
 // blink::WebMediaStreamTrack in content. It is owned by the blink object
@@ -85,26 +84,6 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   MediaStreamDependencyFactory* factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoTrack);
-};
-
-// WebRtcMediaStreamVideoTrack is a content representation of a video track.
-// received on a PeerConnection.
-// TODO(perkj): Replace WebRtcMediaStreamVideoTrack with a remote
-// MediaStreamVideoSource class so that all tracks are MediaStreamVideoTracks
-// and new tracks can be cloned from the original remote video track.
-// crbug/334243.
-class CONTENT_EXPORT WebRtcMediaStreamVideoTrack
-    : public MediaStreamVideoTrack {
- public:
-  explicit WebRtcMediaStreamVideoTrack(webrtc::VideoTrackInterface* track);
-  virtual ~WebRtcMediaStreamVideoTrack();
-  virtual void AddSink(MediaStreamVideoSink* sink) OVERRIDE;
-  virtual void RemoveSink(MediaStreamVideoSink* sink) OVERRIDE;
-
- private:
-  ScopedVector<WebRtcVideoSinkAdapter> sinks_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebRtcMediaStreamVideoTrack);
 };
 
 }  // namespace content

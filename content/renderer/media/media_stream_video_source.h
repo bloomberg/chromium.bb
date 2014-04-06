@@ -64,7 +64,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // interface of this class.
   // This creates a VideoSourceInterface implementation if it does not already
   // exist.
-  webrtc::VideoSourceInterface* GetAdapter();
+  virtual webrtc::VideoSourceInterface* GetAdapter();
 
   // Return true if |name| is a constraint supported by MediaStreamVideoSource.
   static bool IsConstraintSupported(const std::string& name);
@@ -130,7 +130,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
     STARTED,
     ENDED
   };
-  State state() { return state_; }
+  State state() const { return state_; }
 
  private:
   // Creates a webrtc::VideoSourceInterface used by libjingle.
