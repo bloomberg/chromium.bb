@@ -482,7 +482,12 @@ void SpdyProxyClientSocket::OnDataSent()  {
 
   int rv = write_buffer_len_;
   write_buffer_len_ = 0;
-  ResetAndReturn(&write_callback_).Run(rv);
+
+  // Proxy write callbacks result in deep callback chains. Post to allow the
+  // stream's write callback chain to unwind (see crbug.com/355511).
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(ResetAndReturn(&write_callback_), rv));
 }
 
 void SpdyProxyClientSocket::OnClose(int status)  {
