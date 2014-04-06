@@ -508,10 +508,17 @@ class SpdyTestUtil {
 
   const SpdyHeaderInfo MakeSpdyHeader(SpdyFrameType type);
 
+  // For versions below SPDY4, adds the version HTTP/1.1 header.
+  void MaybeAddVersionHeader(SpdyFrameWithNameValueBlockIR* frame_ir) const;
+
+  // Maps |priority| to SPDY version priority, and sets it on |frame_ir|.
+  void SetPriority(RequestPriority priority, SpdySynStreamIR* frame_ir) const;
+
   NextProto protocol() const { return protocol_; }
   SpdyMajorVersion spdy_version() const { return spdy_version_; }
   bool is_spdy2() const { return protocol_ < kProtoSPDY3; }
-  scoped_ptr<SpdyFramer> CreateFramer() const;
+  bool include_version_header() const { return protocol_ < kProtoSPDY4a2; }
+  scoped_ptr<SpdyFramer> CreateFramer(bool compressed) const;
 
   const char* GetMethodKey() const;
   const char* GetStatusKey() const;

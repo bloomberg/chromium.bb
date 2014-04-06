@@ -3613,7 +3613,6 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
-  EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
   EXPECT_EQ(std::string(), delegate.TakeReceivedData());
   EXPECT_TRUE(data.at_write_eof());
 }
@@ -3810,12 +3809,10 @@ TEST_P(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
 
   EXPECT_TRUE(delegate1.send_headers_completed());
   EXPECT_EQ("200", delegate1.GetResponseHeaderValue(":status"));
-  EXPECT_EQ("HTTP/1.1", delegate1.GetResponseHeaderValue(":version"));
   EXPECT_EQ(std::string(), delegate1.TakeReceivedData());
 
   EXPECT_TRUE(delegate2.send_headers_completed());
   EXPECT_EQ("200", delegate2.GetResponseHeaderValue(":status"));
-  EXPECT_EQ("HTTP/1.1", delegate2.GetResponseHeaderValue(":version"));
   EXPECT_EQ(std::string(), delegate2.TakeReceivedData());
 
   EXPECT_TRUE(data.at_write_eof());
@@ -3999,7 +3996,6 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
 
   EXPECT_TRUE(delegate2.send_headers_completed());
   EXPECT_EQ("200", delegate2.GetResponseHeaderValue(":status"));
-  EXPECT_EQ("HTTP/1.1", delegate2.GetResponseHeaderValue(":version"));
   EXPECT_EQ(std::string(), delegate2.TakeReceivedData());
 
   EXPECT_TRUE(delegate3.send_headers_completed());

@@ -71,6 +71,8 @@ class SpdyProxyClientSocketTest
  protected:
   void Initialize(MockRead* reads, size_t reads_count, MockWrite* writes,
                   size_t writes_count);
+  void PopulateConnectRequestIR(SpdySynStreamIR* syn_ir);
+  void PopulateConnectReplyIR(SpdySynReplyIR* reply_ir, const char* status);
   SpdyFrame* ConstructConnectRequestFrame();
   SpdyFrame* ConstructConnectAuthRequestFrame();
   SpdyFrame* ConstructConnectReplyFrame();
@@ -230,7 +232,6 @@ void SpdyProxyClientSocketTest::AssertConnectionEstablished() {
   const HttpResponseInfo* response = sock_->GetConnectResponseInfo();
   ASSERT_TRUE(response != NULL);
   ASSERT_EQ(200, response->headers->response_code());
-  ASSERT_EQ("Connection Established", response->headers->GetStatusText());
 }
 
 void SpdyProxyClientSocketTest::AssertSyncReadEquals(const char* data,
@@ -311,152 +312,69 @@ void SpdyProxyClientSocketTest::AssertAsyncWriteWithReadsSucceeds(
   write_callback_.WaitForResult();
 }
 
+void SpdyProxyClientSocketTest::PopulateConnectRequestIR(
+    SpdySynStreamIR* syn_ir) {
+  spdy_util_.SetPriority(LOWEST, syn_ir);
+  syn_ir->SetHeader(spdy_util_.GetMethodKey(), "CONNECT");
+  syn_ir->SetHeader(spdy_util_.GetPathKey(), kOriginHostPort);
+  syn_ir->SetHeader(spdy_util_.GetHostKey(), kOriginHost);
+  syn_ir->SetHeader("user-agent", kUserAgent);
+  spdy_util_.MaybeAddVersionHeader(syn_ir);
+}
+
+void SpdyProxyClientSocketTest::PopulateConnectReplyIR(SpdySynReplyIR* reply_ir,
+                                                       const char* status) {
+  reply_ir->SetHeader(spdy_util_.GetStatusKey(), status);
+  spdy_util_.MaybeAddVersionHeader(reply_ir);
+}
+
 // Constructs a standard SPDY SYN_STREAM frame for a CONNECT request.
 SpdyFrame*
 SpdyProxyClientSocketTest::ConstructConnectRequestFrame() {
-  const SpdyHeaderInfo kSynStartHeader = {
-    SYN_STREAM,
-    kStreamId,
-    0,
-    net::ConvertRequestPriorityToSpdyPriority(
-        LOWEST, spdy_util_.spdy_version()),
-    0,
-    CONTROL_FLAG_NONE,
-    false,
-    RST_STREAM_INVALID,
-    NULL,
-    0,
-    DATA_FLAG_NONE
-  };
-  bool spdy2 = spdy_util_.is_spdy2();
-  const char* const kConnectHeaders[] = {
-    spdy2 ? "method"  : ":method",  "CONNECT",
-    spdy2 ? "url"     : ":path",    kOriginHostPort,
-    spdy2 ? "host"    : ":host",    kOriginHost,
-    "user-agent", kUserAgent,
-    spdy2 ? "version" : ":version", "HTTP/1.1",
-  };
-  return spdy_util_.ConstructSpdyFrame(
-      kSynStartHeader, NULL, 0, kConnectHeaders, arraysize(kConnectHeaders)/2);
+  SpdySynStreamIR syn_ir(kStreamId);
+  PopulateConnectRequestIR(&syn_ir);
+  return spdy_util_.CreateFramer(false)->SerializeFrame(syn_ir);
 }
 
 // Constructs a SPDY SYN_STREAM frame for a CONNECT request which includes
 // Proxy-Authorization headers.
-SpdyFrame*
-SpdyProxyClientSocketTest::ConstructConnectAuthRequestFrame() {
-  const SpdyHeaderInfo kSynStartHeader = {
-    SYN_STREAM,
-    kStreamId,
-    0,
-    net::ConvertRequestPriorityToSpdyPriority(
-        LOWEST, spdy_util_.spdy_version()),
-    0,
-    CONTROL_FLAG_NONE,
-    false,
-    RST_STREAM_INVALID,
-    NULL,
-    0,
-    DATA_FLAG_NONE
-  };
-  bool spdy2 = spdy_util_.is_spdy2();
-  const char* const kConnectHeaders[] = {
-    spdy2 ? "method"  : ":method",  "CONNECT",
-    spdy2 ? "url"     : ":path",    kOriginHostPort,
-    spdy2 ? "host"    : ":host",    kOriginHost,
-    "user-agent", kUserAgent,
-    spdy2 ? "version" : ":version", "HTTP/1.1",
-    "proxy-authorization", "Basic Zm9vOmJhcg==",
-  };
-  return spdy_util_.ConstructSpdyFrame(
-      kSynStartHeader, NULL, 0, kConnectHeaders, arraysize(kConnectHeaders)/2);
+SpdyFrame* SpdyProxyClientSocketTest::ConstructConnectAuthRequestFrame() {
+  SpdySynStreamIR syn_ir(kStreamId);
+  PopulateConnectRequestIR(&syn_ir);
+  syn_ir.SetHeader("proxy-authorization", "Basic Zm9vOmJhcg==");
+  return spdy_util_.CreateFramer(false)->SerializeFrame(syn_ir);
 }
 
 // Constructs a standard SPDY SYN_REPLY frame to match the SPDY CONNECT.
 SpdyFrame* SpdyProxyClientSocketTest::ConstructConnectReplyFrame() {
-  bool spdy2 = spdy_util_.is_spdy2();
-  const char* const kStandardReplyHeaders[] = {
-      spdy2 ? "status"  : ":status",  "200 Connection Established",
-      spdy2 ? "version" : ":version", "HTTP/1.1"
-  };
-  return spdy_util_.ConstructSpdyControlFrame(NULL,
-                                              0,
-                                              false,
-                                              kStreamId,
-                                              LOWEST,
-                                              SYN_REPLY,
-                                              CONTROL_FLAG_NONE,
-                                              kStandardReplyHeaders,
-                                              arraysize(kStandardReplyHeaders),
-                                              0);
+  SpdySynReplyIR reply_ir(kStreamId);
+  PopulateConnectReplyIR(&reply_ir, "200");
+  return spdy_util_.CreateFramer(false)->SerializeFrame(reply_ir);
 }
 
-// Constructs a standard SPDY SYN_REPLY frame to match the SPDY CONNECT.
-SpdyFrame*
-SpdyProxyClientSocketTest::ConstructConnectAuthReplyFrame() {
-  bool spdy2 = spdy_util_.is_spdy2();
-
-  const char* const kStandardReplyHeaders[] = {
-      spdy2 ? "status"  : ":status",  "407 Proxy Authentication Required",
-      spdy2 ? "version" : ":version", "HTTP/1.1",
-      "proxy-authenticate", "Basic realm=\"MyRealm1\"",
-  };
-
-  return spdy_util_.ConstructSpdyControlFrame(NULL,
-                                              0,
-                                              false,
-                                              kStreamId,
-                                              LOWEST,
-                                              SYN_REPLY,
-                                              CONTROL_FLAG_NONE,
-                                              kStandardReplyHeaders,
-                                              arraysize(kStandardReplyHeaders),
-                                              0);
+// Constructs a standard SPDY SYN_REPLY frame to match the SPDY CONNECT,
+// including Proxy-Authenticate headers.
+SpdyFrame* SpdyProxyClientSocketTest::ConstructConnectAuthReplyFrame() {
+  SpdySynReplyIR reply_ir(kStreamId);
+  PopulateConnectReplyIR(&reply_ir, "407");
+  reply_ir.SetHeader("proxy-authenticate", "Basic realm=\"MyRealm1\"");
+  return framer_.SerializeFrame(reply_ir);
 }
 
 // Constructs a SPDY SYN_REPLY frame with an HTTP 302 redirect.
-SpdyFrame*
-SpdyProxyClientSocketTest::ConstructConnectRedirectReplyFrame() {
-  bool spdy2 = spdy_util_.is_spdy2();
-
-  const char* const kStandardReplyHeaders[] = {
-      spdy2 ? "status"  : ":status",  "302 Found",
-      spdy2 ? "version" : ":version", "HTTP/1.1",
-      "location", kRedirectUrl,
-      "set-cookie", "foo=bar"
-  };
-
-  return spdy_util_.ConstructSpdyControlFrame(NULL,
-                                              0,
-                                              false,
-                                              kStreamId,
-                                              LOWEST,
-                                              SYN_REPLY,
-                                              CONTROL_FLAG_NONE,
-                                              kStandardReplyHeaders,
-                                              arraysize(kStandardReplyHeaders),
-                                              0);
+SpdyFrame* SpdyProxyClientSocketTest::ConstructConnectRedirectReplyFrame() {
+  SpdySynReplyIR reply_ir(kStreamId);
+  PopulateConnectReplyIR(&reply_ir, "302");
+  reply_ir.SetHeader("location", kRedirectUrl);
+  reply_ir.SetHeader("set-cookie", "foo=bar");
+  return framer_.SerializeFrame(reply_ir);
 }
 
 // Constructs a SPDY SYN_REPLY frame with an HTTP 500 error.
-SpdyFrame*
-SpdyProxyClientSocketTest::ConstructConnectErrorReplyFrame() {
-  bool spdy2 = spdy_util_.is_spdy2();
-
-  const char* const kStandardReplyHeaders[] = {
-      spdy2 ? "status"  : ":status",  "500 Internal Server Error",
-      spdy2 ? "version" : ":version", "HTTP/1.1",
-  };
-
-  return spdy_util_.ConstructSpdyControlFrame(NULL,
-                                              0,
-                                              false,
-                                              kStreamId,
-                                              LOWEST,
-                                              SYN_REPLY,
-                                              CONTROL_FLAG_NONE,
-                                              kStandardReplyHeaders,
-                                              arraysize(kStandardReplyHeaders),
-                                              0);
+SpdyFrame* SpdyProxyClientSocketTest::ConstructConnectErrorReplyFrame() {
+  SpdySynReplyIR reply_ir(kStreamId);
+  PopulateConnectReplyIR(&reply_ir, "500");
+  return framer_.SerializeFrame(reply_ir);
 }
 
 SpdyFrame* SpdyProxyClientSocketTest::ConstructBodyFrame(
@@ -507,8 +425,6 @@ TEST_P(SpdyProxyClientSocketTest, ConnectWithAuthRequested) {
   const HttpResponseInfo* response = sock_->GetConnectResponseInfo();
   ASSERT_TRUE(response != NULL);
   ASSERT_EQ(407, response->headers->response_code());
-  ASSERT_EQ("Proxy Authentication Required",
-            response->headers->GetStatusText());
 }
 
 TEST_P(SpdyProxyClientSocketTest, ConnectWithAuthCredentials) {

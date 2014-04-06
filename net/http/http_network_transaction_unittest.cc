@@ -3388,23 +3388,15 @@ TEST_P(HttpNetworkTransactionTest,
       spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp1->size()));
 
   // CONNECT to news.google.com:443 via SPDY.
-  const char* const kConnectHeaders2[] = {
-    spdy_util_.GetMethodKey(), "CONNECT",
-    spdy_util_.GetPathKey(), "news.google.com:443",
-    spdy_util_.GetHostKey(), "news.google.com",
-    spdy_util_.GetVersionKey(), "HTTP/1.1",
-  };
+  SpdySynStreamIR connect2_ir(3);
+  spdy_util_.SetPriority(LOWEST, &connect2_ir);
+  connect2_ir.SetHeader(spdy_util_.GetMethodKey(), "CONNECT");
+  connect2_ir.SetHeader(spdy_util_.GetPathKey(), "news.google.com:443");
+  connect2_ir.SetHeader(spdy_util_.GetHostKey(), "news.google.com");
+  spdy_util_.MaybeAddVersionHeader(&connect2_ir);
   scoped_ptr<SpdyFrame> connect2(
-      spdy_util_.ConstructSpdyControlFrame(NULL,
-                                           0,
-                                           /*compressed*/ false,
-                                           3,
-                                           LOWEST,
-                                           SYN_STREAM,
-                                           CONTROL_FLAG_NONE,
-                                           kConnectHeaders2,
-                                           arraysize(kConnectHeaders2),
-                                           0));
+      spdy_util_.CreateFramer(false)->SerializeFrame(connect2_ir));
+
   scoped_ptr<SpdyFrame> conn_resp2(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
 
@@ -11277,20 +11269,21 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
                                                                 LOWEST));
   scoped_ptr<SpdyFrame> req1(
       spdy_util_.ConstructSpdyGet(https_url.c_str(), false, 1, LOWEST));
-
-  // SPDY GET for HTTP URL (through the proxy, but not the tunnel)
   scoped_ptr<SpdyFrame> wrapped_req1(
       spdy_util_.ConstructWrappedSpdyFrame(req1, 1));
-  const char* const headers[] = {
-    spdy_util_.GetMethodKey(), "GET",
-    spdy_util_.GetPathKey(), spdy_util_.is_spdy2() ? http_url.c_str() : "/",
-    spdy_util_.GetHostKey(),  "www.google.com:443",
-    spdy_util_.GetSchemeKey(), "http",
-    spdy_util_.GetVersionKey(), "HTTP/1.1"
-  };
-  scoped_ptr<SpdyFrame> req2(spdy_util_.ConstructSpdyControlFrame(
-      NULL, 0, false, 3, MEDIUM, SYN_STREAM, CONTROL_FLAG_FIN,
-      headers, arraysize(headers), 0));
+
+  // SPDY GET for HTTP URL (through the proxy, but not the tunnel).
+  SpdySynStreamIR req2_ir(3);
+  spdy_util_.SetPriority(MEDIUM, &req2_ir);
+  req2_ir.set_fin(true);
+  req2_ir.SetHeader(spdy_util_.GetMethodKey(), "GET");
+  req2_ir.SetHeader(spdy_util_.GetPathKey(),
+                    spdy_util_.is_spdy2() ? http_url.c_str() : "/");
+  req2_ir.SetHeader(spdy_util_.GetHostKey(), "www.google.com:443");
+  req2_ir.SetHeader(spdy_util_.GetSchemeKey(), "http");
+  spdy_util_.MaybeAddVersionHeader(&req2_ir);
+  scoped_ptr<SpdyFrame> req2(
+      spdy_util_.CreateFramer(false)->SerializeFrame(req2_ir));
 
   MockWrite writes1[] = {
     CreateMockWrite(*connect, 0),

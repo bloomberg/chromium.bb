@@ -29,18 +29,21 @@ bool SpdyHeadersToHttpResponse(const SpdyHeaderBlock& headers,
   std::string version;
   std::string status;
 
-  // The "status" and "version" headers are required.
+  // The "status" header is required. "version" is required below SPDY4.
   SpdyHeaderBlock::const_iterator it;
   it = headers.find(status_key);
   if (it == headers.end())
     return false;
   status = it->second;
 
-  it = headers.find(version_key);
-  if (it == headers.end())
-    return false;
-  version = it->second;
-
+  if (protocol_version >= SPDY4) {
+    version = "HTTP/1.1";
+  } else {
+    it = headers.find(version_key);
+    if (it == headers.end())
+      return false;
+    version = it->second;
+  }
   std::string raw_headers(version);
   raw_headers.push_back(' ');
   raw_headers.append(status);
@@ -90,7 +93,7 @@ void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
   while (it.GetNext()) {
     std::string name = StringToLowerASCII(it.name());
     if (name == "connection" || name == "proxy-connection" ||
-        name == "transfer-encoding") {
+        name == "transfer-encoding" || name == "host") {
       continue;
     }
     if (headers->find(name) == headers->end()) {
@@ -114,14 +117,16 @@ void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
     else
       (*headers)["url"] = HttpUtil::SpecForRequest(info.url);
   } else {
-    (*headers)[":version"] = kHttpProtocolVersion;
+    if (protocol_version < SPDY4) {
+      (*headers)[":version"] = kHttpProtocolVersion;
+      (*headers)[":host"] = GetHostAndOptionalPort(info.url);
+    } else {
+      (*headers)[":authority"] = GetHostAndOptionalPort(info.url);
+    }
     (*headers)[":method"] = info.method;
-    (*headers)[":host"] = GetHostAndOptionalPort(info.url);
     (*headers)[":scheme"] = info.url.scheme();
     (*headers)[":path"] = HttpUtil::PathForRequest(info.url);
-    headers->erase("host"); // this is kinda insane, spdy 3 spec.
   }
-
 }
 
 COMPILE_ASSERT(HIGHEST - LOWEST < 4 &&
@@ -170,7 +175,8 @@ GURL GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers,
   }
 
   const char* scheme_header = protocol_version >= SPDY3 ? ":scheme" : "scheme";
-  const char* host_header = protocol_version >= SPDY3 ? ":host" : "host";
+  const char* host_header = protocol_version >= SPDY4 ? ":authority" :
+      (protocol_version >= SPDY3 ? ":host" : "host");
   const char* path_header = protocol_version >= SPDY3 ? ":path" : "url";
 
   std::string scheme;

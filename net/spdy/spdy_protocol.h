@@ -506,6 +506,9 @@ class NET_EXPORT_PRIVATE SpdyFrameWithNameValueBlockIR
                  const base::StringPiece& value) {
     name_value_block_[name.as_string()] = value.as_string();
   }
+  SpdyNameValueBlock* mutable_name_value_block() {
+    return &name_value_block_;
+  }
 
  protected:
   explicit SpdyFrameWithNameValueBlockIR(SpdyStreamId stream_id);

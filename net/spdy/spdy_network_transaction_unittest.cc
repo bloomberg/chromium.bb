@@ -3288,16 +3288,20 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeaders) {
   test_cases[0].expected_headers["cookie"] += "val2";
   test_cases[0].expected_headers["hello"] = "bye";
   test_cases[0].expected_headers["status"] = "200";
-  test_cases[0].expected_headers["version"] = "HTTP/1.1";
 
   test_cases[1].expected_headers["hello"] = "bye";
   test_cases[1].expected_headers["status"] = "200";
-  test_cases[1].expected_headers["version"] = "HTTP/1.1";
 
   test_cases[2].expected_headers["cookie"] = "val1,val2";
   test_cases[2].expected_headers["hello"] = "bye";
   test_cases[2].expected_headers["status"] = "200";
-  test_cases[2].expected_headers["version"] = "HTTP/1.1";
+
+  if (spdy_util_.spdy_version() < SPDY4) {
+    // SPDY4/HTTP2 eliminates use of the :version header.
+    test_cases[0].expected_headers["version"] = "HTTP/1.1";
+    test_cases[1].expected_headers["version"] = "HTTP/1.1";
+    test_cases[2].expected_headers["version"] = "HTTP/1.1";
+  }
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     scoped_ptr<SpdyFrame> req(
@@ -3842,9 +3846,12 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
   expected.push_back(std::string(spdy_util_.GetHostKey()) + ": www.google.com");
   expected.push_back(std::string(spdy_util_.GetPathKey()) + ": /");
   expected.push_back(std::string(spdy_util_.GetSchemeKey()) + ": http");
-  expected.push_back(std::string(spdy_util_.GetVersionKey()) + ": HTTP/1.1");
   expected.push_back(std::string(spdy_util_.GetMethodKey()) + ": GET");
   expected.push_back("user-agent: Chrome");
+  if (spdy_util_.spdy_version() < SPDY4) {
+    // SPDY4/HTTP2 eliminates use of the :version header.
+    expected.push_back(std::string(spdy_util_.GetVersionKey()) + ": HTTP/1.1");
+  }
   EXPECT_EQ(expected.size(), header_list->GetSize());
   for (std::vector<std::string>::const_iterator it = expected.begin();
        it != expected.end();
@@ -5332,7 +5339,10 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
 
   scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
   (*late_headers)[spdy_util_.GetStatusKey()] = "200";
-  (*late_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
+  if (spdy_util_.spdy_version() < SPDY4) {
+    // SPDY4/HTTP2 eliminates use of the :version header.
+    (*late_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
+  }
   scoped_ptr<SpdyFrame> stream2_headers2(
       spdy_util_.ConstructSpdyControlFrame(late_headers.Pass(),
                                            false,
@@ -5430,13 +5440,17 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
     EXPECT_TRUE(response2.headers->HasHeaderValue(
         "scheme", "http"));
     EXPECT_TRUE(response2.headers->HasHeaderValue(
-        "host", "www.google.com"));
-    EXPECT_TRUE(response2.headers->HasHeaderValue(
         "path", "/foo.dat"));
+    if (spdy_util_.spdy_version() < SPDY4) {
+      EXPECT_TRUE(response2.headers->HasHeaderValue(
+          "host", "www.google.com"));
+    } else {
+      EXPECT_TRUE(response2.headers->HasHeaderValue(
+          "authority", "www.google.com"));
+    }
   }
   EXPECT_TRUE(response2.headers->HasHeaderValue("hello", "bye"));
   EXPECT_TRUE(response2.headers->HasHeaderValue("status", "200"));
-  EXPECT_TRUE(response2.headers->HasHeaderValue("version", "HTTP/1.1"));
 
   // Read the final EOF (which will close the session)
   data.RunFor(1);
