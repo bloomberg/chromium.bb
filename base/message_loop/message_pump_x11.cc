@@ -28,7 +28,9 @@ Display* g_xdisplay = NULL;
 
 }  // namespace
 
-MessagePumpX11::MessagePumpX11() : MessagePumpGlib() {}
+MessagePumpX11::MessagePumpX11() : MessagePumpGlib() {
+  GetDefaultXDisplay();
+}
 
 MessagePumpX11::~MessagePumpX11() {
   if (g_xdisplay) {
