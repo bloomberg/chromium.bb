@@ -288,7 +288,7 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
     const Template** dest_template = &dest->templates_[i->first];
     if (*dest_template)
       delete *dest_template;
-    *dest_template = i->second;
+    *dest_template = i->second->Clone().release();
   }
 
   return true;

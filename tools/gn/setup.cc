@@ -44,11 +44,22 @@ extern const char kDotfile_Help[] =
     "  same as a buildfile, but with very limited build setup-specific\n"
     "  meaning.\n"
     "\n"
+    "  If you specify --root, by default GN will look for the file .gn in\n"
+    "  that directory. If you want to specify a different file, you can\n"
+    "  additionally pass --dotfile:\n"
+    "\n"
+    "    gn gen out/Debug --root=/home/build --dotfile=/home/my_gn_file.gn\n"
+    "\n"
     "Variables\n"
     "\n"
     "  buildconfig [required]\n"
     "      Label of the build config file. This file will be used to setup\n"
     "      the build file execution environment for each toolchain.\n"
+    "\n"
+    "  root [optional]\n"
+    "      Label of the root build target. The GN build will start by loading\n"
+    "      the build file containing this target name. This defaults to\n"
+    "      \"//:\" which will cause the file //BUILD.gn to be loaded.\n"
     "\n"
     "  secondary_source [optional]\n"
     "      Label of an alternate directory tree to find input files. When\n"
@@ -66,6 +77,8 @@ extern const char kDotfile_Help[] =
     "\n"
     "  buildconfig = \"//build/config/BUILDCONFIG.gn\"\n"
     "\n"
+    "  root = \"//:root\"\n"
+    "\n"
     "  secondary_source = \"//build/config/temporary_buildfiles/\"\n";
 
 namespace {
@@ -79,12 +92,13 @@ const char kSwitchArgs[] = "args";
 // Set root dir.
 const char kSwitchRoot[] = "root";
 
+// Set dotfile name.
+const char kSwitchDotfile[] = "dotfile";
+
 // Enable timing.
 const char kTimeSwitch[] = "time";
 
 const char kTracelogSwitch[] = "tracelog";
-
-const char kSecondarySource[] = "secondary";
 
 const base::FilePath::CharType kGnFile[] = FILE_PATH_LITERAL(".gn");
 
@@ -122,6 +136,7 @@ CommonSetup::CommonSetup()
     : build_settings_(),
       loader_(new LoaderImpl(&build_settings_)),
       builder_(new Builder(loader_.get())),
+      root_build_file_("//BUILD.gn"),
       check_for_bad_items_(true),
       check_for_unused_overrides_(true) {
   loader_->set_complete_callback(base::Bind(&DecrementWorkCount));
@@ -131,6 +146,7 @@ CommonSetup::CommonSetup(const CommonSetup& other)
     : build_settings_(other.build_settings_),
       loader_(new LoaderImpl(&build_settings_)),
       builder_(new Builder(loader_.get())),
+      root_build_file_(other.root_build_file_),
       check_for_bad_items_(other.check_for_bad_items_),
       check_for_unused_overrides_(other.check_for_unused_overrides_) {
   loader_->set_complete_callback(base::Bind(&DecrementWorkCount));
@@ -141,7 +157,7 @@ CommonSetup::~CommonSetup() {
 
 void CommonSetup::RunPreMessageLoop() {
   // Load the root build file.
-  loader_->Load(SourceFile("//BUILD.gn"), Label());
+  loader_->Load(root_build_file_, Label());
 
   // Will be decremented with the loader is drained.
   g_scheduler->IncrementWorkCount();
@@ -271,8 +287,31 @@ bool Setup::FillSourceDir(const CommandLine& cmdline) {
   base::FilePath relative_root_path = cmdline.GetSwitchValuePath(kSwitchRoot);
   if (!relative_root_path.empty()) {
     root_path = base::MakeAbsoluteFilePath(relative_root_path);
-    dotfile_name_ = root_path.Append(kGnFile);
+    if (root_path.empty()) {
+      Err(Location(), "Root source path not found.",
+          "The path \"" + FilePathToUTF8(relative_root_path) +
+          "\" doesn't exist.").PrintToStdout();
+      return false;
+    }
+
+    // When --root is specified, an alternate --dotfile can also be set.
+    // --dotfile should be a real file path and not a "//foo" source-relative
+    // path.
+    base::FilePath dot_file_path = cmdline.GetSwitchValuePath(kSwitchDotfile);
+    if (dot_file_path.empty()) {
+      dotfile_name_ = root_path.Append(kGnFile);
+    } else {
+      dotfile_name_ = base::MakeAbsoluteFilePath(dot_file_path);
+      if (dotfile_name_.empty()) {
+        Err(Location(), "Could not load dotfile.",
+            "The file \"" + FilePathToUTF8(dot_file_path) +
+            "\" cound't be loaded.").PrintToStdout();
+        return false;
+      }
+    }
   } else {
+    // In the default case, look for a dotfile and that also tells us where the
+    // source root is.
     base::FilePath cur_dir;
     base::GetCurrentDirectory(&cur_dir);
     dotfile_name_ = FindDotFile(cur_dir);
@@ -369,24 +408,35 @@ bool Setup::RunConfigFile() {
 bool Setup::FillOtherConfig(const CommandLine& cmdline) {
   Err err;
 
-  // Secondary source path.
-  SourceDir secondary_source;
-  if (cmdline.HasSwitch(kSecondarySource)) {
-    // Prefer the command line over the config file.
-    secondary_source =
-        SourceDir(cmdline.GetSwitchValueASCII(kSecondarySource));
-  } else {
-    // Read from the config file if present.
-    const Value* secondary_value =
-        dotfile_scope_.GetValue("secondary_source", true);
-    if (secondary_value) {
-      if (!secondary_value->VerifyTypeIs(Value::STRING, &err)) {
-        err.PrintToStdout();
-        return false;
-      }
-      build_settings_.SetSecondarySourcePath(
-          SourceDir(secondary_value->string_value()));
+  // Secondary source path, read from the config file if present.
+  // Read from the config file if present.
+  const Value* secondary_value =
+      dotfile_scope_.GetValue("secondary_source", true);
+  if (secondary_value) {
+    if (!secondary_value->VerifyTypeIs(Value::STRING, &err)) {
+      err.PrintToStdout();
+      return false;
     }
+    build_settings_.SetSecondarySourcePath(
+        SourceDir(secondary_value->string_value()));
+  }
+
+  // Root build file.
+  const Value* root_value = dotfile_scope_.GetValue("root", true);
+  if (root_value) {
+    if (!root_value->VerifyTypeIs(Value::STRING, &err)) {
+      err.PrintToStdout();
+      return false;
+    }
+
+    Label root_target_label =
+        Label::Resolve(SourceDir("//"), Label(), *root_value, &err);
+    if (err.has_error()) {
+      err.PrintToStdout();
+      return false;
+    }
+
+    root_build_file_ = Loader::BuildFileForLabel(root_target_label);
   }
 
   // Build config file.

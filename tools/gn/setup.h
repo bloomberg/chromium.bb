@@ -65,6 +65,8 @@ class CommonSetup {
   scoped_refptr<LoaderImpl> loader_;
   scoped_refptr<Builder> builder_;
 
+  SourceFile root_build_file_;
+
   bool check_for_bad_items_;
   bool check_for_unused_overrides_;
 
