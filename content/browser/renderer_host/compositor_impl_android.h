@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_COMPOSITOR_IMPL_ANDROID_H_
 #define CONTENT_BROWSER_RENDERER_HOST_COMPOSITOR_IMPL_ANDROID_H_
 
-#include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
@@ -46,14 +45,6 @@ class CONTENT_EXPORT CompositorImpl
   virtual ~CompositorImpl();
 
   static bool IsInitialized();
-
-  // Returns the Java Surface object for a given view surface id.
-  static base::android::ScopedJavaLocalRef<jobject> GetSurface(int surface_id);
-
-  // Returns the Java Surface object for a given surface texture id.
-  static base::android::ScopedJavaLocalRef<jobject> GetSurfaceTextureSurface(
-      int surface_texture_id,
-      int child_process_id);
 
   // Creates a surface texture and returns a surface texture id. Returns -1 on
   // failure.

@@ -6,13 +6,12 @@
 
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>
-#include <map>
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/containers/scoped_ptr_hash_map.h"
+#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -28,6 +27,7 @@
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/trees/layer_tree_host.h"
+#include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
@@ -46,7 +46,6 @@
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/frame_time.h"
-#include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/android/surface_texture_tracker.h"
 #include "webkit/common/gpu/context_provider_in_process.h"
@@ -148,9 +147,13 @@ class SurfaceTextureTrackerImpl : public gfx::SurfaceTextureTracker {
       int primary_id,
       int secondary_id) OVERRIDE {
     base::AutoLock lock(surface_textures_lock_);
-    scoped_ptr<SurfaceTextureInfo> info = surface_textures_.take_and_erase(
-        SurfaceTextureMapKey(primary_id, secondary_id));
-    return info ? info->surface_texture : NULL;
+    SurfaceTextureMapKey key(primary_id, secondary_id);
+    SurfaceTextureMap::iterator it = surface_textures_.find(key);
+    if (it == surface_textures_.end())
+      return scoped_refptr<gfx::SurfaceTexture>();
+    scoped_refptr<gfx::SurfaceTexture> surface_texture = it->second;
+    surface_textures_.erase(it);
+    return surface_texture;
   }
 
   int AddSurfaceTexture(gfx::SurfaceTexture* surface_texture,
@@ -163,8 +166,11 @@ class SurfaceTextureTrackerImpl : public gfx::SurfaceTextureTracker {
     base::AutoLock lock(surface_textures_lock_);
     SurfaceTextureMapKey key(surface_texture_id, child_process_id);
     DCHECK(surface_textures_.find(key) == surface_textures_.end());
-    surface_textures_.set(
-        key, make_scoped_ptr(new SurfaceTextureInfo(surface_texture)));
+    surface_textures_[key] = surface_texture;
+    content::RegisterChildProcessSurfaceTexture(
+        surface_texture_id,
+        child_process_id,
+        surface_texture->j_surface_texture().obj());
     return surface_texture_id;
   }
 
@@ -173,36 +179,20 @@ class SurfaceTextureTrackerImpl : public gfx::SurfaceTextureTracker {
     base::AutoLock lock(surface_textures_lock_);
     SurfaceTextureMap::iterator it = surface_textures_.begin();
     while (it != surface_textures_.end()) {
-      if (it->first.second == child_process_id)
+      if (it->first.second == child_process_id) {
+        content::UnregisterChildProcessSurfaceTexture(it->first.first,
+                                                      it->first.second);
         surface_textures_.erase(it++);
-      else
+      } else {
         ++it;
+      }
     }
   }
 
-  base::android::ScopedJavaLocalRef<jobject> GetSurface(
-      int surface_texture_id,
-      int child_process_id) const {
-    base::AutoLock lock(surface_textures_lock_);
-    SurfaceTextureMap::const_iterator it = surface_textures_.find(
-        SurfaceTextureMapKey(surface_texture_id, child_process_id));
-    return it == surface_textures_.end()
-               ? base::android::ScopedJavaLocalRef<jobject>()
-               : base::android::ScopedJavaLocalRef<jobject>(
-                     it->second->surface.j_surface());
-  }
-
  private:
-  struct SurfaceTextureInfo {
-    explicit SurfaceTextureInfo(gfx::SurfaceTexture* surface_texture)
-        : surface_texture(surface_texture), surface(surface_texture) {}
-
-    scoped_refptr<gfx::SurfaceTexture> surface_texture;
-    gfx::ScopedJavaSurface surface;
-  };
-
   typedef std::pair<int, int> SurfaceTextureMapKey;
-  typedef base::ScopedPtrHashMap<SurfaceTextureMapKey, SurfaceTextureInfo>
+  typedef base::hash_map<SurfaceTextureMapKey,
+                         scoped_refptr<gfx::SurfaceTexture> >
       SurfaceTextureMap;
   SurfaceTextureMap surface_textures_;
   mutable base::Lock surface_textures_lock_;
@@ -217,12 +207,6 @@ static bool g_initialized = false;
 } // anonymous namespace
 
 namespace content {
-
-typedef std::map<int, base::android::ScopedJavaGlobalRef<jobject> >
-    SurfaceMap;
-static base::LazyInstance<SurfaceMap>
-    g_surface_map = LAZY_INSTANCE_INITIALIZER;
-static base::LazyInstance<base::Lock> g_surface_map_lock;
 
 // static
 Compositor* Compositor::Create(CompositorClient* client,
@@ -242,35 +226,6 @@ void Compositor::Initialize() {
 // static
 bool CompositorImpl::IsInitialized() {
   return g_initialized;
-}
-
-// static
-base::android::ScopedJavaLocalRef<jobject> CompositorImpl::GetSurface(
-    int surface_id) {
-  base::AutoLock lock(g_surface_map_lock.Get());
-  SurfaceMap* surfaces = g_surface_map.Pointer();
-  SurfaceMap::iterator it = surfaces->find(surface_id);
-  base::android::ScopedJavaLocalRef<jobject> jsurface(
-      it == surfaces->end()
-          ? base::android::ScopedJavaLocalRef<jobject>()
-          : base::android::ScopedJavaLocalRef<jobject>(it->second));
-
-  LOG_IF(WARNING, !jsurface.is_null()) << "No surface for surface id "
-                                       << surface_id;
-  return jsurface;
-}
-
-// static
-base::android::ScopedJavaLocalRef<jobject>
-CompositorImpl::GetSurfaceTextureSurface(int surface_texture_id,
-                                         int child_process_id) {
-  base::android::ScopedJavaLocalRef<jobject> jsurface(
-      g_surface_texture_tracker.Pointer()->GetSurface(surface_texture_id,
-                                                      child_process_id));
-
-  LOG_IF(WARNING, jsurface.is_null()) << "No surface for surface texture id "
-                                      << surface_texture_id;
-  return jsurface;
 }
 
 // static
@@ -351,12 +306,8 @@ void CompositorImpl::SetSurface(jobject surface) {
   base::android::ScopedJavaLocalRef<jobject> j_surface(env, surface);
 
   // First, cleanup any existing surface references.
-  if (surface_id_) {
-    DCHECK(g_surface_map.Get().find(surface_id_) !=
-           g_surface_map.Get().end());
-    base::AutoLock lock(g_surface_map_lock.Get());
-    g_surface_map.Get().erase(surface_id_);
-  }
+  if (surface_id_)
+    content::UnregisterViewSurface(surface_id_);
   SetWindowSurface(NULL);
 
   // Now, set the new surface if we have one.
@@ -366,10 +317,7 @@ void CompositorImpl::SetSurface(jobject surface) {
   if (window) {
     SetWindowSurface(window);
     ANativeWindow_release(window);
-    {
-      base::AutoLock lock(g_surface_map_lock.Get());
-      g_surface_map.Get().insert(std::make_pair(surface_id_, j_surface));
-    }
+    content::RegisterViewSurface(surface_id_, j_surface.obj());
   }
 }
 

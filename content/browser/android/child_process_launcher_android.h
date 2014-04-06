@@ -32,6 +32,17 @@ void StopChildProcess(base::ProcessHandle handle);
 
 bool IsChildProcessOomProtected(base::ProcessHandle handle);
 
+void RegisterViewSurface(int surface_id, jobject j_surface);
+
+void UnregisterViewSurface(int surface_id);
+
+void RegisterChildProcessSurfaceTexture(int surface_texture_id,
+                                        int child_process_id,
+                                        jobject j_surface_texture);
+
+void UnregisterChildProcessSurfaceTexture(int surface_texture_id,
+                                          int child_process_id);
+
 bool RegisterChildProcessLauncher(JNIEnv* env);
 
 }  // namespace content

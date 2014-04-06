@@ -5,7 +5,9 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.graphics.SurfaceTexture;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Surface;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -214,6 +216,14 @@ public class ChildProcessLauncher {
     // Manages oom bindings used to bind chind services.
     private static BindingManager sBindingManager = BindingManagerImpl.createBindingManager();
 
+    // Map from surface id to Surface.
+    private static Map<Integer, Surface> sViewSurfaceMap =
+            new ConcurrentHashMap<Integer, Surface>();
+
+    // Map from surface texture id to Surface.
+    private static Map<Pair<Integer, Integer>, Surface> sSurfaceTextureSurfaceMap =
+            new ConcurrentHashMap<Pair<Integer, Integer>, Surface>();
+
     static BindingManager getBindingManager() {
         return sBindingManager;
     }
@@ -226,6 +236,29 @@ public class ChildProcessLauncher {
     @CalledByNative
     private static boolean isOomProtected(int pid) {
         return sBindingManager.isOomProtected(pid);
+    }
+
+    @CalledByNative
+    private static void registerViewSurface(int surfaceId, Surface surface) {
+        sViewSurfaceMap.put(surfaceId, surface);
+    }
+
+    @CalledByNative
+    private static void unregisterViewSurface(int surfaceId) {
+        sViewSurfaceMap.remove(surfaceId);
+    }
+
+    @CalledByNative
+    private static void registerSurfaceTexture(
+            int surfaceTextureId, int childProcessId, SurfaceTexture surfaceTexture) {
+        Pair<Integer, Integer> key = new Pair<Integer, Integer>(surfaceTextureId, childProcessId);
+        sSurfaceTextureSurfaceMap.put(key, new Surface(surfaceTexture));
+    }
+
+    @CalledByNative
+    private static void unregisterSurfaceTexture(int surfaceTextureId, int childProcessId) {
+        Pair<Integer, Integer> key = new Pair<Integer, Integer>(surfaceTextureId, childProcessId);
+        sSurfaceTextureSurfaceMap.remove(key);
     }
 
     /**
@@ -423,7 +456,12 @@ public class ChildProcessLauncher {
                     return null;
                 }
 
-                return nativeGetViewSurface(surfaceId);
+                Surface surface = sViewSurfaceMap.get(surfaceId);
+                if (surface == null) {
+                    Log.e(TAG, "Invalid surfaceId.");
+                    return null;
+                }
+                return surface;
             }
 
             @Override
@@ -438,7 +476,14 @@ public class ChildProcessLauncher {
                     return null;
                 }
 
-                return nativeGetSurfaceTextureSurface(primaryId, secondaryId);
+                Pair<Integer, Integer> key = new Pair<Integer, Integer>(primaryId, secondaryId);
+                // Note: This removes the surface and passes the ownership to the caller.
+                Surface surface = sSurfaceTextureSurfaceMap.remove(key);
+                if (surface == null) {
+                    Log.e(TAG, "Invalid Id for surface texture.");
+                    return null;
+                }
+                return surface;
             }
         };
     }
@@ -451,9 +496,6 @@ public class ChildProcessLauncher {
     }
 
     private static native void nativeOnChildProcessStarted(long clientContext, int pid);
-    private static native Surface nativeGetViewSurface(int surfaceId);
-    private static native Surface nativeGetSurfaceTextureSurface(
-            int surfaceTextureId, int childProcessId);
     private static native void nativeEstablishSurfacePeer(
             int pid, Surface surface, int primaryID, int secondaryID);
     private static native boolean nativeIsSingleProcess();
