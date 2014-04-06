@@ -96,11 +96,11 @@ deps = {
 
   "src/third_party/WebKit/LayoutTests/w3c/web-platform-tests":
     Var("chromium_git") +
-    "/external/w3c/web-platform-tests.git@ac4322a338be82b3d8b722917d6d3d057c0a3f6a",
+    "/external/w3c/web-platform-tests.git@2f0f4e335e765fdfb9603f6553f466cca2686a3a",
 
   "src/third_party/WebKit/LayoutTests/w3c/csswg-test":
     Var("chromium_git") +
-    "/external/w3c/csswg-test.git@8c415e3215a203fa3a22dbdd1799279fdf44c81e",
+    "/external/w3c/csswg-test.git@7ce6320613b5d5153d737435a0152ea66daf9563",
 
   "src/third_party/icu":
     "/trunk/deps/third_party/icu46@259309",
