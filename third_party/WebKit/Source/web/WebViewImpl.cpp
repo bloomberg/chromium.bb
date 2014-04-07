@@ -404,8 +404,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     provideDatabaseClientTo(*m_page, DatabaseClientImpl::create());
     InspectorIndexedDBAgent::provideTo(m_page.get());
     provideStorageQuotaClientTo(*m_page, StorageQuotaClientImpl::create());
-    m_validationMessage = ValidationMessageClientImpl::create(*this);
-    m_page->setValidationMessageClient(m_validationMessage.get());
+    m_page->setValidationMessageClient(ValidationMessageClientImpl::create(*this));
     provideWorkerGlobalScopeProxyProviderTo(*m_page, WorkerGlobalScopeProxyProviderImpl::create());
 
     m_page->makeOrdinary();

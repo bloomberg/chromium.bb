@@ -151,8 +151,8 @@ public:
     ContextMenuController& contextMenuController() const { return *m_contextMenuController; }
     InspectorController& inspectorController() const { return *m_inspectorController; }
     PointerLockController& pointerLockController() const { return *m_pointerLockController; }
-    ValidationMessageClient* validationMessageClient() const { return m_validationMessageClient; }
-    void setValidationMessageClient(ValidationMessageClient* client) { m_validationMessageClient = client; }
+    ValidationMessageClient& validationMessageClient() const { return *m_validationMessageClient; }
+    void setValidationMessageClient(PassOwnPtr<ValidationMessageClient>);
 
     ScrollingCoordinator* scrollingCoordinator();
 
@@ -258,9 +258,9 @@ private:
 
     BackForwardClient* m_backForwardClient;
     EditorClient* const m_editorClient;
-    ValidationMessageClient* m_validationMessageClient;
     SpellCheckerClient* const m_spellCheckerClient;
     StorageClient* m_storageClient;
+    OwnPtr<ValidationMessageClient> m_validationMessageClient;
 
     UseCounter m_useCounter;
 

@@ -121,7 +121,6 @@ Page::Page(PageClients& pageClients)
     , m_undoStack(UndoStack::create())
     , m_backForwardClient(pageClients.backForwardClient)
     , m_editorClient(pageClients.editorClient)
-    , m_validationMessageClient(0)
     , m_spellCheckerClient(pageClients.spellCheckerClient)
     , m_storageClient(pageClients.storageClient)
     , m_subframeCount(0)
@@ -318,6 +317,11 @@ void Page::unmarkAllTextMatches()
         frame->document()->markers().removeMarkers(DocumentMarker::TextMatch);
         frame = incrementFrame(frame, true, false);
     } while (frame);
+}
+
+void Page::setValidationMessageClient(PassOwnPtr<ValidationMessageClient> client)
+{
+    m_validationMessageClient = client;
 }
 
 void Page::setDefersLoading(bool defers)

@@ -60,9 +60,8 @@ ValidationMessageClient* ValidationMessage::validationMessageClient() const
     Page* page = m_element->document().page();
     if (!page)
         return 0;
-    // The form valdiation feature requires ValidationMessageClient.
-    ASSERT(page->validationMessageClient());
-    return page->validationMessageClient();
+
+    return &page->validationMessageClient();
 }
 
 void ValidationMessage::updateValidationMessage(const String& message)

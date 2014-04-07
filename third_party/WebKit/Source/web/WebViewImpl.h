@@ -745,7 +745,6 @@ private:
     int m_flingModifier;
     bool m_flingSourceDevice;
     Vector<OwnPtr<LinkHighlight> > m_linkHighlights;
-    OwnPtr<ValidationMessageClientImpl> m_validationMessage;
     OwnPtr<FullscreenController> m_fullscreenController;
 
     bool m_showFPSCounter;
