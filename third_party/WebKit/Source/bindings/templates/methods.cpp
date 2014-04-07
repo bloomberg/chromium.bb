@@ -208,14 +208,6 @@ RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.num
 if (exceptionState.throwIfNeeded())
     return;
 {% endif %}
-{% if method.is_call_with_script_state %}
-if (state->hadException()) {
-    v8::Local<v8::Value> exception = state->exception();
-    state->clearException();
-    throwError(exception, info.GetIsolate());
-    return;
-}
-{% endif %}
 {# Set return value #}
 {% if method.union_arguments %}
 {{union_type_method_call_and_set_return_value(method)}}

@@ -6806,12 +6806,6 @@ static void callWithScriptStateVoidMethodMethod(const v8::FunctionCallbackInfo<v
     if (!state)
         return;
     impl->callWithScriptStateVoidMethod(state);
-    if (state->hadException()) {
-        v8::Local<v8::Value> exception = state->exception();
-        state->clearException();
-        throwError(exception, info.GetIsolate());
-        return;
-    }
 }
 
 static void callWithScriptStateVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6828,12 +6822,6 @@ static void callWithScriptStateLongMethodMethod(const v8::FunctionCallbackInfo<v
     if (!state)
         return;
     int result = impl->callWithScriptStateLongMethod(state);
-    if (state->hadException()) {
-        v8::Local<v8::Value> exception = state->exception();
-        state->clearException();
-        throwError(exception, info.GetIsolate());
-        return;
-    }
     v8SetReturnValueInt(info, result);
 }
 
@@ -6866,12 +6854,6 @@ static void callWithScriptStateExecutionContextVoidMethodMethod(const v8::Functi
         return;
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     impl->callWithScriptStateExecutionContextVoidMethod(state, scriptContext);
-    if (state->hadException()) {
-        v8::Local<v8::Value> exception = state->exception();
-        state->clearException();
-        throwError(exception, info.GetIsolate());
-        return;
-    }
 }
 
 static void callWithScriptStateExecutionContextVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6889,12 +6871,6 @@ static void callWithScriptStateScriptArgumentsVoidMethodMethod(const v8::Functio
         return;
     RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 0));
     impl->callWithScriptStateScriptArgumentsVoidMethod(state, scriptArguments.release());
-    if (state->hadException()) {
-        v8::Local<v8::Value> exception = state->exception();
-        state->clearException();
-        throwError(exception, info.GetIsolate());
-        return;
-    }
 }
 
 static void callWithScriptStateScriptArgumentsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6913,12 +6889,6 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
             return;
         RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
         impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release());
-        if (state->hadException()) {
-            v8::Local<v8::Value> exception = state->exception();
-            state->clearException();
-            throwError(exception, info.GetIsolate());
-            return;
-        }
         return;
     }
     V8TRYCATCH_VOID(bool, optionalBooleanArg, info[0]->BooleanValue());
@@ -6927,12 +6897,6 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
         return;
     RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
     impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release(), optionalBooleanArg);
-    if (state->hadException()) {
-        v8::Local<v8::Value> exception = state->exception();
-        state->clearException();
-        throwError(exception, info.GetIsolate());
-        return;
-    }
 }
 
 static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

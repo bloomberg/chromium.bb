@@ -47,14 +47,6 @@ class WorkerGlobalScope;
 class ScriptState {
     WTF_MAKE_NONCOPYABLE(ScriptState);
 public:
-    bool hadException() { return !m_exception.isEmpty(); }
-    void setException(v8::Local<v8::Value> exception)
-    {
-        m_exception.set(m_isolate, exception);
-    }
-    v8::Local<v8::Value> exception() { return m_exception.newLocal(m_isolate); }
-    void clearException() { m_exception.clear(); }
-
     v8::Local<v8::Context> context() const
     {
         return m_context.newLocal(m_isolate);
