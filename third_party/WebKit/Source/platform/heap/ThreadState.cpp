@@ -31,6 +31,7 @@
 #include "config.h"
 #include "platform/heap/ThreadState.h"
 
+#include "platform/heap/AddressSanitizer.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -41,10 +42,6 @@
 #include <winnt.h>
 #elif defined(__GLIBC__)
 extern "C" void* __libc_stack_end;  // NOLINT
-#endif
-
-#if defined(ADDRESS_SANITIZER) && !OS(WIN)
-#include <sanitizer/asan_interface.h>
 #endif
 
 namespace WebCore {
