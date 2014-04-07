@@ -64,15 +64,6 @@ bool CheckLayoutSystemDeps() {
   if (::GetSystemMetrics(SM_CXVSCROLL) != 17)
     errors.push_back("Must use normal size fonts (96 dpi).");
 
-  // ClearType must be disabled, because the rendering is unpredictable.
-  BOOL font_smoothing_enabled;
-  ::SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &font_smoothing_enabled, 0);
-  int font_smoothing_type;
-  ::SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &font_smoothing_type, 0);
-  if (font_smoothing_enabled &&
-      (font_smoothing_type == FE_FONTSMOOTHINGCLEARTYPE))
-    errors.push_back("ClearType must be disabled.");
-
   // Check that we're using the default system fonts.
   OSVERSIONINFO version_info = {0};
   version_info.dwOSVersionInfoSize = sizeof(version_info);
