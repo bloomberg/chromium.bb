@@ -56,7 +56,7 @@ class ParseError(Exception):
   def __str__(self):
     return "%s: Error: Unexpected end of file" % self.filename if self.eof \
         else "%s:%d: Error: Unexpected %r:\n%s" % (
-            self.filename, self.lineno + 1, self.bad_char, self.snippet)
+            self.filename, self.lineno, self.bad_char, self.snippet)
 
   def __repr__(self):
     return str(self)
@@ -334,9 +334,8 @@ class Parser(object):
       # TODO(vtl): Can we figure out what's missing?
       raise ParseError(self.filename, eof=True)
 
-    lineno = e.lineno + 1
-    snippet = self.source.split('\n')[lineno]
-    raise ParseError(self.filename, lineno=lineno, snippet=snippet,
+    snippet = self.source.split('\n')[e.lineno - 1]
+    raise ParseError(self.filename, lineno=e.lineno, snippet=snippet,
                      bad_char=e.value)
 
 

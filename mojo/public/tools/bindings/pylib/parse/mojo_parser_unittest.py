@@ -41,7 +41,7 @@ module my_module {
 
   def testSimpleStruct(self):
     """Tests a simple .mojom source that just defines a struct."""
-    source ="""\
+    source = """\
 module my_module {
 
 struct MyStruct {
@@ -51,7 +51,6 @@ struct MyStruct {
 
 }  // module my_module
 """
-    # Note: Output as pretty-printed on failure by the test harness.
     expected = \
 [('MODULE',
   'my_module',
@@ -61,6 +60,53 @@ struct MyStruct {
     [('FIELD', 'int32', 'a', None, None),
      ('FIELD', 'double', 'b', None, None)])])]
     self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
+
+  def testSimpleStructWithoutModule(self):
+    """Tests a simple struct without an enclosing module."""
+    source = """\
+struct MyStruct {
+  int32 a;
+  double b;
+};
+"""
+    expected = \
+[('MODULE',
+  '',
+  [('STRUCT',
+    'MyStruct',
+    None,
+    [('FIELD', 'int32', 'a', None, None),
+     ('FIELD', 'double', 'b', None, None)])])]
+    self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
+
+  def testMissingModuleName(self):
+    """Tests an (invalid) .mojom with a missing module name."""
+    source1 = """\
+// Missing module name.
+module {
+struct MyStruct {
+  int32 a;
+};
+}
+"""
+    with self.assertRaisesRegexp(
+        mojo_parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected '{':\nmodule {$"):
+      mojo_parser.Parse(source1, "my_file.mojom")
+
+    # Another similar case, but make sure that line-number tracking/reporting
+    # is correct.
+    source2 = """\
+module
+// This line intentionally left unblank.
+
+{
+}
+"""
+    with self.assertRaisesRegexp(
+        mojo_parser.ParseError,
+        r"^my_file\.mojom:4: Error: Unexpected '{':\n{$"):
+      mojo_parser.Parse(source2, "my_file.mojom")
 
   def testEnumExpressions(self):
     """Tests an enum with values calculated using simple expressions."""
