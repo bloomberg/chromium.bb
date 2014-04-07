@@ -55,9 +55,9 @@ class BluetoothDeviceMac : public BluetoothDevice {
       const device::BluetoothUUID& service_uuid,
       const SocketCallback& callback) OVERRIDE;
   virtual void ConnectToProfile(
-      BluetoothProfile* profile,
+      device::BluetoothProfile* profile,
       const base::Closure& callback,
-      const ConnectToProfileErrorCallback& error_callback) OVERRIDE;
+      const ErrorCallback& error_callback) OVERRIDE;
   virtual void SetOutOfBandPairingData(
       const BluetoothOutOfBandPairingData& data,
       const base::Closure& callback,

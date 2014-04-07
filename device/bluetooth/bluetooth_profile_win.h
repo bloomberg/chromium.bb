@@ -9,12 +9,10 @@
 
 #include "device/bluetooth/bluetooth_profile.h"
 #include "device/bluetooth/bluetooth_uuid.h"
-#include "net/base/net_log.h"
 
 namespace device {
 
 class BluetoothDeviceWin;
-class BluetoothSocketThreadWin;
 
 class BluetoothProfileWin : public BluetoothProfile {
  public:
@@ -23,15 +21,7 @@ class BluetoothProfileWin : public BluetoothProfile {
   virtual void SetConnectionCallback(
       const ConnectionCallback& callback) OVERRIDE;
 
-  typedef base::Callback<void(const std::string&)> ErrorCallback;
-
-  void Connect(const BluetoothDeviceWin* device,
-               scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-               scoped_refptr<BluetoothSocketThreadWin> socket_thread,
-               net::NetLog* net_log,
-               const net::NetLog::Source& source,
-               const base::Closure& callback,
-               const ErrorCallback& error_callback);
+  bool Connect(const BluetoothDeviceWin* device);
 
  private:
   friend BluetoothProfile;
@@ -42,8 +32,6 @@ class BluetoothProfileWin : public BluetoothProfile {
   const BluetoothUUID uuid_;
   const std::string name_;
   ConnectionCallback connection_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothProfileWin);
 };
 
 }  // namespace device

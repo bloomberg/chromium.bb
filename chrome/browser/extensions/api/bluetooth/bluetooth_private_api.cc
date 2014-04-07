@@ -41,13 +41,15 @@ void BluetoothPrivateAPI::Shutdown() {
 }
 
 void BluetoothPrivateAPI::OnListenerAdded(const EventListenerInfo& details) {
-  BluetoothAPI::Get(browser_context_)->event_router()->AddPairingDelegate(
-      details.extension_id);
+  BluetoothAPI::Get(browser_context_)
+      ->bluetooth_event_router()
+      ->AddPairingDelegate(details.extension_id);
 }
 
 void BluetoothPrivateAPI::OnListenerRemoved(const EventListenerInfo& details) {
-  BluetoothAPI::Get(browser_context_)->event_router()->RemovePairingDelegate(
-      details.extension_id);
+  BluetoothAPI::Get(browser_context_)
+      ->bluetooth_event_router()
+      ->RemovePairingDelegate(details.extension_id);
 }
 
 namespace api {
@@ -220,7 +222,7 @@ bool BluetoothPrivateSetPairingResponseFunction::DoWork(
   const bt_private::SetPairingResponseOptions& options = params->options;
 
   BluetoothEventRouter* router =
-      BluetoothAPI::Get(browser_context())->event_router();
+      BluetoothAPI::Get(browser_context())->bluetooth_event_router();
   if (!router->GetPairingDelegate(extension_id())) {
     SetError(kPairingNotEnabled);
     SendResponse(false);

@@ -18,8 +18,8 @@ chrome.bluetooth.onConnection.addListener(
   function(socket) {
     deviceName = socket.device.name;
     deviceAddress = socket.device.address;
-    profileUuid = socket.uuid;
-    chrome.bluetooth.disconnect({'socketId': socket.id});
+    profileUuid = socket.profile.uuid;
+    chrome.bluetooth.disconnect({'socket': socket});
   });
 
 chrome.test.sendMessage('ready',

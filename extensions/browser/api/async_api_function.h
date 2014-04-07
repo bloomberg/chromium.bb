@@ -42,7 +42,6 @@ class AsyncApiFunction : public UIThreadExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  protected:
-  content::BrowserThread::ID work_thread_id() const { return work_thread_id_; }
   void set_work_thread_id(content::BrowserThread::ID work_thread_id) {
     work_thread_id_ = work_thread_id;
   }

@@ -13,7 +13,6 @@ namespace bluetooth {
                    joystick, gamepad, keyboard, mouse, tablet,
                    keyboardMouseCombo};
 
-  // Information about the state of the Bluetooth adapter.
   dictionary AdapterState {
     // The address of the adapter, in the format 'XX:XX:XX:XX:XX:XX'.
     DOMString address;
@@ -31,7 +30,6 @@ namespace bluetooth {
     boolean discovering;
   };
 
-  // Information about the state of a known Bluetooth device.
   dictionary Device {
     // The address of the device, in the format 'XX:XX:XX:XX:XX:XX'.
     DOMString address;
@@ -69,7 +67,6 @@ namespace bluetooth {
     DOMString[]? uuids;
   };
 
-  // Information about a Bluetooth profile.
   dictionary Profile {
     // Unique profile identifier, e.g. 00001401-0000-1000-8000-00805F9B23FB
     DOMString uuid;
@@ -82,7 +79,7 @@ namespace bluetooth {
     long? channel;
 
     // The LS2CAP PSM number, used when the profile is to be exported to remote
-    // devices.
+    // deviecs.
     long? psm;
 
     // Specifies whether pairing (and encryption) is required to be able to
@@ -104,49 +101,24 @@ namespace bluetooth {
     long? features;
   };
 
-  // The socket properties specified in the $ref:update function. Each property
-  // is optional. If a property value is not specified, the existing value if
-  // preserved when calling $ref:update.
-  dictionary SocketProperties {
-    // Flag indicating whether the socket is left open when the event page of
-    // the application is unloaded (see <a
-    // href="http://developer.chrome.com/apps/app_lifecycle.html">Manage App
-    // Lifecycle</a>). The default value is <code>false.</code> When the
-    // application is loaded, any sockets previously opened with persistent=true
-    // can be fetched with $ref:getSockets.
-    boolean? persistent;
+  dictionary ServiceRecord {
+    // The name of the service.
+    DOMString name;
 
-    // An application-defined string associated with the socket.
-    DOMString? name;
-
-    // The size of the buffer used to receive data. The default value is 4096.
-    long? bufferSize;
+    // The UUID of the service.
+    DOMString? uuid;
   };
 
   dictionary Socket {
-    // The socket identifier.
-    long id;
-
     // The remote Bluetooth device associated with this socket.
     Device device;
 
-    // The remote Bluetooth uuid associated with this socket.
-    DOMString uuid;
+    // The remote Bluetooth profile associated with this socket.
+    Profile profile;
 
-    // Flag indicating whether the socket is left open when the application is
-    // suspended (see <code>SocketProperties.persistent</code>).
-    boolean persistent;
-
-    // Application-defined string associated with the socket.
-    DOMString? name;
-
-    // The size of the buffer used to receive data. If no buffer size has been
-    // specified explictly, the field is not provided.
-    long? bufferSize;
-
-    // Flag indicating whether a connected socket blocks its peer from sending
-    // more data (see <code>setPaused</code>).
-    boolean paused;
+    // An identifier for this socket that should be used with the
+    // read/write/disconnect methods.
+    long id;
   };
 
   dictionary OutOfBandPairingData {
@@ -182,8 +154,23 @@ namespace bluetooth {
 
   // Options for the disconnect function.
   dictionary DisconnectOptions {
-    // The socket identifier.
-    long socketId;
+    // The socket to disconnect.
+    Socket socket;
+  };
+
+  // Options for the read function.
+  dictionary ReadOptions {
+    // The socket to read from.
+    Socket socket;
+  };
+
+  // Options for the write function.
+  dictionary WriteOptions {
+    // The socket to write to.
+    Socket socket;
+
+    // The data to write.
+    ArrayBuffer data;
   };
 
   // Options for the setOutOfBandPairingData function.
@@ -197,45 +184,17 @@ namespace bluetooth {
     OutOfBandPairingData? data;
   };
 
-  // Callback from the <code>getSocket</code> method.
-  // |socket| : Object containing the socket information.
-  callback GetSocketCallback = void (Socket socket);
-
-  // Callback from the <code>getSockets</code> method.
-  // |sockets| : Array of object containing socket information.
-  callback GetSocketsCallback = void (Socket[] sockets);
-
-  // Data from an <code>onReceive</code> event.
-  dictionary ReceiveInfo {
-    // The socket identifier.
-    long socketId;
-
-    // The data received, with a maximum size of <code>bufferSize</code>.
-    ArrayBuffer data;
-  };
-
-  enum ReceiveError {
-    // The connection was disconnected.
-    disconnected,
-
-    // A system error occurred and the connection may be unrecoverable.
-    system_error
-  };
-
-  // Data from an <code>onReceiveError</code> event.
-  dictionary ReceiveErrorInfo {
-    // The socket identifier.
-    long socketId;
-
-     // The error message.
-    DOMString errorMessage;
-
-    // An error code indicating what went wrong.
-    ReceiveError error;
-  };
-
   // These functions all report failures via chrome.runtime.lastError.
   interface Functions {
+    // Registers the JavaScript application as an implementation for the given
+    // Profile; if a channel or PSM is specified, the profile will be exported
+    // in the host's SDP and GATT tables and advertised to other devices.
+    static void addProfile(Profile profile, ResultCallback callback);
+
+    // Unregisters the JavaScript application as an implementation for the given
+    // Profile; only the uuid field of the Profile object is used.
+    static void removeProfile(Profile profile, ResultCallback callback);
+
     // Get information about the Bluetooth adapter.
     // |callback| : Called with an AdapterState object describing the adapter
     //              state.
@@ -251,62 +210,31 @@ namespace bluetooth {
     // |callback| : Called with the Device object describing the device.
     static void getDevice(DOMString deviceAddress, DeviceCallback callback);
 
-    // Registers the JavaScript application as an implementation for the given
-    // Profile; if a channel or PSM is specified, the profile will be exported
-    // in the host's SDP and GATT tables and advertised to other devices.
-    static void addProfile(Profile profile, ResultCallback callback);
-
-    // Unregisters the JavaScript application as an implementation for the given
-    // Profile; only the uuid field of the Profile object is used.
-    static void removeProfile(Profile profile, ResultCallback callback);
-
     // Connect to a service on a device.
     // |options|  : The options for the connection.
     // |callback| : Called to indicate success or failure.
     static void connect(ConnectOptions options,
                         ResultCallback callback);
 
-    // Closes a Bluetooth connection.
+    // Close a Bluetooth connection.
     // |options|  : The options for this function.
     // |callback| : Called to indicate success or failure.
     static void disconnect(DisconnectOptions options,
                            optional ResultCallback callback);
 
-    // Sends data to a Bluetooth connection.
-    // |socketId| : The socket identifier.
-    // |data| : The data to send.
-    // |callback| : Called with the number of bytes sent.
-    static void send(long socketId,
-                     ArrayBuffer data,
-                     optional SizeCallback callback);
+    // Read data from a Bluetooth connection. The |callback| will be called
+    // with the current data in the buffer even if it is empty. This function
+    // should be polled to read incoming data.
+    // |options|  : The options for this function.
+    // |callback| : Called with the data read from the socket buffer.
+    static void read(ReadOptions options,
+                     DataCallback callback);
 
-    // Updates the socket properties.
-    // |socketId| : The socket identifier.
-    // |properties| : The properties to update.
-    // |callback| : Called when the properties are updated.
-    static void updateSocket(long socketId,
-                             SocketProperties properties,
-                             optional ResultCallback callback);
-
-    // Enables or disables the application from receiving messages from its
-    // peer. The default value is <code>false</code>. Pausing a socket is
-    // typically used by an application to throttle data sent by its peer. When
-    // a socket is paused, no $ref:onReceive event is raised. When a socket is
-    // connected and un-paused, $ref:onReceive events are raised again when
-    // messages are received.
-    static void setSocketPaused(long socketId,
-                                boolean paused,
-                                optional ResultCallback callback);
-
-    // Retrieves the state of the given socket.
-    // |socketId| : The socket identifier.
-    // |callback| : Called when the socket state is available.
-    static void getSocket(long socketId,
-                          GetSocketCallback callback);
-
-    // Retrieves the list of currently opened sockets owned by the application.
-    // |callback| : Called when the list of sockets is available.
-    static void getSockets(GetSocketsCallback callback);
+    // Write data to a Bluetooth connection.
+    // |options|  : The options for this function.
+    // |callback| : Called with the number of bytes written.
+    static void write(WriteOptions options,
+                      optional SizeCallback callback);
 
     // Get the local Out of Band Pairing data.
     // |callback| : Called with the data.
@@ -357,16 +285,5 @@ namespace bluetooth {
     // Fired when a connection has been made for a registered profile.
     // |socket| : The socket for the connection.
     static void onConnection(Socket socket);
-
-    // Event raised when data has been received for a given socket.
-    // |info| : The event data.
-    static void onReceive(ReceiveInfo info);
-
-    // Event raised when a network error occured while the runtime was waiting
-    // for data on the socket. Once this event is raised, the socket is set to
-    // <code>paused</code> and no more <code>onReceive</code> events are raised
-    // for this socket.
-    // |info| : The event data.
-    static void onReceiveError(ReceiveErrorInfo info);
   };
 };

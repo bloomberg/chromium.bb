@@ -49,6 +49,17 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
   void GetAdapter(
       const device::BluetoothAdapterFactory::AdapterCallback& callback);
 
+  // Register the BluetoothSocket |socket| for use by the extensions system.
+  // This class will hold onto the socket for its lifetime until
+  // ReleaseSocket is called for the socket, or until the extension associated
+  // with the socket is disabled/ reloaded. Returns an id for the socket.
+  int RegisterSocket(const std::string& extension_id,
+                     scoped_refptr<device::BluetoothSocket> socket);
+
+  // Release the BluetoothSocket corresponding to |id|.  Returns true if
+  // the socket was found and released, false otherwise.
+  bool ReleaseSocket(int id);
+
   // Add the BluetoothProfile |bluetooth_profile| for use by the extension
   // system. This class will hold onto the profile until RemoveProfile is
   // called for the profile, or until the extension that added the profile
@@ -87,6 +98,16 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
   // Returns the BluetoothProfile that corresponds to |uuid|. It returns NULL
   // if the BluetoothProfile with |uuid| does not exist.
   device::BluetoothProfile* GetProfile(const device::BluetoothUUID& uuid) const;
+
+  // Get the BluetoothSocket corresponding to |id|.
+  scoped_refptr<device::BluetoothSocket> GetSocket(int id);
+
+  // Dispatch an event that takes a connection socket as a parameter to the
+  // extension that registered the profile that the socket has connected to.
+  void DispatchConnectionEvent(const std::string& extension_id,
+                               const device::BluetoothUUID& uuid,
+                               const device::BluetoothDevice* device,
+                               scoped_refptr<device::BluetoothSocket> socket);
 
   // Called when a bluetooth event listener is added.
   void OnListenerAdded();
@@ -156,6 +177,14 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
   int num_event_listeners_;
+
+  // The next id to use for referring to a BluetoothSocket.  We avoid using
+  // the fd of the socket because we don't want to leak that information to
+  // the extension javascript.
+  int next_socket_id_;
+
+  typedef std::map<int, ExtensionBluetoothSocketRecord> SocketMap;
+  SocketMap socket_map_;
 
   // Maps uuids to a struct containing a Bluetooth profile and its
   // associated extension id.

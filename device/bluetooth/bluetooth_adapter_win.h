@@ -18,8 +18,9 @@
 #include "device/bluetooth/bluetooth_task_manager_win.h"
 
 namespace base {
+
 class SequencedTaskRunner;
-class Thread;
+
 }  // namespace base
 
 namespace device {
@@ -27,7 +28,6 @@ namespace device {
 class BluetoothAdapterFactory;
 class BluetoothAdapterWinTest;
 class BluetoothDevice;
-class BluetoothSocketThreadWin;
 
 class BluetoothAdapterWin : public BluetoothAdapter,
                             public BluetoothTaskManagerWin::Observer {
@@ -121,7 +121,6 @@ class BluetoothAdapterWin : public BluetoothAdapter,
   size_t num_discovery_listeners_;
 
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
-  scoped_refptr<BluetoothSocketThreadWin> socket_thread_;
   scoped_refptr<BluetoothTaskManagerWin> task_manager_;
 
   base::ThreadChecker thread_checker_;

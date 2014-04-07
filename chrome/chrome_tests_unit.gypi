@@ -847,7 +847,6 @@
         'browser/extensions/api/activity_log_private/activity_log_private_api_unittest.cc',
         'browser/extensions/api/alarms/alarms_api_unittest.cc',
         'browser/extensions/api/api_resource_manager_unittest.cc',
-        'browser/extensions/api/bluetooth/bluetooth_api_unittest.cc',
         'browser/extensions/api/bluetooth/bluetooth_event_router_unittest.cc',
         'browser/extensions/api/bookmarks/bookmark_api_helpers_unittest.cc',
         'browser/extensions/api/cast_channel/cast_socket_unittest.cc',

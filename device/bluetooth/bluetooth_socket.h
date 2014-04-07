@@ -7,11 +7,13 @@
 
 #include <string>
 
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 
 namespace net {
-class IOBuffer;
+
+class DrainableIOBuffer;
+class GrowableIOBuffer;
+
 }  // namespace net
 
 namespace device {
@@ -19,51 +21,24 @@ namespace device {
 // BluetoothSocket represents a socket to a specific service on a
 // BluetoothDevice.  BluetoothSocket objects are ref counted and may outlive
 // both the BluetoothDevice and BluetoothAdapter that were involved in their
-// creation.  In terms of threading, platform specific implementations may
-// differ slightly, but platform independent consumers must guarantee calling
-// various instances methods on the same thread as the thread used at
-// construction time -- platform specific implementation are resonsible for
-// marshalling calls to a different thread if required.
-class BluetoothSocket : public base::RefCountedThreadSafe<BluetoothSocket> {
+// creation.
+class BluetoothSocket : public base::RefCounted<BluetoothSocket> {
  public:
-  enum ErrorReason { kSystemError, kIOPending, kDisconnected };
+  // Receives data from the socket and stores it in |buffer|. It returns whether
+  // the reception has been successful. If it fails, the caller can get the
+  // error message through |GetLastErrorMessage()|.
+  virtual bool Receive(net::GrowableIOBuffer* buffer) = 0;
 
-  typedef base::Callback<void(int)> SendCompletionCallback;
-  typedef base::Callback<void(int, scoped_refptr<net::IOBuffer> io_buffer)>
-      ReceiveCompletionCallback;
-  typedef base::Callback<void(const std::string& error_message)>
-      ErrorCompletionCallback;
-  typedef base::Callback<void(ErrorReason, const std::string& error_message)>
-      ReceiveErrorCompletionCallback;
+  // Sends |buffer| to the socket. It returns whether the sending has been
+  // successful. If it fails, the caller can get the error message through
+  // |GetLastErrorMessage()|.
+  virtual bool Send(net::DrainableIOBuffer* buffer) = 0;
 
-  // Destroys resources associated with the socket. After calling this method,
-  // it is illegal to call any method on this socket instance (except for the
-  // desctrutor via Release).
-  virtual void Close() = 0;
-
-  // Gracefully disconnects the socket and calls |callback| upon completion.
-  // There is no failure case, as this is a best effort operation.
-  virtual void Disconnect(const base::Closure& callback) = 0;
-
-  // Receives data from the socket and calls |success_callback| when data is
-  // available. |count| is maximum amount of bytes received. If an error occurs,
-  // calls |error_callback| with a reason and an error message.
-  virtual void Receive(
-      int count,
-      const ReceiveCompletionCallback& success_callback,
-      const ReceiveErrorCompletionCallback& error_callback) = 0;
-
-  // Sends |buffer| to the socket and calls |success_callback| when data has
-  // been successfully sent. |buffer_size| is the number of bytes contained in
-  // |buffer|. If an error occurs, calls |error_callback| with an error message.
-  virtual void Send(scoped_refptr<net::IOBuffer> buffer,
-                    int buffer_size,
-                    const SendCompletionCallback& success_callback,
-                    const ErrorCompletionCallback& error_callback) = 0;
+  virtual std::string GetLastErrorMessage() const = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<BluetoothSocket>;
-  virtual ~BluetoothSocket();
+  friend class base::RefCounted<BluetoothSocket>;
+  virtual ~BluetoothSocket() {}
 };
 
 }  // namespace device

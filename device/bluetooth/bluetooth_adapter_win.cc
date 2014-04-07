@@ -14,7 +14,6 @@
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_device_win.h"
-#include "device/bluetooth/bluetooth_socket_thread_win.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
 
 namespace device {
@@ -186,8 +185,7 @@ void BluetoothAdapterWin::DevicesDiscovered(
        ++iter) {
     if (discovered_devices_.find((*iter)->address) ==
         discovered_devices_.end()) {
-      BluetoothDeviceWin device_win(
-          **iter, ui_task_runner_, socket_thread_, NULL, net::NetLog::Source());
+      BluetoothDeviceWin device_win(**iter);
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                         DeviceAdded(this, &device_win));
       discovered_devices_.insert((*iter)->address);
@@ -202,8 +200,7 @@ void BluetoothAdapterWin::DevicesUpdated(
            devices.begin();
        iter != devices.end();
        ++iter) {
-    devices_[(*iter)->address] = new BluetoothDeviceWin(
-        **iter, ui_task_runner_, socket_thread_, NULL, net::NetLog::Source());
+    devices_[(*iter)->address] = new BluetoothDeviceWin(**iter);
   }
 }
 
@@ -235,7 +232,6 @@ void BluetoothAdapterWin::RemoveDiscoverySession(
 
 void BluetoothAdapterWin::Init() {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  socket_thread_ = BluetoothSocketThreadWin::Get();
   task_manager_ =
       new BluetoothTaskManagerWin(ui_task_runner_);
   task_manager_->AddObserver(this);

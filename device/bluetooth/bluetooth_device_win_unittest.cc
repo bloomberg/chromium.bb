@@ -6,12 +6,9 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/test_simple_task_runner.h"
 #include "device/bluetooth/bluetooth_device_win.h"
 #include "device/bluetooth/bluetooth_service_record.h"
-#include "device/bluetooth/bluetooth_socket_thread_win.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,23 +60,11 @@ class BluetoothDeviceWinTest : public testing::Test {
     base::HexStringToBytes(kTestVideoSdpBytes, &video_state->sdp_bytes);
     device_state.service_record_states.push_back(video_state);
 
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner(
-        new base::TestSimpleTaskRunner());
-    scoped_refptr<BluetoothSocketThreadWin> socket_thread(
-        BluetoothSocketThreadWin::Get());
-    device_.reset(new BluetoothDeviceWin(device_state,
-                                         ui_task_runner,
-                                         socket_thread,
-                                         NULL,
-                                         net::NetLog::Source()));
+    device_.reset(new BluetoothDeviceWin(device_state));
 
     // Add empty device.
     device_state.service_record_states.clear();
-    empty_device_.reset(new BluetoothDeviceWin(device_state,
-                                               ui_task_runner,
-                                               socket_thread,
-                                               NULL,
-                                               net::NetLog::Source()));
+    empty_device_.reset(new BluetoothDeviceWin(device_state));
   }
 
  protected:

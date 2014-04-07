@@ -25,8 +25,6 @@
 namespace extensions {
 
 namespace api {
-class BluetoothSocketApiFunction;
-class BluetoothSocketEventDispatcher;
 class SerialEventDispatcher;
 }
 
@@ -154,9 +152,6 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
  private:
   // TODO(rockot): ApiResourceData could be moved out of ApiResourceManager and
   // we could avoid maintaining a friends list here.
-  friend class BluetoothAPI;
-  friend class api::BluetoothSocketApiFunction;
-  friend class api::BluetoothSocketEventDispatcher;
   friend class api::SerialEventDispatcher;
   friend class core_api::TCPServerSocketEventDispatcher;
   friend class core_api::TCPSocketEventDispatcher;
@@ -220,38 +215,26 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     }
 
     void InitiateExtensionUnloadedCleanup(const std::string& extension_id) {
-      if (content::BrowserThread::CurrentlyOn(thread_id_)) {
-        CleanupResourcesFromUnloadedExtension(extension_id);
-      } else {
-        content::BrowserThread::PostTask(
-            thread_id_,
-            FROM_HERE,
-            base::Bind(&ApiResourceData::CleanupResourcesFromUnloadedExtension,
-                       this,
-                       extension_id));
-      }
+      content::BrowserThread::PostTask(
+          thread_id_,
+          FROM_HERE,
+          base::Bind(&ApiResourceData::CleanupResourcesFromUnloadedExtension,
+                     this,
+                     extension_id));
     }
 
     void InitiateExtensionSuspendedCleanup(const std::string& extension_id) {
-      if (content::BrowserThread::CurrentlyOn(thread_id_)) {
-        CleanupResourcesFromSuspendedExtension(extension_id);
-      } else {
-        content::BrowserThread::PostTask(
-            thread_id_,
-            FROM_HERE,
-            base::Bind(&ApiResourceData::CleanupResourcesFromSuspendedExtension,
-                       this,
-                       extension_id));
-      }
+      content::BrowserThread::PostTask(
+          thread_id_,
+          FROM_HERE,
+          base::Bind(&ApiResourceData::CleanupResourcesFromSuspendedExtension,
+                     this,
+                     extension_id));
     }
 
     void InititateCleanup() {
-      if (content::BrowserThread::CurrentlyOn(thread_id_)) {
-        Cleanup();
-      } else {
-        content::BrowserThread::PostTask(
-            thread_id_, FROM_HERE, base::Bind(&ApiResourceData::Cleanup, this));
-      }
+      content::BrowserThread::PostTask(
+          thread_id_, FROM_HERE, base::Bind(&ApiResourceData::Cleanup, this));
     }
 
    private:
