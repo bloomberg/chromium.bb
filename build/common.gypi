@@ -1216,6 +1216,10 @@
     # whether warnings are treated as errors.
     'chromium_code%': 0,
 
+    # Disable fatal linker warnings, similarly to how we make it possible
+    # to disable -Werror (e.g. for different toolchain versions).
+    'disable_fatal_linker_warnings%': 0,
+
     'release_valgrind_build%': 0,
 
     # TODO(thakis): Make this a blacklist instead, http://crbug.com/101600
@@ -3048,13 +3052,19 @@
     },
   },
   'conditions': [
+    ['os_posix==1', {
+      'target_defaults': {
+        'ldflags': [
+          '-Wl,-z,now',
+          '-Wl,-z,relro',
+        ],
+      },
+    }],
     # TODO(jochen): Enable this on chromeos on arm. http://crbug.com/356580
-    ['os_posix==1 and (chromeos==0 or target_arch!="arm")', {
+    ['os_posix==1 and disable_fatal_linker_warnings==0 and (chromeos==0 or target_arch!="arm")', {
       'target_defaults': {
         'ldflags': [
           '-Wl,--fatal-warnings',
-          '-Wl,-z,now',
-          '-Wl,-z,relro',
         ],
       },
     }],
