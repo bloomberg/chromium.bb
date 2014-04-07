@@ -34,22 +34,27 @@
             list[i].className = "float";
     }
     
-    function createTestFunction(width, height, nested, runs) {
-        var container = createSet(width, height, nested);
+    function createTestFunction(width, height, nested, runs, rows) {
+        var containers = [];
+        for (var i = 0; i < rows; ++i)
+            containers[i] = createSet(width, height, nested);
         nested = nested || 0;
         runs = runs || 10;
         return function() {
-            container.style.display = "block";
-            for (var i = 0; i < runs; ++i) {
-                var x = Math.floor(Math.random() * width);
-                var y = Math.floor(Math.random() * height);
-                var el = document.getElementById("float" + x + "_" + y);
-                el.className = toggle(el.className, "float", "float big");
-                // Force a layout.
-                container.clientHeight;
+            for (var c = 0; c < rows; ++c) {
+                container = containers[c];
+                container.style.display = "block";
+                for (var i = 0; i < runs; ++i) {
+                    var x = Math.floor(Math.random() * width);
+                    var y = Math.floor(Math.random() * height);
+                    var el = document.getElementById("float" + x + "_" + y);
+                    el.className = toggle(el.className, "float", "float big");
+                    // Force a layout.
+                    container.clientHeight;
+                }
+                resetTest();
+                container.style.display = "none";
             }
-            resetTest();
-            container.style.display = "none";
         }
     }
     
