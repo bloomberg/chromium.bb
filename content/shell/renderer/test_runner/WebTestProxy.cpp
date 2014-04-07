@@ -1237,7 +1237,7 @@ void WebTestProxyBase::didReceiveResponse(WebLocalFrame*, unsigned identifier, c
     }
 }
 
-void WebTestProxyBase::didChangeResourcePriority(WebLocalFrame*, unsigned identifier, const blink::WebURLRequest::Priority& priority)
+void WebTestProxyBase::didChangeResourcePriority(WebLocalFrame*, unsigned identifier, const blink::WebURLRequest::Priority& priority, int intra_priority_value)
 {
     if (m_testInterfaces->testRunner()->shouldDumpResourcePriorities()) {
         if (m_resourceIdentifierMap.find(identifier) == m_resourceIdentifierMap.end())
@@ -1246,6 +1246,9 @@ void WebTestProxyBase::didChangeResourcePriority(WebLocalFrame*, unsigned identi
             m_delegate->printMessage(m_resourceIdentifierMap[identifier]);
         m_delegate->printMessage(" changed priority to ");
         m_delegate->printMessage(PriorityDescription(priority));
+        char buffer[64];
+        snprintf(buffer, sizeof(buffer), ", intra_priority %d", intra_priority_value);
+        m_delegate->printMessage(buffer);
         m_delegate->printMessage("\n");
     }
 }

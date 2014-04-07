@@ -342,6 +342,7 @@ IPC_MESSAGE_CONTROL1(ResourceHostMsg_ReleaseDownloadedFile,
                      int /* request_id */)
 
 // Sent by the renderer when a resource request changes priority.
-IPC_MESSAGE_CONTROL2(ResourceHostMsg_DidChangePriority,
+IPC_MESSAGE_CONTROL3(ResourceHostMsg_DidChangePriority,
                      int /* request_id */,
-                     net::RequestPriority)
+                     net::RequestPriority,
+                     int /* intra_priority_value */)

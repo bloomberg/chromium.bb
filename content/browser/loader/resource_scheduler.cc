@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
+
 #include "content/browser/loader/resource_scheduler.h"
 
 #include "base/stl_util.h"
@@ -23,54 +25,47 @@ namespace content {
 static const size_t kMaxNumDelayableRequestsPerClient = 10;
 static const size_t kMaxNumDelayableRequestsPerHost = 6;
 
-// A thin wrapper around net::PriorityQueue that deals with
-// ScheduledResourceRequests instead of PriorityQueue::Pointers.
+
+struct ResourceScheduler::RequestPriorityParams {
+  RequestPriorityParams()
+    : priority(net::DEFAULT_PRIORITY),
+      intra_priority(0) {
+  }
+
+  RequestPriorityParams(net::RequestPriority priority, int intra_priority)
+    : priority(priority),
+      intra_priority(intra_priority) {
+  }
+
+  bool operator==(const RequestPriorityParams& other) const {
+    return (priority == other.priority) &&
+        (intra_priority == other.intra_priority);
+  }
+
+  bool operator!=(const RequestPriorityParams& other) const {
+    return !(*this == other);
+  }
+
+  bool GreaterThan(const RequestPriorityParams& other) const {
+    if (priority != other.priority)
+      return priority > other.priority;
+    return intra_priority > other.intra_priority;
+  }
+
+  net::RequestPriority priority;
+  int intra_priority;
+};
+
 class ResourceScheduler::RequestQueue {
- private:
-  typedef net::PriorityQueue<ScheduledResourceRequest*> NetQueue;
-
  public:
-  class Iterator {
-   public:
-    Iterator(NetQueue* queue) : queue_(queue) {
-      DCHECK(queue != NULL);
-      current_pointer_ = queue_->FirstMax();
-    }
+  typedef std::multiset<ScheduledResourceRequest*, ScheduledResourceSorter>
+      NetQueue;
 
-    Iterator& operator++() {
-      current_pointer_ = queue_->GetNextTowardsLastMin(current_pointer_);
-      return *this;
-    }
-
-    Iterator operator++(int) {
-      Iterator result(*this);
-      ++(*this);
-      return result;
-    }
-
-    ScheduledResourceRequest* value() {
-      return current_pointer_.value();
-    }
-
-    bool is_null() {
-      return current_pointer_.is_null();
-    }
-
-   private:
-    NetQueue* queue_;
-    NetQueue::Pointer current_pointer_;
-  };
-
-  RequestQueue() : queue_(net::NUM_PRIORITIES) {}
+  RequestQueue() : fifo_ordering_ids_(0) {}
   ~RequestQueue() {}
 
   // Adds |request| to the queue with given |priority|.
-  void Insert(ScheduledResourceRequest* request,
-              net::RequestPriority priority) {
-    DCHECK(!ContainsKey(pointers_, request));
-    NetQueue::Pointer pointer = queue_.Insert(request, priority);
-    pointers_[request] = pointer;
-  }
+  void Insert(ScheduledResourceRequest* request);
 
   // Removes |request| from the queue.
   void Erase(ScheduledResourceRequest* request) {
@@ -78,17 +73,16 @@ class ResourceScheduler::RequestQueue {
     DCHECK(it != pointers_.end());
     if (it == pointers_.end())
       return;
-    queue_.Erase(it->second);
+    queue_.erase(it->second);
     pointers_.erase(it);
   }
 
-  // Returns the highest priority request that's queued, or NULL if none are.
-  ScheduledResourceRequest* FirstMax() {
-    return queue_.FirstMax().value();
+  NetQueue::iterator GetNextHighestIterator() {
+    return queue_.begin();
   }
 
-  Iterator GetNextHighestIterator() {
-    return Iterator(&queue_);
+  NetQueue::iterator End() {
+    return queue_.end();
   }
 
   // Returns true if |request| is queued.
@@ -100,7 +94,16 @@ class ResourceScheduler::RequestQueue {
   bool IsEmpty() const { return queue_.size() == 0; }
 
  private:
-  typedef std::map<ScheduledResourceRequest*, NetQueue::Pointer> PointerMap;
+  typedef std::map<ScheduledResourceRequest*, NetQueue::iterator> PointerMap;
+
+  uint32 MakeFifoOrderingId() {
+    fifo_ordering_ids_ += 1;
+    return fifo_ordering_ids_;
+  }
+
+  // Used to create an ordering ID for scheduled resources so that resources
+  // with same priority/intra_priority stay in fifo order.
+  uint32 fifo_ordering_ids_;
 
   NetQueue queue_;
   PointerMap pointers_;
@@ -114,13 +117,16 @@ class ResourceScheduler::ScheduledResourceRequest
  public:
   ScheduledResourceRequest(const ClientId& client_id,
                            net::URLRequest* request,
-                           ResourceScheduler* scheduler)
+                           ResourceScheduler* scheduler,
+                           const RequestPriorityParams& priority)
       : ResourceMessageDelegate(request),
         client_id_(client_id),
         request_(request),
         ready_(false),
         deferred_(false),
-        scheduler_(scheduler) {
+        scheduler_(scheduler),
+        priority_(priority),
+        fifo_ordering_(0) {
     TRACE_EVENT_ASYNC_BEGIN1("net", "URLRequest", request_,
                              "url", request->url().spec());
   }
@@ -138,9 +144,19 @@ class ResourceScheduler::ScheduledResourceRequest
     }
   }
 
+  void set_request_priority_params(const RequestPriorityParams& priority) {
+    priority_ = priority;
+  }
+  const RequestPriorityParams& get_request_priority_params() const {
+    return priority_;
+  }
   const ClientId& client_id() const { return client_id_; }
   net::URLRequest* url_request() { return request_; }
   const net::URLRequest* url_request() const { return request_; }
+  uint32 fifo_ordering() const { return fifo_ordering_; }
+  void set_fifo_ordering(uint32 fifo_ordering) {
+    fifo_ordering_ = fifo_ordering;
+  }
 
  private:
   // ResourceMessageDelegate interface:
@@ -163,8 +179,9 @@ class ResourceScheduler::ScheduledResourceRequest
     return "ResourceScheduler";
   }
 
-  void DidChangePriority(int request_id, net::RequestPriority new_priority) {
-    scheduler_->ReprioritizeRequest(this, new_priority);
+  void DidChangePriority(int request_id, net::RequestPriority new_priority,
+                         int intra_priority_value) {
+    scheduler_->ReprioritizeRequest(this, new_priority, intra_priority_value);
   }
 
   ClientId client_id_;
@@ -172,9 +189,34 @@ class ResourceScheduler::ScheduledResourceRequest
   bool ready_;
   bool deferred_;
   ResourceScheduler* scheduler_;
+  RequestPriorityParams priority_;
+  uint32 fifo_ordering_;
 
   DISALLOW_COPY_AND_ASSIGN(ScheduledResourceRequest);
 };
+
+bool ResourceScheduler::ScheduledResourceSorter::operator()(
+    const ScheduledResourceRequest* a,
+    const ScheduledResourceRequest* b) const {
+  // Want the set to be ordered first by decreasing priority, then by
+  // decreasing intra_priority.
+  // ie. with (priority, intra_priority)
+  // [(1, 0), (1, 0), (0, 100), (0, 0)]
+  if (a->get_request_priority_params() != b->get_request_priority_params())
+    return a->get_request_priority_params().GreaterThan(
+        b->get_request_priority_params());
+
+  // If priority/intra_priority is the same, fall back to fifo ordering.
+  // std::multiset doesn't guarantee this until c++11.
+  return a->fifo_ordering() < b->fifo_ordering();
+}
+
+void ResourceScheduler::RequestQueue::Insert(
+    ScheduledResourceRequest* request) {
+  DCHECK(!ContainsKey(pointers_, request));
+  request->set_fifo_ordering(MakeFifoOrderingId());
+  pointers_[request] = queue_.insert(request);
+}
 
 // Each client represents a tab.
 struct ResourceScheduler::Client {
@@ -202,7 +244,8 @@ scoped_ptr<ResourceThrottle> ResourceScheduler::ScheduleRequest(
   DCHECK(CalledOnValidThread());
   ClientId client_id = MakeClientId(child_id, route_id);
   scoped_ptr<ScheduledResourceRequest> request(
-      new ScheduledResourceRequest(client_id, url_request, this));
+      new ScheduledResourceRequest(client_id, url_request, this,
+          RequestPriorityParams(url_request->priority(), 0)));
 
   ClientMap::iterator it = client_map_.find(client_id);
   if (it == client_map_.end()) {
@@ -219,7 +262,7 @@ scoped_ptr<ResourceThrottle> ResourceScheduler::ScheduleRequest(
   if (ShouldStartRequest(request.get(), client) == START_REQUEST) {
     StartRequest(request.get(), client);
   } else {
-    client->pending_requests.Insert(request.get(), url_request->priority());
+    client->pending_requests.Insert(request.get());
   }
   return request.PassAs<ResourceThrottle>();
 }
@@ -336,21 +379,32 @@ void ResourceScheduler::StartRequest(ScheduledResourceRequest* request,
 }
 
 void ResourceScheduler::ReprioritizeRequest(ScheduledResourceRequest* request,
-                                            net::RequestPriority new_priority) {
+                                            net::RequestPriority new_priority,
+                                            int new_intra_priority_value) {
   if (request->url_request()->load_flags() & net::LOAD_IGNORE_LIMITS) {
     // We should not be re-prioritizing requests with the
     // IGNORE_LIMITS flag.
     NOTREACHED();
     return;
   }
-  net::RequestPriority old_priority = request->url_request()->priority();
-  DCHECK_NE(new_priority, old_priority);
-  request->url_request()->SetPriority(new_priority);
+
+  RequestPriorityParams new_priority_params(new_priority,
+      new_intra_priority_value);
+  RequestPriorityParams old_priority_params =
+      request->get_request_priority_params();
+
+  DCHECK(old_priority_params != new_priority_params);
+
+  request->url_request()->SetPriority(new_priority_params.priority);
+  request->set_request_priority_params(new_priority_params);
   ClientMap::iterator client_it = client_map_.find(request->client_id());
   if (client_it == client_map_.end()) {
     // The client was likely deleted shortly before we received this IPC.
     return;
   }
+
+  if (old_priority_params == new_priority_params)
+    return;
 
   Client *client = client_it->second;
   if (!client->pending_requests.IsQueued(request)) {
@@ -360,10 +414,9 @@ void ResourceScheduler::ReprioritizeRequest(ScheduledResourceRequest* request,
   }
 
   client->pending_requests.Erase(request);
-  client->pending_requests.Insert(request,
-                                  request->url_request()->priority());
+  client->pending_requests.Insert(request);
 
-  if (new_priority > old_priority) {
+  if (new_priority_params.priority > old_priority_params.priority) {
     // Check if this request is now able to load at its new priority.
     LoadAnyStartablePendingRequests(client);
   }
@@ -378,12 +431,10 @@ void ResourceScheduler::LoadAnyStartablePendingRequests(Client* client) {
   //    the previous request still in the list.
   // 3) We do not start the request, same as above, but StartRequest() tells
   //    us there's no point in checking any further requests.
-
-  RequestQueue::Iterator request_iter =
+  RequestQueue::NetQueue::iterator request_iter =
       client->pending_requests.GetNextHighestIterator();
-
-  while (!request_iter.is_null()) {
-    ScheduledResourceRequest* request = request_iter.value();
+  while (request_iter != client->pending_requests.End()) {
+    ScheduledResourceRequest* request = *request_iter;
     ShouldStartReqResult query_result = ShouldStartRequest(request, client);
 
     if (query_result == START_REQUEST) {
@@ -393,7 +444,8 @@ void ResourceScheduler::LoadAnyStartablePendingRequests(Client* client) {
       // StartRequest can modify the pending list, so we (re)start evaluation
       // from the currently highest priority request. Avoid copying a singular
       // iterator, which would trigger undefined behavior.
-      if (client->pending_requests.GetNextHighestIterator().is_null())
+      if (client->pending_requests.GetNextHighestIterator() ==
+          client->pending_requests.End())
         break;
       request_iter = client->pending_requests.GetNextHighestIterator();
     } else if (query_result == DO_NOT_START_REQUEST_AND_KEEP_SEARCHING) {

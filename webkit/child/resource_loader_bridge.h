@@ -58,7 +58,8 @@ class ResourceLoaderBridge {
   // Call this method when the priority of the requested resource changes after
   // Start() has been called.  This method may only be called after a successful
   // call to the Start method.
-  virtual void DidChangePriority(net::RequestPriority new_priority) = 0;
+  virtual void DidChangePriority(net::RequestPriority new_priority,
+                                 int intra_priority_value) = 0;
 
   // Call this method to load the resource synchronously (i.e., in one shot).
   // This is an alternative to the Start method.  Be warned that this method

@@ -188,7 +188,7 @@ protected:
     void willRequestResource(blink::WebLocalFrame*, const blink::WebCachedURLRequest&);
     void willSendRequest(blink::WebLocalFrame*, unsigned identifier, blink::WebURLRequest&, const blink::WebURLResponse& redirectResponse);
     void didReceiveResponse(blink::WebLocalFrame*, unsigned identifier, const blink::WebURLResponse&);
-    void didChangeResourcePriority(blink::WebLocalFrame*, unsigned identifier, const blink::WebURLRequest::Priority&);
+    void didChangeResourcePriority(blink::WebLocalFrame*, unsigned identifier, const blink::WebURLRequest::Priority&, int intra_priority_value);
     void didFinishResourceLoad(blink::WebLocalFrame*, unsigned identifier);
     blink::WebNavigationPolicy decidePolicyForNavigation(blink::WebLocalFrame*, blink::WebDataSource::ExtraData*, const blink::WebURLRequest&, blink::WebNavigationType, blink::WebNavigationPolicy defaultPolicy, bool isRedirect);
     bool willCheckAndDispatchMessageEvent(blink::WebLocalFrame* sourceFrame, blink::WebFrame* targetFrame, blink::WebSecurityOrigin target, blink::WebDOMMessageEvent);
@@ -432,10 +432,10 @@ public:
         WebTestProxyBase::didReceiveResponse(frame, identifier, response);
         Base::didReceiveResponse(frame, identifier, response);
     }
-    virtual void didChangeResourcePriority(blink::WebLocalFrame* frame, unsigned identifier, const blink::WebURLRequest::Priority& priority)
+    virtual void didChangeResourcePriority(blink::WebLocalFrame* frame, unsigned identifier, const blink::WebURLRequest::Priority& priority, int intra_priority_value)
     {
-        WebTestProxyBase::didChangeResourcePriority(frame, identifier, priority);
-        Base::didChangeResourcePriority(frame, identifier, priority);
+        WebTestProxyBase::didChangeResourcePriority(frame, identifier, priority, intra_priority_value);
+        Base::didChangeResourcePriority(frame, identifier, priority, intra_priority_value);
     }
     virtual void didFinishResourceLoad(blink::WebLocalFrame* frame, unsigned identifier)
     {

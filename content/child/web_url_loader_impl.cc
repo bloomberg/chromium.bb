@@ -231,7 +231,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
 
   void Cancel();
   void SetDefersLoading(bool value);
-  void DidChangePriority(WebURLRequest::Priority new_priority);
+  void DidChangePriority(WebURLRequest::Priority new_priority,
+                         int intra_priority_value);
   void Start(const WebURLRequest& request,
              SyncLoadResponse* sync_load_response);
 
@@ -302,10 +303,10 @@ void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
 }
 
 void WebURLLoaderImpl::Context::DidChangePriority(
-    WebURLRequest::Priority new_priority) {
+    WebURLRequest::Priority new_priority, int intra_priority_value) {
   if (bridge_)
     bridge_->DidChangePriority(
-        ConvertWebKitPriorityToNetPriority(new_priority));
+        ConvertWebKitPriorityToNetPriority(new_priority), intra_priority_value);
 }
 
 void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
@@ -867,8 +868,9 @@ void WebURLLoaderImpl::setDefersLoading(bool value) {
   context_->SetDefersLoading(value);
 }
 
-void WebURLLoaderImpl::didChangePriority(WebURLRequest::Priority new_priority) {
-  context_->DidChangePriority(new_priority);
+void WebURLLoaderImpl::didChangePriority(WebURLRequest::Priority new_priority,
+                                         int intra_priority_value) {
+  context_->DidChangePriority(new_priority, intra_priority_value);
 }
 
 }  // namespace content

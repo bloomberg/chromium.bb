@@ -76,7 +76,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
   // Indicates the priority of the specified request changed.
   void DidChangePriority(int routing_id, int request_id,
-                         net::RequestPriority new_priority);
+                         net::RequestPriority new_priority,
+                         int intra_priority_value);
 
   // This does not take ownership of the delegate. It is expected that the
   // delegate have a longer lifetime than the ResourceDispatcher.
