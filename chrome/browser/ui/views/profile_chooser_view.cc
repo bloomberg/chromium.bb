@@ -318,7 +318,8 @@ class TitleCard : public views::View {
 
  private:
   virtual void Layout() OVERRIDE{
-    back_button_->SetBoundsRect(GetContentsBounds());
+    back_button_->SetBounds(
+        0, 0, back_button_->GetPreferredSize().width(), height());
     title_label_->SetBoundsRect(GetContentsBounds());
   }
 
