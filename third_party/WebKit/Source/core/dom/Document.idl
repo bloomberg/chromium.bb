@@ -113,7 +113,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
              [TreatNullAs=NullString, RaisesException] attribute DOMString cookie;
 
-             [RaisesException=Setter, CustomElementCallbacks, PerWorldBindings] attribute HTMLElement body;
+             [RaisesException=Setter, CustomElementCallbacks, PerWorldBindings, ExposeJSAccessors] attribute HTMLElement body;
 
     readonly attribute HTMLHeadElement head;
     readonly attribute HTMLCollection images;
