@@ -4,6 +4,7 @@
 
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
 
+#include "base/logging.h"
 #include "chrome/browser/drive/drive_notification_manager.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +28,12 @@ DriveNotificationManagerFactory::GetForBrowserContext(
     content::BrowserContext* context) {
   if (!ProfileSyncService::IsSyncEnabled())
     return NULL;
+  if (!invalidation::InvalidationServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(context))) {
+    // Do not create a DriveNotificationManager for |context|s that do not
+    // support invalidation.
+    return NULL;
+  }
 
   return static_cast<DriveNotificationManager*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
@@ -50,9 +57,11 @@ DriveNotificationManagerFactory::~DriveNotificationManagerFactory() {}
 
 KeyedService* DriveNotificationManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new DriveNotificationManager(
+  invalidation::InvalidationService* invalidation_service =
       invalidation::InvalidationServiceFactory::GetForProfile(
-          Profile::FromBrowserContext(context)));
+          Profile::FromBrowserContext(context));
+  DCHECK(invalidation_service);
+  return new DriveNotificationManager(invalidation_service);
 }
 
 }  // namespace drive
