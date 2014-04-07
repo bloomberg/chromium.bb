@@ -90,6 +90,12 @@ struct gl_surface_state {
 	int needs_full_upload;
 	pixman_region32_t texture_damage;
 
+	/* These are only used by SHM surfaces to detect when we need
+	 * to do a full upload to specify a new internal texture
+	 * format */
+	GLenum gl_format;
+	GLenum gl_pixel_type;
+
 	EGLImageKHR images[3];
 	GLenum target;
 	int num_images;
@@ -998,8 +1004,6 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	struct weston_buffer *buffer = gs->buffer_ref.buffer;
 	struct weston_view *view;
 	int texture_used;
-	GLenum format;
-	int pixel_type;
 
 #ifdef GL_EXT_unpack_subimage
 	pixman_box32_t *rectangles;
@@ -1032,29 +1036,13 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	    !gs->needs_full_upload)
 		goto done;
 
-	switch (wl_shm_buffer_get_format(buffer->shm_buffer)) {
-	case WL_SHM_FORMAT_XRGB8888:
-	case WL_SHM_FORMAT_ARGB8888:
-		format = GL_BGRA_EXT;
-		pixel_type = GL_UNSIGNED_BYTE;
-		break;
-	case WL_SHM_FORMAT_RGB565:
-		format = GL_RGB;
-		pixel_type = GL_UNSIGNED_SHORT_5_6_5;
-		break;
-	default:
-		weston_log("warning: unknown shm buffer format\n");
-		format = GL_BGRA_EXT;
-		pixel_type = GL_UNSIGNED_BYTE;
-	}
-
 	glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
 
 	if (!gr->has_unpack_subimage) {
 		wl_shm_buffer_begin_access(buffer->shm_buffer);
-		glTexImage2D(GL_TEXTURE_2D, 0, format,
+		glTexImage2D(GL_TEXTURE_2D, 0, gs->gl_format,
 			     gs->pitch, buffer->height, 0,
-			     format, pixel_type,
+			     gs->gl_format, gs->gl_pixel_type,
 			     wl_shm_buffer_get_data(buffer->shm_buffer));
 		wl_shm_buffer_end_access(buffer->shm_buffer);
 
@@ -1069,9 +1057,9 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 		glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, 0);
 		glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, 0);
 		wl_shm_buffer_begin_access(buffer->shm_buffer);
-		glTexImage2D(GL_TEXTURE_2D, 0, format,
+		glTexImage2D(GL_TEXTURE_2D, 0, gs->gl_format,
 			     gs->pitch, buffer->height, 0,
-			     format, pixel_type, data);
+			     gs->gl_format, gs->gl_pixel_type, data);
 		wl_shm_buffer_end_access(buffer->shm_buffer);
 		goto done;
 	}
@@ -1087,7 +1075,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 		glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, r.y1);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, r.x1, r.y1,
 				r.x2 - r.x1, r.y2 - r.y1,
-				format, pixel_type, data);
+				gs->gl_format, gs->gl_pixel_type, data);
 	}
 	wl_shm_buffer_end_access(buffer->shm_buffer);
 #endif
@@ -1127,6 +1115,7 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 	struct weston_compositor *ec = es->compositor;
 	struct gl_renderer *gr = get_renderer(ec);
 	struct gl_surface_state *gs = get_surface_state(es);
+	GLenum gl_format, gl_pixel_type;
 	int pitch;
 
 	buffer->shm_buffer = shm_buffer;
@@ -1137,19 +1126,25 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 	case WL_SHM_FORMAT_XRGB8888:
 		gs->shader = &gr->texture_shader_rgbx;
 		pitch = wl_shm_buffer_get_stride(shm_buffer) / 4;
+		gl_format = GL_BGRA_EXT;
+		gl_pixel_type = GL_UNSIGNED_BYTE;
 		break;
 	case WL_SHM_FORMAT_ARGB8888:
 		gs->shader = &gr->texture_shader_rgba;
 		pitch = wl_shm_buffer_get_stride(shm_buffer) / 4;
+		gl_format = GL_BGRA_EXT;
+		gl_pixel_type = GL_UNSIGNED_BYTE;
 		break;
 	case WL_SHM_FORMAT_RGB565:
 		gs->shader = &gr->texture_shader_rgbx;
 		pitch = wl_shm_buffer_get_stride(shm_buffer) / 2;
+		gl_format = GL_RGB;
+		gl_pixel_type = GL_UNSIGNED_SHORT_5_6_5;
 		break;
 	default:
-		weston_log("warning: unknown shm buffer format\n");
-		gs->shader = &gr->texture_shader_rgba;
-		pitch = wl_shm_buffer_get_stride(shm_buffer) / 4;
+		weston_log("warning: unknown shm buffer format: %08x\n",
+			   wl_shm_buffer_get_format(shm_buffer));
+		return;
 	}
 
 	/* Only allocate a texture if it doesn't match existing one.
@@ -1157,10 +1152,14 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 	 * happening, we need to allocate a new texture buffer. */
 	if (pitch != gs->pitch ||
 	    buffer->height != gs->height ||
+	    gl_format != gs->gl_format ||
+	    gl_pixel_type != gs->gl_pixel_type ||
 	    gs->buffer_type != BUFFER_TYPE_SHM) {
 		gs->pitch = pitch;
 		gs->height = buffer->height;
 		gs->target = GL_TEXTURE_2D;
+		gs->gl_format = gl_format;
+		gs->gl_pixel_type = gl_pixel_type;
 		gs->buffer_type = BUFFER_TYPE_SHM;
 		gs->needs_full_upload = 1;
 		gs->y_inverted = 1;
