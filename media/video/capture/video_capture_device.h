@@ -212,6 +212,14 @@ class MEDIA_EXPORT VideoCaptureDevice {
   // would be sequenced through the same task runner, so that deallocation
   // happens first.
   virtual void StopAndDeAllocate() = 0;
+
+  // Gets the power line frequency from the current system time zone if this is
+  // defined, otherwise returns 0.
+  int GetPowerLineFrequencyForLocation() const;
+
+ protected:
+  static const int kPowerLine50Hz = 50;
+  static const int kPowerLine60Hz = 60;
 };
 
 }  // namespace media

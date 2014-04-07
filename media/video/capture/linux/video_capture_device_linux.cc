@@ -401,6 +401,19 @@ void VideoCaptureDeviceLinux::OnAllocateAndStart(int width,
   // TODO(mcasas): what should be done if the camera driver does not allow
   // framerate configuration, or the actual one is different from the desired?
 
+  // Set anti-banding/anti-flicker to 50/60Hz. May fail due to not supported
+  // operation (|errno| == EINVAL in this case) or plain failure.
+  const int power_line_frequency = GetPowerLineFrequencyForLocation();
+  if ((power_line_frequency == kPowerLine50Hz) ||
+      (power_line_frequency == kPowerLine60Hz)) {
+    struct v4l2_control control = {};
+    control.id = V4L2_CID_POWER_LINE_FREQUENCY;
+    control.value = (power_line_frequency == kPowerLine50Hz) ?
+                        V4L2_CID_POWER_LINE_FREQUENCY_50HZ :
+                        V4L2_CID_POWER_LINE_FREQUENCY_60HZ;
+    HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &control));
+  }
+
   // Store our current width and height.
   capture_format_.frame_size.SetSize(video_fmt.fmt.pix.width,
                                      video_fmt.fmt.pix.height);
