@@ -27,6 +27,7 @@
 #include "bindings/v8/V8PerIsolateData.h"
 
 #include "bindings/v8/DOMDataStore.h"
+#include "bindings/v8/PageScriptDebugServer.h"
 #include "bindings/v8/ScriptGCEvent.h"
 #include "bindings/v8/ScriptProfiler.h"
 #include "bindings/v8/V8Binding.h"
@@ -52,8 +53,10 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     , m_gcEventData(adoptPtr(new GCEventData()))
     , m_performingMicrotaskCheckpoint(false)
 {
-    if (isMainThread())
+    if (isMainThread()) {
         mainThreadPerIsolateData = this;
+        PageScriptDebugServer::setMainThreadIsolate(isolate);
+    }
 }
 
 V8PerIsolateData::~V8PerIsolateData()

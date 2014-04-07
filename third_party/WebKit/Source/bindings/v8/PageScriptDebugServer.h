@@ -49,8 +49,12 @@ class PageScriptDebugServer FINAL : public ScriptDebugServer {
 public:
     static PageScriptDebugServer& shared();
 
+    static void setMainThreadIsolate(v8::Isolate*);
+
     void addListener(ScriptDebugListener*, Page*);
     void removeListener(ScriptDebugListener*, Page*);
+
+    static void interruptAndRun(PassOwnPtr<Task>);
 
     class ClientMessageLoop {
     public:
@@ -73,7 +77,7 @@ public:
 
 private:
     PageScriptDebugServer();
-    virtual ~PageScriptDebugServer() { }
+    virtual ~PageScriptDebugServer();
 
     virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) OVERRIDE;
     virtual void runMessageLoopOnPause(v8::Handle<v8::Context>) OVERRIDE;
@@ -88,6 +92,7 @@ private:
     OwnPtr<ScriptSourceCode> m_preprocessorSourceCode;
     OwnPtr<ScriptPreprocessor> m_scriptPreprocessor;
     bool canPreprocess(LocalFrame*);
+    static v8::Isolate* s_mainThreadIsolate;
 };
 
 } // namespace WebCore

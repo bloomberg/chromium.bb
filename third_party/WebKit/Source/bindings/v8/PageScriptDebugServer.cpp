@@ -89,9 +89,20 @@ PageScriptDebugServer& PageScriptDebugServer::shared()
     return server;
 }
 
+v8::Isolate* PageScriptDebugServer::s_mainThreadIsolate = 0;
+
+void PageScriptDebugServer::setMainThreadIsolate(v8::Isolate* isolate)
+{
+    s_mainThreadIsolate = isolate;
+}
+
 PageScriptDebugServer::PageScriptDebugServer()
-    : ScriptDebugServer(v8::Isolate::GetCurrent())
+    : ScriptDebugServer(s_mainThreadIsolate)
     , m_pausedPage(0)
+{
+}
+
+PageScriptDebugServer::~PageScriptDebugServer()
 {
 }
 
@@ -141,6 +152,11 @@ void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, Page* 
     if (m_listenersMap.isEmpty())
         v8::Debug::SetDebugEventListener2(0);
     // FIXME: Remove all breakpoints set by the agent.
+}
+
+void PageScriptDebugServer::interruptAndRun(PassOwnPtr<Task> task)
+{
+    ScriptDebugServer::interruptAndRun(task, s_mainThreadIsolate);
 }
 
 void PageScriptDebugServer::setClientMessageLoop(PassOwnPtr<ClientMessageLoop> clientMessageLoop)
