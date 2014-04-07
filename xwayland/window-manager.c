@@ -681,6 +681,8 @@ weston_wm_create_surface(struct wl_listener *listener, void *data)
 		if (window->surface_id ==
 		    wl_resource_get_id(surface->resource)) {
 			xserver_map_shell_surface(window, surface);
+			window->surface_id = 0;
+			wl_list_remove(&window->link);
 			break;
 		}	
 }
@@ -1119,6 +1121,9 @@ weston_wm_window_destroy(struct weston_wm_window *window)
 		hash_table_remove(wm->window_hash, window->frame_id);
 		window->frame_id = XCB_WINDOW_NONE;
 	}
+
+	if (window->surface_id)
+		wl_list_remove(&window->link);
 
 	hash_table_remove(window->wm->window_hash, window->id);
 	free(window);
