@@ -143,6 +143,8 @@ public class Tab implements NavigationClient {
      */
     private boolean mGroupedWithParent = true;
 
+    private boolean mIsClosing = false;
+
     /**
      * A default {@link ChromeContextMenuItemDelegate} that supports some of the context menu
      * functionality.
@@ -885,6 +887,20 @@ public class Tab implements NavigationClient {
     @CalledByNative
     public boolean loadIfNeeded() {
         return false;
+    }
+
+    /**
+     * @return Whether or not the tab is in the closing process.
+     */
+    public boolean isClosing() {
+        return mIsClosing;
+    }
+
+    /**
+     * @param closing Whether or not the tab is in the closing process.
+     */
+    public void setClosing(boolean closing) {
+        mIsClosing = closing;
     }
 
     /**
