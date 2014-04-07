@@ -903,18 +903,22 @@ void InspectorCSSAgent::setPropertyText(ErrorString* errorString, const String& 
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);
 }
 
-void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const RefPtr<JSONObject>& fullRuleId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result)
+void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result)
 {
-    InspectorCSSId compoundId(fullRuleId);
-    ASSERT(!compoundId.isEmpty());
-
-    InspectorStyleSheet* inspectorStyleSheet = assertInspectorStyleSheetForId(errorString, compoundId.styleSheetId());
+    InspectorStyleSheet* inspectorStyleSheet = assertInspectorStyleSheetForId(errorString, styleSheetId);
     if (!inspectorStyleSheet)
         return;
+    SourceRange selectorRange;
+    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &selectorRange))
+        return;
+    InspectorCSSId compoundId;
+    if (!inspectorStyleSheet->findRuleBySelectorRange(selectorRange, &compoundId)) {
+        *errorString = "Source range didn't match any rule selector source range";
+        return;
+    }
 
     TrackExceptionState exceptionState;
     bool success = m_domAgent->history()->perform(adoptRef(new SetRuleSelectorAction(inspectorStyleSheet, compoundId, selector)), exceptionState);
-
     if (success) {
         CSSStyleRule* rule = inspectorStyleSheet->ruleForId(compoundId);
         result = inspectorStyleSheet->buildObjectForRule(rule, buildMediaListChain(rule));

@@ -242,6 +242,8 @@ public:
     virtual CSSStyleDeclaration* styleForId(const InspectorCSSId&) const OVERRIDE;
     virtual bool setStyleText(const InspectorCSSId&, const String&) OVERRIDE;
 
+    bool findRuleBySelectorRange(const SourceRange&, InspectorCSSId*);
+
 protected:
     virtual PassRefPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&) OVERRIDE;
     virtual unsigned ruleCount() OVERRIDE;

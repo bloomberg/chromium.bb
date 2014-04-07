@@ -12,13 +12,13 @@ InspectorTest.dumpStyleSheetText = function(styleSheetId, callback)
     }
 }
 
-InspectorTest.setPropertyText = function(styleSheetId, expectError, options, callback)
+function updateStyleSheetRange(command, styleSheetId, expectError, options, callback)
 {
     options.styleSheetId = styleSheetId;
     if (expectError)
-        InspectorTest.sendCommand("CSS.setPropertyText", options, onResponse);
+        InspectorTest.sendCommand(command, options, onResponse);
     else
-        InspectorTest.sendCommandOrDie("CSS.setPropertyText", options, onSuccess);
+        InspectorTest.sendCommandOrDie(command, options, onSuccess);
 
     function onSuccess()
     {
@@ -36,6 +36,9 @@ InspectorTest.setPropertyText = function(styleSheetId, expectError, options, cal
         callback();
     }
 }
+
+InspectorTest.setPropertyText = updateStyleSheetRange.bind(null, "CSS.setPropertyText");
+InspectorTest.setRuleSelector = updateStyleSheetRange.bind(null, "CSS.setRuleSelector");
 
 InspectorTest.requestMainFrameId = function(callback)
 {
