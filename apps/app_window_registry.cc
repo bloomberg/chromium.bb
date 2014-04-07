@@ -106,11 +106,11 @@ AppWindowRegistry::AppWindowList AppWindowRegistry::GetAppWindowsForApp(
 }
 
 void AppWindowRegistry::CloseAllAppWindowsForApp(const std::string& app_id) {
-  for (AppWindowList::const_iterator i = app_windows_.begin();
-       i != app_windows_.end();) {
-    AppWindow* app_window = *(i++);
-    if (app_window->extension_id() == app_id)
-      app_window->GetBaseWindow()->Close();
+  const AppWindowList windows = GetAppWindowsForApp(app_id);
+  for (AppWindowRegistry::const_iterator it = windows.begin();
+       it != windows.end();
+       ++it) {
+    (*it)->GetBaseWindow()->Close();
   }
 }
 
