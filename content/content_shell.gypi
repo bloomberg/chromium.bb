@@ -318,7 +318,9 @@
         ['use_aura==1', {
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
+            '../ui/aura/aura.gyp:aura_test_support',
             '../ui/base/strings/ui_strings.gyp:ui_strings',
+            '../ui/events/events.gyp:events',
           ],
           'sources/': [
             ['exclude', 'shell/browser/shell_gtk.cc'],
