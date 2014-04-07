@@ -90,7 +90,8 @@ public:
 
     virtual LayerType layerTypeRequired() const OVERRIDE
     {
-        if (isRoot() || isPositioned() || createsGroup() || hasClipPath() || hasTransform() || hasHiddenBackface() || hasReflection() || style()->specifiesColumns() || style()->hasWillChangeCompositingHint() || style()->hasWillChangeGpuRasterizationHint() || shouldCompositeForActiveAnimations(*this))
+        ASSERT(!isRoot());
+        if (isPositioned() || createsGroup() || hasClipPath() || hasTransform() || hasHiddenBackface() || hasReflection() || style()->specifiesColumns() || style()->hasWillChangeCompositingHint() || style()->hasWillChangeGpuRasterizationHint() || shouldCompositeForActiveAnimations(*this))
             return NormalLayer;
 
         return NoLayer;
