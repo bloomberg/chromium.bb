@@ -133,7 +133,7 @@ def transfer_extended_attributes(dependency_interface, dependency_interface_base
     * applying certain extended attributes from the dependency interface
       to its members
     * storing the C++ class of the implementation in an internal
-      extended attribute of each member, [ImplementedBy]
+      extended attribute of each member, [PartialInterfaceImplementedAs]
 
     No return: modifies dependency_interface in place.
     """
@@ -142,11 +142,12 @@ def transfer_extended_attributes(dependency_interface, dependency_interface_base
         for key, value in dependency_interface.extended_attributes.iteritems()
         if key in DEPENDENCY_EXTENDED_ATTRIBUTES)
 
-    # A partial interface's member's are implemented as static member functions
-    # in a separate C++ class. This class name is stored in [ImplementedBy],
-    # which defaults to the basename of dependency IDL file.
-    # This class name can be overridden by [ImplementedAs] on the dependency
-    # interface.
+    # A partial interface's members are implemented as static member functions
+    # in a separate C++ class. This class name is stored in
+    # [PartialInterfaceImplementedAs] which defaults to the basename of
+    # dependency IDL file.
+    # This class name can be overridden by [ImplementedAs] on the partial
+    # interface definition.
     #
     # Note that implemented interfaces do *not* need [ImplementedAs], since
     # they are implemented on the C++ object |impl| itself, just like members of
@@ -166,7 +167,7 @@ def transfer_extended_attributes(dependency_interface, dependency_interface_base
     # instead extract it and handle it separately.
     if (dependency_interface.is_partial or
         'LegacyTreatAsPartialInterface' in dependency_interface.extended_attributes):
-        merged_extended_attributes['ImplementedBy'] = (
+        merged_extended_attributes['PartialInterfaceImplementedAs'] = (
             dependency_interface.extended_attributes.get(
                 'ImplementedAs', dependency_interface_basename))
 

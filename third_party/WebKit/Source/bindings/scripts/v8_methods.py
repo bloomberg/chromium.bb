@@ -114,7 +114,8 @@ def generate_method(interface, method):
         'is_custom_element_callbacks': is_custom_element_callbacks,
         'is_do_not_check_security': 'DoNotCheckSecurity' in extended_attributes,
         'is_do_not_check_signature': 'DoNotCheckSignature' in extended_attributes,
-        'is_implemented_by': 'ImplementedBy' in extended_attributes,
+        'is_partial_interface_member':
+            'PartialInterfaceImplementedAs' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
         'is_raises_exception': is_raises_exception,
         'is_read_only': 'ReadOnly' in extended_attributes,
@@ -199,7 +200,10 @@ def cpp_value(interface, method, number_of_arguments):
     # Truncate omitted optional arguments
     arguments = method.arguments[:number_of_arguments]
     cpp_arguments = v8_utilities.call_with_arguments(method)
-    if ('ImplementedBy' in method.extended_attributes and
+    # Members of IDL partial interface definitions are implemented in C++ as
+    # static member functions, which for instance members (non-static members)
+    # take *impl as their first argument
+    if ('PartialInterfaceImplementedAs' in method.extended_attributes and
         not method.is_static):
         cpp_arguments.append('*impl')
     cpp_arguments.extend(cpp_argument(argument) for argument in arguments)

@@ -287,7 +287,7 @@ def generate_constant(constant):
 
     extended_attributes = constant.extended_attributes
     return {
-        'cpp_class': extended_attributes.get('ImplementedBy'),
+        'cpp_class': extended_attributes.get('PartialInterfaceImplementedAs'),
         'name': constant.name,
         # FIXME: use 'reflected_name' as correct 'name'
         'reflected_name': extended_attributes.get('Reflect', constant.name),

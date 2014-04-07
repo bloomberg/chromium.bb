@@ -101,11 +101,12 @@ def generate_attribute(interface, attribute):
         'is_getter_raises_exception': (  # [RaisesException]
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in [None, 'Getter']),
-        'is_implemented_by': 'ImplementedBy' in extended_attributes,
         'is_initialized_by_event_constructor':
             'InitializedByEventConstructor' in extended_attributes,
         'is_keep_alive_for_gc': is_keep_alive_for_gc(interface, attribute),
         'is_nullable': attribute.idl_type.is_nullable,
+        'is_partial_interface_member':
+            'PartialInterfaceImplementedAs' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
         'is_read_only': attribute.is_read_only,
         'is_reflect': is_reflect,
@@ -195,7 +196,10 @@ def getter_expression(interface, attribute, contents):
     getter_name = scoped_name(interface, attribute, this_getter_base_name)
 
     arguments.extend(v8_utilities.call_with_arguments(attribute))
-    if ('ImplementedBy' in attribute.extended_attributes and
+    # Members of IDL partial interface definitions are implemented in C++ as
+    # static member functions, which for instance members (non-static members)
+    # take *impl as their first argument
+    if ('PartialInterfaceImplementedAs' in attribute.extended_attributes and
         not attribute.is_static):
         arguments.append('*impl')
     if attribute.idl_type.is_nullable:
@@ -291,7 +295,10 @@ def setter_expression(interface, attribute, contents):
     this_setter_base_name = setter_base_name(interface, attribute, arguments)
     setter_name = scoped_name(interface, attribute, this_setter_base_name)
 
-    if ('ImplementedBy' in extended_attributes and
+    # Members of IDL partial interface definitions are implemented in C++ as
+    # static member functions, which for instance members (non-static members)
+    # take *impl as their first argument
+    if ('PartialInterfaceImplementedAs' in extended_attributes and
         not attribute.is_static):
         arguments.append('*impl')
     idl_type = attribute.idl_type

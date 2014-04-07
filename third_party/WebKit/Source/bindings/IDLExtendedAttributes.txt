@@ -60,7 +60,6 @@ WillBeGarbageCollected
 GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGlobalScope|ServiceWorkerGlobalScope
 Immutable
 ImplementedAs=*
-ImplementedBy=*
 InitializedByEventConstructor
 LegacyTreatAsPartialInterface
 MeasureAs=*
@@ -68,6 +67,7 @@ NamedConstructor=*
 NoInterfaceObject
 NotEnumerable
 OverrideBuiltins
+PartialInterfaceImplementedAs=*
 # Valid values for [PerContextEnabled] are Context Features, in
 # ContextFeatures::FeatureType in Source/core/dom/ContextFeatures.h
 PerContextEnabled=*
