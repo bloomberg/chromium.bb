@@ -19,6 +19,7 @@ content::WebUIDataSource* CreateSyncInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISyncInternalsHost);
 
+  source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
   source->AddResourcePath("sync_index.js", IDR_SYNC_INTERNALS_INDEX_JS);
   source->AddResourcePath("chrome_sync.js",

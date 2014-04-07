@@ -44,6 +44,7 @@ content::WebUIDataSource* CreateConflictsUIHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIConflictsHost);
 
+  source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("loadingMessage", IDS_CONFLICTS_LOADING_MESSAGE);
   source->AddLocalizedString("modulesLongTitle",
                              IDS_CONFLICTS_CHECK_PAGE_TITLE_LONG);

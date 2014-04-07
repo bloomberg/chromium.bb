@@ -69,6 +69,7 @@ content::WebUIDataSource* CreateChooseMobileNetworkUIHTMLSource() {
   source->AddLocalizedString("connect", IDS_OPTIONS_SETTINGS_CONNECT);
   source->AddLocalizedString("cancel", IDS_CANCEL);
 
+  source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
   source->AddResourcePath("choose_mobile_network.js",
                           IDR_CHOOSE_MOBILE_NETWORK_JS);

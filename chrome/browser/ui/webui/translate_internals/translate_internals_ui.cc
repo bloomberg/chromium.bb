@@ -46,6 +46,8 @@ void GetLanguages(base::DictionaryValue* dict) {
 content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUITranslateInternalsHost);
+
+  source->SetUseJsonJSFormatV2();
   source->SetDefaultResource(IDR_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HTML);
   source->SetJsonPath("strings.js");
   source->AddResourcePath("translate_internals.js",

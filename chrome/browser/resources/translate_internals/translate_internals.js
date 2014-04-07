@@ -93,8 +93,8 @@
      */
     function formatLanguageCode(langCode) {
       var key = 'language-' + langCode;
-      if (key in templateData) {
-        var langName = templateData[key];
+      if (loadTimeData.valueExists(key)) {
+        var langName = loadTimeData.getString(key);
         return langCode + ' (' + langName + ')';
       }
 
@@ -368,7 +368,7 @@
                'event-logs-place');
       appendTD(tr, details['message'], 'event-logs-message');
 
-      var tbody = $('event-logs').getElementsByTagName('tbody')[0];
+      var tbody = $('tabpanel-event-logs').getElementsByTagName('tbody')[0];
       tbody.appendChild(tr);
     }
 
