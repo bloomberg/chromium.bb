@@ -496,9 +496,9 @@
    * Realigns the keysets in all layouts of the keyboard.
    */
   function realignAll() {
+    resizeKeyboardContainer()
     var keyboard = $('keyboard');
     var layoutParams = {};
-
     var idToLayout = function(id) {
       var parts = id.split('-');
       parts.pop();
@@ -524,6 +524,8 @@
   function realign() {
     var keyboard = $('keyboard');
     var params = new AlignmentOptions();
+    // Check if current window bounds are accurate.
+    resizeKeyboardContainer(params)
     var layout = keyboard.layout;
     var keysets =
         keyboard.querySelectorAll('kb-keyset[id^=' + layout + ']').array();
@@ -543,14 +545,6 @@
     var rows = keyset.querySelectorAll('kb-row').array();
     keyset.style.fontSize = (params.availableHeight /
       FONT_SIZE_RATIO / rows.length) + 'px';
-    var bounds = getKeyboardBounds();
-    // If currently the active keyset, resize if vertical padding exceeds the
-    // resize threshold.
-    // TODO(rsadam@): Add logic to stretch if necessary after overscroll lands.
-    if (bounds.height - params.height > RESIZE_THRESHOLD &&
-        $('keyboard').activeKeysetId == keyset.id) {
-      window.resizeTo(params.width, params.height);
-    }
     var heightOffset  = 0;
     for (var i = 0; i < rows.length; i++) {
       var row = rows[i];
@@ -562,6 +556,20 @@
         realignRow(row, params, rowHeight, heightOffset);
       }
       heightOffset += (rowHeight + params.pitchY);
+    }
+  }
+
+  /**
+   * Resizes the keyboard container if needed.
+   * @params {AlignmentOptions=} opt_params Optional parameters to use. Defaults
+   *   to the parameters of the current active keyset.
+   */
+  function resizeKeyboardContainer(opt_params) {
+    var params = opt_params ? opt_params : new AlignmentOptions();
+    var bounds = getKeyboardBounds();
+    if (Math.abs(bounds.height - params.height) > RESIZE_THRESHOLD) {
+      // Cannot resize more than 50% of screen height due to crbug.com/338829.
+      window.resizeTo(params.width, params.height);
     }
   }
 
@@ -622,8 +630,8 @@ addEventListener('touchmove', function(e) { e.preventDefault() });
 addEventListener('polymer-ready', function(e) {
   flattenKeysets();
   resolveAudio();
-  realignAll();
-  var keyset = $('keyboard').activeKeyset;
-  if (keyset)
-    keyset.show();
 });
+addEventListener('stateChange', function(e) {
+  if (e.detail.value == $('keyboard').activeKeysetId)
+    realignAll();
+})

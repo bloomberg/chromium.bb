@@ -83,7 +83,7 @@ var KEY_PADDING_BOTTOM = 1;
  * The maximum number of extra pixels before a resize is triggered.
  * @type {number}
  */
-var RESIZE_THRESHOLD = 50;
+var RESIZE_THRESHOLD = 20;
 
 /**
  * The size of the pool to use for playing audio sounds on key press. This is to
