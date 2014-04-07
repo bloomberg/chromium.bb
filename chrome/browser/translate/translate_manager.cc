@@ -322,7 +322,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   // automatically translate.  Note that in incognito mode we disable that
   // feature; the user will get an infobar, so they can control whether the
   // page's text is sent to the translate server.
-  if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
+  if (!translate_driver_->IsOffTheRecord()) {
     std::string auto_target_lang = GetAutoTargetLanguage(language_code, prefs);
     if (!auto_target_lang.empty()) {
       TranslateBrowserMetrics::ReportInitiationStatus(
@@ -487,7 +487,7 @@ void TranslateManager::PageTranslated(PageTranslatedDetails* details) {
 
   WebContents* web_contents = translate_tab_helper_->GetWebContents();
   if (details->error_type != TranslateErrors::NONE &&
-      !web_contents->GetBrowserContext()->IsOffTheRecord()) {
+      !translate_driver_->IsOffTheRecord()) {
     TranslateErrorDetails error_details;
     error_details.time = base::Time::Now();
     error_details.url = web_contents->GetLastCommittedURL();
@@ -523,7 +523,7 @@ void TranslateManager::OnTranslateScriptFetchComplete(
         target_lang,
         TranslateErrors::NETWORK,
         false);
-    if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
+    if (!translate_driver_->IsOffTheRecord()) {
       TranslateErrorDetails error_details;
       error_details.time = base::Time::Now();
       error_details.url = entry->GetURL();

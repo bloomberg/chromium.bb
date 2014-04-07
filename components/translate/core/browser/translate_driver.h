@@ -33,6 +33,9 @@ class TranslateDriver {
 
   // Reverts the contents of the page to its original language.
   virtual void RevertTranslation() = 0;
+
+  // Returns whether the user is currently operating in off-the-record mode.
+  virtual bool IsOffTheRecord() = 0;
 };
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_DRIVER_H_

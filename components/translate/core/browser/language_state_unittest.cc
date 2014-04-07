@@ -48,6 +48,8 @@ class MockTranslateDriver : public TranslateDriver {
 
   virtual void RevertTranslation() OVERRIDE {}
 
+  virtual bool IsOffTheRecord() OVERRIDE { return false; }
+
   bool on_is_page_translated_changed_called() const {
     return on_is_page_translated_changed_called_;
   }

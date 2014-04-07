@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "components/translate/content/common/translate_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -87,4 +88,8 @@ void ContentTranslateDriver::RevertTranslation() {
   content::WebContents* web_contents = navigation_controller_->GetWebContents();
   web_contents->GetRenderViewHost()->Send(new ChromeViewMsg_RevertTranslation(
       web_contents->GetRenderViewHost()->GetRoutingID(), entry->GetPageID()));
+}
+
+bool ContentTranslateDriver::IsOffTheRecord() {
+  return navigation_controller_->GetBrowserContext()->IsOffTheRecord();
 }

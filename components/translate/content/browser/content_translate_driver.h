@@ -50,6 +50,7 @@ class ContentTranslateDriver : public TranslateDriver {
                              const std::string& source_lang,
                              const std::string& target_lang) OVERRIDE;
   virtual void RevertTranslation() OVERRIDE;
+  virtual bool IsOffTheRecord() OVERRIDE;
 
  private:
   // The navigation controller of the tab we are associated with.
