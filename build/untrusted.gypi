@@ -802,7 +802,7 @@
           ['nexe_target!="" and build_newlib!=0', {
             'variables': {
                'tool_name': 'newlib',
-               'out_newlib_mips%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_mips.nexe',
+               'out_newlib_mips%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_mips32.nexe',
                'objdir_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)-mips/>(_target_name)',
             },
             'actions': [
@@ -890,7 +890,7 @@
           ['nexe_target!="" and build_irt!=0', {
             'variables': {
                'tool_name': 'irt',
-               'out_newlib_mips%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_mips.nexe',
+               'out_newlib_mips%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_mips32.nexe',
                'objdir_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)-mips/>(_target_name)',
             },
             'actions': [
@@ -1307,7 +1307,7 @@
            'out_pnacl_newlib_x86_32_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x32.nexe',
            'out_pnacl_newlib_x86_64_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x64.nexe',
            'out_pnacl_newlib_arm_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_arm.nexe',
-           'out_pnacl_newlib_mips_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_mips.nexe',
+           'out_pnacl_newlib_mips_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_mips32.nexe',
            'out_pnacl_newlib_x86_32_nonsfi_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x32_nonsfi.nexe',
            'tool_name': 'pnacl_newlib',
            'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib',
