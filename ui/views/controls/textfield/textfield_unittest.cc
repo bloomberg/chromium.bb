@@ -1824,6 +1824,16 @@ TEST_F(TextfieldTest, SelectionClipboard) {
   textfield_->OnMouseReleased(release_word);
   EXPECT_EQ(gfx::Range(0, 8), textfield_->GetSelectedRange());
   EXPECT_STR_EQ("ab cd ef", GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION));
+
+  // Selecting a range of text without any user interaction should not change
+  // the clipboard content.
+  textfield_->SelectRange(gfx::Range(0, 3));
+  EXPECT_STR_EQ("ab ", textfield_->GetSelectedText());
+  EXPECT_STR_EQ("ab cd ef", GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION));
+
+  SetClipboardText(ui::CLIPBOARD_TYPE_SELECTION, "other");
+  textfield_->SelectAll(false);
+  EXPECT_STR_EQ("other", GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION));
 }
 #endif
 

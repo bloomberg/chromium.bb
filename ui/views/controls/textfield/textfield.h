@@ -400,6 +400,11 @@ class VIEWS_EXPORT Textfield : public View,
   base::TimeDelta password_reveal_duration_;
   base::OneShotTimer<Textfield> password_reveal_timer_;
 
+  // Keeps track of whether currently performing a user action (i.e. when
+  // OnBeforeUserAction() has been called, but OnAfterUserAction() is yet to be
+  // called).
+  bool performing_user_action_;
+
   // True if InputMethod::CancelComposition() should not be called.
   bool skip_input_method_cancel_composition_;
 
