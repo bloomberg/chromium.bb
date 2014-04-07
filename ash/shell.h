@@ -47,10 +47,6 @@ class Point;
 class Rect;
 }
 
-namespace keyboard {
-class KeyboardController;
-}
-
 namespace ui {
 class Layer;
 class OutputConfigurator;
@@ -327,10 +323,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Test if the MaximizeModeWindowManager is enabled or not.
   bool IsMaximizeModeWindowManagerEnabled();
-
-  keyboard::KeyboardController* keyboard_controller() {
-    return keyboard_controller_.get();
-  }
 
   AcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();
@@ -619,7 +611,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::vector<WindowAndBoundsPair> to_restore_;
 
   scoped_ptr<UserMetricsRecorder> user_metrics_recorder_;
-  scoped_ptr<keyboard::KeyboardController> keyboard_controller_;
   scoped_ptr<NestedDispatcherController> nested_dispatcher_controller_;
   scoped_ptr<AcceleratorController> accelerator_controller_;
   scoped_ptr<ShellDelegate> delegate_;

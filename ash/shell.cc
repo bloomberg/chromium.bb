@@ -410,22 +410,22 @@ void Shell::CreateKeyboard() {
   InitKeyboard();
   if (keyboard::IsKeyboardUsabilityExperimentEnabled()) {
     display_controller()->virtual_keyboard_window_controller()->
-        ActivateKeyboard(keyboard_controller_.get());
+        ActivateKeyboard(keyboard::KeyboardController::GetInstance());
   } else {
     GetPrimaryRootWindowController()->
-        ActivateKeyboard(keyboard_controller_.get());
+        ActivateKeyboard(keyboard::KeyboardController::GetInstance());
   }
 }
 
 void Shell::DeactivateKeyboard() {
-  if (keyboard_controller_.get()) {
+  if (keyboard::KeyboardController::GetInstance()) {
     RootWindowControllerList controllers = GetAllRootWindowControllers();
     for (RootWindowControllerList::iterator iter = controllers.begin();
         iter != controllers.end(); ++iter) {
-      (*iter)->DeactivateKeyboard(keyboard_controller_.get());
+      (*iter)->DeactivateKeyboard(keyboard::KeyboardController::GetInstance());
     }
   }
-  keyboard_controller_.reset();
+  keyboard::KeyboardController::ResetInstance(NULL);
 }
 
 void Shell::ShowShelf() {
@@ -753,11 +753,11 @@ Shell::~Shell() {
   display_controller_->Shutdown();
   display_controller_.reset();
   screen_position_controller_.reset();
-
-  keyboard_controller_.reset();
   accessibility_delegate_.reset();
   new_window_delegate_.reset();
   media_delegate_.reset();
+
+  keyboard::KeyboardController::ResetInstance(NULL);
 
 #if defined(OS_CHROMEOS)
   if (display_change_observer_)
@@ -1023,16 +1023,17 @@ void Shell::Init() {
 
 void Shell::InitKeyboard() {
   if (keyboard::IsKeyboardEnabled()) {
-    if (keyboard_controller_.get()) {
+    if (keyboard::KeyboardController::GetInstance()) {
       RootWindowControllerList controllers = GetAllRootWindowControllers();
       for (RootWindowControllerList::iterator iter = controllers.begin();
            iter != controllers.end(); ++iter) {
-        (*iter)->DeactivateKeyboard(keyboard_controller_.get());
+        (*iter)->DeactivateKeyboard(
+            keyboard::KeyboardController::GetInstance());
       }
     }
     keyboard::KeyboardControllerProxy* proxy =
         delegate_->CreateKeyboardControllerProxy();
-    keyboard_controller_.reset(
+    keyboard::KeyboardController::ResetInstance(
         new keyboard::KeyboardController(proxy));
   }
 }

@@ -435,7 +435,7 @@ bool InputMethodEngine::DeleteSurroundingText(int context_id,
 
 void InputMethodEngine::HideInputView() {
   keyboard::KeyboardController* keyboard_controller =
-    ash::Shell::GetInstance()->keyboard_controller();
+    keyboard::KeyboardController::GetInstance();
   if (keyboard_controller) {
     keyboard_controller->HideKeyboard(
         keyboard::KeyboardController::HIDE_REASON_MANUAL);
@@ -494,7 +494,7 @@ void InputMethodEngine::Enable() {
 
   keyboard::SetOverrideContentUrl(input_view_url_);
   keyboard::KeyboardController* keyboard_controller =
-      ash::Shell::GetInstance()->keyboard_controller();
+      keyboard::KeyboardController::GetInstance();
   if (keyboard_controller)
     keyboard_controller->Reload();
 }
@@ -506,7 +506,7 @@ void InputMethodEngine::Disable() {
   GURL empty_url;
   keyboard::SetOverrideContentUrl(empty_url);
   keyboard::KeyboardController* keyboard_controller =
-      ash::Shell::GetInstance()->keyboard_controller();
+      keyboard::KeyboardController::GetInstance();
   if (keyboard_controller)
     keyboard_controller->Reload();
 }

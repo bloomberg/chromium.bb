@@ -450,7 +450,7 @@ void RootWindowController::CloseChildWindows() {
 
   // Deactivate keyboard container before closing child windows and shutting
   // down associated layout managers.
-  DeactivateKeyboard(Shell::GetInstance()->keyboard_controller());
+  DeactivateKeyboard(keyboard::KeyboardController::GetInstance());
 
   // panel_layout_manager_ needs to be shut down before windows are destroyed.
   if (panel_layout_manager_) {

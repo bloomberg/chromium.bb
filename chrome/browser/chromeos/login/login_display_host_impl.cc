@@ -326,8 +326,8 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
       is_observing_keyboard_(false) {
   DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
   CrasAudioHandler::Get()->AddAudioObserver(this);
-  if (ash::Shell::GetInstance()->keyboard_controller()) {
-    ash::Shell::GetInstance()->keyboard_controller()->AddObserver(this);
+  if (keyboard::KeyboardController::GetInstance()) {
+    keyboard::KeyboardController::GetInstance()->AddObserver(this);
     is_observing_keyboard_ = true;
   }
 
@@ -427,9 +427,8 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
 LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
-  if (ash::Shell::GetInstance()->keyboard_controller() &&
-      is_observing_keyboard_) {
-    ash::Shell::GetInstance()->keyboard_controller()->RemoveObserver(this);
+  if (keyboard::KeyboardController::GetInstance() && is_observing_keyboard_) {
+    keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
     is_observing_keyboard_ = false;
   }
 
@@ -856,14 +855,14 @@ void LoginDisplayHostImpl::OnActiveOutputNodeChanged() {
 // implementation:
 
 void LoginDisplayHostImpl::OnVirtualKeyboardStateChanged(bool activated) {
-  if (ash::Shell::GetInstance()->keyboard_controller()) {
+  if (keyboard::KeyboardController::GetInstance()) {
     if (activated) {
       if (!is_observing_keyboard_) {
-        ash::Shell::GetInstance()->keyboard_controller()->AddObserver(this);
+        keyboard::KeyboardController::GetInstance()->AddObserver(this);
         is_observing_keyboard_ = true;
       }
     } else {
-      ash::Shell::GetInstance()->keyboard_controller()->RemoveObserver(this);
+      keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
       is_observing_keyboard_ = false;
     }
   }

@@ -622,7 +622,7 @@ class VirtualKeyboardRootWindowControllerTest : public RootWindowControllerTest
         keyboard::switches::kEnableVirtualKeyboard);
     test::AshTestBase::SetUp();
     Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
-        Shell::GetInstance()->keyboard_controller());
+        keyboard::KeyboardController::GetInstance());
   }
 
  private:
@@ -660,7 +660,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   ASSERT_TRUE(keyboard_container);
   keyboard_container->Show();
 
-  aura::Window* keyboard_window = Shell::GetInstance()->keyboard_controller()->
+  aura::Window* keyboard_window = keyboard::KeyboardController::GetInstance()->
       proxy()->GetKeyboardWindow();
   keyboard_container->AddChild(keyboard_window);
   keyboard_window->set_owned_by_parent(false);
@@ -712,7 +712,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
       Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
   keyboard_container->Show();
   keyboard::KeyboardController* controller =
-      Shell::GetInstance()->keyboard_controller();
+      keyboard::KeyboardController::GetInstance();
   aura::Window* keyboard_window = controller->proxy()->GetKeyboardWindow();
   keyboard_container->AddChild(keyboard_window);
   keyboard_window->set_owned_by_parent(false);
@@ -741,7 +741,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
   ASSERT_TRUE(keyboard_container);
   keyboard_container->Show();
 
-  aura::Window* keyboard_window = Shell::GetInstance()->keyboard_controller()->
+  aura::Window* keyboard_window = keyboard::KeyboardController::GetInstance()->
       proxy()->GetKeyboardWindow();
   keyboard_container->AddChild(keyboard_window);
   keyboard_window->set_owned_by_parent(false);

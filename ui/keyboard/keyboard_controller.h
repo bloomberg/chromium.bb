@@ -81,6 +81,14 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Force the keyboard to show up if not showing and lock the keyboard.
   void ShowAndLockKeyboard();
 
+  // Sets the active keyboard controller. KeyboardController takes ownership of
+  // the instance. Calling ResetIntance with a new instance destroys the
+  // previous one. May be called with NULL to clear the instance.
+  static void ResetInstance(KeyboardController* controller);
+
+  // Retrieve the active keyboard controller.
+  static KeyboardController* GetInstance();
+
   // Returns true if keyboard is currently visible.
   bool keyboard_visible() { return keyboard_visible_; }
 
@@ -130,6 +138,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   ObserverList<KeyboardControllerObserver> observer_list_;
 
   base::WeakPtrFactory<KeyboardController> weak_factory_;
+
+  static KeyboardController* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardController);
 };

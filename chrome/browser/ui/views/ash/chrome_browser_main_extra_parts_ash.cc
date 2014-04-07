@@ -18,6 +18,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/screen_type_delegate.h"
 #include "ui/keyboard/keyboard.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -97,7 +98,7 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   // activation to UpdateWindow() in virtual_keyboard_window_controller.cc.
   if (!keyboard::IsKeyboardUsabilityExperimentEnabled()) {
     ash::Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
-        ash::Shell::GetInstance()->keyboard_controller());
+        keyboard::KeyboardController::GetInstance());
   }
 }
 

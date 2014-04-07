@@ -178,6 +178,9 @@ void CallbackAnimationObserver::OnLayerAnimationAborted(
   animator_->RemoveObserver(this);
 }
 
+// static
+KeyboardController* KeyboardController::instance_ = NULL;
+
 KeyboardController::KeyboardController(KeyboardControllerProxy* proxy)
     : proxy_(proxy),
       input_method_(NULL),
@@ -195,6 +198,18 @@ KeyboardController::~KeyboardController() {
     container_->RemoveObserver(this);
   if (input_method_)
     input_method_->RemoveObserver(this);
+}
+
+// static
+void KeyboardController::ResetInstance(KeyboardController* controller) {
+  if (instance_ && instance_ != controller)
+    delete instance_;
+  instance_ = controller;
+}
+
+// static
+KeyboardController* KeyboardController::GetInstance() {
+  return instance_;
 }
 
 aura::Window* KeyboardController::GetContainerWindow() {

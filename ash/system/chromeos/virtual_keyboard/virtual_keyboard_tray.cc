@@ -98,7 +98,7 @@ bool VirtualKeyboardTray::ClickedOutsideBubble() {
 }
 
 bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
-  Shell::GetInstance()->keyboard_controller()->ShowAndLockKeyboard();
+  keyboard::KeyboardController::GetInstance()->ShowAndLockKeyboard();
   return true;
 }
 

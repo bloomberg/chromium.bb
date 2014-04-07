@@ -35,7 +35,7 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
   }
 
   keyboard::KeyboardControllerProxy* proxy() {
-    return ash::Shell::GetInstance()->keyboard_controller()->proxy();
+    return keyboard::KeyboardController::GetInstance()->proxy();
   }
 
  protected:

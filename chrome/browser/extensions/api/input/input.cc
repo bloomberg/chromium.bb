@@ -111,7 +111,7 @@ bool VirtualKeyboardPrivateHideKeyboardFunction::RunImpl() {
 
   // Pass HIDE_REASON_MANUAL since calls to HideKeyboard as part of this API
   // would be user generated.
-  ash::Shell::GetInstance()->keyboard_controller()->HideKeyboard(
+  keyboard::KeyboardController::GetInstance()->HideKeyboard(
       keyboard::KeyboardController::HIDE_REASON_MANUAL);
 
   return true;
@@ -126,7 +126,7 @@ bool VirtualKeyboardPrivateLockKeyboardFunction::RunImpl() {
 #if defined(USE_ASH)
   bool lock;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &lock));
-  ash::Shell::GetInstance()->keyboard_controller()->set_lock_keyboard(lock);
+  keyboard::KeyboardController::GetInstance()->set_lock_keyboard(lock);
   return true;
 #else
   error_ = kNotYetImplementedError;

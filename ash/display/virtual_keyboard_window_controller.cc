@@ -59,7 +59,7 @@ void VirtualKeyboardWindowController::UpdateWindow(
     root_window_controller_.reset(GetRootWindowController(host->window()));
     root_window_controller_->host()->Show();
     root_window_controller_->ActivateKeyboard(
-        Shell::GetInstance()->keyboard_controller());
+        keyboard::KeyboardController::GetInstance());
     FlipDisplay();
   } else {
     aura::WindowTreeHost* host = root_window_controller_->host();
