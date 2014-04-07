@@ -1,24 +1,24 @@
 Inspected contents
 Style sheet added: regular (stylesheet.css)
 Dumping matched rules: 
-*#inspected* {    regular (stylesheet.css)
+*#inspected* {    regular
     color: red;
 }
 Adding a rule to the existing stylesheet.
 Dumping matched rules: 
-*#inspected* {    regular (stylesheet.css)
+*#inspected* {    regular
     color: red;
 }
-*#inspected* {    regular (stylesheet.css)
+*#inspected* {    regular
 }
 Creating inspector stylesheet.
 Style sheet added: inspector
 Adding a rule to the inspector stylesheet.
 Dumping matched rules: 
-*#inspected* {    regular (stylesheet.css)
+*#inspected* {    regular
     color: red;
 }
-*#inspected* {    regular (stylesheet.css)
+*#inspected* {    regular
 }
 *#inspected* {    inspector
 }

@@ -103,7 +103,7 @@ InspectorTest.dumpRuleMatch = function(ruleMatch)
             selectorLine += "*";
     }
     selectorLine += " {";
-    selectorLine += "    " + rule.origin + (rule.sourceURL ? " (" + InspectorTest.displayName(rule.sourceURL) + ")" : "");
+    selectorLine += "    " + rule.origin;
     log(0, selectorLine);
     var style = rule.style;
     var cssProperties = style.cssProperties;

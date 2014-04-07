@@ -1228,10 +1228,6 @@ PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorStyleSheet::buildObjectForRule(CS
         .setOrigin(m_origin)
         .setStyle(buildObjectForStyle(rule->style()));
 
-    String url = this->url();
-    if (!url.isEmpty())
-        result->setSourceURL(url);
-
     if (canBind(m_origin)) {
         InspectorCSSId id(ruleId(rule));
         if (!id.isEmpty())
