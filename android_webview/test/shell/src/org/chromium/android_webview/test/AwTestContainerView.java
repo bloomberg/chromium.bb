@@ -35,6 +35,8 @@ public class AwTestContainerView extends FrameLayout {
         super(context);
         mInternalAccessDelegate = new InternalAccessAdapter();
         setOverScrollMode(View.OVER_SCROLL_ALWAYS);
+        setFocusable(true);
+        setFocusableInTouchMode(true);
     }
 
     public void initialize(AwContents awContents) {
