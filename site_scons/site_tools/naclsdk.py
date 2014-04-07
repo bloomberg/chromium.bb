@@ -209,7 +209,10 @@ def _SetEnvForPnacl(env, root):
   assert arch in ['arm', 'mips32', 'x86-32', 'x86-64']
 
   if env.Bit('pnacl_unsandboxed'):
-    arch = '%s-linux' % arch
+    if env.Bit('host_linux'):
+      arch = '%s-linux' % arch
+    elif env.Bit('host_mac'):
+      arch = '%s-mac' % arch
   arch_flag = ' -arch %s' % arch
   if env.Bit('pnacl_generate_pexe'):
     ld_arch_flag = ''

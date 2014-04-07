@@ -2458,11 +2458,15 @@ libs-support-native() {
 }
 
 libs-support-unsandboxed() {
-  if ${BUILD_PLATFORM_LINUX}; then
-    local arch=x86-32-linux
+  if ${BUILD_PLATFORM_LINUX} || ${BUILD_PLATFORM_MAC}; then
+    local arch="x86-32-${BUILD_PLATFORM}"
     StepBanner "LIBS-SUPPORT (${arch})" "Install unsandboxed_irt.o"
     local destdir="${INSTALL_LIB_NATIVE}"${arch}
     mkdir -p ${destdir}
+    # The NaCl headers insist on having a platform macro such as
+    # NACL_LINUX defined, but unsandboxed_irt.c does not itself use
+    # any of these macros, so defining NACL_LINUX here even on
+    # non-Linux systems is OK.
     gcc -m32 -O2 -Wall -Werror -I${NACL_ROOT}/.. -DNACL_LINUX=1 -c \
         ${PNACL_SUPPORT}/unsandboxed_irt.c -o ${destdir}/unsandboxed_irt.o
   fi

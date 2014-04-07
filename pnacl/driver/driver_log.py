@@ -54,6 +54,7 @@ def FixArch(arch):
               'mipsel': 'MIPS32',
 
               'x86-32-linux': 'X8632_LINUX',
+              'x86-32-mac': 'X8632_MAC',
               'x86-32-nonsfi': 'X8632_NONSFI',
               }
   if arch not in archfix:

@@ -574,7 +574,9 @@ if __name__ == '__main__':
       packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0], bias))
     for arch in ALL_ARCHES:
       packages.update(pnacl_targetlibs.NativeLibs(hosts[0], arch))
-    packages.update(pnacl_targetlibs.NativeLibsUnsandboxed('x86-32-linux'))
+  if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
+    packages.update(pnacl_targetlibs.NativeLibsUnsandboxed(
+        'x86-32-%s' % pynacl.platform.GetOS()))
   packages.update(Metadata())
 
   # TODO(dyen): Fill in PACKAGE_TARGETS for pnacl.

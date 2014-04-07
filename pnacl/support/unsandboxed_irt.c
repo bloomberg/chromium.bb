@@ -8,7 +8,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
-#include <linux/futex.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +16,10 @@
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+
+#if defined(__linux__)
+# include <linux/futex.h>
+#endif
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/include/elf_auxv.h"
@@ -47,17 +50,31 @@
 
 #if defined(__GLIBC__)
 /*
- * glibc's headers will define st_atimensec fields, but only if
+ * glibc's headers will define st_atimensec etc. fields, but only if
  * _POSIX_SOURCE is defined, which disables many other declarations,
  * such as nanosleep(), getpagesize(), MAP_ANON and clock_gettime().
  */
 # define st_atimensec st_atim.tv_nsec
 # define st_mtimensec st_mtim.tv_nsec
 # define st_ctimensec st_ctim.tv_nsec
+#elif defined(__APPLE__)
+/*
+ * Similarly, Mac OS X's headers will define st_atimensec etc. fields,
+ * but only if _POSIX_SOURCE is defined, which disables declarations
+ * such as _SC_NPROCESSORS_ONLN.
+ */
+# define st_atimensec st_atimespec.tv_nsec
+# define st_mtimensec st_mtimespec.tv_nsec
+# define st_ctimensec st_ctimespec.tv_nsec
 #endif
 
 void _user_start(void *info);
+void _start(void *info);
 
+/* TODO(mseaborn): Make threads work on Mac OS X. */
+#if defined(__APPLE__)
+# define __thread /* nothing */
+#endif
 static __thread void *g_tls_value;
 
 
@@ -349,6 +366,11 @@ static int thread_nice(const int nice) {
   return 0;
 }
 
+/*
+ * Mac OS X does not provide futexes or clock_gettime()/getres() natively.
+ * TODO(mseaborn):  Make threads and clock_gettime() work on Mac OS X.
+ */
+#if defined(__linux__)
 static int futex_wait_abs(volatile int *addr, int value,
                           const struct timespec *abstime_nacl) {
   struct timespec reltime;
@@ -404,6 +426,7 @@ static int irt_clock_gettime(nacl_irt_clockid_t clk_id,
   convert_to_nacl_timespec(time_nacl, &time);
   return result;
 }
+#endif
 
 static int irt_open(const char *pathname, int flags, mode_t mode, int *new_fd) {
   int fd = open(pathname, flags, mode);
@@ -496,6 +519,7 @@ const static struct nacl_irt_thread irt_thread = {
   thread_nice,
 };
 
+#if defined(__linux__)
 const static struct nacl_irt_futex irt_futex = {
   futex_wait_abs,
   futex_wake,
@@ -505,6 +529,14 @@ const static struct nacl_irt_clock irt_clock = {
   irt_clock_getres,
   irt_clock_gettime,
 };
+#else
+DEFINE_STUB(futex_wait_abs)
+DEFINE_STUB(futex_wake)
+const static struct nacl_irt_futex irt_futex = {
+  USE_STUB(irt_futex, futex_wait_abs),
+  USE_STUB(irt_futex, futex_wake),
+};
+#endif
 
 DEFINE_STUB(truncate)
 DEFINE_STUB(lstat)
@@ -551,7 +583,9 @@ static const struct nacl_interface_table irt_interfaces[] = {
   { NACL_IRT_TLS_v0_1, &irt_tls, sizeof(irt_tls) },
   { NACL_IRT_THREAD_v0_1, &irt_thread, sizeof(irt_thread) },
   { NACL_IRT_FUTEX_v0_1, &irt_futex, sizeof(irt_futex) },
+#if defined(__linux__)
   { NACL_IRT_CLOCK_v0_1, &irt_clock, sizeof(irt_clock) },
+#endif
   { NACL_IRT_DEV_FILENAME_v0_3, &irt_dev_filename, sizeof(irt_dev_filename) },
   { NACL_IRT_DEV_GETPID_v0_1, &irt_dev_getpid, sizeof(irt_dev_getpid) },
 };
@@ -611,6 +645,17 @@ int main(int argc, char **argv, char **environ) {
   data[pos++] = 0;
   assert(pos == count);
 
+  /*
+   * On Linux, we rename _start() to _user_start() to avoid a clash
+   * with the "_start" routine in the host toolchain.  On Mac OS X,
+   * lacking objcopy, doing the symbol renaming is trickier, but also
+   * unnecessary, because the host toolchain doesn't have a "_start"
+   * routine.
+   */
+#if defined(__APPLE__)
+  _start(data);
+#else
   _user_start(data);
+#endif
   return 1;
 }

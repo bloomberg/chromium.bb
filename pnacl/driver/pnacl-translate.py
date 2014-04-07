@@ -208,23 +208,29 @@ TranslatorPatterns = [
 
 def SetUpArch():
   base_arch = env.getone('ARCH')
+  env.set('TARGET_OS', 'nacl')
   without_sfi = False
   if base_arch.endswith('_NONSFI'):
     base_arch = base_arch[:-len('_NONSFI')]
     without_sfi = True
   elif base_arch.endswith('_LINUX'):
     base_arch = base_arch[:-len('_LINUX')]
+    env.set('TARGET_OS', 'linux')
+    without_sfi = True
+  elif base_arch.endswith('_MAC'):
+    base_arch = base_arch[:-len('_MAC')]
+    env.set('TARGET_OS', 'mac')
     without_sfi = True
 
-  if without_sfi:
-    triple_map = {'X8632': 'i686-linux-gnu'}
-  else:
-    triple_map = {
-        'X8632': 'i686-none-nacl-gnu',
-        'X8664': 'x86_64-none-nacl-gnu',
-        'ARM': 'armv7a-none-nacl-gnueabihf',
-        'MIPS32': 'mipsel-none-nacl-gnu'}
-  env.set('TRIPLE', triple_map[base_arch])
+  triple_map = {
+      'nacl':
+          {'X8632': 'i686-none-nacl-gnu',
+           'X8664': 'x86_64-none-nacl-gnu',
+           'ARM': 'armv7a-none-nacl-gnueabihf',
+           'MIPS32': 'mipsel-none-nacl-gnu'},
+      'linux': {'X8632': 'i686-linux-gnu'},
+      'mac': {'X8632': 'i686-apple-darwin'}}
+  env.set('TRIPLE', triple_map[env.getone('TARGET_OS')][base_arch])
 
   # CPU that is representative of baseline feature requirements for NaCl
   # and/or chrome.  We may want to make this more like "-mtune"
@@ -246,10 +252,10 @@ def SetUpArch():
       'MIPS32': ['-sfi-load', '-sfi-store', '-sfi-stack',
                  '-sfi-branch', '-sfi-data']}
   env.set('LLC_FLAGS_ARCH', *llc_flags_map.get(base_arch, []))
-  # When linking against Linux glibc, don't use %gs:0 to read the
-  # thread pointer because that's not compatible with glibc's use of
-  # %gs.  Similarly, Non-SFI Mode currently offers no optimized path
-  # for reading the thread pointer.
+  # When linking against a host OS's libc (such as Linux glibc), don't
+  # use %gs:0 to read the thread pointer because that won't be
+  # compatible with the libc's use of %gs:0.  Similarly, Non-SFI Mode
+  # currently offers no optimized path for reading the thread pointer.
   if without_sfi:
     env.append('LLC_FLAGS_ARCH', '-mtls-use-call')
 
@@ -290,12 +296,16 @@ def main(argv):
   elif int(env.getone('SPLIT_MODULE')) < 1:
     Log.Fatal('Value given for -split-module must be > 0')
   if (env.getbool('ALLOW_LLVM_BITCODE_INPUT') or
-      env.getone('ARCH') == 'X8632_LINUX' or
+      env.getone('TARGET_OS') != 'nacl' or
       env.getbool('USE_EMULATOR')):
     # When llvm input is allowed, the pexe may not be ABI-stable, so do not
-    # split it. For now also do not support threading non-SFI baremetal mode.
-    # Non-ABI-stable pexes may have symbol naming and visibility issues that the
-    # current splitting scheme doesn't account for.
+    # split it.  Non-ABI-stable pexes may have symbol naming and visibility
+    # issues that the current splitting scheme doesn't account for.
+    #
+    # For now, also do not enable multi-threaded translation when TARGET_OS !=
+    # 'nacl', since in these cases we will be using the host toolchain's
+    # linker.
+    #
     # The x86->arm emulator is very flaky when threading is used, so don't
     # do module splitting when using it.
     env.set('SPLIT_MODULE', '1')
@@ -347,7 +357,7 @@ def main(argv):
       TempFiles.add(filename)
       env.append('INPUTS', filename)
 
-  if env.getone('ARCH') == 'X8632_LINUX':
+  if env.getone('TARGET_OS') != 'nacl':
     RunHostLD(ofile, output)
   else:
     RunLD(ofile, output)
@@ -382,13 +392,16 @@ def RunLD(infile, outfile):
   driver_tools.RunDriver('nativeld', args)
 
 def RunHostLD(infile, outfile):
-  driver_tools.Run(['objcopy', '--redefine-sym', '_start=_user_start', infile])
-  lib_dir = env.getone('BASE_LIB_NATIVE') + 'x86-32-linux'
-  driver_tools.Run(['gcc', '-m32', infile,
-                    os.path.join(lib_dir, 'unsandboxed_irt.o'),
-                    '-lpthread',
-                    '-lrt',  # For clock_gettime()
-                    '-o', outfile])
+  if env.getone('TARGET_OS') == 'linux':
+    driver_tools.Run(['objcopy', '--redefine-sym', '_start=_user_start',
+                      infile])
+  lib_dir = (env.getone('BASE_LIB_NATIVE')
+             + 'x86-32-%s' % env.getone('TARGET_OS'))
+  args = ['gcc', '-m32', infile, '-o', outfile,
+          os.path.join(lib_dir, 'unsandboxed_irt.o'), '-lpthread']
+  if env.getone('TARGET_OS') == 'linux':
+    args.append('-lrt')  # For clock_gettime()
+  driver_tools.Run(args)
 
 def RunLLC(infile, outfile, outfiletype):
   env.push()

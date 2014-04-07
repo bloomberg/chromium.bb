@@ -616,6 +616,13 @@ mode-buildbot-tc-x8632-mac() {
   tc-build-all toolchain/mac_x86 pnacl_newlib \
       ${PNACL_TOOLCHAIN_LABEL} ${is_try} false
   HOST_ARCH=x86_32 tc-tests-fast "x86-32"
+
+  echo "@@@BUILD_STEP test unsandboxed mode@@@"
+  # Test translation to an unsandboxed executable.
+  # TODO(mseaborn): Use the same test list as on Linux when the
+  # threading tests pass for Mac.
+  ./scons bitcode=1 pnacl_unsandboxed=1 \
+    --mode=nacl_irt_test platform=x86-32 -j8 run_hello_world_test_irt
 }
 
 mode-buildbot-tc-x8664-win() {
