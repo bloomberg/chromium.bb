@@ -400,7 +400,6 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       watchdog_(watchdog),
       software_(software),
       handle_messages_scheduled_(false),
-      processed_get_state_fast_(false),
       currently_processing_message_(NULL),
       weak_factory_(this),
       num_stubs_descheduled_(0) {
@@ -459,27 +458,11 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
              << " with type " << message.type();
   }
 
-  if (message.type() == GpuCommandBufferMsg_GetStateFast::ID) {
-    if (processed_get_state_fast_) {
-      // Require a non-GetStateFast message in between two GetStateFast
-      // messages, to ensure progress is made.
-      std::deque<IPC::Message*>::iterator point = deferred_messages_.begin();
-
-      while (point != deferred_messages_.end() &&
-             (*point)->type() == GpuCommandBufferMsg_GetStateFast::ID) {
-        ++point;
-      }
-
-      if (point != deferred_messages_.end()) {
-        ++point;
-      }
-
-      deferred_messages_.insert(point, new IPC::Message(message));
-    } else {
-      // Move GetStateFast commands to the head of the queue, so the renderer
-      // doesn't have to wait any longer than necessary.
-      deferred_messages_.push_front(new IPC::Message(message));
-    }
+  if (message.type() == GpuCommandBufferMsg_WaitForTokenInRange::ID ||
+      message.type() == GpuCommandBufferMsg_WaitForGetOffsetInRange::ID) {
+    // Move Wait commands to the head of the queue, so the renderer
+    // doesn't have to wait any longer than necessary.
+    deferred_messages_.push_front(new IPC::Message(message));
   } else {
     deferred_messages_.push_back(new IPC::Message(message));
   }
@@ -735,9 +718,6 @@ void GpuChannel::HandleMessage() {
     scoped_ptr<IPC::Message> message(m);
     deferred_messages_.pop_front();
     bool message_processed = true;
-
-    processed_get_state_fast_ =
-        (message->type() == GpuCommandBufferMsg_GetStateFast::ID);
 
     currently_processing_message_ = message.get();
     bool result;

@@ -46,6 +46,15 @@
 #endif
 
 namespace content {
+struct WaitForCommandState {
+  WaitForCommandState(int32 start, int32 end, IPC::Message* reply)
+      : start(start), end(end), reply(reply) {}
+
+  int32 start;
+  int32 end;
+  scoped_ptr<IPC::Message> reply;
+};
+
 namespace {
 
 // The GpuCommandBufferMemoryTracker class provides a bridge between the
@@ -181,9 +190,9 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   // messages directed at the command buffer. This ensures that the message
   // handler can assume that the context is current (not necessary for
   // Echo, RetireSyncPoint, or WaitSyncPoint).
-  if (decoder_.get() &&
-      message.type() != GpuCommandBufferMsg_Echo::ID &&
-      message.type() != GpuCommandBufferMsg_GetStateFast::ID &&
+  if (decoder_.get() && message.type() != GpuCommandBufferMsg_Echo::ID &&
+      message.type() != GpuCommandBufferMsg_WaitForTokenInRange::ID &&
+      message.type() != GpuCommandBufferMsg_WaitForGetOffsetInRange::ID &&
       message.type() != GpuCommandBufferMsg_RetireSyncPoint::ID &&
       message.type() != GpuCommandBufferMsg_SetLatencyInfo::ID) {
     if (!MakeCurrent())
@@ -202,8 +211,10 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnProduceFrontBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Echo, OnEcho);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetState, OnGetState);
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetStateFast,
-                                    OnGetStateFast);
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_WaitForTokenInRange,
+                                    OnWaitForTokenInRange);
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_WaitForGetOffsetInRange,
+                                    OnWaitForGetOffsetInRange);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncFlush, OnAsyncFlush);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetLatencyInfo, OnSetLatencyInfo);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Rescheduled, OnRescheduled);
@@ -236,6 +247,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnCreateStreamTexture)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
+  CheckCompleteWaits();
 
   // Ensure that any delayed work that was created will be handled.
   ScheduleDelayedWork(kHandleMoreWorkPeriodMs);
@@ -353,6 +366,14 @@ bool GpuCommandBufferStub::MakeCurrent() {
 }
 
 void GpuCommandBufferStub::Destroy() {
+  if (wait_for_token_) {
+    Send(wait_for_token_->reply.release());
+    wait_for_token_.reset();
+  }
+  if (wait_for_get_offset_) {
+    Send(wait_for_get_offset_->reply.release());
+    wait_for_get_offset_.reset();
+  }
   if (handle_.is_null() && !active_url_.is_empty()) {
     GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
     gpu_channel_manager->Send(new GpuHostMsg_DidDestroyOffscreenContext(
@@ -657,19 +678,65 @@ void GpuCommandBufferStub::OnParseError() {
   CheckContextLost();
 }
 
-void GpuCommandBufferStub::OnGetStateFast(IPC::Message* reply_message) {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnGetStateFast");
+void GpuCommandBufferStub::OnWaitForTokenInRange(int32 start,
+                                                 int32 end,
+                                                 IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnWaitForTokenInRange");
   DCHECK(command_buffer_.get());
   CheckContextLost();
-  gpu::CommandBuffer::State state = command_buffer_->GetState();
-  GpuCommandBufferMsg_GetStateFast::WriteReplyParams(reply_message, state);
-  Send(reply_message);
+  if (wait_for_token_)
+    LOG(ERROR) << "Got WaitForToken command while currently waiting for token.";
+  wait_for_token_ =
+      make_scoped_ptr(new WaitForCommandState(start, end, reply_message));
+  CheckCompleteWaits();
 }
 
-void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset,
-                                        uint32 flush_count) {
-  TRACE_EVENT1("gpu", "GpuCommandBufferStub::OnAsyncFlush",
-               "put_offset", put_offset);
+void GpuCommandBufferStub::OnWaitForGetOffsetInRange(
+    int32 start,
+    int32 end,
+    IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnWaitForGetOffsetInRange");
+  DCHECK(command_buffer_.get());
+  CheckContextLost();
+  if (wait_for_get_offset_) {
+    LOG(ERROR)
+        << "Got WaitForGetOffset command while currently waiting for offset.";
+  }
+  wait_for_get_offset_ =
+      make_scoped_ptr(new WaitForCommandState(start, end, reply_message));
+  CheckCompleteWaits();
+}
+
+void GpuCommandBufferStub::CheckCompleteWaits() {
+  if (wait_for_token_ || wait_for_get_offset_) {
+    gpu::CommandBuffer::State state = command_buffer_->GetState();
+    if (wait_for_token_ &&
+        (gpu::CommandBuffer::InRange(
+             wait_for_token_->start, wait_for_token_->end, state.token) ||
+         state.error != gpu::error::kNoError)) {
+      ReportState();
+      GpuCommandBufferMsg_WaitForTokenInRange::WriteReplyParams(
+          wait_for_token_->reply.get(), state);
+      Send(wait_for_token_->reply.release());
+      wait_for_token_.reset();
+    }
+    if (wait_for_get_offset_ &&
+        (gpu::CommandBuffer::InRange(wait_for_get_offset_->start,
+                                     wait_for_get_offset_->end,
+                                     state.get_offset) ||
+         state.error != gpu::error::kNoError)) {
+      ReportState();
+      GpuCommandBufferMsg_WaitForGetOffsetInRange::WriteReplyParams(
+          wait_for_get_offset_->reply.get(), state);
+      Send(wait_for_get_offset_->reply.release());
+      wait_for_get_offset_.reset();
+    }
+  }
+}
+
+void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset, uint32 flush_count) {
+  TRACE_EVENT1(
+      "gpu", "GpuCommandBufferStub::OnAsyncFlush", "put_offset", put_offset);
   DCHECK(command_buffer_.get());
   if (flush_count - last_flush_count_ < 0x8000000U) {
     last_flush_count_ = flush_count;
@@ -725,10 +792,7 @@ void GpuCommandBufferStub::OnCommandProcessed() {
     watchdog_->CheckArmed();
 }
 
-void GpuCommandBufferStub::ReportState() {
-  if (!CheckContextLost())
-    command_buffer_->UpdateState();
-}
+void GpuCommandBufferStub::ReportState() { command_buffer_->UpdateState(); }
 
 void GpuCommandBufferStub::PutChanged() {
   FastSetActiveURL(active_url_, active_url_hash_);
@@ -981,6 +1045,7 @@ bool GpuCommandBufferStub::CheckContextLost() {
       (gfx::GLContext::LosesAllContextsOnContextLost() ||
        use_virtualized_gl_context_))
     channel_->LoseAllContexts();
+  CheckCompleteWaits();
   return was_lost;
 }
 

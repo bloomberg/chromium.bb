@@ -46,6 +46,7 @@ class GpuChannel;
 class GpuVideoDecodeAccelerator;
 class GpuVideoEncodeAccelerator;
 class GpuWatchdog;
+struct WaitForCommandState;
 
 class GpuCommandBufferStub
     : public GpuMemoryManagerClient,
@@ -160,7 +161,12 @@ class GpuCommandBufferStub
   void OnSetGetBuffer(int32 shm_id, IPC::Message* reply_message);
   void OnProduceFrontBuffer(const gpu::Mailbox& mailbox);
   void OnGetState(IPC::Message* reply_message);
-  void OnGetStateFast(IPC::Message* reply_message);
+  void OnWaitForTokenInRange(int32 start,
+                             int32 end,
+                             IPC::Message* reply_message);
+  void OnWaitForGetOffsetInRange(int32 start,
+                                 int32 end,
+                                 IPC::Message* reply_message);
   void OnAsyncFlush(int32 put_offset, uint32 flush_count);
   void OnEcho(const IPC::Message& message);
   void OnRescheduled();
@@ -218,6 +224,7 @@ class GpuCommandBufferStub
   void ScheduleDelayedWork(int64 delay);
 
   bool CheckContextLost();
+  void CheckCompleteWaits();
 
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they
@@ -270,6 +277,8 @@ class GpuCommandBufferStub
   size_t active_url_hash_;
 
   size_t total_gpu_memory_;
+  scoped_ptr<WaitForCommandState> wait_for_token_;
+  scoped_ptr<WaitForCommandState> wait_for_get_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };

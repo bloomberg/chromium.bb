@@ -218,13 +218,15 @@ void CommandBufferProxyImpl::WaitForTokenInRange(int32 start, int32 end) {
                "end",
                end);
   TryUpdateState();
-  while (!InRange(start, end, last_state_.token) &&
-         last_state_.error == gpu::error::kNoError) {
+  if (!InRange(start, end, last_state_.token) &&
+      last_state_.error == gpu::error::kNoError) {
     gpu::CommandBuffer::State state;
-    if (Send(new GpuCommandBufferMsg_GetStateFast(route_id_, &state)))
+    if (Send(new GpuCommandBufferMsg_WaitForTokenInRange(
+            route_id_, start, end, &state)))
       OnUpdateState(state);
-    TryUpdateState();
   }
+  DCHECK(InRange(start, end, last_state_.token) ||
+         last_state_.error != gpu::error::kNoError);
 }
 
 void CommandBufferProxyImpl::WaitForGetOffsetInRange(int32 start, int32 end) {
@@ -235,13 +237,15 @@ void CommandBufferProxyImpl::WaitForGetOffsetInRange(int32 start, int32 end) {
                "end",
                end);
   TryUpdateState();
-  while (!InRange(start, end, last_state_.get_offset) &&
-         last_state_.error == gpu::error::kNoError) {
+  if (!InRange(start, end, last_state_.get_offset) &&
+      last_state_.error == gpu::error::kNoError) {
     gpu::CommandBuffer::State state;
-    if (Send(new GpuCommandBufferMsg_GetStateFast(route_id_, &state)))
+    if (Send(new GpuCommandBufferMsg_WaitForGetOffsetInRange(
+            route_id_, start, end, &state)))
       OnUpdateState(state);
-    TryUpdateState();
   }
+  DCHECK(InRange(start, end, last_state_.get_offset) ||
+         last_state_.error != gpu::error::kNoError);
 }
 
 void CommandBufferProxyImpl::SetGetBuffer(int32 shm_id) {

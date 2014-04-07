@@ -218,7 +218,6 @@ class GpuChannel : public IPC::Listener,
   GpuWatchdog* watchdog_;
   bool software_;
   bool handle_messages_scheduled_;
-  bool processed_get_state_fast_;
   IPC::Message* currently_processing_message_;
 
   base::WeakPtrFactory<GpuChannel> weak_factory_;

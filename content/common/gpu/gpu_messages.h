@@ -524,8 +524,16 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ProduceFrontBuffer,
 IPC_SYNC_MESSAGE_ROUTED0_1(GpuCommandBufferMsg_GetState,
                            gpu::CommandBuffer::State /* state */)
 
-// Get the current state of the command buffer, as fast as possible.
-IPC_SYNC_MESSAGE_ROUTED0_1(GpuCommandBufferMsg_GetStateFast,
+// Wait until the token is in a specific range, inclusive.
+IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_WaitForTokenInRange,
+                           int32 /* start */,
+                           int32 /* end */,
+                           gpu::CommandBuffer::State /* state */)
+
+// Wait until the get offset is in a specific range, inclusive.
+IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_WaitForGetOffsetInRange,
+                           int32 /* start */,
+                           int32 /* end */,
                            gpu::CommandBuffer::State /* state */)
 
 // Asynchronously synchronize the put and get offsets of both processes.
