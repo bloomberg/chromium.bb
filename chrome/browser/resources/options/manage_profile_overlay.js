@@ -680,6 +680,7 @@ cr.define('options', function() {
       $('create-profile-name').disabled = inProgress;
       $('create-shortcut').disabled = inProgress;
       $('create-profile-ok').disabled = inProgress;
+      $('import-existing-managed-user-link').disabled = inProgress;
 
       $('create-profile-throbber').hidden = !inProgress;
     },
@@ -791,7 +792,7 @@ cr.define('options', function() {
 
       var importManagedUserElement = $('import-existing-managed-user-link');
       importManagedUserElement.hidden = false;
-      importManagedUserElement.disabled = !enable;
+      importManagedUserElement.disabled = !enable || this.createInProgress_;
       importManagedUserElement.textContent = enable ?
           loadTimeData.getString('importExistingManagedUserLink') :
           loadTimeData.getString('signInToImportManagedUsers');
