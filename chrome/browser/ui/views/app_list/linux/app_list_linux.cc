@@ -95,10 +95,6 @@ void AppListLinux::Prerender() {
   view_->Prerender();
 }
 
-void AppListLinux::ReactivateOnNextFocusLoss() {
-  // This is only used on Windows 8, so we ignore it on Linux.
-}
-
 gfx::NativeWindow AppListLinux::GetWindow() {
   return view_->GetWidget()->GetNativeWindow();
 }

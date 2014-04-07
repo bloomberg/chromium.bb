@@ -42,9 +42,6 @@ class FakeAppList : public AppList {
     prerendered_ = true;
   }
 
-  virtual void ReactivateOnNextFocusLoss() OVERRIDE {
-  }
-
   virtual gfx::NativeWindow GetWindow() OVERRIDE {
     return NULL;
   }

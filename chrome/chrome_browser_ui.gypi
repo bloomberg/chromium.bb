@@ -251,8 +251,6 @@
         'browser/ui/app_modal_dialogs/javascript_dialog_manager.h',
         'browser/ui/app_modal_dialogs/native_app_modal_dialog.h',
         'browser/ui/apps/app_info_dialog.h',
-        'browser/ui/apps/app_metro_infobar_delegate_win.cc',
-        'browser/ui/apps/app_metro_infobar_delegate_win.h',
         'browser/ui/apps/apps_metro_handler_win.cc',
         'browser/ui/apps/apps_metro_handler_win.h',
         'browser/ui/apps/chrome_app_window_delegate.cc',

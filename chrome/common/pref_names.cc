@@ -2511,10 +2511,6 @@ const char kRLZDisabled[] = "rlz.disabled";
 // app launcher.
 const char kAppListProfile[] = "app_list.profile";
 
-// Whether to show the app list on a browser relaunch. Used when switching out
-// of metro mode after a user gesture requests showing the app list.
-const char kRestartWithAppList[] = "app_list.show_on_relaunch";
-
 // The number of times the app launcher was launched since last ping and
 // the time of the last ping.
 const char kAppListLaunchCount[] = "app_list.launch_count";

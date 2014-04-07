@@ -41,7 +41,6 @@ class AppListWin : public AppList {
   virtual void MoveNearCursor() OVERRIDE;
   virtual bool IsVisible() OVERRIDE;
   virtual void Prerender() OVERRIDE;
-  virtual void ReactivateOnNextFocusLoss() OVERRIDE;
   virtual gfx::NativeWindow GetWindow() OVERRIDE;
   virtual void SetProfile(Profile* profile) OVERRIDE;
 

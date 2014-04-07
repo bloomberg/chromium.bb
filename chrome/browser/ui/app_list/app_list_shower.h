@@ -31,7 +31,6 @@ class AppListShower {
     can_close_app_list_ = can_close;
   }
 
-  void ShowAndReacquireFocus(Profile* requested_profile);
   void ShowForProfile(Profile* requested_profile);
   gfx::NativeWindow GetWindow();
 

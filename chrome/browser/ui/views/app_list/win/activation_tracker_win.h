@@ -21,10 +21,6 @@ class ActivationTrackerWin : public app_list::AppListViewObserver {
                        const base::Closure& on_should_dismiss);
   ~ActivationTrackerWin();
 
-  void ReactivateOnNextFocusLoss() {
-    reactivate_on_next_focus_loss_ = true;
-  }
-
   // app_list::AppListViewObserver:
   virtual void OnActivationChanged(views::Widget* widget, bool active) OVERRIDE;
 
@@ -32,9 +28,7 @@ class ActivationTrackerWin : public app_list::AppListViewObserver {
 
  private:
   // Dismisses the app launcher if it has lost focus and the user is not trying
-  // to pin it. If it is time to dismiss the app launcher, but
-  // ReactivateOnNextFocusLoss has been called, reactivates the app launcher
-  // instead of dismissing it.
+  // to pin it.
   void MaybeDismissAppList();
 
   // Determines whether the app launcher should be dismissed. This should be
@@ -48,11 +42,6 @@ class ActivationTrackerWin : public app_list::AppListViewObserver {
 
   // Called to request |view_| be closed.
   base::Closure on_should_dismiss_;
-
-  // True if we are anticipating that the app list will lose focus, and we want
-  // to take it back. This is used when switching out of Metro mode, and the
-  // browser regains focus after showing the app list.
-  bool reactivate_on_next_focus_loss_;
 
   // Records whether, on the previous timer tick, the taskbar had focus without
   // the right mouse button being down. We allow the taskbar to have focus for

@@ -19,7 +19,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/extension_system.h"
-#include "win8/util/win8_util.h"
 
 using extensions::Extension;
 using extensions::ExtensionSystem;
@@ -69,13 +68,6 @@ void HandleAppLaunchForMetroRestart(Profile* profile) {
     return;
 
   prefs->ClearPref(prefs::kAppLaunchForMetroRestart);
-
-  if (win8::IsSingleWindowMetroMode()) {
-    // In this case we have relaunched with the correct profile, but we are not
-    // in Desktop mode, so can not launch apps. Leave the preferences cleared so
-    // there are no surprises later.
-    return;
-  }
 
   const int kRestartAppLaunchDelayMs = 1000;
   base::MessageLoop::current()->PostDelayedTask(

@@ -872,8 +872,6 @@ extern const char kRLZDisabled[];
 
 #if defined(ENABLE_APP_LIST)
 extern const char kAppListProfile[];
-extern const char kRestartWithAppList[];
-
 extern const char kLastAppListLaunchPing[];
 extern const char kAppListLaunchCount[];
 extern const char kLastAppListAppLaunchPing[];

@@ -22,11 +22,6 @@ std::vector<BrowserContext*> ShellAppsClient::GetLoadedBrowserContexts() {
   return browser_contexts;
 }
 
-bool ShellAppsClient::CheckAppLaunch(BrowserContext* context,
-                                     const extensions::Extension* extension) {
-  return true;
-}
-
 AppWindow* ShellAppsClient::CreateAppWindow(
     BrowserContext* context,
     const extensions::Extension* extension) {

@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/app_list/app_list_shower.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/app_list/keep_alive_service_impl.h"
-#include "chrome/browser/ui/apps/app_metro_infobar_delegate_win.h"
 #include "chrome/browser/ui/views/app_list/win/activation_tracker_win.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_win.h"
@@ -65,7 +64,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/widget/widget.h"
-#include "win8/util/win8_util.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
@@ -369,15 +367,6 @@ void AppListServiceWin::ShowForProfile(Profile* requested_profile) {
   content::BrowserThread::PostBlockingPoolTask(
       FROM_HERE, base::Bind(SetDidRunForNDayActiveStats));
 
-  if (win8::IsSingleWindowMetroMode()) {
-    // This request came from Windows 8 in desktop mode, but chrome is currently
-    // running in Metro mode.
-    AppMetroInfoBarDelegateWin::Create(
-        requested_profile, AppMetroInfoBarDelegateWin::SHOW_APP_LIST,
-        std::string());
-    return;
-  }
-
   InvalidatePendingProfileLoads();
   SetProfilePath(requested_profile->GetPath());
   shower_->ShowForProfile(requested_profile);
@@ -418,24 +407,10 @@ void AppListServiceWin::HandleFirstRun() {
 }
 
 void AppListServiceWin::Init(Profile* initial_profile) {
-  // In non-Ash metro mode, we can not show the app list for this process, so do
-  // not bother performing Init tasks.
-  if (win8::IsSingleWindowMetroMode())
-    return;
-
   if (enable_app_list_on_next_init_) {
     enable_app_list_on_next_init_ = false;
     EnableAppList(initial_profile, ENABLE_ON_REINSTALL);
     CreateShortcut();
-  }
-
-  PrefService* prefs = g_browser_process->local_state();
-  if (prefs->HasPrefPath(prefs::kRestartWithAppList) &&
-      prefs->GetBoolean(prefs::kRestartWithAppList)) {
-    prefs->SetBoolean(prefs::kRestartWithAppList, false);
-    // If we are restarting in Metro mode we will lose focus straight away. We
-    // need to reacquire focus when that happens.
-    shower_->ShowAndReacquireFocus(initial_profile);
   }
 
   // Migrate from legacy app launcher if we are on a non-canary and non-chromium

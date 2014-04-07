@@ -19,7 +19,6 @@ class AppList {
   virtual void MoveNearCursor() = 0;
   virtual bool IsVisible() = 0;
   virtual void Prerender() = 0;
-  virtual void ReactivateOnNextFocusLoss() = 0;
   virtual gfx::NativeWindow GetWindow() = 0;
   virtual void SetProfile(Profile* profile) = 0;
 };

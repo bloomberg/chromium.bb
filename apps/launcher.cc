@@ -4,7 +4,6 @@
 
 #include "apps/launcher.h"
 
-#include "apps/apps_client.h"
 #include "apps/browser/api/app_runtime/app_runtime_api.h"
 #include "apps/browser/file_handler_util.h"
 #include "apps/common/api/app_runtime.h"
@@ -39,10 +38,6 @@
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#endif
-
-#if defined(OS_WIN)
-#include "win8/util/win8_util.h"
 #endif
 
 namespace app_runtime = apps::api::app_runtime;
@@ -315,9 +310,6 @@ void LaunchPlatformAppWithCommandLine(Profile* profile,
                                       const Extension* extension,
                                       const CommandLine& command_line,
                                       const base::FilePath& current_directory) {
-  if (!AppsClient::Get()->CheckAppLaunch(profile, extension))
-    return;
-
   // An app with "kiosk_only" should not be installed and launched
   // outside of ChromeOS kiosk mode in the first place. This is a defensive
   // check in case this scenario does occur.
@@ -373,12 +365,6 @@ void LaunchPlatformAppWithFileHandler(Profile* profile,
 }
 
 void RestartPlatformApp(Profile* profile, const Extension* extension) {
-#if defined(OS_WIN)
-  // On Windows 8's single window Metro mode we can not launch platform apps.
-  // In restart we are just making sure launch doesn't slip through.
-  if (win8::IsSingleWindowMetroMode())
-    return;
-#endif
   EventRouter* event_router = EventRouter::Get(profile);
   bool listening_to_restart = event_router->
       ExtensionHasEventListener(extension->id(),

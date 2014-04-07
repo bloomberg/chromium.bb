@@ -26,8 +26,6 @@ class ShellAppsClient : public AppsClient {
   // apps::AppsClient implementation:
   virtual std::vector<content::BrowserContext*> GetLoadedBrowserContexts()
       OVERRIDE;
-  virtual bool CheckAppLaunch(content::BrowserContext* context,
-                              const extensions::Extension* extension) OVERRIDE;
   virtual AppWindow* CreateAppWindow(content::BrowserContext* context,
                                      const extensions::Extension* extension)
       OVERRIDE;

@@ -19,11 +19,6 @@ AppListShower::AppListShower(scoped_ptr<AppListFactory> factory,
 AppListShower::~AppListShower() {
 }
 
-void AppListShower::ShowAndReacquireFocus(Profile* requested_profile) {
-  ShowForProfile(requested_profile);
-  app_list_->ReactivateOnNextFocusLoss();
-}
-
 void AppListShower::ShowForProfile(Profile* requested_profile) {
   // If the app list is already displaying |profile| just activate it (in case
   // we have lost focus).

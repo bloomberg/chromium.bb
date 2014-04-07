@@ -21,7 +21,6 @@ ActivationTrackerWin::ActivationTrackerWin(
     const base::Closure& on_should_dismiss)
     : view_(view),
       on_should_dismiss_(on_should_dismiss),
-      reactivate_on_next_focus_loss_(false),
       taskbar_has_focus_(false) {
   view_->AddObserver(this);
 }
@@ -51,13 +50,6 @@ void ActivationTrackerWin::OnViewHidden() {
 void ActivationTrackerWin::MaybeDismissAppList() {
   if (!ShouldDismissAppList())
     return;
-
-  if (reactivate_on_next_focus_loss_) {
-    // Instead of dismissing the app launcher, re-activate it.
-    reactivate_on_next_focus_loss_ = false;
-    view_->GetWidget()->Activate();
-    return;
-  }
 
   on_should_dismiss_.Run();
 }
