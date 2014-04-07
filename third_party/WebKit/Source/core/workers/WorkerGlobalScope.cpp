@@ -223,6 +223,10 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
             exceptionState.throwDOMException(SyntaxError, "The URL '" + *it + "' is invalid.");
             return;
         }
+        if (!contentSecurityPolicy()->allowScriptFromSource(url)) {
+            exceptionState.throwDOMException(NetworkError, "The script at '" + url.elidedString() + "' failed to load.");
+            return;
+        }
         completedURLs.append(url);
     }
     Vector<KURL>::const_iterator end = completedURLs.end();
