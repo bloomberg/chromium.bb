@@ -150,7 +150,7 @@ deps = {
     'src/tools/deps2git':
         Var('git_url') + '/chromium/tools/deps2git.git@5d3006d5bf9a3982b8549f8a7bd25ac40e038be0',
     'src/tools/grit':
-        Var('git_url') + '/external/grit-i18n.git@bf1b697651f655172662c9defd04e323089477d2',
+        Var('git_url') + '/external/grit-i18n.git@6fb6d62a2a05b7a7c268cc4e6bf0452e376e1990',
     'src/tools/gyp':
         Var('git_url') + '/external/gyp.git@dde28829b59815fc4fbbb76ff1a7054e2c3db85f',
     'src/tools/page_cycler/acid3':
