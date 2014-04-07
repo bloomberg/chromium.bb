@@ -505,7 +505,7 @@ cr.define('options', function() {
 
     /**
      * Builds a list of sub-pages (and overlay pages) to search.  Ignore pages
-     * that have no associated controls.
+     * that have no associated controls, or whose controls are hidden.
      * @return {Array} An array of pages to search.
      * @private
      */
@@ -513,13 +513,19 @@ cr.define('options', function() {
       var name, pageInfo, page, pages = [];
       for (name in OptionsPage.registeredPages) {
         page = OptionsPage.registeredPages[name];
-        if (page.parentPage && page.associatedSection)
+        if (page.parentPage &&
+            page.associatedSection &&
+            !page.associatedSection.hidden) {
           pages.push(page);
+        }
       }
       for (name in OptionsPage.registeredOverlayPages) {
         page = OptionsPage.registeredOverlayPages[name];
-        if (page.associatedSection && page.pageDiv != undefined)
+        if (page.associatedSection &&
+            !page.associatedSection.hidden &&
+            page.pageDiv != undefined) {
           pages.push(page);
+        }
       }
       return pages;
     },
