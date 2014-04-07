@@ -2774,10 +2774,8 @@ class VMTestStage(BoardSpecificBuilderStage, ArchivingStageMixin):
         archived_results_dir, self._build_root)
     upload_paths.append(test_tarball)
 
-    got_symbols = False
-    if self._run.options.archive:
-      got_symbols = self.GetParallel('breakpad_symbols_generated',
-                                     pretty_name='breakpad symbols')
+    got_symbols = self.GetParallel('breakpad_symbols_generated',
+                                   pretty_name='breakpad symbols')
     upload_paths += commands.GenerateStackTraces(
         self._build_root, self._current_board, test_results_dir,
         self.archive_path, got_symbols)
@@ -2914,8 +2912,7 @@ class UploadTestArtifactsStage(BoardSpecificBuilderStage, ArchivingStageMixin):
     """Upload any needed HWTest artifacts."""
     steps = []
     if (self._run.ShouldBuildAutotest() and
-        (self._run.config.upload_hw_test_artifacts or
-         self._run.config.archive_build_debug)):
+        self._run.config.upload_hw_test_artifacts):
       steps.append(self.BuildAutotestTarballs)
 
     if self._run.config.upload_hw_test_artifacts:
@@ -3490,6 +3487,7 @@ class ArchiveStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   """
 
   option_name = 'archive'
+  config_name = 'archive'
 
   # This stage is intended to run in the background, in parallel with tests.
   def __init__(self, builder_run, board, chrome_version=None, **kwargs):
@@ -3762,8 +3760,8 @@ class ArchiveStage(BoardSpecificBuilderStage, ArchivingStageMixin):
       # TODO(petermayo): This logic needs to be exported from the BuildTargets
       # stage rather than copied/re-evaluated here.
       # TODO(mtennant): Make this autotest_built concept into a run param.
-      autotest_built = config['build_tests'] and self._run.options.tests and (
-          config['upload_hw_test_artifacts'] or config['archive_build_debug'])
+      autotest_built = (config['build_tests'] and self._run.options.tests and
+                        config['upload_hw_test_artifacts'])
 
       if config['hwqual'] and autotest_built:
         # Build the full autotest tarball for hwqual image. We don't upload it,
@@ -3873,6 +3871,8 @@ class ArchiveStage(BoardSpecificBuilderStage, ArchivingStageMixin):
 class CPEExportStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   """Handles generation & upload of package CPE information."""
 
+  config_name = 'cpe_export'
+
   def PerformStage(self):
     """Generate debug symbols and upload debug.tgz."""
     buildroot = self._build_root
@@ -3898,6 +3898,8 @@ class CPEExportStage(BoardSpecificBuilderStage, ArchivingStageMixin):
 
 class DebugSymbolsStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   """Handles generation & upload of debug symbols."""
+
+  config_name = 'debug_symbols'
 
   def PerformStage(self):
     """Generate debug symbols and upload debug.tgz."""
@@ -3940,11 +3942,19 @@ class DebugSymbolsStage(BoardSpecificBuilderStage, ArchivingStageMixin):
     if os.path.exists(failed_list):
       self.UploadArtifact(os.path.basename(failed_list), archive=False)
 
-  def _HandleStageException(self, exc_info):
-    """Tell other stages to not wait on us if we die for some reason."""
+  def _SymbolsNotGenerated(self):
+    """Tell other stages that our symbols were not generated."""
     self.board_runattrs.SetParallelDefault('breakpad_symbols_generated', False)
     self.board_runattrs.SetParallelDefault('debug_tarball_generated', False)
 
+  def HandleSkip(self):
+    """Tell other stages to not wait on us if we are skipped."""
+    self._SymbolsNotGenerated()
+    return super(DebugSymbolsStage, self).HandleSkip()
+
+  def _HandleStageException(self, exc_info):
+    """Tell other stages to not wait on us if we die for some reason."""
+    self._SymbolsNotGenerated()
     return super(DebugSymbolsStage, self)._HandleStageException(exc_info)
 
 

@@ -458,8 +458,6 @@ _settings = dict(
 # arm -- Whether the board we are building is arm-based.
   arm=False,
 
-  archive_build_debug=False,
-
 # images -- List of images we want to build -- see build_image for more details.
   images=['test'],
 
@@ -492,6 +490,22 @@ _settings = dict(
 #                           and schedule auto-tests for them.
 # If you disable this, you are BEING NAUGHTY!
   perform_paygen_testing=True,
+
+# cpe_export -- Run a stage that generates and uploads package CPE information.
+  cpe_export=True,
+
+# debug_symbols -- Run a stage that generates and uploads debug symbols.
+  debug_symbols=True,
+
+# archive_build_debug -- Include *.debug files for debugging core files with
+#                        gdb in debug.tgz. These are very large. This option
+#                        only has an effect if debug_symbols and archive are
+#                        set.
+  archive_build_debug=False,
+
+# archive -- Run a stage that archives build and test artifacts for developer
+#            consumption.
+  archive=True,
 
 # manifest_repo_url -- git repository URL for our manifests.
 #  External: https://chromium.googlesource.com/chromiumos/manifest
