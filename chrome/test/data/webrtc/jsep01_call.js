@@ -228,12 +228,6 @@ function addStreamCallback_(event) {
   debug('Receiving remote stream...');
   var videoTag = document.getElementById('remote-view');
   attachMediaStream(videoTag, event.stream);
-
-  // Due to crbug.com/110938 the size is 0 when onloadedmetadata fires.
-  // videoTag.onloadedmetadata = displayVideoSize_(videoTag);
-  // Use setTimeout as a workaround for now.
-  // Displays the remote video size for both the video element and the stream.
-  setTimeout(function() {displayVideoSize_(videoTag);}, 500);
 }
 
 /** @private */
