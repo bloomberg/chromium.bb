@@ -143,7 +143,7 @@ void PrefHashFilter::Initialize(const PrefStore& pref_store) {
 
 // Validates loaded preference values according to stored hashes, reports
 // validation results via UMA, and updates hashes in case of mismatch.
-void PrefHashFilter::FilterOnLoad(base::DictionaryValue* pref_store_contents) {
+bool PrefHashFilter::FilterOnLoad(base::DictionaryValue* pref_store_contents) {
   DCHECK(pref_store_contents);
   base::TimeTicks checkpoint = base::TimeTicks::Now();
 
@@ -171,6 +171,8 @@ void PrefHashFilter::FilterOnLoad(base::DictionaryValue* pref_store_contents) {
   // significantly affect startup.
   UMA_HISTOGRAM_TIMES("Settings.FilterOnLoadTime",
                       base::TimeTicks::Now() - checkpoint);
+
+  return did_reset;
 }
 
 // Marks |path| has having changed if it is part of |tracked_paths_|. A new hash

@@ -349,7 +349,7 @@ class PrefHashFilterTest
 };
 
 TEST_P(PrefHashFilterTest, EmptyAndUnchanged) {
-  pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
+  ASSERT_FALSE(pref_hash_filter_->FilterOnLoad(&pref_store_contents_));
   // All paths checked.
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
@@ -489,7 +489,7 @@ TEST_P(PrefHashFilterTest, EmptyAndUnknown) {
       kAtomicPref, PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE);
   mock_pref_hash_store_->SetCheckResult(
       kSplitPref, PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE);
-  pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
+  ASSERT_FALSE(pref_hash_filter_->FilterOnLoad(&pref_store_contents_));
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(2u, mock_pref_hash_store_->stored_paths_count());
@@ -526,7 +526,9 @@ TEST_P(PrefHashFilterTest, InitialValueUnknown) {
       kAtomicPref, PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE);
   mock_pref_hash_store_->SetCheckResult(
       kSplitPref, PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE);
-  pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
+  // If we are enforcing, expect this to report changes.
+  ASSERT_EQ(GetParam() >= PrefHashFilter::ENFORCE_ON_LOAD,
+            pref_hash_filter_->FilterOnLoad(&pref_store_contents_));
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(2u, mock_pref_hash_store_->stored_paths_count());
@@ -585,7 +587,7 @@ TEST_P(PrefHashFilterTest, InitialValueTrustedUnknown) {
       kAtomicPref, PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE);
   mock_pref_hash_store_->SetCheckResult(
       kSplitPref, PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE);
-  pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
+  ASSERT_FALSE(pref_hash_filter_->FilterOnLoad(&pref_store_contents_));
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(2u, mock_pref_hash_store_->stored_paths_count());
@@ -637,7 +639,8 @@ TEST_P(PrefHashFilterTest, InitialValueChanged) {
   mock_invalid_keys.push_back("c");
   mock_pref_hash_store_->SetInvalidKeysResult(kSplitPref, mock_invalid_keys);
 
-  pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
+  ASSERT_EQ(GetParam() >= PrefHashFilter::ENFORCE_ON_LOAD,
+            pref_hash_filter_->FilterOnLoad(&pref_store_contents_));
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(2u, mock_pref_hash_store_->stored_paths_count());
@@ -699,7 +702,7 @@ TEST_P(PrefHashFilterTest, EmptyCleared) {
                                         PrefHashStoreTransaction::CLEARED);
   mock_pref_hash_store_->SetCheckResult(kSplitPref,
                                         PrefHashStoreTransaction::CLEARED);
-  pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
+  ASSERT_FALSE(pref_hash_filter_->FilterOnLoad(&pref_store_contents_));
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(2u, mock_pref_hash_store_->stored_paths_count());
@@ -735,7 +738,9 @@ TEST_P(PrefHashFilterTest, InitialValueMigrated) {
 
   mock_pref_hash_store_->SetCheckResult(kAtomicPref,
                                         PrefHashStoreTransaction::WEAK_LEGACY);
-  pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
+
+  ASSERT_EQ(GetParam() >= PrefHashFilter::ENFORCE_ON_LOAD,
+            pref_hash_filter_->FilterOnLoad(&pref_store_contents_));
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(1u, mock_pref_hash_store_->stored_paths_count());
@@ -782,7 +787,7 @@ TEST_P(PrefHashFilterTest, InitialValueUnchangedLegacyId) {
       kAtomicPref, PrefHashStoreTransaction::SECURE_LEGACY);
   mock_pref_hash_store_->SetCheckResult(
       kSplitPref, PrefHashStoreTransaction::SECURE_LEGACY);
-  pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
+  ASSERT_FALSE(pref_hash_filter_->FilterOnLoad(&pref_store_contents_));
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
@@ -840,7 +845,9 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
                                         PrefHashStoreTransaction::CHANGED);
   mock_pref_hash_store_->SetCheckResult(kReportOnlySplitPref,
                                         PrefHashStoreTransaction::CHANGED);
-  pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
+
+  ASSERT_EQ(GetParam() >= PrefHashFilter::ENFORCE_ON_LOAD,
+            pref_hash_filter_->FilterOnLoad(&pref_store_contents_));
   // All prefs should be checked and a new hash should be stored for each tested
   // pref.
   ASSERT_EQ(arraysize(kTestTrackedPrefs),

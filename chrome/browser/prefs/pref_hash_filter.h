@@ -94,7 +94,7 @@ class PrefHashFilter : public PrefFilter {
                      PersistentPrefStore* destination);
 
   // PrefFilter implementation.
-  virtual void FilterOnLoad(base::DictionaryValue* pref_store_contents)
+  virtual bool FilterOnLoad(base::DictionaryValue* pref_store_contents)
       OVERRIDE;
   virtual void FilterUpdate(const std::string& path) OVERRIDE;
   virtual void FilterSerializeData(

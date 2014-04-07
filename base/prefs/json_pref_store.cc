@@ -314,8 +314,8 @@ void JsonPrefStore::OnFileRead(base::Value* value_owned,
       NOTREACHED() << "Unknown error: " << error;
   }
 
-  if (pref_filter_)
-    pref_filter_->FilterOnLoad(prefs_.get());
+  if (pref_filter_ && pref_filter_->FilterOnLoad(prefs_.get()))
+    writer_.ScheduleWrite(this);
 
   if (error_delegate_.get() && error != PREF_READ_ERROR_NONE)
     error_delegate_->OnError(error);

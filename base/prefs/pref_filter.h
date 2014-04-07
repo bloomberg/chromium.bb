@@ -24,7 +24,9 @@ class BASE_PREFS_EXPORT PrefFilter {
   // Observers are notified.
   // Changes made by a PrefFilter during FilterOnLoad do not result in
   // notifications to |PrefStore::Observer|s.
-  virtual void FilterOnLoad(base::DictionaryValue* pref_store_contents) = 0;
+  // Implementations should return true if they modify the dictionary, to allow
+  // the changes to be persisted.
+  virtual bool FilterOnLoad(base::DictionaryValue* pref_store_contents) = 0;
 
   // Receives notification when a pref store value is changed, before Observers
   // are notified.
