@@ -1279,7 +1279,6 @@
         'browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc',
         'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
         'browser/printing/print_preview_dialog_controller_browsertest.cc',
-        'browser/printing/printing_layout_browsertest.cc',
         'browser/process_singleton_browsertest.cc',
         'browser/profiles/profile_browsertest.cc',
         'browser/profiles/profile_list_desktop_browsertest.cc',
@@ -1822,8 +1821,6 @@
             'app/chrome_dll.rc',
             'app/chrome_dll_resource.h',
             'app/chrome_version.rc.version',
-            # TODO(port): http://crbug.com/45770
-            'browser/printing/printing_layout_browsertest.cc',
           ],
         }],
         ['toolkit_uses_gtk == 1', {
@@ -1954,7 +1951,6 @@
           'sources/': [
             ['exclude', '^browser/extensions/api/cloud_print_private/cloud_print_private_apitest.cc'],
             ['exclude', '^browser/printing/cloud_print/test/.*'],
-            ['exclude', '^browser/printing/printing_layout_browsertest.cc'],
             ['exclude', '^browser/printing/print_preview_dialog_controller_browsertest.cc'],
             ['exclude', '^browser/ui/webui/print_preview/print_preview_ui_browsertest.cc'],
             ['exclude', '^renderer/printing/print_web_view_helper_browsertest.cc'],
