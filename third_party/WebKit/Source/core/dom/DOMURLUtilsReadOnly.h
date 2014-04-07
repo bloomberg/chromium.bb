@@ -39,37 +39,37 @@ public:
     virtual String input() const = 0;
     virtual ~DOMURLUtilsReadOnly() { };
 
-    static String href(DOMURLUtilsReadOnly&);
+    String href();
 
     static String origin(const KURL&);
-    static String origin(DOMURLUtilsReadOnly& impl) { return origin(impl.url()); }
+    String origin() { return origin(url()); }
 
     static String protocol(const KURL& url) { return url.protocol() + ":"; }
-    static String protocol(DOMURLUtilsReadOnly& impl) { return protocol(impl.url()); }
+    String protocol() { return protocol(url()); }
 
     static String username(const KURL& url) { return url.user(); }
-    static String username(DOMURLUtilsReadOnly& impl) { return username(impl.url()); }
+    String username() { return username(url()); }
 
     static String password(const KURL& url) { return url.pass(); }
-    static String password(DOMURLUtilsReadOnly& impl) { return password(impl.url()); }
+    String password() { return password(url()); }
 
     static String host(const KURL&);
-    static String host(DOMURLUtilsReadOnly& impl) { return host(impl.url()); }
+    String host() { return host(url()); }
 
     static String hostname(const KURL& url) { return url.host(); }
-    static String hostname(DOMURLUtilsReadOnly& impl) { return hostname(impl.url()); }
+    String hostname() { return hostname(url()); }
 
     static String port(const KURL&);
-    static String port(DOMURLUtilsReadOnly& impl) { return port(impl.url()); }
+    String port() { return port(url()); }
 
     static String pathname(const KURL& url) { return url.path(); }
-    static String pathname(DOMURLUtilsReadOnly& impl) { return pathname(impl.url()); }
+    String pathname() { return pathname(url()); }
 
     static String search(const KURL&);
-    static String search(DOMURLUtilsReadOnly& impl) { return search(impl.url()); }
+    String search() { return search(url()); }
 
     static String hash(const KURL&);
-    static String hash(DOMURLUtilsReadOnly& impl) { return hash(impl.url()); }
+    String hash() { return hash(url()); }
 };
 
 } // namespace WebCore

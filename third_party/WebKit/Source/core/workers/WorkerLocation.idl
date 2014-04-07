@@ -26,10 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/workers/#workerlocation
 [
     GlobalContext=WorkerGlobalScope,
-    WillBeGarbageCollected
+    WillBeGarbageCollected,
 ] interface WorkerLocation {
 };
 
+// https://developer.mozilla.org/en-US/docs/Web/API/WorkerLocation
 WorkerLocation implements URLUtilsReadOnly;

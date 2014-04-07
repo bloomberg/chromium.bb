@@ -32,47 +32,47 @@
 
 namespace WebCore {
 
-String DOMURLUtilsReadOnly::href(DOMURLUtilsReadOnly& impl)
+String DOMURLUtilsReadOnly::href()
 {
-    const KURL& url = impl.url();
-    if (url.isNull())
-        return impl.input();
-    return url.string();
+    const KURL& kurl = url();
+    if (kurl.isNull())
+        return input();
+    return kurl.string();
 }
 
-String DOMURLUtilsReadOnly::origin(const KURL& url)
+String DOMURLUtilsReadOnly::origin(const KURL& kurl)
 {
-    if (url.isNull())
+    if (kurl.isNull())
         return "";
-    return SecurityOrigin::create(url)->toString();
+    return SecurityOrigin::create(kurl)->toString();
 }
 
-String DOMURLUtilsReadOnly::host(const KURL& url)
+String DOMURLUtilsReadOnly::host(const KURL& kurl)
 {
-    if (url.hostEnd() == url.pathStart())
-        return url.host();
-    if (isDefaultPortForProtocol(url.port(), url.protocol()))
-        return url.host();
-    return url.host() + ":" + String::number(url.port());
+    if (kurl.hostEnd() == kurl.pathStart())
+        return kurl.host();
+    if (isDefaultPortForProtocol(kurl.port(), kurl.protocol()))
+        return kurl.host();
+    return kurl.host() + ":" + String::number(kurl.port());
 }
 
-String DOMURLUtilsReadOnly::port(const KURL& url)
+String DOMURLUtilsReadOnly::port(const KURL& kurl)
 {
-    if (url.hasPort())
-        return String::number(url.port());
+    if (kurl.hasPort())
+        return String::number(kurl.port());
 
     return emptyString();
 }
 
-String DOMURLUtilsReadOnly::search(const KURL& url)
+String DOMURLUtilsReadOnly::search(const KURL& kurl)
 {
-    String query = url.query();
+    String query = kurl.query();
     return query.isEmpty() ? emptyString() : "?" + query;
 }
 
-String DOMURLUtilsReadOnly::hash(const KURL& url)
+String DOMURLUtilsReadOnly::hash(const KURL& kurl)
 {
-    String fragmentIdentifier = url.fragmentIdentifier();
+    String fragmentIdentifier = kurl.fragmentIdentifier();
     if (fragmentIdentifier.isEmpty())
         return emptyString();
     return AtomicString(String("#" + fragmentIdentifier));
