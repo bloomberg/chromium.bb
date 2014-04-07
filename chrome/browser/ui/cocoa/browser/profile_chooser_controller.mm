@@ -521,6 +521,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // The title frame origin isn't aware of the left margin spacing added
   // in -drawImage, so it must be added when drawing the title as well.
   frame.origin.x += leftMarginSpacing_ + imageTitleSpacing_;
+  frame.size.width -= (imageTitleSpacing_ + leftMarginSpacing_);
   return [super drawTitle:title withFrame:frame inView:controlView];
 }
 
@@ -554,6 +555,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         [[CustomPaddingImageButtonCell alloc]
             initWithLeftMarginSpacing:kHorizontalSpacing
                     imageTitleSpacing:kImageTitleSpacing]);
+    [cell setLineBreakMode:NSLineBreakByTruncatingTail];
     [self setCell:cell.get()];
   }
   return self;
