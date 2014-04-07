@@ -24,7 +24,7 @@ function setup()
     }
 
     window.content = document.createElement('content');
-    var shadowRoot = host.webkitCreateShadowRoot();
+    var shadowRoot = host.createShadowRoot();
     shadowRoot.appendChild(content);
 }
 

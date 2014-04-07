@@ -10,8 +10,8 @@
         testRunner.dumpAsText();
 
     var host = document.getElementById('host');
-    var oldestShadowRoot = host.webkitCreateShadowRoot();
-    var youngestShadowRoot = host.webkitCreateShadowRoot();
+    var oldestShadowRoot = host.createShadowRoot();
+    var youngestShadowRoot = host.createShadowRoot();
 
     oldestShadowRoot.innerHTML = '';
     youngestShadowRoot.innerHTML = '<shadow></shadow>';

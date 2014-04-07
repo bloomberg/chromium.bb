@@ -6,7 +6,7 @@
 
 <script>
 var inside = document.getElementById('inside');
-var insideRoot = inside.webkitCreateShadowRoot();
+var insideRoot = inside.createShadowRoot();
 
 var content = insideRoot.appendChild(document.createElement('content'));
 
@@ -17,4 +17,3 @@ insideRoot.appendChild(content);
 
 shouldBeTrue("inside.offsetHeight > 0");
 </script>
-

@@ -4,7 +4,6 @@ if (window.testRunner)
     testRunner.dumpAsText();
 if (window.internals)
     internals.settings.setUnifiedTextCheckerEnabled(true);
-Element.prototype.createShadowRoot = Element.prototype.webkitCreateShadowRoot || Element.prototype.createShadowRoot;
 onload = function() {
     var myShadowRoot = document.getElementById('sample').createShadowRoot();
     var myShadowElement = document.createElement('defs');

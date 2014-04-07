@@ -7,7 +7,7 @@
 function createShadowRoot()
 {
     var template = document.querySelector('#tmpl');
-    var root = document.querySelector('#host').webkitCreateShadowRoot();
+    var root = document.querySelector('#host').createShadowRoot();
     root.appendChild(template.content.cloneNode(true));
 }
 

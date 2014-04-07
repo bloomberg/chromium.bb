@@ -19,7 +19,7 @@ function createTreeOfTrees(root, depth, eachTreeHeight)
         return;
       var child = document.createElement('div');
       node.appendChild(child);
-      var shadowRoot = child.webkitCreateShadowRoot();
+      var shadowRoot = child.createShadowRoot();
       createTreeOfTrees(shadowRoot, depth - 1, eachTreeHeight);
 }
 

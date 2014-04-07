@@ -20,7 +20,7 @@ function createTreeOfTrees(root, depth, branch, eachTreeHeight)
     for (i = 0; i < branch; ++i) {
         var child = document.createElement('div');
         node.appendChild(child);
-        var shadowRoot = child.webkitCreateShadowRoot();
+        var shadowRoot = child.createShadowRoot();
         createTreeOfTrees(shadowRoot, depth - 1, branch, eachTreeHeight);
     }
 }

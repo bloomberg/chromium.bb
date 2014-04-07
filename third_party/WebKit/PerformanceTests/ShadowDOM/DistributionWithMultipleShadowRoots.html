@@ -28,7 +28,7 @@ function setup()
         var shadow = document.createElement('shadow');
         var content = document.createElement('content');
         shadow.appendChild(content);
-        var shadowRoot = host.webkitCreateShadowRoot();
+        var shadowRoot = host.createShadowRoot();
         shadowRoot.appendChild(shadow);
     }
 }

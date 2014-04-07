@@ -25,11 +25,11 @@ function setup()
         host.appendChild(div);
     }
 
-    var shadowRoot = host.webkitCreateShadowRoot();
+    var shadowRoot = host.createShadowRoot();
     shadowRoot.innerHTML = '<div id="host2"><content></content></div>';
 
     var host2 = shadowRoot.getElementById('host2');
-    var shadowRoot2 = host2.webkitCreateShadowRoot();
+    var shadowRoot2 = host2.createShadowRoot();
     shadowRoot2.innerHTML = '<content select=".selected"></content>';
 }
 
