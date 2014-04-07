@@ -31,7 +31,7 @@
 #ifndef InspectorRuntimeAgent_h
 #define InspectorRuntimeAgent_h
 
-
+#include "InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -43,6 +43,7 @@ class InjectedScriptManager;
 class InstrumentingAgents;
 class JSONArray;
 class ScriptDebugServer;
+class ScriptState;
 
 typedef String ErrorString;
 
@@ -52,8 +53,8 @@ public:
     virtual ~InspectorRuntimeAgent();
 
     // Part of the protocol.
-    virtual void enable(ErrorString*) OVERRIDE { m_enabled = true; }
-    virtual void disable(ErrorString*) OVERRIDE { m_enabled = false; }
+    virtual void enable(ErrorString*) OVERRIDE;
+    virtual void disable(ErrorString*) OVERRIDE FINAL;
     virtual void evaluate(ErrorString*,
         const String& expression,
         const String* objectGroup,
@@ -78,6 +79,10 @@ public:
     virtual void releaseObjectGroup(ErrorString*, const String& objectGroup) OVERRIDE FINAL;
     virtual void run(ErrorString*) OVERRIDE;
 
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE FINAL;
+    virtual void clearFrontend() OVERRIDE FINAL;
+    virtual void restore() OVERRIDE FINAL;
+
 protected:
     InspectorRuntimeAgent(InjectedScriptManager*, ScriptDebugServer*);
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) = 0;
@@ -86,7 +91,10 @@ protected:
     virtual void unmuteConsole() = 0;
 
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
+    void addExecutionContextToFrontend(ScriptState*, bool isPageContext, const String& name, const String& frameId);
+
     bool m_enabled;
+    InspectorFrontend::Runtime* m_frontend;
 
 private:
     InjectedScriptManager* m_injectedScriptManager;

@@ -30,15 +30,21 @@
 
 #include "config.h"
 #include "core/inspector/InspectorRuntimeAgent.h"
-
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorState.h"
 #include "platform/JSONValues.h"
 
-
 #include "bindings/v8/ScriptDebugServer.h"
+#include "bindings/v8/ScriptState.h"
+
+using WebCore::TypeBuilder::Runtime::ExecutionContextDescription;
 
 namespace WebCore {
+
+namespace InspectorRuntimeAgentState {
+static const char runtimeEnabled[] = "runtimeEnabled";
+};
 
 static bool asBool(const bool* const b)
 {
@@ -48,6 +54,7 @@ static bool asBool(const bool* const b)
 InspectorRuntimeAgent::InspectorRuntimeAgent(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer)
     : InspectorBaseAgent<InspectorRuntimeAgent>("Runtime")
     , m_enabled(false)
+    , m_frontend(0)
     , m_injectedScriptManager(injectedScriptManager)
     , m_scriptDebugServer(scriptDebugServer)
 {
@@ -145,6 +152,54 @@ void InspectorRuntimeAgent::releaseObjectGroup(ErrorString*, const String& objec
 
 void InspectorRuntimeAgent::run(ErrorString*)
 {
+}
+
+void InspectorRuntimeAgent::setFrontend(InspectorFrontend* frontend)
+{
+    m_frontend = frontend->runtime();
+}
+
+void InspectorRuntimeAgent::clearFrontend()
+{
+    m_frontend = 0;
+    String errorString;
+    disable(&errorString);
+}
+
+void InspectorRuntimeAgent::restore()
+{
+    if (m_state->getBoolean(InspectorRuntimeAgentState::runtimeEnabled)) {
+        String error;
+        enable(&error);
+    }
+}
+
+void InspectorRuntimeAgent::enable(ErrorString* errorString)
+{
+    if (m_enabled)
+        return;
+
+    m_enabled = true;
+    m_state->setBoolean(InspectorRuntimeAgentState::runtimeEnabled, true);
+}
+
+void InspectorRuntimeAgent::disable(ErrorString* errorString)
+{
+    if (!m_enabled)
+        return;
+    m_enabled = false;
+    m_state->setBoolean(InspectorRuntimeAgentState::runtimeEnabled, false);
+}
+
+void InspectorRuntimeAgent::addExecutionContextToFrontend(ScriptState* scriptState, bool isPageContext, const String& name, const String& frameId)
+{
+    int executionContextId = injectedScriptManager()->injectedScriptIdFor(scriptState);
+    m_frontend->executionContextCreated(ExecutionContextDescription::create()
+        .setId(executionContextId)
+        .setIsPageContext(isPageContext)
+        .setName(name)
+        .setFrameId(frameId)
+        .release());
 }
 
 } // namespace WebCore

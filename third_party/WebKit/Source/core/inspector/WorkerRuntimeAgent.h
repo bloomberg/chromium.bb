@@ -47,6 +47,7 @@ public:
     virtual ~WorkerRuntimeAgent();
 
     virtual void init() OVERRIDE;
+    virtual void enable(ErrorString*) OVERRIDE;
 
     // Protocol commands.
     virtual void run(ErrorString*) OVERRIDE;

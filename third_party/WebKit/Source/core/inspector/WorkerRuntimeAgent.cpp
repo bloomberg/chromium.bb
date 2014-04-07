@@ -59,6 +59,16 @@ void WorkerRuntimeAgent::init()
     m_instrumentingAgents->setWorkerRuntimeAgent(this);
 }
 
+void WorkerRuntimeAgent::enable(ErrorString* errorString)
+{
+    if (m_enabled)
+        return;
+
+    InspectorRuntimeAgent::enable(errorString);
+    ScriptState* scriptState = scriptStateFromWorkerGlobalScope(m_workerGlobalScope);
+    addExecutionContextToFrontend(scriptState, true, m_workerGlobalScope->url(), "");
+}
+
 InjectedScript WorkerRuntimeAgent::injectedScriptForEval(ErrorString* error, const int* executionContextId)
 {
     if (executionContextId) {
