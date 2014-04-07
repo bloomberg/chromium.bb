@@ -16,6 +16,11 @@
   
   
   
+<polymer-element name="polymer-body" extends="body" assetpath="../../../../third_party/polymer/polymer/">
+
+  
+
+</polymer-element>
 <!--
  Copyright 2013 The Polymer Authors. All rights reserved.
  Use of this source code is governed by a BSD-style
@@ -23,6 +28,7 @@
 -->
 
 <!-- <link rel="import" href="../polymer-dev/polymer.html"> -->
+
 <!--
 Copyright 2013 The Polymer Authors. All rights reserved.
 Use of this source code is governed by a BSD-style
@@ -145,6 +151,7 @@ license that can be found in the LICENSE file.
  *     </polymer-selector>
  *
  * @class polymer-selector
+ * @status stable
  */
 /**
  * Fired when an item's selection state is changed. This event is fired both
@@ -167,7 +174,7 @@ license that can be found in the LICENSE file.
 
 
 
-<polymer-element name="polymer-selector" attributes="selected multi valueattr selectedClass selectedProperty selectedItem selectedModel selectedIndex notap target itemsSelector activateEvent" assetpath="../../../../third_party/polymer/polymer-selector/">
+<polymer-element name="polymer-selector" attributes="selected multi valueattr selectedClass selectedProperty selectedAttribute selectedItem selectedModel selectedIndex notap target itemsSelector activateEvent" assetpath="../../../../third_party/polymer/polymer-selector/">
   <template>
     <polymer-selection id="selection" multi="{{multi}}" on-polymer-select="{{selectionSelect}}"></polymer-selection>
     <content id="items" select="*"></content>
@@ -175,7 +182,7 @@ license that can be found in the LICENSE file.
   
 </polymer-element>
 
-<polymer-element name="viewer-button" attributes="src latchable" assetpath="html_office/elements/viewer-button/">
+<polymer-element name="viewer-button" attributes="img latchable" assetpath="html_office/elements/viewer-button/">
 <template>
   <style>/* Copyright 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
@@ -501,19 +508,21 @@ input {
 
 <viewer-toolbar id="toolbar">
   <polymer-selector>
-    <viewer-button id="fit-to-page-button" src="button_fit_page.png" latchable="">
+    <viewer-button id="fit-to-page-button" assetpath="html_office/elements/viewer-button/" img="button_fit_page.png" latchable="">
     </viewer-button>
-    <viewer-button id="fit-to-width-button" src="button_fit_width.png" latchable="">
+    <viewer-button id="fit-to-width-button" assetpath="html_office/elements/viewer-button/" img="button_fit_width.png" latchable="">
     </viewer-button>
-    <viewer-button id="zoom-in-button" src="button_zoom_in.png">
+    <viewer-button id="zoom-in-button" assetpath="html_office/elements/viewer-button/" img="button_zoom_in.png">
     </viewer-button>
-    <viewer-button id="zoom-out-button" src="button_zoom_out.png">
+    <viewer-button id="zoom-out-button" assetpath="html_office/elements/viewer-button/" img="button_zoom_out.png">
     </viewer-button>
   </polymer-selector>
   <a id="save-button-link" download="">
-    <viewer-button id="save-button" src="button_save.png"></viewer-button>
+    <viewer-button id="save-button" assetpath="html_office/elements/viewer-button/" img="button_save.png">
+    </viewer-button>
   </a>
-  <viewer-button id="print-button" src="button_print.png"></viewer-button>
+  <viewer-button id="print-button" assetpath="html_office/elements/viewer-button/" img="button_print.png">
+  </viewer-button>
 </viewer-toolbar>
 
 <viewer-error-screen id="error-screen"></viewer-error-screen>

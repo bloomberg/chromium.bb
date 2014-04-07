@@ -60,20 +60,33 @@
 
 <viewer-toolbar id="toolbar">
   <polymer-selector>
-    <viewer-button id="fit-to-page-button" src="button_fit_page.png" latchable>
+    <viewer-button id="fit-to-page-button"
+        assetpath="html_office/elements/viewer-button/"
+        img="button_fit_page.png" latchable>
     </viewer-button>
-    <viewer-button id="fit-to-width-button" src="button_fit_width.png"
-        latchable>
+    <viewer-button id="fit-to-width-button"
+        assetpath="html_office/elements/viewer-button/"
+        img="button_fit_width.png" latchable>
     </viewer-button>
-    <viewer-button id="zoom-in-button" src="button_zoom_in.png">
+    <viewer-button id="zoom-in-button"
+        assetpath="html_office/elements/viewer-button/"
+        img="button_zoom_in.png">
     </viewer-button>
-    <viewer-button id="zoom-out-button" src="button_zoom_out.png">
+    <viewer-button id="zoom-out-button"
+        assetpath="html_office/elements/viewer-button/"
+        img="button_zoom_out.png">
     </viewer-button>
   </polymer-selector>
   <a id="save-button-link" download>
-    <viewer-button id="save-button" src="button_save.png"></viewer-button>
+    <viewer-button id="save-button"
+        assetpath="html_office/elements/viewer-button/"
+        img="button_save.png">
+    </viewer-button>
   </a>
-  <viewer-button id="print-button" src="button_print.png"></viewer-button>
+  <viewer-button id="print-button"
+      assetpath="html_office/elements/viewer-button/"
+      img="button_print.png">
+  </viewer-button>
 </viewer-toolbar>
 
 <viewer-error-screen id="error-screen"></viewer-error-screen>
