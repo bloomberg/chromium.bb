@@ -20,16 +20,17 @@ class RendererMediaPlayerManager;
 // ProxyDecryptor directly. Then we can remove this class!
 class ProxyMediaKeys : public media::MediaKeys {
  public:
-  ProxyMediaKeys(RendererMediaPlayerManager* proxy,
-                 const media::SessionCreatedCB& session_created_cb,
-                 const media::SessionMessageCB& session_message_cb,
-                 const media::SessionReadyCB& session_ready_cb,
-                 const media::SessionClosedCB& session_closed_cb,
-                 const media::SessionErrorCB& session_error_cb);
-  virtual ~ProxyMediaKeys();
+  static scoped_ptr<ProxyMediaKeys> Create(
+      const std::string& key_system,
+      const GURL& security_origin,
+      RendererMediaPlayerManager* manager,
+      const media::SessionCreatedCB& session_created_cb,
+      const media::SessionMessageCB& session_message_cb,
+      const media::SessionReadyCB& session_ready_cb,
+      const media::SessionClosedCB& session_closed_cb,
+      const media::SessionErrorCB& session_error_cb);
 
-  void InitializeCdm(const std::string& key_system,
-                     const GURL& security_origin);
+  virtual ~ProxyMediaKeys();
 
   // MediaKeys implementation.
   virtual bool CreateSession(uint32 session_id,
@@ -57,6 +58,16 @@ class ProxyMediaKeys : public media::MediaKeys {
   int GetCdmId() const;
 
  private:
+  ProxyMediaKeys(RendererMediaPlayerManager* manager,
+                 const media::SessionCreatedCB& session_created_cb,
+                 const media::SessionMessageCB& session_message_cb,
+                 const media::SessionReadyCB& session_ready_cb,
+                 const media::SessionClosedCB& session_closed_cb,
+                 const media::SessionErrorCB& session_error_cb);
+
+  void InitializeCdm(const std::string& key_system,
+                     const GURL& security_origin);
+
   // CDM ID should be unique per renderer process.
   // TODO(xhwang): Use uint32 to prevent undefined overflow behavior.
   static int next_cdm_id_;

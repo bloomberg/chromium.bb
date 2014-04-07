@@ -16,30 +16,29 @@ namespace content {
 int ProxyMediaKeys::next_cdm_id_ =
     RendererMediaPlayerManager::kInvalidCdmId + 1;
 
-ProxyMediaKeys::ProxyMediaKeys(
+scoped_ptr<ProxyMediaKeys> ProxyMediaKeys::Create(
+    const std::string& key_system,
+    const GURL& security_origin,
     RendererMediaPlayerManager* manager,
     const media::SessionCreatedCB& session_created_cb,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
-    const media::SessionErrorCB& session_error_cb)
-    : manager_(manager),
-      cdm_id_(next_cdm_id_++),
-      session_created_cb_(session_created_cb),
-      session_message_cb_(session_message_cb),
-      session_ready_cb_(session_ready_cb),
-      session_closed_cb_(session_closed_cb),
-      session_error_cb_(session_error_cb) {
-  DCHECK(manager_);
+    const media::SessionErrorCB& session_error_cb) {
+  DCHECK(manager);
+  scoped_ptr<ProxyMediaKeys> proxy_media_keys(
+      new ProxyMediaKeys(manager,
+                         session_created_cb,
+                         session_message_cb,
+                         session_ready_cb,
+                         session_closed_cb,
+                         session_error_cb));
+  proxy_media_keys->InitializeCdm(key_system, security_origin);
+  return proxy_media_keys.Pass();
 }
 
 ProxyMediaKeys::~ProxyMediaKeys() {
   manager_->DestroyCdm(cdm_id_);
-}
-
-void ProxyMediaKeys::InitializeCdm(const std::string& key_system,
-                                   const GURL& security_origin) {
-  manager_->InitializeCdm(cdm_id_, this, key_system, security_origin);
 }
 
 bool ProxyMediaKeys::CreateSession(uint32 session_id,
@@ -115,6 +114,27 @@ void ProxyMediaKeys::OnSessionError(uint32 session_id,
 
 int ProxyMediaKeys::GetCdmId() const {
   return cdm_id_;
+}
+
+ProxyMediaKeys::ProxyMediaKeys(
+    RendererMediaPlayerManager* manager,
+    const media::SessionCreatedCB& session_created_cb,
+    const media::SessionMessageCB& session_message_cb,
+    const media::SessionReadyCB& session_ready_cb,
+    const media::SessionClosedCB& session_closed_cb,
+    const media::SessionErrorCB& session_error_cb)
+    : manager_(manager),
+      cdm_id_(next_cdm_id_++),
+      session_created_cb_(session_created_cb),
+      session_message_cb_(session_message_cb),
+      session_ready_cb_(session_ready_cb),
+      session_closed_cb_(session_closed_cb),
+      session_error_cb_(session_error_cb) {
+}
+
+void ProxyMediaKeys::InitializeCdm(const std::string& key_system,
+                                   const GURL& security_origin) {
+  manager_->InitializeCdm(cdm_id_, this, key_system, security_origin);
 }
 
 }  // namespace content

@@ -59,15 +59,17 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
                              session_closed_cb,
                              session_error_cb));
 #elif defined(OS_ANDROID)
-  scoped_ptr<ProxyMediaKeys> proxy_media_keys(
-      new ProxyMediaKeys(manager,
-                         session_created_cb,
-                         session_message_cb,
-                         session_ready_cb,
-                         session_closed_cb,
-                         session_error_cb));
-  proxy_media_keys->InitializeCdm(key_system, security_origin);
-  *cdm_id = proxy_media_keys->GetCdmId();
+  scoped_ptr<ProxyMediaKeys> proxy_media_keys =
+      ProxyMediaKeys::Create(key_system,
+                             security_origin,
+                             manager,
+                             session_created_cb,
+                             session_message_cb,
+                             session_ready_cb,
+                             session_closed_cb,
+                             session_error_cb);
+  if (proxy_media_keys)
+    *cdm_id = proxy_media_keys->GetCdmId();
   return proxy_media_keys.PassAs<media::MediaKeys>();
 #else
   return scoped_ptr<media::MediaKeys>();
