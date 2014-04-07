@@ -3933,15 +3933,7 @@ window_flush(struct window *window)
 	struct surface *surface;
 
 	if (!window->custom) {
-		if (!window->xdg_popup && !window->xdg_surface) {
-			window->xdg_surface = xdg_shell_get_xdg_surface(window->display->xdg_shell,
-									window->main_surface->surface);
-			fail_on_null(window->xdg_surface);
-
-			xdg_surface_set_user_data(window->xdg_surface, window);
-			xdg_surface_add_listener(window->xdg_surface,
-						 &xdg_surface_listener, window);
-
+		if (window->xdg_surface) {
 			window_sync_transient_for(window);
 			window_sync_margin(window);
 		}
@@ -4388,7 +4380,20 @@ window_create_internal(struct display *display, int custom)
 struct window *
 window_create(struct display *display)
 {
-	return window_create_internal(display, 0);
+	struct window *window;
+
+	window = window_create_internal(display, 0);
+
+	window->xdg_surface =
+		xdg_shell_get_xdg_surface(window->display->xdg_shell,
+					  window->main_surface->surface);
+	fail_on_null(window->xdg_surface);
+
+	xdg_surface_set_user_data(window->xdg_surface, window);
+	xdg_surface_add_listener(window->xdg_surface,
+				 &xdg_surface_listener, window);
+
+	return window;
 }
 
 struct window *

@@ -2963,8 +2963,9 @@ terminal_run(struct terminal *terminal, const char *path)
 	display_watch_fd(terminal->display, terminal->master,
 			 EPOLLIN | EPOLLHUP, &terminal->io_task);
 
-	window_set_fullscreen(terminal->window, option_fullscreen);
-	if (!window_is_fullscreen(terminal->window))
+	if (option_fullscreen)
+		window_set_fullscreen(terminal->window, 1);
+	else
 		terminal_resize(terminal, 80, 24);
 
 	return 0;
