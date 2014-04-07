@@ -267,6 +267,8 @@
         'test/events_test_utils.h',
         'test/events_test_utils_x11.cc',
         'test/events_test_utils_x11.h',
+        'test/platform_event_waiter.cc',
+        'test/platform_event_waiter.h',
         'test/test_event_handler.cc',
         'test/test_event_handler.h',
         'test/test_event_processor.cc',
