@@ -201,7 +201,7 @@ const int kWebMIdVoid = 0xEC;
 const int kWebMIdWritingApp = 0x5741;
 
 const int64 kWebMReservedId = 0x1FFFFFFF;
-const int64 kWebMUnknownSize = 0x00FFFFFFFFFFFFFFLL;
+const int64 kWebMUnknownSize = GG_LONGLONG(0x00FFFFFFFFFFFFFF);
 
 const uint8 kWebMFlagKeyframe = 0x80;
 

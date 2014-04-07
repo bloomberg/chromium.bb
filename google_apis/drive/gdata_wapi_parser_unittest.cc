@@ -248,8 +248,8 @@ TEST(GDataWAPIParserTest, AccountMetadataParser) {
   scoped_ptr<AccountMetadata> metadata(
       AccountMetadata::CreateFrom(*document));
   ASSERT_TRUE(metadata.get());
-  EXPECT_EQ(6789012345LL, metadata->quota_bytes_used());
-  EXPECT_EQ(9876543210LL, metadata->quota_bytes_total());
+  EXPECT_EQ(GG_LONGLONG(6789012345), metadata->quota_bytes_used());
+  EXPECT_EQ(GG_LONGLONG(9876543210), metadata->quota_bytes_total());
   EXPECT_EQ(654321, metadata->largest_changestamp());
   EXPECT_EQ(2U, metadata->installed_apps().size());
   const InstalledApp* first_app = metadata->installed_apps()[0];

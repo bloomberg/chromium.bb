@@ -8,10 +8,6 @@
 #include <stdarg.h>
 #include "build/build_config.h"
 
-// DEPRECATED: Use ...LL and ...ULL suffixes.
-// TODO(viettrungluu): Delete these. These are only here until |GG_(U)INT64_C|
-// are deleted (some other header files (re)define |GG_(U)INT64_C|, so our
-// definitions of them must exactly match theirs).
 #ifdef COMPILER_MSVC
 #define GG_LONGLONG(x) x##I64
 #define GG_ULONGLONG(x) x##UI64

@@ -210,8 +210,8 @@ TEST_F(SQLMetaTableTest, IntValue) {
 
 TEST_F(SQLMetaTableTest, Int64Value) {
   const char kKey[] = "Int Key";
-  const int64 kFirstValue = 5000000017LL;
-  const int64 kSecondValue = 5000000023LL;
+  const int64 kFirstValue = GG_LONGLONG(5000000017);
+  const int64 kSecondValue = GG_LONGLONG(5000000023);
 
   // Initially, the value isn't there until set.
   {

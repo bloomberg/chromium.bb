@@ -858,8 +858,8 @@ TEST_F(FileSystemTest, GetAvailableSpace) {
       google_apis::test_util::CreateCopyResultCallback(
           &error, &bytes_total, &bytes_used));
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(6789012345LL, bytes_used);
-  EXPECT_EQ(9876543210LL, bytes_total);
+  EXPECT_EQ(GG_LONGLONG(6789012345), bytes_used);
+  EXPECT_EQ(GG_LONGLONG(9876543210), bytes_total);
 }
 
 TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {

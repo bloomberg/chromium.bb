@@ -563,8 +563,8 @@ std::string GoogleStreamingRemoteEngine::GetAcceptedLanguages() const {
 
 // TODO(primiano): Is there any utility in the codebase that already does this?
 std::string GoogleStreamingRemoteEngine::GenerateRequestKey() const {
-  const int64 kKeepLowBytes = 0x00000000FFFFFFFFLL;
-  const int64 kKeepHighBytes = 0xFFFFFFFF00000000LL;
+  const int64 kKeepLowBytes = GG_LONGLONG(0x00000000FFFFFFFF);
+  const int64 kKeepHighBytes = GG_LONGLONG(0xFFFFFFFF00000000);
 
   // Just keep the least significant bits of timestamp, in order to reduce
   // probability of collisions.

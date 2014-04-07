@@ -230,18 +230,24 @@ TEST(Int128, Multiply) {
   }
 
   // Verified with dc.
-  a = uint128(0xffffeeeeddddccccULL, 0xbbbbaaaa99998888ULL);
-  b = uint128(0x7777666655554444ULL, 0x3333222211110000ULL);
+  a = uint128(GG_ULONGLONG(0xffffeeeeddddcccc),
+              GG_ULONGLONG(0xbbbbaaaa99998888));
+  b = uint128(GG_ULONGLONG(0x7777666655554444),
+              GG_ULONGLONG(0x3333222211110000));
   c = a * b;
-  EXPECT_EQ(uint128(0x530EDA741C71D4C3ULL, 0xBF25975319080000ULL), c);
+  EXPECT_EQ(uint128(GG_ULONGLONG(0x530EDA741C71D4C3),
+                    GG_ULONGLONG(0xBF25975319080000)), c);
   EXPECT_EQ(0, c - b * a);
   EXPECT_EQ(a*a - b*b, (a+b) * (a-b));
 
   // Verified with dc.
-  a = uint128(0x0123456789abcdefULL, 0xfedcba9876543210ULL);
-  b = uint128(0x02468ace13579bdfULL, 0xfdb97531eca86420ULL);
+  a = uint128(GG_ULONGLONG(0x0123456789abcdef),
+              GG_ULONGLONG(0xfedcba9876543210));
+  b = uint128(GG_ULONGLONG(0x02468ace13579bdf),
+              GG_ULONGLONG(0xfdb97531eca86420));
   c = a * b;
-  EXPECT_EQ(uint128(0x97a87f4f261ba3f2ULL, 0x342d0bbf48948200ULL), c);
+  EXPECT_EQ(uint128(GG_ULONGLONG(0x97a87f4f261ba3f2),
+                    GG_ULONGLONG(0x342d0bbf48948200)), c);
   EXPECT_EQ(0, c - b * a);
   EXPECT_EQ(a*a - b*b, (a+b) * (a-b));
 }
