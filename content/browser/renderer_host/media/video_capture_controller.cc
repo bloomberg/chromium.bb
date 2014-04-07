@@ -320,6 +320,13 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
     destination_height = new_unrotated_width;
   }
   const gfx::Size dimensions(destination_width, destination_height);
+  if (!media::VideoFrame::IsValidConfig(media::VideoFrame::I420,
+                                        dimensions,
+                                        gfx::Rect(dimensions),
+                                        dimensions)) {
+    return;
+  }
+
   scoped_refptr<Buffer> buffer =
       DoReserveOutputBuffer(media::VideoFrame::I420, dimensions);
 
@@ -417,8 +424,6 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
   // address all these #ifdef parts, see http://crbug.com/299611 .
   NOTREACHED();
 #endif  // if !defined(AVOID_LIBYUV_FOR_ANDROID_WEBVIEW)
-  VideoCaptureFormat format(
-      dimensions, frame_format.frame_rate, media::PIXEL_FORMAT_I420);
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalPackedMemory(
           media::VideoFrame::I420,
@@ -432,6 +437,9 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
           base::TimeDelta(),
           base::Closure());
   DCHECK(frame);
+
+  VideoCaptureFormat format(
+      dimensions, frame_format.frame_rate, media::PIXEL_FORMAT_I420);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
