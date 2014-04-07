@@ -1,10 +1,13 @@
-#Introduction
+# Introduction
 
-app_shell is an experimental project to build a minimal environment like content_shell. The goal is to be able to run a v2 app and supply most of the
-chrome.* extension APIs without running the rest of Chrome.
+app_shell is an experimental project to build a minimal environment like
+content_shell.
+
+The goal is to be able to run a v2 app and supply most of the chrome.* extension
+APIs without running the rest of Chrome.
 
 app_shell is only officially supported on Chrome OS.
 
-#How to run
+# How to run
 
 app_shell --app=/path/to/extension
