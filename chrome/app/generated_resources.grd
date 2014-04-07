@@ -10062,8 +10062,8 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
             Proxy
           </message>
         </if>
-        <message name="IDS_OPTIONS_TAB_EXTENSION_CONTROLLED" desc="The label in the bubble showing which extension is controlling a particular setting.">
-          An extension, <ph name="EXTENSION_NAME">$1<ex>MyFirstExtension</ex></ph>, is controlling this setting.
+        <message name="IDS_OPTIONS_TAB_EXTENSION_CONTROLLED" desc="The label in the bubble showing which extension is controlling a particular setting. Please preserve the embedded HTML (&lt;b&gt; and &lt;/b&gt;) during translation. They serve to make the name bold.">
+          An extension, &lt;b&gt;<ph name="EXTENSION_NAME">$1<ex>MyFirstExtension</ex></ph>&lt;/b&gt;, is controlling this setting.
         </message>
         <message name="IDS_OPTIONS_TAB_EXTENSION_CONTROLLED_DISABLE" desc="The 'Disable Extension' button label in the bubble showing which extension is controlling a particular setting.">
           Disable extension
