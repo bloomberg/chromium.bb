@@ -66,19 +66,17 @@ IN_PROC_BROWSER_TEST_F(WebRtcWebcamBrowserTest,
   EXPECT_EQ("640x360", GetStreamSize(tab, "local-view"));
   CloseLastLocalStream(tab);
 
-  // Broken on Win for C920 webcams: see http://crbug.com/360512.
-#if !defined(OS_WIN)
-  GetUserMediaWithSpecificConstraintsAndAccept(tab,
-                                               kAudioVideoCallConstraints720p);
-  StartDetectingVideo(tab, "local-view");
-  WaitForVideoToPlay(tab);
-  EXPECT_EQ("1280x720", GetStreamSize(tab, "local-view"));
-  CloseLastLocalStream(tab);
-  GetUserMediaWithSpecificConstraintsAndAccept(tab,
-                                               kAudioVideoCallConstraints1080p);
-  StartDetectingVideo(tab, "local-view");
-  WaitForVideoToPlay(tab);
-  EXPECT_EQ("1920x1080", GetStreamSize(tab, "local-view"));
-  CloseLastLocalStream(tab);
-#endif
+  // Broken on all platforms for C920 webcams: see http://crbug.com/360512.
+//  GetUserMediaWithSpecificConstraintsAndAccept(tab,
+//                                              kAudioVideoCallConstraints720p);
+//  StartDetectingVideo(tab, "local-view");
+//  WaitForVideoToPlay(tab);
+//  EXPECT_EQ("1280x720", GetStreamSize(tab, "local-view"));
+//  CloseLastLocalStream(tab);
+//  GetUserMediaWithSpecificConstraintsAndAccept(tab,
+//                                             kAudioVideoCallConstraints1080p);
+//  StartDetectingVideo(tab, "local-view");
+//  WaitForVideoToPlay(tab);
+//  EXPECT_EQ("1920x1080", GetStreamSize(tab, "local-view"));
+//  CloseLastLocalStream(tab);
 }
