@@ -214,8 +214,18 @@ menu.chrome-menu > .menuitem-button.left {
   right: 59px;
 }
 
+html[dir='rtl'] menu.chrome-menu > .menuitem-button.left {
+  left: 59px;
+  right: auto;
+}
+
 menu.chrome-menu > .menuitem-button.right {
   right: 0;
+}
+
+html[dir='rtl'] menu.chrome-menu > .menuitem-button.right {
+  left: 0;
+  right: auto;
 }
 
 menu.chrome-menu > menuitem[disabled] {

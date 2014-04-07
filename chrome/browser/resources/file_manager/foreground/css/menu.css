@@ -36,3 +36,7 @@ menu > [shortcutText]::after {
   content: attr(shortcutText);
   float: right;
 }
+
+html[dir='rtl'] menu > [shortcutText]::after {
+  float: left;
+}

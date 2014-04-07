@@ -1660,7 +1660,7 @@ list.autocomplete-suggestions > [lead] > div.detail-text em {
 }
 
 #gear-menu > menuitem:not(.menuitem-button) {
-  margin-right: 50px;
+  -webkit-margin-end: 50px;
 }
 
 /* View buttons in the gear menu. */
