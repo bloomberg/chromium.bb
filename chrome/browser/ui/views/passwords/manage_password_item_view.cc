@@ -10,9 +10,91 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
+// Pending View
+ManagePasswordItemView::PendingView::PendingView(
+    ManagePasswordItemView* parent) {
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+
+  parent->BuildColumnSet(layout, TWO_COLUMN_SET);
+  layout->StartRowWithPadding(
+      0, TWO_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
+  layout->AddView(parent->GenerateUsernameLabel());
+  layout->AddView(parent->GeneratePasswordLabel());
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+}
+
+ManagePasswordItemView::PendingView::~PendingView() {}
+
+// Manage View
+ManagePasswordItemView::ManageView::ManageView(ManagePasswordItemView* parent)
+    : parent_(parent) {
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  delete_button_ = new views::ImageButton(this);
+  delete_button_->SetImage(views::ImageButton::STATE_NORMAL,
+                           rb->GetImageNamed(IDR_CLOSE_2).ToImageSkia());
+  delete_button_->SetImage(views::ImageButton::STATE_HOVERED,
+                           rb->GetImageNamed(IDR_CLOSE_2_H).ToImageSkia());
+  delete_button_->SetImage(views::ImageButton::STATE_PRESSED,
+                           rb->GetImageNamed(IDR_CLOSE_2_P).ToImageSkia());
+
+  parent->BuildColumnSet(layout, THREE_COLUMN_SET);
+  layout->StartRowWithPadding(
+      0, THREE_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
+  layout->AddView(parent->GenerateUsernameLabel());
+  layout->AddView(parent->GeneratePasswordLabel());
+  layout->AddView(delete_button_);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+}
+
+void ManagePasswordItemView::ManageView::ButtonPressed(views::Button* sender,
+                                                       const ui::Event& event) {
+  DCHECK_EQ(delete_button_, sender);
+  parent_->NotifyClickedDelete();
+}
+
+ManagePasswordItemView::ManageView::~ManageView() {}
+
+// Undo View
+ManagePasswordItemView::UndoView::UndoView(ManagePasswordItemView* parent)
+    : parent_(parent) {
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+
+  views::Label* text =
+      new views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED));
+  text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+  undo_link_ =
+      new views::Link(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO));
+  undo_link_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  undo_link_->set_listener(this);
+  undo_link_->SetUnderline(false);
+
+  parent->BuildColumnSet(layout, TWO_COLUMN_SET);
+  layout->StartRowWithPadding(
+      0, TWO_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
+  layout->AddView(text);
+  layout->AddView(undo_link_);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+}
+
+void ManagePasswordItemView::UndoView::LinkClicked(views::Link* sender,
+                                                   int event_flags) {
+  DCHECK_EQ(undo_link_, sender);
+  parent_->NotifyClickedUndo();
+}
+
+ManagePasswordItemView::UndoView::~UndoView() {}
+
+// ManagePasswordItemView
 ManagePasswordItemView::ManagePasswordItemView(
     ManagePasswordsBubbleModel* manage_passwords_bubble_model,
     autofill::PasswordForm password_form,
@@ -24,8 +106,7 @@ ManagePasswordItemView::ManagePasswordItemView(
       delete_password_(false),
       field_1_width_(field_1_width),
       field_2_width_(field_2_width) {
-  views::GridLayout* layout = new views::GridLayout(this);
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  views::FillLayout* layout = new views::FillLayout();
   SetLayoutManager(layout);
 
   // When a password is displayed as the first item in a list, it has borders
@@ -39,54 +120,24 @@ ManagePasswordItemView::ManagePasswordItemView(
       GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
 
-  // Build the columnset we need for the current state of the model.
-  int column_set_to_build =
-      !manage_passwords_bubble_model_->WaitingToSavePassword()
-          ? COLUMN_SET_MANAGE
-          : COLUMN_SET_SAVE;
-  BuildColumnSet(layout, column_set_to_build);
-  layout->StartRowWithPadding(
-      0, column_set_to_build, 0, views::kRelatedControlVerticalSpacing);
+  if (manage_passwords_bubble_model_->WaitingToSavePassword())
+    AddChildView(new PendingView(this));
+  else
+    AddChildView(new ManageView(this));
 
-  // Add the username field: fills the first non-padding column of the layout.
-  label_1_ = new views::Label(password_form_.username_value);
-  label_1_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->AddView(label_1_);
+  GetLayoutManager()->Layout(this);
+}
 
-  // Add the password field: fills the second non-padding column of the layout.
-  label_2_ =
-      new views::Link(password_form_.password_value);
-  label_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label_2_->set_listener(this);
-  label_2_->SetObscured(true);
-  label_2_->SetFocusable(false);
-  label_2_->SetEnabled(false);
-  label_2_->SetUnderline(false);
-  layout->AddView(label_2_);
-
-  // If we're managing passwords (that is, we're not currently in the process
-  // of saving a password), construct and add the delete button: fills the
-  // third non-padding column of the layout.
-  if (!manage_passwords_bubble_model_->WaitingToSavePassword()) {
-    delete_button_ = new views::ImageButton(this);
-    delete_button_->SetImage(views::ImageButton::STATE_NORMAL,
-                             rb->GetImageNamed(IDR_CLOSE_2).ToImageSkia());
-    delete_button_->SetImage(views::ImageButton::STATE_HOVERED,
-                             rb->GetImageNamed(IDR_CLOSE_2_H).ToImageSkia());
-    delete_button_->SetImage(views::ImageButton::STATE_PRESSED,
-                             rb->GetImageNamed(IDR_CLOSE_2_P).ToImageSkia());
-    layout->AddView(delete_button_, 1, 1);
-  }
-
-  // Match the padding at the top of the row with padding at the bottom.
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+ManagePasswordItemView::~ManagePasswordItemView() {
+  if (delete_password_)
+    manage_passwords_bubble_model_->DeleteFromBestMatches(password_form_);
 }
 
 void ManagePasswordItemView::BuildColumnSet(views::GridLayout* layout,
                                             int column_set_id) {
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
 
-  // The username field.
+  // The username/"Deleted!" field.
   column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
@@ -95,7 +146,7 @@ void ManagePasswordItemView::BuildColumnSet(views::GridLayout* layout,
                         field_1_width_,
                         field_1_width_);
 
-  // The password field.
+  // The password/"Undo!" field.
   column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
@@ -105,7 +156,8 @@ void ManagePasswordItemView::BuildColumnSet(views::GridLayout* layout,
                         field_2_width_);
 
   // If we're in manage-mode, we need another column for the delete button.
-  if (column_set_id == COLUMN_SET_MANAGE) {
+  if (column_set_id == THREE_COLUMN_SET) {
+    column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
     column_set->AddColumn(views::GridLayout::TRAILING,
                           views::GridLayout::FILL,
                           0,
@@ -116,52 +168,28 @@ void ManagePasswordItemView::BuildColumnSet(views::GridLayout* layout,
   column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
 }
 
-ManagePasswordItemView::~ManagePasswordItemView() {
-  if (delete_password_)
-    manage_passwords_bubble_model_->DeleteFromBestMatches(password_form_);
+views::Label* ManagePasswordItemView::GenerateUsernameLabel() const {
+  views::Label* label = new views::Label(password_form_.username_value);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  return label;
+}
+
+views::Label* ManagePasswordItemView::GeneratePasswordLabel() const {
+  views::Label* label = new views::Label(password_form_.password_value);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetObscured(true);
+  return label;
 }
 
 void ManagePasswordItemView::Refresh() {
-  // TODO(mkwst): We're currently swaping out values in the same view. We need
-  // to swap out views in order to enable some future work (and to make the undo
-  // button's alignment work correctly).
+  DCHECK(!manage_passwords_bubble_model_->WaitingToSavePassword());
 
-  if (delete_password_) {
-    // The user clicked the "delete password" button, so:
-    //
-    // Change the username string to "Deleted"
-    label_1_->SetText(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED));
-
-    // Change the password's text to "Undo", and enable the link.
-    label_2_->SetText(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO));
-    label_2_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-    label_2_->SetObscured(false);
-    label_2_->SetEnabled(true);
-    label_2_->SetFocusable(true);
-
-    if (delete_button_)
-      delete_button_->SetVisible(false);
-  } else {
-    // The user clicked the "undo" button after deleting a password, so:
-
-    // Move focus to the parent in order to get the focus ring off the link
-    // that the user just clicked.
-    parent()->RequestFocus();
-
-    // Change the username string back to the username.
-    label_1_->SetText(password_form_.username_value);
-
-    // Change the second column back to the password, obscure and disable it.
-    // disable the link.
-    label_2_->SetObscured(true);
-    label_2_->SetEnabled(false);
-    label_2_->SetFocusable(false);
-    label_2_->SetText(password_form_.password_value);
-    label_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-    if (delete_button_)
-      delete_button_->SetVisible(true);
-  }
+  RemoveAllChildViews(true);
+  if (delete_password_)
+    AddChildView(new UndoView(this));
+  else
+    AddChildView(new ManageView(this));
+  GetLayoutManager()->Layout(this);
 
   // After the view is consistent, notify the model that the password needs to
   // be updated (either removed or put back into the store, as appropriate.
@@ -171,16 +199,12 @@ void ManagePasswordItemView::Refresh() {
                        : ManagePasswordsBubbleModel::ADD_PASSWORD);
 }
 
-void ManagePasswordItemView::ButtonPressed(views::Button* sender,
-                                           const ui::Event& event) {
-  DCHECK_EQ(delete_button_, sender);
+void ManagePasswordItemView::NotifyClickedDelete() {
   delete_password_ = true;
   Refresh();
 }
 
-void ManagePasswordItemView::LinkClicked(views::Link* source,
-                                         int event_flags) {
-  DCHECK_EQ(source, label_2_);
+void ManagePasswordItemView::NotifyClickedUndo() {
   delete_password_ = false;
   Refresh();
 }

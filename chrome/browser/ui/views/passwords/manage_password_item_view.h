@@ -14,11 +14,59 @@ class ImageButton;
 }
 
 // A custom view for credentials which allows the management of the specific
-// credentials.
-class ManagePasswordItemView : public views::View,
-                               public views::ButtonListener,
-                               public views::LinkListener {
+// credentials. The view has three distinct states:
+//
+// * Present credentials to the user which she may choose to save.
+// * Present already-saved credentials to the user for management.
+// * Offer the user the ability to undo a deletion action.
+//
+// The ManagePasswordItemView serves as a container for a single view
+// representing one of these states.
+class ManagePasswordItemView : public views::View {
  public:
+  // Render credentials in two columns: username and password.
+  class PendingView : public views::View {
+   public:
+    explicit PendingView(ManagePasswordItemView* parent);
+
+   private:
+    virtual ~PendingView();
+  };
+
+  // Render credentials in three columns: username, password, and delete.
+  class ManageView : public views::View, public views::ButtonListener {
+   public:
+    explicit ManageView(ManagePasswordItemView* parent);
+
+   private:
+    virtual ~ManageView();
+
+    // views::ButtonListener:
+    virtual void ButtonPressed(views::Button* sender,
+                               const ui::Event& event) OVERRIDE;
+
+    views::ImageButton* delete_button_;
+
+    ManagePasswordItemView* parent_;
+  };
+
+  // Render a notification to the user that a password has been removed, and
+  // offer an undo link.
+  class UndoView : public views::View, public views::LinkListener {
+   public:
+    explicit UndoView(ManagePasswordItemView* parent);
+
+   private:
+    virtual ~UndoView();
+
+    // views::LinkListener:
+    virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
+    views::Link* undo_link_;
+
+    ManagePasswordItemView* parent_;
+  };
+
   enum Position { FIRST_ITEM, SUBSEQUENT_ITEM };
 
   ManagePasswordItemView(
@@ -29,34 +77,22 @@ class ManagePasswordItemView : public views::View,
       Position position);
 
  private:
-  enum ColumnSets { COLUMN_SET_SAVE = 0, COLUMN_SET_MANAGE = 1, };
+  enum ColumnSets { TWO_COLUMN_SET = 0, THREE_COLUMN_SET };
 
   virtual ~ManagePasswordItemView();
+
+  views::Label* GenerateUsernameLabel() const;
+  views::Label* GeneratePasswordLabel() const;
 
   // Build a two-label column set using the widths stored in |field_1_width_|
   // and |field_2_width_|.
   void BuildColumnSet(views::GridLayout*, int column_set_id);
 
+  void NotifyClickedDelete();
+  void NotifyClickedUndo();
+
   // Changes the views according to the state of |delete_password_|.
   void Refresh();
-
-  // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
-
-  // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
-
-  views::Label* label_1_;
-
-  // This link is used to display the password dots when |delete_password_| is
-  // not set and to display an undo link if it is set. Clicking the undo link
-  // will change the view and unset |delete_password_|.
-  views::Link* label_2_;
-
-  // This button is used to set |delete_password_| and to bring up the the undo
-  // link in |label_2|.
-  views::ImageButton* delete_button_;
 
   ManagePasswordsBubbleModel* manage_passwords_bubble_model_;
   autofill::PasswordForm password_form_;
