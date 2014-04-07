@@ -6,6 +6,7 @@
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBPERMISSIONS_H_
 
 #include "base/basictypes.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPermissionClient.h"
 
 namespace WebTestRunner {
