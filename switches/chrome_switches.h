@@ -17,6 +17,9 @@ const char kPolicySwitchesEnd[] = "policy-switches-end";
 // Switch for path that breakpad can read an optional termination message from.
 const char kTerminationMessageFile[] = "termination-message-file";
 
+// Flag passed to the browser if the system is running in dev-mode.
+const char kSystemInDevMode[] = "system-developer-mode";
+
 }  // namespace switches
 }  // namespace chromeos
 
