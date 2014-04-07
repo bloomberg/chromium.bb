@@ -676,6 +676,7 @@ static void enableViewportSettings(WebSettings* settings)
     settings->setViewportMetaEnabled(true);
     settings->setViewportEnabled(true);
     settings->setMainFrameResizesAreOrientationChanges(true);
+    settings->setShrinksViewportContentToFit(true);
 }
 
 TEST_F(WebFrameTest, FrameViewNeedsLayoutOnFixedLayoutResize)
