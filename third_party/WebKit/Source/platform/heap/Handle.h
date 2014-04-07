@@ -44,21 +44,23 @@ namespace WebCore {
 
 template<typename T> class HeapTerminatedArray;
 
-#define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage)                                          \
-    typedef typename WTF::RemoveConst<T>::Type NonConstType;                                          \
-    typedef WTF::IsSubclassOfTemplate<NonConstType, GarbageCollected> GarbageCollectedSubclass;       \
-    typedef WTF::IsSubclass<NonConstType, GarbageCollectedMixin> GarbageCollectedMixinSubclass;       \
-    typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashSet> HeapHashSetSubclass;                \
-    typedef WTF::IsSubclassOfTemplate5<NonConstType, HeapHashMap> HeapHashMapSubclass;                \
-    typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapVector> HeapVectorSubclass;       \
-    typedef WTF::IsSubclassOfTemplate<NonConstType, HeapTerminatedArray> HeapTerminatedArraySubclass; \
-    COMPILE_ASSERT(GarbageCollectedSubclass::value ||                                                 \
-        GarbageCollectedMixinSubclass::value ||                                                       \
-        HeapHashSetSubclass::value ||                                                                 \
-        HeapHashMapSubclass::value ||                                                                 \
-        HeapVectorSubclass::value ||                                                                  \
-        HeapTerminatedArraySubclass::value,                                                           \
-        ErrorMessage);
+#define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage)                                              \
+    do {                                                                                                  \
+        typedef typename WTF::RemoveConst<T>::Type NonConstType;                                          \
+        typedef WTF::IsSubclassOfTemplate<NonConstType, GarbageCollected> GarbageCollectedSubclass;       \
+        typedef WTF::IsSubclass<NonConstType, GarbageCollectedMixin> GarbageCollectedMixinSubclass;       \
+        typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashSet> HeapHashSetSubclass;                \
+        typedef WTF::IsSubclassOfTemplate5<NonConstType, HeapHashMap> HeapHashMapSubclass;                \
+        typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapVector> HeapVectorSubclass;       \
+        typedef WTF::IsSubclassOfTemplate<NonConstType, HeapTerminatedArray> HeapTerminatedArraySubclass; \
+        COMPILE_ASSERT(GarbageCollectedSubclass::value ||                                                 \
+            GarbageCollectedMixinSubclass::value ||                                                       \
+            HeapHashSetSubclass::value ||                                                                 \
+            HeapHashMapSubclass::value ||                                                                 \
+            HeapVectorSubclass::value ||                                                                  \
+            HeapTerminatedArraySubclass::value,                                                           \
+            ErrorMessage);                                                                                \
+    } while (0)
 
 template<typename T> class Member;
 
@@ -446,6 +448,13 @@ public:
     explicit Member(T& raw) : m_raw(&raw)
     {
         COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
+    }
+
+    template<typename U>
+    Member(const RawPtr<U>& other) : m_raw(other.get())
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(U, NonGarbageCollectedObjectInMember);
     }
 
     Member(WTF::HashTableDeletedValueType) : m_raw(reinterpret_cast<T*>(-1))
