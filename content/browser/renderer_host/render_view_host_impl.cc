@@ -915,7 +915,9 @@ void RenderViewHostImpl::AllowBindings(int bindings_flags) {
     // than this single active view.
     RenderProcessHostImpl* process =
         static_cast<RenderProcessHostImpl*>(GetProcess());
-    if (process->GetActiveViewCount() > 1)
+    // --single-process only has one renderer.
+    if (process->GetActiveViewCount() > 1 &&
+        !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
       return;
   }
 
