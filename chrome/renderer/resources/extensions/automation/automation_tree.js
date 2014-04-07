@@ -122,8 +122,8 @@ AutomationTreeImpl.prototype = {
       }
 
       // Update children.
-      var oldChildIDs = privates(node).impl.childIDs;
-      var newChildIDs = nodeData.childIDs || [];
+      var oldChildIDs = privates(node).impl.childIds;
+      var newChildIDs = nodeData.childIds || [];
       var newChildIDsHash = {};
 
       for (var j = 0, newId; newId = newChildIDs[j]; j++) {
@@ -172,7 +172,7 @@ AutomationTreeImpl.prototype = {
               nodeData[attributeType][attributeID];
         }
       }
-      privates(node).impl.childIDs = newChildIDs;
+      privates(node).impl.childIds = newChildIDs;
       this.axNodeDataCache_[node.id] = node;
       privates(node).impl.notifyEventListeners(data.eventType);
     }

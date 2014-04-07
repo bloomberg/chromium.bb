@@ -13,7 +13,7 @@ var utils = require('utils');
  */
 var AutomationNodeImpl = function(owner) {
   this.owner = owner;
-  this.childIDs = [];
+  this.childIds = [];
   this.attributes = {};
   this.listeners = {};
 };
@@ -24,19 +24,19 @@ AutomationNodeImpl.prototype = {
   },
 
   firstChild: function() {
-    var node = this.owner.get(this.childIDs[0]);
+    var node = this.owner.get(this.childIds[0]);
     return node;
   },
 
   lastChild: function() {
-    var childIDs = this.childIDs;
-    var node = this.owner.get(childIDs[childIDs.length - 1]);
+    var childIds = this.childIds;
+    var node = this.owner.get(childIds[childIds.length - 1]);
     return node;
   },
 
   children: function() {
     var children = [];
-    for (var i = 0, childID; childID = this.childIDs[i]; i++)
+    for (var i = 0, childID; childID = this.childIds[i]; i++)
       children.push(this.owner.get(childID));
     return children;
   },

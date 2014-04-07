@@ -21,7 +21,7 @@ namespace automationInternal {
     object? intAttributes;
     object? intlistAttributes;
     object? stringAttributes;
-    long[] childIDs;
+    long[] childIds;
   };
 
   // Data for an accessibility event and/or an atomic change to an accessibility
