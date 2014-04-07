@@ -71,7 +71,7 @@ const char* kAtomsToCache[] = {
 
 // The time to wait for the target to respond after the user has released the
 // mouse button before ending the move loop.
-const int kEndMoveLoopTimeoutMs = 30000;
+const int kEndMoveLoopTimeoutMs = 1000;
 
 static base::LazyInstance<
     std::map< ::Window, views::DesktopDragDropClientAuraX11*> >::Leaky
@@ -736,6 +736,13 @@ void DesktopDragDropClientAuraX11::OnMouseMovement(XMotionEvent* event) {
 }
 
 void DesktopDragDropClientAuraX11::OnMouseReleased() {
+  if (source_state_ != SOURCE_STATE_OTHER) {
+    // The user has previously released the mouse and is clicking in
+    // frustration.
+    move_loop_.EndMoveLoop();
+    return;
+  }
+
   if (source_current_window_ != None) {
     if (ContainsKey(waiting_on_status_, source_current_window_)) {
       // If we are waiting for an XdndStatus message, we need to wait for it to
