@@ -1452,14 +1452,18 @@ internal_nowithdebug_paladin.add_config('x86-mario-nowithdebug-paladin',
 pre_cq = internal_paladin.derive(
   build_type=constants.INCREMENTAL_TYPE,
   build_packages_in_background=True,
-  compilecheck=True,
   pre_cq=True,
-  description='Verifies compilation and unit tests',
+  archive=False,
+  debug_symbols=False,
+  prebuilts=False,
+  cpe_export=False,
+  description='Verifies compilation, unit tests, and building an image',
 )
 
 # Pre-CQ targets that only check compilation.
 compile_only_pre_cq = pre_cq.derive(
   description='Verifies compilation only',
+  compilecheck=True,
   unittests=False,
 )
 
