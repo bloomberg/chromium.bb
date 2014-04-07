@@ -121,9 +121,6 @@ public:
     BLINK_PLATFORM_EXPORT WebURL firstPartyForCookies() const;
     BLINK_PLATFORM_EXPORT void setFirstPartyForCookies(const WebURL&);
 
-    BLINK_PLATFORM_EXPORT bool allowCookies() const;
-    BLINK_PLATFORM_EXPORT void setAllowCookies(bool);
-
     // Controls whether user name, password, and cookies may be sent with the
     // request. (If false, this overrides allowCookies.)
     BLINK_PLATFORM_EXPORT bool allowStoredCredentials() const;
