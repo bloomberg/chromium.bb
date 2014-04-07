@@ -115,6 +115,8 @@ WorkerScriptController::~WorkerScriptController()
 
 bool WorkerScriptController::initializeContextIfNeeded()
 {
+    v8::HandleScope handleScope(m_isolate);
+
     if (isContextInitialized())
         return true;
 
@@ -153,19 +155,16 @@ bool WorkerScriptController::initializeContextIfNeeded()
 
 ScriptValue WorkerScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, WorkerGlobalScopeExecutionState* state)
 {
-    v8::HandleScope handleScope(m_isolate);
-
     if (!initializeContextIfNeeded())
         return ScriptValue();
 
-    v8::Handle<v8::Context> context = m_scriptState->context();
+    NewScriptState::Scope scope(m_scriptState.get());
+
     if (!m_disableEvalPending.isEmpty()) {
-        context->AllowCodeGenerationFromStrings(false);
-        context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, m_disableEvalPending));
+        m_scriptState->context()->AllowCodeGenerationFromStrings(false);
+        m_scriptState->context()->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, m_disableEvalPending));
         m_disableEvalPending = String();
     }
-
-    v8::Context::Scope scope(context);
 
     v8::TryCatch block;
 

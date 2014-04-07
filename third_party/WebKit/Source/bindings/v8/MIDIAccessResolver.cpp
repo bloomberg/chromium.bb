@@ -23,17 +23,13 @@ MIDIAccessResolver::~MIDIAccessResolver()
 
 void MIDIAccessResolver::resolve(MIDIAccess* access, ExecutionContext* executionContext)
 {
-    v8::HandleScope handleScope(toIsolate(executionContext));
-    v8::Context::Scope contextScope(m_scriptState->context());
-
+    NewScriptState::Scope scope(m_scriptState.get());
     m_resolver->resolve(access, executionContext);
 }
 
 void MIDIAccessResolver::reject(DOMError* error, ExecutionContext* executionContext)
 {
-    v8::HandleScope handleScope(toIsolate(executionContext));
-    v8::Context::Scope contextScope(m_scriptState->context());
-
+    NewScriptState::Scope scope(m_scriptState.get());
     m_resolver->reject(error, executionContext);
 }
 

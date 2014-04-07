@@ -158,14 +158,11 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
 
     element->setCustomElementState(Element::Upgraded);
 
-    v8::Isolate* isolate = m_scriptState->isolate();
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> context = m_scriptState->context();
-    if (context.IsEmpty())
+    if (m_scriptState->contextIsEmpty())
         return;
-
-    v8::Context::Scope scope(context);
-
+    NewScriptState::Scope scope(m_scriptState.get());
+    v8::Isolate* isolate = m_scriptState->isolate();
+    v8::Handle<v8::Context> context = m_scriptState->context();
     v8::Handle<v8::Object> receiver = DOMDataStore::current(isolate).get<V8Element>(element, isolate);
     if (!receiver.IsEmpty()) {
         // Swizzle the prototype of the existing wrapper. We don't need to
@@ -211,14 +208,11 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
     if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
 
-    v8::Isolate* isolate = m_scriptState->isolate();
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> context = m_scriptState->context();
-    if (context.IsEmpty())
+    if (m_scriptState->contextIsEmpty())
         return;
-
-    v8::Context::Scope scope(context);
-
+    NewScriptState::Scope scope(m_scriptState.get());
+    v8::Isolate* isolate = m_scriptState->isolate();
+    v8::Handle<v8::Context> context = m_scriptState->context();
     v8::Handle<v8::Object> receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
     ASSERT(!receiver.IsEmpty());
 
@@ -247,14 +241,11 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
     if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
 
-    v8::Isolate* isolate = m_scriptState->isolate();
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> context = m_scriptState->context();
-    if (context.IsEmpty())
+    if (m_scriptState->contextIsEmpty())
         return;
-
-    v8::Context::Scope scope(context);
-
+    NewScriptState::Scope scope(m_scriptState.get());
+    v8::Isolate* isolate = m_scriptState->isolate();
+    v8::Handle<v8::Context> context = m_scriptState->context();
     v8::Handle<v8::Function> callback = weakCallback.newLocal(isolate);
     if (callback.IsEmpty())
         return;

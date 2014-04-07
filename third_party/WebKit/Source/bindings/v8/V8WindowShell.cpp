@@ -123,11 +123,9 @@ void V8WindowShell::clearForNavigation()
     if (!isContextInitialized())
         return;
 
-    v8::HandleScope handleScope(m_isolate);
-    m_document.clear();
+    NewScriptState::Scope scope(m_scriptState.get());
 
-    v8::Handle<v8::Context> context = m_scriptState->context();
-    v8::Context::Scope contextScope(context);
+    m_document.clear();
 
     // Clear the document wrapper cache before turning on access checks on
     // the old DOMWindow wrapper. This way, access to the document wrapper
@@ -198,9 +196,8 @@ bool V8WindowShell::initialize()
     if (!isContextInitialized())
         return false;
 
+    NewScriptState::Scope scope(m_scriptState.get());
     v8::Handle<v8::Context> context = m_scriptState->context();
-    v8::Context::Scope contextScope(context);
-
     if (m_global.isEmpty()) {
         m_global.set(m_isolate, context->Global());
         if (m_global.isEmpty()) {
@@ -343,10 +340,8 @@ void V8WindowShell::updateDocumentProperty()
     if (!m_world->isMainWorld())
         return;
 
-    v8::HandleScope handleScope(m_isolate);
+    NewScriptState::Scope scope(m_scriptState.get());
     v8::Handle<v8::Context> context = m_scriptState->context();
-    v8::Context::Scope contextScope(context);
-
     v8::Handle<v8::Value> documentWrapper = toV8(m_frame->document(), v8::Handle<v8::Object>(), context->GetIsolate());
     ASSERT(documentWrapper == m_document.newLocal(m_isolate) || m_document.isEmpty());
     if (m_document.isEmpty())
@@ -466,9 +461,7 @@ void V8WindowShell::namedItemAdded(HTMLDocument* document, const AtomicString& n
     if (!isContextInitialized())
         return;
 
-    v8::HandleScope handleScope(m_isolate);
-    v8::Context::Scope contextScope(m_scriptState->context());
-
+    NewScriptState::Scope scope(m_scriptState.get());
     ASSERT(!m_document.isEmpty());
     v8::Handle<v8::Object> documentHandle = m_document.newLocal(m_isolate);
     checkDocumentWrapper(documentHandle, document);
@@ -485,9 +478,7 @@ void V8WindowShell::namedItemRemoved(HTMLDocument* document, const AtomicString&
     if (document->hasNamedItem(name) || document->hasExtraNamedItem(name))
         return;
 
-    v8::HandleScope handleScope(m_isolate);
-    v8::Context::Scope contextScope(m_scriptState->context());
-
+    NewScriptState::Scope scope(m_scriptState.get());
     ASSERT(!m_document.isEmpty());
     v8::Handle<v8::Object> documentHandle = m_document.newLocal(m_isolate);
     checkDocumentWrapper(documentHandle, document);

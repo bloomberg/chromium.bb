@@ -35,12 +35,10 @@ namespace WebCore {
         {{return_default}};
 
     v8::Isolate* isolate = m_scriptState->isolate();
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> v8Context = m_scriptState->context();
-    if (v8Context.IsEmpty())
+    if (m_scriptState->contextIsEmpty())
         {{return_default}};
 
-    v8::Context::Scope scope(v8Context);
+    NewScriptState::Scope scope(m_scriptState.get());
     {% if method.call_with_this_handle %}
     v8::Handle<v8::Value> thisHandle = thisValue.v8Value();
     if (thisHandle.IsEmpty()) {
