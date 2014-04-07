@@ -85,6 +85,7 @@
         <include name="IDR_FILE_MANAGER_GALLERY_JS" file="file_manager/foreground/js/photo/gallery_scripts.js" flattenhtml="true" type="BINDATA" />
 
         <!-- Scripts working in background page. -->
+        <include name="IDR_FILE_MANAGER_ERROR_UTIL_JS" file="file_manager/common/js/error_util.js" flattenhtml="false" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ASYNC_UTIL_JS" file="file_manager/common/js/async_util.js" flattenhtml="false" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_DEVICE_HANDLER_JS" file="file_manager/background/js/device_handler.js" flattenhtml="false" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_DRIVE_SYNC_HANDLER_JS" file="file_manager/background/js/drive_sync_handler.js" flattenhtml="false" type="BINDATA" />

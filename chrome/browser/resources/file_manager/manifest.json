@@ -196,6 +196,7 @@
   "app": {
     "background": {
       "scripts": [
+        "common/js/error_util.js",
         "chrome://resources/js/load_time_data.js",
         "chrome://resources/js/cr.js",
         "chrome://resources/js/cr/event_target.js",

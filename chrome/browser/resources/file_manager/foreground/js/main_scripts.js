@@ -66,8 +66,8 @@
 (function() {
 // 'strict mode' is invoked for this scope.
 
-// // This script must be loaded before all other Files.app's scripts.
-//<include src="error_counter.js"/>
+// error_util.js must be loaded before all other Files.app's scripts.
+//<include src="../../common/js/error_util.js"/>
 //
 //<include src="../../common/js/async_util.js"/>
 //<include src="../../common/js/path_util.js"/>

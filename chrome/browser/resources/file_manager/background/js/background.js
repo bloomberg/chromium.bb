@@ -5,17 +5,6 @@
 'use strict';
 
 /**
- * Number of runtime errors caught in the background page.
- * @type {number}
- */
-var JSErrorCount = 0;
-
-/**
- * Counts runtime JavaScript errors.
- */
-window.onerror = function() { JSErrorCount++; };
-
-/**
  * Type of a Files.app's instance launch.
  * @enum {number}
  */

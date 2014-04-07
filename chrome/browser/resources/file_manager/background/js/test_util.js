@@ -104,7 +104,7 @@ test.util.sync.getDocument_ = function(contentWindow, opt_iframeQuery) {
 };
 
 /**
- * Gets total Javascript error count from each app window.
+ * Gets total Javascript error count from background page and each app window.
  * @return {number} Error count.
  */
 test.util.sync.getErrorCount = function() {
