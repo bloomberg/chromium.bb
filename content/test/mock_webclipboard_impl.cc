@@ -102,7 +102,7 @@ blink::WebData MockWebClipboardImpl::readImage(
                         gfx::PNGCodec::FORMAT_BGRA,
 #endif
                         gfx::Size(bitmap.width(), bitmap.height()),
-                        bitmap.rowBytes(),
+                        static_cast<int>(bitmap.rowBytes()),
                         false /* discard_transparency */,
                         std::vector<gfx::PNGCodec::Comment>(),
                         &encoded_image);

@@ -38,11 +38,14 @@
         'content_resources.gyp:content_resources',
         'content_shell_resources',
         'copy_test_netscape_plugin',
-        'test_support_content',
+        'layouttest_support_content',
         '../base/base.gyp:base',
+        '../base/base.gyp:base_static',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../cc/cc.gyp:cc',
         '../components/components.gyp:breakpad_component',
         '../gin/gin.gyp:gin',
+        '../gpu/gpu.gyp:gpu',
         '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:media',
         '../net/net.gyp:net',
@@ -58,13 +61,14 @@
         '../url/url.gyp:url_lib',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/common/webkit_common.gyp:webkit_common',
+        '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_bindings',
+        '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
-        'public/test/layouttest_support.h',
         'shell/android/shell_jni_registrar.cc',
         'shell/android/shell_jni_registrar.h',
         'shell/android/shell_manager.cc',
@@ -241,7 +245,6 @@
         'shell/renderer/test_runner/web_ax_object_proxy.h',
         'shell/renderer/webkit_test_runner.cc',
         'shell/renderer/webkit_test_runner.h',
-        'test/layouttest_support.cc',
       ],
       'msvs_settings': {
         'VCLinkerTool': {
@@ -298,12 +301,6 @@
           ],
           'dependencies!': [
             'copy_test_netscape_plugin',
-          ],
-        }, {  # else: OS!="android"
-          'dependencies': [
-            # This dependency is for running DRT against the content shell, and
-            # this combination is not yet supported on Android.
-            'test_support_content',
           ],
         }],  # OS=="android"
         ['os_posix == 1 and OS != "mac" and android_webview_build != 1', {
@@ -492,7 +489,11 @@
             ],
             'conditions': [
               ['OS!="android"', {
-                'pak_inputs': ['<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',],
+                'variables': {
+                  'pak_inputs': [
+                    '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
+                  ],
+                },
                 'pak_output': '<(PRODUCT_DIR)/content_shell.pak',
               }, {
                 'pak_output': '<(PRODUCT_DIR)/content_shell/assets/content_shell.pak',
