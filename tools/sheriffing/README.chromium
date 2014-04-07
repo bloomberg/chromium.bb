@@ -1,5 +1,6 @@
 Web interface helpful for sheriffing.
 
-Run with "python -m SimpleHTTPServer" and browse to localhost:8000.
+Run with "python -m SimpleHTTPServer" and browse to localhost:8000. It's also
+pushed to chromium-sheriffing.appspot.com on occasion.
 
 Favicon from http://www.famfamfam.com/lab/icons/mini/.

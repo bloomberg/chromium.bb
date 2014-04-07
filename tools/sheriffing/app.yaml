@@ -1,0 +1,17 @@
+application: chromium-sheriffing
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+# Silly way of using appspot for static hosting. (It has a "free" tier vs.
+# Cloud Storage which requires billing info for the << $1 it will cost to
+# host this.)
+handlers:
+- url: /
+  static_files: index.html
+  upload: index.html
+
+- url: /(.*)
+  static_files: \1
+  upload: (.*)
