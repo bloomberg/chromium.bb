@@ -189,3 +189,14 @@ message SetBootAttributeRequest {
 
 message FlushAndSignBootAttributesRequest {
 }
+
+message ListKeysRequest {
+  // The default behavior is by label so any extension here should honor that.
+}
+
+message ListKeysReply {
+  extend BaseReply {
+    optional ListKeysReply reply = 1004;
+  }
+  repeated string labels = 1;
+}
