@@ -202,7 +202,8 @@
     },
     'webcomponents': {
       'filepath': 'Source/core/dom/shadow/' \
-                  '|Source/core/dom/CustomElement' \
+                  '|Source/core/dom/custom/' \
+                  '|Source/core/html/imports/' \
                   '|Source/bindings/v8/custom/V8CustomElementConstructorCustom' \
                   '|Source/bindings/v8/CustomElementHelpers'
     },
