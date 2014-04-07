@@ -172,6 +172,8 @@ void ContextProviderCommandBuffer::OnLostContext() {
   }
   if (!lost_context_callback_.is_null())
     base::ResetAndReturn(&lost_context_callback_).Run();
+  if (gr_context_)
+    gr_context_->OnLostContext();
 }
 
 void ContextProviderCommandBuffer::OnMemoryAllocationChanged(

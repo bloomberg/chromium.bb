@@ -43,8 +43,11 @@ GrContextForWebGraphicsContext3D::GrContextForWebGraphicsContext3D(
 }
 
 GrContextForWebGraphicsContext3D::~GrContextForWebGraphicsContext3D() {
+}
+
+void GrContextForWebGraphicsContext3D::OnLostContext() {
   if (gr_context_)
-    gr_context_->contextDestroyed();
+    gr_context_->contextLost();
 }
 
 void GrContextForWebGraphicsContext3D::SetMemoryLimit(bool nonzero_allocation) {

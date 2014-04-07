@@ -26,6 +26,7 @@ class WEBKIT_GPU_EXPORT GrContextForWebGraphicsContext3D {
 
   GrContext* get() { return gr_context_.get(); }
 
+  void OnLostContext();
   void SetMemoryLimit(bool nonzero_allocation);
 
  private:

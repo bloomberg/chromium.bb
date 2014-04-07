@@ -41,8 +41,8 @@ class TestInProcessContextProvider : public ContextProvider {
   virtual ~TestInProcessContextProvider();
 
  private:
-  skia::RefPtr<class GrContext> gr_context_;
   scoped_ptr<gpu::GLInProcessContext> context_;
+  skia::RefPtr<class GrContext> gr_context_;
 };
 
 }  // namespace cc

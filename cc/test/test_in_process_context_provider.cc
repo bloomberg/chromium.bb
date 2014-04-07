@@ -49,8 +49,6 @@ TestInProcessContextProvider::TestInProcessContextProvider()
     : context_(CreateTestInProcessContext()) {}
 
 TestInProcessContextProvider::~TestInProcessContextProvider() {
-  if (gr_context_)
-    gr_context_->contextDestroyed();
 }
 
 bool TestInProcessContextProvider::BindToCurrentThread() { return true; }
