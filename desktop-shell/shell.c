@@ -5852,6 +5852,9 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 	weston_compositor_add_button_binding(ec, BTN_LEFT, 0,
 					     click_to_activate_binding,
 					     shell);
+	weston_compositor_add_button_binding(ec, BTN_RIGHT, 0,
+					     click_to_activate_binding,
+					     shell);
 	weston_compositor_add_touch_binding(ec, 0,
 					    touch_to_activate_binding,
 					    shell);
