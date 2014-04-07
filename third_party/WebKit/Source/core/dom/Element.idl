@@ -126,7 +126,7 @@
     // W3C version
     [PerWorldBindings, ActivityLogging=ForAllWorlds, MeasureAs=PrefixedElementRequestFullscreen] void webkitRequestFullscreen();
 
-    void webkitRequestPointerLock();
+    [MeasureAs=PrefixedElementRequestPointerLock] void webkitRequestPointerLock();
 
     // Event handler attributes
     attribute EventHandler onbeforecopy;
