@@ -747,22 +747,15 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const 
 
 // This function is used by the WebAnimations JavaScript API method animate().
 // FIXME: Remove this when animate() switches away from resolution-dependent parsing.
-PassRefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> StyleResolver::createKeyframeEffectModel(Element& element, const WillBeHeapVector<RefPtrWillBeMember<MutableStylePropertySet> >& propertySetVector, AnimatableValueKeyframeVector& keyframes)
+PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, CSSPropertyID property, CSSValue* value)
 {
-    ASSERT(propertySetVector.size() == keyframes.size());
-
+    // We use a fresh RenderStyle here because certain values (eg. background-position) won't always completely replace the previously applied property.
+    RefPtr<RenderStyle> style = element.renderStyle() ? RenderStyle::clone(element.renderStyle()) : RenderStyle::create();
     StyleResolverState state(element.document(), &element);
-    state.setStyle(RenderStyle::create());
+    state.setStyle(style.get());
     state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
-
-    for (unsigned i = 0; i < propertySetVector.size(); ++i) {
-        for (unsigned j = 0; j < propertySetVector[i]->propertyCount(); ++j) {
-            CSSPropertyID id = propertySetVector[i]->propertyAt(j).id();
-            StyleBuilder::applyProperty(id, state, propertySetVector[i]->getPropertyCSSValue(id).get());
-            keyframes[i]->setPropertyValue(id, CSSAnimatableValueFactory::create(id, *state.style()).get());
-        }
-    }
-    return AnimatableValueKeyframeEffectModel::create(keyframes);
+    StyleBuilder::applyProperty(property, state, value);
+    return CSSAnimatableValueFactory::create(property, *style);
 }
 
 PassRefPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)

@@ -13,6 +13,8 @@ namespace WebCore {
 
 typedef HashSet<CSSPropertyID> PropertySet;
 
+class Element;
+
 // FIXME: Make Keyframe immutable
 class Keyframe : public RefCountedWillBeGarbageCollectedFinalized<Keyframe> {
 public:
@@ -55,7 +57,7 @@ public:
         virtual bool isStringPropertySpecificKeyframe() const { return false; }
 
         virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const = 0;
-        virtual PassRefPtrWillBeRawPtr<Interpolation> createInterpolation(CSSPropertyID, WebCore::Keyframe::PropertySpecificKeyframe* end) const = 0;
+        virtual PassRefPtrWillBeRawPtr<Interpolation> createInterpolation(CSSPropertyID, WebCore::Keyframe::PropertySpecificKeyframe* end, Element*) const = 0;
 
         virtual void trace(Visitor*) = 0;
 

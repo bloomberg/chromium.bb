@@ -47,6 +47,7 @@
 
 namespace WebCore {
 
+class Element;
 class KeyframeEffectModelTest;
 
 class KeyframeEffectModelBase : public AnimationEffect {
@@ -94,12 +95,20 @@ public:
 
     virtual void trace(Visitor*) OVERRIDE;
 
+    // FIXME: This is a hack used to resolve CSSValues to AnimatableValues while we have a valid handle on an element.
+    // This should be removed once StringKeyframes no longer uses InterpolableAnimatableValues.
+    void forceConversionsToAnimatableValues(Element* element)
+    {
+        ensureKeyframeGroups();
+        ensureInterpolationEffect(element);
+    }
+
 protected:
     static KeyframeVector normalizedKeyframes(const KeyframeVector& keyframes);
 
     // Lazily computes the groups of property-specific keyframes.
     void ensureKeyframeGroups() const;
-    void ensureInterpolationEffect() const;
+    void ensureInterpolationEffect(Element* = 0) const;
 
     KeyframeVector m_keyframes;
     // The spec describes filtering the normalized keyframes at sampling time

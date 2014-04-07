@@ -9,8 +9,8 @@ PASS: border-color from [white] to [orange] was [rgb(255, 120, 0)] at 1.5
 Web Animations API:
 PASS: borderColor from [white] to [orange] was [white] at -0.3
 PASS: borderColor from [white] to [orange] was [white] at 0
-FAIL: borderColor from [white] to [orange] was [rgb(255, 255, 255)] at 0.3, expected [rgb(255, 228, 179)]
-FAIL: borderColor from [white] to [orange] was [rgb(255, 255, 255)] at 0.6, expected [rgb(255, 201, 102)]
-FAIL: borderColor from [white] to [orange] was [rgb(255, 255, 255)] at 1, expected [orange] (parsed as [rgb(255, 165, 0)])
-FAIL: borderColor from [white] to [orange] was [rgb(255, 255, 255)] at 1.5, expected [rgb(255, 120, 0)]
+PASS: borderColor from [white] to [orange] was [rgb(255, 228, 179)] at 0.3
+PASS: borderColor from [white] to [orange] was [rgb(255, 201, 102)] at 0.6
+PASS: borderColor from [white] to [orange] was [orange] at 1
+PASS: borderColor from [white] to [orange] was [rgb(255, 120, 0)] at 1.5
 

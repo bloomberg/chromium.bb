@@ -9,8 +9,8 @@ PASS: padding from [0px] to [10px] was [15px] at 1.5
 Web Animations API:
 PASS: padding from [0px] to [10px] was [0px] at -0.3
 PASS: padding from [0px] to [10px] was [0px] at 0
-FAIL: padding from [0px] to [10px] was [0px] at 0.3, expected [3px]
-FAIL: padding from [0px] to [10px] was [0px] at 0.6, expected [6px]
-FAIL: padding from [0px] to [10px] was [0px] at 1, expected [10px]
-FAIL: padding from [0px] to [10px] was [0px] at 1.5, expected [15px]
+PASS: padding from [0px] to [10px] was [3px] at 0.3
+PASS: padding from [0px] to [10px] was [6px] at 0.6
+PASS: padding from [0px] to [10px] was [10px] at 1
+PASS: padding from [0px] to [10px] was [15px] at 1.5
 

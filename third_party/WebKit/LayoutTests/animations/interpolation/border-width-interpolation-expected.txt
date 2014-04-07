@@ -7,10 +7,10 @@ PASS: border-width from [0px] to [10px] was [10px] at 1
 PASS: border-width from [0px] to [10px] was [15px] at 1.5
 
 Web Animations API:
-FAIL: borderWidth from [0px] to [10px] was [2px] at -0.3, expected [0px]
-FAIL: borderWidth from [0px] to [10px] was [2px] at 0, expected [0px]
-FAIL: borderWidth from [0px] to [10px] was [2px] at 0.3, expected [3px]
-FAIL: borderWidth from [0px] to [10px] was [2px] at 0.6, expected [6px]
-FAIL: borderWidth from [0px] to [10px] was [2px] at 1, expected [10px]
-FAIL: borderWidth from [0px] to [10px] was [2px] at 1.5, expected [15px]
+PASS: borderWidth from [0px] to [10px] was [0px] at -0.3
+PASS: borderWidth from [0px] to [10px] was [0px] at 0
+PASS: borderWidth from [0px] to [10px] was [3px] at 0.3
+PASS: borderWidth from [0px] to [10px] was [6px] at 0.6
+PASS: borderWidth from [0px] to [10px] was [10px] at 1
+PASS: borderWidth from [0px] to [10px] was [15px] at 1.5
 

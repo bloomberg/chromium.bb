@@ -37,7 +37,7 @@ public:
         AnimatableValue* value() const { return m_value.get(); }
 
         virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const OVERRIDE FINAL;
-        virtual PassRefPtrWillBeRawPtr<Interpolation> createInterpolation(CSSPropertyID, WebCore::Keyframe::PropertySpecificKeyframe* end) const OVERRIDE FINAL;
+        virtual PassRefPtrWillBeRawPtr<Interpolation> createInterpolation(CSSPropertyID, WebCore::Keyframe::PropertySpecificKeyframe* end, Element*) const OVERRIDE FINAL;
 
         virtual void trace(Visitor*) OVERRIDE;
 

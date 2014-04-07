@@ -19,12 +19,12 @@ PASS: -webkit-border-vertical-spacing from [0px] to [10px] was [10px] at 1
 PASS: -webkit-border-vertical-spacing from [0px] to [10px] was [15px] at 1.5
 
 Web Animations API:
-FAIL: borderSpacing from [0px] to [10px] was [2px 2px] at -0.3, expected [0px 0px]
-FAIL: borderSpacing from [0px] to [10px] was [2px 2px] at 0, expected [0px 0px]
-FAIL: borderSpacing from [0px] to [10px] was [2px 2px] at 0.3, expected [3px 3px]
-FAIL: borderSpacing from [0px] to [10px] was [2px 2px] at 0.6, expected [6px 6px]
-FAIL: borderSpacing from [0px] to [10px] was [2px 2px] at 1, expected [10px 10px]
-FAIL: borderSpacing from [0px] to [10px] was [2px 2px] at 1.5, expected [15px 15px]
+PASS: borderSpacing from [0px] to [10px] was [0px 0px] at -0.3
+PASS: borderSpacing from [0px] to [10px] was [0px 0px] at 0
+PASS: borderSpacing from [0px] to [10px] was [3px 3px] at 0.3
+PASS: borderSpacing from [0px] to [10px] was [6px 6px] at 0.6
+PASS: borderSpacing from [0px] to [10px] was [10px 10px] at 1
+PASS: borderSpacing from [0px] to [10px] was [15px 15px] at 1.5
 FAIL: webkitBorderHorizontalSpacing from [0px] to [10px] was [2px] at -0.3, expected [0px]
 FAIL: webkitBorderHorizontalSpacing from [0px] to [10px] was [2px] at 0, expected [0px]
 FAIL: webkitBorderHorizontalSpacing from [0px] to [10px] was [2px] at 0.3, expected [3px]

@@ -5,10 +5,12 @@
 #ifndef StringKeyframe_h
 #define StringKeyframe_h
 
-#include "core/animation/AnimatableValue.h"
 #include "core/animation/Keyframe.h"
+#include "core/css/StylePropertySet.h"
 
 namespace WebCore {
+
+class StyleSheetContents;
 
 class StringKeyframe : public Keyframe {
 public:
@@ -16,15 +18,13 @@ public:
     {
         return adoptRefWillBeNoop(new StringKeyframe);
     }
-    void setPropertyValue(CSSPropertyID property, const String& value)
+    void setPropertyValue(CSSPropertyID, const String& value, StyleSheetContents*);
+    void clearPropertyValue(CSSPropertyID property) { m_propertySet->removeProperty(property); }
+    CSSValue* propertyValue(CSSPropertyID property) const
     {
-        m_propertyValues.add(property, value);
-    }
-    void clearPropertyValue(CSSPropertyID property) { m_propertyValues.remove(property); }
-    String propertyValue(CSSPropertyID property) const
-    {
-        ASSERT(m_propertyValues.contains(property));
-        return m_propertyValues.get(property);
+        int index = m_propertySet->findPropertyIndex(property);
+        RELEASE_ASSERT(index >= 0);
+        return m_propertySet->propertyAt(static_cast<unsigned>(index)).value();
     }
     virtual PropertySet properties() const OVERRIDE;
 
@@ -32,39 +32,44 @@ public:
 
     class PropertySpecificKeyframe : public Keyframe::PropertySpecificKeyframe {
     public:
-        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const String& value, AnimationEffect::CompositeOperation);
+        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue*, AnimationEffect::CompositeOperation);
 
-        const String& value() const { return m_value; }
+        CSSValue* value() const { return m_value.get(); }
 
         virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const OVERRIDE FINAL;
-        virtual PassRefPtrWillBeRawPtr<Interpolation> createInterpolation(CSSPropertyID, WebCore::Keyframe::PropertySpecificKeyframe* end) const OVERRIDE FINAL;
+        virtual PassRefPtrWillBeRawPtr<Interpolation> createInterpolation(CSSPropertyID, WebCore::Keyframe::PropertySpecificKeyframe* end, Element*) const OVERRIDE FINAL;
 
         virtual void trace(Visitor*) OVERRIDE;
 
     private:
-        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const String& value);
+        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue*);
 
         virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(double offset) const;
         virtual bool isStringPropertySpecificKeyframe() const OVERRIDE { return true; }
 
-        String m_value;
+        RefPtrWillBeRawPtr<CSSValue> m_value;
     };
 
 private:
-    StringKeyframe() { }
+    StringKeyframe()
+        : m_propertySet(MutableStylePropertySet::create())
+    { }
 
     StringKeyframe(const StringKeyframe& copyFrom);
 
+    void setPropertyCSSValue(CSSPropertyID, CSSValue*);
     virtual PassRefPtrWillBeRawPtr<Keyframe> clone() const OVERRIDE;
     virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(CSSPropertyID) const OVERRIDE;
 
     virtual bool isStringKeyframe() const OVERRIDE { return true; }
 
-    typedef HashMap<CSSPropertyID, String> PropertyValueMap;
-    PropertyValueMap m_propertyValues;
+    RefPtrWillBeRawPtr<MutableStylePropertySet> m_propertySet;
 };
 
 typedef StringKeyframe::PropertySpecificKeyframe StringPropertySpecificKeyframe;
+
+DEFINE_TYPE_CASTS(StringKeyframe, Keyframe, value, value->isStringKeyframe(), value.isStringKeyframe());
+DEFINE_TYPE_CASTS(StringPropertySpecificKeyframe, Keyframe::PropertySpecificKeyframe, value, value->isStringPropertySpecificKeyframe(), value.isStringPropertySpecificKeyframe());
 
 }
 

@@ -6,14 +6,22 @@
 #include "core/animation/StringKeyframe.h"
 
 #include "core/animation/Interpolation.h"
+#include "core/animation/css/CSSAnimations.h"
+#include "core/css/resolver/StyleResolver.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 
 StringKeyframe::StringKeyframe(const StringKeyframe& copyFrom)
     : Keyframe(copyFrom.m_offset, copyFrom.m_composite, copyFrom.m_easing)
+    , m_propertySet(copyFrom.m_propertySet->mutableCopy())
 {
-    for (PropertyValueMap::const_iterator iter = copyFrom.m_propertyValues.begin(); iter != copyFrom.m_propertyValues.end(); ++iter)
-        setPropertyValue(iter->key, iter->value);
+}
+
+void StringKeyframe::setPropertyValue(CSSPropertyID property, const String& value, StyleSheetContents* styleSheetContents)
+{
+    ASSERT(property != CSSPropertyInvalid);
+    m_propertySet->setProperty(property, value, false, styleSheetContents);
 }
 
 PropertySet StringKeyframe::properties() const
@@ -21,8 +29,12 @@ PropertySet StringKeyframe::properties() const
     // This is not used in time-critical code, so we probably don't need to
     // worry about caching this result.
     PropertySet properties;
-    for (PropertyValueMap::const_iterator iter = m_propertyValues.begin(); iter != m_propertyValues.end(); ++iter)
-        properties.add(*iter.keys());
+    for (unsigned i = 0; i < m_propertySet->propertyCount(); ++i) {
+        // FIXME: Allow for non-animatable properties.
+        CSSPropertyID property = m_propertySet->propertyAt(i).id();
+        if (CSSAnimations::isAnimatableProperty(property))
+            properties.add(property);
+    }
     return properties;
 }
 
@@ -40,38 +52,44 @@ void StringKeyframe::trace(Visitor* visitor)
     Keyframe::trace(visitor);
 }
 
-StringKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const String& value, AnimationEffect::CompositeOperation op)
+StringKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue* value, AnimationEffect::CompositeOperation op)
     : Keyframe::PropertySpecificKeyframe(offset, easing, op)
     , m_value(value)
 { }
 
-StringKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const String& value)
+StringKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue* value)
     : Keyframe::PropertySpecificKeyframe(offset, easing, AnimationEffect::CompositeReplace)
     , m_value(value)
 {
     ASSERT(!isNull(m_offset));
 }
 
-PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::createInterpolation(CSSPropertyID property, Keyframe::PropertySpecificKeyframe* end) const
+PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::createInterpolation(CSSPropertyID property, Keyframe::PropertySpecificKeyframe* end, Element* element) const
 {
-    ASSERT_UNUSED(end, end);
-    // FIXME: Convert string keyframe value pairs to interpolations.
-    return nullptr;
+    CSSValue* fromCSSValue = m_value.get();
+    CSSValue* toCSSValue = toStringPropertySpecificKeyframe(end)->value();
+
+    // FIXME: Remove the use of AnimatableValues, RenderStyles and Elements here.
+    RefPtr<AnimatableValue> from = StyleResolver::createAnimatableValueSnapshot(*element, property, fromCSSValue);
+    RefPtr<AnimatableValue> to = StyleResolver::createAnimatableValueSnapshot(*element, property, toCSSValue);
+
+    return LegacyStyleInterpolation::create(from.release(), to.release(), property);
 }
 
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::PropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
 {
-    return adoptPtrWillBeNoop(new StringKeyframe::PropertySpecificKeyframe(offset, easing, emptyString(), AnimationEffect::CompositeAdd));
+    return adoptPtrWillBeNoop(new PropertySpecificKeyframe(offset, easing, 0, AnimationEffect::CompositeAdd));
 }
 
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::PropertySpecificKeyframe::cloneWithOffset(double offset) const
 {
-    Keyframe::PropertySpecificKeyframe *theClone = new PropertySpecificKeyframe(offset, m_easing, m_value);
+    Keyframe::PropertySpecificKeyframe *theClone = new PropertySpecificKeyframe(offset, m_easing, m_value.get());
     return adoptPtrWillBeNoop(theClone);
 }
 
 void StringKeyframe::PropertySpecificKeyframe::trace(Visitor* visitor)
 {
+    visitor->trace(m_value);
 }
 
 }

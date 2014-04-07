@@ -46,49 +46,49 @@ PASS: background-position from [center center] to [right 20px bottom 20px] was [
 PASS: background-position from [center center] to [right 20px bottom 20px] was [calc(100% - 20px) calc(100% - 20px)] at 1
 
 Web Animations API:
-FAIL: backgroundPosition from [center center] to [left 20px top 20px] was [0% 0%] at 0, expected [50% 50%]
-FAIL: backgroundPosition from [center center] to [left 20px top 20px] was [0% 0%] at 0.25, expected [calc(37.5% + 5px) calc(37.5% + 5px)]
-FAIL: backgroundPosition from [center center] to [left 20px top 20px] was [0% 0%] at 0.5, expected [calc(25% + 10px) calc(25% + 10px)]
-FAIL: backgroundPosition from [center center] to [left 20px top 20px] was [0% 0%] at 0.75, expected [calc(12.5% + 15px) calc(12.5% + 15px)]
-FAIL: backgroundPosition from [center center] to [left 20px top 20px] was [0% 0%] at 1, expected [20px 20px]
-FAIL: backgroundPosition from [center center] to [center top 20px] was [0% 0%] at 0, expected [50% 50%]
-FAIL: backgroundPosition from [center center] to [center top 20px] was [0% 0%] at 0.25, expected [50% calc(37.5% + 5px)]
-FAIL: backgroundPosition from [center center] to [center top 20px] was [0% 0%] at 0.5, expected [50% calc(25% + 10px)]
-FAIL: backgroundPosition from [center center] to [center top 20px] was [0% 0%] at 0.75, expected [50% calc(12.5% + 15px)]
-FAIL: backgroundPosition from [center center] to [center top 20px] was [0% 0%] at 1, expected [50% 20px]
-FAIL: backgroundPosition from [center center] to [right 20px top 20px] was [0% 0%] at 0, expected [50% 50%]
-FAIL: backgroundPosition from [center center] to [right 20px top 20px] was [0% 0%] at 0.25, expected [calc(37.5% + ((100% - 20px) * 0.25)) calc(37.5% + 5px)]
-FAIL: backgroundPosition from [center center] to [right 20px top 20px] was [0% 0%] at 0.5, expected [calc(25% + ((100% - 20px) * 0.5)) calc(25% + 10px)]
-FAIL: backgroundPosition from [center center] to [right 20px top 20px] was [0% 0%] at 0.75, expected [calc(12.5% + ((100% - 20px) * 0.75)) calc(12.5% + 15px)]
-FAIL: backgroundPosition from [center center] to [right 20px top 20px] was [0% 0%] at 1, expected [calc(100% - 20px) 20px]
-FAIL: backgroundPosition from [center center] to [left 20px center] was [0% 0%] at 0, expected [50% 50%]
-FAIL: backgroundPosition from [center center] to [left 20px center] was [0% 0%] at 0.25, expected [calc(37.5% + 5px) 50%]
-FAIL: backgroundPosition from [center center] to [left 20px center] was [0% 0%] at 0.5, expected [calc(25% + 10px) 50%]
-FAIL: backgroundPosition from [center center] to [left 20px center] was [0% 0%] at 0.75, expected [calc(12.5% + 15px) 50%]
-FAIL: backgroundPosition from [center center] to [left 20px center] was [0% 0%] at 1, expected [20px 50%]
-FAIL: backgroundPosition from [center center] to [center center] was [0% 0%] at 0, expected [50% 50%]
-FAIL: backgroundPosition from [center center] to [center center] was [0% 0%] at 0.25, expected [50% 50%]
-FAIL: backgroundPosition from [center center] to [center center] was [0% 0%] at 0.5, expected [50% 50%]
-FAIL: backgroundPosition from [center center] to [center center] was [0% 0%] at 0.75, expected [50% 50%]
-FAIL: backgroundPosition from [center center] to [center center] was [0% 0%] at 1, expected [50% 50%]
-FAIL: backgroundPosition from [center center] to [right 20px center] was [0% 0%] at 0, expected [50% 50%]
-FAIL: backgroundPosition from [center center] to [right 20px center] was [0% 0%] at 0.25, expected [calc(37.5% + ((100% - 20px) * 0.25)) 50%]
-FAIL: backgroundPosition from [center center] to [right 20px center] was [0% 0%] at 0.5, expected [calc(25% + ((100% - 20px) * 0.5)) 50%]
-FAIL: backgroundPosition from [center center] to [right 20px center] was [0% 0%] at 0.75, expected [calc(12.5% + ((100% - 20px) * 0.75)) 50%]
-FAIL: backgroundPosition from [center center] to [right 20px center] was [0% 0%] at 1, expected [calc(100% - 20px) 50%]
-FAIL: backgroundPosition from [center center] to [left 20px bottom 20px] was [0% 0%] at 0, expected [50% 50%]
-FAIL: backgroundPosition from [center center] to [left 20px bottom 20px] was [0% 0%] at 0.25, expected [calc(37.5% + 5px) calc(37.5% + ((100% - 20px) * 0.25))]
-FAIL: backgroundPosition from [center center] to [left 20px bottom 20px] was [0% 0%] at 0.5, expected [calc(25% + 10px) calc(25% + ((100% - 20px) * 0.5))]
-FAIL: backgroundPosition from [center center] to [left 20px bottom 20px] was [0% 0%] at 0.75, expected [calc(12.5% + 15px) calc(12.5% + ((100% - 20px) * 0.75))]
-FAIL: backgroundPosition from [center center] to [left 20px bottom 20px] was [0% 0%] at 1, expected [20px calc(100% - 20px)]
-FAIL: backgroundPosition from [center center] to [center bottom 20px] was [0% 0%] at 0, expected [50% 50%]
-FAIL: backgroundPosition from [center center] to [center bottom 20px] was [0% 0%] at 0.25, expected [50% calc(37.5% + ((100% - 20px) * 0.25))]
-FAIL: backgroundPosition from [center center] to [center bottom 20px] was [0% 0%] at 0.5, expected [50% calc(25% + ((100% - 20px) * 0.5))]
-FAIL: backgroundPosition from [center center] to [center bottom 20px] was [0% 0%] at 0.75, expected [50% calc(12.5% + ((100% - 20px) * 0.75))]
-FAIL: backgroundPosition from [center center] to [center bottom 20px] was [0% 0%] at 1, expected [50% calc(100% - 20px)]
-FAIL: backgroundPosition from [center center] to [right 20px bottom 20px] was [0% 0%] at 0, expected [50% 50%]
-FAIL: backgroundPosition from [center center] to [right 20px bottom 20px] was [0% 0%] at 0.25, expected [calc(37.5% + ((100% - 20px) * 0.25)) calc(37.5% + ((100% - 20px) * 0.25))]
-FAIL: backgroundPosition from [center center] to [right 20px bottom 20px] was [0% 0%] at 0.5, expected [calc(25% + ((100% - 20px) * 0.5)) calc(25% + ((100% - 20px) * 0.5))]
-FAIL: backgroundPosition from [center center] to [right 20px bottom 20px] was [0% 0%] at 0.75, expected [calc(12.5% + ((100% - 20px) * 0.75)) calc(12.5% + ((100% - 20px) * 0.75))]
-FAIL: backgroundPosition from [center center] to [right 20px bottom 20px] was [0% 0%] at 1, expected [calc(100% - 20px) calc(100% - 20px)]
+PASS: backgroundPosition from [center center] to [left 20px top 20px] was [50% 50%] at 0
+PASS: backgroundPosition from [center center] to [left 20px top 20px] was [calc(37.5% + 5px) calc(37.5% + 5px)] at 0.25
+PASS: backgroundPosition from [center center] to [left 20px top 20px] was [calc(25% + 10px) calc(25% + 10px)] at 0.5
+PASS: backgroundPosition from [center center] to [left 20px top 20px] was [calc(12.5% + 15px) calc(12.5% + 15px)] at 0.75
+PASS: backgroundPosition from [center center] to [left 20px top 20px] was [20px 20px] at 1
+PASS: backgroundPosition from [center center] to [center top 20px] was [50% 50%] at 0
+PASS: backgroundPosition from [center center] to [center top 20px] was [50% calc(37.5% + 5px)] at 0.25
+PASS: backgroundPosition from [center center] to [center top 20px] was [50% calc(25% + 10px)] at 0.5
+PASS: backgroundPosition from [center center] to [center top 20px] was [50% calc(12.5% + 15px)] at 0.75
+PASS: backgroundPosition from [center center] to [center top 20px] was [50% 20px] at 1
+PASS: backgroundPosition from [center center] to [right 20px top 20px] was [50% 50%] at 0
+PASS: backgroundPosition from [center center] to [right 20px top 20px] was [calc(37.5% + ((100% - 20px) * 0.25)) calc(37.5% + 5px)] at 0.25
+PASS: backgroundPosition from [center center] to [right 20px top 20px] was [calc(25% + ((100% - 20px) * 0.5)) calc(25% + 10px)] at 0.5
+PASS: backgroundPosition from [center center] to [right 20px top 20px] was [calc(12.5% + ((100% - 20px) * 0.75)) calc(12.5% + 15px)] at 0.75
+PASS: backgroundPosition from [center center] to [right 20px top 20px] was [calc(100% - 20px) 20px] at 1
+PASS: backgroundPosition from [center center] to [left 20px center] was [50% 50%] at 0
+PASS: backgroundPosition from [center center] to [left 20px center] was [calc(37.5% + 5px) 50%] at 0.25
+PASS: backgroundPosition from [center center] to [left 20px center] was [calc(25% + 10px) 50%] at 0.5
+PASS: backgroundPosition from [center center] to [left 20px center] was [calc(12.5% + 15px) 50%] at 0.75
+PASS: backgroundPosition from [center center] to [left 20px center] was [20px 50%] at 1
+PASS: backgroundPosition from [center center] to [center center] was [50% 50%] at 0
+PASS: backgroundPosition from [center center] to [center center] was [50% 50%] at 0.25
+PASS: backgroundPosition from [center center] to [center center] was [50% 50%] at 0.5
+PASS: backgroundPosition from [center center] to [center center] was [50% 50%] at 0.75
+PASS: backgroundPosition from [center center] to [center center] was [50% 50%] at 1
+PASS: backgroundPosition from [center center] to [right 20px center] was [50% 50%] at 0
+PASS: backgroundPosition from [center center] to [right 20px center] was [calc(37.5% + ((100% - 20px) * 0.25)) 50%] at 0.25
+PASS: backgroundPosition from [center center] to [right 20px center] was [calc(25% + ((100% - 20px) * 0.5)) 50%] at 0.5
+PASS: backgroundPosition from [center center] to [right 20px center] was [calc(12.5% + ((100% - 20px) * 0.75)) 50%] at 0.75
+PASS: backgroundPosition from [center center] to [right 20px center] was [calc(100% - 20px) 50%] at 1
+PASS: backgroundPosition from [center center] to [left 20px bottom 20px] was [50% 50%] at 0
+PASS: backgroundPosition from [center center] to [left 20px bottom 20px] was [calc(37.5% + 5px) calc(37.5% + ((100% - 20px) * 0.25))] at 0.25
+PASS: backgroundPosition from [center center] to [left 20px bottom 20px] was [calc(25% + 10px) calc(25% + ((100% - 20px) * 0.5))] at 0.5
+PASS: backgroundPosition from [center center] to [left 20px bottom 20px] was [calc(12.5% + 15px) calc(12.5% + ((100% - 20px) * 0.75))] at 0.75
+PASS: backgroundPosition from [center center] to [left 20px bottom 20px] was [20px calc(100% - 20px)] at 1
+PASS: backgroundPosition from [center center] to [center bottom 20px] was [50% 50%] at 0
+PASS: backgroundPosition from [center center] to [center bottom 20px] was [50% calc(37.5% + ((100% - 20px) * 0.25))] at 0.25
+PASS: backgroundPosition from [center center] to [center bottom 20px] was [50% calc(25% + ((100% - 20px) * 0.5))] at 0.5
+PASS: backgroundPosition from [center center] to [center bottom 20px] was [50% calc(12.5% + ((100% - 20px) * 0.75))] at 0.75
+PASS: backgroundPosition from [center center] to [center bottom 20px] was [50% calc(100% - 20px)] at 1
+PASS: backgroundPosition from [center center] to [right 20px bottom 20px] was [50% 50%] at 0
+PASS: backgroundPosition from [center center] to [right 20px bottom 20px] was [calc(37.5% + ((100% - 20px) * 0.25)) calc(37.5% + ((100% - 20px) * 0.25))] at 0.25
+PASS: backgroundPosition from [center center] to [right 20px bottom 20px] was [calc(25% + ((100% - 20px) * 0.5)) calc(25% + ((100% - 20px) * 0.5))] at 0.5
+PASS: backgroundPosition from [center center] to [right 20px bottom 20px] was [calc(12.5% + ((100% - 20px) * 0.75)) calc(12.5% + ((100% - 20px) * 0.75))] at 0.75
+PASS: backgroundPosition from [center center] to [right 20px bottom 20px] was [calc(100% - 20px) calc(100% - 20px)] at 1
 

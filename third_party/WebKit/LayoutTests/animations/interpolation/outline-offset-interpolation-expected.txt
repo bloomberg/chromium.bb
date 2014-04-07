@@ -7,10 +7,10 @@ PASS: outline-offset from [-5px] to [5px] was [5px] at 1
 PASS: outline-offset from [-5px] to [5px] was [10px] at 1.5
 
 Web Animations API:
-FAIL: outlineOffset from [-5px] to [5px] was [0px] at -0.3, expected [-8px]
-FAIL: outlineOffset from [-5px] to [5px] was [0px] at 0, expected [-5px]
-FAIL: outlineOffset from [-5px] to [5px] was [0px] at 0.3, expected [-2px]
-FAIL: outlineOffset from [-5px] to [5px] was [0px] at 0.6, expected [1px]
-FAIL: outlineOffset from [-5px] to [5px] was [0px] at 1, expected [5px]
-FAIL: outlineOffset from [-5px] to [5px] was [0px] at 1.5, expected [10px]
+PASS: outlineOffset from [-5px] to [5px] was [-8px] at -0.3
+PASS: outlineOffset from [-5px] to [5px] was [-5px] at 0
+PASS: outlineOffset from [-5px] to [5px] was [-2px] at 0.3
+PASS: outlineOffset from [-5px] to [5px] was [1px] at 0.6
+PASS: outlineOffset from [-5px] to [5px] was [5px] at 1
+PASS: outlineOffset from [-5px] to [5px] was [10px] at 1.5
 

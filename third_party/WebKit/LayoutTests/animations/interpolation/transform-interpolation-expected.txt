@@ -463,24 +463,24 @@ PASS: transform from [translateY(70%)] to [translateY(90%)] was [translateY(75%)
 PASS: transform from [translateY(70%)] to [translateY(90%)] was [translateY(85%)] at 0.75
 PASS: transform from [translateY(70%)] to [translateY(90%)] was [translateY(90%)] at 1
 PASS: transform from [translateY(70%)] to [translateY(90%)] was [translateY(110%)] at 2
-FAIL: transform from [translateZ(2em)] to [translateZ(3em)] was [matrix(1, 0, 0, 1, 0, 0)] at -1, expected [translateZ(1em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 16, 1)])
-FAIL: transform from [translateZ(2em)] to [translateZ(3em)] was [matrix(1, 0, 0, 1, 0, 0)] at 0, expected [translateZ(2em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 32, 1)])
-FAIL: transform from [translateZ(2em)] to [translateZ(3em)] was [matrix(1, 0, 0, 1, 0, 0)] at 0.25, expected [translateZ(2.25em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 36, 1)])
-FAIL: transform from [translateZ(2em)] to [translateZ(3em)] was [matrix(1, 0, 0, 1, 0, 0)] at 0.75, expected [translateZ(2.75em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 44, 1)])
-FAIL: transform from [translateZ(2em)] to [translateZ(3em)] was [matrix(1, 0, 0, 1, 0, 0)] at 1, expected [translateZ(3em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 48, 1)])
-FAIL: transform from [translateZ(2em)] to [translateZ(3em)] was [matrix(1, 0, 0, 1, 0, 0)] at 2, expected [translateZ(4em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 64, 1)])
-FAIL: transform from [translate3d(12px, 70%, 2em)] to [translate3d(13px, 90%, 3em)] was [matrix(1, 0, 0, 1, 11, 50)] at -1, expected [translate3d(11px, 50%, 1em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 11, 50, 16, 1)])
-FAIL: transform from [translate3d(12px, 70%, 2em)] to [translate3d(13px, 90%, 3em)] was [matrix(1, 0, 0, 1, 12, 70)] at 0, expected [translate3d(12px, 70%, 2em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 12, 70, 32, 1)])
-FAIL: transform from [translate3d(12px, 70%, 2em)] to [translate3d(13px, 90%, 3em)] was [matrix(1, 0, 0, 1, 12.25, 75)] at 0.25, expected [translate3d(12.25px, 75%, 2.25em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 12.25, 75, 36, 1)])
-FAIL: transform from [translate3d(12px, 70%, 2em)] to [translate3d(13px, 90%, 3em)] was [matrix(1, 0, 0, 1, 12.75, 85)] at 0.75, expected [translate3d(12.75px, 85%, 2.75em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 12.75, 85, 44, 1)])
-FAIL: transform from [translate3d(12px, 70%, 2em)] to [translate3d(13px, 90%, 3em)] was [matrix(1, 0, 0, 1, 13, 90)] at 1, expected [translate3d(13px, 90%, 3em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 13, 90, 48, 1)])
-FAIL: transform from [translate3d(12px, 70%, 2em)] to [translate3d(13px, 90%, 3em)] was [matrix(1, 0, 0, 1, 14, 110)] at 2, expected [translate3d(14px, 110%, 4em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 14, 110, 64, 1)])
-FAIL: transform from [translateX(12px) translateY(70%) translateZ(2em)] to [translateX(13px) translateY(90%) translateZ(3em)] was [matrix(1, 0, 0, 1, 11, 50)] at -1, expected [translateX(11px) translateY(50%) translateZ(1em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 11, 50, 16, 1)])
-FAIL: transform from [translateX(12px) translateY(70%) translateZ(2em)] to [translateX(13px) translateY(90%) translateZ(3em)] was [matrix(1, 0, 0, 1, 12, 70)] at 0, expected [translateX(12px) translateY(70%) translateZ(2em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 12, 70, 32, 1)])
-FAIL: transform from [translateX(12px) translateY(70%) translateZ(2em)] to [translateX(13px) translateY(90%) translateZ(3em)] was [matrix(1, 0, 0, 1, 12.25, 75)] at 0.25, expected [translateX(12.25px) translateY(75%) translateZ(2.25em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 12.25, 75, 36, 1)])
-FAIL: transform from [translateX(12px) translateY(70%) translateZ(2em)] to [translateX(13px) translateY(90%) translateZ(3em)] was [matrix(1, 0, 0, 1, 12.75, 85)] at 0.75, expected [translateX(12.75px) translateY(85%) translateZ(2.75em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 12.75, 85, 44, 1)])
-FAIL: transform from [translateX(12px) translateY(70%) translateZ(2em)] to [translateX(13px) translateY(90%) translateZ(3em)] was [matrix(1, 0, 0, 1, 13, 90)] at 1, expected [translateX(13px) translateY(90%) translateZ(3em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 13, 90, 48, 1)])
-FAIL: transform from [translateX(12px) translateY(70%) translateZ(2em)] to [translateX(13px) translateY(90%) translateZ(3em)] was [matrix(1, 0, 0, 1, 14, 110)] at 2, expected [translateX(14px) translateY(110%) translateZ(4em)] (parsed as [matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 14, 110, 64, 1)])
+PASS: transform from [translateZ(2em)] to [translateZ(3em)] was [translateZ(1em)] at -1
+PASS: transform from [translateZ(2em)] to [translateZ(3em)] was [translateZ(2em)] at 0
+PASS: transform from [translateZ(2em)] to [translateZ(3em)] was [translateZ(2.25em)] at 0.25
+PASS: transform from [translateZ(2em)] to [translateZ(3em)] was [translateZ(2.75em)] at 0.75
+PASS: transform from [translateZ(2em)] to [translateZ(3em)] was [translateZ(3em)] at 1
+PASS: transform from [translateZ(2em)] to [translateZ(3em)] was [translateZ(4em)] at 2
+PASS: transform from [translate3d(12px, 70%, 2em)] to [translate3d(13px, 90%, 3em)] was [translate3d(11px, 50%, 1em)] at -1
+PASS: transform from [translate3d(12px, 70%, 2em)] to [translate3d(13px, 90%, 3em)] was [translate3d(12px, 70%, 2em)] at 0
+PASS: transform from [translate3d(12px, 70%, 2em)] to [translate3d(13px, 90%, 3em)] was [translate3d(12.25px, 75%, 2.25em)] at 0.25
+PASS: transform from [translate3d(12px, 70%, 2em)] to [translate3d(13px, 90%, 3em)] was [translate3d(12.75px, 85%, 2.75em)] at 0.75
+PASS: transform from [translate3d(12px, 70%, 2em)] to [translate3d(13px, 90%, 3em)] was [translate3d(13px, 90%, 3em)] at 1
+PASS: transform from [translate3d(12px, 70%, 2em)] to [translate3d(13px, 90%, 3em)] was [translate3d(14px, 110%, 4em)] at 2
+PASS: transform from [translateX(12px) translateY(70%) translateZ(2em)] to [translateX(13px) translateY(90%) translateZ(3em)] was [translateX(11px) translateY(50%) translateZ(1em)] at -1
+PASS: transform from [translateX(12px) translateY(70%) translateZ(2em)] to [translateX(13px) translateY(90%) translateZ(3em)] was [translateX(12px) translateY(70%) translateZ(2em)] at 0
+PASS: transform from [translateX(12px) translateY(70%) translateZ(2em)] to [translateX(13px) translateY(90%) translateZ(3em)] was [translateX(12.25px) translateY(75%) translateZ(2.25em)] at 0.25
+PASS: transform from [translateX(12px) translateY(70%) translateZ(2em)] to [translateX(13px) translateY(90%) translateZ(3em)] was [translateX(12.75px) translateY(85%) translateZ(2.75em)] at 0.75
+PASS: transform from [translateX(12px) translateY(70%) translateZ(2em)] to [translateX(13px) translateY(90%) translateZ(3em)] was [translateX(13px) translateY(90%) translateZ(3em)] at 1
+PASS: transform from [translateX(12px) translateY(70%) translateZ(2em)] to [translateX(13px) translateY(90%) translateZ(3em)] was [translateX(14px) translateY(110%) translateZ(4em)] at 2
 PASS: transform from [skewX(10rad) translateY(70%)] to [skewX(20rad) translateY(90%)] was [skewX(0rad) translateY(50%)] at -1
 PASS: transform from [skewX(10rad) translateY(70%)] to [skewX(20rad) translateY(90%)] was [skewX(10rad) translateY(70%)] at 0
 PASS: transform from [skewX(10rad) translateY(70%)] to [skewX(20rad) translateY(90%)] was [skewX(12.5rad) translateY(75%)] at 0.25

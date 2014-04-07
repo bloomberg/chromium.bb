@@ -7,10 +7,10 @@ PASS: margin from [0px] to [10px] was [10px] at 1
 PASS: margin from [0px] to [10px] was [15px] at 1.5
 
 Web Animations API:
-FAIL: margin from [0px] to [10px] was [0px] at -0.3, expected [-3px]
+PASS: margin from [0px] to [10px] was [-3px] at -0.3
 PASS: margin from [0px] to [10px] was [0px] at 0
-FAIL: margin from [0px] to [10px] was [0px] at 0.3, expected [3px]
-FAIL: margin from [0px] to [10px] was [0px] at 0.6, expected [6px]
-FAIL: margin from [0px] to [10px] was [0px] at 1, expected [10px]
-FAIL: margin from [0px] to [10px] was [0px] at 1.5, expected [15px]
+PASS: margin from [0px] to [10px] was [3px] at 0.3
+PASS: margin from [0px] to [10px] was [6px] at 0.6
+PASS: margin from [0px] to [10px] was [10px] at 1
+PASS: margin from [0px] to [10px] was [15px] at 1.5
 

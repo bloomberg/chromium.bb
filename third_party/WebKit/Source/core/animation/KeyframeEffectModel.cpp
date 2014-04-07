@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/animation/KeyframeEffectModel.h"
 
+#include "StylePropertyShorthand.h"
 #include "core/animation/TimedItem.h"
 #include "wtf/text/StringHash.h"
 
@@ -144,6 +145,7 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
         PropertySet keyframeProperties = keyframe->properties();
         for (PropertySet::const_iterator propertyIter = keyframeProperties.begin(); propertyIter != keyframeProperties.end(); ++propertyIter) {
             CSSPropertyID property = *propertyIter;
+            ASSERT_WITH_MESSAGE(!isExpandedShorthand(property), "Web Animations: Encountered shorthand CSS property (%d) in normalized keyframes.", property);
             KeyframeGroupMap::iterator groupIter = m_keyframeGroups->find(property);
             PropertySpecificKeyframeGroup* group;
             if (groupIter == m_keyframeGroups->end())
@@ -163,7 +165,7 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
     }
 }
 
-void KeyframeEffectModelBase::ensureInterpolationEffect() const
+void KeyframeEffectModelBase::ensureInterpolationEffect(Element* element) const
 {
     if (m_interpolationEffect)
         return;
@@ -179,7 +181,7 @@ void KeyframeEffectModelBase::ensureInterpolationEffect() const
             if (applyTo == 1)
                 applyTo = std::numeric_limits<double>::infinity();
 
-            m_interpolationEffect->addInterpolation(keyframes[i]->createInterpolation(iter->key, keyframes[i + 1].get()),
+            m_interpolationEffect->addInterpolation(keyframes[i]->createInterpolation(iter->key, keyframes[i + 1].get(), element),
                 keyframes[i]->easing(), keyframes[i]->offset(), keyframes[i + 1]->offset(), applyFrom, applyTo);
         }
     }
