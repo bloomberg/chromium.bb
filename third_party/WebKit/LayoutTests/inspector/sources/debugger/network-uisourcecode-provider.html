@@ -64,11 +64,15 @@ function test()
     function createNetworkUISourceCodeProvider()
     {
         InspectorTest.createWorkspace();
-        WebInspector.resourceTreeModel = new WebInspector.Object();
-        WebInspector.resourceTreeModel.inspectedPageURL = function() { return "foo"; };
-        WebInspector.debuggerModel = new WebInspector.Object();
-        WebInspector.debuggerModel._registerScript = function(){};
+        var target = WebInspector.targetManager.activeTarget();
+        target.resourceTreeModel = new WebInspector.Object();
+        target.resourceTreeModel.inspectedPageURL = function() { return "foo"; };
+        target.debuggerModel = new WebInspector.Object();
+        target.debuggerModel._registerScript = function(){};
+        WebInspector.resourceTreeModel = target.resourceTreeModel;
+        WebInspector.debuggerModel = target.debuggerModel;
         var networkUISourceCodeProvider = new WebInspector.NetworkUISourceCodeProvider(InspectorTest.testNetworkWorkspaceProvider, InspectorTest.testWorkspace);
+        networkUISourceCodeProvider.targetAdded(target);
         return networkUISourceCodeProvider;
     }
 
