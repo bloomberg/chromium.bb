@@ -230,10 +230,6 @@ class WinPort(base.Port):
         binary_name = '%s.exe' % self.driver_name()
         return self._build_path_with_configuration(configuration, binary_name)
 
-    def _path_to_helper(self):
-        binary_name = 'layout_test_helper.exe'
-        return self._build_path(binary_name)
-
     def _path_to_crash_service(self):
         binary_name = 'content_shell_crash_service.exe'
         return self._build_path(binary_name)
