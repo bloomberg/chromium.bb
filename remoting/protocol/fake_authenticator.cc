@@ -84,10 +84,15 @@ FakeAuthenticator::FakeAuthenticator(
       round_trips_(round_trips),
       action_(action),
       async_(async),
-      messages_(0) {
+      messages_(0),
+      messages_till_started_(0) {
 }
 
 FakeAuthenticator::~FakeAuthenticator() {
+}
+
+void FakeAuthenticator::set_messages_till_started(int messages) {
+  messages_till_started_ = messages;
 }
 
 Authenticator::State FakeAuthenticator::state() const {
@@ -114,6 +119,10 @@ Authenticator::State FakeAuthenticator::state() const {
   } else {
     return WAITING_MESSAGE;
   }
+}
+
+bool FakeAuthenticator::started() const {
+  return messages_ > messages_till_started_;
 }
 
 Authenticator::RejectionReason FakeAuthenticator::rejection_reason() const {
@@ -153,8 +162,10 @@ FakeAuthenticator::CreateChannelAuthenticator() const {
 }
 
 FakeHostAuthenticatorFactory::FakeHostAuthenticatorFactory(
-    int round_trips, FakeAuthenticator::Action action, bool async)
+    int round_trips, int messages_till_started,
+    FakeAuthenticator::Action action, bool async)
     : round_trips_(round_trips),
+      messages_till_started_(messages_till_started),
       action_(action), async_(async) {
 }
 
@@ -165,8 +176,12 @@ scoped_ptr<Authenticator> FakeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& local_jid,
     const std::string& remote_jid,
     const buzz::XmlElement* first_message) {
-  return scoped_ptr<Authenticator>(new FakeAuthenticator(
-      FakeAuthenticator::HOST, round_trips_, action_, async_));
+  FakeAuthenticator* authenticator = new FakeAuthenticator(
+      FakeAuthenticator::HOST, round_trips_, action_, async_);
+  authenticator->set_messages_till_started(messages_till_started_);
+
+  scoped_ptr<Authenticator> result(authenticator);
+  return result.Pass();
 }
 
 }  // namespace protocol

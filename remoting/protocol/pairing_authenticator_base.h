@@ -43,6 +43,7 @@ class PairingAuthenticatorBase : public Authenticator {
 
   // Authenticator interface.
   virtual State state() const OVERRIDE;
+  virtual bool started() const OVERRIDE;
   virtual RejectionReason rejection_reason() const OVERRIDE;
   virtual void ProcessMessage(const buzz::XmlElement* message,
                               const base::Closure& resume_callback) OVERRIDE;

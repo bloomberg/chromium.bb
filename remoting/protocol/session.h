@@ -38,6 +38,9 @@ class Session {
     // Session has been accepted and is pending authentication.
     CONNECTED,
 
+    // Session has started authenticating.
+    AUTHENTICATING,
+
     // Session has been connected and authenticated.
     AUTHENTICATED,
 
@@ -54,8 +57,8 @@ class Session {
     virtual ~EventHandler() {}
 
     // Called after session state has changed. It is safe to destroy
-    // the session from within the handler if |state| is CLOSED or
-    // FAILED.
+    // the session from within the handler if |state| is AUTHENTICATING
+    // or CLOSED or FAILED.
     virtual void OnSessionStateChange(State state) = 0;
 
     // Called whenever route for the channel specified with

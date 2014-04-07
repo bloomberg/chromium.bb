@@ -171,6 +171,20 @@ void ChromotingHost::SetMaximumSessionDuration(
 
 ////////////////////////////////////////////////////////////////////////////
 // protocol::ClientSession::EventHandler implementation.
+void ChromotingHost::OnSessionAuthenticating(ClientSession* client) {
+  // We treat each incoming connection as a failure to authenticate,
+  // and clear the backoff when a connection successfully
+  // authenticates. This allows the backoff to protect from parallel
+  // connection attempts as well as sequential ones.
+  if (login_backoff_.ShouldRejectRequest()) {
+    LOG(WARNING) << "Disconnecting client " << client->client_jid() << " due to"
+                    " an overload of failed login attempts.";
+    client->DisconnectSession();
+    return;
+  }
+  login_backoff_.InformOfRequest(false);
+}
+
 bool ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   DCHECK(CalledOnValidThread());
 
@@ -265,15 +279,11 @@ void ChromotingHost::OnIncomingSession(
   }
 
   if (login_backoff_.ShouldRejectRequest()) {
+    LOG(WARNING) << "Rejecting connection due to"
+                    " an overload of failed login attempts.";
     *response = protocol::SessionManager::OVERLOAD;
     return;
   }
-
-  // We treat each incoming connection as a failure to authenticate,
-  // and clear the backoff when a connection successfully
-  // authenticates. This allows the backoff to protect from parallel
-  // connection attempts as well as sequential ones.
-  login_backoff_.InformOfRequest(false);
 
   protocol::SessionConfig config;
   if (!protocol_config_->Select(session->candidate_config(), &config)) {

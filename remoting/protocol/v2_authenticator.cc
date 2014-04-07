@@ -62,6 +62,7 @@ V2Authenticator::V2Authenticator(
     : certificate_sent_(false),
       key_exchange_impl_(type, shared_secret),
       state_(initial_state),
+      started_(false),
       rejection_reason_(INVALID_CREDENTIALS) {
   pending_messages_.push(key_exchange_impl_.GetMessage());
 }
@@ -73,6 +74,10 @@ Authenticator::State V2Authenticator::state() const {
   if (state_ == ACCEPTED && !pending_messages_.empty())
     return MESSAGE_READY;
   return state_;
+}
+
+bool V2Authenticator::started() const {
+  return started_;
 }
 
 Authenticator::RejectionReason V2Authenticator::rejection_reason() const {
@@ -127,6 +132,7 @@ void V2Authenticator::ProcessMessageInternal(const buzz::XmlElement* message) {
 
     P224EncryptedKeyExchange::Result result =
         key_exchange_impl_.ProcessMessage(spake_message);
+    started_ = true;
     switch (result) {
       case P224EncryptedKeyExchange::kResultPending:
         pending_messages_.push(key_exchange_impl_.GetMessage());
@@ -143,7 +149,6 @@ void V2Authenticator::ProcessMessageInternal(const buzz::XmlElement* message) {
         return;
     }
   }
-
   state_ = MESSAGE_READY;
 }
 

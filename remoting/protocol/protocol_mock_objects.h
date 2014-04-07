@@ -52,6 +52,8 @@ class MockConnectionToClientEventHandler :
   MockConnectionToClientEventHandler();
   virtual ~MockConnectionToClientEventHandler();
 
+  MOCK_METHOD1(OnConnectionAuthenticating,
+               void(ConnectionToClient* connection));
   MOCK_METHOD1(OnConnectionAuthenticated, void(ConnectionToClient* connection));
   MOCK_METHOD1(OnConnectionChannelsConnected,
                void(ConnectionToClient* connection));

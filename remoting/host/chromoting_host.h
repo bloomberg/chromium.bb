@@ -115,6 +115,7 @@ class ChromotingHost : public base::NonThreadSafe,
 
   ////////////////////////////////////////////////////////////////////////////
   // ClientSession::EventHandler implementation.
+  virtual void OnSessionAuthenticating(ClientSession* client) OVERRIDE;
   virtual bool OnSessionAuthenticated(ClientSession* client) OVERRIDE;
   virtual void OnSessionChannelsConnected(ClientSession* client) OVERRIDE;
   virtual void OnSessionAuthenticationFailed(ClientSession* client) OVERRIDE;

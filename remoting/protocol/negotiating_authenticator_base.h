@@ -64,6 +64,7 @@ class NegotiatingAuthenticatorBase : public Authenticator {
 
   // Authenticator interface.
   virtual State state() const OVERRIDE;
+  virtual bool started() const OVERRIDE;
   virtual RejectionReason rejection_reason() const OVERRIDE;
   virtual scoped_ptr<ChannelAuthenticator>
       CreateChannelAuthenticator() const OVERRIDE;

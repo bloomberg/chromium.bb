@@ -41,7 +41,9 @@ class AuthenticatorTestBase : public testing::Test {
   };
 
   static void ContinueAuthExchangeWith(Authenticator* sender,
-                                       Authenticator* receiver);
+                                       Authenticator* receiver,
+                                       bool sender_started,
+                                       bool receiver_srated);
   virtual void SetUp() OVERRIDE;
   void RunAuthExchange();
   void RunHostInitiatedAuthExchange();

@@ -132,8 +132,12 @@ class JingleSession : public Session,
 
   // Called after the initial incoming authenticator message is processed.
   void ContinueAcceptIncomingConnection();
+
   // Called after subsequent authenticator messages are processed.
   void ProcessAuthenticationStep();
+
+  // Called after the authenticating step is finished.
+  void ContinueAuthenticationStep();
 
   // Terminates the session and sends session-terminate if it is
   // necessary. |error| specifies the error code in case when the
@@ -142,6 +146,9 @@ class JingleSession : public Session,
 
   // Sets |state_| to |new_state| and calls state change callback.
   void SetState(State new_state);
+
+  // Returns true if the state of the session is not CLOSED or FAILED
+  bool is_session_active();
 
   JingleSessionManager* session_manager_;
   std::string peer_jid_;
@@ -171,6 +178,8 @@ class JingleSession : public Session,
 
   // Pending remote candidates, received before the local channels were created.
   std::list<JingleMessage::NamedCandidate> pending_remote_candidates_;
+
+  base::WeakPtrFactory<JingleSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleSession);
 };

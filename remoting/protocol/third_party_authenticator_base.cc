@@ -28,10 +28,15 @@ const buzz::StaticQName ThirdPartyAuthenticatorBase::kTokenTag =
 ThirdPartyAuthenticatorBase::ThirdPartyAuthenticatorBase(
     Authenticator::State initial_state)
     : token_state_(initial_state),
+      started_(false),
       rejection_reason_(INVALID_CREDENTIALS) {
 }
 
 ThirdPartyAuthenticatorBase::~ThirdPartyAuthenticatorBase() {
+}
+
+bool ThirdPartyAuthenticatorBase::started() const {
+  return started_;
 }
 
 Authenticator::State ThirdPartyAuthenticatorBase::state() const {
@@ -74,9 +79,10 @@ scoped_ptr<buzz::XmlElement> ThirdPartyAuthenticatorBase::GetNextMessage() {
     message = CreateEmptyAuthenticatorMessage();
   }
 
-  if (token_state_ == MESSAGE_READY)
+  if (token_state_ == MESSAGE_READY) {
     AddTokenElements(message.get());
-
+    started_ = true;
+  }
   return message.Pass();
 }
 

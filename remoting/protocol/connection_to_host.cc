@@ -152,6 +152,7 @@ void ConnectionToHost::OnSessionStateChange(
     case Session::CONNECTING:
     case Session::ACCEPTING:
     case Session::CONNECTED:
+    case Session::AUTHENTICATING:
       // Don't care about these events.
       break;
 

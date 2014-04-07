@@ -54,6 +54,9 @@ class ClientSession
   // Callback interface for passing events to the ChromotingHost.
   class EventHandler {
    public:
+    // Called after authentication has started.
+    virtual void OnSessionAuthenticating(ClientSession* client) = 0;
+
     // Called after authentication has finished successfully. Returns true if
     // the connection is allowed, or false otherwise.
     virtual bool OnSessionAuthenticated(ClientSession* client) = 0;
@@ -115,6 +118,8 @@ class ClientSession
       const protocol::ExtensionMessage& message) OVERRIDE;
 
   // protocol::ConnectionToClient::EventHandler interface.
+  virtual void OnConnectionAuthenticating(
+      protocol::ConnectionToClient* connection) OVERRIDE;
   virtual void OnConnectionAuthenticated(
       protocol::ConnectionToClient* connection) OVERRIDE;
   virtual void OnConnectionChannelsConnected(

@@ -112,7 +112,9 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
     case Session::CONNECTED:
       // Don't care about these events.
       break;
-
+    case Session::AUTHENTICATING:
+      handler_->OnConnectionAuthenticating(this);
+      break;
     case Session::AUTHENTICATED:
       // Initialize channels.
       control_dispatcher_.reset(new HostControlDispatcher());

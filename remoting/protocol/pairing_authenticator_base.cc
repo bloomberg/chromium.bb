@@ -38,6 +38,13 @@ Authenticator::State PairingAuthenticatorBase::state() const {
   return v2_authenticator_->state();
 }
 
+bool PairingAuthenticatorBase::started() const {
+  if (!v2_authenticator_) {
+    return false;
+  }
+  return v2_authenticator_->started();
+}
+
 Authenticator::RejectionReason
 PairingAuthenticatorBase::rejection_reason() const {
   if (!v2_authenticator_) {

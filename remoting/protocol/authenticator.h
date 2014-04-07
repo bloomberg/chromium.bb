@@ -89,6 +89,11 @@ class Authenticator {
   // Returns current state of the authenticator.
   virtual State state() const = 0;
 
+  // Returns whether authentication has started. The chromoting host uses this
+  // method to starts the back off process to prevent malicious clients from
+  // guessing the PIN by spamming the host with auth requests.
+  virtual bool started() const = 0;
+
   // Returns rejection reason. Can be called only when in REJECTED state.
   virtual RejectionReason rejection_reason() const = 0;
 

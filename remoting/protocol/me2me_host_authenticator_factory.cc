@@ -30,6 +30,10 @@ class RejectingAuthenticator : public Authenticator {
     return state_;
   }
 
+  virtual bool started() const OVERRIDE {
+    return true;
+  }
+
   virtual RejectionReason rejection_reason() const OVERRIDE {
     DCHECK_EQ(state_, REJECTED);
     return INVALID_CREDENTIALS;

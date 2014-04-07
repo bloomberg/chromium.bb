@@ -60,22 +60,43 @@ void AuthenticatorTestBase::SetUp() {
 }
 
 void AuthenticatorTestBase::RunAuthExchange() {
-  ContinueAuthExchangeWith(client_.get(), host_.get());
+  ContinueAuthExchangeWith(client_.get(),
+                           host_.get(),
+                           client_->started(),
+                           host_->started());
 }
 
 void AuthenticatorTestBase::RunHostInitiatedAuthExchange() {
-  ContinueAuthExchangeWith(host_.get(), client_.get());
+  ContinueAuthExchangeWith(host_.get(),
+                           client_.get(),
+                           host_->started(),
+                           client_->started());
 }
 
 // static
+// This function sends a message from the sender and receiver and recursively
+// calls itself to the send the next message from the receiver to the sender
+// untils the authentication completes.
 void AuthenticatorTestBase::ContinueAuthExchangeWith(Authenticator* sender,
-                                                     Authenticator* receiver) {
+                                                     Authenticator* receiver,
+                                                     bool sender_started,
+                                                     bool receiver_started) {
   scoped_ptr<buzz::XmlElement> message;
   ASSERT_NE(Authenticator::WAITING_MESSAGE, sender->state());
   if (sender->state() == Authenticator::ACCEPTED ||
       sender->state() == Authenticator::REJECTED)
     return;
-  // Pass message from client to host.
+
+  // Verify that once the started flag for either party is set to true,
+  // it should always stay true.
+  if (receiver_started) {
+    ASSERT_TRUE(receiver->started());
+  }
+
+  if (sender_started) {
+    ASSERT_TRUE(sender->started());
+  }
+
   ASSERT_EQ(Authenticator::MESSAGE_READY, sender->state());
   message = sender->GetNextMessage();
   ASSERT_TRUE(message.get());
@@ -84,7 +105,8 @@ void AuthenticatorTestBase::ContinueAuthExchangeWith(Authenticator* sender,
   ASSERT_EQ(Authenticator::WAITING_MESSAGE, receiver->state());
   receiver->ProcessMessage(message.get(), base::Bind(
       &AuthenticatorTestBase::ContinueAuthExchangeWith,
-      base::Unretained(receiver), base::Unretained(sender)));
+      base::Unretained(receiver), base::Unretained(sender),
+      receiver->started(), sender->started()));
 }
 
 void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {

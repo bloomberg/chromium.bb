@@ -210,6 +210,11 @@ void ClientSession::DeliverClientMessage(
             << message.type() << ": " << message.data();
 }
 
+void ClientSession::OnConnectionAuthenticating(
+    protocol::ConnectionToClient* connection) {
+  event_handler_->OnSessionAuthenticating(this);
+}
+
 void ClientSession::OnConnectionAuthenticated(
     protocol::ConnectionToClient* connection) {
   DCHECK(CalledOnValidThread());

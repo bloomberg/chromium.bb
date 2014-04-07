@@ -38,6 +38,7 @@ class V2Authenticator : public Authenticator {
 
   // Authenticator interface.
   virtual State state() const OVERRIDE;
+  virtual bool started() const OVERRIDE;
   virtual RejectionReason rejection_reason() const OVERRIDE;
   virtual void ProcessMessage(const buzz::XmlElement* message,
                               const base::Closure& resume_callback) OVERRIDE;
@@ -67,6 +68,7 @@ class V2Authenticator : public Authenticator {
   // Used for both host and client authenticators.
   crypto::P224EncryptedKeyExchange key_exchange_impl_;
   State state_;
+  bool started_;
   RejectionReason rejection_reason_;
   std::queue<std::string> pending_messages_;
   std::string auth_key_;

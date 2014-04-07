@@ -40,6 +40,13 @@ Authenticator::State NegotiatingAuthenticatorBase::state() const {
   return state_;
 }
 
+bool NegotiatingAuthenticatorBase::started() const {
+  if (!current_authenticator_) {
+    return false;
+  }
+  return current_authenticator_->started();
+}
+
 Authenticator::RejectionReason
 NegotiatingAuthenticatorBase::rejection_reason() const {
   return rejection_reason_;

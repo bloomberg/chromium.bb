@@ -38,6 +38,9 @@ class ConnectionToClient : public base::NonThreadSafe,
  public:
   class EventHandler {
    public:
+    // Called when the network connection is authenticating
+    virtual void OnConnectionAuthenticating(ConnectionToClient* connection) = 0;
+
     // Called when the network connection is authenticated.
     virtual void OnConnectionAuthenticated(ConnectionToClient* connection) = 0;
 

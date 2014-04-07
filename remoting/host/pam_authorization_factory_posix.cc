@@ -24,6 +24,7 @@ class PamAuthorizer : public protocol::Authenticator {
 
   // protocol::Authenticator interface.
   virtual State state() const OVERRIDE;
+  virtual bool started() const OVERRIDE;
   virtual RejectionReason rejection_reason() const OVERRIDE;
   virtual void ProcessMessage(const buzz::XmlElement* message,
                               const base::Closure& resume_callback) OVERRIDE;
@@ -60,6 +61,10 @@ protocol::Authenticator::State PamAuthorizer::state() const {
   } else {
     return underlying_->state();
   }
+}
+
+bool PamAuthorizer::started() const {
+  return underlying_->started();
 }
 
 protocol::Authenticator::RejectionReason
