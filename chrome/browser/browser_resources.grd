@@ -208,6 +208,7 @@
       <include name="IDR_OMNIBOX_HTML" file="resources\omnibox\omnibox.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_OMNIBOX_CSS" file="resources\omnibox\omnibox.css" type="BINDATA" />
       <include name="IDR_OMNIBOX_JS" file="resources\omnibox\omnibox.js" type="BINDATA" />
+      <include name="IDR_OMNIBOX_MOJO_JS" file="${omnibox_mojom_file}" use_base_dir="false" type="BINDATA"/>
       <if expr="not is_android">
         <include name="IDR_PLUGINS_HTML" file="resources\plugins.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PLUGINS_JS" file="resources\plugins.js" type="BINDATA" />

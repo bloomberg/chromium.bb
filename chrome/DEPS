@@ -21,6 +21,8 @@ include_rules = [
   "+components/variations",
   "+content/public/common",
   "+content/public/test",
+  "+mojo/common",
+  "+mojo/public",
 
   # Don't allow inclusion of these other libs we shouldn't be calling directly.
   "-webkit",

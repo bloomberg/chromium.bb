@@ -16,8 +16,14 @@
  * results are available.  When results (possibly intermediate ones)
  * are available, the Javascript formats them and displays them.
  */
-cr.define('omniboxDebug', function() {
+define('main', [
+    'mojo/public/js/bindings/connection',
+    'chrome/browser/ui/webui/omnibox/omnibox.mojom',
+], function(connector, browser) {
   'use strict';
+
+  var connection;
+  var page;
 
   /**
    * Register our event handlers.
@@ -35,10 +41,9 @@ cr.define('omniboxDebug', function() {
   }
 
   /**
-   * @type {Array.<Object>} an array of all autocomplete results we've seen
+   * @type {OmniboxResultMojo} an array of all autocomplete results we've seen
    *     for this query.  We append to this list once for every call to
-   *     handleNewAutocompleteResult.  For details on the structure of
-   *     the object inside, see the comments by addResultToOutput.
+   *     handleNewAutocompleteResult.  See omnibox.mojom for details..
    */
   var progressiveAutocompleteResults = [];
 
@@ -65,12 +70,12 @@ cr.define('omniboxDebug', function() {
     // - forth element: the value of prefer-keyword
     // - fifth element: the value of page-classification
     cursorPositionUsed = $('input-text').selectionEnd;
-    chrome.send('startOmniboxQuery', [
+    page.browser_.startOmniboxQuery(
         $('input-text').value,
         cursorPositionUsed,
         $('prevent-inline-autocomplete').checked,
         $('prefer-keyword').checked,
-        parseInt($('page-classification').value)]);
+        parseInt($('page-classification').value));
     // Cancel the submit action.  i.e., don't submit the form.  (We handle
     // display the results solely with Javascript.)
     event.preventDefault();
@@ -152,8 +157,6 @@ cr.define('omniboxDebug', function() {
         'A green checkmark indicates that the provider is done looking for ' +
         'more results.'),
     new PresentationInfoRecord(
-        'Template URL', '', 'template_url', false, ''),
-    new PresentationInfoRecord(
         'Associated Keyword', '', 'associated_keyword', false,
         'If non-empty, a "press tab to search" hint will be shown and will ' +
         'engage this keyword.'),
@@ -213,21 +216,22 @@ cr.define('omniboxDebug', function() {
     if (propertyName in autocompleteSuggestion) {
       if (propertyName == 'additional_info') {
         // |additional_info| embeds a two-column table of provider-specific data
-        // within this cell.
+        // within this cell. |additional_info| is an array of
+        // AutocompleteAdditionalInfo.
         var additionalInfoTable = document.createElement('table');
-        for (var additionalInfoKey in autocompleteSuggestion[propertyName]) {
+        for (var i = 0; i < autocompleteSuggestion[propertyName].length; i++) {
+          var additionalInfo = autocompleteSuggestion[propertyName][i];
           var additionalInfoRow = document.createElement('tr');
 
           // Set the title (name of property) cell text.
           var propertyCell = document.createElement('td');
-          propertyCell.textContent = additionalInfoKey + ':';
+          propertyCell.textContent = additionalInfo.key + ':';
           propertyCell.className = 'additional-info-property';
           additionalInfoRow.appendChild(propertyCell);
 
           // Set the value of the property cell text.
           var valueCell = document.createElement('td');
-          valueCell.textContent =
-              autocompleteSuggestion[propertyName][additionalInfoKey];
+          valueCell.textContent = additionalInfo.value;
           valueCell.className = 'additional-info-value';
           additionalInfoRow.appendChild(valueCell);
 
@@ -264,59 +268,11 @@ cr.define('omniboxDebug', function() {
   }
 
   /**
-   * Called by C++ code when we get an update from the
-   * AutocompleteController.  We simply append the result to
-   * progressiveAutocompleteResults and refresh the page.
-   */
-  function handleNewAutocompleteResult(result) {
-    progressiveAutocompleteResults.push(result);
-    refresh();
-  }
-
-  /**
    * Appends some human-readable information about the provided
    * autocomplete result to the HTML node with id omnibox-debug-text.
    * The current human-readable form is a few lines about general
    * autocomplete result statistics followed by a table with one line
-   * for each autocomplete match.  The input parameter result is a
-   * complex Object with lots of information about various
-   * autocomplete matches.  Here's an example of what it looks like:
-   * <pre>
-   * {@code
-   * {
-   *   'done': false,
-   *   'time_since_omnibox_started_ms': 15,
-   *   'host': 'mai',
-   *   'is_typed_host': false,
-   *   'combined_results' : {
-   *     'num_items': 4,
-   *     'item_0': {
-   *       'destination_url': 'http://mail.google.com',
-   *       'provider_name': 'HistoryURL',
-   *       'relevance': 1410,
-   *       ...
-   *     }
-   *     'item_1: {
-   *       ...
-   *     }
-   *     ...
-   *   }
-   *   'results_by_provider': {
-   *     'HistoryURL' : {
-   *       'num_items': 3,
-   *         ...
-   *       }
-   *     'Search' : {
-   *       'num_items': 1,
-   *       ...
-   *     }
-   *     ...
-   *   }
-   * }
-   * }
-   * </pre>
-   * For more information on how the result is packed, see the
-   * corresponding code in chrome/browser/ui/webui/omnibox_ui.cc
+   * for each autocomplete match.  The input parameter is an OmniboxResultMojo.
    */
   function addResultToOutput(result) {
     var output = $('omnibox-debug-text');
@@ -377,23 +333,20 @@ cr.define('omniboxDebug', function() {
     // Add the per-provider result tables with labels. We do not append the
     // combined/merged result table since we already have the per provider
     // results.
-    for (var provider in result.results_by_provider) {
-      var results = result.results_by_provider[provider];
+    for (var i = 0; i < result.results_by_provider.length; i++) {
+      var providerResults = result.results_by_provider[i];
       // If we have no results we do not display anything.
-      if (results.num_items == 0) {
+      if (providerResults.results.length == 0) {
         continue;
       }
       var p = document.createElement('p');
-      p.appendChild(addResultTableToOutput(results));
+      p.appendChild(addResultTableToOutput(providerResults.results));
       output.appendChild(p);
     }
   }
 
   /**
-   * @param {Object} result either the combined_results component of
-   *     the structure described in the comment by addResultToOutput()
-   *     above or one of the per-provider results in the structure.
-   *     (Both have the same format).
+   * @param {Object} result an array of AutocompleteMatchMojos.
    * @return {HTMLTableCellElement} that is a user-readable HTML
    *     representation of this object.
    */
@@ -404,8 +357,8 @@ cr.define('omniboxDebug', function() {
     table.className = 'autocomplete-results-table';
     table.appendChild(createAutocompleteResultTableHeader());
     // Loop over every autocomplete item and add it as a row in the table.
-    for (var i = 0; i < result.num_items; i++) {
-      var autocompleteSuggestion = result['item_' + i];
+    for (var i = 0; i < result.length; i++) {
+      var autocompleteSuggestion = result[i];
       var row = document.createElement('tr');
       // Loop over all the columns/properties and output either them
       // all (if we're in detailed mode) or only the ones marked displayAlways.
@@ -464,11 +417,22 @@ cr.define('omniboxDebug', function() {
     }
   }
 
-  return {
-    initialize: initialize,
-    startOmniboxQuery: startOmniboxQuery,
-    handleNewAutocompleteResult: handleNewAutocompleteResult
+  function OmniboxPageImpl(browser) {
+    this.browser_ = browser;
+    page = this;
+    initialize();
+  }
+
+  OmniboxPageImpl.prototype =
+      Object.create(browser.OmniboxPageStub.prototype);
+
+  OmniboxPageImpl.prototype.handleNewAutocompleteResult = function(result) {
+    progressiveAutocompleteResults.push(result);
+    refresh();
+  };
+
+  return function(handle) {
+    connection = new connector.Connection(handle, OmniboxPageImpl,
+                                          browser.OmniboxUIHandlerMojoProxy);
   };
 });
-
-document.addEventListener('DOMContentLoaded', omniboxDebug.initialize);
