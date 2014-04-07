@@ -1470,13 +1470,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableWebGLDraftExtensions)
   },
   {
-    "enable-html-imports",
-    IDS_FLAGS_ENABLE_HTML_IMPORTS_NAME,
-    IDS_FLAGS_ENABLE_HTML_IMPORTS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableHTMLImports)
-  },
-  {
     "enable-web-midi",
     IDS_FLAGS_ENABLE_WEB_MIDI_NAME,
     IDS_FLAGS_ENABLE_WEB_MIDI_DESCRIPTION,

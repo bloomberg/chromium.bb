@@ -463,9 +463,6 @@ const char kEnableDirectWrite[]             = "enable-direct-write";
 const char kEnableHighResolutionTime[]      = "enable-high-resolution-time";
 #endif
 
-// Enable HTML Imports
-extern const char kEnableHTMLImports[]      = "enable-html-imports";
-
 // Paint content on the compositor thread instead of the main thread.
 const char kEnableImplSidePainting[]        = "enable-impl-side-painting";
 
