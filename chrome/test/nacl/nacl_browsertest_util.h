@@ -158,11 +158,13 @@ class NaClBrowserTestStatic : public NaClBrowserTestBase {
 #define MAYBE_PNACL(test_name) test_name
 #endif
 
-#if defined(ARCH_CPU_ARM_FAMILY)
+#if defined(ARCH_CPU_ARM_FAMILY) || defined(ARCH_CPU_MIPS_FAMILY)
 
-// There is no support for Glibc on ARM NaCl.
+// There is no support for Glibc on ARM and MIPS NaCl.
 #define NACL_BROWSER_TEST_F(suite, name, body) \
 IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
+body \
+IN_PROC_BROWSER_TEST_F(suite##Pnacl, MAYBE_PNACL(name)) \
 body
 
 #else

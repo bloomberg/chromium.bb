@@ -62,9 +62,9 @@ using content::RenderViewHost;
 #define TEST_PPAPI_NACL_DISALLOWED_SOCKETS(test_name)
 #define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name)
 
-#elif defined(ARCH_CPU_ARM_FAMILY)
-// NaCl glibc tests are not included in ARM as there is no glibc support
-// on ARM today.
+#elif defined(ARCH_CPU_ARM_FAMILY) || defined(ARCH_CPU_MIPS_FAMILY)
+// NaCl glibc tests are not included in ARM and MIPS as there is no glibc
+// support on ARM and MIPS today.
 #define TEST_PPAPI_NACL(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
@@ -121,12 +121,12 @@ using content::RenderViewHost;
 #endif
 
 
-// NaCl glibc tests are not included in ARM as there is no glibc support
-// on ARM today.
-#if defined(ARCH_CPU_ARM_FAMILY)
-#define MAYBE_GLIBC(test_name) DISABLED_##test_name
-#else
+// NaCl glibc tests are included for x86 only, as there is no glibc support
+// for other architectures (ARM/MIPS).
+#if defined(ARCH_CPU_X86_FAMILY)
 #define MAYBE_GLIBC(test_name) test_name
+#else
+#define MAYBE_GLIBC(test_name) DISABLED_##test_name
 #endif
 
 
