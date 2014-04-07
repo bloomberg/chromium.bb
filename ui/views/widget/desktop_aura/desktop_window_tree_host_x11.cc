@@ -1412,7 +1412,8 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
         OnHostResized(bounds.size());
       if (origin_changed)
         OnHostMoved(bounds_.origin());
-      ResetWindowRegion();
+      if (size_changed)
+        ResetWindowRegion();
       break;
     }
     case GenericEvent: {

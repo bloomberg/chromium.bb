@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
-#include "base/timer/timer.h"
 #include "ui/gfx/point.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
@@ -19,10 +18,6 @@
 
 namespace aura {
 class WindowTreeHost;
-}
-
-namespace gfx {
-class Rect;
 }
 
 namespace views {
@@ -48,9 +43,6 @@ class VIEWS_EXPORT X11DesktopWindowMoveClient :
   virtual void EndMoveLoop() OVERRIDE;
 
  private:
-  // Callback from |window_move_timer_|.
-  void SetHostBounds(const gfx::Rect& rect);
-
   X11WholeScreenMoveLoop move_loop_;
 
   // We need to keep track of this so we can actually move it when reacting to
@@ -61,8 +53,6 @@ class VIEWS_EXPORT X11DesktopWindowMoveClient :
   // started. Used to calculate the window's new bounds relative to the current
   // location of the cursor.
   gfx::Vector2d window_offset_;
-
-  base::OneShotTimer<X11DesktopWindowMoveClient> window_move_timer_;
 };
 
 }  // namespace views
