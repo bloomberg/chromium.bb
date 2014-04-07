@@ -396,12 +396,12 @@ void AdbTargetsUIHandler::RemoteDevicesChanged(
        dit != devices->end(); ++dit) {
     DevToolsAdbBridge::RemoteDevice* device = dit->get();
     base::DictionaryValue* device_data = new base::DictionaryValue();
-    device_data->SetString(kAdbModelField, device->GetModel());
-    device_data->SetString(kAdbSerialField, device->GetSerial());
-    device_data->SetBoolean(kAdbConnectedField, device->IsConnected());
+    device_data->SetString(kAdbModelField, device->model());
+    device_data->SetString(kAdbSerialField, device->serial());
+    device_data->SetBoolean(kAdbConnectedField, device->is_connected());
     std::string device_id = base::StringPrintf(
         "device:%s",
-        device->GetSerial().c_str());
+        device->serial().c_str());
     device_data->SetString(kTargetIdField, device_id);
     base::ListValue* browser_list = new base::ListValue();
     device_data->Set(kAdbBrowsersList, browser_list);
@@ -420,7 +420,7 @@ void AdbTargetsUIHandler::RemoteDevicesChanged(
           browser->IsChrome() && !parsed.empty() ? parsed[0] : 0);
       std::string browser_id = base::StringPrintf(
           "browser:%s:%s:%s:%s",
-          device->GetSerial().c_str(), // Ensure uniqueness across devices.
+          device->serial().c_str(), // Ensure uniqueness across devices.
           browser->display_name().c_str(),  // Sort by display name.
           browser->version().c_str(),  // Then by version.
           browser->socket().c_str());  // Ensure uniqueness on the device.
@@ -471,7 +471,7 @@ void AdbTargetsUIHandler::RemoteDevicesChanged(
 
     if (port_forwarding_controller) {
       PortForwardingController::DevicesStatus::iterator sit =
-          port_forwarding_status.find(device->GetSerial());
+          port_forwarding_status.find(device->serial());
       if (sit != port_forwarding_status.end()) {
         base::DictionaryValue* port_status_dict = new base::DictionaryValue();
         typedef PortForwardingController::PortStatusMap StatusMap;

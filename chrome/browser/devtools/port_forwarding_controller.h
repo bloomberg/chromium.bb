@@ -13,10 +13,11 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 class PrefService;
+class Profile;
 
 class PortForwardingController : public KeyedService {
  public:
-  explicit PortForwardingController(PrefService* pref_service);
+  explicit PortForwardingController(Profile* profile);
 
   virtual ~PortForwardingController();
 
@@ -55,7 +56,7 @@ class PortForwardingController : public KeyedService {
   bool ShouldCreateConnections();
   void ShutdownConnections();
 
-  scoped_refptr<RefCountedAdbThread> adb_thread_;
+  Profile* profile_;
   PrefService* pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
   Registry registry_;

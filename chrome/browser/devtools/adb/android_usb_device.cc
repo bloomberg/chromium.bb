@@ -167,18 +167,19 @@ static void RespondWithCountOnUIThread(base::Callback<void(int)> callback,
   callback.Run(count);
 }
 
-static void RespondOnUIThread(const AndroidUsbDevicesCallback& callback,
-                              const AndroidUsbDevices& devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+static void RespondOnCallerThread(const AndroidUsbDevicesCallback& callback,
+                                  const AndroidUsbDevices& devices) {
   callback.Run(devices);
 }
 
-static void RespondOnFileThread(const AndroidUsbDevicesCallback& callback) {
+static void RespondOnFileThread(
+    const AndroidUsbDevicesCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> caller_message_loop_proxy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // Copy g_devices.Get() on file thread.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&RespondOnUIThread, callback, g_devices.Get()));
+  caller_message_loop_proxy->PostTask(
+      FROM_HERE,
+      base::Bind(&RespondOnCallerThread, callback, g_devices.Get()));
 }
 
 static void OpenAndroidDevicesOnFileThread(
@@ -227,8 +228,10 @@ static void CountOnFileThread(
                                      device_count));
 }
 
-static void EnumerateOnFileThread(crypto::RSAPrivateKey* rsa_key,
-                                  const AndroidUsbDevicesCallback& callback) {
+static void EnumerateOnFileThread(
+    crypto::RSAPrivateKey* rsa_key,
+    const AndroidUsbDevicesCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> caller_message_loop_proxy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   UsbService* service = UsbService::GetInstance();
@@ -261,7 +264,9 @@ static void EnumerateOnFileThread(crypto::RSAPrivateKey* rsa_key,
 
   // Add new devices.
   base::Closure barrier = base::BarrierClosure(
-      usb_devices.size(), base::Bind(&RespondOnFileThread, callback));
+      usb_devices.size(), base::Bind(&RespondOnFileThread,
+                                     callback,
+                                     caller_message_loop_proxy));
 
   for (UsbDevices::iterator it = usb_devices.begin(); it != usb_devices.end();
        ++it) {
@@ -308,10 +313,9 @@ void AndroidUsbDevice::CountDevices(
 // static
 void AndroidUsbDevice::Enumerate(crypto::RSAPrivateKey* rsa_key,
                                  const AndroidUsbDevicesCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&EnumerateOnFileThread, rsa_key,
-                                     callback));
+                          base::Bind(&EnumerateOnFileThread, rsa_key, callback,
+                                     base::MessageLoopProxy::current()));
 }
 
 AndroidUsbDevice::AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,

@@ -278,22 +278,22 @@ public:
     ASSERT_EQ(2U, devices_.size());
 
     scoped_refptr<DevToolsAdbBridge::RemoteDevice> connected =
-        devices_[0]->IsConnected() ? devices_[0] : devices_[1];
+        devices_[0]->is_connected() ? devices_[0] : devices_[1];
 
     scoped_refptr<DevToolsAdbBridge::RemoteDevice> not_connected =
-        devices_[0]->IsConnected() ? devices_[1] : devices_[0];
+        devices_[0]->is_connected() ? devices_[1] : devices_[0];
 
-    ASSERT_TRUE(connected->IsConnected());
-    ASSERT_FALSE(not_connected->IsConnected());
+    ASSERT_TRUE(connected->is_connected());
+    ASSERT_FALSE(not_connected->is_connected());
 
     ASSERT_EQ(720, connected->screen_size().width());
     ASSERT_EQ(1184, connected->screen_size().height());
 
-    ASSERT_EQ("FirstDevice", connected->GetSerial());
-    ASSERT_EQ("Nexus 6", connected->GetModel());
+    ASSERT_EQ("FirstDevice", connected->serial());
+    ASSERT_EQ("Nexus 6", connected->model());
 
-    ASSERT_EQ("SecondDevice", not_connected->GetSerial());
-    ASSERT_EQ("Offline", not_connected->GetModel());
+    ASSERT_EQ("SecondDevice", not_connected->serial());
+    ASSERT_EQ("Offline", not_connected->model());
 
     const DevToolsAdbBridge::RemoteBrowsers& browsers = connected->browsers();
     ASSERT_EQ(4U, browsers.size());

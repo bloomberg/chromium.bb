@@ -16,8 +16,6 @@
 #include "chrome/browser/devtools/refcounted_adb_thread.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/browser_thread.h"
-#include "net/socket/tcp_client_socket.h"
 #include "ui/gfx/size.h"
 
 template<typename T> struct DefaultSingletonTraits;
@@ -82,16 +80,41 @@ class DevToolsAdbBridge
     DISALLOW_COPY_AND_ASSIGN(Factory);
   };
 
+  class AdbWebSocket : public base::RefCountedThreadSafe<AdbWebSocket> {
+   public:
+    class Delegate {
+     public:
+      virtual void OnSocketOpened() = 0;
+      virtual void OnFrameRead(const std::string& message) = 0;
+      virtual void OnSocketClosed(bool closed_by_device) = 0;
+
+     protected:
+      virtual ~Delegate() {}
+    };
+
+    AdbWebSocket() {}
+
+    virtual void Disconnect() = 0;
+
+    virtual void SendFrame(const std::string& message) = 0;
+
+   protected:
+    virtual ~AdbWebSocket() {}
+
+   private:
+    friend class base::RefCountedThreadSafe<AdbWebSocket>;
+
+    DISALLOW_COPY_AND_ASSIGN(AdbWebSocket);
+  };
+
   class RemoteBrowser : public base::RefCounted<RemoteBrowser> {
    public:
     RemoteBrowser(
-        scoped_refptr<RefCountedAdbThread> adb_thread,
-        scoped_refptr<AndroidDevice> device,
+        scoped_refptr<DevToolsAdbBridge> adb_bridge,
+        const std::string& serial,
         const std::string& socket);
 
-    scoped_refptr<RefCountedAdbThread> adb_thread() { return adb_thread_; }
-
-    scoped_refptr<AndroidDevice> device() { return device_; }
+    std::string serial() { return serial_; }
     std::string socket() { return socket_; }
 
     std::string display_name() { return display_name_; }
@@ -108,12 +131,18 @@ class DevToolsAdbBridge
     std::vector<DevToolsTargetImpl*> CreatePageTargets();
     void SetPageDescriptors(const base::ListValue&);
 
-    void SendJsonRequest(const std::string& request, base::Closure callback);
+    typedef base::Callback<void(int, const std::string&)> JsonRequestCallback;
+    void SendJsonRequest(const std::string& request,
+                         const JsonRequestCallback& callback);
     void SendProtocolCommand(const std::string& debug_url,
                              const std::string& method,
                              base::DictionaryValue* params);
 
     void Open(const std::string& url);
+
+    scoped_refptr<AdbWebSocket> CreateWebSocket(
+        const std::string& url,
+        DevToolsAdbBridge::AdbWebSocket::Delegate* delegate);
 
    private:
     friend class base::RefCounted<RemoteBrowser>;
@@ -125,8 +154,8 @@ class DevToolsAdbBridge
     void PageCreatedOnUIThread(
         const std::string& response, const std::string& url);
 
-    scoped_refptr<RefCountedAdbThread> adb_thread_;
-    scoped_refptr<AndroidDevice> device_;
+    scoped_refptr<DevToolsAdbBridge> adb_bridge_;
+    const std::string serial_;
     const std::string socket_;
     std::string display_name_;
     std::string version_;
@@ -139,23 +168,31 @@ class DevToolsAdbBridge
 
   class RemoteDevice : public base::RefCounted<RemoteDevice> {
    public:
-    explicit RemoteDevice(scoped_refptr<AndroidDevice> device);
+    RemoteDevice(scoped_refptr<DevToolsAdbBridge> adb_bridge,
+                 const std::string& serial,
+                 const std::string& model,
+                 bool connected);
 
-    std::string GetSerial();
-    std::string GetModel();
-    bool IsConnected();
+    std::string serial() { return serial_; }
+    std::string model() { return model_; }
+    bool is_connected() { return connected_; }
     void AddBrowser(scoped_refptr<RemoteBrowser> browser);
 
-    scoped_refptr<AndroidDevice> device() { return device_; }
     RemoteBrowsers& browsers() { return browsers_; }
     gfx::Size screen_size() { return screen_size_; }
     void set_screen_size(const gfx::Size& size) { screen_size_ = size; }
+
+    void OpenSocket(const std::string& socket_name,
+                    const AndroidDeviceManager::SocketCallback& callback);
 
    private:
     friend class base::RefCounted<RemoteDevice>;
     virtual ~RemoteDevice();
 
-    scoped_refptr<AndroidDevice> device_;
+    scoped_refptr<DevToolsAdbBridge> adb_bridge_;
+    std::string serial_;
+    std::string model_;
+    bool connected_;
     RemoteBrowsers browsers_;
     gfx::Size screen_size_;
 
@@ -163,9 +200,6 @@ class DevToolsAdbBridge
   };
 
   typedef std::vector<scoped_refptr<RemoteDevice> > RemoteDevices;
-
-  typedef std::vector<scoped_refptr<AndroidDevice> > AndroidDevices;
-  typedef base::Callback<void(const AndroidDevices&)> AndroidDevicesCallback;
 
   class Listener {
    public:
@@ -191,13 +225,22 @@ class DevToolsAdbBridge
 
   virtual ~DevToolsAdbBridge();
 
+  base::MessageLoop* device_message_loop() {
+    return adb_thread_->message_loop();
+  }
+
+  AndroidDeviceManager* device_manager() {
+    return device_manager_.get();
+  }
+
+  void CreatedDeviceManager(scoped_refptr<AndroidDeviceManager> device_manager);
   void RequestRemoteDevices();
   void ReceivedRemoteDevices(RemoteDevices* devices);
   void CreateDeviceProviders();
 
   Profile* profile_;
   scoped_refptr<RefCountedAdbThread> adb_thread_;
-  bool has_message_loop_;
+  scoped_refptr<AndroidDeviceManager> device_manager_;
   typedef std::vector<Listener*> Listeners;
   Listeners listeners_;
   DeviceProviders device_providers_;

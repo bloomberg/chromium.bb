@@ -160,7 +160,6 @@
             'browser/devtools/adb_client_socket.cc',
             'browser/devtools/adb_client_socket.h',
             'browser/devtools/adb_web_socket.cc',
-            'browser/devtools/adb_web_socket.h',
             'browser/devtools/android_device.cc',
             'browser/devtools/android_device.h',
             'browser/devtools/browser_list_tabcontents_provider.cc',

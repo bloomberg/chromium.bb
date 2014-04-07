@@ -334,29 +334,24 @@ public:
   }
 
   void CheckDevices() {
-#if defined(DEBUG_DEVTOOLS)
-    // Mock device is added
-    ASSERT_EQ(3U, devices_.size());
-#else
     ASSERT_EQ(2U, devices_.size());
-#endif
 
     scoped_refptr<DevToolsAdbBridge::RemoteDevice> online_device_;
     scoped_refptr<DevToolsAdbBridge::RemoteDevice> offline_device_;
 
     for (DevToolsAdbBridge::RemoteDevices::const_iterator it =
         devices_.begin(); it != devices_.end(); ++it) {
-      if ((*it)->GetSerial() == "01498B321301A00A")
+      if ((*it)->serial() == "01498B321301A00A")
         online_device_ = *it;
-      else if ((*it)->GetSerial() == "01498B2B0D01300E")
+      else if ((*it)->serial() == "01498B2B0D01300E")
         offline_device_ = *it;
     }
 
-    ASSERT_EQ(online_device_->GetSerial(), "01498B321301A00A");
-    ASSERT_TRUE(online_device_->device()->is_connected());
-    ASSERT_FALSE(offline_device_->device()->is_connected());
+    ASSERT_EQ(online_device_->serial(), "01498B321301A00A");
+    ASSERT_TRUE(online_device_->is_connected());
+    ASSERT_FALSE(offline_device_->is_connected());
 
-    ASSERT_EQ(online_device_->GetModel(), kDeviceModel);
+    ASSERT_EQ(online_device_->model(), kDeviceModel);
     ASSERT_EQ(online_device_->browsers().size(), 0U);
     ASSERT_EQ(online_device_->screen_size(), gfx::Size(720, 1184));
   }

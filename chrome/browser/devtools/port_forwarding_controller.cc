@@ -17,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/devtools/adb_client_socket.h"
-#include "chrome/browser/devtools/adb_web_socket.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -228,9 +227,10 @@ static bool IsPortForwardingSupported(const ParsedVersion& version) {
   return !version.empty() && version[0] >= kMinVersionPortForwarding;
 }
 
-static std::string FindBestSocketForTethering(
+static scoped_refptr<DevToolsAdbBridge::RemoteBrowser>
+FindBestBrowserForTethering(
     const DevToolsAdbBridge::RemoteBrowsers browsers) {
-  std::string socket;
+  scoped_refptr<DevToolsAdbBridge::RemoteBrowser> best_browser;
   ParsedVersion newest_version;
   for (DevToolsAdbBridge::RemoteBrowsers::const_iterator it = browsers.begin();
        it != browsers.end(); ++it) {
@@ -239,25 +239,24 @@ static std::string FindBestSocketForTethering(
     if (browser->IsChrome() &&
         IsPortForwardingSupported(current_version) &&
         IsVersionLower(newest_version, current_version)) {
-      socket = browser->socket();
+      best_browser = browser;
       newest_version = current_version;
     }
   }
-  return socket;
+  return best_browser;
 }
 
 }  // namespace
 
 class PortForwardingController::Connection
-    : public AdbWebSocket::Delegate,
+    : public DevToolsAdbBridge::AdbWebSocket::Delegate,
       public base::RefCountedThreadSafe<
           Connection,
           content::BrowserThread::DeleteOnUIThread> {
  public:
   Connection(Registry* registry,
-             scoped_refptr<AndroidDevice> device,
-             const std::string& socket,
-             scoped_refptr<RefCountedAdbThread> adb_thread,
+             scoped_refptr<DevToolsAdbBridge::RemoteDevice> device,
+             scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser,
              PrefService* pref_service);
 
   const PortStatusMap& GetPortStatusMap();
@@ -291,16 +290,16 @@ class PortForwardingController::Connection
   void UpdateSocketCountOnHandlerThread(int port, int increment);
   void UpdateSocketCount(int port, int increment);
 
-  // AdbWebSocket::Delegate implementation:
+  // DevToolsAdbBridge::AdbWebSocket::Delegate implementation:
   virtual void OnSocketOpened() OVERRIDE;
   virtual void OnFrameRead(const std::string& message) OVERRIDE;
   virtual void OnSocketClosed(bool closed_by_device) OVERRIDE;
 
   PortForwardingController::Registry* registry_;
-  scoped_refptr<AndroidDevice> device_;
-  scoped_refptr<RefCountedAdbThread> adb_thread_;
+  scoped_refptr<DevToolsAdbBridge::RemoteDevice> device_;
+  scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser_;
   PrefChangeRegistrar pref_change_registrar_;
-  scoped_refptr<AdbWebSocket> web_socket_;
+  scoped_refptr<DevToolsAdbBridge::AdbWebSocket> web_socket_;
   int command_id_;
   ForwardingMap forwarding_map_;
   CommandCallbackMap pending_responses_;
@@ -311,20 +310,17 @@ class PortForwardingController::Connection
 
 PortForwardingController::Connection::Connection(
     Registry* registry,
-    scoped_refptr<AndroidDevice> device,
-    const std::string& socket,
-    scoped_refptr<RefCountedAdbThread> adb_thread,
+    scoped_refptr<DevToolsAdbBridge::RemoteDevice> device,
+    scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser,
     PrefService* pref_service)
     : registry_(registry),
       device_(device),
-      adb_thread_(adb_thread),
+      browser_(browser),
       command_id_(0) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pref_change_registrar_.Init(pref_service);
   (*registry_)[device_->serial()] = this;
-  web_socket_ = new AdbWebSocket(
-      device, socket, kDevToolsRemoteBrowserTarget,
-      adb_thread_->message_loop(), this);
+  web_socket_ = browser->CreateWebSocket(kDevToolsRemoteBrowserTarget, this);
   AddRef();  // Balanced in OnSocketClosed();
 }
 
@@ -451,7 +447,6 @@ void PortForwardingController::Connection::ProcessUnbindResponse(
 
 void PortForwardingController::Connection::UpdateSocketCountOnHandlerThread(
     int port, int increment) {
-  DCHECK_EQ(base::MessageLoop::current(), adb_thread_->message_loop());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
      base::Bind(&Connection::UpdateSocketCount, this, port, increment));
 }
@@ -533,20 +528,18 @@ void PortForwardingController::Connection::OnFrameRead(
   SocketTunnel::CounterCallback callback =
       base::Bind(&Connection::UpdateSocketCountOnHandlerThread, this, port);
 
-  adb_thread_->message_loop()->PostTask(FROM_HERE,
-      base::Bind(&AndroidDevice::OpenSocket,
-                 device_,
-                 connection_id.c_str(),
-                 base::Bind(&SocketTunnel::StartTunnel,
-                            destination_host,
-                            destination_port,
-                            callback)));
+  device_->OpenSocket(
+      connection_id.c_str(),
+      base::Bind(&SocketTunnel::StartTunnel,
+                 destination_host,
+                 destination_port,
+                 callback));
 }
 
-PortForwardingController::PortForwardingController(PrefService* pref_service)
-    : adb_thread_(RefCountedAdbThread::GetInstance()),
-      pref_service_(pref_service) {
-  pref_change_registrar_.Init(pref_service);
+PortForwardingController::PortForwardingController(Profile* profile)
+    : profile_(profile),
+      pref_service_(profile->GetPrefs()) {
+  pref_change_registrar_.Init(pref_service_);
   base::Closure callback = base::Bind(
       &PortForwardingController::OnPrefsChange, base::Unretained(this));
   pref_change_registrar_.Add(prefs::kDevToolsPortForwardingEnabled, callback);
@@ -567,17 +560,17 @@ PortForwardingController::UpdateDeviceList(
   for (DevToolsAdbBridge::RemoteDevices::const_iterator it = devices.begin();
        it != devices.end(); ++it) {
     scoped_refptr<DevToolsAdbBridge::RemoteDevice> device = *it;
-    if (!device->IsConnected())
+    if (!device->is_connected())
       continue;
-    Registry::iterator rit = registry_.find(device->GetSerial());
+    Registry::iterator rit = registry_.find(device->serial());
     if (rit == registry_.end()) {
-      std::string socket = FindBestSocketForTethering(device->browsers());
-      if (!socket.empty()) {
-        new Connection(
-          &registry_, device->device(), socket, adb_thread_, pref_service_);
+      scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser =
+          FindBestBrowserForTethering(device->browsers());
+      if (browser) {
+        new Connection(&registry_, device, browser, pref_service_);
       }
     } else {
-      status[device->GetSerial()] = (*rit).second->GetPortStatusMap();
+      status[device->serial()] = (*rit).second->GetPortStatusMap();
     }
   }
   return status;
@@ -626,5 +619,5 @@ PortForwardingController::Factory::~Factory() {}
 KeyedService* PortForwardingController::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  return new PortForwardingController(profile->GetPrefs());
+  return new PortForwardingController(profile);
 }
