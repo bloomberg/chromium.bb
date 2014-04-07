@@ -6,6 +6,22 @@ cr.define('chrome.sync.about_tab', function() {
   // Contains the latest snapshot of sync about info.
   chrome.sync.aboutInfo = {};
 
+  function highlightIfChanged(node, oldVal, newVal) {
+    function clearHighlight() {
+      this.removeAttribute('highlighted');
+    }
+
+    var oldStr = oldVal.toString();
+    var newStr = newVal.toString();
+    if (oldStr != '' && oldStr != newStr) {
+      // Note the addListener function does not end up creating duplicate
+      // listeners.  There can be only one listener per event at a time.
+      // Reference: https://developer.mozilla.org/en/DOM/element.addEventListener
+      node.addEventListener('webkitAnimationEnd', clearHighlight, false);
+      node.setAttribute('highlighted', '');
+    }
+  }
+
   function refreshAboutInfo(aboutInfo) {
     chrome.sync.aboutInfo = aboutInfo;
     var aboutInfoDiv = $('about-info');
@@ -139,7 +155,8 @@ cr.define('chrome.sync.about_tab', function() {
 
   return {
     onLoad: onLoad,
-    addExpandListener: addExpandListener
+    addExpandListener: addExpandListener,
+    highlightIfChanged: highlightIfChanged
   };
 });
 

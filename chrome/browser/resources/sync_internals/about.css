@@ -48,6 +48,36 @@
  background: rgb(204, 255, 204);
 }
 
+@-webkit-keyframes highlight1 {
+  0% {
+    background: rgb(255, 255, 0);
+  }
+  100% {
+    background: #fff;
+  }
+}
+
+@-webkit-keyframes highlight2 {
+  0% {
+    background: rgb(155, 158, 166);
+  }
+  100% {
+    background: rgb(239, 243, 255);
+  }
+}
+
+.about-details [highlighted] {
+  -webkit-animation-duration: 3s;
+  -webkit-animation-name: highlight1;
+  -webkit-animation-timing-function: linear;
+}
+
+.about-details [highlighted]:nth-child(odd) {
+  -webkit-animation-duration: 3s;
+  -webkit-animation-name: highlight2;
+  -webkit-animation-timing-function: linear;
+}
+
 .about-details .uninitialized {
   color: #7f7f7f;
 }
