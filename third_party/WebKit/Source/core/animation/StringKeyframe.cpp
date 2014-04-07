@@ -49,6 +49,7 @@ PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::creat
 
 void StringKeyframe::trace(Visitor* visitor)
 {
+    visitor->trace(m_propertySet);
     Keyframe::trace(visitor);
 }
 

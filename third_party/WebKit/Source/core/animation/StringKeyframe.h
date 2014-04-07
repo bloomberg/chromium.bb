@@ -63,7 +63,7 @@ private:
 
     virtual bool isStringKeyframe() const OVERRIDE { return true; }
 
-    RefPtrWillBeRawPtr<MutableStylePropertySet> m_propertySet;
+    RefPtrWillBeMember<MutableStylePropertySet> m_propertySet;
 };
 
 typedef StringKeyframe::PropertySpecificKeyframe StringPropertySpecificKeyframe;
