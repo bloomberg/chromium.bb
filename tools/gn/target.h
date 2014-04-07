@@ -69,6 +69,16 @@ class Target : public Item {
   const FileList& sources() const { return sources_; }
   FileList& sources() { return sources_; }
 
+  // Set to true when all sources are public. This is the default. In this case
+  // the public headers list should be empty.
+  bool all_headers_public() const { return all_headers_public_; }
+  void set_all_headers_public(bool p) { all_headers_public_ = p; }
+
+  // When all_headers_public is false, this is the list of public headers. It
+  // could be empty which would mean no headers are public.
+  const FileList& public_headers() const { return public_headers_; }
+  FileList& public_headers() { return public_headers_; }
+
   // Compile-time extra dependencies.
   const FileList& source_prereqs() const { return source_prereqs_; }
   FileList& source_prereqs() { return source_prereqs_; }
@@ -145,6 +155,8 @@ class Target : public Item {
   std::string output_extension_;
 
   FileList sources_;
+  bool all_headers_public_;
+  FileList public_headers_;
   FileList source_prereqs_;
   FileList data_;
 

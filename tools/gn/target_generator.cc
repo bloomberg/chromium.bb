@@ -137,6 +137,21 @@ void TargetGenerator::FillSources() {
   target_->sources().swap(dest_sources);
 }
 
+void TargetGenerator::FillPublic() {
+  const Value* value = scope_->GetValue(variables::kPublic, true);
+  if (!value)
+    return;
+
+  // If the public headers are defined, don't default to public.
+  target_->set_all_headers_public(false);
+
+  Target::FileList dest_public;
+  if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
+                                  scope_->GetSourceDir(), &dest_public, err_))
+    return;
+  target_->public_headers().swap(dest_public);
+}
+
 void TargetGenerator::FillSourcePrereqs() {
   const Value* value = scope_->GetValue(variables::kSourcePrereqs, true);
   if (!value)

@@ -128,6 +128,7 @@ static_library("test_support_perf") {
     "run_all_perftests.cc",
   ]
   deps = [
+    ":test_support_base",
     "//base",
     "//testing/gtest",
   ]

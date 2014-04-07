@@ -24,6 +24,11 @@ extern const char kArgs_HelpShort[];
 extern const char kArgs_Help[];
 int RunArgs(const std::vector<std::string>& args);
 
+extern const char kCheck[];
+extern const char kCheck_HelpShort[];
+extern const char kCheck_Help[];
+int RunCheck(const std::vector<std::string>& args);
+
 extern const char kDesc[];
 extern const char kDesc_HelpShort[];
 extern const char kDesc_Help[];

@@ -49,6 +49,7 @@ class TargetGenerator {
   const BuildSettings* GetBuildSettings() const;
 
   void FillSources();
+  void FillPublic();
   void FillSourcePrereqs();
   void FillConfigs();
   void FillOutputs();

@@ -12,7 +12,10 @@ static_library("usb") {
     "usb_ids.h",
     generated_ids,
   ]
-  deps = [ ":usb_device_ids" ]
+  deps = [
+    ":usb_device_ids",
+    "//base",
+  ]
 }
 
 action("usb_device_ids") {

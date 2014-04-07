@@ -28,8 +28,7 @@ enum SourceFileType {
   SOURCE_RC,
 };
 
-SourceFileType GetSourceFileType(const SourceFile& file,
-                                 Settings::TargetOS os);
+SourceFileType GetSourceFileType(const SourceFile& file);
 
 // Returns the extension, not including the dot, for the given file type on the
 // given system.

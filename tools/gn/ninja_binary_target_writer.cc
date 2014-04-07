@@ -151,8 +151,7 @@ void NinjaBinaryTargetWriter::WriteSources(
   for (size_t i = 0; i < sources.size(); i++) {
     const SourceFile& input_file = sources[i];
 
-    SourceFileType input_file_type = GetSourceFileType(input_file,
-                                                       settings_->target_os());
+    SourceFileType input_file_type = GetSourceFileType(input_file);
     if (input_file_type == SOURCE_UNKNOWN)
       continue;  // Skip unknown file types.
     std::string command =
@@ -429,8 +428,7 @@ void NinjaBinaryTargetWriter::ClassifyDependency(
     } else {
       // Linking in a source set, copy its object files.
       for (size_t i = 0; i < dep->sources().size(); i++) {
-        SourceFileType input_file_type = GetSourceFileType(
-            dep->sources()[i], dep->settings()->target_os());
+        SourceFileType input_file_type = GetSourceFileType(dep->sources()[i]);
         if (input_file_type != SOURCE_UNKNOWN &&
             input_file_type != SOURCE_H) {
           // Note we need to specify the target as the source_set target

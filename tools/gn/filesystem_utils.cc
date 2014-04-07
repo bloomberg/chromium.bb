@@ -165,8 +165,7 @@ bool FilesystemStringsEqual(const base::FilePath::StringType& a,
 
 }  // namespace
 
-SourceFileType GetSourceFileType(const SourceFile& file,
-                                 Settings::TargetOS os) {
+SourceFileType GetSourceFileType(const SourceFile& file) {
   base::StringPiece extension = FindExtension(&file.value());
   if (extension == "cc" || extension == "cpp" || extension == "cxx")
     return SOURCE_CC;
@@ -174,29 +173,14 @@ SourceFileType GetSourceFileType(const SourceFile& file,
     return SOURCE_H;
   if (extension == "c")
     return SOURCE_C;
-
-  switch (os) {
-    case Settings::MAC:
-      if (extension == "m")
-        return SOURCE_M;
-      if (extension == "mm")
-        return SOURCE_MM;
-      break;
-
-    case Settings::WIN:
-      if (extension == "rc")
-        return SOURCE_RC;
-      // TODO(brettw) asm files.
-      break;
-
-    default:
-      break;
-  }
-
-  if (os != Settings::WIN) {
-    if (extension == "S")
-      return SOURCE_S;
-  }
+  if (extension == "m")
+    return SOURCE_M;
+  if (extension == "mm")
+    return SOURCE_MM;
+  if (extension == "rc")
+    return SOURCE_RC;
+  if (extension == "S")
+    return SOURCE_S;
 
   return SOURCE_UNKNOWN;
 }

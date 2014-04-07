@@ -35,6 +35,7 @@ const CommandInfoMap& GetCommands() {
                                        &Run##cmd);
 
     INSERT_COMMAND(Args)
+    INSERT_COMMAND(Check)
     INSERT_COMMAND(Desc)
     INSERT_COMMAND(Gen)
     INSERT_COMMAND(Help)

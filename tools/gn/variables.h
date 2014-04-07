@@ -159,6 +159,10 @@ extern const char kOutputs[];
 extern const char kOutputs_HelpShort[];
 extern const char kOutputs_Help[];
 
+extern const char kPublic[];
+extern const char kPublic_HelpShort[];
+extern const char kPublic_Help[];
+
 extern const char kScript[];
 extern const char kScript_HelpShort[];
 extern const char kScript_Help[];

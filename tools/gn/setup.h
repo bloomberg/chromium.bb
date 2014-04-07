@@ -48,6 +48,12 @@ class CommonSetup {
     check_for_unused_overrides_ = s;
   }
 
+  // After a successful run, setting this will additionally cause the public
+  // headers to be checked. Defaults to false.
+  void set_check_public_headers(bool s) {
+    check_public_headers_ = s;
+  }
+
   BuildSettings& build_settings() { return build_settings_; }
   Builder* builder() { return builder_.get(); }
   LoaderImpl* loader() { return loader_.get(); }
@@ -69,6 +75,7 @@ class CommonSetup {
 
   bool check_for_bad_items_;
   bool check_for_unused_overrides_;
+  bool check_public_headers_;
 
  private:
   CommonSetup& operator=(const CommonSetup& other);  // Disallow.

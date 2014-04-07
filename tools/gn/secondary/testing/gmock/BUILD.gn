@@ -28,7 +28,7 @@ static_library("gmock") {
     "src/gmock-matchers.cc",
     "src/gmock-spec-builders.cc",
     "src/gmock.cc",
-    "gmock_mutant.h",  # gMock helpers
+    "../gmock_mutant.h",  # gMock helpers
   ]
 
   # This project includes some stuff form gtest's guts.
@@ -38,6 +38,8 @@ static_library("gmock") {
     ":gmock_config",
     "//testing/gtest:gtest_config",
   ]
+
+  deps = [ "//base" ]
 }
 
 static_library("gmock_main") {

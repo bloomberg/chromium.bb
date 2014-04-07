@@ -22,6 +22,8 @@ namespace {
 // Suppress output on success.
 const char kSwitchQuiet[] = "q";
 
+const char kSwitchCheck[] = "check";
+
 void BackgroundDoWrite(const Target* target,
                        const Toolchain* toolchain,
                        const std::vector<const Item*>& deps_for_visibility) {
@@ -102,6 +104,9 @@ int RunGen(const std::vector<std::string>& args) {
   Setup* setup = new Setup();
   if (!setup->DoSetup(args[0]))
     return 1;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kSwitchCheck))
+    setup->set_check_public_headers(true);
 
   // Cause the load to also generate the ninja files for each target. We wrap
   // the writing to maintain a counter.

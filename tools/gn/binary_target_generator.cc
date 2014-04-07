@@ -37,6 +37,10 @@ void BinaryTargetGenerator::DoRun() {
   if (err_->has_error())
     return;
 
+  FillPublic();
+  if (err_->has_error())
+    return;
+
   FillSourcePrereqs();
   if (err_->has_error())
     return;

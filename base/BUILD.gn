@@ -6,7 +6,6 @@ import("//build/config/ui.gni")
 
 component("base") {
   sources = [
-    "../build/build_config.h",
     "third_party/dmg_fp/dmg_fp.h",
     "third_party/dmg_fp/g_fmt.cc",
     "third_party/dmg_fp/dtoa_wrapper.cc",
@@ -368,6 +367,10 @@ component("base") {
     "native_library_mac.mm",
     "native_library_posix.cc",
     "native_library_win.cc",
+    "numerics/safe_conversions.h",
+    "numerics/safe_conversions_impl.h",
+    "numerics/safe_math.h",
+    "numerics/safe_math_impl.h",
     "nix/mime_util_xdg.cc",
     "nix/mime_util_xdg.h",
     "nix/xdg_util.cc",
@@ -391,7 +394,6 @@ component("base") {
     "port.h",
     "posix/eintr_wrapper.h",
     "posix/file_descriptor_shuffle.cc",
-    "posix/file_descriptor_shuffle.y",
     "posix/global_descriptors.cc",
     "posix/global_descriptors.h",
     "posix/unix_domain_socket_linux.cc",
@@ -453,7 +455,6 @@ component("base") {
     "process/process_metrics_posix.cc",
     "process/process_metrics_win.cc",
     "process/process_posix.cc",
-    "process/process_util.h",
     "process/process_win.cc",
     "profiler/scoped_profile.cc",
     "profiler/scoped_profile.h",
@@ -468,7 +469,6 @@ component("base") {
     "rand_util_win.cc",
     "run_loop.cc",
     "run_loop.h",
-    "safe_numerics.h",
     "safe_strerror_posix.cc",
     "safe_strerror_posix.h",
     "scoped_generic.h",

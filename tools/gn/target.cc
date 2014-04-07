@@ -54,6 +54,7 @@ void MergeAllDependentConfigsFrom(const Target* from_target,
 Target::Target(const Settings* settings, const Label& label)
     : Item(settings, label),
       output_type_(UNKNOWN),
+      all_headers_public_(true),
       hard_dep_(false) {
 }
 
