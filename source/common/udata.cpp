@@ -621,7 +621,7 @@ U_NAMESPACE_END
  *      our common data.                                                *
  *                                                                      *
  *----------------------------------------------------------------------*/
-extern "C" const DataHeader U_DATA_API U_ICUDATA_ENTRY_POINT;
+extern "C" const ICU_Data_Header U_DATA_API U_ICUDATA_ENTRY_POINT;
 
 /*
  * This would be a good place for weak-linkage declarations of
@@ -667,7 +667,7 @@ openCommonData(const char *path,          /*  Path from OpenChoice?          */
         if(gCommonICUDataArray[commonDataIndex] == NULL) {
             int32_t i;
             for(i = 0; i < commonDataIndex; ++i) {
-                if(gCommonICUDataArray[i]->pHeader == &U_ICUDATA_ENTRY_POINT) {
+                if(gCommonICUDataArray[i]->pHeader == &U_ICUDATA_ENTRY_POINT.hdr) {
                     /* The linked-in data is already in the list. */
                     return NULL;
                 }
@@ -686,7 +686,7 @@ openCommonData(const char *path,          /*  Path from OpenChoice?          */
                 setCommonICUDataPointer(uprv_getICUData_conversion(), FALSE, pErrorCode);
             }
             */
-            setCommonICUDataPointer(&U_ICUDATA_ENTRY_POINT, FALSE, pErrorCode);
+            setCommonICUDataPointer(&U_ICUDATA_ENTRY_POINT.hdr, FALSE, pErrorCode);
         }
         return gCommonICUDataArray[commonDataIndex];
     }

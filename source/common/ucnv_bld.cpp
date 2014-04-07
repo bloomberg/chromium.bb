@@ -79,16 +79,25 @@ converterData[UCNV_NUMBER_OF_SUPPORTED_CONVERTER_TYPES]={
     &_HZData,
 #endif
 
+#if UCONFIG_NO_NON_HTML5_CONVERSION
+    NULL,
+#else
     &_SCSUData,
+#endif
 
-#if UCONFIG_NO_LEGACY_CONVERSION
+
+#if UCONFIG_NO_LEGACY_CONVERSION || UCONFIG_NO_NON_HTML5_CONVERSION
     NULL,
 #else
     &_ISCIIData,
 #endif
 
     &_ASCIIData,
+#if UCONFIG_NO_NON_HTML5_CONVERSION
+    NULL, NULL, &_UTF16Data, &_UTF32Data, NULL, NULL,
+#else
     &_UTF7Data, &_Bocu1Data, &_UTF16Data, &_UTF32Data, &_CESU8Data, &_IMAPData,
+#endif
 
 #if UCONFIG_NO_LEGACY_CONVERSION
     NULL,

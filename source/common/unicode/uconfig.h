@@ -265,6 +265,14 @@
 #endif
 
 /**
+ * This switch turns off all the converters NOT listed in
+ * the encoding standard : http://encoding.spec.whatwg.org
+ */
+#ifndef UCONFIG_NO_NON_HTML5_CONVERSION
+#define UCONFIG_NO_NON_HTML5_CONVERSION 0
+#endif
+
+/**
  * \def UCONFIG_NO_LEGACY_CONVERSION
  * This switch turns off all converters except for
  * - Unicode charsets (UTF-7/8/16/32, CESU-8, SCSU, BOCU-1)

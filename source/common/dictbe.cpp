@@ -621,11 +621,11 @@ foundBest:
 #define KHMER_LOOKAHEAD 3
 
 // Will not combine a non-word with a preceding dictionary word longer than this
-#define KHMER_ROOT_COMBINE_THRESHOLD 3
+#define KHMER_ROOT_COMBINE_THRESHOLD 10
 
 // Will not combine a non-word that shares at least this much prefix with a
 // dictionary word, with a preceding word
-#define KHMER_PREFIX_COMBINE_THRESHOLD 3
+#define KHMER_PREFIX_COMBINE_THRESHOLD 5
 
 // Minimum word size
 #define KHMER_MIN_WORD 2

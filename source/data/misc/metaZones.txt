@@ -1,6 +1,6 @@
 ﻿// ***************************************************************************
 // *
-// * Copyright (C) 2013 International Business Machines
+// * Copyright (C) 2014 International Business Machines
 // * Corporation and others. All Rights Reserved.
 // * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
 // * Source File: <path>/metaZones.xml
@@ -311,6 +311,7 @@ metaZones:table(nofallback){
             EG{"Africa/Cairo"}
             FI{"Europe/Helsinki"}
             GR{"Europe/Athens"}
+            JO{"Asia/Amman"}
             LB{"Asia/Beirut"}
             SY{"Asia/Damascus"}
         }
@@ -511,6 +512,12 @@ metaZones:table(nofallback){
         }
         Mawson{
             001{"Antarctica/Mawson"}
+        }
+        Mexico_Northwest{
+            001{"America/Santa_Isabel"}
+        }
+        Mexico_Pacific{
+            001{"America/Mazatlan"}
         }
         Mongolia{
             001{"Asia/Ulaanbaatar"}
@@ -1058,6 +1065,11 @@ metaZones:table(nofallback){
             {
                 "Europe_Central",
                 "2012-11-10 00:00",
+                "2013-10-25 00:00",
+            }
+            {
+                "Europe_Eastern",
+                "2013-10-25 00:00",
                 "9999-12-31 23:59",
             }
         }
@@ -1456,7 +1468,7 @@ metaZones:table(nofallback){
                 "1998-04-05 09:00",
             }
             {
-                "America_Mountain",
+                "Mexico_Pacific",
                 "1998-04-05 09:00",
                 "9999-12-31 23:59",
             }
@@ -1563,6 +1575,11 @@ metaZones:table(nofallback){
             {
                 "Amazon",
                 "2008-06-24 05:00",
+                "2013-11-10 04:00",
+            }
+            {
+                "Acre",
+                "2013-11-10 04:00",
                 "9999-12-31 23:59",
             }
         }
@@ -1650,7 +1667,7 @@ metaZones:table(nofallback){
                 "1970-01-01 08:00",
             }
             {
-                "America_Mountain",
+                "Mexico_Pacific",
                 "1970-01-01 08:00",
                 "9999-12-31 23:59",
             }
@@ -1963,7 +1980,7 @@ metaZones:table(nofallback){
                 "1970-01-01 08:00",
             }
             {
-                "America_Mountain",
+                "Mexico_Pacific",
                 "1970-01-01 08:00",
                 "9999-12-31 23:59",
             }
@@ -2049,11 +2066,6 @@ metaZones:table(nofallback){
         "America:Montevideo"{
             {
                 "Uruguay",
-            }
-        }
-        "America:Montreal"{
-            {
-                "America_Eastern",
             }
         }
         "America:Montserrat"{
@@ -2278,12 +2290,17 @@ metaZones:table(nofallback){
             {
                 "Amazon",
                 "2008-06-24 05:00",
+                "2013-11-10 04:00",
+            }
+            {
+                "Acre",
+                "2013-11-10 04:00",
                 "9999-12-31 23:59",
             }
         }
         "America:Santa_Isabel"{
             {
-                "America_Pacific",
+                "Mexico_Northwest",
             }
         }
         "America:Santarem"{
@@ -2340,11 +2357,6 @@ metaZones:table(nofallback){
                 "Greenland_Eastern",
                 "1981-03-29 02:00",
                 "9999-12-31 23:59",
-            }
-        }
-        "America:Shiprock"{
-            {
-                "America_Mountain",
             }
         }
         "America:Sitka"{
@@ -2549,6 +2561,11 @@ metaZones:table(nofallback){
                 "Syowa",
             }
         }
+        "Antarctica:Troll"{
+            {
+                "GMT",
+            }
+        }
         "Antarctica:Vostok"{
             {
                 "Vostok",
@@ -2579,13 +2596,6 @@ metaZones:table(nofallback){
         "Asia:Amman"{
             {
                 "Europe_Eastern",
-                "1970-01-01 00:00",
-                "2012-10-25 22:00",
-            }
-            {
-                "Arabian",
-                "2012-10-25 22:00",
-                "9999-12-31 23:59",
             }
         }
         "Asia:Anadyr"{
@@ -3567,11 +3577,11 @@ metaZones:table(nofallback){
             {
                 "Moscow",
                 "1970-01-01 00:00",
-                "1990-06-30 23:00",
+                "1990-06-30 22:00",
             }
             {
                 "Europe_Eastern",
-                "1990-06-30 23:00",
+                "1990-06-30 22:00",
                 "9999-12-31 23:59",
             }
         }
@@ -3751,6 +3761,11 @@ metaZones:table(nofallback){
             {
                 "Europe_Eastern",
                 "1997-03-30 01:00",
+                "2014-03-30 00:00",
+            }
+            {
+                "Moscow",
+                "2014-03-30 00:00",
                 "9999-12-31 23:59",
             }
         }

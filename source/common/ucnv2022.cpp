@@ -167,13 +167,19 @@ typedef enum  {
  *   all versions, not just JIS7 and JIS8.
  * - ICU does not distinguish between different versions of JIS X 0208.
  */
+#if UCONFIG_NO_NON_HTML5_CONVERSION
+enum { MAX_JA_VERSION=0 };
+#else
 enum { MAX_JA_VERSION=4 };
+#endif
 static const uint16_t jpCharsetMasks[MAX_JA_VERSION+1]={
     CSM(ASCII)|CSM(JISX201)|CSM(JISX208)|CSM(HWKANA_7BIT),
+#if !UCONFIG_NO_NON_HTML5_CONVERSION
     CSM(ASCII)|CSM(JISX201)|CSM(JISX208)|CSM(HWKANA_7BIT)|CSM(JISX212),
     CSM(ASCII)|CSM(JISX201)|CSM(JISX208)|CSM(HWKANA_7BIT)|CSM(JISX212)|CSM(GB2312)|CSM(KSC5601)|CSM(ISO8859_1)|CSM(ISO8859_7),
     CSM(ASCII)|CSM(JISX201)|CSM(JISX208)|CSM(HWKANA_7BIT)|CSM(JISX212)|CSM(GB2312)|CSM(KSC5601)|CSM(ISO8859_1)|CSM(ISO8859_7),
     CSM(ASCII)|CSM(JISX201)|CSM(JISX208)|CSM(HWKANA_7BIT)|CSM(JISX212)|CSM(GB2312)|CSM(KSC5601)|CSM(ISO8859_1)|CSM(ISO8859_7)
+#endif
 };
 
 typedef enum {
@@ -361,14 +367,25 @@ static const int8_t escSeqStateTable_Value_2022[MAX_STATES_2022] = {
 };
 
 
+/* Enable ISO-2022-{KR,CN,CN-Ext} for now.
+ * TODO(jshin): Disable it when we know what to do about 'replacement'
+ * encodings. See http://crbug.com/277037 and
+ * https://codereview.chromium.org/145973021/
+ */
+#ifndef U_ENABLE_ISO_2022_KR_CN
+#define U_ENABLE_ISO_2022_KR_CN 1
+#endif
+
 /* Type def for refactoring changeState_2022 code*/
 typedef enum{
 #ifdef U_ENABLE_GENERIC_ISO_2022
     ISO_2022=0,
 #endif
     ISO_2022_JP=1,
+#ifdef U_ENABLE_ISO_2022_KR_CN
     ISO_2022_KR=2,
     ISO_2022_CN=3
+#endif
 } Variant2022;
 
 /*********** ISO 2022 Converter Protos ***********/
@@ -485,24 +502,28 @@ _ISO2022Open(UConverter *cnv, UConverterLoadArgs *pArgs, UErrorCode *errorCode){
                 /* prevent indexing beyond jpCharsetMasks[] */
                 myConverterData->version = version = 0;
             }
+#if !UCONFIG_NO_NON_HTML5_CONVERSION
             if(jpCharsetMasks[version]&CSM(ISO8859_7)) {
                 myConverterData->myConverterArray[ISO8859_7] =
                     ucnv_loadSharedData("ISO8859_7", &stackPieces, &stackArgs, errorCode);
             }
+#endif
             myConverterData->myConverterArray[JISX208] =
                 ucnv_loadSharedData("Shift-JIS", &stackPieces, &stackArgs, errorCode);
+#if !UCONFIG_NO_NON_HTML5_CONVERSION
             if(jpCharsetMasks[version]&CSM(JISX212)) {
                 myConverterData->myConverterArray[JISX212] =
                     ucnv_loadSharedData("jisx-212", &stackPieces, &stackArgs, errorCode);
             }
             if(jpCharsetMasks[version]&CSM(GB2312)) {
                 myConverterData->myConverterArray[GB2312] =
-                    ucnv_loadSharedData("ibm-5478", &stackPieces, &stackArgs, errorCode);   /* gb_2312_80-1 */
+                    ucnv_loadSharedData("noop-gb2312_gl", &stackPieces, &stackArgs, errorCode);   /* gb_2312_80-1 */
             }
             if(jpCharsetMasks[version]&CSM(KSC5601)) {
                 myConverterData->myConverterArray[KSC5601] =
                     ucnv_loadSharedData("ksc_5601", &stackPieces, &stackArgs, errorCode);
             }
+#endif
 
             /* set the function pointers to appropriate funtions */
             cnv->sharedData=(UConverterSharedData*)(&_ISO2022JPData);
@@ -513,6 +534,7 @@ _ISO2022Open(UConverter *cnv, UConverterLoadArgs *pArgs, UErrorCode *errorCode){
             myConverterData->name[len]=(char)(myConverterData->version+(int)'0');
             myConverterData->name[len+1]='\0';
         }
+#ifdef U_ENABLE_ISO_2022_KR_CN
         else if(myLocale[0]=='k' && (myLocale[1]=='o'|| myLocale[1]=='r') &&
             (myLocale[2]=='_' || myLocale[2]=='\0'))
         {
@@ -558,13 +580,13 @@ _ISO2022Open(UConverter *cnv, UConverterLoadArgs *pArgs, UErrorCode *errorCode){
 
             /* open the required converters and cache them */
             myConverterData->myConverterArray[GB2312_1] =
-                ucnv_loadSharedData("ibm-5478", &stackPieces, &stackArgs, errorCode);
+                ucnv_loadSharedData("noop-gb2312_gl", &stackPieces, &stackArgs, errorCode);
             if(version==1) {
                 myConverterData->myConverterArray[ISO_IR_165] =
-                    ucnv_loadSharedData("iso-ir-165", &stackPieces, &stackArgs, errorCode);
+                    ucnv_loadSharedData("noop-iso-ir-165", &stackPieces, &stackArgs, errorCode);
             }
             myConverterData->myConverterArray[CNS_11643] =
-                ucnv_loadSharedData("cns-11643-1992", &stackPieces, &stackArgs, errorCode);
+                ucnv_loadSharedData("noop-cns-11643", &stackPieces, &stackArgs, errorCode);
 
 
             /* set the function pointers to appropriate funtions */
@@ -582,6 +604,7 @@ _ISO2022Open(UConverter *cnv, UConverterLoadArgs *pArgs, UErrorCode *errorCode){
                 (void)uprv_strcpy(myConverterData->name,"ISO_2022,locale=zh,version=2");
             }
         }
+#endif // U_ENABLE_ISO_2022_KR_CN
         else{
 #ifdef U_ENABLE_GENERIC_ISO_2022
             myConverterData->isFirstBuffer = TRUE;

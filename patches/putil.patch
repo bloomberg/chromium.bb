@@ -1,0 +1,13 @@
+Index: source/common/putilimp.h
+===================================================================
+--- source/common/putilimp.h	(revision 259715)
++++ source/common/putilimp.h	(working copy)
+@@ -85,7 +85,7 @@
+ 
+ #ifdef U_HAVE_NL_LANGINFO_CODESET
+     /* Use the predefined value. */
+-#elif U_PLATFORM_HAS_WIN32_API
++#elif U_PLATFORM_HAS_WIN32_API || U_PLATFORM == U_PF_ANDROID || U_PLATFORM == U_PF_QNX
+ #   define U_HAVE_NL_LANGINFO_CODESET 0
+ #else
+ #   define U_HAVE_NL_LANGINFO_CODESET 1

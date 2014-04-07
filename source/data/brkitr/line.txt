@@ -12,9 +12,10 @@
 #         This is only because of a limitation of ICU break engine implementation,
 #         not because the older behavior is desirable.
 
-#
-#  Character Classes defined by TR 14.
-#
+# CHROME: 1. Use line_ja.txt to apply small kana rules in all locales.
+#         2. Adjust CL, OP, and IS to handle 'comma-variants' consistently.
+#         3. Adjust CL, QU, and OP to handle quotation marks around Chinese
+#            characters.
 
 !!chain;
 !!LBCMNoChain;
@@ -57,14 +58,15 @@
 #
 
 $AI = [:LineBreak =  Ambiguous:];
-$AL = [:LineBreak =  Alphabetic:];
+$AL = [[:LineBreak =  Alphabetic:] - [\u23B4\u23B5]];
 $BA = [:LineBreak =  Break_After:];
 $BB = [:LineBreak =  Break_Before:];
 $BK = [:LineBreak =  Mandatory_Break:];
 $B2 = [:LineBreak =  Break_Both:];
 $CB = [:LineBreak =  Contingent_Break:];
 $CJ = [:LineBreak =  Conditional_Japanese_Starter:];
-$CL = [:LineBreak =  Close_Punctuation:];
+$QU2CL = [\u2019\u201D\u275C\u275E];
+$CL = [[:LineBreak =  Close_Punctuation:] [\uFE51\uFE10\u23B5] $QU2CL];
 $CM = [:LineBreak =  Combining_Mark:];
 $CP = [:LineBreak =  Close_Parenthesis:];
 $CR = [:LineBreak =  Carriage_Return:];
@@ -74,20 +76,21 @@ $HL = [:LineBreak =  Hebrew_Letter:];
 $HY = [:LineBreak =  Hyphen:];
 $H2 = [:LineBreak =  H2:];
 $H3 = [:LineBreak =  H3:];
-$ID = [:LineBreak =  Ideographic:];
+$ID = [[[:LineBreak =  Ideographic:] $CJ] - [\uFE51]];
 $IN = [:LineBreak =  Inseperable:];
-$IS = [:LineBreak =  Infix_Numeric:];
+$IS = [[:LineBreak =  Infix_Numeric:] - [\uFE10]];
 $JL = [:LineBreak =  JL:];
 $JV = [:LineBreak =  JV:];
 $JT = [:LineBreak =  JT:];
 $LF = [:LineBreak =  Line_Feed:];
 $NL = [:LineBreak =  Next_Line:];
-$NS = [[:LineBreak =  Nonstarter:] $CJ];
+$NS = [:LineBreak =  Nonstarter:];
 $NU = [:LineBreak =  Numeric:];
-$OP = [:LineBreak =  Open_Punctuation:];
+$QU2OP = [\u2018\u201B\u201C\u201F\u275B\u275D];
+$OP = [[:LineBreak =  Open_Punctuation:] \u23B4 $QU2OP];
 $PO = [:LineBreak =  Postfix_Numeric:];
 $PR = [:LineBreak =  Prefix_Numeric:];
-$QU = [:LineBreak =  Quotation:];
+$QU = [[:LineBreak =  Quotation:] - $QU2CL - $QU2OP];
 $RI = [:LineBreak =  Regional_Indicator:];
 $SA = [:LineBreak =  Complex_Context:];
 $SG = [:LineBreak =  Surrogate:];

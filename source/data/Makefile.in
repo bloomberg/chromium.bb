@@ -240,7 +240,14 @@ package390: $(OUTTMPDIR)/icudata390.lst $(PKGDATA_LIST) ./icupkg.inc packagedata
 #  2010-dec Removed pnames.icu.
 # These are now hardcoded in ICU4C and only loaded in ICU4J.
 #
-DAT_FILES_SHORT=unames.icu cnvalias.icu coll/ucadata.icu coll/invuca.icu nfc.nrm nfkc.nrm nfkc_cf.nrm uts46.nrm
+# CHROME: unames.icu is excluded from the data file.
+# coll/invuca.icu is also excluded. When building a ICU data file to check in,
+# we need to copy data/in/coll/invuca.icu to the build location (expected
+# by genrb : out/build/icudt46l/coll) by hand because genrb requires its
+# presence when compiling coll/root.txt. We have to put it back if Webkit
+# begins to use it.
+# See https://bugs.webkit.org/show_bug.cgi?id=30437#c32 about invuca.icu.
+DAT_FILES_SHORT=cnvalias.icu coll/ucadata.icu nfc.nrm nfkc.nrm nfkc_cf.nrm uts46.nrm
 DAT_FILES=$(DAT_FILES_SHORT:%=$(BUILDDIR)/%)
 
 ## BRK files
@@ -271,7 +278,8 @@ CFU_FILES=$(BUILDDIR)/$(CFU_FILES_SHORT)
 -include $(UCMSRCDIR)/ucmfiles.mk
 -include $(UCMSRCDIR)/ucmebcdic.mk
 -include $(UCMSRCDIR)/ucmlocal.mk
-ALL_UCM_SOURCE=ibm-37_P100-1995.ucm ibm-1047_P100-1995.ucm $(UCM_SOURCE_CORE) $(UCM_SOURCE_FILES) $(UCM_SOURCE_EBCDIC) $(UCM_SOURCE_LOCAL)
+# CHROME: we don't need any EBCDIC converters.
+ALL_UCM_SOURCE=$(UCM_SOURCE_CORE) $(UCM_SOURCE_FILES) $(UCM_SOURCE_EBCDIC) $(UCM_SOURCE_LOCAL)
 UCM_FILES = $(ALL_UCM_SOURCE:%=$(SRCDATADIR)/%)
 CNV_FILES = $(ALL_UCM_SOURCE:%.ucm=$(BUILDDIR)/%.cnv)
 CNV_FILES_SHORT = $(ALL_UCM_SOURCE:%.ucm=%.cnv)
@@ -338,7 +346,8 @@ TRANSLIT_SRC= $(TRANSLIT_SOURCE) $(TRANSLIT_ALIAS_SOURCE) $(TRANSLIT_SOURCE_LOCA
 TRANSLIT_SRC_FILES = $(TRANSLIT_SRC:%=$(TRANSLITSRCDIR)/%)
 INSTALLED_TRANSLIT_FILES = $(TRANSLIT_SOURCE:%.txt=%)  $(TRANSLIT_SOURCE_LOCAL:%.txt=%)
 endif
-GENRBOPTS=-k
+# CHROME : To save space, use '-R' option.
+GENRBOPTS=-k -R
 
 ## MISC files
 -include $(MISCSRCDIR)/miscfiles.mk

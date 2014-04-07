@@ -1,8 +1,8 @@
 Index: source/common/udata.cpp
 ===================================================================
---- source/common/udata.cpp	(revision 68397)
+--- source/common/udata.cpp	(revision 259715)
 +++ source/common/udata.cpp	(working copy)
-@@ -610,7 +610,7 @@
+@@ -621,7 +621,7 @@
   *      our common data.                                                *
   *                                                                      *
   *----------------------------------------------------------------------*/
@@ -11,7 +11,7 @@ Index: source/common/udata.cpp
  
  /*
   * This would be a good place for weak-linkage declarations of
-@@ -656,7 +656,7 @@
+@@ -667,7 +667,7 @@
          if(gCommonICUDataArray[commonDataIndex] == NULL) {
              int32_t i;
              for(i = 0; i < commonDataIndex; ++i) {
@@ -20,7 +20,7 @@ Index: source/common/udata.cpp
                      /* The linked-in data is already in the list. */
                      return NULL;
                  }
-@@ -675,7 +675,7 @@
+@@ -686,7 +686,7 @@
                  setCommonICUDataPointer(uprv_getICUData_conversion(), FALSE, pErrorCode);
              }
              */
