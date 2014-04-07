@@ -1832,7 +1832,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_SAVE_PASSWORD_BUBBLE_NAME,
     IDS_FLAGS_ENABLE_SAVE_PASSWORD_BUBBLE_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableSavePasswordBubble)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSavePasswordBubble,
+                              switches::kDisableSavePasswordBubble)
   },
 #if defined(GOOGLE_CHROME_BUILD)
   {

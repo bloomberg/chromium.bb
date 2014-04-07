@@ -33,6 +33,24 @@
 #include "chrome/browser/android/password_authentication_manager.h"
 #endif  // OS_ANDROID
 
+namespace {
+
+bool IsTheHotNewBubbleUIEnabled() {
+  std::string group_name =
+      base::FieldTrialList::FindFullName("PasswordManagerUI");
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableSavePasswordBubble))
+    return false;
+
+  if (command_line->HasSwitch(switches::kEnableSavePasswordBubble))
+    return true;
+
+  return group_name == "Bubble";
+}
+
+} // namespace
+
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromePasswordManagerClient);
 
 ChromePasswordManagerClient::ChromePasswordManagerClient(
@@ -47,8 +65,7 @@ ChromePasswordManagerClient::~ChromePasswordManagerClient() {}
 
 void ChromePasswordManagerClient::PromptUserToSavePassword(
     PasswordFormManager* form_to_save) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSavePasswordBubble)) {
+  if (IsTheHotNewBubbleUIEnabled()) {
     ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
         ManagePasswordsBubbleUIController::FromWebContents(web_contents());
     if (manage_passwords_bubble_ui_controller) {
@@ -70,21 +87,15 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
     const autofill::PasswordFormMap& best_matches) const {
   ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
       ManagePasswordsBubbleUIController::FromWebContents(web_contents());
-  if (manage_passwords_bubble_ui_controller &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSavePasswordBubble)) {
+  if (manage_passwords_bubble_ui_controller && IsTheHotNewBubbleUIEnabled())
     manage_passwords_bubble_ui_controller->OnPasswordAutofilled(best_matches);
-  }
 }
 
 void ChromePasswordManagerClient::PasswordAutofillWasBlocked() const {
   ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
       ManagePasswordsBubbleUIController::FromWebContents(web_contents());
-  if (manage_passwords_bubble_ui_controller &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSavePasswordBubble)) {
+  if (manage_passwords_bubble_ui_controller && IsTheHotNewBubbleUIEnabled())
     manage_passwords_bubble_ui_controller->OnBlacklistBlockedAutofill();
-  }
 }
 
 void ChromePasswordManagerClient::AuthenticateAutofillAndFillForm(

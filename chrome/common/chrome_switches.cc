@@ -391,6 +391,9 @@ const char kDisableQuicPortSelection[]      = "disable-quic-port-selection";
 const char kDisableRestoreBackgroundContents[] =
     "disable-restore-background-contents";
 
+// Prevents the save password bubble from being enabled.
+const char kDisableSavePasswordBubble[] = "disable-save-password-bubble";
+
 // Disables throttling prints initiated by scripts.
 const char kDisableScriptedPrintThrottling[] =
     "disable-scripted-print-throttling";
