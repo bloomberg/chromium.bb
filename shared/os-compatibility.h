@@ -23,9 +23,9 @@
 #ifndef OS_COMPATIBILITY_H
 #define OS_COMPATIBILITY_H
 
-#include <sys/types.h>
-
 #include "config.h"
+
+#include <sys/types.h>
 
 #ifdef HAVE_EXECINFO_H
 #include <execinfo.h>

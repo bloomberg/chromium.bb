@@ -24,6 +24,8 @@
 #ifndef _WESTON_TEST_RUNNER_H_
 #define _WESTON_TEST_RUNNER_H_
 
+#include "config.h"
+
 #include <stdlib.h>
 
 #ifdef NDEBUG

@@ -23,6 +23,8 @@
 #ifndef WSCREENSAVER_H
 #define WSCREENSAVER_H
 
+#include "config.h"
+
 #define MESA_EGL_NO_X11_HEADERS
 #include <EGL/egl.h>
 

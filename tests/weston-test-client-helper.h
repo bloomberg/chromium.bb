@@ -23,6 +23,8 @@
 #ifndef _WESTON_TEST_CLIENT_HELPER_H_
 #define _WESTON_TEST_CLIENT_HELPER_H_
 
+#include "config.h"
+
 #include <assert.h>
 #include "weston-test-runner.h"
 #include "wayland-test-client-protocol.h"

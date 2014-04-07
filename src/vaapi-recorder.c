@@ -43,6 +43,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>

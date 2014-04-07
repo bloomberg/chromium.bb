@@ -23,6 +23,8 @@
 #ifndef _WINDOW_H_
 #define _WINDOW_H_
 
+#include "config.h"
+
 #include <xkbcommon/xkbcommon.h>
 #include <wayland-client.h>
 #include <cairo.h>
