@@ -225,8 +225,14 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, MotionTest) {
   fetcher_->stopped_motion_.Wait();
 }
 
+// Failing in the android try bot. See http://crbug.com/360578.
+#if defined(OS_ANDROID)
+#define MAYBE_OrientationNullTestWithAlert DISABLED_OrientationNullTestWithAlert
+#else
+#define MAYBE_OrientationNullTestWithAlert OrientationNullTestWithAlert
+#endif
 IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
-    OrientationNullTestWithAlert) {
+    MAYBE_OrientationNullTestWithAlert) {
   // The test page will register an event handler for orientation events,
   // expects to get an event with null values. The test raises a modal alert
   // dialog with a delay to test that the one-off null-event still propagates
