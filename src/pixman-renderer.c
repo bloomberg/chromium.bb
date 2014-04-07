@@ -181,6 +181,8 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	float view_x, view_y;
 	pixman_transform_t transform;
 	pixman_fixed_t fw, fh;
+	pixman_image_t *mask_image;
+	pixman_color_t mask = { 0, };
 
 	/* The final region to be painted is the intersection of
 	 * 'region' and 'surf_region'. However, 'region' is in the global
@@ -340,12 +342,12 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	if (ps->buffer_ref.buffer)
 		wl_shm_buffer_begin_access(ps->buffer_ref.buffer->shm_buffer);
 
-	pixman_image_t *mask_image;
 	if (ev->alpha < 1.0) {
-		pixman_color_t mask = { 0x0000, 0x0000, 0x0000, 0xffff*ev->alpha };
+		mask.alpha = 0xffff * ev->alpha;
 		mask_image = pixman_image_create_solid_fill(&mask);
-	} else
+	} else {
 		mask_image = NULL;
+	}
 
 	pixman_image_composite32(pixman_op,
 				 ps->image, /* src */
@@ -356,6 +358,9 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 				 0, 0, /* dest_x, dest_y */
 				 pixman_image_get_width (po->shadow_image), /* width */
 				 pixman_image_get_height (po->shadow_image) /* height */);
+
+	if (mask_image)
+		pixman_image_unref(mask_image);
 
 	if (ps->buffer_ref.buffer)
 		wl_shm_buffer_end_access(ps->buffer_ref.buffer->shm_buffer);
@@ -404,8 +409,9 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 	}
 
 	/* TODO: Implement repaint_region_complex() using pixman_composite_trapezoids() */
-	if (ev->transform.enabled &&
-	    ev->transform.matrix.type != WESTON_MATRIX_TRANSFORM_TRANSLATE) {
+	if (ev->alpha != 1.0 ||
+	    (ev->transform.enabled &&
+	     ev->transform.matrix.type != WESTON_MATRIX_TRANSFORM_TRANSLATE)) {
 		repaint_region(ev, output, &repaint, NULL, PIXMAN_OP_OVER);
 	} else {
 		/* blended region is whole surface minus opaque region: */
