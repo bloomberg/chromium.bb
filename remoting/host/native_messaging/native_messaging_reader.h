@@ -17,10 +17,6 @@ class SequencedTaskRunner;
 class Value;
 }  // namespace base
 
-namespace net {
-class FileStream;
-}  // namespace net
-
 namespace remoting {
 
 // This class is used for reading messages from the Native Messaging client
@@ -50,7 +46,7 @@ class NativeMessagingReader {
   void InvokeEofCallback();
 
   // Holds the information that the read thread needs to access, such as the
-  // FileStream, and the TaskRunner used for posting notifications back to this
+  // File, and the TaskRunner used for posting notifications back to this
   // class.
   scoped_ptr<Core> core_;
 

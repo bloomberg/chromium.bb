@@ -25,33 +25,12 @@ const int kMessageHeaderSize = sizeof(MessageLengthType);
 // result of std::string::length() without compiler warnings.
 const size_t kMaximumMessageSize = 1024 * 1024;
 
-// Performs the same task as FileStream::WriteSync(), but ensures that exactly
-// |buffer_length| bytes are written. Unlike WriteSync(), a partial write may
-// only occur as a result of end-of-file or fatal error. Returns the number of
-// bytes written (buffer_length) or an error-code <= 0.
-//
-// TODO(lambroslambrou): Add this method to net::FileStream, with unit-tests.
-// See http://crbug.com/232202.
-int WriteUntilComplete(net::FileStream* out,
-                       const char* buffer, int buffer_length) {
-  int written = 0;
-  while (written < buffer_length) {
-    int result = out->WriteSync(buffer + written, buffer_length - written);
-    if (result <= 0) {
-      return result;
-    }
-    DCHECK_LE(result, buffer_length - written);
-    written += result;
-  }
-  return written;
-}
-
 }  // namespace
 
 namespace remoting {
 
 NativeMessagingWriter::NativeMessagingWriter(base::PlatformFile handle)
-    : write_stream_(handle, base::PLATFORM_FILE_WRITE, NULL),
+    : write_stream_(handle),
       fail_(false) {
 }
 
@@ -74,9 +53,8 @@ bool NativeMessagingWriter::WriteMessage(const base::Value& message) {
   MessageLengthType message_length =
       static_cast<MessageLengthType>(message_json.length());
 
-  int result = WriteUntilComplete(
-      &write_stream_, reinterpret_cast<char*>(&message_length),
-      kMessageHeaderSize);
+  int result = write_stream_.WriteAtCurrentPos(
+      reinterpret_cast<char*>(&message_length), kMessageHeaderSize);
   if (result != kMessageHeaderSize) {
     LOG(ERROR) << "Failed to send message header, write returned " << result;
     fail_ = true;
@@ -89,8 +67,8 @@ bool NativeMessagingWriter::WriteMessage(const base::Value& message) {
 
   // CHECK needed since data() is undefined on an empty std::string.
   CHECK(!message_json.empty());
-  result = WriteUntilComplete(&write_stream_, message_json.data(),
-                              message_length_as_int);
+  result = write_stream_.WriteAtCurrentPos(message_json.data(),
+                                           message_length_as_int);
   if (result != message_length_as_int) {
     LOG(ERROR) << "Failed to send message body, write returned " << result;
     fail_ = true;

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/files/file.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
@@ -15,7 +16,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
-#include "net/base/file_stream.h"
 
 namespace {
 
@@ -49,7 +49,7 @@ class NativeMessagingReader::Core {
   // Notify the reader's EOF callback when an error occurs or EOF is reached.
   void NotifyEof();
 
-  net::FileStream read_stream_;
+  base::File read_stream_;
 
   base::WeakPtr<NativeMessagingReader> reader_;
 
@@ -67,7 +67,7 @@ NativeMessagingReader::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SequencedTaskRunner> read_task_runner,
     base::WeakPtr<NativeMessagingReader> reader)
-    : read_stream_(handle, base::PLATFORM_FILE_READ, NULL),
+    : read_stream_(handle),
       reader_(reader),
       caller_task_runner_(caller_task_runner),
       read_task_runner_(read_task_runner) {
@@ -81,7 +81,7 @@ void NativeMessagingReader::Core::ReadMessage() {
   // Keep reading messages until the stream is closed or an error occurs.
   while (true) {
     MessageLengthType message_length;
-    int read_result = read_stream_.ReadUntilComplete(
+    int read_result = read_stream_.ReadAtCurrentPos(
         reinterpret_cast<char*>(&message_length), kMessageHeaderSize);
     if (read_result != kMessageHeaderSize) {
       // 0 means EOF which is normal and should not be logged as an error.
@@ -100,8 +100,8 @@ void NativeMessagingReader::Core::ReadMessage() {
     }
 
     std::string message_json(message_length, '\0');
-    read_result = read_stream_.ReadUntilComplete(string_as_array(&message_json),
-                                                 message_length);
+    read_result = read_stream_.ReadAtCurrentPos(string_as_array(&message_json),
+                                                message_length);
     if (read_result != static_cast<int>(message_length)) {
       LOG(ERROR) << "Failed to read message body, read returned "
                  << read_result;
