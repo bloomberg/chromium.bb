@@ -43,6 +43,11 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     , m_syntheticItalic(false)
     , m_orientation(Horizontal)
     , m_isHashTableDeletedValue(true)
+#if OS(WIN)
+    , m_paintTextFlags(0)
+    , m_minSizeForAntiAlias(0)
+    , m_useSubpixelPositioning(false)
+#endif
 {
 }
 
@@ -55,6 +60,7 @@ FontPlatformData::FontPlatformData()
 #if OS(WIN)
     , m_paintTextFlags(0)
     , m_minSizeForAntiAlias(0)
+    , m_useSubpixelPositioning(false)
 #endif
 {
 }
@@ -68,6 +74,7 @@ FontPlatformData::FontPlatformData(float textSize, bool syntheticBold, bool synt
 #if OS(WIN)
     , m_paintTextFlags(0)
     , m_minSizeForAntiAlias(0)
+    , m_useSubpixelPositioning(false)
 #endif
 {
 }
@@ -85,8 +92,9 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src)
     , m_harfBuzzFace(nullptr)
     , m_isHashTableDeletedValue(false)
 #if OS(WIN)
-    , m_paintTextFlags(0)
-    , m_minSizeForAntiAlias(0)
+    , m_paintTextFlags(src.m_paintTextFlags)
+    , m_minSizeForAntiAlias(src.m_minSizeForAntiAlias)
+    , m_useSubpixelPositioning(src.m_useSubpixelPositioning)
 #endif
 {
 }
@@ -101,6 +109,11 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family
     , m_syntheticItalic(syntheticItalic)
     , m_orientation(orientation)
     , m_isHashTableDeletedValue(false)
+#if OS(WIN)
+    , m_paintTextFlags(0)
+    , m_minSizeForAntiAlias(0)
+    , m_useSubpixelPositioning(subpixelTextPosition)
+#endif
 {
     querySystemForRenderStyle(subpixelTextPosition);
 }
@@ -117,8 +130,9 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
     , m_harfBuzzFace(nullptr)
     , m_isHashTableDeletedValue(false)
 #if OS(WIN)
-    , m_paintTextFlags(0)
-    , m_minSizeForAntiAlias(0)
+    , m_paintTextFlags(src.m_paintTextFlags)
+    , m_minSizeForAntiAlias(src.m_minSizeForAntiAlias)
+    , m_useSubpixelPositioning(src.m_useSubpixelPositioning)
 #endif
 {
     querySystemForRenderStyle(FontDescription::subpixelPositioning());
@@ -143,6 +157,7 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& src)
 #if OS(WIN)
     m_paintTextFlags = 0;
     m_minSizeForAntiAlias = src.m_minSizeForAntiAlias;
+    m_useSubpixelPositioning = src.m_useSubpixelPositioning;
 #endif
 
     return *this;
