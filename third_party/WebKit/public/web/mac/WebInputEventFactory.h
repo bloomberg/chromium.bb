@@ -53,8 +53,6 @@ public:
     BLINK_EXPORT static WebKeyboardEvent keyboardEvent(NSEvent*);
     BLINK_EXPORT static WebKeyboardEvent keyboardEvent(wchar_t character, int modifiers, double timeStampSeconds);
     BLINK_EXPORT static WebMouseEvent mouseEvent(NSEvent*, NSView*);
-    // TODO(erikchen): Remove this method once chrome has been updated to use the method with 4 parameters.
-    BLINK_EXPORT static WebMouseWheelEvent mouseWheelEvent(NSEvent*, NSView*);
     BLINK_EXPORT static WebMouseWheelEvent mouseWheelEvent(NSEvent*, NSView*, bool canRubberbandLeft, bool canRubberbandRight);
     BLINK_EXPORT static WebGestureEvent gestureEvent(NSEvent *, NSView *);
     BLINK_EXPORT static bool isSystemKeyEvent(const WebKeyboardEvent&);

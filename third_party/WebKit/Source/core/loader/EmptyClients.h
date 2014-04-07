@@ -161,8 +161,6 @@ public:
 
     virtual void numWheelEventHandlersChanged(unsigned) OVERRIDE { }
 
-    virtual bool shouldRubberBandInDirection(WebCore::ScrollDirection) const OVERRIDE { return false; }
-
     virtual void didAssociateFormControls(const Vector<RefPtr<Element> >&) OVERRIDE { }
 
     virtual void annotatedRegionsChanged() OVERRIDE { }

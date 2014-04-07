@@ -1109,11 +1109,6 @@ bool ScrollAnimatorMac::canScrollVertically()
     return scrollbar->enabled();
 }
 
-bool ScrollAnimatorMac::shouldRubberBandInDirection(ScrollDirection direction)
-{
-    return m_scrollableArea->shouldRubberBandInDirection(direction);
-}
-
 IntPoint ScrollAnimatorMac::absoluteScrollPosition()
 {
     return m_scrollableArea->visibleContentRect().location() + m_scrollableArea->scrollOrigin();

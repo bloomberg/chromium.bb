@@ -151,7 +151,6 @@ public:
     void setInputEventsTransformForEmulation(const IntSize&, float);
 
     virtual void setScrollPosition(const IntPoint&) OVERRIDE;
-    virtual bool shouldRubberBandInDirection(ScrollDirection) const OVERRIDE;
     virtual bool isRubberBandInProgress() const OVERRIDE;
     void setScrollPositionNonProgrammatically(const IntPoint&);
 

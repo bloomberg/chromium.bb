@@ -903,6 +903,7 @@
       'graphics/filters/ImageFilterBuilderTest.cpp',
       'graphics/gpu/DrawingBufferTest.cpp',
       'graphics/test/MockDiscardablePixelRef.h',
+      'mac/ScrollElasticityControllerTest.mm',
       'image-decoders/ImageDecoderTest.cpp',
       'testing/ArenaTestHelpers.h',
       'testing/TreeTestHelpers.cpp',

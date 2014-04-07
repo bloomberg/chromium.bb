@@ -28,6 +28,7 @@
 
 #if USE(RUBBER_BANDING)
 
+#include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/scroll/ScrollTypes.h"
@@ -44,11 +45,12 @@ protected:
 public:
     virtual bool allowsHorizontalStretching() = 0;
     virtual bool allowsVerticalStretching() = 0;
+    // The amount that the view is stretched past the normal allowable bounds.
+    // The "overhang" amount.
     virtual IntSize stretchAmount() = 0;
     virtual bool pinnedInDirection(const FloatSize&) = 0;
     virtual bool canScrollHorizontally() = 0;
     virtual bool canScrollVertically() = 0;
-    virtual bool shouldRubberBandInDirection(ScrollDirection) = 0;
 
     // Return the absolute scroll position, not relative to the scroll origin.
     virtual WebCore::IntPoint absoluteScrollPosition() = 0;
@@ -59,12 +61,24 @@ public:
     virtual void stopSnapRubberbandTimer() = 0;
 };
 
-class ScrollElasticityController {
+class PLATFORM_EXPORT ScrollElasticityController {
     WTF_MAKE_NONCOPYABLE(ScrollElasticityController);
 
 public:
     explicit ScrollElasticityController(ScrollElasticityControllerClient*);
 
+    // This method is responsible for both scrolling and rubber-banding.
+    //
+    // Events are passed by IPC from the embedder. Events on Mac are grouped
+    // into "gestures". If this method returns 'true', then this object has
+    // handled the event. It expects the embedder to continue to forward events
+    // from the gesture.
+    //
+    // This method makes the assumption that there is only 1 input device being
+    // used at a time. If the user simultaneously uses multiple input devices,
+    // Cocoa does not correctly pass all the gestureBegin/End events. The state
+    // of this class is guaranteed to become eventually consistent, once the
+    // user stops using multiple input devices.
     bool handleWheelEvent(const PlatformWheelEvent&);
     void snapRubberBandTimerFired();
 
@@ -74,11 +88,31 @@ private:
     void stopSnapRubberbandTimer();
     void snapRubberBand();
 
-    bool shouldRubberBandInHorizontalDirection(const PlatformWheelEvent&);
+    // This method determines whether a given event should be handled. The
+    // logic for control events of gestures (PhaseBegan, PhaseEnded) is handled
+    // elsewhere.
+    //
+    // This class handles almost all wheel events. All of the following
+    // conditions must be met for this class to ignore an event:
+    // + No previous events in this gesture have caused any scrolling or rubber
+    // banding.
+    // + The event contains a horizontal component.
+    // + The client's view is pinned in the horizontal direction of the event.
+    // + The wheel event disallows rubber banding in the horizontal direction
+    // of the event.
+    bool shouldHandleEvent(const PlatformWheelEvent&);
 
     ScrollElasticityControllerClient* m_client;
 
+    // There is an active scroll gesture event. This parameter only gets set to
+    // false after the rubber band has been snapped, and before a new gesture
+    // has begun. A careful audit of the code may deprecate the need for this
+    // parameter.
     bool m_inScrollGesture;
+    // At least one event in the current gesture has been consumed and has
+    // caused the view to scroll or rubber band. All future events in this
+    // gesture will be consumed and overscrolls will cause rubberbanding.
+    bool m_hasScrolled;
     bool m_momentumScrollInProgress;
     bool m_ignoreMomentumScrolls;
 
