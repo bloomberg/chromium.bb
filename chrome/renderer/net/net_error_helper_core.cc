@@ -346,7 +346,7 @@ void NetErrorHelperCore::OnStartLoad(FrameType frame_type, PageType page_type) {
   // or the new page is not an error page, then reset pending error page state.
   if (!pending_error_page_info_ || page_type != ERROR_PAGE) {
     CancelPendingFetches();
-  } else {
+  } else if (auto_reload_enabled_) {
     // If an error load is starting, the resulting error page is autoreloadable.
     can_auto_reload_page_ = IsReloadableError(*pending_error_page_info_);
   }
