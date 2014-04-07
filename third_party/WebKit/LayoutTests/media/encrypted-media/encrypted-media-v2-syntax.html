@@ -14,9 +14,6 @@
             var mediaKeySession = null;
             var initData = stringToUint8Array('init data');
 
-            // Timeout for all tests to run.
-            setup({ timeout: 60000 });
-
             test(function()
             {
                 // Too few parameters.
@@ -29,7 +26,9 @@
                 assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys('unsupported'); });
                 assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys(1); });
                 assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys(new Uint8Array(0)); });
-            }, 'Test MediaKeys constructor exceptions.', { timeout: 60000 });
+                // Non-ASCII names.
+                assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys('org.w3\u263A.clearkey'); });
+            }, 'Test MediaKeys constructor exceptions.');
 
             test(function()
             {
@@ -41,7 +40,7 @@
                 assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
                 assert_equals(typeof mediaKeys.createSession, 'function');
                 assert_equals(typeof mediaKeys.addEventListener, 'undefined');
-            }, 'Test MediaKeys constructor.', { timeout: 60000 });
+            }, 'Test MediaKeys constructor.');
 
             test(function()
             {
@@ -68,7 +67,7 @@
                 assert_throws('NotSupportedError', function() { mediaKeys.createSession('unsupported', initData); });
                 assert_throws('NotSupportedError', function() { mediaKeys.createSession('video/foo', initData); });
                 assert_throws('NotSupportedError', function() { mediaKeys.createSession('text/webm', initData); });
-            }, 'Test MediaKeys createSession() exceptions.', { timeout: 60000 });
+            }, 'Test MediaKeys createSession() exceptions.');
 
             test(function()
             {
@@ -85,7 +84,7 @@
                 assert_equals(typeof mediaKeySession.onmessage, 'undefined');
                 assert_equals(typeof mediaKeySession.onclose, 'undefined');
                 assert_equals(typeof mediaKeySession.onerror, 'undefined');
-            }, 'Test MediaKeys createSession().', { timeout: 60000 });
+            }, 'Test MediaKeys createSession().');
 
             test(function()
             {
@@ -97,20 +96,20 @@
                 assert_throws('InvalidAccessError', function() { mediaKeySession.update(undefined); });
                 assert_throws('InvalidAccessError', function() { mediaKeySession.update(1); });
                 assert_throws('InvalidAccessError', function() { mediaKeySession.update(new Uint8Array(0)); });
-            }, 'Test MediaKeySession update() exceptions.', { timeout: 60000 });
+            }, 'Test MediaKeySession update() exceptions.');
 
             test(function()
             {
                 mediaKeySession.update(new Uint8Array(1), 'extra');
                 mediaKeySession.update(new Uint8Array(1));
-            }, 'Test MediaKeySession update().', { timeout: 60000 });
+            }, 'Test MediaKeySession update().');
 
             test(function()
             {
                 mediaKeySession.release();
                 // FIXME: This causes Chromium to crash. Uncomment this once Chromium is fixed.
                 // mediaKeySession.release('extra');
-            }, 'Test MediaKeySession release().', { timeout: 60000 });
+            }, 'Test MediaKeySession release().');
 
             // FIXME: Add syntax checks for MediaKeys.IsTypeSupported().
             // FIXME: Add syntax checks for MediaKeyError and MediaKeySession events.
