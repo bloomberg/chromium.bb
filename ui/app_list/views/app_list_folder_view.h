@@ -82,6 +82,9 @@ class AppListFolderView : public views::View,
       AppListItemView* original_drag_view,
       const gfx::Point& drag_point_in_root_grid);
 
+  // Overridden from views::View:
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+
   // Overridden from FolderHeaderViewDelegate:
   virtual void NavigateBack(AppListFolderItem* item,
                             const ui::Event& event_flags) OVERRIDE;
@@ -115,6 +118,8 @@ class AppListFolderView : public views::View,
   scoped_ptr<PaginationModel> pagination_model_;
 
   bool hide_for_reparent_;
+
+  base::string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListFolderView);
 };

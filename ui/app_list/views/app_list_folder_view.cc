@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "grit/ui_strings.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_model.h"
@@ -80,6 +82,10 @@ AppListFolderView::~AppListFolderView() {
 }
 
 void AppListFolderView::SetAppListFolderItem(AppListFolderItem* folder) {
+  accessible_name_ = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+      IDS_APP_LIST_FOLDER_OPEN_FOLDER_ACCESSIBILE_NAME);
+  NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+
   folder_item_ = folder;
   items_grid_view_->SetItemList(folder_item_->item_list());
   folder_header_view_->SetFolderItem(folder_item_);
@@ -281,8 +287,14 @@ void AppListFolderView::HideViewImmediately() {
 }
 
 void AppListFolderView::CloseFolderPage() {
+  accessible_name_ = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+      IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME);
+  NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+
+  GiveBackFocusToSearchBox();
   if (items_grid_view()->dragging())
     items_grid_view()->EndDrag(true);
+  items_grid_view()->ClearAnySelectedView();
   container_view_->ShowApps(folder_item_);
 }
 
@@ -290,9 +302,14 @@ bool AppListFolderView::IsOEMFolder() const {
   return folder_item_->folder_type() == AppListFolderItem::FOLDER_TYPE_OEM;
 }
 
+void AppListFolderView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_BUTTON;
+  state->name = accessible_name_;
+}
+
 void AppListFolderView::NavigateBack(AppListFolderItem* item,
                                      const ui::Event& event_flags) {
-  container_view_->ShowApps(item);
+  CloseFolderPage();
 }
 
 void AppListFolderView::GiveBackFocusToSearchBox() {

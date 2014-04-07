@@ -7,14 +7,17 @@
 #include <algorithm>
 
 #include "base/strings/utf_string_conversions.h"
+#include "grit/ui_strings.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/cached_label.h"
 #include "ui/app_list/views/progress_bar_view.h"
 #include "ui/base/dragdrop/drag_utils.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -231,7 +234,11 @@ void AppListItemView::ItemNameChanged() {
   title_->Invalidate();
   UpdateTooltip();
   // Use full name for accessibility.
-  SetAccessibleName(base::UTF8ToUTF16(item_->name()));
+  SetAccessibleName(item_->GetItemType() == AppListFolderItem::kItemType
+                        ? l10n_util::GetStringFUTF16(
+                              IDS_APP_LIST_FOLDER_BUTTON_ACCESSIBILE_NAME,
+                              base::UTF8ToUTF16(item_->name()))
+                        : base::UTF8ToUTF16(item_->name()));
   Layout();
 }
 

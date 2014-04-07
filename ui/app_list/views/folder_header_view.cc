@@ -65,6 +65,10 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
   back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
       views::ImageButton::ALIGN_MIDDLE);
   AddChildView(back_button_);
+  back_button_->SetFocusable(true);
+  back_button_->SetAccessibleName(
+      ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+          IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME));
 
   folder_name_view_->SetFontList(
       rb.GetFontList(ui::ResourceBundle::MediumFont));
@@ -198,7 +202,6 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
 
 void FolderHeaderView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
-  delegate_->GiveBackFocusToSearchBox();
   delegate_->NavigateBack(folder_item_, event);
 }
 
