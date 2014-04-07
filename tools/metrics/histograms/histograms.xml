@@ -28043,6 +28043,186 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="UpdateEngine.Attempt.ConnectionType"
+    enum="UpdateEngineConnectionType">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The network connection type when the attempt begins. Possible values include
+    &quot;Unknown&quot;, &quot;Ethernet&quot;, &quot;Wifi&quot;,
+    &quot;Wimax&quot;, &quot;Bluetooth&quot;, &quot;Cellular&quot;,
+    &quot;Tethered Ethernet&quot;, &quot;Tethered Wifi&quot;.
+
+    This is reported when an update attempt ends.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Attempt.DownloadErrorCode"
+    enum="UpdateEngineDownloadErrorCode">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    A more detailed description of the last Payload transfer error when
+    downloading the payload.
+
+    This is reported when an attempt ends with the &quot;Payload Download
+    Error&quot; result.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Attempt.DownloadSource"
+    enum="UpdateEngineDownloadSource">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The download source used, possible values include &quot;HTTPS Server&quot;,
+    &quot;HTTP Server&quot; and &quot;HTTP Peer&quot;.
+
+    This is reported when an update attempt ends.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Attempt.DurationMinutes" units="minutes">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The number of minutes the update attempt took including the time the device
+    spent sleeping.
+
+    This is reported when an update attempt ends.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Attempt.DurationUptimeMinutes" units="minutes">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The number of minutes the update attempt took excluding the time the device
+    spent sleeping.
+
+    This is reported when an update attempt ends.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Attempt.InternalErrorCode"
+    enum="UpdateEngineErrorCode">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    A more detailed description of the last internal error. The possible values
+    correspond to the ErrorCode enumeration in the update_engine source code.
+
+    This is reported when an attempt ends with the InternalError result.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Attempt.Number" units="count">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The attempt number which starts at 0 for the initial attempt and keeps
+    increasing for subsequent attempts.
+
+    This is reported when an update attempt ends.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Attempt.PayloadBytesDownloadedMiB" units="MiB">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The number of payload mebibytes (1048576 bytes) actually download.
+
+    This is reported when an update attempt ends.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Attempt.PayloadDownloadSpeedKBps" units="KBps">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The payload download speed, in kilobytes per second (1000 bytes/second).
+    This is calculated as the number of bytes downloaded divided by the duration
+    of the attempt (excluding time spent sleeping).
+
+    This is reported when an update attempt ends.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Attempt.PayloadSizeMiB" units="MiB">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The payload size, in mebibytes (1048576 bytes).
+
+    This is reported when an update attempt ends.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Attempt.PayloadType"
+    enum="UpdateEnginePayloadFormat">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The payload type, possible values include &quot;Delta&quot; (if Omaha
+    specified to download a delta payload); and &quot;Full&quot; (if Omaha
+    specified to download a full payload); and &quot;ForcedFull&quot; (if the
+    client specified that it would only accept a full payload).
+
+    This is reported when an update attempt ends.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Attempt.Result" enum="UpdateEngineAttemptResult">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The result of the update attempt.
+
+    This is reported when an update attempt ends.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Attempt.TimeSinceLastAttemptMinutes"
+    units="minutes">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The number of minutes since the last attempt including the time the device
+    spent sleeping.
+
+    This is reported when an update attempt ends but only if there was a
+    previous attempt for the same update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Attempt.TimeSinceLastAttemptUptimeMinutes"
+    units="minutes">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The number of minutes since the last attempt excluding the time the device
+    spent sleeping.
+
+    This is reported when an update attempt ends but only if there was a
+    previous attempt for the same update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
 <histogram name="UpdateEngine.Check.DownloadErrorCode"
     enum="UpdateEngineDownloadErrorCode">
   <owner>zeuthen@chromium.org</owner>
@@ -40809,6 +40989,20 @@ other types of suffix sets.
   <int value="3" label="Group not reported and trial was disabled"/>
 </enum>
 
+<enum name="UpdateEngineAttemptResult" type="int">
+  <int value="0" label="Update Succeeded"/>
+  <int value="1" label="Internal Error"/>
+  <int value="2" label="Payload Download Error"/>
+  <int value="3" label="Metadata Malformed"/>
+  <int value="4" label="Operation Malformed"/>
+  <int value="5" label="Operation Execution Error"/>
+  <int value="6" label="Metadata Verification Failed"/>
+  <int value="7" label="Payload Verification Failed"/>
+  <int value="8" label="Verification Failed"/>
+  <int value="9" label="Post-install Failed"/>
+  <int value="10" label="Abnormal Termination"/>
+</enum>
+
 <enum name="UpdateEngineCheckReaction" type="int">
   <int value="0" label="Updating"/>
   <int value="1" label="Ignoring"/>
@@ -40822,6 +41016,17 @@ other types of suffix sets.
   <int value="2" label="Response Download Error"/>
   <int value="3" label="Response Parsing Error"/>
   <int value="4" label="Reboot Pending"/>
+</enum>
+
+<enum name="UpdateEngineConnectionType" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Ethernet"/>
+  <int value="2" label="Wifi"/>
+  <int value="3" label="WiMAX"/>
+  <int value="4" label="Bluetooth"/>
+  <int value="5" label="Cellular"/>
+  <int value="6" label="Tethered (Ethernet)"/>
+  <int value="7" label="Tethered (Wifi)"/>
 </enum>
 
 <enum name="UpdateEngineDownloadErrorCode" type="int">
@@ -40844,6 +41049,12 @@ other types of suffix sets.
   <int value="502" label="Bad Gateway (HTTP Status 502)"/>
   <int value="503" label="Service Unavailable (HTTP Status 503)"/>
   <int value="504" label="Gateway Timeout (HTTP Status 504)"/>
+</enum>
+
+<enum name="UpdateEngineDownloadSource" type="int">
+  <int value="0" label="HTTPS Server"/>
+  <int value="1" label="HTTP Server"/>
+  <int value="2" label="HTTP Peer"/>
 </enum>
 
 <enum name="UpdateEngineDownloadSources" type="int">
