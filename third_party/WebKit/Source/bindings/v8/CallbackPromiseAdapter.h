@@ -65,7 +65,7 @@ class CallbackPromiseAdapter FINAL : public blink::WebCallbacks<typename S::WebT
 public:
     explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver, ExecutionContext* context)
         : m_resolver(resolver)
-        , m_requestState(context)
+        , m_requestState(toIsolate(context))
     {
     }
     virtual ~CallbackPromiseAdapter() { }

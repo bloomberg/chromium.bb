@@ -236,7 +236,7 @@ public:
         : m_promise(isolate, promise)
         , m_handler(isolate, handler)
         , m_argument(isolate, argument)
-        , m_requestState(context)
+        , m_requestState(isolate)
     {
         ASSERT(!m_promise.isEmpty());
         ASSERT(!m_handler.isEmpty());
@@ -281,7 +281,7 @@ public:
         , m_onFulfilled(isolate, onFulfilled)
         , m_onRejected(isolate, onRejected)
         , m_originatorValueObject(isolate, originatorValueObject)
-        , m_requestState(context)
+        , m_requestState(isolate)
     {
         ASSERT(!m_promise.isEmpty());
         ASSERT(!m_originatorValueObject.isEmpty());

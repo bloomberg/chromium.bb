@@ -63,7 +63,7 @@ IDBObjectStore::IDBObjectStore(const IDBObjectStoreMetadata& metadata, IDBTransa
 
 ScriptValue IDBObjectStore::keyPath(ExecutionContext* context) const
 {
-    DOMRequestState requestState(context);
+    DOMRequestState requestState(toIsolate(context));
     return idbAnyToScriptValue(&requestState, IDBAny::create(m_metadata.keyPath));
 }
 
@@ -143,7 +143,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(ScriptState* state, ScriptValue& valu
 PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, PassRefPtr<IDBAny> source, ScriptState* state, ScriptValue& value, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
     ExecutionContext* context = state->executionContext();
-    DOMRequestState requestState(context);
+    DOMRequestState requestState(toIsolate(context));
     RefPtr<IDBKey> key = keyValue.isUndefined() ? nullptr : scriptValueToIDBKey(&requestState, keyValue);
     return put(putMode, source, state, value, key.release(), exceptionState);
 }
@@ -183,7 +183,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
     const bool hasKeyGenerator = autoIncrement();
 
     ExecutionContext* context = state->executionContext();
-    DOMRequestState requestState(context);
+    DOMRequestState requestState(toIsolate(context));
 
     if (putMode != WebIDBDatabase::CursorUpdate && usesInLineKeys && key) {
         exceptionState.throwDOMException(DataError, "The object store uses in-line keys and the key parameter was provided.");

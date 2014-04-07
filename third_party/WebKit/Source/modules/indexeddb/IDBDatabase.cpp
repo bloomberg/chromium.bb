@@ -164,7 +164,7 @@ PassRefPtr<DOMStringList> IDBDatabase::objectStoreNames() const
 
 ScriptValue IDBDatabase::version(ExecutionContext* context) const
 {
-    DOMRequestState requestState(context);
+    DOMRequestState requestState(toIsolate(context));
     int64_t intVersion = m_metadata.intVersion;
     if (intVersion == IDBDatabaseMetadata::NoIntVersion)
         return idbAnyToScriptValue(&requestState, IDBAny::createString(m_metadata.version));

@@ -122,7 +122,7 @@ void CryptoResultImpl::completeWithKeyPair(const blink::WebCryptoKey& publicKey,
 CryptoResultImpl::CryptoResultImpl(ExecutionContext* context)
     : ContextLifecycleObserver(context)
     , m_promiseResolver(ScriptPromiseResolver::create(context))
-    , m_requestState(context)
+    , m_requestState(toIsolate(context))
 #if !ASSERT_DISABLED
     , m_owningThread(currentThread())
     , m_finished(false)

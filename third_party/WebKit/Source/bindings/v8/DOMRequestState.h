@@ -37,18 +37,9 @@ namespace WebCore {
 // FIXME: DOMRequestState is deprecated and going to be removed. Use NewScriptState instead.
 class DOMRequestState {
 public:
-    explicit DOMRequestState(ExecutionContext* executionContext)
-        : m_isolate(toIsolate(executionContext))
-        , m_executionContext(executionContext)
-        , m_world(DOMWrapperWorld::current(m_isolate))
+    explicit DOMRequestState(v8::Isolate* isolate)
+        : m_scriptState(NewScriptState::current(isolate))
     {
-        ASSERT(m_executionContext);
-    }
-
-    void clear()
-    {
-        m_executionContext = 0;
-        m_world.clear();
     }
 
     class Scope {
@@ -63,23 +54,13 @@ public:
         v8::Context::Scope m_contextScope;
     };
 
-    v8::Local<v8::Context> context()
-    {
-        ASSERT(m_executionContext);
-        return toV8Context(m_executionContext, *m_world);
-    }
-
-    v8::Isolate* isolate() const
-    {
-        return m_isolate;
-    }
-
-    bool isValid() const { return m_executionContext; }
+    void clear() { m_scriptState.clear(); }
+    v8::Local<v8::Context> context() { return m_scriptState->context(); }
+    v8::Isolate* isolate() const { return m_scriptState->isolate(); }
+    bool isValid() const { return m_scriptState; }
 
 private:
-    v8::Isolate* m_isolate;
-    ExecutionContext* m_executionContext;
-    RefPtr<DOMWrapperWorld> m_world;
+    RefPtr<NewScriptState> m_scriptState;
 };
 
 }

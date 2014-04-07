@@ -62,7 +62,7 @@ IDBIndex::~IDBIndex()
 
 ScriptValue IDBIndex::keyPath(ExecutionContext* context) const
 {
-    DOMRequestState requestState(context);
+    DOMRequestState requestState(toIsolate(context));
     return idbAnyToScriptValue(&requestState, IDBAny::create(m_metadata.keyPath));
 }
 

@@ -173,7 +173,7 @@ void IDBCursor::advance(unsigned long count, ExceptionState& exceptionState)
 void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::continue");
-    DOMRequestState requestState(context);
+    DOMRequestState requestState(toIsolate(context));
     RefPtr<IDBKey> key = keyValue.isUndefined() || keyValue.isNull() ? nullptr : scriptValueToIDBKey(&requestState, keyValue);
     if (key && !key->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
@@ -185,7 +185,7 @@ void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& k
 void IDBCursor::continuePrimaryKey(ExecutionContext* context, const ScriptValue& keyValue, const ScriptValue& primaryKeyValue, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::continuePrimaryKey");
-    DOMRequestState requestState(context);
+    DOMRequestState requestState(toIsolate(context));
     RefPtr<IDBKey> key = scriptValueToIDBKey(&requestState, keyValue);
     RefPtr<IDBKey> primaryKey = scriptValueToIDBKey(&requestState, primaryKeyValue);
     if (!key->isValid() || !primaryKey->isValid()) {
@@ -312,14 +312,14 @@ void IDBCursor::checkForReferenceCycle()
 ScriptValue IDBCursor::key(ExecutionContext* context)
 {
     m_keyDirty = false;
-    DOMRequestState requestState(context);
+    DOMRequestState requestState(toIsolate(context));
     return idbKeyToScriptValue(&requestState, m_key);
 }
 
 ScriptValue IDBCursor::primaryKey(ExecutionContext* context)
 {
     m_primaryKeyDirty = false;
-    DOMRequestState requestState(context);
+    DOMRequestState requestState(toIsolate(context));
     return idbKeyToScriptValue(&requestState, m_primaryKey);
 }
 
@@ -327,7 +327,7 @@ ScriptValue IDBCursor::value(ExecutionContext* context)
 {
     ASSERT(isCursorWithValue());
 
-    DOMRequestState requestState(context);
+    DOMRequestState requestState(toIsolate(context));
     RefPtr<IDBObjectStore> objectStore = effectiveObjectStore();
     const IDBObjectStoreMetadata& metadata = objectStore->metadata();
     RefPtr<IDBAny> value;
@@ -346,7 +346,7 @@ ScriptValue IDBCursor::value(ExecutionContext* context)
 
 ScriptValue IDBCursor::source(ExecutionContext* context) const
 {
-    DOMRequestState requestState(context);
+    DOMRequestState requestState(toIsolate(context));
     return idbAnyToScriptValue(&requestState, m_source);
 }
 

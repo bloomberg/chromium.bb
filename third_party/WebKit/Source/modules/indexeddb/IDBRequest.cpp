@@ -68,7 +68,7 @@ IDBRequest::IDBRequest(ExecutionContext* context, PassRefPtr<IDBAny> source, IDB
     , m_didFireUpgradeNeededEvent(false)
     , m_preventPropagation(false)
     , m_resultDirty(true)
-    , m_requestState(context)
+    , m_requestState(toIsolate(context))
 {
     ScriptWrappable::init(this);
 }
@@ -104,7 +104,7 @@ ScriptValue IDBRequest::source(ExecutionContext* context) const
     if (m_contextStopped || !executionContext())
         return ScriptValue();
 
-    DOMRequestState requestState(context);
+    DOMRequestState requestState(toIsolate(context));
     return idbAnyToScriptValue(&requestState, m_source);
 }
 
