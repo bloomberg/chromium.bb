@@ -190,6 +190,7 @@ public:
 
     virtual void didCancelCompositionOnSelectionChange() OVERRIDE;
     virtual void willSetInputMethodState() OVERRIDE;
+    virtual void didUpdateTextOfFocusedElementByNonUserInput() OVERRIDE;
 
 private:
     virtual bool isChromeClientImpl() const OVERRIDE { return true; }

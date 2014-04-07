@@ -890,6 +890,12 @@ void ChromeClientImpl::willSetInputMethodState()
         m_webView->client()->resetInputMethod();
 }
 
+void ChromeClientImpl::didUpdateTextOfFocusedElementByNonUserInput()
+{
+    if (m_webView->client())
+        m_webView->client()->didUpdateTextOfFocusedElementByNonUserInput();
+}
+
 void ChromeClientImpl::handleKeyboardEventOnTextField(HTMLInputElement& inputElement, KeyboardEvent& event)
 {
     if (!m_webView->autofillClient())

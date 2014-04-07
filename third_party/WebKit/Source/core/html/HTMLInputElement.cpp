@@ -1031,6 +1031,8 @@ void HTMLInputElement::setValueInternal(const String& sanitizedValue, TextFieldE
 {
     m_valueIfDirty = sanitizedValue;
     setNeedsValidityCheck();
+    if (document().focusedElement() == this)
+        document().frameHost()->chrome().client().didUpdateTextOfFocusedElementByNonUserInput();
 }
 
 void HTMLInputElement::updateView()

@@ -186,6 +186,10 @@ public:
     // of the touch actions that are permitted for this touch.
     virtual void setTouchAction(WebTouchAction touchAction) { }
 
+    // Called when value of focused text field gets dirty, e.g. value is
+    // modified by script, not by user input.
+    virtual void didUpdateTextOfFocusedElementByNonUserInput() { }
+
 protected:
     ~WebWidgetClient() { }
 };

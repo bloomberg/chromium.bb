@@ -342,6 +342,8 @@ void HTMLTextAreaElement::setValue(const String& value, TextFieldEventBehavior e
     setValueCommon(value, eventBehavior);
     m_isDirty = true;
     setNeedsValidityCheck();
+    if (document().focusedElement() == this)
+        document().frameHost()->chrome().client().didUpdateTextOfFocusedElementByNonUserInput();
 }
 
 void HTMLTextAreaElement::setNonDirtyValue(const String& value)

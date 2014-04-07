@@ -248,6 +248,7 @@ public:
     // Input mehtod editor related functions.
     virtual void didCancelCompositionOnSelectionChange() { }
     virtual void willSetInputMethodState() { }
+    virtual void didUpdateTextOfFocusedElementByNonUserInput() { }
 
 protected:
     virtual ~ChromeClient() { }
