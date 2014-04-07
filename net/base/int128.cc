@@ -7,8 +7,8 @@
 #include "net/base/int128.h"
 
 const uint128_pod kuint128max = {
-    static_cast<uint64>(GG_LONGLONG(0xFFFFFFFFFFFFFFFF)),
-    static_cast<uint64>(GG_LONGLONG(0xFFFFFFFFFFFFFFFF))
+    static_cast<uint64>(0xFFFFFFFFFFFFFFFFULL),
+    static_cast<uint64>(0xFFFFFFFFFFFFFFFFULL)
 };
 
 std::ostream& operator<<(std::ostream& o, const uint128& b) {

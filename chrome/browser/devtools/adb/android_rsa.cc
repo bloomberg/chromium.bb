@@ -100,7 +100,7 @@ void BnSub(uint32* a, uint32* b) {
     carry_over = 0;
     if (sub < 0) {
       carry_over = 1;
-      sub += GG_LONGLONG(0x100000000);
+      sub += 0x100000000LL;
     }
     a[i] = static_cast<uint32>(sub);
   }
@@ -233,7 +233,7 @@ std::string AndroidRSAPublicKey(crypto::RSAPrivateKey* key) {
   RSAPublicKey pkey;
   pkey.len = kRSANumWords;
   pkey.exponent = 65537; // Fixed public exponent
-  pkey.n0inv = 0 - ModInverse(n0, GG_LONGLONG(0x100000000));
+  pkey.n0inv = 0 - ModInverse(n0, 0x100000000LL);
   if (pkey.n0inv == 0)
     return kDummyRSAPublicKey;
 
