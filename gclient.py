@@ -1057,8 +1057,11 @@ solutions = [
 Your .gclient file seems to be broken. The requested URL is different from what
 is actually checked out in %(checkout_path)s.
 
-Expected: %(expected_url)s (%(expected_scm)s)
-Actual:   %(actual_url)s (%(actual_scm)s)
+The .gclient file contains:
+%(expected_url)s (%(expected_scm)s)
+
+The local checkout in %(checkout_path)s reports:
+%(actual_url)s (%(actual_scm)s)
 
 You should ensure that the URL listed in .gclient is correct and either change
 it or fix the checkout. If you're managing your own git checkout in
