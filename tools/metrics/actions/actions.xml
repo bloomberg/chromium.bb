@@ -6881,6 +6881,24 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ManagedUsers_OpenProfile">
+  <owner>pam@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
+  <description>Supervised user profile activated.</description>
+</action>
+
+<action name="ManagedUsers_QuitBrowser">
+  <owner>pam@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
+  <description>Supervised user quit the browser.</description>
+</action>
+
+<action name="ManagedUsers_SwitchProfile">
+  <owner>pam@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
+  <description>Supervised user switched to another profile.</description>
+</action>
+
 <action name="ManagedUsers_UploadItem_Queued">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

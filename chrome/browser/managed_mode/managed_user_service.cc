@@ -44,6 +44,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -57,17 +58,13 @@
 #endif
 
 using base::DictionaryValue;
+using base::UserMetricsAction;
 using content::BrowserThread;
 
 const char kManagedUserAccessRequestKeyPrefix[] =
     "X-ManagedUser-AccessRequests";
 const char kManagedUserAccessRequestTime[] = "timestamp";
 const char kManagedUserName[] = "name";
-const char kOpenManagedProfileKeyPrefix[] = "X-ManagedUser-Events-OpenProfile";
-const char kQuitBrowserKeyPrefix[] = "X-ManagedUser-Events-QuitBrowser";
-const char kSwitchFromManagedProfileKeyPrefix[] =
-    "X-ManagedUser-Events-SwitchProfile";
-const char kEventTimestamp[] = "timestamp";
 
 // Key for the notification setting of the custodian. This is a shared setting
 // so we can include the setting in the access request data that is used to
@@ -153,7 +150,7 @@ ManagedUserService::~ManagedUserService() {
 void ManagedUserService::Shutdown() {
   did_shutdown_ = true;
   if (ProfileIsManaged()) {
-    RecordProfileAndBrowserEventsHelper(kQuitBrowserKeyPrefix);
+    content::RecordAction(UserMetricsAction("ManagedUsers_QuitBrowser"));
 #if !defined(OS_ANDROID)
     // TODO(bauerb): Get rid of the platform-specific #ifdef here.
     // http://crbug.com/313377
@@ -695,23 +692,9 @@ void ManagedUserService::UpdateManualURLs() {
 void ManagedUserService::OnBrowserSetLastActive(Browser* browser) {
   bool profile_became_active = profile_->IsSameProfile(browser->profile());
   if (!is_profile_active_ && profile_became_active)
-    RecordProfileAndBrowserEventsHelper(kOpenManagedProfileKeyPrefix);
+    content::RecordAction(UserMetricsAction("ManagedUsers_OpenProfile"));
   else if (is_profile_active_ && !profile_became_active)
-    RecordProfileAndBrowserEventsHelper(kSwitchFromManagedProfileKeyPrefix);
+    content::RecordAction(UserMetricsAction("ManagedUsers_SwitchProfile"));
 
   is_profile_active_ = profile_became_active;
-}
-
-void ManagedUserService::RecordProfileAndBrowserEventsHelper(
-    const char* key_prefix) {
-  std::string key = ManagedUserSettingsService::MakeSplitSettingKey(
-      key_prefix,
-      base::Int64ToString(base::TimeTicks::Now().ToInternalValue()));
-
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-
-  // TODO(bauerb): Use sane time when ready.
-  dict->SetDouble(kEventTimestamp, base::Time::Now().ToJsTime());
-
-  GetSettingsService()->UploadItem(key, dict.PassAs<base::Value>());
 }
