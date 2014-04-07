@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "sync/engine/directory_type_debug_info_emitter.h"
 #include "sync/engine/sync_scheduler.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/internal_api/change_reorder_buffer.h"
@@ -35,8 +36,6 @@
 #include "sync/internal_api/sync_core.h"
 #include "sync/internal_api/syncapi_internal.h"
 #include "sync/internal_api/syncapi_server_connection_manager.h"
-#include "sync/js/js_arg_list.h"
-#include "sync/js/js_reply_handler.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator.h"
 #include "sync/notifier/object_id_invalidation_map.h"
@@ -175,11 +174,6 @@ SyncManagerImpl::SyncManagerImpl(const std::string& name)
     notification_info_map_.insert(
         std::make_pair(ModelTypeFromInt(i), NotificationInfo()));
   }
-
-  // Bind message handlers.
-  BindJsMessageHandler(
-      "getAllNodes",
-      &SyncManagerImpl::GetAllNodes);
 }
 
 SyncManagerImpl::~SyncManagerImpl() {
@@ -947,46 +941,27 @@ void SyncManagerImpl::SetJsEventHandler(
   js_sync_encryption_handler_observer_.SetJsEventHandler(event_handler);
 }
 
+// TODO(rlarocque): This function is no longer needed and should be removed.
+// See http://crbug.com/357821.
 void SyncManagerImpl::ProcessJsMessage(
     const std::string& name, const JsArgList& args,
     const WeakHandle<JsReplyHandler>& reply_handler) {
-  if (!initialized_) {
-    NOTREACHED();
-    return;
-  }
-
-  if (!reply_handler.IsInitialized()) {
-    DVLOG(1) << "Uninitialized reply handler; dropping unknown message "
-            << name << " with args " << args.ToString();
-    return;
-  }
-
-  JsMessageHandler js_message_handler = js_message_handlers_[name];
-  if (js_message_handler.is_null()) {
-    DVLOG(1) << "Dropping unknown message " << name
-             << " with args " << args.ToString();
-    return;
-  }
-
-  reply_handler.Call(FROM_HERE,
-                     &JsReplyHandler::HandleJsReply,
-                     name, js_message_handler.Run(args));
+  NOTREACHED();
 }
 
-void SyncManagerImpl::BindJsMessageHandler(
-    const std::string& name,
-    UnboundJsMessageHandler unbound_message_handler) {
-  js_message_handlers_[name] =
-      base::Bind(unbound_message_handler, base::Unretained(this));
-}
+scoped_ptr<base::ListValue> SyncManagerImpl::GetAllNodesForType(
+    syncer::ModelType type) {
+  DirectoryTypeDebugInfoEmitterMap* emitter_map =
+      model_type_registry_->directory_type_debug_info_emitter_map();
+  DirectoryTypeDebugInfoEmitterMap::iterator it = emitter_map->find(type);
 
-JsArgList SyncManagerImpl::GetAllNodes(const JsArgList& args) {
-  ReadTransaction trans(FROM_HERE, GetUserShare());
-  base::ListValue return_args;
-  scoped_ptr<base::ListValue> nodes(
-      trans.GetDirectory()->GetAllNodeDetails(trans.GetWrappedTrans()));
-  return_args.Append(nodes.release());
-  return JsArgList(&return_args);
+  if (it == emitter_map->end()) {
+    NOTREACHED() << "Asked to return debug info for invalid type "
+                 << ModelTypeToString(type);
+    return scoped_ptr<base::ListValue>();
+  }
+
+  return it->second->GetAllNodes();
 }
 
 void SyncManagerImpl::OnInvalidatorStateChange(InvalidatorState state) {

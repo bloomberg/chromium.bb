@@ -502,6 +502,20 @@ void SyncBackendHostImpl::DisableProtocolEventForwarding() {
           core_));
 }
 
+void SyncBackendHostImpl::GetAllNodesForTypes(
+    syncer::ModelTypeSet types,
+    base::Callback<void(const std::vector<syncer::ModelType>&,
+                        ScopedVector<base::ListValue>)> callback) {
+  DCHECK(initialized());
+  registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
+       base::Bind(
+           &SyncBackendHostCore::GetAllNodesForTypes,
+           core_,
+           types,
+           frontend_loop_->message_loop_proxy(),
+           callback));
+}
+
 void SyncBackendHostImpl::InitCore(scoped_ptr<DoInitializeOptions> options) {
   registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHostCore::DoInitialize,

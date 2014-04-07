@@ -337,7 +337,10 @@ class SYNC_EXPORT Directory {
   void CollectMetaHandleCounts(std::vector<int>* num_entries_by_type,
                                std::vector<int>* num_to_delete_entries_by_type);
 
-  scoped_ptr<base::ListValue> GetAllNodeDetails(BaseTransaction* trans);
+  // Returns a ListValue serialization of all nodes for the given type.
+  scoped_ptr<base::ListValue> GetNodeDetailsForType(
+      BaseTransaction* trans,
+      ModelType type);
 
   // Sets the level of invariant checking performed after transactions.
   void SetInvariantCheckLevel(InvariantCheckLevel check_level);

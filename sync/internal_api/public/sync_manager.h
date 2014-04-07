@@ -352,6 +352,9 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
   // Returns the SyncManager's encryption handler.
   virtual SyncEncryptionHandler* GetEncryptionHandler() = 0;
 
+  virtual scoped_ptr<base::ListValue> GetAllNodesForType(
+      syncer::ModelType type) = 0;
+
   // Ask the SyncManager to fetch updates for the given types.
   virtual void RefreshTypes(ModelTypeSet types) = 0;
 

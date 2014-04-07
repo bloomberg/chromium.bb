@@ -126,6 +126,8 @@ class FakeSyncManager : public SyncManager {
   virtual SyncEncryptionHandler* GetEncryptionHandler() OVERRIDE;
   virtual ScopedVector<syncer::ProtocolEvent>
       GetBufferedProtocolEvents() OVERRIDE;
+  virtual scoped_ptr<base::ListValue> GetAllNodesForType(
+      syncer::ModelType type) OVERRIDE;
   virtual void RefreshTypes(ModelTypeSet types) OVERRIDE;
 
  private:

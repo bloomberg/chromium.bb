@@ -47,11 +47,16 @@ cr.define('chrome.sync', function() {
     var searchId = ++currSearchId;
     try {
       var regex = new RegExp(query);
-      chrome.sync.getAllNodes(query, function(allNodes) {
+      chrome.sync.getAllNodes(function(node_map) {
+        // Put all nodes into one big list that ignores the type.
+        var nodes = node_map.
+            map(function(x) { return x.nodes; }).
+            reduce(function(a, b) { return a.concat(b); });
+
         if (currSearchId != searchId) {
           return;
         }
-        callback(allNodes.filter(function(elem) {
+        callback(nodes.filter(function(elem) {
           return regex.test(JSON.stringify(elem, null, 2));
         }), null);
       });

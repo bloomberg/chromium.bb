@@ -650,6 +650,33 @@ void SyncBackendHostCore::DeleteSyncDataFolder() {
   }
 }
 
+void SyncBackendHostCore::GetAllNodesForTypes(
+    syncer::ModelTypeSet types,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::Callback<void(const std::vector<syncer::ModelType>& type,
+                        ScopedVector<base::ListValue>)> callback) {
+  std::vector<syncer::ModelType> types_vector;
+  ScopedVector<base::ListValue> node_lists;
+
+  syncer::ModelSafeRoutingInfo routes;
+  registrar_->GetModelSafeRoutingInfo(&routes);
+  syncer::ModelTypeSet enabled_types = GetRoutingInfoTypes(routes);
+
+  for (syncer::ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
+    types_vector.push_back(it.Get());
+    if (!enabled_types.Has(it.Get())) {
+      node_lists.push_back(new base::ListValue());
+    } else {
+      node_lists.push_back(
+          sync_manager_->GetAllNodesForType(it.Get()).release());
+    }
+  }
+
+  task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(callback, types_vector, base::Passed(&node_lists)));
+}
+
 void SyncBackendHostCore::StartSavingChanges() {
   // We may already be shut down.
   if (!sync_loop_)

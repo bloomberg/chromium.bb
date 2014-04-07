@@ -60,112 +60,100 @@ SyncInternalsWebUITest.prototype = {
  * Constant hard-coded value to return from mock getAllNodes.
  * @const
  */
-var HARD_CODED_ALL_NODES = [
-{
-  "BASE_SERVER_SPECIFICS": {},
-      "BASE_VERSION": "1388699799780000",
-      "CTIME": "Wednesday, December 31, 1969 4:00:00 PM",
-      "ID": "sZ:ADqtAZw5kjSwSkukraMoMX6z0OlFXENzhA+1HZNcO6LbATQrkVenHJS5" +
-          "AgICYfj8/6KcvwlCw3FIvcRFtOEP3zSP5YJ1VH53/Q==",
-      "IS_DEL": false,
-      "IS_DIR": true,
-      "IS_UNAPPLIED_UPDATE": false,
-      "IS_UNSYNCED": false,
-      "LOCAL_EXTERNAL_ID": "0",
-      "META_HANDLE": "376",
-      "MTIME": "Wednesday, December 31, 1969 4:00:00 PM",
-      "NON_UNIQUE_NAME": "Typed URLs",
-      "PARENT_ID": "r",
-      "SERVER_CTIME": "Wednesday, December 31, 1969 4:00:00 PM",
-      "SERVER_IS_DEL": false,
-      "SERVER_IS_DIR": true,
-      "SERVER_MTIME": "Wednesday, December 31, 1969 4:00:00 PM",
-      "SERVER_NON_UNIQUE_NAME": "Typed URLs",
-      "SERVER_PARENT_ID": "r",
-      "SERVER_SPECIFICS": {
-        "typed_url": {
-          "visit_transitions": [],
-          "visits": []
-        }
-      },
-      "SERVER_UNIQUE_POSITION": "INVALID[]",
-      "SERVER_VERSION": "1388699799780000",
-      "SPECIFICS": {
-        "typed_url": {
-          "visit_transitions": [],
-          "visits": []
-        }
-      },
-      "SYNCING": false,
-      "TRANSACTION_VERSION": "1",
-      "UNIQUE_BOOKMARK_TAG": "",
-      "UNIQUE_CLIENT_TAG": "",
-      "UNIQUE_POSITION": "INVALID[]",
-      "UNIQUE_SERVER_TAG": "google_chrome_typed_urls",
-      "isDirty": false,
-      "serverModelType": "Typed URLs"
-},
-{
-  "BASE_SERVER_SPECIFICS": {},
-  "BASE_VERSION": "1372291923970334",
-  "CTIME": "Wednesday, June 26, 2013 5:12:03 PM",
-  "ID": "sZ:ADqtAZyz70DhOIusPT1v2XCd/8YT8Fy43WlqdRyH6UwoBAqMkX5Pnkl/sW9A" +
-      "+AVrmzAPWFTrRBf0AWD57HyN4GcYXwSR9q4lYA==",
-  "IS_DEL": false,
-  "IS_DIR": false,
-  "IS_UNAPPLIED_UPDATE": false,
-  "IS_UNSYNCED": false,
-  "LOCAL_EXTERNAL_ID": "0",
-  "META_HANDLE": "3011",
-  "MTIME": "Wednesday, June 26, 2013 5:12:03 PM",
-  "NON_UNIQUE_NAME": "http://chrome.com/",
-  "PARENT_ID": "sZ:ADqtAZw5kjSwSkukraMoMX6z0OlFXENzhA+1HZNcO6LbATQrkVen" +
-      "HJS5AgICYfj8/6KcvwlCw3FIvcRFtOEP3zSP5YJ1VH53/Q==",
-  "SERVER_CTIME": "Wednesday, June 26, 2013 5:12:03 PM",
-  "SERVER_IS_DEL": false,
-  "SERVER_IS_DIR": false,
-  "SERVER_MTIME": "Wednesday, June 26, 2013 5:12:03 PM",
-  "SERVER_NON_UNIQUE_NAME": "http://chrome.com/",
-  "SERVER_PARENT_ID": "sZ:ADqtAZw5kjSwSkukraMoMX6z0OlFXENzhA+1HZNcO6LbAT" +
-      "QrkVenHJS5AgICYfj8/6KcvwlCw3FIvcRFtOEP3zSP5YJ1VH53/Q==",
-  "SERVER_SPECIFICS": {
-    "typed_url": {
-      "hidden": false,
-      "title": "Chrome",
-      "url": "http://chrome.com/",
-      "visit_transitions": [
-          "268435457"
-          ],
-      "visits": [
-          "13016765523677321"
-          ]
-    }
-  },
-  "SERVER_UNIQUE_POSITION": "INVALID[]",
-  "SERVER_VERSION": "1372291923970334",
-  "SPECIFICS": {
-    "typed_url": {
-      "hidden": false,
-      "title": "Chrome",
-      "url": "http://chrome.com/",
-      "visit_transitions": [
-          "268435457"
-          ],
-      "visits": [
-          "13016765523677321"
-          ]
-    }
-  },
-  "SYNCING": false,
-  "TRANSACTION_VERSION": "1",
-  "UNIQUE_BOOKMARK_TAG": "",
-  "UNIQUE_CLIENT_TAG": "J28uWKpXPuQwR3SJKbuLqzYGOcM=",
-  "UNIQUE_POSITION": "INVALID[]",
-  "UNIQUE_SERVER_TAG": "",
-  "isDirty": false,
-  "serverModelType": "Typed URLs"
-}
-];
+var HARD_CODED_ALL_NODES = [{
+  "nodes": [{
+    "ATTACHMENT_METADATA": "",
+    "BASE_SERVER_SPECIFICS": {},
+    "BASE_VERSION": "1396470970810000",
+    "CTIME": "Wednesday, December 31, 1969 4:00:00 PM",
+    "ID": "sZ:ADqtAZwzF4GOIyvkI2enSI62AU5p/7MNmvuSSyf7yXJ1SkJwpp1YL" +
+      "6bbMkF8inzqW+EO6n2aPJ/uXccW9GHxorBlnKoZAWHVzg==",
+    "IS_DEL": false,
+    "IS_DIR": true,
+    "IS_UNAPPLIED_UPDATE": false,
+    "IS_UNSYNCED": false,
+    "LOCAL_EXTERNAL_ID": "0",
+    "META_HANDLE": "387",
+    "MTIME": "Wednesday, December 31, 1969 4:00:00 PM",
+    "NON_UNIQUE_NAME": "Autofill",
+    "PARENT_ID": "r",
+    "SERVER_CTIME": "Wednesday, December 31, 1969 4:00:00 PM",
+    "SERVER_IS_DEL": false,
+    "SERVER_IS_DIR": true,
+    "SERVER_MTIME": "Wednesday, December 31, 1969 4:00:00 PM",
+    "SERVER_NON_UNIQUE_NAME": "Autofill",
+    "SERVER_PARENT_ID": "r",
+    "SERVER_SPECIFICS": {
+      "autofill": {
+        "usage_timestamp": []
+      }
+    },
+    "SERVER_UNIQUE_POSITION": "INVALID[]",
+    "SERVER_VERSION": "1396470970810000",
+    "SPECIFICS": {
+      "autofill": {
+        "usage_timestamp": []
+      }
+    },
+    "SYNCING": false,
+    "TRANSACTION_VERSION": "1",
+    "UNIQUE_BOOKMARK_TAG": "",
+    "UNIQUE_CLIENT_TAG": "",
+    "UNIQUE_POSITION": "INVALID[]",
+    "UNIQUE_SERVER_TAG": "google_chrome_autofill",
+    "isDirty": false,
+    "serverModelType": "Autofill"
+  }, {
+    "ATTACHMENT_METADATA": "",
+    "BASE_SERVER_SPECIFICS": {},
+    "BASE_VERSION": "1394241139528639",
+    "CTIME": "Friday, March 7, 2014 5:12:19 PM",
+    "ID": "sZ:ADqtAZwzc/ol1iaz+yNLjjWak9PBE0o/hATzpqJsyq/HX2xzV2f88" +
+      "FaOrT7HDE4tyn7zx2LWgkAFvZfCA5mOy4p0XFgiY0L+mw==",
+    "IS_DEL": false,
+    "IS_DIR": false,
+    "IS_UNAPPLIED_UPDATE": false,
+    "IS_UNSYNCED": false,
+    "LOCAL_EXTERNAL_ID": "0",
+    "META_HANDLE": "2989",
+    "MTIME": "Friday, March 7, 2014 5:12:19 PM",
+    "NON_UNIQUE_NAME": "autofill_entry|Email|rlsynctet2",
+    "PARENT_ID": "sZ:ADqtAZwzF4GOIyvkI2enSI62AU5p/7MNmvuSSyf7yXJ1Sk" +
+      "Jwpp1YL6bbMkF8inzqW+EO6n2aPJ/uXccW9GHxorBlnKoZAWHVzg==",
+    "SERVER_CTIME": "Friday, March 7, 2014 5:12:19 PM",
+    "SERVER_IS_DEL": false,
+    "SERVER_IS_DIR": false,
+    "SERVER_MTIME": "Friday, March 7, 2014 5:12:19 PM",
+    "SERVER_NON_UNIQUE_NAME": "autofill_entry|Email|rlsynctet2",
+    "SERVER_PARENT_ID": "sZ:ADqtAZwzF4GOIyvkI2enSI62AU5p/7MNmvuSSyf" +
+      "7yXJ1SkJwpp1YL6bbMkF8inzqW+EO6n2aPJ/uXccW9GHxorBlnKoZAWHVzg==",
+    "SERVER_SPECIFICS": {
+      "autofill": {
+        "name": "Email",
+        "usage_timestamp": ["13038713887000000", "13038713890000000"],
+        "value": "rlsynctet2"
+      }
+    },
+    "SERVER_UNIQUE_POSITION": "INVALID[]",
+    "SERVER_VERSION": "1394241139528639",
+    "SPECIFICS": {
+      "autofill": {
+        "name": "Email",
+        "usage_timestamp": ["13038713887000000", "13038713890000000"],
+        "value": "rlsynctet2"
+      }
+    },
+    "SYNCING": false,
+    "TRANSACTION_VERSION": "1",
+    "UNIQUE_BOOKMARK_TAG": "",
+    "UNIQUE_CLIENT_TAG": "EvliorKUf1rLjT+BGkNZp586Tsk=",
+    "UNIQUE_POSITION": "INVALID[]",
+    "UNIQUE_SERVER_TAG": "",
+    "isDirty": false,
+    "serverModelType": "Autofill"
+  }],
+  "type": "Autofill"
+}];
 
 /**
  * A value to return in mock onReceivedUpdatedAboutInfo event.
@@ -301,10 +289,12 @@ TEST_F('SyncInternalsWebUITest', 'SearchTabDoesntChangeOnItemSelect',
 });
 
 TEST_F('SyncInternalsWebUITest', 'NodeBrowserTest', function() {
-  this.mockHandler.expects(once()).getAllNodes([]).will(
-      callFunction(function() {
-        chrome.sync.getAllNodes.handleReply(HARD_CODED_ALL_NODES);
-      }));
+  var getAllNodesSavedArgs = new SaveMockArguments();
+  this.mockHandler.expects(once()).
+      getAllNodes(getAllNodesSavedArgs.match(ANYTHING)).
+      will(callFunctionWithSavedArgs(getAllNodesSavedArgs,
+                                     chrome.sync.getAllNodesCallback,
+                                     HARD_CODED_ALL_NODES));
 
   // Hit the refresh button.
   $('node-browser-refresh-button').click();
@@ -335,10 +325,12 @@ TEST_F('SyncInternalsWebUITest', 'NodeBrowserTest', function() {
 });
 
 TEST_F('SyncInternalsWebUITest', 'NodeBrowserRefreshOnTabSelect', function() {
-  this.mockHandler.expects(once()).getAllNodes([]).will(
-      callFunction(function() {
-        chrome.sync.getAllNodes.handleReply(HARD_CODED_ALL_NODES);
-      }));
+  var getAllNodesSavedArgs = new SaveMockArguments();
+  this.mockHandler.expects(once()).
+      getAllNodes(getAllNodesSavedArgs.match(ANYTHING)).
+      will(callFunctionWithSavedArgs(getAllNodesSavedArgs,
+                                     chrome.sync.getAllNodesCallback,
+                                     HARD_CODED_ALL_NODES));
 
   // Should start with non-refreshed node browser.
   expectEquals($('node-browser-refresh-time').textContent, 'Never');

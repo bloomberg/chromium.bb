@@ -117,6 +117,8 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   virtual SyncEncryptionHandler* GetEncryptionHandler() OVERRIDE;
   virtual ScopedVector<syncer::ProtocolEvent>
       GetBufferedProtocolEvents() OVERRIDE;
+  virtual scoped_ptr<base::ListValue> GetAllNodesForType(
+      syncer::ModelType type) OVERRIDE;
 
   // SyncEncryptionHandler::Observer implementation.
   virtual void OnPassphraseRequired(
@@ -217,10 +219,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   base::TimeDelta GetNudgeDelayTimeDelta(const ModelType& model_type);
 
   typedef std::map<ModelType, NotificationInfo> NotificationInfoMap;
-  typedef JsArgList (SyncManagerImpl::*UnboundJsMessageHandler)(
-      const JsArgList&);
-  typedef base::Callback<JsArgList(const JsArgList&)> JsMessageHandler;
-  typedef std::map<std::string, JsMessageHandler> JsMessageHandlerMap;
 
   // Determine if the parents or predecessors differ between the old and new
   // versions of an entry.  Note that a node's index may change without its
@@ -265,16 +263,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
 
   // Checks for server reachabilty and requests a nudge.
   void OnNetworkConnectivityChangedImpl();
-
-  // Helper function used only by the constructor.
-  void BindJsMessageHandler(
-    const std::string& name, UnboundJsMessageHandler unbound_message_handler);
-
-  // JS message handlers.
-  JsArgList GetAllNodes(const JsArgList& args);
-  JsArgList GetNodeSummariesById(const JsArgList& args);
-  JsArgList GetNodeDetailsById(const JsArgList& args);
-  JsArgList GetChildNodeIds(const JsArgList& args);
 
   syncable::Directory* directory();
 
@@ -351,7 +339,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   NotificationInfoMap notification_info_map_;
 
   // These are for interacting with chrome://sync-internals.
-  JsMessageHandlerMap js_message_handlers_;
   JsSyncManagerObserver js_sync_manager_observer_;
   JsMutationEventObserver js_mutation_event_observer_;
   JsSyncEncryptionHandlerObserver js_sync_encryption_handler_observer_;

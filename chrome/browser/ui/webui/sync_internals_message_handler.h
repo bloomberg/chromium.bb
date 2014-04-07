@@ -17,7 +17,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "sync/js/js_controller.h"
 #include "sync/js/js_event_handler.h"
-#include "sync/js/js_reply_handler.h"
 
 class ProfileSyncService;
 
@@ -25,7 +24,6 @@ class ProfileSyncService;
 class SyncInternalsMessageHandler
     : public content::WebUIMessageHandler,
       public syncer::JsEventHandler,
-      public syncer::JsReplyHandler,
       public ProfileSyncServiceObserver,
       public browser_sync::ProtocolEventObserver {
  public:
@@ -33,9 +31,6 @@ class SyncInternalsMessageHandler
   virtual ~SyncInternalsMessageHandler();
 
   virtual void RegisterMessages() OVERRIDE;
-
-  // Forwards requests to the JsController.
-  void ForwardToJsController(const std::string& name, const base::ListValue*);
 
   // Sets up observers to receive events and forward them to the UI.
   void HandleRegisterForEvents(const base::ListValue* args);
@@ -46,15 +41,16 @@ class SyncInternalsMessageHandler
   // Fires and event to send the list of types back to the page.
   void HandleRequestListOfTypes(const base::ListValue* args);
 
+  // Handler for getAllNodes message.  Needs a |request_id| argument.
+  void HandleGetAllNodes(const base::ListValue* args);
+
   // syncer::JsEventHandler implementation.
   virtual void HandleJsEvent(
       const std::string& name,
       const syncer::JsEventDetails& details) OVERRIDE;
 
-  // syncer::JsReplyHandler implementation.
-  virtual void HandleJsReply(
-      const std::string& name,
-      const syncer::JsArgList& args) OVERRIDE;
+  // Callback used in GetAllNodes.
+  void OnReceivedAllNodes(int request_id, scoped_ptr<base::ListValue> nodes);
 
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() OVERRIDE;
@@ -63,9 +59,6 @@ class SyncInternalsMessageHandler
   virtual void OnProtocolEvent(const syncer::ProtocolEvent& e) OVERRIDE;
 
  private:
-  // Helper function to register JsController function callbacks.
-  void RegisterJsControllerCallback(const std::string& name);
-
   // Fetches updated aboutInfo and sends it to the page in the form of an
   // onAboutInfoUpdated event.
   void SendAboutInfo();

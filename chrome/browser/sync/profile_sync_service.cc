@@ -83,7 +83,6 @@
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
-#include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 #include "sync/util/cryptographer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -2120,6 +2119,104 @@ void ProfileSyncService::RemoveProtocolEventObserver(
   protocol_event_observers_.RemoveObserver(observer);
   if (backend_ && !protocol_event_observers_.might_have_observers()) {
     backend_->DisableProtocolEventForwarding();
+  }
+}
+
+namespace {
+
+class GetAllNodesRequestHelper
+    : public base::RefCountedThreadSafe<GetAllNodesRequestHelper> {
+ public:
+  GetAllNodesRequestHelper(
+      syncer::ModelTypeSet requested_types,
+      const base::Callback<void(scoped_ptr<base::ListValue>)>& callback);
+
+  void OnReceivedNodesForTypes(
+      const std::vector<syncer::ModelType>& types,
+      ScopedVector<base::ListValue> scoped_node_lists);
+
+ private:
+  friend class base::RefCountedThreadSafe<GetAllNodesRequestHelper>;
+  virtual ~GetAllNodesRequestHelper();
+
+  scoped_ptr<base::ListValue> result_accumulator_;
+
+  syncer::ModelTypeSet awaiting_types_;
+  base::Callback<void(scoped_ptr<base::ListValue>)> callback_;
+};
+
+GetAllNodesRequestHelper::GetAllNodesRequestHelper(
+    syncer::ModelTypeSet requested_types,
+    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback)
+    : result_accumulator_(new base::ListValue()),
+      awaiting_types_(requested_types),
+      callback_(callback) {}
+
+GetAllNodesRequestHelper::~GetAllNodesRequestHelper() {
+  if (!awaiting_types_.Empty()) {
+    DLOG(WARNING)
+        << "GetAllNodesRequest deleted before request was fulfilled.  "
+        << "Missing types are: " << ModelTypeSetToString(awaiting_types_);
+  }
+}
+
+// Called when the set of nodes for a type or set of types has been returned.
+//
+// The nodes for several types can be returned at the same time by specifying
+// their types in the |types| array, and putting their results at the
+// correspnding indices in the |scoped_node_lists|.
+void GetAllNodesRequestHelper::OnReceivedNodesForTypes(
+    const std::vector<syncer::ModelType>& types,
+    ScopedVector<base::ListValue> scoped_node_lists) {
+  DCHECK_EQ(types.size(), scoped_node_lists.size());
+
+  // Take unsafe ownership of the node list.
+  std::vector<base::ListValue*> node_lists;
+  scoped_node_lists.release(&node_lists);
+
+  for (size_t i = 0; i < node_lists.size() && i < types.size(); ++i) {
+    const ModelType type = types[i];
+    base::ListValue* node_list = node_lists[i];
+
+    // Add these results to our list.
+    scoped_ptr<base::DictionaryValue> type_dict(new base::DictionaryValue());
+    type_dict->SetString("type", ModelTypeToString(type));
+    type_dict->Set("nodes", node_list);
+    result_accumulator_->Append(type_dict.release());
+
+    // Remember that this part of the request is satisfied.
+    awaiting_types_.Remove(type);
+  }
+
+  if (awaiting_types_.Empty()) {
+    callback_.Run(result_accumulator_.Pass());
+    callback_.Reset();
+  }
+}
+
+}  // namespace
+
+void ProfileSyncService::GetAllNodes(
+    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback) {
+  // TODO(rlarocque): Should be GetRegisteredDirectoryTypes.
+  const ModelTypeSet directory_types = GetRegisteredDataTypes();
+  scoped_refptr<GetAllNodesRequestHelper> helper =
+      new GetAllNodesRequestHelper(directory_types, callback);
+
+  if (!backend_initialized_) {
+    // If there's no backend available to fulfill the request, handle it here.
+    ScopedVector<base::ListValue> empty_results;
+    std::vector<ModelType> type_vector;
+    for (ModelTypeSet::Iterator it = directory_types.First();
+         it.Good(); it.Inc()) {
+      type_vector.push_back(it.Get());
+      empty_results.push_back(new base::ListValue());
+    }
+    helper->OnReceivedNodesForTypes(type_vector, empty_results.Pass());
+  } else {
+    backend_->GetAllNodesForTypes(
+        directory_types,
+        base::Bind(&GetAllNodesRequestHelper::OnReceivedNodesForTypes, helper));
   }
 }
 

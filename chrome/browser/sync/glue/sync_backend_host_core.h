@@ -227,6 +227,12 @@ class SyncBackendHostCore
     return &release_request_context_signal_;
   }
 
+  void GetAllNodesForTypes(
+      syncer::ModelTypeSet types,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      base::Callback<void(const std::vector<syncer::ModelType>& type,
+                          ScopedVector<base::ListValue>) > callback);
+
  private:
   friend class base::RefCountedThreadSafe<SyncBackendHostCore>;
   friend class SyncBackendHostForProfileSyncTest;

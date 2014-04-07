@@ -98,6 +98,11 @@ class SyncBackendHostMock : public SyncBackendHost {
   virtual void RequestBufferedProtocolEventsAndEnableForwarding() OVERRIDE;
   virtual void DisableProtocolEventForwarding() OVERRIDE;
 
+  virtual void GetAllNodesForTypes(
+      syncer::ModelTypeSet types,
+      base::Callback<void(const std::vector<syncer::ModelType>& type,
+                          ScopedVector<base::ListValue>) > callback) OVERRIDE;
+
   virtual base::MessageLoop* GetSyncLoopForTesting() OVERRIDE;
 
   void set_fail_initial_download(bool should_fail);

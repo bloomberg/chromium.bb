@@ -950,13 +950,18 @@ void Directory::CollectMetaHandleCounts(
   }
 }
 
-scoped_ptr<base::ListValue> Directory::GetAllNodeDetails(
-    BaseTransaction* trans) {
+scoped_ptr<base::ListValue> Directory::GetNodeDetailsForType(
+    BaseTransaction* trans,
+    ModelType type) {
   scoped_ptr<base::ListValue> nodes(new base::ListValue());
 
   ScopedKernelLock lock(this);
   for (MetahandlesMap::iterator it = kernel_->metahandles_map.begin();
        it != kernel_->metahandles_map.end(); ++it) {
+    if (GetModelTypeFromSpecifics(it->second->ref(SPECIFICS)) != type) {
+      continue;
+    }
+
     EntryKernel* kernel = it->second;
     scoped_ptr<base::DictionaryValue> node(
         kernel->ToValue(GetCryptographer(trans)));

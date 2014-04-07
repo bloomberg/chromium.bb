@@ -127,6 +127,10 @@ class SyncBackendHostImpl
   virtual SyncedDeviceTracker* GetSyncedDeviceTracker() const OVERRIDE;
   virtual void RequestBufferedProtocolEventsAndEnableForwarding() OVERRIDE;
   virtual void DisableProtocolEventForwarding() OVERRIDE;
+  virtual void GetAllNodesForTypes(
+      syncer::ModelTypeSet types,
+      base::Callback<void(const std::vector<syncer::ModelType>&,
+                          ScopedVector<base::ListValue>)> type) OVERRIDE;
   virtual base::MessageLoop* GetSyncLoopForTesting() OVERRIDE;
 
  protected:

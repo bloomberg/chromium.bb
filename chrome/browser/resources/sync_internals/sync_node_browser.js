@@ -178,7 +178,12 @@
     clear();
     setLastRefreshTime('In progress since ' + (new Date()).toLocaleString());
 
-    chrome.sync.getAllNodes(function(nodes) {
+    chrome.sync.getAllNodes(function(nodeMap) {
+      // Put all nodes into one big list that ignores the type.
+      var nodes = nodeMap.
+          map(function(x) { return x.nodes; }).
+          reduce(function(a, b) { return a.concat(b); });
+
       var treeContainer = $('sync-node-tree-container');
       var tree = document.createElement('tree');
       tree.setAttribute('id', 'sync-node-tree');

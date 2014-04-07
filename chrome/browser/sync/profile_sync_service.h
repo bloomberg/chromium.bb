@@ -276,6 +276,15 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   void RemoveProtocolEventObserver(
       browser_sync::ProtocolEventObserver* observer);
 
+  // Asynchronously fetches base::Value representations of all sync nodes and
+  // returns them to the specified callback on this thread.
+  //
+  // These requests can live a long time and return when you least expect it.
+  // For safety, the callback should be bound to some sort of WeakPtr<> or
+  // scoped_refptr<>.
+  void GetAllNodes(
+      const base::Callback<void(scoped_ptr<base::ListValue>)>& callback);
+
   void RegisterAuthNotifications();
   void UnregisterAuthNotifications();
 

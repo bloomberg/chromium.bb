@@ -244,6 +244,11 @@ FakeSyncManager::GetBufferedProtocolEvents() {
   return ScopedVector<syncer::ProtocolEvent>();
 }
 
+scoped_ptr<base::ListValue> FakeSyncManager::GetAllNodesForType(
+    syncer::ModelType type) {
+  return scoped_ptr<base::ListValue>(new base::ListValue());
+}
+
 void FakeSyncManager::RefreshTypes(ModelTypeSet types) {
   last_refresh_request_types_ = types;
 }

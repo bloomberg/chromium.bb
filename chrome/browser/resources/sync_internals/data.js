@@ -57,7 +57,11 @@ function versionToDateString(version) {
   return date.toString();
 }
 
-function getFields(node) {
+/**
+ * @param {!Object} node A JavaScript represenation of a sync entity.
+ * @return {string} A string representation of the sync entity.
+ */
+function serializeNode(node) {
   return allFields.map(function(field) {
     var fieldVal;
     if (field == 'SERVER_VERSION_TIME') {
@@ -79,8 +83,11 @@ function getFields(node) {
   });
 }
 
-function isSelectedDatatype(node) {
-  var type = node.serverModelType;
+/**
+ * @param {string} type The name of a sync model type.
+ * @return {boolean} True if the type's checkbox is selected.
+ */
+function isSelectedDatatype(type) {
   var typeCheckbox = $(type);
   // Some types, such as 'Top level folder', appear in the list of nodes
   // but not in the list of selectable items.
@@ -116,7 +123,13 @@ function makeDateUserAgentHeader() {
   return dateUaHeader;
 }
 
-function triggerDataDownload(data) {
+/**
+ * Builds a summary of current state and exports it as a downloaded file.
+ *
+ * @param {!Array.<{type: string, nodes: !Array<!Object>}>} nodesMap
+ *     Summary of local state by model type.
+ */
+function triggerDataDownload(nodesMap) {
   // Prepend a header with ISO date and useragent.
   var output = [makeDateUserAgentHeader()];
   output.push('=====');
@@ -124,16 +137,17 @@ function triggerDataDownload(data) {
   var aboutInfo = JSON.stringify(chrome.sync.aboutInfo, null, 2);
   output.push(aboutInfo);
 
-  if (data != null && data.length > 0) {
-    output.push('=====');
-    var fieldLabels = allFields.join(',');
-    output.push(fieldLabels);
+  // Filter out non-selected types.
+  var selectedTypesNodes = nodesMap.filter(function(x) {
+    return isSelectedDatatype(x.type);
+  });
 
-    var data = data.filter(isSelectedDatatype);
-    data = data.map(getFields);
-    var dataAsString = data.join('\n');
-    output.push(dataAsString);
-  }
+  // Serialize the remaining nodes and add them to the output.
+  selectedTypesNodes.forEach(function(typeNodes) {
+    output.push('=====');
+    output.push(typeNodes.nodes.map(serializeNode).join('\n'));
+  });
+
   output = output.join('\n');
 
   var anchor = $('dump-to-file-anchor');

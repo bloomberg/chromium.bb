@@ -206,6 +206,13 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Disables protocol event forwarding.
   virtual void DisableProtocolEventForwarding() = 0;
 
+  // Returns a ListValue representing all nodes for the specified types through
+  // |callback| on this thread.
+  virtual void GetAllNodesForTypes(
+      syncer::ModelTypeSet types,
+      base::Callback<void(const std::vector<syncer::ModelType>&,
+                          ScopedVector<base::ListValue>)> type) = 0;
+
   virtual base::MessageLoop* GetSyncLoopForTesting() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
