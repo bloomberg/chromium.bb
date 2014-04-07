@@ -29,12 +29,27 @@ using content::BrowserThread;
 using extensions::ExtensionRegistry;
 
 namespace apps {
+namespace {
+
+ShellContentBrowserClient* g_instance = NULL;
+
+}  // namespace
 
 ShellContentBrowserClient::ShellContentBrowserClient()
     : browser_main_parts_(NULL) {
+  DCHECK(!g_instance);
+  g_instance = this;
 }
 
-ShellContentBrowserClient::~ShellContentBrowserClient() {
+ShellContentBrowserClient::~ShellContentBrowserClient() { g_instance = NULL; }
+
+// static
+ShellContentBrowserClient* ShellContentBrowserClient::Get() {
+  return g_instance;
+}
+
+content::BrowserContext* ShellContentBrowserClient::GetBrowserContext() {
+  return browser_main_parts_->browser_context();
 }
 
 content::BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(

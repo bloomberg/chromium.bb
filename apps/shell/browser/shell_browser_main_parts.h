@@ -33,7 +33,6 @@ class NetLog;
 
 namespace apps {
 
-class ShellAppsClient;
 class ShellBrowserContext;
 class ShellDesktopController;
 class ShellExtensionsClient;
@@ -75,7 +74,6 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
   scoped_ptr<ShellExtensionsClient> extensions_client_;
   scoped_ptr<extensions::ShellExtensionsBrowserClient>
       extensions_browser_client_;
-  scoped_ptr<ShellAppsClient> apps_client_;
   scoped_ptr<net::NetLog> net_log_;
 
   scoped_ptr<content::ShellDevToolsDelegate> devtools_delegate_;

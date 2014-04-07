@@ -4,8 +4,6 @@
 
 #include "apps/shell/browser/shell_browser_main_parts.h"
 
-#include "apps/browser_context_keyed_service_factories.h"
-#include "apps/shell/browser/shell_apps_client.h"
 #include "apps/shell/browser/shell_browser_context.h"
 #include "apps/shell/browser/shell_desktop_controller.h"
 #include "apps/shell/browser/shell_extension_system.h"
@@ -24,7 +22,6 @@
 #include "extensions/browser/extension_system.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/widget/widget.h"
 
 using content::BrowserContext;
 using extensions::Extension;
@@ -36,7 +33,6 @@ namespace {
 // Register additional KeyedService factories here. See
 // ChromeBrowserMainExtraPartsProfiles for details.
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
-  apps::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   extensions::ShellExtensionSystemFactory::GetInstance();
 }
@@ -86,9 +82,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   extensions_browser_client_.reset(
       new extensions::ShellExtensionsBrowserClient(browser_context_.get()));
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
-
-  apps_client_.reset(new ShellAppsClient(browser_context_.get()));
-  AppsClient::Set(apps_client_.get());
 
   // Create our custom ExtensionSystem first because other
   // KeyedServices depend on it.
@@ -144,7 +137,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 void ShellBrowserMainParts::OnHostCloseRequested(
     const aura::WindowTreeHost* host) {
   desktop_controller_->CloseAppWindow();
-  extension_system_->CloseApp();
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::MessageLoop::QuitClosure());
 }

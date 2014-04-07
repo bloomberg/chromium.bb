@@ -40,9 +40,6 @@ class ShellExtensionSystem : public ExtensionSystem {
   // Returns true on success.
   bool LoadAndLaunchApp(const base::FilePath& app_dir);
 
-  // Closes the running app.
-  void CloseApp();
-
   // KeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 

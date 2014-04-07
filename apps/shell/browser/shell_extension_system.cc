@@ -6,8 +6,7 @@
 
 #include <string>
 
-#include "apps/app_window_registry.h"
-#include "base/command_line.h"
+#include "apps/shell/browser/shell_app_runtime_api.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -74,23 +73,11 @@ bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {
       content::Source<BrowserContext>(browser_context_),
       content::NotificationService::NoDetails());
 
-  // This is effectively the same behavior as
-  // apps::AppEventRouter::DispatchOnLaunchedEvent without any dependency
-  // on ExtensionSystem or Profile.
-  scoped_ptr<base::DictionaryValue> launch_data(new base::DictionaryValue());
-  launch_data->SetBoolean("isKioskSession", false);
-  scoped_ptr<base::ListValue> event_args(new base::ListValue());
-  event_args->Append(launch_data.release());
-  scoped_ptr<Event> event(
-      new Event("app.runtime.onLaunched", event_args.Pass()));
-  event_router_->DispatchEventWithLazyListener(extension->id(), event.Pass());
+  // Send the onLaunched event.
+  ShellAppRuntimeAPI::DispatchOnLaunchedEvent(event_router_.get(),
+                                              extension.get());
 
   return true;
-}
-
-void ShellExtensionSystem::CloseApp() {
-  apps::AppWindowRegistry::Get(browser_context_)
-      ->CloseAllAppWindowsForApp(app_id_);
 }
 
 void ShellExtensionSystem::Shutdown() {

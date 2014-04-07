@@ -10,6 +10,10 @@
 
 class GURL;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 class Extension;
 }
@@ -22,6 +26,12 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
  public:
   ShellContentBrowserClient();
   virtual ~ShellContentBrowserClient();
+
+  // Returns the single instance.
+  static ShellContentBrowserClient* Get();
+
+  // Returns the single browser context for app_shell.
+  content::BrowserContext* GetBrowserContext();
 
   // content::ContentBrowserClient overrides.
   virtual content::BrowserMainParts* CreateBrowserMainParts(

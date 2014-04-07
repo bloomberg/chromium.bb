@@ -5,7 +5,6 @@
 #include "apps/shell/browser/shell_desktop_controller.h"
 
 #include "apps/shell/browser/shell_app_window.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/test/test_screen.h"
@@ -13,9 +12,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/test/test_views_delegate.h"
-#include "ui/views/views_delegate.h"
-#include "ui/views/widget/widget.h"
 #include "ui/wm/test/wm_test_helper.h"
 
 #if defined(OS_CHROMEOS)
@@ -25,8 +21,6 @@
 
 namespace apps {
 namespace {
-
-const SkColor kBackgroundColor = SK_ColorBLACK;
 
 // A simple layout manager that makes each new window fill its parent.
 class FillLayout : public aura::LayoutManager {
@@ -62,27 +56,6 @@ class FillLayout : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(FillLayout);
 };
 
-// A ViewsDelegate to attach new unparented windows to app_shell's root window.
-class ShellViewsDelegate : public views::TestViewsDelegate {
- public:
-  explicit ShellViewsDelegate(aura::Window* root_window)
-      : root_window_(root_window) {}
-  virtual ~ShellViewsDelegate() {}
-
-  // views::ViewsDelegate implementation.
-  virtual void OnBeforeWidgetInit(
-      views::Widget::InitParams* params,
-      views::internal::NativeWidgetDelegate* delegate) OVERRIDE {
-    if (!params->parent)
-      params->parent = root_window_;
-  }
-
- private:
-  aura::Window* root_window_;  // Not owned.
-
-  DISALLOW_COPY_AND_ASSIGN(ShellViewsDelegate);
-};
-
 ShellDesktopController* g_instance = NULL;
 
 }  // namespace
@@ -96,10 +69,6 @@ ShellDesktopController::ShellDesktopController() {
 #endif
   CreateRootWindow();
 
-  DCHECK(!views::ViewsDelegate::views_delegate);
-  views::ViewsDelegate::views_delegate =
-      new ShellViewsDelegate(wm_test_helper_->host()->window());
-
   g_instance = this;
 }
 
@@ -107,8 +76,6 @@ ShellDesktopController::~ShellDesktopController() {
   // The app window must be explicitly closed before desktop teardown.
   DCHECK(!app_window_);
   g_instance = NULL;
-  delete views::ViewsDelegate::views_delegate;
-  views::ViewsDelegate::views_delegate = NULL;
   DestroyRootWindow();
   aura::Env::DeleteInstance();
 }
@@ -155,15 +122,14 @@ void ShellDesktopController::CreateRootWindow() {
   // TODO(jamescook): Initialize a real input method.
   ui::InitializeInputMethodForTesting();
 
-  // Set up basic pieces of views::corewm.
+  // Set up basic pieces of ui::wm.
   gfx::Size size = GetPrimaryDisplaySize();
   if (size.IsEmpty())
     size = gfx::Size(800, 600);
   wm_test_helper_.reset(new wm::WMTestHelper(size));
-  aura::WindowTreeHost* host = wm_test_helper_->host();
-  host->compositor()->SetBackgroundColor(kBackgroundColor);
 
   // Ensure new windows fill the display.
+  aura::WindowTreeHost* host = wm_test_helper_->host();
   host->window()->SetLayoutManager(new FillLayout);
 
   // Ensure the X window gets mapped.
