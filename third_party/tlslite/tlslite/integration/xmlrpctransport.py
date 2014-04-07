@@ -1,23 +1,31 @@
-"""TLS Lite + smtplib."""
+"""TLS Lite + xmlrpclib."""
 
-from smtplib import SMTP
-from tlslite.TLSConnection import TLSConnection
-from tlslite.integration.ClientHelper import ClientHelper
+import xmlrpclib
+import httplib
+from tlslite.integration.httptlsconnection import HTTPTLSConnection
+from tlslite.integration.clienthelper import ClientHelper
 
-class SMTP_TLS(SMTP):
-    """This class extends L{smtplib.SMTP} with TLS support."""
 
-    def starttls(self,
+class XMLRPCTransport(xmlrpclib.Transport, ClientHelper):
+    """Handles an HTTPS transaction to an XML-RPC server."""
+
+    def __init__(self,
                  username=None, password=None, sharedKey=None,
                  certChain=None, privateKey=None,
                  cryptoID=None, protocol=None,
                  x509Fingerprint=None,
                  x509TrustList=None, x509CommonName=None,
                  settings=None):
-        """Puts the connection to the SMTP server into TLS mode.
+        """Create a new XMLRPCTransport.
 
-        If the server supports TLS, this will encrypt the rest of the SMTP
-        session.
+        An instance of this class can be passed to L{xmlrpclib.ServerProxy}
+        to use TLS with XML-RPC calls::
+
+            from tlslite.api import XMLRPCTransport
+            from xmlrpclib import ServerProxy
+
+            transport = XMLRPCTransport(user="alice", password="abra123")
+            server = ServerProxy("https://localhost", transport)
 
         For client authentication, use one of these argument
         combinations:
@@ -37,8 +45,12 @@ class SMTP_TLS(SMTP):
         SRP or certificate-based client authentication.  It is
         not compatible with shared-keys.
 
-        The caller should be prepared to handle TLS-specific
-        exceptions.  See the client handshake functions in
+        The constructor does not perform the TLS handshake itself, but
+        simply stores these arguments for later.  The handshake is
+        performed only when this class needs to connect with the
+        server.  Thus you should be prepared to handle TLS-specific
+        exceptions when calling methods of L{xmlrpclib.ServerProxy}.  See the
+        client handshake functions in
         L{tlslite.TLSConnection.TLSConnection} for details on which
         exceptions might be raised.
 
@@ -97,18 +109,29 @@ class SMTP_TLS(SMTP):
         the ciphersuites, certificate types, and SSL/TLS versions
         offered by the client.
         """
-        (resp, reply) = self.docmd("STARTTLS")
-        if resp == 220:
-            helper = ClientHelper(
-                     username, password, sharedKey,
-                     certChain, privateKey,
-                     cryptoID, protocol,
-                     x509Fingerprint,
-                     x509TrustList, x509CommonName,
-                     settings)
-            conn = TLSConnection(self.sock)
-            conn.closeSocket = True
-            helper._handshake(conn)
-            self.sock = conn
-            self.file = conn.makefile('rb')
-        return (resp, reply)
+
+        ClientHelper.__init__(self,
+                 username, password, sharedKey,
+                 certChain, privateKey,
+                 cryptoID, protocol,
+                 x509Fingerprint,
+                 x509TrustList, x509CommonName,
+                 settings)
+
+
+    def make_connection(self, host):
+        # create a HTTPS connection object from a host descriptor
+        host, extra_headers, x509 = self.get_host_info(host)
+        http = HTTPTLSConnection(host, None,
+                                 self.username, self.password,
+                                 self.sharedKey,
+                                 self.certChain, self.privateKey,
+                                 self.checker.cryptoID,
+                                 self.checker.protocol,
+                                 self.checker.x509Fingerprint,
+                                 self.checker.x509TrustList,
+                                 self.checker.x509CommonName,
+                                 self.settings)
+        http2 = httplib.HTTP()
+        http2._setup(http)
+        return http2

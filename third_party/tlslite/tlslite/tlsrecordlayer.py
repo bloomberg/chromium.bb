@@ -11,7 +11,7 @@ from mathtls import *
 from constants import *
 from utils.cryptomath import getRandomBytes
 from utils import hmac
-from FileObject import FileObject
+from fileobject import FileObject
 
 # The sha module is deprecated in Python 2.6 
 try:

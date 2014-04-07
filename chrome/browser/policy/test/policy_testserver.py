@@ -847,7 +847,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
         try:
           key = tlslite.api.parsePEMKey(key_str, private=True)
         except SyntaxError:
-          key = tlslite.utils.Python_RSAKey.Python_RSAKey._parsePKCS8(
+          key = tlslite.utils.python_rsakey.Python_RSAKey._parsePKCS8(
               tlslite.utils.cryptomath.stringToBytes(key_str))
 
         assert key is not None
@@ -865,7 +865,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       # Use the canned private keys if none were passed from the command line.
       for signing_key in SIGNING_KEYS:
         decoded_key = base64.b64decode(signing_key['key']);
-        key = tlslite.utils.Python_RSAKey.Python_RSAKey._parsePKCS8(
+        key = tlslite.utils.python_rsakey.Python_RSAKey._parsePKCS8(
             tlslite.utils.cryptomath.stringToBytes(decoded_key))
         assert key is not None
         # Grab the signature dictionary for this key and decode all of the

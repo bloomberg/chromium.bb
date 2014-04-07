@@ -2,8 +2,8 @@
 
 
 import asyncore
-from tlslite.TLSConnection import TLSConnection
-from AsyncStateMachine import AsyncStateMachine
+from tlslite.tlsconnection import TLSConnection
+from asyncstatemachine import AsyncStateMachine
 
 
 class TLSAsyncDispatcherMixIn(AsyncStateMachine):

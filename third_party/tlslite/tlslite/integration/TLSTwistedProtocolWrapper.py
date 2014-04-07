@@ -3,8 +3,8 @@
 from twisted.protocols.policies import ProtocolWrapper, WrappingFactory
 from twisted.python.failure import Failure
 
-from AsyncStateMachine import AsyncStateMachine
-from tlslite.TLSConnection import TLSConnection
+from asyncstatemachine import AsyncStateMachine
+from tlslite.tlsconnection import TLSConnection
 from tlslite.errors import *
 
 import socket

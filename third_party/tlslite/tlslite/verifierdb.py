@@ -3,7 +3,7 @@
 from utils.cryptomath import *
 from utils.compat import *
 import mathtls
-from BaseDB import BaseDB
+from basedb import BaseDB
 
 class VerifierDB(BaseDB):
     """This class represent an in-memory or on-disk database of SRP

@@ -2,7 +2,7 @@
 
 from cryptomath import *
 
-from TripleDES import *
+from tripledes import *
 
 if cryptlibpyLoaded:
 

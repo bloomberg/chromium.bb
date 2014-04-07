@@ -2,7 +2,7 @@
 
 from cryptomath import *
 
-from AES import *
+from aes import *
 from rijndael import rijndael
 
 def new(key, mode, IV):

@@ -1,6 +1,6 @@
 """TLS Lite + SocketServer."""
 
-from tlslite.TLSConnection import TLSConnection
+from tlslite.tlsconnection import TLSConnection
 
 class TLSSocketServerMixIn:
     """

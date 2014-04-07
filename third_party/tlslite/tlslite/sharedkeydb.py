@@ -3,8 +3,8 @@
 from utils.cryptomath import *
 from utils.compat import *
 from mathtls import *
-from Session import Session
-from BaseDB import BaseDB
+from session import Session
+from basedb import BaseDB
 
 class SharedKeyDB(BaseDB):
     """This class represent an in-memory or on-disk database of shared

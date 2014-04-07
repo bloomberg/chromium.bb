@@ -5,14 +5,14 @@ from __future__ import generators
 
 import socket
 from utils.compat import formatExceptionTrace
-from TLSRecordLayer import TLSRecordLayer
-from Session import Session
+from tlsrecordlayer import TLSRecordLayer
+from session import Session
 from constants import *
 from utils.cryptomath import getRandomBytes
 from errors import *
 from messages import *
 from mathtls import *
-from HandshakeSettings import HandshakeSettings
+from handshakesettings import HandshakeSettings
 
 
 class TLSConnection(TLSRecordLayer):

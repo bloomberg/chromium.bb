@@ -3,8 +3,8 @@
 The TLS Lite API consists of classes, functions, and variables spread
 throughout this package.  Instead of importing them individually with::
 
-    from tlslite.TLSConnection import TLSConnection
-    from tlslite.HandshakeSettings import HandshakeSettings
+    from tlslite.tlsconnection import TLSConnection
+    from tlslite.handshakesettings import HandshakeSettings
     from tlslite.errors import *
     .
     .
@@ -19,24 +19,24 @@ imports::
 
     from constants import AlertLevel, AlertDescription, Fault
     from errors import *
-    from Checker import Checker
-    from HandshakeSettings import HandshakeSettings
-    from Session import Session
-    from SessionCache import SessionCache
-    from SharedKeyDB import SharedKeyDB
-    from TLSConnection import TLSConnection
-    from VerifierDB import VerifierDB
-    from X509 import X509
-    from X509CertChain import X509CertChain
+    from checker import Checker
+    from handshakesettings import HandshakeSettings
+    from session import Session
+    from sessioncache import SessionCache
+    from sharedkeydb import SharedKeyDB
+    from tlsconnection import TLSConnection
+    from verifierdb import VerifierDB
+    from x509 import X509
+    from x509certchain import X509CertChain
 
-    from integration.HTTPTLSConnection import HTTPTLSConnection
-    from integration.POP3_TLS import POP3_TLS
-    from integration.IMAP4_TLS import IMAP4_TLS
-    from integration.SMTP_TLS import SMTP_TLS
-    from integration.XMLRPCTransport import XMLRPCTransport
-    from integration.TLSSocketServerMixIn import TLSSocketServerMixIn
-    from integration.TLSAsyncDispatcherMixIn import TLSAsyncDispatcherMixIn
-    from integration.TLSTwistedProtocolWrapper import TLSTwistedProtocolWrapper
+    from integration.httptlsconnection import HTTPTLSConnection
+    from integration.pop3_tls import POP3_TLS
+    from integration.imap4_tls import IMAP4_TLS
+    from integration.smtp_tls import SMTP_TLS
+    from integration.xmlrpctransport import XMLRPCTransport
+    from integration.tlssocketservermixin import TLSSocketServerMixIn
+    from integration.tlsasyncdispatchermixin import TLSAsyncDispatcherMixIn
+    from integration.tlstwistedprotocolwrapper import TLSTwistedProtocolWrapper
     from utils.cryptomath import cryptlibpyLoaded, m2cryptoLoaded,
                                  gmpyLoaded, pycryptoLoaded, prngName
     from utils.keyfactory import generateRSAKey, parsePEMKey, parseXMLKey,
@@ -45,27 +45,27 @@ imports::
 
 from constants import AlertLevel, AlertDescription, Fault
 from errors import *
-from Checker import Checker
-from HandshakeSettings import HandshakeSettings
-from Session import Session
-from SessionCache import SessionCache
-from SharedKeyDB import SharedKeyDB
-from TLSConnection import TLSConnection
-from VerifierDB import VerifierDB
-from X509 import X509
-from X509CertChain import X509CertChain
+from checker import Checker
+from handshakesettings import HandshakeSettings
+from session import Session
+from sessioncache import SessionCache
+from sharedkeydb import SharedKeyDB
+from tlsconnection import TLSConnection
+from verifierdb import VerifierDB
+from x509 import X509
+from x509certchain import X509CertChain
 
-from integration.HTTPTLSConnection import HTTPTLSConnection
-from integration.TLSSocketServerMixIn import TLSSocketServerMixIn
-from integration.TLSAsyncDispatcherMixIn import TLSAsyncDispatcherMixIn
-from integration.POP3_TLS import POP3_TLS
-from integration.IMAP4_TLS import IMAP4_TLS
-from integration.SMTP_TLS import SMTP_TLS
-from integration.XMLRPCTransport import XMLRPCTransport
+from integration.httptlsconnection import HTTPTLSConnection
+from integration.tlssocketservermixin import TLSSocketServerMixIn
+from integration.tlsasyncdispatchermixin import TLSAsyncDispatcherMixIn
+from integration.pop3_tls import POP3_TLS
+from integration.imap4_tls import IMAP4_TLS
+from integration.smtp_tls import SMTP_TLS
+from integration.xmlrpctransport import XMLRPCTransport
 try:
     import twisted
     del(twisted)
-    from integration.TLSTwistedProtocolWrapper import TLSTwistedProtocolWrapper
+    from integration.tlstwistedprotocolwrapper import TLSTwistedProtocolWrapper
 except ImportError:
     pass
 

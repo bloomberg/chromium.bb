@@ -41,3 +41,4 @@ Local Modifications:
 - patches/status_request.patch: add support for sending stapled OCSP responses.
 - patches/rsa_signature_length.patch: Ensure that RSA signatures have the
   correct length.
+- Rename all Python files to lowercase in preparation for 0.4.6 update.

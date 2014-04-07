@@ -1,31 +1,69 @@
-"""TLS Lite + xmlrpclib."""
+"""TLS Lite + httplib."""
 
-import xmlrpclib
+import socket
 import httplib
-from tlslite.integration.HTTPTLSConnection import HTTPTLSConnection
-from tlslite.integration.ClientHelper import ClientHelper
+from tlslite.tlsconnection import TLSConnection
+from tlslite.integration.clienthelper import ClientHelper
 
 
-class XMLRPCTransport(xmlrpclib.Transport, ClientHelper):
-    """Handles an HTTPS transaction to an XML-RPC server."""
+class HTTPBaseTLSConnection(httplib.HTTPConnection):
+    """This abstract class provides a framework for adding TLS support
+    to httplib."""
 
-    def __init__(self,
+    default_port = 443
+
+    def __init__(self, host, port=None, strict=None):
+        if strict == None:
+            #Python 2.2 doesn't support strict
+            httplib.HTTPConnection.__init__(self, host, port)
+        else:
+            httplib.HTTPConnection.__init__(self, host, port, strict)
+
+    def connect(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if hasattr(sock, 'settimeout'):
+            sock.settimeout(10)
+        sock.connect((self.host, self.port))
+
+        #Use a TLSConnection to emulate a socket
+        self.sock = TLSConnection(sock)
+
+        #When httplib closes this, close the socket
+        self.sock.closeSocket = True
+        self._handshake(self.sock)
+
+    def _handshake(self, tlsConnection):
+        """Called to perform some sort of handshake.
+
+        This method must be overridden in a subclass to do some type of
+        handshake.  This method will be called after the socket has
+        been connected but before any data has been sent.  If this
+        method does not raise an exception, the TLS connection will be
+        considered valid.
+
+        This method may (or may not) be called every time an HTTP
+        request is performed, depending on whether the underlying HTTP
+        connection is persistent.
+
+        @type tlsConnection: L{tlslite.TLSConnection.TLSConnection}
+        @param tlsConnection: The connection to perform the handshake
+        on.
+        """
+        raise NotImplementedError()
+
+
+class HTTPTLSConnection(HTTPBaseTLSConnection, ClientHelper):
+    """This class extends L{HTTPBaseTLSConnection} to support the
+    common types of handshaking."""
+
+    def __init__(self, host, port=None,
                  username=None, password=None, sharedKey=None,
                  certChain=None, privateKey=None,
                  cryptoID=None, protocol=None,
                  x509Fingerprint=None,
                  x509TrustList=None, x509CommonName=None,
-                 settings=None):
-        """Create a new XMLRPCTransport.
-
-        An instance of this class can be passed to L{xmlrpclib.ServerProxy}
-        to use TLS with XML-RPC calls::
-
-            from tlslite.api import XMLRPCTransport
-            from xmlrpclib import ServerProxy
-
-            transport = XMLRPCTransport(user="alice", password="abra123")
-            server = ServerProxy("https://localhost", transport)
+                 settings = None):
+        """Create a new HTTPTLSConnection.
 
         For client authentication, use one of these argument
         combinations:
@@ -49,10 +87,17 @@ class XMLRPCTransport(xmlrpclib.Transport, ClientHelper):
         simply stores these arguments for later.  The handshake is
         performed only when this class needs to connect with the
         server.  Thus you should be prepared to handle TLS-specific
-        exceptions when calling methods of L{xmlrpclib.ServerProxy}.  See the
-        client handshake functions in
+        exceptions when calling methods inherited from
+        L{httplib.HTTPConnection} such as request(), connect(), and
+        send().  See the client handshake functions in
         L{tlslite.TLSConnection.TLSConnection} for details on which
         exceptions might be raised.
+
+        @type host: str
+        @param host: Server to connect to.
+
+        @type port: int
+        @param port: Port to connect to.
 
         @type username: str
         @param username: SRP or shared-key username.  Requires the
@@ -110,6 +155,8 @@ class XMLRPCTransport(xmlrpclib.Transport, ClientHelper):
         offered by the client.
         """
 
+        HTTPBaseTLSConnection.__init__(self, host, port)
+
         ClientHelper.__init__(self,
                  username, password, sharedKey,
                  certChain, privateKey,
@@ -118,20 +165,5 @@ class XMLRPCTransport(xmlrpclib.Transport, ClientHelper):
                  x509TrustList, x509CommonName,
                  settings)
 
-
-    def make_connection(self, host):
-        # create a HTTPS connection object from a host descriptor
-        host, extra_headers, x509 = self.get_host_info(host)
-        http = HTTPTLSConnection(host, None,
-                                 self.username, self.password,
-                                 self.sharedKey,
-                                 self.certChain, self.privateKey,
-                                 self.checker.cryptoID,
-                                 self.checker.protocol,
-                                 self.checker.x509Fingerprint,
-                                 self.checker.x509TrustList,
-                                 self.checker.x509CommonName,
-                                 self.settings)
-        http2 = httplib.HTTP()
-        http2._setup(http)
-        return http2
+    def _handshake(self, tlsConnection):
+        ClientHelper._handshake(self, tlsConnection)

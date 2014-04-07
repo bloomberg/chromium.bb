@@ -1,7 +1,7 @@
 """Class representing an X.509 certificate chain."""
 
 from utils import cryptomath
-from X509 import X509
+from x509 import X509
 
 class X509CertChain:
     """This class represents a chain of X.509 certificates.

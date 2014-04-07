@@ -5,8 +5,8 @@ from utils.cryptomath import *
 from errors import *
 from utils.codec import *
 from constants import *
-from X509 import X509
-from X509CertChain import X509CertChain
+from x509 import X509
+from x509certchain import X509CertChain
 
 # The sha module is deprecated in Python 2.6 
 try:

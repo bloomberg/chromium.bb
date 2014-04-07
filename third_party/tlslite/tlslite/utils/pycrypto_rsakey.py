@@ -2,8 +2,8 @@
 
 from cryptomath import *
 
-from RSAKey import *
-from Python_RSAKey import Python_RSAKey
+from rsakey import *
+from python_rsakey import Python_RSAKey
 
 if pycryptoLoaded:
 
