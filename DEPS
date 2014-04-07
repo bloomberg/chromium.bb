@@ -35,7 +35,7 @@ vars = {
   "google_toolbox_for_mac_revision": "662",
   "libaddressinput_revision": "176",
   "libphonenumber_revision": "621",
-  "libvpx_revision": "261461",
+  "libvpx_revision": "261575",
   "lss_revision": "24",
 
   # These two FFmpeg variables must be updated together.  One is used for SVN
@@ -738,7 +738,7 @@ hooks = [
   {
     "name": "binutils",
     "pattern": "src/third_party/binutils",
-    "action": [ 
+    "action": [
         "python",
         "src/third_party/binutils/download.py",
     ],
