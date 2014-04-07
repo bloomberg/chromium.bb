@@ -57,7 +57,9 @@ void DevToolsGpuAgent::ProcessEvent(
   task.timestamp = (timestamp - TimeTicks()).InSecondsF();
   task.phase = phase;
   task.foreign = channel != gpu_channel_;
-  task.used_gpu_memory_bytes = channel->GetMemoryUsage();
+  task.gpu_memory_used_bytes = channel->GetMemoryUsage();
+  task.gpu_memory_limit_bytes = gpu_channel_->gpu_channel_manager()->
+      gpu_memory_manager()->GetMaximumClientAllocation();
 
   const int kFlushIntervalMs = 100;
   const unsigned kMaxPendingItems = 100;

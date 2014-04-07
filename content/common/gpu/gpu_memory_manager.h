@@ -64,6 +64,12 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   uint64 GetClientMemoryUsage(const GpuMemoryManagerClient* client) const;
 
+  // The maximum and minimum amount of memory that a client may be assigned.
+  uint64 GetMaximumClientAllocation() const;
+  uint64 GetMinimumClientAllocation() const {
+    return bytes_minimum_per_client_;
+  }
+
  private:
   friend class GpuMemoryManagerTest;
   friend class GpuMemoryTrackingGroup;
@@ -145,11 +151,6 @@ class CONTENT_EXPORT GpuMemoryManager :
   // Maximum cap on total GPU memory, no matter how much the GPU reports.
   uint64 GetMaximumTotalGpuMemory() const;
 
-  // The maximum and minimum amount of memory that a client may be assigned.
-  uint64 GetMaximumClientAllocation() const;
-  uint64 GetMinimumClientAllocation() const {
-    return bytes_minimum_per_client_;
-  }
   // The default amount of memory that a client is assigned, if it has not
   // reported any memory usage stats yet.
   uint64 GetDefaultClientAllocation() const {
