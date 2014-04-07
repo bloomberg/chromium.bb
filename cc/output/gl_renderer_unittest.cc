@@ -1116,7 +1116,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
                                               viewport_rect,
                                               gfx::Transform());
     AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
-    root_pass->damage_rect = gfx::RectF(2.f, 2.f, 3.f, 3.f);
+    root_pass->damage_rect = gfx::Rect(2, 2, 3, 3);
 
     renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
     renderer.DrawFrame(&render_passes_in_draw_order_,
@@ -1136,7 +1136,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
                                               viewport_rect,
                                               gfx::Transform());
     AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
-    root_pass->damage_rect = gfx::RectF(root_pass->output_rect);
+    root_pass->damage_rect = root_pass->output_rect;
 
     renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
     renderer.DrawFrame(&render_passes_in_draw_order_,
@@ -1157,7 +1157,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
                                               viewport_rect,
                                               gfx::Transform());
     AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
-    root_pass->damage_rect = gfx::RectF(root_pass->output_rect);
+    root_pass->damage_rect = root_pass->output_rect;
     root_pass->has_transparent_background = false;
 
     renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -1180,7 +1180,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
                                               viewport_rect,
                                               gfx::Transform());
     AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
-    root_pass->damage_rect = gfx::RectF(root_pass->output_rect);
+    root_pass->damage_rect = root_pass->output_rect;
 
     renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
     renderer.DrawFrame(&render_passes_in_draw_order_,
@@ -1201,7 +1201,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
                                               viewport_rect,
                                               gfx::Transform());
     AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
-    root_pass->damage_rect = gfx::RectF(root_pass->output_rect);
+    root_pass->damage_rect = root_pass->output_rect;
 
     renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
     renderer.DrawFrame(&render_passes_in_draw_order_,
@@ -1223,7 +1223,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
                                               viewport_rect,
                                               gfx::Transform());
     AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
-    root_pass->damage_rect = gfx::RectF(root_pass->output_rect);
+    root_pass->damage_rect = root_pass->output_rect;
 
     renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
     renderer.DrawFrame(&render_passes_in_draw_order_,

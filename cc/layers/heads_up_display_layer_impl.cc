@@ -599,25 +599,31 @@ void HeadsUpDisplayLayerImpl::DrawDebugRect(
     SkColor fill_color,
     float stroke_width,
     const std::string& label_text) const {
-  gfx::RectF debug_layer_rect = gfx::ScaleRect(
+  gfx::Rect debug_layer_rect = gfx::ScaleToEnclosingRect(
       rect.rect, 1.0 / contents_scale_x(), 1.0 / contents_scale_y());
-  SkRect sk_rect = RectFToSkRect(debug_layer_rect);
+  SkIRect sk_rect = RectToSkIRect(debug_layer_rect);
   paint.setColor(fill_color);
   paint.setStyle(SkPaint::kFill_Style);
-  canvas->drawRect(sk_rect, paint);
+  canvas->drawIRect(sk_rect, paint);
 
   paint.setColor(stroke_color);
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setStrokeWidth(SkFloatToScalar(stroke_width));
-  canvas->drawRect(sk_rect, paint);
+  canvas->drawIRect(sk_rect, paint);
 
   if (label_text.length()) {
     const int kFontHeight = 12;
     const int kPadding = 3;
 
+    // The debug_layer_rect may be huge, and converting to a floating point may
+    // be lossy, so intersect with the HUD layer bounds first to prevent that.
+    gfx::Rect clip_rect = debug_layer_rect;
+    clip_rect.Intersect(gfx::Rect(content_bounds()));
+    SkRect sk_clip_rect = RectToSkRect(clip_rect);
+
     canvas->save();
-    canvas->clipRect(sk_rect);
-    canvas->translate(sk_rect.x(), sk_rect.y());
+    canvas->clipRect(sk_clip_rect);
+    canvas->translate(sk_clip_rect.x(), sk_clip_rect.y());
 
     SkPaint label_paint = CreatePaint();
     label_paint.setTextSize(kFontHeight);

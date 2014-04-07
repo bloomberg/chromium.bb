@@ -48,7 +48,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
     const RenderPass* current_render_pass;
     const ScopedResource* current_texture;
 
-    gfx::RectF root_damage_rect;
+    gfx::Rect root_damage_rect;
     gfx::Rect device_viewport_rect;
     gfx::Rect device_clip_rect;
 
@@ -78,19 +78,19 @@ class CC_EXPORT DirectRenderer : public Renderer {
                           const gfx::Rect& draw_rect,
                           const gfx::Rect& viewport_rect,
                           const gfx::Size& surface_size);
-  gfx::Rect MoveFromDrawToWindowSpace(const gfx::RectF& draw_rect) const;
+  gfx::Rect MoveFromDrawToWindowSpace(const gfx::Rect& draw_rect) const;
 
   bool NeedDeviceClip(const DrawingFrame* frame) const;
   gfx::Rect DeviceClipRectInWindowSpace(const DrawingFrame* frame) const;
-  static gfx::RectF ComputeScissorRectForRenderPass(const DrawingFrame* frame);
+  static gfx::Rect ComputeScissorRectForRenderPass(const DrawingFrame* frame);
   void SetScissorStateForQuad(const DrawingFrame* frame, const DrawQuad& quad);
   void SetScissorStateForQuadWithRenderPassScissor(
       const DrawingFrame* frame,
       const DrawQuad& quad,
-      const gfx::RectF& render_pass_scissor,
+      const gfx::Rect& render_pass_scissor,
       bool* should_skip_quad);
   void SetScissorTestRectInDrawSpace(const DrawingFrame* frame,
-                                     const gfx::RectF& draw_space_rect);
+                                     const gfx::Rect& draw_space_rect);
 
   static gfx::Size RenderPassTextureSize(const RenderPass* render_pass);
 

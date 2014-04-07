@@ -31,7 +31,7 @@ scoped_ptr<RenderPass> CreateTestRootRenderPass(RenderPass::Id id,
                                                 const gfx::Rect& rect) {
   scoped_ptr<RenderPass> pass = RenderPass::Create();
   const gfx::Rect output_rect = rect;
-  const gfx::RectF damage_rect = rect;
+  const gfx::Rect damage_rect = rect;
   const gfx::Transform transform_to_root_target;
   pass->SetNew(id, output_rect, damage_rect, transform_to_root_target);
   return pass.Pass();
@@ -43,7 +43,7 @@ scoped_ptr<RenderPass> CreateTestRenderPass(
     const gfx::Transform& transform_to_root_target) {
   scoped_ptr<RenderPass> pass = RenderPass::Create();
   const gfx::Rect output_rect = rect;
-  const gfx::RectF damage_rect = rect;
+  const gfx::Rect damage_rect = rect;
   pass->SetNew(id, output_rect, damage_rect, transform_to_root_target);
   return pass.Pass();
 }

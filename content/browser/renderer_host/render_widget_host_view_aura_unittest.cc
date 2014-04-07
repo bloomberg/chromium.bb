@@ -849,10 +849,8 @@ scoped_ptr<cc::CompositorFrame> MakeDelegatedFrame(float scale_factor,
   frame->delegated_frame_data.reset(new cc::DelegatedFrameData);
 
   scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
-  pass->SetNew(cc::RenderPass::Id(1, 1),
-               gfx::Rect(size),
-               gfx::RectF(damage),
-               gfx::Transform());
+  pass->SetNew(
+      cc::RenderPass::Id(1, 1), gfx::Rect(size), damage, gfx::Transform());
   frame->delegated_frame_data->render_pass_list.push_back(pass.Pass());
   return frame.Pass();
 }

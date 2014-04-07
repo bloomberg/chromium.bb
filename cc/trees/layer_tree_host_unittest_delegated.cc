@@ -257,7 +257,7 @@ class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
   virtual void SetupTree() OVERRIDE {
     root_ = Layer::Create();
     root_->SetAnchorPoint(gfx::PointF());
-    root_->SetBounds(gfx::Size(10, 10));
+    root_->SetBounds(gfx::Size(15, 15));
 
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostDelegatedTest::SetupTree();
@@ -720,7 +720,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
     if (!first_draw_for_source_frame_)
       return draw_result;
 
-    gfx::RectF damage_rect;
+    gfx::Rect damage_rect;
     if (!frame->has_no_damage) {
       damage_rect = frame->render_passes.back()->damage_rect;
     } else {
@@ -731,85 +731,66 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
         // First frame is damaged because of viewport resize.
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 10.f, 10.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(15, 15).ToString(), damage_rect.ToString());
         break;
       case 1:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 10.f, 10.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(10, 10).ToString(), damage_rect.ToString());
         break;
       case 2:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 10.f, 10.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(10, 10).ToString(), damage_rect.ToString());
         break;
       case 3:
-        EXPECT_EQ(gfx::RectF(1.f, 1.f, 5.f, 3.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(1, 1, 5, 3).ToString(), damage_rect.ToString());
         break;
       case 4:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 0.f, 0.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), damage_rect.ToString());
         break;
       case 5:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 10.f, 10.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(10, 10).ToString(), damage_rect.ToString());
         break;
       case 6:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 0.f, 0.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), damage_rect.ToString());
         break;
       case 7:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 6.f, 6.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(6, 6).ToString(), damage_rect.ToString());
         break;
       case 8:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 0.f, 0.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), damage_rect.ToString());
         break;
       case 9:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 6.f, 6.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(6, 6).ToString(), damage_rect.ToString());
         break;
       case 10:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 0.f, 0.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), damage_rect.ToString());
         break;
       case 11:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 10.f, 10.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(10, 10).ToString(), damage_rect.ToString());
         break;
       case 12:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 0.f, 0.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), damage_rect.ToString());
         break;
       case 13:
-        EXPECT_EQ(gfx::RectF(2.f, 2.f, 4.f, 4.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(2, 2, 4, 4).ToString(), damage_rect.ToString());
         break;
       case 14:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 0.f, 0.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), damage_rect.ToString());
         break;
       case 15:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 10.f, 10.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(10, 10).ToString(), damage_rect.ToString());
         break;
       case 16:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 10.f, 10.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(10, 10).ToString(), damage_rect.ToString());
         break;
       case 17:
-        EXPECT_EQ(gfx::RectF(0.f, 0.f, 10.f, 10.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(10, 10).ToString(), damage_rect.ToString());
         break;
       case 18:
-        EXPECT_EQ(gfx::UnionRects(gfx::RectF(5.f, 0.f, 10.f, 10.f),
-                                  gfx::RectF(4.f, 0.f, 1.f, 1.f)).ToString(),
+        EXPECT_EQ(gfx::UnionRects(gfx::Rect(5, 0, 10, 10),
+                                  gfx::Rect(4, 0, 1, 1)).ToString(),
                   damage_rect.ToString());
         break;
       case 19:
-        EXPECT_EQ(gfx::RectF(3.f, 3.f, 6.f, 1.f).ToString(),
-                  damage_rect.ToString());
+        EXPECT_EQ(gfx::Rect(3, 3, 6, 1).ToString(), damage_rect.ToString());
         EndTest();
         break;
     }

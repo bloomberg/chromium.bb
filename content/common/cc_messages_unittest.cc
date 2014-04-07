@@ -437,7 +437,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   scoped_ptr<RenderPass> pass_in = RenderPass::Create();
   pass_in->SetAll(arbitrary_id,
                   arbitrary_rect1,
-                  arbitrary_rectf1,
+                  arbitrary_rect2,
                   arbitrary_matrix,
                   arbitrary_bool1);
 
@@ -458,7 +458,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   scoped_ptr<RenderPass> pass_cmp = RenderPass::Create();
   pass_cmp->SetAll(arbitrary_id,
                    arbitrary_rect1,
-                   arbitrary_rectf1,
+                   arbitrary_rect2,
                    arbitrary_matrix,
                    arbitrary_bool1);
 
@@ -535,7 +535,7 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
   scoped_ptr<RenderPass> pass_in = RenderPass::Create();
   pass_in->SetAll(RenderPass::Id(1, 1),
                   gfx::Rect(100, 100),
-                  gfx::RectF(),
+                  gfx::Rect(),
                   gfx::Transform(),
                   false);
 

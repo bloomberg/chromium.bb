@@ -28,7 +28,7 @@ struct RenderPassSize {
   SharedQuadStateList shared_quad_state_list;
   gfx::Transform transform_to_root_target;
   gfx::Rect output_rect;
-  gfx::RectF damage_rect;
+  gfx::Rect damage_rect;
   bool has_transparent_background;
   ScopedPtrVector<CopyOutputRequest> copy_callbacks;
 };

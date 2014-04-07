@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/layer_lists.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/rect_f.h"
 
 namespace cc {
 
@@ -58,11 +57,11 @@ enum DebugRectType {
 };
 
 struct DebugRect {
-  DebugRect(DebugRectType new_type, const gfx::RectF& new_rect)
+  DebugRect(DebugRectType new_type, const gfx::Rect& new_rect)
       : type(new_type), rect(new_rect) {}
 
   DebugRectType type;
-  gfx::RectF rect;
+  gfx::Rect rect;
 };
 
 // This class maintains a history of rects of various types that can be used

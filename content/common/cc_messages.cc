@@ -402,7 +402,7 @@ bool ParamTraits<cc::RenderPass>::Read(
     const Message* m, PickleIterator* iter, param_type* p) {
   cc::RenderPass::Id id(-1, -1);
   gfx::Rect output_rect;
-  gfx::RectF damage_rect;
+  gfx::Rect damage_rect;
   gfx::Transform transform_to_root_target;
   bool has_transparent_background;
   size_t shared_quad_state_list_size;

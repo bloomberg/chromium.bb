@@ -480,7 +480,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
   Surface grandchild_surface(&manager_, NULL, surface_size);
   scoped_ptr<RenderPass> grandchild_pass = RenderPass::Create();
   gfx::Rect output_rect(surface_size);
-  gfx::RectF damage_rect(surface_size);
+  gfx::Rect damage_rect(surface_size);
   gfx::Transform transform_to_root_target;
   grandchild_pass->SetNew(
       pass_id, output_rect, damage_rect, transform_to_root_target);

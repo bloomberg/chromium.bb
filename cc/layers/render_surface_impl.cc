@@ -130,7 +130,8 @@ void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
   scoped_ptr<RenderPass> pass = RenderPass::Create(layer_list_.size());
   pass->SetNew(RenderPassId(),
                content_rect_,
-               damage_tracker_->current_damage_rect(),
+               gfx::IntersectRects(content_rect_,
+                                   damage_tracker_->current_damage_rect()),
                screen_space_transform_);
   pass_sink->AppendRenderPass(pass.Pass());
 }

@@ -77,12 +77,12 @@ class CC_EXPORT RenderPass {
 
   void SetNew(Id id,
               const gfx::Rect& output_rect,
-              const gfx::RectF& damage_rect,
+              const gfx::Rect& damage_rect,
               const gfx::Transform& transform_to_root_target);
 
   void SetAll(Id id,
               const gfx::Rect& output_rect,
-              const gfx::RectF& damage_rect,
+              const gfx::Rect& damage_rect,
               const gfx::Transform& transform_to_root_target,
               bool has_transparent_background);
 
@@ -93,7 +93,7 @@ class CC_EXPORT RenderPass {
 
   // These are in the space of the render pass' physical pixels.
   gfx::Rect output_rect;
-  gfx::RectF damage_rect;
+  gfx::Rect damage_rect;
 
   // Transforms from the origin of the |output_rect| to the origin of the root
   // render pass' |output_rect|.
