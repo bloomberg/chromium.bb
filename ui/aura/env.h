@@ -12,10 +12,6 @@
 #include "ui/events/event_target.h"
 #include "ui/gfx/point.h"
 
-#if defined(USE_X11)
-#include "ui/aura/device_list_updater_aurax11.h"
-#endif
-
 namespace aura {
 
 namespace test {
@@ -87,10 +83,6 @@ class AURA_EXPORT Env : public ui::EventTarget {
   // Location of last mouse event, in screen coordinates.
   gfx::Point last_mouse_location_;
   bool is_touch_down_;
-
-#if defined(USE_X11)
-  DeviceListUpdaterAuraX11 device_list_updater_aurax11_;
-#endif
 
   scoped_ptr<InputStateLookup> input_state_lookup_;
 

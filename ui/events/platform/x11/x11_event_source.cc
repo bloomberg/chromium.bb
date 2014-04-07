@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -199,6 +200,11 @@ uint32_t X11EventSource::DispatchEvent(XEvent* xevent) {
   base::MessagePumpX11::Current()->WillProcessXEvent(xevent);
   uint32_t action = PlatformEventSource::DispatchEvent(xevent);
   base::MessagePumpX11::Current()->DidProcessXEvent(xevent);
+
+  if (xevent->type == GenericEvent &&
+      xevent->xgeneric.evtype == XI_HierarchyChanged) {
+    ui::UpdateDeviceList();
+  }
 
   if (have_cookie)
     XFreeEventData(xevent->xgeneric.display, &xevent->xcookie);

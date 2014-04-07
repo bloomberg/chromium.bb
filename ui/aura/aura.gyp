@@ -54,8 +54,6 @@
         'client/window_stacking_client.h',
         'client/window_tree_client.cc',
         'client/window_tree_client.h',
-        'device_list_updater_aurax11.cc',
-        'device_list_updater_aurax11.h',
         'env.cc',
         'env.h',
         'env_observer.h',
