@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #include "chrome/browser/ui/webui/options/chromeos/accounts_options_handler.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
@@ -86,6 +88,9 @@ const char kSelectNetworkMessage[] = "selectNetwork";
 }  // namespace
 
 CoreChromeOSOptionsHandler::CoreChromeOSOptionsHandler() {
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
+                              content::NotificationService::AllSources());
 }
 
 CoreChromeOSOptionsHandler::~CoreChromeOSOptionsHandler() {
@@ -118,6 +123,27 @@ void CoreChromeOSOptionsHandler::InitializeHandler() {
   ObservePref(prefs::kDeviceOpenNetworkConfiguration);
   proxy_config_service_.SetPrefs(profile_prefs,
                                  g_browser_process->local_state());
+}
+
+void CoreChromeOSOptionsHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  // The only expected notification for now is this one.
+  DCHECK(type == chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED);
+
+  // Finish this asynchronously because the notification has to tricle in to all
+  // Chrome components before we can reliably read the status on the other end.
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&CoreChromeOSOptionsHandler::NotifyOwnershipChanged,
+                 base::Unretained(this)));
+}
+
+void CoreChromeOSOptionsHandler::NotifyOwnershipChanged() {
+  for (SubscriptionMap::iterator it = pref_subscription_map_.begin();
+       it != pref_subscription_map_.end(); ++it) {
+    NotifySettingsChanged(it->first);
+  }
 }
 
 base::Value* CoreChromeOSOptionsHandler::FetchPref(

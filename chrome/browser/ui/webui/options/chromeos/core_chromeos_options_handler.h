@@ -12,12 +12,15 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/ui_proxy_config_service.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace chromeos {
 namespace options {
 
 // CoreChromeOSOptionsHandler handles ChromeOS settings.
-class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler {
+class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler,
+                                   public content::NotificationObserver {
  public:
   CoreChromeOSOptionsHandler();
   virtual ~CoreChromeOSOptionsHandler();
@@ -39,6 +42,11 @@ class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler {
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
 
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
  private:
   virtual void OnPreferenceChanged(PrefService* service,
                                    const std::string& pref_name) OVERRIDE;
@@ -51,9 +59,15 @@ class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler {
   void NotifySettingsChanged(const std::string& setting_name);
   void NotifyProxyPrefsChanged();
 
+  // Called on changes to the ownership status. Needed to update the interface
+  // in case it has been shown before ownership has been fully established.
+  void NotifyOwnershipChanged();
+
   typedef std::map<std::string, linked_ptr<CrosSettings::ObserverSubscription> >
       SubscriptionMap;
   SubscriptionMap pref_subscription_map_;
+
+  content::NotificationRegistrar notification_registrar_;
 
   UIProxyConfigService proxy_config_service_;
 };

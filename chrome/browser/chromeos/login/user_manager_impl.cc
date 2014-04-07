@@ -929,8 +929,14 @@ void UserManagerImpl::Observe(int type,
         if (device_local_account_policy_service_)
           device_local_account_policy_service_->AddObserver(this);
       }
-      RetrieveTrustedDevicePolicies();
-      UpdateOwnership();
+      // Making this call synchronously is not gonna cut it because
+      // notification order is not defined and in a single message loop run and
+      // getting trusted settings rely on a reload that happens on the very same
+      // notification observation.
+      base::MessageLoop::current()->PostTask(FROM_HERE,
+            base::Bind(&UserManagerImpl::RetrieveTrustedDevicePolicies,
+                       base::Unretained(this)));
+      UserManagerImpl::UpdateOwnership();
       break;
     case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED: {
       Profile* profile = content::Details<Profile>(details).ptr();
