@@ -23,6 +23,8 @@
       var barLeft = (this.width / 2 - 1);
       this.$.bar.style.left = barLeft + 'px';
       this.$.bar.style.right = barLeft + 'px';
+
+      this.addEventListener('keydown', this.onKeyDown_.bind(this));
     },
 
     /**
@@ -91,6 +93,23 @@
     rawValueChanged: function(oldValue, newValue) {
       if (oldValue != newValue)
         this.model.volume = 100 - newValue;
+    },
+
+    /**
+     * Invoked the 'keydown' event is fired.
+     * @param {Event} event The event object.
+     */
+    onKeyDown_: function(event) {
+      switch (event.keyIdentifier) {
+        // Prevents the default behavior. These key should be handled in
+        // <audio-player> element.
+        case 'Up':
+        case 'Down':
+        case 'PageUp':
+        case 'PageDown':
+          event.preventDefault();
+          break;
+      }
     },
   });
 })();  // Anonymous closure

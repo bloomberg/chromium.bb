@@ -33,6 +33,8 @@ Polymer('audio-player', {
     this.audioElement = this.$.audio;
     this.trackList = this.$.trackList;
 
+    this.addEventListener('keydown', this.onKeyDown_.bind(this));
+
     this.audioElement.volume = 0;  // Temporary initial volume.
     this.audioElement.addEventListener('ended', this.onAudioEnded.bind(this));
     this.audioElement.addEventListener('error', this.onAudioError.bind(this));
@@ -311,5 +313,30 @@ Polymer('audio-player', {
    */
   onPageUnload: function() {
     this.audioElement.src = '';  // Hack to prevent crashing.
+  },
+
+  /**
+   * Invoked the 'keydown' event is fired.
+   * @param {Event} event The event object.
+   */
+  onKeyDown_: function(event) {
+    switch (event.keyIdentifier) {
+      case 'Up':
+        if (this.audioController.volumeSliderShown && this.model.volume < 100)
+          this.model.volume += 1;
+        break;
+      case 'Down':
+        if (this.audioController.volumeSliderShown && this.model.volume > 0)
+          this.model.volume -= 1;
+        break;
+      case 'PageUp':
+        if (this.audioController.volumeSliderShown && this.model.volume < 91)
+          this.model.volume += 10;
+        break;
+      case 'PageDown':
+        if (this.audioController.volumeSliderShown && this.model.volume > 9)
+          this.model.volume -= 10;
+        break;
+    }
   },
 });
