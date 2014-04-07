@@ -907,6 +907,15 @@ crbug.com/357464 [ Win Debug ] virtual/softwarecompositing/visibility/visibility
 crbug.com/357465 [ Debug ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
 crbug.com/357465 [ Linux Release ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
 
+crbug.com/354305 svg/custom/gradient-stroke-width.svg [ NeedsRebaseline ]
+crbug.com/354305 svg/custom/mouse-move-on-svg-container-standalone.svg [ NeedsRebaseline ]
+crbug.com/354305 svg/custom/mouse-move-on-svg-container.xhtml [ NeedsRebaseline ]
+crbug.com/354305 svg/custom/mouse-move-on-svg-root-standalone.svg [ NeedsRebaseline ]
+crbug.com/354305 svg/custom/mouse-move-on-svg-root.xhtml [ NeedsRebaseline ]
+crbug.com/354305 svg/custom/pattern-userSpaceOnUse-userToBaseTransform.xhtml [ NeedsRebaseline ]
+crbug.com/354305 svg/hixie/mixed/010.xml [ NeedsRebaseline ]
+crbug.com/354305 svg/text/small-fonts-in-html5.html [ NeedsRebaseline ]
+
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-004.html [ Failure ]
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-003.html [ Failure ]
 crbug.com/353727 virtual/threaded/animations/keyframe-timing-functions-multiple-properties.html [ Pass Timeout ]

@@ -29,6 +29,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
@@ -50,6 +51,7 @@ RenderSVGRoot::RenderSVGRoot(SVGElement* node)
     , m_objectBoundingBoxValid(false)
     , m_isLayoutSizeChanged(false)
     , m_needsBoundariesOrTransformUpdate(true)
+    , m_hasBoxDecorations(false)
 {
 }
 
@@ -221,10 +223,13 @@ void RenderSVGRoot::layout()
         m_needsBoundariesOrTransformUpdate = false;
     }
 
+    m_overflow.clear();
+    addVisualEffectOverflow();
     updateLayerTransform();
+    m_hasBoxDecorations = isRoot() ? calculateHasBoxDecorations() : hasBoxDecorations();
+    invalidateBackgroundObscurationStatus();
 
     repainter.repaintAfterLayout();
-
     clearNeedsLayout();
 }
 
@@ -293,6 +298,10 @@ void RenderSVGRoot::styleDidChange(StyleDifference diff, const RenderStyle* oldS
 {
     if (diff == StyleDifferenceLayout)
         setNeedsBoundariesUpdate();
+    if (diff == StyleDifferenceRepaint) {
+        // Box decorations may have appeared/disappeared - recompute status.
+        m_hasBoxDecorations = calculateHasBoxDecorations();
+    }
 
     RenderReplaced::styleDidChange(diff, oldStyle);
     SVGResourcesCache::clientStyleChanged(this, diff, style());
@@ -355,7 +364,35 @@ const AffineTransform& RenderSVGRoot::localToParentTransform() const
 
 LayoutRect RenderSVGRoot::clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const
 {
-    return SVGRenderSupport::clippedOverflowRectForRepaint(this, repaintContainer);
+    // This is an open-coded aggregate of SVGRenderSupport::clippedOverflowRectForRepaint,
+    // RenderSVGRoot::computeFloatRectForRepaint and RenderReplaced::clippedOverflowRectForRepaint.
+    // The reason for this is to optimize/minimize the repaint rect when the box is not "decorated"
+    // (does not have background/border/etc.)
+
+    // Return early for any cases where we don't actually paint.
+    if (style()->visibility() != VISIBLE && !enclosingLayer()->hasVisibleContent())
+        return LayoutRect();
+
+    // Compute the repaint rect of the content of the SVG in the border-box coordinate space.
+    FloatRect contentRepaintRect = repaintRectInLocalCoordinates();
+    contentRepaintRect = m_localToBorderBoxTransform.mapRect(contentRepaintRect);
+
+    // Apply initial viewport clip - not affected by overflow settings
+    contentRepaintRect.intersect(pixelSnappedBorderBoxRect());
+
+    LayoutRect repaintRect = enclosingLayoutRect(contentRepaintRect);
+    // If the box is decorated or is overflowing, extend it to include the border-box and overflow.
+    if (m_hasBoxDecorations || hasRenderOverflow()) {
+        // The selectionRect can project outside of the overflowRect, so take their union
+        // for repainting to avoid selection painting glitches.
+        LayoutRect decoratedRepaintRect = unionRect(localSelectionRect(false), visualOverflowRect());
+        repaintRect.unite(decoratedRepaintRect);
+    }
+
+    // Compute the repaint rect in the parent coordinate space.
+    LayoutRect rect = enclosingIntRect(repaintRect);
+    RenderReplaced::computeRectForRepaint(repaintContainer, rect);
+    return rect;
 }
 
 void RenderSVGRoot::computeFloatRectForRepaint(const RenderLayerModelObject* repaintContainer, FloatRect& repaintRect, bool fixed) const
@@ -392,7 +429,6 @@ void RenderSVGRoot::updateCachedBoundaries()
 {
     SVGRenderSupport::computeContainerBoundingBoxes(this, m_objectBoundingBox, m_objectBoundingBoxValid, m_strokeBoundingBox, m_repaintBoundingBox);
     SVGRenderSupport::intersectRepaintRectWithResources(this, m_repaintBoundingBox);
-    m_repaintBoundingBox.inflate(borderAndPaddingWidth().toFloat());
 }
 
 bool RenderSVGRoot::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
