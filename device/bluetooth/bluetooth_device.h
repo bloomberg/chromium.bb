@@ -12,6 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "net/base/net_log.h"
 
 namespace device {
 
@@ -335,9 +336,12 @@ class BluetoothDevice {
   // identified by |profile|, on success the profile's connection callback
   // will be called as well as |callback|; on failure |error_callback| will be
   // called.
-  virtual void ConnectToProfile(BluetoothProfile* profile,
-                                const base::Closure& callback,
-                                const ErrorCallback& error_callback) = 0;
+  typedef base::Callback<void(const std::string&)>
+      ConnectToProfileErrorCallback;
+  virtual void ConnectToProfile(
+      BluetoothProfile* profile,
+      const base::Closure& callback,
+      const ConnectToProfileErrorCallback& error_callback) = 0;
 
   // Sets the Out Of Band pairing data for this device to |data|.  Exactly one
   // of |callback| or |error_callback| will be run.

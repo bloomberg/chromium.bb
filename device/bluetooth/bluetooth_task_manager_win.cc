@@ -30,6 +30,8 @@ const int kMaxNumDeviceAddressChar = 127;
 const int kServiceDiscoveryResultBufferSize = 5000;
 const int kMaxDeviceDiscoveryTimeout = 48;
 
+typedef device::BluetoothTaskManagerWin::ServiceRecordState ServiceRecordState;
+
 // Populates bluetooth adapter state using adapter_handle.
 void GetAdapterState(HANDLE adapter_handle,
                      device::BluetoothTaskManagerWin::AdapterState* state) {
@@ -69,6 +71,49 @@ void GetDeviceState(const BLUETOOTH_DEVICE_INFO& device_info,
   state->visible = true;
   state->connected = !!device_info.fConnected;
   state->authenticated = !!device_info.fAuthenticated;
+}
+
+void DiscoverDeviceServices(
+    const std::string& device_address,
+    const GUID& protocol_uuid,
+    ScopedVector<ServiceRecordState>* service_record_states) {
+  // Bluetooth and WSAQUERYSET for Service Inquiry. See http://goo.gl/2v9pyt.
+  WSAQUERYSET sdp_query;
+  ZeroMemory(&sdp_query, sizeof(sdp_query));
+  sdp_query.dwSize = sizeof(sdp_query);
+  GUID protocol = protocol_uuid;
+  sdp_query.lpServiceClassId = &protocol;
+  sdp_query.dwNameSpace = NS_BTH;
+  wchar_t device_address_context[kMaxNumDeviceAddressChar];
+  std::size_t length = base::SysUTF8ToWide("(" + device_address + ")").copy(
+      device_address_context, kMaxNumDeviceAddressChar);
+  device_address_context[length] = NULL;
+  sdp_query.lpszContext = device_address_context;
+  HANDLE sdp_handle;
+  if (ERROR_SUCCESS !=
+      WSALookupServiceBegin(&sdp_query, LUP_RETURN_ALL, &sdp_handle)) {
+    return;
+  }
+  char sdp_buffer[kServiceDiscoveryResultBufferSize];
+  LPWSAQUERYSET sdp_result_data = reinterpret_cast<LPWSAQUERYSET>(sdp_buffer);
+  while (true) {
+    DWORD sdp_buffer_size = sizeof(sdp_buffer);
+    if (ERROR_SUCCESS !=
+        WSALookupServiceNext(
+            sdp_handle, LUP_RETURN_ALL, &sdp_buffer_size, sdp_result_data)) {
+      break;
+    }
+    ServiceRecordState* service_record_state = new ServiceRecordState();
+    service_record_state->name =
+        base::SysWideToUTF8(sdp_result_data->lpszServiceInstanceName);
+    service_record_state->address = device_address;
+    for (uint64 i = 0; i < sdp_result_data->lpBlob->cbSize; i++) {
+      service_record_state->sdp_bytes.push_back(
+          sdp_result_data->lpBlob->pBlobData[i]);
+    }
+    service_record_states->push_back(service_record_state);
+  }
+  WSALookupServiceEnd(sdp_handle);
 }
 
 }  // namespace
@@ -375,41 +420,9 @@ void BluetoothTaskManagerWin::DiscoverServices(
     const std::string device_address = (*iter)->address;
     ScopedVector<ServiceRecordState>* service_record_states =
         &(*iter)->service_record_states;
-    WSAQUERYSET sdp_query;
-    ZeroMemory(&sdp_query, sizeof(sdp_query));
-    sdp_query.dwSize = sizeof(sdp_query);
-    GUID protocol = L2CAP_PROTOCOL_UUID;
-    sdp_query.lpServiceClassId = &protocol;
-    sdp_query.dwNameSpace = NS_BTH;
-    wchar_t device_address_context[kMaxNumDeviceAddressChar];
-    std::size_t length =
-        base::SysUTF8ToWide("(" + device_address + ")").copy(
-            device_address_context, kMaxNumDeviceAddressChar);
-    device_address_context[length] = NULL;
-    sdp_query.lpszContext = device_address_context;
-    HANDLE sdp_handle;
-    if (ERROR_SUCCESS !=
-        WSALookupServiceBegin(&sdp_query, LUP_RETURN_ALL, &sdp_handle)) {
-      return;
-    }
-    char sdp_buffer[kServiceDiscoveryResultBufferSize];
-    LPWSAQUERYSET sdp_result_data = reinterpret_cast<LPWSAQUERYSET>(sdp_buffer);
-    DWORD sdp_buffer_size = sizeof(sdp_buffer);
-    while (ERROR_SUCCESS == WSALookupServiceNext(sdp_handle,
-                                                 LUP_RETURN_ALL,
-                                                 &sdp_buffer_size,
-                                                 sdp_result_data)) {
-      ServiceRecordState* service_record_state = new ServiceRecordState();
-      service_record_state->name =
-          base::SysWideToUTF8(sdp_result_data->lpszServiceInstanceName);
-      service_record_state->address = device_address;
-      for (uint64 i = 0; i < sdp_result_data->lpBlob->cbSize; i++) {
-        service_record_state->sdp_bytes.push_back(
-            sdp_result_data->lpBlob->pBlobData[i]);
-      }
-      service_record_states->push_back(service_record_state);
-    }
-    WSALookupServiceEnd(sdp_handle);
+
+    DiscoverDeviceServices(
+        device_address, L2CAP_PROTOCOL_UUID, service_record_states);
   }
 }
 

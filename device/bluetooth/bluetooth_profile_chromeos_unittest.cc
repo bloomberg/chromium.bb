@@ -92,6 +92,10 @@ class BluetoothProfileChromeOSTest : public testing::Test {
     message_loop_.Quit();
   }
 
+  void ConnectToProfileErrorCallback(const std::string error) {
+    ErrorCallback();
+  }
+
   void ProfileCallback(BluetoothProfile* profile) {
     ++profile_callback_count_;
     last_profile_ = profile;
@@ -157,7 +161,7 @@ TEST_F(BluetoothProfileChromeOSTest, L2capEndToEnd) {
       profile,
       base::Bind(&BluetoothProfileChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothProfileChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothProfileChromeOSTest::ConnectToProfileErrorCallback,
                  base::Unretained(this)));
 
   message_loop_.Run();
@@ -283,7 +287,7 @@ TEST_F(BluetoothProfileChromeOSTest, RfcommEndToEnd) {
       profile,
       base::Bind(&BluetoothProfileChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothProfileChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothProfileChromeOSTest::ConnectToProfileErrorCallback,
                  base::Unretained(this)));
 
   message_loop_.Run();

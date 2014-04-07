@@ -21,10 +21,8 @@ class IOBluetoothSDPServiceRecord;
 #endif
 
 namespace net {
-
-class DrainableIOBuffer;
 class GrowableIOBuffer;
-
+class IOBuffer;
 }  // namespace net
 
 namespace device {
@@ -42,10 +40,17 @@ class BluetoothSocketMac : public BluetoothSocket {
   static scoped_refptr<BluetoothSocket> CreateBluetoothSocket(
       IOBluetoothSDPServiceRecord* record);
 
-  // BluetoothSocket override
-  virtual bool Receive(net::GrowableIOBuffer* buffer) OVERRIDE;
-  virtual bool Send(net::DrainableIOBuffer* buffer) OVERRIDE;
-  virtual std::string GetLastErrorMessage() const OVERRIDE;
+  // Overriden from BluetoothSocket:
+  virtual void Close() OVERRIDE;
+  virtual void Disconnect(const base::Closure& callback) OVERRIDE;
+  virtual void Receive(int count,
+                       const ReceiveCompletionCallback& success_callback,
+                       const ReceiveErrorCompletionCallback& error_callback)
+      OVERRIDE;
+  virtual void Send(scoped_refptr<net::IOBuffer> buffer,
+                    int buffer_size,
+                    const SendCompletionCallback& success_callback,
+                    const ErrorCompletionCallback& error_callback) OVERRIDE;
 
   // called by BluetoothRFCOMMChannelDelegate.
   void OnDataReceived(IOBluetoothRFCOMMChannel* rfcomm_channel,
