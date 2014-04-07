@@ -447,8 +447,7 @@ const std::string VPNConfigView::GetServerCACertPEM() const {
     return std::string();
   } else {
     int cert_index = index - 1;
-    return CertLibrary::Get()->GetCertPEMAt(
-        CertLibrary::CERT_TYPE_SERVER_CA, cert_index);
+    return CertLibrary::Get()->GetServerCACertPEMAt(cert_index);
   }
 }
 
@@ -458,8 +457,7 @@ const std::string VPNConfigView::GetUserCertID() const {
   } else {
     // Certificates are listed in the order they appear in the model.
     int index = user_cert_combobox_ ? user_cert_combobox_->selected_index() : 0;
-    return CertLibrary::Get()->GetCertPkcs11IdAt(
-        CertLibrary::CERT_TYPE_USER, index);
+    return CertLibrary::Get()->GetUserCertPkcs11IdAt(index);
   }
 }
 
@@ -886,8 +884,8 @@ void VPNConfigView::Refresh() {
     server_ca_cert_combobox_->ModelChanged();
     if (enable_server_ca_cert_ && !ca_cert_pem_.empty()) {
       // Select the current server CA certificate in the combobox.
-      int cert_index = CertLibrary::Get()->GetCertIndexByPEM(
-          CertLibrary::CERT_TYPE_SERVER_CA, ca_cert_pem_);
+      int cert_index =
+          CertLibrary::Get()->GetServerCACertIndexByPEM(ca_cert_pem_);
       if (cert_index >= 0) {
         // Skip item for "Default"
         server_ca_cert_combobox_->SetSelectedIndex(1 + cert_index);
@@ -902,8 +900,8 @@ void VPNConfigView::Refresh() {
   if (user_cert_combobox_) {
     user_cert_combobox_->ModelChanged();
     if (enable_user_cert_ && !client_cert_id_.empty()) {
-      int cert_index = CertLibrary::Get()->GetCertIndexByPkcs11Id(
-          CertLibrary::CERT_TYPE_USER, client_cert_id_);
+      int cert_index =
+          CertLibrary::Get()->GetUserCertIndexByPkcs11Id(client_cert_id_);
       if (cert_index >= 0)
         user_cert_combobox_->SetSelectedIndex(cert_index);
       else

@@ -824,8 +824,7 @@ std::string WifiConfigView::GetEapServerCaCertPEM() const {
     return std::string();
   } else {
     int cert_index = index - 1;
-    return CertLibrary::Get()->GetCertPEMAt(
-        CertLibrary::CERT_TYPE_SERVER_CA, cert_index);
+    return CertLibrary::Get()->GetServerCACertPEMAt(cert_index);
   }
 }
 
@@ -847,8 +846,7 @@ std::string WifiConfigView::GetEapClientCertPkcs11Id() const {
   } else {
     // Certificates are listed in the order they appear in the model.
     int index = user_cert_combobox_->selected_index();
-    return CertLibrary::Get()->GetCertPkcs11IdAt(
-        CertLibrary::CERT_TYPE_USER, index);
+    return CertLibrary::Get()->GetUserCertPkcs11IdAt(index);
   }
 }
 
@@ -1279,8 +1277,8 @@ void WifiConfigView::InitFromProperties(
       }
     } else {
       // Select the certificate if available.
-      int cert_index = CertLibrary::Get()->GetCertIndexByPEM(
-          CertLibrary::CERT_TYPE_SERVER_CA, eap_ca_cert_pem);
+      int cert_index =
+          CertLibrary::Get()->GetServerCACertIndexByPEM(eap_ca_cert_pem);
       if (cert_index >= 0) {
         // Skip item for "Default".
         server_ca_cert_combobox_->SetSelectedIndex(1 + cert_index);
@@ -1297,8 +1295,8 @@ void WifiConfigView::InitFromProperties(
     properties.GetStringWithoutPathExpansion(
         shill::kEapCertIdProperty, &eap_cert_id);
     if (!eap_cert_id.empty()) {
-      int cert_index = CertLibrary::Get()->GetCertIndexByPkcs11Id(
-          CertLibrary::CERT_TYPE_USER, eap_cert_id);
+      int cert_index =
+          CertLibrary::Get()->GetUserCertIndexByPkcs11Id(eap_cert_id);
       if (cert_index >= 0)
         user_cert_combobox_->SetSelectedIndex(cert_index);
     }

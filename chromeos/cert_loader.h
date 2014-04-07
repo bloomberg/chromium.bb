@@ -57,6 +57,13 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   // Returns true if the global instance has been initialized.
   static bool IsInitialized();
 
+  // Returns the PKCS#11 attribute CKA_ID for a certificate as an upper-case
+  // hex string, or the empty string if none is found. Note that the returned ID
+  // should be used only to identify the cert in its slot.
+  // This should be used only for user certificates, assuming that only one
+  // private slot is loaded for a user.
+  // TODO(tbarzic): Make this check cert slot id if we start loading
+  // certificates for secondary users.
   static std::string GetPkcs11IdForCert(const net::X509Certificate& cert);
 
   // Starts the CertLoader with the NSS cert database.

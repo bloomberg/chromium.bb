@@ -180,11 +180,6 @@ void GetNicknameStringsFromCertList(
   // TODO(bulach): implement me.
 }
 
-std::string GetPkcs11Id(net::X509Certificate::OSCertHandle cert_handle) {
-  // TODO(jamescook): implement me.
-  return "";
-}
-
 void GetExtensions(
     const std::string& critical_label,
     const std::string& non_critical_label,

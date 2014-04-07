@@ -258,29 +258,6 @@ void GetNicknameStringsFromCertList(
   CERT_DestroyCertList(cert_list);
 }
 
-// For background see this discussion on dev-tech-crypto.lists.mozilla.org:
-// http://web.archiveorange.com/archive/v/6JJW7E40sypfZGtbkzxX
-//
-// NOTE: This function relies on the convention that the same PKCS#11 ID
-// is shared between a certificate and its associated private and public
-// keys.  I tried to implement this with PK11_GetLowLevelKeyIDForCert(),
-// but that always returns NULL on Chrome OS for me.
-std::string GetPkcs11Id(net::X509Certificate::OSCertHandle cert_handle) {
-  std::string pkcs11_id;
-  SECKEYPrivateKey *priv_key = PK11_FindKeyByAnyCert(cert_handle,
-                                                     NULL /* wincx */);
-  if (priv_key) {
-    // Get the CKA_ID attribute for a key.
-    SECItem* sec_item = PK11_GetLowLevelKeyIDForPrivateKey(priv_key);
-    if (sec_item) {
-      pkcs11_id = base::HexEncode(sec_item->data, sec_item->len);
-      SECITEM_FreeItem(sec_item, PR_TRUE);
-    }
-    SECKEY_DestroyPrivateKey(priv_key);
-  }
-  return pkcs11_id;
-}
-
 void GetExtensions(
     const string& critical_label,
     const string& non_critical_label,

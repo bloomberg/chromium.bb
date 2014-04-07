@@ -161,13 +161,13 @@ base::string16 CertLibrary::GetCertDisplayStringAt(CertType type,
   return GetDisplayString(cert, hardware_backed);
 }
 
-std::string CertLibrary::GetCertPEMAt(CertType type, int index) const {
-  return CertToPEM(*GetCertificateAt(type, index));
+std::string CertLibrary::GetServerCACertPEMAt(int index) const {
+  return CertToPEM(*GetCertificateAt(CERT_TYPE_SERVER_CA, index));
 }
 
-std::string CertLibrary::GetCertPkcs11IdAt(CertType type, int index) const {
-  net::X509Certificate* cert = GetCertificateAt(type, index);
-  return x509_certificate_model::GetPkcs11Id(cert->os_cert_handle());
+std::string CertLibrary::GetUserCertPkcs11IdAt(int index) const {
+  net::X509Certificate* cert = GetCertificateAt(CERT_TYPE_USER, index);
+  return CertLoader::GetPkcs11IdForCert(*cert);
 }
 
 bool CertLibrary::IsCertHardwareBackedAt(CertType type, int index) const {
@@ -175,11 +175,11 @@ bool CertLibrary::IsCertHardwareBackedAt(CertType type, int index) const {
   return CertLoader::Get()->IsCertificateHardwareBacked(cert);
 }
 
-int CertLibrary::GetCertIndexByPEM(CertType type,
-                                   const std::string& pem_encoded) const {
-  int num_certs = NumCertificates(type);
+int CertLibrary::GetServerCACertIndexByPEM(
+    const std::string& pem_encoded) const {
+  int num_certs = NumCertificates(CERT_TYPE_SERVER_CA);
   for (int index = 0; index < num_certs; ++index) {
-    net::X509Certificate* cert = GetCertificateAt(type, index);
+    net::X509Certificate* cert = GetCertificateAt(CERT_TYPE_SERVER_CA, index);
     if (CertToPEM(*cert) != pem_encoded)
       continue;
     return index;
@@ -187,13 +187,12 @@ int CertLibrary::GetCertIndexByPEM(CertType type,
   return -1;
 }
 
-int CertLibrary::GetCertIndexByPkcs11Id(CertType type,
-                                        const std::string& pkcs11_id) const {
-  int num_certs = NumCertificates(type);
+int CertLibrary::GetUserCertIndexByPkcs11Id(
+    const std::string& pkcs11_id) const {
+  int num_certs = NumCertificates(CERT_TYPE_USER);
   for (int index = 0; index < num_certs; ++index) {
-    net::X509Certificate* cert = GetCertificateAt(type, index);
-    net::X509Certificate::OSCertHandle cert_handle = cert->os_cert_handle();
-    std::string id = x509_certificate_model::GetPkcs11Id(cert_handle);
+    net::X509Certificate* cert = GetCertificateAt(CERT_TYPE_USER, index);
+    std::string id = CertLoader::GetPkcs11IdForCert(*cert);
     if (id == pkcs11_id)
       return index;
   }

@@ -68,8 +68,8 @@ class CertLibrary : public CertLoader::Observer {
 
   // Retreives the certificate property for |type| at |index|.
   base::string16 GetCertDisplayStringAt(CertType type, int index) const;
-  std::string GetCertPEMAt(CertType type, int index) const;
-  std::string GetCertPkcs11IdAt(CertType type, int index) const;
+  std::string GetServerCACertPEMAt(int index) const;
+  std::string GetUserCertPkcs11IdAt(int index) const;
   bool IsCertHardwareBackedAt(CertType type, int index) const;
 
   // Returns the index of a Certificate matching |pem_encoded| or -1 if none
@@ -77,10 +77,9 @@ class CertLibrary : public CertLoader::Observer {
   // certificates.
   // TOOD(pneubeck): Either make this more efficient, asynchronous or get rid of
   // it.
-  int GetCertIndexByPEM(CertType type, const std::string& pem_encoded) const;
-  // Same as above but for a PKCS#11 id. TODO(stevenjb): Replace this with a
-  // better mechanism for uniquely idientifying certificates, crbug.com/236978.
-  int GetCertIndexByPkcs11Id(CertType type, const std::string& pkcs11_id) const;
+  int GetServerCACertIndexByPEM(const std::string& pem_encoded) const;
+  // Same as above but for a PKCS#11 id.
+  int GetUserCertIndexByPkcs11Id(const std::string& pkcs11_id) const;
 
   // CertLoader::Observer
   virtual void OnCertificatesLoaded(const net::CertificateList&,

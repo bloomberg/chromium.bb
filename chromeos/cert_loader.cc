@@ -115,7 +115,8 @@ bool CertLoader::CertificatesLoading() const {
   return database_ && !certificates_loaded_;
 }
 
-// This is copied from chrome/common/net/x509_certificate_model_nss.cc.
+// static
+//
 // For background see this discussion on dev-tech-crypto.lists.mozilla.org:
 // http://web.archiveorange.com/archive/v/6JJW7E40sypfZGtbkzxX
 //
@@ -123,8 +124,6 @@ bool CertLoader::CertificatesLoading() const {
 // is shared between a certificate and its associated private and public
 // keys.  I tried to implement this with PK11_GetLowLevelKeyIDForCert(),
 // but that always returns NULL on Chrome OS for me.
-
-// static
 std::string CertLoader::GetPkcs11IdForCert(const net::X509Certificate& cert) {
   CERTCertificateStr* cert_handle = cert.os_cert_handle();
   SECKEYPrivateKey *priv_key =
