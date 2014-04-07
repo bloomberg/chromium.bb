@@ -2,3 +2,9 @@ brettw@chromium.org
 sky@chromium.org
 
 per-file download_database.*=benjhayden@chromium.org
+
+# Temporary owner, for refactoring changes only.
+blundell@chromium.org
+
+# Temporary owner, for refactoring changes only.
+droger@chromium.org
