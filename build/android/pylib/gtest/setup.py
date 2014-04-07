@@ -30,7 +30,7 @@ import unittest_util # pylint: disable=F0401
 _ISOLATE_FILE_PATHS = {
     'base_unittests': 'base/base_unittests.isolate',
     'blink_heap_unittests':
-      'third_party/WebKit/Source/heap/BlinkHeapUnitTests.isolate',
+      'third_party/WebKit/Source/platform/heap/BlinkHeapUnitTests.isolate',
     'breakpad_unittests': 'breakpad/breakpad_unittests.isolate',
     'cc_perftests': 'cc/cc_perftests.isolate',
     'components_unittests': 'components/components_unittests.isolate',
