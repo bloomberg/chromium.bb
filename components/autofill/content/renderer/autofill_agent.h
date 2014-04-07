@@ -25,6 +25,7 @@
 namespace blink {
 class WebNode;
 class WebView;
+struct WebAutocompleteParams;
 }
 
 namespace autofill {
@@ -76,18 +77,22 @@ class AutofillAgent : public content::RenderViewObserver,
 
   // blink::WebAutofillClient:
   virtual void textFieldDidEndEditing(
-      const blink::WebInputElement& element) OVERRIDE;
+      const blink::WebInputElement& element);
   virtual void textFieldDidChange(
       const blink::WebFormControlElement& element);
   virtual void textFieldDidReceiveKeyDown(
       const blink::WebInputElement& element,
-      const blink::WebKeyboardEvent& event) OVERRIDE;
+      const blink::WebKeyboardEvent& event);
+  // TODO(estade): remove this.
   virtual void didRequestAutocomplete(
       blink::WebFrame* frame,
-      const blink::WebFormElement& form) OVERRIDE;
-  virtual void setIgnoreTextChanges(bool ignore) OVERRIDE;
+      const blink::WebFormElement& form);
+  virtual void didRequestAutocomplete(
+      const blink::WebFormElement& form,
+      const blink::WebAutocompleteParams& details);
+  virtual void setIgnoreTextChanges(bool ignore);
   virtual void didAssociateFormControls(
-      const blink::WebVector<blink::WebNode>& nodes) OVERRIDE;
+      const blink::WebVector<blink::WebNode>& nodes);
   virtual void openTextDataListChooser(const blink::WebInputElement& element);
 
   void OnFieldTypePredictionsAvailable(

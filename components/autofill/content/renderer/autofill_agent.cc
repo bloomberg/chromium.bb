@@ -294,6 +294,13 @@ void AutofillAgent::didRequestAutocomplete(WebFrame* frame,
   Send(new AutofillHostMsg_RequestAutocomplete(routing_id(), form_data, url));
 }
 
+void AutofillAgent::didRequestAutocomplete(
+    const WebFormElement& form,
+    const blink::WebAutocompleteParams& details) {
+  // TODO(estade): honor |details|.
+  didRequestAutocomplete(form.document().frame(), form);
+}
+
 void AutofillAgent::setIgnoreTextChanges(bool ignore) {
   ignore_text_changes_ = ignore;
 }
