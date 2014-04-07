@@ -301,7 +301,7 @@ deps = {
 
   "src/chrome/browser/resources/pdf/html_office":
      Var("chromium_git") +
-         "/chromium/html-office-public.git@9f76cc282c471ae4ff77415384db039fcab2faa8",
+         "/chromium/html-office-public.git@c29b3dcd20a03c5cec041764d178245b7d306dec",
 
   "src/third_party/libwebm/source":
     Var("chromium_git") +
