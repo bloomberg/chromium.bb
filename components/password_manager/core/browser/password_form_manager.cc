@@ -407,6 +407,7 @@ void PasswordFormManager::OnRequestDone(
 
   // Check to see if the user told us to ignore this site in the past.
   if (preferred_match_->blacklisted_by_user) {
+    client_->PasswordAutofillWasBlocked();
     manager_action_ = kManagerActionBlacklisted;
     return;
   }

@@ -31,6 +31,10 @@ class PasswordManagerClient {
   virtual void PasswordWasAutofilled(
       const autofill::PasswordFormMap& best_matches) const {}
 
+  // Called when password autofill is blocked by the blacklist. Default
+  // implementation is a no-op.
+  virtual void PasswordAutofillWasBlocked() const {}
+
   // Called to authenticate the autofill password data.  If authentication is
   // successful, this should continue filling the form.
   virtual void AuthenticateAutofillAndFillForm(

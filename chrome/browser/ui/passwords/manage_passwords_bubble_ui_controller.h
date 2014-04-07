@@ -33,6 +33,9 @@ class ManagePasswordsBubbleUIController
   // the manage password icon.
   void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map);
 
+  // Called when a form is _not_ autofilled due to user blacklisting.
+  void OnBlacklistBlockedAutofill();
+
   // TODO(npentrel) This ought to be changed. Best matches should be newly
   // made when opening the ManagePasswordsBubble because there may have been
   // changes to the best matches via the settings page. At the moment this also
@@ -84,6 +87,11 @@ class ManagePasswordsBubbleUIController
     password_submitted_ = password_submitted;
   }
 
+  bool autofill_blocked() const { return autofill_blocked_; }
+  void set_autofill_blocked(bool autofill_blocked) {
+    autofill_blocked_ = autofill_blocked;
+  }
+
  private:
   friend class content::WebContentsUserData<ManagePasswordsBubbleUIController>;
 
@@ -116,6 +124,10 @@ class ManagePasswordsBubbleUIController
   // Stores whether a new password has been submitted, if so we have
   // |pending_credentials|.
   bool password_submitted_;
+
+  // Stores whether autofill was blocked due to a user's decision to blacklist
+  // the current site ("Never save passwords for this site").
+  bool autofill_blocked_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleUIController);
 };

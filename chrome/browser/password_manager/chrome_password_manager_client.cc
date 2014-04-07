@@ -77,6 +77,16 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
   }
 }
 
+void ChromePasswordManagerClient::PasswordAutofillWasBlocked() const {
+  ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
+      ManagePasswordsBubbleUIController::FromWebContents(web_contents());
+  if (manage_passwords_bubble_ui_controller &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSavePasswordBubble)) {
+    manage_passwords_bubble_ui_controller->OnBlacklistBlockedAutofill();
+  }
+}
+
 void ChromePasswordManagerClient::AuthenticateAutofillAndFillForm(
       scoped_ptr<autofill::PasswordFormFillData> fill_data) {
 #if defined(OS_ANDROID)

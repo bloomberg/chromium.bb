@@ -20,7 +20,8 @@ ManagePasswordsBubbleUIController::ManagePasswordsBubbleUIController(
       manage_passwords_icon_to_be_shown_(false),
       password_to_be_saved_(false),
       manage_passwords_bubble_needs_showing_(false),
-      password_submitted_(false) {}
+      password_submitted_(false),
+      autofill_blocked_(false) {}
 
 ManagePasswordsBubbleUIController::~ManagePasswordsBubbleUIController() {}
 
@@ -43,6 +44,7 @@ void ManagePasswordsBubbleUIController::OnPasswordSubmitted(
   password_to_be_saved_ = true;
   manage_passwords_bubble_needs_showing_ = true;
   password_submitted_ = true;
+  autofill_blocked_ = false;
   UpdateBubbleAndIconVisibility();
 }
 
@@ -53,6 +55,16 @@ void ManagePasswordsBubbleUIController::OnPasswordAutofilled(
   password_to_be_saved_ = false;
   manage_passwords_bubble_needs_showing_ = false;
   password_submitted_ = false;
+  autofill_blocked_ = false;
+  UpdateBubbleAndIconVisibility();
+}
+
+void ManagePasswordsBubbleUIController::OnBlacklistBlockedAutofill() {
+  manage_passwords_icon_to_be_shown_ = true;
+  password_to_be_saved_ = false;
+  manage_passwords_bubble_needs_showing_ = false;
+  password_submitted_ = false;
+  autofill_blocked_ = true;
   UpdateBubbleAndIconVisibility();
 }
 

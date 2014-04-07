@@ -32,8 +32,12 @@ void ManagePasswordsIconView::Update(
         ManagePasswordsBubbleView::NOT_DISPLAYED);
     return;
   }
+  int icon_to_display =
+      manage_passwords_bubble_ui_controller->autofill_blocked()
+          ? IDR_SAVE_PASSWORD_BLACKLISTED
+          : IDR_SAVE_PASSWORD;
   SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_SAVE_PASSWORD));
+      icon_to_display));
   SetTooltip(manage_passwords_bubble_ui_controller->password_to_be_saved());
 }
 
