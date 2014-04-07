@@ -26,23 +26,25 @@
 typedef unsigned long  GLenum;
 typedef boolean        GLboolean;
 typedef unsigned long  GLbitfield;
-typedef byte           GLbyte;         /* 'byte' should be a signed 8 bit type. */
+typedef byte           GLbyte; // 'byte' should be a signed 8 bit type.
 typedef short          GLshort;
 typedef long           GLint;
 typedef long           GLsizei;
 typedef long long      GLintptr;
 typedef long long      GLsizeiptr;
-typedef octet          GLubyte;        /* 'octet' should be an unsigned 8 bit type. */
+typedef octet          GLubyte; // 'octet' should be an unsigned 8 bit type.
 typedef unsigned short GLushort;
 typedef unsigned long  GLuint;
+// FIXME: Should be unrestricted: http://crbug.com/354298
 typedef /*unrestricted*/ float GLfloat;
 typedef /*unrestricted*/ float GLclampf;
 
 [
-    DoNotCheckConstants,
-    ImplementedInBaseClass,
-    NoInterfaceObject,
-    StrictTypeChecking,
+    // FIXME: [DoNotCheckConstants] and [StrictTypeChecking] should be applied
+    // to members and not need to be put on implementing interface
+    // DoNotCheckConstants, // need to put on implementing interface
+    NoInterfaceObject, // Always used on target of 'implements'
+    // StrictTypeChecking, // need to put on implementing interface
 ] interface WebGLRenderingContextBase {
 
     readonly attribute HTMLCanvasElement canvas;

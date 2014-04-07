@@ -25,10 +25,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#windowbase64
+
 [
     ImplementedAs=DOMWindowBase64,
-    NoInterfaceObject,
+    LegacyTreatAsPartialInterface,
+    NoInterfaceObject, // Always used on target of 'implements'
 ] interface WindowBase64 {
-    [RaisesException] DOMString atob(DOMString string);
     [RaisesException] DOMString btoa(DOMString string);
+    [RaisesException] DOMString atob(DOMString string);
 };

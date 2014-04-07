@@ -27,8 +27,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.whatwg.org/specs/web-apps/current-work/#globaleventhandlers
+
 [
-    NoInterfaceObject
+    LegacyTreatAsPartialInterface,
+    NoInterfaceObject, // Always used on target of 'implements'
 ] interface GlobalEventHandlers {
     attribute EventHandler onabort;
     [RuntimeEnabled=RequestAutocomplete] attribute EventHandler onautocomplete;

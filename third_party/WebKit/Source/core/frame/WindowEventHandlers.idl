@@ -27,9 +27,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#windoweventhandlers
+
 [
-    NoInterfaceObject,
-    ImplementedAs=DOMWindowEventHandlers
+    ImplementedAs=DOMWindowEventHandlers,
+    LegacyTreatAsPartialInterface,
+    NoInterfaceObject, // Always used on target of 'implements'
 ] interface WindowEventHandlers {
     //attribute EventHandler onafterprint;
     //attribute EventHandler onbeforeprint;

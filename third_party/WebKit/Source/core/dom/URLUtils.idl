@@ -27,7 +27,6 @@
 
 [
     NoInterfaceObject, // Always used on target of 'implements'
-    ImplementedInBaseClass,
 ] interface URLUtils {
     // FIXME: should be stringifier: http://crbug.com/306606
     // stringifier attribute DOMString href;

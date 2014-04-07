@@ -66,13 +66,13 @@ class IDLExtendedAttributeValidator(object):
             self.validate_name_values_string(name, values_string)
 
     def validate_name_values_string(self, name, values_string):
-        if name == 'ImplementedBy':  # attribute added when merging interfaces
-            return
         if name not in self.valid_extended_attributes:
-            raise IDLInvalidExtendedAttributeError('Unknown extended attribute [%s]' % name)
+            raise IDLInvalidExtendedAttributeError(
+                'Unknown extended attribute [%s]' % name)
         valid_values = self.valid_extended_attributes[name]
         if values_string is None and None not in valid_values:
-            raise IDLInvalidExtendedAttributeError('Missing required argument for extended attribute [%s]' % name)
+            raise IDLInvalidExtendedAttributeError(
+                'Missing required argument for extended attribute [%s]' % name)
         if '*' in valid_values:  # wildcard, any (non-empty) value ok
             return
         if values_string is None:
@@ -82,7 +82,9 @@ class IDLExtendedAttributeValidator(object):
         invalid_values = values - valid_values
         if invalid_values:
             invalid_value = invalid_values.pop()
-            raise IDLInvalidExtendedAttributeError('Invalid value "%s" found in extended attribute [%s=%s]' % (invalid_value, name, values_string))
+            raise IDLInvalidExtendedAttributeError(
+                'Invalid value "%s" found in extended attribute [%s=%s]' %
+                (invalid_value, name, values_string))
 
 
 def read_extended_attributes_file():

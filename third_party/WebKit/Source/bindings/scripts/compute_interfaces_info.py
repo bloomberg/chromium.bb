@@ -161,9 +161,7 @@ def compute_individual_info(idl_filename):
 
     extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
     implemented_as = extended_attributes.get('ImplementedAs')
-    this_include_path = (include_path(idl_filename, implemented_as)
-                         if 'ImplementedInBaseClass' not in extended_attributes
-                         else None)
+    this_include_path = include_path(idl_filename, implemented_as)
 
     # Handle partial interfaces
     partial_interface_name = get_partial_interface_name_from_idl(idl_file_contents)
@@ -179,6 +177,9 @@ def compute_individual_info(idl_filename):
         'implemented_as': implemented_as,
         'implements_interfaces': get_implemented_interfaces_from_idl(idl_file_contents, interface_name),
         'include_path': this_include_path,
+        # FIXME: temporary private field, while removing old treatement of
+        # 'implements': http://crbug.com/360435
+        'is_legacy_treat_as_partial_interface': 'LegacyTreatAsPartialInterface' in extended_attributes,
         'is_callback_interface': is_callback_interface_from_idl(idl_file_contents),
         # Interfaces that are referenced (used as types) and that we introspect
         # during code generation (beyond interface-level data ([ImplementedAs],
@@ -243,6 +244,8 @@ def compute_interfaces_info(idl_files):
     for interface_name, interface_info in interfaces_info.iteritems():
         partial_interface_paths = partial_interface_files[interface_name]
         partial_interfaces_full_paths = partial_interface_paths['full_paths']
+        # Partial interface definitions each need an include, as they are
+        # implemented in separate classes from the main interface.
         partial_interfaces_include_paths = partial_interface_paths['include_paths']
 
         implemented_interfaces = interface_info['implements_interfaces']
@@ -255,10 +258,16 @@ def compute_interfaces_info(idl_files):
         implemented_interfaces_full_paths = [
             implemented_interface_info['full_path']
             for implemented_interface_info in implemented_interfaces_info]
+        # Implemented interfaces don't need includes, as this is handled in
+        # the Blink implementation (they are implemented on |impl| itself,
+        # hence header is included in implementing class).
+        # However, they are needed for legacy implemented interfaces that
+        # are being treated as partial interfaces, until we remove these.
+        # http://crbug.com/360435
         implemented_interfaces_include_paths = [
             implemented_interface_info['include_path']
             for implemented_interface_info in implemented_interfaces_info
-            if implemented_interface_info['include_path']]
+            if implemented_interface_info['is_legacy_treat_as_partial_interface']]
 
         interface_info.update({
             'dependencies_full_paths': (partial_interfaces_full_paths +
@@ -266,6 +275,10 @@ def compute_interfaces_info(idl_files):
             'dependencies_include_paths': (partial_interfaces_include_paths +
                                            implemented_interfaces_include_paths),
         })
+
+    # Clean up temporary private information
+    for interface_info in interfaces_info.itervalues():
+        del interface_info['is_legacy_treat_as_partial_interface']
 
 
 ################################################################################

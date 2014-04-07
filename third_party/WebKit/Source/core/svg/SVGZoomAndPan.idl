@@ -24,9 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG11/types.html#InterfaceSVGZoomAndPan
+
 [
-    NoInterfaceObject
+    LegacyTreatAsPartialInterface,
+    NoInterfaceObject, // Always used on target of 'implements'
 ] interface SVGZoomAndPan {
+
+  // Zoom and Pan Types
     const unsigned short SVG_ZOOMANDPAN_UNKNOWN = 0;
     const unsigned short SVG_ZOOMANDPAN_DISABLE = 1;
     const unsigned short SVG_ZOOMANDPAN_MAGNIFY = 2;

@@ -28,13 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.whatwg.org/specs/web-apps/current-work/#navigatorid
+
 [
-    NoInterfaceObject
+    LegacyTreatAsPartialInterface,
+    NoInterfaceObject, // Always used on target of 'implements'
 ] interface NavigatorID {
+    readonly attribute DOMString appCodeName; // constant "Mozilla"
     readonly attribute DOMString appName;
     readonly attribute DOMString appVersion;
     readonly attribute DOMString platform;
+    readonly attribute DOMString product; // constant "Gecko"
     readonly attribute DOMString userAgent;
-    readonly attribute DOMString appCodeName;
-    readonly attribute DOMString product;
 };

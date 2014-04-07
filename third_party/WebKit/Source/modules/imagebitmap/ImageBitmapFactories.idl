@@ -28,9 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.whatwg.org/specs/web-apps/current-work/#imagebitmapfactories
+
+// FIXME: should use typedef instead, but
+// requires better union type support: http://crbug.com/240176
+/*
+typedef (// HTMLImageElement or
+         // HTMLVideoElement or
+         // HTMLCanvasElement or
+         Blob or
+         ImageData or
+         // CanvasRenderingContext2D or
+         ImageBitmap) ImageBitmapSource;
+*/
+
 [
-    NoInterfaceObject,
-    RuntimeEnabled=ExperimentalCanvasFeatures
+    LegacyTreatAsPartialInterface,
+    NoInterfaceObject, // Always used on target of 'implements'
+    RuntimeEnabled=ExperimentalCanvasFeatures,
 ] interface ImageBitmapFactories {
     [RaisesException] Promise createImageBitmap(Blob blob);
     [RaisesException] Promise createImageBitmap(Blob blob, long sx, long sy, long sw, long sh);

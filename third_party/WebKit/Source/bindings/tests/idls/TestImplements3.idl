@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 [
-    ImplementedInBaseClass, // Conflicts with default implements class name and [ImplementedAs]
+    LegacyTreatAsPartialInterface, // used by [ImplementedAs]
+    ImplementedAs=TestImplements3Implementation, // Conflicts with default implements class name
     NoInterfaceObject, // Always used on target of 'implements'
 ] interface TestImplements3 {
     attribute DOMString implements3StringAttribute;

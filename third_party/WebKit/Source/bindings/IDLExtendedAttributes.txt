@@ -60,8 +60,9 @@ WillBeGarbageCollected
 GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGlobalScope|ServiceWorkerGlobalScope
 Immutable
 ImplementedAs=*
-ImplementedInBaseClass
+ImplementedBy=*
 InitializedByEventConstructor
+LegacyTreatAsPartialInterface
 MeasureAs=*
 NamedConstructor=*
 NoInterfaceObject

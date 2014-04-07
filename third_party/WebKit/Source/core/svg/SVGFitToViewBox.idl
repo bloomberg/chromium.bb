@@ -24,9 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG11/types.html#InterfaceSVGFitToViewBox
+
 [
-    NoInterfaceObject
+    LegacyTreatAsPartialInterface,
+    NoInterfaceObject, // Always used on target of 'implements'
 ] interface SVGFitToViewBox {
-    readonly attribute SVGAnimatedRect                viewBox;
+    readonly attribute SVGAnimatedRect viewBox;
     readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
 };

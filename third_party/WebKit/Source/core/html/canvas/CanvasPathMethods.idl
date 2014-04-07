@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-[
-    NoInterfaceObject
-] interface CanvasPathMethods {
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#canvaspathmethods
 
+[
+    LegacyTreatAsPartialInterface,
+    NoInterfaceObject, // Always used on target of 'implements'
+] interface CanvasPathMethods {
+    // shared path API methods
     void closePath();
     void moveTo(float x, float y);
     void lineTo(float x, float y);
