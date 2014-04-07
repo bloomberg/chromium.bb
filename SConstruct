@@ -2663,8 +2663,11 @@ def SetUpLinuxEnvMips(env):
     env.Append(LIBS=['rt', 'dl', 'pthread'],
                      CCFLAGS=['-march=mips32r2'])
 
-
-def MakeLinuxEnv(platform=None):
+# Makes a generic Linux development environment.
+# Linux development environments are used in two different ways.
+# 1) To produce trusted tools (e.g., sel_ldr), called TRUSTED_ENV
+# 2) To produce build tools (e.g., tls_edit), called BUILD_ENV
+def MakeGenericLinuxEnv(platform=None):
   linux_env = MakeUnixLikeEnv(platform).Clone(
       BUILD_TYPE = '${OPTIMIZATION_LEVEL}-linux',
       BUILD_TYPE_DESCRIPTION = 'Linux ${OPTIMIZATION_LEVEL} build',
@@ -2732,13 +2735,18 @@ def MakeLinuxEnv(platform=None):
   # code-generation flags affect the predefines we might test there.
   linux_env.Replace(ASFLAGS=['${CCFLAGS}'])
 
+  return linux_env
+
+# Specializes a generic Linux development environment to be a trusted
+# environment.
+def MakeTrustedLinuxEnv(platform=None):
+  linux_env = MakeGenericLinuxEnv(platform)
   if linux_env.Bit('android'):
     SetUpAndroidEnv(linux_env)
-
   return linux_env
 
 (linux_debug_env, linux_optimized_env) = \
-    GenerateOptimizationLevels(MakeLinuxEnv())
+    GenerateOptimizationLevels(MakeTrustedLinuxEnv())
 
 # Do this before the site_scons/site_tools/naclsdk.py stuff to pass it along.
 pre_base_env.Append(
@@ -3665,8 +3673,8 @@ def MakeBuildEnv():
   platform_func_map = {
       'win32' : MakeWindowsEnv,
       'cygwin': MakeWindowsEnv,
-      'linux' : MakeLinuxEnv,
-      'linux2': MakeLinuxEnv,
+      'linux' : MakeGenericLinuxEnv,
+      'linux2': MakeGenericLinuxEnv,
       'darwin': MakeMacEnv,
       }
   if sys.platform not in platform_func_map:
