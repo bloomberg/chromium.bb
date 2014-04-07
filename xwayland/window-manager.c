@@ -38,7 +38,6 @@
 
 #include "cairo-util.h"
 #include "compositor.h"
-#include "xserver-server-protocol.h"
 #include "hash.h"
 
 struct wm_size_hints {

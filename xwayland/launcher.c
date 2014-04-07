@@ -33,7 +33,6 @@
 #include <signal.h>
 
 #include "xwayland.h"
-#include "xserver-server-protocol.h"
 
 
 static int

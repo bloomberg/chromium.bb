@@ -37,7 +37,6 @@
 
 #include "cairo-util.h"
 #include "compositor.h"
-#include "xserver-server-protocol.h"
 #include "hash.h"
 
 static void
