@@ -61,7 +61,7 @@ class WebUIDataSource {
   virtual void SetUseJsonJSFormatV2() = 0;
 
   // Adds a mapping between a path name and a resource to return.
-  virtual void AddResourcePath(const std::string &path, int resource_id) = 0;
+  virtual void AddResourcePath(const std::string& path, int resource_id) = 0;
 
   // Sets the resource to returned when no other paths match.
   virtual void SetDefaultResource(int resource_id) = 0;
