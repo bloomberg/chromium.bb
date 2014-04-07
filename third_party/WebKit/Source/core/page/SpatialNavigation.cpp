@@ -51,7 +51,6 @@ static bool areRectsMoreThanFullScreenApart(FocusType, const LayoutRect& curRect
 static bool isRectInDirection(FocusType, const LayoutRect&, const LayoutRect&);
 static void deflateIfOverlapped(LayoutRect&, LayoutRect&);
 static LayoutRect rectToAbsoluteCoordinates(LocalFrame* initialFrame, const LayoutRect&);
-static void entryAndExitPointsForDirection(FocusType, const LayoutRect& startingRect, const LayoutRect& potentialRect, LayoutPoint& exitPoint, LayoutPoint& entryPoint);
 static bool isScrollableNode(const Node*);
 
 FocusCandidate::FocusCandidate(Node* node, FocusType type)
@@ -144,11 +143,11 @@ static bool areRectsFullyAligned(FocusType type, const LayoutRect& a, const Layo
     switch (type) {
     case FocusTypeLeft:
         aStart = a.x();
-        bEnd = b.maxX();
+        bEnd = b.x();
         break;
     case FocusTypeRight:
         aStart = b.x();
-        bEnd = a.maxX();
+        bEnd = a.x();
         break;
     case FocusTypeUp:
         aStart = a.y();
@@ -188,32 +187,21 @@ static bool areRectsFullyAligned(FocusType type, const LayoutRect& a, const Layo
     //  *             *            *  *             *             *
     //  ****************************  *****************************
 
-    //     Horizontal    Vertical        Horizontal     Vertical
-    //  ****************************  *****************************
-    //  *  _......_   *   _ _ _ _  *  *  _          *    _ _ _ _  *
-    //  * |_|    |_|  *  |_|_|_|_| *  * |_|     _   *   |_|_|_|_| *
-    //  * |_|    |_|  *  .         *  * |_|    |_|  *           . *
-    //  * |_|        (3) .         *  * |_|....|_| (4)          . *
-    //  *             *  ._ _      *  *             *        _ _. *
-    //  *             *  |_|_|     *  *             *       |_|_| *
-    //  *             *            *  *             *             *
-    //  ****************************  *****************************
-
-    return ((bMiddle >= aStart && bMiddle <= aEnd) // (1)
-            || (aMiddle >= bStart && aMiddle <= bEnd) // (2)
-            || (bStart == aStart) // (3)
-            || (bEnd == aEnd)); // (4)
+    return (bMiddle >= aStart && bMiddle <= aEnd) // (1)
+        || (aMiddle >= bStart && aMiddle <= bEnd); // (2)
 }
 
-// This method checks if |start| and |dest| have a partial intersection, either
-// horizontally or vertically.
+// This method checks if rects |a| and |b| are partially aligned either vertically or
+// horizontally. In general, rects whose either of edges falls between the top or
+// bottom of each other are considered partially-aligned.
+// This is a separate set of conditions from "fully-aligned" and do not include cases
+// that satisfy the former.
 // * a = Current focused node's rect.
 // * b = Focus candidate node's rect.
 static bool areRectsPartiallyAligned(FocusType type, const LayoutRect& a, const LayoutRect& b)
 {
     LayoutUnit aStart  = start(type, a);
     LayoutUnit bStart  = start(type, b);
-    LayoutUnit bMiddle = middle(type, b);
     LayoutUnit aEnd = end(type, a);
     LayoutUnit bEnd = end(type, b);
 
@@ -232,9 +220,8 @@ static bool areRectsPartiallyAligned(FocusType type, const LayoutRect& a, const 
     // ********************************
     //
     // ... and variants of the above cases.
-    return ((bStart >= aStart && bStart <= aEnd)
-            || (bEnd >= aStart && bEnd <= aEnd)
-            || (bMiddle >= aStart && bMiddle <= aEnd));
+    return (bStart >= aStart && bStart <= aEnd)
+        || (bEnd >= aStart && bEnd <= aEnd);
 }
 
 static bool areRectsMoreThanFullScreenApart(FocusType type, const LayoutRect& curRect, const LayoutRect& targetRect, const LayoutSize& viewSize)
@@ -257,28 +244,34 @@ static bool areRectsMoreThanFullScreenApart(FocusType type, const LayoutRect& cu
 }
 
 // Return true if rect |a| is below |b|. False otherwise.
+// For overlapping rects, |a| is considered to be below |b|
+// if both edges of |a| are below the respective ones of |b|
 static inline bool below(const LayoutRect& a, const LayoutRect& b)
 {
-    return a.y() > b.maxY();
+    return a.y() >= b.maxY()
+        || (a.y() >= b.y() && a.maxY() > b.maxY());
 }
 
 // Return true if rect |a| is on the right of |b|. False otherwise.
+// For overlapping rects, |a| is considered to be on the right of |b|
+// if both edges of |a| are on the right of the respective ones of |b|
 static inline bool rightOf(const LayoutRect& a, const LayoutRect& b)
 {
-    return a.x() > b.maxX();
+    return a.x() >= b.maxX()
+        || (a.x() >= b.x() && a.maxX() > b.maxX());
 }
 
 static bool isRectInDirection(FocusType type, const LayoutRect& curRect, const LayoutRect& targetRect)
 {
     switch (type) {
     case FocusTypeLeft:
-        return targetRect.maxX() <= curRect.x();
+        return rightOf(curRect, targetRect);
     case FocusTypeRight:
-        return targetRect.x() >= curRect.maxX();
+        return rightOf(targetRect, curRect);
     case FocusTypeUp:
-        return targetRect.maxY() <= curRect.y();
+        return below(curRect, targetRect);
     case FocusTypeDown:
-        return targetRect.y() >= curRect.maxY();
+        return below(targetRect, curRect);
     default:
         ASSERT_NOT_REACHED();
         return false;
@@ -539,24 +532,38 @@ LayoutRect frameRectInAbsoluteCoordinates(LocalFrame* frame)
 
 // This method calculates the exitPoint from the startingRect and the entryPoint into the candidate rect.
 // The line between those 2 points is the closest distance between the 2 rects.
+// Takes care of overlapping rects, defining points so that the distance between them
+// is zero where necessary
 void entryAndExitPointsForDirection(FocusType type, const LayoutRect& startingRect, const LayoutRect& potentialRect, LayoutPoint& exitPoint, LayoutPoint& entryPoint)
 {
     switch (type) {
     case FocusTypeLeft:
         exitPoint.setX(startingRect.x());
-        entryPoint.setX(potentialRect.maxX());
+        if (potentialRect.maxX() < startingRect.x())
+            entryPoint.setX(potentialRect.maxX());
+        else
+            entryPoint.setX(startingRect.x());
         break;
     case FocusTypeUp:
         exitPoint.setY(startingRect.y());
-        entryPoint.setY(potentialRect.maxY());
+        if (potentialRect.maxY() < startingRect.y())
+            entryPoint.setY(potentialRect.maxY());
+        else
+            entryPoint.setY(startingRect.y());
         break;
     case FocusTypeRight:
         exitPoint.setX(startingRect.maxX());
-        entryPoint.setX(potentialRect.x());
+        if (potentialRect.x() > startingRect.maxX())
+            entryPoint.setX(potentialRect.x());
+        else
+            entryPoint.setX(startingRect.maxX());
         break;
     case FocusTypeDown:
         exitPoint.setY(startingRect.maxY());
-        entryPoint.setY(potentialRect.y());
+        if (potentialRect.y() > startingRect.maxY())
+            entryPoint.setY(potentialRect.y());
+        else
+            entryPoint.setY(startingRect.maxY());
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -567,10 +574,16 @@ void entryAndExitPointsForDirection(FocusType type, const LayoutRect& startingRe
     case FocusTypeRight:
         if (below(startingRect, potentialRect)) {
             exitPoint.setY(startingRect.y());
-            entryPoint.setY(potentialRect.maxY());
+            if (potentialRect.maxY() < startingRect.y())
+                entryPoint.setY(potentialRect.maxY());
+            else
+                entryPoint.setY(startingRect.y());
         } else if (below(potentialRect, startingRect)) {
             exitPoint.setY(startingRect.maxY());
-            entryPoint.setY(potentialRect.y());
+            if (potentialRect.y() > startingRect.maxY())
+                entryPoint.setY(potentialRect.y());
+            else
+                entryPoint.setY(startingRect.maxY());
         } else {
             exitPoint.setY(max(startingRect.y(), potentialRect.y()));
             entryPoint.setY(exitPoint.y());
@@ -580,10 +593,16 @@ void entryAndExitPointsForDirection(FocusType type, const LayoutRect& startingRe
     case FocusTypeDown:
         if (rightOf(startingRect, potentialRect)) {
             exitPoint.setX(startingRect.x());
-            entryPoint.setX(potentialRect.maxX());
+            if (potentialRect.maxX() < startingRect.x())
+                entryPoint.setX(potentialRect.maxX());
+            else
+                entryPoint.setX(startingRect.x());
         } else if (rightOf(potentialRect, startingRect)) {
             exitPoint.setX(startingRect.maxX());
-            entryPoint.setX(potentialRect.x());
+            if (potentialRect.x() > startingRect.maxX())
+                entryPoint.setX(potentialRect.x());
+            else
+                entryPoint.setX(startingRect.maxX());
         } else {
             exitPoint.setX(max(startingRect.x(), potentialRect.x()));
             entryPoint.setX(exitPoint.x());
@@ -636,42 +655,37 @@ void distanceDataForNode(FocusType type, const FocusCandidate& current, FocusCan
 
     LayoutPoint exitPoint;
     LayoutPoint entryPoint;
-    LayoutUnit sameAxisDistance = 0;
-    LayoutUnit otherAxisDistance = 0;
     entryAndExitPointsForDirection(type, currentRect, nodeRect, exitPoint, entryPoint);
+
+    LayoutUnit xAxis = exitPoint.x() - entryPoint.x();
+    LayoutUnit yAxis = exitPoint.y() - entryPoint.y();
+
+    LayoutUnit navigationAxisDistance;
+    LayoutUnit orthogonalAxisDistance;
 
     switch (type) {
     case FocusTypeLeft:
-        sameAxisDistance = exitPoint.x() - entryPoint.x();
-        otherAxisDistance = absoluteValue(exitPoint.y() - entryPoint.y());
+    case FocusTypeRight:
+        navigationAxisDistance = xAxis.abs();
+        orthogonalAxisDistance = yAxis.abs();
         break;
     case FocusTypeUp:
-        sameAxisDistance = exitPoint.y() - entryPoint.y();
-        otherAxisDistance = absoluteValue(exitPoint.x() - entryPoint.x());
-        break;
-    case FocusTypeRight:
-        sameAxisDistance = entryPoint.x() - exitPoint.x();
-        otherAxisDistance = absoluteValue(entryPoint.y() - exitPoint.y());
-        break;
     case FocusTypeDown:
-        sameAxisDistance = entryPoint.y() - exitPoint.y();
-        otherAxisDistance = absoluteValue(entryPoint.x() - exitPoint.x());
+        navigationAxisDistance = yAxis.abs();
+        orthogonalAxisDistance = xAxis.abs();
         break;
     default:
         ASSERT_NOT_REACHED();
         return;
     }
 
-    float x = ((entryPoint.x() - exitPoint.x()) * (entryPoint.x() - exitPoint.x())).toFloat();
-    float y = ((entryPoint.y() - exitPoint.y()) * (entryPoint.y() - exitPoint.y())).toFloat();
+    double euclidianDistancePow2 = (xAxis * xAxis + yAxis * yAxis).toDouble();
+    LayoutRect intersectionRect = intersection(currentRect, nodeRect);
+    double overlap = (intersectionRect.width() * intersectionRect.height()).toDouble();
 
-    float euclidianDistance = sqrt(x + y);
+    // Distance calculation is based on http://www.w3.org/TR/WICD/#focus-handling
+    candidate.distance = sqrt(euclidianDistancePow2) + navigationAxisDistance+ orthogonalAxisDistance * 2 - sqrt(overlap);
 
-    // Loosely based on http://www.w3.org/TR/WICD/#focus-handling
-    // df = dotDist + dx + dy + 2 * (xdisplacement + ydisplacement) - sqrt(Overlap)
-
-    float distance = euclidianDistance + sameAxisDistance + 2 * otherAxisDistance;
-    candidate.distance = roundf(distance);
     LayoutSize viewSize = candidate.visibleNode->document().page()->mainFrame()->view()->visibleContentRect().size();
     candidate.alignment = alignmentForRects(type, currentRect, nodeRect, viewSize);
 }

@@ -755,7 +755,8 @@ static void updateFocusCandidateIfNeeded(FocusType type, const FocusCandidate& c
     }
 
     LayoutRect intersectionRect = intersection(candidate.rect, closest.rect);
-    if (!intersectionRect.isEmpty() && !areElementsOnSameLine(closest, candidate)) {
+    if (!intersectionRect.isEmpty() && !areElementsOnSameLine(closest, candidate)
+        && intersectionRect == candidate.rect) {
         // If 2 nodes are intersecting, do hit test to find which node in on top.
         LayoutUnit x = intersectionRect.x() + intersectionRect.width() / 2;
         LayoutUnit y = intersectionRect.y() + intersectionRect.height() / 2;

@@ -5,14 +5,24 @@
     <script type="application/javascript">
 
     var resultMap = [
+      ["Down", "s22"],
       ["Down", "p11"],
+      ["Down", "s23"],
       ["Down", "p12"],
+      ["Down", "s24"],
       ["Down", "s25"],
+      ["Up", "s24"],
       ["Up", "p12"],
-      ["Left", "s13"],
+      ["Right", "p22"],
+      ["Left", "p12"],
+      ["Left", "s24"],
+      ["Left", "s14"],
+      ["Up", "s13"],
       ["Up", "s12"],
+      ["Right", "s22"],
       ["Right", "p11"],
       ["Right", "p21"],
+      ["Up", "s22"],
       ["Up", "start"],
       ["DONE", "DONE"]
     ];
@@ -74,6 +84,6 @@
 <div tabindex="5" id="s25" class="simple"><img src="resources/green.png" width=160px height=60px></div>
 </td></tr></table>
 <div id="console"></div>
-This test is testing that we prefer focusable elements with absolute positioning over other elements.
+This test is testing that we can prefer the elements with higher Z indexes.
 </body>
 </html>
