@@ -58,18 +58,6 @@ public:
     static PassRefPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, double duration, ExceptionState&);
     static PassRefPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
 
-    // FIXME: Move all of these setter methods out of Animation,
-    // possibly into a new class (TimingInput?).
-    static void setStartDelay(Timing&, double startDelay);
-    static void setEndDelay(Timing&, double endDelay);
-    static void setFillMode(Timing&, String fillMode);
-    static void setIterationStart(Timing&, double iterationStart);
-    static void setIterationCount(Timing&, double iterationCount);
-    static void setIterationDuration(Timing&, double iterationDuration);
-    static void setPlaybackRate(Timing&, double playbackRate);
-    static void setPlaybackDirection(Timing&, String direction);
-    static void setTimingFunction(Timing&, String timingFunctionString);
-
     virtual bool isAnimation() const OVERRIDE { return true; }
 
     const WillBeHeapVector<RefPtrWillBeMember<Interpolation> >& activeInterpolations() const
@@ -100,8 +88,6 @@ protected:
     virtual double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const OVERRIDE;
 
 private:
-    static void populateTiming(Timing&, Dictionary);
-
     Animation(PassRefPtr<Element>, PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, Priority, PassOwnPtr<EventDelegate>);
 
     RefPtr<Element> m_target;
