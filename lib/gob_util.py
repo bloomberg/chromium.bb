@@ -206,7 +206,7 @@ def FetchUrlJson(*args, **kwargs):
 
 
 def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
-                 sortkey=None):
+                 start=None):
   """Queries a gerrit-on-borg server for changes matching query terms.
 
   Args:
@@ -217,9 +217,7 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
     limit: Maximum number of results to return.
     o_params: A list of additional output specifiers, as documented here:
         https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
-    sortkey: Positions the low level scan routine to start from this |sortkey|
-        and continue through changes from this point. This is most often used
-        for paginating result sets.
+    start: Offset in the result set to start at.
 
   Returns:
     A list of json-decoded query results.
@@ -228,8 +226,8 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
   if not param_dict and not first_param:
     raise RuntimeError('QueryChanges requires search parameters')
   path = 'changes/?q=%s' % _QueryString(param_dict, first_param)
-  if sortkey:
-    path = '%s&N=%s' % (path, sortkey)
+  if start:
+    path = '%s&S=%d' % (path, start)
   if limit:
     path = '%s&n=%d' % (path, limit)
   if o_params:
@@ -239,7 +237,7 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
 
 
 def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
-                      sortkey=None):
+                      start=None):
   """Initiate a query composed of multiple sets of query parameters."""
   if not change_list:
     raise RuntimeError(
@@ -249,8 +247,8 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
     q.append(_QueryString(param_dict))
   if limit:
     q.append('n=%d' % limit)
-  if sortkey:
-    q.append('N=%s' % sortkey)
+  if start:
+    q.append('S=%s' % start)
   if o_params:
     q.extend(['o=%s' % p for p in o_params])
   path = 'changes/?%s' % '&'.join(q)

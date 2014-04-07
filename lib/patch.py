@@ -1373,7 +1373,6 @@ class GerritPatch(GerritFetchOnlyPatch):
        'branch': change['branch'],
        'createdOn': _convert_tm(change['created']),
        'lastUpdated': _convert_tm(change['updated']),
-       'sortKey': change.get('_sortkey'),
        'id': change_id,
        'owner': _convert_user(change['owner']),
        'number': str(change['_number']),

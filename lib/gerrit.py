@@ -39,7 +39,6 @@ class GerritHelper(object):
 
   # Fields that appear in gerrit change query results.
   MORE_CHANGES = '_more_changes'
-  SORTKEY = '_sortkey'
 
   def __init__(self, host, remote, print_cmd=True):
     """Initialize.
@@ -164,7 +163,7 @@ class GerritHelper(object):
     return results[0]
 
   def Query(self, change=None, sort=None, current_patch=True, options=(),
-            dryrun=False, raw=False, sortkey=None, **kwargs):
+            dryrun=False, raw=False, start=None, **kwargs):
     """Free-form query for gerrit changes.
 
     Args:
@@ -178,8 +177,7 @@ class GerritHelper(object):
       dryrun: If True, don't query the gerrit server; return an empty list.
       raw: If True, return a list of python dict's representing the query
           results.  Otherwise, return a list of cros_patch.GerritPatch.
-      sortkey: For continuation queries, this should be the '_sortkey' field
-          extracted from the previous batch of results.
+      start: Offset in the result set to start at.
       kwargs: A dict of query parameters, as described here:
         https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
 
@@ -238,17 +236,15 @@ class GerritHelper(object):
           self._GERRIT_MAX_QUERY_RETURN)
       return []
 
+    start = 0
     moar = gob_util.QueryChanges(
-        self.host, query_kwds, first_param=change, sortkey=sortkey,
+        self.host, query_kwds, first_param=change, start=start,
         limit=self._GERRIT_MAX_QUERY_RETURN, o_params=o_params)
     result = list(moar)
     while moar and self.MORE_CHANGES in moar[-1]:
-      if self.SORTKEY not in moar[-1]:
-        raise GerritException(
-            'Gerrit query has more results, but is missing _sortkey field.')
-      sortkey = moar[-1][self.SORTKEY]
+      start += len(moar)
       moar = gob_util.QueryChanges(
-          self.host, query_kwds, first_param=change, sortkey=sortkey,
+          self.host, query_kwds, first_param=change, start=start,
           limit=self._GERRIT_MAX_QUERY_RETURN, o_params=o_params)
       result.extend(moar)
 
