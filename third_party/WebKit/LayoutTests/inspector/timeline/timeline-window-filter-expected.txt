@@ -45,9 +45,9 @@ divider offsets: [350, 400, 450, 500, 550, 600, 650, 700]. We are expecting roun
 
 mode = Frames
 range = 0 - 1
-time range = 1390988669115.716 - 1390988670098.158
-records count: 77
-divider offsets: [200, 400, 600, 800, 1000]. We are expecting round numbers.
+time range = 1390988669115.4338 - 1390988670116.917
+records count: 80
+divider offsets: [0, 200, 400, 600, 800, 1000]. We are expecting round numbers.
 
 mode = Frames
 range = 0.25 - 0.75
@@ -63,8 +63,8 @@ divider offsets: [500, 600, 700, 800, 900, 1000]. We are expecting round numbers
 
 mode = FlameChart
 range = 0 - 1
-time range = 1390988669115.716 - 1390988670098.158
-divider offsets: [200, 400, 600, 800]. We are expecting round numbers.
+time range = 1390988669115.4338 - 1390988670116.917
+divider offsets: [200, 400, 600, 800, 1000]. We are expecting round numbers.
 
 mode = FlameChart
 range = 0.25 - 0.5
