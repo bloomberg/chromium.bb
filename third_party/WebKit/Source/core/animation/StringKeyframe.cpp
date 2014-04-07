@@ -70,8 +70,8 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     CSSValue* toCSSValue = toStringPropertySpecificKeyframe(end)->value();
 
     // FIXME: Remove the use of AnimatableValues, RenderStyles and Elements here.
-    RefPtr<AnimatableValue> from = StyleResolver::createAnimatableValueSnapshot(*element, property, fromCSSValue);
-    RefPtr<AnimatableValue> to = StyleResolver::createAnimatableValueSnapshot(*element, property, toCSSValue);
+    RefPtrWillBeRawPtr<AnimatableValue> from = StyleResolver::createAnimatableValueSnapshot(*element, property, fromCSSValue);
+    RefPtrWillBeRawPtr<AnimatableValue> to = StyleResolver::createAnimatableValueSnapshot(*element, property, toCSSValue);
 
     return LegacyStyleInterpolation::create(from.release(), to.release(), property);
 }

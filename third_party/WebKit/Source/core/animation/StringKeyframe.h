@@ -47,7 +47,7 @@ public:
         virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(double offset) const;
         virtual bool isStringPropertySpecificKeyframe() const OVERRIDE { return true; }
 
-        RefPtrWillBeRawPtr<CSSValue> m_value;
+        RefPtrWillBeMember<CSSValue> m_value;
     };
 
 private:
