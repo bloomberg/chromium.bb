@@ -25,7 +25,7 @@ function test()
 
     function onInlineStyleRecieved(result)
     {
-        var styleSheetId = result.inlineStyle.styleId.styleSheetId;
+        var styleSheetId = result.inlineStyle.styleSheetId;
         setPropertyText = InspectorTest.setPropertyText.bind(InspectorTest, styleSheetId, false);
         verifyProtocolError = InspectorTest.setPropertyText.bind(InspectorTest, styleSheetId, true);
         dumpStyleSheet = InspectorTest.dumpStyleSheetText.bind(null, styleSheetId);

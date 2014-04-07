@@ -62,16 +62,6 @@ public:
     {
     }
 
-    explicit InspectorCSSId(PassRefPtr<JSONObject> value)
-    {
-        if (!value->getString("styleSheetId", &m_styleSheetId))
-            return;
-
-        RefPtr<JSONValue> ordinalValue = value->get("ordinal");
-        if (!ordinalValue || !ordinalValue->asNumber(&m_ordinal))
-            m_styleSheetId = "";
-    }
-
     InspectorCSSId(const String& styleSheetId, unsigned ordinal)
         : m_styleSheetId(styleSheetId)
         , m_ordinal(ordinal)
@@ -82,19 +72,6 @@ public:
 
     const String& styleSheetId() const { return m_styleSheetId; }
     unsigned ordinal() const { return m_ordinal; }
-
-    // ID type is either TypeBuilder::CSS::CSSStyleId or TypeBuilder::CSS::CSSRuleId.
-    template<typename ID>
-    PassRefPtr<ID> asProtocolValue() const
-    {
-        if (isEmpty())
-            return nullptr;
-
-        RefPtr<ID> result = ID::create()
-            .setStyleSheetId(m_styleSheetId)
-            .setOrdinal(m_ordinal);
-        return result.release();
-    }
 
 private:
     String m_styleSheetId;

@@ -150,7 +150,7 @@ function test()
                 InspectorTest.addResult("");
                 InspectorTest.addResult("=== Stylesheet-for-inline-style text ===");
                 InspectorTest.addResult(result);
-                CSSAgent.setStyleSheetText(inlineStyle.styleId.styleSheetId, "", setTextCallback);
+                CSSAgent.setStyleSheetText(inlineStyle.styleSheetId, "", setTextCallback);
             }
 
             function callback(error, inlineStyle, attributesStyle)
@@ -162,7 +162,7 @@ function test()
                 InspectorTest.addResult("");
                 InspectorTest.addResult("=== Attributes style for table ===");
                 InspectorTest.dumpStyle(attributesStyle);
-                CSSAgent.getStyleSheetText(inlineStyle.styleId.styleSheetId, textCallback.bind(this, inlineStyle));
+                CSSAgent.getStyleSheetText(inlineStyle.styleSheetId, textCallback.bind(this, inlineStyle));
             }
 
             function nodeCallback(node)
@@ -192,7 +192,7 @@ function test()
                 }
                 InspectorTest.addResult("");
                 InspectorTest.addResult("=== After style text set ===");
-                loadAndDumpStyleSheet(style.styleId.styleSheetId, next);
+                loadAndDumpStyleSheet(style.styleSheetId, next);
             }
 
             function collapseToStart(range)
@@ -207,12 +207,12 @@ function test()
 
             function setStyleText(rule)
             {
-                CSSAgent.setPropertyText(rule.style.styleId.styleSheetId, rule.style.cssProperties[1].range, "");
-                CSSAgent.setPropertyText(rule.style.styleId.styleSheetId, rule.style.cssProperties[0].range, "");
+                CSSAgent.setPropertyText(rule.style.styleSheetId, rule.style.cssProperties[1].range, "");
+                CSSAgent.setPropertyText(rule.style.styleSheetId, rule.style.cssProperties[0].range, "");
 
                 // This operation should not update the style as the new property text is not parsable.
-                CSSAgent.setPropertyText(rule.style.styleId.styleSheetId, collapseToStart(rule.style.range), "zzz;");
-                CSSAgent.setPropertyText(rule.style.styleId.styleSheetId, collapseToStart(rule.style.range), "color: white; background: black;", didSetStyleText);
+                CSSAgent.setPropertyText(rule.style.styleSheetId, collapseToStart(rule.style.range), "zzz;");
+                CSSAgent.setPropertyText(rule.style.styleSheetId, collapseToStart(rule.style.range), "color: white; background: black;", didSetStyleText);
             }
 
             function didSetSelector(error, rule)
@@ -224,13 +224,13 @@ function test()
                 }
                 InspectorTest.addResult("");
                 InspectorTest.addResult("=== After selector set ===");
-                loadAndDumpStyleSheet(rule.ruleId.styleSheetId, setStyleText.bind(this, rule));
+                loadAndDumpStyleSheet(rule.styleSheetId, setStyleText.bind(this, rule));
             }
 
             function setRuleSelector(rule)
             {
                 var orm = WebInspector.CSSRule.parsePayload(WebInspector.cssModel, rule);
-                CSSAgent.setRuleSelector(orm.id.styleSheetId, orm.selectorRange, "html *, body[foo=\"bar\"]", didSetSelector);
+                CSSAgent.setRuleSelector(orm.styleSheetId, orm.selectorRange, "html *, body[foo=\"bar\"]", didSetSelector);
             }
 
             function onMatchedStylesForNode(error, matchedStyles)
@@ -304,7 +304,7 @@ function test()
                     InspectorTest.addResult("error: " + error);
                     return;
                 }
-                CSSAgent.setPropertyText(rule.style.styleId.styleSheetId, {
+                CSSAgent.setPropertyText(rule.style.styleSheetId, {
                     startLine: rule.style.range.startLine,
                     startColumn: rule.style.range.startColumn,
                     endLine: rule.style.range.startLine,
@@ -375,7 +375,6 @@ function test()
                 // border-width: 0px;
                 // padding-top: 1px; [d]
 
-                var styleId = matchedCSSRules[1].rule.style.styleId;
                 var orm = WebInspector.CSSStyleDeclaration.parsePayload(WebInspector.cssModel, matchedCSSRules[1].rule.style);
                 orm.propertyAt(0).setDisabled(true, step1);
 
@@ -386,12 +385,12 @@ function test()
 
                 function step2(orm)
                 {
-                    CSSAgent.setPropertyText(orm.id.styleSheetId, orm.propertyAt(7).range.collapseToStart(), "font-size: 12px;", parseStylePayload.bind(null, step3));
+                    CSSAgent.setPropertyText(orm.styleSheetId, orm.propertyAt(7).range.collapseToStart(), "font-size: 12px;", parseStylePayload.bind(null, step3));
                 }
 
                 function step3(orm)
                 {
-                    CSSAgent.setPropertyText(orm.id.styleSheetId, orm.propertyAt(9).range.collapseToStart(), "font-size: 14px;", parseStylePayload.bind(null, step4));
+                    CSSAgent.setPropertyText(orm.styleSheetId, orm.propertyAt(9).range.collapseToStart(), "font-size: 14px;", parseStylePayload.bind(null, step4));
                 }
 
                 function step4(orm)
@@ -401,7 +400,7 @@ function test()
 
                 function step5(orm)
                 {
-                    CSSAgent.setPropertyText(orm.id.styleSheetId, orm.propertyAt(8).range, "border-width: 1px;", parseStylePayload.bind(null, step6));
+                    CSSAgent.setPropertyText(orm.styleSheetId, orm.propertyAt(8).range, "border-width: 1px;", parseStylePayload.bind(null, step6));
                 }
 
                 function step6(orm)
@@ -411,7 +410,7 @@ function test()
 
                 function step7(orm)
                 {
-                    CSSAgent.setPropertyText(orm.id.styleSheetId, orm.propertyAt(3).range, "", parseStylePayload.bind(null, step8));
+                    CSSAgent.setPropertyText(orm.styleSheetId, orm.propertyAt(3).range, "", parseStylePayload.bind(null, step8));
                 }
 
                 function step8(orm)

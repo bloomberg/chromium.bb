@@ -42,7 +42,7 @@ function test()
 
     function onGotInlineStyles(result)
     {
-        inlineStyleSheetId = result.inlineStyle.styleId.styleSheetId;
+        inlineStyleSheetId = result.inlineStyle.styleSheetId;
         sendCommand("CSS.getStyleSheetText", { styleSheetId: inlineStyleSheetId }, onReceiveStyleSheetText);
     }
 

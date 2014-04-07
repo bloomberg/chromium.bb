@@ -19,7 +19,7 @@ function test()
 
     function matchedStylesCallback(styles)
     {
-        styleSheetId = styles.matchedCSSRules[1].id.styleSheetId;
+        styleSheetId = styles.matchedCSSRules[1].styleSheetId;
         CSSAgent.setStyleSheetText(styleSheetId,
             "@import url(\"import-pseudoclass-crash-empty.css\");\n\n:last-child { color: #000001; }\n", modifiedCallback);
     }

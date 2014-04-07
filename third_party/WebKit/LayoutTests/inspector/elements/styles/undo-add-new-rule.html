@@ -72,7 +72,7 @@ function test()
     function printStyleSheetAndCall(next)
     {
         var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][2];
-        var id = section.styleRule.style.id.styleSheetId;
+        var id = section.styleRule.style.styleSheetId;
         CSSAgent.getStyleSheetText(id, callback);
         function callback(result, styleSheetText)
         {

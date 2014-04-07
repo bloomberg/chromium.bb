@@ -27,7 +27,7 @@ function test()
 
     function matchedStylesCallback(styles)
     {
-        styleSheetId = styles.matchedCSSRules[1].id.styleSheetId;
+        styleSheetId = styles.matchedCSSRules[1].styleSheetId;
         InspectorTest.addResult("Setting stylesheet text...");
         CSSAgent.setStyleSheetText(styleSheetId,
             "@import url(resources/multiple-imports-edit-crash-1.css);\n@import url(resources/multiple-imports-edit-crash-2.css);\n#inspected { color: black }\n");

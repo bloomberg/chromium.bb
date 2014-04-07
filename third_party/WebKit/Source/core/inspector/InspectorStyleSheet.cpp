@@ -522,7 +522,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::buildObjectForStyle() con
 {
     RefPtr<TypeBuilder::CSS::CSSStyle> result = styleWithProperties();
     if (!m_styleId.isEmpty())
-        result->setStyleId(m_styleId.asProtocolValue<TypeBuilder::CSS::CSSStyleId>());
+        result->setStyleSheetId(m_styleId.styleSheetId());
 
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = extractSourceData();
     if (sourceData)
@@ -1235,7 +1235,7 @@ PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorStyleSheet::buildObjectForRule(CS
     if (canBind(m_origin)) {
         InspectorCSSId id(ruleId(rule));
         if (!id.isEmpty())
-            result->setRuleId(id.asProtocolValue<TypeBuilder::CSS::CSSRuleId>());
+            result->setStyleSheetId(id.styleSheetId());
     }
 
     if (mediaStack)
