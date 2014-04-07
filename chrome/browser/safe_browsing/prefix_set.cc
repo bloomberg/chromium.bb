@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 
 namespace {
 
@@ -20,11 +21,9 @@ namespace {
 // md5 -qs chrome/browser/safe_browsing/prefix_set.cc | colrm 9
 static uint32 kMagic = 0x864088dd;
 
-// TODO(shess): Update v2 history info once landed.
-
 // Version history:
 // Version 1: b6cb7cfe/r74487 by shess@chromium.org on 2011-02-10
-// version 2: ????????/r????? by shess@chromium.org on 2014-02-24
+// version 2: 2b59b0a6/r253924 by shess@chromium.org on 2014-02-27
 
 // Version 2 layout is identical to version 1.  The sort order of |index_|
 // changed from |int32| to |uint32| to match the change of |SBPrefix|.
@@ -161,13 +160,17 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
   if (read != 1)
     return scoped_ptr<PrefixSet>();
 
+  if (header.magic != kMagic)
+    return scoped_ptr<PrefixSet>();
+
+  // Track version read to inform removal of support for older versions.
+  UMA_HISTOGRAM_SPARSE_SLOWLY("SB2.PrefixSetVersionRead", header.version);
+
   // TODO(shess): Version 1 and 2 use the same file structure, with version 1
   // data using a signed sort.  For M-35, the data is re-sorted before return.
   // After M-35, just drop v1 support. <http://crbug.com/346405>
-  if (header.magic != kMagic ||
-      (header.version != kVersion && header.version != 1)) {
+  if (header.version != kVersion && header.version != 1)
     return scoped_ptr<PrefixSet>();
-  }
 
   IndexVector index;
   const size_t index_bytes = sizeof(index[0]) * header.index_size;

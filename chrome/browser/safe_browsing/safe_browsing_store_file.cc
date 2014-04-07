@@ -8,6 +8,7 @@
 #include "base/files/scoped_file.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 
 namespace {
 
@@ -18,7 +19,7 @@ const int32 kFileMagic = 0x600D71FE;
 // Version history:
 // Version 6: aad08754/r2814 by erikkay@google.com on 2008-10-02 (sqlite)
 // Version 7: 6afe28a5/r37435 by shess@chromium.org on 2010-01-28
-// Version 8: ????????/r????? by shess@chromium.org on 2014-03-??
+// Version 8: d3dd0715/r259791 by shess@chromium.org on 2014-03-27
 const int32 kFileVersion = 8;
 
 // ReadAndVerifyHeader() returns this in case of error.
@@ -75,6 +76,48 @@ struct ShardHeader {
   uint32 add_prefix_count, sub_prefix_count;
   uint32 add_hash_count, sub_hash_count;
 };
+
+// Enumerate different format-change events for histogramming
+// purposes.  DO NOT CHANGE THE ORDERING OF THESE VALUES.
+enum FormatEventType {
+  // Corruption detected, broken down by file format.
+  FORMAT_EVENT_FILE_CORRUPT,
+  FORMAT_EVENT_SQLITE_CORRUPT,  // Obsolete
+
+  // The type of format found in the file.  The expected case (new
+  // file format) is intentionally not covered.
+  FORMAT_EVENT_FOUND_SQLITE,
+  FORMAT_EVENT_FOUND_UNKNOWN,
+
+  // The number of SQLite-format files deleted should be the same as
+  // FORMAT_EVENT_FOUND_SQLITE.  It can differ if the delete fails,
+  // or if a failure prevents the update from succeeding.
+  FORMAT_EVENT_SQLITE_DELETED,  // Obsolete
+  FORMAT_EVENT_SQLITE_DELETE_FAILED,  // Obsolete
+
+  // Found and deleted (or failed to delete) the ancient "Safe
+  // Browsing" file.
+  FORMAT_EVENT_DELETED_ORIGINAL,
+  FORMAT_EVENT_DELETED_ORIGINAL_FAILED,
+
+  // The checksum did not check out in CheckValidity() or in
+  // FinishUpdate().  This most likely indicates that the machine
+  // crashed before the file was fully sync'ed to disk.
+  FORMAT_EVENT_VALIDITY_CHECKSUM_FAILURE,
+  FORMAT_EVENT_UPDATE_CHECKSUM_FAILURE,
+
+  // The header checksum was incorrect in ReadAndVerifyHeader().  Likely
+  // indicates that the system crashed while writing an update.
+  FORMAT_EVENT_HEADER_CHECKSUM_FAILURE,
+
+  // Memory space for histograms is determined by the max.  ALWAYS
+  // ADD NEW VALUES BEFORE THIS ONE.
+  FORMAT_EVENT_MAX
+};
+
+void RecordFormatEvent(FormatEventType event_type) {
+  UMA_HISTOGRAM_ENUMERATION("SB2.FormatEvent", event_type, FORMAT_EVENT_MAX);
+}
 
 // Rewind the file.  Using fseek(2) because rewind(3) errors are
 // weird.
@@ -241,6 +284,9 @@ int ReadAndVerifyHeader(const base::FilePath& filename,
   size_t add_chunks_count = 0;
   size_t sub_chunks_count = 0;
 
+  // Track version read to inform removal of support for older versions.
+  UMA_HISTOGRAM_SPARSE_SLOWLY("SB2.StoreVersionRead", header->v8.version);
+
   if (header->v8.version == 7) {
     version = 7;
 
@@ -271,8 +317,10 @@ int ReadAndVerifyHeader(const base::FilePath& filename,
   }
 
   // v8 includes a checksum to validate the header.
-  if (version > 7 && !ReadAndVerifyChecksum(fp, context))
+  if (version > 7 && !ReadAndVerifyChecksum(fp, context)) {
+    RecordFormatEvent(FORMAT_EVENT_HEADER_CHECKSUM_FAILURE);
     return kInvalidVersion;
+  }
 
   return version;
 }
@@ -595,11 +643,6 @@ bool ReadDbStateHelper(const base::FilePath& filename,
 }
 
 }  // namespace
-
-// static
-void SafeBrowsingStoreFile::RecordFormatEvent(FormatEventType event_type) {
-  UMA_HISTOGRAM_ENUMERATION("SB2.FormatEvent", event_type, FORMAT_EVENT_MAX);
-}
 
 // static
 void SafeBrowsingStoreFile::CheckForOriginalAndDelete(
@@ -1098,8 +1141,10 @@ bool SafeBrowsingStoreFile::DoUpdate(
 
   // Verify the overall checksum.
   if (!empty_) {
-    if (!ReadAndVerifyChecksum(file_.get(), &in_context))
+    if (!ReadAndVerifyChecksum(file_.get(), &in_context)) {
+      RecordFormatEvent(FORMAT_EVENT_UPDATE_CHECKSUM_FAILURE);
       return OnCorruptDatabase();
+    }
 
     // TODO(shess): Verify EOF?
 

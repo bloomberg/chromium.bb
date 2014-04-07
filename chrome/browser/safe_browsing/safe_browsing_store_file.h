@@ -190,45 +190,6 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
                         safe_browsing::PrefixSetBuilder* builder,
                         std::vector<SBAddFullHash>* add_full_hashes_result);
 
-  // Enumerate different format-change events for histogramming
-  // purposes.  DO NOT CHANGE THE ORDERING OF THESE VALUES.
-  // TODO(shess): Remove this once the format change is complete.
-  enum FormatEventType {
-    // Corruption detected, broken down by file format.
-    FORMAT_EVENT_FILE_CORRUPT,
-    FORMAT_EVENT_SQLITE_CORRUPT,  // Obsolete
-
-    // The type of format found in the file.  The expected case (new
-    // file format) is intentionally not covered.
-    FORMAT_EVENT_FOUND_SQLITE,
-    FORMAT_EVENT_FOUND_UNKNOWN,
-
-    // The number of SQLite-format files deleted should be the same as
-    // FORMAT_EVENT_FOUND_SQLITE.  It can differ if the delete fails,
-    // or if a failure prevents the update from succeeding.
-    FORMAT_EVENT_SQLITE_DELETED,  // Obsolete
-    FORMAT_EVENT_SQLITE_DELETE_FAILED,  // Obsolete
-
-    // Found and deleted (or failed to delete) the ancient "Safe
-    // Browsing" file.
-    FORMAT_EVENT_DELETED_ORIGINAL,
-    FORMAT_EVENT_DELETED_ORIGINAL_FAILED,
-
-    // The checksum did not check out in CheckValidity() or in
-    // FinishUpdate().  This most likely indicates that the machine
-    // crashed before the file was fully sync'ed to disk.
-    FORMAT_EVENT_VALIDITY_CHECKSUM_FAILURE,
-    FORMAT_EVENT_UPDATE_CHECKSUM_FAILURE,
-
-    // Memory space for histograms is determined by the max.  ALWAYS
-    // ADD NEW VALUES BEFORE THIS ONE.
-    FORMAT_EVENT_MAX
-  };
-
-  // Helper to record an event related to format conversion from
-  // SQLite to file.
-  static void RecordFormatEvent(FormatEventType event_type);
-
   // Some very lucky users have an original-format file still in their
   // profile.  Check for it and delete, recording a histogram for the
   // result (no histogram for not-found).  Logically this

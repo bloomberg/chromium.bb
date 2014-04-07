@@ -21479,10 +21479,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SB2.FormatEvent" enum="SB2FormatEvent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>
-    Tracks events involved in upgrading safe-browsing data from SQLite format to
-    new file format.
+    Collection of boolean events for SafeBrowsingFileStore instances.  Includes
+    corruptions detected, old versions detected, and various failures detected.
   </summary>
 </histogram>
 
@@ -21643,6 +21643,14 @@ other types of suffix sets.
   <summary>Size of v1 database deleted from client profile.</summary>
 </histogram>
 
+<histogram name="SB2.OutShardShifts">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Indicates how sharded safe-browsing on-disk stores are.  Values like 0 to 4
+    are reasonable.
+  </summary>
+</histogram>
+
 <histogram name="SB2.PhishingInterstitialTimeClosed" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -21786,6 +21794,11 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SB2.PrefixSetVersionRead">
+  <owner>shess@chromium.org</owner>
+  <summary>Version read from the PrefixSet file.</summary>
+</histogram>
+
 <histogram name="SB2.PrefixSetWrite" units="ms">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Time to store the PrefixSet file.</summary>
@@ -21840,6 +21853,11 @@ other types of suffix sets.
     enum="SB2SideEffectFreeWhitelistStatus">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The instantiation status of the SideEffectFreeWhitelist.</summary>
+</histogram>
+
+<histogram name="SB2.StoreVersionRead">
+  <owner>shess@chromium.org</owner>
+  <summary>Version read from the store file.</summary>
 </histogram>
 
 <histogram name="SB2.SubPrefixes">
@@ -39015,6 +39033,9 @@ other types of suffix sets.
   <int value="5" label="SQLITE_DELETE_FAILED"/>
   <int value="6" label="SQLITE_DELETED_ORIGINAL"/>
   <int value="7" label="SQLITE_DELETE_ORIGINAL_FAILED"/>
+  <int value="8" label="VALIDITY_CHECKSUM_FAILURE"/>
+  <int value="9" label="UPDATE_CHECKSUM_FAILURE"/>
+  <int value="10" label="HEADER_CHECKSUM_FAILURE"/>
 </enum>
 
 <enum name="SB2GetHashResult" type="int">
