@@ -291,12 +291,8 @@ DesktopDragDropClientAuraX11::X11DragContext::X11DragContext(
 }
 
 DesktopDragDropClientAuraX11::X11DragContext::~X11DragContext() {
-  DesktopDragDropClientAuraX11* client =
-      DesktopDragDropClientAuraX11::GetForWindow(source_window_);
-  if (!client) {
-    // Unsubscribe from message events.
-    ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
-  }
+  // Unsubscribe from message events.
+  ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 }
 
 void DesktopDragDropClientAuraX11::X11DragContext::OnStartXdndPositionMessage(
