@@ -14,13 +14,17 @@
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permission_message_util.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/socket_permission.h"
+#include "extensions/common/value_builder.h"
+#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using extension_test_util::LoadManifest;
 
@@ -926,7 +930,7 @@ TEST(PermissionsTest, GetWarningMessages_DeclarativeWebRequest) {
   // First verify that declarativeWebRequest produces a message when host
   // permissions do not cover all hosts.
   scoped_refptr<Extension> extension =
-      LoadManifest("permissions", "web_request_com_host_permissions.json");
+      LoadManifest("permissions", "web_request_not_all_host_permissions.json");
   const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
   const PermissionSet* set = extension->GetActivePermissions().get();
   std::vector<base::string16> warnings =
@@ -1034,6 +1038,55 @@ TEST(PermissionsTest, GetWarningMessages_PlatformApppHosts) {
   EXPECT_TRUE(extension->is_platform_app());
   warnings = PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(0u, warnings.size());
+}
+
+bool ShowsAllHostsWarning(const std::string& pattern) {
+  scoped_refptr<Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "TLDWildCardTest")
+                           .Set("version", "0.1.0")
+                           .Set("permissions", ListBuilder().Append(pattern))
+                           .Build())
+          .Build();
+
+  std::vector<base::string16> warnings =
+      PermissionsData::GetPermissionMessageStrings(extension);
+
+  if (warnings.empty())
+    return false;
+
+  if (warnings[0] !=
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)) {
+    return false;
+  }
+
+  return true;
+}
+
+TEST(PermissionsTest, GetWarningMessages_TLDWildcardTreatedAsAllHosts) {
+  EXPECT_TRUE(ShowsAllHostsWarning("http://*.com/*"));    // most popular.
+  EXPECT_TRUE(ShowsAllHostsWarning("http://*.org/*"));    // sanity check.
+  EXPECT_TRUE(ShowsAllHostsWarning("http://*.co.uk/*"));  // eTLD.
+  EXPECT_TRUE(ShowsAllHostsWarning("http://*.de/*"));  // foreign country tld.
+
+  // We should still show the normal permissions (i.e., "Can access your data on
+  // *.rdcronin.com") for things that are not TLDs.
+  EXPECT_FALSE(ShowsAllHostsWarning("http://*.rdcronin.com/*"));
+
+  // Pseudo-TLDs, like appspot.com, should not show all hosts.
+  EXPECT_FALSE(ShowsAllHostsWarning("http://*.appspot.com/*"));
+
+  // Non-TLDs should be likewise exempt.
+  EXPECT_FALSE(ShowsAllHostsWarning("http://*.notarealtld/*"));
+
+  // Our internal checks use "foo", so let's make sure we're not messing
+  // something up with it.
+  EXPECT_FALSE(ShowsAllHostsWarning("http://*.foo.com"));
+  EXPECT_FALSE(ShowsAllHostsWarning("http://foo.com"));
+  // This will fail if foo becomes a recognized TLD. Which could be soon.
+  // Update as needed.
+  EXPECT_FALSE(ShowsAllHostsWarning("http://*.foo"));
 }
 
 TEST(PermissionsTest, GetDistinctHosts) {

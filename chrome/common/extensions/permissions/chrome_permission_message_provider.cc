@@ -5,17 +5,62 @@
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_message_util.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/generated_resources.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 namespace extensions {
 
 namespace {
+
+bool ShouldWarnAllHosts(const PermissionSet* permissions) {
+  if (permissions->HasEffectiveAccessToAllHosts())
+    return true;
+
+  const URLPatternSet& effective_hosts = permissions->effective_hosts();
+  for (URLPatternSet::const_iterator iter = effective_hosts.begin();
+       iter != effective_hosts.end();
+       ++iter) {
+    // If this doesn't even match subdomains, it can't possibly imply all hosts.
+    if (!iter->match_subdomains())
+      continue;
+
+    // If iter->host() is a recognized TLD, this will be 0. We don't include
+    // private TLDs, so that, e.g., *.appspot.com does not imply all hosts.
+    size_t registry_length =
+        net::registry_controlled_domains::GetRegistryLength(
+            iter->host(),
+            net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+    // If there was more than just a TLD in the host (e.g., *.foobar.com), it
+    // doesn't imply all hosts.
+    if (registry_length > 0)
+      continue;
+
+    // At this point the host could either be just a TLD ("com") or some unknown
+    // TLD-like string ("notatld"). To disambiguate between them construct a
+    // fake URL, and check the registry. This returns 0 if the TLD is
+    // unrecognized, or the length of the recognized TLD.
+    registry_length = net::registry_controlled_domains::GetRegistryLength(
+        base::StringPrintf("foo.%s", iter->host().c_str()),
+        net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+        net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+    // If we recognized this TLD, then this is a pattern like *.com, and it
+    // should imply all hosts.
+    if (registry_length > 0)
+      return true;
+  }
+
+  return false;
+}
 
 PermissionMessages::iterator FindMessageByID(PermissionMessages& messages,
                                              int id) {
@@ -217,7 +262,7 @@ ChromePermissionMessageProvider::GetAPIPermissionMessages(
   // subset of what the "<all_urls>" access allows. Therefore we
   // display only the "<all_urls>" warning message if both permissions
   // are required.
-  if (permissions->HasEffectiveAccessToAllHosts()) {
+  if (ShouldWarnAllHosts(permissions)) {
     messages.erase(
         PermissionMessage(
             PermissionMessage::kDeclarativeWebRequest, base::string16()));
@@ -254,7 +299,7 @@ ChromePermissionMessageProvider::GetHostPermissionMessages(
   if (extension_type == Manifest::TYPE_PLATFORM_APP)
     return messages;
 
-  if (permissions->HasEffectiveAccessToAllHosts()) {
+  if (ShouldWarnAllHosts(permissions)) {
     messages.insert(PermissionMessage(
         PermissionMessage::kHostsAll,
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)));
