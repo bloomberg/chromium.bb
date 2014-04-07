@@ -16,6 +16,9 @@
 #endif  // defined(OS_ANDROID)
 
 namespace mojo {
+
+class Spy;
+
 namespace shell {
 
 class DynamicServiceLoader;
@@ -43,6 +46,7 @@ class Context {
   Loader loader_;
   ServiceManager service_manager_;
   scoped_ptr<DynamicServiceLoader> dynamic_service_loader_;
+  scoped_ptr<Spy> spy_;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> activity_;

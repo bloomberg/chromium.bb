@@ -20,5 +20,8 @@ const char kDisableCache[] = "disable-cache";
 const char kEnableMultiprocess[] = "enable-multiprocess";
 
 const char kOrigin[] = "origin";
+// Enables the mojo spy, which acts as a man-in-the-middle inspector for
+// message pipes and other activities. This is work in progress.
+const char kSpy[] = "spy";
 
 }  // namespace switches

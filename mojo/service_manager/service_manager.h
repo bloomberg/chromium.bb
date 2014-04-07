@@ -39,6 +39,15 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
     ServiceManager* manager_;
   };
 
+  // Interface class for debugging only.
+  class Interceptor {
+   public:
+    virtual ~Interceptor() {}
+    // Called when ServiceManager::Connect is called.
+    virtual ScopedMessagePipeHandle OnConnectToClient(
+        const GURL& url, ScopedMessagePipeHandle handle) = 0;
+  };
+
   ServiceManager();
   ~ServiceManager();
 
@@ -58,6 +67,8 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   // Sets a Loader to be used for a specific url scheme.
   // Does not take ownership of |loader|.
   void SetLoaderForScheme(ServiceLoader* loader, const std::string& scheme);
+  // Allows to interpose a debugger to service connections.
+  void SetInterceptor(Interceptor* interceptor);
 
  private:
   class ServiceFactory;
@@ -77,6 +88,7 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   URLToLoaderMap url_to_loader_;
   SchemeToLoaderMap scheme_to_loader_;
   ServiceLoader* default_loader_;
+  Interceptor* interceptor_;
 
   URLToServiceFactoryMap url_to_service_factory_;
   DISALLOW_COPY_AND_ASSIGN(ServiceManager);

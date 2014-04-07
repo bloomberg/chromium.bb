@@ -70,7 +70,9 @@ bool ServiceManager::TestAPI::HasFactoryForURL(const GURL& url) const {
       manager_->url_to_service_factory_.end();
 }
 
-ServiceManager::ServiceManager() : default_loader_(NULL) {
+ServiceManager::ServiceManager()
+    : default_loader_(NULL),
+      interceptor_(NULL) {
 }
 
 ServiceManager::~ServiceManager() {
@@ -100,7 +102,12 @@ void ServiceManager::Connect(const GURL& url,
     service_factory = new ServiceFactory(this, url);
     url_to_service_factory_[url] = service_factory;
   }
-  service_factory->ConnectToClient(client_handle.Pass());
+  if (interceptor_) {
+    service_factory->ConnectToClient(
+        interceptor_->OnConnectToClient(url, client_handle.Pass()));
+  } else {
+    service_factory->ConnectToClient(client_handle.Pass());
+  }
 }
 
 void ServiceManager::SetLoaderForURL(ServiceLoader* loader, const GURL& url) {
@@ -112,6 +119,10 @@ void ServiceManager::SetLoaderForScheme(ServiceLoader* loader,
                                         const std::string& scheme) {
   DCHECK(scheme_to_loader_.find(scheme) == scheme_to_loader_.end());
   scheme_to_loader_[scheme] = loader;
+}
+
+void ServiceManager::SetInterceptor(Interceptor* interceptor) {
+  interceptor_ = interceptor;
 }
 
 ServiceLoader* ServiceManager::GetLoaderForURL(const GURL& url) {

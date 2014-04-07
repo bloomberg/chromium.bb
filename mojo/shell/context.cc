@@ -12,6 +12,7 @@
 #include "mojo/shell/network_delegate.h"
 #include "mojo/shell/out_of_process_dynamic_service_runner.h"
 #include "mojo/shell/switches.h"
+#include "mojo/spy/spy.h"
 
 namespace mojo {
 namespace shell {
@@ -27,15 +28,21 @@ Context::Context()
   embedder::Init();
   gles2::GLES2SupportImpl::Init();
 
+  CommandLine* cmdline = CommandLine::ForCurrentProcess();
   scoped_ptr<DynamicServiceRunnerFactory> runner_factory;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableMultiprocess))
+  if (cmdline->HasSwitch(switches::kEnableMultiprocess))
     runner_factory.reset(new OutOfProcessDynamicServiceRunnerFactory());
   else
     runner_factory.reset(new InProcessDynamicServiceRunnerFactory());
+
   dynamic_service_loader_.reset(
       new DynamicServiceLoader(this, runner_factory.Pass()));
   service_manager_.set_default_loader(dynamic_service_loader_.get());
+
+  if (cmdline->HasSwitch(switches::kSpy)) {
+    spy_.reset(new mojo::Spy(&service_manager_,
+                             cmdline->GetSwitchValueASCII(switches::kSpy)));
+  }
 }
 
 Context::~Context() {

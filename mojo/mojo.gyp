@@ -380,6 +380,20 @@
       ],
     },
     {
+      'target_name': 'mojo_spy',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_static',
+        '../url/url.gyp:url_lib',
+        'mojo_service_manager',
+      ],
+      'sources': [
+        'spy/spy.cc',
+        'spy/spy.h',
+      ],
+    },
+    {
       'target_name': 'mojo_shell_lib',
       'type': 'static_library',
       'dependencies': [
@@ -393,6 +407,7 @@
         'mojo_system',
         'mojo_system_impl',
         'mojo_native_viewport_service',
+        'mojo_spy',
       ],
       'variables': {
         'mojom_base_output_dir': 'mojo',
