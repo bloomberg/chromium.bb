@@ -491,10 +491,9 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowCocoa::ShowTranslateBubble(
-    content::WebContents* contents,
-    TranslateTabHelper::TranslateStep step,
-    TranslateErrors::Type error_type) {
+void BrowserWindowCocoa::ShowTranslateBubble(content::WebContents* contents,
+                                             translate::TranslateStep step,
+                                             TranslateErrors::Type error_type) {
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(contents);
   LanguageState& language_state = translate_tab_helper->GetLanguageState();

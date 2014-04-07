@@ -319,8 +319,7 @@ class Command;
 
 // Show the translate bubble.
 - (void)showTranslateBubbleForWebContents:(content::WebContents*)contents
-                                     step:
-                                      (TranslateTabHelper::TranslateStep)step
+                                     step:(translate::TranslateStep)step
                                 errorType:(TranslateErrors::Type)errorType;
 
 // Shows or hides the docked web inspector depending on |contents|'s state.

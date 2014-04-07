@@ -74,7 +74,8 @@ void TranslateInfoBar::ProcessButton(int action,
 
 void TranslateInfoBar::PassJavaInfoBar(InfoBarAndroid* source) {
   TranslateInfoBarDelegate* delegate = GetDelegate();
-  DCHECK_NE(TranslateTabHelper::BEFORE_TRANSLATE, delegate->translate_step());
+  DCHECK_NE(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
+            delegate->translate_step());
 
   // Ask the former bar to transfer ownership to us.
   DCHECK(source != NULL);
@@ -103,9 +104,8 @@ void TranslateInfoBar::ApplyTranslateOptions(JNIEnv* env,
     delegate->ToggleSiteBlacklist();
 }
 
-void TranslateInfoBar::TransferOwnership(
-    TranslateInfoBar* destination,
-    TranslateTabHelper::TranslateStep new_type) {
+void TranslateInfoBar::TransferOwnership(TranslateInfoBar* destination,
+                                         translate::TranslateStep new_type) {
   int new_target_language = destination->GetDelegate()->target_language_index();
   JNIEnv* env = base::android::AttachCurrentThread();
   if (Java_TranslateInfoBarDelegate_changeTranslateInfoBarTypeAndPointer(
@@ -123,7 +123,8 @@ void TranslateInfoBar::SetJavaDelegate(jobject delegate) {
 
 bool TranslateInfoBar::ShouldDisplayNeverTranslateInfoBarOnCancel() {
   TranslateInfoBarDelegate* delegate = GetDelegate();
-  return (delegate->translate_step() == TranslateTabHelper::BEFORE_TRANSLATE) &&
+  return (delegate->translate_step() ==
+          translate::TRANSLATE_STEP_BEFORE_TRANSLATE) &&
          delegate->ShouldShowNeverTranslateShortcut();
 }
 

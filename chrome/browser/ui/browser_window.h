@@ -232,7 +232,7 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Shows the translate bubble.
   virtual void ShowTranslateBubble(content::WebContents* contents,
-                                   TranslateTabHelper::TranslateStep step,
+                                   translate::TranslateStep step,
                                    TranslateErrors::Type error_type) = 0;
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

@@ -11,7 +11,7 @@ namespace {
 
 void ShowDefault(BrowserWindow* window,
                  content::WebContents* web_contents,
-                 TranslateTabHelper::TranslateStep step,
+                 translate::TranslateStep step,
                  TranslateErrors::Type error_type) {
   // |window| might be null when testing.
   if (!window)
@@ -27,7 +27,7 @@ TranslateBubbleFactory::~TranslateBubbleFactory() {
 // static
 void TranslateBubbleFactory::Show(BrowserWindow* window,
                                   content::WebContents* web_contents,
-                                  TranslateTabHelper::TranslateStep step,
+                                  translate::TranslateStep step,
                                   TranslateErrors::Type error_type) {
   if (current_factory_) {
     current_factory_->ShowImplementation(

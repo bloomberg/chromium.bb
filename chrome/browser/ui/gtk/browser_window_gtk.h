@@ -141,7 +141,7 @@ class BrowserWindowGtk
       const WebApplicationInfo& web_app_info,
       const std::string& extension_id) OVERRIDE;
   virtual void ShowTranslateBubble(content::WebContents* contents,
-                                   TranslateTabHelper::TranslateStep step,
+                                   translate::TranslateStep step,
                                    TranslateErrors::Type error_type) OVERRIDE;
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   virtual void ShowOneClickSigninBubble(

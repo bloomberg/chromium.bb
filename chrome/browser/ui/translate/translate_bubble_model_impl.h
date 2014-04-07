@@ -16,14 +16,14 @@ class TranslateUIDelegate;
 // The standard implementation of TranslateBubbleModel.
 class TranslateBubbleModelImpl : public TranslateBubbleModel {
  public:
-  TranslateBubbleModelImpl(TranslateTabHelper::TranslateStep step,
+  TranslateBubbleModelImpl(translate::TranslateStep step,
                            scoped_ptr<TranslateUIDelegate> ui_delegate);
   virtual ~TranslateBubbleModelImpl();
 
   // Converts a TranslateStep to a ViewState.
   // This function never returns VIEW_STATE_ADVANCED.
   static TranslateBubbleModel::ViewState TranslateStepToViewState(
-      TranslateTabHelper::TranslateStep step);
+      translate::TranslateStep step);
 
   // TranslateBubbleModel methods.
   virtual TranslateBubbleModel::ViewState GetViewState() const OVERRIDE;

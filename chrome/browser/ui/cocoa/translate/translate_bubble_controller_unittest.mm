@@ -46,8 +46,7 @@ TEST_F(TranslateBubbleControllerTest, ShowAndClose) {
   BrowserWindowController* bwc =
       [BrowserWindowController browserWindowControllerForWindow:nativeWindow];
   content::WebContents* webContents = AppendToTabStrip();
-  TranslateTabHelper::TranslateStep step =
-      TranslateTabHelper::BEFORE_TRANSLATE;
+  translate::TranslateStep step = translate::TRANSLATE_STEP_BEFORE_TRANSLATE;
 
   TranslateBubbleController* bubble = [bwc translateBubbleController];
   EXPECT_FALSE(bubble);

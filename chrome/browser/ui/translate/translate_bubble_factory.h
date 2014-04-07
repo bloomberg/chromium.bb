@@ -24,7 +24,7 @@ class TranslateBubbleFactory {
   // implementation.
   static void Show(BrowserWindow* window,
                    content::WebContents* web_contents,
-                   TranslateTabHelper::TranslateStep step,
+                   translate::TranslateStep step,
                    TranslateErrors::Type error_type);
 
   // Sets the factory to change the behavior how to show the bubble.
@@ -35,7 +35,7 @@ class TranslateBubbleFactory {
   // Shows the translate bubble.
   virtual void ShowImplementation(BrowserWindow* window,
                                   content::WebContents* web_contents,
-                                  TranslateTabHelper::TranslateStep step,
+                                  translate::TranslateStep step,
                                   TranslateErrors::Type error_type) = 0;
 
  private:

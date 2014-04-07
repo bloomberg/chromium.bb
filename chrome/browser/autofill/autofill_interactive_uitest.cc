@@ -985,7 +985,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
   TranslateInfoBarDelegate* delegate =
       infobar_manager->infobar_at(0)->delegate()->AsTranslateInfoBarDelegate();
   ASSERT_TRUE(delegate);
-  EXPECT_EQ(TranslateTabHelper::BEFORE_TRANSLATE, delegate->translate_step());
+  EXPECT_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
+            delegate->translate_step());
 
   // Simulate translation button press.
   delegate->Translate();

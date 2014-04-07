@@ -24,9 +24,9 @@
 // static
 scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
     scoped_ptr<TranslateInfoBarDelegate> delegate) {
-  if (delegate->translate_step() == TranslateTabHelper::BEFORE_TRANSLATE)
+  if (delegate->translate_step() == translate::TRANSLATE_STEP_BEFORE_TRANSLATE)
     return scoped_ptr<InfoBar>(new BeforeTranslateInfoBar(delegate.Pass()));
-  if (delegate->translate_step() == TranslateTabHelper::AFTER_TRANSLATE)
+  if (delegate->translate_step() == translate::TRANSLATE_STEP_AFTER_TRANSLATE)
     return scoped_ptr<InfoBar>(new AfterTranslateInfoBar(delegate.Pass()));
   return scoped_ptr<InfoBar>(new TranslateMessageInfoBar(delegate.Pass()));
 }

@@ -35,7 +35,7 @@ class TranslateInfoBar : public InfoBarAndroid {
   virtual void PassJavaInfoBar(InfoBarAndroid* source) OVERRIDE;
 
   void TransferOwnership(TranslateInfoBar* destination,
-                         TranslateTabHelper::TranslateStep new_type);
+                         translate::TranslateStep new_type);
   void SetJavaDelegate(jobject delegate);
   bool ShouldDisplayNeverTranslateInfoBarOnCancel();
 

@@ -42,6 +42,7 @@
         'translate/core/browser/translate_prefs.h',
         'translate/core/browser/translate_script.cc',
         'translate/core/browser/translate_script.h',
+        'translate/core/browser/translate_step.h',
         'translate/core/browser/translate_url_fetcher.cc',
         'translate/core/browser/translate_url_fetcher.h',
         'translate/core/browser/translate_url_util.cc',

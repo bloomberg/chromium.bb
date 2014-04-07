@@ -40,7 +40,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   // Shows the Translate bubble.
   static void ShowBubble(views::View* anchor_view,
                          content::WebContents* web_contents,
-                         TranslateTabHelper::TranslateStep step,
+                         translate::TranslateStep step,
                          TranslateErrors::Type error_type);
 
   // If true, the Translate bubble is being shown.

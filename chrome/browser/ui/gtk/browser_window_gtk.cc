@@ -1034,10 +1034,9 @@ void BrowserWindowGtk::ShowBookmarkAppBubble(
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowGtk::ShowTranslateBubble(
-    content::WebContents* contents,
-    TranslateTabHelper::TranslateStep step,
-    TranslateErrors::Type error_type) {
+void BrowserWindowGtk::ShowTranslateBubble(content::WebContents* contents,
+                                           translate::TranslateStep step,
+                                           TranslateErrors::Type error_type) {
   NOTIMPLEMENTED();
 }
 

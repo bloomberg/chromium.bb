@@ -34,16 +34,16 @@ scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
       new InfoBarCocoa(delegate.PassAs<InfoBarDelegate>()));
   base::scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller;
   switch (infobar->delegate()->AsTranslateInfoBarDelegate()->translate_step()) {
-    case TranslateTabHelper::BEFORE_TRANSLATE:
+    case translate::TRANSLATE_STEP_BEFORE_TRANSLATE:
       infobar_controller.reset([[BeforeTranslateInfobarController alloc]
           initWithInfoBar:infobar.get()]);
       break;
-    case TranslateTabHelper::AFTER_TRANSLATE:
+    case translate::TRANSLATE_STEP_AFTER_TRANSLATE:
       infobar_controller.reset([[AfterTranslateInfobarController alloc]
           initWithInfoBar:infobar.get()]);
       break;
-    case TranslateTabHelper::TRANSLATING:
-    case TranslateTabHelper::TRANSLATE_ERROR:
+    case translate::TRANSLATE_STEP_TRANSLATING:
+    case translate::TRANSLATE_STEP_TRANSLATE_ERROR:
       infobar_controller.reset([[TranslateMessageInfobarController alloc]
           initWithInfoBar:infobar.get()]);
       break;
@@ -128,7 +128,8 @@ scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
   if (newLanguageIdxSizeT == [self delegate]->original_language_index())
     return;
   [self delegate]->UpdateOriginalLanguageIndex(newLanguageIdxSizeT);
-  if ([self delegate]->translate_step() == TranslateTabHelper::AFTER_TRANSLATE)
+  if ([self delegate]->translate_step() ==
+      translate::TRANSLATE_STEP_AFTER_TRANSLATE)
     [self delegate]->Translate();
   int commandId = IDC_TRANSLATE_ORIGINAL_LANGUAGE_BASE + newLanguageIdx;
   int newMenuIdx = [fromLanguagePopUp_ indexOfItemWithTag:commandId];
@@ -141,7 +142,8 @@ scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
   if (newLanguageIdxSizeT == [self delegate]->target_language_index())
     return;
   [self delegate]->UpdateTargetLanguageIndex(newLanguageIdxSizeT);
-  if ([self delegate]->translate_step() == TranslateTabHelper::AFTER_TRANSLATE)
+  if ([self delegate]->translate_step() ==
+      translate::TRANSLATE_STEP_AFTER_TRANSLATE)
     [self delegate]->Translate();
   int commandId = IDC_TRANSLATE_TARGET_LANGUAGE_BASE + newLanguageIdx;
   int newMenuIdx = [toLanguagePopUp_ indexOfItemWithTag:commandId];
@@ -399,9 +401,9 @@ scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
   if (![self isOwned])
     return;
   TranslateInfoBarDelegate* delegate = [self delegate];
-  TranslateTabHelper::TranslateStep state = delegate->translate_step();
-  DCHECK(state == TranslateTabHelper::BEFORE_TRANSLATE ||
-         state == TranslateTabHelper::TRANSLATE_ERROR);
+  translate::TranslateStep state = delegate->translate_step();
+  DCHECK(state == translate::TRANSLATE_STEP_BEFORE_TRANSLATE ||
+         state == translate::TRANSLATE_STEP_TRANSLATE_ERROR);
   delegate->Translate();
 }
 
@@ -410,7 +412,8 @@ scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
   if (![self isOwned])
     return;
   TranslateInfoBarDelegate* delegate = [self delegate];
-  DCHECK_EQ(TranslateTabHelper::BEFORE_TRANSLATE, delegate->translate_step());
+  DCHECK_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
+            delegate->translate_step());
   delegate->TranslationDeclined();
   [super removeSelf];
 }

@@ -1213,7 +1213,7 @@ void BrowserView::ShowBookmarkPrompt() {
 }
 
 void BrowserView::ShowTranslateBubble(content::WebContents* web_contents,
-                                      TranslateTabHelper::TranslateStep step,
+                                      translate::TranslateStep step,
                                       TranslateErrors::Type error_type) {
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);

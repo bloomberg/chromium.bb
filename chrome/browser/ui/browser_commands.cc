@@ -782,12 +782,12 @@ void Translate(Browser* browser) {
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
 
-  TranslateTabHelper::TranslateStep step = TranslateTabHelper::BEFORE_TRANSLATE;
+  translate::TranslateStep step = translate::TRANSLATE_STEP_BEFORE_TRANSLATE;
   if (translate_tab_helper) {
     if (translate_tab_helper->GetLanguageState().translation_pending())
-      step = TranslateTabHelper::TRANSLATING;
+      step = translate::TRANSLATE_STEP_TRANSLATING;
     else if (translate_tab_helper->GetLanguageState().IsPageTranslated())
-      step = TranslateTabHelper::AFTER_TRANSLATE;
+      step = translate::TRANSLATE_STEP_AFTER_TRANSLATE;
   }
   browser->window()->ShowTranslateBubble(
       web_contents, step, TranslateErrors::NONE);

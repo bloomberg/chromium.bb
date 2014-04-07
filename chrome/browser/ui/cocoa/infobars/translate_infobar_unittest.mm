@@ -28,22 +28,26 @@ using content::WebContents;
 namespace {
 
 // All states the translate toolbar can assume.
-TranslateTabHelper::TranslateStep kTranslateToolbarStates[] = {
-  TranslateTabHelper::BEFORE_TRANSLATE,
-  TranslateTabHelper::AFTER_TRANSLATE,
-  TranslateTabHelper::TRANSLATING,
-  TranslateTabHelper::TRANSLATE_ERROR
-};
+translate::TranslateStep kTranslateToolbarStates[] = {
+    translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
+    translate::TRANSLATE_STEP_AFTER_TRANSLATE,
+    translate::TRANSLATE_STEP_TRANSLATING,
+    translate::TRANSLATE_STEP_TRANSLATE_ERROR};
 
 class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
  public:
   MockTranslateInfoBarDelegate(content::WebContents* web_contents,
-                               TranslateTabHelper::TranslateStep step,
+                               translate::TranslateStep step,
                                TranslateErrors::Type error,
                                PrefService* prefs)
-      : TranslateInfoBarDelegate(web_contents, step, NULL, "en", "es", error,
-                                 prefs, false) {
-  }
+      : TranslateInfoBarDelegate(web_contents,
+                                 step,
+                                 NULL,
+                                 "en",
+                                 "es",
+                                 error,
+                                 prefs,
+                                 false) {}
 
   MOCK_METHOD0(Translate, void());
   MOCK_METHOD0(RevertTranslation, void());
@@ -83,9 +87,9 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     CocoaProfileTest::TearDown();
   }
 
-  void CreateInfoBar(TranslateTabHelper::TranslateStep type) {
+  void CreateInfoBar(translate::TranslateStep type) {
     TranslateErrors::Type error = TranslateErrors::NONE;
-    if (type == TranslateTabHelper::TRANSLATE_ERROR)
+    if (type == translate::TRANSLATE_STEP_TRANSLATE_ERROR)
       error = TranslateErrors::NETWORK;
     Profile* profile =
         Profile::FromBrowserContext(web_contents_->GetBrowserContext());
@@ -123,13 +127,13 @@ class TranslationInfoBarTest : public CocoaProfileTest {
 
 // Check that we can instantiate a Translate Infobar correctly.
 TEST_F(TranslationInfoBarTest, Instantiate) {
-  CreateInfoBar(TranslateTabHelper::BEFORE_TRANSLATE);
+  CreateInfoBar(translate::TRANSLATE_STEP_BEFORE_TRANSLATE);
   ASSERT_TRUE(infobar_controller_.get());
 }
 
 // Check that clicking the Translate button calls Translate().
 TEST_F(TranslationInfoBarTest, TranslateCalledOnButtonPress) {
-  CreateInfoBar(TranslateTabHelper::BEFORE_TRANSLATE);
+  CreateInfoBar(translate::TRANSLATE_STEP_BEFORE_TRANSLATE);
 
   EXPECT_CALL(*infobar_delegate(), Translate()).Times(1);
   [infobar_controller_ ok:nil];
@@ -138,7 +142,7 @@ TEST_F(TranslationInfoBarTest, TranslateCalledOnButtonPress) {
 // Check that clicking the "Retry" button calls Translate() when we're
 // in the error mode - http://crbug.com/41315 .
 TEST_F(TranslationInfoBarTest, TranslateCalledInErrorMode) {
-  CreateInfoBar(TranslateTabHelper::TRANSLATE_ERROR);
+  CreateInfoBar(translate::TRANSLATE_STEP_TRANSLATE_ERROR);
 
   EXPECT_CALL(*infobar_delegate(), Translate()).Times(1);
 
@@ -147,7 +151,7 @@ TEST_F(TranslationInfoBarTest, TranslateCalledInErrorMode) {
 
 // Check that clicking the "Show Original button calls RevertTranslation().
 TEST_F(TranslationInfoBarTest, RevertCalledOnButtonPress) {
-  CreateInfoBar(TranslateTabHelper::BEFORE_TRANSLATE);
+  CreateInfoBar(translate::TRANSLATE_STEP_BEFORE_TRANSLATE);
 
   EXPECT_CALL(*infobar_delegate(), RevertTranslation()).Times(1);
   [infobar_controller_ showOriginal:nil];
@@ -155,7 +159,7 @@ TEST_F(TranslationInfoBarTest, RevertCalledOnButtonPress) {
 
 // Check that items in the options menu are hooked up correctly.
 TEST_F(TranslationInfoBarTest, OptionsMenuItemsHookedUp) {
-  CreateInfoBar(TranslateTabHelper::BEFORE_TRANSLATE);
+  CreateInfoBar(translate::TRANSLATE_STEP_BEFORE_TRANSLATE);
   EXPECT_CALL(*infobar_delegate(), Translate())
     .Times(0);
 
@@ -210,7 +214,7 @@ TEST_F(TranslationInfoBarTest, OptionsMenuItemsHookedUp) {
 // translate" mode doesn't trigger a translation or change state.
 // http://crbug.com/36666
 TEST_F(TranslationInfoBarTest, Bug36666) {
-  CreateInfoBar(TranslateTabHelper::BEFORE_TRANSLATE);
+  CreateInfoBar(translate::TRANSLATE_STEP_BEFORE_TRANSLATE);
   EXPECT_CALL(*infobar_delegate(), Translate())
     .Times(0);
 
@@ -242,7 +246,7 @@ TEST_F(TranslationInfoBarTest, TriggerShowAlwaysTranslateButton) {
   for (int i = 0; i < 4; ++i) {
     translate_prefs->IncrementTranslationAcceptedCount("en");
   }
-  CreateInfoBar(TranslateTabHelper::BEFORE_TRANSLATE);
+  CreateInfoBar(translate::TRANSLATE_STEP_BEFORE_TRANSLATE);
   BeforeTranslateInfobarController* controller =
       (BeforeTranslateInfobarController*)infobar_controller_.get();
   EXPECT_TRUE([[controller alwaysTranslateButton] superview] !=  nil);
@@ -258,7 +262,7 @@ TEST_F(TranslationInfoBarTest, TriggerShowNeverTranslateButton) {
   for (int i = 0; i < 4; ++i) {
     translate_prefs->IncrementTranslationDeniedCount("en");
   }
-  CreateInfoBar(TranslateTabHelper::BEFORE_TRANSLATE);
+  CreateInfoBar(translate::TRANSLATE_STEP_BEFORE_TRANSLATE);
   BeforeTranslateInfobarController* controller =
       (BeforeTranslateInfobarController*)infobar_controller_.get();
   EXPECT_TRUE([[controller alwaysTranslateButton] superview] == nil);

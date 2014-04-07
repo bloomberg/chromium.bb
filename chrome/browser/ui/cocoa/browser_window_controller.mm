@@ -1763,8 +1763,7 @@ enum {
 }
 
 - (void)showTranslateBubbleForWebContents:(content::WebContents*)contents
-                                     step:
-                                    (TranslateTabHelper::TranslateStep)step
+                                     step:(translate::TranslateStep)step
                                 errorType:(TranslateErrors::Type)errorType {
   // TODO(hajimehoshi): The similar logic exists at TranslateBubbleView::
   // ShowBubble. This should be unified.
@@ -1776,7 +1775,7 @@ enum {
         TranslateBubbleModel::VIEW_STATE_ADVANCED) {
       return;
     }
-    if (step != TranslateTabHelper::TRANSLATE_ERROR) {
+    if (step != translate::TRANSLATE_STEP_TRANSLATE_ERROR) {
       TranslateBubbleModel::ViewState viewState =
           TranslateBubbleModelImpl::TranslateStepToViewState(step);
       [translateBubbleController_ switchView:viewState];

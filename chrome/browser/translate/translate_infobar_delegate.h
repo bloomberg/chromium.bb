@@ -47,7 +47,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // if there is no other translate infobar already present.
   static void Create(bool replace_existing_infobar,
                      content::WebContents* web_contents,
-                     TranslateTabHelper::TranslateStep step,
+                     translate::TranslateStep step,
                      const std::string& original_language,
                      const std::string& target_language,
                      TranslateErrors::Type error_type,
@@ -67,7 +67,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
     return ui_delegate_.GetLanguageNameAt(index);
   }
 
-  TranslateTabHelper::TranslateStep translate_step() const { return step_; }
+  translate::TranslateStep translate_step() const { return step_; }
 
   TranslateErrors::Type error_type() const { return error_type_; }
 
@@ -91,8 +91,9 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   // Returns true if the current infobar indicates an error (in which case it
   // should get a yellow background instead of a blue one).
-  bool is_error() const { return step_ == TranslateTabHelper::TRANSLATE_ERROR; }
-
+  bool is_error() const {
+    return step_ == translate::TRANSLATE_STEP_TRANSLATE_ERROR;
+  }
 
   // Return true if the translation was triggered by a menu entry instead of
   // via an infobar/bubble or preference.
@@ -166,7 +167,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
  protected:
   TranslateInfoBarDelegate(content::WebContents* web_contents,
-                           TranslateTabHelper::TranslateStep step,
+                           translate::TranslateStep step,
                            TranslateInfoBarDelegate* old_delegate,
                            const std::string& original_language,
                            const std::string& target_language,
@@ -189,7 +190,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   virtual bool ShouldExpire(const NavigationDetails& details) const OVERRIDE;
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() OVERRIDE;
 
-  TranslateTabHelper::TranslateStep step_;
+  translate::TranslateStep step_;
 
   // The type of fading animation if any that should be used when showing this
   // infobar.

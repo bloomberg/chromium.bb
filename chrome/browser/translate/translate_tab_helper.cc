@@ -130,18 +130,18 @@ content::WebContents* TranslateTabHelper::GetWebContents() {
   return web_contents();
 }
 
-void TranslateTabHelper::ShowTranslateUI(TranslateTabHelper::TranslateStep step,
+void TranslateTabHelper::ShowTranslateUI(translate::TranslateStep step,
                                          const std::string source_language,
                                          const std::string target_language,
                                          TranslateErrors::Type error_type,
                                          bool triggered_from_menu) {
   DCHECK(web_contents());
   if (error_type != TranslateErrors::NONE)
-    step = TranslateTabHelper::TRANSLATE_ERROR;
+    step = translate::TRANSLATE_STEP_TRANSLATE_ERROR;
 
   if (TranslateService::IsTranslateBubbleEnabled()) {
     // Bubble UI.
-    if (step == BEFORE_TRANSLATE) {
+    if (step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE) {
       // TODO: Move this logic out of UI code.
       GetLanguageState().SetTranslateEnabled(true);
       if (!GetLanguageState().HasLanguageChanged())
@@ -155,14 +155,15 @@ void TranslateTabHelper::ShowTranslateUI(TranslateTabHelper::TranslateStep step,
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   Profile* original_profile = profile->GetOriginalProfile();
-  TranslateInfoBarDelegate::Create(step != BEFORE_TRANSLATE,
-                                   web_contents(),
-                                   step,
-                                   source_language,
-                                   target_language,
-                                   error_type,
-                                   original_profile->GetPrefs(),
-                                   triggered_from_menu);
+  TranslateInfoBarDelegate::Create(
+      step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
+      web_contents(),
+      step,
+      source_language,
+      target_language,
+      error_type,
+      original_profile->GetPrefs(),
+      triggered_from_menu);
 }
 
 TranslateDriver* TranslateTabHelper::GetTranslateDriver() {
@@ -374,7 +375,7 @@ void TranslateTabHelper::OnPageTranslated(int32 page_id,
       content::Details<PageTranslatedDetails>(&details));
 }
 
-void TranslateTabHelper::ShowBubble(TranslateTabHelper::TranslateStep step,
+void TranslateTabHelper::ShowBubble(translate::TranslateStep step,
                                     TranslateErrors::Type error_type) {
 // The bubble is implemented only on the desktop platforms.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -401,8 +402,8 @@ void TranslateTabHelper::ShowBubble(TranslateTabHelper::TranslateStep step,
   }
 
   // During auto-translating, the bubble should not be shown.
-  if (step == TranslateTabHelper::TRANSLATING ||
-      step == TranslateTabHelper::AFTER_TRANSLATE) {
+  if (step == translate::TRANSLATE_STEP_TRANSLATING ||
+      step == translate::TRANSLATE_STEP_AFTER_TRANSLATE) {
     if (GetLanguageState().InTranslateNavigation())
       return;
   }

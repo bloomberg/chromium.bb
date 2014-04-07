@@ -116,7 +116,7 @@ TranslateBubbleView::~TranslateBubbleView() {
 // static
 void TranslateBubbleView::ShowBubble(views::View* anchor_view,
                                      content::WebContents* web_contents,
-                                     TranslateTabHelper::TranslateStep step,
+                                     translate::TranslateStep step,
                                      TranslateErrors::Type error_type) {
   if (IsShowing()) {
     // When the user reads the advanced setting panel, the bubble should not be
@@ -126,7 +126,7 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
         TranslateBubbleModel::VIEW_STATE_ADVANCED) {
       return;
     }
-    if (step != TranslateTabHelper::TRANSLATE_ERROR) {
+    if (step != translate::TRANSLATE_STEP_TRANSLATE_ERROR) {
       TranslateBubbleModel::ViewState state =
           TranslateBubbleModelImpl::TranslateStepToViewState(step);
       translate_bubble_view_->SwitchView(state);

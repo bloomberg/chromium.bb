@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "components/translate/content/browser/content_translate_driver.h"
 #include "components/translate/core/browser/translate_client.h"
+#include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -77,17 +78,9 @@ class TranslateTabHelper
   // destroyed.
   content::WebContents* GetWebContents();
 
-  // Denotes which state the user is in with respect to translate.
-  enum TranslateStep {
-    BEFORE_TRANSLATE,
-    TRANSLATING,
-    AFTER_TRANSLATE,
-    TRANSLATE_ERROR
-  };
-
   // Called when the embedder should present UI to the user corresponding to the
   // user's current |step|.
-  void ShowTranslateUI(TranslateStep step,
+  void ShowTranslateUI(translate::TranslateStep step,
                        const std::string source_language,
                        const std::string target_language,
                        TranslateErrors::Type error_type,
@@ -158,7 +151,8 @@ class TranslateTabHelper
 #endif
 
   // Shows the translate bubble.
-  void ShowBubble(TranslateStep step, TranslateErrors::Type error_type);
+  void ShowBubble(translate::TranslateStep step,
+                  TranslateErrors::Type error_type);
 
   ContentTranslateDriver translate_driver_;
   scoped_ptr<TranslateManager> translate_manager_;

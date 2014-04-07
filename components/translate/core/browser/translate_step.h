@@ -1,0 +1,22 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_STEP_H_
+#define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_STEP_H_
+
+#include "base/basictypes.h"
+
+namespace translate {
+
+// Denotes which state the user is in with respect to translate.
+enum TranslateStep {
+  TRANSLATE_STEP_BEFORE_TRANSLATE,
+  TRANSLATE_STEP_TRANSLATING,
+  TRANSLATE_STEP_AFTER_TRANSLATE,
+  TRANSLATE_STEP_TRANSLATE_ERROR
+};
+
+}  // namespace translate
+
+#endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_STEP_H_

@@ -1917,7 +1917,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
   TranslateInfoBarDelegate* translate_infobar_delegate =
       infobar->delegate()->AsTranslateInfoBarDelegate();
   ASSERT_TRUE(translate_infobar_delegate);
-  EXPECT_EQ(TranslateTabHelper::BEFORE_TRANSLATE,
+  EXPECT_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
             translate_infobar_delegate->translate_step());
   EXPECT_EQ("fr", translate_infobar_delegate->original_language_code());
 
