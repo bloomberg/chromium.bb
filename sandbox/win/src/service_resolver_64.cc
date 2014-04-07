@@ -209,9 +209,4 @@ bool Wow64ResolverThunk::IsFunctionAService(void* local_thunk) const {
   return false;
 }
 
-bool Win2kResolverThunk::IsFunctionAService(void* local_thunk) const {
-  NOTREACHED_NT();
-  return false;
-}
-
 }  // namespace sandbox

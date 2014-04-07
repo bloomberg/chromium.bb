@@ -7,17 +7,9 @@
 #include <windows.h>
 
 #include "base/logging.h"
-#include "base/win/windows_version.h"
 #include "sandbox/win/src/internal_types.h"
 
 namespace sandbox {
-
-bool IsXPSP2OrLater() {
-  base::win::Version version = base::win::GetVersion();
-  return (version > base::win::VERSION_XP) ||
-      ((version == base::win::VERSION_XP) &&
-       (base::win::OSInfo::GetInstance()->service_pack().major >= 2));
-}
 
 void InitObjectAttribs(const base::string16& name,
                        ULONG attributes,

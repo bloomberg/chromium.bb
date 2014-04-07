@@ -17,7 +17,6 @@
 #include "sandbox/win/src/interception_internal.h"
 #include "sandbox/win/src/interceptors.h"
 #include "sandbox/win/src/sandbox.h"
-#include "sandbox/win/src/sandbox_utils.h"
 #include "sandbox/win/src/service_resolver.h"
 #include "sandbox/win/src/target_interceptions.h"
 #include "sandbox/win/src/target_process.h"
@@ -483,8 +482,6 @@ bool InterceptionManager::PatchClientFunctions(DllInterceptionData* thunks,
       thunk = new Wow64W8ResolverThunk(child_->Process(), relaxed_);
     else
       thunk = new Wow64ResolverThunk(child_->Process(), relaxed_);
-  } else if (!IsXPSP2OrLater()) {
-    thunk = new Win2kResolverThunk(child_->Process(), relaxed_);
   } else if (os_info->version() >= base::win::VERSION_WIN8) {
     thunk = new Win8ResolverThunk(child_->Process(), relaxed_);
   } else {

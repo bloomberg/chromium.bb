@@ -10,7 +10,6 @@
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_factory.h"
-#include "sandbox/win/src/sandbox_utils.h"
 #include "sandbox/win/src/target_services.h"
 #include "sandbox/win/src/win_utils.h"
 #include "sandbox/win/tests/common/controller.h"
@@ -188,7 +187,7 @@ SBOX_TESTS_COMMAND int CheckDep(int argc, wchar_t **argv) {
 
 #if !defined(_WIN64)  // DEP is always enabled on 64-bit.
 TEST(ProcessMitigationsTest, CheckDep) {
-  if (!IsXPSP2OrLater() || base::win::GetVersion() > base::win::VERSION_WIN7)
+  if (base::win::GetVersion() > base::win::VERSION_WIN7)
     return;
 
   TestRunner runner;

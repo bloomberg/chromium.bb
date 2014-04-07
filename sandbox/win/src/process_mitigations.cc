@@ -8,7 +8,6 @@
 
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/nt_internals.h"
-#include "sandbox/win/src/sandbox_utils.h"
 #include "sandbox/win/src/win_utils.h"
 
 namespace {
@@ -31,10 +30,6 @@ namespace sandbox {
 bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
   if (!CanSetProcessMitigationsPostStartup(flags))
     return false;
-
-  // We can't apply anything before Win XP, so just return cleanly.
-  if (!IsXPSP2OrLater())
-    return true;
 
   base::win::Version version = base::win::GetVersion();
   HMODULE module = ::GetModuleHandleA("kernel32.dll");
@@ -250,10 +245,6 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
 }
 
 MitigationFlags FilterPostStartupProcessMitigations(MitigationFlags flags) {
-  // Anything prior to XP SP2.
-  if (!IsXPSP2OrLater())
-    return 0;
-
   base::win::Version version = base::win::GetVersion();
 
   // Windows XP SP2+.

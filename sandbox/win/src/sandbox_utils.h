@@ -14,9 +14,6 @@
 
 namespace sandbox {
 
-// Returns true if the current OS is Windows XP SP2 or later.
-bool IsXPSP2OrLater();
-
 void InitObjectAttribs(const base::string16& name,
                        ULONG attributes,
                        HANDLE root,

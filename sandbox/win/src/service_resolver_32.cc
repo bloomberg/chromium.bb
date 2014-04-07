@@ -400,26 +400,6 @@ bool Wow64W8ResolverThunk::IsFunctionAService(void* local_thunk) const {
   return true;
 }
 
-bool Win2kResolverThunk::IsFunctionAService(void* local_thunk) const {
-  ServiceEntry function_code;
-  SIZE_T read;
-  if (!::ReadProcessMemory(process_, target_, &function_code,
-                           sizeof(function_code), &read))
-    return false;
-
-  if (sizeof(function_code) != read)
-    return false;
-
-  if (kMovEax != function_code.mov_eax ||
-      function_code.service_id > kMaxService)
-    return false;
-
-  // Save the verified code
-  memcpy(local_thunk, &function_code, sizeof(function_code));
-
-  return true;
-}
-
 bool Win8ResolverThunk::IsFunctionAService(void* local_thunk) const {
   ServiceEntryW8 function_code;
   SIZE_T read;

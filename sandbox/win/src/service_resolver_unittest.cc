@@ -58,7 +58,6 @@ class ResolverThunkTest : public T {
 typedef ResolverThunkTest<sandbox::ServiceResolverThunk> WinXpResolverTest;
 
 #if !defined(_WIN64)
-typedef ResolverThunkTest<sandbox::Win2kResolverThunk> Win2kResolverTest;
 typedef ResolverThunkTest<sandbox::Win8ResolverThunk> Win8ResolverTest;
 typedef ResolverThunkTest<sandbox::Wow64ResolverThunk> Wow64ResolverTest;
 typedef ResolverThunkTest<sandbox::Wow64W8ResolverThunk> Wow64W8ResolverTest;
@@ -140,9 +139,6 @@ sandbox::ServiceResolverThunk* GetTestResolver(bool relaxed) {
       return new Wow64W8ResolverTest(relaxed);
     return new Wow64ResolverTest(relaxed);
   }
-
-  if (!sandbox::IsXPSP2OrLater())
-    return new Win2kResolverTest(relaxed);
 
   if (os_info->version() >= base::win::VERSION_WIN8)
     return new Win8ResolverTest(relaxed);
