@@ -28,8 +28,6 @@
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#windowbase64
 
 [
-    ImplementedAs=DOMWindowBase64,
-    LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
 ] interface WindowBase64 {
     [RaisesException] DOMString btoa(DOMString string);

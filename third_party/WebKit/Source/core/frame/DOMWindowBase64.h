@@ -38,12 +38,12 @@
 namespace WebCore {
 
 class ExceptionState;
-class ScriptWrappable;
 
-namespace DOMWindowBase64 {
-String btoa(ScriptWrappable&, const String& stringToEncode, ExceptionState&);
-String atob(ScriptWrappable&, const String& encodedString, ExceptionState&);
-}
+class DOMWindowBase64 {
+public:
+    String btoa(const String& stringToEncode, ExceptionState&);
+    String atob(const String& encodedString, ExceptionState&);
+};
 
 } // namespace WebCore
 

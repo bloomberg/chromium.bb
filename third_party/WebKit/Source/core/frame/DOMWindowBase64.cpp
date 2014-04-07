@@ -40,9 +40,7 @@
 
 namespace WebCore {
 
-namespace DOMWindowBase64 {
-
-String btoa(ScriptWrappable&, const String& stringToEncode, ExceptionState& exceptionState)
+String DOMWindowBase64::btoa(const String& stringToEncode, ExceptionState& exceptionState)
 {
     if (stringToEncode.isNull())
         return String();
@@ -55,7 +53,7 @@ String btoa(ScriptWrappable&, const String& stringToEncode, ExceptionState& exce
     return base64Encode(stringToEncode.latin1());
 }
 
-String atob(ScriptWrappable&, const String& encodedString, ExceptionState& exceptionState)
+String DOMWindowBase64::atob(const String& encodedString, ExceptionState& exceptionState)
 {
     if (encodedString.isNull())
         return String();
@@ -72,7 +70,5 @@ String atob(ScriptWrappable&, const String& encodedString, ExceptionState& excep
 
     return String(out.data(), out.size());
 }
-
-} // namespace DOMWindowBase64
 
 } // namespace WebCore

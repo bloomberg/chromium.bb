@@ -30,6 +30,7 @@
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
+#include "core/frame/DOMWindowBase64.h"
 #include "core/frame/FrameDestructionObserver.h"
 #include "heap/Handle.h"
 #include "platform/LifecycleContext.h"
@@ -91,7 +92,7 @@ enum PageshowEventPersistence {
 
     enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
-    class DOMWindow FINAL : public RefCountedWillBeRefCountedGarbageCollected<DOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public FrameDestructionObserver, public WillBeHeapSupplementable<DOMWindow>, public LifecycleContext<DOMWindow> {
+    class DOMWindow FINAL : public RefCountedWillBeRefCountedGarbageCollected<DOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public DOMWindowBase64, public FrameDestructionObserver, public WillBeHeapSupplementable<DOMWindow>, public LifecycleContext<DOMWindow> {
         WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindow);
         DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<DOMWindow>);
     public:

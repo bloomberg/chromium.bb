@@ -32,6 +32,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
+#include "core/frame/DOMWindowBase64.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerConsole.h"
 #include "core/workers/WorkerEventQueue.h"
@@ -57,7 +58,7 @@ namespace WebCore {
     class WorkerNavigator;
     class WorkerThread;
 
-    class WorkerGlobalScope : public RefCountedWillBeRefCountedGarbageCollected<WorkerGlobalScope>, public ScriptWrappable, public SecurityContext, public ExecutionContext, public ExecutionContextClient, public WillBeHeapSupplementable<WorkerGlobalScope>, public EventTargetWithInlineData {
+    class WorkerGlobalScope : public RefCountedWillBeRefCountedGarbageCollected<WorkerGlobalScope>, public ScriptWrappable, public SecurityContext, public ExecutionContext, public ExecutionContextClient, public WillBeHeapSupplementable<WorkerGlobalScope>, public EventTargetWithInlineData, public DOMWindowBase64 {
         WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScope);
         DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<WorkerGlobalScope>);
     public:
