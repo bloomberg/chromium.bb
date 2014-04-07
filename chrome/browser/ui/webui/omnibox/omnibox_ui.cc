@@ -12,7 +12,8 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 
-OmniboxUI::OmniboxUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
+OmniboxUI::OmniboxUI(content::WebUI* web_ui)
+    : content::WebUIController(web_ui) {
   // Set up the chrome://omnibox/ source.
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIOmniboxHost);
@@ -20,18 +21,11 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
   html_source->AddResourcePath("omnibox.js", IDR_OMNIBOX_JS);
   html_source->SetDefaultResource(IDR_OMNIBOX_HTML);
 
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::WebUIDataSource::Add(profile, html_source);
 
-  AddMojoResourcePath("chrome/browser/ui/webui/omnibox/omnibox.mojom",
-                      IDR_OMNIBOX_MOJO_JS);
+  // AddMessageHandler takes ownership of OmniboxUIHandler
+  web_ui->AddMessageHandler(new OmniboxUIHandler(profile));
 }
 
-OmniboxUI::~OmniboxUI() {}
-
-scoped_ptr<MojoWebUIHandler> OmniboxUI::CreateUIHandler(
-    mojo::ScopedMessagePipeHandle handle_to_page) {
-  return scoped_ptr<MojoWebUIHandler>(
-      new OmniboxUIHandler(
-          ScopedOmniboxPageHandle::From(handle_to_page.Pass()).Pass(),
-          Profile::FromWebUI(web_ui())));
-}
+OmniboxUI::~OmniboxUI() { }

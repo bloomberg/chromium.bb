@@ -24,120 +24,140 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "content/public/browser/web_ui.h"
-#include "mojo/common/common_type_converters.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
 
-namespace mojo {
-
-template <>
-class TypeConverter<mojo::Array<AutocompleteAdditionalInfo>,
-                    AutocompleteMatch::AdditionalInfo> {
- public:
-  static mojo::Array<AutocompleteAdditionalInfo> ConvertFrom(
-      const AutocompleteMatch::AdditionalInfo& input,
-      Buffer* buf) {
-    mojo::Array<AutocompleteAdditionalInfo>::Builder array_builder(
-        input.size(), buf);
-    size_t index = 0;
-    for (AutocompleteMatch::AdditionalInfo::const_iterator i = input.begin();
-         i != input.end(); ++i, index++) {
-      AutocompleteAdditionalInfo::Builder item_builder(buf);
-      item_builder.set_key(i->first);
-      item_builder.set_value(i->second);
-      array_builder[index] = item_builder.Finish();
-    }
-    return array_builder.Finish();
-  }
-};
-
-template <>
-class TypeConverter<AutocompleteMatchMojo, AutocompleteMatch> {
- public:
-  static AutocompleteMatchMojo ConvertFrom(const AutocompleteMatch& input,
-                                           Buffer* buf) {
-    AutocompleteMatchMojo::Builder builder(buf);
-    if (input.provider != NULL) {
-      builder.set_provider_name(input.provider->GetName());
-      builder.set_provider_done(input.provider->done());
-    }
-    builder.set_relevance(input.relevance);
-    builder.set_deletable(input.deletable);
-    builder.set_fill_into_edit(input.fill_into_edit);
-    builder.set_inline_autocompletion(input.inline_autocompletion);
-    builder.set_destination_url(input.destination_url.spec());
-    builder.set_contents(input.contents);
-    // At this time, we're not bothering to send along the long vector that
-    // represent contents classification.  i.e., for each character, what
-    // type of text it is.
-    builder.set_description(input.description);
-    // At this time, we're not bothering to send along the long vector that
-    // represents description classification.  i.e., for each character, what
-    // type of text it is.
-    builder.set_transition(input.transition);
-    builder.set_is_history_what_you_typed_match(
-        input.is_history_what_you_typed_match);
-    builder.set_allowed_to_be_default_match(input.allowed_to_be_default_match);
-    builder.set_type(AutocompleteMatchType::ToString(input.type));
-    if (input.associated_keyword.get() != NULL)
-      builder.set_associated_keyword(input.associated_keyword->keyword);
-    builder.set_keyword(input.keyword);
-    builder.set_starred(input.starred);
-    builder.set_duplicates(static_cast<int32>(input.duplicate_matches.size()));
-    builder.set_from_previous(input.from_previous);
-
-    builder.set_additional_info(input.additional_info);
-    return builder.Finish();
-  }
-};
-
-template <>
-class TypeConverter<AutocompleteResultsForProviderMojo, AutocompleteProvider*> {
- public:
-  static AutocompleteResultsForProviderMojo ConvertFrom(
-      const AutocompleteProvider* input,
-      Buffer* buf) {
-    AutocompleteResultsForProviderMojo::Builder builder(buf);
-    builder.set_provider_name(input->GetName());
-    builder.set_results(input->matches());
-    return builder.Finish();
-  }
-};
-
-}  // namespace mojo
-
-OmniboxUIHandler::OmniboxUIHandler(ScopedOmniboxPageHandle handle,
-                                   Profile* profile)
-    : page_(handle.Pass(), this),
-      profile_(profile) {
+OmniboxUIHandler::OmniboxUIHandler(Profile* profile): profile_(profile) {
   ResetController();
 }
 
 OmniboxUIHandler::~OmniboxUIHandler() {}
 
+void OmniboxUIHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback("startOmniboxQuery",
+      base::Bind(&OmniboxUIHandler::StartOmniboxQuery,
+                 base::Unretained(this)));
+}
+
+// This function gets called when the AutocompleteController possibly
+// has new results.  We package those results in a DictionaryValue
+// object result_to_output and call the javascript function
+// handleNewAutocompleteResult.  Here's an example populated
+// result_to_output object:
+// {
+//   'done': false,
+//   'time_since_omnibox_started_ms': 15,
+//   'host': 'mai',
+//   'is_typed_host': false,
+//   'combined_results' : {
+//     'num_items': 4,
+//     'item_0': {
+//       'destination_url': 'http://mail.google.com',
+//       'provider_name': 'HistoryURL',
+//       'relevance': 1410,
+//       ...
+//     }
+//     'item_1: {
+//       ...
+//     }
+//     ...
+//   }
+//   'results_by_provider': {
+//     'HistoryURL' : {
+//       'num_items': 3,
+//         ...
+//       }
+//     'Search' : {
+//       'num_items': 1,
+//       ...
+//     }
+//     ...
+//   }
+// }
+// For reference, the javascript code that unpacks this object and
+// displays it is in chrome/browser/resources/omnibox.js
 void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
-  mojo::AllocationScope scope;
-  OmniboxResultMojo::Builder builder;
-  builder.set_done(controller_->done());
-  builder.set_time_since_omnibox_started_ms(
+  base::DictionaryValue result_to_output;
+  // Fill in general information.
+  result_to_output.SetBoolean("done", controller_->done());
+  result_to_output.SetInteger("time_since_omnibox_started_ms",
       (base::Time::Now() - time_omnibox_started_).InMilliseconds());
-  const base::string16 host = controller_->input().text().substr(
+  const base::string16& host = controller_->input().text().substr(
       controller_->input().parts().host.begin,
       controller_->input().parts().host.len);
-  builder.set_host(host);
+  result_to_output.SetString("host", host);
   bool is_typed_host;
-  if (!LookupIsTypedHost(host, &is_typed_host))
-    is_typed_host = false;
-  builder.set_is_typed_host(is_typed_host);
-
-  {
-    // Copy to an ACMatches to make conversion easier. Since this isn't
-    // performance critical we don't worry about the cost here.
-    ACMatches matches(controller_->result().begin(),
-                      controller_->result().end());
-    builder.set_combined_results(matches);
+  if (LookupIsTypedHost(host, &is_typed_host)) {
+    // If we successfully looked up whether the host part of the omnibox
+    // input (this interprets the input as a host plus optional path) as
+    // a typed host, then record this information in the output.
+    result_to_output.SetBoolean("is_typed_host", is_typed_host);
   }
-  builder.set_results_by_provider(*controller_->providers());
-  page_->HandleNewAutocompleteResult(builder.Finish());
+  // Fill in the merged/combined results the controller has provided.
+  AddResultToDictionary("combined_results", controller_->result().begin(),
+                        controller_->result().end(), &result_to_output);
+  // Fill results from each individual provider as well.
+  for (ACProviders::const_iterator it(controller_->providers()->begin());
+       it != controller_->providers()->end(); ++it) {
+    AddResultToDictionary(
+        std::string("results_by_provider.") + (*it)->GetName(),
+        (*it)->matches().begin(), (*it)->matches().end(), &result_to_output);
+  }
+  // Add done; send the results.
+  web_ui()->CallJavascriptFunction("omniboxDebug.handleNewAutocompleteResult",
+                                   result_to_output);
+}
+
+// For details on the format of the DictionaryValue that this function
+// populates, see the comments by OnResultChanged().
+void OmniboxUIHandler::AddResultToDictionary(const std::string& prefix,
+                                             ACMatches::const_iterator it,
+                                             ACMatches::const_iterator end,
+                                             base::DictionaryValue* output) {
+  int i = 0;
+  for (; it != end; ++it, ++i) {
+    std::string item_prefix(prefix + base::StringPrintf(".item_%d", i));
+    if (it->provider != NULL) {
+      output->SetString(item_prefix + ".provider_name",
+                        it->provider->GetName());
+      output->SetBoolean(item_prefix + ".provider_done", it->provider->done());
+    }
+    output->SetInteger(item_prefix + ".relevance", it->relevance);
+    output->SetBoolean(item_prefix + ".deletable", it->deletable);
+    output->SetString(item_prefix + ".fill_into_edit", it->fill_into_edit);
+    output->SetString(item_prefix + ".inline_autocompletion",
+                       it->inline_autocompletion);
+    output->SetString(item_prefix + ".destination_url",
+                      it->destination_url.spec());
+    output->SetString(item_prefix + ".contents", it->contents);
+    // At this time, we're not bothering to send along the long vector that
+    // represent contents classification.  i.e., for each character, what
+    // type of text it is.
+    output->SetString(item_prefix + ".description", it->description);
+    // At this time, we're not bothering to send along the long vector that
+    // represents description classification.  i.e., for each character, what
+    // type of text it is.
+    output->SetInteger(item_prefix + ".transition", it->transition);
+    output->SetBoolean(item_prefix + ".is_history_what_you_typed_match",
+                       it->is_history_what_you_typed_match);
+    output->SetBoolean(item_prefix + ".allowed_to_be_default_match",
+                       it->allowed_to_be_default_match);
+    output->SetString(item_prefix + ".type",
+                      AutocompleteMatchType::ToString(it->type));
+    if (it->associated_keyword.get() != NULL) {
+      output->SetString(item_prefix + ".associated_keyword",
+                        it->associated_keyword->keyword);
+    }
+    output->SetString(item_prefix + ".keyword", it->keyword);
+    output->SetBoolean(item_prefix + ".starred", it->starred);
+    output->SetInteger(item_prefix + ".duplicates",
+                       static_cast<int>(it->duplicate_matches.size()));
+    output->SetBoolean(item_prefix + ".from_previous", it->from_previous);
+    for (AutocompleteMatch::AdditionalInfo::const_iterator j =
+         it->additional_info.begin(); j != it->additional_info.end(); ++j) {
+      output->SetString(item_prefix + ".additional_info." + j->first,
+                        j->second);
+    }
+  }
+  output->SetInteger(prefix + ".num_items", i);
 }
 
 bool OmniboxUIHandler::LookupIsTypedHost(const base::string16& host,
@@ -154,11 +174,23 @@ bool OmniboxUIHandler::LookupIsTypedHost(const base::string16& host,
   return true;
 }
 
-void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
-                                         int32_t cursor_position,
-                                         bool prevent_inline_autocomplete,
-                                         bool prefer_keyword,
-                                         int32_t page_classification) {
+void OmniboxUIHandler::StartOmniboxQuery(const base::ListValue* input) {
+  DCHECK_EQ(5u, input->GetSize());
+  base::string16 input_string;
+  bool return_val = input->GetString(0, &input_string);
+  DCHECK(return_val);
+  int cursor_position;
+  return_val = input->GetInteger(1, &cursor_position);
+  DCHECK(return_val);
+  bool prevent_inline_autocomplete;
+  return_val = input->GetBoolean(2, &prevent_inline_autocomplete);
+  DCHECK(return_val);
+  bool prefer_keyword;
+  return_val = input->GetBoolean(3, &prefer_keyword);
+  DCHECK(return_val);
+  int current_page_classification;
+  return_val = input->GetInteger(4, &current_page_classification);
+  DCHECK(return_val);
   // Reset the controller.  If we don't do this, then the
   // AutocompleteController might inappropriately set its |minimal_changes|
   // variable (or something else) and some providers will short-circuit
@@ -172,7 +204,7 @@ void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
       base::string16(),  // user's desired tld (top-level domain)
       GURL(),
       static_cast<AutocompleteInput::PageClassification>(
-          page_classification),
+          current_page_classification),
       prevent_inline_autocomplete,
       prefer_keyword,
       true,  // allow exact keyword matches
