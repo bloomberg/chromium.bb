@@ -48,9 +48,9 @@ namespace WebCore {
                                   if parent_interface else '0' %}
 {% set wrapper_type_prototype = 'WrapperTypeExceptionPrototype' if is_exception else
                                 'WrapperTypeObjectPrototype' %}
-{% set will_be_garbage_collected = 'true'
-       if is_will_be_garbage_collected else 'false' %}
-const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}::domTemplate, {{v8_class}}::derefObject, {{to_active_dom_object}}, {{to_event_target}}, {{visit_dom_wrapper}}, {{v8_class}}::installPerContextEnabledMethods, {{parent_wrapper_type_info}}, {{wrapper_type_prototype}}, {{will_be_garbage_collected}} };
+{% set oilpan_object_type = 'WillBeGarbageCollectedObject'
+       if is_will_be_garbage_collected else 'RefCountedObject' %}
+const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}::domTemplate, {{v8_class}}::derefObject, {{to_active_dom_object}}, {{to_event_target}}, {{visit_dom_wrapper}}, {{v8_class}}::installPerContextEnabledMethods, {{parent_wrapper_type_info}}, {{wrapper_type_prototype}}, {{oilpan_object_type}} };
 
 namespace {{cpp_class}}V8Internal {
 

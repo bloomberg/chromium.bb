@@ -53,7 +53,7 @@ namespace WebCore {
 
 const WrapperTypeInfo* npObjectTypeInfo()
 {
-    static const WrapperTypeInfo typeInfo = { gin::kEmbedderBlink, 0, 0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype, false };
+    static const WrapperTypeInfo typeInfo = { gin::kEmbedderBlink, 0, 0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype, RefCountedObject };
     return &typeInfo;
 }
 

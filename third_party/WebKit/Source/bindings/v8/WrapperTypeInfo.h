@@ -63,6 +63,12 @@ namespace WebCore {
         WrapperTypeExceptionPrototype
     };
 
+    enum WrappedObjectType {
+        GarbageCollectedObject,
+        WillBeGarbageCollectedObject,
+        RefCountedObject,
+    };
+
     inline void setObjectGroup(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
     {
         isolate->SetObjectGroupId(wrapper, v8::UniqueId(reinterpret_cast<intptr_t>(object)));
@@ -138,7 +144,7 @@ namespace WebCore {
         const InstallPerContextEnabledPrototypePropertiesFunction installPerContextEnabledMethodsFunction;
         const WrapperTypeInfo* parentClass;
         const WrapperTypePrototype wrapperTypePrototype;
-        const bool isGarbageCollected;
+        const WrappedObjectType wrappedObjectType;
     };
 
 
@@ -189,20 +195,25 @@ namespace WebCore {
     inline void releaseObject(v8::Handle<v8::Object> wrapper)
     {
         const WrapperTypeInfo* typeInfo = toWrapperTypeInfo(wrapper);
-#if ENABLE(OILPAN)
-        if (typeInfo->isGarbageCollected) {
+        if (typeInfo->wrappedObjectType == GarbageCollectedObject) {
             const PersistentNode* handle = toPersistentHandle(wrapper);
             // This will be null iff a wrapper for a hidden wrapper object,
             // see V8DOMWrapper::setNativeInfoForHiddenWrapper().
             delete handle;
+        } else if (typeInfo->wrappedObjectType == WillBeGarbageCollectedObject) {
+#if ENABLE(OILPAN)
+            const PersistentNode* handle = toPersistentHandle(wrapper);
+            // This will be null iff a wrapper for a hidden wrapper object,
+            // see V8DOMWrapper::setNativeInfoForHiddenWrapper().
+            delete handle;
+#else
+            ASSERT(typeInfo->derefObjectFunction);
+            typeInfo->derefObjectFunction(toNative(wrapper));
+#endif
         } else {
             ASSERT(typeInfo->derefObjectFunction);
             typeInfo->derefObjectFunction(toNative(wrapper));
         }
-#else
-        ASSERT(typeInfo->derefObjectFunction);
-        typeInfo->derefObjectFunction(toNative(wrapper));
-#endif
     }
 
     struct WrapperConfiguration {
