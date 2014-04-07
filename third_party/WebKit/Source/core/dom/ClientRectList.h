@@ -29,6 +29,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "platform/geometry/FloatQuad.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -37,20 +38,28 @@ namespace WebCore {
 
 class ClientRect;
 
-class ClientRectList : public RefCounted<ClientRectList>, public ScriptWrappable {
+class ClientRectList FINAL : public RefCountedWillBeGarbageCollectedFinalized<ClientRectList>, public ScriptWrappable {
 public:
-    static PassRefPtr<ClientRectList> create() { return adoptRef(new ClientRectList); }
-    static PassRefPtr<ClientRectList> create(const Vector<FloatQuad>& quads) { return adoptRef(new ClientRectList(quads)); }
+    static PassRefPtrWillBeRawPtr<ClientRectList> create()
+    {
+        return adoptRefWillBeNoop(new ClientRectList);
+    }
+    static PassRefPtrWillBeRawPtr<ClientRectList> create(const Vector<FloatQuad>& quads)
+    {
+        return adoptRefWillBeNoop(new ClientRectList(quads));
+    }
     ~ClientRectList();
 
     unsigned length() const;
     ClientRect* item(unsigned index);
 
+    void trace(Visitor*);
+
 private:
     ClientRectList();
     explicit ClientRectList(const Vector<FloatQuad>&);
 
-    Vector<RefPtr<ClientRect> > m_list;
+    WillBeHeapVector<RefPtrWillBeMember<ClientRect> > m_list;
 };
 
 } // namespace WebCore

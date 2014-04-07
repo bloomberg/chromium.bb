@@ -43,9 +43,9 @@ namespace WebCore {
 
 class Node;
 
-class LayerRect : public RefCountedWillBeGarbageCollectedFinalized<LayerRect> {
+class LayerRect FINAL : public RefCountedWillBeGarbageCollectedFinalized<LayerRect> {
 public:
-    static PassRefPtrWillBeRawPtr<LayerRect> create(PassRefPtr<Node> node, const String& layerType, PassRefPtr<ClientRect> rect)
+    static PassRefPtrWillBeRawPtr<LayerRect> create(PassRefPtr<Node> node, const String& layerType, PassRefPtrWillBeRawPtr<ClientRect> rect)
     {
         return adoptRefWillBeNoop(new LayerRect(node, layerType, rect));
     }
@@ -54,10 +54,13 @@ public:
     String layerType() const { return m_layerType; }
     ClientRect* layerRelativeRect() const { return m_rect.get(); }
 
-    void trace(Visitor*) { }
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_rect);
+    }
 
 private:
-    LayerRect(PassRefPtr<Node> node, const String& layerName, PassRefPtr<ClientRect> rect)
+    LayerRect(PassRefPtr<Node> node, const String& layerName, PassRefPtrWillBeRawPtr<ClientRect> rect)
         : m_layerRootNode(node)
         , m_layerType(layerName)
         , m_rect(rect)
@@ -66,7 +69,7 @@ private:
 
     RefPtr<Node> m_layerRootNode;
     String m_layerType;
-    RefPtr<ClientRect> m_rect;
+    RefPtrWillBeMember<ClientRect> m_rect;
 };
 
 } // namespace WebCore

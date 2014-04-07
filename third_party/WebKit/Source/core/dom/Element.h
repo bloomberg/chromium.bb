@@ -34,6 +34,7 @@
 #include "core/dom/SpaceSplitString.h"
 #include "core/html/CollectionType.h"
 #include "core/page/FocusType.h"
+#include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 
 namespace WebCore {
@@ -206,8 +207,8 @@ public:
 
     IntRect boundsInRootViewSpace();
 
-    PassRefPtr<ClientRectList> getClientRects();
-    PassRefPtr<ClientRect> getBoundingClientRect();
+    PassRefPtrWillBeRawPtr<ClientRectList> getClientRects();
+    PassRefPtrWillBeRawPtr<ClientRect> getBoundingClientRect();
 
     // Returns the absolute bounding box translated into screen coordinates:
     IntRect screenRect() const;

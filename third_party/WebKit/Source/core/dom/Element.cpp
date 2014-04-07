@@ -833,7 +833,7 @@ IntRect Element::boundsInRootViewSpace()
     return result;
 }
 
-PassRefPtr<ClientRectList> Element::getClientRects()
+PassRefPtrWillBeRawPtr<ClientRectList> Element::getClientRects()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -850,7 +850,7 @@ PassRefPtr<ClientRectList> Element::getClientRects()
     return ClientRectList::create(quads);
 }
 
-PassRefPtr<ClientRect> Element::getBoundingClientRect()
+PassRefPtrWillBeRawPtr<ClientRect> Element::getBoundingClientRect()
 {
     document().updateLayoutIgnorePendingStylesheets();
 

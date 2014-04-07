@@ -1808,7 +1808,7 @@ void Range::expand(const String& unit, ExceptionState& exceptionState)
     setEnd(end.deepEquivalent().containerNode(), end.deepEquivalent().computeOffsetInContainerNode(), exceptionState);
 }
 
-PassRefPtr<ClientRectList> Range::getClientRects() const
+PassRefPtrWillBeRawPtr<ClientRectList> Range::getClientRects() const
 {
     if (!m_start.container())
         return ClientRectList::create();
@@ -1821,7 +1821,7 @@ PassRefPtr<ClientRectList> Range::getClientRects() const
     return ClientRectList::create(quads);
 }
 
-PassRefPtr<ClientRect> Range::getBoundingClientRect() const
+PassRefPtrWillBeRawPtr<ClientRect> Range::getBoundingClientRect() const
 {
     return ClientRect::create(boundingRect());
 }

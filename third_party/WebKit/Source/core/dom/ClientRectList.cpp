@@ -64,4 +64,9 @@ ClientRect* ClientRectList::item(unsigned index)
     return m_list[index].get();
 }
 
+void ClientRectList::trace(Visitor* visitor)
+{
+    visitor->trace(m_list);
+}
+
 } // namespace WebCore

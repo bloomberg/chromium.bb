@@ -198,7 +198,7 @@ String Page::mainThreadScrollingReasonsAsText()
     return String();
 }
 
-PassRefPtr<ClientRectList> Page::nonFastScrollableRects(const LocalFrame* frame)
+PassRefPtrWillBeRawPtr<ClientRectList> Page::nonFastScrollableRects(const LocalFrame* frame)
 {
     if (Document* document = m_mainFrame->document())
         document->updateLayout();

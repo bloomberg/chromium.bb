@@ -56,7 +56,7 @@ LayerRect* LayerRectList::item(unsigned index)
     return m_list[index].get();
 }
 
-void LayerRectList::append(PassRefPtr<Node> layerRootNode, const String& layerType, PassRefPtr<ClientRect> layerRelativeRect)
+void LayerRectList::append(PassRefPtr<Node> layerRootNode, const String& layerType, PassRefPtrWillBeRawPtr<ClientRect> layerRelativeRect)
 {
     m_list.append(LayerRect::create(layerRootNode, layerType, layerRelativeRect));
 }

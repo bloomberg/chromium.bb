@@ -29,33 +29,45 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-    class IntRect;
+class IntRect;
 
-    class ClientRect : public ScriptWrappable, public RefCounted<ClientRect> {
-    public:
-        static PassRefPtr<ClientRect> create() { return adoptRef(new ClientRect); }
-        static PassRefPtr<ClientRect> create(const IntRect& rect) { return adoptRef(new ClientRect(rect)); }
-        static PassRefPtr<ClientRect> create(const FloatRect& rect) { return adoptRef(new ClientRect(rect)); }
+class ClientRect FINAL : public RefCountedWillBeGarbageCollectedFinalized<ClientRect>, public ScriptWrappable {
+public:
+    static PassRefPtrWillBeRawPtr<ClientRect> create()
+    {
+        return adoptRefWillBeNoop(new ClientRect);
+    }
+    static PassRefPtrWillBeRawPtr<ClientRect> create(const IntRect& rect)
+    {
+        return adoptRefWillBeNoop(new ClientRect(rect));
+    }
+    static PassRefPtrWillBeRawPtr<ClientRect> create(const FloatRect& rect)
+    {
+        return adoptRefWillBeNoop(new ClientRect(rect));
+    }
 
-        float top() const { return m_rect.y(); }
-        float right() const { return m_rect.maxX(); }
-        float bottom() const { return m_rect.maxY(); }
-        float left() const { return m_rect.x(); }
-        float width() const { return m_rect.width(); }
-        float height() const { return m_rect.height(); }
+    float top() const { return m_rect.y(); }
+    float right() const { return m_rect.maxX(); }
+    float bottom() const { return m_rect.maxY(); }
+    float left() const { return m_rect.x(); }
+    float width() const { return m_rect.width(); }
+    float height() const { return m_rect.height(); }
 
-    private:
-        ClientRect();
-        explicit ClientRect(const IntRect&);
-        explicit ClientRect(const FloatRect&);
+    void trace(Visitor*) { }
 
-        FloatRect m_rect;
-    };
+private:
+    ClientRect();
+    explicit ClientRect(const IntRect&);
+    explicit ClientRect(const FloatRect&);
+
+    FloatRect m_rect;
+};
 
 } // namespace WebCore
 

@@ -139,13 +139,13 @@ public:
     void setEnableMockPagePopup(bool, ExceptionState&);
     PassRefPtrWillBeRawPtr<PagePopupController> pagePopupController();
 
-    PassRefPtr<ClientRect> unscaledViewportRect(ExceptionState&);
+    PassRefPtrWillBeRawPtr<ClientRect> unscaledViewportRect(ExceptionState&);
 
-    PassRefPtr<ClientRect> absoluteCaretBounds(ExceptionState&);
+    PassRefPtrWillBeRawPtr<ClientRect> absoluteCaretBounds(ExceptionState&);
 
-    PassRefPtr<ClientRect> boundingBox(Element*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<ClientRect> boundingBox(Element*, ExceptionState&);
 
-    PassRefPtr<ClientRectList> inspectorHighlightRects(Document*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<ClientRectList> inspectorHighlightRects(Document*, ExceptionState&);
 
     unsigned markerCountForNode(Node*, const String&, ExceptionState&);
     unsigned activeMarkerCountForNode(Node*, ExceptionState&);
@@ -175,7 +175,7 @@ public:
     Node* touchNodeAdjustedToBestClickableNode(long x, long y, long width, long height, Document*, ExceptionState&);
     PassRefPtrWillBeRawPtr<DOMPoint> touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document*, ExceptionState&);
     Node* touchNodeAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document*, ExceptionState&);
-    PassRefPtr<ClientRect> bestZoomableAreaForTouchPoint(long x, long y, long width, long height, Document*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<ClientRect> bestZoomableAreaForTouchPoint(long x, long y, long width, long height, Document*, ExceptionState&);
 
     int lastSpellCheckRequestSequence(Document*, ExceptionState&);
     int lastSpellCheckProcessedSequence(Document*, ExceptionState&);
@@ -230,11 +230,11 @@ public:
     void setNeedsCompositedScrolling(Element*, unsigned value, ExceptionState&);
 
     String repaintRectsAsText(Document*, ExceptionState&) const;
-    PassRefPtr<ClientRectList> repaintRects(Element*, ExceptionState&) const;
+    PassRefPtrWillBeRawPtr<ClientRectList> repaintRects(Element*, ExceptionState&) const;
 
     String scrollingStateTreeAsText(Document*, ExceptionState&) const;
     String mainThreadScrollingReasons(Document*, ExceptionState&) const;
-    PassRefPtr<ClientRectList> nonFastScrollableRects(Document*, ExceptionState&) const;
+    PassRefPtrWillBeRawPtr<ClientRectList> nonFastScrollableRects(Document*, ExceptionState&) const;
 
     void garbageCollectDocumentResources(Document*, ExceptionState&) const;
     void evictAllResources() const;
@@ -284,8 +284,8 @@ public:
     void updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(ExceptionState&);
     void updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(Node*, ExceptionState&);
 
-    PassRefPtr<ClientRectList> draggableRegions(Document*, ExceptionState&);
-    PassRefPtr<ClientRectList> nonDraggableRegions(Document*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<ClientRectList> draggableRegions(Document*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<ClientRectList> nonDraggableRegions(Document*, ExceptionState&);
 
     PassRefPtr<ArrayBuffer> serializeObject(PassRefPtr<SerializedScriptValue>) const;
     PassRefPtr<SerializedScriptValue> deserializeBuffer(PassRefPtr<ArrayBuffer>) const;
@@ -300,7 +300,7 @@ public:
 
     bool isSelectPopupVisible(Node*);
 
-    PassRefPtr<ClientRect> selectionBounds(ExceptionState&);
+    PassRefPtrWillBeRawPtr<ClientRect> selectionBounds(ExceptionState&);
     String baseURL(Document*, ExceptionState&);
 
     bool loseSharedGraphicsContext3D();
@@ -330,7 +330,7 @@ private:
     Document* contextDocument() const;
     LocalFrame* frame() const;
     Vector<String> iconURLs(Document*, int iconTypesMask) const;
-    PassRefPtr<ClientRectList> annotatedRegions(Document*, bool draggable, ExceptionState&);
+    PassRefPtrWillBeRawPtr<ClientRectList> annotatedRegions(Document*, bool draggable, ExceptionState&);
 
     DocumentMarker* markerAt(Node*, const String& markerType, unsigned index, ExceptionState&);
     RefPtrWillBeMember<DOMWindow> m_frontendWindow;

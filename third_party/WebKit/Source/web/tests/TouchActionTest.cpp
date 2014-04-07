@@ -206,9 +206,9 @@ void TouchActionTest::runTestOnTree(WebCore::ContainerNode* root, WebView* webVi
         // Note that we don't want the bounding box because our tests sometimes have elements with
         // multiple border boxes with other elements in between. Use the first border box (which
         // we can easily visualize in a browser for debugging).
-        RefPtr<WebCore::ClientRectList> rects = element->getClientRects();
+        RefPtrWillBeRawPtr<WebCore::ClientRectList> rects = element->getClientRects();
         ASSERT_GE(rects->length(), 0u) << failureContext;
-        RefPtr<WebCore::ClientRect> r = rects->item(0);
+        RefPtrWillBeRawPtr<WebCore::ClientRect> r = rects->item(0);
         WebCore::FloatRect clientFloatRect = WebCore::FloatRect(r->left(), r->top(), r->width(), r->height());
         WebCore::IntRect clientRect =  enclosedIntRect(clientFloatRect);
         for (int locIdx = 0; locIdx < 3; locIdx++) {

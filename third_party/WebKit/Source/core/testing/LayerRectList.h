@@ -44,7 +44,7 @@ class ClientRectList;
 class LayerRect;
 class Node;
 
-class LayerRectList : public RefCountedWillBeGarbageCollected<LayerRectList> {
+class LayerRectList FINAL : public RefCountedWillBeGarbageCollected<LayerRectList> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(LayerRectList);
 public:
     static PassRefPtrWillBeRawPtr<LayerRectList> create()
@@ -54,7 +54,7 @@ public:
 
     unsigned length() const;
     LayerRect* item(unsigned index);
-    void append(PassRefPtr<Node> layerRootNode, const String& layerName, PassRefPtr<ClientRect> layerRelativeRect);
+    void append(PassRefPtr<Node> layerRootNode, const String& layerName, PassRefPtrWillBeRawPtr<ClientRect> layerRelativeRect);
 
     void trace(Visitor*);
 

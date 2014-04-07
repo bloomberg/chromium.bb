@@ -25,6 +25,7 @@
  */
 
 [
+    WillBeGarbageCollected,
 ] interface ClientRectList {
     readonly attribute unsigned long length;
     getter ClientRect item(unsigned long index);

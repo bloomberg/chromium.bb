@@ -157,7 +157,7 @@ public:
     ScrollingCoordinator* scrollingCoordinator();
 
     String mainThreadScrollingReasonsAsText();
-    PassRefPtr<ClientRectList> nonFastScrollableRects(const LocalFrame*);
+    PassRefPtrWillBeRawPtr<ClientRectList> nonFastScrollableRects(const LocalFrame*);
 
     Settings& settings() const { return *m_settings; }
     BackForwardClient& backForward() const { return *m_backForwardClient; }
