@@ -14,8 +14,7 @@ var test = function()
 
     function step1(node)
     {
-        treeElement = InspectorTest.firstElementsTreeOutline().findTreeElement(node);
-        WebInspector.panels.elements._loadDimensionsForNode(treeElement, step2);
+        WebInspector.panels.elements._loadDimensionsForNode(node, step2);
     }
 
     function step2(dimensions)

@@ -8,7 +8,7 @@
 document.addEventListener("DOMContentLoaded", runTest);
 function test()
 {
-    var fileSystemModel = new WebInspector.FileSystemModel;
+    var fileSystemModel = new WebInspector.FileSystemModel(WebInspector.targetManager.activeTarget());
 
     var testStep = [
         function()
