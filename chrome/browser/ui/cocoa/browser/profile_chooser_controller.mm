@@ -116,8 +116,12 @@ NSString* ElideEmail(const std::string& email, CGFloat width) {
   return base::SysUTF16ToNSString(elidedEmail);
 }
 
-// Builds  a label with the given |title| and anchored at |frame_origin|.
-NSTextField* BuildLabel(NSString* title, NSPoint frame_origin) {
+// Builds a label with the given |title| anchored at |frame_origin|. Sets the
+// text color and background color to the given colors if not null.
+NSTextField* BuildLabel(NSString* title,
+                        NSPoint frame_origin,
+                        NSColor* background_color,
+                        NSColor* text_color) {
   base::scoped_nsobject<NSTextField> label(
       [[NSTextField alloc] initWithFrame:NSZeroRect]);
   [label setStringValue:title];
@@ -128,6 +132,11 @@ NSTextField* BuildLabel(NSString* title, NSPoint frame_origin) {
   [label setFrameOrigin:frame_origin];
   [label sizeToFit];
 
+  if (background_color) {
+    DCHECK(text_color);
+    [[label cell] setBackgroundColor:background_color];
+    [[label cell] setTextColor:text_color];
+  }
   return label.autorelease();
 }
 
@@ -153,7 +162,8 @@ NSView* BuildTitleCard(NSRect frame_rect,
   [button setFrameOrigin:NSMakePoint(kHorizontalSpacing, 0)];
 
   NSTextField* title_label =
-      BuildLabel(l10n_util::GetNSString(message_id), NSZeroPoint);
+      BuildLabel(l10n_util::GetNSString(message_id), NSZeroPoint,
+                 nil /* background_color */, nil /* text_color */);
   [title_label setAlignment:NSCenterTextAlignment];
   [title_label setFont:[NSFont labelFontOfSize:kTitleFontSize]];
   [title_label sizeToFit];
@@ -563,6 +573,28 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 @end
 
+// A custom view with the given background color.
+@interface BackgroundColorView : NSView {
+ @private
+  base::scoped_nsobject<NSColor> backgroundColor_;
+}
+@end
+
+@implementation BackgroundColorView
+- (id)initWithFrame:(NSRect)frameRect
+          withColor:(NSColor*)color {
+  if ((self = [super initWithFrame:frameRect]))
+    backgroundColor_.reset([color retain]);
+  return self;
+}
+
+- (void)drawRect:(NSRect)dirtyRect {
+  [backgroundColor_ setFill];
+  NSRectFill(dirtyRect);
+  [super drawRect:dirtyRect];
+}
+@end
+
 @interface ProfileChooserController ()
 // Creates a tutorial card for the profile |avatar_item| if needed.
 - (NSView*)createTutorialViewIfNeeded:(const AvatarMenu::Item&)item;
@@ -652,6 +684,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (IBAction)addAccount:(id)sender {
   [self initMenuContentsWithView:BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT];
+}
+
+- (IBAction)navigateBackFromSigninPage:(id)sender {
+  std::string primaryAccount = SigninManagerFactory::GetForProfile(
+      browser_->profile())->GetAuthenticatedUsername();
+  [self initMenuContentsWithView:primaryAccount.empty() ?
+      BUBBLE_VIEW_MODE_PROFILE_CHOOSER : BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
 }
 
 - (IBAction)showAccountRemovalView:(id)sender {
@@ -836,15 +875,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   }
 
   if (tutorialView) {
-    NSBox* accountsSeparator = [self separatorWithFrame:
-        NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
-    [contentView addSubview:accountsSeparator];
-    yOffset = NSMaxY([accountsSeparator frame]) + kVerticalSpacing;
-
-    [tutorialView setFrameOrigin:NSMakePoint(kHorizontalSpacing,
-                                             yOffset)];
+    [tutorialView setFrameOrigin:NSMakePoint(0, yOffset)];
     [contentView addSubview:tutorialView];
-    yOffset = NSMaxY([tutorialView frame]) + kVerticalSpacing;
+    yOffset = NSMaxY([tutorialView frame]);
   } else {
     tutorialShowing_ = false;
   }
@@ -871,71 +904,91 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     tutorialShowing_ = true;
   }
 
+  NSColor* tutorialBackgroundColor =
+      gfx::SkColorToSRGBNSColor(profiles::kAvatarTutorialBackgroundColor);
+  base::scoped_nsobject<NSView> container([[BackgroundColorView alloc]
+      initWithFrame:NSMakeRect(0, 0, kFixedMenuWidth, 0)
+          withColor:tutorialBackgroundColor]);
   CGFloat availableWidth = kFixedMenuWidth - 2 * kHorizontalSpacing;
-  base::scoped_nsobject<NSView> container([[NSView alloc]
-      initWithFrame:NSMakeRect(0, 0, availableWidth, 0)]);
-  CGFloat yOffset = 0;
+  CGFloat yOffset = kVerticalSpacing;
 
   // Adds links and buttons at the bottom.
   NSButton* learnMoreLink =
-      [self linkButtonWithTitle:l10n_util::GetNSString(IDS_LEARN_MORE)
-                    frameOrigin:NSMakePoint(0, yOffset)
+      [self linkButtonWithTitle:
+          l10n_util::GetNSString(IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE)
+                    frameOrigin:NSMakePoint(kHorizontalSpacing, yOffset)
                          action:@selector(openTutorialLearnMoreURL:)];
+  [[learnMoreLink cell] setTextColor:[NSColor whiteColor]];
   [container addSubview:learnMoreLink];
 
-  base::scoped_nsobject<NSButton> tutorialOkButton([[BlueLabelButton alloc]
+  base::scoped_nsobject<NSButton> tutorialOkButton([[HoverButton alloc]
       initWithFrame:NSZeroRect]);
   [tutorialOkButton setTitle:l10n_util::GetNSString(
       IDS_PROFILES_SIGNIN_TUTORIAL_OK_BUTTON)];
   [tutorialOkButton setTarget:self];
   [tutorialOkButton setAction:@selector(dismissTutorial:)];
   [tutorialOkButton sizeToFit];
+  NSSize buttonSize = [tutorialOkButton frame].size;
+  const CGFloat kTopBottomTextPadding = 6;
+  const CGFloat kLeftRightTextPadding = 15;
+  buttonSize.width += 2 * kLeftRightTextPadding;
+  buttonSize.height += 2 * kTopBottomTextPadding;
+  [tutorialOkButton setFrameSize:buttonSize];
+  [tutorialOkButton setAlignment:NSCenterTextAlignment];
   [tutorialOkButton setFrameOrigin:NSMakePoint(
-      availableWidth - NSWidth([tutorialOkButton frame]), yOffset)];
+      kFixedMenuWidth - NSWidth([tutorialOkButton frame]) - kHorizontalSpacing,
+      yOffset)];
   [container addSubview:tutorialOkButton];
 
   yOffset = std::max(NSMaxY([learnMoreLink frame]),
                      NSMaxY([tutorialOkButton frame])) + kVerticalSpacing;
 
-  // Adds body content consisting of three bulleted lines.
-  const int kTextHorizIndentation = 10;
-  NSTextField* bulletLabel =
-      BuildLabel(
-          l10n_util::GetNSString(IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_TEXT),
-          NSMakePoint(kTextHorizIndentation, yOffset));
-  [bulletLabel setFrameSize:NSMakeSize(availableWidth,
-      NSHeight([bulletLabel frame]))];
-  [container addSubview:bulletLabel];
-  yOffset = NSMaxY([bulletLabel frame]) + kSmallVerticalSpacing;
-
-  // Adds body header.
-  NSTextField* contentHeaderLabel =
-      BuildLabel(
-          l10n_util::GetNSString(IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_HEADER),
-          NSMakePoint(0, yOffset));
-  [contentHeaderLabel setFrameSize:NSMakeSize(availableWidth, 0)];
-  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
-      contentHeaderLabel];
-  [container addSubview:contentHeaderLabel];
-  yOffset = NSMaxY([contentHeaderLabel frame]) + kSmallVerticalSpacing;
+  // Adds body content.
+  NSTextField* contentLabel = BuildLabel(
+      l10n_util::GetNSString(IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_TEXT),
+      NSMakePoint(kHorizontalSpacing, yOffset),
+      tutorialBackgroundColor,
+      gfx::SkColorToSRGBNSColor(profiles::kAvatarTutorialContentTextColor));
+  [contentLabel setFrameSize:NSMakeSize(availableWidth, 0)];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:contentLabel];
+  [container addSubview:contentLabel];
+  yOffset = NSMaxY([contentLabel frame]) + kSmallVerticalSpacing;
 
   // Adds title.
   NSTextField* titleLabel =
       BuildLabel(
-          l10n_util::GetNSStringF(IDS_PROFILES_SIGNIN_TUTORIAL_TITLE,
-              profiles::GetAvatarNameForProfile(profile)),
-          NSMakePoint(0, yOffset));
+          l10n_util::GetNSString(IDS_PROFILES_SIGNIN_TUTORIAL_TITLE),
+          NSMakePoint(kHorizontalSpacing, yOffset),
+          tutorialBackgroundColor,
+          [NSColor whiteColor] /* text_color */);
   [titleLabel setFont:[NSFont labelFontOfSize:kTitleFontSize]];
-  [[titleLabel cell] setTextColor:
-      gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
   [titleLabel sizeToFit];
   [titleLabel setFrameSize:
       NSMakeSize(availableWidth, NSHeight([titleLabel frame]))];
   [container addSubview:titleLabel];
-  yOffset = NSMaxY([titleLabel frame]);
+  yOffset = NSMaxY([titleLabel frame]) + kVerticalSpacing;
 
   [container setFrameSize:NSMakeSize(kFixedMenuWidth, yOffset)];
-  return container.autorelease();
+
+  // Adds caret at the bottom.
+  NSImage* caretImage = ui::ResourceBundle::GetSharedInstance().
+      GetNativeImageNamed(IDR_ICON_PROFILES_MENU_CARET).AsNSImage();
+  base::scoped_nsobject<NSImageView> caretView(
+      [[NSImageView alloc] initWithFrame:NSMakeRect(
+          kHorizontalSpacing, 0, caretImage.size.width,
+          caretImage.size.height)]);
+  [caretView setImage:caretImage];
+
+  base::scoped_nsobject<NSView> containerWithCaret([[NSView alloc]
+      initWithFrame:NSMakeRect(0, 0, kFixedMenuWidth, 0)]);
+  [containerWithCaret addSubview:caretView];
+
+  [container setFrameOrigin:NSMakePoint(0, caretImage.size.height)];
+  [containerWithCaret addSubview:container];
+
+  [containerWithCaret setFrameSize:
+      NSMakeSize(kFixedMenuWidth, NSMaxY([container frame]))];
+  return containerWithCaret.autorelease();
 }
 
 - (NSView*)createCurrentProfileView:(const AvatarMenu::Item&)item {
@@ -1195,7 +1248,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       addSecondaryAccount ? IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE :
                             IDS_PROFILES_GAIA_SIGNIN_TITLE,
       self /* backButtonTarget*/,
-      @selector(showAccountManagement:) /* backButtonAction */);
+      @selector(navigateBackFromSigninPage:) /* backButtonAction */);
   [container addSubview:titleView];
   yOffset = NSMaxY([titleView frame]);
 
@@ -1240,7 +1293,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                               base::UTF8ToUTF16(accountIdToRemove_)) :
       l10n_util::GetNSString(IDS_PROFILES_ACCOUNT_REMOVAL_TEXT);
   NSTextField* contentLabel =
-      BuildLabel(contentStr, NSMakePoint(kHorizontalSpacing, yOffset));
+      BuildLabel(contentStr, NSMakePoint(kHorizontalSpacing, yOffset),
+                 nil /* background_color */, nil /* text_color */);
   [contentLabel setFrameSize:NSMakeSize(availableWidth, 0)];
   [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:contentLabel];
   [container addSubview:contentLabel];

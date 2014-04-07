@@ -11637,7 +11637,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Remove account and relaunch
       </message>
       <message name="IDS_PROFILES_SIGNIN_TUTORIAL_TITLE" desc="Title of the tutorial card in the avatar menu bubble view for a signed-in user.">
-        Hey, <ph name="PROFILE_DISPLAY_NAME">$1<ex>Jessica</ex></ph>!
+        You're all set
       </message>
       <message name="IDS_PROFILES_SIGNIN_TUTORIAL_OK_BUTTON" desc="Text of the ok button on the tutorial card in the avatar menu bubble view">
         Ok, Got it!
@@ -11652,6 +11652,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to manage accounts for a profile.">
           Your accounts
         </message>
+        <message name="IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE" desc="The Learn More button in the avatar tutorial bubble.">
+          Learn more
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON" desc="Button in the avatar menu bubble view used to add an account to a profile.">
@@ -11659,6 +11662,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         </message>
         <message name="IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to manage accounts for a profile.">
           Your Accounts
+        </message>
+        <message name="IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE" desc="The Learn More button in the avatar tutorial bubble.">
+            Learn More
         </message>
       </if>
       <message name="IDS_PROFILES_PROFILE_CHANGE_PHOTO_BUTTON" desc="Button in the avatar menu bubble view used to change the photo for a profile.">

@@ -358,6 +358,7 @@
         <structure type="chrome_scaled_image"
         name="IDR_ICON_PROFILES_EDIT_HOVER" file="common/edit_button_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_PRESSED" file="common/edit_button_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_CARET" file="common/carrot_blue.png" />
       </if>
       <if expr="not is_android and not is_ios and not chromeos">
         <!-- TODO(noms): Remove this once local profile avatars are migrated -->

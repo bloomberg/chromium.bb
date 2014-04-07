@@ -854,13 +854,8 @@ For Chromium, processes used to display diagnostics information (such as this "a
       </message>
 
       <!-- Tutorial card in the avatar menu bubble -->
-      <message name="IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_HEADER" desc="Header line of the tutorial card in the avatar menu bubble view for a signed-in user.">
-        Welcome to your Chromium. Check back here to:
-      </message>
-      <message name="IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_TEXT" desc="The bulleted content of the tutorial card in the avatar menu bubble view for a signed-in user.">
-        • Switch between people
-• Lock your Chromium stuff
-• Manage your Google Accounts
+      <message name="IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_TEXT" desc="The main content of the tutorial card in the avatar menu bubble view for a signed-in user.">
+        You can add your other Google Accounts and lock your Chromium below.
       </message>
 
       <!-- Account removal view in the avatar menu bubble -->
@@ -1184,7 +1179,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       <message name="IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_START_AND_SEARCH" desc="Second line in the Settings API bubble. Only shown if the secondary change by the extension was both the start page and the search engine. See IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_START_PAGES for reason for triple quotes.">
         ''' It also controls what page is shown when you start Chromium or search from the Omnibox. '''
       </message>
-      
+
       <!-- Update bubble -->
       <message name="IDS_REINSTALL_APP" desc="Text for the button the user clicks to reinstall the app.">
         Reinstall Chromium

@@ -512,8 +512,6 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   if (tutorial_view) {
     layout->StartRow(1, 0);
     layout->AddView(tutorial_view);
-    layout->StartRow(0, 0);
-    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
   }
 
   if (!current_profile_view) {
@@ -693,11 +691,8 @@ views::View* ProfileChooserView::CreateTutorialView(
   tutorial_showing_ = true;
 
   views::View* view = new views::View();
-  ui::NativeTheme* theme = GetNativeTheme();
-  view->set_background(
-      views::Background::CreateSolidBackground(theme->GetSystemColor(
-          ui::NativeTheme::kColorId_DialogBackground)));
-
+  view->set_background(views::Background::CreateSolidBackground(
+      profiles::kAvatarTutorialBackgroundColor));
   views::GridLayout* layout = CreateSingleColumnLayout(view,
       kFixedMenuWidth - 2 * views::kButtonHEdgeMarginNew);
   layout->SetInsets(views::kButtonVEdgeMarginNew,
@@ -706,49 +701,27 @@ views::View* ProfileChooserView::CreateTutorialView(
                     views::kButtonHEdgeMarginNew);
 
   // Adds title.
-  base::string16 name = profiles::GetAvatarNameForProfile(profile);
   views::Label* title_label = new views::Label(
-      l10n_util::GetStringFUTF16(IDS_PROFILES_SIGNIN_TUTORIAL_TITLE, name));
+      l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_TUTORIAL_TITLE));
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  const SkColor kTitleTextColor = SkColorSetRGB(0x53, 0x8c, 0xea);
-  title_label->SetEnabledColor(kTitleTextColor);
+  title_label->SetAutoColorReadabilityEnabled(false);
+  title_label->SetEnabledColor(SK_ColorWHITE);
+  title_label ->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::MediumFont));
   layout->StartRow(1, 0);
   layout->AddView(title_label);
 
-  // Adds body header.
-  views::Label* content_header_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_HEADER));
-  content_header_label->SetMultiLine(true);
-  content_header_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  const gfx::FontList& small_font_list =
-      rb->GetFontList(ui::ResourceBundle::SmallFont);
-  content_header_label->SetFontList(small_font_list);
-  layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
-  layout->AddView(content_header_label);
-
-  // Adds body content consisting of three bulleted lines.
-  views::View* bullet_row = new views::View();
-  views::GridLayout* bullet_layout = new views::GridLayout(bullet_row);
-  views::ColumnSet* bullet_columns = bullet_layout->AddColumnSet(0);
-  const int kTextHorizIndentation = 10;
-  bullet_columns->AddPaddingColumn(0, kTextHorizIndentation);
-  bullet_columns->AddColumn(views::GridLayout::LEADING,
-      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
-  bullet_row->SetLayoutManager(bullet_layout);
-
-  views::Label* bullet_label = new views::Label(
+  // Adds body content.
+  views::Label* content_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_TEXT));
-  bullet_label->SetMultiLine(true);
-  bullet_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  bullet_label->SetFontList(small_font_list);
-  bullet_layout->StartRow(1, 0);
-  bullet_layout->AddView(bullet_label);
-
+  content_label->SetMultiLine(true);
+  content_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  content_label->SetAutoColorReadabilityEnabled(false);
+  content_label->SetEnabledColor(profiles::kAvatarTutorialContentTextColor);
   layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
-  layout->AddView(bullet_row);
+  layout->AddView(content_label);
 
-  // Adds links and buttons at the bottom.
+  // Adds links and buttons.
   views::View* button_row = new views::View();
   views::GridLayout* button_layout = new views::GridLayout(button_row);
   views::ColumnSet* button_columns = button_layout->AddColumnSet(0);
@@ -761,20 +734,49 @@ views::View* ProfileChooserView::CreateTutorialView(
   button_row->SetLayoutManager(button_layout);
 
   tutorial_learn_more_link_ = CreateLink(
-      l10n_util::GetStringUTF16(IDS_LEARN_MORE), this);
+      l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE),
+      this);
   tutorial_learn_more_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  tutorial_learn_more_link_->SetAutoColorReadabilityEnabled(false);
+  tutorial_learn_more_link_->SetEnabledColor(SK_ColorWHITE);
   button_layout->StartRow(1, 0);
   button_layout->AddView(tutorial_learn_more_link_);
 
-  tutorial_ok_button_ = new views::BlueButton(this, l10n_util::GetStringUTF16(
-      IDS_PROFILES_SIGNIN_TUTORIAL_OK_BUTTON));
+  tutorial_ok_button_ = new views::LabelButton(
+      this, l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_TUTORIAL_OK_BUTTON));
   tutorial_ok_button_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  tutorial_ok_button_->SetStyle(views::Button::STYLE_BUTTON);
   button_layout->AddView(tutorial_ok_button_);
 
   layout->StartRowWithPadding(1, 0, 0, views::kUnrelatedControlVerticalSpacing);
   layout->AddView(button_row);
 
-  return view;
+  // Adds a padded caret image at the bottom.
+  views::View* padded_caret_view = new views::View();
+  views::GridLayout* padded_caret_layout =
+      new views::GridLayout(padded_caret_view);
+  views::ColumnSet* padded_columns = padded_caret_layout->AddColumnSet(0);
+  padded_columns->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
+  padded_columns->AddColumn(views::GridLayout::LEADING,
+      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
+  padded_caret_view->SetLayoutManager(padded_caret_layout);
+
+  views::ImageView* caret_image_view = new views::ImageView();
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  caret_image_view->SetImage(
+      *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_CARET));
+
+  padded_caret_layout->StartRow(1, 0);
+  padded_caret_layout->AddView(caret_image_view);
+
+  views::View* view_with_caret = new views::View();
+  views::GridLayout* layout_with_caret =
+      CreateSingleColumnLayout(view_with_caret, kFixedMenuWidth);
+  layout_with_caret->StartRow(1, 0);
+  layout_with_caret->AddView(view);
+  layout_with_caret->StartRow(1, 0);
+  layout_with_caret->AddView(padded_caret_view);
+  return view_with_caret;
 }
 
 views::View* ProfileChooserView::CreateCurrentProfileView(

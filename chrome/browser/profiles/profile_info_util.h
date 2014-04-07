@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_INFO_UTIL_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_INFO_UTIL_H_
 
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
 
 namespace profiles {
@@ -12,6 +13,8 @@ namespace profiles {
 extern const int kAvatarIconWidth;
 extern const int kAvatarIconHeight;
 extern const int kAvatarIconPadding;
+extern const SkColor kAvatarTutorialBackgroundColor;
+extern const SkColor kAvatarTutorialContentTextColor;
 
 // Returns a version of |image| of a specific size and with a grey border.
 // Note that no checks are done on the width/height so make sure they're

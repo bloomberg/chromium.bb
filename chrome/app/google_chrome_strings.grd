@@ -778,13 +778,8 @@ For Google Chrome, processes used to display diagnostics information (such as th
       </message>
 
       <!-- Tutorial card in the avatar menu bubble -->
-      <message name="IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_HEADER" desc="Header line of the tutorial card in the avatar menu bubble view for a signed-in user.">
-        Welcome to your Chrome. Check back here to:
-      </message>
-      <message name="IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_TEXT" desc="The bulleted content of the tutorial card in the avatar menu bubble view for a signed-in user.">
-        • Switch between people
-• Lock your Chrome stuff
-• Manage your Google Accounts
+      <message name="IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_TEXT" desc="The main content of the tutorial card in the avatar menu bubble view for a signed-in user.">
+        You can add your other Google Accounts and lock your Chrome below.
       </message>
 
       <!-- Account removal view in the avatar menu bubble -->

@@ -173,6 +173,8 @@ namespace profiles {
 const int kAvatarIconWidth = 38;
 const int kAvatarIconHeight = 31;
 const int kAvatarIconPadding = 2;
+const SkColor kAvatarTutorialBackgroundColor = SkColorSetRGB(0x42, 0x85, 0xf4);
+const SkColor kAvatarTutorialContentTextColor = SkColorSetRGB(0xc6, 0xda, 0xfc);
 
 gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
                                         bool is_rectangle,
