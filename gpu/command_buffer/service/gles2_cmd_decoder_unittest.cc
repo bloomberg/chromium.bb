@@ -1611,7 +1611,6 @@ TEST_F(GLES2DecoderWithShaderTest, GetActiveUniformBadSharedMemoryFails) {
   const GLuint kUniformIndex = 1;
   const uint32 kBucketId = 123;
   GetActiveUniform cmd;
-  typedef GetActiveUniform::Result Result;
   cmd.Init(client_program_id_, kUniformIndex, kBucketId,
            kInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
@@ -1691,7 +1690,6 @@ TEST_F(GLES2DecoderWithShaderTest, GetActiveAttribBadSharedMemoryFails) {
   const GLuint kAttribIndex = 1;
   const uint32 kBucketId = 123;
   GetActiveAttrib cmd;
-  typedef GetActiveAttrib::Result Result;
   cmd.Init(client_program_id_, kAttribIndex, kBucketId,
            kInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));

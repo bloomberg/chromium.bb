@@ -198,7 +198,6 @@ TEST_F(EntryMetadataTest, Serialize) {
 }
 
 TEST_F(SimpleIndexTest, IndexSizeCorrectOnMerge) {
-  typedef disk_cache::SimpleIndex::EntrySet EntrySet;
   index()->SetMaxSize(100);
   index()->Insert(hashes_.at<2>());
   index()->UpdateEntrySize(hashes_.at<2>(), 2);

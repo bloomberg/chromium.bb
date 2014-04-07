@@ -481,7 +481,6 @@ TEST_F(MemoryProgramCacheTest, LoadFailOnDifferentMap) {
 }
 
 TEST_F(MemoryProgramCacheTest, MemoryProgramCacheEviction) {
-  typedef ShaderTranslator::VariableMap VariableMap;
   const GLenum kFormat = 1;
   const int kProgramId = 10;
   const int kBinaryLength = 20;

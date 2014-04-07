@@ -127,7 +127,6 @@ TEST_F(GLES2ImplementationTest, CheckFramebufferStatus) {
     cmds::CheckFramebufferStatus cmd;
   };
 
-  typedef cmds::CheckFramebufferStatus::Result Result;
   Cmds expected;
   ExpectedMemoryInfo result1 =
       GetExpectedResultMemory(sizeof(cmds::CheckFramebufferStatus::Result));
@@ -759,7 +758,6 @@ TEST_F(GLES2ImplementationTest, IsBuffer) {
     cmds::IsBuffer cmd;
   };
 
-  typedef cmds::IsBuffer::Result Result;
   Cmds expected;
   ExpectedMemoryInfo result1 =
       GetExpectedResultMemory(sizeof(cmds::IsBuffer::Result));
@@ -779,7 +777,6 @@ TEST_F(GLES2ImplementationTest, IsEnabled) {
     cmds::IsEnabled cmd;
   };
 
-  typedef cmds::IsEnabled::Result Result;
   Cmds expected;
   ExpectedMemoryInfo result1 =
       GetExpectedResultMemory(sizeof(cmds::IsEnabled::Result));
@@ -799,7 +796,6 @@ TEST_F(GLES2ImplementationTest, IsFramebuffer) {
     cmds::IsFramebuffer cmd;
   };
 
-  typedef cmds::IsFramebuffer::Result Result;
   Cmds expected;
   ExpectedMemoryInfo result1 =
       GetExpectedResultMemory(sizeof(cmds::IsFramebuffer::Result));
@@ -819,7 +815,6 @@ TEST_F(GLES2ImplementationTest, IsProgram) {
     cmds::IsProgram cmd;
   };
 
-  typedef cmds::IsProgram::Result Result;
   Cmds expected;
   ExpectedMemoryInfo result1 =
       GetExpectedResultMemory(sizeof(cmds::IsProgram::Result));
@@ -839,7 +834,6 @@ TEST_F(GLES2ImplementationTest, IsRenderbuffer) {
     cmds::IsRenderbuffer cmd;
   };
 
-  typedef cmds::IsRenderbuffer::Result Result;
   Cmds expected;
   ExpectedMemoryInfo result1 =
       GetExpectedResultMemory(sizeof(cmds::IsRenderbuffer::Result));
@@ -859,7 +853,6 @@ TEST_F(GLES2ImplementationTest, IsShader) {
     cmds::IsShader cmd;
   };
 
-  typedef cmds::IsShader::Result Result;
   Cmds expected;
   ExpectedMemoryInfo result1 =
       GetExpectedResultMemory(sizeof(cmds::IsShader::Result));
@@ -879,7 +872,6 @@ TEST_F(GLES2ImplementationTest, IsTexture) {
     cmds::IsTexture cmd;
   };
 
-  typedef cmds::IsTexture::Result Result;
   Cmds expected;
   ExpectedMemoryInfo result1 =
       GetExpectedResultMemory(sizeof(cmds::IsTexture::Result));
@@ -1669,7 +1661,6 @@ TEST_F(GLES2ImplementationTest, IsVertexArrayOES) {
     cmds::IsVertexArrayOES cmd;
   };
 
-  typedef cmds::IsVertexArrayOES::Result Result;
   Cmds expected;
   ExpectedMemoryInfo result1 =
       GetExpectedResultMemory(sizeof(cmds::IsVertexArrayOES::Result));

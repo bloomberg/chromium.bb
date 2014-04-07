@@ -5558,7 +5558,6 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     cmds::%(name)s cmd;
   };
 
-  typedef cmds::%(name)s::Result Result;
   Cmds expected;
   ExpectedMemoryInfo result1 =
       GetExpectedResultMemory(sizeof(cmds::%(name)s::Result));

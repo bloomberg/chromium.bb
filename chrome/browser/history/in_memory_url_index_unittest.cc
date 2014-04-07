@@ -770,8 +770,6 @@ TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
   // Verify that match results for previously typed characters are retained
   // (in the term_char_word_set_cache_) and reused, if possible, in future
   // autocompletes.
-  typedef URLIndexPrivateData::SearchTermCacheMap::iterator CacheIter;
-  typedef URLIndexPrivateData::SearchTermCacheItem CacheItem;
 
   URLIndexPrivateData::SearchTermCacheMap& cache(
       GetPrivateData()->search_term_cache_);
