@@ -52,26 +52,6 @@ public:
 
     virtual bool isTransformInvertible() const { return true; }
 
-    // CanvasPathMethods JS API.
-    static void closePath(CanvasPathMethods& object)
-        { object.closePath(); }
-    static void moveTo(CanvasPathMethods& object, float x, float y)
-        { object.moveTo(x, y); }
-    static void lineTo(CanvasPathMethods& object, float x, float y)
-        { object.lineTo(x, y); }
-    static void quadraticCurveTo(CanvasPathMethods& object, float cpx, float cpy, float x, float y)
-        { object.quadraticCurveTo(cpx, cpy, x, y); }
-    static void bezierCurveTo(CanvasPathMethods& object, float cp1x, float cp1y, float cp2x, float cp2y, float x, float y)
-        { object.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y); }
-    static void arcTo(CanvasPathMethods& object, float x0, float y0, float x1, float y1, float radius, ExceptionState& es)
-        { object.arcTo(x0, y0, x1, y1, radius, es); }
-    static void arc(CanvasPathMethods& object, float x, float y, float radius, float startAngle, float endAngle, bool anticlockwise, ExceptionState& es)
-        { object.arc(x, y, radius, startAngle, endAngle, anticlockwise, es); }
-    static void ellipse(CanvasPathMethods& object, float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise, ExceptionState& es)
-        { object.ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise, es); }
-    static void rect(CanvasPathMethods& object, float x, float y, float width, float height)
-        { object.rect(x, y, width, height); }
-
 protected:
     CanvasPathMethods() { }
     CanvasPathMethods(const Path& path) : m_path(path) { }
