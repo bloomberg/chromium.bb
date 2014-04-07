@@ -832,12 +832,10 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
     }
     return;
   }
-  // SlurpFile closes the file descriptor after reading (or on error).
-  // Duplicate our file descriptor since it will be handled by the browser.
-  int dup_file_desc = DUP(info.get_desc());
   nacl::string json_buffer;
+  // SlurpFile closes the file descriptor after reading (or on error).
   file_utils::StatusCode status = file_utils::SlurpFile(
-      dup_file_desc, json_buffer, kNaClManifestMaxFileBytes);
+      info.Release().desc, json_buffer, kNaClManifestMaxFileBytes);
 
   if (status != file_utils::PLUGIN_FILE_SUCCESS) {
     switch (status) {
