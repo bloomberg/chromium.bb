@@ -152,7 +152,10 @@ struct RtcpFieldApplicationSpecificCastReceiverLogItem {
   uint32 rtp_timestamp;
   uint32 event_timestamp_base;
   uint8 event;
-  uint16 delay_delta_or_packet_id;
+  union {
+    uint16 packet_id;
+    int16 delay_delta;
+  } delay_delta_or_packet_id;
   uint16 event_timestamp_delta;
 };
 

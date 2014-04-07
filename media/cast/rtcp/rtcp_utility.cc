@@ -613,7 +613,9 @@ bool RtcpParser::ParseCastReceiverLogEventItem() {
 
   field_.cast_receiver_log.event =
       static_cast<uint8>(event_type_and_timestamp_delta >> 12);
-  field_.cast_receiver_log.delay_delta_or_packet_id = delay_delta_or_packet_id;
+  // delay_delta is in union'ed with packet_id.
+  field_.cast_receiver_log.delay_delta_or_packet_id.packet_id =
+      delay_delta_or_packet_id;
   field_.cast_receiver_log.event_timestamp_delta =
       event_type_and_timestamp_delta & 0xfff;
 

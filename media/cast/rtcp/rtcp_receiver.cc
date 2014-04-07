@@ -529,8 +529,9 @@ void RtcpReceiver::HandleApplicationSpecificCastReceiverEventLog(
   event_log.type = event_type;
   event_log.event_timestamp = event_timestamp;
   event_log.delay_delta = base::TimeDelta::FromMilliseconds(
-      rtcp_field.cast_receiver_log.delay_delta_or_packet_id);
-  event_log.packet_id = rtcp_field.cast_receiver_log.delay_delta_or_packet_id;
+      rtcp_field.cast_receiver_log.delay_delta_or_packet_id.delay_delta);
+  event_log.packet_id =
+      rtcp_field.cast_receiver_log.delay_delta_or_packet_id.packet_id;
   event_log_messages->push_back(event_log);
 }
 
