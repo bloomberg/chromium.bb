@@ -31,8 +31,8 @@
 #ifndef DOMWrapperMap_h
 #define DOMWrapperMap_h
 
-#include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/WrapperTypeInfo.h"
+#include <v8-util.h>
 #include <v8.h>
 #include "wtf/HashMap.h"
 
@@ -41,95 +41,124 @@ namespace WebCore {
 template<class KeyType>
 class DOMWrapperMap {
 public:
-    typedef HashMap<KeyType*, UnsafePersistent<v8::Object> > MapType;
-
     explicit DOMWrapperMap(v8::Isolate* isolate)
         : m_isolate(isolate)
+        , m_map(isolate)
     {
     }
 
     v8::Handle<v8::Object> newLocal(KeyType* key, v8::Isolate* isolate)
     {
-        return m_map.get(key).newLocal(isolate);
+        return m_map.Get(key);
     }
 
     bool setReturnValueFrom(v8::ReturnValue<v8::Value> returnValue, KeyType* key)
     {
-        typename MapType::iterator it = m_map.find(key);
-        if (it == m_map.end())
-            return false;
-        returnValue.Set(*(it->value.persistent()));
-        return true;
+        return m_map.SetReturnValue(key, returnValue);
     }
 
     void setReference(const v8::Persistent<v8::Object>& parent, KeyType* key, v8::Isolate* isolate)
     {
-        m_map.get(key).setReferenceFrom(parent, isolate);
+        m_map.SetReference(key, parent);
     }
 
     bool containsKey(KeyType* key)
     {
-        return m_map.find(key) != m_map.end();
-    }
-
-    bool containsKeyAndValue(KeyType* key, v8::Handle<v8::Object> value)
-    {
-        typename MapType::iterator it = m_map.find(key);
-        if (it == m_map.end())
-            return false;
-        return *(it->value.persistent()) == value;
+        return m_map.Contains(key);
     }
 
     void set(KeyType* key, v8::Handle<v8::Object> wrapper, const WrapperConfiguration& configuration)
     {
         ASSERT(static_cast<KeyType*>(toNative(wrapper)) == key);
-        v8::Persistent<v8::Object> persistent(m_isolate, wrapper);
-        configuration.configureWrapper(&persistent);
-        persistent.SetWeak(this, &setWeakCallback);
-        typename MapType::AddResult result = m_map.add(key, UnsafePersistent<v8::Object>());
-        ASSERT(result.isNewEntry);
-        // FIXME: Stop handling this case once duplicate wrappers are guaranteed not to be created.
-        if (!result.isNewEntry)
-            result.storedValue->value.dispose();
-        result.storedValue->value = UnsafePersistent<v8::Object>(persistent);
+        v8::UniquePersistent<v8::Object> unique(m_isolate, wrapper);
+        configuration.configureWrapper(&unique);
+        m_map.Set(key, unique.Pass());
     }
 
     void clear()
     {
-        v8::HandleScope scope(m_isolate);
-        while (!m_map.isEmpty()) {
-            // Swap out m_map on each iteration to ensure any wrappers added due to side effects of the loop are cleared.
-            MapType map;
-            map.swap(m_map);
-            for (typename MapType::iterator it = map.begin(); it != map.end(); ++it) {
-                releaseObject(it->value.newLocal(m_isolate));
-                it->value.dispose();
-            }
-        }
+        m_map.Clear();
     }
 
     void removeAndDispose(KeyType* key)
     {
-        typename MapType::iterator it = m_map.find(key);
-        ASSERT_WITH_SECURITY_IMPLICATION(it != m_map.end());
-        it->value.dispose();
-        m_map.remove(it);
+        m_map.Remove(key);
     }
 
 private:
-    static void setWeakCallback(const v8::WeakCallbackData<v8::Object, DOMWrapperMap<KeyType> >&);
+    class PersistentValueMapTraits {
+    public:
+        // Map traits:
+        typedef HashMap<KeyType*, v8::PersistentContainerValue> Impl;
+        typedef typename Impl::iterator Iterator;
+        static size_t Size(const Impl* impl) { return impl->size(); }
+        static bool Empty(Impl* impl) { return impl->isEmpty(); }
+        static void Swap(Impl& impl, Impl& other) { impl.swap(other); }
+        static Iterator Begin(Impl* impl) { return impl->begin(); }
+        static Iterator End(Impl* impl) { return impl->end(); }
+        static v8::PersistentContainerValue Value(Iterator& iter)
+        {
+            return iter->value;
+        }
+        static KeyType* Key(Iterator& iter) { return iter->key; }
+        static v8::PersistentContainerValue Set(
+            Impl* impl, KeyType* key, v8::PersistentContainerValue value)
+        {
+            v8::PersistentContainerValue oldValue = Get(impl, key);
+            impl->add(key, value);
+            return oldValue;
+        }
+        static v8::PersistentContainerValue Get(const Impl* impl, KeyType* key)
+        {
+            return impl->get(key);
+        }
+
+        static v8::PersistentContainerValue Remove(Impl* impl, KeyType* key)
+        {
+            return impl->take(key);
+        }
+
+        // Weak traits:
+        static const v8::PersistentContainerCallbackType kCallbackType = v8::kWeak;
+        typedef v8::PersistentValueMap<KeyType*, v8::Object, PersistentValueMapTraits> MapType;
+        typedef MapType WeakCallbackDataType;
+
+        static WeakCallbackDataType* WeakCallbackParameter(MapType* map, KeyType* key, v8::Local<v8::Object>& value)
+        {
+            return map;
+        }
+
+        static void DisposeCallbackData(WeakCallbackDataType* callbackData) { }
+
+        static MapType* MapFromWeakCallbackData(
+            const v8::WeakCallbackData<v8::Object, WeakCallbackDataType>& data)
+        {
+            return data.GetParameter();
+        }
+
+        static KeyType* KeyFromWeakCallbackData(
+            const v8::WeakCallbackData<v8::Object, WeakCallbackDataType>& data)
+        {
+            return static_cast<KeyType*>(toNative(data.GetValue()));
+        }
+
+        // Dispose traits:
+        // Generally nothing to do, but see below for a specialization for
+        // DomWrapperMap<void>.
+        static void Dispose(v8::Isolate* isolate, v8::UniquePersistent<v8::Object> value, KeyType* key) { }
+    };
 
     v8::Isolate* m_isolate;
-    MapType m_map;
+    typename PersistentValueMapTraits::MapType m_map;
 };
 
-template<>
-inline void DOMWrapperMap<void>::setWeakCallback(const v8::WeakCallbackData<v8::Object, DOMWrapperMap<void> >& data)
+template <>
+inline void DOMWrapperMap<void>::PersistentValueMapTraits::Dispose(
+    v8::Isolate* isolate,
+    v8::UniquePersistent<v8::Object> value,
+    void* key)
 {
-    void* key = static_cast<void*>(toNative(data.GetValue()));
-    ASSERT(*data.GetParameter()->m_map.get(key).persistent() == data.GetValue());
-    data.GetParameter()->removeAndDispose(key);
-    releaseObject(data.GetValue());
+    releaseObject(v8::Local<v8::Object>::New(isolate, value));
 }
 
 } // namespace WebCore

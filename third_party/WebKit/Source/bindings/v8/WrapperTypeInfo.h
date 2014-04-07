@@ -222,7 +222,7 @@ namespace WebCore {
             Dependent, Independent
         };
 
-        void configureWrapper(v8::Persistent<v8::Object>* wrapper) const
+        void configureWrapper(v8::PersistentBase<v8::Object>* wrapper) const
         {
             wrapper->SetWrapperClassId(classId);
             if (lifetime == Independent)

@@ -36,7 +36,6 @@
 #include "V8HTMLEmbedElement.h"
 #include "V8HTMLObjectElement.h"
 #include "bindings/v8/NPV8Object.h"
-#include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8NPUtils.h"
 #include "bindings/v8/V8ObjectConstructor.h"
@@ -404,18 +403,13 @@ static DOMWrapperMap<NPObject>& staticNPObjectMap()
     return npObjectMap;
 }
 
-template<>
-inline void DOMWrapperMap<NPObject>::setWeakCallback(const v8::WeakCallbackData<v8::Object, DOMWrapperMap<NPObject> >& data)
+template <>
+inline void DOMWrapperMap<NPObject>::PersistentValueMapTraits::Dispose(
+    v8::Isolate* isolate,
+    v8::UniquePersistent<v8::Object> value,
+    NPObject* npObject)
 {
-    NPObject* npObject = static_cast<NPObject*>(toNative(data.GetValue()));
-
     ASSERT(npObject);
-    ASSERT(staticNPObjectMap().containsKeyAndValue(npObject, data.GetValue()));
-
-    // Must remove from our map before calling _NPN_ReleaseObject(). _NPN_ReleaseObject can
-    // call forgetV8ObjectForNPObject, which uses the table as well.
-    staticNPObjectMap().removeAndDispose(npObject);
-
     if (_NPN_IsAlive(npObject))
         _NPN_ReleaseObject(npObject);
 }
