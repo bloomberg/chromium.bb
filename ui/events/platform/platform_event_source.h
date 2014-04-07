@@ -65,13 +65,6 @@ class EVENTS_EXPORT PlatformEventSource {
 
   void OnOverriddenDispatcherRestored();
 
-  // Invokes the corresponding methods on the PlatformEventObservers added to
-  // the event-source.
-  // Returns true from |WillProcessEvent()| if any of the observers in the list
-  // consumes the event and returns true from |WillProcessEvent()|.
-  bool WillProcessEvent(PlatformEvent platform_event);
-  void DidProcessEvent(PlatformEvent platform_event);
-
   typedef std::vector<PlatformEventDispatcher*> PlatformEventDispatcherList;
   PlatformEventDispatcherList dispatchers_;
   PlatformEventDispatcher* overridden_dispatcher_;

@@ -87,20 +87,17 @@ class TestPlatformEventDispatcher : public PlatformEventDispatcher {
 class TestPlatformEventObserver : public PlatformEventObserver {
  public:
   TestPlatformEventObserver(int id, std::vector<int>* list)
-      : id_(id), list_(list), consume_event_(false) {
+      : id_(id), list_(list) {
     PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
   }
   virtual ~TestPlatformEventObserver() {
     PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);
   }
 
-  void set_consume_event(bool consume) { consume_event_ = consume; }
-
  protected:
   // PlatformEventObserver:
-  virtual EventStatus WillProcessEvent(const PlatformEvent& event) OVERRIDE {
+  virtual void WillProcessEvent(const PlatformEvent& event) OVERRIDE {
     list_->push_back(id_);
-    return consume_event_ ? EVENT_STATUS_HANDLED : EVENT_STATUS_CONTINUE;
   }
 
   virtual void DidProcessEvent(const PlatformEvent& event) OVERRIDE {}
@@ -108,7 +105,6 @@ class TestPlatformEventObserver : public PlatformEventObserver {
  private:
   int id_;
   std::vector<int>* list_;
-  bool consume_event_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformEventObserver);
 };
@@ -238,26 +234,6 @@ TEST_F(PlatformEventTest, DispatcherAndObserverOrder) {
   source()->Dispatch(*event);
   const int expected[] = {10, 20, 12, 23};
   EXPECT_EQ(std::vector<int>(expected, expected + arraysize(expected)), list);
-}
-
-// Tests that an observer can consume an event and stop its dispatch.
-TEST_F(PlatformEventTest, ObserverConsumesEventToStopDispatch) {
-  std::vector<int> list;
-  TestPlatformEventDispatcher first_d(12, &list);
-  TestPlatformEventObserver first_o(10, &list);
-  TestPlatformEventDispatcher second_d(23, &list);
-  TestPlatformEventObserver second_o(20, &list);
-  scoped_ptr<PlatformEvent> event(CreatePlatformEvent());
-  source()->Dispatch(*event);
-  const int expected[] = {10, 20, 12, 23};
-  EXPECT_EQ(std::vector<int>(expected, expected + arraysize(expected)), list);
-
-  list.clear();
-  first_o.set_consume_event(true);
-  event = CreatePlatformEvent();
-  source()->Dispatch(*event);
-  ASSERT_EQ(1u, list.size());
-  EXPECT_EQ(10, list[0]);
 }
 
 // Tests that an overridden dispatcher receives events before the default

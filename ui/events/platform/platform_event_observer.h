@@ -14,16 +14,8 @@ namespace ui {
 // receives all events that are dispatched to the dispatchers.
 class EVENTS_EXPORT PlatformEventObserver {
  public:
-  enum EventStatus {
-    EVENT_STATUS_CONTINUE,
-    EVENT_STATUS_HANDLED
-  };
-
-  // This is called before the dispatcher receives the event. The observer can
-  // consume the event and stop the event from reaching the dispatcher or other
-  // observers by returning EVENT_STATUS_HANDLED from this function. The event
-  // dispatch continues as usual if this returns EVENT_STATUS_CONTINUE.
-  virtual EventStatus WillProcessEvent(const PlatformEvent& event) = 0;
+  // This is called before the dispatcher receives the event.
+  virtual void WillProcessEvent(const PlatformEvent& event) = 0;
 
   // This is called after the event has been dispatched to the dispatcher(s).
   virtual void DidProcessEvent(const PlatformEvent& event) = 0;
