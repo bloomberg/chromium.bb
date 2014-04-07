@@ -58,7 +58,7 @@ bool IDBFactoryBackendProxy::allowIndexedDB(ExecutionContext* context, const Str
         Document* document = toDocument(context);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         // FIXME: webFrame->permissionClient() returns 0 in test_shell and content_shell http://crbug.com/137269
-        return !webFrame->permissionClient() || webFrame->permissionClient()->allowIndexedDB(webFrame, name, origin);
+        return !webFrame->permissionClient() || webFrame->permissionClient()->allowIndexedDB(name, origin);
     }
 
     WorkerGlobalScope& workerGlobalScope = *toWorkerGlobalScope(context);

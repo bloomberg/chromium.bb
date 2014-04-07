@@ -61,7 +61,7 @@ bool DatabaseClientImpl::allowDatabase(ExecutionContext* executionContext, const
         if (!webFrame)
             return false;
         if (webFrame->permissionClient())
-            return webFrame->permissionClient()->allowDatabase(webFrame, name, displayName, estimatedSize);
+            return webFrame->permissionClient()->allowDatabase(name, displayName, estimatedSize);
     } else {
         WorkerGlobalScope& workerGlobalScope = *toWorkerGlobalScope(executionContext);
         return WorkerPermissionClient::from(workerGlobalScope)->allowDatabase(name, displayName, estimatedSize);

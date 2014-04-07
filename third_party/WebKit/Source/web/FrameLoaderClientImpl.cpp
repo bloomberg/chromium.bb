@@ -155,7 +155,7 @@ bool FrameLoaderClientImpl::allowScriptExtension(const String& extensionName,
                                                  int worldId)
 {
     if (m_webFrame->permissionClient())
-        return m_webFrame->permissionClient()->allowScriptExtension(m_webFrame, extensionName, extensionGroup, worldId);
+        return m_webFrame->permissionClient()->allowScriptExtension(extensionName, extensionGroup, worldId);
 
     return true;
 }
@@ -175,7 +175,7 @@ void FrameLoaderClientImpl::didUpdateCurrentHistoryItem()
 bool FrameLoaderClientImpl::allowScript(bool enabledPerSettings)
 {
     if (m_webFrame->permissionClient())
-        return m_webFrame->permissionClient()->allowScript(m_webFrame, enabledPerSettings);
+        return m_webFrame->permissionClient()->allowScript(enabledPerSettings);
 
     return enabledPerSettings;
 }
@@ -183,7 +183,7 @@ bool FrameLoaderClientImpl::allowScript(bool enabledPerSettings)
 bool FrameLoaderClientImpl::allowScriptFromSource(bool enabledPerSettings, const KURL& scriptURL)
 {
     if (m_webFrame->permissionClient())
-        return m_webFrame->permissionClient()->allowScriptFromSource(m_webFrame, enabledPerSettings, scriptURL);
+        return m_webFrame->permissionClient()->allowScriptFromSource(enabledPerSettings, scriptURL);
 
     return enabledPerSettings;
 }
@@ -191,7 +191,7 @@ bool FrameLoaderClientImpl::allowScriptFromSource(bool enabledPerSettings, const
 bool FrameLoaderClientImpl::allowPlugins(bool enabledPerSettings)
 {
     if (m_webFrame->permissionClient())
-        return m_webFrame->permissionClient()->allowPlugins(m_webFrame, enabledPerSettings);
+        return m_webFrame->permissionClient()->allowPlugins(enabledPerSettings);
 
     return enabledPerSettings;
 }
@@ -199,7 +199,7 @@ bool FrameLoaderClientImpl::allowPlugins(bool enabledPerSettings)
 bool FrameLoaderClientImpl::allowImage(bool enabledPerSettings, const KURL& imageURL)
 {
     if (m_webFrame->permissionClient())
-        return m_webFrame->permissionClient()->allowImage(m_webFrame, enabledPerSettings, imageURL);
+        return m_webFrame->permissionClient()->allowImage(enabledPerSettings, imageURL);
 
     return enabledPerSettings;
 }
@@ -207,7 +207,7 @@ bool FrameLoaderClientImpl::allowImage(bool enabledPerSettings, const KURL& imag
 bool FrameLoaderClientImpl::allowDisplayingInsecureContent(bool enabledPerSettings, SecurityOrigin* context, const KURL& url)
 {
     if (m_webFrame->permissionClient())
-        return m_webFrame->permissionClient()->allowDisplayingInsecureContent(m_webFrame, enabledPerSettings, WebSecurityOrigin(context), WebURL(url));
+        return m_webFrame->permissionClient()->allowDisplayingInsecureContent(enabledPerSettings, WebSecurityOrigin(context), WebURL(url));
 
     return enabledPerSettings;
 }
@@ -215,7 +215,7 @@ bool FrameLoaderClientImpl::allowDisplayingInsecureContent(bool enabledPerSettin
 bool FrameLoaderClientImpl::allowRunningInsecureContent(bool enabledPerSettings, SecurityOrigin* context, const KURL& url)
 {
     if (m_webFrame->permissionClient())
-        return m_webFrame->permissionClient()->allowRunningInsecureContent(m_webFrame, enabledPerSettings, WebSecurityOrigin(context), WebURL(url));
+        return m_webFrame->permissionClient()->allowRunningInsecureContent(enabledPerSettings, WebSecurityOrigin(context), WebURL(url));
 
     return enabledPerSettings;
 }
@@ -223,13 +223,13 @@ bool FrameLoaderClientImpl::allowRunningInsecureContent(bool enabledPerSettings,
 void FrameLoaderClientImpl::didNotAllowScript()
 {
     if (m_webFrame->permissionClient())
-        m_webFrame->permissionClient()->didNotAllowScript(m_webFrame);
+        m_webFrame->permissionClient()->didNotAllowScript();
 }
 
 void FrameLoaderClientImpl::didNotAllowPlugins()
 {
     if (m_webFrame->permissionClient())
-        m_webFrame->permissionClient()->didNotAllowPlugins(m_webFrame);
+        m_webFrame->permissionClient()->didNotAllowPlugins();
 
 }
 

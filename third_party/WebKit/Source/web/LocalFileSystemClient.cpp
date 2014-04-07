@@ -60,7 +60,7 @@ bool LocalFileSystemClient::allowFileSystem(ExecutionContext* context)
     if (context->isDocument()) {
         Document* document = toDocument(context);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        return !webFrame->permissionClient() || webFrame->permissionClient()->allowFileSystem(webFrame);
+        return !webFrame->permissionClient() || webFrame->permissionClient()->allowFileSystem();
     }
     ASSERT(context->isWorkerGlobalScope());
     return WorkerPermissionClient::from(*toWorkerGlobalScope(context))->allowFileSystem();
@@ -76,7 +76,7 @@ void LocalFileSystemClient::requestFileSystemAccess(ExecutionContext* context, P
             callbacks->onAllowed();
             return;
         }
-        webFrame->permissionClient()->requestFileSystemAccess(webFrame, callbacks);
+        webFrame->permissionClient()->requestFileSystemAccess(callbacks);
         return;
     }
     ASSERT(context->isWorkerGlobalScope());

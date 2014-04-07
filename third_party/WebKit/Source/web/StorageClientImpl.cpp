@@ -48,7 +48,7 @@ PassOwnPtr<WebCore::StorageNamespace> StorageClientImpl::createSessionStorageNam
 bool StorageClientImpl::canAccessStorage(WebCore::LocalFrame* frame, WebCore::StorageType type) const
 {
     WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
-    return !webFrame->permissionClient() || webFrame->permissionClient()->allowStorage(webFrame, type == WebCore::LocalStorage);
+    return !webFrame->permissionClient() || webFrame->permissionClient()->allowStorage(type == WebCore::LocalStorage);
 }
 
 } // namespace blink

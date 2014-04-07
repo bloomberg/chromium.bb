@@ -65,7 +65,7 @@ bool EditorClientImpl::canCopyCut(LocalFrame* frame, bool defaultValue) const
     WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
     if (!webFrame->permissionClient())
         return defaultValue;
-    return webFrame->permissionClient()->allowWriteToClipboard(webFrame, defaultValue);
+    return webFrame->permissionClient()->allowWriteToClipboard(defaultValue);
 }
 
 bool EditorClientImpl::canPaste(LocalFrame* frame, bool defaultValue) const
@@ -73,7 +73,7 @@ bool EditorClientImpl::canPaste(LocalFrame* frame, bool defaultValue) const
     WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
     if (!webFrame->permissionClient())
         return defaultValue;
-    return webFrame->permissionClient()->allowReadFromClipboard(webFrame, defaultValue);
+    return webFrame->permissionClient()->allowReadFromClipboard(defaultValue);
 }
 
 void EditorClientImpl::didExecuteCommand(String commandName)
