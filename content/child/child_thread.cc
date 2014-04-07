@@ -70,6 +70,45 @@ base::LazyInstance<base::ThreadLocalPointer<ChildThread> > g_lazy_tls =
 // plugins), PluginThread has EnsureTerminateMessageFilter.
 #if defined(OS_POSIX)
 
+// TODO(earthdok): Re-enable on CrOS http://crbug.com/360622
+#if (defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(THREAD_SANITIZER)) && !defined(OS_CHROMEOS)
+// A thread delegate that waits for |duration| and then exits the process with
+// _exit(0).
+class WaitAndExitDelegate : public base::PlatformThread::Delegate {
+ public:
+  explicit WaitAndExitDelegate(base::TimeDelta duration)
+      : duration_(duration) {}
+  virtual ~WaitAndExitDelegate() OVERRIDE {}
+
+  virtual void ThreadMain() OVERRIDE {
+    base::PlatformThread::Sleep(duration_);
+    _exit(0);
+  }
+
+ private:
+  const base::TimeDelta duration_;
+  DISALLOW_COPY_AND_ASSIGN(WaitAndExitDelegate);
+};
+
+bool CreateWaitAndExitThread(base::TimeDelta duration) {
+  scoped_ptr<WaitAndExitDelegate> delegate(new WaitAndExitDelegate(duration));
+
+  const bool thread_created =
+      base::PlatformThread::CreateNonJoinable(0, delegate.get());
+  if (!thread_created)
+    return false;
+
+  // A non joinable thread has been created. The thread will either terminate
+  // the process or will be terminated by the process. Therefore, keep the
+  // delegate object alive for the lifetime of the process.
+  WaitAndExitDelegate* leaking_delegate = delegate.release();
+  ANNOTATE_LEAKING_OBJECT_PTR(leaking_delegate);
+  ignore_result(leaking_delegate);
+  return true;
+}
+#endif
+
 class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
  public:
   // IPC::ChannelProxy::MessageFilter
@@ -89,7 +128,21 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
     //
     // So, we install a filter on the channel so that we can process this event
     // here and kill the process.
+    // TODO(earthdok): Re-enable on CrOS http://crbug.com/360622
+#if (defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(THREAD_SANITIZER)) && !defined(OS_CHROMEOS)
+    // Some sanitizer tools rely on exit handlers (e.g. to run leak detection,
+    // or dump code coverage data to disk). Instead of exiting the process
+    // immediately, we give it 60 seconds to run exit handlers.
+    CHECK(CreateWaitAndExitThread(base::TimeDelta::FromSeconds(60)));
+#if defined(LEAK_SANITIZER)
+    // Invoke LeakSanitizer early to avoid detecting shutdown-only leaks. If
+    // leaks are found, the process will exit here.
+    __lsan_do_leak_check();
+#endif
+#else
     _exit(0);
+#endif
   }
 
  protected:

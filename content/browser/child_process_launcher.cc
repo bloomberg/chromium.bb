@@ -59,7 +59,13 @@ class ChildProcessLauncher::Context
         termination_status_(base::TERMINATION_STATUS_NORMAL_TERMINATION),
         exit_code_(RESULT_CODE_NORMAL_EXIT),
         starting_(true),
+        // TODO(earthdok): Re-enable on CrOS http://crbug.com/360622
+#if (defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(THREAD_SANITIZER)) && !defined(OS_CHROMEOS)
+        terminate_child_on_shutdown_(false)
+#else
         terminate_child_on_shutdown_(true)
+#endif
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
         , zygote_(false)
 #endif
