@@ -845,9 +845,8 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "executeDefaultTaskOnDrive")));
 
-// TODO: http://crbug.com/360436
 INSTANTIATE_TEST_CASE_P(
-    DISABLED_NavigationList,
+    NavigationList,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "traverseNavigationList")));
