@@ -2183,6 +2183,8 @@ compositor_create_surface(struct wl_client *client,
 	}
 	wl_resource_set_implementation(surface->resource, &surface_interface,
 				       surface, destroy_surface);
+
+	wl_signal_emit(&ec->create_surface_signal, surface);
 }
 
 static void
@@ -3613,6 +3615,7 @@ weston_compositor_init(struct weston_compositor *ec,
 	ec->config = config;
 	ec->wl_display = display;
 	wl_signal_init(&ec->destroy_signal);
+	wl_signal_init(&ec->create_surface_signal);
 	wl_signal_init(&ec->activate_signal);
 	wl_signal_init(&ec->transform_signal);
 	wl_signal_init(&ec->kill_signal);

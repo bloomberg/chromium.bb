@@ -574,6 +574,7 @@ struct weston_compositor {
 	struct weston_config *config;
 
 	/* surface signals */
+	struct wl_signal create_surface_signal;
 	struct wl_signal activate_signal;
 	struct wl_signal transform_signal;
 
