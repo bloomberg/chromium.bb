@@ -65,6 +65,11 @@ class TranslateTabHelper
   static TranslateManager* GetManagerFromWebContents(
       content::WebContents* web_contents);
 
+  // Gets |source| and |target| language for translation.
+  static void GetTranslateLanguages(content::WebContents* web_contents,
+                                    std::string* source,
+                                    std::string* target);
+
   // Gets the associated TranslateManager.
   TranslateManager* GetTranslateManager();
 

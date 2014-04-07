@@ -5,6 +5,8 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
@@ -85,6 +87,39 @@ TranslateManager* TranslateTabHelper::GetManagerFromWebContents(
   if (!translate_tab_helper)
     return NULL;
   return translate_tab_helper->GetTranslateManager();
+}
+
+// static
+void TranslateTabHelper::GetTranslateLanguages(
+    content::WebContents* web_contents,
+    std::string* source,
+    std::string* target) {
+  DCHECK(source != NULL);
+  DCHECK(target != NULL);
+
+  TranslateTabHelper* translate_tab_helper = FromWebContents(web_contents);
+  if (!translate_tab_helper)
+    return;
+
+  *source = translate_tab_helper->GetLanguageState().original_language();
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  Profile* original_profile = profile->GetOriginalProfile();
+  PrefService* prefs = original_profile->GetPrefs();
+  if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
+    std::string auto_translate_language =
+        TranslateManager::GetAutoTargetLanguage(*source, prefs);
+    if (!auto_translate_language.empty()) {
+      *target = auto_translate_language;
+      return;
+    }
+  }
+
+  std::string accept_languages_str = prefs->GetString(prefs::kAcceptLanguages);
+  std::vector<std::string> accept_languages_list;
+  base::SplitString(accept_languages_str, ',', &accept_languages_list);
+  *target = TranslateManager::GetTargetLanguage(accept_languages_list);
 }
 
 TranslateManager* TranslateTabHelper::GetTranslateManager() {

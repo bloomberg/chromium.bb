@@ -59,32 +59,6 @@ views::Link* CreateLink(views::LinkListener* listener,
   return link;
 }
 
-void GetTranslateLanguages(content::WebContents* web_contents,
-                           std::string* source,
-                           std::string* target) {
-  DCHECK(source != NULL);
-  DCHECK(target != NULL);
-
-  TranslateTabHelper* translate_tab_helper =
-      TranslateTabHelper::FromWebContents(web_contents);
-  *source = translate_tab_helper->GetLanguageState().original_language();
-  *source = TranslateDownloadManager::GetLanguageCode(*source);
-
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  Profile* original_profile = profile->GetOriginalProfile();
-  PrefService* prefs = original_profile->GetPrefs();
-  if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
-    std::string auto_translate_language =
-        TranslateManager::GetAutoTargetLanguage(*source, prefs);
-    if (!auto_translate_language.empty()) {
-      *target = auto_translate_language;
-      return;
-    }
-  }
-  *target = TranslateService::GetTargetLanguage(prefs);
-}
-
 class TranslateDenialComboboxModel : public ui::ComboboxModel {
  public:
   enum {
@@ -164,7 +138,8 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
 
   std::string source_language;
   std::string target_language;
-  GetTranslateLanguages(web_contents, &source_language, &target_language);
+  TranslateTabHelper::GetTranslateLanguages(web_contents,
+                                            &source_language, &target_language);
 
   scoped_ptr<TranslateUIDelegate> ui_delegate(
       new TranslateUIDelegate(web_contents, source_language, target_language));

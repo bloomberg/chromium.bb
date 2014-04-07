@@ -12821,7 +12821,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </if>
 
       <!-- Translate Bubble -->
-      <if expr="toolkit_views">
+      <if expr="toolkit_views or is_macosx">
         <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE" desc="Text to show for the translate bubble label when that page is in specified language and ask if should translate.">
           Would you like to translate this page?
         </message>

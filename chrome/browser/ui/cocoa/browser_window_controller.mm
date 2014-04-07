@@ -27,6 +27,7 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/translate/translate_ui_delegate.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -1785,9 +1786,10 @@ enum {
     return;
   }
 
-  // TODO(hajimehoshi): Set the initial languages correctly.
-  std::string sourceLanguage = "xx";
-  std::string targetLanguage = "yy";
+  std::string sourceLanguage;
+  std::string targetLanguage;
+  TranslateTabHelper::GetTranslateLanguages(contents,
+                                            &sourceLanguage, &targetLanguage);
 
   scoped_ptr<TranslateUIDelegate> uiDelegate(
       new TranslateUIDelegate(contents, sourceLanguage, targetLanguage));

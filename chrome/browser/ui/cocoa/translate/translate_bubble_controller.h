@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
@@ -11,7 +12,9 @@
 
 @class BrowserWindowController;
 
+class LanguageComboboxModel;
 class TranslateBubbleModel;
+class TranslateDenialComboboxModel;
 
 namespace content {
 class WebContents;
@@ -25,6 +28,30 @@ class WebContents;
  @private
   content::WebContents* webContents_;
   scoped_ptr<TranslateBubbleModel> model_;
+
+  // The views of each state. The keys are TranslateBubbleModel::ViewState,
+  // and the values are NSView*.
+  base::scoped_nsobject<NSDictionary> views_;
+
+  // The 'Done' or 'Translate' button on the advanced (option) panel.
+  NSButton* advancedDoneButton_;
+
+  // The 'Cancel' button on the advanced (option) panel.
+  NSButton* advancedCancelButton_;
+
+  // The 'Always translate' checkbox on the advanced (option) panel.
+  // This is nil when the current WebContents is in an incognito window.
+  NSButton* alwaysTranslateCheckbox_;
+
+  // The combobox model which is used to deny translation at the view before
+  // translate.
+  scoped_ptr<TranslateDenialComboboxModel> translateDenialComboboxModel_;
+
+  // The combobox model for source languages on the advanced (option) panel.
+  scoped_ptr<LanguageComboboxModel> sourceLanguageComboboxModel_;
+
+  // The combobox model for target languages on the advanced (option) panel.
+  scoped_ptr<LanguageComboboxModel> targetLanguageComboboxModel_;
 
   // Whether the translation is actually executed once at least.
   BOOL translateExecuted_;
