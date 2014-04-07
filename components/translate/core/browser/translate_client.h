@@ -5,8 +5,12 @@
 #ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_CLIENT_H_
 #define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_CLIENT_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/translate/core/browser/translate_step.h"
+#include "components/translate/core/common/translate_errors.h"
 
 class PrefService;
 class TranslateAcceptLanguages;
@@ -30,6 +34,14 @@ class TranslateClient {
 
   // Returns the associated TranslateAcceptLanguages.
   virtual TranslateAcceptLanguages* GetTranslateAcceptLanguages() = 0;
+
+  // Called when the embedder should present UI to the user corresponding to the
+  // user's current |step|.
+  virtual void ShowTranslateUI(translate::TranslateStep step,
+                               const std::string source_language,
+                               const std::string target_language,
+                               TranslateErrors::Type error_type,
+                               bool triggered_from_menu) = 0;
 };
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_CLIENT_H_

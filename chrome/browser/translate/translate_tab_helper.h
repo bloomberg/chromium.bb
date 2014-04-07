@@ -78,19 +78,16 @@ class TranslateTabHelper
   // destroyed.
   content::WebContents* GetWebContents();
 
-  // Called when the embedder should present UI to the user corresponding to the
-  // user's current |step|.
-  void ShowTranslateUI(translate::TranslateStep step,
-                       const std::string source_language,
-                       const std::string target_language,
-                       TranslateErrors::Type error_type,
-                       bool triggered_from_menu);
-
   // TranslateClient implementation.
   virtual TranslateDriver* GetTranslateDriver() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual scoped_ptr<TranslatePrefs> GetTranslatePrefs() OVERRIDE;
   virtual TranslateAcceptLanguages* GetTranslateAcceptLanguages() OVERRIDE;
+  virtual void ShowTranslateUI(translate::TranslateStep step,
+                               const std::string source_language,
+                               const std::string target_language,
+                               TranslateErrors::Type error_type,
+                               bool triggered_from_menu) OVERRIDE;
 
  private:
   explicit TranslateTabHelper(content::WebContents* web_contents);
