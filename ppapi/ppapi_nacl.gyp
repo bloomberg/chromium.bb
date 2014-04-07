@@ -176,8 +176,8 @@
         # and in-browser translation is tested elsewhere.
         # NOTE: native_client/build/untrusted.gypi dictates that
         # PNaCl only generate x86-32 and x86-64 on x86 platforms,
-        # or ARM on ARM platforms, not all versions always.
-        # TODO(petarj): Enable tests for MIPS.
+        # ARM on ARM platforms, or MIPS on MIPS platforms, not all
+        # versions always.
         # The same goes for the PNaCl shims. So, we have two variations here.
         ['disable_pnacl==0 and (target_arch=="ia32" or target_arch=="x64")', {
           'variables': {
@@ -229,6 +229,28 @@
               # NOTE: create_nmf must be first, it is the script python executes
               # below.
               'inputs': ['>(create_nmf)', '>(out_pnacl_newlib_arm_nexe)'],
+              'outputs': ['>(nmf_pnacl)'],
+              'action': [
+                'python',
+                '>@(_inputs)',
+                '--output=>(nmf_pnacl)',
+              ],
+            },
+          ],
+        }],
+        ['disable_pnacl==0 and target_arch=="mipsel"', {
+          'variables': {
+            'build_pnacl_newlib': 1,
+            'nmf_pnacl%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl.nmf',
+          },
+          # Shim is a dependency for the nexe because we pre-translate.
+          'dependencies': [
+            '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim_aot',
+          ],
+          'actions': [
+            {
+              'action_name': 'Generate PNACL NEWLIB NMF',
+              'inputs': ['>(create_nmf)', '>(out_pnacl_newlib_mips_nexe)'],
               'outputs': ['>(nmf_pnacl)'],
               'action': [
                 'python',
