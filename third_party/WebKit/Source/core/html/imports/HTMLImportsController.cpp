@@ -64,6 +64,7 @@ void HTMLImportsController::clear()
 {
     for (size_t i = 0; i < m_imports.size(); ++i)
         m_imports[i]->importDestroyed();
+    m_imports.clear();
     if (m_master)
         m_master->setImport(0);
     m_master = 0;

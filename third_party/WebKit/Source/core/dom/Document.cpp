@@ -808,7 +808,9 @@ void Document::setImport(HTMLImport* import)
 
 bool Document::haveImportsLoaded() const
 {
-    return !m_import || !m_import->state().shouldBlockScriptExecution();
+    if (!m_import)
+        return true;
+    return !m_import->state().shouldBlockScriptExecution();
 }
 
 DOMWindow* Document::executingWindow()

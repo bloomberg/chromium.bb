@@ -49,8 +49,10 @@ HTMLImportLoader::HTMLImportLoader()
 
 HTMLImportLoader::~HTMLImportLoader()
 {
-    if (m_importedDocument)
+    if (m_importedDocument) {
+        m_importedDocument->cancelParsing();
         m_importedDocument->setImport(0);
+    }
 }
 
 void HTMLImportLoader::startLoading(const ResourcePtr<RawResource>& resource)
@@ -178,6 +180,8 @@ void HTMLImportLoader::removeImport(HTMLImportChild* client)
 {
     ASSERT(kNotFound != m_imports.find(client));
     m_imports.remove(m_imports.find(client));
+    if (m_importedDocument && m_importedDocument->import() == client)
+        m_importedDocument->setImport(0);
 }
 
 } // namespace WebCore
