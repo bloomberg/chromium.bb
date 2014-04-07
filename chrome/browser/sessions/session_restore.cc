@@ -17,6 +17,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -545,7 +546,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
       {
         base::MessageLoop::ScopedNestableTaskAllower allow(
             base::MessageLoop::current());
-        base::MessageLoop::current()->Run();
+        base::RunLoop loop;
+        quit_closure_for_sync_restore_ = loop.QuitClosure();
+        loop.Run();
+        quit_closure_for_sync_restore_ = base::Closure();
       }
       Browser* browser = ProcessSessionWindows(&windows_, active_window_id_);
       delete this;
@@ -762,7 +766,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
       // See comment above windows_ as to why we don't process immediately.
       windows_.swap(windows.get());
       active_window_id_ = active_window_id;
-      base::MessageLoop::current()->QuitNow();
+      CHECK(!quit_closure_for_sync_restore_.is_null());
+      quit_closure_for_sync_restore_.Run();
       return;
     }
 
@@ -1143,6 +1148,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   // Whether or not restore is synchronous.
   const bool synchronous_;
+
+  // The quit-closure to terminate the nested message-loop started for
+  // synchronous session-restore.
+  base::Closure quit_closure_for_sync_restore_;
 
   // See description of CLOBBER_CURRENT_TAB.
   const bool clobber_existing_tab_;
