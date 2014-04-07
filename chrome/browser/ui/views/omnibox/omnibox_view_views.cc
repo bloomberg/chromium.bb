@@ -861,10 +861,10 @@ void OmniboxViewViews::OnAfterUserAction(views::Textfield* sender) {
   OnAfterPossibleChange();
 }
 
-void OmniboxViewViews::OnAfterCutOrCopy() {
+void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardType clipboard_type) {
   ui::Clipboard* cb = ui::Clipboard::GetForCurrentThread();
   base::string16 selected_text;
-  cb->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &selected_text);
+  cb->ReadText(clipboard_type, &selected_text);
   GURL url;
   bool write_url;
   model()->AdjustTextForCopy(GetSelectedRange().GetMin(), IsSelectAll(),
@@ -875,10 +875,10 @@ void OmniboxViewViews::OnAfterCutOrCopy() {
   if (write_url) {
     BookmarkNodeData data;
     data.ReadFromTuple(url, selected_text);
-    data.WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    data.WriteToClipboard(clipboard_type);
   } else {
     ui::ScopedClipboardWriter scoped_clipboard_writer(
-        ui::Clipboard::GetForCurrentThread(), ui::CLIPBOARD_TYPE_COPY_PASTE);
+        ui::Clipboard::GetForCurrentThread(), clipboard_type);
     scoped_clipboard_writer.WriteText(selected_text);
   }
 }

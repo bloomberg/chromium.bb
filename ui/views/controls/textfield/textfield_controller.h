@@ -52,7 +52,7 @@ class VIEWS_EXPORT TextfieldController {
   virtual void OnAfterUserAction(Textfield* sender) {}
 
   // Called after performing a Cut or Copy operation.
-  virtual void OnAfterCutOrCopy() {}
+  virtual void OnAfterCutOrCopy(ui::ClipboardType clipboard_type) {}
 
   // Called after performing a Paste operation.
   virtual void OnAfterPaste() {}
