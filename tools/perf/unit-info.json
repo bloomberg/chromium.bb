@@ -181,5 +181,9 @@
   },
   "us": {
     "improvement_direction": "down"
+  },
+  "vsyncs": {
+    "improvement_direction": "down",
+    "why": "Used in smoothness benchmarks. Number of vsyncs to generate a frame, never < 1.0"
   }
 }
