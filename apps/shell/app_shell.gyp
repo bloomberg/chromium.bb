@@ -4,7 +4,7 @@
 
 {
   'variables': {
-    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
+    'chromium_code': 1,
   },
   'targets': [
     {
@@ -28,8 +28,8 @@
           'action_name': 'repack_app_shell_pack',
           'variables': {
             'pak_inputs': [
-              '<(grit_out_dir)/common_resources.pak',
-              '<(grit_out_dir)/extensions_api_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.pak',
               # TODO(jamescook): Extract the extension/app related resources
               # from generated_resources_en-US.pak and
               # theme_resources_100_percent.pak.
@@ -52,9 +52,6 @@
       'target_name': 'app_shell_lib',
       'type': 'static_library',
       'defines!': ['CONTENT_IMPLEMENTATION'],
-      'variables': {
-        'chromium_code': 1,
-      },
       'dependencies': [
         '<(DEPTH)/apps/common/api/api.gyp:apps_api',
         '<(DEPTH)/chrome/chrome.gyp:browser',
@@ -130,9 +127,6 @@
       'target_name': 'app_shell',
       'type': 'executable',
       'defines!': ['CONTENT_IMPLEMENTATION'],
-      'variables': {
-        'chromium_code': 1,
-      },
       'dependencies': [
         'app_shell_lib',
         'app_shell_pak',
@@ -160,9 +154,6 @@
     {
       'target_name': 'app_shell_browsertests',
       'type': '<(gtest_target_type)',
-      'variables': {
-        'chromium_code': 1,
-      },
       'dependencies': [
         'app_shell_lib',
         # TODO(yoz): find the right deps
