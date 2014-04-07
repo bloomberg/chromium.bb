@@ -203,7 +203,7 @@ void OutputConfiguratorAnimation::StartFadeInAnimation() {
 }
 
 void OutputConfiguratorAnimation::OnDisplayModeChanged(
-    const ui::OutputConfigurator::DisplayStateList& outputs) {
+    const ui::DisplayConfigurator::DisplayStateList& outputs) {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();
 }

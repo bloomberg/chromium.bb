@@ -5,22 +5,22 @@
 #ifndef UI_DISPLAY_CHROMEOS_OZONE_TOUCHSCREEN_DELEGATE_OZONE_H_
 #define UI_DISPLAY_CHROMEOS_OZONE_TOUCHSCREEN_DELEGATE_OZONE_H_
 
-#include "ui/display/chromeos/output_configurator.h"
+#include "ui/display/chromeos/display_configurator.h"
 
 namespace ui {
 
 class TouchscreenDelegateOzone
-    : public OutputConfigurator::TouchscreenDelegate {
+    : public DisplayConfigurator::TouchscreenDelegate {
  public:
   TouchscreenDelegateOzone();
   virtual ~TouchscreenDelegateOzone();
 
-  // OutputConfigurator::TouchscreenDelegate overrides:
+  // DisplayConfigurator::TouchscreenDelegate overrides:
   virtual void AssociateTouchscreens(
-      std::vector<OutputConfigurator::DisplayState>* outputs) OVERRIDE;
+      std::vector<DisplayConfigurator::DisplayState>* outputs) OVERRIDE;
   virtual void ConfigureCTM(
       int touch_device_id,
-      const OutputConfigurator::CoordinateTransformation& ctm) OVERRIDE;
+      const DisplayConfigurator::CoordinateTransformation& ctm) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TouchscreenDelegateOzone);

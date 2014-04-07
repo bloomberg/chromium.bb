@@ -26,7 +26,7 @@
 
 namespace ash {
 
-using ui::OutputConfigurator;
+using ui::DisplayConfigurator;
 
 namespace {
 
@@ -52,7 +52,7 @@ struct DisplayModeSorter {
 
 // static
 std::vector<DisplayMode> DisplayChangeObserver::GetDisplayModeList(
-    const OutputConfigurator::DisplayState& output) {
+    const DisplayConfigurator::DisplayState& output) {
   typedef std::map<std::pair<int, int>, DisplayMode> DisplayModeMap;
   DisplayModeMap display_mode_map;
 
@@ -118,11 +118,11 @@ bool DisplayChangeObserver::GetResolutionForDisplayId(int64 display_id,
 }
 
 void DisplayChangeObserver::OnDisplayModeChanged(
-    const std::vector<OutputConfigurator::DisplayState>& outputs) {
+    const std::vector<DisplayConfigurator::DisplayState>& outputs) {
   std::vector<DisplayInfo> displays;
   std::set<int64> ids;
   for (size_t i = 0; i < outputs.size(); ++i) {
-    const OutputConfigurator::DisplayState& output = outputs[i];
+    const DisplayConfigurator::DisplayState& output = outputs[i];
 
     if (output.display->type() == ui::OUTPUT_TYPE_INTERNAL &&
         gfx::Display::InternalDisplayId() == gfx::Display::kInvalidDisplayID) {
@@ -164,8 +164,9 @@ void DisplayChangeObserver::OnDisplayModeChanged(
         output.touch_device_id == 0 ? gfx::Display::TOUCH_SUPPORT_UNAVAILABLE :
                                       gfx::Display::TOUCH_SUPPORT_AVAILABLE);
     new_info.set_available_color_profiles(
-        Shell::GetInstance()->output_configurator()->
-        GetAvailableColorCalibrationProfiles(id));
+        Shell::GetInstance()
+            ->display_configurator()
+            ->GetAvailableColorCalibrationProfiles(id));
   }
 
   // DisplayManager can be null during the boot.
@@ -176,7 +177,7 @@ void DisplayChangeObserver::OnAppTerminating() {
 #if defined(USE_ASH)
   // Stop handling display configuration events once the shutdown
   // process starts. crbug.com/177014.
-  Shell::GetInstance()->output_configurator()->PrepareForExit();
+  Shell::GetInstance()->display_configurator()->PrepareForExit();
 #endif
 }
 

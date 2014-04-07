@@ -303,7 +303,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
 
 void DisplayOptionsHandler::OnFadeOutForMirroringFinished(bool is_mirroring) {
   ash::Shell::GetInstance()->display_manager()->SetMirrorMode(is_mirroring);
-  // Not necessary to start fade-in animation.  OutputConfigurator will do that.
+  // Not necessary to start fade-in animation. DisplayConfigurator will do that.
 }
 
 void DisplayOptionsHandler::OnFadeOutForDisplayLayoutFinished(

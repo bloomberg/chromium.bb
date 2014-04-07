@@ -455,7 +455,7 @@ void DisplayManager::SetDisplayResolution(int64 display_id,
   display_modes_[display_id] = *iter;
 #if defined(OS_CHROMEOS)
   if (base::SysInfo::IsRunningOnChromeOS())
-    Shell::GetInstance()->output_configurator()->OnConfigurationChanged();
+    Shell::GetInstance()->display_configurator()->OnConfigurationChanged();
 #endif
 }
 
@@ -515,7 +515,7 @@ void DisplayManager::SetColorCalibrationProfile(
     delegate_->PreDisplayConfigurationChange(false);
   // Just sets color profile if it's not running on ChromeOS (like tests).
   if (!base::SysInfo::IsRunningOnChromeOS() ||
-      Shell::GetInstance()->output_configurator()->SetColorCalibrationProfile(
+      Shell::GetInstance()->display_configurator()->SetColorCalibrationProfile(
           display_id, profile)) {
     display_info_[display_id].SetColorProfile(profile);
     UMA_HISTOGRAM_ENUMERATION(
@@ -866,7 +866,7 @@ void DisplayManager::SetMirrorMode(bool mirrored) {
   if (base::SysInfo::IsRunningOnChromeOS()) {
     ui::OutputState new_state = mirrored ? ui::OUTPUT_STATE_DUAL_MIRROR :
                                            ui::OUTPUT_STATE_DUAL_EXTENDED;
-    Shell::GetInstance()->output_configurator()->SetDisplayMode(new_state);
+    Shell::GetInstance()->display_configurator()->SetDisplayMode(new_state);
     return;
   }
 #endif
@@ -1004,7 +1004,7 @@ void DisplayManager::OnDisplayInfoUpdated(const DisplayInfo& display_info) {
 #if defined(OS_CHROMEOS)
   ui::ColorCalibrationProfile color_profile = display_info.color_profile();
   if (color_profile != ui::COLOR_PROFILE_STANDARD) {
-    Shell::GetInstance()->output_configurator()->SetColorCalibrationProfile(
+    Shell::GetInstance()->display_configurator()->SetColorCalibrationProfile(
         display_info.id(), color_profile);
   }
 #endif

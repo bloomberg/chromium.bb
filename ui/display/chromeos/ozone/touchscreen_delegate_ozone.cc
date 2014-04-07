@@ -11,13 +11,13 @@ TouchscreenDelegateOzone::TouchscreenDelegateOzone() {}
 TouchscreenDelegateOzone::~TouchscreenDelegateOzone() {}
 
 void TouchscreenDelegateOzone::AssociateTouchscreens(
-    std::vector<OutputConfigurator::DisplayState>* outputs) {
+    std::vector<DisplayConfigurator::DisplayState>* outputs) {
   NOTIMPLEMENTED();
 }
 
 void TouchscreenDelegateOzone::ConfigureCTM(
     int touch_device_id,
-    const OutputConfigurator::CoordinateTransformation& ctm) {
+    const DisplayConfigurator::CoordinateTransformation& ctm) {
   NOTIMPLEMENTED();
 }
 

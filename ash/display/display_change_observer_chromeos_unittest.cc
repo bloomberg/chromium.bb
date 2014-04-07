@@ -7,11 +7,11 @@
 #include "ash/display/display_info.h"
 #include "base/memory/scoped_vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/chromeos/display_mode.h"
-#include "ui/display/chromeos/output_configurator.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
 
-using ui::OutputConfigurator;
+using ui::DisplayConfigurator;
 
 typedef testing::Test DisplayChangeObserverTest;
 
@@ -44,7 +44,7 @@ TEST_F(DisplayChangeObserverTest, GetDisplayModeList) {
 
   ui::TestDisplaySnapshot display_snapshot;
   display_snapshot.set_modes(modes.get());
-  OutputConfigurator::DisplayState output;
+  DisplayConfigurator::DisplayState output;
   output.display = &display_snapshot;
 
   std::vector<DisplayMode> display_modes =

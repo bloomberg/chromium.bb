@@ -18,7 +18,7 @@ ProjectingObserver::ProjectingObserver()
 ProjectingObserver::~ProjectingObserver() {}
 
 void ProjectingObserver::OnDisplayModeChanged(
-    const ui::OutputConfigurator::DisplayStateList& outputs) {
+    const ui::DisplayConfigurator::DisplayStateList& outputs) {
   has_internal_output_ = false;
   output_count_ = outputs.size();
 

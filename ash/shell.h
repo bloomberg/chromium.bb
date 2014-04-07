@@ -48,8 +48,8 @@ class Rect;
 }
 
 namespace ui {
+class DisplayConfigurator;
 class Layer;
-class OutputConfigurator;
 }
 namespace views {
 class NonClientFrameView;
@@ -495,8 +495,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
 #if defined(OS_CHROMEOS)
   // TODO(oshima): Move these objects to DisplayController.
-  ui::OutputConfigurator* output_configurator() {
-    return output_configurator_.get();
+  ui::DisplayConfigurator* display_configurator() {
+    return display_configurator_.get();
   }
   OutputConfiguratorAnimation* output_configurator_animation() {
     return output_configurator_animation_.get();
@@ -701,7 +701,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   scoped_ptr<LastWindowClosedLogoutReminder>
       last_window_closed_logout_reminder_;
   // Controls video output device state.
-  scoped_ptr<ui::OutputConfigurator> output_configurator_;
+  scoped_ptr<ui::DisplayConfigurator> display_configurator_;
   scoped_ptr<OutputConfiguratorAnimation> output_configurator_animation_;
   scoped_ptr<DisplayErrorObserver> display_error_observer_;
   scoped_ptr<ProjectingObserver> projecting_observer_;

@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/display/chromeos/output_configurator.h"
+#include "ui/display/chromeos/display_configurator.h"
 #endif
 
 namespace gfx {
@@ -33,10 +33,10 @@ class LockStateController;
 // Displays onscreen animations and locks or suspends the system in response to
 // the power button being pressed or released.
 class ASH_EXPORT PowerButtonController
-// TODO(derat): Remove these ifdefs after OutputConfigurator becomes
+// TODO(derat): Remove these ifdefs after DisplayConfigurator becomes
 // cross-platform.
 #if defined(OS_CHROMEOS)
-    : public ui::OutputConfigurator::Observer
+    : public ui::DisplayConfigurator::Observer
 #endif
       {
  public:
@@ -55,9 +55,9 @@ class ASH_EXPORT PowerButtonController
   void OnLockButtonEvent(bool down, const base::TimeTicks& timestamp);
 
 #if defined(OS_CHROMEOS)
-  // Overriden from ui::OutputConfigurator::Observer:
+  // Overriden from ui::DisplayConfigurator::Observer:
   virtual void OnDisplayModeChanged(
-      const ui::OutputConfigurator::DisplayStateList& outputs) OVERRIDE;
+      const ui::DisplayConfigurator::DisplayStateList& outputs) OVERRIDE;
 #endif
 
  private:

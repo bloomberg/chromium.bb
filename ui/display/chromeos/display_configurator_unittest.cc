@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/chromeos/output_configurator.h"
+#include "ui/display/chromeos/display_configurator.h"
 
 #include <stdint.h>
 
@@ -85,7 +85,7 @@ std::string GetFramebufferAction(const gfx::Size& size,
 // Returns a string describing a TestNativeDisplayDelegate::ConfigureCTM() call.
 std::string GetCTMAction(
     int device_id,
-    const OutputConfigurator::CoordinateTransformation& ctm) {
+    const DisplayConfigurator::CoordinateTransformation& ctm) {
   return base::StringPrintf("ctm(id=%d,transform=(%f,%f,%f,%f))",
                             device_id,
                             ctm.x_scale,
@@ -145,7 +145,8 @@ class ActionLogger {
   DISALLOW_COPY_AND_ASSIGN(ActionLogger);
 };
 
-class TestTouchscreenDelegate : public OutputConfigurator::TouchscreenDelegate {
+class TestTouchscreenDelegate
+    : public DisplayConfigurator::TouchscreenDelegate {
  public:
   // Ownership of |log| remains with the caller.
   explicit TestTouchscreenDelegate(ActionLogger* log)
@@ -153,7 +154,7 @@ class TestTouchscreenDelegate : public OutputConfigurator::TouchscreenDelegate {
         configure_touchscreens_(false) {}
   virtual ~TestTouchscreenDelegate() {}
 
-  const OutputConfigurator::CoordinateTransformation& GetCTM(
+  const DisplayConfigurator::CoordinateTransformation& GetCTM(
       int touch_device_id) {
     return ctms_[touch_device_id];
   }
@@ -162,9 +163,9 @@ class TestTouchscreenDelegate : public OutputConfigurator::TouchscreenDelegate {
     configure_touchscreens_ = state;
   }
 
-  // OutputConfigurator::TouchscreenDelegate implementation:
+  // DisplayConfigurator::TouchscreenDelegate implementation:
   virtual void AssociateTouchscreens(
-      OutputConfigurator::DisplayStateList* outputs) OVERRIDE {
+      DisplayConfigurator::DisplayStateList* outputs) OVERRIDE {
     if (configure_touchscreens_) {
       for (size_t i = 0; i < outputs->size(); ++i)
         (*outputs)[i].touch_device_id = i + 1;
@@ -172,7 +173,7 @@ class TestTouchscreenDelegate : public OutputConfigurator::TouchscreenDelegate {
   }
   virtual void ConfigureCTM(
       int touch_device_id,
-      const OutputConfigurator::CoordinateTransformation& ctm) OVERRIDE {
+      const DisplayConfigurator::CoordinateTransformation& ctm) OVERRIDE {
     log_->AppendAction(GetCTMAction(touch_device_id, ctm));
     ctms_[touch_device_id] = ctm;
   }
@@ -183,7 +184,7 @@ class TestTouchscreenDelegate : public OutputConfigurator::TouchscreenDelegate {
   bool configure_touchscreens_;
 
   // Most-recently-configured transformation matrices, keyed by touch device ID.
-  std::map<int, OutputConfigurator::CoordinateTransformation> ctms_;
+  std::map<int, DisplayConfigurator::CoordinateTransformation> ctms_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTouchscreenDelegate);
 };
@@ -208,7 +209,7 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
 
   void set_hdcp_state(HDCPState state) { hdcp_state_ = state; }
 
-  // OutputConfigurator::Delegate overrides:
+  // DisplayConfigurator::Delegate overrides:
   virtual void Initialize() OVERRIDE { log_->AppendAction(kInitXRandR); }
   virtual void GrabServer() OVERRIDE { log_->AppendAction(kGrab); }
   virtual void UngrabServer() OVERRIDE { log_->AppendAction(kUngrab); }
@@ -256,8 +257,7 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   }
 
   virtual std::vector<ui::ColorCalibrationProfile>
-  GetAvailableColorCalibrationProfiles(
-      const DisplaySnapshot& output) OVERRIDE {
+  GetAvailableColorCalibrationProfiles(const DisplaySnapshot& output) OVERRIDE {
     return std::vector<ui::ColorCalibrationProfile>();
   }
 
@@ -291,9 +291,9 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestNativeDisplayDelegate);
 };
 
-class TestObserver : public OutputConfigurator::Observer {
+class TestObserver : public DisplayConfigurator::Observer {
  public:
-  explicit TestObserver(OutputConfigurator* configurator)
+  explicit TestObserver(DisplayConfigurator* configurator)
       : configurator_(configurator) {
     Reset();
     configurator_->AddObserver(this);
@@ -302,7 +302,7 @@ class TestObserver : public OutputConfigurator::Observer {
 
   int num_changes() const { return num_changes_; }
   int num_failures() const { return num_failures_; }
-  const OutputConfigurator::DisplayStateList& latest_outputs() const {
+  const DisplayConfigurator::DisplayStateList& latest_outputs() const {
     return latest_outputs_;
   }
   OutputState latest_failed_state() const { return latest_failed_state_; }
@@ -314,9 +314,9 @@ class TestObserver : public OutputConfigurator::Observer {
     latest_failed_state_ = OUTPUT_STATE_INVALID;
   }
 
-  // OutputConfigurator::Observer overrides:
+  // DisplayConfigurator::Observer overrides:
   virtual void OnDisplayModeChanged(
-      const OutputConfigurator::DisplayStateList& outputs) OVERRIDE {
+      const DisplayConfigurator::DisplayStateList& outputs) OVERRIDE {
     num_changes_++;
     latest_outputs_ = outputs;
   }
@@ -328,27 +328,27 @@ class TestObserver : public OutputConfigurator::Observer {
   }
 
  private:
-  OutputConfigurator* configurator_;  // Not owned.
+  DisplayConfigurator* configurator_;  // Not owned.
 
   // Number of times that OnDisplayMode*() has been called.
   int num_changes_;
   int num_failures_;
 
   // Parameters most recently passed to OnDisplayMode*().
-  OutputConfigurator::DisplayStateList latest_outputs_;
+  DisplayConfigurator::DisplayStateList latest_outputs_;
   OutputState latest_failed_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
-class TestStateController : public OutputConfigurator::StateController {
+class TestStateController : public DisplayConfigurator::StateController {
  public:
   TestStateController() : state_(OUTPUT_STATE_DUAL_EXTENDED) {}
   virtual ~TestStateController() {}
 
   void set_state(OutputState state) { state_ = state; }
 
-  // OutputConfigurator::StateController overrides:
+  // DisplayConfigurator::StateController overrides:
   virtual OutputState GetStateForDisplayIds(
       const std::vector<int64_t>& outputs) const OVERRIDE {
     return state_;
@@ -365,7 +365,7 @@ class TestStateController : public OutputConfigurator::StateController {
 };
 
 class TestMirroringController
-    : public OutputConfigurator::SoftwareMirroringController {
+    : public DisplayConfigurator::SoftwareMirroringController {
  public:
   TestMirroringController() : software_mirroring_enabled_(false) {}
   virtual ~TestMirroringController() {}
@@ -384,14 +384,14 @@ class TestMirroringController
   DISALLOW_COPY_AND_ASSIGN(TestMirroringController);
 };
 
-class OutputConfiguratorTest : public testing::Test {
+class DisplayConfiguratorTest : public testing::Test {
  public:
-  OutputConfiguratorTest()
+  DisplayConfiguratorTest()
       : small_mode_(gfx::Size(1366, 768), false, 60.0f),
         big_mode_(gfx::Size(2560, 1600), false, 60.0f),
         observer_(&configurator_),
         test_api_(&configurator_) {}
-  virtual ~OutputConfiguratorTest() {}
+  virtual ~DisplayConfiguratorTest() {}
 
   virtual void SetUp() OVERRIDE {
     log_.reset(new ActionLogger());
@@ -402,7 +402,7 @@ class OutputConfiguratorTest : public testing::Test {
 
     touchscreen_delegate_ = new TestTouchscreenDelegate(log_.get());
     configurator_.SetTouchscreenDelegateForTesting(
-        scoped_ptr<OutputConfigurator::TouchscreenDelegate>(
+        scoped_ptr<DisplayConfigurator::TouchscreenDelegate>(
             touchscreen_delegate_));
 
     configurator_.set_state_controller(&state_controller_);
@@ -479,22 +479,22 @@ class OutputConfiguratorTest : public testing::Test {
   base::MessageLoop message_loop_;
   TestStateController state_controller_;
   TestMirroringController mirroring_controller_;
-  OutputConfigurator configurator_;
+  DisplayConfigurator configurator_;
   TestObserver observer_;
   scoped_ptr<ActionLogger> log_;
   TestNativeDisplayDelegate* native_display_delegate_;  // not owned
   TestTouchscreenDelegate* touchscreen_delegate_;       // not owned
-  OutputConfigurator::TestApi test_api_;
+  DisplayConfigurator::TestApi test_api_;
 
   TestDisplaySnapshot outputs_[2];
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(OutputConfiguratorTest);
+  DISALLOW_COPY_AND_ASSIGN(DisplayConfiguratorTest);
 };
 
 }  // namespace
 
-TEST_F(OutputConfiguratorTest, FindDisplayModeMatchingSize) {
+TEST_F(DisplayConfiguratorTest, FindDisplayModeMatchingSize) {
   ScopedVector<const DisplayMode> modes;
 
   // Fields are width, height, interlaced, refresh rate.
@@ -524,48 +524,48 @@ TEST_F(OutputConfiguratorTest, FindDisplayModeMatchingSize) {
   output.set_modes(modes.get());
 
   EXPECT_EQ(modes[0],
-            OutputConfigurator::FindDisplayModeMatchingSize(
+            DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(1920, 1200)));
 
   // Should pick highest refresh rate.
   EXPECT_EQ(modes[2],
-            OutputConfigurator::FindDisplayModeMatchingSize(
+            DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(1920, 1080)));
 
   // Should pick non-interlaced mode.
   EXPECT_EQ(modes[6],
-            OutputConfigurator::FindDisplayModeMatchingSize(
+            DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(1280, 720)));
 
   // Interlaced only. Should pick one with the highest refresh rate in
   // interlaced mode.
   EXPECT_EQ(modes[9],
-            OutputConfigurator::FindDisplayModeMatchingSize(
+            DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(1024, 768)));
 
   // Mixed: Should pick one with the highest refresh rate in
   // interlaced mode.
   EXPECT_EQ(modes[12],
-            OutputConfigurator::FindDisplayModeMatchingSize(
+            DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(1024, 600)));
 
   // Just one interlaced mode.
   EXPECT_EQ(modes[13],
-            OutputConfigurator::FindDisplayModeMatchingSize(
+            DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(640, 480)));
 
   // Refresh rate not available.
   EXPECT_EQ(modes[14],
-            OutputConfigurator::FindDisplayModeMatchingSize(
+            DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(320, 200)));
 
   // No mode found.
   EXPECT_EQ(NULL,
-            OutputConfigurator::FindDisplayModeMatchingSize(
+            DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(1440, 900)));
 }
 
-TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
+TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
   InitWithSingleOutput();
 
   // Connect a second output and check that the configurator enters
@@ -574,7 +574,7 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   state_controller_.set_state(OUTPUT_STATE_DUAL_EXTENDED);
   UpdateOutputs(2, true);
   const int kDualHeight = small_mode_.size().height() +
-                          OutputConfigurator::kVerticalGap +
+                          DisplayConfigurator::kVerticalGap +
                           big_mode_.size().height();
   EXPECT_EQ(
       JoinActions(
@@ -587,7 +587,7 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
                         &big_mode_,
                         gfx::Point(0,
                                    small_mode_.size().height() +
-                                       OutputConfigurator::kVerticalGap))
+                                       DisplayConfigurator::kVerticalGap))
               .c_str(),
           kUngrab,
           NULL),
@@ -639,7 +639,7 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
                         &big_mode_,
                         gfx::Point(0,
                                    small_mode_.size().height() +
-                                       OutputConfigurator::kVerticalGap))
+                                       DisplayConfigurator::kVerticalGap))
               .c_str(),
           kUngrab,
           NULL),
@@ -683,7 +683,7 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   EXPECT_EQ(1, observer_.num_changes());
 }
 
-TEST_F(OutputConfiguratorTest, SetDisplayPower) {
+TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
   InitWithSingleOutput();
 
   state_controller_.set_state(OUTPUT_STATE_DUAL_MIRROR);
@@ -707,7 +707,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   observer_.Reset();
   configurator_.SetDisplayPower(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-      OutputConfigurator::kSetDisplayPowerNoFlags);
+      DisplayConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -726,7 +726,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   // to the mirrored size.
   observer_.Reset();
   configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_OFF,
-                                OutputConfigurator::kSetDisplayPowerNoFlags);
+                                DisplayConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(
       JoinActions(kGrab,
                   GetFramebufferAction(
@@ -743,7 +743,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   // Turn all displays on and check that mirroring is still used.
   observer_.Reset();
   configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_ON,
-                                OutputConfigurator::kSetDisplayPowerNoFlags);
+                                DisplayConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -765,7 +765,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   observer_.Reset();
   UpdateOutputs(2, true);
   const int kDualHeight = small_mode_.size().height() +
-                          OutputConfigurator::kVerticalGap +
+                          DisplayConfigurator::kVerticalGap +
                           big_mode_.size().height();
   EXPECT_EQ(
       JoinActions(
@@ -778,7 +778,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
                         &big_mode_,
                         gfx::Point(0,
                                    small_mode_.size().height() +
-                                       OutputConfigurator::kVerticalGap))
+                                       DisplayConfigurator::kVerticalGap))
               .c_str(),
           kUngrab,
           NULL),
@@ -792,7 +792,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   observer_.Reset();
   configurator_.SetDisplayPower(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-      OutputConfigurator::kSetDisplayPowerNoFlags);
+      DisplayConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -812,7 +812,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   // to the extended + software mirroring.
   observer_.Reset();
   configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_OFF,
-                                OutputConfigurator::kSetDisplayPowerNoFlags);
+                                DisplayConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -824,7 +824,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
                         NULL,
                         gfx::Point(0,
                                    small_mode_.size().height() +
-                                       OutputConfigurator::kVerticalGap))
+                                       DisplayConfigurator::kVerticalGap))
               .c_str(),
           kUngrab,
           NULL),
@@ -836,7 +836,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   // Turn all displays on and check that mirroring is still used.
   observer_.Reset();
   configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_ON,
-                                OutputConfigurator::kSetDisplayPowerNoFlags);
+                                DisplayConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -848,7 +848,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
                         &big_mode_,
                         gfx::Point(0,
                                    small_mode_.size().height() +
-                                       OutputConfigurator::kVerticalGap))
+                                       DisplayConfigurator::kVerticalGap))
               .c_str(),
           kForceDPMS,
           kUngrab,
@@ -859,7 +859,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(1, observer_.num_changes());
 }
 
-TEST_F(OutputConfiguratorTest, SuspendAndResume) {
+TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
   InitWithSingleOutput();
 
   // No preparation is needed before suspending when the display is already
@@ -881,7 +881,7 @@ TEST_F(OutputConfiguratorTest, SuspendAndResume) {
   // Now turn the display off before suspending and check that the
   // configurator turns it back on and syncs with the server.
   configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_OFF,
-                                OutputConfigurator::kSetDisplayPowerNoFlags);
+                                DisplayConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -930,7 +930,7 @@ TEST_F(OutputConfiguratorTest, SuspendAndResume) {
       log_->GetActionsAndClear());
 
   configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_OFF,
-                                OutputConfigurator::kSetDisplayPowerNoFlags);
+                                DisplayConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(
       JoinActions(kGrab,
                   GetFramebufferAction(
@@ -959,7 +959,7 @@ TEST_F(OutputConfiguratorTest, SuspendAndResume) {
       log_->GetActionsAndClear());
 }
 
-TEST_F(OutputConfiguratorTest, Headless) {
+TEST_F(DisplayConfiguratorTest, Headless) {
   UpdateOutputs(0, false);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   configurator_.Init(false);
@@ -971,10 +971,10 @@ TEST_F(OutputConfiguratorTest, Headless) {
   // Not much should happen when the display power state is changed while
   // no displays are connected.
   configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_OFF,
-                                OutputConfigurator::kSetDisplayPowerNoFlags);
+                                DisplayConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), log_->GetActionsAndClear());
   configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_ON,
-                                OutputConfigurator::kSetDisplayPowerNoFlags);
+                                DisplayConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(JoinActions(kGrab, kForceDPMS, kUngrab, NULL),
             log_->GetActionsAndClear());
 
@@ -995,7 +995,7 @@ TEST_F(OutputConfiguratorTest, Headless) {
       log_->GetActionsAndClear());
 }
 
-TEST_F(OutputConfiguratorTest, StartWithTwoOutputs) {
+TEST_F(DisplayConfiguratorTest, StartWithTwoOutputs) {
   UpdateOutputs(2, false);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   configurator_.Init(false);
@@ -1017,7 +1017,7 @@ TEST_F(OutputConfiguratorTest, StartWithTwoOutputs) {
       log_->GetActionsAndClear());
 }
 
-TEST_F(OutputConfiguratorTest, InvalidOutputStates) {
+TEST_F(DisplayConfiguratorTest, InvalidOutputStates) {
   UpdateOutputs(0, false);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   configurator_.Init(false);
@@ -1050,7 +1050,7 @@ TEST_F(OutputConfiguratorTest, InvalidOutputStates) {
   EXPECT_EQ(2, observer_.num_failures());
 }
 
-TEST_F(OutputConfiguratorTest, GetOutputStateForDisplaysWithoutId) {
+TEST_F(DisplayConfiguratorTest, GetOutputStateForDisplaysWithoutId) {
   outputs_[0].set_has_proper_display_id(false);
   UpdateOutputs(2, false);
   configurator_.Init(false);
@@ -1059,7 +1059,7 @@ TEST_F(OutputConfiguratorTest, GetOutputStateForDisplaysWithoutId) {
   EXPECT_EQ(OUTPUT_STATE_DUAL_EXTENDED, configurator_.output_state());
 }
 
-TEST_F(OutputConfiguratorTest, GetOutputStateForDisplaysWithId) {
+TEST_F(DisplayConfiguratorTest, GetOutputStateForDisplaysWithId) {
   outputs_[0].set_has_proper_display_id(true);
   UpdateOutputs(2, false);
   configurator_.Init(false);
@@ -1068,9 +1068,9 @@ TEST_F(OutputConfiguratorTest, GetOutputStateForDisplaysWithId) {
   EXPECT_EQ(OUTPUT_STATE_DUAL_MIRROR, configurator_.output_state());
 }
 
-TEST_F(OutputConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
+TEST_F(DisplayConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
   InitWithSingleOutput();
-  const OutputConfigurator::DisplayStateList* cached =
+  const DisplayConfigurator::DisplayStateList* cached =
       &configurator_.cached_outputs();
   ASSERT_EQ(static_cast<size_t>(1), cached->size());
   EXPECT_EQ(outputs_[0].current_mode(), (*cached)[0].display->current_mode());
@@ -1085,7 +1085,7 @@ TEST_F(OutputConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
   EXPECT_EQ(outputs_[1].current_mode(), (*cached)[1].display->current_mode());
 }
 
-TEST_F(OutputConfiguratorTest, PanelFitting) {
+TEST_F(DisplayConfiguratorTest, PanelFitting) {
   // Configure the internal display to support only the big mode and the
   // external display to support only the small mode.
   outputs_[0].set_current_mode(&big_mode_);
@@ -1129,19 +1129,20 @@ TEST_F(OutputConfiguratorTest, PanelFitting) {
 
   // Also check that the newly-added small mode is present in the internal
   // snapshot that was passed to the observer (http://crbug.com/289159).
-  const OutputConfigurator::DisplayState& state = observer_.latest_outputs()[0];
+  const DisplayConfigurator::DisplayState& state =
+      observer_.latest_outputs()[0];
   ASSERT_NE(state.display->modes().end(),
             std::find(state.display->modes().begin(),
                       state.display->modes().end(),
                       &small_mode_));
 }
 
-TEST_F(OutputConfiguratorTest, OutputProtection) {
+TEST_F(DisplayConfiguratorTest, OutputProtection) {
   configurator_.Init(false);
   configurator_.ForceInitialConfigure(0);
   EXPECT_NE(kNoActions, log_->GetActionsAndClear());
 
-  OutputConfigurator::OutputProtectionClientId id =
+  DisplayConfigurator::OutputProtectionClientId id =
       configurator_.RegisterOutputProtectionClient();
   EXPECT_NE(0u, id);
 
@@ -1187,10 +1188,10 @@ TEST_F(OutputConfiguratorTest, OutputProtection) {
             log_->GetActionsAndClear());
 }
 
-TEST_F(OutputConfiguratorTest, OutputProtectionTwoClients) {
-  OutputConfigurator::OutputProtectionClientId client1 =
+TEST_F(DisplayConfiguratorTest, OutputProtectionTwoClients) {
+  DisplayConfigurator::OutputProtectionClientId client1 =
       configurator_.RegisterOutputProtectionClient();
-  OutputConfigurator::OutputProtectionClientId client2 =
+  DisplayConfigurator::OutputProtectionClientId client2 =
       configurator_.RegisterOutputProtectionClient();
   EXPECT_NE(client1, client2);
 
@@ -1225,12 +1226,11 @@ TEST_F(OutputConfiguratorTest, OutputProtectionTwoClients) {
             log_->GetActionsAndClear());
   EXPECT_TRUE(configurator_.EnableOutputProtection(
       client1, outputs_[1].display_id(), OUTPUT_PROTECTION_METHOD_NONE));
-  EXPECT_EQ(
-      GetSetHDCPStateAction(outputs_[1], HDCP_STATE_UNDESIRED).c_str(),
-      log_->GetActionsAndClear());
+  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1], HDCP_STATE_UNDESIRED).c_str(),
+            log_->GetActionsAndClear());
 }
 
-TEST_F(OutputConfiguratorTest, CTMForMultiScreens) {
+TEST_F(DisplayConfiguratorTest, CTMForMultiScreens) {
   touchscreen_delegate_->set_configure_touchscreens(true);
   UpdateOutputs(2, false);
   configurator_.Init(false);
@@ -1238,13 +1238,13 @@ TEST_F(OutputConfiguratorTest, CTMForMultiScreens) {
   configurator_.ForceInitialConfigure(0);
 
   const int kDualHeight = small_mode_.size().height() +
-                          OutputConfigurator::kVerticalGap +
+                          DisplayConfigurator::kVerticalGap +
                           big_mode_.size().height();
   const int kDualWidth = big_mode_.size().width();
 
-  OutputConfigurator::CoordinateTransformation ctm1 =
+  DisplayConfigurator::CoordinateTransformation ctm1 =
       touchscreen_delegate_->GetCTM(1);
-  OutputConfigurator::CoordinateTransformation ctm2 =
+  DisplayConfigurator::CoordinateTransformation ctm2 =
       touchscreen_delegate_->GetCTM(2);
 
   EXPECT_EQ(small_mode_.size().height() - 1,
@@ -1253,7 +1253,7 @@ TEST_F(OutputConfiguratorTest, CTMForMultiScreens) {
 
   EXPECT_EQ(big_mode_.size().height() - 1,
             round((kDualHeight - 1) * ctm2.y_scale));
-  EXPECT_EQ(small_mode_.size().height() + OutputConfigurator::kVerticalGap,
+  EXPECT_EQ(small_mode_.size().height() + DisplayConfigurator::kVerticalGap,
             round((kDualHeight - 1) * ctm2.y_offset));
 
   EXPECT_EQ(small_mode_.size().width() - 1,
@@ -1265,11 +1265,11 @@ TEST_F(OutputConfiguratorTest, CTMForMultiScreens) {
   EXPECT_EQ(0, round((kDualWidth - 1) * ctm2.x_offset));
 }
 
-TEST_F(OutputConfiguratorTest, HandleConfigureCrtcFailure) {
+TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
   InitWithSingleOutput();
 
   ScopedVector<const DisplayMode> modes;
-  // The first mode is the mode we are requesting OutputConfigurator to choose.
+  // The first mode is the mode we are requesting DisplayConfigurator to choose.
   // The test will be setup so that this mode will fail and it will have to
   // choose the next best option.
   modes.push_back(new DisplayMode(gfx::Size(2560, 1600), false, 60.0));
@@ -1331,7 +1331,7 @@ TEST_F(OutputConfiguratorTest, HandleConfigureCrtcFailure) {
           GetFramebufferAction(
               gfx::Size(modes[0]->size().width(),
                         modes[0]->size().height() + modes[0]->size().height() +
-                            OutputConfigurator::kVerticalGap),
+                            DisplayConfigurator::kVerticalGap),
               &outputs_[0],
               &outputs_[1]).c_str(),
           GetCrtcAction(outputs_[0], modes[0], gfx::Point(0, 0)).c_str(),
@@ -1340,13 +1340,13 @@ TEST_F(OutputConfiguratorTest, HandleConfigureCrtcFailure) {
                         modes[0],
                         gfx::Point(0,
                                    modes[0]->size().height() +
-                                       OutputConfigurator::kVerticalGap))
+                                       DisplayConfigurator::kVerticalGap))
               .c_str(),
           GetCrtcAction(outputs_[1],
                         modes[3],
                         gfx::Point(0,
                                    modes[0]->size().height() +
-                                       OutputConfigurator::kVerticalGap))
+                                       DisplayConfigurator::kVerticalGap))
               .c_str(),
           kUngrab,
           NULL),

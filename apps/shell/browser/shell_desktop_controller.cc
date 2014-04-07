@@ -89,10 +89,10 @@ ShellDesktopController* g_instance = NULL;
 
 ShellDesktopController::ShellDesktopController() {
 #if defined(OS_CHROMEOS)
-  output_configurator_.reset(new ui::OutputConfigurator);
-  output_configurator_->Init(false);
-  output_configurator_->ForceInitialConfigure(0);
-  output_configurator_->AddObserver(this);
+  display_configurator_.reset(new ui::DisplayConfigurator);
+  display_configurator_->Init(false);
+  display_configurator_->ForceInitialConfigure(0);
+  display_configurator_->AddObserver(this);
 #endif
   CreateRootWindow();
 
@@ -141,7 +141,7 @@ aura::WindowTreeHost* ShellDesktopController::GetWindowTreeHost() {
 
 #if defined(OS_CHROMEOS)
 void ShellDesktopController::OnDisplayModeChanged(
-    const std::vector<ui::OutputConfigurator::DisplayState>& outputs) {
+    const std::vector<ui::DisplayConfigurator::DisplayState>& outputs) {
   gfx::Size size = GetPrimaryDisplaySize();
   if (!size.IsEmpty())
     wm_test_helper_->host()->UpdateRootWindowSize(size);
@@ -177,8 +177,8 @@ void ShellDesktopController::DestroyRootWindow() {
 
 gfx::Size ShellDesktopController::GetPrimaryDisplaySize() {
 #if defined(OS_CHROMEOS)
-  const std::vector<ui::OutputConfigurator::DisplayState>& states =
-      output_configurator_->cached_outputs();
+  const std::vector<ui::DisplayConfigurator::DisplayState>& states =
+      display_configurator_->cached_outputs();
   if (states.empty())
     return gfx::Size();
   const ui::DisplayMode* mode = states[0].display->current_mode();

@@ -12,7 +12,7 @@
 #include "ui/gfx/geometry/size.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/display/chromeos/output_configurator.h"
+#include "ui/display/chromeos/display_configurator.h"
 #endif
 
 namespace aura {
@@ -35,7 +35,7 @@ class ShellAppWindow;
 // Handles desktop-related tasks for app_shell.
 class ShellDesktopController
 #if defined(OS_CHROMEOS)
-    : public ui::OutputConfigurator::Observer
+    : public ui::DisplayConfigurator::Observer
 #endif
       {
  public:
@@ -58,10 +58,9 @@ class ShellDesktopController
   aura::WindowTreeHost* GetWindowTreeHost();
 
 #if defined(OS_CHROMEOS)
-  // ui::OutputConfigurator::Observer overrides.
-  virtual void OnDisplayModeChanged(
-      const std::vector<ui::OutputConfigurator::DisplayState>& outputs)
-      OVERRIDE;
+  // ui::DisplayConfigurator::Observer overrides.
+  virtual void OnDisplayModeChanged(const std::vector<
+      ui::DisplayConfigurator::DisplayState>& outputs) OVERRIDE;
 #endif
 
  private:
@@ -76,7 +75,7 @@ class ShellDesktopController
   gfx::Size GetPrimaryDisplaySize();
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<ui::OutputConfigurator> output_configurator_;
+  scoped_ptr<ui::DisplayConfigurator> display_configurator_;
 #endif
 
   // Enable a minimal set of views::corewm to be initialized.

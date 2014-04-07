@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "ui/display/chromeos/output_configurator.h"
+#include "ui/display/chromeos/display_configurator.h"
 #include "ui/message_center/message_center.h"
 
 using ash::ResolutionNotificationController;
@@ -175,7 +175,7 @@ TEST_F(DisplayPreferencesTest, PairedLayoutOverrides) {
   LoadDisplayPreferences(true);
   // DisplayPowerState should be ignored at boot.
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON,
-            shell->output_configurator()->power_state());
+            shell->display_configurator()->power_state());
 
   shell->display_manager()->UpdateDisplays();
   // Check if the layout settings are notified to the system properly.
@@ -593,9 +593,8 @@ TEST_F(DisplayPreferencesTest, DisplayPowerStateAfterRestart) {
   StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
   LoadDisplayPreferences(false);
-  EXPECT_EQ(
-      chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-      ash::Shell::GetInstance()->output_configurator()->power_state());
+  EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
+            ash::Shell::GetInstance()->display_configurator()->power_state());
 }
 
 TEST_F(DisplayPreferencesTest, DontSaveAndRestoreAllOff) {
@@ -605,12 +604,12 @@ TEST_F(DisplayPreferencesTest, DontSaveAndRestoreAllOff) {
   LoadDisplayPreferences(false);
   // DisplayPowerState should be ignored at boot.
   EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-            shell->output_configurator()->power_state());
+            shell->display_configurator()->power_state());
 
   StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_ALL_OFF);
   EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-            shell->output_configurator()->power_state());
+            shell->display_configurator()->power_state());
   EXPECT_EQ("internal_off_external_on",
             local_state()->GetString(prefs::kDisplayPowerState));
 
@@ -618,7 +617,7 @@ TEST_F(DisplayPreferencesTest, DontSaveAndRestoreAllOff) {
   local_state()->SetString(prefs::kDisplayPowerState, "all_off");
   LoadDisplayPreferences(false);
   EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-            shell->output_configurator()->power_state());
+            shell->display_configurator()->power_state());
 }
 
 }  // namespace chromeos

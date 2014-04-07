@@ -26,7 +26,7 @@
 #include "ui/gfx/size.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/display/chromeos/output_configurator.h"
+#include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
 #include "ui/display/display_constants.h"
 #endif
@@ -997,15 +997,15 @@ TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
   modes.push_back(new ui::DisplayMode(gfx::Size(1, 1), false, 60.0f));
 
   // Create two outputs, the first internal and the second external.
-  ui::OutputConfigurator::DisplayStateList outputs;
-  ui::OutputConfigurator::DisplayState internal_output;
+  ui::DisplayConfigurator::DisplayStateList outputs;
+  ui::DisplayConfigurator::DisplayState internal_output;
   ui::TestDisplaySnapshot internal_display;
   internal_display.set_type(ui::OUTPUT_TYPE_INTERNAL);
   internal_display.set_modes(modes.get());
   internal_output.display = &internal_display;
   outputs.push_back(internal_output);
 
-  ui::OutputConfigurator::DisplayState external_output;
+  ui::DisplayConfigurator::DisplayState external_output;
   ui::TestDisplaySnapshot external_display;
   external_display.set_type(ui::OUTPUT_TYPE_HDMI);
   external_display.set_modes(modes.get());

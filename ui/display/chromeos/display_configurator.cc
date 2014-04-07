@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/chromeos/output_configurator.h"
+#include "ui/display/chromeos/display_configurator.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -71,9 +71,10 @@ std::string OutputStateToString(OutputState state) {
 // Returns the number of outputs in |outputs| that should be turned on, per
 // |state|.  If |output_power| is non-NULL, it is updated to contain the
 // on/off state of each corresponding entry in |outputs|.
-int GetOutputPower(const std::vector<OutputConfigurator::DisplayState>& outputs,
-                   chromeos::DisplayPowerState state,
-                   std::vector<bool>* output_power) {
+int GetOutputPower(
+    const std::vector<DisplayConfigurator::DisplayState>& outputs,
+    chromeos::DisplayPowerState state,
+    std::vector<bool>* output_power) {
   int num_on_outputs = 0;
   if (output_power)
     output_power->resize(outputs.size());
@@ -95,19 +96,19 @@ int GetOutputPower(const std::vector<OutputConfigurator::DisplayState>& outputs,
 
 }  // namespace
 
-OutputConfigurator::CoordinateTransformation::CoordinateTransformation()
+DisplayConfigurator::CoordinateTransformation::CoordinateTransformation()
     : x_scale(1.0),
       x_offset(0.0),
       y_scale(1.0),
       y_offset(0.0) {}
 
-OutputConfigurator::DisplayState::DisplayState()
+DisplayConfigurator::DisplayState::DisplayState()
     : display(NULL),
       touch_device_id(0),
       selected_mode(NULL),
       mirror_mode(NULL) {}
 
-bool OutputConfigurator::TestApi::TriggerConfigureTimeout() {
+bool DisplayConfigurator::TestApi::TriggerConfigureTimeout() {
   if (configurator_->configure_timer_.get() &&
       configurator_->configure_timer_->IsRunning()) {
     configurator_->configure_timer_.reset();
@@ -119,7 +120,7 @@ bool OutputConfigurator::TestApi::TriggerConfigureTimeout() {
 }
 
 // static
-const DisplayMode* OutputConfigurator::FindDisplayModeMatchingSize(
+const DisplayMode* DisplayConfigurator::FindDisplayModeMatchingSize(
     const DisplaySnapshot& output,
     const gfx::Size& size) {
   const DisplayMode* best_mode = NULL;
@@ -156,7 +157,7 @@ const DisplayMode* OutputConfigurator::FindDisplayModeMatchingSize(
   return best_mode;
 }
 
-OutputConfigurator::OutputConfigurator()
+DisplayConfigurator::DisplayConfigurator()
     : state_controller_(NULL),
       mirroring_controller_(NULL),
       is_panel_fitting_enabled_(false),
@@ -165,12 +166,12 @@ OutputConfigurator::OutputConfigurator()
       power_state_(chromeos::DISPLAY_POWER_ALL_ON),
       next_output_protection_client_id_(1) {}
 
-OutputConfigurator::~OutputConfigurator() {
+DisplayConfigurator::~DisplayConfigurator() {
   if (native_display_delegate_)
     native_display_delegate_->RemoveObserver(this);
 }
 
-void OutputConfigurator::SetNativeDisplayDelegateForTesting(
+void DisplayConfigurator::SetNativeDisplayDelegateForTesting(
     scoped_ptr<NativeDisplayDelegate> delegate) {
   DCHECK(!native_display_delegate_);
 
@@ -179,20 +180,20 @@ void OutputConfigurator::SetNativeDisplayDelegateForTesting(
   configure_display_ = true;
 }
 
-void OutputConfigurator::SetTouchscreenDelegateForTesting(
+void DisplayConfigurator::SetTouchscreenDelegateForTesting(
     scoped_ptr<TouchscreenDelegate> delegate) {
   DCHECK(!touchscreen_delegate_);
 
   touchscreen_delegate_ = delegate.Pass();
 }
 
-void OutputConfigurator::SetInitialDisplayPower(
+void DisplayConfigurator::SetInitialDisplayPower(
     chromeos::DisplayPowerState power_state) {
   DCHECK_EQ(output_state_, OUTPUT_STATE_INVALID);
   power_state_ = power_state;
 }
 
-void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
+void DisplayConfigurator::Init(bool is_panel_fitting_enabled) {
   is_panel_fitting_enabled_ = is_panel_fitting_enabled;
   if (!configure_display_)
     return;
@@ -219,7 +220,8 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
   }
 }
 
-void OutputConfigurator::ForceInitialConfigure(uint32_t background_color_argb) {
+void DisplayConfigurator::ForceInitialConfigure(
+    uint32_t background_color_argb) {
   if (!configure_display_)
     return;
 
@@ -240,7 +242,7 @@ void OutputConfigurator::ForceInitialConfigure(uint32_t background_color_argb) {
   NotifyObservers(success, new_state);
 }
 
-bool OutputConfigurator::ApplyProtections(const DisplayProtections& requests) {
+bool DisplayConfigurator::ApplyProtections(const DisplayProtections& requests) {
   for (DisplayStateList::const_iterator it = cached_outputs_.begin();
        it != cached_outputs_.end();
        ++it) {
@@ -278,15 +280,15 @@ bool OutputConfigurator::ApplyProtections(const DisplayProtections& requests) {
   return true;
 }
 
-OutputConfigurator::OutputProtectionClientId
-OutputConfigurator::RegisterOutputProtectionClient() {
+DisplayConfigurator::OutputProtectionClientId
+DisplayConfigurator::RegisterOutputProtectionClient() {
   if (!configure_display_)
     return kInvalidClientId;
 
   return next_output_protection_client_id_++;
 }
 
-void OutputConfigurator::UnregisterOutputProtectionClient(
+void DisplayConfigurator::UnregisterOutputProtectionClient(
     OutputProtectionClientId client_id) {
   client_protection_requests_.erase(client_id);
 
@@ -305,7 +307,7 @@ void OutputConfigurator::UnregisterOutputProtectionClient(
   ApplyProtections(protections);
 }
 
-bool OutputConfigurator::QueryOutputProtectionStatus(
+bool DisplayConfigurator::QueryOutputProtectionStatus(
     OutputProtectionClientId client_id,
     int64_t display_id,
     uint32_t* link_mask,
@@ -362,7 +364,7 @@ bool OutputConfigurator::QueryOutputProtectionStatus(
   return true;
 }
 
-bool OutputConfigurator::EnableOutputProtection(
+bool DisplayConfigurator::EnableOutputProtection(
     OutputProtectionClientId client_id,
     int64_t display_id,
     uint32_t desired_method_mask) {
@@ -402,8 +404,7 @@ bool OutputConfigurator::EnableOutputProtection(
 }
 
 std::vector<ui::ColorCalibrationProfile>
-OutputConfigurator::GetAvailableColorCalibrationProfiles(
-    int64_t display_id) {
+DisplayConfigurator::GetAvailableColorCalibrationProfiles(int64_t display_id) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDisplayColorCalibration)) {
     for (size_t i = 0; i < cached_outputs_.size(); ++i) {
@@ -418,7 +419,7 @@ OutputConfigurator::GetAvailableColorCalibrationProfiles(
   return std::vector<ui::ColorCalibrationProfile>();
 }
 
-bool OutputConfigurator::SetColorCalibrationProfile(
+bool DisplayConfigurator::SetColorCalibrationProfile(
     int64_t display_id,
     ui::ColorCalibrationProfile new_profile) {
   for (size_t i = 0; i < cached_outputs_.size(); ++i) {
@@ -432,11 +433,11 @@ bool OutputConfigurator::SetColorCalibrationProfile(
   return false;
 }
 
-void OutputConfigurator::PrepareForExit() {
+void DisplayConfigurator::PrepareForExit() {
   configure_display_ = false;
 }
 
-bool OutputConfigurator::SetDisplayPower(
+bool DisplayConfigurator::SetDisplayPower(
     chromeos::DisplayPowerState power_state,
     int flags) {
   if (!configure_display_)
@@ -478,7 +479,7 @@ bool OutputConfigurator::SetDisplayPower(
   return true;
 }
 
-bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
+bool DisplayConfigurator::SetDisplayMode(OutputState new_state) {
   if (!configure_display_)
     return false;
 
@@ -502,30 +503,30 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
   return success;
 }
 
-void OutputConfigurator::OnConfigurationChanged() {
+void DisplayConfigurator::OnConfigurationChanged() {
   // Configure outputs with |kConfigureDelayMs| delay,
   // so that time-consuming ConfigureOutputs() won't be called multiple times.
   if (configure_timer_.get()) {
     configure_timer_->Reset();
   } else {
-    configure_timer_.reset(new base::OneShotTimer<OutputConfigurator>());
+    configure_timer_.reset(new base::OneShotTimer<DisplayConfigurator>());
     configure_timer_->Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
         this,
-        &OutputConfigurator::ConfigureOutputs);
+        &DisplayConfigurator::ConfigureOutputs);
   }
 }
 
-void OutputConfigurator::AddObserver(Observer* observer) {
+void DisplayConfigurator::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void OutputConfigurator::RemoveObserver(Observer* observer) {
+void DisplayConfigurator::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void OutputConfigurator::SuspendDisplays() {
+void DisplayConfigurator::SuspendDisplays() {
   // If the display is off due to user inactivity and there's only a single
   // internal display connected, switch to the all-on state before
   // suspending.  This shouldn't be very noticeable to the user since the
@@ -542,13 +543,13 @@ void OutputConfigurator::SuspendDisplays() {
   }
 }
 
-void OutputConfigurator::ResumeDisplays() {
+void DisplayConfigurator::ResumeDisplays() {
   // Force probing to ensure that we pick up any changes that were made
   // while the system was suspended.
   SetDisplayPower(power_state_, kSetDisplayPowerForceProbe);
 }
 
-void OutputConfigurator::UpdateCachedOutputs() {
+void DisplayConfigurator::UpdateCachedOutputs() {
   std::vector<DisplaySnapshot*> snapshots =
       native_display_delegate_->GetOutputs();
 
@@ -624,10 +625,10 @@ void OutputConfigurator::UpdateCachedOutputs() {
   }
 }
 
-bool OutputConfigurator::FindMirrorMode(DisplayState* internal_output,
-                                        DisplayState* external_output,
-                                        bool try_panel_fitting,
-                                        bool preserve_aspect) {
+bool DisplayConfigurator::FindMirrorMode(DisplayState* internal_output,
+                                         DisplayState* external_output,
+                                         bool try_panel_fitting,
+                                         bool preserve_aspect) {
   const DisplayMode* internal_native_info =
       internal_output->display->native_mode();
   const DisplayMode* external_native_info =
@@ -688,7 +689,7 @@ bool OutputConfigurator::FindMirrorMode(DisplayState* internal_output,
   return false;
 }
 
-void OutputConfigurator::ConfigureOutputs() {
+void DisplayConfigurator::ConfigureOutputs() {
   configure_timer_.reset();
 
   if (!configure_display_)
@@ -704,8 +705,8 @@ void OutputConfigurator::ConfigureOutputs() {
   NotifyObservers(success, new_state);
 }
 
-void OutputConfigurator::NotifyObservers(bool success,
-                                         OutputState attempted_state) {
+void DisplayConfigurator::NotifyObservers(bool success,
+                                          OutputState attempted_state) {
   if (success) {
     FOR_EACH_OBSERVER(
         Observer, observers_, OnDisplayModeChanged(cached_outputs_));
@@ -715,7 +716,7 @@ void OutputConfigurator::NotifyObservers(bool success,
   }
 }
 
-bool OutputConfigurator::EnterStateOrFallBackToSoftwareMirroring(
+bool DisplayConfigurator::EnterStateOrFallBackToSoftwareMirroring(
     OutputState output_state,
     chromeos::DisplayPowerState power_state) {
   bool success = EnterState(output_state, power_state);
@@ -733,8 +734,8 @@ bool OutputConfigurator::EnterStateOrFallBackToSoftwareMirroring(
   return success;
 }
 
-bool OutputConfigurator::EnterState(OutputState output_state,
-                                    chromeos::DisplayPowerState power_state) {
+bool DisplayConfigurator::EnterState(OutputState output_state,
+                                     chromeos::DisplayPowerState power_state) {
   std::vector<bool> output_power;
   int num_on_outputs =
       GetOutputPower(cached_outputs_, power_state, &output_power);
@@ -923,7 +924,7 @@ bool OutputConfigurator::EnterState(OutputState output_state,
   return all_succeeded;
 }
 
-OutputState OutputConfigurator::ChooseOutputState(
+OutputState DisplayConfigurator::ChooseOutputState(
     chromeos::DisplayPowerState power_state) const {
   int num_on_outputs = GetOutputPower(cached_outputs_, power_state, NULL);
   switch (cached_outputs_.size()) {
@@ -957,8 +958,8 @@ OutputState OutputConfigurator::ChooseOutputState(
   return OUTPUT_STATE_INVALID;
 }
 
-OutputConfigurator::CoordinateTransformation
-OutputConfigurator::GetMirrorModeCTM(const DisplayState& output) {
+DisplayConfigurator::CoordinateTransformation
+DisplayConfigurator::GetMirrorModeCTM(const DisplayState& output) {
   CoordinateTransformation ctm;  // Default to identity
   const DisplayMode* native_mode_info = output.display->native_mode();
   const DisplayMode* mirror_mode_info = output.mirror_mode;
@@ -993,10 +994,10 @@ OutputConfigurator::GetMirrorModeCTM(const DisplayState& output) {
   return ctm;  // Same aspect ratio - return identity
 }
 
-OutputConfigurator::CoordinateTransformation
-OutputConfigurator::GetExtendedModeCTM(const DisplayState& output,
-                                       const gfx::Point& new_origin,
-                                       const gfx::Size& framebuffer_size) {
+DisplayConfigurator::CoordinateTransformation
+DisplayConfigurator::GetExtendedModeCTM(const DisplayState& output,
+                                        const gfx::Point& new_origin,
+                                        const gfx::Size& framebuffer_size) {
   CoordinateTransformation ctm;  // Default to identity
   const DisplayMode* mode_info = output.selected_mode;
   DCHECK(mode_info);
@@ -1021,7 +1022,7 @@ OutputConfigurator::GetExtendedModeCTM(const DisplayState& output,
   // x_offset = 0 / (2560 - 1)
   // y_scale = (1600 - 1) / (2428 - 1)
   // y_offset = 828 / (2428 -1)
-  // See the unittest OutputConfiguratorTest.CTMForMultiScreens.
+  // See the unittest DisplayConfiguratorTest.CTMForMultiScreens.
   ctm.x_scale = static_cast<float>(mode_info->size().width() - 1) /
                 (framebuffer_size.width() - 1);
   ctm.x_offset =
@@ -1033,7 +1034,7 @@ OutputConfigurator::GetExtendedModeCTM(const DisplayState& output,
   return ctm;
 }
 
-float OutputConfigurator::GetMirroredDisplayAreaRatio(
+float DisplayConfigurator::GetMirroredDisplayAreaRatio(
     const DisplayState& output) {
   float area_ratio = 1.0f;
   const DisplayMode* native_mode_info = output.display->native_mode();

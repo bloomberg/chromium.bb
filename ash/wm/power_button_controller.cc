@@ -28,13 +28,13 @@ PowerButtonController::PowerButtonController(
               switches::kAuraLegacyPowerButton)),
       controller_(controller) {
 #if defined(OS_CHROMEOS)
-  Shell::GetInstance()->output_configurator()->AddObserver(this);
+  Shell::GetInstance()->display_configurator()->AddObserver(this);
 #endif
 }
 
 PowerButtonController::~PowerButtonController() {
 #if defined(OS_CHROMEOS)
-  Shell::GetInstance()->output_configurator()->RemoveObserver(this);
+  Shell::GetInstance()->display_configurator()->RemoveObserver(this);
 #endif
 }
 
@@ -118,11 +118,11 @@ void PowerButtonController::OnLockButtonEvent(
 
 #if defined(OS_CHROMEOS)
 void PowerButtonController::OnDisplayModeChanged(
-    const ui::OutputConfigurator::DisplayStateList& outputs) {
+    const ui::DisplayConfigurator::DisplayStateList& outputs) {
   bool internal_display_off = false;
   bool external_display_on = false;
   for (size_t i = 0; i < outputs.size(); ++i) {
-    const ui::OutputConfigurator::DisplayState& output = outputs[i];
+    const ui::DisplayConfigurator::DisplayState& output = outputs[i];
     if (output.display->type() == ui::OUTPUT_TYPE_INTERNAL) {
       if (!output.display->current_mode())
         internal_display_off = true;

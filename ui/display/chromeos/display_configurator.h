@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_CHROMEOS_OUTPUT_CONFIGURATOR_H_
-#define UI_DISPLAY_CHROMEOS_OUTPUT_CONFIGURATOR_H_
+#ifndef UI_DISPLAY_CHROMEOS_DISPLAY_CONFIGURATOR_H_
+#define UI_DISPLAY_CHROMEOS_DISPLAY_CONFIGURATOR_H_
 
 #include <stdint.h>
 
@@ -31,7 +31,7 @@ class DisplaySnapshot;
 class NativeDisplayDelegate;
 
 // This class interacts directly with the system display configurator.
-class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
+class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
  public:
   typedef uint64_t OutputProtectionClientId;
   static const OutputProtectionClientId kInvalidClientId = 0;
@@ -129,7 +129,7 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
   // Helper class used by tests.
   class TestApi {
    public:
-    TestApi(OutputConfigurator* configurator) : configurator_(configurator) {}
+    TestApi(DisplayConfigurator* configurator) : configurator_(configurator) {}
     ~TestApi() {}
 
     // If |configure_timer_| is started, stops the timer, runs
@@ -137,7 +137,7 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
     bool TriggerConfigureTimeout();
 
    private:
-    OutputConfigurator* configurator_;  // not owned
+    DisplayConfigurator* configurator_;  // not owned
 
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
@@ -165,8 +165,8 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
       const DisplaySnapshot& output,
       const gfx::Size& size);
 
-  OutputConfigurator();
-  virtual ~OutputConfigurator();
+  DisplayConfigurator();
+  virtual ~DisplayConfigurator();
 
   OutputState output_state() const { return output_state_; }
   chromeos::DisplayPowerState power_state() const { return power_state_; }
@@ -198,7 +198,7 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
 
   // Does initial configuration of displays during startup.
   // If |background_color_argb| is non zero and there are multiple displays,
-  // OutputConfigurator sets the background color of X's RootWindow to this
+  // DisplayConfigurator sets the background color of X's RootWindow to this
   // color.
   void ForceInitialConfigure(uint32_t background_color_argb);
 
@@ -266,9 +266,8 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
       int64_t display_id);
 
   // Updates the color calibration to |new_profile|.
-  bool SetColorCalibrationProfile(
-      int64_t display_id,
-      ui::ColorCalibrationProfile new_profile);
+  bool SetColorCalibrationProfile(int64_t display_id,
+                                  ui::ColorCalibrationProfile new_profile);
 
  private:
   // Mapping a display_id to a protection request bitmask.
@@ -384,7 +383,7 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
 
   // The timer to delay configuring outputs. See also the comments in
   // Dispatch().
-  scoped_ptr<base::OneShotTimer<OutputConfigurator> > configure_timer_;
+  scoped_ptr<base::OneShotTimer<DisplayConfigurator> > configure_timer_;
 
   // Id for next output protection client.
   OutputProtectionClientId next_output_protection_client_id_;
@@ -392,9 +391,9 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
   // Output protection requests of each client.
   ProtectionRequests client_protection_requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(OutputConfigurator);
+  DISALLOW_COPY_AND_ASSIGN(DisplayConfigurator);
 };
 
 }  // namespace ui
 
-#endif  // UI_DISPLAY_CHROMEOS_OUTPUT_CONFIGURATOR_H_
+#endif  // UI_DISPLAY_CHROMEOS_DISPLAY_CONFIGURATOR_H_

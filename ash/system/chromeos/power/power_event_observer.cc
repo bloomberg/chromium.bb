@@ -10,7 +10,7 @@
 #include "ash/wm/power_button_controller.h"
 #include "base/prefs/pref_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "ui/display/chromeos/output_configurator.h"
+#include "ui/display/chromeos/display_configurator.h"
 #include "ui/wm/core/user_activity_detector.h"
 
 namespace ash {
@@ -51,11 +51,11 @@ void PowerEventObserver::SuspendImminent() {
   }
 
   shell->user_activity_detector()->OnDisplayPowerChanging();
-  shell->output_configurator()->SuspendDisplays();
+  shell->display_configurator()->SuspendDisplays();
 }
 
 void PowerEventObserver::SystemResumed(const base::TimeDelta& sleep_duration) {
-  Shell::GetInstance()->output_configurator()->ResumeDisplays();
+  Shell::GetInstance()->display_configurator()->ResumeDisplays();
   Shell::GetInstance()->system_tray_notifier()->NotifyRefreshClock();
 }
 

@@ -25,11 +25,11 @@ ui::TestDisplaySnapshot* CreateVGASnapshot() {
   return output;
 }
 
-ui::OutputConfigurator::DisplayStateList CreateOutputs(
+ui::DisplayConfigurator::DisplayStateList CreateOutputs(
     const ScopedVector<ui::TestDisplaySnapshot>& displays) {
-  ui::OutputConfigurator::DisplayStateList outputs;
+  ui::DisplayConfigurator::DisplayStateList outputs;
   for (size_t i = 0; i < displays.size(); ++i) {
-    ui::OutputConfigurator::DisplayState state;
+    ui::DisplayConfigurator::DisplayState state;
     state.display = displays[i];
     outputs.push_back(state);
   }
@@ -66,7 +66,7 @@ class ProjectingObserverTest : public testing::Test {
 
 TEST_F(ProjectingObserverTest, CheckNoDisplay) {
   ScopedVector<ui::TestDisplaySnapshot> displays;
-  ui::OutputConfigurator::DisplayStateList outputs = CreateOutputs(displays);
+  ui::DisplayConfigurator::DisplayStateList outputs = CreateOutputs(displays);
   observer_->OnDisplayModeChanged(outputs);
 
   EXPECT_EQ(1, fake_power_client_->num_set_is_projecting_calls());
@@ -76,7 +76,7 @@ TEST_F(ProjectingObserverTest, CheckNoDisplay) {
 TEST_F(ProjectingObserverTest, CheckWithoutInternalDisplay) {
   ScopedVector<ui::TestDisplaySnapshot> displays;
   displays.push_back(CreateVGASnapshot());
-  ui::OutputConfigurator::DisplayStateList outputs = CreateOutputs(displays);
+  ui::DisplayConfigurator::DisplayStateList outputs = CreateOutputs(displays);
   observer_->OnDisplayModeChanged(outputs);
 
   EXPECT_EQ(1, fake_power_client_->num_set_is_projecting_calls());
@@ -86,7 +86,7 @@ TEST_F(ProjectingObserverTest, CheckWithoutInternalDisplay) {
 TEST_F(ProjectingObserverTest, CheckWithInternalDisplay) {
   ScopedVector<ui::TestDisplaySnapshot> displays;
   displays.push_back(CreateInternalSnapshot());
-  ui::OutputConfigurator::DisplayStateList outputs = CreateOutputs(displays);
+  ui::DisplayConfigurator::DisplayStateList outputs = CreateOutputs(displays);
   observer_->OnDisplayModeChanged(outputs);
 
   EXPECT_EQ(1, fake_power_client_->num_set_is_projecting_calls());
@@ -97,7 +97,7 @@ TEST_F(ProjectingObserverTest, CheckWithTwoVGADisplays) {
   ScopedVector<ui::TestDisplaySnapshot> displays;
   displays.push_back(CreateVGASnapshot());
   displays.push_back(CreateVGASnapshot());
-  ui::OutputConfigurator::DisplayStateList outputs = CreateOutputs(displays);
+  ui::DisplayConfigurator::DisplayStateList outputs = CreateOutputs(displays);
   observer_->OnDisplayModeChanged(outputs);
 
   EXPECT_EQ(1, fake_power_client_->num_set_is_projecting_calls());
@@ -109,7 +109,7 @@ TEST_F(ProjectingObserverTest, CheckWithInternalAndVGADisplays) {
   ScopedVector<ui::TestDisplaySnapshot> displays;
   displays.push_back(CreateInternalSnapshot());
   displays.push_back(CreateVGASnapshot());
-  ui::OutputConfigurator::DisplayStateList outputs = CreateOutputs(displays);
+  ui::DisplayConfigurator::DisplayStateList outputs = CreateOutputs(displays);
   observer_->OnDisplayModeChanged(outputs);
 
   EXPECT_EQ(1, fake_power_client_->num_set_is_projecting_calls());
@@ -119,7 +119,7 @@ TEST_F(ProjectingObserverTest, CheckWithInternalAndVGADisplays) {
 TEST_F(ProjectingObserverTest, CheckWithVGADisplayAndOneCastingSession) {
   ScopedVector<ui::TestDisplaySnapshot> displays;
   displays.push_back(CreateVGASnapshot());
-  ui::OutputConfigurator::DisplayStateList outputs = CreateOutputs(displays);
+  ui::DisplayConfigurator::DisplayStateList outputs = CreateOutputs(displays);
   observer_->OnDisplayModeChanged(outputs);
 
   observer_->OnCastingSessionStartedOrStopped(true);
@@ -132,7 +132,7 @@ TEST_F(ProjectingObserverTest, CheckWithVGADisplayAndOneCastingSession) {
 TEST_F(ProjectingObserverTest, CheckWithInternalDisplayAndOneCastingSession) {
   ScopedVector<ui::TestDisplaySnapshot> displays;
   displays.push_back(CreateInternalSnapshot());
-  ui::OutputConfigurator::DisplayStateList outputs = CreateOutputs(displays);
+  ui::DisplayConfigurator::DisplayStateList outputs = CreateOutputs(displays);
   observer_->OnDisplayModeChanged(outputs);
 
   observer_->OnCastingSessionStartedOrStopped(true);
@@ -144,7 +144,7 @@ TEST_F(ProjectingObserverTest, CheckWithInternalDisplayAndOneCastingSession) {
 TEST_F(ProjectingObserverTest, CheckProjectingAfterClosingACastingSession) {
   ScopedVector<ui::TestDisplaySnapshot> displays;
   displays.push_back(CreateInternalSnapshot());
-  ui::OutputConfigurator::DisplayStateList outputs = CreateOutputs(displays);
+  ui::DisplayConfigurator::DisplayStateList outputs = CreateOutputs(displays);
   observer_->OnDisplayModeChanged(outputs);
 
   observer_->OnCastingSessionStartedOrStopped(true);
@@ -163,7 +163,7 @@ TEST_F(ProjectingObserverTest,
        CheckStopProjectingAfterClosingAllCastingSessions) {
   ScopedVector<ui::TestDisplaySnapshot> displays;
   displays.push_back(CreateInternalSnapshot());
-  ui::OutputConfigurator::DisplayStateList outputs = CreateOutputs(displays);
+  ui::DisplayConfigurator::DisplayStateList outputs = CreateOutputs(displays);
   observer_->OnDisplayModeChanged(outputs);
 
   observer_->OnCastingSessionStartedOrStopped(true);
@@ -178,7 +178,7 @@ TEST_F(ProjectingObserverTest,
   ScopedVector<ui::TestDisplaySnapshot> displays;
   displays.push_back(CreateInternalSnapshot());
   displays.push_back(CreateVGASnapshot());
-  ui::OutputConfigurator::DisplayStateList outputs = CreateOutputs(displays);
+  ui::DisplayConfigurator::DisplayStateList outputs = CreateOutputs(displays);
   observer_->OnDisplayModeChanged(outputs);
 
   // Remove VGA output.

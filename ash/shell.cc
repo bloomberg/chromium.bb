@@ -134,7 +134,7 @@
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
 #include "base/bind_helpers.h"
 #include "base/sys_info.h"
-#include "ui/display/chromeos/output_configurator.h"
+#include "ui/display/chromeos/display_configurator.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -603,7 +603,7 @@ Shell::Shell(ShellDelegate* delegate)
       activation_client_(NULL),
       accelerometer_controller_(new AccelerometerController()),
 #if defined(OS_CHROMEOS)
-      output_configurator_(new ui::OutputConfigurator()),
+      display_configurator_(new ui::DisplayConfigurator()),
 #endif  // defined(OS_CHROMEOS)
       native_cursor_manager_(new AshNativeCursorManager),
       cursor_manager_(
@@ -761,13 +761,13 @@ Shell::~Shell() {
 
 #if defined(OS_CHROMEOS)
   if (display_change_observer_)
-    output_configurator_->RemoveObserver(display_change_observer_.get());
+    display_configurator_->RemoveObserver(display_change_observer_.get());
   if (output_configurator_animation_)
-    output_configurator_->RemoveObserver(output_configurator_animation_.get());
+    display_configurator_->RemoveObserver(output_configurator_animation_.get());
   if (display_error_observer_)
-    output_configurator_->RemoveObserver(display_error_observer_.get());
+    display_configurator_->RemoveObserver(display_error_observer_.get());
   if (projecting_observer_)
-    output_configurator_->RemoveObserver(projecting_observer_.get());
+    display_configurator_->RemoveObserver(projecting_observer_.get());
   display_change_observer_.reset();
 #endif  // defined(OS_CHROMEOS)
 
@@ -786,23 +786,23 @@ void Shell::Init() {
   }
   bool display_initialized = display_manager_->InitFromCommandLine();
 #if defined(OS_CHROMEOS)
-  output_configurator_->Init(!gpu_support_->IsPanelFittingDisabled());
+  display_configurator_->Init(!gpu_support_->IsPanelFittingDisabled());
   output_configurator_animation_.reset(new OutputConfiguratorAnimation());
-  output_configurator_->AddObserver(output_configurator_animation_.get());
+  display_configurator_->AddObserver(output_configurator_animation_.get());
 
   projecting_observer_.reset(new ProjectingObserver());
-  output_configurator_->AddObserver(projecting_observer_.get());
+  display_configurator_->AddObserver(projecting_observer_.get());
 
   if (!display_initialized && base::SysInfo::IsRunningOnChromeOS()) {
     display_change_observer_.reset(new DisplayChangeObserver);
     // Register |display_change_observer_| first so that the rest of
     // observer gets invoked after the root windows are configured.
-    output_configurator_->AddObserver(display_change_observer_.get());
+    display_configurator_->AddObserver(display_change_observer_.get());
     display_error_observer_.reset(new DisplayErrorObserver());
-    output_configurator_->AddObserver(display_error_observer_.get());
-    output_configurator_->set_state_controller(display_change_observer_.get());
-    output_configurator_->set_mirroring_controller(display_manager_.get());
-    output_configurator_->ForceInitialConfigure(
+    display_configurator_->AddObserver(display_error_observer_.get());
+    display_configurator_->set_state_controller(display_change_observer_.get());
+    display_configurator_->set_mirroring_controller(display_manager_.get());
+    display_configurator_->ForceInitialConfigure(
         delegate_->IsFirstRunAfterBoot() ? kChromeOsBootColor : 0);
     display_initialized = true;
   }
@@ -911,7 +911,7 @@ void Shell::Init() {
 #if defined(OS_CHROMEOS)
   // Pass the initial display state to PowerButtonController.
   power_button_controller_->OnDisplayModeChanged(
-      output_configurator_->cached_outputs());
+      display_configurator_->cached_outputs());
 #endif
   AddShellObserver(lock_state_controller_.get());
 

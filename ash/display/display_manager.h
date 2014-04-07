@@ -17,7 +17,7 @@
 #include "ui/gfx/display.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/display/chromeos/output_configurator.h"
+#include "ui/display/chromeos/display_configurator.h"
 #endif
 
 namespace gfx {
@@ -44,7 +44,7 @@ class SystemGestureEventFilterTest;
 // TODO(oshima): Make this non internal.
 class ASH_EXPORT DisplayManager
 #if defined(OS_CHROMEOS)
-    : public ui::OutputConfigurator::SoftwareMirroringController
+    : public ui::DisplayConfigurator::SoftwareMirroringController
 #endif
       {
  public:

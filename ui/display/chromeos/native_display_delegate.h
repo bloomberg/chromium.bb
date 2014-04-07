@@ -24,7 +24,7 @@ class DisplaySnapshot;
 class NativeDisplayObserver;
 
 // Interface for classes that perform display configuration actions on behalf
-// of OutputConfigurator.
+// of DisplayConfigurator.
 class DISPLAY_EXPORT NativeDisplayDelegate {
  public:
   virtual ~NativeDisplayDelegate() {}
