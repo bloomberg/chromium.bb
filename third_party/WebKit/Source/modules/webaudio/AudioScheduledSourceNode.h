@@ -40,7 +40,7 @@ public:
     // These are the possible states an AudioScheduledSourceNode can be in:
     //
     // UNSCHEDULED_STATE - Initial playback state. Created, but not yet scheduled.
-    // SCHEDULED_STATE - Scheduled to play (via noteOn() or noteGrainOn()), but not yet playing.
+    // SCHEDULED_STATE - Scheduled to play (via start()), but not yet playing.
     // PLAYING_STATE - Generating sound.
     // FINISHED_STATE - Finished generating sound.
     //

@@ -27,11 +27,11 @@
     ActiveDOMObject,
     Conditional=WEB_AUDIO,
     Constructor,
-    Constructor(unsigned long numberOfChannels, unsigned long numberOfFrames, float sampleRate),
     ConstructorCallWith=Document,
     NoInterfaceObject,
     RaisesException=Constructor,
 ] interface AudioContext : EventTarget {
+    
     // All rendered audio ultimately connects to destination, which represents the audio hardware.
     readonly attribute AudioDestinationNode destination;
 
@@ -82,10 +82,4 @@
     // void prepareOfflineBufferRendering(unsigned long numberOfChannels, unsigned long numberOfFrames, float sampleRate);
     attribute EventHandler oncomplete;
     void startRendering();
-
-    [MeasureAs=LegacyWebAudio, ImplementedAs=createGain] GainNode createGainNode();
-    [MeasureAs=LegacyWebAudio, ImplementedAs=createDelay, RaisesException] DelayNode createDelayNode(optional double maxDelayTime);
-
-    [MeasureAs=LegacyWebAudio, ImplementedAs=createScriptProcessor, RaisesException] ScriptProcessorNode createJavaScriptNode(unsigned long bufferSize, optional unsigned long numberOfInputChannels, optional unsigned long numberOfOutputChannels);
-
 };

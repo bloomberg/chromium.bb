@@ -79,9 +79,6 @@ public:
     // Create an AudioContext for rendering to the audio hardware.
     static PassRefPtr<AudioContext> create(Document&, ExceptionState&);
 
-    // Deprecated: create an AudioContext for offline (non-realtime) rendering.
-    static PassRefPtr<AudioContext> create(Document&, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
-
     virtual ~AudioContext();
 
     bool isInitialized() const;

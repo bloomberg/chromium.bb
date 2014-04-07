@@ -425,14 +425,6 @@ void AudioBufferSourceNode::start(double when, double grainOffset, double grainD
     m_playbackState = SCHEDULED_STATE;
 }
 
-void AudioBufferSourceNode::noteGrainOn(double when, double grainOffset, double grainDuration, ExceptionState& exceptionState)
-{
-    // Handle unspecified duration where 0 means the rest of the buffer.
-    if (!grainDuration && buffer())
-        grainDuration = buffer()->duration();
-    start(when, grainOffset, grainDuration, exceptionState);
-}
-
 double AudioBufferSourceNode::totalPitchRate()
 {
     double dopplerRate = 1.0;

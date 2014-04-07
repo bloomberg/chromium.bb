@@ -43,12 +43,8 @@
     attribute double loopStart;
     attribute double loopEnd;
 
-    [RaisesException, MeasureAs=WebAudioStart] void start(optional double when, optional double grainOffset, optional double grainDuration);
+    [RaisesException] void start(optional double when, optional double grainOffset, optional double grainDuration);
     [RaisesException] void stop(optional double when);
-
-    [RaisesException, ImplementedAs=start, MeasureAs=LegacyWebAudio] void noteOn(double when);
-    [RaisesException, MeasureAs=LegacyWebAudio] void noteGrainOn(double when, double grainOffset, double grainDuration);
-    [RaisesException, ImplementedAs=stop] void noteOff(double when);
 
     attribute EventHandler onended;
 };

@@ -104,12 +104,6 @@ PassRefPtr<AudioContext> AudioContext::create(Document& document, ExceptionState
     return audioContext.release();
 }
 
-PassRefPtr<AudioContext> AudioContext::create(Document& document, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
-{
-    document.addConsoleMessage(JSMessageSource, WarningMessageLevel, "Deprecated AudioContext constructor: use OfflineAudioContext instead");
-    return OfflineAudioContext::create(&document, numberOfChannels, numberOfFrames, sampleRate, exceptionState);
-}
-
 // Constructor for rendering to the audio hardware.
 AudioContext::AudioContext(Document* document)
     : ActiveDOMObject(document)

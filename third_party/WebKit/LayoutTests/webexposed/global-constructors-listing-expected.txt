@@ -486,8 +486,6 @@ XPathEvaluator
 XPathExpression
 XPathResult
 XSLTProcessor
-webkitAudioContext
-webkitAudioPannerNode
 webkitIDBCursor
 webkitIDBDatabase
 webkitIDBFactory
@@ -497,7 +495,6 @@ webkitIDBObjectStore
 webkitIDBRequest
 webkitIDBTransaction
 webkitMediaStream
-webkitOfflineAudioContext
 webkitRTCPeerConnection
 webkitSpeechGrammar
 webkitSpeechGrammarList

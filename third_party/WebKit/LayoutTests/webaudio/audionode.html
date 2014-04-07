@@ -91,16 +91,12 @@ function runTest() {
         testPassed("exception thrown when connecting to other context's node.");
     }
 
-    // Create a new context with not enough arguments
-    try {
-        context2 = new AudioContext(0, 0);
-        testFailed("exception should be thrown when creating audio context with not enough arguments.");
-    } catch(e) {
-        testPassed("exception thrown when creating audio context with not enough arguments.");
-    }
-
-    // Create a new offline audio context using the deprecated AudioContext constructor.
+    // 3-arg AudioContext doesn't create an offline context anymore.
     shouldNotThrow("context3 = new AudioContext(1, 44100, 44100)");
+    if (context3 instanceof OfflineAudioContext)
+        testFailed("context3 should not be an OfflineAudioContext");
+    else
+        testPassed("context3 is not an OfflineAudioContext");
 
     // Ensure it is an EventTarget
     try {
