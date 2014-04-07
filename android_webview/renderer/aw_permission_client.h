@@ -25,12 +25,12 @@ class AwPermissionClient : public content::RenderFrameObserver,
       blink::WebFrame* frame,
       bool enabled_per_settings,
       const blink::WebSecurityOrigin& origin,
-      const blink::WebURL& url) OVERRIDE;
+      const blink::WebURL& url);
   virtual bool allowRunningInsecureContent(
       blink::WebFrame* frame,
       bool enabled_per_settings,
       const blink::WebSecurityOrigin& origin,
-      const blink::WebURL& url) OVERRIDE;
+      const blink::WebURL& url);
 
   virtual bool allowDisplayingInsecureContent(
       bool enabled_per_settings,
