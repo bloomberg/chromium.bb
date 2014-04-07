@@ -13,6 +13,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_time.h"
+#include "ppapi/c/private/ppb_nacl_private.h"
 
 #define SRPC_PLUGIN_DEBUG 1
 
@@ -26,18 +27,17 @@ namespace plugin {
 // TODO(sehr): add Unicode identifier support.
 bool IsValidIdentifierString(const char* strval, uint32_t* length);
 
+const PPB_NaCl_Private* GetNaClInterface();
+
 // Debugging print utility
 extern int gNaClPluginDebugPrintEnabled;
-extern FILE* gNaClPluginLogFile;
 extern int NaClPluginPrintLog(const char *format, ...);
 extern int NaClPluginDebugPrintCheckEnv();
-extern FILE* NaClPluginLogFileEnv();
 #if SRPC_PLUGIN_DEBUG
 #define INIT_PLUGIN_LOGGING() do {                                    \
     if (-1 == ::plugin::gNaClPluginDebugPrintEnabled) {               \
       ::plugin::gNaClPluginDebugPrintEnabled =                        \
           ::plugin::NaClPluginDebugPrintCheckEnv();                   \
-      ::plugin::gNaClPluginLogFile = ::plugin::NaClPluginLogFileEnv();\
     }                                                                 \
 } while (0)
 

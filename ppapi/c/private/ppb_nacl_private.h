@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Apr  4 08:16:11 2014. */
+/* From private/ppb_nacl_private.idl modified Fri Apr  4 10:27:36 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -329,6 +329,8 @@ struct PPB_NaCl_Private_1_0 {
   int32_t (*GetExitStatus)(PP_Instance instance);
   /* Sets the exit status of the plugin process. */
   void (*SetExitStatus)(PP_Instance instance, int32_t exit_status);
+  /* Logs the message via VLOG. */
+  void (*Vlog)(const char* message);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

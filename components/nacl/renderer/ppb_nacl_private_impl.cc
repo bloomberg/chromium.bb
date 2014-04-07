@@ -583,6 +583,10 @@ void SetExitStatus(PP_Instance instance, int32_t exit_status) {
     return load_manager->set_exit_status(exit_status);
 }
 
+void Vlog(const char* message) {
+  VLOG(1) << message;
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -613,7 +617,8 @@ const PPB_NaCl_Private nacl_interface = {
   &SetIsInstalled,
   &SetReadyTime,
   &GetExitStatus,
-  &SetExitStatus
+  &SetExitStatus,
+  &Vlog
 };
 
 }  // namespace

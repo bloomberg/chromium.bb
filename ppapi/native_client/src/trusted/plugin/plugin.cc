@@ -84,13 +84,6 @@ const int64_t kSizeKBMin = 1;
 const int64_t kSizeKBMax = 512*1024;     // very large .nexe
 const uint32_t kSizeKBBuckets = 100;
 
-const PPB_NaCl_Private* GetNaClInterface() {
-  pp::Module *module = pp::Module::Get();
-  CHECK(module);
-  return static_cast<const PPB_NaCl_Private*>(
-      module->GetBrowserInterface(PPB_NACL_PRIVATE_INTERFACE));
-}
-
 }  // namespace
 
 bool Plugin::EarlyInit(int argc, const char* argn[], const char* argv[]) {

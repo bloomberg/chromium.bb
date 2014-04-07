@@ -341,4 +341,7 @@ interface PPB_NaCl_Private {
   /* Sets the exit status of the plugin process. */
   void SetExitStatus([in] PP_Instance instance,
                      [in] int32_t exit_status);
+
+  /* Logs the message via VLOG. */
+  void Vlog([in] str_t message);
 };
