@@ -113,6 +113,7 @@ def UploadPackageInfoFiles(storage, package_target, package_name,
   remote_archive_dir = posixpath.join(posixpath.dirname(remote_package_file),
                                       remote_package_name)
 
+  num_archives = len(archive_list)
   for index, archive in enumerate(archive_list):
     archive_file = archive + '.json'
     local_archive_file = os.path.join(local_archive_dir, archive_file)
@@ -120,19 +121,16 @@ def UploadPackageInfoFiles(storage, package_target, package_name,
     if skip_missing and not os.path.isfile(local_archive_file):
       continue
 
-    if annotate:
-      print ('@@@BUILD_STEP %s:%s:Archive[%d] (upload)@@@' %
-             (package_target, package_name, index))
-
     archive_url = storage.PutFile(local_archive_file, remote_archive_file)
     if annotate:
-      print '@@@STEP_LINK@download@%s@@@' % archive_url
+      print ('@@@STEP_LINK@download (%s/%s/%s.json [%d/%d])@%s@@@' %
+             (package_target, package_name, archive, index+1, num_archives,
+              archive_url))
 
-  if annotate:
-    print '@@@BUILD_STEP %s:%s (upload)@@@' % (package_target, package_name)
   package_url = storage.PutFile(local_package_file, remote_package_file)
   if annotate:
-    print '@@@STEP_LINK@download@%s@@@' % package_url
+    print ('@@@STEP_LINK@download (%s/%s.json)@%s@@@' %
+           (package_target, package_name, package_url))
   return package_url
 
 

@@ -168,7 +168,7 @@ else
       --archive-package=nacl_x86_glibc --extract \
       tools/toolchain.tar.bz2,toolchain/linux_x86@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_linux_x86.tar.xz
 
-  echo @@@BUILD_STEP upload_package@@@
+  echo @@@BUILD_STEP upload_package_info@@@
   python build/package_version/package_version.py --annotate \
       upload --upload-package=nacl_x86_glibc --revision=${BUILDBOT_GOT_REVISION}
 

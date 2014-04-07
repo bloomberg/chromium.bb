@@ -92,6 +92,8 @@ try:
     upload_args.extend(['--cloud-bucket', 'nativeclient-trybot/packages'])
 
   if upload_rev is not None:
+    print '@@@BUILD_STEP upload_package_info@@@'
+    sys.stdout.flush()
     with open(TEMP_PACKAGES_FILE, 'rt') as f:
       for package_file in f.readlines():
         pkg_name, pkg_ext = os.path.splitext(os.path.basename(package_file))

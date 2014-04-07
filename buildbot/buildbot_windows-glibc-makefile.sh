@@ -111,6 +111,7 @@ else
       --archive-package=nacl_x86_glibc --extract \
       tools/toolchain.tar.bz2,toolchain/win_x86@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_win_x86.tar.xz
 
+  echo @@@BUILD_STEP upload_package_info@@@
   ${NATIVE_PYTHON} build/package_version/package_version.py --annotate \
       upload --upload-package=nacl_x86_glibc --revision=${BUILDBOT_GOT_REVISION}
 fi
