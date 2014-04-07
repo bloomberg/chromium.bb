@@ -6,13 +6,12 @@
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEB_AX_OBJECT_PROXY_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
-#include "content/shell/renderer/test_runner/unsafe_persistent.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
+#include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -159,7 +158,7 @@ class WebAXObjectProxyList : public WebAXObjectProxy::Factory {
   v8::Handle<v8::Object> CreateRoot(const blink::WebAXObject&);
 
  private:
-  typedef std::vector<UnsafePersistent<v8::Object> > ElementList;
+  typedef v8::PersistentValueVector<v8::Object> ElementList;
   ElementList elements_;
 };
 

@@ -240,7 +240,6 @@
         'shell/renderer/test_runner/test_runner.h',
         'shell/renderer/test_runner/text_input_controller.cc',
         'shell/renderer/test_runner/text_input_controller.h',
-        'shell/renderer/test_runner/unsafe_persistent.h',
         'shell/renderer/test_runner/web_ax_object_proxy.cc',
         'shell/renderer/test_runner/web_ax_object_proxy.h',
         'shell/renderer/webkit_test_runner.cc',
