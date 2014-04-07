@@ -79,7 +79,8 @@ GestureEventDetails CreateTapGestureDetails(EventType type,
 
 // GestureProvider:::Config
 
-GestureProvider::Config::Config() : disable_click_delay(false) {}
+GestureProvider::Config::Config()
+    : disable_click_delay(false), gesture_begin_end_types_enabled(false) {}
 
 GestureProvider::Config::~Config() {}
 
@@ -532,7 +533,8 @@ GestureProvider::GestureProvider(const Config& config,
       touch_scroll_in_progress_(false),
       pinch_in_progress_(false),
       double_tap_support_for_page_(true),
-      double_tap_support_for_platform_(true) {
+      double_tap_support_for_platform_(true),
+      gesture_begin_end_types_enabled_(config.gesture_begin_end_types_enabled) {
   DCHECK(client);
   InitGestureDetectors(config);
 }
@@ -548,33 +550,10 @@ bool GestureProvider::OnTouchEvent(const MotionEvent& event) {
   const bool in_scale_gesture =
       scale_gesture_listener_->IsScaleGestureDetectionInProgress();
 
-  if (event.GetAction() == MotionEvent::ACTION_DOWN) {
-    current_down_event_ = event.Clone();
-    touch_scroll_in_progress_ = false;
-    needs_show_press_event_ = true;
-    current_longpress_time_ = base::TimeTicks();
-    SendTapCancelIfNecessary(event);
-  }
-
-  bool handled = gesture_listener_->OnTouchEvent(event, in_scale_gesture);
-  handled |= scale_gesture_listener_->OnTouchEvent(event);
-
-  if (event.GetAction() == MotionEvent::ACTION_UP ||
-      event.GetAction() == MotionEvent::ACTION_CANCEL) {
-    // Note: This call will have no effect if a fling was just generated, as
-    // |Fling()| will have already signalled an end to touch-scrolling.
-    EndTouchScrollIfNecessary(event, true);
-
-    // We shouldn't necessarily cancel a tap on ACTION_UP, as the double-tap
-    // timeout may yet trigger a SINGLE_TAP.
-    if (event.GetAction() == MotionEvent::ACTION_CANCEL)
-      SendTapCancelIfNecessary(event);
-
-    UpdateDoubleTapDetectionSupport();
-
-    current_down_event_.reset();
-  }
-
+  OnTouchEventHandlingBegin(event);
+  gesture_listener_->OnTouchEvent(event, in_scale_gesture);
+  scale_gesture_listener_->OnTouchEvent(event);
+  OnTouchEventHandlingEnd(event);
   return true;
 }
 
@@ -677,6 +656,7 @@ void GestureProvider::Send(const GestureEventData& gesture) {
   switch (gesture.type) {
     case ET_GESTURE_TAP_DOWN:
       needs_tap_ending_event_ = true;
+      needs_show_press_event_ = true;
       break;
     case ET_GESTURE_TAP_UNCONFIRMED:
       needs_show_press_event_ = false;
@@ -784,6 +764,60 @@ void GestureProvider::UpdateDoubleTapDetectionSupport() {
   const bool supports_double_tap = IsDoubleTapSupported();
   gesture_listener_->SetDoubleTapEnabled(supports_double_tap);
   scale_gesture_listener_->SetDoubleTapEnabled(supports_double_tap);
+}
+
+void GestureProvider::OnTouchEventHandlingBegin(const MotionEvent& event) {
+  switch (event.GetAction()) {
+    case MotionEvent::ACTION_DOWN:
+      current_down_event_ = event.Clone();
+      touch_scroll_in_progress_ = false;
+      needs_show_press_event_ = false;
+      current_longpress_time_ = base::TimeTicks();
+      SendTapCancelIfNecessary(event);
+      if (gesture_begin_end_types_enabled_)
+        Send(CreateGesture(ET_GESTURE_BEGIN, event));
+      break;
+    case MotionEvent::ACTION_POINTER_DOWN:
+      if (gesture_begin_end_types_enabled_)
+        Send(CreateGesture(ET_GESTURE_BEGIN, event));
+      break;
+    case MotionEvent::ACTION_POINTER_UP:
+    case MotionEvent::ACTION_UP:
+    case MotionEvent::ACTION_CANCEL:
+    case MotionEvent::ACTION_MOVE:
+      break;
+  }
+}
+
+void GestureProvider::OnTouchEventHandlingEnd(const MotionEvent& event) {
+  switch (event.GetAction()) {
+    case MotionEvent::ACTION_UP:
+    case MotionEvent::ACTION_CANCEL:
+      // Note: This call will have no effect if a fling was just generated, as
+      // |Fling()| will have already signalled an end to touch-scrolling.
+      EndTouchScrollIfNecessary(event, true);
+
+      // We shouldn't necessarily cancel a tap on ACTION_UP, as the double-tap
+      // timeout may yet trigger a SINGLE_TAP.
+      if (event.GetAction() == MotionEvent::ACTION_CANCEL)
+        SendTapCancelIfNecessary(event);
+
+      UpdateDoubleTapDetectionSupport();
+
+      if (gesture_begin_end_types_enabled_)
+        Send(CreateGesture(ET_GESTURE_END, event));
+
+      current_down_event_.reset();
+      break;
+    case MotionEvent::ACTION_POINTER_UP:
+      if (gesture_begin_end_types_enabled_)
+        Send(CreateGesture(ET_GESTURE_END, event));
+      break;
+    case MotionEvent::ACTION_DOWN:
+    case MotionEvent::ACTION_POINTER_DOWN:
+    case MotionEvent::ACTION_MOVE:
+      break;
+  }
 }
 
 }  //  namespace ui

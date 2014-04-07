@@ -143,6 +143,13 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     return GetDefaultConfig().gesture_detector_config.showpress_timeout;
   }
 
+  void SetBeginEndTypesEnabled(bool enabled) {
+    GestureProvider::Config config = GetDefaultConfig();
+    config.gesture_begin_end_types_enabled = true;
+    gesture_provider_.reset(new GestureProvider(config, this));
+    gesture_provider_->SetMultiTouchSupportEnabled(false);
+  }
+
  protected:
   void CheckScrollEventSequenceForEndActionType(
       MotionEvent::Action end_action_type) {
@@ -1119,6 +1126,70 @@ TEST_F(GestureProviderTest, CancelActiveTouchSequence) {
                             MotionEvent::ACTION_DOWN);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+}
+
+// Verify that gesture begin and gesture end events are dispatched correctly.
+TEST_F(GestureProviderTest, GestureBeginAndEnd) {
+  SetBeginEndTypesEnabled(true);
+  base::TimeTicks event_time = base::TimeTicks::Now();
+
+  EXPECT_EQ(0U, GetReceivedGestureCount());
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_BEGIN, GetReceivedGesture(0).type);
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+  EXPECT_EQ(2U, GetReceivedGestureCount());
+
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_BEGIN, GetMostRecentGestureEventType());
+  EXPECT_EQ(3U, GetReceivedGestureCount());
+
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_BEGIN, GetMostRecentGestureEventType());
+  EXPECT_EQ(4U, GetReceivedGestureCount());
+
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_UP);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
+  EXPECT_EQ(5U, GetReceivedGestureCount());
+
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_BEGIN, GetMostRecentGestureEventType());
+  EXPECT_EQ(6U, GetReceivedGestureCount());
+
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_UP);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
+  EXPECT_EQ(7U, GetReceivedGestureCount());
+
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_UP);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
+  EXPECT_EQ(8U, GetReceivedGestureCount());
+
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
+  EXPECT_EQ(9U, GetReceivedGestureCount());
+
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_CANCEL, GetReceivedGesture(9).type);
+  EXPECT_EQ(ET_GESTURE_BEGIN, GetReceivedGesture(10).type);
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+  EXPECT_EQ(12U, GetReceivedGestureCount());
+
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_CANCEL);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_CANCEL, GetReceivedGesture(12).type);
+  EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
+  EXPECT_EQ(14U, GetReceivedGestureCount());
+
+
 }
 
 }  // namespace ui

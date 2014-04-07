@@ -331,6 +331,11 @@ WebGestureEvent CreateWebGestureEventFromGestureEventData(
       gesture.data.tapDown.height =
           data.details.bounding_box_f().height() * scale;
       break;
+    case ui::ET_GESTURE_BEGIN:
+    case ui::ET_GESTURE_END:
+      NOTREACHED() << "ET_GESTURE_BEGIN and ET_GESTURE_END are only produced "
+                   << "in Aura, and should never end up here.";
+      break;
     default:
       NOTREACHED() << "ui::EventType provided wasn't a valid gesture event.";
       break;

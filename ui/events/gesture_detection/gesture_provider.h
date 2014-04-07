@@ -32,7 +32,18 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
     GestureDetector::Config gesture_detector_config;
     ScaleGestureDetector::Config scale_gesture_detector_config;
     SnapScrollController::Config snap_scroll_controller_config;
+
+    // If |disable_click_delay| is true and double-tap support is disabled,
+    // there will be no delay before tap events. When double-tap support is
+    // enabled, there will always be a delay before a tap event is fired, in
+    // order to allow the double tap gesture to occur without firing any tap
+    // events.
     bool disable_click_delay;
+
+    // If |gesture_begin_end_types_enabled| is true, fire an ET_GESTURE_BEGIN
+    // event for every added touch point, and an ET_GESTURE_END event for every
+    // removed touch point.
+    bool gesture_begin_end_types_enabled;
   };
 
   GestureProvider(const Config& config, GestureProviderClient* client);
@@ -94,6 +105,8 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   bool SendLongTapIfNecessary(const MotionEvent& event);
   void EndTouchScrollIfNecessary(const MotionEvent& event,
                                  bool send_scroll_end_event);
+  void OnTouchEventHandlingBegin(const MotionEvent& event);
+  void OnTouchEventHandlingEnd(const MotionEvent& event);
   void UpdateDoubleTapDetectionSupport();
 
   GestureProviderClient* const client_;
@@ -130,6 +143,8 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   // opened after a GESTURE_LONG_PRESS, this is used to insert a
   // GESTURE_TAP_CANCEL for removing any ::active styling.
   base::TimeTicks current_longpress_time_;
+
+  bool gesture_begin_end_types_enabled_;
 };
 
 }  //  namespace ui

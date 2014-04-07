@@ -88,6 +88,10 @@ DispositionHandlingInfo GetDispositionHandlingInfo(EventType type) {
       return Info(RT_CURRENT, ET_GESTURE_PINCH_BEGIN);
     case ET_GESTURE_PINCH_END:
       return Info(RT_NONE, ET_GESTURE_PINCH_BEGIN);
+    case ET_GESTURE_BEGIN:
+      return Info(RT_START);
+    case ET_GESTURE_END:
+      return Info(RT_NONE, ET_GESTURE_BEGIN);
     default:
       break;
   }

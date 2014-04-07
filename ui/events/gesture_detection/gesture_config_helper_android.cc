@@ -63,6 +63,7 @@ GestureProvider::Config DefaultGestureProviderConfig() {
   config.gesture_detector_config = DefaultGestureDetectorConfig();
   config.scale_gesture_detector_config = DefaultScaleGestureDetectorConfig();
   config.snap_scroll_controller_config = DefaultSnapScrollControllerConfig();
+  config.gesture_begin_end_types_enabled = false;
   return config;
 }
 
