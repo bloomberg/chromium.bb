@@ -32,7 +32,8 @@ DataModelWrapper::~DataModelWrapper() {}
 
 void DataModelWrapper::FillInputs(DetailInputs* inputs) {
   for (size_t i = 0; i < inputs->size(); ++i) {
-    (*inputs)[i].initial_value = GetInfo(AutofillType((*inputs)[i].type));
+    (*inputs)[i].initial_value =
+        GetInfoForDisplay(AutofillType((*inputs)[i].type));
   }
 }
 
