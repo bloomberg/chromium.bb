@@ -58,7 +58,7 @@ String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader)
         return String();
     if (!m_context->validateWebGLObject("getTranslatedShaderSource", shader))
         return "";
-    return m_context->ensureNotNull(m_context->webGraphicsContext3D()->getTranslatedShaderSourceANGLE(shader->object()));
+    return m_context->ensureNotNull(m_context->webContext()->getTranslatedShaderSourceANGLE(shader->object()));
 }
 
 bool WebGLDebugShaders::supported(WebGLRenderingContextBase* context)

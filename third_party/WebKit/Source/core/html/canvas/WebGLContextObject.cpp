@@ -47,7 +47,7 @@ void WebGLContextObject::detachContext()
 {
     detach();
     if (m_context) {
-        deleteObject(m_context->webGraphicsContext3D());
+        deleteObject(m_context->webContext());
         m_context->removeContextObject(this);
         m_context = 0;
     }
@@ -55,7 +55,7 @@ void WebGLContextObject::detachContext()
 
 blink::WebGraphicsContext3D* WebGLContextObject::getAWebGraphicsContext3D() const
 {
-    return m_context ? m_context->webGraphicsContext3D() : 0;
+    return m_context ? m_context->webContext() : 0;
 }
 
 }

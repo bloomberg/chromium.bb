@@ -72,7 +72,7 @@ void OESVertexArrayObject::deleteVertexArrayOES(WebGLVertexArrayObjectOES* array
     if (!arrayObject->isDefaultObject() && arrayObject == m_context->m_boundVertexArrayObject)
         m_context->setBoundVertexArrayObject(nullptr);
 
-    arrayObject->deleteObject(m_context->webGraphicsContext3D());
+    arrayObject->deleteObject(m_context->webContext());
 }
 
 GLboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
@@ -83,7 +83,7 @@ GLboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* arra
     if (!arrayObject->hasEverBeenBound())
         return 0;
 
-    return m_context->webGraphicsContext3D()->isVertexArrayOES(arrayObject->object());
+    return m_context->webContext()->isVertexArrayOES(arrayObject->object());
 }
 
 void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
@@ -92,17 +92,17 @@ void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayOb
         return;
 
     if (arrayObject && (arrayObject->isDeleted() || !arrayObject->validate(0, context()))) {
-        m_context->webGraphicsContext3D()->synthesizeGLError(GL_INVALID_OPERATION);
+        m_context->webContext()->synthesizeGLError(GL_INVALID_OPERATION);
         return;
     }
 
     if (arrayObject && !arrayObject->isDefaultObject() && arrayObject->object()) {
-        m_context->webGraphicsContext3D()->bindVertexArrayOES(arrayObject->object());
+        m_context->webContext()->bindVertexArrayOES(arrayObject->object());
 
         arrayObject->setHasEverBeenBound();
         m_context->setBoundVertexArrayObject(arrayObject);
     } else {
-        m_context->webGraphicsContext3D()->bindVertexArrayOES(0);
+        m_context->webContext()->bindVertexArrayOES(0);
         m_context->setBoundVertexArrayObject(nullptr);
     }
 }

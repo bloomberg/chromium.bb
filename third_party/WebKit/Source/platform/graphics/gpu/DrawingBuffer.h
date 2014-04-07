@@ -79,13 +79,9 @@ public:
         Discard
     };
 
-    static PassRefPtr<DrawingBuffer> create(blink::WebGraphicsContext3D*, const IntSize&, PreserveDrawingBuffer, PassRefPtr<ContextEvictionManager>);
+    static PassRefPtr<DrawingBuffer> create(PassOwnPtr<blink::WebGraphicsContext3D>, const IntSize&, PreserveDrawingBuffer, PassRefPtr<ContextEvictionManager>);
 
     virtual ~DrawingBuffer();
-
-    // Clear all resources from this object, as well as context. Called when context is destroyed
-    // to prevent invalid accesses to the resources.
-    void releaseResources();
 
     // Issues a glClear() on all framebuffers associated with this DrawingBuffer. The caller is responsible for
     // making the context current and setting the clear values and masks. Modifies the framebuffer binding.
@@ -93,10 +89,9 @@ public:
 
     // Given the desired buffer size, provides the largest dimensions that will fit in the pixel budget.
     IntSize adjustSize(const IntSize&);
-    void reset(const IntSize&);
+    bool reset(const IntSize&);
     void bind();
     IntSize size() const { return m_size; }
-    bool isZeroSized() const { return m_size.isEmpty(); }
 
     // Copies the multisample color buffer to the normal color buffer and leaves m_fbo bound.
     void commit(long x = 0, long y = 0, long width = -1, long height = -1);
@@ -144,10 +139,11 @@ public:
     PassRefPtr<Uint8ClampedArray> paintRenderingResultsToImageData(int&, int&);
 
 private:
-    DrawingBuffer(blink::WebGraphicsContext3D*, const IntSize&, bool multisampleExtensionSupported,
+    DrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D>, bool multisampleExtensionSupported,
                   bool packedDepthStencilExtensionSupported, PreserveDrawingBuffer, PassRefPtr<ContextEvictionManager>);
 
-    void initialize(const IntSize&);
+    bool initialize(const IntSize&);
+    void releaseResources();
 
     unsigned createColorTexture(const IntSize& size = IntSize());
     // Create the depth/stencil and multisample buffers, if needed.
@@ -199,7 +195,7 @@ private:
     Platform3DObject m_framebufferBinding;
     GLenum m_activeTextureUnit;
 
-    blink::WebGraphicsContext3D* m_context;
+    OwnPtr<blink::WebGraphicsContext3D> m_context;
     IntSize m_size;
     bool m_multisampleExtensionSupported;
     bool m_packedDepthStencilExtensionSupported;
