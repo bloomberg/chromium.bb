@@ -17,11 +17,10 @@
 #include "ipc/ipc_platform_file.h"
 
 SafeAudioVideoChecker::SafeAudioVideoChecker(
-    const base::PlatformFile& file,
+    base::File file,
     const fileapi::CopyOrMoveFileValidator::ResultCallback& callback)
     : state_(INITIAL_STATE),
-      file_(file),
-      file_closer_(&file_),
+      file_(file.Pass()),
       callback_(callback) {
   DCHECK(!callback.is_null());
 }
@@ -32,8 +31,7 @@ void SafeAudioVideoChecker::Start() {
     return;
   state_ = PINGED_STATE;
 
-  DCHECK(file_closer_);
-  if (*file_closer_.get() == base::kInvalidPlatformFileValue) {
+  if (!file_.IsValid()) {
     callback_.Run(base::File::FILE_ERROR_SECURITY);
     state_ = FINISHED_STATE;
     return;
@@ -55,9 +53,8 @@ void SafeAudioVideoChecker::OnProcessStarted() {
   if (utility_process_host_->GetData().handle == base::kNullProcessHandle)
     DLOG(ERROR) << "Child process handle is null";
   IPC::PlatformFileForTransit file_for_transit =
-      IPC::GetFileHandleForProcess(*file_closer_.release(),
-                                   utility_process_host_->GetData().handle,
-                                   true /* close_source_handle */);
+      IPC::TakeFileHandleForProcess(file_.Pass(),
+                                    utility_process_host_->GetData().handle);
   const int64 kFileDecodeTimeInMS = 250;
   utility_process_host_->Send(new ChromeUtilityMsg_CheckMediaFile(
       kFileDecodeTimeInMS, file_for_transit));

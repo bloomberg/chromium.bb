@@ -9,9 +9,9 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "chrome/common/media_galleries/iphoto_library.h"
 #include "chrome/common/media_galleries/itunes_library.h"
 #include "content/public/browser/utility_process_host.h"
@@ -94,11 +94,11 @@ class SafeIAppsLibraryParser : public content::UtilityProcessHostClient {
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  base::FilePath library_file_;
+  base::FilePath library_file_path_;
 
   // Once we have opened the file, we store the handle so that we can use it
   // once the utility process has launched.
-  base::PlatformFile library_platform_file_;
+  base::File library_file_;
 
   // Only accessed on the IO thread.
   base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
