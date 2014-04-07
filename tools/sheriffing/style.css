@@ -1,0 +1,166 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body {
+  margin: 0px;
+  font-family: 'Roboto', sans-serif;
+  font-size: small;
+}
+
+td {
+  background-color: white;
+}
+
+a {
+  text-decoration: none;
+  color: black;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Waterfall styles */
+#build_info {
+  background-color: white;
+  margin-left: 250px;
+  border-spacing: 1px;
+}
+
+#build_info td {
+  padding: 0.2em 0.5em 0.2em 0.5em;
+}
+
+#failure_info {
+  background-color: white;
+  margin-left: 250px;
+  border-spacing: 1px;
+}
+
+#failure_info td {
+  padding: 0.2em 0.5em 0.2em 0.5em;
+}
+
+.failure_range {
+  white-space: nowrap;
+}
+
+.waterfall_name {
+  font-weight: bold;
+  background: #eeeeee;
+  border-top: 1px dotted #999999;
+}
+
+.pending_count {
+  width: 2.5em;
+  min-width: 2.5em;
+  max-width: 3.5em;
+  display: inline-block;
+  text-align: right;
+  color: #cccccc;
+}
+
+.build_identifier {
+  width: 3.5em;
+  min-width: 3.5em;
+  max-width: 3.5em;
+  display: inline-block;
+  text-align: right;
+  color: blue;
+}
+
+.build_letter {
+  color: blue;
+}
+
+.build_status {
+  padding-left: 0.5em;
+  color: black;
+}
+
+.in_flight {
+  background-color: #99ffff;
+}
+
+.category {
+  text-align: right;
+  color: #e0e0e0;
+}
+
+/* Sidebar styling. */
+#sidebar {
+  background-color: #dddddd;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  min-width: 250px;
+  max-width: 250px;
+  width: 250px;
+  border-right: 1px solid #666666;
+  padding: 0px;
+  overflow: auto;
+}
+
+.box {
+  background: white;
+  margin: 0.4em;
+  padding: 1em;
+  border-bottom: 1px solid #999999;
+}
+
+.box li {
+  list-style-type: none;
+}
+
+.box a {
+  color: black;
+  font-weight: bold;
+}
+
+#debugging {
+  color: #cccccc;
+}
+
+/* Build statuses. */
+.success {
+  background: #ccff99;
+}
+
+.failed {
+  background: #ff9999;
+}
+
+.exception {
+  background: #ff66ff;
+}
+
+.offline {
+  background: #999999;
+}
+
+.running {
+  background: #ffff99;
+}
+
+.unknown {
+  background: #cccccc;
+}
+
+/* Tree statuses. */
+.open {
+  background: #ccff99;
+}
+
+.closed {
+  background: #ff9999;
+}
+
+.throttled {
+  background: #ffff99;
+}
+
+.maintenance {
+  background: #ff66ff;
+}

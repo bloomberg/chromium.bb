@@ -1,0 +1,5 @@
+Web interface helpful for sheriffing.
+
+Run with "python -m SimpleHTTPServer" and browse to localhost:8000.
+
+Favicon from http://www.famfamfam.com/lab/icons/mini/.
