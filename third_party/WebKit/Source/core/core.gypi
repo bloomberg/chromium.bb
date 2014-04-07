@@ -1671,8 +1671,6 @@
             'rendering/shapes/RectangleShape.h',
             'rendering/shapes/Shape.cpp',
             'rendering/shapes/Shape.h',
-            'rendering/shapes/ShapeInfo.cpp',
-            'rendering/shapes/ShapeInfo.h',
             'rendering/shapes/ShapeInterval.h',
             'rendering/shapes/ShapeOutsideInfo.cpp',
             'rendering/shapes/ShapeOutsideInfo.h',

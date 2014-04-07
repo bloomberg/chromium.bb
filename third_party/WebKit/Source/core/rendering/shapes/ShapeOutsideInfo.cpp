@@ -33,8 +33,223 @@
 #include "core/rendering/FloatingObjects.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderImage.h"
 
 namespace WebCore {
+
+CSSBoxType referenceBox(const ShapeValue& shapeValue)
+{
+    if (shapeValue.cssBox() == BoxMissing)
+        return MarginBox;
+    return shapeValue.cssBox();
+}
+
+void ShapeOutsideInfo::setReferenceBoxLogicalSize(LayoutSize newReferenceBoxLogicalSize)
+{
+    bool isHorizontalWritingMode = m_renderer.containingBlock()->style()->isHorizontalWritingMode();
+    switch (referenceBox(*m_renderer.style()->shapeOutside())) {
+    case MarginBox:
+        if (isHorizontalWritingMode)
+            newReferenceBoxLogicalSize.expand(m_renderer.marginWidth(), m_renderer.marginHeight());
+        else
+            newReferenceBoxLogicalSize.expand(m_renderer.marginHeight(), m_renderer.marginWidth());
+        break;
+    case BorderBox:
+        break;
+    case PaddingBox:
+        if (isHorizontalWritingMode)
+            newReferenceBoxLogicalSize.shrink(m_renderer.borderWidth(), m_renderer.borderHeight());
+        else
+            newReferenceBoxLogicalSize.shrink(m_renderer.borderHeight(), m_renderer.borderWidth());
+        break;
+    case ContentBox:
+        if (isHorizontalWritingMode)
+            newReferenceBoxLogicalSize.shrink(m_renderer.borderAndPaddingWidth(), m_renderer.borderAndPaddingHeight());
+        else
+            newReferenceBoxLogicalSize.shrink(m_renderer.borderAndPaddingHeight(), m_renderer.borderAndPaddingWidth());
+        break;
+    case BoxMissing:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+
+    if (m_referenceBoxLogicalSize == newReferenceBoxLogicalSize)
+        return;
+    markShapeAsDirty();
+    m_referenceBoxLogicalSize = newReferenceBoxLogicalSize;
+}
+
+static bool checkShapeImageOrigin(Document& document, ImageResource& imageResource)
+{
+    if (imageResource.isAccessAllowed(document.securityOrigin()))
+        return true;
+
+    const KURL& url = imageResource.url();
+    String urlString = url.isNull() ? "''" : url.elidedString();
+    document.addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Unsafe attempt to load URL " + urlString + ".");
+
+    return false;
+}
+
+static void getShapeImageAndRect(const ShapeValue& shapeValue, const RenderBox& renderBox, const LayoutSize& referenceBoxSize, Image*& image, LayoutRect& rect)
+{
+    ASSERT(shapeValue.isImageValid());
+    StyleImage* styleImage = shapeValue.image();
+
+    const IntSize& imageSize = renderBox.calculateImageIntrinsicDimensions(styleImage, roundedIntSize(referenceBoxSize), RenderImage::ScaleByEffectiveZoom);
+    styleImage->setContainerSizeForRenderer(&renderBox, imageSize, renderBox.style()->effectiveZoom());
+
+    image = styleImage->cachedImage()->imageForRenderer(&renderBox);
+    if (renderBox.isRenderImage())
+        rect = toRenderImage(&renderBox)->replacedContentRect();
+    else
+        rect = LayoutRect(LayoutPoint(), imageSize);
+}
+
+static LayoutRect getShapeImageMarginRect(const RenderBox& renderBox, const LayoutSize& referenceBoxLogicalSize)
+{
+    LayoutPoint marginBoxOrigin(-renderBox.marginLogicalLeft() - renderBox.borderAndPaddingLogicalLeft(), -renderBox.marginBefore() - renderBox.borderBefore() - renderBox.paddingBefore());
+    LayoutSize marginBoxSizeDelta(renderBox.marginLogicalWidth() + renderBox.borderAndPaddingLogicalWidth(), renderBox.marginLogicalHeight() + renderBox.borderAndPaddingLogicalHeight());
+    return LayoutRect(marginBoxOrigin, referenceBoxLogicalSize + marginBoxSizeDelta);
+}
+
+const Shape& ShapeOutsideInfo::computedShape() const
+{
+    if (Shape* shape = m_shape.get())
+        return *shape;
+
+    const RenderStyle& style = *m_renderer.style();
+    ASSERT(m_renderer.containingBlock());
+    const RenderStyle& containingBlockStyle = *m_renderer.containingBlock()->style();
+
+    WritingMode writingMode = containingBlockStyle.writingMode();
+    Length margin = style.shapeMargin();
+    float shapeImageThreshold = style.shapeImageThreshold();
+    ASSERT(style.shapeOutside());
+    const ShapeValue& shapeValue = *style.shapeOutside();
+
+    switch (shapeValue.type()) {
+    case ShapeValue::Shape:
+        ASSERT(shapeValue.shape());
+        m_shape = Shape::createShape(shapeValue.shape(), m_referenceBoxLogicalSize, writingMode, margin);
+        break;
+    case ShapeValue::Image: {
+        Image* image;
+        LayoutRect imageRect;
+        getShapeImageAndRect(shapeValue, m_renderer, m_referenceBoxLogicalSize, image, imageRect);
+        const LayoutRect& marginRect = getShapeImageMarginRect(m_renderer, m_referenceBoxLogicalSize);
+        m_shape = Shape::createRasterShape(image, shapeImageThreshold, imageRect, marginRect, writingMode, margin);
+        break;
+    }
+    case ShapeValue::Box: {
+        const RoundedRect& shapeRect = style.getRoundedBorderFor(LayoutRect(LayoutPoint(), m_referenceBoxLogicalSize), m_renderer.view());
+        m_shape = Shape::createLayoutBoxShape(shapeRect, writingMode, margin);
+        break;
+    }
+    }
+
+    ASSERT(m_shape);
+    return *m_shape;
+}
+
+SegmentList ShapeOutsideInfo::computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight) const
+{
+    ASSERT(lineHeight >= 0);
+    SegmentList segments;
+
+    computedShape().getExcludedIntervals((lineTop - logicalTopOffset()), std::min(lineHeight, shapeLogicalBottom() - lineTop), segments);
+
+    for (size_t i = 0; i < segments.size(); i++) {
+        segments[i].logicalLeft += logicalLeftOffset();
+        segments[i].logicalRight += logicalLeftOffset();
+    }
+
+    return segments;
+}
+
+inline LayoutUnit borderBeforeInWritingMode(const RenderBox& renderer, WritingMode writingMode)
+{
+    switch (writingMode) {
+    case TopToBottomWritingMode: return renderer.borderTop();
+    case BottomToTopWritingMode: return renderer.borderBottom();
+    case LeftToRightWritingMode: return renderer.borderLeft();
+    case RightToLeftWritingMode: return renderer.borderRight();
+    }
+
+    ASSERT_NOT_REACHED();
+    return renderer.borderBefore();
+}
+
+inline LayoutUnit borderAndPaddingBeforeInWritingMode(const RenderBox& renderer, WritingMode writingMode)
+{
+    switch (writingMode) {
+    case TopToBottomWritingMode: return renderer.borderTop() + renderer.paddingTop();
+    case BottomToTopWritingMode: return renderer.borderBottom() + renderer.paddingBottom();
+    case LeftToRightWritingMode: return renderer.borderLeft() + renderer.paddingLeft();
+    case RightToLeftWritingMode: return renderer.borderRight() + renderer.paddingRight();
+    }
+
+    ASSERT_NOT_REACHED();
+    return renderer.borderAndPaddingBefore();
+}
+
+LayoutUnit ShapeOutsideInfo::logicalTopOffset() const
+{
+    switch (referenceBox(*m_renderer.style()->shapeOutside())) {
+    case MarginBox: return -m_renderer.marginBefore(m_renderer.containingBlock()->style());
+    case BorderBox: return LayoutUnit();
+    case PaddingBox: return borderBeforeInWritingMode(m_renderer, m_renderer.containingBlock()->style()->writingMode());
+    case ContentBox: return borderAndPaddingBeforeInWritingMode(m_renderer, m_renderer.containingBlock()->style()->writingMode());
+    case BoxMissing: break;
+    }
+
+    ASSERT_NOT_REACHED();
+    return LayoutUnit();
+}
+
+inline LayoutUnit borderStartWithStyleForWritingMode(const RenderBox& renderer, const RenderStyle* style)
+{
+    if (style->isHorizontalWritingMode()) {
+        if (style->isLeftToRightDirection())
+            return renderer.borderLeft();
+
+        return renderer.borderRight();
+    }
+    if (style->isLeftToRightDirection())
+        return renderer.borderTop();
+
+    return renderer.borderBottom();
+}
+
+inline LayoutUnit borderAndPaddingStartWithStyleForWritingMode(const RenderBox& renderer, const RenderStyle* style)
+{
+    if (style->isHorizontalWritingMode()) {
+        if (style->isLeftToRightDirection())
+            return renderer.borderLeft() + renderer.paddingLeft();
+
+        return renderer.borderRight() + renderer.paddingRight();
+    }
+    if (style->isLeftToRightDirection())
+        return renderer.borderTop() + renderer.paddingTop();
+
+    return renderer.borderBottom() + renderer.paddingBottom();
+}
+
+LayoutUnit ShapeOutsideInfo::logicalLeftOffset() const
+{
+    switch (referenceBox(*m_renderer.style()->shapeOutside())) {
+    case MarginBox: return -m_renderer.marginStart(m_renderer.containingBlock()->style());
+    case BorderBox: return LayoutUnit();
+    case PaddingBox: return borderStartWithStyleForWritingMode(m_renderer, m_renderer.containingBlock()->style());
+    case ContentBox: return borderAndPaddingStartWithStyleForWritingMode(m_renderer, m_renderer.containingBlock()->style());
+    case BoxMissing: break;
+    }
+
+    ASSERT_NOT_REACHED();
+    return LayoutUnit();
+}
+
+
 bool ShapeOutsideInfo::isEnabledFor(const RenderBox& box)
 {
     ShapeValue* shapeValue = box.style()->shapeOutside();
@@ -87,17 +302,6 @@ void ShapeOutsideInfo::updateDeltasForContainingBlockLine(const RenderBlockFlow&
         m_rightMarginBoxDelta = -floatMarginBoxWidth;
         m_lineOverlapsShape = false;
     }
-}
-
-ShapeValue* ShapeOutsideInfo::shapeValue() const
-{
-    return m_renderer.style()->shapeOutside();
-}
-
-const RenderStyle* ShapeOutsideInfo::styleForWritingMode() const
-{
-    ASSERT(m_renderer.containingBlock());
-    return m_renderer.containingBlock()->style();
 }
 
 }
