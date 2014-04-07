@@ -50,7 +50,7 @@ struct wl_shm_pool {
 	struct wl_resource *resource;
 	int refcount;
 	char *data;
-	int size;
+	int32_t size;
 };
 
 struct wl_shm_buffer {
@@ -195,8 +195,14 @@ shm_pool_resize(struct wl_client *client, struct wl_resource *resource,
 	struct wl_shm_pool *pool = wl_resource_get_user_data(resource);
 	void *data;
 
-	data = mremap(pool->data, pool->size, size, MREMAP_MAYMOVE);
+	if (size < pool->size) {
+		wl_resource_post_error(resource,
+				       WL_SHM_ERROR_INVALID_FD,
+				       "shrinking pool invalid");
+		return;
+	}
 
+	data = mremap(pool->data, pool->size, size, MREMAP_MAYMOVE);
 	if (data == MAP_FAILED) {
 		wl_resource_post_error(resource,
 				       WL_SHM_ERROR_INVALID_FD,

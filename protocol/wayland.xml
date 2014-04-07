@@ -246,7 +246,8 @@
       <description summary="change the size of the pool mapping">
 	This request will cause the server to remap the backing memory
 	for the pool from the file descriptor passed when the pool was
-	created, but using the new size.
+	created, but using the new size.  This request can only be
+	used to make the pool bigger.
       </description>
 
       <arg name="size" type="int"/>
