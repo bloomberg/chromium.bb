@@ -1092,8 +1092,9 @@
             {
               'target_name': 'chrome_official_builder',
               'type': 'none',
+              # Do not add new dependencies here for anything we don't ship.
+              # It increases official build times and causes breakage.
               'dependencies': [
-                '../base/base.gyp:base_unittests',
                 '../chrome/chrome.gyp:crash_service',
                 '../chrome/chrome.gyp:gcapi_dll',
                 '../chrome/chrome.gyp:pack_policy_templates',
@@ -1101,18 +1102,8 @@
                 '../cloud_print/cloud_print.gyp:cloud_print',
                 '../courgette/courgette.gyp:courgette',
                 '../courgette/courgette.gyp:courgette64',
-                '../ipc/ipc.gyp:ipc_tests',
-                '../media/media.gyp:media_unittests',
-                '../net/net.gyp:net_unittests_run',
-                '../printing/printing.gyp:printing_unittests',
                 '../remoting/remoting.gyp:remoting_webapp',
-                '../sql/sql.gyp:sql_unittests',
-                '../sync/sync.gyp:sync_unit_tests',
                 '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
-                '../ui/gfx/gfx.gyp:gfx_unittests',
-                '../ui/ui_unittests.gyp:ui_unittests',
-                '../ui/views/views.gyp:views_unittests',
-                '../url/url.gyp:url_unittests',
               ],
               'conditions': [
                 ['internal_pdf', {
