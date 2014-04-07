@@ -52,12 +52,12 @@ export PNACL_VERBOSE=true
 # export HOST_ARCH="x86_32"
 # TODO(pnacl-team): Figure out what to do about this.
 # Export this so that the test scripts know where to find the toolchain.
-export TOOLCHAIN_BASE_DIR=toolchain/linux_x86
+export TOOLCHAIN_BASE_DIR=linux_x86
 export PNACL_TOOLCHAIN_DIR=${TOOLCHAIN_BASE_DIR}/pnacl_newlib
 export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
 # This picks the TC which we just built, even if scons doesn't know
 # how to find a 64-bit host toolchain.
-readonly SCONS_PICK_TC="pnaclsdk_mode=custom:${PNACL_TOOLCHAIN_DIR}"
+readonly SCONS_PICK_TC="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_DIR}"
 
 # download-old-tc -
 # Download the archived frontend toolchain, if we haven't already
@@ -222,26 +222,26 @@ archived-frontend-test() {
   # Get the archived frontend.
   # If the correct cached frontend is in place, the hash will match and the
   # download will be a no-op. Otherwise the downloader will fix it.
-  download-old-tc ${TOOLCHAIN_BASE_DIR}/archived_tc
+  download-old-tc toolchain/${TOOLCHAIN_BASE_DIR}/archived_tc
 
   # Save the current toolchain.
-  mkdir -p ${TOOLCHAIN_BASE_DIR}/current_tc
-  rm -rf ${TOOLCHAIN_BASE_DIR}current_tc/*
-  mv ${PNACL_TOOLCHAIN_DIR} \
-    ${TOOLCHAIN_BASE_DIR}/current_tc/${PNACL_TOOLCHAIN_LABEL}
+  mkdir -p toolchain/${TOOLCHAIN_BASE_DIR}/current_tc
+  rm -rf toolchain/${TOOLCHAIN_BASE_DIR}/current_tc/*
+  mv toolchain/${PNACL_TOOLCHAIN_DIR} \
+    toolchain/${TOOLCHAIN_BASE_DIR}/current_tc/${PNACL_TOOLCHAIN_LABEL}
 
   # Link the old frontend into place. If we just use pnaclsdk_mode to select a
   # different toolchain, SCons will attempt to rebuild the IRT.
-  ln -s archived_tc/${PNACL_TOOLCHAIN_LABEL} ${PNACL_TOOLCHAIN_DIR}
+  ln -s archived_tc/${PNACL_TOOLCHAIN_LABEL} toolchain/${PNACL_TOOLCHAIN_DIR}
 
   # Build the pexes with the old frontend.
   ${SCONS_COMMON} ${SCONS_PICK_TC} \
     do_not_run_tests=1 ${flags} ${targets} || handle-error
 
   # Put the current toolchain back in place.
-  rm ${PNACL_TOOLCHAIN_DIR}
-  mv ${TOOLCHAIN_BASE_DIR}/current_tc/${PNACL_TOOLCHAIN_LABEL} \
-    ${PNACL_TOOLCHAIN_DIR}
+  rm toolchain/${PNACL_TOOLCHAIN_DIR}
+  mv toolchain/${TOOLCHAIN_BASE_DIR}/current_tc/${PNACL_TOOLCHAIN_LABEL} \
+    toolchain/${PNACL_TOOLCHAIN_DIR}
 
   # Translate them with the new translator, and run the tests.
   # Use the sandboxed translator, which runs the newer ABI verifier
