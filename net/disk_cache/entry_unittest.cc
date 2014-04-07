@@ -3229,6 +3229,11 @@ TEST_F(DiskCacheEntryTest, SimpleCacheEvictOldEntries) {
 
   std::string key2("the key prefix");
   for (int i = 0; i < kNumExtraEntries; i++) {
+    if (i == kNumExtraEntries - 2) {
+      // Create a distinct timestamp for the last two entries. These entries
+      // will be checked for outliving the eviction.
+      AddDelay();
+    }
     ASSERT_EQ(net::OK, CreateEntry(key2 + base::StringPrintf("%d", i), &entry));
     ScopedEntryPtr entry_closer(entry);
     EXPECT_EQ(kWriteSize,
