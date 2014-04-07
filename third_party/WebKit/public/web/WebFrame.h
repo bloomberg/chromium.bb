@@ -32,6 +32,7 @@
 #define WebFrame_h
 
 #include "WebCompositionUnderline.h"
+#include "WebHistoryItem.h"
 #include "WebIconURL.h"
 #include "WebNode.h"
 #include "WebURLLoaderOptions.h"
@@ -60,7 +61,6 @@ class WebDocument;
 class WebElement;
 class WebFormElement;
 class WebFrameClient;
-class WebHistoryItem;
 class WebInputElement;
 class WebLayer;
 class WebPerformance;
@@ -341,9 +341,15 @@ public:
     virtual void loadRequest(const WebURLRequest&) = 0;
 
     // Load the given history state, corresponding to a back/forward
-    // navigation.
+    // navigation of a whole page.
     virtual void loadHistoryItem(
         const WebHistoryItem&,
+        WebURLRequest::CachePolicy = WebURLRequest::UseProtocolCachePolicy) = 0;
+    // Load the given history state, corresponding to a back/forward
+    // navigation of a frame. Multiple frames may be navigated via separate calls.
+    virtual void loadHistoryItem(
+        const WebHistoryItem&,
+        WebHistoryLoadType,
         WebURLRequest::CachePolicy = WebURLRequest::UseProtocolCachePolicy) = 0;
 
     // Loads the given data with specific mime type and optional text

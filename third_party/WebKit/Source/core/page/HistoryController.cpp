@@ -151,11 +151,6 @@ HistoryController::~HistoryController()
 {
 }
 
-void HistoryController::updateBackForwardListForFragmentScroll(LocalFrame* frame, HistoryItem* item)
-{
-    createNewBackForwardItem(frame, item, false);
-}
-
 void HistoryController::goToEntry(PassOwnPtr<HistoryEntry> targetEntry, ResourceRequestCachePolicy cachePolicy)
 {
     HistoryFrameLoadSet sameDocumentLoads;
@@ -241,7 +236,7 @@ void HistoryController::updateForInitialLoadInChildFrame(LocalFrame* frame, Hist
         parentHistoryNode->addChild(item, frame->frameID());
 }
 
-void HistoryController::updateForCommit(LocalFrame* frame, HistoryItem* item, HistoryCommitType commitType)
+void HistoryController::updateForCommit(LocalFrame* frame, HistoryItem* item, HistoryCommitType commitType, bool navigationWithinPage)
 {
     if (commitType == BackForwardCommit) {
         if (!m_provisionalEntry)
@@ -254,7 +249,7 @@ void HistoryController::updateForCommit(LocalFrame* frame, HistoryItem* item, Hi
         ASSERT(m_provisionalEntry);
         m_currentEntry = m_provisionalEntry.release();
     } else if (commitType == StandardCommit) {
-        createNewBackForwardItem(frame, item, true);
+        createNewBackForwardItem(frame, item, !navigationWithinPage);
     } else if (commitType == InitialCommitInChildFrame) {
         updateForInitialLoadInChildFrame(frame, item);
     }

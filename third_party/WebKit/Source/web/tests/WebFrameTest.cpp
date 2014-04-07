@@ -4074,7 +4074,7 @@ public:
         runPendingTasks();
     }
 
-    virtual void didCommitProvisionalLoad(WebLocalFrame* frame, bool)
+    virtual void didCommitProvisionalLoad(WebLocalFrame* frame, const WebHistoryItem&, WebHistoryCommitType)
     {
         if (frame->dataSource()->response().url() != WebURL(URLTestHelpers::toKURL("about:blank")))
             m_commitCalled = true;
@@ -4112,7 +4112,7 @@ TEST_F(WebFrameTest, ReplaceNavigationAfterHistoryNavigation)
     errorHistoryItem.initialize();
     errorHistoryItem.setURLString(WebString::fromUTF8(errorURL.c_str(), errorURL.length()));
     Platform::current()->unitTestSupport()->registerMockedErrorURL(URLTestHelpers::toKURL(errorURL), response, error);
-    frame->loadHistoryItem(errorHistoryItem);
+    frame->loadHistoryItem(errorHistoryItem, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
     WebString text = frame->contentAsText(std::numeric_limits<size_t>::max());
@@ -4126,7 +4126,7 @@ public:
     {
     }
 
-    virtual void didCommitProvisionalLoad(WebLocalFrame*, bool) OVERRIDE
+    virtual void didCommitProvisionalLoad(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType) OVERRIDE
     {
         m_numBodies = 0;
         m_didLoad = true;
@@ -4743,7 +4743,7 @@ TEST_F(WebFrameTest, FirstPartyForCookiesForRedirect)
 class TestNavigationPolicyWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
 
-    virtual void didNavigateWithinPage(WebLocalFrame*, bool)
+    virtual void didNavigateWithinPage(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType) OVERRIDE
     {
         EXPECT_TRUE(false);
     }
@@ -4827,18 +4827,18 @@ TEST_F(WebFrameTest, BackToReload)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "fragment_middle_click.html", true);
     WebFrame* frame = webViewHelper.webView()->mainFrame();
-    WebHistoryItem firstItem = frame->currentHistoryItem();
-    EXPECT_FALSE(firstItem.isNull());
+    const WebCore::FrameLoader& mainFrameLoader = webViewHelper.webViewImpl()->mainFrameImpl()->frame()->loader();
+    RefPtr<WebCore::HistoryItem> firstItem = mainFrameLoader.currentItem();
+    EXPECT_TRUE(firstItem);
 
     registerMockedHttpURLLoad("white-1x1.png");
     FrameTestHelpers::loadFrame(frame, m_baseURL + "white-1x1.png");
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-    EXPECT_FALSE(frame->previousHistoryItem().isNull());
-    EXPECT_EQ(firstItem.urlString(), frame->previousHistoryItem().urlString());
+    EXPECT_NE(firstItem.get(), mainFrameLoader.currentItem());
 
-    frame->loadHistoryItem(frame->previousHistoryItem());
+    frame->loadHistoryItem(WebHistoryItem(firstItem.get()), WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-    EXPECT_EQ(firstItem.urlString(), frame->currentHistoryItem().urlString());
+    EXPECT_EQ(firstItem.get(), mainFrameLoader.currentItem());
 
     frame->reload();
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
@@ -4851,6 +4851,7 @@ TEST_F(WebFrameTest, BackDuringChildFrameReload)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "page_with_blank_iframe.html", true);
     WebFrame* mainFrame = webViewHelper.webView()->mainFrame();
+    const WebCore::FrameLoader& mainFrameLoader = webViewHelper.webViewImpl()->mainFrameImpl()->frame()->loader();
     WebFrame* childFrame = mainFrame->firstChild();
     ASSERT_TRUE(childFrame);
 
@@ -4863,12 +4864,12 @@ TEST_F(WebFrameTest, BackDuringChildFrameReload)
     item.initialize();
     WebURL historyURL(toKURL(m_baseURL + "white-1x1.png"));
     item.setURLString(historyURL.string());
-    mainFrame->loadHistoryItem(item);
+    mainFrame->loadHistoryItem(item, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
 
     childFrame->reload();
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     EXPECT_EQ(item.urlString(), mainFrame->document().url().string());
-    EXPECT_EQ(item.urlString(), mainFrame->currentHistoryItem().urlString());
+    EXPECT_EQ(item.urlString(), WebString(mainFrameLoader.currentItem()->urlString()));
 }
 
 TEST_F(WebFrameTest, ReloadPost)
@@ -4881,7 +4882,6 @@ TEST_F(WebFrameTest, ReloadPost)
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), "javascript:document.forms[0].submit()");
     runPendingTasks();
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-    EXPECT_FALSE(frame->previousHistoryItem().isNull());
     EXPECT_EQ(WebString::fromUTF8("POST"), frame->dataSource()->request().httpMethod());
 
     frame->reload();
@@ -4896,19 +4896,19 @@ TEST_F(WebFrameTest, LoadHistoryItemReload)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "fragment_middle_click.html", true);
     WebFrame* frame = webViewHelper.webView()->mainFrame();
-    WebHistoryItem firstItem = frame->currentHistoryItem();
-    EXPECT_FALSE(firstItem.isNull());
+    const WebCore::FrameLoader& mainFrameLoader = webViewHelper.webViewImpl()->mainFrameImpl()->frame()->loader();
+    RefPtr<WebCore::HistoryItem> firstItem = mainFrameLoader.currentItem();
+    EXPECT_TRUE(firstItem);
 
     registerMockedHttpURLLoad("white-1x1.png");
     FrameTestHelpers::loadFrame(frame, m_baseURL + "white-1x1.png");
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-    EXPECT_FALSE(frame->previousHistoryItem().isNull());
-    EXPECT_EQ(firstItem.urlString(), frame->previousHistoryItem().urlString());
+    EXPECT_NE(firstItem.get(), mainFrameLoader.currentItem());
 
     // Cache policy overrides should take.
-    frame->loadHistoryItem(frame->previousHistoryItem(), WebURLRequest::ReloadIgnoringCacheData);
+    frame->loadHistoryItem(WebHistoryItem(firstItem), WebHistoryDifferentDocumentLoad, WebURLRequest::ReloadIgnoringCacheData);
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-    EXPECT_EQ(firstItem.urlString(), frame->currentHistoryItem().urlString());
+    EXPECT_EQ(firstItem.get(), mainFrameLoader.currentItem());
     EXPECT_EQ(WebURLRequest::ReloadIgnoringCacheData, frame->dataSource()->request().cachePolicy());
 }
 
@@ -4984,22 +4984,6 @@ TEST_F(WebFrameTest, ReloadIframe)
     EXPECT_EQ(mainClient.childFrameCreationCount(), 2);
     EXPECT_EQ(childClient.willSendRequestCallCount(), 2);
     EXPECT_EQ(childClient.cachePolicy(), WebURLRequest::ReloadIgnoringCacheData);
-}
-
-TEST_F(WebFrameTest, ExportHistoryItemFromChildFrame)
-{
-    registerMockedHttpURLLoad("iframe_reload.html");
-    registerMockedHttpURLLoad("visible_iframe.html");
-    TestCachePolicyWebFrameClient mainClient;
-    TestCachePolicyWebFrameClient childClient;
-    mainClient.setChildWebFrameClient(&childClient);
-
-    FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "iframe_reload.html", true, &mainClient);
-
-    WebFrame* childFrame = webViewHelper.webViewImpl()->mainFrameImpl()->firstChild();
-    WebHistoryItem item = childFrame->currentHistoryItem();
-    EXPECT_EQ(item.urlString().utf8(), m_baseURL + "iframe_reload.html");
 }
 
 class TestSameDocumentWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
@@ -5201,7 +5185,6 @@ TEST_F(WebFrameTest, firstNavigationIsHistoryWithBlankChild)
     registerMockedHttpURLLoad("history.html");
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebViewImpl* webView = webViewHelper.initialize();
-    ASSERT_TRUE(webView->mainFrame()->currentHistoryItem().isNull());
 
     WebHistoryItem item;
     item.initialize();
@@ -5214,7 +5197,7 @@ TEST_F(WebFrameTest, firstNavigationIsHistoryWithBlankChild)
     childItem.setURLString("about:blank");
     item.appendToChildren(childItem);
 
-    webView->mainFrame()->loadHistoryItem(item);
+    webView->mainFrame()->loadHistoryItem(item, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     EXPECT_EQ(destinationURL, webView->mainFrame()->document().url());
 }
@@ -5259,17 +5242,18 @@ TEST_F(WebFrameTest, CurrentHistoryItem)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initialize();
     WebFrame* frame = webViewHelper.webView()->mainFrame();
+    const WebCore::FrameLoader& mainFrameLoader = webViewHelper.webViewImpl()->mainFrameImpl()->frame()->loader();
     FrameTestHelpers::loadFrame(frame, url);
 
     // Before commit, there is no history item.
-    EXPECT_TRUE(frame->currentHistoryItem().isNull());
+    EXPECT_FALSE(mainFrameLoader.currentItem());
 
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
     // After commit, there is.
-    WebHistoryItem item = frame->currentHistoryItem();
-    ASSERT_FALSE(item.isNull());
-    EXPECT_EQ(url, item.urlString().utf8());
+    WebCore::HistoryItem* item = mainFrameLoader.currentItem();
+    ASSERT_TRUE(item);
+    EXPECT_EQ(WTF::String(url.data()), item->urlString());
 }
 
 class FailCreateChildFrame : public WebFrameClient {

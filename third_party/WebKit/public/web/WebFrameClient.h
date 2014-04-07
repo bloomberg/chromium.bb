@@ -34,6 +34,7 @@
 #include "WebDOMMessageEvent.h"
 #include "WebDataSource.h"
 #include "WebFrame.h"
+#include "WebHistoryCommitType.h"
 #include "WebHistoryItem.h"
 #include "WebIconURL.h"
 #include "WebNavigationPolicy.h"
@@ -216,7 +217,7 @@ public:
     // The provisional datasource is now committed.  The first part of the
     // response body has been received, and the encoding of the response
     // body is known.
-    virtual void didCommitProvisionalLoad(WebLocalFrame*, bool isNewNavigation) { }
+    virtual void didCommitProvisionalLoad(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType) { }
 
     // The window object for the frame has been cleared of any extra
     // properties that may have been set by script from the previously
@@ -247,7 +248,7 @@ public:
     // The navigation resulted in no change to the documents within the page.
     // For example, the navigation may have just resulted in scrolling to a
     // named anchor or a PopState event may have been dispatched.
-    virtual void didNavigateWithinPage(WebLocalFrame*, bool isNewNavigation) { }
+    virtual void didNavigateWithinPage(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType) { }
 
     // Called upon update to scroll position, document state, and other
     // non-navigational events related to the data held by WebHistoryItem.

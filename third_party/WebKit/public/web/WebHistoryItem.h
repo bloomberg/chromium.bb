@@ -44,6 +44,11 @@ class WebSerializedScriptValue;
 struct WebPoint;
 template <typename T> class WebVector;
 
+enum WebHistoryLoadType {
+    WebHistorySameDocumentLoad,
+    WebHistoryDifferentDocumentLoad
+};
+
 // Represents a frame-level navigation entry in session history.  A
 // WebHistoryItem is a node in a tree.
 //

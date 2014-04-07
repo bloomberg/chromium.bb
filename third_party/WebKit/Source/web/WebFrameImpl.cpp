@@ -918,6 +918,14 @@ void WebFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebURLRequest::Ca
     frame()->page()->historyController().goToItem(historyItem.get(), static_cast<ResourceRequestCachePolicy>(cachePolicy));
 }
 
+void WebFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebHistoryLoadType loadType, WebURLRequest::CachePolicy cachePolicy)
+{
+    ASSERT(frame());
+    RefPtr<HistoryItem> historyItem = PassRefPtr<HistoryItem>(item);
+    ASSERT(historyItem);
+    frame()->loader().loadHistoryItem(historyItem.get(), static_cast<HistoryLoadType>(loadType), static_cast<ResourceRequestCachePolicy>(cachePolicy));
+}
+
 void WebFrameImpl::loadData(const WebData& data, const WebString& mimeType, const WebString& textEncoding, const WebURL& baseURL, const WebURL& unreachableURL, bool replace)
 {
     ASSERT(frame());
@@ -1713,11 +1721,8 @@ PassRefPtr<LocalFrame> WebFrameImpl::createChildFrame(const FrameLoadRequest& re
     // If we're moving in the back/forward list, we might want to replace the content
     // of this child frame with whatever was there at that point.
     RefPtr<HistoryItem> childItem;
-    if (isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished()) {
+    if (isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished())
         childItem = PassRefPtr<HistoryItem>(webframe->client()->historyItemForNewChildFrame(webframe));
-        if (!childItem)
-            childItem = frame()->page()->historyController().itemForNewChildFrame(childFrame.get());
-    }
 
     if (childItem)
         childFrame->loader().loadHistoryItem(childItem.get());

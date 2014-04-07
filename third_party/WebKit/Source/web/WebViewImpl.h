@@ -594,6 +594,10 @@ private:
     virtual bool handleKeyEvent(const WebKeyboardEvent&) OVERRIDE;
     virtual bool handleCharEvent(const WebKeyboardEvent&) OVERRIDE;
 
+    virtual void updateForCommit(WebFrame*, const WebHistoryItem&, WebHistoryCommitType, bool navigationWithinPage) OVERRIDE;
+    virtual WebHistoryItem itemForNewChildFrame(WebFrame*) const OVERRIDE;
+    virtual void removeChildrenForRedirect(WebFrame*) OVERRIDE;
+
     WebCore::InputMethodContext* inputMethodContext();
     WebPlugin* focusedPluginIfInputMethodSupported(WebCore::LocalFrame*);
 

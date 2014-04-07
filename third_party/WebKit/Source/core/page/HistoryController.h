@@ -142,9 +142,7 @@ public:
     // Should only be called by embedder. To request a back/forward
     // navigation, call FrameLoaderClient::navigateBackForward().
     void goToItem(HistoryItem*, ResourceRequestCachePolicy);
-
-    void updateBackForwardListForFragmentScroll(LocalFrame*, HistoryItem*);
-    void updateForCommit(LocalFrame*, HistoryItem*, HistoryCommitType);
+    void updateForCommit(LocalFrame*, HistoryItem*, HistoryCommitType, bool navigationWithinPage);
 
     PassRefPtr<HistoryItem> currentItemForExport();
     PassRefPtr<HistoryItem> previousItemForExport();

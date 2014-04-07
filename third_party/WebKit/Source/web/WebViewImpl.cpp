@@ -2926,6 +2926,24 @@ void WebViewImpl::resetScrollAndScaleState()
     resetSavedScrollAndScaleState();
 }
 
+void WebViewImpl::updateForCommit(WebFrame* frame, const WebHistoryItem& item, WebHistoryCommitType commitType, bool navigationWithinPage)
+{
+    RefPtr<HistoryItem> historyItem = PassRefPtr<HistoryItem>(item);
+    if (!historyItem)
+        return;
+    page()->historyController().updateForCommit(toWebFrameImpl(frame)->frame(), historyItem.get(), static_cast<HistoryCommitType>(commitType), navigationWithinPage);
+}
+
+WebHistoryItem WebViewImpl::itemForNewChildFrame(WebFrame* frame) const
+{
+    return WebHistoryItem(page()->historyController().itemForNewChildFrame(toWebFrameImpl(frame)->frame()));
+}
+
+void WebViewImpl::removeChildrenForRedirect(WebFrame* frame)
+{
+    page()->historyController().removeChildrenForRedirect(toWebFrameImpl(frame)->frame());
+}
+
 void WebViewImpl::setFixedLayoutSize(const WebSize& layoutSize)
 {
     if (!page())

@@ -1369,6 +1369,7 @@ LocalFrame* FrameLoader::findFrameForNavigation(const AtomicString& name, Docume
 
 void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoadType, ResourceRequestCachePolicy cachePolicy)
 {
+    RefPtr<LocalFrame> protect(m_frame);
     if (m_frame->page()->defersLoading()) {
         m_deferredHistoryLoad = DeferredHistoryLoad(item, historyLoadType, cachePolicy);
         return;

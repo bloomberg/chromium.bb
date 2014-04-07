@@ -112,6 +112,7 @@
 #include "public/web/WebGeolocationError.h"
 #include "public/web/WebGeolocationPosition.h"
 #include "public/web/WebHistoryCommitType.h"
+#include "public/web/WebHistoryItem.h"
 #include "public/web/WebIconURL.h"
 #include "public/web/WebInputElement.h"
 #include "public/web/WebInputEvent.h"
@@ -602,6 +603,9 @@ COMPILE_ASSERT_MATCHING_ENUM(WebStandardCommit, StandardCommit);
 COMPILE_ASSERT_MATCHING_ENUM(WebBackForwardCommit, BackForwardCommit);
 COMPILE_ASSERT_MATCHING_ENUM(WebInitialCommitInChildFrame, InitialCommitInChildFrame);
 COMPILE_ASSERT_MATCHING_ENUM(WebHistoryInertCommit, HistoryInertCommit);
+
+COMPILE_ASSERT_MATCHING_ENUM(WebHistorySameDocumentLoad, HistorySameDocumentLoad);
+COMPILE_ASSERT_MATCHING_ENUM(WebHistoryDifferentDocumentLoad, HistoryDifferentDocumentLoad);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelDebug, DebugMessageLevel);
 COMPILE_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelLog, LogMessageLevel);

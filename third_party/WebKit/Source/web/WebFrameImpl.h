@@ -142,6 +142,7 @@ public:
     virtual void reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache) OVERRIDE;
     virtual void loadRequest(const WebURLRequest&) OVERRIDE;
     virtual void loadHistoryItem(const WebHistoryItem&, WebURLRequest::CachePolicy) OVERRIDE;
+    virtual void loadHistoryItem(const WebHistoryItem&, WebHistoryLoadType, WebURLRequest::CachePolicy) OVERRIDE;
     virtual void loadData(
         const WebData&, const WebString& mimeType, const WebString& textEncoding,
         const WebURL& baseURL, const WebURL& unreachableURL, bool replace) OVERRIDE;
