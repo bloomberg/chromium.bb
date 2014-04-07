@@ -296,8 +296,6 @@ def main(argv):
     # split it. For now also do not support threading non-SFI baremetal mode.
     # Non-ABI-stable pexes may have symbol naming and visibility issues that the
     # current splitting scheme doesn't account for.
-    # If the link would require a non-standard command line, do not split the
-    # modules because the sandboxed linker doesn't support that combination.
     # The x86->arm emulator is very flaky when threading is used, so don't
     # do module splitting when using it.
     env.set('SPLIT_MODULE', '1')
