@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/common/extensions/extension_icon_set.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/extension_icon_set.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/image/image_skia.h"
 

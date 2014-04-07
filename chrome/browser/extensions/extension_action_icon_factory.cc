@@ -6,8 +6,8 @@
 
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension_icon_set.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_icon_set.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"

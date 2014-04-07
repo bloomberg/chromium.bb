@@ -64,6 +64,8 @@
         'common/extension_api.cc',
         'common/extension_api.h',
         'common/extension_api_stub.cc',
+        'common/extension_icon_set.cc',
+        'common/extension_icon_set.h',
         'common/extension_message_generator.cc',
         'common/extension_message_generator.h',
         'common/extension_messages.cc',

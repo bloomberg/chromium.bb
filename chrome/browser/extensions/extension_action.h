@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/extensions/extension_icon_set.h"
+#include "extensions/common/extension_icon_set.h"
 #include "third_party/skia/include/core/SkColor.h"
 // TODO(robertphillips): change this to "class SkBaseDevice;"
 #include "third_party/skia/include/core/SkDevice.h"
