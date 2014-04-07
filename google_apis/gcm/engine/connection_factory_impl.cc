@@ -106,7 +106,7 @@ void ConnectionFactoryImpl::Connect() {
 void ConnectionFactoryImpl::ConnectWithBackoff() {
   // If a canary managed to connect while a backoff expiration was pending,
   // just cleanup the internal state.
-  if (connecting_ || IsEndpointReachable()) {
+  if (connecting_ || logging_in_ || IsEndpointReachable()) {
     waiting_for_backoff_ = false;
     return;
   }

@@ -128,6 +128,9 @@ class TestConnectionFactoryImpl : public ConnectionFactoryImpl {
   void SetConnectResult(int connect_result);
   void SetMultipleConnectResults(int connect_result, int num_expected_attempts);
 
+  // Force a login handshake to be delayed.
+  void SetDelayLogin(bool delay_login);
+
   base::SimpleTestTickClock* tick_clock() { return &tick_clock_; }
 
  private:
@@ -140,6 +143,8 @@ class TestConnectionFactoryImpl : public ConnectionFactoryImpl {
   // Whether all expected connection attempts have been fulfilled since an
   // expectation was last set.
   bool connections_fulfilled_;
+  // Whether to delay a login handshake completion or not.
+  bool delay_login_;
   // Callback to invoke when all connection attempts have been made.
   base::Closure finished_callback_;
   // The current fake connection handler..
@@ -155,6 +160,7 @@ TestConnectionFactoryImpl::TestConnectionFactoryImpl(
       connect_result_(net::ERR_UNEXPECTED),
       num_expected_attempts_(0),
       connections_fulfilled_(true),
+      delay_login_(false),
       finished_callback_(finished_callback),
       fake_handler_(NULL) {
   // Set a non-null time.
@@ -186,7 +192,8 @@ void TestConnectionFactoryImpl::ConnectImpl() {
 
 void TestConnectionFactoryImpl::InitHandler() {
   EXPECT_NE(connect_result_, net::ERR_UNEXPECTED);
-  ConnectionHandlerCallback(net::OK);
+  if (!delay_login_)
+    ConnectionHandlerCallback(net::OK);
 }
 
 scoped_ptr<net::BackoffEntry> TestConnectionFactoryImpl::CreateBackoffEntry(
@@ -237,6 +244,11 @@ void TestConnectionFactoryImpl::SetMultipleConnectResults(
                    BuildLoginRequest(0, 0, "").PassAs<
                        const google::protobuf::MessageLite>()));
   }
+}
+
+void TestConnectionFactoryImpl::SetDelayLogin(bool delay_login) {
+  delay_login_ = delay_login;
+  fake_handler_->set_fail_login(delay_login_);
 }
 
 class ConnectionFactoryImplTest : public testing::Test {
@@ -323,7 +335,6 @@ TEST_F(ConnectionFactoryImplTest, FailThenSucceed) {
 // Multiple connection failures should retry with an exponentially increasing
 // backoff, then reset on success.
 TEST_F(ConnectionFactoryImplTest, MultipleFailuresThenSucceed) {
-
   const int kNumAttempts = 5;
   factory()->SetMultipleConnectResults(net::ERR_CONNECTION_FAILED,
                                        kNumAttempts);
@@ -400,6 +411,30 @@ TEST_F(ConnectionFactoryImplTest, CanarySucceedsThenDisconnects) {
   EXPECT_FALSE(factory()->IsEndpointReachable());
   WaitForConnections();
   EXPECT_TRUE(factory()->IsEndpointReachable());
+}
+
+// Verify that if a canary connects, but hasn't finished the handshake, a
+// pending backoff attempt doesn't interrupt the connection.
+TEST_F(ConnectionFactoryImplTest, CanarySucceedsRetryDuringLogin) {
+  factory()->SetConnectResult(net::ERR_CONNECTION_FAILED);
+  factory()->Connect();
+  WaitForConnections();
+  base::TimeTicks initial_backoff = factory()->NextRetryAttempt();
+  EXPECT_FALSE(initial_backoff.is_null());
+
+  factory()->SetDelayLogin(true);
+  factory()->SetConnectResult(net::OK);
+  factory()->OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  WaitForConnections();
+  EXPECT_FALSE(factory()->IsEndpointReachable());
+
+  // Pump the loop, to ensure the pending backoff retry has no effect.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(1));
+  WaitForConnections();
 }
 
 // Fail after successful connection via signal reset.
