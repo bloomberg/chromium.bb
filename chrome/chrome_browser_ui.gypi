@@ -338,6 +338,8 @@
         'browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h',
         'browser/ui/ash/multi_user/multi_user_window_manager_stub.cc',
         'browser/ui/ash/multi_user/multi_user_window_manager_stub.h',
+        'browser/ui/ash/multi_user/user_switch_animator_chromeos.cc',
+        'browser/ui/ash/multi_user/user_switch_animator_chromeos.h',
         'browser/ui/ash/screenshot_taker.cc',
         'browser/ui/ash/screenshot_taker.h',
         'browser/ui/ash/session_state_delegate_chromeos.cc',
