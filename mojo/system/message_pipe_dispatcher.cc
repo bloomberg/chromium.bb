@@ -174,14 +174,14 @@ void MessagePipeDispatcher::RemoveWaiterImplNoLock(Waiter* waiter) {
 
 size_t MessagePipeDispatcher::GetMaximumSerializedSizeImplNoLock(
     const Channel* /*channel*/) const {
-  lock().AssertAcquired();
+  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   return sizeof(SerializedMessagePipeDispatcher);
 }
 
 bool MessagePipeDispatcher::SerializeAndCloseImplNoLock(Channel* channel,
                                                         void* destination,
                                                         size_t* actual_size) {
-  lock().AssertAcquired();
+  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
 
   // Convert the local endpoint to a proxy endpoint (moving the message queue).
   message_pipe_->ConvertLocalToProxy(port_);

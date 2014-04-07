@@ -147,6 +147,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
 
   // A |MessageInTransit| may serialize dispatchers that are attached to it to a
   // given |Channel| and then (probably in a different process) deserialize.
+  // Note that the |MessageInTransit| "owns" (i.e., has the only ref to) these
+  // dispatchers, so there are no locking issues. (There's no lock ordering
+  // issue, and in fact no need to take dispatcher locks at all.)
   // TODO(vtl): Consider making another wrapper similar to |DispatcherTransport|
   // (but with an owning, unique reference), and having
   // |CreateEquivalentDispatcherAndCloseImplNoLock()| return that wrapper (and
@@ -170,7 +173,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
                                   size_t* actual_size);
 
     // Deserialization API.
-    // TODO(vtl): Implement this.
     static scoped_refptr<Dispatcher> Deserialize(Channel* channel,
                                                  int32_t type,
                                                  const void* source,

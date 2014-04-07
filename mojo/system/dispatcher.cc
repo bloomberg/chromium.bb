@@ -353,7 +353,7 @@ void Dispatcher::RemoveWaiterImplNoLock(Waiter* /*waiter*/) {
 
 size_t Dispatcher::GetMaximumSerializedSizeImplNoLock(
       const Channel* /*channel*/) const {
-  lock_.AssertAcquired();
+  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   DCHECK(!is_closed_);
   // By default, serializing isn't supported.
   return 0;
@@ -362,7 +362,7 @@ size_t Dispatcher::GetMaximumSerializedSizeImplNoLock(
 bool Dispatcher::SerializeAndCloseImplNoLock(Channel* /*channel*/,
                                              void* /*destination*/,
                                              size_t* /*actual_size*/) {
-  lock_.AssertAcquired();
+  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   DCHECK(is_closed_);
   // By default, serializing isn't supported, so just close.
   CloseImplNoLock();
@@ -398,9 +398,7 @@ Dispatcher::CreateEquivalentDispatcherAndCloseNoLock() {
 
 size_t Dispatcher::GetMaximumSerializedSize(const Channel* channel) const {
   DCHECK(channel);
-  DCHECK(HasOneRef());
-
-  base::AutoLock locker(lock_);
+  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   DCHECK(!is_closed_);
   return GetMaximumSerializedSizeImplNoLock(channel);
 }
@@ -411,9 +409,7 @@ bool Dispatcher::SerializeAndClose(Channel* channel,
   DCHECK(destination);
   DCHECK(channel);
   DCHECK(actual_size);
-  DCHECK(HasOneRef());
-
-  base::AutoLock locker(lock_);
+  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   DCHECK(!is_closed_);
 
   // We have to call |GetMaximumSerializedSizeImplNoLock()| first, because we

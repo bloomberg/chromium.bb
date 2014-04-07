@@ -267,7 +267,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   static const size_t kMaxSecondaryBufferSize;
 
   // Validates the secondary buffer. Returns null on success, or a
-  // human-readable error message on error.
+  // human-readable error message (meant for logging/debugging) on error.
   static const char* ValidateSecondaryBuffer(size_t num_handles,
                                              const void* secondary_buffer,
                                              size_t secondary_buffer_size);
