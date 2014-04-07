@@ -1214,6 +1214,7 @@
         'browser/importer/importer_unittest_utils.h',
         'browser/infobars/infobar_extension_apitest.cc',
         'browser/infobars/infobars_browsertest.cc',
+        'browser/invalidation/invalidation_service_factory_browsertest.cc',
         'browser/lifetime/browser_close_manager_browsertest.cc',
         'browser/loadtimes_extension_bindings_browsertest.cc',
         'browser/locale_tests_browsertest.cc',
@@ -1703,6 +1704,7 @@
           ],
           'sources!': [
             'browser/extensions/api/terminal/terminal_private_apitest.cc',
+            'browser/invalidation/invalidation_service_factory_browsertest.cc',
             'browser/net/nss_context_chromeos_browsertest.cc',
             'browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc',
             'browser/ui/ash/keyboard_controller_browsertest.cc',

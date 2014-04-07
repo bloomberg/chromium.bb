@@ -44,6 +44,7 @@ class InvalidationServiceFactory : public BrowserContextKeyedServiceFactory {
   void RegisterTestingFactory(TestingFactoryFunction testing_factory);
 
  private:
+  friend class InvalidationServiceFactoryTestBase;
   friend struct DefaultSingletonTraits<InvalidationServiceFactory>;
 
   InvalidationServiceFactory();
