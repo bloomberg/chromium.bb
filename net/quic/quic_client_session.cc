@@ -179,6 +179,12 @@ QuicClientSession::~QuicClientSession() {
     }
   }
 
+  if (connection()->connected()) {
+    // Ensure that the connection is closed by the time the session is
+    // destroyed.
+    connection()->CloseConnection(QUIC_INTERNAL_ERROR, false);
+  }
+
   if (IsEncryptionEstablished())
     RecordHandshakeState(STATE_ENCRYPTION_ESTABLISHED);
   if (IsCryptoHandshakeConfirmed())

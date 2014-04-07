@@ -317,7 +317,11 @@ size_t QuicSession::WriteHeaders(
 void QuicSession::SendRstStream(QuicStreamId id,
                                 QuicRstStreamErrorCode error,
                                 QuicStreamOffset bytes_written) {
-  connection_->SendRstStream(id, error, bytes_written);
+  if (connection()->connected()) {
+    // Don't bother sending a RST_STREAM frame if the connection is already
+    // closed.
+    connection_->SendRstStream(id, error, bytes_written);
+  }
   CloseStreamInner(id, true);
 }
 
