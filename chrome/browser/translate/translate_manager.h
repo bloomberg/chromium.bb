@@ -103,7 +103,7 @@ class TranslateManager : public content::NotificationObserver {
   // Initiates translation once the page is finished loading.
   void InitiateTranslationPosted(const std::string& page_lang, int attempt);
 
-  // Sends a translation request to the RenderView.
+  // Sends a translation request to the TranslateDriver.
   void DoTranslatePage(const std::string& translate_script,
                        const std::string& source_lang,
                        const std::string& target_lang);

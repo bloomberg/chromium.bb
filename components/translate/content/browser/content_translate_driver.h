@@ -46,6 +46,10 @@ class ContentTranslateDriver : public TranslateDriver {
   virtual void OnTranslateEnabledChanged() OVERRIDE;
   virtual bool IsLinkNavigation() OVERRIDE;
   virtual LanguageState& GetLanguageState() OVERRIDE;
+  virtual void TranslatePage(const std::string& translate_script,
+                             const std::string& source_lang,
+                             const std::string& target_lang) OVERRIDE;
+  virtual void RevertTranslation() OVERRIDE;
 
  private:
   // The navigation controller of the tab we are associated with.

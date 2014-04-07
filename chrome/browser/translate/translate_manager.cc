@@ -426,15 +426,7 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
 }
 
 void TranslateManager::RevertTranslation() {
-  WebContents* web_contents = translate_tab_helper_->GetWebContents();
-  NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
-  if (!entry) {
-    NOTREACHED();
-    return;
-  }
-  web_contents->GetRenderViewHost()->Send(new ChromeViewMsg_RevertTranslation(
-      web_contents->GetRenderViewHost()->GetRoutingID(), entry->GetPageID()));
-
+  translate_driver_->RevertTranslation();
   translate_driver_->GetLanguageState().SetCurrentLanguage(
       translate_driver_->GetLanguageState().original_language());
 }
@@ -472,18 +464,8 @@ void TranslateManager::ReportLanguageDetectionError() {
 void TranslateManager::DoTranslatePage(const std::string& translate_script,
                                        const std::string& source_lang,
                                        const std::string& target_lang) {
-  WebContents* web_contents = translate_tab_helper_->GetWebContents();
-  DCHECK(web_contents);
-  NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
-  if (!entry) {
-    NOTREACHED();
-    return;
-  }
-
   translate_driver_->GetLanguageState().set_translation_pending(true);
-  web_contents->GetRenderViewHost()->Send(new ChromeViewMsg_TranslatePage(
-      web_contents->GetRenderViewHost()->GetRoutingID(), entry->GetPageID(),
-      translate_script, source_lang, target_lang));
+  translate_driver_->TranslatePage(translate_script, source_lang, target_lang);
 }
 
 void TranslateManager::PageTranslated(PageTranslatedDetails* details) {

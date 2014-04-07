@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_DRIVER_H_
 #define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_DRIVER_H_
 
+#include <string>
+
 class LanguageState;
 
 // Interface that allows Translate core code to interact with its driver (i.e.,
@@ -23,6 +25,14 @@ class TranslateDriver {
 
   // Gets the LanguageState associated with the driver.
   virtual LanguageState& GetLanguageState() = 0;
+
+  // Translates the page contents from |source_lang| to |target_lang|.
+  virtual void TranslatePage(const std::string& translate_script,
+                             const std::string& source_lang,
+                             const std::string& target_lang) = 0;
+
+  // Reverts the contents of the page to its original language.
+  virtual void RevertTranslation() = 0;
 };
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_DRIVER_H_
