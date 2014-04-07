@@ -22,6 +22,7 @@ import os
 import posixpath
 import subprocess
 import sys
+import time
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 SWARMING_CLIENT_DIR = os.path.join(TOOLS_DIR, 'swarming_client')
@@ -39,6 +40,47 @@ DYNAMIC_LIBRARIES = {
   'linux2': 'lib/*.so',
   'win32': '*.dll',
 }
+
+
+def get_dynamic_libs(build_dir):
+  """Finds all the dynamic libs to map.
+
+  Returns:
+    list of relative path, e.g. [../out/Debug/lib/libuser_prefs.so].
+  """
+  items = set()
+  root = os.path.join(build_dir, DYNAMIC_LIBRARIES[sys.platform])
+  for i in glob.iglob(root):
+    try:
+      # Will throw on Windows if another process is writing to this file.
+      open(i).close()
+      items.add((i, os.stat(i).st_size))
+    except IOError:
+      continue
+
+  # The following sleep value was carefully selected via random guessing. The
+  # goal is to detect files that are being linked by checking their file size
+  # after a small delay.
+  #
+  # This happens as other build targets can be built simultaneously. For
+  # example, base_unittests.isolated is being processed but dynamic libraries
+  # for chrome are currently being linked.
+  #
+  # TODO(maruel): Obviously, this must go away and be replaced with a proper
+  # ninja parser but we need something now. http://crbug.com/333473
+  time.sleep(10)
+
+  for item in sorted(items):
+    file_name, file_size = item
+    try:
+      open(file_name).close()
+      if os.stat(file_name).st_size != file_size:
+        items.remove(item)
+    except IOError:
+      items.remove(item)
+      continue
+
+  return [i[0].replace(os.path.sep, '/') for i in items]
 
 
 def create_wrapper(args, isolate_index, isolated_index):
@@ -69,16 +111,10 @@ def create_wrapper(args, isolate_index, isolated_index):
   isolate_relpath = os.path.relpath(
       '.', temp_isolate_dir).replace(os.path.sep, '/')
 
-  # This will look like [../out/Debug/lib/libuser_prefs.so].
-  dynamic_libs = [
-    i.replace(os.path.sep, '/')
-    for i in glob.iglob(
-        os.path.join(build_dir, DYNAMIC_LIBRARIES[sys.platform]))
-  ]
-  # And now like ['<(PRODUCT_DIR)/lib/flibuser_prefs.so'].
+  # Will look like ['<(PRODUCT_DIR)/lib/flibuser_prefs.so'].
   rebased_libs = [
     '<(PRODUCT_DIR)/%s' % i[len(build_dir)+1:]
-    for i in dynamic_libs
+    for i in get_dynamic_libs(build_dir)
   ]
 
   # Now do actual wrapping .isolate.
@@ -118,8 +154,7 @@ def main():
     print >> sys.stderr, 'Internal failure'
     return 1
 
-  # http://crbug.com/360223
-  if is_component and False:
+  if is_component:
     create_wrapper(args, isolate, isolated)
 
   swarming_client = os.path.join(SRC_DIR, 'tools', 'swarming_client')
