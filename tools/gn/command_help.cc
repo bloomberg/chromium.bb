@@ -35,6 +35,8 @@ void PrintToplevelHelp() {
       "--args: Specifies build arguments overrides. "
       "See \"gn help buildargs\".");
   PrintShortHelp(
+      "--[no]color: Forces colored output on or off (rather than autodetect).");
+  PrintShortHelp(
       "--dotfile: Specifies an alternate .gn file. See \"gn help dotfile\".");
   PrintShortHelp(
       "--no-exec: Skips exec_script calls (for performance testing).");

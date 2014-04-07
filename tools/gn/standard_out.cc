@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -21,6 +22,9 @@ namespace {
 
 bool initialized = false;
 
+static const char kSwitchColor[] = "color";
+static const char kSwitchNoColor[] = "nocolor";
+
 #if defined(OS_WIN)
 HANDLE hstdout;
 WORD default_attributes;
@@ -32,13 +36,25 @@ void EnsureInitialized() {
     return;
   initialized = true;
 
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(kSwitchNoColor)) {
+    // Force color off.
+    is_console = false;
+    return;
+  }
+
 #if defined(OS_WIN)
+  // On Windows, we can't force the color on. If the output handle isn't a
+  // console, there's nothing we can do about it.
   hstdout = ::GetStdHandle(STD_OUTPUT_HANDLE);
   CONSOLE_SCREEN_BUFFER_INFO info;
   is_console = !!::GetConsoleScreenBufferInfo(hstdout, &info);
   default_attributes = info.wAttributes;
 #else
-  is_console = isatty(fileno(stdout));
+  if (cmdline->HasSwitch(kSwitchColor))
+    is_console = true;
+  else
+    is_console = isatty(fileno(stdout));
 #endif
 }
 
