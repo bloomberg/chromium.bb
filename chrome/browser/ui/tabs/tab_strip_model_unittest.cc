@@ -277,7 +277,9 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     MOVE,
     CHANGE,
     PINNED,
-    REPLACED
+    REPLACED,
+    CLOSE_ALL,
+    CLOSE_ALL_CANCELED,
   };
 
   struct State {
@@ -306,13 +308,32 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     return static_cast<int>(states_.size());
   }
 
-  State GetStateAt(int index) const {
+  // Returns (by way of parameters) the number of state's with CLOSE_ALL and
+  // CLOSE_ALL_CANCELED.
+  void GetCloseCounts(int* close_all_count,
+                      int* close_all_canceled_count) {
+    *close_all_count = *close_all_canceled_count = 0;
+    for (int i = 0; i < GetStateCount(); ++i) {
+      switch (GetStateAt(i).action) {
+        case CLOSE_ALL:
+          (*close_all_count)++;
+          break;
+        case CLOSE_ALL_CANCELED:
+          (*close_all_canceled_count)++;
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+  const State& GetStateAt(int index) const {
     DCHECK(index >= 0 && index < GetStateCount());
     return states_[index];
   }
 
   bool StateEquals(int index, const State& state) {
-    State s = GetStateAt(index);
+    const State& s = GetStateAt(index);
     return (s.src_contents == state.src_contents &&
             s.dst_contents == state.dst_contents &&
             s.src_index == state.src_index &&
@@ -386,6 +407,12 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   }
   virtual void TabStripEmpty() OVERRIDE {
     empty_ = true;
+  }
+  virtual void WillCloseAllTabs() OVERRIDE {
+    states_.push_back(State(NULL, -1, CLOSE_ALL));
+  }
+  virtual void CloseAllTabsCanceled() OVERRIDE {
+    states_.push_back(State(NULL, -1, CLOSE_ALL_CANCELED));
   }
   virtual void TabStripModelDeleted() OVERRIDE {
     deleted_ = true;
@@ -632,7 +659,14 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_EQ(0, tabstrip.active_index());
   }
 
+  observer.ClearStates();
   tabstrip.CloseAllTabs();
+
+  int close_all_count = 0, close_all_canceled_count = 0;
+  observer.GetCloseCounts(&close_all_count, &close_all_canceled_count);
+  EXPECT_EQ(1, close_all_count);
+  EXPECT_EQ(0, close_all_canceled_count);
+
   // TabStripModel should now be empty.
   EXPECT_TRUE(tabstrip.empty());
 
@@ -2184,12 +2218,22 @@ TEST_F(TabStripModelTest, DeleteFromDestroy) {
   TabStripModel strip(&delegate, profile());
   WebContents* contents1 = CreateWebContents();
   WebContents* contents2 = CreateWebContents();
+  MockTabStripModelObserver tab_strip_model_observer(&strip);
   strip.AppendWebContents(contents1, true);
   strip.AppendWebContents(contents2, true);
   // DeleteWebContentsOnDestroyedObserver deletes contents1 when contents2 sends
   // out notification that it is being destroyed.
   DeleteWebContentsOnDestroyedObserver observer(contents2, contents1, NULL);
+  strip.AddObserver(&tab_strip_model_observer);
   strip.CloseAllTabs();
+
+  int close_all_count = 0, close_all_canceled_count = 0;
+  tab_strip_model_observer.GetCloseCounts(&close_all_count,
+                                          &close_all_canceled_count);
+  EXPECT_EQ(1, close_all_count);
+  EXPECT_EQ(0, close_all_canceled_count);
+
+  strip.RemoveObserver(&tab_strip_model_observer);
 }
 
 // Makes sure TabStripModel handles the case of deleting another tab and the

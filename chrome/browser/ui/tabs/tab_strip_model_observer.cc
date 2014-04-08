@@ -62,6 +62,14 @@ void TabStripModelObserver::TabBlockedStateChanged(WebContents* contents,
                                                    int index) {
 }
 
-void TabStripModelObserver::TabStripEmpty() {}
+void TabStripModelObserver::TabStripEmpty() {
+}
 
-void TabStripModelObserver::TabStripModelDeleted() {}
+void TabStripModelObserver::WillCloseAllTabs() {
+}
+
+void TabStripModelObserver::CloseAllTabsCanceled() {
+}
+
+void TabStripModelObserver::TabStripModelDeleted() {
+}

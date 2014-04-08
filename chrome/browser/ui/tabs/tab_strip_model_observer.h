@@ -146,6 +146,15 @@ class TabStripModelObserver {
   // TabStripModel, for example...
   virtual void TabStripEmpty();
 
+  // Sent any time an attempt is made to close all the tabs. This is not
+  // necessarily the result of CloseAllTabs(). For example, if the user closes
+  // the last tab WillCloseAllTabs() is sent. If the close does not succeed
+  // during the current event (say unload handlers block it) then
+  // CloseAllTabsCanceled() is sent. Also note that if the last tab is detached
+  // (DetachWebContentsAt()) then this is not sent.
+  virtual void WillCloseAllTabs();
+  virtual void CloseAllTabsCanceled();
+
   // Sent when the tabstrip model is about to be deleted and any reference held
   // must be dropped.
   virtual void TabStripModelDeleted();

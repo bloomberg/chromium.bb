@@ -576,6 +576,8 @@ class TabStripModel {
   // TODO(sky): remove this; used for debugging 291265.
   bool in_notify_;
 
+  base::WeakPtrFactory<TabStripModel> weak_factory_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(TabStripModel);
 };
 
