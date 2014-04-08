@@ -233,8 +233,13 @@ class MediaCodecBridge {
 
     @CalledByNative
     private void release() {
-        mMediaCodec.stop();
-        mMediaCodec.release();
+        try {
+            mMediaCodec.release();
+        } catch(IllegalStateException e) {
+            // The MediaCodec is stuck in a wrong state, possibly due to losing
+            // the surface.
+            Log.e(TAG, "Cannot release media codec", e);
+        }
         mMediaCodec = null;
         if (mAudioTrack != null) {
             mAudioTrack.release();
