@@ -127,6 +127,18 @@ class DevServerWrapper(multiprocessing.Process):
       return res.read()
 
   @classmethod
+  def WipeStaticDirectory(cls, static_dir):
+    """Cleans up |static_dir|.
+
+    Args:
+      static_dir: path to the static directory of the devserver instance.
+    """
+    # Wipe the payload cache.
+    cls.WipePayloadCache(static_dir=static_dir)
+    cros_build_lib.Info('Cleaning up directory %s', static_dir)
+    osutils.RmDir(static_dir, ignore_missing=True, sudo=True)
+
+  @classmethod
   def WipePayloadCache(cls, devserver_bin='start_devserver', static_dir=None):
     """Cleans up devserver cache of payloads.
 
@@ -362,4 +374,9 @@ You can fix this with one of the following three options:
   @classmethod
   def WipePayloadCache(cls, devserver_bin='start_devserver', static_dir=None):
     """Cleans up devserver cache of payloads."""
+    raise NotImplementedError()
+
+  @classmethod
+  def WipeStaticDirectory(cls, static_dir):
+    """Cleans up |static_dir|."""
     raise NotImplementedError()
