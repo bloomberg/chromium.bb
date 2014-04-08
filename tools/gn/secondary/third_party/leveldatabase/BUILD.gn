@@ -132,7 +132,7 @@ test("env_chromium_unittests") {
   ]
   deps = [
     ":leveldatabase",
-    "//base/test:test_support_base",
+    "//base/test:test_support",
     "//testing/gtest",
   ]
 }

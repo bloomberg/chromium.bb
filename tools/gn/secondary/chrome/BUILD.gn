@@ -135,8 +135,7 @@ source_set("debugger") {
     "//net",
     "//net:http_server",
     "//skia",
-    "//third_party/icu:icui18n",
-    "//third_party/icu:icuuc",
+    "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/libusb",
   ]

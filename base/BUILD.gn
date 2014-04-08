@@ -840,7 +840,7 @@ component("base") {
 # This is the subset of files from base that should not be used with a dynamic
 # library. Note that this library cannot depend on base because base depends on
 # base_static.
-static_library("base_static") {
+source_set("base_static") {
   sources = [
     "base_switches.cc",
     "base_switches.h",
@@ -849,7 +849,8 @@ static_library("base_static") {
   ]
 }
 
-component("base_i18n") {
+component("i18n") {
+  output_name = "base_i18n"
   sources = [
     "i18n/base_i18n_export.h",
     "i18n/bidi_line_iterator.cc",
@@ -884,8 +885,7 @@ component("base_i18n") {
   deps = [
     ":base",
     "//base/third_party/dynamic_annotations",
-    "//third_party/icu:icui18n",
-    "//third_party/icu:icuuc",
+    "//third_party/icu",
   ]
 
   if (toolkit_uses_gtk) {

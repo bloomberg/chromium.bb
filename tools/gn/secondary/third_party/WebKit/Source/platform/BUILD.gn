@@ -39,8 +39,7 @@ component("platform") {
 
   deps = [
     "//third_party/WebKit/Source/wtf",
-    "//third_party/icu:icui18n",
-    "//third_party/icu:icuuc",
+    "//third_party/icu",
     "//url",
   ]
 }

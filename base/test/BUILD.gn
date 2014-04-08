@@ -4,7 +4,7 @@
 
 import("//build/config/ui.gni")
 
-static_library("test_support_base") {
+source_set("test_support") {
   sources = [
     "expectations/expectation.cc",
     "expectations/expectation.h",
@@ -92,7 +92,7 @@ static_library("test_support_base") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//base:base_i18n",
+    "//base:i18n",
     "//base:base_static",
     "//testing/gmock",
     "//testing/gtest",
@@ -128,7 +128,7 @@ static_library("test_support_perf") {
     "run_all_perftests.cc",
   ]
   deps = [
-    ":test_support_base",
+    ":test_support",
     "//base",
     "//testing/gtest",
   ]
@@ -140,11 +140,11 @@ static_library("test_support_perf") {
   }
 }
 
-static_library("run_all_unittests") {
+source_set("run_all_unittests") {
   sources = [
     "run_all_unittests.cc",
   ]
   deps = [
-    ":test_support_base",
+    ":test_support",
   ]
 }

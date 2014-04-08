@@ -249,8 +249,7 @@ component("wtf") {
 
   defines = [ "WTF_IMPLEMENTATION=1" ]
   deps = [
-    "//third_party/icu:icui18n",
-    "//third_party/icu:icuuc",
+    "//third_party/icu",
   ]
 
   #  # Disable c4267 warnings until we fix size_t to int truncations.
@@ -312,7 +311,7 @@ static_library("run_all_tests") {
   ]
 
   deps = [
-    "//base/test:test_support_base",
+    "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     ":wtf",

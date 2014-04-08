@@ -205,7 +205,7 @@ test("gn_unittests") {
   deps = [
     ":gn_lib",
     "//base/test:run_all_unittests",
-    "//base/test:test_support_base",
+    "//base/test:test_support",
     "//testing/gtest",
   ]
 }

@@ -50,8 +50,7 @@ component("url") {
   deps = [
     "//base",
     "//third_party/icu:icudata",
-    "//third_party/icu:icui18n",
-    "//third_party/icu:icuuc",
+    "//third_party/icu",
   ]
 }
 
@@ -78,7 +77,7 @@ test("url_unittests") {
 
   deps = [
     ":url",
-    "//base:base_i18n",
+    "//base:i18n",
     "//base/test:run_all_unittests",
     "//testing/gtest",
     "//third_party/icu:icuuc",

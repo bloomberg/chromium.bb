@@ -231,7 +231,7 @@ test("crypto_unittests") {
     ":crypto",
     "//base",
     "//base/test:run_all_unittests",
-    "//base/test:test_support_base",
+    "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

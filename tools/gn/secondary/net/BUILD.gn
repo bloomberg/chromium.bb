@@ -1058,13 +1058,12 @@ component("net") {
   deps = [
     #":net_resources",
     "//base",
-    "//base:base_i18n",
+    "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//crypto",
     "//crypto/ssl:metassl",
     "//sdch",
-    "//third_party/icu:icui18n",
-    "//third_party/icu:icuuc",
+    "//third_party/icu",
     "//third_party/zlib",
     "//url",
   ]

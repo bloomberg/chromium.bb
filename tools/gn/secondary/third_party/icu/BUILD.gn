@@ -2,6 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Meta target that includes both icuuc and icui18n. Most targets want both.
+# You can depend on the individually if you need to.
+group("icu") {
+  deps = [
+    ":icui18n",
+    ":icuuc",
+  ]
+}
+
 # Shared config used by ICU and all dependents.
 config("icu_config") {
   defines = [
