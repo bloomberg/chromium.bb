@@ -9,6 +9,24 @@
 
 namespace base {
 namespace android {
+namespace {
+
+const int kDefaultLocalFrameCapacity = 16;
+
+}  // namespace
+
+ScopedJavaLocalFrame::ScopedJavaLocalFrame(JNIEnv* env) : env_(env) {
+  int failed = env_->PushLocalFrame(kDefaultLocalFrameCapacity);
+  DCHECK(!failed);
+}
+
+ScopedJavaLocalFrame::ScopedJavaLocalFrame(JNIEnv* env, int capacity)
+    : env_(env) {
+  int failed = env_->PushLocalFrame(capacity);
+  DCHECK(!failed);
+}
+
+ScopedJavaLocalFrame::~ScopedJavaLocalFrame() { env_->PopLocalFrame(NULL); }
 
 JavaRef<jobject>::JavaRef() : obj_(NULL) {}
 

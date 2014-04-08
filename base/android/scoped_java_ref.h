@@ -14,6 +14,23 @@
 namespace base {
 namespace android {
 
+// Creates a new local reference frame, in which at least a given number of
+// local references can be created. Note that local references already created
+// in previous local frames are still valid in the current local frame.
+class BASE_EXPORT ScopedJavaLocalFrame {
+ public:
+  explicit ScopedJavaLocalFrame(JNIEnv* env);
+  ScopedJavaLocalFrame(JNIEnv* env, int capacity);
+  ~ScopedJavaLocalFrame();
+
+ private:
+  // This class is only good for use on the thread it was created on so
+  // it's safe to cache the non-threadsafe JNIEnv* inside this object.
+  JNIEnv* env_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedJavaLocalFrame);
+};
+
 // Forward declare the generic java reference template class.
 template<typename T> class JavaRef;
 

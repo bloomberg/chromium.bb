@@ -123,6 +123,10 @@ void SurfaceTexture::DetachFromGLContext() {
 ANativeWindow* SurfaceTexture::CreateSurface() {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaSurface surface(this);
+  // Note: This ensures that any local references used by
+  // ANativeWindow_fromSurface are released immediately. This is needed as a
+  // workaround for https://code.google.com/p/android/issues/detail?id=68174
+  base::android::ScopedJavaLocalFrame scoped_local_reference_frame(env);
   ANativeWindow* native_window = ANativeWindow_fromSurface(
       env, surface.j_surface().obj());
   return native_window;
