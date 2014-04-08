@@ -100,6 +100,7 @@ class TabHelper : public content::WebContentsObserver,
   void CreateApplicationShortcuts();
   void CreateHostedAppFromWebContents();
   bool CanCreateApplicationShortcuts() const;
+  bool CanCreateBookmarkApp() const;
 
   void set_pending_web_app_action(WebAppAction action) {
     pending_web_app_action_ = action;

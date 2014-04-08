@@ -1236,7 +1236,7 @@ void CreateApplicationShortcuts(Browser* browser) {
           CreateApplicationShortcuts();
 }
 
-void CreateHostedAppFromCurrentWebContents(Browser* browser) {
+void CreateBookmarkAppFromCurrentWebContents(Browser* browser) {
   content::RecordAction(UserMetricsAction("CreateHostedApp"));
   extensions::TabHelper::FromWebContents(
       browser->tab_strip_model()->GetActiveWebContents())->
@@ -1247,6 +1247,12 @@ bool CanCreateApplicationShortcuts(const Browser* browser) {
   return extensions::TabHelper::FromWebContents(
       browser->tab_strip_model()->GetActiveWebContents())->
           CanCreateApplicationShortcuts();
+}
+
+bool CanCreateBookmarkApp(const Browser* browser) {
+  return extensions::TabHelper::FromWebContents(
+             browser->tab_strip_model()->GetActiveWebContents())
+      ->CanCreateBookmarkApp();
 }
 
 void ConvertTabToAppWindow(Browser* browser,

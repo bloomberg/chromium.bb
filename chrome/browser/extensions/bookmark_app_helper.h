@@ -93,6 +93,9 @@ class BookmarkAppHelper : public content::NotificationObserver {
 void CreateOrUpdateBookmarkApp(ExtensionService* service,
                                WebApplicationInfo& web_app_info);
 
+// Returns whether the given |url| is a valid bookmark app url.
+bool IsValidBookmarkAppUrl(const GURL& url);
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_HELPER_H_

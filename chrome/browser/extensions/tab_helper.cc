@@ -153,7 +153,7 @@ void TabHelper::CreateApplicationShortcuts() {
 }
 
 void TabHelper::CreateHostedAppFromWebContents() {
-  DCHECK(CanCreateApplicationShortcuts());
+  DCHECK(CanCreateBookmarkApp());
   NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
   if (!entry)
@@ -172,6 +172,15 @@ bool TabHelper::CanCreateApplicationShortcuts() const {
 #else
   return web_app::IsValidUrl(web_contents()->GetURL()) &&
       pending_web_app_action_ == NONE;
+#endif
+}
+
+bool TabHelper::CanCreateBookmarkApp() const {
+#if defined(OS_MACOSX)
+  return false;
+#else
+  return IsValidBookmarkAppUrl(web_contents()->GetURL()) &&
+         pending_web_app_action_ == NONE;
 #endif
 }
 

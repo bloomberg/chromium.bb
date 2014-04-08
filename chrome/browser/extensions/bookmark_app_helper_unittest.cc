@@ -251,4 +251,11 @@ TEST_F(BookmarkAppHelperTest, GenerateIcons) {
   }
 }
 
+TEST_F(BookmarkAppHelperTest, IsValidBookmarkAppUrl) {
+  EXPECT_TRUE(IsValidBookmarkAppUrl(GURL("https://www.chromium.org")));
+  EXPECT_TRUE(IsValidBookmarkAppUrl(GURL("http://www.chromium.org/path")));
+  EXPECT_FALSE(IsValidBookmarkAppUrl(GURL("ftp://www.chromium.org")));
+  EXPECT_FALSE(IsValidBookmarkAppUrl(GURL("chrome://flags")));
+}
+
 }  // namespace extensions

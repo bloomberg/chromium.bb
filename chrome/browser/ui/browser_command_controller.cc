@@ -677,7 +677,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       CreateApplicationShortcuts(browser_);
       break;
     case IDC_CREATE_HOSTED_APP:
-      CreateHostedAppFromCurrentWebContents(browser_);
+      CreateBookmarkAppFromCurrentWebContents(browser_);
       break;
     case IDC_DEV_TOOLS:
       ToggleDevToolsWindow(browser_, DevToolsToggleAction::Show());
@@ -1134,9 +1134,8 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(
       IDC_CREATE_SHORTCUTS,
       CanCreateApplicationShortcuts(browser_));
-  command_updater_.UpdateCommandEnabled(
-      IDC_CREATE_HOSTED_APP,
-      CanCreateApplicationShortcuts(browser_));
+  command_updater_.UpdateCommandEnabled(IDC_CREATE_HOSTED_APP,
+                                        CanCreateBookmarkApp(browser_));
 #endif
 
   command_updater_.UpdateCommandEnabled(
