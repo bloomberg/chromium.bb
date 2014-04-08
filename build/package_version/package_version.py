@@ -180,7 +180,12 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
       raise IOError('Error, no URL for archive: %s' % archive_desc.name)
 
     logging.info('Downloading package archive: %s', archive_desc.name)
-    downloader(archive_desc.url, local_archive_file)
+    try:
+      downloader(archive_desc.url, local_archive_file)
+    except Exception as e:
+      raise IOError('Could not download URL (%s): %s' %
+                    (archive_desc.url, e))
+
     verified_hash = archive_info.GetArchiveHash(local_archive_file)
     if verified_hash != archive_desc.hash:
       raise IOError('Package hash check failed: %s != %s' %

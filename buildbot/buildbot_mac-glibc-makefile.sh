@@ -100,7 +100,7 @@ else
   echo @@@BUILD_STEP archive_extract_package@@@
   python build/package_version/package_version.py archive \
       --archive-package=nacl_x86_glibc --extract \
-      tools/toolchain.tar.gz,toolchain/mac_x86@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_mac_x86.tar.gz
+      tools/toolchain.tar.bz2,toolchain/mac_x86@https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_mac_x86.tar.bz2
 
   echo @@@BUILD_STEP upload_package_info@@@
   python build/package_version/package_version.py --annotate \

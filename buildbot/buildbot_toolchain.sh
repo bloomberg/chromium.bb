@@ -71,11 +71,6 @@ else
   echo "$(SHA1=$(sha1sum -b naclsdk.tgz) ; echo ${SHA1:0:40})"
 fi > naclsdk.tgz.sha1hash
 
-echo @@@BUILD_STEP archive_extract_package@@@
-${NATIVE_PYTHON} ../build/package_version/package_version.py archive \
-    --archive-package=nacl_x86_newlib --extract \
-    naclsdk.tgz,sdk/nacl-sdk@http://gsdview.appspot.com/nativeclient-archive2/toolchain/123/naclsdk_linux_x86.tgz
-
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   # Upload the toolchain before running the tests, in case the tests
   # fail.  We do not want a flaky test or a non-toolchain-related bug to
@@ -96,9 +91,19 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   )
   echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/toolchain/${BUILDBOT_GOT_REVISION}/@@@
 
+  echo @@@BUILD_STEP archive_extract_package@@@
+  ${NATIVE_PYTHON} ../build/package_version/package_version.py archive \
+    --archive-package=nacl_x86_newlib --extract \
+    naclsdk.tgz,sdk/nacl-sdk@https://storage.googleapis.com/nativeclient-archive2/toolchain/${BUILDBOT_GOT_REVISION}/naclsdk_${PLATFORM}_x86.tgz
+
   ${NATIVE_PYTHON} ../build/package_version/package_version.py --annotate \
       upload --upload-package=nacl_x86_newlib \
       --revision=${BUILDBOT_GOT_REVISION}
+else
+  echo @@@BUILD_STEP archive_extract_package@@@
+  ${NATIVE_PYTHON} ../build/package_version/package_version.py archive \
+    --archive-package=nacl_x86_newlib --extract \
+    naclsdk.tgz,sdk/nacl-sdk
 fi
 
 cd ..
