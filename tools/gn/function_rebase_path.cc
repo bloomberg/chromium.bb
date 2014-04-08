@@ -131,7 +131,7 @@ const char kRebasePath_Help[] =
     "  current directory to be relative to the build directory (which will\n"
     "  be the current directory when executing scripts).\n"
     "\n"
-    "Arguments\n"
+    "Arguments:\n"
     "\n"
     "  input\n"
     "      A string or list of strings representing file or directory names\n"

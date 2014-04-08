@@ -298,7 +298,7 @@ Value RunDeclareArgs(Scope* scope,
 
 const char kDefined[] = "defined";
 const char kDefined_HelpShort[] =
-    "defines: Returns whether an identifier is defined.";
+    "defined: Returns whether an identifier is defined.";
 const char kDefined_Help[] =
     "defined: Returns whether an identifier is defined.\n"
     "\n"

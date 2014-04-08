@@ -31,7 +31,7 @@ const char kWriteFile_Help[] =
     "  TODO(brettw) we probably need an optional third argument to control\n"
     "  list formatting.\n"
     "\n"
-    "Arguments\n"
+    "Arguments:\n"
     "\n"
     "  filename\n"
     "      Filename to write. This must be within the output directory.\n"
