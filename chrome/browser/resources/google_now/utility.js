@@ -570,13 +570,20 @@ function registerPromiseAdapter() {
       // We will still forward this call on to let the promise system
       // handle further processing, but since this promise is in an ending state
       // we can be confident it will never be called back.
-      if (isCallable(maybeCallback) && sameTracker.callbacks) {
+      if (isCallable(maybeCallback) &&
+          !maybeCallback.wrappedByPromiseTracker &&
+          sameTracker.callbacks) {
         var handler = wrapper.wrapCallback(function() {
           if (sameTracker.callbacks) {
             clearTracker(otherTracker);
             return maybeCallback.apply(null, arguments);
           }
         }, false);
+        // Harmony promises' catch calls will call into handleThen,
+        // double-wrapping all catch callbacks. Regular promise catch calls do
+        // not call into handleThen. Setting an attribute on the wrapped
+        // function is compatible with both promise implementations.
+        handler.wrappedByPromiseTracker = true;
         sameTracker.callbacks.push(handler);
         return handler;
       } else {
@@ -609,10 +616,13 @@ function registerPromiseAdapter() {
       return originalCatch.call(promise, rejectionHandler);
     }
 
-    // Seeds this promise with at least one 'then' and 'catch' so we always
-    // receive a callback to update the task manager on the state of callbacks.
-    handleThen(function() {});
-    handleCatch(function() {});
+    // Register at least one resolve and reject callback so we always receive
+    // a callback to update the task manager and clear the callbacks
+    // that will never occur.
+    //
+    // The then form is used to avoid reentrancy by handleCatch,
+    // which ends up calling handleThen.
+    handleThen(function() {}, function() {});
 
     return {
       handleThen: handleThen,
