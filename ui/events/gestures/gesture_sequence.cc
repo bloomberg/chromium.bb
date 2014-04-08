@@ -708,6 +708,10 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     case GST_PINCH_THIRD_MOVED_HANDLED:
     case GST_PINCH_FOURTH_MOVED_HANDLED:
     case GST_PINCH_FIFTH_MOVED_HANDLED:
+      // If touches are consumed for a while, and then left unconsumed, we don't
+      // want a PinchUpdate or ScrollUpdate with a massive delta.
+      latest_multi_scroll_update_location_ = bounding_box_.CenterPoint();
+      pinch_distance_current_ = BoundingBoxDiagonal(bounding_box_);
       break;
     case GST_PINCH_FIRST_MOVED:
     case GST_PINCH_SECOND_MOVED:

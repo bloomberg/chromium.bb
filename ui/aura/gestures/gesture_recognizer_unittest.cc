@@ -148,6 +148,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     scroll_x_hint_ = 0;
     scroll_y_hint_ = 0;
     tap_count_ = 0;
+    scale_ = 0;
   }
 
   const std::vector<ui::EventType>& events() const { return events_; };
@@ -199,6 +200,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float velocity_y_ordinal() const { return velocity_y_ordinal_; }
   float scroll_x_hint() const { return scroll_x_hint_; }
   float scroll_y_hint() const { return scroll_y_hint_; }
+  float scale() const { return scale_; }
   const gfx::Rect& bounding_box() const { return bounding_box_; }
   int tap_count() const { return tap_count_; }
 
@@ -256,6 +258,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         break;
       case ui::ET_GESTURE_PINCH_UPDATE:
         pinch_update_ = true;
+        scale_ = gesture->details().scale();
         break;
       case ui::ET_GESTURE_PINCH_END:
         pinch_end_ = true;
@@ -341,6 +344,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float velocity_y_ordinal_;
   float scroll_x_hint_;
   float scroll_y_hint_;
+  float scale_;
   gfx::Rect bounding_box_;
   int tap_count_;
 
@@ -4089,6 +4093,90 @@ TEST_F(GestureRecognizerTest, ScrollAlternatelyConsumedTest) {
     delegate->ReceivedAckPreventDefaulted();
     EXPECT_FALSE(delegate->scroll_begin());
     EXPECT_FALSE(delegate->scroll_update());
+    delegate->Reset();
+  }
+}
+
+TEST_F(GestureRecognizerTest, PinchAlternatelyConsumedTest) {
+  scoped_ptr<QueueTouchEventDelegate> delegate(
+      new QueueTouchEventDelegate(host()->dispatcher()));
+  TimedEvents tes;
+  const int kWindowWidth = 3000;
+  const int kWindowHeight = 3000;
+  const int kTouchId1 = 5;
+  const int kTouchId2 = 7;
+  gfx::Rect bounds(0, 0, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, root_window()));
+
+  delegate->Reset();
+
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
+                        kTouchId1, tes.Now());
+  DispatchEventUsingWindowDispatcher(&press1);
+  delegate->ReceivedAck();
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  delegate->Reset();
+
+  int x = 0;
+  int y = 0;
+
+  ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(x, y),
+                        kTouchId2, tes.Now());
+  DispatchEventUsingWindowDispatcher(&press2);
+  delegate->ReceivedAck();
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->pinch_begin());
+  EXPECT_FALSE(delegate->pinch_update());
+
+  delegate->Reset();
+
+  x += 100;
+  y += 100;
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(x, y),
+                       kTouchId2, tes.Now());
+  DispatchEventUsingWindowDispatcher(&move1);
+  delegate->ReceivedAck();
+  EXPECT_TRUE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_TRUE(delegate->pinch_begin());
+  EXPECT_FALSE(delegate->pinch_update());
+  delegate->Reset();
+
+  const float expected_scales[] = {1.5f, 1.2f, 1.125f};
+
+  for (int i = 0; i < 3; ++i) {
+    x += 50;
+    y += 50;
+    ui::TouchEvent move2(
+        ui::ET_TOUCH_MOVED, gfx::Point(x, y), kTouchId2, tes.Now());
+    DispatchEventUsingWindowDispatcher(&move2);
+    delegate->ReceivedAck();
+    EXPECT_FALSE(delegate->scroll_begin());
+    EXPECT_TRUE(delegate->scroll_update());
+    EXPECT_FALSE(delegate->scroll_end());
+    EXPECT_FALSE(delegate->pinch_begin());
+    EXPECT_TRUE(delegate->pinch_update());
+    EXPECT_FALSE(delegate->pinch_end());
+    EXPECT_EQ(25, delegate->scroll_x());
+    EXPECT_EQ(25, delegate->scroll_y());
+    EXPECT_FLOAT_EQ(expected_scales[i], delegate->scale());
+    delegate->Reset();
+
+    x += 100;
+    y += 100;
+    ui::TouchEvent move3(
+        ui::ET_TOUCH_MOVED, gfx::Point(x, y), kTouchId2, tes.Now());
+    DispatchEventUsingWindowDispatcher(&move3);
+    delegate->ReceivedAckPreventDefaulted();
+    EXPECT_FALSE(delegate->scroll_begin());
+    EXPECT_FALSE(delegate->scroll_update());
+    EXPECT_FALSE(delegate->scroll_end());
+    EXPECT_FALSE(delegate->pinch_begin());
+    EXPECT_FALSE(delegate->pinch_update());
+    EXPECT_FALSE(delegate->pinch_end());
     delegate->Reset();
   }
 }
