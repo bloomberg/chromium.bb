@@ -28,9 +28,8 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
-#include "bindings/v8/ScriptScope.h"
-#include "bindings/v8/ScriptState.h"
 #include "core/css/CSSFontFaceLoadEvent.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/parser/BisonCSSParser.h"
@@ -66,7 +65,7 @@ private:
     LoadFontPromiseResolver(FontFaceArray faces, ExecutionContext* context)
         : m_numLoading(faces.size())
         , m_errorOccured(false)
-        , m_scriptState(ScriptState::current())
+        , m_scriptState(NewScriptState::current(toIsolate(context)))
         , m_resolver(ScriptPromiseResolver::create(context))
     {
         m_fontFaces.swap(faces);
@@ -75,7 +74,7 @@ private:
     FontFaceArray m_fontFaces;
     int m_numLoading;
     bool m_errorOccured;
-    ScriptState* m_scriptState;
+    RefPtr<NewScriptState> m_scriptState;
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
@@ -96,7 +95,7 @@ void LoadFontPromiseResolver::notifyLoaded(FontFace* fontFace)
     if (m_numLoading || m_errorOccured)
         return;
 
-    ScriptScope scope(m_scriptState);
+    NewScriptState::Scope scope(m_scriptState.get());
     m_resolver->resolve(m_fontFaces);
 }
 
@@ -105,7 +104,7 @@ void LoadFontPromiseResolver::notifyError(FontFace* fontFace)
     m_numLoading--;
     if (!m_errorOccured) {
         m_errorOccured = true;
-        ScriptScope scope(m_scriptState);
+        NewScriptState::Scope scope(m_scriptState.get());
         m_resolver->reject(fontFace->error());
     }
 }
@@ -119,7 +118,7 @@ public:
 
     void resolve(PassRefPtr<FontFaceSet> fontFaceSet)
     {
-        ScriptScope scope(m_scriptState);
+        NewScriptState::Scope scope(m_scriptState.get());
         m_resolver->resolve(fontFaceSet);
     }
 
@@ -127,10 +126,12 @@ public:
 
 private:
     FontsReadyPromiseResolver(ExecutionContext* context)
-        : m_scriptState(ScriptState::current())
+        : m_scriptState(NewScriptState::current(toIsolate(context)))
         , m_resolver(ScriptPromiseResolver::create(context))
-    { }
-    ScriptState* m_scriptState;
+    {
+    }
+
+    RefPtr<NewScriptState> m_scriptState;
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
