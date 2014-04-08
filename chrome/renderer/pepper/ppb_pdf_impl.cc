@@ -48,13 +48,9 @@ namespace {
 class PrivateFontFile : public ppapi::Resource {
  public:
   PrivateFontFile(PP_Instance instance, int fd)
-      : Resource(ppapi::OBJECT_IS_IMPL, instance),
-        fd_(fd) {
-  }
+      : Resource(ppapi::OBJECT_IS_IMPL, instance), fd_(fd) {}
 
-  bool GetFontTable(uint32_t table,
-                    void* output,
-                    uint32_t* output_length) {
+  bool GetFontTable(uint32_t table, void* output, uint32_t* output_length) {
     size_t temp_size = static_cast<size_t>(*output_length);
     bool rv = content::GetFontTable(
         fd_, table, 0 /* offset */, static_cast<uint8_t*>(output), &temp_size);
@@ -76,59 +72,58 @@ struct ResourceImageInfo {
 };
 
 static const ResourceImageInfo kResourceImageMap[] = {
-  { PP_RESOURCEIMAGE_PDF_BUTTON_FTP, IDR_PDF_BUTTON_FTP },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_FTP_HOVER, IDR_PDF_BUTTON_FTP_HOVER },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_FTP_PRESSED, IDR_PDF_BUTTON_FTP_PRESSED },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_FTW, IDR_PDF_BUTTON_FTW },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_FTW_HOVER, IDR_PDF_BUTTON_FTW_HOVER },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_FTW_PRESSED, IDR_PDF_BUTTON_FTW_PRESSED },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_END, IDR_PDF_BUTTON_ZOOMIN_END },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_END_HOVER,
-      IDR_PDF_BUTTON_ZOOMIN_END_HOVER },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_END_PRESSED,
-      IDR_PDF_BUTTON_ZOOMIN_END_PRESSED },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN, IDR_PDF_BUTTON_ZOOMIN },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_HOVER, IDR_PDF_BUTTON_ZOOMIN_HOVER },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_PRESSED, IDR_PDF_BUTTON_ZOOMIN_PRESSED },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMOUT, IDR_PDF_BUTTON_ZOOMOUT },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMOUT_HOVER, IDR_PDF_BUTTON_ZOOMOUT_HOVER },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMOUT_PRESSED,
-      IDR_PDF_BUTTON_ZOOMOUT_PRESSED },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_SAVE, IDR_PDF_BUTTON_SAVE },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_SAVE_HOVER, IDR_PDF_BUTTON_SAVE_HOVER },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_SAVE_PRESSED, IDR_PDF_BUTTON_SAVE_PRESSED },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_PRINT, IDR_PDF_BUTTON_PRINT },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_PRINT_HOVER, IDR_PDF_BUTTON_PRINT_HOVER },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_PRINT_PRESSED, IDR_PDF_BUTTON_PRINT_PRESSED },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_PRINT_DISABLED, IDR_PDF_BUTTON_PRINT_DISABLED },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_0, IDR_PDF_THUMBNAIL_0 },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_1, IDR_PDF_THUMBNAIL_1 },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_2, IDR_PDF_THUMBNAIL_2 },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_3, IDR_PDF_THUMBNAIL_3 },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_4, IDR_PDF_THUMBNAIL_4 },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_5, IDR_PDF_THUMBNAIL_5 },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_6, IDR_PDF_THUMBNAIL_6 },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_7, IDR_PDF_THUMBNAIL_7 },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_8, IDR_PDF_THUMBNAIL_8 },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_9, IDR_PDF_THUMBNAIL_9 },
-  { PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_NUM_BACKGROUND,
-      IDR_PDF_THUMBNAIL_NUM_BACKGROUND },
-  { PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_0, IDR_PDF_PROGRESS_BAR_0 },
-  { PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_1, IDR_PDF_PROGRESS_BAR_1 },
-  { PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_2, IDR_PDF_PROGRESS_BAR_2 },
-  { PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_3, IDR_PDF_PROGRESS_BAR_3 },
-  { PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_4, IDR_PDF_PROGRESS_BAR_4 },
-  { PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_5, IDR_PDF_PROGRESS_BAR_5 },
-  { PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_6, IDR_PDF_PROGRESS_BAR_6 },
-  { PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_7, IDR_PDF_PROGRESS_BAR_7 },
-  { PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_8, IDR_PDF_PROGRESS_BAR_8 },
-  { PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_BACKGROUND,
-      IDR_PDF_PROGRESS_BAR_BACKGROUND },
-  { PP_RESOURCEIMAGE_PDF_PAGE_INDICATOR_BACKGROUND,
-      IDR_PDF_PAGE_INDICATOR_BACKGROUND },
-  { PP_RESOURCEIMAGE_PDF_PAGE_DROPSHADOW, IDR_PDF_PAGE_DROPSHADOW },
-  { PP_RESOURCEIMAGE_PDF_PAN_SCROLL_ICON, IDR_PAN_SCROLL_ICON },
-};
+    {PP_RESOURCEIMAGE_PDF_BUTTON_FTP, IDR_PDF_BUTTON_FTP},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_FTP_HOVER, IDR_PDF_BUTTON_FTP_HOVER},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_FTP_PRESSED, IDR_PDF_BUTTON_FTP_PRESSED},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_FTW, IDR_PDF_BUTTON_FTW},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_FTW_HOVER, IDR_PDF_BUTTON_FTW_HOVER},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_FTW_PRESSED, IDR_PDF_BUTTON_FTW_PRESSED},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_END, IDR_PDF_BUTTON_ZOOMIN_END},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_END_HOVER,
+     IDR_PDF_BUTTON_ZOOMIN_END_HOVER},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_END_PRESSED,
+     IDR_PDF_BUTTON_ZOOMIN_END_PRESSED},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN, IDR_PDF_BUTTON_ZOOMIN},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_HOVER, IDR_PDF_BUTTON_ZOOMIN_HOVER},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_PRESSED, IDR_PDF_BUTTON_ZOOMIN_PRESSED},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMOUT, IDR_PDF_BUTTON_ZOOMOUT},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMOUT_HOVER, IDR_PDF_BUTTON_ZOOMOUT_HOVER},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMOUT_PRESSED,
+     IDR_PDF_BUTTON_ZOOMOUT_PRESSED},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_SAVE, IDR_PDF_BUTTON_SAVE},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_SAVE_HOVER, IDR_PDF_BUTTON_SAVE_HOVER},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_SAVE_PRESSED, IDR_PDF_BUTTON_SAVE_PRESSED},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_PRINT, IDR_PDF_BUTTON_PRINT},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_PRINT_HOVER, IDR_PDF_BUTTON_PRINT_HOVER},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_PRINT_PRESSED, IDR_PDF_BUTTON_PRINT_PRESSED},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_PRINT_DISABLED, IDR_PDF_BUTTON_PRINT_DISABLED},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_0, IDR_PDF_THUMBNAIL_0},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_1, IDR_PDF_THUMBNAIL_1},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_2, IDR_PDF_THUMBNAIL_2},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_3, IDR_PDF_THUMBNAIL_3},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_4, IDR_PDF_THUMBNAIL_4},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_5, IDR_PDF_THUMBNAIL_5},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_6, IDR_PDF_THUMBNAIL_6},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_7, IDR_PDF_THUMBNAIL_7},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_8, IDR_PDF_THUMBNAIL_8},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_9, IDR_PDF_THUMBNAIL_9},
+    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_NUM_BACKGROUND,
+     IDR_PDF_THUMBNAIL_NUM_BACKGROUND},
+    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_0, IDR_PDF_PROGRESS_BAR_0},
+    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_1, IDR_PDF_PROGRESS_BAR_1},
+    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_2, IDR_PDF_PROGRESS_BAR_2},
+    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_3, IDR_PDF_PROGRESS_BAR_3},
+    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_4, IDR_PDF_PROGRESS_BAR_4},
+    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_5, IDR_PDF_PROGRESS_BAR_5},
+    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_6, IDR_PDF_PROGRESS_BAR_6},
+    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_7, IDR_PDF_PROGRESS_BAR_7},
+    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_8, IDR_PDF_PROGRESS_BAR_8},
+    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_BACKGROUND,
+     IDR_PDF_PROGRESS_BAR_BACKGROUND},
+    {PP_RESOURCEIMAGE_PDF_PAGE_INDICATOR_BACKGROUND,
+     IDR_PDF_PAGE_INDICATOR_BACKGROUND},
+    {PP_RESOURCEIMAGE_PDF_PAGE_DROPSHADOW, IDR_PDF_PAGE_DROPSHADOW},
+    {PP_RESOURCEIMAGE_PDF_PAN_SCROLL_ICON, IDR_PAN_SCROLL_ICON}, };
 
 #if defined(ENABLE_FULL_PRINTING)
 
@@ -157,13 +152,9 @@ bool IsPrintingEnabled(PP_Instance instance_id) {
 
 #else  // ENABLE_FULL_PRINTING
 
-bool IsPrintingEnabled(PP_Instance instance_id) {
-  return false;
-}
+bool IsPrintingEnabled(PP_Instance instance_id) { return false; }
 
 #endif  // ENABLE_FULL_PRINTING
-
-
 
 PP_Var GetLocalizedString(PP_Instance instance_id,
                           PP_ResourceString string_id) {
@@ -197,8 +188,8 @@ PP_Resource GetFontFileWithFallback(
   if (!content::PepperPluginInstance::Get(instance_id))
     return 0;
 
-  scoped_refptr<ppapi::StringVar> face_name(ppapi::StringVar::FromPPVar(
-      description->face));
+  scoped_refptr<ppapi::StringVar> face_name(
+      ppapi::StringVar::FromPPVar(description->face));
   if (!face_name.get())
     return 0;
 
@@ -246,13 +237,17 @@ void SearchString(PP_Instance instance,
                   int* count) {
   const base::char16* string =
       reinterpret_cast<const base::char16*>(input_string);
-  const base::char16* term =
-      reinterpret_cast<const base::char16*>(input_term);
+  const base::char16* term = reinterpret_cast<const base::char16*>(input_term);
 
   UErrorCode status = U_ZERO_ERROR;
-  UStringSearch* searcher = usearch_open(
-      term, -1, string, -1, RenderThread::Get()->GetLocale().c_str(), 0,
-      &status);
+  UStringSearch* searcher =
+      usearch_open(term,
+                   -1,
+                   string,
+                   -1,
+                   RenderThread::Get()->GetLocale().c_str(),
+                   0,
+                   &status);
   DCHECK(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING ||
          status == U_USING_DEFAULT_WARNING);
   UCollationStrength strength = case_sensitive ? UCOL_TERTIARY : UCOL_PRIMARY;
@@ -406,8 +401,7 @@ PP_Resource GetResourceImage(PP_Instance instance_id,
   return GetResourceImageForScale(instance_id, image_id, 1.0f);
 }
 
-PP_Var ModalPromptForPassword(PP_Instance instance_id,
-                              PP_Var message) {
+PP_Var ModalPromptForPassword(PP_Instance instance_id, PP_Var message) {
   content::PepperPluginInstance* instance =
       content::PepperPluginInstance::Get(instance_id);
   if (!instance)
@@ -427,9 +421,7 @@ PP_Var ModalPromptForPassword(PP_Instance instance_id,
   return ppapi::StringVar::StringToPPVar(actual_value);
 }
 
-PP_Bool IsOutOfProcess(PP_Instance instance_id) {
-  return PP_FALSE;
-}
+PP_Bool IsOutOfProcess(PP_Instance instance_id) { return PP_FALSE; }
 
 void SetSelectedText(PP_Instance instance_id, const char* selected_text) {
   // This function is intended for out of process PDF plugin.
@@ -444,34 +436,31 @@ void SetLinkUnderCursor(PP_Instance instance_id, const char* url) {
   instance->SetLinkUnderCursor(url);
 }
 
-const PPB_PDF ppb_pdf = {
-  &GetLocalizedString,
-  &GetResourceImage,
-  &GetFontFileWithFallback,
-  &GetFontTableForPrivateFontFile,
-  &SearchString,
-  &DidStartLoading,
-  &DidStopLoading,
-  &SetContentRestriction,
-  &HistogramPDFPageCount,
-  &UserMetricsRecordAction,
-  &HasUnsupportedFeature,
-  &SaveAs,
-  &PPB_PDF_Impl::InvokePrintingForInstance,
-  &IsFeatureEnabled,
-  &GetResourceImageForScale,
-  &ModalPromptForPassword,
-  &IsOutOfProcess,
-  &SetSelectedText,
-  &SetLinkUnderCursor,
+const PPB_PDF ppb_pdf = {                            //
+    &GetLocalizedString,                             //
+    &GetResourceImage,                               //
+    &GetFontFileWithFallback,                        //
+    &GetFontTableForPrivateFontFile, &SearchString,  //
+    &DidStartLoading,                                //
+    &DidStopLoading,                                 //
+    &SetContentRestriction,                          //
+    &HistogramPDFPageCount,                          //
+    &UserMetricsRecordAction,                        //
+    &HasUnsupportedFeature,                          //
+    &SaveAs,                                         //
+    &PPB_PDF_Impl::InvokePrintingForInstance,        //
+    &IsFeatureEnabled,                               //
+    &GetResourceImageForScale,                       //
+    &ModalPromptForPassword,                         //
+    &IsOutOfProcess,                                 //
+    &SetSelectedText,                                //
+    &SetLinkUnderCursor,                             //
 };
 
 }  // namespace
 
 // static
-const PPB_PDF* PPB_PDF_Impl::GetInterface() {
-  return &ppb_pdf;
-}
+const PPB_PDF* PPB_PDF_Impl::GetInterface() { return &ppb_pdf; }
 
 // static
 void PPB_PDF_Impl::InvokePrintingForInstance(PP_Instance instance_id) {

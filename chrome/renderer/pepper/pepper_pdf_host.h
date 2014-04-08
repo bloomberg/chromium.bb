@@ -63,12 +63,10 @@ class PepperPDFHost : public ppapi::host::ResourceHost {
   int32_t OnHostMsgGetResourceImage(ppapi::host::HostMessageContext* context,
                                     PP_ResourceImage image_id,
                                     float scale);
-  int32_t OnHostMsgSetSelectedText(
-      ppapi::host::HostMessageContext* context,
-      const base::string16& selected_text);
-  int32_t OnHostMsgSetLinkUnderCursor(
-      ppapi::host::HostMessageContext* context,
-      const std::string& url);
+  int32_t OnHostMsgSetSelectedText(ppapi::host::HostMessageContext* context,
+                                   const base::string16& selected_text);
+  int32_t OnHostMsgSetLinkUnderCursor(ppapi::host::HostMessageContext* context,
+                                      const std::string& url);
 
   bool CreateImageData(PP_Instance instance,
                        PP_ImageDataFormat format,

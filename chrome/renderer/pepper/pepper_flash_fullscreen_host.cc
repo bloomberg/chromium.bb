@@ -17,19 +17,16 @@ PepperFlashFullscreenHost::PepperFlashFullscreenHost(
     PP_Instance instance,
     PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      renderer_ppapi_host_(host) {
-}
+      renderer_ppapi_host_(host) {}
 
-PepperFlashFullscreenHost::~PepperFlashFullscreenHost() {
-}
+PepperFlashFullscreenHost::~PepperFlashFullscreenHost() {}
 
 int32_t PepperFlashFullscreenHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperFlashFullscreenHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_FlashFullscreen_SetFullscreen,
-        OnSetFullscreen)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFullscreen_SetFullscreen,
+                                    OnSetFullscreen)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }

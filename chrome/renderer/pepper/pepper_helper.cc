@@ -10,11 +10,9 @@
 #include "ppapi/host/ppapi_host.h"
 
 PepperHelper::PepperHelper(content::RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame) {
-}
+    : RenderFrameObserver(render_frame) {}
 
-PepperHelper::~PepperHelper() {
-}
+PepperHelper::~PepperHelper() {}
 
 void PepperHelper::DidCreatePepperPlugin(content::RendererPpapiHost* host) {
   // TODO(brettw) figure out how to hook up the host factory. It needs some

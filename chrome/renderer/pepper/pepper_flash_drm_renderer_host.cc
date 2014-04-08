@@ -26,18 +26,16 @@ PepperFlashDRMRendererHost::PepperFlashDRMRendererHost(
     PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
-PepperFlashDRMRendererHost::~PepperFlashDRMRendererHost() {
-}
+PepperFlashDRMRendererHost::~PepperFlashDRMRendererHost() {}
 
 int32_t PepperFlashDRMRendererHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperFlashDRMRendererHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FlashDRM_GetVoucherFile,
-                                        OnGetVoucherFile)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FlashDRM_GetVoucherFile,
+                                      OnGetVoucherFile)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -51,8 +49,8 @@ int32_t PepperFlashDRMRendererHost::OnGetVoucherFile(
 
   base::FilePath plugin_dir = plugin_instance->GetModulePath().DirName();
   DCHECK(!plugin_dir.empty());
-  base::FilePath voucher_file = plugin_dir.Append(
-      base::FilePath(kVoucherFilename));
+  base::FilePath voucher_file =
+      plugin_dir.Append(base::FilePath(kVoucherFilename));
 
   int renderer_pending_host_id =
       plugin_instance->MakePendingFileRefRendererHost(voucher_file);

@@ -40,30 +40,26 @@ class PepperUMAHost : public ppapi::host::ResourceHost {
   bool IsPluginWhitelisted();
   bool IsHistogramAllowed(const std::string& histogram);
 
-  int32_t OnHistogramCustomTimes(
-      ppapi::host::HostMessageContext* context,
-      const std::string& name,
-      int64_t sample,
-      int64_t min,
-      int64_t max,
-      uint32_t bucket_count);
+  int32_t OnHistogramCustomTimes(ppapi::host::HostMessageContext* context,
+                                 const std::string& name,
+                                 int64_t sample,
+                                 int64_t min,
+                                 int64_t max,
+                                 uint32_t bucket_count);
 
-  int32_t OnHistogramCustomCounts(
-      ppapi::host::HostMessageContext* context,
-      const std::string& name,
-      int32_t sample,
-      int32_t min,
-      int32_t max,
-      uint32_t bucket_count);
+  int32_t OnHistogramCustomCounts(ppapi::host::HostMessageContext* context,
+                                  const std::string& name,
+                                  int32_t sample,
+                                  int32_t min,
+                                  int32_t max,
+                                  uint32_t bucket_count);
 
-  int32_t OnHistogramEnumeration(
-      ppapi::host::HostMessageContext* context,
-      const std::string& name,
-      int32_t sample,
-      int32_t boundary_value);
+  int32_t OnHistogramEnumeration(ppapi::host::HostMessageContext* context,
+                                 const std::string& name,
+                                 int32_t sample,
+                                 int32_t boundary_value);
 
-  int32_t OnIsCrashReportingEnabled(
-      ppapi::host::HostMessageContext* context);
+  int32_t OnIsCrashReportingEnabled(ppapi::host::HostMessageContext* context);
 
   const GURL document_url_;
   bool is_plugin_in_process_;

@@ -21,4 +21,3 @@ class PPB_PDF_Impl {
 };
 
 #endif  // CHROME_RENDERER_PEPPER_PPB_PDF_IMPL_H_
-

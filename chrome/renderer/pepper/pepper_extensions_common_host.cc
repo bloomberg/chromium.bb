@@ -77,10 +77,8 @@ int32_t PepperExtensionsCommonHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperExtensionsCommonHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_ExtensionsCommon_Post,
-                                      OnPost)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_ExtensionsCommon_Call,
-                                      OnCall)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_ExtensionsCommon_Post, OnPost)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_ExtensionsCommon_Call, OnCall)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }

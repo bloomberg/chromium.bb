@@ -52,7 +52,7 @@ class PepperFlashRendererHost : public ppapi::host::ResourceHost {
   int32_t OnNavigate(ppapi::host::HostMessageContext* host_context,
                      const ppapi::URLRequestInfoData& data,
                      const std::string& target,
-                        bool from_user_action);
+                     bool from_user_action);
   int32_t OnIsRectTopmost(ppapi::host::HostMessageContext* host_context,
                           const PP_Rect& rect);
   int32_t OnInvokePrinting(ppapi::host::HostMessageContext* host_context);

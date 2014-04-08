@@ -23,28 +23,26 @@
 namespace {
 
 const char* const kPredefinedAllowedUMAOrigins[] = {
-  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see http://crbug.com/317833
-  "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see http://crbug.com/317833
+    "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see http://crbug.com/317833
+    "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see http://crbug.com/317833
 };
 
 const char* const kWhitelistedHistogramPrefixes[] = {
-  "CD190EA2B764EDF0BB97552A638D32072F3CFD41",  // see http://crbug.com/317833
+    "CD190EA2B764EDF0BB97552A638D32072F3CFD41",  // see http://crbug.com/317833
 };
 
-
 std::string HashPrefix(const std::string& histogram) {
-  const std::string id_hash = base::SHA1HashString(
-      histogram.substr(0, histogram.find('.')));
+  const std::string id_hash =
+      base::SHA1HashString(histogram.substr(0, histogram.find('.')));
   DCHECK_EQ(id_hash.length(), base::kSHA1Length);
   return base::HexEncode(id_hash.c_str(), id_hash.length());
 }
 
 }  // namespace
 
-PepperUMAHost::PepperUMAHost(
-    content::RendererPpapiHost* host,
-    PP_Instance instance,
-    PP_Resource resource)
+PepperUMAHost::PepperUMAHost(content::RendererPpapiHost* host,
+                             PP_Instance instance,
+                             PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       document_url_(host->GetDocumentURL(instance)),
       is_plugin_in_process_(host->IsRunningInProcess()) {
@@ -54,21 +52,20 @@ PepperUMAHost::PepperUMAHost(
     allowed_histogram_prefixes_.insert(kWhitelistedHistogramPrefixes[i]);
 }
 
-PepperUMAHost::~PepperUMAHost() {
-}
+PepperUMAHost::~PepperUMAHost() {}
 
 int32_t PepperUMAHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperUMAHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UMA_HistogramCustomTimes,
-        OnHistogramCustomTimes);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UMA_HistogramCustomCounts,
-        OnHistogramCustomCounts);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UMA_HistogramEnumeration,
-        OnHistogramEnumeration);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_UMA_IsCrashReportingEnabled, OnIsCrashReportingEnabled);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UMA_HistogramCustomTimes,
+                                    OnHistogramCustomTimes);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UMA_HistogramCustomCounts,
+                                    OnHistogramCustomCounts);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UMA_HistogramEnumeration,
+                                    OnHistogramEnumeration);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_UMA_IsCrashReportingEnabled,
+                                      OnIsCrashReportingEnabled);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -94,9 +91,9 @@ bool PepperUMAHost::IsHistogramAllowed(const std::string& histogram) {
 }
 
 #define RETURN_IF_BAD_ARGS(_min, _max, _buckets) \
-  do { \
-    if (_min >= _max || _buckets <= 1) \
-      return PP_ERROR_BADARGUMENT; \
+  do {                                           \
+    if (_min >= _max || _buckets <= 1)           \
+      return PP_ERROR_BADARGUMENT;               \
   } while (0)
 
 int32_t PepperUMAHost::OnHistogramCustomTimes(
@@ -111,13 +108,12 @@ int32_t PepperUMAHost::OnHistogramCustomTimes(
   }
   RETURN_IF_BAD_ARGS(min, max, bucket_count);
 
-  base::HistogramBase* counter =
-      base::Histogram::FactoryTimeGet(
-          name,
-          base::TimeDelta::FromMilliseconds(min),
-          base::TimeDelta::FromMilliseconds(max),
-          bucket_count,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
+  base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
+      name,
+      base::TimeDelta::FromMilliseconds(min),
+      base::TimeDelta::FromMilliseconds(max),
+      bucket_count,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
   // The histogram can be NULL if it is constructed with bad arguments.  Ignore
   // that data for this API.  An error message will be logged.
   if (counter)
@@ -137,13 +133,12 @@ int32_t PepperUMAHost::OnHistogramCustomCounts(
   }
   RETURN_IF_BAD_ARGS(min, max, bucket_count);
 
-  base::HistogramBase* counter =
-      base::Histogram::FactoryGet(
-          name,
-          min,
-          max,
-          bucket_count,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
+  base::HistogramBase* counter = base::Histogram::FactoryGet(
+      name,
+      min,
+      max,
+      bucket_count,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
   // The histogram can be NULL if it is constructed with bad arguments.  Ignore
   // that data for this API.  An error message will be logged.
   if (counter)
@@ -161,13 +156,12 @@ int32_t PepperUMAHost::OnHistogramEnumeration(
   }
   RETURN_IF_BAD_ARGS(0, boundary_value, boundary_value + 1);
 
-  base::HistogramBase* counter =
-      base::LinearHistogram::FactoryGet(
-          name,
-          1,
-          boundary_value,
-          boundary_value + 1,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
+  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
+      name,
+      1,
+      boundary_value,
+      boundary_value + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
   // The histogram can be NULL if it is constructed with bad arguments.  Ignore
   // that data for this API.  An error message will be logged.
   if (counter)
@@ -186,4 +180,3 @@ int32_t PepperUMAHost::OnIsCrashReportingEnabled(
     return PP_OK;
   return PP_ERROR_FAILED;
 }
-

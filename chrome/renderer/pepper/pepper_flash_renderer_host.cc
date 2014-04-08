@@ -51,20 +51,20 @@ namespace {
 // TODO(yzshen): We should be able to remove the histogram recording code once
 // we get the answer.
 const char* kRejectedHttpRequestHeaders[] = {
-  "authorization",
-  "cache-control",
-  "content-encoding",
-  "content-md5",
-  "content-type",  // If the media type is not one of those covered by the
-                   // simple header definition.
-  "expires",
-  "from",
-  "if-match",
-  "if-none-match",
-  "if-range",
-  "if-unmodified-since",
-  "pragma",
-  "referer"
+    "authorization",     //
+    "cache-control",     //
+    "content-encoding",  //
+    "content-md5",       //
+    "content-type",      // If the media type is not one of those covered by the
+                         // simple header definition.
+    "expires",           //
+    "from",              //
+    "if-match",          //
+    "if-none-match",     //
+    "if-range",          //
+    "if-unmodified-since",  //
+    "pragma",               //
+    "referer"               //
 };
 
 // Please note that new entries should be added right above
@@ -95,7 +95,6 @@ enum FlashNavigateUsage {
 
   // Total number of navigate requests.
   TOTAL_NAVIGATE_REQUESTS,
-
   FLASH_NAVIGATE_USAGE_ENUM_COUNT
 };
 
@@ -114,8 +113,11 @@ bool IsSimpleHeader(const std::string& lower_case_header_name,
     std::string lower_case_mime_type;
     std::string lower_case_charset;
     bool had_charset = false;
-    net::HttpUtil::ParseContentType(header_value, &lower_case_mime_type,
-                                    &lower_case_charset, &had_charset, NULL);
+    net::HttpUtil::ParseContentType(header_value,
+                                    &lower_case_mime_type,
+                                    &lower_case_charset,
+                                    &had_charset,
+                                    NULL);
     return lower_case_mime_type == "application/x-www-form-urlencoded" ||
            lower_case_mime_type == "multipart/form-data" ||
            lower_case_mime_type == "text/plain";
@@ -126,8 +128,8 @@ bool IsSimpleHeader(const std::string& lower_case_header_name,
 
 void RecordFlashNavigateUsage(FlashNavigateUsage usage) {
   DCHECK_NE(FLASH_NAVIGATE_USAGE_ENUM_COUNT, usage);
-  UMA_HISTOGRAM_ENUMERATION("Plugin.FlashNavigateUsage", usage,
-                            FLASH_NAVIGATE_USAGE_ENUM_COUNT);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Plugin.FlashNavigateUsage", usage, FLASH_NAVIGATE_USAGE_ENUM_COUNT);
 }
 
 }  // namespace
@@ -138,8 +140,7 @@ PepperFlashRendererHost::PepperFlashRendererHost(
     PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       host_(host),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 PepperFlashRendererHost::~PepperFlashRendererHost() {
   // This object may be destroyed in the middle of a sync message. If that is
@@ -153,18 +154,17 @@ int32_t PepperFlashRendererHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperFlashRendererHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_GetProxyForURL,
-                                      OnGetProxyForURL);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_SetInstanceAlwaysOnTop,
-                                      OnSetInstanceAlwaysOnTop);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_DrawGlyphs,
-                                      OnDrawGlyphs);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_Navigate,
-                                      OnNavigate);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_IsRectTopmost,
-                                      OnIsRectTopmost);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Flash_InvokePrinting,
-                                        OnInvokePrinting);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_GetProxyForURL,
+                                    OnGetProxyForURL);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_SetInstanceAlwaysOnTop,
+                                    OnSetInstanceAlwaysOnTop);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_DrawGlyphs,
+                                    OnDrawGlyphs);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_Navigate, OnNavigate);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_IsRectTopmost,
+                                    OnIsRectTopmost);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Flash_InvokePrinting,
+                                      OnInvokePrinting);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -209,9 +209,8 @@ int32_t PepperFlashRendererHost::OnDrawGlyphs(
     style |= SkTypeface::kBold;
   if (params.font_desc.italic)
     style |= SkTypeface::kItalic;
-  skia::RefPtr<SkTypeface> typeface = skia::AdoptRef(
-      SkTypeface::CreateFromName(params.font_desc.face.c_str(),
-                                 static_cast<SkTypeface::Style>(style)));
+  skia::RefPtr<SkTypeface> typeface = skia::AdoptRef(SkTypeface::CreateFromName(
+      params.font_desc.face.c_str(), static_cast<SkTypeface::Style>(style)));
   if (!typeface)
     return PP_ERROR_FAILED;
 
@@ -221,8 +220,7 @@ int32_t PepperFlashRendererHost::OnDrawGlyphs(
     return PP_ERROR_FAILED;
 
   // Set up the canvas.
-  PPB_ImageData_API* image = static_cast<PPB_ImageData_API*>(
-      enter.object());
+  PPB_ImageData_API* image = static_cast<PPB_ImageData_API*>(enter.object());
   SkCanvas* canvas = image->GetPlatformCanvas();
   bool needs_unmapping = false;
   if (!canvas) {
@@ -237,19 +235,17 @@ int32_t PepperFlashRendererHost::OnDrawGlyphs(
 
   // Clip is applied in pixels before the transform.
   SkRect clip_rect = {
-    SkIntToScalar(params.clip.point.x),
-    SkIntToScalar(params.clip.point.y),
-    SkIntToScalar(params.clip.point.x + params.clip.size.width),
-    SkIntToScalar(params.clip.point.y + params.clip.size.height)
-  };
+      SkIntToScalar(params.clip.point.x), SkIntToScalar(params.clip.point.y),
+      SkIntToScalar(params.clip.point.x + params.clip.size.width),
+      SkIntToScalar(params.clip.point.y + params.clip.size.height)};
   canvas->clipRect(clip_rect);
 
   // Convert & set the matrix.
   SkMatrix matrix;
   matrix.set(SkMatrix::kMScaleX, SkFloatToScalar(params.transformation[0][0]));
-  matrix.set(SkMatrix::kMSkewX,  SkFloatToScalar(params.transformation[0][1]));
+  matrix.set(SkMatrix::kMSkewX, SkFloatToScalar(params.transformation[0][1]));
   matrix.set(SkMatrix::kMTransX, SkFloatToScalar(params.transformation[0][2]));
-  matrix.set(SkMatrix::kMSkewY,  SkFloatToScalar(params.transformation[1][0]));
+  matrix.set(SkMatrix::kMSkewY, SkFloatToScalar(params.transformation[1][0]));
   matrix.set(SkMatrix::kMScaleY, SkFloatToScalar(params.transformation[1][1]));
   matrix.set(SkMatrix::kMTransY, SkFloatToScalar(params.transformation[1][2]));
   matrix.set(SkMatrix::kMPersp0, SkFloatToScalar(params.transformation[2][0]));
@@ -284,8 +280,8 @@ int32_t PepperFlashRendererHost::OnDrawGlyphs(
       y += SkFloatToScalar(params.glyph_advances[i].y);
     }
 
-    canvas->drawPosText(&params.glyph_indices[0], glyph_count * 2, sk_positions,
-                        paint);
+    canvas->drawPosText(
+        &params.glyph_indices[0], glyph_count * 2, sk_positions, paint);
   }
 
   if (needs_unmapping)
@@ -317,9 +313,8 @@ int32_t PepperFlashRendererHost::OnNavigate(
           static_cast<FlashNavigateUsage>(i);
   }
 
-  net::HttpUtil::HeadersIterator header_iter(data.headers.begin(),
-                                             data.headers.end(),
-                                             "\n\r");
+  net::HttpUtil::HeadersIterator header_iter(
+      data.headers.begin(), data.headers.end(), "\n\r");
   bool rejected = false;
   while (header_iter.GetNext()) {
     std::string lower_case_header_name = StringToLowerASCII(header_iter.name());
@@ -328,8 +323,8 @@ int32_t PepperFlashRendererHost::OnNavigate(
 
       std::map<std::string, FlashNavigateUsage>::const_iterator iter =
           rejected_headers.find(lower_case_header_name);
-      FlashNavigateUsage usage = iter != rejected_headers.end() ?
-          iter->second : REJECT_OTHER_HEADERS;
+      FlashNavigateUsage usage =
+          iter != rejected_headers.end() ? iter->second : REJECT_OTHER_HEADERS;
       RecordFlashNavigateUsage(usage);
     }
   }
@@ -372,8 +367,9 @@ int32_t PepperFlashRendererHost::OnIsRectTopmost(
     const PP_Rect& rect) {
   content::PepperPluginInstance* plugin_instance =
       host_->GetPluginInstance(pp_instance());
-  if (plugin_instance && plugin_instance->IsRectTopmost(
-      gfx::Rect(rect.point.x, rect.point.y,rect.size.width, rect.size.height)))
+  if (plugin_instance &&
+      plugin_instance->IsRectTopmost(gfx::Rect(
+          rect.point.x, rect.point.y, rect.size.width, rect.size.height)))
     return PP_OK;
   return PP_ERROR_FAILED;
 }

@@ -79,8 +79,8 @@ bool ConvertMenuData(const PP_Flash_Menu* in_menu,
     item.enabled = PP_ToBool(in_menu->items[i].enabled);
     item.checked = PP_ToBool(in_menu->items[i].checked);
     if (type == PP_FLASH_MENUITEM_TYPE_SUBMENU) {
-      if (!ConvertMenuData(in_menu->items[i].submenu, depth + 1, &item.submenu,
-                           menu_id_map))
+      if (!ConvertMenuData(
+              in_menu->items[i].submenu, depth + 1, &item.submenu, menu_id_map))
         return false;
     }
 
@@ -123,8 +123,7 @@ int32_t PepperFlashMenuHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperFlashMenuHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashMenu_Show,
-                                      OnHostMsgShow)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashMenu_Show, OnHostMsgShow)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -195,9 +194,8 @@ void PepperFlashMenuHost::OnMenuClosed(int request_id) {
 void PepperFlashMenuHost::SendMenuReply(int32_t result, int action) {
   ppapi::host::ReplyMessageContext reply_context(
       ppapi::proxy::ResourceMessageReplyParams(pp_resource(), 0),
-      NULL, MSG_ROUTING_NONE);
+      NULL,
+      MSG_ROUTING_NONE);
   reply_context.params.set_result(result);
-  host()->SendReply(reply_context,
-                    PpapiPluginMsg_FlashMenu_ShowReply(action));
-
+  host()->SendReply(reply_context, PpapiPluginMsg_FlashMenu_ShowReply(action));
 }
