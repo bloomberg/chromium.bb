@@ -51,7 +51,7 @@ typedef unsigned TextIteratorBehaviorFlags;
 
 String plainText(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 PassRefPtrWillBeRawPtr<Range> findPlainText(const Range*, const String&, FindOptions);
-PassRefPtrWillBeRawPtr<Range> findPlainText(const Position& start, const Position& end, const String&, FindOptions);
+void findPlainText(const Position& inputStart, const Position& inputEnd, const String&, FindOptions, Position& resultStart, Position& resultEnd);
 
 class BitStack {
 public:

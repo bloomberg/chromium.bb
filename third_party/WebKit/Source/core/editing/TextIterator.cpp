@@ -1563,18 +1563,16 @@ void CharacterIterator::advance(int count)
     m_runOffset = 0;
 }
 
-static PassRefPtrWillBeRawPtr<Range> characterSubrange(CharacterIterator& it, int offset, int length)
+static void calculateCharacterSubrange(CharacterIterator& it, int offset, int length, Position& startPosition, Position& endPosition)
 {
     it.advance(offset);
     RefPtrWillBeRawPtr<Range> start = it.range();
+    startPosition = start->startPosition();
 
     if (length > 1)
         it.advance(length - 1);
     RefPtrWillBeRawPtr<Range> end = it.range();
-
-    return Range::create(start->startContainer()->document(),
-        start->startContainer(), start->startOffset(),
-        end->endContainer(), end->endOffset());
+    endPosition = end->endPosition();
 }
 
 BackwardsCharacterIterator::BackwardsCharacterIterator(const Range* range, TextIteratorBehaviorFlags behavior)
@@ -2041,7 +2039,10 @@ int TextIterator::rangeLength(const Range* r, bool forSelectionPreservation)
 PassRefPtrWillBeRawPtr<Range> TextIterator::subrange(Range* entireRange, int characterOffset, int characterCount)
 {
     CharacterIterator entireRangeIterator(entireRange);
-    return characterSubrange(entireRangeIterator, characterOffset, characterCount);
+    Position start;
+    Position end;
+    calculateCharacterSubrange(entireRangeIterator, characterOffset, characterCount, start, end);
+    return Range::create(entireRange->ownerDocument(), start, end);
 }
 
 // --------
@@ -2138,31 +2139,38 @@ PassRefPtrWillBeRawPtr<Range> findPlainText(const Range* range, const String& ta
 
     // Then, find the document position of the start and the end of the text.
     CharacterIterator computeRangeIterator(range, iteratorFlagsForFindPlainText);
-    return characterSubrange(computeRangeIterator, matchStart, matchLength);
+    Position resultStart;
+    Position resultEnd;
+    calculateCharacterSubrange(computeRangeIterator, matchStart, matchLength, resultStart, resultEnd);
+    return Range::create(range->ownerDocument(), resultStart, resultEnd);
 }
 
-PassRefPtrWillBeRawPtr<Range> findPlainText(const Position& start, const Position& end, const String& target, FindOptions options)
+void findPlainText(const Position& inputStart, const Position& inputEnd, const String& target, FindOptions options, Position& resultStart, Position& resultEnd)
 {
+    resultStart.clear();
+    resultEnd.clear();
     // CharacterIterator requires renderers to be up-to-date.
-    if (!start.inDocument())
-        return nullptr;
-    ASSERT(start.document() == end.document());
-    start.document()->updateLayout();
+    if (!inputStart.inDocument())
+        return;
+    ASSERT(inputStart.document() == inputEnd.document());
+    inputStart.document()->updateLayout();
 
     // FIXME: Reduce the code duplication with above (but how?).
     size_t matchStart;
     size_t matchLength;
     {
-        CharacterIterator findIterator(start, end, iteratorFlagsForFindPlainText);
+        CharacterIterator findIterator(inputStart, inputEnd, iteratorFlagsForFindPlainText);
         matchLength = findPlainTextInternal(findIterator, target, options, matchStart);
         if (!matchLength) {
-            const Position& collapseTo = options & Backwards ? start : end;
-            return Range::create(*start.document(), collapseTo, collapseTo);
+            const Position& collapseTo = options & Backwards ? inputStart : inputEnd;
+            resultStart = collapseTo;
+            resultEnd = collapseTo;
+            return;
         }
     }
 
-    CharacterIterator computeRangeIterator(start, end, iteratorFlagsForFindPlainText);
-    return characterSubrange(computeRangeIterator, matchStart, matchLength);
+    CharacterIterator computeRangeIterator(inputStart, inputEnd, iteratorFlagsForFindPlainText);
+    calculateCharacterSubrange(computeRangeIterator, matchStart, matchLength, resultStart, resultEnd);
 }
 
 }
