@@ -245,19 +245,12 @@ SyncedNotificationAppInfoService::CreateSyncedNotificationAppInfoFromProtobuf(
   if (server_app_info.has_settings_display_name()) {
     display_name = server_app_info.settings_display_name();
   }
-
   scoped_ptr<SyncedNotificationAppInfo> app_info;
   if (display_name.length() == 0)
     return app_info.Pass();
 
   // Create a new app info object based on the supplied protobuf.
   app_info.reset(new SyncedNotificationAppInfo(profile_, display_name, this));
-
-  // This URL is used whenever the user clicks on the body of the app's welcome
-  // notification.
-  if (server_app_info.has_info_url()) {
-    app_info->SetWelcomeLinkUrl(GURL(server_app_info.info_url()));
-  }
 
   // TODO(petewil): Eventually we will add the monochrome icon here, and we may
   // need to fetch the correct url for the current DPI.

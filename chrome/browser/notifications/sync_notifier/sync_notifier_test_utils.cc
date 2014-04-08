@@ -8,7 +8,6 @@
 const char kSendingService1Name[] = "TestService1";
 const char kSendingService2Name[] = "TestService2";
 const char kSendingService3Name[] = "TestService3";
-const char kTestInfoUrl[] = "https://www.google.com/info.html";
 const char kTestIconUrl[] = "https://www.google.com/someicon.png";
 
 // Fake data for creating a SyncData object to use in creating a

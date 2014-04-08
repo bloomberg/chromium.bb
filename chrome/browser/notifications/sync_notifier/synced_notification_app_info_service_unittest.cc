@@ -137,7 +137,6 @@ class SyncedNotificationAppInfoServiceTest : public testing::Test {
     protobuf.add_app_id(std::string(kAppId1));
     protobuf.add_app_id(std::string(kAppId2));
     protobuf.set_settings_display_name(kSendingService1Name);
-    protobuf.set_info_url(kTestInfoUrl);
     protobuf.mutable_icon()->set_url(kTestIconUrl);
   }
 
@@ -151,7 +150,6 @@ class SyncedNotificationAppInfoServiceTest : public testing::Test {
   // Helper to create syncer::SyncChange.
   static SyncChange CreateSyncChange(SyncChange::SyncChangeType type,
                                      const std::string& settings_display_name,
-                                     const std::string& info_url,
                                      const std::string& icon_url,
                                      const std::string& app_id1,
                                      const std::string& app_id2) {
@@ -159,13 +157,11 @@ class SyncedNotificationAppInfoServiceTest : public testing::Test {
     return SyncChange(
         FROM_HERE,
         type,
-        CreateSyncData(
-            settings_display_name, info_url, icon_url, app_id1, app_id2));
+        CreateSyncData(settings_display_name, icon_url, app_id1, app_id2));
   }
 
   // Build a SyncData object to look like what Sync would deliver.
   static SyncData CreateSyncData(const std::string& settings_display_name,
-                                 const std::string& info_url,
                                  const std::string& icon_url,
                                  const std::string& app_id1,
                                  const std::string& app_id2) {
@@ -183,9 +179,6 @@ class SyncedNotificationAppInfoServiceTest : public testing::Test {
 
     // Add the key, the settings display name.
     app_info->set_settings_display_name(settings_display_name);
-
-    // Add the welcome notification info URL.
-    app_info->set_info_url(info_url);
 
     // Add the icon URL.
     app_info->mutable_icon()->set_url(icon_url);
@@ -249,7 +242,6 @@ TEST_F(SyncedNotificationAppInfoServiceTest, ProcessSyncChangesEmptyModel) {
   SyncChangeList changes;
   changes.push_back(CreateSyncChange(SyncChange::ACTION_ADD,
                                      kSendingService1Name,
-                                     kTestInfoUrl,
                                      kTestIconUrl,
                                      kAppId1,
                                      kAppId2));
@@ -281,7 +273,6 @@ TEST_F(SyncedNotificationAppInfoServiceTest, ProcessSyncChangesNonEmptyModel) {
 
   changes.push_back(CreateSyncChange(SyncChange::ACTION_UPDATE,
                                      kSendingService1Name,
-                                     kTestInfoUrl,
                                      kTestIconUrl,
                                      kAppId1,
                                      kAppId3));
@@ -381,7 +372,6 @@ TEST_F(SyncedNotificationAppInfoServiceTest,
   // Ensure the app info class has the fields we expect.
   EXPECT_EQ(std::string(kSendingService1Name),
             app_info->settings_display_name());
-  EXPECT_EQ(GURL(kTestInfoUrl), app_info->welcome_link_url());
   EXPECT_TRUE(app_info->HasAppId(kAppId1));
   EXPECT_TRUE(app_info->HasAppId(kAppId2));
   EXPECT_EQ(GURL(std::string(kTestIconUrl)), app_info->settings_icon_url());
