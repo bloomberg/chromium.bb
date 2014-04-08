@@ -13,7 +13,7 @@ namespace ui {
 
 // Represents a command that performs a specific operation on text.
 // Copy and assignment are explicitly allowed; these objects live in vectors.
-class EVENTS_EXPORT TextEditCommandX11 {
+class EVENTS_EXPORT TextEditCommandAuraLinux {
  public:
   enum CommandId {
     COPY,
@@ -52,7 +52,7 @@ class EVENTS_EXPORT TextEditCommandX11 {
     INVALID_COMMAND
   };
 
-  TextEditCommandX11(CommandId command_id,
+  TextEditCommandAuraLinux(CommandId command_id,
                      const std::string& argument,
                      bool extend_selection)
       : command_id_(command_id),

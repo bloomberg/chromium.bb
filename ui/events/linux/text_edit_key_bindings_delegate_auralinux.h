@@ -11,31 +11,32 @@
 
 namespace ui {
 class Event;
-class TextEditCommandX11;
+class TextEditCommandAuraLinux;
 
 // An interface which can interpret various text editing commands out of key
 // events.
 //
 // On desktop Linux, we've traditionally supported the user's custom
 // keybindings. We need to support this in both content/ and in views/.
-class EVENTS_EXPORT TextEditKeyBindingsDelegateX11 {
+class EVENTS_EXPORT TextEditKeyBindingsDelegateAuraLinux {
  public:
   // Matches a key event against the users' platform specific key bindings,
   // false will be returned if the key event doesn't correspond to a predefined
   // key binding.  Edit commands matched with |event| will be stored in
   // |edit_commands|, if |edit_commands| is non-NULL.
   virtual bool MatchEvent(const ui::Event& event,
-                          std::vector<TextEditCommandX11>* commands) = 0;
+                          std::vector<TextEditCommandAuraLinux>* commands) = 0;
 
  protected:
-  virtual ~TextEditKeyBindingsDelegateX11() {}
+  virtual ~TextEditKeyBindingsDelegateAuraLinux() {}
 };
 
-// Sets/Gets the global TextEditKeyBindingsDelegateX11. No ownership
+// Sets/Gets the global TextEditKeyBindingsDelegateAuraLinux. No ownership
 // changes. Can be NULL.
 EVENTS_EXPORT void SetTextEditKeyBindingsDelegate(
-    TextEditKeyBindingsDelegateX11* delegate);
-EVENTS_EXPORT TextEditKeyBindingsDelegateX11* GetTextEditKeyBindingsDelegate();
+    TextEditKeyBindingsDelegateAuraLinux* delegate);
+EVENTS_EXPORT TextEditKeyBindingsDelegateAuraLinux*
+    GetTextEditKeyBindingsDelegate();
 
 }  // namespace ui
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/x/text_edit_command_x11.h"
+#include "ui/events/linux/text_edit_command_auralinux.h"
 
 #include "base/logging.h"
 
 namespace ui {
 
-std::string TextEditCommandX11::GetCommandString() const {
+std::string TextEditCommandAuraLinux::GetCommandString() const {
   std::string base_name;
   switch (command_id_) {
     case COPY:
@@ -122,4 +122,3 @@ std::string TextEditCommandX11::GetCommandString() const {
 }
 
 }  // namespace ui
-

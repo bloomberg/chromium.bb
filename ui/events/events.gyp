@@ -149,10 +149,10 @@
         'platform/x11/x11_event_source.h',
         'win/events_win.cc',
         'x/events_x.cc',
-        'x/text_edit_command_x11.cc',
-        'x/text_edit_command_x11.h',
-        'x/text_edit_key_bindings_delegate_x11.cc',
-        'x/text_edit_key_bindings_delegate_x11.h',
+        'linux/text_edit_command_auralinux.cc',
+        'linux/text_edit_command_auralinux.h',
+        'linux/text_edit_key_bindings_delegate_auralinux.cc',
+        'linux/text_edit_key_bindings_delegate_auralinux.h',
       ],
       'conditions': [
         # We explicitly enumerate the platforms we _do_ provide native cracking
@@ -164,10 +164,10 @@
         }],
         ['chromeos==1', {
           'sources!': [
-            'x/text_edit_command_x11.cc',
-            'x/text_edit_command_x11.h',
-            'x/text_edit_key_bindings_delegate_x11.cc',
-            'x/text_edit_key_bindings_delegate_x11.h',
+            'linux/text_edit_command_auralinux.cc',
+            'linux/text_edit_command_auralinux.h',
+            'linux/text_edit_key_bindings_delegate_auralinux.cc',
+            'linux/text_edit_key_bindings_delegate_auralinux.h',
           ],
         }],
         ['use_x11==1', {

@@ -681,7 +681,7 @@ void Gtk2UI::NotifyWindowManagerStartupComplete() {
 }
 
 bool Gtk2UI::MatchEvent(const ui::Event& event,
-                        std::vector<ui::TextEditCommandX11>* commands) {
+                        std::vector<ui::TextEditCommandAuraLinux>* commands) {
   // Ensure that we have a keyboard handler.
   if (!key_bindings_handler_)
     key_bindings_handler_.reset(new Gtk2KeyBindingsHandler);

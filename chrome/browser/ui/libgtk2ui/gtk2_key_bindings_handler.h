@@ -12,7 +12,7 @@
 
 #include "base/event_types.h"
 #include "chrome/browser/ui/libgtk2ui/owned_widget_gtk2.h"
-#include "ui/events/x/text_edit_command_x11.h"
+#include "ui/events/linux/text_edit_command_auralinux.h"
 
 namespace content {
 struct NativeWebKeyboardEvent;
@@ -53,7 +53,7 @@ class Gtk2KeyBindingsHandler {
   // Edit commands matched with |event| will be stored in |edit_commands|, if
   // non-NULL.
   bool MatchEvent(const ui::Event& event,
-                  std::vector<ui::TextEditCommandX11>* commands);
+                  std::vector<ui::TextEditCommandAuraLinux>* commands);
 
  private:
   // Object structure of Handler class, which is derived from GtkTextView.
@@ -71,7 +71,7 @@ class Gtk2KeyBindingsHandler {
   GtkWidget* CreateNewHandler();
 
   // Adds an edit command to the key event.
-  void EditCommandMatched(ui::TextEditCommandX11::CommandId id,
+  void EditCommandMatched(ui::TextEditCommandAuraLinux::CommandId id,
                           const std::string& value,
                           bool extend_selection);
 
@@ -141,7 +141,7 @@ class Gtk2KeyBindingsHandler {
   libgtk2ui::OwnedWidgetGtk handler_;
 
   // Buffer to store the match results.
-  std::vector<ui::TextEditCommandX11> edit_commands_;
+  std::vector<ui::TextEditCommandAuraLinux> edit_commands_;
 
   // Whether the current X server has the XKeyboard extension.
   bool has_xkb_;

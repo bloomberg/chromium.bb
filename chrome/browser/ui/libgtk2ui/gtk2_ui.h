@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal_registrar.h"
 #include "chrome/browser/ui/libgtk2ui/libgtk2ui_export.h"
 #include "chrome/browser/ui/libgtk2ui/owned_widget_gtk2.h"
-#include "ui/events/x/text_edit_key_bindings_delegate_x11.h"
+#include "ui/events/linux/text_edit_key_bindings_delegate_auralinux.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -115,7 +115,7 @@ class Gtk2UI : public views::LinuxUI {
   // ui::TextEditKeybindingDelegate:
   virtual bool MatchEvent(
       const ui::Event& event,
-      std::vector<ui::TextEditCommandX11>* commands) OVERRIDE;
+      std::vector<ui::TextEditCommandAuraLinux>* commands) OVERRIDE;
 
  private:
   typedef std::map<int, SkColor> ColorMap;
