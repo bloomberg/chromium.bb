@@ -148,7 +148,8 @@ void HTMLPlugInElement::requestPluginCreationWithoutRendererIfPossible()
     if (m_serviceType.isEmpty())
         return;
 
-    if (!document().frame()->loader().client()->canCreatePluginWithoutRenderer(m_serviceType))
+    if (!document().frame()
+        || !document().frame()->loader().client()->canCreatePluginWithoutRenderer(m_serviceType))
         return;
 
     if (renderer() && renderer()->isWidget())
