@@ -11,7 +11,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
-#include "ui/gfx/ozone/surface_ozone_base.h"
+#include "ui/gfx/ozone/surface_ozone_canvas.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
@@ -19,13 +19,12 @@
 
 namespace {
 
-class MockSurfaceOzone : public gfx::SurfaceOzoneBase {
+class MockSurfaceOzone : public gfx::SurfaceOzoneCanvas {
  public:
   MockSurfaceOzone() {}
   virtual ~MockSurfaceOzone() {}
 
-  // gfx::SurfaceOzoneBase overrides:
-  virtual bool InitializeCanvas() OVERRIDE { return true; }
+  // gfx::SurfaceOzoneCanvas overrides:
   virtual bool ResizeCanvas(const gfx::Size& size) OVERRIDE {
     surface_ = skia::AdoptRef(SkSurface::NewRaster(
         SkImageInfo::MakeN32Premul(size.width(), size.height())));
@@ -33,6 +32,13 @@ class MockSurfaceOzone : public gfx::SurfaceOzoneBase {
   }
   virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE {
     return skia::SharePtr(surface_->getCanvas());
+  }
+  virtual bool PresentCanvas() OVERRIDE {
+    NOTIMPLEMENTED();
+    return true;
+  }
+  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE {
+    return scoped_ptr<gfx::VSyncProvider>();
   }
 
  private:
@@ -57,9 +63,9 @@ class MockSurfaceFactoryOzone : public gfx::SurfaceFactoryOzone {
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE {
     return false;
   }
-  virtual scoped_ptr<gfx::SurfaceOzone> CreateSurfaceForWidget(
+  virtual scoped_ptr<gfx::SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) OVERRIDE {
-    return make_scoped_ptr<gfx::SurfaceOzone>(new MockSurfaceOzone());
+    return make_scoped_ptr<gfx::SurfaceOzoneCanvas>(new MockSurfaceOzone());
   }
 
  private:

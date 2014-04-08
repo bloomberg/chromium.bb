@@ -21,7 +21,8 @@ class SkCanvas;
 namespace gfx {
 class VSyncProvider;
 class OverlayCandidatesOzone;
-class SurfaceOzone;
+class SurfaceOzoneCanvas;
+class SurfaceOzoneEGL;
 typedef intptr_t NativeBufferOzone;
 
 // The Ozone interface allows external implementations to hook into Chromium to
@@ -29,6 +30,9 @@ typedef intptr_t NativeBufferOzone;
 // drawing modes: 1) accelerated drawing through EGL and 2) software drawing
 // through Skia.
 //
+// If you want to paint on a window with ozone, you need to create a
+// SurfaceOzoneEGL or SurfaceOzoneCanvas for that window. The platform can
+// support software, EGL, or both for painting on the window.
 // The following functionality is specific to the drawing mode and may not have
 // any meaningful implementation in the other mode. An implementation must
 // provide functionality for at least one mode.
@@ -40,11 +44,12 @@ typedef intptr_t NativeBufferOzone;
 //  - LoadEGLGLES2Bindings
 //  - GetEGLSurfaceProperties (optional if the properties match the default
 //  Chromium ones).
+//  - CreateEGLSurfaceForWidget
 //
 // 2) Software Drawing (Skia):
 //
 // The following function is specific to the software path:
-//  - GetCanvasForWidget
+//  - CreateCanvasForWidget
 //
 // The accelerated path can optionally provide support for the software drawing
 // path.
@@ -100,13 +105,20 @@ class GFX_EXPORT SurfaceFactoryOzone {
   // before it can be used to create a GL surface.
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() = 0;
 
-  // Create a surface for the specified gfx::AcceleratedWidget.
+  // Create SurfaceOzoneEGL for the specified gfx::AcceleratedWidget.
   //
   // Note: When used from content, this is called in the GPU process. The
-  // platform must support creation of SurfaceOzone from the GPU process
+  // platform must support creation of SurfaceOzoneEGL from the GPU process
   // using only the handle contained in gfx::AcceleratedWidget.
-  virtual scoped_ptr<SurfaceOzone> CreateSurfaceForWidget(
-      gfx::AcceleratedWidget widget);
+  virtual scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
+        gfx::AcceleratedWidget widget);
+
+  // Create SurfaceOzoneCanvas for the specified gfx::AcceleratedWidget.
+  //
+  // Note: The platform must support creation of SurfaceOzoneCanvas from the
+  // Browser Process using only the handle contained in gfx::AcceleratedWidget.
+  virtual scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
+        gfx::AcceleratedWidget widget);
 
   // Sets up GL bindings for the native surface. Takes two callback parameters
   // that allow Ozone to register the GL bindings.

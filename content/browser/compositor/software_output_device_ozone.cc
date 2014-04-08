@@ -6,7 +6,7 @@
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
-#include "ui/gfx/ozone/surface_ozone.h"
+#include "ui/gfx/ozone/surface_ozone_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
 
@@ -19,9 +19,9 @@ SoftwareOutputDeviceOzone::SoftwareOutputDeviceOzone(ui::Compositor* compositor)
   if (factory->InitializeHardware() != gfx::SurfaceFactoryOzone::INITIALIZED)
     LOG(FATAL) << "Failed to initialize hardware in OZONE";
 
-  surface_ozone_ = factory->CreateSurfaceForWidget(compositor_->widget());
+  surface_ozone_ = factory->CreateCanvasForWidget(compositor_->widget());
 
-  if (!surface_ozone_->InitializeCanvas())
+  if (!surface_ozone_)
     LOG(FATAL) << "Failed to initialize canvas";
 
   vsync_provider_ = surface_ozone_->CreateVSyncProvider();

@@ -14,6 +14,7 @@
 #include "ui/gfx/ozone/dri/dri_wrapper.h"
 #include "ui/gfx/ozone/dri/hardware_display_controller.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
+#include "ui/gfx/ozone/surface_ozone_canvas.h"
 
 namespace {
 
@@ -263,7 +264,7 @@ TEST_F(DriSurfaceFactoryTest, FailSurfaceInitialization) {
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(kDefaultWidgetHandle, w);
 
-  EXPECT_FALSE(factory_->CreateSurfaceForWidget(w));
+  EXPECT_FALSE(factory_->CreateCanvasForWidget(w));
 }
 
 TEST_F(DriSurfaceFactoryTest, FailBindingSurfaceToController) {
@@ -275,7 +276,7 @@ TEST_F(DriSurfaceFactoryTest, FailBindingSurfaceToController) {
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(kDefaultWidgetHandle, w);
 
-  EXPECT_FALSE(factory_->CreateSurfaceForWidget(w));
+  EXPECT_FALSE(factory_->CreateCanvasForWidget(w));
 }
 
 TEST_F(DriSurfaceFactoryTest, SuccessfulWidgetRealization) {
@@ -285,7 +286,7 @@ TEST_F(DriSurfaceFactoryTest, SuccessfulWidgetRealization) {
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(kDefaultWidgetHandle, w);
 
-  EXPECT_TRUE(factory_->CreateSurfaceForWidget(w));
+  EXPECT_TRUE(factory_->CreateCanvasForWidget(w));
 }
 
 TEST_F(DriSurfaceFactoryTest, FailSchedulePageFlip) {
@@ -297,7 +298,7 @@ TEST_F(DriSurfaceFactoryTest, FailSchedulePageFlip) {
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(kDefaultWidgetHandle, w);
 
-  scoped_ptr<gfx::SurfaceOzone> surf = factory_->CreateSurfaceForWidget(w);
+  scoped_ptr<gfx::SurfaceOzoneCanvas> surf = factory_->CreateCanvasForWidget(w);
   EXPECT_TRUE(surf);
 
   EXPECT_FALSE(factory_->SchedulePageFlip(w));
@@ -310,7 +311,7 @@ TEST_F(DriSurfaceFactoryTest, SuccessfulSchedulePageFlip) {
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(kDefaultWidgetHandle, w);
 
-  scoped_ptr<gfx::SurfaceOzone> surf = factory_->CreateSurfaceForWidget(w);
+  scoped_ptr<gfx::SurfaceOzoneCanvas> surf = factory_->CreateCanvasForWidget(w);
   EXPECT_TRUE(surf);
 
   EXPECT_TRUE(factory_->SchedulePageFlip(w));
@@ -323,7 +324,7 @@ TEST_F(DriSurfaceFactoryTest, SetCursorImage) {
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(kDefaultWidgetHandle, w);
 
-  scoped_ptr<gfx::SurfaceOzone> surf = factory_->CreateSurfaceForWidget(w);
+  scoped_ptr<gfx::SurfaceOzoneCanvas> surf = factory_->CreateCanvasForWidget(w);
   EXPECT_TRUE(surf);
 
   SkBitmap image;

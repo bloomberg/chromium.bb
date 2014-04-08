@@ -7,7 +7,8 @@
 #include <stdlib.h>
 
 #include "base/command_line.h"
-#include "ui/gfx/ozone/surface_ozone.h"
+#include "ui/gfx/ozone/surface_ozone_canvas.h"
+#include "ui/gfx/ozone/surface_ozone_egl.h"
 
 namespace gfx {
 
@@ -33,10 +34,16 @@ intptr_t SurfaceFactoryOzone::GetNativeDisplay() {
   return 0;
 }
 
-scoped_ptr<SurfaceOzone> SurfaceFactoryOzone::CreateSurfaceForWidget(
-    gfx::AcceleratedWidget widget) {
+scoped_ptr<SurfaceOzoneEGL> SurfaceFactoryOzone::CreateEGLSurfaceForWidget(
+      gfx::AcceleratedWidget widget) {
   NOTIMPLEMENTED();
-  return scoped_ptr<SurfaceOzone>();
+  return scoped_ptr<SurfaceOzoneEGL>();
+}
+
+scoped_ptr<SurfaceOzoneCanvas> SurfaceFactoryOzone::CreateCanvasForWidget(
+      gfx::AcceleratedWidget widget) {
+  NOTIMPLEMENTED();
+  return scoped_ptr<SurfaceOzoneCanvas>();
 }
 
 const int32* SurfaceFactoryOzone::GetEGLSurfaceProperties(

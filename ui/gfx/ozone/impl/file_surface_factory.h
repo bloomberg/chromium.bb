@@ -25,8 +25,8 @@ class GFX_EXPORT FileSurfaceFactory : public SurfaceFactoryOzone {
   virtual HardwareState InitializeHardware() OVERRIDE;
   virtual void ShutdownHardware() OVERRIDE;
   virtual AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
-  virtual scoped_ptr<SurfaceOzone> CreateSurfaceForWidget(
-      AcceleratedWidget widget) OVERRIDE;
+  virtual scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
+      gfx::AcceleratedWidget w) OVERRIDE;
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;

@@ -17,7 +17,7 @@
 #include "ui/gfx/ozone/dri/dri_vsync_provider.h"
 #include "ui/gfx/ozone/dri/dri_wrapper.h"
 #include "ui/gfx/ozone/dri/hardware_display_controller.h"
-#include "ui/gfx/ozone/surface_ozone_base.h"
+#include "ui/gfx/ozone/surface_ozone_canvas.h"
 
 namespace gfx {
 
@@ -123,7 +123,7 @@ void UpdateCursorImage(DriSurface* cursor, const SkBitmap& image) {
 // the compositor merely owns this proxy object.
 //
 // TODO(spang): Should the compositor own any bits of the DriSurface?
-class DriSurfaceAdapter : public SurfaceOzoneBase {
+class DriSurfaceAdapter : public SurfaceOzoneCanvas {
  public:
   DriSurfaceAdapter(gfx::AcceleratedWidget w, DriSurfaceFactory* dri)
       : widget_(w), dri_(dri) {}
@@ -133,6 +133,10 @@ class DriSurfaceAdapter : public SurfaceOzoneBase {
   virtual bool InitializeCanvas() OVERRIDE { return true; }
   virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE {
     return skia::SharePtr(dri_->GetCanvasForWidget(widget_));
+  }
+  virtual bool ResizeCanvas(const gfx::Size& viewport_size) OVERRIDE {
+    NOTIMPLEMENTED();
+    return false;
   }
   virtual bool PresentCanvas() OVERRIDE {
     return dri_->SchedulePageFlip(widget_);
@@ -208,7 +212,7 @@ gfx::AcceleratedWidget DriSurfaceFactory::GetAcceleratedWidget() {
   return kDefaultWidgetHandle;
 }
 
-scoped_ptr<SurfaceOzone> DriSurfaceFactory::CreateSurfaceForWidget(
+scoped_ptr<SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget w) {
   CHECK(state_ == INITIALIZED);
   // TODO(dnicoara) Once we can handle multiple displays this needs to be
@@ -222,7 +226,7 @@ scoped_ptr<SurfaceOzone> DriSurfaceFactory::CreateSurfaceForWidget(
   // hardware display.
   if (!InitializeControllerForPrimaryDisplay(drm_.get(), controller_.get())) {
     LOG(ERROR) << "Failed to initialize controller";
-    return scoped_ptr<SurfaceOzone>();
+    return scoped_ptr<SurfaceOzoneCanvas>();
   }
 
   // Create a surface suitable for the current controller.
@@ -232,7 +236,7 @@ scoped_ptr<SurfaceOzone> DriSurfaceFactory::CreateSurfaceForWidget(
 
   if (!surface->Initialize()) {
     LOG(ERROR) << "Failed to initialize surface";
-    return scoped_ptr<SurfaceOzone>();
+    return scoped_ptr<SurfaceOzoneCanvas>();
   }
 
   // Bind the surface to the controller. This will register the backing buffers
@@ -240,13 +244,13 @@ scoped_ptr<SurfaceOzone> DriSurfaceFactory::CreateSurfaceForWidget(
   // takes ownership of the surface.
   if (!controller_->BindSurfaceToController(surface.Pass())) {
     LOG(ERROR) << "Failed to bind surface to controller";
-    return scoped_ptr<SurfaceOzone>();
+    return scoped_ptr<SurfaceOzoneCanvas>();
   }
 
   // Initial cursor set.
   ResetCursor();
 
-  return make_scoped_ptr<SurfaceOzone>(new DriSurfaceAdapter(w, this));
+  return make_scoped_ptr<SurfaceOzoneCanvas>(new DriSurfaceAdapter(w, this));
 }
 
 bool DriSurfaceFactory::LoadEGLGLES2Bindings(

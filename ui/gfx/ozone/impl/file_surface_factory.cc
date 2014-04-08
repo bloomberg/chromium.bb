@@ -12,7 +12,7 @@
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/ozone/surface_ozone_base.h"
+#include "ui/gfx/ozone/surface_ozone_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
 
@@ -29,7 +29,7 @@ void WriteDataToFile(const base::FilePath& location,
                   png_data.size());
 }
 
-class FileSurface : public SurfaceOzoneBase {
+class FileSurface : public SurfaceOzoneCanvas {
  public:
   FileSurface(const base::FilePath& location) : location_(location) {}
   virtual ~FileSurface() {}
@@ -56,6 +56,10 @@ class FileSurface : public SurfaceOzoneBase {
           FROM_HERE, base::Bind(&WriteDataToFile, location_, bitmap), true);
     }
     return true;
+  }
+
+  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE {
+    return scoped_ptr<gfx::VSyncProvider>();
   }
 
  private:
@@ -88,9 +92,9 @@ AcceleratedWidget FileSurfaceFactory::GetAcceleratedWidget() {
   return 1;
 }
 
-scoped_ptr<SurfaceOzone> FileSurfaceFactory::CreateSurfaceForWidget(
-    AcceleratedWidget widget) {
-  return make_scoped_ptr<SurfaceOzone>(new FileSurface(location_));
+scoped_ptr<SurfaceOzoneCanvas> FileSurfaceFactory::CreateCanvasForWidget(
+      gfx::AcceleratedWidget w) {
+  return make_scoped_ptr<SurfaceOzoneCanvas>(new FileSurface(location_));
 }
 
 bool FileSurfaceFactory::LoadEGLGLES2Bindings(

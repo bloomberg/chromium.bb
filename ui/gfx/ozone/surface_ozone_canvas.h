@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_SURFACE_OZONE_H_
-#define UI_GFX_OZONE_SURFACE_OZONE_H_
+#ifndef UI_GFX_OZONE_SURFACE_OZONE_CANVAS_H_
+#define UI_GFX_OZONE_SURFACE_OZONE_CANVAS_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,34 +17,15 @@ namespace gfx {
 class Size;
 class VSyncProvider;
 
-// The platform-specific part of an EGL surface or software output.
-//
+// The platform-specific part of an software output. The class is intended
+// for use when no EGL/GLES2 acceleration is possible.
 // This class owns any bits that the ozone implementation needs freed when
-// the software output or EGL surface is destroyed.
-//
-// If you want to paint on a window with ozone, you need to create a
-// SurfaceOzone for that window.
-//
-// The platform can support software, EGL, or both for painting on the
-// window. The initializer for unsupported modes should return false.
-class GFX_EXPORT SurfaceOzone {
+// the software output is destroyed.
+class GFX_EXPORT SurfaceOzoneCanvas {
  public:
-  virtual ~SurfaceOzone() {}
+  virtual ~SurfaceOzoneCanvas() {}
 
-  // Initialize the surface for output using EGL/GLES2. Returns true if
-  // initialization was successful.
-  virtual bool InitializeEGL() = 0;
-
-  // Returns the EGL native window for rendering onto this surface.
-  // This can be used to to create a GLSurface.
-  virtual intptr_t /* EGLNativeWindowType */ GetEGLNativeWindow() = 0;
-
-  // Initialize canvas for software output. Returns true if initialization
-  // was successful.
-  virtual bool InitializeCanvas() = 0;
-
-  // Returns an SkCanvas for drawing on the window. The canvas is intended
-  // for use when no EGL/GLES2 acceleration is possible.
+  // Returns an SkCanvas for drawing on the window.
   virtual skia::RefPtr<SkCanvas> GetCanvas() = 0;
 
   // Attempts to resize the canvas to match the viewport size. Returns true if
@@ -67,4 +48,4 @@ class GFX_EXPORT SurfaceOzone {
 
 }  // namespace gfx
 
-#endif  // UI_GFX_OZONE_SURFACE_OZONE_H_
+#endif  // UI_GFX_OZONE_SURFACE_OZONE_CANVAS_H_

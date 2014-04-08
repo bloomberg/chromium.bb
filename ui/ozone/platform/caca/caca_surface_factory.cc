@@ -7,7 +7,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "ui/gfx/ozone/surface_ozone_base.h"
+#include "ui/gfx/ozone/surface_ozone_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/platform/caca/caca_connection.h"
@@ -18,15 +18,16 @@ namespace {
 
 const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 
-class CacaSurface : public gfx::SurfaceOzoneBase {
+class CacaSurface : public gfx::SurfaceOzoneCanvas {
  public:
   CacaSurface(CacaConnection* connection);
   virtual ~CacaSurface();
 
-  // gfx::SurfaceOzoneBase overrides:
-  virtual bool InitializeCanvas() OVERRIDE;
+  // gfx::SurfaceOzoneCanvas overrides:
   virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE;
+  virtual bool ResizeCanvas(const gfx::Size& viewport_size) OVERRIDE;
   virtual bool PresentCanvas() OVERRIDE;
+  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE;
 
  private:
   CacaConnection* connection_;  // Not owned.
@@ -74,6 +75,11 @@ skia::RefPtr<SkCanvas> CacaSurface::GetCanvas() {
   return skia::SharePtr<SkCanvas>(surface_->getCanvas());
 }
 
+bool CacaSurface::ResizeCanvas(const gfx::Size& viewport_size) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool CacaSurface::PresentCanvas() {
   SkImageInfo info;
   size_t row_bytes;
@@ -88,6 +94,10 @@ bool CacaSurface::PresentCanvas() {
   caca_refresh_display(connection_->display());
 
   return true;
+}
+
+scoped_ptr<gfx::VSyncProvider> CacaSurface::CreateVSyncProvider() {
+  return scoped_ptr<gfx::VSyncProvider>();
 }
 
 }  // namespace
@@ -125,12 +135,12 @@ bool CacaSurfaceFactory::LoadEGLGLES2Bindings(
   return false;
 }
 
-scoped_ptr<gfx::SurfaceOzone> CacaSurfaceFactory::CreateSurfaceForWidget(
+scoped_ptr<gfx::SurfaceOzoneCanvas> CacaSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
   CHECK_EQ(INITIALIZED, state_);
   CHECK_EQ(kDefaultWidgetHandle, widget);
 
-  return make_scoped_ptr<gfx::SurfaceOzone>(new CacaSurface(connection_));
+  return make_scoped_ptr<gfx::SurfaceOzoneCanvas>(new CacaSurface(connection_));
 }
 
 }  // namespace ui

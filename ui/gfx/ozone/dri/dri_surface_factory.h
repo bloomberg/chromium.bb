@@ -8,14 +8,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
-#include "ui/gfx/ozone/surface_ozone.h"
 
 namespace gfx {
 
 class DriSurface;
 class DriWrapper;
 class HardwareDisplayController;
-class SurfaceOzone;
+class SurfaceOzoneCanvas;
 
 // SurfaceFactoryOzone implementation on top of DRM/KMS using dumb buffers.
 // This implementation is used in conjunction with the software rendering
@@ -30,7 +29,7 @@ class GFX_EXPORT DriSurfaceFactory : public SurfaceFactoryOzone {
 
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
 
-  virtual scoped_ptr<SurfaceOzone> CreateSurfaceForWidget(
+  virtual scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget w) OVERRIDE;
 
   virtual bool LoadEGLGLES2Bindings(
