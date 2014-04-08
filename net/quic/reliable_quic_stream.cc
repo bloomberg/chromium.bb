@@ -210,6 +210,14 @@ void ReliableQuicStream::MaybeSendWindowUpdate() {
   }
 }
 
+int ReliableQuicStream::num_frames_received() {
+  return sequencer_.num_frames_received();
+}
+
+int ReliableQuicStream::num_duplicate_frames_received() {
+  return sequencer_.num_duplicate_frames_received();
+}
+
 void ReliableQuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
   stream_error_ = frame.error_code;
   CloseWriteSide();

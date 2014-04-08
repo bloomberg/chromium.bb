@@ -63,6 +63,9 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
       const CryptoHandshakeMessage& message);
   void OnConnectionClosed(QuicErrorCode error, bool from_peer);
   void OnSuccessfulVersionNegotiation(const QuicVersion& version);
+  void UpdateReceivedFrameCounts(QuicStreamId stream_id,
+                                 int num_frames_received,
+                                 int num_duplicate_frames_received);
 
  private:
   // Do a factory get for a histogram for recording data, about individual
@@ -123,6 +126,10 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   size_t num_truncated_acks_received_;
   // The kCADR value provided by the server in ServerHello.
   IPEndPoint client_address_;
+  // Count of the number of frames received.
+  int num_frames_received_;
+  // Count of the number of duplicate frames received.
+  int num_duplicate_frames_received_;
   // Vector of inital packets status' indexed by packet sequence numbers, where
   // false means never received.  Zero is not a valid packet sequence number, so
   // that offset is never used, and we'll track 150 packets.

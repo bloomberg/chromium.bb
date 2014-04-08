@@ -12793,6 +12793,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.StreamFrameDuplicatedPercentLongConnection">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The percentage of stream frames received which were duplicates. Only for
+    QUIC sessions which received at least 100 packets.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.StreamFrameDuplicatedPercentShortConnection">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The percentage of stream frames received which were duplicates. Only for
+    QUIC sessions which received fewer than 100 packets.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.TruncatedAcksReceived">
   <owner>rch@chromium.org</owner>
   <summary>The number of truncated ACK frames received.</summary>

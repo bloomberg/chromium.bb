@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/metrics/sparse_histogram.h"
 #include "net/quic/reliable_quic_stream.h"
 
 using std::min;
@@ -21,7 +22,9 @@ QuicStreamSequencer::QuicStreamSequencer(ReliableQuicStream* quic_stream)
       max_frame_memory_(numeric_limits<size_t>::max()),
       close_offset_(numeric_limits<QuicStreamOffset>::max()),
       blocked_(false),
-      num_bytes_buffered_(0) {
+      num_bytes_buffered_(0),
+      num_frames_received_(0),
+      num_duplicate_frames_received_(0) {
 }
 
 QuicStreamSequencer::QuicStreamSequencer(size_t max_frame_memory,
@@ -31,7 +34,9 @@ QuicStreamSequencer::QuicStreamSequencer(size_t max_frame_memory,
       max_frame_memory_(max_frame_memory),
       close_offset_(numeric_limits<QuicStreamOffset>::max()),
       blocked_(false),
-      num_bytes_buffered_(0) {
+      num_bytes_buffered_(0),
+      num_frames_received_(0),
+      num_duplicate_frames_received_(0) {
   if (max_frame_memory < kMaxPacketSize) {
     LOG(DFATAL) << "Setting max frame memory to " << max_frame_memory
                 << ".  Some frames will be impossible to handle.";
@@ -72,12 +77,14 @@ bool QuicStreamSequencer::WillAcceptStreamFrame(
 }
 
 bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
+  ++num_frames_received_;
   if (!WillAcceptStreamFrame(frame)) {
     // This should not happen, as WillAcceptFrame should be called before
     // OnStreamFrame.  Error handling should be done by the caller.
     return false;
   }
   if (IsDuplicate(frame)) {
+    ++num_duplicate_frames_received_;
     // Silently ignore duplicates.
     return true;
   }

@@ -309,6 +309,8 @@ QuicConnectionLogger::QuicConnectionLogger(const BoundNetLog& net_log)
       num_packets_received_(0),
       num_truncated_acks_sent_(0),
       num_truncated_acks_received_(0),
+      num_frames_received_(0),
+      num_duplicate_frames_received_(0),
       connection_description_(GetConnectionDescriptionString()) {
 }
 
@@ -319,6 +321,19 @@ QuicConnectionLogger::~QuicConnectionLogger() {
                        num_truncated_acks_sent_);
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.TruncatedAcksReceived",
                        num_truncated_acks_received_);
+  if (num_frames_received_ > 0) {
+    int duplicate_stream_frame_percent =
+        num_duplicate_frames_received_ * 100 / num_frames_received_;
+    if (num_packets_received_ < 100) {
+      UMA_HISTOGRAM_COUNTS(
+          "Net.QuicSession.StreamFrameDuplicatedPercentShortConnection",
+          duplicate_stream_frame_percent);
+    } else {
+      UMA_HISTOGRAM_COUNTS(
+          "Net.QuicSession.StreamFrameDuplicatedPercentLongConnection",
+          duplicate_stream_frame_percent);
+    }
+  }
 
   RecordLossHistograms();
 }
@@ -589,6 +604,16 @@ void QuicConnectionLogger::OnSuccessfulVersionNegotiation(
   string quic_version = QuicVersionToString(version);
   net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_VERSION_NEGOTIATED,
                     NetLog::StringCallback("version", &quic_version));
+}
+
+void QuicConnectionLogger::UpdateReceivedFrameCounts(
+    QuicStreamId stream_id,
+    int num_frames_received,
+    int num_duplicate_frames_received) {
+  if (stream_id != kCryptoStreamId) {
+    num_frames_received_ += num_frames_received;
+    num_duplicate_frames_received_ += num_duplicate_frames_received;
+  }
 }
 
 base::HistogramBase* QuicConnectionLogger::GetPacketSequenceNumberHistogram(

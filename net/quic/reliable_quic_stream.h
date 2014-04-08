@@ -104,6 +104,10 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // sequencer's buffer.
   void MaybeSendWindowUpdate();
 
+  int num_frames_received();
+
+  int num_duplicate_frames_received();
+
  protected:
   // Sends as much of 'data' to the connection as the connection will consume,
   // and then buffers any remaining data in queued_data_.

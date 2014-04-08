@@ -436,6 +436,12 @@ QuicDataStream* QuicClientSession::CreateIncomingDataStream(
 }
 
 void QuicClientSession::CloseStream(QuicStreamId stream_id) {
+  ReliableQuicStream* stream = GetStream(stream_id);
+  if (stream) {
+    logger_.UpdateReceivedFrameCounts(
+        stream_id, stream->num_frames_received(),
+        stream->num_duplicate_frames_received());
+  }
   QuicSession::CloseStream(stream_id);
   OnClosedStream();
 }
