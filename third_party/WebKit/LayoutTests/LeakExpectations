@@ -1,0 +1,2 @@
+# This file is used for tests that only need to be suppressed on the Chromium
+# WebKit Leak bots.
