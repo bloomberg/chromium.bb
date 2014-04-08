@@ -446,7 +446,7 @@ void GpuCommandBufferStub::OnInitialize(
   if (!handle_.is_null()) {
 #if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
     if (software_) {
-      LOG(ERROR) << "No software support.\n";
+      LOG(ERROR) << "No software support.";
       OnInitializeFailed(reply_message);
       return;
     }
@@ -462,7 +462,7 @@ void GpuCommandBufferStub::OnInitialize(
   }
 
   if (!surface_.get()) {
-    DLOG(ERROR) << "Failed to create surface.\n";
+    DLOG(ERROR) << "Failed to create surface.";
     OnInitializeFailed(reply_message);
     return;
   }
@@ -475,6 +475,11 @@ void GpuCommandBufferStub::OnInitialize(
           channel_->share_group(),
           channel_->gpu_channel_manager()->GetDefaultOffscreenSurface(),
           gpu_preference_);
+      if (!context.get()) {
+        DLOG(ERROR) << "Failed to create shared context for virtualization.";
+        OnInitializeFailed(reply_message);
+        return;
+      }
       channel_->share_group()->SetSharedContext(context.get());
     }
     // This should be a non-virtual GL context.
@@ -498,7 +503,7 @@ void GpuCommandBufferStub::OnInitialize(
         channel_->share_group(), surface_.get(), gpu_preference_);
   }
   if (!context.get()) {
-    DLOG(ERROR) << "Failed to create context.\n";
+    DLOG(ERROR) << "Failed to create context.";
     OnInitializeFailed(reply_message);
     return;
   }
