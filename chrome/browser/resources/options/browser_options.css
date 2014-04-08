@@ -159,6 +159,21 @@ input[type='range'] {
   padding-top: 0;
 }
 
+.extension-controlled-warning-box {
+  background-color: #fbfbfb;
+  border: 1px solid #cecece;
+  border-radius: 3px;
+  padding: 19px;
+}
+
+.extension-controlled-warning {
+  -webkit-padding-start: 35px;
+  background-repeat: no-repeat;
+  margin-bottom: 14px;
+  padding-bottom: 6px;
+  padding-top: 3px;
+}
+
 /* Override a platform specific rule in Widgets that may no longer be relevant.
  * Too late in the development cycle to update Widgets.css due to the number
  * of pages that depend on it.

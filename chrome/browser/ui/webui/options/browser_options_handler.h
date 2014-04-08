@@ -308,6 +308,11 @@ class BrowserOptionsHandler
   // Setup the UI for Easy Unlock.
   void SetupEasyUnlock();
 
+#if defined(OS_WIN)
+  // Setup the UI for showing which settings are extension controlled.
+  void SetupExtensionControlledIndicators(const base::ListValue* args);
+#endif
+
 #if defined(OS_CHROMEOS)
   // Setup the accessibility features for ChromeOS.
   void SetupAccessibilityFeatures();

@@ -93,6 +93,7 @@
 <script src="chrome://resources/js/cr/ui/repeating_button.js"></script>
 <script src="chrome://resources/js/cr/ui/tree.js"></script>
 <script src="chrome://resources/js/load_time_data.js"></script>
+<script src="chrome://resources/js/parse_html_subset.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 
 <script src="chrome://settings-frame/strings.js"></script>
@@ -170,6 +171,12 @@
     <button class='controlled-setting-bubble-extension-disable-button'
         i18n-content="controlledSettingDisableExtension"></button>
   </div>
+</div>
+
+<div id="extension-controlled-warning-template"
+     class="extension-controlled-warning-box" hidden>
+  <div class="extension-controlled-warning"></div>
+  <button i18n-content="extensionDisable"></button>
 </div>
 
 <div id="main-content">

@@ -542,6 +542,24 @@ cr.define('options', function() {
       };
       $('reset-profile-settings-section').hidden =
           !loadTimeData.getBoolean('enableResetProfileSettings');
+
+      // Extension controlled UI.
+      this.addExtensionControlledBox_('search-section-content',
+                                      'search-engine-controlled');
+      this.addExtensionControlledBox_('extension-controlled-container',
+                                      'homepage-controlled');
+      this.addExtensionControlledBox_('startup-section-content',
+                                      'startpage-controlled');
+
+      document.body.addEventListener('click', function(e) {
+        var button = findAncestor(e.target, function(el) {
+          return el.tagName == 'BUTTON' &&
+                 el.dataset.extensionId !== undefined &&
+                 el.dataset.extensionId.length;
+        });
+        if (button)
+          chrome.send('disableExtension', [button.dataset.extensionId]);
+      });
     },
 
     /** @override */
@@ -1506,6 +1524,97 @@ cr.define('options', function() {
     },
 
     /**
+     * Adds hidden warning boxes for settings potentially controlled by
+     * extensions.
+     * @param {string} parentDiv The div name to append the bubble to.
+     * @param {string} bubbleId The ID to use for the bubble.
+     * @private
+     */
+    addExtensionControlledBox_: function(parentDiv, bubbleId) {
+      var bubble = $('extension-controlled-warning-template').cloneNode(true);
+      bubble.id = bubbleId;
+      var parent = $(parentDiv);
+      parent.insertBefore(bubble, parent.firstChild);
+    },
+
+    /**
+     * Adds a bubble showing that an extension is controlling a particular
+     * setting.
+     * @param {string} parentDiv The div name to append the bubble to.
+     * @param {string} bubbleId The ID to use for the bubble.
+     * @param {string} extensionId The ID of the controlling extension.
+     * @param {string} extensionName The name of the controlling extension.
+     * @private
+     */
+    toggleExtensionControlledBox_: function(
+        parentDiv, bubbleId, extensionId, extensionName) {
+      var bubble = $(bubbleId);
+      assert(bubble);
+      bubble.hidden = extensionId.length == 0;
+      if (bubble.hidden)
+        return;
+
+      // Set the extension image.
+      var div = bubble.firstElementChild;
+      div.style.backgroundImage =
+          'url(chrome://extension-icon/' + extensionId + '/24/1)';
+
+      // Set the bubble label.
+      var label = loadTimeData.getStringF('extensionControlled', extensionName);
+      var docFrag = parseHtmlSubset('<div>' + label + '</div>', ['B', 'DIV']);
+      div.innerHTML = docFrag.firstChild.innerHTML;
+
+      // Wire up the button to disable the right extension.
+      var button = div.nextElementSibling;
+      button.dataset.extensionId = extensionId;
+    },
+
+    /**
+     * Toggles the bubble that shows which extension is controlling the search
+     * engine.
+     * @param {string} extensionId The ID of the extension controlling the
+     *     default search engine setting.
+     * @param {string} extensionName The name of the extension.
+     * @private
+     */
+    toggleSearchEngineControlled_: function(extensionId, extensionName) {
+      this.toggleExtensionControlledBox_('search-section-content',
+                                         'search-engine-controlled',
+                                         extensionId,
+                                         extensionName);
+    },
+
+    /**
+     * Toggles the bubble that shows which extension is controlling the home
+     * page.
+     * @param {string} extensionId The ID of the extension controlling the
+     *     home page setting.
+     * @param {string} extensionName The name of the extension.
+     * @private
+     */
+    toggleHomepageControlled_: function(extensionId, extensionName) {
+      this.toggleExtensionControlledBox_('extension-controlled-container',
+                                         'homepage-controlled',
+                                         extensionId,
+                                         extensionName);
+    },
+
+    /**
+     * Toggles the bubble that shows which extension is controlling the startup
+     * pages.
+     * @param {string} extensionId The ID of the extension controlling the
+     *     startup pages setting.
+     * @param {string} extensionName The name of the extension.
+     * @private
+     */
+    toggleStartupPagesControlled_: function(extensionId, extensionName) {
+      this.toggleExtensionControlledBox_('startup-section-content',
+                                         'startpage-controlled',
+                                         extensionId,
+                                         extensionName);
+    },
+
+    /**
      * Show/hide touchpad-related settings.
      * @private
      */
@@ -1659,6 +1768,9 @@ cr.define('options', function() {
     'showManagedUserImportSuccess',
     'showMouseControls',
     'showTouchpadControls',
+    'toggleHomepageControlled',
+    'toggleSearchEngineControlled',
+    'toggleStartupPagesControlled',
     'updateAccountPicture',
     'updateAutoLaunchState',
     'updateDefaultBrowserState',
