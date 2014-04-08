@@ -8,6 +8,7 @@
 #include <functional>
 #include <utility>
 
+#include "apps/ui/web_contents_sizer.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -327,7 +328,7 @@ void PrerenderContents::StartPrerendering(
   web_contents_delegate_.reset(new WebContentsDelegateImpl(this));
   prerender_contents_.get()->SetDelegate(web_contents_delegate_.get());
   // Set the size of the prerender WebContents.
-  prerender_contents_->GetView()->SizeContents(size_);
+  apps::ResizeWebContents(prerender_contents_.get(), size_);
 
   child_id_ = GetRenderViewHost()->GetProcess()->GetID();
   route_id_ = GetRenderViewHost()->GetRoutingID();

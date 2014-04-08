@@ -72,8 +72,18 @@
         'ui/views/app_window_frame_view.h',
         'ui/views/native_app_window_views.cc',
         'ui/views/native_app_window_views.h',
+        'ui/web_contents_sizer.h',
       ],
       'conditions': [
+        ['OS=="mac"', {
+          'sources': [
+            'ui/web_contents_sizer.mm',
+          ],
+        }, {  # OS!=mac
+          'sources': [
+            'ui/web_contents_sizer.cc',
+          ],
+        }],
         ['chromeos==1',
           {
             'dependencies': [

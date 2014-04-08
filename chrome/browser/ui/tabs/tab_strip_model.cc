@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "apps/ui/web_contents_sizer.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -837,8 +838,8 @@ void TabStripModel::AddWebContents(WebContents* contents,
   // new background tab.
   if (WebContents* old_contents = GetActiveWebContents()) {
     if ((add_types & ADD_ACTIVE) == 0) {
-      contents->GetView()->SizeContents(
-          old_contents->GetView()->GetContainerSize());
+      apps::ResizeWebContents(contents,
+                              old_contents->GetView()->GetContainerSize());
     }
   }
 }

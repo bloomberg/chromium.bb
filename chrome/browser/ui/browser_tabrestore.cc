@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/browser_tabrestore.h"
 
+#include "apps/ui/web_contents_sizer.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -113,14 +114,14 @@ content::WebContents* AddRestoredTab(
   if (select) {
     browser->window()->Activate();
   } else {
-    // We set the size of the view here, before WebKit does its initial
-    // layout.  If we don't, the initial layout of background tabs will be
-    // performed with a view width of 0, which may cause script outputs and
-    // anchor link location calculations to be incorrect even after a new
-    // layout with proper view dimensions. TabStripModel::AddWebContents()
-    // contains similar logic.
-    web_contents->GetView()->SizeContents(
-        browser->window()->GetRestoredBounds().size());
+    // We set the size of the view here, before Blink does its initial layout.
+    // If we don't, the initial layout of background tabs will be performed
+    // with a view width of 0, which may cause script outputs and anchor link
+    // location calculations to be incorrect even after a new layout with
+    // proper view dimensions. TabStripModel::AddWebContents() contains similar
+    // logic.
+    apps::ResizeWebContents(web_contents,
+                            browser->window()->GetRestoredBounds().size());
     web_contents->WasHidden();
   }
   SessionService* session_service =
