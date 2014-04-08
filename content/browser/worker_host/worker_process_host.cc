@@ -36,6 +36,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
+#include "content/browser/renderer_host/websocket_dispatcher_host.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_service_impl.h"
@@ -318,6 +319,16 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
           resource_context_);
   socket_stream_dispatcher_host_ = socket_stream_dispatcher_host;
   process_->AddFilter(socket_stream_dispatcher_host);
+
+  WebSocketDispatcherHost::GetRequestContextCallback
+      websocket_request_context_callback(
+          base::Bind(&WorkerProcessHost::GetRequestContext,
+                     base::Unretained(this),
+                     ResourceType::SUB_RESOURCE));
+
+  process_->AddFilter(new WebSocketDispatcherHost(
+      render_process_id, websocket_request_context_callback));
+
   process_->AddFilter(new WorkerDevToolsMessageFilter(process_->GetData().id));
   process_->AddFilter(
       new IndexedDBDispatcherHost(partition_.indexed_db_context()));
