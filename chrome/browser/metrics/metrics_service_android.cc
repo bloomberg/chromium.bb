@@ -128,16 +128,3 @@ void MetricsService::OnForegroundActivityChanged(PrefService* pref,
 
   pref->CommitPendingWrite();
 }
-
-// static
-void MetricsService::DiscardOldStabilityStatsAndroid(PrefService* local_state) {
-  local_state->SetInteger(prefs::kStabilityForegroundActivityType,
-                          ActivityTypeIds::ACTIVITY_NONE);
-  local_state->SetInteger(prefs::kStabilityLaunchedActivityFlags, 0);
-
-  ListPrefUpdate launches(local_state, prefs::kStabilityLaunchedActivityCounts);
-  launches.Get()->Clear();
-
-  ListPrefUpdate crashes(local_state, prefs::kStabilityCrashedActivityCounts);
-  crashes.Get()->Clear();
-}

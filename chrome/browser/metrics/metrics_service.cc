@@ -169,7 +169,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/guid.h"
-#include "base/md5.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
@@ -351,11 +350,6 @@ void MarkAppCleanShutdownAndCommit() {
   pref->CommitPendingWrite();
 }
 
-// Returns whether initial stability metrics should be sent in a separate log.
-bool SendSeparateInitialStabilityLog() {
-  return base::FieldTrialList::FindFullName("UMAStability") == "SeparateLog";
-}
-
 }  // namespace
 
 
@@ -491,38 +485,6 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
 
 #if defined(OS_ANDROID)
   RegisterPrefsAndroid(registry);
-#endif  // defined(OS_ANDROID)
-}
-
-// static
-void MetricsService::DiscardOldStabilityStats(PrefService* local_state) {
-  local_state->SetBoolean(prefs::kStabilityExitedCleanly, true);
-  local_state->SetInteger(prefs::kStabilityExecutionPhase, UNINITIALIZED_PHASE);
-  local_state->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
-
-  local_state->SetInteger(prefs::kStabilityIncompleteSessionEndCount, 0);
-  local_state->SetInteger(prefs::kStabilityBreakpadRegistrationSuccess, 0);
-  local_state->SetInteger(prefs::kStabilityBreakpadRegistrationFail, 0);
-  local_state->SetInteger(prefs::kStabilityDebuggerPresent, 0);
-  local_state->SetInteger(prefs::kStabilityDebuggerNotPresent, 0);
-
-  local_state->SetInteger(prefs::kStabilityLaunchCount, 0);
-  local_state->SetInteger(prefs::kStabilityCrashCount, 0);
-
-  local_state->SetInteger(prefs::kStabilityPageLoadCount, 0);
-  local_state->SetInteger(prefs::kStabilityRendererCrashCount, 0);
-  local_state->SetInteger(prefs::kStabilityRendererHangCount, 0);
-
-  local_state->SetInt64(prefs::kStabilityLaunchTimeSec, 0);
-  local_state->SetInt64(prefs::kStabilityLastTimestampSec, 0);
-
-  local_state->ClearPref(prefs::kStabilityPluginStats);
-
-  local_state->ClearPref(prefs::kMetricsInitialLogs);
-  local_state->ClearPref(prefs::kMetricsOngoingLogs);
-
-#if defined(OS_ANDROID)
-  DiscardOldStabilityStatsAndroid(local_state);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -968,20 +930,9 @@ void MetricsService::InitializeMetricsState(ReportingState reporting_state) {
   PrefService* pref = g_browser_process->local_state();
   DCHECK(pref);
 
-  // TODO(asvitkine): Kill this logic when SendSeparateInitialStabilityLog() is
-  // is made the default behavior.
-  if ((pref->GetInt64(prefs::kStabilityStatsBuildTime)
-       != MetricsLog::GetBuildTime()) ||
-      (pref->GetString(prefs::kStabilityStatsVersion)
-       != MetricsLog::GetVersionString())) {
-    // This is a new version, so we don't want to confuse the stats about the
-    // old version with info that we upload.
-    DiscardOldStabilityStats(pref);
-    pref->SetString(prefs::kStabilityStatsVersion,
-                    MetricsLog::GetVersionString());
-    pref->SetInt64(prefs::kStabilityStatsBuildTime,
-                   MetricsLog::GetBuildTime());
-  }
+  pref->SetString(prefs::kStabilityStatsVersion,
+                  MetricsLog::GetVersionString());
+  pref->SetInt64(prefs::kStabilityStatsBuildTime, MetricsLog::GetBuildTime());
 
   session_id_ = pref->GetInteger(prefs::kMetricsSessionID);
 
@@ -1003,8 +954,7 @@ void MetricsService::InitializeMetricsState(ReportingState reporting_state) {
 
     // If the previous session didn't exit cleanly, then prepare an initial
     // stability log if UMA is enabled.
-    bool reporting_will_be_enabled = (reporting_state == REPORTING_ENABLED);
-    if (reporting_will_be_enabled && SendSeparateInitialStabilityLog())
+    if (reporting_state == REPORTING_ENABLED)
       PrepareInitialStabilityLog();
   }
 
@@ -1557,13 +1507,7 @@ void MetricsService::StageNewLog() {
         // logs have already been loaded by PrepareInitialStabilityLog().
         state_ = SENDING_INITIAL_STABILITY_LOG;
       } else {
-        // TODO(asvitkine): When the field trial is removed, the |log_type|
-        // arg should be removed and PrepareInitialMetricsLog() should always
-        // use ONGOING_LOG. Use INITIAL_LOG only to match to the old behavior
-        // when the field trial is off.
-        MetricsLog::LogType log_type = SendSeparateInitialStabilityLog() ?
-            MetricsLog::ONGOING_LOG : MetricsLog::INITIAL_LOG;
-        PrepareInitialMetricsLog(log_type);
+        PrepareInitialMetricsLog();
         // Load unsent logs (if any) from local state.
         log_manager_.LoadPersistedUnsentLogs();
         state_ = SENDING_INITIAL_METRICS_LOG;
@@ -1618,7 +1562,7 @@ void MetricsService::PrepareInitialStabilityLog() {
   has_initial_stability_log_ = true;
 }
 
-void MetricsService::PrepareInitialMetricsLog(MetricsLog::LogType log_type) {
+void MetricsService::PrepareInitialMetricsLog() {
   DCHECK(state_ == INIT_TASK_DONE || state_ == SENDING_INITIAL_STABILITY_LOG);
   initial_metrics_log_->set_hardware_class(hardware_class_);
 
@@ -1631,12 +1575,13 @@ void MetricsService::PrepareInitialMetricsLog(MetricsLog::LogType log_type) {
   base::TimeDelta uptime;
   GetUptimes(pref, &incremental_uptime, &uptime);
   initial_metrics_log_->RecordStabilityMetrics(incremental_uptime, uptime,
-                                               log_type);
+                                               MetricsLog::ONGOING_LOG);
 
   // Histograms only get written to the current log, so make the new log current
   // before writing them.
   log_manager_.PauseCurrentLog();
-  log_manager_.BeginLoggingWithLog(initial_metrics_log_.release(), log_type);
+  log_manager_.BeginLoggingWithLog(initial_metrics_log_.release(),
+                                   MetricsLog::ONGOING_LOG);
 #if defined(OS_ANDROID)
   ConvertAndroidStabilityPrefsToHistograms(pref);
 #endif  // defined(OS_ANDROID)
@@ -1756,7 +1701,7 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
       case SENDING_INITIAL_STABILITY_LOG:
         // Store the updated list to disk now that the removed log is uploaded.
         log_manager_.PersistUnsentLogs();
-        PrepareInitialMetricsLog(MetricsLog::ONGOING_LOG);
+        PrepareInitialMetricsLog();
         SendStagedLog();
         state_ = SENDING_INITIAL_METRICS_LOG;
         break;

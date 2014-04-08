@@ -384,17 +384,6 @@ class MetricsService
     return entropy_source_returned_;
   }
 
-  // When we start a new version of Chromium (different from our last run), we
-  // need to discard the old crash stats so that we don't attribute crashes etc.
-  // in the old version to the current version (via current logs).
-  // Without this, a common reason to finally start a new version is to crash
-  // the old version (after an autoupdate has arrived), and so we'd bias
-  // initial results towards showing crashes :-(.
-  static void DiscardOldStabilityStats(PrefService* local_state);
-#if defined(OS_ANDROID)
-  static void DiscardOldStabilityStatsAndroid(PrefService* local_state);
-#endif  // defined(OS_ANDROID)
-
   // Turns recording on or off.
   // DisableRecording() also forces a persistent save of logging state (if
   // anything has been recorded, or transmitted).
@@ -460,7 +449,7 @@ class MetricsService
 
   // Prepares the initial metrics log, which includes startup histograms and
   // profiler data, as well as incremental stability-related metrics.
-  void PrepareInitialMetricsLog(MetricsLog::LogType log_type);
+  void PrepareInitialMetricsLog();
 
   // Uploads the currently staged log (which must be non-null).
   void SendStagedLog();
