@@ -6,6 +6,7 @@
 #define COMPONENTS_POLICY_CORE_COMMON_SCHEMA_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -47,6 +48,10 @@ enum SchemaOnErrorStrategy {
   // Mismatched values will be ignored.
   SCHEMA_ALLOW_INVALID,
 };
+
+class Schema;
+
+typedef std::vector<Schema> SchemaList;
 
 // Describes the expected type of one policy. Also recursively describes the
 // types of inner elements, for structured types.
@@ -148,13 +153,24 @@ class POLICY_EXPORT Schema {
   // property name then the returned Schema is not valid.
   Schema GetKnownProperty(const std::string& key) const;
 
+  // Returns all Schemas from pattern properties that match |key|. May be empty.
+  SchemaList GetPatternProperties(const std::string& key) const;
+
   // Returns the Schema for additional properties. If additional properties are
   // not allowed for this Schema then the Schema returned is not valid.
   Schema GetAdditionalProperties() const;
 
   // Returns the Schema for |key| if it is a known property, otherwise returns
   // the Schema for additional properties.
+  // DEPRECATED: This function didn't consider patternProperties, use
+  // GetMatchingProperties() instead.
+  // TODO(binjin): Replace calls to this function with GetKnownProperty() or
+  // GetMatchingProperties() and remove this later.
   Schema GetProperty(const std::string& key) const;
+
+  // Returns all Schemas that are supposed to be validated against for |key|.
+  // May be empty.
+  SchemaList GetMatchingProperties(const std::string& key) const;
 
   // Returns the Schema for items of an array.
   // This method should be called only if type() == TYPE_LIST,

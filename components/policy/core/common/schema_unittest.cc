@@ -5,12 +5,17 @@
 #include "components/policy/core/common/schema.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/stringprintf.h"
 #include "components/policy/core/common/schema_internal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
 
 namespace {
+
+#define TestSchemaValidation(a, b, c, d) \
+    TestSchemaValidationHelper(          \
+        base::StringPrintf("%s:%i", __FILE__, __LINE__), a, b, c, d)
 
 const char kTestSchema[] =
     "{"
@@ -99,6 +104,26 @@ const char kTestSchema[] =
     "          }"
     "        }"
     "      }"
+    "    },"
+    "    \"StringWithPattern\": {"
+    "      \"type\": \"string\","
+    "      \"pattern\": \"^foo+$\""
+    "    },"
+    "    \"ObjectWithPatternProperties\": {"
+    "      \"type\": \"object\","
+    "      \"patternProperties\": {"
+    "        \"^foo+$\": { \"type\": \"integer\" },"
+    "        \"^bar+$\": {"
+    "          \"type\": \"string\","
+    "          \"enum\": [\"one\", \"two\"]"
+    "        }"
+    "      },"
+    "      \"properties\": {"
+    "        \"bar\": {"
+    "          \"type\": \"string\","
+    "          \"enum\": [\"one\", \"three\"]"
+    "        }"
+    "      }"
     "    }"
     "  }"
     "}";
@@ -112,17 +137,18 @@ bool ParseFails(const std::string& content) {
   return true;
 }
 
-void TestSchemaValidation(Schema schema,
-                          const base::Value& value,
-                          SchemaOnErrorStrategy strategy,
-                          bool expected_return_value) {
+void TestSchemaValidationHelper(const std::string& source,
+                                Schema schema,
+                                const base::Value& value,
+                                SchemaOnErrorStrategy strategy,
+                                bool expected_return_value) {
   std::string error;
   static const char kNoErrorReturned[] = "No error returned.";
 
   // Test that Schema::Validate() works as expected.
   error = kNoErrorReturned;
   bool returned = schema.Validate(value, strategy, NULL, &error);
-  EXPECT_EQ(returned, expected_return_value) << error;
+  ASSERT_EQ(expected_return_value, returned) << source << ": " << error;
 
   // Test that Schema::Normalize() will return the same value as
   // Schema::Validate().
@@ -131,18 +157,20 @@ void TestSchemaValidation(Schema schema,
   bool touched = false;
   returned =
       schema.Normalize(cloned_value.get(), strategy, NULL, &error, &touched);
-  EXPECT_EQ(returned, expected_return_value) << error;
+  EXPECT_EQ(expected_return_value, returned) << source << ": " << error;
 
   bool strictly_valid = schema.Validate(value, SCHEMA_STRICT, NULL, &error);
-  EXPECT_EQ(!strictly_valid && returned, touched);
+  EXPECT_EQ(touched, !strictly_valid && returned) << source;
 
   // Test that Schema::Normalize() have actually dropped invalid and unknown
   // properties.
   if (expected_return_value) {
     EXPECT_TRUE(
-        schema.Validate(*cloned_value.get(), SCHEMA_STRICT, NULL, &error));
-    EXPECT_TRUE(schema.Normalize(
-        cloned_value.get(), SCHEMA_STRICT, NULL, &error, NULL));
+        schema.Validate(*cloned_value.get(), SCHEMA_STRICT, NULL, &error))
+        << source;
+    EXPECT_TRUE(
+        schema.Normalize(cloned_value.get(), SCHEMA_STRICT, NULL, &error, NULL))
+        << source;
   }
 }
 
@@ -350,26 +378,36 @@ TEST(SchemaTest, ValidSchema) {
   ASSERT_TRUE(sub.valid());
   ASSERT_EQ(base::Value::TYPE_INTEGER, sub.type());
 
+  sub = schema.GetProperty("StringWithPattern");
+  ASSERT_TRUE(sub.valid());
+  ASSERT_EQ(base::Value::TYPE_STRING, sub.type());
+
+  sub = schema.GetProperty("ObjectWithPatternProperties");
+  ASSERT_TRUE(sub.valid());
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, sub.type());
+
   struct {
     const char* expected_key;
     base::Value::Type expected_type;
   } kExpectedProperties[] = {
-    { "Array",                base::Value::TYPE_LIST },
-    { "ArrayOfArray",         base::Value::TYPE_LIST },
-    { "ArrayOfObjectOfArray", base::Value::TYPE_LIST },
-    { "ArrayOfObjects",       base::Value::TYPE_LIST },
-    { "Boolean",              base::Value::TYPE_BOOLEAN },
-    { "Integer",              base::Value::TYPE_INTEGER },
-    { "IntegerWithEnums",     base::Value::TYPE_INTEGER },
-    { "IntegerWithEnumsGaps", base::Value::TYPE_INTEGER },
-    { "IntegerWithRange",     base::Value::TYPE_INTEGER },
-    { "Null",                 base::Value::TYPE_NULL },
-    { "Number",               base::Value::TYPE_DOUBLE },
-    { "Object",               base::Value::TYPE_DICTIONARY },
-    { "ObjectOfArray",        base::Value::TYPE_DICTIONARY },
-    { "ObjectOfObject",       base::Value::TYPE_DICTIONARY },
-    { "String",               base::Value::TYPE_STRING },
-    { "StringWithEnums",      base::Value::TYPE_STRING },
+    { "Array",                       base::Value::TYPE_LIST },
+    { "ArrayOfArray",                base::Value::TYPE_LIST },
+    { "ArrayOfObjectOfArray",        base::Value::TYPE_LIST },
+    { "ArrayOfObjects",              base::Value::TYPE_LIST },
+    { "Boolean",                     base::Value::TYPE_BOOLEAN },
+    { "Integer",                     base::Value::TYPE_INTEGER },
+    { "IntegerWithEnums",            base::Value::TYPE_INTEGER },
+    { "IntegerWithEnumsGaps",        base::Value::TYPE_INTEGER },
+    { "IntegerWithRange",            base::Value::TYPE_INTEGER },
+    { "Null",                        base::Value::TYPE_NULL },
+    { "Number",                      base::Value::TYPE_DOUBLE },
+    { "Object",                      base::Value::TYPE_DICTIONARY },
+    { "ObjectOfArray",               base::Value::TYPE_DICTIONARY },
+    { "ObjectOfObject",              base::Value::TYPE_DICTIONARY },
+    { "ObjectWithPatternProperties", base::Value::TYPE_DICTIONARY },
+    { "String",                      base::Value::TYPE_STRING },
+    { "StringWithEnums",             base::Value::TYPE_STRING },
+    { "StringWithPattern",           base::Value::TYPE_STRING },
   };
   Schema::Iterator it = schema.GetPropertiesIterator();
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kExpectedProperties); ++i) {
@@ -444,16 +482,17 @@ TEST(SchemaTest, Lookups) {
 
 TEST(SchemaTest, Wrap) {
   const internal::SchemaNode kSchemas[] = {
-    { base::Value::TYPE_DICTIONARY,   0 },    // 0: root node
-    { base::Value::TYPE_BOOLEAN,      -1 },   // 1
-    { base::Value::TYPE_INTEGER,      -1 },   // 2
-    { base::Value::TYPE_DOUBLE,       -1 },   // 3
-    { base::Value::TYPE_STRING,       -1 },   // 4
-    { base::Value::TYPE_LIST,         4 },    // 5: list of strings.
-    { base::Value::TYPE_LIST,         5 },    // 6: list of lists of strings.
-    { base::Value::TYPE_INTEGER,      0 },    // 7: integer enumerations.
-    { base::Value::TYPE_INTEGER,      1 },    // 8: ranged integers.
-    { base::Value::TYPE_STRING,       2 },    // 9: string enumerations.
+    { base::Value::TYPE_DICTIONARY,   0 },    //  0: root node
+    { base::Value::TYPE_BOOLEAN,      -1 },   //  1
+    { base::Value::TYPE_INTEGER,      -1 },   //  2
+    { base::Value::TYPE_DOUBLE,       -1 },   //  3
+    { base::Value::TYPE_STRING,       -1 },   //  4
+    { base::Value::TYPE_LIST,         4 },    //  5: list of strings.
+    { base::Value::TYPE_LIST,         5 },    //  6: list of lists of strings.
+    { base::Value::TYPE_INTEGER,      0 },    //  7: integer enumerations.
+    { base::Value::TYPE_INTEGER,      1 },    //  8: ranged integers.
+    { base::Value::TYPE_STRING,       2 },    //  9: string enumerations.
+    { base::Value::TYPE_STRING,       3 },    // 10: string with pattern.
   };
 
   const internal::PropertyNode kPropertyNodes[] = {
@@ -465,26 +504,30 @@ TEST(SchemaTest, Wrap) {
     { "IntEnum",   7 },  // 5
     { "RangedInt", 8 },  // 6
     { "StrEnum",   9 },  // 7
+    { "StrPat",   10 },  // 8
+    { "bar+$",     4 },  // 9
   };
 
   const internal::PropertiesNode kProperties[] = {
-    // 0 to 8 (exclusive) are the known properties in kPropertyNodes, and 6 is
-    // the addionalProperties node.
-    { 0, 8, 6 },
+    // 0 to 9 (exclusive) are the known properties in kPropertyNodes, 9 is
+    // patternProperties and 6 is the additionalProperties node.
+    { 0, 9, 10, 6 },
   };
 
   const internal::RestrictionNode kRestriction[] = {
-    {{0, 3}},  // [1, 2, 3]
-    {{5, 1}},  // minimum = 1, maximum = 5
-    {{0, 3}},  // ["one", "two", "three"]
+    {{0, 3}},  // 0: [1, 2, 3]
+    {{5, 1}},  // 1: minimum = 1, maximum = 5
+    {{0, 3}},  // 2: ["one", "two", "three"]
+    {{3, 3}},  // 3: pattern "foo+"
   };
 
   const int kIntEnums[] = {1, 2, 3};
 
   const char* kStringEnums[] = {
-    "one",
-    "two",
-    "three",
+    "one",    // 0
+    "two",    // 1
+    "three",  // 2
+    "foo+",   // 3
   };
 
   const internal::SchemaData kData = {
@@ -511,7 +554,8 @@ TEST(SchemaTest, Wrap) {
     { "List", base::Value::TYPE_LIST },
     { "IntEnum", base::Value::TYPE_INTEGER },
     { "RangedInt", base::Value::TYPE_INTEGER },
-    { "StrEnum", base::Value::TYPE_STRING }
+    { "StrEnum", base::Value::TYPE_STRING },
+    { "StrPat", base::Value::TYPE_STRING },
   };
 
   Schema::Iterator it = schema.GetPropertiesIterator();
@@ -541,6 +585,15 @@ TEST(SchemaTest, Wrap) {
   Schema subsubsub = subsub.GetItems();
   ASSERT_TRUE(subsubsub.valid());
   ASSERT_EQ(base::Value::TYPE_STRING, subsubsub.type());
+
+  SchemaList schema_list = schema.GetPatternProperties("barr");
+  ASSERT_EQ(1u, schema_list.size());
+  sub = schema_list[0];
+  ASSERT_TRUE(sub.valid());
+  EXPECT_EQ(base::Value::TYPE_STRING, sub.type());
+
+  EXPECT_TRUE(schema.GetPatternProperties("ba").empty());
+  EXPECT_TRUE(schema.GetPatternProperties("bar+$").empty());
 }
 
 TEST(SchemaTest, Validate) {
@@ -791,6 +844,73 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
     TestSchemaValidationWithPath(subschema, root, "items[0].List.items[1]");
+  }
+
+  // Tests on StringWithPattern.
+  {
+    Schema subschema = schema.GetProperty("StringWithPattern");
+    ASSERT_TRUE(subschema.valid());
+
+    TestSchemaValidation(
+        subschema, base::StringValue("foobar"), SCHEMA_STRICT, false);
+    TestSchemaValidation(
+        subschema, base::StringValue("foo"), SCHEMA_STRICT, true);
+    TestSchemaValidation(
+        subschema, base::StringValue("fo"), SCHEMA_STRICT, false);
+    TestSchemaValidation(
+        subschema, base::StringValue("fooo"), SCHEMA_STRICT, true);
+    TestSchemaValidation(
+        subschema, base::StringValue("^foo+$"), SCHEMA_STRICT, false);
+  }
+
+  // Tests on ObjectWithPatternProperties.
+  {
+    Schema subschema = schema.GetProperty("ObjectWithPatternProperties");
+    ASSERT_TRUE(subschema.valid());
+    base::DictionaryValue root;
+
+    ASSERT_EQ(1u, subschema.GetPatternProperties("fooo").size());
+    ASSERT_EQ(1u, subschema.GetPatternProperties("foo").size());
+    ASSERT_EQ(1u, subschema.GetPatternProperties("barr").size());
+    ASSERT_EQ(1u, subschema.GetPatternProperties("bar").size());
+    ASSERT_EQ(1u, subschema.GetMatchingProperties("fooo").size());
+    ASSERT_EQ(1u, subschema.GetMatchingProperties("foo").size());
+    ASSERT_EQ(1u, subschema.GetMatchingProperties("barr").size());
+    ASSERT_EQ(2u, subschema.GetMatchingProperties("bar").size());
+    ASSERT_TRUE(subschema.GetPatternProperties("foobar").empty());
+
+    root.SetInteger("fooo", 123);
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, true);
+    root.SetBoolean("fooo", false);
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
+    root.Remove("fooo", NULL);
+
+    root.SetInteger("foo", 123);
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, true);
+    root.SetBoolean("foo", false);
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
+    root.Remove("foo", NULL);
+
+    root.SetString("barr", "one");
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, true);
+    root.SetString("barr", "three");
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
+    root.SetBoolean("barr", false);
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
+    root.Remove("barr", NULL);
+
+    root.SetString("bar", "one");
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, true);
+    root.SetString("bar", "two");
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
+    root.SetString("bar", "three");
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
+    root.Remove("bar", NULL);
+
+    root.SetInteger("foobar", 123);
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
+    root.Remove("foobar", NULL);
   }
 
   // Test that integer to double promotion is allowed.

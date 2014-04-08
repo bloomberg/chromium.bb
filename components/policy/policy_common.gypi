@@ -19,6 +19,7 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
+        '../third_party/re2/re2.gyp:re2',
         '../url/url.gyp:url_lib',
         'cloud_policy_proto',
         'json_schema',

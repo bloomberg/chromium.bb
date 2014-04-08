@@ -63,6 +63,13 @@ struct POLICY_EXPORT PropertiesNode {
   // properties can be looked up by binary searching in the range.
   int end;
 
+  // An offset into SchemaData::property_nodes that indexes the PropertyNode
+  // right beyond the last known pattern property.
+  //
+  // [end, pattern_end) is the range that covers all pattern properties
+  // defined. It's not required to be sorted.
+  int pattern_end;
+
   // If this map policy supports keys with any value (besides the well-known
   // values described in the range [begin, end)) then |additional| is an offset
   // into SchemaData::schema_nodes that indexes the SchemaNode describing the
@@ -92,6 +99,14 @@ union POLICY_EXPORT RestrictionNode {
     int max_value;
     int min_value;
   } ranged_restriction;
+
+  // For string type only, requires |pattern_index| and |pattern_index_backup|
+  // to be exactly the same. And it's an offset into SchemaData::string_enums
+  // which contains the regular expression that the target string must follow.
+  struct StringPatternRestriction {
+    int pattern_index;
+    int pattern_index_backup;
+  } string_pattern_restriction;
 };
 
 

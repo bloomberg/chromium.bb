@@ -284,7 +284,11 @@ class SchemaNodesGenerator:
     self.ranges = {}
 
   def GetString(self, s):
-    return self.shared_strings[s] if s in self.shared_strings else '"%s"' % s
+    if s in self.shared_strings:
+      return self.shared_strings[s]
+    # Generate JSON escaped string, which is slightly different from desired
+    # C/C++ escaped string. Known differences includes unicode escaping format.
+    return json.dumps(s)
 
   def AppendSchema(self, type, extra, comment=''):
     index = len(self.schema_nodes)
@@ -315,7 +319,8 @@ class SchemaNodesGenerator:
     return self.stringlist_type
 
   def SchemaHaveRestriction(self, schema):
-    return 'minimum' in schema or 'maximum' in schema or 'enum' in schema
+    return any(keyword in schema for keyword in
+        ['minimum', 'maximum', 'enum', 'pattern'])
 
   def IsConsecutiveInterval(self, seq):
     sortedSeq = sorted(seq)
@@ -355,6 +360,20 @@ class SchemaNodesGenerator:
     else:
       raise RuntimeError('Unknown enumeration type in %s' % name)
 
+  def GetPatternType(self, schema, name):
+    if schema['type'] != 'string':
+      raise RuntimeError('Unknown pattern type in %s' % name)
+    pattern = schema['pattern']
+    # Try to compile the pattern to validate it, note that the syntax used
+    # here might be slightly different from re2.
+    # TODO(binjin): Add a python wrapper of re2 and use it here.
+    re.compile(pattern)
+    index = len(self.string_enums);
+    self.string_enums.append(pattern);
+    return self.AppendSchema('TYPE_STRING',
+        self.AppendRestriction(index, index),
+        'string with pattern restriction: %s' % name);
+
   def GetRangedType(self, schema, name):
     if schema['type'] != 'integer':
       raise RuntimeError('Unknown ranged type in %s' % name)
@@ -385,6 +404,8 @@ class SchemaNodesGenerator:
         return self.GetSimpleType(schema['type'])
       elif 'enum' in schema:
         return self.GetEnumType(schema, name)
+      elif 'pattern' in schema:
+        return self.GetPatternType(schema, name)
       else:
         return self.GetRangedType(schema, name)
 
@@ -413,17 +434,27 @@ class SchemaNodesGenerator:
       # recursive calls to Generate() append the necessary child nodes; if
       # |properties| were a generator then this wouldn't work.
       sorted_properties = sorted(schema.get('properties', {}).items())
-      properties = [ (self.GetString(key), self.Generate(schema, key))
-                     for key, schema in sorted_properties ]
+      properties = [ (self.GetString(key), self.Generate(subschema, key))
+                     for key, subschema in sorted_properties ]
+
+      pattern_properties = []
+      for pattern, subschema in schema.get('patternProperties', {}).items():
+        pattern_properties.append((self.GetString(pattern),
+            self.Generate(subschema, pattern)));
+
       begin = len(self.property_nodes)
       self.property_nodes += properties
       end = len(self.property_nodes)
+      self.property_nodes += pattern_properties
+      pattern_end = len(self.property_nodes)
+
       if index == 0:
         self.root_properties_begin = begin
         self.root_properties_end = end
 
       extra = len(self.properties_nodes)
-      self.properties_nodes.append((begin, end, additionalProperties, name))
+      self.properties_nodes.append((begin, end, pattern_end,
+          additionalProperties, name))
 
       # Set the right data at |index| now.
       self.schema_nodes[index] = ('TYPE_DICTIONARY', extra, name)
@@ -452,9 +483,9 @@ class SchemaNodesGenerator:
 
     if self.properties_nodes:
       f.write('const internal::PropertiesNode kProperties[] = {\n'
-              '//  Begin    End  Additional Properties\n')
+              '//  Begin    End  PatternEnd Additional Properties\n')
       for node in self.properties_nodes:
-        f.write('  { %5d, %5d, %5d },  // %s\n' % node)
+        f.write('  { %5d, %5d, %10d, %5d },  // %s\n' % node)
       f.write('};\n\n')
 
     if self.restriction_nodes:

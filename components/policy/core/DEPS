@@ -3,6 +3,7 @@ include_rules = [
   "+crypto",
   "+google_apis",
   "+net",
+  "+third_party/re2",
 
   # These are generated from components/policy/proto and
   # components/policy/resources/policy_templates.json.

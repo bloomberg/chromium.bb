@@ -8,15 +8,17 @@
 #include <climits>
 #include <map>
 #include <utility>
-#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/json_schema/json_schema_constants.h"
 #include "components/json_schema/json_schema_validator.h"
 #include "components/policy/core/common/schema_internal.h"
+#include "third_party/re2/re2/re2.h"
 
 namespace schema = json_schema_constants;
 
@@ -175,6 +177,10 @@ class Schema::InternalStorage
     return schema_data_.string_enums + index;
   }
 
+  // Compiles regular expression |pattern|. The result is cached and will be
+  // returned directly next time.
+  re2::RE2* CompileRegex(const std::string& pattern) const;
+
  private:
   friend class base::RefCountedThreadSafe<InternalStorage>;
 
@@ -228,12 +234,21 @@ class Schema::InternalStorage
                        SchemaNode* schema_node,
                        std::string* error);
 
+  bool ParseStringPattern(const base::DictionaryValue& schema,
+                          SchemaNode* schema_node,
+                          std::string* error);
+
   // Assigns the IDs in |id_map| to the pending references in the
   // |reference_list|. If an ID is missing then |error| is set and false is
   // returned; otherwise returns true.
   static bool ResolveReferences(const IdMap& id_map,
                                 const ReferenceList& reference_list,
                                 std::string* error);
+
+  // Cache for CompileRegex(), will memorize return value of every call to
+  // CompileRegex() and return results directly next time.
+  mutable std::map<std::string, re2::RE2*> regex_cache_;
+  STLValueDeleter<std::map<std::string, re2::RE2*> > regex_cache_deleter_;
 
   SchemaData schema_data_;
   std::vector<std::string> strings_;
@@ -247,7 +262,8 @@ class Schema::InternalStorage
   DISALLOW_COPY_AND_ASSIGN(InternalStorage);
 };
 
-Schema::InternalStorage::InternalStorage() {}
+Schema::InternalStorage::InternalStorage()
+    : regex_cache_deleter_(&regex_cache_) {}
 
 Schema::InternalStorage::~InternalStorage() {}
 
@@ -324,6 +340,17 @@ Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
   return storage;
 }
 
+re2::RE2* Schema::InternalStorage::CompileRegex(
+    const std::string& pattern) const {
+  std::map<std::string, re2::RE2*>::iterator it = regex_cache_.find(pattern);
+  if (it == regex_cache_.end()) {
+    re2::RE2* compiled = new re2::RE2(pattern);
+    regex_cache_[pattern] = compiled;
+    return compiled;
+  }
+  return it->second;
+}
+
 // static
 void Schema::InternalStorage::DetermineStorageSizes(
     const base::DictionaryValue& schema,
@@ -366,6 +393,17 @@ void Schema::InternalStorage::DetermineStorageSizes(
         sizes->property_nodes++;
       }
     }
+
+    const base::DictionaryValue* pattern_properties = NULL;
+    if (schema.GetDictionary(schema::kPatternProperties, &pattern_properties)) {
+      for (base::DictionaryValue::Iterator it(*pattern_properties);
+           !it.IsAtEnd(); it.Advance()) {
+        CHECK(it.value().GetAsDictionary(&dict));
+        DetermineStorageSizes(*dict, sizes);
+        sizes->strings++;
+        sizes->property_nodes++;
+      }
+    }
   } else if (schema.HasKey(schema::kEnum)) {
     const base::ListValue* possible_values = NULL;
     if (schema.GetList(schema::kEnum, &possible_values)) {
@@ -380,6 +418,12 @@ void Schema::InternalStorage::DetermineStorageSizes(
   } else if (type == base::Value::TYPE_INTEGER) {
     if (schema.HasKey(schema::kMinimum) || schema.HasKey(schema::kMaximum))
       sizes->restriction_nodes++;
+  } else if (type == base::Value::TYPE_STRING) {
+    if (schema.HasKey(schema::kPattern)) {
+      sizes->strings++;
+      sizes->string_enums++;
+      sizes->restriction_nodes++;
+    }
   }
 }
 
@@ -426,6 +470,9 @@ bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
   } else if (schema.HasKey(schema::kEnum)) {
     if (!ParseEnum(schema, type, schema_node, error))
       return false;
+  } else if (schema.HasKey(schema::kPattern)) {
+    if (!ParseStringPattern(schema, schema_node, error))
+      return false;
   } else if (schema.HasKey(schema::kMinimum) ||
              schema.HasKey(schema::kMaximum)) {
     if (type != base::Value::TYPE_INTEGER) {
@@ -455,8 +502,6 @@ bool Schema::InternalStorage::ParseDictionary(
     std::string* error) {
   int extra = static_cast<int>(properties_nodes_.size());
   properties_nodes_.push_back(PropertiesNode());
-  properties_nodes_[extra].begin = kInvalid;
-  properties_nodes_[extra].end = kInvalid;
   properties_nodes_[extra].additional = kInvalid;
   schema_node->extra = extra;
 
@@ -468,15 +513,29 @@ bool Schema::InternalStorage::ParseDictionary(
     }
   }
 
+  properties_nodes_[extra].begin = static_cast<int>(property_nodes_.size());
+
   const base::DictionaryValue* properties = NULL;
   if (schema.GetDictionary(schema::kProperties, &properties)) {
-    int base_index = static_cast<int>(property_nodes_.size());
-    // This reserves nodes for all of the |properties|, and makes sure they
-    // are contiguous. Recursive calls to Parse() will append after these
+    // This and below reserves nodes for all of the |properties|, and makes sure
+    // they are contiguous. Recursive calls to Parse() will append after these
     // elements.
-    property_nodes_.resize(base_index + properties->size());
+    property_nodes_.resize(property_nodes_.size() + properties->size());
+  }
 
+  properties_nodes_[extra].end = static_cast<int>(property_nodes_.size());
+
+  const base::DictionaryValue* pattern_properties = NULL;
+  if (schema.GetDictionary(schema::kPatternProperties, &pattern_properties))
+    property_nodes_.resize(property_nodes_.size() + pattern_properties->size());
+
+  properties_nodes_[extra].pattern_end =
+      static_cast<int>(property_nodes_.size());
+
+  if (properties != NULL) {
+    int base_index = properties_nodes_[extra].begin;
     int index = base_index;
+
     for (base::DictionaryValue::Iterator it(*properties);
          !it.IsAtEnd(); it.Advance(), ++index) {
       // This should have been verified by the JSONSchemaValidator.
@@ -489,8 +548,35 @@ bool Schema::InternalStorage::ParseDictionary(
       }
     }
     CHECK_EQ(static_cast<int>(properties->size()), index - base_index);
-    properties_nodes_[extra].begin = base_index;
-    properties_nodes_[extra].end = index;
+  }
+
+  if (pattern_properties != NULL) {
+    int base_index = properties_nodes_[extra].end;
+    int index = base_index;
+
+    for (base::DictionaryValue::Iterator it(*pattern_properties);
+         !it.IsAtEnd(); it.Advance(), ++index) {
+      CHECK(it.value().GetAsDictionary(&dict));
+      re2::RE2* compiled_regex = CompileRegex(it.key());
+      if (!compiled_regex->ok()) {
+        *error =
+            "/" + it.key() + "/ is a invalid regex: " + compiled_regex->error();
+        return false;
+      }
+      strings_.push_back(it.key());
+      property_nodes_[index].key = strings_.back().c_str();
+      if (!Parse(*dict, &property_nodes_[index].schema,
+                 id_map, reference_list, error)) {
+        return false;
+      }
+    }
+    CHECK_EQ(static_cast<int>(pattern_properties->size()), index - base_index);
+  }
+
+  if (properties_nodes_[extra].begin == properties_nodes_[extra].pattern_end) {
+    properties_nodes_[extra].begin = kInvalid;
+    properties_nodes_[extra].end = kInvalid;
+    properties_nodes_[extra].pattern_end = kInvalid;
   }
 
   return true;
@@ -579,6 +665,31 @@ bool Schema::InternalStorage::ParseRangedInt(
   restriction_nodes_.push_back(RestrictionNode());
   restriction_nodes_.back().ranged_restriction.max_value = max_value;
   restriction_nodes_.back().ranged_restriction.min_value = min_value;
+  return true;
+}
+
+bool Schema::InternalStorage::ParseStringPattern(
+    const base::DictionaryValue& schema,
+    SchemaNode* schema_node,
+    std::string* error) {
+  std::string pattern;
+  if (!schema.GetString(schema::kPattern, &pattern)) {
+    *error = "Schema pattern must be a string.";
+    return false;
+  }
+  re2::RE2* compiled_regex = CompileRegex(pattern);
+  if (!compiled_regex->ok()) {
+    *error = "/" + pattern + "/ is invalid regex: " + compiled_regex->error();
+    return false;
+  }
+  int index = static_cast<int>(string_enums_.size());
+  strings_.push_back(pattern);
+  string_enums_.push_back(strings_.back().c_str());
+  schema_node->extra = static_cast<int>(restriction_nodes_.size());
+  restriction_nodes_.push_back(RestrictionNode());
+  restriction_nodes_.back().string_pattern_restriction.pattern_index = index;
+  restriction_nodes_.back().string_pattern_restriction.pattern_index_backup =
+      index;
   return true;
 }
 
@@ -687,20 +798,25 @@ bool Schema::Validate(const base::Value& value,
   if (value.GetAsDictionary(&dict)) {
     for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
          it.Advance()) {
-      Schema subschema = GetProperty(it.key());
-      if (!subschema.valid()) {
+      SchemaList schema_list = GetMatchingProperties(it.key());
+      if (schema_list.empty()) {
         // Unknown property was detected.
         SchemaErrorFound(error_path, error, "Unknown property: " + it.key());
         if (!StrategyAllowUnknownOnTopLevel(strategy))
           return false;
-      } else if (!subschema.Validate(it.value(),
-                                     StrategyForNextLevel(strategy),
-                                     error_path,
-                                     error)) {
-        // Invalid property was detected.
-        AddDictKeyPrefixToPath(it.key(), error_path);
-        if (!StrategyAllowInvalidOnTopLevel(strategy))
-          return false;
+      } else {
+        for (SchemaList::iterator subschema = schema_list.begin();
+             subschema != schema_list.end(); ++subschema) {
+          if (!subschema->Validate(it.value(),
+                                   StrategyForNextLevel(strategy),
+                                   error_path,
+                                   error)) {
+            // Invalid property was detected.
+            AddDictKeyPrefixToPath(it.key(), error_path);
+            if (!StrategyAllowInvalidOnTopLevel(strategy))
+              return false;
+          }
+        }
       }
     }
   } else if (value.GetAsList(&list)) {
@@ -763,8 +879,8 @@ bool Schema::Normalize(base::Value* value,
     std::vector<std::string> drop_list;  // Contains the keys to drop.
     for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
          it.Advance()) {
-      Schema subschema = GetProperty(it.key());
-      if (!subschema.valid()) {
+      SchemaList schema_list = GetMatchingProperties(it.key());
+      if (schema_list.empty()) {
         // Unknown property was detected.
         SchemaErrorFound(error_path, error, "Unknown property: " + it.key());
         if (StrategyAllowUnknownOnTopLevel(strategy))
@@ -772,19 +888,24 @@ bool Schema::Normalize(base::Value* value,
         else
           return false;
       } else {
-        base::Value* sub_value = NULL;
-        dict->GetWithoutPathExpansion(it.key(), &sub_value);
-        if (!subschema.Normalize(sub_value,
-                                 StrategyForNextLevel(strategy),
-                                 error_path,
-                                 error,
-                                 changed)) {
-          // Invalid property was detected.
-          AddDictKeyPrefixToPath(it.key(), error_path);
-          if (StrategyAllowInvalidOnTopLevel(strategy))
-            drop_list.push_back(it.key());
-          else
-            return false;
+        for (SchemaList::iterator subschema = schema_list.begin();
+             subschema != schema_list.end(); ++subschema) {
+          base::Value* sub_value = NULL;
+          dict->GetWithoutPathExpansion(it.key(), &sub_value);
+          if (!subschema->Normalize(sub_value,
+                                    StrategyForNextLevel(strategy),
+                                    error_path,
+                                    error,
+                                    changed)) {
+            // Invalid property was detected.
+            AddDictKeyPrefixToPath(it.key(), error_path);
+            if (StrategyAllowInvalidOnTopLevel(strategy)) {
+              drop_list.push_back(it.key());
+              break;
+            } else {
+              return false;
+            }
+          }
         }
       }
     }
@@ -899,9 +1020,47 @@ Schema Schema::GetAdditionalProperties() const {
   return Schema(storage_, storage_->schema(node->additional));
 }
 
+SchemaList Schema::GetPatternProperties(const std::string& key) const {
+  CHECK(valid());
+  CHECK_EQ(base::Value::TYPE_DICTIONARY, type());
+  const PropertiesNode* node = storage_->properties(node_->extra);
+  const PropertyNode* begin = storage_->property(node->end);
+  const PropertyNode* end = storage_->property(node->pattern_end);
+  SchemaList matching_properties;
+  for (const PropertyNode* it = begin; it != end; ++it) {
+    if (re2::RE2::PartialMatch(key, *storage_->CompileRegex(it->key))) {
+      matching_properties.push_back(
+          Schema(storage_, storage_->schema(it->schema)));
+    }
+  }
+  return matching_properties;
+}
+
 Schema Schema::GetProperty(const std::string& key) const {
   Schema schema = GetKnownProperty(key);
-  return schema.valid() ? schema : GetAdditionalProperties();
+  if (schema.valid())
+    return schema;
+  return GetAdditionalProperties();
+}
+
+SchemaList Schema::GetMatchingProperties(const std::string& key) const {
+  SchemaList schema_list;
+
+  Schema known_property = GetKnownProperty(key);
+  if (known_property.valid())
+    schema_list.push_back(known_property);
+
+  SchemaList pattern_properties = GetPatternProperties(key);
+  schema_list.insert(
+      schema_list.end(), pattern_properties.begin(), pattern_properties.end());
+
+  if (schema_list.empty()) {
+    Schema additional_property = GetAdditionalProperties();
+    if (additional_property.valid())
+      schema_list.push_back(additional_property);
+  }
+
+  return schema_list;
 }
 
 Schema Schema::GetItems() const {
@@ -920,7 +1079,7 @@ bool Schema::ValidateIntegerRestriction(int index, int value) const {
            rnode->ranged_restriction.max_value >= value;
   } else {
     for (int i = rnode->enumeration_restriction.offset_begin;
-         i < rnode->enumeration_restriction.offset_end; i++) {
+         i < rnode->enumeration_restriction.offset_end; ++i) {
       if (*storage_->int_enums(i) == value)
         return true;
     }
@@ -930,12 +1089,20 @@ bool Schema::ValidateIntegerRestriction(int index, int value) const {
 
 bool Schema::ValidateStringRestriction(int index, const char* str) const {
   const RestrictionNode* rnode = storage_->restriction(index);
-  for (int i = rnode->enumeration_restriction.offset_begin;
-       i < rnode->enumeration_restriction.offset_end; i++) {
-    if (strcmp(*storage_->string_enums(i), str) == 0)
-      return true;
+  if (rnode->enumeration_restriction.offset_begin <
+      rnode->enumeration_restriction.offset_end) {
+    for (int i = rnode->enumeration_restriction.offset_begin;
+         i < rnode->enumeration_restriction.offset_end; ++i) {
+      if (strcmp(*storage_->string_enums(i), str) == 0)
+        return true;
+    }
+    return false;
+  } else {
+    int index = rnode->string_pattern_restriction.pattern_index;
+    DCHECK(index == rnode->string_pattern_restriction.pattern_index_backup);
+    re2::RE2* regex = storage_->CompileRegex(*storage_->string_enums(index));
+    return re2::RE2::PartialMatch(str, *regex);
   }
-  return false;
 }
 
 }  // namespace policy
