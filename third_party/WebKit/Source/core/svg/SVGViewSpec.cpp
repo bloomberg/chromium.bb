@@ -21,7 +21,10 @@
 #include "core/svg/SVGViewSpec.h"
 
 #include "SVGNames.h"
+#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGParserUtilities.h"
 
@@ -46,6 +49,57 @@ SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
     // Note: addToPropertyMap is not needed, as SVGViewSpec do not correspond to an element.
 }
 
+bool SVGViewSpec::parseViewSpec(const String& spec)
+{
+    if (spec.isEmpty() || !m_contextElement)
+        return false;
+    if (spec.is8Bit()) {
+        const LChar* ptr = spec.characters8();
+        const LChar* end = ptr + spec.length();
+        return parseViewSpecInternal(ptr, end);
+    }
+    const UChar* ptr = spec.characters16();
+    const UChar* end = ptr + spec.length();
+    return parseViewSpecInternal(ptr, end);
+}
+
+void SVGViewSpec::reset()
+{
+    resetZoomAndPan();
+    m_transform->baseValue()->clear();
+    updateViewBox(FloatRect());
+    ASSERT(preserveAspectRatio());
+    preserveAspectRatio()->baseValue()->setAlign(SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_XMIDYMID);
+    preserveAspectRatio()->baseValue()->setMeetOrSlice(SVGPreserveAspectRatio::SVG_MEETORSLICE_MEET);
+    m_viewTargetString = emptyString();
+}
+
+void SVGViewSpec::detachContextElement()
+{
+    m_transform = nullptr;
+    clearViewBox();
+    clearPreserveAspectRatio();
+    m_contextElement = 0;
+}
+
+SVGElement* SVGViewSpec::viewTarget() const
+{
+    if (!m_contextElement)
+        return 0;
+    Element* element = m_contextElement->treeScope().getElementById(AtomicString(m_viewTargetString));
+    if (!element || !element->isSVGElement())
+        return 0;
+    return toSVGElement(element);
+}
+
+String SVGViewSpec::viewBoxString() const
+{
+    if (!viewBox())
+        return String();
+
+    return viewBox()->currentValue()->valueAsString();
+}
+
 String SVGViewSpec::preserveAspectRatioString() const
 {
     if (!preserveAspectRatio())
@@ -62,41 +116,10 @@ String SVGViewSpec::transformString() const
     return m_transform->baseValue()->valueAsString();
 }
 
-String SVGViewSpec::viewBoxString() const
+void SVGViewSpec::setZoomAndPan(unsigned short, ExceptionState& exceptionState)
 {
-    if (!viewBox())
-        return String();
-
-    return viewBox()->currentValue()->valueAsString();
-}
-
-SVGElement* SVGViewSpec::viewTarget() const
-{
-    if (!m_contextElement)
-        return 0;
-    Element* element = m_contextElement->treeScope().getElementById(AtomicString(m_viewTargetString));
-    if (!element || !element->isSVGElement())
-        return 0;
-    return toSVGElement(element);
-}
-
-void SVGViewSpec::detachContextElement()
-{
-    m_transform = nullptr;
-    clearViewBox();
-    clearPreserveAspectRatio();
-    m_contextElement = 0;
-}
-
-void SVGViewSpec::reset()
-{
-    resetZoomAndPan();
-    m_transform->baseValue()->clear();
-    updateViewBox(FloatRect());
-    ASSERT(preserveAspectRatio());
-    preserveAspectRatio()->baseValue()->setAlign(SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_XMIDYMID);
-    preserveAspectRatio()->baseValue()->setMeetOrSlice(SVGPreserveAspectRatio::SVG_MEETORSLICE_MEET);
-    m_viewTargetString = emptyString();
+    // SVGViewSpec and all of its content is read-only.
+    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
 }
 
 static const LChar svgViewSpec[] = {'s', 'v', 'g', 'V', 'i', 'e', 'w'};
@@ -187,20 +210,6 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
         return false;
 
     return true;
-}
-
-bool SVGViewSpec::parseViewSpec(const String& spec)
-{
-    if (spec.isEmpty() || !m_contextElement)
-        return false;
-    if (spec.is8Bit()) {
-        const LChar* ptr = spec.characters8();
-        const LChar* end = ptr + spec.length();
-        return parseViewSpecInternal(ptr, end);
-    }
-    const UChar* ptr = spec.characters16();
-    const UChar* end = ptr + spec.length();
-    return parseViewSpecInternal(ptr, end);
 }
 
 }

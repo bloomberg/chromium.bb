@@ -40,19 +40,19 @@ public:
 
     bool parseViewSpec(const String&);
     void reset();
-
-    SVGElement* viewTarget() const;
-    String viewBoxString() const;
-
-    String preserveAspectRatioString() const;
-
-    String transformString() const;
-    String viewTargetString() const { return m_viewTargetString; }
-
     void detachContextElement();
 
+    // JS API
     SVGTransformList* transform() { return m_transform ? m_transform->baseValue() : 0; }
     PassRefPtr<SVGTransformListTearOff> transformFromJavascript() { return m_transform ? m_transform->baseVal() : 0; }
+    SVGElement* viewTarget() const;
+    String viewBoxString() const;
+    String preserveAspectRatioString() const;
+    String transformString() const;
+    String viewTargetString() const { return m_viewTargetString; }
+    // override SVGZoomAndPan.setZoomAndPan so can throw exception on write
+    void setZoomAndPan(unsigned short value) { } // read only
+    void setZoomAndPan(unsigned short value, ExceptionState&);
 
 private:
     explicit SVGViewSpec(SVGSVGElement*);

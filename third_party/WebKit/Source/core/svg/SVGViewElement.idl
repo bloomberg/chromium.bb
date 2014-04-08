@@ -23,10 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG2/linking.html#InterfaceSVGViewElement
+
 interface SVGViewElement : SVGElement {
     readonly attribute SVGStringList viewTarget;
 };
 
 SVGViewElement implements SVGFitToViewBox;
 SVGViewElement implements SVGZoomAndPan;
-

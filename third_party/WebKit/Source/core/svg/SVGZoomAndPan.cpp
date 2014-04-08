@@ -22,9 +22,6 @@
 #include "config.h"
 #include "core/svg/SVGZoomAndPan.h"
 
-#include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGParserUtilities.h"
 
 namespace WebCore {
@@ -74,12 +71,6 @@ bool SVGZoomAndPan::parseZoomAndPan(const LChar*& start, const LChar* end)
 bool SVGZoomAndPan::parseZoomAndPan(const UChar*& start, const UChar* end)
 {
     return parseZoomAndPanInternal(start, end, m_zoomAndPan);
-}
-
-void SVGZoomAndPan::setZoomAndPan(SVGViewSpec&, unsigned short, ExceptionState& exceptionState)
-{
-    // SVGViewSpec and all of its content is read-only.
-    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
 }
 
 }

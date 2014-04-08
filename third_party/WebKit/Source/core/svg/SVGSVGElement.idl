@@ -20,11 +20,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// http://www.w3.org/TR/SVG2/struct.html#InterfaceSVGSVGElement
+
 // TODO: no css::ViewCSS available!
 // TODO: no events::DocumentEvent available!
 [
     StrictTypeChecking,
 ] interface SVGSVGElement : SVGGraphicsElement {
+
     readonly attribute SVGAnimatedLength x;
     readonly attribute SVGAnimatedLength y;
     readonly attribute SVGAnimatedLength width;
