@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
@@ -17,6 +18,60 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
+
+namespace extensions {
+
+namespace {
+
+// A fake webstore domain.
+const char kWebstoreDomain[] = "cws.com";
+
+// Check whether or not style was injected, with |expected_injection| indicating
+// the expected result. Also ensure that no CSS was added to the
+// document.styleSheets array.
+testing::AssertionResult CheckStyleInjection(Browser* browser,
+                                             const GURL& url,
+                                             bool expected_injection) {
+  ui_test_utils::NavigateToURL(browser, url);
+
+  bool css_injected = false;
+  if (!content::ExecuteScriptAndExtractBool(
+          browser->tab_strip_model()->GetActiveWebContents(),
+          "window.domAutomationController.send("
+          "    document.defaultView.getComputedStyle(document.body, null)."
+          "        getPropertyValue('display') == 'none');",
+          &css_injected)) {
+    return testing::AssertionFailure()
+        << "Failed to execute script and extract bool for injection status.";
+  }
+
+  if (css_injected != expected_injection) {
+    std::string message;
+    if (css_injected)
+      message = "CSS injected when no injection was expected.";
+    else
+      message = "CSS not injected when injection was expected.";
+    return testing::AssertionFailure() << message;
+  }
+
+  bool css_doesnt_add_to_list = false;
+  if (!content::ExecuteScriptAndExtractBool(
+          browser->tab_strip_model()->GetActiveWebContents(),
+          "window.domAutomationController.send("
+          "    document.styleSheets.length == 0);",
+          &css_doesnt_add_to_list)) {
+    return testing::AssertionFailure()
+        << "Failed to execute script and extract bool for stylesheets length.";
+  }
+  if (!css_doesnt_add_to_list) {
+    return testing::AssertionFailure()
+        << "CSS injection added to number of stylesheets.";
+  }
+
+  return testing::AssertionSuccess();
+}
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptAllFrames) {
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -88,6 +143,51 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptOtherExtensions) {
   // Then load targeted extension to make sure its content isn't changed.
   ASSERT_TRUE(RunExtensionTest("content_scripts/other_extensions/victim"))
       << message_;
+}
+
+class ContentScriptCssInjectionTest : public ExtensionApiTest {
+ protected:
+  // TODO(rdevlin.cronin): Make a testing switch that looks like FeatureSwitch,
+  // but takes in an optional value so that we don't have to do this.
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    // We change the Webstore URL to be http://cws.com. We need to do this so
+    // we can check that css injection is not allowed on the webstore (which
+    // could lead to spoofing). Unfortunately, host_resolver seems to have
+    // problems with redirecting "chrome.google.com" to the test server, so we
+    // can't use the real Webstore's URL. If this changes, we could clean this
+    // up.
+    command_line->AppendSwitchASCII(
+        switches::kAppsGalleryURL,
+        base::StringPrintf("http://%s", kWebstoreDomain));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ContentScriptCssInjectionTest,
+                       ContentScriptInjectsStyles) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  host_resolver()->AddRule(kWebstoreDomain, "127.0.0.1");
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("content_scripts")
+                                          .AppendASCII("css_injection")));
+
+  // CSS injection should be allowed on an aribitrary web page.
+  GURL url =
+      embedded_test_server()->GetURL("/extensions/test_file_with_body.html");
+  EXPECT_TRUE(CheckStyleInjection(browser(), url, true));
+
+  // The loaded extension has an exclude match for "extensions/test_file.html",
+  // so no CSS should be injected.
+  url = embedded_test_server()->GetURL("/extensions/test_file.html");
+  EXPECT_TRUE(CheckStyleInjection(browser(), url, false));
+
+  // We disallow all injection on the webstore.
+  GURL::Replacements replacements;
+  std::string host(kWebstoreDomain);
+  replacements.SetHostStr(host);
+  url = embedded_test_server()->GetURL("/extensions/test_file_with_body.html")
+            .ReplaceComponents(replacements);
+  EXPECT_TRUE(CheckStyleInjection(browser(), url, false));
 }
 
 // crbug.com/120762
@@ -172,3 +272,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptBypassPageCSP) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/bypass_page_csp")) << message_;
 }
+
+}  // namespace extensions

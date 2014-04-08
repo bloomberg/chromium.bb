@@ -176,40 +176,6 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
     }
   }
 
-  // Push user styles down into WebCore
-  RenderThread::Get()->EnsureWebKitInitialized();
-  WebView::removeInjectedStyleSheets();
-  for (size_t i = 0; i < scripts_.size(); ++i) {
-    UserScript* script = scripts_[i];
-    if (script->css_scripts().empty())
-      continue;
-
-    WebVector<WebString> patterns;
-    std::vector<WebString> temp_patterns;
-    const URLPatternSet& url_patterns = script->url_patterns();
-    for (URLPatternSet::const_iterator k = url_patterns.begin();
-         k != url_patterns.end(); ++k) {
-      URLPatternList explicit_patterns = k->ConvertToExplicitSchemes();
-      for (size_t m = 0; m < explicit_patterns.size(); ++m) {
-        temp_patterns.push_back(WebString::fromUTF8(
-            explicit_patterns[m].GetAsString()));
-      }
-    }
-    patterns.assign(temp_patterns);
-
-    for (size_t j = 0; j < script->css_scripts().size(); ++j) {
-      const UserScript::File& file = scripts_[i]->css_scripts()[j];
-      std::string content = file.GetContent().as_string();
-
-      WebView::injectStyleSheet(
-          WebString::fromUTF8(content),
-          patterns,
-           script->match_all_frames() ?
-              WebView::InjectStyleInAllFrames :
-              WebView::InjectStyleInTopFrameOnly);
-    }
-  }
-
   return true;
 }
 
@@ -272,10 +238,16 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
       continue;
     }
 
-    // We rely on WebCore for CSS injection, but it's still useful to know how
-    // many css files there are.
-    if (location == UserScript::DOCUMENT_START)
+    if (location == UserScript::DOCUMENT_START) {
       num_css += script->css_scripts().size();
+      for (UserScript::FileList::const_iterator iter =
+               script->css_scripts().begin();
+           iter != script->css_scripts().end();
+           ++iter) {
+        frame->document().insertStyleSheet(
+            WebString::fromUTF8(iter->GetContent().as_string()));
+      }
+    }
 
     if (script->run_location() == location) {
       num_scripts += script->js_scripts().size();
