@@ -243,6 +243,97 @@ WebRtcVideoCapturerAdapter* MediaStreamDependencyFactory::CreateVideoCapturer(
   return new WebRtcVideoCapturerAdapter(is_screeencast);
 }
 
+scoped_refptr<webrtc::MediaStreamInterface>
+MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
+    const blink::WebMediaStream& web_stream) {
+  DCHECK(web_stream.extraData());
+  DVLOG(1) << "MediaStreamDependencyFactory::CreateNativeLocalMediaStream()";
+
+  std::string label = web_stream.id().utf8();
+  scoped_refptr<webrtc::MediaStreamInterface> native_stream =
+      CreateLocalMediaStream(label);
+
+  // Add audio tracks.
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
+  web_stream.audioTracks(audio_tracks);
+  for (size_t i = 0; i < audio_tracks.size(); ++i) {
+    MediaStreamTrack* native_track =
+        MediaStreamTrack::GetTrack(audio_tracks[i]);
+    if (!native_track) {
+      // TODO(perkj): Implement.
+      // This can happen if the blink track uses a source from a remote track.
+      NOTIMPLEMENTED();
+      continue;
+    }
+    native_stream->AddTrack(native_track->GetAudioAdapter());
+  }
+
+  // Add video tracks.
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
+  web_stream.videoTracks(video_tracks);
+  for (size_t i = 0; i < video_tracks.size(); ++i) {
+    MediaStreamTrack* native_track =
+        MediaStreamTrack::GetTrack(video_tracks[i]);
+    if (!native_track) {
+      // TODO(perkj): Implement.
+      // This can happen if the blink track uses a source from a remote track.
+      NOTIMPLEMENTED();
+      continue;
+    }
+    native_stream->AddTrack(native_track->GetVideoAdapter());
+  }
+  return native_stream;
+}
+
+bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
+    const blink::WebMediaStream& stream,
+    const blink::WebMediaStreamTrack& track) {
+  DVLOG(1) << "AddNativeMediaStreamTrack";
+  webrtc::MediaStreamInterface* webrtc_stream =
+      MediaStream::GetAdapter(stream);
+
+  MediaStreamTrack* native_track =
+      MediaStreamTrack::GetTrack(track);
+  if (!native_track) {
+    // TODO(perkj): Implement.
+    // This can happen if the blink track uses a source from a remote track.
+    NOTIMPLEMENTED();
+    return false;
+  }
+
+  switch (track.source().type()) {
+    case blink::WebMediaStreamSource::TypeAudio: {
+      webrtc::AudioTrackInterface* webrtc_audio_track =
+          native_track->GetAudioAdapter();
+      return webrtc_audio_track && webrtc_stream->AddTrack(webrtc_audio_track);
+    }
+    case blink::WebMediaStreamSource::TypeVideo: {
+      webrtc::VideoTrackInterface* webrtc_video_track =
+          native_track->GetVideoAdapter();
+      return webrtc_video_track && webrtc_stream->AddTrack(webrtc_video_track);
+    }
+  }
+  return false;
+}
+
+bool MediaStreamDependencyFactory::RemoveNativeMediaStreamTrack(
+    const blink::WebMediaStream& stream,
+    const blink::WebMediaStreamTrack& track) {
+  webrtc::MediaStreamInterface* native_stream =
+      MediaStream::GetAdapter(stream);
+  DCHECK(native_stream);
+  std::string track_id = track.id().utf8();
+  switch (track.source().type()) {
+    case blink::WebMediaStreamSource::TypeAudio:
+      return native_stream->RemoveTrack(
+          native_stream->FindAudioTrack(track_id));
+    case blink::WebMediaStreamSource::TypeVideo:
+      return native_stream->RemoveTrack(
+          native_stream->FindVideoTrack(track_id));
+  }
+  return false;
+}
+
 scoped_refptr<webrtc::VideoSourceInterface>
 MediaStreamDependencyFactory::CreateVideoSource(
     cricket::VideoCapturer* capturer,

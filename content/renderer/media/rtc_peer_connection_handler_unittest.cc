@@ -190,8 +190,7 @@ class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
   }
 
   MockPeerConnectionImpl* native_peer_connection() {
-    return static_cast<MockPeerConnectionImpl*>(
-        RTCPeerConnectionHandler::native_peer_connection());
+    return static_cast<MockPeerConnectionImpl*>(native_peer_connection_.get());
   }
 };
 
@@ -258,7 +257,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     local_stream.initialize(base::UTF8ToUTF16(stream_label), audio_tracks,
                             video_tracks);
     local_stream.setExtraData(
-        new MediaStream(MediaStream::StreamStopCallback(),
+        new MediaStream(mock_dependency_factory_.get(),
+                        MediaStream::StreamStopCallback(),
                         local_stream));
     return local_stream;
   }
@@ -421,8 +421,6 @@ TEST_F(RTCPeerConnectionHandlerTest, addAndRemoveStream) {
       mock_peer_connection_->local_streams()->at(0)->GetAudioTracks().size());
   EXPECT_EQ(1u,
       mock_peer_connection_->local_streams()->at(0)->GetVideoTracks().size());
-
-  EXPECT_FALSE(pc_handler_->addStream(local_stream, constraints));
 
   pc_handler_->removeStream(local_stream);
   EXPECT_EQ(0u, mock_peer_connection_->local_streams()->count());
