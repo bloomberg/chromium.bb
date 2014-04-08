@@ -175,7 +175,8 @@ void WebDialogGtk::AddNewContents(content::WebContents* source,
       was_blocked);
 }
 
-void WebDialogGtk::LoadingStateChanged(content::WebContents* source) {
+void WebDialogGtk::LoadingStateChanged(content::WebContents* source,
+                                       bool to_different_document) {
   if (delegate_)
     delegate_->OnLoadingStateChanged(source);
 }

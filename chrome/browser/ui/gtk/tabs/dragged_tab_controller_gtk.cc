@@ -209,7 +209,8 @@ void DraggedTabControllerGtk::AddNewContents(WebContents* source,
   }
 }
 
-void DraggedTabControllerGtk::LoadingStateChanged(WebContents* source) {
+void DraggedTabControllerGtk::LoadingStateChanged(WebContents* source,
+                                                  bool to_different_document) {
   // TODO(jhawkins): It would be nice to respond to this message by changing the
   // screen shot in the dragged tab.
   if (dragged_view_.get())

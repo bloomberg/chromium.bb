@@ -62,7 +62,8 @@ class WebDialogGtk : public ui::WebDialogWebContentsDelegate,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
-  virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
+  virtual void LoadingStateChanged(content::WebContents* source,
+                                   bool to_different_document) OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_1(WebDialogGtk, void, OnResponse, int);
