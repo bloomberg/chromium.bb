@@ -1897,11 +1897,7 @@ String Internals::mainThreadScrollingReasons(Document* document, ExceptionState&
         return String();
     }
 
-    // Force a re-layout and a compositing update.
-    document->updateLayout();
-    RenderView* view = document->renderView();
-    if (view->compositor())
-        view->compositor()->updateCompositingLayers();
+    document->frame()->view()->updateLayoutAndStyleForPainting();
 
     Page* page = document->page();
     if (!page)
@@ -2099,6 +2095,7 @@ void Internals::startTrackingRepaints(Document* document, ExceptionState& except
     }
 
     FrameView* frameView = document->view();
+    frameView->updateLayoutAndStyleForPainting();
     frameView->setTracksRepaints(true);
 }
 
@@ -2110,6 +2107,7 @@ void Internals::stopTrackingRepaints(Document* document, ExceptionState& excepti
     }
 
     FrameView* frameView = document->view();
+    frameView->updateLayoutAndStyleForPainting();
     frameView->setTracksRepaints(false);
 }
 
@@ -2343,11 +2341,7 @@ void Internals::forceCompositingUpdate(Document* document, ExceptionState& excep
         return;
     }
 
-    document->updateLayout();
-
-    RenderView* view = document->renderView();
-    if (view->compositor())
-        view->compositor()->updateCompositingLayers();
+    document->frame()->view()->updateLayoutAndStyleForPainting();
 }
 
 bool Internals::isCompositorFramePending(Document* document, ExceptionState& exceptionState)

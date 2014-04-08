@@ -195,6 +195,14 @@ struct CompositingRecursionData {
 #endif
 };
 
+static void clearAncestorDependentPropertyCacheRecursive(RenderLayer* layer)
+{
+    layer->clearAncestorDependentPropertyCache();
+    RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), AllChildren);
+    for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling())
+        clearAncestorDependentPropertyCacheRecursive(child);
+}
+
 RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     : m_renderView(renderView)
     , m_compositingReasonFinder(renderView)
@@ -327,17 +335,25 @@ static RenderVideo* findFullscreenVideoRenderer(Document& document)
     return toRenderVideo(renderer);
 }
 
-void RenderLayerCompositor::finishCompositingUpdateForFrameTree(LocalFrame* frame)
+void RenderLayerCompositor::updateIfNeededRecursive()
 {
-    for (LocalFrame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling())
-        finishCompositingUpdateForFrameTree(child);
+    for (LocalFrame* child = m_renderView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling())
+        child->contentRenderer()->compositor()->updateIfNeededRecursive();
 
-    // Update compositing for current frame after all descendant frames are updated.
-    if (frame && frame->contentRenderer()) {
-        RenderLayerCompositor* frameCompositor = frame->contentRenderer()->compositor();
-        if (frameCompositor && !frameCompositor->isMainFrame())
-            frame->contentRenderer()->compositor()->updateCompositingLayers();
-    }
+    TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateIfNeededRecursive");
+
+    ASSERT(!m_renderView.needsLayout());
+    lifecycle().advanceTo(DocumentLifecycle::InCompositingUpdate);
+
+    updateIfNeeded();
+
+    // Clear data only valid during compositing updates.
+    clearAncestorDependentPropertyCacheRecursive(rootRenderLayer());
+
+    lifecycle().advanceTo(DocumentLifecycle::CompositingClean);
+
+    DocumentAnimations::startPendingAnimations(m_renderView.document());
+    ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
 }
 
 void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType updateType)
@@ -382,40 +398,6 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
     page()->animator().scheduleVisualUpdate();
 }
 
-static void clearAncestorDependentPropertyCacheRecursive(RenderLayer* layer)
-{
-    layer->clearAncestorDependentPropertyCache();
-    RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), AllChildren);
-    for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling())
-        clearAncestorDependentPropertyCacheRecursive(child);
-}
-
-void RenderLayerCompositor::updateCompositingLayers()
-{
-    TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateCompositingLayers");
-
-    // FIXME: We should carefully clean up the awkward early-exit semantics, balancing
-    // between skipping unnecessary compositing updates and not incorrectly skipping
-    // necessary updates.
-
-    // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
-    // FIXME: Can we assert that we never return here?
-    if (m_renderView.needsLayout())
-        return;
-
-    lifecycle().advanceTo(DocumentLifecycle::InCompositingUpdate);
-
-    updateCompositingLayersInternal();
-
-    // Clear data only valid during compositing updates.
-    clearAncestorDependentPropertyCacheRecursive(rootRenderLayer());
-
-    lifecycle().advanceTo(DocumentLifecycle::CompositingClean);
-
-    DocumentAnimations::startPendingAnimations(m_renderView.document());
-    ASSERT(m_renderView.document().lifecycle().state() == DocumentLifecycle::CompositingClean);
-}
-
 void RenderLayerCompositor::scheduleAnimationIfNeeded()
 {
     LocalFrame* localFrame = &m_renderView.frameView()->frame();
@@ -435,11 +417,8 @@ bool RenderLayerCompositor::hasUnresolvedDirtyBits()
     return m_needsToRecomputeCompositingRequirements || m_compositingLayersNeedRebuild || m_needsUpdateCompositingRequirementsState || m_pendingUpdateType > CompositingUpdateNone;
 }
 
-void RenderLayerCompositor::updateCompositingLayersInternal()
+void RenderLayerCompositor::updateIfNeeded()
 {
-    if (isMainFrame() && m_renderView.frameView())
-        finishCompositingUpdateForFrameTree(&m_renderView.frameView()->frame());
-
     if (m_forceCompositingMode && !m_compositing)
         enableCompositingMode(true);
 
@@ -1333,7 +1312,7 @@ bool RenderLayerCompositor::scrollingLayerDidChange(RenderLayer* layer)
 
 String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
 {
-    ASSERT(m_renderView.document().lifecycle().state() >= DocumentLifecycle::CompositingClean);
+    ASSERT(lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
     if (!m_rootContentLayer)
         return String();
@@ -1700,7 +1679,7 @@ void RenderLayerCompositor::resetTrackedRepaintRects()
 
 void RenderLayerCompositor::setTracksRepaints(bool tracksRepaints)
 {
-    updateCompositingLayers();
+    ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
     m_isTrackingRepaints = tracksRepaints;
 }
 

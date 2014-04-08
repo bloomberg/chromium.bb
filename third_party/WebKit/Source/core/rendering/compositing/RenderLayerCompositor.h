@@ -64,9 +64,10 @@ enum CompositingUpdateType {
 class RenderLayerCompositor FINAL : public GraphicsLayerClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    // FIXME: This constructor should take a reference.
     explicit RenderLayerCompositor(RenderView&);
     virtual ~RenderLayerCompositor();
+
+    void updateIfNeededRecursive();
 
     // Return true if this RenderView is in "compositing mode" (i.e. has one or more
     // composited RenderLayers)
@@ -97,11 +98,6 @@ public:
 
     // Used to indicate that a compositing update will be needed for the next frame that gets drawn.
     void setNeedsCompositingUpdate(CompositingUpdateType);
-
-    // Main entry point for a full update. As needed, this function will compute compositing requirements,
-    // rebuild the composited layer tree, and/or update all the properties assocaited with each layer of the
-    // composited layer tree.
-    void updateCompositingLayers();
 
     enum UpdateLayerCompositingStateOptions {
         Normal,
@@ -247,7 +243,7 @@ private:
 
     void updateDirectCompositingReasons(RenderLayer*);
 
-    void updateCompositingLayersInternal();
+    void updateIfNeeded();
 
     // Returns indirect reasons that a layer should be composited because of something in its subtree.
     CompositingReasons subtreeReasonsForCompositing(RenderObject*, bool hasCompositedDescendants, bool has3DTransformedDescendants) const;
@@ -257,10 +253,6 @@ private:
     bool updateSquashingAssignment(RenderLayer*, SquashingState&, CompositingStateTransitionType compositedLayerUpdate);
 
     void recursiveRepaintLayer(RenderLayer*);
-
-    // Forces an update for all frames of frame tree recursively. Used only when the mainFrame compositor is ready to
-    // finish all deferred work.
-    static void finishCompositingUpdateForFrameTree(LocalFrame*);
 
     void computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer*, OverlapMap&, struct CompositingRecursionData&, bool& descendantHas3DTransform, Vector<RenderLayer*>& unclippedDescendants, IntRect& absoluteDecendantBoundingBox);
 
