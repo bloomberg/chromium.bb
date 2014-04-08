@@ -510,6 +510,60 @@ def InstallMinGWHostCompiler():
       pass
   os.environ['MINGW'] = MINGW_PATH
 
+
+def GetUploadPackageTargets():
+  """Package Targets describes all the archived package targets.
+
+  This build can be built among many build bots, but eventually all things
+  will be combined together. This package target dictionary describes the final
+  output of the entire build.
+  """
+  package_targets = {}
+
+  common_packages = ['metadata']
+
+  # Target native libraries
+  for arch in ALL_ARCHES:
+    legal_arch = pynacl.gsd_storage.LegalizeName(arch)
+    common_packages.append('libs_support_native_%s' % legal_arch)
+    common_packages.append('compiler_rt_%s' % legal_arch)
+    if not 'nonsfi' in arch:
+      common_packages.append('libgcc_eh_%s' % legal_arch)
+
+  # Target bitcode libraries
+  for bias in BITCODE_BIASES:
+    legal_bias = pynacl.gsd_storage.LegalizeName(bias)
+    common_packages.append('newlib_%s' % legal_bias)
+    common_packages.append('libcxx_%s' % legal_bias)
+    common_packages.append('libstdcxx_%s' % legal_bias)
+    common_packages.append('libs_support_bitcode_%s' % legal_bias)
+
+  # Host components
+  host_packages = {}
+  for os_name, arch in (('win', 'x86-32'),
+                        ('mac', 'x86-64'),
+                        ('linux', 'x86-32'),
+                        ('linux', 'x86-64')):
+    triple = pynacl.platform.PlatformTriple(os_name, arch)
+    legal_triple = pynacl.gsd_storage.LegalizeName(triple)
+    host_packages.setdefault(os_name, []).extend(['binutils_%s' % legal_triple,
+                                             'llvm_%s' % legal_triple,
+                                             'driver_%s' % legal_triple])
+
+  # Unsandboxed target IRT libraries
+  for os_name in ('linux', 'mac'):
+    legal_triple = pynacl.gsd_storage.LegalizeName('x86-32-' + os_name)
+    host_packages[os_name].append('unsandboxed_irt_%s' % legal_triple)
+
+  for os_name, os_packages in host_packages.iteritems():
+    package_target = '%s_x86' % pynacl.platform.GetOS(os_name)
+    package_targets[package_target] = {}
+    package_name = 'pnacl_newlib'
+    combined_packages = os_packages + common_packages
+    package_targets[package_target][package_name] = combined_packages
+
+  return package_targets
+
 if __name__ == '__main__':
   # This sets the logging for gclient-alike repo sync. It will be overridden
   # by the package builder based on the command-line flags.
@@ -575,12 +629,11 @@ if __name__ == '__main__':
     for arch in ALL_ARCHES:
       packages.update(pnacl_targetlibs.NativeLibs(hosts[0], arch))
   if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
-    packages.update(pnacl_targetlibs.NativeLibsUnsandboxed(
+    packages.update(pnacl_targetlibs.UnsandboxedIRT(
         'x86-32-%s' % pynacl.platform.GetOS()))
   packages.update(Metadata())
 
-  # TODO(dyen): Fill in PACKAGE_TARGETS for pnacl.
   tb = toolchain_main.PackageBuilder(packages,
-                                     {},
+                                     GetUploadPackageTargets(),
                                      leftover_args)
   tb.Main()

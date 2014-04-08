@@ -14,6 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import pynacl.platform
 
 import buildbot_lib
+import packages
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
@@ -24,24 +25,10 @@ TOOLCHAIN_BUILD_OUT_DIR = os.path.join(TOOLCHAIN_BUILD_DIR, 'out')
 
 PACKAGE_VERSION_SCRIPT = os.path.join(PACKAGE_VERSION_DIR, 'package_version.py')
 TEMP_PACKAGES_FILE = os.path.join(TOOLCHAIN_BUILD_OUT_DIR, 'packages.txt')
-BUILDBOT_REVISION = os.getenv('BUILDBOT_GOT_REVISION', None)
-BUILDBOT_BUILDERNAME = os.getenv('BUILDBOT_BUILDERNAME', None)
-BUILDBOT_BUILDNUMBER = os.getenv('BUILDBOT_BUILDNUMBER', None)
-
 
 # As this is a buildbot script, we want verbose logging. Note however, that
 # toolchain_build has its own log settings, controlled by its CLI flags.
 logging.getLogger().setLevel(logging.DEBUG)
-
-if BUILDBOT_REVISION is None:
-  logging.error('Error - Could not obtain buildbot revision number')
-  sys.exit(1)
-elif BUILDBOT_BUILDERNAME is None:
-  logging.error('Error - could not obtain buildbot builder name')
-  sys.exit(1)
-elif BUILDBOT_BUILDNUMBER is None:
-  logging.error('Error - could not obtain buildbot build number')
-  sys.exit(1)
 
 parser = argparse.ArgumentParser(description='PNaCl toolchain buildbot script')
 group = parser.add_mutually_exclusive_group()
@@ -75,40 +62,18 @@ with buildbot_lib.Step('Sync build.sh repos', status, halt_on_fail=True):
 try:
   gsd_arg = []
   if args.buildbot:
-    gsd_arg = ['--buildbot', '--packages-file', TEMP_PACKAGES_FILE]
+    gsd_arg = ['--buildbot']
   elif args.trybot:
-    gsd_arg = ['--trybot', '--packages-file', TEMP_PACKAGES_FILE]
+    gsd_arg = ['--trybot']
 
-  cmd = toolchain_build_cmd + gsd_arg
+  cmd = toolchain_build_cmd + gsd_arg + ['--packages-file', TEMP_PACKAGES_FILE]
   logging.info('Running: ' + ' '.join(cmd))
   subprocess.check_call(cmd)
 
-  upload_rev = None
-  upload_args = []
-  if args.buildbot:
-    upload_rev = BUILDBOT_REVISION
-  elif args.trybot:
-    upload_rev = '%s/%s' % (BUILDBOT_BUILDERNAME, BUILDBOT_BUILDNUMBER)
-    upload_args.extend(['--cloud-bucket', 'nativeclient-trybot/packages'])
-
-  if upload_rev is not None:
+  if args.buildbot or args.trybot:
+    packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
     print '@@@BUILD_STEP upload_package_info@@@'
     sys.stdout.flush()
-    with open(TEMP_PACKAGES_FILE, 'rt') as f:
-      for package_file in f.readlines():
-        pkg_name, pkg_ext = os.path.splitext(os.path.basename(package_file))
-        pkg_target = os.path.basename(os.path.dirname(package_file))
-        full_package_name = '%s/%s' % (pkg_target, pkg_name)
-
-        subprocess.check_call([sys.executable,
-                               PACKAGE_VERSION_SCRIPT] +
-                               upload_args +
-                               ['--annotate',
-                               'upload',
-                               '--skip-missing',
-                               '--upload-package', full_package_name,
-                               '--revision', upload_rev,
-                               '--package-file', package_file])
 
 except subprocess.CalledProcessError:
   # Ignore any failures and keep going (but make the bot stage red).

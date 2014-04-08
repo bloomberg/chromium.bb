@@ -565,9 +565,9 @@ def NativeLibs(host, arch):
     })
   return libs
 
-def NativeLibsUnsandboxed(arch):
+def UnsandboxedIRT(arch):
   libs = {
-      Mangle('libs_support_unsandboxed', arch): {
+      Mangle('unsandboxed_irt', arch): {
           'type': 'build',
           'output_subdir': 'lib-' + arch,
           'inputs': { 'support': os.path.join(NACL_DIR, 'pnacl', 'support') },
