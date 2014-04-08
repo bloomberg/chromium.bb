@@ -2430,7 +2430,7 @@ void RenderViewImpl::didFailProvisionalLoad(WebLocalFrame* frame,
       RenderViewObserver, observers_, DidFailProvisionalLoad(frame, error));
 }
 
-void RenderViewImpl::FrameDidCommitProvisionalLoad(WebFrame* frame,
+void RenderViewImpl::FrameDidCommitProvisionalLoad(WebLocalFrame* frame,
                                                    bool is_new_navigation) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
                     DidCommitProvisionalLoad(frame, is_new_navigation));

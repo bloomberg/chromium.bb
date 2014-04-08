@@ -285,7 +285,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   void FrameDidChangeLoadProgress(blink::WebFrame* frame,
                                   double load_progress);
-  void FrameDidCommitProvisionalLoad(blink::WebFrame* frame,
+  void FrameDidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                      bool is_new_navigation);
 
   // Plugin-related functions --------------------------------------------------
