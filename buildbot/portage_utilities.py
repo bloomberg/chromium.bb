@@ -395,12 +395,24 @@ class EBuild(object):
 
     # Calculate srcdir.
     if self._category == 'chromeos-base':
-      dir_ = 'platform'
+      dir_ = '' # 'platform2'
     else:
       dir_ = 'third_party'
 
-    subdir_paths = [os.path.realpath(os.path.join(srcroot, dir_, l, s))
-                    for l, s in zip(localnames, subdirs)]
+    # Once all targets are moved from platform to platform2, uncomment
+    # the following lines as well as dir_ = 'platform2' above,
+    # and delete the loop that builds |subdir_paths| below.
+
+    # subdir_paths = [os.path.realpath(os.path.join(srcroot, dir_, l, s))
+    #                for l, s in zip(localnames, subdirs)]
+
+    subdir_paths = []
+    for local, sub in zip(localnames, subdirs):
+      subdir_path = os.path.realpath(os.path.join(srcroot, dir_, local, sub))
+      if dir_ == '' and not os.path.isdir(subdir_path):
+        subdir_path = os.path.realpath(os.path.join(srcroot, 'platform',
+                                                    local, sub))
+      subdir_paths.append(subdir_path)
 
     for subdir_path, project in zip(subdir_paths, projects):
       if not os.path.isdir(subdir_path):
