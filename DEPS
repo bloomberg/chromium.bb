@@ -291,7 +291,7 @@ deps = {
     "/trunk/deps/third_party/opus@256783",
 
   "src/media/cdm/ppapi/api":
-    "/trunk/deps/cdm@249141",
+    "/trunk/deps/cdm@260640",
 
   "src/third_party/mesa/src":
     "/trunk/deps/third_party/mesa@261106",
