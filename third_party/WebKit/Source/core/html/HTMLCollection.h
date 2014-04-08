@@ -67,12 +67,18 @@ protected:
 
     class NamedItemCache {
     public:
+        static PassOwnPtr<NamedItemCache> create()
+        {
+            return adoptPtr(new NamedItemCache);
+        }
+
         Vector<Element*>* getElementsById(const AtomicString& id) const { return m_idCache.get(id.impl()); }
         Vector<Element*>* getElementsByName(const AtomicString& name) const { return m_nameCache.get(name.impl()); }
         void addElementWithId(const AtomicString& id, Element* element) { addElementToMap(m_idCache, id, element); }
         void addElementWithName(const AtomicString& name, Element* element) { addElementToMap(m_nameCache, name, element); }
 
     private:
+        NamedItemCache();
         typedef HashMap<StringImpl*, OwnPtr<Vector<Element*> > > StringToElementsMap;
         static void addElementToMap(StringToElementsMap& map, const AtomicString& key, Element* element)
         {
@@ -94,13 +100,13 @@ protected:
     virtual void updateIdNameCache() const;
     bool hasValidIdNameCache() const { return m_namedItemCache; }
 
-    NamedItemCache& createNamedItemCache() const
+    void setNamedItemCache(PassOwnPtr<NamedItemCache> cache) const
     {
         ASSERT(!m_namedItemCache);
         document().incrementNodeListWithIdNameCacheCount();
-        m_namedItemCache = adoptPtr(new NamedItemCache);
-        return *m_namedItemCache;
+        m_namedItemCache = cache;
     }
+
     NamedItemCache& namedItemCache() const
     {
         ASSERT(m_namedItemCache);

@@ -442,17 +442,19 @@ void HTMLCollection::updateIdNameCache() const
     if (hasValidIdNameCache())
         return;
 
-    NamedItemCache& cache = createNamedItemCache();
+    OwnPtr<NamedItemCache> cache = NamedItemCache::create();
     for (Element* element = traverseToFirstElement(); element; element = traverseNextElement(*element)) {
         const AtomicString& idAttrVal = element->getIdAttribute();
         if (!idAttrVal.isEmpty())
-            cache.addElementWithId(idAttrVal, element);
+            cache->addElementWithId(idAttrVal, element);
         if (!element->isHTMLElement())
             continue;
         const AtomicString& nameAttrVal = element->getNameAttribute();
         if (!nameAttrVal.isEmpty() && idAttrVal != nameAttrVal && (type() != DocAll || nameShouldBeVisibleInDocumentAll(toHTMLElement(*element))))
-            cache.addElementWithName(nameAttrVal, element);
+            cache->addElementWithName(nameAttrVal, element);
     }
+    // Set the named item cache last as traversing the tree may cause cache invalidation.
+    setNamedItemCache(cache.release());
 }
 
 void HTMLCollection::namedItems(const AtomicString& name, Vector<RefPtr<Element> >& result) const
@@ -472,6 +474,10 @@ void HTMLCollection::namedItems(const AtomicString& name, Vector<RefPtr<Element>
 
     for (unsigned i = 0; nameResults && i < nameResults->size(); ++i)
         result.append(nameResults->at(i));
+}
+
+HTMLCollection::NamedItemCache::NamedItemCache()
+{
 }
 
 } // namespace WebCore

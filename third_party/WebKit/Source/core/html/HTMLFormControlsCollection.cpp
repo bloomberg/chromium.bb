@@ -153,7 +153,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
     if (hasValidIdNameCache())
         return;
 
-    NamedItemCache& cache = createNamedItemCache();
+    OwnPtr<NamedItemCache> cache = NamedItemCache::create();
     HashSet<StringImpl*> foundInputElements;
 
     const Vector<FormAssociatedElement*>& elementsArray = formControlElements();
@@ -165,11 +165,11 @@ void HTMLFormControlsCollection::updateIdNameCache() const
             const AtomicString& idAttrVal = element->getIdAttribute();
             const AtomicString& nameAttrVal = element->getNameAttribute();
             if (!idAttrVal.isEmpty()) {
-                cache.addElementWithId(idAttrVal, element);
+                cache->addElementWithId(idAttrVal, element);
                 foundInputElements.add(idAttrVal.impl());
             }
             if (!nameAttrVal.isEmpty() && idAttrVal != nameAttrVal) {
-                cache.addElementWithName(nameAttrVal, element);
+                cache->addElementWithName(nameAttrVal, element);
                 foundInputElements.add(nameAttrVal.impl());
             }
         }
@@ -182,11 +182,14 @@ void HTMLFormControlsCollection::updateIdNameCache() const
             const AtomicString& idAttrVal = element->getIdAttribute();
             const AtomicString& nameAttrVal = element->getNameAttribute();
             if (!idAttrVal.isEmpty() && !foundInputElements.contains(idAttrVal.impl()))
-                cache.addElementWithId(idAttrVal, element);
+                cache->addElementWithId(idAttrVal, element);
             if (!nameAttrVal.isEmpty() && idAttrVal != nameAttrVal && !foundInputElements.contains(nameAttrVal.impl()))
-                cache.addElementWithName(nameAttrVal, element);
+                cache->addElementWithName(nameAttrVal, element);
         }
     }
+
+    // Set the named item cache last as traversing the tree may cause cache invalidation.
+    setNamedItemCache(cache.release());
 }
 
 void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& radioNodeListEnabled, RefPtr<RadioNodeList>& radioNodeList, bool& elementEnabled, RefPtr<Element>& element)
