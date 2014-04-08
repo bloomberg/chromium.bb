@@ -30,7 +30,7 @@ deps = {
     'src/chrome/test/data/perf/third_party/octane':
         Var('git_url') + '/external/octane-benchmark.git@9ac27bfd9e0bc73663db0c0551440215d8b20d09',
     'src/media/cdm/ppapi/api':
-        Var('git_url') + '/chromium/cdm.git@01f5723f05af12535ef5fa052a26fc90848d16be',
+        Var('git_url') + '/chromium/cdm.git@48838307cc58618ca67f93a5015f42e17a8db96d',
     'src/native_client':
         Var('git_url') + '/native_client/src/native_client.git@2d4a98a39fe258acf708511899fdb55f387a9d8b',
     'src/sdch/open-vcdiff':
