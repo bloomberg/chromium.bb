@@ -120,6 +120,7 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
     , m_canReceiveDroppedFiles(false)
     , m_hasTouchEventHandler(false)
     , m_shouldRevealPassword(false)
+    , m_valueMatchesRenderer(false)
     , m_inputType(InputType::createText(*this))
     , m_inputTypeView(m_inputType)
 {
@@ -991,6 +992,12 @@ void HTMLInputElement::setEditingValue(const String& value)
         cacheSelectionInResponseToSetValue(max);
 
     dispatchInputEvent();
+}
+
+void HTMLInputElement::setInnerTextValue(const String& value)
+{
+    HTMLTextFormControlElement::setInnerTextValue(value);
+    m_valueMatchesRenderer = true;
 }
 
 void HTMLInputElement::setValue(const String& value, ExceptionState& exceptionState, TextFieldEventBehavior eventBehavior)

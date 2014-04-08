@@ -83,8 +83,8 @@ HTMLTextAreaElement::HTMLTextAreaElement(Document& document, HTMLFormElement* fo
     , m_cols(defaultCols)
     , m_wrap(SoftWrap)
     , m_isDirty(false)
+    , m_valueMatchesRenderer(true)
 {
-    setFormControlValueMatchesRenderer(true);
     ScriptWrappable::init(this);
 }
 
@@ -271,7 +271,7 @@ void HTMLTextAreaElement::handleFocusEvent(Element*, FocusType)
 void HTMLTextAreaElement::subtreeHasChanged()
 {
     setChangedSinceLastFormControlChangeEvent(true);
-    setFormControlValueMatchesRenderer(false);
+    m_valueMatchesRenderer = false;
     setNeedsValidityCheck();
 
     if (!focused())
@@ -319,12 +319,12 @@ String HTMLTextAreaElement::sanitizeUserInputValue(const String& proposedValue, 
 
 void HTMLTextAreaElement::updateValue() const
 {
-    if (formControlValueMatchesRenderer())
+    if (m_valueMatchesRenderer)
         return;
 
     ASSERT(renderer());
     m_value = innerTextValue();
-    const_cast<HTMLTextAreaElement*>(this)->setFormControlValueMatchesRenderer(true);
+    const_cast<HTMLTextAreaElement*>(this)->m_valueMatchesRenderer = true;
     const_cast<HTMLTextAreaElement*>(this)->notifyFormStateChanged();
     m_isDirty = true;
     const_cast<HTMLTextAreaElement*>(this)->updatePlaceholderVisibility(false);
@@ -372,7 +372,7 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
         setLastChangeWasNotUserEdit();
     updatePlaceholderVisibility(false);
     setNeedsStyleRecalc(SubtreeStyleChange);
-    setFormControlValueMatchesRenderer(true);
+    m_valueMatchesRenderer = true;
     m_suggestedValue = String();
 
     // Set the caret to the end of the text value.
@@ -389,6 +389,12 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
             dispatchFormControlInputEvent();
         dispatchFormControlChangeEvent();
     }
+}
+
+void HTMLTextAreaElement::setInnerTextValue(const String& value)
+{
+    HTMLTextFormControlElement::setInnerTextValue(value);
+    m_valueMatchesRenderer = true;
 }
 
 String HTMLTextAreaElement::defaultValue() const

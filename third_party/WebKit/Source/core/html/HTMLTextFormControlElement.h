@@ -79,7 +79,7 @@ public:
 
     void selectionChanged(bool userTriggered);
     bool lastChangeWasUserEdit() const;
-    void setInnerTextValue(const String&);
+    virtual void setInnerTextValue(const String&);
     String innerTextValue() const;
 
     String directionForFormData() const;

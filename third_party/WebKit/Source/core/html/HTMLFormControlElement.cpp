@@ -49,7 +49,6 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Doc
     , m_isAutofilled(false)
     , m_isReadOnly(false)
     , m_isRequired(false)
-    , m_valueMatchesRenderer(false)
     , m_ancestorDisabledState(AncestorDisabledStateUnknown)
     , m_dataListAncestorState(Unknown)
     , m_willValidateInitialized(false)

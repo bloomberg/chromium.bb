@@ -74,6 +74,7 @@ private:
     void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) const;
     static String sanitizeUserInputValue(const String&, unsigned maxLength);
     void updateValue() const;
+    virtual void setInnerTextValue(const String&) OVERRIDE;
     void setNonDirtyValue(const String&);
     void setValueCommon(const String&, TextFieldEventBehavior);
 
@@ -127,6 +128,7 @@ private:
     WrapMethod m_wrap;
     mutable String m_value;
     mutable bool m_isDirty;
+    bool m_valueMatchesRenderer;
     String m_suggestedValue;
 };
 

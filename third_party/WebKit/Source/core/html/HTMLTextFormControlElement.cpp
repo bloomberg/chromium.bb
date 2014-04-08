@@ -514,8 +514,6 @@ void HTMLTextFormControlElement::setInnerTextValue(const String& value)
         if (value.endsWith('\n') || value.endsWith('\r'))
             innerTextElement()->appendChild(HTMLBRElement::create(document()));
     }
-
-    setFormControlValueMatchesRenderer(true);
 }
 
 static String finishText(StringBuilder& result)
