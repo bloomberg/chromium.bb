@@ -262,8 +262,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     uint32_t unused;
   };
 
-  // The maximum possible size of a valid secondary buffer: for each handle,
-  // there'll be a handle table entry and its serialized data.
+  // The maximum possible size of a valid secondary buffer.
   static const size_t kMaxSecondaryBufferSize;
 
   // Validates the secondary buffer. Returns null on success, or a

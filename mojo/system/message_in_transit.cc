@@ -16,14 +16,8 @@
 namespace mojo {
 namespace system {
 
-namespace {
-
-
-}  // namespace
-
 struct MessageInTransit::PrivateStructForCompileAsserts {
-  // The size of |Header| must be appropriate to maintain alignment of the
-  // following data.
+  // The size of |Header| must be a multiple of the alignment.
   COMPILE_ASSERT(sizeof(Header) % kMessageAlignment == 0,
                  sizeof_MessageInTransit_Header_invalid);
   // Avoid dangerous situations, but making sure that the size of the "header" +
@@ -37,10 +31,11 @@ struct MessageInTransit::PrivateStructForCompileAsserts {
   COMPILE_ASSERT(kMaxMessageNumBytes % kMessageAlignment == 0,
                  kMessageAlignment_not_a_multiple_of_alignment);
 
+  // The maximum serialized dispatcher size must be a multiple of the alignment.
   COMPILE_ASSERT(kMaxSerializedDispatcherSize % kMessageAlignment == 0,
                  kMaxSerializedDispatcherSize_not_a_multiple_of_alignment);
 
-  // The size of |HandleTableEntry| must be appropriate to maintain alignment.
+  // The size of |HandleTableEntry| must be a multiple of the alignment.
   COMPILE_ASSERT(sizeof(HandleTableEntry) % kMessageAlignment == 0,
                  sizeof_MessageInTransit_HandleTableEntry_invalid);
 };
@@ -61,6 +56,8 @@ STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
 STATIC_CONST_MEMBER_DEFINITION const size_t
     MessageInTransit::kMaxSerializedDispatcherSize;
 
+// For each attached (Mojo) handle, there'll be a handle table entry and
+// serialized dispatcher data.
 // static
 const size_t MessageInTransit::kMaxSecondaryBufferSize = kMaxMessageNumHandles *
     (sizeof(HandleTableEntry) + kMaxSerializedDispatcherSize);
@@ -256,9 +253,8 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
       handle_table[i].offset = static_cast<uint32_t>(current_offset);
       handle_table[i].size = static_cast<uint32_t>(actual_size);
     } else {
-      // (Nothing to do on failure, since |secondary_buffer_| was cleared, and
-      // |kTypeUnknown| is zero.)
-      // The handle will simply be closed.
+      // Nothing to do on failure, since |secondary_buffer_| was cleared, and
+      // |kTypeUnknown| is zero. The handle was simply closed.
       LOG(ERROR) << "Failed to serialize handle to remote message pipe";
     }
 
@@ -269,10 +265,12 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   UpdateTotalSize();
 }
 
+// Note: The message's secondary buffer should have been checked by calling
+// |View::IsValid()| (on the |View|) first.
 void MessageInTransit::DeserializeDispatchers(Channel* channel) {
   DCHECK(!dispatchers_);
 
-  // This should have been checked by calling |IsValid()| on the |View| first.
+  // Already checked by |View::IsValid()|:
   DCHECK_LE(num_handles(), kMaxMessageNumHandles);
 
   if (!num_handles())
@@ -282,24 +280,18 @@ void MessageInTransit::DeserializeDispatchers(Channel* channel) {
       new std::vector<scoped_refptr<Dispatcher> >(num_handles()));
 
   size_t handle_table_size = num_handles() * sizeof(HandleTableEntry);
-  if (secondary_buffer_size_ < handle_table_size) {
-    LOG(ERROR) << "Serialized handle table too small";
-    return;
-  }
+  // Already checked by |View::IsValid()|:
+  DCHECK_LE(handle_table_size, secondary_buffer_size_);
 
   const HandleTableEntry* handle_table =
       static_cast<const HandleTableEntry*>(secondary_buffer_);
   for (size_t i = 0; i < num_handles(); i++) {
     size_t offset = handle_table[i].offset;
     size_t size = handle_table[i].size;
-    // TODO(vtl): Sanity-check the size.
-    if (offset % kMessageAlignment != 0 || offset > secondary_buffer_size_ ||
-        offset + size > secondary_buffer_size_) {
-      // TODO(vtl): Maybe should report error (and make it possible to kill the
-      // connection with extreme prejudice).
-      LOG(ERROR) << "Invalid serialized handle table entry";
-      continue;
-    }
+    // Already checked by |View::IsValid()|:
+    DCHECK_EQ(offset % kMessageAlignment, 0u);
+    DCHECK_LE(offset, secondary_buffer_size_);
+    DCHECK_LE(offset + size, secondary_buffer_size_);
 
     const void* source = static_cast<const char*>(secondary_buffer_) + offset;
     (*dispatchers_)[i] = Dispatcher::MessageInTransitAccess::Deserialize(
@@ -314,14 +306,22 @@ const char* MessageInTransit::ValidateSecondaryBuffer(
     size_t num_handles,
     const void* secondary_buffer,
     size_t secondary_buffer_size) {
-  if (!num_handles)
-    return NULL;
-
-  if (num_handles > kMaxMessageNumHandles)
-    return "Message handle payload too large";
-
+  // Always make sure that the secondary buffer size is sane (even if we have no
+  // handles); if it's not, someone's messing with us.
   if (secondary_buffer_size > kMaxSecondaryBufferSize)
     return "Message secondary buffer too large";
+
+  // Fast-path for the common case (no handles => no secondary buffer).
+  if (num_handles == 0) {
+    // We shouldn't have a secondary buffer in this case.
+    if (secondary_buffer_size > 0)
+      return "Message has no handles attached, but secondary buffer present";
+    return NULL;
+  }
+
+  // Sanity-check |num_handles| (before multiplying it against anything).
+  if (num_handles > kMaxMessageNumHandles)
+    return "Message handle payload too large";
 
   if (secondary_buffer_size < num_handles * sizeof(HandleTableEntry))
     return "Message secondary buffer too small";
