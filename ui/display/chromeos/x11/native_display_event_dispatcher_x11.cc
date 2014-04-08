@@ -13,14 +13,16 @@
 namespace ui {
 
 // static
-const int NativeDisplayEventDispatcherX11::kCachedOutputsExpirationMs = 5000;
+const int NativeDisplayEventDispatcherX11::kUseCacheAfterStartupMs = 7000;
 
 NativeDisplayEventDispatcherX11::NativeDisplayEventDispatcherX11(
     NativeDisplayDelegateX11::HelperDelegate* delegate,
     int xrandr_event_base)
     : delegate_(delegate),
       xrandr_event_base_(xrandr_event_base),
-      tick_clock_(new base::DefaultTickClock) {}
+      tick_clock_(new base::DefaultTickClock) {
+  startup_time_ = tick_clock_->NowTicks();
+}
 
 NativeDisplayEventDispatcherX11::~NativeDisplayEventDispatcherX11() {}
 
@@ -58,10 +60,10 @@ uint32_t NativeDisplayEventDispatcherX11::DispatchEvent(
           << " mode=" << output_change_event->mode
           << " action=" << (connected ? "connected" : "disconnected");
 
-  bool force_notify = last_notified_time_.is_null() ||
-      (tick_clock_->NowTicks() - last_notified_time_).InMilliseconds() >=
-      kCachedOutputsExpirationMs;
-  if (!force_notify) {
+  bool check_cache = (tick_clock_->NowTicks() - startup_time_)
+                         .InMilliseconds() <= kUseCacheAfterStartupMs;
+
+  if (check_cache) {
     bool found_changed_output = false;
     const std::vector<DisplaySnapshot*>& cached_outputs =
         delegate_->GetCachedOutputs();
@@ -91,8 +93,6 @@ uint32_t NativeDisplayEventDispatcherX11::DispatchEvent(
     }
   }
 
-  last_notified_time_ = tick_clock_->NowTicks();
-
   delegate_->NotifyDisplayObservers();
 
   return ui::POST_DISPATCH_PERFORM_DEFAULT;
@@ -101,6 +101,7 @@ uint32_t NativeDisplayEventDispatcherX11::DispatchEvent(
 void NativeDisplayEventDispatcherX11::SetTickClockForTest(
     scoped_ptr<base::TickClock> tick_clock) {
   tick_clock_ = tick_clock.Pass();
+  startup_time_ = tick_clock_->NowTicks();
 }
 
 }  // namespace ui

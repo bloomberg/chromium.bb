@@ -30,8 +30,8 @@ class DISPLAY_EXPORT NativeDisplayEventDispatcherX11
 
   void SetTickClockForTest(scoped_ptr<base::TickClock> tick_clock);
 
-  // How long the cached output is valid.
-  static const int kCachedOutputsExpirationMs;
+  // How long the cached output is valid after startup.
+  static const int kUseCacheAfterStartupMs;
 
  private:
   NativeDisplayDelegateX11::HelperDelegate* delegate_;  // Not owned.
@@ -40,8 +40,7 @@ class DISPLAY_EXPORT NativeDisplayEventDispatcherX11
   // decoding events regarding output add/remove.
   int xrandr_event_base_;
 
-  // The last time display observers were notified.
-  base::TimeTicks last_notified_time_;
+  base::TimeTicks startup_time_;
 
   scoped_ptr<base::TickClock> tick_clock_;
 

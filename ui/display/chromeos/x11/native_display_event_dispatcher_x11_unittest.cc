@@ -18,9 +18,10 @@ namespace ui {
 
 namespace {
 
-const DisplayModeX11 kDefaultDisplayMode(gfx::Size(1, 1), false, 60.0f, 20);
-
 DisplaySnapshotX11* CreateOutput(RROutput output, RRCrtc crtc) {
+  static const DisplayModeX11* kDefaultDisplayMode =
+      new DisplayModeX11(gfx::Size(1, 1), false, 60.0f, 20);
+
   DisplaySnapshotX11* snapshot = new DisplaySnapshotX11(
       0,
       false,
@@ -30,8 +31,8 @@ DisplaySnapshotX11* CreateOutput(RROutput output, RRCrtc crtc) {
       false,
       false,
       std::string(),
-      std::vector<const DisplayMode*>(1, &kDefaultDisplayMode),
-      &kDefaultDisplayMode,
+      std::vector<const DisplayMode*>(1, kDefaultDisplayMode),
+      kDefaultDisplayMode,
       NULL,
       output,
       crtc,
@@ -176,19 +177,6 @@ TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationAfterSecondEvent) {
   EXPECT_EQ(2, helper_delegate_->num_calls_notify_observers());
 }
 
-TEST_F(NativeDisplayEventDispatcherX11Test, AvoidNotificationOnDuplicateEvent) {
-  ScopedVector<DisplaySnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10));
-  helper_delegate_->set_cached_outputs(outputs.get());
-
-  // Very first event will not be ignored.
-  DispatchOutputChangeEvent(1, 10, 20, true);
-  EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
-
-  DispatchOutputChangeEvent(1, 10, 20, true);
-  EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
-}
-
 TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnDisconnect) {
   ScopedVector<DisplaySnapshot> outputs;
   outputs.push_back(CreateOutput(1, 10));
@@ -258,7 +246,7 @@ TEST_F(NativeDisplayEventDispatcherX11Test,
        ForceUpdateAfterCacheExpiration) {
   // +1 to compenstate a possible rounding error.
   const int kHalfOfExpirationMs =
-      NativeDisplayEventDispatcherX11::kCachedOutputsExpirationMs / 2 + 1;
+      NativeDisplayEventDispatcherX11::kUseCacheAfterStartupMs / 2 + 1;
 
   ScopedVector<DisplaySnapshot> outputs;
   outputs.push_back(CreateOutput(1, 10));
@@ -267,37 +255,38 @@ TEST_F(NativeDisplayEventDispatcherX11Test,
 
   EXPECT_EQ(0, helper_delegate_->num_calls_notify_observers());
 
+  // Duplicated event will be ignored during the startup.
   DispatchOutputChangeEvent(2, 11, 20, true);
-  EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
-
-  // Duplicated event will be ignored.
-  DispatchOutputChangeEvent(2, 11, 20, true);
-  EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
+  EXPECT_EQ(0, helper_delegate_->num_calls_notify_observers());
 
   test_tick_clock_->Advance(base::TimeDelta::FromMilliseconds(
       kHalfOfExpirationMs));
 
   // Duplicated event will still be ignored.
   DispatchOutputChangeEvent(2, 11, 20, true);
-  EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
+  EXPECT_EQ(0, helper_delegate_->num_calls_notify_observers());
 
-  // Duplicated event does notify after expiration timeout.
+  // The startup timeout has been elapsed. Duplicated event
+  // should not be ignored.
   test_tick_clock_->Advance(
       base::TimeDelta::FromMilliseconds(kHalfOfExpirationMs));
   DispatchOutputChangeEvent(2, 11, 20, true);
-  EXPECT_EQ(2, helper_delegate_->num_calls_notify_observers());
+  EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
 
-  // Last update time has been updated, so next duplicated change event
-  // will be ignored.
+  // Sending the same event immediately shoudldn't be ignored.
   DispatchOutputChangeEvent(2, 11, 20, true);
   EXPECT_EQ(2, helper_delegate_->num_calls_notify_observers());
 
-  // Another duplicated change event arrived within expiration time will
-  // be ignored again.
+  // Advancing time further should not change the behavior.
   test_tick_clock_->Advance(base::TimeDelta::FromMilliseconds(
       kHalfOfExpirationMs));
   DispatchOutputChangeEvent(2, 11, 20, true);
-  EXPECT_EQ(2, helper_delegate_->num_calls_notify_observers());
+  EXPECT_EQ(3, helper_delegate_->num_calls_notify_observers());
+
+  test_tick_clock_->Advance(
+      base::TimeDelta::FromMilliseconds(kHalfOfExpirationMs));
+  DispatchOutputChangeEvent(2, 11, 20, true);
+  EXPECT_EQ(4, helper_delegate_->num_calls_notify_observers());
 }
 
 }  // namespace ui
