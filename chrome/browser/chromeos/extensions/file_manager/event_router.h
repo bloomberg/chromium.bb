@@ -185,6 +185,7 @@ class EventRouter
   };
   std::map<drive::JobID, DriveJobInfoWithStatus> drive_jobs_;
   base::Time last_file_transfer_event_;
+  base::Time last_copy_progress_event_;
 
   WatcherMap file_watchers_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;

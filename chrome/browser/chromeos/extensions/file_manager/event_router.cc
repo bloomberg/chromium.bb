@@ -86,7 +86,7 @@ const char kFileTransferStateCompleted[] = "completed";
 const char kFileTransferStateFailed[] = "failed";
 
 // Frequency of sending onFileTransferUpdated.
-const int64 kFileTransferEventFrequencyInMilliseconds = 1000;
+const int64 kProgressEventFrequencyInMilliseconds = 1000;
 
 // Utility function to check if |job_info| is a file uploading job.
 bool IsUploadJob(drive::JobType type) {
@@ -314,6 +314,23 @@ void GrantAccessForAddedProfileToRunningInstance(Profile* added_profile,
   file_manager::util::SetupProfileFileAccessPermissions(id, added_profile);
 }
 
+// Checks if we should send a progress event or not according to the
+// |last_time| of sending an event. If |always| is true, the function always
+// returns true. If the function returns true, the function also updates
+// |last_time|.
+bool ShouldSendProgressEvent(bool always, base::Time* last_time) {
+  const base::Time now = base::Time::Now();
+  const int64 delta = (now - *last_time).InMilliseconds();
+  // delta < 0 may rarely happen if system clock is synced and rewinded.
+  // To be conservative, we don't skip in that case.
+  if (!always && 0 <= delta && delta < kProgressEventFrequencyInMilliseconds) {
+    return false;
+  } else {
+    *last_time = now;
+    return true;
+  }
+}
+
 }  // namespace
 
 // Pass dummy value to JobInfo's constructor for make it default constructible.
@@ -529,6 +546,12 @@ void EventRouter::OnCopyProgress(
   if (type == fileapi::FileSystemOperation::PROGRESS)
     status.size.reset(new double(size));
 
+  // Should not skip events other than TYPE_PROGRESS.
+  const bool always =
+      status.type != file_browser_private::COPY_PROGRESS_STATUS_TYPE_PROGRESS;
+  if (!ShouldSendProgressEvent(always, &last_copy_progress_event_))
+    return;
+
   BroadcastEvent(
       profile_,
       file_browser_private::OnCopyProgress::kEventName,
@@ -606,18 +629,11 @@ void EventRouter::OnJobDone(const drive::JobInfo& job_info,
 void EventRouter::SendDriveFileTransferEvent(bool always) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const base::Time now = base::Time::Now();
-
   // When |always| flag is not set, we don't send the event until certain
   // amount of time passes after the previous one. This is to avoid
   // flooding the IPC between extensions by many onFileTransferUpdated events.
-  if (!always) {
-    const int64 delta = (now - last_file_transfer_event_).InMilliseconds();
-    // delta < 0 may rarely happen if system clock is synced and rewinded.
-    // To be conservative, we don't skip in that case.
-    if (0 <= delta && delta < kFileTransferEventFrequencyInMilliseconds)
-      return;
-  }
+  if (!ShouldSendProgressEvent(always, &last_file_transfer_event_))
+    return;
 
   // Convert the current |drive_jobs_| to IDL type.
   std::vector<linked_ptr<file_browser_private::FileTransferStatus> >
@@ -637,7 +653,6 @@ void EventRouter::SendDriveFileTransferEvent(bool always) {
       profile_,
       file_browser_private::OnFileTransfersUpdated::kEventName,
       file_browser_private::OnFileTransfersUpdated::Create(status_list));
-  last_file_transfer_event_ = now;
 }
 
 void EventRouter::OnDirectoryChanged(const base::FilePath& drive_path) {
