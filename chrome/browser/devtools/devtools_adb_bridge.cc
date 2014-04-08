@@ -237,7 +237,7 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
       scoped_refptr<DevToolsAdbBridge> adb_bridge,
       AndroidDeviceManager* device_manager,
       base::MessageLoop* device_message_loop,
-      const DevToolsAdbBridge::DeviceProviders& device_providers,
+      const AndroidDeviceManager::DeviceProviders& device_providers,
       const Callback& callback);
 
  private:
@@ -295,7 +295,7 @@ AdbPagesCommand::AdbPagesCommand(
     scoped_refptr<DevToolsAdbBridge> adb_bridge,
     AndroidDeviceManager* device_manager,
     base::MessageLoop* device_message_loop,
-    const DevToolsAdbBridge::DeviceProviders& device_providers,
+    const AndroidDeviceManager::DeviceProviders& device_providers,
     const Callback& callback)
     : adb_bridge_(adb_bridge),
       device_manager_(device_manager),
@@ -1063,6 +1063,52 @@ void DevToolsAdbBridge::RemoteDevice::OpenSocket(
 DevToolsAdbBridge::RemoteDevice::~RemoteDevice() {
 }
 
+// DevToolsAdbBridge::RefCountedAdbThread -------------------------------------
+
+const char kDevToolsAdbBridgeThreadName[] = "Chrome_DevToolsADBThread";
+
+DevToolsAdbBridge::RefCountedAdbThread*
+DevToolsAdbBridge::RefCountedAdbThread::instance_ = NULL;
+
+// static
+scoped_refptr<DevToolsAdbBridge::RefCountedAdbThread>
+DevToolsAdbBridge::RefCountedAdbThread::GetInstance() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!instance_)
+    new RefCountedAdbThread();
+  return instance_;
+}
+
+DevToolsAdbBridge::RefCountedAdbThread::RefCountedAdbThread() {
+  instance_ = this;
+  thread_ = new base::Thread(kDevToolsAdbBridgeThreadName);
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  if (!thread_->StartWithOptions(options)) {
+    delete thread_;
+    thread_ = NULL;
+  }
+}
+
+base::MessageLoop* DevToolsAdbBridge::RefCountedAdbThread::message_loop() {
+  return thread_ ? thread_->message_loop() : NULL;
+}
+
+// static
+void DevToolsAdbBridge::RefCountedAdbThread::StopThread(base::Thread* thread) {
+  thread->Stop();
+}
+
+DevToolsAdbBridge::RefCountedAdbThread::~RefCountedAdbThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  instance_ = NULL;
+  if (!thread_)
+    return;
+  // Shut down thread on FILE thread to join into IO.
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&RefCountedAdbThread::StopThread, thread_));
+}
 
 // DevToolsAdbBridge ----------------------------------------------------------
 
@@ -1159,11 +1205,11 @@ void DevToolsAdbBridge::ReceivedRemoteDevices(RemoteDevices* devices_ptr) {
 }
 
 void DevToolsAdbBridge::CreateDeviceProviders() {
-  DevToolsAdbBridge::DeviceProviders device_providers;
+  device_providers_.clear();
 #if defined(DEBUG_DEVTOOLS)
-  device_providers.push_back(AndroidDeviceProvider::GetSelfAsDeviceProvider());
+  device_providers_.push_back(AndroidDeviceManager::GetSelfAsDeviceProvider());
 #endif
-  device_providers.push_back(AndroidDeviceProvider::GetAdbDeviceProvider());
+  device_providers_.push_back(AndroidDeviceManager::GetAdbDeviceProvider());
 
   PrefService* service = profile_->GetPrefs();
   const PrefService::Preference* pref =
@@ -1172,9 +1218,7 @@ void DevToolsAdbBridge::CreateDeviceProviders() {
 
   bool enabled;
   if (pref_value->GetAsBoolean(&enabled) && enabled) {
-    device_providers.push_back(
-        AndroidDeviceProvider::GetUsbDeviceProvider(profile_));
+    device_providers_.push_back(
+        AndroidDeviceManager::GetUsbDeviceProvider(profile_));
   }
-
-  set_device_providers(device_providers);
 }

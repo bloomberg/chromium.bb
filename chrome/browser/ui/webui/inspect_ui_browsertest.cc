@@ -70,9 +70,9 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, SharedWorker) {
 IN_PROC_BROWSER_TEST_F(InspectUITest, AdbTargets) {
   scoped_refptr<DevToolsAdbBridge> adb_bridge =
       DevToolsAdbBridge::Factory::GetForProfile(browser()->profile());
-  DevToolsAdbBridge::DeviceProviders providers;
-  providers.push_back(AndroidDeviceProvider::GetMockDeviceProviderForTest());
-  adb_bridge->set_device_providers(providers);
+  AndroidDeviceManager::DeviceProviders providers;
+  providers.push_back(AndroidDeviceManager::GetMockDeviceProviderForTest());
+  adb_bridge->set_device_providers_for_test(providers);
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIInspectURL));
 

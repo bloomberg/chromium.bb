@@ -186,8 +186,6 @@
             'browser/devtools/devtools_window.h',
             'browser/devtools/port_forwarding_controller.cc',
             'browser/devtools/port_forwarding_controller.h',
-            'browser/devtools/refcounted_adb_thread.cc',
-            'browser/devtools/refcounted_adb_thread.h',
             'browser/devtools/remote_debugging_server.cc',
             'browser/devtools/remote_debugging_server.h',
           ],

@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/devtools/android_device.h"
-#include "chrome/browser/devtools/refcounted_adb_thread.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/gfx/size.h"
@@ -48,7 +47,6 @@ class DevToolsAdbBridge
  public:
   typedef base::Callback<void(int result,
                               const std::string& response)> Callback;
-  typedef std::vector<scoped_refptr<AndroidDeviceProvider> > DeviceProviders;
 
   class Wrapper : public KeyedService {
    public:
@@ -212,7 +210,8 @@ class DevToolsAdbBridge
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
 
-  void set_device_providers(DeviceProviders device_providers) {
+  void set_device_providers_for_test(
+      const AndroidDeviceManager::DeviceProviders& device_providers) {
     device_providers_ = device_providers;
   }
 
@@ -222,6 +221,22 @@ class DevToolsAdbBridge
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<DevToolsAdbBridge>;
+
+  class RefCountedAdbThread
+      : public base::RefCountedThreadSafe<RefCountedAdbThread> {
+   public:
+    static scoped_refptr<RefCountedAdbThread> GetInstance();
+    base::MessageLoop* message_loop();
+
+   private:
+    friend class base::RefCountedThreadSafe<RefCountedAdbThread>;
+    static RefCountedAdbThread* instance_;
+    static void StopThread(base::Thread* thread);
+
+    RefCountedAdbThread();
+    virtual ~RefCountedAdbThread();
+    base::Thread* thread_;
+  };
 
   virtual ~DevToolsAdbBridge();
 
@@ -243,7 +258,7 @@ class DevToolsAdbBridge
   scoped_refptr<AndroidDeviceManager> device_manager_;
   typedef std::vector<Listener*> Listeners;
   Listeners listeners_;
-  DeviceProviders device_providers_;
+  AndroidDeviceManager::DeviceProviders device_providers_;
   PrefChangeRegistrar pref_change_registrar_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsAdbBridge);
 };

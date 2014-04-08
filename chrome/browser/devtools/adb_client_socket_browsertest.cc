@@ -394,10 +394,10 @@ private:
     adb_bridge_ = DevToolsAdbBridge::Factory::GetForProfile(
         browser()->profile());
 
-    DevToolsAdbBridge::DeviceProviders device_providers;
-    device_providers.push_back(AndroidDeviceProvider::GetAdbDeviceProvider());
+    AndroidDeviceManager::DeviceProviders device_providers;
+    device_providers.push_back(AndroidDeviceManager::GetAdbDeviceProvider());
 
-    adb_bridge_->set_device_providers(device_providers);
+    adb_bridge_->set_device_providers_for_test(device_providers);
     adb_bridge_->AddListener(this);
   }
 

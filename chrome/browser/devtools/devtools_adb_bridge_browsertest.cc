@@ -124,11 +124,11 @@ char kSampleWebViewPages[] = "[ {\n"
     "44681551-ADFD-2411-076B-3AB14C1C60E2\"\n"
     "}]";
 
-class MockDeviceImpl : public AndroidDevice {
+class MockDeviceImpl : public AndroidDeviceManager::Device {
  public:
   MockDeviceImpl(const std::string& serial, int index,
                  bool connected, const char* device_model)
-      : AndroidDevice(serial, connected),
+      : Device(serial, connected),
         device_model_(device_model)
   {}
 
@@ -235,12 +235,12 @@ class MockDeviceImpl : public AndroidDevice {
   const char* device_model_;
 };
 
-class MockDeviceProvider : public AndroidDeviceProvider {
+class MockDeviceProvider : public AndroidDeviceManager::DeviceProvider {
   virtual ~MockDeviceProvider()
   {}
 
   virtual void QueryDevices(const QueryDevicesCallback& callback) OVERRIDE {
-    AndroidDeviceProvider::AndroidDevices devices;
+    AndroidDeviceManager::Devices devices;
     devices.push_back(new MockDeviceImpl("FirstDevice", 0, true, "Nexus 6"));
     devices.push_back(new MockDeviceImpl("SecondDevice", 1, false, "Nexus 8"));
     callback.Run(devices);
@@ -248,8 +248,8 @@ class MockDeviceProvider : public AndroidDeviceProvider {
 };
 
 // static
-scoped_refptr<AndroidDeviceProvider>
-AndroidDeviceProvider::GetMockDeviceProviderForTest() {
+scoped_refptr<AndroidDeviceManager::DeviceProvider>
+AndroidDeviceManager::GetMockDeviceProviderForTest() {
   return new MockDeviceProvider();
 }
 
@@ -360,10 +360,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsAdbBridgeTest, DiscoverAndroidBrowsers) {
   scoped_refptr<DevToolsAdbBridge> adb_bridge =
       DevToolsAdbBridge::Factory::GetForProfile(browser()->profile());
 
-  DevToolsAdbBridge::DeviceProviders providers;
-  providers.push_back(AndroidDeviceProvider::GetMockDeviceProviderForTest());
+  AndroidDeviceManager::DeviceProviders providers;
+  providers.push_back(AndroidDeviceManager::GetMockDeviceProviderForTest());
 
-  adb_bridge->set_device_providers(providers);
+  adb_bridge->set_device_providers_for_test(providers);
 
   if (!adb_bridge) {
     FAIL() << "Failed to get DevToolsAdbBridge.";
