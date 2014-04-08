@@ -69,21 +69,21 @@ FloatRect Font::selectionRectForComplexText(const TextRun& run, const FloatPoint
     return FloatRect(floorf(point.x() + beforeWidth), point.y(), roundf(point.x() + afterWidth) - floorf(point.x() + beforeWidth), h);
 }
 
-float Font::getGlyphsAndAdvancesForComplexText(const TextRun& run, int from, int to, GlyphBuffer& glyphBuffer, ForTextEmphasisOrNot forTextEmphasis) const
+float Font::getGlyphsAndAdvancesForComplexText(const TextRunPaintInfo& runInfo, GlyphBuffer& glyphBuffer, ForTextEmphasisOrNot forTextEmphasis) const
 {
     float initialAdvance;
 
-    ComplexTextController controller(this, run, false, 0, forTextEmphasis);
-    controller.advance(from);
+    ComplexTextController controller(this, runInfo.run, false, 0, forTextEmphasis);
+    controller.advance(runInfo.from);
     float beforeWidth = controller.runWidthSoFar();
-    controller.advance(to, &glyphBuffer);
+    controller.advance(runInfo.to, &glyphBuffer);
 
     if (glyphBuffer.isEmpty())
         return 0;
 
     float afterWidth = controller.runWidthSoFar();
 
-    if (run.rtl()) {
+    if (runInfo.run.rtl()) {
         initialAdvance = controller.totalWidth() + controller.finalRoundingWidth() - afterWidth;
         glyphBuffer.reverse(0, glyphBuffer.size());
     } else
@@ -106,7 +106,7 @@ void Font::drawComplexText(GraphicsContext* context, const TextRunPaintInfo& run
     // This glyph buffer holds our glyphs + advances + font data for each glyph.
     GlyphBuffer glyphBuffer;
 
-    float startX = point.x() + getGlyphsAndAdvancesForComplexText(runInfo.run, runInfo.from, runInfo.to, glyphBuffer);
+    float startX = point.x() + getGlyphsAndAdvancesForComplexText(runInfo, glyphBuffer);
 
     // We couldn't generate any glyphs for the run.  Give up.
     if (glyphBuffer.isEmpty())
@@ -120,7 +120,7 @@ void Font::drawComplexText(GraphicsContext* context, const TextRunPaintInfo& run
 void Font::drawEmphasisMarksForComplexText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
 {
     GlyphBuffer glyphBuffer;
-    float initialAdvance = getGlyphsAndAdvancesForComplexText(runInfo.run, runInfo.from, runInfo.to, glyphBuffer, ForTextEmphasis);
+    float initialAdvance = getGlyphsAndAdvancesForComplexText(runInfo, glyphBuffer, ForTextEmphasis);
 
     if (glyphBuffer.isEmpty())
         return;

@@ -606,33 +606,31 @@ int Font::emphasisMarkHeight(const AtomicString& mark) const
     return markFontData->fontMetrics().height();
 }
 
-float Font::getGlyphsAndAdvancesForSimpleText(const TextRun& run, int from, int to, GlyphBuffer& glyphBuffer, ForTextEmphasisOrNot forTextEmphasis) const
+float Font::getGlyphsAndAdvancesForSimpleText(const TextRunPaintInfo& runInfo, GlyphBuffer& glyphBuffer, ForTextEmphasisOrNot forTextEmphasis) const
 {
     float initialAdvance;
 
-    WidthIterator it(this, run, 0, false, forTextEmphasis);
+    WidthIterator it(this, runInfo.run, 0, false, forTextEmphasis);
     // FIXME: Using separate glyph buffers for the prefix and the suffix is incorrect when kerning or
     // ligatures are enabled.
     GlyphBuffer localGlyphBuffer;
-    it.advance(from, &localGlyphBuffer);
+    it.advance(runInfo.from, &localGlyphBuffer);
     float beforeWidth = it.m_runWidthSoFar;
-    it.advance(to, &glyphBuffer);
+    it.advance(runInfo.to, &glyphBuffer);
 
     if (glyphBuffer.isEmpty())
         return 0;
 
     float afterWidth = it.m_runWidthSoFar;
 
-    if (run.rtl()) {
+    if (runInfo.run.rtl()) {
         float finalRoundingWidth = it.m_finalRoundingWidth;
-        it.advance(run.length(), &localGlyphBuffer);
+        it.advance(runInfo.run.length(), &localGlyphBuffer);
         initialAdvance = finalRoundingWidth + it.m_runWidthSoFar - afterWidth;
+        glyphBuffer.reverse(0, glyphBuffer.size());
     } else {
         initialAdvance = beforeWidth;
     }
-
-    if (run.rtl())
-        glyphBuffer.reverse(0, glyphBuffer.size());
 
     return initialAdvance;
 }
@@ -642,7 +640,7 @@ void Font::drawSimpleText(GraphicsContext* context, const TextRunPaintInfo& runI
     // This glyph buffer holds our glyphs+advances+font data for each glyph.
     GlyphBuffer glyphBuffer;
 
-    float startX = point.x() + getGlyphsAndAdvancesForSimpleText(runInfo.run, runInfo.from, runInfo.to, glyphBuffer);
+    float startX = point.x() + getGlyphsAndAdvancesForSimpleText(runInfo, glyphBuffer);
 
     if (glyphBuffer.isEmpty())
         return;
@@ -654,7 +652,7 @@ void Font::drawSimpleText(GraphicsContext* context, const TextRunPaintInfo& runI
 void Font::drawEmphasisMarksForSimpleText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
 {
     GlyphBuffer glyphBuffer;
-    float initialAdvance = getGlyphsAndAdvancesForSimpleText(runInfo.run, runInfo.from, runInfo.to, glyphBuffer, ForTextEmphasis);
+    float initialAdvance = getGlyphsAndAdvancesForSimpleText(runInfo, glyphBuffer, ForTextEmphasis);
 
     if (glyphBuffer.isEmpty())
         return;
