@@ -45,6 +45,8 @@ public:
         SVG_ZOOMANDPAN_MAGNIFY = SVGZoomAndPanMagnify
     };
 
+    virtual ~SVGZoomAndPan() { }
+
     static bool isKnownAttribute(const QualifiedName&);
     static void addSupportedAttributes(HashSet<QualifiedName>&);
 
