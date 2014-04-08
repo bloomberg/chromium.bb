@@ -311,7 +311,7 @@ class ArchivingStageMixin(object):
         commands.UploadArchivedFile(
             self.archive_path, url, filename, self._run.debug,
             update_list=True, acl=self.acl)
-    except (cros_build_lib.RunCommandError, timeout_util.TimeoutError):
+    except (gs.GSContextException, timeout_util.TimeoutError):
       cros_build_lib.PrintBuildbotStepText('Upload failed')
       if strict:
         raise
