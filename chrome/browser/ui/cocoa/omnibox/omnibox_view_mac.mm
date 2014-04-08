@@ -147,7 +147,10 @@ OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
       selection_before_change_(NSMakeRange(0, 0)),
       marked_range_before_change_(NSMakeRange(0, 0)),
       delete_was_pressed_(false),
-      delete_at_end_pressed_(false) {
+      delete_at_end_pressed_(false),
+      in_coalesced_update_block_(false),
+      do_coalesced_text_update_(false),
+      do_coalesced_range_update_(false) {
   [field_ setObserver:this];
 
   // Needed so that editing doesn't lose the styling.
@@ -238,6 +241,25 @@ void OmniboxViewMac::Update() {
   }
 }
 
+void OmniboxViewMac::OpenMatch(const AutocompleteMatch& match,
+                               WindowOpenDisposition disposition,
+                               const GURL& alternate_nav_url,
+                               const base::string16& pasted_text,
+                               size_t selected_line) {
+  // Coalesce text and selection updates from the following function. If we
+  // don't do this, the user may see intermediate states as brief flickers.
+  in_coalesced_update_block_ = true;
+  OmniboxView::OpenMatch(
+      match, disposition, alternate_nav_url, pasted_text, selected_line);
+  in_coalesced_update_block_ = false;
+  if (do_coalesced_text_update_)
+    SetText(coalesced_text_update_);
+  do_coalesced_text_update_ = false;
+  if (do_coalesced_range_update_)
+    SetSelectedRange(coalesced_range_update_);
+  do_coalesced_range_update_ = false;
+}
+
 base::string16 OmniboxViewMac::GetText() const {
   return base::SysNSStringToUTF16([field_ stringValue]);
 }
@@ -252,6 +274,12 @@ NSRange OmniboxViewMac::GetMarkedRange() const {
 }
 
 void OmniboxViewMac::SetSelectedRange(const NSRange range) {
+  if (in_coalesced_update_block_) {
+    do_coalesced_range_update_ = true;
+    coalesced_range_update_ = range;
+    return;
+  }
+
   // This can be called when we don't have focus.  For instance, when
   // the user clicks the "Go" button.
   if (model()->has_focus()) {
@@ -378,6 +406,14 @@ void OmniboxViewMac::SetText(const base::string16& display_text) {
 }
 
 void OmniboxViewMac::SetTextInternal(const base::string16& display_text) {
+  if (in_coalesced_update_block_) {
+    do_coalesced_text_update_ = true;
+    coalesced_text_update_ = display_text;
+    // Don't do any selection changes, since they apply to the previous text.
+    do_coalesced_range_update_ = false;
+    return;
+  }
+
   NSString* ss = base::SysUTF16ToNSString(display_text);
   NSMutableAttributedString* as =
       [[[NSMutableAttributedString alloc] initWithString:ss] autorelease];
