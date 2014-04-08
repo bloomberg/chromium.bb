@@ -19,7 +19,7 @@
 #include "google_apis/gcm/engine/registration_request.h"
 #include "google_apis/gcm/engine/unregistration_request.h"
 #include "google_apis/gcm/gcm_client.h"
-#include "google_apis/gcm/protocol/checkin.pb.h"
+#include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "net/base/net_log.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -167,12 +167,13 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
 
   // Starts a first time device checkin.
   void StartCheckin();
-  // Completes the device checkin request by parsing the |checkin_response|.
-  // Function also cleans up the pending checkin.
-  void OnCheckinCompleted(
-      const checkin_proto::AndroidCheckinResponse& checkin_response);
-  // Schedules next device checkin, based on |last_checkin_time| and
-  // checkin_interval specified in GServices settings.
+  // Completes the device checkin request.
+  // |android_id| and |security_token| are expected to be non-zero or an error
+  // is triggered. Function also cleans up the pending checkin.
+  void OnCheckinCompleted(uint64 android_id,
+                          uint64 security_token);
+  // Schedules next device checkin, based on |last_checkin_time| and default
+  // checkin interval.
   void SchedulePeriodicCheckin(const base::Time& last_checkin_time);
   // Callback for setting last checkin time in the |gcm_store_|.
   void SetLastCheckinTimeCallback(bool success);

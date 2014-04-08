@@ -48,8 +48,6 @@ class GCM_EXPORT GCMStore {
     RegistrationInfoMap registrations;
     std::vector<std::string> incoming_messages;
     OutgoingMessageMap outgoing_messages;
-    std::map<std::string, std::string> gservices_settings;
-    std::string gservices_digest;
     base::Time last_checkin_time;
   };
 
@@ -108,14 +106,6 @@ class GCM_EXPORT GCMStore {
   // Sets last device's checkin time.
   virtual void SetLastCheckinTime(const base::Time& last_checkin_time,
                                   const UpdateCallback& callback) = 0;
-
-  // G-service settings handling.
-  // Persists |settings| and |settings_digest|. It completely replaces the
-  // existing data.
-  virtual void SetGServicesSettings(
-      const std::map<std::string, std::string>& settings,
-      const std::string& settings_digest,
-      const UpdateCallback& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GCMStore);

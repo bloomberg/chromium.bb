@@ -210,8 +210,7 @@ class MCSProbe {
   void LoadCallback(scoped_ptr<GCMStore::LoadResult> load_result);
   void UpdateCallback(bool success);
   void ErrorCallback();
-  void OnCheckInCompleted(
-      const checkin_proto::AndroidCheckinResponse& checkin_response);
+  void OnCheckInCompleted(uint64 android_id, uint64 secret);
   void StartMCSLogin();
 
   base::DefaultClock clock_;
@@ -424,32 +423,24 @@ void MCSProbe::CheckIn() {
   chrome_build_proto.set_channel(
       checkin_proto::ChromeBuildProto::CHANNEL_CANARY);
   chrome_build_proto.set_chrome_version(kChromeVersion);
-
-  CheckinRequest::RequestInfo request_info(
-      0, 0, std::string(), std::vector<std::string>(), chrome_build_proto);
-
   checkin_request_.reset(new CheckinRequest(
-      request_info,
-      kDefaultBackoffPolicy,
       base::Bind(&MCSProbe::OnCheckInCompleted, base::Unretained(this)),
+      kDefaultBackoffPolicy,
+      chrome_build_proto,
+      0,
+      0,
+      std::vector<std::string>(),
       url_request_context_getter_.get()));
   checkin_request_->Start();
 }
 
-void MCSProbe::OnCheckInCompleted(
-    const checkin_proto::AndroidCheckinResponse& checkin_response) {
-  bool success = checkin_response.has_android_id() &&
-                 checkin_response.android_id() != 0UL &&
-                 checkin_response.has_security_token() &&
-                 checkin_response.security_token() != 0UL;
+void MCSProbe::OnCheckInCompleted(uint64 android_id, uint64 secret) {
   LOG(INFO) << "Check-in request completion "
-            << (success ? "success!" : "failure!");
-
-  if (!success)
+            << (android_id ? "success!" : "failure!");
+  if (!android_id || !secret)
     return;
-
-  android_id_ = checkin_response.android_id();
-  secret_ = checkin_response.security_token();
+  android_id_ = android_id;
+  secret_ = secret;
 
   gcm_store_->SetDeviceCredentials(android_id_,
                                    secret_,
