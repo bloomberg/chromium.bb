@@ -23,36 +23,6 @@ WebPermissions::~WebPermissions()
 {
 }
 
-bool WebPermissions::allowImage(blink::WebLocalFrame*, bool enabledPerSettings, const blink::WebURL& imageURL)
-{
-    return allowImage(enabledPerSettings, imageURL);
-}
-
-bool WebPermissions::allowScriptFromSource(blink::WebLocalFrame*, bool enabledPerSettings, const blink::WebURL& scriptURL)
-{
-    return allowScriptFromSource(enabledPerSettings, scriptURL);
-}
-
-bool WebPermissions::allowStorage(blink::WebLocalFrame*, bool temp)
-{
-    return allowStorage(temp);
-}
-
-bool WebPermissions::allowPlugins(blink::WebLocalFrame*, bool enabledPerSettings)
-{
-    return enabledPerSettings && m_pluginsAllowed;
-}
-
-bool WebPermissions::allowDisplayingInsecureContent(blink::WebLocalFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin& temp1, const blink::WebURL& temp2)
-{
-    return allowDisplayingInsecureContent(enabledPerSettings, temp1, temp2);
-}
-
-bool WebPermissions::allowRunningInsecureContent(blink::WebLocalFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin& temp1, const blink::WebURL& temp2)
-{
-    return allowRunningInsecureContent(enabledPerSettings, temp1, temp2);
-}
-
 bool WebPermissions::allowImage(bool enabledPerSettings, const blink::WebURL& imageURL)
 {
     bool allowed = enabledPerSettings && m_imagesAllowed;

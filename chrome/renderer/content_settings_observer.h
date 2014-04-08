@@ -12,7 +12,6 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "extensions/common/permissions/api_permission.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPermissionClient.h"
 
 class GURL;
@@ -50,47 +49,6 @@ class ContentSettingsObserver
   void DidBlockContentType(ContentSettingsType settings_type);
 
   // blink::WebPermissionClient implementation.
-  // TODO(jam): remove all these methods after Blink rolls.
-  virtual bool allowDatabase(blink::WebLocalFrame* frame,
-                             const blink::WebString& name,
-                             const blink::WebString& display_name,
-                             unsigned long estimated_size);
-  virtual bool allowFileSystem(blink::WebLocalFrame* frame);
-  virtual bool allowImage(blink::WebLocalFrame* frame,
-                          bool enabled_per_settings,
-                          const blink::WebURL& image_url);
-  virtual bool allowIndexedDB(blink::WebLocalFrame* frame,
-                              const blink::WebString& name,
-                              const blink::WebSecurityOrigin& origin);
-  virtual bool allowPlugins(blink::WebLocalFrame* frame,
-                            bool enabled_per_settings);
-  virtual bool allowScript(blink::WebLocalFrame* frame,
-                           bool enabled_per_settings);
-  virtual bool allowScriptFromSource(blink::WebLocalFrame* frame,
-                                     bool enabled_per_settings,
-                                     const blink::WebURL& script_url);
-  virtual bool allowStorage(blink::WebLocalFrame* frame, bool local);
-  virtual bool allowReadFromClipboard(blink::WebLocalFrame* frame,
-                                      bool default_value);
-  virtual bool allowWriteToClipboard(blink::WebLocalFrame* frame,
-                                     bool default_value);
-  virtual bool allowWebComponents(blink::WebLocalFrame* frame, bool);
-  virtual bool allowMutationEvents(blink::WebLocalFrame* frame,
-                                   bool default_value);
-  virtual bool allowPushState(blink::WebLocalFrame* frame);
-  virtual void didNotAllowPlugins(blink::WebLocalFrame* frame);
-  virtual void didNotAllowScript(blink::WebLocalFrame* frame);
-  virtual bool allowDisplayingInsecureContent(
-      blink::WebLocalFrame* frame,
-      bool allowed_per_settings,
-      const blink::WebSecurityOrigin& context,
-      const blink::WebURL& url);
-  virtual bool allowRunningInsecureContent(
-      blink::WebLocalFrame* frame,
-      bool allowed_per_settings,
-      const blink::WebSecurityOrigin& context,
-      const blink::WebURL& url);
-
   virtual bool allowDatabase(const blink::WebString& name,
                              const blink::WebString& display_name,
                              unsigned long estimated_size);

@@ -33,22 +33,6 @@ AwPermissionClient::~AwPermissionClient() {
 }
 
 bool AwPermissionClient::allowDisplayingInsecureContent(
-      blink::WebFrame* frame,
-      bool enabled_per_settings,
-      const blink::WebSecurityOrigin& origin,
-      const blink::WebURL& url) {
-  return allowDisplayingInsecureContent(enabled_per_settings, origin, url);
-}
-
-bool AwPermissionClient::allowRunningInsecureContent(
-      blink::WebFrame* frame,
-      bool enabled_per_settings,
-      const blink::WebSecurityOrigin& origin,
-      const blink::WebURL& url) {
-  return allowRunningInsecureContent(enabled_per_settings, origin, url);
-}
-
-bool AwPermissionClient::allowDisplayingInsecureContent(
       bool enabled_per_settings,
       const blink::WebSecurityOrigin& origin,
       const blink::WebURL& url) {
