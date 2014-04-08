@@ -403,7 +403,6 @@
         'renderer/native_handler.cc',
         'renderer/native_handler.h',
         'renderer/scoped_persistent.h',
-        'renderer/unsafe_persistent.h',
       ],
       'dependencies': [
         '../third_party/WebKit/public/blink.gyp:blink',
