@@ -38,6 +38,7 @@ public:
         , m_xHeight(0)
         , m_zeroWidth(0)
         , m_underlinethickness(0)
+        , m_underlinePosition(0)
         , m_hasXHeight(false)
         , m_hasZeroWidth(false)
     {
@@ -126,6 +127,9 @@ public:
     float underlineThickness() const { return m_underlinethickness; }
     void setUnderlineThickness(float underlineThickness) { m_underlinethickness = underlineThickness; }
 
+    float underlinePosition() const { return m_underlinePosition; }
+    void setUnderlinePosition(float underlinePosition) { m_underlinePosition = underlinePosition; }
+
 private:
     friend class SimpleFontData;
 
@@ -139,6 +143,7 @@ private:
         m_xHeight = 0;
         m_hasXHeight = false;
         m_underlinethickness = 0;
+        m_underlinePosition = 0;
     }
 
     unsigned m_unitsPerEm;
@@ -149,6 +154,7 @@ private:
     float m_xHeight;
     float m_zeroWidth;
     float m_underlinethickness;
+    float m_underlinePosition;
     bool m_hasXHeight;
     bool m_hasZeroWidth;
 };

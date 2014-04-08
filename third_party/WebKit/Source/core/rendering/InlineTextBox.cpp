@@ -920,7 +920,18 @@ static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition,
 {
     // Compute the gap between the font and the underline. Use at least one
     // pixel gap, if underline is thick then use a bigger gap.
-    const int gap = std::max<int>(1, ceilf(textDecorationThickness / 2.f));
+    int gap = 0;
+
+    // Underline position of zero means draw underline on Baseline Position,
+    // in Blink we need at least 1-pixel gap to adding following check.
+    // Positive underline Position means underline should be drawn above baselin e
+    // and negative value means drawing below baseline, negating the value as in Blink
+    // downward Y-increases.
+
+    if (fontMetrics.underlinePosition())
+        gap = -fontMetrics.underlinePosition();
+    else
+        gap = std::max<int>(1, ceilf(textDecorationThickness / 2.f));
 
     // FIXME: We support only horizontal text for now.
     switch (underlinePosition) {

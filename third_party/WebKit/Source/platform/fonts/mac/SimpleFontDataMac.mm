@@ -213,6 +213,7 @@ void SimpleFontData::platformInit()
     float descent = -scaleEmToUnits(iDescent, unitsPerEm) * pointSize;
     float lineGap = scaleEmToUnits(iLineGap, unitsPerEm) * pointSize;
     float underlineThickness = CTFontGetUnderlineThickness(m_platformData.ctFont());
+    float underlinePosition = CTFontGetUnderlinePosition(m_platformData.ctFont());
 
     // We need to adjust Times, Helvetica, and Courier to closely match the
     // vertical metrics of their Microsoft counterparts that are the de facto
@@ -256,6 +257,7 @@ void SimpleFontData::platformInit()
     m_fontMetrics.setLineGap(lineGap);
     m_fontMetrics.setXHeight(xHeight);
     m_fontMetrics.setUnderlineThickness(underlineThickness);
+    m_fontMetrics.setUnderlinePosition(underlinePosition);
 }
 
 static CFDataRef copyFontTableForTag(FontPlatformData& platformData, FourCharCode tableName)
