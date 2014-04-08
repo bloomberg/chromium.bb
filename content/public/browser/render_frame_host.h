@@ -64,22 +64,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns the associated widget's native view.
   virtual gfx::NativeView GetNativeView() = 0;
 
-  // Runs the beforeunload handler for this frame.  The result will be returned
-  // via FrameMsg_BeforeUnload_ACK.  Currently only used for the main frame.
-  // See also ClosePage and SwapOut in RenderViewHost, which run the unload
-  // handler.
-  //
-  // |for_cross_site_transition| indicates whether this call is for the current
-  // frame during a cross-process navigation.  False means we're closing the
-  // entire tab.
-  //
-  // TODO(creis): We should run the beforeunload handler for every frame that
-  // has one.
-  // TODO(creis): This should be public on the Navigator interface instead of
-  // RenderFrameHost, since callers outside content shouldn't need to call this
-  // directly on subframes.
-  virtual void DispatchBeforeUnload(bool for_cross_site_transition) = 0;
-
   // Runs some JavaScript in this frame's context. If a callback is provided, it
   // will be used to return the result, when the result is available.
   typedef base::Callback<void(const base::Value*)> JavaScriptResultCallback;

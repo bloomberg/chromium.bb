@@ -55,7 +55,6 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   virtual bool IsCrossProcessSubframe() OVERRIDE;
   virtual GURL GetLastCommittedURL() OVERRIDE;
   virtual gfx::NativeView GetNativeView() OVERRIDE;
-  virtual void DispatchBeforeUnload(bool for_cross_site_transition) OVERRIDE;
   virtual void ExecuteJavaScript(
       const base::string16& javascript) OVERRIDE;
   virtual void ExecuteJavaScript(
@@ -142,6 +141,11 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   // Load the specified URL; this is a shortcut for Navigate().
   void NavigateToURL(const GURL& url);
+
+  // Runs the beforeunload handler for this frame. |for_cross_site_transition|
+  // indicates whether this call is for the current frame during a cross-process
+  // navigation. False means we're closing the entire tab.
+  void DispatchBeforeUnload(bool for_cross_site_transition);
 
   // Deletes the current selection plus the specified number of characters
   // before and after the selection or caret.

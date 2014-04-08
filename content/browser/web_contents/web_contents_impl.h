@@ -235,6 +235,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void WasShown() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual bool NeedToFireBeforeUnload() OVERRIDE;
+  virtual void DispatchBeforeUnload(bool for_cross_site_transition) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual WebContents* Clone() OVERRIDE;
   virtual void ReloadFocusedFrame(bool ignore_cache) OVERRIDE;

@@ -999,6 +999,11 @@ bool WebContentsImpl::NeedToFireBeforeUnload() {
           GetRenderViewHost())->SuddenTerminationAllowed();
 }
 
+void WebContentsImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
+  static_cast<RenderFrameHostImpl*>(GetMainFrame())->DispatchBeforeUnload(
+      for_cross_site_transition);
+}
+
 void WebContentsImpl::Stop() {
   GetRenderManager()->Stop();
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, NavigationStopped());

@@ -133,49 +133,6 @@ gfx::NativeView RenderFrameHostImpl::GetNativeView() {
   return view->GetNativeView();
 }
 
-void RenderFrameHostImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
-  // TODO(creis): Support subframes.
-  DCHECK(!GetParent());
-
-  if (!render_view_host_->IsRenderViewLive()) {
-    // We don't have a live renderer, so just skip running beforeunload.
-    render_view_host_->is_waiting_for_beforeunload_ack_ = true;
-    render_view_host_->unload_ack_is_for_cross_site_transition_ =
-        for_cross_site_transition;
-    base::TimeTicks now = base::TimeTicks::Now();
-    OnBeforeUnloadACK(true, now, now);
-    return;
-  }
-
-  // This may be called more than once (if the user clicks the tab close button
-  // several times, or if she clicks the tab close button then the browser close
-  // button), and we only send the message once.
-  if (render_view_host_->is_waiting_for_beforeunload_ack_) {
-    // Some of our close messages could be for the tab, others for cross-site
-    // transitions. We always want to think it's for closing the tab if any
-    // of the messages were, since otherwise it might be impossible to close
-    // (if there was a cross-site "close" request pending when the user clicked
-    // the close button). We want to keep the "for cross site" flag only if
-    // both the old and the new ones are also for cross site.
-    render_view_host_->unload_ack_is_for_cross_site_transition_ =
-        render_view_host_->unload_ack_is_for_cross_site_transition_ &&
-        for_cross_site_transition;
-  } else {
-    // Start the hang monitor in case the renderer hangs in the beforeunload
-    // handler.
-    render_view_host_->is_waiting_for_beforeunload_ack_ = true;
-    render_view_host_->unload_ack_is_for_cross_site_transition_ =
-        for_cross_site_transition;
-    // Increment the in-flight event count, to ensure that input events won't
-    // cancel the timeout timer.
-    render_view_host_->increment_in_flight_event_count();
-    render_view_host_->StartHangMonitorTimeout(
-        TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
-    send_before_unload_start_time_ = base::TimeTicks::Now();
-    Send(new FrameMsg_BeforeUnload(routing_id_));
-  }
-}
-
 void RenderFrameHostImpl::ExecuteJavaScript(
     const base::string16& javascript) {
   Send(new FrameMsg_JavaScriptExecuteRequest(routing_id_,
@@ -686,6 +643,49 @@ void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
   params.transition = PAGE_TRANSITION_LINK;
   params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   Navigate(params);
+}
+
+void RenderFrameHostImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
+  // TODO(creis): Support subframes.
+  DCHECK(!GetParent());
+
+  if (!render_view_host_->IsRenderViewLive()) {
+    // We don't have a live renderer, so just skip running beforeunload.
+    render_view_host_->is_waiting_for_beforeunload_ack_ = true;
+    render_view_host_->unload_ack_is_for_cross_site_transition_ =
+        for_cross_site_transition;
+    base::TimeTicks now = base::TimeTicks::Now();
+    OnBeforeUnloadACK(true, now, now);
+    return;
+  }
+
+  // This may be called more than once (if the user clicks the tab close button
+  // several times, or if she clicks the tab close button then the browser close
+  // button), and we only send the message once.
+  if (render_view_host_->is_waiting_for_beforeunload_ack_) {
+    // Some of our close messages could be for the tab, others for cross-site
+    // transitions. We always want to think it's for closing the tab if any
+    // of the messages were, since otherwise it might be impossible to close
+    // (if there was a cross-site "close" request pending when the user clicked
+    // the close button). We want to keep the "for cross site" flag only if
+    // both the old and the new ones are also for cross site.
+    render_view_host_->unload_ack_is_for_cross_site_transition_ =
+        render_view_host_->unload_ack_is_for_cross_site_transition_ &&
+        for_cross_site_transition;
+  } else {
+    // Start the hang monitor in case the renderer hangs in the beforeunload
+    // handler.
+    render_view_host_->is_waiting_for_beforeunload_ack_ = true;
+    render_view_host_->unload_ack_is_for_cross_site_transition_ =
+        for_cross_site_transition;
+    // Increment the in-flight event count, to ensure that input events won't
+    // cancel the timeout timer.
+    render_view_host_->increment_in_flight_event_count();
+    render_view_host_->StartHangMonitorTimeout(
+        TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
+    send_before_unload_start_time_ = base::TimeTicks::Now();
+    Send(new FrameMsg_BeforeUnload(routing_id_));
+  }
 }
 
 void RenderFrameHostImpl::ExtendSelectionAndDelete(size_t before,
