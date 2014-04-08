@@ -121,6 +121,7 @@ v8.log
 /chrome/test/data/perf/third_party/
 /chrome/test/data/plugin/
 /chrome/test/data/pyauto_private
+/chrome/test/data/webrtc/resources
 /chrome/tools/memory
 /chrome/tools/test/reference_build
 /chrome/unit_tests_run.xml

@@ -16,17 +16,17 @@ class WebContents;
 
 namespace test {
 
-// Reference video locations.
+// Reference file locations.
 
-// Checks if the user has the reference video files, returns true if so.
+// Checks if the user has the reference files directory, returns true if so.
 // If the user's checkout don't have these dirs, they need to configure their
-// .gclient as described in kAdviseOnGclientSolution. The reason for this is
-// that we don't want to burden regular chrome devs with downloading these
-// sizable reference files by default.
+// .gclient as described in chrome/test/data/webrtc/resources/README. The reason
+// for this is that we don't want to burden regular chrome devs with downloading
+// these sizable reference files by default.
 bool HasReferenceFilesInCheckout();
 
-// Retrieves the reference video dir, to which file names can be appended.
-base::FilePath GetReferenceVideosDir();
+// Retrieves the reference files dir, to which file names can be appended.
+base::FilePath GetReferenceFilesDir();
 
 extern const base::FilePath::CharType kReferenceFileName360p[];
 extern const base::FilePath::CharType kYuvFileExtension[];

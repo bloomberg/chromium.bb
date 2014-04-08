@@ -190,6 +190,7 @@ function sendFrames() {
   if (!gWebSocketOpened) {
     console.log('WebSocket connection is not yet open');
     setTimeout(function() { sendFrames(); }, 100);
+    return;
   }
 
   progressBar = document.getElementById('progress-bar');

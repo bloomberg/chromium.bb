@@ -79,7 +79,7 @@ static const char kPyWebSocketPortNumber[] = "12221";
 // Test the video quality of the WebRTC output.
 //
 // Prerequisites: This test case must run on a machine with a chrome playing
-// the video from the reference files located int GetReferenceVideosDir().
+// the video from the reference files located in GetReferenceFilesDir().
 // The file kReferenceY4mFileName.kY4mFileExtension is played using a
 // FileVideoCaptureDevice and its sibling with kYuvFileExtension is used for
 // comparison.
@@ -113,7 +113,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // Set up the command line option with the expected file name. We will check
     // its existence in HasAllRequiredResources().
-    webrtc_reference_video_y4m_ = test::GetReferenceVideosDir()
+    webrtc_reference_video_y4m_ = test::GetReferenceFilesDir()
         .Append(test::kReferenceFileName360p)
         .AddExtension(test::kY4mFileExtension);
     command_line->AppendSwitchPath(switches::kUseFileForFakeVideoCapture,
@@ -141,7 +141,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
     base::FilePath pywebsocket_server = path_pywebsocket_dir.Append(
         FILE_PATH_LITERAL("mod_pywebsocket/standalone.py"));
     base::FilePath path_to_data_handler =
-        GetSourceDir().Append(FILE_PATH_LITERAL("chrome/test/functional"));
+        GetSourceDir().Append(FILE_PATH_LITERAL("chrome/test/data/webrtc/wsh"));
 
     if (!base::PathExists(pywebsocket_server)) {
       LOG(ERROR) << "Missing pywebsocket server.";
@@ -298,9 +298,8 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
   base::FilePath webrtc_reference_video_y4m_;
 };
 
-// Disabled due to crbug.com/360033.
 IN_PROC_BROWSER_TEST_F(WebRtcVideoQualityBrowserTest,
-                       DISABLED_MANUAL_TestVGAVideoQuality) {
+                       MANUAL_TestVGAVideoQuality) {
 #if defined(OS_WIN)
   // Fails on XP. http://crbug.com/353078
   if (base::win::GetVersion() <= base::win::VERSION_XP)
@@ -358,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoQualityBrowserTest,
       k360pWidth,
       k360pHeight,
       GetWorkingDir().Append(kCapturedYuvFileName),
-      test::GetReferenceVideosDir()
+      test::GetReferenceFilesDir()
           .Append(test::kReferenceFileName360p)
           .AddExtension(test::kYuvFileExtension),
       GetWorkingDir().Append(kStatsFileName)));

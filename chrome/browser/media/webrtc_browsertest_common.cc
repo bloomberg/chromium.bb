@@ -13,12 +13,14 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/chrome_paths.h"
 #include "content/public/test/browser_test_utils.h"
 
 namespace test {
 
-const base::FilePath::CharType kReferenceVideosDirName[] =
-    FILE_PATH_LITERAL("webrtc.DEPS/webrtc_videos");
+// Relative to the chrome/test/data directory.
+const base::FilePath::CharType kReferenceFilesDirName[] =
+    FILE_PATH_LITERAL("webrtc/resources");
 const base::FilePath::CharType kReferenceFileName360p[] =
     FILE_PATH_LITERAL("reference_video_640x360_30fps");
 const base::FilePath::CharType kYuvFileExtension[] = FILE_PATH_LITERAL("yuv");
@@ -36,33 +38,22 @@ static const char kAdviseOnGclientSolution[] =
 
 const int kDefaultPollIntervalMsec = 250;
 
-base::FilePath GetReferenceVideosDir() {
-  // FilePath does not tolerate relative paths, and we want to hang the
-  // kReferenceVideosDirName at the same level as Chromium codebase, so we
-  // need to subtract the trailing .../src manually from the path.
-  const size_t src_token_length = 3u;
-  const base::FilePath::StringType src_token(FILE_PATH_LITERAL("src"));
+base::FilePath GetReferenceFilesDir() {
+  base::FilePath test_data_dir;
+  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
 
-  base::FilePath source_dir;
-  PathService::Get(base::DIR_SOURCE_ROOT, &source_dir);
-
-  base::FilePath::StringType path = source_dir.value();
-  DCHECK_GT(path.size(), src_token_length);
-  std::size_t found = path.rfind(src_token);
-  if (found != std::string::npos)
-    path.erase(found, src_token_length);
-  return base::FilePath(path).Append(kReferenceVideosDirName);
+  return test_data_dir.Append(kReferenceFilesDirName);
 }
 
 bool HasReferenceFilesInCheckout() {
-  if (!base::PathExists(GetReferenceVideosDir())) {
+  if (!base::PathExists(GetReferenceFilesDir())) {
     LOG(ERROR)
         << "Cannot find the working directory for the reference video "
-        << "files, expected at " << GetReferenceVideosDir().value() << ". " <<
+        << "files, expected at " << GetReferenceFilesDir().value() << ". " <<
         kAdviseOnGclientSolution;
     return false;
   }
-  base::FilePath webrtc_reference_video_yuv = GetReferenceVideosDir()
+  base::FilePath webrtc_reference_video_yuv = GetReferenceFilesDir()
       .Append(kReferenceFileName360p).AddExtension(kYuvFileExtension);
   if (!base::PathExists(webrtc_reference_video_yuv)) {
     LOG(ERROR)
@@ -72,7 +63,7 @@ bool HasReferenceFilesInCheckout() {
     return false;
   }
 
-  base::FilePath webrtc_reference_video_y4m = GetReferenceVideosDir()
+  base::FilePath webrtc_reference_video_y4m = GetReferenceFilesDir()
       .Append(kReferenceFileName360p).AddExtension(kY4mFileExtension);
   if (!base::PathExists(webrtc_reference_video_y4m)) {
     LOG(ERROR)

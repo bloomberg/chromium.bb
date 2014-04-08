@@ -57,7 +57,7 @@ class WebRtcBrowserTest : public WebRtcTestBase,
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream));
 
     // Play a suitable, somewhat realistic video file.
-    base::FilePath input_video = test::GetReferenceVideosDir()
+    base::FilePath input_video = test::GetReferenceFilesDir()
         .Append(test::kReferenceFileName360p)
         .AddExtension(test::kY4mFileExtension);
     command_line->AppendSwitchPath(switches::kUseFileForFakeVideoCapture,

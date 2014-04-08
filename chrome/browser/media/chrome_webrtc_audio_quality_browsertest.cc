@@ -24,33 +24,27 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/perf/perf_test.h"
 
+// These are relative to the reference file dir defined by
+// webrtc_browsertest_common.h (i.e. chrome/test/data/webrtc/resources).
 static const base::FilePath::CharType kReferenceFile[] =
 #if defined (OS_WIN)
-    FILE_PATH_LITERAL("pyauto_private/webrtc/human-voice-win.wav");
+    FILE_PATH_LITERAL("human-voice-win.wav");
 #else
-    FILE_PATH_LITERAL("pyauto_private/webrtc/human-voice-linux.wav");
+    FILE_PATH_LITERAL("human-voice-linux.wav");
 #endif
 
 // The javascript will load the reference file relative to its location,
-// which is in /webrtc on the web server. Therefore, prepend a '..' traversal.
+// which is in /webrtc on the web server. The files we are looking for are in
+// webrtc/resources in the chrome/test/data folder.
 static const char kReferenceFileRelativeUrl[] =
 #if defined (OS_WIN)
-    "../pyauto_private/webrtc/human-voice-win.wav";
+    "resources/human-voice-win.wav";
 #else
-    "../pyauto_private/webrtc/human-voice-linux.wav";
+    "resources/human-voice-linux.wav";
 #endif
-
-static const base::FilePath::CharType kToolsPath[] =
-    FILE_PATH_LITERAL("pyauto_private/media/tools");
 
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_audio_quality_test.html";
-
-static base::FilePath GetTestDataDir() {
-  base::FilePath source_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &source_dir);
-  return source_dir;
-}
 
 // Test we can set up a WebRTC call and play audio through it.
 //
@@ -108,16 +102,6 @@ class WebRtcAudioQualityBrowserTest : public WebRtcTestBase,
     bool enable_audio_track_processing = GetParam();
     if (enable_audio_track_processing)
       command_line->AppendSwitch(switches::kEnableAudioTrackProcessing);
-  }
-
-  bool HasAllRequiredResources() {
-    base::FilePath reference_file = GetTestDataDir().Append(kReferenceFile);
-    if (!base::PathExists(reference_file)) {
-      LOG(ERROR) << "Cannot find the reference file to be used for audio "
-          << "quality comparison: " << reference_file.value();
-      return false;
-    }
-    return true;
   }
 
   void AddAudioFile(const std::string& input_file_relative_url,
@@ -227,7 +211,7 @@ class AudioRecorder {
 
 bool ForceMicrophoneVolumeTo100Percent() {
 #if defined(OS_WIN)
-  CommandLine command_line(GetTestDataDir().Append(kToolsPath).Append(
+  CommandLine command_line(test::GetReferenceFilesDir().Append(
       FILE_PATH_LITERAL("force_mic_volume_max.exe")));
   VLOG(0) << "Running " << command_line.GetCommandLineString();
   std::string result;
@@ -275,7 +259,7 @@ bool RemoveSilence(const base::FilePath& input_file,
   const char* kTreshold = "5%";
 
 #if defined(OS_WIN)
-  CommandLine command_line(GetTestDataDir().Append(kToolsPath).Append(
+  CommandLine command_line(test::GetReferenceFilesDir().Append(
       FILE_PATH_LITERAL("sox.exe")));
 #else
   CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("sox")));
@@ -324,10 +308,10 @@ bool RunPesq(const base::FilePath& reference_file,
 
 #if defined(OS_WIN)
   base::FilePath pesq_path =
-      GetTestDataDir().Append(kToolsPath).Append(FILE_PATH_LITERAL("pesq.exe"));
+      test::GetReferenceFilesDir().Append(FILE_PATH_LITERAL("pesq.exe"));
 #else
   base::FilePath pesq_path =
-      GetTestDataDir().Append(kToolsPath).Append(FILE_PATH_LITERAL("pesq"));
+      test::GetReferenceFilesDir().Append(FILE_PATH_LITERAL("pesq"));
 #endif
 
   if (!base::PathExists(pesq_path)) {
@@ -378,9 +362,8 @@ INSTANTIATE_TEST_CASE_P(WebRtcAudioQualityBrowserTests,
 #define MAYBE_MANUAL_TestAudioQuality DISABLED_MANUAL_TestAudioQuality
 #endif
 
-// Disabled due to crbug.com/359579.
 IN_PROC_BROWSER_TEST_P(WebRtcAudioQualityBrowserTest,
-                       DISABLED_MANUAL_TestAudioQuality) {
+                       MANUAL_TestAudioQuality) {
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     // It would take work to implement this on XP; not prioritized right now.
@@ -388,7 +371,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioQualityBrowserTest,
     return;
   }
 #endif
-  ASSERT_TRUE(HasAllRequiredResources());
+  ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
@@ -446,7 +429,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioQualityBrowserTest,
   std::string raw_mos;
   std::string mos_lqo;
   base::FilePath reference_file_in_test_dir =
-      GetTestDataDir().Append(kReferenceFile);
+      test::GetReferenceFilesDir().Append(kReferenceFile);
   ASSERT_TRUE(RunPesq(reference_file_in_test_dir, trimmed_recording, 16000,
                       &raw_mos, &mos_lqo));
 
