@@ -20,6 +20,8 @@
 
 using blink::WebServiceWorkerError;
 
+namespace content {
+
 namespace {
 
 const char kDisabledErrorMessage[] =
@@ -32,9 +34,9 @@ const uint32 kFilteredMessageClasses[] = {
   EmbeddedWorkerMsgStart,
 };
 
-}  // namespace
+void NoOpStatusCallback(ServiceWorkerStatusCode status) {}
 
-namespace content {
+}  // namespace
 
 ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
     int render_process_id,
@@ -90,7 +92,8 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnRemoveScriptClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SetVersionId,
                         OnSetHostedVersionId)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessage, OnPostMessage)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessage,
+                        OnPostMessage)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStarted,
                         OnWorkerStarted)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStopped,
@@ -165,7 +168,7 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
 }
 
 void ServiceWorkerDispatcherHost::OnPostMessage(
-    int64 registration_id,
+    int64 version_id,
     const base::string16& message,
     const std::vector<int>& sent_message_port_ids) {
   if (!context_ || !ServiceWorkerUtils::IsFeatureEnabled())
@@ -180,33 +183,12 @@ void ServiceWorkerDispatcherHost::OnPostMessage(
         new_routing_ids[i]);
   }
 
-  context_->storage()->FindRegistrationForId(
-      registration_id,
-      base::Bind(&ServiceWorkerDispatcherHost::PostMessageFoundRegistration,
-                 message,
-                 sent_message_port_ids,
-                 new_routing_ids));
-}
-
-namespace {
-void NoOpStatusCallback(ServiceWorkerStatusCode status) {}
-}  // namespace
-
-// static
-void ServiceWorkerDispatcherHost::PostMessageFoundRegistration(
-    const base::string16& message,
-    const std::vector<int>& sent_message_port_ids,
-    const std::vector<int>& new_routing_ids,
-    ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& result) {
-  if (status != SERVICE_WORKER_OK)
-    return;
-  DCHECK(result);
-
-  // TODO(jsbell): Route message to appropriate version. crbug.com/351797
-  ServiceWorkerVersion* version = result->GetNewestVersion();
+  // TODO(kinuko,michaeln): Make sure we keep the version that has
+  // corresponding WebServiceWorkerImpl alive.
+  ServiceWorkerVersion* version = context_->GetLiveVersion(version_id);
   if (!version)
     return;
+
   version->SendMessage(
       ServiceWorkerMsg_Message(message, sent_message_port_ids, new_routing_ids),
       base::Bind(&NoOpStatusCallback));
@@ -273,14 +255,15 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
     int32 thread_id,
     int32 request_id,
     ServiceWorkerStatusCode status,
-    int64 registration_id) {
+    int64 registration_id,
+    int64 version_id) {
   if (status != SERVICE_WORKER_OK) {
     SendRegistrationError(thread_id, request_id, status);
     return;
   }
 
   Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
-      thread_id, request_id, registration_id));
+      thread_id, request_id, version_id));
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerStarted(

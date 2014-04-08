@@ -55,7 +55,7 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_UnregisterServiceWorker,
 
 // Sends a 'message' event to a service worker (renderer->browser).
 IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_PostMessage,
-                     int64 /* registration_id */,
+                     int64 /* version_id */,
                      base::string16 /* message */,
                      std::vector<int> /* sent_message_port_ids */)
 
@@ -105,7 +105,7 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_FetchEventFinished,
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerRegistered,
                      int32 /* thread_id */,
                      int32 /* request_id */,
-                     int64 /* service_worker_id */)
+                     int64 /* version_id */)
 
 // Response to ServiceWorkerMsg_UnregisterServiceWorker
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_ServiceWorkerUnregistered,

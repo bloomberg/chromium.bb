@@ -73,6 +73,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
       base::WeakPtr<ServiceWorkerContextCore> context);
 
   int64 version_id() const { return version_id_; }
+  ServiceWorkerRegistration* registration() { return registration_.get(); }
 
   void Shutdown();
   bool is_shutdown() const { return is_shutdown_; }

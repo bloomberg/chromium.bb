@@ -21,7 +21,7 @@ WebServiceWorkerImpl::~WebServiceWorkerImpl() {}
 void WebServiceWorkerImpl::postMessage(const WebString& message,
                                        WebMessagePortChannelArray* channels) {
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_PostMessage(
-      registration_id_,
+      version_id_,
       message,
       WebMessagePortChannelImpl::ExtractMessagePortIDs(channels)));
 }

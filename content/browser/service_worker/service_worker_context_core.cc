@@ -93,14 +93,19 @@ void ServiceWorkerContextCore::UnregisterServiceWorker(
 void ServiceWorkerContextCore::RegistrationComplete(
     const ServiceWorkerContextCore::RegistrationCallback& callback,
     ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+    ServiceWorkerVersion* version) {
   if (status != SERVICE_WORKER_OK) {
-    DCHECK(!registration);
-    callback.Run(status, -1L);
+    DCHECK(!version);
+    callback.Run(status,
+                 kInvalidServiceWorkerRegistrationId,
+                 kInvalidServiceWorkerVersionId);
     return;
   }
 
-  callback.Run(status, registration->id());
+  DCHECK(version->registration());
+  callback.Run(status,
+               version->registration()->id(),
+               version->version_id());
 }
 
 ServiceWorkerRegistration* ServiceWorkerContextCore::GetLiveRegistration(

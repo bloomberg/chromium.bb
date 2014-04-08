@@ -17,9 +17,9 @@ class ThreadSafeSender;
 class WebServiceWorkerImpl
     : NON_EXPORTED_BASE(public blink::WebServiceWorker) {
  public:
-  WebServiceWorkerImpl(int64 registration_id,
+  WebServiceWorkerImpl(int64 version_id,
                        ThreadSafeSender* thread_safe_sender)
-      : registration_id_(registration_id),
+      : version_id_(version_id),
         thread_safe_sender_(thread_safe_sender) {}
   virtual ~WebServiceWorkerImpl();
 
@@ -27,7 +27,7 @@ class WebServiceWorkerImpl
                            blink::WebMessagePortChannelArray* channels);
 
  private:
-  int64 registration_id_;
+  int64 version_id_;
   ThreadSafeSender* thread_safe_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerImpl);

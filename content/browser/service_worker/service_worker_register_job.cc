@@ -85,6 +85,7 @@ void ServiceWorkerRegisterJob::HandleExistingRegistrationAndContinue(
       UpdateAndContinue(status);
       return;
     }
+    RunCallbacks(status, registration_->active_version());
     Complete(SERVICE_WORKER_OK);
     return;
   }
@@ -173,7 +174,7 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
   // to the callbacks, so pendingWorker must be set first.
   DCHECK(!registration_->pending_version());
   registration_->set_pending_version(pending_version_);
-  RunCallbacks(status);
+  RunCallbacks(status, pending_version_.get());
 
   InstallAndContinue();
 }
@@ -217,7 +218,11 @@ void ServiceWorkerRegisterJob::ActivateAndContinue() {
 }
 
 void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
-  RunCallbacks(status);
+  // In success case the callbacks must have been dispatched already
+  // (so this is no-op), otherwise we must have come here for abort case,
+  // so dispatch callbacks with NULL.
+  DCHECK(callbacks_.empty() || status != SERVICE_WORKER_OK);
+  RunCallbacks(status, NULL);
 
   // If |pending_version_| exists, it was not activated, so we are the sole
   // owner of it, so it will be destroyed when this job ends, so Shutdown here.
@@ -233,11 +238,12 @@ void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
   context_->job_coordinator()->FinishJob(pattern_, this);
 }
 
-void ServiceWorkerRegisterJob::RunCallbacks(ServiceWorkerStatusCode status) {
+void ServiceWorkerRegisterJob::RunCallbacks(ServiceWorkerStatusCode status,
+                                            ServiceWorkerVersion* version) {
   for (std::vector<RegistrationCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end();
        ++it) {
-    it->Run(status, status == SERVICE_WORKER_OK ? registration_ : NULL);
+    it->Run(status, version);
   }
   callbacks_.clear();
 }

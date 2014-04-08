@@ -47,7 +47,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
           public base::SupportsWeakPtr<ServiceWorkerContextCore>) {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status,
-                              int64 registration_id)> RegistrationCallback;
+                              int64 registration_id,
+                              int64 version_id)> RegistrationCallback;
   typedef base::Callback<
       void(ServiceWorkerStatusCode status)> UnregistrationCallback;
 
@@ -105,7 +106,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void RegistrationComplete(
       const RegistrationCallback& callback,
       ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
+      ServiceWorkerVersion* version);
 
   ProcessToProviderMap providers_;
   scoped_ptr<ServiceWorkerStorage> storage_;

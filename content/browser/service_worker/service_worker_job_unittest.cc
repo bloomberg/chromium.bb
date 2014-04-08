@@ -26,10 +26,10 @@ void SaveRegistrationCallback(
     bool* called,
     scoped_refptr<ServiceWorkerRegistration>* registration,
     ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& result) {
+    ServiceWorkerVersion* result) {
   EXPECT_EQ(expected_status, status);
   *called = true;
-  *registration = result;
+  *registration = result ? result->registration() : NULL;
 }
 
 void SaveFoundRegistrationCallback(

@@ -68,7 +68,9 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   virtual void OnWorkerRunLoopStopped() OVERRIDE;
 
   // The asynchronous success response to RegisterServiceWorker.
-  void OnRegistered(int32 thread_id, int32 request_id, int64 registration_id);
+  void OnRegistered(int32 thread_id,
+                    int32 request_id,
+                    int64 version_id);
   // The asynchronous success response to UregisterServiceWorker.
   void OnUnregistered(int32 thread_id,
                       int32 request_id);

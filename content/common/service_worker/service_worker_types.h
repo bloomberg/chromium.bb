@@ -22,7 +22,10 @@ namespace content {
 // and embedded worker.
 const static int kInvalidServiceWorkerRequestId = -1;
 
+// Constants for invalid identifiers.
 const static int kInvalidServiceWorkerProviderId = -1;
+const static int64 kInvalidServiceWorkerRegistrationId = -1;
+const static int64 kInvalidServiceWorkerVersionId = -1;
 
 // To dispatch fetch request from browser to child process.
 // TODO(kinuko): This struct will definitely need more fields and

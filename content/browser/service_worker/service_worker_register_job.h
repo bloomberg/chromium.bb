@@ -34,8 +34,8 @@ class ServiceWorkerStorage;
 class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status,
-                              const scoped_refptr<ServiceWorkerRegistration>&
-                                  registration)> RegistrationCallback;
+                              ServiceWorkerVersion* version)>
+      RegistrationCallback;
 
   ServiceWorkerRegisterJob(base::WeakPtr<ServiceWorkerContextCore> context,
                            const GURL& pattern,
@@ -65,7 +65,8 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void ActivateAndContinue();
   void Complete(ServiceWorkerStatusCode status);
 
-  void RunCallbacks(ServiceWorkerStatusCode status);
+  void RunCallbacks(ServiceWorkerStatusCode status,
+                    ServiceWorkerVersion* version);
 
   // The ServiceWorkerStorage object should always outlive this.
   base::WeakPtr<ServiceWorkerContextCore> context_;
