@@ -480,6 +480,34 @@ TEST_F(MaximizeModeWindowManagerTest, IgnoreRestoreStateChages) {
   DestroyMaximizeModeWindowManager();
 }
 
+// Check that minimize and restore do the right thing.
+TEST_F(MaximizeModeWindowManagerTest, TestMinimize) {
+  gfx::Rect rect(10, 10, 100, 100);
+  scoped_ptr<aura::Window> window(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL,
+                                  rect));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  EXPECT_EQ(rect.ToString(), window->bounds().ToString());
+  ash::Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_FALSE(window_state->IsMinimized());
+  EXPECT_TRUE(window->IsVisible());
+
+  window_state->Minimize();
+  EXPECT_FALSE(window_state->IsMaximized());
+  EXPECT_TRUE(window_state->IsMinimized());
+  EXPECT_FALSE(window->IsVisible());
+
+  window_state->Maximize();
+  EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_FALSE(window_state->IsMinimized());
+  EXPECT_TRUE(window->IsVisible());
+
+  ash::Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+  EXPECT_FALSE(window_state->IsMaximized());
+  EXPECT_FALSE(window_state->IsMinimized());
+  EXPECT_TRUE(window->IsVisible());
+}
+
 // Check that a full screen window is changing to maximized in maximize mode,
 // cannot go to fullscreen and goes back to fullscreen thereafter.
 TEST_F(MaximizeModeWindowManagerTest, FullScreenModeTests) {

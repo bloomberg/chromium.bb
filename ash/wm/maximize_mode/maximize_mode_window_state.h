@@ -45,6 +45,9 @@ class MaximizeModeWindowState : public wm::WindowState::State {
   // set to true, a bounds change will be animated - otherwise immediate.
   void MaximizeOrCenterWindow(wm::WindowState* window_state, bool animate);
 
+  // Minimize the window.
+  void Minimize(wm::WindowState* window_state);
+
   // The original state object of the window.
   scoped_ptr<wm::WindowState::State> old_state_;
 
