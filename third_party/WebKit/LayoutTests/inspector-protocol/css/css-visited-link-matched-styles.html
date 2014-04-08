@@ -1,0 +1,122 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="css-protocol-test.js"></script>
+<script type="text/javascript">
+function test()
+{
+setTimeout(InspectorTest.completeTest.bind(InspectorTest), 2000);
+    var nodeInfo = {};
+    InspectorTest.eventHandler["DOM.setChildNodes"] = setChildNodes;
+    InspectorTest.sendCommandOrDie("CSS.enable", {}, onCSSEnabled);
+
+    function onCSSEnabled()
+    {
+        InspectorTest.requestNodeId("#redlink", onNodeReceived);
+    }
+
+    function onNodeReceived(nodeId)
+    {
+        dumpVisitedAndLinkRules(nodeId, onLinkDumped);
+    }
+
+    function onLinkDumped()
+    {
+        InspectorTest.requestNodeId("#shadow-host", onShadowHost);
+    }
+
+    function onShadowHost(nodeId)
+    {
+        var node = nodeInfo[nodeId];
+        if (!node) {
+            InspectorTest.log("ERROR: didn't get node from backend");
+            InspectorTest.completeTest();
+            return;
+        }
+        var shadowRoots = node.shadowRoots || [];
+        if (shadowRoots.length !== 1) {
+            InspectorTest.log("ERROR: shadow host doesn't have any shadow roots");
+            InspectorTest.completeTest();
+            return;
+        }
+        var shadowRoot = shadowRoots[0];
+        InspectorTest.sendCommandOrDie("DOM.querySelector", {
+            nodeId: shadowRoot.nodeId,
+            selector: ".shadow-link"
+        }, onShadowAnchor);
+    }
+
+    function onShadowAnchor(result)
+    {
+        dumpVisitedAndLinkRules(result.nodeId, InspectorTest.completeTest.bind(InspectorTest));
+    }
+
+    function setChildNodes(message)
+    {
+        var nodes = message.params.nodes;
+        for (var i = 0; i < nodes.length; ++i) {
+            nodeInfo[nodes[i].nodeId] = nodes[i];
+            delete nodes[i].nodeId;
+        }
+    }
+
+    function dumpVisitedAndLinkRules(nodeId, callback)
+    {
+        InspectorTest.log("==== Styles for unvisited link ====");
+        InspectorTest.loadAndDumpMatchingRulesForNode(nodeId, onUnvisitedLinkDumped);
+        function onUnvisitedLinkDumped()
+        {
+            InspectorTest.sendCommandOrDie("CSS.forcePseudoState", {
+                nodeId: nodeId,
+                forcedPseudoClasses: [ "visited" ]
+            }, onVisitedForced);
+        }
+
+        function onVisitedForced()
+        {
+            InspectorTest.log("==== Styles for visited link ====");
+            InspectorTest.loadAndDumpMatchingRulesForNode(nodeId, callback);
+        }
+    }
+
+}
+</script>
+<style>
+#redlink:visited {
+    color: red;
+}
+#redlink:link {
+    color: blue;
+}
+
+#redlink {
+    color: gray;
+}
+</style>
+<template id="shadow">
+<style>
+.shadow-link:visited {
+    color: blue;
+}
+.shadow-link:link {
+    color: green;
+}
+.shadow-link {
+    color: lightgray;
+}
+</style>
+<a class="shadow-link" href="definitely-unvisited-shadow-link-2232">This is shadow link</a>
+</template>
+</head>
+<body>
+    <a id="redlink" href="definitely-unvisited-link-address-1989-42.html">This is visited link</a>
+    <div id="shadow-host"></div>
+    <script>
+        runTest();
+        var host = document.querySelector("#shadow-host").createShadowRoot();
+        var template = document.querySelector("#shadow");
+        host.appendChild(template.content);
+        template.remove();
+    </script>
+</body>
+</html>
