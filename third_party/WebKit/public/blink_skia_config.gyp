@@ -43,6 +43,7 @@
           # DO NOT remove the define until you are ready to rebaseline, and
           # AFTER the flag has been removed from skia.gyp in Chromium.
           'SK_DEFERRED_CANVAS_USES_FACTORIES=1',
+          'SK_IGNORE_FREETYPE_ROTATION_FIX',
         ],
       },
     },

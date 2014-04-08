@@ -5,3 +5,5 @@ jamesr@chromium.org
 jochen@chromium.org
 pfeldman@chromium.org
 tkent@chromium.org
+per-file blink_skia_config.gyp=bungeman@chromium.org
+per-file blink_skia_config.gyp=reed@chromium.org
