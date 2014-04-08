@@ -33,7 +33,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<BlendModeTy
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(FEBLEND_MODE_UNKNOWN, emptyString()));
         entries.append(std::make_pair(FEBLEND_MODE_NORMAL, "normal"));
         entries.append(std::make_pair(FEBLEND_MODE_MULTIPLY, "multiply"));
         entries.append(std::make_pair(FEBLEND_MODE_SCREEN, "screen"));

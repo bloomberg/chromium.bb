@@ -32,7 +32,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGStitchOp
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(SVG_STITCHTYPE_UNKNOWN, emptyString()));
         entries.append(std::make_pair(SVG_STITCHTYPE_STITCH, "stitch"));
         entries.append(std::make_pair(SVG_STITCHTYPE_NOSTITCH, "noStitch"));
     }
@@ -43,7 +42,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<TurbulenceT
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(FETURBULENCE_TYPE_UNKNOWN, emptyString()));
         entries.append(std::make_pair(FETURBULENCE_TYPE_FRACTALNOISE, "fractalNoise"));
         entries.append(std::make_pair(FETURBULENCE_TYPE_TURBULENCE, "turbulence"));
     }

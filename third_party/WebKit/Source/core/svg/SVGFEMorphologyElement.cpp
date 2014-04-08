@@ -33,7 +33,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<MorphologyO
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(FEMORPHOLOGY_OPERATOR_UNKNOWN, emptyString()));
         entries.append(std::make_pair(FEMORPHOLOGY_OPERATOR_ERODE, "erode"));
         entries.append(std::make_pair(FEMORPHOLOGY_OPERATOR_DILATE, "dilate"));
     }

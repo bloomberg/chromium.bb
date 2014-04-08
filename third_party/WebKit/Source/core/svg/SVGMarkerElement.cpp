@@ -34,7 +34,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerUn
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(SVGMarkerUnitsUnknown, emptyString()));
         entries.append(std::make_pair(SVGMarkerUnitsUserSpaceOnUse, "userSpaceOnUse"));
         entries.append(std::make_pair(SVGMarkerUnitsStrokeWidth, "strokeWidth"));
     }

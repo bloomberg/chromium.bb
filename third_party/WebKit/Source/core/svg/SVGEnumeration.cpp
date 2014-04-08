@@ -66,8 +66,8 @@ String SVGEnumerationBase::valueAsString() const
             return it->second;
     }
 
-    ASSERT_NOT_REACHED();
-    return String();
+    ASSERT(m_value < maxEnumValue());
+    return emptyString();
 }
 
 void SVGEnumerationBase::setValue(unsigned short value, ExceptionState& exceptionState)
@@ -92,6 +92,8 @@ void SVGEnumerationBase::setValueAsString(const String& string, ExceptionState& 
     StringEntries::const_iterator itEnd = m_entries.end();
     for (; it != itEnd; ++it) {
         if (string == it->second) {
+            // 0 corresponds to _UNKNOWN enumeration values, and should not be settable.
+            ASSERT(it->first);
             m_value = it->first;
             notifyChange();
             return;

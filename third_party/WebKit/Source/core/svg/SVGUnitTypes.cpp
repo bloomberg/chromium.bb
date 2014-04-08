@@ -37,7 +37,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGUnitType
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN, emptyString()));
         entries.append(std::make_pair(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE, "userSpaceOnUse"));
         entries.append(std::make_pair(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX, "objectBoundingBox"));
     }

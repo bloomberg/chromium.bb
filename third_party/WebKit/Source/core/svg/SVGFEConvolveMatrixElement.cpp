@@ -36,7 +36,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<EdgeModeTyp
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(EDGEMODE_UNKNOWN, emptyString()));
         entries.append(std::make_pair(EDGEMODE_DUPLICATE, "duplicate"));
         entries.append(std::make_pair(EDGEMODE_WRAP, "wrap"));
         entries.append(std::make_pair(EDGEMODE_NONE, "none"));

@@ -32,7 +32,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<ChannelSele
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(CHANNEL_UNKNOWN, emptyString()));
         entries.append(std::make_pair(CHANNEL_R, "R"));
         entries.append(std::make_pair(CHANNEL_G, "G"));
         entries.append(std::make_pair(CHANNEL_B, "B"));

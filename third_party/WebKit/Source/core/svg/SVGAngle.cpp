@@ -36,7 +36,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerOr
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(SVGMarkerOrientUnknown, emptyString()));
         entries.append(std::make_pair(SVGMarkerOrientAuto, "auto"));
         entries.append(std::make_pair(SVGMarkerOrientAngle, "angle"));
     }

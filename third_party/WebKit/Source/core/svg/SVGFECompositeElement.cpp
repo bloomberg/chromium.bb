@@ -33,7 +33,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<CompositeOp
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(FECOMPOSITE_OPERATOR_UNKNOWN, emptyString()));
         entries.append(std::make_pair(FECOMPOSITE_OPERATOR_OVER, "over"));
         entries.append(std::make_pair(FECOMPOSITE_OPERATOR_IN, "in"));
         entries.append(std::make_pair(FECOMPOSITE_OPERATOR_OUT, "out"));

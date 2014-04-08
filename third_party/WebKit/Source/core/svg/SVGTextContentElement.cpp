@@ -41,7 +41,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGLengthAd
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(SVGLengthAdjustUnknown, emptyString()));
         entries.append(std::make_pair(SVGLengthAdjustSpacing, "spacing"));
         entries.append(std::make_pair(SVGLengthAdjustSpacingAndGlyphs, "spacingAndGlyphs"));
     }

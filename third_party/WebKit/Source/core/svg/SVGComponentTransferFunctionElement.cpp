@@ -34,7 +34,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<ComponentTr
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(FECOMPONENTTRANSFER_TYPE_UNKNOWN, emptyString()));
         entries.append(std::make_pair(FECOMPONENTTRANSFER_TYPE_IDENTITY, "identity"));
         entries.append(std::make_pair(FECOMPONENTTRANSFER_TYPE_TABLE, "table"));
         entries.append(std::make_pair(FECOMPONENTTRANSFER_TYPE_DISCRETE, "discrete"));

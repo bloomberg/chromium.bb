@@ -33,7 +33,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGTextPath
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(SVGTextPathMethodUnknown, emptyString()));
         entries.append(std::make_pair(SVGTextPathMethodAlign, "align"));
         entries.append(std::make_pair(SVGTextPathMethodStretch, "stretch"));
     }
@@ -44,7 +43,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGTextPath
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(SVGTextPathSpacingUnknown, emptyString()));
         entries.append(std::make_pair(SVGTextPathSpacingAuto, "auto"));
         entries.append(std::make_pair(SVGTextPathSpacingExact, "exact"));
     }

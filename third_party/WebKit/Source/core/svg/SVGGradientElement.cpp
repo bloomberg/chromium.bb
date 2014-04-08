@@ -39,7 +39,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGSpreadMe
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(SVGSpreadMethodUnknown, emptyString()));
         entries.append(std::make_pair(SVGSpreadMethodPad, "pad"));
         entries.append(std::make_pair(SVGSpreadMethodReflect, "reflect"));
         entries.append(std::make_pair(SVGSpreadMethodRepeat, "repeat"));
