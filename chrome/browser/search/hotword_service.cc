@@ -26,13 +26,7 @@ const int kMaxTimesToShowOptInPopup = 10;
 // Allowed languages for hotwording.
 static const char* kSupportedLocales[] = {
   "en",
-  "en_us",
-  "en_gb",
-  "en_ca",
-  "en_au",
-  "fr_fr",
-  "de_de",
-  "ru_ru"
+  "en_us"
 };
 
 // Enum describing the state of the hotword preference.
