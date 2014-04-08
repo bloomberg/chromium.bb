@@ -43662,6 +43662,7 @@ other types of suffix sets.
 
 <fieldtrial name="NewTabPageProviders" separator=".">
   <group name="client" label="Suggestions coming from the client."/>
+  <group name="client0" label="Suggestions coming from the client source 0."/>
   <group name="server" label="Suggestions coming from the server."/>
   <group name="server0" label="Suggestions coming from server source 0."/>
   <group name="server1" label="Suggestions coming from server source 1."/>
