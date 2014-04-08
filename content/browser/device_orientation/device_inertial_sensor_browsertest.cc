@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, MotionTest) {
   fetcher_->stopped_motion_.Wait();
 }
 
-// Failing in the android try bot. See http://crbug.com/360578.
+// Flaking in the android try bot. See http://crbug.com/360578.
 #if defined(OS_ANDROID)
 #define MAYBE_OrientationNullTestWithAlert DISABLED_OrientationNullTestWithAlert
 #else
@@ -255,8 +255,14 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
 }
 
+// Flaking in the android try bot. See http://crbug.com/360578.
+#if defined(OS_ANDROID)
+#define MAYBE_MotionNullTestWithAlert DISABLED_MotionNullTestWithAlert
+#else
+#define MAYBE_MotionNullTestWithAlert MotionNullTestWithAlert
+#endif
 IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
-    MotionNullTestWithAlert) {
+    MAYBE_MotionNullTestWithAlert) {
   // The test page will register an event handler for motion events,
   // expects to get an event with null values. The test raises a modal alert
   // dialog with a delay to test that the one-off null-event still propagates
