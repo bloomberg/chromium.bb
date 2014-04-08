@@ -25,7 +25,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SliderThumbElement.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "wtf/MathExtras.h"
 
 using std::min;
@@ -93,7 +92,6 @@ inline SliderThumbElement* RenderSlider::sliderThumbElement() const
 
 void RenderSlider::layout()
 {
-    LayoutRectRecorder recorder(*this);
     // FIXME: Find a way to cascade appearance.
     // http://webkit.org/b/62535
     RenderBox* thumbBox = sliderThumbElement()->renderBox();

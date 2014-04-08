@@ -30,7 +30,6 @@
 
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/style/ShadowList.h"
@@ -324,7 +323,6 @@ void RenderSVGText::layout()
 
     subtreeStyleDidChange();
 
-    LayoutRectRecorder recorder(*this);
     LayoutRepainter repainter(*this, SVGRenderSupport::checkForSVGRepaintDuringLayout(this));
 
     bool updateCachedBoundariesInParents = false;

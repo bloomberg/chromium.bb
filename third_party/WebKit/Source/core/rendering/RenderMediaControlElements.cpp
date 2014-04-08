@@ -30,7 +30,6 @@
 #include "core/rendering/RenderMediaControlElements.h"
 
 #include "core/frame/DeprecatedScheduleStyleRecalcDuringLayout.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {
@@ -42,7 +41,6 @@ RenderTextTrackContainerElement::RenderTextTrackContainerElement(Element* elemen
 
 void RenderTextTrackContainerElement::layout()
 {
-    LayoutRectRecorder recorder(*this);
     RenderBlockFlow::layout();
     if (style()->display() == NONE)
         return;

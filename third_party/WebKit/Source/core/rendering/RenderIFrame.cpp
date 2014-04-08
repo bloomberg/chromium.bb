@@ -30,7 +30,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {
@@ -76,7 +75,6 @@ void RenderIFrame::layout()
 {
     ASSERT(needsLayout());
 
-    LayoutRectRecorder recorder(*this);
     updateLogicalWidth();
     // No kids to layout as a replaced element.
     updateLogicalHeight();

@@ -30,7 +30,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/PlatformKeyboardEvent.h"
@@ -94,7 +93,6 @@ LayoutUnit RenderTextControlSingleLine::computeLogicalHeightLimit() const
 
 void RenderTextControlSingleLine::layout()
 {
-    LayoutRectRecorder recorder(*this);
     SubtreeLayoutScope layoutScope(this);
 
     // FIXME: We should remove the height-related hacks in layout() and
@@ -180,7 +178,6 @@ void RenderTextControlSingleLine::layout()
     HTMLElement* placeholderElement = inputElement()->placeholderElement();
     if (RenderBox* placeholderBox = placeholderElement ? placeholderElement->renderBox() : 0) {
         LayoutSize innerTextSize;
-        LayoutRectRecorder placeholderBoxRecorder(*placeholderBox);
 
         if (innerTextRenderer)
             innerTextSize = innerTextRenderer->size();

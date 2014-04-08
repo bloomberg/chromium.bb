@@ -30,7 +30,6 @@
 #include "core/fetch/ImageResource.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderView.h"
@@ -159,8 +158,6 @@ void RenderTableRow::addChild(RenderObject* child, RenderObject* beforeChild)
 void RenderTableRow::layout()
 {
     ASSERT(needsLayout());
-
-    LayoutRectRecorder recorder(*this);
 
     // Table rows do not add translation.
     LayoutStateMaintainer statePusher(*this, LayoutSize());

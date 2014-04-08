@@ -31,7 +31,6 @@
 
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestRequest.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
@@ -135,7 +134,6 @@ bool RenderSVGShape::strokeContains(const FloatPoint& point, bool requiresStroke
 
 void RenderSVGShape::layout()
 {
-    LayoutRectRecorder recorder(*this);
     LayoutRepainter repainter(*this, SVGRenderSupport::checkForSVGRepaintDuringLayout(this) && selfNeedsLayout());
 
     bool updateCachedBoundariesInParents = false;

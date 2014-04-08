@@ -35,7 +35,6 @@
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
@@ -151,7 +150,6 @@ void RenderFlowThread::validateRegions()
 
 void RenderFlowThread::layout()
 {
-    LayoutRectRecorder recorder(*this);
     m_pageLogicalSizeChanged = m_regionsInvalidated && everHadLayout();
 
     validateRegions();

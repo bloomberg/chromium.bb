@@ -24,7 +24,6 @@
 #define RenderBox_h
 
 #include "core/animation/ActiveAnimations.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderOverflow.h"
 #include "core/rendering/shapes/ShapeOutsideInfo.h"
@@ -518,7 +517,6 @@ public:
     // that just updates the object's position. If the size does change, the object remains dirty.
     bool tryLayoutDoingPositionedMovementOnly()
     {
-        LayoutRectRecorder recorder(*this);
         LayoutUnit oldWidth = width();
         updateLogicalWidth();
         // If we shrink to fit our width may have changed, so we still need full layout.
@@ -635,6 +633,8 @@ protected:
     bool getBackgroundPaintedExtent(LayoutRect&) const;
     virtual bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned maxDepthToTest) const;
     virtual bool computeBackgroundIsKnownToBeObscured() OVERRIDE;
+
+    virtual void repaintTreeAfterLayout() OVERRIDE;
 
     void paintBackgroundWithBorderAndBoxShadow(PaintInfo&, const LayoutRect&, BackgroundBleedAvoidance);
     void paintBackground(const PaintInfo&, const LayoutRect&, BackgroundBleedAvoidance = BackgroundBleedNone);

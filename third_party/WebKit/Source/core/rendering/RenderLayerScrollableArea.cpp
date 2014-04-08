@@ -55,7 +55,6 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
@@ -341,8 +340,6 @@ int RenderLayerScrollableArea::scrollSize(ScrollbarOrientation orientation) cons
 
 void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 {
-    LayoutRectRecorder recorder(*m_box);
-
     if (!m_box->isMarquee()) {
         // Ensure that the dimensions will be computed if they need to be (for overflow:hidden blocks).
         if (m_scrollDimensionsDirty)
@@ -381,7 +378,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 
     FloatQuad quadForFakeMouseMoveEvent;
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-        quadForFakeMouseMoveEvent = FloatQuad(layer()->renderer()->newRepaintRect());
+        quadForFakeMouseMoveEvent = FloatQuad(layer()->renderer()->previousRepaintRect());
     else
         quadForFakeMouseMoveEvent = FloatQuad(layer()->repainter().repaintRect());
 
@@ -408,7 +405,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
             if (m_box->frameView()->isInPerformLayout())
                 m_box->setShouldDoFullRepaintAfterLayout(true);
             else
-                m_box->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->renderer()->newRepaintRect()), InvalidationScroll);
+                m_box->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->renderer()->previousRepaintRect()), InvalidationScroll);
         } else {
             m_box->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->repainter().repaintRect()), InvalidationScroll);
         }
@@ -569,8 +566,6 @@ void RenderLayerScrollableArea::updateAfterLayout()
     // List box parts handle the scrollbars by themselves so we have nothing to do.
     if (m_box->style()->appearance() == ListboxPart)
         return;
-
-    LayoutRectRecorder recorder(*m_box);
 
     m_scrollDimensionsDirty = true;
     IntSize originalScrollOffset = adjustedScrollOffset();

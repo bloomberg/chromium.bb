@@ -33,7 +33,6 @@
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderLayer.h"
@@ -165,7 +164,6 @@ void RenderView::layoutContent()
 {
     ASSERT(needsLayout());
 
-    LayoutRectRecorder recorder(*this);
     RenderBlockFlow::layout();
 
     if (RuntimeEnabledFeatures::dialogElementEnabled())

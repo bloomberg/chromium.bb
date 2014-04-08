@@ -21,7 +21,6 @@
 
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
@@ -62,7 +61,6 @@ void RenderSVGResourceContainer::layout()
     if (m_isInLayout)
         return;
 
-    LayoutRectRecorder recorder(*this);
     TemporaryChange<bool> inLayoutChange(m_isInLayout, true);
 
     RenderSVGHiddenContainer::layout();

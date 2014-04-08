@@ -45,7 +45,6 @@
 #include "core/rendering/RenderLayerRepainter.h"
 
 #include "core/rendering/FilterEffectRenderer.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
@@ -119,11 +118,7 @@ void RenderLayerRepainter::computeRepaintRectsIncludingDescendants()
         // FIXME: We want RenderLayerRepainter to go away when
         // repaint-after-layout is on by default so we need to figure out how to
         // handle this update.
-        //
-        // This is a little silly as we create and immediately destroy the RAII
-        // object but it makes sure we correctly set all of the repaint flags.
-        LayoutRectRecorder recorder(*m_renderer);
-
+        m_renderer->setPreviousRepaintRect(m_renderer->clippedOverflowRectForRepaint(m_renderer->containerForRepaint()));
     } else {
         // FIXME: computeRepaintRects() has to walk up the parent chain for every layer to compute the rects.
         // We should make this more efficient.
@@ -163,7 +158,7 @@ LayoutRect RenderLayerRepainter::repaintRectIncludingNonCompositingDescendants()
 {
     LayoutRect repaintRect;
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-        repaintRect = m_renderer->newRepaintRect();
+        repaintRect = m_renderer->previousRepaintRect();
     else
         repaintRect = m_repaintRect;
 

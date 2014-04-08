@@ -1464,7 +1464,6 @@
             'rendering/InlineFlowBox.cpp',
             'rendering/InlineIterator.h',
             'rendering/InlineTextBox.cpp',
-            'rendering/LayoutRectRecorder.cpp',
             'rendering/LayoutRepainter.cpp',
             'rendering/LayoutState.cpp',
             'rendering/OrderIterator.cpp',

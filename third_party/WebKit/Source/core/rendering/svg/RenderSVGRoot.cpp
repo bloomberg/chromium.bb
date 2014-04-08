@@ -27,7 +27,6 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
@@ -201,7 +200,6 @@ void RenderSVGRoot::layout()
     LayoutStateDisabler layoutStateDisabler(*this);
 
     bool needsLayout = selfNeedsLayout();
-    LayoutRectRecorder recorder(*this, checkForRepaint() && needsLayout);
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout() && needsLayout);
 
     LayoutSize oldSize = size();

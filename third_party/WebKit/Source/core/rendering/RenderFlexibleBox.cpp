@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/rendering/RenderFlexibleBox.h"
 
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
@@ -233,7 +232,6 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren)
         return;
 
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
-    LayoutRectRecorder recorder(*this);
 
     if (updateLogicalWidthAndColumnWidth())
         relayoutChildren = true;
@@ -1095,7 +1093,6 @@ void RenderFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
     bool shouldFlipMainAxis = !isColumnFlow() && !isLeftToRightFlow();
     for (size_t i = 0; i < children.size(); ++i) {
         RenderBox* child = children[i];
-        LayoutRectRecorder recorder(*child);
 
         if (child->isOutOfFlowPositioned()) {
             prepareChildForPositionedLayout(child, mainAxisOffset, crossAxisOffset, FlipForRowReverse);
@@ -1178,7 +1175,6 @@ void RenderFlexibleBox::layoutColumnReverse(const OrderedFlexItemList& children,
     size_t seenInFlowPositionedChildren = 0;
     for (size_t i = 0; i < children.size(); ++i) {
         RenderBox* child = children[i];
-        LayoutRectRecorder recorder(*child);
 
         if (child->isOutOfFlowPositioned()) {
             child->layer()->setStaticBlockPosition(mainAxisOffset);

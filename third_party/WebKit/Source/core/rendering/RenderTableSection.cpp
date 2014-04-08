@@ -29,7 +29,6 @@
 #include <limits>
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTableCol.h"
@@ -732,8 +731,6 @@ void RenderTableSection::layout()
     ASSERT(!needsCellRecalc());
     ASSERT(!table()->needsSectionRecalc());
 
-    LayoutRectRecorder recorder(*this);
-
     // addChild may over-grow m_grid but we don't want to throw away the memory too early as addChild
     // can be called in a loop (e.g during parsing). Doing it now ensures we have a stable-enough structure.
     m_grid.shrinkToFit();
@@ -753,8 +750,6 @@ void RenderTableSection::layout()
             RenderTableCell* cell = current.primaryCell();
             if (!cell || current.inColSpan)
                 continue;
-
-            LayoutRectRecorder cellRecorder(*cell);
 
             unsigned endCol = startColumn;
             unsigned cspan = cell->colSpan();
@@ -918,8 +913,6 @@ void RenderTableSection::layoutRows()
 
             if (!cell || cs.inColSpan)
                 continue;
-
-            LayoutRectRecorder cellRecorder(*cell);
 
             int rowIndex = cell->rowIndex();
             int rHeight = m_rowPos[rowIndex + cell->rowSpan()] - m_rowPos[rowIndex] - vspacing;

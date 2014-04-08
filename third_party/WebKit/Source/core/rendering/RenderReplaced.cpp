@@ -26,7 +26,6 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderImage.h"
@@ -82,7 +81,6 @@ void RenderReplaced::layout()
 {
     ASSERT(needsLayout());
 
-    LayoutRectRecorder recorder(*this);
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
 
     setHeight(minimumReplacedHeight());

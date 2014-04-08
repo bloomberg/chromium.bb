@@ -35,7 +35,6 @@
 #include "core/rendering/FixedTableLayout.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTableCaption.h"
@@ -413,8 +412,6 @@ void RenderTable::simplifiedNormalFlowLayout()
 void RenderTable::layout()
 {
     ASSERT(needsLayout());
-
-    LayoutRectRecorder recorder(*this);
 
     if (simplifiedLayout())
         return;

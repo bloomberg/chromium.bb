@@ -48,7 +48,6 @@
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderText.h"
@@ -177,7 +176,6 @@ void RenderListBox::selectionChanged()
 
 void RenderListBox::layout()
 {
-    LayoutRectRecorder recorder(*this);
     RenderBlockFlow::layout();
 
     if (m_vBar) {
@@ -194,6 +192,12 @@ void RenderListBox::layout()
         LayoutStateDisabler layoutStateDisabler(*this);
         scrollToRevealSelection();
     }
+}
+
+void RenderListBox::repaintTreeAfterLayout()
+{
+    repaintScrollbarIfNeeded();
+    RenderBox::repaintTreeAfterLayout();
 }
 
 void RenderListBox::scrollToRevealSelection()

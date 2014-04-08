@@ -23,7 +23,6 @@
 
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -49,7 +48,6 @@ void RenderSVGResourceMarker::layout()
     if (m_isInLayout)
         return;
 
-    LayoutRectRecorder recorder(*this);
     TemporaryChange<bool> inLayoutChange(m_isInLayout, true);
 
     // RenderSVGHiddenContainer overwrites layout(). We need the

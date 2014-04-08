@@ -830,6 +830,9 @@ public:
     bool repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repaintContainer, bool wasSelfLayout,
         const LayoutRect& oldBounds, const LayoutRect* newBoundsPtr = 0);
 
+    // Walk the tree after layout repainting renderers that have changed or moved, updating bounds that have changed, and clearing repaint state.
+    virtual void repaintTreeAfterLayout();
+
     virtual void repaintOverflow();
     void repaintOverflowIfNeeded();
 
@@ -982,11 +985,8 @@ public:
 
     bool isRelayoutBoundaryForInspector() const;
 
-    const LayoutRect& newRepaintRect() const { return m_newRepaintRect; }
-    void setNewRepaintRect(const LayoutRect& rect) { m_newRepaintRect = rect; }
-
-    const LayoutRect& oldRepaintRect() const { return m_oldRepaintRect; }
-    void setOldRepaintRect(const LayoutRect& rect) { m_oldRepaintRect = rect; }
+    const LayoutRect& previousRepaintRect() const { return m_previousRepaintRect; }
+    void setPreviousRepaintRect(const LayoutRect& rect) { m_previousRepaintRect = rect; }
 
     LayoutRect newOutlineRect();
     void setNewOutlineRect(const LayoutRect&);
@@ -1241,8 +1241,8 @@ private:
     // Store state between styleWillChange and styleDidChange
     static bool s_affectsParentBlock;
 
-    LayoutRect m_oldRepaintRect;
-    LayoutRect m_newRepaintRect;
+    // This stores the repaint rect from the previous layout.
+    LayoutRect m_previousRepaintRect;
 };
 
 // Allow equality comparisons of RenderObject's by reference or pointer, interchangeably.
@@ -1301,6 +1301,11 @@ inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLay
 
 inline void RenderObject::clearNeedsLayout()
 {
+    if (!shouldDoFullRepaintAfterLayout())
+        setShouldDoFullRepaintAfterLayout(selfNeedsLayout());
+    if (needsPositionedMovementLayoutOnly())
+        setOnlyNeededPositionedMovementLayout(true);
+    setLayoutDidGetCalled(true);
     setSelfNeedsLayout(false);
     setEverHadLayout(true);
     setPosChildNeedsLayout(false);

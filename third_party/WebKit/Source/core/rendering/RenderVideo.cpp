@@ -32,7 +32,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLVideoElement.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFullScreen.h"
 #include "platform/graphics/media/MediaPlayer.h"
@@ -185,7 +184,6 @@ bool RenderVideo::acceleratedRenderingInUse()
 
 void RenderVideo::layout()
 {
-    LayoutRectRecorder recorder(*this);
     updatePlayer();
     RenderMedia::layout();
 }

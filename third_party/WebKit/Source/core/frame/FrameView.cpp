@@ -1048,65 +1048,9 @@ void FrameView::repaintTree(RenderObject* root)
     // Until those states are fully fledged, I'll just disable the ASSERTS.
     DisableCompositingQueryAsserts disabler;
 
-    // If we are set to do a full repaint that means the RenderView will be
-    // invalidated. We can then skip issuing of invalidations for the child
-    // renderers as they'll be covered by the RenderView.
-    if (m_doFullRepaint) {
-        RenderView* view = renderView();
-        view->repaintAfterLayoutIfNeeded(view->containerForRepaint(), true, view->oldRepaintRect(), &(view->newRepaintRect()));
+    RootLayoutStateScope rootLayoutStateScope(*renderView());
 
-        // Clear the invalidation flags for the root and child renderers.
-        for (RenderObject* renderer = root; renderer; renderer = renderer->nextInPreOrder()) {
-            renderer->clearRepaintState();
-        }
-        return;
-    }
-
-    ASSERT(!m_doFullRepaint);
-
-    for (RenderObject* renderer = root; renderer; renderer = renderer->nextInPreOrder()) {
-        if ((renderer->onlyNeededPositionedMovementLayout() && renderer->compositingState() != PaintsIntoOwnBacking)
-            || (renderer->shouldDoFullRepaintIfSelfPaintingLayer()
-                && renderer->hasLayer()
-                && toRenderLayerModelObject(renderer)->layer()->isSelfPaintingLayer())) {
-            renderer->setShouldDoFullRepaintAfterLayout(true);
-        }
-
-        // FIXME: Currently renderers with layers will get repainted when we call updateLayerPositionsAfterLayout.
-        // That call should be broken apart to position the layers be done before
-        // the repaintTree call so this will repaint everything.
-        bool didFullRepaint = false;
-        if (!renderer->layoutDidGetCalled()) {
-            if (renderer->shouldDoFullRepaintAfterLayout()) {
-                renderer->repaint();
-                didFullRepaint = true;
-            }
-
-        } else {
-            didFullRepaint = renderer->repaintAfterLayoutIfNeeded(renderer->containerForRepaint(),
-                renderer->shouldDoFullRepaintAfterLayout(), renderer->oldRepaintRect(), &(renderer->newRepaintRect()));
-        }
-
-        if (!didFullRepaint)
-            renderer->repaintOverflowIfNeeded();
-
-        // Repaint any scrollbars if there is a scrollable area for this renderer.
-        if (RenderLayerScrollableArea* area = renderer->enclosingLayer()->scrollableArea()) {
-            if (area->hasVerticalBarDamage())
-                renderer->repaintRectangle(area->verticalBarDamage());
-            if (area->hasHorizontalBarDamage())
-                renderer->repaintRectangle(area->horizontalBarDamage());
-            area->resetScrollbarDamage();
-        }
-
-        // The list box has a verticalScrollbar we may need to repaint.
-        if (renderer->isListBox()) {
-            RenderListBox* listBox = static_cast<RenderListBox*>(renderer);
-            listBox->repaintScrollbarIfNeeded();
-        }
-
-        renderer->clearRepaintState();
-    }
+    root->repaintTreeAfterLayout();
 
     // Repaint the frameviews scrollbars if needed
     if (hasVerticalBarDamage())
@@ -1138,7 +1082,7 @@ void FrameView::gatherDebugLayoutRects(RenderObject* layoutRoot)
     debugInfo.currentLayoutRects().clear();
     for (RenderObject* renderer = layoutRoot; renderer; renderer = renderer->nextInPreOrder()) {
         if (renderer->layoutDidGetCalled()) {
-            FloatQuad quad = renderer->localToAbsoluteQuad(FloatQuad(renderer->newRepaintRect()));
+            FloatQuad quad = renderer->localToAbsoluteQuad(FloatQuad(renderer->previousRepaintRect()));
             LayoutRect rect = quad.enclosingBoundingBox();
             debugInfo.currentLayoutRects().append(rect);
             renderer->setLayoutDidGetCalled(false);

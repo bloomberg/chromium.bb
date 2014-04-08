@@ -28,7 +28,6 @@
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/rendering/FastTextAutosizer.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
 #include "wtf/StdLibExtras.h"
@@ -323,7 +322,6 @@ void RenderListItem::layout()
             textAutosizer->inflateListItem(this, m_marker);
     }
 
-    LayoutRectRecorder recorder(*this);
     updateMarkerLocation();
     RenderBlockFlow::layout();
 }

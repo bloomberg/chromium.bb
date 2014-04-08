@@ -28,7 +28,6 @@
 #include "core/rendering/RenderMedia.h"
 
 #include "core/html/HTMLMediaElement.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {
@@ -50,7 +49,6 @@ HTMLMediaElement* RenderMedia::mediaElement() const
 
 void RenderMedia::layout()
 {
-    LayoutRectRecorder recorder(*this);
     LayoutSize oldSize = contentBoxRect().size();
 
     RenderImage::layout();

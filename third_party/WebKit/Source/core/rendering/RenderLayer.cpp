@@ -64,7 +64,6 @@
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/HitTestingTransformState.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderInline.h"
@@ -503,9 +502,6 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
         flags |= HasSeenAncestorWithOverflowClip;
 
     if ((flags & IsOverflowScroll) && (flags & HasSeenAncestorWithOverflowClip) && !m_canSkipRepaintRectsUpdateOnScroll) {
-        // FIXME: This may not be needed. Once repaint-after-layout isn't
-        // under-painting for layer's we should see if this can be removed.
-        LayoutRectRecorder recorder(*m_renderer);
         // FIXME: We could track the repaint container as we walk down the tree.
         repainter().computeRepaintRects(renderer()->containerForRepaint(), geometryMap);
     } else {
@@ -949,8 +945,6 @@ bool RenderLayer::updateLayerPosition()
 {
     LayoutPoint localPoint;
     LayoutSize inlineBoundingBoxOffset; // We don't put this into the RenderLayer x/y for inlines, so we need to subtract it out when done.
-
-    LayoutRectRecorder recorder(*m_renderer);
 
     if (renderer()->isInline() && renderer()->isRenderInline()) {
         RenderInline* inlineFlow = toRenderInline(renderer());

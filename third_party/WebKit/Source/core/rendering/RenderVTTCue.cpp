@@ -27,7 +27,6 @@
 #include "core/rendering/RenderVTTCue.h"
 
 #include "core/html/track/vtt/VTTCue.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {
@@ -40,7 +39,6 @@ RenderVTTCue::RenderVTTCue(VTTCueBox* element)
 
 void RenderVTTCue::layout()
 {
-    LayoutRectRecorder recorder(*this);
     RenderBlockFlow::layout();
 
     // If WebVTT Regions are used, the regular WebVTT layout algorithm is no

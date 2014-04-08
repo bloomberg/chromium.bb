@@ -44,7 +44,6 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/InlineTextBox.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderCombineText.h"
@@ -1281,7 +1280,6 @@ void RenderBlock::updateScrollInfoAfterLayout()
 void RenderBlock::layout()
 {
     OverflowEventDispatcher dispatcher(this);
-    LayoutRectRecorder recorder(*this);
 
     // Update our first letter info now.
     updateFirstLetter();
@@ -1632,7 +1630,8 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
     for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
         r = *it;
 
-        LayoutRectRecorder recorder(*r);
+        // FIXME: this should only be set from clearNeedsLayout crbug.com/361250
+        r->setLayoutDidGetCalled(true);
 
         SubtreeLayoutScope layoutScope(r);
         // A fixed position element with an absolute positioned ancestor has no way of knowing if the latter has changed position. So

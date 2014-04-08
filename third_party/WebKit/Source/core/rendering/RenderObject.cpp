@@ -51,7 +51,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
@@ -117,7 +116,7 @@ struct SameSizeAsRenderObject {
 #endif
     unsigned m_bitfields;
     unsigned m_bitfields2;
-    LayoutRect rects[2]; // Stores the old/new repaint rects.
+    LayoutRect rect; // Stores the previous repaint rect.
 };
 
 COMPILE_ASSERT(sizeof(RenderObject) == sizeof(SameSizeAsRenderObject), RenderObject_should_stay_small);
@@ -1504,6 +1503,14 @@ const char* RenderObject::invalidationReasonToString(InvalidationReason reason) 
     }
     ASSERT_NOT_REACHED();
     return "";
+}
+
+void RenderObject::repaintTreeAfterLayout()
+{
+    clearRepaintState();
+
+    for (RenderObject* child = firstChild(); child; child = child->nextSibling())
+        child->repaintTreeAfterLayout();
 }
 
 bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repaintContainer, bool wasSelfLayout,

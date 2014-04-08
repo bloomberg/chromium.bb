@@ -21,8 +21,6 @@
 
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
 
-#include "core/rendering/LayoutRectRecorder.h"
-
 namespace WebCore {
 
 RenderSVGHiddenContainer::RenderSVGHiddenContainer(SVGElement* element)
@@ -33,7 +31,6 @@ RenderSVGHiddenContainer::RenderSVGHiddenContainer(SVGElement* element)
 void RenderSVGHiddenContainer::layout()
 {
     ASSERT(needsLayout());
-    LayoutRectRecorder recorder(*this);
     SVGRenderSupport::layoutChildren(this, selfNeedsLayout());
     updateCachedBoundaries();
     clearNeedsLayout();
