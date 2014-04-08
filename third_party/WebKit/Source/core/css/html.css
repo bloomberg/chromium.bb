@@ -793,6 +793,10 @@ input[type="color"] {
     -webkit-appearance: square-button;
     width: 44px;
     height: 23px;
+    background-color: ButtonFace;
+    /* Same as native_theme_base. */
+    border: 1px #a9a9a9 solid;
+    padding: 1px 2px;
 }
 
 input[type="color"]::-webkit-color-swatch-wrapper {

@@ -33,7 +33,6 @@
    making our form elements match Firefox's. */
 
 input:not([type]), 
-input[type="color"],
 input[type="email"],
 input[type="number"],
 input[type="password"],
