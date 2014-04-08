@@ -1663,13 +1663,11 @@ internal_paladin.add_config('sonic-paladin',
 
 internal_paladin.add_config('monroe-paladin',
   boards=['monroe'],
-  hw_tests=[],
   paladin_builder_name='monroe paladin',
 )
 
 internal_paladin.add_config('panther-paladin',
   boards=['panther'],
-  hw_tests=[],
   paladin_builder_name='panther paladin',
 )
 
