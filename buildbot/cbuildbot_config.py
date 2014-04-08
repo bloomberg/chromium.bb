@@ -1457,7 +1457,8 @@ pre_cq = internal_paladin.derive(
   debug_symbols=False,
   prebuilts=False,
   cpe_export=False,
-  description='Verifies compilation, unit tests, and building an image',
+  vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+  description='Verifies compilation, vm/unit tests, and building an image',
 )
 
 # Pre-CQ targets that only check compilation.

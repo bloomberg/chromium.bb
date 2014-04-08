@@ -9082,7 +9082,7 @@
         "create_delta_sysroot": false,
         "critical_for_chrome": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, unit tests, and building an image",
+        "description": "Verifies compilation, vm/unit tests, and building an image",
         "dev_installer_prebuilts": false,
         "dev_manifest": "default.xml",
         "disk_layout": null,
@@ -21713,7 +21713,9 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "parrot-release": {
         "archive": true,
@@ -26162,7 +26164,7 @@
                 "create_delta_sysroot": false,
                 "critical_for_chrome": false,
                 "debug_symbols": false,
-                "description": "Verifies compilation, unit tests, and building an image",
+                "description": "Verifies compilation, vm/unit tests, and building an image",
                 "dev_installer_prebuilts": false,
                 "dev_manifest": "default.xml",
                 "disk_layout": null,
@@ -26226,7 +26228,9 @@
                 ],
                 "usepkg_build_packages": true,
                 "usepkg_setup_board": true,
-                "vm_tests": []
+                "vm_tests": [
+                    "smoke_suite"
+                ]
             },
             {
                 "archive": false,
@@ -26257,7 +26261,7 @@
                 "create_delta_sysroot": false,
                 "critical_for_chrome": false,
                 "debug_symbols": false,
-                "description": "Verifies compilation, unit tests, and building an image",
+                "description": "Verifies compilation, vm/unit tests, and building an image",
                 "dev_installer_prebuilts": false,
                 "dev_manifest": "default.xml",
                 "disk_layout": null,
@@ -26511,7 +26515,9 @@
                 ],
                 "usepkg_build_packages": true,
                 "usepkg_setup_board": true,
-                "vm_tests": []
+                "vm_tests": [
+                    "smoke_suite"
+                ]
             }
         ],
         "chrome_binhost_only": false,
@@ -26526,7 +26532,7 @@
         "create_delta_sysroot": false,
         "critical_for_chrome": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, unit tests, and building an image",
+        "description": "Verifies compilation, vm/unit tests, and building an image",
         "dev_installer_prebuilts": false,
         "dev_manifest": "default.xml",
         "disk_layout": null,
@@ -26590,7 +26596,9 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "pre-cq-launcher": {
         "archive": true,
@@ -30351,7 +30359,7 @@
         "create_delta_sysroot": false,
         "critical_for_chrome": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, unit tests, and building an image",
+        "description": "Verifies compilation, vm/unit tests, and building an image",
         "dev_installer_prebuilts": false,
         "dev_manifest": "default.xml",
         "disk_layout": null,
@@ -30415,7 +30423,9 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "rambi-release": {
         "archive": true,
