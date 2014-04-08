@@ -1565,15 +1565,15 @@ void RenderWidgetHostViewMac::DestroyCompositingStateOnError() {
 
 void RenderWidgetHostViewMac::SetOverlayView(
     RenderWidgetHostViewMac* overlay, const gfx::Point& offset) {
-  if (use_core_animation_)
-    return;
-
   if (overlay_view_)
     overlay_view_->underlay_view_.reset();
 
   overlay_view_ = overlay->overlay_view_weak_factory_.GetWeakPtr();
-  overlay_view_offset_ = offset;
   overlay_view_->underlay_view_ = overlay_view_weak_factory_.GetWeakPtr();
+  if (use_core_animation_)
+    return;
+
+  overlay_view_offset_ = offset;
   overlay_view_->underlay_view_has_drawn_ = false;
 
   [cocoa_view_ setNeedsDisplay:YES];
@@ -1581,13 +1581,13 @@ void RenderWidgetHostViewMac::SetOverlayView(
 }
 
 void RenderWidgetHostViewMac::RemoveOverlayView() {
-  if (use_core_animation_)
-    return;
-
   if (overlay_view_) {
     overlay_view_->underlay_view_.reset();
     overlay_view_.reset();
   }
+  if (use_core_animation_)
+    return;
+
   [cocoa_view_ setNeedsDisplay:YES];
   [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
 }
@@ -2187,6 +2187,15 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
 
 void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
   if (!render_widget_host_ || render_widget_host_->is_hidden())
+    return;
+
+  // Pausing for the overlay view prevents the underlay from receiving
+  // frames. This may lead to large delays, causing overlaps. If both
+  // overlay and underlay resize at the same time, let them both to have
+  // some time waiting. See crbug.com/352020.
+  if (underlay_view_ &&
+      !underlay_view_->render_widget_host_->
+          CanPauseForPendingResizeOrRepaints())
     return;
 
   // Ensure that all frames are acked before waiting for a frame to come in.

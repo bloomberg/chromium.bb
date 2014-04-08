@@ -792,16 +792,23 @@ void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {
   TRACE_EVENT0("browser",
       "RenderWidgetHostImpl::PauseForPendingResizeOrRepaints");
 
-  // Do not pause if the view is hidden.
-  if (is_hidden())
-    return;
-
-  // Do not pause if there is not a paint or resize already coming.
-  if (!repaint_ack_pending_ && !resize_ack_pending_ && !view_being_painted_)
+  if (!CanPauseForPendingResizeOrRepaints())
     return;
 
   // Waiting for a backing store will do the wait for us.
   ignore_result(GetBackingStore(true));
+}
+
+bool RenderWidgetHostImpl::CanPauseForPendingResizeOrRepaints() {
+  // Do not pause if the view is hidden.
+  if (is_hidden())
+    return false;
+
+  // Do not pause if there is not a paint or resize already coming.
+  if (!repaint_ack_pending_ && !resize_ack_pending_ && !view_being_painted_)
+    return false;
+
+  return true;
 }
 
 bool RenderWidgetHostImpl::TryGetBackingStore(const gfx::Size& desired_size,

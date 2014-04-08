@@ -256,6 +256,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // size, then also pump through a new resize message if there is time.
   void PauseForPendingResizeOrRepaints();
 
+  // Whether pausing may be useful.
+  bool CanPauseForPendingResizeOrRepaints();
+
   // Check for the existance of a BackingStore of the given |desired_size| and
   // return it if it exists. If the BackingStore is GPU, true is returned and
   // |*backing_store| is set to NULL.
