@@ -208,6 +208,7 @@ cr.define('print_preview', function() {
     INITIALIZING: 'initializing',
     READY: 'ready',
     OPENING_PDF_PREVIEW: 'opening-pdf-preview',
+    OPENING_CLOUD_PRINT_DIALOG: 'opening-cloud-print-dialog',
     OPENING_NATIVE_PRINT_DIALOG: 'opening-native-print-dialog',
     PRINTING: 'printing',
     FILE_SELECTION: 'file-selection',
@@ -453,9 +454,10 @@ cr.define('print_preview', function() {
     printIfReady_: function() {
       var okToPrint =
           (this.uiState_ == PrintPreview.UiState_.PRINTING ||
-              this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW ||
-              this.uiState_ == PrintPreview.UiState_.FILE_SELECTION ||
-              this.isInKioskAutoPrintMode_) &&
+           this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW ||
+           this.uiState_ == PrintPreview.UiState_.FILE_SELECTION ||
+           this.uiState_ == PrintPreview.UiState_.OPENING_CLOUD_PRINT_DIALOG ||
+           this.isInKioskAutoPrintMode_) &&
           this.destinationStore_.selectedDestination &&
           this.destinationStore_.selectedDestination.capabilities;
       if (!okToPrint) {
@@ -466,12 +468,17 @@ cr.define('print_preview', function() {
       }
       assert(this.printTicketStore_.isTicketValid(),
           'Trying to print with invalid ticket');
-      this.nativeLayer_.startPrint(
-          this.destinationStore_.selectedDestination,
-          this.printTicketStore_,
-          this.cloudPrintInterface_,
-          this.documentInfo_,
-          this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW);
+      if (this.uiState_ == PrintPreview.UiState_.OPENING_CLOUD_PRINT_DIALOG) {
+        this.nativeLayer_.startShowCloudPrintDialog(
+            this.printTicketStore_.pageRange.getPageNumberSet().size);
+      } else {
+        this.nativeLayer_.startPrint(
+            this.destinationStore_.selectedDestination,
+            this.printTicketStore_,
+            this.cloudPrintInterface_,
+            this.documentInfo_,
+            this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW);
+      }
       return PrintPreview.PrintAttemptResult_.PRINTED;
     },
 
@@ -683,6 +690,9 @@ cr.define('print_preview', function() {
       this.printHeader_.isPrintButtonEnabled = false;
       if (this.uiState_ == PrintPreview.UiState_.PRINTING) {
         this.nativeLayer_.startCancelPendingPrint();
+      } else if (this.uiState_ ==
+            PrintPreview.UiState_.OPENING_CLOUD_PRINT_DIALOG) {
+        this.uiState_ = PrintPreview.UiState_.READY;
       }
     },
 
@@ -876,9 +886,8 @@ cr.define('print_preview', function() {
                  this.uiState_);
       setIsVisible($('cloud-print-dialog-throbber'), true);
       this.setIsEnabled_(false);
-      this.uiState_ = PrintPreview.UiState_.OPENING_NATIVE_PRINT_DIALOG;
-      this.nativeLayer_.startShowCloudPrintDialog(
-          this.printTicketStore_.pageRange.getPageNumberSet().size);
+      this.uiState_ = PrintPreview.UiState_.OPENING_CLOUD_PRINT_DIALOG;
+      this.printIfReady_();
     },
 
     /**
