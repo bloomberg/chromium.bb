@@ -18,36 +18,6 @@ InputMethodAuraLinux::InputMethodAuraLinux(
 
 InputMethodAuraLinux::~InputMethodAuraLinux() {}
 
-// static
-void InputMethodAuraLinux::Initialize() {
-#if (USE_X11)
-  // Force a IBus IM context to run in synchronous mode.
-  //
-  // Background: IBus IM context runs by default in asynchronous mode.  In
-  // this mode, gtk_im_context_filter_keypress() consumes all the key events
-  // and returns true while asynchronously sending the event to an underlying
-  // IME implementation.  When the event has not actually been consumed by
-  // the underlying IME implementation, the context pushes the event back to
-  // the GDK event queue marking the event as already handled by the IBus IM
-  // context.
-  //
-  // The problem here is that those pushed-back GDK events are never handled
-  // when base::MessagePumpX11 is used, which only handles X events.  So, we
-  // make a IBus IM context run in synchronous mode by setting an environment
-  // variable.  This is only the interface to change the mode.
-  //
-  // Another possible solution is to use GDK event loop instead of X event
-  // loop.
-  //
-  // Since there is no reentrant version of setenv(3C), it's a caller's duty
-  // to avoid race conditions.  This function should be called in the main
-  // thread on a very early stage, and supposed to be called from
-  // ui::InitializeInputMethod().
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  env->SetVar("IBUS_ENABLE_SYNC_MODE", "1");
-#endif
-}
-
 // Overriden from InputMethod.
 
 void InputMethodAuraLinux::Init(bool focused) {

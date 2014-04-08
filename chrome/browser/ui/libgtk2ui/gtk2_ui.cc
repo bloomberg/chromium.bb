@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/libgtk2ui/app_indicator_icon.h"
 #include "chrome/browser/ui/libgtk2ui/chrome_gtk_frame.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_border.h"
+#include "chrome/browser/ui/libgtk2ui/gtk2_event_loop.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_key_bindings_handler.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal_registrar.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
@@ -353,6 +354,9 @@ void Gtk2UI::Initialize() {
 #endif  // defined(USE_GCONF)
 
   indicators_count = 0;
+
+  // Instantiate the singleton instance of Gtk2EventLoop.
+  Gtk2EventLoop::GetInstance();
 }
 
 Gtk2UI::~Gtk2UI() {

@@ -20,11 +20,6 @@ class InputMethodAuraLinux : public InputMethodBase,
   explicit InputMethodAuraLinux(internal::InputMethodDelegate* delegate);
   virtual ~InputMethodAuraLinux();
 
-  // Initializes input methods.  This function must be called once prior to
-  // any use of this instance.  This function is supposed to be called from
-  // ui::InitializeInputMethod().
-  static void Initialize();
-
   // Overriden from InputMethod.
   virtual void Init(bool focused) OVERRIDE;
   virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,

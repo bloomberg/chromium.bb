@@ -7,7 +7,7 @@
 #if defined(OS_CHROMEOS)
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #elif defined(USE_AURA) && defined(OS_LINUX) && !defined(USE_OZONE)
-#include "ui/base/ime/input_method_auralinux.h"
+#include "base/logging.h"
 #include "ui/base/ime/linux/fake_input_method_context_factory.h"
 #endif
 
@@ -25,8 +25,6 @@ namespace ui {
 void InitializeInputMethod() {
 #if defined(OS_CHROMEOS)
   chromeos::IMEBridge::Initialize();
-#elif defined(USE_AURA) && defined(OS_LINUX) && !defined(USE_OZONE)
-  InputMethodAuraLinux::Initialize();
 #endif
 }
 
