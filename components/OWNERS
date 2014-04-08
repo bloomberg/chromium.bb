@@ -22,6 +22,9 @@ per-file domain_reliability.gypi=mmenke@chromium.org
 per-file domain_reliability.gypi=szym@chromium.org
 per-file domain_reliability.gypi=ttuttle@chromium.org
 
+per-file favicon*=sky@chromium.org
+per-file favicon*=stevenjb@chromium.org
+
 per-file json_schema.gypi=asargent@chromium.org
 per-file json_schema.gypi=calamity@chromium.org
 per-file json_schema.gypi=kalman@chromium.org

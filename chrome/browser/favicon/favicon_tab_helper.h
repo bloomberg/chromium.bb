@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chrome/browser/favicon/favicon_handler_delegate.h"
+#include "components/favicon/core/favicon_handler_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/favicon_url.h"

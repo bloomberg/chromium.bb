@@ -1,13 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FAVICON_FAVICON_HANDLER_DELEGATE_H_
-#define CHROME_BROWSER_FAVICON_FAVICON_HANDLER_DELEGATE_H_
+#ifndef COMPONENTS_FAVICON_CORE_FAVICON_HANDLER_DELEGATE_H_
+#define COMPONENTS_FAVICON_CORE_FAVICON_HANDLER_DELEGATE_H_
 
 class GURL;
 
 namespace content {
+// TODO(jif): Abstract the NavigationEntry (crbug.com/359598).
 class NavigationEntry;
 }
 
@@ -17,6 +18,7 @@ class NavigationEntry;
 class FaviconHandlerDelegate {
  public:
   // Returns the current NavigationEntry.
+  // TODO(jif): Abstract the NavigationEntry (crbug.com/359598).
   virtual content::NavigationEntry* GetActiveEntry() = 0;
 
   // Starts the download for the given favicon. When finished, the delegate
@@ -35,4 +37,4 @@ class FaviconHandlerDelegate {
   virtual void NotifyFaviconUpdated(bool icon_url_changed) = 0;
 };
 
-#endif  // CHROME_BROWSER_FAVICON_FAVICON_HANDLER_DELEGATE_H_
+#endif  // COMPONENTS_FAVICON_CORE_FAVICON_HANDLER_DELEGATE_H_
