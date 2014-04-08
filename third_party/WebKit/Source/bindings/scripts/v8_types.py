@@ -116,7 +116,7 @@ CPP_SPECIAL_CONVERSION_RULES = {
 }
 
 
-def cpp_type(idl_type, extended_attributes=None, used_as_argument=False, will_be_in_heap_object=False):
+def cpp_type(idl_type, extended_attributes=None, used_as_argument=False, used_in_cpp_sequence=False):
     """Returns C++ type corresponding to IDL type.
 
     |idl_type| argument is of type IdlType, while return value is a string
@@ -126,10 +126,8 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False, will_be
             IdlType
         used_as_argument:
             bool, True if idl_type's raw/primitive C++ type should be returned.
-        will_be_in_heap_object:
-            bool, True if idl_type will be part of a possibly heap allocated
-            object (e.g., appears as an element of a C++ heap vector type.)
-            The C++ type of an interface type changes, if so.
+        used_in_cpp_sequence:
+            bool, True if the C++ type is used as an element of an array or sequence.
     """
     def string_mode():
         # FIXME: the Web IDL spec requires 'EmptyString', not 'NullString',
@@ -148,7 +146,7 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False, will_be
     if array_or_sequence_type:
         will_be_garbage_collected = array_or_sequence_type.is_will_be_garbage_collected
         vector_type = 'WillBeHeapVector' if will_be_garbage_collected else 'Vector'
-        return cpp_template_type(vector_type, array_or_sequence_type.cpp_type_args(will_be_in_heap_object=will_be_garbage_collected))
+        return cpp_template_type(vector_type, array_or_sequence_type.cpp_type_args(used_in_cpp_sequence=True))
 
     # Simple types
     base_idl_type = idl_type.base_type
@@ -176,14 +174,14 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False, will_be
         if used_as_argument:
             return implemented_as_class + '*'
         if idl_type.is_will_be_garbage_collected:
-            ref_ptr_type = 'RefPtrWillBeMember' if will_be_in_heap_object else 'RefPtrWillBeRawPtr'
+            ref_ptr_type = 'RefPtrWillBeMember' if used_in_cpp_sequence else 'RefPtrWillBeRawPtr'
             return cpp_template_type(ref_ptr_type, implemented_as_class)
         return cpp_template_type('RefPtr', implemented_as_class)
     # Default, assume native type is a pointer with same type name as idl type
     return base_idl_type + '*'
 
 
-def cpp_type_union(idl_type, extended_attributes=None, used_as_argument=False, will_be_in_heap_object=False):
+def cpp_type_union(idl_type, extended_attributes=None, used_as_argument=False):
     return (member_type.cpp_type for member_type in idl_type.member_types)
 
 # Allow access as idl_type.cpp_type if no arguments

@@ -149,9 +149,8 @@ def generate_argument(interface, method, argument, index):
     idl_type = argument.idl_type
     this_cpp_value = cpp_value(interface, method, index)
     is_variadic_wrapper_type = argument.is_variadic and idl_type.is_wrapper_type
-    use_heap_vector_type = is_variadic_wrapper_type and idl_type.is_will_be_garbage_collected
     return {
-        'cpp_type': idl_type.cpp_type_args(will_be_in_heap_object=use_heap_vector_type),
+        'cpp_type': idl_type.cpp_type_args(used_in_cpp_sequence=is_variadic_wrapper_type),
         'cpp_value': this_cpp_value,
         'enum_validation_expression': idl_type.enum_validation_expression,
         'has_default': 'Default' in extended_attributes,
@@ -168,7 +167,7 @@ def generate_argument(interface, method, argument, index):
         'is_optional': argument.is_optional,
         'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,
         'is_variadic_wrapper_type': is_variadic_wrapper_type,
-        'vector_type': 'WillBeHeapVector' if use_heap_vector_type else 'Vector',
+        'vector_type': 'WillBeHeapVector' if idl_type.is_will_be_garbage_collected else 'Vector',
         'is_wrapper_type': idl_type.is_wrapper_type,
         'name': argument.name,
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
