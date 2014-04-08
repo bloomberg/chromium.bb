@@ -32,12 +32,17 @@
           codec.kMessageExpectsResponse, 0);
       builder.encodeStruct({{interface.name}}_{{method.name}}_Params, params);
       var message = builder.finish();
-      this.receiver_.acceptWithResponder(message, { accept: function(message) {
-        var reader = new codec.MessageReader(message);
-        var responseParams =
-            reader.decodeStruct({{interface.name}}_{{method.name}}_ResponseParams);
-        resolve(responseParams);
-      }});
+      this.receiver_.acceptWithResponder(message, {
+          accept: function(message) {
+            var reader = new codec.MessageReader(message);
+            var responseParams =
+                reader.decodeStruct({{interface.name}}_{{method.name}}_ResponseParams);
+            resolve(responseParams);
+          },
+          reject: function(result) {
+            reject(Error("Connection error: " + result));
+          },
+      }).catch(reject);
     }.bind(this));
 {%- endif %}
   };
@@ -73,7 +78,7 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif %}
 {%- if method.response_parameters != None %}
     case k{{interface.name}}_{{method.name}}_Name:
       var params = reader.decodeStruct({{interface.name}}_{{method.name}}_Params);
-      this.{{method.name|stylize_method}}(
+      return this.{{method.name|stylize_method}}(
 {%- for parameter in method.parameters -%}
 params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
 {%- endfor %}).then(function(response) {
@@ -91,11 +96,10 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
         var message = builder.finish();
         responder.accept(message);
       });
-      return true;
 {%- endif %}
 {%- endfor %}
     default:
-      return false;
+      return Promise.reject(Error("Unhandled message: " + reader.messageName));
     }
   };
 

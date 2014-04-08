@@ -14,6 +14,7 @@ define("mojo/public/js/bindings/connector", [
     this.error_ = false;
     this.incomingReceiver_ = null;
     this.readWaitCookie_ = null;
+    this.errorHandler_ = null;
 
     this.waitToReadMore_();
   }
@@ -67,9 +68,13 @@ define("mojo/public/js/bindings/connector", [
     this.incomingReceiver_ = receiver;
   };
 
+  Connector.prototype.setErrorHandler = function(handler) {
+    this.errorHandler_ = handler;
+  };
+
   Connector.prototype.encounteredError = function() {
     return this.error_;
-  }
+  };
 
   Connector.prototype.waitToReadMore_ = function() {
     this.readWaitCookie_ = support.asyncWait(this.handle_,
@@ -87,6 +92,8 @@ define("mojo/public/js/bindings/connector", [
       }
       if (read.result != core.RESULT_OK) {
         this.error_ = true;
+        if (this.errorHandler_)
+          this.errorHandler_.onError(read.result);
         return;
       }
       // TODO(abarth): Should core.readMessage return a Uint8Array?

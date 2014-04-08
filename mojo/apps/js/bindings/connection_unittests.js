@@ -225,6 +225,7 @@ define([
     var connection1 = new connection.Connection(
         pipe.handle1, ProviderClientImpl, sample_interfaces.ProviderProxy);
 
+    var origReadMessage = core.readMessage;
     // echoString
     mockSupport.queuePump(core.RESULT_OK);
     return connection1.remote.echoString("hello").then(function(response) {
@@ -236,6 +237,20 @@ define([
     }).then(function(response) {
       expect(response.a).toBe("hello");
       expect(response.b).toBe("world");
+    }).then(function() {
+      // Mock a read failure, expect it to fail.
+      core.readMessage = function() {
+        return { result: core.RESULT_UNKNOWN };
+      };
+      mockSupport.queuePump(core.RESULT_OK);
+      return connection1.remote.echoString("goodbye");
+    }).then(function() {
+      throw Error("Expected echoString to fail.");
+    }, function(error) {
+      expect(error.message).toBe("Connection error: " + core.RESULT_UNKNOWN);
+
+      // Clean up.
+      core.readMessage = origReadMessage;
     });
   }
 });
