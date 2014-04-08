@@ -11,6 +11,10 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/ui/views/apps/chrome_native_app_window_views_win.h"
+#endif
+
 class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
  public:
   ShapedAppWindowTargeterTest()
@@ -49,7 +53,11 @@ class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
  private:
   views::WebView web_view_;
   scoped_ptr<views::Widget> widget_;
+#if defined(OS_WIN)
+  ChromeNativeAppWindowViewsWin app_window_;
+#else
   ChromeNativeAppWindowViews app_window_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ShapedAppWindowTargeterTest);
 };
@@ -184,9 +192,10 @@ TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
     EXPECT_EQ(window, move.target());
   }
 
-  // The EasyResizeTargeter specifies an inset of 5px within the window.
-  app_window_views()->InstallEasyResizeTargeterOnContainer();
-
+#if defined(OS_WIN)
+  // On Windows the non standard app frame has a easy resize targetter
+  // installed.
+  app_window_views()->CreateNonStandardAppFrame();
   {
     // An event in the center of the window should always have
     // |window| as its target.
@@ -210,4 +219,5 @@ TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(root_window(), move.target());
   }
+#endif  // defined (OS_WIN)
 }
