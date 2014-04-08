@@ -60,6 +60,7 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(
       in_move_loop_(false),
       should_reset_mouse_flags_(false),
       grab_input_window_(None),
+      canceled_(false),
       weak_factory_(this) {
   last_xmotion_.type = LASTEvent;
 }
@@ -118,17 +119,16 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
       break;
     }
     case KeyPress: {
-      if (ui::KeyboardCodeFromXKeyEvent(xev) == ui::VKEY_ESCAPE)
+      if (ui::KeyboardCodeFromXKeyEvent(xev) == ui::VKEY_ESCAPE) {
+        canceled_ = true;
         EndMoveLoop();
+      }
       break;
     }
   }
 
   return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostLinux, aura::client::WindowMoveClient implementation:
 
 bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
                                          gfx::NativeCursor cursor) {
@@ -168,12 +168,13 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
     should_reset_mouse_flags_ = true;
   }
 
+  canceled_ = false;
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();
-  return true;
+  return !canceled_;
 }
 
 void X11WholeScreenMoveLoop::UpdateCursor(gfx::NativeCursor cursor) {
