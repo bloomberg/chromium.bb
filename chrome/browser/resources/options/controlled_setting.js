@@ -61,19 +61,9 @@ cr.define('options', function() {
         if (!this.value || String(event.value.value) == this.value) {
           this.controlledBy = event.value.controlledBy;
           if (event.value.extension) {
-            if (this.pref == 'session.restore_on_startup' ||
-                this.pref == 'homepage_is_newtabpage') {
-              // Special case for the restore on startup, which is implied
-              // by the startup pages settings being controlled by an
-              // extension, and same for the home page as NTP, so we don't want
-              // to show two buttons in these cases.
-              // TODO(mad): Find a better way to handle this.
-              this.controlledBy = null;
-            } else {
-              this.extensionId = event.value.extension.id;
-              this.extensionIcon = event.value.extension.icon;
-              this.extensionName = event.value.extension.name;
-            }
+            this.extensionId = event.value.extension.id;
+            this.extensionIcon = event.value.extension.icon;
+            this.extensionName = event.value.extension.name;
           }
         } else {
           this.controlledBy = null;

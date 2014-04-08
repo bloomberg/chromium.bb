@@ -222,11 +222,6 @@ cr.define('options', function() {
       };
       $('default-search-engine').addEventListener('change',
           this.setDefaultSearchEngine_);
-      // Without this, the bubble would overlap the uber frame navigation pane
-      // and would not get mouse event as explained in crbug.com/311421.
-      document.querySelector(
-          '#default-search-engine + .controlled-setting-indicator').location =
-              cr.ui.ArrowLocation.TOP_START;
 
       // Users section.
       if (loadTimeData.valueExists('profilesInfo')) {
