@@ -546,7 +546,7 @@ Vector<RefPtr<T> > toRefPtrNativeArray(v8::Handle<v8::Value> value, const String
 }
 
 template <class T, class V8T>
-HeapVector<Member<T> > toMemberNativeArray(v8::Handle<v8::Value> value, int argumentIndex, v8::Isolate* isolate, bool* success = 0)
+HeapVector<Member<T> > toRefPtrWillBeMemberNativeArray(v8::Handle<v8::Value> value, int argumentIndex, v8::Isolate* isolate, bool* success = 0)
 {
     if (success)
         *success = true;
@@ -557,10 +557,10 @@ HeapVector<Member<T> > toMemberNativeArray(v8::Handle<v8::Value> value, int argu
         length = v8::Local<v8::Array>::Cast(v8Value)->Length();
     } else if (toV8Sequence(value, length, isolate).IsEmpty()) {
         throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
-        return HeapVector<Member<T> >();
+        return WillBeHeapVector<RefPtrWillBeMember<T> >();
     }
 
-    HeapVector<Member<T> > result;
+    WillBeHeapVector<RefPtrWillBeMember<T> > result;
     result.reserveInitialCapacity(length);
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
     for (uint32_t i = 0; i < length; ++i) {
@@ -572,7 +572,7 @@ HeapVector<Member<T> > toMemberNativeArray(v8::Handle<v8::Value> value, int argu
             if (success)
                 *success = false;
             throwTypeError("Invalid Array element type", isolate);
-            return HeapVector<Member<T> >();
+            return WillBeHeapVector<RefPtrWillBeMember<T> >();
         }
     }
     return result;

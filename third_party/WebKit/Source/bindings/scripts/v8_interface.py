@@ -39,6 +39,7 @@ import v8_attributes
 from v8_globals import includes
 import v8_methods
 import v8_types
+from v8_types import cpp_ptr_type
 import v8_utilities
 from v8_utilities import capitalize, conditional_string, cpp_name, has_extended_attribute_value, runtime_enabled_function_name
 
@@ -128,7 +129,10 @@ def generate_interface(interface):
         v8_types.add_includes_for_interface(special_wrap_interface)
 
     # [WillBeGarbageCollected]
-    is_will_be_garbage_collected = 'WillBeGarbageCollected' in extended_attributes
+    if 'WillBeGarbageCollected' in extended_attributes:
+        garbage_collection_type = 'WillBeGarbageCollectedObject'
+    else:
+        garbage_collection_type = 'RefCountedObject'
 
     # [Custom=Wrap], [SetWrapperReferenceFrom]
     has_visit_dom_wrapper = (
@@ -139,6 +143,7 @@ def generate_interface(interface):
     template_contents = {
         'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class': cpp_name(interface),
+        'garbage_collection_type': garbage_collection_type,
         'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
         'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
         'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]
@@ -152,15 +157,12 @@ def generate_interface(interface):
         'is_document': is_document,
         'is_event_target': inherits_interface(interface.name, 'EventTarget'),
         'is_exception': interface.is_exception,
-        'is_will_be_garbage_collected': is_will_be_garbage_collected,
         'is_node': inherits_interface(interface.name, 'Node'),
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'parent_interface': parent_interface,
-        'pass_ref_ptr': 'PassRefPtrWillBeRawPtr'
-                        if is_will_be_garbage_collected else 'PassRefPtr',
+        'pass_ref_ptr': cpp_ptr_type('PassRefPtr', 'RawPtr', garbage_collection_type),
         'reachable_node_function': reachable_node_function,
-        'ref_ptr': 'RefPtrWillBeRawPtr'
-                   if is_will_be_garbage_collected else 'RefPtr',
+        'ref_ptr': cpp_ptr_type('RefPtr', 'RawPtr', garbage_collection_type),
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
         'set_wrapper_reference_to_list': set_wrapper_reference_to_list,
         'special_wrap_for': special_wrap_for,

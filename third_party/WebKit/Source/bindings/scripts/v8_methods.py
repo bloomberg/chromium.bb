@@ -167,7 +167,7 @@ def generate_argument(interface, method, argument, index):
         'is_optional': argument.is_optional,
         'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,
         'is_variadic_wrapper_type': is_variadic_wrapper_type,
-        'vector_type': 'WillBeHeapVector' if idl_type.is_will_be_garbage_collected else 'Vector',
+        'vector_type': v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.garbage_collection_type),
         'is_wrapper_type': idl_type.is_wrapper_type,
         'name': argument.name,
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
@@ -241,7 +241,7 @@ def v8_value_to_local_cpp_value(argument, index):
     idl_type = argument.idl_type
     name = argument.name
     if argument.is_variadic:
-        vector_type = 'WillBeHeapVector' if idl_type.is_will_be_garbage_collected else 'Vector'
+        vector_type = v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.garbage_collection_type)
         return 'V8TRYCATCH_VOID({vector_type}<{cpp_type}>, {name}, toNativeArguments<{cpp_type}>(info, {index}))'.format(
                 cpp_type=idl_type.cpp_type, name=name, index=index, vector_type=vector_type)
     # [Default=NullString]

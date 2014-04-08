@@ -7661,7 +7661,7 @@ static void voidMethodTestInterfaceWillBeGarbageCollectedSequenceArgMethod(const
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >, testInterfaceWillBeGarbageCollectedSequenceArg, (toMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate())));
+    V8TRYCATCH_VOID(WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >, testInterfaceWillBeGarbageCollectedSequenceArg, (toRefPtrWillBeMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate())));
     impl->voidMethodTestInterfaceWillBeGarbageCollectedSequenceArg(testInterfaceWillBeGarbageCollectedSequenceArg);
 }
 
@@ -7679,7 +7679,7 @@ static void voidMethodTestInterfaceWillBeGarbageCollectedArrayArgMethod(const v8
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >, testInterfaceWillBeGarbageCollectedArrayArg, (toMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate())));
+    V8TRYCATCH_VOID(WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >, testInterfaceWillBeGarbageCollectedArrayArg, (toRefPtrWillBeMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate())));
     impl->voidMethodTestInterfaceWillBeGarbageCollectedArrayArg(testInterfaceWillBeGarbageCollectedArrayArg);
 }
 

@@ -1308,8 +1308,8 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_ref_ptr}}<{{cpp_class}
 {% block deref_object_and_to_v8_no_inline %}
 void {{v8_class}}::derefObject(void* object)
 {
-{% set oilpan_conditional = '!ENABLE(OILPAN)' if is_will_be_garbage_collected
-                                              else '' %}
+{% set oilpan_conditional = '' if garbage_collection_type == 'RefCountedObject'
+                               else '!ENABLE(OILPAN)' %}
 {% filter conditional(oilpan_conditional) %}
     fromInternalPointer(object)->deref();
 {% endfilter %}
