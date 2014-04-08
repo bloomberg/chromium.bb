@@ -29,17 +29,9 @@ class TouchscreenTapSuppressionController
   // |processed| is true if the GestureFlingCancel successfully stopped a fling.
   void GestureFlingCancelAck(bool processed);
 
-  // Should be called on arrival of GestureTapDown events. Returns true if the
-  // caller should stop normal handling of the GestureTapDown.
-  bool ShouldDeferGestureTapDown(const GestureEventWithLatencyInfo& event);
-
-  // Should be called on arrival of GestureShowPress events. Returns true if the
-  // caller should stop normal handling of the GestureShowPress.
-  bool ShouldDeferGestureShowPress(const GestureEventWithLatencyInfo& event);
-
-  // Should be called on arrival of tap-ending gesture events. Returns true if
-  // the caller should stop normal handling of the GestureTap.
-  bool ShouldSuppressGestureTapEnd();
+  // Should be called on arrival of any tap-related events. Returns true if the
+  // caller should stop normal handling of the gesture.
+  bool FilterTapEvent(const GestureEventWithLatencyInfo& event);
 
  private:
   // TapSuppressionControllerClient implementation.

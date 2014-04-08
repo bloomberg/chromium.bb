@@ -133,17 +133,16 @@ bool GestureEventQueue::ShouldForwardForTapSuppression(
         touchpad_tap_suppression_controller_->GestureFlingCancel();
       return true;
     case WebInputEvent::GestureTapDown:
-      return !touchscreen_tap_suppression_controller_->
-          ShouldDeferGestureTapDown(gesture_event);
     case WebInputEvent::GestureShowPress:
-      return !touchscreen_tap_suppression_controller_->
-          ShouldDeferGestureShowPress(gesture_event);
+    case WebInputEvent::GestureTapUnconfirmed:
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GestureTap:
-    case WebInputEvent::GestureTapUnconfirmed:
     case WebInputEvent::GestureDoubleTap:
-      return !touchscreen_tap_suppression_controller_->
-          ShouldSuppressGestureTapEnd();
+      if (gesture_event.event.sourceDevice == WebGestureEvent::Touchscreen) {
+        return !touchscreen_tap_suppression_controller_->
+            FilterTapEvent(gesture_event);
+      }
+      return true;
     default:
       return true;
   }
