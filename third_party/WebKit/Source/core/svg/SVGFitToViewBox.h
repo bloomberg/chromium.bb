@@ -71,12 +71,10 @@ public:
         return false;
     }
 
-    // SVGFitToViewBox JS API.
-    static SVGAnimatedRect* viewBox(SVGFitToViewBox& object) { return object.viewBox(); }
-    static SVGAnimatedPreserveAspectRatio* preserveAspectRatio(SVGFitToViewBox& object) { return object.preserveAspectRatio(); }
-
-    SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
     bool hasEmptyViewBox() const { return m_viewBox->currentValue()->isValid() && m_viewBox->currentValue()->value().isEmpty(); }
+
+    // JS API
+    SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
     SVGAnimatedPreserveAspectRatio* preserveAspectRatio() const { return m_preserveAspectRatio.get(); }
 
 protected:

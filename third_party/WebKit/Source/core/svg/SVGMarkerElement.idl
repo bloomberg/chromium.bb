@@ -23,30 +23,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG2/painting.html#InterfaceSVGMarkerElement
+
 [
     StrictTypeChecking,
 ] interface SVGMarkerElement : SVGElement {
+
     // Marker Unit Types
-    const unsigned short SVG_MARKERUNITS_UNKNOWN        = 0;
+    const unsigned short SVG_MARKERUNITS_UNKNOWN = 0;
     const unsigned short SVG_MARKERUNITS_USERSPACEONUSE = 1;
-    const unsigned short SVG_MARKERUNITS_STROKEWIDTH    = 2;
+    const unsigned short SVG_MARKERUNITS_STROKEWIDTH = 2;
 
     // Marker Orientation Types
-    const unsigned short SVG_MARKER_ORIENT_UNKNOWN      = 0;
-    const unsigned short SVG_MARKER_ORIENT_AUTO         = 1;
-    const unsigned short SVG_MARKER_ORIENT_ANGLE        = 2;
+    const unsigned short SVG_MARKER_ORIENT_UNKNOWN = 0;
+    const unsigned short SVG_MARKER_ORIENT_AUTO = 1;
+    const unsigned short SVG_MARKER_ORIENT_ANGLE = 2;
 
-    readonly attribute SVGAnimatedLength      refX;
-    readonly attribute SVGAnimatedLength      refY;
+    readonly attribute SVGAnimatedLength refX;
+    readonly attribute SVGAnimatedLength refY;
     readonly attribute SVGAnimatedEnumeration markerUnits;
-    readonly attribute SVGAnimatedLength      markerWidth;
-    readonly attribute SVGAnimatedLength      markerHeight;
+    readonly attribute SVGAnimatedLength markerWidth;
+    readonly attribute SVGAnimatedLength markerHeight;
     readonly attribute SVGAnimatedEnumeration orientType;
-    readonly attribute SVGAnimatedAngle       orientAngle;
+    readonly attribute SVGAnimatedAngle orientAngle;
 
     void setOrientToAuto();
     void setOrientToAngle(SVGAngle angle);
 };
 
 SVGMarkerElement implements SVGFitToViewBox;
-
