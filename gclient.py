@@ -1051,8 +1051,8 @@ solutions = [
     for dep in self.dependencies:
       if dep.managed and dep.url:
         scm = gclient_scm.CreateSCM(dep.url, self.root_dir, dep.name)
-        actual_url = scm.GetActualRemoteURL()
-        if actual_url and not scm.DoesRemoteURLMatch():
+        actual_url = scm.GetActualRemoteURL(self._options)
+        if actual_url and not scm.DoesRemoteURLMatch(self._options):
           raise gclient_utils.Error('''
 Your .gclient file seems to be broken. The requested URL is different from what
 is actually checked out in %(checkout_path)s.

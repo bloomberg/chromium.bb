@@ -45,10 +45,10 @@ class SCMMock(object):
     return self.url + url
 
   # pylint: disable=R0201
-  def DoesRemoteURLMatch(self):
+  def DoesRemoteURLMatch(self, _):
     return True
 
-  def GetActualRemoteURL(self):
+  def GetActualRemoteURL(self, _):
     return self.url
 
 

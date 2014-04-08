@@ -140,23 +140,41 @@ class SCMWrapper(object):
 
     return getattr(self, command)(options, args, file_list)
 
-  def GetActualRemoteURL(self):
+  def GetActualRemoteURL(self, options):
     """Attempt to determine the remote URL for this SCMWrapper."""
+    # Git
     if os.path.exists(os.path.join(self.checkout_path, '.git')):
-      return shlex.split(scm.GIT.Capture(
+      actual_remote_url = shlex.split(scm.GIT.Capture(
           ['config', '--local', '--get-regexp', r'remote.*.url'],
           self.checkout_path))[1]
+
+      # If a cache_dir is used, obtain the actual remote URL from the cache.
+      if getattr(self, 'cache_dir', None):
+        try:
+          full_cache_dir = self._Run(['cache', 'exists', '--cache-dir',
+                                      self.cache_dir, self.url],
+                                     options, cwd=self._root_dir).strip()
+        except subprocess2.CalledProcessError:
+          full_cache_dir = None
+        if (full_cache_dir.replace('\\', '/') ==
+            actual_remote_url.replace('\\', '/')):
+          actual_remote_url = shlex.split(scm.GIT.Capture(
+              ['config', '--local', '--get-regexp', r'remote.*.url'],
+              os.path.join(self._root_dir, full_cache_dir)))[1]
+      return actual_remote_url
+
+    # Svn
     if os.path.exists(os.path.join(self.checkout_path, '.svn')):
       return scm.SVN.CaptureLocalInfo([], self.checkout_path)['URL']
     return None
 
-  def DoesRemoteURLMatch(self):
+  def DoesRemoteURLMatch(self, options):
     """Determine whether the remote URL of this checkout is the expected URL."""
     if not os.path.exists(self.checkout_path):
       # A checkout which doesn't exist can't be broken.
       return True
 
-    actual_remote_url = self.GetActualRemoteURL()
+    actual_remote_url = self.GetActualRemoteURL(options)
     if actual_remote_url:
       return (gclient_utils.SplitUrlRevision(actual_remote_url)[0].rstrip('/')
               == gclient_utils.SplitUrlRevision(self.url)[0].rstrip('/'))
