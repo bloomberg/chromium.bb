@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
   base::i18n::InitializeICU();
 
-  gin::IsolateHolder instance;
+  gin::IsolateHolder instance(gin::IsolateHolder::kStrictMode);
 
   base::MessageLoop message_loop;
 

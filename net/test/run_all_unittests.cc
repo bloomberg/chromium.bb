@@ -48,8 +48,7 @@ int main(int argc, char** argv) {
   net::EnableSSLServerSockets();
 
 #if !defined(OS_IOS)
-  // This has to be done on the main thread.
-  net::ProxyResolverV8::RememberDefaultIsolate();
+  net::ProxyResolverV8::EnsureIsolateCreated();
 #endif
 
   return base::LaunchUnitTests(

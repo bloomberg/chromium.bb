@@ -1,5 +1,6 @@
 include_rules = [
   "+crypto",
+  "+gin/public",
   "+jni",
   "+third_party/apple_apsl",
   "+third_party/libevent",

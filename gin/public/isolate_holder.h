@@ -26,7 +26,13 @@ class PerIsolateData;
 // It is not possible to mix the two.
 class GIN_EXPORT IsolateHolder {
  public:
-  IsolateHolder();
+  // Controls whether or not V8 should only accept strict mode scripts.
+  enum ScriptMode {
+    kNonStrictMode,
+    kStrictMode
+  };
+
+  explicit IsolateHolder(ScriptMode mode);
   IsolateHolder(v8::Isolate* isolate, v8::ArrayBuffer::Allocator* allocator);
 
   ~IsolateHolder();

@@ -9,11 +9,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "gin/public/isolate_holder.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
@@ -764,59 +766,44 @@ int ProxyResolverV8::SetPacScript(
 }
 
 // static
-void ProxyResolverV8::RememberDefaultIsolate() {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  DCHECK(isolate)
-      << "ProxyResolverV8::RememberDefaultIsolate called on wrong thread";
-  DCHECK(g_default_isolate_ == NULL || g_default_isolate_ == isolate)
-      << "Default Isolate can not be changed";
-  g_default_isolate_ = isolate;
+void ProxyResolverV8::EnsureIsolateCreated() {
+  if (g_proxy_resolver_isolate_)
+    return;
+  g_proxy_resolver_isolate_ =
+      new gin::IsolateHolder(gin::IsolateHolder::kNonStrictMode);
+  ANNOTATE_LEAKING_OBJECT_PTR(g_proxy_resolver_isolate_);
 }
-
-#if defined(OS_WIN)
-// static
-void ProxyResolverV8::CreateIsolate() {
-  v8::Isolate* isolate = v8::Isolate::New();
-  DCHECK(isolate);
-  DCHECK(g_default_isolate_ == NULL) << "Default Isolate can not be set twice";
-
-  isolate->Enter();
-  v8::V8::Initialize();
-
-  g_default_isolate_ = isolate;
-}
-#endif  // defined(OS_WIN)
 
 // static
 v8::Isolate* ProxyResolverV8::GetDefaultIsolate() {
-  DCHECK(g_default_isolate_)
-      << "Must call ProxyResolverV8::RememberDefaultIsolate() first";
-  return g_default_isolate_;
+  DCHECK(g_proxy_resolver_isolate_)
+      << "Must call ProxyResolverV8::EnsureIsolateCreated() first";
+  return g_proxy_resolver_isolate_->isolate();
 }
 
-v8::Isolate* ProxyResolverV8::g_default_isolate_ = NULL;
+gin::IsolateHolder* ProxyResolverV8::g_proxy_resolver_isolate_ = NULL;
 
 // static
 size_t ProxyResolverV8::GetTotalHeapSize() {
-  if (!g_default_isolate_)
+  if (!g_proxy_resolver_isolate_)
     return 0;
 
-  v8::Locker locked(g_default_isolate_);
-  v8::Isolate::Scope isolate_scope(g_default_isolate_);
+  v8::Locker locked(g_proxy_resolver_isolate_->isolate());
+  v8::Isolate::Scope isolate_scope(g_proxy_resolver_isolate_->isolate());
   v8::HeapStatistics heap_statistics;
-  g_default_isolate_->GetHeapStatistics(&heap_statistics);
+  g_proxy_resolver_isolate_->isolate()->GetHeapStatistics(&heap_statistics);
   return heap_statistics.total_heap_size();
 }
 
 // static
 size_t ProxyResolverV8::GetUsedHeapSize() {
-  if (!g_default_isolate_)
+  if (!g_proxy_resolver_isolate_)
     return 0;
 
-  v8::Locker locked(g_default_isolate_);
-  v8::Isolate::Scope isolate_scope(g_default_isolate_);
+  v8::Locker locked(g_proxy_resolver_isolate_->isolate());
+  v8::Isolate::Scope isolate_scope(g_proxy_resolver_isolate_->isolate());
   v8::HeapStatistics heap_statistics;
-  g_default_isolate_->GetHeapStatistics(&heap_statistics);
+  g_proxy_resolver_isolate_->isolate()->GetHeapStatistics(&heap_statistics);
   return heap_statistics.used_heap_size();
 }
 

@@ -25,7 +25,7 @@ namespace apps {
 void Start(MojoHandle pipe, const std::string& module) {
   base::MessageLoop loop;
 
-  gin::IsolateHolder instance;
+  gin::IsolateHolder instance(gin::IsolateHolder::kStrictMode);
   MojoRunnerDelegate delegate;
   gin::ShellRunner runner(&delegate, instance.isolate());
   delegate.Start(&runner, pipe, module);

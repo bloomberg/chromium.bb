@@ -30,6 +30,10 @@
 #include "win8/util/win8_util.h"
 #endif
 
+#if !defined(OS_IOS)
+#include "net/proxy/proxy_resolver_v8.h"
+#endif
+
 using content::BrowserThread;
 
 // static
@@ -107,12 +111,6 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
   }
 #endif  // defined(OS_IOS)
 
-#if defined(OS_WIN)
-  // Crashes. http://crbug.com/266838
-  if (use_v8 && win8::IsSingleWindowMetroMode())
-    use_v8 = false;
-#endif
-
   size_t num_pac_threads = 0u;  // Use default number of threads.
 
   // Check the command line for an override on the number of proxy resolver
@@ -134,6 +132,8 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
 #if defined(OS_IOS)
     NOTREACHED();
 #else
+    net::ProxyResolverV8::EnsureIsolateCreated();
+
     net::DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher;
 #if defined(OS_CHROMEOS)
     dhcp_proxy_script_fetcher =

@@ -19,7 +19,7 @@ V8Test::~V8Test() {
 }
 
 void V8Test::SetUp() {
-  instance_.reset(new gin::IsolateHolder);
+  instance_.reset(new gin::IsolateHolder(gin::IsolateHolder::kStrictMode));
   instance_->isolate()->Enter();
   HandleScope handle_scope(instance_->isolate());
   context_.Reset(instance_->isolate(), Context::New(instance_->isolate()));

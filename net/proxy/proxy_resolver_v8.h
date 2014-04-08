@@ -10,6 +10,10 @@
 #include "net/base/net_export.h"
 #include "net/proxy/proxy_resolver.h"
 
+namespace gin {
+class IsolateHolder;
+}  // namespace gin
+
 namespace v8 {
 class HeapStatistics;
 class Isolate;
@@ -90,18 +94,10 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 : public ProxyResolver {
       const scoped_refptr<ProxyResolverScriptData>& script_data,
       const net::CompletionCallback& /*callback*/) OVERRIDE;
 
-  // Remember the default Isolate, must be called from the main thread. This
-  // hack can be removed when the "default Isolate" concept is gone.
-  static void RememberDefaultIsolate();
-
-#if defined(OS_WIN)
-  // Create an isolate to use for the proxy resolver. Until the "default
-  // Isolate" concept is gone, it is preferable to invoke
-  // RememberDefaultIsolate() as creating a new Isolate in additional to the
-  // default Isolate will waste a few MB of memory and the runtime it took to
-  // create the default Isolate.
-  static void CreateIsolate();
-#endif
+  // Create an isolate to use for the proxy resolver. If the embedder invokes
+  // this method multiple times, it must be invoked in a thread safe manner,
+  // e.g. always from the same thread.
+  static void EnsureIsolateCreated();
 
   static v8::Isolate* GetDefaultIsolate();
 
@@ -111,7 +107,7 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 : public ProxyResolver {
   static size_t GetUsedHeapSize();
 
  private:
-  static v8::Isolate* g_default_isolate_;
+  static gin::IsolateHolder* g_proxy_resolver_isolate_;
 
   // Context holds the Javascript state for the most recently loaded PAC
   // script. It corresponds with the data from the last call to

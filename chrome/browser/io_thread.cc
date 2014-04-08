@@ -100,10 +100,6 @@
 #include "net/ocsp/nss_ocsp.h"
 #endif
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-#include "net/proxy/proxy_resolver_v8.h"
-#endif
-
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
 #endif
@@ -420,16 +416,6 @@ IOThread::IOThread(
       is_spdy_disabled_by_policy_(false),
       weak_factory_(this),
       creation_time_(base::TimeTicks::Now()) {
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-#if defined(OS_WIN)
-  if (!win8::IsSingleWindowMetroMode())
-    net::ProxyResolverV8::RememberDefaultIsolate();
-  else
-    net::ProxyResolverV8::CreateIsolate();
-#else
-  net::ProxyResolverV8::RememberDefaultIsolate();
-#endif
-#endif
   auth_schemes_ = local_state->GetString(prefs::kAuthSchemes);
   negotiate_disable_cname_lookup_ = local_state->GetBoolean(
       prefs::kDisableAuthNegotiateCnameLookup);

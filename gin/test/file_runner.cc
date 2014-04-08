@@ -55,7 +55,7 @@ void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate,
 
   base::MessageLoop message_loop;
 
-  gin::IsolateHolder instance;
+  gin::IsolateHolder instance(gin::IsolateHolder::kStrictMode);
   gin::ShellRunner runner(delegate, instance.isolate());
   {
     gin::Runner::Scope scope(&runner);

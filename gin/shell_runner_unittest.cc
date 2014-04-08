@@ -19,7 +19,7 @@ namespace gin {
 TEST(RunnerTest, Run) {
   std::string source = "this.result = 'PASS';\n";
 
-  gin::IsolateHolder instance;
+  gin::IsolateHolder instance(gin::IsolateHolder::kStrictMode);
 
   ShellRunnerDelegate delegate;
   Isolate* isolate = instance.isolate();
