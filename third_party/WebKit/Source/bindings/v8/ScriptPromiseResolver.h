@@ -137,6 +137,8 @@ public:
     void resolve(ScriptValue);
     void reject(ScriptValue);
 
+    v8::Isolate* isolate() const { return m_isolate; }
+
 private:
     ScriptPromiseResolver(ExecutionContext*);
     ScriptPromiseResolver(v8::Isolate*);

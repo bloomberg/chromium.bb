@@ -31,9 +31,9 @@
 #ifndef ImageBitmapFactories_h
 #define ImageBitmapFactories_h
 
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
-#include "bindings/v8/ScriptState.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "platform/Supplementable.h"
@@ -103,7 +103,7 @@ private:
         virtual void didFinishLoading() OVERRIDE;
         virtual void didFail(FileError::ErrorCode) OVERRIDE;
 
-        ScriptState* m_scriptState;
+        RefPtr<NewScriptState> m_scriptState;
         FileReaderLoader m_loader;
         ImageBitmapFactories* m_factory;
         RefPtr<ScriptPromiseResolver> m_resolver;

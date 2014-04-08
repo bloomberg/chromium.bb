@@ -301,7 +301,7 @@ void ImageBitmapFactories::didFinishLoading(ImageBitmapLoader* loader)
 }
 
 ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(ImageBitmapFactories& factory, PassRefPtr<ScriptPromiseResolver> resolver, const IntRect& cropRect)
-    : m_scriptState(ScriptState::current())
+    : m_scriptState(NewScriptState::current(resolver->isolate()))
     , m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
     , m_factory(&factory)
     , m_resolver(resolver)
@@ -316,7 +316,7 @@ void ImageBitmapFactories::ImageBitmapLoader::loadBlobAsync(ExecutionContext* co
 
 void ImageBitmapFactories::ImageBitmapLoader::rejectPromise()
 {
-    ScriptScope scope(m_scriptState);
+    NewScriptState::Scope scope(m_scriptState.get());
     m_resolver->reject(ScriptValue::createNull());
     m_factory->didFinishLoading(this);
 }
@@ -348,7 +348,7 @@ void ImageBitmapFactories::ImageBitmapLoader::didFinishLoading()
     }
 
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image.get(), m_cropRect);
-    ScriptScope scope(m_scriptState);
+    NewScriptState::Scope scope(m_scriptState.get());
     m_resolver->resolve(imageBitmap.release());
     m_factory->didFinishLoading(this);
 }
