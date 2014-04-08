@@ -111,13 +111,14 @@ public:
         return CompositorAnimationsImpl::getAnimationOnCompositor(timing, effect, animations);
     }
 
-    bool isCandidateHelperForSingleKeyframe(AnimatableValueKeyframe* frame)
+    bool duplicateSingleKeyframeAndTestIsCandidateOnResult(AnimatableValueKeyframe* frame)
     {
         EXPECT_EQ(frame->offset(), 0);
         AnimatableValueKeyframeVector frames;
+        RefPtrWillBeRawPtr<Keyframe> second = frame->cloneWithOffset(1);
+
         frames.append(frame);
-        EXPECT_EQ((*m_keyframeVector2)[1]->offset(), 1.0);
-        frames.append((*m_keyframeVector2)[1]);
+        frames.append(toAnimatableValueKeyframe(second.get()));
         return isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(frames).get());
     }
 
@@ -219,15 +220,11 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKey
 {
     RefPtrWillBeRawPtr<AnimatableValueKeyframe> keyframeGoodMultiple = createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace);
     keyframeGoodMultiple->setPropertyValue(CSSPropertyTransform, AnimatableTransform::create(TransformOperations()).get());
-    EXPECT_TRUE(isCandidateHelperForSingleKeyframe(keyframeGoodMultiple.get()));
-
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> keyframeBadMultipleOp = createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeAdd);
-    keyframeBadMultipleOp->setPropertyValue(CSSPropertyTransform, AnimatableDouble::create(10.0).get());
-    EXPECT_FALSE(isCandidateHelperForSingleKeyframe(keyframeBadMultipleOp.get()));
+    EXPECT_TRUE(duplicateSingleKeyframeAndTestIsCandidateOnResult(keyframeGoodMultiple.get()));
 
     RefPtrWillBeRawPtr<AnimatableValueKeyframe> keyframeBadMultipleID = createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeReplace);
     keyframeBadMultipleID->setPropertyValue(CSSPropertyOpacity, AnimatableDouble::create(10.0).get());
-    EXPECT_FALSE(isCandidateHelperForSingleKeyframe(keyframeBadMultipleID.get()));
+    EXPECT_FALSE(duplicateSingleKeyframeAndTestIsCandidateOnResult(keyframeBadMultipleID.get()));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationTransformDependsOnBoxSize)
@@ -235,17 +232,17 @@ TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationTr
     TransformOperations ops;
     ops.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(2, WebCore::Fixed), TransformOperation::TranslateX));
     RefPtrWillBeRawPtr<AnimatableValueKeyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops).get());
-    EXPECT_TRUE(isCandidateHelperForSingleKeyframe(goodKeyframe.get()));
+    EXPECT_TRUE(duplicateSingleKeyframeAndTestIsCandidateOnResult(goodKeyframe.get()));
 
     ops.operations().append(TranslateTransformOperation::create(Length(50, WebCore::Percent), Length(2, WebCore::Fixed), TransformOperation::TranslateX));
     RefPtrWillBeRawPtr<AnimatableValueKeyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops).get());
-    EXPECT_FALSE(isCandidateHelperForSingleKeyframe(badKeyframe.get()));
+    EXPECT_FALSE(duplicateSingleKeyframeAndTestIsCandidateOnResult(badKeyframe.get()));
 
     TransformOperations ops2;
     Length calcLength = Length(100, WebCore::Percent).blend(Length(100, WebCore::Fixed), 0.5, WebCore::ValueRangeAll);
     ops2.operations().append(TranslateTransformOperation::create(calcLength, Length(0, WebCore::Fixed), TransformOperation::TranslateX));
     RefPtrWillBeRawPtr<AnimatableValueKeyframe> badKeyframe2 = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops2).get());
-    EXPECT_FALSE(isCandidateHelperForSingleKeyframe(badKeyframe2.get()));
+    EXPECT_FALSE(duplicateSingleKeyframeAndTestIsCandidateOnResult(badKeyframe2.get()));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKeyframeEffectModelMultipleFramesOkay)
@@ -258,7 +255,7 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKey
     AnimatableValueKeyframeVector framesMixed;
     framesMixed.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
     framesMixed.append(createDefaultKeyframe(CSSPropertyTransform, AnimationEffect::CompositeReplace, 1.0).get());
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(framesMixed).get()));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(framesMixed).get()));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKeyframeEffectModel)
@@ -272,11 +269,6 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKey
     framesMixedProperties.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
     framesMixedProperties.append(createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeReplace, 1.0).get());
     EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(framesMixedProperties).get()));
-
-    AnimatableValueKeyframeVector framesMixedOps;
-    framesMixedOps.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
-    framesMixedOps.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeAdd, 1.0).get());
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(framesMixedOps).get()));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorStartDelay)
@@ -433,13 +425,12 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTim
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionCubic)
 {
-    // Cubic bezier are okay if we only have two keyframes
     m_timing.timingFunction = m_cubicEaseTimingFunction;
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
     EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
     m_timing.timingFunction = m_cubicCustomTimingFunction;
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
     EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 

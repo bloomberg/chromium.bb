@@ -48,7 +48,7 @@ private:
 
     static bool convertTimingForCompositor(const Timing&, CompositorTiming& out);
 
-    static void getAnimationOnCompositor(const Timing&, const AnimatableValueKeyframeEffectModel&, Vector<OwnPtr<blink::WebAnimation> >& animations);
+    static void getAnimationOnCompositor(const Timing&, const KeyframeEffectModelBase&, Vector<OwnPtr<blink::WebAnimation> >& animations);
 
     static void addKeyframesToCurve(blink::WebAnimationCurve&, const AnimatableValuePropertySpecificKeyframeVector&, bool reverse);
 

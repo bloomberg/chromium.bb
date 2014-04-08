@@ -71,10 +71,12 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     CSSValue* toCSSValue = toStringPropertySpecificKeyframe(end)->value();
 
     // FIXME: Remove the use of AnimatableValues, RenderStyles and Elements here.
-    RefPtrWillBeRawPtr<AnimatableValue> from = StyleResolver::createAnimatableValueSnapshot(*element, property, fromCSSValue);
+    // FIXME: Remove this cache
+    m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(*element, property, fromCSSValue);
+
     RefPtrWillBeRawPtr<AnimatableValue> to = StyleResolver::createAnimatableValueSnapshot(*element, property, toCSSValue);
 
-    return LegacyStyleInterpolation::create(from.release(), to.release(), property);
+    return LegacyStyleInterpolation::create(m_animatableValueCache.get(), to.release(), property);
 }
 
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::PropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
@@ -91,6 +93,7 @@ PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::Prope
 void StringKeyframe::PropertySpecificKeyframe::trace(Visitor* visitor)
 {
     visitor->trace(m_value);
+    visitor->trace(m_animatableValueCache);
 }
 
 }

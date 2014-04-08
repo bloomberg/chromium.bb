@@ -6,6 +6,7 @@
 #define Keyframe_h
 
 #include "CSSPropertyNames.h"
+#include "core/animation/AnimatableValue.h"
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/TimedItem.h"
 
@@ -52,6 +53,8 @@ public:
         TimingFunction* easing() const { return m_easing.get(); }
         AnimationEffect::CompositeOperation composite() const { return m_composite; }
         virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const = 0;
+
+        virtual const PassRefPtr<AnimatableValue> getAnimatableValue() const = 0;
 
         virtual bool isAnimatableValuePropertySpecificKeyframe() const { return false; }
         virtual bool isStringPropertySpecificKeyframe() const { return false; }

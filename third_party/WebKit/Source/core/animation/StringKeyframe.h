@@ -35,6 +35,10 @@ public:
         PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue*, AnimationEffect::CompositeOperation);
 
         CSSValue* value() const { return m_value.get(); }
+        virtual const PassRefPtr<AnimatableValue> getAnimatableValue() const OVERRIDE FINAL {
+            ASSERT(m_animatableValueCache);
+            return m_animatableValueCache.get();
+        }
 
         virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const OVERRIDE FINAL;
         virtual PassRefPtrWillBeRawPtr<Interpolation> createInterpolation(CSSPropertyID, WebCore::Keyframe::PropertySpecificKeyframe* end, Element*) const OVERRIDE FINAL;
@@ -48,6 +52,7 @@ public:
         virtual bool isStringPropertySpecificKeyframe() const OVERRIDE { return true; }
 
         RefPtrWillBeMember<CSSValue> m_value;
+        mutable RefPtrWillBeMember<AnimatableValue> m_animatableValueCache;
     };
 
 private:
