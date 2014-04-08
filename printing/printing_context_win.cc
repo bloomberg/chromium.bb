@@ -442,7 +442,7 @@ PrintingContext::Result PrintingContextWin::NewDocument(
     filename += L"_";
     filename += L"buffer.prn";
     file_util::ReplaceIllegalCharactersInPath(&filename, '_');
-    debug_dump_path.Append(filename);
+    debug_dump_path = debug_dump_path.Append(filename);
     di.lpszOutput = debug_dump_path.value().c_str();
   }
 
