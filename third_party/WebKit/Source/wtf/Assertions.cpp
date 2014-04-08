@@ -267,7 +267,7 @@ void WTFPrintBacktrace(void** stack, int size)
     for (int i = 0; i < size; ++i) {
         const char* mangledName = 0;
         char* cxaDemangled = 0;
-#if OS(MACOSX) || OS(LINUX)
+#if OS(MACOSX) || (OS(LINUX) && !defined(__UCLIBC__))
         Dl_info info;
         if (dladdr(stack[i], &info) && info.dli_sname)
             mangledName = info.dli_sname;
