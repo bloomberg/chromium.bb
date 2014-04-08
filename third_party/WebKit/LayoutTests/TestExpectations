@@ -1181,3 +1181,5 @@ crbug.com/347510 [ Linux Mac Mavericks SnowLeopard Lion MountainLion Retina ] ta
 crbug.com/347510 [ Linux Mac Mavericks SnowLeopard Lion MountainLion Retina ] tables/mozilla_expected_failures/marvin/backgr_position-table-column.html [ NeedsRebaseline ]
 crbug.com/347510 [ Linux Mac Mavericks SnowLeopard Lion MountainLion Retina ] tables/mozilla_expected_failures/marvin/backgr_position-table-row-group.html [ NeedsRebaseline ]
 crbug.com/347510 [ Linux Mac Mavericks SnowLeopard Lion MountainLion Retina ] tables/mozilla_expected_failures/marvin/backgr_position-table-row.html [ NeedsRebaseline ]
+
+crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
