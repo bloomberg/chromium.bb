@@ -18,6 +18,9 @@ chrome.test.runTests([
       createSession(stream.getAudioTracks()[0],
                     stream.getVideoTracks()[0],
                     pass(function(stream, audioId, videoId, udpId) {
+        chrome.test.assertTrue(audioId > 0);
+        chrome.test.assertTrue(videoId > 0);
+        chrome.test.assertTrue(udpId > 0);
         console.log("Starting.");
         var stateMachine = new TestStateMachine(stream,
                                                 audioId,

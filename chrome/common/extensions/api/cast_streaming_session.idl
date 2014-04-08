@@ -9,6 +9,8 @@
 // Calling this API will generate corresponding resources for use with
 // chrome.cast.streaming.rtpStream and chrome.cast.streaming.udpTransport
 // APIs.
+//
+// Valid resource IDs are positive and non-zero.
 namespace cast.streaming.session {
   // Callback from the <code>create</code> method.
   // |audioStreamId| : The audio RTP stream ID.

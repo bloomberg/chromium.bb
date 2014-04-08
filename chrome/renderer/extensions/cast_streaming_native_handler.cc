@@ -147,7 +147,7 @@ bool ToCastRtpParamsOrThrow(v8::Isolate* isolate,
 
 CastStreamingNativeHandler::CastStreamingNativeHandler(ChromeV8Context* context)
     : ObjectBackedNativeHandler(context),
-      last_transport_id_(0),
+      last_transport_id_(1),
       weak_factory_(this) {
   RouteFunction("CreateSession",
       base::Bind(&CastStreamingNativeHandler::CreateCastSession,

@@ -6,6 +6,8 @@
 // transport for Cast RTP streams. This API is not useful when standalone
 // since it does not have send and receive methods.
 // It is used to configure the UDP transport used in Cast session.
+//
+// Valid transport IDs are positive and non-zero.
 namespace cast.streaming.udpTransport {
   // The UDP socket address and port.
   dictionary IPEndPoint {

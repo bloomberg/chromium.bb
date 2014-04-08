@@ -435,6 +435,7 @@ void CastRtpStream::Start(const CastRtpParams& params,
                           const base::Closure& start_callback,
                           const base::Closure& stop_callback,
                           const ErrorCallback& error_callback) {
+  VLOG(1) << "CastRtpStream::Start =  " << (IsAudio() ? "audio" : "video");
   stop_callback_ = stop_callback;
   error_callback_ = error_callback;
 
@@ -481,6 +482,7 @@ void CastRtpStream::Start(const CastRtpParams& params,
 }
 
 void CastRtpStream::Stop() {
+  VLOG(1) << "CastRtpStream::Stop =  " << (IsAudio() ? "audio" : "video");
   audio_sink_.reset();
   video_sink_.reset();
   stop_callback_.Run();

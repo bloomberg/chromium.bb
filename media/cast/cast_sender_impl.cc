@@ -118,6 +118,7 @@ void CastSenderImpl::InitializeVideo(
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   CHECK(video_config.use_external_encoder ||
         cast_environment_->HasVideoThread());
+  VLOG(1) << "CastSender::ctor";
 
   video_sender_.reset(new VideoSender(cast_environment_,
                                       video_config,
@@ -131,7 +132,9 @@ void CastSenderImpl::InitializeVideo(
       new LocalVideoFrameInput(cast_environment_, video_sender_->AsWeakPtr());
 }
 
-CastSenderImpl::~CastSenderImpl() {}
+CastSenderImpl::~CastSenderImpl() {
+  VLOG(1) << "CastSender::dtor";
+}
 
 // ReceivedPacket handle the incoming packets to the cast sender
 // it's only expected to receive RTCP feedback packets from the remote cast

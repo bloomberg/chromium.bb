@@ -5,6 +5,8 @@
 // The <code>chrome.cast.streaming.rtpStream</code> API allows configuration
 // of encoding parameters and RTP parameters used in a Cast streaming
 // session.
+//
+// Valid stream IDs are positive and non-zero.
 namespace cast.streaming.rtpStream {
   // Params for audio and video codec.
   dictionary CodecSpecificParams {
