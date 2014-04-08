@@ -250,6 +250,44 @@ void OriginChipView::Update(content::WebContents* web_contents) {
   SchedulePaint();
 }
 
+void OriginChipView::OnChanged() {
+  Update(location_bar_view_->GetWebContents());
+  // TODO(gbillock): Also need to potentially repaint infobars to make sure the
+  // arrows are pointing to the right spot. Only needed for some edge cases.
+}
+
+int OriginChipView::ElideDomainTarget(int target_max_width) {
+  base::string16 host =
+      OriginChip::LabelFromURLForProfile(url_displayed_, profile_);
+  host_label_->SetText(host);
+  int width = GetPreferredSize().width();
+  if (width <= target_max_width)
+    return width;
+
+  gfx::Size label_size = host_label_->GetPreferredSize();
+  int padding_width = width - label_size.width();
+
+  host_label_->SetText(ElideHost(
+      location_bar_view_->GetToolbarModel()->GetURL(),
+      host_label_->font_list(), target_max_width - padding_width));
+  return GetPreferredSize().width();
+}
+
+void OriginChipView::FadeIn() {
+  fade_in_animation_->Show();
+}
+
+gfx::Size OriginChipView::GetPreferredSize() {
+  gfx::Size label_size = host_label_->GetPreferredSize();
+  gfx::Size icon_size = location_icon_view_->GetPreferredSize();
+  int icon_spacing = showing_16x16_icon_ ?
+      (k16x16IconLeadingSpacing + k16x16IconTrailingSpacing) : 0;
+  return gfx::Size(kEdgeThickness + icon_size.width() + icon_spacing +
+                   kIconTextSpacing + label_size.width() +
+                   kTrailingLabelMargin + kEdgeThickness,
+                   icon_size.height());
+}
+
 void OriginChipView::SetBorderImages(const int images[3][9]) {
   scoped_ptr<views::LabelButtonBorder> border(
       new views::LabelButtonBorder(views::Button::STYLE_BUTTON));
@@ -276,16 +314,6 @@ void OriginChipView::SetBorderImages(const int images[3][9]) {
       bitmap.getColor(bitmap.width() / 2, bitmap.height() / 2));
 }
 
-void OriginChipView::OnChanged() {
-  Update(location_bar_view_->GetWebContents());
-  // TODO(gbillock): Also need to potentially repaint infobars to make sure the
-  // arrows are pointing to the right spot. Only needed for some edge cases.
-}
-
-void OriginChipView::FadeIn() {
-  fade_in_animation_->Show();
-}
-
 void OriginChipView::AnimationProgressed(const gfx::Animation* animation) {
   if (animation == fade_in_animation_.get())
     SchedulePaint();
@@ -298,17 +326,6 @@ void OriginChipView::AnimationEnded(const gfx::Animation* animation) {
     fade_in_animation_->Reset();
   else
     views::LabelButton::AnimationEnded(animation);
-}
-
-gfx::Size OriginChipView::GetPreferredSize() {
-  gfx::Size label_size = host_label_->GetPreferredSize();
-  gfx::Size icon_size = location_icon_view_->GetPreferredSize();
-  int icon_spacing = showing_16x16_icon_ ?
-      (k16x16IconLeadingSpacing + k16x16IconTrailingSpacing) : 0;
-  return gfx::Size(kEdgeThickness + icon_size.width() + icon_spacing +
-                   kIconTextSpacing + label_size.width() +
-                   kTrailingLabelMargin + kEdgeThickness,
-                   icon_size.height());
 }
 
 void OriginChipView::Layout() {
@@ -341,23 +358,6 @@ void OriginChipView::OnPaintBorder(gfx::Canvas* canvas) {
   } else {
     views::LabelButton::OnPaintBorder(canvas);
   }
-}
-
-int OriginChipView::ElideDomainTarget(int target_max_width) {
-  base::string16 host =
-      OriginChip::LabelFromURLForProfile(url_displayed_, profile_);
-  host_label_->SetText(host);
-  int width = GetPreferredSize().width();
-  if (width <= target_max_width)
-    return width;
-
-  gfx::Size label_size = host_label_->GetPreferredSize();
-  int padding_width = width - label_size.width();
-
-  host_label_->SetText(ElideHost(
-      location_bar_view_->GetToolbarModel()->GetURL(),
-      host_label_->font_list(), target_max_width - padding_width));
-  return GetPreferredSize().width();
 }
 
 // TODO(gbillock): Make the LocationBarView or OmniboxView the listener for

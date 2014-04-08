@@ -71,9 +71,15 @@ class OriginChipView : public views::LabelButton,
   int host_label_x() const { return host_label_->x(); }
 
   // views::LabelButton:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+
+ private:
+  // Sets an image grid to represent the current security state.
+  void SetBorderImages(const int images[3][9]);
+
+  // views::LabelButton:
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE;
 
@@ -86,10 +92,6 @@ class OriginChipView : public views::LabelButton,
       const SafeBrowsingUIManager::UnsafeResource& resource) OVERRIDE;
   virtual void OnSafeBrowsingMatch(
       const SafeBrowsingUIManager::UnsafeResource& resource) OVERRIDE;
-
- private:
-  // Sets an image grid to represent the current security state.
-  void SetBorderImages(const int images[3][9]);
 
   LocationBarView* location_bar_view_;
   Profile* profile_;
