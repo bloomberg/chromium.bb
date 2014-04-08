@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_switches.h"
@@ -325,16 +324,9 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     // Tap textfield
     touch_editable->Reset();
     generator.GestureTapAt(gfx::Point(bounds.x() + 50, bounds.y() + 40));
-    // Only wait for the tap gesture ack if it's received asynchronously.
-    if (WebInputEventTraits::IgnoresAckDisposition(
-            blink::WebInputEvent::GestureTap)) {
-      touch_editable->WaitForSelectionChangeCallback();
-      touch_editable->Reset();
-    } else {
-      touch_editable->Reset();
-      touch_editable->WaitForGestureAck();
-      touch_editable->WaitForSelectionChangeCallback();
-    }
+    // Tap Down and Tap acks are sent synchronously.
+    touch_editable->WaitForSelectionChangeCallback();
+    touch_editable->Reset();
 
     // Check if cursor handle is showing.
     ui::TouchSelectionController* controller =
