@@ -8,8 +8,11 @@
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_driver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
+
+const std::string kHtmlMimeType = "text/html";
 
 class MockTranslateDriver : public TranslateDriver {
  public:
@@ -49,6 +52,22 @@ class MockTranslateDriver : public TranslateDriver {
   virtual void RevertTranslation() OVERRIDE {}
 
   virtual bool IsOffTheRecord() OVERRIDE { return false; }
+
+  virtual const std::string& GetContentsMimeType() OVERRIDE {
+    return kHtmlMimeType;
+  }
+
+  virtual const GURL& GetLastCommittedURL() OVERRIDE {
+    return GURL::EmptyGURL();
+  }
+
+  virtual const GURL& GetActiveURL() OVERRIDE { return GURL::EmptyGURL(); }
+
+  virtual const GURL& GetVisibleURL() OVERRIDE { return GURL::EmptyGURL(); }
+
+  virtual bool HasCurrentPage() OVERRIDE { return true; }
+
+  virtual int GetCurrentPageID() OVERRIDE { return 0; }
 
   bool on_is_page_translated_changed_called() const {
     return on_is_page_translated_changed_called_;

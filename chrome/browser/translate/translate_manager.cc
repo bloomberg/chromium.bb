@@ -17,8 +17,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/url_constants.h"
-#include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
@@ -35,16 +33,10 @@
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/translate/core/common/translate_switches.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 
-using content::NavigationController;
-using content::NavigationEntry;
 using content::WebContents;
 
 namespace {
@@ -124,8 +116,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
 
   // MHTML pages currently cannot be translated.
   // See bug: 217945.
-  WebContents* web_contents = translate_tab_helper_->GetWebContents();
-  if (web_contents->GetContentsMimeType() == "multipart/related") {
+  if (translate_driver_->GetContentsMimeType() == "multipart/related") {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_MIME_TYPE_IS_NOT_SUPPORTED);
     return;
@@ -133,7 +124,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
 
   // Don't translate any Chrome specific page, e.g., New Tab Page, Download,
   // History, and so on.
-  GURL page_url = web_contents->GetURL();
+  const GURL& page_url = translate_driver_->GetVisibleURL();
   if (!translate_client_->IsTranslatableURL(page_url)) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_URL_IS_NOT_SUPPORTED);
@@ -224,10 +215,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
 void TranslateManager::TranslatePage(const std::string& original_source_lang,
                                      const std::string& target_lang,
                                      bool triggered_from_menu) {
-  WebContents* web_contents = translate_tab_helper_->GetWebContents();
-  DCHECK(web_contents);
-  NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
-  if (!entry) {
+  if (!translate_driver_->HasCurrentPage()) {
     NOTREACHED();
     return;
   }
@@ -260,7 +248,7 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
   TranslateScript::RequestCallback callback =
       base::Bind(&TranslateManager::OnTranslateScriptFetchComplete,
                  weak_method_factory_.GetWeakPtr(),
-                 entry->GetPageID(),
+                 translate_driver_->GetCurrentPageID(),
                  source_lang,
                  target_lang);
 
@@ -285,11 +273,10 @@ void TranslateManager::ReportLanguageDetectionError() {
 
   GURL report_error_url = GURL(kReportLanguageDetectionErrorURL);
 
-  GURL page_url = web_contents->GetController().GetActiveEntry()->GetURL();
-  report_error_url = net::AppendQueryParameter(
-      report_error_url,
-      kUrlQueryName,
-      page_url.spec());
+  report_error_url =
+      net::AppendQueryParameter(report_error_url,
+                                kUrlQueryName,
+                                translate_driver_->GetActiveURL().spec());
 
   report_error_url = net::AppendQueryParameter(
       report_error_url,
@@ -328,12 +315,11 @@ void TranslateManager::PageTranslated(const std::string& source_lang,
                                      error_type,
                                      false);
 
-  WebContents* web_contents = translate_tab_helper_->GetWebContents();
   if (error_type != TranslateErrors::NONE &&
       !translate_driver_->IsOffTheRecord()) {
     TranslateErrorDetails error_details;
     error_details.time = base::Time::Now();
-    error_details.url = web_contents->GetLastCommittedURL();
+    error_details.url = translate_driver_->GetLastCommittedURL();
     error_details.error = error_type;
     NotifyTranslateError(error_details);
   }
@@ -345,10 +331,8 @@ void TranslateManager::OnTranslateScriptFetchComplete(
     const std::string& target_lang,
     bool success,
     const std::string& data) {
-  WebContents* web_contents = translate_tab_helper_->GetWebContents();
-  DCHECK(web_contents);
-  NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
-  if (!entry || entry->GetPageID() != page_id) {
+  if (!translate_driver_->HasCurrentPage() ||
+      translate_driver_->GetCurrentPageID() != page_id) {
     // We navigated away from the page the translation was triggered on.
     return;
   }
@@ -369,7 +353,7 @@ void TranslateManager::OnTranslateScriptFetchComplete(
     if (!translate_driver_->IsOffTheRecord()) {
       TranslateErrorDetails error_details;
       error_details.time = base::Time::Now();
-      error_details.url = entry->GetURL();
+      error_details.url = translate_driver_->GetActiveURL();
       error_details.error = TranslateErrors::NETWORK;
       NotifyTranslateError(error_details);
     }

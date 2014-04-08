@@ -12,6 +12,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "url/gurl.h"
 
 ContentTranslateDriver::ContentTranslateDriver(
     content::NavigationController* nav_controller)
@@ -92,4 +93,33 @@ void ContentTranslateDriver::RevertTranslation() {
 
 bool ContentTranslateDriver::IsOffTheRecord() {
   return navigation_controller_->GetBrowserContext()->IsOffTheRecord();
+}
+
+const std::string& ContentTranslateDriver::GetContentsMimeType() {
+  return navigation_controller_->GetWebContents()->GetContentsMimeType();
+}
+
+const GURL& ContentTranslateDriver::GetLastCommittedURL() {
+  return navigation_controller_->GetWebContents()->GetLastCommittedURL();
+}
+
+const GURL& ContentTranslateDriver::GetActiveURL() {
+  content::NavigationEntry* entry = navigation_controller_->GetActiveEntry();
+  if (!entry)
+    return GURL::EmptyGURL();
+  return entry->GetURL();
+}
+
+const GURL& ContentTranslateDriver::GetVisibleURL() {
+  return navigation_controller_->GetWebContents()->GetVisibleURL();
+}
+
+bool ContentTranslateDriver::HasCurrentPage() {
+  return (navigation_controller_->GetActiveEntry() != NULL);
+}
+
+int ContentTranslateDriver::GetCurrentPageID() {
+  DCHECK(HasCurrentPage());
+  content::NavigationEntry* entry = navigation_controller_->GetActiveEntry();
+  return entry->GetPageID();
 }

@@ -51,6 +51,12 @@ class ContentTranslateDriver : public TranslateDriver {
                              const std::string& target_lang) OVERRIDE;
   virtual void RevertTranslation() OVERRIDE;
   virtual bool IsOffTheRecord() OVERRIDE;
+  virtual const std::string& GetContentsMimeType() OVERRIDE;
+  virtual const GURL& GetLastCommittedURL() OVERRIDE;
+  virtual const GURL& GetActiveURL() OVERRIDE;
+  virtual const GURL& GetVisibleURL() OVERRIDE;
+  virtual bool HasCurrentPage() OVERRIDE;
+  virtual int GetCurrentPageID() OVERRIDE;
 
  private:
   // The navigation controller of the tab we are associated with.
