@@ -27,6 +27,9 @@ const char kDumpRenderTree[] = "dump-render-tree";
 // Enable accelerated 2D canvas.
 const char kEnableAccelerated2DCanvas[] = "enable-accelerated-2d-canvas";
 
+// Enable font smoothing for pixel tests.
+const char kEnableFontSmoothing[] = "enable-font-smoothing";
+
 // Enables the leak detection of loading webpages. This allows us to check
 // whether or not reloading a webpage releases web-related objects correctly.
 const char kEnableLeakDetection[] = "enable-leak-detection";

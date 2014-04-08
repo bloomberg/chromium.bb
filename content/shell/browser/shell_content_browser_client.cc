@@ -205,6 +205,9 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     command_line->AppendSwitch(switches::kDumpRenderTree);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableFontSmoothing))
+    command_line->AppendSwitch(switches::kEnableFontSmoothing);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kExposeInternalsForTesting))
     command_line->AppendSwitch(switches::kExposeInternalsForTesting);
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kStableReleaseMode))
