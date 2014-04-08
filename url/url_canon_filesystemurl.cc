@@ -25,10 +25,10 @@ bool DoCanonicalizeFileSystemURL(const CHAR* spec,
                                  CanonOutput* output,
                                  url_parse::Parsed* new_parsed) {
   // filesystem only uses {scheme, path, query, ref} -- clear the rest.
-  new_parsed->username = url_parse::Component();
-  new_parsed->password = url_parse::Component();
-  new_parsed->host = url_parse::Component();
-  new_parsed->port = url_parse::Component();
+  new_parsed->username.reset();
+  new_parsed->password.reset();
+  new_parsed->host.reset();
+  new_parsed->port.reset();
 
   const url_parse::Parsed* inner_parsed = parsed.inner_parsed();
   url_parse::Parsed new_inner_parsed;
