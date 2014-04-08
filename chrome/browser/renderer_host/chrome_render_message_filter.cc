@@ -25,14 +25,14 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
-#include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/file_util.h"
+#include "extensions/common/message_bundle.h"
 
 #if defined(USE_TCMALLOC)
 #include "chrome/browser/browser_about_handler.h"
@@ -340,7 +340,7 @@ void ChromeRenderMessageFilter::OnGetExtensionMessageBundleOnFileThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   scoped_ptr<extensions::MessageBundle::SubstitutionMap> dictionary_map(
-      extension_file_util::LoadMessageBundleSubstitutionMap(
+      extensions::file_util::LoadMessageBundleSubstitutionMap(
           extension_path, extension_id, default_locale));
 
   ExtensionHostMsg_GetMessageBundle::WriteReplyParams(reply_msg,

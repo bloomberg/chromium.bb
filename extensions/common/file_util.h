@@ -5,6 +5,10 @@
 #ifndef EXTENSIONS_COMMON_FILE_UTIL_H_
 #define EXTENSIONS_COMMON_FILE_UTIL_H_
 
+#include <string>
+
+#include "extensions/common/message_bundle.h"
+
 class GURL;
 
 namespace base {
@@ -21,6 +25,19 @@ base::FilePath ExtensionURLToRelativeFilePath(const GURL& url);
 // points a file outside of root, this function will return empty FilePath.
 base::FilePath ExtensionResourceURLToFilePath(const GURL& url,
                                               const base::FilePath& root);
+
+// Loads extension message catalogs and returns message bundle.
+// Returns NULL on error or if the extension is not localized.
+MessageBundle* LoadMessageBundle(const base::FilePath& extension_path,
+                                 const std::string& default_locale,
+                                 std::string* error);
+
+// Loads the extension message bundle substitution map. Contains at least
+// the extension_id item.
+MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMap(
+    const base::FilePath& extension_path,
+    const std::string& extension_id,
+    const std::string& default_locale);
 
 }  // namespace file_util
 }  // namespace extensions

@@ -8,11 +8,11 @@
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
-#include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/message_bundle.h"
 #include "extensions/browser/file_reader.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/file_util.h"
+#include "extensions/common/message_bundle.h"
 #include "net/base/net_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -71,7 +71,7 @@ void ExecuteCodeFunction::GetFileURLAndLocalizeCSS(
       !extension_id.empty() &&
       (data.find(MessageBundle::kMessageBegin) != std::string::npos)) {
     scoped_ptr<SubstitutionMap> localization_messages(
-        extension_file_util::LoadMessageBundleSubstitutionMap(
+        file_util::LoadMessageBundleSubstitutionMap(
             extension_path, extension_id, extension_default_locale));
 
     // We need to do message replacement on the data, so it has to be mutable.

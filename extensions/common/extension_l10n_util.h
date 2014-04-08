@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // This file declares extension specific l10n utils.
 
-#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_L10N_UTIL_H_
-#define CHROME_COMMON_EXTENSIONS_EXTENSION_L10N_UTIL_H_
+#ifndef EXTENSIONS_COMMON_EXTENSION_L10N_UTIL_H_
+#define EXTENSIONS_COMMON_EXTENSION_L10N_UTIL_H_
 
 #include <set>
 #include <string>
@@ -128,7 +128,6 @@ class ScopedLocaleForTest {
   std::string locale_;  // The current locale at ctor time.
 };
 
-
 }  // namespace extension_l10n_util
 
-#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_L10N_UTIL_H_
+#endif  // EXTENSIONS_COMMON_EXTENSION_L10N_UTIL_H_

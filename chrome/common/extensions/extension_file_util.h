@@ -10,7 +10,6 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/extensions/message_bundle.h"
 #include "extensions/common/manifest.h"
 
 class ExtensionIconSet;
@@ -22,7 +21,6 @@ class FilePath;
 
 namespace extensions {
 class Extension;
-class MessageBundle;
 struct InstallWarning;
 }
 
@@ -93,20 +91,6 @@ std::set<base::FilePath> GetBrowserImagePaths(
 // Returns a list of files that contain private keys inside |extension_dir|.
 std::vector<base::FilePath> FindPrivateKeyFiles(
     const base::FilePath& extension_dir);
-
-// Loads extension message catalogs and returns message bundle.
-// Returns NULL on error, or if extension is not localized.
-extensions::MessageBundle* LoadMessageBundle(
-    const base::FilePath& extension_path,
-    const std::string& default_locale,
-    std::string* error);
-
-// Loads the extension message bundle substitution map. Contains at least
-// extension_id item.
-extensions::MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMap(
-    const base::FilePath& extension_path,
-    const std::string& extension_id,
-    const std::string& default_locale);
 
 // We need to reserve the namespace of entries that start with "_" for future
 // use by Chrome.

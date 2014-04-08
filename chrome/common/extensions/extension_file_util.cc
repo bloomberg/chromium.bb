@@ -19,13 +19,12 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
-#include "chrome/common/extensions/message_bundle.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
+#include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/install_warning.h"
@@ -320,61 +319,6 @@ std::set<base::FilePath> GetBrowserImagePaths(const Extension* extension) {
     AddPathsFromIconSet(browser_action->default_icon, &image_paths);
 
   return image_paths;
-}
-
-extensions::MessageBundle* LoadMessageBundle(
-    const base::FilePath& extension_path,
-    const std::string& default_locale,
-    std::string* error) {
-  error->clear();
-  // Load locale information if available.
-  base::FilePath locale_path = extension_path.Append(extensions::kLocaleFolder);
-  if (!base::PathExists(locale_path))
-    return NULL;
-
-  std::set<std::string> locales;
-  if (!extension_l10n_util::GetValidLocales(locale_path, &locales, error))
-    return NULL;
-
-  if (default_locale.empty() ||
-      locales.find(default_locale) == locales.end()) {
-    *error = l10n_util::GetStringUTF8(
-        IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED);
-    return NULL;
-  }
-
-  extensions::MessageBundle* message_bundle =
-      extension_l10n_util::LoadMessageCatalogs(
-          locale_path,
-          default_locale,
-          extension_l10n_util::CurrentLocaleOrDefault(),
-          locales,
-          error);
-
-  return message_bundle;
-}
-
-SubstitutionMap* LoadMessageBundleSubstitutionMap(
-    const base::FilePath& extension_path,
-    const std::string& extension_id,
-    const std::string& default_locale) {
-  SubstitutionMap* returnValue = new SubstitutionMap();
-  if (!default_locale.empty()) {
-    // Touch disk only if extension is localized.
-    std::string error;
-    scoped_ptr<extensions::MessageBundle> bundle(
-        LoadMessageBundle(extension_path, default_locale, &error));
-
-    if (bundle.get())
-      *returnValue = *bundle->dictionary();
-  }
-
-  // Add @@extension_id reserved message here, so it's available to
-  // non-localized extensions too.
-  returnValue->insert(
-      std::make_pair(extensions::MessageBundle::kExtensionIdKey, extension_id));
-
-  return returnValue;
 }
 
 bool CheckForIllegalFilenames(const base::FilePath& extension_path,

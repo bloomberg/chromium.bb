@@ -22,15 +22,15 @@
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
-#include "chrome/common/extensions/message_bundle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/file_util.h"
+#include "extensions/common/message_bundle.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
@@ -256,7 +256,7 @@ SubstitutionMap* UserScriptMaster::ScriptReloader::GetLocalizationMessages(
     return NULL;
   }
 
-  return extension_file_util::LoadMessageBundleSubstitutionMap(
+  return file_util::LoadMessageBundleSubstitutionMap(
       extensions_info_[extension_id].first,
       extension_id,
       extensions_info_[extension_id].second);

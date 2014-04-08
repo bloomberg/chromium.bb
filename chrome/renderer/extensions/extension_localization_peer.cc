@@ -6,10 +6,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/message_bundle.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/net_errors.h"

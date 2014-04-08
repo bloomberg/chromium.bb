@@ -10,7 +10,7 @@
 #include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension_l10n_util.h"
+#include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/test_util.h"
 #include "ui/base/l10n/l10n_util.h"
 

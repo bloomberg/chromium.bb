@@ -4,11 +4,18 @@
 
 #include "extensions/common/file_util.h"
 
+#include <set>
 #include <string>
+#include <utility>
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/extension_l10n_util.h"
+#include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -55,6 +62,61 @@ base::FilePath ExtensionResourceURLToFilePath(const GURL& url,
   if (path.empty() || !root.IsParent(path))
     return base::FilePath();
   return path;
+}
+
+MessageBundle* LoadMessageBundle(
+    const base::FilePath& extension_path,
+    const std::string& default_locale,
+    std::string* error) {
+  error->clear();
+  // Load locale information if available.
+  base::FilePath locale_path = extension_path.Append(kLocaleFolder);
+  if (!base::PathExists(locale_path))
+    return NULL;
+
+  std::set<std::string> locales;
+  if (!extension_l10n_util::GetValidLocales(locale_path, &locales, error))
+    return NULL;
+
+  if (default_locale.empty() || locales.find(default_locale) == locales.end()) {
+    *error = l10n_util::GetStringUTF8(
+        IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED);
+    return NULL;
+  }
+
+  MessageBundle* message_bundle =
+      extension_l10n_util::LoadMessageCatalogs(
+          locale_path,
+          default_locale,
+          extension_l10n_util::CurrentLocaleOrDefault(),
+          locales,
+          error);
+
+  return message_bundle;
+}
+
+MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMap(
+    const base::FilePath& extension_path,
+    const std::string& extension_id,
+    const std::string& default_locale) {
+  MessageBundle::SubstitutionMap* returnValue =
+      new MessageBundle::SubstitutionMap();
+  if (!default_locale.empty()) {
+    // Touch disk only if extension is localized.
+    std::string error;
+    scoped_ptr<MessageBundle> bundle(
+        LoadMessageBundle(extension_path, default_locale, &error));
+
+    if (bundle.get())
+      *returnValue = *bundle->dictionary();
+  }
+
+  // Add @@extension_id reserved message here, so it's available to
+  // non-localized extensions too.
+  returnValue->insert(
+      std::make_pair(MessageBundle::kExtensionIdKey, extension_id));
+
+  return returnValue;
 }
 
 }  // namespace file_util

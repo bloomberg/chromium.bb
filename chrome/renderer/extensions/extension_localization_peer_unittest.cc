@@ -6,8 +6,8 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/extensions/message_bundle.h"
 #include "chrome/renderer/extensions/extension_localization_peer.h"
+#include "extensions/common/message_bundle.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_message.h"
 #include "net/base/net_errors.h"

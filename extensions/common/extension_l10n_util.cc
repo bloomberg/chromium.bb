@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension_l10n_util.h"
+#include "extensions/common/extension_l10n_util.h"
 
 #include <algorithm>
 #include <set>
@@ -17,12 +17,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/message_bundle.h"
-#include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/message_bundle.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -37,8 +36,8 @@ namespace {
 base::DictionaryValue* LoadMessageFile(const base::FilePath& locale_path,
                                        const std::string& locale,
                                        std::string* error) {
-  base::FilePath file = locale_path.AppendASCII(locale)
-      .Append(extensions::kMessagesFilename);
+  base::FilePath file =
+      locale_path.AppendASCII(locale).Append(extensions::kMessagesFilename);
   JSONFileValueSerializer messages_serializer(file);
   base::Value* dictionary = messages_serializer.Deserialize(NULL, error);
   if (!dictionary) {
@@ -179,15 +178,15 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
         *error = errors::kInvalidFileBrowserHandler;
         return false;
       }
-      if (!LocalizeManifestValue(keys::kPageActionDefaultTitle, messages,
-                                 handler, error))
+      if (!LocalizeManifestValue(
+              keys::kPageActionDefaultTitle, messages, handler, error))
         return false;
     }
   }
 
   base::ListValue* media_galleries_handlers = NULL;
   if (manifest->GetList(keys::kMediaGalleriesHandlers,
-      &media_galleries_handlers)) {
+                        &media_galleries_handlers)) {
     key.assign(keys::kMediaGalleriesHandlers);
     for (size_t i = 0; i < media_galleries_handlers->GetSize(); i++) {
       base::DictionaryValue* handler = NULL;
@@ -195,8 +194,8 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
         *error = errors::kInvalidMediaGalleriesHandler;
         return false;
       }
-      if (!LocalizeManifestValue(keys::kPageActionDefaultTitle, messages,
-                                 handler, error))
+      if (!LocalizeManifestValue(
+              keys::kPageActionDefaultTitle, messages, handler, error))
         return false;
     }
   }
@@ -231,8 +230,8 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
     for (base::DictionaryValue::Iterator iter(*commands_handler);
          !iter.IsAtEnd();
          iter.Advance()) {
-      key.assign(base::StringPrintf("commands.%s.description",
-                                    iter.key().c_str()));
+      key.assign(
+          base::StringPrintf("commands.%s.description", iter.key().c_str()));
       if (!LocalizeManifestValue(key, messages, manifest, error))
         return false;
     }
@@ -247,9 +246,10 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
          iter.Advance()) {
       key.assign(base::StringPrintf(
           "%s.%s", keys::kOverrideSearchProvider, iter.key().c_str()));
-      bool success = (key == keys::kSettingsOverrideAlternateUrls) ?
-          LocalizeManifestListValue(key, messages, manifest, error) :
-          LocalizeManifestValue(key, messages, manifest, error);
+      bool success =
+          (key == keys::kSettingsOverrideAlternateUrls)
+              ? LocalizeManifestListValue(key, messages, manifest, error)
+              : LocalizeManifestValue(key, messages, manifest, error);
       if (!success)
         return false;
     }
@@ -279,7 +279,7 @@ bool LocalizeExtension(const base::FilePath& extension_path,
   std::string default_locale = GetDefaultLocaleFromManifest(*manifest, error);
 
   scoped_ptr<extensions::MessageBundle> message_bundle(
-      extension_file_util::LoadMessageBundle(
+      extensions::file_util::LoadMessageBundle(
           extension_path, default_locale, error));
 
   if (!message_bundle.get() && !error->empty())
@@ -309,8 +309,7 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
     return true;
   }
   // Check if messages file is actually present (but don't check content).
-  if (base::PathExists(
-      locale_folder.Append(extensions::kMessagesFilename))) {
+  if (base::PathExists(locale_folder.Append(extensions::kMessagesFilename))) {
     valid_locales->insert(locale_name);
   } else {
     *error = base::StringPrintf("Catalog file is missing for locale %s.",
@@ -357,9 +356,8 @@ bool GetValidLocales(const base::FilePath& locale_path,
   GetAllLocales(&chrome_locales);
 
   // Enumerate all supplied locales in the extension.
-  base::FileEnumerator locales(locale_path,
-                               false,
-                               base::FileEnumerator::DIRECTORIES);
+  base::FileEnumerator locales(
+      locale_path, false, base::FileEnumerator::DIRECTORIES);
   base::FilePath locale_folder;
   while (!(locale_folder = locales.Next()).empty()) {
     std::string locale_name = locale_folder.BaseName().MaybeAsASCII();
@@ -367,11 +365,8 @@ bool GetValidLocales(const base::FilePath& locale_path,
       NOTREACHED();
       continue;  // Not ASCII.
     }
-    if (!AddLocale(chrome_locales,
-                   locale_folder,
-                   locale_name,
-                   valid_locales,
-                   error)) {
+    if (!AddLocale(
+            chrome_locales, locale_folder, locale_name, valid_locales, error)) {
       return false;
     }
   }
@@ -391,8 +386,8 @@ extensions::MessageBundle* LoadMessageCatalogs(
     const std::set<std::string>& valid_locales,
     std::string* error) {
   std::vector<std::string> all_fallback_locales;
-  GetAllFallbackLocales(application_locale, default_locale,
-      &all_fallback_locales);
+  GetAllFallbackLocales(
+      application_locale, default_locale, &all_fallback_locales);
 
   std::vector<linked_ptr<base::DictionaryValue> > catalogs;
   for (size_t i = 0; i < all_fallback_locales.size(); ++i) {
@@ -400,7 +395,7 @@ extensions::MessageBundle* LoadMessageCatalogs(
     if (valid_locales.find(all_fallback_locales[i]) == valid_locales.end())
       continue;
     linked_ptr<base::DictionaryValue> catalog(
-      LoadMessageFile(locale_path, all_fallback_locales[i], error));
+        LoadMessageFile(locale_path, all_fallback_locales[i], error));
     if (!catalog.get()) {
       // If locale is valid, but messages.json is corrupted or missing, return
       // an error.
@@ -421,15 +416,15 @@ bool ValidateExtensionLocales(const base::FilePath& extension_path,
   if (default_locale.empty())
     return true;
 
-  base::FilePath locale_path =
-      extension_path.Append(extensions::kLocaleFolder);
+  base::FilePath locale_path = extension_path.Append(extensions::kLocaleFolder);
 
   std::set<std::string> valid_locales;
   if (!GetValidLocales(locale_path, &valid_locales, error))
     return false;
 
   for (std::set<std::string>::const_iterator locale = valid_locales.begin();
-       locale != valid_locales.end(); ++locale) {
+       locale != valid_locales.end();
+       ++locale) {
     std::string locale_error;
     scoped_ptr<base::DictionaryValue> catalog(
         LoadMessageFile(locale_path, *locale, &locale_error));

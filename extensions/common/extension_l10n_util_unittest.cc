@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,11 +11,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/extensions/message_bundle.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/message_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -46,9 +46,9 @@ TEST(ExtensionL10nUtil, ValidateLocalesWithBadLocale) {
   std::string error;
   EXPECT_FALSE(extension_l10n_util::ValidateExtensionLocales(
       temp.path(), &manifest, &error));
-  EXPECT_THAT(error,
-              testing::HasSubstr(
-                  base::UTF16ToUTF8(messages_file.LossyDisplayName())));
+  EXPECT_THAT(
+      error,
+      testing::HasSubstr(base::UTF16ToUTF8(messages_file.LossyDisplayName())));
 }
 
 TEST(ExtensionL10nUtil, GetValidLocalesEmptyLocaleFolder) {
@@ -60,9 +60,8 @@ TEST(ExtensionL10nUtil, GetValidLocalesEmptyLocaleFolder) {
 
   std::string error;
   std::set<std::string> locales;
-  EXPECT_FALSE(extension_l10n_util::GetValidLocales(src_path,
-                                                    &locales,
-                                                    &error));
+  EXPECT_FALSE(
+      extension_l10n_util::GetValidLocales(src_path, &locales, &error));
 
   EXPECT_TRUE(locales.empty());
 }
@@ -77,9 +76,8 @@ TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocaleNoMessagesFile) {
 
   std::string error;
   std::set<std::string> locales;
-  EXPECT_FALSE(extension_l10n_util::GetValidLocales(src_path,
-                                                    &locales,
-                                                    &error));
+  EXPECT_FALSE(
+      extension_l10n_util::GetValidLocales(src_path, &locales, &error));
 
   EXPECT_TRUE(locales.empty());
 }
@@ -95,16 +93,13 @@ TEST(ExtensionL10nUtil, GetValidLocalesWithUnsupportedLocale) {
   ASSERT_TRUE(base::CreateDirectory(locale_1));
   std::string data("whatever");
   ASSERT_TRUE(base::WriteFile(
-      locale_1.Append(kMessagesFilename),
-      data.c_str(), data.length()));
+      locale_1.Append(kMessagesFilename), data.c_str(), data.length()));
   // Unsupported locale.
   ASSERT_TRUE(base::CreateDirectory(src_path.AppendASCII("xxx_yyy")));
 
   std::string error;
   std::set<std::string> locales;
-  EXPECT_TRUE(extension_l10n_util::GetValidLocales(src_path,
-                                                   &locales,
-                                                   &error));
+  EXPECT_TRUE(extension_l10n_util::GetValidLocales(src_path, &locales, &error));
 
   EXPECT_FALSE(locales.empty());
   EXPECT_TRUE(locales.find("sr") != locales.end());
@@ -115,17 +110,16 @@ TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocalesAndMessagesFile) {
   base::FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
-      .AppendASCII("good")
-      .AppendASCII("Extensions")
-      .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
-      .AppendASCII("1.0.0.0")
-      .Append(kLocaleFolder);
+                    .AppendASCII("good")
+                    .AppendASCII("Extensions")
+                    .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+                    .AppendASCII("1.0.0.0")
+                    .Append(kLocaleFolder);
 
   std::string error;
   std::set<std::string> locales;
-  EXPECT_TRUE(extension_l10n_util::GetValidLocales(install_dir,
-                                                   &locales,
-                                                   &error));
+  EXPECT_TRUE(
+      extension_l10n_util::GetValidLocales(install_dir, &locales, &error));
   EXPECT_EQ(3U, locales.size());
   EXPECT_TRUE(locales.find("sr") != locales.end());
   EXPECT_TRUE(locales.find("en") != locales.end());
@@ -136,17 +130,16 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsValidFallback) {
   base::FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
-      .AppendASCII("good")
-      .AppendASCII("Extensions")
-      .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
-      .AppendASCII("1.0.0.0")
-      .Append(kLocaleFolder);
+                    .AppendASCII("good")
+                    .AppendASCII("Extensions")
+                    .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+                    .AppendASCII("1.0.0.0")
+                    .Append(kLocaleFolder);
 
   std::string error;
   std::set<std::string> locales;
-  EXPECT_TRUE(extension_l10n_util::GetValidLocales(install_dir,
-                                                   &locales,
-                                                   &error));
+  EXPECT_TRUE(
+      extension_l10n_util::GetValidLocales(install_dir, &locales, &error));
 
   scoped_ptr<MessageBundle> bundle(extension_l10n_util::LoadMessageCatalogs(
       install_dir, "sr", "en_US", locales, &error));
@@ -167,11 +160,8 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsMissingFiles) {
   valid_locales.insert("sr");
   valid_locales.insert("en");
   std::string error;
-  EXPECT_TRUE(NULL == extension_l10n_util::LoadMessageCatalogs(src_path,
-                                                               "en",
-                                                               "sr",
-                                                               valid_locales,
-                                                               &error));
+  EXPECT_TRUE(NULL == extension_l10n_util::LoadMessageCatalogs(
+                          src_path, "en", "sr", valid_locales, &error));
   EXPECT_FALSE(error.empty());
 }
 
@@ -193,17 +183,13 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsBadJSONFormat) {
   valid_locales.insert("sr");
   valid_locales.insert("en_US");
   std::string error;
-  EXPECT_TRUE(NULL == extension_l10n_util::LoadMessageCatalogs(src_path,
-                                                               "en_US",
-                                                               "sr",
-                                                               valid_locales,
-                                                               &error));
-  EXPECT_EQ(
-      extensions::ErrorUtils::FormatErrorMessage(
-          errors::kLocalesInvalidLocale,
-          base::UTF16ToUTF8(messages_file.LossyDisplayName()),
-          "Line: 1, column: 10, Unexpected token."),
-      error);
+  EXPECT_TRUE(NULL == extension_l10n_util::LoadMessageCatalogs(
+                          src_path, "en_US", "sr", valid_locales, &error));
+  EXPECT_EQ(extensions::ErrorUtils::FormatErrorMessage(
+                errors::kLocalesInvalidLocale,
+                base::UTF16ToUTF8(messages_file.LossyDisplayName()),
+                "Line: 1, column: 10, Unexpected token."),
+            error);
 }
 
 TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {
@@ -217,16 +203,16 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {
   ASSERT_TRUE(base::CreateDirectory(locale_1));
 
   std::string data =
-    "{ \"name\": { \"message\": \"something\" }, "
-    "\"name\": { \"message\": \"something else\" } }";
-  ASSERT_TRUE(base::WriteFile(locale_1.Append(kMessagesFilename),
-                              data.c_str(), data.length()));
+      "{ \"name\": { \"message\": \"something\" }, "
+      "\"name\": { \"message\": \"something else\" } }";
+  ASSERT_TRUE(base::WriteFile(
+      locale_1.Append(kMessagesFilename), data.c_str(), data.length()));
 
   base::FilePath locale_2 = src_path.AppendASCII("sr");
   ASSERT_TRUE(base::CreateDirectory(locale_2));
 
-  ASSERT_TRUE(base::WriteFile(locale_2.Append(kMessagesFilename),
-                              data.c_str(), data.length()));
+  ASSERT_TRUE(base::WriteFile(
+      locale_2.Append(kMessagesFilename), data.c_str(), data.length()));
 
   std::set<std::string> valid_locales;
   valid_locales.insert("sr");
@@ -235,11 +221,8 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {
   // JSON parser hides duplicates. We are going to get only one key/value
   // pair at the end.
   scoped_ptr<MessageBundle> message_bundle(
-      extension_l10n_util::LoadMessageCatalogs(src_path,
-                                               "en",
-                                               "sr",
-                                               valid_locales,
-                                               &error));
+      extension_l10n_util::LoadMessageCatalogs(
+          src_path, "en", "sr", valid_locales, &error));
   EXPECT_TRUE(NULL != message_bundle.get());
   EXPECT_TRUE(error.empty());
 }
@@ -519,12 +502,12 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionCommandDescription) {
   ASSERT_TRUE(manifest.GetString(keys::kDescription, &result));
   EXPECT_EQ("description", result);
 
-  ASSERT_TRUE(manifest.GetString("commands.first_command.description",
-                                 &result));
+  ASSERT_TRUE(
+      manifest.GetString("commands.first_command.description", &result));
   EXPECT_EQ("first command", result);
 
-  ASSERT_TRUE(manifest.GetString("commands.second_command.description",
-                                 &result));
+  ASSERT_TRUE(
+      manifest.GetString("commands.second_command.description", &result));
   EXPECT_EQ("second command", result);
 
   EXPECT_TRUE(error.empty());

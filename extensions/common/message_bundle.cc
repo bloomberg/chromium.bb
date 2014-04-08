@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/message_bundle.h"
+#include "extensions/common/message_bundle.h"
 
 #include <string>
 #include <vector>
@@ -13,13 +13,13 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_l10n_util.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/manifest_constants.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
 

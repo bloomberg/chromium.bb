@@ -5,10 +5,10 @@
 #include "chrome/renderer/extensions/i18n_custom_bindings.h"
 
 #include "base/bind.h"
-#include "chrome/common/extensions/message_bundle.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/message_bundle.h"
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"
 
