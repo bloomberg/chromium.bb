@@ -111,9 +111,9 @@ class User {
     DAILY = 0,
     CUSTOMIZED = 1,
     DEFAULT = 2,
-    UNKNOWN = 3,
+    /* UNKNOWN = 3 */  // Removed.  Do not re-use the id!
     ONLINE = 4,
-    POLICY = 5,  // Controlled by policy, can't be changed by the user.
+    POLICY = 5,        // Controlled by policy, can't be changed by the user.
     WALLPAPER_TYPE_COUNT = 6
   };
 

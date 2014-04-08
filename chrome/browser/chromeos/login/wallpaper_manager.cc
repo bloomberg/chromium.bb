@@ -1161,33 +1161,35 @@ bool WallpaperManager::GetUserWallpaperInfo(const std::string& user_id,
     return true;
   }
 
-  const base::DictionaryValue* user_wallpapers =
-      g_browser_process->local_state()->
-          GetDictionary(prefs::kUsersWallpaperInfo);
-  const base::DictionaryValue* wallpaper_info_dict;
-  if (user_wallpapers->GetDictionaryWithoutPathExpansion(
-          user_id, &wallpaper_info_dict)) {
-    info->file = "";
-    info->layout = ash::WALLPAPER_LAYOUT_CENTER_CROPPED;
-    info->type = User::UNKNOWN;
-    info->date = base::Time::Now().LocalMidnight();
-    wallpaper_info_dict->GetString(kNewWallpaperFileNodeName, &(info->file));
-    int temp;
-    wallpaper_info_dict->GetInteger(kNewWallpaperLayoutNodeName, &temp);
-    info->layout = static_cast<ash::WallpaperLayout>(temp);
-    wallpaper_info_dict->GetInteger(kNewWallpaperTypeNodeName, &temp);
-    info->type = static_cast<User::WallpaperType>(temp);
-    std::string date_string;
-    int64 val;
-    if (!(wallpaper_info_dict->GetString(kNewWallpaperDateNodeName,
-                                         &date_string) &&
-          base::StringToInt64(date_string, &val)))
-      val = 0;
-    info->date = base::Time::FromInternalValue(val);
-    return true;
+  const base::DictionaryValue* info_dict;
+  if (!g_browser_process->local_state()->
+          GetDictionary(prefs::kUsersWallpaperInfo)->
+              GetDictionaryWithoutPathExpansion(user_id, &info_dict)) {
+    return false;
   }
 
-  return false;
+  // Use temporary variables to keep |info| untouched in the error case.
+  std::string file;
+  if (!info_dict->GetString(kNewWallpaperFileNodeName, &file))
+    return false;
+  int layout;
+  if (!info_dict->GetInteger(kNewWallpaperLayoutNodeName, &layout))
+    return false;
+  int type;
+  if (!info_dict->GetInteger(kNewWallpaperTypeNodeName, &type))
+    return false;
+  std::string date_string;
+  if (!info_dict->GetString(kNewWallpaperDateNodeName, &date_string))
+    return false;
+  int64 date_val;
+  if (!base::StringToInt64(date_string, &date_val))
+    return false;
+
+  info->file = file;
+  info->layout = static_cast<ash::WallpaperLayout>(layout);
+  info->type = static_cast<User::WallpaperType>(type);
+  info->date = base::Time::FromInternalValue(date_val);
+  return true;
 }
 
 void WallpaperManager::MoveCustomWallpapersOnWorker(
