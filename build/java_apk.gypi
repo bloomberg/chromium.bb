@@ -199,7 +199,6 @@
           'destination': '<(apk_package_native_libs_dir)/<(android_app_abi)',
           'files': [
             '<(android_gdbserver)',
-            '<@(extra_native_libs)',
           ],
         },
       ],
