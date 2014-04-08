@@ -101,10 +101,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/ash_switches.h"
+#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/magnifier/magnifier_constants.h"
+#include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/chromeos_utils.h"
-#include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
@@ -1488,7 +1489,7 @@ void BrowserOptionsHandler::HandleRequestHotwordSetupRetry(
 #if defined(OS_CHROMEOS)
 void BrowserOptionsHandler::HandleOpenWallpaperManager(
     const base::ListValue* args) {
-  wallpaper_manager_util::OpenWallpaperManager();
+  ash::Shell::GetInstance()->user_wallpaper_delegate()->OpenSetWallpaperPage();
 }
 
 void BrowserOptionsHandler::VirtualKeyboardChangeCallback(
