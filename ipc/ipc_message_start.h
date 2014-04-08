@@ -101,6 +101,7 @@ enum IPCMessageStart {
   ChromeExtensionMsgStart,
   MojoMsgStart,
   TranslateMsgStart,
+  PushMessagingMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

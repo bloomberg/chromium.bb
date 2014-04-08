@@ -445,6 +445,8 @@
     'renderer/pepper/usb_key_code_conversion_win.cc',
     'renderer/pepper/v8_var_converter.cc',
     'renderer/pepper/v8_var_converter.h',
+    'renderer/push_messaging_dispatcher.cc',
+    'renderer/push_messaging_dispatcher.h',
     'renderer/render_frame_impl.cc',
     'renderer/render_frame_impl.h',
     'renderer/render_process.h',

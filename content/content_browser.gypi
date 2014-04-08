@@ -852,6 +852,8 @@
     'browser/profiler_controller_impl.h',
     'browser/profiler_message_filter.cc',
     'browser/profiler_message_filter.h',
+    'browser/push_messaging_message_filter.cc',
+    'browser/push_messaging_message_filter.h',
     'browser/quota_dispatcher_host.cc',
     'browser/quota_dispatcher_host.h',
     'browser/renderer_data_memoizing_store.h',

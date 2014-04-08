@@ -45,6 +45,7 @@
 #include "content/common/pepper_messages.h"
 #include "content/common/plugin_process_messages.h"
 #include "content/common/power_monitor_messages.h"
+#include "content/common/push_messaging_messages.h"
 #include "content/common/quota_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/screen_orientation_messages.h"

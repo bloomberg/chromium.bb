@@ -67,6 +67,7 @@
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/profiler_message_filter.h"
+#include "content/browser/push_messaging_message_filter.h"
 #include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/clipboard_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
@@ -834,6 +835,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new VibrationMessageFilter());
   screen_orientation_dispatcher_host_ = new ScreenOrientationDispatcherHost();
   AddFilter(screen_orientation_dispatcher_host_);
+  AddFilter(new PushMessagingMessageFilter());
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {

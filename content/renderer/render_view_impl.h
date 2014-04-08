@@ -150,6 +150,7 @@ class MouseLockDispatcher;
 class NavigationState;
 class NotificationProvider;
 class PepperPluginInstanceImpl;
+class PushMessagingDispatcher;
 class RenderViewObserver;
 class RenderViewTest;
 class RendererAccessibility;
@@ -503,6 +504,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual blink::WebPageVisibilityState visibilityState() const;
   virtual blink::WebUserMediaClient* userMediaClient();
   virtual blink::WebMIDIClient* webMIDIClient();
+  virtual blink::WebPushClient* webPushClient();
   virtual void draggableRegionsChanged();
 
 #if defined(OS_ANDROID)
@@ -1243,6 +1245,9 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Holds a reference to the service which provides desktop notifications.
   NotificationProvider* notification_provider_;
+
+  // The push messaging dispatcher attached to this view, lazily initialized.
+  PushMessagingDispatcher* push_messaging_dispatcher_;
 
   // The geolocation dispatcher attached to this view, lazily initialized.
   GeolocationDispatcher* geolocation_dispatcher_;
