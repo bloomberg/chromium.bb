@@ -518,6 +518,8 @@
         'wm/ash_focus_rules.h',
         'wm/boot_splash_screen_chromeos.cc',
         'wm/boot_splash_screen_chromeos.h',
+        'wm/cursor_manager_chromeos.cc',
+        'wm/cursor_manager_chromeos.h',
         'wm/coordinate_conversion.cc',
         'wm/coordinate_conversion.h',
         'wm/default_state.cc',

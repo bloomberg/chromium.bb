@@ -25,8 +25,6 @@
 
 namespace ash {
 
-using ::wm::CursorManager;
-
 class AshNativeCursorManagerTest : public test::AshTestBase {
  public:
   AshNativeCursorManagerTest() {}
@@ -90,7 +88,7 @@ void MoveMouseSync(aura::Window* window, int x, int y) {
 #endif
 
 TEST_F(AshNativeCursorManagerTest, MAYBE_CursorChangeOnEnterNotify) {
-  CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   test::CursorManagerTestApi test_api(cursor_manager);
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();

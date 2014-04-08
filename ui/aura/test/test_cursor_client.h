@@ -10,6 +10,10 @@
 #include "base/observer_list.h"
 #include "ui/aura/client/cursor_client.h"
 
+namespace ui {
+class KeyEvent;
+}
+
 namespace aura {
 namespace test {
 
@@ -43,6 +47,8 @@ class TestCursorClient : public aura::client::CursorClient {
       aura::client::CursorClientObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
       aura::client::CursorClientObserver* observer) OVERRIDE;
+  virtual bool ShouldHideCursorOnKeyEvent(
+      const ui::KeyEvent& event) const OVERRIDE;
 
  private:
   bool visible_;

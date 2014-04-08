@@ -12,6 +12,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/system/user/login_status.h"
+#include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -720,7 +721,14 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
   // pointer to vend to test code.
   AshNativeCursorManager* native_cursor_manager_;
+
+// Cursor may be hidden on certain key events in ChromeOS, whereas we never hide
+// the cursor on Windows.
+#if defined(OS_CHROMEOS)
+  CursorManager cursor_manager_;
+#else  // !defined(OS_CHROMEOS)
   ::wm::CursorManager cursor_manager_;
+#endif  // defined(OS_CHROMEOS)
 
   ObserverList<ShellObserver> observers_;
 

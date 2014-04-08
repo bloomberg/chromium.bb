@@ -206,6 +206,11 @@ void CursorManager::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+bool CursorManager::ShouldHideCursorOnKeyEvent(
+    const ui::KeyEvent& event) const {
+  return false;
+}
+
 void CursorManager::CommitCursor(gfx::NativeCursor cursor) {
   current_state_->set_cursor(cursor);
 }

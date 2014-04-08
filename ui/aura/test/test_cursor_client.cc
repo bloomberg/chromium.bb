@@ -99,5 +99,10 @@ void TestCursorClient::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+bool TestCursorClient::ShouldHideCursorOnKeyEvent(
+    const ui::KeyEvent& event) const {
+  return true;
+}
+
 }  // namespace test
 }  // namespace aura

@@ -25,55 +25,8 @@ namespace wm {
 
 namespace {
 
-bool ShouldHideCursorOnKeyEvent(const ui::KeyEvent& event) {
-#if defined(OS_CHROMEOS)
-  // All alt and control key commands are ignored.
-  if (event.IsAltDown() || event.IsControlDown())
-    return false;
-
-  static bool inited = false;
-  static base::hash_set<int32> ignored_keys;
-  if (!inited) {
-    // Modifiers.
-    ignored_keys.insert(ui::VKEY_SHIFT);
-    ignored_keys.insert(ui::VKEY_CONTROL);
-    ignored_keys.insert(ui::VKEY_MENU);
-
-    // Search key == VKEY_LWIN.
-    ignored_keys.insert(ui::VKEY_LWIN);
-
-    // Function keys.
-    for (int key = ui::VKEY_F1; key <= ui::VKEY_F24; ++key)
-      ignored_keys.insert(key);
-
-    // Media keys.
-    for (int key = ui::VKEY_BROWSER_BACK; key <= ui::VKEY_MEDIA_LAUNCH_APP2;
-         ++key) {
-      ignored_keys.insert(key);
-    }
-
-#if defined(OS_POSIX)
-    ignored_keys.insert(ui::VKEY_WLAN);
-    ignored_keys.insert(ui::VKEY_POWER);
-    ignored_keys.insert(ui::VKEY_BRIGHTNESS_DOWN);
-    ignored_keys.insert(ui::VKEY_BRIGHTNESS_UP);
-    ignored_keys.insert(ui::VKEY_KBD_BRIGHTNESS_DOWN);
-    ignored_keys.insert(ui::VKEY_KBD_BRIGHTNESS_UP);
-#endif
-
-    inited = true;
-  }
-
-  if (ignored_keys.count(event.key_code()) > 0)
-    return false;
-
-  return true;
-#else  // !defined(OS_CHROMEOS)
-  return false;
-#endif  // defined(OS_CHROMEOS)
-}
-
 // Returns true if the cursor should be hidden on touch events.
+// TODO(tdanderson|rsadam): Move this function into CursorClient.
 bool ShouldHideCursorOnTouch(const ui::TouchEvent& event) {
 #if defined(OS_WIN)
   return true;
@@ -240,10 +193,11 @@ void CompoundEventFilter::SetMouseEventsEnableStateOnEvent(aura::Window* target,
 // CompoundEventFilter, ui::EventHandler implementation:
 
 void CompoundEventFilter::OnKeyEvent(ui::KeyEvent* event) {
-  if (ShouldHideCursorOnKeyEvent(*event)) {
-    SetCursorVisibilityOnEvent(
-        static_cast<aura::Window*>(event->target()), event, false);
-  }
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  aura::client::CursorClient* client =
+      aura::client::GetCursorClient(target->GetRootWindow());
+  if (client && client->ShouldHideCursorOnKeyEvent(*event))
+    SetCursorVisibilityOnEvent(target, event, false);
 
   FilterKeyEvent(event);
 }

@@ -14,6 +14,10 @@ namespace gfx {
 class Display;
 }
 
+namespace ui {
+class KeyEvent;
+}
+
 namespace aura {
 class Window;
 namespace client {
@@ -79,6 +83,9 @@ class AURA_EXPORT CursorClient {
   // Used to add or remove a CursorClientObserver.
   virtual void AddObserver(CursorClientObserver* observer) = 0;
   virtual void RemoveObserver(CursorClientObserver* observer) = 0;
+
+  // Returns true if the mouse cursor should be hidden on |event|.
+  virtual bool ShouldHideCursorOnKeyEvent(const ui::KeyEvent& event) const = 0;
 
  protected:
   virtual ~CursorClient() {}

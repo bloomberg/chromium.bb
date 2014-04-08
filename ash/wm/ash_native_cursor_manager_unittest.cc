@@ -19,8 +19,6 @@
 #include "ui/base/cursor/cursor_loader_win.h"
 #endif
 
-using ::wm::CursorManager;
-
 namespace ash {
 namespace test {
 
@@ -54,7 +52,7 @@ class MouseEventLocationDelegate : public aura::test::TestWindowDelegate {
 typedef test::AshTestBase AshNativeCursorManagerTest;
 
 TEST_F(AshNativeCursorManagerTest, LockCursor) {
-  CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
   gfx::Display display(0);
 #if defined(OS_WIN)
@@ -113,7 +111,7 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
 }
 
 TEST_F(AshNativeCursorManagerTest, SetCursor) {
-  CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 #if defined(OS_WIN)
   ui::CursorLoaderWin::SetCursorResourceModule(L"ash_unittests.exe");
@@ -127,7 +125,7 @@ TEST_F(AshNativeCursorManagerTest, SetCursor) {
 }
 
 TEST_F(AshNativeCursorManagerTest, SetCursorSet) {
-  CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
   EXPECT_EQ(ui::CURSOR_SET_NORMAL, test_api.GetCurrentCursorSet());
@@ -143,7 +141,7 @@ TEST_F(AshNativeCursorManagerTest, SetCursorSet) {
 }
 
 TEST_F(AshNativeCursorManagerTest, SetScale) {
-  CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
   EXPECT_EQ(1.f, test_api.GetCurrentScale());
@@ -156,7 +154,7 @@ TEST_F(AshNativeCursorManagerTest, SetScale) {
 }
 
 TEST_F(AshNativeCursorManagerTest, SetDeviceScaleFactorAndRotation) {
-  CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
   gfx::Display display(0);

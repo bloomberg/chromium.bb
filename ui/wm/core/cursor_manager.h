@@ -20,6 +20,10 @@ namespace gfx {
 class Display;
 }
 
+namespace ui {
+class KeyEvent;
+}
+
 namespace wm {
 
 namespace internal {
@@ -35,7 +39,7 @@ class NativeCursorManager;
 class WM_CORE_EXPORT CursorManager : public aura::client::CursorClient,
                                      public NativeCursorManagerDelegate {
  public:
-  CursorManager(scoped_ptr<NativeCursorManager> delegate);
+  explicit CursorManager(scoped_ptr<NativeCursorManager> delegate);
   virtual ~CursorManager();
 
   // Overridden from aura::client::CursorClient:
@@ -59,6 +63,8 @@ class WM_CORE_EXPORT CursorManager : public aura::client::CursorClient,
       aura::client::CursorClientObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
       aura::client::CursorClientObserver* observer) OVERRIDE;
+  virtual bool ShouldHideCursorOnKeyEvent(
+      const ui::KeyEvent& event) const OVERRIDE;
 
  private:
   // Overridden from NativeCursorManagerDelegate:
