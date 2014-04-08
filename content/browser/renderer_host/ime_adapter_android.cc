@@ -22,6 +22,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/ImeAdapter_jni.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -229,33 +230,33 @@ void ImeAdapterAndroid::DeleteSurroundingText(JNIEnv*, jobject,
 }
 
 void ImeAdapterAndroid::Unselect(JNIEnv* env, jobject) {
-  RenderFrameHost* rfh = GetFocusedFrame();
-  if (rfh)
-    rfh->Unselect();
+  WebContents* wc = GetWebContents();
+  if (wc)
+    wc->Unselect();
 }
 
 void ImeAdapterAndroid::SelectAll(JNIEnv* env, jobject) {
-  RenderFrameHost* rfh = GetFocusedFrame();
-  if (rfh)
-    rfh->SelectAll();
+  WebContents* wc = GetWebContents();
+  if (wc)
+    wc->SelectAll();
 }
 
 void ImeAdapterAndroid::Cut(JNIEnv* env, jobject) {
-  RenderFrameHost* rfh = GetFocusedFrame();
-  if (rfh)
-    rfh->Cut();
+  WebContents* wc = GetWebContents();
+  if (wc)
+    wc->Cut();
 }
 
 void ImeAdapterAndroid::Copy(JNIEnv* env, jobject) {
-  RenderFrameHost* rfh = GetFocusedFrame();
-  if (rfh)
-    rfh->Copy();
+  WebContents* wc = GetWebContents();
+  if (wc)
+    wc->Copy();
 }
 
 void ImeAdapterAndroid::Paste(JNIEnv* env, jobject) {
-  RenderFrameHost* rfh = GetFocusedFrame();
-  if (rfh)
-    rfh->Paste();
+  WebContents* wc = GetWebContents();
+  if (wc)
+    wc->Paste();
 }
 
 void ImeAdapterAndroid::ResetImeAdapter(JNIEnv* env, jobject) {
@@ -285,6 +286,15 @@ RenderFrameHost* ImeAdapterAndroid::GetFocusedFrame() {
     return NULL;
 
   return focused_frame->current_frame_host();
+}
+
+WebContents* ImeAdapterAndroid::GetWebContents() {
+  RenderWidgetHostImpl* rwh = GetRenderWidgetHostImpl();
+  if (!rwh)
+    return NULL;
+  if (!rwh->IsRenderView())
+    return NULL;
+  return WebContents::FromRenderViewHost(RenderViewHost::From(rwh));
 }
 
 }  // namespace content

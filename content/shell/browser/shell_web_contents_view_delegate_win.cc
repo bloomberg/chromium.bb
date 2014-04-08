@@ -191,23 +191,18 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
 }
 
 void ShellWebContentsViewDelegate::MenuItemSelected(int selection) {
-  RenderFrameHost* frame = web_contents_->GetFocusedFrame();
   switch (selection) {
     case ShellContextMenuItemCutId:
-       if (frame)
-         frame->Cut();
+      web_contents_->Cut();
       break;
     case ShellContextMenuItemCopyId:
-      if (frame)
-        frame->Copy();
+      web_contents_->Copy();
       break;
     case ShellContextMenuItemPasteId:
-      if (frame)
-        frame->Paste();
+      web_contents_->Paste();
       break;
     case ShellContextMenuItemDeleteId:
-      if (frame)
-        frame->Delete();
+      web_contents_->Delete();
       break;
     case ShellContextMenuItemOpenLinkId: {
       ShellBrowserContext* browser_context =

@@ -1780,7 +1780,102 @@ void WebContentsImpl::ReloadFocusedFrame(bool ignore_cache) {
   if (!focused_frame)
     return;
 
-  Send(new FrameMsg_Reload(focused_frame->GetRoutingID(), ignore_cache));
+  focused_frame->Send(new FrameMsg_Reload(
+      focused_frame->GetRoutingID(), ignore_cache));
+}
+
+void WebContentsImpl::Undo() {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(new InputMsg_Undo(focused_frame->GetRoutingID()));
+  RecordAction(base::UserMetricsAction("Undo"));
+}
+
+void WebContentsImpl::Redo() {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+  focused_frame->Send(new InputMsg_Redo(focused_frame->GetRoutingID()));
+  RecordAction(base::UserMetricsAction("Redo"));
+}
+
+void WebContentsImpl::Cut() {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(new InputMsg_Cut(focused_frame->GetRoutingID()));
+  RecordAction(base::UserMetricsAction("Cut"));
+}
+
+void WebContentsImpl::Copy() {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(new InputMsg_Copy(focused_frame->GetRoutingID()));
+  RecordAction(base::UserMetricsAction("Copy"));
+}
+
+void WebContentsImpl::CopyToFindPboard() {
+#if defined(OS_MACOSX)
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  // Windows/Linux don't have the concept of a find pasteboard.
+  focused_frame->Send(
+      new InputMsg_CopyToFindPboard(focused_frame->GetRoutingID()));
+  RecordAction(base::UserMetricsAction("CopyToFindPboard"));
+#endif
+}
+
+void WebContentsImpl::Paste() {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(new InputMsg_Paste(focused_frame->GetRoutingID()));
+  RecordAction(base::UserMetricsAction("Paste"));
+}
+
+void WebContentsImpl::PasteAndMatchStyle() {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(new InputMsg_PasteAndMatchStyle(
+      focused_frame->GetRoutingID()));
+  RecordAction(base::UserMetricsAction("PasteAndMatchStyle"));
+}
+
+void WebContentsImpl::Delete() {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(new InputMsg_Delete(focused_frame->GetRoutingID()));
+  RecordAction(base::UserMetricsAction("DeleteSelection"));
+}
+
+void WebContentsImpl::SelectAll() {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(new InputMsg_SelectAll(focused_frame->GetRoutingID()));
+  RecordAction(base::UserMetricsAction("SelectAll"));
+}
+
+void WebContentsImpl::Unselect() {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(new InputMsg_Unselect(focused_frame->GetRoutingID()));
+  RecordAction(base::UserMetricsAction("Unselect"));
 }
 
 void WebContentsImpl::Replace(const base::string16& word) {
@@ -1788,7 +1883,8 @@ void WebContentsImpl::Replace(const base::string16& word) {
   if (!focused_frame)
     return;
 
-  Send(new InputMsg_Replace(focused_frame->GetRoutingID(), word));
+  focused_frame->Send(new InputMsg_Replace(
+      focused_frame->GetRoutingID(), word));
 }
 
 void WebContentsImpl::ReplaceMisspelling(const base::string16& word) {
@@ -1796,7 +1892,28 @@ void WebContentsImpl::ReplaceMisspelling(const base::string16& word) {
   if (!focused_frame)
     return;
 
-  Send(new InputMsg_ReplaceMisspelling(focused_frame->GetRoutingID(), word));
+  focused_frame->Send(new InputMsg_ReplaceMisspelling(
+      focused_frame->GetRoutingID(), word));
+}
+
+void WebContentsImpl::NotifyContextMenuClosed(
+    const CustomContextMenuContext& context) {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(new FrameMsg_ContextMenuClosed(
+      focused_frame->GetRoutingID(), context));
+}
+
+void WebContentsImpl::ExecuteCustomContextMenuCommand(
+    int action, const CustomContextMenuContext& context) {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(new FrameMsg_CustomContextMenuAction(
+      focused_frame->GetRoutingID(), context, action));
 }
 
 void WebContentsImpl::FocusThroughTabTraversal(bool reverse) {
@@ -2725,6 +2842,16 @@ void WebContentsImpl::SetIsLoading(RenderViewHost* render_view_host,
       det = Details<LoadNotificationDetails>(details);
   NotificationService::current()->Notify(
       type, Source<NavigationController>(&controller_), det);
+}
+
+void WebContentsImpl::SelectRange(const gfx::Point& start,
+                                  const gfx::Point& end) {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(
+      new InputMsg_SelectRange(focused_frame->GetRoutingID(), start, end));
 }
 
 void WebContentsImpl::UpdateMaxPageIDIfNecessary(RenderViewHost* rvh) {

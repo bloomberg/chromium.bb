@@ -223,23 +223,18 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
 }
 
 void ShellWebContentsViewDelegate::ActionPerformed(int tag) {
-  RenderFrameHost* frame = web_contents_->GetFocusedFrame();
   switch (tag) {
     case ShellContextMenuItemCutTag:
-      if (frame)
-        frame->Cut();
+      web_contents_->Cut();
       break;
     case ShellContextMenuItemCopyTag:
-      if (frame)
-        frame->Copy();
+      web_contents_->Copy();
       break;
     case ShellContextMenuItemPasteTag:
-      if (frame)
-        frame->Paste();
+      web_contents_->Paste();
       break;
     case ShellContextMenuItemDeleteTag:
-      if (frame)
-        frame->Delete();
+      web_contents_->Delete();
       break;
     case ShellContextMenuItemOpenLinkTag: {
       ShellBrowserContext* browser_context =

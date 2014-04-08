@@ -32,9 +32,11 @@ specific_include_rules = {
   ],
   "render_widget_host_view_mac\.mm": [
     "+content/browser/frame_host",
+    "+content/public/browser/web_contents.h",
   ],
   "ime_adapter_android\.cc": [
     "+content/browser/frame_host",
+    "+content/public/browser/web_contents.h",
   ],
   # TODO(nasko): Remove these exceptions once we've untangled the dependency
   # of RenderViewHost on the FrameTree.

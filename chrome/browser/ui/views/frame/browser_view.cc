@@ -1409,19 +1409,19 @@ void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 // won't do anything. We'll need something like an overall clipboard command
 // manager to do that.
 void BrowserView::Cut() {
-  // If a WebContent is focused, call RenderFrameHost::Cut. Otherwise, e.g. if
+  // If a WebContent is focused, call WebContents::Cut. Otherwise, e.g. if
   // Omnibox is focused, send a Ctrl+x key event to Chrome. Using RWH interface
   // rather than the fake key event for a WebContent is important since the fake
   // event might be consumed by the web content (crbug.com/137908).
-  DoCutCopyPaste(&content::RenderFrameHost::Cut, IDS_APP_CUT);
+  DoCutCopyPaste(&content::WebContents::Cut, IDS_APP_CUT);
 }
 
 void BrowserView::Copy() {
-  DoCutCopyPaste(&content::RenderFrameHost::Copy, IDS_APP_COPY);
+  DoCutCopyPaste(&content::WebContents::Copy, IDS_APP_COPY);
 }
 
 void BrowserView::Paste() {
-  DoCutCopyPaste(&content::RenderFrameHost::Paste, IDS_APP_PASTE);
+  DoCutCopyPaste(&content::WebContents::Paste, IDS_APP_PASTE);
 }
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
@@ -2515,7 +2515,7 @@ void BrowserView::ShowBrowserActionPopup(
   toolbar_->ShowBrowserActionPopup(extension);
 }
 
-void BrowserView::DoCutCopyPaste(void (content::RenderFrameHost::*method)(),
+void BrowserView::DoCutCopyPaste(void (WebContents::*method)(),
                                  int command_id) {
   WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
   if (!contents)
@@ -2542,7 +2542,7 @@ void BrowserView::DoCutCopyPaste(void (content::RenderFrameHost::*method)(),
 
 bool BrowserView::DoCutCopyPasteForWebContents(
     WebContents* contents,
-    void (content::RenderFrameHost::*method)()) {
+    void (WebContents::*method)()) {
   gfx::NativeView native_view = contents->GetView()->GetContentNativeView();
   if (!native_view)
     return false;
@@ -2551,9 +2551,7 @@ bool BrowserView::DoCutCopyPasteForWebContents(
 #elif defined(OS_WIN)
   if (native_view == ::GetFocus()) {
 #endif
-    content::RenderFrameHost* frame = contents->GetFocusedFrame();
-    if (frame)
-      (frame->*method)();
+    (contents->*method)();
     return true;
   }
 

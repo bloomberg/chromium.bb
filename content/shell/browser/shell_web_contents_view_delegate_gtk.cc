@@ -221,27 +221,19 @@ void ShellWebContentsViewDelegate::OnOpenURLMenuActivated(GtkWidget* widget) {
 }
 
 void ShellWebContentsViewDelegate::OnCutMenuActivated(GtkWidget* widget) {
-  RenderFrameHost* frame = web_contents_->GetFocusedFrame();
-  if (frame)
-    frame->Cut();
+  web_contents_->Cut();
 }
 
 void ShellWebContentsViewDelegate::OnCopyMenuActivated(GtkWidget* widget) {
-  RenderFrameHost* frame = web_contents_->GetFocusedFrame();
-  if (frame)
-    frame->Copy();
+  web_contents_->Copy();
 }
 
 void ShellWebContentsViewDelegate::OnPasteMenuActivated(GtkWidget* widget) {
-  RenderFrameHost* frame = web_contents_->GetFocusedFrame();
-  if (frame)
-    frame->Paste();
+  web_contents_->Paste();
 }
 
 void ShellWebContentsViewDelegate::OnDeleteMenuActivated(GtkWidget* widget) {
-  RenderFrameHost* frame = web_contents_->GetFocusedFrame();
-  if (frame)
-    frame->Delete();
+  web_contents_->Delete();
 }
 
 void ShellWebContentsViewDelegate::OnInspectMenuActivated(GtkWidget* widget) {

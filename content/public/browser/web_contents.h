@@ -58,6 +58,7 @@ class RenderWidgetHostView;
 class SiteInstance;
 class WebContentsDelegate;
 class WebContentsView;
+struct CustomContextMenuContext;
 struct RendererPreferences;
 
 // WebContents is the core class in content/. A WebContents renders web content
@@ -333,11 +334,30 @@ class WebContents : public PageNavigator,
 
   // Editing commands ----------------------------------------------------------
 
+  virtual void Undo() = 0;
+  virtual void Redo() = 0;
+  virtual void Cut() = 0;
+  virtual void Copy() = 0;
+  virtual void CopyToFindPboard() = 0;
+  virtual void Paste() = 0;
+  virtual void PasteAndMatchStyle() = 0;
+  virtual void Delete() = 0;
+  virtual void SelectAll() = 0;
+  virtual void Unselect() = 0;
+
   // Replaces the currently selected word or a word around the cursor.
   virtual void Replace(const base::string16& word) = 0;
 
   // Replaces the misspelling in the current selection.
   virtual void ReplaceMisspelling(const base::string16& word) = 0;
+
+  // Let the renderer know that the menu has been closed.
+  virtual void NotifyContextMenuClosed(
+      const CustomContextMenuContext& context) = 0;
+
+  // Executes custom context menu action that was provided from Blink.
+  virtual void ExecuteCustomContextMenuCommand(
+      int action, const CustomContextMenuContext& context) = 0;
 
   // Views and focus -----------------------------------------------------------
 

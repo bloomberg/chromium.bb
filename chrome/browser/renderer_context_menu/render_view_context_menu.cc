@@ -1465,8 +1465,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         source_web_contents_, false, std::string());
     }
 #endif
-    if (render_frame_host)
-      render_frame_host->ExecuteCustomContextMenuCommand(action, context);
+    source_web_contents_->ExecuteCustomContextMenuCommand(action, context);
     return;
   }
 
@@ -1794,43 +1793,35 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     }
 
     case IDC_CONTENT_CONTEXT_UNDO:
-      if (render_frame_host)
-        render_frame_host->Undo();
+      source_web_contents_->Undo();
       break;
 
     case IDC_CONTENT_CONTEXT_REDO:
-      if (render_frame_host)
-        render_frame_host->Redo();
+      source_web_contents_->Redo();
       break;
 
     case IDC_CONTENT_CONTEXT_CUT:
-      if (render_frame_host)
-        render_frame_host->Cut();
+      source_web_contents_->Cut();
       break;
 
     case IDC_CONTENT_CONTEXT_COPY:
-      if (render_frame_host)
-        render_frame_host->Copy();
+      source_web_contents_->Copy();
       break;
 
     case IDC_CONTENT_CONTEXT_PASTE:
-      if (render_frame_host)
-        render_frame_host->Paste();
+      source_web_contents_->Paste();
       break;
 
     case IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE:
-      if (render_frame_host)
-        render_frame_host->PasteAndMatchStyle();
+      source_web_contents_->PasteAndMatchStyle();
       break;
 
     case IDC_CONTENT_CONTEXT_DELETE:
-      if (render_frame_host)
-        render_frame_host->Delete();
+      source_web_contents_->Delete();
       break;
 
     case IDC_CONTENT_CONTEXT_SELECTALL:
-      if (render_frame_host)
-        render_frame_host->SelectAll();
+      source_web_contents_->SelectAll();
       break;
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
@@ -1950,10 +1941,7 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
       source_web_contents_->GetRenderWidgetHostView();
   if (view)
     view->SetShowingContextMenu(false);
-  RenderFrameHost* render_frame_host =
-      RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-  if (render_frame_host)
-    render_frame_host->NotifyContextMenuClosed(params_.custom_context);
+  source_web_contents_->NotifyContextMenuClosed(params_.custom_context);
 
   if (!command_executed_) {
     FOR_EACH_OBSERVER(RenderViewContextMenuObserver,

@@ -166,63 +166,27 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
 }
 
 - (void)handlesUndoScriptCommand:(NSScriptCommand*)command {
-  RenderFrameHost* frame = webContents_->GetFocusedFrame();
-  if (!frame) {
-    NOTREACHED();
-    return;
-  }
-
-  frame->Undo();
+  webContents_->Undo();
 }
 
 - (void)handlesRedoScriptCommand:(NSScriptCommand*)command {
-  RenderFrameHost* frame = webContents_->GetFocusedFrame();
-  if (!frame) {
-    NOTREACHED();
-    return;
-  }
-
-  frame->Redo();
+  webContents_->Redo();
 }
 
 - (void)handlesCutScriptCommand:(NSScriptCommand*)command {
-  RenderFrameHost* frame = webContents_->GetFocusedFrame();
-  if (!frame) {
-    NOTREACHED();
-    return;
-  }
-
-  frame->Cut();
+  webContents_->Cut();
 }
 
 - (void)handlesCopyScriptCommand:(NSScriptCommand*)command {
-  RenderFrameHost* frame = webContents_->GetFocusedFrame();
-  if (!frame) {
-    NOTREACHED();
-    return;
-  }
-
-  frame->Copy();
+  webContents_->Copy();
 }
 
 - (void)handlesPasteScriptCommand:(NSScriptCommand*)command {
-  RenderFrameHost* frame = webContents_->GetFocusedFrame();
-  if (!frame) {
-    NOTREACHED();
-    return;
-  }
-
-  frame->Paste();
+  webContents_->Paste();
 }
 
 - (void)handlesSelectAllScriptCommand:(NSScriptCommand*)command {
-  RenderFrameHost* frame = webContents_->GetFocusedFrame();
-  if (!frame) {
-    NOTREACHED();
-    return;
-  }
-
-  frame->SelectAll();
+  webContents_->SelectAll();
 }
 
 - (void)handlesGoBackScriptCommand:(NSScriptCommand*)command {

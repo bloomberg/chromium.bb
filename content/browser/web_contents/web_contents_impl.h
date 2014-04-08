@@ -238,8 +238,22 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void Stop() OVERRIDE;
   virtual WebContents* Clone() OVERRIDE;
   virtual void ReloadFocusedFrame(bool ignore_cache) OVERRIDE;
+  virtual void Undo() OVERRIDE;
+  virtual void Redo() OVERRIDE;
+  virtual void Cut() OVERRIDE;
+  virtual void Copy() OVERRIDE;
+  virtual void CopyToFindPboard() OVERRIDE;
+  virtual void Paste() OVERRIDE;
+  virtual void PasteAndMatchStyle() OVERRIDE;
+  virtual void Delete() OVERRIDE;
+  virtual void SelectAll() OVERRIDE;
+  virtual void Unselect() OVERRIDE;
   virtual void Replace(const base::string16& word) OVERRIDE;
   virtual void ReplaceMisspelling(const base::string16& word) OVERRIDE;
+  virtual void NotifyContextMenuClosed(
+      const CustomContextMenuContext& context) OVERRIDE;
+  virtual void ExecuteCustomContextMenuCommand(
+      int action, const CustomContextMenuContext& context) OVERRIDE;
   virtual void FocusThroughTabTraversal(bool reverse) OVERRIDE;
   virtual bool ShowingInterstitialPage() const OVERRIDE;
   virtual InterstitialPage* GetInterstitialPage() const OVERRIDE;
@@ -597,6 +611,10 @@ class CONTENT_EXPORT WebContentsImpl
                             LoadNotificationDetails* details) OVERRIDE;
 
   typedef base::Callback<void(WebContents*)> CreatedCallback;
+
+  // Requests the renderer to select the region between two points in the
+  // currently focused frame.
+  void SelectRange(const gfx::Point& start, const gfx::Point& end);
 
  private:
   friend class NavigationControllerImpl;

@@ -14,6 +14,7 @@ namespace content {
 class RenderFrameHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewAndroid;
+class WebContents;
 struct NativeWebKeyboardEvent;
 
 // This class is in charge of dispatching key events from the java side
@@ -62,6 +63,7 @@ class ImeAdapterAndroid {
  private:
   RenderWidgetHostImpl* GetRenderWidgetHostImpl();
   RenderFrameHost* GetFocusedFrame();
+  WebContents* GetWebContents();
 
   RenderWidgetHostViewAndroid* rwhva_;
   JavaObjectWeakGlobalRef java_ime_adapter_;

@@ -52,6 +52,7 @@
 #include "content/public/browser/notification_types.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -1676,19 +1677,12 @@ gfx::Range RenderWidgetHostViewMac::ConvertCharacterRangeToCompositionRange(
       request_range.end() - composition_range_.start());
 }
 
-RenderFrameHost* RenderWidgetHostViewMac::GetFocusedFrame() {
+WebContents* RenderWidgetHostViewMac::GetWebContents() {
   if (!render_widget_host_->IsRenderView())
     return NULL;
 
-  RenderViewHost* rvh = RenderViewHost::From(render_widget_host_);
-  RenderFrameHostImpl* rfh =
-      static_cast<RenderFrameHostImpl*>(rvh->GetMainFrame());
-  FrameTreeNode* focused_frame =
-      rfh->frame_tree_node()->frame_tree()->GetFocusedFrame();
-  if (!focused_frame)
-    return NULL;
-
-  return focused_frame->current_frame_host();
+  return WebContents::FromRenderViewHost(
+      RenderViewHost::From(render_widget_host_));
 }
 
 bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
@@ -4048,45 +4042,31 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)undo:(id)sender {
-  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
-  if (host)
-    host->Undo();
+  renderWidgetHostView_->GetWebContents()->Undo();
 }
 
 - (void)redo:(id)sender {
-  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
-  if (host)
-    host->Redo();
+  renderWidgetHostView_->GetWebContents()->Redo();
 }
 
 - (void)cut:(id)sender {
-  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
-  if (host)
-    host->Cut();
+  renderWidgetHostView_->GetWebContents()->Cut();
 }
 
 - (void)copy:(id)sender {
-  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
-  if (host)
-    host->Copy();
+  renderWidgetHostView_->GetWebContents()->Copy();
 }
 
 - (void)copyToFindPboard:(id)sender {
-  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
-  if (host)
-    host->CopyToFindPboard();
+  renderWidgetHostView_->GetWebContents()->CopyToFindPboard();
 }
 
 - (void)paste:(id)sender {
-  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
-  if (host)
-    host->Paste();
+  renderWidgetHostView_->GetWebContents()->Paste();
 }
 
 - (void)pasteAndMatchStyle:(id)sender {
-  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
-  if (host)
-    host->PasteAndMatchStyle();
+  renderWidgetHostView_->GetWebContents()->PasteAndMatchStyle();
 }
 
 - (void)selectAll:(id)sender {
@@ -4097,9 +4077,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // menu handler, neither is true.
   // Explicitly call SelectAll() here to make sure the renderer returns
   // selection results.
-  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
-  if (host)
-    host->SelectAll();
+  renderWidgetHostView_->GetWebContents()->SelectAll();
 }
 
 - (void)startSpeaking:(id)sender {

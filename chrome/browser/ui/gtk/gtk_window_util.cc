@@ -27,12 +27,12 @@ static int last_click_y;
 
 // Performs Cut/Copy/Paste operation on the |window|.
 // If the current render view is focused, then just call the specified |method|
-// against the current render view host, otherwise emit the specified |signal|
+// against the given web contents, otherwise emit the specified |signal|
 // against the focused widget.
 // TODO(suzhe): This approach does not work for plugins.
 void DoCutCopyPaste(GtkWindow* window,
                     WebContents* web_contents,
-                    void (RenderFrameHost::*method)(),
+                    void (WebContents::*method)(),
                     const char* signal) {
   GtkWidget* widget = gtk_window_get_focus(window);
   if (widget == NULL)
@@ -40,8 +40,7 @@ void DoCutCopyPaste(GtkWindow* window,
 
   if (web_contents &&
       widget == web_contents->GetView()->GetContentNativeView()) {
-    RenderFrameHost* frame = web_contents->GetFocusedFrame();
-    (frame->*method)();
+    (web_contents->*method)();
   } else {
     guint id;
     if ((id = g_signal_lookup(signal, G_OBJECT_TYPE(widget))) != 0)
@@ -51,17 +50,17 @@ void DoCutCopyPaste(GtkWindow* window,
 
 void DoCut(GtkWindow* window, WebContents* web_contents) {
   DoCutCopyPaste(window, web_contents,
-                 &RenderFrameHost::Cut, "cut-clipboard");
+                 &WebContents::Cut, "cut-clipboard");
 }
 
 void DoCopy(GtkWindow* window, WebContents* web_contents) {
   DoCutCopyPaste(window, web_contents,
-                 &RenderFrameHost::Copy, "copy-clipboard");
+                 &WebContents::Copy, "copy-clipboard");
 }
 
 void DoPaste(GtkWindow* window, WebContents* web_contents) {
   DoCutCopyPaste(window, web_contents,
-                 &RenderFrameHost::Paste, "paste-clipboard");
+                 &WebContents::Paste, "paste-clipboard");
 }
 
 // Ubuntu patches their version of GTK+ so that there is always a

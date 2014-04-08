@@ -22,7 +22,6 @@ namespace content {
 class RenderProcessHost;
 class RenderViewHost;
 class SiteInstance;
-struct CustomContextMenuContext;
 
 // The interface provides a communication conduit with a frame in the renderer.
 class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
@@ -80,26 +79,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // RenderFrameHost, since callers outside content shouldn't need to call this
   // directly on subframes.
   virtual void DispatchBeforeUnload(bool for_cross_site_transition) = 0;
-
-  // Let the renderer know that the menu has been closed.
-  virtual void NotifyContextMenuClosed(
-      const CustomContextMenuContext& context) = 0;
-
-  // Executes custom context menu action that was provided from Blink.
-  virtual void ExecuteCustomContextMenuCommand(
-      int action, const CustomContextMenuContext& context) = 0;
-
-  // Edit operations.
-  virtual void Undo() = 0;
-  virtual void Redo() = 0;
-  virtual void Cut() = 0;
-  virtual void Copy() = 0;
-  virtual void CopyToFindPboard() = 0;
-  virtual void Paste() = 0;
-  virtual void PasteAndMatchStyle() = 0;
-  virtual void Delete() = 0;
-  virtual void SelectAll() = 0;
-  virtual void Unselect() = 0;
 
   // Requests the renderer to insert CSS into the frame's document.
   virtual void InsertCSS(const std::string& css) = 0;

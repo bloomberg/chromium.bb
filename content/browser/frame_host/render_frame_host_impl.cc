@@ -176,69 +176,6 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
   }
 }
 
-void RenderFrameHostImpl::NotifyContextMenuClosed(
-    const CustomContextMenuContext& context) {
-  Send(new FrameMsg_ContextMenuClosed(routing_id_, context));
-}
-
-void RenderFrameHostImpl::ExecuteCustomContextMenuCommand(
-    int action, const CustomContextMenuContext& context) {
-  Send(new FrameMsg_CustomContextMenuAction(routing_id_, context, action));
-}
-
-void RenderFrameHostImpl::Undo() {
-  Send(new InputMsg_Undo(routing_id_));
-  RecordAction(base::UserMetricsAction("Undo"));
-}
-
-void RenderFrameHostImpl::Redo() {
-  Send(new InputMsg_Redo(routing_id_));
-  RecordAction(base::UserMetricsAction("Redo"));
-}
-
-void RenderFrameHostImpl::Cut() {
-  Send(new InputMsg_Cut(routing_id_));
-  RecordAction(base::UserMetricsAction("Cut"));
-}
-
-void RenderFrameHostImpl::Copy() {
-  Send(new InputMsg_Copy(routing_id_));
-  RecordAction(base::UserMetricsAction("Copy"));
-}
-
-void RenderFrameHostImpl::CopyToFindPboard() {
-#if defined(OS_MACOSX)
-  // Windows/Linux don't have the concept of a find pasteboard.
-  Send(new InputMsg_CopyToFindPboard(routing_id_));
-  RecordAction(base::UserMetricsAction("CopyToFindPboard"));
-#endif
-}
-
-void RenderFrameHostImpl::Paste() {
-  Send(new InputMsg_Paste(routing_id_));
-  RecordAction(base::UserMetricsAction("Paste"));
-}
-
-void RenderFrameHostImpl::PasteAndMatchStyle() {
-  Send(new InputMsg_PasteAndMatchStyle(routing_id_));
-  RecordAction(base::UserMetricsAction("PasteAndMatchStyle"));
-}
-
-void RenderFrameHostImpl::Delete() {
-  Send(new InputMsg_Delete(routing_id_));
-  RecordAction(base::UserMetricsAction("DeleteSelection"));
-}
-
-void RenderFrameHostImpl::SelectAll() {
-  Send(new InputMsg_SelectAll(routing_id_));
-  RecordAction(base::UserMetricsAction("SelectAll"));
-}
-
-void RenderFrameHostImpl::Unselect() {
-  Send(new InputMsg_Unselect(routing_id_));
-  RecordAction(base::UserMetricsAction("Unselect"));
-}
-
 void RenderFrameHostImpl::InsertCSS(const std::string& css) {
   Send(new FrameMsg_CSSInsertRequest(routing_id_, css));
 }
@@ -719,11 +656,6 @@ void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
   params.transition = PAGE_TRANSITION_LINK;
   params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   Navigate(params);
-}
-
-void RenderFrameHostImpl::SelectRange(const gfx::Point& start,
-                                      const gfx::Point& end) {
-  Send(new InputMsg_SelectRange(routing_id_, start, end));
 }
 
 void RenderFrameHostImpl::ExtendSelectionAndDelete(size_t before,
