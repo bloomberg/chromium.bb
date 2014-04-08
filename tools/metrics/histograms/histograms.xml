@@ -7111,6 +7111,12 @@ other types of suffix sets.
   <summary>Events in GeolocationInfoBarDelegateAndroid.</summary>
 </histogram>
 
+<histogram name="Geolocation.LocationUpdate.ErrorCode"
+    enum="GeopositionErrorCode">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <summary>Error code for the geoposition sent to the renderers.</summary>
+</histogram>
+
 <histogram name="Geolocation.NetworkLocationRequest.AccessPoints">
   <owner>mvanouwerkerk@chromium.org</owner>
   <summary>
@@ -34153,6 +34159,13 @@ other types of suffix sets.
   <int value="3" label="User dismissed the bar"/>
   <int value="4" label="User clicked on link"/>
   <int value="5" label="User ignored the bar"/>
+</enum>
+
+<enum name="GeopositionErrorCode" type="int">
+  <int value="0" label="There was no error"/>
+  <int value="1" label="User denied use of geolocation"/>
+  <int value="2" label="Geoposition could not be determined"/>
+  <int value="3" label="Timeout"/>
 </enum>
 
 <enum name="GestureActionType" type="int">

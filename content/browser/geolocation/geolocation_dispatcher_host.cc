@@ -21,6 +21,49 @@
 namespace content {
 namespace {
 
+// Geoposition error codes for reporting in UMA.
+enum GeopositionErrorCode {
+  // NOTE: Do not renumber these as that would confuse interpretation of
+  // previously logged data. When making changes, also update the enum list
+  // in tools/metrics/histograms/histograms.xml to keep it in sync.
+
+  // There was no error.
+  GEOPOSITION_ERROR_CODE_NONE = 0,
+
+  // User denied use of geolocation.
+  GEOPOSITION_ERROR_CODE_PERMISSION_DENIED = 1,
+
+  // Geoposition could not be determined.
+  GEOPOSITION_ERROR_CODE_POSITION_UNAVAILABLE = 2,
+
+  // Timeout.
+  GEOPOSITION_ERROR_CODE_TIMEOUT = 3,
+
+  // NOTE: Add entries only immediately above this line.
+  GEOPOSITION_ERROR_CODE_COUNT = 4
+};
+
+void RecordGeopositionErrorCode(Geoposition::ErrorCode error_code) {
+  GeopositionErrorCode code = GEOPOSITION_ERROR_CODE_NONE;
+  switch (error_code) {
+    case Geoposition::ERROR_CODE_NONE:
+      code = GEOPOSITION_ERROR_CODE_NONE;
+      break;
+    case Geoposition::ERROR_CODE_PERMISSION_DENIED:
+      code = GEOPOSITION_ERROR_CODE_PERMISSION_DENIED;
+      break;
+    case Geoposition::ERROR_CODE_POSITION_UNAVAILABLE:
+      code = GEOPOSITION_ERROR_CODE_POSITION_UNAVAILABLE;
+      break;
+    case Geoposition::ERROR_CODE_TIMEOUT:
+      code = GEOPOSITION_ERROR_CODE_TIMEOUT;
+      break;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Geolocation.LocationUpdate.ErrorCode",
+                            code,
+                            GEOPOSITION_ERROR_CODE_COUNT);
+}
+
 void NotifyGeolocationProviderPermissionGranted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   GeolocationProviderImpl::GetInstance()->UserDidOptIntoLocationServices();
@@ -148,6 +191,7 @@ bool GeolocationDispatcherHostImpl::OnMessageReceived(
 void GeolocationDispatcherHostImpl::OnLocationUpdate(
     const Geoposition& geoposition) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RecordGeopositionErrorCode(geoposition.error_code);
   for (std::map<int, RendererGeolocationOptions>::iterator it =
        geolocation_renderers_.begin();
        it != geolocation_renderers_.end(); ++it) {
