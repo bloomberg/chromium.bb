@@ -27,7 +27,8 @@
 #define WorkerNavigator_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/frame/NavigatorBase.h"
+#include "core/frame/NavigatorID.h"
+#include "core/frame/NavigatorOnLine.h"
 #include "heap/Handle.h"
 #include "platform/Supplementable.h"
 #include "wtf/PassRefPtr.h"
@@ -36,7 +37,7 @@
 
 namespace WebCore {
 
-class WorkerNavigator FINAL : public RefCountedWillBeGarbageCollectedFinalized<WorkerNavigator>, public ScriptWrappable, public NavigatorBase, public WillBeHeapSupplementable<WorkerNavigator> {
+class WorkerNavigator FINAL : public RefCountedWillBeGarbageCollectedFinalized<WorkerNavigator>, public ScriptWrappable, public NavigatorID, public NavigatorOnLine, public WillBeHeapSupplementable<WorkerNavigator> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigator);
 public:
     static PassRefPtrWillBeRawPtr<WorkerNavigator> create(const String& userAgent)

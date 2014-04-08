@@ -31,7 +31,6 @@
 // http://www.whatwg.org/specs/web-apps/current-work/#navigatorid
 
 [
-    LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
 ] interface NavigatorID {
     readonly attribute DOMString appCodeName; // constant "Mozilla"

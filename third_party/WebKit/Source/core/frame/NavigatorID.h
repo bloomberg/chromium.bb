@@ -35,16 +35,14 @@
 
 namespace WebCore {
 
-class NavigatorBase;
-
 class NavigatorID {
 public:
-    static String appName(const NavigatorBase&);
-    static String appVersion(const NavigatorBase&);
-    static String userAgent(const NavigatorBase&);
-    static String platform(const NavigatorBase&);
-    static String appCodeName(const NavigatorBase&);
-    static String product(const NavigatorBase&);
+    String appCodeName();
+    String appName();
+    String appVersion();
+    String platform();
+    String product();
+    virtual String userAgent() const = 0;
 };
 
 } // namespace WebCore

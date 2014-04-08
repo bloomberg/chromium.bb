@@ -26,9 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/workers.html#the-workernavigator-object
+
 [
     GlobalContext=WorkerGlobalScope,
-    WillBeGarbageCollected
+    WillBeGarbageCollected,
 ] interface WorkerNavigator {
 };
 

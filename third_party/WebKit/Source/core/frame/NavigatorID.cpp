@@ -30,9 +30,7 @@
  */
 
 #include "config.h"
-#include "NavigatorID.h"
-
-#include "core/frame/NavigatorBase.h"
+#include "core/frame/NavigatorID.h"
 
 #if !defined(WEBCORE_NAVIGATOR_PLATFORM) && OS(POSIX) && !OS(MACOSX)
 #include "wtf/StdLibExtras.h"
@@ -45,24 +43,24 @@
 
 namespace WebCore {
 
-String NavigatorID::appName(const NavigatorBase&)
+String NavigatorID::appCodeName()
+{
+    return "Mozilla";
+}
+
+String NavigatorID::appName()
 {
     return "Netscape";
 }
 
-String NavigatorID::appVersion(const NavigatorBase& navigator)
+String NavigatorID::appVersion()
 {
     // Version is everything in the user agent string past the "Mozilla/" prefix.
-    const String& agent = navigator.userAgent();
+    const String& agent = userAgent();
     return agent.substring(agent.find('/') + 1);
 }
 
-String NavigatorID::userAgent(const NavigatorBase& navigator)
-{
-    return navigator.userAgent();
-}
-
-String NavigatorID::platform(const NavigatorBase&)
+String NavigatorID::platform()
 {
 #if defined(WEBCORE_NAVIGATOR_PLATFORM)
     return WEBCORE_NAVIGATOR_PLATFORM;
@@ -79,12 +77,7 @@ String NavigatorID::platform(const NavigatorBase&)
 #endif
 }
 
-String NavigatorID::appCodeName(const NavigatorBase&)
-{
-    return "Mozilla";
-}
-
-String NavigatorID::product(const NavigatorBase&)
+String NavigatorID::product()
 {
     return WEBCORE_NAVIGATOR_PRODUCT;
 }
