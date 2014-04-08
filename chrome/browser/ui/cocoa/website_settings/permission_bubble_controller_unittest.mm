@@ -46,6 +46,7 @@ class PermissionBubbleControllerTest : public CocoaTest,
   virtual void SetUp() OVERRIDE {
     CocoaTest::SetUp();
     bridge_.reset(new PermissionBubbleCocoa(nil));
+    AddRequest(kPermissionA);
     controller_ = [[PermissionBubbleController alloc]
         initWithParentWindow:test_window()
                       bridge:bridge_.get()];
@@ -111,8 +112,6 @@ TEST_F(PermissionBubbleControllerTest, ShowAndClose) {
 }
 
 TEST_F(PermissionBubbleControllerTest, ShowSinglePermission) {
-  AddRequest(kPermissionA);
-
   [controller_ showAtAnchor:NSZeroPoint
               withDelegate:this
                forRequests:requests_
@@ -127,7 +126,6 @@ TEST_F(PermissionBubbleControllerTest, ShowSinglePermission) {
 }
 
 TEST_F(PermissionBubbleControllerTest, ShowMultiplePermissions) {
-  AddRequest(kPermissionA);
   AddRequest(kPermissionB);
   AddRequest(kPermissionC);
 
@@ -148,7 +146,6 @@ TEST_F(PermissionBubbleControllerTest, ShowMultiplePermissions) {
 }
 
 TEST_F(PermissionBubbleControllerTest, ShowCustomizationMode) {
-  AddRequest(kPermissionA);
   AddRequest(kPermissionB);
 
   accept_states_.push_back(true);
@@ -175,6 +172,7 @@ TEST_F(PermissionBubbleControllerTest, ShowCustomizationMode) {
 }
 
 TEST_F(PermissionBubbleControllerTest, OK) {
+  accept_states_.push_back(true);
   [controller_ showAtAnchor:NSZeroPoint
               withDelegate:this
                forRequests:requests_
@@ -208,7 +206,6 @@ TEST_F(PermissionBubbleControllerTest, Deny) {
 }
 
 TEST_F(PermissionBubbleControllerTest, ToggleCheckbox) {
-  AddRequest(kPermissionA);
   AddRequest(kPermissionB);
 
   accept_states_.push_back(true);
@@ -227,6 +224,7 @@ TEST_F(PermissionBubbleControllerTest, ToggleCheckbox) {
 }
 
 TEST_F(PermissionBubbleControllerTest, ClickCustomize) {
+  AddRequest(kPermissionB);
   [controller_ showAtAnchor:NSZeroPoint
               withDelegate:this
                forRequests:requests_

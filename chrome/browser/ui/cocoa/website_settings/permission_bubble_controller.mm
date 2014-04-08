@@ -9,6 +9,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/chrome_style.h"
@@ -33,6 +34,7 @@ namespace {
 const CGFloat kHorizontalPadding = 20.0f;
 const CGFloat kVerticalPadding = 20.0f;
 const CGFloat kButtonPadding = 10.0f;
+const CGFloat kTitlePaddingX = 50.0f;
 const CGFloat kCheckboxYAdjustment = 2.0f;
 
 const CGFloat kFontSize = 15.0f;
@@ -43,12 +45,11 @@ const base::char16 kBulletPoint = 0x2022;
 @interface PermissionBubbleController ()
 
 // Returns an autoreleased NSView displaying the label for |request|.
-- (NSView*)labelForRequest:(PermissionBubbleRequest*)request
-           isSingleRequest:(BOOL)singleRequest;
+- (NSView*)labelForRequest:(PermissionBubbleRequest*)request;
 
-// Returns an autoreleased NSView displaying the title for the bubble if
-// there are multiple requests.
-- (NSView*)titleForMultipleRequests;
+// Returns an autoreleased NSView displaying the title for the bubble
+// requesting settings for |host|.
+- (NSView*)titleWithHostname:(const std::string&)host;
 
 // Returns an autoreleased NSView displaying a checkbox for |request|.  The
 // checkbox will be initialized as checked if |checked| is YES.
@@ -121,6 +122,7 @@ const base::char16 kBulletPoint = 0x2022;
          forRequests:(const std::vector<PermissionBubbleRequest*>&)requests
          acceptStates:(const std::vector<bool>&)acceptStates
     customizationMode:(BOOL)customizationMode {
+  DCHECK(!requests.empty());
   DCHECK(delegate);
   DCHECK(!customizationMode || (requests.size() == acceptStates.size()));
   delegate_ = delegate;
@@ -155,8 +157,7 @@ const base::char16 kBulletPoint = 0x2022;
       [base::mac::ObjCCastStrict<NSButton>(permissionView) setTag:index];
       [checkboxes_ addObject:permissionView];
     } else {
-      permissionView.reset([[self labelForRequest:(*it)
-                                  isSingleRequest:singlePermission] retain]);
+      permissionView.reset([[self labelForRequest:(*it)] retain]);
     }
     NSPoint origin = [permissionView frame].origin;
     origin.x += kHorizontalPadding;
@@ -175,6 +176,18 @@ const base::char16 kBulletPoint = 0x2022;
     bubbleFrame = NSUnionRect(
         bubbleFrame, NSInsetRect([view frame], -kHorizontalPadding, 0));
   }
+
+  base::scoped_nsobject<NSView> titleView(
+      [[self titleWithHostname:requests[0]->GetRequestingHostname().host()]
+          retain]);
+  [contentView addSubview:titleView];
+  [titleView setFrameOrigin:NSMakePoint(kHorizontalPadding,
+                                        kVerticalPadding + yOffset)];
+  yOffset += NSHeight([titleView frame]) + kVerticalPadding;
+
+  // The title must fit within the bubble.
+  bubbleFrame.size.width = std::max(NSWidth(bubbleFrame),
+                                    NSWidth([titleView frame]));
 
   // 'x' button in the upper-right-hand corner.
   base::scoped_nsobject<NSView> closeButton([[self closeButton] retain]);
@@ -217,15 +230,6 @@ const base::char16 kBulletPoint = 0x2022;
     [contentView addSubview:customizeButton];
   }
 
-  if (!singlePermission) {
-    base::scoped_nsobject<NSView> titleView(
-       [[self titleForMultipleRequests] retain]);
-    [contentView addSubview:titleView];
-    [titleView setFrameOrigin:NSMakePoint(kHorizontalPadding,
-                                          kVerticalPadding + yOffset)];
-    yOffset += NSHeight([titleView frame]) + kVerticalPadding;
-  }
-
   bubbleFrame.size.height = yOffset + kVerticalPadding;
   bubbleFrame = [[self window] frameRectForContentRect:bubbleFrame];
   [[self window] setFrame:bubbleFrame display:NO];
@@ -234,23 +238,14 @@ const base::char16 kBulletPoint = 0x2022;
   [self showWindow:nil];
 }
 
-- (NSView*)labelForRequest:(PermissionBubbleRequest*)request
-           isSingleRequest:(BOOL)singleRequest {
+- (NSView*)labelForRequest:(PermissionBubbleRequest*)request {
   DCHECK(request);
   base::scoped_nsobject<NSTextField> permissionLabel(
       [[NSTextField alloc] initWithFrame:NSZeroRect]);
   base::string16 label;
-  if (!singleRequest) {
-    label.push_back(kBulletPoint);
-    label.push_back(' ');
-  }
-  if (singleRequest) {
-    // TODO(leng):  Make the appropriate call when it's working.  It should call
-    // GetMessageText(), but it's not returning the correct string yet.
-    label += request->GetMessageTextFragment();
-  } else {
-    label += request->GetMessageTextFragment();
-  }
+  label.push_back(kBulletPoint);
+  label.push_back(' ');
+  label += request->GetMessageTextFragment();
   [permissionLabel setDrawsBackground:NO];
   [permissionLabel setBezeled:NO];
   [permissionLabel setEditable:NO];
@@ -260,7 +255,7 @@ const base::char16 kBulletPoint = 0x2022;
   return permissionLabel.autorelease();
 }
 
-- (NSView*)titleForMultipleRequests {
+- (NSView*)titleWithHostname:(const std::string&)host {
   base::scoped_nsobject<NSTextField> titleView(
       [[NSTextField alloc] initWithFrame:NSZeroRect]);
   [titleView setDrawsBackground:NO];
@@ -268,9 +263,13 @@ const base::char16 kBulletPoint = 0x2022;
   [titleView setEditable:NO];
   [titleView setSelectable:NO];
   [titleView setStringValue:
-      l10n_util::GetNSString(IDS_PERMISSIONS_BUBBLE_PROMPT)];
+      l10n_util::GetNSStringF(IDS_PERMISSIONS_BUBBLE_PROMPT,
+                              base::UTF8ToUTF16(host))];
   [titleView setFont:[NSFont systemFontOfSize:kFontSize]];
   [titleView sizeToFit];
+  NSRect titleFrame = [titleView frame];
+  [titleView setFrameSize:NSMakeSize(NSWidth(titleFrame) + kTitlePaddingX,
+                                     NSHeight(titleFrame))];
   return titleView.autorelease();
 }
 
