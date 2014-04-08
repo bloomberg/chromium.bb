@@ -59,15 +59,17 @@ class Progress(object):
       return
 
     if self._total <= 0:
-      sys.stdout.write('%s: %d, done.\n' % (
+      text = '%s: %d, done.' % (
         self._title,
-        self._done))
-      sys.stdout.flush()
+        self._done)
     else:
       p = (100 * self._done) / self._total
-      sys.stdout.write('%s: %3d%% (%d/%d), done.\n' % (
+      text = '%s: %3d%% (%d/%d), done.' % (
         self._title,
         p,
         self._done,
-        self._total))
-      sys.stdout.flush()
+        self._total)
+
+    spaces = max(self._width - len(text), 0)
+    sys.stdout.write('%s%*s\n' % (text, spaces, ''))
+    sys.stdout.flush()

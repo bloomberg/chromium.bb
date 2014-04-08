@@ -13,6 +13,7 @@ from subprocess import Popen, PIPE, STDOUT
 
 import logging
 import os
+import re
 import sys
 import tempfile
 import unittest
@@ -28,6 +29,14 @@ import subprocess2
 # Shortcut since this function is used often
 join = gclient_scm.os.path.join
 
+TIMESTAMP_RE = re.compile('\[[0-9]{1,2}:[0-9]{2}:[0-9]{2}\] (.*)', re.DOTALL)
+def strip_timestamps(value):
+  lines = value.splitlines(True)
+  for i in xrange(len(lines)):
+    m = TIMESTAMP_RE.match(lines[i])
+    if m:
+      lines[i] = m.group(1)
+  return ''.join(lines)
 
 # Access to a protected member XXX of a client class
 # pylint: disable=W0212
@@ -88,6 +97,12 @@ class SVNWrapperTestCase(BaseTestCase):
       # TODO(maruel): Test --jobs > 1.
       self.jobs = 1
       self.delete_unversioned_trees = False
+
+  def checkstdout(self, expected):
+    value = sys.stdout.getvalue()
+    sys.stdout.close()
+    # pylint: disable=E1101
+    self.assertEquals(expected, strip_timestamps(value))
 
   def Options(self, *args, **kwargs):
     return self.OptionsObject(*args, **kwargs)
@@ -179,7 +194,7 @@ class SVNWrapperTestCase(BaseTestCase):
                             relpath=self.relpath)
     scm.revert(options, self.args, files_list)
     self.checkstdout(
-        ('\n_____ %s is missing, synching instead\n' % self.relpath))
+        ('_____ %s is missing, synching instead\n' % self.relpath))
 
   def testRevertNoDotSvn(self):
     options = self.Options(verbose=True, force=True)
@@ -416,7 +431,7 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.update(options, (), files_list)
-    self.checkstdout('\n_____ %s at 42\n' % self.relpath)
+    self.checkstdout('_____ %s at 42\n' % self.relpath)
 
   def testUpdateResetDeleteUnversionedTrees(self):
     options = self.Options(verbose=True)
@@ -461,8 +476,8 @@ class SVNWrapperTestCase(BaseTestCase):
     files_list = []
     scm.update(options, (), files_list)
     self.checkstdout(
-      ('\n_____ %s at 42\n'
-       '\n_____ removing unversioned directory dir\n') % self.relpath)
+      ('_____ %s at 42\n'
+       '_____ removing unversioned directory dir\n') % self.relpath)
 
   def testUpdateSingleCheckout(self):
     options = self.Options(verbose=True)
@@ -509,7 +524,7 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.updatesingle(options, ['DEPS'], files_list)
-    self.checkstdout('\n_____ %s at 42\n' % self.relpath)
+    self.checkstdout('_____ %s at 42\n' % self.relpath)
 
   def testUpdateSingleCheckoutSVN14(self):
     options = self.Options(verbose=True)
@@ -581,7 +596,7 @@ class SVNWrapperTestCase(BaseTestCase):
                             relpath=self.relpath)
     scm.updatesingle(options, ['DEPS'], files_list)
     self.checkstdout(
-        ('\n_____ %s at 42\n' % self.relpath))
+        ('_____ %s at 42\n' % self.relpath))
 
   def testUpdateSingleUpdate(self):
     options = self.Options(verbose=True)
@@ -616,7 +631,7 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.updatesingle(options, ['DEPS'], files_list)
-    self.checkstdout('\n_____ %s at 42\n' % self.relpath)
+    self.checkstdout('_____ %s at 42\n' % self.relpath)
 
   def testUpdateGit(self):
     options = self.Options(verbose=True)
@@ -744,6 +759,12 @@ from :3
 """
   def Options(self, *args, **kwargs):
     return self.OptionsObject(*args, **kwargs)
+
+  def checkstdout(self, expected):
+    value = sys.stdout.getvalue()
+    sys.stdout.close()
+    # pylint: disable=E1101
+    self.assertEquals(expected, strip_timestamps(value))
 
   @staticmethod
   def CreateGitRepo(git_import, path):
@@ -895,7 +916,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     scm.status(options, self.args, file_list)
     self.assertEquals(file_list, [file_path])
     self.checkstdout(
-        ('\n________ running \'git diff --name-status '
+        ('running \'git diff --name-status '
          '069c602044c5388d2d15c3f875b057c852003458\' in \'%s\'\nM\ta\n') %
             join(self.root_dir, '.'))
 
@@ -915,7 +936,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     expected_file_list = [join(self.base_path, x) for x in ['a', 'b']]
     self.assertEquals(sorted(file_list), expected_file_list)
     self.checkstdout(
-        ('\n________ running \'git diff --name-status '
+        ('running \'git diff --name-status '
          '069c602044c5388d2d15c3f875b057c852003458\' in \'%s\'\nM\ta\nM\tb\n') %
             join(self.root_dir, '.'))
 

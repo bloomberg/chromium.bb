@@ -444,7 +444,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         parent_url = self.parent.parsed_url
         if isinstance(parent_url, self.FileImpl):
           parent_url = parent_url.file_location
-        scm = gclient_scm.CreateSCM(parent_url, self.root.root_dir, None)
+        scm = gclient_scm.CreateSCM(
+            parent_url, self.root.root_dir, None, self.outbuf)
         parsed_url = scm.FullUrlForRelativeUrl(url)
       else:
         parsed_url = url
@@ -657,7 +658,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           # pylint: disable=E1103
           options.revision = parsed_url.GetRevision()
           self._used_scm = gclient_scm.SVNWrapper(
-              parsed_url.GetPath(), self.root.root_dir, self.name)
+              parsed_url.GetPath(), self.root.root_dir, self.name,
+              out_cb=work_queue.out_cb)
           self._used_scm.RunCommand('updatesingle',
               options, args + [parsed_url.GetFilename()], file_list)
       else:
@@ -667,7 +669,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         self.maybeGetParentRevision(
             command, options, parsed_url, self.parent.name, revision_overrides)
         self._used_scm = gclient_scm.CreateSCM(
-            parsed_url, self.root.root_dir, self.name)
+            parsed_url, self.root.root_dir, self.name, self.outbuf,
+            out_cb=work_queue.out_cb)
         self._got_revision = self._used_scm.RunCommand(command, options, args,
                                                        file_list)
         if file_list:
@@ -724,7 +727,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
               match = re.match('^Binary file ([^\0]+) matches$', line)
               if match:
-                print 'Binary file %s matches' % mod_path(match.group(1))
+                print 'Binary file %s matches\n' % mod_path(match.group(1))
                 return
 
               items = line.split('\0')
@@ -1050,7 +1053,8 @@ solutions = [
     solutions."""
     for dep in self.dependencies:
       if dep.managed and dep.url:
-        scm = gclient_scm.CreateSCM(dep.url, self.root_dir, dep.name)
+        scm = gclient_scm.CreateSCM(
+            dep.url, self.root_dir, dep.name, self.outbuf)
         actual_url = scm.GetActualRemoteURL(self._options)
         if actual_url and not scm.DoesRemoteURLMatch(self._options):
           raise gclient_utils.Error('''
@@ -1234,7 +1238,8 @@ want to set 'managed': False in .gclient.
           'It appears your safesync_url (%s) is not working properly\n'
           '(as it returned an empty response). Check your config.' %
           dep.safesync_url)
-    scm = gclient_scm.CreateSCM(dep.url, dep.root.root_dir, dep.name)
+    scm = gclient_scm.CreateSCM(
+        dep.url, dep.root.root_dir, dep.name, self.outbuf)
     safe_rev = scm.GetUsableRev(rev, self._options)
     if self._options.verbose:
       print('Using safesync_url revision: %s.\n' % safe_rev)
@@ -1265,7 +1270,8 @@ want to set 'managed': False in .gclient.
       elif command == 'recurse':
         pm = Progress(' '.join(args), 1)
     work_queue = gclient_utils.ExecutionQueue(
-        self._options.jobs, pm, ignore_requirements=ignore_requirements)
+        self._options.jobs, pm, ignore_requirements=ignore_requirements,
+        verbose=self._options.verbose)
     for s in self.dependencies:
       work_queue.enqueue(s)
     work_queue.flush(revision_overrides, command, args, options=self._options)
@@ -1301,7 +1307,8 @@ want to set 'managed': False in .gclient.
         if (entry not in entries and
             (not any(path.startswith(entry + '/') for path in entries)) and
             os.path.exists(e_dir)):
-          scm = gclient_scm.CreateSCM(prev_url, self.root_dir, entry_fixed)
+          scm = gclient_scm.CreateSCM(
+              prev_url, self.root_dir, entry_fixed, self.outbuf)
 
           # Check to see if this directory is now part of a higher-up checkout.
           if scm.GetCheckoutRoot() in full_entries:
@@ -1332,7 +1339,8 @@ want to set 'managed': False in .gclient.
     if not self.dependencies:
       raise gclient_utils.Error('No solution specified')
     # Load all the settings.
-    work_queue = gclient_utils.ExecutionQueue(self._options.jobs, None, False)
+    work_queue = gclient_utils.ExecutionQueue(
+        self._options.jobs, None, False, verbose=self._options.verbose)
     for s in self.dependencies:
       work_queue.enqueue(s)
     work_queue.flush({}, None, [], options=self._options)
@@ -1346,7 +1354,8 @@ want to set 'managed': False in .gclient.
       else:
         original_url = dep.parsed_url
       url, _ = gclient_utils.SplitUrlRevision(original_url)
-      scm = gclient_scm.CreateSCM(original_url, self.root_dir, dep.name)
+      scm = gclient_scm.CreateSCM(
+          original_url, self.root_dir, dep.name, self.outbuf)
       if not os.path.isdir(scm.checkout_path):
         return None
       return '%s@%s' % (url, scm.revinfo(self._options, [], None))

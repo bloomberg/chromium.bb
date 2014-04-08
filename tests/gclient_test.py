@@ -72,7 +72,7 @@ class GclientTest(trial_dir.TestCase):
     os.chdir(self.previous_dir)
     super(GclientTest, self).tearDown()
 
-  def _createscm(self, parsed_url, root_dir, name):
+  def _createscm(self, parsed_url, root_dir, name, out_fh=None, out_cb=None):
     self.assertTrue(parsed_url.startswith('svn://example.com/'), parsed_url)
     self.assertTrue(root_dir.startswith(self.root_dir), root_dir)
     return SCMMock(self, parsed_url)
