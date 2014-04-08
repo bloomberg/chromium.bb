@@ -77,7 +77,7 @@
                           [Default=Undefined] optional long baseOffset,
                           [Default=Undefined] optional Node extentNode,
                           [Default=Undefined] optional long extentOffset);
-    [RaisesException, ImplementedAs=collapse] void setPosition([Default=Undefined] optional Node node,
+    [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException] void setPosition([Default=Undefined] optional Node node,
                      [Default=Undefined] optional long offset);
 
     // IE extentions
