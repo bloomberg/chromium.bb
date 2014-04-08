@@ -27,6 +27,7 @@
 class Browser;
 class BrowserWindow;
 class DevToolsControllerTest;
+class DevToolsEventForwarder;
 class Profile;
 
 namespace base {
@@ -37,6 +38,7 @@ namespace content {
 class DevToolsAgentHost;
 class DevToolsClientHost;
 struct FileChooserParams;
+struct NativeWebKeyboardEvent;
 class RenderViewHost;
 class WebContents;
 }
@@ -67,6 +69,11 @@ class DevToolsWindow : private content::NotificationObserver,
   // otherwise NULL.
   static DevToolsWindow* GetInstanceForInspectedRenderViewHost(
       content::RenderViewHost* inspected_rvh);
+
+  // Return the DevToolsWindow for the given WebContents if one exists,
+  // otherwise NULL.
+  static DevToolsWindow* GetInstanceForInspectedWebContents(
+      content::WebContents* inspected_web_contents);
 
   // Return the DevToolsWindow for the given WebContents if one exists and is
   // docked, otherwise NULL. This method will return only fully initialized
@@ -132,6 +139,9 @@ class DevToolsWindow : private content::NotificationObserver,
   // Sets closure to be called after load is done. If already loaded, calls
   // closure immediately.
   void SetLoadCompletedCallback(const base::Closure& closure);
+
+  // Forwards an unhandled keyboard event to the DevTools frontend.
+  bool ForwardKeyboardEvent(const content::NativeWebKeyboardEvent& event);
 
   // BeforeUnload interception ////////////////////////////////////////////////
 
@@ -326,6 +336,7 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void SearchInPath(int request_id,
                             const std::string& file_system_path,
                             const std::string& query) OVERRIDE;
+  virtual void SetWhitelistedShortcuts(const std::string& message) OVERRIDE;
   virtual void ZoomIn() OVERRIDE;
   virtual void ZoomOut() OVERRIDE;
   virtual void ResetZoom() OVERRIDE;
@@ -399,6 +410,9 @@ class DevToolsWindow : private content::NotificationObserver,
   scoped_ptr<DevToolsEmbedderMessageDispatcher> embedder_message_dispatcher_;
   base::WeakPtrFactory<DevToolsWindow> weak_factory_;
   base::TimeTicks inspect_element_start_time_;
+  scoped_ptr<DevToolsEventForwarder> event_forwarder_;
+
+  friend class DevToolsEventForwarder;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };
 

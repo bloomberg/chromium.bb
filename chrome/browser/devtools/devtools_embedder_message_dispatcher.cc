@@ -259,6 +259,8 @@ DevToolsEmbedderMessageDispatcher*
   d->RegisterHandler("indexPath", &Delegate::IndexPath, delegate);
   d->RegisterHandler("stopIndexing", &Delegate::StopIndexing, delegate);
   d->RegisterHandler("searchInPath", &Delegate::SearchInPath, delegate);
+  d->RegisterHandler("setWhitelistedShortcuts",
+                     &Delegate::SetWhitelistedShortcuts, delegate);
   d->RegisterHandler("zoomIn", &Delegate::ZoomIn, delegate);
   d->RegisterHandler("zoomOut", &Delegate::ZoomOut, delegate);
   d->RegisterHandler("resetZoom", &Delegate::ResetZoom, delegate);
