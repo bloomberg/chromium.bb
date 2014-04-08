@@ -1228,34 +1228,6 @@ void GraphicsContext::drawPosText(const void* text, size_t byteLength,
         m_opaqueRegion.didDrawUnbounded(this, paint, OpaqueRegionSkia::FillOrStroke);
 }
 
-void GraphicsContext::drawPosTextH(const void* text, size_t byteLength,
-    const SkScalar xpos[], SkScalar constY,  const SkRect& textRect, const SkPaint& paint)
-{
-    if (paintingDisabled())
-        return;
-
-    m_canvas->drawPosTextH(text, byteLength, xpos, constY, paint);
-    didDrawTextInRect(textRect);
-
-    // FIXME: compute bounds for positioned text.
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.didDrawUnbounded(this, paint, OpaqueRegionSkia::FillOrStroke);
-}
-
-void GraphicsContext::drawTextOnPath(const void* text, size_t byteLength,
-    const SkPath& path,  const SkRect& textRect, const SkMatrix* matrix, const SkPaint& paint)
-{
-    if (paintingDisabled())
-        return;
-
-    m_canvas->drawTextOnPath(text, byteLength, path, matrix, paint);
-    didDrawTextInRect(textRect);
-
-    // FIXME: compute bounds for positioned text.
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.didDrawUnbounded(this, paint, OpaqueRegionSkia::FillOrStroke);
-}
-
 void GraphicsContext::fillPath(const Path& pathToFill)
 {
     if (paintingDisabled() || pathToFill.isEmpty())

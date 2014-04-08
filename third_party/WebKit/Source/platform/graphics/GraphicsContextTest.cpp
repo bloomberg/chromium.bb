@@ -703,10 +703,6 @@ TEST(GraphicsContextTest, trackOpaqueTextTest)
     alphaPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
 
     SkPoint point = SkPoint::Make(0, 0);
-    SkScalar pointX = 0;
-    SkPath path;
-    path.moveTo(SkPoint::Make(0, 0));
-    path.lineTo(SkPoint::Make(100, 0));
 
     context.fillRect(FloatRect(50, 50, 50, 50), opaque, CompositeSourceOver);
     EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
@@ -724,24 +720,8 @@ TEST(GraphicsContextTest, trackOpaqueTextTest)
     EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.drawPosTextH("A", 1, &pointX, 0, textRect, opaquePaint);
-    EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
-    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
-
-    context.drawPosTextH("A", 1, &pointX, 0, textRect, alphaPaint);
-    EXPECT_EQ_RECT(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
-    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
-
     context.fillRect(FloatRect(50, 50, 50, 50), opaque, CompositeSourceOver);
     EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
-    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
-
-    context.drawTextOnPath("A", 1, path, textRect, 0, opaquePaint);
-    EXPECT_EQ_RECT(IntRect(50, 50, 50, 50), context.opaqueRegion().asRect());
-    EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
-
-    context.drawTextOnPath("A", 1, path, textRect, 0, alphaPaint);
-    EXPECT_EQ_RECT(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
