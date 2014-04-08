@@ -188,11 +188,13 @@ class AndroidMkWriter(object):
     self.WriteLn('LOCAL_MODULE_TAGS := optional')
     if self.toolset == 'host':
       self.WriteLn('LOCAL_IS_HOST_MODULE := true')
+    self.WriteLn('LOCAL_MODULE_TARGET_ARCH := $(TARGET_$(GYP_VAR_PREFIX)ARCH)')
 
     # Grab output directories; needed for Actions and Rules.
-    self.WriteLn('gyp_intermediate_dir := $(call local-intermediates-dir)')
+    self.WriteLn('gyp_intermediate_dir := '
+                 '$(call local-intermediates-dir,,$(GYP_VAR_PREFIX))')
     self.WriteLn('gyp_shared_intermediate_dir := '
-                 '$(call intermediates-dir-for,GYP,shared)')
+                 '$(call intermediates-dir-for,GYP,shared,,,$(GYP_VAR_PREFIX))')
     self.WriteLn()
 
     # List files this target depends on so that actions/rules/copies/sources
@@ -608,16 +610,16 @@ class AndroidMkWriter(object):
       prefix = ''
 
     if spec['toolset'] == 'host':
-      suffix = '_host_gyp'
+      suffix = '_$(TARGET_$(GYP_VAR_PREFIX)ARCH)_host_gyp'
     else:
       suffix = '_gyp'
 
     if self.path:
-      name = '%s%s_%s%s' % (prefix, self.path, self.target, suffix)
+      middle = make.StringToMakefileVariable('%s_%s' % (self.path, self.target))
     else:
-      name = '%s%s%s' % (prefix, self.target, suffix)
+      middle = make.StringToMakefileVariable(self.target)
 
-    return make.StringToMakefileVariable(name)
+    return ''.join([prefix, middle, suffix])
 
 
   def ComputeOutputParts(self, spec):
@@ -679,15 +681,15 @@ class AndroidMkWriter(object):
       if self.toolset == 'host':
         path = '$(HOST_OUT_INTERMEDIATE_LIBRARIES)'
       else:
-        path = '$(TARGET_OUT_INTERMEDIATE_LIBRARIES)'
+        path = '$($(GYP_VAR_PREFIX)TARGET_OUT_INTERMEDIATE_LIBRARIES)'
     else:
       # Other targets just get built into their intermediate dir.
       if self.toolset == 'host':
         path = '$(call intermediates-dir-for,%s,%s,true)' % (self.android_class,
                                                             self.android_module)
       else:
-        path = '$(call intermediates-dir-for,%s,%s)' % (self.android_class,
-                                                        self.android_module)
+        path = ('$(call intermediates-dir-for,%s,%s,,,$(GYP_VAR_PREFIX))'
+                % (self.android_class, self.android_module))
 
     assert spec.get('product_dir') is None # TODO: not supported?
     return os.path.join(path, self.ComputeOutputBasename(spec))
@@ -872,6 +874,7 @@ class AndroidMkWriter(object):
     else:
       self.WriteLn('LOCAL_MODULE_PATH := $(PRODUCT_OUT)/gyp_stamp')
       self.WriteLn('LOCAL_UNINSTALLABLE_MODULE := true')
+      self.WriteLn('LOCAL_2ND_ARCH_VAR_PREFIX := $(GYP_VAR_PREFIX)')
       self.WriteLn()
       self.WriteLn('include $(BUILD_SYSTEM)/base_rules.mk')
       self.WriteLn()
@@ -879,6 +882,8 @@ class AndroidMkWriter(object):
       self.WriteLn('\t$(hide) echo "Gyp timestamp: $@"')
       self.WriteLn('\t$(hide) mkdir -p $(dir $@)')
       self.WriteLn('\t$(hide) touch $@')
+      self.WriteLn()
+      self.WriteLn('LOCAL_2ND_ARCH_VAR_PREFIX :=')
 
 
   def WriteList(self, value_list, variable=None, prefix='',
@@ -1061,6 +1066,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     include_list.add(mkfile_rel_path)
 
   root_makefile.write('GYP_CONFIGURATION ?= %s\n' % default_configuration)
+  root_makefile.write('GYP_VAR_PREFIX ?=\n')
 
   # Write out the sorted list of includes.
   root_makefile.write('\n')
