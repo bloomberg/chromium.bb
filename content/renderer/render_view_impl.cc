@@ -1402,26 +1402,6 @@ void RenderViewImpl::LoadNavigationErrorPage(
                         replace);
 }
 
-bool RenderViewImpl::RunJavaScriptMessage(JavaScriptMessageType type,
-                                          const base::string16& message,
-                                          const base::string16& default_value,
-                                          const GURL& frame_url,
-                                          base::string16* result) {
-  // Don't allow further dialogs if we are waiting to swap out, since the
-  // PageGroupLoadDeferrer in our stack prevents it.
-  if (suppress_dialogs_until_swap_out_)
-    return false;
-
-  bool success = false;
-  base::string16 result_temp;
-  if (!result)
-    result = &result_temp;
-
-  SendAndRunNestedMessageLoop(new ViewHostMsg_RunJavaScriptMessage(
-      routing_id_, message, default_value, frame_url, type, &success, result));
-  return success;
-}
-
 bool RenderViewImpl::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
   // Before WebKit asks us to show an alert (etc.), it takes care of doing the
   // equivalent of WebView::willEnterModalLoop.  In the case of showModalDialog
@@ -1737,35 +1717,20 @@ bool RenderViewImpl::runFileChooser(
 
 void RenderViewImpl::runModalAlertDialog(WebLocalFrame* frame,
                                          const WebString& message) {
-  RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_ALERT,
-                       message,
-                       base::string16(),
-                       frame->document().url(),
-                       NULL);
+  RenderFrameImpl::FromWebFrame(frame)->runModalAlertDialog(message);
 }
 
 bool RenderViewImpl::runModalConfirmDialog(WebLocalFrame* frame,
                                            const WebString& message) {
-  return RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
-                              message,
-                              base::string16(),
-                              frame->document().url(),
-                              NULL);
+  return RenderFrameImpl::FromWebFrame(frame)->runModalConfirmDialog(message);
 }
 
 bool RenderViewImpl::runModalPromptDialog(WebLocalFrame* frame,
                                           const WebString& message,
                                           const WebString& default_value,
                                           WebString* actual_value) {
-  base::string16 result;
-  bool ok = RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_PROMPT,
-                                 message,
-                                 default_value,
-                                 frame->document().url(),
-                                 &result);
-  if (ok)
-    actual_value->assign(result);
-  return ok;
+  return RenderFrameImpl::FromWebFrame(frame)->
+      runModalPromptDialog(message, default_value, actual_value);
 }
 
 bool RenderViewImpl::runModalBeforeUnloadDialog(WebLocalFrame* frame,
@@ -1774,31 +1739,34 @@ bool RenderViewImpl::runModalBeforeUnloadDialog(WebLocalFrame* frame,
   WebDataSource* ds = frame->provisionalDataSource();
   if (ds)
     is_reload = (ds->navigationType() == blink::WebNavigationTypeReload);
-  return runModalBeforeUnloadDialog(frame, is_reload, message);
+  return RenderFrameImpl::FromWebFrame(frame)->
+      runModalBeforeUnloadDialog(is_reload, message);
 }
 
-bool RenderViewImpl::runModalBeforeUnloadDialog(WebLocalFrame* frame,
-                                                bool is_reload,
+void RenderViewImpl::runModalAlertDialog(const WebString& message) {
+  /* bogus version of the function to avoid errors */
+  NOTIMPLEMENTED();
+}
+
+bool RenderViewImpl::runModalConfirmDialog(const WebString& message) {
+  /* bogus version of the function to avoid errors */
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool RenderViewImpl::runModalPromptDialog(const WebString& message,
+                                          const WebString& default_value,
+                                          WebString* actual_value) {
+  /* bogus version of the function to avoid errors */
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool RenderViewImpl::runModalBeforeUnloadDialog(bool is_reload,
                                                 const WebString& message) {
-  // If we are swapping out, we have already run the beforeunload handler.
-  // TODO(creis): Fix OnSwapOut to clear the frame without running beforeunload
-  // at all, to avoid running it twice.
-  if (is_swapped_out_)
-    return true;
-
-  // Don't allow further dialogs if we are waiting to swap out, since the
-  // PageGroupLoadDeferrer in our stack prevents it.
-  if (suppress_dialogs_until_swap_out_)
-    return false;
-
-  bool success = false;
-  // This is an ignored return value, but is included so we can accept the same
-  // response as RunJavaScriptMessage.
-  base::string16 ignored_result;
-  SendAndRunNestedMessageLoop(new ViewHostMsg_RunBeforeUnloadConfirm(
-      routing_id_, frame->document().url(), message, is_reload,
-      &success, &ignored_result));
-  return success;
+  /* bogus version of the function to avoid errors */
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void RenderViewImpl::showValidationMessage(
@@ -2980,11 +2948,6 @@ float RenderViewImpl::GetFilteredTimePerFrame() const {
 
 blink::WebPageVisibilityState RenderViewImpl::GetVisibilityState() const {
   return visibilityState();
-}
-
-void RenderViewImpl::RunModalAlertDialog(blink::WebLocalFrame* frame,
-                                         const blink::WebString& message) {
-  return runModalAlertDialog(frame, message);
 }
 
 void RenderViewImpl::DidStartLoading() {

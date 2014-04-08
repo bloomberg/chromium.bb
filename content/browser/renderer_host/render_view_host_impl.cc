@@ -210,7 +210,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       run_modal_opener_id_(MSG_ROUTING_NONE),
       is_waiting_for_beforeunload_ack_(false),
       unload_ack_is_for_cross_site_transition_(false),
-      are_javascript_messages_suppressed_(false),
       sudden_termination_allowed_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       virtual_keyboard_requested_(false),
@@ -848,37 +847,6 @@ void RenderViewHostImpl::DesktopNotificationPostClick(int notification_id) {
   Send(new DesktopNotificationMsg_PostClick(GetRoutingID(), notification_id));
 }
 
-void RenderViewHostImpl::JavaScriptDialogClosed(
-    IPC::Message* reply_msg,
-    bool success,
-    const base::string16& user_input) {
-  GetProcess()->SetIgnoreInputEvents(false);
-  bool is_waiting = is_waiting_for_beforeunload_ack_ || IsWaitingForUnloadACK();
-
-  // If we are executing as part of (before)unload event handling, we don't
-  // want to use the regular hung_renderer_delay_ms_ if the user has agreed to
-  // leave the current page. In this case, use the regular timeout value used
-  // during the (before)unload handling.
-  if (is_waiting) {
-    StartHangMonitorTimeout(TimeDelta::FromMilliseconds(
-        success ? kUnloadTimeoutMS : hung_renderer_delay_ms_));
-  }
-
-  ViewHostMsg_RunJavaScriptMessage::WriteReplyParams(reply_msg,
-                                                     success, user_input);
-  Send(reply_msg);
-
-  // If we are waiting for an unload or beforeunload ack and the user has
-  // suppressed messages, kill the tab immediately; a page that's spamming
-  // alerts in onbeforeunload is presumably malicious, so there's no point in
-  // continuing to run its script and dragging out the process.
-  // This must be done after sending the reply since RenderView can't close
-  // correctly while waiting for a response.
-  if (is_waiting && are_javascript_messages_suppressed_)
-    delegate_->RendererUnresponsive(
-        this, is_waiting_for_beforeunload_ack_, IsWaitingForUnloadACK());
-}
-
 void RenderViewHostImpl::DragSourceEndedAt(
     int client_x, int client_y, int screen_x, int screen_y,
     WebDragOperation operation) {
@@ -1081,10 +1049,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent,
                         OnRouteCloseEvent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteMessageEvent, OnRouteMessageEvent)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunJavaScriptMessage,
-                                    OnRunJavaScriptMessage)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunBeforeUnloadConfirm,
-                                    OnRunBeforeUnloadConfirm)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(DragHostMsg_TargetDrop_ACK, OnTargetDropACK)
@@ -1375,32 +1339,6 @@ void RenderViewHostImpl::OnRouteMessageEvent(
     const ViewMsg_PostMessage_Params& params) {
   // Give to the delegate to route to the active RenderViewHost.
   delegate_->RouteMessageEvent(this, params);
-}
-
-void RenderViewHostImpl::OnRunJavaScriptMessage(
-    const base::string16& message,
-    const base::string16& default_prompt,
-    const GURL& frame_url,
-    JavaScriptMessageType type,
-    IPC::Message* reply_msg) {
-  // While a JS message dialog is showing, tabs in the same process shouldn't
-  // process input events.
-  GetProcess()->SetIgnoreInputEvents(true);
-  StopHangMonitorTimeout();
-  delegate_->RunJavaScriptMessage(this, message, default_prompt, frame_url,
-                                  type, reply_msg,
-                                  &are_javascript_messages_suppressed_);
-}
-
-void RenderViewHostImpl::OnRunBeforeUnloadConfirm(const GURL& frame_url,
-                                                  const base::string16& message,
-                                                  bool is_reload,
-                                                  IPC::Message* reply_msg) {
-  // While a JS before unload dialog is showing, tabs in the same process
-  // shouldn't process input events.
-  GetProcess()->SetIgnoreInputEvents(true);
-  StopHangMonitorTimeout();
-  delegate_->RunBeforeUnloadConfirm(this, message, is_reload, reply_msg);
 }
 
 void RenderViewHostImpl::OnStartDragging(

@@ -1091,6 +1091,28 @@ bool RenderFrameImpl::ShouldUpdateSelectionTextFromContextMenuParams(
   return trimmed_params_text != trimmed_selection_text;
 }
 
+bool RenderFrameImpl::RunJavaScriptMessage(JavaScriptMessageType type,
+                                           const base::string16& message,
+                                           const base::string16& default_value,
+                                           const GURL& frame_url,
+                                           base::string16* result) {
+  // Don't allow further dialogs if we are waiting to swap out, since the
+  // PageGroupLoadDeferrer in our stack prevents it.
+  if (render_view()->suppress_dialogs_until_swap_out_)
+    return false;
+
+  bool success = false;
+  base::string16 result_temp;
+  if (!result)
+    result = &result_temp;
+
+  render_view()->SendAndRunNestedMessageLoop(
+      new FrameHostMsg_RunJavaScriptMessage(
+        routing_id_, message, default_value, frame_url, type, &success,
+        result));
+  return success;
+}
+
 void RenderFrameImpl::DidCommitCompositorFrame() {
   if (compositing_helper_)
     compositing_helper_->DidCommitCompositorFrame();
@@ -2014,6 +2036,62 @@ void RenderFrameImpl::didChangeSelection(bool is_empty_selection) {
 #if defined(OS_ANDROID)
   GetRenderWidget()->UpdateTextInputState(false, true);
 #endif
+}
+
+void RenderFrameImpl::runModalAlertDialog(const blink::WebString& message) {
+  RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_ALERT,
+                       message,
+                       base::string16(),
+                       frame_->document().url(),
+                       NULL);
+}
+
+bool RenderFrameImpl::runModalConfirmDialog(const blink::WebString& message) {
+  return RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
+                              message,
+                              base::string16(),
+                              frame_->document().url(),
+                              NULL);
+}
+
+bool RenderFrameImpl::runModalPromptDialog(
+    const blink::WebString& message,
+    const blink::WebString& default_value,
+    blink::WebString* actual_value) {
+  base::string16 result;
+  bool ok = RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_PROMPT,
+                                 message,
+                                 default_value,
+                                 frame_->document().url(),
+                                 &result);
+  if (ok)
+    actual_value->assign(result);
+  return ok;
+}
+
+bool RenderFrameImpl::runModalBeforeUnloadDialog(
+    bool is_reload,
+    const blink::WebString& message) {
+  // If we are swapping out, we have already run the beforeunload handler.
+  // TODO(creis): Fix OnSwapOut to clear the frame without running beforeunload
+  // at all, to avoid running it twice.
+  if (render_view()->is_swapped_out_)
+    return true;
+
+  // Don't allow further dialogs if we are waiting to swap out, since the
+  // PageGroupLoadDeferrer in our stack prevents it.
+  if (render_view()->suppress_dialogs_until_swap_out_)
+    return false;
+
+  bool success = false;
+  // This is an ignored return value, but is included so we can accept the same
+  // response as RunJavaScriptMessage.
+  base::string16 ignored_result;
+  render_view()->SendAndRunNestedMessageLoop(
+      new FrameHostMsg_RunBeforeUnloadConfirm(
+          routing_id_, frame_->document().url(), message, is_reload,
+          &success, &ignored_result));
+  return success;
 }
 
 void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {

@@ -28,7 +28,6 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/view_message_enums.h"
-#include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/renderer_preferences.h"
@@ -450,8 +449,16 @@ class CONTENT_EXPORT RenderViewImpl
                                     const blink::WebString& default_value,
                                     blink::WebString* actual_value);
   virtual bool runModalBeforeUnloadDialog(blink::WebLocalFrame* frame,
-                                          bool is_reload,
                                           const blink::WebString& message);
+  // -- begin stub implementations --
+  virtual void runModalAlertDialog(const blink::WebString& message);
+  virtual bool runModalConfirmDialog(const blink::WebString& message);
+  virtual bool runModalPromptDialog(const blink::WebString& message,
+                                    const blink::WebString& default_value,
+                                    blink::WebString* actual_value);
+  virtual bool runModalBeforeUnloadDialog(bool is_reload,
+                                          const blink::WebString& message);
+  // -- end stub implementations --
   virtual void showValidationMessage(const blink::WebRect& anchor_in_root_view,
                                      const blink::WebString& main_text,
                                      const blink::WebString& sub_text,
@@ -459,10 +466,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void hideValidationMessage() OVERRIDE;
   virtual void moveValidationMessage(
       const blink::WebRect& anchor_in_root_view) OVERRIDE;
-
-  // DEPRECATED
-  virtual bool runModalBeforeUnloadDialog(blink::WebLocalFrame* frame,
-                                          const blink::WebString& message);
   virtual void setStatusText(const blink::WebString& text);
   virtual void setMouseOverURL(const blink::WebURL& url);
   virtual void setKeyboardFocusURL(const blink::WebURL& url);
@@ -636,8 +639,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool GetContentStateImmediately() const OVERRIDE;
   virtual float GetFilteredTimePerFrame() const OVERRIDE;
   virtual blink::WebPageVisibilityState GetVisibilityState() const OVERRIDE;
-  virtual void RunModalAlertDialog(blink::WebLocalFrame* frame,
-                                   const blink::WebString& message) OVERRIDE;
   virtual void DidStartLoading() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
   virtual void Repaint(const gfx::Size& size) OVERRIDE;
@@ -824,12 +825,6 @@ class CONTENT_EXPORT RenderViewImpl
   // finally get right encoding of page.
   void UpdateEncoding(blink::WebFrame* frame,
                       const std::string& encoding_name);
-
-  bool RunJavaScriptMessage(JavaScriptMessageType type,
-                            const base::string16& message,
-                            const base::string16& default_value,
-                            const GURL& frame_url,
-                            base::string16* result);
 
   // Sends a message and runs a nested message loop.
   bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);

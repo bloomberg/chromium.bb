@@ -13,6 +13,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_state.h"
 #include "ipc/ipc_message_macros.h"
 #include "url/gurl.h"
@@ -22,11 +23,13 @@
 
 #define IPC_MESSAGE_START FrameMsgStart
 
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::JavaScriptMessageType,
+                              content::JAVASCRIPT_MESSAGE_TYPE_ALERT,
+                              content::JAVASCRIPT_MESSAGE_TYPE_PROMPT)
 IPC_ENUM_TRAITS_MAX_VALUE(FrameMsg_Navigate_Type::Value,
                           FrameMsg_Navigate_Type::NAVIGATE_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::MediaType,
                           blink::WebContextMenuData::MediaTypeLast)
-
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(content::ContextMenuParams)
@@ -520,3 +523,22 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_InitializeChildFrame,
 IPC_MESSAGE_ROUTED2(FrameHostMsg_JavaScriptExecuteResponse,
                     int  /* id */,
                     base::ListValue  /* result */)
+
+// A request to run a JavaScript dialog.
+IPC_SYNC_MESSAGE_ROUTED4_2(FrameHostMsg_RunJavaScriptMessage,
+                           base::string16     /* in - alert message */,
+                           base::string16     /* in - default prompt */,
+                           GURL               /* in - originating page URL */,
+                           content::JavaScriptMessageType /* in - type */,
+                           bool               /* out - success */,
+                           base::string16     /* out - user_input field */)
+
+// Displays a dialog to confirm that the user wants to navigate away from the
+// page. Replies true if yes, and false otherwise. The reply string is ignored,
+// but is included so that we can use OnJavaScriptMessageBoxClosed.
+IPC_SYNC_MESSAGE_ROUTED3_2(FrameHostMsg_RunBeforeUnloadConfirm,
+                           GURL,           /* in - originating frame URL */
+                           base::string16  /* in - alert message */,
+                           bool            /* in - is a reload */,
+                           bool            /* out - success */,
+                           base::string16  /* out - This is ignored.*/)

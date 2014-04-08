@@ -23,7 +23,6 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
-#include "content/public/common/javascript_message_type.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
@@ -77,7 +76,6 @@ IPC_ENUM_TRAITS(blink::WebTextDirection)
 IPC_ENUM_TRAITS(WindowContainerType)
 IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 IPC_ENUM_TRAITS(content::FileChooserParams::Mode)
-IPC_ENUM_TRAITS(content::JavaScriptMessageType)
 IPC_ENUM_TRAITS(content::MenuItem::Type)
 IPC_ENUM_TRAITS(content::NavigationGesture)
 IPC_ENUM_TRAITS(content::PageZoom)
@@ -1361,14 +1359,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_RouteCloseEvent)
 IPC_MESSAGE_ROUTED1(ViewHostMsg_RouteMessageEvent,
                     ViewMsg_PostMessage_Params)
 
-IPC_SYNC_MESSAGE_ROUTED4_2(ViewHostMsg_RunJavaScriptMessage,
-                           base::string16     /* in - alert message */,
-                           base::string16     /* in - default prompt */,
-                           GURL         /* in - originating page URL */,
-                           content::JavaScriptMessageType /* in - type */,
-                           bool         /* out - success */,
-                           base::string16     /* out - user_input field */)
-
 // Notifies that the preferred size of the content changed.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
                     gfx::Size /* pref_size */)
@@ -1565,16 +1555,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_TextInputStateChanged,
 
 // Required for cancelling an ongoing input method composition.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_ImeCancelComposition)
-
-// Displays a box to confirm that the user wants to navigate away from the
-// page. Replies true if yes, false otherwise, the reply string is ignored,
-// but is included so that we can use OnJavaScriptMessageBoxClosed.
-IPC_SYNC_MESSAGE_ROUTED3_2(ViewHostMsg_RunBeforeUnloadConfirm,
-                           GURL,           /* in - originating frame URL */
-                           base::string16  /* in - alert message */,
-                           bool            /* in - is a reload */,
-                           bool            /* out - success */,
-                           base::string16  /* out - This is ignored.*/)
 
 // Sent when the renderer changes the zoom level for a particular url, so the
 // browser can update its records.  If remember is true, then url is used to

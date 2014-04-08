@@ -13,7 +13,6 @@
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "content/public/common/javascript_message_type.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/page_transition_types.h"
 #include "net/base/load_states.h"
@@ -166,20 +165,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual void RouteMessageEvent(
       RenderViewHost* rvh,
       const ViewMsg_PostMessage_Params& params) {}
-
-  // A javascript message, confirmation or prompt should be shown.
-  virtual void RunJavaScriptMessage(RenderViewHost* rvh,
-                                    const base::string16& message,
-                                    const base::string16& default_prompt,
-                                    const GURL& frame_url,
-                                    JavaScriptMessageType type,
-                                    IPC::Message* reply_msg,
-                                    bool* did_suppress_message) {}
-
-  virtual void RunBeforeUnloadConfirm(RenderViewHost* rvh,
-                                      const base::string16& message,
-                                      bool is_reload,
-                                      IPC::Message* reply_msg) {}
 
   // Return a dummy RendererPreferences object that will be used by the renderer
   // associated with the owning RenderViewHost.

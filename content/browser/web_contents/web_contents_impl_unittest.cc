@@ -2201,13 +2201,11 @@ TEST_F(WebContentsImplTest, NoJSMessageOnInterstitials) {
   // While the interstitial is showing, let's simulate the hidden page
   // attempting to show a JS message.
   IPC::Message* dummy_message = new IPC::Message;
-  bool did_suppress_message = false;
-  contents()->RunJavaScriptMessage(contents()->GetRenderViewHost(),
+  contents()->RunJavaScriptMessage(contents()->GetMainFrame(),
       base::ASCIIToUTF16("This is an informative message"),
       base::ASCIIToUTF16("OK"),
-      kGURL, JAVASCRIPT_MESSAGE_TYPE_ALERT, dummy_message,
-      &did_suppress_message);
-  EXPECT_TRUE(did_suppress_message);
+      kGURL, JAVASCRIPT_MESSAGE_TYPE_ALERT, dummy_message);
+  EXPECT_TRUE(contents()->last_dialog_suppressed_);
 }
 
 // Makes sure that if the source passed to CopyStateFromAndPrune has an

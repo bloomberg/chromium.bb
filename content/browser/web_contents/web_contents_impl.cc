@@ -338,7 +338,8 @@ WebContentsImpl::WebContentsImpl(
       color_chooser_identifier_(0),
       render_view_message_source_(NULL),
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE),
-      is_subframe_(false) {
+      is_subframe_(false),
+      last_dialog_suppressed_(false) {
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);
   frame_tree_.SetFrameRemoveListener(
@@ -2999,6 +3000,82 @@ void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
   render_view_host_delegate_view_->ShowContextMenu(render_frame_host, params);
 }
 
+void WebContentsImpl::RunJavaScriptMessage(
+    RenderFrameHost* rfh,
+    const base::string16& message,
+    const base::string16& default_prompt,
+    const GURL& frame_url,
+    JavaScriptMessageType javascript_message_type,
+    IPC::Message* reply_msg) {
+  // Suppress JavaScript dialogs when requested. Also suppress messages when
+  // showing an interstitial as it's shown over the previous page and we don't
+  // want the hidden page's dialogs to interfere with the interstitial.
+  bool suppress_this_message =
+      static_cast<RenderViewHostImpl*>(rfh->GetRenderViewHost())->
+          IsSwappedOut() ||
+      ShowingInterstitialPage() ||
+      !delegate_ ||
+      delegate_->ShouldSuppressDialogs() ||
+      !delegate_->GetJavaScriptDialogManager();
+
+  if (!suppress_this_message) {
+    std::string accept_lang = GetContentClient()->browser()->
+      GetAcceptLangs(GetBrowserContext());
+    dialog_manager_ = delegate_->GetJavaScriptDialogManager();
+    dialog_manager_->RunJavaScriptDialog(
+        this,
+        frame_url.GetOrigin(),
+        accept_lang,
+        javascript_message_type,
+        message,
+        default_prompt,
+        base::Bind(&WebContentsImpl::OnDialogClosed,
+                   base::Unretained(this),
+                   rfh,
+                   reply_msg,
+                   false),
+        &suppress_this_message);
+  }
+
+  if (suppress_this_message) {
+    // If we are suppressing messages, just reply as if the user immediately
+    // pressed "Cancel", passing true to |dialog_was_suppressed|.
+    OnDialogClosed(rfh, reply_msg, true, false, base::string16());
+  }
+
+  // OnDialogClosed (two lines up) may have caused deletion of this object (see
+  // http://crbug.com/288961 ). The only safe thing to do here is return.
+}
+
+void WebContentsImpl::RunBeforeUnloadConfirm(
+    RenderFrameHost* rfh,
+    const base::string16& message,
+    bool is_reload,
+    IPC::Message* reply_msg) {
+  RenderFrameHostImpl* rfhi = static_cast<RenderFrameHostImpl*>(rfh);
+  RenderViewHostImpl* rvhi =
+      static_cast<RenderViewHostImpl*>(rfh->GetRenderViewHost());
+  if (delegate_)
+    delegate_->WillRunBeforeUnloadConfirm();
+
+  bool suppress_this_message =
+      rvhi->rvh_state() != RenderViewHostImpl::STATE_DEFAULT ||
+      !delegate_ ||
+      delegate_->ShouldSuppressDialogs() ||
+      !delegate_->GetJavaScriptDialogManager();
+  if (suppress_this_message) {
+    rfhi->JavaScriptDialogClosed(reply_msg, true, base::string16(), true);
+    return;
+  }
+
+  is_showing_before_unload_dialog_ = true;
+  dialog_manager_ = delegate_->GetJavaScriptDialogManager();
+  dialog_manager_->RunBeforeUnloadDialog(
+      this, message, is_reload,
+      base::Bind(&WebContentsImpl::OnDialogClosed, base::Unretained(this),
+                 rfh, reply_msg, false));
+}
+
 WebContents* WebContentsImpl::GetAsWebContents() {
   return this;
 }
@@ -3383,81 +3460,6 @@ void WebContentsImpl::RouteMessageEvent(
   Send(new ViewMsg_PostMessageEvent(GetRoutingID(), new_params));
 }
 
-void WebContentsImpl::RunJavaScriptMessage(
-    RenderViewHost* rvh,
-    const base::string16& message,
-    const base::string16& default_prompt,
-    const GURL& frame_url,
-    JavaScriptMessageType javascript_message_type,
-    IPC::Message* reply_msg,
-    bool* did_suppress_message) {
-  // Suppress JavaScript dialogs when requested. Also suppress messages when
-  // showing an interstitial as it's shown over the previous page and we don't
-  // want the hidden page's dialogs to interfere with the interstitial.
-  bool suppress_this_message =
-      static_cast<RenderViewHostImpl*>(rvh)->IsSwappedOut() ||
-      ShowingInterstitialPage() ||
-      !delegate_ ||
-      delegate_->ShouldSuppressDialogs() ||
-      !delegate_->GetJavaScriptDialogManager();
-
-  if (!suppress_this_message) {
-    std::string accept_lang = GetContentClient()->browser()->
-      GetAcceptLangs(GetBrowserContext());
-    dialog_manager_ = delegate_->GetJavaScriptDialogManager();
-    dialog_manager_->RunJavaScriptDialog(
-        this,
-        frame_url.GetOrigin(),
-        accept_lang,
-        javascript_message_type,
-        message,
-        default_prompt,
-        base::Bind(&WebContentsImpl::OnDialogClosed,
-                   base::Unretained(this),
-                   rvh,
-                   reply_msg),
-        &suppress_this_message);
-  }
-
-  *did_suppress_message = suppress_this_message;
-
-  if (suppress_this_message) {
-    // If we are suppressing messages, just reply as if the user immediately
-    // pressed "Cancel".
-    OnDialogClosed(rvh, reply_msg, false, base::string16());
-  }
-
-  // OnDialogClosed (two lines up) may have caused deletion of this object (see
-  // http://crbug.com/288961 ). The only safe thing to do here is return.
-}
-
-void WebContentsImpl::RunBeforeUnloadConfirm(RenderViewHost* rvh,
-                                             const base::string16& message,
-                                             bool is_reload,
-                                             IPC::Message* reply_msg) {
-  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(rvh);
-  if (delegate_)
-    delegate_->WillRunBeforeUnloadConfirm();
-
-  bool suppress_this_message =
-      rvhi->rvh_state() != RenderViewHostImpl::STATE_DEFAULT ||
-      !delegate_ ||
-      delegate_->ShouldSuppressDialogs() ||
-      !delegate_->GetJavaScriptDialogManager();
-  if (suppress_this_message) {
-    // The reply must be sent to the RVH that sent the request.
-    rvhi->JavaScriptDialogClosed(reply_msg, true, base::string16());
-    return;
-  }
-
-  is_showing_before_unload_dialog_ = true;
-  dialog_manager_ = delegate_->GetJavaScriptDialogManager();
-  dialog_manager_->RunBeforeUnloadDialog(
-      this, message, is_reload,
-      base::Bind(&WebContentsImpl::OnDialogClosed, base::Unretained(this), rvh,
-                 reply_msg));
-}
-
 bool WebContentsImpl::AddMessageToConsole(int32 level,
                                           const base::string16& message,
                                           int32 line_no,
@@ -3732,22 +3734,26 @@ bool WebContentsImpl::CreateRenderViewForInitialEmptyDocument() {
 }
 #endif
 
-void WebContentsImpl::OnDialogClosed(RenderViewHost* rvh,
+void WebContentsImpl::OnDialogClosed(RenderFrameHost* rfh,
                                      IPC::Message* reply_msg,
+                                     bool dialog_was_suppressed,
                                      bool success,
                                      const base::string16& user_input) {
+  last_dialog_suppressed_ = dialog_was_suppressed;
+
   if (is_showing_before_unload_dialog_ && !success) {
     // If a beforeunload dialog is canceled, we need to stop the throbber from
     // spinning, since we forced it to start spinning in Navigate.
-    DidStopLoading(rvh->GetMainFrame());
+    DidStopLoading(rfh);
     controller_.DiscardNonCommittedEntries();
 
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       BeforeUnloadDialogCancelled());
   }
+
   is_showing_before_unload_dialog_ = false;
-  static_cast<RenderViewHostImpl*>(
-      rvh)->JavaScriptDialogClosed(reply_msg, success, user_input);
+  static_cast<RenderFrameHostImpl*>(rfh)->JavaScriptDialogClosed(
+      reply_msg, success, user_input, dialog_was_suppressed);
 }
 
 void WebContentsImpl::SetEncoding(const std::string& encoding) {

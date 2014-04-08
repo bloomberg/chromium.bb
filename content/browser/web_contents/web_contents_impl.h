@@ -328,6 +328,16 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void WorkerCrashed(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
                                const ContextMenuParams& params) OVERRIDE;
+  virtual void RunJavaScriptMessage(RenderFrameHost* rfh,
+                                    const base::string16& message,
+                                    const base::string16& default_prompt,
+                                    const GURL& frame_url,
+                                    JavaScriptMessageType type,
+                                    IPC::Message* reply_msg) OVERRIDE;
+  virtual void RunBeforeUnloadConfirm(RenderFrameHost* rfh,
+                                      const base::string16& message,
+                                      bool is_reload,
+                                      IPC::Message* reply_msg) OVERRIDE;
   virtual WebContents* GetAsWebContents() OVERRIDE;
 
   // RenderViewHostDelegate ----------------------------------------------------
@@ -369,17 +379,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void RouteMessageEvent(
       RenderViewHost* rvh,
       const ViewMsg_PostMessage_Params& params) OVERRIDE;
-  virtual void RunJavaScriptMessage(RenderViewHost* rvh,
-                                    const base::string16& message,
-                                    const base::string16& default_prompt,
-                                    const GURL& frame_url,
-                                    JavaScriptMessageType type,
-                                    IPC::Message* reply_msg,
-                                    bool* did_suppress_message) OVERRIDE;
-  virtual void RunBeforeUnloadConfirm(RenderViewHost* rvh,
-                                      const base::string16& message,
-                                      bool is_reload,
-                                      IPC::Message* reply_msg) OVERRIDE;
   virtual bool AddMessageToConsole(int32 level,
                                    const base::string16& message,
                                    int32 line_no,
@@ -664,9 +663,10 @@ class CONTENT_EXPORT WebContentsImpl
   // watching |web_contents|. No-op if there is no such observer.
   void RemoveDestructionObserver(WebContentsImpl* web_contents);
 
-  // Callback function when showing JS dialogs.
-  void OnDialogClosed(RenderViewHost* rvh,
+  // Callback function when showing JavaScript dialogs.
+  void OnDialogClosed(RenderFrameHost* rfh,
                       IPC::Message* reply_msg,
+                      bool dialog_was_suppressed,
                       bool success,
                       const base::string16& user_input);
 
@@ -1069,6 +1069,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Whether this WebContents is responsible for displaying a subframe in a
   // different process from its parent page.
   bool is_subframe_;
+
+  // Whether the last JavaScript dialog shown was suppressed. Used for testing.
+  bool last_dialog_suppressed_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };

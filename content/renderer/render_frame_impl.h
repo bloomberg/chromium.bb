@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
+#include "content/public/common/javascript_message_type.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
@@ -282,6 +283,13 @@ class CONTENT_EXPORT RenderFrameImpl
                                      bool is_new_navigation);
   virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   virtual void didChangeSelection(bool is_empty_selection);
+  virtual void runModalAlertDialog(const blink::WebString& message);
+  virtual bool runModalConfirmDialog(const blink::WebString& message);
+  virtual bool runModalPromptDialog(const blink::WebString& message,
+                                    const blink::WebString& default_value,
+                                    blink::WebString* actual_value);
+  virtual bool runModalBeforeUnloadDialog(bool is_reload,
+                                          const blink::WebString& message);
   virtual void showContextMenu(const blink::WebContextMenuData& data);
   virtual void clearContextMenu();
   virtual void willRequestAfterPreconnect(blink::WebLocalFrame* frame,
@@ -444,6 +452,12 @@ class CONTENT_EXPORT RenderFrameImpl
       size_t selection_text_offset,
       const gfx::Range& selection_range,
       const ContextMenuParams& params);
+
+  bool RunJavaScriptMessage(JavaScriptMessageType type,
+                            const base::string16& message,
+                            const base::string16& default_value,
+                            const GURL& frame_url,
+                            base::string16* result);
 
   // Stores the WebLocalFrame we are associated with.
   blink::WebLocalFrame* frame_;

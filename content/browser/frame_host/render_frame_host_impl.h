@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_transition_types.h"
 
 class GURL;
@@ -146,6 +147,13 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   // before and after the selection or caret.
   void ExtendSelectionAndDelete(size_t before, size_t after);
 
+  // Notifies the RenderFrame that the JavaScript message that was shown was
+  // closed by the user.
+  void JavaScriptDialogClosed(IPC::Message* reply_msg,
+                              bool success,
+                              const base::string16& user_input,
+                              bool dialog_was_suppressed);
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -191,6 +199,15 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   void OnSwapOutACK();
   void OnContextMenu(const ContextMenuParams& params);
   void OnJavaScriptExecuteResponse(int id, const base::ListValue& result);
+  void OnRunJavaScriptMessage(const base::string16& message,
+                              const base::string16& default_prompt,
+                              const GURL& frame_url,
+                              JavaScriptMessageType type,
+                              IPC::Message* reply_msg);
+  void OnRunBeforeUnloadConfirm(const GURL& frame_url,
+                                const base::string16& message,
+                                bool is_reload,
+                                IPC::Message* reply_msg);
 
   // Returns whether the given URL is allowed to commit in the current process.
   // This is a more conservative check than RenderProcessHost::FilterURL, since

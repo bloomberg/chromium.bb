@@ -259,6 +259,10 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
     IPC_MESSAGE_HANDLER(FrameHostMsg_JavaScriptExecuteResponse,
                         OnJavaScriptExecuteResponse)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunJavaScriptMessage,
+                                    OnRunJavaScriptMessage)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunBeforeUnloadConfirm,
+                                    OnRunBeforeUnloadConfirm)
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -584,6 +588,32 @@ void RenderFrameHostImpl::OnJavaScriptExecuteResponse(
   }
 }
 
+void RenderFrameHostImpl::OnRunJavaScriptMessage(
+    const base::string16& message,
+    const base::string16& default_prompt,
+    const GURL& frame_url,
+    JavaScriptMessageType type,
+    IPC::Message* reply_msg) {
+  // While a JS message dialog is showing, tabs in the same process shouldn't
+  // process input events.
+  GetProcess()->SetIgnoreInputEvents(true);
+  render_view_host_->StopHangMonitorTimeout();
+  delegate_->RunJavaScriptMessage(this, message, default_prompt,
+                                  frame_url, type, reply_msg);
+}
+
+void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
+    const GURL& frame_url,
+    const base::string16& message,
+    bool is_reload,
+    IPC::Message* reply_msg) {
+  // While a JS before unload dialog is showing, tabs in the same process
+  // shouldn't process input events.
+  GetProcess()->SetIgnoreInputEvents(true);
+  render_view_host_->StopHangMonitorTimeout();
+  delegate_->RunBeforeUnloadConfirm(this, message, is_reload, reply_msg);
+}
+
 void RenderFrameHostImpl::SetPendingShutdown(const base::Closure& on_swap_out) {
   render_view_host_->SetPendingShutdown(on_swap_out);
 }
@@ -661,6 +691,42 @@ void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
 void RenderFrameHostImpl::ExtendSelectionAndDelete(size_t before,
                                                    size_t after) {
   Send(new FrameMsg_ExtendSelectionAndDelete(routing_id_, before, after));
+}
+
+void RenderFrameHostImpl::JavaScriptDialogClosed(
+    IPC::Message* reply_msg,
+    bool success,
+    const base::string16& user_input,
+    bool dialog_was_suppressed) {
+  GetProcess()->SetIgnoreInputEvents(false);
+  bool is_waiting = render_view_host_->is_waiting_for_beforeunload_ack() ||
+                    render_view_host_->IsWaitingForUnloadACK();
+
+  // If we are executing as part of (before)unload event handling, we don't
+  // want to use the regular hung_renderer_delay_ms_ if the user has agreed to
+  // leave the current page. In this case, use the regular timeout value used
+  // during the (before)unload handling.
+  if (is_waiting) {
+    render_view_host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(
+        success ? RenderViewHostImpl::kUnloadTimeoutMS
+                : render_view_host_->hung_renderer_delay_ms_));
+  }
+
+  FrameHostMsg_RunJavaScriptMessage::WriteReplyParams(reply_msg,
+                                                      success, user_input);
+  Send(reply_msg);
+
+  // If we are waiting for an unload or beforeunload ack and the user has
+  // suppressed messages, kill the tab immediately; a page that's spamming
+  // alerts in onbeforeunload is presumably malicious, so there's no point in
+  // continuing to run its script and dragging out the process.
+  // This must be done after sending the reply since RenderView can't close
+  // correctly while waiting for a response.
+  if (is_waiting && dialog_was_suppressed)
+    render_view_host_->delegate_->RendererUnresponsive(
+        render_view_host_,
+        render_view_host_->is_waiting_for_beforeunload_ack(),
+        render_view_host_->IsWaitingForUnloadACK());
 }
 
 }  // namespace content

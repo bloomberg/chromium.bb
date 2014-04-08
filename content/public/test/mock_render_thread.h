@@ -33,11 +33,6 @@ class MockRenderThread : public RenderThread {
   // Provides access to the messages that have been received by this thread.
   IPC::TestSink& sink() { return sink_; }
 
-  // Helpers for embedders to know when content IPC messages are received, since
-  // they don't have access to content IPC files.
-  void VerifyRunJavaScriptMessageSend(
-      const base::string16& expected_alert_message);
-
   // RenderThread implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual base::MessageLoop* GetMessageLoop() OVERRIDE;

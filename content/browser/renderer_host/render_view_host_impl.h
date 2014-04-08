@@ -19,7 +19,6 @@
 #include "content/common/drag_event_source_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/javascript_message_type.h"
 #include "content/public/common/window_container_type.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
@@ -342,12 +341,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // and cleared when we hear the response or commit.
   void SetHasPendingCrossSiteRequest(bool has_pending_request);
 
-  // Notifies the RenderView that the JavaScript message that was shown was
-  // closed by the user.
-  void JavaScriptDialogClosed(IPC::Message* reply_msg,
-                              bool success,
-                              const base::string16& user_input);
-
   // Tells the renderer view to focus the first (last if reverse is true) node.
   void SetInitialFocus(bool reverse);
 
@@ -531,15 +524,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnPasteFromSelectionClipboard();
   void OnRouteCloseEvent();
   void OnRouteMessageEvent(const ViewMsg_PostMessage_Params& params);
-  void OnRunJavaScriptMessage(const base::string16& message,
-                              const base::string16& default_prompt,
-                              const GURL& frame_url,
-                              JavaScriptMessageType type,
-                              IPC::Message* reply_msg);
-  void OnRunBeforeUnloadConfirm(const GURL& frame_url,
-                                const base::string16& message,
-                                bool is_reload,
-                                IPC::Message* reply_msg);
   void OnStartDragging(const DropData& drop_data,
                        blink::WebDragOperationsMask operations_allowed,
                        const SkBitmap& bitmap,
@@ -659,8 +643,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // the case of a cross-site transition ( = true).
   // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
   bool unload_ack_is_for_cross_site_transition_;
-
-  bool are_javascript_messages_suppressed_;
 
   // Accessibility callback for testing.
   base::Callback<void(ui::AXEvent)> accessibility_testing_callback_;

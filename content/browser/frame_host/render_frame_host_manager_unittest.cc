@@ -371,7 +371,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
                         rvh()->GetRoutingID(), 0, icons)));
     EXPECT_TRUE(observer.favicon_received());
   }
-  // Create one more view in the same SiteInstance where dest_rvh2
+  // Create one more view in the same SiteInstance where ntp_rvh
   // exists so that it doesn't get deleted on navigation to another
   // site.
   static_cast<SiteInstanceImpl*>(ntp_rvh->GetSiteInstance())->
@@ -426,23 +426,24 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   MockRenderProcessHost* ntp_process_host =
       static_cast<MockRenderProcessHost*>(ntp_rvh->GetProcess());
   ntp_process_host->sink().ClearMessages();
+  RenderFrameHost* ntp_rfh = ntp_rvh->GetMainFrame();
   const base::string16 msg = base::ASCIIToUTF16("Message");
   bool result = false;
   base::string16 unused;
-  ViewHostMsg_RunBeforeUnloadConfirm before_unload_msg(
-      rvh()->GetRoutingID(), kChromeURL, msg, false, &result, &unused);
+  FrameHostMsg_RunBeforeUnloadConfirm before_unload_msg(
+      ntp_rfh->GetRoutingID(), kChromeURL, msg, false, &result, &unused);
   // Enable pumping for check in BrowserMessageFilter::CheckCanDispatchOnUI.
   before_unload_msg.EnableMessagePumping();
-  EXPECT_TRUE(ntp_rvh->OnMessageReceived(before_unload_msg));
+  EXPECT_TRUE(ntp_rfh->OnMessageReceived(before_unload_msg));
   EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
 
   // Also test RunJavaScriptMessage.
   ntp_process_host->sink().ClearMessages();
-  ViewHostMsg_RunJavaScriptMessage js_msg(
-      rvh()->GetRoutingID(), msg, msg, kChromeURL,
+  FrameHostMsg_RunJavaScriptMessage js_msg(
+      ntp_rfh->GetRoutingID(), msg, msg, kChromeURL,
       JAVASCRIPT_MESSAGE_TYPE_CONFIRM, &result, &unused);
   js_msg.EnableMessagePumping();
-  EXPECT_TRUE(ntp_rvh->OnMessageReceived(js_msg));
+  EXPECT_TRUE(ntp_rfh->OnMessageReceived(js_msg));
   EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
 }
 
