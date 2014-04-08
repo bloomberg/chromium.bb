@@ -7,8 +7,14 @@
 
 namespace gfx {
 
-ScopedCGLSetCurrentContext::ScopedCGLSetCurrentContext(CGLContextObj context)
-    : previous_context_(CGLGetCurrentContext(), base::scoped_policy::RETAIN) {
+ScopedCGLSetCurrentContext::ScopedCGLSetCurrentContext(CGLContextObj context) {
+  CGLContextObj previous_context = CGLGetCurrentContext();
+  // It is possible for the previous context to have a zero reference count,
+  // because making a context current does not increment the reference count.
+  // In that case, do not restore the previous context.
+  if (previous_context && CGLGetContextRetainCount(previous_context)) {
+    previous_context_.reset(previous_context, base::scoped_policy::RETAIN);
+  }
   CGLError error = CGLSetCurrentContext(context);
   DCHECK_EQ(error, kCGLNoError) << "CGLSetCurrentContext should never fail";
 }
