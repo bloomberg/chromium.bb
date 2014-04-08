@@ -8,7 +8,7 @@ var gContext = null;
 
 function loadAudioAndAddToPeerConnection(url, peerconnection) {
   if (gContext == null)
-    gContext = new webkitAudioContext();
+    gContext = new AudioContext();
 
   var inputSink = gContext.createMediaStreamDestination();
   peerconnection.addStream(inputSink.stream);
