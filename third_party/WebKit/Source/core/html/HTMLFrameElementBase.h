@@ -51,6 +51,10 @@ protected:
     virtual void didNotifySubtreeInsertionsToDocument() OVERRIDE FINAL;
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
 
+    // FIXME: Remove this method once we have input routing in the browser
+    // process. See http://crbug.com/339659.
+    virtual void defaultEventHandler(Event*) OVERRIDE;
+
 private:
     virtual bool supportsFocus() const OVERRIDE FINAL;
     virtual void setFocus(bool) OVERRIDE FINAL;

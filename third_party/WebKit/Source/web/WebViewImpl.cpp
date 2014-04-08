@@ -152,6 +152,7 @@
 #include "public/platform/WebImage.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebFrameClient.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/RefPtr.h"
 #include "wtf/TemporaryChange.h"
@@ -902,10 +903,17 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
         return true;
     }
 
-    // TODO(kenrb): Handle the remote frame case. Possibly move eventHandler() to Frame?
-    RefPtr<LocalFrame> frame = toLocalFrame(focusedWebCoreFrame());
-    if (!frame)
+    RefPtr<Frame> focusedFrame = focusedWebCoreFrame();
+    if (focusedFrame && focusedFrame->isRemoteFrameTemporary()) {
+        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(toLocalFrameTemporary(focusedFrame.get()));
+        webFrame->client()->forwardInputEvent(&event);
+        return true;
+    }
+
+    if (!focusedFrame || !focusedFrame->isLocalFrame())
         return false;
+
+    RefPtr<LocalFrame> frame = toLocalFrame(focusedFrame.get());
 
 #if !OS(MACOSX)
     const WebInputEvent::Type contextMenuTriggeringEventType =

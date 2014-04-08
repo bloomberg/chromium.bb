@@ -1015,6 +1015,11 @@ static LocalFrame* subframeForTargetNode(Node* node)
     if (!renderer || !renderer->isWidget())
         return 0;
 
+
+    // FIXME: This explicit check is needed only until RemoteFrames have RemoteFrameViews.
+    if (isHTMLFrameElementBase(node) && toHTMLFrameElementBase(node)->contentFrame() && toHTMLFrameElementBase(node)->contentFrame()->isRemoteFrameTemporary())
+        return 0;
+
     Widget* widget = toRenderWidget(renderer)->widget();
     if (!widget || !widget->isFrameView())
         return 0;

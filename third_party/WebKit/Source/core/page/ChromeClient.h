@@ -57,13 +57,14 @@ class DateTimeChooserClient;
 class Element;
 class FileChooser;
 class FloatRect;
-class LocalFrame;
+class Frame;
 class GraphicsLayer;
 class GraphicsLayerFactory;
 class HitTestResult;
 class HTMLFormControlElement;
 class HTMLInputElement;
 class IntRect;
+class LocalFrame;
 class Node;
 class Page;
 class PagePopup;
@@ -242,7 +243,7 @@ public:
 
     // FIXME: Remove this method once we have input routing in the browser
     // process. See http://crbug.com/339659.
-    virtual void forwardInputEvent(WebCore::Document*, WebCore::Event*) { }
+    virtual void forwardInputEvent(WebCore::Frame*, WebCore::Event*) { }
 
     // Input mehtod editor related functions.
     virtual void didCancelCompositionOnSelectionChange() { }

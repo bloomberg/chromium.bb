@@ -185,7 +185,7 @@ public:
 
     // FIXME: Remove this method once we have input routing in the browser
     // process. See http://crbug.com/339659.
-    virtual void forwardInputEvent(WebCore::Document*, WebCore::Event*) OVERRIDE;
+    virtual void forwardInputEvent(WebCore::Frame*, WebCore::Event*) OVERRIDE;
 
     virtual void didCancelCompositionOnSelectionChange() OVERRIDE;
     virtual void willSetInputMethodState() OVERRIDE;

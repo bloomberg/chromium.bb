@@ -100,6 +100,10 @@ bool RenderPart::nodeAtPoint(const HitTestRequest& request, HitTestResult& resul
     if (!widget() || !widget()->isFrameView() || !request.allowsChildFrameContent())
         return RenderWidget::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, action);
 
+    // FIXME: Until RemoteFrames use RemoteFrameViews, we need an explicit check here.
+    if (toFrameView(widget())->frame().isRemoteFrameTemporary())
+        return RenderWidget::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, action);
+
     FrameView* childFrameView = toFrameView(widget());
     RenderView* childRoot = childFrameView->renderView();
 

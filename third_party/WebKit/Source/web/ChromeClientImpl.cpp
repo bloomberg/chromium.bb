@@ -890,9 +890,9 @@ void ChromeClientImpl::handleKeyboardEventOnTextField(HTMLInputElement& inputEle
 // FIXME: Remove this code once we have input routing in the browser
 // process. See http://crbug.com/339659.
 void ChromeClientImpl::forwardInputEvent(
-    WebCore::Document* document, WebCore::Event* event)
+    WebCore::Frame* frame, WebCore::Event* event)
 {
-    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(toLocalFrameTemporary(frame));
 
     // This is only called when we have out-of-process iframes, which
     // need to forward input events across processes.
@@ -901,14 +901,14 @@ void ChromeClientImpl::forwardInputEvent(
         WebKeyboardEventBuilder webEvent(*static_cast<WebCore::KeyboardEvent*>(event));
         webFrame->client()->forwardInputEvent(&webEvent);
     } else if (event->isMouseEvent()) {
-        WebMouseEventBuilder webEvent(webFrame->frameView(), document->renderer(), *static_cast<WebCore::MouseEvent*>(event));
+        WebMouseEventBuilder webEvent(webFrame->frameView(), frame->ownerRenderer(), *static_cast<WebCore::MouseEvent*>(event));
         // Internal Blink events should not be forwarded.
         if (webEvent.type == WebInputEvent::Undefined)
             return;
 
         webFrame->client()->forwardInputEvent(&webEvent);
     } else if (event->isWheelEvent()) {
-        WebMouseWheelEventBuilder webEvent(webFrame->frameView(), document->renderer(), *static_cast<WebCore::WheelEvent*>(event));
+        WebMouseWheelEventBuilder webEvent(webFrame->frameView(), frame->ownerRenderer(), *static_cast<WebCore::WheelEvent*>(event));
         if (webEvent.type == WebInputEvent::Undefined)
             return;
         webFrame->client()->forwardInputEvent(&webEvent);

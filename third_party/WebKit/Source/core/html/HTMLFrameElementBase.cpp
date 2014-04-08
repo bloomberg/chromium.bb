@@ -33,6 +33,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/FrameLoader.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderPart.h"
@@ -220,6 +221,17 @@ int HTMLFrameElementBase::height()
     if (!renderBox())
         return 0;
     return renderBox()->height();
+}
+
+// FIXME: Remove this code once we have input routing in the browser
+// process. See http://crbug.com/339659.
+void HTMLFrameElementBase::defaultEventHandler(Event* event)
+{
+    if (contentFrame() && contentFrame()->isRemoteFrameTemporary()) {
+        contentFrame()->chromeClient().forwardInputEvent(contentFrame(), event);
+        return;
+    }
+    HTMLFrameOwnerElement::defaultEventHandler(event);
 }
 
 } // namespace WebCore

@@ -5482,17 +5482,6 @@ bool Document::hasFocus() const
     return false;
 }
 
-// FIXME: Remove this code once we have input routing in the browser
-// process. See http://crbug.com/339659.
-void Document::defaultEventHandler(Event* event)
-{
-    if (frame() && frame()->remotePlatformLayer()) {
-        frame()->chromeClient().forwardInputEvent(this, event);
-        return;
-    }
-    Node::defaultEventHandler(event);
-}
-
 template<unsigned type>
 bool shouldInvalidateNodeListCachesForAttr(const unsigned nodeListCounts[], const QualifiedName& attrName)
 {
