@@ -77,9 +77,11 @@ public:
 private:
     static AnimationPlayer* animateInternal(Element& element, PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Timing& timing)
     {
-        ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-        RefPtr<Animation> animation = Animation::create(&element, effect, timing);
-        return element.document().timeline().play(animation.get());
+        if (RuntimeEnabledFeatures::webAnimationsAPIEnabled()) {
+            RefPtr<Animation> animation = Animation::create(&element, effect, timing);
+            return element.document().timeline().play(animation.get());
+        }
+        return 0;
     }
 };
 

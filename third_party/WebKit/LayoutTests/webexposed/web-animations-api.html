@@ -3,8 +3,8 @@
 <script src="../resources/testharnessreport.js"></script>
 <script>
 test(function() {
-    assert_false('animate' in Element.prototype);
-}, 'Element.animate() should not be exposed without experimental web platform features enabled.\nThis test is expected to fail in LayouTests/webexposed.');
+    assert_true('animate' in Element.prototype);
+}, 'Element.animate() should be exposed.');
 
 test(function() {
     assert_false('Animation' in window);

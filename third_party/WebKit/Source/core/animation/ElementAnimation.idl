@@ -28,10 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    RuntimeEnabled=WebAnimationsAPI,
-] partial interface Element {
+partial interface Element {
     [MeasureAs=ElementAnimateKeyframeListEffectObjectTiming, RaisesException] AnimationPlayer animate(sequence<Dictionary> keyframes, Dictionary timingInput);
     [MeasureAs=ElementAnimateKeyframeListEffectDoubleTiming, RaisesException] AnimationPlayer animate(sequence<Dictionary> keyframes, double timingInput);
     [MeasureAs=ElementAnimateKeyframeListEffectNoTiming, RaisesException] AnimationPlayer animate(sequence<Dictionary> keyframes);
 };
+
