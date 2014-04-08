@@ -29,7 +29,7 @@
 ] interface HTMLMediaElement : HTMLElement {
 
     // error state
-    readonly attribute MediaError error;
+    [StrictTypeChecking] readonly attribute MediaError? error;
 
     // network state
     [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
@@ -73,7 +73,7 @@
 
     // media controller
     [Reflect] attribute DOMString mediaGroup;
-    [StrictTypeChecking] attribute MediaController controller;
+    [StrictTypeChecking] attribute MediaController? controller;
 
     // controls
     attribute boolean controls;

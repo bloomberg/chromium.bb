@@ -30,7 +30,7 @@ function runTest() {
 
     // Make sure we can't set to something which isn't an AudioBuffer.
     shouldThrow("source.buffer = 57", '"TypeError: Failed to set the \'buffer\' property on \'AudioBufferSourceNode\': The provided value is not of type \'AudioBuffer\'."');
-    shouldThrow("source.buffer = null", '"TypeError: Failed to set the \'buffer\' property on \'AudioBufferSourceNode\': buffer cannot be null"');
+    shouldThrow("source.buffer = null", '"TypeError: Failed to set the \'buffer\' property on \'AudioBufferSourceNode\': The provided value is not of type \'AudioBuffer\'."');
 
     // Check that mono buffer can be set.
     try {

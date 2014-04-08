@@ -202,7 +202,7 @@ def getter_expression(interface, attribute, contents):
     if ('PartialInterfaceImplementedAs' in attribute.extended_attributes and
         not attribute.is_static):
         arguments.append('*impl')
-    if attribute.idl_type.is_nullable:
+    if attribute.idl_type.is_nullable and not contents['has_strict_type_checking']:
         arguments.append('isNull')
     if contents['is_getter_raises_exception']:
         arguments.append('exceptionState')

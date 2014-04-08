@@ -52,7 +52,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
           attribute.is_getter_raises_exception %}
     ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
     {% endif %}
-    {% if attribute.is_nullable %}
+    {% if attribute.is_nullable and not attribute.has_strict_type_checking %}
     bool isNull = false;
     {% endif %}
     {# FIXME: consider always using a local variable for value #}
@@ -82,7 +82,11 @@ const v8::PropertyCallbackInfo<v8::Value>& info
       | indent}}
     {% endif %}
     {% if attribute.is_nullable %}
+    {% if attribute.has_strict_type_checking %}
+    if (!{{attribute.cpp_value}}) {
+    {% else %}
     if (isNull) {
+    {% endif %}
         v8SetReturnValueNull(info);
         return;
     }
@@ -221,7 +225,7 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {% if attribute.has_strict_type_checking %}
     {# Type checking for interface types (if interface not implemented, throw
        TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
-    if (!isUndefinedOrNull(v8Value) && !V8{{attribute.idl_type}}::hasInstance(v8Value, info.GetIsolate())) {
+    if ({% if attribute.is_nullable %}!isUndefinedOrNull(v8Value) && {% endif %}!V8{{attribute.idl_type}}::hasInstance(v8Value, info.GetIsolate())) {
         exceptionState.throwTypeError("The provided value is not of type '{{attribute.idl_type}}'.");
         exceptionState.throwIfNeeded();
         return;

@@ -71,7 +71,7 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
 {
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceAttribute", "TestInterface", holder, info.GetIsolate());
-    if (!isUndefinedOrNull(v8Value) && !V8TestInterface::hasInstance(v8Value, info.GetIsolate())) {
+    if (!V8TestInterface::hasInstance(v8Value, info.GetIsolate())) {
         exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
         exceptionState.throwIfNeeded();
         return;
@@ -269,7 +269,7 @@ static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
 {
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "implementsNodeAttribute", "TestInterface", holder, info.GetIsolate());
-    if (!isUndefinedOrNull(v8Value) && !V8Node::hasInstance(v8Value, info.GetIsolate())) {
+    if (!V8Node::hasInstance(v8Value, info.GetIsolate())) {
         exceptionState.throwTypeError("The provided value is not of type 'Node'.");
         exceptionState.throwIfNeeded();
         return;
@@ -334,7 +334,7 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::V
 {
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "implementsRuntimeEnabledNodeAttribute", "TestInterface", holder, info.GetIsolate());
-    if (!isUndefinedOrNull(v8Value) && !V8Node::hasInstance(v8Value, info.GetIsolate())) {
+    if (!V8Node::hasInstance(v8Value, info.GetIsolate())) {
         exceptionState.throwTypeError("The provided value is not of type 'Node'.");
         exceptionState.throwIfNeeded();
         return;
@@ -369,7 +369,7 @@ static void implementsPerContextEnabledNodeAttributeAttributeSetter(v8::Local<v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "implementsPerContextEnabledNodeAttribute", "TestInterface", holder, info.GetIsolate());
-    if (!isUndefinedOrNull(v8Value) && !V8Node::hasInstance(v8Value, info.GetIsolate())) {
+    if (!V8Node::hasInstance(v8Value, info.GetIsolate())) {
         exceptionState.throwTypeError("The provided value is not of type 'Node'.");
         exceptionState.throwIfNeeded();
         return;

@@ -124,7 +124,7 @@ public:
     {
         return SVGMatrixTearOff::create(state().m_transform);
     }
-    void setCurrentTransform(PassRefPtr<SVGMatrixTearOff>, ExceptionState&);
+    void setCurrentTransform(PassRefPtr<SVGMatrixTearOff>);
 
     void scale(float sx, float sy);
     void rotate(float angleInRadians);

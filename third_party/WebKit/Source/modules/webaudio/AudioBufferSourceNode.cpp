@@ -334,12 +334,6 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
 void AudioBufferSourceNode::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    // FIXME: It does not look like we should throw if the buffer is null as
-    // the attribute is nullable in the specification.
-    if (!buffer) {
-        exceptionState.throwTypeError("buffer cannot be null");
-        return;
-    }
 
     // The context must be locked since changing the buffer can re-configure the number of channels that are output.
     AudioContext::AutoLocker contextLocker(context());
