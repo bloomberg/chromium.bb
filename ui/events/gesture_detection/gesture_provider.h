@@ -100,8 +100,6 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
 
   void Fling(const MotionEvent& e, float velocity_x, float velocity_y);
   void Send(const GestureEventData& gesture);
-  void SendTapCancelIfNecessary(const MotionEvent& event);
-  void SendTapCancelIfNecessary(const GestureEventData& event);
   bool SendLongTapIfNecessary(const MotionEvent& event);
   void EndTouchScrollIfNecessary(const MotionEvent& event,
                                  bool send_scroll_end_event);
@@ -120,15 +118,6 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   scoped_ptr<ScaleGestureListenerImpl> scale_gesture_listener_;
 
   scoped_ptr<MotionEvent> current_down_event_;
-
-  // Whether a GESTURE_SHOW_PRESS was sent for the current touch sequence.
-  // Sending a GESTURE_TAP event will forward a GESTURE_SHOW_PRESS if one has
-  // not yet been sent.
-  bool needs_show_press_event_;
-
-  // Whether a sent GESTURE_TAP_DOWN event has yet to be accompanied by a
-  // corresponding GESTURE_TAP, GESTURE_TAP_CANCEL or GESTURE_DOUBLE_TAP.
-  bool needs_tap_ending_event_;
 
   // Whether the respective {SCROLL,PINCH}_BEGIN gestures have been terminated
   // with a {SCROLL,PINCH}_END.

@@ -92,7 +92,9 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   }
 
   const bool stream_complete =
-      action == MotionEvent::ACTION_UP || action == MotionEvent::ACTION_CANCEL;
+      action == MotionEvent::ACTION_UP ||
+      action == MotionEvent::ACTION_CANCEL ||
+      (action == MotionEvent::ACTION_POINTER_DOWN && InDoubleTapMode());
 
   if (action == MotionEvent::ACTION_DOWN || stream_complete) {
     // Reset any scale in progress with the listener.
@@ -103,8 +105,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
       in_progress_ = false;
       initial_span_ = 0;
       double_tap_mode_ = DOUBLE_TAP_MODE_NONE;
-    } else if (double_tap_mode_ == DOUBLE_TAP_MODE_IN_PROGRESS &&
-               stream_complete) {
+    } else if (InDoubleTapMode() && stream_complete) {
       in_progress_ = false;
       initial_span_ = 0;
       double_tap_mode_ = DOUBLE_TAP_MODE_NONE;
@@ -129,7 +130,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   const int div = pointer_up ? count - 1 : count;
   float focus_x;
   float focus_y;
-  if (double_tap_mode_ == DOUBLE_TAP_MODE_IN_PROGRESS) {
+  if (InDoubleTapMode()) {
     // In double tap mode, the focal pt is always where the double tap
     // gesture started.
     focus_x = double_tap_focus_x_;
