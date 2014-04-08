@@ -527,6 +527,9 @@ class WebContents : public PageNavigator,
   // (and what action to take regarding the selection).
   virtual void StopFinding(StopFindAction action) = 0;
 
+  // Requests the renderer to insert CSS into the main frame's document.
+  virtual void InsertCSS(const std::string& css) = 0;
+
 #if defined(OS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       jobject jweb_contents_android);

@@ -176,10 +176,6 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
   }
 }
 
-void RenderFrameHostImpl::InsertCSS(const std::string& css) {
-  Send(new FrameMsg_CSSInsertRequest(routing_id_, css));
-}
-
 void RenderFrameHostImpl::ExecuteJavaScript(
     const base::string16& javascript) {
   Send(new FrameMsg_JavaScriptExecuteRequest(routing_id_,

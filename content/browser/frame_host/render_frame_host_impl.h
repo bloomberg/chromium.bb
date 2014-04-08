@@ -55,7 +55,6 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   virtual GURL GetLastCommittedURL() OVERRIDE;
   virtual gfx::NativeView GetNativeView() OVERRIDE;
   virtual void DispatchBeforeUnload(bool for_cross_site_transition) OVERRIDE;
-  virtual void InsertCSS(const std::string& css) OVERRIDE;
   virtual void ExecuteJavaScript(
       const base::string16& javascript) OVERRIDE;
   virtual void ExecuteJavaScript(

@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -344,7 +343,7 @@ void ExtensionViewHost::InsertInfobarCSS() {
       ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_EXTENSIONS_INFOBAR_CSS));
 
-  host_contents()->GetMainFrame()->InsertCSS(css.as_string());
+  host_contents()->InsertCSS(css.as_string());
 }
 
 }  // namespace extensions

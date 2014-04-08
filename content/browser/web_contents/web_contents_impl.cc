@@ -2219,6 +2219,11 @@ void WebContentsImpl::StopFinding(StopFindAction action) {
   Send(new ViewMsg_StopFinding(GetRoutingID(), action));
 }
 
+void WebContentsImpl::InsertCSS(const std::string& css) {
+  GetMainFrame()->Send(new FrameMsg_CSSInsertRequest(
+      GetMainFrame()->GetRoutingID(), css));
+}
+
 bool WebContentsImpl::FocusLocationBarByDefault() {
   NavigationEntry* entry = controller_.GetVisibleEntry();
   if (entry && entry->GetURL() == GURL(kAboutBlankURL))

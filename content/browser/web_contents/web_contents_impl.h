@@ -303,6 +303,7 @@ class CONTENT_EXPORT WebContentsImpl
                     const blink::WebFindOptions& options) OVERRIDE;
   virtual void SetZoomLevel(double level) OVERRIDE;
   virtual void StopFinding(StopFindAction action) OVERRIDE;
+  virtual void InsertCSS(const std::string& css) OVERRIDE;
 #if defined(OS_ANDROID)
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents()
       OVERRIDE;

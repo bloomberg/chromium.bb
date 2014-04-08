@@ -80,9 +80,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // directly on subframes.
   virtual void DispatchBeforeUnload(bool for_cross_site_transition) = 0;
 
-  // Requests the renderer to insert CSS into the frame's document.
-  virtual void InsertCSS(const std::string& css) = 0;
-
   // Runs some JavaScript in this frame's context. If a callback is provided, it
   // will be used to return the result, when the result is available.
   typedef base::Callback<void(const base::Value*)> JavaScriptResultCallback;
