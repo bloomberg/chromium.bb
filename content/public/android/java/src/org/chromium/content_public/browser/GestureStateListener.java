@@ -61,4 +61,9 @@ public class GestureStateListener {
      * Called when the scroll offsets or extents may have changed.
      */
     public void onScrollOffsetOrExtentChanged(int scrollOffsetY, int scrollExtentY) {}
+
+    /*
+     * Called when a tap event was not handled by the renderer.
+     */
+    public void onUnhandledTapEvent(int x, int y) {}
 }

@@ -1285,12 +1285,17 @@ TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // The GestureTapUnconfirmed is converted into a tap, as the touch action is
-  // auto.
+  // none.
   SimulateGestureEvent(WebInputEvent::GestureTapUnconfirmed,
                        WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  // This test will become invalid if GestureTap stops requiring an ack.
+  ASSERT_TRUE(!WebInputEventTraits::IgnoresAckDisposition(
+      WebInputEvent::GestureTap));
+  EXPECT_EQ(2, client_->in_flight_event_count());
   SendInputEventACK(WebInputEvent::GestureTap,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1, client_->in_flight_event_count());
 
   // This tap gesture is dropped, since the GestureTapUnconfirmed was turned
   // into a tap.
@@ -1312,8 +1317,10 @@ TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
   SimulateGestureEvent(WebInputEvent::GestureDoubleTap,
                        WebGestureEvent::Touchscreen);
   // This test will become invalid if GestureDoubleTap stops requiring an ack.
-  DCHECK(!WebInputEventTraits::IgnoresAckDisposition(
+  ASSERT_TRUE(!WebInputEventTraits::IgnoresAckDisposition(
       WebInputEvent::GestureDoubleTap));
+  EXPECT_EQ(1, client_->in_flight_event_count());
+  SendInputEventACK(WebInputEvent::GestureTap, INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0, client_->in_flight_event_count());
 }
 
