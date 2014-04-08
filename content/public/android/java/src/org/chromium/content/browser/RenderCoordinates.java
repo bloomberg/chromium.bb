@@ -15,8 +15,10 @@ package org.chromium.content.browser;
 public class RenderCoordinates {
 
     // Used to accomodate finite precision when comparing scaled viewport and
-    // content widths in {@link #hasMobileViewport()}.
-    private static final float MOBILE_VIEWPORT_WIDTH_EPSILON = 0.005f;
+    // content widths in {@link #hasMobileViewport()}.  While this value may
+    // seem large, width=device-width on an N7 V1 saw errors of ~0.065 between
+    // computed window and content widths.
+    private static final float MOBILE_VIEWPORT_WIDTH_EPSILON = 0.15f;
 
     // Scroll offset from the native in CSS.
     private float mScrollXCss;
