@@ -498,8 +498,12 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
   // If this renderer navigated while the beforeunload request was in flight, we
   // may have cleared this state in OnNavigate, in which case we can ignore
   // this message.
-  if (!render_view_host_->is_waiting_for_beforeunload_ack_ ||
-      render_view_host_->rvh_state_ != RenderViewHostImpl::STATE_DEFAULT) {
+  // However renderer might also be swapped out but we still want to proceed
+  // with navigation, otherwise it would block future navigations. This can
+  // happen when pending cross-site navigation is canceled by a second one just
+  // before OnNavigate while current RVH is waiting for commit but second
+  // navigation is started from the beginning.
+  if (!render_view_host_->is_waiting_for_beforeunload_ack_) {
     return;
   }
 

@@ -950,6 +950,50 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
       notifications.Check1AndReset(NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
 }
 
+// Test that navigation is not blocked when we make new navigation before
+// previous one has been committed. This is also a regression test for
+// http://crbug.com/104600.
+TEST_F(RenderFrameHostManagerTest, NewCrossNavigationBetweenSwapOutAndCommit) {
+  const GURL kUrl1("http://www.google.com/");
+  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl3("http://www.youtube.com/");
+
+  contents()->NavigateAndCommit(kUrl1);
+  TestRenderViewHost* rvh1 = test_rvh();
+
+  // Keep active_view_count nonzero so that no swapped out views in
+  // this SiteInstance get forcefully deleted.
+  static_cast<SiteInstanceImpl*>(rvh1->GetSiteInstance())->
+      increment_active_view_count();
+
+  // Navigate but don't commit.
+  contents()->GetController().LoadURL(
+      kUrl2, Referrer(), PAGE_TRANSITION_LINK, std::string());
+  EXPECT_TRUE(rvh1->is_waiting_for_beforeunload_ack());
+  contents()->ProceedWithCrossSiteNavigation();
+  EXPECT_FALSE(rvh1->is_waiting_for_beforeunload_ack());
+  StartCrossSiteTransition(contents());
+  EXPECT_TRUE(rvh1->IsWaitingForUnloadACK());
+
+  rvh1->OnSwappedOut(false);
+  EXPECT_EQ(RenderViewHostImpl::STATE_WAITING_FOR_COMMIT, rvh1->rvh_state());
+
+  TestRenderViewHost* rvh2 = pending_test_rvh();
+  EXPECT_TRUE(rvh2);
+  static_cast<SiteInstanceImpl*>(rvh2->GetSiteInstance())->
+      increment_active_view_count();
+
+  contents()->GetController().LoadURL(
+      kUrl3, Referrer(), PAGE_TRANSITION_LINK, std::string());
+  // Pending rvh2 is already deleted.
+  contents()->ProceedWithCrossSiteNavigation();
+
+  TestRenderViewHost* rvh3 = pending_test_rvh();
+  EXPECT_TRUE(rvh3);
+  // Navigation should be already unblocked by rvh1.
+  EXPECT_FALSE(rvh3->are_navigations_suspended());
+}
+
 // Tests WebUI creation.
 TEST_F(RenderFrameHostManagerTest, WebUI) {
   set_should_create_webui(true);
