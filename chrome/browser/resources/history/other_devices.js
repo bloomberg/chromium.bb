@@ -186,7 +186,13 @@ Device.prototype.getDOMNode = function(maxNumTabs, row) {
 
   var dropDownButton = new cr.ui.ContextMenuButton;
   dropDownButton.classList.add('drop-down');
-  dropDownButton.addEventListener('mousedown', handleDropDownFocus);
+  dropDownButton.addEventListener('mousedown', function(event) {
+      handleDropDownFocus(event);
+      // Mousedown handling of cr.ui.MenuButton.handleEvent calls
+      // preventDefault, which prevents blur of the focused element. We need to
+      // do blur manually.
+      document.activeElement.blur();
+  });
   dropDownButton.addEventListener('focus', handleDropDownFocus);
   heading.appendChild(dropDownButton);
 
