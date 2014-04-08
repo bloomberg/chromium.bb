@@ -135,3 +135,5 @@ WebKitMediaSource status=stable
 WebVTTRegions depends_on=Media, status=experimental
 WOFF2 status=stable
 XSLT status=stable
+
+PseudoClassesInMatchingCriteriaInAuthorShadowTrees status=test

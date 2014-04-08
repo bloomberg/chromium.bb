@@ -28,6 +28,7 @@
 #include "core/html/HTMLContentElement.h"
 
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/css/parser/BisonCSSParser.h"
@@ -92,11 +93,18 @@ bool HTMLContentElement::validateSelect() const
     if (!m_selectorList.isValid())
         return false;
 
+    bool disallowPseudoClasses = !RuntimeEnabledFeatures::pseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled() && containingShadowRoot() && containingShadowRoot()->type() == ShadowRoot::AuthorShadowRoot;
+
     for (const CSSSelector* selector = m_selectorList.first(); selector; selector = m_selectorList.next(*selector)) {
         if (!selector->isCompound())
             return false;
+        if (!disallowPseudoClasses)
+            continue;
+        for (const CSSSelector* subSelector = selector; subSelector; subSelector = subSelector->tagHistory()) {
+            if (subSelector->m_match == CSSSelector::PseudoClass)
+                return false;
+        }
     }
-
     return true;
 }
 
