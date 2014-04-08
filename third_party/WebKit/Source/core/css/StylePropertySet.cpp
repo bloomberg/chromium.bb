@@ -87,7 +87,9 @@ ImmutableStylePropertySet::ImmutableStylePropertySet(const CSSProperty* properti
     for (unsigned i = 0; i < m_arraySize; ++i) {
         metadataArray[i] = properties[i].metadata();
         valueArray[i] = properties[i].value();
+#if !ENABLE(OILPAN)
         valueArray[i]->ref();
+#endif
     }
 }
 
