@@ -24,6 +24,7 @@ class OutputFile;
 class BuildSettings {
  public:
   typedef base::Callback<void(scoped_ptr<Item>)> ItemDefinedCallback;
+  typedef base::Callback<void(const std::string&)> PrintCallback;
 
   BuildSettings();
   BuildSettings(const BuildSettings& other);
@@ -83,6 +84,13 @@ class BuildSettings {
     item_defined_callback_ = cb;
   }
 
+  // Defines a callback that will be used to override the behavior of the
+  // print function. This is used in tests to collect print output. If the
+  // callback is is_null() (the default) the output will be printed to the
+  // console.
+  const PrintCallback& print_callback() const { return print_callback_; }
+  void set_print_callback(const PrintCallback& cb) { print_callback_ = cb; }
+
  private:
   base::FilePath root_path_;
   std::string root_path_utf8_;
@@ -95,6 +103,7 @@ class BuildSettings {
   Args build_args_;
 
   ItemDefinedCallback item_defined_callback_;
+  PrintCallback print_callback_;
 
   BuildSettings& operator=(const BuildSettings& other);  // Disallow.
 };
