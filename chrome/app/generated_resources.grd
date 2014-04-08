@@ -7010,7 +7010,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Crashes (<ph name="CRASH_COUNT">$1<ex>3</ex></ph>)
       </message>
       <message name="IDS_CRASHES_CRASH_HEADER_FORMAT" desc="Format for crash entry headings on chrome://crashes">
-        Crash ID <ph name="CRASH_ID">$1<ex>8fa95dbb6f2ec862</ex></ph>
+        Crash ID <ph name="CRASH_ID">$1<ex>8fa95dbb6f2ec862</ex></ph> (<ph name="CRASH_LOCAL_ID">$2<ex>Chrome</ex></ph>)
       </message>
       <message name="IDS_CRASHES_CRASH_TIME_FORMAT" desc="Format for crash entry occurence time on chrome://crashes">
         Occurred <ph name="CRASH_TIME">$1<ex>Tuesday, January 25, 2011 2:58:02 PM</ex></ph>

@@ -35,13 +35,18 @@ function updateCrashList(enabled, dynamicBackend, crashes, version) {
   // Clear any previous list.
   crashSection.textContent = '';
 
+  var productName = loadTimeData.getString('shortProductName');
+
   for (var i = 0; i < crashes.length; i++) {
     var crash = crashes[i];
+    if (crash['local_id'] == '')
+      crash['local_id'] = productName;
 
     var crashBlock = document.createElement('div');
     var title = document.createElement('h3');
     title.textContent = loadTimeData.getStringF('crashHeaderFormat',
-                                                crash['id']);
+                                                crash['id'],
+                                                crash['local_id']);
     crashBlock.appendChild(title);
     var date = document.createElement('p');
     date.textContent = loadTimeData.getStringF('crashTimeFormat',

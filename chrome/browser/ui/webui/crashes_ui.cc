@@ -43,6 +43,7 @@ content::WebUIDataSource* CreateCrashesUIHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUICrashesHost);
   source->SetUseJsonJSFormatV2();
 
+  source->AddLocalizedString("shortProductName", IDS_SHORT_PRODUCT_NAME);
   source->AddLocalizedString("crashesTitle", IDS_CRASHES_TITLE);
   source->AddLocalizedString("crashCountFormat",
                              IDS_CRASHES_CRASH_COUNT_BANNER_FORMAT);
@@ -169,6 +170,7 @@ void CrashesDOMHandler::UpdateUI() {
       base::DictionaryValue* crash = new base::DictionaryValue();
       crash->SetString("id", i->id);
       crash->SetString("time", base::TimeFormatFriendlyDateAndTime(i->time));
+      crash->SetString("local_id", i->local_id);
       crash_list.Append(crash);
     }
   }
