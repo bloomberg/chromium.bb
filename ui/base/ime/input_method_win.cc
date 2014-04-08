@@ -11,6 +11,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/win/dpi.h"
 #include "ui/gfx/win/hwnd_util.h"
 
 namespace ui {
@@ -155,7 +156,10 @@ void InputMethodWin::OnCaretBoundsChanged(const TextInputClient* client) {
   }
   // The current text input type should not be NONE if |client| is focused.
   DCHECK(!IsTextInputTypeNone());
-  gfx::Rect screen_bounds(GetTextInputClient()->GetCaretBounds());
+  // Tentatively assume that the returned value is DIP (Density Independent
+  // Pixel). See the comment in text_input_client.h and http://crbug.com/360334.
+  const gfx::Rect dip_screen_bounds(GetTextInputClient()->GetCaretBounds());
+  const gfx::Rect screen_bounds = gfx::win::DIPToScreenRect(dip_screen_bounds);
 
   HWND attached_window = GetAttachedWindowHandle(client);
   // TODO(ime): see comment in TextInputClient::GetCaretBounds(), this
@@ -518,10 +522,13 @@ LRESULT InputMethodWin::OnQueryCharPosition(IMECHARPOSITION* char_positon) {
   if (!client)
     return 0;
 
-  gfx::Rect rect;
+  // Tentatively assume that the returned value from |client| is DIP (Density
+  // Independent Pixel). See the comment in text_input_client.h and
+  // http://crbug.com/360334.
+  gfx::Rect dip_rect;
   if (client->HasCompositionText()) {
     if (!client->GetCompositionCharacterBounds(char_positon->dwCharPos,
-                                               &rect)) {
+                                               &dip_rect)) {
       return 0;
     }
   } else {
@@ -529,8 +536,9 @@ LRESULT InputMethodWin::OnQueryCharPosition(IMECHARPOSITION* char_positon) {
     // the caret bounds. This behavior is the same to that of RichEdit control.
     if (char_positon->dwCharPos != 0)
       return 0;
-    rect = client->GetCaretBounds();
+    dip_rect = client->GetCaretBounds();
   }
+  const gfx::Rect rect = gfx::win::DIPToScreenRect(dip_rect);
 
   char_positon->pt.x = rect.x();
   char_positon->pt.y = rect.y();
