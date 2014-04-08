@@ -112,6 +112,8 @@
         'common/manifest_constants.h',
         'common/manifest_handler.cc',
         'common/manifest_handler.h',
+        'common/manifest_handler_helpers.cc',
+        'common/manifest_handler_helpers.h',
         'common/manifest_handlers/background_info.cc',
         'common/manifest_handlers/background_info.h',
         'common/manifest_handlers/csp_info.cc',

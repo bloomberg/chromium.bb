@@ -7,7 +7,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
