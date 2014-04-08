@@ -147,15 +147,18 @@ class ASH_EXPORT StickyKeysHandler {
     StickyKeysHandlerDelegate();
     virtual ~StickyKeysHandlerDelegate();
 
-    // Dispatches keyboard event synchronously.
+    // Dispatches keyboard event synchronously. |event| is an event that has
+    // been previously dispatched.
     virtual void DispatchKeyEvent(ui::KeyEvent* event,
                                   aura::Window* target) = 0;
 
-    // Dispatches mouse event synchronously.
+    // Dispatches mouse event synchronously. |event| is an event that has
+    // been previously dispatched.
     virtual void DispatchMouseEvent(ui::MouseEvent* event,
                                     aura::Window* target) = 0;
 
-    // Dispatches scroll event synchronously.
+    // Dispatches scroll event synchronously. |event| is an event that has
+    // been previously dispatched.
     virtual void DispatchScrollEvent(ui::ScrollEvent* event,
                                      aura::Window* target) = 0;
   };

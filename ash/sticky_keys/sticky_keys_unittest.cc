@@ -245,26 +245,38 @@ class StickyKeysTest : public test::AshTestBase,
   }
 
   // Creates a synthesized MouseEvent that is not backed by a native event.
-  ui::MouseEvent* GenerateSynthesizedMouseEvent(bool is_button_press) {
-    ui::MouseEvent* event = new ui::MouseEvent(
-        is_button_press ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
-        gfx::Point(0, 0),
-        gfx::Point(0, 0),
-        ui::EF_LEFT_MOUSE_BUTTON,
-        ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent* GenerateSynthesizedMouseEventAt(ui::EventType event_type,
+                                                  const gfx::Point& location) {
+    ui::MouseEvent* event = new ui::MouseEvent(event_type,
+                                               location,
+                                               location,
+                                               ui::EF_LEFT_MOUSE_BUTTON,
+                                               ui::EF_LEFT_MOUSE_BUTTON);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_);
     return event;
   }
 
+  // Creates a synthesized mouse press or release event.
+  ui::MouseEvent* GenerateSynthesizedMouseClickEvent(
+      bool is_button_press,
+      const gfx::Point& location) {
+    return GenerateSynthesizedMouseEventAt(
+        is_button_press ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
+        location);
+  }
+
   // Creates a synthesized ET_MOUSE_MOVED event.
-  ui::MouseEvent* GenerateSynthesizedMouseEvent(int x, int y) {
-    ui::MouseEvent* event = new ui::MouseEvent(
-        ui::ET_MOUSE_MOVED,
-        gfx::Point(x, y),
-        gfx::Point(x, y),
-        ui::EF_LEFT_MOUSE_BUTTON,
-        ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent* GenerateSynthesizedMouseMoveEvent(
+      const gfx::Point& location) {
+    return GenerateSynthesizedMouseEventAt(ui::ET_MOUSE_MOVED, location);
+  }
+
+  // Creates a synthesized MouseWHeel event.
+  ui::MouseWheelEvent* GenerateSynthesizedMouseWheelEvent(int wheel_delta) {
+    scoped_ptr<ui::MouseEvent> mev(
+        GenerateSynthesizedMouseEventAt(ui::ET_MOUSEWHEEL, gfx::Point(0, 0)));
+    ui::MouseWheelEvent* event = new ui::MouseWheelEvent(*mev, 0, wheel_delta);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_);
     return event;
@@ -491,9 +503,9 @@ TEST_F(StickyKeysTest, MouseMovedModifierTest) {
   // Press ctrl and handle mouse move events.
   kev.reset(GenerateKey(true, ui::VKEY_CONTROL));
   sticky_key.HandleKeyEvent(kev.get());
-  mev.reset(GenerateSynthesizedMouseEvent(0, 0));
+  mev.reset(GenerateSynthesizedMouseMoveEvent(gfx::Point(0, 0)));
   sticky_key.HandleMouseEvent(mev.get());
-  mev.reset(GenerateSynthesizedMouseEvent(100, 100));
+  mev.reset(GenerateSynthesizedMouseMoveEvent(gfx::Point(100, 100)));
   sticky_key.HandleMouseEvent(mev.get());
 
   // Sticky keys should be enabled afterwards.
@@ -780,12 +792,12 @@ TEST_F(StickyKeysTest, SynthesizedEvents) {
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
 
   scoped_ptr<ui::MouseEvent> mev;
-  mev.reset(GenerateSynthesizedMouseEvent(true));
+  mev.reset(GenerateSynthesizedMouseClickEvent(true, gfx::Point(0, 0)));
   sticky_key.HandleMouseEvent(mev.get());
   EXPECT_TRUE(mev->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_EQ(STICKY_KEY_STATE_ENABLED, sticky_key.current_state());
 
-  mev.reset(GenerateSynthesizedMouseEvent(false));
+  mev.reset(GenerateSynthesizedMouseClickEvent(false, gfx::Point(0, 0)));
   sticky_key.HandleMouseEvent(mev.get());
   EXPECT_TRUE(mev->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_EQ(STICKY_KEY_STATE_DISABLED, sticky_key.current_state());
@@ -827,6 +839,21 @@ TEST_F(StickyKeysTest, KeyEventDispatchImpl) {
   EXPECT_EQ(ui::VKEY_C,
             static_cast<ui::KeyEvent*>(events[0])->key_code());
   EXPECT_FALSE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+
+  // Test that synthesized key events are dispatched correctly.
+  SendActivateStickyKeyPattern(dispatcher, ui::VKEY_CONTROL);
+  buffer.PopEvents(&events);
+  scoped_ptr<ui::KeyEvent> kev;
+  kev.reset(GenerateSynthesizedKeyEvent(true, ui::VKEY_K));
+  dispatcher->OnEventFromSource(kev.get());
+  buffer.PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_EQ(ui::ET_KEY_PRESSED, events[0]->type());
+  EXPECT_EQ(ui::VKEY_K, static_cast<ui::KeyEvent*>(events[0])->key_code());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1])->key_code());
 
   Shell::GetInstance()->RemovePreTargetHandler(&buffer);
 }
@@ -881,6 +908,21 @@ TEST_P(StickyKeysMouseDispatchTest, MouseEventDispatchImpl) {
   EXPECT_EQ(ui::VKEY_CONTROL,
             static_cast<ui::KeyEvent*>(events[1])->key_code());
 
+  // Test synthesized mouse events are dispatched correctly.
+  SendActivateStickyKeyPattern(dispatcher, ui::VKEY_CONTROL);
+  buffer.PopEvents(&events);
+  ev.reset(GenerateSynthesizedMouseClickEvent(false, physical_location));
+  dispatcher->OnEventFromSource(ev.get());
+  buffer.PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_EQ(ui::ET_MOUSE_RELEASED, events[0]->type());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(dip_location.ToString(),
+            static_cast<ui::MouseEvent*>(events[0])->location().ToString());
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1])->key_code());
+
   Shell::GetInstance()->RemovePreTargetHandler(&buffer);
 }
 
@@ -930,6 +972,23 @@ TEST_P(StickyKeysMouseDispatchTest, MouseWheelEventDispatchImpl) {
   EXPECT_TRUE(events[0]->IsMouseWheelEvent());
   EXPECT_EQ(-ui::MouseWheelEvent::kWheelDelta / scale_factor,
             static_cast<ui::MouseWheelEvent*>(events[0])->y_offset());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1])->key_code());
+
+  // Test synthesized mouse wheel events are dispatched correctly.
+  SendActivateStickyKeyPattern(dispatcher, ui::VKEY_CONTROL);
+  buffer.PopEvents(&events);
+  ev.reset(
+      GenerateSynthesizedMouseWheelEvent(ui::MouseWheelEvent::kWheelDelta));
+  dispatcher->OnEventFromSource(ev.get());
+  buffer.PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_TRUE(events[0]->IsMouseWheelEvent());
+  EXPECT_EQ(ui::MouseWheelEvent::kWheelDelta / scale_factor,
+            static_cast<ui::MouseWheelEvent*>(events[0])->y_offset());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
   EXPECT_EQ(ui::VKEY_CONTROL,
