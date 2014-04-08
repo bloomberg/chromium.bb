@@ -500,7 +500,7 @@ def _TempFilename(name, contents=None):
   temp_dir = tempfile.mkdtemp(prefix=name)
   try:
     path = os.path.join(temp_dir, name)
-    if contents:
+    if contents is not None:
       with open(path, 'wb') as f:
         f.write(contents)
     yield path
