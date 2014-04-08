@@ -48,15 +48,21 @@ public:
 class MediaQueryParser {
     STACK_ALLOCATED();
 public:
-    static PassRefPtrWillBeRawPtr<MediaQuerySet> parse(const String&);
+    typedef Vector<MediaQueryToken>::iterator TokenIterator;
+
+    static PassRefPtrWillBeRawPtr<MediaQuerySet> parseMediaQuerySet(const String&);
+    static PassRefPtrWillBeRawPtr<MediaQuerySet> parseMediaCondition(TokenIterator, TokenIterator endToken);
 
 private:
-    MediaQueryParser(const String&);
-    virtual ~MediaQueryParser() { };
+    enum ParserType {
+        MediaQuerySetParser,
+        MediaConditionParser,
+    };
 
-    PassRefPtrWillBeRawPtr<MediaQuerySet> parseImpl();
+    MediaQueryParser(ParserType);
+    virtual ~MediaQueryParser();
 
-    typedef Vector<MediaQueryToken>::iterator TokenIterator;
+    PassRefPtrWillBeRawPtr<MediaQuerySet> parseImpl(TokenIterator, TokenIterator endToken);
 
     enum BlockType {
         ParenthesisBlock,
@@ -98,7 +104,6 @@ private:
     static void popIfBlockMatches(Vector<MediaQueryParser::BlockType>& blockStack, BlockType);
 
     State m_state;
-    Vector<MediaQueryToken> m_tokens;
     MediaQueryData m_mediaQueryData;
     RefPtrWillBeMember<MediaQuerySet> m_querySet;
     Vector<BlockType> m_blockStack;

@@ -77,7 +77,7 @@ static bool expressionCompare(const OwnPtrWillBeMember<MediaQueryExp>& a, const 
 
 PassOwnPtrWillBeRawPtr<MediaQuery> MediaQuery::createNotAll()
 {
-    return adoptPtrWillBeNoop(new MediaQuery(MediaQuery::Not, "all", nullptr));
+    return adoptPtrWillBeNoop(new MediaQuery(MediaQuery::Not, MediaTypeNames::all, nullptr));
 }
 
 MediaQuery::MediaQuery(Restrictor r, const String& mediaType, PassOwnPtrWillBeRawPtr<ExpressionHeapVector> expressions)

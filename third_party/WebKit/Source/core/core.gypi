@@ -3339,6 +3339,7 @@
             'css/invalidation/DescendantInvalidationSetTest.cpp',
             'css/parser/BisonCSSParserTest.cpp',
             'css/parser/MediaQueryTokenizerTest.cpp',
+            'css/parser/MediaConditionTest.cpp',
             'css/resolver/FontBuilderTest.cpp',
             'dom/ActiveDOMObjectTest.cpp',
             'dom/DOMImplementationTest.cpp',

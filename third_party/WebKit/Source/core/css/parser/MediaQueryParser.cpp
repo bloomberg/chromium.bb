@@ -11,9 +11,18 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parse(const String& queryString)
+PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaQuerySet(const String& queryString)
 {
-    return MediaQueryParser(queryString).parseImpl();
+    // FIXME: Replace the MediaQueryTokenizer with a generic CSSTokenizer, once there is one,
+    // or better yet, replace the MediaQueryParser with a generic thread-safe CSS parser.
+    Vector<MediaQueryToken> tokens;
+    MediaQueryTokenizer::tokenize(queryString, tokens);
+    return MediaQueryParser(MediaQuerySetParser).parseImpl(tokens.begin(), tokens.end());
+}
+
+PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaCondition(TokenIterator token, TokenIterator endToken)
+{
+    return MediaQueryParser(MediaConditionParser).parseImpl(token, endToken);
 }
 
 const MediaQueryParser::State MediaQueryParser::ReadRestrictor = &MediaQueryParser::readRestrictor;
@@ -28,14 +37,16 @@ const MediaQueryParser::State MediaQueryParser::SkipUntilComma = &MediaQueryPars
 const MediaQueryParser::State MediaQueryParser::SkipUntilBlockEnd = &MediaQueryParser::skipUntilBlockEnd;
 const MediaQueryParser::State MediaQueryParser::Done = &MediaQueryParser::done;
 
-// FIXME: Replace the MediaQueryTokenizer with a generic CSSTokenizer, once there is one,
-// or better yet, replace the MediaQueryParser with a generic thread-safe CSS parser.
-MediaQueryParser::MediaQueryParser(const String& queryString)
-    : m_state(&MediaQueryParser::readRestrictor)
-    , m_querySet(MediaQuerySet::create())
+MediaQueryParser::MediaQueryParser(ParserType parserType)
+    : m_querySet(MediaQuerySet::create())
 {
-    MediaQueryTokenizer::tokenize(queryString, m_tokens);
+    if (parserType == MediaQuerySetParser)
+        m_state = &MediaQueryParser::readRestrictor;
+    else // MediaConditionParser
+        m_state = &MediaQueryParser::readFeatureStart;
 }
+
+MediaQueryParser::~MediaQueryParser() { };
 
 void MediaQueryParser::setStateAndRestrict(State state, MediaQuery::Restrictor restrictor)
 {
@@ -205,9 +216,9 @@ void MediaQueryParser::processToken(TokenIterator& token)
 }
 
 // The state machine loop
-PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseImpl()
+PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseImpl(TokenIterator token, TokenIterator endToken)
 {
-    for (Vector<MediaQueryToken>::iterator token = m_tokens.begin(); token != m_tokens.end(); ++token)
+    for (; token != endToken; ++token)
         processToken(token);
 
     if (m_state != ReadAnd && m_state != ReadRestrictor && m_state != Done)
