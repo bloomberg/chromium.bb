@@ -351,8 +351,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
 #endif
 
   WebNetworkStateNotifier::setOnLine(prefs.is_online);
-  settings->setExperimentalWebSocketEnabled(
-      prefs.experimental_websocket_enabled);
   settings->setPinchVirtualViewportEnabled(
       prefs.pinch_virtual_viewport_enabled);
 

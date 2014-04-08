@@ -1074,7 +1074,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableEncryptedMedia,
     switches::kEnableExperimentalCanvasFeatures,
     switches::kEnableExperimentalWebPlatformFeatures,
-    switches::kEnableExperimentalWebSocket,
     switches::kEnableFastTextAutosizing,
     switches::kEnableGPUClientLogging,
     switches::kEnableGpuClientTracing,
