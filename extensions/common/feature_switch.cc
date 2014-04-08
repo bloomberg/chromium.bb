@@ -18,7 +18,7 @@ class CommonSwitches {
  public:
   CommonSwitches()
       : easy_off_store_install(
-            switches::kEasyOffStoreExtensionInstall,
+            NULL,
             FeatureSwitch::DEFAULT_DISABLED),
         force_dev_mode_highlighting(
             switches::kForceDevModeHighlighting,
@@ -44,10 +44,17 @@ class CommonSwitches {
             switches::kEnableOverrideBookmarksUI,
             FeatureSwitch::DEFAULT_DISABLED) {}
 
+  // Enables extensions to be easily installed from sites other than the web
+  // store.
   FeatureSwitch easy_off_store_install;
+
   FeatureSwitch force_dev_mode_highlighting;
   FeatureSwitch global_commands;
+
+  // Should we prompt the user before allowing external extensions to install?
+  // Default is yes.
   FeatureSwitch prompt_for_external_extensions;
+
   FeatureSwitch error_console;
   FeatureSwitch enable_override_bookmarks_ui;
 };
