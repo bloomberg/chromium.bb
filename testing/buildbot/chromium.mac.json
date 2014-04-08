@@ -24,7 +24,6 @@
   "Mac10.6 Tests (2)": {
     "gtest_tests": [
       "components_unittests",
-      "gcm_unit_tests",
       "gfx_unittests",
       "google_apis_unittests",
       "ipc_tests",
@@ -77,7 +76,6 @@
   "Mac10.7 Tests (2)": {
     "gtest_tests": [
       "components_unittests",
-      "gcm_unit_tests",
       "gfx_unittests",
       "google_apis_unittests",
       "ipc_tests",
@@ -141,7 +139,6 @@
   "Mac 10.6 Tests (dbg)(4)": {
     "gtest_tests": [
       "components_unittests",
-      "gcm_unit_tests",
       "google_apis_unittests",
       "message_center_unittests",
       "ipc_tests",
@@ -198,7 +195,6 @@
   "Mac 10.7 Tests (dbg)(4)": {
     "gtest_tests": [
       "components_unittests",
-      "gcm_unit_tests",
       "google_apis_unittests",
       "message_center_unittests",
       "ipc_tests",
