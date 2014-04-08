@@ -9,8 +9,11 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/values.h"
 #include "components/domain_reliability/dispatcher.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using base::DictionaryValue;
@@ -72,13 +75,24 @@ void DomainReliabilityContext::AddBeacon(
           << beacon.server_ip << " "
           << beacon.elapsed.InMilliseconds() << "ms";
 
+  bool reported = false;
+  bool evicted = false;
   if (state->config->DecideIfShouldReportRequest(success)) {
     state->beacons.push_back(beacon);
     ++beacon_count_;
-    if (beacon_count_ > kMaxQueuedBeacons)
+    if (beacon_count_ > kMaxQueuedBeacons) {
       RemoveOldestBeacon();
+      evicted = true;
+    }
     scheduler_.OnBeaconAdded();
+    reported = true;
+    UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.ReportedBeaconError",
+                                -beacon.chrome_error);
+    // TODO(ttuttle): Histogram HTTP response code?
   }
+
+  UMA_HISTOGRAM_BOOLEAN("DomainReliability.BeaconReported", reported);
+  UMA_HISTOGRAM_BOOLEAN("DomainReliability.AddBeaconDidEvict", evicted);
 }
 
 void DomainReliabilityContext::GetQueuedDataForTesting(
@@ -176,9 +190,10 @@ void DomainReliabilityContext::ScheduleUpload(
 void DomainReliabilityContext::StartUpload() {
   MarkUpload();
 
-  base::TimeTicks upload_time = time_->Now();
+  DCHECK(upload_time_.is_null());
+  upload_time_ = time_->Now();
   std::string report_json;
-  scoped_ptr<const Value> report_value(CreateReport(upload_time));
+  scoped_ptr<const Value> report_value(CreateReport(upload_time_));
   base::JSONWriter::Write(report_value.get(), &report_json);
   report_value.reset();
 
@@ -191,12 +206,25 @@ void DomainReliabilityContext::StartUpload() {
       base::Bind(
           &DomainReliabilityContext::OnUploadComplete,
           weak_factory_.GetWeakPtr()));
+
+  UMA_HISTOGRAM_BOOLEAN("DomainReliability.UploadFailover",
+                        collector_index > 0);
+  if (!last_upload_time_.is_null()) {
+    UMA_HISTOGRAM_LONG_TIMES("DomainReliability.UploadInterval",
+                             upload_time_ - last_upload_time_);
+  }
 }
 
 void DomainReliabilityContext::OnUploadComplete(bool success) {
   if (success)
     CommitUpload();
   scheduler_.OnUploadComplete(success);
+  UMA_HISTOGRAM_BOOLEAN("DomainReliability.UploadSuccess", success);
+  DCHECK(!upload_time_.is_null());
+  UMA_HISTOGRAM_MEDIUM_TIMES("DomainReliability.UploadDuration",
+                             time_->Now() - upload_time_);
+  last_upload_time_ = upload_time_;
+  upload_time_ = base::TimeTicks();
 }
 
 scoped_ptr<const Value> DomainReliabilityContext::CreateReport(

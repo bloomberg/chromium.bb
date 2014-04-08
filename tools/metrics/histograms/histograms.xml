@@ -3937,6 +3937,69 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="DomainReliability.AddBeaconDidEvict" enum="BooleanDidEvict">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    Whether adding a beacon to a Domain Reliability context caused it to evict
+    an older beacon to stay within memory limits.
+  </summary>
+</histogram>
+
+<histogram name="DomainReliability.BeaconReported" enum="BooleanReported">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    Whether a beacon added to a Domain Reliability context was saved to be
+    uploaded to the collector.
+  </summary>
+</histogram>
+
+<histogram name="DomainReliability.ReportedBeaconError" enum="NetErrorCodes">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    The Chrome error code included in a beacon saved to be uploaded to the
+    collector.
+  </summary>
+</histogram>
+
+<histogram name="DomainReliability.UploadDuration" units="ms">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    The elapsed time between starting and finishing a Domain Reliability upload.
+  </summary>
+</histogram>
+
+<histogram name="DomainReliability.UploadFailover"
+    enum="DomainReliability.BooleanFailover">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    Whether a Domain Reliability upload was sent to a collector other than the
+    first one listed in the config. (This only happens when an upload to the
+    first collector fails.)
+  </summary>
+</histogram>
+
+<histogram name="DomainReliability.UploadInterval" units="ms">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    The time between successive Domain Reliability uploads being started in the
+    same context. (Can be arbitrarily long if no beacons are reported in a
+    while.)
+  </summary>
+</histogram>
+
+<histogram name="DomainReliability.UploadResponseCode">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    The response code returned by the Domain Reliability collector when a report
+    is uploaded.
+  </summary>
+</histogram>
+
+<histogram name="DomainReliability.UploadSuccess" enum="BooleanSuccess">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>Whether a Domain Reliability upload succeeded.</summary>
+</histogram>
+
 <histogram name="DomDistiller.DistillationQuality" enum="BooleanSuccess">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -11655,7 +11718,7 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Net.HttpAuthCacheAddEvicted">
+<histogram name="Net.HttpAuthCacheAddEvicted" enum="BooleanDidEvict">
   <owner>ttuttle@chromium.org</owner>
   <summary>
     Whether adding an entry to the HTTP auth cache evicted another entry.
@@ -11676,7 +11739,7 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Net.HttpAuthCacheAddPathEvicted">
+<histogram name="Net.HttpAuthCacheAddPathEvicted" enum="BooleanDidEvict">
   <owner>ttuttle@chromium.org</owner>
   <summary>
     Whether adding a path to an entry in the HTTP auth cache evicted another
@@ -30423,6 +30486,11 @@ other types of suffix sets.
   <int value="1" label="Deleted"/>
 </enum>
 
+<enum name="BooleanDidEvict" type="int">
+  <int value="0" label="Did not evict"/>
+  <int value="1" label="Did evict"/>
+</enum>
+
 <enum name="BooleanDuplicate" type="int">
   <int value="0" label="Not Duplicate"/>
   <int value="1" label="Duplicate"/>
@@ -30486,6 +30554,11 @@ other types of suffix sets.
 <enum name="BooleanRegistered" type="int">
   <int value="0" label="Not Registered"/>
   <int value="1" label="Registered"/>
+</enum>
+
+<enum name="BooleanReported" type="int">
+  <int value="0" label="Not reported"/>
+  <int value="1" label="Reported"/>
 </enum>
 
 <enum name="BooleanSelected" type="int">
@@ -31167,6 +31240,11 @@ other types of suffix sets.
   <int value="5" label="CLIENT_NO_SERVER_BOUND_CERT_SERVICE">
     The SSLClientSocket was created without a ServerBoundCertService.
   </int>
+</enum>
+
+<enum name="DomainReliability.BooleanFailover" type="int">
+  <int value="0" label="Used first collector"/>
+  <int value="1" label="Failed over to another collector"/>
 </enum>
 
 <enum name="DoubleGetExperimentMethods" type="int">

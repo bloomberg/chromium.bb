@@ -5,6 +5,7 @@
 #include "components/domain_reliability/uploader.h"
 
 #include "base/bind.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
@@ -57,6 +58,9 @@ class DomainReliabilityUploaderImpl
     DCHECK(callback_it != upload_callbacks_.end());
 
     VLOG(1) << "Upload finished with " << fetcher->GetResponseCode();
+
+    UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.UploadResponseCode",
+                                fetcher->GetResponseCode());
 
     bool success = fetcher->GetResponseCode() == 200;
     callback_it->second.Run(success);

@@ -124,6 +124,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   ResourceStateVector states_;
   int beacon_count_;
   int uploading_beacon_count_;
+  base::TimeTicks upload_time_;
+  base::TimeTicks last_upload_time_;
 
   base::WeakPtrFactory<DomainReliabilityContext> weak_factory_;
 
