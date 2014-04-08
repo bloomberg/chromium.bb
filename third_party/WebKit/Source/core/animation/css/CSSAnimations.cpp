@@ -407,13 +407,13 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     // recalculation, we find these cases by searching for new transitions that
     // have matching cancelled animation property IDs on the compositor.
     HashMap<CSSPropertyID, std::pair<RefPtr<Animation>, double> > retargetedCompositorTransitions;
-    const ActiveAnimations* activeAnimations = element->activeAnimations();
     for (HashSet<CSSPropertyID>::iterator iter = update->cancelledTransitions().begin(); iter != update->cancelledTransitions().end(); ++iter) {
         CSSPropertyID id = *iter;
         ASSERT(m_transitions.contains(id));
         AnimationPlayer* player = m_transitions.take(id).transition->player();
-        if (activeAnimations && activeAnimations->hasActiveAnimationsOnCompositor(id) && update->newTransitions().find(id) != update->newTransitions().end())
-            retargetedCompositorTransitions.add(id, std::pair<RefPtr<Animation>, double>(toAnimation(player->source()), player->startTime()));
+        Animation* animation = toAnimation(player->source());
+        if (animation->hasActiveAnimationsOnCompositor(id) && update->newTransitions().find(id) != update->newTransitions().end())
+            retargetedCompositorTransitions.add(id, std::pair<RefPtr<Animation>, double>(animation, player->startTime()));
         player->cancel();
     }
 

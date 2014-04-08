@@ -7,7 +7,6 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
-#include "core/animation/ActiveAnimations.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -171,7 +170,7 @@ bool CompositingReasonFinder::requiresCompositingForAnimation(RenderObject* rend
     if (!(m_compositingTriggers & AnimationTrigger))
         return false;
 
-    return shouldCompositeForActiveAnimations(*renderer);
+    return renderer->style()->shouldCompositeForCurrentAnimations();
 }
 
 bool CompositingReasonFinder::requiresCompositingForOutOfFlowClipping(const RenderLayer* layer) const

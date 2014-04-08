@@ -31,12 +31,12 @@
 #include "config.h"
 #include "core/animation/DocumentAnimations.h"
 
-#include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimationClock.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/rendering/RenderView.h"
@@ -76,9 +76,12 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
         updateAnimationTiming(element.document(), AnimationPlayer::UpdateOnDemand);
         return;
     }
-    if (const ActiveAnimations* activeAnimations = element.activeAnimations()) {
-        if (activeAnimations->hasActiveAnimationsOnCompositor(property))
+    if (RenderStyle* style = element.renderStyle()) {
+        if ((property == CSSPropertyOpacity && style->isRunningOpacityAnimationOnCompositor())
+            || ((property == CSSPropertyTransform || property == CSSPropertyWebkitTransform) && style->isRunningTransformAnimationOnCompositor())
+            || (property == CSSPropertyWebkitFilter && style->isRunningFilterAnimationOnCompositor())) {
             updateAnimationTiming(element.document(), AnimationPlayer::UpdateOnDemand);
+        }
     }
 }
 

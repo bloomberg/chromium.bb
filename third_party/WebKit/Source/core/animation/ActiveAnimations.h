@@ -44,11 +44,6 @@ class CSSAnimations;
 class RenderObject;
 class Element;
 
-// FIXME: Move these to CompositorAnimations
-bool shouldCompositeForActiveAnimations(const RenderObject&);
-bool hasActiveAnimations(const RenderObject&, CSSPropertyID);
-bool hasActiveAnimationsOnCompositor(const RenderObject&, CSSPropertyID);
-
 class ActiveAnimations : public NoBaseWillBeGarbageCollectedFinalized<ActiveAnimations> {
     WTF_MAKE_NONCOPYABLE(ActiveAnimations);
 public:
@@ -73,12 +68,9 @@ public:
 
     bool isEmpty() const { return m_defaultStack.isEmpty() && m_cssAnimations.isEmpty(); }
 
-    // FIXME: This and most of this class needs to be renamed to consider 'current'
-    // rather than 'active' animations.
-    bool hasActiveAnimations(CSSPropertyID) const;
-    bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
     void cancelAnimationOnCompositor();
 
+    void updateAnimationFlags(RenderStyle&);
     void setAnimationStyleChange(bool animationStyleChange) { m_animationStyleChange = animationStyleChange; }
 
     void trace(Visitor*);

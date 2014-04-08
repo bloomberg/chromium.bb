@@ -35,47 +35,7 @@
 
 namespace WebCore {
 
-bool shouldCompositeForActiveAnimations(const RenderObject& renderer)
-{
-    if (!renderer.node() || !renderer.node()->isElementNode())
-        return false;
-
-    const Element* element = toElement(renderer.node());
-    if (const ActiveAnimations* activeAnimations = element->activeAnimations()) {
-        if (activeAnimations->hasActiveAnimations(CSSPropertyOpacity)
-            || activeAnimations->hasActiveAnimations(CSSPropertyTransform)
-            || activeAnimations->hasActiveAnimations(CSSPropertyWebkitFilter))
-            return true;
-    }
-
-    return false;
-}
-
-bool hasActiveAnimations(const RenderObject& renderer, CSSPropertyID property)
-{
-    if (!renderer.node() || !renderer.node()->isElementNode())
-        return false;
-
-    const Element* element = toElement(renderer.node());
-    if (const ActiveAnimations* activeAnimations = element->activeAnimations())
-        return activeAnimations->hasActiveAnimations(property);
-
-    return false;
-}
-
-bool hasActiveAnimationsOnCompositor(const RenderObject& renderer, CSSPropertyID property)
-{
-    if (!renderer.node() || !renderer.node()->isElementNode())
-        return false;
-
-    const Element* element = toElement(renderer.node());
-    if (const ActiveAnimations* activeAnimations = element->activeAnimations())
-        return activeAnimations->hasActiveAnimationsOnCompositor(property);
-
-    return false;
-}
-
-bool ActiveAnimations::hasActiveAnimations(CSSPropertyID property) const
+void ActiveAnimations::updateAnimationFlags(RenderStyle& style)
 {
     for (AnimationPlayerSet::const_iterator it = m_players.begin(); it != players().end(); ++it) {
         const AnimationPlayer& player = *it->key;
@@ -83,15 +43,22 @@ bool ActiveAnimations::hasActiveAnimations(CSSPropertyID property) const
         // FIXME: Needs to consider AnimationGroup once added.
         ASSERT(player.source()->isAnimation());
         const Animation& animation = *toAnimation(player.source());
-        if (animation.isCurrent() && animation.affects(property))
-            return true;
+        if (animation.isCurrent()) {
+            if (animation.affects(CSSPropertyOpacity))
+                style.setHasCurrentOpacityAnimation(true);
+            if (animation.affects(CSSPropertyTransform))
+                style.setHasCurrentTransformAnimation(true);
+            if (animation.affects(CSSPropertyWebkitFilter))
+                style.setHasCurrentFilterAnimation(true);
+        }
     }
-    return false;
-}
 
-bool ActiveAnimations::hasActiveAnimationsOnCompositor(CSSPropertyID property) const
-{
-    return m_defaultStack.hasActiveAnimationsOnCompositor(property);
+    if (style.hasCurrentOpacityAnimation())
+        style.setIsRunningOpacityAnimationOnCompositor(m_defaultStack.hasActiveAnimationsOnCompositor(CSSPropertyOpacity));
+    if (style.hasCurrentTransformAnimation())
+        style.setIsRunningTransformAnimationOnCompositor(m_defaultStack.hasActiveAnimationsOnCompositor(CSSPropertyTransform));
+    if (style.hasCurrentFilterAnimation())
+        style.setIsRunningFilterAnimationOnCompositor(m_defaultStack.hasActiveAnimationsOnCompositor(CSSPropertyWebkitFilter));
 }
 
 void ActiveAnimations::cancelAnimationOnCompositor()

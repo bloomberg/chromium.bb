@@ -96,14 +96,18 @@ Animation::Animation(PassRefPtr<Element> target, PassRefPtrWillBeRawPtr<Animatio
 
 void Animation::didAttach()
 {
-    if (m_target)
+    if (m_target) {
         m_target->ensureActiveAnimations().players().add(player());
+        m_target->setNeedsAnimationStyleRecalc();
+    }
 }
 
 void Animation::willDetach()
 {
-    if (m_target)
+    if (m_target) {
         m_target->activeAnimations()->players().remove(player());
+        m_target->setNeedsAnimationStyleRecalc();
+    }
     if (m_activeInAnimationStack)
         clearEffects();
 }

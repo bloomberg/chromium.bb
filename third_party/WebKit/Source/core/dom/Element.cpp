@@ -1502,12 +1502,14 @@ PassRefPtr<RenderStyle> Element::styleForRenderer()
         style = customStyleForRenderer();
     if (!style)
         style = originalStyleForRenderer();
+    ASSERT(style);
 
     // styleForElement() might add active animations so we need to get it again.
-    if (ActiveAnimations* activeAnimations = this->activeAnimations())
+    if (ActiveAnimations* activeAnimations = this->activeAnimations()) {
         activeAnimations->cssAnimations().maybeApplyPendingUpdate(this);
+        activeAnimations->updateAnimationFlags(*style);
+    }
 
-    ASSERT(style);
     return style.release();
 }
 

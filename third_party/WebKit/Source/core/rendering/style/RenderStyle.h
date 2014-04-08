@@ -921,8 +921,14 @@ public:
     const LengthSize& pageSize() const { return rareNonInheritedData->m_pageSize; }
     PageSizeType pageSizeType() const { return static_cast<PageSizeType>(rareNonInheritedData->m_pageSizeType); }
 
-    // When set, this ensures that styles compare as different. Used during accelerated animations.
-    bool isRunningAcceleratedAnimation() const { return rareNonInheritedData->m_runningAcceleratedAnimation; }
+    bool hasCurrentOpacityAnimation() const { return rareNonInheritedData->m_hasCurrentOpacityAnimation; }
+    bool hasCurrentTransformAnimation() const { return rareNonInheritedData->m_hasCurrentTransformAnimation; }
+    bool hasCurrentFilterAnimation() const { return rareNonInheritedData->m_hasCurrentFilterAnimation; }
+    bool shouldCompositeForCurrentAnimations() { return hasCurrentOpacityAnimation() || hasCurrentTransformAnimation() || hasCurrentFilterAnimation(); }
+
+    bool isRunningOpacityAnimationOnCompositor() const { return rareNonInheritedData->m_runningOpacityAnimationOnCompositor; }
+    bool isRunningTransformAnimationOnCompositor() const { return rareNonInheritedData->m_runningTransformAnimationOnCompositor; }
+    bool isRunningFilterAnimationOnCompositor() const { return rareNonInheritedData->m_runningFilterAnimationOnCompositor; }
 
     LineBoxContain lineBoxContain() const { return rareInheritedData->m_lineBoxContain; }
     const LineClampValue& lineClamp() const { return rareNonInheritedData->lineClamp; }
@@ -1373,7 +1379,13 @@ public:
     void setPageSizeType(PageSizeType t) { SET_VAR(rareNonInheritedData, m_pageSizeType, t); }
     void resetPageSizeType() { SET_VAR(rareNonInheritedData, m_pageSizeType, PAGE_SIZE_AUTO); }
 
-    void setIsRunningAcceleratedAnimation(bool b = true) { SET_VAR(rareNonInheritedData, m_runningAcceleratedAnimation, b); }
+    void setHasCurrentOpacityAnimation(bool b = true) { SET_VAR(rareNonInheritedData, m_hasCurrentOpacityAnimation, b); }
+    void setHasCurrentTransformAnimation(bool b = true) { SET_VAR(rareNonInheritedData, m_hasCurrentTransformAnimation, b); }
+    void setHasCurrentFilterAnimation(bool b = true) { SET_VAR(rareNonInheritedData, m_hasCurrentFilterAnimation, b); }
+
+    void setIsRunningOpacityAnimationOnCompositor(bool b = true) { SET_VAR(rareNonInheritedData, m_runningOpacityAnimationOnCompositor, b); }
+    void setIsRunningTransformAnimationOnCompositor(bool b = true) { SET_VAR(rareNonInheritedData, m_runningTransformAnimationOnCompositor, b); }
+    void setIsRunningFilterAnimationOnCompositor(bool b = true) { SET_VAR(rareNonInheritedData, m_runningFilterAnimationOnCompositor, b); }
 
     void setLineBoxContain(LineBoxContain c) { SET_VAR(rareInheritedData, m_lineBoxContain, c); }
     void setLineClamp(LineClampValue c) { SET_VAR(rareNonInheritedData, lineClamp, c); }
