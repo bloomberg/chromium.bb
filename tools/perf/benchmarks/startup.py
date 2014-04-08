@@ -10,7 +10,7 @@ from measurements import startup
 class StartupColdBlankPage(test.Test):
   tag = 'cold'
   test = startup.Startup
-  page_set = 'page_sets/blank_page.json'
+  page_set = 'page_sets/blank_page.py'
   options = {'cold': True,
              'pageset_repeat': 5}
 
@@ -18,7 +18,7 @@ class StartupColdBlankPage(test.Test):
 class StartupWarmBlankPage(test.Test):
   tag = 'warm'
   test = startup.Startup
-  page_set = 'page_sets/blank_page.json'
+  page_set = 'page_sets/blank_page.py'
   options = {'warm': True,
              'pageset_repeat': 20}
 
@@ -26,7 +26,7 @@ class StartupWarmBlankPage(test.Test):
 class StartupColdTheme(test.Test):
   tag = 'theme_cold'
   test = startup.Startup
-  page_set = 'page_sets/blank_page.json'
+  page_set = 'page_sets/blank_page.py'
   generated_profile_archive = 'theme_profile.zip'
   options = {'cold': True,
              'pageset_repeat': 5}
@@ -35,7 +35,7 @@ class StartupColdTheme(test.Test):
 class StartupWarmTheme(test.Test):
   tag = 'theme_warm'
   test = startup.Startup
-  page_set = 'page_sets/blank_page.json'
+  page_set = 'page_sets/blank_page.py'
   generated_profile_archive = 'theme_profile.zip'
   options = {'warm': True,
              'pageset_repeat': 20}
@@ -44,7 +44,7 @@ class StartupWarmTheme(test.Test):
 class StartupColdManyExtensions(test.Test):
   tag = 'many_extensions_cold'
   test = startup.Startup
-  page_set = 'page_sets/blank_page.json'
+  page_set = 'page_sets/blank_page.py'
   generated_profile_archive = 'many_extensions_profile.zip'
   options = {'cold': True,
              'pageset_repeat': 5}
@@ -53,7 +53,7 @@ class StartupColdManyExtensions(test.Test):
 class StartupWarmManyExtensions(test.Test):
   tag = 'many_extensions_warm'
   test = startup.Startup
-  page_set = 'page_sets/blank_page.json'
+  page_set = 'page_sets/blank_page.py'
   generated_profile_archive = 'many_extensions_profile.zip'
   options = {'warm': True,
              'pageset_repeat': 20}
