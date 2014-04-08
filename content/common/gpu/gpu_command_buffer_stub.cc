@@ -607,12 +607,12 @@ void GpuCommandBufferStub::OnSetLatencyInfo(
     latency_info_callback_.Run(latency_info);
 }
 
-void GpuCommandBufferStub::OnCreateStreamTexture(uint32 texture_id,
-                                                 int32* stream_id) {
+void GpuCommandBufferStub::OnCreateStreamTexture(
+    uint32 texture_id, int32 stream_id, bool* succeeded) {
 #if defined(OS_ANDROID)
-  *stream_id = StreamTexture::Create(this, texture_id);
+  *succeeded = StreamTexture::Create(this, texture_id, stream_id);
 #else
-  *stream_id = 0;
+  *succeeded = false;
 #endif
 }
 
@@ -806,9 +806,9 @@ void GpuCommandBufferStub::PutChanged() {
 
 void GpuCommandBufferStub::OnCreateVideoDecoder(
     media::VideoCodecProfile profile,
+    int32 decoder_route_id,
     IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateVideoDecoder");
-  int32 decoder_route_id = channel_->GenerateRouteID();
   GpuVideoDecodeAccelerator* decoder = new GpuVideoDecodeAccelerator(
       decoder_route_id, this, channel_->io_message_loop());
   decoder->Initialize(profile, reply_message);
@@ -821,9 +821,9 @@ void GpuCommandBufferStub::OnCreateVideoEncoder(
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
     uint32 initial_bitrate,
+    int32 encoder_route_id,
     IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateVideoEncoder");
-  int32 encoder_route_id = channel_->GenerateRouteID();
   GpuVideoEncodeAccelerator* encoder =
       new GpuVideoEncodeAccelerator(encoder_route_id, this);
   encoder->Initialize(input_format,

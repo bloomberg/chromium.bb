@@ -19,20 +19,19 @@ DevToolsGpuAgent::DevToolsGpuAgent(GpuChannel* gpu_channel) :
 DevToolsGpuAgent::~DevToolsGpuAgent() {
 }
 
-void DevToolsGpuAgent::StartEventsRecording(int32* route_id) {
+bool DevToolsGpuAgent::StartEventsRecording(int32 route_id) {
   DCHECK(CalledOnValidThread());
   if (route_id_ != MSG_ROUTING_NONE) {
     // Events recording is already in progress, so "fail" the call by
-    // returning MSG_ROUTING_NONE as the route id.
-    *route_id = MSG_ROUTING_NONE;
-    return;
+    // returning false.
+    return false;
   }
-  route_id_ = gpu_channel_->GenerateRouteID();
-  *route_id = route_id_;
+  route_id_ = route_id;
   tasks_.reset(new GpuTaskInfoList());
   GpuEventsDispatcher* dispatcher =
       gpu_channel_->gpu_channel_manager()->gpu_devtools_events_dispatcher();
   dispatcher->AddProcessor(this);
+  return true;
 }
 
 void DevToolsGpuAgent::StopEventsRecording() {

@@ -387,9 +387,14 @@ uint32 CommandBufferProxyImpl::CreateStreamTexture(uint32 texture_id) {
   if (last_state_.error != gpu::error::kNoError)
     return 0;
 
-  int32 stream_id = 0;
+  int32 stream_id = channel_->GenerateRouteID();
+  bool succeeded;
   Send(new GpuCommandBufferMsg_CreateStreamTexture(
-      route_id_, texture_id, &stream_id));
+      route_id_, texture_id, stream_id, &succeeded));
+  if (!succeeded) {
+    DLOG(ERROR) << "GpuCommandBufferMsg_CreateStreamTexture returned failure";
+    return 0;
+  }
   return stream_id;
 }
 

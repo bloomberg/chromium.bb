@@ -170,17 +170,18 @@ void GpuChannelManager::OnCreateViewCommandBuffer(
     const gfx::GLSurfaceHandle& window,
     int32 surface_id,
     int32 client_id,
-    const GPUCreateCommandBufferConfig& init_params) {
+    const GPUCreateCommandBufferConfig& init_params,
+    int32 route_id) {
   DCHECK(surface_id);
-  int32 route_id = MSG_ROUTING_NONE;
+  bool succeeded = false;
 
   GpuChannelMap::const_iterator iter = gpu_channels_.find(client_id);
   if (iter != gpu_channels_.end()) {
-    iter->second->CreateViewCommandBuffer(
-        window, surface_id, init_params, &route_id);
+    succeeded = iter->second->CreateViewCommandBuffer(
+        window, surface_id, init_params, route_id);
   }
 
-  Send(new GpuHostMsg_CommandBufferCreated(route_id));
+  Send(new GpuHostMsg_CommandBufferCreated(succeeded));
 }
 
 void GpuChannelManager::CreateImage(

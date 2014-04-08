@@ -82,7 +82,7 @@ class GpuVideoEncodeAccelerator
 
   void Send(IPC::Message* message);
   // Helper for replying to the creation request.
-  void SendCreateEncoderReply(IPC::Message* message, int32 route_id);
+  void SendCreateEncoderReply(IPC::Message* message, bool succeeded);
 
   // Route ID to communicate with the host.
   int32 host_route_id_;

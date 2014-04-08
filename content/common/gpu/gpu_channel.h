@@ -104,11 +104,11 @@ class GpuChannel : public IPC::Listener,
   // other channels.
   void StubSchedulingChanged(bool scheduled);
 
-  void CreateViewCommandBuffer(
+  bool CreateViewCommandBuffer(
       const gfx::GLSurfaceHandle& window,
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
-      int32* route_id);
+      int32 route_id);
 
   void CreateImage(
       gfx::PluginWindowHandle window,
@@ -126,11 +126,11 @@ class GpuChannel : public IPC::Listener,
   // Destroy channel and all contained contexts.
   void DestroySoon();
 
-  // Generate a route ID guaranteed to be unique for this channel.
-  int32 GenerateRouteID();
+  // Called to add a listener for a particular message routing ID.
+  // Returns true if succeeded.
+  bool AddRoute(int32 route_id, IPC::Listener* listener);
 
-  // Called to add/remove a listener for a particular message routing ID.
-  void AddRoute(int32 route_id, IPC::Listener* listener);
+  // Called to remove a listener for a particular message routing ID.
   void RemoveRoute(int32 route_id);
 
   gpu::PreemptionFlag* GetPreemptionFlag();
@@ -167,9 +167,10 @@ class GpuChannel : public IPC::Listener,
   void OnCreateOffscreenCommandBuffer(
       const gfx::Size& size,
       const GPUCreateCommandBufferConfig& init_params,
-      int32* route_id);
+      int32 route_id,
+      bool* succeeded);
   void OnDestroyCommandBuffer(int32 route_id);
-  void OnDevToolsStartEventsRecording(int32* route_id);
+  void OnDevToolsStartEventsRecording(int32 route_id, bool* succeeded);
   void OnDevToolsStopEventsRecording();
 
   // Decrement the count of unhandled IPC messages and defer preemption.

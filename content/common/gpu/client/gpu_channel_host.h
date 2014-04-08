@@ -68,8 +68,10 @@ class CONTENT_EXPORT GpuChannelHostFactory {
   virtual base::MessageLoop* GetMainLoop() = 0;
   virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() = 0;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) = 0;
-  virtual int32 CreateViewCommandBuffer(
-      int32 surface_id, const GPUCreateCommandBufferConfig& init_params) = 0;
+  virtual bool CreateViewCommandBuffer(
+      int32 surface_id,
+      const GPUCreateCommandBufferConfig& init_params,
+      int32 route_id) = 0;
   virtual void CreateImage(
       gfx::PluginWindowHandle window,
       int32 image_id,
@@ -161,6 +163,9 @@ class GpuChannelHost : public IPC::Sender,
   // Reserve one unused gpu memory buffer ID.
   int32 ReserveGpuMemoryBufferId();
 
+  // Generate a route ID guaranteed to be unique for this channel.
+  int32 GenerateRouteID();
+
  private:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
   GpuChannelHost(GpuChannelHostFactory* factory,
@@ -212,6 +217,7 @@ class GpuChannelHost : public IPC::Sender,
   // except:
   // - |next_transfer_buffer_id_|, atomic type
   // - |next_gpu_memory_buffer_id_|, atomic type
+  // - |next_route_id_|, atomic type
   // - |proxies_|, protected by |context_lock_|
   GpuChannelHostFactory* const factory_;
 
@@ -228,6 +234,9 @@ class GpuChannelHost : public IPC::Sender,
 
   // Gpu memory buffer IDs are allocated in sequence.
   base::AtomicSequenceNumber next_gpu_memory_buffer_id_;
+
+  // Route IDs are allocated in sequence.
+  base::AtomicSequenceNumber next_route_id_;
 
   // Protects proxies_.
   mutable base::Lock context_lock_;

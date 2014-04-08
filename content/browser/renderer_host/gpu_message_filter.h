@@ -60,13 +60,14 @@ class GpuMessageFilter : public BrowserMessageFilter {
   void OnCreateViewCommandBuffer(
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
+      int32 route_id,
       IPC::Message* reply);
   // Helper callbacks for the message handlers.
   void EstablishChannelCallback(scoped_ptr<IPC::Message> reply,
                                 const IPC::ChannelHandle& channel,
                                 const gpu::GPUInfo& gpu_info);
   void CreateCommandBufferCallback(scoped_ptr<IPC::Message> reply,
-                                   int32 route_id);
+                                   bool succeeded);
 
   void BeginAllFrameSubscriptions();
   void EndAllFrameSubscriptions();

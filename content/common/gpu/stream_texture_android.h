@@ -22,8 +22,9 @@ class StreamTexture : public gfx::GLImage,
                       public IPC::Listener,
                       public GpuCommandBufferStub::DestructionObserver {
  public:
-  static int32 Create(GpuCommandBufferStub* owner_stub,
-                      uint32 client_texture_id);
+  static bool Create(GpuCommandBufferStub* owner_stub,
+                     uint32 client_texture_id,
+                     int stream_id);
 
  private:
   StreamTexture(GpuCommandBufferStub* owner_stub,

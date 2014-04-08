@@ -87,17 +87,24 @@ bool GpuVideoEncodeAcceleratorHost::Initialize(
     DLOG(ERROR) << "impl_ destroyed";
     return false;
   }
+
+  int32 route_id = channel_->GenerateRouteID();
+  channel_->AddRoute(route_id, weak_this_factory_.GetWeakPtr());
+
+  bool succeeded = false;
   Send(new GpuCommandBufferMsg_CreateVideoEncoder(impl_->GetRouteID(),
                                                   input_format,
                                                   input_visible_size,
                                                   output_profile,
                                                   initial_bitrate,
-                                                  &encoder_route_id_));
-  if (encoder_route_id_ == MSG_ROUTING_NONE) {
+                                                  route_id,
+                                                  &succeeded));
+  if (!succeeded) {
     DLOG(ERROR) << "Send(GpuCommandBufferMsg_CreateVideoEncoder()) failed";
+    channel_->RemoveRoute(route_id);
     return false;
   }
-  channel_->AddRoute(encoder_route_id_, weak_this_factory_.GetWeakPtr());
+  encoder_route_id_ = route_id;
   return true;
 }
 

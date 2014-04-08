@@ -87,7 +87,7 @@ class GpuVideoDecodeAccelerator
   void SetTextureCleared(const media::Picture& picture);
 
   // Helper for replying to the creation request.
-  void SendCreateDecoderReply(IPC::Message* message, int32 route_id);
+  void SendCreateDecoderReply(IPC::Message* message, bool succeeded);
 
   // Route ID to communicate with the host.
   int32 host_route_id_;

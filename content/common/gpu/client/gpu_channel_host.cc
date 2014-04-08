@@ -65,6 +65,7 @@ GpuChannelHost::GpuChannelHost(GpuChannelHostFactory* factory,
       gpu_info_(gpu_info) {
   next_transfer_buffer_id_.GetNext();
   next_gpu_memory_buffer_id_.GetNext();
+  next_route_id_.GetNext();
 }
 
 void GpuChannelHost::Connect(const IPC::ChannelHandle& channel_handle,
@@ -140,8 +141,8 @@ CommandBufferProxyImpl* GpuChannelHost::CreateViewCommandBuffer(
   init_params.attribs = attribs;
   init_params.active_url = active_url;
   init_params.gpu_preference = gpu_preference;
-  int32 route_id = factory_->CreateViewCommandBuffer(surface_id, init_params);
-  if (route_id == MSG_ROUTING_NONE) {
+  int32 route_id = GenerateRouteID();
+  if (!factory_->CreateViewCommandBuffer(surface_id, init_params, route_id)) {
     LOG(ERROR) << "GpuChannelHost::CreateViewCommandBuffer failed.";
     return NULL;
   }
@@ -169,15 +170,17 @@ CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
   init_params.attribs = attribs;
   init_params.active_url = active_url;
   init_params.gpu_preference = gpu_preference;
-  int32 route_id;
+  int32 route_id = GenerateRouteID();
+  bool succeeded = false;
   if (!Send(new GpuChannelMsg_CreateOffscreenCommandBuffer(size,
                                                            init_params,
-                                                           &route_id))) {
+                                                           route_id,
+                                                           &succeeded))) {
     LOG(ERROR) << "Failed to send GpuChannelMsg_CreateOffscreenCommandBuffer.";
     return NULL;
   }
 
-  if (route_id == MSG_ROUTING_NONE) {
+  if (!succeeded) {
     LOG(ERROR)
         << "GpuChannelMsg_CreateOffscreenCommandBuffer returned failure.";
     return NULL;
@@ -296,6 +299,10 @@ gfx::GpuMemoryBufferHandle GpuChannelHost::ShareGpuMemoryBufferToGpuProcess(
 
 int32 GpuChannelHost::ReserveGpuMemoryBufferId() {
   return next_gpu_memory_buffer_id_.GetNext();
+}
+
+int32 GpuChannelHost::GenerateRouteID() {
+  return next_route_id_.GetNext();
 }
 
 GpuChannelHost::~GpuChannelHost() {

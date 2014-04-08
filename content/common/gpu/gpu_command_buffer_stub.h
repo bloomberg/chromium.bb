@@ -177,11 +177,13 @@ class GpuCommandBufferStub
   void OnGetTransferBuffer(int32 id, IPC::Message* reply_message);
 
   void OnCreateVideoDecoder(media::VideoCodecProfile profile,
+                            int32 route_id,
                             IPC::Message* reply_message);
   void OnCreateVideoEncoder(media::VideoFrame::Format input_format,
                             const gfx::Size& input_visible_size,
                             media::VideoCodecProfile output_profile,
                             uint32 initial_bitrate,
+                            int32 route_id,
                             IPC::Message* reply_message);
 
   void OnSetSurfaceVisible(bool visible);
@@ -208,7 +210,8 @@ class GpuCommandBufferStub
   void OnCommandProcessed();
   void OnParseError();
   void OnSetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
-  void OnCreateStreamTexture(uint32 texture_id, int32* stream_id);
+  void OnCreateStreamTexture(
+      uint32 texture_id, int32 stream_id, bool* succeeded);
 
   void ReportState();
 

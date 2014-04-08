@@ -1137,23 +1137,26 @@ scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
       HostAllocateSharedMemoryBuffer(size));
 }
 
-int32 RenderThreadImpl::CreateViewCommandBuffer(
-      int32 surface_id, const GPUCreateCommandBufferConfig& init_params) {
+bool RenderThreadImpl::CreateViewCommandBuffer(
+      int32 surface_id,
+      const GPUCreateCommandBufferConfig& init_params,
+      int32 route_id) {
   TRACE_EVENT1("gpu",
                "RenderThreadImpl::CreateViewCommandBuffer",
                "surface_id",
                surface_id);
 
-  int32 route_id = MSG_ROUTING_NONE;
+  bool succeeded = false;
   IPC::Message* message = new GpuHostMsg_CreateViewCommandBuffer(
       surface_id,
       init_params,
-      &route_id);
+      route_id,
+      &succeeded);
 
   // Allow calling this from the compositor thread.
   thread_safe_sender()->Send(message);
 
-  return route_id;
+  return succeeded;
 }
 
 void RenderThreadImpl::CreateImage(

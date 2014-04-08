@@ -23,12 +23,10 @@ using gpu::gles2::TextureManager;
 using gpu::gles2::TextureRef;
 
 // static
-int32 StreamTexture::Create(
+bool StreamTexture::Create(
     GpuCommandBufferStub* owner_stub,
-    uint32 client_texture_id) {
-  GpuChannel* channel = owner_stub->channel();
-  int32 route_id = channel->GenerateRouteID();
-
+    uint32 client_texture_id,
+    int stream_id) {
   GLES2Decoder* decoder = owner_stub->decoder();
   TextureManager* texture_manager =
       decoder->GetContextGroup()->texture_manager();
@@ -40,7 +38,7 @@ int32 StreamTexture::Create(
     // TODO: Ideally a valid image id was returned to the client so that
     // it could then call glBindTexImage2D() for doing the following.
     scoped_refptr<gfx::GLImage> gl_image(
-        new StreamTexture(owner_stub, route_id, texture->service_id()));
+        new StreamTexture(owner_stub, stream_id, texture->service_id()));
     gfx::Size size = gl_image->GetSize();
     texture_manager->SetTarget(texture, GL_TEXTURE_EXTERNAL_OES);
     texture_manager->SetLevelInfo(texture,
@@ -56,10 +54,10 @@ int32 StreamTexture::Create(
                                   true);
     texture_manager->SetLevelImage(
         texture, GL_TEXTURE_EXTERNAL_OES, 0, gl_image);
-    return route_id;
+    return true;
   }
 
-  return 0;
+  return false;
 }
 
 StreamTexture::StreamTexture(GpuCommandBufferStub* owner_stub,

@@ -189,10 +189,13 @@ void DevToolsAgent::startGPUEventsRecording() {
   if (!gpu_channel_host)
     return;
   DCHECK(gpu_route_id_ == MSG_ROUTING_NONE);
+  int32 route_id = gpu_channel_host->GenerateRouteID();
+  bool succeeded = false;
   gpu_channel_host->Send(
-      new GpuChannelMsg_DevToolsStartEventsRecording(&gpu_route_id_));
-  DCHECK(gpu_route_id_ != MSG_ROUTING_NONE);
-  if (gpu_route_id_ != MSG_ROUTING_NONE) {
+      new GpuChannelMsg_DevToolsStartEventsRecording(route_id, &succeeded));
+  DCHECK(succeeded);
+  if (succeeded) {
+    gpu_route_id_ = route_id;
     gpu_channel_host->AddRoute(gpu_route_id_, AsWeakPtr());
   }
 }

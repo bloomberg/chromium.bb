@@ -26,8 +26,13 @@ bool MessageRouter::Send(IPC::Message* msg) {
   return false;
 }
 
-void MessageRouter::AddRoute(int32 routing_id, IPC::Listener* listener) {
+bool MessageRouter::AddRoute(int32 routing_id, IPC::Listener* listener) {
+  if (routes_.Lookup(routing_id)) {
+    DLOG(ERROR) << "duplicate routing ID";
+    return false;
+  }
   routes_.AddWithID(listener, routing_id);
+  return true;
 }
 
 void MessageRouter::RemoveRoute(int32 routing_id) {

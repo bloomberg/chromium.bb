@@ -46,7 +46,6 @@ GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(int32 host_route_id,
       output_buffer_size_(0),
       weak_this_factory_(this) {
   stub_->AddDestructionObserver(this);
-  stub_->channel()->AddRoute(host_route_id_, this);
   make_context_current_ =
       base::Bind(&MakeDecoderContextCurrent, stub_->AsWeakPtr());
 }
@@ -70,13 +69,20 @@ void GpuVideoEncodeAccelerator::Initialize(
            << ", initial_bitrate=" << initial_bitrate;
   DCHECK(!encoder_);
 
+  if (!stub_->channel()->AddRoute(host_route_id_, this)) {
+    DLOG(ERROR) << "GpuVideoEncodeAccelerator::Initialize(): "
+                   "failed to add route";
+    SendCreateEncoderReply(init_done_msg, false);
+    return;
+  }
+
   if (input_visible_size.width() > media::limits::kMaxDimension ||
       input_visible_size.height() > media::limits::kMaxDimension ||
       input_visible_size.GetArea() > media::limits::kMaxCanvas) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::Initialize(): "
                    "input_visible_size " << input_visible_size.ToString()
                 << " too large";
-    SendCreateEncoderReply(init_done_msg, MSG_ROUTING_NONE);
+    SendCreateEncoderReply(init_done_msg, false);
     return;
   }
 
@@ -84,7 +90,7 @@ void GpuVideoEncodeAccelerator::Initialize(
   if (!encoder_) {
     DLOG(ERROR)
         << "GpuVideoEncodeAccelerator::Initialize(): VEA creation failed";
-    SendCreateEncoderReply(init_done_msg, MSG_ROUTING_NONE);
+    SendCreateEncoderReply(init_done_msg, false);
     return;
   }
   if (!encoder_->Initialize(input_format,
@@ -94,12 +100,12 @@ void GpuVideoEncodeAccelerator::Initialize(
                             this)) {
     DLOG(ERROR)
         << "GpuVideoEncodeAccelerator::Initialize(): VEA initialization failed";
-    SendCreateEncoderReply(init_done_msg, MSG_ROUTING_NONE);
+    SendCreateEncoderReply(init_done_msg, false);
     return;
   }
   input_format_ = input_format;
   input_visible_size_ = input_visible_size;
-  SendCreateEncoderReply(init_done_msg, host_route_id_);
+  SendCreateEncoderReply(init_done_msg, true);
 }
 
 bool GpuVideoEncodeAccelerator::OnMessageReceived(const IPC::Message& message) {
@@ -283,8 +289,8 @@ void GpuVideoEncodeAccelerator::Send(IPC::Message* message) {
 }
 
 void GpuVideoEncodeAccelerator::SendCreateEncoderReply(IPC::Message* message,
-                                                       int32 route_id) {
-  GpuCommandBufferMsg_CreateVideoEncoder::WriteReplyParams(message, route_id);
+                                                       bool succeeded) {
+  GpuCommandBufferMsg_CreateVideoEncoder::WriteReplyParams(message, succeeded);
   Send(message);
 }
 

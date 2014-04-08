@@ -59,7 +59,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   typedef base::Callback<void(const IPC::ChannelHandle&, const gpu::GPUInfo&)>
       EstablishChannelCallback;
 
-  typedef base::Callback<void(int32)> CreateCommandBufferCallback;
+  typedef base::Callback<void(bool)> CreateCommandBufferCallback;
 
   typedef base::Callback<void(const gfx::Size)> CreateImageCallback;
 
@@ -112,6 +112,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       int surface_id,
       int client_id,
       const GPUCreateCommandBufferConfig& init_params,
+      int route_id,
       const CreateCommandBufferCallback& callback);
 
   // Tells the GPU process to create a new image using the given window.
@@ -155,7 +156,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Message handlers.
   void OnInitialized(bool result, const gpu::GPUInfo& gpu_info);
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
-  void OnCommandBufferCreated(const int32 route_id);
+  void OnCommandBufferCreated(bool succeeded);
   void OnDestroyCommandBuffer(int32 surface_id);
   void OnImageCreated(const gfx::Size size);
   void OnDidCreateOffscreenContext(const GURL& url);

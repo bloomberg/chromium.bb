@@ -261,11 +261,12 @@ IPC_MESSAGE_CONTROL1(GpuMsg_CloseChannel,
 
 // Tells the GPU process to create a new command buffer that renders directly
 // to a native view. A corresponding GpuCommandBufferStub is created.
-IPC_MESSAGE_CONTROL4(GpuMsg_CreateViewCommandBuffer,
+IPC_MESSAGE_CONTROL5(GpuMsg_CreateViewCommandBuffer,
                      gfx::GLSurfaceHandle, /* compositing_surface */
                      int32, /* surface_id */
                      int32, /* client_id */
-                     GPUCreateCommandBufferConfig /* init_params */)
+                     GPUCreateCommandBufferConfig, /* init_params */
+                     int32 /* route_id */)
 
 // Tells the GPU process to create a new image from a window. Images
 // can be bound to textures using CHROMIUM_texture_from_image.
@@ -328,10 +329,11 @@ IPC_SYNC_MESSAGE_CONTROL1_3(GpuHostMsg_EstablishGpuChannel,
 
 // A renderer sends this to the browser process when it wants to
 // create a GL context associated with the given view_id.
-IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_CreateViewCommandBuffer,
+IPC_SYNC_MESSAGE_CONTROL3_1(GpuHostMsg_CreateViewCommandBuffer,
                             int32, /* surface_id */
                             GPUCreateCommandBufferConfig, /* init_params */
-                            int32 /* route_id */)
+                            int32, /* route_id */
+                            bool /* succeeded */)
 
 // Response from GPU to a GputMsg_Initialize message.
 IPC_MESSAGE_CONTROL2(GpuHostMsg_Initialized,
@@ -358,7 +360,7 @@ IPC_MESSAGE_CONTROL1(GpuMsg_LoadedShader,
 
 // Respond from GPU to a GpuMsg_CreateViewCommandBuffer message.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_CommandBufferCreated,
-                     int32 /* route_id */)
+                     bool /* succeeded */)
 
 // Request from GPU to free the browser resources associated with the
 // command buffer.
@@ -448,10 +450,11 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_GpuMemoryUmaStats,
 
 // Tells the GPU process to create a new command buffer that renders to an
 // offscreen frame buffer.
-IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
+IPC_SYNC_MESSAGE_CONTROL3_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
                             gfx::Size, /* size */
                             GPUCreateCommandBufferConfig, /* init_params */
-                            int32 /* route_id */)
+                            int32, /* route_id */
+                            bool /* succeeded */)
 
 // The CommandBufferProxy sends this to the GpuCommandBufferStub in its
 // destructor, so that the stub deletes the actual CommandBufferService
@@ -459,16 +462,11 @@ IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                             int32 /* instance_id */)
 
-// Create a new GPU-accelerated video encoder.
-IPC_SYNC_MESSAGE_CONTROL0_1(GpuChannelMsg_CreateVideoEncoder,
-                            int32 /* route_id */)
-
-IPC_MESSAGE_CONTROL1(GpuChannelMsg_DestroyVideoEncoder, int32 /* route_id */)
-
 // Sent by DevTools agent in the inspected renderer process to initiate GPU
 // instrumentation events recording.
-IPC_SYNC_MESSAGE_CONTROL0_1(GpuChannelMsg_DevToolsStartEventsRecording,
-                            int32 /* route_id */)
+IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_DevToolsStartEventsRecording,
+                            int32, /* route_id */
+                            bool /* succeeded */)
 
 // The message is sent when DevTools want to stop events recording.
 IPC_MESSAGE_CONTROL0(GpuChannelMsg_DevToolsStopEventsRecording)
@@ -569,22 +567,24 @@ IPC_MESSAGE_ROUTED3(GpuCommandBufferMsg_RegisterTransferBuffer,
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_DestroyTransferBuffer,
                     int32 /* id */)
 
-// Create and initialize a hardware video decoder, returning its new route_id.
+// Create and initialize a hardware video decoder using the specified route_id.
 // Created decoders should be freed with AcceleratedVideoDecoderMsg_Destroy when
 // no longer needed.
-IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateVideoDecoder,
+IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateVideoDecoder,
                            media::VideoCodecProfile /* profile */,
-                           int32 /* route_id */)
+                           int32, /* route_id */
+                           bool /* succeeded */)
 
-// Create and initialize a hardware video encoder, returning its new route_id.
+// Create and initialize a hardware video encoder using the specified route_id.
 // Created encoders should be freed with AcceleratedVideoEncoderMsg_Destroy when
 // no longer needed.
-IPC_SYNC_MESSAGE_ROUTED4_1(GpuCommandBufferMsg_CreateVideoEncoder,
+IPC_SYNC_MESSAGE_ROUTED5_1(GpuCommandBufferMsg_CreateVideoEncoder,
                            media::VideoFrame::Format /* input_format */,
                            gfx::Size /* input_visible_size */,
                            media::VideoCodecProfile /* output_profile */,
                            uint32 /* initial_bitrate */,
-                           int32 /* route_id  */)
+                           int32, /* route_id */
+                           bool /* succeeded */)
 
 // Tells the proxy that there was an error and the command buffer had to be
 // destroyed for some reason.
@@ -660,9 +660,10 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_DestroyGpuMemoryBuffer,
                     int32 /* id */)
 
 // Attaches an external image stream to the client texture.
-IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateStreamTexture,
+IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateStreamTexture,
                            uint32, /* client_texture_id */
-                           int32   /* stream_id */)
+                           int32, /* stream_id */
+                           bool /* succeeded */)
 
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Messages

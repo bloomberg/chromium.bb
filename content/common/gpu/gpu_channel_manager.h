@@ -117,7 +117,8 @@ class GpuChannelManager : public IPC::Listener,
       const gfx::GLSurfaceHandle& window,
       int32 render_view_id,
       int32 client_id,
-      const GPUCreateCommandBufferConfig& init_params);
+      const GPUCreateCommandBufferConfig& init_params,
+      int32 route_id);
   void CreateImage(
       gfx::PluginWindowHandle window, int32 client_id, int32 image_id);
   void OnCreateImage(

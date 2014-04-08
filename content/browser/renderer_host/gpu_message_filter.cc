@@ -158,6 +158,7 @@ void GpuMessageFilter::OnEstablishGpuChannel(
 void GpuMessageFilter::OnCreateViewCommandBuffer(
     int32 surface_id,
     const GPUCreateCommandBufferConfig& init_params,
+    int32 route_id,
     IPC::Message* reply_ptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_ptr<IPC::Message> reply(reply_ptr);
@@ -197,6 +198,7 @@ void GpuMessageFilter::OnCreateViewCommandBuffer(
       surface_id,
       render_process_id_,
       init_params,
+      route_id,
       base::Bind(&GpuMessageFilter::CreateCommandBufferCallback,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&reply)));
@@ -214,9 +216,9 @@ void GpuMessageFilter::EstablishChannelCallback(
 }
 
 void GpuMessageFilter::CreateCommandBufferCallback(
-    scoped_ptr<IPC::Message> reply, int32 route_id) {
+    scoped_ptr<IPC::Message> reply, bool succeeded) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  GpuHostMsg_CreateViewCommandBuffer::WriteReplyParams(reply.get(), route_id);
+  GpuHostMsg_CreateViewCommandBuffer::WriteReplyParams(reply.get(), succeeded);
   Send(reply.release());
 }
 

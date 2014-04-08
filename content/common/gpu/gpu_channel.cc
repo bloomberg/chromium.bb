@@ -537,17 +537,15 @@ void GpuChannel::StubSchedulingChanged(bool scheduled) {
   }
 }
 
-void GpuChannel::CreateViewCommandBuffer(
+bool GpuChannel::CreateViewCommandBuffer(
     const gfx::GLSurfaceHandle& window,
     int32 surface_id,
     const GPUCreateCommandBufferConfig& init_params,
-    int32* route_id) {
+    int32 route_id) {
   TRACE_EVENT1("gpu",
                "GpuChannel::CreateViewCommandBuffer",
                "surface_id",
                surface_id);
-
-  *route_id = MSG_ROUTING_NONE;
 
   GpuCommandBufferStub* share_group = stubs_.Lookup(init_params.share_group_id);
 
@@ -559,7 +557,6 @@ void GpuChannel::CreateViewCommandBuffer(
   use_virtualized_gl_context = true;
 #endif
 
-  *route_id = GenerateRouteID();
   scoped_ptr<GpuCommandBufferStub> stub(
       new GpuCommandBufferStub(this,
                                share_group,
@@ -571,15 +568,20 @@ void GpuChannel::CreateViewCommandBuffer(
                                init_params.attribs,
                                init_params.gpu_preference,
                                use_virtualized_gl_context,
-                               *route_id,
+                               route_id,
                                surface_id,
                                watchdog_,
                                software_,
                                init_params.active_url));
   if (preempted_flag_.get())
     stub->SetPreemptByFlag(preempted_flag_);
-  router_.AddRoute(*route_id, stub.get());
-  stubs_.AddWithID(stub.release(), *route_id);
+  if (!router_.AddRoute(route_id, stub.get())) {
+    DLOG(ERROR) << "GpuChannel::CreateViewCommandBuffer(): "
+                   "failed to add route";
+    return false;
+  }
+  stubs_.AddWithID(stub.release(), route_id);
+  return true;
 }
 
 GpuCommandBufferStub* GpuChannel::LookupCommandBuffer(int32 route_id) {
@@ -635,13 +637,8 @@ void GpuChannel::DestroySoon() {
       FROM_HERE, base::Bind(&GpuChannel::OnDestroy, this));
 }
 
-int32 GpuChannel::GenerateRouteID() {
-  static int32 last_id = 0;
-  return ++last_id;
-}
-
-void GpuChannel::AddRoute(int32 route_id, IPC::Listener* listener) {
-  router_.AddRoute(route_id, listener);
+bool GpuChannel::AddRoute(int32 route_id, IPC::Listener* listener) {
+  return router_.AddRoute(route_id, listener);
 }
 
 void GpuChannel::RemoveRoute(int32 route_id) {
@@ -769,11 +766,10 @@ void GpuChannel::HandleMessage() {
 void GpuChannel::OnCreateOffscreenCommandBuffer(
     const gfx::Size& size,
     const GPUCreateCommandBufferConfig& init_params,
-    int32* route_id) {
+    int32 route_id,
+    bool* succeeded) {
   TRACE_EVENT0("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer");
   GpuCommandBufferStub* share_group = stubs_.Lookup(init_params.share_group_id);
-
-  *route_id = GenerateRouteID();
 
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this,
@@ -786,17 +782,23 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       init_params.attribs,
       init_params.gpu_preference,
       false,
-      *route_id,
+      route_id,
       0,
       watchdog_,
       software_,
       init_params.active_url));
   if (preempted_flag_.get())
     stub->SetPreemptByFlag(preempted_flag_);
-  router_.AddRoute(*route_id, stub.get());
-  stubs_.AddWithID(stub.release(), *route_id);
+  if (!router_.AddRoute(route_id, stub.get())) {
+    DLOG(ERROR) << "GpuChannel::OnCreateOffscreenCommandBuffer(): "
+                   "failed to add route";
+    *succeeded = false;
+    return;
+  }
+  stubs_.AddWithID(stub.release(), route_id);
   TRACE_EVENT1("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer",
                "route_id", route_id);
+  *succeeded = true;
 }
 
 void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
@@ -817,8 +819,9 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
   }
 }
 
-void GpuChannel::OnDevToolsStartEventsRecording(int32* route_id) {
-  devtools_gpu_agent_->StartEventsRecording(route_id);
+void GpuChannel::OnDevToolsStartEventsRecording(int32 route_id,
+                                                bool* succeeded) {
+  *succeeded = devtools_gpu_agent_->StartEventsRecording(route_id);
 }
 
 void GpuChannel::OnDevToolsStopEventsRecording() {

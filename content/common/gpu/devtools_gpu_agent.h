@@ -30,7 +30,7 @@ class DevToolsGpuAgent : public base::NonThreadSafe {
                     GpuEventsDispatcher::EventPhase,
                     GpuChannel* channel);
 
-  void StartEventsRecording(int32* route_id);
+  bool StartEventsRecording(int32 route_id);
   void StopEventsRecording();
 
  private:

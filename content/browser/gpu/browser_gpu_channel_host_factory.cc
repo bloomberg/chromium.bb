@@ -213,21 +213,24 @@ void BrowserGpuChannelHostFactory::CreateViewCommandBufferOnIO(
       surface_id,
       gpu_client_id_,
       init_params,
+      request->route_id,
       base::Bind(&BrowserGpuChannelHostFactory::CommandBufferCreatedOnIO,
                  request));
 }
 
 // static
 void BrowserGpuChannelHostFactory::CommandBufferCreatedOnIO(
-    CreateRequest* request, int32 route_id) {
-  request->route_id = route_id;
+    CreateRequest* request, bool succeeded) {
+  request->succeeded = succeeded;
   request->event.Signal();
 }
 
-int32 BrowserGpuChannelHostFactory::CreateViewCommandBuffer(
+bool BrowserGpuChannelHostFactory::CreateViewCommandBuffer(
       int32 surface_id,
-      const GPUCreateCommandBufferConfig& init_params) {
+      const GPUCreateCommandBufferConfig& init_params,
+      int32 route_id) {
   CreateRequest request;
+  request.route_id = route_id;
   GetIOLoopProxy()->PostTask(FROM_HERE, base::Bind(
         &BrowserGpuChannelHostFactory::CreateViewCommandBufferOnIO,
         base::Unretained(this),
@@ -242,7 +245,7 @@ int32 BrowserGpuChannelHostFactory::CreateViewCommandBuffer(
                "BrowserGpuChannelHostFactory::CreateViewCommandBuffer");
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   request.event.Wait();
-  return request.route_id;
+  return request.succeeded;
 }
 
 void BrowserGpuChannelHostFactory::CreateImageOnIO(

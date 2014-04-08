@@ -89,15 +89,21 @@ bool GpuVideoDecodeAcceleratorHost::Initialize(media::VideoCodecProfile profile,
 
   if (!impl_)
     return false;
+
+  int32 route_id = channel_->GenerateRouteID();
+  channel_->AddRoute(route_id, weak_this_factory_.GetWeakPtr());
+
+  bool succeeded = false;
   Send(new GpuCommandBufferMsg_CreateVideoDecoder(
-      impl_->GetRouteID(), profile, &decoder_route_id_));
-  if (decoder_route_id_ == MSG_ROUTING_NONE) {
+      impl_->GetRouteID(), profile, route_id, &succeeded));
+
+  if (!succeeded) {
     NOTIFY_ERROR(PLATFORM_FAILURE)
         << "Send(GpuCommandBufferMsg_CreateVideoDecoder()) failed";
+    channel_->RemoveRoute(route_id);
     return false;
   }
-
-  channel_->AddRoute(decoder_route_id_, weak_this_factory_.GetWeakPtr());
+  decoder_route_id_ = route_id;
   return true;
 }
 

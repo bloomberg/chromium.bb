@@ -128,7 +128,6 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
       weak_factory_for_io_(this) {
   DCHECK(stub_);
   stub_->AddDestructionObserver(this);
-  stub_->channel()->AddRoute(host_route_id_, this);
   child_message_loop_ = base::MessageLoopProxy::current();
   make_context_current_ =
       base::Bind(&MakeDecoderContextCurrent, stub_->AsWeakPtr());
@@ -228,11 +227,17 @@ void GpuVideoDecodeAccelerator::Initialize(
     IPC::Message* init_done_msg) {
   DCHECK(!video_decode_accelerator_.get());
 
+  if (!stub_->channel()->AddRoute(host_route_id_, this)) {
+    DLOG(ERROR) << "GpuVideoDecodeAccelerator::Initialize(): "
+                   "failed to add route";
+    SendCreateDecoderReply(init_done_msg, false);
+  }
+
 #if !defined(OS_WIN)
   // Ensure we will be able to get a GL context at all before initializing
   // non-Windows VDAs.
   if (!make_context_current_.Run()) {
-    SendCreateDecoderReply(init_done_msg, MSG_ROUTING_NONE);
+    SendCreateDecoderReply(init_done_msg, false);
     return;
   }
 #endif
@@ -240,7 +245,7 @@ void GpuVideoDecodeAccelerator::Initialize(
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_WIN7) {
     NOTIMPLEMENTED() << "HW video decode acceleration not available.";
-    SendCreateDecoderReply(init_done_msg, MSG_ROUTING_NONE);
+    SendCreateDecoderReply(init_done_msg, false);
     return;
   }
   DVLOG(0) << "Initializing DXVA HW decoder for windows.";
@@ -250,7 +255,7 @@ void GpuVideoDecodeAccelerator::Initialize(
   scoped_ptr<V4L2Device> device =
       V4L2Device::Create(stub_->decoder()->GetGLContext()->GetHandle());
   if (!device.get()) {
-    SendCreateDecoderReply(init_done_msg, MSG_ROUTING_NONE);
+    SendCreateDecoderReply(init_done_msg, false);
     return;
   }
   video_decode_accelerator_.reset(
@@ -263,7 +268,7 @@ void GpuVideoDecodeAccelerator::Initialize(
   if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL) {
     VLOG(1) << "HW video decode acceleration not available without "
                "DesktopGL (GLX).";
-    SendCreateDecoderReply(init_done_msg, MSG_ROUTING_NONE);
+    SendCreateDecoderReply(init_done_msg, false);
     return;
   }
   gfx::GLContextGLX* glx_context =
@@ -276,7 +281,7 @@ void GpuVideoDecodeAccelerator::Initialize(
       make_context_current_));
 #else
   NOTIMPLEMENTED() << "HW video decode acceleration not available.";
-  SendCreateDecoderReply(init_done_msg, MSG_ROUTING_NONE);
+  SendCreateDecoderReply(init_done_msg, false);
   return;
 #endif
 
@@ -286,11 +291,11 @@ void GpuVideoDecodeAccelerator::Initialize(
   }
 
   if (!video_decode_accelerator_->Initialize(profile, this)) {
-    SendCreateDecoderReply(init_done_msg, MSG_ROUTING_NONE);
+    SendCreateDecoderReply(init_done_msg, false);
     return;
   }
 
-  SendCreateDecoderReply(init_done_msg, host_route_id_);
+  SendCreateDecoderReply(init_done_msg, true);
 }
 
 // Runs on IO thread if video_decode_accelerator_->CanDecodeOnIOThread() is
@@ -486,8 +491,8 @@ bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
 }
 
 void GpuVideoDecodeAccelerator::SendCreateDecoderReply(IPC::Message* message,
-                                                       int32 route_id) {
-  GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(message, route_id);
+                                                       bool succeeded) {
+  GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(message, succeeded);
   Send(message);
 }
 

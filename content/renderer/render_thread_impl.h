@@ -387,9 +387,10 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() OVERRIDE;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t size) OVERRIDE;
-  virtual int32 CreateViewCommandBuffer(
+  virtual bool CreateViewCommandBuffer(
       int32 surface_id,
-      const GPUCreateCommandBufferConfig& init_params) OVERRIDE;
+      const GPUCreateCommandBufferConfig& init_params,
+      int32 route_id) OVERRIDE;
   virtual void CreateImage(
       gfx::PluginWindowHandle window,
       int32 image_id,

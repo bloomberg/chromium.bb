@@ -29,9 +29,10 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() OVERRIDE;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t size) OVERRIDE;
-  virtual int32 CreateViewCommandBuffer(
+  virtual bool CreateViewCommandBuffer(
       int32 surface_id,
-      const GPUCreateCommandBufferConfig& init_params) OVERRIDE;
+      const GPUCreateCommandBufferConfig& init_params,
+      int32 route_id) OVERRIDE;
   virtual void CreateImage(
       gfx::PluginWindowHandle window,
       int32 image_id,
@@ -68,6 +69,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
     base::WaitableEvent event;
     int gpu_host_id;
     int32 route_id;
+    bool succeeded;
   };
 
   class EstablishRequest : public base::RefCountedThreadSafe<EstablishRequest> {
@@ -110,7 +112,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       CreateRequest* request,
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params);
-  static void CommandBufferCreatedOnIO(CreateRequest* request, int32 route_id);
+  static void CommandBufferCreatedOnIO(CreateRequest* request, bool succeeded);
   void CreateImageOnIO(
       gfx::PluginWindowHandle window,
       int32 image_id,
