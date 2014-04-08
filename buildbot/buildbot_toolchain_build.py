@@ -48,6 +48,6 @@ subprocess.check_call([sys.executable,
                        + sys.argv[2:])
 
 if bot_type == '--buildbot' or bot_type == '--trybot':
-  packages.UploadPackages(TEMP_PACKAGES_FILE, bot_type == '--trybot')
   print '@@@BUILD_STEP upload_package_info@@@'
+  packages.UploadPackages(TEMP_PACKAGES_FILE, bot_type == '--trybot')
   sys.stdout.flush()

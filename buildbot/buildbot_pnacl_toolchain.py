@@ -71,8 +71,8 @@ try:
   subprocess.check_call(cmd)
 
   if args.buildbot or args.trybot:
-    packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
     print '@@@BUILD_STEP upload_package_info@@@'
+    packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
     sys.stdout.flush()
 
 except subprocess.CalledProcessError:
