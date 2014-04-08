@@ -49,7 +49,7 @@
 	capability is provided, wl_fullscreen_shell.present_surface_for_mode
 	will almost never fail and clients should feel free to set whatever
 	mode they like.  If the compositor does not advertise this, it may
-	still suppot some modes that are not advertised through wl_global.mode
+	still support some modes that are not advertised through wl_global.mode
 	but it is less likely.
 
 	CURSOR_PLANE:
