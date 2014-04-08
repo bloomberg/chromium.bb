@@ -49,8 +49,8 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/page_navigator.h"
 #include "extensions/common/constants.h"
-#include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
+#include "net/base/net_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/download_handler.h"

@@ -12,7 +12,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/renderer/savable_resources.h"
 #include "content/shell/browser/shell.h"
-#include "net/base/filename_util.h"
+#include "net/base/net_util.h"
 
 namespace content {
 

@@ -18,8 +18,8 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_util.h"
 #include "url/gurl.h"
 
 namespace content {

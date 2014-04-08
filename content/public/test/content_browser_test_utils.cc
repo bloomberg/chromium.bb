@@ -17,7 +17,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
-#include "net/base/filename_util.h"
+#include "net/base/net_util.h"
 
 namespace content {
 

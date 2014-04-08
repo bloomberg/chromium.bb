@@ -16,9 +16,9 @@
 #include "base/values.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
-#include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 
 using url_matcher::URLMatcher;

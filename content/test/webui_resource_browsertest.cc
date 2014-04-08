@@ -13,7 +13,7 @@
 #include "content/shell/browser/shell.h"
 #include "grit/content_resources.h"
 #include "grit/webui_resources.h"
-#include "net/base/filename_util.h"
+#include "net/base/net_util.h"
 
 namespace content {
 

@@ -19,7 +19,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/filename_util.h"
+#include "net/base/net_util.h"
 
 // These tests don't apply to the Mac version; see GetCommandLineForRelaunch
 // for details.

@@ -20,7 +20,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/generated_resources.h"
-#include "net/base/filename_util.h"
+#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {

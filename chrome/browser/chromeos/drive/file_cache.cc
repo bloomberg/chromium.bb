@@ -21,9 +21,9 @@
 #include "chromeos/chromeos_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/task_util.h"
-#include "net/base/filename_util.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
+#include "net/base/net_util.h"
 #include "third_party/cros_system_api/constants/cryptohome.h"
 
 using content::BrowserThread;

@@ -19,7 +19,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "net/base/filename_util.h"
+#include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"

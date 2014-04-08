@@ -85,6 +85,40 @@ void RemovePermanentIPv6AddressesWhereTemporaryExists(
 
 }  // namespace
 
+bool FileURLToFilePath(const GURL& url, base::FilePath* path) {
+  *path = base::FilePath();
+  std::string& file_path_str = const_cast<std::string&>(path->value());
+  file_path_str.clear();
+
+  if (!url.is_valid())
+    return false;
+
+  // Firefox seems to ignore the "host" of a file url if there is one. That is,
+  // file://foo/bar.txt maps to /bar.txt.
+  // TODO(dhg): This should probably take into account UNCs which could
+  // include a hostname other than localhost or blank
+  std::string old_path = url.path();
+
+  if (old_path.empty())
+    return false;
+
+  // GURL stores strings as percent-encoded 8-bit, this will undo if possible.
+  old_path = UnescapeURLComponent(old_path,
+      UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
+
+  // Collapse multiple path slashes into a single path slash.
+  std::string new_path;
+  do {
+    new_path = old_path;
+    ReplaceSubstringsAfterOffset(&new_path, 0, "//", "/");
+    old_path.swap(new_path);
+  } while (new_path != old_path);
+
+  file_path_str.assign(old_path);
+
+  return !file_path_str.empty();
+}
+
 bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
 #if defined(OS_ANDROID)
   std::string network_list = android::GetNetworkList();
