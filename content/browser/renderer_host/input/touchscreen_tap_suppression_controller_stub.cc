@@ -23,8 +23,17 @@ void TouchscreenTapSuppressionController::GestureFlingCancelAck(
     bool /*processed*/) {
 }
 
-bool TouchscreenTapSuppressionController::FilterTapEvent(
+bool TouchscreenTapSuppressionController::ShouldDeferGestureTapDown(
     const GestureEventWithLatencyInfo& /*event*/) {
+  return false;
+}
+
+bool TouchscreenTapSuppressionController::ShouldDeferGestureShowPress(
+    const GestureEventWithLatencyInfo& /*event*/) {
+  return false;
+}
+
+bool TouchscreenTapSuppressionController::ShouldSuppressGestureTapEnd() {
   return false;
 }
 

@@ -153,8 +153,13 @@ void TouchDispositionGestureFilter::OnTouchEventAck(bool event_consumed) {
   if (IsEmpty() || (Head().empty() && sequences_.size() == 1))
     return;
 
-  if (Head().empty())
-    PopGestureSequence();
+  if (Head().empty()) {
+    CancelTapIfNecessary();
+    CancelFlingIfNecessary();
+    EndScrollIfNecessary();
+    state_ = GestureHandlingState();
+    sequences_.pop();
+  }
 
   GestureSequence& sequence = Head();
 
@@ -166,8 +171,7 @@ void TouchDispositionGestureFilter::OnTouchEventAck(bool event_consumed) {
     DCHECK_NE(packet.gesture_source(), GestureEventDataPacket::UNDEFINED);
     DCHECK_NE(packet.gesture_source(), GestureEventDataPacket::INVALID);
 
-    GestureEventDataPacket::GestureSource source = packet.gesture_source();
-    if (source != GestureEventDataPacket::TOUCH_TIMEOUT) {
+    if (packet.gesture_source() != GestureEventDataPacket::TOUCH_TIMEOUT) {
       // We should handle at most one non-timeout based packet.
       if (touch_packet_for_current_ack_handled)
         break;
@@ -197,8 +201,6 @@ void TouchDispositionGestureFilter::FilterAndSendPacket(
     }
     SendGesture(gesture);
   }
-  if (packet.gesture_source() == GestureEventDataPacket::TOUCH_SEQUENCE_END)
-    EndScrollIfNecessary();
 }
 
 void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
@@ -206,37 +208,18 @@ void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
   // utility class.
   switch (event.type) {
     case ET_GESTURE_LONG_TAP:
-      if (!needs_tap_ending_event_)
-        return;
       CancelTapIfNecessary();
       CancelFlingIfNecessary();
       break;
     case ET_GESTURE_TAP_DOWN:
       DCHECK(!needs_tap_ending_event_);
       ending_event_motion_event_id_ = event.motion_event_id;
-      needs_show_press_event_ = true;
       needs_tap_ending_event_ = true;
       break;
-    case ET_GESTURE_SHOW_PRESS:
-      if (!needs_show_press_event_)
-        return;
-      needs_show_press_event_ = false;
-      break;
-    case ET_GESTURE_DOUBLE_TAP:
-      CancelTapIfNecessary();
-      needs_show_press_event_ = false;
-      break;
     case ET_GESTURE_TAP:
-      if (needs_show_press_event_) {
-        GestureEventData show_press_event(event);
-        show_press_event.type = ET_GESTURE_SHOW_PRESS;
-        SendGesture(show_press_event);
-        DCHECK(!needs_show_press_event_);
-      }
-      needs_tap_ending_event_ = false;
-      break;
     case ET_GESTURE_TAP_CANCEL:
-      needs_show_press_event_ = false;
+    case ET_GESTURE_TAP_UNCONFIRMED:
+    case ET_GESTURE_DOUBLE_TAP:
       needs_tap_ending_event_ = false;
       break;
     case ET_GESTURE_SCROLL_BEGIN:
@@ -289,15 +272,6 @@ void TouchDispositionGestureFilter::EndScrollIfNecessary() {
   SendGesture(
       CreateGesture(ET_GESTURE_SCROLL_END, ending_event_motion_event_id_));
   DCHECK(!needs_scroll_ending_event_);
-}
-
-void TouchDispositionGestureFilter::PopGestureSequence() {
-  DCHECK(Head().empty());
-  CancelTapIfNecessary();
-  CancelFlingIfNecessary();
-  EndScrollIfNecessary();
-  state_ = GestureHandlingState();
-  sequences_.pop();
 }
 
 TouchDispositionGestureFilter::GestureSequence&

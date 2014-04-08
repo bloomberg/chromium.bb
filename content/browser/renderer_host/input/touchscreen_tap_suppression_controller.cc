@@ -12,8 +12,6 @@
 #include "ui/gfx/android/view_configuration.h"
 #endif
 
-using blink::WebInputEvent;
-
 namespace content {
 
 TouchscreenTapSuppressionController::TouchscreenTapSuppressionController(
@@ -33,33 +31,25 @@ void TouchscreenTapSuppressionController::GestureFlingCancelAck(
   controller_->GestureFlingCancelAck(processed);
 }
 
-bool TouchscreenTapSuppressionController::FilterTapEvent(
+bool TouchscreenTapSuppressionController::ShouldDeferGestureTapDown(
     const GestureEventWithLatencyInfo& event) {
-  switch (event.event.type) {
-    case WebInputEvent::GestureTapDown:
-      if (!controller_->ShouldDeferTapDown())
-        return false;
-      stashed_tap_down_.reset(new GestureEventWithLatencyInfo(event));
-      return true;
+  bool should_defer = controller_->ShouldDeferTapDown();
+  if (should_defer)
+    stashed_tap_down_.reset(new GestureEventWithLatencyInfo(event));
+  return should_defer;
+}
 
-    case WebInputEvent::GestureShowPress:
-      if (!stashed_tap_down_)
-        return false;
-      stashed_show_press_.reset(new GestureEventWithLatencyInfo(event));
-      return true;
+bool TouchscreenTapSuppressionController::ShouldDeferGestureShowPress(
+    const GestureEventWithLatencyInfo& event) {
+  if (!stashed_tap_down_)
+    return false;
 
-    case WebInputEvent::GestureTapUnconfirmed:
-      return stashed_tap_down_;
+  stashed_show_press_.reset(new GestureEventWithLatencyInfo(event));
+  return true;
+}
 
-    case WebInputEvent::GestureTapCancel:
-    case WebInputEvent::GestureTap:
-    case WebInputEvent::GestureDoubleTap:
-      return controller_->ShouldSuppressTapEnd();
-
-    default:
-      break;
-  }
-  return false;
+bool TouchscreenTapSuppressionController::ShouldSuppressGestureTapEnd() {
+  return controller_->ShouldSuppressTapEnd();
 }
 
 #if defined(OS_ANDROID)
