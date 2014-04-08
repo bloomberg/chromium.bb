@@ -69,12 +69,7 @@ class CONTENT_EXPORT ImageTransportFactory {
 
   virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() = 0;
 
-  // Creates a transport texture for a given scale factor.
-  virtual scoped_refptr<ui::Texture> CreateTransportClient(
-      float device_scale_factor) = 0;
-
-  // Variant of CreateTransportClient() that deletes the texture on the GPU when
-  // the returned value is deleted.
+  // Creates a ui::Texture that deletes the GL texture when deleted.
   virtual scoped_refptr<ui::Texture> CreateOwnedTexture(
       const gfx::Size& size,
       float device_scale_factor,

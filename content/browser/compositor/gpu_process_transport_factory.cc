@@ -106,40 +106,6 @@ class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
   DISALLOW_COPY_AND_ASSIGN(OwnedTexture);
 };
 
-class ImageTransportClientTexture : public OwnedTexture {
- public:
-  ImageTransportClientTexture(const scoped_refptr<ContextProvider>& provider,
-                              float device_scale_factor,
-                              GLuint texture_id)
-      : OwnedTexture(provider,
-                     gfx::Size(0, 0),
-                     device_scale_factor,
-                     texture_id) {}
-
-  virtual void Consume(const gpu::Mailbox& mailbox,
-                       const gfx::Size& new_size) OVERRIDE {
-    mailbox_ = mailbox;
-    if (mailbox.IsZero())
-      return;
-
-    DCHECK(provider_ && texture_id_);
-    GLES2Interface* gl = provider_->ContextGL();
-    gl->BindTexture(GL_TEXTURE_2D, texture_id_);
-    gl->ConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
-    size_ = new_size;
-    gl->ShallowFlushCHROMIUM();
-  }
-
-  virtual gpu::Mailbox Produce() OVERRIDE { return mailbox_; }
-
- protected:
-  virtual ~ImageTransportClientTexture() {}
-
- private:
-  gpu::Mailbox mailbox_;
-  DISALLOW_COPY_AND_ASSIGN(ImageTransportClientTexture);
-};
-
 GpuProcessTransportFactory::GpuProcessTransportFactory()
     : callback_factory_(this), offscreen_content_bound_to_other_thread_(false) {
   output_surface_proxy_ = new BrowserCompositorOutputSurfaceProxy(
@@ -322,20 +288,6 @@ gfx::GLSurfaceHandle GpuProcessTransportFactory::GetSharedSurfaceHandle() {
   handle.parent_client_id =
       BrowserGpuChannelHostFactory::instance()->GetGpuChannelId();
   return handle;
-}
-
-scoped_refptr<ui::Texture> GpuProcessTransportFactory::CreateTransportClient(
-    float device_scale_factor) {
-  scoped_refptr<cc::ContextProvider> provider =
-      SharedMainThreadContextProvider();
-  if (!provider.get())
-    return NULL;
-  GLuint texture_id = 0;
-  provider->ContextGL()->GenTextures(1, &texture_id);
-  scoped_refptr<ImageTransportClientTexture> image(
-      new ImageTransportClientTexture(
-          provider, device_scale_factor, texture_id));
-  return image;
 }
 
 scoped_refptr<ui::Texture> GpuProcessTransportFactory::CreateOwnedTexture(

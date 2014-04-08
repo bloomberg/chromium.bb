@@ -11,45 +11,6 @@
 
 namespace content {
 
-namespace {
-
-class FakeTexture : public ui::Texture {
- public:
-  FakeTexture(scoped_refptr<cc::ContextProvider> context_provider,
-              float device_scale_factor)
-      : ui::Texture(false, gfx::Size(), device_scale_factor),
-        context_provider_(context_provider),
-        texture_(0u) {
-    context_provider_->ContextGL()->GenTextures(1, &texture_);
-  }
-
-  virtual unsigned int PrepareTexture() OVERRIDE { return texture_; }
-
-  virtual void Consume(const gpu::Mailbox& mailbox,
-                       const gfx::Size& new_size) OVERRIDE {
-    if (mailbox.IsZero())
-      return;
-
-    DCHECK(context_provider_ && texture_);
-    gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
-    gl->BindTexture(GL_TEXTURE_2D, texture_);
-    gl->ConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
-    size_ = new_size;
-    gl->ShallowFlushCHROMIUM();
-  }
-
- private:
-  virtual ~FakeTexture() {
-    context_provider_->ContextGL()->DeleteTextures(1, &texture_);
-  }
-
-  scoped_refptr<cc::ContextProvider> context_provider_;
-  unsigned texture_;
-  DISALLOW_COPY_AND_ASSIGN(FakeTexture);
-};
-
-}  // anonymous namespace
-
 NoTransportImageTransportFactory::NoTransportImageTransportFactory(
     scoped_ptr<ui::ContextFactory> context_factory)
     : context_factory_(context_factory.Pass()) {}
@@ -63,13 +24,6 @@ ui::ContextFactory* NoTransportImageTransportFactory::AsContextFactory() {
 gfx::GLSurfaceHandle
 NoTransportImageTransportFactory::GetSharedSurfaceHandle() {
   return gfx::GLSurfaceHandle();
-}
-
-scoped_refptr<ui::Texture>
-NoTransportImageTransportFactory::CreateTransportClient(
-    float device_scale_factor) {
-  return new FakeTexture(context_factory_->SharedMainThreadContextProvider(),
-                         device_scale_factor);
 }
 
 scoped_refptr<ui::Texture> NoTransportImageTransportFactory::CreateOwnedTexture(

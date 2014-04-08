@@ -38,7 +38,14 @@ IN_PROC_BROWSER_TEST_F(ImageTransportFactoryBrowserTest,
     return;
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  scoped_refptr<ui::Texture> texture = factory->CreateTransportClient(1.f);
+  ui::ContextFactory* context_factory = ui::ContextFactory::GetInstance();
+  gpu::gles2::GLES2Interface* gl =
+      context_factory->SharedMainThreadContextProvider()->ContextGL();
+  GLuint texture_id = 0;
+  gl->GenTextures(1, &texture_id);
+
+  scoped_refptr<ui::Texture> texture =
+      factory->CreateOwnedTexture(gfx::Size(1, 1), 1.f, texture_id);
   ASSERT_TRUE(texture.get());
 
   MockImageTransportFactoryObserver observer;
@@ -48,10 +55,6 @@ IN_PROC_BROWSER_TEST_F(ImageTransportFactoryBrowserTest,
   EXPECT_CALL(observer, OnLostResources())
       .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
-  ui::ContextFactory* context_factory = ui::ContextFactory::GetInstance();
-
-  gpu::gles2::GLES2Interface* gl =
-      context_factory->SharedMainThreadContextProvider()->ContextGL();
   gl->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                           GL_INNOCENT_CONTEXT_RESET_ARB);
 

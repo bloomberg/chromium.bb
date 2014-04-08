@@ -52,8 +52,6 @@ class GpuProcessTransportFactory
   // ImageTransportFactory implementation.
   virtual ui::ContextFactory* AsContextFactory() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() OVERRIDE;
-  virtual scoped_refptr<ui::Texture> CreateTransportClient(
-      float device_scale_factor) OVERRIDE;
   virtual scoped_refptr<ui::Texture> CreateOwnedTexture(
       const gfx::Size& size,
       float device_scale_factor,
