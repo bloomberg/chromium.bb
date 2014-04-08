@@ -583,9 +583,11 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
     SkPaint mask_paint;
     mask_paint.setShader(mask_shader.get());
 
+    SkLayerRasterizer::Builder builder;
+    builder.addLayer(mask_paint);
+
     skia::RefPtr<SkLayerRasterizer> mask_rasterizer =
-        skia::AdoptRef(new SkLayerRasterizer);
-    mask_rasterizer->addLayer(mask_paint);
+        skia::AdoptRef(builder.detachRasterizer());
 
     current_paint_.setRasterizer(mask_rasterizer.get());
     current_canvas_->drawRect(dest_visible_rect, current_paint_);
