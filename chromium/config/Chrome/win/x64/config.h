@@ -6,7 +6,7 @@
 #define CONFIG_THIS_YEAR 2013
 #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
 #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
-#define CC_IDENT "Microsoft (R) C/C++ Optimizing Compiler Version 16.00.40219.01 for x64"
+#define CC_IDENT "Microsoft (R) C/C++ Optimizing Compiler Version 18.00.21005.1 for x64"
 #define av_restrict __restrict
 #define EXTERN_PREFIX ""
 #define EXTERN_ASM 
@@ -133,29 +133,29 @@
 #define HAVE_ATOMICS_WIN32 1
 #define HAVE_ATANF 1
 #define HAVE_ATAN2F 1
-#define HAVE_CBRT 0
-#define HAVE_CBRTF 0
+#define HAVE_CBRT 1
+#define HAVE_CBRTF 1
 #define HAVE_COSF 1
-#define HAVE_EXP2 0
-#define HAVE_EXP2F 0
+#define HAVE_EXP2 1
+#define HAVE_EXP2F 1
 #define HAVE_EXPF 1
-#define HAVE_ISINF 0
-#define HAVE_ISNAN 0
+#define HAVE_ISINF 1
+#define HAVE_ISNAN 1
 #define HAVE_LDEXPF 1
-#define HAVE_LLRINT 0
-#define HAVE_LLRINTF 0
+#define HAVE_LLRINT 1
+#define HAVE_LLRINTF 1
 #define HAVE_LOG2 0
-#define HAVE_LOG2F 0
+#define HAVE_LOG2F 1
 #define HAVE_LOG10F 1
-#define HAVE_LRINT 0
-#define HAVE_LRINTF 0
+#define HAVE_LRINT 1
+#define HAVE_LRINTF 1
 #define HAVE_POWF 1
-#define HAVE_RINT 0
-#define HAVE_ROUND 0
-#define HAVE_ROUNDF 0
+#define HAVE_RINT 1
+#define HAVE_ROUND 1
+#define HAVE_ROUNDF 1
 #define HAVE_SINF 1
-#define HAVE_TRUNC 0
-#define HAVE_TRUNCF 0
+#define HAVE_TRUNC 1
+#define HAVE_TRUNCF 1
 #define HAVE_ACCESS 1
 #define HAVE_ALIGNED_MALLOC 1
 #define HAVE_ALIGNED_STACK 1
@@ -206,7 +206,7 @@
 #define HAVE_GETSERVBYPORT 0
 #define HAVE_GETTIMEOFDAY 0
 #define HAVE_GLOB 0
-#define HAVE_GNU_AS 0
+#define HAVE_GNU_AS 1
 #define HAVE_GNU_WINDRES 0
 #define HAVE_GSM_H 0
 #define HAVE_IBM_ASM 0
@@ -252,7 +252,7 @@
 #define HAVE_SCHED_GETAFFINITY 0
 #define HAVE_SDL 0
 #define HAVE_SETCONSOLETEXTATTRIBUTE 1
-#define HAVE_SETMODE 0
+#define HAVE_SETMODE 1
 #define HAVE_SETRLIMIT 0
 #define HAVE_SLEEP 1
 #define HAVE_SNDIO_H 0

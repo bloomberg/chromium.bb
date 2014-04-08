@@ -99,16 +99,7 @@ GYP_CONDITIONAL_C_SOURCE_STANZA_BEGIN = """        'c_sources': [
 """
 GYP_CONDITIONAL_ASM_SOURCE_STANZA_BEGIN = """        'asm_sources': [
 """
-GYP_CONDITIONAL_MSVC_OUTPUT_STANZA_BEGIN = """        'converter_outputs': [
-"""
 GYP_CONDITIONAL_ITEM_STANZA_END = """        ],
-"""
-
-GYP_HEADERS_STANZA_BEGIN = """    'c_headers': [
-"""
-GYP_HEADERS_STANZA_END = """    ],  # c_headers
-"""
-GYP_HEADERS_STANZA_ITEM = """      '%s',
 """
 
 # Controls GYP conditional stanza generation.
@@ -387,14 +378,6 @@ class SourceSet(object):
         stanza += GYP_CONDITIONAL_STANZA_ITEM % (name)
       stanza += GYP_CONDITIONAL_ITEM_STANZA_END
 
-    # Write out all MSVC outputs.
-    msvc_outputs = filter(IsCFile, self.sources)
-    if msvc_outputs:
-      stanza += GYP_CONDITIONAL_MSVC_OUTPUT_STANZA_BEGIN
-      for name in msvc_outputs:
-        stanza += GYP_CONDITIONAL_STANZA_OUTPUT_ITEM % (name)
-      stanza += GYP_CONDITIONAL_ITEM_STANZA_END
-
     stanza += GYP_CONDITIONAL_STANZA_END % (conditions)
     return ''.join(stanza)
 
@@ -519,23 +502,6 @@ def main():
   for s in CreatePairwiseDisjointSets(sets):
     fd.write(s.GenerateGypStanza())
   fd.write(GYP_CONDITIONAL_END)
-
-  # Generate sorted list of .h files in source tree and write headers stanza.
-  header_files = []
-  for root, dirnames, filenames in os.walk('.'):
-    # Strip './' and other cruft from path.
-    root = os.path.normpath(root)
-    # Only process headers in code we use.  There should be no dependencies on
-    # headers from libraries we don't use.
-    if not root.startswith(
-        ('libavcodec', 'libavutil', 'libavformat', 'compat')):
-      continue
-    for fn in fnmatch.filter(filenames, '*.h'):
-      header_files.append(os.path.join(root,fn))
-  fd.write(GYP_HEADERS_STANZA_BEGIN)
-  for header in sorted(header_files):
-    fd.write(GYP_HEADERS_STANZA_ITEM % header)
-  fd.write(GYP_HEADERS_STANZA_END)
 
   fd.write(GYP_FOOTER)
   fd.close()

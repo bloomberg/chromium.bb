@@ -55,22 +55,16 @@
       }, {
         'ffmpeg_config%': '<(target_arch)',
       }],
-      ['OS == "win" and (MSVS_VERSION == "2013" or MSVS_VERSION == "2013e")', {
-        'os_config%': 'win-vs2013',
-      }, {
+      ['OS == "mac" or OS == "win" or OS == "openbsd"', {
+        'os_config%': '<(OS)',
+      }, {  # all other Unix OS's use the linux config
         'conditions': [
-          ['OS == "mac" or OS == "win" or OS == "openbsd"', {
-            'os_config%': '<(OS)',
-          }, {  # all other Unix OS's use the linux config
-            'conditions': [
-              ['msan==1', {
-                # MemorySanitizer doesn't like assembly code.
-                'os_config%': 'linux-noasm',
-              }, {
-                'os_config%': 'linux',
-              }]
-            ],
-          }],
+          ['msan==1', {
+            # MemorySanitizer doesn't like assembly code.
+            'os_config%': 'linux-noasm',
+          }, {
+            'os_config%': 'linux',
+          }]
         ],
       }],
       ['chromeos == 1', {
@@ -98,10 +92,6 @@
         {
           'target_name': 'ffmpeg_yasm',
           'type': 'static_library',
-          # VS2010 does not correctly incrementally link obj files generated
-          # from asm files. This flag disables UseLibraryDependencyInputs to
-          # avoid this problem.
-          'msvs_2010_disable_uldi_when_referenced': 1,
           'includes': [
             'ffmpeg_generated.gypi',
             '../yasm/yasm_compile.gypi',
@@ -151,59 +141,6 @@
         },
       ] # targets
     }], # arch != arm
-    ['OS == "win" and clang == 0 and MSVS_VERSION != "2013" and MSVS_VERSION != "2013e"', {
-      # Convert the source code from c99 to c89 if we're on Windows and not
-      # using clang, which can compile c99 directly.  Clang support is
-      # experimental and unsupported. VS2013 also supports enough of C99 to
-      # be able to avoid this conversion.
-      'variables': {
-        'converter_script': 'chromium/scripts/c99conv.py',
-        'converter_executable': 'chromium/binaries/c99conv.exe',
-        # Path to platform configuration files.
-        'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
-      },
-      'includes': [
-        'ffmpeg_generated.gypi',
-      ],
-      'targets': [{
-        'target_name': 'convert_ffmpeg_sources',
-        'type': 'none',
-        'sources': [
-          '<@(c_sources)',
-        ],
-        'rules': [
-          {
-            'rule_name': 'convert_c99_to_c89',
-            'extension': 'c',
-            'inputs': [
-              '<(converter_script)',
-              '<(converter_executable)',
-              # Since we don't know the dependency graph for header includes
-              # we need to list them all here to ensure a header change causes
-              # a recompilation.
-              '<(platform_config_root)/config.h',
-              '<(platform_config_root)/libavutil/avconfig.h',
-              '<@(c_headers)',
-            ],
-            # Argh!  Required so that the msvs generator will properly convert
-            # RULE_INPUT_DIRNAME to a relative path.
-            'msvs_external_rule': 1,
-            'outputs': [
-              '<(shared_generated_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).c',
-            ],
-            'action': [
-              'python',
-              '<(converter_script)',
-              '<(RULE_INPUT_PATH)',
-              '<(shared_generated_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).c',
-              '-I', '<(platform_config_root)',
-            ],
-            'message': 'Converting <(RULE_INPUT_PATH) from C99 to C89',
-            'process_outputs_as_sources': 1,
-          },
-        ],
-      }],
-    }],
     ['build_ffmpegsumo != 0', {
       'includes': [
         'ffmpeg_generated.gypi',
@@ -217,6 +154,7 @@
           'target_name': 'ffmpegsumo',
           'type': 'loadable_module',
           'sources': [
+            '<@(c_sources)',
             '<(platform_config_root)/config.h',
             '<(platform_config_root)/libavutil/avconfig.h',
           ],
@@ -235,14 +173,6 @@
             '-fomit-frame-pointer',
           ],
           'conditions': [
-            ['OS != "win" or clang == 1 or MSVS_VERSION == "2013" or MSVS_VERSION == "2013e"', {
-              # If we're not doing C99 conversion, add the normal source code.
-              'sources': ['<@(c_sources)'],
-            }, {
-              # Otherwise, compile the converted source code.
-              'dependencies': ['convert_ffmpeg_sources'],
-              'sources': ['<@(converter_outputs)'],
-            }],
             ['target_arch != "arm" and target_arch != "mipsel" and os_config != "linux-noasm"', {
               'dependencies': [
                 'ffmpeg_yasm',
@@ -475,11 +405,6 @@
                 }],
               ],
               'msvs_settings': {
-                # This magical incantation is necessary because VC++ will compile
-                # object files to same directory... even if they have the same name!
-                'VCCLCompilerTool': {
-                  'ObjectFile': '$(IntDir)/%(RelativeDir)/',
-                },
                 # Ignore warnings about a local symbol being inefficiently imported,
                 # upstream is working on a fix.
                 'VCLinkerTool': {
