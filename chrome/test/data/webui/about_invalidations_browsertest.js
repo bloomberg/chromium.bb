@@ -46,18 +46,20 @@ TEST_F('InvalidationsWebUITest', 'testChangingInvalidationsState', function() {
   var newNewState = 'TRANSIENT_INVALIDATION_ERROR';
 
   chrome.invalidations.updateInvalidatorState(newState);
-  expectEquals(invalidationsState.textContent,
-    'INVALIDATIONS_ENABLED',
-    'could not change the invalidations text');
+  var isContainedState = invalidationsState.textContent.indexOf(
+      'INVALIDATIONS_ENABLED') != -1;
+  expectTrue(isContainedState, 'could not change the invalidations text');
+
   invalidationsLog.value = '';
   chrome.invalidations.updateInvalidatorState(newNewState);
-  expectEquals(invalidationsState.textContent,
-    'TRANSIENT_INVALIDATION_ERROR');
-  var isContained =
+  var isContainedState2 = invalidationsState.textContent.indexOf(
+      'TRANSIENT_INVALIDATION_ERROR') != -1;
+  expectTrue(isContainedState2, 'could not change the invalidations text');
+  var isContainedLog =
     invalidationsLog.value.indexOf(
       'Invalidations service state changed to ' +
       '"TRANSIENT_INVALIDATION_ERROR"') != -1;
-  expectTrue(isContained, 'Actual log is:' + invalidationsLog.value);
+  expectTrue(isContainedLog, 'Actual log is:' + invalidationsLog.value);
 });
 
 // Test that objects ids appear on the table.

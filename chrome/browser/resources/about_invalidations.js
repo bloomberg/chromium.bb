@@ -54,14 +54,16 @@ cr.define('chrome.invalidations', function() {
   /**
    * Shows the current state of the InvalidatorService.
    * @param {string} newState The string to be displayed and logged.
+   * @param {number} lastChangedTime The time in epoch when the state was last
+   *     changed.
    */
-  function updateInvalidatorState(newState) {
+  function updateInvalidatorState(newState, lastChangedTime) {
     var logMessage = nowTimeString() +
       'Invalidations service state changed to ' + quote(newState);
 
     appendToLog(logMessage);
-    $('invalidations-state').textContent = newState;
-    currentInvalidationState = newState;
+    $('invalidations-state').textContent = newState + ' (since ' +
+        new Date(lastChangedTime) + ')';
   }
 
   /**

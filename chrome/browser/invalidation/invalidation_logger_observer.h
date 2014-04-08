@@ -28,7 +28,8 @@ class InvalidationLoggerObserver {
  public:
   virtual void OnRegistrationChange(
       const std::multiset<std::string>& registered_handlers) = 0;
-  virtual void OnStateChange(const syncer::InvalidatorState& new_state) = 0;
+  virtual void OnStateChange(const syncer::InvalidatorState& new_state,
+                             const base::Time& last_change_timestamp) = 0;
   virtual void OnUpdateIds(const std::string& handler_name,
                            const syncer::ObjectIdCountMap& details) = 0;
   virtual void OnDebugMessage(const base::DictionaryValue& details) = 0;

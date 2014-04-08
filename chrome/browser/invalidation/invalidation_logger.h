@@ -79,6 +79,7 @@ class InvalidationLogger {
 
   // The last InvalidatorState updated by the InvalidatorService.
   syncer::InvalidatorState last_invalidator_state_;
+  base::Time last_invalidator_state_timestamp_;
 
   // The map that contains every object id that is currently registered
   // and its owner.

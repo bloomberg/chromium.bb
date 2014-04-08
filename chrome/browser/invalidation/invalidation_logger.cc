@@ -13,7 +13,8 @@ namespace invalidation {
 class InvalidationLoggerObserver;
 
 InvalidationLogger::InvalidationLogger()
-    : last_invalidator_state_(syncer::TRANSIENT_INVALIDATION_ERROR) {}
+    : last_invalidator_state_(syncer::TRANSIENT_INVALIDATION_ERROR),
+      last_invalidator_state_timestamp_(base::Time::Now()) { }
 
 InvalidationLogger::~InvalidationLogger() {}
 
@@ -38,15 +39,19 @@ void InvalidationLogger::EmitRegisteredHandlers() {
 }
 
 void InvalidationLogger::OnStateChange(
-    const syncer::InvalidatorState& newState) {
-  last_invalidator_state_ = newState;
+    const syncer::InvalidatorState& new_state) {
+  // Prevent spurious same state emissions from updating the timestamp.
+  if (new_state != last_invalidator_state_)
+    last_invalidator_state_timestamp_ = base::Time::Now();
+  last_invalidator_state_ = new_state;
   EmitState();
 }
 
 void InvalidationLogger::EmitState() {
   FOR_EACH_OBSERVER(InvalidationLoggerObserver,
                     observer_list_,
-                    OnStateChange(last_invalidator_state_));
+                    OnStateChange(last_invalidator_state_,
+                                  last_invalidator_state_timestamp_));
 }
 
 void InvalidationLogger::OnUpdateIds(

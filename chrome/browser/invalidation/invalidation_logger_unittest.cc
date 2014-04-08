@@ -30,7 +30,8 @@ class InvalidationLoggerObserverTest : public InvalidationLoggerObserver {
     registration_change_received = true;
   }
 
-  virtual void OnStateChange(const syncer::InvalidatorState& newState)
+  virtual void OnStateChange(const syncer::InvalidatorState& new_state,
+                             const base::Time& last_change_timestamp)
       OVERRIDE {
     state_received = true;
   }
@@ -46,7 +47,7 @@ class InvalidationLoggerObserverTest : public InvalidationLoggerObserver {
   }
 
   virtual void OnInvalidation(
-      const syncer::ObjectIdInvalidationMap& newInvalidations) OVERRIDE {
+      const syncer::ObjectIdInvalidationMap& new_invalidations) OVERRIDE {
     invalidation_received = true;
   }
 

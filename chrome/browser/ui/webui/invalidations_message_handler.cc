@@ -80,10 +80,12 @@ void InvalidationsMessageHandler::OnRegistrationChange(
 }
 
 void InvalidationsMessageHandler::OnStateChange(
-    const syncer::InvalidatorState& new_state) {
+    const syncer::InvalidatorState& new_state,
+    const base::Time& last_changed_timestamp) {
   std::string state(syncer::InvalidatorStateToString(new_state));
   web_ui()->CallJavascriptFunction(
-      "chrome.invalidations.updateInvalidatorState", base::StringValue(state));
+      "chrome.invalidations.updateInvalidatorState", base::StringValue(state),
+      base::FundamentalValue(last_changed_timestamp.ToJsTime()));
 }
 
 void InvalidationsMessageHandler::OnUpdateIds(
