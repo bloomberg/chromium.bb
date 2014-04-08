@@ -32,6 +32,8 @@ class NexeLoadManager {
                          uint64_t loaded_bytes,
                          uint64_t total_bytes);
   void ReportLoadError(PP_NaClError error,
+                       const std::string& error_message);
+  void ReportLoadError(PP_NaClError error,
                        const std::string& error_message,
                        const std::string& console_message);
   void ReportLoadAbort();

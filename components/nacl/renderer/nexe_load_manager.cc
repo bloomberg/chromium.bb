@@ -220,6 +220,11 @@ void NexeLoadManager::ReportLoadSuccess(const std::string& url,
 }
 
 void NexeLoadManager::ReportLoadError(PP_NaClError error,
+                                      const std::string& error_message) {
+  ReportLoadError(error, error_message, error_message);
+}
+
+void NexeLoadManager::ReportLoadError(PP_NaClError error,
                                       const std::string& error_message,
                                       const std::string& console_message) {
   // Check that we are on the main renderer thread.
@@ -306,7 +311,6 @@ void NexeLoadManager::NexeDidCrash(const char* crash_log) {
       ReportDeadNexe();
     } else {
       ReportLoadError(PP_NACL_ERROR_START_PROXY_CRASH,
-                      "Nexe crashed during startup",
                       "Nexe crashed during startup");
     }
   }
