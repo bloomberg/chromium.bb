@@ -15,7 +15,6 @@
       'target_name': 'test_app',
       'product_name': 'Test App Gyp',
       'type': 'executable',
-      'product_extension': 'bundle',
       'mac_bundle': 1,
       'sources': [
         'TestApp/main.m',

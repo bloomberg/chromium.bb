@@ -20,27 +20,27 @@ if sys.platform == 'darwin':
   test.build('test.gyp', test.ALL, chdir='app-bundle')
 
   # Test that the extension is .bundle
-  test.built_file_must_exist('Test App Gyp.bundle/Test App Gyp',
+  test.built_file_must_exist('Test App Gyp.app/Test App Gyp',
                              chdir='app-bundle')
 
   # Info.plist
-  info_plist = test.built_file_path('Test App Gyp.bundle/Info.plist',
+  info_plist = test.built_file_path('Test App Gyp.app/Info.plist',
                                     chdir='app-bundle')
   # Resources
   test.built_file_must_exist(
-      'Test App Gyp.bundle/English.lproj/InfoPlist.strings',
+      'Test App Gyp.app/English.lproj/InfoPlist.strings',
       chdir='app-bundle')
   test.built_file_must_exist(
-      'Test App Gyp.bundle/English.lproj/MainMenu.nib',
+      'Test App Gyp.app/English.lproj/MainMenu.nib',
       chdir='app-bundle')
   test.built_file_must_exist(
-      'Test App Gyp.bundle/English.lproj/Main_iPhone.storyboardc',
+      'Test App Gyp.app/English.lproj/Main_iPhone.storyboardc',
       chdir='app-bundle')
 
   # Packaging
-  test.built_file_must_exist('Test App Gyp.bundle/PkgInfo',
+  test.built_file_must_exist('Test App Gyp.app/PkgInfo',
                              chdir='app-bundle')
-  test.built_file_must_match('Test App Gyp.bundle/PkgInfo', 'APPLause',
+  test.built_file_must_match('Test App Gyp.app/PkgInfo', 'APPLause',
                              chdir='app-bundle')
 
   test.pass_test()

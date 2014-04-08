@@ -1544,6 +1544,7 @@ def _AddIOSDeviceConfigurations(targets):
     for config_name, config_dict in dict(configs).iteritems():
       iphoneos_config_dict = copy.deepcopy(config_dict)
       configs[config_name + '-iphoneos'] = iphoneos_config_dict
+      configs[config_name + '-iphonesimulator'] = config_dict
       if toolset == 'target':
         iphoneos_config_dict['xcode_settings']['SDKROOT'] = 'iphoneos'
   return targets
