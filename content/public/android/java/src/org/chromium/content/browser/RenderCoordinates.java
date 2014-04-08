@@ -13,6 +13,11 @@ package org.chromium.content.browser;
  * Unless stated otherwise, all coordinates are in CSS (document) coordinate space.
  */
 public class RenderCoordinates {
+
+    // Used to accomodate finite precision when comparing scaled viewport and
+    // content widths in {@link #hasMobileViewport()}.
+    private static final float MOBILE_VIEWPORT_WIDTH_EPSILON = 0.005f;
+
     // Scroll offset from the native in CSS.
     private float mScrollXCss;
     private float mScrollYCss;
@@ -274,8 +279,8 @@ public class RenderCoordinates {
      * @return True if the page has a width=device-width or narrower viewport.
      */
     public boolean hasMobileViewport() {
-        float windowWidthDip = mPageScaleFactor * mLastFrameViewportWidthCss;
-        return mContentWidthCss <= windowWidthDip;
+        final float windowWidthDip = mPageScaleFactor * mLastFrameViewportWidthCss;
+        return mContentWidthCss <= (windowWidthDip + MOBILE_VIEWPORT_WIDTH_EPSILON);
     }
 
     /**
