@@ -1909,6 +1909,7 @@
       }],
       ['tsan==1', {
         'clang%': 1,
+        'use_custom_libcxx%': 1,
       }],
       ['msan==1', {
         'clang%': 1,
