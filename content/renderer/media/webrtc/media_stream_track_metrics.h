@@ -73,6 +73,10 @@ class CONTENT_EXPORT MediaStreamTrackMetrics : public base::NonThreadSafe {
                                    StreamType stream_type);
 
  protected:
+  // Calls SendLifetimeMessage for |observer| depending on |ice_state_|.
+  void SendLifeTimeMessageDependingOnIceState(
+      MediaStreamTrackMetricsObserver* observer);
+
   // Implements MakeUniqueId. |pc_id| is a cast of this object's
   // |this| pointer to a 64-bit integer, which is usable as a unique
   // ID for the PeerConnection this object is attached to (since there
@@ -88,6 +92,8 @@ class CONTENT_EXPORT MediaStreamTrackMetrics : public base::NonThreadSafe {
 
   typedef ScopedVector<MediaStreamTrackMetricsObserver> ObserverVector;
   ObserverVector observers_;
+
+  webrtc::PeerConnectionInterface::IceConnectionState ice_state_;
 };
 
 }  // namespace

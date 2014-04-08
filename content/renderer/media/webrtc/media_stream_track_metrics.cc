@@ -204,7 +204,8 @@ void MediaStreamTrackMetricsObserver::ReportTracks(
   }
 }
 
-MediaStreamTrackMetrics::MediaStreamTrackMetrics() {}
+MediaStreamTrackMetrics::MediaStreamTrackMetrics()
+    : ice_state_(webrtc::PeerConnectionInterface::kIceConnectionNew) {}
 
 MediaStreamTrackMetrics::~MediaStreamTrackMetrics() {
   for (ObserverVector::iterator it = observers_.begin(); it != observers_.end();
@@ -216,8 +217,10 @@ MediaStreamTrackMetrics::~MediaStreamTrackMetrics() {
 void MediaStreamTrackMetrics::AddStream(StreamType type,
                                         MediaStreamInterface* stream) {
   DCHECK(CalledOnValidThread());
-  observers_.insert(observers_.end(),
-                    new MediaStreamTrackMetricsObserver(type, stream, this));
+  MediaStreamTrackMetricsObserver* observer =
+      new MediaStreamTrackMetricsObserver(type, stream, this);
+  observers_.insert(observers_.end(), observer);
+  SendLifeTimeMessageDependingOnIceState(observer);
 }
 
 void MediaStreamTrackMetrics::RemoveStream(StreamType type,
@@ -237,41 +240,46 @@ void MediaStreamTrackMetrics::RemoveStream(StreamType type,
 void MediaStreamTrackMetrics::IceConnectionChange(
     PeerConnectionInterface::IceConnectionState new_state) {
   DCHECK(CalledOnValidThread());
+  ice_state_ = new_state;
   for (ObserverVector::iterator it = observers_.begin(); it != observers_.end();
        ++it) {
-    // There is a state transition diagram for these states at
-    // http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
-    switch (new_state) {
-      case PeerConnectionInterface::kIceConnectionConnected:
-      case PeerConnectionInterface::kIceConnectionCompleted:
-        (*it)->SendLifetimeMessages(CONNECTED);
-        break;
+    SendLifeTimeMessageDependingOnIceState(*it);
+  }
+}
+void MediaStreamTrackMetrics::SendLifeTimeMessageDependingOnIceState(
+    MediaStreamTrackMetricsObserver* observer) {
+  // There is a state transition diagram for these states at
+  // http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCIceConnectionState
+  switch (ice_state_) {
+    case PeerConnectionInterface::kIceConnectionConnected:
+    case PeerConnectionInterface::kIceConnectionCompleted:
+      observer->SendLifetimeMessages(CONNECTED);
+      break;
 
-      case PeerConnectionInterface::kIceConnectionFailed:
-        // We don't really need to handle FAILED (it is only supposed
-        // to be preceded by CHECKING so we wouldn't yet have sent a
-        // lifetime message) but we might as well use belt and
-        // suspenders and handle it the same as the other "end call"
-        // states. It will be ignored anyway if the call is not
-        // already connected.
-      case PeerConnectionInterface::kIceConnectionNew:
-        // It's a bit weird to count NEW as an end-lifetime event, but
-        // it's possible to transition directly from a connected state
-        // (CONNECTED or COMPLETED) to NEW, which can then be followed
-        // by a new connection. The observer will ignore the end
-        // lifetime event if it was not preceded by a begin-lifetime
-        // event.
-      case PeerConnectionInterface::kIceConnectionDisconnected:
-      case PeerConnectionInterface::kIceConnectionClosed:
-        (*it)->SendLifetimeMessages(DISCONNECTED);
-        break;
+    case PeerConnectionInterface::kIceConnectionFailed:
+      // We don't really need to handle FAILED (it is only supposed
+      // to be preceded by CHECKING so we wouldn't yet have sent a
+      // lifetime message) but we might as well use belt and
+      // suspenders and handle it the same as the other "end call"
+      // states. It will be ignored anyway if the call is not
+      // already connected.
+    case PeerConnectionInterface::kIceConnectionNew:
+      // It's a bit weird to count NEW as an end-lifetime event, but
+      // it's possible to transition directly from a connected state
+      // (CONNECTED or COMPLETED) to NEW, which can then be followed
+      // by a new connection. The observer will ignore the end
+      // lifetime event if it was not preceded by a begin-lifetime
+      // event.
+    case PeerConnectionInterface::kIceConnectionDisconnected:
+    case PeerConnectionInterface::kIceConnectionClosed:
+      observer->SendLifetimeMessages(DISCONNECTED);
+      break;
 
-      default:
-        // We ignore the remaining state (CHECKING) as it is never
-        // involved in a transition from connected to disconnected or
-        // vice versa.
-        break;
-    }
+    default:
+      // We ignore the remaining state (CHECKING) as it is never
+      // involved in a transition from connected to disconnected or
+      // vice versa.
+      break;
   }
 }
 

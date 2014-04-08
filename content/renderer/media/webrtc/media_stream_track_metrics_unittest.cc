@@ -199,6 +199,50 @@ TEST_F(MediaStreamTrackMetricsTest, BasicLocalStreams) {
   metrics_->IceConnectionChange(PeerConnectionInterface::kIceConnectionFailed);
 }
 
+TEST_F(MediaStreamTrackMetricsTest, LocalStreamAddedAferIceConnect) {
+  metrics_->IceConnectionChange(
+        PeerConnectionInterface::kIceConnectionConnected);
+
+  EXPECT_CALL(*metrics_,
+              SendLifetimeMessage("audio",
+                                  MediaStreamTrackMetrics::AUDIO_TRACK,
+                                  MediaStreamTrackMetrics::CONNECTED,
+                                  MediaStreamTrackMetrics::SENT_STREAM));
+  EXPECT_CALL(*metrics_,
+              SendLifetimeMessage("video",
+                                  MediaStreamTrackMetrics::VIDEO_TRACK,
+                                  MediaStreamTrackMetrics::CONNECTED,
+                                  MediaStreamTrackMetrics::SENT_STREAM));
+
+  scoped_refptr<MockAudioTrackInterface> audio(MakeAudioTrack("audio"));
+  scoped_refptr<MockVideoTrackInterface> video(MakeVideoTrack("video"));
+  stream_->AddTrack(audio);
+  stream_->AddTrack(video);
+  metrics_->AddStream(MediaStreamTrackMetrics::SENT_STREAM, stream_);
+}
+
+TEST_F(MediaStreamTrackMetricsTest, RemoteStreamAddedAferIceConnect) {
+  metrics_->IceConnectionChange(
+        PeerConnectionInterface::kIceConnectionConnected);
+
+  EXPECT_CALL(*metrics_,
+              SendLifetimeMessage("audio",
+                                  MediaStreamTrackMetrics::AUDIO_TRACK,
+                                  MediaStreamTrackMetrics::CONNECTED,
+                                  MediaStreamTrackMetrics::RECEIVED_STREAM));
+  EXPECT_CALL(*metrics_,
+              SendLifetimeMessage("video",
+                                  MediaStreamTrackMetrics::VIDEO_TRACK,
+                                  MediaStreamTrackMetrics::CONNECTED,
+                                  MediaStreamTrackMetrics::RECEIVED_STREAM));
+
+  scoped_refptr<MockAudioTrackInterface> audio(MakeAudioTrack("audio"));
+  scoped_refptr<MockVideoTrackInterface> video(MakeVideoTrack("video"));
+  stream_->AddTrack(audio);
+  stream_->AddTrack(video);
+  metrics_->AddStream(MediaStreamTrackMetrics::RECEIVED_STREAM, stream_);
+}
+
 TEST_F(MediaStreamTrackMetricsTest, RemoteStreamTrackAdded) {
   scoped_refptr<MockAudioTrackInterface> initial(MakeAudioTrack("initial"));
   scoped_refptr<MockAudioTrackInterface> added(MakeAudioTrack("added"));
