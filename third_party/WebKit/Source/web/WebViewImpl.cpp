@@ -1697,8 +1697,9 @@ void WebViewImpl::doPixelReadbackToCanvas(WebCanvas* canvas, const IntRect& rect
     ASSERT(m_layerTreeView);
 
     SkBitmap target;
-    target.setConfig(SkBitmap::kARGB_8888_Config, rect.width(), rect.height(), rect.width() * 4);
-    target.allocPixels();
+    target.setConfig(SkImageInfo::MakeN32Premul(rect.width(), rect.height()), rect.width() * 4);
+    if (!target.allocPixels())
+        return;
     m_layerTreeView->compositeAndReadback(target.getPixels(), rect);
 #if (!SK_R32_SHIFT && SK_B32_SHIFT == 16)
     // The compositor readback always gives back pixels in BGRA order, but for
