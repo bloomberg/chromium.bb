@@ -55,6 +55,9 @@ template("grit") {
   grit_config = target_name + "_grit_config"
   config(grit_config) {
     include_dirs = [ target_gen_dir ]
+
+    # Only our generated static library can depend on this.
+    visibility = ":" + target_name
   }
 
   grit_custom_target = target_name + "_grit"
@@ -70,7 +73,8 @@ template("grit") {
       "-o", output_dir,
     ] + grit_flags
 
-    # Inherit deps from template invocation if any.
+    # Only our generated static library can depend on this.
+    visibility = ":" + target_name
   }
 
   # This is the thing that people actually link with, it must be named the
@@ -86,5 +90,9 @@ template("grit") {
     deps = []
     deps = [ ":$grit_custom_target" ]
     direct_dependent_configs = [ ":$grit_config" ]
+
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
   }
 }

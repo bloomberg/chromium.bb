@@ -39,5 +39,8 @@ template("pkg_config") {
     if (defined(invoker.defines)) {
       defines = invoker.defines
     }
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
   }
 }

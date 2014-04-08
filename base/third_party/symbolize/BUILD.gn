@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 static_library("symbolize") {
+  visibility = "//base/*"
   sources = [
     "config.h",
     "demangle.cc",

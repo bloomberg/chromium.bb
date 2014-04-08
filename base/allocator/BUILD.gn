@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 static_library("allocator_extension_thunks") {
+  visibility = "//base/*"
   sources = [
     "allocator_extension_thunks.cc",
     "allocator_extension_thunks.h",

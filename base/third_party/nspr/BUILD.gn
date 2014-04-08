@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 static_library("nspr") {
+  visibility = "//base/*"
   sources = [
     "prtime.cc",
     "prtime.h",

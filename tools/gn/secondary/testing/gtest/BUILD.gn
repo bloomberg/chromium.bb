@@ -3,6 +3,11 @@
 # found in the LICENSE file.
 
 config("gtest_config") {
+  visibility = [
+    ":*",
+    "//testing/gmock:*",  # gmock also shares this config.
+  ]
+
   defines = [
     "UNIT_TEST",
 
