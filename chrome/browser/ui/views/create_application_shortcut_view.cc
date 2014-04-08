@@ -389,8 +389,10 @@ bool CreateApplicationShortcutView::Accept() {
   creation_locations.in_quick_launch_bar = false;
 #endif
 
-  web_app::CreateShortcuts(shortcut_info_, creation_locations,
-                           web_app::SHORTCUT_CREATION_BY_USER);
+  web_app::CreateShortcutsForShortcutInfo(
+      web_app::SHORTCUT_CREATION_BY_USER,
+      creation_locations,
+      shortcut_info_);
   return true;
 }
 
