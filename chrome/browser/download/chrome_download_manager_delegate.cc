@@ -197,7 +197,6 @@ bool IsOpenInBrowserPreferreredForFile(const base::FilePath& path) {
       path.MatchesExtension(FILE_PATH_LITERAL(".xht")) ||
       path.MatchesExtension(FILE_PATH_LITERAL(".xhtm")) ||
       path.MatchesExtension(FILE_PATH_LITERAL(".xhtml")) ||
-      path.MatchesExtension(FILE_PATH_LITERAL(".xml")) ||
       path.MatchesExtension(FILE_PATH_LITERAL(".xsl")) ||
       path.MatchesExtension(FILE_PATH_LITERAL(".xslt"))) {
     return true;
