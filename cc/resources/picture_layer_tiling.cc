@@ -29,6 +29,10 @@ class TileEvictionOrder {
     const TilePriority& a_priority = a->priority(tree_);
     const TilePriority& b_priority = b->priority(tree_);
 
+    if (a_priority.priority_bin == b_priority.priority_bin &&
+        a->required_for_activation() != b->required_for_activation()) {
+      return b->required_for_activation();
+    }
     return a_priority.IsHigherPriorityThan(b_priority);
   }
 

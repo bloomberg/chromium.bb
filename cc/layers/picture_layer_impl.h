@@ -55,6 +55,29 @@ class CC_EXPORT PictureLayerImpl
     PictureLayerTiling::TilingRasterTileIterator iterators_[NUM_ITERATORS];
   };
 
+  class CC_EXPORT LayerEvictionTileIterator {
+   public:
+    LayerEvictionTileIterator();
+    explicit LayerEvictionTileIterator(PictureLayerImpl* layer);
+    ~LayerEvictionTileIterator();
+
+    Tile* operator*();
+    LayerEvictionTileIterator& operator++();
+    operator bool() const;
+
+   private:
+    void AdvanceToNextIterator();
+    bool IsCorrectType(
+        PictureLayerTiling::TilingEvictionTileIterator* it) const;
+
+    std::vector<PictureLayerTiling::TilingEvictionTileIterator> iterators_;
+    size_t iterator_index_;
+    TilePriority::PriorityBin iteration_stage_;
+    bool required_for_activation_;
+
+    PictureLayerImpl* layer_;
+  };
+
   static scoped_ptr<PictureLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new PictureLayerImpl(tree_impl, id));
   }

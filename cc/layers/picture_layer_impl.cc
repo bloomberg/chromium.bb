@@ -1372,4 +1372,129 @@ Tile* PictureLayerImpl::LayerRasterTileIterator::operator*() {
   return *iterators_[index];
 }
 
+PictureLayerImpl::LayerEvictionTileIterator::LayerEvictionTileIterator()
+    : iterator_index_(0),
+      iteration_stage_(TilePriority::EVENTUALLY),
+      required_for_activation_(false),
+      layer_(NULL) {}
+
+PictureLayerImpl::LayerEvictionTileIterator::LayerEvictionTileIterator(
+    PictureLayerImpl* layer)
+    : iterator_index_(0),
+      iteration_stage_(TilePriority::EVENTUALLY),
+      required_for_activation_(false),
+      layer_(layer) {
+  if (!layer_->tilings_ || !layer_->tilings_->num_tilings())
+    return;
+
+  WhichTree tree =
+      layer_->layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
+
+  size_t high_res_tiling_index = layer_->tilings_->num_tilings();
+  size_t low_res_tiling_index = layer_->tilings_->num_tilings();
+  for (size_t i = 0; i < layer_->tilings_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = layer_->tilings_->tiling_at(i);
+    if (tiling->resolution() == HIGH_RESOLUTION)
+      high_res_tiling_index = i;
+    else if (tiling->resolution() == LOW_RESOLUTION)
+      low_res_tiling_index = i;
+  }
+
+  iterators_.reserve(layer_->tilings_->num_tilings());
+
+  // Higher resolution non-ideal goes first.
+  for (size_t i = 0; i < high_res_tiling_index; ++i) {
+    iterators_.push_back(PictureLayerTiling::TilingEvictionTileIterator(
+        layer_->tilings_->tiling_at(i), tree));
+  }
+
+  // Lower resolution non-ideal goes next.
+  for (size_t i = layer_->tilings_->num_tilings() - 1;
+       i > high_res_tiling_index;
+       --i) {
+    PictureLayerTiling* tiling = layer_->tilings_->tiling_at(i);
+    if (tiling->resolution() == LOW_RESOLUTION)
+      continue;
+
+    iterators_.push_back(
+        PictureLayerTiling::TilingEvictionTileIterator(tiling, tree));
+  }
+
+  // Now, put the low res tiling if we have one.
+  if (low_res_tiling_index < layer_->tilings_->num_tilings()) {
+    iterators_.push_back(PictureLayerTiling::TilingEvictionTileIterator(
+        layer_->tilings_->tiling_at(low_res_tiling_index), tree));
+  }
+
+  // Finally, put the high res tiling if we have one.
+  if (high_res_tiling_index < layer_->tilings_->num_tilings()) {
+    iterators_.push_back(PictureLayerTiling::TilingEvictionTileIterator(
+        layer_->tilings_->tiling_at(high_res_tiling_index), tree));
+  }
+
+  DCHECK_GT(iterators_.size(), 0u);
+
+  if (!iterators_[iterator_index_] ||
+      !IsCorrectType(&iterators_[iterator_index_])) {
+    AdvanceToNextIterator();
+  }
+}
+
+PictureLayerImpl::LayerEvictionTileIterator::~LayerEvictionTileIterator() {}
+
+Tile* PictureLayerImpl::LayerEvictionTileIterator::operator*() {
+  DCHECK(*this);
+  return *iterators_[iterator_index_];
+}
+
+PictureLayerImpl::LayerEvictionTileIterator&
+PictureLayerImpl::LayerEvictionTileIterator::
+operator++() {
+  DCHECK(*this);
+  ++iterators_[iterator_index_];
+  if (!iterators_[iterator_index_] ||
+      !IsCorrectType(&iterators_[iterator_index_])) {
+    AdvanceToNextIterator();
+  }
+  return *this;
+}
+
+void PictureLayerImpl::LayerEvictionTileIterator::AdvanceToNextIterator() {
+  ++iterator_index_;
+
+  while (true) {
+    while (iterator_index_ < iterators_.size()) {
+      if (iterators_[iterator_index_] &&
+          IsCorrectType(&iterators_[iterator_index_])) {
+        return;
+      }
+      ++iterator_index_;
+    }
+
+    // If we're NOW and required_for_activation, then this was the last pass
+    // through the iterators.
+    if (iteration_stage_ == TilePriority::NOW && required_for_activation_)
+      break;
+
+    if (!required_for_activation_) {
+      required_for_activation_ = true;
+    } else {
+      required_for_activation_ = false;
+      iteration_stage_ =
+          static_cast<TilePriority::PriorityBin>(iteration_stage_ - 1);
+    }
+    iterator_index_ = 0;
+  }
+}
+
+PictureLayerImpl::LayerEvictionTileIterator::operator bool() const {
+  return iterator_index_ < iterators_.size();
+}
+
+bool PictureLayerImpl::LayerEvictionTileIterator::IsCorrectType(
+    PictureLayerTiling::TilingEvictionTileIterator* it) const {
+  return it->get_type() == iteration_stage_ &&
+         (**it)->required_for_activation() == required_for_activation_;
+}
+
 }  // namespace cc

@@ -4,6 +4,8 @@
 
 #include "cc/layers/picture_layer_impl.h"
 
+#include <algorithm>
+#include <limits>
 #include <set>
 #include <utility>
 
@@ -1854,6 +1856,151 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
   EXPECT_EQ(0u, non_ideal_tile_count);
   EXPECT_EQ(1u, low_res_tile_count);
   EXPECT_EQ(0u, high_res_tile_count);
+}
+
+TEST_F(PictureLayerImplTest, LayerEvictionTileIterator) {
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(1000, 1000);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  SetupPendingTree(pending_pile);
+
+  ASSERT_TRUE(pending_layer_->CanHaveTilings());
+
+  float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
+
+  std::vector<PictureLayerTiling*> tilings;
+  tilings.push_back(pending_layer_->AddTiling(low_res_factor));
+  tilings.push_back(pending_layer_->AddTiling(0.3f));
+  tilings.push_back(pending_layer_->AddTiling(0.7f));
+  tilings.push_back(pending_layer_->AddTiling(1.0f));
+  tilings.push_back(pending_layer_->AddTiling(2.0f));
+
+  host_impl_.SetViewportSize(gfx::Size(500, 500));
+  host_impl_.pending_tree()->UpdateDrawProperties();
+
+  std::vector<Tile*> all_tiles;
+  for (std::vector<PictureLayerTiling*>::iterator tiling_iterator =
+           tilings.begin();
+       tiling_iterator != tilings.end();
+       ++tiling_iterator) {
+    std::vector<Tile*> tiles = (*tiling_iterator)->AllTilesForTesting();
+    std::copy(tiles.begin(), tiles.end(), std::back_inserter(all_tiles));
+  }
+
+  std::set<Tile*> all_tiles_set(all_tiles.begin(), all_tiles.end());
+
+  bool mark_required = false;
+  for (std::vector<Tile*>::iterator it = all_tiles.begin();
+       it != all_tiles.end();
+       ++it) {
+    Tile* tile = *it;
+    if (mark_required)
+      tile->MarkRequiredForActivation();
+    mark_required = !mark_required;
+  }
+
+  // Sanity checks.
+  EXPECT_EQ(91u, all_tiles.size());
+  EXPECT_EQ(91u, all_tiles_set.size());
+
+  // Empty iterator.
+  PictureLayerImpl::LayerEvictionTileIterator it;
+  EXPECT_FALSE(it);
+
+  // Tiles don't have resources yet.
+  it = PictureLayerImpl::LayerEvictionTileIterator(pending_layer_);
+  EXPECT_FALSE(it);
+
+  host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
+
+  std::set<Tile*> unique_tiles;
+  float expected_scales[] = {2.0f, 0.3f, 0.7f, low_res_factor, 1.0f};
+  size_t scale_index = 0;
+  bool reached_visible = false;
+  bool reached_required = false;
+  Tile* last_tile = NULL;
+  for (it = PictureLayerImpl::LayerEvictionTileIterator(pending_layer_); it;
+       ++it) {
+    Tile* tile = *it;
+    if (!last_tile)
+      last_tile = tile;
+
+    EXPECT_TRUE(tile);
+
+    TilePriority priority = tile->priority(PENDING_TREE);
+
+    if (priority.priority_bin == TilePriority::NOW) {
+      reached_visible = true;
+      last_tile = tile;
+      break;
+    }
+
+    if (reached_required) {
+      EXPECT_TRUE(tile->required_for_activation());
+    } else if (tile->required_for_activation()) {
+      reached_required = true;
+      scale_index = 0;
+    }
+
+    while (std::abs(tile->contents_scale() - expected_scales[scale_index]) >
+           std::numeric_limits<float>::epsilon()) {
+      ++scale_index;
+      ASSERT_LT(scale_index, arraysize(expected_scales));
+    }
+
+    EXPECT_FLOAT_EQ(tile->contents_scale(), expected_scales[scale_index]);
+    unique_tiles.insert(tile);
+
+    // If the tile is the same rough bin as last tile (same activation, bin, and
+    // scale), then distance should be decreasing.
+    if (tile->required_for_activation() ==
+            last_tile->required_for_activation() &&
+        priority.priority_bin ==
+            last_tile->priority(PENDING_TREE).priority_bin &&
+        std::abs(tile->contents_scale() - last_tile->contents_scale()) <
+            std::numeric_limits<float>::epsilon()) {
+      EXPECT_LE(priority.distance_to_visible,
+                last_tile->priority(PENDING_TREE).distance_to_visible);
+    }
+
+    last_tile = tile;
+  }
+
+  EXPECT_TRUE(reached_visible);
+  EXPECT_TRUE(reached_required);
+  EXPECT_EQ(65u, unique_tiles.size());
+
+  scale_index = 0;
+  reached_required = false;
+  for (; it; ++it) {
+    Tile* tile = *it;
+    EXPECT_TRUE(tile);
+
+    TilePriority priority = tile->priority(PENDING_TREE);
+    EXPECT_EQ(TilePriority::NOW, priority.priority_bin);
+
+    if (reached_required) {
+      EXPECT_TRUE(tile->required_for_activation());
+    } else if (tile->required_for_activation()) {
+      reached_required = true;
+      scale_index = 0;
+    }
+
+    while (std::abs(tile->contents_scale() - expected_scales[scale_index]) >
+           std::numeric_limits<float>::epsilon()) {
+      ++scale_index;
+      ASSERT_LT(scale_index, arraysize(expected_scales));
+    }
+
+    EXPECT_FLOAT_EQ(tile->contents_scale(), expected_scales[scale_index]);
+    unique_tiles.insert(tile);
+  }
+
+  EXPECT_TRUE(reached_required);
+  EXPECT_EQ(all_tiles_set.size(), unique_tiles.size());
 }
 
 }  // namespace
