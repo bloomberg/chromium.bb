@@ -27,7 +27,7 @@ DisplaySnapshotX11* CreateOutput(RROutput output, RRCrtc crtc) {
       false,
       gfx::Point(0, 0),
       gfx::Size(0, 0),
-      OUTPUT_TYPE_UNKNOWN,
+      DISPLAY_CONNECTION_TYPE_UNKNOWN,
       false,
       false,
       std::string(),
@@ -59,7 +59,7 @@ class TestHelperDelegate : public NativeDisplayDelegateX11::HelperDelegate {
   // NativeDisplayDelegateX11::HelperDelegate overrides:
   virtual void UpdateXRandRConfiguration(const base::NativeEvent& event)
       OVERRIDE;
-  virtual const std::vector<DisplaySnapshot*>& GetCachedOutputs() const
+  virtual const std::vector<DisplaySnapshot*>& GetCachedDisplays() const
       OVERRIDE;
   virtual void NotifyDisplayObservers() OVERRIDE;
 
@@ -82,7 +82,7 @@ void TestHelperDelegate::UpdateXRandRConfiguration(
   ++num_calls_update_xrandr_config_;
 }
 
-const std::vector<DisplaySnapshot*>& TestHelperDelegate::GetCachedOutputs()
+const std::vector<DisplaySnapshot*>& TestHelperDelegate::GetCachedDisplays()
     const {
   return cached_outputs_;
 }

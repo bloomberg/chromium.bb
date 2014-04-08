@@ -86,7 +86,7 @@ class NativeDisplayDelegateX11::HelperDelegateX11
       OVERRIDE {
     XRRUpdateConfiguration(event);
   }
-  virtual const std::vector<DisplaySnapshot*>& GetCachedOutputs() const
+  virtual const std::vector<DisplaySnapshot*>& GetCachedDisplays() const
       OVERRIDE {
     return delegate_->cached_outputs_.get();
   }
@@ -220,7 +220,7 @@ void NativeDisplayDelegateX11::ForceDPMSOn() {
   CHECK(DPMSForceLevel(display_, DPMSModeOn));
 }
 
-std::vector<DisplaySnapshot*> NativeDisplayDelegateX11::GetOutputs() {
+std::vector<DisplaySnapshot*> NativeDisplayDelegateX11::GetDisplays() {
   CHECK(screen_) << "Server not grabbed";
 
   cached_outputs_.clear();
@@ -250,7 +250,7 @@ void NativeDisplayDelegateX11::AddMode(const DisplaySnapshot& output,
       static_cast<const DisplaySnapshotX11&>(output);
   RRMode mode_id = static_cast<const DisplayModeX11*>(mode)->mode_id();
 
-  VLOG(1) << "AddOutputMode: output=" << x11_output.output()
+  VLOG(1) << "AddDisplayMode: output=" << x11_output.output()
           << " mode=" << mode_id;
   XRRAddOutputMode(display_, x11_output.output(), mode_id);
 }
@@ -350,15 +350,15 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
   bool has_overscan = false;
   GetOutputOverscanFlag(id, &has_overscan);
 
-  OutputType type = GetOutputTypeFromName(info->name);
-  if (type == OUTPUT_TYPE_UNKNOWN)
+  DisplayConnectionType type = GetDisplayConnectionTypeFromName(info->name);
+  if (type == DISPLAY_CONNECTION_TYPE_UNKNOWN)
     LOG(ERROR) << "Unknown link type: " << info->name;
 
   // Use the index as a valid display ID even if the internal
   // display doesn't have valid EDID because the index
   // will never change.
   if (!has_display_id) {
-    if (type == OUTPUT_TYPE_INTERNAL)
+    if (type == DISPLAY_CONNECTION_TYPE_INTERNAL)
       has_display_id = true;
 
     // Fallback to output index.

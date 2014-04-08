@@ -1000,14 +1000,14 @@ TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
   ui::DisplayConfigurator::DisplayStateList outputs;
   ui::DisplayConfigurator::DisplayState internal_output;
   ui::TestDisplaySnapshot internal_display;
-  internal_display.set_type(ui::OUTPUT_TYPE_INTERNAL);
+  internal_display.set_type(ui::DISPLAY_CONNECTION_TYPE_INTERNAL);
   internal_display.set_modes(modes.get());
   internal_output.display = &internal_display;
   outputs.push_back(internal_output);
 
   ui::DisplayConfigurator::DisplayState external_output;
   ui::TestDisplaySnapshot external_display;
-  external_display.set_type(ui::OUTPUT_TYPE_HDMI);
+  external_display.set_type(ui::DISPLAY_CONNECTION_TYPE_HDMI);
   external_display.set_modes(modes.get());
   external_output.display = &external_display;
   outputs.push_back(external_output);

@@ -66,7 +66,7 @@ uint32_t NativeDisplayEventDispatcherX11::DispatchEvent(
   if (check_cache) {
     bool found_changed_output = false;
     const std::vector<DisplaySnapshot*>& cached_outputs =
-        delegate_->GetCachedOutputs();
+        delegate_->GetCachedDisplays();
     for (std::vector<DisplaySnapshot*>::const_iterator it =
              cached_outputs.begin();
          it != cached_outputs.end();

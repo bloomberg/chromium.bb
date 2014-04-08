@@ -36,7 +36,7 @@ void NativeDisplayDelegateOzone::ForceDPMSOn() {
   NOTIMPLEMENTED();
 }
 
-std::vector<ui::DisplaySnapshot*> NativeDisplayDelegateOzone::GetOutputs() {
+std::vector<ui::DisplaySnapshot*> NativeDisplayDelegateOzone::GetDisplays() {
   NOTIMPLEMENTED();
   return std::vector<ui::DisplaySnapshot*>();
 }

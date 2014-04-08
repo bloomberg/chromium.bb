@@ -28,7 +28,7 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
   virtual ~DisplayChangeObserver();
 
   // ui::DisplayConfigurator::StateController overrides:
-  virtual ui::OutputState GetStateForDisplayIds(
+  virtual ui::MultipleDisplayState GetStateForDisplayIds(
       const std::vector<int64>& outputs) const OVERRIDE;
   virtual bool GetResolutionForDisplayId(int64 display_id,
                                          gfx::Size* size) const OVERRIDE;

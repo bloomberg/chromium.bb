@@ -66,7 +66,8 @@ void EventTransformationHandler::OnTouchEvent(ui::TouchEvent* event) {
   // Check display_configurator's output_state instead of checking
   // DisplayManager::IsMirrored() because the compositor based mirroring
   // won't cause the scaling issue.
-  if (display_configurator->output_state() != ui::OUTPUT_STATE_DUAL_MIRROR)
+  if (display_configurator->display_state() !=
+      ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR)
     return;
 
   const std::map<int, float>& area_ratio_map =

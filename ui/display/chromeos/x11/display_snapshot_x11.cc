@@ -14,7 +14,7 @@ DisplaySnapshotX11::DisplaySnapshotX11(
     bool has_proper_display_id,
     const gfx::Point& origin,
     const gfx::Size& physical_size,
-    OutputType type,
+    DisplayConnectionType type,
     bool is_aspect_preserving_scaling,
     bool has_overscan,
     std::string display_name,

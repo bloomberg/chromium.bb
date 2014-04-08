@@ -15,13 +15,13 @@ namespace {
 
 ui::TestDisplaySnapshot* CreateInternalSnapshot() {
   ui::TestDisplaySnapshot* output = new ui::TestDisplaySnapshot();
-  output->set_type(ui::OUTPUT_TYPE_INTERNAL);
+  output->set_type(ui::DISPLAY_CONNECTION_TYPE_INTERNAL);
   return output;
 }
 
 ui::TestDisplaySnapshot* CreateVGASnapshot() {
   ui::TestDisplaySnapshot* output = new ui::TestDisplaySnapshot();
-  output->set_type(ui::OUTPUT_TYPE_VGA);
+  output->set_type(ui::DISPLAY_CONNECTION_TYPE_VGA);
   return output;
 }
 

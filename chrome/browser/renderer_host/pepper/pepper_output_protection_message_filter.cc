@@ -31,38 +31,38 @@ namespace {
 
 #if defined(OS_CHROMEOS)
 COMPILE_ASSERT(static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NONE) ==
-                   static_cast<int>(ui::OUTPUT_TYPE_NONE),
+                   static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_NONE),
                PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NONE);
 COMPILE_ASSERT(
     static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_UNKNOWN) ==
-        static_cast<int>(ui::OUTPUT_TYPE_UNKNOWN),
+        static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_UNKNOWN),
     PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_UNKNOWN);
 COMPILE_ASSERT(
     static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_INTERNAL) ==
-        static_cast<int>(ui::OUTPUT_TYPE_INTERNAL),
+        static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_INTERNAL),
     PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_INTERNAL);
 COMPILE_ASSERT(static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_VGA) ==
-                   static_cast<int>(ui::OUTPUT_TYPE_VGA),
+                   static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_VGA),
                PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_VGA);
 COMPILE_ASSERT(static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_HDMI) ==
-                   static_cast<int>(ui::OUTPUT_TYPE_HDMI),
+                   static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_HDMI),
                PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_HDMI);
 COMPILE_ASSERT(static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DVI) ==
-                   static_cast<int>(ui::OUTPUT_TYPE_DVI),
+                   static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_DVI),
                PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DVI);
 COMPILE_ASSERT(
     static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DISPLAYPORT) ==
-        static_cast<int>(ui::OUTPUT_TYPE_DISPLAYPORT),
+        static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_DISPLAYPORT),
     PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DISPLAYPORT);
 COMPILE_ASSERT(
     static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NETWORK) ==
-        static_cast<int>(ui::OUTPUT_TYPE_NETWORK),
+        static_cast<int>(ui::DISPLAY_CONNECTION_TYPE_NETWORK),
     PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NETWORK);
 COMPILE_ASSERT(static_cast<int>(PP_OUTPUT_PROTECTION_METHOD_PRIVATE_NONE) ==
-                   static_cast<int>(ui::OUTPUT_PROTECTION_METHOD_NONE),
+                   static_cast<int>(ui::CONTENT_PROTECTION_METHOD_NONE),
                PP_OUTPUT_PROTECTION_METHOD_PRIVATE_NONE);
 COMPILE_ASSERT(static_cast<int>(PP_OUTPUT_PROTECTION_METHOD_PRIVATE_HDCP) ==
-                   static_cast<int>(ui::OUTPUT_PROTECTION_METHOD_HDCP),
+                   static_cast<int>(ui::CONTENT_PROTECTION_METHOD_HDCP),
                PP_OUTPUT_PROTECTION_METHOD_PRIVATE_HDCP);
 
 bool GetCurrentDisplayId(content::RenderFrameHost* rfh, int64* display_id) {
@@ -96,13 +96,13 @@ class PepperOutputProtectionMessageFilter::Delegate
   int32_t OnEnableProtection(uint32_t desired_method_mask);
 
  private:
-  ui::DisplayConfigurator::OutputProtectionClientId GetClientId();
+  ui::DisplayConfigurator::ContentProtectionClientId GetClientId();
 
   // Used to lookup the WebContents associated with this PP_Instance.
   int render_process_id_;
   int render_frame_id_;
 
-  ui::DisplayConfigurator::OutputProtectionClientId client_id_;
+  ui::DisplayConfigurator::ContentProtectionClientId client_id_;
   // The display id which the renderer currently uses.
   int64 display_id_;
   // The last desired method mask. Will enable this mask on new display if
@@ -125,7 +125,7 @@ PepperOutputProtectionMessageFilter::Delegate::~Delegate() {
 
   ui::DisplayConfigurator* configurator =
       ash::Shell::GetInstance()->display_configurator();
-  configurator->UnregisterOutputProtectionClient(client_id_);
+  configurator->UnregisterContentProtectionClient(client_id_);
 
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
@@ -136,7 +136,7 @@ PepperOutputProtectionMessageFilter::Delegate::~Delegate() {
   }
 }
 
-ui::DisplayConfigurator::OutputProtectionClientId
+ui::DisplayConfigurator::ContentProtectionClientId
 PepperOutputProtectionMessageFilter::Delegate::GetClientId() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (client_id_ == ui::DisplayConfigurator::kInvalidClientId) {
@@ -151,7 +151,7 @@ PepperOutputProtectionMessageFilter::Delegate::GetClientId() {
 
     ui::DisplayConfigurator* configurator =
         ash::Shell::GetInstance()->display_configurator();
-    client_id_ = configurator->RegisterOutputProtectionClient();
+    client_id_ = configurator->RegisterContentProtectionClient();
   }
   return client_id_;
 }
@@ -169,7 +169,7 @@ int32_t PepperOutputProtectionMessageFilter::Delegate::OnQueryStatus(
 
   ui::DisplayConfigurator* configurator =
       ash::Shell::GetInstance()->display_configurator();
-  bool result = configurator->QueryOutputProtectionStatus(
+  bool result = configurator->QueryContentProtectionStatus(
       GetClientId(), display_id_, link_mask, protection_mask);
 
   // If we successfully retrieved the device level status, check for capturers.
@@ -182,7 +182,7 @@ int32_t PepperOutputProtectionMessageFilter::Delegate::OnQueryStatus(
         MediaCaptureDevicesDispatcher::GetInstance()
             ->IsDesktopCaptureInProgress();
     if (capture_detected)
-      *link_mask |= ui::OUTPUT_TYPE_NETWORK;
+      *link_mask |= ui::DISPLAY_CONNECTION_TYPE_NETWORK;
   }
 
   return result ? PP_OK : PP_ERROR_FAILED;
@@ -194,7 +194,7 @@ int32_t PepperOutputProtectionMessageFilter::Delegate::OnEnableProtection(
 
   ui::DisplayConfigurator* configurator =
       ash::Shell::GetInstance()->display_configurator();
-  bool result = configurator->EnableOutputProtection(
+  bool result = configurator->EnableContentProtection(
       GetClientId(), display_id_, desired_method_mask);
   desired_method_mask_ = desired_method_mask;
   return result ? PP_OK : PP_ERROR_FAILED;
@@ -215,14 +215,14 @@ void PepperOutputProtectionMessageFilter::Delegate::OnWindowHierarchyChanged(
   if (display_id_ == new_display_id)
     return;
 
-  if (desired_method_mask_ != ui::OUTPUT_PROTECTION_METHOD_NONE) {
+  if (desired_method_mask_ != ui::CONTENT_PROTECTION_METHOD_NONE) {
     // Display changed and should enable output protections on new display.
     ui::DisplayConfigurator* configurator =
         ash::Shell::GetInstance()->display_configurator();
-    configurator->EnableOutputProtection(GetClientId(), new_display_id,
-                                         desired_method_mask_);
-    configurator->EnableOutputProtection(
-        GetClientId(), display_id_, ui::OUTPUT_PROTECTION_METHOD_NONE);
+    configurator->EnableContentProtection(
+        GetClientId(), new_display_id, desired_method_mask_);
+    configurator->EnableContentProtection(
+        GetClientId(), display_id_, ui::CONTENT_PROTECTION_METHOD_NONE);
   }
   display_id_ = new_display_id;
 }

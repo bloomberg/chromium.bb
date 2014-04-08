@@ -57,7 +57,7 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
 
     // Returns the list of current outputs. This is used to discard duplicate
     // events.
-    virtual const std::vector<DisplaySnapshot*>& GetCachedOutputs() const = 0;
+    virtual const std::vector<DisplaySnapshot*>& GetCachedDisplays() const = 0;
 
     // Notify |observers_| that a change in configuration has occurred.
     virtual void NotifyDisplayObservers() = 0;
@@ -73,7 +73,7 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   virtual void SyncWithServer() OVERRIDE;
   virtual void SetBackgroundColor(uint32_t color_argb) OVERRIDE;
   virtual void ForceDPMSOn() OVERRIDE;
-  virtual std::vector<DisplaySnapshot*> GetOutputs() OVERRIDE;
+  virtual std::vector<DisplaySnapshot*> GetDisplays() OVERRIDE;
   virtual void AddMode(const DisplaySnapshot& output,
                        const DisplayMode* mode) OVERRIDE;
   virtual bool Configure(const DisplaySnapshot& output,

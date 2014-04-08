@@ -118,15 +118,15 @@ void PowerButtonController::OnLockButtonEvent(
 
 #if defined(OS_CHROMEOS)
 void PowerButtonController::OnDisplayModeChanged(
-    const ui::DisplayConfigurator::DisplayStateList& outputs) {
+    const ui::DisplayConfigurator::DisplayStateList& display_states) {
   bool internal_display_off = false;
   bool external_display_on = false;
-  for (size_t i = 0; i < outputs.size(); ++i) {
-    const ui::DisplayConfigurator::DisplayState& output = outputs[i];
-    if (output.display->type() == ui::OUTPUT_TYPE_INTERNAL) {
-      if (!output.display->current_mode())
+  for (size_t i = 0; i < display_states.size(); ++i) {
+    const ui::DisplayConfigurator::DisplayState& state = display_states[i];
+    if (state.display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
+      if (!state.display->current_mode())
         internal_display_off = true;
-    } else if (output.display->current_mode()) {
+    } else if (state.display->current_mode()) {
       external_display_on = true;
     }
   }

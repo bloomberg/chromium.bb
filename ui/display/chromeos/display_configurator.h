@@ -33,8 +33,8 @@ class NativeDisplayDelegate;
 // This class interacts directly with the system display configurator.
 class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
  public:
-  typedef uint64_t OutputProtectionClientId;
-  static const OutputProtectionClientId kInvalidClientId = 0;
+  typedef uint64_t ContentProtectionClientId;
+  static const ContentProtectionClientId kInvalidClientId = 0;
 
   struct CoordinateTransformation {
     // Initialized to the identity transformation.
@@ -51,15 +51,15 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
     DisplaySnapshot* display;  // Not owned.
 
-    // XInput device ID or 0 if this output isn't a touchscreen.
+    // XInput device ID or 0 if this display isn't a touchscreen.
     int touch_device_id;
 
     CoordinateTransformation transform;
 
-    // User-selected mode for the output.
+    // User-selected mode for the display.
     const DisplayMode* selected_mode;
 
-    // Mode used when displaying the same desktop on multiple outputs.
+    // Mode used when displaying the same desktop on multiple displays.
     const DisplayMode* mirror_mode;
   };
 
@@ -69,29 +69,30 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
    public:
     virtual ~Observer() {}
 
-    // Called after the display mode has been changed. |output| contains the
+    // Called after the display mode has been changed. |display| contains the
     // just-applied configuration. Note that the X server is no longer grabbed
     // when this method is called, so the actual configuration could've changed
     // already.
     virtual void OnDisplayModeChanged(
-        const std::vector<DisplayState>& outputs) {}
+        const std::vector<DisplayState>& displays) {}
 
     // Called after a display mode change attempt failed. |failed_new_state| is
     // the new state which the system failed to enter.
-    virtual void OnDisplayModeChangeFailed(OutputState failed_new_state) {}
+    virtual void OnDisplayModeChangeFailed(
+        MultipleDisplayState failed_new_state) {}
   };
 
-  // Interface for classes that make decisions about which output state
+  // Interface for classes that make decisions about which display state
   // should be used.
   class StateController {
    public:
     virtual ~StateController() {}
 
     // Called when displays are detected.
-    virtual OutputState GetStateForDisplayIds(
+    virtual MultipleDisplayState GetStateForDisplayIds(
         const std::vector<int64_t>& display_ids) const = 0;
 
-    // Queries the resolution (|size|) in pixels to select output mode for the
+    // Queries the resolution (|size|) in pixels to select display mode for the
     // given display id.
     virtual bool GetResolutionForDisplayId(int64_t display_id,
                                            gfx::Size* size) const = 0;
@@ -111,11 +112,11 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
     virtual ~TouchscreenDelegate() {}
 
     // Searches for touchscreens among input devices,
-    // and tries to match them up to screens in |outputs|.
-    // |outputs| is an array of detected screens.
-    // If a touchscreen with same resolution as an output's native mode
-    // is detected, its id will be stored in this output.
-    virtual void AssociateTouchscreens(std::vector<DisplayState>* outputs) = 0;
+    // and tries to match them up to screens in |displays|.
+    // |displays| is an array of detected screens.
+    // If a touchscreen with same resolution as a display's native mode
+    // is detected, its id will be stored in this display.
+    virtual void AssociateTouchscreens(std::vector<DisplayState>* displays) = 0;
 
     // Configures XInput's Coordinate Transformation Matrix property.
     // |touch_device_id| the ID of the touchscreen device to configure.
@@ -133,7 +134,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
     ~TestApi() {}
 
     // If |configure_timer_| is started, stops the timer, runs
-    // ConfigureOutputs(), and returns true; returns false otherwise.
+    // ConfigureDisplays(), and returns true; returns false otherwise.
     bool TriggerConfigureTimeout();
 
    private:
@@ -159,19 +160,19 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // See crbug.com/130188 for initial discussion.
   static const int kVerticalGap = 60;
 
-  // Returns the mode within |output| that matches the given size with highest
-  // refresh rate. Returns None if no matching output was found.
+  // Returns the mode within |display| that matches the given size with highest
+  // refresh rate. Returns None if no matching display was found.
   static const DisplayMode* FindDisplayModeMatchingSize(
-      const DisplaySnapshot& output,
+      const DisplaySnapshot& display,
       const gfx::Size& size);
 
   DisplayConfigurator();
   virtual ~DisplayConfigurator();
 
-  OutputState output_state() const { return output_state_; }
+  MultipleDisplayState display_state() const { return display_state_; }
   chromeos::DisplayPowerState power_state() const { return power_state_; }
-  const std::vector<DisplayState>& cached_outputs() const {
-    return cached_outputs_;
+  const std::vector<DisplayState>& cached_displays() const {
+    return cached_displays_;
   }
 
   void set_state_controller(StateController* controller) {
@@ -213,8 +214,8 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   // Force switching the display mode to |new_state|. Returns false if
   // switching failed (possibly because |new_state| is invalid for the
-  // current set of connected outputs).
-  bool SetDisplayMode(OutputState new_state);
+  // current set of connected displays).
+  bool SetDisplayMode(MultipleDisplayState new_state);
 
   // NativeDisplayDelegate::Observer overrides:
   virtual void OnConfigurationChanged() OVERRIDE;
@@ -235,30 +236,30 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
     return mirrored_display_area_ratio_map_;
   }
 
-  // Registers a client for output protection and requests a client id. Returns
+  // Registers a client for display protection and requests a client id. Returns
   // 0 if requesting failed.
-  OutputProtectionClientId RegisterOutputProtectionClient();
+  ContentProtectionClientId RegisterContentProtectionClient();
 
   // Unregisters the client.
-  void UnregisterOutputProtectionClient(OutputProtectionClientId client_id);
+  void UnregisterContentProtectionClient(ContentProtectionClientId client_id);
 
   // Queries link status and protection status.
-  // |link_mask| is the type of connected output links, which is a bitmask of
-  // OutputType values. |protection_mask| is the desired protection methods,
-  // which is a bitmask of the OutputProtectionMethod values.
+  // |link_mask| is the type of connected display links, which is a bitmask of
+  // DisplayConnectionType values. |protection_mask| is the desired protection
+  // methods, which is a bitmask of the ContentProtectionMethod values.
   // Returns true on success.
-  bool QueryOutputProtectionStatus(OutputProtectionClientId client_id,
-                                   int64_t display_id,
-                                   uint32_t* link_mask,
-                                   uint32_t* protection_mask);
+  bool QueryContentProtectionStatus(ContentProtectionClientId client_id,
+                                    int64_t display_id,
+                                    uint32_t* link_mask,
+                                    uint32_t* protection_mask);
 
   // Requests the desired protection methods.
   // |protection_mask| is the desired protection methods, which is a bitmask
-  // of the OutputProtectionMethod values.
+  // of the ContentProtectionMethod values.
   // Returns true when the protection request has been made.
-  bool EnableOutputProtection(OutputProtectionClientId client_id,
-                              int64_t display_id,
-                              uint32_t desired_protection_mask);
+  bool EnableContentProtection(ContentProtectionClientId client_id,
+                               int64_t display_id,
+                               uint32_t desired_protection_mask);
 
   // Checks the available color profiles for |display_id| and fills the result
   // into |profiles|.
@@ -271,80 +272,82 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
  private:
   // Mapping a display_id to a protection request bitmask.
-  typedef std::map<int64_t, uint32_t> DisplayProtections;
+  typedef std::map<int64_t, uint32_t> ContentProtections;
   // Mapping a client to its protection request.
-  typedef std::map<OutputProtectionClientId, DisplayProtections>
+  typedef std::map<ContentProtectionClientId, ContentProtections>
       ProtectionRequests;
 
-  // Updates |cached_outputs_| to contain currently-connected outputs. Calls
-  // |delegate_->GetOutputs()| and then does additional work, like finding the
+  // Updates |cached_displays_| to contain currently-connected displays. Calls
+  // |delegate_->GetDisplays()| and then does additional work, like finding the
   // mirror mode and setting user-preferred modes. Note that the server must be
   // grabbed via |delegate_->GrabServer()| first.
-  void UpdateCachedOutputs();
+  void UpdateCachedDisplays();
 
-  // Helper method for UpdateCachedOutputs() that initializes the passed-in
-  // outputs' |mirror_mode| fields by looking for a mode in |internal_output|
-  // and |external_output| having the same resolution. Returns false if a shared
+  // Helper method for UpdateCachedDisplays() that initializes the passed-in
+  // displays' |mirror_mode| fields by looking for a mode in |internal_display|
+  // and |external_display| having the same resolution. Returns false if a
+  // shared
   // mode wasn't found or created.
   //
   // |try_panel_fitting| allows creating a panel-fitting mode for
-  // |internal_output| instead of only searching for a matching mode (note that
+  // |internal_display| instead of only searching for a matching mode (note that
   // it may lead to a crash if |internal_info| is not capable of panel fitting).
   //
   // |preserve_aspect| limits the search/creation only to the modes having the
-  // native aspect ratio of |external_output|.
-  bool FindMirrorMode(DisplayState* internal_output,
-                      DisplayState* external_output,
+  // native aspect ratio of |external_display|.
+  bool FindMirrorMode(DisplayState* internal_display,
+                      DisplayState* external_display,
                       bool try_panel_fitting,
                       bool preserve_aspect);
 
-  // Configures outputs.
-  void ConfigureOutputs();
+  // Configures displays.
+  void ConfigureDisplays();
 
   // Notifies observers about an attempted state change.
-  void NotifyObservers(bool success, OutputState attempted_state);
+  void NotifyObservers(bool success, MultipleDisplayState attempted_state);
 
-  // Switches to the state specified in |output_state| and |power_state|.
+  // Switches to the state specified in |display_state| and |power_state|.
   // If the hardware mirroring failed and |mirroring_controller_| is set,
   // it switches to |STATE_DUAL_EXTENDED| and calls |SetSoftwareMirroring()|
   // to enable software based mirroring.
-  // On success, updates |output_state_|, |power_state_|, and |cached_outputs_|
-  // and returns true.
+  // On success, updates |display_state_|, |power_state_|, and
+  // |cached_displays_| and returns true.
   bool EnterStateOrFallBackToSoftwareMirroring(
-      OutputState output_state,
+      MultipleDisplayState display_state,
       chromeos::DisplayPowerState power_state);
 
-  // Switches to the state specified in |output_state| and |power_state|.
-  // On success, updates |output_state_|, |power_state_|, and
-  // |cached_outputs_| and returns true.
-  bool EnterState(OutputState output_state,
+  // Switches to the state specified in |display_state| and |power_state|.
+  // On success, updates |display_state_|, |power_state_|, and
+  // |cached_displays_| and returns true.
+  bool EnterState(MultipleDisplayState display_state,
                   chromeos::DisplayPowerState power_state);
 
-  // Returns the output state that should be used with |cached_outputs_| while
+  // Returns the display state that should be used with |cached_displays_| while
   // in |power_state|.
-  OutputState ChooseOutputState(chromeos::DisplayPowerState power_state) const;
+  MultipleDisplayState ChooseDisplayState(
+      chromeos::DisplayPowerState power_state) const;
 
   // Computes the relevant transformation for mirror mode.
-  // |output| is the output on which mirror mode is being applied.
+  // |display| is the display on which mirror mode is being applied.
   // Returns the transformation or identity if computations fail.
-  CoordinateTransformation GetMirrorModeCTM(const DisplayState& output);
+  CoordinateTransformation GetMirrorModeCTM(const DisplayState& display);
 
-  // Computes the relevant transformation for extended mode. |output| is the
-  // output on which extended mode is being applied. |new_origin| is the
-  // position of the output on the framebuffer. |framebuffer_size| is the
+  // Computes the relevant transformation for extended mode. |display| is the
+  // display on which extended mode is being applied. |new_origin| is the
+  // position of the display on the framebuffer. |framebuffer_size| is the
   // size of the combined framebuffer.
   // Returns the transformation or identity if computations fail.
   CoordinateTransformation GetExtendedModeCTM(
-      const DisplayState& output,
+      const DisplayState& display,
       const gfx::Point& new_origin,
       const gfx::Size& framebuffer_size);
 
   // Returns the ratio between mirrored mode area and native mode area:
   // (mirror_mode_width * mirrow_mode_height) / (native_width * native_height)
-  float GetMirroredDisplayAreaRatio(const DisplayState& output);
+  float GetMirroredDisplayAreaRatio(const DisplayState& display);
 
-  // Applies output protections according to requests.
-  bool ApplyProtections(const DisplayProtections& requests);
+  // Applies display protections according to requests.
+  bool ApplyProtections(const ContentProtections& requests);
 
   StateController* state_controller_;
   SoftwareMirroringController* mirroring_controller_;
@@ -365,30 +368,30 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // This is detected by the constructor to determine whether or not we should
   // be enabled.  If we aren't running on ChromeOS, we can't assume that the
   // Xrandr X11 extension is supported.
-  // If this flag is set to false, any attempts to change the output
+  // If this flag is set to false, any attempts to change the display
   // configuration to immediately fail without changing the state.
   bool configure_display_;
 
   // The current display state.
-  OutputState output_state_;
+  MultipleDisplayState display_state_;
 
   // The current power state.
   chromeos::DisplayPowerState power_state_;
 
-  // Most-recently-used output configuration. Note that the actual
+  // Most-recently-used display configuration. Note that the actual
   // configuration changes asynchronously.
-  DisplayStateList cached_outputs_;
+  DisplayStateList cached_displays_;
 
   ObserverList<Observer> observers_;
 
-  // The timer to delay configuring outputs. See also the comments in
+  // The timer to delay configuring displays. See also the comments in
   // Dispatch().
   scoped_ptr<base::OneShotTimer<DisplayConfigurator> > configure_timer_;
 
-  // Id for next output protection client.
-  OutputProtectionClientId next_output_protection_client_id_;
+  // Id for next display protection client.
+  ContentProtectionClientId next_display_protection_client_id_;
 
-  // Output protection requests of each client.
+  // Display protection requests of each client.
   ProtectionRequests client_protection_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayConfigurator);

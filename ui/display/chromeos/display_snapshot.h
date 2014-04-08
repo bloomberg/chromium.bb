@@ -24,7 +24,7 @@ class DISPLAY_EXPORT DisplaySnapshot {
                   bool has_proper_display_id,
                   const gfx::Point& origin,
                   const gfx::Size& physical_size,
-                  OutputType type,
+                  DisplayConnectionType type,
                   bool is_aspect_preserving_scaling,
                   bool has_overscan,
                   std::string display_name,
@@ -35,7 +35,7 @@ class DISPLAY_EXPORT DisplaySnapshot {
 
   const gfx::Point& origin() const { return origin_; }
   const gfx::Size& physical_size() const { return physical_size_; }
-  ui::OutputType type() const { return type_; }
+  ui::DisplayConnectionType type() const { return type_; }
   bool is_aspect_preserving_scaling() const {
     return is_aspect_preserving_scaling_;
   }
@@ -62,12 +62,12 @@ class DISPLAY_EXPORT DisplaySnapshot {
   int64_t display_id_;
   bool has_proper_display_id_;
 
-  // Output's origin on the framebuffer.
+  // Display's origin on the framebuffer.
   gfx::Point origin_;
 
   gfx::Size physical_size_;
 
-  OutputType type_;
+  DisplayConnectionType type_;
 
   bool is_aspect_preserving_scaling_;
 

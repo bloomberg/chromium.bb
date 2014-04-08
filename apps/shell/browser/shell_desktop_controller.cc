@@ -144,7 +144,7 @@ void ShellDesktopController::DestroyRootWindow() {
 gfx::Size ShellDesktopController::GetPrimaryDisplaySize() {
 #if defined(OS_CHROMEOS)
   const std::vector<ui::DisplayConfigurator::DisplayState>& states =
-      display_configurator_->cached_outputs();
+      display_configurator_->cached_displays();
   if (states.empty())
     return gfx::Size();
   const ui::DisplayMode* mode = states[0].display->current_mode();

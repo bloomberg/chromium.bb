@@ -10,32 +10,32 @@ namespace ui {
 
 namespace {
 
-struct OutputTypeMapping {
+struct DisplayConnectionTypeMapping {
   // Prefix of output name.
   const char* name;
-  OutputType type;
+  DisplayConnectionType type;
 };
 
-const OutputTypeMapping kOutputTypeMapping[] = {
-  {"LVDS", OUTPUT_TYPE_INTERNAL},
-  {"eDP", OUTPUT_TYPE_INTERNAL},
-  {"DSI", OUTPUT_TYPE_INTERNAL},
-  {"VGA", OUTPUT_TYPE_VGA},
-  {"HDMI", OUTPUT_TYPE_HDMI},
-  {"DVI", OUTPUT_TYPE_DVI},
-  {"DP", OUTPUT_TYPE_DISPLAYPORT}
-};
+const DisplayConnectionTypeMapping kDisplayConnectionTypeMapping[] = {
+    {"LVDS", DISPLAY_CONNECTION_TYPE_INTERNAL},
+    {"eDP", DISPLAY_CONNECTION_TYPE_INTERNAL},
+    {"DSI", DISPLAY_CONNECTION_TYPE_INTERNAL},
+    {"VGA", DISPLAY_CONNECTION_TYPE_VGA},
+    {"HDMI", DISPLAY_CONNECTION_TYPE_HDMI},
+    {"DVI", DISPLAY_CONNECTION_TYPE_DVI},
+    {"DP", DISPLAY_CONNECTION_TYPE_DISPLAYPORT}};
 
 }  // namespace
 
-OutputType GetOutputTypeFromName(const std::string& name) {
-  for (unsigned int i = 0; i < arraysize(kOutputTypeMapping); ++i) {
-    if (name.find(kOutputTypeMapping[i].name) == 0) {
-      return kOutputTypeMapping[i].type;
+DisplayConnectionType GetDisplayConnectionTypeFromName(
+    const std::string& name) {
+  for (unsigned int i = 0; i < arraysize(kDisplayConnectionTypeMapping); ++i) {
+    if (name.find(kDisplayConnectionTypeMapping[i].name) == 0) {
+      return kDisplayConnectionTypeMapping[i].type;
     }
   }
 
-  return OUTPUT_TYPE_UNKNOWN;
+  return DISPLAY_CONNECTION_TYPE_UNKNOWN;
 }
 
 }  // namespace ui

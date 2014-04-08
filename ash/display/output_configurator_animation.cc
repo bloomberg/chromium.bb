@@ -209,7 +209,7 @@ void OutputConfiguratorAnimation::OnDisplayModeChanged(
 }
 
 void OutputConfiguratorAnimation::OnDisplayModeChangeFailed(
-    ui::OutputState failed_new_state) {
+    ui::MultipleDisplayState failed_new_state) {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();
 }

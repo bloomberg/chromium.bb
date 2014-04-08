@@ -46,7 +46,7 @@ TEST_F(DisplayErrorObserverTest, Normal) {
     return;
 
   UpdateDisplay("200x200,300x300");
-  observer()->OnDisplayModeChangeFailed(ui::OUTPUT_STATE_DUAL_MIRROR);
+  observer()->OnDisplayModeChangeFailed(ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING),
             GetMessageContents());
 }
@@ -56,11 +56,11 @@ TEST_F(DisplayErrorObserverTest, CallTwice) {
     return;
 
   UpdateDisplay("200x200,300x300");
-  observer()->OnDisplayModeChangeFailed(ui::OUTPUT_STATE_DUAL_MIRROR);
+  observer()->OnDisplayModeChangeFailed(ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
   base::string16 message = GetMessageContents();
   EXPECT_FALSE(message.empty());
 
-  observer()->OnDisplayModeChangeFailed(ui::OUTPUT_STATE_DUAL_MIRROR);
+  observer()->OnDisplayModeChangeFailed(ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
   base::string16 message2 = GetMessageContents();
   EXPECT_FALSE(message2.empty());
   EXPECT_EQ(message, message2);
@@ -71,11 +71,12 @@ TEST_F(DisplayErrorObserverTest, CallWithDifferentState) {
     return;
 
   UpdateDisplay("200x200,300x300");
-  observer()->OnDisplayModeChangeFailed(ui::OUTPUT_STATE_DUAL_MIRROR);
+  observer()->OnDisplayModeChangeFailed(ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING),
             GetMessageContents());
 
-  observer()->OnDisplayModeChangeFailed(ui::OUTPUT_STATE_DUAL_EXTENDED);
+  observer()->OnDisplayModeChangeFailed(
+      ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING),
             GetMessageContents());
 }

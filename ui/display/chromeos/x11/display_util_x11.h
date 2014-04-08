@@ -15,9 +15,10 @@ typedef XID RROutput;
 
 namespace ui {
 
-// Returns the OutputType by matching known type prefixes to |name|. Returns
-// OUTPUT_TYPE_UNKNOWN if no valid match.
-DISPLAY_EXPORT OutputType GetOutputTypeFromName(const std::string& name);
+// Returns the DisplayConnectionType by matching known type prefixes to |name|.
+// Returns DISPLAY_TYPE_UNKNOWN if no valid match.
+DISPLAY_EXPORT DisplayConnectionType
+    GetDisplayConnectionTypeFromName(const std::string& name);
 
 }  // namespace ui
 

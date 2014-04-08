@@ -96,14 +96,14 @@ DisplayChangeObserver::~DisplayChangeObserver() {
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
-ui::OutputState DisplayChangeObserver::GetStateForDisplayIds(
+ui::MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
     const std::vector<int64>& display_ids) const {
   CHECK_EQ(2U, display_ids.size());
   DisplayIdPair pair = std::make_pair(display_ids[0], display_ids[1]);
   DisplayLayout layout = Shell::GetInstance()->display_manager()->
       layout_store()->GetRegisteredDisplayLayout(pair);
-  return layout.mirrored ? ui::OUTPUT_STATE_DUAL_MIRROR :
-                           ui::OUTPUT_STATE_DUAL_EXTENDED;
+  return layout.mirrored ? ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR :
+                           ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
 }
 
 bool DisplayChangeObserver::GetResolutionForDisplayId(int64 display_id,
@@ -118,40 +118,40 @@ bool DisplayChangeObserver::GetResolutionForDisplayId(int64 display_id,
 }
 
 void DisplayChangeObserver::OnDisplayModeChanged(
-    const std::vector<DisplayConfigurator::DisplayState>& outputs) {
+    const std::vector<DisplayConfigurator::DisplayState>& display_states) {
   std::vector<DisplayInfo> displays;
   std::set<int64> ids;
-  for (size_t i = 0; i < outputs.size(); ++i) {
-    const DisplayConfigurator::DisplayState& output = outputs[i];
+  for (size_t i = 0; i < display_states.size(); ++i) {
+    const DisplayConfigurator::DisplayState& state = display_states[i];
 
-    if (output.display->type() == ui::OUTPUT_TYPE_INTERNAL &&
+    if (state.display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL &&
         gfx::Display::InternalDisplayId() == gfx::Display::kInvalidDisplayID) {
-      gfx::Display::SetInternalDisplayId(output.display->display_id());
+      gfx::Display::SetInternalDisplayId(state.display->display_id());
     }
 
-    const ui::DisplayMode* mode_info = output.display->current_mode();
+    const ui::DisplayMode* mode_info = state.display->current_mode();
     if (!mode_info)
       continue;
 
     float device_scale_factor = 1.0f;
-    if (!ui::IsDisplaySizeBlackListed(output.display->physical_size()) &&
+    if (!ui::IsDisplaySizeBlackListed(state.display->physical_size()) &&
         (kInchInMm * mode_info->size().width() /
-         output.display->physical_size().width()) > kHighDensityDPIThreshold) {
+         state.display->physical_size().width()) > kHighDensityDPIThreshold) {
       device_scale_factor = 2.0f;
     }
-    gfx::Rect display_bounds(output.display->origin(), mode_info->size());
+    gfx::Rect display_bounds(state.display->origin(), mode_info->size());
 
-    std::vector<DisplayMode> display_modes = GetDisplayModeList(output);
+    std::vector<DisplayMode> display_modes = GetDisplayModeList(state);
 
     std::string name =
-        output.display->type() == ui::OUTPUT_TYPE_INTERNAL
-            ? l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME) :
-              output.display->display_name();
+        state.display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL ?
+            l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME) :
+            state.display->display_name();
     if (name.empty())
       name = l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
 
-    bool has_overscan = output.display->has_overscan();
-    int64 id = output.display->display_id();
+    bool has_overscan = state.display->has_overscan();
+    int64 id = state.display->display_id();
     ids.insert(id);
 
     displays.push_back(DisplayInfo(id, name, has_overscan));
@@ -160,9 +160,9 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     new_info.SetBounds(display_bounds);
     new_info.set_native(true);
     new_info.set_display_modes(display_modes);
-    new_info.set_touch_support(
-        output.touch_device_id == 0 ? gfx::Display::TOUCH_SUPPORT_UNAVAILABLE :
-                                      gfx::Display::TOUCH_SUPPORT_AVAILABLE);
+    new_info.set_touch_support(state.touch_device_id == 0 ?
+        gfx::Display::TOUCH_SUPPORT_UNAVAILABLE :
+        gfx::Display::TOUCH_SUPPORT_AVAILABLE);
     new_info.set_available_color_profiles(
         Shell::GetInstance()
             ->display_configurator()

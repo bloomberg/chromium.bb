@@ -51,7 +51,7 @@ class DISPLAY_EXPORT NativeDisplayDelegate {
   // 60 milliseconds or more.
   // NativeDisplayDelegate maintains ownership of the ui::DisplaySnapshot
   // pointers.
-  virtual std::vector<ui::DisplaySnapshot*> GetOutputs() = 0;
+  virtual std::vector<ui::DisplaySnapshot*> GetDisplays() = 0;
 
   // Adds |mode| to |output|. |mode| must be a valid display mode pointer.
   virtual void AddMode(const ui::DisplaySnapshot& output,

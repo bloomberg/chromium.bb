@@ -16,14 +16,14 @@ class DISPLAY_EXPORT TestDisplaySnapshot : public DisplaySnapshot {
                       bool has_proper_display_id,
                       const gfx::Point& origin,
                       const gfx::Size& physical_size,
-                      OutputType type,
+                      DisplayConnectionType type,
                       bool is_aspect_preserving_scaling,
                       const std::vector<const DisplayMode*>& modes,
                       const DisplayMode* current_mode,
                       const DisplayMode* native_mode);
   virtual ~TestDisplaySnapshot();
 
-  void set_type(OutputType type) { type_ = type; }
+  void set_type(DisplayConnectionType type) { type_ = type; }
   void set_modes(const std::vector<const DisplayMode*>& modes) {
     modes_ = modes;
   }

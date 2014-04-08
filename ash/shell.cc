@@ -911,7 +911,7 @@ void Shell::Init() {
 #if defined(OS_CHROMEOS)
   // Pass the initial display state to PowerButtonController.
   power_button_controller_->OnDisplayModeChanged(
-      display_configurator_->cached_outputs());
+      display_configurator_->cached_displays());
 #endif
   AddShellObserver(lock_state_controller_.get());
 
