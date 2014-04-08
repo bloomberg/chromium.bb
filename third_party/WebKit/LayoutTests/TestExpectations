@@ -876,7 +876,6 @@ crbug.com/356996 [ Debug ] html5lib/generated/run-tests1-data.html [ Pass Timeou
 crbug.com/356996 [ Mac Release ] html5lib/generated/run-tests1-data.html [ Pass Timeout ]
 crbug.com/356997 http/tests/security/isolatedWorld/events.html [ Failure Pass ]
 crbug.com/357002 [ Linux ] http/tests/misc/cache-hit-resource-timing-buffer-full-crash.html [ Failure Pass ]
-crbug.com/357004 inspector/sources/debugger/script-formatter-breakpoints-2.html [ Pass Timeout ]
 crbug.com/357068 css3/images/cross-fade-invalidation.html [ ImageOnlyFailure Pass ]
 crbug.com/357069 [ Debug ] fast/media/lifetime.html [ Crash Pass Timeout ]
 crbug.com/357071 gamepad/gamepad-polling-access.html [ Crash Pass ]
