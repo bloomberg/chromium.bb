@@ -36,7 +36,7 @@ class ExtensionRegistry : public KeyedService {
     EVERYTHING = (1 << 4) - 1,
   };
 
-  ExtensionRegistry();
+  explicit ExtensionRegistry(content::BrowserContext* browser_context);
   virtual ~ExtensionRegistry();
 
   // Returns the instance for the given |browser_context|.
@@ -136,6 +136,8 @@ class ExtensionRegistry : public KeyedService {
   ExtensionSet blacklisted_extensions_;
 
   ObserverList<ExtensionRegistryObserver> observers_;
+
+  content::BrowserContext* const browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionRegistry);
 };

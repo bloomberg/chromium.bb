@@ -35,7 +35,7 @@ ExtensionRegistryFactory::~ExtensionRegistryFactory() {}
 
 KeyedService* ExtensionRegistryFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new ExtensionRegistry;
+  return new ExtensionRegistry(context);
 }
 
 BrowserContext* ExtensionRegistryFactory::GetBrowserContextToUse(

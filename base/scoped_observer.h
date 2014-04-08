@@ -19,8 +19,7 @@ class ScopedObserver {
   explicit ScopedObserver(Observer* observer) : observer_(observer) {}
 
   ~ScopedObserver() {
-    for (size_t i = 0; i < sources_.size(); ++i)
-      sources_[i]->RemoveObserver(observer_);
+    RemoveAll();
   }
 
   // Adds the object passed to the constructor as an observer on |source|.
@@ -35,12 +34,15 @@ class ScopedObserver {
     source->RemoveObserver(observer_);
   }
 
+  void RemoveAll() {
+    for (size_t i = 0; i < sources_.size(); ++i)
+      sources_[i]->RemoveObserver(observer_);
+    sources_.clear();
+  }
+
   bool IsObserving(Source* source) const {
-    for (size_t i = 0; i < sources_.size(); ++i) {
-      if (sources_[i] == source)
-        return true;
-    }
-    return false;
+    return std::find(sources_.begin(), sources_.end(), source) !=
+        sources_.end();
   }
 
  private:

@@ -191,7 +191,9 @@ void GalleryWatchStateTracker::OnGalleryWatchRemoved(
   WriteToStorage(extension_id);
 }
 
-void GalleryWatchStateTracker::OnExtensionLoaded(const Extension* extension) {
+void GalleryWatchStateTracker::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
   if (!storage)
@@ -205,6 +207,7 @@ void GalleryWatchStateTracker::OnExtensionLoaded(const Extension* extension) {
 }
 
 void GalleryWatchStateTracker::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
     const Extension* extension) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!ContainsKey(watched_extensions_map_, extension->id()))

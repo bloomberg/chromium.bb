@@ -13,24 +13,25 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/media_galleries/media_folder_finder.h"
 #include "chrome/browser/media_galleries/media_scan_types.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 
-class Profile;
 class MediaScanManagerObserver;
+class Profile;
 
 namespace extensions {
 class Extension;
-}  // namespace extensions
+class ExtensionRegistry;
+}
 
 // The MediaScanManager is owned by MediaFileSystemRegistry, which is global.
 // This class manages multiple 'virtual' media scans, up to one per extension
 // per profile, and also manages the one physical scan backing them.
 // This class lives and is called on the UI thread.
-class MediaScanManager : public content::NotificationObserver {
+class MediaScanManager : public extensions::ExtensionRegistryObserver {
  public:
   MediaScanManager();
   virtual ~MediaScanManager();
@@ -68,10 +69,10 @@ class MediaScanManager : public content::NotificationObserver {
   };
   typedef std::map<Profile*, ScanObservers> ScanObserverMap;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // extensions::ExtensionRegistryObserver implementation.
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
 
   bool ScanInProgress() const;
 
@@ -93,8 +94,9 @@ class MediaScanManager : public content::NotificationObserver {
   // Set of extensions (on all profiles) that have an in-progress scan.
   ScanObserverMap observers_;
 
-  // Used to listen for NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED events.
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      scoped_extension_registry_observer_;
 
   base::WeakPtrFactory<MediaScanManager> weak_factory_;
 

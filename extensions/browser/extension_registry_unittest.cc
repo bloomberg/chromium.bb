@@ -43,11 +43,13 @@ class TestObserver : public ExtensionRegistryObserver {
   const ExtensionList& unloaded() { return unloaded_; }
 
  private:
-  virtual void OnExtensionLoaded(const Extension* extension) OVERRIDE {
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE {
     loaded_.push_back(extension);
   }
 
-  virtual void OnExtensionUnloaded(const Extension* extension) OVERRIDE {
+  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                   const Extension* extension) OVERRIDE {
     unloaded_.push_back(extension);
   }
 
@@ -56,7 +58,7 @@ class TestObserver : public ExtensionRegistryObserver {
 };
 
 TEST_F(ExtensionRegistryTest, FillAndClearRegistry) {
-  ExtensionRegistry registry;
+  ExtensionRegistry registry(NULL);
   scoped_refptr<Extension> extension1 = test_util::CreateExtensionWithID("id1");
   scoped_refptr<Extension> extension2 = test_util::CreateExtensionWithID("id2");
   scoped_refptr<Extension> extension3 = test_util::CreateExtensionWithID("id3");
@@ -90,7 +92,7 @@ TEST_F(ExtensionRegistryTest, FillAndClearRegistry) {
 
 // A simple test of adding and removing things from sets.
 TEST_F(ExtensionRegistryTest, AddAndRemoveExtensionFromRegistry) {
-  ExtensionRegistry registry;
+  ExtensionRegistry registry(NULL);
 
   // Adding an extension works.
   scoped_refptr<Extension> extension = test_util::CreateExtensionWithID("id");
@@ -111,7 +113,7 @@ TEST_F(ExtensionRegistryTest, AddAndRemoveExtensionFromRegistry) {
 }
 
 TEST_F(ExtensionRegistryTest, AddExtensionToRegistryTwice) {
-  ExtensionRegistry registry;
+  ExtensionRegistry registry(NULL);
   scoped_refptr<Extension> extension = test_util::CreateExtensionWithID("id");
 
   // An extension can exist in two sets at once. It would be nice to eliminate
@@ -126,7 +128,7 @@ TEST_F(ExtensionRegistryTest, AddExtensionToRegistryTwice) {
 }
 
 TEST_F(ExtensionRegistryTest, GetExtensionById) {
-  ExtensionRegistry registry;
+  ExtensionRegistry registry(NULL);
 
   // Trying to get an extension fails cleanly when the sets are empty.
   EXPECT_FALSE(
@@ -205,7 +207,7 @@ TEST_F(ExtensionRegistryTest, GetExtensionById) {
 }
 
 TEST_F(ExtensionRegistryTest, Observer) {
-  ExtensionRegistry registry;
+  ExtensionRegistry registry(NULL);
   TestObserver observer;
   registry.AddObserver(&observer);
 

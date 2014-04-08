@@ -210,11 +210,13 @@ void ErrorConsole::OnPrefChanged() {
   CheckEnabled();
 }
 
-void ErrorConsole::OnExtensionUnloaded(const Extension* extension) {
+void ErrorConsole::OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                       const Extension* extension) {
   CheckEnabled();
 }
 
-void ErrorConsole::OnExtensionLoaded(const Extension* extension) {
+void ErrorConsole::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                     const Extension* extension) {
   CheckEnabled();
 }
 

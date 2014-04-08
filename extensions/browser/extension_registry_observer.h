@@ -5,6 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_REGISTRY_OBSERVER_H_
 #define EXTENSIONS_BROWSER_EXTENSION_REGISTRY_OBSERVER_H_
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 class Extension;
@@ -17,13 +21,17 @@ class ExtensionRegistryObserver {
 
   // Called after an extension is loaded. The extension will exclusively exist
   // in the enabled_extensions set of ExtensionRegistry.
-  virtual void OnExtensionLoaded(const Extension* extension) {}
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension) {}
 
   // Called after an extension is unloaded. The extension no longer exists in
   // any of the ExtensionRegistry sets (enabled, disabled, etc.).
-  virtual void OnExtensionUnloaded(const Extension* extension) {}
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension) {}
 };
 
-}
+}  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_EXTENSION_REGISTRY_OBSERVER_H_

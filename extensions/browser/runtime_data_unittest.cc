@@ -39,7 +39,7 @@ scoped_refptr<Extension> CreateExtensionWithBackgroundPage() {
 
 class RuntimeDataTest : public testing::Test {
  public:
-  RuntimeDataTest() : runtime_data_(&registry_) {}
+  RuntimeDataTest() : registry_(NULL), runtime_data_(&registry_) {}
   virtual ~RuntimeDataTest() {}
 
  protected:
@@ -100,7 +100,7 @@ TEST_F(RuntimeDataTest, OnExtensionUnloaded) {
   runtime_data_.SetBackgroundPageReady(extension, true);
   ASSERT_TRUE(runtime_data_.HasExtensionForTesting(extension));
 
-  runtime_data_.OnExtensionUnloaded(extension);
+  runtime_data_.OnExtensionUnloaded(NULL, extension);
   EXPECT_FALSE(runtime_data_.HasExtensionForTesting(extension));
 }
 

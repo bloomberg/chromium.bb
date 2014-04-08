@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
@@ -17,10 +16,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+
+using extensions::ExtensionRegistry;
 
 namespace media_galleries = extensions::api::media_galleries;
 
@@ -304,7 +304,9 @@ int CountScanResultsForExtension(MediaGalleriesPreferences* preferences,
 
 }  // namespace
 
-MediaScanManager::MediaScanManager() : weak_factory_(this) {
+MediaScanManager::MediaScanManager()
+    : scoped_extension_registry_observer_(this),
+      weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -369,12 +371,8 @@ void MediaScanManager::StartScan(Profile* profile,
   }
 
   // On first scan for the |profile|, register to listen for extension unload.
-  if (scanning_extensions->empty()) {
-    registrar_.Add(
-        this,
-        chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-        content::Source<Profile>(profile));
-  }
+  if (scanning_extensions->empty())
+    scoped_extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 
   scanning_extensions->insert(extension->id());
   scans_for_profile->second.observer->OnScanStarted(extension->id());
@@ -408,12 +406,8 @@ void MediaScanManager::CancelScan(Profile* profile,
   scans_for_profile->second.observer->OnScanCancelled(extension->id());
 
   // No more scanning extensions for |profile|, so stop listening for unloads.
-  if (scans_for_profile->second.scanning_extensions.empty()) {
-    registrar_.Remove(
-        this,
-        chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-        content::Source<Profile>(profile));
-  }
+  if (scans_for_profile->second.scanning_extensions.empty())
+    scoped_extension_registry_observer_.Remove(ExtensionRegistry::Get(profile));
 
   if (!ScanInProgress()) {
     folder_finder_.reset();
@@ -432,23 +426,11 @@ void MediaScanManager::SetMediaFolderFinderFactory(
 MediaScanManager::ScanObservers::ScanObservers() : observer(NULL) {}
 MediaScanManager::ScanObservers::~ScanObservers() {}
 
-void MediaScanManager::Observe(
-    int type, const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void MediaScanManager::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      Profile* profile = content::Source<Profile>(source).ptr();
-      extensions::Extension* extension = const_cast<extensions::Extension*>(
-          content::Details<extensions::UnloadedExtensionInfo>(
-              details)->extension);
-      DCHECK(extension);
-      CancelScan(profile, extension);
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
+  CancelScan(Profile::FromBrowserContext(browser_context), extension);
 }
 
 bool MediaScanManager::ScanInProgress() const {
@@ -529,6 +511,6 @@ void MediaScanManager::OnFoundContainerDirectories(
     scanning_extensions->clear();
     preferences->SetLastScanCompletionTime(base::Time::Now());
   }
-  registrar_.RemoveAll();
+  scoped_extension_registry_observer_.RemoveAll();
   folder_finder_.reset();
 }

@@ -90,8 +90,10 @@ class GalleryWatchStateTracker
   typedef std::map<std::string, WatchedGalleriesMap> WatchedExtensionsMap;
 
   // extensions::ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(const Extension* extension) OVERRIDE;
-  virtual void OnExtensionUnloaded(const Extension* extension) OVERRIDE;
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                   const Extension* extension) OVERRIDE;
 
   // Syncs media gallery watch data for the given extension to/from the state
   // storage.
