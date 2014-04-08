@@ -78,7 +78,7 @@ class InProcessReceiver {
                             const base::TimeTicks& playout_time,
                             bool is_continuous) = 0;
   virtual void OnVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
-                            const base::TimeTicks& render_time,
+                            const base::TimeTicks& playout_time,
                             bool is_continuous) = 0;
 
   // Helper method that creates |transport_| and |cast_receiver_|, starts
@@ -97,12 +97,15 @@ class InProcessReceiver {
  private:
   friend class base::RefCountedThreadSafe<InProcessReceiver>;
 
-  // CastReceiver callbacks that receive a frame and then request another.
+  // CastReceiver callbacks that receive a frame and then request another.  See
+  // comments for the callbacks defined in src/media/cast/cast_receiver.h for
+  // argument description and semantics.
   void GotAudioFrame(scoped_ptr<AudioBus> audio_frame,
                      const base::TimeTicks& playout_time,
                      bool is_continuous);
   void GotVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
-                     const base::TimeTicks& render_time);
+                     const base::TimeTicks& playout_time,
+                     bool is_continuous);
   void PullNextAudioFrame();
   void PullNextVideoFrame();
 

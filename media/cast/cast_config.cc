@@ -7,6 +7,20 @@
 namespace media {
 namespace cast {
 
+// TODO(miu): Revisit code factoring of these structs.  There are a number of
+// common elements between them all, so it might be reasonable to only have one
+// or two structs; or, at least a common base class.
+
+// TODO(miu): Make sure all POD members are initialized by ctors.  Policy
+// decision: Reasonable defaults or use invalid placeholder values to expose
+// unset members?
+
+// TODO(miu): Provide IsValidConfig() functions?
+
+// TODO(miu): Throughout the code, there is a lot of copy-and-paste of the same
+// calculations based on these config values.  So, why don't we add methods to
+// these classes to centralize the logic?
+
 VideoSenderConfig::VideoSenderConfig()
     : sender_ssrc(0),
       incoming_feedback_ssrc(0),
@@ -16,10 +30,15 @@ VideoSenderConfig::VideoSenderConfig()
       width(0),
       height(0),
       congestion_control_back_off(kDefaultCongestionControlBackOff),
+      max_bitrate(5000000),
+      min_bitrate(1000000),
+      start_bitrate(5000000),
       max_qp(kDefaultMaxQp),
       min_qp(kDefaultMinQp),
       max_frame_rate(kDefaultMaxFrameRate),
-      max_number_of_video_buffers_used(kDefaultNumberOfVideoBuffers) {}
+      max_number_of_video_buffers_used(kDefaultNumberOfVideoBuffers),
+      codec(transport::kVp8),
+      number_of_cores(0) {}
 
 AudioSenderConfig::AudioSenderConfig()
     : sender_ssrc(0),
@@ -51,7 +70,8 @@ VideoReceiverConfig::VideoReceiverConfig()
       rtp_payload_type(0),
       use_external_decoder(false),
       max_frame_rate(kDefaultMaxFrameRate),
-      decoder_faster_than_max_frame_rate(true) {}
+      decoder_faster_than_max_frame_rate(true),
+      codec(transport::kVp8) {}
 
 }  // namespace cast
 }  // namespace media

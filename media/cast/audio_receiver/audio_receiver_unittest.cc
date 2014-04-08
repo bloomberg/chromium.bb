@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
-
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,15 +18,19 @@
 namespace media {
 namespace cast {
 
-static const int64 kStartMillisecond = INT64_C(12345678900000);
+using ::testing::_;
 
 namespace {
+
+const int64 kStartMillisecond = INT64_C(12345678900000);
+const uint32 kFirstFrameId = 1234;
+
 class FakeAudioClient {
  public:
   FakeAudioClient() : num_called_(0) {}
   virtual ~FakeAudioClient() {}
 
-  void SetNextExpectedResult(uint8 expected_frame_id,
+  void SetNextExpectedResult(uint32 expected_frame_id,
                              const base::TimeTicks& expected_playout_time) {
     expected_frame_id_ = expected_frame_id;
     expected_playout_time_ = expected_playout_time;
@@ -49,11 +51,12 @@ class FakeAudioClient {
 
  private:
   int num_called_;
-  uint8 expected_frame_id_;
+  uint32 expected_frame_id_;
   base::TimeTicks expected_playout_time_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAudioClient);
 };
+
 }  // namespace
 
 class AudioReceiverTest : public ::testing::Test {
@@ -64,7 +67,7 @@ class AudioReceiverTest : public ::testing::Test {
     audio_config_.frequency = 16000;
     audio_config_.channels = 1;
     audio_config_.codec = transport::kPcm16;
-    audio_config_.use_external_decoder = false;
+    audio_config_.use_external_decoder = true;
     audio_config_.feedback_ssrc = 1234;
     testing_clock_ = new base::SimpleTestTickClock();
     testing_clock_->Advance(
@@ -76,10 +79,7 @@ class AudioReceiverTest : public ::testing::Test {
         task_runner_,
         task_runner_,
         task_runner_);
-  }
 
-  void Configure(bool use_external_decoder) {
-    audio_config_.use_external_decoder = use_external_decoder;
     receiver_.reset(new AudioReceiver(cast_environment_, audio_config_,
                                       &mock_transport_));
   }
@@ -89,7 +89,7 @@ class AudioReceiverTest : public ::testing::Test {
   virtual void SetUp() {
     payload_.assign(kMaxIpPacketSize, 0);
     rtp_header_.is_key_frame = true;
-    rtp_header_.frame_id = 0;
+    rtp_header_.frame_id = kFirstFrameId;
     rtp_header_.packet_id = 0;
     rtp_header_.max_packet_id = 0;
     rtp_header_.is_reference = false;
@@ -116,12 +116,11 @@ class AudioReceiverTest : public ::testing::Test {
   scoped_ptr<AudioReceiver> receiver_;
 };
 
-TEST_F(AudioReceiverTest, GetOnePacketEncodedframe) {
+TEST_F(AudioReceiverTest, GetOnePacketEncodedFrame) {
   SimpleEventSubscriber event_subscriber;
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber);
 
-  Configure(true);
-  EXPECT_CALL(mock_transport_, SendRtcpPacket(testing::_)).Times(1);
+  EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).Times(1);
 
   // Enqueue a request for an audio frame.
   receiver_->GetEncodedAudioFrame(
@@ -133,7 +132,8 @@ TEST_F(AudioReceiverTest, GetOnePacketEncodedframe) {
   EXPECT_EQ(0, fake_audio_client_.number_times_called());
 
   // Deliver one audio frame to the receiver and expect to get one frame back.
-  fake_audio_client_.SetNextExpectedResult(0, testing_clock_->NowTicks());
+  fake_audio_client_.SetNextExpectedResult(kFirstFrameId,
+                                           testing_clock_->NowTicks());
   FeedOneFrameIntoReceiver();
   task_runner_->RunTasks();
   EXPECT_EQ(1, fake_audio_client_.number_times_called());
@@ -151,8 +151,7 @@ TEST_F(AudioReceiverTest, GetOnePacketEncodedframe) {
 }
 
 TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
-  Configure(true);
-  EXPECT_CALL(mock_transport_, SendRtcpPacket(testing::_))
+  EXPECT_CALL(mock_transport_, SendRtcpPacket(_))
       .WillRepeatedly(testing::Return(true));
 
   // Enqueue a request for an audio frame.
@@ -164,7 +163,8 @@ TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
   EXPECT_EQ(0, fake_audio_client_.number_times_called());
 
   // Receive one audio frame and expect to see the first request satisfied.
-  fake_audio_client_.SetNextExpectedResult(0, testing_clock_->NowTicks());
+  fake_audio_client_.SetNextExpectedResult(kFirstFrameId,
+                                           testing_clock_->NowTicks());
   FeedOneFrameIntoReceiver();
   task_runner_->RunTasks();
   EXPECT_EQ(1, fake_audio_client_.number_times_called());
@@ -190,12 +190,13 @@ TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
   // Receive one audio frame out-of-order: Make sure that we are not continuous
   // and that the RTP timestamp represents a time in the future.
   rtp_header_.is_key_frame = false;
-  rtp_header_.frame_id = 2;
+  rtp_header_.frame_id = kFirstFrameId + 2;
   rtp_header_.is_reference = true;
   rtp_header_.reference_frame_id = 0;
   rtp_header_.webrtc.header.timestamp = 960;
   fake_audio_client_.SetNextExpectedResult(
-      2, testing_clock_->NowTicks() + base::TimeDelta::FromMilliseconds(100));
+      kFirstFrameId + 2,
+      testing_clock_->NowTicks() + base::TimeDelta::FromMilliseconds(100));
   FeedOneFrameIntoReceiver();
 
   // Frame 2 should not come out at this point in time.
@@ -214,11 +215,12 @@ TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
   EXPECT_EQ(2, fake_audio_client_.number_times_called());
 
   // Receive Frame 3 and expect it to fulfill the third request immediately.
-  rtp_header_.frame_id = 3;
+  rtp_header_.frame_id = kFirstFrameId + 3;
   rtp_header_.is_reference = false;
   rtp_header_.reference_frame_id = 0;
   rtp_header_.webrtc.header.timestamp = 1280;
-  fake_audio_client_.SetNextExpectedResult(3, testing_clock_->NowTicks());
+  fake_audio_client_.SetNextExpectedResult(kFirstFrameId + 3,
+                                           testing_clock_->NowTicks());
   FeedOneFrameIntoReceiver();
   task_runner_->RunTasks();
   EXPECT_EQ(3, fake_audio_client_.number_times_called());

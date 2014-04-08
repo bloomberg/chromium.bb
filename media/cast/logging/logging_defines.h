@@ -35,8 +35,8 @@ enum CastLoggingEvent {
   kAudioFrameCaptured,
   kAudioFrameEncoded,
   // Audio receiver.
-  kAudioPlayoutDelay,
   kAudioFrameDecoded,
+  kAudioPlayoutDelay,
   // Video sender.
   kVideoFrameCaptured,
   kVideoFrameReceived,

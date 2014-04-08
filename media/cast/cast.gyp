@@ -65,7 +65,6 @@
             'rtp_receiver/receiver_stats_unittest.cc',
             'rtp_receiver/rtp_parser/test/rtp_packet_builder.cc',
             'rtp_receiver/rtp_parser/rtp_parser_unittest.cc',
-            'test/encode_decode_test.cc',
             'test/end2end_unittest.cc',
             'test/fake_single_thread_task_runner.cc',
             'test/fake_single_thread_task_runner.h',

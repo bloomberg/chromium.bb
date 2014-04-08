@@ -92,9 +92,7 @@ CastReceiverImpl::CastReceiverImpl(
       audio_receiver_(cast_environment, audio_config, &pacer_),
       video_receiver_(cast_environment,
                       video_config,
-                      &pacer_,
-                      base::Bind(&CastReceiverImpl::UpdateTargetDelay,
-                                 base::Unretained(this))),
+                      &pacer_),
       frame_receiver_(new LocalFrameReceiver(cast_environment,
                                              &audio_receiver_,
                                              &video_receiver_)),
@@ -138,10 +136,6 @@ void CastReceiverImpl::ReceivedPacket(scoped_ptr<Packet> packet) {
     VLOG(1) << "Received a packet with a non matching sender SSRC "
             << ssrc_of_sender;
   }
-}
-
-void CastReceiverImpl::UpdateTargetDelay(base::TimeDelta target_delay_ms) {
-  audio_receiver_.SetTargetDelay(target_delay_ms);
 }
 
 transport::PacketReceiverCallback CastReceiverImpl::packet_receiver() {

@@ -26,30 +26,28 @@ namespace transport {
 class PacketSender;
 }
 
-// Callback in which the raw audio frame, play-out time, and a continuity flag
-// will be returned.  |is_continuous| will be false to indicate the loss of
-// audio data due to a loss of frames (or decoding errors).  This allows the
-// client to take steps to smooth discontinuities for playback.  Note: A NULL
-// AudioBus can be returned when data is not available (e.g., bad packet or when
-// flushing callbacks during shutdown).
+// The following callbacks are used to deliver decoded audio/video frame data,
+// the frame's corresponding play-out time, and a continuity flag.
+// |is_continuous| will be false to indicate the loss of data due to a loss of
+// frames (or decoding errors).  This allows the client to take steps to smooth
+// discontinuities for playback.  Note: A NULL pointer can be returned when data
+// is not available (e.g., bad packet or when flushing callbacks during
+// shutdown).
 typedef base::Callback<void(scoped_ptr<AudioBus> audio_bus,
                             const base::TimeTicks& playout_time,
                             bool is_continuous)> AudioFrameDecodedCallback;
+// TODO(miu): |video_frame| includes a timestamp, so use that instead.
+typedef base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
+                            const base::TimeTicks& playout_time,
+                            bool is_continuous)> VideoFrameDecodedCallback;
 
-// Callback in which the encoded audio frame and play-out time will be
-// returned.  The client should examine the EncodedAudioFrame::frame_id field to
-// determine whether any frames have been dropped (i.e., frame_id should be
-// incrementing by one each time).  Note: A NULL EncodedAudioFrame can be
-// returned on error/shutdown.
+// The following callbacks deliver still-encoded audio/video frame data, along
+// with the frame's corresponding play-out time.  The client should examine the
+// EncodedXXXFrame::frame_id field to determine whether any frames have been
+// dropped (i.e., frame_id should be incrementing by one each time).  Note: A
+// NULL pointer can be returned on error/shutdown.
 typedef base::Callback<void(scoped_ptr<transport::EncodedAudioFrame>,
                             const base::TimeTicks&)> AudioFrameEncodedCallback;
-
-// Callback in which the raw frame and render time will be returned once
-// decoding is complete.
-typedef base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
-                            const base::TimeTicks&)> VideoFrameDecodedCallback;
-
-// Callback in which the encoded video frame and render time will be returned.
 typedef base::Callback<void(scoped_ptr<transport::EncodedVideoFrame>,
                             const base::TimeTicks&)> VideoFrameEncodedCallback;
 

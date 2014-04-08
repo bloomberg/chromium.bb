@@ -37,7 +37,6 @@ class CastReceiverImpl : public CastReceiver {
 
  private:
   void ReceivedPacket(scoped_ptr<Packet> packet);
-  void UpdateTargetDelay(base::TimeDelta target_delay_ms);
 
   transport::PacedSender pacer_;
   AudioReceiver audio_receiver_;

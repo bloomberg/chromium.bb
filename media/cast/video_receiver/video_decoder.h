@@ -5,34 +5,53 @@
 #ifndef MEDIA_CAST_VIDEO_RECEIVER_VIDEO_DECODER_H_
 #define MEDIA_CAST_VIDEO_RECEIVER_VIDEO_DECODER_H_
 
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_receiver.h"
+#include "media/cast/transport/cast_transport_config.h"
 
 namespace media {
 namespace cast {
 
-class Vp8Decoder;
-class VideoFrame;
+class CastEnvironment;
 
-// This class is not thread safe; it's only called from the cast video decoder
-// thread.
-class VideoDecoder : public base::NonThreadSafe {
+class VideoDecoder {
  public:
-  VideoDecoder(const VideoReceiverConfig& video_config,
-               scoped_refptr<CastEnvironment> cast_environment);
+  // Callback passed to DecodeFrame, to deliver a decoded video frame from the
+  // decoder.  |frame| can be NULL when errors occur.  |is_continuous| is
+  // normally true, but will be false if the decoder has detected a frame skip
+  // since the last decode operation; and the client might choose to take steps
+  // to smooth/interpolate video discontinuities in this case.
+  typedef base::Callback<void(const scoped_refptr<VideoFrame>& frame,
+                              bool is_continuous)> DecodeFrameCallback;
+
+  VideoDecoder(const scoped_refptr<CastEnvironment>& cast_environment,
+               const VideoReceiverConfig& video_config);
   virtual ~VideoDecoder();
 
-  // Decode a video frame. Decoded (raw) frame will be returned via the
-  // provided callback
-  bool DecodeVideoFrame(const transport::EncodedVideoFrame* encoded_frame,
-                        const base::TimeTicks render_time,
-                        const VideoFrameDecodedCallback& frame_decoded_cb);
+  // Returns STATUS_VIDEO_INITIALIZED if the decoder was successfully
+  // constructed from the given VideoReceiverConfig.  If this method returns any
+  // other value, calls to DecodeFrame() will not succeed.
+  CastInitializationStatus InitializationResult() const;
+
+  // Decode the payload in |encoded_frame| asynchronously.  |callback| will be
+  // invoked on the CastEnvironment::MAIN thread with the result.
+  //
+  // In the normal case, |encoded_frame->frame_id| will be
+  // monotonically-increasing by 1 for each successive call to this method.
+  // When it is not, the decoder will assume one or more frames have been
+  // dropped (e.g., due to packet loss), and will perform recovery actions.
+  void DecodeFrame(scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
+                   const DecodeFrameCallback& callback);
 
  private:
-  transport::VideoCodec codec_;
-  scoped_ptr<Vp8Decoder> vp8_decoder_;
+  class ImplBase;
+  class Vp8Impl;
+
+  const scoped_refptr<CastEnvironment> cast_environment_;
+  scoped_refptr<ImplBase> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoder);
 };

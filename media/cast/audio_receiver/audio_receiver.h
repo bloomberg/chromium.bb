@@ -31,8 +31,18 @@ class AudioDecoder;
 
 // AudioReceiver receives packets out-of-order while clients make requests for
 // complete frames in-order.  (A frame consists of one or more packets.)
-// AudioReceiver also includes logic for mapping RTP timestamps to the local
-// base::TimeTicks clock for each frame.
+//
+// AudioReceiver also includes logic for computing the playout time for each
+// frame, accounting for a constant targeted playout delay.  The purpose of the
+// playout delay is to provide a fixed window of time between the capture event
+// on the sender and the playout on the receiver.  This is important because
+// each step of the pipeline (i.e., encode frame, then transmit/retransmit from
+// the sender, then receive and re-order packets on the receiver, then decode
+// frame) can vary in duration and is typically very hard to predict.
+// Heuristics will determine when the targeted playout delay is insufficient in
+// the current environment; and the receiver can then increase the playout
+// delay, notifying the sender, to account for the extra variance.
+// TODO(miu): Make the last sentence true.  http://crbug.com/360111
 //
 // Two types of frames can be requested: 1) A frame of decoded audio data; or 2)
 // a frame of still-encoded audio data, to be passed into an external audio
@@ -63,7 +73,7 @@ class AudioReceiver : public RtpReceiver,
   // even if to respond with NULL at shutdown time.
   void GetRawAudioFrame(const AudioFrameDecodedCallback& callback);
 
-  // Extract an encoded audio frame from the cast receiver.
+  // Request an encoded audio frame.
   //
   // The given |callback| is guaranteed to be run at some point in the future,
   // even if to respond with NULL at shutdown time.

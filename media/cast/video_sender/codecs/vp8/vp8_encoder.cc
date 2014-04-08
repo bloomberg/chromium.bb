@@ -177,6 +177,9 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
 
   // Note: The duration does not reflect the real time between frames. This is
   // done to keep the encoder happy.
+  //
+  // TODO(miu): This is a semi-hack.  We should consider using
+  // |video_frame->timestamp()| instead.
   uint32 duration = kVideoFrequency / cast_config_.max_frame_rate;
   if (vpx_codec_encode(encoder_.get(),
                        raw_image_,

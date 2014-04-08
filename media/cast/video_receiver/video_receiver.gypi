@@ -19,10 +19,11 @@
         'video_receiver.cc',
       ], # source
       'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/media/cast/framer/framer.gyp:cast_framer',
+        '<(DEPTH)/media/cast/rtp_receiver/rtp_receiver.gyp:cast_rtp_receiver',
         '<(DEPTH)/media/cast/transport/utility/utility.gyp:transport_utility',
-        'framer/framer.gyp:cast_framer',
-        'video_receiver/codecs/vp8/vp8_decoder.gyp:cast_vp8_decoder',
-        'rtp_receiver/rtp_receiver.gyp:cast_rtp_receiver',
+        '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
       ],
     },
   ],

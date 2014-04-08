@@ -111,9 +111,11 @@ void InProcessReceiver::GotAudioFrame(scoped_ptr<AudioBus> audio_frame,
 
 void InProcessReceiver::GotVideoFrame(
     const scoped_refptr<VideoFrame>& video_frame,
-    const base::TimeTicks& render_time) {
+    const base::TimeTicks& playout_time,
+    bool is_continuous) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  OnVideoFrame(video_frame, render_time, true /* pending CL to set this */);
+  if (video_frame)
+    OnVideoFrame(video_frame, playout_time, is_continuous);
   PullNextVideoFrame();
 }
 
