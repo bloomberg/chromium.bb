@@ -4,9 +4,9 @@
 
 #include "base/atomicops.h"
 
+#include <stdint.h>
 #include <string.h>
 
-#include "base/port.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 template <class AtomicType>
@@ -91,7 +91,7 @@ static void TestCompareAndSwap() {
 
   // Use test value that has non-zero bits in both halves, more for testing
   // 64-bit implementation on 32-bit platforms.
-  const AtomicType k_test_val = (GG_ULONGLONG(1) <<
+  const AtomicType k_test_val = (static_cast<uint64_t>(1) <<
                                  (NUM_BITS(AtomicType) - 2)) + 11;
   value = k_test_val;
   prev = base::subtle::NoBarrier_CompareAndSwap(&value, 0, 5);
@@ -114,7 +114,7 @@ static void TestAtomicExchange() {
 
   // Use test value that has non-zero bits in both halves, more for testing
   // 64-bit implementation on 32-bit platforms.
-  const AtomicType k_test_val = (GG_ULONGLONG(1) <<
+  const AtomicType k_test_val = (static_cast<uint64_t>(1) <<
                                  (NUM_BITS(AtomicType) - 2)) + 11;
   value = k_test_val;
   new_value = base::subtle::NoBarrier_AtomicExchange(&value, k_test_val);
@@ -131,7 +131,7 @@ static void TestAtomicExchange() {
 template <class AtomicType>
 static void TestAtomicIncrementBounds() {
   // Test at rollover boundary between int_max and int_min
-  AtomicType test_val = (GG_ULONGLONG(1) <<
+  AtomicType test_val = (static_cast<uint64_t>(1) <<
                          (NUM_BITS(AtomicType) - 1));
   AtomicType value = -1 ^ test_val;
   AtomicType new_value = base::subtle::NoBarrier_AtomicIncrement(&value, 1);
@@ -142,7 +142,7 @@ static void TestAtomicIncrementBounds() {
   EXPECT_EQ(-1 ^ test_val, value);
 
   // Test at 32-bit boundary for 64-bit atomic type.
-  test_val = GG_ULONGLONG(1) << (NUM_BITS(AtomicType) / 2);
+  test_val = static_cast<uint64_t>(1) << (NUM_BITS(AtomicType) / 2);
   value = test_val - 1;
   new_value = base::subtle::NoBarrier_AtomicIncrement(&value, 1);
   EXPECT_EQ(test_val, value);

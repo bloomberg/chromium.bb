@@ -46,7 +46,7 @@ const int64 kUpdateStorageBytes = 100 * 1024;
 const uint32 kMinShardStride = 1 << 24;
 
 // Strides over the entire SBPrefix space.
-const uint64 kMaxShardStride = GG_LONGLONG(1u) << 32;
+const uint64 kMaxShardStride = 1ULL << 32;
 
 // Maximum SBPrefix value.
 const SBPrefix kMaxSBPrefix = ~0;

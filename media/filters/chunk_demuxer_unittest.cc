@@ -85,7 +85,7 @@ base::TimeDelta kDefaultDuration() {
 // The data pointed by |buffer| should be at least 8 bytes long.
 // |number| should be in the range 0 <= number < 0x00FFFFFFFFFFFFFF.
 static void WriteInt64(uint8* buffer, int64 number) {
-  DCHECK(number >= 0 && number < GG_LONGLONG(0x00FFFFFFFFFFFFFF));
+  DCHECK(number >= 0 && number < 0x00FFFFFFFFFFFFFFLL);
   buffer[0] = 0x01;
   int64 tmp = number;
   for (int i = 7; i > 0; i--) {
