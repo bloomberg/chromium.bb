@@ -33,10 +33,10 @@ class BluetoothPairingChromeOS;
 // Chrome OS platform.
 class BluetoothAdapterChromeOS
     : public device::BluetoothAdapter,
-      private chromeos::BluetoothAdapterClient::Observer,
-      private chromeos::BluetoothDeviceClient::Observer,
-      private chromeos::BluetoothInputClient::Observer,
-      private chromeos::BluetoothAgentServiceProvider::Delegate {
+      public chromeos::BluetoothAdapterClient::Observer,
+      public chromeos::BluetoothDeviceClient::Observer,
+      public chromeos::BluetoothInputClient::Observer,
+      public chromeos::BluetoothAgentServiceProvider::Delegate {
  public:
   // BluetoothAdapter override
   virtual void AddObserver(

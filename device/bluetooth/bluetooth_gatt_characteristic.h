@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_GATT_CHARACTERISTIC_H_
-#define DEVICE_BLUETOOTH_GATT_CHARACTERISTIC_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_GATT_CHARACTERISTIC_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_GATT_CHARACTERISTIC_H_
 
 #include <vector>
 
@@ -70,42 +70,12 @@ class BluetoothGattCharacteristic {
   };
   typedef uint32 Permissions;
 
-  // Interface for observing changes from a BluetoothGattCharacteristic.
-  // Properties of remote characteristics are received asynchonously. The
-  // Observer interface can be used to be notified when the initial values of a
-  // characteristic are received as well as when successive changes occur during
-  // its life cycle.
-  class Observer {
-   public:
-    // Called when the UUID of |characteristic| has changed.
-    virtual void UuidChanged(
-        BluetoothGattCharacteristic* characteristic,
-        const BluetoothUUID& uuid) {}
-
-    // Called when the current value of |characteristic| has changed.
-    virtual void ValueChanged(
-        BluetoothGattCharacteristic* characteristic,
-        const std::vector<uint8>& value) {}
-
-    // Called when the descriptors that are associated with |characteristic|
-    // have changed.
-    virtual void DescriptorsChanged(
-        BluetoothGattCharacteristic* characteristic,
-        const std::vector<BluetoothGattDescriptor*>& descriptors) {}
-  };
-
   // The ErrorCallback is used by methods to asynchronously report errors.
   typedef base::Callback<void(const std::string&)> ErrorCallback;
 
   // The ValueCallback is used to return the value of a remote characteristic
   // upon a read request.
   typedef base::Callback<void(const std::vector<uint8>&)> ValueCallback;
-
-  // Adds and removes observers for events on this GATT characteristic. If
-  // monitoring multiple characteristics, check the |characteristic| parameter
-  // of observer methods to determine which characteristic is issuing the event.
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Constructs a BluetoothGattCharacteristic that can be associated with a
   // local GATT service when the adapter is in the peripheral role. To
@@ -131,11 +101,16 @@ class BluetoothGattCharacteristic {
                                              Permissions permissions);
 
   // The Bluetooth-specific UUID of the characteristic.
-  virtual const BluetoothUUID& GetUuid() const = 0;
+  virtual BluetoothUUID GetUUID() const = 0;
 
   // Returns true, if this characteristic is hosted locally. If false, then this
   // instance represents a remote GATT characteristic.
   virtual bool IsLocal() const = 0;
+
+  // Returns the value of the characteristic. For remote characteristics, this
+  // is the most recently cached value. For local characteristics, this is the
+  // most recently updated value or the value retrieved from the delegate.
+  virtual const std::vector<uint8>& GetValue() const = 0;
 
   // Returns a pointer to the GATT service this characteristic belongs to.
   virtual const BluetoothGattService* GetService() const = 0;
@@ -192,4 +167,4 @@ class BluetoothGattCharacteristic {
 
 }  // namespace device
 
-#endif  // DEVICE_BLUETOOTH_GATT_CHARACTERISTIC_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_GATT_CHARACTERISTIC_H_

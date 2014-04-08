@@ -31,8 +31,8 @@ namespace chromeos {
 // Chrome OS platform.
 class CHROMEOS_EXPORT BluetoothProfileChromeOS
     : public device::BluetoothProfile,
-      private device::BluetoothAdapter::Observer,
-      private BluetoothProfileServiceProvider::Delegate {
+      public device::BluetoothAdapter::Observer,
+      public BluetoothProfileServiceProvider::Delegate {
  public:
   // BluetoothProfile override.
   virtual void Unregister() OVERRIDE;

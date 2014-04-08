@@ -27,6 +27,7 @@
         'bluetooth/bluetooth_adapter_win_unittest.cc',
         'bluetooth/bluetooth_device_win_unittest.cc',
         'bluetooth/bluetooth_chromeos_unittest.cc',
+        'bluetooth/bluetooth_gatt_chromeos_unittest.cc',
         'bluetooth/bluetooth_profile_chromeos_unittest.cc',
         'bluetooth/bluetooth_service_record_mac_unittest.mm',
         'bluetooth/bluetooth_service_record_win_unittest.cc',

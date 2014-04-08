@@ -5,7 +5,9 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_H_
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -16,6 +18,7 @@
 
 namespace device {
 
+class BluetoothGattService;
 class BluetoothProfile;
 class BluetoothSocket;
 
@@ -80,6 +83,18 @@ class BluetoothDevice {
   class Observer {
    public:
     virtual ~Observer() {}
+
+    // Called when a new GATT service |service| is added to the device |device|,
+    // as the service is received from the device. Don't cache |service|. Store
+    // its identifier instead (i.e. BluetoothGattService::GetIdentifier).
+    virtual void GattServiceAdded(BluetoothDevice* device,
+                                  BluetoothGattService* service) {}
+
+    // Called when the GATT service |service| is removed from the device
+    // |device|. This can happen if the attribute database of the remote device
+    // changes or when |device| gets removed.
+    virtual void GattServiceRemoved(BluetoothDevice* device,
+                                    BluetoothGattService* service) {}
 
     // TODO(keybuk): add observers for pairing and connection.
   };
@@ -172,6 +187,12 @@ class BluetoothDevice {
   };
 
   virtual ~BluetoothDevice();
+
+  // Adds and removes observers for events on this Bluetooth device. If
+  // monitoring multiple devices, check the |device| parameter of the observer
+  // methods to determine which device is issuing the event.
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Returns the Bluetooth class of the device, used by GetDeviceType()
   // and metrics logging,
@@ -356,11 +377,23 @@ class BluetoothDevice {
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
 
+  // Returns the list of discovered GATT services.
+  std::vector<BluetoothGattService*> GetGattServices() const;
+
+  // Returns the GATT service with device-specific identifier |identifier|.
+  // Returns NULL, if no such service exists.
+  BluetoothGattService* GetGattService(const std::string& identifier) const;
+
  protected:
   BluetoothDevice();
 
   // Returns the internal name of the Bluetooth device, used by GetName().
   virtual std::string GetDeviceName() const = 0;
+
+  // Mapping from the platform-specific GATT service identifiers to
+  // BluetoothGattService objects.
+  typedef std::map<std::string, BluetoothGattService*> GattServiceMap;
+  GattServiceMap gatt_services_;
 
  private:
   // Returns a localized string containing the device's bluetooth address and

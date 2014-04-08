@@ -94,7 +94,9 @@ void FakeBluetoothGattServiceClient::ExposeHeartRateService(
       &FakeBluetoothGattServiceClient::OnPropertyChanged,
       base::Unretained(this),
       dbus::ObjectPath(heart_rate_service_path_))));
-  heart_rate_service_properties_->uuid.ReplaceValue(heart_rate_service_path_);
+  heart_rate_service_properties_->uuid.ReplaceValue(kHeartRateServiceUUID);
+  heart_rate_service_properties_->device.ReplaceValue(device_path);
+  heart_rate_service_properties_->primary.ReplaceValue(true);
 
   NotifyServiceAdded(dbus::ObjectPath(heart_rate_service_path_));
 
@@ -117,11 +119,12 @@ void FakeBluetoothGattServiceClient::HideHeartRateService() {
           DBusThreadManager::Get()->GetBluetoothGattCharacteristicClient());
   char_client->HideHeartRateCharacteristics();
 
-  heart_rate_service_properties_.reset();
-  std::string hrs_path = heart_rate_service_path_;
-  heart_rate_service_path_.clear();
+  // Notify observers before deleting the properties structure so that it
+  // can be accessed from the observer method.
+  NotifyServiceRemoved(dbus::ObjectPath(heart_rate_service_path_));
 
-  NotifyServiceRemoved(dbus::ObjectPath(hrs_path));
+  heart_rate_service_properties_.reset();
+  heart_rate_service_path_.clear();
 }
 
 void FakeBluetoothGattServiceClient::OnPropertyChanged(

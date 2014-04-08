@@ -9,7 +9,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
+#include "chromeos/dbus/bluetooth_gatt_service_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_device.h"
 
@@ -21,9 +23,14 @@ class BluetoothPairingChromeOS;
 // The BluetoothDeviceChromeOS class implements BluetoothDevice for the
 // Chrome OS platform.
 class BluetoothDeviceChromeOS
-    : public device::BluetoothDevice {
+    : public device::BluetoothDevice,
+      public BluetoothGattServiceClient::Observer {
  public:
   // BluetoothDevice override
+  virtual void AddObserver(
+      device::BluetoothDevice::Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      device::BluetoothDevice::Observer* observer) OVERRIDE;
   virtual uint32 GetBluetoothClass() const OVERRIDE;
   virtual std::string GetAddress() const OVERRIDE;
   virtual VendorIDSource GetVendorIDSource() const OVERRIDE;
@@ -90,6 +97,10 @@ class BluetoothDeviceChromeOS
                           const dbus::ObjectPath& object_path);
   virtual ~BluetoothDeviceChromeOS();
 
+  // BluetoothGattServiceClient::Observer overrides.
+  virtual void GattServiceAdded(const dbus::ObjectPath& object_path) OVERRIDE;
+  virtual void GattServiceRemoved(const dbus::ObjectPath& object_path) OVERRIDE;
+
   // Internal method to initiate a connection to this device, and methods called
   // by dbus:: on completion of the D-Bus method call.
   void ConnectInternal(bool after_pairing,
@@ -154,6 +165,9 @@ class BluetoothDeviceChromeOS
 
   // The dbus object path of the device object.
   dbus::ObjectPath object_path_;
+
+  // List of observers interested in event notifications from us.
+  ObserverList<device::BluetoothDevice::Observer> observers_;
 
   // Number of ongoing calls to Connect().
   int num_connecting_calls_;

@@ -24,6 +24,12 @@ class CHROMEOS_EXPORT BluetoothGattServiceClient : public DBusClient {
     // The 128-bit service UUID. [read-only]
     dbus::Property<std::string> uuid;
 
+    // Object path of the Bluetooth device that the GATT service belongs to.
+    dbus::Property<dbus::ObjectPath> device;
+
+    // Whether or not this service is a primary service.
+    dbus::Property<bool> primary;
+
     // Array of object paths representing the included services of this service.
     // [read-only]
     dbus::Property<std::vector<dbus::ObjectPath> > includes;

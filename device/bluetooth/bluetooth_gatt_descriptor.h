@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_GATT_DESCRIPTOR_H_
-#define DEVICE_BLUETOOTH_GATT_DESCRIPTOR_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_GATT_DESCRIPTOR_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_GATT_DESCRIPTOR_H_
 
 #include <vector>
 
@@ -105,37 +105,12 @@ class BluetoothGattDescriptor {
   // handled by the subsystem.
   static const BluetoothUUID kCharacteristicAggregateFormatUuid;
 
-  // Interface for observing changes from a BluetoothGattDescriptor.
-  // Properties of remote characteristic desciptors are received asynchonously.
-  // The Observer interface can be used to be notified when the initial values
-  // of a characteristic descriptor are received as well as when successive
-  // changes occur during its life cycle.
-  class Observer {
-   public:
-    // Called when the UUID of |descriptor| has changed.
-    virtual void UuidChanged(
-        BluetoothGattDescriptor* descriptor,
-        const BluetoothUUID& uuid) {}
-
-    // Called when the current value of |descriptor| has changed.
-    virtual void ValueChanged(
-        BluetoothGattDescriptor* descriptor,
-        const std::vector<uint8>& value) {}
-  };
-
   // The ErrorCallback is used by methods to asynchronously report errors.
   typedef base::Callback<void(const std::string&)> ErrorCallback;
 
   // The ValueCallback is used to return the value of a remote characteristic
   // descriptor upon a read request.
   typedef base::Callback<void(const std::vector<uint8>&)> ValueCallback;
-
-  // Adds and removes observers for events on this GATT characteristic
-  // descriptor. If monitoring multiple descriptors, check the |descriptor|
-  // parameter of observer methods to determine which characteristic is issuing
-  // the event.
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Constructs a BluetoothGattDescriptor that can be associated with a local
   // GATT characteristic when the adapter is in the peripheral role. To
@@ -157,11 +132,17 @@ class BluetoothGattDescriptor {
                                          const std::vector<uint8>& value);
 
   // The Bluetooth-specific UUID of the characteristic descriptor.
-  virtual const BluetoothUUID& GetUuid() const = 0;
+  virtual BluetoothUUID GetUUID() const = 0;
 
   // Returns true, if this characteristic descriptor is hosted locally. If
   // false, then this instance represents a remote descriptor.
   virtual bool IsLocal() const = 0;
+
+  // Returns the value of the descriptor. For remote descriptors, this is the
+  // most recently cached value of the remote descriptor. For local descriptors
+  // this is the most recently updated value or the value retrieved from the
+  // delegate.
+  virtual const std::vector<uint8>& GetValue() const = 0;
 
   // Returns a pointer to the GATT characteristic that this characteristic
   // descriptor belongs to.
@@ -194,4 +175,4 @@ class BluetoothGattDescriptor {
 
 }  // namespace device
 
-#endif  // DEVICE_BLUETOOTH_GATT_DESCRIPTOR_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_GATT_DESCRIPTOR_H_

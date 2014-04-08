@@ -209,21 +209,21 @@ void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
 
 void FakeBluetoothGattCharacteristicClient::HideHeartRateCharacteristics() {
   VLOG(2) << "Hiding fake Heart Rate characteristics.";
+
+  // Notify the observers before deleting the properties structures so that they
+  // can be accessed from the observer method.
+  NotifyCharacteristicRemoved(dbus::ObjectPath(heart_rate_measurement_path_));
+  NotifyCharacteristicRemoved(dbus::ObjectPath(body_sensor_location_path_));
+  NotifyCharacteristicRemoved(dbus::ObjectPath(heart_rate_control_point_path_));
+
   heart_rate_measurement_properties_.reset();
   body_sensor_location_properties_.reset();
   heart_rate_control_point_properties_.reset();
 
-  std::string hrm_path = heart_rate_measurement_path_;
   heart_rate_measurement_path_.clear();
-  std::string bsl_path =  body_sensor_location_path_;
   body_sensor_location_path_.clear();
-  std::string hrcp_path = heart_rate_control_point_path_;
   heart_rate_control_point_path_.clear();
   heart_rate_visible_ = false;
-
-  NotifyCharacteristicRemoved(dbus::ObjectPath(hrm_path));
-  NotifyCharacteristicRemoved(dbus::ObjectPath(bsl_path));
-  NotifyCharacteristicRemoved(dbus::ObjectPath(hrcp_path));
 }
 
 void FakeBluetoothGattCharacteristicClient::OnPropertyChanged(

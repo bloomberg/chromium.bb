@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
 
@@ -29,6 +30,10 @@ class BluetoothDeviceWin : public BluetoothDevice {
   virtual ~BluetoothDeviceWin();
 
   // BluetoothDevice override
+  virtual void AddObserver(
+      device::BluetoothDevice::Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      device::BluetoothDevice::Observer* observer) OVERRIDE;
   virtual uint32 GetBluetoothClass() const OVERRIDE;
   virtual std::string GetAddress() const OVERRIDE;
   virtual VendorIDSource GetVendorIDSource() const OVERRIDE;
@@ -91,6 +96,9 @@ class BluetoothDeviceWin : public BluetoothDevice {
   scoped_refptr<BluetoothSocketThreadWin> socket_thread_;
   net::NetLog* net_log_;
   net::NetLog::Source net_log_source_;
+
+  // List of observers interested in event notifications from us.
+  ObserverList<Observer> observers_;
 
   // The Bluetooth class of the device, a bitmask that may be decoded using
   // https://www.bluetooth.org/Technical/AssignedNumbers/baseband.htm

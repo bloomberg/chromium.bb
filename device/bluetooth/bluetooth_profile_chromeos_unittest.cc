@@ -6,6 +6,7 @@
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
+#include "chromeos/dbus/fake_bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_service_provider.h"
@@ -57,6 +58,9 @@ class BluetoothProfileChromeOSTest : public testing::Test {
         scoped_ptr<BluetoothDeviceClient>(new FakeBluetoothDeviceClient));
     fake_dbus_thread_manager->SetBluetoothInputClient(
         scoped_ptr<BluetoothInputClient>(new FakeBluetoothInputClient));
+    fake_dbus_thread_manager->SetBluetoothGattServiceClient(
+        scoped_ptr<BluetoothGattServiceClient>(
+            new FakeBluetoothGattServiceClient));
     DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
 
     device::BluetoothAdapterFactory::GetAdapter(

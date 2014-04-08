@@ -8,6 +8,7 @@
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
+#include "chromeos/dbus/fake_bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "dbus/object_path.h"
@@ -28,6 +29,8 @@ using device::BluetoothDiscoverySession;
 using device::BluetoothUUID;
 
 namespace chromeos {
+
+namespace {
 
 class TestObserver : public BluetoothAdapter::Observer {
  public:
@@ -140,6 +143,8 @@ class TestObserver : public BluetoothAdapter::Observer {
   scoped_refptr<BluetoothAdapter> adapter_;
 };
 
+}  // namespace
+
 class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
  public:
   TestPairingDelegate()
@@ -241,6 +246,9 @@ class BluetoothChromeOSTest : public testing::Test {
     fake_dbus_thread_manager->SetBluetoothAgentManagerClient(
         scoped_ptr<BluetoothAgentManagerClient>(
             new FakeBluetoothAgentManagerClient));
+    fake_dbus_thread_manager->SetBluetoothGattServiceClient(
+        scoped_ptr<BluetoothGattServiceClient>(
+            new FakeBluetoothGattServiceClient));
     DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
 
     fake_bluetooth_adapter_client_->SetSimulationIntervalMs(10);
