@@ -103,11 +103,13 @@ class InputMethodEngine : public InputMethodEngineInterface {
   void MenuItemToProperty(const MenuItem& item,
                           ash::ime::InputMethodMenuItem* property);
 
+  // Enables or disables overriding input view page to Virtual Keyboard window.
+  void EnableInputView(bool enabled);
+
   // Descriptor of this input method.
   input_method::InputMethodDescriptor descriptor_;
 
-  // True if the current context has focus.
-  bool focused_;
+  ui::TextInputType current_input_type_;
 
   // True if this engine is active.
   bool active_;

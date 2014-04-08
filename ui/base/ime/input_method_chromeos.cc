@@ -17,8 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "chromeos/ime/composition_text.h"
-#include "chromeos/ime/input_method_descriptor.h"
-#include "chromeos/ime/input_method_manager.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -39,8 +37,7 @@ namespace ui {
 // InputMethodChromeOS implementation -----------------------------------------
 InputMethodChromeOS::InputMethodChromeOS(
     internal::InputMethodDelegate* delegate)
-    : context_focused_(false),
-      composing_text_(false),
+    : composing_text_(false),
       composition_changed_(false),
       current_keyevent_id_(0),
       previous_textinput_type_(TEXT_INPUT_TYPE_NONE),
@@ -54,7 +51,6 @@ InputMethodChromeOS::InputMethodChromeOS(
 
 InputMethodChromeOS::~InputMethodChromeOS() {
   AbandonAllPendingKeyEvents();
-  context_focused_ = false;
   ConfirmCompositionText();
   // We are dead, so we need to ask the client to stop relying on us.
   OnInputMethodChanged();
@@ -64,13 +60,13 @@ InputMethodChromeOS::~InputMethodChromeOS() {
 
 void InputMethodChromeOS::OnFocus() {
   InputMethodBase::OnFocus();
-  UpdateContextFocusState();
+  OnTextInputTypeChanged(GetTextInputClient());
 }
 
 void InputMethodChromeOS::OnBlur() {
   ConfirmCompositionText();
   InputMethodBase::OnBlur();
-  UpdateContextFocusState();
+  OnTextInputTypeChanged(GetTextInputClient());
 }
 
 bool InputMethodChromeOS::OnUntranslatedIMEMessage(
@@ -110,12 +106,11 @@ bool InputMethodChromeOS::DispatchKeyEvent(const ui::KeyEvent& event) {
   DCHECK(system_toplevel_window_focused());
 
   // If |context_| is not usable, then we can only dispatch the key event as is.
-  // We also dispatch the key event directly if the current text input type is
-  // TEXT_INPUT_TYPE_PASSWORD, to bypass the input method.
+  // We only dispatch the key event to input method when the |context_| is an
+  // normal input field (not a password field).
   // Note: We need to send the key event to ibus even if the |context_| is not
   // enabled, so that ibus can have a chance to enable the |context_|.
-  if (!context_focused_ || !GetEngine() ||
-      GetTextInputType() == TEXT_INPUT_TYPE_PASSWORD ) {
+  if (!IsInputFieldFocused() || !GetEngine()) {
     if (event.type() == ET_KEY_PRESSED) {
       if (ExecuteCharacterComposer(event)) {
         // Treating as PostIME event if character composer handles key event and
@@ -158,7 +153,7 @@ void InputMethodChromeOS::OnTextInputTypeChanged(
 }
 
 void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
-  if (!context_focused_ || !IsTextInputClientFocused(client))
+  if (!IsInputFieldFocused() || !IsTextInputClientFocused(client))
     return;
 
   // The current text input type should not be NONE if |context_| is focused.
@@ -213,7 +208,7 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
 }
 
 void InputMethodChromeOS::CancelComposition(const TextInputClient* client) {
-  if (context_focused_ && IsTextInputClientFocused(client))
+  if (IsInputFieldFocused() && IsTextInputClientFocused(client))
     ResetContext();
 }
 
@@ -264,7 +259,7 @@ void InputMethodChromeOS::ConfirmCompositionText() {
 }
 
 void InputMethodChromeOS::ResetContext() {
-  if (!context_focused_ || !GetTextInputClient())
+  if (!IsInputFieldFocused() || !GetTextInputClient())
     return;
 
   DCHECK(system_toplevel_window_focused());
@@ -290,38 +285,26 @@ void InputMethodChromeOS::ResetContext() {
 }
 
 void InputMethodChromeOS::UpdateContextFocusState() {
-  const bool old_context_focused = context_focused_;
-  const TextInputType current_text_input_type = GetTextInputType();
-  // Use switch here in case we are going to add more text input types.
-  switch (current_text_input_type) {
-    case TEXT_INPUT_TYPE_NONE:
-    case TEXT_INPUT_TYPE_PASSWORD:
-      context_focused_ = false;
-      break;
-    default:
-      context_focused_ = true;
-      break;
-  }
-
   // Propagate the focus event to the candidate window handler which also
   // manages the input method mode indicator.
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
   if (candidate_window)
-    candidate_window->FocusStateChanged(context_focused_);
+    candidate_window->FocusStateChanged(IsInputFieldFocused());
 
   if (!GetEngine())
     return;
 
-  // We only focus in |context_| when the focus is in a normal textfield.
-  // Even if focus is not changed, a text input type change causes a focus
-  // blink.
-  // ibus_input_context_focus_{in|out}() run asynchronously.
-  bool input_type_change =
-      (current_text_input_type != previous_textinput_type_);
-  if (old_context_focused && (!context_focused_ || input_type_change))
+  const TextInputType current_text_input_type = GetTextInputType();
+
+  // When focus is not changed, a text input type change causes a focus
+  // blink. The focus in to or out from password field should also notify
+  // engine.
+  if (previous_textinput_type_ != TEXT_INPUT_TYPE_NONE &&
+      previous_textinput_type_ != current_text_input_type)
     GetEngine()->FocusOut();
-  if (context_focused_ && (!old_context_focused || input_type_change)) {
+  if (current_text_input_type != TEXT_INPUT_TYPE_NONE &&
+      current_text_input_type != previous_textinput_type_) {
     chromeos::IMEEngineHandlerInterface::InputContext context(
         current_text_input_type, GetTextInputMode());
     GetEngine()->FocusIn(context);
@@ -646,6 +629,11 @@ void InputMethodChromeOS::ExtractCompositionText(
     out_composition->underlines.push_back(CompositionUnderline(
         0, length, SK_ColorBLACK, false /* thick */));
   }
+}
+
+bool InputMethodChromeOS::IsInputFieldFocused() {
+  TextInputType type = GetTextInputType();
+  return (type != TEXT_INPUT_TYPE_NONE) && (type != TEXT_INPUT_TYPE_PASSWORD);
 }
 
 }  // namespace ui

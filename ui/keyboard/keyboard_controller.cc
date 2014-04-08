@@ -347,13 +347,7 @@ void KeyboardController::OnShowImeIfNeeded() {
     keyboard->set_owned_by_parent(false);
   }
 
-  // Must be called after keyboard window is created. LoadSystemKeyboard and
-  // ReloadKeyboardIfNeeded depend on a keyboard web content which created when
-  // creating keyboard window.
-  if (type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
-    proxy_->LoadSystemKeyboard();
-  else
-    proxy_->ReloadKeyboardIfNeeded();
+  proxy_->ReloadKeyboardIfNeeded();
 
   if (keyboard_visible_)
     return;

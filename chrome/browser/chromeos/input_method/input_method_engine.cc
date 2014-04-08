@@ -58,7 +58,7 @@ void UpdateComposition(const CompositionText& composition_text,
 }  // namespace
 
 InputMethodEngine::InputMethodEngine()
-    : focused_(false),
+    : current_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       active_(false),
       context_id_(0),
       next_context_id_(1),
@@ -93,7 +93,7 @@ void InputMethodEngine::Initialize(
   ComponentExtensionIMEManager* comp_ext_ime_manager =
       manager->GetComponentExtensionIMEManager();
 
-  if (comp_ext_ime_manager->IsInitialized() &&
+  if (comp_ext_ime_manager && comp_ext_ime_manager->IsInitialized() &&
       comp_ext_ime_manager->IsWhitelistedExtension(extension_id)) {
     imm_id_ = comp_ext_ime_manager->GetId(extension_id, engine_id);
   } else {
@@ -220,7 +220,7 @@ bool InputMethodEngine::SendKeyEvents(
   }
   // context_id  ==  0, means sending key events to non-input field.
   // context_id_ == -1, means the focus is not in an input field.
-  if ((context_id != 0 && context_id != context_id_) || context_id_ == -1) {
+  if (context_id != 0 && (context_id != context_id_ || context_id_ == -1)) {
     return false;
   }
 
@@ -442,17 +442,37 @@ void InputMethodEngine::HideInputView() {
   }
 }
 
+void InputMethodEngine::EnableInputView(bool enabled) {
+  const GURL& url = enabled ? input_view_url_ : GURL();
+  keyboard::SetOverrideContentUrl(url);
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller)
+    keyboard_controller->Reload();
+}
+
 void InputMethodEngine::FocusIn(
     const IMEEngineHandlerInterface::InputContext& input_context) {
-  focused_ = true;
+  current_input_type_ = input_context.type;
   if (!active_)
     return;
+
+  // Prevent sending events on password field to 3rd-party IME extensions.
+  // And also make sure the VK fallback to system VK.
+  // TODO(shuchen): for password field, forcibly switch/lock the IME to the XKB
+  // keyboard related to the current IME.
+  if (current_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD &&
+      !extension_ime_util::IsComponentExtensionIME(GetDescriptor().id())) {
+    EnableInputView(false);
+    return;
+  }
+
   context_id_ = next_context_id_;
   ++next_context_id_;
 
   InputMethodEngineInterface::InputContext context;
   context.id = context_id_;
-  switch (input_context.type) {
+  switch (current_input_type_) {
     case ui::TEXT_INPUT_TYPE_SEARCH:
       context.type = "search";
       break;
@@ -468,6 +488,9 @@ void InputMethodEngine::FocusIn(
     case ui::TEXT_INPUT_TYPE_NUMBER:
       context.type = "number";
       break;
+    case ui::TEXT_INPUT_TYPE_PASSWORD:
+      context.type = "password";
+      break;
     default:
       context.type = "text";
       break;
@@ -477,9 +500,19 @@ void InputMethodEngine::FocusIn(
 }
 
 void InputMethodEngine::FocusOut() {
-  focused_ = false;
+  ui::TextInputType input_type = current_input_type_;
+  current_input_type_ = ui::TEXT_INPUT_TYPE_NONE;
   if (!active_)
     return;
+
+  // Prevent sending events on password field to 3rd-party IME extensions.
+  // And also make sure the VK restore to IME input view.
+  if (input_type == ui::TEXT_INPUT_TYPE_PASSWORD &&
+      !extension_ime_util::IsComponentExtensionIME(GetDescriptor().id())) {
+    EnableInputView(true);
+    return;
+  }
+
   int context_id = context_id_;
   context_id_ = -1;
   observer_->OnBlur(context_id);
@@ -488,27 +521,16 @@ void InputMethodEngine::FocusOut() {
 void InputMethodEngine::Enable() {
   active_ = true;
   observer_->OnActivate(engine_id_);
-  IMEEngineHandlerInterface::InputContext context(ui::TEXT_INPUT_TYPE_TEXT,
-                                                  ui::TEXT_INPUT_MODE_DEFAULT);
-  FocusIn(context);
-
-  keyboard::SetOverrideContentUrl(input_view_url_);
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller)
-    keyboard_controller->Reload();
+  if (current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
+    current_input_type_ = ui::TEXT_INPUT_TYPE_TEXT;
+  FocusIn(IMEEngineHandlerInterface::InputContext(
+      current_input_type_, ui::TEXT_INPUT_MODE_DEFAULT));
+  EnableInputView(true);
 }
 
 void InputMethodEngine::Disable() {
   active_ = false;
   observer_->OnDeactivated(engine_id_);
-
-  GURL empty_url;
-  keyboard::SetOverrideContentUrl(empty_url);
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller)
-    keyboard_controller->Reload();
 }
 
 void InputMethodEngine::PropertyActivate(const std::string& property_name) {

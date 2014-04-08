@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_INPUT_METHOD_MANAGER_H_
 
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/fake_input_method_delegate.h"
 #include "chromeos/ime/fake_xkeyboard.h"
 #include "chromeos/ime/input_method_manager.h"
@@ -73,6 +74,9 @@ class MockInputMethodManager : public InputMethodManager {
     current_input_method_id_ = input_method_id;
   }
 
+  void SetComponentExtensionIMEManager(
+      scoped_ptr<ComponentExtensionIMEManager> comp_ime_manager);
+
   // Set values that will be provided to the InputMethodUtil.
   void set_application_locale(const std::string& value);
 
@@ -92,6 +96,7 @@ class MockInputMethodManager : public InputMethodManager {
   InputMethodUtil util_;
   FakeXKeyboard xkeyboard_;
   bool mod3_used_;
+  scoped_ptr<ComponentExtensionIMEManager> comp_ime_manager_;
 
   // The active input method ids cache (actually default only)
   std::vector<std::string> active_input_method_ids_;

@@ -324,12 +324,10 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
 }
 
 void SetOverrideContentUrl(const GURL& url) {
-  DCHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_UI);
   g_override_content_url.Get() = url;
 }
 
 const GURL& GetOverrideContentUrl() {
-  DCHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_UI);
   return g_override_content_url.Get();
 }
 

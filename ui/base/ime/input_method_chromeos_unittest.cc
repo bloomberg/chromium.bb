@@ -470,15 +470,15 @@ TEST_F(InputMethodChromeOSTest, FocusIn_Text) {
   EXPECT_EQ(1U, on_input_method_changed_call_count_);
 }
 
-// Confirm that IBusClient::FocusIn is NOT called on "connected" if input_type_
-// is PASSWORD.
+// Confirm that InputMethodEngine::FocusIn is called on "connected" even if
+// input_type_ is PASSWORD.
 TEST_F(InputMethodChromeOSTest, FocusIn_Password) {
   ime_->Init(true);
   EXPECT_EQ(0U, on_input_method_changed_call_count_);
   input_type_ = TEXT_INPUT_TYPE_PASSWORD;
   ime_->OnTextInputTypeChanged(this);
-  // Since a form has focus, IBusClient::FocusIn() should NOT be called.
-  EXPECT_EQ(0, mock_ime_engine_handler_->focus_in_call_count());
+  // InputMethodEngine::FocusIn() should be called even for password field.
+  EXPECT_EQ(1, mock_ime_engine_handler_->focus_in_call_count());
   EXPECT_EQ(1U, on_input_method_changed_call_count_);
 }
 
@@ -502,7 +502,7 @@ TEST_F(InputMethodChromeOSTest, FocusOut_Password) {
   EXPECT_EQ(0, mock_ime_engine_handler_->focus_out_call_count());
   input_type_ = TEXT_INPUT_TYPE_PASSWORD;
   ime_->OnTextInputTypeChanged(this);
-  EXPECT_EQ(1, mock_ime_engine_handler_->focus_in_call_count());
+  EXPECT_EQ(2, mock_ime_engine_handler_->focus_in_call_count());
   EXPECT_EQ(1, mock_ime_engine_handler_->focus_out_call_count());
 }
 

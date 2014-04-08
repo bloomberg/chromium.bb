@@ -109,6 +109,10 @@ class UI_BASE_EXPORT InputMethodChromeOS
   // Callback function for IMEEngineHandlerInterface::ProcessKeyEvent.
   void ProcessKeyEventDone(uint32 id, ui::KeyEvent* event, bool is_handled);
 
+  // Returns whether an input field is focused. Note that password field is not
+  // considered as an input field.
+  bool IsInputFieldFocused();
+
   // All pending key events. Note: we do not own these object, we just save
   // pointers to these object so that we can abandon them when necessary.
   // They will be deleted in ProcessKeyEventDone().
@@ -126,9 +130,6 @@ class UI_BASE_EXPORT InputMethodChromeOS
 
   base::string16 previous_surrounding_text_;
   gfx::Range previous_selection_range_;
-
-  // Indicates if input context is focused or not.
-  bool context_focused_;
 
   // Indicates if there is an ongoing composition text.
   bool composing_text_;

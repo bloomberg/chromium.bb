@@ -163,7 +163,12 @@ InputMethodUtil* MockInputMethodManager::GetInputMethodUtil() {
 
 ComponentExtensionIMEManager*
     MockInputMethodManager::GetComponentExtensionIMEManager() {
-  return NULL;
+  return comp_ime_manager_.get();
+}
+
+void MockInputMethodManager::SetComponentExtensionIMEManager(
+    scoped_ptr<ComponentExtensionIMEManager> comp_ime_manager) {
+  comp_ime_manager_ = comp_ime_manager.Pass();
 }
 
 void MockInputMethodManager::set_application_locale(const std::string& value) {
