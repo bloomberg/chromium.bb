@@ -128,7 +128,7 @@ const base::char16 kBulletPoint = 0x2022;
   delegate_ = delegate;
 
   NSView* contentView = [[self window] contentView];
-  DCHECK([[contentView subviews] count] == 0);
+  [contentView setSubviews:@[]];
 
   // Create one button to use as a guide for the permissions' y-offsets.
   base::scoped_nsobject<NSView> allowOrOkButton;
@@ -232,10 +232,22 @@ const base::char16 kBulletPoint = 0x2022;
 
   bubbleFrame.size.height = yOffset + kVerticalPadding;
   bubbleFrame = [[self window] frameRectForContentRect:bubbleFrame];
-  [[self window] setFrame:bubbleFrame display:NO];
 
-  [self setAnchorPoint:anchorPoint];
-  [self showWindow:nil];
+  if ([[self window] isVisible]) {
+    // Unfortunately, calling -setFrame followed by -setFrameOrigin  (called
+    // within -setAnchorPoint) causes flickering.  Avoid the flickering by
+    // manually adjusting the new frame's origin so that the top left stays the
+    // same, and only calling -setFrame.
+    NSRect currentWindowFrame = [[self window] frame];
+    bubbleFrame.origin = currentWindowFrame.origin;
+    bubbleFrame.origin.y = bubbleFrame.origin.y +
+        currentWindowFrame.size.height - bubbleFrame.size.height;
+    [[self window] setFrame:bubbleFrame display:YES];
+  } else {
+    [[self window] setFrame:bubbleFrame display:NO];
+    [self setAnchorPoint:anchorPoint];
+    [self showWindow:nil];
+  }
 }
 
 - (NSView*)labelForRequest:(PermissionBubbleRequest*)request {
