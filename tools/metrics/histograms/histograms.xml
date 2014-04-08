@@ -16356,13 +16356,6 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="PasswordBubble.DismissalReason"
-    enum="PasswordBubbleDismissalReason">
-  <owner>mkwst@chromium.org</owner>
-  <owner>markusheintz@chromium.org</owner>
-  <summary>Why did we close the password management bubble?</summary>
-</histogram>
-
 <histogram name="PasswordBubble.DisplayDisposition"
     enum="PasswordBubbleDisplayDisposition">
   <owner>mkwst@chromium.org</owner>
@@ -16604,6 +16597,15 @@ other types of suffix sets.
   <owner>vabr@chromium.org</owner>
   <summary>
     The number of accounts stored in the password manager (across all sites)
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.UIDismissalReason"
+    enum="PasswordManagerUIDismissalReason">
+  <owner>mkwst@chromium.org</owner>
+  <owner>markusheintz@chromium.org</owner>
+  <summary>
+    Why was the password manager's UI (bubble or infobar) closed?
   </summary>
 </histogram>
 
@@ -37411,15 +37413,6 @@ other types of suffix sets.
   <int value="3" label="Cookie contains both control chars and is invalid"/>
 </enum>
 
-<enum name="PasswordBubbleDismissalReason" type="int">
-  <int value="0" label="Bubble lost focus"/>
-  <int value="1" label="Clicked 'Save'"/>
-  <int value="2" label="Clicked 'Nope'"/>
-  <int value="3" label="Clicked 'Never'"/>
-  <int value="4" label="Clicked 'Manage passwords'"/>
-  <int value="5" label="Clicked 'Done'"/>
-</enum>
-
 <enum name="PasswordBubbleDisplayDisposition" type="int">
   <int value="0" label="Opened automatically / Offering a password to save"/>
   <int value="1" label="Opened manually / Offering a password to save"/>
@@ -37867,6 +37860,15 @@ other types of suffix sets.
   <int value="0" label="Matching disabled"/>
   <int value="1" label="No match"/>
   <int value="2" label="Match"/>
+</enum>
+
+<enum name="PasswordManagerUIDismissalReason" type="int">
+  <int value="0" label="Bubble lost focus / No infobar interaction"/>
+  <int value="1" label="Clicked 'Save'"/>
+  <int value="2" label="Clicked 'Nope'"/>
+  <int value="3" label="Clicked 'Never'"/>
+  <int value="4" label="Clicked 'Manage passwords'"/>
+  <int value="5" label="Clicked 'Done'"/>
 </enum>
 
 <enum name="PepperInterface" type="int">

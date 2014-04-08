@@ -115,4 +115,32 @@ std::string GroupIdToString(size_t group_id) {
   return std::string();
 }
 
+void LogUIDismissalReason(ResponseType type) {
+  UIDismissalReason reason = NO_DIRECT_INTERACTION;
+  switch (type) {
+    case NO_RESPONSE:
+      reason = NO_DIRECT_INTERACTION;
+      break;
+    case REMEMBER_PASSWORD:
+      reason = CLICKED_SAVE;
+      break;
+    case NEVER_REMEMBER_PASSWORD:
+      reason = CLICKED_NEVER;
+      break;
+    case INFOBAR_DISMISSED:
+      reason = CLICKED_NOPE;
+      break;
+    case NUM_RESPONSE_TYPES:
+      NOTREACHED();
+      break;
+  }
+  LogUIDismissalReason(reason);
+}
+
+void LogUIDismissalReason(UIDismissalReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.UIDismissalReason",
+                            reason,
+                            NUM_UI_RESPONSES);
+}
+
 }  // namespace password_manager_metrics_util

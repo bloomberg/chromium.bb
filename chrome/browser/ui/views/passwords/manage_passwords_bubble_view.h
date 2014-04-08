@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -35,28 +36,14 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
 
   enum BubbleDisplayReason { AUTOMATIC = 0, USER_ACTION, NUM_DISPLAY_REASONS };
 
-  enum BubbleDismissalReason {
-    BUBBLE_LOST_FOCUS = 0,
-    CLICKED_SAVE,
-    CLICKED_NOPE,
-    CLICKED_NEVER,
-    CLICKED_MANAGE,
-    CLICKED_DONE,
-    NUM_DISMISSAL_REASONS,
-
-    // If we add the omnibox icon _without_ intending to display the bubble,
-    // we actually call Close() after creating the bubble view. We don't want
-    // that to count in the metrics, so we need this placeholder value.
-    NOT_DISPLAYED
-  };
-
   // Shows the bubble.
   static void ShowBubble(content::WebContents* web_contents,
                          ManagePasswordsIconView* icon_view,
                          BubbleDisplayReason reason);
 
   // Closes any existing bubble.
-  static void CloseBubble(BubbleDismissalReason reason);
+  static void CloseBubble(
+      password_manager_metrics_util::UIDismissalReason reason);
 
   // Whether the bubble is currently showing.
   static bool IsShowing();
@@ -95,7 +82,7 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
   // bubble, this must be called after the bubble is created.
   void AdjustForFullscreen(const gfx::Rect& screen_bounds);
 
-  void Close(BubbleDismissalReason reason);
+  void Close(password_manager_metrics_util::UIDismissalReason reason);
 
   // views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
@@ -127,7 +114,7 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
   views::LabelButton* done_button_;
 
   // We track the dismissal reason so we can log it correctly in the destructor.
-  BubbleDismissalReason dismissal_reason_;
+  password_manager_metrics_util::UIDismissalReason dismissal_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleView);
 };

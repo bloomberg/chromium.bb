@@ -12,6 +12,7 @@
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
 namespace content {
 class WebContents;
@@ -43,14 +44,6 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
       bool use_additional_authentication);
 
  private:
-  enum ResponseType {
-    NO_RESPONSE = 0,
-    REMEMBER_PASSWORD,
-    NEVER_REMEMBER_PASSWORD,
-    INFOBAR_DISMISSED,
-    NUM_RESPONSE_TYPES,
-  };
-
   SavePasswordInfoBarDelegate(PasswordFormManager* form_to_save,
                               const std::string& uma_histogram_suffix);
 
@@ -77,7 +70,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   scoped_ptr<PasswordFormManager> form_to_save_;
 
   // Used to track the results we get from the info bar.
-  ResponseType infobar_response_;
+  password_manager_metrics_util::ResponseType infobar_response_;
 
   // Measures the "Save password?" prompt lifetime. Used to report an UMA
   // signal.

@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/profile_management_switches.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -53,7 +52,10 @@ void SavePasswordInfoBarDelegate::Create(
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.InfoBarResponse",
-                            infobar_response_, NUM_RESPONSE_TYPES);
+                            infobar_response_,
+                            password_manager_metrics_util::NUM_RESPONSE_TYPES);
+
+  password_manager_metrics_util::LogUIDismissalReason(infobar_response_);
 
   // The shortest period for which the prompt needs to live, so that we don't
   // consider it killed prematurely, as might happen, e.g., if a pre-rendered
@@ -64,7 +66,8 @@ SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
   if (!uma_histogram_suffix_.empty()) {
     password_manager_metrics_util::LogUMAHistogramEnumeration(
         "PasswordManager.SavePasswordPromptResponse_" + uma_histogram_suffix_,
-        infobar_response_, NUM_RESPONSE_TYPES);
+        infobar_response_,
+        password_manager_metrics_util::NUM_RESPONSE_TYPES);
     password_manager_metrics_util::LogUMAHistogramBoolean(
         "PasswordManager.SavePasswordPromptDisappearedQuickly_" +
             uma_histogram_suffix_,
@@ -83,7 +86,7 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     const std::string& uma_histogram_suffix)
     : ConfirmInfoBarDelegate(),
       form_to_save_(form_to_save),
-      infobar_response_(NO_RESPONSE),
+      infobar_response_(password_manager_metrics_util::NO_RESPONSE),
       uma_histogram_suffix_(uma_histogram_suffix) {
   if (!uma_histogram_suffix_.empty()) {
     password_manager_metrics_util::LogUMAHistogramBoolean(
@@ -133,20 +136,20 @@ base::string16 SavePasswordInfoBarDelegate::GetButtonLabel(
 bool SavePasswordInfoBarDelegate::Accept() {
   DCHECK(form_to_save_.get());
   form_to_save_->Save();
-  infobar_response_ = REMEMBER_PASSWORD;
+  infobar_response_ = password_manager_metrics_util::REMEMBER_PASSWORD;
   return true;
 }
 
 bool SavePasswordInfoBarDelegate::Cancel() {
   DCHECK(form_to_save_.get());
   form_to_save_->PermanentlyBlacklist();
-  infobar_response_ = NEVER_REMEMBER_PASSWORD;
+  infobar_response_ = password_manager_metrics_util::NEVER_REMEMBER_PASSWORD;
   return true;
 }
 
 void SavePasswordInfoBarDelegate::InfoBarDismissed() {
   DCHECK(form_to_save_.get());
-  infobar_response_ = INFOBAR_DISMISSED;
+  infobar_response_ = password_manager_metrics_util::INFOBAR_DISMISSED;
 }
 
 InfoBarDelegate::InfoBarAutomationType
