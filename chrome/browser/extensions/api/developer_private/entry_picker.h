@@ -39,7 +39,6 @@ class EntryPicker : public ui::SelectFileDialog::Listener {
   static void StopSkippingPickerForTest();
 
  protected:
-
   virtual ~EntryPicker();
 
  private:

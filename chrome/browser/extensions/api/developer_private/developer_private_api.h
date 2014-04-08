@@ -136,7 +136,6 @@ class DeveloperPrivateAPI : public BrowserContextKeyedAPI,
   scoped_ptr<DeveloperPrivateEventRouter> developer_private_event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateAPI);
-
 };
 
 namespace api {
@@ -264,7 +263,6 @@ class DeveloperPrivateShowPermissionsDialogFunction
 
   scoped_ptr<ExtensionInstallPrompt> prompt_;
   std::string extension_id_;
-
 };
 
 class DeveloperPrivateEnableFunction

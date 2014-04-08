@@ -542,7 +542,6 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
     GetInspectablePagesForExtension(
         const Extension* extension,
         bool extension_is_enabled) {
-
   ItemInspectViewList result;
   // Get the extension process's active views.
   extensions::ProcessManager* process_manager =
@@ -552,7 +551,7 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
       process_manager->GetRenderViewHostsForExtension(extension->id()),
       &result);
 
-  // Get app window views
+  // Get app window views.
   GetAppWindowPagesForExtensionProfile(extension, &result);
 
   // Include a link to start the lazy background page, if applicable.
@@ -812,8 +811,7 @@ bool DeveloperPrivateEnableFunction::RunImpl() {
                !requirements_checker_.get()) {
       // Recheck the requirements.
       scoped_refptr<const Extension> extension =
-          service->GetExtensionById(extension_id,
-                                     true );// include_disabled
+          service->GetExtensionById(extension_id, true);
       requirements_checker_.reset(new RequirementsChecker);
       // Released by OnRequirementsChecked.
       AddRef();
@@ -1048,7 +1046,6 @@ bool DeveloperPrivateLoadDirectoryFunction::RunImpl() {
 
   // Directory url is non empty only for syncfilesystem.
   if (directory_url_str != "") {
-
     context_ = content::BrowserContext::GetStoragePartition(
         GetProfile(), render_view_host()->GetSiteInstance())
                    ->GetFileSystemContext();
@@ -1087,8 +1084,7 @@ bool DeveloperPrivateLoadDirectoryFunction::RunImpl() {
                    this,
                    project_base_path_));
   } else {
-
-    // Check if the DirecotryEntry is the instace of chrome filesystem..
+    // Check if the DirecotryEntry is the instance of chrome filesystem.
     if (!app_file_handler_util::ValidateFileEntryAndGetPath(filesystem_name,
                                                             filesystem_path,
                                                             render_view_host_,
@@ -1103,7 +1099,6 @@ bool DeveloperPrivateLoadDirectoryFunction::RunImpl() {
 }
 
 void DeveloperPrivateLoadDirectoryFunction::Load() {
-
   ExtensionService* service = GetProfile()->GetExtensionService();
   UnpackedInstaller::Create(service)->Load(project_base_path_);
 
@@ -1184,7 +1179,6 @@ void DeveloperPrivateLoadDirectoryFunction::ReadSyncFileSystemDirectoryCb(
         base::Bind(&DeveloperPrivateLoadDirectoryFunction::SnapshotFileCallback,
             this,
             target_path));
-
   }
 
   if (!has_more) {
@@ -1248,7 +1242,6 @@ DeveloperPrivateLoadDirectoryFunction::~DeveloperPrivateLoadDirectoryFunction()
     {}
 
 bool DeveloperPrivateChoosePathFunction::RunImpl() {
-
   scoped_ptr<developer::ChoosePath::Params> params(
       developer::ChoosePath::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
@@ -1261,9 +1254,9 @@ bool DeveloperPrivateChoosePathFunction::RunImpl() {
   base::string16 select_title;
 
   int file_type_index = 0;
-  if (params->file_type == developer::FILE_TYPE_LOAD)
+  if (params->file_type == developer::FILE_TYPE_LOAD) {
     select_title = l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY);
-  else if (params->file_type== developer::FILE_TYPE_PEM) {
+  } else if (params->file_type == developer::FILE_TYPE_PEM) {
     select_title = l10n_util::GetStringUTF16(
         IDS_EXTENSION_PACK_DIALOG_SELECT_KEY);
     info.extensions.push_back(std::vector<base::FilePath::StringType>());
@@ -1363,6 +1356,6 @@ bool DeveloperPrivateOpenDevToolsFunction::RunImpl() {
   return true;
 }
 
-} // namespace api
+}  // namespace api
 
-} // namespace extensions
+}  // namespace extensions
