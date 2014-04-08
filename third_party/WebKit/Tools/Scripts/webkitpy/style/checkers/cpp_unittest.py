@@ -2317,6 +2317,15 @@ class CppStyleTest(CppStyleTestBase):
                 '  [build/header_guard] [5]'),
             error_collector.result_list())
 
+        # Verify that the Chromium-style header guard is allowed as well.
+        error_collector = ErrorCollector(self.assertTrue, header_guard_filter)
+        self.process_file_data('Source/foo/testname.h', 'h',
+                               ['#ifndef BLINK_FOO_TESTNAME_H_',
+                                '#define BLINK_FOO_TESTNAME_H_'],
+                              error_collector)
+        self.assertEqual(0, len(error_collector.result_list()),
+                          error_collector.result_list())
+
     def test_build_printf_format(self):
         self.assert_lint(
             r'printf("\%%d", value);',

@@ -917,7 +917,11 @@ def check_for_copyright(lines, error):
               'You should have a line: "Copyright [year] <Copyright Owner>"')
 
 
-def get_header_guard_cpp_variable(filename):
+# TODO(jww) After the transition of Blink into the Chromium repo, this function
+# should be removed. This will strictly enforce Chromium-style header guards,
+# rather than allowing traditional WebKit header guards and Chromium-style
+# simultaneously.
+def get_legacy_header_guard_cpp_variable(filename):
     """Returns the CPP variable that should be used as a header guard.
 
     Args:
@@ -943,6 +947,31 @@ def get_header_guard_cpp_variable(filename):
     return (special_name, standard_name)
 
 
+def get_header_guard_cpp_variable(filename):
+    """Returns the CPP variable that should be used as a header guard in Chromium-style.
+
+    Args:
+      filename: The name of a C++ header file.
+
+    Returns:
+      The CPP variable that should be used as a header guard in the
+      named file in Chromium-style.
+
+    """
+
+    # Restores original filename in case that style checker is invoked from Emacs's
+    # flymake.
+    filename = re.sub(r'_flymake\.h$', '.h', filename)
+
+    # If it's a full path and starts with Source/, replace Source with blink
+    # since that will be the new style directory.
+    filename = sub(r'^Source\/', 'blink/', filename)
+
+    standard_name = sub(r'[-.\s\/]', '_', filename).upper() + '_'
+
+    return standard_name
+
+
 def check_for_header_guard(filename, lines, error):
     """Checks that the file contains a header guard.
 
@@ -955,7 +984,8 @@ def check_for_header_guard(filename, lines, error):
       error: The function to call with any errors found.
     """
 
-    cppvar = get_header_guard_cpp_variable(filename)
+    legacy_cpp_var = get_legacy_header_guard_cpp_variable(filename)
+    cpp_var = get_header_guard_cpp_variable(filename)
 
     ifndef = None
     ifndef_line_number = 0
@@ -976,13 +1006,13 @@ def check_for_header_guard(filename, lines, error):
     if not ifndef or not define or ifndef != define:
         error(0, 'build/header_guard', 5,
               'No #ifndef header guard found, suggested CPP variable is: %s' %
-              cppvar[0])
+              legacy_cpp_var[0])
         return
 
-    # The guard should be File_h.
-    if ifndef not in cppvar:
+    # The guard should be File_h or, for Chromium style, BLINK_PATH_TO_FILE_H_.
+    if ifndef not in legacy_cpp_var and ifndef != cpp_var:
         error(ifndef_line_number, 'build/header_guard', 5,
-              '#ifndef header guard has wrong style, please use: %s' % cppvar[0])
+              '#ifndef header guard has wrong style, please use: %s' % legacy_cpp_var[0])
 
 
 def check_for_unicode_replacement_characters(lines, error):
