@@ -762,16 +762,6 @@ crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-002.html [ Skip ]
 
 crbug.com/246077 [ Linux ] virtual/android/fullscreen/parent-flow-inline-with-block-child.html [ Failure ]
 
-# These fullscreen tests are crashing for some debug builds
-crbug.com/359067 [ Debug ] fullscreen/full-screen-iframe-allowed-video.html [ Crash Pass ]
-crbug.com/359067 [ Debug ] fullscreen/full-screen-iframe-legacy.html [ Crash Pass ]
-crbug.com/359067 [ Debug ] fullscreen/full-screen-iframe-without-allow-attribute-allowed-from-parent.html [ Crash Pass ]
-crbug.com/359067 [ Debug ] fullscreen/full-screen-inline-split-crash.html [ Crash Pass ]
-crbug.com/359067 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Crash Pass ]
-crbug.com/359067 [ Debug ] virtual/android/fullscreen/full-screen-iframe-legacy.html [ Crash Pass ]
-crbug.com/359067 [ Debug ] virtual/android/fullscreen/full-screen-iframe-without-allow-attribute-allowed-from-parent.html [ Crash Pass ]
-crbug.com/359067 [ Debug ] virtual/android/fullscreen/full-screen-iframe-zIndex.html [ Crash Pass ]
-
 crbug.com/338475 crbug.com/307777 [ Android ] css1/cascade/important.html [ Failure Timeout ]
 crbug.com/338475 crbug.com/307777 [ Android ] css1/classification/list_style.html [ Failure Timeout ]
 crbug.com/338475 [ Android ] css1/classification/list_style_position.html [ Failure ]

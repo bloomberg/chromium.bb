@@ -281,7 +281,8 @@ void FullscreenElementStack::webkitExitFullscreen()
 
     // 1. Let doc be the context object. (i.e. "this")
     Document* currentDoc = document();
-    ASSERT(currentDoc->isActive());
+    if (!currentDoc->isActive())
+        return;
 
     // 2. If doc's fullscreen element stack is empty, terminate these steps.
     if (m_fullScreenElementStack.isEmpty())
