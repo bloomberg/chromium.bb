@@ -455,7 +455,7 @@ void BrowserNonClientFrameViewAsh::PaintImmersiveLightbarStyleHeader(
     gfx::Canvas* canvas) {
   // The light bar header is not themed because theming it does not look good.
   gfx::ImageSkia* frame_image = GetThemeProvider()->GetImageSkiaNamed(
-      IDR_AURA_BROWSER_WINDOW_HEADER_BASE_MAXIMIZED);
+      IDR_ASH_BROWSER_WINDOW_HEADER_BASE_MAXIMIZED);
   canvas->TileImageInt(*frame_image, 0, 0, width(), frame_image->height());
 }
 
