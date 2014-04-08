@@ -12,6 +12,7 @@
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/translate_errors.h"
 
+class GURL;
 class PrefService;
 class TranslateAcceptLanguages;
 class TranslateDriver;
@@ -42,6 +43,9 @@ class TranslateClient {
                                const std::string target_language,
                                TranslateErrors::Type error_type,
                                bool triggered_from_menu) = 0;
+
+  // Returns true if the URL can be translated.
+  virtual bool IsTranslatableURL(const GURL& url) = 0;
 };
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_CLIENT_H_

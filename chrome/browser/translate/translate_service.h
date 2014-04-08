@@ -7,6 +7,7 @@
 
 #include "chrome/browser/web_resource/resource_request_allowed_notifier.h"
 
+class GURL;
 class PrefService;
 
 // Singleton managing the resources required for Translate.
@@ -46,6 +47,9 @@ class TranslateService : public ResourceRequestAllowedNotifier::Observer {
   //     the accept-language list
   // If no language is found then an empty string is returned.
   static std::string GetTargetLanguage(PrefService* prefs);
+
+  // Returns true if the URL can be translated.
+  static bool IsTranslatableURL(const GURL& url);
 
  private:
   TranslateService();

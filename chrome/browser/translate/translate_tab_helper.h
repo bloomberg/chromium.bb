@@ -93,6 +93,7 @@ class TranslateTabHelper
                                const std::string target_language,
                                TranslateErrors::Type error_type,
                                bool triggered_from_menu) OVERRIDE;
+  virtual bool IsTranslatableURL(const GURL& url) OVERRIDE;
 
  private:
   explicit TranslateTabHelper(content::WebContents* web_contents);

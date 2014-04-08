@@ -42,9 +42,6 @@ class TranslateManager {
                    const std::string& accept_language_pref_name);
   virtual ~TranslateManager();
 
-  // Returns true if the URL can be translated.
-  static bool IsTranslatableURL(const GURL& url);
-
   // Returns the language to translate to. The language returned is the
   // first language found in the following list that is supported by the
   // translation service:

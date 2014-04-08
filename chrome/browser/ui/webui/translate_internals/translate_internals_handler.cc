@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -71,7 +72,7 @@ void TranslateInternalsHandler::Observe(
       content::Source<content::WebContents>(source).ptr();
 
   if (web_contents->GetBrowserContext()->IsOffTheRecord() ||
-      !TranslateManager::IsTranslatableURL(language_detection_details->url)) {
+      !TranslateService::IsTranslatableURL(language_detection_details->url)) {
     return;
   }
 

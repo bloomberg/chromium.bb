@@ -43,11 +43,6 @@
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "extensions/common/constants.h"
-#endif
-
 using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
@@ -78,25 +73,6 @@ void NotifyTranslateError(const TranslateErrorDetails& details) {
 }  // namespace
 
 TranslateManager::~TranslateManager() {}
-
-// static
-bool TranslateManager::IsTranslatableURL(const GURL& url) {
-  // A URLs is translatable unless it is one of the following:
-  // - empty (can happen for popups created with window.open(""))
-  // - an internal URL (chrome:// and others)
-  // - the devtools (which is considered UI)
-  // - Chrome OS file manager extension
-  // - an FTP page (as FTP pages tend to have long lists of filenames that may
-  //   confuse the CLD)
-  return !url.is_empty() &&
-         !url.SchemeIs(content::kChromeUIScheme) &&
-         !url.SchemeIs(content::kChromeDevToolsScheme) &&
-#if defined(OS_CHROMEOS)
-         !(url.SchemeIs(extensions::kExtensionScheme) &&
-           url.DomainIs(file_manager::kFileManagerAppId)) &&
-#endif
-         !url.SchemeIs(content::kFtpScheme);
-}
 
 // static
 scoped_ptr<TranslateManager::TranslateErrorCallbackList::Subscription>
@@ -158,7 +134,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   // Don't translate any Chrome specific page, e.g., New Tab Page, Download,
   // History, and so on.
   GURL page_url = web_contents->GetURL();
-  if (!IsTranslatableURL(page_url)) {
+  if (!translate_client_->IsTranslatableURL(page_url)) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_URL_IS_NOT_SUPPORTED);
     return;

@@ -1446,9 +1446,9 @@ TEST_F(TranslateManagerRenderViewHostTest, ScriptExpires) {
 
 TEST_F(TranslateManagerRenderViewHostTest, DownloadsAndHistoryNotTranslated) {
   ASSERT_FALSE(
-      TranslateManager::IsTranslatableURL(GURL(chrome::kChromeUIDownloadsURL)));
+      TranslateService::IsTranslatableURL(GURL(chrome::kChromeUIDownloadsURL)));
   ASSERT_FALSE(
-      TranslateManager::IsTranslatableURL(GURL(chrome::kChromeUIHistoryURL)));
+      TranslateService::IsTranslatableURL(GURL(chrome::kChromeUIHistoryURL)));
 }
 
 #if defined(USE_AURA)

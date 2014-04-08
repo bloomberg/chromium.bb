@@ -13,6 +13,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "content/public/common/url_constants.h"
+#include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "extensions/common/constants.h"
+#endif
 
 namespace {
 // The singleton instance of TranslateService.
@@ -107,4 +114,22 @@ std::string TranslateService::GetTargetLanguage(PrefService* prefs) {
   base::SplitString(prefs->GetString(prefs::kAcceptLanguages), ',',
                     &accept_languages_list);
   return TranslateManager::GetTargetLanguage(accept_languages_list);
+}
+
+// static
+bool TranslateService::IsTranslatableURL(const GURL& url) {
+  // A URLs is translatable unless it is one of the following:
+  // - empty (can happen for popups created with window.open(""))
+  // - an internal URL (chrome:// and others)
+  // - the devtools (which is considered UI)
+  // - Chrome OS file manager extension
+  // - an FTP page (as FTP pages tend to have long lists of filenames that may
+  //   confuse the CLD)
+  return !url.is_empty() && !url.SchemeIs(content::kChromeUIScheme) &&
+         !url.SchemeIs(content::kChromeDevToolsScheme) &&
+#if defined(OS_CHROMEOS)
+         !(url.SchemeIs(extensions::kExtensionScheme) &&
+           url.DomainIs(file_manager::kFileManagerAppId)) &&
+#endif
+         !url.SchemeIs(content::kFtpScheme);
 }

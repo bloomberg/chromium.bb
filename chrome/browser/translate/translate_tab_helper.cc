@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_status_code.h"
+#include "url/gurl.h"
 
 #if defined(CLD2_DYNAMIC_MODE)
 #include "base/files/file.h"
@@ -198,6 +199,10 @@ scoped_ptr<TranslatePrefs> TranslateTabHelper::GetTranslatePrefs() {
 TranslateAcceptLanguages* TranslateTabHelper::GetTranslateAcceptLanguages() {
   DCHECK(web_contents());
   return GetTranslateAcceptLanguages(web_contents()->GetBrowserContext());
+}
+
+bool TranslateTabHelper::IsTranslatableURL(const GURL& url) {
+  return TranslateService::IsTranslatableURL(url);
 }
 
 bool TranslateTabHelper::OnMessageReceived(const IPC::Message& message) {
