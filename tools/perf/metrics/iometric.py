@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from metrics import Metric
+from telemetry.core.platform import factory
 from telemetry.value import scalar
 
 class IOMetric(Metric):
@@ -10,7 +11,10 @@ class IOMetric(Metric):
 
   @classmethod
   def CustomizeBrowserOptions(cls, options):
-    options.AppendExtraBrowserArgs('--no-sandbox')
+    os_name = factory.GetPlatformBackendForCurrentOS().GetOSName()
+    if os_name != 'mac':
+      # FIXME: Get rid of this on all platforms - http://crbug.com/361049 .
+      options.AppendExtraBrowserArgs('--no-sandbox')
 
   def Start(self, page, tab):
     raise NotImplementedError()
