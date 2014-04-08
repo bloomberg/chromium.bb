@@ -439,12 +439,6 @@ int OmniboxFieldTrial::HQPBookmarkValue() {
   return bookmark_value;
 }
 
-bool OmniboxFieldTrial::HQPDiscountFrecencyWhenFewVisits() {
-  return chrome_variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kHQPDiscountFrecencyWhenFewVisitsRule) == "true";
-}
-
 bool OmniboxFieldTrial::HQPAllowMatchInTLDValue() {
   return chrome_variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
@@ -468,8 +462,6 @@ const char OmniboxFieldTrial::kReorderForLegalDefaultMatchRule[] =
     "ReorderForLegalDefaultMatch";
 const char OmniboxFieldTrial::kHQPBookmarkValueRule[] =
     "HQPBookmarkValue";
-const char OmniboxFieldTrial::kHQPDiscountFrecencyWhenFewVisitsRule[] =
-    "HQPDiscountFrecencyWhenFewVisits";
 const char OmniboxFieldTrial::kHQPAllowMatchInTLDRule[] = "HQPAllowMatchInTLD";
 const char OmniboxFieldTrial::kHQPAllowMatchInSchemeRule[] =
     "HQPAllowMatchInScheme";

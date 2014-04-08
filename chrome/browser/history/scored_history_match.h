@@ -182,16 +182,6 @@ class ScoredHistoryMatch : public history::HistoryMatch {
   // untyped visits to non-bookmarked pages and 20 for typed visits.
   static int bookmark_value_;
 
-  // If true, we treat URLs with fewer visits than kMaxVisitsToScore as if
-  // they had kMaxVisitsToScore visits, just with the additional visits having
-  // zero score.  This means that a URL that has, for instance, one typed visit
-  // today and no other visits would have a score of 2.0 ( = 20 for the single
-  // typed visit / 10 visits total ) versus a score of 20.0 ( = 20 for the
-  // single typed visit / 1 visit total ).  As you can see, if this value is
-  // false, we're extremely optimistic that the visit frequency trends we
-  // observe with a tiny number of visits will continue.
-  static bool discount_frecency_when_few_visits_;
-
   // If true, we allow input terms to match in the TLD (e.g., .com).
   static bool allow_tld_matches_;
 

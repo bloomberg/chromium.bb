@@ -232,31 +232,6 @@ TEST_F(ScoredHistoryMatchTest, ScoringBookmarks) {
   EXPECT_GT(scored_with_bookmark.raw_score(), scored.raw_score());
 }
 
-TEST_F(ScoredHistoryMatchTest, ScoringDiscountFrecency) {
-  // We use NowFromSystemTime() because MakeURLRow uses the same function
-  // to calculate last visit time when building a row.
-  base::Time now = base::Time::NowFromSystemTime();
-
-  std::string url_string("http://fedcba.com/");
-  const GURL url(url_string);
-  URLRow row(MakeURLRow(url_string.c_str(), "", 1, 1, 1));
-  RowWordStarts word_starts;
-  PopulateWordStarts(row, &word_starts);
-  WordStarts one_word_no_offset(1, 0u);
-  VisitInfoVector visits = CreateVisitInfoVector(1, 1, now);
-  ScoredHistoryMatch scored(row, visits, std::string(), ASCIIToUTF16("fed"),
-                            Make1Term("fed"), one_word_no_offset, word_starts,
-                            now, NULL);
-
-  // With properly discounted scores, the final raw_score should be lower.
-  base::AutoReset<bool> reset(
-      &ScoredHistoryMatch::discount_frecency_when_few_visits_, true);
-  ScoredHistoryMatch scored_with_discount_frecency(
-      row, visits, std::string(), ASCIIToUTF16("fed"),
-      Make1Term("fed"), one_word_no_offset, word_starts, now, NULL);
-  EXPECT_LT(scored_with_discount_frecency.raw_score(), scored.raw_score());
-}
-
 TEST_F(ScoredHistoryMatchTest, ScoringTLD) {
   // We use NowFromSystemTime() because MakeURLRow uses the same function
   // to calculate last visit time when building a row.

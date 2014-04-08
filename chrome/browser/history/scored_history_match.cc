@@ -35,7 +35,6 @@ float* ScoredHistoryMatch::raw_term_score_to_topicality_score_ = NULL;
 float* ScoredHistoryMatch::days_ago_to_recency_score_ = NULL;
 bool ScoredHistoryMatch::initialized_ = false;
 int ScoredHistoryMatch::bookmark_value_ = 1;
-bool ScoredHistoryMatch::discount_frecency_when_few_visits_ = false;
 bool ScoredHistoryMatch::allow_tld_matches_ = false;
 bool ScoredHistoryMatch::allow_scheme_matches_ = false;
 bool ScoredHistoryMatch::also_do_hup_like_scoring_ = false;
@@ -520,11 +519,8 @@ float ScoredHistoryMatch::GetFrecency(const base::Time& now,
   // kMaxVisitsToScore as the denominator for the average regardless of
   // how many visits there were in order to penalize a match that has
   // fewer visits than kMaxVisitsToScore.
-  const int total_sampled_visits = std::min(visits.size(), kMaxVisitsToScore);
-  if (total_sampled_visits == 0)
-    return 0.0f;
   float summed_visit_points = 0;
-  for (int i = 0; i < total_sampled_visits; ++i) {
+  for (size_t i = 0; i < std::min(visits.size(), kMaxVisitsToScore); ++i) {
     int value_of_transition =
         (visits[i].second == content::PAGE_TRANSITION_TYPED) ? 20 : 1;
     if (bookmarked)
@@ -533,9 +529,7 @@ float ScoredHistoryMatch::GetFrecency(const base::Time& now,
         GetRecencyScore((now - visits[i].first).InDays());
     summed_visit_points += (value_of_transition * bucket_weight);
   }
-  return visits.size() * summed_visit_points /
-      (discount_frecency_when_few_visits_ ?
-          kMaxVisitsToScore : total_sampled_visits);
+  return visits.size() * summed_visit_points / kMaxVisitsToScore;
 }
 
 // static
@@ -597,8 +591,6 @@ void ScoredHistoryMatch::Init() {
         HistoryURLProvider::kScoreForBestInlineableResult - 1;
   }
   bookmark_value_ = OmniboxFieldTrial::HQPBookmarkValue();
-  discount_frecency_when_few_visits_ =
-      OmniboxFieldTrial::HQPDiscountFrecencyWhenFewVisits();
   allow_tld_matches_ = OmniboxFieldTrial::HQPAllowMatchInTLDValue();
   allow_scheme_matches_ = OmniboxFieldTrial::HQPAllowMatchInSchemeValue();
   initialized_ = true;

@@ -263,16 +263,6 @@ class OmniboxFieldTrial {
   static int HQPBookmarkValue();
 
   // ---------------------------------------------------------
-  // For the HQPDiscountFrecencyWhenFewVisits experiment that's part of
-  // the bundled omnibox field trial.
-
-  // Returns whether to discount the frecency score estimates when a
-  // URL has fewer than ScoredHistoryMatch::kMaxVisitsToScore visits.
-  // See comments in scored_history_match.h for details.  Returns false
-  // if the discount frecency experiment isn't active.
-  static bool HQPDiscountFrecencyWhenFewVisits();
-
-  // ---------------------------------------------------------
   // For the HQPAllowMatchInTLD experiment that's part of the
   // bundled omnibox field trial.
 
