@@ -2172,6 +2172,7 @@ def SetUpConfigurations(target, target_dict):
                 if not target_dict['configurations'][i].get('abstract')]
     target_dict['default_configuration'] = sorted(concrete)[0]
 
+  merged_configurations = {}
   for configuration in target_dict['configurations'].keys():
     old_configuration_dict = target_dict['configurations'][configuration]
     # Skip abstract configurations (saves work only).
@@ -2203,8 +2204,12 @@ def SetUpConfigurations(target, target_dict):
     MergeConfigWithInheritance(new_configuration_dict, build_file,
                                target_dict, configuration, [])
 
-    # Put the new result back into the target dict as a configuration.
-    target_dict['configurations'][configuration] = new_configuration_dict
+    merged_configurations[configuration] = new_configuration_dict
+
+  # Put the new configurations back into the target dict as a configuration.
+  for configuration in merged_configurations.keys():
+    target_dict['configurations'][configuration] = (
+        merged_configurations[configuration])
 
   # Now drop all the abstract ones.
   for configuration in target_dict['configurations'].keys():
