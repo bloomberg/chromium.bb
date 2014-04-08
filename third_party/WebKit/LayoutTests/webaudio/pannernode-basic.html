@@ -133,28 +133,19 @@ function runTest() {
         }
     }
 
-    // For legacy support, verify that we can set the .panningModel attribute as an integer value and
-    // verify that this translates correctly to the WebIDL enum value.
-    for (var i = 0; i < panningModels.length; ++i) {
-        try {
-            panner.panningModel = panningModels[i].integerValue;
-            if (panner.panningModel === panningModels[i].value && panningModels[i].integerValue === i) {
-                var message = "panningModel: " + panningModels[i].integerValue + " is settable using legacy integer value.";
-                testPassed(message);
-            } else {
-                var message = "panningModel: " + panningModels[i].integerValue + " was not correctly set using legacy integer value.";
-                testFailed(message);
-            }
-        } catch(e) {
-            var message = "Setting panningModel to " + panningModels[i].integerValue + " should not throw exception using legacy integer value.";
-            testFailed(message);
-        }
+    // Check that numerical values are no longer supported.
+    panner.panningModel = "HRTF";
+    panner.panningModel = 1;
+    if (panner.panningModel == 1) {
+        testFailed("panningModel incorrectly set to " + panner.panningModel + ".");
+    } else {
+        testPassed("panningModel correctly not set to 1.");
     }
 
     // Check that the .distanceModel attribute can be set to all legal values.
-    var distanceModels = [{value: "linear", integerValue: panner.LINEAR_DISTANCE},
-                          {value: "inverse", integerValue: panner.INVERSE_DISTANCE},
-                          {value: "exponential", integerValue: panner.EXPONENTIAL_DISTANCE}
+    var distanceModels = [{value: "linear"},
+                          {value: "inverse"},
+                          {value: "exponential"}
                         ];
 
     for (var i = 0; i < distanceModels.length; ++i) {
@@ -173,27 +164,14 @@ function runTest() {
         }
     }
 
-    // For legacy support, verify that we can set the .distanceModel attribute as an integer value and
-    // verify that this translates correctly to the WebIDL enum value.
-    for (var i = 0; i < distanceModels.length; ++i) {
-        try {
-            panner.distanceModel = distanceModels[i].integerValue;
-            if (panner.distanceModel === distanceModels[i].value && distanceModels[i].integerValue === i) {
-                var message = "distanceModel: " + distanceModels[i].integerValue + " is settable using legacy integer value.";
-                testPassed(message);
-            } else {
-                var message = "distanceModel: " + distanceModels[i].integerValue + " was not correctly set using legacy integer value.";
-                testFailed(message);
-            }
-        } catch(e) {
-            var message = "Setting distanceModel to " + distanceModels[i].integerValue + " should not throw exception using legacy integer value.";
-            testFailed(message);
-        }
+    // Check that numerical values are no longer supported.
+    panner.distanceModel = "inverse";
+    panner.distanceModel = 1;
+    if (panner.distanceModel == 1) {
+        testFailed("distanceModel incorrectly set to " + panner.distanceModel + ".");
+    } else {
+        testPassed("distanceModel correctly not set to 1.");
     }
-
-    // Check that we throw a TypeError for illegal .distanceModel values.
-    shouldThrowTypeError(function() { panner.distanceModel = "xyz12349jfksd"; }, "Setting .type to illegal string value");
-    shouldThrowTypeError(function() { panner.distanceModel = new Float32Array(1); }, "Setting .type to illegal type of Float32Array");
 
     finishJSTest();
 }

@@ -25,9 +25,7 @@
           // Create offline audio context.
           context = new OfflineAudioContext(2, sampleRate * renderLengthSeconds, sampleRate);
 
-          // Temp panner node so we can get the EXPONENTIAL_DISTANCE value.
-          var tempPanner = context.createPanner();
-          createTestAndRun(context, tempPanner.EXPONENTIAL_DISTANCE, 2);
+          createTestAndRun(context, "exponential");
       }
 
       runTest();

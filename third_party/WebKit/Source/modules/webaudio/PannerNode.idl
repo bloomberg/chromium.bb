@@ -26,17 +26,8 @@
     NoInterfaceObject,
     Conditional=WEB_AUDIO
 ] interface PannerNode : AudioNode {
-    // Panning model
-    const unsigned short EQUALPOWER = 0;
-    const unsigned short HRTF = 1;
-
-    // Distance model
-    const unsigned short LINEAR_DISTANCE = 0;
-    const unsigned short INVERSE_DISTANCE = 1;
-    const unsigned short EXPONENTIAL_DISTANCE = 2;
-
     // Default model for stereo is HRTF
-    [Custom=Setter] attribute DOMString panningModel;
+    attribute DOMString panningModel;
 
     // Uses a 3D cartesian coordinate system
     void setPosition(float x, float y, float z);
@@ -44,7 +35,7 @@
     void setVelocity(float x, float y, float z);
 
     // Distance model
-    [Custom=Setter] attribute DOMString distanceModel;
+    attribute DOMString distanceModel;
 
     attribute double refDistance;
     attribute double maxDistance;

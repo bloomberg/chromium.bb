@@ -208,8 +208,6 @@ void PannerNode::setPanningModel(const String& model)
         setPanningModel(EQUALPOWER);
     else if (model == "HRTF")
         setPanningModel(HRTF);
-    else
-        ASSERT_NOT_REACHED();
 }
 
 bool PannerNode::setPanningModel(unsigned model)
@@ -295,8 +293,6 @@ void PannerNode::setDistanceModel(const String& model)
         setDistanceModel(DistanceEffect::ModelInverse);
     else if (model == "exponential")
         setDistanceModel(DistanceEffect::ModelExponential);
-    else
-        ASSERT_NOT_REACHED();
 }
 
 bool PannerNode::setDistanceModel(unsigned model)

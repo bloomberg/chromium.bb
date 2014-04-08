@@ -52,10 +52,10 @@ function exponentialDistance(panner, x, y, z) {
     return gain;
 }
 
-// This array must be arranged in the numeric order of the distance
-// model values.
-var distanceModelFunction = [linearDistance, inverseDistance, exponentialDistance];
-var distanceModelIndex = {"linear": 0, "inverse": 1, "exponential": 2};
+// Map the distance model to the function that implements the model
+var distanceModelFunction = {"linear": linearDistance,
+                             "inverse": inverseDistance,
+                             "exponential": exponentialDistance};
 
 function createGraph(context, distanceModel, nodeCount) {
     bufferSource = new Array(nodeCount);
@@ -99,10 +99,9 @@ function createGraph(context, distanceModel, nodeCount) {
     }
 }
 
-// distanceModel should be the distance model constant like
-// LINEAR_DISTANCE, INVERSE_DISTANCE, and EXPONENTIAL_DISTANCE.  The
-// expectedModel is the expected actual numeric value of the constant.
-function createTestAndRun(context, distanceModel, expectedModel) {
+// distanceModel should be the distance model string like
+// "linear", "inverse", or "exponential".
+function createTestAndRun(context, distanceModel) {
     // To test the distance models, we create a number of panners at
     // uniformly spaced intervals on the z-axis.  Each of these are
     // started at equally spaced time intervals.  After rendering the
@@ -112,7 +111,7 @@ function createTestAndRun(context, distanceModel, expectedModel) {
 
     createGraph(context, distanceModel, nodesToCreate);
 
-    context.oncomplete = checkDistanceResult(distanceModel, expectedModel);
+    context.oncomplete = checkDistanceResult(distanceModel);
     context.startRendering();
 }
 
@@ -122,7 +121,7 @@ function equalPowerGain() {
     return Math.SQRT1_2;
 }
 
-function checkDistanceResult(model, expectedModel) {
+function checkDistanceResult(model) {
     return function(event) {
         renderedBuffer = event.renderedBuffer;
         renderedData = renderedBuffer.getChannelData(0);
@@ -152,8 +151,7 @@ function checkDistanceResult(model, expectedModel) {
         for (var k = 0; k < renderedData.length; ++k) {
             if (renderedData[k] != 0) {
                 // Convert from string to index.
-                var modelIndex = distanceModelIndex[panner[impulseCount].distanceModel];
-                var distanceFunction = distanceModelFunction[modelIndex];
+                var distanceFunction = distanceModelFunction[model];
                 var expected = distanceFunction(panner[impulseCount], 0, 0, position[impulseCount]);
 
                 // Adjust for the center-panning of the EQUALPOWER panning
@@ -173,13 +171,6 @@ function checkDistanceResult(model, expectedModel) {
                 ++impulseCount;
             }
         }
-
-        if (model == expectedModel) {
-            testPassed("Distance model value matched expected value.");
-        } else {
-            testFailed("Distance model value does not match expected value.");
-            success = false;
-        }    
 
         if (impulseCount == nodesToCreate) {
             testPassed("Number of impulses found matches number of panner nodes.");

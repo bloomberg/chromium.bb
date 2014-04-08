@@ -80,7 +80,6 @@ public:
 
     // Panning model
     String panningModel() const;
-    bool setPanningModel(unsigned); // Returns true on success.
     void setPanningModel(const String&);
 
     // Position
@@ -94,7 +93,6 @@ public:
 
     // Distance parameters
     String distanceModel() const;
-    bool setDistanceModel(unsigned); // Returns true on success.
     void setDistanceModel(const String&);
 
     double refDistance() { return m_distanceEffect.refDistance(); }
@@ -125,6 +123,8 @@ public:
 private:
     PannerNode(AudioContext*, float sampleRate);
 
+    bool setPanningModel(unsigned); // Returns true on success.
+    bool setDistanceModel(unsigned); // Returns true on success.
     void calculateAzimuthElevation(double* outAzimuth, double* outElevation);
     // Returns the combined distance and cone gain attenuation.
     float calculateDistanceConeGain();
