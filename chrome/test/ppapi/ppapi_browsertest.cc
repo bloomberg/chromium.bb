@@ -348,47 +348,32 @@ TEST_PPAPI_OUT_OF_PROCESS(MAYBE_OUT_BrowserFont)
 TEST_PPAPI_IN_PROCESS(Buffer)
 TEST_PPAPI_OUT_OF_PROCESS(Buffer)
 
-// TCPSocket tests.
+// TCPSocket and TCPSocketPrivate tests.
+#define RUN_TCPSOCKET_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(TCPSocket_Connect) \
+      LIST_TEST(TCPSocket_ReadWrite) \
+      LIST_TEST(TCPSocket_SetOption) \
+      LIST_TEST(TCPSocket_Listen) \
+      LIST_TEST(TCPSocket_Backlog) \
+      LIST_TEST(TCPSocket_Interface_1_0) \
+  )
+
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocket) {
-  RunTestViaHTTP(
-      LIST_TEST(TCPSocket_Connect)
-      LIST_TEST(TCPSocket_ReadWrite)
-      LIST_TEST(TCPSocket_SetOption)
-      LIST_TEST(TCPSocket_Listen)
-      LIST_TEST(TCPSocket_Backlog)
-      LIST_TEST(TCPSocket_Interface_1_0)
-  );
+  RUN_TCPSOCKET_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, TCPSocket) {
-  RunTestViaHTTP(
-      LIST_TEST(TCPSocket_Connect)
-      LIST_TEST(TCPSocket_ReadWrite)
-      LIST_TEST(TCPSocket_SetOption)
-      LIST_TEST(TCPSocket_Listen)
-      LIST_TEST(TCPSocket_Backlog)
-      LIST_TEST(TCPSocket_Interface_1_0)
-  );
+  RUN_TCPSOCKET_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(TCPSocket)) {
-  RunTestViaHTTP(
-      LIST_TEST(TCPSocket_Connect)
-      LIST_TEST(TCPSocket_ReadWrite)
-      LIST_TEST(TCPSocket_SetOption)
-      LIST_TEST(TCPSocket_Listen)
-      LIST_TEST(TCPSocket_Backlog)
-      LIST_TEST(TCPSocket_Interface_1_0)
-  );
+  RUN_TCPSOCKET_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, TCPSocket) {
-  RunTestViaHTTP(
-      LIST_TEST(TCPSocket_Connect)
-      LIST_TEST(TCPSocket_ReadWrite)
-      LIST_TEST(TCPSocket_SetOption)
-      LIST_TEST(TCPSocket_Listen)
-      LIST_TEST(TCPSocket_Backlog)
-      LIST_TEST(TCPSocket_Interface_1_0)
-  );
+  RUN_TCPSOCKET_SUBTESTS;
 }
+
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(TCPServerSocketPrivate)
+TEST_PPAPI_NACL(TCPServerSocketPrivate)
 
 TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivate)
 TEST_PPAPI_NACL_WITH_SSL_SERVER(TCPSocketPrivate)
@@ -396,48 +381,38 @@ TEST_PPAPI_NACL_WITH_SSL_SERVER(TCPSocketPrivate)
 TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
 
 // UDPSocket tests.
-// UDPSocket_Broadcast is disabled for OSX because it requires root permissions
-// on OSX 10.7+.
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, UDPSocket) {
-  RunTestViaHTTP(
-      LIST_TEST(UDPSocket_ReadWrite)
-      LIST_TEST(UDPSocket_SetOption)
-#if !defined(OS_MACOSX)
-      LIST_TEST(UDPSocket_Broadcast)
+// UDPSocket_Broadcast is disabled for OSX because it requires root
+// permissions on OSX 10.7+.
+#if defined(OS_MACOSX)
+#define MAYBE_UDPSocket_Broadcast DISABLED_UDPSocket_Broadcast
+#else
+#define MAYBE_UDPSocket_Broadcast UDPSocket_Broadcast
 #endif
-  );
+
+#define RUN_UDPSOCKET_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(UDPSocket_ReadWrite) \
+      LIST_TEST(UDPSocket_SetOption) \
+      LIST_TEST(MAYBE_UDPSocket_Broadcast) \
+  )
+
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, UDPSocket) {
+  RUN_UDPSOCKET_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, UDPSocket) {
-  RunTestViaHTTP(
-      LIST_TEST(UDPSocket_ReadWrite)
-      LIST_TEST(UDPSocket_SetOption)
-#if !defined(OS_MACOSX)
-      LIST_TEST(UDPSocket_Broadcast)
-#endif
-  );
+  RUN_UDPSOCKET_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(UDPSocket)) {
-  RunTestViaHTTP(
-      LIST_TEST(UDPSocket_ReadWrite)
-      LIST_TEST(UDPSocket_SetOption)
-#if !defined(OS_MACOSX)
-      LIST_TEST(UDPSocket_Broadcast)
-#endif
-  );
+  RUN_UDPSOCKET_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, UDPSocket) {
-  RunTestViaHTTP(
-      LIST_TEST(UDPSocket_ReadWrite)
-      LIST_TEST(UDPSocket_SetOption)
-#if !defined(OS_MACOSX)
-      LIST_TEST(UDPSocket_Broadcast)
-#endif
-  );
+  RUN_UDPSOCKET_SUBTESTS;
 }
 
+
 // UDPSocketPrivate tests.
-// UDPSocketPrivate_Broadcast is disabled for OSX because it requires
-// root permissions on OSX 10.7+.
+// UDPSocketPrivate_Broadcast is disabled for OSX because it requires root
+// permissions on OSX 10.7+.
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_Connect)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_ConnectFailure)
 #if !defined(OS_MACOSX)
@@ -451,42 +426,31 @@ TEST_PPAPI_NACL(UDPSocketPrivate_Broadcast)
 #endif  // !defined(OS_MACOSX)
 TEST_PPAPI_NACL(UDPSocketPrivate_SetSocketFeatureErrors)
 
+// Disallowed socket tests.
 TEST_PPAPI_NACL_DISALLOWED_SOCKETS(HostResolverPrivateDisallowed)
 TEST_PPAPI_NACL_DISALLOWED_SOCKETS(TCPServerSocketPrivateDisallowed)
 TEST_PPAPI_NACL_DISALLOWED_SOCKETS(TCPSocketPrivateDisallowed)
 TEST_PPAPI_NACL_DISALLOWED_SOCKETS(UDPSocketPrivateDisallowed)
 
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(TCPServerSocketPrivate)
-TEST_PPAPI_NACL(TCPServerSocketPrivate)
+// HostResolver and HostResolverPrivate tests.
+#define RUN_HOST_RESOLVER_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(HostResolver_Empty) \
+      LIST_TEST(HostResolver_Resolve) \
+      LIST_TEST(HostResolver_ResolveIPv4) \
+  )
 
-// HostResolver tests.
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, HostResolver) {
-  RunTestViaHTTP(
-      LIST_TEST(HostResolver_Empty)
-      LIST_TEST(HostResolver_Resolve)
-      LIST_TEST(HostResolver_ResolveIPv4)
-  );
+  RUN_HOST_RESOLVER_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, HostResolver) {
-  RunTestViaHTTP(
-      LIST_TEST(HostResolver_Empty)
-      LIST_TEST(HostResolver_Resolve)
-      LIST_TEST(HostResolver_ResolveIPv4)
-  );
+  RUN_HOST_RESOLVER_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(HostResolver)) {
-  RunTestViaHTTP(
-      LIST_TEST(HostResolver_Empty)
-      LIST_TEST(HostResolver_Resolve)
-      LIST_TEST(HostResolver_ResolveIPv4)
-  );
+  RUN_HOST_RESOLVER_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, HostResolver) {
-  RunTestViaHTTP(
-      LIST_TEST(HostResolver_Empty)
-      LIST_TEST(HostResolver_Resolve)
-      LIST_TEST(HostResolver_ResolveIPv4)
-  );
+  RUN_HOST_RESOLVER_SUBTESTS;
 }
 
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(HostResolverPrivate_Resolve)
@@ -496,130 +460,101 @@ TEST_PPAPI_NACL(HostResolverPrivate_ResolveIPv4)
 
 // URLLoader tests. These are split into multiple test fixtures because if we
 // run them all together, they tend to time out.
-IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader0) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_BasicGET)
-      LIST_TEST(URLLoader_BasicPOST)
-      LIST_TEST(URLLoader_BasicFilePOST)
-      LIST_TEST(URLLoader_BasicFileRangePOST)
-      LIST_TEST(URLLoader_CompoundBodyPOST)
-  );
-}
+#define RUN_URLLOADER_SUBTESTS_0 \
+  RunTestViaHTTP( \
+      LIST_TEST(URLLoader_BasicGET) \
+      LIST_TEST(URLLoader_BasicPOST) \
+      LIST_TEST(URLLoader_BasicFilePOST) \
+      LIST_TEST(URLLoader_BasicFileRangePOST) \
+      LIST_TEST(URLLoader_CompoundBodyPOST) \
+  )
 
+#define RUN_URLLOADER_SUBTESTS_1 \
+  RunTestViaHTTP( \
+      LIST_TEST(URLLoader_EmptyDataPOST) \
+      LIST_TEST(URLLoader_BinaryDataPOST) \
+      LIST_TEST(URLLoader_CustomRequestHeader) \
+      LIST_TEST(URLLoader_FailsBogusContentLength) \
+      LIST_TEST(URLLoader_StreamToFile) \
+  )
+
+// TODO(bbudge) Fix Javascript URLs for trusted loaders.
+// http://crbug.com/103062
+#define RUN_URLLOADER_SUBTESTS_2 \
+  RunTestViaHTTP( \
+      LIST_TEST(URLLoader_UntrustedSameOriginRestriction) \
+      LIST_TEST(URLLoader_UntrustedCrossOriginRequest) \
+      LIST_TEST(URLLoader_UntrustedJavascriptURLRestriction) \
+      LIST_TEST(DISABLED_URLLoader_TrustedJavascriptURLRestriction) \
+  )
+
+#define RUN_URLLOADER_NACL_SUBTESTS_2 \
+  RunTestViaHTTP( \
+      LIST_TEST(URLLoader_UntrustedSameOriginRestriction) \
+      LIST_TEST(URLLoader_UntrustedCrossOriginRequest) \
+      LIST_TEST(URLLoader_UntrustedJavascriptURLRestriction) \
+      LIST_TEST(DISABLED_URLLoader_TrustedJavascriptURLRestriction) \
+  )
+
+#define RUN_URLLOADER_SUBTESTS_3 \
+  RunTestViaHTTP( \
+      LIST_TEST(URLLoader_UntrustedHttpRequests) \
+      LIST_TEST(URLLoader_FollowURLRedirect) \
+      LIST_TEST(URLLoader_AuditURLRedirect) \
+      LIST_TEST(URLLoader_AbortCalls) \
+      LIST_TEST(URLLoader_UntendedLoad) \
+      LIST_TEST(URLLoader_PrefetchBufferThreshold) \
+  )
+
+// Note: we do not support Trusted APIs in NaCl, so these will be skipped.
+#define RUN_URLLOADER_TRUSTED_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(URLLoader_TrustedSameOriginRestriction) \
+      LIST_TEST(URLLoader_TrustedCrossOriginRequest) \
+      LIST_TEST(URLLoader_TrustedHttpRequests) \
+  )
+
+IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader0) {
+  RUN_URLLOADER_SUBTESTS_0;
+}
 IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader1) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_EmptyDataPOST)
-      LIST_TEST(URLLoader_BinaryDataPOST)
-      LIST_TEST(URLLoader_CustomRequestHeader)
-      LIST_TEST(URLLoader_FailsBogusContentLength)
-      LIST_TEST(URLLoader_StreamToFile)
-  );
+  RUN_URLLOADER_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader2) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_UntrustedSameOriginRestriction)
-      LIST_TEST(URLLoader_TrustedSameOriginRestriction)
-      LIST_TEST(URLLoader_UntrustedCrossOriginRequest)
-      LIST_TEST(URLLoader_TrustedCrossOriginRequest)
-      LIST_TEST(URLLoader_UntrustedJavascriptURLRestriction)
-      // TODO(bbudge) Fix Javascript URLs for trusted loaders.
-      // http://crbug.com/103062
-      LIST_TEST(DISABLED_URLLoader_TrustedJavascriptURLRestriction)
-  );
+  RUN_URLLOADER_SUBTESTS_2;
 }
 IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader3) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_UntrustedHttpRequests)
-      LIST_TEST(URLLoader_TrustedHttpRequests)
-      LIST_TEST(URLLoader_FollowURLRedirect)
-      LIST_TEST(URLLoader_AuditURLRedirect)
-      LIST_TEST(URLLoader_AbortCalls)
-      LIST_TEST(URLLoader_UntendedLoad)
-      LIST_TEST(URLLoader_PrefetchBufferThreshold)
-  );
+  RUN_URLLOADER_SUBTESTS_3;
+}
+IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoaderTrusted) {
+  RUN_URLLOADER_TRUSTED_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader0) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_BasicGET)
-      LIST_TEST(URLLoader_BasicPOST)
-      LIST_TEST(URLLoader_BasicFilePOST)
-      LIST_TEST(URLLoader_BasicFileRangePOST)
-      LIST_TEST(URLLoader_CompoundBodyPOST)
-  );
+  RUN_URLLOADER_SUBTESTS_0;
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader1) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_EmptyDataPOST)
-      LIST_TEST(URLLoader_BinaryDataPOST)
-      LIST_TEST(URLLoader_CustomRequestHeader)
-      LIST_TEST(URLLoader_FailsBogusContentLength)
-      LIST_TEST(URLLoader_StreamToFile)
-  );
+  RUN_URLLOADER_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader2) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_UntrustedSameOriginRestriction)
-      LIST_TEST(URLLoader_TrustedSameOriginRestriction)
-      LIST_TEST(URLLoader_UntrustedCrossOriginRequest)
-      LIST_TEST(URLLoader_TrustedCrossOriginRequest)
-      LIST_TEST(URLLoader_UntrustedJavascriptURLRestriction)
-      // TODO(bbudge) Fix Javascript URLs for trusted loaders.
-      // http://crbug.com/103062
-      LIST_TEST(DISABLED_URLLoader_TrustedJavascriptURLRestriction)
-  );
+  RUN_URLLOADER_SUBTESTS_2;
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader3) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_UntrustedHttpRequests)
-      LIST_TEST(URLLoader_TrustedHttpRequests)
-      LIST_TEST(URLLoader_FollowURLRedirect)
-      LIST_TEST(URLLoader_AuditURLRedirect)
-      LIST_TEST(URLLoader_AbortCalls)
-      LIST_TEST(URLLoader_UntendedLoad)
-      LIST_TEST(URLLoader_PrefetchBufferThreshold)
-  );
+  RUN_URLLOADER_SUBTESTS_3;
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoaderTrusted) {
+  RUN_URLLOADER_TRUSTED_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader0) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_BasicGET)
-      LIST_TEST(URLLoader_BasicPOST)
-      LIST_TEST(URLLoader_BasicFilePOST)
-      LIST_TEST(URLLoader_BasicFileRangePOST)
-      LIST_TEST(URLLoader_CompoundBodyPOST)
-  );
+  RUN_URLLOADER_SUBTESTS_0;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader1) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_EmptyDataPOST)
-      LIST_TEST(URLLoader_BinaryDataPOST)
-      LIST_TEST(URLLoader_CustomRequestHeader)
-      LIST_TEST(URLLoader_FailsBogusContentLength)
-      LIST_TEST(URLLoader_StreamToFile)
-  );
+  RUN_URLLOADER_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader2) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_UntrustedSameOriginRestriction)
-      // We don't support Trusted APIs in NaCl.
-      LIST_TEST(DISABLED_URLLoader_TrustedSameOriginRestriction)
-      LIST_TEST(URLLoader_UntrustedCrossOriginRequest)
-      LIST_TEST(DISABLED_URLLoader_TrustedCrossOriginRequest)
-      LIST_TEST(URLLoader_UntrustedJavascriptURLRestriction)
-      // TODO(bbudge) Fix Javascript URLs for trusted loaders.
-      // http://crbug.com/103062
-      LIST_TEST(DISABLED_URLLoader_TrustedJavascriptURLRestriction)
-  );
+  RUN_URLLOADER_SUBTESTS_2;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader3) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_UntrustedHttpRequests)
-      LIST_TEST(DISABLED_URLLoader_TrustedHttpRequests)
-      LIST_TEST(URLLoader_FollowURLRedirect)
-      LIST_TEST(URLLoader_AuditURLRedirect)
-      LIST_TEST(URLLoader_AbortCalls)
-      LIST_TEST(URLLoader_UntendedLoad)
-      LIST_TEST(URLLoader_PrefetchBufferThreshold)
-  );
+  RUN_URLLOADER_SUBTESTS_3;
 }
 
 // Flaky on 32-bit linux bot; http://crbug.com/308906
@@ -637,80 +572,27 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader0) {
       LIST_TEST(URLLoader_CompoundBodyPOST)
   );
 }
+
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader1) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_EmptyDataPOST)
-      LIST_TEST(URLLoader_BinaryDataPOST)
-      LIST_TEST(URLLoader_CustomRequestHeader)
-      LIST_TEST(URLLoader_FailsBogusContentLength)
-      LIST_TEST(URLLoader_StreamToFile)
-  );
+  RUN_URLLOADER_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader2) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_UntrustedSameOriginRestriction)
-      // We don't support Trusted APIs in NaCl.
-      LIST_TEST(DISABLED_URLLoader_TrustedSameOriginRestriction)
-      LIST_TEST(URLLoader_UntrustedCrossOriginRequest)
-      LIST_TEST(DISABLED_URLLoader_TrustedCrossOriginRequest)
-      LIST_TEST(URLLoader_UntrustedJavascriptURLRestriction)
-      // TODO(bbudge) Fix Javascript URLs for trusted loaders.
-      // http://crbug.com/103062
-      LIST_TEST(DISABLED_URLLoader_TrustedJavascriptURLRestriction)
-  );
+  RUN_URLLOADER_SUBTESTS_2;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader3) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_UntrustedHttpRequests)
-      LIST_TEST(DISABLED_URLLoader_TrustedHttpRequests)
-      LIST_TEST(URLLoader_FollowURLRedirect)
-      LIST_TEST(URLLoader_AuditURLRedirect)
-      LIST_TEST(URLLoader_AbortCalls)
-      LIST_TEST(URLLoader_UntendedLoad)
-      LIST_TEST(URLLoader_PrefetchBufferThreshold)
-  );
+  RUN_URLLOADER_SUBTESTS_3;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader0) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_BasicGET)
-      LIST_TEST(URLLoader_BasicPOST)
-      LIST_TEST(URLLoader_BasicFilePOST)
-      LIST_TEST(URLLoader_BasicFileRangePOST)
-      LIST_TEST(URLLoader_CompoundBodyPOST)
-  );
+  RUN_URLLOADER_SUBTESTS_0;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader1) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_EmptyDataPOST)
-      LIST_TEST(URLLoader_BinaryDataPOST)
-      LIST_TEST(URLLoader_CustomRequestHeader)
-      LIST_TEST(URLLoader_FailsBogusContentLength)
-      LIST_TEST(URLLoader_StreamToFile)
-  );
+  RUN_URLLOADER_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader2) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_UntrustedSameOriginRestriction)
-      // We don't support Trusted APIs in NaCl.
-      LIST_TEST(DISABLED_URLLoader_TrustedSameOriginRestriction)
-      LIST_TEST(URLLoader_UntrustedCrossOriginRequest)
-      LIST_TEST(DISABLED_URLLoader_TrustedCrossOriginRequest)
-      LIST_TEST(URLLoader_UntrustedJavascriptURLRestriction)
-      // TODO(bbudge) Fix Javascript URLs for trusted loaders.
-      // http://crbug.com/103062
-      LIST_TEST(DISABLED_URLLoader_TrustedJavascriptURLRestriction)
-  );
+  RUN_URLLOADER_SUBTESTS_2;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader3) {
-  RunTestViaHTTP(
-      LIST_TEST(URLLoader_UntrustedHttpRequests)
-      LIST_TEST(DISABLED_URLLoader_TrustedHttpRequests)
-      LIST_TEST(URLLoader_FollowURLRedirect)
-      LIST_TEST(URLLoader_AuditURLRedirect)
-      LIST_TEST(URLLoader_AbortCalls)
-      LIST_TEST(URLLoader_UntendedLoad)
-      LIST_TEST(URLLoader_PrefetchBufferThreshold)
-  );
+  RUN_URLLOADER_SUBTESTS_3;
 }
 
 // URLRequestInfo tests.
@@ -748,9 +630,7 @@ TEST_PPAPI_NACL(PaintAggregator)
 // TODO(danakj): http://crbug.com/115286
 TEST_PPAPI_IN_PROCESS(DISABLED_Scrollbar)
 // http://crbug.com/89961
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, DISABLED_Scrollbar) {
-  RunTest("Scrollbar");
-}
+TEST_PPAPI_OUT_OF_PROCESS(DISABLED_Scrollbar)
 // TODO(danakj): http://crbug.com/115286
 TEST_PPAPI_NACL(DISABLED_Scrollbar)
 
@@ -781,11 +661,28 @@ TEST_PPAPI_NACL(VarResource)
 TEST_PPAPI_IN_PROCESS(VarDeprecated)
 TEST_PPAPI_OUT_OF_PROCESS(MAYBE_VarDeprecated)
 
+// PostMessage tests.
+#define RUN_POSTMESSAGE_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(PostMessage_SendInInit) \
+      LIST_TEST(PostMessage_SendingData) \
+      LIST_TEST(PostMessage_SendingString) \
+      LIST_TEST(PostMessage_SendingArrayBuffer) \
+      LIST_TEST(PostMessage_SendingArray) \
+      LIST_TEST(PostMessage_SendingDictionary) \
+      LIST_TEST(PostMessage_SendingResource) \
+      LIST_TEST(PostMessage_SendingComplexVar) \
+      LIST_TEST(PostMessage_MessageEvent) \
+      LIST_TEST(PostMessage_NoHandler) \
+      LIST_TEST(PostMessage_ExtraParam) \
+      LIST_TEST(PostMessage_NonMainThread) \
+  )
+
 // Windows defines 'PostMessage', so we have to undef it.
 #ifdef PostMessage
 #undef PostMessage
 #endif
-// PostMessage tests.
+
 IN_PROC_BROWSER_TEST_F(PPAPITest, PostMessage) {
   RunTestViaHTTP(
       LIST_TEST(PostMessage_SendInInit)
@@ -809,68 +706,16 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, PostMessage) {
 #define MAYBE_PostMessage PostMessage
 #endif
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_PostMessage) {
-  RunTestViaHTTP(
-      LIST_TEST(PostMessage_SendInInit)
-      LIST_TEST(PostMessage_SendingData)
-      LIST_TEST(PostMessage_SendingString)
-      LIST_TEST(PostMessage_SendingArrayBuffer)
-      LIST_TEST(PostMessage_SendingArray)
-      LIST_TEST(PostMessage_SendingDictionary)
-      LIST_TEST(PostMessage_SendingResource)
-      LIST_TEST(PostMessage_SendingComplexVar)
-      LIST_TEST(PostMessage_MessageEvent)
-      LIST_TEST(PostMessage_NoHandler)
-      LIST_TEST(PostMessage_ExtraParam)
-      LIST_TEST(PostMessage_NonMainThread)
-  );
+  RUN_POSTMESSAGE_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, PostMessage) {
-  RunTestViaHTTP(
-      LIST_TEST(PostMessage_SendInInit)
-      LIST_TEST(PostMessage_SendingData)
-      LIST_TEST(PostMessage_SendingString)
-      LIST_TEST(PostMessage_SendingArrayBuffer)
-      LIST_TEST(PostMessage_SendingArray)
-      LIST_TEST(PostMessage_SendingDictionary)
-      LIST_TEST(PostMessage_SendingResource)
-      LIST_TEST(PostMessage_SendingComplexVar)
-      LIST_TEST(PostMessage_MessageEvent)
-      LIST_TEST(PostMessage_NoHandler)
-      LIST_TEST(PostMessage_ExtraParam)
-      LIST_TEST(PostMessage_NonMainThread)
-  );
+  RUN_POSTMESSAGE_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(PostMessage)) {
-  RunTestViaHTTP(
-      LIST_TEST(PostMessage_SendInInit)
-      LIST_TEST(PostMessage_SendingData)
-      LIST_TEST(PostMessage_SendingString)
-      LIST_TEST(PostMessage_SendingArrayBuffer)
-      LIST_TEST(PostMessage_SendingArray)
-      LIST_TEST(PostMessage_SendingDictionary)
-      LIST_TEST(PostMessage_SendingResource)
-      LIST_TEST(PostMessage_SendingComplexVar)
-      LIST_TEST(PostMessage_MessageEvent)
-      LIST_TEST(PostMessage_NoHandler)
-      LIST_TEST(PostMessage_ExtraParam)
-      LIST_TEST(PostMessage_NonMainThread)
-  );
+  RUN_POSTMESSAGE_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, PostMessage) {
-  RunTestViaHTTP(
-      LIST_TEST(PostMessage_SendInInit)
-      LIST_TEST(PostMessage_SendingData)
-      LIST_TEST(PostMessage_SendingString)
-      LIST_TEST(PostMessage_SendingArrayBuffer)
-      LIST_TEST(PostMessage_SendingArray)
-      LIST_TEST(PostMessage_SendingDictionary)
-      LIST_TEST(PostMessage_SendingResource)
-      LIST_TEST(PostMessage_SendingComplexVar)
-      LIST_TEST(PostMessage_MessageEvent)
-      LIST_TEST(PostMessage_NoHandler)
-      LIST_TEST(PostMessage_ExtraParam)
-      LIST_TEST(PostMessage_NonMainThread)
-  );
+  RUN_POSTMESSAGE_SUBTESTS;
 }
 
 TEST_PPAPI_IN_PROCESS(Memory)
@@ -879,6 +724,27 @@ TEST_PPAPI_NACL(Memory)
 
 TEST_PPAPI_IN_PROCESS(VideoDecoder)
 TEST_PPAPI_OUT_OF_PROCESS(VideoDecoder)
+
+// FileIO tests.
+#define RUN_FILEIO_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(FileIO_Open) \
+      LIST_TEST(FileIO_OpenDirectory) \
+      LIST_TEST(FileIO_AbortCalls) \
+      LIST_TEST(FileIO_ParallelReads) \
+      LIST_TEST(FileIO_ParallelWrites) \
+      LIST_TEST(FileIO_NotAllowMixedReadWrite) \
+      LIST_TEST(FileIO_ReadWriteSetLength) \
+      LIST_TEST(FileIO_ReadToArrayWriteSetLength) \
+      LIST_TEST(FileIO_TouchQuery) \
+  )
+
+#define RUN_FILEIO_PRIVATE_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(FileIO_RequestOSFileHandle) \
+      LIST_TEST(FileIO_RequestOSFileHandleWithOpenExclusive) \
+      LIST_TEST(FileIO_Mmap) \
+  )
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 // TODO(erg): linux_aura bringup: http://crbug.com/318961
@@ -889,96 +755,44 @@ TEST_PPAPI_OUT_OF_PROCESS(VideoDecoder)
 #define MAYBE_FileIO_Private FileIO_Private
 #endif
 
-// FileIO tests.
 IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_FileIO) {
-  RunTestViaHTTP(
-      LIST_TEST(FileIO_Open)
-      LIST_TEST(FileIO_OpenDirectory)
-      LIST_TEST(FileIO_AbortCalls)
-      LIST_TEST(FileIO_ParallelReads)
-      LIST_TEST(FileIO_ParallelWrites)
-      LIST_TEST(FileIO_NotAllowMixedReadWrite)
-      LIST_TEST(FileIO_ReadWriteSetLength)
-      LIST_TEST(FileIO_ReadToArrayWriteSetLength)
-      LIST_TEST(FileIO_TouchQuery)
-  );
+  RUN_FILEIO_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPIPrivateTest, MAYBE_FileIO_Private) {
-  RunTestViaHTTP(
-      LIST_TEST(FileIO_RequestOSFileHandle)
-      LIST_TEST(FileIO_RequestOSFileHandleWithOpenExclusive)
-      LIST_TEST(FileIO_Mmap)
-  );
+  RUN_FILEIO_PRIVATE_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_FileIO) {
-  RunTestViaHTTP(
-      LIST_TEST(FileIO_Open)
-      LIST_TEST(FileIO_AbortCalls)
-      LIST_TEST(FileIO_ParallelReads)
-      LIST_TEST(FileIO_ParallelWrites)
-      LIST_TEST(FileIO_NotAllowMixedReadWrite)
-      LIST_TEST(FileIO_ReadWriteSetLength)
-      LIST_TEST(FileIO_ReadToArrayWriteSetLength)
-      LIST_TEST(FileIO_TouchQuery)
-  );
+  RUN_FILEIO_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPIPrivateTest, MAYBE_FileIO_Private) {
-  RunTestViaHTTP(
-      LIST_TEST(FileIO_RequestOSFileHandle)
-      LIST_TEST(FileIO_RequestOSFileHandleWithOpenExclusive)
-      LIST_TEST(FileIO_Mmap)
-  );
+  RUN_FILEIO_PRIVATE_SUBTESTS;
 }
+
 // Flaky on XP; times out, http://crbug.com/313401
 #if defined(OS_WIN)
-#define MAYBE_Nacl_Newlib_FileIO DISABLED_FileIO
-#define MAYBE_Nacl_Newlib_FileIO_Private DISABLED_FileIO_Private
+#define MAYBE_NaCl_Newlib_FileIO DISABLED_FileIO
+#define MAYBE_NaCl_Newlib_FileIO_Private DISABLED_FileIO_Private
 #else
-#define MAYBE_Nacl_Newlib_FileIO FileIO
-#define MAYBE_Nacl_Newlib_FileIO_Private FileIO_Private
+#define MAYBE_NaCl_Newlib_FileIO FileIO
+#define MAYBE_NaCl_Newlib_FileIO_Private FileIO_Private
 #endif
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_Nacl_Newlib_FileIO) {
-  RunTestViaHTTP(
-      LIST_TEST(FileIO_Open)
-      LIST_TEST(FileIO_AbortCalls)
-      LIST_TEST(FileIO_ParallelReads)
-      LIST_TEST(FileIO_ParallelWrites)
-      LIST_TEST(FileIO_NotAllowMixedReadWrite)
-      LIST_TEST(FileIO_ReadWriteSetLength)
-      LIST_TEST(FileIO_ReadToArrayWriteSetLength)
-      LIST_TEST(FileIO_TouchQuery)
-  );
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_NaCl_Newlib_FileIO) {
+  RUN_FILEIO_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClNewlibTest,
-                       MAYBE_Nacl_Newlib_FileIO_Private) {
-  RunTestViaHTTP(
-      LIST_TEST(FileIO_RequestOSFileHandle)
-      LIST_TEST(FileIO_RequestOSFileHandleWithOpenExclusive)
-      LIST_TEST(FileIO_Mmap)
-  );
+                       MAYBE_NaCl_Newlib_FileIO_Private) {
+  RUN_FILEIO_PRIVATE_SUBTESTS;
 }
+
 // Flaky on 32-bit linux bot; http://crbug.com/308905
 // Flaky on Windows too; http://crbug.com/321300
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, DISABLED_NaCl_Glibc_FileIO) {
-  RunTestViaHTTP(
-      LIST_TEST(FileIO_Open)
-      LIST_TEST(FileIO_AbortCalls)
-      LIST_TEST(FileIO_ParallelReads)
-      LIST_TEST(FileIO_ParallelWrites)
-      LIST_TEST(FileIO_NotAllowMixedReadWrite)
-      LIST_TEST(FileIO_ReadWriteSetLength)
-      LIST_TEST(FileIO_ReadToArrayWriteSetLength)
-      LIST_TEST(FileIO_TouchQuery)
-  );
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, DISABLED_FileIO) {
+  RUN_FILEIO_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClGLibcTest,
-                       DISABLED_NaCl_Glibc_FileIO_Private) {
-  RunTestViaHTTP(
-      LIST_TEST(FileIO_RequestOSFileHandle)
-      LIST_TEST(FileIO_RequestOSFileHandleWithOpenExclusive)
-      LIST_TEST(FileIO_Mmap)
-  );
+IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClGLibcTest, DISABLED_FileIO_Private) {
+  RUN_FILEIO_PRIVATE_SUBTESTS;
 }
+
 // Flaky on XP; times out, http://crbug.com/313205
 #if defined(OS_WIN)
 #define MAYBE_PNaCl_FileIO DISABLED_FileIO
@@ -988,23 +802,10 @@ IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClGLibcTest,
 #define MAYBE_PNaCl_FileIO_Private FileIO_Private
 #endif
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PNaCl_FileIO) {
-  RunTestViaHTTP(
-      LIST_TEST(FileIO_Open)
-      LIST_TEST(FileIO_AbortCalls)
-      LIST_TEST(FileIO_ParallelReads)
-      LIST_TEST(FileIO_ParallelWrites)
-      LIST_TEST(FileIO_NotAllowMixedReadWrite)
-      LIST_TEST(FileIO_ReadWriteSetLength)
-      LIST_TEST(FileIO_ReadToArrayWriteSetLength)
-      LIST_TEST(FileIO_TouchQuery)
-  );
+  RUN_FILEIO_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClPNaClTest, MAYBE_PNaCl_FileIO_Private) {
-  RunTestViaHTTP(
-      LIST_TEST(FileIO_RequestOSFileHandle)
-      LIST_TEST(FileIO_RequestOSFileHandleWithOpenExclusive)
-      LIST_TEST(FileIO_Mmap)
-  );
+  RUN_FILEIO_PRIVATE_SUBTESTS;
 }
 
 // PPB_FileMapping is only implemented on POSIX currently.
@@ -1017,67 +818,49 @@ IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClPNaClTest, MAYBE_PNaCl_FileIO_Private) {
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_FileMapping)
 TEST_PPAPI_NACL(MAYBE_FileMapping)
 
+// FileRef tests.
+#define RUN_FILEREF_SUBTESTS_1 \
+  RunTestViaHTTP( \
+      LIST_TEST(FileRef_Create) \
+      LIST_TEST(FileRef_GetFileSystemType) \
+      LIST_TEST(FileRef_GetName) \
+      LIST_TEST(FileRef_GetPath) \
+      LIST_TEST(FileRef_GetParent) \
+      LIST_TEST(FileRef_MakeDirectory) \
+  )
+
+#define RUN_FILEREF_SUBTESTS_2 \
+  RunTestViaHTTP( \
+      LIST_TEST(FileRef_QueryAndTouchFile) \
+      LIST_TEST(FileRef_DeleteFileAndDirectory) \
+      LIST_TEST(FileRef_RenameFileAndDirectory) \
+      LIST_TEST(FileRef_Query) \
+      LIST_TEST(FileRef_FileNameEscaping) \
+  )
+
 // Note, the FileRef tests are split into two, because all of them together
 // sometimes take too long on windows: crbug.com/336999
 IN_PROC_BROWSER_TEST_F(PPAPITest, FileRef1) {
-  RunTestViaHTTP(
-      LIST_TEST(FileRef_Create)
-      LIST_TEST(FileRef_GetFileSystemType)
-      LIST_TEST(FileRef_GetName)
-      LIST_TEST(FileRef_GetPath)
-      LIST_TEST(FileRef_GetParent)
-      LIST_TEST(FileRef_MakeDirectory)
-  );
+  RUN_FILEREF_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(PPAPITest, FileRef2) {
-  RunTestViaHTTP(
-      LIST_TEST(FileRef_QueryAndTouchFile)
-      LIST_TEST(FileRef_DeleteFileAndDirectory)
-      LIST_TEST(FileRef_RenameFileAndDirectory)
-      LIST_TEST(FileRef_Query)
-      LIST_TEST(FileRef_FileNameEscaping)
-      LIST_TEST(FileRef_ReadDirectoryEntries)
-  );
+  RUN_FILEREF_SUBTESTS_2;
+}
+// This test only works as an in-process test. See crbug.com/241646.
+IN_PROC_BROWSER_TEST_F(PPAPITest, FileRef_ReadDirectoryEntries) {
+  RunTestViaHTTP(LIST_TEST(FileRef_ReadDirectoryEntries));
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileRef1) {
-  RunTestViaHTTP(
-      LIST_TEST(FileRef_Create)
-      LIST_TEST(FileRef_GetFileSystemType)
-      LIST_TEST(FileRef_GetName)
-      LIST_TEST(FileRef_GetPath)
-      LIST_TEST(FileRef_GetParent)
-      LIST_TEST(FileRef_MakeDirectory)
-  );
+  RUN_FILEREF_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileRef2) {
-  RunTestViaHTTP(
-      LIST_TEST(FileRef_QueryAndTouchFile)
-      LIST_TEST(FileRef_DeleteFileAndDirectory)
-      LIST_TEST(FileRef_RenameFileAndDirectory)
-      LIST_TEST(FileRef_Query)
-      LIST_TEST(FileRef_FileNameEscaping)
-      LIST_TEST(DISABLED_FileRef_ReadDirectoryEntries)
-  );
+  RUN_FILEREF_SUBTESTS_2;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileRef1) {
-  RunTestViaHTTP(
-      LIST_TEST(FileRef_Create)
-      LIST_TEST(FileRef_GetFileSystemType)
-      LIST_TEST(FileRef_GetName)
-      LIST_TEST(FileRef_GetPath)
-      LIST_TEST(FileRef_GetParent)
-      LIST_TEST(FileRef_MakeDirectory)
-  );
+  RUN_FILEREF_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileRef2) {
-  RunTestViaHTTP(
-      LIST_TEST(FileRef_QueryAndTouchFile)
-      LIST_TEST(FileRef_DeleteFileAndDirectory)
-      LIST_TEST(FileRef_RenameFileAndDirectory)
-      LIST_TEST(FileRef_Query)
-      LIST_TEST(FileRef_FileNameEscaping)
-      LIST_TEST(DISABLED_FileRef_ReadDirectoryEntries)
-  );
+  RUN_FILEREF_SUBTESTS_2;
 }
 // Flaky on 32-bit linux bot; http://crbug.com/308908
 #if defined(OS_LINUX) && defined(ARCH_CPU_X86)
@@ -1088,44 +871,16 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileRef2) {
 #define MAYBE_NaCl_Glibc_FileRef2 FileRef2
 #endif
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_NaCl_Glibc_FileRef1) {
-  RunTestViaHTTP(
-      LIST_TEST(FileRef_Create)
-      LIST_TEST(FileRef_GetFileSystemType)
-      LIST_TEST(FileRef_GetName)
-      LIST_TEST(FileRef_GetPath)
-      LIST_TEST(FileRef_GetParent)
-      LIST_TEST(FileRef_MakeDirectory)
-  );
+  RUN_FILEREF_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_NaCl_Glibc_FileRef2) {
-  RunTestViaHTTP(
-      LIST_TEST(FileRef_QueryAndTouchFile)
-      LIST_TEST(FileRef_DeleteFileAndDirectory)
-      LIST_TEST(FileRef_RenameFileAndDirectory)
-      LIST_TEST(FileRef_Query)
-      LIST_TEST(FileRef_FileNameEscaping)
-      LIST_TEST(DISABLED_FileRef_ReadDirectoryEntries)
-  );
+  RUN_FILEREF_SUBTESTS_2;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, FileRef1) {
-  RunTestViaHTTP(
-      LIST_TEST(FileRef_Create)
-      LIST_TEST(FileRef_GetFileSystemType)
-      LIST_TEST(FileRef_GetName)
-      LIST_TEST(FileRef_GetPath)
-      LIST_TEST(FileRef_GetParent)
-      LIST_TEST(FileRef_MakeDirectory)
-  );
+  RUN_FILEREF_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, FileRef2) {
-  RunTestViaHTTP(
-      LIST_TEST(FileRef_QueryAndTouchFile)
-      LIST_TEST(FileRef_DeleteFileAndDirectory)
-      LIST_TEST(FileRef_RenameFileAndDirectory)
-      LIST_TEST(FileRef_Query)
-      LIST_TEST(FileRef_FileNameEscaping)
-      LIST_TEST(DISABLED_FileRef_ReadDirectoryEntries)
-  );
+  RUN_FILEREF_SUBTESTS_2;
 }
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileSystem)
@@ -1164,409 +919,225 @@ TEST_PPAPI_IN_PROCESS(UMA)
 TEST_PPAPI_OUT_OF_PROCESS(UMA)
 TEST_PPAPI_NACL(UMA)
 
-// NetAddress tests
+// NetAddress tests.
+#define RUN_NETADDRESS_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(NetAddress_IPv4Address) \
+      LIST_TEST(NetAddress_IPv6Address) \
+      LIST_TEST(NetAddress_DescribeAsString) \
+  )
+
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetAddress) {
-  RunTestViaHTTP(
-      LIST_TEST(NetAddress_IPv4Address)
-      LIST_TEST(NetAddress_IPv6Address)
-      LIST_TEST(NetAddress_DescribeAsString)
-  );
+  RUN_NETADDRESS_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NetAddress) {
-  RunTestViaHTTP(
-      LIST_TEST(NetAddress_IPv4Address)
-      LIST_TEST(NetAddress_IPv6Address)
-      LIST_TEST(NetAddress_DescribeAsString)
-  );
+  RUN_NETADDRESS_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(NetAddress)) {
-  RunTestViaHTTP(
-      LIST_TEST(NetAddress_IPv4Address)
-      LIST_TEST(NetAddress_IPv6Address)
-      LIST_TEST(NetAddress_DescribeAsString)
-  );
+  RUN_NETADDRESS_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, NetAddress) {
-  RunTestViaHTTP(
-      LIST_TEST(NetAddress_IPv4Address)
-      LIST_TEST(NetAddress_IPv6Address)
-      LIST_TEST(NetAddress_DescribeAsString)
-  );
+  RUN_NETADDRESS_SUBTESTS;
 }
 
+// NetAddressPrivate tests.
+#define RUN_NETADDRESS_PRIVATE_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(NetAddressPrivate_AreEqual) \
+      LIST_TEST(NetAddressPrivate_AreHostsEqual) \
+      LIST_TEST(NetAddressPrivate_Describe) \
+      LIST_TEST(NetAddressPrivate_ReplacePort) \
+      LIST_TEST(NetAddressPrivate_GetAnyAddress) \
+      LIST_TEST(NetAddressPrivate_DescribeIPv6) \
+      LIST_TEST(NetAddressPrivate_GetFamily) \
+      LIST_TEST(NetAddressPrivate_GetPort) \
+      LIST_TEST(NetAddressPrivate_GetAddress) \
+      LIST_TEST(NetAddressPrivate_GetScopeID) \
+  )
+
 IN_PROC_BROWSER_TEST_F(PPAPITest, NetAddressPrivate) {
-  RunTestViaHTTP(
-      LIST_TEST(NetAddressPrivate_AreEqual)
-      LIST_TEST(NetAddressPrivate_AreHostsEqual)
-      LIST_TEST(NetAddressPrivate_Describe)
-      LIST_TEST(NetAddressPrivate_ReplacePort)
-      LIST_TEST(NetAddressPrivate_GetAnyAddress)
-      LIST_TEST(NetAddressPrivate_DescribeIPv6)
-      LIST_TEST(NetAddressPrivate_GetFamily)
-      LIST_TEST(NetAddressPrivate_GetPort)
-      LIST_TEST(NetAddressPrivate_GetAddress)
-      LIST_TEST(NetAddressPrivate_GetScopeID)
-  );
+  RUN_NETADDRESS_PRIVATE_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetAddressPrivate) {
-  RunTestViaHTTP(
-      LIST_TEST(NetAddressPrivate_AreEqual)
-      LIST_TEST(NetAddressPrivate_AreHostsEqual)
-      LIST_TEST(NetAddressPrivate_Describe)
-      LIST_TEST(NetAddressPrivate_ReplacePort)
-      LIST_TEST(NetAddressPrivate_GetAnyAddress)
-      LIST_TEST(NetAddressPrivate_DescribeIPv6)
-      LIST_TEST(NetAddressPrivate_GetFamily)
-      LIST_TEST(NetAddressPrivate_GetPort)
-      LIST_TEST(NetAddressPrivate_GetAddress)
-      LIST_TEST(NetAddressPrivate_GetScopeID)
-  );
+  RUN_NETADDRESS_PRIVATE_SUBTESTS;
 }
+
+#define RUN_NETADDRESS_PRIVATE_UNTRUSTED_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(NetAddressPrivateUntrusted_AreEqual) \
+      LIST_TEST(NetAddressPrivateUntrusted_AreHostsEqual) \
+      LIST_TEST(NetAddressPrivateUntrusted_Describe) \
+      LIST_TEST(NetAddressPrivateUntrusted_ReplacePort) \
+      LIST_TEST(NetAddressPrivateUntrusted_GetAnyAddress) \
+      LIST_TEST(NetAddressPrivateUntrusted_GetFamily) \
+      LIST_TEST(NetAddressPrivateUntrusted_GetPort) \
+      LIST_TEST(NetAddressPrivateUntrusted_GetAddress) \
+  )
+
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NetAddressPrivate) {
-  RunTestViaHTTP(
-      LIST_TEST(NetAddressPrivateUntrusted_AreEqual)
-      LIST_TEST(NetAddressPrivateUntrusted_AreHostsEqual)
-      LIST_TEST(NetAddressPrivateUntrusted_Describe)
-      LIST_TEST(NetAddressPrivateUntrusted_ReplacePort)
-      LIST_TEST(NetAddressPrivateUntrusted_GetAnyAddress)
-      LIST_TEST(NetAddressPrivateUntrusted_GetFamily)
-      LIST_TEST(NetAddressPrivateUntrusted_GetPort)
-      LIST_TEST(NetAddressPrivateUntrusted_GetAddress)
-  );
+  RUN_NETADDRESS_PRIVATE_UNTRUSTED_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(NetAddressPrivate)) {
-  RunTestViaHTTP(
-      LIST_TEST(NetAddressPrivateUntrusted_AreEqual)
-      LIST_TEST(NetAddressPrivateUntrusted_AreHostsEqual)
-      LIST_TEST(NetAddressPrivateUntrusted_Describe)
-      LIST_TEST(NetAddressPrivateUntrusted_ReplacePort)
-      LIST_TEST(NetAddressPrivateUntrusted_GetAnyAddress)
-      LIST_TEST(NetAddressPrivateUntrusted_GetFamily)
-      LIST_TEST(NetAddressPrivateUntrusted_GetPort)
-      LIST_TEST(NetAddressPrivateUntrusted_GetAddress)
-  );
+  RUN_NETADDRESS_PRIVATE_UNTRUSTED_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, NetAddressPrivate) {
-  RunTestViaHTTP(
-      LIST_TEST(NetAddressPrivateUntrusted_AreEqual)
-      LIST_TEST(NetAddressPrivateUntrusted_AreHostsEqual)
-      LIST_TEST(NetAddressPrivateUntrusted_Describe)
-      LIST_TEST(NetAddressPrivateUntrusted_ReplacePort)
-      LIST_TEST(NetAddressPrivateUntrusted_GetAnyAddress)
-      LIST_TEST(NetAddressPrivateUntrusted_GetFamily)
-      LIST_TEST(NetAddressPrivateUntrusted_GetPort)
-      LIST_TEST(NetAddressPrivateUntrusted_GetAddress)
-  );
+  RUN_NETADDRESS_PRIVATE_UNTRUSTED_SUBTESTS;
 }
 
 // NetworkMonitor tests.
+#define RUN_NETWORK_MONITOR_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(NetworkMonitor_Basic) \
+      LIST_TEST(NetworkMonitor_2Monitors) \
+      LIST_TEST(NetworkMonitor_DeleteInCallback) \
+  )
+
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetworkMonitor) {
-  RunTestViaHTTP(
-      LIST_TEST(NetworkMonitor_Basic)
-      LIST_TEST(NetworkMonitor_2Monitors)
-      LIST_TEST(NetworkMonitor_DeleteInCallback)
-  );
+  RUN_NETWORK_MONITOR_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NetworkMonitor) {
-  RunTestViaHTTP(
-      LIST_TEST(NetworkMonitor_Basic)
-      LIST_TEST(NetworkMonitor_2Monitors)
-      LIST_TEST(NetworkMonitor_DeleteInCallback)
-  );
+  RUN_NETWORK_MONITOR_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(NetworkMonitor)) {
-  RunTestViaHTTP(
-      LIST_TEST(NetworkMonitor_Basic)
-      LIST_TEST(NetworkMonitor_2Monitors)
-      LIST_TEST(NetworkMonitor_DeleteInCallback)
-  );
+  RUN_NETWORK_MONITOR_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, NetworkMonitor) {
-  RunTestViaHTTP(
-      LIST_TEST(NetworkMonitor_Basic)
-      LIST_TEST(NetworkMonitor_2Monitors)
-      LIST_TEST(NetworkMonitor_DeleteInCallback)
-  );
+  RUN_NETWORK_MONITOR_SUBTESTS;
 }
 
 // Flash tests.
+#define RUN_FLASH_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(Flash_SetInstanceAlwaysOnTop) \
+      LIST_TEST(Flash_GetCommandLineArgs) \
+  )
+
 IN_PROC_BROWSER_TEST_F(PPAPITest, Flash) {
-  RunTestViaHTTP(
-      LIST_TEST(Flash_SetInstanceAlwaysOnTop)
-      LIST_TEST(Flash_GetCommandLineArgs)
-  );
+  RUN_FLASH_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, Flash) {
-  RunTestViaHTTP(
-      LIST_TEST(Flash_SetInstanceAlwaysOnTop)
-      LIST_TEST(Flash_GetCommandLineArgs)
-  );
+  RUN_FLASH_SUBTESTS;
 }
 
 // In-process WebSocket tests. Note, the WebSocket tests are split into two,
 // because all of them together sometimes take too long on windows:
 // crbug.com/336999
+#define RUN_WEBSOCKET_SUBTESTS_1 \
+  RunTestWithWebSocketServer( \
+      LIST_TEST(WebSocket_IsWebSocket) \
+      LIST_TEST(WebSocket_UninitializedPropertiesAccess) \
+      LIST_TEST(WebSocket_InvalidConnect) \
+      LIST_TEST(WebSocket_Protocols) \
+      LIST_TEST(WebSocket_GetURL) \
+      LIST_TEST(WebSocket_ValidConnect) \
+      LIST_TEST(WebSocket_InvalidClose) \
+      LIST_TEST(WebSocket_ValidClose) \
+      LIST_TEST(WebSocket_GetProtocol) \
+      LIST_TEST(WebSocket_TextSendReceive) \
+      LIST_TEST(WebSocket_BinarySendReceive) \
+      LIST_TEST(WebSocket_StressedSendReceive) \
+      LIST_TEST(WebSocket_BufferedAmount) \
+  )
+
+#define RUN_WEBSOCKET_SUBTESTS_2 \
+  RunTestWithWebSocketServer( \
+      LIST_TEST(WebSocket_AbortCallsWithCallback) \
+      LIST_TEST(WebSocket_AbortSendMessageCall) \
+      LIST_TEST(WebSocket_AbortCloseCall) \
+      LIST_TEST(WebSocket_AbortReceiveMessageCall) \
+      LIST_TEST(WebSocket_CcInterfaces) \
+      LIST_TEST(WebSocket_UtilityInvalidConnect) \
+      LIST_TEST(WebSocket_UtilityProtocols) \
+      LIST_TEST(WebSocket_UtilityGetURL) \
+      LIST_TEST(WebSocket_UtilityValidConnect) \
+      LIST_TEST(WebSocket_UtilityInvalidClose) \
+      LIST_TEST(WebSocket_UtilityValidClose) \
+      LIST_TEST(WebSocket_UtilityGetProtocol) \
+      LIST_TEST(WebSocket_UtilityTextSendReceive) \
+      LIST_TEST(WebSocket_UtilityBinarySendReceive) \
+      LIST_TEST(WebSocket_UtilityBufferedAmount) \
+  )
+
+
 IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket1) {
-  RunTestWithWebSocketServer(
-      LIST_TEST(WebSocket_IsWebSocket)
-      LIST_TEST(WebSocket_UninitializedPropertiesAccess)
-      LIST_TEST(WebSocket_InvalidConnect)
-      LIST_TEST(WebSocket_Protocols)
-      LIST_TEST(WebSocket_GetURL)
-      LIST_TEST(WebSocket_ValidConnect)
-      LIST_TEST(WebSocket_InvalidClose)
-      LIST_TEST(WebSocket_ValidClose)
-      LIST_TEST(WebSocket_GetProtocol)
-      LIST_TEST(WebSocket_TextSendReceive)
-      LIST_TEST(WebSocket_BinarySendReceive)
-      LIST_TEST(WebSocket_StressedSendReceive)
-      LIST_TEST(WebSocket_BufferedAmount)
-  );
+  RUN_WEBSOCKET_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket2) {
-  RunTestWithWebSocketServer(
-      LIST_TEST(WebSocket_AbortCallsWithCallback)
-      LIST_TEST(WebSocket_AbortSendMessageCall)
-      LIST_TEST(WebSocket_AbortCloseCall)
-      LIST_TEST(WebSocket_AbortReceiveMessageCall)
-      LIST_TEST(WebSocket_CcInterfaces)
-      LIST_TEST(WebSocket_UtilityInvalidConnect)
-      LIST_TEST(WebSocket_UtilityProtocols)
-      LIST_TEST(WebSocket_UtilityGetURL)
-      LIST_TEST(WebSocket_UtilityValidConnect)
-      LIST_TEST(WebSocket_UtilityInvalidClose)
-      LIST_TEST(WebSocket_UtilityValidClose)
-      LIST_TEST(WebSocket_UtilityGetProtocol)
-      LIST_TEST(WebSocket_UtilityTextSendReceive)
-      LIST_TEST(WebSocket_UtilityBinarySendReceive)
-      LIST_TEST(WebSocket_UtilityBufferedAmount));
+  RUN_WEBSOCKET_SUBTESTS_2;
 }
-
-// Out-of-process WebSocket tests
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket1) {
-  RunTestWithWebSocketServer(
-      LIST_TEST(WebSocket_IsWebSocket)
-      LIST_TEST(WebSocket_UninitializedPropertiesAccess)
-      LIST_TEST(WebSocket_InvalidConnect)
-      LIST_TEST(WebSocket_Protocols)
-      LIST_TEST(WebSocket_GetURL)
-      LIST_TEST(WebSocket_ValidConnect)
-      LIST_TEST(WebSocket_InvalidClose)
-      LIST_TEST(WebSocket_ValidClose)
-      LIST_TEST(WebSocket_GetProtocol)
-      LIST_TEST(WebSocket_TextSendReceive)
-      LIST_TEST(WebSocket_BinarySendReceive)
-      LIST_TEST(WebSocket_StressedSendReceive)
-      LIST_TEST(WebSocket_BufferedAmount)
-  );
+  RUN_WEBSOCKET_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket2) {
-  RunTestWithWebSocketServer(
-      LIST_TEST(WebSocket_AbortCallsWithCallback)
-      LIST_TEST(WebSocket_AbortSendMessageCall)
-      LIST_TEST(WebSocket_AbortCloseCall)
-      LIST_TEST(WebSocket_AbortReceiveMessageCall)
-      LIST_TEST(WebSocket_CcInterfaces)
-      LIST_TEST(WebSocket_UtilityInvalidConnect)
-      LIST_TEST(WebSocket_UtilityProtocols)
-      LIST_TEST(WebSocket_UtilityGetURL)
-      LIST_TEST(WebSocket_UtilityValidConnect)
-      LIST_TEST(WebSocket_UtilityInvalidClose)
-      LIST_TEST(WebSocket_UtilityValidClose)
-      LIST_TEST(WebSocket_UtilityGetProtocol)
-      LIST_TEST(WebSocket_UtilityTextSendReceive)
-      LIST_TEST(WebSocket_UtilityBinarySendReceive)
-      LIST_TEST(WebSocket_UtilityBufferedAmount));
+  RUN_WEBSOCKET_SUBTESTS_2;
 }
-
-// NaClNewlib WebSocket tests
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket1) {
-  RunTestWithWebSocketServer(
-      LIST_TEST(WebSocket_IsWebSocket)
-      LIST_TEST(WebSocket_UninitializedPropertiesAccess)
-      LIST_TEST(WebSocket_InvalidConnect)
-      LIST_TEST(WebSocket_Protocols)
-      LIST_TEST(WebSocket_GetURL)
-      LIST_TEST(WebSocket_ValidConnect)
-      LIST_TEST(WebSocket_InvalidClose)
-      LIST_TEST(WebSocket_ValidClose)
-      LIST_TEST(WebSocket_GetProtocol)
-      LIST_TEST(WebSocket_TextSendReceive)
-      LIST_TEST(WebSocket_BinarySendReceive)
-      LIST_TEST(WebSocket_StressedSendReceive)
-      LIST_TEST(WebSocket_BufferedAmount)
-  );
+  RUN_WEBSOCKET_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket2) {
-  RunTestWithWebSocketServer(
-      LIST_TEST(WebSocket_AbortCallsWithCallback)
-      LIST_TEST(WebSocket_AbortSendMessageCall)
-      LIST_TEST(WebSocket_AbortCloseCall)
-      LIST_TEST(WebSocket_AbortReceiveMessageCall)
-      LIST_TEST(WebSocket_CcInterfaces)
-      LIST_TEST(WebSocket_UtilityInvalidConnect)
-      LIST_TEST(WebSocket_UtilityProtocols)
-      LIST_TEST(WebSocket_UtilityGetURL)
-      LIST_TEST(WebSocket_UtilityValidConnect)
-      LIST_TEST(WebSocket_UtilityInvalidClose)
-      LIST_TEST(WebSocket_UtilityValidClose)
-      LIST_TEST(WebSocket_UtilityGetProtocol)
-      LIST_TEST(WebSocket_UtilityTextSendReceive)
-      LIST_TEST(WebSocket_UtilityBinarySendReceive)
-      LIST_TEST(WebSocket_UtilityBufferedAmount));
+  RUN_WEBSOCKET_SUBTESTS_2;
 }
-
-// NaClGLibc WebSocket tests
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(WebSocket1)) {
-  RunTestWithWebSocketServer(
-      LIST_TEST(WebSocket_IsWebSocket)
-      LIST_TEST(WebSocket_UninitializedPropertiesAccess)
-      LIST_TEST(WebSocket_InvalidConnect)
-      LIST_TEST(WebSocket_Protocols)
-      LIST_TEST(WebSocket_GetURL)
-      LIST_TEST(WebSocket_ValidConnect)
-      LIST_TEST(WebSocket_InvalidClose)
-      LIST_TEST(WebSocket_ValidClose)
-      LIST_TEST(WebSocket_GetProtocol)
-      LIST_TEST(WebSocket_TextSendReceive)
-      LIST_TEST(WebSocket_BinarySendReceive)
-      LIST_TEST(WebSocket_StressedSendReceive)
-      LIST_TEST(WebSocket_BufferedAmount)
-  );
+  RUN_WEBSOCKET_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(WebSocket2)) {
-  RunTestWithWebSocketServer(
-      LIST_TEST(WebSocket_AbortCallsWithCallback)
-      LIST_TEST(WebSocket_AbortSendMessageCall)
-      LIST_TEST(WebSocket_AbortCloseCall)
-      LIST_TEST(WebSocket_AbortReceiveMessageCall)
-      LIST_TEST(WebSocket_CcInterfaces)
-      LIST_TEST(WebSocket_UtilityInvalidConnect)
-      LIST_TEST(WebSocket_UtilityProtocols)
-      LIST_TEST(WebSocket_UtilityGetURL)
-      LIST_TEST(WebSocket_UtilityValidConnect)
-      LIST_TEST(WebSocket_UtilityInvalidClose)
-      LIST_TEST(WebSocket_UtilityValidClose)
-      LIST_TEST(WebSocket_UtilityGetProtocol)
-      LIST_TEST(WebSocket_UtilityTextSendReceive)
-      LIST_TEST(WebSocket_UtilityBinarySendReceive)
-      LIST_TEST(WebSocket_UtilityBufferedAmount));
+  RUN_WEBSOCKET_SUBTESTS_2;
 }
-
-// PNaCl WebSocket tests
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, WebSocket1) {
-  RunTestWithWebSocketServer(
-      LIST_TEST(WebSocket_IsWebSocket)
-      LIST_TEST(WebSocket_UninitializedPropertiesAccess)
-      LIST_TEST(WebSocket_InvalidConnect)
-      LIST_TEST(WebSocket_Protocols)
-      LIST_TEST(WebSocket_GetURL)
-      LIST_TEST(WebSocket_ValidConnect)
-      LIST_TEST(WebSocket_InvalidClose)
-      LIST_TEST(WebSocket_ValidClose)
-      LIST_TEST(WebSocket_GetProtocol)
-      LIST_TEST(WebSocket_TextSendReceive)
-      LIST_TEST(WebSocket_BinarySendReceive)
-      LIST_TEST(WebSocket_StressedSendReceive)
-      LIST_TEST(WebSocket_BufferedAmount)
-  );
+  RUN_WEBSOCKET_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, WebSocket2) {
-  RunTestWithWebSocketServer(
-      LIST_TEST(WebSocket_AbortCallsWithCallback)
-      LIST_TEST(WebSocket_AbortSendMessageCall)
-      LIST_TEST(WebSocket_AbortCloseCall)
-      LIST_TEST(WebSocket_AbortReceiveMessageCall)
-      LIST_TEST(WebSocket_CcInterfaces)
-      LIST_TEST(WebSocket_UtilityInvalidConnect)
-      LIST_TEST(WebSocket_UtilityProtocols)
-      LIST_TEST(WebSocket_UtilityGetURL)
-      LIST_TEST(WebSocket_UtilityValidConnect)
-      LIST_TEST(WebSocket_UtilityInvalidClose)
-      LIST_TEST(WebSocket_UtilityValidClose)
-      LIST_TEST(WebSocket_UtilityGetProtocol)
-      LIST_TEST(WebSocket_UtilityTextSendReceive)
-      LIST_TEST(WebSocket_UtilityBinarySendReceive)
-      LIST_TEST(WebSocket_UtilityBufferedAmount));
+  RUN_WEBSOCKET_SUBTESTS_2;
 }
 
+// AudioConfig tests
+#define RUN_AUDIO_CONFIG_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(AudioConfig_RecommendSampleRate) \
+      LIST_TEST(AudioConfig_ValidConfigs) \
+      LIST_TEST(AudioConfig_InvalidConfigs) \
+  )
 
-// In-process AudioConfig tests
 IN_PROC_BROWSER_TEST_F(PPAPITest, AudioConfig) {
-  RunTest(
-      LIST_TEST(AudioConfig_RecommendSampleRate)
-      LIST_TEST(AudioConfig_ValidConfigs)
-      LIST_TEST(AudioConfig_InvalidConfigs));
+  RUN_AUDIO_CONFIG_SUBTESTS;
 }
-
-// Out-of-process AudioConfig tests
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, AudioConfig) {
-  RunTest(
-      LIST_TEST(AudioConfig_RecommendSampleRate)
-      LIST_TEST(AudioConfig_ValidConfigs)
-      LIST_TEST(AudioConfig_InvalidConfigs));
+  RUN_AUDIO_CONFIG_SUBTESTS;
 }
-
-// NaClNewlib AudioConfig tests
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, AudioConfig) {
-  RunTestViaHTTP(
-      LIST_TEST(AudioConfig_RecommendSampleRate)
-      LIST_TEST(AudioConfig_ValidConfigs)
-      LIST_TEST(AudioConfig_InvalidConfigs));
+  RUN_AUDIO_CONFIG_SUBTESTS;
 }
-
-// NaClGLibc AudioConfig tests
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(AudioConfig)) {
-  RunTestViaHTTP(
-      LIST_TEST(AudioConfig_RecommendSampleRate)
-      LIST_TEST(AudioConfig_ValidConfigs)
-      LIST_TEST(AudioConfig_InvalidConfigs));
+  RUN_AUDIO_CONFIG_SUBTESTS;
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, AudioConfig) {
+  RUN_AUDIO_CONFIG_SUBTESTS;
 }
 
-// PNaCl AudioConfig tests
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, AudioConfig) {
-  RunTestViaHTTP(
-      LIST_TEST(AudioConfig_RecommendSampleRate)
-      LIST_TEST(AudioConfig_ValidConfigs)
-      LIST_TEST(AudioConfig_InvalidConfigs));
-}
+// PPB_Audio tests.
+#define RUN_AUDIO_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(Audio_Creation) \
+      LIST_TEST(Audio_DestroyNoStop) \
+      LIST_TEST(Audio_Failures) \
+      LIST_TEST(Audio_AudioCallback1) \
+      LIST_TEST(Audio_AudioCallback2) \
+      LIST_TEST(Audio_AudioCallback3) \
+      LIST_TEST(Audio_AudioCallback4) \
+  )
 
 // PPB_Audio is not supported in-process.
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, Audio) {
-  RunTest(LIST_TEST(Audio_Creation)
-          LIST_TEST(Audio_DestroyNoStop)
-          LIST_TEST(Audio_Failures)
-          LIST_TEST(Audio_AudioCallback1)
-          LIST_TEST(Audio_AudioCallback2)
-          LIST_TEST(Audio_AudioCallback3)
-          LIST_TEST(Audio_AudioCallback4));
+  RUN_AUDIO_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, Audio) {
-  RunTestViaHTTP(LIST_TEST(Audio_Creation)
-                 LIST_TEST(Audio_DestroyNoStop)
-                 LIST_TEST(Audio_Failures)
-                 LIST_TEST(Audio_AudioCallback1)
-                 LIST_TEST(Audio_AudioCallback2)
-                 LIST_TEST(Audio_AudioCallback3)
-                 LIST_TEST(Audio_AudioCallback4));
+  RUN_AUDIO_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(Audio)) {
-  RunTestViaHTTP(LIST_TEST(Audio_Creation)
-                 LIST_TEST(Audio_DestroyNoStop)
-                 LIST_TEST(Audio_Failures)
-                 LIST_TEST(Audio_AudioCallback1)
-                 LIST_TEST(Audio_AudioCallback2)
-                 LIST_TEST(Audio_AudioCallback3)
-                 LIST_TEST(Audio_AudioCallback4));
+  RUN_AUDIO_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, Audio) {
-  RunTestViaHTTP(LIST_TEST(Audio_Creation)
-                 LIST_TEST(Audio_DestroyNoStop)
-                 LIST_TEST(Audio_Failures)
-                 LIST_TEST(Audio_AudioCallback1)
-                 LIST_TEST(Audio_AudioCallback2)
-                 LIST_TEST(Audio_AudioCallback3)
-                 LIST_TEST(Audio_AudioCallback4));
+  RUN_AUDIO_SUBTESTS;
 }
 
 TEST_PPAPI_IN_PROCESS(View_CreatedVisible);
@@ -1635,30 +1206,38 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, InputEvent_AcceptTouchEvent) {
   }
 }
 
+// View tests.
+#define RUN_VIEW_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(View_SizeChange) \
+      LIST_TEST(View_ClipChange) \
+  )
+
 IN_PROC_BROWSER_TEST_F(PPAPITest, View) {
-  RunTest(LIST_TEST(View_SizeChange)
-          LIST_TEST(View_ClipChange));
+  RUN_VIEW_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View) {
-  RunTest(LIST_TEST(View_SizeChange)
-          LIST_TEST(View_ClipChange));
+  RUN_VIEW_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, View) {
-  RunTestViaHTTP(LIST_TEST(View_SizeChange)
-                 LIST_TEST(View_ClipChange));
+  RUN_VIEW_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(View)) {
-  RunTestViaHTTP(LIST_TEST(View_SizeChange)
-                 LIST_TEST(View_ClipChange));
+  RUN_VIEW_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, View) {
-  RunTestViaHTTP(LIST_TEST(View_SizeChange)
-                 LIST_TEST(View_ClipChange));
+  RUN_VIEW_SUBTESTS;
 }
 
+// FlashMessageLoop tests.
+#define RUN_FLASH_MESSAGE_LOOP_SUBTESTS \
+  RunTest( \
+      LIST_TEST(FlashMessageLoop_Basics) \
+      LIST_TEST(FlashMessageLoop_RunWithoutQuit) \
+  )
+
 IN_PROC_BROWSER_TEST_F(PPAPITest, FlashMessageLoop) {
-  RunTest(LIST_TEST(FlashMessageLoop_Basics)
-          LIST_TEST(FlashMessageLoop_RunWithoutQuit));
+  RUN_FLASH_MESSAGE_LOOP_SUBTESTS;
 }
 #if defined(OS_LINUX)  // Disabled due to flakiness http://crbug.com/316925
 #define MAYBE_FlashMessageLoop DISABLED_FlashMessageLoop
@@ -1666,8 +1245,7 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, FlashMessageLoop) {
 #define MAYBE_FlashMessageLoop FlashMessageLoop
 #endif
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_FlashMessageLoop) {
-  RunTest(LIST_TEST(FlashMessageLoop_Basics)
-          LIST_TEST(FlashMessageLoop_RunWithoutQuit));
+  RUN_FLASH_MESSAGE_LOOP_SUBTESTS;
 }
 
 TEST_PPAPI_OUT_OF_PROCESS(MediaStreamAudioTrack)
