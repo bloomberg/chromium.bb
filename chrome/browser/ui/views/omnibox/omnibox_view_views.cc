@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/settings_api_bubble_helper_views.h"
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
 #include "grit/app_locale_settings.h"
@@ -117,11 +116,6 @@ ui::TextInputType DetermineTextInputType() {
     return ui::TEXT_INPUT_TYPE_SEARCH;
 #endif
   return ui::TEXT_INPUT_TYPE_URL;
-}
-
-bool IsOmniboxAutoCompletionForImeEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableOmniboxAutoCompletionForIme);
 }
 
 }  // namespace
@@ -583,14 +577,9 @@ void OmniboxViewViews::UpdatePopup() {
   if (!model()->has_focus())
     return;
 
-  // Prevent inline autocomplete when the caret isn't at the end of the text,
-  // and during IME composition editing unless
-  // |kEnableOmniboxAutoCompletionForIme| is enabled.
+  // Prevent inline autocomplete when the caret isn't at the end of the text.
   const gfx::Range sel = GetSelectedRange();
-  model()->StartAutocomplete(
-      !sel.is_empty(),
-      sel.GetMax() < text().length() ||
-      (IsIMEComposing() && !IsOmniboxAutoCompletionForImeEnabled()));
+  model()->StartAutocomplete(!sel.is_empty(), sel.GetMax() < text().length());
 }
 
 void OmniboxViewViews::SetFocus() {

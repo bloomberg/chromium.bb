@@ -335,10 +335,6 @@ const char kDisableMinimizeOnSecondLauncherItemClick[] =
 // Disables the menu on the NTP for accessing sessions from other devices.
 const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
 
-// Disables omnibox auto-completion when IME is active.
-const char kDisableOmniboxAutoCompletionForIme[] =
-    "disable-omnibox-auto-completion-for-ime";
-
 // Disable the origin chip.
 const char kDisableOriginChip[]             = "disable-origin-chip";
 
@@ -576,11 +572,6 @@ const char kEnableNpnHttpOnly[]             = "enable-npn-http";
 
 // Enable auto-reload of error pages if offline.
 const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";
-
-// Enables omnibox auto-completion when IME is active.  The auto-completion for
-// IME is shown in the same style as the normal(non-IME) auto-completion.
-const char kEnableOmniboxAutoCompletionForIme[] =
-    "enable-omnibox-auto-completion-for-ime";
 
 // Controls which branch of the origin chip experiment is enabled. The first
 // flag (enable-origin-chip) is equivalent to the third

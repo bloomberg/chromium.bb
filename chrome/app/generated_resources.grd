@@ -6355,12 +6355,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_DESCRIPTION" desc="Description for the flag to enable native style frames for apps.">
         Use native-style window decorations for packaged app windows.
       </message>
-      <message name="IDS_FLAGS_ENABLE_OMNIBOX_AUTO_COMPLETION_FOR_IME_NAME" desc="Title for the flag to enable omnibox auto-completion for IMEs.">
-        Enable omnibox auto-completion when IME is active
-      </message>
-      <message name="IDS_FLAGS_ENABLE_OMNIBOX_AUTO_COMPLETION_FOR_IME_DESCRIPTION" desc="Description for the flag to enable auto-completion for IMEs.">
-        Enables omnibox auto-completion when IME is active.  The auto-completion for IME is shown in the same style as the normal(non-IME) auto-completion.
-      </message>
 
       <message name="IDS_GENERIC_EXPERIMENT_CHOICE_AUTOMATIC" desc="Generic 'Automatic' experiment choice option name.">
         Automatic

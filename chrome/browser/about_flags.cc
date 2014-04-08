@@ -1422,16 +1422,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSimplifiedFullscreen)
   },
 #endif
-#if defined(TOOLKIT_VIEWS)
-  {
-    "omnibox-auto-completion-for-ime",
-    IDS_FLAGS_ENABLE_OMNIBOX_AUTO_COMPLETION_FOR_IME_NAME,
-    IDS_FLAGS_ENABLE_OMNIBOX_AUTO_COMPLETION_FOR_IME_DESCRIPTION,
-    kOsCrOS | kOsWin | kOsLinux,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOmniboxAutoCompletionForIme,
-                              switches::kDisableOmniboxAutoCompletionForIme)
-  },
-#endif
 #if defined(USE_AURA)
   {
     "tab-capture-upscale-quality",
