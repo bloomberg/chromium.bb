@@ -128,8 +128,7 @@ class DriSurfaceAdapter : public SurfaceOzoneCanvas {
       : widget_(w), dri_(dri) {}
   virtual ~DriSurfaceAdapter() {}
 
-  // SurfaceOzone:
-  virtual bool InitializeCanvas() OVERRIDE { return true; }
+  // SurfaceOzoneCanvas overrides:
   virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE {
     return skia::SharePtr(dri_->GetCanvasForWidget(widget_));
   }

@@ -34,8 +34,7 @@ class FileSurface : public SurfaceOzoneCanvas {
   FileSurface(const base::FilePath& location) : location_(location) {}
   virtual ~FileSurface() {}
 
-  virtual bool InitializeCanvas() OVERRIDE { return true; }
-
+  // SurfaceOzoneCanvas overrides:
   virtual bool ResizeCanvas(const Size& viewport_size) OVERRIDE {
     SkImageInfo info = SkImageInfo::MakeN32Premul(viewport_size.width(),
                                                   viewport_size.height());
@@ -43,9 +42,7 @@ class FileSurface : public SurfaceOzoneCanvas {
     canvas_ = skia::AdoptRef(new SkCanvas(device_.get()));
     return true;
   }
-
   virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE { return canvas_; }
-
   virtual bool PresentCanvas() OVERRIDE {
     SkBitmap bitmap;
     bitmap.setConfig(
@@ -57,7 +54,6 @@ class FileSurface : public SurfaceOzoneCanvas {
     }
     return true;
   }
-
   virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE {
     return scoped_ptr<gfx::VSyncProvider>();
   }
