@@ -92,6 +92,7 @@ const uint64_t CompositingReasonComboAllDirectReasons =
 const uint64_t CompositingReasonComboAllStyleDeterminedReasons =
     CompositingReason3DTransform
     | CompositingReasonBackfaceVisibilityHidden
+    | CompositingReasonActiveAnimation
     | CompositingReasonTransitionProperty
     | CompositingReasonFilters
     | CompositingReasonWillChange;

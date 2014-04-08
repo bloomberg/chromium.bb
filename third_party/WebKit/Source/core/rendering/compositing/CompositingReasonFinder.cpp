@@ -90,6 +90,9 @@ CompositingReasons CompositingReasonFinder::styleDeterminedReasons(RenderObject*
     if (requiresCompositingForBackfaceVisibilityHidden(renderer))
         directReasons |= CompositingReasonBackfaceVisibilityHidden;
 
+    if (requiresCompositingForAnimation(renderer))
+        directReasons |= CompositingReasonActiveAnimation;
+
     if (requiresCompositingForFilters(renderer))
         directReasons |= CompositingReasonFilters;
 
@@ -141,9 +144,6 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
 {
     CompositingReasons directReasons = CompositingReasonNone;
     RenderObject* renderer = layer->renderer();
-
-    if (requiresCompositingForAnimation(renderer))
-        directReasons |= CompositingReasonActiveAnimation;
 
     if (m_renderView.compositorDrivenAcceleratedScrollingEnabled()) {
         if (requiresCompositingForOutOfFlowClipping(layer))
