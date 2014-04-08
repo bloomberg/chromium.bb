@@ -180,7 +180,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
 
   virtual void AddNodeToMap(BrowserAccessibility* node);
 
-  virtual void NotifyRootChanged() {}
+  virtual void OnRootChanged() {}
 
  private:
   // The following states keep track of whether or not the

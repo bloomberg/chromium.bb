@@ -63,6 +63,10 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // Called when |accessible_hwnd_| is deleted by its parent.
   void OnAccessibleHwndDeleted();
 
+ protected:
+  // BrowserAccessibilityManager methods
+  virtual void OnRootChanged() OVERRIDE;
+
  private:
   // The closest ancestor HWND.
   HWND parent_hwnd_;

@@ -222,6 +222,11 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   }
 }
 
+void BrowserAccessibilityManagerWin::OnRootChanged() {
+  if (delegate_ && delegate_->HasFocus())
+    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, root_);
+}
+
 void BrowserAccessibilityManagerWin::TrackScrollingObject(
     BrowserAccessibilityWin* node) {
   if (tracked_scroll_object_)

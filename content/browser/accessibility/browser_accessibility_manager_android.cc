@@ -521,7 +521,7 @@ jint BrowserAccessibilityManagerAndroid::FindElementType(
   return 0;
 }
 
-void BrowserAccessibilityManagerAndroid::NotifyRootChanged() {
+void BrowserAccessibilityManagerAndroid::OnRootChanged() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())

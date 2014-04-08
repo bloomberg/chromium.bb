@@ -203,7 +203,7 @@ void BrowserAccessibilityManager::SetFocus(
 
 void BrowserAccessibilityManager::SetRoot(BrowserAccessibility* node) {
   root_ = node;
-  NotifyRootChanged();
+  OnRootChanged();
 }
 
 void BrowserAccessibilityManager::DoDefaultAction(

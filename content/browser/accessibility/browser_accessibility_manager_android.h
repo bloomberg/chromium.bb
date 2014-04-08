@@ -66,7 +66,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
                        jstring element_type, jboolean forwards);
 
  protected:
-  virtual void NotifyRootChanged() OVERRIDE;
+  virtual void OnRootChanged() OVERRIDE;
 
   virtual bool UseRootScrollOffsetsWhenComputingBounds() OVERRIDE;
 
