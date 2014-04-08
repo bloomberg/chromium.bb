@@ -19,27 +19,7 @@ namespace {
 
 const char kFieldTrialName[] = "EnhancedBookmarks";
 
-bool IsBookmarksExtensionHash(const std::string& sha1_hex) {
-    return sha1_hex == "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2" ||
-           sha1_hex == "D57DE394F36DC1C3220E7604C575D29C51A6C495";
-}
-
 };  // namespace
-
-bool IsBookmarksExtensionInstalled(
-    const extensions::ExtensionIdSet& extension_ids) {
-  // Compare installed extension ids with ones we expect.
-  for (extensions::ExtensionIdSet::const_iterator iter = extension_ids.begin();
-       iter != extension_ids.end(); ++iter) {
-    const std::string id_hash = base::SHA1HashString(*iter);
-    DCHECK_EQ(id_hash.length(), base::kSHA1Length);
-    std::string hash = base::HexEncode(id_hash.c_str(), id_hash.length());
-
-    if (IsBookmarksExtensionHash(hash))
-      return true;
-  }
-  return false;
-}
 
 void UpdateBookmarksExperiment(
     PrefService* local_state,

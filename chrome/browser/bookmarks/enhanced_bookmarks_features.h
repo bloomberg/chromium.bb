@@ -17,10 +17,6 @@ enum BookmarksExperimentState {
   kBookmarksExperimentEnabledUserOptOut
 };
 
-// Returns true if Enhanced bookmarks extension is installed
-bool IsBookmarksExtensionInstalled(
-    const extensions::ExtensionIdSet& extension_ids);
-
 // Sets flag to opt-in user into Finch experiment.
 void UpdateBookmarksExperiment(
     PrefService* local_state,
