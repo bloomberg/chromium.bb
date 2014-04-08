@@ -755,6 +755,9 @@ component("base") {
     if (is_component_build) {
       sources -= [ "debug/debug_on_start_win.cc" ]
     }
+
+    # Needed by win_util.h
+    libs = [ "netapi32.lib" ]
   } else if (!is_nacl) {
     # Non-Windows.
     deps += [ "//third_party/libevent" ]

@@ -244,7 +244,7 @@ void LoaderImpl::BackgroundLoadFile(const Settings* settings,
   }
 
   Scope our_scope(settings->base_config());
-  ScopePerFileProvider per_file_provider(&our_scope);
+  ScopePerFileProvider per_file_provider(&our_scope, true);
   our_scope.set_source_dir(file_name.GetDir());
 
   ScopedTrace trace(TraceItem::TRACE_FILE_EXECUTE, file_name.value());

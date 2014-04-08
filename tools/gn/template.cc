@@ -8,6 +8,7 @@
 #include "tools/gn/functions.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scope.h"
+#include "tools/gn/scope_per_file_provider.h"
 #include "tools/gn/value.h"
 
 Template::Template(const Scope* scope, const FunctionCallNode* def)
@@ -50,17 +51,24 @@ Value Template::Invoke(Scope* scope,
   if (err->has_error())
     return Value();
 
-  // Set up the scope to run the template. This should be dependent on the
-  // closure, but have the "invoker" and "target_name" values injected, and the
-  // current dir matching the invoker. We jump through some hoops to avoid
-  // copying the invocation scope when setting it in the template scope (since
-  // the invocation scope may have large lists of source files in it and could
-  // be expensive to copy).
+  // Set up the scope to run the template and set the current directory for the
+  // template (which ScopePerFileProvider uses to base the target-related
+  // variables target_gen_dir and target_out_dir on) to be that of the invoker.
+  // This way, files don't have to be rebased and target_*_dir works the way
+  // people expect (otherwise its to easy to be putting generated files in the
+  // gen dir corresponding to an imported file).
+  Scope template_scope(closure_.get());
+  template_scope.set_source_dir(scope->GetSourceDir());
+
+  ScopePerFileProvider per_file_provider(&template_scope, true);
+
+  // We jump through some hoops to avoid copying the invocation scope when
+  // setting it in the template scope (since the invocation scope may have
+  // large lists of source files in it and could be expensive to copy).
   //
   // Scope.SetValue will copy the value which will in turn copy the scope, but
   // if we instead create a value and then set the scope on it, the copy can
   // be avoided.
-  Scope template_scope(closure_.get());
   const char kInvoker[] = "invoker";
   template_scope.SetValue(kInvoker, Value(NULL, scoped_ptr<Scope>()),
                           invocation);
@@ -73,11 +81,11 @@ Value Template::Invoke(Scope* scope,
                           Value(invocation, args[0].string_value()),
                           invocation);
 
-  // Run the template code. Don't check for unused variables since the
-  // template could be executed in many different ways and it could be that
-  // not all executions use all values in the closure.
+  // Actually run the template code.
   Value result =
       definition_->block()->ExecuteBlockInScope(&template_scope, err);
+  if (err->has_error())
+    return Value();
 
   // Check for unused variables in the invocation scope. This will find typos
   // of things the caller meant to pass to the template but the template didn't

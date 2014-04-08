@@ -20,7 +20,7 @@ TEST(ScopePerFileProvider, Expected) {
   {
     Scope scope(test.settings());
     scope.set_source_dir(SourceDir("//source/"));
-    ScopePerFileProvider provider(&scope);
+    ScopePerFileProvider provider(&scope, true);
 
     EXPECT_EQ("//toolchain:default",    GPV(variables::kCurrentToolchain));
     // TODO(brettw) this test harness does not set up the Toolchain manager
@@ -41,7 +41,7 @@ TEST(ScopePerFileProvider, Expected) {
 
     Scope scope(&settings);
     scope.set_source_dir(SourceDir("//source/"));
-    ScopePerFileProvider provider(&scope);
+    ScopePerFileProvider provider(&scope, true);
 
     EXPECT_EQ("//toolchain:tc",            GPV(variables::kCurrentToolchain));
     // See above.

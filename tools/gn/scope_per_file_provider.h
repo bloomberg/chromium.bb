@@ -14,7 +14,10 @@
 // variable support.
 class ScopePerFileProvider : public Scope::ProgrammaticProvider {
  public:
-  ScopePerFileProvider(Scope* scope);
+  // allow_target_vars allows the target-related variables to get resolved.
+  // When allow_target_vars is unset, the target-related values will be
+  // undefined to GN script.
+  ScopePerFileProvider(Scope* scope, bool allow_target_vars);
   virtual ~ScopePerFileProvider();
 
   // ProgrammaticProvider implementation.
@@ -30,6 +33,8 @@ class ScopePerFileProvider : public Scope::ProgrammaticProvider {
   const Value* GetRootOutDir();
   const Value* GetTargetGenDir();
   const Value* GetTargetOutDir();
+
+  bool allow_target_vars_;
 
   // All values are lazily created.
   scoped_ptr<Value> current_toolchain_;

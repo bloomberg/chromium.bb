@@ -10,8 +10,10 @@
 #include "tools/gn/value.h"
 #include "tools/gn/variables.h"
 
-ScopePerFileProvider::ScopePerFileProvider(Scope* scope)
-    : ProgrammaticProvider(scope) {
+ScopePerFileProvider::ScopePerFileProvider(Scope* scope,
+                                           bool allow_target_vars)
+    : ProgrammaticProvider(scope),
+      allow_target_vars_(allow_target_vars) {
 }
 
 ScopePerFileProvider::~ScopePerFileProvider() {
@@ -32,10 +34,13 @@ const Value* ScopePerFileProvider::GetProgrammaticValue(
     return GetRootGenDir();
   if (ident == variables::kRootOutDir)
     return GetRootOutDir();
-  if (ident == variables::kTargetGenDir)
-    return GetTargetGenDir();
-  if (ident == variables::kTargetOutDir)
-    return GetTargetOutDir();
+
+  if (allow_target_vars_) {
+    if (ident == variables::kTargetGenDir)
+      return GetTargetGenDir();
+    if (ident == variables::kTargetOutDir)
+      return GetTargetOutDir();
+  }
   return NULL;
 }
 
