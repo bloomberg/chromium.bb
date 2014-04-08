@@ -6923,6 +6923,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="GCM.LoadSucceeded" enum="BooleanSuccess">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Success indicates successfully loading an initialized persistent GCM store
+    at startup time. Failure indicates a failure loading the store.
+  </summary>
+</histogram>
+
 <histogram name="GCM.NumThrottledApps">
   <owner>zea@chromium.org</owner>
   <summary>
@@ -6976,14 +6984,6 @@ other types of suffix sets.
     Success indicates successfully destroying the GCM persistent store. Failure
     indicates a failure destroying the persistence store. GCM store will be
     destroyed when the profile has been signed out.
-  </summary>
-</histogram>
-
-<histogram name="GCM.StoreLoadSucceeded" enum="BooleanSuccess">
-  <owner>zea@chromium.org</owner>
-  <summary>
-    Success indicates successfully loading an initialized persistent GCM store
-    at startup time. Failure indicates a failure loading the store.
   </summary>
 </histogram>
 
