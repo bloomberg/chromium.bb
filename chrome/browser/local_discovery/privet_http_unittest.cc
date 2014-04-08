@@ -210,17 +210,6 @@ const char kSampleCJTDuplex[] =
     "\"print\": { \"duplex\": {\"type\": \"SHORT_EDGE\"} }"
     "}";
 
-const char kSampleCJTDuplexPWGSettings[] =
-    "{"
-    "\"version\" : \"1.0\","
-    "\"print\": {"
-    "  \"pwg_raster_config\" : {"
-    "    \"document_sheet_back\" : \"MANUAL_TUMBLE\","
-    "    \"reverse_order_streaming\": true"
-    "   },"
-    "  \"duplex\": {\"type\": \"SHORT_EDGE\"} }"
-    "}";
-
 // Return the representation of the given JSON that would be outputted by
 // JSONWriter. This ensures the same JSON values are represented by the same
 // string.
@@ -939,7 +928,7 @@ TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrintDuplex) {
 
   EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
       GURL("http://10.0.0.8:6006/privet/printer/createjob"),
-      kSampleCJTDuplexPWGSettings,
+      kSampleCJTDuplex,
       kSampleCreatejobResponse));
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());

@@ -538,14 +538,6 @@ void PrivetLocalPrintOperationImpl::DoCreatejob() {
       &PrivetLocalPrintOperationImpl::OnCreatejobResponse,
       base::Unretained(this));
 
-  // Add PWG raster settings to ticket if they are supplied by the printer.
-  PwgRasterConfigCapability raster_capability;
-  PwgRasterConfigTicketItem raster_ticket_item;
-  if (raster_capability.LoadFrom(capabilities_)) {
-    raster_ticket_item.set_value(raster_capability.value());
-    raster_ticket_item.SaveTo(&ticket_);
-  }
-
   url_fetcher_= privet_client_->CreateURLFetcher(
       CreatePrivetURL(kPrivetCreatejobPath), net::URLFetcher::POST, this);
   url_fetcher_->SetUploadData(kPrivetContentTypeCJT, ticket_.ToString());
