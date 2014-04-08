@@ -17,20 +17,32 @@
 }
 
 #destination-search .user-info {
-  -webkit-user-select: none;
-  overflow: hidden;
+  display: flex;
   position: absolute;
   right: 40px;
   text-align: right;
-  text-overflow: ellipsis;
   top: 14px;
-  white-space: nowrap;
   width: 350px;
 }
 
 [dir='rtl'] #destination-search .user-info {
   left: 40px;
   right: auto;
+}
+
+#destination-search .account-select-label {
+  -webkit-user-select: none;
+  flex: 1;
+  height: 2em;
+  line-height: 2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#destination-search .account-select {
+  flex: 1;
+  margin-left: 8px;
 }
 
 #destination-search > .page > .close-button {

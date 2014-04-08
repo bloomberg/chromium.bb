@@ -116,11 +116,11 @@ cr.define('print_preview', function() {
           DestinationSettings.Classes_.ICON)[0];
       iconEl.src = destination.iconUrl;
 
-      var location = destination.location;
+      var hint = destination.hint;
       var locationEl = this.getElement().getElementsByClassName(
           DestinationSettings.Classes_.LOCATION)[0];
-      locationEl.textContent = location;
-      locationEl.title = location;
+      locationEl.textContent = hint;
+      locationEl.title = hint;
 
       var offlineStatusText = destination.offlineStatusText;
       var offlineStatusEl =

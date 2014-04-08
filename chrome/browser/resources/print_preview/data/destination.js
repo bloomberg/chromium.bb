@@ -18,6 +18,7 @@ cr.define('print_preview', function() {
    *     Connection status of the print destination.
    * @param {{tags: Array.<string>,
    *          isOwned: ?boolean,
+   *          account: ?string,
    *          lastAccessTime: ?number,
    *          isTosAccepted: ?boolean,
    *          cloudID: ?string,
@@ -74,6 +75,12 @@ cr.define('print_preview', function() {
      * @private {boolean}
      */
     this.isOwned_ = (opt_params && opt_params.isOwned) || false;
+
+    /**
+     * Account this destination is registered for, if known.
+     * @private {string}
+     */
+    this.account_ = (opt_params && opt_params.account) || '';
 
     /**
      * Cache of destination location fetched from tags.
@@ -230,6 +237,13 @@ cr.define('print_preview', function() {
       return this.isOwned_;
     },
 
+    /**
+     * @return {string} Account this destination is registered for, if known.
+     */
+    get account() {
+      return this.account_;
+    },
+
     /** @return {boolean} Whether the destination is local or cloud-based. */
     get isLocal() {
       return this.origin_ == Destination.Origin.LOCAL ||
@@ -268,6 +282,18 @@ cr.define('print_preview', function() {
      */
     get description() {
       return this.description_;
+    },
+
+    /**
+     * @return {string} Most relevant string to help user to identify this
+     *     destination.
+     */
+    get hint() {
+      if (this.id_ == Destination.GooglePromotedId.DOCS ||
+          this.id_ == Destination.GooglePromotedId.FEDEX) {
+        return this.account_;
+      }
+      return this.location || this.description;
     },
 
     /** @return {!Array.<string>} Tags associated with the destination. */

@@ -10,12 +10,13 @@ cr.define('print_preview', function() {
    * store changes.
    * @param {!print_preview.NativeLayer} nativeLayer Used to fetch local print
    *     destinations.
+   * @param {!print_preview.UserInfo} userInfo User information repository.
    * @param {!print_preview.AppState} appState Application state.
    * @param {!print_preview.Metrics} metrics Metrics.
    * @constructor
    * @extends {cr.EventTarget}
    */
-  function DestinationStore(nativeLayer, appState, metrics) {
+  function DestinationStore(nativeLayer, userInfo, appState, metrics) {
     cr.EventTarget.call(this);
 
     /**
@@ -24,6 +25,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.nativeLayer_ = nativeLayer;
+
+    /**
+     * User information repository.
+     * @type {!print_preview.UserInfo}
+     * @private
+     */
+    this.userInfo_ = userInfo;
 
     /**
      * Used to load and persist the selected destination.
@@ -534,13 +542,14 @@ cr.define('print_preview', function() {
 
     /**
      * Initiates loading of cloud destinations.
+     * @param {print_preview.Destination.Origin=} opt_origin Search destinations
+     *     for the specified origin only.
      */
-    startLoadCloudDestinations: function() {
+    startLoadCloudDestinations: function(opt_origin) {
       if (this.cloudPrintInterface_ != null &&
           !this.hasLoadedAllCloudDestinations_) {
         this.hasLoadedAllCloudDestinations_ = true;
-        this.cloudPrintInterface_.search(true);
-        this.cloudPrintInterface_.search(false);
+        this.cloudPrintInterface_.search(opt_origin);
         cr.dispatchSimpleEvent(
             this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
       }
@@ -619,6 +628,10 @@ cr.define('print_preview', function() {
           this.nativeLayer_,
           print_preview.NativeLayer.EventType.PRIVET_CAPABILITIES_SET,
           this.onPrivetCapabilitiesSet_.bind(this));
+      this.tracker_.add(
+          this.userInfo_,
+          print_preview.UserInfo.EventType.ACTIVE_USER_CHANGED,
+          this.onActiveUserChanged_.bind(this));
     },
 
     /**
@@ -633,9 +646,52 @@ cr.define('print_preview', function() {
       this.hasLoadedAllLocalDestinations_ = false;
       this.insertDestination(
           DestinationStore.createLocalPdfPrintDestination_());
+      this.resetAutoSelectTimeout_();
+    },
+
+    /**
+     * Resets the state of the destination store to its initial state.
+     * @private
+     */
+    resetCookiesDestinations_: function() {
+      // Forget all cookies based destinations.
+      this.destinations_ = this.destinations_.filter(function(destination) {
+        if (destination.origin == print_preview.Destination.Origin.COOKIES) {
+          delete this.destinationMap_[
+              this.getDestinationKey_(destination.origin, destination.id)];
+          return false;
+        }
+        return true;
+      }, this);
+      // Reset selected destination, if necessary.
+      if (this.selectedDestination_ &&
+          this.selectedDestination_.origin ==
+              print_preview.Destination.Origin.COOKIES) {
+        this.selectedDestination_ = null;
+      }
+      this.hasLoadedAllCloudDestinations_ = false;
+      this.resetAutoSelectTimeout_();
+    },
+
+    /**
+     * Resets destination auto selection timeout.
+     * @private
+     */
+    resetAutoSelectTimeout_: function() {
       this.autoSelectTimeout_ =
           setTimeout(this.onAutoSelectFailed_.bind(this),
                      DestinationStore.AUTO_SELECT_TIMEOUT_);
+    },
+
+    /**
+     * Called when active user changes. Resets cookie based destinations
+     * and starts loading cloud destinations for the active user.
+     * @private
+     */
+    onActiveUserChanged_: function() {
+      this.resetCookiesDestinations_();
+      this.isInAutoSelectMode_ = true;
+      this.startLoadCloudDestinations(print_preview.Destination.Origin.COOKIES);
     },
 
     /**

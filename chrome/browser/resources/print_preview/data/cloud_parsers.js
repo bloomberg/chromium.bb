@@ -59,9 +59,11 @@ cr.define('cloudprint', function() {
    *     printer response.
    * @param {!print_preview.Destination.Origin} origin The origin of the
    *     response.
+   * @param {string} account The account this destination is registered for or
+   *     empty string, if origin != COOKIES.
    * @return {!print_preview.Destination} Parsed destination.
    */
-  CloudDestinationParser.parse = function(json, origin) {
+  CloudDestinationParser.parse = function(json, origin, account) {
     if (!json.hasOwnProperty(CloudDestinationParser.Field_.ID) ||
         !json.hasOwnProperty(CloudDestinationParser.Field_.TYPE) ||
         !json.hasOwnProperty(CloudDestinationParser.Field_.DISPLAY_NAME)) {
@@ -73,6 +75,7 @@ cr.define('cloudprint', function() {
         json[CloudDestinationParser.Field_.CONNECTION_STATUS] ||
         print_preview.Destination.ConnectionStatus.UNKNOWN;
     var optionalParams = {
+      account: account,
       tags: tags,
       isOwned: arrayContains(tags, CloudDestinationParser.OWNED_TAG_),
       lastAccessTime: parseInt(

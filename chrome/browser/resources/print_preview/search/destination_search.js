@@ -158,17 +158,6 @@ cr.define('print_preview', function() {
       }
     },
 
-    /** @param {string} email Email of the logged-in user. */
-    setCloudPrintEmail: function(email) {
-      var userInfoEl = this.getChildElement('.user-info');
-      userInfoEl.textContent = localStrings.getStringF('userInfo', email);
-      userInfoEl.title = localStrings.getStringF('userInfo', email);
-      setIsVisible(userInfoEl, true);
-      setIsVisible(this.getChildElement('.cloud-list'), true);
-      setIsVisible(this.getChildElement('.cloudprint-promo'), false);
-      this.reflowLists_();
-    },
-
     /** Shows the Google Cloud Print promotion banner. */
     showCloudPrintPromo: function() {
       setIsVisible(this.getChildElement('.cloudprint-promo'), true);
@@ -191,6 +180,11 @@ cr.define('print_preview', function() {
           setIsVisible(e.target, false);
         }
       });
+
+      this.tracker.add(
+          this.getChildElement('.account-select'),
+          'change',
+          this.onAccountChange_.bind(this));
 
       this.tracker.add(
           this.getChildElement('.page > .close-button'),
@@ -250,8 +244,8 @@ cr.define('print_preview', function() {
 
       this.tracker.add(
           this.userInfo_,
-          print_preview.UserInfo.EventType.EMAIL_CHANGE,
-          this.onEmailChange_.bind(this));
+          print_preview.UserInfo.EventType.USERS_CHANGED,
+          this.onUsersChanged_.bind(this));
 
       this.tracker.add(window, 'resize', this.onWindowResize_.bind(this));
 
@@ -271,6 +265,8 @@ cr.define('print_preview', function() {
           'cloudPrintPromotion',
           '<span class="sign-in link-button">',
           '</span>');
+      this.getChildElement('.account-select-label').textContent =
+          localStrings.getString('accountSelectTitle');
     },
 
     /**
@@ -412,6 +408,37 @@ cr.define('print_preview', function() {
       this.reflowLists_();
     },
 
+
+    /**
+     * Updates the account selection UI.
+     * @param {string} email Email of the logged in user.
+     * @param {!Array.<string>} accounts List of logged in user accounts.
+     */
+    setAccounts_: function(email, accounts) {
+      var loggedIn = !!email;
+      if (loggedIn) {
+        var accountSelectEl = this.getChildElement('.account-select');
+        accountSelectEl.innerHTML = '';
+        accounts.forEach(function(account) {
+          var option = document.createElement('option');
+          option.text = account;
+          option.value = account;
+          accountSelectEl.add(option);
+        });
+        var option = document.createElement('option');
+        option.text = localStrings.getString('addAccountTitle');
+        option.value = '';
+        accountSelectEl.add(option);
+
+        accountSelectEl.selectedIndex = accounts.indexOf(email);
+      }
+
+      setIsVisible(this.getChildElement('.user-info'), loggedIn);
+      setIsVisible(this.getChildElement('.cloud-list'), loggedIn);
+      setIsVisible(this.getChildElement('.cloudprint-promo'), !loggedIn);
+      this.reflowLists_();
+    },
+
     /**
      * Called when a destination search should be executed. Filters the
      * destination lists with the given query.
@@ -506,6 +533,29 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Called when item in the Accounts list is selected. Initiates active user
+     * switch or, for 'Add account...' item, opens Google sign-in page.
+     * @private
+     */
+    onAccountChange_: function() {
+      var accountSelectEl = this.getChildElement('.account-select');
+      var account =
+          accountSelectEl.options[accountSelectEl.selectedIndex].value;
+      if (account) {
+        this.userInfo_.activeUser = account;
+      } else {
+        cr.dispatchSimpleEvent(this, DestinationSearch.EventType.ADD_ACCOUNT);
+        // Set selection back to the active user.
+        for (var i = 0; i < accountSelectEl.options.length; i++) {
+          if (accountSelectEl.options[i].value == this.userInfo_.activeUser) {
+            accountSelectEl.selectedIndex = i;
+            break;
+          }
+        }
+      }
+    },
+
+    /**
      * Called when the close button on the cloud print promo is clicked. Hides
      * the promo.
      * @private
@@ -534,14 +584,11 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called when the user's email field has changed. Updates the UI.
+     * Called when user's logged in accounts change. Updates the UI.
      * @private
      */
-    onEmailChange_: function() {
-      var userEmail = this.userInfo_.getUserEmail();
-      if (userEmail) {
-        this.setCloudPrintEmail(userEmail);
-      }
+    onUsersChanged_: function() {
+      this.setAccounts_(this.userInfo_.activeUser, this.userInfo_.users);
     },
 
     /**

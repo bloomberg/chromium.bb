@@ -60,7 +60,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.destinationStore_ = new print_preview.DestinationStore(
-        this.nativeLayer_, this.appState_, this.metrics_);
+        this.nativeLayer_, this.userInfo_, this.appState_, this.metrics_);
 
     /**
      * Storage of the print ticket used to create the print job.
@@ -547,9 +547,10 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintEnable_: function(event) {
-      this.cloudPrintInterface_ =
-          new cloudprint.CloudPrintInterface(event.baseCloudPrintUrl,
-                                             this.nativeLayer_);
+      this.cloudPrintInterface_ = new cloudprint.CloudPrintInterface(
+          event.baseCloudPrintUrl,
+          this.nativeLayer_,
+          this.userInfo_);
       this.tracker.add(
           this.cloudPrintInterface_,
           cloudprint.CloudPrintInterface.EventType.SUBMIT_DONE,
@@ -572,7 +573,6 @@ cr.define('print_preview', function() {
               UPDATE_PRINTER_TOS_ACCEPTANCE_FAILED,
           this.onCloudPrintError_.bind(this));
 
-      this.userInfo_.setCloudPrintInterface(this.cloudPrintInterface_);
       this.destinationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
       if (this.destinationSearch_.getIsVisible()) {
         this.destinationStore_.startLoadCloudDestinations();
@@ -913,7 +913,7 @@ cr.define('print_preview', function() {
     onDestinationSearchDone_: function() {
       var isPromoVisible = cr.isChromeOS &&
           this.cloudPrintInterface_ &&
-          this.userInfo_.getUserEmail() &&
+          this.userInfo_.activeUser &&
           !this.appState_.isGcpPromoDismissed &&
           !this.destinationStore_.isLocalDestinationsSearchInProgress &&
           !this.destinationStore_.isCloudDestinationsSearchInProgress &&
@@ -948,7 +948,7 @@ cr.define('print_preview', function() {
           print_preview.Metrics.GcpPromoBucket.CLICKED);
       this.appState_.persistIsGcpPromoDismissed(true);
       window.open(this.cloudPrintInterface_.baseUrl + '?user=' +
-                  this.userInfo_.getUserEmail() + '#printers');
+                  this.userInfo_.activeUser + '#printers');
       this.close_();
     }
   };
