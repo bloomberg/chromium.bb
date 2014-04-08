@@ -9,17 +9,14 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 
 namespace webrtc {
 class MediaStreamInterface;
-}  // namespace webrtc
+}
 
 namespace content {
-
-class MediaStreamDependencyFactory;
 
 // MediaStream is the Chrome representation of blink::WebMediaStream.
 // It is owned by blink::WebMediaStream as blink::WebMediaStream::ExtraData.
@@ -29,11 +26,13 @@ class CONTENT_EXPORT MediaStream
   typedef base::Callback<void(const std::string& label)> StreamStopCallback;
 
   // Constructor for local MediaStreams.
-  MediaStream(MediaStreamDependencyFactory* factory,
-              StreamStopCallback stream_stop,
+  MediaStream(StreamStopCallback stream_stop,
               const blink::WebMediaStream& stream);
+
   // Constructor for remote MediaStreams.
-  explicit MediaStream(webrtc::MediaStreamInterface* stream);
+  // TODO(xians): Remove once the audio renderer don't separate between local
+  // and remotely generated streams.
+  explicit MediaStream(webrtc::MediaStreamInterface* webrtc_stream);
 
   virtual ~MediaStream();
 
@@ -41,9 +40,9 @@ class CONTENT_EXPORT MediaStream
   static MediaStream* GetMediaStream(
       const blink::WebMediaStream& stream);
 
-  // Returns a libjingle representation of a MediaStream. If a representation
-  // does not exist- the libjingle stream is created. This method will never
-  // return NULL.
+  // Returns a libjingle representation of a remote MediaStream.
+  // TODO(xians): Remove once the audio renderer don't separate between local
+  // and remotely generated streams.
   static webrtc::MediaStreamInterface* GetAdapter(
       const blink::WebMediaStream& stream);
 
@@ -58,14 +57,12 @@ class CONTENT_EXPORT MediaStream
   // Called by MediaStreamCenter when a track has been added to a stream stream.
   // If a libjingle representation of |stream| exist, the track is added to
   // the libjingle MediaStream.
-  bool AddTrack(const blink::WebMediaStream& stream,
-                const blink::WebMediaStreamTrack& track);
+  bool AddTrack(const blink::WebMediaStreamTrack& track);
 
   // Called by MediaStreamCenter when a track has been removed from |stream|
   // If a libjingle representation or |stream| exist, the track is removed
   // from the libjingle MediaStream.
-  bool RemoveTrack(const blink::WebMediaStream& stream,
-                   const blink::WebMediaStreamTrack& track);
+  bool RemoveTrack(const blink::WebMediaStreamTrack& track);
 
  protected:
   virtual webrtc::MediaStreamInterface* GetWebRtcAdapter(
@@ -73,13 +70,12 @@ class CONTENT_EXPORT MediaStream
 
  private:
   StreamStopCallback stream_stop_callback_;
-  scoped_refptr<webrtc::MediaStreamInterface> stream_adapter_;
   const bool is_local_;
   const std::string label_;
 
-  // Weak ref to a MediaStreamDependencyFactory, owned by the RenderThread.
-  // It's valid for the lifetime of RenderThread.
-  MediaStreamDependencyFactory* factory_;
+  // TODO(xians): Remove once the audio renderer don't separate between local
+  // and remotely generated streams.
+  scoped_refptr<webrtc::MediaStreamInterface> webrtc_media_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStream);
 };

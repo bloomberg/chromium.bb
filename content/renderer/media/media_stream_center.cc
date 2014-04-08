@@ -185,9 +185,7 @@ void MediaStreamCenter::didCreateMediaStream(blink::WebMediaStream& stream) {
   DVLOG(1) << "MediaStreamCenter::didCreateMediaStream";
   blink::WebMediaStream writable_stream(stream);
   MediaStream* native_stream(
-      new MediaStream(rtc_factory_,
-                      MediaStream::StreamStopCallback(),
-                      stream));
+      new MediaStream(MediaStream::StreamStopCallback(), stream));
   writable_stream.setExtraData(native_stream);
 
   // TODO(perkj): Remove track creation once crbug/294145 is fixed. A track
@@ -217,7 +215,7 @@ bool MediaStreamCenter::didAddMediaStreamTrack(
   if (!MediaStreamTrack::GetTrack(track))
     CreateNativeMediaStreamTrack(track, rtc_factory_);
   MediaStream* native_stream = MediaStream::GetMediaStream(stream);
-  return native_stream->AddTrack(stream, track);
+  return native_stream->AddTrack(track);
 }
 
 bool MediaStreamCenter::didRemoveMediaStreamTrack(
@@ -225,7 +223,7 @@ bool MediaStreamCenter::didRemoveMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   DVLOG(1) << "MediaStreamCenter::didRemoveMediaStreamTrack";
   MediaStream* native_stream = MediaStream::GetMediaStream(stream);
-  return native_stream->RemoveTrack(stream, track);
+  return native_stream->RemoveTrack(track);
 }
 
 bool MediaStreamCenter::OnControlMessageReceived(const IPC::Message& message) {

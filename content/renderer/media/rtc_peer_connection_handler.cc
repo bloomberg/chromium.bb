@@ -16,8 +16,6 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/media/media_stream.h"
-#include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/peer_connection_tracker.h"
@@ -25,6 +23,7 @@
 #include "content/renderer/media/rtc_data_channel_handler.h"
 #include "content/renderer/media/rtc_dtmf_sender_handler.h"
 #include "content/renderer/media/rtc_media_constraints.h"
+#include "content/renderer/media/webrtc/webrtc_media_stream_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
@@ -320,8 +319,8 @@ void LocalRTCStatsResponse::addStatistic(size_t report,
 RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     blink::WebRTCPeerConnectionHandlerClient* client,
     MediaStreamDependencyFactory* dependency_factory)
-    : PeerConnectionHandlerBase(dependency_factory),
-      client_(client),
+    : client_(client),
+      dependency_factory_(dependency_factory),
       frame_(NULL),
       peer_connection_tracker_(NULL),
       num_data_channels_created_(0) {
@@ -548,7 +547,16 @@ void RTCPeerConnectionHandler::OnaddICECandidateResult(
 bool RTCPeerConnectionHandler::addStream(
     const blink::WebMediaStream& stream,
     const blink::WebMediaConstraints& options) {
-  RTCMediaConstraints constraints(options);
+
+  for (ScopedVector<WebRtcMediaStreamAdapter>::iterator adapter_it =
+      local_streams_.begin(); adapter_it != local_streams_.end();
+      ++adapter_it) {
+    if ((*adapter_it)->IsEqual(stream)) {
+      DVLOG(1) << "RTCPeerConnectionHandler::addStream called with the same "
+               << "stream twice. id=" << stream.id().utf8();
+      return false;
+    }
+  }
 
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackAddStream(
@@ -556,47 +564,40 @@ bool RTCPeerConnectionHandler::addStream(
 
   PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
 
+  WebRtcMediaStreamAdapter* adapter =
+      new WebRtcMediaStreamAdapter(stream, dependency_factory_);
+  local_streams_.push_back(adapter);
+
+  webrtc::MediaStreamInterface* webrtc_stream = adapter->webrtc_media_stream();
   track_metrics_.AddStream(MediaStreamTrackMetrics::SENT_STREAM,
-                           MediaStream::GetAdapter(stream));
+                           webrtc_stream);
 
-  // A media stream is connected to a peer connection, enable the
-  // peer connection mode for the sources.
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  stream.audioTracks(audio_tracks);
-  for (size_t i = 0; i < audio_tracks.size(); ++i) {
-    MediaStreamTrack* native_track =
-        MediaStreamTrack::GetTrack(audio_tracks[i]);
-    if (!native_track || !native_track->is_local_track()) {
-      // We don't support connecting remote audio tracks to PeerConnection yet.
-      // See issue http://crbug/344303.
-      // TODO(xians): Remove this after we support connecting remote audio track
-      // to PeerConnection.
-      DLOG(ERROR) << "addStream() failed because we don't support connecting"
-                  << " remote audio track to PeerConnection";
-      NOTIMPLEMENTED();
-      return false;
-    }
-
-    // This is a local audio track.
-    const blink::WebMediaStreamSource& source = audio_tracks[i].source();
-    MediaStreamAudioSource* audio_source =
-        static_cast<MediaStreamAudioSource*>(source.extraData());
-    if (audio_source && audio_source->GetAudioCapturer())
-      audio_source->GetAudioCapturer()->EnablePeerConnectionMode();
-  }
-
-  return AddStream(stream, &constraints);
+  RTCMediaConstraints constraints(options);
+  return native_peer_connection_->AddStream(webrtc_stream, &constraints);
 }
 
 void RTCPeerConnectionHandler::removeStream(
     const blink::WebMediaStream& stream) {
-  RemoveStream(stream);
+  // Find the webrtc stream.
+  scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream;
+  for (ScopedVector<WebRtcMediaStreamAdapter>::iterator adapter_it =
+           local_streams_.begin(); adapter_it != local_streams_.end();
+       ++adapter_it) {
+    if ((*adapter_it)->IsEqual(stream)) {
+      webrtc_stream = (*adapter_it)->webrtc_media_stream();
+      local_streams_.erase(adapter_it);
+      break;
+    }
+  }
+  DCHECK(webrtc_stream);
+  native_peer_connection_->RemoveStream(webrtc_stream);
+
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackRemoveStream(
         this, stream, PeerConnectionTracker::SOURCE_LOCAL);
   PerSessionWebRTCAPIMetrics::GetInstance()->DecrementStreamCounter();
   track_metrics_.RemoveStream(MediaStreamTrackMetrics::SENT_STREAM,
-                              MediaStream::GetAdapter(stream));
+                              webrtc_stream);
 }
 
 void RTCPeerConnectionHandler::getStats(

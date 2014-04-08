@@ -5,7 +5,6 @@
 #include "content/renderer/media/media_stream.h"
 
 #include "base/logging.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
@@ -25,22 +24,16 @@ webrtc::MediaStreamInterface* MediaStream::GetAdapter(
   return native_stream->GetWebRtcAdapter(stream);
 }
 
-MediaStream::MediaStream(MediaStreamDependencyFactory* factory,
-                         StreamStopCallback stream_stop,
+MediaStream::MediaStream(StreamStopCallback stream_stop,
                          const blink::WebMediaStream& stream)
     : stream_stop_callback_(stream_stop),
-      stream_adapter_(NULL),
       is_local_(true),
-      label_(stream.id().utf8()),
-      factory_(factory) {
-  DCHECK(factory_);
+      label_(stream.id().utf8()) {
 }
 
-MediaStream::MediaStream(webrtc::MediaStreamInterface* stream)
-    : stream_adapter_(stream),
-      is_local_(false),
-      factory_(NULL) {
-  DCHECK(stream);
+MediaStream::MediaStream(webrtc::MediaStreamInterface* webrtc_stream)
+    : is_local_(false),
+      webrtc_media_stream_(webrtc_stream) {
 }
 
 MediaStream::~MediaStream() {
@@ -53,32 +46,22 @@ void MediaStream::OnStreamStopped() {
 
 webrtc::MediaStreamInterface* MediaStream::GetWebRtcAdapter(
     const blink::WebMediaStream& stream) {
-  if (!stream_adapter_) {
-    DCHECK(is_local_);
-    stream_adapter_ = factory_->CreateNativeLocalMediaStream(stream);
-  }
-  DCHECK(stream_adapter_);
-  return stream_adapter_.get();
+  DCHECK(webrtc_media_stream_);
+  return webrtc_media_stream_.get();
 }
 
-bool MediaStream::AddTrack(const blink::WebMediaStream& stream,
-                           const blink::WebMediaStreamTrack& track) {
-  // If the libjingle representation of the stream has not been created, it
-  // does not matter if the tracks are added or removed. Once the
-  // libjingle representation is created, a libjingle track representation will
-  // be created for all blink tracks.
-  if (!stream_adapter_)
-    return true;
-  return factory_->AddNativeMediaStreamTrack(stream, track);
+bool MediaStream::AddTrack(const blink::WebMediaStreamTrack& track) {
+  // This method can be implemented if any clients need to know that a track
+  // has been added to a MediaStream.
+  NOTIMPLEMENTED();
+  return true;
 }
 
-bool MediaStream::RemoveTrack(const blink::WebMediaStream& stream,
-                              const blink::WebMediaStreamTrack& track) {
-  // If the libjingle representation of the stream has not been created, it
-  // does not matter if the tracks are added or removed.
-  if (!stream_adapter_)
-    return true;
-  return factory_->RemoveNativeMediaStreamTrack(stream, track);
+bool MediaStream::RemoveTrack(const blink::WebMediaStreamTrack& track) {
+  // This method can be implemented if any clients need to know that a track
+  // has been removed from a MediaStream.
+  NOTIMPLEMENTED();
+  return true;
 }
 
 }  // namespace content

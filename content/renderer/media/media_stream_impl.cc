@@ -341,7 +341,6 @@ void MediaStreamImpl::OnStreamGenerated(
                          video_track_vector);
   web_stream->setExtraData(
       new MediaStream(
-          dependency_factory_,
           base::Bind(&MediaStreamImpl::OnLocalMediaStreamStop, AsWeakPtr()),
           *web_stream));
 
