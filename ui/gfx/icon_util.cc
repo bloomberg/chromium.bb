@@ -177,13 +177,18 @@ HICON IconUtil::CreateHICONFromSkBitmap(const SkBitmap& bitmap) {
   // alpha mask for the DIB.
   BITMAPV5HEADER bitmap_header;
   InitializeBitmapHeader(&bitmap_header, bitmap.width(), bitmap.height());
-  void* bits;
-  HDC hdc = ::GetDC(NULL);
+
+  void* bits = NULL;
   HBITMAP dib;
-  dib = ::CreateDIBSection(hdc, reinterpret_cast<BITMAPINFO*>(&bitmap_header),
-                           DIB_RGB_COLORS, &bits, NULL, 0);
-  DCHECK(dib);
-  ::ReleaseDC(NULL, hdc);
+
+  {
+    base::win::ScopedGetDC hdc(NULL);
+    dib = ::CreateDIBSection(hdc, reinterpret_cast<BITMAPINFO*>(&bitmap_header),
+                             DIB_RGB_COLORS, &bits, NULL, 0);
+  }
+  if (!dib || !bits)
+    return NULL;
+
   memcpy(bits, bitmap.getPixels(), bitmap.width() * bitmap.height() * 4);
 
   // Icons are generally created using an AND and XOR masks where the AND
