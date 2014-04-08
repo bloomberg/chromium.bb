@@ -36,7 +36,7 @@ android_envsetup_main() {
   # unset, we default to a sane value that's known to work. This allows for
   # experimentation with a custom SDK.
   if [[ -z "${ANDROID_SDK_ROOT}" || ! -d "${ANDROID_SDK_ROOT}" ]]; then
-    export ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
+    local ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
   fi
 
   # Add Android SDK tools to system path.
