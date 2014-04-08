@@ -143,11 +143,12 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
   }
 
   // Invoked by InProcessReceiver for each received audio frame.
-  virtual void OnAudioFrame(scoped_ptr<media::cast::PcmAudioFrame> audio_frame,
-                            const base::TimeTicks& playout_time) OVERRIDE {
+  virtual void OnAudioFrame(scoped_ptr<media::AudioBus> audio_frame,
+                            const base::TimeTicks& playout_time,
+                            bool is_continuous) OVERRIDE {
     DCHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
-    if (audio_frame->samples.empty()) {
+    if (audio_frame->frames() <= 0) {
       NOTREACHED() << "OnAudioFrame called with no samples?!?";
       return;
     }
@@ -155,10 +156,15 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     // Assume the audio signal is a single sine wave (it can have some
     // low-amplitude noise).  Count zero crossings, and extrapolate the
     // frequency of the sine wave in |audio_frame|.
-    const int crossings = media::cast::CountZeroCrossings(audio_frame->samples);
-    const float seconds_per_frame = audio_frame->samples.size() /
-                                    static_cast<float>(audio_frame->frequency);
-    const float frequency_in_frame = crossings / seconds_per_frame;
+    int crossings = 0;
+    for (int ch = 0; ch < audio_frame->channels(); ++ch) {
+      crossings += media::cast::CountZeroCrossings(audio_frame->channel(ch),
+                                                   audio_frame->frames());
+    }
+    crossings /= audio_frame->channels();  // Take the average.
+    const float seconds_per_frame =
+        audio_frame->frames() / static_cast<float>(audio_config().frequency);
+    const float frequency_in_frame = crossings / seconds_per_frame / 2.0f;
 
     const float kAveragingWeight = 0.1f;
     UpdateExponentialMovingAverage(
@@ -179,7 +185,8 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
   }
 
   virtual void OnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
-                            const base::TimeTicks& render_time) OVERRIDE {
+                            const base::TimeTicks& render_time,
+                            bool is_continuous) OVERRIDE {
     DCHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
     CHECK(video_frame->format() == media::VideoFrame::YV12 ||

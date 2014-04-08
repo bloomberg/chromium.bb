@@ -104,17 +104,8 @@ void InProcessReceiver::GotAudioFrame(scoped_ptr<AudioBus> audio_frame,
                                       const base::TimeTicks& playout_time,
                                       bool is_continuous) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  if (audio_frame.get()) {
-    // TODO(miu): Remove use of deprecated PcmAudioFrame and also pass
-    // |is_continuous| flag.
-    scoped_ptr<PcmAudioFrame> pcm_frame(new PcmAudioFrame());
-    pcm_frame->channels = audio_frame->channels();
-    pcm_frame->frequency = audio_config_.frequency;
-    pcm_frame->samples.resize(audio_frame->channels() * audio_frame->frames());
-    audio_frame->ToInterleaved(
-        audio_frame->frames(), sizeof(int16), &pcm_frame->samples.front());
-    OnAudioFrame(pcm_frame.Pass(), playout_time);
-  }
+  if (audio_frame.get())
+    OnAudioFrame(audio_frame.Pass(), playout_time, is_continuous);
   PullNextAudioFrame();
 }
 
@@ -122,7 +113,7 @@ void InProcessReceiver::GotVideoFrame(
     const scoped_refptr<VideoFrame>& video_frame,
     const base::TimeTicks& render_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  OnVideoFrame(video_frame, render_time);
+  OnVideoFrame(video_frame, render_time, true /* pending CL to set this */);
   PullNextVideoFrame();
 }
 

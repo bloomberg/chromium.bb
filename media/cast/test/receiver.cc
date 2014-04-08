@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/time/default_tick_clock.h"
+#include "media/base/audio_bus.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
@@ -151,7 +152,8 @@ class ReceiverDisplay : public InProcessReceiver {
 
  protected:
   virtual void OnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
-                            const base::TimeTicks& render_time) OVERRIDE {
+                            const base::TimeTicks& render_time,
+                            bool is_continuous) OVERRIDE {
 #ifdef OS_LINUX
     render_.RenderFrame(video_frame);
 #endif  // OS_LINUX
@@ -164,12 +166,13 @@ class ReceiverDisplay : public InProcessReceiver {
     last_render_time_ = render_time;
   }
 
-  virtual void OnAudioFrame(scoped_ptr<PcmAudioFrame> audio_frame,
-                            const base::TimeTicks& playout_time) OVERRIDE {
+  virtual void OnAudioFrame(scoped_ptr<AudioBus> audio_frame,
+                            const base::TimeTicks& playout_time,
+                            bool is_continuous) OVERRIDE {
     // For audio just print the playout delta between audio frames.
     if (!last_playout_time_.is_null()) {
       base::TimeDelta time_diff = playout_time - last_playout_time_;
-      VLOG(2) << "SampleRate = " << audio_frame->frequency
+      VLOG(2) << "SampleRate = " << audio_config().frequency
               << "; PlayoutDelay[mS] =  " << time_diff.InMilliseconds();
     }
     last_playout_time_ = playout_time;

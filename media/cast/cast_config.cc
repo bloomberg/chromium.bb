@@ -53,8 +53,5 @@ VideoReceiverConfig::VideoReceiverConfig()
       max_frame_rate(kDefaultMaxFrameRate),
       decoder_faster_than_max_frame_rate(true) {}
 
-PcmAudioFrame::PcmAudioFrame() {}
-PcmAudioFrame::~PcmAudioFrame() {}
-
 }  // namespace cast
 }  // namespace media

@@ -52,8 +52,10 @@ class InProcessReceiver {
   // Must be destroyed on the cast MAIN thread.  See DestroySoon().
   virtual ~InProcessReceiver();
 
-  // Convenience accessor to CastEnvironment.
+  // Convenience accessors.
   scoped_refptr<CastEnvironment> cast_env() const { return cast_environment_; }
+  const AudioReceiverConfig& audio_config() const { return audio_config_; }
+  const VideoReceiverConfig& video_config() const { return video_config_; }
 
   // Begin delivering any received audio/video frames to the OnXXXFrame()
   // methods.
@@ -72,10 +74,12 @@ class InProcessReceiver {
  protected:
   // To be implemented by subclasses.  These are called on the Cast MAIN thread
   // as each frame is received.
-  virtual void OnAudioFrame(scoped_ptr<PcmAudioFrame> audio_frame,
-                            const base::TimeTicks& playout_time) = 0;
+  virtual void OnAudioFrame(scoped_ptr<AudioBus> audio_frame,
+                            const base::TimeTicks& playout_time,
+                            bool is_continuous) = 0;
   virtual void OnVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
-                            const base::TimeTicks& render_time) = 0;
+                            const base::TimeTicks& render_time,
+                            bool is_continuous) = 0;
 
   // Helper method that creates |transport_| and |cast_receiver_|, starts
   // |transport_| receiving, and requests the first audio/video frame.

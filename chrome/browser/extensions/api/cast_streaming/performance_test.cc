@@ -33,6 +33,7 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/switches.h"
+#include "media/base/audio_bus.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
@@ -213,24 +214,21 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
 
  private:
   // Invoked by InProcessReceiver for each received audio frame.
-  virtual void OnAudioFrame(scoped_ptr<media::cast::PcmAudioFrame> audio_frame,
-                            const base::TimeTicks& playout_time) OVERRIDE {
+  virtual void OnAudioFrame(scoped_ptr<media::AudioBus> audio_frame,
+                            const base::TimeTicks& playout_time,
+                            bool is_continuous) OVERRIDE {
     CHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
-    if (audio_frame->samples.empty()) {
+    if (audio_frame->frames() <= 0) {
       NOTREACHED() << "OnAudioFrame called with no samples?!?";
       return;
     }
 
-    std::vector<int16> samples;
-    for (size_t i = 0;
-         i < audio_frame->samples.size();
-         i += audio_frame->channels) {
-      samples.push_back(audio_frame->samples[i]);
-    }
     // Note: This is the number of the video frame that this audio belongs to.
     uint16 frame_no;
-    if (media::cast::DecodeTimestamp(samples, &frame_no)) {
+    if (media::cast::DecodeTimestamp(audio_frame->channel(0),
+                                     audio_frame->frames(),
+                                     &frame_no)) {
       audio_events_.push_back(TimeData(frame_no, playout_time));
     } else {
       VLOG(0) << "Failed to decode audio timestamp!";
@@ -238,7 +236,8 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
   }
 
   virtual void OnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
-                            const base::TimeTicks& render_time) OVERRIDE {
+                            const base::TimeTicks& render_time,
+                            bool is_continuous) OVERRIDE {
     CHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
     TRACE_EVENT_INSTANT1(
