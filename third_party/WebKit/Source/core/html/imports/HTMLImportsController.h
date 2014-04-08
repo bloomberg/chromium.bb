@@ -47,6 +47,7 @@ class ExecutionContext;
 class ResourceFetcher;
 class HTMLImportChild;
 class HTMLImportChildClient;
+class HTMLImportLoader;
 
 class HTMLImportsController FINAL : public HTMLImportRoot, public DocumentSupplement {
     WTF_MAKE_FAST_ALLOCATED;
@@ -77,7 +78,12 @@ public:
 
     void recalcTimerFired(Timer<HTMLImportsController>*);
 
+
     virtual void trace(Visitor*) OVERRIDE { }
+    HTMLImportLoader* createLoader();
+
+    size_t loaderCount() const { return m_loaders.size(); }
+    HTMLImportLoader* loaderAt(size_t i) const { return m_loaders[i].get(); }
 
 private:
     HTMLImportChild* createChild(const KURL&, HTMLImport* parent, HTMLImportChildClient*);
@@ -89,6 +95,9 @@ private:
     // List of import which has been loaded or being loaded.
     typedef Vector<OwnPtr<HTMLImportChild> > ImportList;
     ImportList m_imports;
+
+    typedef Vector<RefPtr<HTMLImportLoader> > LoaderList;
+    LoaderList m_loaders;
 };
 
 } // namespace WebCore

@@ -104,7 +104,7 @@ private:
     Document& m_master;
     KURL m_url;
     CustomElementMicrotaskImportStep* m_customElementMicrotaskStep;
-    RefPtr<HTMLImportLoader> m_loader;
+    HTMLImportLoader* m_loader;
     HTMLImportChildClient* m_client;
 };
 

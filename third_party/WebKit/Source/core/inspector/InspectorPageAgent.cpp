@@ -53,7 +53,8 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/imports/HTMLImport.h"
-#include "core/html/imports/HTMLImportChild.h"
+#include "core/html/imports/HTMLImportLoader.h"
+#include "core/html/imports/HTMLImportsController.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/DOMPatchSupport.h"
@@ -544,31 +545,25 @@ static Vector<Resource*> cachedResourcesForFrame(LocalFrame* frame)
     Vector<Resource*> result;
     Document* rootDocument = frame->document();
 
+    cachedResourcesForDocument(rootDocument, result);
     if (HTMLImport* rootImport = rootDocument->import()) {
-        for (HTMLImport* import = rootImport; import; import = traverseNext(import)) {
-            if (import->ownsLoader() || import->isRoot()) {
-                if (Document* document = import->document())
-                    cachedResourcesForDocument(document, result);
-            }
-        }
-    } else {
-        cachedResourcesForDocument(rootDocument, result);
+        HTMLImportsController* controller = rootImport->root()->toController();
+        for (size_t i = 0; i < controller->loaderCount(); ++i)
+            cachedResourcesForDocument(controller->loaderAt(i)->document(), result);
     }
 
     return result;
 }
 
-static Vector<HTMLImportChild*> importsForFrame(LocalFrame* frame)
+static Vector<HTMLImportLoader*> importsForFrame(LocalFrame* frame)
 {
-    Vector<HTMLImportChild*> result;
+    Vector<HTMLImportLoader*> result;
     Document* rootDocument = frame->document();
 
     if (HTMLImport* rootImport = rootDocument->import()) {
-        // Skips root, that isn't a real import but just a placeholder.
-        for (HTMLImport* import = traverseNext(rootImport); import; import = traverseNext(import)) {
-            if (import->ownsLoader() && import->document())
-                result.append(toHTMLImportChild(import));
-        }
+        HTMLImportsController* controller = rootImport->root()->toController();
+        for (size_t i = 0; i < controller->loaderCount(); ++i)
+            result.append(controller->loaderAt(i));
     }
 
     return result;
@@ -1109,11 +1104,11 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
         subresources->addItem(resourceObject);
     }
 
-    Vector<HTMLImportChild*> allImports = importsForFrame(frame);
-    for (Vector<HTMLImportChild*>::const_iterator it = allImports.begin(); it != allImports.end(); ++it) {
-        HTMLImportChild* import = *it;
+    Vector<HTMLImportLoader*> allImports = importsForFrame(frame);
+    for (Vector<HTMLImportLoader*>::const_iterator it = allImports.begin(); it != allImports.end(); ++it) {
+        HTMLImportLoader* import = *it;
         RefPtr<TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = TypeBuilder::Page::FrameResourceTree::Resources::create()
-            .setUrl(urlWithoutFragment(import->url()).string())
+            .setUrl(urlWithoutFragment(import->document()->url()).string())
             .setType(resourceTypeJson(InspectorPageAgent::DocumentResource))
             .setMimeType(import->document()->suggestedMIMEType());
         subresources->addItem(resourceObject);

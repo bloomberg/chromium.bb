@@ -36,6 +36,7 @@
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 #include "core/html/imports/HTMLImportChildClient.h"
 #include "core/html/imports/HTMLImportLoader.h"
+#include "core/html/imports/HTMLImportsController.h"
 
 namespace WebCore {
 
@@ -44,6 +45,7 @@ HTMLImportChild::HTMLImportChild(Document& master, const KURL& url, SyncMode syn
     , m_master(master)
     , m_url(url)
     , m_customElementMicrotaskStep(0)
+    , m_loader(0)
     , m_client(0)
 {
     m_master.guardRef();
@@ -126,7 +128,7 @@ void HTMLImportChild::importDestroyed()
         parent()->removeChild(this);
     if (m_loader) {
         m_loader->removeImport(this);
-        m_loader.clear();
+        m_loader = 0;
     }
 }
 
@@ -187,7 +189,7 @@ void HTMLImportChild::createLoader()
 {
     ASSERT(!state().shouldBlockDocumentCreation());
     ASSERT(!m_loader);
-    m_loader = HTMLImportLoader::create();
+    m_loader = root()->toController()->createLoader();
     m_loader->addImport(this);
     m_loader->startLoading(resource());
 }
@@ -247,7 +249,7 @@ void HTMLImportChild::showThis()
 {
     HTMLImport::showThis();
     fprintf(stderr, " loader=%p own=%s async=%s url=%s",
-        m_loader.get(),
+        m_loader,
         hasLoader() && ownsLoader() ? "Y" : "N",
         isSync() ? "Y" : "N",
         url().string().utf8().data());

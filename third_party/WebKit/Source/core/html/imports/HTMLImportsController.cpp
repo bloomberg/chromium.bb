@@ -37,6 +37,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportChildClient.h"
+#include "core/html/imports/HTMLImportLoader.h"
 
 namespace WebCore {
 
@@ -182,6 +183,12 @@ void HTMLImportsController::recalcTimerFired(Timer<HTMLImportsController>*)
         m_recalcTimer.stop();
         HTMLImport::recalcTreeState(this);
     } while (m_recalcTimer.isActive());
+}
+
+HTMLImportLoader* HTMLImportsController::createLoader()
+{
+    m_loaders.append(HTMLImportLoader::create());
+    return m_loaders.last().get();
 }
 
 } // namespace WebCore
