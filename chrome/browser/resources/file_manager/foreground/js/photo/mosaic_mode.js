@@ -56,15 +56,15 @@ MosaicMode.prototype.hasActiveTool = function() { return true };
  * Keydown handler.
  *
  * @param {Event} event Event.
- * @return {boolean} True if processed.
  */
 MosaicMode.prototype.onKeyDown = function(event) {
   switch (util.getKeyModifiers(event) + event.keyIdentifier) {
     case 'Enter':
       this.toggleMode_();
-      return true;
+      event.preventDefault();
+      return;
   }
-  return this.mosaic_.onKeyDown(event);
+  this.mosaic_.onKeyDown(event);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
