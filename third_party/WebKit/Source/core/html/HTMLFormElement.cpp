@@ -66,7 +66,6 @@ HTMLFormElement::HTMLFormElement(Document& document)
     , m_hasElementsAssociatedByParser(false)
     , m_didFinishParsingChildren(false)
     , m_wasUserSubmitted(false)
-    , m_shouldSubmit(false)
     , m_isInResetFunction(false)
     , m_wasDemoted(false)
     , m_requestAutocompleteTimer(this, &HTMLFormElement::requestAutocompleteTimerFired)
@@ -280,28 +279,21 @@ bool HTMLFormElement::validateInteractively(Event* event)
     return false;
 }
 
-bool HTMLFormElement::prepareForSubmission(Event* event)
+void HTMLFormElement::prepareForSubmission(Event* event)
 {
     RefPtr<HTMLFormElement> protector(this);
     LocalFrame* frame = document().frame();
     if (!frame)
-        return false;
-
-    m_shouldSubmit = false;
+        return;
 
     // Interactive validation must be done before dispatching the submit event.
     if (!validateInteractively(event))
-        return false;
+        return;
 
     frame->loader().client()->dispatchWillSendSubmitEvent(this);
 
     if (dispatchEvent(Event::createCancelableBubble(EventTypeNames::submit)))
-        m_shouldSubmit = true;
-
-    if (m_shouldSubmit)
         submit(event, true, true, NotSubmittedByJavaScript);
-
-    return m_shouldSubmit;
 }
 
 void HTMLFormElement::submit()
@@ -362,8 +354,6 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
 
     if (needButtonActivation && firstSuccessfulSubmitButton)
         firstSuccessfulSubmitButton->setActivatedSubmit(false);
-
-    m_shouldSubmit = false;
 }
 
 void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submission)
