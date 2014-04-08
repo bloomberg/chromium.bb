@@ -1,4 +1,5 @@
 [
+  "gcm_unit_tests",
   "gfx_unittests",
   "mojo_apps_js_unittests",
   "mojo_common_unittests",
