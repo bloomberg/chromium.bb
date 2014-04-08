@@ -79,8 +79,6 @@ RenderLayerScrollableArea::RenderLayerScrollableArea(RenderBox* box)
     , m_scrollDimensionsDirty(true)
     , m_inOverflowRelayout(false)
     , m_needsCompositedScrolling(false)
-    , m_willUseCompositedScrollingHasBeenRecorded(false)
-    , m_isScrollableAreaHasBeenRecorded(false)
     , m_forceNeedsCompositedScrolling(DoNotForceCompositedScrolling)
     , m_scrollCorner(0)
     , m_resizer(0)
@@ -1428,20 +1426,14 @@ void RenderLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
     }
 
     if (updatedScrollableAreaSet) {
-        // Count the total number of RenderLayers that are scrollable areas for
-        // any period. We only want to record this at most once per RenderLayer.
-        if (requiresScrollableArea && !m_isScrollableAreaHasBeenRecorded) {
-            blink::Platform::current()->histogramEnumeration("Renderer.CompositedScrolling", IsScrollableAreaBucket, CompositedScrollingHistogramMax);
-            m_isScrollableAreaHasBeenRecorded = true;
-        }
-
         // We always want composited scrolling if compositor driven accelerated
         // scrolling is enabled. Since we will not update needs composited scrolling
         // in this case, we must force our state to update.
-        if (m_box->compositorDrivenAcceleratedScrollingEnabled())
+        RenderLayerCompositor* compositor = m_box->view()->compositor();
+        if (compositor->acceleratedCompositingForOverflowScrollEnabled())
             layer()->didUpdateNeedsCompositedScrolling();
         else if (requiresScrollableArea)
-            m_box->view()->compositor()->setNeedsUpdateCompositingRequirementsState();
+            compositor->setNeedsUpdateCompositingRequirementsState();
         else
             setNeedsCompositedScrolling(false);
     }
@@ -1453,23 +1445,17 @@ void RenderLayerScrollableArea::updateNeedsCompositedScrolling()
 
     layer()->stackingNode()->updateDescendantsAreContiguousInStackingOrder();
     layer()->updateDescendantDependentFlags();
+    RenderLayerCompositor* compositor = m_box->view()->compositor();
 
     ASSERT(scrollsOverflow());
-    const bool needsToBeStackingContainer = m_box->acceleratedCompositingForOverflowScrollEnabled()
+    const bool needsToBeStackingContainer = compositor->legacyAcceleratedCompositingForOverflowScrollEnabled()
         && layer()->stackingNode()->descendantsAreContiguousInStackingOrder()
         && !layer()->hasUnclippedDescendant();
 
     const bool needsToBeStackingContainerDidChange = layer()->stackingNode()->setNeedsToBeStackingContainer(needsToBeStackingContainer);
 
     const bool needsCompositedScrolling = needsToBeStackingContainer
-        || m_box->compositorDrivenAcceleratedScrollingEnabled();
-
-    // We gather a boolean value for use with Google UMA histograms to
-    // quantify the actual effects of a set of patches attempting to
-    // relax composited scrolling requirements, thereby increasing the
-    // number of composited overflow divs.
-    if (m_box->acceleratedCompositingForOverflowScrollEnabled())
-        blink::Platform::current()->histogramEnumeration("Renderer.NeedsCompositedScrolling", needsCompositedScrolling, 2);
+        || compositor->acceleratedCompositingForOverflowScrollEnabled();
 
     const bool needsCompositedScrollingDidChange = setNeedsCompositedScrolling(needsCompositedScrolling);
 
@@ -1487,16 +1473,7 @@ bool RenderLayerScrollableArea::setNeedsCompositedScrolling(bool needsComposited
     if (this->needsCompositedScrolling() == needsCompositedScrolling)
         return false;
 
-    // Count the total number of RenderLayers which need composited scrolling at
-    // some point. This should be recorded at most once per RenderLayer, so we
-    // check m_willUseCompositedScrollingHasBeenRecorded.
-    if (m_box->acceleratedCompositingForOverflowScrollEnabled() && !m_willUseCompositedScrollingHasBeenRecorded) {
-        blink::Platform::current()->histogramEnumeration("Renderer.CompositedScrolling", WillUseCompositedScrollingBucket, CompositedScrollingHistogramMax);
-        m_willUseCompositedScrollingHasBeenRecorded = true;
-    }
-
     m_needsCompositedScrolling = needsCompositedScrolling;
-
     return true;
 }
 

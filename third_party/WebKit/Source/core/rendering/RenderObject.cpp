@@ -2809,22 +2809,6 @@ CompositingReasons RenderObject::additionalCompositingReasons(CompositingTrigger
     return CompositingReasonNone;
 }
 
-bool RenderObject::acceleratedCompositingForOverflowScrollEnabled() const
-{
-    const Settings* settings = document().settings();
-    return settings && settings->acceleratedCompositingForOverflowScrollEnabled();
-}
-
-// FIXME: This is a temporary flag and should be removed once accelerated
-// overflow scroll is ready (crbug.com/254111).
-bool RenderObject::compositorDrivenAcceleratedScrollingEnabled() const
-{
-    const Settings* settings = document().settings();
-    if (!settings)
-        return false;
-    return settings->acceleratedCompositingForOverflowScrollEnabled() && settings->compositorDrivenAcceleratedScrollingEnabled();
-}
-
 bool RenderObject::hitTest(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestFilter hitTestFilter)
 {
     bool inside = false;

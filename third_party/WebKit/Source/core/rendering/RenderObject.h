@@ -698,11 +698,6 @@ public:
     CompositingState compositingState() const;
     virtual CompositingReasons additionalCompositingReasons(CompositingTriggerFlags) const;
 
-    bool acceleratedCompositingForOverflowScrollEnabled() const;
-    // FIXME: This is a temporary flag and should be removed once accelerated
-    // overflow scroll is ready (crbug.com/254111).
-    bool compositorDrivenAcceleratedScrollingEnabled() const;
-
     bool hitTest(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestFilter = HitTestAll);
     virtual void updateHitTestResult(HitTestResult&, const LayoutPoint&);
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);

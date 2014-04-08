@@ -33,6 +33,11 @@ enum CompositingTrigger {
     FilterTrigger = 1 << 5,
     ScrollableInnerFrameTrigger = 1 << 6,
     GPURasterizationTrigger = 1 << 7,
+    // FIXME: This is a temporary trigger for enabling the old, opt-in path for
+    // accelerated overflow scroll. It should be removed once the "universal"
+    // path is ready (crbug.com/254111).
+    LegacyOverflowScrollTrigger = 1 << 8,
+    OverflowScrollTrigger = 1 << 9,
     AllCompositingTriggers = 0xFFFFFFFF,
 };
 

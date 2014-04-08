@@ -82,6 +82,9 @@ public:
     bool hasAcceleratedCompositing() const { return m_hasAcceleratedCompositing; }
     bool layerSquashingEnabled() const;
 
+    bool legacyAcceleratedCompositingForOverflowScrollEnabled() const;
+    bool acceleratedCompositingForOverflowScrollEnabled() const;
+
     bool canRender3DTransforms() const;
 
     // Copy the accelerated compositing related flags from Settings

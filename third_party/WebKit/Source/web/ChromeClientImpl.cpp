@@ -736,6 +736,10 @@ WebCore::CompositingTriggerFlags ChromeClientImpl::allowedCompositingTriggers() 
         flags |= WebCore::FilterTrigger;
     if (settings.acceleratedCompositingForGpuRasterizationHintEnabled())
         flags |= WebCore::GPURasterizationTrigger;
+    if (settings.acceleratedCompositingForOverflowScrollEnabled())
+        flags |= WebCore::LegacyOverflowScrollTrigger;
+    if (settings.compositorDrivenAcceleratedScrollingEnabled())
+        flags |= WebCore::OverflowScrollTrigger;
 
     return flags;
 }

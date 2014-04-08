@@ -155,6 +155,16 @@ bool RenderLayerCompositor::layerSquashingEnabled() const
     return false;
 }
 
+bool RenderLayerCompositor::legacyAcceleratedCompositingForOverflowScrollEnabled() const
+{
+    return m_compositingReasonFinder.hasLegacyOverflowScrollTrigger();
+}
+
+bool RenderLayerCompositor::acceleratedCompositingForOverflowScrollEnabled() const
+{
+    return m_compositingReasonFinder.hasOverflowScrollTrigger();
+}
+
 bool RenderLayerCompositor::canRender3DTransforms() const
 {
     return hasAcceleratedCompositing() && m_compositingReasonFinder.has3DTransformTrigger();
@@ -177,7 +187,7 @@ void RenderLayerCompositor::updateCompositingRequirementsState()
 
     m_needsUpdateCompositingRequirementsState = false;
 
-    if (!rootRenderLayer() || !m_renderView.acceleratedCompositingForOverflowScrollEnabled())
+    if (!rootRenderLayer() || !legacyAcceleratedCompositingForOverflowScrollEnabled())
         return;
 
     for (HashSet<RenderLayer*>::iterator it = m_outOfFlowPositionedLayers.begin(); it != m_outOfFlowPositionedLayers.end(); ++it)

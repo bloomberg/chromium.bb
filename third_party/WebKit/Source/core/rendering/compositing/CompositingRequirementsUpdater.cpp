@@ -237,7 +237,6 @@ static CompositingReasons subtreeReasonsForCompositing(RenderObject* renderer, b
             subtreeReasons |= CompositingReasonClipsCompositingDescendants;
     }
 
-
     // A layer with preserve-3d or perspective only needs to be composited if there are descendant layers that
     // will be affected by the preserve-3d or perspective.
     if (has3DTransformedDescendants) {
@@ -311,7 +310,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
     // used, we must assume we overlap if there is anything composited behind us in paint-order.
     CompositingReasons overlapCompositingReason = currentRecursionData.m_subtreeIsCompositing ? CompositingReasonAssumedOverlap : CompositingReasonNone;
 
-    if (m_renderView.compositorDrivenAcceleratedScrollingEnabled()) {
+    if (m_renderView.compositor()->acceleratedCompositingForOverflowScrollEnabled()) {
         Vector<size_t> unclippedDescendantsToRemove;
         for (size_t i = 0; i < unclippedDescendants.size(); i++) {
             RenderLayer* unclippedDescendant = unclippedDescendants.at(i);

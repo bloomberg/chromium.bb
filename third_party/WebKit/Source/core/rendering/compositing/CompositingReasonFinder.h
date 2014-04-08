@@ -28,6 +28,8 @@ public:
 
     bool has3DTransformTrigger() const;
     bool hasAnimationTrigger() const;
+    bool hasOverflowScrollTrigger() const;
+    bool hasLegacyOverflowScrollTrigger() const;
 
     bool requiresCompositingForScrollableFrame() const;
     bool requiresCompositingForPosition(RenderObject*, const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason*, bool* needToRecomputeCompositingRequirements) const;

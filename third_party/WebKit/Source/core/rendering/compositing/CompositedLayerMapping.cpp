@@ -455,7 +455,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
     if (m_owningLayer.needsCompositedScrolling())
         needsDescendantsClippingLayer = false;
 
-    RenderLayer* scrollParent = renderer->compositorDrivenAcceleratedScrollingEnabled() ? m_owningLayer.scrollParent() : 0;
+    RenderLayer* scrollParent = compositor->acceleratedCompositingForOverflowScrollEnabled() ? m_owningLayer.scrollParent() : 0;
     bool needsAncestorClip = compositor->clippedByAncestor(&m_owningLayer);
     if (scrollParent) {
         // If our containing block is our ancestor scrolling layer, then we'll already be clipped
@@ -879,7 +879,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
     updateRenderingContext();
     updateShouldFlattenTransform();
     updateChildrenTransform();
-    updateScrollParent(renderer()->compositorDrivenAcceleratedScrollingEnabled() ? m_owningLayer.scrollParent() : 0);
+    updateScrollParent(compositor()->acceleratedCompositingForOverflowScrollEnabled() ? m_owningLayer.scrollParent() : 0);
     registerScrollingLayers();
 
     updateCompositingReasons();
@@ -1411,7 +1411,7 @@ static void updateScrollParentForGraphicsLayer(GraphicsLayer* layer, GraphicsLay
 
 void CompositedLayerMapping::updateScrollParent(RenderLayer* scrollParent)
 {
-    if (!scrollParent && m_squashedLayers.size() && renderer()->compositorDrivenAcceleratedScrollingEnabled())
+    if (!scrollParent && m_squashedLayers.size() && compositor()->acceleratedCompositingForOverflowScrollEnabled())
         scrollParent = m_squashedLayers[0].renderLayer->scrollParent();
 
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {

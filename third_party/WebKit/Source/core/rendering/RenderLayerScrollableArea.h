@@ -234,9 +234,6 @@ private:
     unsigned m_inOverflowRelayout : 1;
 
     unsigned m_needsCompositedScrolling : 1;
-    unsigned m_willUseCompositedScrollingHasBeenRecorded : 1;
-
-    unsigned m_isScrollableAreaHasBeenRecorded : 1;
 
     ForceNeedsCompositedScrollingMode m_forceNeedsCompositedScrolling;
 

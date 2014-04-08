@@ -1151,7 +1151,7 @@ void RenderLayer::ensureAncestorDependentPropertyCache() const
 
 RenderLayer* RenderLayer::ancestorCompositedScrollingLayer() const
 {
-    if (!renderer()->acceleratedCompositingForOverflowScrollEnabled())
+    if (!compositor()->legacyAcceleratedCompositingForOverflowScrollEnabled())
         return 0;
 
     ASSERT(isInCompositingUpdate() || !m_ancestorDependentPropertyCache);
@@ -1724,7 +1724,7 @@ void RenderLayer::convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutR
 
 RenderLayer* RenderLayer::scrollParent() const
 {
-    ASSERT(renderer()->compositorDrivenAcceleratedScrollingEnabled());
+    ASSERT(compositor()->acceleratedCompositingForOverflowScrollEnabled());
 
     // Normal flow elements will be parented under the main scrolling layer, so
     // we don't need a scroll parent/child relationship to get them to scroll.
