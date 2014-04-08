@@ -208,6 +208,14 @@ PowerUI::PowerUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
                            IDS_ABOUT_POWER_BATTERY_DISCHARGE_RATE_HEADER);
   html->AddLocalizedString("dischargeRateLegendText",
                            IDS_ABOUT_POWER_DISCHARGE_RATE_LEGEND_TEXT);
+  html->AddLocalizedString("movingAverageLegendText",
+                           IDS_ABOUT_POWER_MOVING_AVERAGE_LEGEND_TEXT);
+  html->AddLocalizedString("binnedAverageLegendText",
+                           IDS_ABOUT_POWER_BINNED_AVERAGE_LEGEND_TEXT);
+  html->AddLocalizedString("averageOverText",
+                           IDS_ABOUT_POWER_AVERAGE_OVER_TEXT);
+  html->AddLocalizedString("samplesText",
+                           IDS_ABOUT_POWER_AVERAGE_SAMPLES_TEXT);
 
   html->AddLocalizedString("cpuIdleSectionTitle",
                            IDS_ABOUT_POWER_CPU_IDLE_SECTION_TITLE);

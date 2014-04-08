@@ -23,6 +23,14 @@
       <td id="battery-charge-cell" class="plots-cell">
         <div id="battery-charge-section" class="section-div">
           <div class="plots-div" id="battery-charge-plots-div"></div>
+          <form>
+            <label>
+              <span i18n-content="averageOverText"></span>
+              <input id="sample-count-input" type="number" min="1" max="150"
+                     value="10">
+            </label>
+            <span i18n-content="samplesText"></span>
+          </form>
           <button id="battery-charge-reload-button" class="reload-button"
                   i18n-content="reloadButton">
           </button>

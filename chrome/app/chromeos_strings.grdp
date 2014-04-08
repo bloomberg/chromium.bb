@@ -5156,6 +5156,18 @@ All users must sign out to continue.
   <message name="IDS_ABOUT_POWER_DISCHARGE_RATE_LEGEND_TEXT" desc="Text to be displayed for the discharge rate legend entry of the discharge rate plot on the about:power page">
     Discharge Rate in Watts
   </message>
+  <message name="IDS_ABOUT_POWER_MOVING_AVERAGE_LEGEND_TEXT" desc="Text to be displayed for the moving average legend entry of the plots on the about:power page">
+    Moving Average
+  </message>
+  <message name="IDS_ABOUT_POWER_BINNED_AVERAGE_LEGEND_TEXT" desc="Text to be displayed for the binned average legend entry of the plots on the about:power page">
+    Binned Average
+  </message>
+  <message name="IDS_ABOUT_POWER_AVERAGE_OVER_TEXT" desc="Pre text to be displayed in the label of the moving average sample count.">
+    Average Over
+  </message>
+  <message name="IDS_ABOUT_POWER_AVERAGE_SAMPLES_TEXT" desc="Post text to be displayed in the label of the moving average sample count.">
+    Samples
+  </message>
   <message name="IDS_ABOUT_POWER_CPU_IDLE_SECTION_TITLE" desc="Title for the CPU idle state data section on the about:power page">
     Idle State Data
   </message>

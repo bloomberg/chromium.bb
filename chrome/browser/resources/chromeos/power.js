@@ -198,6 +198,7 @@ function plotLineGraph(
     width = size;
   }
   var height = plotCanvas.height - yOrigin - textHeight - padding;
+  var linePlotEndMarkerWidth = 3;
 
   function drawPlots() {
     // Start fresh.
@@ -243,6 +244,7 @@ function plotLineGraph(
       var plot = plots[count];
       var yData = plot.data;
       plotCtx.strokeStyle = plot.color;
+      plotCtx.lineWidth = 2;
       plotCtx.beginPath();
       var beginPath = true;
       for (var i = 0; i < size; i++) {
@@ -262,10 +264,10 @@ function plotLineGraph(
           // A simple move to does not print anything. Hence, draw a little
           // square here to mark a beginning.
           plotCtx.fillStyle = '#000';
-          plotCtx.fillRect(xPos - 1,
-                           yPos - 1,
-                           1 * devicePixelRatio,
-                           1 * devicePixelRatio);
+          plotCtx.fillRect(xPos - linePlotEndMarkerWidth,
+                           yPos - linePlotEndMarkerWidth,
+                           linePlotEndMarkerWidth * devicePixelRatio,
+                           linePlotEndMarkerWidth * devicePixelRatio);
           beginPath = false;
         } else {
           plotCtx.lineTo(xPos, yPos);
@@ -273,10 +275,10 @@ function plotLineGraph(
             // Draw a little square to mark an end to go with the start
             // markers from above.
             plotCtx.fillStyle = '#000';
-            plotCtx.fillRect(xPos - 1,
-                             yPos - 1,
-                             1 * devicePixelRatio,
-                             1 * devicePixelRatio);
+            plotCtx.fillRect(xPos - linePlotEndMarkerWidth,
+                             yPos - linePlotEndMarkerWidth,
+                             linePlotEndMarkerWidth * devicePixelRatio,
+                             linePlotEndMarkerWidth * devicePixelRatio);
           }
         }
       }
@@ -537,7 +539,7 @@ function showBatteryChargeData(powerSupplyArray, systemResumedArray) {
   var chargePlot = [
     {
       name: loadTimeData.getString('batteryChargePercentageHeader'),
-      color: '#0000FF',
+      color: 'Blue',
       data: []
     }
   ];
@@ -546,7 +548,17 @@ function showBatteryChargeData(powerSupplyArray, systemResumedArray) {
   var dischargeRatePlot = [
     {
       name: loadTimeData.getString('dischargeRateLegendText'),
-      color: '#FF0000',
+      color: 'Red',
+      data: []
+    },
+    {
+      name: loadTimeData.getString('movingAverageLegendText'),
+      color: 'Green',
+      data: []
+    },
+    {
+      name: loadTimeData.getString('binnedAverageLegendText'),
+      color: 'Blue',
       data: []
     }
   ];
@@ -564,12 +576,34 @@ function showBatteryChargeData(powerSupplyArray, systemResumedArray) {
                       systemResumedArray);
 
     var dischargeRate = powerSupplyArray[i].batteryDischargeRate;
+    var inputSampleCount = $('sample-count-input').value;
+
+    var movingAverage = 0;
+    var k = 0;
+    for (k = 0; k < inputSampleCount && i - k >= 0; k++) {
+      movingAverage += powerSupplyArray[i - k].batteryDischargeRate;
+    }
+    // |k| will be atleast 1 because the 'min' value of the input field is 1.
+    movingAverage /= k;
+
+    var binnedAverage = 0;
+    for (k = 0; k < inputSampleCount; k++) {
+      var currentSampleIndex = i - i % inputSampleCount + k;
+      if (currentSampleIndex >= powerSupplyArray.length) {
+        break;
+      }
+
+      binnedAverage +=
+          powerSupplyArray[currentSampleIndex].batteryDischargeRate;
+    }
+    binnedAverage /= k;
+
     minDischargeRate = Math.min(dischargeRate, minDischargeRate);
     maxDischargeRate = Math.max(dischargeRate, maxDischargeRate);
     addTimeDataSample(dischargeRatePlot,
                       dischargeRateTimeData,
                       dischargeRateAbsTime,
-                      [dischargeRate],
+                      [dischargeRate, movingAverage, binnedAverage],
                       powerSupplyArray[i].time,
                       powerSupplyArray[j].time,
                       systemResumedArray);
@@ -817,6 +851,7 @@ document.addEventListener('DOMContentLoaded', function() {
       'battery-charge-show-button',
       requestBatteryChargeData);
   $('battery-charge-reload-button').onclick = requestBatteryChargeData;
+  $('sample-count-input').onclick = requestBatteryChargeData;
 
   $('cpu-idle-section').hidden = true;
   $('cpu-idle-show-button').onclick = showHideCallback(
