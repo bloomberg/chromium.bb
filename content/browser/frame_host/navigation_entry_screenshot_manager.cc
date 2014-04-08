@@ -64,7 +64,7 @@ class ScreenshotData : public base::RefCountedThreadSafe<ScreenshotData> {
     SkColorFilter* filter = SkLumaColorFilter::Create();
     paint.setColorFilter(filter);
     filter->unref();
-    canvas.drawBitmap(bitmap, SK_Scalar1, SK_Scalar1, &paint);
+    canvas.drawBitmap(bitmap, SkIntToScalar(0), SkIntToScalar(0), &paint);
     // Encode the a8Bitmap to grayscale PNG treating alpha as color intensity
     if (gfx::PNGCodec::EncodeA8SkBitmap(a8Bitmap, &data))
       data_ = new base::RefCountedBytes(data);
