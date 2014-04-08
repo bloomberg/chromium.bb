@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/param.h>
+#include <sys/resource.h>
 #include <sys/utsname.h>
 #include <unistd.h>
 
@@ -45,6 +46,20 @@ base::LazyInstance<
     g_lazy_number_of_processors = LAZY_INSTANCE_INITIALIZER;
 #endif
 
+int64 AmountOfVirtualMemory() {
+  struct rlimit limit;
+  int result = getrlimit(RLIMIT_DATA, &limit);
+  if (result != 0) {
+    NOTREACHED();
+    return 0;
+  }
+  return limit.rlim_cur == RLIM_INFINITY ? 0 : limit.rlim_cur;
+}
+
+base::LazyInstance<
+    base::internal::LazySysInfoValue<int64, AmountOfVirtualMemory> >::Leaky
+    g_lazy_virtual_memory = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 namespace base {
@@ -54,6 +69,11 @@ int SysInfo::NumberOfProcessors() {
   return g_lazy_number_of_processors.Get().value();
 }
 #endif
+
+// static
+int64 SysInfo::AmountOfVirtualMemory() {
+  return g_lazy_virtual_memory.Get().value();
+}
 
 // static
 int64 SysInfo::AmountOfFreeDiskSpace(const FilePath& path) {

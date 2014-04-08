@@ -29,6 +29,8 @@ TEST_F(SysInfoTest, AmountOfMem) {
   // We aren't actually testing that it's correct, just that it's sane.
   EXPECT_GT(base::SysInfo::AmountOfPhysicalMemory(), 0);
   EXPECT_GT(base::SysInfo::AmountOfPhysicalMemoryMB(), 0);
+  // The maxmimal amount of virtual memory can be zero which means unlimited.
+  EXPECT_GE(base::SysInfo::AmountOfVirtualMemory(), 0);
 }
 
 TEST_F(SysInfoTest, AmountOfFreeDiskSpace) {

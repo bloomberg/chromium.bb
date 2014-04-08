@@ -943,6 +943,10 @@ size_t BlinkPlatformImpl::physicalMemoryMB() {
   return static_cast<size_t>(base::SysInfo::AmountOfPhysicalMemoryMB());
 }
 
+size_t BlinkPlatformImpl::virtualMemoryLimitMB() {
+  return static_cast<size_t>(base::SysInfo::AmountOfVirtualMemoryMB());
+}
+
 size_t BlinkPlatformImpl::numberOfProcessors() {
   return static_cast<size_t>(base::SysInfo::NumberOfProcessors());
 }

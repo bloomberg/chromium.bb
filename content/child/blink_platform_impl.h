@@ -59,6 +59,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual size_t memoryUsageMB();
   virtual size_t actualMemoryUsageMB();
   virtual size_t physicalMemoryMB();
+  virtual size_t virtualMemoryLimitMB();
   virtual size_t numberOfProcessors();
 
   virtual void startHeapProfiling(const blink::WebString& prefix);

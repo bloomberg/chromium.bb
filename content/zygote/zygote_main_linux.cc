@@ -311,6 +311,7 @@ static void ZygotePreSandboxInit() {
   base::RandUint64();
 
   base::SysInfo::AmountOfPhysicalMemory();
+  base::SysInfo::AmountOfVirtualMemory();
   base::SysInfo::MaxSharedMemorySize();
   base::SysInfo::NumberOfProcessors();
 
