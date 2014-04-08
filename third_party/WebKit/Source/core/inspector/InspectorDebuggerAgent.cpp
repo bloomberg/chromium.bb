@@ -949,9 +949,9 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const
     }
 }
 
-void InspectorDebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, TypeBuilder::OptOutput<ScriptId>* scriptId, TypeBuilder::OptOutput<String>* syntaxErrorMessage)
+void InspectorDebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, const int* executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, TypeBuilder::OptOutput<String>* syntaxErrorMessage)
 {
-    InjectedScript injectedScript = injectedScriptForEval(errorString, 0);
+    InjectedScript injectedScript = injectedScriptForEval(errorString, executionContextId);
     if (injectedScript.hasNoValue()) {
         *errorString = "Inspected frame has gone";
         return;
