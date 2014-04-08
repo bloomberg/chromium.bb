@@ -361,7 +361,7 @@ void BluetoothDeviceChromeOS::ConnectToService(
 void BluetoothDeviceChromeOS::ConnectToProfile(
     device::BluetoothProfile* profile,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    const ConnectToProfileErrorCallback& error_callback) {
   BluetoothProfileChromeOS* profile_chromeos =
       static_cast<BluetoothProfileChromeOS*>(profile);
   VLOG(1) << object_path_.value() << ": Connecting profile: "
@@ -581,7 +581,7 @@ void BluetoothDeviceChromeOS::OnConnectProfile(
 
 void BluetoothDeviceChromeOS::OnConnectProfileError(
     device::BluetoothProfile* profile,
-    const ErrorCallback& error_callback,
+    const ConnectToProfileErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
   BluetoothProfileChromeOS* profile_chromeos =
@@ -589,7 +589,7 @@ void BluetoothDeviceChromeOS::OnConnectProfileError(
   VLOG(1) << object_path_.value() << ": Profile connection failed: "
           << profile_chromeos->uuid().canonical_value() << ": "
           << error_name << ": " << error_message;
-  error_callback.Run();
+  error_callback.Run(error_message);
 }
 
 }  // namespace chromeos

@@ -13,16 +13,11 @@
 #include "device/bluetooth/bluetooth_socket.h"
 
 namespace dbus {
-
 class FileDescriptor;
-
 }  // namespace dbus
 
 namespace net {
-
-class DrainableIOBuffer;
-class GrowableIOBuffer;
-
+class IOBuffer;
 }  // namespace net
 
 namespace chromeos {
@@ -32,10 +27,17 @@ namespace chromeos {
 class CHROMEOS_EXPORT BluetoothSocketChromeOS
     : public device::BluetoothSocket {
  public:
-  // BluetoothSocket override.
-  virtual bool Receive(net::GrowableIOBuffer* buffer) OVERRIDE;
-  virtual bool Send(net::DrainableIOBuffer* buffer) OVERRIDE;
-  virtual std::string GetLastErrorMessage() const OVERRIDE;
+  // Overriden from BluetoothSocket:
+  virtual void Close() OVERRIDE;
+  virtual void Disconnect(const base::Closure& callback) OVERRIDE;
+  virtual void Receive(int count,
+                       const ReceiveCompletionCallback& success_callback,
+                       const ReceiveErrorCompletionCallback& error_callback)
+      OVERRIDE;
+  virtual void Send(scoped_refptr<net::IOBuffer> buffer,
+                    int buffer_size,
+                    const SendCompletionCallback& success_callback,
+                    const ErrorCompletionCallback& error_callback) OVERRIDE;
 
   // Create an instance of a BluetoothSocket from the passed file descriptor
   // received over D-Bus in |fd|, the descriptor will be taken from that object

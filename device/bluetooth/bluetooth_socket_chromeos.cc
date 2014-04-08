@@ -47,6 +47,28 @@ BluetoothSocketChromeOS::~BluetoothSocketChromeOS() {
   close(fd_);
 }
 
+void BluetoothSocketChromeOS::Close() { NOTIMPLEMENTED(); }
+
+void BluetoothSocketChromeOS::Disconnect(const base::Closure& callback) {
+  NOTIMPLEMENTED();
+}
+
+void BluetoothSocketChromeOS::Receive(
+    int count,
+    const ReceiveCompletionCallback& success_callback,
+    const ReceiveErrorCompletionCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
+void BluetoothSocketChromeOS::Send(
+    scoped_refptr<net::IOBuffer> buffer,
+    int buffer_size,
+    const SendCompletionCallback& success_callback,
+    const ErrorCompletionCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
+#if 0
 bool BluetoothSocketChromeOS::Receive(net::GrowableIOBuffer *buffer) {
   base::ThreadRestrictions::AssertIOAllowed();
 
@@ -153,6 +175,7 @@ bool BluetoothSocketChromeOS::Send(net::DrainableIOBuffer *buffer) {
 std::string BluetoothSocketChromeOS::GetLastErrorMessage() const {
   return error_message_;
 }
+#endif
 
 // static
 scoped_refptr<device::BluetoothSocket> BluetoothSocketChromeOS::Create(

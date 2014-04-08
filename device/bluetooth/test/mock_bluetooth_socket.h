@@ -8,23 +8,25 @@
 #include <string>
 
 #include "device/bluetooth/bluetooth_socket.h"
+#include "net/base/io_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-namespace net {
-
-class DrainableIOBuffer;
-class GrowableIOBuffer;
-
-}  // namespace net
 
 namespace device {
 
 class MockBluetoothSocket : public BluetoothSocket {
  public:
   MockBluetoothSocket();
-  MOCK_METHOD1(Receive, bool(net::GrowableIOBuffer*));
-  MOCK_METHOD1(Send, bool(net::DrainableIOBuffer*));
-  MOCK_CONST_METHOD0(GetLastErrorMessage, std::string());
+  MOCK_METHOD0(Close, void());
+  MOCK_METHOD1(Disconnect, void(const base::Closure& callback));
+  MOCK_METHOD3(Receive,
+               void(int count,
+                    const ReceiveCompletionCallback& success_callback,
+                    const ReceiveErrorCompletionCallback& error_callback));
+  MOCK_METHOD4(Send,
+               void(scoped_refptr<net::IOBuffer> buffer,
+                    int buffer_size,
+                    const SendCompletionCallback& success_callback,
+                    const ErrorCompletionCallback& error_callback));
 
  protected:
   virtual ~MockBluetoothSocket();

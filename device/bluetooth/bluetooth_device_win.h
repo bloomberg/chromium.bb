@@ -16,11 +16,16 @@ namespace device {
 
 class BluetoothAdapterWin;
 class BluetoothServiceRecord;
+class BluetoothSocketThreadWin;
 
 class BluetoothDeviceWin : public BluetoothDevice {
  public:
   explicit BluetoothDeviceWin(
-      const BluetoothTaskManagerWin::DeviceState& state);
+      const BluetoothTaskManagerWin::DeviceState& state,
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+      scoped_refptr<BluetoothSocketThreadWin> socket_thread,
+      net::NetLog* net_log,
+      const net::NetLog::Source& net_log_source);
   virtual ~BluetoothDeviceWin();
 
   // BluetoothDevice override
@@ -57,7 +62,7 @@ class BluetoothDeviceWin : public BluetoothDevice {
   virtual void ConnectToProfile(
       device::BluetoothProfile* profile,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ConnectToProfileErrorCallback& error_callback) OVERRIDE;
   virtual void SetOutOfBandPairingData(
       const BluetoothOutOfBandPairingData& data,
       const base::Closure& callback,
@@ -81,6 +86,11 @@ class BluetoothDeviceWin : public BluetoothDevice {
   // Used by BluetoothAdapterWin to update the visible state during
   // discovery.
   void SetVisible(bool visible);
+
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  scoped_refptr<BluetoothSocketThreadWin> socket_thread_;
+  net::NetLog* net_log_;
+  net::NetLog::Source net_log_source_;
 
   // The Bluetooth class of the device, a bitmask that may be decoded using
   // https://www.bluetooth.org/Technical/AssignedNumbers/baseband.htm

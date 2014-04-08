@@ -57,7 +57,7 @@ class BluetoothDeviceChromeOS
   virtual void ConnectToProfile(
       device::BluetoothProfile* profile,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const ConnectToProfileErrorCallback& error_callback) OVERRIDE;
   virtual void SetOutOfBandPairingData(
       const device::BluetoothOutOfBandPairingData& data,
       const base::Closure& callback,
@@ -140,10 +140,11 @@ class BluetoothDeviceChromeOS
   // connect a peofile.
   void OnConnectProfile(device::BluetoothProfile* profile,
                         const base::Closure& callback);
-  void OnConnectProfileError(device::BluetoothProfile* profile,
-                             const ErrorCallback& error_callback,
-                             const std::string& error_name,
-                             const std::string& error_message);
+  void OnConnectProfileError(
+      device::BluetoothProfile* profile,
+      const ConnectToProfileErrorCallback& error_callback,
+      const std::string& error_name,
+      const std::string& error_message);
 
   // Returns the object path of the device; used by BluetoothAdapterChromeOS
   const dbus::ObjectPath& object_path() const { return object_path_; }

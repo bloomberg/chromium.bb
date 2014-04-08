@@ -36,6 +36,8 @@
 
 namespace {
 
+const char kFailedToConnect[] = "Connection failed";
+
 // Converts |uuid| to a IOBluetoothSDPUUID instance.
 //
 // |uuid| must be in the format of XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.
@@ -194,13 +196,13 @@ void BluetoothDeviceMac::ConnectToService(
 }
 
 void BluetoothDeviceMac::ConnectToProfile(
-    device::BluetoothProfile* profile,
+    BluetoothProfile* profile,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    const ConnectToProfileErrorCallback& error_callback) {
   if (static_cast<BluetoothProfileMac*>(profile)->Connect(device_))
     callback.Run();
   else
-    error_callback.Run();
+    error_callback.Run(kFailedToConnect);
 }
 
 void BluetoothDeviceMac::SetOutOfBandPairingData(

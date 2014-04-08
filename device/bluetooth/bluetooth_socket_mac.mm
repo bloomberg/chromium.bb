@@ -123,6 +123,27 @@ scoped_refptr<BluetoothSocket> BluetoothSocketMac::CreateBluetoothSocket(
   return scoped_refptr<BluetoothSocketMac>(bluetooth_socket);
 }
 
+void BluetoothSocketMac::Close() { NOTIMPLEMENTED(); }
+
+void BluetoothSocketMac::Disconnect(const base::Closure& callback) {
+  NOTIMPLEMENTED();
+}
+
+void BluetoothSocketMac::Receive(
+    int count,
+    const ReceiveCompletionCallback& success_callback,
+    const ReceiveErrorCompletionCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
+void BluetoothSocketMac::Send(scoped_refptr<net::IOBuffer> buffer,
+                              int buffer_size,
+                              const SendCompletionCallback& success_callback,
+                              const ErrorCompletionCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
+#if 0
 bool BluetoothSocketMac::Receive(net::GrowableIOBuffer* buffer) {
   CHECK(buffer->offset() == 0);
   int length = incoming_data_buffer_->offset();
@@ -154,7 +175,7 @@ bool BluetoothSocketMac::Send(net::DrainableIOBuffer* buffer) {
 std::string BluetoothSocketMac::GetLastErrorMessage() const {
   return error_message_;
 }
-
+#endif
 void BluetoothSocketMac::OnDataReceived(
     IOBluetoothRFCOMMChannel* rfcomm_channel, void* data, size_t length) {
   DCHECK(rfcomm_channel_ == rfcomm_channel);
