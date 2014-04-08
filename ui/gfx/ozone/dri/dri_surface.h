@@ -11,12 +11,11 @@
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/skia_util.h"
 
-class SkBitmapDevice;
 class SkCanvas;
 
 namespace gfx {
 
-class DriSkBitmap;
+class DriBuffer;
 class DriWrapper;
 
 // DriSurface is used to represent a surface that can be scanned out
@@ -147,21 +146,18 @@ class GFX_EXPORT DriSurface {
  private:
   friend class HardwareDisplayController;
 
+  DriBuffer* frontbuffer() const { return bitmaps_[front_buffer_].get(); }
+  DriBuffer* backbuffer() const { return bitmaps_[front_buffer_ ^ 1].get(); }
+
   // Used to create the backing buffers.
-  virtual DriSkBitmap* CreateBuffer();
+  virtual DriBuffer* CreateBuffer();
 
   // Stores the connection to the graphics card. Pointer not owned by this
   // class.
   DriWrapper* dri_;
 
   // The actual buffers used for painting.
-  scoped_ptr<DriSkBitmap> bitmaps_[2];
-
-  // BitmapDevice for the current backbuffer.
-  skia::RefPtr<SkBitmapDevice> skia_device_;
-
-  // Canvas for the current backbuffer.
-  skia::RefPtr<SkCanvas> skia_canvas_;
+  scoped_ptr<DriBuffer> bitmaps_[2];
 
   // Keeps track of which bitmap is |buffers_| is the frontbuffer.
   int front_buffer_;

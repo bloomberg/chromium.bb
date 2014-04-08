@@ -1,17 +1,17 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/dri/dri_skbitmap.h"
+#include "ui/gfx/ozone/dri/dri_buffer.h"
 
 #include <errno.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <xf86drm.h>
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "third_party/skia/include/core/SkPixelRef.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/gfx/ozone/dri/dri_wrapper.h"
 
 namespace gfx {
 
@@ -23,32 +23,32 @@ void DestroyDumbBuffer(int fd, uint32_t handle) {
   drmIoctl(fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_request);
 }
 
-bool CreateDumbBuffer(
-    DriSkBitmap* bitmap,
-    const SkImageInfo& info,
-    size_t* stride,
-    void** pixels) {
+bool CreateDumbBuffer(DriWrapper* dri,
+                      const SkImageInfo& info,
+                      uint32_t* handle,
+                      uint32_t* stride,
+                      void** pixels) {
   struct drm_mode_create_dumb request;
   request.width = info.width();
   request.height = info.height();
   request.bpp = info.bytesPerPixel() << 3;
   request.flags = 0;
 
-  if (drmIoctl(bitmap->get_fd(), DRM_IOCTL_MODE_CREATE_DUMB, &request) < 0) {
+  if (drmIoctl(dri->get_fd(), DRM_IOCTL_MODE_CREATE_DUMB, &request) < 0) {
     DLOG(ERROR) << "Cannot create dumb buffer (" << errno << ") "
                 << strerror(errno);
     return false;
   }
 
-  bitmap->set_handle(request.handle);
+  *handle = request.handle;
   *stride = request.pitch;
 
   struct drm_mode_map_dumb map_request;
-  map_request.handle = bitmap->get_handle();
-  if (drmIoctl(bitmap->get_fd(), DRM_IOCTL_MODE_MAP_DUMB, &map_request)) {
+  map_request.handle = request.handle;
+  if (drmIoctl(dri->get_fd(), DRM_IOCTL_MODE_MAP_DUMB, &map_request)) {
     DLOG(ERROR) << "Cannot prepare dumb buffer for mapping (" << errno << ") "
                 << strerror(errno);
-    DestroyDumbBuffer(bitmap->get_fd(), bitmap->get_handle());
+    DestroyDumbBuffer(dri->get_fd(), request.handle);
     return false;
   }
 
@@ -56,49 +56,36 @@ bool CreateDumbBuffer(
                  request.size,
                  PROT_READ | PROT_WRITE,
                  MAP_SHARED,
-                 bitmap->get_fd(),
+                 dri->get_fd(),
                  map_request.offset);
   if (*pixels == MAP_FAILED) {
     DLOG(ERROR) << "Cannot mmap dumb buffer (" << errno << ") "
                 << strerror(errno);
-    DestroyDumbBuffer(bitmap->get_fd(), bitmap->get_handle());
+    DestroyDumbBuffer(dri->get_fd(), request.handle);
     return false;
   }
 
   return true;
 }
 
-void ReleasePixels(void* addr, void* context) {
-  DriSkBitmap *bitmap = reinterpret_cast<DriSkBitmap*>(context);
-  if (!bitmap && !bitmap->getPixels())
-    return;
-
-  munmap(bitmap->getPixels(), bitmap->getSize());
-  DestroyDumbBuffer(bitmap->get_fd(), bitmap->get_handle());
-}
-
 }  // namespace
 
-////////////////////////////////////////////////////////////////////////////////
-// DriSkBitmap implementation
+DriBuffer::DriBuffer(DriWrapper* dri)
+    : dri_(dri), handle_(0), framebuffer_(0) {}
 
-DriSkBitmap::DriSkBitmap(int fd)
-  : fd_(fd),
-    handle_(0),
-    framebuffer_(0) {
+DriBuffer::~DriBuffer() {
+  Destroy();
 }
 
-DriSkBitmap::~DriSkBitmap() {
-}
-
-bool DriSkBitmap::Initialize(const SkImageInfo& info) {
-  size_t stride = 0;
+bool DriBuffer::Initialize(const SkImageInfo& info) {
   void* pixels = NULL;
-  if (!CreateDumbBuffer(this, info, &stride, &pixels)) {
+  if (!CreateDumbBuffer(dri_, info, &handle_, &stride_, &pixels)) {
     DLOG(ERROR) << "Cannot allocate drm dumb buffer";
     return false;
   }
-  if (!installPixels(info, pixels, stride, ReleasePixels, this)) {
+
+  surface_ = skia::AdoptRef(SkSurface::NewRasterDirect(info, pixels, stride_));
+  if (!surface_) {
     DLOG(ERROR) << "Cannot install Skia pixels for drm buffer";
     return false;
   }
@@ -106,8 +93,21 @@ bool DriSkBitmap::Initialize(const SkImageInfo& info) {
   return true;
 }
 
-uint8_t DriSkBitmap::GetColorDepth() const {
-  switch (colorType()) {
+void DriBuffer::Destroy() {
+  if (!surface_)
+    return;
+
+  SkImageInfo info;
+  void* pixels = const_cast<void*>(surface_->peekPixels(&info, NULL));
+  if (!pixels)
+    return;
+
+  munmap(pixels, info.getSafeSize(stride_));
+  DestroyDumbBuffer(dri_->get_fd(), handle_);
+}
+
+uint8_t DriBuffer::GetColorDepth() const {
+  switch (surface_->getCanvas()->imageInfo().colorType()) {
     case kUnknown_SkColorType:
     case kAlpha_8_SkColorType:
       return 0;

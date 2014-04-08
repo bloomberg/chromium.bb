@@ -10,10 +10,9 @@
 #include <xf86drm.h>
 
 #include "base/logging.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/gfx/ozone/dri/dri_skbitmap.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/ozone/dri/dri_buffer.h"
 #include "ui/gfx/ozone/dri/dri_wrapper.h"
 #include "ui/gfx/skia_util.h"
 
@@ -21,24 +20,27 @@ namespace gfx {
 
 namespace {
 
-// Extends the SkBitmapDevice to allow setting the SkPixelRef. We use the setter
-// to change the SkPixelRef such that the device always points to the
-// backbuffer.
-class CustomSkBitmapDevice : public SkBitmapDevice {
- public:
-  CustomSkBitmapDevice(const SkBitmap& bitmap) : SkBitmapDevice(bitmap) {}
-  virtual ~CustomSkBitmapDevice() {}
+// TODO(dnicoara) Remove this once Skia implements this between 2 SkCanvases.
+void CopyRect(DriBuffer* dst, DriBuffer* src, const gfx::Rect& damage) {
+  SkImageInfo src_info, dst_info;
+  size_t src_stride, dst_stride;
+  uint8_t* src_pixels = static_cast<uint8_t*>(
+      const_cast<void*>(src->canvas()->peekPixels(&src_info, &src_stride)));
+  uint8_t* dst_pixels = static_cast<uint8_t*>(
+      const_cast<void*>(dst->canvas()->peekPixels(&dst_info, &dst_stride)));
 
-  void SetPixelRef(SkPixelRef* pixel_ref) { setPixelRef(pixel_ref); }
+  // The 2 buffers should have the same properties.
+  DCHECK(src_info == dst_info);
+  DCHECK(src_stride == dst_stride);
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(CustomSkBitmapDevice);
-};
+  int bpp = src_info.bytesPerPixel();
+  for (int height = damage.y(); height < damage.y() + damage.height(); ++height)
+    memcpy(dst_pixels + height * dst_stride + damage.x() * bpp,
+           src_pixels + height * src_stride + damage.x() * bpp,
+           damage.width() * bpp);
+}
 
 }  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// DriSurface implementation
 
 DriSurface::DriSurface(
     DriWrapper* dri, const gfx::Size& size)
@@ -52,7 +54,7 @@ DriSurface::~DriSurface() {
 }
 
 bool DriSurface::Initialize() {
-  for (int i = 0; i < 2; ++i) {
+  for (size_t i = 0; i < arraysize(bitmaps_); ++i) {
     bitmaps_[i].reset(CreateBuffer());
     // TODO(dnicoara) Should select the configuration based on what the
     // underlying system supports.
@@ -65,55 +67,38 @@ bool DriSurface::Initialize() {
     }
   }
 
-  skia_device_ = skia::AdoptRef(
-      new CustomSkBitmapDevice(*bitmaps_[front_buffer_ ^ 1].get()));
-  skia_canvas_ = skia::AdoptRef(new SkCanvas(skia_device_.get()));
-
   return true;
 }
 
 uint32_t DriSurface::GetFramebufferId() const {
-  CHECK(bitmaps_[0].get() && bitmaps_[1].get());
-  return bitmaps_[front_buffer_ ^ 1]->get_framebuffer();
+  CHECK(backbuffer());
+  return backbuffer()->framebuffer();
 }
 
 uint32_t DriSurface::GetHandle() const {
-  CHECK(bitmaps_[0].get() && bitmaps_[1].get());
-  return bitmaps_[front_buffer_ ^ 1]->get_handle();
+  CHECK(backbuffer());
+  return backbuffer()->handle();
 }
 
 // This call is made after the hardware just started displaying our back buffer.
 // We need to update our pointer reference and synchronize the two buffers.
 void DriSurface::SwapBuffers() {
-  CHECK(bitmaps_[0].get() && bitmaps_[1].get());
+  CHECK(frontbuffer());
+  CHECK(backbuffer());
 
   // Update our front buffer pointer.
   front_buffer_ ^= 1;
 
-  // Unlocking will unset the pixel pointer, so it won't be pointing to the old
-  // PixelRef.
-  skia_device_->accessBitmap(false).unlockPixels();
-  // Update the backing pixels for the bitmap device.
-  static_cast<CustomSkBitmapDevice*>(skia_device_.get())->SetPixelRef(
-      bitmaps_[front_buffer_ ^ 1]->pixelRef());
-  // Locking the pixels will set the pixel pointer based on the PixelRef value.
-  skia_device_->accessBitmap(false).lockPixels();
-
   SkIRect device_damage;
-  skia_canvas_->getClipDeviceBounds(&device_damage);
-  SkRect damage = SkRect::Make(device_damage);
-
-  skia_canvas_->drawBitmapRectToRect(*bitmaps_[front_buffer_].get(),
-                                     &damage,
-                                     damage);
+  frontbuffer()->canvas()->getClipDeviceBounds(&device_damage);
+  CopyRect(backbuffer(), frontbuffer(), SkIRectToRect(device_damage));
 }
 
 SkCanvas* DriSurface::GetDrawableForWidget() {
-  return skia_canvas_.get();
+  CHECK(backbuffer());
+  return backbuffer()->canvas();
 }
 
-DriSkBitmap* DriSurface::CreateBuffer() {
-  return new DriSkBitmap(dri_->get_fd());
-}
+DriBuffer* DriSurface::CreateBuffer() { return new DriBuffer(dri_); }
 
 }  // namespace gfx

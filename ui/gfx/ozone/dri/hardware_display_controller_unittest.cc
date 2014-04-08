@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/ozone/dri/dri_skbitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/gfx/ozone/dri/dri_buffer.h"
 #include "ui/gfx/ozone/dri/dri_surface.h"
 #include "ui/gfx/ozone/dri/dri_wrapper.h"
 #include "ui/gfx/ozone/dri/hardware_display_controller.h"
@@ -146,28 +147,36 @@ class MockDriWrapper : public gfx::DriWrapper {
   DISALLOW_COPY_AND_ASSIGN(MockDriWrapper);
 };
 
-class MockDriSkBitmap : public gfx::DriSkBitmap {
+class MockDriBuffer : public gfx::DriBuffer {
  public:
-  MockDriSkBitmap(int fd) : DriSkBitmap(fd) {}
-  virtual ~MockDriSkBitmap() {}
+  MockDriBuffer(gfx::DriWrapper* dri) : DriBuffer(dri) {}
+  virtual ~MockDriBuffer() {}
 
   virtual bool Initialize(const SkImageInfo& info) OVERRIDE {
-    return allocPixels(info);
+    surface_ = skia::AdoptRef(SkSurface::NewRaster(info));
+    surface_->getCanvas()->clear(SK_ColorBLACK);
+
+    return true;
   }
+  virtual void Destroy() OVERRIDE {}
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockDriSkBitmap);
+  DISALLOW_COPY_AND_ASSIGN(MockDriBuffer);
 };
 
 class MockDriSurface : public gfx::DriSurface {
  public:
   MockDriSurface(gfx::DriWrapper* dri, const gfx::Size& size)
-      : DriSurface(dri, size) {}
+      : DriSurface(dri, size), dri_(dri) {}
   virtual ~MockDriSurface() {}
 
  private:
-  virtual gfx::DriSkBitmap* CreateBuffer() OVERRIDE {
-    return new MockDriSkBitmap(kFd);
+  virtual gfx::DriBuffer* CreateBuffer() OVERRIDE {
+    return new MockDriBuffer(dri_);
   }
+
+  gfx::DriWrapper* dri_;
+
   DISALLOW_COPY_AND_ASSIGN(MockDriSurface);
 };
 

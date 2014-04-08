@@ -10,8 +10,9 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/ozone/dri/dri_skbitmap.h"
+#include "ui/gfx/ozone/dri/dri_buffer.h"
 #include "ui/gfx/ozone/dri/dri_surface.h"
 #include "ui/gfx/ozone/dri/dri_wrapper.h"
 
@@ -57,8 +58,8 @@ HardwareDisplayController::~HardwareDisplayController() {
 
   if (surface_.get()) {
     // Unregister the buffers.
-    for (int i = 0; i < 2; ++i) {
-      if (!drm_->RemoveFramebuffer(surface_->bitmaps_[i]->get_framebuffer()))
+    for (size_t i = 0; i < arraysize(surface_->bitmaps_); ++i) {
+      if (!drm_->RemoveFramebuffer(surface_->bitmaps_[i]->framebuffer()))
         DLOG(ERROR) << "Failed to remove FB: " << strerror(errno);
     }
   }
@@ -70,14 +71,15 @@ HardwareDisplayController::BindSurfaceToController(
   CHECK(state_ == UNINITIALIZED);
 
   // Register the buffers.
-  for (int i = 0; i < 2; ++i) {
+  for (size_t i = 0; i < arraysize(surface->bitmaps_); ++i) {
     uint32_t fb_id;
-    if (!drm_->AddFramebuffer(mode_,
-                              surface->bitmaps_[i]->GetColorDepth(),
-                              surface->bitmaps_[i]->bytesPerPixel() << 3,
-                              surface->bitmaps_[i]->rowBytes(),
-                              surface->bitmaps_[i]->get_handle(),
-                              &fb_id)) {
+    if (!drm_->AddFramebuffer(
+            mode_,
+            surface->bitmaps_[i]->GetColorDepth(),
+            surface->bitmaps_[i]->canvas()->imageInfo().bytesPerPixel() << 3,
+            surface->bitmaps_[i]->stride(),
+            surface->bitmaps_[i]->handle(),
+            &fb_id)) {
       DLOG(ERROR) << "Failed to register framebuffer: " << strerror(errno);
       state_ = FAILED;
       return false;

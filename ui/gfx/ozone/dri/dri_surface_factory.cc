@@ -12,7 +12,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/ozone/dri/dri_skbitmap.h"
 #include "ui/gfx/ozone/dri/dri_surface.h"
 #include "ui/gfx/ozone/dri/dri_vsync_provider.h"
 #include "ui/gfx/ozone/dri/dri_wrapper.h"

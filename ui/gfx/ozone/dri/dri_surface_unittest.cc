@@ -6,7 +6,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkDevice.h"
-#include "ui/gfx/ozone/dri/dri_skbitmap.h"
+#include "ui/gfx/ozone/dri/dri_buffer.h"
 #include "ui/gfx/ozone/dri/dri_surface.h"
 #include "ui/gfx/ozone/dri/hardware_display_controller.h"
 
@@ -66,35 +66,33 @@ class MockDriWrapper : public gfx::DriWrapper {
   DISALLOW_COPY_AND_ASSIGN(MockDriWrapper);
 };
 
-class MockDriSkBitmap : public gfx::DriSkBitmap {
+class MockDriBuffer : public gfx::DriBuffer {
  public:
-  MockDriSkBitmap(int fd,
-                       bool initialize_expectation)
-      : DriSkBitmap(fd),
-        initialize_expectation_(initialize_expectation) {}
-  virtual ~MockDriSkBitmap() {}
+  MockDriBuffer(gfx::DriWrapper* dri, bool initialize_expectation)
+      : DriBuffer(dri), initialize_expectation_(initialize_expectation) {}
+  virtual ~MockDriBuffer() {}
 
   virtual bool Initialize(const SkImageInfo& info) OVERRIDE {
     if (!initialize_expectation_)
       return false;
 
-    allocPixels(info);
-    // Clear the bitmap to black.
-    eraseColor(SK_ColorBLACK);
+    surface_ = skia::AdoptRef(SkSurface::NewRaster(info));
+    surface_->getCanvas()->clear(SK_ColorBLACK);
 
     return true;
   }
+  virtual void Destroy() OVERRIDE {}
+
  private:
   bool initialize_expectation_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockDriSkBitmap);
+  DISALLOW_COPY_AND_ASSIGN(MockDriBuffer);
 };
 
 class MockDriSurface : public gfx::DriSurface {
  public:
   MockDriSurface(gfx::DriWrapper* dri, const gfx::Size& size)
-      : DriSurface(dri, size),
-        initialize_expectation_(true) {}
+      : DriSurface(dri, size), dri_(dri), initialize_expectation_(true) {}
   virtual ~MockDriSurface() {}
 
   void set_initialize_expectation(bool state) {
@@ -102,10 +100,11 @@ class MockDriSurface : public gfx::DriSurface {
   }
 
  private:
-  virtual gfx::DriSkBitmap* CreateBuffer() OVERRIDE {
-    return new MockDriSkBitmap(kFd, initialize_expectation_);
+  virtual gfx::DriBuffer* CreateBuffer() OVERRIDE {
+    return new MockDriBuffer(dri_, initialize_expectation_);
   }
 
+  gfx::DriWrapper* dri_;
   bool initialize_expectation_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDriSurface);
