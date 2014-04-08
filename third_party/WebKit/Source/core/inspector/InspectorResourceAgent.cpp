@@ -336,6 +336,18 @@ void InspectorResourceAgent::markResourceAsCached(unsigned long identifier)
     m_frontend->requestServedFromCache(IdentifiersFactory::requestId(identifier));
 }
 
+bool isResponseEmpty(PassRefPtr<TypeBuilder::Network::Response> response)
+{
+    if (!response)
+        return true;
+
+    RefPtr<JSONValue> status = response->get("status");
+    RefPtr<JSONValue> mimeType = response->get("mimeType");
+    RefPtr<JSONObject> headers = response->getObject("headers");
+
+    return !status && !mimeType && (!headers || !headers->size());
+}
+
 void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
     if (!loader)
@@ -369,7 +381,9 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
 
     m_resourcesData->responseReceived(requestId, m_pageAgent->frameId(loader->frame()), response);
     m_resourcesData->setResourceType(requestId, type);
-    m_frontend->responseReceived(requestId, m_pageAgent->frameId(loader->frame()), m_pageAgent->loaderId(loader), currentTime(), InspectorPageAgent::resourceTypeJson(type), resourceResponse);
+
+    if (!isResponseEmpty(resourceResponse))
+        m_frontend->responseReceived(requestId, m_pageAgent->frameId(loader->frame()), m_pageAgent->loaderId(loader), currentTime(), InspectorPageAgent::resourceTypeJson(type), resourceResponse);
     // If we revalidated the resource and got Not modified, send content length following didReceiveResponse
     // as there will be no calls to didReceiveData from the network stack.
     if (isNotModified && cachedResource && cachedResource->encodedSize())
