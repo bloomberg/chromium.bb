@@ -17,8 +17,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/query_parser.h"
-#include "chrome/browser/undo/bookmark_undo_service.h"
-#include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/user_metrics.h"
