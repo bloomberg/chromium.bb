@@ -1026,18 +1026,19 @@ public class Tab implements NavigationClient {
     private void swapWebContents(
             final long newWebContents, boolean didStartLoad, boolean didFinishLoad) {
         swapContentView(ContentView.newInstance(mContext, newWebContents, getWindowAndroid()),
-                false);
-        for (TabObserver observer : mObservers) {
-            observer.onWebContentsSwapped(this, didStartLoad, didFinishLoad);
-        }
+                false, didStartLoad, didFinishLoad);
     }
 
     /**
      * Called to swap out the current view with the one passed in.
      * @param view The content view that should be swapped into the tab.
      * @param deleteOldNativeWebContents Whether to delete the native web contents of old view.
+     * @param didStartLoad Whether WebContentsObserver::DidStartProvisionalLoadForFrame() has
+     *     already been called.
+     * @param didFinishLoad Whether WebContentsObserver::DidFinishLoad() has already been called.
      */
-    protected void swapContentView(ContentView view, boolean deleteOldNativeWebContents) {
+    protected void swapContentView(ContentView view, boolean deleteOldNativeWebContents,
+            boolean didStartLoad, boolean didFinishLoad) {
         int originalWidth = 0;
         int originalHeight = 0;
         if (mContentViewCore != null) {
@@ -1059,6 +1060,9 @@ public class Tab implements NavigationClient {
         mContentViewCore.attachImeAdapter();
         for (TabObserver observer : mObservers) observer.onContentChanged(this);
         destroyNativePageInternal(previousNativePage);
+        for (TabObserver observer : mObservers) {
+            observer.onWebContentsSwapped(this, didStartLoad, didFinishLoad);
+        }
     }
 
     @CalledByNative
