@@ -10,7 +10,7 @@ class GURL;
 namespace policy {
 
 // Returns true if |url| should never be blacklisted by policy.
-bool OverrideBlacklistForURL(const GURL& url, bool* block);
+bool OverrideBlacklistForURL(const GURL& url, bool* block, int* reason);
 
 }  // namespace policy
 

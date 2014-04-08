@@ -17,6 +17,7 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 
@@ -359,7 +360,7 @@ bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {
 }
 
 bool URLBlacklistManager::IsRequestBlocked(
-    const net::URLRequest& request) const {
+    const net::URLRequest& request, int* reason) const {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 #if !defined(OS_IOS)
   // TODO(joaodasilva): iOS doesn't set these flags. http://crbug.com/338283
@@ -369,9 +370,10 @@ bool URLBlacklistManager::IsRequestBlocked(
 #endif
 
   bool block = false;
-  if (override_blacklist_.Run(request.url(), &block))
+  if (override_blacklist_.Run(request.url(), &block, reason))
     return block;
 
+  *reason = net::ERR_BLOCKED_BY_ADMINISTRATOR;
   return IsURLBlocked(request.url());
 }
 

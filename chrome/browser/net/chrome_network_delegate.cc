@@ -474,14 +474,15 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
   // TODO(joaodasilva): This prevents extensions from seeing URLs that are
   // blocked. However, an extension might redirect the request to another URL,
   // which is not blocked.
+  int error = net::ERR_BLOCKED_BY_ADMINISTRATOR;
   if (url_blacklist_manager_ &&
-      url_blacklist_manager_->IsRequestBlocked(*request)) {
+      url_blacklist_manager_->IsRequestBlocked(*request, &error)) {
     // URL access blocked by policy.
     request->net_log().AddEvent(
         net::NetLog::TYPE_CHROME_POLICY_ABORTED_REQUEST,
         net::NetLog::StringCallback("url",
                                     &request->url().possibly_invalid_spec()));
-    return net::ERR_BLOCKED_BY_ADMINISTRATOR;
+    return error;
   }
 #endif
 

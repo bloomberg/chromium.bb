@@ -133,7 +133,9 @@ class POLICY_EXPORT URLBlacklistManager {
  public:
   // Returns true if the blacklist should be overridden for |url| and sets
   // |block| to true if it should be blocked and false otherwise.
-  typedef base::Callback<bool(const GURL&, bool*)> OverrideBlacklistCallback;
+  // |reason| is set to the exact reason for blocking |url| iff |block| is true.
+  typedef base::Callback<bool(const GURL& url, bool* block, int* reason)>
+      OverrideBlacklistCallback;
 
   // Must be constructed on the UI thread.
   // |background_task_runner| is used to build the blacklist in a background
@@ -159,8 +161,10 @@ class POLICY_EXPORT URLBlacklistManager {
   // Only main frame and sub frame requests may be blocked; other sub resources
   // or background downloads (e.g. extensions updates, sync, etc) are not
   // filtered. The sync signin page is also not filtered.
+  // |reason| is populated with the exact reason for blocking the url if and
+  // only if the return value is true otherwise it is left untouched.
   // Must be called from the IO thread.
-  bool IsRequestBlocked(const net::URLRequest& request) const;
+  bool IsRequestBlocked(const net::URLRequest& request, int* reason) const;
 
   // Replaces the current blacklist. Must be called on the IO thread.
   // Virtual for testing.

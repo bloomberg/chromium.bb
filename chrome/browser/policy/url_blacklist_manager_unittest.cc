@@ -16,6 +16,7 @@
 #include "chrome/common/net/url_fixer_upper.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -503,12 +504,14 @@ TEST_F(URLBlacklistManagerTest, DontBlockResources) {
   net::URLRequest request(
       GURL("http://google.com"), net::DEFAULT_PRIORITY, NULL, &context);
 
+  int reason = net::ERR_UNEXPECTED;
   // Background requests aren't filtered.
-  EXPECT_FALSE(blacklist_manager_->IsRequestBlocked(request));
+  EXPECT_FALSE(blacklist_manager_->IsRequestBlocked(request, &reason));
 
   // Main frames are filtered.
   request.SetLoadFlags(net::LOAD_MAIN_FRAME);
-  EXPECT_TRUE(blacklist_manager_->IsRequestBlocked(request));
+  EXPECT_TRUE(blacklist_manager_->IsRequestBlocked(request, &reason));
+  EXPECT_EQ(net::ERR_BLOCKED_BY_ADMINISTRATOR, reason);
 
   // On most platforms, sync gets a free pass due to signin flows.
   bool block_signin_urls = false;
@@ -523,7 +526,7 @@ TEST_F(URLBlacklistManagerTest, DontBlockResources) {
   net::URLRequest sync_request(sync_url, net::DEFAULT_PRIORITY, NULL, &context);
   sync_request.SetLoadFlags(net::LOAD_MAIN_FRAME);
   EXPECT_EQ(block_signin_urls,
-            blacklist_manager_->IsRequestBlocked(sync_request));
+            blacklist_manager_->IsRequestBlocked(sync_request, &reason));
 }
 
 }  // namespace policy
