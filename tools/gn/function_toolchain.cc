@@ -76,7 +76,7 @@ const char kToolchain_Help[] =
     "Example:\n"
     "  toolchain(\"plugin_toolchain\") {\n"
     "    tool(\"cc\") {\n"
-    "      command = \"gcc $in\""
+    "      command = \"gcc $in\"\n"
     "    }\n"
     "\n"
     "    toolchain_args() {\n"

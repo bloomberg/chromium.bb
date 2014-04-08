@@ -54,7 +54,7 @@ extern const char kDotfile_Help[] =
     "Variables\n"
     "\n"
     "  buildconfig [required]\n"
-    "      Label of the build config file. This file will be used to setup\n"
+    "      Label of the build config file. This file will be used to set up\n"
     "      the build file execution environment for each toolchain.\n"
     "\n"
     "  root [optional]\n"
