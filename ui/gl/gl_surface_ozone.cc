@@ -25,6 +25,13 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
       : NativeViewGLSurfaceEGL(ozone_surface->GetNativeWindow()),
         ozone_surface_(ozone_surface.Pass()) {}
 
+  virtual bool Resize(const gfx::Size& size) OVERRIDE {
+    if (!ozone_surface_->ResizeNativeWindow(size))
+      return false;
+
+    return NativeViewGLSurfaceEGL::Resize(size);
+  }
+
  private:
   virtual ~GLSurfaceOzoneEGL() {
     Destroy();  // EGL surface must be destroyed before SurfaceOzone
