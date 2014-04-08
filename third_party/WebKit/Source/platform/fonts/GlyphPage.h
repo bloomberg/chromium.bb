@@ -98,8 +98,9 @@ public:
 
     ~GlyphPage() { }
 
-    static const size_t size = 256; // Covers Latin-1 in a single page.
-    static unsigned indexForCharacter(UChar32 c) { return c % GlyphPage::size; }
+    static const unsigned char sizeBits = 8;
+    static const size_t size = (1 << GlyphPage::sizeBits); // Covers Latin-1 in a single page.
+    static unsigned indexForCharacter(UChar32 c) { return c & 0xFF; }
 
     ALWAYS_INLINE GlyphData glyphDataForCharacter(UChar32 c) const
     {
