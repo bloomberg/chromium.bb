@@ -6233,13 +6233,11 @@
         },
       ],
     },
-    # TODO(joaodasilva): replace the 'dict' type with a more generic
-    # 'json' type. The actual schema type for this should be 'array'.
     {
       'name': 'ManagedBookmarks',
       'type': 'dict',
       'schema': {
-        'type': 'object',
+        'type': 'array',
         'items': {
           'type': 'object',
           'properties': {
@@ -6253,8 +6251,15 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'future': True,
-      'example_value': { "name": "Google", "url": "google.com" },
+      'example_value': [
+        {
+          "name": "Google",
+          "url": "google.com"
+        }, {
+          "name": "Youtube",
+          "url": "youtube.com"
+        }
+      ],
       'id': 227,
       'caption': '''Managed Bookmarks''',
       'desc': '''Configures a list of managed bookmarks.

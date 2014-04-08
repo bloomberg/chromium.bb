@@ -19,16 +19,18 @@ TRAILING_WHITESPACE = re.compile('.*?([ \t]+)$')
 # Matches all non-empty strings that contain no whitespaces.
 NO_WHITESPACE = re.compile('[^\s]+$')
 
-# Convert a 'type' to its corresponding schema type.
+# Convert a 'type' to the schema types it may be converted to.
+# The 'dict' type represents structured JSON data, and can be converted
+# to an 'object' or an 'array'.
 TYPE_TO_SCHEMA = {
-  'int': 'integer',
-  'list': 'array',
-  'dict': 'object',
-  'main': 'boolean',
-  'string': 'string',
-  'int-enum': 'integer',
-  'string-enum': 'string',
-  'external': 'object',
+  'int': [ 'integer' ],
+  'list': [ 'array' ],
+  'dict': [ 'object', 'array' ],
+  'main': [ 'boolean' ],
+  'string': [ 'string' ],
+  'int-enum': [ 'integer' ],
+  'string-enum': [ 'string' ],
+  'external': [ 'object' ],
 }
 
 # List of boolean policies that have been introduced with negative polarity in
@@ -84,6 +86,8 @@ class PolicyTemplateChecker(object):
     If |value_type| is string and |regexp_check| is specified, then an error is
     reported when the value does not match the regular expression object.
 
+    |value_type| can also be a list, if more than one type is supported.
+
     The other parameters are needed to generate, if applicable, an appropriate
     human-readable error message of the following form:
 
@@ -112,11 +116,12 @@ class PolicyTemplateChecker(object):
                     container_name, identifier, offending)
       return None
     value = container[key]
-    if not isinstance(value, value_type):
-      self._Error('Value of "%s" must be a %s.' %
-                  (key, value_type.__name__),
+    value_types = value_type if isinstance(value_type, list) else [ value_type ]
+    if not any(isinstance(value, type) for type in value_types):
+      self._Error('Value of "%s" must one of [ %s ].' %
+                  (key, ', '.join([type.__name__ for type in value_types])),
                   container_name, identifier, value)
-    if value_type == str and regexp_check and not regexp_check.match(value):
+    if str in value_types and regexp_check and not regexp_check.match(value):
       self._Error('Value of "%s" must match "%s".' %
                   (key, regexp_check.pattern),
                   container_name, identifier, value)
@@ -150,7 +155,7 @@ class PolicyTemplateChecker(object):
     if isinstance(policy.get('schema'), dict):
       self._CheckContains(policy['schema'], 'type', str)
       schema_type = policy['schema'].get('type')
-      if schema_type != TYPE_TO_SCHEMA[policy_type]:
+      if schema_type not in TYPE_TO_SCHEMA[policy_type]:
         self._Error('Schema type must match the existing type for policy %s' %
                     policy.get('name'))
 
@@ -278,8 +283,10 @@ class PolicyTemplateChecker(object):
         value_type = int
       elif policy_type == 'list':
         value_type = list
-      elif policy_type in ('dict', 'external'):
+      elif policy_type == 'external':
         value_type = dict
+      elif policy_type == 'dict':
+        value_type = [ dict, list ]
       else:
         raise NotImplementedError('Unimplemented policy type: %s' % policy_type)
       self._CheckContains(policy, 'example_value', value_type)

@@ -236,6 +236,9 @@ templates and will be translated for each locale. -->
       <output filename="app/policy/mac/strings/vi.lproj/Localizable.strings" type="plist_strings" lang="vi" />
       <output filename="app/policy/mac/strings/zh_CN.lproj/Localizable.strings" type="plist_strings" lang="zh-CN" />
       <output filename="app/policy/mac/strings/zh_TW.lproj/Localizable.strings" type="plist_strings" lang="zh-TW" />
+
+      <!-- Generate the sample iOS plist when building the templates for the Mac. -->
+      <output filename="app/policy/ios/chrome_policy.plist" type="ios_plist" lang="en" />
    </if>
 
   </outputs>
