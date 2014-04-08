@@ -525,26 +525,19 @@ TEST(MinidumpWriterTest, InvalidStackPointer) {
 
   // Fake the child's stack pointer for its crashing thread.  NOTE: This must
   // be an invalid memory address for the child process (stack or otherwise).
-#if defined(__i386)
   // Try 1MB below the current stack.
   uintptr_t invalid_stack_pointer =
       reinterpret_cast<uintptr_t>(&context) - 1024*1024;
+#if defined(__i386)
   context.context.uc_mcontext.gregs[REG_ESP] = invalid_stack_pointer;
 #elif defined(__x86_64)
-  // Try 1MB below the current stack.
-  uintptr_t invalid_stack_pointer =
-      reinterpret_cast<uintptr_t>(&context) - 1024*1024;
   context.context.uc_mcontext.gregs[REG_RSP] = invalid_stack_pointer;
 #elif defined(__ARM_EABI__)
-  // Try 1MB below the current stack.
-  uintptr_t invalid_stack_pointer =
-      reinterpret_cast<uintptr_t>(&context) - 1024*1024;
   context.context.uc_mcontext.arm_sp = invalid_stack_pointer;
+#elif defined(__aarch64__)
+  context.context.uc_mcontext.sp = invalid_stack_pointer;
 #elif defined(__mips__)
-  // Try 1MB below the current stack.
-  uintptr_t invalid_stack_pointer =
-      reinterpret_cast<uintptr_t>(&context) - 1024 * 1024;
-  context.context.uc_mcontext.gregs[MD_CONTEXT_MIPS_REG_SP] = 
+  context.context.uc_mcontext.gregs[MD_CONTEXT_MIPS_REG_SP] =
       invalid_stack_pointer;
 #else
 # error "This code has not been ported to your platform yet."
@@ -629,7 +622,7 @@ TEST(MinidumpWriterTest, MinidumpSizeLimit) {
     ASSERT_EQ(1, r);
     ASSERT_TRUE(pfd.revents & POLLIN);
     uint8_t junk;
-    ASSERT_EQ(read(fds[0], &junk, sizeof(junk)), 
+    ASSERT_EQ(read(fds[0], &junk, sizeof(junk)),
               static_cast<ssize_t>(sizeof(junk)));
   }
   close(fds[0]);

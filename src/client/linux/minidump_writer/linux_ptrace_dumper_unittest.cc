@@ -433,6 +433,8 @@ TEST(LinuxPtraceDumperTest, VerifyStackReadWithMultipleThreads) {
     // specific register. Check that we can recover its value.
 #if defined(__ARM_EABI__)
     pid_t* process_tid_location = (pid_t*)(one_thread.regs.uregs[3]);
+#elif defined(__aarch64__)
+    pid_t* process_tid_location = (pid_t*)(one_thread.regs.regs[3]);
 #elif defined(__i386)
     pid_t* process_tid_location = (pid_t*)(one_thread.regs.ecx);
 #elif defined(__x86_64)

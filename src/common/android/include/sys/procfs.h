@@ -36,6 +36,7 @@
 
 #else
 
+#include <asm/ptrace.h>
 #include <sys/cdefs.h>
 #include <sys/user.h>
 #include <unistd.h>
