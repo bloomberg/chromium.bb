@@ -15,6 +15,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
 
 using content::BrowserThread;
@@ -114,11 +116,18 @@ bool HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info, DrawGLResult* result) {
                       draw_info->clip_right - draw_info->clip_left,
                       draw_info->clip_bottom - draw_info->clip_top);
 
+  gfx::Rect viewport(draw_info->width, draw_info->height);
+  if (!draw_info->is_layer) {
+    gfx::RectF view_rect(input.width, input.height);
+    transform.TransformRect(&view_rect);
+    viewport.Intersect(gfx::ToEnclosingRect(view_rect));
+  }
+
   bool did_draw = shared_renderer_state_->GetCompositor()->
       DemandDrawHw(
           gfx::Size(draw_info->width, draw_info->height),
           transform,
-          clip_rect,  // viewport
+          viewport,
           clip_rect,
           state_restore.stencil_enabled());
   gl_surface_->ResetBackingFrameBufferObject();

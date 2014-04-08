@@ -10,7 +10,7 @@
 
 namespace android_webview {
 
-DrawGLInput::DrawGLInput() : frame_id(0) {}
+DrawGLInput::DrawGLInput() : frame_id(0), width(0), height(0) {}
 
 DrawGLResult::DrawGLResult() : frame_id(0), clip_contains_visible_rect(false) {}
 

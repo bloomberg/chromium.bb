@@ -99,6 +99,8 @@ bool BrowserViewRenderer::OnDraw(jobject java_canvas,
   draw_gl_input_.frame_id++;
   draw_gl_input_.scroll_offset = scroll;
   draw_gl_input_.global_visible_rect = global_visible_rect;
+  draw_gl_input_.width = width_;
+  draw_gl_input_.height = height_;
   if (clear_view_)
     return false;
   if (is_hardware_canvas && attached_to_window_) {

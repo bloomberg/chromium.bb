@@ -19,6 +19,8 @@ struct DrawGLInput {
   unsigned int frame_id;
   gfx::Rect global_visible_rect;
   gfx::Vector2d scroll_offset;
+  int width;
+  int height;
 
   DrawGLInput();
 };
