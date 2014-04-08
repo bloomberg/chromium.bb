@@ -33,11 +33,3 @@ remoting.Error = {
   P2P_FAILURE: /*i18n-content*/'ERROR_P2P_FAILURE',
   REGISTRATION_FAILED: /*i18n-content*/'ERROR_HOST_REGISTRATION_FAILED'
 };
-
-/**
- * Message returned by chrome.runtime.lastError.message when chrome fails
- * to find a native messaging host.
- * @type {string}
- */
-remoting.NATIVE_MESSAGING_HOST_NOT_FOUND_ERROR =
-    'Specified native messaging host not found.';

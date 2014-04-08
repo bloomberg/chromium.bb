@@ -60,10 +60,9 @@ remoting.HostIt2MeNativeMessaging = function() {
 
   /**
    * Called if Native Messaging host has failed to start.
-   * @param {remoting.Error} error
    * @private
    * */
-  this.onHostInitFailed_ = function(error) {};
+  this.onHostInitFailed_ = function() {};
 
   /**
    * Called if the It2Me Native Messaging host sends a malformed message:
@@ -94,8 +93,7 @@ remoting.HostIt2MeNativeMessaging = function() {
  *
  * @param {function():void} onHostStarted Called after successful
  *     initialization.
- * @param {function(remoting.Error):void} onHostInitFailed Called if cannot
- *      connect to host.
+ * @param {function():void} onHostInitFailed Called if cannot connect to host.
  * @param {function(remoting.Error):void} onError Called on host error after
  *     successfully connecting to the host.
  * @return {void}
@@ -115,7 +113,7 @@ remoting.HostIt2MeNativeMessaging.prototype.initialize =
   } catch (err) {
     console.log('Native Messaging initialization failed: ',
                 /** @type {*} */ (err));
-    onHostInitFailed(remoting.Error.UNEXPECTED);
+    onHostInitFailed();
     return;
   }
 };
@@ -290,12 +288,15 @@ remoting.HostIt2MeNativeMessaging.prototype.onConnected_ =
  */
 remoting.HostIt2MeNativeMessaging.prototype.onHostDisconnect_ = function() {
   if (!this.initialized_) {
-    var error = (chrome.runtime.lastError.message ==
-                 remoting.NATIVE_MESSAGING_HOST_NOT_FOUND_ERROR)
-                    ? remoting.Error.MISSING_PLUGIN
-                    : remoting.Error.UNEXPECTED;
-    console.error('Native Messaging initialization failed.');
-    this.onHostInitFailed_(error);
+    // If the host is disconnected before it is initialized, it probably means
+    // the host is not propertly installed (or not installed at all).
+    // E.g., if the host manifest is not present we get "Specified native
+    // messaging host not found" error. If the host manifest is present but
+    // the host binary cannot be found we get the "Native host has exited"
+    // error.
+    console.log('Native Messaging initialization failed: ' +
+                chrome.runtime.lastError.message);
+    this.onHostInitFailed_();
   } else {
     console.error('Native Messaging port disconnected.');
     this.onError_(remoting.Error.UNEXPECTED);

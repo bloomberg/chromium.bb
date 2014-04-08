@@ -184,6 +184,8 @@ remoting.createNpapiPlugin = function(container) {
 remoting.isMe2MeInstallable = function() {
   /** @type {string} */
   var platform = navigator.platform;
+  // Chromoting host is not installable on ChromeOS and any linux distro other
+  // than Ubuntu.
   return platform == 'Win32' || platform == 'MacIntel';
 }
 
