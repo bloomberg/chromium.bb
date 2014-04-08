@@ -731,6 +731,7 @@ public class ContentViewCore
             @Override
             public void didStartLoading(String url) {
                 hidePopupDialog();
+                resetScrollInProgress();
                 resetGestureDetectors();
             }
         };
@@ -1269,6 +1270,7 @@ public class ContentViewCore
     @SuppressWarnings("unused")
     @CalledByNative
     private void onScrollEndEventAck() {
+        if (!mTouchScrollInProgress) return;
         mTouchScrollInProgress = false;
         updateGestureStateListener(GestureEventType.SCROLL_END);
     }
@@ -3128,6 +3130,23 @@ public class ContentViewCore
         return mContainerView.performLongClick();
     }
 
+    /**
+     * Reset scroll and fling accounting, notifying listeners as appropriate.
+     * This is useful as a failsafe when the input stream may have been interruped.
+     */
+    private void resetScrollInProgress() {
+        if (!isScrollInProgress()) return;
+
+        final boolean touchScrollInProgress = mTouchScrollInProgress;
+        final int potentiallyActiveFlingCount = mPotentiallyActiveFlingCount;
+
+        mTouchScrollInProgress = false;
+        mPotentiallyActiveFlingCount = 0;
+
+        if (touchScrollInProgress) updateGestureStateListener(GestureEventType.SCROLL_END);
+        if (potentiallyActiveFlingCount > 0) updateGestureStateListener(GestureEventType.FLING_END);
+    }
+
     private native long nativeInit(long webContentsPtr,
             long viewAndroidPtr, long windowAndroidPtr);
 
@@ -3146,7 +3165,8 @@ public class ContentViewCore
         // Note that mTouchScrollInProgress should normally be false at this
         // point, but we reset it anyway as another failsafe.
         mTouchScrollInProgress = false;
-        if (mPotentiallyActiveFlingCount > 0) mPotentiallyActiveFlingCount--;
+        if (mPotentiallyActiveFlingCount <= 0) return;
+        mPotentiallyActiveFlingCount--;
         updateGestureStateListener(GestureEventType.FLING_END);
     }
 
