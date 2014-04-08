@@ -124,6 +124,17 @@ void HistogramTimeLarge(const std::string& name, int64_t sample) {
     counter->AddTime(base::TimeDelta::FromMilliseconds(sample));
 }
 
+void HistogramStartupTimeMedium(const std::string& name,
+                                base::TimeDelta td,
+                                int64_t nexe_size) {
+  HistogramTimeMedium(name, static_cast<int64_t>(td.InMilliseconds()));
+  if (nexe_size > 0) {
+    float size_in_MB = static_cast<float>(nexe_size) / (1024.f * 1024.f);
+    HistogramTimeMedium(name + "PerMB",
+                        static_cast<int64_t>(td.InMilliseconds() / size_in_MB));
+  }
+}
+
 blink::WebString EventTypeToString(PP_NaClEventType event_type) {
   switch (event_type) {
     case PP_NACL_EVENT_LOADSTART:
@@ -166,6 +177,7 @@ NexeLoadManager::NexeLoadManager(
       nexe_error_reported_(false),
       is_installed_(false),
       exit_status_(-1),
+      nexe_size_(0),
       plugin_instance_(content::PepperPluginInstance::Get(pp_instance)),
       weak_factory_(this) {
   SetLastError("");
@@ -386,6 +398,12 @@ void NexeLoadManager::set_exit_status(int exit_status) {
       ppapi::ScopedPPVar::PassRef(),
       ppapi::StringVar::StringToPPVar("exitStatus"));
   SetReadOnlyProperty(exit_status_name_var.get(), PP_MakeInt32(exit_status));
+}
+
+void NexeLoadManager::ReportStartupOverhead() const {
+  base::TimeDelta overhead = base::Time::Now() - init_time_;
+  HistogramStartupTimeMedium(
+      "NaCl.Perf.StartupTime.NaClOverhead", overhead, nexe_size_);
 }
 
 void NexeLoadManager::ReportDeadNexe() {

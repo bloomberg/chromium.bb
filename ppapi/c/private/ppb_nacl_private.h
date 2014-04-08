@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Apr  4 10:27:36 2014. */
+/* From private/ppb_nacl_private.idl modified Mon Apr  7 13:43:24 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -14,7 +14,6 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/private/ppb_instance_private.h"
 
 #define PPB_NACL_PRIVATE_INTERFACE_1_0 "PPB_NaCl_Private;1.0"
 #define PPB_NACL_PRIVATE_INTERFACE PPB_NACL_PRIVATE_INTERFACE_1_0
@@ -190,14 +189,9 @@ struct PPB_NaCl_Private_1_0 {
                        struct PP_Var* error_message,
                        struct PP_CompletionCallback callback);
   /* This function starts the IPC proxy so the nexe can communicate with the
-   * browser. Returns PP_EXTERNAL_PLUGIN_OK on success, otherwise a result code
-   * indicating the failure. PP_EXTERNAL_PLUGIN_FAILED is returned if
-   * LaunchSelLdr wasn't called with the instance.
-   * PP_EXTERNAL_PLUGIN_ERROR_MODULE is returned if the module can't be
-   * initialized. PP_EXTERNAL_PLUGIN_ERROR_INSTANCE is returned if the instance
-   * can't be initialized.
+   * browser.
    */
-  PP_ExternalPluginResult (*StartPpapiProxy)(PP_Instance instance);
+  PP_Bool (*StartPpapiProxy)(PP_Instance instance);
   /* On POSIX systems, this function returns the file descriptor of
    * /dev/urandom.  On non-POSIX systems, this function returns 0.
    */
@@ -331,6 +325,12 @@ struct PPB_NaCl_Private_1_0 {
   void (*SetExitStatus)(PP_Instance instance, int32_t exit_status);
   /* Logs the message via VLOG. */
   void (*Vlog)(const char* message);
+  /* Sets the time the plugin was initialized. */
+  void (*SetInitTime)(PP_Instance instance);
+  /* Returns the size of the nexe. */
+  int64_t (*GetNexeSize)(PP_Instance instance);
+  /* Sets the size of the nexe. */
+  void (*SetNexeSize)(PP_Instance instance, int64_t nexe_size);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

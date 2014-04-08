@@ -168,14 +168,9 @@ interface PPB_NaCl_Private {
                     [in] PP_CompletionCallback callback);
 
   /* This function starts the IPC proxy so the nexe can communicate with the
-   * browser. Returns PP_EXTERNAL_PLUGIN_OK on success, otherwise a result code
-   * indicating the failure. PP_EXTERNAL_PLUGIN_FAILED is returned if
-   * LaunchSelLdr wasn't called with the instance.
-   * PP_EXTERNAL_PLUGIN_ERROR_MODULE is returned if the module can't be
-   * initialized. PP_EXTERNAL_PLUGIN_ERROR_INSTANCE is returned if the instance
-   * can't be initialized.
+   * browser.
    */
-  PP_ExternalPluginResult StartPpapiProxy(PP_Instance instance);
+  PP_Bool StartPpapiProxy(PP_Instance instance);
 
   /* On POSIX systems, this function returns the file descriptor of
    * /dev/urandom.  On non-POSIX systems, this function returns 0.
@@ -344,4 +339,14 @@ interface PPB_NaCl_Private {
 
   /* Logs the message via VLOG. */
   void Vlog([in] str_t message);
+
+  /* Sets the time the plugin was initialized. */
+  void SetInitTime([in] PP_Instance instance);
+
+  /* Returns the size of the nexe. */
+  int64_t GetNexeSize([in] PP_Instance instance);
+
+  /* Sets the size of the nexe. */
+  void SetNexeSize([in] PP_Instance instance,
+                   [in] int64_t nexe_size);
 };

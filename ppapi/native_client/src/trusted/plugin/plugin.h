@@ -95,7 +95,7 @@ class Plugin : public pp::Instance {
 
   // Finish hooking interfaces up, after low-level initialization is
   // complete.
-  bool LoadNaClModuleContinuationIntern(ErrorInfo* error_info);
+  bool LoadNaClModuleContinuationIntern();
 
   // Continuation for starting SRPC/JSProxy services as appropriate.
   // This is invoked as a callback when the NaCl module makes the
@@ -401,7 +401,6 @@ class Plugin : public pp::Instance {
 
   int64_t init_time_;
   int64_t ready_time_;
-  size_t nexe_size_;
 
   // Callback to receive .nexe and .dso download progress notifications.
   static void UpdateDownloadProgress(

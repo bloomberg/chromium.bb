@@ -84,6 +84,13 @@ class NexeLoadManager {
   int32_t exit_status() const { return exit_status_; }
   void set_exit_status(int32_t exit_status);
 
+  void set_init_time() { init_time_ = base::Time::Now(); }
+
+  void ReportStartupOverhead() const;
+
+  int64_t nexe_size() const { return nexe_size_; }
+  void set_nexe_size(int64_t nexe_size) { nexe_size_ = nexe_size; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NexeLoadManager);
 
@@ -110,10 +117,16 @@ class NexeLoadManager {
   // Time of a successful nexe load.
   base::Time ready_time_;
 
+  // Time of plugin initialization.
+  base::Time init_time_;
+
   // The exit status of the plugin process.
   // This will have a value in the range (0x00-0xff) if the exit status is set,
   // or -1 if set_exit_status() has never been called.
   int32_t exit_status_;
+
+  // Size of the downloaded nexe, in bytes.
+  int64_t nexe_size_;
 
   // Non-owning.
   content::PepperPluginInstance* plugin_instance_;

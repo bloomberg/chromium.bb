@@ -327,7 +327,8 @@ void Plugin::LoadNexeAndStart(int32_t pp_error,
   }
 }
 
-bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
+bool Plugin::LoadNaClModuleContinuationIntern() {
+  ErrorInfo error_info;
   if (!uses_nonsfi_mode_) {
     if (!main_subprocess_.StartSrpcServices()) {
       // The NaCl process probably crashed. On Linux, a crash causes this
@@ -336,35 +337,19 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
       // to make it less confusing for developers.
       NaClLog(LOG_ERROR, "LoadNaClModuleContinuationIntern: "
               "StartSrpcServices failed\n");
-      error_info->SetReport(PP_NACL_ERROR_START_PROXY_MODULE,
-                            "could not initialize module.");
+      error_info.SetReport(PP_NACL_ERROR_START_PROXY_MODULE,
+                           "could not initialize module.");
+      ReportLoadError(error_info);
       return false;
     }
   }
-  PP_ExternalPluginResult ipc_result =
-      nacl_interface_->StartPpapiProxy(pp_instance());
-  if (ipc_result == PP_EXTERNAL_PLUGIN_OK) {
-    // Log the amound of time that has passed between the trusted plugin being
-    // initialized and the untrusted plugin being initialized.  This is
-    // (roughly) the cost of using NaCl, in terms of startup time.
-    HistogramStartupTimeMedium(
-        "NaCl.Perf.StartupTime.NaClOverhead",
-        static_cast<float>(NaClGetTimeOfDayMicroseconds() - init_time_)
-            / NACL_MICROS_PER_MILLI);
-  } else if (ipc_result == PP_EXTERNAL_PLUGIN_ERROR_MODULE) {
-    NaClLog(LOG_ERROR, "LoadNaClModuleContinuationIntern: "
-            "Got PP_EXTERNAL_PLUGIN_ERROR_MODULE\n");
-    error_info->SetReport(PP_NACL_ERROR_START_PROXY_MODULE,
-                          "could not initialize module.");
-    return false;
-  } else if (ipc_result == PP_EXTERNAL_PLUGIN_ERROR_INSTANCE) {
-    error_info->SetReport(PP_NACL_ERROR_START_PROXY_INSTANCE,
-                          "could not create instance.");
-    return false;
+
+  bool result = PP_ToBool(nacl_interface_->StartPpapiProxy(pp_instance()));
+  if (result) {
+    PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
+                   main_subprocess_.detailed_description().c_str()));
   }
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
-                 main_subprocess_.detailed_description().c_str()));
-  return true;
+  return result;
 }
 
 NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
@@ -458,6 +443,8 @@ Plugin* Plugin::New(PP_Instance pp_instance) {
 bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   PLUGIN_PRINTF(("Plugin::Init (argc=%" NACL_PRIu32 ")\n", argc));
   init_time_ = NaClGetTimeOfDayMicroseconds();
+  nacl_interface_->SetInitTime(pp_instance());
+
   url_util_ = pp::URLUtil_Dev::Get();
   if (url_util_ == NULL)
     return false;
@@ -525,7 +512,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       enable_dev_interfaces_(false),
       init_time_(0),
       ready_time_(0),
-      nexe_size_(0),
       time_of_last_progress_event_(0),
       nacl_interface_(NULL),
       uma_interface_(this) {
@@ -610,16 +596,18 @@ bool Plugin::HandleDocumentLoad(const pp::URLLoader& url_loader) {
 }
 
 void Plugin::HistogramStartupTimeSmall(const std::string& name, float dt) {
-  if (nexe_size_ > 0) {
-    float size_in_MB = static_cast<float>(nexe_size_) / (1024.f * 1024.f);
+  int64_t nexe_size = nacl_interface_->GetNexeSize(pp_instance());
+  if (nexe_size > 0) {
+    float size_in_MB = static_cast<float>(nexe_size) / (1024.f * 1024.f);
     HistogramTimeSmall(name, static_cast<int64_t>(dt));
     HistogramTimeSmall(name + "PerMB", static_cast<int64_t>(dt / size_in_MB));
   }
 }
 
 void Plugin::HistogramStartupTimeMedium(const std::string& name, float dt) {
-  if (nexe_size_ > 0) {
-    float size_in_MB = static_cast<float>(nexe_size_) / (1024.f * 1024.f);
+  int64_t nexe_size = nacl_interface_->GetNexeSize(pp_instance());
+  if (nexe_size > 0) {
+    float size_in_MB = static_cast<float>(nexe_size) / (1024.f * 1024.f);
     HistogramTimeMedium(name, static_cast<int64_t>(dt));
     HistogramTimeMedium(name + "PerMB", static_cast<int64_t>(dt / size_in_MB));
   }
@@ -660,9 +648,9 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
   }
   size_t nexe_bytes_read = static_cast<size_t>(stat_buf.st_size);
 
-  nexe_size_ = nexe_bytes_read;
+  nacl_interface_->SetNexeSize(pp_instance(), nexe_bytes_read);
   HistogramSizeKB("NaCl.Perf.Size.Nexe",
-                  static_cast<int32_t>(nexe_size_ / 1024));
+                  static_cast<int32_t>(nexe_bytes_read / 1024));
   HistogramStartupTimeMedium(
       "NaCl.Perf.StartupTime.NexeDownload",
       static_cast<float>(nexe_downloader_.TimeSinceOpenMilliseconds()));
@@ -689,14 +677,13 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
 }
 
 void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
-  ErrorInfo error_info;
   bool was_successful;
 
   UNREFERENCED_PARAMETER(pp_error);
   NaClLog(4, "Entered NexeFileDidOpenContinuation\n");
   NaClLog(4, "NexeFileDidOpenContinuation: invoking"
           " LoadNaClModuleContinuationIntern\n");
-  was_successful = LoadNaClModuleContinuationIntern(&error_info);
+  was_successful = LoadNaClModuleContinuationIntern();
   if (was_successful) {
     NaClLog(4, "NexeFileDidOpenContinuation: success;"
             " setting histograms\n");
@@ -709,10 +696,10 @@ void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
         "NaCl.Perf.StartupTime.Total",
         static_cast<float>(ready_time_ - init_time_) / NACL_MICROS_PER_MILLI);
 
-    ReportLoadSuccess(nexe_size_, nexe_size_);
+    int64_t nexe_size = nacl_interface_->GetNexeSize(pp_instance());
+    ReportLoadSuccess(nexe_size, nexe_size);
   } else {
     NaClLog(4, "NexeFileDidOpenContinuation: failed.");
-    ReportLoadError(error_info);
   }
   NaClLog(4, "Leaving NexeFileDidOpenContinuation\n");
 }
@@ -752,8 +739,7 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
 }
 
 void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
-  ErrorInfo error_info;
-  bool was_successful = LoadNaClModuleContinuationIntern(&error_info);
+  bool was_successful = LoadNaClModuleContinuationIntern();
 
   NaClLog(4, "Entered BitcodeDidTranslateContinuation\n");
   UNREFERENCED_PARAMETER(pp_error);
@@ -762,8 +748,6 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
     int64_t total;
     pnacl_coordinator_->GetCurrentProgress(&loaded, &total);
     ReportLoadSuccess(loaded, total);
-  } else {
-    ReportLoadError(error_info);
   }
 }
 
