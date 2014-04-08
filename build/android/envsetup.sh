@@ -12,38 +12,42 @@ if [[ -n "$BASH_VERSION" && "${BASH_SOURCE:-$0}" == "$0" ]]; then
   exit 1
 fi
 
-SCRIPT_DIR="$(dirname "${BASH_SOURCE:-$0}")"
+# This only exists to set local variables. Don't call this manually.
+android_envsetup_main() {
+  local SCRIPT_DIR="$(dirname "${BASH_SOURCE:-$0}")"
 
-CURRENT_DIR="$(readlink -f "${SCRIPT_DIR}/../../")"
-if [[ -z "${CHROME_SRC}" ]]; then
-  # If $CHROME_SRC was not set, assume current directory is CHROME_SRC.
-  export CHROME_SRC="${CURRENT_DIR}"
-fi
+  local CURRENT_DIR="$(readlink -f "${SCRIPT_DIR}/../../")"
+  if [[ -z "${CHROME_SRC}" ]]; then
+    # If $CHROME_SRC was not set, assume current directory is CHROME_SRC.
+    local CHROME_SRC="${CURRENT_DIR}"
+  fi
 
-if [[ "${CURRENT_DIR/"${CHROME_SRC}"/}" == "${CURRENT_DIR}" ]]; then
-  # If current directory is not in $CHROME_SRC, it might be set for other
-  # source tree. If $CHROME_SRC was set correctly and we are in the correct
-  # directory, "${CURRENT_DIR/"${CHROME_SRC}"/}" will be "".
-  # Otherwise, it will equal to "${CURRENT_DIR}"
-  echo "Warning: Current directory is out of CHROME_SRC, it may not be \
-the one you want."
-  echo "${CHROME_SRC}"
-fi
+  if [[ "${CURRENT_DIR/"${CHROME_SRC}"/}" == "${CURRENT_DIR}" ]]; then
+    # If current directory is not in $CHROME_SRC, it might be set for other
+    # source tree. If $CHROME_SRC was set correctly and we are in the correct
+    # directory, "${CURRENT_DIR/"${CHROME_SRC}"/}" will be "".
+    # Otherwise, it will equal to "${CURRENT_DIR}"
+    echo "Warning: Current directory is out of CHROME_SRC, it may not be \
+  the one you want."
+    echo "${CHROME_SRC}"
+  fi
 
-# Allow the caller to override a few environment variables. If any of them is
-# unset, we default to a sane value that's known to work. This allows for
-# experimentation with a custom SDK.
-if [[ -z "${ANDROID_SDK_ROOT}" || ! -d "${ANDROID_SDK_ROOT}" ]]; then
-  export ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
-fi
+  # Allow the caller to override a few environment variables. If any of them is
+  # unset, we default to a sane value that's known to work. This allows for
+  # experimentation with a custom SDK.
+  if [[ -z "${ANDROID_SDK_ROOT}" || ! -d "${ANDROID_SDK_ROOT}" ]]; then
+    export ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
+  fi
 
-# Add Android SDK tools to system path.
-export PATH=$PATH:${ANDROID_SDK_ROOT}/tools
-export PATH=$PATH:${ANDROID_SDK_ROOT}/platform-tools
+  # Add Android SDK tools to system path.
+  export PATH=$PATH:${ANDROID_SDK_ROOT}/tools
+  export PATH=$PATH:${ANDROID_SDK_ROOT}/platform-tools
 
-# Add Chromium Android development scripts to system path.
-# Must be after CHROME_SRC is set.
-export PATH=$PATH:${CHROME_SRC}/build/android
+  # Add Chromium Android development scripts to system path.
+  # Must be after CHROME_SRC is set.
+  export PATH=$PATH:${CHROME_SRC}/build/android
+}
+android_envsetup_main
 
 android_gyp() {
   echo "Please call build/gyp_chromium instead. android_gyp is going away."
