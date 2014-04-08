@@ -162,6 +162,7 @@ FileError FinishUpdate(ResourceMetadata* metadata,
   // Clear dirty bit unless the file has been edited during update.
   FileCacheEntry cache_entry;
   if (cache->GetCacheEntry(local_id, &cache_entry) &&
+      cache_entry.is_dirty() &&
       cache_entry.md5() == entry.file_specific_info().md5()) {
     error = cache->ClearDirty(local_id);
     if (error != FILE_ERROR_OK)

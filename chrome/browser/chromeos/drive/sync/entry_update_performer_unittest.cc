@@ -9,6 +9,7 @@
 #include "base/md5.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
@@ -123,6 +124,66 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry) {
   ASSERT_TRUE(parent_link);
   EXPECT_EQ(dest_entry.resource_id(),
             util::ExtractResourceIdFromUrl(parent_link->href()));
+}
+
+// Tests updating metadata of a file with a non-dirty cache file.
+TEST_F(EntryUpdatePerformerTest, UpdateEntry_WithNonDirtyCache) {
+  base::FilePath src_path(
+      FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
+
+  // Download the file content to prepare a non-dirty cache file.
+  file_system::DownloadOperation download_operation(
+      blocking_task_runner(), observer(), scheduler(), metadata(), cache(),
+      temp_dir());
+  FileError error = FILE_ERROR_FAILED;
+  base::FilePath cache_file_path;
+  scoped_ptr<ResourceEntry> src_entry;
+  download_operation.EnsureFileDownloadedByPath(
+      src_path,
+      ClientContext(USER_INITIATED),
+      GetFileContentInitializedCallback(),
+      google_apis::GetContentCallback(),
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &cache_file_path, &src_entry));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(src_entry);
+
+  // Update the entry locally.
+  src_entry->set_title("Updated" + src_entry->title());
+  src_entry->set_metadata_edit_state(ResourceEntry::DIRTY);
+
+  error = FILE_ERROR_FAILED;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&ResourceMetadata::RefreshEntry,
+                 base::Unretained(metadata()),
+                 *src_entry),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Perform server side update. This shouldn't fail. (crbug.com/358590)
+  error = FILE_ERROR_FAILED;
+  performer_->UpdateEntry(
+      src_entry->local_id(),
+      ClientContext(USER_INITIATED),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Verify the file is updated on the server.
+  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> gdata_entry;
+  fake_service()->GetResourceEntry(
+      src_entry->resource_id(),
+      google_apis::test_util::CreateCopyResultCallback(&gdata_error,
+                                                       &gdata_entry));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, gdata_error);
+  ASSERT_TRUE(gdata_entry);
+  EXPECT_EQ(src_entry->title(), gdata_entry->title());
 }
 
 TEST_F(EntryUpdatePerformerTest, UpdateEntry_NotFound) {
