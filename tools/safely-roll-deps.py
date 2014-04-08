@@ -99,11 +99,9 @@ def main():
     print '%s roll %s:%s' % (project.title(), old_rev, new_rev)
 
     review_field = 'TBR' if options.commit else 'R'
-    commit_msg = options.message or (
-        '%s roll %s:%s\n'
-        '\n'
-        '%s=%s\n' % (project.title(), old_rev, new_rev,
-                     review_field, options.reviewers))
+    commit_msg = options.message or '%s roll %s:%s\n' % (project.title(),
+                                                         old_rev, new_rev)
+    commit_msg += '\n%s=%s\n' % (review_field, options.reviewers)
 
     if options.dry_run:
       print 'Commit message: ' + commit_msg
