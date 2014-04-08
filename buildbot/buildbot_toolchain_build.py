@@ -17,9 +17,9 @@ import packages
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 BUILD_DIR = os.path.join(NACL_DIR, 'build')
-PACKAGE_VERSION_DIR = os.path.join(BUILD_DIR, 'package_version')
 TOOLCHAIN_BUILD_DIR = os.path.join(NACL_DIR, 'toolchain_build')
 TOOLCHAIN_BUILD_OUT_DIR = os.path.join(TOOLCHAIN_BUILD_DIR, 'out')
+
 TEMP_PACKAGES_FILE = os.path.join(TOOLCHAIN_BUILD_OUT_DIR, 'packages.txt')
 
 build_name = sys.argv[1]
@@ -48,6 +48,4 @@ subprocess.check_call([sys.executable,
                        + sys.argv[2:])
 
 if bot_type == '--buildbot' or bot_type == '--trybot':
-  print '@@@BUILD_STEP upload_package_info@@@'
   packages.UploadPackages(TEMP_PACKAGES_FILE, bot_type == '--trybot')
-  sys.stdout.flush()

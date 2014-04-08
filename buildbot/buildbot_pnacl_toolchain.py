@@ -18,12 +18,9 @@ import packages
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
-BUILD_DIR = os.path.join(NACL_DIR, 'build')
-PACKAGE_VERSION_DIR = os.path.join(BUILD_DIR, 'package_version')
 TOOLCHAIN_BUILD_DIR = os.path.join(NACL_DIR, 'toolchain_build')
 TOOLCHAIN_BUILD_OUT_DIR = os.path.join(TOOLCHAIN_BUILD_DIR, 'out')
 
-PACKAGE_VERSION_SCRIPT = os.path.join(PACKAGE_VERSION_DIR, 'package_version.py')
 TEMP_PACKAGES_FILE = os.path.join(TOOLCHAIN_BUILD_OUT_DIR, 'packages.txt')
 
 # As this is a buildbot script, we want verbose logging. Note however, that
@@ -71,9 +68,7 @@ try:
   subprocess.check_call(cmd)
 
   if args.buildbot or args.trybot:
-    print '@@@BUILD_STEP upload_package_info@@@'
     packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
-    sys.stdout.flush()
 
 except subprocess.CalledProcessError:
   # Ignore any failures and keep going (but make the bot stage red).

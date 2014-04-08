@@ -35,6 +35,8 @@ def UploadPackages(filename, is_try):
     filename: File to read package descriptions from.
     is_try: True if the run is for a trybot, False if for a real buildbot.
   """
+  print '@@@BUILD_STEP upload_package_info@@@'
+  sys.stdout.flush()
 
   if not is_try:
     upload_rev = BUILDBOT_REVISION
