@@ -72,9 +72,11 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
 
     // FIXME: Remove the use of AnimatableValues, RenderStyles and Elements here.
     // FIXME: Remove this cache
-    m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(*element, property, fromCSSValue);
+    if (!m_animatableValueCache)
+        m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(*element, property, fromCSSValue);
 
     RefPtrWillBeRawPtr<AnimatableValue> to = StyleResolver::createAnimatableValueSnapshot(*element, property, toCSSValue);
+    toStringPropertySpecificKeyframe(end)->m_animatableValueCache = to;
 
     return LegacyStyleInterpolation::create(m_animatableValueCache.get(), to.release(), property);
 }
@@ -86,7 +88,8 @@ PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::Prope
 
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::PropertySpecificKeyframe::cloneWithOffset(double offset) const
 {
-    Keyframe::PropertySpecificKeyframe *theClone = new PropertySpecificKeyframe(offset, m_easing, m_value.get());
+    Keyframe::PropertySpecificKeyframe* theClone = new PropertySpecificKeyframe(offset, m_easing, m_value.get());
+    toStringPropertySpecificKeyframe(theClone)->m_animatableValueCache = m_animatableValueCache;
     return adoptPtrWillBeNoop(theClone);
 }
 
