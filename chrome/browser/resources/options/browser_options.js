@@ -1317,7 +1317,7 @@ cr.define('options', function() {
 
       // Create a synthetic pref change event decorated as
       // CoreOptionsHandler::CreateValueForPref() does.
-      var event = new Event('account-picture');
+      var event = new Event('wallpaper');
       if (managed)
         event.value = { controlledBy: 'policy' };
       else
