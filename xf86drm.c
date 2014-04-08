@@ -503,7 +503,7 @@ static int drmOpenByBusid(const char *busid)
 		sv.drm_di_minor = 1;
 		sv.drm_dd_major = -1;       /* Don't care */
 		sv.drm_dd_minor = -1;       /* Don't care */
-		drmMsg("drmOpenByBusid: Interface 1.4 failed, trying 1.1\n",fd);
+		drmMsg("drmOpenByBusid: Interface 1.4 failed, trying 1.1\n");
 		drmSetInterfaceVersion(fd, &sv);
 	    }
 	    buf = drmGetBusid(fd);
