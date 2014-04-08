@@ -1094,6 +1094,12 @@ redraw_handler(struct widget *widget, void *data)
 				cairo_stroke(cr);
 			}
 
+                        /* skip space glyph (RLE) we use as a placeholder of
+                           the right half of a double-width character,
+                           because RLE is not available in every font. */
+			if (p_row[col].ch == 0x200B)
+				continue;
+
 			glyph_run_add(&run, text_x, text_y, &p_row[col]);
 		}
 	}
