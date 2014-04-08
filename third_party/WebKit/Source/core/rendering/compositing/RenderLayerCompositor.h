@@ -190,6 +190,9 @@ public:
 
     void scheduleAnimationIfNeeded();
 
+    // Whether the layer could ever be composited.
+    bool canBeComposited(const RenderLayer*) const;
+
 private:
     class OverlapMap;
 
@@ -238,15 +241,10 @@ private:
 
     // Whether the given RL needs to paint into its own separate backing (and hence would need its own CompositedLayerMapping).
     bool needsOwnBacking(const RenderLayer*) const;
-    // Whether the layer could ever be composited.
-    bool canBeComposited(const RenderLayer*) const;
 
     void updateDirectCompositingReasons(RenderLayer*);
 
     void updateIfNeeded();
-
-    // Returns indirect reasons that a layer should be composited because of something in its subtree.
-    CompositingReasons subtreeReasonsForCompositing(RenderObject*, bool hasCompositedDescendants, bool has3DTransformedDescendants) const;
 
     // Make or destroy the CompositedLayerMapping for this layer; returns true if the compositedLayerMapping changed.
     bool allocateOrClearCompositedLayerMapping(RenderLayer*, CompositingStateTransitionType compositedLayerUpdate);
@@ -263,8 +261,6 @@ private:
     // Hook compositing layers together
     void setCompositingParent(RenderLayer* childLayer, RenderLayer* parentLayer);
     void removeCompositedChildren(RenderLayer*);
-
-    bool isRunningAcceleratedTransformAnimation(RenderObject*) const;
 
     bool hasAnyAdditionalCompositedLayers(const RenderLayer* rootLayer) const;
 
@@ -344,7 +340,6 @@ private:
     OwnPtr<GraphicsLayer> m_layerForOverhangShadow;
 #endif
 };
-
 
 } // namespace WebCore
 

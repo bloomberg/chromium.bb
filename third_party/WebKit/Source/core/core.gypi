@@ -1647,6 +1647,8 @@
             'rendering/compositing/CompositingPropertyUpdater.h',
             'rendering/compositing/CompositingReasonFinder.cpp',
             'rendering/compositing/CompositingReasonFinder.h',
+            'rendering/compositing/CompositingRequirementsUpdater.cpp',
+            'rendering/compositing/CompositingRequirementsUpdater.h',
             'rendering/compositing/CompositingState.h',
             'rendering/compositing/CompositingTriggers.h',
             'rendering/compositing/GraphicsLayerUpdater.cpp',

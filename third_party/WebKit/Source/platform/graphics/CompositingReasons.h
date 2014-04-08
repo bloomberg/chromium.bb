@@ -118,6 +118,18 @@ const uint64_t CompositingReasonComboSquashableReasons =
 
 typedef uint64_t CompositingReasons;
 
+// Any reasons other than overlap or assumed overlap will require the layer to be separately compositing.
+inline bool requiresCompositing(CompositingReasons reasons)
+{
+    return reasons & ~CompositingReasonComboSquashableReasons;
+}
+
+// If the layer has overlap or assumed overlap, but no other reasons, then it should be squashed.
+inline bool requiresSquashing(CompositingReasons reasons)
+{
+    return !requiresCompositing(reasons) && (reasons & CompositingReasonComboSquashableReasons);
+}
+
 struct CompositingReasonStringMap {
     CompositingReasons reason;
     const char* shortName;
