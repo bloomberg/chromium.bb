@@ -55,7 +55,7 @@ TEST(ExtensionURLPatternTest, Ports) {
     { "http://foo:1234/", URLPattern::PARSE_SUCCESS, "1234" },
     { "http://foo:1234/bar", URLPattern::PARSE_SUCCESS, "1234" },
     { "http://*.foo:1234/", URLPattern::PARSE_SUCCESS, "1234" },
-    { "http://*.foo:1234/bar", URLPattern::PARSE_SUCCESS,"1234" },
+    { "http://*.foo:1234/bar", URLPattern::PARSE_SUCCESS, "1234" },
     { "http://:1234/", URLPattern::PARSE_SUCCESS, "1234" },
     { "http://foo:/", URLPattern::PARSE_ERROR_INVALID_PORT, "*" },
     { "http://foo:*/", URLPattern::PARSE_SUCCESS, "*" },
@@ -69,7 +69,7 @@ TEST(ExtensionURLPatternTest, Ports) {
     // Port-like strings in the path should not trigger a warning.
     { "http://*/:1234", URLPattern::PARSE_SUCCESS, "*" },
     { "http://*.foo/bar:1234", URLPattern::PARSE_SUCCESS, "*" },
-    { "http://foo/bar:1234/path", URLPattern::PARSE_SUCCESS,"*" },
+    { "http://foo/bar:1234/path", URLPattern::PARSE_SUCCESS, "*" },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestPatterns); ++i) {
@@ -380,7 +380,8 @@ TEST(ExtensionURLPatternTest, Match17) {
   EXPECT_FALSE(pattern.MatchesURL(GURL("http://www.example.com:8080/foo")));
   EXPECT_FALSE(pattern.MatchesURL(
       GURL("filesystem:http://www.example.com:8080/foo/")));
-  EXPECT_FALSE(pattern.MatchesURL(GURL("filesystem:http://www.example.com/f/foo")));
+  EXPECT_FALSE(pattern.MatchesURL(
+      GURL("filesystem:http://www.example.com/f/foo")));
 }
 
 // Explicit port wildcard

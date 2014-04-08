@@ -24,7 +24,7 @@ using extensions::URLPatternSet;
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
     : location(Manifest::INVALID_LOCATION),
-      creation_flags(Extension::NO_FLAGS){}
+      creation_flags(Extension::NO_FLAGS) {}
 
 ExtensionMsg_Loaded_Params::~ExtensionMsg_Loaded_Params() {}
 

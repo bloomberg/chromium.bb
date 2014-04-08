@@ -29,4 +29,4 @@ extern const char kWhitelistedExtensionID[];
 
 }  // namespace extensions
 
-#endif // EXTENSIONS_COMMON_SWITCHES_H_
+#endif  // EXTENSIONS_COMMON_SWITCHES_H_

@@ -195,6 +195,6 @@ bool ContentSecurityPolicyIsSandboxed(
   return seen_sandbox;
 }
 
-}  // csp_validator
+}  // namespace csp_validator
 
-}  // extensions
+}  // namespace extensions

@@ -100,6 +100,6 @@ class ListBuilder {
   scoped_ptr<base::ListValue> list_;
 };
 
-} // namespace extensions
+}  // namespace extensions
 
 #endif  // EXTENSIONS_COMMON_VALUE_BUILDER_H_

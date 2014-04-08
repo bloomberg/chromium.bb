@@ -41,4 +41,4 @@ void SetViewType(WebContents* tab, ViewType type) {
   tab->SetUserData(&kViewTypeUserDataKey, new ViewTypeUserData(type));
 }
 
-}  // namespace chrome
+}  // namespace extensions

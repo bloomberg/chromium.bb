@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMMON_URL_PATTERN_SET_H_
-#define EXTENSIONS_COMMMON_URL_PATTERN_SET_H_
+#ifndef EXTENSIONS_COMMON_URL_PATTERN_SET_H_
+#define EXTENSIONS_COMMON_URL_PATTERN_SET_H_
 
 #include <set>
 
@@ -102,4 +102,4 @@ class URLPatternSet {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_COMMMON_URL_PATTERN_SET_H_
+#endif  // EXTENSIONS_COMMON_URL_PATTERN_SET_H_

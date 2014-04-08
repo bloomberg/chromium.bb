@@ -31,7 +31,7 @@ URLPatternSet Patterns(const std::string& pattern1,
   return set;
 }
 
-}
+}  // namespace
 
 TEST(URLPatternSetTest, Empty) {
   URLPatternSet set;
@@ -276,7 +276,6 @@ TEST(URLPatternSetTest, NwayUnion) {
 
   // List with 2 elements.
   {
-
     std::vector<URLPatternSet> test;
     test.push_back(Patterns(google_a, google_b));
     test.push_back(Patterns(google_b, google_c));
@@ -364,7 +363,6 @@ TEST(URLPatternSetTest, NwayUnion) {
 
   // List with 9 elements.
   {
-
     std::vector<URLPatternSet> test;
     test.push_back(Patterns(google_a));
     test.push_back(Patterns(google_b));

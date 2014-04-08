@@ -19,6 +19,6 @@ namespace extensions {
 ViewType GetViewType(content::WebContents* tab);
 void SetViewType(content::WebContents* tab, ViewType type);
 
-}  // namespace chrome
+}  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_VIEW_TYPE_UTILS_H_

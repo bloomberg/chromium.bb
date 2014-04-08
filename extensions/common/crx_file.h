@@ -16,7 +16,6 @@ namespace extensions {
 // the header is valid or not.
 class CrxFile {
  public:
-
   // The size of the magic character sequence at the beginning of each crx
   // file, in bytes. This should be a multiple of 4.
   static const size_t kCrxFileHeaderMagicSize = 4;

@@ -145,6 +145,6 @@ class ExtensionAPI {
   DISALLOW_COPY_AND_ASSIGN(ExtensionAPI);
 };
 
-} // namespace extensions
+}  // namespace extensions
 
 #endif  // EXTENSIONS_COMMON_EXTENSION_API_H_

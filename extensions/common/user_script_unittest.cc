@@ -133,7 +133,8 @@ TEST(ExtensionUserScriptTest, UrlPatternGlobInteraction) {
   UserScript script;
 
   URLPattern pattern(kAllSchemes);
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS,pattern.Parse("http://www.google.com/*"));
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+            pattern.Parse("http://www.google.com/*"));
   script.add_url_pattern(pattern);
 
   script.add_glob("*bar*");

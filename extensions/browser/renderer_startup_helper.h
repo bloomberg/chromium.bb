@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_RENDER_PROCESS_HELPER_H_
-#define EXTENSIONS_BROWSER_RENDER_PROCESS_HELPER_H_
+#ifndef EXTENSIONS_BROWSER_RENDERER_STARTUP_HELPER_H_
+#define EXTENSIONS_BROWSER_RENDERER_STARTUP_HELPER_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
@@ -71,4 +71,4 @@ class RendererStartupHelperFactory : public BrowserContextKeyedServiceFactory {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_RENDER_PROCESS_HELPER_H_
+#endif  // EXTENSIONS_BROWSER_RENDERER_STARTUP_HELPER_H_

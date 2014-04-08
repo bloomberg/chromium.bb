@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMON_STACK_FRAME
-#define EXTENSIONS_COMMON_STACK_FRAME
+#ifndef EXTENSIONS_COMMON_STACK_FRAME_H_
+#define EXTENSIONS_COMMON_STACK_FRAME_H_
 
 #include <vector>
 
@@ -37,5 +37,5 @@ typedef std::vector<StackFrame> StackTrace;
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_COMMON_STACK_FRAME
+#endif  // EXTENSIONS_COMMON_STACK_FRAME_H_
 
