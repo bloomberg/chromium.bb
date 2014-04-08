@@ -164,19 +164,22 @@ def _GenerateDepsDirUsingIsolate(suite_name):
   # On Android, all pak files need to be in the top-level 'paks' directory.
   paks_dir = os.path.join(constants.ISOLATE_DEPS_DIR, 'paks')
   os.mkdir(paks_dir)
-  for root, _, filenames in os.walk(os.path.join(constants.ISOLATE_DEPS_DIR,
-                                                 'out')):
+
+  deps_out_dir = os.path.join(
+      constants.ISOLATE_DEPS_DIR,
+      os.path.relpath(os.path.join(constants.GetOutDirectory(), os.pardir),
+                      constants.DIR_SOURCE_ROOT))
+  for root, _, filenames in os.walk(deps_out_dir):
     for filename in fnmatch.filter(filenames, '*.pak'):
       shutil.move(os.path.join(root, filename), paks_dir)
 
   # Move everything in PRODUCT_DIR to top level.
-  deps_product_dir = os.path.join(constants.ISOLATE_DEPS_DIR, 'out',
-      constants.GetBuildType())
+  deps_product_dir = os.path.join(deps_out_dir, constants.GetBuildType())
   if os.path.isdir(deps_product_dir):
     for p in os.listdir(deps_product_dir):
       shutil.move(os.path.join(deps_product_dir, p), constants.ISOLATE_DEPS_DIR)
     os.rmdir(deps_product_dir)
-    os.rmdir(os.path.join(constants.ISOLATE_DEPS_DIR, 'out'))
+    os.rmdir(deps_out_dir)
 
 
 def _GetDisabledTestsFilterFromFile(suite_name):
