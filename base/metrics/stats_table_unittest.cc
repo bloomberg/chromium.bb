@@ -18,21 +18,14 @@
 namespace base {
 
 class StatsTableTest : public MultiProcessTest {
- public:
-  void DeleteShmem(const std::string& name) {
-    SharedMemory mem;
-    mem.Delete(name);
-  }
 };
 
 // Open a StatsTable and verify that we can write to each of the
 // locations in the table.
 TEST_F(StatsTableTest, VerifySlots) {
-  const std::string kTableName = "VerifySlotsStatTable";
   const int kMaxThreads = 1;
   const int kMaxCounter = 5;
-  DeleteShmem(kTableName);
-  StatsTable table(kTableName, kMaxThreads, kMaxCounter);
+  StatsTable table(StatsTable::TableIdentifier(), kMaxThreads, kMaxCounter);
 
   // Register a single thread.
   std::string thread_name = "mainThread";
@@ -55,8 +48,6 @@ TEST_F(StatsTableTest, VerifySlots) {
   // Try to allocate an additional counter.  Verify it fails.
   int counter_id = table.FindCounter(counter_base_name);
   EXPECT_EQ(counter_id, 0);
-
-  DeleteShmem(kTableName);
 }
 
 // CounterZero will continually be set to 0.
@@ -117,11 +108,9 @@ void StatsTableThread::Run() {
 #endif
 TEST_F(StatsTableTest, MAYBE_MultipleThreads) {
   // Create a stats table.
-  const std::string kTableName = "MultipleThreadStatTable";
   const int kMaxThreads = 20;
   const int kMaxCounter = 5;
-  DeleteShmem(kTableName);
-  StatsTable table(kTableName, kMaxThreads, kMaxCounter);
+  StatsTable table(StatsTable::TableIdentifier(), kMaxThreads, kMaxCounter);
   StatsTable::set_current(&table);
 
   EXPECT_EQ(0, table.CountThreadsRegistered());
@@ -166,10 +155,11 @@ TEST_F(StatsTableTest, MAYBE_MultipleThreads) {
   EXPECT_EQ((kMaxThreads % 2) * kThreadLoops,
       table.GetCounterValue(name));
   EXPECT_EQ(0, table.CountThreadsRegistered());
-
-  DeleteShmem(kTableName);
 }
 
+// This multiprocess test only runs on Windows. On Posix, the shared memory
+// handle is not sent between the processes properly.
+#if defined(OS_WIN)
 const std::string kMPTableName = "MultipleProcessStatTable";
 
 MULTIPROCESS_TEST_MAIN(StatsTableMultipleProcessMain) {
@@ -199,7 +189,6 @@ TEST_F(StatsTableTest, DISABLED_MultipleProcesses) {
   // Create a stats table.
   const int kMaxProcs = 20;
   const int kMaxCounter = 5;
-  DeleteShmem(kMPTableName);
   StatsTable table(kMPTableName, kMaxProcs, kMaxCounter);
   StatsTable::set_current(&table);
   EXPECT_EQ(0, table.CountThreadsRegistered());
@@ -241,9 +230,8 @@ TEST_F(StatsTableTest, DISABLED_MultipleProcesses) {
   EXPECT_EQ(-kMaxProcs * kThreadLoops,
       table.GetCounterValue(name));
   EXPECT_EQ(0, table.CountThreadsRegistered());
-
-  DeleteShmem(kMPTableName);
 }
+#endif
 
 class MockStatsCounter : public StatsCounter {
  public:
@@ -255,11 +243,9 @@ class MockStatsCounter : public StatsCounter {
 // Test some basic StatsCounter operations
 TEST_F(StatsTableTest, StatsCounter) {
   // Create a stats table.
-  const std::string kTableName = "StatTable";
   const int kMaxThreads = 20;
   const int kMaxCounter = 5;
-  DeleteShmem(kTableName);
-  StatsTable table(kTableName, kMaxThreads, kMaxCounter);
+  StatsTable table(StatsTable::TableIdentifier(), kMaxThreads, kMaxCounter);
   StatsTable::set_current(&table);
 
   MockStatsCounter foo("foo");
@@ -295,8 +281,6 @@ TEST_F(StatsTableTest, StatsCounter) {
   EXPECT_EQ(-1, table.GetCounterValue("c:foo"));
   foo.Subtract(-1);
   EXPECT_EQ(0, table.GetCounterValue("c:foo"));
-
-  DeleteShmem(kTableName);
 }
 
 class MockStatsCounterTimer : public StatsCounterTimer {
@@ -311,11 +295,9 @@ class MockStatsCounterTimer : public StatsCounterTimer {
 // Test some basic StatsCounterTimer operations
 TEST_F(StatsTableTest, StatsCounterTimer) {
   // Create a stats table.
-  const std::string kTableName = "StatTable";
   const int kMaxThreads = 20;
   const int kMaxCounter = 5;
-  DeleteShmem(kTableName);
-  StatsTable table(kTableName, kMaxThreads, kMaxCounter);
+  StatsTable table(StatsTable::TableIdentifier(), kMaxThreads, kMaxCounter);
   StatsTable::set_current(&table);
 
   MockStatsCounterTimer bar("bar");
@@ -340,17 +322,14 @@ TEST_F(StatsTableTest, StatsCounterTimer) {
   bar.Stop();
   EXPECT_GT(table.GetCounterValue("t:bar"), 0);
   EXPECT_LE(kDuration.InMilliseconds() * 2, table.GetCounterValue("t:bar"));
-  DeleteShmem(kTableName);
 }
 
 // Test some basic StatsRate operations
 TEST_F(StatsTableTest, StatsRate) {
   // Create a stats table.
-  const std::string kTableName = "StatTable";
   const int kMaxThreads = 20;
   const int kMaxCounter = 5;
-  DeleteShmem(kTableName);
-  StatsTable table(kTableName, kMaxThreads, kMaxCounter);
+  StatsTable table(StatsTable::TableIdentifier(), kMaxThreads, kMaxCounter);
   StatsTable::set_current(&table);
 
   StatsRate baz("baz");
@@ -375,17 +354,14 @@ TEST_F(StatsTableTest, StatsRate) {
   baz.Stop();
   EXPECT_EQ(2, table.GetCounterValue("c:baz"));
   EXPECT_LE(kDuration.InMilliseconds() * 2, table.GetCounterValue("t:baz"));
-  DeleteShmem(kTableName);
 }
 
 // Test some basic StatsScope operations
 TEST_F(StatsTableTest, StatsScope) {
   // Create a stats table.
-  const std::string kTableName = "StatTable";
   const int kMaxThreads = 20;
   const int kMaxCounter = 5;
-  DeleteShmem(kTableName);
-  StatsTable table(kTableName, kMaxThreads, kMaxCounter);
+  StatsTable table(StatsTable::TableIdentifier(), kMaxThreads, kMaxCounter);
   StatsTable::set_current(&table);
 
   StatsCounterTimer foo("foo");
@@ -417,8 +393,6 @@ TEST_F(StatsTableTest, StatsScope) {
   EXPECT_LE(kDuration.InMilliseconds() * 2, table.GetCounterValue("t:foo"));
   EXPECT_LE(kDuration.InMilliseconds() * 2, table.GetCounterValue("t:bar"));
   EXPECT_EQ(2, table.GetCounterValue("c:bar"));
-
-  DeleteShmem(kTableName);
 }
 
 }  // namespace base

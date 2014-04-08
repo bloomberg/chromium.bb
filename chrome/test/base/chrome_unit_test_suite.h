@@ -32,7 +32,6 @@ class ChromeUnitTestSuite : public ChromeTestSuite {
   static void InitializeResourceBundle();
 
  private:
-  std::string stats_filename_;
   scoped_ptr<base::StatsTable> stats_table_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeUnitTestSuite);

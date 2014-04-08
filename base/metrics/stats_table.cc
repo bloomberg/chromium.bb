@@ -14,12 +14,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local_storage.h"
 
-#if defined(OS_POSIX)
-#include "base/posix/global_descriptors.h"
-#include "errno.h"
-#include "ipc/ipc_descriptors.h"
-#endif
-
 namespace base {
 
 // The StatsTable uses a shared memory segment that is laid out as follows
@@ -105,7 +99,7 @@ class StatsTable::Internal {
 
   // Construct a new Internal based on expected size parameters, or
   // return NULL on failure.
-  static Internal* New(const std::string& name,
+  static Internal* New(const StatsTable::TableIdentifier& table,
                        int size,
                        int max_threads,
                        int max_counters);
@@ -151,8 +145,9 @@ class StatsTable::Internal {
   }
 
   // Create or open the SharedMemory used by the stats table.
-  static SharedMemory* CreateSharedMemory(const std::string& name,
-                                          int size);
+  static SharedMemory* CreateSharedMemory(
+      const StatsTable::TableIdentifier& table,
+      int size);
 
   // Initializes the table on first access.  Sets header values
   // appropriately and zeroes all counters.
@@ -174,11 +169,12 @@ class StatsTable::Internal {
 };
 
 // static
-StatsTable::Internal* StatsTable::Internal::New(const std::string& name,
-                                                int size,
-                                                int max_threads,
-                                                int max_counters) {
-  scoped_ptr<SharedMemory> shared_memory(CreateSharedMemory(name, size));
+StatsTable::Internal* StatsTable::Internal::New(
+    const StatsTable::TableIdentifier& table,
+    int size,
+    int max_threads,
+    int max_counters) {
+  scoped_ptr<SharedMemory> shared_memory(CreateSharedMemory(table, size));
   if (!shared_memory.get())
     return NULL;
   if (!shared_memory->Map(size))
@@ -200,16 +196,14 @@ StatsTable::Internal* StatsTable::Internal::New(const std::string& name,
 }
 
 // static
-SharedMemory* StatsTable::Internal::CreateSharedMemory(const std::string& name,
-                                                       int size) {
+SharedMemory* StatsTable::Internal::CreateSharedMemory(
+    const StatsTable::TableIdentifier& table,
+    int size) {
 #if defined(OS_POSIX)
-  GlobalDescriptors* global_descriptors = GlobalDescriptors::GetInstance();
-  if (global_descriptors->MaybeGet(kStatsTableSharedMemFd) != -1) {
-    // Open the shared memory file descriptor passed by the browser process.
-    FileDescriptor file_descriptor(
-        global_descriptors->Get(kStatsTableSharedMemFd), false);
-    return new SharedMemory(file_descriptor, false);
-  }
+  // Check for existing table.
+  if (table.fd != -1)
+    return new SharedMemory(table, false);
+
   // Otherwise we need to create it.
   scoped_ptr<SharedMemory> shared_memory(new SharedMemory());
   if (!shared_memory->CreateAnonymous(size))
@@ -217,15 +211,22 @@ SharedMemory* StatsTable::Internal::CreateSharedMemory(const std::string& name,
   return shared_memory.release();
 #elif defined(OS_WIN)
   scoped_ptr<SharedMemory> shared_memory(new SharedMemory());
-  if (!shared_memory->CreateNamedDeprecated(name, true, size))
-    return NULL;
+  if (table.empty()) {
+    // Create an anonymous table.
+    if (!shared_memory->CreateAnonymous(size))
+      return NULL;
+  } else {
+    // Create a named table for sharing between processes.
+    if (!shared_memory->CreateNamedDeprecated(table, true, size))
+      return NULL;
+  }
   return shared_memory.release();
 #endif
 }
 
 void StatsTable::Internal::InitializeTable(void* memory, int size,
-                                          int max_counters,
-                                          int max_threads) {
+                                           int max_counters,
+                                           int max_threads) {
   // Zero everything.
   memset(memory, 0, size);
 
@@ -286,7 +287,8 @@ struct StatsTable::TLSData {
 // We keep a singleton table which can be easily accessed.
 StatsTable* global_table = NULL;
 
-StatsTable::StatsTable(const std::string& name, int max_threads,
+StatsTable::StatsTable(const TableIdentifier& table,
+                       int max_threads,
                        int max_counters)
     : internal_(NULL),
       tls_index_(SlotReturnFunction) {
@@ -298,7 +300,7 @@ StatsTable::StatsTable(const std::string& name, int max_threads,
     AlignedSize(max_threads * sizeof(int)) +
     AlignedSize((sizeof(int) * (max_counters * max_threads)));
 
-  internal_ = Internal::New(name, table_size, max_threads, max_counters);
+  internal_ = Internal::New(table, table_size, max_threads, max_counters);
 
   if (!internal_)
     DPLOG(ERROR) << "StatsTable did not initialize";

@@ -36,15 +36,6 @@
 
 namespace {
 
-void RemoveSharedMemoryFile(const std::string& filename) {
-  // Stats uses SharedMemory under the hood. On posix, this results in a file
-  // on disk.
-#if defined(OS_POSIX)
-  base::SharedMemory memory;
-  memory.Delete(filename);
-#endif
-}
-
 // Creates a TestingBrowserProcess for each test.
 class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
  public:
@@ -107,10 +98,10 @@ void ChromeUnitTestSuite::Initialize() {
   InitializeProviders();
   RegisterInProcessThreads();
 
-  stats_filename_ = base::StringPrintf("unit_tests-%d",
-                                       base::GetCurrentProcId());
-  RemoveSharedMemoryFile(stats_filename_);
-  stats_table_.reset(new base::StatsTable(stats_filename_, 20, 200));
+  // Create an anonymous stats table since we don't need to share between
+  // processes.
+  stats_table_.reset(
+      new base::StatsTable(base::StatsTable::TableIdentifier(), 20, 200));
   base::StatsTable::set_current(stats_table_.get());
 
   ChromeTestSuite::Initialize();
@@ -125,7 +116,6 @@ void ChromeUnitTestSuite::Shutdown() {
 
   base::StatsTable::set_current(NULL);
   stats_table_.reset();
-  RemoveSharedMemoryFile(stats_filename_);
 
   ChromeTestSuite::Shutdown();
 }

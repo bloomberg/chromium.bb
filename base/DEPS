@@ -10,6 +10,9 @@ include_rules = [
   "+third_party/modp_b64",
   "+third_party/tcmalloc",
 
+  # IPC is implicitly brought in from the root, and we don't want it.
+  "-ipc",
+
   # ICU dependendencies must be separate from the rest of base.
   "-i18n",
 ]

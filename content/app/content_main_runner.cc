@@ -45,6 +45,7 @@
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 #include "crypto/nss_util.h"
+#include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media.h"
 #include "sandbox/win/src/sandbox_types.h"
@@ -239,11 +240,11 @@ void CommonSubprocessInit(const std::string& process_type) {
 #endif
 }
 
+// Only needed on Windows for creating stats tables.
+#if defined(OS_WIN)
 static base::ProcessId GetBrowserPid(const CommandLine& command_line) {
   base::ProcessId browser_pid = base::GetCurrentProcId();
-#if !defined(OS_IOS)
   if (command_line.HasSwitch(switches::kProcessChannelID)) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
     std::string channel_name =
         command_line.GetSwitchValueASCII(switches::kProcessChannelID);
 
@@ -251,27 +252,10 @@ static base::ProcessId GetBrowserPid(const CommandLine& command_line) {
     base::StringToInt(channel_name, &browser_pid_int);
     browser_pid = static_cast<base::ProcessId>(browser_pid_int);
     DCHECK_NE(browser_pid_int, 0);
-#elif defined(OS_ANDROID)
-    // On Android, the browser process isn't the parent. A bunch
-    // of work will be required before callers of this routine will
-    // get what they want.
-    //
-    // Note: On Linux, base::GetParentProcessId() is defined in
-    // process_util_linux.cc. Note that *_linux.cc is excluded from
-    // Android builds but a special exception is made in base.gypi
-    // for a few files including process_util_linux.cc.
-    LOG(ERROR) << "GetBrowserPid() not implemented for Android().";
-#elif defined(OS_POSIX)
-    // On linux, we're in a process forked from the zygote here; so we need the
-    // parent's parent process' id.
-    browser_pid =
-        base::GetParentProcessId(
-            base::GetParentProcessId(base::GetCurrentProcId()));
-#endif
   }
-#endif  // !OS_IOS
   return browser_pid;
 }
+#endif
 
 static void InitializeStatsTable(const CommandLine& command_line) {
   // Initialize the Stats Counters table.  With this initialized,
@@ -282,11 +266,25 @@ static void InitializeStatsTable(const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kEnableStatsTable)) {
     // NOTIMPLEMENTED: we probably need to shut this down correctly to avoid
     // leaking shared memory regions on posix platforms.
-    std::string statsfile =
+#if defined(OS_POSIX)
+    // Stats table is in the global file descriptors table on Posix.
+    base::GlobalDescriptors* global_descriptors =
+        base::GlobalDescriptors::GetInstance();
+    base::FileDescriptor table_ident;
+    if (global_descriptors->MaybeGet(kStatsTableSharedMemFd) != -1) {
+      // Open the shared memory file descriptor passed by the browser process.
+      table_ident = base::FileDescriptor(
+          global_descriptors->Get(kStatsTableSharedMemFd), false);
+    }
+#elif defined(OS_WIN)
+    // Stats table is in a named segment on Windows. Use the PID to make this
+    // unique on the system.
+    std::string table_ident =
       base::StringPrintf("%s-%u", kStatsFilename,
           static_cast<unsigned int>(GetBrowserPid(command_line)));
-    base::StatsTable* stats_table = new base::StatsTable(statsfile,
-        kStatsMaxThreads, kStatsMaxCounters);
+#endif
+    base::StatsTable* stats_table =
+        new base::StatsTable(table_ident, kStatsMaxThreads, kStatsMaxCounters);
     base::StatsTable::set_current(stats_table);
   }
 }
