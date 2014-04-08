@@ -40,6 +40,7 @@ function test()
     }
 
     WebInspector.inspectorView.showPanel("sources");
+    WebInspector.inspectorView.showViewInDrawer("search");
 
     InspectorTest.createWorkspace();
     manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);

@@ -8,6 +8,7 @@
 
 function test()
 {
+    WebInspector.moduleManager.loadModule("search");
     var panel = WebInspector.inspectorView.showPanel("sources");
 
     InspectorTest.showScriptSource("edit-me.js", step1);
