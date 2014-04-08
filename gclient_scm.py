@@ -361,6 +361,7 @@ class GitWrapper(SCMWrapper):
         (os.path.isdir(self.checkout_path) and
          not os.path.exists(os.path.join(self.checkout_path, '.git')))):
       self._Clone(revision, url, options)
+      self._UpdateBranchHeads(options, fetch=True)
       self.UpdateSubmoduleConfig()
       if file_list is not None:
         files = self._Capture(['ls-files']).splitlines()
