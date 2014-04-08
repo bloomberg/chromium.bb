@@ -1553,7 +1553,15 @@ TEST_F(ExtensionUpdaterTest, TestDetermineUpdatesPending) {
   TestDetermineUpdatesPending();
 }
 
-TEST_F(ExtensionUpdaterTest, TestMultipleManifestDownloading) {
+#if defined(THREAD_SANITIZER) || defined(MEMORY_SANITIZER)
+// This test fails under ThreadSanitizer and MemorySanitizer, which build with
+// libc++ instead of libstdc++.
+#define MAYBE_TestMultipleManifestDownloading \
+    DISABLED_TestMultipleManifestDownloading
+#else
+#define MAYBE_TestMultipleManifestDownloading TestMultipleManifestDownloading
+#endif
+TEST_F(ExtensionUpdaterTest, MAYBE_TestMultipleManifestDownloading) {
   TestMultipleManifestDownloading();
 }
 
