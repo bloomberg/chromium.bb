@@ -1870,14 +1870,30 @@ class AndroidCommands(object):
     if not command:
       raise Exception('Unable to act on usb charging.')
     disable_command = command['disable_command']
-    self.RunShellCommand(disable_command)
+    # Do not loop directly on self.IsDeviceCharging to cut the number of calls
+    # to the device.
+    while True:
+      self.RunShellCommand(disable_command)
+      if not self.IsDeviceCharging():
+        break
 
   def EnableUsbCharging(self):
     command = self._GetControlUsbChargingCommand()
     if not command:
       raise Exception('Unable to act on usb charging.')
     disable_command = command['enable_command']
-    self.RunShellCommand(disable_command)
+    # Do not loop directly on self.IsDeviceCharging to cut the number of calls
+    # to the device.
+    while True:
+      self.RunShellCommand(disable_command)
+      if self.IsDeviceCharging():
+        break
+
+  def IsDeviceCharging(self):
+    for line in self.RunShellCommand('dumpsys battery'):
+      if 'powered: ' in line:
+        if line.split('powered: ')[1] == 'true':
+          return True
 
 
 class NewLineNormalizer(object):
