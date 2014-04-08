@@ -61,7 +61,9 @@ const GLint TestHelper::kMaxVertexUniformComponents;
 #endif
 
 void TestHelper::SetupTextureInitializationExpectations(
-    ::gfx::MockGLInterface* gl, GLenum target) {
+    ::gfx::MockGLInterface* gl,
+    GLenum target,
+    bool use_default_textures) {
   InSequence sequence;
 
   bool needs_initialization = (target != GL_TEXTURE_EXTERNAL_OES);
@@ -98,7 +100,7 @@ void TestHelper::SetupTextureInitializationExpectations(
       NOTREACHED();
   }
 
-  int array_size = 2;
+  int array_size = use_default_textures ? 2 : 1;
 
   EXPECT_CALL(*gl, GenTextures(array_size, _))
       .WillOnce(SetArrayArgument<1>(texture_ids,
@@ -139,11 +141,14 @@ void TestHelper::SetupTextureInitializationExpectations(
 
 void TestHelper::SetupTextureManagerInitExpectations(
     ::gfx::MockGLInterface* gl,
-    const char* extensions) {
+    const char* extensions,
+    bool use_default_textures) {
   InSequence sequence;
 
-  SetupTextureInitializationExpectations(gl, GL_TEXTURE_2D);
-  SetupTextureInitializationExpectations(gl, GL_TEXTURE_CUBE_MAP);
+  SetupTextureInitializationExpectations(
+      gl, GL_TEXTURE_2D, use_default_textures);
+  SetupTextureInitializationExpectations(
+      gl, GL_TEXTURE_CUBE_MAP, use_default_textures);
 
   bool ext_image_external = false;
   bool arb_texture_rectangle = false;
@@ -160,15 +165,22 @@ void TestHelper::SetupTextureManagerInitExpectations(
   }
 
   if (ext_image_external) {
-    SetupTextureInitializationExpectations(gl, GL_TEXTURE_EXTERNAL_OES);
+    SetupTextureInitializationExpectations(
+        gl, GL_TEXTURE_EXTERNAL_OES, use_default_textures);
   }
   if (arb_texture_rectangle) {
-    SetupTextureInitializationExpectations(gl, GL_TEXTURE_RECTANGLE_ARB);
+    SetupTextureInitializationExpectations(
+        gl, GL_TEXTURE_RECTANGLE_ARB, use_default_textures);
   }
 }
 
 void TestHelper::SetupTextureDestructionExpectations(
-    ::gfx::MockGLInterface* gl, GLenum target) {
+    ::gfx::MockGLInterface* gl,
+    GLenum target,
+    bool use_default_textures) {
+  if (!use_default_textures)
+    return;
+
   GLuint texture_id = 0;
   switch (target) {
     case GL_TEXTURE_2D:
@@ -194,9 +206,11 @@ void TestHelper::SetupTextureDestructionExpectations(
 
 void TestHelper::SetupTextureManagerDestructionExpectations(
     ::gfx::MockGLInterface* gl,
-    const char* extensions) {
-  SetupTextureDestructionExpectations(gl, GL_TEXTURE_2D);
-  SetupTextureDestructionExpectations(gl, GL_TEXTURE_CUBE_MAP);
+    const char* extensions,
+    bool use_default_textures) {
+  SetupTextureDestructionExpectations(gl, GL_TEXTURE_2D, use_default_textures);
+  SetupTextureDestructionExpectations(
+      gl, GL_TEXTURE_CUBE_MAP, use_default_textures);
 
   bool ext_image_external = false;
   bool arb_texture_rectangle = false;
@@ -213,10 +227,12 @@ void TestHelper::SetupTextureManagerDestructionExpectations(
   }
 
   if (ext_image_external) {
-    SetupTextureDestructionExpectations(gl, GL_TEXTURE_EXTERNAL_OES);
+    SetupTextureDestructionExpectations(
+        gl, GL_TEXTURE_EXTERNAL_OES, use_default_textures);
   }
   if (arb_texture_rectangle) {
-    SetupTextureDestructionExpectations(gl, GL_TEXTURE_RECTANGLE_ARB);
+    SetupTextureDestructionExpectations(
+        gl, GL_TEXTURE_RECTANGLE_ARB, use_default_textures);
   }
 
   EXPECT_CALL(*gl, DeleteTextures(4, _))
@@ -225,10 +241,11 @@ void TestHelper::SetupTextureManagerDestructionExpectations(
 }
 
 void TestHelper::SetupContextGroupInitExpectations(
-      ::gfx::MockGLInterface* gl,
-      const DisallowedFeatures& disallowed_features,
-      const char* extensions,
-      const char* gl_version) {
+    ::gfx::MockGLInterface* gl,
+    const DisallowedFeatures& disallowed_features,
+    const char* extensions,
+    const char* gl_version,
+    bool bind_generates_resource) {
   InSequence sequence;
 
   SetupFeatureInfoInitExpectationsWithGLVersion(gl, extensions, "", gl_version);
@@ -277,7 +294,8 @@ void TestHelper::SetupContextGroupInitExpectations(
       .WillOnce(SetArgumentPointee<1>(kMaxVertexUniformComponents))
       .RetiresOnSaturation();
 
-  SetupTextureManagerInitExpectations(gl, extensions);
+  bool use_default_textures = bind_generates_resource;
+  SetupTextureManagerInitExpectations(gl, extensions, use_default_textures);
 }
 
 void TestHelper::SetupFeatureInfoInitExpectations(

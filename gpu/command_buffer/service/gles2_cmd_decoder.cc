@@ -2394,20 +2394,20 @@ bool GLES2DecoderImpl::Initialize(
       ref = texture_manager()->GetDefaultTextureInfo(
           GL_TEXTURE_EXTERNAL_OES);
       state_.texture_units[tt].bound_texture_external_oes = ref;
-      glBindTexture(GL_TEXTURE_EXTERNAL_OES, ref->service_id());
+      glBindTexture(GL_TEXTURE_EXTERNAL_OES, ref ? ref->service_id() : 0);
     }
     if (features().arb_texture_rectangle) {
       ref = texture_manager()->GetDefaultTextureInfo(
           GL_TEXTURE_RECTANGLE_ARB);
       state_.texture_units[tt].bound_texture_rectangle_arb = ref;
-      glBindTexture(GL_TEXTURE_RECTANGLE_ARB, ref->service_id());
+      glBindTexture(GL_TEXTURE_RECTANGLE_ARB, ref ? ref->service_id() : 0);
     }
     ref = texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_CUBE_MAP);
     state_.texture_units[tt].bound_texture_cube_map = ref;
-    glBindTexture(GL_TEXTURE_CUBE_MAP, ref->service_id());
+    glBindTexture(GL_TEXTURE_CUBE_MAP, ref ? ref->service_id() : 0);
     ref = texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_2D);
     state_.texture_units[tt].bound_texture_2d = ref;
-    glBindTexture(GL_TEXTURE_2D, ref->service_id());
+    glBindTexture(GL_TEXTURE_2D, ref ? ref->service_id() : 0);
   }
   glActiveTexture(GL_TEXTURE0);
   CHECK_GL_ERROR();
@@ -4041,21 +4041,25 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
   } else {
     texture_ref = texture_manager()->GetDefaultTextureInfo(target);
   }
-  Texture* texture = texture_ref->texture();
 
   // Check the texture exists
-  // Check that we are not trying to bind it to a different target.
-  if (texture->target() != 0 && texture->target() != target) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glBindTexture", "texture bound to more than 1 target.");
-    return;
+  if (texture_ref) {
+    Texture* texture = texture_ref->texture();
+    // Check that we are not trying to bind it to a different target.
+    if (texture->target() != 0 && texture->target() != target) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                         "glBindTexture",
+                         "texture bound to more than 1 target.");
+      return;
+    }
+    LogClientServiceForInfo(texture, client_id, "glBindTexture");
+    if (texture->target() == 0) {
+      texture_manager()->SetTarget(texture_ref, target);
+    }
+    glBindTexture(target, texture->service_id());
+  } else {
+    glBindTexture(target, 0);
   }
-  LogClientServiceForInfo(texture, client_id, "glBindTexture");
-  if (texture->target() == 0) {
-    texture_manager()->SetTarget(texture_ref, target);
-  }
-  glBindTexture(target, texture->service_id());
 
   TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
   unit.bind_target = target;

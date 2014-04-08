@@ -22,6 +22,7 @@ const GLint kMaxCubemapSize = 64;
 const GLint kMaxRenderbufferSize = 64;
 const GLint kMaxSamples = 4;
 const bool kDepth24Supported = false;
+const bool kUseDefaultTextures = false;
 
 }  // namespace
 
@@ -29,11 +30,15 @@ class FramebufferManagerTest : public testing::Test {
  public:
   FramebufferManagerTest()
       : manager_(1, 1),
-        texture_manager_(
-          NULL, new FeatureInfo(), kMaxTextureSize, kMaxCubemapSize),
-        renderbuffer_manager_(NULL, kMaxRenderbufferSize, kMaxSamples,
-                              kDepth24Supported) {
-  }
+        texture_manager_(NULL,
+                         new FeatureInfo(),
+                         kMaxTextureSize,
+                         kMaxCubemapSize,
+                         kUseDefaultTextures),
+        renderbuffer_manager_(NULL,
+                              kMaxRenderbufferSize,
+                              kMaxSamples,
+                              kDepth24Supported) {}
   virtual ~FramebufferManagerTest() {
     manager_.Destroy(false);
     texture_manager_.Destroy(false);
@@ -112,8 +117,11 @@ class FramebufferInfoTest : public testing::Test {
         feature_info_(new FeatureInfo()),
         renderbuffer_manager_(NULL, kMaxRenderbufferSize, kMaxSamples,
                               kDepth24Supported) {
-    texture_manager_.reset(new TextureManager(NULL, feature_info_.get(),
-        kMaxTextureSize, kMaxCubemapSize));
+    texture_manager_.reset(new TextureManager(NULL,
+                                              feature_info_.get(),
+                                              kMaxTextureSize,
+                                              kMaxCubemapSize,
+                                              kUseDefaultTextures));
   }
   virtual ~FramebufferInfoTest() {
     manager_.Destroy(false);

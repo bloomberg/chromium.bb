@@ -116,6 +116,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
                        new ShaderTranslatorCache,
                        feature_info.get(),
                        init.bind_generates_resource));
+  bool use_default_textures = init.bind_generates_resource;
 
   InSequence sequence;
 
@@ -135,7 +136,8 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   TestHelper::SetupContextGroupInitExpectations(gl_.get(),
                                                 DisallowedFeatures(),
                                                 init.extensions.c_str(),
-                                                init.gl_version.c_str());
+                                                init.gl_version.c_str(),
+                                                init.bind_generates_resource);
 
   // We initialize the ContextGroup with a MockGLES2Decoder so that
   // we can use the ContextGroup to figure out how the real GLES2Decoder
@@ -182,25 +184,36 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
         .Times(1)
         .RetiresOnSaturation();
     if (group_->feature_info()->feature_flags().oes_egl_image_external) {
-      EXPECT_CALL(*gl_, BindTexture(
-              GL_TEXTURE_EXTERNAL_OES,
-              TestHelper::kServiceDefaultExternalTextureId))
+      EXPECT_CALL(*gl_,
+                  BindTexture(GL_TEXTURE_EXTERNAL_OES,
+                              use_default_textures
+                                  ? TestHelper::kServiceDefaultExternalTextureId
+                                  : 0))
           .Times(1)
           .RetiresOnSaturation();
     }
     if (group_->feature_info()->feature_flags().arb_texture_rectangle) {
-      EXPECT_CALL(*gl_, BindTexture(
-              GL_TEXTURE_RECTANGLE_ARB,
-              TestHelper::kServiceDefaultRectangleTextureId))
+      EXPECT_CALL(
+          *gl_,
+          BindTexture(GL_TEXTURE_RECTANGLE_ARB,
+                      use_default_textures
+                          ? TestHelper::kServiceDefaultRectangleTextureId
+                          : 0))
           .Times(1)
           .RetiresOnSaturation();
     }
-    EXPECT_CALL(*gl_, BindTexture(
-        GL_TEXTURE_CUBE_MAP, TestHelper::kServiceDefaultTextureCubemapId))
+    EXPECT_CALL(*gl_,
+                BindTexture(GL_TEXTURE_CUBE_MAP,
+                            use_default_textures
+                                ? TestHelper::kServiceDefaultTextureCubemapId
+                                : 0))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, BindTexture(
-        GL_TEXTURE_2D, TestHelper::kServiceDefaultTexture2dId))
+    EXPECT_CALL(
+        *gl_,
+        BindTexture(
+            GL_TEXTURE_2D,
+            use_default_textures ? TestHelper::kServiceDefaultTexture2dId : 0))
         .Times(1)
         .RetiresOnSaturation();
   }

@@ -895,9 +895,10 @@ TextureRef::~TextureRef() {
 TextureManager::TextureManager(MemoryTracker* memory_tracker,
                                FeatureInfo* feature_info,
                                GLint max_texture_size,
-                               GLint max_cube_map_texture_size)
-    : memory_tracker_managed_(new MemoryTypeTracker(memory_tracker,
-                                                    MemoryTracker::kManaged)),
+                               GLint max_cube_map_texture_size,
+                               bool use_default_textures)
+    : memory_tracker_managed_(
+          new MemoryTypeTracker(memory_tracker, MemoryTracker::kManaged)),
       memory_tracker_unmanaged_(
           new MemoryTypeTracker(memory_tracker, MemoryTracker::kUnmanaged)),
       feature_info_(feature_info),
@@ -912,6 +913,7 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
                                               max_cube_map_texture_size,
                                               max_cube_map_texture_size,
                                               max_cube_map_texture_size)),
+      use_default_textures_(use_default_textures),
       num_unrenderable_textures_(0),
       num_unsafe_textures_(0),
       num_uncleared_mips_(0),
@@ -959,8 +961,9 @@ scoped_refptr<TextureRef>
 
   // Make default textures and texture for replacing non-renderable textures.
   GLuint ids[2];
-  glGenTextures(arraysize(ids), ids);
-  for (unsigned long ii = 0; ii < arraysize(ids); ++ii) {
+  const unsigned long num_ids = use_default_textures_ ? 2 : 1;
+  glGenTextures(num_ids, ids);
+  for (unsigned long ii = 0; ii < num_ids; ++ii) {
     glBindTexture(target, ids[ii]);
     if (needs_initialization) {
       if (needs_faces) {
@@ -976,48 +979,50 @@ scoped_refptr<TextureRef>
   }
   glBindTexture(target, 0);
 
-  scoped_refptr<TextureRef> default_texture(
-      TextureRef::Create(this, 0, ids[1]));
-  SetTarget(default_texture.get(), target);
-  if (needs_faces) {
-    for (int ii = 0; ii < GLES2Util::kNumFaces; ++ii) {
-      SetLevelInfo(default_texture.get(),
-                   GLES2Util::IndexToGLFaceTarget(ii),
-                   0,
-                   GL_RGBA,
-                   1,
-                   1,
-                   1,
-                   0,
-                   GL_RGBA,
-                   GL_UNSIGNED_BYTE,
-                   true);
-    }
-  } else {
-    if (needs_initialization) {
-      SetLevelInfo(default_texture.get(),
-                   GL_TEXTURE_2D,
-                   0,
-                   GL_RGBA,
-                   1,
-                   1,
-                   1,
-                   0,
-                   GL_RGBA,
-                   GL_UNSIGNED_BYTE,
-                   true);
+  scoped_refptr<TextureRef> default_texture;
+  if (use_default_textures_) {
+    default_texture = TextureRef::Create(this, 0, ids[1]);
+    SetTarget(default_texture.get(), target);
+    if (needs_faces) {
+      for (int ii = 0; ii < GLES2Util::kNumFaces; ++ii) {
+        SetLevelInfo(default_texture.get(),
+                     GLES2Util::IndexToGLFaceTarget(ii),
+                     0,
+                     GL_RGBA,
+                     1,
+                     1,
+                     1,
+                     0,
+                     GL_RGBA,
+                     GL_UNSIGNED_BYTE,
+                     true);
+      }
     } else {
-      SetLevelInfo(default_texture.get(),
-                   GL_TEXTURE_EXTERNAL_OES,
-                   0,
-                   GL_RGBA,
-                   1,
-                   1,
-                   1,
-                   0,
-                   GL_RGBA,
-                   GL_UNSIGNED_BYTE,
-                   true);
+      if (needs_initialization) {
+        SetLevelInfo(default_texture.get(),
+                     GL_TEXTURE_2D,
+                     0,
+                     GL_RGBA,
+                     1,
+                     1,
+                     1,
+                     0,
+                     GL_RGBA,
+                     GL_UNSIGNED_BYTE,
+                     true);
+      } else {
+        SetLevelInfo(default_texture.get(),
+                     GL_TEXTURE_EXTERNAL_OES,
+                     0,
+                     GL_RGBA,
+                     1,
+                     1,
+                     1,
+                     0,
+                     GL_RGBA,
+                     GL_UNSIGNED_BYTE,
+                     true);
+      }
     }
   }
 

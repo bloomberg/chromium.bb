@@ -66,7 +66,8 @@ class TestHelper {
       ::gfx::MockGLInterface* gl,
       const DisallowedFeatures& disallowed_features,
       const char* extensions,
-      const char* gl_version);
+      const char* gl_version,
+      bool bind_generates_resource);
   static void SetupFeatureInfoInitExpectations(
       ::gfx::MockGLInterface* gl, const char* extensions);
   static void SetupFeatureInfoInitExpectationsWithGLVersion(
@@ -74,10 +75,13 @@ class TestHelper {
       const char* extensions,
       const char* gl_renderer,
       const char* gl_version);
-  static void SetupTextureManagerInitExpectations(
-      ::gfx::MockGLInterface* gl, const char* extensions);
+  static void SetupTextureManagerInitExpectations(::gfx::MockGLInterface* gl,
+                                                  const char* extensions,
+                                                  bool use_default_textures);
   static void SetupTextureManagerDestructionExpectations(
-      ::gfx::MockGLInterface* gl, const char* extensions);
+      ::gfx::MockGLInterface* gl,
+      const char* extensions,
+      bool use_default_textures);
 
   static void SetupExpectationsForClearingUniforms(
       ::gfx::MockGLInterface* gl, UniformInfo* uniforms, size_t num_uniforms);
@@ -104,10 +108,12 @@ class TestHelper {
       GLenum pname, GLint value, GLenum error);
 
  private:
-  static void SetupTextureInitializationExpectations(
-       ::gfx::MockGLInterface* gl, GLenum target);
-  static void SetupTextureDestructionExpectations(
-       ::gfx::MockGLInterface* gl, GLenum target);
+  static void SetupTextureInitializationExpectations(::gfx::MockGLInterface* gl,
+                                                     GLenum target,
+                                                     bool use_default_textures);
+  static void SetupTextureDestructionExpectations(::gfx::MockGLInterface* gl,
+                                                  GLenum target,
+                                                  bool use_default_textures);
 };
 
 // This object temporaritly Sets what gfx::GetGLImplementation returns. During

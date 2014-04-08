@@ -481,7 +481,8 @@ class GPU_EXPORT TextureManager {
   TextureManager(MemoryTracker* memory_tracker,
                  FeatureInfo* feature_info,
                  GLsizei max_texture_size,
-                 GLsizei max_cube_map_texture_size);
+                 GLsizei max_cube_map_texture_size,
+                 bool use_default_textures);
   ~TextureManager();
 
   void set_framebuffer_manager(FramebufferManager* manager) {
@@ -773,6 +774,8 @@ class GPU_EXPORT TextureManager {
   GLsizei max_cube_map_texture_size_;
   GLint max_levels_;
   GLint max_cube_map_levels_;
+
+  const bool use_default_textures_;
 
   int num_unrenderable_textures_;
   int num_unsafe_textures_;

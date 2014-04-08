@@ -178,7 +178,8 @@ bool ContextGroup::Initialize(
   texture_manager_.reset(new TextureManager(memory_tracker_.get(),
                                             feature_info_.get(),
                                             max_texture_size,
-                                            max_cube_map_texture_size));
+                                            max_cube_map_texture_size,
+                                            bind_generates_resource_));
   texture_manager_->set_framebuffer_manager(framebuffer_manager_.get());
 
   const GLint kMinTextureImageUnits = 8;
