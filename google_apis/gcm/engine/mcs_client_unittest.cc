@@ -156,7 +156,8 @@ MCSClientTest::MCSClientTest()
 MCSClientTest::~MCSClientTest() {}
 
 void MCSClientTest::BuildMCSClient() {
-  gcm_store_.reset(new GCMStoreImpl(temp_directory_.path(),
+  gcm_store_.reset(new GCMStoreImpl(true,
+                                    temp_directory_.path(),
                                     message_loop_.message_loop_proxy()));
   mcs_client_.reset(new TestMCSClient(&clock_,
                                       &connection_factory_,

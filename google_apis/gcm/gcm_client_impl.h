@@ -27,7 +27,6 @@ class GURL;
 
 namespace base {
 class Clock;
-class FilePath;
 }  // namespace base
 
 namespace net {
@@ -48,9 +47,6 @@ class GCM_EXPORT GCMInternalsBuilder {
   virtual ~GCMInternalsBuilder();
 
   virtual scoped_ptr<base::Clock> BuildClock();
-  virtual scoped_ptr<GCMStore> BuildGCMStore(
-      const base::FilePath& path,
-      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
   virtual scoped_ptr<MCSClient> BuildMCSClient(
       const std::string& version,
       base::Clock* clock,

@@ -125,13 +125,6 @@ scoped_ptr<base::Clock> GCMInternalsBuilder::BuildClock() {
   return make_scoped_ptr<base::Clock>(new base::DefaultClock());
 }
 
-scoped_ptr<GCMStore> GCMInternalsBuilder::BuildGCMStore(
-    const base::FilePath& path,
-    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner) {
-  return make_scoped_ptr<GCMStore>(
-      new GCMStoreImpl(path, blocking_task_runner));
-}
-
 scoped_ptr<MCSClient> GCMInternalsBuilder::BuildMCSClient(
     const std::string& version,
     base::Clock* clock,
@@ -192,8 +185,7 @@ void GCMClientImpl::Initialize(
   chrome_build_proto_.CopyFrom(chrome_build_proto);
   account_ids_ = account_ids;
 
-  gcm_store_ =
-      internals_builder_->BuildGCMStore(path, blocking_task_runner).Pass();
+  gcm_store_.reset(new GCMStoreImpl(false, path, blocking_task_runner));
 
   delegate_ = delegate;
 

@@ -300,7 +300,8 @@ void MCSProbe::Start() {
                                 network_session_,
                                 &net_log_));
   gcm_store_.reset(
-      new GCMStoreImpl(gcm_store_path_,
+      new GCMStoreImpl(true,
+                       gcm_store_path_,
                        file_thread_.message_loop_proxy()));
   mcs_client_.reset(new MCSClient("probe",
                                   &clock_,

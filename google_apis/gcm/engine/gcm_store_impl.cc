@@ -605,11 +605,16 @@ bool GCMStoreImpl::Backend::LoadLastCheckinTime(
 }
 
 GCMStoreImpl::GCMStoreImpl(
+    bool use_mock_keychain,
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : backend_(new Backend(path, base::MessageLoopProxy::current())),
       blocking_task_runner_(blocking_task_runner),
       weak_ptr_factory_(this) {
+// On OSX, prevent the Keychain permissions popup during unit tests.
+#if defined(OS_MACOSX)
+  OSCrypt::UseMockKeychain(use_mock_keychain);
+#endif
 }
 
 GCMStoreImpl::~GCMStoreImpl() {}

@@ -13,7 +13,6 @@
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/fake_connection_factory.h"
 #include "google_apis/gcm/engine/fake_connection_handler.h"
-#include "google_apis/gcm/engine/gcm_store_impl.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
@@ -118,10 +117,6 @@ class FakeGCMInternalsBuilder : public GCMInternalsBuilder {
   virtual ~FakeGCMInternalsBuilder();
 
   virtual scoped_ptr<base::Clock> BuildClock() OVERRIDE;
-  virtual scoped_ptr<GCMStore> BuildGCMStore(
-      const base::FilePath& path,
-      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
-      OVERRIDE;
   virtual scoped_ptr<MCSClient> BuildMCSClient(
       const std::string& version,
       base::Clock* clock,
@@ -140,16 +135,6 @@ FakeGCMInternalsBuilder::~FakeGCMInternalsBuilder() {}
 
 scoped_ptr<base::Clock> FakeGCMInternalsBuilder::BuildClock() {
   return make_scoped_ptr<base::Clock>(new base::SimpleTestClock());
-}
-
-scoped_ptr<GCMStore> FakeGCMInternalsBuilder::BuildGCMStore(
-      const base::FilePath& path,
-      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner) {
-#if defined(OS_MACOSX)
-  OSCrypt::UseMockKeychain(true);
-#endif
-  return make_scoped_ptr<GCMStore>(
-      new GCMStoreImpl(path, blocking_task_runner));
 }
 
 scoped_ptr<MCSClient> FakeGCMInternalsBuilder::BuildMCSClient(
