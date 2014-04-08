@@ -51,11 +51,16 @@
           ],
         }],
         [ 'os_posix==1 and OS!="android"', {
+          # Suppress a warning given by opus_decoder.c that tells us
+          # optimizations are turned off.
           'cflags': [
-            # Suppress a warning given by opus_decoder.c that tells us
-            # optimizations are turned off.
             '-Wno-#pragma-messages',
           ],
+          'xcode_settings': {
+            'WARNING_CFLAGS': [
+              '-Wno-#pragma-messages',
+            ],
+          },
         }],
         ['use_opus_fixed_point==0', {
           'include_dirs': [
