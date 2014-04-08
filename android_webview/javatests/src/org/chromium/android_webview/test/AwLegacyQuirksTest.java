@@ -196,11 +196,17 @@ public class AwLegacyQuirksTest extends AwTestBase {
         settings.setSupportZoom(true);
 
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        // ContentView must update itself according to the viewport setup.
+        // As we specify 'user-scalable=0', the page must become non-zoomable.
+        poll(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return !canZoomInOnUiThread(awContents) && !canZoomOutOnUiThread(awContents);
+            }
+        });
         int width = Integer.parseInt(getTitleOnUiThread(awContents));
         assertEquals(pageWidth, width);
         assertEquals(pageScale, getScaleOnUiThread(awContents));
-        assertEquals(false, canZoomInOnUiThread(awContents));
-        assertEquals(false, canZoomOutOnUiThread(awContents));
     }
 
     @MediumTest
