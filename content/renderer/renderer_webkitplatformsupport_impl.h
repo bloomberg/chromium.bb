@@ -68,6 +68,9 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       const char* canonicalURL, size_t length);
   virtual bool isLinkVisited(unsigned long long linkHash);
   virtual blink::WebMessagePortChannel* createMessagePortChannel();
+  virtual void createMessageChannel(
+      blink::WebMessagePortChannel** channel1,
+      blink::WebMessagePortChannel** channel2);
   virtual blink::WebPrescientNetworking* prescientNetworking();
   virtual void cacheMetadata(
       const blink::WebURL&, double, const char*, size_t);

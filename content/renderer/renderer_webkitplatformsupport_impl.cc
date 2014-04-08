@@ -319,6 +319,15 @@ RendererWebKitPlatformSupportImpl::createMessagePortChannel() {
   return new WebMessagePortChannelImpl(child_thread_loop_.get());
 }
 
+void RendererWebKitPlatformSupportImpl::createMessageChannel(
+    blink::WebMessagePortChannel** channel1,
+    blink::WebMessagePortChannel** channel2) {
+  *channel1 = new WebMessagePortChannelImpl(child_thread_loop_.get());
+  *channel2 = new WebMessagePortChannelImpl(child_thread_loop_.get());
+  (*channel1)->entangle(*channel2);
+  (*channel2)->entangle(*channel1);
+}
+
 blink::WebPrescientNetworking*
 RendererWebKitPlatformSupportImpl::prescientNetworking() {
   return GetContentClient()->renderer()->GetPrescientNetworking();
