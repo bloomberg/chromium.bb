@@ -61,6 +61,8 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
 }
 
 ConnectionFactoryImpl::~ConnectionFactoryImpl() {
+  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   if (pac_request_) {
     network_session_->proxy_service()->CancelPacRequest(pac_request_);
     pac_request_ = NULL;
