@@ -331,7 +331,11 @@ void DesktopDragDropClientAuraX11::X11DragContext::RequestNextTarget() {
 
 void DesktopDragDropClientAuraX11::X11DragContext::OnSelectionNotify(
     const XSelectionEvent& event) {
-  DCHECK(waiting_to_handle_position_);
+  if (!waiting_to_handle_position_) {
+    // A misbehaved window may send SelectionNotify without us requesting data
+    // via XConvertSelection().
+    return;
+  }
   DCHECK(drag_drop_client_);
   DCHECK_EQ(event.property, atom_cache_->GetAtom(kChromiumDragReciever));
 
