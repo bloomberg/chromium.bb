@@ -88,15 +88,6 @@ public:
 
     virtual void updateFromStyle() OVERRIDE;
 
-    virtual LayerType layerTypeRequired() const OVERRIDE
-    {
-        ASSERT(!isRoot());
-        if (isPositioned() || createsGroup() || hasClipPath() || hasTransform() || hasHiddenBackface() || hasReflection() || style()->specifiesColumns() || style()->hasWillChangeCompositingHint() || style()->hasWillChangeGpuRasterizationHint() || style()->shouldCompositeForCurrentAnimations())
-            return NormalLayer;
-
-        return NoLayer;
-    }
-
     // This will work on inlines to return the bounding box of all of the lines' border boxes.
     virtual IntRect borderBoundingBox() const = 0;
 
