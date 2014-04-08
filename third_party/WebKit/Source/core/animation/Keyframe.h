@@ -54,7 +54,7 @@ public:
         AnimationEffect::CompositeOperation composite() const { return m_composite; }
         virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const = 0;
 
-        virtual const PassRefPtr<AnimatableValue> getAnimatableValue() const = 0;
+        virtual const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const = 0;
 
         virtual bool isAnimatableValuePropertySpecificKeyframe() const { return false; }
         virtual bool isStringPropertySpecificKeyframe() const { return false; }

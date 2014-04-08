@@ -35,7 +35,7 @@ public:
         PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue*, AnimationEffect::CompositeOperation);
 
         CSSValue* value() const { return m_value.get(); }
-        virtual const PassRefPtr<AnimatableValue> getAnimatableValue() const OVERRIDE FINAL {
+        virtual const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const OVERRIDE FINAL {
             ASSERT(m_animatableValueCache);
             return m_animatableValueCache.get();
         }
