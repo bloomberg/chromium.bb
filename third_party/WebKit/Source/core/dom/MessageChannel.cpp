@@ -35,17 +35,21 @@ namespace WebCore {
 
 static void createChannel(MessagePort* port1, MessagePort* port2)
 {
-    // Create proxies for each endpoint.
-    OwnPtr<blink::WebMessagePortChannel> channel1 = adoptPtr(blink::Platform::current()->createMessagePortChannel());
-    OwnPtr<blink::WebMessagePortChannel> channel2 = adoptPtr(blink::Platform::current()->createMessagePortChannel());
+    blink::WebMessagePortChannel* channel1;
+    blink::WebMessagePortChannel* channel2;
+    blink::Platform::current()->createMessageChannel(&channel1, &channel2);
 
-    // Entangle the two endpoints.
-    channel1->entangle(channel2.get());
-    channel2->entangle(channel1.get());
+    // FIXME: Remove once createMessageChannel is supported.
+    if (!channel1) {
+        channel1 = blink::Platform::current()->createMessagePortChannel();
+        channel2 = blink::Platform::current()->createMessagePortChannel();
+        channel1->entangle(channel2);
+        channel2->entangle(channel1);
+    }
 
     // Now entangle the proxies with the appropriate local ports.
-    port1->entangle(channel2.release());
-    port2->entangle(channel1.release());
+    port1->entangle(adoptPtr(channel2));
+    port2->entangle(adoptPtr(channel1));
 }
 
 MessageChannel::MessageChannel(ExecutionContext* context)
