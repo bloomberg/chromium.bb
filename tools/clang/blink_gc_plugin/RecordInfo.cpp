@@ -433,7 +433,7 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
 
   if (type->isPointerType()) {
     if (Edge* ptr = CreateEdge(type->getPointeeType().getTypePtrOrNull()))
-      return new RawPtr(ptr);
+      return new RawPtr(ptr, false);
     return 0;
   }
 
@@ -448,7 +448,7 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
 
   if (Config::IsRawPtr(info->name()) && info->GetTemplateArgs(1, &args)) {
     if (Edge* ptr = CreateEdge(args[0]))
-      return new RawPtr(ptr);
+      return new RawPtr(ptr, true);
     return 0;
   }
 

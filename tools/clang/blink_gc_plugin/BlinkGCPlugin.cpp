@@ -23,6 +23,9 @@ using std::string;
 
 namespace {
 
+const char kClassMustLeftMostlyDeriveGC[] =
+    "[blink-gc] Class %0 must derive its GC base in the left-most position.";
+
 const char kClassRequiresTraceMethod[] =
     "[blink-gc] Class %0 requires a trace method"
     " because it contains fields that require tracing.";
@@ -430,6 +433,7 @@ class CheckGCRootsVisitor : public RecursiveEdgeVisitor {
 // This visitor checks that the fields of a class are "well formed".
 // - OwnPtr, RefPtr and RawPtr must not point to a GC derived types.
 // - An on-heap class must never contain GC roots.
+// - Only stack-allocated types may point to stack-allocated types.
 class CheckFieldsVisitor : public RecursiveEdgeVisitor {
  public:
   typedef std::vector<std::pair<FieldPoint*, Edge*> > Errors;
@@ -481,20 +485,25 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
     if (!Parent() || !edge->value()->IsGCAllocated())
       return;
 
-    if (Parent()->IsOwnPtr() ||
-        (stack_allocated_host_ && Parent()->IsRawPtr() &&
-         // TODO: Remove this exception once the node hierarchy is moved.
-         !edge->value()->IsTreeShared())) {
-      invalid_fields_.push_back(std::make_pair(current_, Parent()));
+    // In transition mode, disallow  OwnPtr<T>, RawPtr<T> to GC allocated T's,
+    // also disallow T* in stack-allocated types.
+    if (options_.enable_oilpan) {
+      if (Parent()->IsOwnPtr() ||
+          Parent()->IsRawPtrClass() ||
+          (stack_allocated_host_ && Parent()->IsRawPtr() &&
+           // TODO: Remove this exception once the node hierarchy is moved.
+           !edge->value()->IsTreeShared())) {
+        invalid_fields_.push_back(std::make_pair(current_, Parent()));
+        return;
+      }
+
       return;
     }
 
-    // Don't check raw and ref pointers in transition mode.
-    if (options_.enable_oilpan)
-      return;
-
-    if (Parent()->IsRawPtr() || Parent()->IsRefPtr())
+    if (Parent()->IsRawPtr() || Parent()->IsRefPtr() || Parent()->IsOwnPtr()) {
       invalid_fields_.push_back(std::make_pair(current_, Parent()));
+      return;
+    }
   }
 
  private:
@@ -525,6 +534,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     options_.ignored_directories.push_back("/heap/");
 
     // Register warning/error messages.
+    diag_class_must_left_mostly_derive_gc_ = diagnostic_.getCustomDiagID(
+        getErrorLevel(), kClassMustLeftMostlyDeriveGC);
     diag_class_requires_trace_method_ =
         diagnostic_.getCustomDiagID(getErrorLevel(), kClassRequiresTraceMethod);
     diag_base_requires_tracing_ =
@@ -685,6 +696,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     }
 
     if (info->IsGCDerived()) {
+      CheckLeftMostDerived(info);
+
       CheckDispatch(info);
 
       // TODO: Remove this exception once TreeShared is properly traced.
@@ -699,6 +712,17 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     }
 
     DumpClass(info);
+  }
+
+  void CheckLeftMostDerived(RecordInfo* info) {
+    CXXRecordDecl* left_most = info->record();
+    CXXRecordDecl::base_class_iterator it = left_most->bases_begin();
+    while (it != left_most->bases_end()) {
+      left_most = it->getType()->getAsCXXRecordDecl();
+      it = left_most->bases_begin();
+    }
+    if (!Config::IsGCBase(left_most->getName()))
+      ReportClassMustLeftMostlyDeriveGC(info);
   }
 
   void CheckDispatch(RecordInfo* info) {
@@ -1036,6 +1060,14 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     return true;
   }
 
+  void ReportClassMustLeftMostlyDeriveGC(RecordInfo* info) {
+    SourceLocation loc = info->record()->getInnerLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_class_must_left_mostly_derive_gc_)
+        << info->record();
+  }
+
   void ReportClassRequiresTraceMethod(RecordInfo* info) {
     SourceLocation loc = info->record()->getInnerLocStart();
     SourceManager& manager = instance_.getSourceManager();
@@ -1269,6 +1301,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         << overridden;
   }
 
+  unsigned diag_class_must_left_mostly_derive_gc_;
   unsigned diag_class_requires_trace_method_;
   unsigned diag_base_requires_tracing_;
   unsigned diag_fields_require_tracing_;
