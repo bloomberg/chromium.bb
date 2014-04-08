@@ -416,9 +416,11 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
   template <class T>
   MouseWheelEvent(const MouseWheelEvent& model,
                   T* source,
-                  T* target)
-      : MouseEvent(model, source, target, model.type(), model.flags()),
-        offset_(model.x_offset(), model.y_offset()) {
+                  T* target,
+                  EventType type,
+                  int flags)
+      : MouseEvent(model, source, target, type, flags),
+        offset_(model.x_offset(), model.y_offset()){
   }
 
   // The amount to scroll. This is in multiples of kWheelDelta.

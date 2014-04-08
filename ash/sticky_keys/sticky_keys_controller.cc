@@ -69,18 +69,10 @@ void StickyKeysHandlerDelegateImpl::DispatchMouseEvent(ui::MouseEvent* event,
   DCHECK(target);
   // We need to send a new, untransformed mouse event to the host.
   if (event->IsMouseWheelEvent()) {
-    aura::Window* source = static_cast<aura::Window*>(event->target());
-    ui::MouseWheelEvent new_event(*static_cast<ui::MouseWheelEvent*>(event),
-                                  source,
-                                  source->GetRootWindow());
-    // Transform the location back to host coordinates before dispatching.
-    new_event.UpdateForRootTransform(source->GetHost()->GetRootTransform());
+    ui::MouseWheelEvent new_event(event->native_event());
     DispatchEvent(&new_event, target);
   } else {
-    aura::Window* source = static_cast<aura::Window*>(event->target());
-    ui::MouseEvent new_event(*event, source, source->GetRootWindow());
-    // Transform the location back to host coordinates before dispatching.
-    new_event.UpdateForRootTransform(source->GetHost()->GetRootTransform());
+    ui::MouseEvent new_event(event->native_event());
     DispatchEvent(&new_event, target);
   }
 }
