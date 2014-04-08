@@ -528,7 +528,7 @@ Document::~Document()
 
     m_scriptRunner.clear();
 
-    removeAllEventListeners();
+    removeAllEventListenersRecursively();
 
     // Currently we believe that Document can never outlive the parser.
     // Although the Document may be replaced synchronously, DocumentParsers
@@ -2188,8 +2188,6 @@ void Document::removeAllEventListeners()
 
     if (DOMWindow* domWindow = this->domWindow())
         domWindow->removeAllEventListeners();
-    for (Node* node = firstChild(); node; node = NodeTraversal::next(*node))
-        node->removeAllEventListeners();
 }
 
 void Document::clearAXObjectCache()
@@ -2280,7 +2278,7 @@ void Document::open(Document* ownerDocument)
             m_frame->loader().stopAllLoaders();
     }
 
-    removeAllEventListeners();
+    removeAllEventListenersRecursively();
     implicitOpen();
     if (ScriptableDocumentParser* parser = scriptableDocumentParser())
         parser->setWasCreatedByScript(true);
@@ -2603,7 +2601,7 @@ void Document::dispatchUnloadEvents()
     bool keepEventListeners = m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument() && m_frame->loader().provisionalDocumentLoader()
         && isSecureTransitionTo(m_frame->loader().provisionalDocumentLoader()->url());
     if (!keepEventListeners)
-        removeAllEventListeners();
+        removeAllEventListenersRecursively();
 }
 
 Document::PageDismissalType Document::pageDismissalEventBeingDispatched() const

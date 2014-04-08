@@ -202,14 +202,6 @@ void ElementShadow::detach(const Node::AttachContext& context)
         root->detach(childrenContext);
 }
 
-void ElementShadow::removeAllEventListeners()
-{
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        for (Node* node = root; node; node = NodeTraversal::next(*node))
-            node->removeAllEventListeners();
-    }
-}
-
 void ElementShadow::setNeedsDistributionRecalc()
 {
     if (m_needsDistributionRecalc)

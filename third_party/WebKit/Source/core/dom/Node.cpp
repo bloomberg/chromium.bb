@@ -2000,6 +2000,15 @@ void Node::removeAllEventListeners()
     document().didClearTouchEventHandlers(this);
 }
 
+void Node::removeAllEventListenersRecursively()
+{
+    for (Node* node = this; node; node = NodeTraversal::next(*node)) {
+        node->removeAllEventListeners();
+        for (ShadowRoot* root = node->youngestShadowRoot(); root; root = root->olderShadowRoot())
+            root->removeAllEventListenersRecursively();
+    }
+}
+
 typedef HashMap<Node*, OwnPtr<EventTargetData> > EventTargetDataMap;
 
 static EventTargetDataMap& eventTargetDataMap()

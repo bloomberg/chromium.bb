@@ -1889,13 +1889,6 @@ void Element::childrenChanged(bool changedByParser, Node* beforeChange, Node* af
         shadow->setNeedsDistributionRecalc();
 }
 
-void Element::removeAllEventListeners()
-{
-    ContainerNode::removeAllEventListeners();
-    if (ElementShadow* shadow = this->shadow())
-        shadow->removeAllEventListeners();
-}
-
 void Element::finishParsingChildren()
 {
     setIsFinishedParsingChildren(true);
