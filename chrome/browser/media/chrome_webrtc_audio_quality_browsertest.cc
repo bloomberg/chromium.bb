@@ -363,7 +363,7 @@ INSTANTIATE_TEST_CASE_P(WebRtcAudioQualityBrowserTests,
 #endif
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioQualityBrowserTest,
-                       MANUAL_TestAudioQuality) {
+                       MAYBE_MANUAL_TestAudioQuality) {
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     // It would take work to implement this on XP; not prioritized right now.
