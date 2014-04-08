@@ -505,7 +505,7 @@ alloc_backing_store(drm_intel_bo *bo)
 
 	bo_fake->backing_store = malloc(bo->size);
 
-	DBG("alloc_backing - buf %d %p %d\n", bo_fake->id,
+	DBG("alloc_backing - buf %d %p %lu\n", bo_fake->id,
 	    bo_fake->backing_store, bo->size);
 	assert(bo_fake->backing_store);
 }
@@ -716,7 +716,7 @@ evict_and_alloc_block(drm_intel_bo *bo)
 		if (alloc_block(bo))
 			return 1;
 
-	DBG("%s 0x%x bytes failed\n", __FUNCTION__, bo->size);
+	DBG("%s 0x%lx bytes failed\n", __FUNCTION__, bo->size);
 
 	return 0;
 }
@@ -835,7 +835,7 @@ drm_intel_fake_bo_alloc(drm_intel_bufmgr *bufmgr,
 	bo_fake->flags = 0;
 	bo_fake->is_static = 0;
 
-	DBG("drm_bo_alloc: (buf %d: %s, %d kb)\n", bo_fake->id, bo_fake->name,
+	DBG("drm_bo_alloc: (buf %d: %s, %lu kb)\n", bo_fake->id, bo_fake->name,
 	    bo_fake->bo.size / 1024);
 
 	return &bo_fake->bo;
@@ -894,7 +894,7 @@ drm_intel_bo_fake_alloc_static(drm_intel_bufmgr *bufmgr,
 	bo_fake->flags = BM_PINNED;
 	bo_fake->is_static = 1;
 
-	DBG("drm_bo_alloc_static: (buf %d: %s, %d kb)\n", bo_fake->id,
+	DBG("drm_bo_alloc_static: (buf %d: %s, %lu kb)\n", bo_fake->id,
 	    bo_fake->name, bo_fake->bo.size / 1024);
 
 	return &bo_fake->bo;
@@ -1022,7 +1022,7 @@ static int
 		return 0;
 
 	{
-		DBG("drm_bo_map: (buf %d: %s, %d kb)\n", bo_fake->id,
+		DBG("drm_bo_map: (buf %d: %s, %lu kb)\n", bo_fake->id,
 		    bo_fake->name, bo_fake->bo.size / 1024);
 
 		if (bo->virtual != NULL) {
@@ -1100,7 +1100,7 @@ static int
 	if (--bo_fake->map_count != 0)
 		return 0;
 
-	DBG("drm_bo_unmap: (buf %d: %s, %d kb)\n", bo_fake->id, bo_fake->name,
+	DBG("drm_bo_unmap: (buf %d: %s, %lu kb)\n", bo_fake->id, bo_fake->name,
 	    bo_fake->bo.size / 1024);
 
 	bo->virtual = NULL;
@@ -1167,7 +1167,7 @@ static int
 
 	bufmgr_fake = (drm_intel_bufmgr_fake *) bo->bufmgr;
 
-	DBG("drm_bo_validate: (buf %d: %s, %d kb)\n", bo_fake->id,
+	DBG("drm_bo_validate: (buf %d: %s, %lu kb)\n", bo_fake->id,
 	    bo_fake->name, bo_fake->bo.size / 1024);
 
 	/* Sanity check: Buffers should be unmapped before being validated.
@@ -1197,7 +1197,7 @@ static int
 
 	/* Upload the buffer contents if necessary */
 	if (bo_fake->dirty) {
-		DBG("Upload dirty buf %d:%s, sz %d offset 0x%x\n", bo_fake->id,
+		DBG("Upload dirty buf %d:%s, sz %lu offset 0x%x\n", bo_fake->id,
 		    bo_fake->name, bo->size, bo_fake->block->mem->ofs);
 
 		assert(!(bo_fake->flags & (BM_NO_BACKING_STORE | BM_PINNED)));
@@ -1522,12 +1522,12 @@ drm_intel_fake_check_aperture_space(drm_intel_bo ** bo_array, int count)
 	}
 
 	if (sz > bufmgr_fake->size) {
-		DBG("check_space: overflowed bufmgr size, %dkb vs %dkb\n",
+		DBG("check_space: overflowed bufmgr size, %ukb vs %lukb\n",
 		    sz / 1024, bufmgr_fake->size / 1024);
 		return -1;
 	}
 
-	DBG("drm_check_space: sz %dkb vs bufgr %dkb\n", sz / 1024,
+	DBG("drm_check_space: sz %ukb vs bufgr %lukb\n", sz / 1024,
 	    bufmgr_fake->size / 1024);
 	return 0;
 }
