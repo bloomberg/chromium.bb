@@ -120,7 +120,7 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
     , m_canReceiveDroppedFiles(false)
     , m_hasTouchEventHandler(false)
     , m_shouldRevealPassword(false)
-    , m_valueMatchesRenderer(false)
+    , m_needsToUpdateViewValue(true)
     , m_inputType(InputType::createText(*this))
     , m_inputTypeView(m_inputType)
 {
@@ -452,7 +452,7 @@ void HTMLInputElement::updateType()
     } else
         updateValueIfNeeded();
 
-    setFormControlValueMatchesRenderer(false);
+    m_needsToUpdateViewValue = true;
     m_inputTypeView->updateView();
 
     if (didRespectHeightAndWidth != m_inputType->shouldRespectHeightAndWidthAttributes()) {
@@ -644,7 +644,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
             updatePlaceholderVisibility(false);
             setNeedsStyleRecalc(SubtreeStyleChange);
         }
-        setFormControlValueMatchesRenderer(false);
+        m_needsToUpdateViewValue = true;
         setNeedsValidityCheck();
         m_valueAttributeWasUpdatedAfterParsing = !m_parsingInProgress;
         m_inputTypeView->valueAttributeChanged();
@@ -732,7 +732,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
             m_inputTypeView->destroyShadowSubtree();
             lazyReattachIfAttached();
             m_inputTypeView->createShadowSubtree();
-            setFormControlValueMatchesRenderer(false);
+            m_needsToUpdateViewValue = true;
         }
         UseCounter::countDeprecation(document(), UseCounter::PrefixedSpeechAttribute);
     } else if (name == onwebkitspeechchangeAttr)
@@ -786,7 +786,7 @@ void HTMLInputElement::attach(const AttachContext& context)
 void HTMLInputElement::detach(const AttachContext& context)
 {
     HTMLTextFormControlElement::detach(context);
-    setFormControlValueMatchesRenderer(false);
+    m_needsToUpdateViewValue = true;
     m_inputTypeView->closePopupView();
 }
 
@@ -926,7 +926,7 @@ void HTMLInputElement::copyNonAttributePropertiesFromElement(const Element& sour
 
     HTMLTextFormControlElement::copyNonAttributePropertiesFromElement(source);
 
-    setFormControlValueMatchesRenderer(false);
+    m_needsToUpdateViewValue = true;
     m_inputTypeView->updateView();
 }
 
@@ -972,7 +972,7 @@ void HTMLInputElement::setSuggestedValue(const String& value)
 {
     if (!m_inputType->canSetSuggestedValue())
         return;
-    setFormControlValueMatchesRenderer(false);
+    m_needsToUpdateViewValue = true;
     m_suggestedValue = sanitizeValue(value);
     setNeedsStyleRecalc(SubtreeStyleChange);
     m_inputTypeView->updateView();
@@ -997,7 +997,7 @@ void HTMLInputElement::setEditingValue(const String& value)
 void HTMLInputElement::setInnerTextValue(const String& value)
 {
     HTMLTextFormControlElement::setInnerTextValue(value);
-    m_valueMatchesRenderer = true;
+    m_needsToUpdateViewValue = false;
 }
 
 void HTMLInputElement::setValue(const String& value, ExceptionState& exceptionState, TextFieldEventBehavior eventBehavior)
@@ -1020,7 +1020,7 @@ void HTMLInputElement::setValue(const String& value, TextFieldEventBehavior even
     bool valueChanged = sanitizedValue != this->value();
 
     setLastChangeWasNotUserEdit();
-    setFormControlValueMatchesRenderer(false);
+    m_needsToUpdateViewValue = true;
     m_suggestedValue = String(); // Prevent TextFieldInputType::setValue from using the suggested value.
 
     m_inputType->setValue(sanitizedValue, valueChanged, eventBehavior);
@@ -1084,8 +1084,7 @@ void HTMLInputElement::setValueFromRenderer(const String& value)
     ASSERT(value == sanitizeValue(value) || sanitizeValue(value).isEmpty());
 
     m_valueIfDirty = value;
-
-    setFormControlValueMatchesRenderer(true);
+    m_needsToUpdateViewValue = false;
 
     // Input event is fired by the Node::defaultEventHandler for editable controls.
     if (!isTextField())

@@ -293,7 +293,6 @@ void FileInputType::setFiles(PassRefPtrWillBeRawPtr<FileList> files)
 
     m_fileList = files;
 
-    input->setFormControlValueMatchesRenderer(true);
     input->notifyFormStateChanged();
     input->setNeedsValidityCheck();
 

@@ -233,8 +233,7 @@ public:
     void setValueInternal(const String&, TextFieldEventBehavior);
     bool valueAttributeWasUpdatedAfterParsing() const { return m_valueAttributeWasUpdatedAfterParsing; }
     void updateView();
-    bool formControlValueMatchesRenderer() const { return m_valueMatchesRenderer; }
-    void setFormControlValueMatchesRenderer(bool b) { m_valueMatchesRenderer = b; }
+    bool needsToUpdateViewValue() const { return m_needsToUpdateViewValue; }
     virtual void setInnerTextValue(const String&) OVERRIDE;
 
     void cacheSelectionInResponseToSetValue(int caretOffset) { cacheSelection(caretOffset, caretOffset, SelectionHasNoDirection); }
@@ -396,7 +395,7 @@ private:
     bool m_canReceiveDroppedFiles : 1;
     bool m_hasTouchEventHandler : 1;
     bool m_shouldRevealPassword : 1;
-    bool m_valueMatchesRenderer : 1;
+    bool m_needsToUpdateViewValue : 1;
     RefPtr<InputType> m_inputType;
     RefPtr<InputTypeView> m_inputTypeView;
     // The ImageLoader must be owned by this element because the loader code assumes
