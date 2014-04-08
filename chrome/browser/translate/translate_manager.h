@@ -13,11 +13,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class GURL;
-struct PageTranslatedDetails;
 class PrefService;
 class TranslateClient;
 class TranslateDriver;
@@ -68,6 +68,14 @@ class TranslateManager : public content::NotificationObserver {
                      const std::string& target_lang,
                      bool triggered_from_menu);
 
+  // Starts the translation process for a page in the |page_lang| language.
+  void InitiateTranslation(const std::string& page_lang);
+
+  // Shows the after translate or error infobar depending on the details.
+  void PageTranslated(const std::string& source_lang,
+                      const std::string& target_lang,
+                      TranslateErrors::Type error_type);
+
   // Reverts the contents of the page to its original language.
   void RevertTranslation();
 
@@ -97,8 +105,6 @@ class TranslateManager : public content::NotificationObserver {
       RegisterTranslateErrorCallback(const TranslateErrorCallback& callback);
 
  private:
-  // Starts the translation process for a page in the |page_lang| language.
-  void InitiateTranslation(const std::string& page_lang);
 
   // Initiates translation once the page is finished loading.
   void InitiateTranslationPosted(const std::string& page_lang, int attempt);
@@ -107,9 +113,6 @@ class TranslateManager : public content::NotificationObserver {
   void DoTranslatePage(const std::string& translate_script,
                        const std::string& source_lang,
                        const std::string& target_lang);
-
-  // Shows the after translate or error infobar depending on the details.
-  void PageTranslated(PageTranslatedDetails* details);
 
   // Called when the Translate script has been fetched.
   // Initiates the translation.

@@ -352,6 +352,9 @@ void TranslateTabHelper::OnLanguageDetermined(
   translate_driver_.GetLanguageState().LanguageDetermined(
       details.adopted_language, page_needs_translation);
 
+  if (web_contents())
+    translate_manager_->InitiateTranslation(details.adopted_language);
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
       content::Source<content::WebContents>(web_contents()),
@@ -363,8 +366,9 @@ void TranslateTabHelper::OnPageTranslated(int32 page_id,
                                           const std::string& translated_lang,
                                           TranslateErrors::Type error_type) {
   DCHECK(web_contents());
-  translate_driver_.GetLanguageState().SetCurrentLanguage(translated_lang);
-  translate_driver_.GetLanguageState().set_translation_pending(false);
+  translate_manager_->PageTranslated(
+      original_lang, translated_lang, error_type);
+
   PageTranslatedDetails details;
   details.source_language = original_lang;
   details.target_language = translated_lang;
