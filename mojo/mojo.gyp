@@ -318,6 +318,7 @@
       'target_name': 'mojo_environment_chromium',
       'type': 'static_library',
       'dependencies': [
+        'mojo_common_lib',
         'mojo_environment_chromium_impl',
       ],
       'sources': [
