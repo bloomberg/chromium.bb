@@ -81,6 +81,7 @@ IndexedDBTransaction::~IndexedDBTransaction() {
   // complete or aborted.
   DCHECK_EQ(state_, FINISHED);
   DCHECK(preemptive_task_queue_.empty());
+  DCHECK_EQ(pending_preemptive_events_, 0);
   DCHECK(task_queue_.empty());
   DCHECK(abort_task_stack_.empty());
 }
@@ -157,6 +158,7 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
     abort_task_stack_.pop().Run(NULL);
 
   preemptive_task_queue_.clear();
+  pending_preemptive_events_ = 0;
   task_queue_.clear();
 
   // Backing store resources (held via cursors) must be released

@@ -85,6 +85,8 @@ class CONTENT_EXPORT IndexedDBTransaction
   const Diagnostics& diagnostics() const { return diagnostics_; }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTestMode, AbortPreemptive);
+
   friend class base::RefCounted<IndexedDBTransaction>;
   virtual ~IndexedDBTransaction();
 
