@@ -57,7 +57,7 @@ void CryptoResultImpl::completeWithError(const blink::WebString& errorDetails)
     ASSERT(!m_finished);
 
     if (canCompletePromise()) {
-        DOMRequestState::Scope scope(m_requestState);
+        NewScriptState::Scope scope(m_scriptState.get());
         if (!errorDetails.isEmpty()) {
             // FIXME: Include the line number which started the crypto operation.
             executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, errorDetails);
@@ -76,7 +76,7 @@ void CryptoResultImpl::completeWithBuffer(const blink::WebArrayBuffer& buffer)
     ASSERT(!m_finished);
 
     if (canCompletePromise()) {
-        DOMRequestState::Scope scope(m_requestState);
+        NewScriptState::Scope scope(m_scriptState.get());
         m_promiseResolver->resolve(PassRefPtr<ArrayBuffer>(buffer));
     }
 
@@ -88,7 +88,7 @@ void CryptoResultImpl::completeWithBoolean(bool b)
     ASSERT(!m_finished);
 
     if (canCompletePromise()) {
-        DOMRequestState::Scope scope(m_requestState);
+        NewScriptState::Scope scope(m_scriptState.get());
         m_promiseResolver->resolve(ScriptValue::createBoolean(b));
     }
 
@@ -100,7 +100,7 @@ void CryptoResultImpl::completeWithKey(const blink::WebCryptoKey& key)
     ASSERT(!m_finished);
 
     if (canCompletePromise()) {
-        DOMRequestState::Scope scope(m_requestState);
+        NewScriptState::Scope scope(m_scriptState.get());
         m_promiseResolver->resolve(Key::create(key));
     }
 
@@ -112,7 +112,7 @@ void CryptoResultImpl::completeWithKeyPair(const blink::WebCryptoKey& publicKey,
     ASSERT(!m_finished);
 
     if (canCompletePromise()) {
-        DOMRequestState::Scope scope(m_requestState);
+        NewScriptState::Scope scope(m_scriptState.get());
         m_promiseResolver->resolve(KeyPair::create(publicKey, privateKey));
     }
 
@@ -122,7 +122,7 @@ void CryptoResultImpl::completeWithKeyPair(const blink::WebCryptoKey& publicKey,
 CryptoResultImpl::CryptoResultImpl(ExecutionContext* context)
     : ContextLifecycleObserver(context)
     , m_promiseResolver(ScriptPromiseResolver::create(context))
-    , m_requestState(toIsolate(context))
+    , m_scriptState(NewScriptState::current(toIsolate(context)))
 #if !ASSERT_DISABLED
     , m_owningThread(currentThread())
     , m_finished(false)
@@ -141,7 +141,7 @@ void CryptoResultImpl::finish()
 void CryptoResultImpl::clearPromiseResolver()
 {
     m_promiseResolver.clear();
-    m_requestState.clear();
+    m_scriptState.clear();
 }
 
 void CryptoResultImpl::CheckValidThread() const

@@ -39,7 +39,7 @@ namespace WebCore {
 
 StorageQuotaCallbacksImpl::StorageQuotaCallbacksImpl(PassRefPtr<ScriptPromiseResolver> resolver, ExecutionContext* context)
     : m_resolver(resolver)
-    , m_requestState(toIsolate(context))
+    , m_scriptState(NewScriptState::current(toIsolate(context)))
 {
 }
 
@@ -49,19 +49,19 @@ StorageQuotaCallbacksImpl::~StorageQuotaCallbacksImpl()
 
 void StorageQuotaCallbacksImpl::didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes)
 {
-    DOMRequestState::Scope scope(m_requestState);
+    NewScriptState::Scope scope(m_scriptState.get());
     m_resolver->resolve(StorageInfo::create(usageInBytes, quotaInBytes));
 }
 
 void StorageQuotaCallbacksImpl::didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes)
 {
-    DOMRequestState::Scope scope(m_requestState);
+    NewScriptState::Scope scope(m_scriptState.get());
     m_resolver->resolve(StorageInfo::create(usageInBytes, grantedQuotaInBytes));
 }
 
 void StorageQuotaCallbacksImpl::didFail(blink::WebStorageQuotaError error)
 {
-    DOMRequestState::Scope scope(m_requestState);
+    NewScriptState::Scope scope(m_scriptState.get());
     m_resolver->reject(DOMError::create(static_cast<ExceptionCode>(error)).get());
 }
 

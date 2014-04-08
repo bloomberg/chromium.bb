@@ -31,7 +31,7 @@
 #ifndef CallbackPromiseAdapter_h
 #define CallbackPromiseAdapter_h
 
-#include "bindings/v8/DOMRequestState.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "public/platform/WebCallbacks.h"
 
@@ -63,26 +63,26 @@ namespace WebCore {
 template<typename S, typename T>
 class CallbackPromiseAdapter FINAL : public blink::WebCallbacks<typename S::WebType, typename T::WebType> {
 public:
-    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver, ExecutionContext* context)
+    CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver, ExecutionContext* context)
         : m_resolver(resolver)
-        , m_requestState(toIsolate(context))
+        , m_scriptState(NewScriptState::current(toIsolate(context)))
     {
     }
     virtual ~CallbackPromiseAdapter() { }
 
     virtual void onSuccess(typename S::WebType* result) OVERRIDE
     {
-        DOMRequestState::Scope scope(m_requestState);
+        NewScriptState::Scope scope(m_scriptState.get());
         m_resolver->resolve(S::from(result));
     }
     virtual void onError(typename T::WebType* error) OVERRIDE
     {
-        DOMRequestState::Scope scope(m_requestState);
+        NewScriptState::Scope scope(m_scriptState.get());
         m_resolver->reject(T::from(error));
     }
 private:
     RefPtr<ScriptPromiseResolver> m_resolver;
-    DOMRequestState m_requestState;
+    RefPtr<NewScriptState> m_scriptState;
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 };
 

@@ -31,7 +31,7 @@
 #ifndef CryptoResultImpl_h
 #define CryptoResultImpl_h
 
-#include "bindings/v8/DOMRequestState.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/ContextLifecycleObserver.h"
@@ -77,7 +77,7 @@ private:
     void clearPromiseResolver();
 
     RefPtr<ScriptPromiseResolver> m_promiseResolver;
-    DOMRequestState m_requestState;
+    RefPtr<NewScriptState> m_scriptState;
 
 #if !ASSERT_DISABLED
     ThreadIdentifier m_owningThread;

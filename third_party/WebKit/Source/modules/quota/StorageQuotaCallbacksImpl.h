@@ -31,7 +31,7 @@
 #ifndef StorageQuotaCallbacksImpl_h
 #define StorageQuotaCallbacksImpl_h
 
-#include "bindings/v8/DOMRequestState.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "platform/StorageQuotaCallbacks.h"
 #include "wtf/OwnPtr.h"
@@ -58,7 +58,7 @@ private:
     StorageQuotaCallbacksImpl(PassRefPtr<ScriptPromiseResolver>, ExecutionContext*);
 
     RefPtr<ScriptPromiseResolver> m_resolver;
-    DOMRequestState m_requestState;
+    RefPtr<NewScriptState> m_scriptState;
 };
 
 } // namespace
