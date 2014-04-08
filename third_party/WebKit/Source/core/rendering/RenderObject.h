@@ -593,8 +593,7 @@ public:
     RenderView* view() const { return document().renderView(); };
     FrameView* frameView() const { return document().view(); };
 
-    // Returns true if this renderer is rooted, and optionally returns the hosting view (the root of the hierarchy).
-    bool isRooted(RenderView** = 0) const;
+    bool isRooted() const;
 
     Node* node() const
     {

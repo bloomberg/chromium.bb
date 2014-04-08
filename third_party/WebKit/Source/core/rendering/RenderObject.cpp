@@ -1437,29 +1437,25 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
 
 void RenderObject::repaint() const
 {
-    // Don't repaint if we're unrooted (note that view() still returns the view when unrooted)
-    RenderView* view;
-    if (!isRooted(&view))
+    if (!isRooted())
         return;
 
-    if (view->document().printing())
+    if (view()->document().printing())
         return; // Don't repaint if we're printing.
 
     // FIXME: really, we're in the repaint phase here, and the following queries are legal.
     // Until those states are fully fledged, I'll just disable the ASSERTS.
     DisableCompositingQueryAsserts disabler;
     RenderLayerModelObject* repaintContainer = containerForRepaint();
-    repaintUsingContainer(repaintContainer ? repaintContainer : view, pixelSnappedIntRect(clippedOverflowRectForRepaint(repaintContainer)), InvalidationRepaint);
+    repaintUsingContainer(repaintContainer ? repaintContainer : view(), pixelSnappedIntRect(clippedOverflowRectForRepaint(repaintContainer)), InvalidationRepaint);
 }
 
 void RenderObject::repaintRectangle(const LayoutRect& r) const
 {
-    // Don't repaint if we're unrooted (note that view() still returns the view when unrooted)
-    RenderView* view;
-    if (!isRooted(&view))
+    if (!isRooted())
         return;
 
-    if (view->document().printing())
+    if (view()->document().printing())
         return; // Don't repaint if we're printing.
 
     LayoutRect dirtyRect(r);
@@ -1467,12 +1463,12 @@ void RenderObject::repaintRectangle(const LayoutRect& r) const
     if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
         // FIXME: layoutDelta needs to be applied in parts before/after transforms and
         // repaint containers. https://bugs.webkit.org/show_bug.cgi?id=23308
-        dirtyRect.move(view->layoutDelta());
+        dirtyRect.move(view()->layoutDelta());
     }
 
     RenderLayerModelObject* repaintContainer = containerForRepaint();
     computeRectForRepaint(repaintContainer, dirtyRect);
-    repaintUsingContainer(repaintContainer ? repaintContainer : view, pixelSnappedIntRect(dirtyRect), InvalidationRepaintRectangle);
+    repaintUsingContainer(repaintContainer ? repaintContainer : view(), pixelSnappedIntRect(dirtyRect), InvalidationRepaintRectangle);
 }
 
 IntRect RenderObject::pixelSnappedAbsoluteClippedOverflowRect() const
@@ -2480,19 +2476,14 @@ void RenderObject::addLayerHitTestRects(LayerHitTestRects& layerRects, const Ren
     }
 }
 
-bool RenderObject::isRooted(RenderView** view) const
+bool RenderObject::isRooted() const
 {
-    const RenderObject* o = this;
-    while (o->parent())
-        o = o->parent();
-
-    if (!o->isRenderView())
-        return false;
-
-    if (view)
-        *view = const_cast<RenderView*>(toRenderView(o));
-
-    return true;
+    const RenderObject* object = this;
+    while (object->parent() && !object->hasLayer())
+        object = object->parent();
+    if (object->hasLayer())
+        return toRenderLayerModelObject(object)->layer()->root()->isRootLayer();
+    return false;
 }
 
 RenderObject* RenderObject::rendererForRootBackground()
