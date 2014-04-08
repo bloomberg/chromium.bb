@@ -20,7 +20,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
-#include "net/base/net_util.h"
+#include "net/base/filename_util.h"
 
 using content::NavigationController;
 using content::WebContents;

@@ -21,7 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/common/webplugininfo.h"
-#include "net/base/net_util.h"
+#include "net/base/filename_util.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/npapi/bindings/npruntime.h"

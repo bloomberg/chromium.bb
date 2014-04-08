@@ -18,7 +18,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/renderer/savable_resources.h"
 #include "content/shell/browser/shell.h"
-#include "net/base/net_util.h"
+#include "net/base/filename_util.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebData.h"

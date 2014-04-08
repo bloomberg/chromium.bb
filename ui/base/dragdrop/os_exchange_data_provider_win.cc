@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_hglobal.h"
 #include "grit/ui_strings.h"
-#include "net/base/net_util.h"
+#include "net/base/filename_util.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/dragdrop/file_info.h"

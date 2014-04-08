@@ -6,11 +6,12 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
+#include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
-#include "net/base/net_util.h"
 #include "net/filter/gzip_filter.h"
 #include "net/filter/sdch_filter.h"
+#include "url/gurl.h"
 
 namespace {
 

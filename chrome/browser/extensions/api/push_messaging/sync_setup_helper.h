@@ -15,6 +15,10 @@
 class Profile;
 class ProfileSyncServiceHarness;
 
+namespace base {
+class FilePath;
+}
+
 namespace extensions {
 
 class SyncSetupHelper {

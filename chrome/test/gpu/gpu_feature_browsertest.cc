@@ -22,7 +22,7 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_test_config.h"
-#include "net/base/net_util.h"
+#include "net/base/filename_util.h"
 #include "ui/gl/gl_implementation.h"
 
 #if defined(OS_MACOSX)
