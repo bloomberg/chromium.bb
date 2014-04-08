@@ -3,43 +3,253 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
 import os
-import sys
 import unittest
 
-from file_system import FileNotFoundError
 from future import Future
 from reference_resolver import ReferenceResolver
 from test_object_store import TestObjectStore
 from test_util import Server2Path
+from third_party.json_schema_compiler.model import Namespace
 
 
-class _FakeAPIDataSource(object):
-  def __init__(self, json_data):
-    self._json = json_data
-
-  def get(self, key, disable_refs=False):
-    assert disable_refs, 'ReferenceResolve should be disabling refs'
-    if key not in self._json:
-      raise FileNotFoundError(key)
-    return self._json[key]
-
-
-class _FakeNamespace(object):
-  def __init__(self):
-    self.documentation_options = {}
+_TEST_DATA = {
+  'baz': {
+    'namespace': 'baz',
+    'description': '',
+    'types': [
+      {
+        'id': 'baz_t1',
+        'type': 'any',
+      },
+      {
+        'id': 'baz_t2',
+        'type': 'any',
+      },
+      {
+        'id': 'baz_t3',
+        'type': 'any',
+      }
+    ],
+    'functions': [
+      {
+        'name': 'baz_f1',
+        'type': 'function'
+      },
+      {
+        'name': 'baz_f2',
+        'type': 'function'
+      },
+      {
+        'name': 'baz_f3',
+        'type': 'function'
+      }
+    ],
+    'events': [
+      {
+        'name': 'baz_e1',
+        'type': 'function'
+      },
+      {
+        'name': 'baz_e2',
+        'type': 'function'
+      },
+      {
+        'name': 'baz_e3',
+        'type': 'function'
+      }
+    ],
+    'properties': {
+      'baz_p1': {'type': 'any'},
+      'baz_p2': {'type': 'any'},
+      'baz_p3': {'type': 'any'}
+    }
+  },
+  'bar.bon': {
+    'namespace': 'bar.bon',
+    'description': '',
+    'types': [
+      {
+        'id': 'bar_bon_t1',
+        'type': 'any',
+      },
+      {
+        'id': 'bar_bon_t2',
+        'type': 'any',
+      },
+      {
+        'id': 'bar_bon_t3',
+        'type': 'any',
+      }
+    ],
+    'functions': [
+      {
+        'name': 'bar_bon_f1',
+        'type': 'function'
+      },
+      {
+        'name': 'bar_bon_f2',
+        'type': 'function'
+      },
+      {
+        'name': 'bar_bon_f3',
+        'type': 'function'
+      }
+    ],
+    'events': [
+      {
+        'name': 'bar_bon_e1',
+        'type': 'function'
+      },
+      {
+        'name': 'bar_bon_e2',
+        'type': 'function'
+      },
+      {
+        'name': 'bar_bon_e3',
+        'type': 'function'
+      }
+    ],
+    'properties': {
+      'bar_bon_p1': {'type': 'any'},
+      'bar_bon_p2': {'type': 'any'},
+      'bar_bon_p3': {'type': 'any'}
+    }
+  },
+  'bar': {
+    'namespace': 'bar',
+    'description': '',
+    'types': [
+      {
+        'id': 'bar_t1',
+        'type': 'any',
+        'properties': {
+          'bar_t1_p1': {
+            'type': 'any'
+          }
+        }
+      },
+      {
+        'id': 'bar_t2',
+        'type': 'any',
+        'properties': {
+          'bar_t2_p1': {
+            'type': 'any'
+          }
+        }
+      },
+      {
+        'id': 'bar_t3',
+        'type': 'any',
+      },
+      {
+        'id': 'bon',
+        'type': 'any'
+      }
+    ],
+    'functions': [
+      {
+        'name': 'bar_f1',
+        'type': 'function'
+      },
+      {
+        'name': 'bar_f2',
+        'type': 'function'
+      },
+      {
+        'name': 'bar_f3',
+        'type': 'function'
+      }
+    ],
+    'events': [
+      {
+        'name': 'bar_e1',
+        'type': 'function'
+      },
+      {
+        'name': 'bar_e2',
+        'type': 'function'
+      },
+      {
+        'name': 'bar_e3',
+        'type': 'function'
+      }
+    ],
+    'properties': {
+      'bar_p1': {'type': 'any'},
+      'bar_p2': {'type': 'any'},
+      'bar_p3': {'$ref': 'bar_t1'}
+    }
+  },
+  'foo': {
+    'namespace': 'foo',
+    'description': '',
+    'types': [
+      {
+        'id': 'foo_t1',
+        'type': 'any',
+      },
+      {
+        'id': 'foo_t2',
+        'type': 'any',
+      },
+      {
+        'id': 'foo_t3',
+        'type': 'any',
+        'events': [
+          {
+            'name': 'foo_t3_e1',
+            'type': 'function'
+          }
+        ]
+      }
+    ],
+    'functions': [
+      {
+        'name': 'foo_f1',
+        'type': 'function'
+      },
+      {
+        'name': 'foo_f2',
+        'type': 'function'
+      },
+      {
+        'name': 'foo_f3',
+        'type': 'function'
+      }
+    ],
+    'events': [
+      {
+        'name': 'foo_e1',
+        'type': 'function'
+      },
+      {
+        'name': 'foo_e2',
+        'type': 'function'
+      },
+      {
+        'name': 'foo_e3',
+        'type': 'function'
+      }
+    ],
+    'properties': {
+      'foo_p1': {'$ref': 'foo_t3'},
+      'foo_p2': {'type': 'any'},
+      'foo_p3': {'type': 'any'}
+    }
+  }
+}
 
 
 class _FakeAPIModels(object):
-  def __init__(self, names):
-    self._names = names
+  def __init__(self, apis):
+    self._apis = apis
 
   def GetNames(self):
-    return self._names
+    return self._apis.keys()
 
   def GetModel(self, name):
-    return Future(value=_FakeNamespace())
+    return Future(value=Namespace(self._apis[name], 'fake/path.json'))
 
 
 class ReferenceResolverTest(unittest.TestCase):
@@ -51,9 +261,7 @@ class ReferenceResolverTest(unittest.TestCase):
       return f.read()
 
   def testGetLink(self):
-    test_data = json.loads(self._ReadLocalFile('fake_data_source.json'))
-    resolver = ReferenceResolver(_FakeAPIDataSource(test_data),
-                                 _FakeAPIModels(test_data.keys()),
+    resolver = ReferenceResolver(_FakeAPIModels(_TEST_DATA),
                                  TestObjectStore('test'))
     self.assertEqual({
       'href': 'foo',

@@ -102,7 +102,6 @@ class ServerInstance(object):
         self.object_store_creator)
 
     self.ref_resolver = ReferenceResolver(
-        self.api_data_source_factory.Create(None),
         self.api_models,
         self.object_store_creator.Create(ReferenceResolver))
 
