@@ -265,8 +265,7 @@ void NetworkChangeNotifierMac::ReachabilityCallback(
 #if defined(OS_IOS)
   // On iOS, the SCDynamicStore API does not exist, and we use the reachability
   // API to detect IP address changes instead.
-  if (new_type != CONNECTION_NONE)
-    NotifyObserversOfIPAddressChange();
+  NotifyObserversOfIPAddressChange();
 #endif  // defined(OS_IOS)
 }
 
