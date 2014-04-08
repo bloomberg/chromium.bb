@@ -1458,6 +1458,10 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
     DrawIOSurfaceWithoutCoreAnimation();
   }
 
+  // Try to finish previous copy requests after draw to get better pipelining.
+  if (compositing_iosurface_)
+    compositing_iosurface_->CheckIfAllCopiesAreFinished(false);
+
   // The IOSurface's size may have changed, so re-layout the layers to take
   // this into account. This may force an immediate draw.
   LayoutLayers();

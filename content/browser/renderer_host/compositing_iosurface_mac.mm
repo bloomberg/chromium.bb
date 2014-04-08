@@ -399,9 +399,6 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
     glGetError();
   }
 
-  // Try to finish previous copy requests after flush to get better pipelining.
-  CheckIfAllCopiesAreFinished(false);
-
   return result;
 }
 
