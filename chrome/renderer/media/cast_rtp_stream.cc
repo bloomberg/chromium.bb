@@ -51,6 +51,7 @@ CastRtpPayloadParams DefaultOpusPayload() {
   payload.ssrc = 1;
   payload.feedback_ssrc = 2;
   payload.payload_type = 127;
+  payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
   payload.codec_name = kCodecNameOpus;
   payload.clock_rate = 48000;
   payload.channels = 2;
@@ -65,6 +66,7 @@ CastRtpPayloadParams DefaultVp8Payload() {
   payload.ssrc = 11;
   payload.feedback_ssrc = 12;
   payload.payload_type = 96;
+  payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
   payload.codec_name = kCodecNameVp8;
   payload.clock_rate = 90000;
   payload.width = 1280;
@@ -81,6 +83,7 @@ CastRtpPayloadParams DefaultH264Payload() {
   payload.ssrc = 11;
   payload.feedback_ssrc = 12;
   payload.payload_type = 96;
+  payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
   payload.codec_name = kCodecNameH264;
   payload.clock_rate = 90000;
   payload.width = 1280;
@@ -136,6 +139,7 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
   config->sender_ssrc = params.payload.ssrc;
   config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
   config->rtp_config.payload_type = params.payload.payload_type;
+  config->rtp_config.max_delay_ms = params.payload.max_latency_ms;
   config->use_external_encoder = false;
   config->frequency = params.payload.clock_rate;
   config->channels = params.payload.channels;
@@ -153,6 +157,7 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
   config->sender_ssrc = params.payload.ssrc;
   config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
   config->rtp_config.payload_type = params.payload.payload_type;
+  config->rtp_config.max_delay_ms = params.payload.max_latency_ms;
   config->use_external_encoder = false;
   config->width = params.payload.width;
   config->height = params.payload.height;
@@ -395,6 +400,7 @@ CastCodecSpecificParams::~CastCodecSpecificParams() {}
 
 CastRtpPayloadParams::CastRtpPayloadParams()
     : payload_type(0),
+      max_latency_ms(0),
       ssrc(0),
       feedback_ssrc(0),
       clock_rate(0),

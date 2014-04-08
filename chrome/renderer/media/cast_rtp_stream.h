@@ -38,6 +38,10 @@ struct CastRtpPayloadParams {
   // RTP specific field that identifies the content type.
   int payload_type;
 
+  // Maximum latency in milliseconds. Implemetation tries to keep latency
+  // under this threshold.
+  int max_latency_ms;
+
   // RTP specific field to identify a stream.
   int ssrc;
 

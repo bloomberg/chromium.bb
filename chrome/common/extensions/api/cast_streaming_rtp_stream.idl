@@ -16,12 +16,18 @@ namespace cast.streaming.rtpStream {
   dictionary RtpPayloadParams {
     long payloadType;
 
+    // Maximum latency in milliseconds. This parameter controls the logic
+    // of flow control. Implementation can adjust latency adaptively and
+    // tries to keep it under this threshold. A larger value allows smoother
+    // playback at the cost of higher latency.
+    long maxLatency;
+
     DOMString codecName;
 
     // Synchronization source identifier.
-    long? ssrc;
+    long ssrc;
 
-    long? feedbackSsrc;
+    long feedbackSsrc;
 
     long? clockRate;
 
