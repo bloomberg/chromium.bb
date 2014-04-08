@@ -90,7 +90,7 @@ private:
     {
     }
 
-    RefPtrWillBeRawPtr<Event> m_event;
+    RefPtrWillBePersistent<Event> m_event;
     WorkerEventQueue* m_eventQueue;
     bool m_isCancelled;
 };
