@@ -41,7 +41,7 @@ class InertAnimation FINAL : public TimedItem {
 
 public:
     static PassRefPtr<InertAnimation> create(PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, bool paused);
-    PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample();
+    PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample(double inheritedTime);
     AnimationEffect* effect() const { return m_effect.get(); }
     bool paused() const { return m_paused; }
 

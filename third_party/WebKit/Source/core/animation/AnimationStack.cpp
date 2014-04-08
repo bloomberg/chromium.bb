@@ -56,7 +56,7 @@ bool compareAnimations(Animation* animation1, Animation* animation2)
 void copyNewAnimationsToActiveInterpolationMap(const Vector<InertAnimation*>& newAnimations, WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& result)
 {
     for (size_t i = 0; i < newAnimations.size(); ++i) {
-        OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample = newAnimations[i]->sample();
+        OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample = newAnimations[i]->sample(0);
         if (sample) {
             copyToActiveInterpolationMap(*sample, result);
         }

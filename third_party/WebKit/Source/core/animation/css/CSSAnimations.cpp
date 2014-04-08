@@ -435,18 +435,23 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             RefPtr<Animation> oldAnimation = oldTransition.first;
             double oldStartTime = oldTransition.second;
             double inheritedTime = isNull(oldStartTime) ? 0 : element->document().transitionTimeline().currentTime() - oldStartTime;
-            oldAnimation->updateInheritedTime(inheritedTime);
+
             AnimatableValueKeyframeEffectModel* oldEffect = toAnimatableValueKeyframeEffectModel(inertAnimation->effect());
             const KeyframeVector& frames = oldEffect->getFrames();
+
             AnimatableValueKeyframeVector newFrames;
             newFrames.append(toAnimatableValueKeyframe(frames[0]->clone().get()));
-            newFrames[0]->clearPropertyValue(id);
-            ASSERT(oldAnimation->activeInterpolations().size() == 1);
-            RefPtrWillBeRawPtr<AnimatableValue> value = toLegacyStyleInterpolation(oldAnimation->activeInterpolations()[0].get())->currentValue();
-            newFrames[0]->setPropertyValue(id, value.release());
             newFrames.append(toAnimatableValueKeyframe(frames[1]->clone().get()));
+
+            newFrames[0]->clearPropertyValue(id);
+            RefPtr<InertAnimation> inertAnimationForSampling = InertAnimation::create(oldAnimation->effect(), oldAnimation->specifiedTiming(), false);
+            OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample = inertAnimationForSampling->sample(inheritedTime);
+            ASSERT(sample->size() == 1);
+            newFrames[0]->setPropertyValue(id, toLegacyStyleInterpolation(sample->at(0).get())->currentValue());
+
             effect = AnimatableValueKeyframeEffectModel::create(newFrames);
         }
+
         RefPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specifiedTiming(), Animation::TransitionPriority, eventDelegate.release());
         RefPtr<AnimationPlayer> player = element->document().transitionTimeline().createAnimationPlayer(transition.get());
         player->update(AnimationPlayer::UpdateOnDemand);

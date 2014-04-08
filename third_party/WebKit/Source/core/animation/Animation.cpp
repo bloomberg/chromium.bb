@@ -120,10 +120,11 @@ static AnimationStack& ensureAnimationStack(Element* element)
 void Animation::applyEffects(bool previouslyInEffect)
 {
     ASSERT(isInEffect());
+    ASSERT(player());
     if (!m_target || !m_effect)
         return;
 
-    if (player() && !previouslyInEffect) {
+    if (!previouslyInEffect) {
         ensureAnimationStack(m_target.get()).add(this);
         m_activeInAnimationStack = true;
     }
@@ -132,8 +133,7 @@ void Animation::applyEffects(bool previouslyInEffect)
     ASSERT(iteration >= 0);
     // FIXME: Handle iteration values which overflow int.
     m_activeInterpolations = m_effect->sample(static_cast<int>(iteration), timeFraction(), duration());
-    if (player())
-        m_target->setNeedsAnimationStyleRecalc();
+    m_target->setNeedsAnimationStyleRecalc();
 }
 
 void Animation::clearEffects()

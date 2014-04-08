@@ -68,6 +68,7 @@ public:
 
     bool affects(CSSPropertyID) const;
     const AnimationEffect* effect() const { return m_effect.get(); }
+    AnimationEffect* effect() { return m_effect.get(); }
     Priority priority() const { return m_priority; }
     Element* target() { return m_target.get(); }
 
@@ -100,7 +101,6 @@ private:
 
     Vector<int> m_compositorAnimationIds;
 
-    friend class CSSAnimations;
     friend class AnimationAnimationV8Test;
 };
 
