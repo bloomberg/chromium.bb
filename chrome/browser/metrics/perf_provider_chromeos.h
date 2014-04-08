@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_METRICS_PERF_PROVIDER_CHROMEOS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/threading/non_thread_safe.h"
@@ -25,19 +26,11 @@ class PerfProvider : public base::NonThreadSafe {
   PerfProvider();
   ~PerfProvider();
 
-  // Gets the collected perf data protobuf and writes it to |perf_data_proto|.
-  // Returns true if it wrote to |perf_data_proto|.
-  bool GetPerfData(PerfDataProto* perf_data_proto);
+  // Writes collected perf data protobufs to |perf_data|. Clears all the stored
+  // perf data. Returns true if it wrote to |perf_data|.
+  bool GetPerfData(std::vector<PerfDataProto>* perf_data);
 
  private:
-  enum PerfDataState {
-    // Indicates that we are ready to collect perf data.
-    READY_TO_COLLECT,
-
-    // Indicates that we are ready to upload perf data.
-    READY_TO_UPLOAD,
-  };
-
   // Starts an internal timer to start collecting perf data. The timer is set to
   // trigger |interval| after this function call.
   void ScheduleCollection(const base::TimeDelta& interval);
@@ -57,11 +50,8 @@ class PerfProvider : public base::NonThreadSafe {
       scoped_ptr<WindowedIncognitoObserver> incognito_observer,
       const std::vector<uint8>& data);
 
-  // The internal state can be one of the enum values above.
-  PerfDataState state_;
-
-  // Protobuf that has the perf data.
-  PerfDataProto perf_data_proto_;
+  // Vector of perf data protobufs.
+  std::vector<PerfDataProto> cached_perf_data_;
 
   // For scheduling collection of perf data.
   base::OneShotTimer<PerfProvider> timer_;
@@ -72,6 +62,6 @@ class PerfProvider : public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(PerfProvider);
 };
 
-}  // namespace system
+}  // namespace metrics
 
 #endif  // CHROME_BROWSER_METRICS_PERF_PROVIDER_CHROMEOS_H_

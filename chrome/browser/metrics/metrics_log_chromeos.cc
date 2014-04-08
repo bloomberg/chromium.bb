@@ -86,9 +86,14 @@ MetricsLogChromeOS::MetricsLogChromeOS(ChromeUserMetricsExtension* uma_proto)
 }
 
 void MetricsLogChromeOS::LogChromeOSMetrics() {
-  PerfDataProto perf_data_proto;
-  if (perf_provider_.GetPerfData(&perf_data_proto))
-    uma_proto_->add_perf_data()->Swap(&perf_data_proto);
+  std::vector<PerfDataProto> perf_data;
+  if (perf_provider_.GetPerfData(&perf_data)) {
+    for (std::vector<PerfDataProto>::iterator iter = perf_data.begin();
+         iter != perf_data.end();
+         ++iter) {
+      uma_proto_->add_perf_data()->Swap(&(*iter));
+    }
+  }
 
   WriteBluetoothProto();
   UpdateMultiProfileUserCount();

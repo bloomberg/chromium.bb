@@ -48,6 +48,11 @@ const size_t kPerfCommandStartIntervalUpperBoundMinutes = 20;
 // Default time in seconds perf is run for.
 const size_t kPerfCommandDurationDefaultSeconds = 2;
 
+// Limit the total size of protobufs that can be cached, so they don't take up
+// too much memory. If the size of cached protobufs exceeds this value, stop
+// collecting further perf data. The current value is 4 MB.
+const size_t kCachedPerfDataProtobufSizeThreshold = 4 * 1024 * 1024;
+
 // Enumeration representing success and various failure modes for collecting and
 // sending perf data.
 enum GetPerfDataOutcome {
@@ -105,8 +110,7 @@ class WindowedIncognitoObserver : public chrome::BrowserListObserver {
 };
 
 PerfProvider::PerfProvider()
-      : state_(READY_TO_COLLECT),
-      weak_factory_(this) {
+      : weak_factory_(this) {
   size_t collection_interval_minutes = base::RandInt(
       kPerfCommandStartIntervalLowerBoundMinutes,
       kPerfCommandStartIntervalUpperBoundMinutes);
@@ -115,15 +119,15 @@ PerfProvider::PerfProvider()
 
 PerfProvider::~PerfProvider() {}
 
-bool PerfProvider::GetPerfData(PerfDataProto* perf_data_proto) {
+bool PerfProvider::GetPerfData(std::vector<PerfDataProto>* perf_data) {
   DCHECK(CalledOnValidThread());
-  if (state_ != READY_TO_UPLOAD) {
+  if (cached_perf_data_.empty()) {
     AddToPerfHistogram(NOT_READY_TO_UPLOAD);
     return false;
   }
 
-  *perf_data_proto = perf_data_proto_;
-  state_ = READY_TO_COLLECT;
+  perf_data->swap(cached_perf_data_);
+  cached_perf_data_.clear();
 
   AddToPerfHistogram(SUCCESS);
   return true;
@@ -140,7 +144,14 @@ void PerfProvider::ScheduleCollection(const base::TimeDelta& interval) {
 
 void PerfProvider::CollectIfNecessary() {
   DCHECK(CalledOnValidThread());
-  if (state_ != READY_TO_COLLECT) {
+
+  // Do not collect further data if we've already collected a substantial amount
+  // of data, as indicated by |kCachedPerfDataProtobufSizeThreshold|.
+  size_t cached_perf_data_size = 0;
+  for (size_t i = 0; i < cached_perf_data_.size(); ++i) {
+    cached_perf_data_size += cached_perf_data_[i].ByteSize();
+  }
+  if (cached_perf_data_size >= kCachedPerfDataProtobufSizeThreshold) {
     AddToPerfHistogram(NOT_READY_TO_COLLECT);
     return;
   }
@@ -183,13 +194,16 @@ void PerfProvider::ParseProtoIfValid(
     return;
   }
 
-  if (!perf_data_proto_.ParseFromArray(data.data(), data.size())) {
+  PerfDataProto perf_data_proto;
+  if (!perf_data_proto.ParseFromArray(data.data(), data.size())) {
     AddToPerfHistogram(PROTOBUF_NOT_PARSED);
-    perf_data_proto_.Clear();
     return;
   }
 
-  state_ = READY_TO_UPLOAD;
+  // Append a new PerfDataProto to the |cached_perf_data_| vector and swap in
+  // the contents.
+  cached_perf_data_.resize(cached_perf_data_.size() + 1);
+  cached_perf_data_.back().Swap(&perf_data_proto);
 }
 
 }  // namespace metrics
