@@ -129,7 +129,6 @@ PassOwnPtr<ElementShadow> ElementShadow::create()
 
 ElementShadow::ElementShadow()
     : m_needsDistributionRecalc(false)
-    , m_applyAuthorStyles(false)
     , m_needsSelectFeatureSet(false)
 {
 }
@@ -151,10 +150,6 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::Shadow
     m_shadowRoots.push(shadowRoot.get());
     ChildNodeInsertionNotifier(shadowHost).notify(*shadowRoot);
     setNeedsDistributionRecalc();
-
-    // addShadowRoot() affects apply-author-styles. However, we know that the youngest shadow root has not had any children yet.
-    // The youngest shadow root's apply-author-styles is default (false). So we can just set m_applyAuthorStyles false.
-    m_applyAuthorStyles = false;
 
     shadowHost.didAddShadowRoot(*shadowRoot);
     InspectorInstrumentation::didPushShadowRoot(&shadowHost, shadowRoot.get());
@@ -211,17 +206,6 @@ void ElementShadow::setNeedsDistributionRecalc()
     clearDistribution();
 }
 
-bool ElementShadow::didAffectApplyAuthorStyles()
-{
-    bool applyAuthorStyles = resolveApplyAuthorStyles();
-
-    if (m_applyAuthorStyles == applyAuthorStyles)
-        return false;
-
-    m_applyAuthorStyles = applyAuthorStyles;
-    return true;
-}
-
 bool ElementShadow::containsActiveStyles() const
 {
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
@@ -256,17 +240,6 @@ bool ElementShadow::hasSameStyles(ElementShadow *other) const
     }
 
     return true;
-}
-
-bool ElementShadow::resolveApplyAuthorStyles() const
-{
-    for (const ShadowRoot* shadowRoot = youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
-        if (shadowRoot->applyAuthorStyles())
-            return true;
-        if (!shadowRoot->containsShadowElements())
-            break;
-    }
-    return false;
 }
 
 const InsertionPoint* ElementShadow::finalDestinationInsertionPointFor(const Node* key) const

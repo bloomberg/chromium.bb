@@ -319,7 +319,7 @@ Element* TreeScope::findAnchor(const String& name)
 
 bool TreeScope::applyAuthorStyles() const
 {
-    return !rootNode().isShadowRoot() || toShadowRoot(rootNode()).applyAuthorStyles();
+    return rootNode().isDocumentNode();
 }
 
 void TreeScope::adoptIfNeeded(Node& node)

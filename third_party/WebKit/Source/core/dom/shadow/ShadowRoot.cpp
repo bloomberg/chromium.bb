@@ -56,7 +56,6 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
     , m_prev(0)
     , m_next(0)
     , m_numberOfStyles(0)
-    , m_applyAuthorStyles(false)
     , m_type(type)
     , m_registeredWithParentShadowRoot(false)
     , m_descendantInsertionPointsIsValid(false)
@@ -167,30 +166,6 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     }
 
     clearChildNeedsStyleRecalc();
-}
-
-void ShadowRoot::setApplyAuthorStyles(bool value)
-{
-    if (isOrphan())
-        return;
-
-    if (applyAuthorStyles() == value)
-        return;
-
-    m_applyAuthorStyles = value;
-
-    ASSERT(host());
-    ASSERT(host()->shadow());
-    if (host()->shadow()->didAffectApplyAuthorStyles())
-        host()->setNeedsStyleRecalc(SubtreeStyleChange);
-
-    // Since styles in shadow trees can select shadow hosts, set shadow host's needs-recalc flag true.
-    // FIXME: host->setNeedsStyleRecalc() should take care of all elements in its shadow tree.
-    // However, when host's recalcStyle is skipped (i.e. host's parent has no renderer),
-    // no recalc style is invoked for any elements in its shadow tree.
-    // This problem occurs when using getComputedStyle() API.
-    // So currently host and shadow root's needsStyleRecalc flags are set to be true.
-    setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 void ShadowRoot::attach(const AttachContext& context)

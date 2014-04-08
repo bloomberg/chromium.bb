@@ -390,9 +390,10 @@ StyleResolver::~StyleResolver()
 {
 }
 
+// FIXME: Get rid of all the applyAuthorStyles stuff.
 static inline bool applyAuthorStylesOf(const Element* element)
 {
-    return element->treeScope().applyAuthorStyles() || (element->shadow() && element->shadow()->applyAuthorStyles());
+    return element->treeScope().applyAuthorStyles();
 }
 
 void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleCollector& collector, bool includeEmptyRules, Vector<ScopedStyleResolver*, 8>& resolvers, Vector<ScopedStyleResolver*, 8>& resolversInShadowTree)
