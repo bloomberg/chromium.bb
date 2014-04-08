@@ -69,7 +69,7 @@ ChromeMetroViewerProcessHost::ChromeMetroViewerProcessHost()
     : MetroViewerProcessHost(
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::IO)) {
-  g_browser_process->AddRefModule();
+  chrome::IncrementKeepAliveCount();
 }
 
 void ChromeMetroViewerProcessHost::OnChannelError() {
@@ -82,7 +82,7 @@ void ChromeMetroViewerProcessHost::OnChannelError() {
   ::SetEnvironmentVariableA(env_vars::kMetroConnected, NULL);
 
   aura::RemoteWindowTreeHostWin::Instance()->Disconnected();
-  g_browser_process->ReleaseModule();
+  chrome::DecrementKeepAliveCount();
 
   // If browser is trying to quit, we shouldn't reenter the process.
   // TODO(shrikant): In general there seem to be issues with how AttemptExit
