@@ -82,8 +82,7 @@ bool AudioBuffer::createdSuccessfully(unsigned desiredNumberOfChannels) const
 }
 
 AudioBuffer::AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
-    : m_gain(1.0)
-    , m_sampleRate(sampleRate)
+    : m_sampleRate(sampleRate)
     , m_length(numberOfFrames)
 {
     ScriptWrappable::init(this);
@@ -103,8 +102,7 @@ AudioBuffer::AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float
 }
 
 AudioBuffer::AudioBuffer(AudioBus* bus)
-    : m_gain(1.0)
-    , m_sampleRate(bus->sampleRate())
+    : m_sampleRate(bus->sampleRate())
     , m_length(bus->length())
 {
     ScriptWrappable::init(this);

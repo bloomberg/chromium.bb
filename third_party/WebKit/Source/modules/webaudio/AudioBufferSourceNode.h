@@ -77,7 +77,6 @@ public:
     void setLoopStart(double loopStart) { m_loopStart = loopStart; }
     void setLoopEnd(double loopEnd) { m_loopEnd = loopEnd; }
 
-    AudioParam* gain() { return m_gain.get(); }
     AudioParam* playbackRate() { return m_playbackRate.get(); }
 
     // If a panner node is set, then we can incorporate doppler shift into the playback pitch rate.
@@ -106,8 +105,7 @@ private:
     OwnPtr<const float*[]> m_sourceChannels;
     OwnPtr<float*[]> m_destinationChannels;
 
-    // Used for the "gain" and "playbackRate" attributes.
-    RefPtr<AudioParam> m_gain;
+    // Used for the "playbackRate" attributes.
     RefPtr<AudioParam> m_playbackRate;
 
     // If m_isLooping is false, then this node will be done playing and become inactive after it reaches the end of the sample data in the buffer.
@@ -129,9 +127,6 @@ private:
     // totalPitchRate() returns the instantaneous pitch rate (non-time preserving).
     // It incorporates the base pitch rate, any sample-rate conversion factor from the buffer, and any doppler shift from an associated panner node.
     double totalPitchRate();
-
-    // m_lastGain provides continuity when we dynamically adjust the gain.
-    float m_lastGain;
 
     // We optionally keep track of a panner node which has a doppler shift that is incorporated into
     // the pitch rate. We manually manage ref-counting because we want to use RefTypeConnection.

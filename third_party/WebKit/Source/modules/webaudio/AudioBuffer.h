@@ -59,10 +59,6 @@ public:
     Float32Array* getChannelData(unsigned channelIndex);
     void zero();
 
-    // Scalar gain
-    double gain() const { return m_gain; }
-    void setGain(double gain) { m_gain = gain; }
-
     static float minAllowedSampleRate();
     static float maxAllowedSampleRate();
 protected:
@@ -70,7 +66,6 @@ protected:
     explicit AudioBuffer(AudioBus*);
     bool createdSuccessfully(unsigned desiredNumberOfChannels) const;
 
-    double m_gain; // scalar gain
     float m_sampleRate;
     size_t m_length;
 

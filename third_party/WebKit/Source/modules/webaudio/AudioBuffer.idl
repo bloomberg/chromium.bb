@@ -33,8 +33,6 @@
     readonly attribute double duration; // in seconds
     readonly attribute float sampleRate; // in sample-frames per second
 
-    attribute float gain; // linear gain (default 1.0)
-
     // Channel access
     readonly attribute unsigned long numberOfChannels;
     [RaisesException] Float32Array getChannelData(unsigned long channelIndex);
