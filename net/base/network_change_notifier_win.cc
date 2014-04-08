@@ -62,8 +62,6 @@ NetworkChangeNotifierWin::NetworkChangeNotifierWin()
           last_computed_connection_type_ == CONNECTION_NONE) {
   memset(&addr_overlapped_, 0, sizeof addr_overlapped_);
   addr_overlapped_.hEvent = WSACreateEvent();
-  dns_config_service_thread_->StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 }
 
 NetworkChangeNotifierWin::~NetworkChangeNotifierWin() {
@@ -291,6 +289,12 @@ void NetworkChangeNotifierWin::WatchForAddressChange() {
 
 bool NetworkChangeNotifierWin::WatchForAddressChangeInternal() {
   DCHECK(CalledOnValidThread());
+
+  if (!dns_config_service_thread_->IsRunning()) {
+    dns_config_service_thread_->StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+  }
+
   HANDLE handle = NULL;
   DWORD ret = NotifyAddrChange(&handle, &addr_overlapped_);
   if (ret != ERROR_IO_PENDING)
