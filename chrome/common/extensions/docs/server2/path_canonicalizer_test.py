@@ -111,6 +111,11 @@ class PathCanonicalizerTest(unittest.TestCase):
     self._AssertRedirect(SITE_VERIFICATION_FILE,
                          posixpath.splitext(SITE_VERIFICATION_FILE)[0])
 
+  def testDotSeparated(self):
+    self._AssertIdentity('extensions/devtools_inspectedWindow')
+    self._AssertRedirect('extensions/devtools_inspectedWindow',
+                         'extensions/devtools.inspectedWindow')
+
   def _AssertIdentity(self, path):
     self._AssertRedirect(path, path)
 

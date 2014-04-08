@@ -9,13 +9,12 @@ from future import Future
 from path_util import SplitParent
 from special_paths import SITE_VERIFICATION_FILE
 
-
-def _SimplifyFileName(file_name):
-  return (posixpath.splitext(file_name)[0]
-      .lower()
-      .replace('.', '')
-      .replace('-', '')
-      .replace('_', ''))
+def _Normalize(file_name, splittext=False):
+  normalized = file_name
+  if splittext:
+    normalized = posixpath.splitext(file_name)[0]
+  normalized = normalized.replace('.', '').replace('-', '').replace('_', '')
+  return normalized.lower()
 
 
 class PathCanonicalizer(object):
@@ -60,7 +59,8 @@ class PathCanonicalizer(object):
                 path == SITE_VERIFICATION_FILE):
               canonical_path += ext
             canonical_paths.add(canonical_path)
-            simplified_paths_map[_SimplifyFileName(path)].append(canonical_path)
+            simplified_paths_map[_Normalize(path, splittext=True)].append(
+                canonical_path)
         # Store |simplified_paths_map| sorted. Ties in length are broken by
         # taking the shortest, lexicographically smallest path.
         for path_list in simplified_paths_map.itervalues():
@@ -88,18 +88,27 @@ class PathCanonicalizer(object):
     # Path not found. Our single heuristic: find |base| in the directory
     # structure with the longest common prefix of |path|.
     _, base = SplitParent(path)
-    potential_paths = simplified_paths_map.get(_SimplifyFileName(base))
-    if not potential_paths:
+
+    # Paths with a non-extension dot separator lose information in
+    # _SimplifyFileName, so we try paths both with and without the dot to
+    # maximize the possibility of finding the right path.
+    potential_paths = (
+        simplified_paths_map.get(_Normalize(base), []) +
+        simplified_paths_map.get(_Normalize(base, splittext=True), []))
+
+    if potential_paths == []:
       # There is no file with anything close to that name.
       return path
 
     # The most likely canonical file is the one with the longest common prefix
     # with |path|. This is slightly weaker than it could be; |path| is
-    # compared, not the simplified form of |path|, which may matter.
+    # compared without symbols, not the simplified form of |path|,
+    # which may matter.
     max_prefix = potential_paths[0]
     max_prefix_length = len(posixpath.commonprefix((max_prefix, path)))
     for path_for_file in potential_paths[1:]:
-      prefix_length = len(posixpath.commonprefix((path_for_file, path)))
+      prefix_length = len(posixpath.commonprefix((path_for_file,
+          _Normalize(path))))
       if prefix_length > max_prefix_length:
         max_prefix, max_prefix_length = path_for_file, prefix_length
 
