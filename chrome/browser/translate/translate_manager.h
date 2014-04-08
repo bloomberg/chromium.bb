@@ -14,8 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/translate/core/common/translate_errors.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class GURL;
 class PrefService;
@@ -35,7 +33,7 @@ class WebContents;
 // valid WebContents (i.e. the WebContents is never destroyed within the
 // lifetime of TranslateManager).
 
-class TranslateManager : public content::NotificationObserver {
+class TranslateManager {
  public:
   // TranslateTabHelper is expected to outlive the TranslateManager.
   // |accept_language_pref_name| is the path for the preference for the
@@ -84,16 +82,6 @@ class TranslateManager : public content::NotificationObserver {
   // under options in the translate infobar.
   void ReportLanguageDetectionError();
 
-  // content::NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // Number of attempts before waiting for a page to be fully reloaded.
-  void set_translate_max_reload_attemps(int attempts) {
-    max_reload_check_attempts_ = attempts;
-  }
-
   // Callback types for translate errors.
   typedef base::Callback<void(const TranslateErrorDetails&)>
       TranslateErrorCallback;
@@ -105,10 +93,6 @@ class TranslateManager : public content::NotificationObserver {
       RegisterTranslateErrorCallback(const TranslateErrorCallback& callback);
 
  private:
-
-  // Initiates translation once the page is finished loading.
-  void InitiateTranslationPosted(const std::string& page_lang, int attempt);
-
   // Sends a translation request to the TranslateDriver.
   void DoTranslatePage(const std::string& translate_script,
                        const std::string& source_lang,
@@ -121,11 +105,6 @@ class TranslateManager : public content::NotificationObserver {
                                       const std::string& target_lang,
                                       bool success,
                                       const std::string& data);
-
-  content::NotificationRegistrar notification_registrar_;
-
-  // Max number of attempts before checking if a page has been reloaded.
-  int max_reload_check_attempts_;
 
   // Preference name for the Accept-Languages HTTP header.
   std::string accept_languages_pref_name_;

@@ -263,9 +263,8 @@ class TranslateManagerRenderViewHostTest
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
     TranslateTabHelper::CreateForWebContents(web_contents());
-    TranslateManager* manager =
-        TranslateTabHelper::GetManagerFromWebContents(web_contents());
-    manager->set_translate_max_reload_attemps(0);
+    TranslateTabHelper::FromWebContents(web_contents())
+        ->set_translate_max_reload_attempts(0);
 
     notification_registrar_.Add(
         this,
@@ -779,9 +778,8 @@ TEST_F(TranslateManagerRenderViewHostTest, Reload) {
 
   // If we set reload attempts to a high value, we will not see the infobar
   // immediately.
-  TranslateManager* manager =
-      TranslateTabHelper::GetManagerFromWebContents(web_contents());
-  manager->set_translate_max_reload_attemps(100);
+  TranslateTabHelper::FromWebContents(web_contents())
+      ->set_translate_max_reload_attempts(100);
   ReloadAndWait(true);
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 }

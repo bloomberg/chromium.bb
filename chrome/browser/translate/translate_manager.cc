@@ -12,7 +12,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -37,12 +36,7 @@
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -72,10 +66,6 @@ const char kSourceLanguageQueryName[] = "sl";
 
 // Used in kReportLanguageDetectionErrorURL to specify the page URL.
 const char kUrlQueryName[] = "u";
-
-// The maximum number of attempts we'll do to see if the page has finshed
-// loading before giving up the translation
-const int kMaxTranslateLoadCheckAttempts = 20;
 
 // Notifies |g_callback_list_| of translate errors.
 void NotifyTranslateError(const TranslateErrorDetails& details) {
@@ -108,68 +98,6 @@ bool TranslateManager::IsTranslatableURL(const GURL& url) {
          !url.SchemeIs(content::kFtpScheme);
 }
 
-void TranslateManager::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      NavigationController* controller =
-          content::Source<NavigationController>(source).ptr();
-      DCHECK_EQ(&translate_tab_helper_->GetWebContents()->GetController(),
-                controller);
-      content::LoadCommittedDetails* load_details =
-          content::Details<content::LoadCommittedDetails>(details).ptr();
-      NavigationEntry* entry = controller->GetActiveEntry();
-      if (!entry) {
-        NOTREACHED();
-        return;
-      }
-
-      if (!translate_tab_helper_->GetWebContents())
-        return;
-
-      // If the navigation happened while offline don't show the translate
-      // bar since there will be nothing to translate.
-      if (load_details->http_status_code == 0 ||
-          load_details->http_status_code == net::HTTP_INTERNAL_SERVER_ERROR) {
-        return;
-      }
-
-      if (!load_details->is_main_frame &&
-          translate_driver_->GetLanguageState().translation_declined()) {
-        // Some sites (such as Google map) may trigger sub-frame navigations
-        // when the user interacts with the page.  We don't want to show a new
-        // infobar if the user already dismissed one in that case.
-        return;
-      }
-      if (entry->GetTransitionType() != content::PAGE_TRANSITION_RELOAD &&
-          load_details->type != content::NAVIGATION_TYPE_SAME_PAGE) {
-        return;
-      }
-
-      // When doing a page reload, TAB_LANGUAGE_DETERMINED is not sent,
-      // so the translation needs to be explicitly initiated, but only when the
-      // page needs translation.
-      if (!translate_driver_->GetLanguageState().page_needs_translation())
-        return;
-      // Note that we delay it as the TranslateManager gets this notification
-      // before the WebContents and the WebContents processing might remove the
-      // current infobars.  Since InitTranslation might add an infobar, it must
-      // be done after that.
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(
-              &TranslateManager::InitiateTranslationPosted,
-              weak_method_factory_.GetWeakPtr(),
-              translate_driver_->GetLanguageState().original_language(),
-              0));
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-}
-
 // static
 scoped_ptr<TranslateManager::TranslateErrorCallbackList::Subscription>
 TranslateManager::RegisterTranslateErrorCallback(
@@ -182,19 +110,11 @@ TranslateManager::RegisterTranslateErrorCallback(
 TranslateManager::TranslateManager(
     TranslateTabHelper* helper,
     const std::string& accept_languages_pref_name)
-    : max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
-      accept_languages_pref_name_(accept_languages_pref_name),
+    : accept_languages_pref_name_(accept_languages_pref_name),
       translate_tab_helper_(helper),
       translate_client_(helper),
       translate_driver_(translate_client_->GetTranslateDriver()),
-      weak_method_factory_(this) {
-
-  WebContents* web_contents = translate_tab_helper_->GetWebContents();
-
-  notification_registrar_.Add(
-      this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&web_contents->GetController()));
-}
+      weak_method_factory_(this) {}
 
 void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   // Short-circuit out if not in a state where initiating translation makes
@@ -323,31 +243,6 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
                                      target_lang,
                                      TranslateErrors::NONE,
                                      false);
-}
-
-void TranslateManager::InitiateTranslationPosted(const std::string& page_lang,
-                                                 int attempt) {
-  WebContents* web_contents = translate_tab_helper_->GetWebContents();
-  DCHECK(web_contents);
-
-  if (translate_driver_->GetLanguageState().translation_pending())
-    return;
-
-  // During a reload we need web content to be available before the
-  // translate script is executed. Otherwise we will run the translate script on
-  // an empty DOM which will fail. Therefore we wait a bit to see if the page
-  // has finished.
-  if ((web_contents->IsLoading()) && attempt < kMaxTranslateLoadCheckAttempts) {
-    int backoff = attempt * max_reload_check_attempts_;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(&TranslateManager::InitiateTranslationPosted,
-                              weak_method_factory_.GetWeakPtr(),
-                              page_lang, ++attempt),
-        base::TimeDelta::FromMilliseconds(backoff));
-    return;
-  }
-
-  InitiateTranslation(TranslateDownloadManager::GetLanguageCode(page_lang));
 }
 
 void TranslateManager::TranslatePage(const std::string& original_source_lang,
