@@ -76,13 +76,17 @@ TEST_F(TEST_NAME, 'AuthServerRequestForbidden', function() {
 
   expectServerRequests(this, 403, '');
 
-  var callbackCalled = false;
+  var thenCalled = false;
+  var catchCalled = false;
   requestFromServer('GET', 'test/target').then(function(request) {
-    // The promise is resolved even on HTTP failures.
-    callbackCalled = true;
+    thenCalled = true;
+  }).catch(function(request) {
+    // The promise is rejected on HTTP failures.
+    catchCalled = true;
     assertTrue(request.status === 403);
   });
-  assertTrue(callbackCalled);
+  assertFalse(thenCalled);
+  assertTrue(catchCalled);
 });
 
 TEST_F(TEST_NAME, 'AuthServerRequestNoAuth', function() {
@@ -91,13 +95,17 @@ TEST_F(TEST_NAME, 'AuthServerRequestNoAuth', function() {
 
   expectServerRequests(this, 401, '');
 
-  var callbackCalled = false;
+  var thenCalled = false;
+  var catchCalled = false;
   requestFromServer('GET', 'test/target').then(function(request) {
-    // The promise is resolved even on HTTP failures.
-    callbackCalled = true;
+    thenCalled = true;
+  }).catch(function(request) {
+    // The promise is rejected on HTTP failures.
+    catchCalled = true;
     assertTrue(request.status === 401);
   });
-  assertTrue(callbackCalled);
+  assertFalse(thenCalled);
+  assertTrue(catchCalled);
 });
 
 function expectServerRequests(fixture, httpStatus, responseText) {
@@ -188,7 +196,15 @@ TEST_F(TEST_NAME, 'RequestNotificationGroupsFromServerEmpty', function() {
       .will(returnValue(
           Promise.resolve({status: 200, responseText: "{}"})));
 
-  requestNotificationGroupsFromServer([]);
+  var thenCalled = false;
+  var catchCalled = false;
+  requestNotificationGroupsFromServer([]).then(function() {
+    thenCalled = true;
+  }).catch(function() {
+    catchCalled = true;
+  });
+  assertTrue(thenCalled);
+  assertFalse(catchCalled);
 
   var pathAndQuery = requestFromServerArgs.arguments[1];
   var query = pathAndQuery.split('?')[1];
@@ -220,7 +236,15 @@ TEST_F(TEST_NAME, 'RequestNotificationGroupsFromServerWithGroups', function() {
       .will(returnValue(
           Promise.resolve({status: 200, responseText: "{}"})));
 
-  requestNotificationGroupsFromServer(['A', 'B', 'C']);
+  var thenCalled = false;
+  var catchCalled = false;
+  requestNotificationGroupsFromServer(['A', 'B', 'C']).then(function() {
+    thenCalled = true;
+  }).catch(function() {
+    catchCalled = true;
+  });
+  assertTrue(thenCalled);
+  assertFalse(catchCalled);
 
   var pathAndQuery = requestFromServerArgs.arguments[1];
   var query = pathAndQuery.split('?')[1];
@@ -255,7 +279,15 @@ TEST_F(TEST_NAME, 'RequestNotificationGroupsFromServerExplanatory', function() {
       .will(returnValue(
           Promise.resolve({status: 200, responseText: "{}"})));
 
-  requestNotificationGroupsFromServer([]);
+  var thenCalled = false;
+  var catchCalled = false;
+  requestNotificationGroupsFromServer([]).then(function() {
+    thenCalled = true;
+  }).catch(function() {
+    catchCalled = true;
+  });
+  assertTrue(thenCalled);
+  assertFalse(catchCalled);
 
   var pathAndQuery = requestFromServerArgs.arguments[1];
   var query = pathAndQuery.split('?')[1];
@@ -285,9 +317,17 @@ TEST_F(TEST_NAME, 'RequestNotificationGroupsFromServerFailure', function() {
       requestFromServerArgs.match(eq('GET')),
       requestFromServerArgs.match(ANYTHING))
       .will(returnValue(
-          Promise.resolve({status: 401})));
+          Promise.reject({status: 401})));
 
-  requestNotificationGroupsFromServer([]);
+  var thenCalled = false;
+  var catchCalled = false;
+  requestNotificationGroupsFromServer([]).then(function() {
+    thenCalled = true;
+  }).catch(function() {
+    catchCalled = true;
+  });
+  assertFalse(thenCalled);
+  assertTrue(catchCalled);
 });
 
 /**
@@ -363,7 +403,7 @@ TEST_F(TEST_NAME, 'RequestAndUpdateOptInFailure', function() {
   ]);
 
   this.mockApis.expects(once()).requestFromServer('GET', 'settings/optin')
-      .will(returnValue(Promise.resolve({status: 404})));
+      .will(returnValue(Promise.reject({status: 404})));
 
   this.mockApis.expects(never()).chrome_storage_local_set();
 

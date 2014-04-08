@@ -313,19 +313,23 @@ function checkAuthenticationStatus(token) {
  * @param {string} handlerName Server handler to send the request to.
  * @param {string=} opt_contentType Value for the Content-type header.
  * @return {Promise} A promise to issue a request to the server.
- *     The promise rejects if there is a client-side authentication issue.
+ *     The promise rejects if the response is not within the HTTP 200 range.
  */
 function requestFromServer(method, handlerName, opt_contentType) {
   return authenticationManager.getAuthToken().then(function(token) {
     var request = buildServerRequest(method, handlerName, opt_contentType);
     request.setRequestHeader('Authorization', 'Bearer ' + token);
-    var requestPromise = new Promise(function(resolve) {
+    var requestPromise = new Promise(function(resolve, reject) {
       request.addEventListener('loadend', function() {
-        resolve(request);
+        if ((200 <= request.status) && (request.status < 300)) {
+          resolve(request);
+        } else {
+          reject(request);
+        }
       }, false);
       request.send();
     });
-    requestPromise.then(checkAuthenticationStatus(token));
+    requestPromise.catch(checkAuthenticationStatus(token));
     return requestPromise;
   });
 }
@@ -645,8 +649,6 @@ function requestAndUpdateOptedIn() {
     if (request.status == HTTP_OK) {
       var parsedResponse = JSON.parse(request.responseText);
       return parsedResponse.value;
-    } else {
-      return Promise.reject();
     }
   }).then(function(optedIn) {
     if (optedIn) {
@@ -775,10 +777,14 @@ function requestCardDismissal(
 
     // A dismissal doesn't require further retries if it was successful or
     // doesn't have a chance for successful completion.
-    var done = request.status == HTTP_NOCONTENT ||
-        request.status == HTTP_BAD_REQUEST ||
-        request.status == HTTP_METHOD_NOT_ALLOWED;
-    return done ? Promise.resolve() : Promise.reject();
+    return (request.status == HTTP_NOCONTENT) ?
+           Promise.resolve() :
+           Promise.reject();
+  }).catch(function(request) {
+    return (request.status == HTTP_BAD_REQUEST ||
+           request.status == HTTP_METHOD_NOT_ALLOWED) ?
+           Promise.resolve() :
+           Promise.reject();
   });
 }
 
