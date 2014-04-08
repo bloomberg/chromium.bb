@@ -630,6 +630,7 @@ Polymer('kb-keyboard', {
    *    kb-keyboard.
    */
   out: function(event) {
+    repeatKey.cancel();
     // Ignore if triggered from one of the keys.
     if (this.compareDocumentPosition(event.relatedTarget) &
         Node.DOCUMENT_POSITION_CONTAINED_BY)
