@@ -841,6 +841,7 @@
         'browser/extensions/activity_log/activity_log_enabled_unittest.cc',
         'browser/extensions/activity_log/activity_log_unittest.cc',
         'browser/extensions/activity_log/activity_log_policy_unittest.cc',
+        'browser/extensions/activity_log/ad_injection_util_unittest.cc',
         'browser/extensions/activity_log/counting_policy_unittest.cc',
         'browser/extensions/activity_log/database_string_table_unittest.cc',
         'browser/extensions/activity_log/fullstream_ui_policy_unittest.cc',

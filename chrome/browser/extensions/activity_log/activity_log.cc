@@ -14,7 +14,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
+#include "chrome/browser/extensions/activity_log/ad_injection_util.h"
 #include "chrome/browser/extensions/activity_log/counting_policy.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
@@ -45,9 +47,10 @@
 
 namespace constants = activity_log_constants;
 
+namespace extensions {
+
 namespace {
 
-using extensions::Action;
 using constants::kArgUrlPlaceholder;
 using content::BrowserThread;
 
@@ -199,7 +202,7 @@ bool GetUrlForTabId(int tab_id,
                     bool* is_incognito) {
   content::WebContents* contents = NULL;
   Browser* browser = NULL;
-  bool found = extensions::ExtensionTabUtil::GetTabById(
+  bool found = ExtensionTabUtil::GetTabById(
       tab_id,
       profile,
       true,  // Search incognito tabs, too.
@@ -333,8 +336,6 @@ void ExtractUrls(scoped_refptr<Action> action, Profile* profile) {
 }
 
 }  // namespace
-
-namespace extensions {
 
 // SET THINGS UP. --------------------------------------------------------------
 
@@ -556,6 +557,11 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
         dom_verb == DomActionType::METHOD) {
       other->SetInteger(constants::kActionDomVerb, DomActionType::XHR);
     }
+  }
+
+  if (g_browser_process->rappor_service()) {
+    ad_injection_util::CheckActionForAdInjection(
+        action, g_browser_process->rappor_service());
   }
 
   if (uma_policy_)
