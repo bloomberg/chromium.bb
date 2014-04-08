@@ -29,18 +29,13 @@ AppListButton::AppListButton(views::ButtonListener* listener,
                              ShelfButtonHost* host)
     : views::ImageButton(listener),
       host_(host) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SetImage(
-      views::CustomButton::STATE_NORMAL,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST).ToImageSkia());
-  SetImage(
-      views::CustomButton::STATE_HOVERED,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_HOT).
-          ToImageSkia());
-  SetImage(
-      views::CustomButton::STATE_PRESSED,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED).
-          ToImageSkia());
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  SetImage(views::CustomButton::STATE_NORMAL,
+           rb.GetImageNamed(IDR_ASH_SHELF_ICON_APPLIST).ToImageSkia());
+  SetImage(views::CustomButton::STATE_HOVERED,
+           rb.GetImageNamed(IDR_ASH_SHELF_ICON_APPLIST_HOT).ToImageSkia());
+  SetImage(views::CustomButton::STATE_PRESSED,
+           rb.GetImageNamed(IDR_ASH_SHELF_ICON_APPLIST_PUSHED).ToImageSkia());
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));
   SetSize(gfx::Size(kShelfPreferredSize, kShelfPreferredSize));
   SetImageAlignment(ImageButton::ALIGN_CENTER, ImageButton::ALIGN_TOP);

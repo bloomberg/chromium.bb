@@ -546,16 +546,16 @@ void ShelfButton::UpdateBar() {
   int bar_id = 0;
   if (ash::switches::UseAlternateShelfLayout()) {
     if (state_ & STATE_ACTIVE)
-      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE_ALTERNATE;
+      bar_id = IDR_ASH_SHELF_UNDERLINE_ACTIVE_ALTERNATE;
     else if (state_ & STATE_RUNNING)
-      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING_ALTERNATE;
+      bar_id = IDR_ASH_SHELF_UNDERLINE_RUNNING_ALTERNATE;
   } else {
     if (state_ & (STATE_ACTIVE | STATE_ATTENTION))
-      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE;
+      bar_id = IDR_ASH_SHELF_UNDERLINE_ACTIVE;
     else if (state_ & (STATE_HOVERED | STATE_FOCUSED))
-      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_HOVER;
+      bar_id = IDR_ASH_SHELF_UNDERLINE_HOVER;
     else
-      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
+      bar_id = IDR_ASH_SHELF_UNDERLINE_RUNNING;
   }
 
   if (bar_id != 0) {

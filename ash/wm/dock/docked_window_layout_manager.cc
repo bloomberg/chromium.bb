@@ -153,9 +153,9 @@ class DockedBackgroundWidget : public views::Widget,
     GetNativeWindow()->layer()->Add(&opaque_background_);
     Hide();
 
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     gfx::ImageSkia shelf_background =
-        *rb.GetImageSkiaNamed(IDR_AURA_LAUNCHER_BACKGROUND);
+        *rb.GetImageSkiaNamed(IDR_ASH_SHELF_BACKGROUND);
     shelf_background_left_ = gfx::ImageSkiaOperations::CreateRotatedImage(
         shelf_background, SkBitmapOperations::ROTATION_90_CW);
     shelf_background_right_ = gfx::ImageSkiaOperations::CreateRotatedImage(

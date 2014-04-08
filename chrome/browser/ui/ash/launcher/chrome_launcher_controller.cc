@@ -1282,9 +1282,9 @@ bool ChromeLauncherController::ContentCanBeHandledByGmailApp(
 
 gfx::Image ChromeLauncherController::GetAppListIcon(
     content::WebContents* web_contents) const {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (IsIncognito(web_contents))
-    return rb.GetImageNamed(IDR_AURA_LAUNCHER_LIST_INCOGNITO_BROWSER);
+    return rb.GetImageNamed(IDR_ASH_SHELF_LIST_INCOGNITO_BROWSER);
   FaviconTabHelper* favicon_tab_helper =
       FaviconTabHelper::FromWebContents(web_contents);
   gfx::Image result = favicon_tab_helper->GetFavicon();

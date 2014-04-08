@@ -175,9 +175,9 @@ void DimmerView::ForceUndimming(bool force) {
 
 void DimmerView::OnPaintBackground(gfx::Canvas* canvas) {
   SkPaint paint;
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia shelf_background =
-      *rb.GetImageNamed(IDR_AURA_LAUNCHER_DIMMING).ToImageSkia();
+      *rb.GetImageNamed(IDR_ASH_SHELF_DIMMING).ToImageSkia();
 
   if (shelf_->GetAlignment() != ash::SHELF_ALIGNMENT_BOTTOM) {
     shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
@@ -454,9 +454,9 @@ void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
 }
 
 void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia shelf_background =
-      *rb.GetImageSkiaNamed(IDR_AURA_LAUNCHER_BACKGROUND);
+      *rb.GetImageSkiaNamed(IDR_ASH_SHELF_BACKGROUND);
   if (SHELF_ALIGNMENT_BOTTOM != shelf_->GetAlignment())
     shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
         shelf_background,
@@ -489,8 +489,7 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
     // The part of the shelf background that is in the corner below the docked
     // windows close to the work area is an arched gradient that blends
     // vertically oriented docked background and horizontal shelf.
-    gfx::ImageSkia shelf_corner =
-        *rb.GetImageSkiaNamed(IDR_AURA_LAUNCHER_CORNER);
+    gfx::ImageSkia shelf_corner = *rb.GetImageSkiaNamed(IDR_ASH_SHELF_CORNER);
     if (dock_bounds.x() == 0) {
       shelf_corner = gfx::ImageSkiaOperations::CreateRotatedImage(
           shelf_corner, SkBitmapOperations::ROTATION_90_CW);

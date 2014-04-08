@@ -244,10 +244,10 @@ bool BrowserShortcutLauncherItemController::ShouldShowTooltip() {
 
 gfx::Image BrowserShortcutLauncherItemController::GetBrowserListIcon(
     content::WebContents* web_contents) const {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetImageNamed(IsIncognito(web_contents) ?
-      IDR_AURA_LAUNCHER_LIST_INCOGNITO_BROWSER :
-      IDR_AURA_LAUNCHER_LIST_BROWSER);
+      IDR_ASH_SHELF_LIST_INCOGNITO_BROWSER :
+      IDR_ASH_SHELF_LIST_BROWSER);
 }
 
 base::string16 BrowserShortcutLauncherItemController::GetBrowserListTitle(

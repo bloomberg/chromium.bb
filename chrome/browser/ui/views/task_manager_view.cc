@@ -504,7 +504,7 @@ void TaskManagerView::Show(Browser* browser) {
     focus_manager->SetFocusedView(instance_->tab_table_);
 
 #if defined(USE_ASH)
-  CreateShelfItemForDialog(IDR_AURA_LAUNCHER_ICON_TASK_MANAGER,
+  CreateShelfItemForDialog(IDR_ASH_SHELF_ICON_TASK_MANAGER,
                            instance_->GetWidget()->GetNativeWindow());
 #endif
 }
