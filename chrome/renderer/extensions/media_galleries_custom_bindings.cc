@@ -26,7 +26,8 @@ void GetMediaFileSystemObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
   std::string fs_mount(*v8::String::Utf8Value(args[0]));
   CHECK(!fs_mount.empty());
 
-  blink::WebFrame* webframe = blink::WebFrame::frameForCurrentContext();
+  blink::WebLocalFrame* webframe =
+      blink::WebLocalFrame::frameForCurrentContext();
   const GURL origin = GURL(webframe->document().securityOrigin().toString());
   std::string fs_name =
       fileapi::GetFileSystemName(origin, fileapi::kFileSystemTypeExternal);

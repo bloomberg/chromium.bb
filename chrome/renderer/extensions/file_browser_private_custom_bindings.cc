@@ -33,8 +33,8 @@ void FileBrowserPrivateCustomBindings::GetFileSystem(
   std::string name(*v8::String::Utf8Value(args[0]));
   std::string root_url(*v8::String::Utf8Value(args[1]));
 
-  blink::WebFrame* webframe =
-      blink::WebFrame::frameForContext(context()->v8_context());
+  blink::WebLocalFrame* webframe =
+      blink::WebLocalFrame::frameForContext(context()->v8_context());
   DCHECK(webframe);
   args.GetReturnValue().Set(
       blink::WebDOMFileSystem::create(

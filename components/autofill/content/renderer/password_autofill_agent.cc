@@ -455,14 +455,14 @@ void PasswordAutofillAgent::DidStartLoading() {
   }
 }
 
-void PasswordAutofillAgent::DidFinishDocumentLoad(blink::WebFrame* frame) {
+void PasswordAutofillAgent::DidFinishDocumentLoad(blink::WebLocalFrame* frame) {
   // The |frame| contents have been parsed, but not yet rendered.  Let the
   // PasswordManager know that forms are loaded, even though we can't yet tell
   // whether they're visible.
   SendPasswordForms(frame, false);
 }
 
-void PasswordAutofillAgent::DidFinishLoad(blink::WebFrame* frame) {
+void PasswordAutofillAgent::DidFinishLoad(blink::WebLocalFrame* frame) {
   // The |frame| contents have been rendered.  Let the PasswordManager know
   // which of the loaded frames are actually visible to the user.  This also
   // triggers the "Save password?" infobar if the user just submitted a password
@@ -479,7 +479,7 @@ void PasswordAutofillAgent::FrameWillClose(blink::WebFrame* frame) {
 }
 
 void PasswordAutofillAgent::WillSendSubmitEvent(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const blink::WebFormElement& form) {
   // Some login forms have onSubmit handlers that put a hash of the password
   // into a hidden field and then clear the password (http://crbug.com/28910).
@@ -490,7 +490,7 @@ void PasswordAutofillAgent::WillSendSubmitEvent(
     provisionally_saved_forms_[frame].reset(password_form.release());
 }
 
-void PasswordAutofillAgent::WillSubmitForm(blink::WebFrame* frame,
+void PasswordAutofillAgent::WillSubmitForm(blink::WebLocalFrame* frame,
                                            const blink::WebFormElement& form) {
   scoped_ptr<PasswordForm> submitted_form = CreatePasswordForm(form);
 
@@ -542,7 +542,8 @@ blink::WebFrame* PasswordAutofillAgent::CurrentOrChildFrameWithSavedForms(
   return NULL;
 }
 
-void PasswordAutofillAgent::DidStartProvisionalLoad(blink::WebFrame* frame) {
+void PasswordAutofillAgent::DidStartProvisionalLoad(
+    blink::WebLocalFrame* frame) {
   if (!frame->parent()) {
     // If the navigation is not triggered by a user gesture, e.g. by some ajax
     // callback, then inherit the submitted password form from the previous

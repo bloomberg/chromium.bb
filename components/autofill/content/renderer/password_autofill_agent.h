@@ -110,15 +110,15 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
 
   // RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidStartProvisionalLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidStartProvisionalLoad(blink::WebLocalFrame* frame) OVERRIDE;
   virtual void DidStartLoading() OVERRIDE;
-  virtual void DidFinishDocumentLoad(blink::WebFrame* frame) OVERRIDE;
-  virtual void DidFinishLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) OVERRIDE;
+  virtual void DidFinishLoad(blink::WebLocalFrame* frame) OVERRIDE;
   virtual void FrameDetached(blink::WebFrame* frame) OVERRIDE;
   virtual void FrameWillClose(blink::WebFrame* frame) OVERRIDE;
-  virtual void WillSendSubmitEvent(blink::WebFrame* frame,
+  virtual void WillSendSubmitEvent(blink::WebLocalFrame* frame,
                                    const blink::WebFormElement& form) OVERRIDE;
-  virtual void WillSubmitForm(blink::WebFrame* frame,
+  virtual void WillSubmitForm(blink::WebLocalFrame* frame,
                               const blink::WebFormElement& form) OVERRIDE;
   virtual void WillProcessUserGesture() OVERRIDE;
 

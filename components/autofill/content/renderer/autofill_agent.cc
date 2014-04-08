@@ -54,6 +54,7 @@ using blink::WebFormElement;
 using blink::WebFrame;
 using blink::WebInputElement;
 using blink::WebKeyboardEvent;
+using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebOptionElement;
 using blink::WebString;
@@ -166,7 +167,7 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
+void AutofillAgent::DidFinishDocumentLoad(WebLocalFrame* frame) {
   // Record timestamp on document load. This is used to record overhead of
   // Autofill feature.
   forms_seen_timestamp_ = base::TimeTicks::Now();
@@ -211,7 +212,7 @@ void AutofillAgent::FrameWillClose(WebFrame* frame) {
   }
 }
 
-void AutofillAgent::WillSubmitForm(WebFrame* frame,
+void AutofillAgent::WillSubmitForm(WebLocalFrame* frame,
                                    const WebFormElement& form) {
   FormData form_data;
   if (WebFormElementToFormData(form,
@@ -255,11 +256,11 @@ void AutofillAgent::OrientationChangeEvent(int orientation) {
   HidePopup();
 }
 
-void AutofillAgent::DidChangeScrollOffset(WebFrame*) {
+void AutofillAgent::DidChangeScrollOffset(WebLocalFrame*) {
   HidePopup();
 }
 
-void AutofillAgent::didRequestAutocomplete(WebFrame* frame,
+void AutofillAgent::didRequestAutocomplete(WebLocalFrame* frame,
                                            const WebFormElement& form) {
   // Disallow the dialog over non-https or broken https, except when the
   // ignore SSL flag is passed. See http://crbug.com/272512.

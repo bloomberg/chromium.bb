@@ -49,8 +49,8 @@ class PasswordGenerationAgent : public content::RenderViewObserver {
 
  private:
   // RenderViewObserver:
-  virtual void DidFinishDocumentLoad(blink::WebFrame* frame) OVERRIDE;
-  virtual void DidFinishLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) OVERRIDE;
+  virtual void DidFinishLoad(blink::WebLocalFrame* frame) OVERRIDE;
   virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
 
   // Message handlers.

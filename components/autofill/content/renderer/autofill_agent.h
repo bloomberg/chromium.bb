@@ -59,13 +59,13 @@ class AutofillAgent : public content::RenderViewObserver,
  private:
   // content::RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidFinishDocumentLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) OVERRIDE;
   virtual void FrameDetached(blink::WebFrame* frame) OVERRIDE;
   virtual void FrameWillClose(blink::WebFrame* frame) OVERRIDE;
-  virtual void WillSubmitForm(blink::WebFrame* frame,
+  virtual void WillSubmitForm(blink::WebLocalFrame* frame,
                               const blink::WebFormElement& form) OVERRIDE;
   virtual void ZoomLevelChanged() OVERRIDE;
-  virtual void DidChangeScrollOffset(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidChangeScrollOffset(blink::WebLocalFrame* frame) OVERRIDE;
   virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
   virtual void OrientationChangeEvent(int orientation) OVERRIDE;
 
@@ -85,7 +85,7 @@ class AutofillAgent : public content::RenderViewObserver,
       const blink::WebKeyboardEvent& event);
   // TODO(estade): remove this.
   virtual void didRequestAutocomplete(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       const blink::WebFormElement& form);
   virtual void didRequestAutocomplete(
       const blink::WebFormElement& form,

@@ -107,7 +107,8 @@ PasswordGenerationAgent::PasswordGenerationAgent(
 }
 PasswordGenerationAgent::~PasswordGenerationAgent() {}
 
-void PasswordGenerationAgent::DidFinishDocumentLoad(blink::WebFrame* frame) {
+void PasswordGenerationAgent::DidFinishDocumentLoad(
+    blink::WebLocalFrame* frame) {
   // In every navigation, the IPC message sent by the password autofill manager
   // to query whether the current form is blacklisted or not happens when the
   // document load finishes, so we need to clear previous states here before we
@@ -130,7 +131,7 @@ void PasswordGenerationAgent::DidFinishDocumentLoad(blink::WebFrame* frame) {
   }
 }
 
-void PasswordGenerationAgent::DidFinishLoad(blink::WebFrame* frame) {
+void PasswordGenerationAgent::DidFinishLoad(blink::WebLocalFrame* frame) {
   if (!enabled_)
     return;
 

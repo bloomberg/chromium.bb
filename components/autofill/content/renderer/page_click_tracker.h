@@ -39,7 +39,7 @@ class PageClickTracker : public content::RenderViewObserver,
 
  private:
   // RenderView::Observer implementation.
-  virtual void DidFinishDocumentLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) OVERRIDE;
   virtual void FrameDetached(blink::WebFrame* frame) OVERRIDE;
   virtual void DidHandleMouseEvent(const blink::WebMouseEvent& event) OVERRIDE;
 

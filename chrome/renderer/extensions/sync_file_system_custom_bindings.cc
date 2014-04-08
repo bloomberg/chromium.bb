@@ -50,8 +50,8 @@ void SyncFileSystemCustomBindings::GetSyncFileSystemObject(
     return;
   }
 
-  blink::WebFrame* webframe =
-      blink::WebFrame::frameForContext(context()->v8_context());
+  blink::WebLocalFrame* webframe =
+      blink::WebLocalFrame::frameForContext(context()->v8_context());
   args.GetReturnValue().Set(
       blink::WebDOMFileSystem::create(
           webframe,

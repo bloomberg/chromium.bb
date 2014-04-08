@@ -234,85 +234,87 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(bool is_new_navigation) {
 }
 
 bool ContentSettingsObserver::allowDatabase(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const blink::WebString& name,
     const blink::WebString& display_name,
     unsigned long estimated_size) {
   return allowDatabase(name, display_name, estimated_size);
 }
 
-bool ContentSettingsObserver::allowFileSystem(blink::WebFrame* frame) {
+bool ContentSettingsObserver::allowFileSystem(blink::WebLocalFrame* frame) {
   return allowFileSystem();
 }
 
-bool ContentSettingsObserver::allowImage(blink::WebFrame* frame,
+bool ContentSettingsObserver::allowImage(blink::WebLocalFrame* frame,
                                          bool enabled_per_settings,
                                          const blink::WebURL& image_url) {
   return allowImage(enabled_per_settings, image_url);
 }
 
 bool ContentSettingsObserver::allowIndexedDB(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const blink::WebString& name,
     const blink::WebSecurityOrigin& origin) {
   return allowIndexedDB(name, origin);
 }
 
-bool ContentSettingsObserver::allowPlugins(blink::WebFrame* frame,
+bool ContentSettingsObserver::allowPlugins(blink::WebLocalFrame* frame,
                                            bool enabled_per_settings) {
   return allowPlugins(enabled_per_settings);
 }
 
-bool ContentSettingsObserver::allowScript(blink::WebFrame* frame,
+bool ContentSettingsObserver::allowScript(blink::WebLocalFrame* frame,
                                           bool enabled_per_settings) {
   return allowScript(enabled_per_settings);
 }
 
 bool ContentSettingsObserver::allowScriptFromSource(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     bool enabled_per_settings,
     const blink::WebURL& script_url) {
   return allowScriptFromSource(enabled_per_settings, script_url);
 }
 
-bool ContentSettingsObserver::allowStorage(blink::WebFrame* frame, bool local) {
+bool ContentSettingsObserver::allowStorage(blink::WebLocalFrame* frame,
+                                           bool local) {
   return allowStorage(local);
 }
 
-bool ContentSettingsObserver::allowReadFromClipboard(blink::WebFrame* frame,
-                                                     bool default_value) {
+bool ContentSettingsObserver::allowReadFromClipboard(
+    blink::WebLocalFrame* frame,
+    bool default_value) {
   return allowReadFromClipboard(default_value);
 }
 
-bool ContentSettingsObserver::allowWriteToClipboard(blink::WebFrame* frame,
+bool ContentSettingsObserver::allowWriteToClipboard(blink::WebLocalFrame* frame,
                                                     bool default_value) {
   return allowWriteToClipboard(default_value);
 }
 
-bool ContentSettingsObserver::allowWebComponents(blink::WebFrame* frame,
+bool ContentSettingsObserver::allowWebComponents(blink::WebLocalFrame* frame,
                                                  bool default_value) {
   return allowWebComponents(default_value);
 }
 
-bool ContentSettingsObserver::allowMutationEvents(blink::WebFrame* frame,
+bool ContentSettingsObserver::allowMutationEvents(blink::WebLocalFrame* frame,
                                                   bool default_value) {
   return allowMutationEvents(default_value);
 }
 
-bool ContentSettingsObserver::allowPushState(blink::WebFrame* frame) {
+bool ContentSettingsObserver::allowPushState(blink::WebLocalFrame* frame) {
   return allowPushState();
 }
 
-void ContentSettingsObserver::didNotAllowPlugins(blink::WebFrame* frame) {
+void ContentSettingsObserver::didNotAllowPlugins(blink::WebLocalFrame* frame) {
   return didNotAllowPlugins();
 }
 
-void ContentSettingsObserver::didNotAllowScript(blink::WebFrame* frame) {
+void ContentSettingsObserver::didNotAllowScript(blink::WebLocalFrame* frame) {
   return didNotAllowScript();
 }
 
 bool ContentSettingsObserver::allowDisplayingInsecureContent(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     bool allowed_per_settings,
     const blink::WebSecurityOrigin& context,
     const blink::WebURL& url) {
@@ -320,7 +322,7 @@ bool ContentSettingsObserver::allowDisplayingInsecureContent(
 }
 
 bool ContentSettingsObserver::allowRunningInsecureContent(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     bool allowed_per_settings,
     const blink::WebSecurityOrigin& context,
     const blink::WebURL& url) {

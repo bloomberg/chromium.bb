@@ -143,7 +143,7 @@ void PhishingClassifierDelegate::OnStartPhishingDetection(const GURL& url) {
 }
 
 void PhishingClassifierDelegate::DidCommitProvisionalLoad(
-    blink::WebFrame* frame, bool is_new_navigation) {
+    blink::WebLocalFrame* frame, bool is_new_navigation) {
   // A new page is starting to load, so cancel classificaiton.
   //
   // TODO(bryner): We shouldn't need to cancel classification if the navigation

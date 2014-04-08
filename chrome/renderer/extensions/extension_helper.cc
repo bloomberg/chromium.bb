@@ -38,6 +38,7 @@ using content::ConsoleMessageLevel;
 using blink::WebConsoleMessage;
 using blink::WebDataSource;
 using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebURLRequest;
 using blink::WebScopedUserGesture;
 using blink::WebView;
@@ -178,7 +179,7 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ExtensionHelper::DidFinishDocumentLoad(WebFrame* frame) {
+void ExtensionHelper::DidFinishDocumentLoad(WebLocalFrame* frame) {
   dispatcher_->user_script_slave()->InjectScripts(
       frame, UserScript::DOCUMENT_END);
 
@@ -187,13 +188,13 @@ void ExtensionHelper::DidFinishDocumentLoad(WebFrame* frame) {
     i->second->DidFinishDocumentLoad();
 }
 
-void ExtensionHelper::DidFinishLoad(blink::WebFrame* frame) {
+void ExtensionHelper::DidFinishLoad(blink::WebLocalFrame* frame) {
   SchedulerMap::iterator i = g_schedulers.Get().find(frame);
   if (i != g_schedulers.Get().end())
     i->second->DidFinishLoad();
 }
 
-void ExtensionHelper::DidCreateDocumentElement(WebFrame* frame) {
+void ExtensionHelper::DidCreateDocumentElement(WebLocalFrame* frame) {
   dispatcher_->user_script_slave()->InjectScripts(
       frame, UserScript::DOCUMENT_START);
   SchedulerMap::iterator i = g_schedulers.Get().find(frame);
@@ -203,7 +204,7 @@ void ExtensionHelper::DidCreateDocumentElement(WebFrame* frame) {
   dispatcher_->DidCreateDocumentElement(frame);
 }
 
-void ExtensionHelper::DidStartProvisionalLoad(blink::WebFrame* frame) {
+void ExtensionHelper::DidStartProvisionalLoad(blink::WebLocalFrame* frame) {
   SchedulerMap::iterator i = g_schedulers.Get().find(frame);
   if (i != g_schedulers.Get().end())
     i->second->DidStartProvisionalLoad();
@@ -234,14 +235,15 @@ void ExtensionHelper::FrameDetached(WebFrame* frame) {
 }
 
 void ExtensionHelper::DidMatchCSS(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const blink::WebVector<blink::WebString>& newly_matching_selectors,
     const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
   dispatcher_->DidMatchCSS(
       frame, newly_matching_selectors, stopped_matching_selectors);
 }
 
-void ExtensionHelper::DidCreateDataSource(WebFrame* frame, WebDataSource* ds) {
+void ExtensionHelper::DidCreateDataSource(WebLocalFrame* frame,
+                                          WebDataSource* ds) {
   // Check first if we created a scheduler for the frame, since this function
   // gets called for navigations within the document.
   if (g_schedulers.Get().count(frame))

@@ -111,7 +111,7 @@ void PageClickTracker::DidHandleMouseEvent(const WebMouseEvent& event) {
     listener_->FormControlElementClicked(textarea_element, was_focused_);
 }
 
-void PageClickTracker::DidFinishDocumentLoad(blink::WebFrame* frame) {
+void PageClickTracker::DidFinishDocumentLoad(blink::WebLocalFrame* frame) {
   tracked_frames_.push_back(frame);
   frame->document().addEventListener("mousedown", this, false);
 }

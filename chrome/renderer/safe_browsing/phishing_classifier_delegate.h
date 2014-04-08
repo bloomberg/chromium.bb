@@ -59,7 +59,7 @@ class PhishingClassifierDelegate : public content::RenderViewObserver {
   // WebFrame.  Typically, this will cause any pending classification to be
   // cancelled.  However, if the navigation is within the same page, we
   // continue running the current classification.
-  virtual void DidCommitProvisionalLoad(blink::WebFrame* frame,
+  virtual void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
 
  private:

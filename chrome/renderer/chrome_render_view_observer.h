@@ -49,7 +49,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidStartLoading() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
-  virtual void DidCommitProvisionalLoad(blink::WebFrame* frame,
+  virtual void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
   virtual void DetailedConsoleMessageAdded(const base::string16& message,
                                            const base::string16& source,

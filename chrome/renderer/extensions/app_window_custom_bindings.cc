@@ -32,7 +32,7 @@ class DidCreateDocumentElementObserver : public content::RenderViewObserver {
       : content::RenderViewObserver(view), dispatcher_(dispatcher) {
   }
 
-  virtual void DidCreateDocumentElement(blink::WebFrame* frame) OVERRIDE {
+  virtual void DidCreateDocumentElement(blink::WebLocalFrame* frame) OVERRIDE {
     DCHECK(frame);
     DCHECK(dispatcher_);
     // Don't attempt to inject the titlebar into iframes.

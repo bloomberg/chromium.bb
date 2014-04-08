@@ -61,6 +61,7 @@ using blink::WebElement;
 using blink::WebFrame;
 using blink::WebGestureEvent;
 using blink::WebIconURL;
+using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebNodeList;
 using blink::WebRect;
@@ -408,7 +409,7 @@ void ChromeRenderViewObserver::DidStopLoading() {
 }
 
 void ChromeRenderViewObserver::DidCommitProvisionalLoad(
-    WebFrame* frame, bool is_new_navigation) {
+    WebLocalFrame* frame, bool is_new_navigation) {
   // Don't capture pages being not new, or including refresh meta tag.
   if (!is_new_navigation || HasRefreshMetaTag(frame))
     return;

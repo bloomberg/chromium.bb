@@ -28,6 +28,7 @@ using blink::WebDragOperationsMask;
 using blink::WebFrame;
 using blink::WebImage;
 using blink::WebInputEvent;
+using blink::WebLocalFrame;
 using blink::WebMouseEvent;
 using blink::WebPlugin;
 using blink::WebPluginContainer;
@@ -210,7 +211,7 @@ void WebViewPlugin::setToolTipText(const WebString& text,
     container_->element().setAttribute("title", text);
 }
 
-void WebViewPlugin::startDragging(WebFrame*,
+void WebViewPlugin::startDragging(WebLocalFrame*,
                                   const WebDragData&,
                                   WebDragOperationsMask,
                                   const WebImage&,
@@ -228,12 +229,12 @@ void WebViewPlugin::didChangeCursor(const WebCursorInfo& cursor) {
   current_cursor_ = cursor;
 }
 
-void WebViewPlugin::didClearWindowObject(WebFrame* frame, int world_id) {
+void WebViewPlugin::didClearWindowObject(WebLocalFrame* frame, int world_id) {
   if (delegate_)
     delegate_->BindWebFrame(frame);
 }
 
-void WebViewPlugin::didReceiveResponse(WebFrame* frame,
+void WebViewPlugin::didReceiveResponse(WebLocalFrame* frame,
                                        unsigned identifier,
                                        const WebURLResponse& response) {
   WebFrameClient::didReceiveResponse(frame, identifier, response);
