@@ -240,6 +240,11 @@ void BaseMultipleFieldsDateAndTimeInputType::spinButtonStepUp()
         edit->stepUp();
 }
 
+void BaseMultipleFieldsDateAndTimeInputType::spinButtonDidReleaseMouseCapture()
+{
+    element().dispatchFormControlChangeEvent();
+}
+
 bool BaseMultipleFieldsDateAndTimeInputType::isPickerIndicatorOwnerDisabledOrReadOnly() const
 {
     return element().isDisabledOrReadOnly();

@@ -184,7 +184,7 @@ void HTMLTextFormControlElement::select()
 
 void HTMLTextFormControlElement::dispatchFormControlChangeEvent()
 {
-    if (m_textAsOfLastFormControlChangeEvent != value()) {
+    if (!equalIgnoringNullity(m_textAsOfLastFormControlChangeEvent, value())) {
         dispatchChangeEvent();
         setTextAsOfLastFormControlChangeEvent(value());
     }

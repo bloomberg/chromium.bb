@@ -944,10 +944,10 @@ void InputType::stepUpFromRenderer(int n)
         setValueAsDecimal(current, DispatchNoEvent, IGNORE_EXCEPTION);
     }
     if ((sign > 0 && current < stepRange.minimum()) || (sign < 0 && current > stepRange.maximum())) {
-        setValueAsDecimal(sign > 0 ? stepRange.minimum() : stepRange.maximum(), DispatchInputAndChangeEvent, IGNORE_EXCEPTION);
+        setValueAsDecimal(sign > 0 ? stepRange.minimum() : stepRange.maximum(), DispatchChangeEvent, IGNORE_EXCEPTION);
         return;
     }
-    applyStep(current, n, AnyIsDefaultStep, DispatchInputAndChangeEvent, IGNORE_EXCEPTION);
+    applyStep(current, n, AnyIsDefaultStep, DispatchChangeEvent, IGNORE_EXCEPTION);
 }
 
 void InputType::countUsageIfVisible(UseCounter::Feature feature) const

@@ -60,12 +60,6 @@ PassRefPtr<SpinButtonElement> SpinButtonElement::create(Document& document, Spin
     return element.release();
 }
 
-void SpinButtonElement::detach(const AttachContext& context)
-{
-    releaseCapture();
-    HTMLDivElement::detach(context);
-}
-
 void SpinButtonElement::defaultEventHandler(Event* event)
 {
     if (!event->isMouseEvent()) {
@@ -111,7 +105,7 @@ void SpinButtonElement::defaultEventHandler(Event* event)
             event->setDefaultHandled();
         }
     } else if (mouseEvent->type() == EventTypeNames::mouseup && mouseEvent->button() == LeftButton) {
-        stopRepeatingTimer();
+        releaseCapture();
     } else if (event->type() == EventTypeNames::mousemove) {
         if (box->pixelSnappedBorderBoxRect().contains(local)) {
             if (!m_capturing) {
@@ -198,6 +192,9 @@ void SpinButtonElement::releaseCapture()
                 page->chrome().unregisterPopupOpeningObserver(this);
         }
     }
+    if (m_spinButtonOwner)
+        m_spinButtonOwner->spinButtonDidReleaseMouseCapture();
+
 }
 
 bool SpinButtonElement::matchesReadOnlyPseudoClass() const

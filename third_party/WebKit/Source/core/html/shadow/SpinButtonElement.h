@@ -47,6 +47,7 @@ public:
         virtual void focusAndSelectSpinButtonOwner() = 0;
         virtual bool shouldSpinButtonRespondToMouseEvents() = 0;
         virtual bool shouldSpinButtonRespondToWheelEvents() = 0;
+        virtual void spinButtonDidReleaseMouseCapture() = 0;
         virtual void spinButtonStepDown() = 0;
         virtual void spinButtonStepUp() = 0;
     };
@@ -69,7 +70,6 @@ public:
 private:
     SpinButtonElement(Document&, SpinButtonOwner&);
 
-    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual bool isSpinButtonElement() const OVERRIDE { return true; }
     virtual bool isDisabledFormControl() const OVERRIDE { return shadowHost() && shadowHost()->isDisabledFormControl(); }
     virtual bool matchesReadOnlyPseudoClass() const OVERRIDE;
