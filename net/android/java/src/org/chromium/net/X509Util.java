@@ -13,7 +13,6 @@ import android.net.http.X509TrustManagerExtensions;
 import android.os.Build;
 import android.security.KeyChain;
 import android.util.Log;
-import android.util.Pair;
 
 import org.chromium.base.JNINamespace;
 
@@ -22,8 +21,6 @@ import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateFactory;
@@ -31,15 +28,11 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-import javax.security.auth.x500.X500Principal;
 
 /**
  * Utility functions for verifying X.509 certificates.
@@ -141,26 +134,6 @@ public class X509Util {
     private static KeyStore sTestKeyStore;
 
     /**
-     * Hash set of the subject and public key of system roots. This is used to
-     * determine whether a chain ends at a well-known root or not.
-     *
-     * Querying the system KeyStore for the root directly doesn't work as the
-     * root of the verified chain may be the server's version of a root rather
-     * than the system one. For instance, the server may send a certificate
-     * signed by another CA, while the system store contains a self-signed root
-     * with the same subject and SPKI.  The chain will terminate at that root
-     * but X509TrustManagerExtensions will return the server's version.
-     */
-    private static Set<Pair<X500Principal, PublicKey>> sSystemTrustRoots;
-
-    /**
-     * True if the system trust roots were initialized. (sSystemTrustRoots may
-     * still be null if system trust roots cannot be distinguished from
-     * user-installed ones.)
-     */
-    private static boolean sLoadedSystemTrustRoots;
-
-    /**
      * Lock object used to synchronize all calls that modify or depend on the trust managers.
      */
     private static final Object sLock = new Object();
@@ -184,19 +157,6 @@ public class X509Util {
             if (sDefaultTrustManager == null) {
                 sDefaultTrustManager = X509Util.createTrustManager(null);
             }
-            if (!sLoadedSystemTrustRoots) {
-                try {
-                    sSystemTrustRoots = buildSystemTrustRootSet();
-                } catch (KeyStoreException e) {
-                    // If the device does not have an "AndroidCAStore" KeyStore, don't make the
-                    // failure fatal. Instead default conservatively to setting isIssuedByKnownRoot
-                    // to false everywhere.
-                    Log.w(TAG, "Could not load system trust root set", e);
-                }
-                if (!sDisableNativeCodeForTest)
-                    nativeRecordCertVerifyCapabilitiesHistogram(sSystemTrustRoots != null);
-                sLoadedSystemTrustRoots = true;
-            }
             if (sTestKeyStore == null) {
                 sTestKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
                 try {
@@ -214,33 +174,6 @@ public class X509Util {
                         new IntentFilter(KeyChain.ACTION_STORAGE_CHANGED));
             }
         }
-    }
-
-    private static Set<Pair<X500Principal, PublicKey>> buildSystemTrustRootSet() throws
-            CertificateException, KeyStoreException, NoSuchAlgorithmException {
-        // Load the Android CA store.
-        KeyStore systemKeyStore = KeyStore.getInstance("AndroidCAStore");
-        try {
-            systemKeyStore.load(null);
-        } catch (IOException e) {
-            // No IO operation is attempted.
-        }
-
-        // System trust roots have prefix of "system:".
-        Set<Pair<X500Principal, PublicKey>> roots = new HashSet<Pair<X500Principal, PublicKey>>();
-        Enumeration<String> aliases = systemKeyStore.aliases();
-        while (aliases.hasMoreElements()) {
-            String alias = aliases.nextElement();
-            if (!alias.startsWith("system:"))
-                continue;
-            Certificate cert = systemKeyStore.getCertificate(alias);
-            if (cert != null && cert instanceof X509Certificate) {
-                X509Certificate x509Cert = (X509Certificate)cert;
-                roots.add(new Pair<X500Principal, PublicKey>(x509Cert.getSubjectX500Principal(),
-                                                             x509Cert.getPublicKey()));
-            }
-        }
-        return roots;
     }
 
     /**
@@ -285,8 +218,6 @@ public class X509Util {
     private static void reloadDefaultTrustManager() throws KeyStoreException,
             NoSuchAlgorithmException, CertificateException {
         sDefaultTrustManager = null;
-        sSystemTrustRoots = null;
-        sLoadedSystemTrustRoots = false;
         nativeNotifyKeyChainChanged();
         ensureInitialized();
     }
@@ -422,14 +353,10 @@ public class X509Util {
                 }
             }
 
+            // TODO(davidben): This code was removed for
+            // http://crbug.com/361166. Fix the performance regression and
+            // export it again.
             boolean isIssuedByKnownRoot = false;
-            if (sSystemTrustRoots != null && verifiedChain.size() > 0) {
-                X509Certificate root = verifiedChain.get(verifiedChain.size() - 1);
-                isIssuedByKnownRoot = sSystemTrustRoots.contains(
-                        new Pair<X500Principal, PublicKey>(root.getSubjectX500Principal(),
-                                                           root.getPublicKey()));
-            }
-
             return new AndroidCertVerifyResult(CertVerifyStatusAndroid.VERIFY_OK,
                                                isIssuedByKnownRoot, verifiedChain);
         }
