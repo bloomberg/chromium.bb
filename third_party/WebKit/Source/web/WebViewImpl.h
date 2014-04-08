@@ -238,10 +238,6 @@ public:
         const WebPoint& clientPoint,
         const WebPoint& screenPoint,
         WebDragOperation) OVERRIDE;
-    virtual void dragSourceMovedTo(
-        const WebPoint& clientPoint,
-        const WebPoint& screenPoint,
-        WebDragOperation) OVERRIDE;
     virtual void dragSourceSystemDragEnded() OVERRIDE;
     virtual WebDragOperation dragTargetDragEnter(
         const WebDragData&,

@@ -3063,13 +3063,6 @@ void WebViewImpl::dragSourceEndedAt(
         static_cast<DragOperation>(operation));
 }
 
-void WebViewImpl::dragSourceMovedTo(
-    const WebPoint& clientPoint,
-    const WebPoint& screenPoint,
-    WebDragOperation operation)
-{
-}
-
 void WebViewImpl::dragSourceSystemDragEnded()
 {
     // It's possible for us to get this callback while not doing a drag if
