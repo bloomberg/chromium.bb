@@ -5,11 +5,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/platform_file.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/thread_test_helper.h"
 #include "content/browser/browser_main_loop.h"
@@ -403,17 +403,12 @@ static void CorruptIndexedDBDatabase(
 
     if (idb_file.Extension() == FILE_PATH_LITERAL(".ldb")) {
       numFiles++;
-      base::PlatformFile f = base::CreatePlatformFile(
-          idb_file,
-          base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_OPEN_TRUNCATED,
-          NULL,
-          NULL);
-      if (f) {
+      base::File file(idb_file,
+                      base::File::FLAG_WRITE | base::File::FLAG_OPEN_TRUNCATED);
+      if (file.IsValid()) {
         // Was opened truncated, expand back to the original
         // file size and fill with zeros (corrupting the file).
-        base::TruncatePlatformFile(f, size);
-        if (!base::ClosePlatformFile(f))
-          numErrors++;
+        file.SetLength(size);
       } else {
         numErrors++;
       }

@@ -5,11 +5,11 @@
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/platform_file.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
@@ -578,17 +578,11 @@ bool IndexedDBBackingStore::ReadCorruptionInfo(const base::FilePath& path_base,
     return false;
   }
 
-  bool created(false);
-  base::PlatformFileError error(base::PLATFORM_FILE_OK);
-  base::PlatformFile file = base::CreatePlatformFile(
-      info_path,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-      &created,
-      &error);
+  base::File file(info_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   bool success = false;
-  if (file) {
+  if (file.IsValid()) {
     std::vector<char> bytes(file_size);
-    if (file_size == base::ReadPlatformFile(file, 0, &bytes[0], file_size)) {
+    if (file_size == file.Read(0, &bytes[0], file_size)) {
       std::string input_js(&bytes[0], file_size);
       base::JSONReader reader;
       scoped_ptr<base::Value> val(reader.ReadToValue(input_js));
@@ -598,7 +592,7 @@ bool IndexedDBBackingStore::ReadCorruptionInfo(const base::FilePath& path_base,
         success = dict_val->GetString("message", &message);
       }
     }
-    base::ClosePlatformFile(file);
+    file.Close();
   }
 
   base::DeleteFile(info_path, false);
@@ -620,18 +614,11 @@ bool IndexedDBBackingStore::RecordCorruptionInfo(
   std::string output_js;
   base::JSONWriter::Write(&root_dict, &output_js);
 
-  bool created(false);
-  base::PlatformFileError error(base::PLATFORM_FILE_OK);
-  base::PlatformFile file = base::CreatePlatformFile(
-      info_path,
-      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
-      &created,
-      &error);
-  if (!file)
+  base::File file(info_path,
+                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  if (!file.IsValid())
     return false;
-  int written =
-      base::WritePlatformFile(file, 0, output_js.c_str(), output_js.length());
-  base::ClosePlatformFile(file);
+  int written = file.Write(0, output_js.c_str(), output_js.length());
   return size_t(written) == output_js.length();
 }
 
