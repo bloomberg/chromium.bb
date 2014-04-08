@@ -2048,7 +2048,7 @@ const char kVideoCaptureAllowedUrls[] = "hardware.video_capture_allowed_urls";
 
 // A boolean pref that controls the enabled-state of hotword search voice
 // trigger.
-const char kHotwordSearchEnabled[] = "hotword.search_enabled";
+const char kHotwordSearchEnabled[] = "hotword.search_enabled_2";
 
 // An integer pref that keeps track of how many times the opt in popup for
 // hotword void search has been shown to the user. After this pref has reached

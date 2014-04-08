@@ -102,6 +102,8 @@ namespace hotword_internal {
 // Constants for the hotword field trial.
 const char kHotwordFieldTrialName[] = "VoiceTrigger";
 const char kHotwordFieldTrialDisabledGroupName[] = "Disabled";
+// Old preference constant.
+const char kHotwordUnusablePrefName[] = "hotword.search_enabled";
 }  // namespace hotword_internal
 
 // static
@@ -150,6 +152,13 @@ HotwordService::HotwordService(Profile* profile)
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_));
+
+  // Clear the old user pref because it became unusable.
+  // TODO(rlp): Remove this code per crbug.com/358789.
+  if (profile_->GetPrefs()->HasPrefPath(
+          hotword_internal::kHotwordUnusablePrefName)) {
+    profile_->GetPrefs()->ClearPref(hotword_internal::kHotwordUnusablePrefName);
+  }
 }
 
 HotwordService::~HotwordService() {
