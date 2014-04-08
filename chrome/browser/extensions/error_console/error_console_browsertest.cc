@@ -364,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest,
 // Load an extension which, upon visiting any page, first sends out a console
 // log, and then crashes with a JS TypeError.
 IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest,
-                       DISABLED_ContentScriptLogAndRuntimeError) {
+                       ContentScriptLogAndRuntimeError) {
   const Extension* extension = NULL;
   LoadExtensionAndCheckErrors(
       "content_script_log_and_runtime_error",
