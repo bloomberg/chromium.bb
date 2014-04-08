@@ -528,6 +528,14 @@ def GetDefaultLibPath(config):
     'ports/lib/glibc_x86_32/%s' % config,
     'ports/lib/glibc_x86_64/%s' % config,
   ]
+
+  bionic_dir = 'toolchain/%s_arm_bionic' % osname
+  if os.path.isdir(os.path.join(sdk_root, bionic_dir)):
+    libpath += [
+      '%s/arm-nacl/lib' % bionic_dir,
+      '%s/arm-nacl/usr/lib' % bionic_dir,
+      'lib/bionic_arm/%s' % config,
+    ]
   libpath = [os.path.normpath(p) for p in libpath]
   libpath = [os.path.join(sdk_root, p) for p in libpath]
   return libpath
@@ -633,6 +641,8 @@ def main(argv):
     # Add default libraries paths to the end of the search path.
     config = options.debug_libs and 'Debug' or 'Release'
     options.lib_path += GetDefaultLibPath(config)
+    for path in options.lib_path:
+      Trace('libpath: %s' % path)
 
   pnacl_optlevel = None
   if options.pnacl_optlevel is not None:

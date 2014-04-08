@@ -39,6 +39,7 @@ OBJDUMP_ARCH_MAP = {
     'elf64-x86-64-nacl': 'x86-64',
     'elf32-x86-64-nacl': 'x86-64',
     'elf32-i386-nacl': 'x86-32',
+    'elf32-littlearm-nacl': 'arm',
 }
 
 # The proper name of the dynamic linker, as kept in the IRT.  This is
@@ -201,6 +202,17 @@ def _FindLibsInPath(name, lib_path):
     A list of system paths that match the given name within the lib_path'''
   files = []
   for dirname in lib_path:
+    # The libc.so files in the the glibc toolchain is actually a linker
+    # script which references libc.so.<SHA1>.  This means the lib.so itself
+    # does not end up in the NEEDED section for glibc.  However with bionic
+    # the SONAME is actually libc.so.  If we pass glibc's libc.so to objdump
+    # if fails to parse it, os this filters out libc.so expept for within
+    # the bionic toolchain.
+    # TODO(noelallen): Remove this once the SONAME in bionic is made to be
+    # unique in the same it is under glibc:
+    # https://code.google.com/p/nativeclient/issues/detail?id=3833
+    if name == 'libc.so' and 'bionic' not in dirname:
+      continue
     filename = os.path.join(dirname, name)
     if os.path.exists(filename):
       files.append(filename)
