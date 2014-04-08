@@ -41,7 +41,7 @@ SVGTests::SVGTests(SVGElement* contextElement)
     contextElement->addToPropertyMap(m_systemLanguage);
 }
 
-bool SVGTests::hasExtension(SVGTests&, const String&)
+bool SVGTests::hasExtension(const String&)
 {
     // FIXME: Implement me!
     return false;

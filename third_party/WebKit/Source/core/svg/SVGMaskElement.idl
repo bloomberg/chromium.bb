@@ -23,10 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/css-masking/#InterfaceSVGMaskElement
+
 interface SVGMaskElement : SVGElement {
     readonly attribute SVGAnimatedEnumeration maskUnits;
     readonly attribute SVGAnimatedEnumeration maskContentUnits;
-
     readonly attribute SVGAnimatedLength x;
     readonly attribute SVGAnimatedLength y;
     readonly attribute SVGAnimatedLength width;
@@ -34,4 +35,3 @@ interface SVGMaskElement : SVGElement {
 };
 
 SVGMaskElement implements SVGTests;
-

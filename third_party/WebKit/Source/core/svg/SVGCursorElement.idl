@@ -23,11 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG11/interact.html#InterfaceSVGCursorElement
+// http://www.w3.org/TR/SVG2/interact.html#InterfaceSVGCursorElement
+
 interface SVGCursorElement : SVGElement {
     readonly attribute SVGAnimatedLength x;
     readonly attribute SVGAnimatedLength y;
 };
 
 SVGCursorElement implements SVGURIReference;
-SVGCursorElement implements SVGTests;
-
+SVGCursorElement implements SVGTests; // in SVG 1.1 but not SVG 2

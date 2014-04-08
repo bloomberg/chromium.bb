@@ -24,8 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG2/animate.html#InterfaceSVGAnimationElement
+
 interface SVGAnimationElement : SVGElement {
     readonly attribute SVGElement targetElement;
+
+    attribute EventHandler onbegin;
+    attribute EventHandler onend;
+    attribute EventHandler onrepeat;
 
     float getStartTime();
     float getCurrentTime();
@@ -36,9 +42,6 @@ interface SVGAnimationElement : SVGElement {
     void endElement();
     void endElementAt([Default=Undefined] optional float offset);
 
-    attribute EventHandler onbegin;
-    attribute EventHandler onend;
-    attribute EventHandler onrepeat;
 };
 
 SVGAnimationElement implements SVGTests;

@@ -23,16 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG11/struct.html#InterfaceSVGUseElement
+// http://www.w3.org/TR/SVG2/struct.html#InterfaceSVGUseElement
+
 interface SVGUseElement : SVGGraphicsElement {
     readonly attribute SVGAnimatedLength   x;
     readonly attribute SVGAnimatedLength   y;
     readonly attribute SVGAnimatedLength   width;
     readonly attribute SVGAnimatedLength   height;
 
+    // in SVG 1.1, removed in SVG 2
     [MeasureAs=SVGInstanceRoot] readonly attribute SVGElementInstance instanceRoot;
     readonly attribute SVGElementInstance animatedInstanceRoot;
 };
 
-SVGUseElement implements SVGTests;
 SVGUseElement implements SVGURIReference;
-

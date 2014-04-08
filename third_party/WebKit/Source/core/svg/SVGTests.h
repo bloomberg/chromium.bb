@@ -32,11 +32,12 @@ class SVGElement;
 
 class SVGTests {
 public:
-    static SVGStringListTearOff* requiredFeatures(SVGTests& object) { return object.m_requiredFeatures->tearOff(); }
-    static SVGStringListTearOff* requiredExtensions(SVGTests& object) { return object.m_requiredExtensions->tearOff(); }
-    static SVGStringListTearOff* systemLanguage(SVGTests& object) { return object.m_systemLanguage->tearOff(); }
+    // JS API
+    SVGStringListTearOff* requiredFeatures() { return m_requiredFeatures->tearOff(); }
+    SVGStringListTearOff* requiredExtensions() { return m_requiredExtensions->tearOff(); }
+    SVGStringListTearOff* systemLanguage() { return m_systemLanguage->tearOff(); }
+    bool hasExtension(const String&);
 
-    static bool hasExtension(SVGTests&, const String&);
     bool isValid() const;
 
     bool parseAttribute(const QualifiedName&, const AtomicString&);

@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG2/types.html#InterfaceSVGGraphicsElement
+
 [
     StrictTypeChecking,
 ] interface SVGGraphicsElement : SVGElement {

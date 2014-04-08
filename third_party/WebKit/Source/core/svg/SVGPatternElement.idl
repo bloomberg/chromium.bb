@@ -23,17 +23,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG11/pservers.html#InterfaceSVGPatternElement
+// http://www.w3.org/TR/SVG2/pservers.html#InterfaceSVGPatternElement
+
 interface SVGPatternElement : SVGElement {
-    readonly attribute SVGAnimatedEnumeration   patternUnits;
-    readonly attribute SVGAnimatedEnumeration   patternContentUnits;
+    readonly attribute SVGAnimatedEnumeration patternUnits;
+    readonly attribute SVGAnimatedEnumeration patternContentUnits;
     readonly attribute SVGAnimatedTransformList patternTransform;
-    readonly attribute SVGAnimatedLength        x;
-    readonly attribute SVGAnimatedLength        y;
-    readonly attribute SVGAnimatedLength        width;
-    readonly attribute SVGAnimatedLength        height;
+    readonly attribute SVGAnimatedLength x;
+    readonly attribute SVGAnimatedLength y;
+    readonly attribute SVGAnimatedLength width;
+    readonly attribute SVGAnimatedLength height;
 };
 
 SVGPatternElement implements SVGFitToViewBox;
-SVGPatternElement implements SVGTests;
+SVGPatternElement implements SVGTests; // in SVG 1.1 but not SVG 2
 SVGPatternElement implements SVGURIReference;
-
