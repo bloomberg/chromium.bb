@@ -9,7 +9,6 @@ import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.Build;
-import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -48,52 +47,17 @@ public class ContentView extends FrameLayout
      * @param windowAndroid An instance of the WindowAndroid.
      * @return A ContentView instance.
      */
-    public static ContentView newInstance(Context context, long nativeWebContents,
-            WindowAndroid windowAndroid) {
-        return newInstance(context, nativeWebContents, windowAndroid, null,
-                android.R.attr.webViewStyle);
-    }
-
-    /**
-     * Creates an instance of a ContentView.
-     * @param context The Context the view is running in, through which it can
-     *                access the current theme, resources, etc.
-     * @param nativeWebContents A pointer to the native web contents.
-     * @param windowAndroid An instance of the WindowAndroid.
-     * @param attrs The attributes of the XML tag that is inflating the view.
-     * @return A ContentView instance.
-     */
-    public static ContentView newInstance(Context context, long nativeWebContents,
-            WindowAndroid windowAndroid, AttributeSet attrs) {
-        // TODO(klobag): use the WebViewStyle as the default style for now. It enables scrollbar.
-        // When ContentView is moved to framework, we can define its own style in the res.
-        return newInstance(context, nativeWebContents, windowAndroid, attrs,
-                android.R.attr.webViewStyle);
-    }
-
-    /**
-     * Creates an instance of a ContentView.
-     * @param context The Context the view is running in, through which it can
-     *                access the current theme, resources, etc.
-     * @param nativeWebContents A pointer to the native web contents.
-     * @param windowAndroid An instance of the WindowAndroid.
-     * @param attrs The attributes of the XML tag that is inflating the view.
-     * @param defStyle The default style to apply to this view.
-     * @return A ContentView instance.
-     */
-    public static ContentView newInstance(Context context, long nativeWebContents,
-            WindowAndroid windowAndroid, AttributeSet attrs, int defStyle) {
+    public static ContentView newInstance(
+            Context context, long nativeWebContents, WindowAndroid windowAndroid) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-            return new ContentView(context, nativeWebContents, windowAndroid, attrs, defStyle);
+            return new ContentView(context, nativeWebContents, windowAndroid);
         } else {
-            return new JellyBeanContentView(context, nativeWebContents, windowAndroid, attrs,
-                    defStyle);
+            return new JellyBeanContentView(context, nativeWebContents, windowAndroid);
         }
     }
 
-    protected ContentView(Context context, long nativeWebContents, WindowAndroid windowAndroid,
-            AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+    protected ContentView(Context context, long nativeWebContents, WindowAndroid windowAndroid) {
+        super(context, null, android.R.attr.webViewStyle);
 
         if (getScrollBarStyle() == View.SCROLLBARS_INSIDE_OVERLAY) {
             setHorizontalScrollBarEnabled(false);

@@ -6,7 +6,6 @@ package org.chromium.content.browser;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.AttributeSet;
 import android.view.accessibility.AccessibilityNodeProvider;
 
 import org.chromium.ui.base.WindowAndroid;
@@ -15,9 +14,8 @@ import org.chromium.ui.base.WindowAndroid;
  * A version of {@link ContentView} that supports JellyBean features.
  */
 class JellyBeanContentView extends ContentView {
-    JellyBeanContentView(Context context, long nativeWebContents, WindowAndroid windowAndroid,
-            AttributeSet attrs, int defStyle) {
-        super(context, nativeWebContents, windowAndroid, attrs, defStyle);
+    JellyBeanContentView(Context context, long nativeWebContents, WindowAndroid windowAndroid) {
+        super(context, nativeWebContents, windowAndroid);
     }
 
     @Override
