@@ -559,6 +559,15 @@ public:
     }
 };
 
+template<typename T>
+class TraceTrait<OwnPtr<T> > {
+public:
+    static void trace(Visitor* visitor, OwnPtr<T>* ptr)
+    {
+        TraceTrait<T>::trace(visitor, ptr->get());
+    }
+};
+
 template<bool needsTracing, typename T>
 struct StdPairHelper;
 
@@ -954,6 +963,11 @@ template<typename T> inline T* getPtr(const WebCore::Member<T>& p)
 template<typename T, typename U>
 struct NeedsTracing<std::pair<T, U> > {
     static const bool value = NeedsTracing<T>::value || NeedsTracing<U>::value || IsWeak<T>::value || IsWeak<U>::value;
+};
+
+template<typename T>
+struct NeedsTracing<OwnPtr<T> > {
+    static const bool value = NeedsTracing<T>::value;
 };
 
 // We define specialization of the NeedsTracing trait for off heap collections

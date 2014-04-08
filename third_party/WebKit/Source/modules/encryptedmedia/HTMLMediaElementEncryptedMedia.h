@@ -48,6 +48,8 @@ public:
     static HTMLMediaElementEncryptedMedia& from(HTMLMediaElement&);
     static const char* supplementName();
 
+    virtual void trace(Visitor*) OVERRIDE { }
+
 private:
     HTMLMediaElementEncryptedMedia();
     void generateKeyRequest(blink::WebMediaPlayer*, const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState&);

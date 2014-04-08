@@ -53,6 +53,8 @@ public:
     virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
     virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE { }
+
 private:
     explicit DeviceOrientationController(Document&);
     virtual void registerWithDispatcher() OVERRIDE;

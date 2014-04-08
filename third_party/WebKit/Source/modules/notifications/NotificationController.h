@@ -46,6 +46,11 @@ public:
 
     NotificationClient* client() { return m_client; }
 
+    virtual void trace(Visitor*) OVERRIDE
+    {
+        // FIXME: Oilpan: Move Page to the managed heap before using this trace method.
+    }
+
 private:
     explicit NotificationController(NotificationClient*);
 

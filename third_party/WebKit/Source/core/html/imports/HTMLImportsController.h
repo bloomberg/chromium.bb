@@ -77,6 +77,8 @@ public:
 
     void recalcTimerFired(Timer<HTMLImportsController>*);
 
+    virtual void trace(Visitor*) OVERRIDE { }
+
 private:
     HTMLImportChild* createChild(const KURL&, HTMLImport* parent, HTMLImportChildClient*);
     void clear();

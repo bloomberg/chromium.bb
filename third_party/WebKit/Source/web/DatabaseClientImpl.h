@@ -44,6 +44,11 @@ public:
 
     virtual bool allowDatabase(WebCore::ExecutionContext*, const String& name, const String& displayName, unsigned long estimatedSize) OVERRIDE;
 
+    virtual void trace(WebCore::Visitor*) OVERRIDE
+    {
+        // FIXME: Oilpan: Move Page and WorkerClients to the managed heap before using this trace method.
+    }
+
 private:
     DatabaseClientImpl();
 };

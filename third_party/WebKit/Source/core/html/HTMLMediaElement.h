@@ -78,6 +78,8 @@ public:
     static void setMediaStreamRegistry(URLRegistry*);
     static bool isMediaStreamURL(const String& url);
 
+    virtual void trace(Visitor*) OVERRIDE;
+
     // Do not use player().
     // FIXME: Replace all uses with webMediaPlayer() and remove this API.
     MediaPlayer* player() const { return m_player.get(); }

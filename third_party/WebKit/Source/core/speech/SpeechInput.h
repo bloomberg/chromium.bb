@@ -75,6 +75,11 @@ public:
     virtual void didCompleteRecognition(int) OVERRIDE;
     virtual void setRecognitionResult(int, const SpeechInputResultArray&) OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE
+    {
+        // FIXME: Oilpan: Move Page to the managed heap before using this trace method.
+    }
+
 private:
     explicit SpeechInput(PassOwnPtr<SpeechInputClient>);
 

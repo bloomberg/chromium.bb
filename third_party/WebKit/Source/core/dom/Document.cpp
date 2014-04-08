@@ -5527,4 +5527,10 @@ void Document::invalidateNodeListCaches(const QualifiedName* attrName)
         (*it)->invalidateCache(attrName);
 }
 
+void Document::trace(Visitor* visitor)
+{
+    Supplementable<Document>::trace(visitor);
+    ContainerNode::trace(visitor);
+}
+
 } // namespace WebCore

@@ -53,6 +53,11 @@ public:
     virtual ~WorkerGlobalScopeProxyProviderImpl() { }
     virtual WebCore::WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(WebCore::Worker*) OVERRIDE;
 
+    virtual void trace(WebCore::Visitor*) OVERRIDE
+    {
+        // FIXME: Oilpan: Move Page to the managed heap before using this trace method.
+    }
+
 private:
     WorkerGlobalScopeProxyProviderImpl() { }
 };

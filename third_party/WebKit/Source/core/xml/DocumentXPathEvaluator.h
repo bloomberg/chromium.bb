@@ -49,6 +49,8 @@ public:
         const String& expression, Node* contextNode, PassRefPtrWillBeRawPtr<XPathNSResolver>,
         unsigned short type, XPathResult*, ExceptionState&);
 
+    virtual void trace(Visitor*) OVERRIDE { }
+
 private:
     DocumentXPathEvaluator();
 

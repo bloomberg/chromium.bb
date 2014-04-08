@@ -90,6 +90,8 @@ public:
 
     void validateAgainst(Document*);
 
+    virtual void trace(Visitor*) OVERRIDE { }
+
 private:
     String m_domain;
     Entry m_entries[ContextFeatures::FeatureTypeSize];

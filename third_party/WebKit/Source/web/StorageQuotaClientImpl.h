@@ -45,6 +45,11 @@ public:
     virtual void requestQuota(WebCore::ExecutionContext*, WebStorageQuotaType, unsigned long long newQuotaInBytes, PassOwnPtr<WebCore::StorageQuotaCallback>, PassOwnPtr<WebCore::StorageErrorCallback>) OVERRIDE;
     virtual WebCore::ScriptPromise requestPersistentQuota(WebCore::ExecutionContext*, unsigned long long newQuotaInBytes) OVERRIDE;
 
+    virtual void trace(WebCore::Visitor*) OVERRIDE
+    {
+        // FIXME: Oilpan: Move Page to the managed heap before using this trace method.
+    }
+
 private:
     StorageQuotaClientImpl();
 };

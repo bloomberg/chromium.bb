@@ -97,6 +97,8 @@ public:
     virtual void documentWasDetached() OVERRIDE;
     virtual void documentWasDisposed() OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE { }
+
 private:
     static FullscreenElementStack* fromIfExistsSlow(Document&);
 

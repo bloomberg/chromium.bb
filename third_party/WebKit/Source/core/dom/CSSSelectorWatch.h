@@ -54,6 +54,8 @@ public:
 
     void updateSelectorMatches(const Vector<String>& removedSelectors, const Vector<String>& addedSelectors);
 
+    virtual void trace(Visitor*) OVERRIDE { }
+
 private:
     CSSSelectorWatch(Document&);
     void callbackSelectorChangeTimerFired(Timer<CSSSelectorWatch>*);

@@ -3647,4 +3647,10 @@ bool HTMLMediaElement::isInteractiveContent() const
     return fastHasAttribute(controlsAttr);
 }
 
+void HTMLMediaElement::trace(Visitor* visitor)
+{
+    Supplementable<HTMLMediaElement>::trace(visitor);
+    HTMLElement::trace(visitor);
+}
+
 }

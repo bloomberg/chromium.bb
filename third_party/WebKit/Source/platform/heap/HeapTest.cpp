@@ -1890,6 +1890,7 @@ public:
         m_hashSet.add(IntWrapper::create(5));
         m_hashMap.add(this, IntWrapper::create(6));
         m_listHashSet.add(IntWrapper::create(7));
+        m_ownedVector.append(adoptPtr(new ShouldBeTraced(IntWrapper::create(8))));
     }
 
     void trace(Visitor* visitor)
@@ -1901,6 +1902,7 @@ public:
         visitor->trace(m_hashSet);
         visitor->trace(m_hashMap);
         visitor->trace(m_listHashSet);
+        visitor->trace(m_ownedVector);
     }
 
     Deque<ShouldBeTraced> m_deque1;
@@ -1910,6 +1912,7 @@ public:
     HashSet<Member<IntWrapper> > m_hashSet;
     HashMap<void*, Member<IntWrapper> > m_hashMap;
     ListHashSet<Member<IntWrapper> > m_listHashSet;
+    Vector<OwnPtr<ShouldBeTraced> > m_ownedVector;
 };
 
 
@@ -2901,7 +2904,7 @@ TEST(HeapTest, VisitOffHeapCollections)
     EXPECT_EQ(0, IntWrapper::s_destructorCalls);
     container = nullptr;
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    EXPECT_EQ(7, IntWrapper::s_destructorCalls);
+    EXPECT_EQ(8, IntWrapper::s_destructorCalls);
 }
 
 TEST(HeapTest, PersistentHeapCollectionTypes)

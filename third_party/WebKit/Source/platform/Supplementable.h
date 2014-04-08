@@ -113,10 +113,7 @@ template<bool>
 class SupplementTracing;
 
 template<>
-class SupplementTracing<true> : public GarbageCollectedMixin {
-public:
-    virtual void trace(Visitor*) = 0;
-};
+class SupplementTracing<true> : public GarbageCollectedMixin { };
 
 template<>
 class SupplementTracing<false> {
@@ -145,27 +142,18 @@ public:
     {
         return host ? host->requireSupplement(key) : 0;
     }
+
+    virtual void trace(Visitor*) = 0;
 };
 
 template<typename T, bool>
 class SupplementableTracing;
 
 template<typename T>
-class SupplementableTracing<T, true> : public GarbageCollectedMixin {
-public:
-    void trace(Visitor* visitor) { visitor->trace(m_supplements); }
-
-private:
-    typename SupplementableTraits<T, true>::SupplementMap m_supplements;
-    friend class SupplementableBase<T, true>;
-};
+class SupplementableTracing<T, true> : public GarbageCollectedMixin { };
 
 template<typename T>
-class SupplementableTracing<T, false> {
-private:
-    typename SupplementableTraits<T, false>::SupplementMap m_supplements;
-    friend class SupplementableBase<T, false>;
-};
+class SupplementableTracing<T, false> { };
 
 template<typename T, bool isGarbageCollected = false>
 class SupplementableBase : public SupplementableTracing<T, isGarbageCollected> {
@@ -195,6 +183,11 @@ public:
         m_threadId = currentThread();
 #endif
     }
+
+    void trace(Visitor* visitor) { visitor->trace(m_supplements); }
+
+private:
+    typename SupplementableTraits<T, isGarbageCollected>::SupplementMap m_supplements;
 
 #if !ASSERT_DISABLED
 protected:

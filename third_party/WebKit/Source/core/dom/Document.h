@@ -1060,6 +1060,8 @@ public:
 
     void updateStyleInvalidationIfNeeded();
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
