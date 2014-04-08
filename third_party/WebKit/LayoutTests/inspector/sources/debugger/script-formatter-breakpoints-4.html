@@ -2,7 +2,7 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
-<script src="resources/unformatted.js"></script>
+<script src="resources/unformatted4.js"></script>
 
 <script>
 
@@ -18,17 +18,14 @@ var test = function()
     WebInspector.breakpointManager._storage._breakpoints = {};
     var panel = WebInspector.inspectorView.showPanel("sources");
     var scriptFormatter = InspectorTest.scriptFormatter();
-    var sourceFrame;
-    var formattedSourceFrame;
 
     InspectorTest.runDebuggerTestSuite([
         function testBreakpointSetInOriginalAndRemovedInFormatted(next)
         {
             InspectorTest.showScriptSource("script-formatter-breakpoints-4.html", didShowScriptSource);
 
-            function didShowScriptSource(frame)
+            function didShowScriptSource(sourceFrame)
             {
-                sourceFrame = frame;
                 InspectorTest.addResult("Adding breakpoint.");
                 InspectorTest.addSniffer(WebInspector.BreakpointManager.Breakpoint.prototype, "_addResolvedLocation", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
@@ -44,7 +41,7 @@ var test = function()
             function uiSourceCodeScriptFormatted()
             {
                 InspectorTest.addResult("Removing breakpoint.");
-                formattedSourceFrame = panel.visibleView;
+                var formattedSourceFrame = panel.visibleView;
                 InspectorTest.removeBreakpoint(formattedSourceFrame, 16);
                 InspectorTest.addResult("Unformatting.");
                 scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());

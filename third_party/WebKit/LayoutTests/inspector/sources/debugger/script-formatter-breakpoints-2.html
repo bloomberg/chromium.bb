@@ -2,24 +2,22 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
-<script src="resources/unformatted.js"></script>
+<script src="resources/unformatted2.js"></script>
 <script>
 var test = function()
 {
     WebInspector.breakpointManager._storage._breakpoints = {};
     var panel = WebInspector.inspectorView.showPanel("sources");
     var scriptFormatter = InspectorTest.scriptFormatter();
-    var sourceFrame;
     var formattedSourceFrame;
 
     InspectorTest.runDebuggerTestSuite([
         function testBreakpointsSetAndRemoveInFormattedSource(next)
         {
-            InspectorTest.showScriptSource("unformatted.js", didShowScriptSource);
+            InspectorTest.showScriptSource("unformatted2.js", didShowScriptSource);
 
             function didShowScriptSource(frame)
             {
-                sourceFrame = frame;
                 InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
                 scriptFormatter._toggleFormatScriptSource();
             }
