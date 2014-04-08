@@ -1147,7 +1147,6 @@
             'frame/Location.h',
             'frame/Navigator.cpp',
             'frame/Navigator.h',
-            'frame/NavigatorBase.h',
             'frame/NavigatorID.cpp',
             'frame/NavigatorID.h',
             'frame/NavigatorOnLine.h',
