@@ -18,6 +18,7 @@
 extern const char kSendingService1Name[];
 extern const char kSendingService2Name[];
 extern const char kSendingService3Name[];
+extern const char kTestInfoUrl[];
 extern const char kTestIconUrl[];
 
 // Fake data for creating a SyncedNotification.
