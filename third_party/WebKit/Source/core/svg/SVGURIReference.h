@@ -50,13 +50,11 @@ public:
         return !equalIgnoringFragmentIdentifier(url, document.url());
     }
 
-    // SVGURIReference JS API.
-    static SVGAnimatedString* href(SVGURIReference& object) { return object.href(); }
-
-    SVGAnimatedString* href() const { return m_href.get(); }
     const String& hrefString() const { return m_href->currentValue()->value(); }
-
     bool parseAttribute(const QualifiedName&, const AtomicString& value, SVGParsingError&);
+
+    // JS API
+    SVGAnimatedString* href() const { return m_href.get(); }
 
 protected:
     explicit SVGURIReference(SVGElement*);
