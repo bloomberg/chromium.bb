@@ -255,6 +255,7 @@ private:
     SuperclusterMap m_superclusters;
     ClusterStack m_clusterStack;
     FingerprintMapper m_fingerprintMapper;
+    Vector<RefPtr<RenderStyle> > m_stylesRetainedDuringLayout;
 };
 
 } // namespace WebCore

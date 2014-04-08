@@ -412,6 +412,7 @@ void FastTextAutosizer::endLayout(RenderBlock* block)
         m_firstBlock = 0;
         m_clusterStack.clear();
         m_superclusters.clear();
+        m_stylesRetainedDuringLayout.clear();
 #ifndef NDEBUG
         m_blocksThatHaveBegunLayout.clear();
 #endif
@@ -914,6 +915,10 @@ void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier
     RefPtr<RenderStyle> style = RenderStyle::clone(currentStyle);
     style->setTextAutosizingMultiplier(multiplier);
     style->setUnique();
+
+    // Don't free currentStyle until the end of the layout pass. This allows other parts of the system
+    // to safely hold raw RenderStyle* pointers during layout, e.g. BreakingContext::m_currentStyle.
+    m_stylesRetainedDuringLayout.append(currentStyle);
 
     switch (relayoutBehavior) {
     case AlreadyInLayout:
