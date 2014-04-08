@@ -546,9 +546,10 @@ def GetUploadPackageTargets():
                         ('linux', 'x86-64')):
     triple = pynacl.platform.PlatformTriple(os_name, arch)
     legal_triple = pynacl.gsd_storage.LegalizeName(triple)
-    host_packages.setdefault(os_name, []).extend(['binutils_%s' % legal_triple,
-                                             'llvm_%s' % legal_triple,
-                                             'driver_%s' % legal_triple])
+    host_packages.setdefault(os_name, []).extend(
+        ['binutils_pnacl_%s' % legal_triple,
+         'llvm_%s' % legal_triple,
+         'driver_%s' % legal_triple])
 
   # Unsandboxed target IRT libraries
   for os_name in ('linux', 'mac'):
@@ -620,18 +621,21 @@ if __name__ == '__main__':
   # Don't build the target libs on Mac because the gold plugin's rpaths
   # aren't right.
   # On linux use the 32-bit compiler to build the target libs since that's what
-  # most developers will be using.
-  if pynacl.platform.IsLinux():
+  # most developers will be using. (hosts[0] is i686-linux on linux64)
+  # For now, don't build anything more than once.
+  # TODO(dschuff): Figure out a better way to test things on toolchain bots.
+  if pynacl.platform.IsLinux64():
     packages.update(pnacl_targetlibs.TargetLibsSrc(
       GetGitSyncCmdCallback(revisions)))
     for bias in BITCODE_BIASES:
       packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0], bias))
     for arch in ALL_ARCHES:
       packages.update(pnacl_targetlibs.NativeLibs(hosts[0], arch))
+    packages.update(Metadata())
   if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
     packages.update(pnacl_targetlibs.UnsandboxedIRT(
         'x86-32-%s' % pynacl.platform.GetOS()))
-  packages.update(Metadata())
+
 
   tb = toolchain_main.PackageBuilder(packages,
                                      GetUploadPackageTargets(),
