@@ -59,6 +59,22 @@ exec_script("setup_toolchain.py", [ gyp_mac_tool_source ], "value")
 # build args in this definition.
 template("mac_clang_toolchain") {
   toolchain(target_name) {
+    assert(defined(invoker.cc),
+           "mac_clang_toolchain() must specify a \"cc\" value")
+    assert(defined(invoker.cxx),
+           "mac_clang_toolchain() must specify a \"cxx\" value")
+    assert(defined(invoker.ld),
+           "mac_clang_toolchain() must specify a \"ld\" value")
+    assert(defined(invoker.toolchain_os),
+           "mac_clang_toolchain() must specify a \"toolchain_os\"")
+
+    # We can't do string interpolation ($ in strings) on things with dots in
+    # them. To allow us to use $cc below, for example, we create copies of
+    # these values in our scope.
+    cc = invoker.cc
+    cxx = invoker.cxx
+    ld = invoker.ld
+
     # Make these apply to all tools below.
     lib_prefix = "-l"
     lib_dir_prefix="-L"
@@ -124,7 +140,7 @@ template("mac_clang_toolchain") {
     }
 
     toolchain_args() {
-      os = toolchain_os
+      os = invoker.toolchain_os
     }
   }
 }

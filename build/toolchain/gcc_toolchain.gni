@@ -19,11 +19,11 @@ template("gcc_toolchain") {
     assert(defined(invoker.cc), "gcc_toolchain() must specify a \"cc\" value")
     assert(defined(invoker.cxx), "gcc_toolchain() must specify a \"cxx\" value")
     assert(defined(invoker.ar), "gcc_toolchain() must specify a \"ar\" value")
-    assert(defined(invoker.ar), "gcc_toolchain() must specify a \"ld\" value")
+    assert(defined(invoker.ld), "gcc_toolchain() must specify a \"ld\" value")
     assert(defined(invoker.toolchain_cpu_arch),
-                   "gcc_toolchain() must specify a \"toolchain_cpu_arch\"")
+           "gcc_toolchain() must specify a \"toolchain_cpu_arch\"")
     assert(defined(invoker.toolchain_os),
-                   "gcc_toolchain() must specify a \"toolchain_os\"")
+           "gcc_toolchain() must specify a \"toolchain_os\"")
 
     # We can't do string interpolation ($ in strings) on things with dots in
     # them. To allow us to use $cc below, for example, we create copies of
