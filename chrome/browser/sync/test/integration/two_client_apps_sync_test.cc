@@ -43,6 +43,16 @@ class TwoClientAppsSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientAppsSyncTest);
 };
 
+class LegacyTwoClientAppsSyncTest : public SyncTest {
+ public:
+  LegacyTwoClientAppsSyncTest() : SyncTest(TWO_CLIENT_LEGACY) {}
+
+  virtual ~LegacyTwoClientAppsSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LegacyTwoClientAppsSyncTest);
+};
+
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, StartWithNoApps) {
   ASSERT_TRUE(SetupSync());
 
@@ -303,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UpdateIncognitoEnableDisable) {
 }
 
 // TCM ID - 3718276.
-IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, DisableApps) {
+IN_PROC_BROWSER_TEST_F(LegacyTwoClientAppsSyncTest, DisableApps) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 

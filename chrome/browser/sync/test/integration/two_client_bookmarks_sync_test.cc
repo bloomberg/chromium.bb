@@ -59,6 +59,15 @@ class TwoClientBookmarksSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientBookmarksSyncTest);
 };
 
+class LegacyTwoClientBookmarksSyncTest : public SyncTest {
+ public:
+  LegacyTwoClientBookmarksSyncTest() : SyncTest(TWO_CLIENT_LEGACY) {}
+  virtual ~LegacyTwoClientBookmarksSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LegacyTwoClientBookmarksSyncTest);
+};
+
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -1948,7 +1957,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RacyPositionChanges) {
 // Trigger the server side creation of Synced Bookmarks. Ensure both clients
 // remain syncing afterwards. Add bookmarks to the synced bookmarks folder
 // and ensure both clients receive the boomkmark.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, CreateSyncedBookmarks) {
+IN_PROC_BROWSER_TEST_F(LegacyTwoClientBookmarksSyncTest,
+                       CreateSyncedBookmarks) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 

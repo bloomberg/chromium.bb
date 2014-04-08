@@ -37,6 +37,15 @@ class TwoClientPreferencesSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientPreferencesSyncTest);
 };
 
+class LegacyTwoClientPreferencesSyncTest : public SyncTest {
+ public:
+  LegacyTwoClientPreferencesSyncTest() : SyncTest(TWO_CLIENT_LEGACY) {}
+  virtual ~LegacyTwoClientPreferencesSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LegacyTwoClientPreferencesSyncTest);
+};
+
 // TCM ID - 7306186.
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
                        kHomePageIsNewTabPage) {
@@ -88,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
 }
 
 // TCM ID - 3661290.
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, DisablePreferences) {
+IN_PROC_BROWSER_TEST_F(LegacyTwoClientPreferencesSyncTest, DisablePreferences) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
 

@@ -29,6 +29,16 @@ class TwoClientExtensionsSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientExtensionsSyncTest);
 };
 
+class LegacyTwoClientExtensionsSyncTest : public SyncTest {
+ public:
+  LegacyTwoClientExtensionsSyncTest() : SyncTest(TWO_CLIENT_LEGACY) {}
+
+  virtual ~LegacyTwoClientExtensionsSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LegacyTwoClientExtensionsSyncTest);
+};
+
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, StartWithNoExtensions) {
   ASSERT_TRUE(SetupSync());
 
@@ -242,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
 }
 
 // TCM ID - 3732278.
-IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, DisableExtensions) {
+IN_PROC_BROWSER_TEST_F(LegacyTwoClientExtensionsSyncTest, DisableExtensions) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 

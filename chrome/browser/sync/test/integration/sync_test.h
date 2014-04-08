@@ -46,18 +46,26 @@ class SyncTest : public InProcessBrowserTest {
   // The different types of live sync tests that can be implemented.
   enum TestType {
     // Tests where only one client profile is synced with the server. Typically
-    // sanity level tests. Safe to run against the FakeServer, not just the
-    // older python test server.
+    // sanity level tests.
     SINGLE_CLIENT,
 
-    // Tests where only one client profile is synced with the server. "Legacy"
-    // means that the scenario isn't yet supported by the FakeServer so they
-    // should be run against the python server instead.
+    // Tests that use one client profile and are not compatible with
+    // FakeServer.
+    // TODO(pvalenzuela): Delete this value when all SINGLE_CLIENT_LEGACY tests
+    // are compatible with FakeServer and switched to SINGLE_CLIENT. See
+    // crbug.com/323265.
     SINGLE_CLIENT_LEGACY,
 
     // Tests where two client profiles are synced with the server. Typically
     // functionality level tests.
     TWO_CLIENT,
+
+    // Tests that use two client profiles and are not compatible with
+    // FakeServer.
+    // TODO(pvalenzuela): Delete this value when all TWO_CLIENT_LEGACY tests are
+    // compatible with FakeServer and switched to TWO_CLIENT. See
+    // crbug.com/323265.
+    TWO_CLIENT_LEGACY,
 
     // Tests where three or more client profiles are synced with the server.
     // Typically, these tests create client side races and verify that sync

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/test/fake_server/fake_server_entity.h"
@@ -74,6 +75,14 @@ class FakeServer {
   // |id|. A tombstone is not created for the entity itself.
   bool DeleteChildren(const std::string& id);
 
+  // The lock used to ensure that only one client is communicating with server
+  // at any given time.
+  //
+  // It is probably preferable to have FakeServer operate on its own thread and
+  // communicate with it via PostTask, but clients would still need to wait for
+  // requests to finish before proceeding.
+  base::Lock lock_;
+
   // This is the last version number assigned to an entity. The next entity will
   // have a version number of version_ + 1.
   int64 version_;
@@ -87,6 +96,11 @@ class FakeServer {
 
   // All Keystore keys known to the server.
   std::vector<std::string> keystore_keys_;
+
+  // All ModelTypes for which permanent entities have been created. These types
+  // are kept track of so that permanent entities are not recreated for new
+  // clients.
+  syncer::ModelTypeSet created_permanent_entity_types_;
 };
 
 }  // namespace fake_server

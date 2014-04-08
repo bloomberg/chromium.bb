@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/lock.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -28,6 +29,8 @@
 using std::string;
 using std::vector;
 
+using base::AutoLock;
+using syncer::GetModelType;
 using syncer::ModelType;
 
 // The default birthday value.
@@ -94,13 +97,14 @@ class UpdateSieve {
   }
 
   // Returns the data type IDs of types being synced for the first time.
-  vector<ModelType> GetFirstTimeTypes() const {
+  vector<ModelType> GetFirstTimeTypes(
+      syncer::ModelTypeSet created_permanent_entity_types) const {
     vector<ModelType> types;
 
     ModelTypeToVersionMap::const_iterator it;
     for (it = request_from_version_.begin(); it != request_from_version_.end();
          ++it) {
-      if (it->second == 0)
+      if (it->second == 0 && !created_permanent_entity_types.Has(it->first))
         types.push_back(it->first);
     }
 
@@ -172,6 +176,11 @@ bool FakeServer::CreateDefaultPermanentItems(
     }
 
     ModelType model_type = *it;
+    if (created_permanent_entity_types_.Has(model_type)) {
+      // Do not create an entity for the type if it has already been created.
+      continue;
+    }
+
     FakeServerEntity* top_level_entity =
         PermanentEntity::CreateTopLevel(model_type);
     if (top_level_entity == NULL) {
@@ -200,6 +209,8 @@ bool FakeServer::CreateDefaultPermanentItems(
       }
       SaveEntity(other_bookmarks_entity);
     }
+
+    created_permanent_entity_types_.Put(model_type);
   }
 
   return true;
@@ -229,6 +240,8 @@ void FakeServer::SaveEntity(FakeServerEntity* entity) {
 int FakeServer::HandleCommand(const string& request,
                               int* response_code,
                               string* response) {
+  AutoLock lock(lock_);
+
   sync_pb::ClientToServerMessage message;
   bool parsed = message.ParseFromString(request);
   DCHECK(parsed);
@@ -269,7 +282,9 @@ bool FakeServer::HandleGetUpdatesRequest(
   response->set_changes_remaining(0);
 
   scoped_ptr<UpdateSieve> sieve = UpdateSieve::Create(get_updates);
-  if (!CreateDefaultPermanentItems(sieve->GetFirstTimeTypes())) {
+  vector<ModelType> first_time_types = sieve->GetFirstTimeTypes(
+      created_permanent_entity_types_);
+  if (!CreateDefaultPermanentItems(first_time_types)) {
     return false;
   }
   if (get_updates.create_mobile_bookmarks_folder() &&
@@ -325,8 +340,20 @@ bool FakeServer::CommitEntity(
     if (!DeleteChildren(client_entity.id_string())) {
       return false;
     }
+  } else if (GetModelType(client_entity) == syncer::NIGORI) {
+    // NIGORI is the only permanent item type that should be updated by the
+    // client.
+    entity = PermanentEntity::CreateUpdatedNigoriEntity(
+        client_entity,
+        entities_[client_entity.id_string()]);
   } else if (client_entity.has_client_defined_unique_tag()) {
-    entity = UniqueClientEntity::Create(client_entity);
+    if (entities_.find(client_entity.id_string()) != entities_.end()) {
+      entity = UniqueClientEntity::CreateUpdatedVersion(
+          client_entity,
+          entities_[client_entity.id_string()]);
+    } else {
+      entity = UniqueClientEntity::CreateNew(client_entity);
+    }
   } else {
     string parent_id = client_entity.parent_id_string();
     if (client_to_server_ids->find(parent_id) !=
@@ -388,16 +415,24 @@ bool FakeServer::IsChild(const string& id, const string& potential_parent_id) {
 }
 
 bool FakeServer::DeleteChildren(const string& id) {
+  vector<string> child_ids;
   for (EntityMap::iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     if (IsChild(it->first, id)) {
-      FakeServerEntity* tombstone = TombstoneEntity::Create(it->first);
-      if (tombstone == NULL) {
-        return false;
-      }
-      SaveEntity(tombstone);
+      child_ids.push_back(it->first);
     }
   }
+
+  for (vector<string>::iterator it = child_ids.begin(); it != child_ids.end();
+       ++it) {
+    FakeServerEntity* tombstone = TombstoneEntity::Create(*it);
+    if (tombstone == NULL) {
+      LOG(WARNING) << "Tombstone creation failed for entity with ID " << *it;
+      return false;
+    }
+    SaveEntity(tombstone);
+  }
+
   return true;
 }
 

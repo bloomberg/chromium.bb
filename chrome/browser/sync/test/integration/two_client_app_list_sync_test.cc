@@ -51,7 +51,7 @@ const app_list::AppListSyncableService::SyncItem* GetSyncItem(
 
 class TwoClientAppListSyncTest : public SyncTest {
  public:
-  TwoClientAppListSyncTest() : SyncTest(TWO_CLIENT) {}
+  TwoClientAppListSyncTest() : SyncTest(TWO_CLIENT_LEGACY) {}
 
   virtual ~TwoClientAppListSyncTest() {}
 

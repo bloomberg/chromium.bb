@@ -21,7 +21,7 @@ namespace fake_server {
 UniqueClientEntity::~UniqueClientEntity() { }
 
 // static
-FakeServerEntity* UniqueClientEntity::Create(
+FakeServerEntity* UniqueClientEntity::CreateNew(
     const sync_pb::SyncEntity& client_entity) {
   DCHECK(client_entity.has_client_defined_unique_tag());
   DCHECK(!client_entity.folder());
@@ -35,6 +35,22 @@ FakeServerEntity* UniqueClientEntity::Create(
                                 model_type,
                                 client_entity.version(),
                                 client_entity.name(),
+                                client_entity.parent_id_string(),
+                                client_entity.client_defined_unique_tag(),
+                                client_entity.specifics(),
+                                client_entity.ctime(),
+                                client_entity.mtime());
+}
+
+// static
+FakeServerEntity* UniqueClientEntity::CreateUpdatedVersion(
+    const sync_pb::SyncEntity& client_entity,
+    FakeServerEntity* current_server_entity) {
+  return new UniqueClientEntity(client_entity.id_string(),
+                                current_server_entity->GetModelType(),
+                                client_entity.version(),
+                                client_entity.name(),
+                                client_entity.parent_id_string(),
                                 client_entity.client_defined_unique_tag(),
                                 client_entity.specifics(),
                                 client_entity.ctime(),
@@ -46,20 +62,22 @@ UniqueClientEntity::UniqueClientEntity(
     const ModelType& model_type,
     int64 version,
     const string& name,
+    const string& parent_id,
     const string& client_defined_unique_tag,
     const sync_pb::EntitySpecifics& specifics,
     int64 creation_time,
     int64 last_modified_time)
     : FakeServerEntity(id, model_type, version, name),
+      parent_id_(parent_id),
       client_defined_unique_tag_(client_defined_unique_tag),
       specifics_(specifics),
       creation_time_(creation_time),
       last_modified_time_(last_modified_time) { }
 
 string UniqueClientEntity::GetParentId() const {
-  // Return a dummy value that cannot be a real parent ID. This type should
-  // never have parents.
-  return string();
+  // The parent ID for this type of entity should always be its ModelType's
+  // root node.
+  return parent_id_;
 }
 
 sync_pb::SyncEntity* UniqueClientEntity::SerializeAsProto() {
@@ -69,6 +87,7 @@ sync_pb::SyncEntity* UniqueClientEntity::SerializeAsProto() {
   sync_pb::EntitySpecifics* specifics = sync_entity->mutable_specifics();
   specifics->CopyFrom(specifics_);
 
+  sync_entity->set_parent_id_string(parent_id_);
   sync_entity->set_client_defined_unique_tag(client_defined_unique_tag_);
   sync_entity->set_ctime(creation_time_);
   sync_entity->set_mtime(last_modified_time_);

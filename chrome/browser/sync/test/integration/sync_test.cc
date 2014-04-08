@@ -175,7 +175,8 @@ SyncTest::SyncTest(TestType test_type)
       num_clients_ = 1;
       break;
     }
-    case TWO_CLIENT: {
+    case TWO_CLIENT:
+    case TWO_CLIENT_LEGACY: {
       num_clients_ = 2;
       break;
     }
@@ -566,9 +567,7 @@ void SyncTest::DecideServerType() {
       // one that makes sense for most developers. FakeServer is the
       // current solution but some scenarios are only supported by the
       // legacy python server.
-      // TODO(pvalenzuela): Make FAKE_SERVER the default and LOCAL_PYTHON
-      // the exception once more scenarios are supported.
-        server_type_ = test_type_ == SINGLE_CLIENT ?
+        server_type_ = test_type_ == SINGLE_CLIENT || test_type_ == TWO_CLIENT ?
               IN_PROCESS_FAKE_SERVER : LOCAL_PYTHON_SERVER;
     } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
                cl->HasSwitch(switches::kSyncServerCommandLine)) {
