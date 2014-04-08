@@ -434,7 +434,11 @@ struct MediaFormatStrict {
 static const MediaFormatStrict format_codec_mappings[] = {
   { "video/webm", "opus,vorbis,vp8,vp8.0,vp9,vp9.0" },
   { "audio/webm", "opus,vorbis" },
-  { "audio/wav", "1" }
+  { "audio/wav", "1" },
+  { "audio/x-wav", "1" },
+  { "video/ogg", "opus,theora,vorbis" },
+  { "audio/ogg", "opus,vorbis" },
+  { "application/ogg", "opus,theora,vorbis" }
 };
 
 MimeUtil::MimeUtil() {

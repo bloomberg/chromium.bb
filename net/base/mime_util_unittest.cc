@@ -94,6 +94,38 @@ TEST(MimeUtilTest, LookupTypes) {
   EXPECT_FALSE(IsSupportedNonImageMimeType("application/vnd.doc;x=y+json"));
 }
 
+TEST(MimeUtilTest, StrictMediaMimeType) {
+  EXPECT_TRUE(IsStrictMediaMimeType("video/webm"));
+  EXPECT_TRUE(IsStrictMediaMimeType("audio/webm"));
+
+  EXPECT_TRUE(IsStrictMediaMimeType("audio/wav"));
+  EXPECT_TRUE(IsStrictMediaMimeType("audio/x-wav"));
+
+  EXPECT_TRUE(IsStrictMediaMimeType("video/ogg"));
+  EXPECT_TRUE(IsStrictMediaMimeType("audio/ogg"));
+  EXPECT_TRUE(IsStrictMediaMimeType("application/ogg"));
+
+  // TODO(amogh.bihani): These formats should be in stict-format_map_. This will
+  // be fixed with bug 53193 (http://crbug.com/53193)---------------------------
+  EXPECT_FALSE(IsStrictMediaMimeType("audio/mpeg"));
+  EXPECT_FALSE(IsStrictMediaMimeType("audio/mp3"));
+  EXPECT_FALSE(IsStrictMediaMimeType("audio/x-mp3"));
+
+  EXPECT_FALSE(IsStrictMediaMimeType("video/mp4"));
+  EXPECT_FALSE(IsStrictMediaMimeType("video/x-mp4v"));
+  EXPECT_FALSE(IsStrictMediaMimeType("audio/mp4"));
+  EXPECT_FALSE(IsStrictMediaMimeType("audio/x-mp4a"));
+
+  EXPECT_FALSE(IsStrictMediaMimeType("application/x-mpegurl"));
+  EXPECT_FALSE(IsStrictMediaMimeType("application/vnd.apple.mpegurl"));
+  // ---------------------------------------------------------------------------
+
+  EXPECT_FALSE(IsStrictMediaMimeType("video/unknown"));
+  EXPECT_FALSE(IsStrictMediaMimeType("audio/unknown"));
+  EXPECT_FALSE(IsStrictMediaMimeType("application/unknown"));
+  EXPECT_FALSE(IsStrictMediaMimeType("unknown/unknown"));
+}
+
 TEST(MimeUtilTest, MatchesMimeType) {
   EXPECT_TRUE(MatchesMimeType("*", "video/x-mpeg"));
   EXPECT_TRUE(MatchesMimeType("video/*", "video/x-mpeg"));
