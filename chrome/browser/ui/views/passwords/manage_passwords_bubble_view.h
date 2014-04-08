@@ -69,8 +69,14 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
     SINGLE_VIEW_COLUMN_SET = 0,
 
     // | | (TRAILING, CENTER) | | (TRAILING, CENTER) | |
-    // Used for buttons and links at the bottom of the bubble.
-    DOUBLE_VIEW_COLUMN_SET = 1,
+    // Used for buttons at the bottom of the bubble which should nest at the
+    // bottom-right corner.
+    DOUBLE_BUTTON_COLUMN_SET = 1,
+
+    // | | (LEADING, CENTER) | | (TRAILING, CENTER) | |
+    // Used for buttons at the bottom of the bubble which should occupy
+    // the corners.
+    LINK_BUTTON_COLUMN_SET = 2,
   };
 
   ManagePasswordsBubbleView(content::WebContents* web_contents,
@@ -82,10 +88,6 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
   // Construct an appropriate ColumnSet for the given |type|, and add it
   // to |layout|.
   void BuildColumnSet(views::GridLayout* layout, ColumnSetType type);
-
-  // Returns the maximum width needed to display the longest value in the
-  // |type| field.
-  int GetMaximumFieldWidth(FieldType type);
 
   // If the bubble is not anchored to a view, places the bubble in the top
   // right (left in RTL) of the |screen_bounds| that contain |web_contents_|'s

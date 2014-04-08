@@ -40,21 +40,17 @@ enum BubbleDisplayDisposition {
   NUM_DISPLAY_DISPOSITIONS
 };
 
-// Upper limit on the length of fields displayed in the manage passwords bubble.
-const int kMaxDisplayableStringWidth = 22;
+// Upper limit on the size of the username and password fields.
+const int kUsernameFieldSize = 30;
+const int kPasswordFieldSize = 22;
 
-// Returns the width of |password_form|'s |type| field, clamped to the maximum
-// displayable string width.
-int GetFieldWidth(const autofill::PasswordForm& password_form,
-                  ManagePasswordsBubbleView::FieldType type) {
-  const gfx::FontList font_list;
-  base::string16 display_string(
-      type == ManagePasswordsBubbleView::USERNAME_FIELD
-          ? password_form.username_value
-          : password_form.password_value);
-  return std::min(
-      gfx::FontList().GetExpectedTextWidth(kMaxDisplayableStringWidth),
-      gfx::GetStringWidth(display_string, font_list));
+// Returns the width of |type| field.
+int GetFieldWidth(ManagePasswordsBubbleView::FieldType type) {
+  return ui::ResourceBundle::GetSharedInstance()
+      .GetFontList(ui::ResourceBundle::SmallFont)
+      .GetExpectedTextWidth(type == ManagePasswordsBubbleView::USERNAME_FIELD
+                                ? kUsernameFieldSize
+                                : kPasswordFieldSize);
 }
 
 class SavePasswordRefusalComboboxModel : public ui::ComboboxModel {
@@ -192,8 +188,23 @@ void ManagePasswordsBubbleView::BuildColumnSet(views::GridLayout* layout,
                             0);
       break;
 
-    case DOUBLE_VIEW_COLUMN_SET:
+    case DOUBLE_BUTTON_COLUMN_SET:
       column_set->AddColumn(views::GridLayout::TRAILING,
+                            views::GridLayout::CENTER,
+                            1,
+                            views::GridLayout::USE_PREF,
+                            0,
+                            0);
+      column_set->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+      column_set->AddColumn(views::GridLayout::TRAILING,
+                            views::GridLayout::CENTER,
+                            0,
+                            views::GridLayout::USE_PREF,
+                            0,
+                            0);
+      break;
+    case LINK_BUTTON_COLUMN_SET:
+      column_set->AddColumn(views::GridLayout::LEADING,
                             views::GridLayout::CENTER,
                             1,
                             views::GridLayout::USE_PREF,
@@ -209,27 +220,6 @@ void ManagePasswordsBubbleView::BuildColumnSet(views::GridLayout* layout,
       break;
   }
   column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
-}
-
-int ManagePasswordsBubbleView::GetMaximumFieldWidth(FieldType type) {
-  int maximum = 0;
-  if (manage_passwords_bubble_model_->manage_passwords_bubble_state() !=
-      ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED) {
-    // If we are in the PASSWORD_TO_BE_SAVED state we only display the
-    // password that was just submitted and should not take these into account.
-    for (autofill::PasswordFormMap::const_iterator i(
-             manage_passwords_bubble_model_->best_matches().begin());
-         i != manage_passwords_bubble_model_->best_matches().end(); ++i) {
-      maximum = std::max(maximum, GetFieldWidth((*i->second), type));
-    }
-  }
-  if (manage_passwords_bubble_model_->password_submitted()) {
-    maximum = std::max(
-        GetFieldWidth(manage_passwords_bubble_model_->pending_credentials(),
-                      type),
-        maximum);
-  }
-  return maximum;
 }
 
 void ManagePasswordsBubbleView::AdjustForFullscreen(
@@ -266,27 +256,29 @@ void ManagePasswordsBubbleView::Init() {
   SetFocusable(true);
   SetLayoutManager(layout);
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  BuildColumnSet(layout, DOUBLE_VIEW_COLUMN_SET);
+  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
+  BuildColumnSet(layout, LINK_BUTTON_COLUMN_SET);
 
   // This calculates the necessary widths for credential columns in the bubble.
   const int first_field_width = std::max(
-      GetMaximumFieldWidth(USERNAME_FIELD),
+      GetFieldWidth(USERNAME_FIELD),
       views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED))
           .GetPreferredSize()
           .width());
 
   const int second_field_width = std::max(
-      GetMaximumFieldWidth(PASSWORD_FIELD),
+      GetFieldWidth(PASSWORD_FIELD),
       views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO))
           .GetPreferredSize()
           .width());
 
   // Build and populate the header.
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   views::Label* title_label =
       new views::Label(manage_passwords_bubble_model_->title());
+  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label->SetMultiLine(true);
-  title_label->SetFontList(rb->GetFontList(ui::ResourceBundle::MediumFont));
+  title_label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::MediumFont));
 
   layout->StartRowWithPadding(
       0, SINGLE_VIEW_COLUMN_SET, 0, views::kRelatedControlSmallVerticalSpacing);
@@ -316,7 +308,7 @@ void ManagePasswordsBubbleView::Init() {
         this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
 
     layout->StartRowWithPadding(
-        0, DOUBLE_VIEW_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
+        0, DOUBLE_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
     layout->AddView(save_button_);
     layout->AddView(refuse_combobox_);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -375,6 +367,7 @@ void ManagePasswordsBubbleView::Init() {
     // containing a double-view columnset.
     manage_link_ =
         new views::Link(manage_passwords_bubble_model_->manage_link());
+    manage_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     manage_link_->SetUnderline(false);
     manage_link_->set_listener(this);
 
@@ -383,7 +376,7 @@ void ManagePasswordsBubbleView::Init() {
     done_button_->SetStyle(views::Button::STYLE_BUTTON);
 
     layout->StartRowWithPadding(
-        0, DOUBLE_VIEW_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
+        0, LINK_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
     layout->AddView(manage_link_);
     layout->AddView(done_button_);
   }

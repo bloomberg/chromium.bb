@@ -124,7 +124,6 @@ ManagePasswordItemView::ManagePasswordItemView(
     AddChildView(new PendingView(this));
   else
     AddChildView(new ManageView(this));
-
   GetLayoutManager()->Layout(this);
 }
 
@@ -170,12 +169,16 @@ void ManagePasswordItemView::BuildColumnSet(views::GridLayout* layout,
 
 views::Label* ManagePasswordItemView::GenerateUsernameLabel() const {
   views::Label* label = new views::Label(password_form_.username_value);
+  label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::SmallFont));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return label;
 }
 
 views::Label* ManagePasswordItemView::GeneratePasswordLabel() const {
   views::Label* label = new views::Label(password_form_.password_value);
+  label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::SmallFont));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetObscured(true);
   return label;
