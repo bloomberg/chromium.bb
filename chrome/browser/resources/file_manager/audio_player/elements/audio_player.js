@@ -17,6 +17,7 @@ Polymer('audio-player', {
   // any value nowhere except in the handler.
   playing: false,
   currenttrackurl: '',
+  playcount: 0,
 
   /**
    * Model object of the Audio Player.
@@ -170,6 +171,7 @@ Polymer('audio-player', {
    * This handler is registered in this.ready().
    */
   onAudioEnded: function() {
+    this.playcount++;
     this.advance_(true /* forward */, this.model.repeat);
   },
 

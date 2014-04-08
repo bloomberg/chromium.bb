@@ -746,7 +746,11 @@ INSTANTIATE_TEST_CASE_P(
         TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "audioOpenDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "audioOpenDrive"),
-        TestParameter(NOT_IN_GUEST_MODE, "audioAutoAdvanceDrive")));
+        TestParameter(NOT_IN_GUEST_MODE, "audioAutoAdvanceDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "audioRepeatSingleFileDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "audioNoRepeatSingleFileDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "audioRepeatMultipleFileDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "audioNoRepeatMultipleFileDrive")));
 
 INSTANTIATE_TEST_CASE_P(
     KeyboardOperations,
