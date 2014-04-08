@@ -45,7 +45,6 @@ void GesturePoint::Reset() {
 
 void GesturePoint::ResetVelocity() {
   velocity_calculator_.ClearHistory();
-  same_direction_count_ = gfx::Vector2d();
 }
 
 gfx::Vector2dF GesturePoint::ScrollDelta() const {
@@ -61,7 +60,6 @@ void GesturePoint::UpdateValues(const TouchEvent& event) {
                                    event_timestamp_microseconds);
     gfx::Vector2d sd(ScrollVelocityDirection(velocity_calculator_.XVelocity()),
                      ScrollVelocityDirection(velocity_calculator_.YVelocity()));
-    same_direction_count_ = same_direction_count_ + sd;
   }
 
   last_touch_time_ = event.time_stamp().InSecondsF();
@@ -93,7 +91,6 @@ void GesturePoint::UpdateForTap() {
 void GesturePoint::UpdateForScroll() {
   second_last_touch_position_ = last_touch_position_;
   second_last_touch_time_ = last_touch_time_;
-  same_direction_count_ = gfx::Vector2d();
 }
 
 bool GesturePoint::IsInClickWindow(const TouchEvent& event) const {
