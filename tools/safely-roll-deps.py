@@ -51,6 +51,9 @@ def main():
                                  description=sys.modules[__name__].__doc__)
   parser.add_option('-v', '--verbose', action='count', default=0)
   parser.add_option('--dry-run', action='store_true')
+  parser.add_option('-f', '--force', action='store_true',
+                    help='Make destructive changes to the local checkout if '
+                         'necessary.')
   parser.add_option('--commit', action='store_true', default=True,
                     help='(default) Put change in commit queue on upload.')
   parser.add_option('--no-commit', action='store_false', dest='commit',
@@ -83,15 +86,32 @@ def main():
   # Silence the editor.
   os.environ['EDITOR'] = 'true'
 
+  if options.force and not options.dry_run:
+    subprocess2.check_call(['git', 'clean', '-d', '-f'])
+    subprocess2.check_call(['git', 'rebase', '--abort'])
+
   old_branch = scm.GIT.GetBranch(root_dir)
   new_branch = '%s_roll' % project
+
+  if options.upstream == new_branch:
+    parser.error('Cannot set %s as its own upstream.' % new_branch)
+
   if old_branch == new_branch:
-    parser.error('Please delete the branch %s and move to a different branch'
-                 % new_branch)
+    if options.force:
+      if not options.dry_run:
+        subprocess2.check_call(['git', 'checkout', options.upstream, '-f'])
+        subprocess2.call(['git', 'branch', '-D', old_branch])
+    else:
+      parser.error('Please delete the branch %s and move to a different branch'
+                   % new_branch)
 
   if not options.dry_run:
-    subprocess2.check_output(
-        ['git', 'checkout', '-b', new_branch, options.upstream])
+    subprocess2.check_call(['git', 'fetch', 'origin'])
+    subprocess2.call(['git', 'svn', 'fetch'])
+    branch_cmd = ['git', 'checkout', '-b', new_branch, options.upstream]
+    if options.force:
+      branch_cmd.append('-f')
+    subprocess2.check_output(branch_cmd)
 
   try:
     old_rev = int(process_deps(os.path.join(root_dir, 'DEPS'), project, new_rev,
