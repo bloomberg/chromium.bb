@@ -543,17 +543,25 @@ void SVGInlineTextBox::paintDecoration(GraphicsContext* context, TextDecoration 
     const SVGRenderStyle* svgDecorationStyle = decorationStyle->svgStyle();
     ASSERT(svgDecorationStyle);
 
-    bool hasDecorationFill = svgDecorationStyle->hasFill();
-    bool hasVisibleDecorationStroke = svgDecorationStyle->hasVisibleStroke();
-
-    if (hasDecorationFill) {
-        m_paintingResourceMode = ApplyToFillMode;
-        paintDecorationWithStyle(context, decoration, fragment, decorationRenderer);
-    }
-
-    if (hasVisibleDecorationStroke) {
-        m_paintingResourceMode = ApplyToStrokeMode;
-        paintDecorationWithStyle(context, decoration, fragment, decorationRenderer);
+    for (int i = 0; i < 3; i++) {
+        switch (svgDecorationStyle->paintOrderType(i)) {
+        case PT_FILL:
+            if (svgDecorationStyle->hasFill()) {
+                m_paintingResourceMode = ApplyToFillMode;
+                paintDecorationWithStyle(context, decoration, fragment, decorationRenderer);
+            }
+            break;
+        case PT_STROKE:
+            if (svgDecorationStyle->hasVisibleStroke()) {
+                m_paintingResourceMode = ApplyToStrokeMode;
+                paintDecorationWithStyle(context, decoration, fragment, decorationRenderer);
+            }
+            break;
+        case PT_MARKERS:
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
     }
 }
 
