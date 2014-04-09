@@ -4,18 +4,24 @@
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function display()
+function display(callback)
 {
-    document.body.style.backgroundColor = "blue";
-    if (window.testRunner)
-        testRunner.display();
+    requestAnimationFrame(function() {
+        document.body.style.backgroundColor = "blue";
+        if (window.testRunner)
+            testRunner.display();
+        callback();
+    });
 }
 
-function updateSubframeAndDisplay()
+function updateSubframeAndDisplay(callback)
 {
-    frames[0].document.body.children[0].style.backgroundColor = "green";
-    if (window.testRunner)
-        testRunner.display();
+    requestAnimationFrame(function() {
+        frames[0].document.body.children[0].style.backgroundColor = "green";
+        if (window.testRunner)
+            testRunner.display();
+        callback();
+    });
 }
 
 function test()
@@ -24,7 +30,7 @@ function test()
 
     function step1()
     {
-        InspectorTest.evaluateWithTimeline("display()", step2);
+        InspectorTest.invokeAsyncWithTimeline("display", step2);
     }
 
     function step2(records)
@@ -36,7 +42,7 @@ function test()
                 break;
             }
         }
-        InspectorTest.evaluateWithTimeline("updateSubframeAndDisplay()", step3);
+        InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", step3);
     }
 
     function step3(records)

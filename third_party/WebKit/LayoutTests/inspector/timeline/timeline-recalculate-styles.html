@@ -17,7 +17,7 @@ function performActions()
     element.className = "test-style";
     element.innerHTML = "<span>Test data</span>";
     document.querySelector('section > div').appendChild(element);
-    testRunner.display();
+    var unused = element.offsetWidth;
 }
 
 function test()

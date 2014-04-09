@@ -106,6 +106,20 @@ InspectorTest.evaluateWithTimeline = function(actions, doneCallback)
     }
 }
 
+InspectorTest.invokeAsyncWithTimeline = function(functionName, doneCallback)
+{
+    InspectorTest.startTimeline(step1);
+    function step1()
+    {
+        InspectorTest.invokePageFunctionAsync(functionName, step2);
+    }
+
+    function step2()
+    {
+       InspectorTest.stopTimeline(doneCallback);
+    }
+}
+
 InspectorTest.loadTimelineRecords = function(records)
 {
     var model = WebInspector.inspectorView.showPanel("timeline")._model;
@@ -124,7 +138,7 @@ InspectorTest.performActionsAndPrint = function(actions, typeName, includeTimeSt
         }
         InspectorTest.completeTest();
     }
-    InspectorTest.evaluateWithTimeline(actions, callback)
+    InspectorTest.evaluateWithTimeline(actions, callback);
 };
 
 InspectorTest.printTimelineRecords = function(typeName, formatter)

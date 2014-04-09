@@ -93,6 +93,35 @@ InspectorTest.evaluateInPageWithTimeout = function(code)
     InspectorTest.evaluateInPage("setTimeout(unescape('" + escape(code) + "'))");
 }
 
+var lastEvalId = 0;
+var pendingEvalRequests = {};
+
+InspectorTest.invokePageFunctionAsync = function(functionName, callback)
+{
+    var id = ++lastEvalId;
+    pendingEvalRequests[id] = InspectorTest.safeWrap(callback);
+    var asyncEvalWrapper = function(callId, functionName)
+    {
+        function evalCallback(result)
+        {
+            testRunner.evaluateInWebInspector(evalCallbackCallId, "InspectorTest.didInvokePageFunctionAsync(" + callId + ", " + JSON.stringify(result) + ");");
+        }
+        eval(functionName + "(" + evalCallback + ")");
+    }
+    InspectorTest.evaluateInPage("(" + asyncEvalWrapper.toString() + ")(" + id + ", unescape('" + escape(functionName) + "'))");
+}
+
+InspectorTest.didInvokePageFunctionAsync = function(callId, value)
+{
+    var callback = pendingEvalRequests[callId];
+    if (!callback) {
+        InspectorTest.addResult("Missing callback for ascyn eval " + callId + ", perhaps callback invoked twice?");
+        return;
+    }
+    delete pendingEvalRequests[callId];
+    callback(value);
+}
+
 InspectorTest.check = function(passCondition, failureText)
 {
     if (!passCondition)
@@ -548,6 +577,7 @@ WebInspector.TempFile = InspectorTest.TempFileMock;
 var initializeCallId = 0;
 var runTestCallId = 1;
 var completeTestCallId = 2;
+var evalCallbackCallId = 3;
 var frontendReopeningCount = 0;
 
 function reopenFrontend()
