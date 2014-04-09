@@ -24,10 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG11/filters.html#InterfaceSVGFilterPrimitiveStandardAttributes
+// http://www.w3.org/TR/filter-effects/#InterfaceSVGFilterPrimitiveStandardAttributes
 
 [
-    LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
 ] interface SVGFilterPrimitiveStandardAttributes {
     readonly attribute SVGAnimatedLength x;

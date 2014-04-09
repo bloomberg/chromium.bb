@@ -23,6 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/filter-effects/#InterfaceSVGFEComponentTransferElement
+
 interface SVGFEComponentTransferElement : SVGElement {
     readonly attribute SVGAnimatedString in1;
 };
