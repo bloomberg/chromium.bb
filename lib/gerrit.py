@@ -361,12 +361,29 @@ class GerritHelper(object):
     gob_util.DeleteDraft(self.host, self._to_changenum(change))
 
 
-
 def GetGerritPatchInfo(patches):
-  """Query Gerrit server for patch information.
+  """Query Gerrit server for patch information using string queries.
 
   Args:
-    patches: a list of patch IDs to query. Internal patches start with a '*'.
+    patches: A list of patch IDs to query. Internal patches start with a '*'.
+
+  Returns:
+    A list of GerritPatch objects describing each patch.  Only the first
+    instance of a requested patch is returned.
+
+  Raises:
+    PatchException if a patch can't be found.
+    ValueError if a query string cannot be converted to a PatchQuery object.
+  """
+  return GetGerritPatchInfoWithPatchQueries(
+      [cros_patch.ParsePatchDep(p) for p in patches])
+
+
+def GetGerritPatchInfoWithPatchQueries(patches):
+  """Query Gerrit server for patch information using PatchQuery objects.
+
+  Args:
+    patches: A list of PatchQuery objects to query.
 
   Returns:
     A list of GerritPatch objects describing each patch.  Only the first
@@ -375,11 +392,8 @@ def GetGerritPatchInfo(patches):
   Raises:
     PatchException if a patch can't be found.
   """
-  # First, convert them to PatchQuery objects for query.
-  patches = [cros_patch.ParsePatchDep(x) for x in patches]
   seen = set()
   results = []
-
   for remote in constants.CHANGE_PREFIX.keys():
     helper = GetGerritHelper(remote)
     raw_ids = [x.ToGerritQueryText() for x in patches

@@ -1970,24 +1970,13 @@ class ValidationPool(object):
   def ReloadChanges(cls, changes):
     """Reload the specified |changes| from the server.
 
-    Return the reloaded changes.
-    """
-    # Split the changes into internal and external changes. This is needed
-    # because we have two servers (internal and external).
-    int_numbers, ext_numbers = [], []
-    for change in changes:
-      number = str(change.gerrit_number)
-      if change.internal:
-        int_numbers.append(number)
-      else:
-        ext_numbers.append(number)
+    Args:
+      changes: A list of PatchQuery objects.
 
-    # QueryMultipleCurrentPatchset returns a tuple of the patch number and the
-    # changes.
-    int_pool = gerrit.GetCrosInternal()
-    ext_pool = gerrit.GetCrosExternal()
-    return ([x[1] for x in int_pool.QueryMultipleCurrentPatchset(int_numbers)] +
-            [x[1] for x in ext_pool.QueryMultipleCurrentPatchset(ext_numbers)])
+    Returns:
+      A list of GerritPatch objects.
+    """
+    return gerrit.GetGerritPatchInfoWithPatchQueries(changes)
 
   def _SubmitChange(self, change):
     """Submits patch using Gerrit Review."""
