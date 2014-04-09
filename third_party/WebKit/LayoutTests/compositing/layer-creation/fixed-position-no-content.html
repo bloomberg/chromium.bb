@@ -35,13 +35,12 @@
 
 <body>
   <div style="height: 1000px">
-    <p>There should be no layers.</p>
     <pre id="layertree"></pre>
   </div>
 
-  <!-- This should not be composited -->
+  <!-- This should not be promoted to a composited layer. -->
   <div class="fixed" style="top: 10px; left: 10px"></div>
-  <!-- And this should not be promoted into a layer -->
+  <!-- And this should not be promoted into a layer either as a result. -->
   <div class="absolute"></div>
 </body>
 </html>

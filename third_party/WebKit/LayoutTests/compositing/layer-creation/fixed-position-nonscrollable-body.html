@@ -53,12 +53,12 @@
 
 <body class="unscrollable">
   <div style="height: 4000px">
-    <p>There should be no layers, because the body is unscrollable and there is
-       no need to composite the fixed-position layer.</p>
     <pre id="layertree"></pre>
   </div>
 
-  <!-- This should not be composited -->
+  <!-- This should not be promoted to a composited layer, because the body is
+       unscrollable and there is no need to composite the fixed-position layer.
+       -->
   <div class="fixed lime box"></div>
 </body>
 </html>
