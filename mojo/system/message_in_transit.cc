@@ -55,12 +55,17 @@ STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::EndpointId
 STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
 STATIC_CONST_MEMBER_DEFINITION const size_t
     MessageInTransit::kMaxSerializedDispatcherSize;
+STATIC_CONST_MEMBER_DEFINITION const size_t
+    MessageInTransit::kMaxSerializedDispatcherPlatformHandles;
 
 // For each attached (Mojo) handle, there'll be a handle table entry and
 // serialized dispatcher data.
 // static
 const size_t MessageInTransit::kMaxSecondaryBufferSize = kMaxMessageNumHandles *
     (sizeof(HandleTableEntry) + kMaxSerializedDispatcherSize);
+
+const size_t MessageInTransit::kMaxPlatformHandles =
+    kMaxMessageNumHandles * kMaxSerializedDispatcherPlatformHandles;
 
 MessageInTransit::View::View(size_t message_size, const void* buffer)
     : buffer_(buffer) {
@@ -216,14 +221,31 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   // The size of the secondary buffer. We'll start with the size of the handle
   // table, and add to it as we go along.
   size_t size = handle_table_size;
-  for (size_t i = 0; i < dispatchers_->size(); i++) {
+  size_t num_platform_handles = 0;
+#if DCHECK_IS_ON
+  std::vector<size_t> all_max_sizes(num_handles());
+  std::vector<size_t> all_max_platform_handles(num_handles());
+#endif
+  for (size_t i = 0; i < num_handles(); i++) {
     if (Dispatcher* dispatcher = (*dispatchers_)[i].get()) {
-      size_t max_serialized_size =
-          Dispatcher::MessageInTransitAccess::GetMaximumSerializedSize(
-              dispatcher, channel);
-      DCHECK_LE(max_serialized_size, kMaxSerializedDispatcherSize);
-      size += RoundUpMessageAlignment(max_serialized_size);
+      size_t max_size = 0;
+      size_t max_platform_handles = 0;
+      Dispatcher::MessageInTransitAccess::StartSerialize(
+              dispatcher, channel, &max_size, &max_platform_handles);
+
+      DCHECK_LE(max_size, kMaxSerializedDispatcherSize);
+      size += RoundUpMessageAlignment(max_size);
       DCHECK_LE(size, kMaxSecondaryBufferSize);
+
+      DCHECK_LE(max_platform_handles,
+                kMaxSerializedDispatcherPlatformHandles);
+      num_platform_handles += max_platform_handles;
+      DCHECK_LE(num_platform_handles, kMaxPlatformHandles);
+
+#if DCHECK_IS_ON
+      all_max_sizes[i] = max_size;
+      all_max_platform_handles[i] = max_platform_handles;
+#endif
     }
   }
 
@@ -234,10 +256,15 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   // serialize).
   memset(secondary_buffer_, 0, size);
 
+  if (num_platform_handles > 0) {
+    DCHECK(!platform_handles_);
+    platform_handles_.reset(new std::vector<embedder::PlatformHandle>());
+  }
+
   HandleTableEntry* handle_table =
       static_cast<HandleTableEntry*>(secondary_buffer_);
   size_t current_offset = handle_table_size;
-  for (size_t i = 0; i < dispatchers_->size(); i++) {
+  for (size_t i = 0; i < num_handles(); i++) {
     Dispatcher* dispatcher = (*dispatchers_)[i].get();
     if (!dispatcher) {
       COMPILE_ASSERT(Dispatcher::kTypeUnknown == 0,
@@ -245,13 +272,26 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
       continue;
     }
 
+#if DCHECK_IS_ON
+    size_t old_platform_handles_size =
+        platform_handles_ ? platform_handles_->size() : 0;
+#endif
+
     void* destination = static_cast<char*>(secondary_buffer_) + current_offset;
     size_t actual_size = 0;
-    if (Dispatcher::MessageInTransitAccess::SerializeAndClose(
-            dispatcher, channel, destination, &actual_size)) {
+    if (Dispatcher::MessageInTransitAccess::EndSerializeAndClose(
+            dispatcher, channel, destination, &actual_size,
+            platform_handles_.get())) {
       handle_table[i].type = static_cast<int32_t>(dispatcher->GetType());
       handle_table[i].offset = static_cast<uint32_t>(current_offset);
       handle_table[i].size = static_cast<uint32_t>(actual_size);
+
+#if DCHECK_IS_ON
+      DCHECK_LE(actual_size, all_max_sizes[i]);
+      DCHECK_LE(platform_handles_ ? (platform_handles_->size() -
+                                         old_platform_handles_size) : 0,
+                all_max_platform_handles[i]);
+#endif
     } else {
       // Nothing to do on failure, since |secondary_buffer_| was cleared, and
       // |kTypeUnknown| is zero. The handle was simply closed.
@@ -260,6 +300,8 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
 
     current_offset += RoundUpMessageAlignment(actual_size);
     DCHECK_LE(current_offset, size);
+    DCHECK_LE(platform_handles_ ? platform_handles_->size() : 0,
+              num_platform_handles);
   }
 
   UpdateTotalSize();

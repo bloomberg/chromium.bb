@@ -40,21 +40,25 @@ DispatcherTransport Dispatcher::HandleTableAccess::TryStartTransport(
 }
 
 // static
-size_t Dispatcher::MessageInTransitAccess::GetMaximumSerializedSize(
-    const Dispatcher* dispatcher,
-    const Channel* channel) {
+void Dispatcher::MessageInTransitAccess::StartSerialize(
+    Dispatcher* dispatcher,
+    Channel* channel,
+    size_t* max_size,
+    size_t* max_platform_handles) {
   DCHECK(dispatcher);
-  return dispatcher->GetMaximumSerializedSize(channel);
+  dispatcher->StartSerialize(channel, max_size, max_platform_handles);
 }
 
 // static
-bool Dispatcher::MessageInTransitAccess::SerializeAndClose(
+bool Dispatcher::MessageInTransitAccess::EndSerializeAndClose(
     Dispatcher* dispatcher,
     Channel* channel,
     void* destination,
-    size_t* actual_size) {
+    size_t* actual_size,
+    std::vector<embedder::PlatformHandle>* platform_handles) {
   DCHECK(dispatcher);
-  return dispatcher->SerializeAndClose(channel, destination, actual_size);
+  return dispatcher->EndSerializeAndClose(channel, destination, actual_size,
+                                          platform_handles);
 }
 
 // static
@@ -351,22 +355,25 @@ void Dispatcher::RemoveWaiterImplNoLock(Waiter* /*waiter*/) {
   // will do something nontrivial.
 }
 
-size_t Dispatcher::GetMaximumSerializedSizeImplNoLock(
-      const Channel* /*channel*/) const {
+void Dispatcher::StartSerializeImplNoLock(Channel* /*channel*/,
+                                          size_t* max_size,
+                                          size_t* max_platform_handles) {
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   DCHECK(!is_closed_);
-  // By default, serializing isn't supported.
-  return 0;
+  *max_size = 0;
+  *max_platform_handles = 0;
 }
 
-bool Dispatcher::SerializeAndCloseImplNoLock(Channel* /*channel*/,
-                                             void* /*destination*/,
-                                             size_t* /*actual_size*/) {
+bool Dispatcher::EndSerializeAndCloseImplNoLock(
+    Channel* /*channel*/,
+    void* /*destination*/,
+    size_t* /*actual_size*/,
+    std::vector<embedder::PlatformHandle>* /*platform_handles*/) {
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   DCHECK(is_closed_);
   // By default, serializing isn't supported, so just close.
   CloseImplNoLock();
-  return 0;
+  return false;
 }
 
 bool Dispatcher::IsBusyNoLock() const {
@@ -396,29 +403,26 @@ Dispatcher::CreateEquivalentDispatcherAndCloseNoLock() {
   return CreateEquivalentDispatcherAndCloseImplNoLock();
 }
 
-size_t Dispatcher::GetMaximumSerializedSize(const Channel* channel) const {
+void Dispatcher::StartSerialize(Channel* channel,
+                                size_t* max_size,
+                                size_t* max_platform_handles) {
   DCHECK(channel);
+  DCHECK(max_size);
+  DCHECK(max_platform_handles);
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   DCHECK(!is_closed_);
-  return GetMaximumSerializedSizeImplNoLock(channel);
+  StartSerializeImplNoLock(channel, max_size, max_platform_handles);
 }
 
-bool Dispatcher::SerializeAndClose(Channel* channel,
-                                   void* destination,
-                                   size_t* actual_size) {
-  DCHECK(destination);
+bool Dispatcher::EndSerializeAndClose(
+    Channel* channel,
+    void* destination,
+    size_t* actual_size,
+    std::vector<embedder::PlatformHandle>* platform_handles) {
   DCHECK(channel);
   DCHECK(actual_size);
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   DCHECK(!is_closed_);
-
-  // We have to call |GetMaximumSerializedSizeImplNoLock()| first, because we
-  // leave it to |SerializeAndCloseImplNoLock()| to close the thing.
-#if DCHECK_IS_ON
-  size_t max_size = GetMaximumSerializedSizeImplNoLock(channel);
-#else
-  size_t max_size = static_cast<size_t>(-1);
-#endif
 
   // Like other |...Close()| methods, we mark ourselves as closed before calling
   // the impl.
@@ -426,11 +430,15 @@ bool Dispatcher::SerializeAndClose(Channel* channel,
   // No need to cancel waiters: we shouldn't have any (and shouldn't be in
   // |Core|'s handle table.
 
-  if (!SerializeAndCloseImplNoLock(channel, destination, actual_size))
-    return false;
+#if !defined(NDEBUG)
+  // See the comment above |EndSerializeAndCloseImplNoLock()|. In brief: Locking
+  // isn't actually needed, but we need to satisfy assertions (which we don't
+  // want to remove or weaken).
+  base::AutoLock locker(lock_);
+#endif
 
-  DCHECK_LE(*actual_size, max_size);
-  return true;
+  return EndSerializeAndCloseImplNoLock(channel, destination, actual_size,
+                                        platform_handles);
 }
 
 // DispatcherTransport ---------------------------------------------------------

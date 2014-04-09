@@ -70,6 +70,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // of |kMessageAlignment|.
   static const size_t kMaxSerializedDispatcherSize = 10000;
 
+  // The maximum number of platform handles to attach for a single serialized
+  // dispatcher.
+  static const size_t kMaxSerializedDispatcherPlatformHandles = 2;
+
   // Forward-declare |Header| so that |View| can use it:
  private:
   struct Header;
@@ -264,6 +268,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
 
   // The maximum possible size of a valid secondary buffer.
   static const size_t kMaxSecondaryBufferSize;
+
+  // The maximum total number of platform handles that may be attached.
+  static const size_t kMaxPlatformHandles;
 
   // Validates the secondary buffer. Returns null on success, or a
   // human-readable error message (meant for logging/debugging) on error.

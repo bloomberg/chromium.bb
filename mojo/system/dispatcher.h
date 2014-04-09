@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "mojo/embedder/platform_handle.h"
 #include "mojo/public/c/system/core.h"
 #include "mojo/system/system_impl_export.h"
 
@@ -162,15 +163,16 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
     // dispatchers. (|channel| is the |Channel| to which the dispatcher is to be
     // serialized.) See the |Dispatcher| methods of the same names for more
     // details.
-    // TODO(vtl): Consider replacing this API below with a proper two-phase one
-    // ("StartSerialize()" and "EndSerializeAndClose()", with the lock possibly
-    // being held across their invocations).
-    static size_t GetMaximumSerializedSize(const Dispatcher* dispatcher,
-                                           const Channel* channel);
-    static bool SerializeAndClose(Dispatcher* dispatcher,
-                                  Channel* channel,
-                                  void* destination,
-                                  size_t* actual_size);
+    static void StartSerialize(Dispatcher* dispatcher,
+                               Channel* channel,
+                               size_t* max_size,
+                               size_t* max_platform_handles);
+    static bool EndSerializeAndClose(
+        Dispatcher* dispatcher,
+        Channel* channel,
+        void* destination,
+        size_t* actual_size,
+        std::vector<embedder::PlatformHandle>* platform_handles);
 
     // Deserialization API.
     static scoped_refptr<Dispatcher> Deserialize(Channel* channel,
@@ -239,13 +241,24 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // (described below). They will only be called on a dispatcher that's attached
   // to and "owned" by a |MessageInTransit|. See the non-"impl" versions for
   // more information.
+  //
+  // Note: |StartSerializeImplNoLock()| is actually called with |lock_| NOT
+  // held, since the dispatcher should only be accessible to the calling thread.
+  // On Debug builds, |EndSerializeAndCloseImplNoLock()| is called with |lock_|
+  // held, to satisfy any |lock_.AssertAcquired()| (e.g., in |CloseImplNoLock()|
+  // -- and anything it calls); disentangling those assertions is
+  // difficult/fragile, and would weaken our general checking of invariants.
+  //
   // TODO(vtl): Consider making these pure virtual once most things support
   // being passed over a message pipe.
-  virtual size_t GetMaximumSerializedSizeImplNoLock(
-      const Channel* channel) const;
-  virtual bool SerializeAndCloseImplNoLock(Channel* channel,
-                                           void* destination,
-                                           size_t* actual_size);
+  virtual void StartSerializeImplNoLock(Channel* channel,
+                                        size_t* max_size,
+                                        size_t* max_platform_handles);
+  virtual bool EndSerializeAndCloseImplNoLock(
+      Channel* channel,
+      void* destination,
+      size_t* actual_size,
+      std::vector<embedder::PlatformHandle>* platform_handles);
 
   // Available to subclasses. (Note: Returns a non-const reference, just like
   // |base::AutoLock|'s constructor takes a non-const reference.)
@@ -276,22 +289,36 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // |MessageInTransit| (via |MessageInTransitAccess|). They may only be called
   // on a dispatcher attached to a |MessageInTransit| (and in particular not in
   // |CoreImpl|'s handle table).
-  // Gets the maximum amount of space that'll be needed to serialize this
-  // dispatcher to the given |Channel|. This amount must be no greater than
-  // |MessageInTransit::kMaxSerializedDispatcherSize| (message_in_transit.h).
-  // Returns zero to indicate that this dispatcher cannot be serialized (to the
-  // given |Channel|).
-  size_t GetMaximumSerializedSize(const Channel* channel) const;
-  // Serializes this dispatcher to the given |Channel| by writing to
-  // |destination| and then closes this dispatcher. It may write no more than
-  // was indicated by |GetMaximumSerializedSize()|. (WARNING: Beware of races,
-  // e.g., if something can be mutated between the two calls!) Returns true on
-  // success, in which case |*actual_size| is set to the amount it actually
-  // wrote to |destination|. On failure, |*actual_size| should not be modified;
-  // however, the dispatcher will still be closed.
-  bool SerializeAndClose(Channel* channel,
-                         void* destination,
-                         size_t* actual_size);
+  //
+  // Starts the serialization. Returns (via the two "out" parameters) the
+  // maximum amount of space that may be needed to serialize this dispatcher to
+  // the given |Channel| (no more than
+  // |MessageInTransit::kMaxSerializedDispatcherSize|) and the maximum number of
+  // |PlatformHandle|s that may need to be attached (no more than
+  // |MessageInTransit::kMaxSerializedDispatcherPlatformHandles|). If this
+  // dispatcher cannot be serialized to the given |Channel|, |*max_size| and
+  // |*max_platform_handles| should be set to zero. A call to this method will
+  // ALWAYS be followed by a call to |EndSerializeAndClose()| (even if this
+  // dispatcher cannot be serialized to the given |Channel|).
+  void StartSerialize(Channel* channel,
+                      size_t* max_size,
+                      size_t* max_platform_handles);
+  // Completes the serialization of this dispatcher to the given |Channel| and
+  // closes it. (This call will always follow an earlier call to
+  // |StartSerialize()|, with the same |Channel|.) This does so by writing to
+  // |destination| and appending any |PlatformHandle|s needed to
+  // |platform_handles| (which may be null if no platform handles were indicated
+  // to be required to |StartSerialize()|). This may write no more than the
+  // amount indicated by |StartSerialize()|. (WARNING: Beware of races, e.g., if
+  // something can be mutated between the two calls!) Returns true on success,
+  // in which case |*actual_size| is set to the amount it actually wrote to
+  // |destination|. On failure, |*actual_size| should not be modified; however,
+  // the dispatcher will still be closed.
+  bool EndSerializeAndClose(
+      Channel* channel,
+      void* destination,
+      size_t* actual_size,
+      std::vector<embedder::PlatformHandle>* platform_handles);
 
   // This protects the following members as well as any state added by
   // subclasses.

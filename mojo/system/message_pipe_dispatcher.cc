@@ -172,15 +172,20 @@ void MessagePipeDispatcher::RemoveWaiterImplNoLock(Waiter* waiter) {
   message_pipe_->RemoveWaiter(port_, waiter);
 }
 
-size_t MessagePipeDispatcher::GetMaximumSerializedSizeImplNoLock(
-    const Channel* /*channel*/) const {
+void MessagePipeDispatcher::StartSerializeImplNoLock(
+    Channel* /*channel*/,
+    size_t* max_size,
+    size_t* max_platform_handles) {
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
-  return sizeof(SerializedMessagePipeDispatcher);
+  *max_size = sizeof(SerializedMessagePipeDispatcher);
+  *max_platform_handles = 0;
 }
 
-bool MessagePipeDispatcher::SerializeAndCloseImplNoLock(Channel* channel,
-                                                        void* destination,
-                                                        size_t* actual_size) {
+bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
+    Channel* channel,
+    void* destination,
+    size_t* actual_size,
+    std::vector<embedder::PlatformHandle>* platform_handles) {
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
 
   // Convert the local endpoint to a proxy endpoint (moving the message queue).
