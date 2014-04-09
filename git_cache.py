@@ -155,6 +155,11 @@ class Mirror(object):
       target = os.path.abspath(os.path.expanduser(target))
       if os.path.isfile(target) and os.access(target, os.X_OK):
         return target
+      if sys.platform.startswith('win'):
+        for suffix in ('.bat', '.cmd', '.exe'):
+          alt_target = target + suffix
+          if os.path.isfile(alt_target) and os.access(target, os.X_OK):
+            return alt_target
     return None
 
   @classmethod
