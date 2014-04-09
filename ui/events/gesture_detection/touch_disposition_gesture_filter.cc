@@ -81,7 +81,9 @@ DispositionHandlingInfo GetDispositionHandlingInfo(EventType type) {
     case ET_GESTURE_SCROLL_END:
       return Info(RT_NONE, ET_GESTURE_SCROLL_BEGIN);
     case ET_SCROLL_FLING_START:
-      return Info(RT_NONE, ET_GESTURE_SCROLL_BEGIN);
+      // We rely on |EndScrollGestureIfNecessary| to end the scroll if the fling
+      // start is prevented.
+      return Info(RT_NONE, ET_GESTURE_SCROLL_UPDATE);
     case ET_SCROLL_FLING_CANCEL:
       return Info(RT_NONE, ET_SCROLL_FLING_START);
     case ET_GESTURE_PINCH_BEGIN:
