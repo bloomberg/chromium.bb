@@ -2538,6 +2538,14 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
   },
+  'ScheduleOverlayPlaneCHROMIUM': {
+      'type': 'Custom',
+      'impl_func': True,
+      'unit_test': False,
+      'client_test': False,
+      'extension': True,
+      'chromium': True,
+  },
 }
 
 

@@ -10661,4 +10661,108 @@ COMPILE_ASSERT(sizeof(DiscardBackbufferCHROMIUM) == 4,
 COMPILE_ASSERT(offsetof(DiscardBackbufferCHROMIUM, header) == 0,
                OffsetOf_DiscardBackbufferCHROMIUM_header_not_0);
 
+struct ScheduleOverlayPlaneCHROMIUM {
+  typedef ScheduleOverlayPlaneCHROMIUM ValueType;
+  static const CommandId kCmdId = kScheduleOverlayPlaneCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLint _plane_z_order,
+            GLenum _plane_transform,
+            GLuint _overlay_texture_id,
+            GLint _bounds_x,
+            GLint _bounds_y,
+            GLint _bounds_width,
+            GLint _bounds_height,
+            GLfloat _uv_x,
+            GLfloat _uv_y,
+            GLfloat _uv_width,
+            GLfloat _uv_height) {
+    SetHeader();
+    plane_z_order = _plane_z_order;
+    plane_transform = _plane_transform;
+    overlay_texture_id = _overlay_texture_id;
+    bounds_x = _bounds_x;
+    bounds_y = _bounds_y;
+    bounds_width = _bounds_width;
+    bounds_height = _bounds_height;
+    uv_x = _uv_x;
+    uv_y = _uv_y;
+    uv_width = _uv_width;
+    uv_height = _uv_height;
+  }
+
+  void* Set(void* cmd,
+            GLint _plane_z_order,
+            GLenum _plane_transform,
+            GLuint _overlay_texture_id,
+            GLint _bounds_x,
+            GLint _bounds_y,
+            GLint _bounds_width,
+            GLint _bounds_height,
+            GLfloat _uv_x,
+            GLfloat _uv_y,
+            GLfloat _uv_width,
+            GLfloat _uv_height) {
+    static_cast<ValueType*>(cmd)->Init(_plane_z_order,
+                                       _plane_transform,
+                                       _overlay_texture_id,
+                                       _bounds_x,
+                                       _bounds_y,
+                                       _bounds_width,
+                                       _bounds_height,
+                                       _uv_x,
+                                       _uv_y,
+                                       _uv_width,
+                                       _uv_height);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32 plane_z_order;
+  uint32 plane_transform;
+  uint32 overlay_texture_id;
+  int32 bounds_x;
+  int32 bounds_y;
+  int32 bounds_width;
+  int32 bounds_height;
+  float uv_x;
+  float uv_y;
+  float uv_width;
+  float uv_height;
+};
+
+COMPILE_ASSERT(sizeof(ScheduleOverlayPlaneCHROMIUM) == 48,
+               Sizeof_ScheduleOverlayPlaneCHROMIUM_is_not_48);
+COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, header) == 0,
+               OffsetOf_ScheduleOverlayPlaneCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, plane_z_order) == 4,
+               OffsetOf_ScheduleOverlayPlaneCHROMIUM_plane_z_order_not_4);
+COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, plane_transform) == 8,
+               OffsetOf_ScheduleOverlayPlaneCHROMIUM_plane_transform_not_8);
+COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, overlay_texture_id) == 12,
+               OffsetOf_ScheduleOverlayPlaneCHROMIUM_overlay_texture_id_not_12);
+COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, bounds_x) == 16,
+               OffsetOf_ScheduleOverlayPlaneCHROMIUM_bounds_x_not_16);
+COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, bounds_y) == 20,
+               OffsetOf_ScheduleOverlayPlaneCHROMIUM_bounds_y_not_20);
+COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, bounds_width) == 24,
+               OffsetOf_ScheduleOverlayPlaneCHROMIUM_bounds_width_not_24);
+COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, bounds_height) == 28,
+               OffsetOf_ScheduleOverlayPlaneCHROMIUM_bounds_height_not_28);
+COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_x) == 32,
+               OffsetOf_ScheduleOverlayPlaneCHROMIUM_uv_x_not_32);
+COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_y) == 36,
+               OffsetOf_ScheduleOverlayPlaneCHROMIUM_uv_y_not_36);
+COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_width) == 40,
+               OffsetOf_ScheduleOverlayPlaneCHROMIUM_uv_width_not_40);
+COMPILE_ASSERT(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_height) == 44,
+               OffsetOf_ScheduleOverlayPlaneCHROMIUM_uv_height_not_44);
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

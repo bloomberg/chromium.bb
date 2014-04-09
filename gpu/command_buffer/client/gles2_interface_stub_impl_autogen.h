@@ -632,4 +632,16 @@ void GLES2InterfaceStub::WaitSyncPointCHROMIUM(GLuint /* sync_point */) {}
 void GLES2InterfaceStub::DrawBuffersEXT(GLsizei /* count */,
                                         const GLenum* /* bufs */) {}
 void GLES2InterfaceStub::DiscardBackbufferCHROMIUM() {}
+void GLES2InterfaceStub::ScheduleOverlayPlaneCHROMIUM(
+    GLint /* plane_z_order */,
+    GLenum /* plane_transform */,
+    GLuint /* overlay_texture_id */,
+    GLint /* bounds_x */,
+    GLint /* bounds_y */,
+    GLint /* bounds_width */,
+    GLint /* bounds_height */,
+    GLfloat /* uv_x */,
+    GLfloat /* uv_y */,
+    GLfloat /* uv_width */,
+    GLfloat /* uv_height */) {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

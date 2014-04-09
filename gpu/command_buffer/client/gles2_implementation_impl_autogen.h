@@ -2074,4 +2074,37 @@ void GLES2Implementation::DiscardBackbufferCHROMIUM() {
   CheckGLError();
 }
 
+void GLES2Implementation::ScheduleOverlayPlaneCHROMIUM(
+    GLint plane_z_order,
+    GLenum plane_transform,
+    GLuint overlay_texture_id,
+    GLint bounds_x,
+    GLint bounds_y,
+    GLint bounds_width,
+    GLint bounds_height,
+    GLfloat uv_x,
+    GLfloat uv_y,
+    GLfloat uv_width,
+    GLfloat uv_height) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG(
+      "[" << GetLogPrefix() << "] glScheduleOverlayPlaneCHROMIUM("
+          << plane_z_order << ", " << GLES2Util::GetStringEnum(plane_transform)
+          << ", " << overlay_texture_id << ", " << bounds_x << ", " << bounds_y
+          << ", " << bounds_width << ", " << bounds_height << ", " << uv_x
+          << ", " << uv_y << ", " << uv_width << ", " << uv_height << ")");
+  helper_->ScheduleOverlayPlaneCHROMIUM(plane_z_order,
+                                        plane_transform,
+                                        overlay_texture_id,
+                                        bounds_x,
+                                        bounds_y,
+                                        bounds_width,
+                                        bounds_height,
+                                        uv_x,
+                                        uv_y,
+                                        uv_width,
+                                        uv_height);
+  CheckGLError();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_

@@ -7560,6 +7560,16 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
   }
 }
 
+error::Error GLES2DecoderImpl::HandleScheduleOverlayPlaneCHROMIUM(
+    uint32 immediate_data_size,
+    const cmds::ScheduleOverlayPlaneCHROMIUM& c) {
+  NOTIMPLEMENTED() << "Overlay supported isn't finished.";
+  LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                     "glScheduleOverlayPlaneCHROMIUM",
+                     "function not implemented");
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::GetAttribLocationHelper(
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
     const std::string& name_str) {

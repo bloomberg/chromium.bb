@@ -904,6 +904,29 @@ void GLES2DrawBuffersEXT(GLsizei count, const GLenum* bufs) {
 void GLES2DiscardBackbufferCHROMIUM() {
   gles2::GetGLContext()->DiscardBackbufferCHROMIUM();
 }
+void GLES2ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
+                                       GLenum plane_transform,
+                                       GLuint overlay_texture_id,
+                                       GLint bounds_x,
+                                       GLint bounds_y,
+                                       GLint bounds_width,
+                                       GLint bounds_height,
+                                       GLfloat uv_x,
+                                       GLfloat uv_y,
+                                       GLfloat uv_width,
+                                       GLfloat uv_height) {
+  gles2::GetGLContext()->ScheduleOverlayPlaneCHROMIUM(plane_z_order,
+                                                      plane_transform,
+                                                      overlay_texture_id,
+                                                      bounds_x,
+                                                      bounds_y,
+                                                      bounds_width,
+                                                      bounds_height,
+                                                      uv_x,
+                                                      uv_y,
+                                                      uv_width,
+                                                      uv_height);
+}
 
 namespace gles2 {
 
@@ -1277,6 +1300,8 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glDrawBuffersEXT), },
     {"glDiscardBackbufferCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glDiscardBackbufferCHROMIUM), },
+    {"glScheduleOverlayPlaneCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glScheduleOverlayPlaneCHROMIUM), },
     {NULL, NULL, }, };
 
 }  // namespace gles2

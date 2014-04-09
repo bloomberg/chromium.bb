@@ -712,4 +712,16 @@ virtual void DrawBuffersEXT(GLsizei count, const GLenum* bufs) OVERRIDE;
 
 virtual void DiscardBackbufferCHROMIUM() OVERRIDE;
 
+virtual void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
+                                          GLenum plane_transform,
+                                          GLuint overlay_texture_id,
+                                          GLint bounds_x,
+                                          GLint bounds_y,
+                                          GLint bounds_width,
+                                          GLint bounds_height,
+                                          GLfloat uv_x,
+                                          GLfloat uv_y,
+                                          GLfloat uv_width,
+                                          GLfloat uv_height) OVERRIDE;
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
