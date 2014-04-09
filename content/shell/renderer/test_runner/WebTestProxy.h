@@ -166,11 +166,6 @@ protected:
     void didBlur();
     void setToolTipText(const blink::WebString&, blink::WebTextDirection);
     void didAddMessageToConsole(const blink::WebConsoleMessage&, const blink::WebString& sourceName, unsigned sourceLine);
-    void runModalAlertDialog(blink::WebLocalFrame*, const blink::WebString&);
-    bool runModalConfirmDialog(blink::WebLocalFrame*, const blink::WebString&);
-    bool runModalPromptDialog(blink::WebLocalFrame*, const blink::WebString& message, const blink::WebString& defaultValue, blink::WebString* actualValue);
-    bool runModalBeforeUnloadDialog(blink::WebLocalFrame*, const blink::WebString&);
-
     void didStartProvisionalLoad(blink::WebLocalFrame*);
     void didReceiveServerRedirectForProvisionalLoad(blink::WebLocalFrame*);
     bool didFailProvisionalLoad(blink::WebLocalFrame*, const blink::WebURLError&);
@@ -440,25 +435,6 @@ public:
     {
         WebTestProxyBase::didFinishResourceLoad(frame, identifier);
         Base::didFinishResourceLoad(frame, identifier);
-    }
-    virtual void runModalAlertDialog(blink::WebLocalFrame* frame, const blink::WebString& message)
-    {
-        WebTestProxyBase::runModalAlertDialog(frame, message);
-        Base::runModalAlertDialog(frame, message);
-    }
-    virtual bool runModalConfirmDialog(blink::WebLocalFrame* frame, const blink::WebString& message)
-    {
-        WebTestProxyBase::runModalConfirmDialog(frame, message);
-        return Base::runModalConfirmDialog(frame, message);
-    }
-    virtual bool runModalPromptDialog(blink::WebLocalFrame* frame, const blink::WebString& message, const blink::WebString& defaultValue, blink::WebString* actualValue)
-    {
-        WebTestProxyBase::runModalPromptDialog(frame, message, defaultValue, actualValue);
-        return Base::runModalPromptDialog(frame, message, defaultValue, actualValue);
-    }
-    virtual bool runModalBeforeUnloadDialog(blink::WebLocalFrame* frame, const blink::WebString& message)
-    {
-        return WebTestProxyBase::runModalBeforeUnloadDialog(frame, message);
     }
     virtual bool willCheckAndDispatchMessageEvent(blink::WebLocalFrame* sourceFrame, blink::WebFrame* targetFrame, blink::WebSecurityOrigin target, blink::WebDOMMessageEvent event)
     {

@@ -1301,29 +1301,6 @@ void WebTestProxyBase::didAddMessageToConsole(const WebConsoleMessage& message, 
     m_delegate->printMessage(string("\n"));
 }
 
-void WebTestProxyBase::runModalAlertDialog(WebLocalFrame*, const WebString& message)
-{
-    m_delegate->printMessage(string("ALERT: ") + message.utf8().data() + "\n");
-}
-
-bool WebTestProxyBase::runModalConfirmDialog(WebLocalFrame*, const WebString& message)
-{
-    m_delegate->printMessage(string("CONFIRM: ") + message.utf8().data() + "\n");
-    return true;
-}
-
-bool WebTestProxyBase::runModalPromptDialog(WebLocalFrame* frame, const WebString& message, const WebString& defaultValue, WebString*)
-{
-    m_delegate->printMessage(string("PROMPT: ") + message.utf8().data() + ", default text: " + defaultValue.utf8().data() + "\n");
-    return true;
-}
-
-bool WebTestProxyBase::runModalBeforeUnloadDialog(WebLocalFrame*, const WebString& message)
-{
-    m_delegate->printMessage(string("CONFIRM NAVIGATION: ") + message.utf8().data() + "\n");
-    return !m_testInterfaces->testRunner()->shouldStayOnPageAfterHandlingBeforeUnload();
-}
-
 void WebTestProxyBase::locationChangeDone(WebFrame* frame)
 {
     if (frame != m_testInterfaces->testRunner()->topLoadingFrame())

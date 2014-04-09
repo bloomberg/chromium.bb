@@ -6,6 +6,9 @@
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBFRAMETESTPROXY_H_
 
 #include "base/basictypes.h"
+#include "content/shell/renderer/test_runner/test_runner.h"
+#include "content/shell/renderer/test_runner/TestInterfaces.h"
+#include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -107,6 +110,21 @@ public:
         const blink::WebColor& initial_color,
         const blink::WebVector<blink::WebColorSuggestion>& suggestions) {
       return m_baseProxy->createColorChooser(client, initial_color, suggestions);
+    }
+    virtual void runModalAlertDialog(const blink::WebString& message) {
+        m_baseProxy->m_delegate->printMessage(std::string("ALERT: ") + message.utf8().data() + "\n");
+    }
+    virtual bool runModalConfirmDialog(const blink::WebString& message) {
+        m_baseProxy->m_delegate->printMessage(std::string("CONFIRM: ") + message.utf8().data() + "\n");
+        return true;
+    }
+    virtual bool runModalPromptDialog(const blink::WebString& message, const blink::WebString& defaultValue, blink::WebString*) {
+        m_baseProxy->m_delegate->printMessage(std::string("PROMPT: ") + message.utf8().data() + ", default text: " + defaultValue.utf8().data() + "\n");
+        return true;
+    }
+    virtual bool runModalBeforeUnloadDialog(bool is_reload, const blink::WebString& message) {
+        m_baseProxy->m_delegate->printMessage(std::string("CONFIRM NAVIGATION: ") + message.utf8().data() + "\n");
+        return !m_baseProxy->m_testInterfaces->testRunner()->shouldStayOnPageAfterHandlingBeforeUnload();
     }
     virtual void showContextMenu(const blink::WebContextMenuData& contextMenuData) {
         m_baseProxy->showContextMenu(Base::GetWebFrame()->toWebLocalFrame(), contextMenuData);
