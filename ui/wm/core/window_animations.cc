@@ -508,12 +508,6 @@ void HidingWindowAnimationObserver::DetachAndRecreateLayers() {
           layer_owner_->root(), topmost_transient_child->layer());
     }
   }
-
-  // TODO(sky): The recreated layer should have the target visibility of
-  // the original layer.
-  // Make the new layer invisible immediately.
-  window_->layer()->SetVisible(false);
-  window_->layer()->SetOpacity(0);
 }
 
 void HidingWindowAnimationObserver::WindowInvalid() {

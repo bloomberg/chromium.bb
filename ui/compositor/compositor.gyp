@@ -147,6 +147,7 @@
         'layer_animation_element_unittest.cc',
         'layer_animation_sequence_unittest.cc',
         'layer_animator_unittest.cc',
+        'layer_owner_unittest.cc',
         'layer_unittest.cc',
         'run_all_unittests.cc',
         'transform_animation_curve_adapter_unittest.cc',
