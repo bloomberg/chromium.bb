@@ -15,12 +15,14 @@ namespace {
 COMPILE_ASSERT(ET_GESTURE_TYPE_END - ET_GESTURE_TYPE_START < 32,
                gesture_type_count_too_large);
 
-GestureEventData CreateGesture(EventType type, int motion_event_id) {
+GestureEventData CreateGesture(EventType type,
+                               int motion_event_id) {
   return GestureEventData(type,
                           motion_event_id,
                           base::TimeTicks(),
                           0,
                           0,
+                          1,
                           GestureEventDetails(type, 0, 0));
 }
 

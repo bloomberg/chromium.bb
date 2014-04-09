@@ -35,16 +35,25 @@ GestureEventData CreateGesture(EventType type,
                                base::TimeTicks time,
                                float x,
                                float y,
+                               size_t touch_point_count,
                                const GestureEventDetails& details) {
-  return GestureEventData(type, motion_event_id, time, x, y, details);
+  return GestureEventData(type,
+                          motion_event_id,
+                          time,
+                          x,
+                          y,
+                          static_cast<int>(touch_point_count),
+                          details);
 }
 
 GestureEventData CreateGesture(EventType type,
                                int motion_event_id,
                                base::TimeTicks time,
                                float x,
-                               float y) {
-  return GestureEventData(type, motion_event_id, time, x, y);
+                               float y,
+                               size_t touch_point_count) {
+  return GestureEventData(
+      type, motion_event_id, time, x, y, static_cast<int>(touch_point_count));
 }
 
 GestureEventData CreateGesture(EventType type,
@@ -55,13 +64,18 @@ GestureEventData CreateGesture(EventType type,
                        event.GetEventTime(),
                        event.GetX(),
                        event.GetY(),
+                       event.GetPointerCount(),
                        details);
 }
 
 GestureEventData CreateGesture(EventType type,
                                const MotionEvent& event) {
-  return CreateGesture(
-      type, event.GetId(), event.GetEventTime(), event.GetX(), event.GetY());
+  return CreateGesture(type,
+                       event.GetId(),
+                       event.GetEventTime(),
+                       event.GetX(),
+                       event.GetY(),
+                       event.GetPointerCount());
 }
 
 GestureEventDetails CreateTapGestureDetails(EventType type,
@@ -123,8 +137,12 @@ class GestureProvider::ScaleGestureListenerImpl
                           const MotionEvent& e) OVERRIDE {
     if (!pinch_event_sent_)
       return;
-    provider_->Send(CreateGesture(
-        ET_GESTURE_PINCH_END, e.GetId(), detector.GetEventTime(), 0, 0));
+    provider_->Send(CreateGesture(ET_GESTURE_PINCH_END,
+                                  e.GetId(),
+                                  detector.GetEventTime(),
+                                  0,
+                                  0,
+                                  e.GetPointerCount()));
     pinch_event_sent_ = false;
   }
 
@@ -138,7 +156,8 @@ class GestureProvider::ScaleGestureListenerImpl
                                     e.GetId(),
                                     detector.GetEventTime(),
                                     detector.GetFocusX(),
-                                    detector.GetFocusY()));
+                                    detector.GetFocusY(),
+                                    e.GetPointerCount()));
     }
 
     float scale = detector.GetScaleFactor();
@@ -163,6 +182,7 @@ class GestureProvider::ScaleGestureListenerImpl
                                   detector.GetEventTime(),
                                   detector.GetFocusX(),
                                   detector.GetFocusY(),
+                                  e.GetPointerCount(),
                                   pinch_details));
     return true;
   }
@@ -305,11 +325,15 @@ class GestureProvider::GestureListenerImpl
       // scroll deltas are in the opposite direction.
       GestureEventDetails scroll_details(
           ET_GESTURE_SCROLL_BEGIN, -raw_distance_x, -raw_distance_y);
+
+      // Use the co-ordinates from the touch down, as these co-ordinates are
+      // used to determine which layer the scroll should affect.
       provider_->Send(CreateGesture(ET_GESTURE_SCROLL_BEGIN,
                                     e2.GetId(),
                                     e2.GetEventTime(),
                                     e1.GetX(),
                                     e1.GetY(),
+                                    e2.GetPointerCount(),
                                     scroll_details));
     }
 
@@ -541,6 +565,9 @@ GestureProvider::~GestureProvider() {}
 bool GestureProvider::OnTouchEvent(const MotionEvent& event) {
   TRACE_EVENT1("input", "GestureProvider::OnTouchEvent",
                "action", GetMotionEventActionName(event.GetAction()));
+
+  DCHECK_NE(0u, event.GetPointerCount());
+
   if (!CanHandle(event))
     return false;
 
@@ -669,7 +696,8 @@ void GestureProvider::Send(const GestureEventData& gesture) {
                            gesture.motion_event_id,
                            gesture.time,
                            gesture.x,
-                           gesture.y));
+                           gesture.y,
+                           gesture.details.touch_points()));
       touch_scroll_in_progress_ = false;
       break;
     case ET_GESTURE_PINCH_BEGIN:
@@ -679,7 +707,8 @@ void GestureProvider::Send(const GestureEventData& gesture) {
                            gesture.motion_event_id,
                            gesture.time,
                            gesture.x,
-                           gesture.y));
+                           gesture.y,
+                           gesture.details.touch_points()));
       pinch_in_progress_ = true;
       break;
     case ET_GESTURE_PINCH_END:
