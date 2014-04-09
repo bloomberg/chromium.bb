@@ -559,10 +559,6 @@
           'sources': [
             'autofill/content/browser/risk/fingerprint_browsertest.cc',
             'dom_distiller/content/distiller_page_web_contents_browsertest.cc',
-
-            # content_extractor is a standalone content extraction tool built as
-            # a MANUAL component_browsertest.
-            'dom_distiller/standalone/content_extractor.cc',
           ],
           'actions': [
             {
@@ -582,6 +578,13 @@
               'sources!': [
                 'autofill/content/browser/risk/fingerprint_browsertest.cc',
               ],
+            }],
+            ['OS == "linux"', {
+              'sources': [
+                  # content_extractor is a standalone content extraction tool built as
+                  # a MANUAL component_browsertest.
+                  'dom_distiller/standalone/content_extractor.cc',
+                ],
             }],
             ['OS=="win"', {
               'resource_include_dirs': [

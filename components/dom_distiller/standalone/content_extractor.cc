@@ -30,7 +30,18 @@ namespace dom_distiller {
 
 namespace {
 
+// The url to distill.
 const char* kUrlSwitch = "url";
+
+// Indicates that DNS resolution should be disabled for this test.
+const char* kDisableDnsSwitch = "disable-dns";
+
+// Will write the distilled output to the given file instead of to stdout.
+const char* kOutputFile = "output-file";
+
+// Indicates to output a serialized protocol buffer instead of human-readable
+// output.
+const char* kShouldOutputBinary = "output-binary";
 
 scoped_ptr<DomDistillerService> CreateDomDistillerService(
     content::BrowserContext* context,
@@ -69,15 +80,27 @@ void AddComponentsResources() {
 
 void LogArticle(const DistilledArticleProto& article_proto) {
   std::stringstream output;
-  output << "Article Title: " << article_proto.title() << std::endl;
-  output << "# of pages: " << article_proto.pages_size() << std::endl;
-  for (int i = 0; i < article_proto.pages_size(); ++i) {
-    const DistilledPageProto& page = article_proto.pages(i);
-    output << "Page " << i << std::endl;
-    output << "URL: " << page.url() << std::endl;
-    output << "Content: " << page.html() << std::endl;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kShouldOutputBinary)) {
+    output << article_proto.SerializeAsString();
+  } else {
+    output << "Article Title: " << article_proto.title() << std::endl;
+    output << "# of pages: " << article_proto.pages_size() << std::endl;
+    for (int i = 0; i < article_proto.pages_size(); ++i) {
+      const DistilledPageProto& page = article_proto.pages(i);
+      output << "Page " << i << std::endl;
+      output << "URL: " << page.url() << std::endl;
+      output << "Content: " << page.html() << std::endl;
+    }
   }
-  VLOG(0) << output.str();
+
+  std::string data = output.str();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kOutputFile)) {
+    base::FilePath filename =
+        CommandLine::ForCurrentProcess()->GetSwitchValuePath(kOutputFile);
+    base::WriteFile(filename, data.c_str(), data.size());
+  } else {
+    VLOG(0) << data;
+  }
 }
 
 }  // namespace
@@ -132,7 +155,9 @@ class ContentExtractor : public ContentBrowserTest {
   // Change behavior of the default host resolver to avoid DNS lookup errors, so
   // we can make network calls.
   virtual void SetUpOnMainThread() OVERRIDE {
-    EnableDNSLookupForThisTest();
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(kDisableDnsSwitch)) {
+      EnableDNSLookupForThisTest();
+    }
     CHECK(db_dir_.CreateUniqueTempDir());
     AddComponentsResources();
   }
