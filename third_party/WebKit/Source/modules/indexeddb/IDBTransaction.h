@@ -64,6 +64,7 @@ public:
     static blink::WebIDBDatabase::TransactionMode stringToMode(const String&, ExceptionState&);
     static const AtomicString& modeToString(blink::WebIDBDatabase::TransactionMode);
 
+    // When the connection is closed backend will be 0.
     blink::WebIDBDatabase* backendDB() const;
 
     int64_t id() const { return m_id; }

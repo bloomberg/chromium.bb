@@ -185,7 +185,7 @@ void IDBTransaction::setActive(bool active)
     ASSERT(active != (m_state == Active));
     m_state = active ? Active : Inactive;
 
-    if (!active && m_requestList.isEmpty())
+    if (!active && m_requestList.isEmpty() && backendDB())
         backendDB()->commit(m_id);
 }
 
@@ -208,7 +208,8 @@ void IDBTransaction::abort(ExceptionState& exceptionState)
     }
 
     RefPtr<IDBTransaction> selfRef = this;
-    backendDB()->abort(m_id);
+    if (backendDB())
+        backendDB()->abort(m_id);
 }
 
 void IDBTransaction::registerRequest(IDBRequest* request)
