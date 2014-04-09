@@ -30,6 +30,7 @@ uint64 EbmlElementSize(uint64 type, uint64 value);
 uint64 EbmlElementSize(uint64 type, float value);
 uint64 EbmlElementSize(uint64 type, const char* value);
 uint64 EbmlElementSize(uint64 type, const uint8* value, uint64 size);
+uint64 EbmlDateElementSize(uint64 type, int64 value);
 
 // Creates an EBML coded number from |value| and writes it out. The size of
 // the coded number is determined by the value of |value|. |value| must not
@@ -56,6 +57,7 @@ bool WriteEbmlElement(IMkvWriter* writer,
                       uint64 type,
                       const uint8* value,
                       uint64 size);
+bool WriteEbmlDateElement(IMkvWriter* writer, uint64 type, int64 value);
 
 // Output an Mkv Simple Block.
 // Inputs:

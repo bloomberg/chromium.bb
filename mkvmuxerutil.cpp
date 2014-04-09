@@ -29,6 +29,13 @@
 
 namespace mkvmuxer {
 
+namespace {
+
+// Date elements are always 8 octets in size.
+const int kDateElementSize = 8;
+
+}  // namespace
+
 int32 GetCodedUIntSize(uint64 value) {
   if (value < 0x000000000000007FULL)
     return 1;
@@ -133,6 +140,19 @@ uint64 EbmlElementSize(uint64 type, const uint8* value, uint64 size) {
 
   // Size of Datasize
   ebml_size += GetCodedUIntSize(size);
+
+  return ebml_size;
+}
+
+uint64 EbmlDateElementSize(uint64 type, int64 value) {
+  // Size of EBML ID
+  uint64 ebml_size = GetUIntSize(type);
+
+  // Datasize
+  ebml_size += kDateElementSize;
+
+  // Size of Datasize
+  ebml_size++;
 
   return ebml_size;
 }
@@ -316,6 +336,22 @@ bool WriteEbmlElement(IMkvWriter* writer,
     return false;
 
   if (writer->Write(value, static_cast<uint32>(size)))
+    return false;
+
+  return true;
+}
+
+bool WriteEbmlDateElement(IMkvWriter* writer, uint64 type, int64 value) {
+  if (!writer)
+    return false;
+
+  if (WriteID(writer, type))
+    return false;
+
+  if (WriteUInt(writer, kDateElementSize))
+    return false;
+
+  if (SerializeInt(writer, value, kDateElementSize))
     return false;
 
   return true;
