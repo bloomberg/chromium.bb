@@ -52,7 +52,6 @@ public:
     }
 
     String type() const;
-    bool setType(unsigned); // Returns true on success.
     void setType(const String&);
 
     AudioParam* frequency() { return biquadProcessor()->parameter1(); }
@@ -70,6 +69,7 @@ private:
     BiquadFilterNode(AudioContext*, float sampleRate);
 
     BiquadProcessor* biquadProcessor() { return static_cast<BiquadProcessor*>(processor()); }
+    bool setType(unsigned); // Returns true on success.
 };
 
 } // namespace WebCore

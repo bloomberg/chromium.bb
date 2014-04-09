@@ -82,8 +82,6 @@ void BiquadFilterNode::setType(const String& type)
         setType(BiquadProcessor::Notch);
     else if (type == "allpass")
         setType(BiquadProcessor::Allpass);
-    else
-        ASSERT_NOT_REACHED();
 }
 
 bool BiquadFilterNode::setType(unsigned type)

@@ -159,7 +159,6 @@
             'v8/custom/V8ArrayBufferViewCustom.cpp',
             'v8/custom/V8ArrayBufferViewCustom.h',
             'v8/custom/V8AudioNodeCustom.cpp',
-            'v8/custom/V8BiquadFilterNodeCustom.cpp',
             'v8/custom/V8BlobCustom.cpp',
             'v8/custom/V8BlobCustomHelpers.cpp',
             'v8/custom/V8BlobCustomHelpers.h',
