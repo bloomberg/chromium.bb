@@ -300,7 +300,7 @@ TEST_F(ServiceWorkerVersionTest, ActivateAndWaitCompletion) {
   EXPECT_EQ(ServiceWorkerVersion::ACTIVE, version_->status());
 }
 
-TEST_F(ServiceWorkerVersionTest, RepeatedlyObserveStatusChanges) {
+TEST_F(ServiceWorkerVersionTest, DISABLED_RepeatedlyObserveStatusChanges) {
   EXPECT_EQ(ServiceWorkerVersion::NEW, version_->status());
 
   // Repeatedly observe status changes (the callback re-registers itself).
