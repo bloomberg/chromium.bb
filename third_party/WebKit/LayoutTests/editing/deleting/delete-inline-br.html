@@ -20,15 +20,15 @@ function absoluteCaretBounds(node) {
 }
 
 var selection = window.getSelection();
-selection.collapse(('sample'), 2);
+selection.collapse($('sample'), 2);
 var expectedCaretRect = absoluteCaretBounds(document);
 
-selection.collapse(('sample'), 3);
-document.execCommand("Delete");
+selection.collapse($('sample'), 3);
+document.execCommand('Delete');
 var caretRect = absoluteCaretBounds(document);
 
-shouldBe("caretRect.left", "expectedCaretRect.left");
-shouldBe("caretRect.top", "expectedCaretRect.top");
+shouldBe('caretRect.left', 'expectedCaretRect.left');
+shouldBe('caretRect.top', 'expectedCaretRect.top');
 
 if (window.testRunner)
     $('container').outerHTML = '';
