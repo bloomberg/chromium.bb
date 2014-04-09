@@ -9,8 +9,8 @@
 #include "base/location.h"
 #include "base/stl_util.h"
 #include "base/threading/worker_pool.h"
-#include "third_party/skia/include/core/SkBitmapDevice.h"
-#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/ozone/surface_ozone_canvas.h"
 #include "ui/gfx/skia_util.h"
@@ -36,19 +36,21 @@ class FileSurface : public SurfaceOzoneCanvas {
 
   // SurfaceOzoneCanvas overrides:
   virtual bool ResizeCanvas(const Size& viewport_size) OVERRIDE {
-    SkImageInfo info = SkImageInfo::MakeN32Premul(viewport_size.width(),
-                                                  viewport_size.height());
-    device_ = skia::AdoptRef(SkBitmapDevice::Create(info));
-    canvas_ = skia::AdoptRef(new SkCanvas(device_.get()));
+    surface_ = skia::AdoptRef(SkSurface::NewRaster(
+        SkImageInfo::MakeN32Premul(viewport_size.width(),
+                                   viewport_size.height())));
     return true;
   }
-  virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE { return canvas_; }
+  virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE {
+    return skia::SharePtr(surface_->getCanvas());
+  }
   virtual bool PresentCanvas() OVERRIDE {
     SkBitmap bitmap;
-    bitmap.setConfig(
-        SkBitmap::kARGB_8888_Config, device_->width(), device_->height());
+    bitmap.setConfig(surface_->getCanvas()->imageInfo());
 
-    if (canvas_->readPixels(&bitmap, 0, 0)) {
+    // TODO(dnicoara) Use SkImage instead to potentially avoid a copy.
+    // See crbug.com/361605 for details.
+    if (surface_->getCanvas()->readPixels(&bitmap, 0, 0)) {
       base::WorkerPool::PostTask(
           FROM_HERE, base::Bind(&WriteDataToFile, location_, bitmap), true);
     }
@@ -60,8 +62,7 @@ class FileSurface : public SurfaceOzoneCanvas {
 
  private:
   base::FilePath location_;
-  skia::RefPtr<SkBitmapDevice> device_;
-  skia::RefPtr<SkCanvas> canvas_;
+  skia::RefPtr<SkSurface> surface_;
 };
 
 }  // namespace

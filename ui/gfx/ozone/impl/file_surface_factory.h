@@ -10,9 +10,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 
-class SkBitmapDevice;
-class SkCanvas;
-
 namespace gfx {
 
 class GFX_EXPORT FileSurfaceFactory : public SurfaceFactoryOzone {
