@@ -109,6 +109,7 @@
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/clearkeycdmadapter.plugin',
           '<(PRODUCT_DIR)/libclearkeycdm.dylib',
+          '<(PRODUCT_DIR)/osmesa.so',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc_x32.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_x32.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x32.nexe',
