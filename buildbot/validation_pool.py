@@ -1933,10 +1933,19 @@ class ValidationPool(object):
     # that occurs below will be mostly up-to-date.
     errors = {}
     changes = list(self.ReloadChanges(changes))
+
+    # Filter out changes that are already merged (e.g. dev chumped the
+    # CL during the CQ run). We do not consider these as errors, and
+    # print out warnings instead.
+    uncommitted_changes = [x for x in changes if not x.IsAlreadyMerged()]
+    for change in set(changes) - set(uncommitted_changes):
+      logging.warning('%s is already merged. It was most likely chumped during '
+                      'the current CQ run.', change)
+
     # Filter out the draft changes here to prevent the race condition
     # where user uploads a new draft patch set during the CQ run.
-    published_changes = self.FilterDraftChanges(changes)
-    for change in set(changes) - set(published_changes):
+    published_changes = self.FilterDraftChanges(uncommitted_changes)
+    for change in set(uncommitted_changes) - set(published_changes):
       errors[change] = PatchNotPublished(change)
 
     # Filter out changes that aren't marked as CR=+2, CQ=+1, V=+1 anymore, in

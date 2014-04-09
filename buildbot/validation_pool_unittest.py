@@ -1493,6 +1493,11 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     self.PatchObject(self.patches[1], 'HasApproval', return_value=False)
     self.SubmitPool(submitted=self.patches[:1], rejected=self.patches[1:])
 
+  def testAlreadyMerged(self):
+    """Test that a CL that was chumped during the run was not rejected."""
+    self.PatchObject(self.patches[0], 'IsAlreadyMerged', return_value=True)
+    self.SubmitPool(submitted=self.patches[1:], rejected=[])
+
 
 class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
   """Test the SubmitPartialPool function."""
