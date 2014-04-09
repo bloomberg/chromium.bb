@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -543,6 +544,19 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   std::string GetInstallParam(const std::string& extension_id) const;
   void SetInstallParam(const std::string& extension_id,
                        const std::string& install_parameter);
+
+  // Gets/sets the next threshold for displaying a notification if an extension
+  // or app consumes excessive disk space. Returns 0 if the initial threshold
+  // has not yet been reached.
+  int64 GetNextStorageThreshold(const std::string& extension_id) const;
+  void SetNextStorageThreshold(const std::string& extension_id,
+                               int64 next_threshold);
+
+  // Gets/sets whether notifications should be shown if an extension or app
+  // consumes too much disk space.
+  bool IsStorageNotificationEnabled(const std::string& extension_id) const;
+  void SetStorageNotificationEnabled(const std::string& extension_id,
+                                     bool enable_notifications);
 
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.

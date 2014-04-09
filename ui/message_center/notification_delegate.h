@@ -76,6 +76,32 @@ class MESSAGE_CENTER_EXPORT HandleNotificationClickedDelegate
   DISALLOW_COPY_AND_ASSIGN(HandleNotificationClickedDelegate);
 };
 
+// A notification delegate which invokes a callback when a notification button
+// has been clicked.
+class MESSAGE_CENTER_EXPORT HandleNotificationButtonClickDelegate
+    : public NotificationDelegate {
+ public:
+  typedef base::Callback<void(int)> ButtonClickCallback;
+
+  explicit HandleNotificationButtonClickDelegate(
+      const ButtonClickCallback& button_callback);
+
+  // message_center::NotificationDelegate overrides:
+  virtual void Display() OVERRIDE;
+  virtual void Error() OVERRIDE;
+  virtual void Close(bool by_user) OVERRIDE;
+  virtual void Click() OVERRIDE;
+  virtual void ButtonClick(int button_index) OVERRIDE;
+
+ protected:
+  virtual ~HandleNotificationButtonClickDelegate();
+
+ private:
+  ButtonClickCallback button_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(HandleNotificationButtonClickDelegate);
+};
+
 }  //  namespace message_center
 
 #endif  // UI_MESSAGE_CENTER_NOTIFICATION_DELEGATE_H_

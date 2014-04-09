@@ -14626,6 +14626,20 @@ Do you accept?
       Google+
     </message>
 
+    <!-- Extension Storage Monitor notification strings -->
+    <message name="IDS_EXTENSION_STORAGE_MONITOR_TITLE" desc="The title of the notification when high disk usage is detected for an app or extension.">
+      High disk usage detected
+    </message>
+    <message name="IDS_EXTENSION_STORAGE_MONITOR_TEXT" desc="The message of the notification when high disk usage is detected for an app or extension.">
+      <ph name="NAME">$1<ex>Google Docs</ex></ph> is using <ph name="USAGE">$2<ex>500</ex></ph> MB of disk space.
+    </message>
+    <message name="IDS_EXTENSION_STORAGE_MONITOR_BUTTON_DISMISS_APP" desc="Caption for the button to suppress high disk usage notifications for an app.">
+      Don't warn again for this app
+    </message>
+    <message name="IDS_EXTENSION_STORAGE_MONITOR_BUTTON_DISMISS_EXTENSION" desc="Caption for the button to suppress high disk usage notifications for an extension.">
+      Don't warn again for this extension
+    </message>
+
     <!-- Desktop media picker UI for Desktop Capture API -->
     <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE" desc="Title for the window picker dialog shown when desktop capture is requested by an app.">
       Share your screen - <ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph>

@@ -6,9 +6,13 @@
 
 namespace message_center {
 
+// NotificationDelegate:
+
 bool NotificationDelegate::HasClickedListener() { return false; }
 
 void NotificationDelegate::ButtonClick(int button_index) {}
+
+// HandleNotificationClickedDelegate:
 
 HandleNotificationClickedDelegate::HandleNotificationClickedDelegate(
     const base::Closure& closure)
@@ -37,6 +41,34 @@ void HandleNotificationClickedDelegate::Click() {
 }
 
 void HandleNotificationClickedDelegate::ButtonClick(int button_index) {
+}
+
+// HandleNotificationButtonClickDelegate:
+
+HandleNotificationButtonClickDelegate::HandleNotificationButtonClickDelegate(
+    const ButtonClickCallback& button_callback)
+    : button_callback_(button_callback) {
+}
+
+HandleNotificationButtonClickDelegate::
+    ~HandleNotificationButtonClickDelegate() {
+}
+
+void HandleNotificationButtonClickDelegate::Display() {
+}
+
+void HandleNotificationButtonClickDelegate::Error() {
+}
+
+void HandleNotificationButtonClickDelegate::Close(bool by_user) {
+}
+
+void HandleNotificationButtonClickDelegate::Click() {
+}
+
+void HandleNotificationButtonClickDelegate::ButtonClick(int button_index) {
+  if (!button_callback_.is_null())
+    button_callback_.Run(button_index);
 }
 
 }  // namespace message_center
