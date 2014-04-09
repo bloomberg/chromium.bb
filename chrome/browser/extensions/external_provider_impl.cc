@@ -59,10 +59,11 @@ const char ExternalProviderImpl::kInstallParam[] = "install_parameter";
 const char ExternalProviderImpl::kExternalCrx[] = "external_crx";
 const char ExternalProviderImpl::kExternalVersion[] = "external_version";
 const char ExternalProviderImpl::kExternalUpdateUrl[] = "external_update_url";
-const char ExternalProviderImpl::kSupportedLocales[] = "supported_locales";
 const char ExternalProviderImpl::kIsBookmarkApp[] = "is_bookmark_app";
 const char ExternalProviderImpl::kIsFromWebstore[] = "is_from_webstore";
 const char ExternalProviderImpl::kKeepIfPresent[] = "keep_if_present";
+const char ExternalProviderImpl::kWasInstalledByOem[] = "was_installed_by_oem";
+const char ExternalProviderImpl::kSupportedLocales[] = "supported_locales";
 
 ExternalProviderImpl::ExternalProviderImpl(
     VisitorInterface* service,
@@ -219,6 +220,11 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
                 << "only if it is already installed.";
         continue;
       }
+    }
+    bool was_installed_by_oem;
+    if (extension->GetBoolean(kWasInstalledByOem, &was_installed_by_oem) &&
+        was_installed_by_oem) {
+      creation_flags |= Extension::WAS_INSTALLED_BY_OEM;
     }
 
     std::string install_parameter;

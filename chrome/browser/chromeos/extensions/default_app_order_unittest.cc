@@ -79,7 +79,9 @@ TEST_F(DefaultAppOrderTest, BuiltInDefault) {
 
 // Tests external order file overrides built-in default.
 TEST_F(DefaultAppOrderTest, ExternalOrder) {
-  const char kExternalOrder[] = "[\"app1\",\"app2\",\"app3\"]";
+  const char kExternalOrder[] = "[\"app1\",\"app2\",\"app3\","
+      "{ \"oem_apps_folder\": true,\"localized_content\": {"
+      "    \"default\": {\"name\": \"OEM name\"}}}]";
   CreateExternalOrderFile(std::string(kExternalOrder));
 
   scoped_ptr<default_app_order::ExternalLoader> loader(
@@ -91,6 +93,7 @@ TEST_F(DefaultAppOrderTest, ExternalOrder) {
   EXPECT_EQ(std::string("app1"), apps[0]);
   EXPECT_EQ(std::string("app2"), apps[1]);
   EXPECT_EQ(std::string("app3"), apps[2]);
+  EXPECT_EQ(std::string("OEM name"), default_app_order::GetOemAppsFolderName());
 }
 
 // Tests none-existent order file gives built-in default.

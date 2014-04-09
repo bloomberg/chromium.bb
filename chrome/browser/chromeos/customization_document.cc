@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/extensions/external_loader.h"
@@ -641,6 +642,8 @@ void ServicesCustomizationDocument::SetOemFolderName(
     const base::DictionaryValue& root) {
   std::string locale = g_browser_process->GetApplicationLocale();
   std::string name = GetOemAppsFolderNameImpl(locale, root);
+  if (name.empty())
+    name = default_app_order::GetOemAppsFolderName();
   if (!name.empty()) {
     app_list::AppListSyncableService* service =
         app_list::AppListSyncableServiceFactory::GetForProfile(profile);

@@ -5090,6 +5090,19 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
       "  }"
       "}";
   EXPECT_EQ(1, from_webstore_visitor.Visit(json_data));
+
+  // Test was_installed_by_eom.
+  MockProviderVisitor was_installed_by_eom_visitor(
+      base_path, Extension::WAS_INSTALLED_BY_OEM);
+  json_data =
+      "{"
+      "  \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
+      "    \"external_crx\": \"RandomExtension.crx\","
+      "    \"external_version\": \"1.0\","
+      "    \"was_installed_by_oem\": true"
+      "  }"
+      "}";
+  EXPECT_EQ(1, was_installed_by_eom_visitor.Visit(json_data));
 }
 
 // Test loading good extensions from the profile directory.

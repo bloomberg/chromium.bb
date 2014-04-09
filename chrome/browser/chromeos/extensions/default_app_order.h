@@ -27,12 +27,15 @@ class ExternalLoader {
   ~ExternalLoader();
 
   const std::vector<std::string>& GetAppIds();
+  const std::string& GetOemAppsFolderName();
 
  private:
   void Load();
 
   // A vector of app id strings that defines the default order of apps.
   std::vector<std::string> app_ids_;
+
+  std::string oem_apps_folder_name_;
 
   base::WaitableEvent loaded_;
 
@@ -41,6 +44,9 @@ class ExternalLoader {
 
 // Gets the ordered list of app ids.
 void Get(std::vector<std::string>* app_ids);
+
+// Get the name of OEM apps folder in app launcher.
+std::string GetOemAppsFolderName();
 
 }  // namespace default_app_order
 }  // namespace chromeos

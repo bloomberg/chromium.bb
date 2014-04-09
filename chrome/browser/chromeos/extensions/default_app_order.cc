@@ -11,6 +11,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,6 +23,12 @@ namespace {
 
 // The single ExternalLoader instance.
 ExternalLoader* loader_instance = NULL;
+
+// Names used in JSON file.
+const char kOemAppsFolderAttr[] = "oem_apps_folder";
+const char kLocalizedContentAttr[] = "localized_content";
+const char kDefaultAttr[] = "default";
+const char kNameAttr[] = "name";
 
 // Reads external ordinal json file and returned the parsed value. Returns NULL
 // if the file does not exist or could not be parsed properly. Caller takes
@@ -45,6 +52,32 @@ base::ListValue* ReadExternalOrdinalFile(const base::FilePath& path) {
 
   LOG(WARNING) << "Expect a JSON list in file " << path.value();
   return NULL;
+}
+
+std::string GetLocaleSpecificStringImpl(
+    const base::DictionaryValue* root,
+    const std::string& locale,
+    const std::string& dictionary_name,
+    const std::string& entry_name) {
+  const base::DictionaryValue* dictionary_content = NULL;
+  if (!root || !root->GetDictionary(dictionary_name, &dictionary_content))
+    return std::string();
+
+  const base::DictionaryValue* locale_dictionary = NULL;
+  if (dictionary_content->GetDictionary(locale, &locale_dictionary)) {
+    std::string result;
+    if (locale_dictionary->GetString(entry_name, &result))
+      return result;
+  }
+
+  const base::DictionaryValue* default_dictionary = NULL;
+  if (dictionary_content->GetDictionary(kDefaultAttr, &default_dictionary)) {
+    std::string result;
+    if (default_dictionary->GetString(entry_name, &result))
+      return result;
+  }
+
+  return std::string();
 }
 
 // Gets built-in default app order.
@@ -107,6 +140,12 @@ const std::vector<std::string>& ExternalLoader::GetAppIds() {
   return app_ids_;
 }
 
+const std::string& ExternalLoader::GetOemAppsFolderName() {
+  if (!loaded_.IsSignaled())
+    LOG(ERROR) << "GetOemAppsFolderName() called before loaded.";
+  return oem_apps_folder_name_;
+}
+
 void ExternalLoader::Load() {
   base::FilePath ordinals_file;
   CHECK(PathService::Get(chromeos::FILE_DEFAULT_APP_ORDER, &ordinals_file));
@@ -114,10 +153,21 @@ void ExternalLoader::Load() {
   scoped_ptr<base::ListValue> ordinals_value(
       ReadExternalOrdinalFile(ordinals_file));
   if (ordinals_value) {
+    std::string locale = g_browser_process->GetApplicationLocale();
     for (size_t i = 0; i < ordinals_value->GetSize(); ++i) {
       std::string app_id;
-      CHECK(ordinals_value->GetString(i, &app_id));
-      app_ids_.push_back(app_id);
+      base::DictionaryValue* dict = NULL;
+      if (ordinals_value->GetString(i, &app_id)) {
+        app_ids_.push_back(app_id);
+      } else if (ordinals_value->GetDictionary(i, &dict)) {
+        bool is_oem_apps_folder = false;
+        if (!dict->GetBoolean(kOemAppsFolderAttr, &is_oem_apps_folder) ||
+            !is_oem_apps_folder) {
+          LOG(ERROR) << "Invalid syntax in default_app_order.json";
+        }
+        oem_apps_folder_name_ = GetLocaleSpecificStringImpl(
+            dict, locale, kLocalizedContentAttr, kNameAttr);
+      }
     }
   } else {
     GetDefault(&app_ids_);
@@ -134,6 +184,14 @@ void Get(std::vector<std::string>* app_ids) {
   }
 
   *app_ids = loader_instance->GetAppIds();
+}
+
+std::string GetOemAppsFolderName() {
+  // |loader_instance| could be NULL for test.
+  if (!loader_instance)
+    return std::string();
+  else
+    return loader_instance->GetOemAppsFolderName();
 }
 
 }  // namespace default_app_order
