@@ -62,25 +62,32 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
   // No conflicting transactions, so coordinator will start it immediately:
   EXPECT_EQ(IndexedDBTransaction::STARTED, transaction->state());
   EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+  EXPECT_EQ(0, transaction->diagnostics().tasks_scheduled);
+  EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
 
   // Schedule a task - timer won't be started until it's processed.
   transaction->ScheduleTask(base::Bind(
       &IndexedDBTransactionTest::DummyOperation, base::Unretained(this)));
   EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+  EXPECT_EQ(1, transaction->diagnostics().tasks_scheduled);
+  EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
 
   RunPostedTasks();
   EXPECT_TRUE(transaction->IsTimeoutTimerRunning());
 
-  // Abort should cancel the timer.
-  transaction->Abort();
+  transaction->Timeout();
   EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
   EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+  EXPECT_EQ(1, transaction->diagnostics().tasks_scheduled);
+  EXPECT_EQ(1, transaction->diagnostics().tasks_completed);
 
   // This task will be ignored.
   transaction->ScheduleTask(base::Bind(
       &IndexedDBTransactionTest::DummyOperation, base::Unretained(this)));
   EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
   EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+  EXPECT_EQ(1, transaction->diagnostics().tasks_scheduled);
+  EXPECT_EQ(1, transaction->diagnostics().tasks_completed);
 }
 
 TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
