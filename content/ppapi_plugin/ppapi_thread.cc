@@ -348,7 +348,7 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
       if (base::win::OSInfo::GetInstance()->version() >=
           base::win::VERSION_WIN7) {
         base::CPU cpu;
-        if ((cpu.vendor_name() == "AuthenticAMD") && (cpu.family() > 0x14)) {
+        if (cpu.vendor_name() == "AuthenticAMD") {
           // The AMD crypto acceleration is only AMD Bulldozer and above.
 #if defined(_WIN64)
           LoadLibraryA("amdhcp64.dll");
