@@ -388,10 +388,15 @@ bool ChromeClientImpl::canRunBeforeUnloadConfirmPanel()
 
 bool ChromeClientImpl::runBeforeUnloadConfirmPanel(const String& message, LocalFrame* frame)
 {
-    if (m_webView->client()) {
-        return m_webView->client()->runModalBeforeUnloadDialog(
-            WebFrameImpl::fromFrame(frame), message);
-    }
+    WebFrameImpl* webframe = WebFrameImpl::fromFrame(frame);
+
+    bool isReload = false;
+    WebDataSource* ds = webframe->provisionalDataSource();
+    if (ds)
+        isReload = (ds->navigationType() == blink::WebNavigationTypeReload);
+
+    if (webframe->client())
+        return webframe->client()->runModalBeforeUnloadDialog(isReload, message);
     return false;
 }
 
@@ -411,22 +416,22 @@ void ChromeClientImpl::closeWindowSoon()
 // already know our own m_webView.
 void ChromeClientImpl::runJavaScriptAlert(LocalFrame* frame, const String& message)
 {
-    if (m_webView->client()) {
+    WebFrameImpl* webframe = WebFrameImpl::fromFrame(frame);
+    if (webframe->client()) {
         if (WebUserGestureIndicator::isProcessingUserGesture())
             WebUserGestureIndicator::currentUserGestureToken().setJavascriptPrompt();
-        m_webView->client()->runModalAlertDialog(
-            WebFrameImpl::fromFrame(frame), message);
+        webframe->client()->runModalAlertDialog(message);
     }
 }
 
 // See comments for runJavaScriptAlert().
 bool ChromeClientImpl::runJavaScriptConfirm(LocalFrame* frame, const String& message)
 {
-    if (m_webView->client()) {
+    WebFrameImpl* webframe = WebFrameImpl::fromFrame(frame);
+    if (webframe->client()) {
         if (WebUserGestureIndicator::isProcessingUserGesture())
             WebUserGestureIndicator::currentUserGestureToken().setJavascriptPrompt();
-        return m_webView->client()->runModalConfirmDialog(
-            WebFrameImpl::fromFrame(frame), message);
+        return webframe->client()->runModalConfirmDialog(message);
     }
     return false;
 }
@@ -437,12 +442,12 @@ bool ChromeClientImpl::runJavaScriptPrompt(LocalFrame* frame,
                                            const String& defaultValue,
                                            String& result)
 {
-    if (m_webView->client()) {
+    WebFrameImpl* webframe = WebFrameImpl::fromFrame(frame);
+    if (webframe->client()) {
         if (WebUserGestureIndicator::isProcessingUserGesture())
             WebUserGestureIndicator::currentUserGestureToken().setJavascriptPrompt();
         WebString actualValue;
-        bool ok = m_webView->client()->runModalPromptDialog(
-            WebFrameImpl::fromFrame(frame),
+        bool ok = webframe->client()->runModalPromptDialog(
             message,
             defaultValue,
             &actualValue);

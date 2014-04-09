@@ -158,6 +158,7 @@ public:
     // indicating that the default action should be suppressed.
     virtual bool handleCurrentKeyboardEvent() { return false; }
 
+
     // Dialogs -------------------------------------------------------------
 
     // This method opens the color chooser and returns a new WebColorChooser
@@ -199,33 +200,6 @@ public:
 
     // Move the existing notifation popup to the new anchor position.
     virtual void moveValidationMessage(const WebRect& anchorInRootView) { }
-
-    // Displays a modal alert dialog containing the given message.  Returns
-    // once the user dismisses the dialog.
-    virtual void runModalAlertDialog(
-        WebLocalFrame*, const WebString& message) { }
-
-    // Displays a modal confirmation dialog with the given message as
-    // description and OK/Cancel choices.  Returns true if the user selects
-    // 'OK' or false otherwise.
-    virtual bool runModalConfirmDialog(
-        WebLocalFrame*, const WebString& message) { return false; }
-
-    // Displays a modal input dialog with the given message as description
-    // and OK/Cancel choices.  The input field is pre-filled with
-    // defaultValue.  Returns true if the user selects 'OK' or false
-    // otherwise.  Upon returning true, actualValue contains the value of
-    // the input field.
-    virtual bool runModalPromptDialog(
-        WebLocalFrame*, const WebString& message, const WebString& defaultValue,
-        WebString* actualValue) { return false; }
-
-    // Displays a modal confirmation dialog containing the given message as
-    // description and OK/Cancel choices, where 'OK' means that it is okay
-    // to proceed with closing the view.  Returns true if the user selects
-    // 'OK' or false otherwise.
-    virtual bool runModalBeforeUnloadDialog(
-        WebLocalFrame*, const WebString& message) { return true; }
 
 
     // UI ------------------------------------------------------------------
@@ -269,6 +243,7 @@ public:
     // Returns comma separated list of accept languages.
     virtual WebString acceptLanguages() { return WebString(); }
 
+
     // Session history -----------------------------------------------------
 
     // Tells the embedder to navigate back or forward in session history by
@@ -287,6 +262,7 @@ public:
     // Notifies embedder about an accessibility event.
     virtual void postAccessibilityEvent(const WebAXObject&, WebAXEvent) { }
 
+
     // Developer tools -----------------------------------------------------
 
     // Called to notify the client that the inspector's settings were
@@ -295,12 +271,14 @@ public:
 
     virtual void didUpdateInspectorSetting(const WebString& key, const WebString& value) { }
 
+
     // Geolocation ---------------------------------------------------------
 
     // Access the embedder API for (client-based) geolocation client .
     virtual WebGeolocationClient* geolocationClient() { return 0; }
     // Access the embedder API for (non-client-based) geolocation services.
     virtual WebGeolocationService* geolocationService() { return 0; }
+
 
     // Speech --------------------------------------------------------------
 
@@ -311,6 +289,7 @@ public:
     // Access the embedder API for speech recognition services.
     virtual WebSpeechRecognizer* speechRecognizer() { return 0; }
 
+
     // Zoom ----------------------------------------------------------------
 
     // Informs the browser that the zoom levels for this frame have changed from
@@ -320,6 +299,7 @@ public:
     // Informs the browser that the zoom level has changed as a result of an
     // action that wasn't initiated by the client.
     virtual void zoomLevelChanged() { }
+
 
     // Navigator Content Utils  --------------------------------------------
 
@@ -357,6 +337,7 @@ public:
         return WebCustomHandlersNew;
     }
 
+
     // Visibility -----------------------------------------------------------
 
     // Returns the current visibility of the WebView.
@@ -365,9 +346,11 @@ public:
         return WebPageVisibilityStateVisible;
     }
 
+
     // Media Streams -------------------------------------------------------
 
     virtual WebUserMediaClient* userMediaClient() { return 0; }
+
 
     // Web MIDI -------------------------------------------------------------
 
@@ -389,6 +372,7 @@ public:
 
     // Cancels any previously scheduled content intents that have not yet launched.
     virtual void cancelScheduledContentIntents() { }
+
 
     // Draggable regions ----------------------------------------------------
 
