@@ -250,12 +250,12 @@ public class InsertionHandleTest extends ContentShellTestBase {
         // click (only if it changes the selection), the insertion handle is displayed. So that the
         // second click changes the selection, the two clicks should be in sufficiently different
         // locations.
-        Rect nodeBounds = DOMUtils.getNodeBounds(getContentView(),
+        Rect nodeBounds = DOMUtils.getNodeBounds(getContentViewCore(),
                 new TestCallbackHelperContainer(getContentView()), nodeId);
 
-        RenderCoordinates renderCoordinates = getContentView().getRenderCoordinates();
-        int offsetX = getContentView().getContentViewCore().getViewportSizeOffsetWidthPix();
-        int offsetY = getContentView().getContentViewCore().getViewportSizeOffsetHeightPix();
+        RenderCoordinates renderCoordinates = getContentViewCore().getRenderCoordinates();
+        int offsetX = getContentViewCore().getViewportSizeOffsetWidthPix();
+        int offsetY = getContentViewCore().getViewportSizeOffsetHeightPix();
         float left = renderCoordinates.fromLocalCssToPix(nodeBounds.left) + offsetX;
         float right = renderCoordinates.fromLocalCssToPix(nodeBounds.right) + offsetX;
         float top = renderCoordinates.fromLocalCssToPix(nodeBounds.top) + offsetY;

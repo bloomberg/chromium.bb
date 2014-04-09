@@ -449,12 +449,12 @@ public class SelectionHandleTest extends ContentShellTestBase {
     }
 
     private Rect getNodeBoundsPix(String nodeId) throws Throwable {
-        Rect nodeBounds = DOMUtils.getNodeBounds(getContentView(),
+        Rect nodeBounds = DOMUtils.getNodeBounds(getContentViewCore(),
                 new TestCallbackHelperContainer(getContentView()), nodeId);
 
-        RenderCoordinates renderCoordinates = getContentView().getRenderCoordinates();
-        int offsetX = getContentView().getContentViewCore().getViewportSizeOffsetWidthPix();
-        int offsetY = getContentView().getContentViewCore().getViewportSizeOffsetHeightPix();
+        RenderCoordinates renderCoordinates = getContentViewCore().getRenderCoordinates();
+        int offsetX = getContentViewCore().getViewportSizeOffsetWidthPix();
+        int offsetY = getContentViewCore().getViewportSizeOffsetHeightPix();
 
         int left = (int) renderCoordinates.fromLocalCssToPix(nodeBounds.left) + offsetX;
         int right = (int) renderCoordinates.fromLocalCssToPix(nodeBounds.right) + offsetX;

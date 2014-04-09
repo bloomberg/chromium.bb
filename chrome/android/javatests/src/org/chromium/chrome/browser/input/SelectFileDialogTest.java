@@ -84,7 +84,8 @@ public class SelectFileDialogTest extends ChromeShellTestBase {
         // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
         assertWaitForPageScaleFactorMatch(2);
         assertTrue(
-                DOMUtils.waitForNonZeroNodeBounds(mContentView, mCallbackContainer, "input_file"));
+                DOMUtils.waitForNonZeroNodeBounds(mContentView.getContentViewCore(),
+                        mCallbackContainer, "input_file"));
     }
 
     /**

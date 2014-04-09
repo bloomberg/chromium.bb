@@ -13,6 +13,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -464,11 +465,11 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
 
         setUpAndRequestAutocomplete(url, requestFullBilling, requestShipping, requestPhoneNumbers);
 
-        final ContentView view = getActivity().getActiveContentView();
+        ContentView view = getActivity().getActiveContentView();
         final TestCallbackHelperContainer viewClient = new TestCallbackHelperContainer(view);
 
         assertEquals(actualId + " did not match",
-                expected, DOMUtils.getNodeValue(view, viewClient, actualId));
+                expected, DOMUtils.getNodeValue(view.getContentViewCore(), viewClient, actualId));
     }
 
     private void verifyFieldsAreFilled(final boolean requestFullBilling,
@@ -479,88 +480,89 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
                 requestFullBilling, requestShipping, requestPhoneNumbers);
 
         final ContentView view = getActivity().getActiveContentView();
+        final ContentViewCore viewCore = view.getContentViewCore();
         final TestCallbackHelperContainer viewClient = new TestCallbackHelperContainer(view);
 
         assertEquals("billing name did not match",
-                TEST_NAME, DOMUtils.getNodeValue(view, viewClient, "id-billing-name"));
+                TEST_NAME, DOMUtils.getNodeValue(viewCore, viewClient, "id-billing-name"));
         assertEquals("email did not match",
-                TEST_EMAIL, DOMUtils.getNodeValue(view, viewClient, "id-email"));
+                TEST_EMAIL, DOMUtils.getNodeValue(viewCore, viewClient, "id-email"));
 
         assertEquals("cc-name did not match",
-                TEST_NAME, DOMUtils.getNodeValue(view, viewClient, "id-cc-name"));
+                TEST_NAME, DOMUtils.getNodeValue(viewCore, viewClient, "id-cc-name"));
 
         assertEquals("cc-number did not match",
-                TEST_CC_NUMBER, DOMUtils.getNodeValue(view, viewClient, "id-cc-number"));
+                TEST_CC_NUMBER, DOMUtils.getNodeValue(viewCore, viewClient, "id-cc-number"));
         assertEquals("cc-csc did not match",
-                TEST_CC_CSC, DOMUtils.getNodeValue(view, viewClient, "id-cc-csc"));
+                TEST_CC_CSC, DOMUtils.getNodeValue(viewCore, viewClient, "id-cc-csc"));
         assertEquals("cc-csc did not match",
-                TEST_CC_CSC, DOMUtils.getNodeValue(view, viewClient, "id-cc-csc"));
+                TEST_CC_CSC, DOMUtils.getNodeValue(viewCore, viewClient, "id-cc-csc"));
 
         assertEquals("cc-exp did not match",
                 "" + TEST_CC_EXP_YEAR + "-" + TEST_CC_EXP_MONTH,
-                DOMUtils.getNodeValue(view, viewClient, "id-cc-exp"));
+                DOMUtils.getNodeValue(viewCore, viewClient, "id-cc-exp"));
 
         assertEquals("cc-exp-month did not match",
                 "" + TEST_CC_EXP_MONTH,
-                DOMUtils.getNodeValue(view, viewClient, "id-cc-exp-month"));
+                DOMUtils.getNodeValue(viewCore, viewClient, "id-cc-exp-month"));
         assertEquals("cc-exp-year did not match",
                 "" + TEST_CC_EXP_YEAR,
-                DOMUtils.getNodeValue(view, viewClient, "id-cc-exp-year"));
+                DOMUtils.getNodeValue(viewCore, viewClient, "id-cc-exp-year"));
 
         assertEquals("billing country did not match",
-                TEST_BILLING_COUNTRY, DOMUtils.getNodeValue(view, viewClient, "id-cc-country"));
+                TEST_BILLING_COUNTRY, DOMUtils.getNodeValue(viewCore, viewClient, "id-cc-country"));
         assertEquals("billing postal-code did not match",
-                TEST_BILLING_ZIP, DOMUtils.getNodeValue(view, viewClient, "id-cc-zip"));
+                TEST_BILLING_ZIP, DOMUtils.getNodeValue(viewCore, viewClient, "id-cc-zip"));
 
         if (requestFullBilling) {
             assertEquals("billing address-line1 did not match",
-                    TEST_BILLING1, DOMUtils.getNodeValue(view, viewClient, "id-cc-1"));
+                    TEST_BILLING1, DOMUtils.getNodeValue(viewCore, viewClient, "id-cc-1"));
             assertEquals("billing address-line2 did not match",
-                    TEST_BILLING2, DOMUtils.getNodeValue(view, viewClient, "id-cc-2"));
+                    TEST_BILLING2, DOMUtils.getNodeValue(viewCore, viewClient, "id-cc-2"));
             assertEquals("billing locality did not match",
-                    TEST_BILLING_CITY, DOMUtils.getNodeValue(view, viewClient, "id-cc-city"));
+                    TEST_BILLING_CITY, DOMUtils.getNodeValue(viewCore, viewClient, "id-cc-city"));
             assertEquals("billing region did not match",
-                    TEST_BILLING_STATE, DOMUtils.getNodeValue(view, viewClient, "id-cc-state"));
+                    TEST_BILLING_STATE, DOMUtils.getNodeValue(viewCore, viewClient, "id-cc-state"));
 
             if (requestPhoneNumbers) {
                 assertEquals("billing tel did not match",
                         TEST_PHONE_UNFORMATTED,
-                        DOMUtils.getNodeValue(view, viewClient, "id-cc-tel"));
+                        DOMUtils.getNodeValue(viewCore, viewClient, "id-cc-tel"));
             }
         }
 
         if (requestShipping) {
             assertEquals("shipping name did not match",
-                    TEST_SHIPPING_NAME, DOMUtils.getNodeValue(view, viewClient, "id-h-name"));
+                    TEST_SHIPPING_NAME, DOMUtils.getNodeValue(viewCore, viewClient, "id-h-name"));
             assertEquals("shipping postal-code did not match",
-                    TEST_SHIPPING_ZIP, DOMUtils.getNodeValue(view, viewClient, "id-h-zip"));
+                    TEST_SHIPPING_ZIP, DOMUtils.getNodeValue(viewCore, viewClient, "id-h-zip"));
             assertEquals("shipping address-line1 did not match",
-                    TEST_SHIPPING1, DOMUtils.getNodeValue(view, viewClient, "id-h-1"));
+                    TEST_SHIPPING1, DOMUtils.getNodeValue(viewCore, viewClient, "id-h-1"));
             assertEquals("shipping address-line2 did not match",
-                    TEST_SHIPPING2, DOMUtils.getNodeValue(view, viewClient, "id-h-2"));
+                    TEST_SHIPPING2, DOMUtils.getNodeValue(viewCore, viewClient, "id-h-2"));
             assertEquals("shipping locality did not match",
-                    TEST_SHIPPING_CITY, DOMUtils.getNodeValue(view, viewClient, "id-h-city"));
+                    TEST_SHIPPING_CITY, DOMUtils.getNodeValue(viewCore, viewClient, "id-h-city"));
             assertEquals("shipping region did not match",
-                    TEST_SHIPPING_STATE, DOMUtils.getNodeValue(view, viewClient, "id-h-state"));
+                    TEST_SHIPPING_STATE, DOMUtils.getNodeValue(viewCore, viewClient, "id-h-state"));
             assertEquals("shipping country did not match",
                     TEST_SHIPPING_COUNTRY,
-                    DOMUtils.getNodeValue(view, viewClient, "id-h-country"));
+                    DOMUtils.getNodeValue(viewCore, viewClient, "id-h-country"));
 
             // It is currently unspecified whether autocomplete="name" gives a SHIPPING or
             // a BILLING name. I'm assuming here that this is a shipping name.
             assertEquals("name did not match",
-                    TEST_SHIPPING_NAME, DOMUtils.getNodeValue(view, viewClient, "id-name"));
+                    TEST_SHIPPING_NAME, DOMUtils.getNodeValue(viewCore, viewClient, "id-name"));
 
             if (requestPhoneNumbers) {
                 assertEquals("shipping tel did not match",
                         TEST_SHIPPING_PHONE_UNFORMATTED,
-                        DOMUtils.getNodeValue(view, viewClient, "id-h-tel"));
+                        DOMUtils.getNodeValue(viewCore, viewClient, "id-h-tel"));
 
                 // It is currently unspecified whether autocomplete="name" gives a SHIPPING or
                 // a BILLING phone. I'm assuming here that this is a shipping phone.
                 assertEquals("tel did not match",
                         TEST_SHIPPING_PHONE_UNFORMATTED,
-                        DOMUtils.getNodeValue(view, viewClient, "id-tel"));
+                        DOMUtils.getNodeValue(viewCore, viewClient, "id-tel"));
             }
         }
     }
@@ -598,13 +600,14 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
                 requestFullBilling, requestShipping, requestPhoneNumbers);
 
         DOMUtils.clickNode(this, view, viewClient, "id-button");
-        waitForInputFieldFill(view, viewClient);
+        waitForInputFieldFill(view.getContentViewCore(), viewClient);
 
         assertEquals("requestAutocomplete failed",
-                "succeeded", DOMUtils.getNodeContents(view, viewClient, "was-autocompleted"));
+                "succeeded", DOMUtils.getNodeContents(
+                        view.getContentViewCore(), viewClient, "was-autocompleted"));
     }
 
-    private void waitForInputFieldFill(final ContentView view,
+    private void waitForInputFieldFill(final ContentViewCore viewCore,
             final TestCallbackHelperContainer viewClient) throws InterruptedException {
         assertTrue("requestAutocomplete() never completed.",
                 CriteriaHelper.pollForCriteria(new Criteria() {
@@ -613,7 +616,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
                         String wasAutocompleted;
                         try {
                             wasAutocompleted = DOMUtils.getNodeContents(
-                                    view, viewClient, "was-autocompleted");
+                                    viewCore, viewClient, "was-autocompleted");
                         } catch (InterruptedException e) {
                             return false;
                         } catch (TimeoutException e) {

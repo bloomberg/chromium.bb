@@ -4,12 +4,11 @@
 
 package org.chromium.content.browser.test.util;
 
-import junit.framework.Assert;
-
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import junit.framework.Assert;
+
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 
 import java.util.concurrent.TimeUnit;
@@ -26,12 +25,10 @@ public class JavaScriptUtils {
      * Returns the result of its execution in JSON format.
      */
     public static String executeJavaScriptAndWaitForResult(
-            final ContentView view, TestCallbackHelperContainer viewClient,
+            final ContentViewCore viewCore, TestCallbackHelperContainer viewClient,
             final String code) throws InterruptedException, TimeoutException {
         return executeJavaScriptAndWaitForResult(
-                view.getContentViewCore(),
-                viewClient.getOnEvaluateJavaScriptResultHelper(),
-                code);
+                viewCore, viewClient.getOnEvaluateJavaScriptResultHelper(), code);
     }
 
     /**
@@ -76,11 +73,11 @@ public class JavaScriptUtils {
     /**
      * Executes the given snippet of JavaScript code but does not wait for the result.
      */
-    public static void executeJavaScript(final ContentView view, final String code) {
+    public static void executeJavaScript(final ContentViewCore viewCore, final String code) {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                view.evaluateJavaScript(code);
+                viewCore.evaluateJavaScript(code, null);
             }
         });
     }

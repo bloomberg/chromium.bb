@@ -34,7 +34,7 @@ public class ScreenOrientationIntegrationTest extends ContentShellTestBase {
             throws InterruptedException, TimeoutException {
         return Integer.parseInt(
             JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                    mContentView,
+                    mContentView.getContentViewCore(),
                     new TestCallbackHelperContainer(mContentView),
                     "window.orientation"));
     }
@@ -47,7 +47,7 @@ public class ScreenOrientationIntegrationTest extends ContentShellTestBase {
             throws InterruptedException, TimeoutException {
         return Integer.parseInt(
             JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                    mContentView,
+                    mContentView.getContentViewCore(),
                     new TestCallbackHelperContainer(mContentView),
                     "changes"));
     }

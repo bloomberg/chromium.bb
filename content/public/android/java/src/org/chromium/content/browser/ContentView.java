@@ -104,13 +104,6 @@ public class ContentView extends FrameLayout
     }
 
     /**
-     * @return The cache of scales and positions used to convert coordinates from/to CSS.
-     */
-    public RenderCoordinates getRenderCoordinates() {
-        return mContentViewCore.getRenderCoordinates();
-    }
-
-    /**
      * Destroy the internal state of the WebView. This method may only be called
      * after the WebView has been removed from the view system. No other methods
      * may be called on this WebView after this method has been called.
@@ -185,15 +178,6 @@ public class ContentView extends FrameLayout
     @VisibleForTesting
     public void fling(long timeMs, int x, int y, int velocityX, int velocityY) {
         mContentViewCore.flingForTest(timeMs, x, y, velocityX, velocityY);
-    }
-
-    /**
-     * Injects the passed JavaScript code in the current page and evaluates it.
-     *
-     * @throws IllegalStateException If the ContentView has been destroyed.
-     */
-    public void evaluateJavaScript(String script) throws IllegalStateException {
-        mContentViewCore.evaluateJavaScript(script, null);
     }
 
     /**
