@@ -48,6 +48,7 @@ public:
     static Node* nextSkippingChildren(const ContainerNode& current, const Node* stayWithin) { return traverseNextSkippingChildrenTemplate(current, stayWithin); }
 
     // Does a reverse pre-order traversal to find the node that comes before the current one in document order
+    static Node* lastWithin(const ContainerNode&);
     static Node* previous(const Node&, const Node* stayWithin = 0);
 
     // Like previous, but skips children and starts with the next sibling.

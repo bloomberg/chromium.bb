@@ -96,6 +96,14 @@ Node* NodeTraversal::nextAncestorSibling(const Node& current, const Node* stayWi
     return 0;
 }
 
+Node* NodeTraversal::lastWithin(const ContainerNode& current)
+{
+    Node* descendant = current.lastChild();
+    for (Node* child = descendant; child; child = child->lastChild())
+        descendant = child;
+    return descendant;
+}
+
 Node* NodeTraversal::previous(const Node& current, const Node* stayWithin)
 {
     if (current == stayWithin)

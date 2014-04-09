@@ -276,11 +276,6 @@ template <> inline bool isMatchingElement(const HTMLTagCollection& collection, c
     return collection.elementMatches(element);
 }
 
-Element* HTMLCollection::itemBefore(const Element* previous) const
-{
-    return LiveNodeListBase::itemBefore(*this, previous);
-}
-
 Element* HTMLCollection::virtualItemAfter(Element*) const
 {
     ASSERT_NOT_REACHED();
@@ -314,6 +309,14 @@ inline Element* firstMatchingChildElement(const HTMLCollection& nodeList)
     return element;
 }
 
+inline Element* lastMatchingChildElement(const HTMLCollection& nodeList)
+{
+    Element* element = ElementTraversal::lastChild(nodeList.rootNode());
+    while (element && !isMatchingElement(nodeList, *element))
+        element = ElementTraversal::previousSibling(*element);
+    return element;
+}
+
 inline Element* nextMatchingChildElement(const HTMLCollection& nodeList, Element& current)
 {
     Element* next = &current;
@@ -321,6 +324,15 @@ inline Element* nextMatchingChildElement(const HTMLCollection& nodeList, Element
         next = ElementTraversal::nextSibling(*next);
     } while (next && !isMatchingElement(nodeList, *next));
     return next;
+}
+
+inline Element* previousMatchingChildElement(const HTMLCollection& nodeList, Element& current)
+{
+    Element* previous = &current;
+    do {
+        previous = ElementTraversal::previousSibling(*previous);
+    } while (previous && !isMatchingElement(nodeList, *previous));
+    return previous;
 }
 
 Element* HTMLCollection::traverseToFirstElement() const
@@ -337,6 +349,14 @@ Element* HTMLCollection::traverseToFirstElement() const
             return firstMatchingChildElement(*this);
         return firstMatchingElement(*this);
     }
+}
+
+Element* HTMLCollection::traverseToLastElement() const
+{
+    ASSERT(canTraverseBackward());
+    if (shouldOnlyIncludeDirectChildren())
+        return lastMatchingChildElement(*this);
+    return lastMatchingElement(*this);
 }
 
 inline Element* HTMLCollection::traverseNextElement(Element& previous) const
@@ -375,6 +395,21 @@ Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element& curre
         }
         return traverseMatchingElementsForwardToOffset(*this, offset, currentElement, currentOffset);
     }
+}
+
+Element* HTMLCollection::traverseBackwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset) const
+{
+    ASSERT(currentOffset > offset);
+    ASSERT(canTraverseBackward());
+    if (shouldOnlyIncludeDirectChildren()) {
+        Element* previous = &currentElement;
+        while ((previous = previousMatchingChildElement(*this, *previous))) {
+            if (--currentOffset == offset)
+                return previous;
+        }
+        return 0;
+    }
+    return traverseMatchingElementsBackwardToOffset(*this, offset, currentElement, currentOffset);
 }
 
 Element* HTMLCollection::namedItem(const AtomicString& name) const

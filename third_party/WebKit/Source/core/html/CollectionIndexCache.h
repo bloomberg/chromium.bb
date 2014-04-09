@@ -161,18 +161,11 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeBeforeCachedNod
     }
 
     // Backward traversal from the cached node to the requested index.
-    NodeType* currentNode = cachedNode();
     ASSERT(collection.canTraverseBackward());
-    while ((currentNode = collection.itemBefore(currentNode))) {
-        ASSERT(currentIndex);
-        --currentIndex;
-        if (currentIndex == index) {
-            setCachedNode(currentNode, currentIndex);
-            return currentNode;
-        }
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
+    NodeType* currentNode = collection.traverseBackwardToOffset(index, *cachedNode(), currentIndex);
+    ASSERT(currentNode);
+    setCachedNode(currentNode, currentIndex);
+    return currentNode;
 }
 
 template <typename Collection, typename NodeType>
@@ -185,7 +178,7 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAfterCachedNode
     // Determine if we should traverse from the end of the collection instead of the cached node.
     bool lastIsCloser = isCachedNodeCountValid() && cachedNodeCount() - index < index - currentIndex;
     if (lastIsCloser && collection.canTraverseBackward()) {
-        NodeType* lastItem = collection.itemBefore(0);
+        NodeType* lastItem = collection.traverseToLastElement();
         ASSERT(lastItem);
         setCachedNode(lastItem, cachedNodeCount() - 1);
         if (index < cachedNodeCount() - 1)

@@ -1849,7 +1849,7 @@ void Element::checkForSiblingStyleChanges(bool finishedParsingCallback, Node* be
     // In the DOM case, we only need to do something if |afterChange| is not 0.
     if (childrenAffectedByLastChildRules() && beforeChange) {
         // Find our new last child.
-        Node* newLastChild = ElementTraversal::lastWithin(*this);
+        Node* newLastChild = ElementTraversal::lastChild(*this);
         RenderStyle* newLastChildStyle = newLastChild ? newLastChild->renderStyle() : 0;
 
         // Find the last element node going backwards from |beforeChange|

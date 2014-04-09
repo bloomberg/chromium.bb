@@ -50,9 +50,10 @@ public:
 
     // Collection IndexCache API.
     bool canTraverseBackward() const { return true; }
-    Element* itemBefore(const Element* previousItem) const;
     Element* traverseToFirstElement() const;
+    Element* traverseToLastElement() const;
     Element* traverseForwardToOffset(unsigned offset, Element& currentNode, unsigned& currentOffset) const;
+    Element* traverseBackwardToOffset(unsigned offset, Element& currentNode, unsigned& currentOffset) const;
 
 private:
     virtual Node* virtualOwnerNode() const OVERRIDE FINAL;

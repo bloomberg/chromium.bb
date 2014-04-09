@@ -48,12 +48,14 @@ public:
     void invalidateCache() { m_collectionIndexCache.invalidate(); }
     ContainerNode& ownerNode() const { return *m_parent; }
 
-    // CollectionIndexCache API.
     ContainerNode& rootNode() const { return ownerNode(); }
+
+    // CollectionIndexCache API.
     bool canTraverseBackward() const { return true; }
-    Node* itemBefore(const Node* previousItem) const;
     Node* traverseToFirstElement() const { return rootNode().firstChild(); }
+    Node* traverseToLastElement() const { return rootNode().lastChild(); }
     Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const;
+    Node* traverseBackwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const;
 
 private:
     explicit ChildNodeList(ContainerNode& rootNode);

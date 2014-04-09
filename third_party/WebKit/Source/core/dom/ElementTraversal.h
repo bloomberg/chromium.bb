@@ -119,7 +119,10 @@ template <>
 template <class NodeType>
 inline Element* Traversal<Element>::lastWithinTemplate(NodeType& current)
 {
-    return lastChildTemplate(current);
+    Node* node = NodeTraversal::lastWithin(current);
+    while (node && !node->isElementNode())
+        node = NodeTraversal::previous(*node, &current);
+    return toElement(node);
 }
 
 template <>

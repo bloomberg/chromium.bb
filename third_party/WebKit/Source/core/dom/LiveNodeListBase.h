@@ -84,22 +84,21 @@ protected:
 
     ALWAYS_INLINE NodeListRootType rootType() const { return static_cast<NodeListRootType>(m_rootType); }
 
-    template <typename Collection>
-    static Element* itemBefore(const Collection&, const Element* previousItem);
     template <class NodeListType>
     static Element* firstMatchingElement(const NodeListType&);
     template <class NodeListType>
+    static Element* lastMatchingElement(const NodeListType&);
+    template <class NodeListType>
     static Element* nextMatchingElement(const NodeListType&, Element& current);
     template <class NodeListType>
+    static Element* previousMatchingElement(const NodeListType&, Element& current);
+    template <class NodeListType>
     static Element* traverseMatchingElementsForwardToOffset(const NodeListType&, unsigned offset, Element& currentElement, unsigned& currentOffset);
+    template <class NodeListType>
+    static Element* traverseMatchingElementsBackwardToOffset(const NodeListType&, unsigned offset, Element& currentElement, unsigned& currentOffset);
 
 private:
     void invalidateIdNameCacheMaps() const;
-    template <typename Collection>
-    static Element* iterateForPreviousNode(const Collection&, Node* current);
-    static Node* previousNode(const ContainerNode&, const Node& previous, bool onlyIncludeDirectChildren);
-    static Node* lastDescendant(const ContainerNode&);
-    static Node* lastNode(const ContainerNode&, bool onlyIncludeDirectChildren);
 
     RefPtr<ContainerNode> m_ownerNode; // Cannot be null.
     const unsigned m_rootType : 1;
@@ -131,46 +130,14 @@ ALWAYS_INLINE bool LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(NodeL
     return false;
 }
 
-inline Node* LiveNodeListBase::previousNode(const ContainerNode& base, const Node& previous, bool onlyIncludeDirectChildren)
+template <typename NodeListType>
+Element* LiveNodeListBase::lastMatchingElement(const NodeListType& nodeList)
 {
-    return onlyIncludeDirectChildren ? previous.previousSibling() : NodeTraversal::previous(previous, &base);
-}
-
-inline Node* LiveNodeListBase::lastDescendant(const ContainerNode& node)
-{
-    Node* descendant = node.lastChild();
-    for (Node* current = descendant; current; current = current->lastChild())
-        descendant = current;
-    return descendant;
-}
-
-inline Node* LiveNodeListBase::lastNode(const ContainerNode& rootNode, bool onlyIncludeDirectChildren)
-{
-    return onlyIncludeDirectChildren ? rootNode.lastChild() : lastDescendant(rootNode);
-}
-
-template <typename Collection>
-Element* LiveNodeListBase::iterateForPreviousNode(const Collection& collection, Node* current)
-{
-    bool onlyIncludeDirectChildren = collection.shouldOnlyIncludeDirectChildren();
-    ContainerNode& rootNode = collection.rootNode();
-    for (; current; current = previousNode(rootNode, *current, onlyIncludeDirectChildren)) {
-        if (current->isElementNode() && isMatchingElement(collection, toElement(*current)))
-            return toElement(current);
-    }
-    return 0;
-}
-
-template <typename Collection>
-Element* LiveNodeListBase::itemBefore(const Collection& collection, const Element* previous)
-{
-    Node* current;
-    if (LIKELY(!!previous)) // Without this LIKELY, length() and item() can be 10% slower.
-        current = previousNode(collection.rootNode(), *previous, collection.shouldOnlyIncludeDirectChildren());
-    else
-        current = lastNode(collection.rootNode(), collection.shouldOnlyIncludeDirectChildren());
-
-    return iterateForPreviousNode(collection, current);
+    ContainerNode& root = nodeList.rootNode();
+    Element* element = ElementTraversal::lastWithin(root);
+    while (element && !isMatchingElement(nodeList, *element))
+        element = ElementTraversal::previous(*element, &root);
+    return element;
 }
 
 template <class NodeListType>
@@ -195,6 +162,17 @@ Element* LiveNodeListBase::nextMatchingElement(const NodeListType& nodeList, Ele
 }
 
 template <class NodeListType>
+Element* LiveNodeListBase::previousMatchingElement(const NodeListType& nodeList, Element& current)
+{
+    ContainerNode& root = nodeList.rootNode();
+    Element* previous = &current;
+    do {
+        previous = ElementTraversal::previous(*previous, &root);
+    } while (previous && !isMatchingElement(nodeList, *previous));
+    return previous;
+}
+
+template <class NodeListType>
 Element* LiveNodeListBase::traverseMatchingElementsForwardToOffset(const NodeListType& nodeList, unsigned offset, Element& currentElement, unsigned& currentOffset)
 {
     ASSERT(currentOffset < offset);
@@ -202,6 +180,18 @@ Element* LiveNodeListBase::traverseMatchingElementsForwardToOffset(const NodeLis
     while ((next = nextMatchingElement(nodeList, *next))) {
         if (++currentOffset == offset)
             return next;
+    }
+    return 0;
+}
+
+template <class NodeListType>
+Element* LiveNodeListBase::traverseMatchingElementsBackwardToOffset(const NodeListType& nodeList, unsigned offset, Element& currentElement, unsigned& currentOffset)
+{
+    ASSERT(currentOffset > offset);
+    Element* previous = &currentElement;
+    while ((previous = previousMatchingElement(nodeList, *previous))) {
+        if (--currentOffset == offset)
+            return previous;
     }
     return 0;
 }

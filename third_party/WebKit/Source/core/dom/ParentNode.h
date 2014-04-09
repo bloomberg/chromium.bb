@@ -45,12 +45,12 @@ public:
 
     static Element* firstElementChild(ContainerNode& node)
     {
-        return ElementTraversal::firstWithin(node);
+        return ElementTraversal::firstChild(node);
     }
 
     static Element* lastElementChild(ContainerNode& node)
     {
-        return ElementTraversal::lastWithin(node);
+        return ElementTraversal::lastChild(node);
     }
 
     static unsigned childElementCount(ContainerNode& node)
