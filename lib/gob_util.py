@@ -149,7 +149,13 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
     elif response.status in (422,):
       err_prefix = ('Bad request body?  Response body: "%s"' % response.read())
 
-    LOGGER.warn('%s\n%s', err_prefix, msg)
+    if response.status >= 400:
+      # The 'X-ErrorId' header is set only on >= 400 response code.
+      LOGGER.warn('%s\n%s\nX-ErrorId: %s', err_prefix, msg,
+                  response.getheader('X-ErrorId'))
+    else:
+      LOGGER.warn('%s\n%s', err_prefix, msg)
+
     raise GOBError(response.status, response.reason)
 
   return retry_util.RetryException((socket.error, InternalGOBError), TRY_LIMIT,
