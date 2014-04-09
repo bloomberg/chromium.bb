@@ -432,7 +432,6 @@ class BlobEntryKey {
   int64 object_store_id_;
   // This is the user's ObjectStoreDataKey, not the BlobEntryKey itself.
   std::string encoded_user_key_;
-  DISALLOW_COPY_AND_ASSIGN(BlobEntryKey);
 };
 
 class IndexDataKey {

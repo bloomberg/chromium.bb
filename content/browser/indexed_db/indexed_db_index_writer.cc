@@ -119,7 +119,7 @@ bool IndexWriter::AddingKeyAllowed(
 }
 
 bool MakeIndexWriters(
-    scoped_refptr<IndexedDBTransaction> transaction,
+    IndexedDBTransaction* transaction,
     IndexedDBBackingStore* backing_store,
     int64 database_id,
     const IndexedDBObjectStoreMetadata& object_store,

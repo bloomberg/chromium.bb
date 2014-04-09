@@ -59,7 +59,7 @@ class IndexWriter {
 };
 
 bool MakeIndexWriters(
-    scoped_refptr<IndexedDBTransaction> transaction,
+    IndexedDBTransaction* transaction,
     IndexedDBBackingStore* store,
     int64 database_id,
     const IndexedDBObjectStoreMetadata& metadata,

@@ -217,8 +217,8 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   typedef std::map<int, OperationID> OperationsMap;
   OperationsMap operations_;
 
-  // The getter holds the context until Init() can be called from the
-  // IO thread, which will extract the net::URLRequestContext from it.
+  // The getter holds the context until OnChannelConnected() can be called from
+  // the IO thread, which will extract the net::URLRequestContext from it.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   net::URLRequestContext* request_context_;
 
