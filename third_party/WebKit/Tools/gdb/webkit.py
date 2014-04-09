@@ -35,6 +35,8 @@ Add this to your gdb by amending your ~/.gdbinit as follows:
   import webkit
 """
 
+from __future__ import print_function
+
 import gdb
 import re
 import struct
@@ -360,7 +362,7 @@ class PrintPathToRootCommand(gdb.Command):
         try:
             val = gdb.Frame.read_var(frame, arg)
         except:
-            print "No such variable, or invalid type"
+            print("No such variable, or invalid type")
             return
 
         target_type = str(val.type.target().strip_typedefs())
@@ -374,10 +376,10 @@ class PrintPathToRootCommand(gdb.Command):
             padding = ''
             while len(stack) > 0:
                 pair = stack.pop()
-                print padding, pair[1], pair[0]
+                print(padding, pair[1], pair[0])
                 padding = padding + '  '
         else:
-            print 'Sorry: I don\'t know how to deal with %s yet.' % target_type
+            print('Sorry: I don\'t know how to deal with %s yet.' % target_type)
 
 
 PrintPathToRootCommand()
