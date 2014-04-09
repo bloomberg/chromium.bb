@@ -87,11 +87,9 @@ int g_num_raster_threads = 0;
 
 class RasterFinishedWorkerPoolTaskImpl : public internal::WorkerPoolTask {
  public:
-  typedef base::Callback<void(const internal::WorkerPoolTask* source)> Callback;
-
   explicit RasterFinishedWorkerPoolTaskImpl(
       base::SequencedTaskRunner* task_runner,
-      const Callback& on_raster_finished_callback)
+      const base::Closure& on_raster_finished_callback)
       : task_runner_(task_runner),
         on_raster_finished_callback_(on_raster_finished_callback) {}
 
@@ -116,20 +114,12 @@ class RasterFinishedWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   virtual ~RasterFinishedWorkerPoolTaskImpl() {}
 
   void RasterFinished() {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &RasterFinishedWorkerPoolTaskImpl::OnRasterFinishedOnOriginThread,
-            this));
+    task_runner_->PostTask(FROM_HERE, on_raster_finished_callback_);
   }
 
  private:
-  void OnRasterFinishedOnOriginThread() const {
-    on_raster_finished_callback_.Run(this);
-  }
-
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  const Callback on_raster_finished_callback_;
+  const base::Closure on_raster_finished_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterFinishedWorkerPoolTaskImpl);
 };
@@ -139,7 +129,7 @@ class RasterRequiredForActivationFinishedWorkerPoolTaskImpl
  public:
   RasterRequiredForActivationFinishedWorkerPoolTaskImpl(
       base::SequencedTaskRunner* task_runner,
-      const Callback& on_raster_finished_callback,
+      const base::Closure& on_raster_finished_callback,
       size_t tasks_required_for_activation_count)
       : RasterFinishedWorkerPoolTaskImpl(task_runner,
                                          on_raster_finished_callback),
@@ -261,20 +251,6 @@ unsigned RasterWorkerPool::kRasterRequiredForActivationFinishedTaskPriority =
     1u;
 unsigned RasterWorkerPool::kRasterTaskPriorityBase = 3u;
 
-RasterWorkerPool::RasterWorkerPool(base::SequencedTaskRunner* task_runner,
-                                   internal::TaskGraphRunner* task_graph_runner,
-                                   ResourceProvider* resource_provider)
-    : task_runner_(task_runner),
-      task_graph_runner_(task_graph_runner),
-      client_(NULL),
-      resource_provider_(resource_provider),
-      weak_ptr_factory_(this) {
-  if (task_graph_runner_)
-    namespace_token_ = task_graph_runner_->GetNamespaceToken();
-}
-
-RasterWorkerPool::~RasterWorkerPool() {}
-
 // static
 void RasterWorkerPool::SetNumRasterThreads(int num_threads) {
   DCHECK_LT(0, num_threads);
@@ -301,26 +277,34 @@ size_t RasterWorkerPool::GetPictureCloneIndexForCurrentThread() {
   return g_task_graph_runner.Pointer()->GetPictureCloneIndexForCurrentThread();
 }
 
-void RasterWorkerPool::SetClient(RasterWorkerPoolClient* client) {
-  client_ = client;
+// static
+scoped_refptr<internal::WorkerPoolTask>
+RasterWorkerPool::CreateRasterFinishedTask(
+    base::SequencedTaskRunner* task_runner,
+    const base::Closure& on_raster_finished_callback) {
+  return make_scoped_refptr(new RasterFinishedWorkerPoolTaskImpl(
+      task_runner, on_raster_finished_callback));
 }
 
-void RasterWorkerPool::Shutdown() {
-  TRACE_EVENT0("cc", "RasterWorkerPool::Shutdown");
-
-  if (task_graph_runner_) {
-    internal::TaskGraph empty;
-    task_graph_runner_->ScheduleTasks(namespace_token_, &empty);
-    task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
-  }
-
-  weak_ptr_factory_.InvalidateWeakPtrs();
+// static
+scoped_refptr<internal::WorkerPoolTask>
+RasterWorkerPool::CreateRasterRequiredForActivationFinishedTask(
+    size_t tasks_required_for_activation_count,
+    base::SequencedTaskRunner* task_runner,
+    const base::Closure& on_raster_finished_callback) {
+  return make_scoped_refptr(
+      new RasterRequiredForActivationFinishedWorkerPoolTaskImpl(
+          task_runner,
+          on_raster_finished_callback,
+          tasks_required_for_activation_count));
 }
 
-void RasterWorkerPool::SetTaskGraph(internal::TaskGraph* graph) {
-  TRACE_EVENT0("cc", "RasterWorkerPool::SetTaskGraph");
+// static
+void RasterWorkerPool::ScheduleTasksOnOriginThread(
+    internal::WorkerPoolTaskClient* client,
+    internal::TaskGraph* graph) {
+  TRACE_EVENT0("cc", "RasterWorkerPool::ScheduleTasksOnOriginThread");
 
-  DCHECK(task_graph_runner_);
   for (internal::TaskGraph::Node::Vector::iterator it = graph->nodes.begin();
        it != graph->nodes.end();
        ++it) {
@@ -330,74 +314,10 @@ void RasterWorkerPool::SetTaskGraph(internal::TaskGraph* graph) {
 
     if (!task->HasBeenScheduled()) {
       task->WillSchedule();
-      task->ScheduleOnOriginThread(this);
+      task->ScheduleOnOriginThread(client);
       task->DidSchedule();
     }
   }
-
-  task_graph_runner_->ScheduleTasks(namespace_token_, graph);
-}
-
-void RasterWorkerPool::CollectCompletedWorkerPoolTasks(
-    internal::Task::Vector* completed_tasks) {
-  DCHECK(task_graph_runner_);
-  task_graph_runner_->CollectCompletedTasks(namespace_token_, completed_tasks);
-}
-
-scoped_refptr<internal::WorkerPoolTask>
-RasterWorkerPool::CreateRasterFinishedTask() {
-  return make_scoped_refptr(new RasterFinishedWorkerPoolTaskImpl(
-      task_runner_,
-      base::Bind(&RasterWorkerPool::OnRasterFinished,
-                 weak_ptr_factory_.GetWeakPtr())));
-}
-
-scoped_refptr<internal::WorkerPoolTask>
-RasterWorkerPool::CreateRasterRequiredForActivationFinishedTask(
-    size_t tasks_required_for_activation_count) {
-  return make_scoped_refptr(
-      new RasterRequiredForActivationFinishedWorkerPoolTaskImpl(
-          task_runner_,
-          base::Bind(&RasterWorkerPool::OnRasterRequiredForActivationFinished,
-                     weak_ptr_factory_.GetWeakPtr()),
-          tasks_required_for_activation_count));
-}
-
-void RasterWorkerPool::RunTaskOnOriginThread(internal::WorkerPoolTask* task) {
-  task->WillSchedule();
-  task->ScheduleOnOriginThread(this);
-  task->DidSchedule();
-
-  task->WillRun();
-  task->RunOnOriginThread();
-  task->DidRun();
-
-  task->WillComplete();
-  task->CompleteOnOriginThread(this);
-  task->DidComplete();
-}
-
-void RasterWorkerPool::OnRasterFinished(
-    const internal::WorkerPoolTask* source) {
-  TRACE_EVENT0("cc", "RasterWorkerPool::OnRasterFinished");
-
-  // Early out if current |raster_finished_task_| is not the source.
-  if (source != raster_finished_task_.get())
-    return;
-
-  OnRasterTasksFinished();
-}
-
-void RasterWorkerPool::OnRasterRequiredForActivationFinished(
-    const internal::WorkerPoolTask* source) {
-  TRACE_EVENT0("cc", "RasterWorkerPool::OnRasterRequiredForActivationFinished");
-
-  // Early out if current |raster_required_for_activation_finished_task_|
-  // is not the source.
-  if (source != raster_required_for_activation_finished_task_.get())
-    return;
-
-  OnRasterTasksRequiredForActivationFinished();
 }
 
 // static
@@ -414,7 +334,7 @@ void RasterWorkerPool::InsertNodeForTask(internal::TaskGraph* graph,
 }
 
 // static
-void RasterWorkerPool::InsertNodeForRasterTask(
+void RasterWorkerPool::InsertNodesForRasterTask(
     internal::TaskGraph* graph,
     internal::WorkerPoolTask* raster_task,
     const internal::WorkerPoolTask::Vector& decode_tasks,

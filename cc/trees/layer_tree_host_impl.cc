@@ -43,8 +43,11 @@
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/resources/direct_raster_worker_pool.h"
+#include "cc/resources/image_raster_worker_pool.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/picture_layer_tiling.h"
+#include "cc/resources/pixel_buffer_raster_worker_pool.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/texture_mailbox_deleter.h"
 #include "cc/resources/ui_resource_bitmap.h"
@@ -302,6 +305,10 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   recycle_tree_.reset();
   pending_tree_.reset();
   active_tree_.reset();
+  tile_manager_.reset();
+  image_raster_worker_pool_.reset();
+  pixel_buffer_raster_worker_pool_.reset();
+  direct_raster_worker_pool_.reset();
 }
 
 void LayerTreeHostImpl::BeginMainFrameAborted(bool did_handle) {
@@ -1783,17 +1790,31 @@ void LayerTreeHostImpl::CreateAndSetTileManager(
   DCHECK(settings_.impl_side_painting);
   DCHECK(resource_provider);
   DCHECK(proxy_->ImplThreadTaskRunner());
+
+  RasterWorkerPool* default_raster_worker_pool = NULL;
+  if (using_map_image) {
+    image_raster_worker_pool_ = ImageRasterWorkerPool::Create(
+        proxy_->ImplThreadTaskRunner(),
+        resource_provider,
+        GetMapImageTextureTarget(context_provider));
+    default_raster_worker_pool = image_raster_worker_pool_.get();
+  } else {
+    pixel_buffer_raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
+        proxy_->ImplThreadTaskRunner(),
+        resource_provider,
+        GetMaxTransferBufferUsageBytes(context_provider));
+    default_raster_worker_pool = pixel_buffer_raster_worker_pool_.get();
+  }
+  direct_raster_worker_pool_ = DirectRasterWorkerPool::Create(
+      proxy_->ImplThreadTaskRunner(), resource_provider, context_provider);
   tile_manager_ =
       TileManager::Create(this,
-                          proxy_->ImplThreadTaskRunner(),
                           resource_provider,
-                          context_provider,
-                          rendering_stats_instrumentation_,
-                          using_map_image,
-                          allow_rasterize_on_demand,
-                          GetMaxTransferBufferUsageBytes(context_provider),
+                          default_raster_worker_pool,
+                          direct_raster_worker_pool_.get(),
                           GetMaxRasterTasksUsageBytes(context_provider),
-                          GetMapImageTextureTarget(context_provider));
+                          allow_rasterize_on_demand,
+                          rendering_stats_instrumentation_);
 
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
   need_to_update_visible_tiles_before_draw_ = false;
@@ -1817,6 +1838,9 @@ bool LayerTreeHostImpl::InitializeRenderer(
   // Note: order is important here.
   renderer_.reset();
   tile_manager_.reset();
+  image_raster_worker_pool_.reset();
+  pixel_buffer_raster_worker_pool_.reset();
+  direct_raster_worker_pool_.reset();
   resource_provider_.reset();
   output_surface_.reset();
 
@@ -1942,6 +1966,9 @@ void LayerTreeHostImpl::ReleaseGL() {
   ReleaseTreeResources();
   renderer_.reset();
   tile_manager_.reset();
+  image_raster_worker_pool_.reset();
+  pixel_buffer_raster_worker_pool_.reset();
+  direct_raster_worker_pool_.reset();
   resource_provider_->InitializeSoftware();
 
   bool skip_gl_renderer = true;

@@ -180,6 +180,7 @@ class RasterWorkerPoolPerfTestBase {
 
   RasterWorkerPoolPerfTestBase()
       : context_provider_(make_scoped_refptr(new PerfContextProvider)),
+        task_graph_runner_(new internal::TaskGraphRunner),
         timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval) {
@@ -191,8 +192,14 @@ class RasterWorkerPoolPerfTestBase {
         ResourceProvider::Create(
             output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1)
             .Pass();
+    pixel_buffer_raster_worker_pool_.reset(
+        new PerfPixelBufferRasterWorkerPoolImpl(task_graph_runner_.get(),
+                                                resource_provider_.get()));
+    image_raster_worker_pool_.reset(new PerfImageRasterWorkerPoolImpl(
+        task_graph_runner_.get(), resource_provider_.get()));
+    direct_raster_worker_pool_.reset(new PerfDirectRasterWorkerPoolImpl(
+        resource_provider_.get(), context_provider_));
   }
-  virtual ~RasterWorkerPoolPerfTestBase() { resource_provider_.reset(); }
 
   void CreateImageDecodeTasks(
       unsigned num_image_decode_tasks,
@@ -234,6 +241,10 @@ class RasterWorkerPoolPerfTestBase {
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<ResourceProvider> resource_provider_;
+  scoped_ptr<internal::TaskGraphRunner> task_graph_runner_;
+  scoped_ptr<PixelBufferRasterWorkerPool> pixel_buffer_raster_worker_pool_;
+  scoped_ptr<ImageRasterWorkerPool> image_raster_worker_pool_;
+  scoped_ptr<DirectRasterWorkerPool> direct_raster_worker_pool_;
   LapTimer timer_;
 };
 
@@ -242,20 +253,16 @@ class RasterWorkerPoolPerfTest
       public testing::TestWithParam<RasterWorkerPoolType>,
       public RasterWorkerPoolClient {
  public:
-  RasterWorkerPoolPerfTest()
-      : task_graph_runner_(new internal::TaskGraphRunner) {
+  RasterWorkerPoolPerfTest() : raster_worker_pool_(NULL) {
     switch (GetParam()) {
       case RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER:
-        raster_worker_pool_.reset(new PerfPixelBufferRasterWorkerPoolImpl(
-            task_graph_runner_.get(), resource_provider_.get()));
+        raster_worker_pool_ = pixel_buffer_raster_worker_pool_.get();
         break;
       case RASTER_WORKER_POOL_TYPE_IMAGE:
-        raster_worker_pool_.reset(new PerfImageRasterWorkerPoolImpl(
-            task_graph_runner_.get(), resource_provider_.get()));
+        raster_worker_pool_ = image_raster_worker_pool_.get();
         break;
       case RASTER_WORKER_POOL_TYPE_DIRECT:
-        raster_worker_pool_.reset(new PerfDirectRasterWorkerPoolImpl(
-            resource_provider_.get(), context_provider_));
+        raster_worker_pool_ = direct_raster_worker_pool_.get();
         break;
     }
 
@@ -401,8 +408,7 @@ class RasterWorkerPoolPerfTest
     return std::string();
   }
 
-  scoped_ptr<internal::TaskGraphRunner> task_graph_runner_;
-  scoped_ptr<RasterWorkerPool> raster_worker_pool_;
+  RasterWorkerPool* raster_worker_pool_;
 };
 
 TEST_P(RasterWorkerPoolPerfTest, ScheduleTasks) {

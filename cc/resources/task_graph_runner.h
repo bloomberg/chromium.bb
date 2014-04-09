@@ -35,9 +35,10 @@ class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
   bool did_run_;
 };
 
-// Dependencies are represented as edges in a task graph. Each graph node
-// is assigned a priority and a run count that matches the number of
-// dependencies.
+// Dependencies are represented as edges in a task graph. Each graph node is
+// assigned a priority and a run count that matches the number of dependencies.
+// Priority range from 0 (most favorable scheduling) to UINT_MAX (least
+// favorable).
 struct CC_EXPORT TaskGraph {
   struct Node {
     class TaskComparator {

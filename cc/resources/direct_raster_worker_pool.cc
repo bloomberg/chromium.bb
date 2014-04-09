@@ -14,11 +14,11 @@
 namespace cc {
 
 // static
-scoped_ptr<RasterWorkerPool> DirectRasterWorkerPool::Create(
+scoped_ptr<DirectRasterWorkerPool> DirectRasterWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
     ResourceProvider* resource_provider,
     ContextProvider* context_provider) {
-  return make_scoped_ptr<RasterWorkerPool>(new DirectRasterWorkerPool(
+  return make_scoped_ptr(new DirectRasterWorkerPool(
       task_runner, resource_provider, context_provider));
 }
 
@@ -26,15 +26,21 @@ DirectRasterWorkerPool::DirectRasterWorkerPool(
     base::SequencedTaskRunner* task_runner,
     ResourceProvider* resource_provider,
     ContextProvider* context_provider)
-    : RasterWorkerPool(task_runner, NULL, resource_provider),
+    : task_runner_(task_runner),
+      resource_provider_(resource_provider),
       context_provider_(context_provider),
       run_tasks_on_origin_thread_pending_(false),
       raster_tasks_pending_(false),
       raster_tasks_required_for_activation_pending_(false),
-      weak_factory_(this) {}
+      raster_finished_weak_ptr_factory_(this),
+      weak_ptr_factory_(this) {}
 
 DirectRasterWorkerPool::~DirectRasterWorkerPool() {
   DCHECK_EQ(0u, completed_tasks_.size());
+}
+
+void DirectRasterWorkerPool::SetClient(RasterWorkerPoolClient* client) {
+  client_ = client;
 }
 
 void DirectRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
@@ -49,12 +55,22 @@ void DirectRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
   raster_tasks_pending_ = true;
   raster_tasks_required_for_activation_pending_ = true;
 
+  // Cancel existing OnRasterFinished callbacks.
+  raster_finished_weak_ptr_factory_.InvalidateWeakPtrs();
+
   scoped_refptr<internal::WorkerPoolTask>
       new_raster_required_for_activation_finished_task(
           CreateRasterRequiredForActivationFinishedTask(
-              queue->required_for_activation_count));
+              queue->required_for_activation_count,
+              task_runner_.get(),
+              base::Bind(&DirectRasterWorkerPool::
+                             OnRasterRequiredForActivationFinished,
+                         raster_finished_weak_ptr_factory_.GetWeakPtr())));
   scoped_refptr<internal::WorkerPoolTask> new_raster_finished_task(
-      CreateRasterFinishedTask());
+      CreateRasterFinishedTask(
+          task_runner_.get(),
+          base::Bind(&DirectRasterWorkerPool::OnRasterFinished,
+                     raster_finished_weak_ptr_factory_.GetWeakPtr())));
 
   // Need to cancel tasks not present in new queue if we haven't had a
   // chance to run the previous set of tasks yet.
@@ -79,9 +95,9 @@ void DirectRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
 
   raster_tasks_.Swap(queue);
 
-  set_raster_finished_task(new_raster_finished_task);
-  set_raster_required_for_activation_finished_task(
-      new_raster_required_for_activation_finished_task);
+  raster_finished_task_ = new_raster_finished_task;
+  raster_required_for_activation_finished_task_ =
+      new_raster_required_for_activation_finished_task;
 }
 
 unsigned DirectRasterWorkerPool::GetResourceTarget() const {
@@ -89,7 +105,7 @@ unsigned DirectRasterWorkerPool::GetResourceTarget() const {
 }
 
 ResourceFormat DirectRasterWorkerPool::GetResourceFormat() const {
-  return resource_provider()->best_texture_format();
+  return resource_provider_->best_texture_format();
 }
 
 void DirectRasterWorkerPool::CheckForCompletedTasks() {
@@ -109,35 +125,40 @@ void DirectRasterWorkerPool::CheckForCompletedTasks() {
 SkCanvas* DirectRasterWorkerPool::AcquireCanvasForRaster(
     internal::WorkerPoolTask* task,
     const Resource* resource) {
-  return resource_provider()->MapDirectRasterBuffer(resource->id());
+  return resource_provider_->MapDirectRasterBuffer(resource->id());
 }
 
 void DirectRasterWorkerPool::ReleaseCanvasForRaster(
     internal::WorkerPoolTask* task,
     const Resource* resource) {
-  resource_provider()->UnmapDirectRasterBuffer(resource->id());
+  resource_provider_->UnmapDirectRasterBuffer(resource->id());
 }
 
-void DirectRasterWorkerPool::OnRasterTasksFinished() {
+void DirectRasterWorkerPool::OnRasterFinished() {
+  TRACE_EVENT0("cc", "DirectRasterWorkerPool::OnRasterFinished");
+
   DCHECK(raster_tasks_pending_);
   raster_tasks_pending_ = false;
-  client()->DidFinishRunningTasks();
+  client_->DidFinishRunningTasks();
 }
 
-void DirectRasterWorkerPool::OnRasterTasksRequiredForActivationFinished() {
+void DirectRasterWorkerPool::OnRasterRequiredForActivationFinished() {
+  TRACE_EVENT0("cc",
+               "DirectRasterWorkerPool::OnRasterRequiredForActivationFinished");
+
   DCHECK(raster_tasks_required_for_activation_pending_);
   raster_tasks_required_for_activation_pending_ = false;
-  client()->DidFinishRunningTasksRequiredForActivation();
+  client_->DidFinishRunningTasksRequiredForActivation();
 }
 
 void DirectRasterWorkerPool::ScheduleRunTasksOnOriginThread() {
   if (run_tasks_on_origin_thread_pending_)
     return;
 
-  task_runner()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DirectRasterWorkerPool::RunTasksOnOriginThread,
-                 weak_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()));
   run_tasks_on_origin_thread_pending_ = true;
 }
 
@@ -192,8 +213,23 @@ void DirectRasterWorkerPool::RunTasksOnOriginThread() {
     context_provider_->ContextGL()->PopGroupMarkerEXT();
   }
 
-  RunTaskOnOriginThread(raster_required_for_activation_finished_task());
-  RunTaskOnOriginThread(raster_finished_task());
+  RunTaskOnOriginThread(raster_required_for_activation_finished_task_.get());
+  RunTaskOnOriginThread(raster_finished_task_.get());
+}
+
+void DirectRasterWorkerPool::RunTaskOnOriginThread(
+    internal::WorkerPoolTask* task) {
+  task->WillSchedule();
+  task->ScheduleOnOriginThread(this);
+  task->DidSchedule();
+
+  task->WillRun();
+  task->RunOnOriginThread();
+  task->DidRun();
+
+  task->WillComplete();
+  task->CompleteOnOriginThread(this);
+  task->DidComplete();
 }
 
 }  // namespace cc

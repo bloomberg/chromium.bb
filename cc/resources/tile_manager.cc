@@ -15,9 +15,6 @@
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/layers/picture_layer_impl.h"
-#include "cc/resources/direct_raster_worker_pool.h"
-#include "cc/resources/image_raster_worker_pool.h"
-#include "cc/resources/pixel_buffer_raster_worker_pool.h"
 #include "cc/resources/raster_worker_pool_delegate.h"
 #include "cc/resources/tile.h"
 #include "skia/ext/paint_simplifier.h"
@@ -400,52 +397,34 @@ scoped_ptr<base::Value> RasterTaskCompletionStatsAsValue(
 // static
 scoped_ptr<TileManager> TileManager::Create(
     TileManagerClient* client,
-    base::SequencedTaskRunner* task_runner,
     ResourceProvider* resource_provider,
-    ContextProvider* context_provider,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation,
-    bool use_map_image,
-    bool use_rasterize_on_demand,
-    size_t max_transfer_buffer_usage_bytes,
+    RasterWorkerPool* raster_worker_pool,
+    RasterWorkerPool* gpu_raster_worker_pool,
     size_t max_raster_usage_bytes,
-    unsigned map_image_texture_target) {
-  return make_scoped_ptr(new TileManager(
-      client,
-      task_runner,
-      resource_provider,
-      context_provider,
-      use_map_image
-          ? ImageRasterWorkerPool::Create(
-                task_runner, resource_provider, map_image_texture_target)
-          : PixelBufferRasterWorkerPool::Create(
-                task_runner,
-                resource_provider,
-                max_transfer_buffer_usage_bytes),
-      DirectRasterWorkerPool::Create(
-          task_runner, resource_provider, context_provider),
-      max_raster_usage_bytes,
-      rendering_stats_instrumentation,
-      use_rasterize_on_demand));
+    bool use_rasterize_on_demand,
+    RenderingStatsInstrumentation* rendering_stats_instrumentation) {
+  return make_scoped_ptr(new TileManager(client,
+                                         resource_provider,
+                                         raster_worker_pool,
+                                         gpu_raster_worker_pool,
+                                         max_raster_usage_bytes,
+                                         use_rasterize_on_demand,
+                                         rendering_stats_instrumentation));
 }
 
 TileManager::TileManager(
     TileManagerClient* client,
-    base::SequencedTaskRunner* task_runner,
     ResourceProvider* resource_provider,
-    ContextProvider* context_provider,
-    scoped_ptr<RasterWorkerPool> raster_worker_pool,
-    scoped_ptr<RasterWorkerPool> direct_raster_worker_pool,
+    RasterWorkerPool* raster_worker_pool,
+    RasterWorkerPool* gpu_raster_worker_pool,
     size_t max_raster_usage_bytes,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation,
-    bool use_rasterize_on_demand)
+    bool use_rasterize_on_demand,
+    RenderingStatsInstrumentation* rendering_stats_instrumentation)
     : client_(client),
-      context_provider_(context_provider),
       resource_pool_(
           ResourcePool::Create(resource_provider,
                                raster_worker_pool->GetResourceTarget(),
                                raster_worker_pool->GetResourceFormat())),
-      raster_worker_pool_(raster_worker_pool.Pass()),
-      direct_raster_worker_pool_(direct_raster_worker_pool.Pass()),
       prioritized_tiles_dirty_(false),
       all_tiles_that_need_to_be_rasterized_have_memory_(true),
       all_tiles_required_for_activation_have_memory_(true),
@@ -458,10 +437,11 @@ TileManager::TileManager(
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       did_initialize_visible_tile_(false),
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
-      use_rasterize_on_demand_(use_rasterize_on_demand) {
+      use_rasterize_on_demand_(use_rasterize_on_demand),
+      resource_format_(raster_worker_pool->GetResourceFormat()) {
   RasterWorkerPool* raster_worker_pools[NUM_RASTER_WORKER_POOL_TYPES] = {
-      raster_worker_pool_.get(),        // RASTER_WORKER_POOL_TYPE_DEFAULT
-      direct_raster_worker_pool_.get()  // RASTER_WORKER_POOL_TYPE_DIRECT
+      raster_worker_pool,      // RASTER_WORKER_POOL_TYPE_DEFAULT
+      gpu_raster_worker_pool,  // RASTER_WORKER_POOL_TYPE_GPU
   };
   raster_worker_pool_delegate_ = RasterWorkerPoolDelegate::Create(
       this, raster_worker_pools, arraysize(raster_worker_pools));
@@ -1090,7 +1070,7 @@ void TileManager::ScheduleTasks(
       tile_version.raster_task_ = CreateRasterTask(tile);
 
     size_t pool_type = tile->use_gpu_rasterization()
-                           ? RASTER_WORKER_POOL_TYPE_DIRECT
+                           ? RASTER_WORKER_POOL_TYPE_GPU
                            : RASTER_WORKER_POOL_TYPE_DEFAULT;
 
     raster_queue_[pool_type].items.push_back(RasterTaskQueue::Item(

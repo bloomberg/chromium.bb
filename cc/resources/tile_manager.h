@@ -108,15 +108,12 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
 
   static scoped_ptr<TileManager> Create(
       TileManagerClient* client,
-      base::SequencedTaskRunner* task_runner,
       ResourceProvider* resource_provider,
-      ContextProvider* context_provider,
-      RenderingStatsInstrumentation* rendering_stats_instrumentation,
-      bool use_map_image,
-      bool use_rasterize_on_demand,
-      size_t max_transfer_buffer_usage_bytes,
+      RasterWorkerPool* raster_worker_pool,
+      RasterWorkerPool* gpu_raster_worker_pool,
       size_t max_raster_usage_bytes,
-      unsigned map_image_texture_target);
+      bool use_rasterize_on_demand,
+      RenderingStatsInstrumentation* rendering_stats_instrumentation);
   virtual ~TileManager();
 
   void ManageTiles(const GlobalStateThatImpactsTilePriority& state);
@@ -180,14 +177,12 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
 
  protected:
   TileManager(TileManagerClient* client,
-              base::SequencedTaskRunner* task_runner,
               ResourceProvider* resource_provider,
-              ContextProvider* context_provider,
-              scoped_ptr<RasterWorkerPool> raster_worker_pool,
-              scoped_ptr<RasterWorkerPool> direct_raster_worker_pool,
+              RasterWorkerPool* raster_worker_pool,
+              RasterWorkerPool* gpu_raster_worker_pool,
               size_t max_raster_usage_bytes,
-              RenderingStatsInstrumentation* rendering_stats_instrumentation,
-              bool use_rasterize_on_demand);
+              bool use_rasterize_on_demand,
+              RenderingStatsInstrumentation* rendering_stats_instrumentation);
 
   // Methods called by Tile
   friend class Tile;
@@ -217,7 +212,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
  private:
   enum RasterWorkerPoolType {
     RASTER_WORKER_POOL_TYPE_DEFAULT,
-    RASTER_WORKER_POOL_TYPE_DIRECT,
+    RASTER_WORKER_POOL_TYPE_GPU,
     NUM_RASTER_WORKER_POOL_TYPES
   };
 
@@ -231,8 +226,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
                              bool was_canceled);
 
   inline size_t BytesConsumedIfAllocated(const Tile* tile) const {
-    return Resource::MemorySizeBytes(tile->size(),
-                                     raster_worker_pool_->GetResourceFormat());
+    return Resource::MemorySizeBytes(tile->size(), resource_format_);
   }
 
   void FreeResourceForTile(Tile* tile, RasterMode mode);
@@ -246,10 +240,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   void UpdatePrioritizedTileSetIfNeeded();
 
   TileManagerClient* client_;
-  ContextProvider* context_provider_;
   scoped_ptr<ResourcePool> resource_pool_;
-  scoped_ptr<RasterWorkerPool> raster_worker_pool_;
-  scoped_ptr<RasterWorkerPool> direct_raster_worker_pool_;
   scoped_ptr<RasterWorkerPoolDelegate> raster_worker_pool_delegate_;
   GlobalStateThatImpactsTilePriority global_state_;
 
@@ -290,6 +281,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   std::vector<Tile*> released_tiles_;
 
   bool use_rasterize_on_demand_;
+
+  ResourceFormat resource_format_;
 
   // Queues used when scheduling raster tasks.
   RasterTaskQueue raster_queue_[NUM_RASTER_WORKER_POOL_TYPES];

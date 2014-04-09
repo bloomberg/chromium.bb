@@ -7,17 +7,19 @@
 #include <deque>
 #include <limits>
 
+#include "base/lazy_instance.h"
 #include "cc/resources/raster_worker_pool.h"
 
 namespace cc {
 
 namespace {
 
-class FakeRasterWorkerPool : public RasterWorkerPool {
+class FakeRasterWorkerPool : public RasterWorkerPool,
+                             public internal::WorkerPoolTaskClient {
  public:
-  FakeRasterWorkerPool() : RasterWorkerPool(NULL, NULL, NULL) {}
-
   // Overridden from RasterWorkerPool:
+  virtual void SetClient(RasterWorkerPoolClient* client) OVERRIDE {}
+  virtual void Shutdown() OVERRIDE {}
   virtual void ScheduleTasks(RasterTaskQueue* queue) OVERRIDE {
     for (RasterTaskQueue::Item::Vector::const_iterator it =
              queue->items.begin();
@@ -33,17 +35,19 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
     }
   }
   virtual void CheckForCompletedTasks() OVERRIDE {
-    while (!completed_tasks_.empty()) {
-      internal::WorkerPoolTask* task = completed_tasks_.front().get();
+    for (internal::WorkerPoolTask::Vector::iterator it =
+             completed_tasks_.begin();
+         it != completed_tasks_.end();
+         ++it) {
+      internal::WorkerPoolTask* task = it->get();
 
       task->WillComplete();
       task->CompleteOnOriginThread(this);
       task->DidComplete();
 
       task->RunReplyOnOriginThread();
-
-      completed_tasks_.pop_front();
     }
+    completed_tasks_.clear();
   }
   virtual GLenum GetResourceTarget() const OVERRIDE {
     return GL_TEXTURE_2D;
@@ -61,63 +65,53 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
                                       const Resource* resource) OVERRIDE {}
 
  private:
-  // Overridden from RasterWorkerPool:
-  virtual void OnRasterTasksFinished() OVERRIDE {}
-  virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE {}
-
-  TaskDeque completed_tasks_;
+  internal::WorkerPoolTask::Vector completed_tasks_;
 };
+base::LazyInstance<FakeRasterWorkerPool> g_fake_raster_worker_pool =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 FakeTileManager::FakeTileManager(TileManagerClient* client)
     : TileManager(client,
-                  base::MessageLoopProxy::current().get(),
                   NULL,
-                  NULL,
-                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
-                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
+                  g_fake_raster_worker_pool.Pointer(),
+                  g_fake_raster_worker_pool.Pointer(),
                   std::numeric_limits<unsigned>::max(),
-                  NULL,
-                  true) {}
+                  true,
+                  NULL) {}
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourceProvider* resource_provider)
     : TileManager(client,
-                  base::MessageLoopProxy::current().get(),
                   resource_provider,
-                  NULL,
-                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
-                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
+                  g_fake_raster_worker_pool.Pointer(),
+                  g_fake_raster_worker_pool.Pointer(),
                   std::numeric_limits<unsigned>::max(),
-                  NULL,
-                  true) {}
+                  true,
+                  NULL) {}
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourceProvider* resource_provider,
                                  bool allow_on_demand_raster)
     : TileManager(client,
-                  base::MessageLoopProxy::current().get(),
                   resource_provider,
-                  NULL,
-                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
-                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
+                  g_fake_raster_worker_pool.Pointer(),
+                  g_fake_raster_worker_pool.Pointer(),
                   std::numeric_limits<unsigned>::max(),
-                  NULL,
-                  allow_on_demand_raster) {}
+                  allow_on_demand_raster,
+                  NULL) {}
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourceProvider* resource_provider,
                                  size_t raster_task_limit_bytes)
     : TileManager(client,
-                  base::MessageLoopProxy::current().get(),
                   resource_provider,
-                  NULL,
-                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
-                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
+                  g_fake_raster_worker_pool.Pointer(),
+                  g_fake_raster_worker_pool.Pointer(),
                   raster_task_limit_bytes,
-                  NULL,
-                  true) {}
+                  true,
+                  NULL) {}
 
 FakeTileManager::~FakeTileManager() {}
 

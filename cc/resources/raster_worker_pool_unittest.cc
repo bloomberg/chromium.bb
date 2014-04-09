@@ -135,25 +135,28 @@ class RasterWorkerPoolTest
         ResourceProvider::Create(
             output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1)
             .Pass();
+    pixel_buffer_raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
+        base::MessageLoopProxy::current().get(),
+        resource_provider_.get(),
+        std::numeric_limits<size_t>::max());
+    image_raster_worker_pool_ =
+        ImageRasterWorkerPool::Create(base::MessageLoopProxy::current().get(),
+                                      resource_provider_.get(),
+                                      GL_TEXTURE_2D);
+    direct_raster_worker_pool_ =
+        DirectRasterWorkerPool::Create(base::MessageLoopProxy::current().get(),
+                                       resource_provider_.get(),
+                                       context_provider_.get());
 
     switch (GetParam()) {
       case RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER:
-        raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
-            base::MessageLoopProxy::current().get(),
-            resource_provider_.get(),
-            std::numeric_limits<size_t>::max());
+        raster_worker_pool_ = pixel_buffer_raster_worker_pool_.get();
         break;
       case RASTER_WORKER_POOL_TYPE_IMAGE:
-        raster_worker_pool_ = ImageRasterWorkerPool::Create(
-            base::MessageLoopProxy::current().get(),
-            resource_provider_.get(),
-            GL_TEXTURE_2D);
+        raster_worker_pool_ = image_raster_worker_pool_.get();
         break;
       case RASTER_WORKER_POOL_TYPE_DIRECT:
-        raster_worker_pool_ = DirectRasterWorkerPool::Create(
-            base::MessageLoopProxy::current().get(),
-            resource_provider_.get(),
-            context_provider_.get());
+        raster_worker_pool_ = direct_raster_worker_pool_.get();
         break;
     }
 
@@ -272,7 +275,10 @@ class RasterWorkerPoolTest
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<ResourceProvider> resource_provider_;
-  scoped_ptr<RasterWorkerPool> raster_worker_pool_;
+  scoped_ptr<PixelBufferRasterWorkerPool> pixel_buffer_raster_worker_pool_;
+  scoped_ptr<ImageRasterWorkerPool> image_raster_worker_pool_;
+  scoped_ptr<DirectRasterWorkerPool> direct_raster_worker_pool_;
+  RasterWorkerPool* raster_worker_pool_;
   base::CancelableClosure timeout_;
   int timeout_seconds_;
   bool timed_out_;
