@@ -387,7 +387,10 @@ void RuleFeatureSet::clear()
     m_classInvalidationSets.clear();
     m_attributeInvalidationSets.clear();
     m_idInvalidationSets.clear();
-    m_styleInvalidator.clearPendingInvalidations();
+    // We cannot clear m_styleInvalidator here, because the style invalidator might not
+    // have been evaluated yet. If not yet, in StyleInvalidator, there exists some element
+    // who has needsStyleInvlidation but does not have any invalidation list.
+    // This makes Blink not to recalc style correctly. crbug.com/344729.
 }
 
 void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, Element& element)
