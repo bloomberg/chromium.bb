@@ -45,13 +45,15 @@ class Node;
 
 class LayerRect FINAL : public RefCountedWillBeGarbageCollectedFinalized<LayerRect> {
 public:
-    static PassRefPtrWillBeRawPtr<LayerRect> create(PassRefPtr<Node> node, const String& layerType, PassRefPtrWillBeRawPtr<ClientRect> rect)
+    static PassRefPtrWillBeRawPtr<LayerRect> create(PassRefPtr<Node> node, const String& layerType, int nodeOffsetX, int nodeOffsetY, PassRefPtrWillBeRawPtr<ClientRect> rect)
     {
-        return adoptRefWillBeNoop(new LayerRect(node, layerType, rect));
+        return adoptRefWillBeNoop(new LayerRect(node, layerType, nodeOffsetX, nodeOffsetY, rect));
     }
 
-    Node* layerRootNode() const { return m_layerRootNode.get(); }
+    Node* layerAssociatedNode() const { return m_layerAssociatedNode.get(); }
     String layerType() const { return m_layerType; }
+    int associatedNodeOffsetX() const { return m_associatedNodeOffsetX; }
+    int associatedNodeOffsetY() const { return m_associatedNodeOffsetY; }
     ClientRect* layerRelativeRect() const { return m_rect.get(); }
 
     void trace(Visitor* visitor)
@@ -60,15 +62,19 @@ public:
     }
 
 private:
-    LayerRect(PassRefPtr<Node> node, const String& layerName, PassRefPtrWillBeRawPtr<ClientRect> rect)
-        : m_layerRootNode(node)
+    LayerRect(PassRefPtr<Node> node, const String& layerName, int nodeOffsetX, int nodeOffsetY, PassRefPtrWillBeRawPtr<ClientRect> rect)
+        : m_layerAssociatedNode(node)
         , m_layerType(layerName)
+        , m_associatedNodeOffsetX(nodeOffsetX)
+        , m_associatedNodeOffsetY(nodeOffsetY)
         , m_rect(rect)
     {
     }
 
-    RefPtr<Node> m_layerRootNode;
+    RefPtr<Node> m_layerAssociatedNode;
     String m_layerType;
+    int m_associatedNodeOffsetX;
+    int m_associatedNodeOffsetY;
     RefPtrWillBeMember<ClientRect> m_rect;
 };
 

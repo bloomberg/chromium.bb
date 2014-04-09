@@ -31,7 +31,15 @@
 [
     WillBeGarbageCollected,
 ] interface LayerRect {
-    readonly attribute Node layerRootNode;
+    /* The node that most closely represents the layer in which the rect
+       occurs.  When a layer doesn't correspond directly to a node (eg.
+       for layer squashing) this will the node representing an ancestor
+       layer. */
+    readonly attribute Node layerAssociatedNode;
     readonly attribute DOMString layerType;
+    /* Offset of the associated node from the GraphicsLayer */
+    readonly attribute long associatedNodeOffsetX;
+    readonly attribute long associatedNodeOffsetY;
+    /* Rectange in the GraphicsLayer co-ordinate space */
     readonly attribute ClientRect layerRelativeRect;
 };

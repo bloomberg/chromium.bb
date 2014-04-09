@@ -143,7 +143,7 @@ private:
 
     bool touchHitTestingEnabled() const;
     void setShouldHandleScrollGestureOnMainThreadRegion(const Region&);
-    void setTouchEventTargetRects(const LayerHitTestRects&);
+    void setTouchEventTargetRects(LayerHitTestRects&);
     void computeTouchEventTargetRects(LayerHitTestRects&);
     void setWheelEventHandlerCount(unsigned);
 

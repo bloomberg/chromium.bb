@@ -384,6 +384,8 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
     return !!webLayer;
 }
 
+typedef WTF::HashMap<const GraphicsLayer*, Vector<LayoutRect> > GraphicsLayerHitTestRects;
+
 // In order to do a DFS cross-frame walk of the RenderLayer tree, we need to know which
 // RenderLayers have child frames inside of them. This computes a mapping for the
 // current frame which we can consult while walking the layers of that frame.
@@ -406,10 +408,30 @@ static void makeLayerChildFrameMap(const LocalFrame* currentFrame, LayerFrameMap
     }
 }
 
-static void convertLayerRectsToEnclosingCompositedLayerRecursive(
+// Return the enclosingCompositedLayerForRepaint for the given RenderLayer
+// including crossing frame boundaries.
+static const RenderLayer* enclosingCompositedLayer(const RenderLayer* layer)
+{
+    RenderLayer* compositedLayer = 0;
+    while (!compositedLayer) {
+        compositedLayer = layer->enclosingCompositingLayerForRepaint();
+        if (!compositedLayer) {
+            RenderObject* owner = layer->renderer()->frame()->ownerRenderer();
+            if (!owner)
+                break;
+            layer = owner->enclosingLayer();
+        }
+    }
+    // Since this machinery is used only when accelerated compositing is enabled, we expect
+    // that every layer should have an enclosing composited layer.
+    ASSERT(compositedLayer);
+    return compositedLayer;
+}
+
+static void projectRectsToGraphicsLayerSpaceRecursive(
     const RenderLayer* curLayer,
     const LayerHitTestRects& layerRects,
-    LayerHitTestRects& compositorRects,
+    GraphicsLayerHitTestRects& graphicsRects,
     RenderGeometryMap& geometryMap,
     HashSet<const RenderLayer*>& layersWithRects,
     LayerFrameMap& layerChildFrameMap)
@@ -418,30 +440,33 @@ static void convertLayerRectsToEnclosingCompositedLayerRecursive(
     LayerHitTestRects::const_iterator layerIter = layerRects.find(curLayer);
     if (layerIter != layerRects.end()) {
         // Find the enclosing composited layer when it's in another document (for non-composited iframes).
-        RenderLayer* compositedLayer = 0;
-        for (const RenderLayer* layer = layerIter->key; !compositedLayer;) {
-            compositedLayer = layer->enclosingCompositingLayerForRepaint();
-            if (!compositedLayer) {
-                RenderObject* owner = layer->renderer()->frame()->ownerRenderer();
-                if (!owner)
-                    break;
-                layer = owner->enclosingLayer();
-            }
-        }
-        if (!compositedLayer) {
-            // Since this machinery is used only when accelerated compositing is enabled, we expect
-            // that every layer should have an enclosing composited layer.
-            ASSERT_NOT_REACHED();
+        const RenderLayer* compositedLayer = enclosingCompositedLayer(layerIter->key);
+        if (!compositedLayer)
             return;
+
+        // Find the appropriate GraphicsLayer for the composited RenderLayer.
+        GraphicsLayer* graphicsLayer;
+        LayoutSize extraOffset;
+        if (compositedLayer->compositingState() == PaintsIntoGroupedBacking) {
+            graphicsLayer = compositedLayer->groupedMapping()->squashingLayer();
+            extraOffset = -compositedLayer->offsetFromSquashingLayerOrigin();
+        } else {
+            ASSERT(compositedLayer->hasCompositedLayerMapping());
+            CompositedLayerMappingPtr compositedLayerMapping = compositedLayer->compositedLayerMapping();
+            // If the layer is using composited scrolling, then it's the contents that these
+            // rects apply to.
+            graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
+            if (!graphicsLayer)
+                graphicsLayer = compositedLayerMapping->mainGraphicsLayer();
         }
 
-        LayerHitTestRects::iterator compIter = compositorRects.find(compositedLayer);
-        Vector<LayoutRect>* compIterValue;
-        if (compIter == compositorRects.end())
-            compIterValue = &compositorRects.add(compositedLayer, Vector<LayoutRect>()).storedValue->value;
+        GraphicsLayerHitTestRects::iterator glIter = graphicsRects.find(graphicsLayer);
+        Vector<LayoutRect>* glRects;
+        if (glIter == graphicsRects.end())
+            glRects = &graphicsRects.add(graphicsLayer, Vector<LayoutRect>()).storedValue->value;
         else
-            compIterValue = &compIter->value;
-        // Transform each rect to the co-ordinate space of it's enclosing composited layer.
+            glRects = &glIter->value;
+        // Transform each rect to the co-ordinate space of the graphicsLayer.
         for (size_t i = 0; i < layerIter->value.size(); ++i) {
             LayoutRect rect = layerIter->value[i];
             if (compositedLayer != curLayer) {
@@ -453,7 +478,8 @@ static void convertLayerRectsToEnclosingCompositedLayerRecursive(
                 if (compositedLayer->renderer()->hasOverflowClip())
                     rect.move(compositedLayer->renderBox()->scrolledContentOffset());
             }
-            compIterValue->append(rect);
+            rect.move(extraOffset);
+            glRects->append(rect);
         }
     }
 
@@ -461,7 +487,7 @@ static void convertLayerRectsToEnclosingCompositedLayerRecursive(
     for (const RenderLayer* childLayer = curLayer->firstChild(); childLayer; childLayer = childLayer->nextSibling()) {
         if (layersWithRects.contains(childLayer)) {
             geometryMap.pushMappingsToAncestor(childLayer, curLayer);
-            convertLayerRectsToEnclosingCompositedLayerRecursive(childLayer, layerRects, compositorRects, geometryMap, layersWithRects, layerChildFrameMap);
+            projectRectsToGraphicsLayerSpaceRecursive(childLayer, layerRects, graphicsRects, geometryMap, layersWithRects, layerChildFrameMap);
             geometryMap.popMappingsToAncestor(curLayer);
         }
     }
@@ -476,16 +502,16 @@ static void convertLayerRectsToEnclosingCompositedLayerRecursive(
                 LayerFrameMap newLayerChildFrameMap;
                 makeLayerChildFrameMap(childFrame, &newLayerChildFrameMap);
                 geometryMap.pushMappingsToAncestor(childLayer, curLayer);
-                convertLayerRectsToEnclosingCompositedLayerRecursive(childLayer, layerRects, compositorRects, geometryMap, layersWithRects, newLayerChildFrameMap);
+                projectRectsToGraphicsLayerSpaceRecursive(childLayer, layerRects, graphicsRects, geometryMap, layersWithRects, newLayerChildFrameMap);
                 geometryMap.popMappingsToAncestor(curLayer);
             }
         }
     }
 }
 
-static void convertLayerRectsToEnclosingCompositedLayer(LocalFrame* mainFrame, const LayerHitTestRects& layerRects, LayerHitTestRects& compositorRects)
+static void projectRectsToGraphicsLayerSpace(LocalFrame* mainFrame, const LayerHitTestRects& layerRects, GraphicsLayerHitTestRects& graphicsRects)
 {
-    TRACE_EVENT0("input", "ScrollingCoordinator::convertLayerRectsToEnclosingCompositedLayer");
+    TRACE_EVENT0("input", "ScrollingCoordinator::projectRectsToGraphicsLayerSpace");
     bool touchHandlerInChildFrame = false;
 
     // We have a set of rects per RenderLayer, we need to map them to their bounding boxes in their
@@ -517,7 +543,7 @@ static void convertLayerRectsToEnclosingCompositedLayer(LocalFrame* mainFrame, c
     geometryMap.pushMappingsToAncestor(rootLayer, 0);
     LayerFrameMap layerChildFrameMap;
     makeLayerChildFrameMap(mainFrame, &layerChildFrameMap);
-    convertLayerRectsToEnclosingCompositedLayerRecursive(rootLayer, layerRects, compositorRects, geometryMap, layersWithRects, layerChildFrameMap);
+    projectRectsToGraphicsLayerSpaceRecursive(rootLayer, layerRects, graphicsRects, geometryMap, layersWithRects, layerChildFrameMap);
 }
 
 void ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded()
@@ -546,46 +572,38 @@ void ScrollingCoordinator::reset()
 
 // Note that in principle this could be called more often than computeTouchEventTargetRects, for
 // example during a non-composited scroll (although that's not yet implemented - crbug.com/261307).
-void ScrollingCoordinator::setTouchEventTargetRects(const LayerHitTestRects& layerRects)
+void ScrollingCoordinator::setTouchEventTargetRects(LayerHitTestRects& layerRects)
 {
     TRACE_EVENT0("input", "ScrollingCoordinator::setTouchEventTargetRects");
 
-    LayerHitTestRects compositorRects;
-    convertLayerRectsToEnclosingCompositedLayer(m_page->mainFrame(), layerRects, compositorRects);
-
+    // Update the list of layers with touch hit rects.
     HashSet<const RenderLayer*> oldLayersWithTouchRects;
     m_layersWithTouchRects.swap(oldLayersWithTouchRects);
+    for (LayerHitTestRects::iterator it = layerRects.begin(); it != layerRects.end(); ++it) {
+        if (!it->value.isEmpty()) {
+            const RenderLayer* compositedLayer = enclosingCompositedLayer(it->key);
+            if (compositedLayer)
+                m_layersWithTouchRects.add(compositedLayer);
+        }
+    }
 
-    for (LayerHitTestRects::const_iterator iter = compositorRects.begin(); iter != compositorRects.end(); ++iter) {
-        const RenderLayer* layer = iter->key;
+    // Ensure we have an entry for each composited layer that previously had rects (so that old
+    // ones will get cleared out). Note that ideally we'd track this on GraphicsLayer instead of
+    // RenderLayer, but we have no good hook into the lifetime of a GraphicsLayer.
+    for (HashSet<const RenderLayer*>::iterator it = oldLayersWithTouchRects.begin(); it != oldLayersWithTouchRects.end(); ++it) {
+        if (!layerRects.contains(*it))
+            layerRects.add(*it, Vector<LayoutRect>());
+    }
+
+    GraphicsLayerHitTestRects graphicsLayerRects;
+    projectRectsToGraphicsLayerSpace(m_page->mainFrame(), layerRects, graphicsLayerRects);
+
+    for (GraphicsLayerHitTestRects::const_iterator iter = graphicsLayerRects.begin(); iter != graphicsLayerRects.end(); ++iter) {
+        const GraphicsLayer* graphicsLayer = iter->key;
         WebVector<WebRect> webRects(iter->value.size());
         for (size_t i = 0; i < iter->value.size(); ++i)
             webRects[i] = enclosingIntRect(iter->value[i]);
-        // This should be ensured by convertLayerRectsToEnclosingCompositedLayer above.
-        ASSERT(layer->hasCompositedLayerMapping());
-        CompositedLayerMappingPtr compositedLayerMapping = layer->compositedLayerMapping();
-        // If the layer is using composited scrolling, then it's the contents that these
-        // rects apply to.
-        GraphicsLayer* graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
-        if (!graphicsLayer)
-            graphicsLayer = compositedLayerMapping->mainGraphicsLayer();
         graphicsLayer->platformLayer()->setTouchEventHandlerRegion(webRects);
-        oldLayersWithTouchRects.remove(layer);
-        m_layersWithTouchRects.add(layer);
-    }
-
-    // If there are any layers left that we haven't updated, clear them out.
-    for (HashSet<const RenderLayer*>::iterator it = oldLayersWithTouchRects.begin(); it != oldLayersWithTouchRects.end(); ++it) {
-        // FIXME: This is a bug. What's happening here is that we're clearing touch regions for
-        // layers that we didn't visit above. That assumes a 1:1 mapping between RenderLayer and
-        // the graphics layer that owns the touch rects. This is false in the case of
-        // HasOwnBackingButPaintsIntoAncestor and will be extra-false in the world of squashing.
-        if ((*it)->hasCompositedLayerMapping()) {
-            GraphicsLayer* graphicsLayer = (*it)->compositedLayerMapping()->scrollingContentsLayer();
-            if (!graphicsLayer)
-                graphicsLayer = (*it)->compositedLayerMapping()->mainGraphicsLayer();
-            graphicsLayer->platformLayer()->setTouchEventHandlerRegion(WebVector<WebRect>());
-        }
     }
 }
 

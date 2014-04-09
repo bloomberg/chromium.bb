@@ -21,7 +21,7 @@ function sortRects(a, b) {
         || a.layerRelativeRect.left - b.layerRelativeRect.left
         || a.layerRelativeRect.width - b.layerRelativeRect.width
         || a.layerRelativeRect.height - b.layerRelativeRect.right
-        || nameForNode(a.layerRootNode).localeCompare(nameForNode(b.layerRootNode))
+        || nameForNode(a.layerAssociatedNode).localeCompare(nameForNode(b.layerAssociatedNode))
         || a.layerType.localeCompare(b.layerType);
 }
 
@@ -36,7 +36,11 @@ function testElement(element) {
         preRunHandlerForTest[element.id](element);
 
     logRects(element.id);
-    element.removeEventListener('touchstart', listener, false);
+
+    // If we're running manually, leave the handlers in place so the user
+    // can use dev tools 'show potential scroll bottlenecks' for visualization.
+    if (window.internals)
+        element.removeEventListener('touchstart', listener, false);
 }
 
 function logRects(testName, opt_noOverlay) {
@@ -54,11 +58,15 @@ function logRects(testName, opt_noOverlay) {
         sortedRects[i] = rects[i];
     sortedRects.sort(sortRects);
     for ( var i = 0; i < sortedRects.length; ++i) {
-        var node = sortedRects[i].layerRootNode;
+        var node = sortedRects[i].layerAssociatedNode;
         var r = sortedRects[i].layerRelativeRect;
         var nameSuffix = "";
         if (sortedRects[i].layerType)
-            nameSuffix = " " + sortedRects[i].layerType;
+            nameSuffix += " " + sortedRects[i].layerType;
+        var offsetX = sortedRects[i].associatedNodeOffsetX;
+        var offsetY = sortedRects[i].associatedNodeOffsetY;
+        if (offsetX || offsetY)
+            nameSuffix += "[" + offsetX + "," + offsetY + "]"
         log(testName + ": " + nameForNode(node) + nameSuffix + " ("
             + r.left + ", " + r.top + ", " + r.width + ", " + r.height + ")");
 
@@ -80,8 +88,17 @@ function logRects(testName, opt_noOverlay) {
                 container.className = "overlay-container generated";
                 patch.style.position = "relative";
                 node.appendChild(container);
-                container.style.top = (node.offsetTop - container.offsetTop) + "px";
-                container.style.left = (node.offsetLeft - container.offsetLeft) + "px";
+                var x = -offsetX;
+                var y = -offsetY;
+                if (container.offsetParent != node) {
+                    // Assume container.offsetParent == node.offsetParent
+                    y += node.offsetTop - container.offsetTop;
+                    x += node.offsetLeft - container.offsetLeft;
+                }
+                if (x || y) {
+                    container.style.top = y + "px";
+                    container.style.left = x + "px";
+                }
                 container.classList.add("display-when-done");
                 container.appendChild(patch);
             }
@@ -136,7 +153,8 @@ window.onload = function() {
         // Force a compositing update before testing each case to ensure that
         // any subsequent touch rect updates are actually done because of
         // the event handler changes in the test itself.
-        window.internals.forceCompositingUpdate(document);
+        if (window.internals)
+            window.internals.forceCompositingUpdate(document);
         testElement(tests[i]);
     }
 

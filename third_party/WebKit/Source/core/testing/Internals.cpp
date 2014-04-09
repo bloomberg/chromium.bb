@@ -1305,8 +1305,9 @@ unsigned Internals::touchEventHandlerCount(Document* document, ExceptionState& e
     return count;
 }
 
-static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, GraphicsLayer* graphicsLayer, String* layerType)
+static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, GraphicsLayer* graphicsLayer, IntSize* layerOffset, String* layerType)
 {
+    *layerOffset = IntSize();
     if (searchRoot->hasCompositedLayerMapping() && graphicsLayer == searchRoot->compositedLayerMapping()->mainGraphicsLayer())
         return searchRoot;
 
@@ -1314,6 +1315,15 @@ static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, Gra
     if (graphicsLayer == layerForScrolling) {
         *layerType = "scrolling";
         return searchRoot;
+    }
+
+    if (searchRoot->compositingState() == PaintsIntoGroupedBacking) {
+        GraphicsLayer* squashingLayer = searchRoot->groupedMapping()->squashingLayer();
+        if (graphicsLayer == squashingLayer) {
+            *layerType ="squashing";
+            *layerOffset = -searchRoot->offsetFromSquashingLayerOrigin();
+            return searchRoot;
+        }
     }
 
     GraphicsLayer* layerForHorizontalScrollbar = searchRoot->scrollableArea() ? searchRoot->scrollableArea()->layerForHorizontalScrollbar() : 0;
@@ -1334,8 +1344,10 @@ static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, Gra
         return searchRoot;
     }
 
-    for (RenderLayer* child = searchRoot->firstChild(); child; child = child->nextSibling()) {
-        RenderLayer* foundLayer = findRenderLayerForGraphicsLayer(child, graphicsLayer, layerType);
+    // Search right to left to increase the chances that we'll choose the top-most layers in a
+    // grouped mapping for squashing.
+    for (RenderLayer* child = searchRoot->lastChild(); child; child = child->previousSibling()) {
+        RenderLayer* foundLayer = findRenderLayerForGraphicsLayer(child, graphicsLayer, layerOffset, layerType);
         if (foundLayer)
             return foundLayer;
     }
@@ -1394,11 +1406,13 @@ static void accumulateLayerRectList(RenderLayerCompositor* compositor, GraphicsL
     if (!layerRects.isEmpty()) {
         mergeRects(layerRects);
         String layerType;
-        RenderLayer* renderLayer = findRenderLayerForGraphicsLayer(compositor->rootRenderLayer(), graphicsLayer, &layerType);
+        IntSize layerOffset;
+        RenderLayer* renderLayer = findRenderLayerForGraphicsLayer(compositor->rootRenderLayer(), graphicsLayer, &layerOffset, &layerType);
         Node* node = renderLayer ? renderLayer->renderer()->node() : 0;
         for (size_t i = 0; i < layerRects.size(); ++i) {
-            if (!layerRects[i].isEmpty())
-                rects->append(node, layerType, ClientRect::create(layerRects[i]));
+            if (!layerRects[i].isEmpty()) {
+                rects->append(node, layerType, layerOffset.width(), layerOffset.height(), ClientRect::create(layerRects[i]));
+            }
         }
     }
 
@@ -2336,6 +2350,9 @@ bool Internals::loseSharedGraphicsContext3D()
 
 void Internals::forceCompositingUpdate(Document* document, ExceptionState& exceptionState)
 {
+    // Hit when running content_shell with --expose-internals-for-testing.
+    DisableCompositingQueryAsserts disabler;
+
     if (!document || !document->renderView()) {
         exceptionState.throwDOMException(InvalidAccessError, document ? "The document's render view cannot be retrieved." : "The document provided is invalid.");
         return;

@@ -5,9 +5,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS rects.length is 1
-PASS rects[0].layerRootNode.id is "layer"
+PASS rects[0].layerAssociatedNode.id is "layer"
 PASS rects.length is 1
-PASS rects[0].layerRootNode.nodeName is "#document"
+PASS rects[0].layerAssociatedNode.nodeName is "#document"
 PASS successfullyParsed is true
 
 TEST COMPLETE

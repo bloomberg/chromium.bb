@@ -26,7 +26,7 @@ html {
     if (window.internals) {
       rects = window.internals.touchEventTargetLayerRects(document);
       shouldBe("rects.length", "1");
-      shouldBeEqualToString("rects[0].layerRootNode.nodeName", "#document");
+      shouldBeEqualToString("rects[0].layerAssociatedNode.nodeName", "#document");
     }
 </script>
 </body>
