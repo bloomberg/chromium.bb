@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import mimetypes
 import posixpath
+import traceback
 
 from compiled_file_system import SingleFile
 from directory_zipper import DirectoryZipper
@@ -153,16 +155,24 @@ class ContentProvider(object):
     return self._content_cache.GetFromFile(path)
 
   def Cron(self):
-    futures = [self._path_canonicalizer.Cron()]
+    futures = [('<path_canonicalizer>',  # semi-arbitrary string since there is
+                                         # no path associated with this Future.
+                self._path_canonicalizer.Cron())]
     for root, _, files in self.file_system.Walk(''):
       for f in files:
-        futures.append(self.GetContentAndType(Join(root, f)))
+        futures.append((Join(root, f),
+                        self.GetContentAndType(Join(root, f))))
         # Also cache the extension-less version of the file if needed.
         base, ext = posixpath.splitext(f)
         if f != SITE_VERIFICATION_FILE and ext in self._default_extensions:
-          futures.append(self.GetContentAndType(Join(root, base)))
+          futures.append((Join(root, base),
+                          self.GetContentAndType(Join(root, base))))
       # TODO(kalman): Cache .zip files for each directory (if supported).
-    return Future(callback=lambda: [f.Get() for f in futures])
+    def resolve():
+      for label, future in futures:
+        try: future.Get()
+        except: logging.error('%s: %s' % (label, traceback.format_exc()))
+    return Future(callback=resolve)
 
   def __repr__(self):
     return 'ContentProvider of <%s>' % repr(self.file_system)
