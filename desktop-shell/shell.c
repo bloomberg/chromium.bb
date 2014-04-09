@@ -694,14 +694,37 @@ restore_focus_state(struct desktop_shell *shell, struct workspace *ws)
 {
 	struct focus_state *state, *next;
 	struct weston_surface *surface;
+	struct wl_list pending_seat_list;
+	struct weston_seat *seat, *next_seat;
+
+	/* Temporarily steal the list of seats so that we can keep
+	 * track of the seats we've already processed */
+	wl_list_init(&pending_seat_list);
+	wl_list_insert_list(&pending_seat_list, &shell->compositor->seat_list);
+	wl_list_init(&shell->compositor->seat_list);
 
 	wl_list_for_each_safe(state, next, &ws->focus_list, link) {
+		wl_list_remove(&state->seat->link);
+		wl_list_insert(&shell->compositor->seat_list,
+			       &state->seat->link);
+
 		if (state->seat->keyboard == NULL)
 			continue;
 
 		surface = state->keyboard_focus;
 
 		weston_keyboard_set_focus(state->seat->keyboard, surface);
+	}
+
+	/* For any remaining seats that we don't have a focus state
+	 * for we'll reset the keyboard focus to NULL */
+	wl_list_for_each_safe(seat, next_seat, &pending_seat_list, link) {
+		wl_list_insert(&shell->compositor->seat_list, &seat->link);
+
+		if (state->seat->keyboard == NULL)
+			continue;
+
+		weston_keyboard_set_focus(seat->keyboard, NULL);
 	}
 }
 
