@@ -108,7 +108,7 @@ private:
     virtual bool rendererIsFocusable() const OVERRIDE FINAL;
     virtual bool isKeyboardFocusable() const OVERRIDE FINAL;
     virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE FINAL;
-    virtual void didAddShadowRoot(ShadowRoot&) OVERRIDE FINAL;
+    virtual void willAddFirstAuthorShadowRoot() OVERRIDE FINAL;
 
     // HTMLElement function:
     virtual bool hasCustomFocusLogic() const OVERRIDE;

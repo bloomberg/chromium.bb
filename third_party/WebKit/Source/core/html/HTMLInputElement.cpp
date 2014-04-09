@@ -148,10 +148,8 @@ void HTMLInputElement::didAddUserAgentShadowRoot(ShadowRoot&)
     m_inputTypeView->createShadowSubtree();
 }
 
-void HTMLInputElement::didAddShadowRoot(ShadowRoot& root)
+void HTMLInputElement::willAddFirstAuthorShadowRoot()
 {
-    if (!root.isOldestAuthorShadowRoot())
-        return;
     m_inputTypeView->destroyShadowSubtree();
     m_inputTypeView = InputTypeView::create(*this);
     lazyReattachIfAttached();
