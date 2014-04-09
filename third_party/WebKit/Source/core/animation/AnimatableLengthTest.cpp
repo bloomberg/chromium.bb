@@ -80,7 +80,7 @@ protected:
         return AnimatableLength::create(cssValue)->toCSSValue();
     }
 
-    AnimatableLength::NumberUnitType commonUnitType(PassRefPtrWillBeRawPtr<AnimatableLength> a, PassRefPtrWillBeRawPtr<AnimatableLength> b)
+    AnimatableLength::LengthUnitType commonUnitType(PassRefPtrWillBeRawPtr<AnimatableLength> a, PassRefPtrWillBeRawPtr<AnimatableLength> b)
     {
         return a->commonUnitType(b.get());
     }
