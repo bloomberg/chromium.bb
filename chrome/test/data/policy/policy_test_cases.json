@@ -1530,9 +1530,9 @@
     ]
   },
 
-  "QuickCheckEnabled": {
+  "WPADQuickCheckEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "QuickCheckEnabled": true },
+    "test_policy": { "WPADQuickCheckEnabled": true },
     "pref_mappings": [
       { "pref": "proxy.quick_check_enabled",
         "local_state": true

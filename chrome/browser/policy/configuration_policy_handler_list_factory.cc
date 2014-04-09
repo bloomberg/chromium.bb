@@ -86,7 +86,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kBuiltInDnsClientEnabled,
     prefs::kBuiltInDnsClientEnabled,
     base::Value::TYPE_BOOLEAN },
-  { key::kQuickCheckEnabled,
+  { key::kWPADQuickCheckEnabled,
     prefs::kQuickCheckEnabled,
     base::Value::TYPE_BOOLEAN },
   { key::kDisableSpdy,

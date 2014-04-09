@@ -309,7 +309,7 @@
       If this policy is left not set, this will be enabled but the user will be able to change it.''',
     },
     {
-      'name': 'QuickCheckEnabled',
+      'name': 'WPADQuickCheckEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': [ 'chrome.*:35-', 'chrome_os:35-' ],
