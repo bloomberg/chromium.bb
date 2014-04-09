@@ -499,8 +499,8 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
   if (!offscreen_contexts || !offscreen_contexts->GrContext())
     return SkBitmap();
 
-  ResourceProvider::ScopedWriteLockGL lock(renderer->resource_provider(),
-                                           source_texture_resource->id());
+  ResourceProvider::ScopedReadLockGL lock(renderer->resource_provider(),
+                                          source_texture_resource->id());
 
   // Flush the compositor context to ensure that textures there are available
   // in the shared context.  Do this after locking/creating the compositor
