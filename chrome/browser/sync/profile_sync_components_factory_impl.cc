@@ -573,8 +573,9 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
     }
     case syncer::PASSWORDS: {
 #if defined(PASSWORD_MANAGER_ENABLE_SYNC)
-      PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
-          profile_, Profile::EXPLICIT_ACCESS);
+      password_manager::PasswordStore* password_store =
+          PasswordStoreFactory::GetForProfile(profile_,
+                                              Profile::EXPLICIT_ACCESS);
       return password_store ? password_store->GetPasswordSyncableService()
                             : base::WeakPtr<syncer::SyncableService>();
 #else

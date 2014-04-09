@@ -13,6 +13,8 @@ namespace content {
 class BrowserContext;
 }
 
+namespace password_manager {
+
 class MockPasswordStore : public PasswordStore {
  public:
   MockPasswordStore();
@@ -48,5 +50,7 @@ class MockPasswordStore : public PasswordStore {
  protected:
   virtual ~MockPasswordStore();
 };
+
+}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_MOCK_PASSWORD_STORE_H_

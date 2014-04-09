@@ -24,14 +24,16 @@ class Profile;
 // Contains the common logic used by a PasswordUIView to
 // interact with PasswordStore. It provides completion callbacks for
 // PasswordStore operations and updates the view on PasswordStore changes.
-class PasswordManagerPresenter : public PasswordStore::Observer {
+class PasswordManagerPresenter
+    : public password_manager::PasswordStore::Observer {
  public:
   // |password_view| the UI view that owns this presenter, must not be NULL.
   explicit PasswordManagerPresenter(PasswordUIView* password_view);
   virtual ~PasswordManagerPresenter();
 
   // PasswordStore::Observer implementation.
-  virtual void OnLoginsChanged(const PasswordStoreChangeList& changes) OVERRIDE;
+  virtual void OnLoginsChanged(
+      const password_manager::PasswordStoreChangeList& changes) OVERRIDE;
 
   // Repopulates the password and exception entries.
   void UpdatePasswordLists();
@@ -60,7 +62,7 @@ class PasswordManagerPresenter : public PasswordStore::Observer {
   friend class PasswordManagerPresenterTest;
 
   // Returns the password store associated with the currently active profile.
-  PasswordStore* GetPasswordStore();
+  password_manager::PasswordStore* GetPasswordStore();
 
   // Returns true if the user needs to be authenticated before a plaintext
   // password is revealed.
@@ -71,7 +73,7 @@ class PasswordManagerPresenter : public PasswordStore::Observer {
   void SetPasswordExceptionList();
 
   // A short class to mediate requests to the password store.
-  class ListPopulater : public PasswordStoreConsumer {
+  class ListPopulater : public password_manager::PasswordStoreConsumer {
    public:
     explicit ListPopulater(PasswordManagerPresenter* page);
     virtual ~ListPopulater();

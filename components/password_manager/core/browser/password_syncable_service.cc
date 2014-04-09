@@ -14,6 +14,8 @@
 #include "net/base/escape.h"
 #include "sync/api/sync_error_factory.h"
 
+namespace password_manager {
+
 namespace {
 
 // Describes the result of merging sync and local passwords.
@@ -473,3 +475,5 @@ std::string MakePasswordSyncTag(
                              password.password_element(),
                              password.signon_realm());
 }
+
+}  // namespace password_manager

@@ -9,14 +9,15 @@
 // static
 KeyedService* TestPasswordStoreService::Build(
     content::BrowserContext* /*profile*/) {
-  scoped_refptr<PasswordStore> store(new TestPasswordStore);
+  scoped_refptr<password_manager::PasswordStore> store(
+      new password_manager::TestPasswordStore);
   if (!store || !store->Init(syncer::SyncableService::StartSyncFlare()))
     return NULL;
   return new TestPasswordStoreService(store);
 }
 
 TestPasswordStoreService::TestPasswordStoreService(
-    scoped_refptr<PasswordStore> password_store)
+    scoped_refptr<password_manager::PasswordStore> password_store)
     : PasswordStoreService(password_store) {}
 
 TestPasswordStoreService::~TestPasswordStoreService() {}

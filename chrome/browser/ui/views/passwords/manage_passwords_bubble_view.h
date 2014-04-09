@@ -43,7 +43,7 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
 
   // Closes any existing bubble.
   static void CloseBubble(
-      password_manager_metrics_util::UIDismissalReason reason);
+      password_manager::metrics_util::UIDismissalReason reason);
 
   // Whether the bubble is currently showing.
   static bool IsShowing();
@@ -82,7 +82,7 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
   // bubble, this must be called after the bubble is created.
   void AdjustForFullscreen(const gfx::Rect& screen_bounds);
 
-  void Close(password_manager_metrics_util::UIDismissalReason reason);
+  void Close(password_manager::metrics_util::UIDismissalReason reason);
 
   // views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
@@ -114,7 +114,7 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
   views::LabelButton* done_button_;
 
   // We track the dismissal reason so we can log it correctly in the destructor.
-  password_manager_metrics_util::UIDismissalReason dismissal_reason_;
+  password_manager::metrics_util::UIDismissalReason dismissal_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleView);
 };

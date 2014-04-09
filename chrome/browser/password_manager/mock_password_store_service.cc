@@ -9,14 +9,15 @@
 // static
 KeyedService* MockPasswordStoreService::Build(
     content::BrowserContext* /*profile*/) {
-  scoped_refptr<PasswordStore> store(new MockPasswordStore);
+  scoped_refptr<password_manager::PasswordStore> store(
+      new password_manager::MockPasswordStore);
   if (!store || !store->Init(syncer::SyncableService::StartSyncFlare()))
     return NULL;
   return new MockPasswordStoreService(store);
 }
 
 MockPasswordStoreService::MockPasswordStoreService(
-    scoped_refptr<PasswordStore> password_store)
+    scoped_refptr<password_manager::PasswordStore> password_store)
     : PasswordStoreService(password_store) {}
 
 MockPasswordStoreService::~MockPasswordStoreService() {}

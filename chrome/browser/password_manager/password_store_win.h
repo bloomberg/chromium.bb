@@ -8,22 +8,25 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 
-class LoginDatabase;
 class WebDataService;
 
 namespace autofill {
 struct PasswordForm;
 }
 
+namespace password_manager {
+class LoginDatabase;
+}
+
 // Windows PasswordStore implementation that uses the default implementation,
 // but also uses IE7 passwords if no others found.
-class PasswordStoreWin : public PasswordStoreDefault {
+class PasswordStoreWin : public password_manager::PasswordStoreDefault {
  public:
   // WebDataService is only used for IE7 password fetching.
   PasswordStoreWin(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-      LoginDatabase* login_database,
+      password_manager::LoginDatabase* login_database,
       WebDataService* web_data_service);
 
   // PasswordStore:

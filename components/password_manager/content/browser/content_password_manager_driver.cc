@@ -18,6 +18,8 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/cert/cert_status_flags.h"
 
+namespace password_manager {
+
 ContentPasswordManagerDriver::ContentPasswordManagerDriver(
     content::WebContents* web_contents,
     PasswordManagerClient* client)
@@ -105,3 +107,5 @@ autofill::AutofillManager* ContentPasswordManagerDriver::GetAutofillManager() {
       autofill::ContentAutofillDriver::FromWebContents(web_contents());
   return driver ? driver->autofill_manager() : NULL;
 }
+
+}  // namespace password_manager

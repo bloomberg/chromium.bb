@@ -20,7 +20,6 @@
 
 class Browser;
 class GURL;
-class PasswordManager;
 class ProfileIOData;
 
 namespace autofill {
@@ -35,6 +34,10 @@ struct LoadCommittedDetails;
 
 namespace net {
 class URLRequest;
+}
+
+namespace password_manager {
+class PasswordManager;
 }
 
 // Per-tab one-click signin helper.  When a user signs in to a Google service
@@ -171,7 +174,7 @@ class OneClickSigninHelper
 
   static void CreateForWebContentsWithPasswordManager(
       content::WebContents* contents,
-      PasswordManager* password_manager);
+      password_manager::PasswordManager* password_manager);
 
   // Returns true if the one-click signin feature can be offered at this time.
   // If |email| is not empty, then the profile is checked to see if it's
@@ -285,7 +288,7 @@ class OneClickSigninHelper
   static const int kMaxNavigationsSince;
 
   OneClickSigninHelper(content::WebContents* web_contents,
-                       PasswordManager* password_manager);
+                       password_manager::PasswordManager* password_manager);
 
   virtual ~OneClickSigninHelper();
 

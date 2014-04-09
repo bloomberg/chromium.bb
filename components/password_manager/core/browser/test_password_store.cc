@@ -6,6 +6,8 @@
 
 #include "components/autofill/core/common/password_form.h"
 
+namespace password_manager {
+
 TestPasswordStore::TestPasswordStore()
     : PasswordStore(base::MessageLoopProxy::current(),
                     base::MessageLoopProxy::current()) {
@@ -105,3 +107,5 @@ bool TestPasswordStore::FillBlacklistLogins(
     std::vector<autofill::PasswordForm*>* forms) {
   return true;
 }
+
+}  // namespace password_manager

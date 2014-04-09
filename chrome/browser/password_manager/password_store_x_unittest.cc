@@ -28,6 +28,8 @@
 
 using autofill::PasswordForm;
 using content::BrowserThread;
+using password_manager::ContainsAllPasswordForms;
+using password_manager::PasswordStoreChange;
 using testing::_;
 using testing::DoAll;
 using testing::ElementsAreArray;
@@ -39,16 +41,18 @@ typedef std::vector<PasswordForm*> VectorOfForms;
 
 namespace {
 
-class MockPasswordStoreConsumer : public PasswordStoreConsumer {
+class MockPasswordStoreConsumer
+    : public password_manager::PasswordStoreConsumer {
  public:
   MOCK_METHOD1(OnGetPasswordStoreResults,
                void(const std::vector<PasswordForm*>&));
 };
 
-class MockPasswordStoreObserver : public PasswordStore::Observer {
+class MockPasswordStoreObserver
+    : public password_manager::PasswordStore::Observer {
  public:
   MOCK_METHOD1(OnLoginsChanged,
-               void(const PasswordStoreChangeList& changes));
+               void(const password_manager::PasswordStoreChangeList& changes));
 };
 
 class FailingBackend : public PasswordStoreX::NativeBackend {
@@ -177,7 +181,7 @@ class MockLoginDatabaseReturn {
                void(const std::vector<PasswordForm*>&));
 };
 
-void LoginDatabaseQueryCallback(LoginDatabase* login_db,
+void LoginDatabaseQueryCallback(password_manager::LoginDatabase* login_db,
                                 bool autofillable,
                                 MockLoginDatabaseReturn* mock_return) {
   std::vector<PasswordForm*> forms;
@@ -197,17 +201,19 @@ void InitExpectedForms(bool autofillable, size_t count, VectorOfForms* forms) {
                                             i, domain);
     std::string action = base::StringPrintf("http://%zu.%s.com/action",
                                             i, domain);
-    PasswordFormData data = {
-      PasswordForm::SCHEME_HTML,
-      realm.c_str(),
-      origin.c_str(),
-      action.c_str(),
-      L"submit_element",
-      L"username_element",
-      L"password_element",
-      autofillable ? L"username_value" : NULL,
-      autofillable ? L"password_value" : NULL,
-      autofillable, false, static_cast<double>(i + 1) };
+    password_manager::PasswordFormData data = {
+        PasswordForm::SCHEME_HTML,
+        realm.c_str(),
+        origin.c_str(),
+        action.c_str(),
+        L"submit_element",
+        L"username_element",
+        L"password_element",
+        autofillable ? L"username_value" : NULL,
+        autofillable ? L"password_value" : NULL,
+        autofillable,
+        false,
+        static_cast<double>(i + 1)};
     forms->push_back(CreatePasswordFormFromData(data));
   }
 }
@@ -225,7 +231,7 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    login_db_.reset(new LoginDatabase());
+    login_db_.reset(new password_manager::LoginDatabase());
     ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append("login_test")));
   }
 
@@ -246,7 +252,7 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
 
   content::TestBrowserThreadBundle thread_bundle_;
 
-  scoped_ptr<LoginDatabase> login_db_;
+  scoped_ptr<password_manager::LoginDatabase> login_db_;
   base::ScopedTempDir temp_dir_;
 };
 
@@ -262,17 +268,13 @@ TEST_P(PasswordStoreXTest, Notifications) {
                          GetBackend()));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
-  PasswordFormData form_data =
-  { PasswordForm::SCHEME_HTML,
-    "http://bar.example.com",
-    "http://bar.example.com/origin",
-    "http://bar.example.com/action",
-    L"submit_element",
-    L"username_element",
-    L"password_element",
-    L"username_value",
-    L"password_value",
-    true, false, 1 };
+  password_manager::PasswordFormData form_data = {
+      PasswordForm::SCHEME_HTML,       "http://bar.example.com",
+      "http://bar.example.com/origin", "http://bar.example.com/action",
+      L"submit_element",               L"username_element",
+      L"password_element",             L"username_value",
+      L"password_value",               true,
+      false,                           1};
   scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(form_data));
 
   MockPasswordStoreObserver observer;
@@ -342,7 +344,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   base::File::Info db_file_start_info;
   ASSERT_TRUE(base::GetFileInfo(login_db_file, &db_file_start_info));
 
-  LoginDatabase* login_db = login_db_.get();
+  password_manager::LoginDatabase* login_db = login_db_.get();
 
   // Populate the login DB with logins that should be migrated.
   for (VectorOfForms::iterator it = expected_autofillable.begin();

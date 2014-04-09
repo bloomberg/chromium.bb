@@ -28,6 +28,8 @@ using testing::Return;
 using testing::SetArgPointee;
 using testing::_;
 
+namespace password_manager {
+
 namespace {
 
 typedef std::vector<SyncChange> SyncChangeList;
@@ -632,3 +634,5 @@ TEST_F(PasswordSyncableServiceTest, StartSyncFlare) {
 }
 
 }  // namespace
+
+}  // namespace password_manager

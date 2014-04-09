@@ -21,12 +21,15 @@
 
 using autofill::PasswordForm;
 using content::BrowserThread;
+using password_manager::PasswordStoreChange;
+using password_manager::PasswordStoreChangeList;
+using password_manager::PasswordStoreDefault;
 using std::vector;
 
 PasswordStoreX::PasswordStoreX(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-    LoginDatabase* login_db,
+    password_manager::LoginDatabase* login_db,
     NativeBackend* backend)
     : PasswordStoreDefault(main_thread_runner, db_thread_runner, login_db),
       backend_(backend),

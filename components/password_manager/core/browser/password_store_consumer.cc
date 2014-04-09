@@ -4,8 +4,12 @@
 
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
+namespace password_manager {
+
 PasswordStoreConsumer::PasswordStoreConsumer() : weak_ptr_factory_(this) {
 }
 
 PasswordStoreConsumer::~PasswordStoreConsumer() {
 }
+
+}  // namespace password_manager

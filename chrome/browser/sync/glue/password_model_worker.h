@@ -12,10 +12,12 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 
-class PasswordStore;
-
 namespace base {
 class WaitableEvent;
+}
+
+namespace password_manager {
+class PasswordStore;
 }
 
 namespace browser_sync {
@@ -25,8 +27,9 @@ namespace browser_sync {
 // which is the DB thread on Linux and Windows.
 class PasswordModelWorker : public syncer::ModelSafeWorker {
  public:
-  PasswordModelWorker(const scoped_refptr<PasswordStore>& password_store,
-                      syncer::WorkerLoopDestructionObserver* observer);
+  PasswordModelWorker(
+      const scoped_refptr<password_manager::PasswordStore>& password_store,
+      syncer::WorkerLoopDestructionObserver* observer);
 
   // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
   virtual void RegisterForLoopDestruction() OVERRIDE;
@@ -52,7 +55,7 @@ class PasswordModelWorker : public syncer::ModelSafeWorker {
   // |password_store_| is used on password thread but released on UI thread.
   // Protected by |password_store_lock_|.
   base::Lock password_store_lock_;
-  scoped_refptr<PasswordStore> password_store_;
+  scoped_refptr<password_manager::PasswordStore> password_store_;
   DISALLOW_COPY_AND_ASSIGN(PasswordModelWorker);
 };
 

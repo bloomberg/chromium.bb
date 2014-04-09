@@ -126,7 +126,7 @@ class LoginHandlerViews : public LoginHandler,
   // LoginHandler:
 
   virtual void BuildViewForPasswordManager(
-      PasswordManager* manager,
+      password_manager::PasswordManager* manager,
       const base::string16& explanation) OVERRIDE {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

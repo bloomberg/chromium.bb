@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/common/password_manager_switches.h"
 
+namespace password_manager {
+
 namespace switches {
 
 // Enables the chrome://memory-internals/ page.
@@ -11,3 +13,5 @@ const char kEnablePasswordManagerInternalsUI[] =
     "enable-password-manager-internals-ui";
 
 }  // namespace switches
+
+}  // namespace password_manager

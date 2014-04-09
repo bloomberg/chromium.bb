@@ -7,6 +7,8 @@
 
 #include "base/basictypes.h"
 
+namespace password_manager {
+
 namespace prefs {
 
 // Alphabetical list of preference names specific to the PasswordManager
@@ -24,5 +26,7 @@ extern const char kLocalProfileId[];
 #endif
 
 }  // namespace prefs
+
+}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_COMMON_PASSWORD_MANAGER_PREF_NAMES_H_

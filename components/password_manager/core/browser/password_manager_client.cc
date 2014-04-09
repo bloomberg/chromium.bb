@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_manager_client.h"
 
+namespace password_manager {
+
 base::FieldTrial::Probability
 PasswordManagerClient::GetProbabilityForExperiment(
     const std::string& experiment_name) {
@@ -16,3 +18,5 @@ void PasswordManagerClient::SetLogger(PasswordManagerLogger* /*logger*/) {}
 
 void PasswordManagerClient::LogSavePasswordProgress(
     const std::string& /*text*/) {}
+
+}  // namespace password_manager

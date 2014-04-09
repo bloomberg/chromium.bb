@@ -15,6 +15,8 @@ namespace autofill {
 struct PasswordForm;
 }  // namespace autofill
 
+namespace password_manager {
+
 class PSLMatchingHelper {
  public:
   // Enum used for histogram tracking PSL Domain triggering.
@@ -70,5 +72,7 @@ class PSLMatchingHelper {
 
   DISALLOW_COPY_AND_ASSIGN(PSLMatchingHelper);
 };
+
+}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PSL_MATCHING_HELPER_H_
