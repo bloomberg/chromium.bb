@@ -1682,6 +1682,8 @@
             'rendering/style/CounterDirectives.cpp',
             'rendering/style/FillLayer.cpp',
             'rendering/style/GridCoordinate.h',
+            'rendering/style/GridResolvedPosition.cpp',
+            'rendering/style/GridResolvedPosition.h',
             'rendering/style/KeyframeList.cpp',
             'rendering/style/KeyframeList.h',
             'rendering/style/NinePieceImage.cpp',

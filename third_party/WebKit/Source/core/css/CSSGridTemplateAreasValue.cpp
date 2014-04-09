@@ -52,14 +52,14 @@ static String stringForPosition(const NamedGridAreaMap& gridAreaMap, size_t row,
     NamedGridAreaMap::const_iterator end = gridAreaMap.end();
     for (NamedGridAreaMap::const_iterator it = gridAreaMap.begin(); it != end; ++it) {
         const GridCoordinate& coordinate = it->value;
-        if (row >= coordinate.rows.initialPositionIndex && row <= coordinate.rows.finalPositionIndex)
+        if (row >= coordinate.rows.resolvedInitialPosition.toInt() && row <= coordinate.rows.resolvedFinalPosition.toInt())
             candidates.append(it->key);
     }
 
     end = gridAreaMap.end();
     for (NamedGridAreaMap::const_iterator it = gridAreaMap.begin(); it != end; ++it) {
         const GridCoordinate& coordinate = it->value;
-        if (column >= coordinate.columns.initialPositionIndex && column <= coordinate.columns.finalPositionIndex && candidates.contains(it->key))
+        if (column >= coordinate.columns.resolvedInitialPosition.toInt() && column <= coordinate.columns.resolvedFinalPosition.toInt() && candidates.contains(it->key))
             return it->key;
     }
 

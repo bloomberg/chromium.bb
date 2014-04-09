@@ -28,17 +28,13 @@
 
 #include "core/rendering/OrderIterator.h"
 #include "core/rendering/RenderBlock.h"
+#include "core/rendering/style/GridResolvedPosition.h"
 
 namespace WebCore {
 
 struct GridCoordinate;
 struct GridSpan;
 class GridTrack;
-
-enum GridTrackSizingDirection {
-    ForColumns,
-    ForRows
-};
 
 class RenderGrid FINAL : public RenderBlock {
 public:
@@ -81,7 +77,7 @@ private:
     void resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection, GridSizingData&, LayoutUnit& availableLogicalSpace);
 
     void growGrid(GridTrackSizingDirection, size_t maximumPosition);
-    void insertItemIntoGrid(RenderBox*, size_t rowTrack, size_t columnTrack);
+    void insertItemIntoGrid(RenderBox*, const GridResolvedPosition& rowTrack, const GridResolvedPosition& columnTrack);
     void insertItemIntoGrid(RenderBox*, const GridCoordinate&);
     void placeItemsOnGrid();
     void populateExplicitGridAndOrderIterator();
@@ -104,9 +100,6 @@ private:
     double computeNormalizedFractionBreadth(Vector<GridTrack>&, const GridSpan& tracksSpan, GridTrackSizingDirection, LayoutUnit availableLogicalSpace) const;
 
     const GridTrackSize& gridTrackSize(GridTrackSizingDirection, size_t) const;
-    size_t explicitGridColumnCount() const;
-    size_t explicitGridRowCount() const;
-    size_t explicitGridSizeForSide(GridPositionSide) const;
 
     LayoutUnit logicalContentHeightForChild(RenderBox*, Vector<GridTrack>&);
     LayoutUnit minContentForChild(RenderBox*, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
@@ -120,15 +113,6 @@ private:
     LayoutUnit rowPositionForChild(const RenderBox*) const;
     LayoutPoint findChildLogicalPosition(const RenderBox*) const;
     GridCoordinate cachedGridCoordinate(const RenderBox*) const;
-
-    GridSpan resolveGridPositionsFromAutoPlacementPosition(const RenderBox*, GridTrackSizingDirection, size_t) const;
-    PassOwnPtr<GridSpan> resolveGridPositionsFromStyle(const RenderBox*, GridTrackSizingDirection) const;
-    size_t resolveNamedGridLinePositionFromStyle(const GridPosition&, GridPositionSide) const;
-    size_t resolveGridPositionFromStyle(const GridPosition&, GridPositionSide) const;
-    PassOwnPtr<GridSpan> resolveGridPositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition&, GridPositionSide) const;
-    PassOwnPtr<GridSpan> resolveNamedGridLinePositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition&, GridPositionSide) const;
-    PassOwnPtr<GridSpan> resolveBeforeStartNamedGridLinePositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition&, const Vector<size_t>&) const;
-    PassOwnPtr<GridSpan> resolveAfterEndNamedGridLinePositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition&, const Vector<size_t>&) const;
 
     LayoutUnit gridAreaBreadthForChild(const RenderBox* child, GridTrackSizingDirection, const Vector<GridTrack>&) const;
 

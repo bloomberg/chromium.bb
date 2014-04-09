@@ -31,36 +31,36 @@
 #ifndef GridCoordinate_h
 #define GridCoordinate_h
 
-#include "core/rendering/style/GridPosition.h"
+#include "core/rendering/style/GridResolvedPosition.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-// A span in a single direction (either rows or columns). Note that |initialPositionIndex|
-// and |finalPositionIndex| are grid areas' indexes, NOT grid lines'. Iterating over the
-// span should include both |initialPositionIndex| and |finalPositionIndex| to be correct.
+// A span in a single direction (either rows or columns). Note that |resolvedInitialPosition|
+// and |resolvedFinalPosition| are grid areas' indexes, NOT grid lines'. Iterating over the
+// span should include both |resolvedInitialPosition| and |resolvedFinalPosition| to be correct.
 struct GridSpan {
-    static PassOwnPtr<GridSpan> create(size_t initialPosition, size_t finalPosition)
+    static PassOwnPtr<GridSpan> create(const GridResolvedPosition& resolvedInitialPosition, const GridResolvedPosition& resolvedFinalPosition)
     {
-        return adoptPtr(new GridSpan(initialPosition, finalPosition));
+        return adoptPtr(new GridSpan(resolvedInitialPosition, resolvedFinalPosition));
     }
 
-    static PassOwnPtr<GridSpan> createWithSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
+    static PassOwnPtr<GridSpan> createWithSpanAgainstOpposite(const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
     {
         // 'span 1' is contained inside a single grid track regardless of the direction.
         // That's why the CSS span value is one more than the offset we apply.
         size_t positionOffset = position.spanPosition() - 1;
         if (side == ColumnStartSide || side == RowStartSide) {
-            size_t initialResolvedPosition = std::max<int>(0, resolvedOppositePosition - positionOffset);
+            GridResolvedPosition initialResolvedPosition = GridResolvedPosition(std::max<int>(0, resolvedOppositePosition.toInt() - positionOffset));
             return GridSpan::create(initialResolvedPosition, resolvedOppositePosition);
         }
 
-        return GridSpan::create(resolvedOppositePosition, resolvedOppositePosition + positionOffset);
+        return GridSpan::create(resolvedOppositePosition, GridResolvedPosition(resolvedOppositePosition.toInt() + positionOffset));
     }
 
-    static PassOwnPtr<GridSpan> createWithNamedSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, GridPositionSide side, const Vector<size_t>& gridLines)
+    static PassOwnPtr<GridSpan> createWithNamedSpanAgainstOpposite(const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, GridPositionSide side, const Vector<size_t>& gridLines)
     {
         if (side == RowStartSide || side == ColumnStartSide)
             return createWithInitialNamedSpanAgainstOpposite(resolvedOppositePosition, position, gridLines);
@@ -68,14 +68,14 @@ struct GridSpan {
         return createWithFinalNamedSpanAgainstOpposite(resolvedOppositePosition, position, gridLines);
     }
 
-    static PassOwnPtr<GridSpan> createWithInitialNamedSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines)
+    static PassOwnPtr<GridSpan> createWithInitialNamedSpanAgainstOpposite(const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines)
     {
         // The grid line inequality needs to be strict (which doesn't match the after / end case) because |resolvedOppositePosition|
         // is already converted to an index in our grid representation (ie one was removed from the grid line to account for the side).
         size_t firstLineBeforeOppositePositionIndex = 0;
-        const size_t* firstLineBeforeOppositePosition = std::lower_bound(gridLines.begin(), gridLines.end(), resolvedOppositePosition);
+        const size_t* firstLineBeforeOppositePosition = std::lower_bound(gridLines.begin(), gridLines.end(), resolvedOppositePosition.toInt());
         if (firstLineBeforeOppositePosition != gridLines.end()) {
-            if (*firstLineBeforeOppositePosition > resolvedOppositePosition && firstLineBeforeOppositePosition != gridLines.begin())
+            if (*firstLineBeforeOppositePosition > resolvedOppositePosition.toInt() && firstLineBeforeOppositePosition != gridLines.begin())
                 --firstLineBeforeOppositePosition;
 
             firstLineBeforeOppositePositionIndex = firstLineBeforeOppositePosition - gridLines.begin();
@@ -83,39 +83,40 @@ struct GridSpan {
 
         size_t gridLineIndex = std::max<int>(0, firstLineBeforeOppositePositionIndex - position.spanPosition() + 1);
         size_t resolvedGridLinePosition = gridLines[gridLineIndex];
-        if (resolvedGridLinePosition > resolvedOppositePosition)
-            resolvedGridLinePosition = resolvedOppositePosition;
-        return GridSpan::create(resolvedGridLinePosition, resolvedOppositePosition);
+        if (resolvedGridLinePosition > resolvedOppositePosition.toInt())
+            resolvedGridLinePosition = resolvedOppositePosition.toInt();
+        return GridSpan::create(GridResolvedPosition(resolvedGridLinePosition), resolvedOppositePosition);
     }
 
-    static PassOwnPtr<GridSpan> createWithFinalNamedSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines)
+    static PassOwnPtr<GridSpan> createWithFinalNamedSpanAgainstOpposite(const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines)
     {
         size_t firstLineAfterOppositePositionIndex = gridLines.size() - 1;
-        const size_t* firstLineAfterOppositePosition = std::upper_bound(gridLines.begin(), gridLines.end(), resolvedOppositePosition);
+        const size_t* firstLineAfterOppositePosition = std::upper_bound(gridLines.begin(), gridLines.end(), resolvedOppositePosition.toInt());
         if (firstLineAfterOppositePosition != gridLines.end())
             firstLineAfterOppositePositionIndex = firstLineAfterOppositePosition - gridLines.begin();
 
         size_t gridLineIndex = std::min(gridLines.size() - 1, firstLineAfterOppositePositionIndex + position.spanPosition() - 1);
-        size_t resolvedGridLinePosition = GridPosition::adjustGridPositionForAfterEndSide(gridLines[gridLineIndex]);
-        if (resolvedGridLinePosition < resolvedOppositePosition)
-            resolvedGridLinePosition = resolvedOppositePosition;
+        size_t resolvedGridLinePositionInteger = GridResolvedPosition::adjustGridPositionForAfterEndSide(gridLines[gridLineIndex]);
+        GridResolvedPosition resolvedGridLinePosition = GridResolvedPosition(resolvedGridLinePositionInteger);
+        if (resolvedGridLinePosition < resolvedOppositePosition.toInt())
+            resolvedGridLinePosition = resolvedOppositePosition.toInt();
         return GridSpan::create(resolvedOppositePosition, resolvedGridLinePosition);
     }
 
-    GridSpan(size_t initialPosition, size_t finalPosition)
-        : initialPositionIndex(initialPosition)
-        , finalPositionIndex(finalPosition)
+    GridSpan(const GridResolvedPosition& resolvedInitialPosition, const GridResolvedPosition& resolvedFinalPosition)
+        : resolvedInitialPosition(resolvedInitialPosition)
+        , resolvedFinalPosition(resolvedFinalPosition)
     {
-        ASSERT(initialPositionIndex <= finalPositionIndex);
+        ASSERT(resolvedInitialPosition <= resolvedFinalPosition);
     }
 
     bool operator==(const GridSpan& o) const
     {
-        return initialPositionIndex == o.initialPositionIndex && finalPositionIndex == o.finalPositionIndex;
+        return resolvedInitialPosition == o.resolvedInitialPosition && resolvedFinalPosition == o.resolvedFinalPosition;
     }
 
-    size_t initialPositionIndex;
-    size_t finalPositionIndex;
+    GridResolvedPosition resolvedInitialPosition;
+    GridResolvedPosition resolvedFinalPosition;
 };
 
 // This represents a grid area that spans in both rows' and columns' direction.
