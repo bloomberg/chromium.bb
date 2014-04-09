@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -170,6 +171,17 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     PostErrorResult(callback, RESULT_NOT_FOUND);
     return;
 #endif  // !defined(OS_WIN)
+  }
+
+  // In case when the manifest file is there, but the host binary doesn't exist
+  // report the NOT_FOUND error.
+  if (!base::PathExists(host_path)) {
+    LOG(ERROR)
+        << "Found manifest, but not the binary for native messaging host "
+        << native_host_name << ". Host path specified in the manifest: "
+        << host_path.AsUTF8Unsafe();
+    PostErrorResult(callback, RESULT_NOT_FOUND);
+    return;
   }
 
   CommandLine command_line(host_path);

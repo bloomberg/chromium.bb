@@ -22,21 +22,14 @@ namespace extensions {
 
 namespace {
 
-void WriteTestNativeHostManifest(base::FilePath manifest_path) {
+void WriteTestNativeHostManifest(const base::FilePath& target_dir,
+                                 const std::string& host_name,
+                                 const base::FilePath& host_path,
+                                 bool user_level) {
   scoped_ptr<base::DictionaryValue> manifest(new base::DictionaryValue());
-  manifest->SetString("name", ScopedTestNativeMessagingHost::kHostName);
+  manifest->SetString("name", host_name);
   manifest->SetString("description", "Native Messaging Echo Test");
   manifest->SetString("type", "stdio");
-
-  base::FilePath test_user_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_user_data_dir));
-  test_user_data_dir = test_user_data_dir.AppendASCII("native_messaging");
-  test_user_data_dir = test_user_data_dir.AppendASCII("native_hosts");
-#if defined(OS_POSIX)
-  base::FilePath host_path = test_user_data_dir.AppendASCII("echo.py");
-#else
-  base::FilePath host_path = test_user_data_dir.AppendASCII("echo.bat");
-#endif
   manifest->SetString("path", host_path.AsUTF8Unsafe());
 
   scoped_ptr<base::ListValue> origins(new base::ListValue());
@@ -44,14 +37,28 @@ void WriteTestNativeHostManifest(base::FilePath manifest_path) {
       "chrome-extension://%s/", ScopedTestNativeMessagingHost::kExtensionId));
   manifest->Set("allowed_origins", origins.release());
 
+  base::FilePath manifest_path = target_dir.AppendASCII(host_name + ".json");
   JSONFileValueSerializer serializer(manifest_path);
   ASSERT_TRUE(serializer.Serialize(*manifest));
+
+#if defined(OS_WIN)
+  HKEY root_key = user_level ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
+  base::string16 key = L"SOFTWARE\\Google\\Chrome\\NativeMessagingHosts\\" +
+                       base::UTF8ToUTF16(host_name);
+  base::win::RegKey manifest_key(
+      root_key, key.c_str(),
+      KEY_SET_VALUE | KEY_CREATE_SUB_KEY | KEY_CREATE_LINK);
+  ASSERT_EQ(ERROR_SUCCESS,
+            manifest_key.WriteValue(NULL, manifest_path.value().c_str()));
+#endif
 }
 
 }  // namespace
 
 const char ScopedTestNativeMessagingHost::kHostName[] =
     "com.google.chrome.test.echo";
+const char ScopedTestNativeMessagingHost::kBinaryMissingHostName[] =
+    "com.google.chrome.test.host_binary_missing";
 const char ScopedTestNativeMessagingHost::kExtensionId[] =
     "knldjmfmopnpolahpmmgbagdohdnhkik";
 
@@ -60,26 +67,33 @@ ScopedTestNativeMessagingHost::ScopedTestNativeMessagingHost() {}
 void ScopedTestNativeMessagingHost::RegisterTestHost(bool user_level) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   ScopedTestNativeMessagingHost test_host;
-  base::FilePath manifest_path = temp_dir_.path().AppendASCII(
-      std::string(ScopedTestNativeMessagingHost::kHostName) + ".json");
-  ASSERT_NO_FATAL_FAILURE(WriteTestNativeHostManifest(manifest_path));
+
+  base::FilePath test_user_data_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_user_data_dir));
+  test_user_data_dir = test_user_data_dir.AppendASCII("native_messaging")
+                           .AppendASCII("native_hosts");
 
 #if defined(OS_WIN)
   HKEY root_key = user_level ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
   registry_override_.OverrideRegistry(root_key, L"native_messaging");
-  base::string16 key = L"SOFTWARE\\Google\\Chrome\\NativeMessagingHosts\\" +
-                       base::UTF8ToUTF16(kHostName);
-  base::win::RegKey manifest_key(
-      root_key, key.c_str(),
-      KEY_SET_VALUE | KEY_CREATE_SUB_KEY | KEY_CREATE_LINK);
-  ASSERT_EQ(ERROR_SUCCESS,
-            manifest_key.WriteValue(NULL, manifest_path.value().c_str()));
 #else
   path_override_.reset(new base::ScopedPathOverride(
       user_level ? chrome::DIR_USER_NATIVE_MESSAGING
                  : chrome::DIR_NATIVE_MESSAGING,
       temp_dir_.path()));
 #endif
+
+#if defined(OS_POSIX)
+  base::FilePath host_path = test_user_data_dir.AppendASCII("echo.py");
+#else
+  base::FilePath host_path = test_user_data_dir.AppendASCII("echo.bat");
+#endif
+  ASSERT_NO_FATAL_FAILURE(WriteTestNativeHostManifest(
+      temp_dir_.path(), kHostName, host_path, user_level));
+
+  ASSERT_NO_FATAL_FAILURE(WriteTestNativeHostManifest(
+      temp_dir_.path(), kBinaryMissingHostName,
+      test_user_data_dir.AppendASCII("missing_nm_binary.exe"), user_level));
 }
 
 ScopedTestNativeMessagingHost::~ScopedTestNativeMessagingHost() {}

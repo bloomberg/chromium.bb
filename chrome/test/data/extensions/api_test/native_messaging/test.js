@@ -10,9 +10,22 @@ chrome.test.getConfig(function(config) {
         var message = {"text": "Hello!"};
         chrome.runtime.sendNativeMessage(
             'not.installed.app', message,
-            chrome.test.callback(function(response) {
-              chrome.test.assertEq(typeof response, "undefined");
-            }, "Specified native messaging host not found."));
+            chrome.test.callbackFail(
+                "Specified native messaging host not found.",
+                function(response) {
+                  chrome.test.assertEq(undefined, response);
+                }));
+      },
+
+      function nonexistentHost() {
+        var message = {"text": "Hello!"};
+        chrome.runtime.sendNativeMessage(
+            'com.google.chrome.test.host_binary_missing', message,
+            chrome.test.callbackFail(
+                "Specified native messaging host not found.",
+                function(response) {
+                  chrome.test.assertEq(undefined, response);
+                }));
       },
 
       function sendMessageWithCallback() {
@@ -40,10 +53,11 @@ chrome.test.getConfig(function(config) {
         var message = { "bigMessageTest": true };
         chrome.runtime.sendNativeMessage(
             appName, message,
-            chrome.test.callback(function(response) {
-              chrome.test.assertEq(typeof response, "undefined");
-            },
-            "Error when communicating with the native messaging host."));
+            chrome.test.callbackFail(
+                "Error when communicating with the native messaging host.",
+                function(response) {
+                  chrome.test.assertEq(undefined, response);
+                }));
       },
 
       function connect() {

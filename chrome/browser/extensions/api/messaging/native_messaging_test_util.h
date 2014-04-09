@@ -16,9 +16,16 @@
 
 namespace extensions {
 
+// Helper class for native messaging tests. When RegisterTestHost() is called it
+// creates the following manifest files:
+//   kHostName ("com.google.chrome.test.echo") - Echo NM host that runs, see
+//       chrome/test/data/native_messaging/native_hosts/echo.py .
+//   kBinaryMissingHostName ("com.google.chrome.test.host_binary_missing") -
+//        Manifest file that points to a nonexistent host binary.
 class ScopedTestNativeMessagingHost {
  public:
   static const char kHostName[];
+  static const char kBinaryMissingHostName[];
   static const char kExtensionId[];
 
   ScopedTestNativeMessagingHost();
