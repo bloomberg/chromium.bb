@@ -397,7 +397,8 @@ base::string16 Textfield::GetPlaceholderText() const {
 }
 
 void Textfield::ShowImeIfNeeded() {
-  GetInputMethod()->ShowImeIfNeeded();
+  if (enabled() && !read_only())
+    GetInputMethod()->ShowImeIfNeeded();
 }
 
 bool Textfield::IsIMEComposing() const {
