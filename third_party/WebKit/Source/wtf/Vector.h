@@ -548,6 +548,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
     template<typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator>
     class Vector : private VectorBuffer<T, inlineCapacity, Allocator>, public VectorDestructorBase<Vector<T, inlineCapacity, Allocator>, T, (inlineCapacity > 0), Allocator::isGarbageCollected> {
+        WTF_USE_ALLOCATOR(Vector);
     private:
         typedef VectorBuffer<T, inlineCapacity, Allocator> Base;
         typedef VectorTypeOperations<T> TypeOperations;
@@ -559,19 +560,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         typedef const T* const_iterator;
         typedef std::reverse_iterator<iterator> reverse_iterator;
         typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-
-        void* operator new(size_t size)
-        {
-            return Allocator::template malloc<void*, Vector>(size);
-        }
-        void operator delete(void* p) { Allocator::free(p); }
-        void* operator new[](size_t size) { return Allocator::template newArray<Vector>(size); }
-        void operator delete[](void* p) { Allocator::deleteArray(p); }
-        void* operator new(size_t, NotNullTag, void* location)
-        {
-            ASSERT(location);
-            return location;
-        }
 
         Vector()
         {

@@ -147,6 +147,23 @@ public:
 
 } // namespace WTF
 
+#define WTF_USE_ALLOCATOR(ClassName) \
+public: \
+    void* operator new(size_t size) \
+    { \
+        return Allocator::template malloc<void*, ClassName>(size); \
+    } \
+    void operator delete(void* p) { Allocator::free(p); } \
+    void* operator new[](size_t size) { return Allocator::template newArray<ClassName>(size); } \
+    void operator delete[](void* p) { Allocator::deleteArray(p); } \
+    void* operator new(size_t, NotNullTag, void* location) \
+    { \
+        ASSERT(location); \
+        return location; \
+    } \
+private: \
+typedef int __thisIsHereToForceASemicolonAfterThisMacro
+
 using WTF::DefaultAllocator;
 
 #endif // WTF_DefaultAllocator_h

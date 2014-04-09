@@ -48,6 +48,7 @@ namespace WTF {
         typename MappedTraitsArg = HashTraits<MappedArg>,
         typename Allocator = DefaultAllocator>
     class HashMap {
+        WTF_USE_ALLOCATOR(HashMap);
     private:
         typedef KeyTraitsArg KeyTraits;
         typedef MappedTraitsArg MappedTraits;
@@ -58,20 +59,6 @@ namespace WTF {
         typedef const typename KeyTraits::PeekInType& KeyPeekInType;
         typedef typename MappedTraits::TraitType MappedType;
         typedef typename ValueTraits::TraitType ValueType;
-
-        void* operator new(size_t size)
-        {
-            return Allocator::template malloc<void*, HashMap>(size);
-        }
-        void operator delete(void* p) { Allocator::free(p); }
-        void* operator new[](size_t size) { return Allocator::template newArray<HashMap>(size); }
-        void operator delete[](void* p) { Allocator::deleteArray(p); }
-        void* operator new(size_t, NotNullTag, void* location)
-        {
-            COMPILE_ASSERT(!Allocator::isGarbageCollected, Garbage_collector_must_be_disabled);
-            ASSERT(location);
-            return location;
-        }
 
     private:
         typedef typename MappedTraits::PassInType MappedPassInType;

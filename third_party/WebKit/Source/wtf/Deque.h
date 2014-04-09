@@ -44,6 +44,7 @@ namespace WTF {
 
     template<typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator>
     class Deque : public VectorDestructorBase<Deque<T, inlineCapacity, Allocator>, T, (inlineCapacity > 0), Allocator::isGarbageCollected> {
+        WTF_USE_ALLOCATOR(Deque);
     public:
         typedef DequeIterator<T, inlineCapacity, Allocator> iterator;
         typedef DequeConstIterator<T, inlineCapacity, Allocator> const_iterator;
@@ -51,19 +52,6 @@ namespace WTF {
         typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
         typedef PassTraits<T> Pass;
         typedef typename PassTraits<T>::PassType PassType;
-
-        void* operator new(size_t size)
-        {
-            return Allocator::template malloc<void*, Deque>(size);
-        }
-        void operator delete(void* p) { Allocator::free(p); }
-        void* operator new[](size_t size) { return Allocator::template newArray<Vector>(size); }
-        void operator delete[](void* p) { Allocator::deleteArray(p); }
-        void* operator new(size_t, NotNullTag, void* location)
-        {
-            ASSERT(location);
-            return location;
-        }
 
         Deque();
         Deque(const Deque<T, inlineCapacity, Allocator>&);

@@ -37,26 +37,13 @@ namespace WTF {
         typename HashArg = typename DefaultHash<ValueArg>::Hash,
         typename TraitsArg = HashTraits<ValueArg>,
         typename Allocator = DefaultAllocator> class HashSet {
+        WTF_USE_ALLOCATOR(HashSet);
     private:
         typedef HashArg HashFunctions;
         typedef TraitsArg ValueTraits;
         typedef const typename ValueTraits::PeekInType& ValuePeekInType;
 
     public:
-        void* operator new(size_t size)
-        {
-            return Allocator::template malloc<void*, HashSet>(size);
-        }
-        void operator delete(void* p) { Allocator::free(p); }
-        void* operator new[](size_t size) { return Allocator::template newArray<HashSet>(size); }
-        void operator delete[](void* p) { Allocator::deleteArray(p); }
-        void* operator new(size_t, NotNullTag, void* location)
-        {
-            COMPILE_ASSERT(!Allocator::isGarbageCollected, Garbage_collector_must_be_disabled);
-            ASSERT(location);
-            return location;
-        }
-
         typedef typename ValueTraits::TraitType ValueType;
 
     private:
