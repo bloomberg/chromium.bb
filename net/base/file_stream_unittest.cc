@@ -50,11 +50,11 @@ class FileStreamTest : public PlatformTest {
     base::WriteFile(temp_file_path_, kTestData, kTestDataSize);
   }
   virtual void TearDown() {
-    EXPECT_TRUE(base::DeleteFile(temp_file_path_, false));
-
     // FileStreamContexts must be asynchronously closed on the file task runner
     // before they can be deleted. Pump the RunLoop to avoid leaks.
     base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(base::DeleteFile(temp_file_path_, false));
+
     PlatformTest::TearDown();
   }
 
@@ -65,18 +65,6 @@ class FileStreamTest : public PlatformTest {
 };
 
 namespace {
-
-TEST_F(FileStreamTest, BasicOpenExplicitClose) {
-  FileStream stream(NULL);
-  int rv = stream.OpenSync(temp_file_path(),
-                           base::File::FLAG_OPEN | base::File::FLAG_READ);
-  EXPECT_EQ(OK, rv);
-  EXPECT_TRUE(stream.IsOpen());
-  EXPECT_TRUE(stream.GetFileForTesting().IsValid());
-  EXPECT_EQ(OK, stream.CloseSync());
-  EXPECT_FALSE(stream.IsOpen());
-  EXPECT_FALSE(stream.GetFileForTesting().IsValid());
-}
 
 TEST_F(FileStreamTest, AsyncOpenExplicitClose) {
   TestCompletionCallback callback;
@@ -116,87 +104,71 @@ TEST_F(FileStreamTest, AsyncOpenExplicitCloseOrphaned) {
 
 // Test the use of FileStream with a file handle provided at construction.
 TEST_F(FileStreamTest, UseFileHandle) {
+  int rv = 0;
+  TestCompletionCallback callback;
+  TestInt64CompletionCallback callback64;
   // 1. Test reading with a file handle.
   ASSERT_EQ(kTestDataSize,
             base::WriteFile(temp_file_path(), kTestData, kTestDataSize));
-  int flags = base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ;
+  int flags = base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ |
+              base::File::FLAG_ASYNC;
   base::File file(temp_file_path(), flags);
 
   // Seek to the beginning of the file and read.
   scoped_ptr<FileStream> read_stream(
       new FileStream(file.Pass(), NULL, base::MessageLoopProxy::current()));
-  ASSERT_EQ(0, read_stream->SeekSync(FROM_BEGIN, 0));
-  ASSERT_EQ(kTestDataSize, read_stream->Available());
+  ASSERT_EQ(ERR_IO_PENDING,
+            read_stream->Seek(FROM_BEGIN, 0, callback64.callback()));
+  ASSERT_EQ(0, callback64.WaitForResult());
   // Read into buffer and compare.
-  char buffer[kTestDataSize];
-  ASSERT_EQ(kTestDataSize,
-            read_stream->ReadSync(buffer, kTestDataSize));
-  ASSERT_EQ(0, memcmp(kTestData, buffer, kTestDataSize));
+  scoped_refptr<IOBufferWithSize> read_buffer =
+      new IOBufferWithSize(kTestDataSize);
+  rv = read_stream->Read(read_buffer.get(), kTestDataSize, callback.callback());
+  ASSERT_EQ(kTestDataSize, callback.GetResult(rv));
+  ASSERT_EQ(0, memcmp(kTestData, read_buffer->data(), kTestDataSize));
   read_stream.reset();
 
   // 2. Test writing with a file handle.
   base::DeleteFile(temp_file_path(), false);
-  flags = base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE;
+  flags = base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE |
+          base::File::FLAG_ASYNC;
   file.Initialize(temp_file_path(), flags);
 
   scoped_ptr<FileStream> write_stream(
       new FileStream(file.Pass(), NULL, base::MessageLoopProxy::current()));
-  ASSERT_EQ(0, write_stream->SeekSync(FROM_BEGIN, 0));
-  ASSERT_EQ(kTestDataSize,
-            write_stream->WriteSync(kTestData, kTestDataSize));
+  ASSERT_EQ(ERR_IO_PENDING,
+            write_stream->Seek(FROM_BEGIN, 0, callback64.callback()));
+  ASSERT_EQ(0, callback64.WaitForResult());
+  scoped_refptr<IOBufferWithSize> write_buffer = CreateTestDataBuffer();
+  rv = write_stream->Write(write_buffer.get(), kTestDataSize,
+                           callback.callback());
+  ASSERT_EQ(kTestDataSize, callback.GetResult(rv));
   write_stream.reset();
 
   // Read into buffer and compare to make sure the handle worked fine.
   ASSERT_EQ(kTestDataSize,
-            base::ReadFile(temp_file_path(), buffer, kTestDataSize));
-  ASSERT_EQ(0, memcmp(kTestData, buffer, kTestDataSize));
+            base::ReadFile(temp_file_path(), read_buffer->data(),
+                           kTestDataSize));
+  ASSERT_EQ(0, memcmp(kTestData, read_buffer->data(), kTestDataSize));
 }
 
 TEST_F(FileStreamTest, UseClosedStream) {
+  int rv = 0;
+  TestCompletionCallback callback;
+  TestInt64CompletionCallback callback64;
+
   FileStream stream(NULL, base::MessageLoopProxy::current());
 
   EXPECT_FALSE(stream.IsOpen());
 
   // Try seeking...
-  int64 new_offset = stream.SeekSync(FROM_BEGIN, 5);
-  EXPECT_EQ(ERR_UNEXPECTED, new_offset);
-
-  // Try available...
-  int64 avail = stream.Available();
-  EXPECT_EQ(ERR_UNEXPECTED, avail);
+  rv = stream.Seek(FROM_BEGIN, 5, callback64.callback());
+  EXPECT_EQ(ERR_UNEXPECTED, callback64.GetResult(rv));
 
   // Try reading...
-  char buf[10];
-  int rv = stream.ReadSync(buf, arraysize(buf));
-  EXPECT_EQ(ERR_UNEXPECTED, rv);
-}
-
-TEST_F(FileStreamTest, BasicRead) {
-  int64 file_size;
-  EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
-
-  FileStream stream(NULL, base::MessageLoopProxy::current());
-  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-  int rv = stream.OpenSync(temp_file_path(), flags);
-  EXPECT_EQ(OK, rv);
-
-  int64 total_bytes_avail = stream.Available();
-  EXPECT_EQ(file_size, total_bytes_avail);
-
-  int total_bytes_read = 0;
-
-  std::string data_read;
-  for (;;) {
-    char buf[4];
-    rv = stream.ReadSync(buf, arraysize(buf));
-    EXPECT_LE(0, rv);
-    if (rv <= 0)
-      break;
-    total_bytes_read += rv;
-    data_read.append(buf, rv);
-  }
-  EXPECT_EQ(file_size, total_bytes_read);
-  EXPECT_EQ(kTestData, data_read);
+  scoped_refptr<IOBufferWithSize> buf = new IOBufferWithSize(10);
+  rv = stream.Read(buf, buf->size(), callback.callback());
+  EXPECT_EQ(ERR_UNEXPECTED, callback.GetResult(rv));
 }
 
 TEST_F(FileStreamTest, AsyncRead) {
@@ -210,9 +182,6 @@ TEST_F(FileStreamTest, AsyncRead) {
   int rv = stream.Open(temp_file_path(), flags, callback.callback());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
-
-  int64 total_bytes_avail = stream.Available();
-  EXPECT_EQ(file_size, total_bytes_avail);
 
   int total_bytes_read = 0;
 
@@ -245,9 +214,6 @@ TEST_F(FileStreamTest, AsyncRead_EarlyDelete) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
 
-  int64 total_bytes_avail = stream->Available();
-  EXPECT_EQ(file_size, total_bytes_avail);
-
   scoped_refptr<IOBufferWithSize> buf = new IOBufferWithSize(4);
   rv = stream->Read(buf.get(), buf->size(), callback.callback());
   stream.reset();  // Delete instead of closing it.
@@ -259,39 +225,6 @@ TEST_F(FileStreamTest, AsyncRead_EarlyDelete) {
   } else {
     EXPECT_EQ(std::string(kTestData, rv), std::string(buf->data(), rv));
   }
-}
-
-TEST_F(FileStreamTest, BasicRead_FromOffset) {
-  int64 file_size;
-  EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
-
-  FileStream stream(NULL, base::MessageLoopProxy::current());
-  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-  int rv = stream.OpenSync(temp_file_path(), flags);
-  EXPECT_EQ(OK, rv);
-
-  const int64 kOffset = 3;
-  int64 new_offset = stream.SeekSync(FROM_BEGIN, kOffset);
-  EXPECT_EQ(kOffset, new_offset);
-
-  int64 total_bytes_avail = stream.Available();
-  EXPECT_EQ(file_size - kOffset, total_bytes_avail);
-
-  int64 total_bytes_read = 0;
-
-  std::string data_read;
-  for (;;) {
-    char buf[4];
-    rv = stream.ReadSync(buf, arraysize(buf));
-    EXPECT_LE(0, rv);
-    if (rv <= 0)
-      break;
-    total_bytes_read += rv;
-    data_read.append(buf, rv);
-  }
-  EXPECT_EQ(file_size - kOffset, total_bytes_read);
-  EXPECT_TRUE(data_read == kTestData + kOffset);
-  EXPECT_EQ(kTestData + kOffset, data_read);
 }
 
 TEST_F(FileStreamTest, AsyncRead_FromOffset) {
@@ -313,9 +246,6 @@ TEST_F(FileStreamTest, AsyncRead_FromOffset) {
   int64 new_offset = callback64.WaitForResult();
   EXPECT_EQ(kOffset, new_offset);
 
-  int64 total_bytes_avail = stream.Available();
-  EXPECT_EQ(file_size - kOffset, total_bytes_avail);
-
   int total_bytes_read = 0;
 
   std::string data_read;
@@ -332,28 +262,6 @@ TEST_F(FileStreamTest, AsyncRead_FromOffset) {
   }
   EXPECT_EQ(file_size - kOffset, total_bytes_read);
   EXPECT_EQ(kTestData + kOffset, data_read);
-}
-
-TEST_F(FileStreamTest, SeekAround) {
-  FileStream stream(NULL, base::MessageLoopProxy::current());
-  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-  int rv = stream.OpenSync(temp_file_path(), flags);
-  EXPECT_EQ(OK, rv);
-
-  const int64 kOffset = 3;
-  int64 new_offset = stream.SeekSync(FROM_BEGIN, kOffset);
-  EXPECT_EQ(kOffset, new_offset);
-
-  new_offset = stream.SeekSync(FROM_CURRENT, kOffset);
-  EXPECT_EQ(2 * kOffset, new_offset);
-
-  new_offset = stream.SeekSync(FROM_CURRENT, -kOffset);
-  EXPECT_EQ(kOffset, new_offset);
-
-  const int kTestDataLen = arraysize(kTestData) - 1;
-
-  new_offset = stream.SeekSync(FROM_END, -kTestDataLen);
-  EXPECT_EQ(0, new_offset);
 }
 
 TEST_F(FileStreamTest, AsyncSeekAround) {
@@ -389,25 +297,6 @@ TEST_F(FileStreamTest, AsyncSeekAround) {
   ASSERT_EQ(ERR_IO_PENDING, rv);
   new_offset = callback64.WaitForResult();
   EXPECT_EQ(0, new_offset);
-}
-
-TEST_F(FileStreamTest, BasicWrite) {
-  scoped_ptr<FileStream> stream(
-      new FileStream(NULL, base::MessageLoopProxy::current()));
-  int flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE;
-  int rv = stream->OpenSync(temp_file_path(), flags);
-  EXPECT_EQ(OK, rv);
-
-  int64 file_size;
-  EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
-  EXPECT_EQ(0, file_size);
-
-  rv = stream->WriteSync(kTestData, kTestDataSize);
-  EXPECT_EQ(kTestDataSize, rv);
-  stream.reset();
-
-  EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
-  EXPECT_EQ(kTestDataSize, file_size);
 }
 
 TEST_F(FileStreamTest, AsyncWrite) {
@@ -471,29 +360,6 @@ TEST_F(FileStreamTest, AsyncWrite_EarlyDelete) {
   }
 }
 
-TEST_F(FileStreamTest, BasicWrite_FromOffset) {
-  scoped_ptr<FileStream> stream(
-      new FileStream(NULL, base::MessageLoopProxy::current()));
-  int flags = base::File::FLAG_OPEN | base::File::FLAG_WRITE;
-  int rv = stream->OpenSync(temp_file_path(), flags);
-  EXPECT_EQ(OK, rv);
-
-  int64 file_size;
-  EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
-  EXPECT_EQ(kTestDataSize, file_size);
-
-  const int64 kOffset = 0;
-  int64 new_offset = stream->SeekSync(FROM_END, kOffset);
-  EXPECT_EQ(kTestDataSize, new_offset);
-
-  rv = stream->WriteSync(kTestData, kTestDataSize);
-  EXPECT_EQ(kTestDataSize, rv);
-  stream.reset();
-
-  EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
-  EXPECT_EQ(kTestDataSize * 2, file_size);
-}
-
 TEST_F(FileStreamTest, AsyncWrite_FromOffset) {
   int64 file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
@@ -533,89 +399,6 @@ TEST_F(FileStreamTest, AsyncWrite_FromOffset) {
   EXPECT_EQ(file_size, kTestDataSize * 2);
 }
 
-TEST_F(FileStreamTest, BasicReadWrite) {
-  int64 file_size;
-  EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
-
-  scoped_ptr<FileStream> stream(
-      new FileStream(NULL, base::MessageLoopProxy::current()));
-  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
-              base::File::FLAG_WRITE;
-  int rv = stream->OpenSync(temp_file_path(), flags);
-  EXPECT_EQ(OK, rv);
-
-  int64 total_bytes_avail = stream->Available();
-  EXPECT_EQ(file_size, total_bytes_avail);
-
-  int total_bytes_read = 0;
-
-  std::string data_read;
-  for (;;) {
-    char buf[4];
-    rv = stream->ReadSync(buf, arraysize(buf));
-    EXPECT_LE(0, rv);
-    if (rv <= 0)
-      break;
-    total_bytes_read += rv;
-    data_read.append(buf, rv);
-  }
-  EXPECT_EQ(file_size, total_bytes_read);
-  EXPECT_TRUE(data_read == kTestData);
-
-  rv = stream->WriteSync(kTestData, kTestDataSize);
-  EXPECT_EQ(kTestDataSize, rv);
-  stream.reset();
-
-  EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
-  EXPECT_EQ(kTestDataSize * 2, file_size);
-}
-
-TEST_F(FileStreamTest, BasicWriteRead) {
-  int64 file_size;
-  EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
-
-  scoped_ptr<FileStream> stream(
-      new FileStream(NULL, base::MessageLoopProxy::current()));
-  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
-              base::File::FLAG_WRITE;
-  int rv = stream->OpenSync(temp_file_path(), flags);
-  EXPECT_EQ(OK, rv);
-
-  int64 total_bytes_avail = stream->Available();
-  EXPECT_EQ(file_size, total_bytes_avail);
-
-  int64 offset = stream->SeekSync(FROM_END, 0);
-  EXPECT_EQ(offset, file_size);
-
-  rv = stream->WriteSync(kTestData, kTestDataSize);
-  EXPECT_EQ(kTestDataSize, rv);
-
-  offset = stream->SeekSync(FROM_BEGIN, 0);
-  EXPECT_EQ(0, offset);
-
-  int64 total_bytes_read = 0;
-
-  std::string data_read;
-  for (;;) {
-    char buf[4];
-    rv = stream->ReadSync(buf, arraysize(buf));
-    EXPECT_LE(0, rv);
-    if (rv <= 0)
-      break;
-    total_bytes_read += rv;
-    data_read.append(buf, rv);
-  }
-  stream.reset();
-
-  EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
-  EXPECT_EQ(kTestDataSize * 2, file_size);
-  EXPECT_EQ(kTestDataSize * 2, total_bytes_read);
-
-  const std::string kExpectedFileData =
-      std::string(kTestData) + std::string(kTestData);
-  EXPECT_EQ(kExpectedFileData, data_read);
-}
-
 TEST_F(FileStreamTest, BasicAsyncReadWrite) {
   int64 file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
@@ -628,9 +411,6 @@ TEST_F(FileStreamTest, BasicAsyncReadWrite) {
   int rv = stream->Open(temp_file_path(), flags, callback.callback());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
-
-  int64 total_bytes_avail = stream->Available();
-  EXPECT_EQ(file_size, total_bytes_avail);
 
   int64 total_bytes_read = 0;
 
@@ -684,9 +464,6 @@ TEST_F(FileStreamTest, BasicAsyncWriteRead) {
   int rv = stream->Open(temp_file_path(), flags, callback.callback());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
-
-  int64 total_bytes_avail = stream->Available();
-  EXPECT_EQ(file_size, total_bytes_avail);
 
   TestInt64CompletionCallback callback64;
   rv = stream->Seek(FROM_END, 0, callback64.callback());
@@ -796,7 +573,14 @@ class TestWriteReadCompletionCallback {
       *total_bytes_read_ += total_bytes_read;
       *data_read_ += data_read;
     } else {  // We're done writing all data.  Start reading the data.
-      stream_->SeekSync(FROM_BEGIN, 0);
+      TestInt64CompletionCallback callback64;
+      EXPECT_EQ(ERR_IO_PENDING,
+                stream_->Seek(FROM_BEGIN, 0, callback64.callback()));
+      {
+        base::MessageLoop::ScopedNestableTaskAllower allow(
+            base::MessageLoop::current());
+        EXPECT_LE(0, callback64.WaitForResult());
+      }
 
       TestCompletionCallback callback;
       for (;;) {
@@ -848,11 +632,9 @@ TEST_F(FileStreamTest, AsyncWriteRead) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, open_callback.WaitForResult());
 
-  int64 total_bytes_avail = stream->Available();
-  EXPECT_EQ(file_size, total_bytes_avail);
-
-  int64 offset = stream->SeekSync(FROM_END, 0);
-  EXPECT_EQ(offset, file_size);
+  TestInt64CompletionCallback callback64;
+  EXPECT_EQ(ERR_IO_PENDING, stream->Seek(FROM_END, 0, callback64.callback()));
+  EXPECT_EQ(file_size, callback64.WaitForResult());
 
   int total_bytes_written = 0;
   int total_bytes_read = 0;
@@ -954,11 +736,9 @@ TEST_F(FileStreamTest, AsyncWriteClose) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, open_callback.WaitForResult());
 
-  int64 total_bytes_avail = stream->Available();
-  EXPECT_EQ(file_size, total_bytes_avail);
-
-  int64 offset = stream->SeekSync(FROM_END, 0);
-  EXPECT_EQ(offset, file_size);
+  TestInt64CompletionCallback callback64;
+  EXPECT_EQ(ERR_IO_PENDING, stream->Seek(FROM_END, 0, callback64.callback()));
+  EXPECT_EQ(file_size, callback64.WaitForResult());
 
   int total_bytes_written = 0;
   TestWriteCloseCompletionCallback callback(stream.get(), &total_bytes_written);
@@ -974,34 +754,6 @@ TEST_F(FileStreamTest, AsyncWriteClose) {
 
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
   EXPECT_EQ(kTestDataSize * 2, file_size);
-}
-
-// Tests truncating a file.
-TEST_F(FileStreamTest, Truncate) {
-  int flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE;
-
-  scoped_ptr<FileStream> write_stream(
-      new FileStream(NULL, base::MessageLoopProxy::current()));
-  ASSERT_EQ(OK, write_stream->OpenSync(temp_file_path(), flags));
-
-  // Write some data to the file.
-  const char test_data[] = "0123456789";
-  write_stream->WriteSync(test_data, arraysize(test_data));
-
-  // Truncate the file.
-  ASSERT_EQ(4, write_stream->Truncate(4));
-
-  // Write again.
-  write_stream->WriteSync(test_data, 4);
-
-  // Close the stream.
-  write_stream.reset();
-
-  // Read in the contents and make sure we get back what we expected.
-  std::string read_contents;
-  EXPECT_TRUE(base::ReadFileToString(temp_file_path(), &read_contents));
-
-  EXPECT_EQ("01230123", read_contents);
 }
 
 TEST_F(FileStreamTest, AsyncOpenAndDelete) {
@@ -1095,9 +847,6 @@ TEST_F(FileStreamTest, ContentUriAsyncRead) {
   int rv = stream.Open(path, flags, callback.callback());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
-
-  int64 total_bytes_avail = stream.Available();
-  EXPECT_EQ(file_size, total_bytes_avail);
 
   int total_bytes_read = 0;
 

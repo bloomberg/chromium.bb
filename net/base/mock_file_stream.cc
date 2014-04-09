@@ -41,11 +41,6 @@ MockFileStream::MockFileStream(
 MockFileStream::~MockFileStream() {
 }
 
-int MockFileStream::OpenSync(const base::FilePath& path, int open_flags) {
-  path_ = path;
-  return ReturnError(FileStream::OpenSync(path, open_flags));
-}
-
 int MockFileStream::Seek(Whence whence, int64 offset,
                          const Int64CompletionCallback& callback) {
   Int64CompletionCallback wrapped_callback =
@@ -54,14 +49,6 @@ int MockFileStream::Seek(Whence whence, int64 offset,
   if (forced_error_ == net::OK)
     return FileStream::Seek(whence, offset, wrapped_callback);
   return ErrorCallback64(wrapped_callback);
-}
-
-int64 MockFileStream::SeekSync(Whence whence, int64 offset) {
-  return ReturnError64(FileStream::SeekSync(whence, offset));
-}
-
-int64 MockFileStream::Available() {
-  return ReturnError64(FileStream::Available());
 }
 
 int MockFileStream::Read(IOBuffer* buf,
@@ -75,14 +62,6 @@ int MockFileStream::Read(IOBuffer* buf,
   return ErrorCallback(wrapped_callback);
 }
 
-int MockFileStream::ReadSync(char* buf, int buf_len) {
-  return ReturnError(FileStream::ReadSync(buf, buf_len));
-}
-
-int MockFileStream::ReadUntilComplete(char *buf, int buf_len) {
-  return ReturnError(FileStream::ReadUntilComplete(buf, buf_len));
-}
-
 int MockFileStream::Write(IOBuffer* buf,
                           int buf_len,
                           const CompletionCallback& callback) {
@@ -94,14 +73,6 @@ int MockFileStream::Write(IOBuffer* buf,
   return ErrorCallback(wrapped_callback);
 }
 
-int MockFileStream::WriteSync(const char* buf, int buf_len) {
-  return ReturnError(FileStream::WriteSync(buf, buf_len));
-}
-
-int64 MockFileStream::Truncate(int64 bytes) {
-  return ReturnError64(FileStream::Truncate(bytes));
-}
-
 int MockFileStream::Flush(const CompletionCallback& callback) {
   CompletionCallback wrapped_callback = base::Bind(&MockFileStream::DoCallback,
                                                    weak_factory_.GetWeakPtr(),
@@ -109,10 +80,6 @@ int MockFileStream::Flush(const CompletionCallback& callback) {
   if (forced_error_ == net::OK)
     return FileStream::Flush(wrapped_callback);
   return ErrorCallback(wrapped_callback);
-}
-
-int MockFileStream::FlushSync() {
-  return ReturnError(FileStream::FlushSync());
 }
 
 void MockFileStream::ThrottleCallbacks() {

@@ -33,7 +33,6 @@
 #include "base/task_runner.h"
 #include "net/base/completion_callback.h"
 #include "net/base/file_stream.h"
-#include "net/base/file_stream_metrics.h"
 #include "net/base/file_stream_whence.h"
 #include "net/base/net_log.h"
 
@@ -48,6 +47,18 @@ class FilePath;
 namespace net {
 
 class IOBuffer;
+
+enum FileErrorSource {
+  FILE_ERROR_SOURCE_OPEN = 0,
+  FILE_ERROR_SOURCE_WRITE,
+  FILE_ERROR_SOURCE_READ,
+  FILE_ERROR_SOURCE_SEEK,
+  FILE_ERROR_SOURCE_FLUSH,
+  FILE_ERROR_SOURCE_SET_EOF,
+  FILE_ERROR_SOURCE_GET_SIZE,
+  FILE_ERROR_SOURCE_CLOSE,
+  FILE_ERROR_SOURCE_COUNT,
+};
 
 #if defined(OS_WIN)
 class FileStream::Context : public base::MessageLoopForIO::IOHandler {
@@ -65,41 +76,26 @@ class FileStream::Context {
   Context(base::File file,
           const BoundNetLog& bound_net_log,
           const scoped_refptr<base::TaskRunner>& task_runner);
-
-  // This is a deprecated constructor intended only to support callers that
-  // provide a PlatformFile. Such callers are to be updated to provide a File.
-  Context(base::File file,
-          int flags,
-          const BoundNetLog& bound_net_log,
-          const scoped_refptr<base::TaskRunner>& task_runner);
 #if defined(OS_WIN)
   virtual ~Context();
 #elif defined(OS_POSIX)
   ~Context();
 #endif
 
-  int64 GetFileSize() const;
-
   int ReadAsync(IOBuffer* buf,
                 int buf_len,
                 const CompletionCallback& callback);
-  int ReadSync(char* buf, int buf_len);
 
   int WriteAsync(IOBuffer* buf,
                  int buf_len,
                  const CompletionCallback& callback);
-  int WriteSync(const char* buf, int buf_len);
-
-  int Truncate(int64 bytes);
 
   ////////////////////////////////////////////////////////////////////////////
   // Inline methods.
   ////////////////////////////////////////////////////////////////////////////
 
-  void set_record_uma(bool value) { record_uma_ = value; }
   const base::File& file() const { return file_; }
   bool async_in_progress() const { return async_in_progress_; }
-  bool async() const { return async_in_progress_ || async_ || file_.async(); }
 
   ////////////////////////////////////////////////////////////////////////////
   // Platform-independent methods implemented in file_stream_context.cc.
@@ -113,19 +109,14 @@ class FileStream::Context {
   void OpenAsync(const base::FilePath& path,
                  int open_flags,
                  const CompletionCallback& callback);
-  int OpenSync(const base::FilePath& path, int open_flags);
-
-  void CloseSync();
 
   void CloseAsync(const CompletionCallback& callback);
 
   void SeekAsync(Whence whence,
                  int64 offset,
                  const Int64CompletionCallback& callback);
-  int64 SeekSync(Whence whence, int64 offset);
 
   void FlushAsync(const CompletionCallback& callback);
-  int FlushSync();
 
  private:
   ////////////////////////////////////////////////////////////////////////////
@@ -227,10 +218,8 @@ class FileStream::Context {
 #endif
 
   base::File file_;
-  bool record_uma_;
   bool async_in_progress_;
   bool orphaned_;
-  bool async_;  // To be removed when flags are removed from the constructor.
   BoundNetLog bound_net_log_;
   scoped_refptr<base::TaskRunner> task_runner_;
 
@@ -247,4 +236,3 @@ class FileStream::Context {
 }  // namespace net
 
 #endif  // NET_BASE_FILE_STREAM_CONTEXT_H_
-

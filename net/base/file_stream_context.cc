@@ -8,22 +8,53 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "net/base/file_stream_net_log_parameters.h"
+#include "base/values.h"
 #include "net/base/net_errors.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
 #endif
 
+namespace net {
+
 namespace {
 
-void CallInt64ToInt(const net::CompletionCallback& callback, int64 result) {
+void CallInt64ToInt(const CompletionCallback& callback, int64 result) {
   callback.Run(static_cast<int>(result));
 }
 
+const char* FileErrorSourceStrings[] = {
+  "OPEN",
+  "WRITE",
+  "READ",
+  "SEEK",
+  "FLUSH",
+  "SET_EOF",
+  "GET_SIZE",
+  "CLOSE"
+};
+
+COMPILE_ASSERT(ARRAYSIZE_UNSAFE(FileErrorSourceStrings) ==
+                   FILE_ERROR_SOURCE_COUNT,
+               file_error_source_enum_has_changed);
+
+// Creates NetLog parameters when a FileStream has an error.
+base::Value* NetLogFileStreamErrorCallback(
+    FileErrorSource source,
+    int os_error,
+    Error net_error,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+
+  DCHECK_NE(FILE_ERROR_SOURCE_COUNT, source);
+  dict->SetString("operation", FileErrorSourceStrings[source]);
+  dict->SetInteger("os_error", os_error);
+  dict->SetInteger("net_error", net_error);
+
+  return dict;
 }
 
-namespace net {
+}  // namespace
 
 FileStream::Context::IOResult::IOResult()
     : result(OK),
@@ -97,38 +128,6 @@ void FileStream::Context::OpenAsync(const base::FilePath& path,
   DCHECK(posted);
 
   async_in_progress_ = true;
-
-  // TODO(rvargas): Figure out what to do here. For POSIX, async IO is
-  // implemented by doing blocking IO on another thread, so file_ is not really
-  // async, but this code has sync and async paths so it has random checks to
-  // figure out what mode to use. We should probably make this class async only,
-  // and make consumers of sync IO use base::File.
-  async_ = true;
-}
-
-int FileStream::Context::OpenSync(const base::FilePath& path, int open_flags) {
-  DCHECK(!async_in_progress_);
-
-  BeginOpenEvent(path);
-  OpenResult result = OpenFileImpl(path, open_flags);
-  if (result.file.IsValid()) {
-    file_ = result.file.Pass();
-    // TODO(satorux): Remove this once all async clients are migrated to use
-    // Open(). crbug.com/114783
-    if (open_flags & base::File::FLAG_ASYNC)
-      OnAsyncFileOpened();
-  } else {
-    ProcessOpenError(result.error_code);
-  }
-  return result.error_code.result;
-}
-
-void FileStream::Context::CloseSync() {
-  DCHECK(!async_in_progress_);
-  if (file_.IsValid()) {
-    file_.Close();
-    bound_net_log_.EndEvent(NetLog::TYPE_FILE_STREAM_OPEN);
-  }
 }
 
 void FileStream::Context::CloseAsync(const CompletionCallback& callback) {
@@ -165,12 +164,6 @@ void FileStream::Context::SeekAsync(Whence whence,
   async_in_progress_ = true;
 }
 
-int64 FileStream::Context::SeekSync(Whence whence, int64 offset) {
-  IOResult result = SeekFileImpl(whence, offset);
-  RecordError(result, FILE_ERROR_SOURCE_SEEK);
-  return result.result;
-}
-
 void FileStream::Context::FlushAsync(const CompletionCallback& callback) {
   DCHECK(!async_in_progress_);
 
@@ -187,12 +180,6 @@ void FileStream::Context::FlushAsync(const CompletionCallback& callback) {
   async_in_progress_ = true;
 }
 
-int FileStream::Context::FlushSync() {
-  IOResult result = FlushFileImpl();
-  RecordError(result, FILE_ERROR_SOURCE_FLUSH);
-  return result.result;
-}
-
 void FileStream::Context::RecordError(const IOResult& result,
                                       FileErrorSource source) const {
   if (result.result >= 0) {
@@ -207,8 +194,6 @@ void FileStream::Context::RecordError(const IOResult& result,
                    source, result.os_error,
                    static_cast<net::Error>(result.result)));
   }
-
-  RecordFileError(result.os_error, source, record_uma_);
 }
 
 void FileStream::Context::BeginOpenEvent(const base::FilePath& path) {
@@ -311,4 +296,3 @@ void FileStream::Context::OnAsyncCompleted(
 }
 
 }  // namespace net
-

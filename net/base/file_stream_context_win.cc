@@ -40,10 +40,8 @@ void IncrementOffset(OVERLAPPED* overlapped, DWORD count) {
 FileStream::Context::Context(const BoundNetLog& bound_net_log,
                              const scoped_refptr<base::TaskRunner>& task_runner)
     : io_context_(),
-      record_uma_(false),
       async_in_progress_(false),
       orphaned_(false),
-      async_(false),
       bound_net_log_(bound_net_log),
       error_source_(FILE_ERROR_SOURCE_COUNT),
       task_runner_(task_runner) {
@@ -56,51 +54,20 @@ FileStream::Context::Context(base::File file,
                              const scoped_refptr<base::TaskRunner>& task_runner)
     : io_context_(),
       file_(file.Pass()),
-      record_uma_(false),
       async_in_progress_(false),
       orphaned_(false),
-      async_(false),
       bound_net_log_(bound_net_log),
       error_source_(FILE_ERROR_SOURCE_COUNT),
       task_runner_(task_runner) {
   io_context_.handler = this;
   memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
-  if (file_.IsValid() && file_.async())
+  if (file_.IsValid()) {
+    // TODO(hashimoto): Check that file_ is async.
     OnAsyncFileOpened();
-}
-
-FileStream::Context::Context(base::File file,
-                             int flags,
-                             const BoundNetLog& bound_net_log,
-                             const scoped_refptr<base::TaskRunner>& task_runner)
-    : io_context_(),
-      file_(file.Pass()),
-      record_uma_(false),
-      async_in_progress_(false),
-      orphaned_(false),
-      async_((flags & base::File::FLAG_ASYNC) == base::File::FLAG_ASYNC),
-      bound_net_log_(bound_net_log),
-      error_source_(FILE_ERROR_SOURCE_COUNT),
-      task_runner_(task_runner) {
-  io_context_.handler = this;
-  memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
-  if (file_.IsValid() && (file_.async() || flags & base::File::FLAG_ASYNC))
-    OnAsyncFileOpened();
+  }
 }
 
 FileStream::Context::~Context() {
-}
-
-int64 FileStream::Context::GetFileSize() const {
-  LARGE_INTEGER file_size;
-  if (!GetFileSizeEx(file_.GetPlatformFile(), &file_size)) {
-    IOResult error = IOResult::FromOSError(GetLastError());
-    LOG(WARNING) << "GetFileSizeEx failed: " << error.os_error;
-    RecordError(error, FILE_ERROR_SOURCE_GET_SIZE);
-    return error.result;
-  }
-
-  return file_size.QuadPart;
 }
 
 int FileStream::Context::ReadAsync(IOBuffer* buf,
@@ -128,22 +95,6 @@ int FileStream::Context::ReadAsync(IOBuffer* buf,
   return ERR_IO_PENDING;
 }
 
-int FileStream::Context::ReadSync(char* buf, int buf_len) {
-  DWORD bytes_read;
-  if (!ReadFile(file_.GetPlatformFile(), buf, buf_len, &bytes_read, NULL)) {
-    IOResult error = IOResult::FromOSError(GetLastError());
-    if (error.os_error == ERROR_HANDLE_EOF) {
-      return 0;  // Report EOF by returning 0 bytes read.
-    } else {
-      LOG(WARNING) << "ReadFile failed: " << error.os_error;
-      RecordError(error, FILE_ERROR_SOURCE_READ);
-    }
-    return error.result;
-  }
-
-  return bytes_read;
-}
-
 int FileStream::Context::WriteAsync(IOBuffer* buf,
                                     int buf_len,
                                     const CompletionCallback& callback) {
@@ -164,29 +115,6 @@ int FileStream::Context::WriteAsync(IOBuffer* buf,
 
   IOCompletionIsPending(callback, buf);
   return ERR_IO_PENDING;
-}
-
-int FileStream::Context::WriteSync(const char* buf, int buf_len) {
-  DWORD bytes_written = 0;
-  if (!WriteFile(file_.GetPlatformFile(), buf, buf_len, &bytes_written, NULL)) {
-    IOResult error = IOResult::FromOSError(GetLastError());
-    LOG(WARNING) << "WriteFile failed: " << error.os_error;
-    RecordError(error, FILE_ERROR_SOURCE_WRITE);
-    return error.result;
-  }
-
-  return bytes_written;
-}
-
-int FileStream::Context::Truncate(int64 bytes) {
-  if (!SetEndOfFile(file_.GetPlatformFile())) {
-    IOResult error = IOResult::FromOSError(GetLastError());
-    LOG(WARNING) << "SetEndOfFile failed: " << error.os_error;
-    RecordError(error, FILE_ERROR_SOURCE_SET_EOF);
-    return error.result;
-  }
-
-  return bytes;
 }
 
 void FileStream::Context::OnAsyncFileOpened() {

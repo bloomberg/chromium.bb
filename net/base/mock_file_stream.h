@@ -29,23 +29,15 @@ class MockFileStream : public net::FileStream {
   virtual ~MockFileStream();
 
   // FileStream methods.
-  virtual int OpenSync(const base::FilePath& path, int open_flags) OVERRIDE;
   virtual int Seek(net::Whence whence, int64 offset,
                    const Int64CompletionCallback& callback) OVERRIDE;
-  virtual int64 SeekSync(net::Whence whence, int64 offset) OVERRIDE;
-  virtual int64 Available() OVERRIDE;
   virtual int Read(IOBuffer* buf,
                    int buf_len,
                    const CompletionCallback& callback) OVERRIDE;
-  virtual int ReadSync(char* buf, int buf_len) OVERRIDE;
-  virtual int ReadUntilComplete(char *buf, int buf_len) OVERRIDE;
   virtual int Write(IOBuffer* buf,
                     int buf_len,
                     const CompletionCallback& callback) OVERRIDE;
-  virtual int WriteSync(const char* buf, int buf_len) OVERRIDE;
-  virtual int64 Truncate(int64 bytes) OVERRIDE;
   virtual int Flush(const CompletionCallback& callback) OVERRIDE;
-  virtual int FlushSync() OVERRIDE;
 
   void set_forced_error_async(int error) {
     forced_error_ = error;
