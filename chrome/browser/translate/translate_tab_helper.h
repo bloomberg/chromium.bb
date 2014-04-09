@@ -94,6 +94,8 @@ class TranslateTabHelper
                                TranslateErrors::Type error_type,
                                bool triggered_from_menu) OVERRIDE;
   virtual bool IsTranslatableURL(const GURL& url) OVERRIDE;
+  virtual void ShowReportLanguageDetectionErrorUI(
+      const GURL& report_url) OVERRIDE;
 
  private:
   explicit TranslateTabHelper(content::WebContents* web_contents);

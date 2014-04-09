@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/translate/translate_manager.h"
+#include "components/translate/core/browser/translate_manager.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -12,11 +12,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
@@ -33,11 +28,8 @@
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/translate/core/common/translate_switches.h"
-#include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
-
-using content::WebContents;
 
 namespace {
 
@@ -76,11 +68,10 @@ TranslateManager::RegisterTranslateErrorCallback(
 }
 
 TranslateManager::TranslateManager(
-    TranslateTabHelper* helper,
+    TranslateClient* translate_client,
     const std::string& accept_languages_pref_name)
     : accept_languages_pref_name_(accept_languages_pref_name),
-      translate_tab_helper_(helper),
-      translate_client_(helper),
+      translate_client_(translate_client),
       translate_driver_(translate_client_->GetTranslateDriver()),
       weak_method_factory_(this) {}
 
@@ -183,7 +174,10 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   // feature; the user will get an infobar, so they can control whether the
   // page's text is sent to the translate server.
   if (!translate_driver_->IsOffTheRecord()) {
-    std::string auto_target_lang = GetAutoTargetLanguage(language_code, prefs);
+    scoped_ptr<TranslatePrefs> translate_prefs =
+        translate_client_->GetTranslatePrefs();
+    std::string auto_target_lang =
+        GetAutoTargetLanguage(language_code, translate_prefs.get());
     if (!auto_target_lang.empty()) {
       TranslateBrowserMetrics::ReportInitiationStatus(
           TranslateBrowserMetrics::INITIATION_STATUS_AUTO_BY_CONFIG);
@@ -263,13 +257,6 @@ void TranslateManager::RevertTranslation() {
 
 void TranslateManager::ReportLanguageDetectionError() {
   TranslateBrowserMetrics::ReportLanguageDetectionError();
-  // We'll open the URL in a new tab so that the user can tell us more.
-  WebContents* web_contents = translate_tab_helper_->GetWebContents();
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (!browser) {
-    NOTREACHED();
-    return;
-  }
 
   GURL report_error_url = GURL(kReportLanguageDetectionErrorURL);
 
@@ -286,8 +273,7 @@ void TranslateManager::ReportLanguageDetectionError() {
   report_error_url = TranslateURLUtil::AddHostLocaleToUrl(report_error_url);
   report_error_url = TranslateURLUtil::AddApiKeyToUrl(report_error_url);
 
-  chrome::AddSelectedTabWithURL(browser, report_error_url,
-                                content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  translate_client_->ShowReportLanguageDetectionErrorUI(report_error_url);
 }
 
 void TranslateManager::DoTranslatePage(const std::string& translate_script,
@@ -385,10 +371,8 @@ std::string TranslateManager::GetTargetLanguage(
 // static
 std::string TranslateManager::GetAutoTargetLanguage(
     const std::string& original_language,
-    PrefService* prefs) {
+    TranslatePrefs* translate_prefs) {
   std::string auto_target_lang;
-  scoped_ptr<TranslatePrefs> translate_prefs(
-      TranslateTabHelper::CreateTranslatePrefs(prefs));
   if (translate_prefs->ShouldAutoTranslate(original_language,
                                            &auto_target_lang)) {
     // We need to confirm that the saved target language is still supported.

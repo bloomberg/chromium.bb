@@ -11,10 +11,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
-#include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
@@ -23,6 +23,7 @@
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "content/public/browser/navigation_details.h"
@@ -119,9 +120,10 @@ void TranslateTabHelper::GetTranslateLanguages(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   Profile* original_profile = profile->GetOriginalProfile();
   PrefService* prefs = original_profile->GetPrefs();
+  scoped_ptr<TranslatePrefs> translate_prefs = CreateTranslatePrefs(prefs);
   if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
     std::string auto_translate_language =
-        TranslateManager::GetAutoTargetLanguage(*source, prefs);
+        TranslateManager::GetAutoTargetLanguage(*source, translate_prefs.get());
     if (!auto_translate_language.empty()) {
       *target = auto_translate_language;
       return;
@@ -203,6 +205,24 @@ TranslateAcceptLanguages* TranslateTabHelper::GetTranslateAcceptLanguages() {
 
 bool TranslateTabHelper::IsTranslatableURL(const GURL& url) {
   return TranslateService::IsTranslatableURL(url);
+}
+
+void TranslateTabHelper::ShowReportLanguageDetectionErrorUI(
+    const GURL& report_url) {
+#if defined(OS_ANDROID)
+  // Android does not support reporting language detection errors.
+  NOTREACHED();
+#else
+  // We'll open the URL in a new tab so that the user can tell us more.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (!browser) {
+    NOTREACHED();
+    return;
+  }
+
+  chrome::AddSelectedTabWithURL(
+      browser, report_url, content::PAGE_TRANSITION_AUTO_BOOKMARK);
+#endif  // defined(OS_ANDROID)
 }
 
 bool TranslateTabHelper::OnMessageReceived(const IPC::Message& message) {

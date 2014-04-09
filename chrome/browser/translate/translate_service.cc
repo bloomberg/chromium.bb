@@ -9,10 +9,10 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 

@@ -2547,8 +2547,6 @@
         'browser/translate/translate_accept_languages_factory.h',
         'browser/translate/translate_infobar_delegate.cc',
         'browser/translate/translate_infobar_delegate.h',
-        'browser/translate/translate_manager.cc',
-        'browser/translate/translate_manager.h',
         'browser/translate/translate_service.cc',
         'browser/translate/translate_service.h',
         'browser/translate/translate_tab_helper.cc',

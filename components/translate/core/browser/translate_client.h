@@ -46,6 +46,11 @@ class TranslateClient {
 
   // Returns true if the URL can be translated.
   virtual bool IsTranslatableURL(const GURL& url) = 0;
+
+  // Presents |report_url|, a URL containing information relating to reporting
+  // a language detection error, to the user to allow them to report language
+  // detection errors as desired.
+  virtual void ShowReportLanguageDetectionErrorUI(const GURL& report_url) = 0;
 };
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_CLIENT_H_

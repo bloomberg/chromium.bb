@@ -38,6 +38,8 @@
         'translate/core/browser/translate_event_details.h',
         'translate/core/browser/translate_language_list.cc',
         'translate/core/browser/translate_language_list.h',
+        'translate/core/browser/translate_manager.cc',
+        'translate/core/browser/translate_manager.h',
         'translate/core/browser/translate_prefs.cc',
         'translate/core/browser/translate_prefs.h',
         'translate/core/browser/translate_script.cc',
