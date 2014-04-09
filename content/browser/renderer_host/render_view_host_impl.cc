@@ -458,10 +458,7 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
   prefs.touch_adjustment_enabled =
       !command_line.HasSwitch(switches::kDisableTouchAdjustment);
   prefs.compositor_touch_hit_testing =
-      !command_line.HasSwitch(
-           cc::switches::kDisableCompositorTouchHitTesting) &&
-      !command_line.HasSwitch(switches::kEnableBleedingEdgeRenderingFastPaths);
-
+      !command_line.HasSwitch(cc::switches::kDisableCompositorTouchHitTesting);
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   bool default_enable_scroll_animator = true;

@@ -102,8 +102,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.accelerated_animation_enabled =
       !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
   settings.touch_hit_testing =
-      !cmd->HasSwitch(cc::switches::kDisableCompositorTouchHitTesting) &&
-      !cmd->HasSwitch(switches::kEnableBleedingEdgeRenderingFastPaths);
+      !cmd->HasSwitch(cc::switches::kDisableCompositorTouchHitTesting);
 
   int default_tile_width = settings.default_tile_size.width();
   if (cmd->HasSwitch(switches::kDefaultTileWidth)) {
