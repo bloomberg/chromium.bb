@@ -2409,16 +2409,24 @@ public class ContentViewCore
             return;
         }
 
-        if (mSelectPopupDialog != null) {
-            mSelectPopupDialog.hide();
-            mSelectPopupDialog = null;
-        }
+        hideSelectPopup();
         assert items.length == enabled.length;
         List<SelectPopupItem> popupItems = new ArrayList<SelectPopupItem>();
         for (int i = 0; i < items.length; i++) {
             popupItems.add(new SelectPopupItem(items[i], enabled[i]));
         }
         mSelectPopupDialog = SelectPopupDialog.show(this, popupItems, multiple, selectedIndices);
+    }
+
+    /**
+     * Called when the <select> popup needs to be hidden.
+     */
+    @CalledByNative
+    private void hideSelectPopup() {
+        if (mSelectPopupDialog != null) {
+            mSelectPopupDialog.hide();
+            mSelectPopupDialog = null;
+        }
     }
 
     /**

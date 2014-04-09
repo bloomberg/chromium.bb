@@ -247,6 +247,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   void ShowSelectPopupMenu(const std::vector<MenuItem>& items,
                            int selected_item,
                            bool multiple);
+  // Hides a visible popup menu.
+  void HideSelectPopupMenu();
 
   void OnTabCrashed();
 

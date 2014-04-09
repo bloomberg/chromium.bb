@@ -563,6 +563,13 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
                                        multiple, selected_array.obj());
 }
 
+void ContentViewCoreImpl::HideSelectPopupMenu() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (!j_obj.is_null())
+    Java_ContentViewCore_hideSelectPopup(env, j_obj.obj());
+}
+
 void ContentViewCoreImpl::ConfirmTouchEvent(InputEventAckState ack_result) {
   const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
   gesture_provider_.OnTouchEventAck(event_consumed);

@@ -190,7 +190,8 @@ void WebContentsViewAndroid::ShowPopupMenu(
 }
 
 void WebContentsViewAndroid::HidePopupMenu() {
-  // TODO(tkent): implement
+  if (content_view_core_)
+    content_view_core_->HideSelectPopupMenu();
 }
 
 void WebContentsViewAndroid::StartDragging(
