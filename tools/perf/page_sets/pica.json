@@ -4,10 +4,10 @@
   "pages": [
     { "url": "http://localhost/polymer/projects/pica/",
       "script_to_evaluate_on_commit":
-          "document.addEventListener('WebComponentsReady', function(){var unused = document.body.offsetHeight; window.__pica_load_time = performance.now(); setTimeout(function(){window.__web_components_ready=true}, 1000)})",
+          "document.addEventListener('polymer-ready', function(){var unused = document.body.offsetHeight; window.__pica_load_time = performance.now(); setTimeout(function(){window.__polymer_ready=true}, 1000)})",
       "navigate_steps" : [
         { "action": "navigate" },
-        { "action": "wait", "javascript": "window.__web_components_ready" }
+        { "action": "wait", "javascript": "window.__polymer_ready" }
       ]
     }
   ]
