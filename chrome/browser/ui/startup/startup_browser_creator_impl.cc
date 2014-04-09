@@ -816,12 +816,12 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(
     params.tabstrip_add_types = add_types;
     params.extension_app_id = tabs[i].app_id;
 
-#if defined(ENABLE_RLZ)
+#if defined(ENABLE_RLZ) && !defined(OS_IOS)
     if (process_startup && google_util::IsGoogleHomePageUrl(tabs[i].url)) {
       params.extra_headers = RLZTracker::GetAccessPointHttpHeader(
           RLZTracker::CHROME_HOME_PAGE);
     }
-#endif
+#endif  // defined(ENABLE_RLZ) && !defined(OS_IOS)
 
     chrome::Navigate(&params);
 

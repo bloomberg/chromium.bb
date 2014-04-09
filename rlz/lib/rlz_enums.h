@@ -63,7 +63,7 @@ enum AccessPoint {
   CHROMEOS_APP_LIST,   // ChromeOS searches through the app launcher search box.
 
   CHROME_IOS_OMNIBOX,  // Chrome searches through the address bar omnibox (iOS).
-  CHROME_IOS_HOME_PAGE,// Chrome searches through Google as home page (iOS).
+  CHROME_IOS_RESERVED, // Reserved for Chrome on iOS.
 
   CHROME_APP_LIST,     // Chrome searches through the app launcher search box.
   CHROME_MAC_APP_LIST, // Chrome searches through the app launcher search box

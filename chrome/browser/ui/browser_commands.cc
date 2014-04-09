@@ -448,7 +448,7 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
   content::RecordAction(UserMetricsAction("Home"));
 
   std::string extra_headers;
-#if defined(ENABLE_RLZ)
+#if defined(ENABLE_RLZ) && !defined(OS_IOS)
   // If the home page is a Google home page, add the RLZ header to the request.
   PrefService* pref_service = browser->profile()->GetPrefs();
   if (pref_service) {
@@ -458,7 +458,7 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
           RLZTracker::CHROME_HOME_PAGE);
     }
   }
-#endif
+#endif  // defined(ENABLE_RLZ) && !defined(OS_IOS)
 
   GURL url = browser->profile()->GetHomePage();
 

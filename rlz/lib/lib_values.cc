@@ -98,8 +98,8 @@ const char* GetAccessPointName(AccessPoint point) {
   case CHROMEOS_OMNIBOX:              return "CA";
   case CHROMEOS_HOME_PAGE:            return "CB";
   case CHROMEOS_APP_LIST:             return "CC";
-  case CHROME_IOS_OMNIBOX:            return "RM";
-  case CHROME_IOS_HOME_PAGE:          return "RN";
+  case CHROME_IOS_OMNIBOX:            return "C9";
+  case CHROME_IOS_RESERVED:           return "C0";
   case CHROME_APP_LIST:               return "C7";
   case CHROME_MAC_APP_LIST:           return "C8";
   case UNDEFINED_AP_Q:                return "RQ";
