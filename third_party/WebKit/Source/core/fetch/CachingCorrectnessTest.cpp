@@ -76,6 +76,18 @@ protected:
         return resource;
     }
 
+    ResourcePtr<Resource> resourceFromResourceRequest(ResourceRequest request)
+    {
+        if (request.url().isNull())
+            request.setURL(KURL(ParsedURLString, kResourceURL));
+        ResourcePtr<Resource> resource =
+            new Resource(request, Resource::Raw);
+        resource->setResponse(ResourceResponse(KURL(ParsedURLString, kResourceURL), "text/html", 0, nullAtom, String()));
+        memoryCache()->add(resource.get());
+
+        return resource;
+    }
+
     ResourcePtr<Resource> fetch()
     {
         FetchRequest fetchRequest(ResourceRequest(KURL(ParsedURLString, kResourceURL)), FetchInitiatorInfo());
@@ -269,6 +281,15 @@ TEST_F(CachingCorrectnessTest, FreshButNoCache)
     EXPECT_NE(fresh200Nocache, fetched);
 }
 
+TEST_F(CachingCorrectnessTest, RequestWithNoCahe)
+{
+    ResourceRequest noCacheRequest;
+    noCacheRequest.setHTTPHeaderField("Cache-Control", "no-cache");
+    ResourcePtr<Resource> noCacheResource = resourceFromResourceRequest(noCacheRequest);
+    ResourcePtr<Resource> fetched = fetch();
+    EXPECT_NE(noCacheResource, fetched);
+}
+
 TEST_F(CachingCorrectnessTest, FreshButNoStore)
 {
     ResourceResponse fresh200NostoreResponse;
@@ -284,6 +305,15 @@ TEST_F(CachingCorrectnessTest, FreshButNoStore)
 
     ResourcePtr<Resource> fetched = fetch();
     EXPECT_NE(fresh200Nostore, fetched);
+}
+
+TEST_F(CachingCorrectnessTest, RequestWithNoStore)
+{
+    ResourceRequest noStoreRequest;
+    noStoreRequest.setHTTPHeaderField("Cache-Control", "no-store");
+    ResourcePtr<Resource> noStoreResource = resourceFromResourceRequest(noStoreRequest);
+    ResourcePtr<Resource> fetched = fetch();
+    EXPECT_NE(noStoreResource, fetched);
 }
 
 // FIXME: Determine if ignoring must-revalidate for blink is correct behaviour.
