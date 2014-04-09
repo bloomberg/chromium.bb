@@ -47,7 +47,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
   NSString* event_id = @"";
   switch (event_type) {
     case ui::AX_EVENT_ACTIVEDESCENDANTCHANGED:
-      if (node->GetRole() == ui::AX_ROLE_TREE)
+      if (node->role() == ui::AX_ROLE_TREE)
         event_id = NSAccessibilitySelectedRowsChangedNotification;
       else
         event_id = NSAccessibilityFocusedUIElementChangedNotification;

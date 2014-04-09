@@ -258,9 +258,9 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   child3_accessible->NativeAddReference();
 
   // Check the index in parent.
-  EXPECT_EQ(0, child1_accessible->GetIndexInParent());
-  EXPECT_EQ(1, child2_accessible->GetIndexInParent());
-  EXPECT_EQ(2, child3_accessible->GetIndexInParent());
+  EXPECT_EQ(0, child1_accessible->index_in_parent());
+  EXPECT_EQ(1, child2_accessible->index_in_parent());
+  EXPECT_EQ(2, child3_accessible->index_in_parent());
 
   // Process a notification containing the changed subtree.
   std::vector<AccessibilityHostMsg_EventParams> params;
@@ -284,8 +284,8 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   EXPECT_FALSE(child3_accessible->instance_active());
 
   // Check that the index in parent has been updated.
-  EXPECT_EQ(1, child1_accessible->GetIndexInParent());
-  EXPECT_EQ(2, child2_accessible->GetIndexInParent());
+  EXPECT_EQ(1, child1_accessible->index_in_parent());
+  EXPECT_EQ(2, child2_accessible->index_in_parent());
 
   // Release our references. The object count should only decrease by 1
   // for child3.
@@ -435,8 +435,8 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   child3_accessible->NativeAddReference();
 
   // Check the index in parent.
-  EXPECT_EQ(1, child2_accessible->GetIndexInParent());
-  EXPECT_EQ(2, child3_accessible->GetIndexInParent());
+  EXPECT_EQ(1, child2_accessible->index_in_parent());
+  EXPECT_EQ(2, child3_accessible->index_in_parent());
 
   // Process a notification containing the changed subtree rooted at
   // the container.
@@ -462,11 +462,11 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   EXPECT_FALSE(child3_accessible->instance_active());
 
   // Ensure that we retain the parent of the detached subtree.
-  EXPECT_EQ(root_accessible, container_accessible->GetParent());
-  EXPECT_EQ(0, container_accessible->GetIndexInParent());
+  EXPECT_EQ(root_accessible, container_accessible->parent());
+  EXPECT_EQ(0, container_accessible->index_in_parent());
 
   // Check that the index in parent has been updated.
-  EXPECT_EQ(2, child2_accessible->GetIndexInParent());
+  EXPECT_EQ(2, child2_accessible->index_in_parent());
 
   // Release our references. The object count should only decrease by 1
   // for child3.

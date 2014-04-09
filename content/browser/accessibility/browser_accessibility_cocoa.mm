@@ -49,7 +49,7 @@ typedef std::map<ui::AXRole, NSString*> RoleMap;
 // GetState checks the bitmask used in AXNodeData to check
 // if the given state was set on the accessibility object.
 bool GetState(BrowserAccessibility* accessibility, ui::AXState state) {
-  return ((accessibility->GetState() >> state) & 1);
+  return ((accessibility->state() >> state) & 1);
 }
 
 RoleMap BuildRoleMap() {
@@ -391,7 +391,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   if (![self isIgnored]) {
     children_.reset();
   } else {
-    [browserAccessibility_->GetParent()->ToBrowserAccessibilityCocoa()
+    [browserAccessibility_->parent()->ToBrowserAccessibilityCocoa()
        childrenChanged];
   }
 }
@@ -410,7 +410,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     int id = uniqueCellIds[i];
     BrowserAccessibility* cell =
         browserAccessibility_->manager()->GetFromRendererID(id);
-    if (cell && cell->GetRole() == ui::AX_ROLE_COLUMN_HEADER)
+    if (cell && cell->role() == ui::AX_ROLE_COLUMN_HEADER)
       [ret addObject:cell->ToBrowserAccessibilityCocoa()];
   }
   return ret;
@@ -651,9 +651,9 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 - (id)parent {
   // A nil parent means we're the root.
-  if (browserAccessibility_->GetParent()) {
+  if (browserAccessibility_->parent()) {
     return NSAccessibilityUnignoredAncestor(
-        browserAccessibility_->GetParent()->ToBrowserAccessibilityCocoa());
+        browserAccessibility_->parent()->ToBrowserAccessibilityCocoa());
   } else {
     // Hook back up to RenderWidgetHostViewCocoa.
     BrowserAccessibilityManagerMac* manager =
@@ -678,7 +678,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 // Returns an enum indicating the role from browserAccessibility_.
 - (ui::AXRole)internalRole {
-  return static_cast<ui::AXRole>(browserAccessibility_->GetRole());
+  return static_cast<ui::AXRole>(browserAccessibility_->role());
 }
 
 // Returns a string indicating the NSAccessibility role of this object.
@@ -771,7 +771,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     int id = uniqueCellIds[i];
     BrowserAccessibility* cell =
         browserAccessibility_->manager()->GetFromRendererID(id);
-    if (cell && cell->GetRole() == ui::AX_ROLE_ROW_HEADER)
+    if (cell && cell->role() == ui::AX_ROLE_ROW_HEADER)
       [ret addObject:cell->ToBrowserAccessibilityCocoa()];
   }
   return ret;
@@ -1115,7 +1115,7 @@ NSDictionary* attributeToMethodNameMap = nil;
          i < browserAccessibility_->PlatformChildCount();
          ++i) {
       BrowserAccessibility* child = browserAccessibility_->PlatformGetChild(i);
-      if (child->GetRole() != ui::AX_ROLE_ROW)
+      if (child->role() != ui::AX_ROLE_ROW)
         continue;
       int rowIndex;
       if (!child->GetIntAttribute(
@@ -1130,7 +1130,7 @@ NSDictionary* attributeToMethodNameMap = nil;
            j < child->PlatformChildCount();
            ++j) {
         BrowserAccessibility* cell = child->PlatformGetChild(j);
-        if (cell->GetRole() != ui::AX_ROLE_CELL)
+        if (cell->role() != ui::AX_ROLE_CELL)
           continue;
         int colIndex;
         if (!cell->GetIntAttribute(
@@ -1354,9 +1354,9 @@ NSDictionary* attributeToMethodNameMap = nil;
         NSAccessibilityDisclosedRowsAttribute,
         nil]];
   } else if ([role isEqualToString:NSAccessibilityRowRole]) {
-    if (browserAccessibility_->GetParent()) {
+    if (browserAccessibility_->parent()) {
       base::string16 parentRole;
-      browserAccessibility_->GetParent()->GetHtmlAttribute(
+      browserAccessibility_->parent()->GetHtmlAttribute(
           "role", &parentRole);
       const base::string16 treegridRole(base::ASCIIToUTF16("treegrid"));
       if (parentRole == treegridRole) {
@@ -1457,7 +1457,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 
   // TODO(feldstein): Support more actions.
   if ([action isEqualToString:NSAccessibilityPressAction])
-    [delegate_ doDefaultAction:browserAccessibility_->GetId()];
+    [delegate_ doDefaultAction:browserAccessibility_->renderer_id()];
   else if ([action isEqualToString:NSAccessibilityShowMenuAction])
     [delegate_ performShowMenuAction:self];
 }
@@ -1486,12 +1486,12 @@ NSDictionary* attributeToMethodNameMap = nil;
     NSNumber* focusedNumber = value;
     BOOL focused = [focusedNumber intValue];
     [delegate_ setAccessibilityFocus:focused
-                     accessibilityId:browserAccessibility_->GetId()];
+                     accessibilityId:browserAccessibility_->renderer_id()];
   }
   if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
     NSRange range = [(NSValue*)value rangeValue];
     [delegate_
-        accessibilitySetTextSelection:browserAccessibility_->GetId()
+        accessibilitySetTextSelection:browserAccessibility_->renderer_id()
         startOffset:range.location
         endOffset:range.location + range.length];
   }
@@ -1536,7 +1536,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   // Potentially called during dealloc.
   if (!browserAccessibility_)
     return [super hash];
-  return browserAccessibility_->GetId();
+  return browserAccessibility_->renderer_id();
 }
 
 - (BOOL)accessibilityShouldUseUniqueId {

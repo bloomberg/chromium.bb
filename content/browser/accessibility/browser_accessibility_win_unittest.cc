@@ -618,9 +618,9 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
 
   // Verify the root is as we expect by default.
   BrowserAccessibility* root = manager->GetRoot();
-  EXPECT_EQ(0, root->GetId());
-  EXPECT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, root->GetRole());
-  EXPECT_EQ(busy_state | readonly_state | enabled_state, root->GetState());
+  EXPECT_EQ(0, root->renderer_id());
+  EXPECT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, root->role());
+  EXPECT_EQ(busy_state | readonly_state | enabled_state, root->state());
 
   // Tree with a child textfield.
   ui::AXNodeData tree1_1;
@@ -649,8 +649,8 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   EXPECT_NE(root, manager->GetRoot());
 
   // And the proper child remains.
-  EXPECT_EQ(ui::AX_ROLE_TEXT_FIELD, acc1_2->GetRole());
-  EXPECT_EQ(2, acc1_2->GetId());
+  EXPECT_EQ(ui::AX_ROLE_TEXT_FIELD, acc1_2->role());
+  EXPECT_EQ(2, acc1_2->renderer_id());
 
   // Tree with a child button.
   ui::AXNodeData tree2_1;
@@ -676,8 +676,8 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   EXPECT_NE(root, manager->GetRoot());
 
   // And the new child exists.
-  EXPECT_EQ(ui::AX_ROLE_BUTTON, acc2_2->GetRole());
-  EXPECT_EQ(3, acc2_2->GetId());
+  EXPECT_EQ(ui::AX_ROLE_BUTTON, acc2_2->role());
+  EXPECT_EQ(3, acc2_2->renderer_id());
 
   // Ensure we properly cleaned up.
   manager.reset();

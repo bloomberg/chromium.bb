@@ -66,7 +66,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   void InitializeTreeStructure(
       BrowserAccessibilityManager* manager,
       BrowserAccessibility* parent,
-      int32 id,
+      int32 renderer_id,
       int32 index_in_parent);
 
   // Initialize this object's data.
@@ -82,6 +82,12 @@ class CONTENT_EXPORT BrowserAccessibility {
 
   // Return true if this object is equal to or a descendant of |ancestor|.
   bool IsDescendantOf(BrowserAccessibility* ancestor);
+
+  // Returns the parent of this object, or NULL if it's the root.
+  BrowserAccessibility* parent() const { return parent_; }
+
+  // Returns the number of children of this object.
+  uint32 child_count() const { return children_.size(); }
 
   // Returns true if this is a leaf node on this platform, meaning any
   // children should not be exposed to this platform's native accessibility
@@ -148,37 +154,25 @@ class CONTENT_EXPORT BrowserAccessibility {
   // Accessors
   //
 
+  const std::vector<BrowserAccessibility*>& children() const {
+    return children_;
+  }
+  const std::vector<std::pair<std::string, std::string> >&
+  html_attributes() const {
+    return html_attributes_;
+  }
+  int32 index_in_parent() const { return index_in_parent_; }
+  gfx::Rect location() const { return location_; }
   BrowserAccessibilityManager* manager() const { return manager_; }
-  bool instance_active() const { return instance_active_; }
   const std::string& name() const { return name_; }
   const std::string& value() const { return value_; }
+  int32 renderer_id() const { return renderer_id_; }
+  int32 role() const { return role_; }
+  int32 state() const { return state_; }
+  bool instance_active() const { return instance_active_; }
+
   void set_name(const std::string& name) { name_ = name; }
   void set_value(const std::string& value) { value_ = value; }
-
-  std::vector<BrowserAccessibility*>& deprecated_children() {
-    return deprecated_children_;
-  }
-
-  // These access the internal accessibility tree, which doesn't necessarily
-  // reflect the accessibility tree that should be exposed on each platform.
-  // Use PlatformChildCount and PlatformGetChild to implement platform
-  // accessibility APIs.
-  uint32 InternalChildCount() const { return deprecated_children_.size(); }
-  BrowserAccessibility* InternalGetChild(uint32 child_index) const {
-    return deprecated_children_[child_index];
-  }
-
-  BrowserAccessibility* GetParent() const { return deprecated_parent_; }
-  int32 GetIndexInParent() const { return deprecated_index_in_parent_; }
-
-  int32 GetId() const { return data_.id; }
-  gfx::Rect GetLocation() const { return data_.location; }
-  int32 GetRole() const { return data_.role; }
-  int32 GetState() const { return data_.state; }
-  const std::vector<std::pair<std::string, std::string> >& GetHtmlAttributes()
-      const {
-    return data_.html_attributes;
-  }
 
 #if defined(OS_MACOSX) && __OBJC__
   BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa();
@@ -279,7 +273,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   BrowserAccessibilityManager* manager_;
 
   // The parent of this object, may be NULL if we're the root object.
-  BrowserAccessibility* deprecated_parent_;
+  BrowserAccessibility* parent_;
 
  private:
   // Return the sum of the lengths of all static text descendants,
@@ -287,15 +281,32 @@ class CONTENT_EXPORT BrowserAccessibility {
   int GetStaticTextLenRecursive() const;
 
   // The index of this within its parent object.
-  int32 deprecated_index_in_parent_;
+  int32 index_in_parent_;
+
+  // The ID of this object in the renderer process.
+  int32 renderer_id_;
 
   // The children of this object.
-  std::vector<BrowserAccessibility*> deprecated_children_;
+  std::vector<BrowserAccessibility*> children_;
 
   // Accessibility metadata from the renderer
   std::string name_;
   std::string value_;
-  ui::AXNodeData data_;
+  std::vector<std::pair<
+      ui::AXBoolAttribute, bool> > bool_attributes_;
+  std::vector<std::pair<
+      ui::AXFloatAttribute, float> > float_attributes_;
+  std::vector<std::pair<
+      ui::AXIntAttribute, int> > int_attributes_;
+  std::vector<std::pair<
+      ui::AXStringAttribute, std::string> > string_attributes_;
+  std::vector<std::pair<
+      ui::AXIntListAttribute, std::vector<int32> > >
+          intlist_attributes_;
+  std::vector<std::pair<std::string, std::string> > html_attributes_;
+  int32 role_;
+  int32 state_;
+  gfx::Rect location_;
 
   // BrowserAccessibility objects are reference-counted on some platforms.
   // When we're done with this object and it's removed from our accessibility

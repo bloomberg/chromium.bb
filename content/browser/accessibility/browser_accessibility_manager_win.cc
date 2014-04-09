@@ -84,7 +84,7 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(DWORD event,
 void BrowserAccessibilityManagerWin::AddNodeToMap(BrowserAccessibility* node) {
   BrowserAccessibilityManager::AddNodeToMap(node);
   LONG unique_id_win = node->ToBrowserAccessibilityWin()->unique_id_win();
-  unique_id_to_renderer_id_map_[unique_id_win] = node->GetId();
+  unique_id_to_renderer_id_map_[unique_id_win] = node->renderer_id();
 }
 
 void BrowserAccessibilityManagerWin::RemoveNode(BrowserAccessibility* node) {
@@ -114,7 +114,7 @@ void BrowserAccessibilityManagerWin::OnWindowBlurred() {
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
-  if (node->GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX)
+  if (node->role() == ui::AX_ROLE_INLINE_TEXT_BOX)
     return;
 
   LONG event_id = EVENT_MIN;

@@ -25,28 +25,26 @@ void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
     dict->SetString("role", atk_role_get_name(role));
   dict->SetString("name", atk_object_get_name(atk_object));
   dict->SetString("description", atk_object_get_description(atk_object));
-  AtkStateSet* GetState()set =
+  AtkStateSet* state_set =
       atk_object_ref_state_set(atk_object);
   base::ListValue* states = new base::ListValue;
   for (int i = ATK_STATE_INVALID; i < ATK_STATE_LAST_DEFINED; i++) {
-    AtkStateType GetState()type = static_cast<AtkStateType>(i);
+    AtkStateType state_type = static_cast<AtkStateType>(i);
     if (atk_state_set_contains_state(state_set, state_type))
       states->AppendString(atk_state_type_get_name(state_type));
   }
   dict->Set("states", states);
-  dict->SetInteger("id", node.GetId());
+  dict->SetInteger("id", node.renderer_id());
 }
 
 base::string16 AccessibilityTreeFormatter::ToString(
     const base::DictionaryValue& node,
     const base::string16& indent) {
   base::string16 line;
-  std::string GetRole()value;
+  std::string role_value;
   node.GetString("role", &role_value);
-  if (!role_value.empty()) {
-    WriteAttribute(true,
-        base::StringPrintf("[%s]", GetRole()value.c_str()), &line);
-  }
+  if (!role_value.empty())
+    WriteAttribute(true, base::StringPrintf("[%s]", role_value.c_str()), &line);
 
   std::string name_value;
   node.GetString("name", &name_value);
@@ -65,9 +63,9 @@ base::string16 AccessibilityTreeFormatter::ToString(
   for (base::ListValue::const_iterator it = states_value->begin();
        it != states_value->end();
        ++it) {
-    std::string GetState()value;
+    std::string state_value;
     if ((*it)->GetAsString(&state_value))
-      WriteAttribute(true, GetState()value, &line);
+      WriteAttribute(true, state_value, &line);
   }
 
   int id_value;
