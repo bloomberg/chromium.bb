@@ -274,30 +274,6 @@ class GitWrapper(SCMWrapper):
         cwd=self.checkout_path,
         filter_fn=GitDiffFilterer(self.relpath).Filter, print_func=self.Print)
 
-  def UpdateSubmoduleConfig(self):
-    submod_cmd = ['git', 'config', '-f', '$toplevel/.git/config',
-                  'submodule.$name.ignore', 'all']
-    cmd = ['git', 'submodule', '--quiet', 'foreach', ' '.join(submod_cmd)]
-    cmd2 = ['git', 'config', 'diff.ignoreSubmodules', 'all']
-    cmd3 = ['git', 'config', 'branch.autosetupmerge']
-    cmd4 = ['git', 'config', 'fetch.recurseSubmodules', 'false']
-    kwargs = {'cwd': self.checkout_path,
-              'print_stdout': False,
-              'filter_fn': lambda x: None}
-    try:
-      gclient_utils.CheckCallAndFilter(cmd, **kwargs)
-      gclient_utils.CheckCallAndFilter(cmd2, **kwargs)
-    except subprocess2.CalledProcessError:
-      # Not a fatal error, or even very interesting in a non-git-submodule
-      # world.  So just keep it quiet.
-      pass
-    try:
-      gclient_utils.CheckCallAndFilter(cmd3, **kwargs)
-    except subprocess2.CalledProcessError:
-      gclient_utils.CheckCallAndFilter(cmd3 + ['always'], **kwargs)
-
-    gclient_utils.CheckCallAndFilter(cmd4, **kwargs)
-
   def _FetchAndReset(self, revision, file_list, options):
     """Equivalent to git fetch; git reset."""
     quiet = []
@@ -309,7 +285,6 @@ class GitWrapper(SCMWrapper):
     fetch_cmd = cfg + ['fetch', self.remote, '--prune']
     self._Run(fetch_cmd + quiet, options, retry=True)
     self._Run(['reset', '--hard', revision] + quiet, options)
-    self.UpdateSubmoduleConfig()
     if file_list is not None:
       files = self._Capture(['ls-files']).splitlines()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
@@ -380,7 +355,6 @@ class GitWrapper(SCMWrapper):
         self._DeleteOrMove(options.force)
       self._Clone(revision, url, options)
       self._UpdateBranchHeads(options, fetch=True)
-      self.UpdateSubmoduleConfig()
       if file_list is not None:
         files = self._Capture(['ls-files']).splitlines()
         file_list.extend([os.path.join(self.checkout_path, f) for f in files])
@@ -392,7 +366,6 @@ class GitWrapper(SCMWrapper):
 
     if not managed:
       self._UpdateBranchHeads(options, fetch=False)
-      self.UpdateSubmoduleConfig()
       self.Print('________ unmanaged solution; skipping %s' % self.relpath)
       return self._Capture(['rev-parse', '--verify', 'HEAD'])
 
@@ -588,7 +561,6 @@ class GitWrapper(SCMWrapper):
             # whitespace between projects when syncing.
             self.Print('')
 
-    self.UpdateSubmoduleConfig()
     if file_list is not None:
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 

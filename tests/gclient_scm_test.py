@@ -1305,10 +1305,6 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     # pylint: disable=E1120
     gclient_scm.GitWrapper._Clone('refs/remotes/origin/master', self.url,
                                   options)
-    # pylint: disable=E1120
-    self.mox.StubOutWithMock(gclient_scm.GitWrapper, 'UpdateSubmoduleConfig',
-                             True)
-    gclient_scm.GitWrapper.UpdateSubmoduleConfig()
     self.mox.StubOutWithMock(gclient_scm.subprocess2, 'check_output', True)
     gclient_scm.subprocess2.check_output(['git', 'ls-files'],
                                          cwd=self.base_path,
@@ -1341,9 +1337,6 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     gclient_scm.GitWrapper._Clone('refs/remotes/origin/master', self.url,
                                   options)
     # pylint: disable=E1120
-    self.mox.StubOutWithMock(gclient_scm.GitWrapper, 'UpdateSubmoduleConfig',
-                             True)
-    gclient_scm.GitWrapper.UpdateSubmoduleConfig()
     self.mox.StubOutWithMock(gclient_scm.subprocess2, 'check_output', True)
     gclient_scm.subprocess2.check_output(['git', 'ls-files'],
                                          cwd=self.base_path,
