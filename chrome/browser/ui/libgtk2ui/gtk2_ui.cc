@@ -46,7 +46,7 @@
 #include "ui/views/linux_ui/window_button_order_observer.h"
 
 #if defined(USE_GCONF)
-#include "chrome/browser/ui/libgtk2ui/gconf_titlebar_listener.h"
+#include "chrome/browser/ui/libgtk2ui/gconf_listener.h"
 #endif
 
 // A minimized port of GtkThemeService into something that can provide colors
@@ -318,7 +318,7 @@ color_utils::HSL GetDefaultTint(int id) {
 
 namespace libgtk2ui {
 
-Gtk2UI::Gtk2UI() {
+Gtk2UI::Gtk2UI() : middle_click_action_(MIDDLE_CLICK_ACTION_LOWER) {
   GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
 }
 
@@ -350,7 +350,7 @@ void Gtk2UI::Initialize() {
 
 #if defined(USE_GCONF)
   // We must build this after GTK gets initialized.
-  titlebar_listener_.reset(new GConfTitlebarListener(this));
+  gconf_listener_.reset(new GConfListener(this));
 #endif  // defined(USE_GCONF)
 
   indicators_count = 0;
@@ -565,6 +565,10 @@ void Gtk2UI::SetWindowButtonOrdering(
                                                  trailing_buttons_));
 }
 
+void Gtk2UI::SetNonClientMiddleClickAction(NonClientMiddleClickAction action) {
+  middle_click_action_ = action;
+}
+
 scoped_ptr<ui::LinuxInputMethodContext> Gtk2UI::CreateInputMethodContext(
     ui::LinuxInputMethodContextDelegate* delegate) const {
   return scoped_ptr<ui::LinuxInputMethodContext>(
@@ -672,6 +676,11 @@ void Gtk2UI::RemoveNativeThemeChangeObserver(
 
 bool Gtk2UI::UnityIsRunning() {
   return unity::IsRunning();
+}
+
+views::LinuxUI::NonClientMiddleClickAction
+Gtk2UI::GetNonClientMiddleClickAction() {
+  return middle_click_action_;
 }
 
 void Gtk2UI::NotifyWindowManagerStartupComplete() {

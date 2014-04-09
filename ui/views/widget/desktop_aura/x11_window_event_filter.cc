@@ -17,6 +17,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #include "ui/views/widget/native_widget_aura.h"
 
@@ -107,7 +108,27 @@ void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
     return;
 
   if (event->IsMiddleMouseButton() && (component == HTCAPTION)) {
-    XLowerWindow(xdisplay_, xwindow_);
+    LinuxUI::NonClientMiddleClickAction action =
+        LinuxUI::MIDDLE_CLICK_ACTION_LOWER;
+    LinuxUI* linux_ui = LinuxUI::instance();
+    if (linux_ui)
+      action = linux_ui->GetNonClientMiddleClickAction();
+
+    switch (action) {
+      case LinuxUI::MIDDLE_CLICK_ACTION_NONE:
+        break;
+      case LinuxUI::MIDDLE_CLICK_ACTION_LOWER:
+        XLowerWindow(xdisplay_, xwindow_);
+        break;
+      case LinuxUI::MIDDLE_CLICK_ACTION_MINIMIZE:
+        window_tree_host_->Minimize();
+        break;
+      case LinuxUI::MIDDLE_CLICK_ACTION_TOGGLE_MAXIMIZE:
+        if (target->GetProperty(aura::client::kCanMaximizeKey))
+          ToggleMaximizedState();
+        break;
+    }
+
     event->SetHandled();
     return;
   }
@@ -119,10 +140,7 @@ void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
     // Our event is a double click in the caption area in a window that can be
     // maximized. We are responsible for dispatching this as a minimize/
     // maximize on X11 (Windows converts this to min/max events for us).
-    if (window_tree_host_->IsMaximized())
-      window_tree_host_->Restore();
-    else
-      window_tree_host_->Maximize();
+    ToggleMaximizedState();
     event->SetHandled();
     return;
   }
@@ -137,6 +155,13 @@ void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
       event->StopPropagation();
     }
   }
+}
+
+void X11WindowEventFilter::ToggleMaximizedState() {
+  if (window_tree_host_->IsMaximized())
+    window_tree_host_->Restore();
+  else
+    window_tree_host_->Maximize();
 }
 
 bool X11WindowEventFilter::DispatchHostWindowDragMovement(

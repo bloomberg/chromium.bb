@@ -46,6 +46,15 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
                              public ui::LinuxShellDialog,
                              public ui::TextEditKeyBindingsDelegateAuraLinux {
  public:
+  // Describes the window management actions that could be taken in response to
+  // a middle click in the non client area.
+  enum NonClientMiddleClickAction {
+    MIDDLE_CLICK_ACTION_NONE,
+    MIDDLE_CLICK_ACTION_LOWER,
+    MIDDLE_CLICK_ACTION_MINIMIZE,
+    MIDDLE_CLICK_ACTION_TOGGLE_MAXIMIZE
+  };
+
   virtual ~LinuxUI() {}
 
   // Sets the dynamically loaded singleton that draws the desktop native UI.
@@ -126,6 +135,10 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
 
   // Determines whether the user's window manager is Unity.
   virtual bool UnityIsRunning() = 0;
+
+  // What action we should take when the user middle clicks on non-client
+  // area. The default is lowering the window.
+  virtual NonClientMiddleClickAction GetNonClientMiddleClickAction() = 0;
 
   // Notifies the window manager that start up has completed.
   // Normally Chromium opens a new window on startup and GTK does this

@@ -39,6 +39,8 @@ class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
  private:
+  void ToggleMaximizedState();
+
   // Dispatches a _NET_WM_MOVERESIZE message to the window manager to tell it
   // to act as if a border or titlebar drag occurred.
   bool DispatchHostWindowDragMovement(int hittest,

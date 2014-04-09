@@ -36,7 +36,7 @@ namespace libgtk2ui {
 class Gtk2Border;
 class Gtk2KeyBindingsHandler;
 class Gtk2SignalRegistrar;
-class GConfTitlebarListener;
+class GConfListener;
 
 // Interface to GTK2 desktop features.
 //
@@ -45,9 +45,11 @@ class Gtk2UI : public views::LinuxUI {
   Gtk2UI();
   virtual ~Gtk2UI();
 
+  // Setters used by GConfListener:
   void SetWindowButtonOrdering(
     const std::vector<views::FrameButton>& leading_buttons,
     const std::vector<views::FrameButton>& trailing_buttons);
+  void SetNonClientMiddleClickAction(NonClientMiddleClickAction action);
 
   // Draws the GTK button border for state |gtk_state| onto a bitmap.
   SkBitmap DrawGtkButtonBorder(int gtk_state,
@@ -110,6 +112,7 @@ class Gtk2UI : public views::LinuxUI {
   virtual void RemoveNativeThemeChangeObserver(
       views::NativeThemeChangeObserver* observer) OVERRIDE;
   virtual bool UnityIsRunning() OVERRIDE;
+  virtual NonClientMiddleClickAction GetNonClientMiddleClickAction() OVERRIDE;
   virtual void NotifyWindowManagerStartupComplete() OVERRIDE;
 
   // ui::TextEditKeybindingDelegate:
@@ -234,7 +237,7 @@ class Gtk2UI : public views::LinuxUI {
 #if defined(USE_GCONF)
   // Currently, the only source of window button configuration. This will
   // change if we ever have to support XFCE's configuration system or KDE's.
-  scoped_ptr<GConfTitlebarListener> titlebar_listener_;
+  scoped_ptr<GConfListener> gconf_listener_;
 #endif  // defined(USE_GCONF)
 
   // If either of these vectors are non-empty, they represent the current
@@ -249,6 +252,10 @@ class Gtk2UI : public views::LinuxUI {
 
   // Observers to notify when the theme state changes.
   ObserverList<views::NativeThemeChangeObserver> theme_change_observers_;
+
+  // Whether we should lower the window on a middle click to the non client
+  // area.
+  NonClientMiddleClickAction middle_click_action_;
 
   // Image cache of lazily created images.
   mutable ImageCache gtk_images_;
