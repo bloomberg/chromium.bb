@@ -17,6 +17,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
 #include "chrome/common/pref_names.h"
@@ -43,6 +44,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/grid_layout.h"
@@ -642,6 +644,11 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
   }
 }
 
+void ProfileChooserView::StyledLabelLinkClicked(
+    const gfx::Range& range, int event_flags) {
+  chrome::ShowSettings(browser_);
+}
+
 bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
                                         const ui::KeyEvent& key_event) {
   views::Textfield* name_textfield =
@@ -1083,19 +1090,33 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
   bool is_primary_account = primary_account == account_id_to_remove_;
 
   // Adds main text.
-  views::Label* content_label = new views::Label(is_primary_account ?
-      l10n_util::GetStringFUTF16(IDS_PROFILES_PRIMARY_ACCOUNT_REMOVAL_TEXT,
-                                 base::UTF8ToUTF16(account_id_to_remove_)) :
-      l10n_util::GetStringUTF16(IDS_PROFILES_ACCOUNT_REMOVAL_TEXT));
-
-  content_label->SetMultiLine(true);
-  content_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  layout->StartRowWithPadding(1, 0, 0, views::kUnrelatedControlVerticalSpacing);
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   const gfx::FontList& small_font_list =
       rb->GetFontList(ui::ResourceBundle::SmallFont);
-  content_label->SetFontList(small_font_list);
-  layout->StartRowWithPadding(1, 0, 0, views::kUnrelatedControlVerticalSpacing);
-  layout->AddView(content_label);
+
+  if (is_primary_account) {
+    std::vector<size_t> offsets;
+    const base::string16 settings_text =
+        l10n_util::GetStringUTF16(IDS_PROFILES_SETTINGS_LINK);
+    const base::string16 primmary_account_removal_text =
+        l10n_util::GetStringFUTF16(IDS_PROFILES_PRIMARY_ACCOUNT_REMOVAL_TEXT,
+            base::UTF8ToUTF16(account_id_to_remove_), settings_text, &offsets);
+    views::StyledLabel* primary_account_removal_label =
+        new views::StyledLabel(primmary_account_removal_text, this);
+    primary_account_removal_label->AddStyleRange(
+        gfx::Range(offsets[1], offsets[1] + settings_text.size()),
+        views::StyledLabel::RangeStyleInfo::CreateForLink());
+    primary_account_removal_label->SetBaseFontList(small_font_list);
+    layout->AddView(primary_account_removal_label);
+  } else {
+    views::Label* content_label = new views::Label(
+        l10n_util::GetStringUTF16(IDS_PROFILES_ACCOUNT_REMOVAL_TEXT));
+    content_label->SetMultiLine(true);
+    content_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    content_label->SetFontList(small_font_list);
+    layout->AddView(content_label);
+  }
 
   // Adds button.
   if (!is_primary_account) {

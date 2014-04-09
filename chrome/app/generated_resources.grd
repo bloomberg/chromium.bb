@@ -11609,6 +11609,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_TITLE" desc="Title of the account removal view in the avatar menu bubble.">
         Remove account
       </message>
+      <message name="IDS_PROFILES_SETTINGS_LINK" desc="The link text to the Chrome settings page in the account removal view.">
+        settings
+      </message>
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_BUTTON" desc="Text of the ok button on the account removal view in the avatar menu bubble.">
         Remove account and relaunch
       </message>

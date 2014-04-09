@@ -23,7 +23,7 @@ class WebContents;
 
 // This window controller manages the bubble that displays a "menu" of profiles.
 // It is brought open by clicking on the avatar icon in the window frame.
-@interface ProfileChooserController : BaseBubbleController {
+@interface ProfileChooserController : BaseBubbleController<NSTextViewDelegate> {
  @public
   // Different views that can be displayed in the bubble.
   enum BubbleViewMode {

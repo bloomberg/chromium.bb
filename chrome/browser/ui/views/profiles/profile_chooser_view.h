@@ -41,6 +41,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
                            public views::ButtonListener,
                            public views::LinkListener,
                            public views::MenuButtonListener,
+                           public views::StyledLabelListener,
                            public views::TextfieldController,
                            public AvatarMenuObserver,
                            public OAuth2TokenService::Observer {
@@ -108,6 +109,11 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
                                    const gfx::Point& point) OVERRIDE;
+
+  // views::StyledLabelListener implementation.
+  virtual void StyledLabelLinkClicked(
+      const gfx::Range& range, int event_flags) OVERRIDE;
+
   // views::TextfieldController:
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE;

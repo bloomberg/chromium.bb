@@ -27,7 +27,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/chrome_style.h"
+#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/user_manager_mac.h"
@@ -138,6 +140,44 @@ NSTextField* BuildLabel(NSString* title,
     [[label cell] setTextColor:text_color];
   }
   return label.autorelease();
+}
+
+// Builds an NSTextView that has the contents set to the specified |message|,
+// with a non-underlined |link| inserted at |link_offset|. The view is anchored
+// at the specified |frame_origin| and has a fixed |frame_width|.
+NSTextView* BuildFixedWidthTextViewWithLink(
+    id<NSTextViewDelegate> delegate,
+    NSString* message,
+    NSString* link,
+    int link_offset,
+    NSPoint frame_origin,
+    CGFloat frame_width) {
+  base::scoped_nsobject<HyperlinkTextView> text_view(
+      [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
+  NSColor* link_color = gfx::SkColorToCalibratedNSColor(
+      chrome_style::GetLinkColor());
+  [text_view setMessageAndLink:message
+                      withLink:link
+                      atOffset:link_offset
+                          font:[NSFont labelFontOfSize:kTextFontSize]
+                  messageColor:[NSColor blackColor]
+                     linkColor:link_color];
+
+  // Removes the underlining from the link.
+  [text_view setLinkTextAttributes:nil];
+  NSTextStorage* text_storage = [text_view textStorage];
+  NSRange link_range = NSMakeRange(link_offset, [link length]);
+  [text_storage addAttribute:NSUnderlineStyleAttributeName
+                       value:[NSNumber numberWithInt:NSUnderlineStyleNone]
+                       range:link_range];
+
+  NSRect frame = [[text_view attributedString]
+      boundingRectWithSize:NSMakeSize(frame_width, 0)
+                   options:NSStringDrawingUsesLineFragmentOrigin];
+  frame.origin = frame_origin;
+  [text_view setFrame:frame];
+  [text_view setDelegate:delegate];
+  return text_view.autorelease();
 }
 
 // Builds a title card with one back button right aligned and one label center
@@ -1289,18 +1329,29 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     yOffset = NSMaxY([removeAndRelaunchButton frame]) + kVerticalSpacing;
   }
 
-  // Adds the main text.
-  NSString* contentStr = isPrimaryAccount ?
-      l10n_util::GetNSStringF(IDS_PROFILES_PRIMARY_ACCOUNT_REMOVAL_TEXT,
-                              base::UTF8ToUTF16(accountIdToRemove_)) :
-      l10n_util::GetNSString(IDS_PROFILES_ACCOUNT_REMOVAL_TEXT);
-  NSTextField* contentLabel =
-      BuildLabel(contentStr, NSMakePoint(kHorizontalSpacing, yOffset),
-                 nil /* background_color */, nil /* text_color */);
-  [contentLabel setFrameSize:NSMakeSize(availableWidth, 0)];
-  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:contentLabel];
-  [container addSubview:contentLabel];
-  yOffset = NSMaxY([contentLabel frame]) + kVerticalSpacing;
+  NSView* contentView;
+  NSPoint contentFrameOrigin = NSMakePoint(kHorizontalSpacing, yOffset);
+  if (isPrimaryAccount) {
+    std::vector<size_t> offsets;
+    NSString* contentStr = l10n_util::GetNSStringF(
+        IDS_PROFILES_PRIMARY_ACCOUNT_REMOVAL_TEXT,
+        base::UTF8ToUTF16(accountIdToRemove_), base::string16(), &offsets);
+    NSString* linkStr = l10n_util::GetNSString(IDS_PROFILES_SETTINGS_LINK);
+    contentView = BuildFixedWidthTextViewWithLink(self, contentStr, linkStr,
+        offsets[1], contentFrameOrigin, availableWidth);
+  } else {
+    NSString* contentStr = isPrimaryAccount ?
+    l10n_util::GetNSStringF(IDS_PROFILES_PRIMARY_ACCOUNT_REMOVAL_TEXT,
+                            base::UTF8ToUTF16(accountIdToRemove_)) :
+    l10n_util::GetNSString(IDS_PROFILES_ACCOUNT_REMOVAL_TEXT);
+    NSTextField* contentLabel = BuildLabel(contentStr, contentFrameOrigin,
+        nil /* background_color */, nil /* text_color */);
+    [contentLabel setFrameSize:NSMakeSize(availableWidth, 0)];
+    [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:contentLabel];
+    contentView = contentLabel;
+  }
+  [container addSubview:contentView];
+  yOffset = NSMaxY([contentView frame]) + kVerticalSpacing;
 
   // Adds the title card.
   NSBox* separator = [self separatorWithFrame:
@@ -1318,6 +1369,14 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   [container setFrameSize:NSMakeSize(kFixedAccountRemovalViewWidth, yOffset)];
   return container.autorelease();
+}
+
+// Called when clicked on the settings link.
+- (BOOL)textView:(NSTextView*)textView
+   clickedOnLink:(id)link
+         atIndex:(NSUInteger)charIndex {
+  chrome::ShowSettings(browser_);
+  return YES;
 }
 
 - (NSButton*)hoverButtonWithRect:(NSRect)rect
