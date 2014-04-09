@@ -104,6 +104,7 @@ ScrollTopLeftInterop status=experimental
 ServiceWorker status=experimental
 SessionStorage status=stable
 SharedWorker status=stable
+PictureSizes status=experimental
 SpeechInput status=stable
 SpeechSynthesis status=stable
 Srcset status=stable
