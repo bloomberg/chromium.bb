@@ -66,13 +66,6 @@ void InProcessReceiver::StopOnMainThread(base::WaitableEvent* event) {
   event->Signal();
 }
 
-void InProcessReceiver::DestroySoon() {
-  cast_environment_->PostTask(
-      CastEnvironment::MAIN,
-      FROM_HERE,
-      base::Bind(&InProcessReceiver::WillDestroyReceiver, base::Owned(this)));
-}
-
 void InProcessReceiver::UpdateCastTransportStatus(CastTransportStatus status) {
   LOG_IF(ERROR, status == media::cast::transport::TRANSPORT_SOCKET_ERROR)
       << "Transport socket error occurred.  InProcessReceiver is likely dead.";
@@ -130,11 +123,6 @@ void InProcessReceiver::PullNextVideoFrame() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   cast_receiver_->frame_receiver()->GetRawVideoFrame(base::Bind(
       &InProcessReceiver::GotVideoFrame, weak_factory_.GetWeakPtr()));
-}
-
-// static
-void InProcessReceiver::WillDestroyReceiver(InProcessReceiver* receiver) {
-  DCHECK(receiver->cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 }
 
 }  // namespace cast

@@ -49,7 +49,6 @@ class InProcessReceiver {
                     const AudioReceiverConfig& audio_config,
                     const VideoReceiverConfig& video_config);
 
-  // Must be destroyed on the cast MAIN thread.  See DestroySoon().
   virtual ~InProcessReceiver();
 
   // Convenience accessors.
@@ -59,17 +58,11 @@ class InProcessReceiver {
 
   // Begin delivering any received audio/video frames to the OnXXXFrame()
   // methods.
-  void Start();
-
-  // Schedules destruction on the cast MAIN thread.  Any external references to
-  // the InProcessReceiver instance become invalid.
-  // Deprecated: Use Stop instead.
-  // TODO(hubbe): Remove this function and change callers to use Stop.
-  void DestroySoon();
+  virtual void Start();
 
   // Destroy the sub-compontents of this class.
   // After this call, it is safe to destroy this object on any thread.
-  void Stop();
+  virtual void Stop();
 
  protected:
   // To be implemented by subclasses.  These are called on the Cast MAIN thread
@@ -108,9 +101,6 @@ class InProcessReceiver {
                      bool is_continuous);
   void PullNextAudioFrame();
   void PullNextVideoFrame();
-
-  // Invoked just before the destruction of |receiver| on the cast MAIN thread.
-  static void WillDestroyReceiver(InProcessReceiver* receiver);
 
   const scoped_refptr<CastEnvironment> cast_environment_;
   const net::IPEndPoint local_end_point_;

@@ -336,9 +336,7 @@ IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, DISABLED_EndToEnd) {
   receiver->WaitForColorAndTone(kGreenInYUV, 500 /* Hz */, kOneHalfSecond);
   receiver->WaitForColorAndTone(kBlueInYUV, 1800 /* Hz */, kOneHalfSecond);
 
-  // TODO(miu): Uncomment once GetWeakPtr() NULL crash in PacedSender is fixed
-  // (see http://crbug.com/349786):
-  // receiver->DestroySoon();
+  receiver->Stop();
   cast_environment->Shutdown();
 }
 
