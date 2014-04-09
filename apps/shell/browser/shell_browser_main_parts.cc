@@ -43,7 +43,9 @@ namespace apps {
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters)
-    : extension_system_(NULL), parameters_(parameters) {}
+    : extension_system_(NULL),
+      parameters_(parameters),
+      run_message_loop_(true) {}
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {
 }
@@ -66,15 +68,15 @@ int ShellBrowserMainParts::PreCreateThreads() {
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
+  // Initialize our "profile" equivalent.
+  browser_context_.reset(new ShellBrowserContext);
+
   desktop_controller_.reset(new ShellDesktopController);
   desktop_controller_->GetWindowTreeHost()->AddObserver(this);
 
   // NOTE: Much of this is culled from chrome/test/base/chrome_test_suite.cc
   // TODO(jamescook): Initialize chromeos::UserManager.
   net_log_.reset(new content::ShellNetLog("app_shell"));
-
-  // Initialize our "profile" equivalent.
-  browser_context_.reset(new ShellBrowserContext);
 
   extensions_client_.reset(new ShellExtensionsClient());
   extensions::ExtensionsClient::Set(extensions_client_.get());
@@ -95,27 +97,26 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   devtools_delegate_.reset(
       new content::ShellDevToolsDelegate(browser_context_.get()));
 
-  // For running browser tests.
-  // TODO(yoz): This is set up to exit prematurely because we don't have
-  // any tests yet.
-  if (parameters_.ui_task) {
-    parameters_.ui_task->Run();
-    delete parameters_.ui_task;
-    return;
-  }
-
   const std::string kAppSwitch = "app";
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(kAppSwitch)) {
     base::FilePath app_dir(command_line->GetSwitchValueNative(kAppSwitch));
     base::FilePath app_absolute_dir = base::MakeAbsoluteFilePath(app_dir);
     extension_system_->LoadAndLaunchApp(app_absolute_dir);
+  } else if (parameters_.ui_task) {
+    // For running browser tests.
+    parameters_.ui_task->Run();
+    delete parameters_.ui_task;
+    run_message_loop_ = false;
   } else {
     LOG(ERROR) << "--" << kAppSwitch << " unset; boredom is in your future";
   }
 }
 
 bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
+  if (!run_message_loop_)
+    return true;
+  // TODO(yoz): just return false here?
   base::RunLoop run_loop;
   run_loop.Run();
   *result_code = content::RESULT_CODE_NORMAL_EXIT;

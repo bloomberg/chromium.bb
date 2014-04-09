@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_TEST_APP_SHELL_TEST_H_
-#define APPS_TEST_APP_SHELL_TEST_H_
+#ifndef APPS_SHELL_TEST_SHELL_TEST_H_
+#define APPS_SHELL_TEST_SHELL_TEST_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/test/browser_test.h"
@@ -29,6 +29,8 @@ class AppShellTest : public content::BrowserTestBase {
   AppShellTest();
   virtual ~AppShellTest();
 
+  // content::BrowserTestBase implementation.
+  virtual void SetUp() OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
   virtual void RunTestOnMainThreadLoop() OVERRIDE;
 
@@ -45,4 +47,4 @@ class AppShellTest : public content::BrowserTestBase {
 
 }  // namespace apps
 
-#endif  // APPS_TEST_APP_SHELL_TEST_H_
+#endif  // APPS_SHELL_TEST_SHELL_TEST_H_

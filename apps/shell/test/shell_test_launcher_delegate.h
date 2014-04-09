@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_TEST_APPS_TEST_LAUNCHER_DELEGATE_H_
-#define APPS_TEST_APPS_TEST_LAUNCHER_DELEGATE_H_
+#ifndef APPS_SHELL_TEST_SHELL_TEST_LAUNCHER_DELEGATE_H_
+#define APPS_SHELL_TEST_SHELL_TEST_LAUNCHER_DELEGATE_H_
 
 #include "content/public/test/test_launcher.h"
 
 namespace apps {
 
-class AppsTestLauncherDelegate : public content::TestLauncherDelegate {
+class AppShellTestLauncherDelegate : public content::TestLauncherDelegate {
  public:
   virtual int RunTestSuite(int argc, char** argv) OVERRIDE;
   virtual bool AdjustChildProcessCommandLine(
@@ -20,4 +20,4 @@ class AppsTestLauncherDelegate : public content::TestLauncherDelegate {
 
 }  // namespace apps
 
-#endif  // APPS_TEST_APPS_TEST_LAUNCHER_DELEGATE_H_
+#endif  // APPS_SHELL_TEST_SHELL_TEST_LAUNCHER_DELEGATE_H_

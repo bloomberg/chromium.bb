@@ -84,6 +84,10 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
   // For running app browsertests.
   const content::MainFunctionParams parameters_;
 
+  // If true, indicates the main message loop should be run
+  // in MainMessageLoopRun. If false, it has already been run.
+  bool run_message_loop_;
+
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };
 

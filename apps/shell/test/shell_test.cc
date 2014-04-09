@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/test/app_shell_test.h"
+#include "apps/shell/test/shell_test.h"
 
 #include "apps/shell/browser/shell_content_browser_client.h"
+#include "apps/shell/browser/shell_desktop_controller.h"
 #include "apps/shell/browser/shell_extension_system.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_system.h"
 
 namespace apps {
@@ -17,6 +20,12 @@ AppShellTest::AppShellTest()
 
 AppShellTest::~AppShellTest() {}
 
+void AppShellTest::SetUp() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(switches::kTestType, "appshell");
+  content::BrowserTestBase::SetUp();
+}
+
 void AppShellTest::SetUpOnMainThread() {
   browser_context_ = ShellContentBrowserClient::Get()->GetBrowserContext();
 
@@ -25,7 +34,6 @@ void AppShellTest::SetUpOnMainThread() {
 }
 
 void AppShellTest::RunTestOnMainThreadLoop() {
-  // Pump startup related events.
   base::MessageLoopForUI::current()->RunUntilIdle();
 
   SetUpOnMainThread();
@@ -33,6 +41,9 @@ void AppShellTest::RunTestOnMainThreadLoop() {
   RunTestOnMainThread();
 
   TearDownOnMainThread();
+
+  // Clean up the app window.
+  ShellDesktopController::instance()->CloseAppWindow();
 }
 
 bool AppShellTest::LoadAndLaunchApp(const base::FilePath& app_dir) {

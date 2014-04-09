@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/test/apps_test_launcher_delegate.h"
+#include "apps/shell/test/shell_test_launcher_delegate.h"
 
 #include "apps/shell/app/shell_main_delegate.h"
 #include "base/test/test_suite.h"
 
 namespace apps {
 
-int AppsTestLauncherDelegate::RunTestSuite(int argc, char** argv) {
+int AppShellTestLauncherDelegate::RunTestSuite(int argc, char** argv) {
   return base::TestSuite(argc, argv).Run();
 }
 
-bool AppsTestLauncherDelegate::AdjustChildProcessCommandLine(
+bool AppShellTestLauncherDelegate::AdjustChildProcessCommandLine(
     base::CommandLine* command_line,
     const base::FilePath& temp_data_dir) {
   return true;
 }
 
 content::ContentMainDelegate*
-AppsTestLauncherDelegate::CreateContentMainDelegate() {
+AppShellTestLauncherDelegate::CreateContentMainDelegate() {
   return new ShellMainDelegate();
 }
 

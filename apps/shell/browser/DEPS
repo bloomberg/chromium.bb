@@ -1,9 +1,4 @@
 include_rules = [
-  # The apps module has dependencies on chrome.
-  "-apps",
-  "+apps/shell/browser",
-  "+apps/shell/common",
-
   "+chromeos",
   "+components/user_prefs",
 

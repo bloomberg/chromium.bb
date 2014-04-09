@@ -165,11 +165,12 @@
       'msvs_large_pdb': 1,
       'sources': [
         # TODO(yoz): Refactor once we have a second test target.
-        '../test/app_shell_test.h',
-        '../test/app_shell_test.cc',
-        '../test/apps_test_launcher_delegate.cc',
-        '../test/apps_test_launcher_delegate.h',
-        '../test/apps_tests_main.cc',
+        'browser/shell_browsertest.cc',
+        'test/shell_test.h',
+        'test/shell_test.cc',
+        'test/shell_test_launcher_delegate.cc',
+        'test/shell_test_launcher_delegate.h',
+        'test/shell_tests_main.cc',
       ],
     },
   ],  # targets
