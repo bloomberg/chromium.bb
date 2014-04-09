@@ -589,7 +589,7 @@ void BrowserMediaPlayerManager::OnInitializeCdm(int cdm_id,
     return;
   }
 
-  if (!MediaDrmBridge::IsKeySystemSupportedWithType(key_system, "")) {
+  if (!MediaDrmBridge::IsKeySystemSupported(key_system)) {
     NOTREACHED() << "Unsupported key system: " << key_system;
     return;
   }

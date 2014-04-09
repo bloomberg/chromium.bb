@@ -44,9 +44,11 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   static bool IsSecurityLevelSupported(const std::string& key_system,
                                        SecurityLevel security_level);
 
-  // TODO(xhwang): The |container_mime_type| is not the same as contentType in
-  // the EME spec. Revisit this once the spec issue with initData type is
-  // resolved.
+  // Checks whether |key_system| is supported.
+  static bool IsKeySystemSupported(const std::string& key_system);
+
+  // Checks whether |key_system| is supported with |container_mime_type|.
+  // |container_mime_type| must not be empty.
   static bool IsKeySystemSupportedWithType(
       const std::string& key_system,
       const std::string& container_mime_type);

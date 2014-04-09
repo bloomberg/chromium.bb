@@ -4,6 +4,8 @@
 
 #include "media/base/android/media_drm_bridge.h"
 
+#include <algorithm>
+
 #include "base/android/build_info.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -180,6 +182,30 @@ static std::string GetSecurityLevelString(
   return "";
 }
 
+// Checks whether |key_system| is supported with |container_mime_type|. Only
+// checks |key_system| support if |container_mime_type| is empty.
+// TODO(xhwang): The |container_mime_type| is not the same as contentType in
+// the EME spec. Revisit this once the spec issue with initData type is
+// resolved.
+static bool IsKeySystemSupportedWithTypeImpl(
+    const std::string& key_system,
+    const std::string& container_mime_type) {
+  if (!MediaDrmBridge::IsAvailable())
+    return false;
+
+  std::vector<uint8> scheme_uuid = GetUUID(key_system);
+  if (scheme_uuid.empty())
+    return false;
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> j_scheme_uuid =
+      base::android::ToJavaByteArray(env, &scheme_uuid[0], scheme_uuid.size());
+  ScopedJavaLocalRef<jstring> j_container_mime_type =
+      ConvertUTF8ToJavaString(env, container_mime_type);
+  return Java_MediaDrmBridge_isCryptoSchemeSupported(
+      env, j_scheme_uuid.obj(), j_container_mime_type.obj());
+}
+
 // static
 bool MediaDrmBridge::IsAvailable() {
   return base::android::BuildInfo::GetInstance()->sdk_int() >= 19;
@@ -208,23 +234,17 @@ bool MediaDrmBridge::IsSecurityLevelSupported(const std::string& key_system,
 }
 
 // static
+bool MediaDrmBridge::IsKeySystemSupported(const std::string& key_system) {
+  DCHECK(!key_system.empty());
+  return IsKeySystemSupportedWithTypeImpl(key_system, "");
+}
+
+// static
 bool MediaDrmBridge::IsKeySystemSupportedWithType(
     const std::string& key_system,
     const std::string& container_mime_type) {
-  if (!IsAvailable())
-    return false;
-
-  std::vector<uint8> scheme_uuid = GetUUID(key_system);
-  if (scheme_uuid.empty())
-    return false;
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jbyteArray> j_scheme_uuid =
-      base::android::ToJavaByteArray(env, &scheme_uuid[0], scheme_uuid.size());
-  ScopedJavaLocalRef<jstring> j_container_mime_type =
-      ConvertUTF8ToJavaString(env, container_mime_type);
-  return Java_MediaDrmBridge_isCryptoSchemeSupported(
-      env, j_scheme_uuid.obj(), j_container_mime_type.obj());
+  DCHECK(!key_system.empty() && !container_mime_type.empty());
+  return IsKeySystemSupportedWithTypeImpl(key_system, container_mime_type);
 }
 
 bool MediaDrmBridge::RegisterMediaDrmBridge(JNIEnv* env) {
@@ -292,17 +312,29 @@ bool MediaDrmBridge::CreateSession(uint32 session_id,
                                    const std::string& content_type,
                                    const uint8* init_data,
                                    int init_data_length) {
-  std::vector<uint8> pssh_data;
-  if (!GetPsshData(init_data, init_data_length, scheme_uuid_, &pssh_data))
-    return false;
-
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jbyteArray> j_pssh_data =
-      base::android::ToJavaByteArray(env, &pssh_data[0], pssh_data.size());
+  ScopedJavaLocalRef<jbyteArray> j_init_data;
+  // Caller should always use "video/*" content types.
+  DCHECK_EQ(0u, content_type.find("video/"));
+
+  // Widevine MediaDrm plugin only accepts the "data" part of the PSSH box as
+  // the init data when using MP4 container.
+  if (std::equal(scheme_uuid_.begin(), scheme_uuid_.end(), kWidevineUuid) &&
+      content_type == "video/mp4") {
+    std::vector<uint8> pssh_data;
+    if (!GetPsshData(init_data, init_data_length, scheme_uuid_, &pssh_data))
+      return false;
+    j_init_data =
+        base::android::ToJavaByteArray(env, &pssh_data[0], pssh_data.size());
+  } else {
+    j_init_data =
+        base::android::ToJavaByteArray(env, init_data, init_data_length);
+  }
+
   ScopedJavaLocalRef<jstring> j_mime =
       ConvertUTF8ToJavaString(env, content_type);
   Java_MediaDrmBridge_createSession(
-      env, j_media_drm_.obj(), session_id, j_pssh_data.obj(), j_mime.obj());
+      env, j_media_drm_.obj(), session_id, j_init_data.obj(), j_mime.obj());
   return true;
 }
 

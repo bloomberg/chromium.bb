@@ -21,15 +21,22 @@ const size_t kMaxKeySystemLength = 256;
 
 // Check whether the available codecs are supported.
 static android::SupportedCodecs GetSupportedCodecs(
-    android::SupportedCodecs requested_codecs,
+    const SupportedKeySystemRequest& request,
     bool video_must_be_compositable) {
+  const std::string& key_system = request.key_system;
   android::SupportedCodecs supported_codecs = android::NO_SUPPORTED_CODECS;
-  // TODO(qinmin): Remove this DCHECK and query VP8/Vorbis capabilities
-  // once webm support is added to Android.
-  DCHECK(!(requested_codecs & android::WEBM_VP8_AND_VORBIS));
+
+  if ((request.codecs & android::WEBM_VP8_AND_VORBIS) &&
+      MediaDrmBridge::IsKeySystemSupportedWithType(key_system, "video/webm") &&
+      MediaCodecBridge::CanDecode("vp8", !video_must_be_compositable) &&
+      MediaCodecBridge::CanDecode("vorbis", false)) {
+    supported_codecs = static_cast<android::SupportedCodecs>(
+        supported_codecs | android::WEBM_VP8_AND_VORBIS);
+  }
 
 #if defined(USE_PROPRIETARY_CODECS)
-  if ((requested_codecs & android::MP4_AAC) &&
+  if ((request.codecs & android::MP4_AAC) &&
+      MediaDrmBridge::IsKeySystemSupportedWithType(key_system, "video/mp4") &&
       MediaCodecBridge::CanDecode("mp4a", false)) {
     supported_codecs = static_cast<android::SupportedCodecs>(
         supported_codecs | android::MP4_AAC);
@@ -37,7 +44,8 @@ static android::SupportedCodecs GetSupportedCodecs(
 
   // TODO(qinmin): Remove the composition logic when secure contents can be
   // composited.
-  if ((requested_codecs & android::MP4_AVC1) &&
+  if ((request.codecs & android::MP4_AVC1) &&
+      MediaDrmBridge::IsKeySystemSupportedWithType(key_system, "video/mp4") &&
       MediaCodecBridge::CanDecode("avc1", !video_must_be_compositable)) {
     supported_codecs = static_cast<android::SupportedCodecs>(
         supported_codecs | android::MP4_AVC1);
@@ -84,16 +92,14 @@ void EncryptedMediaMessageFilterAndroid::OnGetSupportedKeySystems(
     return;
   }
 
-  // TODO(qinmin): Convert codecs to container types and check whether they
-  // are supported with the key system.
-  if (!MediaDrmBridge::IsKeySystemSupportedWithType(request.key_system, ""))
+  if (!MediaDrmBridge::IsKeySystemSupported(request.key_system))
     return;
 
   DCHECK_EQ(request.codecs >> 3, 0) << "unrecognized codec";
   response->key_system = request.key_system;
   // TODO(qinmin): check composition is supported or not.
-  response->compositing_codecs = GetSupportedCodecs(request.codecs, true);
-  response->non_compositing_codecs = GetSupportedCodecs(request.codecs, false);
+  response->compositing_codecs = GetSupportedCodecs(request, true);
+  response->non_compositing_codecs = GetSupportedCodecs(request, false);
 }
 
 }  // namespace chrome
