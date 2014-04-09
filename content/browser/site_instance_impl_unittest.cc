@@ -557,6 +557,11 @@ static SiteInstanceImpl* CreateSiteInstance(BrowserContext* browser_context,
 // Test to ensure that pages that require certain privileges are grouped
 // in processes with similar pages.
 TEST_F(SiteInstanceTest, ProcessSharingByType) {
+  // This test shouldn't run with --site-per-process mode, since it doesn't
+  // allow render process reuse, which this test explicitly exercises.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
+    return;
+
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
