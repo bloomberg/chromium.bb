@@ -136,6 +136,14 @@ tc-archive-translator() {
   ${PNACL_BUILD} translator-tarball pnacl-translator.tgz
   ${UP_DOWN_LOAD} UploadToolchainTarball ${BUILDBOT_GOT_REVISION} \
       pnacl_translator pnacl-translator.tgz
+
+  echo @@@BUILD_STEP upload_translator_package_info@@@
+  python build/package_version/package_version.py archive \
+      --archive-package=pnacl_translator \
+      pnacl-translator.tgz@https://storage.googleapis.com/nativeclient-archive2/toolchain/${BUILDBOT_GOT_REVISION}/naclsdk_pnacl_translator.tgz
+
+  python build/package_version/package_version.py --annotate upload \
+      --upload-package=pnacl_translator --revision=${BUILDBOT_GOT_REVISION}
 }
 
 tc-build-all() {
