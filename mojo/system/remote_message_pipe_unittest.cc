@@ -366,6 +366,11 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(world), static_cast<size_t>(buffer_size));
   EXPECT_STREQ(world, buffer);
+
+  mp0->Close(0);
+  mp1->Close(1);
+  mp2->Close(0);
+  mp3->Close(1);
 }
 
 TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {

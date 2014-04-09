@@ -62,8 +62,16 @@ void Channel::Shutdown() {
   raw_channel_->Shutdown();
   raw_channel_.reset();
 
-  // TODO(vtl): Should I clear |local_id_to_endpoint_info_map_|? Or assert that
-  // it's empty?
+  // This should not occur, but it probably mostly results in leaking;
+  // (Explicitly clearing the |local_id_to_endpoint_info_map_| would likely put
+  // things in an inconsistent state, which is worse. Note that if the map is
+  // nonempty, we probably won't be destroyed, since the endpoints have a
+  // reference to us.)
+  LOG_IF(ERROR, local_id_to_endpoint_info_map_.empty())
+      << "Channel shutting down with endpoints still attached";
+  // TODO(vtl): This currently blows up, but the fix will be nontrivial.
+  // crbug.com/360081
+  //DCHECK(local_id_to_endpoint_info_map_.empty());
 }
 
 MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
