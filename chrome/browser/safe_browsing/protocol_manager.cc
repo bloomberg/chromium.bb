@@ -171,6 +171,7 @@ void SafeBrowsingProtocolManager::GetFullHash(
   // allowed time. If we are, we can proceed with the request. If not, we are
   // required to return empty results (i.e. treat the page as safe).
   if (gethash_error_count_ && Time::Now() <= next_gethash_time_) {
+    RecordGetHashResult(is_download, GET_HASH_BACKOFF_ERROR);
     std::vector<SBFullHashResult> full_hashes;
     callback.Run(full_hashes, false);
     return;
@@ -240,14 +241,18 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
           &full_hashes);
       if (!parsed_ok) {
         full_hashes.clear();
-        // TODO(cbentzel): Should can_cache be set to false here?
+        RecordGetHashResult(details.is_download, GET_HASH_PARSE_ERROR);
+        // TODO(cbentzel): Should can_cache be set to false here? (See
+        // http://crbug.com/360232.)
       }
     } else {
       HandleGetHashError(Time::Now());
       if (source->GetStatus().status() == net::URLRequestStatus::FAILED) {
+        RecordGetHashResult(details.is_download, GET_HASH_NETWORK_ERROR);
         VLOG(1) << "SafeBrowsing GetHash request for: " << source->GetURL()
                 << " failed with error: " << source->GetStatus().error();
       } else {
+        RecordGetHashResult(details.is_download, GET_HASH_HTTP_ERROR);
         VLOG(1) << "SafeBrowsing GetHash request for: " << source->GetURL()
                 << " failed with error: " << source->GetResponseCode();
       }

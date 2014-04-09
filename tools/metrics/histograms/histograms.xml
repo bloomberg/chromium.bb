@@ -21594,28 +21594,30 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SB2.GetHashResult" enum="SB2GetHashResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mattm@chromium.org</owner>
   <summary>
-    Track return status from GetHash requests to server (STATUS_200 and
-    STATUS_204), and dispensation of returned values (EMPTY, HIT, MISS).  EMPTY
-    means the response had no full hashes, and should contain all of the 204
-    responses plus those 200 responses corrosponding to items deleted on the
-    server but not yet deleted on the client.  HIT means that one of the full
+    Track return status from GetHash attempts (STATUS_200, STATUS_204,
+    NETWORK_ERROR, HTTP_ERROR, BACKOFF_ERROR), whether parsing a 200 result
+    failed (PARSE_ERROR), and dispensation of returned values (EMPTY, HIT,
+    MISS).  EMPTY means the response had no full hashes, and should contain all
+    of the 204 responses plus all *_ERROR cases.  HIT means that one of the full
     hashes matched. MISS means that none of the hashes matched (there was a
-    prefix collision).
+    prefix collision). (PARSE_ERROR, NETWORK_ERROR, HTTP_ERROR, and
+    BACKOFF_ERROR were added in M36.)
   </summary>
 </histogram>
 
 <histogram name="SB2.GetHashResultDownload" enum="SB2GetHashResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mattm@chromium.org</owner>
   <summary>
-    Track return status from GetHash requests to server (STATUS_200 and
-    STATUS_204), and dispensation of returned values (EMPTY, HIT, MISS).  EMPTY
-    means the response had no full hashes, and should contain all of the 204
-    responses plus those 200 responses corrosponding to items deleted on the
-    server but not yet deleted on the client.  HIT means that one of the full
+    Track return status from GetHash attempts (STATUS_200, STATUS_204,
+    NETWORK_ERROR, HTTP_ERROR, BACKOFF_ERROR), whether parsing a 200 result
+    failed (PARSE_ERROR), and dispensation of returned values (EMPTY, HIT,
+    MISS).  EMPTY means the response had no full hashes, and should contain all
+    of the 204 responses plus all *_ERROR cases.  HIT means that one of the full
     hashes matched. MISS means that none of the hashes matched (there was a
-    prefix collision).
+    prefix collision). (PARSE_ERROR, NETWORK_ERROR, HTTP_ERROR, and
+    BACKOFF_ERROR were added in M36.)
   </summary>
 </histogram>
 
@@ -39491,9 +39493,13 @@ other types of suffix sets.
 <enum name="SB2GetHashResult" type="int">
   <int value="0" label="STATUS_200"/>
   <int value="1" label="STATUS_204"/>
-  <int value="2" label="FULL_HASH_EMPTY"/>
-  <int value="3" label="FULL_HASH_HIT"/>
-  <int value="4" label="FULL_HASH_MISS"/>
+  <int value="2" label="FULL_HASH_EMPTY (sum of STATUS_204, *_ERROR)"/>
+  <int value="3" label="FULL_HASH_HIT (subset of STATUS_200)"/>
+  <int value="4" label="FULL_HASH_MISS (subset of STATUS_200)"/>
+  <int value="5" label="PARSE_ERROR (subset of STATUS_200)"/>
+  <int value="6" label="NETWORK_ERROR"/>
+  <int value="7" label="HTTP_ERROR"/>
+  <int value="8" label="BACKOFF_ERROR"/>
 </enum>
 
 <enum name="SB2InterstitialAction" type="int">

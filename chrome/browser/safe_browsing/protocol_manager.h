@@ -129,8 +129,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
     GET_HASH_STATUS_204,
 
     // Subset of successful responses which returned no full hashes.
-    // This includes the 204 case, and also 200 responses for stale
-    // prefixes (deleted at the server but yet deleted on the client).
+    // This includes the STATUS_204 case, and the *_ERROR cases.
     GET_HASH_FULL_HASH_EMPTY,
 
     // Subset of successful responses for which one or more of the
@@ -141,6 +140,18 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
     // matches.  It means that there was a prefix collision which was
     // cleared up by the full hashes.
     GET_HASH_FULL_HASH_MISS,
+
+    // Subset of successful responses where the response body wasn't parsable.
+    GET_HASH_PARSE_ERROR,
+
+    // Gethash request failed (network error).
+    GET_HASH_NETWORK_ERROR,
+
+    // Gethash request returned HTTP result code other than 200 or 204.
+    GET_HASH_HTTP_ERROR,
+
+    // Gethash attempted during error backoff, no request sent.
+    GET_HASH_BACKOFF_ERROR,
 
     // Memory space for histograms is determined by the max.  ALWAYS
     // ADD NEW VALUES BEFORE THIS ONE.
