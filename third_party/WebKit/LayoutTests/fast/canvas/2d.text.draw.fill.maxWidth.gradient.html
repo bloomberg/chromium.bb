@@ -60,9 +60,7 @@ ctx.font = "100px Ahem";
 ctx.fillText(" ", 0, 0);
 
 // Wait for the font to load, then run
-setTimeout(function() {
-  doDeferredTest();
-}, 50);
+document.fonts.addEventListener('loadingdone', doDeferredTest);
 </script>
 </body>
 </html>

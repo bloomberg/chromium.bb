@@ -411,9 +411,6 @@ crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
 
-crbug.com/245644 virtual/gpu/fast/canvas/2d.text.draw.fill.maxWidth.gradient.html [ Failure Pass ]
-crbug.com/245644 fast/canvas/2d.text.draw.fill.maxWidth.gradient.html [ Failure Pass ]
-
 crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html [ Pass Timeout ]
 
 crbug.com/245630 virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
