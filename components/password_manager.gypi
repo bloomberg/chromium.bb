@@ -20,6 +20,8 @@
         '..',
       ],
       'sources': [
+        'password_manager/core/browser/browser_save_password_progress_logger.cc',
+        'password_manager/core/browser/browser_save_password_progress_logger.h',
         'password_manager/core/browser/login_database.cc',
         'password_manager/core/browser/login_database.h',
         'password_manager/core/browser/login_database_mac.cc',
@@ -104,6 +106,8 @@
         'password_manager/core/browser/mock_password_store.h',
         'password_manager/core/browser/password_form_data.cc',
         'password_manager/core/browser/password_form_data.h',
+        'password_manager/core/browser/stub_password_manager_client.cc',
+        'password_manager/core/browser/stub_password_manager_client.h',
         'password_manager/core/browser/test_password_store.cc',
         'password_manager/core/browser/test_password_store.h',
       ],

@@ -12,9 +12,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,6 +23,8 @@ class PasswordGenerationManager;
 
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
+// TODO(vabr): Remove the next line once http://crbug.com/348523 is fixed.
+using password_manager::StubPasswordManagerClient;
 using testing::_;
 using testing::AnyNumber;
 using testing::DoAll;
@@ -36,23 +38,12 @@ class AutofillManager;
 
 namespace {
 
-class MockPasswordManagerClient : public PasswordManagerClient {
+class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MOCK_METHOD1(PromptUserToSavePassword, void(PasswordFormManager*));
   MOCK_METHOD0(GetPasswordStore, PasswordStore*());
   MOCK_METHOD0(GetPrefs, PrefService*());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
-  MOCK_METHOD1(GetProbabilityForExperiment,
-               base::FieldTrial::Probability(const std::string&));
-
-  // The following is required because GMock does not support move-only
-  // parameters.
-  MOCK_METHOD1(AuthenticateAutofillAndFillFormPtr,
-               void(autofill::PasswordFormFillData* fill_data));
-  virtual void AuthenticateAutofillAndFillForm(
-      scoped_ptr<autofill::PasswordFormFillData> fill_data) OVERRIDE {
-    return AuthenticateAutofillAndFillFormPtr(fill_data.release());
-  }
 };
 
 class MockPasswordManagerDriver : public PasswordManagerDriver {

@@ -74,6 +74,8 @@
         'autofill/core/common/password_form_fill_data.h',
         'autofill/core/common/password_generation_util.cc',
         'autofill/core/common/password_generation_util.h',
+        'autofill/core/common/save_password_progress_logger.cc',
+        'autofill/core/common/save_password_progress_logger.h',
         'autofill/core/common/web_element_descriptor.cc',
         'autofill/core/common/web_element_descriptor.h',
       ],
