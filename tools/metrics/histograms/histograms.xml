@@ -33250,6 +33250,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="707" label="BLUETOOTHPRIVATE_ENABLEPAIRING"/>
   <int value="708" label="BLUETOOTHPRIVATE_DISABLEPAIRING"/>
   <int value="709" label="BLUETOOTHPRIVATE_SETPAIRINGRESPONSE"/>
+  <int value="710" label="NETWORKINGPRIVATE_GETCAPTIVEPORTALSTATUS"/>
+  <int value="711" label="AUTOMATIONINTERNAL_PERFORMACTION"/>
+  <int value="712" label="BLUETOOTH_UPDATE_SOCKET"/>
+  <int value="713" label="BLUETOOTH_SET_SOCKET_PAUSED"/>
+  <int value="714" label="BLUETOOTH_GET_SOCKET"/>
+  <int value="715" label="BLUETOOTH_GET_SOCKETS"/>
+  <int value="716" label="FILESYSTEMPROVIDER_UNMOUNT"/>
+  <int value="717" label="FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDSUCCESS"/>
+  <int value="718" label="FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDERROR"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

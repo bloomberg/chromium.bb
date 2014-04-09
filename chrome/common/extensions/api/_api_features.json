@@ -374,6 +374,11 @@
     "dependencies": ["permission:fileSystemProvider"],
     "contexts": ["blessed_extension"]
   },
+  "fileSystemProviderInternal": {
+    "internal": true,
+    "dependencies": ["fileSystemProvider"],
+    "contexts": ["blessed_extension"]
+  },
   "firstRunPrivate": {
     "platforms": ["chromeos"],
     "dependencies": ["permission:firstRunPrivate"],

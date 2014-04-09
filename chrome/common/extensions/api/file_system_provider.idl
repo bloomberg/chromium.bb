@@ -7,12 +7,46 @@
 [platforms=("chromeos"),
  implemented_in="chrome/browser/chromeos/extensions/file_system_provider/file_system_provider_api.h"]
 namespace fileSystemProvider {
+  // Error codes used by providing extensions in response to requests. For
+  // success, <code>OK</code> should be used.
+  enum ProviderError {
+    OK,
+    FAILED,
+    IN_USE,
+    EXISTS,
+    NOT_FOUND,
+    ACCESS_DENIED,
+    TOO_MANY_OPENED,
+    NO_MEMORY,
+    NO_SPACE,
+    NOT_A_DIRECTORY,
+    INVALID_OPERATION,
+    SECURITY,
+    ABORT,
+    NOT_A_FILE,
+    NOT_EMPTY,
+    INVALID_URL,
+    IO
+  };
+
   // Callback to receive the result of mount() function.
   // <code>fileSystemID</code> will be a unique ID for the file system just
   // mounted. The ID is used to distinguish multiple file systems mounted
   // from a single File System Provider.
   callback MountCallback = void(long fileSystemId,
                                 [nodoc, instanceOf=DOMError] object error);
+
+
+  // Callback to receive the result of unmount() function with the <code>
+  // fileSystemId</code> identifier.
+  callback UnmountCallback = void(long fileSystemId,
+                                  [nodoc, instanceOf=DOMError] object error);
+
+  // Callback to be called by the providing extension in case of a success.
+  callback ProviderSuccessCallback = void();
+
+  // Callback to be called by the providing extension in case of an error.
+  callback ProviderErrorCallback = void(ProviderError error);
 
   // Callback to handle an error raised from the browser.
   [nocompile] callback ErrorCallback = void([instanceOf=DOMError] object error);
@@ -22,10 +56,33 @@ namespace fileSystemProvider {
     // <code>displayName</code> will be shown in the left panel of
     // Files.app. <code>displayName</code> can contain any characters
     // including '/', but cannot be an empty string. <code>displayName</code>
-    // should be descritive but doesn't have to be unique. Duplicate display
+    // should be descriptive but doesn't have to be unique. Duplicate display
     // names are uniquified by adding suffix like "(1)" in the Files.app UI.
     static void mount(DOMString displayName,
                       MountCallback successCallback,
                       [nocompile] ErrorCallback errorCallback);
+
+    // Unmounts a file system with the given <code>fileSystemId</code>. It
+    // should be called after <code>onUnmountRequested</code> is invoked. Also,
+    // the providing extension can decide to perform unmounting if not requested
+    // (eg. in case of lost connection, or a file error). If there is no file
+    // system with the requested id, or unmounting fails, then the
+    // <code>errorCallback</code> will be called.
+    static void unmount(long fileSystemId,
+                        UnmountCallback successCallback,
+                        [nocompile] ErrorCallback errorCallback);
+  };
+
+  interface Events {
+    // Raised, when the user requests unmounting of the file system with the
+    // <code>fileSystemId</code> identifier in the Files.app UI. In response,
+    // the <code>unmount</code> API method should be called. If unmounting is
+    // not possible (eg. due to pending operation), then <code>errorCallback
+    // </code> should be called, and <code>unmount</code> should not be called.
+    [maxListeners=1] static void onUnmountRequested(
+        long fileSystemId,
+        ProviderSuccessCallback successCallback,
+        ProviderErrorCallback errorCallback);
   };
 };
+

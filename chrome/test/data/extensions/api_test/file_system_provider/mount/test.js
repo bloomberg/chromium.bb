@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 chrome.test.runTests([
+  // Tests whether mounting succeeds, when a non-empty name is provided.
   function goodDisplayName() {
     chrome.fileSystemProvider.mount(
       'test file system',
@@ -17,6 +18,7 @@ chrome.test.runTests([
     );
   },
 
+  // Verifies that mounting fails, when an empty string is provided as a name.
   function emptyDisplayName() {
     chrome.fileSystemProvider.mount(
       '',
@@ -30,6 +32,9 @@ chrome.test.runTests([
     );
   },
 
+  // End to end test. Mounts a volume using fileSystemProvider.mount(), then
+  // checks if the mounted volume is added to VolumeManager, by querying
+  // fileBrowserPrivate.getVolumeMetadataList().
   function successfulMount() {
     chrome.fileSystemProvider.mount(
       'caramel-candy.zip',
@@ -49,10 +54,11 @@ chrome.test.runTests([
       });
   },
 
+  // Checks is limit for mounted file systems per profile works correctly.
+  // Tries to create more than allowed number of file systems. All of the mount
+  // requests should succeed, except the last one which should fail with a
+  // security error.
   function stressMountTest() {
-    // Try to create more than allowed number of file systems. All of the mount
-    // requests should succeed, except the last one which should fail with a
-    // security error.
     var ALREADY_MOUNTED_FILE_SYSTEMS = 2;  // By previous tests.
     var MAX_FILE_SYSTEMS = 16;
     var index = 0;

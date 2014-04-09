@@ -23,4 +23,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Mount) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Unmount) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/unmount",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
+
 }  // namespace extensions

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_mount.h"
 
+#include <string>
+
 #include "base/format_macros.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -105,8 +107,7 @@ bool FileBrowserPrivateRemoveMountFunction::RunImpl() {
   using file_manager::VolumeManager;
   using file_manager::VolumeInfo;
   VolumeManager* volume_manager = VolumeManager::Get(GetProfile());
-  if (!volume_manager)
-    return false;
+  DCHECK(volume_manager);
 
   VolumeInfo volume_info;
   if (!volume_manager->FindVolumeInfoById(params->volume_id, &volume_info))
@@ -115,10 +116,28 @@ bool FileBrowserPrivateRemoveMountFunction::RunImpl() {
   // TODO(tbarzic): Send response when callback is received, it would make more
   // sense than remembering issued unmount requests in file manager and showing
   // errors for them when MountCompleted event is received.
-  DiskMountManager::GetInstance()->UnmountPath(
-      volume_info.mount_path.value(),
-      chromeos::UNMOUNT_OPTIONS_NONE,
-      DiskMountManager::UnmountPathCallback());
+  switch (volume_info.type) {
+    case file_manager::VOLUME_TYPE_REMOVABLE_DISK_PARTITION:
+    case file_manager::VOLUME_TYPE_MOUNTED_ARCHIVE_FILE: {
+      DiskMountManager::GetInstance()->UnmountPath(
+          volume_info.mount_path.value(),
+          chromeos::UNMOUNT_OPTIONS_NONE,
+          DiskMountManager::UnmountPathCallback());
+      break;
+    }
+    case file_manager::VOLUME_TYPE_PROVIDED: {
+      chromeos::file_system_provider::Service* service =
+          chromeos::file_system_provider::Service::Get(GetProfile());
+      DCHECK(service);
+      // TODO(mtomasz): Pass a more detailed error than just a bool.
+      if (!service->RequestUnmount(volume_info.file_system_id))
+        return false;
+      break;
+    }
+    default:
+      // Requested unmounting a device which is not unmountable.
+      return false;
+  }
 
   SendResponse(true);
   return true;

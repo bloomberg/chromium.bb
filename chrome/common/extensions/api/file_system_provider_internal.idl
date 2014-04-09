@@ -1,0 +1,26 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Internal, used by fileSystemProvider's custom bindings. These functions are
+// called when events' callbacks are invoked.
+[platforms=("chromeos"),
+ implemented_in="chrome/browser/chromeos/extensions/file_system_provider/file_system_provider_api.h", nodoc]
+namespace fileSystemProviderInternal {
+  interface Functions {
+    // Internal. Success callback of the <code>onUnmountRequested</code>
+    // event. Must be called when unmounting is completed.
+    static void unmountRequestedSuccess(long fileSystemId,
+                                        long requestId);
+
+    // Internal. Error callback of the <code>onUnmountRequested</code>
+    // event. Must be called if unmounting fails.
+    static void unmountRequestedError(
+        long fileSystemId,
+        long requestId,
+        // TODO(mtomasz): Use FileSystemProvider::ProviderError when namespaces
+        // are fully implemented in IDL.
+        DOMString error);
+  };
+};
+

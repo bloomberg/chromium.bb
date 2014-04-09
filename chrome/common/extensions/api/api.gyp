@@ -69,6 +69,7 @@
               'file_browser_private.idl',
               'file_system.idl',
               'file_system_provider.idl',
+              'file_system_provider_internal.idl',
               'font_settings.json',
               'gcm.json',
               'hangouts_private.idl',

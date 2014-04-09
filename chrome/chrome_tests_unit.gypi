@@ -720,6 +720,7 @@
         'browser/chromeos/file_manager/path_util_unittest.cc',
         'browser/chromeos/file_manager/url_util_unittest.cc',
         'browser/chromeos/file_manager/volume_manager_unittest.cc',
+        'browser/chromeos/file_system_provider/request_manager_unittest.cc',
         'browser/chromeos/file_system_provider/service_unittest.cc',
         'browser/chromeos/extensions/device_local_account_management_policy_provider_unittest.cc',
         'browser/chromeos/extensions/wallpaper_private_api_unittest.cc',

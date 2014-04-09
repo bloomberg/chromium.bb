@@ -6,12 +6,16 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/common/extensions/api/file_system_provider.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_system.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace chromeos {
@@ -40,9 +44,22 @@ base::FilePath GetMountPointPath(Profile* profile,
       extension_id + "-" + base::IntToString(file_system_id) + user_suffix);
 }
 
+// Creates values to be passed to request events. These values can be extended
+// by additional fields.
+scoped_ptr<base::ListValue> CreateRequestValues(int file_system_id,
+                                                int request_id) {
+  scoped_ptr<base::ListValue> values(new base::ListValue());
+  values->AppendInteger(file_system_id);
+  values->AppendInteger(request_id);
+  return values.Pass();
+}
+
 }  // namespace
 
-Service::Service(Profile* profile) : profile_(profile), next_id_(1) {}
+Service::Service(Profile* profile)
+    : profile_(profile), next_id_(1), weak_ptr_factory_(this) {
+  AddObserver(&request_manager_);
+}
 
 Service::~Service() {}
 
@@ -52,24 +69,28 @@ Service* Service::Get(content::BrowserContext* context) {
 }
 
 void Service::AddObserver(Observer* observer) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(observer);
   observers_.AddObserver(observer);
 }
 
 void Service::RemoveObserver(Observer* observer) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(observer);
   observers_.RemoveObserver(observer);
 }
 
-int Service::RegisterFileSystem(const std::string& extension_id,
-                                const std::string& file_system_name) {
+int Service::MountFileSystem(const std::string& extension_id,
+                             const std::string& file_system_name) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Restrict number of file systems to prevent system abusing.
-  if (file_systems_.size() + 1 > kMaxFileSystems)
+  if (file_systems_.size() + 1 > kMaxFileSystems) {
+    FOR_EACH_OBSERVER(
+        Observer,
+        observers_,
+        OnProvidedFileSystemMount(ProvidedFileSystem(),
+                                  base::File::FILE_ERROR_TOO_MANY_OPENED));
     return 0;
+  }
 
   // The file system id is unique per service, so per profile.
   int file_system_id = next_id_;
@@ -89,6 +110,11 @@ int Service::RegisterFileSystem(const std::string& extension_id,
                                         fileapi::kFileSystemTypeProvided,
                                         fileapi::FileSystemMountOption(),
                                         mount_point_path)) {
+    FOR_EACH_OBSERVER(
+        Observer,
+        observers_,
+        OnProvidedFileSystemMount(ProvidedFileSystem(),
+                                  base::File::FILE_ERROR_INVALID_OPERATION));
     return 0;
   }
 
@@ -103,19 +129,26 @@ int Service::RegisterFileSystem(const std::string& extension_id,
   file_systems_[file_system_id] = file_system;
 
   FOR_EACH_OBSERVER(
-      Observer, observers_, OnProvidedFileSystemRegistered(file_system));
+      Observer,
+      observers_,
+      OnProvidedFileSystemMount(file_system, base::File::FILE_OK));
 
   next_id_++;
   return file_system_id;
 }
 
-bool Service::UnregisterFileSystem(const std::string& extension_id,
-                                   int file_system_id) {
+bool Service::UnmountFileSystem(const std::string& extension_id,
+                                int file_system_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   FileSystemMap::iterator file_system_it = file_systems_.find(file_system_id);
   if (file_system_it == file_systems_.end() ||
       file_system_it->second.extension_id() != extension_id) {
+    const ProvidedFileSystem empty_file_system;
+    FOR_EACH_OBSERVER(Observer,
+                      observers_,
+                      OnProvidedFileSystemUnmount(
+                          empty_file_system, base::File::FILE_ERROR_NOT_FOUND));
     return false;
   }
 
@@ -125,18 +158,25 @@ bool Service::UnregisterFileSystem(const std::string& extension_id,
 
   const std::string mount_point_name =
       file_system_it->second.mount_path().BaseName().value();
-  if (!mount_points->RevokeFileSystem(mount_point_name))
+  if (!mount_points->RevokeFileSystem(mount_point_name)) {
+    FOR_EACH_OBSERVER(
+        Observer,
+        observers_,
+        OnProvidedFileSystemUnmount(file_system_it->second,
+                                    base::File::FILE_ERROR_INVALID_OPERATION));
     return false;
+  }
 
-  FOR_EACH_OBSERVER(Observer,
-                    observers_,
-                    OnProvidedFileSystemUnregistered(file_system_it->second));
+  FOR_EACH_OBSERVER(
+      Observer,
+      observers_,
+      OnProvidedFileSystemUnmount(file_system_it->second, base::File::FILE_OK));
 
   file_systems_.erase(file_system_it);
   return true;
 }
 
-std::vector<ProvidedFileSystem> Service::GetRegisteredFileSystems() {
+std::vector<ProvidedFileSystem> Service::GetMountedFileSystems() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   std::vector<ProvidedFileSystem> result;
@@ -146,6 +186,80 @@ std::vector<ProvidedFileSystem> Service::GetRegisteredFileSystems() {
     result.push_back(it->second);
   }
   return result;
+}
+
+bool Service::FulfillRequest(const std::string& extension_id,
+                             int file_system_id,
+                             int request_id,
+                             scoped_ptr<base::DictionaryValue> result,
+                             bool has_next) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  FileSystemMap::iterator file_system_it = file_systems_.find(file_system_id);
+  if (file_system_it == file_systems_.end() ||
+      file_system_it->second.extension_id() != extension_id) {
+    return false;
+  }
+
+  return request_manager_.FulfillRequest(
+      file_system_it->second, request_id, result.Pass(), has_next);
+}
+
+bool Service::RejectRequest(const std::string& extension_id,
+                            int file_system_id,
+                            int request_id,
+                            base::File::Error error) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  FileSystemMap::iterator file_system_it = file_systems_.find(file_system_id);
+  if (file_system_it == file_systems_.end() ||
+      file_system_it->second.extension_id() != extension_id) {
+    return false;
+  }
+
+  return request_manager_.RejectRequest(
+      file_system_it->second, request_id, error);
+}
+
+bool Service::RequestUnmount(int file_system_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  FileSystemMap::iterator file_system_it = file_systems_.find(file_system_id);
+  if (file_system_it == file_systems_.end())
+    return false;
+
+  int request_id =
+      request_manager_.CreateRequest(file_system_it->second,
+                                     SuccessCallback(),
+                                     base::Bind(&Service::OnRequestUnmountError,
+                                                weak_ptr_factory_.GetWeakPtr(),
+                                                file_system_it->second));
+
+  if (!request_id)
+    return false;
+
+  scoped_ptr<base::ListValue> values(
+      CreateRequestValues(file_system_id, request_id));
+
+  extensions::EventRouter* event_router =
+      extensions::ExtensionSystem::Get(profile_)->event_router();
+  DCHECK(event_router);
+
+  event_router->DispatchEventToExtension(
+      file_system_it->second.extension_id(),
+      make_scoped_ptr(new extensions::Event(
+          extensions::api::file_system_provider::OnUnmountRequested::kEventName,
+          values.Pass())));
+
+  return true;
+}
+
+void Service::Shutdown() { RemoveObserver(&request_manager_); }
+
+void Service::OnRequestUnmountError(const ProvidedFileSystem& file_system,
+                                    base::File::Error error) {
+  FOR_EACH_OBSERVER(
+      Observer, observers_, OnProvidedFileSystemUnmount(file_system, error));
 }
 
 }  // namespace file_system_provider

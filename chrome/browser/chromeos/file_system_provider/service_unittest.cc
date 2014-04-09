@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
+#include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
@@ -25,22 +26,37 @@ const char kFileSystemName[] = "Camera Pictures";
 // Utility observer, logging events from file_system_provider::Service.
 class LoggingObserver : public Observer {
  public:
+  class Event {
+   public:
+    Event(const ProvidedFileSystem& file_system, base::File::Error error)
+        : file_system_(file_system), error_(error) {}
+    ~Event() {}
+
+    const ProvidedFileSystem& file_system() { return file_system_; }
+    base::File::Error error() { return error_; }
+
+   private:
+    ProvidedFileSystem file_system_;
+    base::File::Error error_;
+  };
+
   LoggingObserver() {}
   virtual ~LoggingObserver() {}
 
   // file_system_provider::Observer overrides.
-  virtual void OnProvidedFileSystemRegistered(
-      const ProvidedFileSystem& file_system) OVERRIDE {
-    registered.push_back(new const ProvidedFileSystem(file_system));
+  virtual void OnProvidedFileSystemMount(const ProvidedFileSystem& file_system,
+                                         base::File::Error error) OVERRIDE {
+    mounts.push_back(Event(file_system, error));
   }
 
-  virtual void OnProvidedFileSystemUnregistered(
-      const ProvidedFileSystem& file_system) OVERRIDE {
-    unregistered.push_back(new const ProvidedFileSystem(file_system));
+  virtual void OnProvidedFileSystemUnmount(
+      const ProvidedFileSystem& file_system,
+      base::File::Error error) OVERRIDE {
+    unmounts.push_back(Event(file_system, error));
   }
 
-  ScopedVector<const ProvidedFileSystem> registered;
-  ScopedVector<const ProvidedFileSystem> unregistered;
+  std::vector<Event> mounts;
+  std::vector<Event> unmounts;
 };
 
 }  // namespace
@@ -69,121 +85,135 @@ class FileSystemProviderServiceTest : public testing::Test {
   scoped_ptr<Service> file_system_provider_service_;
 };
 
-TEST_F(FileSystemProviderServiceTest, RegisterFileSystem) {
+TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
   LoggingObserver observer;
   file_system_provider_service_->AddObserver(&observer);
 
-  int file_system_id = file_system_provider_service_->RegisterFileSystem(
+  int file_system_id = file_system_provider_service_->MountFileSystem(
       kExtensionId, kFileSystemName);
 
   EXPECT_LT(0, file_system_id);
-  ASSERT_EQ(1u, observer.registered.size());
-  EXPECT_EQ(kExtensionId, observer.registered[0]->extension_id());
-  EXPECT_EQ(1, observer.registered[0]->file_system_id());
+  ASSERT_EQ(1u, observer.mounts.size());
+  EXPECT_EQ(kExtensionId, observer.mounts[0].file_system().extension_id());
+  EXPECT_EQ(1, observer.mounts[0].file_system().file_system_id());
   EXPECT_EQ("/provided/mbflcebpggnecokmikipoihdbecnjfoj-1-testing_profile-hash",
-            observer.registered[0]->mount_path().AsUTF8Unsafe());
-  EXPECT_EQ(kFileSystemName, observer.registered[0]->file_system_name());
-  ASSERT_EQ(0u, observer.unregistered.size());
+            observer.mounts[0].file_system().mount_path().AsUTF8Unsafe());
+  EXPECT_EQ(kFileSystemName,
+            observer.mounts[0].file_system().file_system_name());
+  EXPECT_EQ(base::File::FILE_OK, observer.mounts[0].error());
+  ASSERT_EQ(0u, observer.unmounts.size());
 
   std::vector<ProvidedFileSystem> provided_file_systems =
-      file_system_provider_service_->GetRegisteredFileSystems();
+      file_system_provider_service_->GetMountedFileSystems();
   ASSERT_EQ(1u, provided_file_systems.size());
 
   file_system_provider_service_->RemoveObserver(&observer);
 }
 
-TEST_F(FileSystemProviderServiceTest, RegisterFileSystem_UniqueIds) {
+TEST_F(FileSystemProviderServiceTest, MountFileSystem_UniqueIds) {
   LoggingObserver observer;
   file_system_provider_service_->AddObserver(&observer);
 
-  int file_system_first_id = file_system_provider_service_->RegisterFileSystem(
+  int file_system_first_id = file_system_provider_service_->MountFileSystem(
       kExtensionId, kFileSystemName);
-  ASSERT_LT(0, file_system_first_id);
+  EXPECT_LT(0, file_system_first_id);
 
-  int file_system_second_id = file_system_provider_service_->RegisterFileSystem(
+  int file_system_second_id = file_system_provider_service_->MountFileSystem(
       kExtensionId, kFileSystemName);
-  ASSERT_LT(0, file_system_second_id);
+  EXPECT_LT(0, file_system_second_id);
 
-  ASSERT_NE(file_system_first_id, file_system_second_id);
-  ASSERT_EQ(2u, observer.registered.size());
+  EXPECT_NE(file_system_first_id, file_system_second_id);
+  ASSERT_EQ(2u, observer.mounts.size());
+  EXPECT_EQ(base::File::FILE_OK, observer.mounts[0].error());
+  EXPECT_EQ(base::File::FILE_OK, observer.mounts[1].error());
 
   std::vector<ProvidedFileSystem> provided_file_systems =
-      file_system_provider_service_->GetRegisteredFileSystems();
+      file_system_provider_service_->GetMountedFileSystems();
   ASSERT_EQ(2u, provided_file_systems.size());
 
   file_system_provider_service_->RemoveObserver(&observer);
 }
 
-TEST_F(FileSystemProviderServiceTest, RegisterFileSystem_StressTest) {
+TEST_F(FileSystemProviderServiceTest, MountFileSystem_StressTest) {
   LoggingObserver observer;
   file_system_provider_service_->AddObserver(&observer);
 
   const size_t kMaxFileSystems = 16;
   for (size_t i = 0; i < kMaxFileSystems; ++i) {
-    int file_system_id = file_system_provider_service_->RegisterFileSystem(
+    int file_system_id = file_system_provider_service_->MountFileSystem(
         kExtensionId, kFileSystemName);
-    ASSERT_LT(0, file_system_id);
+    EXPECT_LT(0, file_system_id);
   }
-  ASSERT_EQ(kMaxFileSystems, observer.registered.size());
+  ASSERT_EQ(kMaxFileSystems, observer.mounts.size());
 
   // The next file system is out of limit, and registering it should fail.
-  int file_system_id = file_system_provider_service_->RegisterFileSystem(
+  int file_system_id = file_system_provider_service_->MountFileSystem(
       kExtensionId, kFileSystemName);
-  ASSERT_EQ(0, file_system_id);
-  ASSERT_EQ(kMaxFileSystems, observer.registered.size());
+  EXPECT_EQ(0, file_system_id);
+
+  ASSERT_EQ(kMaxFileSystems + 1, observer.mounts.size());
+  EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED,
+            observer.mounts[kMaxFileSystems].error());
+  ASSERT_EQ(kMaxFileSystems,
+            file_system_provider_service_->GetMountedFileSystems().size());
 
   std::vector<ProvidedFileSystem> provided_file_systems =
-      file_system_provider_service_->GetRegisteredFileSystems();
+      file_system_provider_service_->GetMountedFileSystems();
   ASSERT_EQ(kMaxFileSystems, provided_file_systems.size());
 
   file_system_provider_service_->RemoveObserver(&observer);
 }
 
-TEST_F(FileSystemProviderServiceTest, UnregisterFileSystem) {
+TEST_F(FileSystemProviderServiceTest, UnmountFileSystem) {
   LoggingObserver observer;
   file_system_provider_service_->AddObserver(&observer);
 
-  int file_system_id = file_system_provider_service_->RegisterFileSystem(
+  int file_system_id = file_system_provider_service_->MountFileSystem(
       kExtensionId, kFileSystemName);
-  ASSERT_LT(0, file_system_id);
-  ASSERT_EQ(1u, observer.registered.size());
+  EXPECT_LT(0, file_system_id);
+  ASSERT_EQ(1u, observer.mounts.size());
 
-  const bool result = file_system_provider_service_->UnregisterFileSystem(
+  const bool result = file_system_provider_service_->UnmountFileSystem(
       kExtensionId, file_system_id);
-  ASSERT_TRUE(result);
-  ASSERT_EQ(1u, observer.unregistered.size());
+  EXPECT_TRUE(result);
+  ASSERT_EQ(1u, observer.unmounts.size());
+  EXPECT_EQ(base::File::FILE_OK, observer.unmounts[0].error());
 
-  EXPECT_EQ(kExtensionId, observer.unregistered[0]->extension_id());
-  EXPECT_EQ(1, observer.unregistered[0]->file_system_id());
+  EXPECT_EQ(kExtensionId, observer.unmounts[0].file_system().extension_id());
+  EXPECT_EQ(1, observer.unmounts[0].file_system().file_system_id());
   EXPECT_EQ("/provided/mbflcebpggnecokmikipoihdbecnjfoj-1-testing_profile-hash",
-            observer.unregistered[0]->mount_path().AsUTF8Unsafe());
-  EXPECT_EQ(kFileSystemName, observer.unregistered[0]->file_system_name());
+            observer.unmounts[0].file_system().mount_path().AsUTF8Unsafe());
+  EXPECT_EQ(kFileSystemName,
+            observer.unmounts[0].file_system().file_system_name());
 
   std::vector<ProvidedFileSystem> provided_file_systems =
-      file_system_provider_service_->GetRegisteredFileSystems();
+      file_system_provider_service_->GetMountedFileSystems();
   ASSERT_EQ(0u, provided_file_systems.size());
 
   file_system_provider_service_->RemoveObserver(&observer);
 }
 
-TEST_F(FileSystemProviderServiceTest, UnregisterFileSystem_WrongExtensionId) {
+TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_WrongExtensionId) {
   LoggingObserver observer;
   file_system_provider_service_->AddObserver(&observer);
 
   const std::string kWrongExtensionId = "helloworldhelloworldhelloworldhe";
 
-  int file_system_id = file_system_provider_service_->RegisterFileSystem(
+  int file_system_id = file_system_provider_service_->MountFileSystem(
       kExtensionId, kFileSystemName);
-  ASSERT_LT(0, file_system_id);
-  ASSERT_EQ(1u, observer.registered.size());
+  EXPECT_LT(0, file_system_id);
+  ASSERT_EQ(1u, observer.mounts.size());
+  ASSERT_EQ(1u, file_system_provider_service_->GetMountedFileSystems().size());
 
-  const bool result = file_system_provider_service_->UnregisterFileSystem(
+  const bool result = file_system_provider_service_->UnmountFileSystem(
       kWrongExtensionId, file_system_id);
-  ASSERT_FALSE(result);
-  ASSERT_EQ(0u, observer.unregistered.size());
+  EXPECT_FALSE(result);
+  ASSERT_EQ(1u, observer.unmounts.size());
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, observer.unmounts[0].error());
+  ASSERT_EQ(1u, file_system_provider_service_->GetMountedFileSystems().size());
 
   std::vector<ProvidedFileSystem> provided_file_systems =
-      file_system_provider_service_->GetRegisteredFileSystems();
+      file_system_provider_service_->GetMountedFileSystems();
   ASSERT_EQ(1u, provided_file_systems.size());
 
   file_system_provider_service_->RemoveObserver(&observer);

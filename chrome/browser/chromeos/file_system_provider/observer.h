@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/files/file.h"
+
 namespace chromeos {
 namespace file_system_provider {
 
@@ -15,13 +17,18 @@ class ProvidedFileSystem;
 // Observes file_system_provider::Service for mounting and unmounting events.
 class Observer {
  public:
-  // Called when a provided |file_system| is registered successfully.
-  virtual void OnProvidedFileSystemRegistered(
-      const ProvidedFileSystem& file_system) = 0;
+  // Called when a file system mounting has been invoked. For success, the
+  // |error| argument is set to FILE_OK. Otherwise, |error| contains a specific
+  // error code.
+  virtual void OnProvidedFileSystemMount(const ProvidedFileSystem& file_system,
+                                         base::File::Error error) = 0;
 
-  // Called when a provided |file_system| is unregistered successfully.
-  virtual void OnProvidedFileSystemUnregistered(
-      const ProvidedFileSystem& file_system) = 0;
+  // Called when a file system unmounting has been invoked. For success, the
+  // |error| argument is set to FILE_OK. Otherwise, |error| contains a specific
+  // error code.
+  virtual void OnProvidedFileSystemUnmount(
+      const ProvidedFileSystem& file_system,
+      base::File::Error error) = 0;
 };
 
 }  // namespace file_system_provider

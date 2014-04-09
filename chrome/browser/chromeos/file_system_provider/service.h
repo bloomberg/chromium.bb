@@ -9,8 +9,13 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
+#include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -27,19 +32,39 @@ class Service : public KeyedService {
   explicit Service(Profile* profile);
   virtual ~Service();
 
-  // Registers a file system provided by an extension with the |extension_id|.
+  // Mounts a file system provided by an extension with the |extension_id|.
   // For success, it returns a numeric file system id, which is an
   // auto-incremented non-zero value. For failures, it returns zero.
-  int RegisterFileSystem(const std::string& extension_id,
-                         const std::string& file_system_name);
+  int MountFileSystem(const std::string& extension_id,
+                      const std::string& file_system_name);
 
-  // Unregisters a file system with the specified |file_system_id| for the
+  // Unmounts a file system with the specified |file_system_id| for the
   // |extension_id|. For success returns true, otherwise false.
-  bool UnregisterFileSystem(const std::string& extension_id,
-                            int file_system_id);
+  bool UnmountFileSystem(const std::string& extension_id, int file_system_id);
 
-  // Returns a list of currently registered file systems. All items are copied.
-  std::vector<ProvidedFileSystem> GetRegisteredFileSystems();
+  // Returns a list of currently mounted file systems. All items are copied.
+  std::vector<ProvidedFileSystem> GetMountedFileSystems();
+
+  // Handles successful response for the |request_id|. If |has_next| is false,
+  // then the request is disposed, after handling the |response|. On error,
+  // returns false, and the request is disposed.
+  bool FulfillRequest(const std::string& extension_id,
+                      int file_system_id,
+                      int request_id,
+                      scoped_ptr<base::DictionaryValue> result,
+                      bool has_next);
+
+  // Handles error response for the |request_id|. If handling the error fails,
+  // returns false. Always disposes the request.
+  bool RejectRequest(const std::string& extension_id,
+                     int file_system_id,
+                     int request_id,
+                     base::File::Error error);
+
+  // Requests unmounting of a file system with the passed |file_system_id|.
+  // Returns true is unmounting has been requested. False, if the request is
+  // invalid (eg. already unmounted).
+  bool RequestUnmount(int file_system_id);
 
   // Adds and removes observers.
   void AddObserver(Observer* observer);
@@ -48,13 +73,23 @@ class Service : public KeyedService {
   // Gets the singleton instance for the |context|.
   static Service* Get(content::BrowserContext* context);
 
+  // BrowserContextKeyedService overrides.
+  virtual void Shutdown() OVERRIDE;
+
  private:
   typedef std::map<int, ProvidedFileSystem> FileSystemMap;
 
+  // Called when the providing extension calls the success callback for the
+  // onUnmountRequested event.
+  void OnRequestUnmountError(const ProvidedFileSystem& file_system,
+                             base::File::Error error);
+
+  RequestManager request_manager_;
   Profile* profile_;
   ObserverList<Observer> observers_;
   FileSystemMap file_systems_;
   int next_id_;
+  base::WeakPtrFactory<Service> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

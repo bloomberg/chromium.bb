@@ -20,7 +20,7 @@ struct SelectedFileInfo;
 namespace extensions {
 
 // Implements chrome.fileBrowserPrivate.addMount method.
-// Mounts a device or a file.
+// Mounts removable devices and archive files.
 class FileBrowserPrivateAddMountFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.addMount",
@@ -41,7 +41,7 @@ class FileBrowserPrivateAddMountFunction : public LoggedAsyncExtensionFunction {
 };
 
 // Implements chrome.fileBrowserPrivate.removeMount method.
-// Unmounts selected device. Expects mount point path as an argument.
+// Unmounts selected volume. Expects volume id as an argument.
 class FileBrowserPrivateRemoveMountFunction
     : public LoggedAsyncExtensionFunction {
  public:
