@@ -8,6 +8,8 @@
 #include <string>
 #include "base/macros.h"
 
+namespace password_manager {
+
 // This interface is used by the password management code to report on progress
 // of actions like saving a password.
 class PasswordManagerLogger {
@@ -20,5 +22,7 @@ class PasswordManagerLogger {
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerLogger);
 };
+
+}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_LOGGER_H_

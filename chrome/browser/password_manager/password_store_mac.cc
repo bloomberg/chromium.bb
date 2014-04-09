@@ -27,6 +27,8 @@
 
 using autofill::PasswordForm;
 using crypto::AppleKeychain;
+using password_manager::PasswordStoreChange;
+using password_manager::PasswordStoreChangeList;
 
 // Utility class to handle the details of constructing and running a keychain
 // search from a set of attributes.
@@ -829,8 +831,8 @@ PasswordStoreMac::PasswordStoreMac(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
     AppleKeychain* keychain,
-    LoginDatabase* login_db)
-    : PasswordStore(main_thread_runner, db_thread_runner),
+    password_manager::LoginDatabase* login_db)
+    : password_manager::PasswordStore(main_thread_runner, db_thread_runner),
       keychain_(keychain),
       login_metadata_db_(login_db) {
   DCHECK(keychain_.get());
@@ -848,12 +850,12 @@ bool PasswordStoreMac::Init(
     thread_.reset(NULL);
     return false;
   }
-  return PasswordStore::Init(flare);
+  return password_manager::PasswordStore::Init(flare);
 }
 
 void PasswordStoreMac::Shutdown() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  PasswordStore::Shutdown();
+  password_manager::PasswordStore::Shutdown();
   thread_->Stop();
 }
 

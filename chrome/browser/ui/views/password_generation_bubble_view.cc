@@ -121,7 +121,7 @@ PasswordGenerationBubbleView::PasswordGenerationBubbleView(
     const gfx::Rect& anchor_rect,
     views::View* anchor_view,
     content::RenderViewHost* render_view_host,
-    PasswordManager* password_manager,
+    password_manager::PasswordManager* password_manager,
     autofill::PasswordGenerator* password_generator,
     content::PageNavigator* navigator,
     ui::ThemeProvider* theme_provider)

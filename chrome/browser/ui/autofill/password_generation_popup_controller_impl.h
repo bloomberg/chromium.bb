@@ -23,7 +23,9 @@ struct NativeWebKeyboardEvent;
 class WebContents;
 }
 
+namespace password_manager {
 class PasswordManager;
+}
 
 namespace autofill {
 
@@ -50,7 +52,7 @@ class PasswordGenerationPopupControllerImpl
       const gfx::RectF& bounds,
       const PasswordForm& form,
       int max_length,
-      PasswordManager* password_manager,
+      password_manager::PasswordManager* password_manager,
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
       gfx::NativeView container_view);
@@ -78,7 +80,7 @@ class PasswordGenerationPopupControllerImpl
       const gfx::RectF& bounds,
       const PasswordForm& form,
       int max_length,
-      PasswordManager* password_manager,
+      password_manager::PasswordManager* password_manager,
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
       gfx::NativeView container_view);
@@ -126,7 +128,7 @@ class PasswordGenerationPopupControllerImpl
   void CalculateBounds();
 
   PasswordForm form_;
-  PasswordManager* password_manager_;
+  password_manager::PasswordManager* password_manager_;
 
   // May be NULL.
   PasswordGenerationPopupObserver* observer_;

@@ -14,6 +14,7 @@
 static const int kMessageWidth = 320;
 static const int kTextfieldStackHorizontalSpacing = 30;
 
+using password_manager::LoginModel;
 using views::GridLayout;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -96,7 +97,7 @@ views::View* LoginView::GetInitiallyFocusedView() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// LoginView, views::View, views::LoginModelObserver overrides:
+// LoginView, views::View, password_manager::LoginModelObserver overrides:
 
 void LoginView::OnAutofillDataAvailable(const base::string16& username,
                                         const base::string16& password) {

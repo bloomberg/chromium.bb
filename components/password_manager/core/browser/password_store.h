@@ -18,9 +18,6 @@
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "sync/api/syncable_service.h"
 
-class PasswordStore;
-class PasswordStoreConsumer;
-class PasswordSyncableService;
 class Task;
 
 namespace autofill {
@@ -34,15 +31,27 @@ class PasswordModelAssociator;
 class PasswordModelWorker;
 }
 
+namespace password_manager {
+class PasswordStore;
+}  // namespace password_manager
+
 namespace passwords_helper {
-void AddLogin(PasswordStore* store, const autofill::PasswordForm& form);
-void RemoveLogin(PasswordStore* store, const autofill::PasswordForm& form);
-void UpdateLogin(PasswordStore* store, const autofill::PasswordForm& form);
+void AddLogin(password_manager::PasswordStore* store,
+              const autofill::PasswordForm& form);
+void RemoveLogin(password_manager::PasswordStore* store,
+                 const autofill::PasswordForm& form);
+void UpdateLogin(password_manager::PasswordStore* store,
+                 const autofill::PasswordForm& form);
 }
 
 namespace syncer {
 class SyncableService;
 }
+
+namespace password_manager {
+
+class PasswordStoreConsumer;
+class PasswordSyncableService;
 
 // Interface for storing form passwords in a platform-specific secure way.
 // The login request/manipulation API is not threadsafe and must be used
@@ -298,5 +307,7 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStore);
 };
+
+}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_H_

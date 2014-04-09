@@ -8,6 +8,8 @@
 
 using autofill::PasswordForm;
 
+namespace password_manager {
+
 PasswordForm* CreatePasswordFormFromData(
     const PasswordFormData& form_data) {
   PasswordForm* form = new PasswordForm();
@@ -85,3 +87,5 @@ bool ContainsSamePasswordForms(
   }
   return ContainsSamePasswordFormsPtr(first_ptr, second_ptr);
 }
+
+}  // namespace password_manager

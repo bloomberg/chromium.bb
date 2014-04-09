@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/mock_password_store.h"
 
+namespace password_manager {
+
 MockPasswordStore::MockPasswordStore()
     : PasswordStore(
         base::MessageLoopProxy::current(),
@@ -11,3 +13,5 @@ MockPasswordStore::MockPasswordStore()
 }
 
 MockPasswordStore::~MockPasswordStore() {}
+
+}  // namespace password_manager

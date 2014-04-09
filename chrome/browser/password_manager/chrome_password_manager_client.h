@@ -13,8 +13,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/rect.h"
 
-class PasswordGenerationManager;
-class PasswordManager;
 class Profile;
 
 namespace autofill {
@@ -26,29 +24,35 @@ namespace content {
 class WebContents;
 }
 
+namespace password_manager {
+class PasswordGenerationManager;
+class PasswordManager;
+}
+
 // ChromePasswordManagerClient implements the PasswordManagerClient interface.
 class ChromePasswordManagerClient
-    : public PasswordManagerClient,
+    : public password_manager::PasswordManagerClient,
       public content::WebContentsObserver,
       public content::WebContentsUserData<ChromePasswordManagerClient> {
  public:
   virtual ~ChromePasswordManagerClient();
 
   // PasswordManagerClient implementation.
-  virtual void PromptUserToSavePassword(PasswordFormManager* form_to_save)
-      OVERRIDE;
+  virtual void PromptUserToSavePassword(
+      password_manager::PasswordFormManager* form_to_save) OVERRIDE;
   virtual void PasswordWasAutofilled(
       const autofill::PasswordFormMap& best_matches) const OVERRIDE;
   virtual void PasswordAutofillWasBlocked() const OVERRIDE;
   virtual void AuthenticateAutofillAndFillForm(
       scoped_ptr<autofill::PasswordFormFillData> fill_data) OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
-  virtual PasswordStore* GetPasswordStore() OVERRIDE;
-  virtual PasswordManagerDriver* GetDriver() OVERRIDE;
+  virtual password_manager::PasswordStore* GetPasswordStore() OVERRIDE;
+  virtual password_manager::PasswordManagerDriver* GetDriver() OVERRIDE;
   virtual base::FieldTrial::Probability GetProbabilityForExperiment(
       const std::string& experiment_name) OVERRIDE;
   virtual bool IsPasswordSyncEnabled() OVERRIDE;
-  virtual void SetLogger(PasswordManagerLogger* logger) OVERRIDE;
+  virtual void SetLogger(password_manager::PasswordManagerLogger* logger)
+      OVERRIDE;
   virtual void LogSavePasswordProgress(const std::string& text) OVERRIDE;
 
   // Hides any visible generation UI.
@@ -56,13 +60,13 @@ class ChromePasswordManagerClient
 
   // Convenience method to allow //chrome code easy access to a PasswordManager
   // from a WebContents instance.
-  static PasswordManager* GetManagerFromWebContents(
+  static password_manager::PasswordManager* GetManagerFromWebContents(
       content::WebContents* contents);
 
   // Convenience method to allow //chrome code easy access to a
   // PasswordGenerationManager from a WebContents instance.
-  static PasswordGenerationManager* GetGenerationManagerFromWebContents(
-      content::WebContents* contents);
+  static password_manager::PasswordGenerationManager*
+      GetGenerationManagerFromWebContents(content::WebContents* contents);
 
   // Observer for PasswordGenerationPopup events. Used for testing.
   void SetTestObserver(autofill::PasswordGenerationPopupObserver* observer);
@@ -96,7 +100,7 @@ class ChromePasswordManagerClient
 
   Profile* GetProfile();
 
-  ContentPasswordManagerDriver driver_;
+  password_manager::ContentPasswordManagerDriver driver_;
 
   // Observer for password generation popup.
   autofill::PasswordGenerationPopupObserver* observer_;
@@ -111,7 +115,7 @@ class ChromePasswordManagerClient
   // Points to an active logger instance to use for, e.g., reporting progress on
   // saving passwords. If there is no active logger (most of the time), the
   // pointer will be NULL.
-  PasswordManagerLogger* logger_;
+  password_manager::PasswordManagerLogger* logger_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };

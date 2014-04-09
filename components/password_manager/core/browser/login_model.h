@@ -7,6 +7,8 @@
 
 #include "base/strings/string16.h"
 
+namespace password_manager {
+
 // Simple Model & Observer interfaces for a LoginView to facilitate exchanging
 // information.
 class LoginModelObserver {
@@ -32,5 +34,7 @@ class LoginModel {
  protected:
   virtual ~LoginModel() {}
 };
+
+}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOGIN_MODEL_H_

@@ -35,9 +35,12 @@
 #endif
 
 // static
-void PasswordManager::RegisterLocalPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterInt64Pref(prefs::kOsPasswordLastChanged, 0);
-  registry->RegisterBooleanPref(prefs::kOsPasswordBlank, false);
+void password_manager::PasswordManager::RegisterLocalPrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterInt64Pref(password_manager::prefs::kOsPasswordLastChanged,
+                              0);
+  registry->RegisterBooleanPref(password_manager::prefs::kOsPasswordBlank,
+                                false);
 }
 
 namespace password_manager_util {
@@ -81,9 +84,10 @@ static bool CheckBlankPassword(WCHAR* username) {
   if (last_changed == -1)
     return false;
 
-  blank_password = local_state->GetBoolean(prefs::kOsPasswordBlank);
+  blank_password =
+      local_state->GetBoolean(password_manager::prefs::kOsPasswordBlank);
   int64 pref_last_changed =
-      local_state->GetInt64(prefs::kOsPasswordLastChanged);
+      local_state->GetInt64(password_manager::prefs::kOsPasswordLastChanged);
   if (pref_last_changed > 0 && last_changed <= pref_last_changed) {
     need_recheck = false;
   }
@@ -116,8 +120,10 @@ static bool CheckBlankPassword(WCHAR* username) {
   last_changed += base::Time::kMicrosecondsPerSecond;
 
   // Save the blank password status for later.
-  local_state->SetBoolean(prefs::kOsPasswordBlank, blank_password);
-  local_state->SetInt64(prefs::kOsPasswordLastChanged, last_changed);
+  local_state->SetBoolean(password_manager::prefs::kOsPasswordBlank,
+                          blank_password);
+  local_state->SetInt64(password_manager::prefs::kOsPasswordLastChanged,
+                        last_changed);
 
   return blank_password;
 }

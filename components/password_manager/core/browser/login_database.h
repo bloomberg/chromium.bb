@@ -19,6 +19,8 @@ namespace autofill {
 struct PasswordForm;
 }  // namespace autofill
 
+namespace password_manager {
+
 // Interface to the database storage of login information, intended as a helper
 // for PasswordStore on platforms that need internal storage of some or all of
 // the login information.
@@ -138,5 +140,7 @@ class LoginDatabase {
 
   DISALLOW_COPY_AND_ASSIGN(LoginDatabase);
 };
+
+}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOGIN_DATABASE_H_

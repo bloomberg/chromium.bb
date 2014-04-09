@@ -20,6 +20,8 @@
 
 using autofill::PasswordForm;
 
+namespace password_manager {
+
 static const int kCurrentVersionNumber = 5;
 static const int kCompatibleVersionNumber = 1;
 
@@ -601,3 +603,5 @@ std::vector<base::string16> LoginDatabase::DeserializeVector(
   }
   return ret;
 }
+
+}  // namespace password_manager

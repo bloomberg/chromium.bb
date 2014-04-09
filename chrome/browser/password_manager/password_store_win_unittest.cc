@@ -32,6 +32,11 @@
 using autofill::PasswordForm;
 using base::WaitableEvent;
 using content::BrowserThread;
+using password_manager::LoginDatabase;
+using password_manager::ContainsAllPasswordForms;
+using password_manager::PasswordFormData;
+using password_manager::PasswordStore;
+using password_manager::PasswordStoreConsumer;
 using testing::_;
 using testing::DoAll;
 using testing::WithArg;

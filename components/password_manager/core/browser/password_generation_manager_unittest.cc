@@ -22,6 +22,8 @@
 
 using base::ASCIIToUTF16;
 
+namespace password_manager {
+
 namespace {
 
 class TestPasswordManagerDriver : public PasswordManagerDriver {
@@ -218,3 +220,5 @@ TEST_F(PasswordGenerationManagerTest, UpdatePasswordSyncStateIncognito) {
 
   EXPECT_FALSE(IsGenerationEnabled());
 }
+
+}  // namespace password_manager

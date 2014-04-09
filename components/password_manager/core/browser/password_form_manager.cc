@@ -23,6 +23,8 @@ using autofill::PasswordForm;
 using autofill::PasswordFormMap;
 using base::Time;
 
+namespace password_manager {
+
 namespace {
 
 enum PasswordGenerationSubmissionEvent {
@@ -692,3 +694,5 @@ void PasswordFormManager::SubmitFailed() {
   if (has_generated_password_)
     LogPasswordGenerationSubmissionEvent(PASSWORD_SUBMISSION_FAILED);
 }
+
+}  // namespace password_manager

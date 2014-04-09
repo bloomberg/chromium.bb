@@ -29,7 +29,9 @@ class Label;
 class LabelButton;
 }
 
+namespace password_manager {
 class PasswordManager;
+}
 
 // PasswordGenerationBubbleView is a bubble used to show possible generated
 // passwords to users. It is set in the page content, anchored at |anchor_rect|.
@@ -39,14 +41,15 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
                                      public views::ButtonListener,
                                      public views::TextfieldController {
  public:
-  PasswordGenerationBubbleView(const autofill::PasswordForm& form,
-                               const gfx::Rect& anchor_rect,
-                               views::View* anchor_view,
-                               content::RenderViewHost* render_view_host,
-                               PasswordManager* password_manager,
-                               autofill::PasswordGenerator* password_generator,
-                               content::PageNavigator* navigator,
-                               ui::ThemeProvider* theme_provider);
+  PasswordGenerationBubbleView(
+      const autofill::PasswordForm& form,
+      const gfx::Rect& anchor_rect,
+      views::View* anchor_view,
+      content::RenderViewHost* render_view_host,
+      password_manager::PasswordManager* password_manager,
+      autofill::PasswordGenerator* password_generator,
+      content::PageNavigator* navigator,
+      ui::ThemeProvider* theme_provider);
   virtual ~PasswordGenerationBubbleView();
 
   // views::View
@@ -89,7 +92,7 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
   content::RenderViewHost* render_view_host_;
 
   // PasswordManager associated with this tab.
-  PasswordManager* password_manager_;
+  password_manager::PasswordManager* password_manager_;
 
   // Object to generate passwords. The class won't take the ownership of it.
   autofill::PasswordGenerator* password_generator_;

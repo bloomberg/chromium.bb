@@ -9,7 +9,9 @@
 
 class PrefService;
 
-namespace password_manager_metrics_util {
+namespace password_manager {
+
+namespace metrics_util {
 
 // Metrics: "PasswordManager.InfoBarResponse"
 enum ResponseType {
@@ -80,6 +82,8 @@ void LogUIDismissalReason(UIDismissalReason reason);
 // has rolled out to stable.
 void LogUIDismissalReason(ResponseType type);
 
-}  // namespace password_manager_metrics_util
+}  // namespace metrics_util
+
+}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_METRICS_UTIL_H_

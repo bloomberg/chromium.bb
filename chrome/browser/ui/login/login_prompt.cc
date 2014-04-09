@@ -118,7 +118,8 @@ void LoginHandler::SetPasswordForm(const autofill::PasswordForm& form) {
   password_form_ = form;
 }
 
-void LoginHandler::SetPasswordManager(PasswordManager* password_manager) {
+void LoginHandler::SetPasswordManager(
+    password_manager::PasswordManager* password_manager) {
   password_manager_ = password_manager;
 }
 
@@ -235,7 +236,7 @@ LoginHandler::~LoginHandler() {
   SetModel(NULL);
 }
 
-void LoginHandler::SetModel(LoginModel* model) {
+void LoginHandler::SetModel(password_manager::LoginModel* model) {
   if (login_model_)
     login_model_->RemoveObserver(this);
   login_model_ = model;
@@ -434,7 +435,7 @@ void LoginDialogCallback(const GURL& request_url,
     return;
   }
 
-  PasswordManager* password_manager =
+  password_manager::PasswordManager* password_manager =
       ChromePasswordManagerClient::GetManagerFromWebContents(parent_contents);
   if (!password_manager) {
     // Same logic as above.

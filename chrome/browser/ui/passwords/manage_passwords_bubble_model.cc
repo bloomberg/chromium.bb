@@ -81,8 +81,9 @@ void ManagePasswordsBubbleModel::OnPasswordAction(
     return;
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
-      profile, Profile::EXPLICIT_ACCESS).get();
+  password_manager::PasswordStore* password_store =
+      PasswordStoreFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS)
+          .get();
   DCHECK(password_store);
   if (action == REMOVE_PASSWORD)
     password_store->RemoveLogin(password_form);

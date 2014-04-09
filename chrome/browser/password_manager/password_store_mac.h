@@ -17,12 +17,16 @@ namespace crypto {
 class AppleKeychain;
 }
 
+namespace password_manager {
+class LoginDatabase;
+}
+
 // Implements PasswordStore on top of the OS X Keychain, with an internal
 // database for extra metadata. For an overview of the interactions with the
 // Keychain, as well as the rationale for some of the behaviors, see the
 // Keychain integration design doc:
 // http://dev.chromium.org/developers/design-documents/os-x-password-manager-keychain-integration
-class PasswordStoreMac : public PasswordStore {
+class PasswordStoreMac : public password_manager::PasswordStore {
  public:
   // Takes ownership of |keychain| and |login_db|, both of which must be
   // non-NULL.
@@ -30,7 +34,7 @@ class PasswordStoreMac : public PasswordStore {
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
       crypto::AppleKeychain* keychain,
-      LoginDatabase* login_db);
+      password_manager::LoginDatabase* login_db);
 
   // Initializes |thread_|.
   virtual bool Init(
@@ -47,14 +51,15 @@ class PasswordStoreMac : public PasswordStore {
 
  private:
   virtual void ReportMetricsImpl() OVERRIDE;
-  virtual PasswordStoreChangeList AddLoginImpl(
+  virtual password_manager::PasswordStoreChangeList AddLoginImpl(
       const autofill::PasswordForm& form) OVERRIDE;
-  virtual PasswordStoreChangeList UpdateLoginImpl(
+  virtual password_manager::PasswordStoreChangeList UpdateLoginImpl(
       const autofill::PasswordForm& form) OVERRIDE;
-  virtual PasswordStoreChangeList RemoveLoginImpl(
+  virtual password_manager::PasswordStoreChangeList RemoveLoginImpl(
       const autofill::PasswordForm& form) OVERRIDE;
-  virtual PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
-      const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
+  virtual password_manager::PasswordStoreChangeList
+      RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
+                                     const base::Time& delete_end) OVERRIDE;
   virtual void GetLoginsImpl(
       const autofill::PasswordForm& form,
       AuthorizationPromptPolicy prompt_policy,
@@ -90,7 +95,7 @@ class PasswordStoreMac : public PasswordStore {
       const std::vector<autofill::PasswordForm*>& forms);
 
   scoped_ptr<crypto::AppleKeychain> keychain_;
-  scoped_ptr<LoginDatabase> login_metadata_db_;
+  scoped_ptr<password_manager::LoginDatabase> login_metadata_db_;
 
   // Thread that the synchronous methods are run on.
   scoped_ptr<base::Thread> thread_;

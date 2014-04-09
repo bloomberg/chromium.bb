@@ -38,7 +38,7 @@ class LoginHandlerAndroid : public LoginHandler {
   virtual void OnLoginModelDestroying() OVERRIDE {}
 
   virtual void BuildViewForPasswordManager(
-      PasswordManager* manager,
+      password_manager::PasswordManager* manager,
       const base::string16& explanation) OVERRIDE {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

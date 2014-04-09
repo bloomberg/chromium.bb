@@ -9,12 +9,17 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace password_manager {
+class PasswordStore;
+}
+
 class ProfileMock : public TestingProfile {
  public:
   ProfileMock();
   virtual ~ProfileMock();
 
-  MOCK_METHOD1(GetPasswordStore, PasswordStore* (ServiceAccessType access));
+  MOCK_METHOD1(GetPasswordStore,
+               password_manager::PasswordStore*(ServiceAccessType access));
 };
 
 #endif  // CHROME_TEST_BASE_PROFILE_MOCK_H_

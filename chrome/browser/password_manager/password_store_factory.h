@@ -10,8 +10,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class PasswordStore;
 class Profile;
+
+namespace password_manager {
+class PasswordStore;
+}
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 // Local profile ids are used to associate resources stored outside the profile
@@ -26,16 +29,17 @@ class PasswordStoreService : public KeyedService {
  public:
   // |password_store| needs to be not-NULL, and the constructor expects that
   // Init() was already called successfully on it.
-  explicit PasswordStoreService(scoped_refptr<PasswordStore> password_store);
+  explicit PasswordStoreService(
+      scoped_refptr<password_manager::PasswordStore> password_store);
   virtual ~PasswordStoreService();
 
-  scoped_refptr<PasswordStore> GetPasswordStore();
+  scoped_refptr<password_manager::PasswordStore> GetPasswordStore();
 
   // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
  private:
-  scoped_refptr<PasswordStore> password_store_;
+  scoped_refptr<password_manager::PasswordStore> password_store_;
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreService);
 };
 
@@ -43,8 +47,9 @@ class PasswordStoreService : public KeyedService {
 // Profiles.
 class PasswordStoreFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static scoped_refptr<PasswordStore> GetForProfile(
-      Profile* profile, Profile::ServiceAccessType set);
+  static scoped_refptr<password_manager::PasswordStore> GetForProfile(
+      Profile* profile,
+      Profile::ServiceAccessType set);
 
   static PasswordStoreFactory* GetInstance();
 

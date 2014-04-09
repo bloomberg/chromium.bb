@@ -16,11 +16,13 @@ class Textfield;
 
 // This class is responsible for displaying the contents of a login window
 // for HTTP/FTP authentication.
-class LoginView : public views::View, public LoginModelObserver {
+class LoginView : public views::View,
+                  public password_manager::LoginModelObserver {
  public:
   // |model| is observed for the entire lifetime of the LoginView.
   // Therefore |model| should not be destroyed before the LoginView object.
-  LoginView(const base::string16& explanation, LoginModel* model);
+  LoginView(const base::string16& explanation,
+            password_manager::LoginModel* model);
   virtual ~LoginView();
 
   // Access the data in the username/password text fields.
@@ -49,7 +51,7 @@ class LoginView : public views::View, public LoginModelObserver {
 
   // If not null, points to a model we need to notify of our own destruction
   // so it doesn't try and access this when its too late.
-  LoginModel* login_model_;
+  password_manager::LoginModel* login_model_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginView);
 };

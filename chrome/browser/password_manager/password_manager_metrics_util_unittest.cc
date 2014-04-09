@@ -20,7 +20,7 @@ class PasswordManagerMetricsUtilTest : public testing::Test {
 
  protected:
   bool IsMonitored(const char* url_host) {
-    size_t group_id = password_manager_metrics_util::MonitoredDomainGroupId(
+    size_t group_id = password_manager::metrics_util::MonitoredDomainGroupId(
         url_host, profile_.GetPrefs());
     return group_id > 0;
   }
@@ -50,16 +50,17 @@ TEST_F(PasswordManagerMetricsUtilTest, MonitoredDomainGroupAssigmentTest) {
   // Provide all possible values of the group id parameter for each monitored
   // website.
   for (size_t i = 0; i < kMonitoredWebsitesLength; ++i) {
-    for (size_t j = 0; j < password_manager_metrics_util::kGroupsPerDomain;
+    for (size_t j = 0; j < password_manager::metrics_util::kGroupsPerDomain;
          ++j) {
       {  // Set the group index for domain |i| to |j|.
-        ListPrefUpdate group_indices(profile_.GetPrefs(),
-                                     prefs::kPasswordManagerGroupsForDomains);
+        ListPrefUpdate group_indices(
+            profile_.GetPrefs(),
+            password_manager::prefs::kPasswordManagerGroupsForDomains);
         group_indices->Set(i, new base::FundamentalValue(static_cast<int>(j)));
       }  // At the end of the scope the prefs get updated.
 
-      ++groups[password_manager_metrics_util::MonitoredDomainGroupId(
-            kMonitoredWebsites[i], profile_.GetPrefs())];
+      ++groups[password_manager::metrics_util::MonitoredDomainGroupId(
+          kMonitoredWebsites[i], profile_.GetPrefs())];
     }
   }
 
