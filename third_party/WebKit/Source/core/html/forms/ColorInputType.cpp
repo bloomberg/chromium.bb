@@ -160,7 +160,7 @@ void ColorInputType::handleDOMActivateEvent(Event* event)
 
     Chrome* chrome = this->chrome();
     if (chrome && !m_chooser)
-        m_chooser = chrome->createColorChooser(this, valueAsColor());
+        m_chooser = chrome->createColorChooser(element().document().frame(), this, valueAsColor());
 
     event->setDefaultHandled();
 }

@@ -46,8 +46,8 @@ enum ColorPickerPopupAction {
     ColorPickerPopupActionSetValue = 0
 };
 
-ColorChooserPopupUIController::ColorChooserPopupUIController(ChromeClientImpl* chromeClient, ColorChooserClient* client)
-    : ColorChooserUIController(chromeClient, client)
+ColorChooserPopupUIController::ColorChooserPopupUIController(WebCore::LocalFrame* frame, ChromeClientImpl* chromeClient, ColorChooserClient* client)
+    : ColorChooserUIController(frame, client)
     , m_chromeClient(chromeClient)
     , m_client(client)
     , m_popup(0)

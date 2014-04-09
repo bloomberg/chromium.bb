@@ -31,7 +31,6 @@
 #ifndef WebViewClient_h
 #define WebViewClient_h
 
-#include "../platform/WebColor.h"
 #include "../platform/WebGraphicsContext3D.h"
 #include "../platform/WebString.h"
 #include "WebAXEnums.h"
@@ -50,8 +49,6 @@
 namespace blink {
 
 class WebAXObject;
-class WebColorChooser;
-class WebColorChooserClient;
 class WebCompositorOutputSurface;
 class WebDateTimeChooserCompletion;
 class WebDragData;
@@ -80,7 +77,6 @@ class WebURLRequest;
 class WebUserMediaClient;
 class WebView;
 class WebWidget;
-struct WebColorSuggestion;
 struct WebConsoleMessage;
 struct WebDateTimeChooserParams;
 struct WebPoint;
@@ -160,21 +156,6 @@ public:
 
 
     // Dialogs -------------------------------------------------------------
-
-    // This method opens the color chooser and returns a new WebColorChooser
-    // instance. If there is a WebColorChooser already from the last time this
-    // was called, it ends the color chooser by calling endChooser, and replaces
-    // it with the new one. The given list of suggestions can be used to show a
-    // simple interface with a limited set of choices.
-
-    // FIXME: Should be removed when the chromium side change lands.
-    virtual WebColorChooser* createColorChooser(WebColorChooserClient*,
-                                                const WebColor&) { return 0; }
-
-    virtual WebColorChooser* createColorChooser(
-        WebColorChooserClient*,
-        const WebColor&,
-        const WebVector<WebColorSuggestion>&) { return 0; }
 
     // This method returns immediately after showing the dialog. When the
     // dialog is closed, it should call the WebFileChooserCompletion to

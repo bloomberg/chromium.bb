@@ -33,16 +33,16 @@
 
 namespace WebCore {
 class ColorChooserClient;
+class LocalFrame;
 }
 
 namespace blink {
 
-class ChromeClientImpl;
 class WebColorChooser;
 
 class ColorChooserUIController : public WebColorChooserClient, public WebCore::ColorChooser {
 public:
-    ColorChooserUIController(ChromeClientImpl*, WebCore::ColorChooserClient*);
+    ColorChooserUIController(WebCore::LocalFrame*, WebCore::ColorChooserClient*);
     virtual ~ColorChooserUIController();
 
     virtual void openUI();
@@ -61,7 +61,7 @@ protected:
 
 private:
 
-    ChromeClientImpl* m_chromeClient;
+    WebCore::LocalFrame* m_frame;
     WebCore::ColorChooserClient* m_client;
 };
 

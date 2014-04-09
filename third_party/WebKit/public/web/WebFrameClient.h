@@ -31,6 +31,7 @@
 #ifndef WebFrameClient_h
 #define WebFrameClient_h
 
+#include "../platform/WebColor.h"
 #include "WebDOMMessageEvent.h"
 #include "WebDataSource.h"
 #include "WebFrame.h"
@@ -55,6 +56,8 @@ namespace blink {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebCachedURLRequest;
+class WebColorChooser;
+class WebColorChooserClient;
 class WebContentDecryptionModule;
 class WebCookieJar;
 class WebDataSource;
@@ -76,6 +79,7 @@ class WebURL;
 class WebURLLoader;
 class WebURLResponse;
 class WebWorkerPermissionClientProxy;
+struct WebColorSuggestion;
 struct WebConsoleMessage;
 struct WebContextMenuData;
 struct WebPluginParams;
@@ -263,6 +267,19 @@ public:
     // These methods allow the client to intercept and overrule editing
     // operations.
     virtual void didChangeSelection(bool isSelectionEmpty) { }
+
+    // Dialogs -------------------------------------------------------------
+
+    // This method opens the color chooser and returns a new WebColorChooser
+    // instance. If there is a WebColorChooser already from the last time this
+    // was called, it ends the color chooser by calling endChooser, and replaces
+    // it with the new one. The given list of suggestions can be used to show a
+    // simple interface with a limited set of choices.
+
+    virtual WebColorChooser* createColorChooser(
+        WebColorChooserClient*,
+        const WebColor&,
+        const WebVector<WebColorSuggestion>&) { return 0; }
 
 
     // Dialogs -------------------------------------------------------------

@@ -116,7 +116,7 @@ public:
 
     void print(LocalFrame*);
 
-    PassOwnPtr<ColorChooser> createColorChooser(ColorChooserClient*, const Color& initialColor);
+    PassOwnPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color& initialColor);
     PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&);
     void openTextDataListChooser(HTMLInputElement&);
 
