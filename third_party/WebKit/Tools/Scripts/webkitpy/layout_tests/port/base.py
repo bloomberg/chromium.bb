@@ -1577,7 +1577,7 @@ class Port(object):
                               '--enable-composited-scrolling-for-frames', '--enable-gesture-tap-highlight', '--enable-pinch',
                               '--enable-overlay-fullscreen-video', '--enable-overlay-scrollbars', '--enable-overscroll-notifications',
                               '--enable-fixed-layout', '--enable-viewport', '--disable-canvas-aa',
-                              '--disable-composited-antialiasing']),
+                              '--disable-composited-antialiasing', '--enable-accelerated-fixed-root-background']),
             VirtualTestSuite('implsidepainting',
                              'inspector/timeline',
                              ['--enable-threaded-compositing', '--enable-impl-side-painting', '--force-compositing-mode']),

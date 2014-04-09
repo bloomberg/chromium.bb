@@ -387,9 +387,15 @@ void RenderLayerCompositor::updateIfNeeded()
         // Host the document layer in the RenderView's root layer.
         if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isMainFrame()) {
             RenderVideo* video = findFullscreenVideoRenderer(m_renderView.document());
+            GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer();
             if (video && video->hasCompositedLayerMapping()) {
                 childList.clear();
                 childList.append(video->compositedLayerMapping()->mainGraphicsLayer());
+                if (backgroundLayer && backgroundLayer->parent())
+                    backgroundLayer->removeFromParent();
+            } else {
+                if (backgroundLayer && !backgroundLayer->parent())
+                    rootFixedBackgroundsChanged();
             }
         }
 
