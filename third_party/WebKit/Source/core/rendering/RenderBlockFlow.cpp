@@ -2515,7 +2515,7 @@ LayoutUnit RenderBlockFlow::nextFloatLogicalBottomBelow(LayoutUnit logicalHeight
     if (!m_floatingObjects)
         return logicalHeight;
 
-    LayoutUnit logicalBottom = LayoutUnit::max();
+    LayoutUnit logicalBottom;
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
     FloatingObjectSetIterator end = floatingObjectSet.end();
     for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
@@ -2529,10 +2529,10 @@ LayoutUnit RenderBlockFlow::nextFloatLogicalBottomBelow(LayoutUnit logicalHeight
                 floatLogicalBottom = shapeLogicalBottom;
         }
         if (floatLogicalBottom > logicalHeight)
-            logicalBottom = min(floatLogicalBottom, logicalBottom);
+            logicalBottom = logicalBottom ? min(floatLogicalBottom, logicalBottom) : floatLogicalBottom;
     }
 
-    return logicalBottom == LayoutUnit::max() ? LayoutUnit() : logicalBottom;
+    return logicalBottom;
 }
 
 bool RenderBlockFlow::hitTestFloats(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset)
