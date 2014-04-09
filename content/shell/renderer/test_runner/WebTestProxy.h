@@ -96,7 +96,6 @@ public:
     void reset();
 
     blink::WebSpellCheckClient *spellCheckClient() const;
-    blink::WebColorChooser* createColorChooser(blink::WebColorChooserClient*, const blink::WebColor&);
     blink::WebColorChooser* createColorChooser(blink::WebColorChooserClient*, const blink::WebColor&, const blink::WebVector<blink::WebColorSuggestion>& suggestions);
     bool runFileChooser(const blink::WebFileChooserParams&, blink::WebFileChooserCompletion*);
     void showValidationMessage(const blink::WebRect& anchorInRootView, const blink::WebString& mainText, const blink::WebString& supplementalText, blink::WebTextDirection);
@@ -466,10 +465,6 @@ public:
         if (WebTestProxyBase::willCheckAndDispatchMessageEvent(sourceFrame, targetFrame, target, event))
             return true;
         return Base::willCheckAndDispatchMessageEvent(sourceFrame, targetFrame, target, event);
-    }
-    virtual blink::WebColorChooser* createColorChooser(blink::WebColorChooserClient* client, const blink::WebColor& color)
-    {
-        return WebTestProxyBase::createColorChooser(client, color);
     }
     virtual blink::WebColorChooser* createColorChooser(blink::WebColorChooserClient* client, const blink::WebColor& color, const blink::WebVector<blink::WebColorSuggestion>& suggestions)
     {

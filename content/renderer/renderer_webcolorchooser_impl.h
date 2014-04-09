@@ -28,6 +28,7 @@ class RendererWebColorChooserImpl : public blink::WebColorChooser,
                                        blink::WebColorChooserClient*);
   virtual ~RendererWebColorChooserImpl();
 
+  // blink::WebColorChooser implementation:
   virtual void setSelectedColor(const blink::WebColor);
   virtual void endChooser();
 

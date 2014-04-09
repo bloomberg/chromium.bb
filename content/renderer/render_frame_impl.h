@@ -291,7 +291,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   virtual void didChangeSelection(bool is_empty_selection);
   virtual blink::WebColorChooser* createColorChooser(
-      blink::WebColorChooserClient*,
+      blink::WebColorChooserClient* client,
       const blink::WebColor& initial_color,
       const blink::WebVector<blink::WebColorSuggestion>& suggestions);
   virtual void runModalAlertDialog(const blink::WebString& message);

@@ -102,6 +102,12 @@ public:
         m_baseProxy->didChangeSelection(is_selection_empty);
         Base::didChangeSelection(is_selection_empty);
     }
+    virtual blink::WebColorChooser* createColorChooser(
+        blink::WebColorChooserClient* client,
+        const blink::WebColor& initial_color,
+        const blink::WebVector<blink::WebColorSuggestion>& suggestions) {
+      return m_baseProxy->createColorChooser(client, initial_color, suggestions);
+    }
     virtual void showContextMenu(const blink::WebContextMenuData& contextMenuData) {
         m_baseProxy->showContextMenu(Base::GetWebFrame()->toWebLocalFrame(), contextMenuData);
         Base::showContextMenu(contextMenuData);

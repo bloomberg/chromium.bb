@@ -452,12 +452,6 @@ WebSpellCheckClient* WebTestProxyBase::spellCheckClient() const
     return m_spellcheck.get();
 }
 
-WebColorChooser* WebTestProxyBase::createColorChooser(WebColorChooserClient* client, const blink::WebColor& color)
-{
-    // This instance is deleted by WebCore::ColorInputType
-    return new MockColorChooser(client, m_delegate, this);
-}
-
 WebColorChooser* WebTestProxyBase::createColorChooser(WebColorChooserClient* client, const blink::WebColor& color, const blink::WebVector<blink::WebColorSuggestion>& suggestions)
 {
     // This instance is deleted by WebCore::ColorInputType
