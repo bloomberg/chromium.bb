@@ -112,6 +112,7 @@ fontVariantLigatures
 fontWeight
 glyphOrientationHorizontal
 glyphOrientationVertical
+grid
 gridArea
 gridAutoColumns
 gridAutoFlow

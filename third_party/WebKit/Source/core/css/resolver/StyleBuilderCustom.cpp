@@ -1454,6 +1454,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitColumnRule:
     case CSSPropertyFlex:
     case CSSPropertyFlexFlow:
+    case CSSPropertyGrid:
     case CSSPropertyGridTemplate:
     case CSSPropertyGridColumn:
     case CSSPropertyGridRow:

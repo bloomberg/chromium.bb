@@ -507,6 +507,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyPerspectiveOrigin: return 450;
     case CSSPropertyBackfaceVisibility: return 451;
     case CSSPropertyGridTemplate: return 452;
+    case CSSPropertyGrid: return 453;
 
     // Add new features above this line (don't change the assigned numbers of the existing
     // items) and update maximumCSSSampleId() with the new maximum value.
