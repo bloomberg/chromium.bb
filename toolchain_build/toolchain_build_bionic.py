@@ -29,7 +29,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-BIONIC_VERSION = 'dc6a3b05fb2b0894088905031f8a5a92e975d023'
+BIONIC_VERSION = 'dfb812021017bceb2593657669dcdc6a902a0b2e'
 ARCHES = ['arm']
 
 BUILD_SCRIPT = os.path.abspath(__file__)
