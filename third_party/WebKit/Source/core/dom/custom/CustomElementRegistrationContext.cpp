@@ -127,6 +127,10 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
     if (!element->isHTMLElement() && !element->isSVGElement())
         return;
 
+    CustomElementRegistrationContext* context = element->document().registrationContext();
+    if (!context)
+        return;
+
     if (element->isCustomElement()) {
         // This can happen if:
         // 1. The element has a custom tag, which takes precedence over
@@ -139,10 +143,11 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
     // Custom tags take precedence over type extensions
     ASSERT(!CustomElement::isValidName(element->localName()));
 
-    element->setCustomElementState(Element::WaitingForUpgrade);
+    if (!CustomElement::isValidName(type))
+        return;
 
-    if (CustomElementRegistrationContext* context = element->document().registrationContext())
-        context->didGiveTypeExtension(element, type);
+    element->setCustomElementState(Element::WaitingForUpgrade);
+    context->didGiveTypeExtension(element, type);
 }
 
 } // namespace WebCore
