@@ -184,11 +184,10 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
     }
   }
   // Remove duplicates.
-  std::sort(matches_.begin(), matches_.end(),
-            &AutocompleteMatch::DestinationSortFunc);
-  matches_.erase(std::unique(matches_.begin(), matches_.end(),
-                             &AutocompleteMatch::DestinationsEqual),
-                 matches_.end());
+  // TODO(hfung): Check whether the false below, which does not store duplicates
+  // in the matches, is correct.
+  AutocompleteResult::DedupMatchesByDestination(
+      input.current_page_classification(), false, &matches_);
   // Find best matches.
   std::partial_sort(matches_.begin(),
       matches_.begin() +

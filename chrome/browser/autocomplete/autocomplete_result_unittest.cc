@@ -514,6 +514,55 @@ TEST_F(AutocompleteResultTest, SortAndCullWithUndemotableTypes) {
             result.match_at(2)->destination_url.spec());
 }
 
+TEST_F(AutocompleteResultTest, SortAndCullWithMatchDupsAndDemotionsByType) {
+  // Add some matches.
+  ACMatches matches;
+  const AutocompleteMatchTestData data[] = {
+    { "http://search-what-you-typed/",
+      AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
+    { "http://dup-url/", AutocompleteMatchType::HISTORY_URL },
+    { "http://dup-url/", AutocompleteMatchType::NAVSUGGEST },
+    { "http://search-url/", AutocompleteMatchType::SEARCH_SUGGEST },
+    { "http://history-url/", AutocompleteMatchType::HISTORY_URL },
+  };
+  PopulateAutocompleteMatchesFromTestData(data, arraysize(data), &matches);
+
+  // Add a rule demoting HISTORY_URL.
+  {
+    std::map<std::string, std::string> params;
+    params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":8:*"] =
+        "1:50";  // 8 == INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS
+    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "C", params));
+  }
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "C");
+
+  {
+    AutocompleteResult result;
+    result.AppendMatches(matches);
+    AutocompleteInput input(
+        base::string16(), base::string16::npos, base::string16(), GURL(),
+        AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS, false,
+        false, false, AutocompleteInput::ALL_MATCHES);
+    result.SortAndCull(input, test_util_.profile());
+
+    // The NAVSUGGEST dup-url stay above search-url since the navsuggest
+    // variant should not be demoted.
+    ASSERT_EQ(4u, result.size());
+    EXPECT_EQ("http://search-what-you-typed/",
+              result.match_at(0)->destination_url.spec());
+    EXPECT_EQ("http://dup-url/",
+              result.match_at(1)->destination_url.spec());
+    EXPECT_EQ(AutocompleteMatchType::NAVSUGGEST,
+              result.match_at(1)->type);
+    EXPECT_EQ("http://search-url/",
+              result.match_at(2)->destination_url.spec());
+    EXPECT_EQ("http://history-url/",
+              result.match_at(3)->destination_url.spec());
+  }
+}
+
 TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
   TestData data[] = {
     { 0, 0, 1300 },

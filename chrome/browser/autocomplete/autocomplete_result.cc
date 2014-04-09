@@ -64,6 +64,34 @@ bool CompareWithDemoteByType::operator()(const AutocompleteMatch& elem1,
       (demoted_relevance1 > demoted_relevance2);
 }
 
+class DestinationSort {
+ public:
+  DestinationSort(
+      AutocompleteInput::PageClassification current_page_classification);
+  bool operator()(const AutocompleteMatch& elem1,
+                  const AutocompleteMatch& elem2);
+
+ private:
+  CompareWithDemoteByType demote_by_type_;
+};
+
+DestinationSort::DestinationSort(
+    AutocompleteInput::PageClassification current_page_classification) :
+    demote_by_type_(current_page_classification) {}
+
+bool DestinationSort::operator()(const AutocompleteMatch& elem1,
+                                 const AutocompleteMatch& elem2) {
+  // Sort identical destination_urls together.  Place the most relevant matches
+  // first, so that when we call std::unique(), these are the ones that get
+  // preserved.
+  if (AutocompleteMatch::DestinationsEqual(elem1, elem2) ||
+      (elem1.stripped_destination_url.is_empty() &&
+       elem2.stripped_destination_url.is_empty())) {
+    return demote_by_type_(elem1, elem2);
+  }
+  return elem1.stripped_destination_url < elem2.stripped_destination_url;
+}
+
 };  // namespace
 
 // static
@@ -147,27 +175,8 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
   for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i)
     i->ComputeStrippedDestinationURL(profile);
 
-  // Sort matches such that duplicate matches are consecutive.
-  std::sort(matches_.begin(), matches_.end(),
-            &AutocompleteMatch::DestinationSortFunc);
-
-  // Set duplicate_matches for the first match before erasing duplicate matches.
-  for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
-    for (int j = 1; (i + j != matches_.end()) &&
-         AutocompleteMatch::DestinationsEqual(*i, *(i + j)); ++j) {
-      AutocompleteMatch& dup_match(*(i + j));
-      i->duplicate_matches.insert(i->duplicate_matches.end(),
-                                  dup_match.duplicate_matches.begin(),
-                                  dup_match.duplicate_matches.end());
-      dup_match.duplicate_matches.clear();
-      i->duplicate_matches.push_back(dup_match);
-    }
-  }
-
-  // Erase duplicate matches.
-  matches_.erase(std::unique(matches_.begin(), matches_.end(),
-                             &AutocompleteMatch::DestinationsEqual),
-                 matches_.end());
+  DedupMatchesByDestination(input.current_page_classification(), true,
+                            &matches_);
 
   // Find the top match before possibly applying demotions.
   if (!matches_.empty())
@@ -331,6 +340,36 @@ GURL AutocompleteResult::ComputeAlternateNavUrl(
           (match.transition != content::PAGE_TRANSITION_KEYWORD) &&
           (input.canonicalized_url() != match.destination_url)) ?
       input.canonicalized_url() : GURL();
+}
+
+void AutocompleteResult::DedupMatchesByDestination(
+      AutocompleteInput::PageClassification page_classification,
+      bool set_duplicate_matches,
+      ACMatches* matches) {
+  DestinationSort destination_sort(page_classification);
+  // Sort matches such that duplicate matches are consecutive.
+  std::sort(matches->begin(), matches->end(), destination_sort);
+
+  if (set_duplicate_matches) {
+    // Set duplicate_matches for the first match before erasing duplicate
+    // matches.
+    for (ACMatches::iterator i(matches->begin()); i != matches->end(); ++i) {
+      for (int j = 1; (i + j != matches->end()) &&
+               AutocompleteMatch::DestinationsEqual(*i, *(i + j)); ++j) {
+        AutocompleteMatch& dup_match(*(i + j));
+        i->duplicate_matches.insert(i->duplicate_matches.end(),
+                                    dup_match.duplicate_matches.begin(),
+                                    dup_match.duplicate_matches.end());
+        dup_match.duplicate_matches.clear();
+        i->duplicate_matches.push_back(dup_match);
+      }
+    }
+  }
+
+  // Erase duplicate matches.
+  matches->erase(std::unique(matches->begin(), matches->end(),
+                             &AutocompleteMatch::DestinationsEqual),
+                 matches->end());
 }
 
 void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {

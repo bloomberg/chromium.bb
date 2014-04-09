@@ -177,19 +177,6 @@ bool AutocompleteMatch::MoreRelevant(const AutocompleteMatch& elem1,
 }
 
 // static
-bool AutocompleteMatch::DestinationSortFunc(const AutocompleteMatch& elem1,
-                                            const AutocompleteMatch& elem2) {
-  // Sort identical destination_urls together.  Place the most relevant matches
-  // first, so that when we call std::unique(), these are the ones that get
-  // preserved.
-  if (DestinationsEqual(elem1, elem2) ||
-      (elem1.stripped_destination_url.is_empty() &&
-       elem2.stripped_destination_url.is_empty()))
-    return MoreRelevant(elem1, elem2);
-  return elem1.stripped_destination_url < elem2.stripped_destination_url;
-}
-
-// static
 bool AutocompleteMatch::DestinationsEqual(const AutocompleteMatch& elem1,
                                           const AutocompleteMatch& elem2) {
   if (elem1.stripped_destination_url.is_empty() &&

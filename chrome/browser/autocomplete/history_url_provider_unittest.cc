@@ -15,6 +15,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -291,11 +292,8 @@ void HistoryURLProviderTest::RunTest(
   if (sort_matches_) {
     for (ACMatches::iterator i = matches_.begin(); i != matches_.end(); ++i)
       i->ComputeStrippedDestinationURL(profile_.get());
-    std::sort(matches_.begin(), matches_.end(),
-              &AutocompleteMatch::DestinationSortFunc);
-    matches_.erase(std::unique(matches_.begin(), matches_.end(),
-                               &AutocompleteMatch::DestinationsEqual),
-                   matches_.end());
+    AutocompleteResult::DedupMatchesByDestination(
+        input.current_page_classification(), false, &matches_);
     std::sort(matches_.begin(), matches_.end(),
               &AutocompleteMatch::MoreRelevant);
   }

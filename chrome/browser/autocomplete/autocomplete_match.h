@@ -108,12 +108,10 @@ struct AutocompleteMatch {
   static bool MoreRelevant(const AutocompleteMatch& elem1,
                            const AutocompleteMatch& elem2);
 
-  // Comparison functions for removing matches with duplicate destinations.
+  // Comparison function for removing matches with duplicate destinations.
   // Destinations are compared using |stripped_destination_url|.  Pairs of
   // matches with empty destinations are treated as differing, since empty
   // destinations are expected for non-navigable matches.
-  static bool DestinationSortFunc(const AutocompleteMatch& elem1,
-                                  const AutocompleteMatch& elem2);
   static bool DestinationsEqual(const AutocompleteMatch& elem1,
                                 const AutocompleteMatch& elem2);
 
