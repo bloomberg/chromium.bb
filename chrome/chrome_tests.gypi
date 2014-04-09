@@ -892,6 +892,8 @@
         'browser/browsing_data/browsing_data_indexed_db_helper_browsertest.cc',
         'browser/browsing_data/browsing_data_local_storage_helper_browsertest.cc',
         'browser/browsing_data/browsing_data_remover_browsertest.cc',
+        'browser/browsing_data/browsing_data_remover_test_util.cc',
+        'browser/browsing_data/browsing_data_remover_test_util.h',
         'browser/captive_portal/captive_portal_browsertest.cc',
         'browser/chrome_content_browser_client_browsertest.cc',
         'browser/chrome_main_browsertest.cc',

@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
@@ -49,6 +50,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "net/cookies/cookie_store.h"
 #include "net/ssl/server_bound_cert_service.h"
 #include "net/ssl/server_bound_cert_store.h"
@@ -93,48 +95,6 @@ const base::FilePath::CharType kDomStorageOrigin3[] =
 
 const base::FilePath::CharType kDomStorageExt[] = FILE_PATH_LITERAL(
     "chrome-extension_abcdefghijklmnopqrstuvwxyz_0.localstorage");
-
-class AwaitCompletionHelper : public BrowsingDataRemover::Observer {
- public:
-  AwaitCompletionHelper() : start_(false), already_quit_(false) {}
-  virtual ~AwaitCompletionHelper() {}
-
-  void BlockUntilNotified() {
-    if (!already_quit_) {
-      DCHECK(!start_);
-      start_ = true;
-      base::MessageLoop::current()->Run();
-    } else {
-      DCHECK(!start_);
-      already_quit_ = false;
-    }
-  }
-
-  void Notify() {
-    if (start_) {
-      DCHECK(!already_quit_);
-      base::MessageLoop::current()->Quit();
-      start_ = false;
-    } else {
-      DCHECK(!already_quit_);
-      already_quit_ = true;
-    }
-  }
-
- protected:
-  // BrowsingDataRemover::Observer implementation.
-  virtual void OnBrowsingDataRemoverDone() OVERRIDE {
-    Notify();
-  }
-
- private:
-  // Helps prevent from running message_loop, if the callback invoked
-  // immediately.
-  bool start_;
-  bool already_quit_;
-
-  DISALLOW_COPY_AND_ASSIGN(AwaitCompletionHelper);
-};
 
 #if defined(OS_CHROMEOS)
 void FakeDBusCall(const chromeos::BoolDBusMethodCallback& callback) {
@@ -244,21 +204,27 @@ class RemoveCookieTester {
 
   // Returns true, if the given cookie exists in the cookie store.
   bool ContainsCookie() {
+    scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+        new content::MessageLoopRunner;
+    quit_closure_ = message_loop_runner->QuitClosure();
     get_cookie_success_ = false;
     cookie_store_->GetCookiesWithOptionsAsync(
         kOrigin1, net::CookieOptions(),
         base::Bind(&RemoveCookieTester::GetCookieCallback,
                    base::Unretained(this)));
-    await_completion_.BlockUntilNotified();
+    message_loop_runner->Run();
     return get_cookie_success_;
   }
 
   void AddCookie() {
+    scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+        new content::MessageLoopRunner;
+    quit_closure_ = message_loop_runner->QuitClosure();
     cookie_store_->SetCookieWithOptionsAsync(
         kOrigin1, "A=1", net::CookieOptions(),
         base::Bind(&RemoveCookieTester::SetCookieCallback,
                    base::Unretained(this)));
-    await_completion_.BlockUntilNotified();
+    message_loop_runner->Run();
   }
 
  protected:
@@ -274,16 +240,16 @@ class RemoveCookieTester {
       EXPECT_EQ("", cookies);
       get_cookie_success_ = false;
     }
-    await_completion_.Notify();
+    quit_closure_.Run();
   }
 
   void SetCookieCallback(bool result) {
     ASSERT_TRUE(result);
-    await_completion_.Notify();
+    quit_closure_.Run();
   }
 
   bool get_cookie_success_;
-  AwaitCompletionHelper await_completion_;
+  base::Closure quit_closure_;
   net::CookieStore* cookie_store_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
@@ -407,13 +373,16 @@ class RemoveHistoryTester {
 
   // Returns true, if the given URL exists in the history service.
   bool HistoryContainsURL(const GURL& url) {
+    scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+        new content::MessageLoopRunner;
+    quit_closure_ = message_loop_runner->QuitClosure();
     history_service_->QueryURL(
         url,
         true,
         &consumer_,
         base::Bind(&RemoveHistoryTester::SaveResultAndQuit,
                    base::Unretained(this)));
-    await_completion_.BlockUntilNotified();
+    message_loop_runner->Run();
     return query_url_success_;
   }
 
@@ -430,17 +399,16 @@ class RemoveHistoryTester {
                          const history::URLRow*,
                          history::VisitVector*) {
     query_url_success_ = success;
-    await_completion_.Notify();
+    quit_closure_.Run();
   }
 
   // For History requests.
   CancelableRequestConsumer consumer_;
   bool query_url_success_;
+  base::Closure quit_closure_;
 
   // TestingProfile owns the history service; we shouldn't delete it.
   HistoryService* history_service_;
-
-  AwaitCompletionHelper await_completion_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveHistoryTester);
 };
@@ -544,8 +512,11 @@ class RemoveLocalStorageTester {
 
   // Returns true, if the given origin URL exists.
   bool DOMStorageExistsForOrigin(const GURL& origin) {
+    scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+        new content::MessageLoopRunner;
+    quit_closure_ = message_loop_runner->QuitClosure();
     GetLocalStorageUsage();
-    await_completion_.BlockUntilNotified();
+    message_loop_runner->Run();
     for (size_t i = 0; i < infos_.size(); ++i) {
       if (origin == infos_[i].origin)
         return true;
@@ -590,7 +561,7 @@ class RemoveLocalStorageTester {
   void OnGotLocalStorageUsage(
       const std::vector<content::LocalStorageUsageInfo>& infos) {
     infos_ = infos;
-    await_completion_.Notify();
+    quit_closure_.Run();
   }
 
   // We don't own these pointers.
@@ -598,8 +569,7 @@ class RemoveLocalStorageTester {
   content::DOMStorageContext* dom_storage_context_;
 
   std::vector<content::LocalStorageUsageInfo> infos_;
-
-  AwaitCompletionHelper await_completion_;
+  base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveLocalStorageTester);
 };
@@ -637,17 +607,16 @@ class BrowsingDataRemoverTest : public testing::Test,
     TestStoragePartition storage_partition;
     remover->OverrideStoragePartitionForTesting(&storage_partition);
 
-    AwaitCompletionHelper await_completion;
-    remover->AddObserver(&await_completion);
-
     called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
 
     // BrowsingDataRemover deletes itself when it completes.
     int origin_set_mask = BrowsingDataHelper::UNPROTECTED_WEB;
     if (include_protected_origins)
       origin_set_mask |= BrowsingDataHelper::PROTECTED_WEB;
+
+    BrowsingDataRemoverCompletionObserver completion_observer(remover);
     remover->Remove(remove_mask, origin_set_mask);
-    await_completion.BlockUntilNotified();
+    completion_observer.BlockUntilCompletion();
 
     // Save so we can verify later.
     storage_partition_removal_data_ =
@@ -662,15 +631,13 @@ class BrowsingDataRemoverTest : public testing::Test,
     TestStoragePartition storage_partition;
     remover->OverrideStoragePartitionForTesting(&storage_partition);
 
-    AwaitCompletionHelper await_completion;
-    remover->AddObserver(&await_completion);
-
     called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
 
     // BrowsingDataRemover deletes itself when it completes.
+    BrowsingDataRemoverCompletionObserver completion_observer(remover);
     remover->RemoveImpl(remove_mask, remove_origin,
         BrowsingDataHelper::UNPROTECTED_WEB);
-    await_completion.BlockUntilNotified();
+    completion_observer.BlockUntilCompletion();
 
     // Save so we can verify later.
     storage_partition_removal_data_ =

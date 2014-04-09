@@ -632,6 +632,8 @@
         'browser/browsing_data/browsing_data_local_storage_helper_unittest.cc',
         'browser/browsing_data/browsing_data_quota_helper_unittest.cc',
         'browser/browsing_data/browsing_data_remover_unittest.cc',
+        'browser/browsing_data/browsing_data_remover_test_util.cc',
+        'browser/browsing_data/browsing_data_remover_test_util.h',
         'browser/browsing_data/browsing_data_server_bound_cert_helper_unittest.cc',
         'browser/browsing_data/cookies_tree_model_unittest.cc',
         'browser/captive_portal/captive_portal_detector_unittest.cc',
