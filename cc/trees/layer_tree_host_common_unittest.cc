@@ -181,15 +181,45 @@ class LayerTreeHostCommonTest : public LayerTreeHostCommonTestBase,
 
 class LayerWithForcedDrawsContent : public Layer {
  public:
-  LayerWithForcedDrawsContent() : Layer() {}
+  LayerWithForcedDrawsContent() : Layer(), last_device_scale_factor_(0.f) {}
 
   virtual bool DrawsContent() const OVERRIDE;
+  virtual void CalculateContentsScale(float ideal_contents_scale,
+                                      float device_scale_factor,
+                                      float page_scale_factor,
+                                      bool animating_transform_to_screen,
+                                      float* contents_scale_x,
+                                      float* contents_scale_y,
+                                      gfx::Size* content_bounds) OVERRIDE;
+
+  float last_device_scale_factor() const { return last_device_scale_factor_; }
 
  private:
   virtual ~LayerWithForcedDrawsContent() {}
+
+  // Parameters from last CalculateContentsScale.
+  float last_device_scale_factor_;
 };
 
 bool LayerWithForcedDrawsContent::DrawsContent() const { return true; }
+
+void LayerWithForcedDrawsContent::CalculateContentsScale(
+    float ideal_contents_scale,
+    float device_scale_factor,
+    float page_scale_factor,
+    bool animating_transform_to_screen,
+    float* contents_scale_x,
+    float* contents_scale_y,
+    gfx::Size* content_bounds) {
+  last_device_scale_factor_ = device_scale_factor;
+  Layer::CalculateContentsScale(ideal_contents_scale,
+                                device_scale_factor,
+                                page_scale_factor,
+                                animating_transform_to_screen,
+                                contents_scale_x,
+                                contents_scale_y,
+                                content_bounds);
+}
 
 class MockContentLayerClient : public ContentLayerClient {
  public:
@@ -1224,8 +1254,10 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   // Transformations applied at the root of the tree should be forwarded
   // to child layers instead of applied to the root RenderSurface.
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> root =
+      new LayerWithForcedDrawsContent;
+  scoped_refptr<LayerWithForcedDrawsContent> child =
+      new LayerWithForcedDrawsContent;
   child->SetScrollClipLayerId(root->id());
   root->AddChild(child);
 
@@ -1258,6 +1290,8 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_EQ(translate, root->draw_properties().target_space_transform);
     EXPECT_EQ(translate, child->draw_properties().target_space_transform);
     EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+    EXPECT_EQ(1.f, root->last_device_scale_factor());
+    EXPECT_EQ(1.f, child->last_device_scale_factor());
   }
 
   gfx::Transform scale;
@@ -1271,6 +1305,8 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_EQ(scale, root->draw_properties().target_space_transform);
     EXPECT_EQ(scale, child->draw_properties().target_space_transform);
     EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+    EXPECT_EQ(2.f, root->last_device_scale_factor());
+    EXPECT_EQ(2.f, child->last_device_scale_factor());
   }
 
   gfx::Transform rotate;
@@ -1284,6 +1320,8 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_EQ(rotate, root->draw_properties().target_space_transform);
     EXPECT_EQ(rotate, child->draw_properties().target_space_transform);
     EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+    EXPECT_EQ(1.f, root->last_device_scale_factor());
+    EXPECT_EQ(1.f, child->last_device_scale_factor());
   }
 
   gfx::Transform composite;
@@ -1318,6 +1356,8 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_EQ(device_scaled_translate,
               child->draw_properties().target_space_transform);
     EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+    EXPECT_EQ(device_scale_factor, root->last_device_scale_factor());
+    EXPECT_EQ(device_scale_factor, child->last_device_scale_factor());
   }
 
   // Verify it composes correctly with page scale.
@@ -1337,6 +1377,8 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_EQ(page_scaled_translate,
               child->draw_properties().target_space_transform);
     EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+    EXPECT_EQ(1.f, root->last_device_scale_factor());
+    EXPECT_EQ(1.f, child->last_device_scale_factor());
   }
 
   // Verify that it composes correctly with transforms directly on root layer.

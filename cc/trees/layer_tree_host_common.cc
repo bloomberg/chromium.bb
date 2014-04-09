@@ -2122,44 +2122,64 @@ static void CalculateDrawPropertiesInternal(
   }
 }
 
-void LayerTreeHostCommon::CalculateDrawProperties(
-    CalcDrawPropsMainInputs* inputs) {
-  DCHECK(inputs->root_layer);
-  DCHECK(IsRootLayer(inputs->root_layer));
-  DCHECK(inputs->render_surface_layer_list);
+template <typename LayerType, typename RenderSurfaceLayerListType>
+static void ProcessCalcDrawPropsInputs(
+    const LayerTreeHostCommon::CalcDrawPropsInputs<LayerType,
+                                                   RenderSurfaceLayerListType>&
+        inputs,
+    SubtreeGlobals<LayerType>* globals,
+    DataForRecursion<LayerType>* data_for_recursion) {
+  DCHECK(inputs.root_layer);
+  DCHECK(IsRootLayer(inputs.root_layer));
+  DCHECK(inputs.render_surface_layer_list);
+
   gfx::Transform identity_matrix;
-  gfx::Transform scaled_device_transform = inputs->device_transform;
-  scaled_device_transform.Scale(inputs->device_scale_factor,
-                                inputs->device_scale_factor);
-  RenderSurfaceLayerList dummy_layer_list;
 
   // The root layer's render_surface should receive the device viewport as the
   // initial clip rect.
-  gfx::Rect device_viewport_rect(inputs->device_viewport_size);
+  gfx::Rect device_viewport_rect(inputs.device_viewport_size);
 
-  SubtreeGlobals<Layer> globals;
-  globals.layer_sorter = NULL;
-  globals.max_texture_size = inputs->max_texture_size;
-  globals.device_scale_factor = inputs->device_scale_factor;
-  globals.page_scale_factor = inputs->page_scale_factor;
-  globals.page_scale_application_layer = inputs->page_scale_application_layer;
-  globals.can_render_to_separate_surface =
-      inputs->can_render_to_separate_surface;
-  globals.can_adjust_raster_scales = inputs->can_adjust_raster_scales;
+  gfx::Vector2dF device_transform_scale_components =
+      MathUtil::ComputeTransform2dScaleComponents(inputs.device_transform, 1.f);
+  // Not handling the rare case of different x and y device scale.
+  float device_transform_scale =
+      std::max(device_transform_scale_components.x(),
+               device_transform_scale_components.y());
 
-  DataForRecursion<Layer> data_for_recursion;
-  data_for_recursion.parent_matrix = scaled_device_transform;
-  data_for_recursion.full_hierarchy_matrix = identity_matrix;
-  data_for_recursion.scroll_compensation_matrix = identity_matrix;
-  data_for_recursion.fixed_container = inputs->root_layer;
-  data_for_recursion.clip_rect_in_target_space = device_viewport_rect;
-  data_for_recursion.clip_rect_of_target_surface_in_target_space =
+  gfx::Transform scaled_device_transform = inputs.device_transform;
+  scaled_device_transform.Scale(inputs.device_scale_factor,
+                                inputs.device_scale_factor);
+
+  globals->layer_sorter = NULL;
+  globals->max_texture_size = inputs.max_texture_size;
+  globals->device_scale_factor =
+      inputs.device_scale_factor * device_transform_scale;
+  globals->page_scale_factor = inputs.page_scale_factor;
+  globals->page_scale_application_layer = inputs.page_scale_application_layer;
+  globals->can_render_to_separate_surface =
+      inputs.can_render_to_separate_surface;
+  globals->can_adjust_raster_scales = inputs.can_adjust_raster_scales;
+
+  data_for_recursion->parent_matrix = scaled_device_transform;
+  data_for_recursion->full_hierarchy_matrix = identity_matrix;
+  data_for_recursion->scroll_compensation_matrix = identity_matrix;
+  data_for_recursion->fixed_container = inputs.root_layer;
+  data_for_recursion->clip_rect_in_target_space = device_viewport_rect;
+  data_for_recursion->clip_rect_of_target_surface_in_target_space =
       device_viewport_rect;
-  data_for_recursion.ancestor_clips_subtree = true;
-  data_for_recursion.nearest_occlusion_immune_ancestor_surface = NULL;
-  data_for_recursion.in_subtree_of_page_scale_application_layer = false;
-  data_for_recursion.subtree_can_use_lcd_text = inputs->can_use_lcd_text;
-  data_for_recursion.subtree_is_visible_from_ancestor = true;
+  data_for_recursion->ancestor_clips_subtree = true;
+  data_for_recursion->nearest_occlusion_immune_ancestor_surface = NULL;
+  data_for_recursion->in_subtree_of_page_scale_application_layer = false;
+  data_for_recursion->subtree_can_use_lcd_text = inputs.can_use_lcd_text;
+  data_for_recursion->subtree_is_visible_from_ancestor = true;
+}
+
+void LayerTreeHostCommon::CalculateDrawProperties(
+    CalcDrawPropsMainInputs* inputs) {
+  RenderSurfaceLayerList dummy_layer_list;
+  SubtreeGlobals<Layer> globals;
+  DataForRecursion<Layer> data_for_recursion;
+  ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);
 
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
@@ -2180,44 +2200,13 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
 void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsImplInputs* inputs) {
-  DCHECK(inputs->root_layer);
-  DCHECK(IsRootLayer(inputs->root_layer));
-  DCHECK(inputs->render_surface_layer_list);
-
-  gfx::Transform identity_matrix;
-  gfx::Transform scaled_device_transform = inputs->device_transform;
-  scaled_device_transform.Scale(inputs->device_scale_factor,
-                                inputs->device_scale_factor);
   LayerImplList dummy_layer_list;
-  LayerSorter layer_sorter;
-
-  // The root layer's render_surface should receive the device viewport as the
-  // initial clip rect.
-  gfx::Rect device_viewport_rect(inputs->device_viewport_size);
-
   SubtreeGlobals<LayerImpl> globals;
-  globals.layer_sorter = &layer_sorter;
-  globals.max_texture_size = inputs->max_texture_size;
-  globals.device_scale_factor = inputs->device_scale_factor;
-  globals.page_scale_factor = inputs->page_scale_factor;
-  globals.page_scale_application_layer = inputs->page_scale_application_layer;
-  globals.can_render_to_separate_surface =
-      inputs->can_render_to_separate_surface;
-  globals.can_adjust_raster_scales = inputs->can_adjust_raster_scales;
-
   DataForRecursion<LayerImpl> data_for_recursion;
-  data_for_recursion.parent_matrix = scaled_device_transform;
-  data_for_recursion.full_hierarchy_matrix = identity_matrix;
-  data_for_recursion.scroll_compensation_matrix = identity_matrix;
-  data_for_recursion.fixed_container = inputs->root_layer;
-  data_for_recursion.clip_rect_in_target_space = device_viewport_rect;
-  data_for_recursion.clip_rect_of_target_surface_in_target_space =
-      device_viewport_rect;
-  data_for_recursion.ancestor_clips_subtree = true;
-  data_for_recursion.nearest_occlusion_immune_ancestor_surface = NULL;
-  data_for_recursion.in_subtree_of_page_scale_application_layer = false;
-  data_for_recursion.subtree_can_use_lcd_text = inputs->can_use_lcd_text;
-  data_for_recursion.subtree_is_visible_from_ancestor = true;
+  ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);
+
+  LayerSorter layer_sorter;
+  globals.layer_sorter = &layer_sorter;
 
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
