@@ -33,7 +33,7 @@ class TileEvictionOrder {
         a->required_for_activation() != b->required_for_activation()) {
       return b->required_for_activation();
     }
-    return a_priority.IsHigherPriorityThan(b_priority);
+    return b_priority.IsHigherPriorityThan(a_priority);
   }
 
  private:

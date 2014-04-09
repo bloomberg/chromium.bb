@@ -97,9 +97,9 @@ struct CC_EXPORT TilePriority {
   }
 
   bool IsHigherPriorityThan(const TilePriority& other) const {
-    return priority_bin > other.priority_bin ||
+    return priority_bin < other.priority_bin ||
            (priority_bin == other.priority_bin &&
-            distance_to_visible > other.distance_to_visible);
+            distance_to_visible < other.distance_to_visible);
   }
 
   TileResolution resolution;
