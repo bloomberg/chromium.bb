@@ -3410,6 +3410,11 @@ void WebViewImpl::setWindowFeatures(const WebWindowFeatures& features)
     m_page->chrome().setWindowFeatures(features);
 }
 
+void WebViewImpl::setOpenedByDOM()
+{
+    m_page->setOpenedByDOM();
+}
+
 void WebViewImpl::setSelectionColors(unsigned activeBackgroundColor,
                                      unsigned activeForegroundColor,
                                      unsigned inactiveBackgroundColor,

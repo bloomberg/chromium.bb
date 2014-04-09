@@ -147,6 +147,10 @@ public:
     // WebWindowFeatures are ignored.
     virtual void setWindowFeatures(const WebWindowFeatures&) = 0;
 
+    // Marks the WebView as being opened by a DOM call. This is relevant
+    // for whether window.close() may be called.
+    virtual void setOpenedByDOM() = 0;
+
 
     // Frames --------------------------------------------------------------
 
