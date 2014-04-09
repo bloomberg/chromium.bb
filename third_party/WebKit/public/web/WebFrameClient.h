@@ -268,6 +268,7 @@ public:
     // operations.
     virtual void didChangeSelection(bool isSelectionEmpty) { }
 
+
     // Dialogs -------------------------------------------------------------
 
     // This method opens the color chooser and returns a new WebColorChooser
@@ -280,9 +281,6 @@ public:
         WebColorChooserClient*,
         const WebColor&,
         const WebVector<WebColorSuggestion>&) { return 0; }
-
-
-    // Dialogs -------------------------------------------------------------
 
     // Displays a modal alert dialog containing the given message. Returns
     // once the user dismisses the dialog.
