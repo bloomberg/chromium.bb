@@ -5,7 +5,6 @@
 #include "base/debug/stack_trace.h"
 
 #include <errno.h>
-#include <execinfo.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
@@ -22,6 +21,9 @@
 
 #if defined(__GLIBCXX__)
 #include <cxxabi.h>
+#endif
+#if !defined(__UCLIBC__)
+#include <execinfo.h>
 #endif
 
 #if defined(OS_MACOSX)
@@ -71,7 +73,7 @@ void DemangleSymbols(std::string* text) {
   // Note: code in this function is NOT async-signal safe (std::string uses
   // malloc internally).
 
-#if defined(__GLIBCXX__)
+#if defined(__GLIBCXX__) && !defined(__UCLIBC__)
 
   std::string::size_type search_from = 0;
   while (search_from < text->size()) {
@@ -108,7 +110,7 @@ void DemangleSymbols(std::string* text) {
     }
   }
 
-#endif  // defined(__GLIBCXX__)
+#endif  // defined(__GLIBCXX__) && !defined(__UCLIBC__)
 }
 #endif  // !defined(USE_SYMBOLIZE)
 
@@ -167,7 +169,7 @@ void ProcessBacktrace(void *const *trace,
 
     handler->HandleOutput("\n");
   }
-#else
+#elif !defined(__UCLIBC__)
   bool printed = false;
 
   // Below part is async-signal unsafe (uses malloc), so execute it only
@@ -279,7 +281,9 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   }
   PrintToStderr("\n");
 
+#if !defined(__UCLIBC__)
   debug::StackTrace().Print();
+#endif
 
 #if defined(OS_LINUX)
 #if ARCH_CPU_X86_FAMILY
@@ -738,11 +742,16 @@ StackTrace::StackTrace() {
   // NOTE: This code MUST be async-signal safe (it's used by in-process
   // stack dumping signal handler). NO malloc or stdio is allowed here.
 
+#if !defined(__UCLIBC__)
   // Though the backtrace API man page does not list any possible negative
   // return values, we take no chance.
   count_ = base::saturated_cast<size_t>(backtrace(trace_, arraysize(trace_)));
+#else
+  count_ = 0;
+#endif
 }
 
+#if !defined(__UCLIBC__)
 void StackTrace::Print() const {
   // NOTE: This code MUST be async-signal safe (it's used by in-process
   // stack dumping signal handler). NO malloc or stdio is allowed here.
@@ -755,6 +764,7 @@ void StackTrace::OutputToStream(std::ostream* os) const {
   StreamBacktraceOutputHandler handler(os);
   ProcessBacktrace(trace_, count_, &handler);
 }
+#endif
 
 namespace internal {
 
