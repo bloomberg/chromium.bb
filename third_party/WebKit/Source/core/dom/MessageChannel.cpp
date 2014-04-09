@@ -38,14 +38,7 @@ static void createChannel(MessagePort* port1, MessagePort* port2)
     blink::WebMessagePortChannel* channel1;
     blink::WebMessagePortChannel* channel2;
     blink::Platform::current()->createMessageChannel(&channel1, &channel2);
-
-    // FIXME: Remove once createMessageChannel is supported.
-    if (!channel1) {
-        channel1 = blink::Platform::current()->createMessagePortChannel();
-        channel2 = blink::Platform::current()->createMessagePortChannel();
-        channel1->entangle(channel2);
-        channel2->entangle(channel1);
-    }
+    ASSERT(channel1 && channel2);
 
     // Now entangle the proxies with the appropriate local ports.
     port1->entangle(adoptPtr(channel2));
