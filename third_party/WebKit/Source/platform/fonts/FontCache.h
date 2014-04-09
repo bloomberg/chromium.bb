@@ -88,9 +88,7 @@ public:
     bool isPlatformFontAvailable(const FontDescription&, const AtomicString&);
 
     void addClient(FontCacheClient*);
-#if !ENABLE(OILPAN)
     void removeClient(FontCacheClient*);
-#endif
 
     unsigned short generation();
     void invalidate();

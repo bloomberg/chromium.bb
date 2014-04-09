@@ -1629,7 +1629,7 @@ void Document::setupFontBuilder(RenderStyle* documentStyle)
 {
     FontBuilder fontBuilder;
     fontBuilder.initForStyleResolve(*this, documentStyle, isSVGDocument());
-    RefPtrWillBeRawPtr<CSSFontSelector> selector = m_styleEngine->fontSelector();
+    RefPtr<CSSFontSelector> selector = m_styleEngine->fontSelector();
     fontBuilder.createFontForDocument(selector, documentStyle);
 }
 

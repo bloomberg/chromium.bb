@@ -48,7 +48,6 @@ class FontDescription;
 class StyleRuleFontFace;
 
 class FontLoader {
-    DISALLOW_ALLOCATION();
 public:
     explicit FontLoader(ResourceFetcher*);
 
@@ -56,8 +55,6 @@ public:
     void loadPendingFonts();
 
     void clearResourceFetcher();
-
-    void trace(Visitor*) { }
 
 private:
     void beginLoadTimerFired(Timer<FontLoader>*);
@@ -69,9 +66,9 @@ private:
 
 class CSSFontSelector FINAL : public FontSelector {
 public:
-    static PassRefPtrWillBeRawPtr<CSSFontSelector> create(Document* document)
+    static PassRefPtr<CSSFontSelector> create(Document* document)
     {
-        return adoptRefWillBeNoop(new CSSFontSelector(document));
+        return adoptRef(new CSSFontSelector(document));
     }
     virtual ~CSSFontSelector();
 
@@ -101,8 +98,6 @@ public:
     void beginLoadingFontSoon(FontResource*);
     void loadPendingFonts();
 
-    virtual void trace(Visitor*);
-
 private:
     explicit CSSFontSelector(Document*);
 
@@ -111,7 +106,7 @@ private:
     Document* m_document;
     // FIXME: Move to Document or StyleEngine.
     FontFaceCache m_fontFaceCache;
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSFontSelectorClient> > m_clients;
+    WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<CSSFontSelectorClient> > m_clients;
 
     FontLoader m_fontLoader;
     GenericFontFamilySettings m_genericFontFamilySettings;

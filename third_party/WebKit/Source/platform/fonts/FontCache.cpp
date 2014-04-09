@@ -243,32 +243,24 @@ void FontCache::purge(PurgeSeverity PurgeSeverity)
     purgeFontVerticalDataCache();
 }
 
-static bool invalidateFontCache = false;
-
-WillBeHeapHashSet<RawPtrWillBeWeakMember<FontCacheClient> >& fontCacheClients()
-{
-#if ENABLE(OILPAN)
-    DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<WeakMember<FontCacheClient> > >, clients, (new HeapHashSet<WeakMember<FontCacheClient> >()));
-#else
-    DEFINE_STATIC_LOCAL(HashSet<RawPtr<FontCacheClient> >*, clients, (new HashSet<RawPtr<FontCacheClient> >()));
-#endif
-    invalidateFontCache = true;
-    return *clients;
-}
+static HashSet<FontCacheClient*>* gClients;
 
 void FontCache::addClient(FontCacheClient* client)
 {
-    ASSERT(!fontCacheClients().contains(client));
-    fontCacheClients().add(client);
+    if (!gClients)
+        gClients = new HashSet<FontCacheClient*>;
+
+    ASSERT(!gClients->contains(client));
+    gClients->add(client);
 }
 
-#if !ENABLE(OILPAN)
 void FontCache::removeClient(FontCacheClient* client)
 {
-    ASSERT(fontCacheClients().contains(client));
-    fontCacheClients().remove(client);
+    ASSERT(gClients);
+    ASSERT(gClients->contains(client));
+
+    gClients->remove(client);
 }
-#endif
 
 static unsigned short gGeneration = 0;
 
@@ -279,7 +271,7 @@ unsigned short FontCache::generation()
 
 void FontCache::invalidate()
 {
-    if (!invalidateFontCache) {
+    if (!gClients) {
         ASSERT(!gFontPlatformDataCache);
         return;
     }
@@ -291,11 +283,11 @@ void FontCache::invalidate()
 
     gGeneration++;
 
-    WillBeHeapVector<RefPtrWillBeMember<FontCacheClient> > clients;
-    size_t numClients = fontCacheClients().size();
+    Vector<RefPtr<FontCacheClient> > clients;
+    size_t numClients = gClients->size();
     clients.reserveInitialCapacity(numClients);
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<FontCacheClient> >::iterator end = fontCacheClients().end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<FontCacheClient> >::iterator it = fontCacheClients().begin(); it != end; ++it)
+    HashSet<FontCacheClient*>::iterator end = gClients->end();
+    for (HashSet<FontCacheClient*>::iterator it = gClients->begin(); it != end; ++it)
         clients.append(*it);
 
     ASSERT(numClients == clients.size());
