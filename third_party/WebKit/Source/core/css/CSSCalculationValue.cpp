@@ -247,6 +247,12 @@ public:
         return 0;
     }
 
+    virtual void accumulateLengthArray(CSSLengthArray& lengthArray, double multiplier) const
+    {
+        ASSERT(category() != CalcNumber);
+        m_value->accumulateLengthArray(lengthArray, multiplier);
+    }
+
     virtual bool equals(const CSSCalcExpressionNode& other) const OVERRIDE
     {
         if (type() != other.type())
@@ -417,6 +423,33 @@ public:
         const double leftValue = m_leftSide->computeLengthPx(conversionData);
         const double rightValue = m_rightSide->computeLengthPx(conversionData);
         return evaluate(leftValue, rightValue);
+    }
+
+    virtual void accumulateLengthArray(CSSLengthArray& lengthArray, double multiplier) const
+    {
+        switch (m_operator) {
+        case CalcAdd:
+            m_leftSide->accumulateLengthArray(lengthArray, multiplier);
+            m_rightSide->accumulateLengthArray(lengthArray, multiplier);
+            break;
+        case CalcSubtract:
+            m_leftSide->accumulateLengthArray(lengthArray, multiplier);
+            m_rightSide->accumulateLengthArray(lengthArray, -multiplier);
+            break;
+        case CalcMultiply:
+            ASSERT((m_leftSide->category() == CalcNumber) != (m_rightSide->category() == CalcNumber));
+            if (m_leftSide->category() == CalcNumber)
+                m_rightSide->accumulateLengthArray(lengthArray, multiplier * m_leftSide->doubleValue());
+            else
+                m_leftSide->accumulateLengthArray(lengthArray, multiplier * m_rightSide->doubleValue());
+            break;
+        case CalcDivide:
+            ASSERT(m_rightSide->category() == CalcNumber);
+            m_leftSide->accumulateLengthArray(lengthArray, multiplier / m_rightSide->doubleValue());
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
     }
 
     static String buildCSSText(const String& leftExpression, const String& rightExpression, CalcOperator op)

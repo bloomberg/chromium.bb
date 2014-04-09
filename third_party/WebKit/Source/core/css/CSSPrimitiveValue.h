@@ -141,7 +141,7 @@ public:
     };
 
     enum LengthUnitType {
-        UnitTypePixels,
+        UnitTypePixels = 0,
         UnitTypePercentage,
         UnitTypeFontSize,
         UnitTypeFontXSize,
@@ -152,10 +152,16 @@ public:
         UnitTypeViewportMin,
         UnitTypeViewportMax,
 
+        // This value must come after the last length unit type to enable iteration over the length unit types.
+        LengthUnitTypeCount,
+
         // FIXME: This is used by AnimatableLength to represent calc objects and is not a type of length value.
         //        Remove this once we no longer need the distinction.
         UnitTypeCalc,
     };
+
+    typedef Vector<double, CSSPrimitiveValue::LengthUnitTypeCount> CSSLengthArray;
+    void accumulateLengthArray(CSSLengthArray&, double multiplier = 1) const;
 
     // This enum follows the BisonCSSParser::Units enum augmented with UNIT_FREQUENCY for frequencies.
     enum UnitCategory {
@@ -429,6 +435,8 @@ private:
         Quad* quad;
     } m_value;
 };
+
+typedef CSSPrimitiveValue::CSSLengthArray CSSLengthArray;
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPrimitiveValue, isPrimitiveValue());
 

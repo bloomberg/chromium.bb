@@ -68,6 +68,7 @@ public:
     virtual PassOwnPtr<CalcExpressionNode> toCalcValue(const CSSToLengthConversionData&) const = 0;
     virtual double doubleValue() const = 0;
     virtual double computeLengthPx(const CSSToLengthConversionData&) const = 0;
+    virtual void accumulateLengthArray(CSSLengthArray&, double multiplier) const = 0;
     virtual String customCSSText() const = 0;
     virtual bool equals(const CSSCalcExpressionNode& other) const { return m_category == other.m_category && m_isInteger == other.m_isInteger; }
     virtual Type type() const = 0;
@@ -110,6 +111,7 @@ public:
     bool isNegative() const { return m_expression->doubleValue() < 0; }
     ValueRange permittedValueRange() { return m_nonNegative ? ValueRangeNonNegative : ValueRangeAll; }
     double computeLengthPx(const CSSToLengthConversionData&) const;
+    void accumulateLengthArray(CSSLengthArray& lengthArray, double multiplier) const { m_expression->accumulateLengthArray(lengthArray, multiplier); }
     CSSCalcExpressionNode* expressionNode() const { return m_expression.get(); }
 
     String customCSSText() const;

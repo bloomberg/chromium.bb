@@ -675,6 +675,20 @@ double CSSPrimitiveValue::computeLengthDouble(const CSSToLengthConversionData& c
     return result * conversionData.zoom();
 }
 
+void CSSPrimitiveValue::accumulateLengthArray(CSSLengthArray& lengthArray, double multiplier) const
+{
+    ASSERT(lengthArray.size() == LengthUnitTypeCount);
+
+    if (m_primitiveUnitType == CSS_CALC) {
+        cssCalcValue()->accumulateLengthArray(lengthArray, multiplier);
+        return;
+    }
+
+    LengthUnitType lengthType;
+    if (unitTypeToLengthUnitType(m_primitiveUnitType, lengthType))
+        lengthArray.at(lengthType) += m_value.num * conversionToCanonicalUnitsScaleFactor(m_primitiveUnitType) * multiplier;
+}
+
 void CSSPrimitiveValue::setFloatValue(unsigned short, double, ExceptionState& exceptionState)
 {
     // Keeping values immutable makes optimizations easier and allows sharing of the primitive value objects.
@@ -900,6 +914,7 @@ unsigned short CSSPrimitiveValue::lengthUnitTypeToUnitType(LengthUnitType type)
     case UnitTypeViewportMax:
         return CSSPrimitiveValue::CSS_VMAX;
     case UnitTypeCalc:
+    case LengthUnitTypeCount:
         break;
     }
     ASSERT_NOT_REACHED();
