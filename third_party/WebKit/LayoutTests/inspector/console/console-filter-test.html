@@ -108,6 +108,18 @@ function test()
             WebInspector.ConsolePanel._view()._filter.removeMessageURLFilter();
             dumpVisibleMessages();
             next();
+        },
+        function checkTextFilter(next)
+        {
+            WebInspector.ConsolePanel._view()._filter._textFilterUI.setValue("outer");
+            dumpVisibleMessages();
+            next();
+        },
+        function checkResetFilter(next)
+        {
+            WebInspector.ConsolePanel._view()._filter.reset();
+            dumpVisibleMessages();
+            next();
         }
     ]);
 }

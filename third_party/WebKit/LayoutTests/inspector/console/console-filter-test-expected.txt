@@ -150,3 +150,52 @@ Running: removeAllFilters
   19outerGroup log-source.js:3
 end console-filter-test.html:39
 
+Running: checkTextFilter
+>outerGroup console-filter-test.html:22
+  >innerGroup console-filter-test.html:29
+  10outerGroup console-filter-test.html:9
+  11outerGroup log-source.js:3
+  12outerGroup console-filter-test.html:9
+  13outerGroup log-source.js:3
+  14outerGroup console-filter-test.html:9
+  15outerGroup log-source.js:3
+  16outerGroup console-filter-test.html:9
+  17outerGroup log-source.js:3
+  18outerGroup console-filter-test.html:9
+  19outerGroup log-source.js:3
+
+Running: checkResetFilter
+0topGroup console-filter-test.html:9
+1topGroup log-source.js:3
+2topGroup console-filter-test.html:9
+3topGroup log-source.js:3
+4topGroup console-filter-test.html:9
+5topGroup log-source.js:3
+6topGroup console-filter-test.html:9
+7topGroup log-source.js:3
+8topGroup console-filter-test.html:9
+9topGroup log-source.js:3
+>outerGroup console-filter-test.html:22
+  >innerGroup console-filter-test.html:29
+    20innerGroup console-filter-test.html:9
+    21innerGroup log-source.js:3
+    22innerGroup console-filter-test.html:9
+    23innerGroup log-source.js:3
+    24innerGroup console-filter-test.html:9
+    25innerGroup log-source.js:3
+    26innerGroup console-filter-test.html:9
+    27innerGroup log-source.js:3
+    28innerGroup console-filter-test.html:9
+    29innerGroup log-source.js:3
+  10outerGroup console-filter-test.html:9
+  11outerGroup log-source.js:3
+  12outerGroup console-filter-test.html:9
+  13outerGroup log-source.js:3
+  14outerGroup console-filter-test.html:9
+  15outerGroup log-source.js:3
+  16outerGroup console-filter-test.html:9
+  17outerGroup log-source.js:3
+  18outerGroup console-filter-test.html:9
+  19outerGroup log-source.js:3
+end console-filter-test.html:39
+
