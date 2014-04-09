@@ -22,6 +22,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -125,7 +126,7 @@ class ProfileManagerTest : public testing::Test {
         base::Bind(&MockObserver::OnProfileCreated,
                    base::Unretained(mock_observer)),
         base::UTF8ToUTF16(name),
-        base::UTF8ToUTF16(ProfileInfoCache::GetDefaultAvatarIconUrl(0)),
+        base::UTF8ToUTF16(profiles::GetDefaultAvatarIconUrl(0)),
         is_managed ? "Dummy ID" : std::string());
   }
 
@@ -513,7 +514,7 @@ TEST_F(ProfileManagerTest, InitProfileUserPrefs) {
   // Check that the profile avatar index is valid
   size_t avatar_index =
       profile->GetPrefs()->GetInteger(prefs::kProfileAvatarIndex);
-  EXPECT_TRUE(profile_manager->GetProfileInfoCache().IsDefaultAvatarIconIndex(
+  EXPECT_TRUE(profiles::IsDefaultAvatarIconIndex(
       avatar_index));
 }
 

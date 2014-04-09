@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/format_macros.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,11 +17,11 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
@@ -57,75 +56,6 @@ const char kSigninRequiredKey[] = "signin_required";
 const char kManagedUserId[] = "managed_user_id";
 const char kProfileIsEphemeral[] = "is_ephemeral";
 const char kActiveTimeKey[] = "active_time";
-
-const char kDefaultUrlPrefix[] = "chrome://theme/IDR_PROFILE_AVATAR_";
-const char kGAIAPictureFileName[] = "Google Profile Picture.png";
-const char kHighResAvatarFolderName[] = "Avatars";
-
-const int kDefaultAvatarIconResources[] = {
-  IDR_PROFILE_AVATAR_0,
-  IDR_PROFILE_AVATAR_1,
-  IDR_PROFILE_AVATAR_2,
-  IDR_PROFILE_AVATAR_3,
-  IDR_PROFILE_AVATAR_4,
-  IDR_PROFILE_AVATAR_5,
-  IDR_PROFILE_AVATAR_6,
-  IDR_PROFILE_AVATAR_7,
-  IDR_PROFILE_AVATAR_8,
-  IDR_PROFILE_AVATAR_9,
-  IDR_PROFILE_AVATAR_10,
-  IDR_PROFILE_AVATAR_11,
-  IDR_PROFILE_AVATAR_12,
-  IDR_PROFILE_AVATAR_13,
-  IDR_PROFILE_AVATAR_14,
-  IDR_PROFILE_AVATAR_15,
-  IDR_PROFILE_AVATAR_16,
-  IDR_PROFILE_AVATAR_17,
-  IDR_PROFILE_AVATAR_18,
-  IDR_PROFILE_AVATAR_19,
-  IDR_PROFILE_AVATAR_20,
-  IDR_PROFILE_AVATAR_21,
-  IDR_PROFILE_AVATAR_22,
-  IDR_PROFILE_AVATAR_23,
-  IDR_PROFILE_AVATAR_24,
-  IDR_PROFILE_AVATAR_25,
-};
-
-// File names for the high-res avatar icon resources. In the same order as
-// the avatars in kDefaultAvatarIconResources.
-const char* kDefaultAvatarIconResourceFileNames[] = {
-  "avatar_generic.png",
-  "avatar_generic_aqua.png",
-  "avatar_generic_blue.png",
-  "avatar_generic_green.png",
-  "avatar_generic_orange.png",
-  "avatar_generic_purple.png",
-  "avatar_generic_red.png",
-  "avatar_generic_yellow.png",
-  "avatar_secret_agent.png",
-  "avatar_superhero.png",
-  "avatar_volley_ball.png",
-  "avatar_businessman.png",
-  "avatar_ninja.png",
-  "avatar_alien.png",
-  "avatar_smiley.png",
-  "avatar_flower.png",
-  "avatar_pizza.png",
-  "avatar_soccer.png",
-  "avatar_burger.png",
-  "avatar_cat.png",
-  "avatar_cupcake.png",
-  "avatar_dog.png",
-  "avatar_horse.png",
-  "avatar_margarita.png",
-  "avatar_note.png",
-  "avatar_sun_cloud.png",
-};
-
-const size_t kDefaultAvatarIconsCount = arraysize(kDefaultAvatarIconResources);
-
-// The first 8 icons are generic.
-const size_t kGenericIconCount = 8;
 
 // First eight are generic icons, which use IDS_NUMBERED_PROFILE_NAME.
 const int kDefaultNames[] = {
@@ -276,7 +206,8 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
   scoped_ptr<base::DictionaryValue> info(new base::DictionaryValue);
   info->SetString(kNameKey, name);
   info->SetString(kUserNameKey, username);
-  info->SetString(kAvatarIconKey, GetDefaultAvatarIconUrl(icon_index));
+  info->SetString(kAvatarIconKey,
+      profiles::GetDefaultAvatarIconUrl(icon_index));
   // Default value for whether background apps are running is false.
   info->SetBoolean(kBackgroundAppsKey, false);
   info->SetString(kManagedUserId, managed_user_id);
@@ -406,7 +337,7 @@ const gfx::Image& ProfileInfoCache::GetAvatarIconOfProfileAtIndex(
       return *image;
   }
 
-  int resource_id = GetDefaultAvatarIconResourceIDAtIndex(
+  int resource_id = profiles::GetDefaultAvatarIconResourceIDAtIndex(
       GetAvatarIconIndexOfProfileAtIndex(index));
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
 }
@@ -462,12 +393,12 @@ const gfx::Image* ProfileInfoCache::GetGAIAPictureOfProfileAtIndex(
 const gfx::Image* ProfileInfoCache::GetHighResAvatarOfProfileAtIndex(
     size_t index) const {
   int avatar_index = GetAvatarIconIndexOfProfileAtIndex(index);
-  std::string key = kDefaultAvatarIconResourceFileNames[avatar_index];
+  std::string key = profiles::GetDefaultAvatarIconFileNameAtIndex(avatar_index);
 
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  base::FilePath image_path =
-      user_data_dir.AppendASCII(kHighResAvatarFolderName).AppendASCII(key);
+  base::FilePath image_path = user_data_dir.
+      AppendASCII(profiles::kHighResAvatarFolderName).AppendASCII(key);
   return LoadAvatarPictureFromPath(key, image_path);
 }
 
@@ -576,7 +507,7 @@ size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
   std::string icon_url;
   GetInfoForProfileAtIndex(index)->GetString(kAvatarIconKey, &icon_url);
   size_t icon_index = 0;
-  if (!IsDefaultAvatarIconUrl(icon_url, &icon_index))
+  if (!profiles::IsDefaultAvatarIconUrl(icon_url, &icon_index))
     DLOG(WARNING) << "Unknown avatar icon: " << icon_url;
 
   return icon_index;
@@ -645,7 +576,8 @@ void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
                                                      size_t icon_index) {
   scoped_ptr<base::DictionaryValue> info(
       GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetString(kAvatarIconKey, GetDefaultAvatarIconUrl(icon_index));
+  info->SetString(kAvatarIconKey,
+      profiles::GetDefaultAvatarIconUrl(icon_index));
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 
@@ -766,8 +698,8 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
     if (!data->size()) {
       LOG(ERROR) << "Failed to PNG encode the image.";
     } else {
-      new_file_name =
-          old_file_name.empty() ? kGAIAPictureFileName : old_file_name;
+      new_file_name = old_file_name.empty() ?
+          profiles::kGAIAPictureFileName : old_file_name;
       base::FilePath image_path = path.AppendASCII(new_file_name);
       bool* success = new bool;
       BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
@@ -850,12 +782,12 @@ base::string16 ProfileInfoCache::ChooseNameForNewProfile(
     if (switches::IsNewProfileManagement()) {
       name = l10n_util::GetStringFUTF16Int(IDS_NEW_NUMBERED_PROFILE_NAME,
                                            name_index);
-    } else if (icon_index < kGenericIconCount) {
+    } else if (icon_index < profiles::GetGenericAvatarIconCount()) {
       name = l10n_util::GetStringFUTF16Int(IDS_NUMBERED_PROFILE_NAME,
                                            name_index);
     } else {
       name = l10n_util::GetStringUTF16(
-          kDefaultNames[icon_index - kGenericIconCount]);
+          kDefaultNames[icon_index - profiles::GetGenericAvatarIconCount()]);
       if (name_index > 1)
         name.append(base::UTF8ToUTF16(base::IntToString(name_index)));
     }
@@ -889,8 +821,8 @@ bool ProfileInfoCache::ChooseAvatarIconIndexForNewProfile(
   // --new-profile-management flag.
   if (switches::IsNewProfileManagement())
     allow_generic_icon = true;
-  size_t start = allow_generic_icon ? 0 : kGenericIconCount;
-  size_t end = GetDefaultAvatarIconCount();
+  size_t start = allow_generic_icon ? 0 : profiles::GetGenericAvatarIconCount();
+  size_t end = profiles::GetDefaultAvatarIconCount();
   size_t count = end - start;
 
   int rand = base::RandInt(0, count);
@@ -923,50 +855,6 @@ size_t ProfileInfoCache::ChooseAvatarIconIndexForNewProfile() const {
 
 const base::FilePath& ProfileInfoCache::GetUserDataDir() const {
   return user_data_dir_;
-}
-
-// static
-size_t ProfileInfoCache::GetDefaultAvatarIconCount() {
-  return kDefaultAvatarIconsCount;
-}
-
-// static
-int ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(size_t index) {
-  DCHECK(IsDefaultAvatarIconIndex(index));
-  return kDefaultAvatarIconResources[index];
-}
-
-// static
-std::string ProfileInfoCache::GetDefaultAvatarIconUrl(size_t index) {
-  DCHECK(IsDefaultAvatarIconIndex(index));
-  return base::StringPrintf("%s%" PRIuS, kDefaultUrlPrefix, index);
-}
-
-// static
-bool ProfileInfoCache::IsDefaultAvatarIconIndex(size_t index) {
-  return index < kDefaultAvatarIconsCount;
-}
-
-// static
-bool ProfileInfoCache::IsDefaultAvatarIconUrl(const std::string& url,
-                                              size_t* icon_index) {
-  DCHECK(icon_index);
-  if (url.find(kDefaultUrlPrefix) != 0)
-    return false;
-
-  int int_value = -1;
-  if (base::StringToInt(base::StringPiece(url.begin() +
-                                          strlen(kDefaultUrlPrefix),
-                                          url.end()),
-                        &int_value)) {
-    if (int_value < 0 ||
-        int_value >= static_cast<int>(kDefaultAvatarIconsCount))
-      return false;
-    *icon_index = int_value;
-    return true;
-  }
-
-  return false;
 }
 
 const base::DictionaryValue* ProfileInfoCache::GetInfoForProfileAtIndex(

@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "sync/api/sync_change.h"
@@ -178,7 +178,7 @@ bool ManagedUserSyncService::GetAvatarIndex(const std::string& avatar_str,
   return (*avatar_index == kNoAvatar ||
           (*avatar_index >= 0 &&
            static_cast<size_t>(*avatar_index) <
-               ProfileInfoCache::GetDefaultAvatarIconCount()));
+               profiles::GetDefaultAvatarIconCount()));
 #endif
 }
 

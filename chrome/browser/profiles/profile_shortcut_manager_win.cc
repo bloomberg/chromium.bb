@@ -23,8 +23,8 @@
 #include "chrome/browser/app_icon_win.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
-#include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_switches.h"
@@ -666,7 +666,7 @@ ProfileShortcutManagerWin::ProfileShortcutManagerWin(ProfileManager* manager)
     : profile_manager_(manager) {
   DCHECK_EQ(
       arraysize(kProfileAvatarIconResources2x),
-      profile_manager_->GetProfileInfoCache().GetDefaultAvatarIconCount());
+      profiles::GetDefaultAvatarIconCount());
 
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                  content::NotificationService::AllSources());
@@ -823,7 +823,7 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
     const size_t icon_index =
         cache->GetAvatarIconIndexOfProfileAtIndex(profile_index);
     const int resource_id_1x =
-        cache->GetDefaultAvatarIconResourceIDAtIndex(icon_index);
+        profiles::GetDefaultAvatarIconResourceIDAtIndex(icon_index);
     const int resource_id_2x = kProfileAvatarIconResources2x[icon_index];
     // Make a copy of the SkBitmaps to ensure that we can safely use the image
     // data on the FILE thread.

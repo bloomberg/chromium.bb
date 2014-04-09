@@ -13,7 +13,7 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/profiles/profile_info_util.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
-#include "chrome/browser/profiles/profile_info_util.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/custom_frame_view.h"

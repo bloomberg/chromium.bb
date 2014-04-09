@@ -16,6 +16,7 @@
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -34,8 +35,8 @@ namespace {
 
 scoped_ptr<base::ListValue> GetAvatarIcons() {
   scoped_ptr<base::ListValue> avatar_icons(new base::ListValue);
-  for (size_t i = 0; i < ProfileInfoCache::GetDefaultAvatarIconCount(); ++i) {
-    std::string avatar_url = ProfileInfoCache::GetDefaultAvatarIconUrl(i);
+  for (size_t i = 0; i < profiles::GetDefaultAvatarIconCount(); ++i) {
+    std::string avatar_url = profiles::GetDefaultAvatarIconUrl(i);
     avatar_icons->Append(new base::StringValue(avatar_url));
   }
 
@@ -190,7 +191,7 @@ void ManagedUserImportHandler::SendExistingManagedUsers(
     std::string avatar_url =
         avatar_index == ManagedUserSyncService::kNoAvatar ?
             supervised_user_icon :
-            ProfileInfoCache::GetDefaultAvatarIconUrl(avatar_index);
+            profiles::GetDefaultAvatarIconUrl(avatar_index);
     managed_user->SetString("iconURL", avatar_url);
     bool on_current_device =
         managed_user_ids.find(it.key()) != managed_user_ids.end();

@@ -26,6 +26,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -390,7 +391,7 @@ void ProfileManager::CreateProfileAsync(
     // Get the icon index from the user's icon url
     size_t icon_index;
     std::string icon_url_std = base::UTF16ToASCII(icon_url);
-    if (cache.IsDefaultAvatarIconUrl(icon_url_std, &icon_index)) {
+    if (profiles::IsDefaultAvatarIconUrl(icon_url_std, &icon_index)) {
       // add profile to cache with user selected name and avatar
       cache.AddProfileToCache(profile_path, name, base::string16(), icon_index,
                               managed_user_id);

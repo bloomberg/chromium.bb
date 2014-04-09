@@ -14,6 +14,7 @@
 #endif
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -228,7 +229,7 @@ void OneClickSigninSyncStarter::CreateNewSignedInProfile() {
       GetProfileInfoCache().ChooseAvatarIconIndexForNewProfile();
   ProfileManager::CreateMultiProfileAsync(
       base::UTF8ToUTF16(signin->GetUsernameForAuthInProgress()),
-      base::UTF8ToUTF16(ProfileInfoCache::GetDefaultAvatarIconUrl(icon_index)),
+      base::UTF8ToUTF16(profiles::GetDefaultAvatarIconUrl(icon_index)),
       base::Bind(&OneClickSigninSyncStarter::CompleteInitForNewProfile,
                  weak_pointer_factory_.GetWeakPtr(), desktop_type_),
       std::string());

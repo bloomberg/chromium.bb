@@ -1193,7 +1193,7 @@
         'browser/profiles/profile_downloader_unittest.cc',
         'browser/profiles/profile_info_cache_unittest.cc',
         'browser/profiles/profile_info_cache_unittest.h',
-        'browser/profiles/profile_info_util_unittest.cc',
+        'browser/profiles/profile_avatar_icon_util_unittest.cc',
         'browser/profiles/profile_list_desktop_unittest.cc',
         'browser/profiles/profile_manager_unittest.cc',
         'browser/profiles/profile_shortcut_manager_unittest_win.cc',

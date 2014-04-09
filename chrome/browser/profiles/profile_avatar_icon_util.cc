@@ -1,14 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/profiles/profile_info_util.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 
+#include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -176,6 +182,75 @@ const int kAvatarIconPadding = 2;
 const SkColor kAvatarTutorialBackgroundColor = SkColorSetRGB(0x42, 0x85, 0xf4);
 const SkColor kAvatarTutorialContentTextColor = SkColorSetRGB(0xc6, 0xda, 0xfc);
 
+const char kDefaultUrlPrefix[] = "chrome://theme/IDR_PROFILE_AVATAR_";
+const char kGAIAPictureFileName[] = "Google Profile Picture.png";
+const char kHighResAvatarFolderName[] = "Avatars";
+
+const int kDefaultAvatarIconResources[] = {
+  IDR_PROFILE_AVATAR_0,
+  IDR_PROFILE_AVATAR_1,
+  IDR_PROFILE_AVATAR_2,
+  IDR_PROFILE_AVATAR_3,
+  IDR_PROFILE_AVATAR_4,
+  IDR_PROFILE_AVATAR_5,
+  IDR_PROFILE_AVATAR_6,
+  IDR_PROFILE_AVATAR_7,
+  IDR_PROFILE_AVATAR_8,
+  IDR_PROFILE_AVATAR_9,
+  IDR_PROFILE_AVATAR_10,
+  IDR_PROFILE_AVATAR_11,
+  IDR_PROFILE_AVATAR_12,
+  IDR_PROFILE_AVATAR_13,
+  IDR_PROFILE_AVATAR_14,
+  IDR_PROFILE_AVATAR_15,
+  IDR_PROFILE_AVATAR_16,
+  IDR_PROFILE_AVATAR_17,
+  IDR_PROFILE_AVATAR_18,
+  IDR_PROFILE_AVATAR_19,
+  IDR_PROFILE_AVATAR_20,
+  IDR_PROFILE_AVATAR_21,
+  IDR_PROFILE_AVATAR_22,
+  IDR_PROFILE_AVATAR_23,
+  IDR_PROFILE_AVATAR_24,
+  IDR_PROFILE_AVATAR_25,
+};
+
+// File names for the high-res avatar icon resources. In the same order as
+// the avatars in kDefaultAvatarIconResources.
+const char* kDefaultAvatarIconResourceFileNames[] = {
+  "avatar_generic.png",
+  "avatar_generic_aqua.png",
+  "avatar_generic_blue.png",
+  "avatar_generic_green.png",
+  "avatar_generic_orange.png",
+  "avatar_generic_purple.png",
+  "avatar_generic_red.png",
+  "avatar_generic_yellow.png",
+  "avatar_secret_agent.png",
+  "avatar_superhero.png",
+  "avatar_volley_ball.png",
+  "avatar_businessman.png",
+  "avatar_ninja.png",
+  "avatar_alien.png",
+  "avatar_smiley.png",
+  "avatar_flower.png",
+  "avatar_pizza.png",
+  "avatar_soccer.png",
+  "avatar_burger.png",
+  "avatar_cat.png",
+  "avatar_cupcake.png",
+  "avatar_dog.png",
+  "avatar_horse.png",
+  "avatar_margarita.png",
+  "avatar_note.png",
+  "avatar_sun_cloud.png",
+};
+
+const size_t kDefaultAvatarIconsCount = arraysize(kDefaultAvatarIconResources);
+
+// The first 8 icons are generic.
+const size_t kGenericAvatarIconsCount = 8;
+
 gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
                                         bool is_rectangle,
                                         int width, int height) {
@@ -243,6 +318,54 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
           AvatarImageSource::BORDER_ETCHED));
 
   return gfx::Image(gfx::ImageSkia(source.release(), dst_size));
+}
+
+// Helper methods for accessing, transforming and drawing avatar icons.
+size_t GetDefaultAvatarIconCount() {
+  return kDefaultAvatarIconsCount;
+}
+
+size_t GetGenericAvatarIconCount() {
+  return kGenericAvatarIconsCount;
+}
+
+int GetDefaultAvatarIconResourceIDAtIndex(size_t index) {
+  DCHECK(IsDefaultAvatarIconIndex(index));
+  return kDefaultAvatarIconResources[index];
+}
+
+const char* GetDefaultAvatarIconFileNameAtIndex(size_t index) {
+  return kDefaultAvatarIconResourceFileNames[index];
+}
+
+std::string GetDefaultAvatarIconUrl(size_t index) {
+  DCHECK(IsDefaultAvatarIconIndex(index));
+  return base::StringPrintf("%s%" PRIuS, kDefaultUrlPrefix, index);
+}
+
+bool IsDefaultAvatarIconIndex(size_t index) {
+  return index < kDefaultAvatarIconsCount;
+}
+
+bool IsDefaultAvatarIconUrl(const std::string& url,
+                                              size_t* icon_index) {
+  DCHECK(icon_index);
+  if (url.find(kDefaultUrlPrefix) != 0)
+    return false;
+
+  int int_value = -1;
+  if (base::StringToInt(base::StringPiece(url.begin() +
+                                          strlen(kDefaultUrlPrefix),
+                                          url.end()),
+                        &int_value)) {
+    if (int_value < 0 ||
+        int_value >= static_cast<int>(kDefaultAvatarIconsCount))
+      return false;
+    *icon_index = int_value;
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace profiles

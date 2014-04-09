@@ -38,8 +38,8 @@
 #include "chrome/browser/profile_resetter/automatic_profile_resetter.h"
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -1195,7 +1195,7 @@ scoped_ptr<base::ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
     } else {
       size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(i);
       profile_value->SetString("iconURL",
-                               cache.GetDefaultAvatarIconUrl(icon_index));
+                               profiles::GetDefaultAvatarIconUrl(icon_index));
     }
 
     profile_info_list->Append(profile_value);

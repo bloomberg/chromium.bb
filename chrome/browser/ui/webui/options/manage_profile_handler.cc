@@ -17,8 +17,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -233,7 +233,8 @@ void ManageProfileHandler::RequestNewProfileDefaults(
 
   base::DictionaryValue profile_info;
   profile_info.SetString("name", cache.ChooseNameForNewProfile(icon_index));
-  profile_info.SetString("iconURL", cache.GetDefaultAvatarIconUrl(icon_index));
+  profile_info.SetString("iconURL",
+      profiles::GetDefaultAvatarIconUrl(icon_index));
 
   web_ui()->CallJavascriptFunction(
       "ManageProfileOverlay.receiveNewProfileDefaults", profile_info);
@@ -261,8 +262,8 @@ void ManageProfileHandler::SendProfileIconsAndNames(
   }
 
   // Next add the default avatar icons and names.
-  for (size_t i = 0; i < ProfileInfoCache::GetDefaultAvatarIconCount(); i++) {
-    std::string url = ProfileInfoCache::GetDefaultAvatarIconUrl(i);
+  for (size_t i = 0; i < profiles::GetDefaultAvatarIconCount(); i++) {
+    std::string url = profiles::GetDefaultAvatarIconUrl(i);
     image_url_list.AppendString(url);
     default_name_list.AppendString(cache.ChooseNameForNewProfile(i));
   }
@@ -320,7 +321,7 @@ void ManageProfileHandler::SetProfileIconAndName(const base::ListValue* args) {
       // below.
       ProfileMetrics::LogProfileSwitchGaia(ProfileMetrics::GAIA_OPT_IN);
     }
-  } else if (cache.IsDefaultAvatarIconUrl(icon_url, &new_icon_index)) {
+  } else if (profiles::IsDefaultAvatarIconUrl(icon_url, &new_icon_index)) {
     ProfileMetrics::LogProfileAvatarSelection(new_icon_index);
     PrefService* pref_service = profile->GetPrefs();
     // Updating the profile preference will cause the cache to be updated for

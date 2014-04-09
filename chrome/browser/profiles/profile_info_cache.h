@@ -126,19 +126,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   const base::FilePath& GetUserDataDir() const;
 
-  // Gets the number of default avatar icons that exist.
-  static size_t GetDefaultAvatarIconCount();
-  // Gets the resource ID of the default avatar icon at |index|.
-  static int GetDefaultAvatarIconResourceIDAtIndex(size_t index);
-  // Returns a URL for the default avatar icon with specified index.
-  static std::string GetDefaultAvatarIconUrl(size_t index);
-  // Checks if |index| is a valid avatar icon index
-  static bool IsDefaultAvatarIconIndex(size_t index);
-  // Checks if the given URL points to one of the default avatar icons. If it
-  // is, returns true and its index through |icon_index|. If not, returns false.
-  static bool IsDefaultAvatarIconUrl(const std::string& icon_url,
-                                     size_t *icon_index);
-
   // Gets all names of profiles associated with this instance of Chrome.
   // Because this method will be called during uninstall, before the creation
   // of the ProfileManager, it reads directly from the local state preferences,

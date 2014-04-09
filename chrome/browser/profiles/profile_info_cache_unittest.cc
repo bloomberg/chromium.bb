@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -128,7 +129,7 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
     base::string16 profile_name =
         ASCIIToUTF16(base::StringPrintf("name_%ud", i));
     const SkBitmap* icon = rb.GetImageNamed(
-        ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(
+        profiles::GetDefaultAvatarIconResourceIDAtIndex(
             i)).ToSkBitmap();
     std::string managed_user_id = i == 3 ? "TEST_ID" : "";
 
@@ -351,7 +352,7 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   EXPECT_FALSE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(1));
 
   // The profile icon should be the default one.
-  int id = ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(0);
+  int id = profiles::GetDefaultAvatarIconResourceIDAtIndex(0);
   const gfx::Image& profile_image(
       ResourceBundle::GetSharedInstance().GetImageNamed(id));
   EXPECT_TRUE(gfx::test::IsEqual(
@@ -429,7 +430,7 @@ TEST_F(ProfileInfoCacheTest, SetManagedUserId) {
 
 TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
   base::string16 profile_name = ASCIIToUTF16("name_1");
-  int id = ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(0);
+  int id = profiles::GetDefaultAvatarIconResourceIDAtIndex(0);
   const gfx::Image& profile_image(
       ResourceBundle::GetSharedInstance().GetImageNamed(id));
 
