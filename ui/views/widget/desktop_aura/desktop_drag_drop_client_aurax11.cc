@@ -528,6 +528,19 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
     ::Atom atom_operation = event.data.l[4];
     negotiated_operation_[source_window] = atom_operation;
     drag_operation = AtomToDragOperation(atom_operation);
+  } else {
+    negotiated_operation_[source_window] = None;
+  }
+
+  if (source_state_ == SOURCE_STATE_PENDING_DROP) {
+    // We were waiting on the status message so we could send the XdndDrop.
+    if (drag_operation == ui::DragDropTypes::DRAG_NONE) {
+      move_loop_.EndMoveLoop();
+      return;
+    }
+    source_state_ = SOURCE_STATE_DROPPED;
+    SendXdndDrop(source_window);
+    return;
   }
 
   switch (drag_operation) {
@@ -547,13 +560,6 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
   // within it. However, it is considered advisory and (at least according to
   // the spec) the other side must handle further position messages within
   // it. GTK+ doesn't bother with this, so neither should we.
-
-  if (source_state_ == SOURCE_STATE_PENDING_DROP) {
-    // We were waiting on the status message so we could send the XdndDrop.
-    source_state_ = SOURCE_STATE_DROPPED;
-    SendXdndDrop(source_window);
-    return;
-  }
 
   NextPositionMap::iterator it = next_position_message_.find(source_window);
   if (source_state_ == SOURCE_STATE_OTHER &&
