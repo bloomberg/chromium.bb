@@ -1309,6 +1309,11 @@ void LayerTreeHostImpl::ReclaimResources(const CompositorFrameAck* ack) {
     tile_manager_->resource_pool()->CheckBusyResources();
     tile_manager_->resource_pool()->ReduceResourceUsage();
   }
+  // If we're not visible, we likely released resources, so we want to
+  // aggressively flush here to make sure those DeleteTextures make it to the
+  // GPU process to free up the memory.
+  if (resource_provider_ && !visible_)
+    resource_provider_->ShallowFlushIfSupported();
 }
 
 void LayerTreeHostImpl::OnCanDrawStateChangedForTree() {
