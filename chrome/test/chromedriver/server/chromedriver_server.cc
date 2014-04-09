@@ -199,6 +199,7 @@ int main(int argc, char *argv[]) {
         "log-path=FILE", "write server log to file instead of stderr, "
             "increases log level to INFO",
         "verbose", "log verbosely",
+        "version", "print the version number and exit",
         "silent", "log nothing",
         "url-base", "base URL path prefix for commands, e.g. wd/url",
         "port-server", "address of server to contact for reserving a port",
@@ -209,6 +210,10 @@ int main(int argc, char *argv[]) {
           kOptionAndDescriptions[i], kOptionAndDescriptions[i + 1]);
     }
     printf("Usage: %s [OPTIONS]\n\nOptions\n%s", argv[0], options.c_str());
+    return 0;
+  }
+  if (cmd_line->HasSwitch("v") || cmd_line->HasSwitch("version")) {
+    printf("ChromeDriver %s\n", kChromeDriverVersion);
     return 0;
   }
   if (cmd_line->HasSwitch("port")) {
