@@ -56,7 +56,7 @@ class MetricsLogBase {
   static int64 GetCurrentTime();
 
   // Records a user-initiated action.
-  void RecordUserAction(const char* key);
+  void RecordUserAction(const std::string& key);
 
   // Record any changes in a given histogram for transmission.
   void RecordHistogramDelta(const std::string& histogram_name,

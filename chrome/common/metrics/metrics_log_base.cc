@@ -111,7 +111,7 @@ void MetricsLogBase::GetEncodedLog(std::string* encoded_log) {
   uma_proto_.SerializeToString(encoded_log);
 }
 
-void MetricsLogBase::RecordUserAction(const char* key) {
+void MetricsLogBase::RecordUserAction(const std::string& key) {
   DCHECK(!locked_);
 
   UserActionEventProto* user_action = uma_proto_.add_user_action_event();

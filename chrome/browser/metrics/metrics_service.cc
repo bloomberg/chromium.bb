@@ -1105,7 +1105,7 @@ void MetricsService::OnUserAction(const std::string& action) {
   if (!ShouldLogEvents())
     return;
 
-  log_manager_.current_log()->RecordUserAction(action.c_str());
+  log_manager_.current_log()->RecordUserAction(action);
   HandleIdleSinceLastTransmission(false);
 }
 
