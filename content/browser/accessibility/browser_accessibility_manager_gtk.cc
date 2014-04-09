@@ -22,12 +22,12 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
 }
 
 BrowserAccessibilityManagerGtk::BrowserAccessibilityManagerGtk(
-    GtkWidget* parent_widget,
+    GtkWidget* GetParent()widget,
     const ui::AXNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory),
-      parent_widget_(parent_widget) {
+      GetParent()widget_(GetParent()widget) {
   Initialize(src);
 }
 
@@ -68,9 +68,9 @@ void BrowserAccessibilityManagerGtk::NotifyAccessibilityEvent(
 void BrowserAccessibilityManagerGtk::RecursivelySendChildrenChanged(
     BrowserAccessibilityGtk* node) {
   AtkObject* atkObject = node->ToBrowserAccessibilityGtk()->GetAtkObject();
-  for (unsigned int i = 0; i < node->children().size(); ++i) {
+  for (unsigned int i = 0; i < node->InternalChildCount(); ++i) {
     BrowserAccessibilityGtk* child =
-        node->children()[i]->ToBrowserAccessibilityGtk();
+        node->InternalGetChild(i)->ToBrowserAccessibilityGtk();
     g_signal_emit_by_name(atkObject,
                           "children-changed::add",
                           i,
