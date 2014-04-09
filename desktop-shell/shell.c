@@ -1807,6 +1807,9 @@ set_busy_cursor(struct shell_surface *shsurf, struct weston_pointer *pointer)
 
 	shell_grab_start(grab, &busy_cursor_grab_interface, shsurf, pointer,
 			 DESKTOP_SHELL_CURSOR_BUSY);
+	/* Mark the shsurf as ungrabbed so that button binding is able
+	 * to move it. */
+	shsurf->grabbed = 0;
 }
 
 static void
