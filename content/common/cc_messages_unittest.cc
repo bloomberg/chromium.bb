@@ -753,11 +753,7 @@ TEST_F(CCMessagesTest, SoftwareFrameData) {
   frame_in.id = 3;
   frame_in.size = gfx::Size(40, 20);
   frame_in.damage_rect = gfx::Rect(5, 18, 31, 44);
-#if defined(OS_WIN)
-  frame_in.handle = reinterpret_cast<base::SharedMemoryHandle>(23);
-#elif defined(OS_POSIX)
-  frame_in.handle = base::FileDescriptor(23, true);
-#endif
+  frame_in.bitmap_id = cc::SharedBitmap::GenerateId();
 
   // Write the frame.
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
@@ -771,7 +767,7 @@ TEST_F(CCMessagesTest, SoftwareFrameData) {
   EXPECT_EQ(frame_in.id, frame_out.id);
   EXPECT_EQ(frame_in.size.ToString(), frame_out.size.ToString());
   EXPECT_EQ(frame_in.damage_rect.ToString(), frame_out.damage_rect.ToString());
-  EXPECT_EQ(frame_in.handle, frame_out.handle);
+  EXPECT_EQ(frame_in.bitmap_id, frame_out.bitmap_id);
 }
 
 TEST_F(CCMessagesTest, SoftwareFrameDataMaxInt) {
@@ -779,11 +775,7 @@ TEST_F(CCMessagesTest, SoftwareFrameDataMaxInt) {
   frame_in.id = 3;
   frame_in.size = gfx::Size(40, 20);
   frame_in.damage_rect = gfx::Rect(5, 18, 31, 44);
-#if defined(OS_WIN)
-  frame_in.handle = reinterpret_cast<base::SharedMemoryHandle>(23);
-#elif defined(OS_POSIX)
-  frame_in.handle = base::FileDescriptor(23, true);
-#endif
+  frame_in.bitmap_id = cc::SharedBitmap::GenerateId();
 
   // Write the SoftwareFrameData by hand, make sure it works.
   {
@@ -791,7 +783,7 @@ TEST_F(CCMessagesTest, SoftwareFrameDataMaxInt) {
     IPC::WriteParam(&msg, frame_in.id);
     IPC::WriteParam(&msg, frame_in.size);
     IPC::WriteParam(&msg, frame_in.damage_rect);
-    IPC::WriteParam(&msg, frame_in.handle);
+    IPC::WriteParam(&msg, frame_in.bitmap_id);
     SoftwareFrameData frame_out;
     PickleIterator iter(msg);
     EXPECT_TRUE(
@@ -812,7 +804,7 @@ TEST_F(CCMessagesTest, SoftwareFrameDataMaxInt) {
     IPC::WriteParam(&msg, frame_in.id);
     IPC::WriteParam(&msg, frame_in.size);
     IPC::WriteParam(&msg, frame_in.damage_rect);
-    IPC::WriteParam(&msg, frame_in.handle);
+    IPC::WriteParam(&msg, frame_in.bitmap_id);
     SoftwareFrameData frame_out;
     PickleIterator iter(msg);
     EXPECT_EQ(

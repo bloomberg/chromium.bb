@@ -394,7 +394,8 @@ void ChildFrameCompositingHelper::OnCompositorFrameSwapped(
     scoped_ptr<cc::CompositorFrame> frame,
     int route_id,
     uint32 output_surface_id,
-    int host_id) {
+    int host_id,
+    base::SharedMemoryHandle handle) {
 
   if (frame->gl_frame_data) {
     SwapBuffersInfo swap_info;
@@ -422,7 +423,7 @@ void ChildFrameCompositingHelper::OnCompositorFrameSwapped(
     swap_info.software_frame_id = frame_data->id;
 
     scoped_ptr<base::SharedMemory> shared_memory(
-        new base::SharedMemory(frame_data->handle, true));
+        new base::SharedMemory(handle, true));
     const size_t size_in_bytes = 4 * frame_data->size.GetArea();
     if (!shared_memory->Map(size_in_bytes)) {
       LOG(ERROR) << "Failed to map shared memory of size " << size_in_bytes;

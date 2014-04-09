@@ -10,10 +10,15 @@
 #include "base/memory/shared_memory.h"
 #include "base/threading/non_thread_safe.h"
 #include "cc/output/software_output_device.h"
+#include "cc/resources/shared_bitmap.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class SkRegion;
+
+namespace cc {
+class SharedBitmapManager;
+}
 
 namespace content {
 
@@ -42,14 +47,13 @@ private:
   // FindDamageDifferenceFrom).
   class Buffer {
    public:
-    explicit Buffer(unsigned id, scoped_ptr<base::SharedMemory> mem);
+    explicit Buffer(unsigned id, scoped_ptr<cc::SharedBitmap> bitmap);
     ~Buffer();
 
     unsigned id() const { return id_; }
 
-    void* memory() const { return mem_->memory(); }
-    base::SharedMemoryHandle handle() const { return mem_->handle(); }
-    base::SharedMemory* shared_memory() const { return mem_.get(); }
+    void* memory() const { return shared_bitmap_->pixels(); }
+    cc::SharedBitmapId shared_bitmap_id() const { return shared_bitmap_->id(); }
 
     bool free() const { return free_; }
     void SetFree(bool free) { free_ = free; }
@@ -61,7 +65,7 @@ private:
 
    private:
     const unsigned id_;
-    scoped_ptr<base::SharedMemory> mem_;
+    scoped_ptr<cc::SharedBitmap> shared_bitmap_;
     bool free_;
     Buffer* parent_;
     gfx::Rect damage_;
@@ -89,7 +93,7 @@ private:
   unsigned next_buffer_id_;
   ScopedVector<Buffer> buffers_;
   ScopedVector<Buffer> awaiting_ack_;
-  RenderThread* render_thread_;
+  cc::SharedBitmapManager* shared_bitmap_manager_;
 };
 
 }  // namespace content

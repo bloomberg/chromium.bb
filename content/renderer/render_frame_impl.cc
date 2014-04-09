@@ -897,7 +897,8 @@ void RenderFrameImpl::OnCompositorFrameSwapped(const IPC::Message& message) {
   compositing_helper_->OnCompositorFrameSwapped(frame.Pass(),
                                                 param.a.producing_route_id,
                                                 param.a.output_surface_id,
-                                                param.a.producing_host_id);
+                                                param.a.producing_host_id,
+                                                param.a.shared_memory_handle);
 }
 
 void RenderFrameImpl::OnContextMenuClosed(

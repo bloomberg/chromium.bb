@@ -12,6 +12,7 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/view_messages.h"
 #include "content/common/webplugin_geometry.h"
 #include "content/public/common/content_switches.h"
@@ -197,21 +198,22 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     // the frame to.
     return;
   }
+  base::SharedMemoryHandle software_frame_handle =
+      base::SharedMemory::NULLHandle();
   if (frame->software_frame_data) {
     cc::SoftwareFrameData* frame_data = frame->software_frame_data.get();
-#ifdef OS_WIN
-    base::SharedMemory shared_memory(frame_data->handle, true,
-                                     host_->GetProcess()->GetHandle());
-#else
-    base::SharedMemory shared_memory(frame_data->handle, true);
-#endif
+    scoped_ptr<cc::SharedBitmap> bitmap =
+        HostSharedBitmapManager::current()->GetSharedBitmapFromId(
+            frame_data->size, frame_data->bitmap_id);
+    if (!bitmap)
+      return;
 
     RenderWidgetHostView* embedder_rwhv =
         guest_->GetEmbedderRenderWidgetHostView();
     base::ProcessHandle embedder_pid =
         embedder_rwhv->GetRenderWidgetHost()->GetProcess()->GetHandle();
 
-    shared_memory.GiveToProcess(embedder_pid, &frame_data->handle);
+    bitmap->memory()->ShareToProcess(embedder_pid, &software_frame_handle);
   }
 
   FrameMsg_CompositorFrameSwapped_Params guest_params;
@@ -219,6 +221,7 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   guest_params.output_surface_id = output_surface_id;
   guest_params.producing_route_id = host_->GetRoutingID();
   guest_params.producing_host_id = host_->GetProcess()->GetID();
+  guest_params.shared_memory_handle = software_frame_handle;
 
   guest_->SendMessageToEmbedder(
       new BrowserPluginMsg_CompositorFrameSwapped(guest_->instance_id(),

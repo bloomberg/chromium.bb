@@ -10,6 +10,7 @@
 #include "base/numerics/safe_math.h"
 #include "cc/resources/shared_bitmap.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/user_metrics.h"
 
 namespace {
@@ -30,13 +31,12 @@ class CONTENT_EXPORT SoftwareFrame : public base::RefCounted<SoftwareFrame> {
   friend class base::RefCounted<SoftwareFrame>;
   friend class SoftwareFrameManager;
 
-  SoftwareFrame(
-    base::WeakPtr<SoftwareFrameManagerClient> frame_manager_client,
-    uint32 output_surface_id,
-    unsigned frame_id,
-    float frame_device_scale_factor,
-    gfx::Size frame_size_pixels,
-    scoped_ptr<base::SharedMemory> shared_memory);
+  SoftwareFrame(base::WeakPtr<SoftwareFrameManagerClient> frame_manager_client,
+                uint32 output_surface_id,
+                unsigned frame_id,
+                float frame_device_scale_factor,
+                gfx::Size frame_size_pixels,
+                scoped_ptr<cc::SharedBitmap> shared_bitmap);
   ~SoftwareFrame();
 
   base::WeakPtr<SoftwareFrameManagerClient> frame_manager_client_;
@@ -44,7 +44,7 @@ class CONTENT_EXPORT SoftwareFrame : public base::RefCounted<SoftwareFrame> {
   const unsigned frame_id_;
   float frame_device_scale_factor_;
   const gfx::Size frame_size_pixels_;
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  scoped_ptr<cc::SharedBitmap> shared_bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareFrame);
 };
@@ -55,13 +55,13 @@ SoftwareFrame::SoftwareFrame(
     unsigned frame_id,
     float frame_device_scale_factor,
     gfx::Size frame_size_pixels,
-    scoped_ptr<base::SharedMemory> shared_memory)
+    scoped_ptr<cc::SharedBitmap> shared_bitmap)
     : frame_manager_client_(frame_manager_client),
       output_surface_id_(output_surface_id),
       frame_id_(frame_id),
       frame_device_scale_factor_(frame_device_scale_factor),
       frame_size_pixels_(frame_size_pixels),
-      shared_memory_(shared_memory.Pass()) {}
+      shared_bitmap_(shared_bitmap.Pass()) {}
 
 SoftwareFrame::~SoftwareFrame() {
   if (frame_manager_client_) {
@@ -86,54 +86,23 @@ bool SoftwareFrameManager::SwapToNewFrame(
     const cc::SoftwareFrameData* frame_data,
     float frame_device_scale_factor,
     base::ProcessHandle process_handle) {
+  scoped_ptr<cc::SharedBitmap> shared_bitmap =
+      HostSharedBitmapManager::current()->GetSharedBitmapFromId(
+          frame_data->size, frame_data->bitmap_id);
 
-#ifdef OS_WIN
-  scoped_ptr<base::SharedMemory> shared_memory(
-      new base::SharedMemory(frame_data->handle, true,
-                             process_handle));
-#else
-  scoped_ptr<base::SharedMemory> shared_memory(
-      new base::SharedMemory(frame_data->handle, true));
-#endif
-
-  // The NULL handle is used in testing.
-  if (base::SharedMemory::IsHandleValid(shared_memory->handle())) {
-    DCHECK(cc::SharedBitmap::VerifySizeInBytes(frame_data->size));
-    // UncheckedSizeInBytes is okay because the frame_data size was verified
-    // when frame_data was received over IPC.
-    size_t size_in_bytes =
-        cc::SharedBitmap::UncheckedSizeInBytes(frame_data->size);
-#ifdef OS_WIN
-    if (!shared_memory->Map(0)) {
-      DLOG(ERROR) << "Unable to map renderer memory.";
-      RecordAction(
-          base::UserMetricsAction("BadMessageTerminate_SharedMemoryManager1"));
-      return false;
-    }
-
-    if (shared_memory->mapped_size() < size_in_bytes) {
-      DLOG(ERROR) << "Shared memory too small for given rectangle";
-      RecordAction(
-          base::UserMetricsAction("BadMessageTerminate_SharedMemoryManager2"));
-      return false;
-    }
-#else
-    if (!shared_memory->Map(size_in_bytes)) {
-      DLOG(ERROR) << "Unable to map renderer memory.";
-      RecordAction(
-          base::UserMetricsAction("BadMessageTerminate_SharedMemoryManager1"));
-      return false;
-    }
-#endif
+  if (!shared_bitmap) {
+    RecordAction(
+        base::UserMetricsAction("BadMessageTerminate_SharedMemoryManager1"));
+    return false;
   }
 
-  scoped_refptr<SoftwareFrame> next_frame(new SoftwareFrame(
-      client_,
-      output_surface_id,
-      frame_data->id,
-      frame_device_scale_factor,
-      frame_data->size,
-      shared_memory.Pass()));
+  scoped_refptr<SoftwareFrame> next_frame(
+      new SoftwareFrame(client_,
+                        output_surface_id,
+                        frame_data->id,
+                        frame_device_scale_factor,
+                        frame_data->size,
+                        shared_bitmap.Pass()));
   current_frame_.swap(next_frame);
   return true;
 }
@@ -173,17 +142,16 @@ void SoftwareFrameManager::GetCurrentFrameMailbox(
     cc::TextureMailbox* mailbox,
     scoped_ptr<cc::SingleReleaseCallback>* callback) {
   DCHECK(HasCurrentFrame());
-  *mailbox = cc::TextureMailbox(
-      current_frame_->shared_memory_.get(), current_frame_->frame_size_pixels_);
+  *mailbox = cc::TextureMailbox(current_frame_->shared_bitmap_->memory(),
+                                current_frame_->frame_size_pixels_);
   *callback = cc::SingleReleaseCallback::Create(
       base::Bind(ReleaseMailbox, current_frame_));
 }
 
 void* SoftwareFrameManager::GetCurrentFramePixels() const {
   DCHECK(HasCurrentFrame());
-  DCHECK(base::SharedMemory::IsHandleValid(
-      current_frame_->shared_memory_->handle()));
-  return current_frame_->shared_memory_->memory();
+  DCHECK(current_frame_->shared_bitmap_);
+  return current_frame_->shared_bitmap_->pixels();
 }
 
 float SoftwareFrameManager::GetCurrentFrameDeviceScaleFactor() const {

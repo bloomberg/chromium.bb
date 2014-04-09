@@ -37,7 +37,6 @@ void SoftwareOutputDevice::EndPaint(SoftwareFrameData* frame_data) {
   frame_data->id = 0;
   frame_data->size = viewport_size_;
   frame_data->damage_rect = damage_rect_;
-  frame_data->handle = base::SharedMemory::NULLHandle();
 }
 
 void SoftwareOutputDevice::CopyToPixels(const gfx::Rect& rect, void* pixels) {

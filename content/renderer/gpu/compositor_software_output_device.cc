@@ -6,7 +6,9 @@
 
 #include "base/logging.h"
 #include "cc/output/software_frame_data.h"
+#include "content/child/child_shared_bitmap_manager.h"
 #include "content/renderer/render_process.h"
+#include "content/renderer/render_thread_impl.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -16,12 +18,9 @@
 namespace content {
 
 CompositorSoftwareOutputDevice::Buffer::Buffer(
-    unsigned id, scoped_ptr<base::SharedMemory> mem)
-    : id_(id),
-      mem_(mem.Pass()),
-      free_(true),
-      parent_(NULL) {
-}
+    unsigned id,
+    scoped_ptr<cc::SharedBitmap> bitmap)
+    : id_(id), shared_bitmap_(bitmap.Pass()), free_(true), parent_(NULL) {}
 
 CompositorSoftwareOutputDevice::Buffer::~Buffer() {
 }
@@ -59,7 +58,8 @@ bool CompositorSoftwareOutputDevice::Buffer::FindDamageDifferenceFrom(
 CompositorSoftwareOutputDevice::CompositorSoftwareOutputDevice()
     : current_index_(-1),
       next_buffer_id_(1),
-      render_thread_(RenderThread::Get()) {
+      shared_bitmap_manager_(
+          RenderThreadImpl::current()->shared_bitmap_manager()) {
   DetachFromThread();
 }
 
@@ -77,13 +77,10 @@ unsigned CompositorSoftwareOutputDevice::GetNextId() {
 
 CompositorSoftwareOutputDevice::Buffer*
 CompositorSoftwareOutputDevice::CreateBuffer() {
-  const size_t size = 4 * viewport_size_.GetArea();
-  scoped_ptr<base::SharedMemory> mem =
-      render_thread_->HostAllocateSharedMemoryBuffer(size).Pass();
-  CHECK(mem);
-  bool success = mem->Map(size);
-  CHECK(success);
-  return new Buffer(GetNextId(), mem.Pass());
+  scoped_ptr<cc::SharedBitmap> shared_bitmap =
+      shared_bitmap_manager_->AllocateSharedBitmap(viewport_size_);
+  CHECK(shared_bitmap);
+  return new Buffer(GetNextId(), shared_bitmap.Pass());
 }
 
 size_t CompositorSoftwareOutputDevice::FindFreeBuffer(size_t hint) {
@@ -200,10 +197,7 @@ void CompositorSoftwareOutputDevice::EndPaint(
   frame_data->id = buffer->id();
   frame_data->size = viewport_size_;
   frame_data->damage_rect = damage_rect_;
-  frame_data->handle = buffer->handle();
-
-  CHECK_LE(static_cast<size_t>(frame_data->size.GetArea()) * 4,
-           buffer->shared_memory()->mapped_size());
+  frame_data->bitmap_id = buffer->shared_bitmap_id();
 }
 
 void CompositorSoftwareOutputDevice::ReclaimSoftwareFrame(unsigned id) {

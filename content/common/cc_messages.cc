@@ -761,7 +761,7 @@ void ParamTraits<cc::SoftwareFrameData>::Write(Message* m,
   WriteParam(m, p.id);
   WriteParam(m, p.size);
   WriteParam(m, p.damage_rect);
-  WriteParam(m, p.handle);
+  WriteParam(m, p.bitmap_id);
 }
 
 bool ParamTraits<cc::SoftwareFrameData>::Read(const Message* m,
@@ -774,7 +774,7 @@ bool ParamTraits<cc::SoftwareFrameData>::Read(const Message* m,
     return false;
   if (!ReadParam(m, iter, &p->damage_rect))
     return false;
-  if (!ReadParam(m, iter, &p->handle))
+  if (!ReadParam(m, iter, &p->bitmap_id))
     return false;
   return true;
 }
@@ -788,7 +788,7 @@ void ParamTraits<cc::SoftwareFrameData>::Log(const param_type& p,
   l->append(", ");
   LogParam(p.damage_rect, l);
   l->append(", ");
-  LogParam(p.handle, l);
+  LogParam(p.bitmap_id, l);
   l->append(")");
 }
 

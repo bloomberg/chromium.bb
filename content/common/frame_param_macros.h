@@ -35,6 +35,7 @@ IPC_STRUCT_BEGIN(FrameMsg_CompositorFrameSwapped_Params)
 
   IPC_STRUCT_MEMBER(cc::CompositorFrame, frame)
   IPC_STRUCT_MEMBER(uint32, output_surface_id)
+  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, shared_memory_handle)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameHostMsg_BuffersSwappedACK_Params)

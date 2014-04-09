@@ -6,7 +6,10 @@
 
 #include <vector>
 
+#include "base/memory/scoped_vector.h"
+#include "base/memory/shared_memory.h"
 #include "base/sys_info.h"
+#include "content/common/host_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -18,9 +21,12 @@ class FakeSoftwareFrameManagerClient : public SoftwareFrameManagerClient {
     software_frame_manager_.reset(new SoftwareFrameManager(
         weak_ptr_factory_.GetWeakPtr()));
   }
-  virtual ~FakeSoftwareFrameManagerClient() {}
-  virtual void SoftwareFrameWasFreed(
-      uint32 output_surface_id, unsigned frame_id) OVERRIDE {
+  virtual ~FakeSoftwareFrameManagerClient() {
+    HostSharedBitmapManager::current()->ProcessRemoved(
+        base::GetCurrentProcessHandle());
+  }
+  virtual void SoftwareFrameWasFreed(uint32 output_surface_id,
+                                     unsigned frame_id) OVERRIDE {
     freed_frames_.push_back(std::make_pair(output_surface_id, frame_id));
   }
   virtual void ReleaseReferencesToSoftwareFrame() OVERRIDE {
@@ -32,7 +38,13 @@ class FakeSoftwareFrameManagerClient : public SoftwareFrameManagerClient {
     frame.id = frame_id;
     frame.size = gfx::Size(1, 1);
     frame.damage_rect = gfx::Rect(frame.size);
-    frame.handle = base::SharedMemory::NULLHandle();
+    frame.bitmap_id = cc::SharedBitmap::GenerateId();
+    scoped_ptr<base::SharedMemory> memory =
+        make_scoped_ptr(new base::SharedMemory);
+    memory->CreateAnonymous(4);
+    HostSharedBitmapManager::current()->ChildAllocatedSharedBitmap(
+        4, memory->handle(), base::GetCurrentProcessHandle(), frame.bitmap_id);
+    allocated_memory_.push_back(memory.release());
     return software_frame_manager_->SwapToNewFrame(
         output_surface, &frame, 1.0, base::GetCurrentProcessHandle());
   }
@@ -46,6 +58,7 @@ class FakeSoftwareFrameManagerClient : public SoftwareFrameManagerClient {
  private:
   std::vector<std::pair<uint32,unsigned> > freed_frames_;
   size_t evicted_count_;
+  ScopedVector<base::SharedMemory> allocated_memory_;
 
   scoped_ptr<SoftwareFrameManager> software_frame_manager_;
   base::WeakPtrFactory<FakeSoftwareFrameManagerClient>

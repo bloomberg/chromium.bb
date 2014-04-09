@@ -454,7 +454,8 @@ void BrowserPlugin::OnCompositorFrameSwapped(const IPC::Message& message) {
   compositing_helper_->OnCompositorFrameSwapped(frame.Pass(),
                                                 param.b.producing_route_id,
                                                 param.b.output_surface_id,
-                                                param.b.producing_host_id);
+                                                param.b.producing_host_id,
+                                                param.b.shared_memory_handle);
 }
 
 void BrowserPlugin::OnCopyFromCompositingSurface(int guest_instance_id,

@@ -5,8 +5,8 @@
 #ifndef CC_OUTPUT_SOFTWARE_FRAME_DATA_H_
 #define CC_OUTPUT_SOFTWARE_FRAME_DATA_H_
 
-#include "base/memory/shared_memory.h"
 #include "cc/base/cc_export.h"
+#include "cc/resources/shared_bitmap.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {
@@ -19,7 +19,7 @@ class CC_EXPORT SoftwareFrameData {
   unsigned id;
   gfx::Size size;
   gfx::Rect damage_rect;
-  base::SharedMemoryHandle handle;
+  SharedBitmapId bitmap_id;
 };
 
 }  // namespace cc

@@ -6,9 +6,7 @@
 
 namespace cc {
 
-SoftwareFrameData::SoftwareFrameData()
-    : id(0),
-      handle(base::SharedMemory::NULLHandle()) {}
+SoftwareFrameData::SoftwareFrameData() : id(0) {}
 
 SoftwareFrameData::~SoftwareFrameData() {}
 
