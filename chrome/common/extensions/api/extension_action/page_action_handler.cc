@@ -7,8 +7,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
 
@@ -79,7 +79,7 @@ bool PageActionHandler::Validate(const Extension* extension,
   const extensions::ActionInfo* action =
       extensions::ActionInfo::GetPageActionInfo(extension);
   if (action && !action->default_icon.empty() &&
-      !extension_file_util::ValidateExtensionIconSet(
+      !file_util::ValidateExtensionIconSet(
           action->default_icon,
           extension,
           IDS_EXTENSION_LOAD_ICON_FOR_PAGE_ACTION_FAILED,

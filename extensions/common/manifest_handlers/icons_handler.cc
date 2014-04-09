@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
@@ -10,14 +10,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handler_helpers.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
 
@@ -27,9 +26,6 @@ namespace keys = manifest_keys;
 
 static base::LazyInstance<ExtensionIconSet> g_empty_icon_set =
     LAZY_INSTANCE_INITIALIZER;
-
-const int IconsInfo::kPageActionIconMaxSize = 19;
-const int IconsInfo::kBrowserActionIconMaxSize = 19;
 
 // static
 const ExtensionIconSet& IconsInfo::GetIcons(const Extension* extension) {
@@ -97,11 +93,10 @@ bool IconsHandler::Parse(Extension* extension, base::string16* error) {
 bool IconsHandler::Validate(const Extension* extension,
                             std::string* error,
                             std::vector<InstallWarning>* warnings) const {
-  return extension_file_util::ValidateExtensionIconSet(
-      IconsInfo::GetIcons(extension),
-      extension,
-      IDS_EXTENSION_LOAD_ICON_FAILED,
-      error);
+  return file_util::ValidateExtensionIconSet(IconsInfo::GetIcons(extension),
+                                             extension,
+                                             IDS_EXTENSION_LOAD_ICON_FAILED,
+                                             error);
 }
 
 const std::vector<std::string> IconsHandler::Keys() const {

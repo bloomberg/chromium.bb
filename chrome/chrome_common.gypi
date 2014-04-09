@@ -179,8 +179,6 @@
         'common/extensions/manifest_handlers/content_scripts_handler.h',
         'common/extensions/manifest_handlers/externally_connectable.cc',
         'common/extensions/manifest_handlers/externally_connectable.h',
-        'common/extensions/manifest_handlers/icons_handler.cc',
-        'common/extensions/manifest_handlers/icons_handler.h',
         'common/extensions/manifest_handlers/minimum_chrome_version_checker.cc',
         'common/extensions/manifest_handlers/minimum_chrome_version_checker.h',
         'common/extensions/manifest_handlers/nacl_modules_handler.cc',

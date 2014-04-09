@@ -15,11 +15,9 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -31,6 +29,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handler.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "grit/generated_resources.h"
 #include "net/base/file_stream.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -221,35 +220,6 @@ std::vector<base::FilePath> FindPrivateKeyFiles(
     result.push_back(current);
   }
   return result;
-}
-
-bool ValidateFilePath(const base::FilePath& path) {
-  int64 size = 0;
-  if (!base::PathExists(path) ||
-      !base::GetFileSize(path, &size) ||
-      size == 0) {
-    return false;
-  }
-
-  return true;
-}
-
-bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
-                              const Extension* extension,
-                              int error_message_id,
-                              std::string* error) {
-  for (ExtensionIconSet::IconMap::const_iterator iter = icon_set.map().begin();
-       iter != icon_set.map().end();
-       ++iter) {
-    const base::FilePath path =
-        extension->GetResource(iter->second).GetFilePath();
-    if (!ValidateFilePath(path)) {
-      *error = l10n_util::GetStringFUTF8(error_message_id,
-                                         base::UTF8ToUTF16(iter->second));
-      return false;
-    }
-  }
-  return true;
 }
 
 bool ValidateExtension(const Extension* extension,

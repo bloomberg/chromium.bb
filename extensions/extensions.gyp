@@ -18,6 +18,9 @@
         '../chrome/chrome_resources.gyp:chrome_resources',
         # TODO(jamescook|derat): Pull strings into extensions module.
         '../chrome/chrome_resources.gyp:chrome_strings',
+        # Need default icons in theme_resources.grd
+        '../chrome/chrome_resources.gyp:theme_resources',
+        
         # TODO(tfarina): This dep here is for extensions/common/constants.*
         # We should find a way to compile this module within extensions_common.
         '../chrome/common_constants.gyp:common_constants',
@@ -120,6 +123,8 @@
         'common/manifest_handlers/background_info.h',
         'common/manifest_handlers/csp_info.cc',
         'common/manifest_handlers/csp_info.h',
+        'common/manifest_handlers/icons_handler.cc',
+        'common/manifest_handlers/icons_handler.h',
         'common/manifest_handlers/incognito_info.cc',
         'common/manifest_handlers/incognito_info.h',
         'common/manifest_handlers/kiosk_mode_info.cc',

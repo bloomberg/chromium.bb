@@ -72,13 +72,13 @@
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/badge_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
@@ -1721,8 +1721,8 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
       preview_enabled_(false) {
   event_box_.Own(gtk_event_box_new());
   gtk_widget_set_size_request(event_box_.get(),
-                              extensions::IconsInfo::kPageActionIconMaxSize,
-                              extensions::IconsInfo::kPageActionIconMaxSize);
+                              ExtensionAction::kPageActionIconMaxSize,
+                              ExtensionAction::kPageActionIconMaxSize);
 
   // Make the event box not visible so it does not paint a background.
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);

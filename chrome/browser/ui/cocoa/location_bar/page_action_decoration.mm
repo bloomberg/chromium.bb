@@ -23,9 +23,9 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/image/image.h"
@@ -75,7 +75,7 @@ PageActionDecoration::~PageActionDecoration() {}
 // Always |kPageActionIconMaxSize| wide.  |ImageDecoration| draws the
 // image centered.
 CGFloat PageActionDecoration::GetWidthForSpace(CGFloat width) {
-  return extensions::IconsInfo::kPageActionIconMaxSize;
+  return ExtensionAction::kPageActionIconMaxSize;
 }
 
 bool PageActionDecoration::AcceptsMousePress() {
@@ -153,8 +153,8 @@ void PageActionDecoration::UpdateVisibility(WebContents* contents,
       SetImage(icon.ToNSImage());
     } else if (!GetImage()) {
       const NSSize default_size = NSMakeSize(
-          extensions::IconsInfo::kPageActionIconMaxSize,
-          extensions::IconsInfo::kPageActionIconMaxSize);
+          ExtensionAction::kPageActionIconMaxSize,
+          ExtensionAction::kPageActionIconMaxSize);
       SetImage([[[NSImage alloc] initWithSize:default_size] autorelease]);
     }
   }
@@ -188,7 +188,7 @@ NSPoint PageActionDecoration::GetBubblePointInFrame(NSRect frame) {
   // easier (the middle of the centered image is the middle of the
   // frame).
   const CGFloat delta_height =
-      NSHeight(frame) - extensions::IconsInfo::kPageActionIconMaxSize;
+      NSHeight(frame) - ExtensionAction::kPageActionIconMaxSize;
   const CGFloat bottom_inset = std::ceil(delta_height / 2.0);
 
   // Return a point just below the bottom of the maximal drawing area.

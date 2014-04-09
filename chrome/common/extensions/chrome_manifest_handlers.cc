@@ -28,7 +28,6 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_handlers/minimum_chrome_version_checker.h"
 #include "chrome/common/extensions/manifest_handlers/nacl_modules_handler.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
@@ -37,6 +36,7 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/mime_types_handler.h"
 #include "extensions/common/api/sockets/sockets_manifest_handler.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/requirements_info.h"
 
 namespace extensions {

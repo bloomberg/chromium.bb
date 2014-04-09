@@ -11,8 +11,12 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/message_bundle.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -20,6 +24,21 @@
 
 namespace extensions {
 namespace file_util {
+namespace {
+
+// Returns true if the given file path exists and is not zero-length.
+bool ValidateFilePath(const base::FilePath& path) {
+  int64 size = 0;
+  if (!base::PathExists(path) ||
+      !base::GetFileSize(path, &size) ||
+      size == 0) {
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace
 
 base::FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
   std::string url_path = url.path();
@@ -64,6 +83,24 @@ base::FilePath ExtensionResourceURLToFilePath(const GURL& url,
   return path;
 }
 
+bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
+                              const Extension* extension,
+                              int error_message_id,
+                              std::string* error) {
+  for (ExtensionIconSet::IconMap::const_iterator iter = icon_set.map().begin();
+       iter != icon_set.map().end();
+       ++iter) {
+    const base::FilePath path =
+        extension->GetResource(iter->second).GetFilePath();
+    if (!ValidateFilePath(path)) {
+      *error = l10n_util::GetStringFUTF8(error_message_id,
+                                         base::UTF8ToUTF16(iter->second));
+      return false;
+    }
+  }
+  return true;
+}
+
 MessageBundle* LoadMessageBundle(
     const base::FilePath& extension_path,
     const std::string& default_locale,
@@ -95,12 +132,12 @@ MessageBundle* LoadMessageBundle(
   return message_bundle;
 }
 
-MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMap(
+std::map<std::string, std::string>* LoadMessageBundleSubstitutionMap(
     const base::FilePath& extension_path,
     const std::string& extension_id,
     const std::string& default_locale) {
-  MessageBundle::SubstitutionMap* returnValue =
-      new MessageBundle::SubstitutionMap();
+  std::map<std::string, std::string>* return_value =
+      new std::map<std::string, std::string>();
   if (!default_locale.empty()) {
     // Touch disk only if extension is localized.
     std::string error;
@@ -108,15 +145,15 @@ MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMap(
         LoadMessageBundle(extension_path, default_locale, &error));
 
     if (bundle.get())
-      *returnValue = *bundle->dictionary();
+      *return_value = *bundle->dictionary();
   }
 
   // Add @@extension_id reserved message here, so it's available to
   // non-localized extensions too.
-  returnValue->insert(
+  return_value->insert(
       std::make_pair(MessageBundle::kExtensionIdKey, extension_id));
 
-  return returnValue;
+  return return_value;
 }
 
 }  // namespace file_util

@@ -39,7 +39,6 @@
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/invalidate_type.h"
@@ -64,6 +63,7 @@
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"

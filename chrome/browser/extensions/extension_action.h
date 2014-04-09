@@ -42,6 +42,9 @@ class ExtensionAction {
   // parameter.
   static const int kDefaultTabId;
 
+  // Max size (both dimensions) for page actions.
+  static const int kPageActionIconMaxSize;
+
   ExtensionAction(const std::string& extension_id,
                   extensions::ActionInfo::Type action_type,
                   const extensions::ActionInfo& manifest_data);

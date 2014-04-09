@@ -7,9 +7,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
@@ -46,7 +46,7 @@ bool BrowserActionHandler::Validate(
     std::vector<InstallWarning>* warnings) const {
   const ActionInfo* action = ActionInfo::GetBrowserActionInfo(extension);
   if (action && !action->default_icon.empty() &&
-      !extension_file_util::ValidateExtensionIconSet(
+      !file_util::ValidateExtensionIconSet(
           action->default_icon,
           extension,
           IDS_EXTENSION_LOAD_ICON_FOR_BROWSER_ACTION_FAILED,

@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/invalidate_type.h"
@@ -40,6 +39,7 @@
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/screen.h"
 
