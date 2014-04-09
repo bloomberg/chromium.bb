@@ -53,6 +53,8 @@ class NativeViewportX11 : public NativeViewport,
     atom_wm_delete_window_ = XInternAtom(display, "WM_DELETE_WINDOW", 1);
     XSetWMProtocols(display, window_, &atom_wm_delete_window_, 1);
 
+    // Assumes there is only one instance per process.
+    event_source_ = ui::PlatformEventSource::CreateDefault();
     ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 
     delegate_->OnAcceleratedWidgetAvailable(window_);
@@ -102,6 +104,7 @@ class NativeViewportX11 : public NativeViewport,
     return ui::POST_DISPATCH_NONE;
   }
 
+  scoped_ptr<ui::PlatformEventSource> event_source_;
   NativeViewportDelegate* delegate_;
   gfx::Rect bounds_;
   XID window_;
