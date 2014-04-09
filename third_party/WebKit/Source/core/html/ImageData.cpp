@@ -126,7 +126,7 @@ PassRefPtrWillBeRawPtr<ImageData> ImageData::create(Uint8ClampedArray* data, uns
 
 ImageData::ImageData(const IntSize& size)
     : m_size(size)
-    , m_data(Uint8ClampedArray::createUninitialized(size.width() * size.height() * 4))
+    , m_data(Uint8ClampedArray::create(size.width() * size.height() * 4))
 {
     ScriptWrappable::init(this);
 }
