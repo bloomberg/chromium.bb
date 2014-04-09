@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
@@ -337,10 +336,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // parent folder with UI animation.
   void CancelFolderItemReparent(AppListItemView* drag_item_view);
 
-  // Removes the folder matching |folder_id| if there is only one item left
-  // in it.
-  void RemoveFolderIfOnlyOneItemLeft(const std::string& folder_id);
-
   // Cancels any context menus showing for app items on the current page.
   void CancelContextMenusOnCurrentPage();
 
@@ -538,8 +533,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // True if the drag_view_ item is a folder item being dragged for reparenting.
   bool dragging_for_reparent_item_;
-
-  base::WeakPtrFactory<AppsGridView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };
