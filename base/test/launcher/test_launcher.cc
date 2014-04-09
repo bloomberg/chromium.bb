@@ -1026,6 +1026,13 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   new_options.job_handle = job_handle.Get();
 #endif  // defined(OS_WIN)
 
+#if defined(OS_LINUX)
+  // To prevent accidental privilege sharing to an untrusted child, processes
+  // are started with PR_SET_NO_NEW_PRIVS. Do not set that here, since this
+  // new child will be privileged and trusted.
+  new_options.allow_new_privs = true;
+#endif
+
   base::ProcessHandle process_handle;
 
   {

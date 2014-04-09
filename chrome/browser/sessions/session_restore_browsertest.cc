@@ -923,7 +923,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
 
   ui_test_utils::BrowserAddedObserver window_observer;
 
-  base::LaunchProcess(app_launch_arguments, base::LaunchOptions(), NULL);
+  base::LaunchProcess(app_launch_arguments, base::LaunchOptionsForTest(), NULL);
 
   Browser* app_window = window_observer.WaitForSingleNewBrowser();
   ASSERT_EQ(2u, active_browser_list_->size());

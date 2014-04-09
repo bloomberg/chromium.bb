@@ -25,6 +25,7 @@ LaunchOptions::LaunchOptions()
       new_process_group(false)
 #if defined(OS_LINUX)
       , clone_flags(0)
+      , allow_new_privs(false)
 #endif  // OS_LINUX
 #if defined(OS_CHROMEOS)
       , ctrl_terminal_fd(-1)
@@ -34,6 +35,17 @@ LaunchOptions::LaunchOptions()
 }
 
 LaunchOptions::~LaunchOptions() {
+}
+
+LaunchOptions LaunchOptionsForTest() {
+  LaunchOptions options;
+#if defined(OS_LINUX)
+  // To prevent accidental privilege sharing to an untrusted child, processes
+  // are started with PR_SET_NO_NEW_PRIVS. Do not set that here, since this
+  // new child will be used for testing only.
+  options.allow_new_privs = true;
+#endif
+  return options;
 }
 
 }  // namespace base

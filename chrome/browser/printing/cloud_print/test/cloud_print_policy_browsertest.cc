@@ -47,7 +47,8 @@ IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, NormalPassedFlag) {
 
   base::ProcessHandle handle;
   bool launched =
-      base::LaunchProcess(new_command_line, base::LaunchOptions(), &handle);
+      base::LaunchProcess(new_command_line, base::LaunchOptionsForTest(),
+          &handle);
   EXPECT_TRUE(launched);
 
   observer.Wait();
@@ -69,7 +70,8 @@ IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, DISABLED_CloudPrintPolicyFlag) {
 
   base::ProcessHandle handle;
   bool launched =
-      base::LaunchProcess(new_command_line, base::LaunchOptions(), &handle);
+      base::LaunchProcess(new_command_line, base::LaunchOptionsForTest(),
+          &handle);
   EXPECT_TRUE(launched);
 
   int exit_code = -100;

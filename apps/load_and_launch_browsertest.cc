@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 
   new_cmdline.AppendSwitch(content::kLaunchAsBrowser);
   base::ProcessHandle process;
-  base::LaunchProcess(new_cmdline, base::LaunchOptions(), &process);
+  base::LaunchProcess(new_cmdline, base::LaunchOptionsForTest(), &process);
   ASSERT_NE(base::kNullProcessHandle, process);
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   new_cmdline.AppendArgPath(test_file_path);
 
   base::ProcessHandle process;
-  base::LaunchProcess(new_cmdline, base::LaunchOptions(), &process);
+  base::LaunchProcess(new_cmdline, base::LaunchOptionsForTest(), &process);
   ASSERT_NE(base::kNullProcessHandle, process);
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());

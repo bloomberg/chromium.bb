@@ -111,6 +111,10 @@ struct BASE_EXPORT LaunchOptions {
 #if defined(OS_LINUX)
   // If non-zero, start the process using clone(), using flags as provided.
   int clone_flags;
+
+  // By default, child processes will have the PR_SET_NO_NEW_PRIVS bit set. If
+  // true, then this bit will not be set in the new child process.
+  bool allow_new_privs;
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS)
@@ -242,6 +246,10 @@ BASE_EXPORT void RaiseProcessToHighPriority();
 // See http://crbug.com/20371/ for more details.
 void RestoreDefaultExceptionHandler();
 #endif  // defined(OS_MACOSX)
+
+// Creates a LaunchOptions object suitable for launching processes in a test
+// binary. This should not be called in production/released code.
+BASE_EXPORT LaunchOptions LaunchOptionsForTest();
 
 }  // namespace base
 

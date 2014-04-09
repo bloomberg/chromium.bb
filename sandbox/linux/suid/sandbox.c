@@ -303,13 +303,14 @@ static bool MoveToNewNamespaces() {
     // something went wrong, hence we bail with an error message rather then
     // provide less security.
     if (errno != EINVAL) {
+      fprintf(stderr, "Failed to move to new namespace:");
       if (kCloneExtraFlags[i] & CLONE_NEWPID) {
-        fprintf(stderr, " PID namespaces supported");
+        fprintf(stderr, " PID namespaces supported,");
       }
       if (kCloneExtraFlags[i] & CLONE_NEWNET) {
-        fprintf(stderr, " Network namespace supported");
+        fprintf(stderr, " Network namespace supported,");
       }
-      fprintf(stderr, "but failed: errno = %s\n", strerror(clone_errno));
+      fprintf(stderr, " but failed: errno = %s\n", strerror(clone_errno));
       return false;
     }
   }
@@ -484,6 +485,13 @@ int main(int argc, char **argv) {
   // Protect the core setuid sandbox functionality with an API version
   if (!CheckAndExportApiVersion()) {
     return 1;
+  }
+
+  if (geteuid() != 0) {
+    fprintf(stderr,
+        "The setuid sandbox is not running as root. Common causes:\n"
+        "  * An unprivileged process using ptrace on it, like a debugger.\n"
+        "  * A parent process set prctl(PR_SET_NO_NEW_PRIVS, ...)\n");
   }
 
   if (!MoveToNewNamespaces())

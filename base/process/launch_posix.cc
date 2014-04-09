@@ -38,6 +38,10 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 
+#if defined(OS_LINUX)
+#include <sys/prctl.h>
+#endif
+
 #if defined(OS_CHROMEOS)
 #include <sys/ioctl.h>
 #endif
@@ -423,6 +427,19 @@ bool LaunchProcess(const std::vector<std::string>& argv,
       _exit(127);
 
     CloseSuperfluousFds(fd_shuffle2);
+
+    // Set NO_NEW_PRIVS by default. Since NO_NEW_PRIVS only exists in kernel
+    // 3.5+, do not check the return value of prctl here.
+#if defined(OS_LINUX)
+#ifndef PR_SET_NO_NEW_PRIVS
+#define PR_SET_NO_NEW_PRIVS 38
+#endif
+    if (!options.allow_new_privs) {
+      if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
+        DCHECK_EQ(EINVAL, errno);
+      }
+    }
+#endif
 
     for (size_t i = 0; i < argv.size(); i++)
       argv_cstr[i] = const_cast<char*>(argv[i].c_str());

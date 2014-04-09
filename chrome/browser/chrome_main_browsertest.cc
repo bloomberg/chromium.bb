@@ -30,7 +30,7 @@ class ChromeMainTest : public InProcessBrowserTest {
   ChromeMainTest() {}
 
   void Relaunch(const CommandLine& new_command_line) {
-    base::LaunchProcess(new_command_line, base::LaunchOptions(), NULL);
+    base::LaunchProcess(new_command_line, base::LaunchOptionsForTest(), NULL);
   }
 };
 

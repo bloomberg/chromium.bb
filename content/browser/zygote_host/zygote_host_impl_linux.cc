@@ -166,6 +166,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   base::ProcessHandle process = -1;
   base::LaunchOptions options;
   options.fds_to_remap = &fds_to_map;
+  options.allow_new_privs = using_suid_sandbox_;  // Don't PR_SET_NO_NEW_PRIVS.
   base::LaunchProcess(cmd_line.argv(), options, &process);
   CHECK(process != -1) << "Failed to launch zygote process";
 
