@@ -416,11 +416,15 @@ Value ExecuteOr(Scope* scope,
                 const Value& right,
                 Err* err) {
   if (left.type() != Value::BOOLEAN) {
-    *err = Err(left, "Left side of || operator is not a boolean.");
-    err->AppendRange(op_node->GetRange());
+    *err = Err(op_node->left(), "Left side of || operator is not a boolean.",
+        "Type is \"" + std::string(Value::DescribeType(left.type())) +
+        "\" instead.");
+    return Value();
   } else if (right.type() != Value::BOOLEAN) {
-    *err = Err(right, "Right side of || operator is not a boolean.");
-    err->AppendRange(op_node->GetRange());
+    *err = Err(op_node->right(), "Right side of || operator is not a boolean.",
+        "Type is \"" + std::string(Value::DescribeType(right.type())) +
+        "\" instead.");
+    return Value();
   }
   return Value(op_node, left.boolean_value() || right.boolean_value());
 }
@@ -431,11 +435,15 @@ Value ExecuteAnd(Scope* scope,
                  const Value& right,
                  Err* err) {
   if (left.type() != Value::BOOLEAN) {
-    *err = Err(left, "Left side of && operator is not a boolean.");
-    err->AppendRange(op_node->GetRange());
+    *err = Err(op_node->left(), "Left side of && operator is not a boolean.",
+        "Type is \"" + std::string(Value::DescribeType(left.type())) +
+        "\" instead.");
+    return Value();
   } else if (right.type() != Value::BOOLEAN) {
-    *err = Err(right, "Right side of && operator is not a boolean.");
-    err->AppendRange(op_node->GetRange());
+    *err = Err(op_node->right(), "Right side of && operator is not a boolean.",
+        "Type is \"" + std::string(Value::DescribeType(right.type())) +
+        "\" instead.");
+    return Value();
   }
   return Value(op_node, left.boolean_value() && right.boolean_value());
 }
@@ -487,8 +495,9 @@ Value ExecuteUnaryOperator(Scope* scope,
   DCHECK(op_node->op().type() == Token::BANG);
 
   if (expr.type() != Value::BOOLEAN) {
-    *err = Err(expr, "Operand of ! operator is not a boolean.");
-    err->AppendRange(op_node->GetRange());
+    *err = Err(op_node, "Operand of ! operator is not a boolean.",
+        "Type is \"" + std::string(Value::DescribeType(expr.type())) +
+        "\" instead.");
     return Value();
   }
   // TODO(scottmg): Why no unary minus?

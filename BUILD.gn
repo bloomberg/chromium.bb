@@ -35,6 +35,7 @@ group("root") {
     "//third_party/freetype2",
     #"//third_party/icu:icudata",
     #"//third_party/leveldatabase",
+    "//skia",
     "//third_party/libpng",
     "//third_party/libusb",
     "//third_party/re2",

@@ -21,12 +21,10 @@ if (cpu_arch == "arm") {
 
   if (is_android) {
     arm_use_neon = false
-    # Our version of arm_neon_optional from common.gypi. This is not used in the
-    # current build so is commented out for now.
-    #arm_optionally_use_neon = false
+    arm_optionally_use_neon = false
   } else {
     arm_use_neon = true
-    #arm_optionally_use_neon = true
+    arm_optionally_use_neon = true
   }
 
   if (arm_version == 6) {
