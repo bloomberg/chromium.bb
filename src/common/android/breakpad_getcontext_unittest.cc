@@ -33,11 +33,24 @@
 #include "common/android/ucontext_constants.h"
 
 TEST(AndroidUContext, GRegsOffset) {
-#ifdef __arm__
+#if defined(__arm__)
   // There is no gregs[] array on ARM, so compare to the offset of
   // first register fields, since they're stored in order.
   ASSERT_EQ(static_cast<size_t>(MCONTEXT_GREGS_OFFSET),
             offsetof(ucontext_t,uc_mcontext.arm_r0));
+#elif defined(__aarch64__)
+  // There is no gregs[] array on ARM, so compare to the offset of
+  // first register fields, since they're stored in order.
+  ASSERT_EQ(static_cast<size_t>(MCONTEXT_GREGS_OFFSET),
+            offsetof(ucontext_t,uc_mcontext.regs[0]));
+  ASSERT_EQ(static_cast<size_t>(MCONTEXT_SP_OFFSET),
+            offsetof(ucontext_t,uc_mcontext.sp));
+  ASSERT_EQ(static_cast<size_t>(MCONTEXT_PC_OFFSET),
+            offsetof(ucontext_t,uc_mcontext.pc));
+  ASSERT_EQ(static_cast<size_t>(MCONTEXT_PSTATE_OFFSET),
+            offsetof(ucontext_t,uc_mcontext.pstate));
+  ASSERT_EQ(static_cast<size_t>(MCONTEXT_EXTENSION_OFFSET),
+            offsetof(ucontext_t,uc_mcontext.__reserved));
 #elif defined(__i386__)
   ASSERT_EQ(static_cast<size_t>(MCONTEXT_GREGS_OFFSET),
             offsetof(ucontext_t,uc_mcontext.gregs));

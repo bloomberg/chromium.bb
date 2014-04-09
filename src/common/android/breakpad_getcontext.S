@@ -90,6 +90,9 @@ breakpad_getcontext:
 
 #elif defined(__aarch64__)
 
+#define  _NSIG                       64
+#define  __NR_rt_sigprocmask         135
+
   .text
   .global breakpad_getcontext
   .hidden breakpad_getcontext

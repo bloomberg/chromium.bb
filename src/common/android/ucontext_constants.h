@@ -49,11 +49,11 @@
 
 #define  UCONTEXT_SIGMASK_OFFSET     40
 
-#define  MCONTEXT_GREGS_OFFSET       56
-#define  MCONTEXT_SP_OFFSET          304
-#define  MCONTEXT_PC_OFFSET          312
-#define  MCONTEXT_PSTATE_OFFSET      320
-#define  MCONTEXT_EXTENSION_OFFSET   336
+#define  MCONTEXT_GREGS_OFFSET       184
+#define  MCONTEXT_SP_OFFSET          432
+#define  MCONTEXT_PC_OFFSET          440
+#define  MCONTEXT_PSTATE_OFFSET      448
+#define  MCONTEXT_EXTENSION_OFFSET   464
 
 #define  FPSIMD_MAGIC                0x46508001
 
@@ -66,9 +66,6 @@
 
 #define  REGISTER_SIZE               8
 #define  SIMD_REGISTER_SIZE          16
-
-#define  _NSIG                       64
-#define  __NR_rt_sigprocmask         135
 
 #elif defined(__i386__)
 
