@@ -564,7 +564,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     sender->SetEnabled(false);
 
   if (sender == users_button_) {
-    chrome::ShowUserManager(base::FilePath());
+    profiles::ShowUserManagerMaybeWithTutorial(browser_->profile());
   } else if (sender == lock_button_) {
     profiles::LockProfile(browser_->profile());
   } else if (sender == add_account_button_) {

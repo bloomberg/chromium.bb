@@ -271,7 +271,8 @@ void CreateGuestProfileForUserManager(
 }
 
 void ShowUserManagerMaybeWithTutorial(Profile* profile) {
-  if (!profile) {
+  // Guest users cannot appear in the User Manager, nor display a tutorial.
+  if (!profile || profile->IsGuestSession()) {
     chrome::ShowUserManager(base::FilePath());
     return;
   }

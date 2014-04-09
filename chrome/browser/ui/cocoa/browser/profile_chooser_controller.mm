@@ -707,9 +707,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)showUserManager:(id)sender {
-  // Guest users cannot appear in the User Manager, nor display a tutorial.
-  profiles::ShowUserManagerMaybeWithTutorial(
-      isGuestSession_ ? NULL : browser_->profile());
+  profiles::ShowUserManagerMaybeWithTutorial(browser_->profile());
 }
 
 - (IBAction)showAccountManagement:(id)sender {
