@@ -18,6 +18,7 @@ import urlparse
 
 import download_from_google_storage
 import gclient_utils
+import git_cache
 import scm
 import subprocess2
 
@@ -28,7 +29,7 @@ GSUTIL_DEFAULT_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     'third_party', 'gsutil', 'gsutil')
 
-
+CHROMIUM_SRC_URL = 'https://chromium.googlesource.com/chromium/src.git'
 class DiffFiltererWrapper(object):
   """Simple base class which tracks which file is being diffed and
   replaces instances of its file name in the original and
@@ -159,23 +160,18 @@ class SCMWrapper(object):
     """Attempt to determine the remote URL for this SCMWrapper."""
     # Git
     if os.path.exists(os.path.join(self.checkout_path, '.git')):
-      actual_remote_url = shlex.split(scm.GIT.Capture(
+      actual_remote_url = shlex.split(self._Capture(
           ['config', '--local', '--get-regexp', r'remote.*.url'],
           self.checkout_path))[1]
 
       # If a cache_dir is used, obtain the actual remote URL from the cache.
       if getattr(self, 'cache_dir', None):
-        try:
-          full_cache_dir = self._Run(['cache', 'exists', '--cache-dir',
-                                      self.cache_dir, self.url],
-                                     options, cwd=self._root_dir).strip()
-        except subprocess2.CalledProcessError:
-          full_cache_dir = None
-        if (full_cache_dir.replace('\\', '/') ==
+        mirror = git_cache.Mirror(self.url)
+        if (mirror.exists() and mirror.mirror_path.replace('\\', '/') ==
             actual_remote_url.replace('\\', '/')):
-          actual_remote_url = shlex.split(scm.GIT.Capture(
+          actual_remote_url = shlex.split(self._Capture(
               ['config', '--local', '--get-regexp', r'remote.*.url'],
-              os.path.join(self._root_dir, full_cache_dir)))[1]
+              cwd=mirror.mirror_path))[1]
       return actual_remote_url
 
     # Svn
@@ -206,12 +202,15 @@ class GitWrapper(SCMWrapper):
 
   cache_dir = None
 
-  def __init__(self, url=None, root_dir=None, relpath=None, out_fh=None,
-               out_cb=None):
+  def __init__(self, url=None, *args):
     """Removes 'git+' fake prefix from git URL."""
     if url.startswith('git+http://') or url.startswith('git+https://'):
       url = url[4:]
-    SCMWrapper.__init__(self, url, root_dir, relpath, out_fh, out_cb)
+    SCMWrapper.__init__(self, url, *args)
+    filter_kwargs = { 'time_throttle': 1, 'out_fh': self.out_fh }
+    if self.out_cb:
+      filter_kwargs['predicate'] = self.out_cb
+    self.filter = gclient_utils.GitFilter(**filter_kwargs)
 
   @staticmethod
   def BinaryExists():
@@ -468,7 +467,10 @@ class GitWrapper(SCMWrapper):
       # case 0
       self._CheckClean(rev_str)
       self._CheckDetachedHead(rev_str, options)
-      self._Capture(['checkout', '--quiet', '%s' % revision])
+      if self._Capture(['rev-list', '-n', '1', 'HEAD']) == revision:
+        self.Print('Up-to-date; skipping checkout.')
+      else:
+        self._Capture(['checkout', '--quiet', '%s' % revision])
       if not printed_path:
         self.Print('_____ %s%s' % (self.relpath, rev_str), timestamp=False)
     elif current_type == 'hash':
@@ -743,11 +745,13 @@ class GitWrapper(SCMWrapper):
     """
     if not self.cache_dir:
       return url
-    v = ['-v'] if options.verbose else []
-    self._Run(['cache', 'populate'] + v + ['--cache-dir', self.cache_dir, url],
-              options, cwd=self._root_dir, retry=True)
-    return self._Run(['cache', 'exists', '--cache-dir', self.cache_dir, url],
-                     options, cwd=self._root_dir, ).strip()
+    mirror_kwargs = { 'print_func': self.filter }
+    if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
+      mirror_kwargs['refs'] = ['refs/tags/lkgr', 'refs/tags/lkcr']
+    mirror = git_cache.Mirror(url, **mirror_kwargs)
+    mirror.populate(verbose=options.verbose, bootstrap=True)
+    mirror.unlock()
+    return mirror.mirror_path if mirror.exists() else None
 
   def _Clone(self, revision, url, options):
     """Clone a git repository from the given URL.
@@ -983,10 +987,7 @@ class GitWrapper(SCMWrapper):
   def _Run(self, args, options, **kwargs):
     cwd = kwargs.setdefault('cwd', self.checkout_path)
     kwargs.setdefault('stdout', self.out_fh)
-    filter_kwargs = { 'time_throttle': 10, 'out_fh': self.out_fh }
-    if self.out_cb:
-      filter_kwargs['predicate'] = self.out_cb
-    kwargs['filter_fn'] = git_filter = gclient_utils.GitFilter(**filter_kwargs)
+    kwargs['filter_fn'] = self.filter
     kwargs.setdefault('print_stdout', False)
     # Don't prompt for passwords; just fail quickly and noisily.
     # By default, git will use an interactive terminal prompt when a username/
@@ -1002,7 +1003,7 @@ class GitWrapper(SCMWrapper):
 
     cmd = ['git'] + args
     header = "running '%s' in '%s'" % (' '.join(cmd), cwd)
-    git_filter(header)
+    self.filter(header)
     return gclient_utils.CheckCallAndFilter(cmd, **kwargs)
 
 

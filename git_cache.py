@@ -5,6 +5,7 @@
 
 """A git command for managing a local cache of git repositories."""
 
+from __future__ import print_function
 import errno
 import logging
 import optparse
@@ -18,38 +19,12 @@ from download_from_google_storage import Gsutil
 import gclient_utils
 import subcommand
 
-
-GIT_EXECUTABLE = 'git.bat' if sys.platform.startswith('win') else 'git'
-BOOTSTRAP_BUCKET = 'chromium-git-cache'
-GSUTIL_DEFAULT_PATH = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    'third_party', 'gsutil', 'gsutil')
-
-
-def UrlToCacheDir(url):
-  """Convert a git url to a normalized form for the cache dir path."""
-  parsed = urlparse.urlparse(url)
-  norm_url = parsed.netloc + parsed.path
-  if norm_url.endswith('.git'):
-    norm_url = norm_url[:-len('.git')]
-  return norm_url.replace('-', '--').replace('/', '-').lower()
-
-
-def RunGit(cmd, **kwargs):
-  """Run git in a subprocess."""
-  kwargs.setdefault('cwd', os.getcwd())
-  if kwargs.get('filter_fn'):
-    kwargs['filter_fn'] = gclient_utils.GitFilter(kwargs.get('filter_fn'))
-    kwargs.setdefault('print_stdout', False)
-    env = kwargs.get('env') or kwargs.setdefault('env', os.environ.copy())
-    env.setdefault('GIT_ASKPASS', 'true')
-    env.setdefault('SSH_ASKPASS', 'true')
-  else:
-    kwargs.setdefault('print_stdout', True)
-  stdout = kwargs.get('stdout', sys.stdout)
-  print >> stdout, 'running "git %s" in "%s"' % (' '.join(cmd), kwargs['cwd'])
-  gclient_utils.CheckCallAndFilter([GIT_EXECUTABLE] + cmd, **kwargs)
-
+try:
+  # pylint: disable=E0602
+  WinErr = WindowsError
+except NameError:
+  class WinErr(Exception):
+    pass
 
 class LockError(Exception):
   pass
@@ -81,7 +56,7 @@ class Lockfile(object):
     open_flags = (os.O_CREAT | os.O_EXCL | os.O_WRONLY)
     fd = os.open(self.lockfile, open_flags, 0o644)
     f = os.fdopen(fd, 'w')
-    print >> f, self.pid
+    print(self.pid, file=f)
     f.close()
 
   def _remove_lockfile(self):
@@ -138,20 +113,234 @@ class Lockfile(object):
     return self
 
   def __exit__(self, *_exc):
-    self.unlock()
+    # Windows is unreliable when it comes to file locking.  YMMV.
+    try:
+      self.unlock()
+    except WinErr:
+      pass
 
+
+class Mirror(object):
+
+  git_exe = 'git.bat' if sys.platform.startswith('win') else 'git'
+  gsutil_exe = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    'third_party', 'gsutil', 'gsutil')
+  bootstrap_bucket = 'chromium-git-cache'
+
+  def __init__(self, url, refs=None, print_func=None):
+    self.url = url
+    self.refs = refs or []
+    self.basedir = self.UrlToCacheDir(url)
+    self.mirror_path = os.path.join(self.GetCachePath(), self.basedir)
+    self.print = print_func or print
+
+  @staticmethod
+  def UrlToCacheDir(url):
+    """Convert a git url to a normalized form for the cache dir path."""
+    parsed = urlparse.urlparse(url)
+    norm_url = parsed.netloc + parsed.path
+    if norm_url.endswith('.git'):
+      norm_url = norm_url[:-len('.git')]
+    return norm_url.replace('-', '--').replace('/', '-').lower()
+
+  @staticmethod
+  def FindExecutable(executable):
+    """This mimics the "which" utility."""
+    path_folders = os.environ.get('PATH').split(os.pathsep)
+
+    for path_folder in path_folders:
+      target = os.path.join(path_folder, executable)
+      # Just incase we have some ~/blah paths.
+      target = os.path.abspath(os.path.expanduser(target))
+      if os.path.isfile(target) and os.access(target, os.X_OK):
+        return target
+    return None
+
+  @classmethod
+  def SetCachePath(cls, cachepath):
+    setattr(cls, 'cachepath', cachepath)
+
+  @classmethod
+  def GetCachePath(cls):
+    if not hasattr(cls, 'cachepath'):
+      try:
+        cachepath = subprocess.check_output(
+            [cls.git_exe, 'config', '--global', 'cache.cachepath']).strip()
+      except subprocess.CalledProcessError:
+        cachepath = None
+      if not cachepath:
+        raise RuntimeError('No global cache.cachepath git configuration found.')
+      setattr(cls, 'cachepath', cachepath)
+    return getattr(cls, 'cachepath')
+
+  def RunGit(self, cmd, **kwargs):
+    """Run git in a subprocess."""
+    cwd = kwargs.setdefault('cwd', self.mirror_path)
+    kwargs.setdefault('print_stdout', False)
+    kwargs.setdefault('filter_fn', self.print)
+    env = kwargs.get('env') or kwargs.setdefault('env', os.environ.copy())
+    env.setdefault('GIT_ASKPASS', 'true')
+    env.setdefault('SSH_ASKPASS', 'true')
+    self.print('running "git %s" in "%s"' % (' '.join(cmd), cwd))
+    gclient_utils.CheckCallAndFilter([self.git_exe] + cmd, **kwargs)
+
+  def config(self, cwd=None):
+    if cwd is None:
+      cwd = self.mirror_path
+    self.RunGit(['config', 'core.deltaBaseCacheLimit',
+                 gclient_utils.DefaultDeltaBaseCacheLimit()], cwd=cwd)
+    self.RunGit(['config', 'remote.origin.url', self.url], cwd=cwd)
+    self.RunGit(['config', '--replace-all', 'remote.origin.fetch',
+                 '+refs/heads/*:refs/heads/*'], cwd=cwd)
+    for ref in self.refs:
+      ref = ref.lstrip('+').rstrip('/')
+      if ref.startswith('refs/'):
+        refspec = '+%s:%s' % (ref, ref)
+      else:
+        refspec = '+refs/%s/*:refs/%s/*' % (ref, ref)
+      self.RunGit(['config', '--add', 'remote.origin.fetch', refspec], cwd=cwd)
+
+  def bootstrap_repo(self, directory):
+    """Bootstrap the repo from Google Stroage if possible.
+
+    Requires 7z on Windows and Unzip on Linux/Mac.
+    """
+    if sys.platform.startswith('win'):
+      if not self.FindExecutable('7z'):
+        self.print('''
+Cannot find 7z in the path.  If you want git cache to be able to bootstrap from
+Google Storage, please install 7z from:
+
+http://www.7-zip.org/download.html
+''')
+        return False
+    else:
+      if not self.FindExecutable('unzip'):
+        self.print('''
+Cannot find unzip in the path.  If you want git cache to be able to bootstrap
+from Google Storage, please ensure unzip is present on your system.
+''')
+        return False
+
+    gs_folder = 'gs://%s/%s' % (self.bootstrap_bucket, self.basedir)
+    gsutil = Gsutil(
+        self.gsutil_exe, boto_path=os.devnull, bypass_prodaccess=True)
+    # Get the most recent version of the zipfile.
+    _, ls_out, _ = gsutil.check_call('ls', gs_folder)
+    ls_out_sorted = sorted(ls_out.splitlines())
+    if not ls_out_sorted:
+      # This repo is not on Google Storage.
+      return False
+    latest_checkout = ls_out_sorted[-1]
+
+    # Download zip file to a temporary directory.
+    try:
+      tempdir = tempfile.mkdtemp()
+      self.print('Downloading %s' % latest_checkout)
+      code, out, err = gsutil.check_call('cp', latest_checkout, tempdir)
+      if code:
+        self.print('%s\n%s' % (out, err))
+        return False
+      filename = os.path.join(tempdir, latest_checkout.split('/')[-1])
+
+      # Unpack the file with 7z on Windows, or unzip everywhere else.
+      if sys.platform.startswith('win'):
+        cmd = ['7z', 'x', '-o%s' % directory, '-tzip', filename]
+      else:
+        cmd = ['unzip', filename, '-d', directory]
+      retcode = subprocess.call(cmd)
+    finally:
+      # Clean up the downloaded zipfile.
+      gclient_utils.rmtree(tempdir)
+
+    if retcode:
+      self.print(
+          'Extracting bootstrap zipfile %s failed.\n'
+          'Resuming normal operations.' % filename)
+      return False
+    return True
+
+  def exists(self):
+    return os.path.isfile(os.path.join(self.mirror_path, 'config'))
+
+  def populate(self, depth=None, shallow=False, bootstrap=False,
+               verbose=False):
+    if shallow and not depth:
+      depth = 10000
+    gclient_utils.safe_makedirs(self.GetCachePath())
+
+    v = []
+    if verbose:
+      v = ['-v', '--progress']
+
+    d = []
+    if depth:
+      d = ['--depth', str(depth)]
+
+
+    with Lockfile(self.mirror_path):
+      # Setup from scratch if the repo is new or is in a bad state.
+      tempdir = None
+      if not os.path.exists(os.path.join(self.mirror_path, 'config')):
+        gclient_utils.rmtree(self.mirror_path)
+        tempdir = tempfile.mkdtemp(
+            suffix=self.basedir, dir=self.GetCachePath())
+        bootstrapped = not depth and bootstrap and self.bootstrap_repo(tempdir)
+        if not bootstrapped:
+          self.RunGit(['init', '--bare'], cwd=tempdir)
+      else:
+        if depth and os.path.exists(os.path.join(self.mirror_path, 'shallow')):
+          logging.warn(
+              'Shallow fetch requested, but repo cache already exists.')
+        d = []
+
+      rundir = tempdir or self.mirror_path
+      self.config(rundir)
+      fetch_cmd = ['fetch'] + v + d + ['origin']
+      fetch_specs = subprocess.check_output(
+          [self.git_exe, 'config', '--get-all', 'remote.origin.fetch'],
+          cwd=rundir).strip().splitlines()
+      for spec in fetch_specs:
+        try:
+          self.RunGit(fetch_cmd + [spec], cwd=rundir, retry=True)
+        except subprocess.CalledProcessError:
+          logging.warn('Fetch of %s failed' % spec)
+      if tempdir:
+        os.rename(tempdir, self.mirror_path)
+
+  def update_bootstrap(self):
+    # The files are named <git number>.zip
+    gen_number = subprocess.check_output(
+        [self.git_exe, 'number', 'master'], cwd=self.mirror_path).strip()
+    self.RunGit(['gc'])  # Run Garbage Collect to compress packfile.
+    # Creating a temp file and then deleting it ensures we can use this name.
+    _, tmp_zipfile = tempfile.mkstemp(suffix='.zip')
+    os.remove(tmp_zipfile)
+    subprocess.call(['zip', '-r', tmp_zipfile, '.'], cwd=self.mirror_path)
+    gsutil = Gsutil(path=self.gsutil_exe, boto_path=None)
+    dest_name = 'gs://%s/%s/%s.zip' % (
+        self.bootstrap_bucket, self.basedir, gen_number)
+    gsutil.call('cp', tmp_zipfile, dest_name)
+    os.remove(tmp_zipfile)
+
+  def unlock(self):
+    lf = Lockfile(self.mirror_path)
+    config_lock = os.path.join(self.mirror_path, 'config.lock')
+    if os.path.exists(config_lock):
+      os.remove(config_lock)
+    lf.break_lock()
 
 @subcommand.usage('[url of repo to check for caching]')
 def CMDexists(parser, args):
   """Check to see if there already is a cache of the given repo."""
-  options, args = parser.parse_args(args)
+  _, args = parser.parse_args(args)
   if not len(args) == 1:
     parser.error('git cache exists only takes exactly one repo url.')
   url = args[0]
-  repo_dir = os.path.join(options.cache_dir, UrlToCacheDir(url))
-  flag_file = os.path.join(repo_dir, 'config')
-  if os.path.isdir(repo_dir) and os.path.isfile(flag_file):
-    print repo_dir
+  mirror = Mirror(url)
+  if mirror.exists():
+    print(mirror.mirror_path)
     return 0
   return 1
 
@@ -161,7 +350,7 @@ def CMDupdate_bootstrap(parser, args):
   """Create and uploads a bootstrap tarball."""
   # Lets just assert we can't do this on Windows.
   if sys.platform.startswith('win'):
-    print >> sys.stderr, 'Sorry, update bootstrap will not work on Windows.'
+    print('Sorry, update bootstrap will not work on Windows.', file=sys.stderr)
     return 1
 
   # First, we need to ensure the cache is populated.
@@ -170,24 +359,11 @@ def CMDupdate_bootstrap(parser, args):
   CMDpopulate(parser, populate_args)
 
   # Get the repo directory.
-  options, args = parser.parse_args(args)
+  _, args = parser.parse_args(args)
   url = args[0]
-  repo_dir = os.path.join(options.cache_dir, UrlToCacheDir(url))
-
-  # The files are named <git number>.zip
-  gen_number = subprocess.check_output(['git', 'number', 'master'],
-                                       cwd=repo_dir).strip()
-  RunGit(['gc'], cwd=repo_dir)  # Run Garbage Collect to compress packfile.
-  # Creating a temp file and then deleting it ensures we can use this name.
-  _, tmp_zipfile = tempfile.mkstemp(suffix='.zip')
-  os.remove(tmp_zipfile)
-  subprocess.call(['zip', '-r', tmp_zipfile, '.'], cwd=repo_dir)
-  gsutil = Gsutil(path=GSUTIL_DEFAULT_PATH, boto_path=None)
-  dest_name = 'gs://%s/%s/%s.zip' % (BOOTSTRAP_BUCKET,
-                                     UrlToCacheDir(url),
-                                     gen_number)
-  gsutil.call('cp', tmp_zipfile, dest_name)
-  os.remove(tmp_zipfile)
+  mirror = Mirror(url)
+  mirror.update_bootstrap()
+  return 0
 
 
 @subcommand.usage('[url of repo to add to or update in cache]')
@@ -203,130 +379,19 @@ def CMDpopulate(parser, args):
                     help='Don\'t bootstrap from Google Storage')
 
   options, args = parser.parse_args(args)
-  if options.shallow and not options.depth:
-    options.depth = 10000
   if not len(args) == 1:
     parser.error('git cache populate only takes exactly one repo url.')
   url = args[0]
 
-  gclient_utils.safe_makedirs(options.cache_dir)
-  repo_dir = os.path.join(options.cache_dir, UrlToCacheDir(url))
-
-  v = []
-  filter_fn = lambda l: '[up to date]' not in l
-  if options.verbose:
-    v = ['-v', '--progress']
-    filter_fn = None
-
-  d = []
+  mirror = Mirror(url, refs=options.ref)
+  kwargs = {
+      'verbose': options.verbose,
+      'shallow': options.shallow,
+      'bootstrap': not options.no_bootstrap,
+  }
   if options.depth:
-    d = ['--depth', '%d' % options.depth]
-
-  def _find(executable):
-    """This mimics the "which" utility."""
-    path_folders = os.environ.get('PATH').split(os.pathsep)
-
-    for path_folder in path_folders:
-      target = os.path.join(path_folder, executable)
-      # Just incase we have some ~/blah paths.
-      target = os.path.abspath(os.path.expanduser(target))
-      if os.path.isfile(target) and os.access(target, os.X_OK):
-        return target
-    return False
-
-  def _maybe_bootstrap_repo(directory):
-    """Bootstrap the repo from Google Stroage if possible.
-
-    Requires 7z on Windows and Unzip on Linux/Mac.
-    """
-    if options.no_bootstrap:
-      return False
-    if sys.platform.startswith('win'):
-      if not _find('7z'):
-        print 'Cannot find 7z in the path.'
-        print 'If you want git cache to be able to bootstrap from '
-        print 'Google Storage, please install 7z from:'
-        print 'http://www.7-zip.org/download.html'
-        return False
-    else:
-      if not _find('unzip'):
-        print 'Cannot find unzip in the path.'
-        print 'If you want git cache to be able to bootstrap from '
-        print 'Google Storage, please ensure unzip is present on your system.'
-        return False
-
-    folder = UrlToCacheDir(url)
-    gs_folder = 'gs://%s/%s' % (BOOTSTRAP_BUCKET, folder)
-    gsutil = Gsutil(GSUTIL_DEFAULT_PATH, boto_path=os.devnull,
-                    bypass_prodaccess=True)
-    # Get the most recent version of the zipfile.
-    _, ls_out, _ = gsutil.check_call('ls', gs_folder)
-    ls_out_sorted = sorted(ls_out.splitlines())
-    if not ls_out_sorted:
-      # This repo is not on Google Storage.
-      return False
-    latest_checkout = ls_out_sorted[-1]
-
-    # Download zip file to a temporary directory.
-    tempdir = tempfile.mkdtemp()
-    print 'Downloading %s...' % latest_checkout
-    code, out, err = gsutil.check_call('cp', latest_checkout, tempdir)
-    if code:
-      print '%s\n%s' % (out, err)
-      return False
-    filename = os.path.join(tempdir, latest_checkout.split('/')[-1])
-
-    # Unpack the file with 7z on Windows, or unzip everywhere else.
-    if sys.platform.startswith('win'):
-      cmd = ['7z', 'x', '-o%s' % directory, '-tzip', filename]
-    else:
-      cmd = ['unzip', filename, '-d', directory]
-    retcode = subprocess.call(cmd)
-
-    # Clean up the downloaded zipfile.
-    gclient_utils.rmtree(tempdir)
-    if retcode:
-      print 'Extracting bootstrap zipfile %s failed.' % filename
-      print 'Resuming normal operations'
-      return False
-    return True
-
-  def _config(directory):
-    RunGit(['config', 'core.deltaBaseCacheLimit',
-            gclient_utils.DefaultDeltaBaseCacheLimit()], cwd=directory)
-    RunGit(['config', 'remote.origin.url', url],
-           cwd=directory)
-    RunGit(['config', '--replace-all', 'remote.origin.fetch',
-            '+refs/heads/*:refs/heads/*'],
-           cwd=directory)
-    RunGit(['config', '--add', 'remote.origin.fetch',
-            '+refs/tags/*:refs/tags/*'],
-           cwd=directory)
-    for ref in options.ref or []:
-      ref = ref.rstrip('/')
-      refspec = '+refs/%s/*:refs/%s/*' % (ref, ref)
-      RunGit(['config', '--add', 'remote.origin.fetch', refspec],
-             cwd=directory)
-
-  with Lockfile(repo_dir):
-    # Setup from scratch if the repo is new or is in a bad state.
-    if not os.path.exists(os.path.join(repo_dir, 'config')):
-      gclient_utils.rmtree(repo_dir)
-      tempdir = tempfile.mkdtemp(suffix=UrlToCacheDir(url),
-                                 dir=options.cache_dir)
-      bootstrapped = _maybe_bootstrap_repo(tempdir)
-      if not bootstrapped:
-        RunGit(['init', '--bare'], cwd=tempdir)
-      _config(tempdir)
-      fetch_cmd = ['fetch'] + v + d + ['origin']
-      RunGit(fetch_cmd, filter_fn=filter_fn, cwd=tempdir, retry=True)
-      os.rename(tempdir, repo_dir)
-    else:
-      _config(repo_dir)
-      if options.depth and os.path.exists(os.path.join(repo_dir, 'shallow')):
-        logging.warn('Shallow fetch requested, but repo cache already exists.')
-      fetch_cmd = ['fetch'] + v + ['origin']
-      RunGit(fetch_cmd, filter_fn=filter_fn, cwd=repo_dir, retry=True)
+    kwargs['depth'] = options.depth
+  mirror.populate(**kwargs)
 
 
 @subcommand.usage('[url of repo to unlock, or -a|--all]')
@@ -340,20 +405,22 @@ def CMDunlock(parser, args):
   if len(args) > 1 or (len(args) == 0 and not options.all):
     parser.error('git cache unlock takes exactly one repo url, or --all')
 
+  repo_dirs = []
   if not options.all:
     url = args[0]
-    repo_dirs = [os.path.join(options.cache_dir, UrlToCacheDir(url))]
+    repo_dirs.append(Mirror(url).mirror_path)
   else:
-    repo_dirs = [os.path.join(options.cache_dir, path)
-                 for path in os.listdir(options.cache_dir)
-                 if os.path.isdir(os.path.join(options.cache_dir, path))]
-    repo_dirs.extend([os.path.join(options.cache_dir,
+    cachepath = Mirror.GetCachePath()
+    repo_dirs = [os.path.join(cachepath, path)
+                 for path in os.listdir(cachepath)
+                 if os.path.isdir(os.path.join(cachepath, path))]
+    repo_dirs.extend([os.path.join(cachepath,
                                    lockfile.replace('.lock', ''))
-                      for lockfile in os.listdir(options.cache_dir)
-                      if os.path.isfile(os.path.join(options.cache_dir,
+                      for lockfile in os.listdir(cachepath)
+                      if os.path.isfile(os.path.join(cachepath,
                                                      lockfile))
                       and lockfile.endswith('.lock')
-                      and os.path.join(options.cache_dir, lockfile)
+                      and os.path.join(cachepath, lockfile)
                           not in repo_dirs])
   lockfiles = [repo_dir + '.lock' for repo_dir in repo_dirs
                if os.path.exists(repo_dir + '.lock')]
@@ -363,8 +430,8 @@ def CMDunlock(parser, args):
                  'Refusing to unlock the following repo caches: '
                  ', '.join(lockfiles))
 
-  unlocked = []
-  untouched = []
+  unlocked_repos = []
+  untouched_repos = []
   for repo_dir in repo_dirs:
     lf = Lockfile(repo_dir)
     config_lock = os.path.join(repo_dir, 'config.lock')
@@ -376,14 +443,16 @@ def CMDunlock(parser, args):
       unlocked = True
 
     if unlocked:
-      unlocked.append(repo_dir)
+      unlocked_repos.append(repo_dir)
     else:
-      untouched.append(repo_dir)
+      untouched_repos.append(repo_dir)
 
-  if unlocked:
-    logging.info('Broke locks on these caches: %s' % unlocked)
-  if untouched:
-    logging.debug('Did not touch these caches: %s' % untouched)
+  if unlocked_repos:
+    logging.info('Broke locks on these caches:\n  %s' % '\n  '.join(
+        unlocked_repos))
+  if untouched_repos:
+    logging.debug('Did not touch these caches:\n %s' % '\n  '.join(
+        untouched_repos))
 
 
 class OptionParser(optparse.OptionParser):
@@ -400,20 +469,15 @@ class OptionParser(optparse.OptionParser):
     options, args = optparse.OptionParser.parse_args(self, args, values)
 
     try:
-      global_cache_dir = subprocess.check_output(
-          [GIT_EXECUTABLE, 'config', '--global', 'cache.cachepath']).strip()
-      if options.cache_dir:
-        if global_cache_dir and (
-            os.path.abspath(options.cache_dir) !=
-            os.path.abspath(global_cache_dir)):
-          logging.warn('Overriding globally-configured cache directory.')
-      else:
-        options.cache_dir = global_cache_dir
-    except subprocess.CalledProcessError:
-      if not options.cache_dir:
-        self.error('No cache directory specified on command line '
-                   'or in cache.cachepath.')
-    options.cache_dir = os.path.abspath(options.cache_dir)
+      global_cache_dir = Mirror.GetCachePath()
+    except RuntimeError:
+      global_cache_dir = None
+    if options.cache_dir:
+      if global_cache_dir and (
+          os.path.abspath(options.cache_dir) !=
+          os.path.abspath(global_cache_dir)):
+        logging.warn('Overriding globally-configured cache directory.')
+      Mirror.SetCachePath(options.cache_dir)
 
     levels = [logging.WARNING, logging.INFO, logging.DEBUG]
     logging.basicConfig(level=levels[min(options.verbose, len(levels) - 1)])
