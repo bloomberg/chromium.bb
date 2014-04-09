@@ -153,7 +153,7 @@ class LoadObserver : public RenderViewObserver {
       : RenderViewObserver(render_view),
         quit_closure_(quit_closure) {}
 
-  virtual void DidFinishLoad(blink::WebFrame* frame) OVERRIDE {
+  virtual void DidFinishLoad(blink::WebLocalFrame* frame) OVERRIDE {
     if (frame == render_view()->GetWebView()->mainFrame())
       quit_closure_.Run();
   }
@@ -279,7 +279,7 @@ class DomSerializerTests : public ContentBrowserTest,
     WebVector<WebString> local_paths;
     local_paths.assign(&file_path, 1);
     // Start serializing DOM.
-    bool result = WebPageSerializer::serialize(web_frame,
+    bool result = WebPageSerializer::serialize(web_frame->toWebLocalFrame(),
        recursive_serialization,
        static_cast<WebPageSerializerClient*>(this),
        links,

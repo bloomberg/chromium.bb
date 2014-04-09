@@ -73,6 +73,7 @@
 
 using blink::WebFrame;
 using blink::WebInputEvent;
+using blink::WebLocalFrame;
 using blink::WebMouseEvent;
 using blink::WebRuntimeFeatures;
 using blink::WebString;
@@ -502,7 +503,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
   policy = static_cast<RenderFrameImpl*>(new_view->GetMainRenderFrame())->
       decidePolicyForNavigation(
-          new_web_view->mainFrame(),
+          new_web_view->mainFrame()->toWebLocalFrame(),
           &state,
           popup_request,
           blink::WebNavigationTypeLinkClicked,
@@ -1560,7 +1561,7 @@ TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
   error.domain = WebString::fromUTF8(net::kErrorDomain);
   error.reason = net::ERR_FILE_NOT_FOUND;
   error.unreachableURL = GURL("http://foo");
-  WebFrame* web_frame = GetMainFrame();
+  WebLocalFrame* web_frame = GetMainFrame();
 
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
@@ -1582,7 +1583,7 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   error.domain = WebString::fromUTF8(net::kErrorDomain);
   error.reason = net::ERR_ABORTED;
   error.unreachableURL = GURL("http://foo");
-  WebFrame* web_frame = GetMainFrame();
+  WebLocalFrame* web_frame = GetMainFrame();
 
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
@@ -2116,7 +2117,7 @@ TEST_F(SuppressErrorPageTest, MAYBE_Suppresses) {
   error.domain = WebString::fromUTF8(net::kErrorDomain);
   error.reason = net::ERR_FILE_NOT_FOUND;
   error.unreachableURL = GURL("http://example.com/suppress");
-  WebFrame* web_frame = GetMainFrame();
+  WebLocalFrame* web_frame = GetMainFrame();
 
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
@@ -2145,7 +2146,7 @@ TEST_F(SuppressErrorPageTest, MAYBE_DoesNotSuppress) {
   error.domain = WebString::fromUTF8(net::kErrorDomain);
   error.reason = net::ERR_FILE_NOT_FOUND;
   error.unreachableURL = GURL("http://example.com/dont-suppress");
-  WebFrame* web_frame = GetMainFrame();
+  WebLocalFrame* web_frame = GetMainFrame();
 
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.

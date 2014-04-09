@@ -59,7 +59,7 @@ class RenderViewTest : public testing::Test {
   void ProcessPendingMessages();
 
   // Returns a pointer to the main frame.
-  blink::WebFrame* GetMainFrame();
+  blink::WebLocalFrame* GetMainFrame();
 
   // Executes the given JavaScript in the context of the main frame. The input
   // is a NULL-terminated UTF-8 string.

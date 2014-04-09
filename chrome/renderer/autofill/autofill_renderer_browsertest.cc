@@ -19,12 +19,14 @@
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 using base::ASCIIToUTF16;
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebFormElement;
 using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebInputElement;
 using blink::WebString;
 using blink::WebURLRequest;
@@ -208,7 +210,7 @@ class RequestAutocompleteRendererTest : public AutofillRendererTest {
 
     WebElement subframe = GetMainFrame()->document().getElementById("subframe");
     ASSERT_FALSE(subframe.isNull());
-    invoking_frame_ = WebFrame::fromFrameOwnerElement(subframe);
+    invoking_frame_ = WebLocalFrame::fromFrameOwnerElement(subframe);
     ASSERT_TRUE(invoking_frame());
     ASSERT_EQ(GetMainFrame(), invoking_frame()->parent());
 
@@ -244,12 +246,12 @@ class RequestAutocompleteRendererTest : public AutofillRendererTest {
   }
 
   const WebFormElement& invoking_form() const { return invoking_form_; }
-  WebFrame* invoking_frame() { return invoking_frame_; }
+  WebLocalFrame* invoking_frame() { return invoking_frame_; }
   WebFrame* sibling_frame() { return sibling_frame_; }
 
  private:
   WebFormElement invoking_form_;
-  WebFrame* invoking_frame_;
+  WebLocalFrame* invoking_frame_;
   WebFrame* sibling_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestAutocompleteRendererTest);

@@ -35,8 +35,8 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
-using blink::WebFrame;
 using blink::WebInputEvent;
+using blink::WebLocalFrame;
 using blink::WebMouseEvent;
 using blink::WebScriptSource;
 using blink::WebString;
@@ -89,8 +89,8 @@ void RenderViewTest::ProcessPendingMessages() {
   msg_loop_.Run();
 }
 
-WebFrame* RenderViewTest::GetMainFrame() {
-  return view_->GetWebView()->mainFrame();
+WebLocalFrame* RenderViewTest::GetMainFrame() {
+  return view_->GetWebView()->mainFrame()->toWebLocalFrame();
 }
 
 void RenderViewTest::ExecuteJavaScript(const char* js) {
