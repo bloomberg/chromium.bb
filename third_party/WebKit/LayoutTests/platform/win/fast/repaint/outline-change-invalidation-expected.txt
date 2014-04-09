@@ -1,0 +1,16 @@
+This test checks that an outline change is correctly repainted.
+
+There should be a 5px green outline below.
+
+Lorem Ipsum
+(repaint rects
+  (rect 30 88 762 20)
+  (rect 43 83 754 30)
+  (rect 30 88 762 20)
+  (rect 30 83 767 30)
+  (rect 8 88 784 20)
+  (rect 8 83 789 30)
+  (rect 792 16 5 97)
+  (rect 8 108 789 5)
+)
+

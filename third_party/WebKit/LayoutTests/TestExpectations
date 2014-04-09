@@ -103,14 +103,6 @@ crbug.com/346134 [ Linux ] virtual/gpu/compositedscrolling/overflow/invisible-de
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 
-crbug.com/3555983 compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ NeedsRebaseline ]
-crbug.com/3555983 virtual/gpu/compositedscrolling/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ NeedsRebaseline ]
-crbug.com/3555983 virtual/softwarecompositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ NeedsRebaseline ]
-crbug.com/3555983 fast/repaint/outline-change-invalidation.html [ NeedsRebaseline ]
-crbug.com/3555983 [ Mac ] fast/repaint/outline-clip-change.html [ NeedsRebaseline ]
-crbug.com/3555983 svg/repaint/remove-outline-property-on-root.html [ NeedsRebaseline ]
-crbug.com/3555983 svg/repaint/add-outline-property-on-root.html [ NeedsRebaseline ]
-
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
 # Temporarily marking the flaky set below as NeedsManualRebaseline, so we can grab results
 # from the bots, rebaseline, and re-mark them out as flaky.
