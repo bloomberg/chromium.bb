@@ -1121,9 +1121,6 @@ static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperati
             webFilters.appendDropShadowFilter(WebPoint(dropShadowOp.x(), dropShadowOp.y()), dropShadowOp.stdDeviation(), dropShadowOp.color().rgb());
             break;
         }
-        case FilterOperation::CUSTOM:
-        case FilterOperation::VALIDATED_CUSTOM:
-            return false; // Not supported.
         case FilterOperation::NONE:
             break;
         }

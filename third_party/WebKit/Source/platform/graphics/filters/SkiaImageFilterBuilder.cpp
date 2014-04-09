@@ -200,9 +200,6 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
             filters->appendDropShadowFilter(blink::WebPoint(drop.x(), drop.y()), drop.stdDeviation(), drop.color().rgb());
             break;
         }
-        case FilterOperation::VALIDATED_CUSTOM:
-        case FilterOperation::CUSTOM:
-            return false; // Not supported.
         case FilterOperation::NONE:
             break;
         }

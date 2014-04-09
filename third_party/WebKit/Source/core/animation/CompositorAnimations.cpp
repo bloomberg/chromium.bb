@@ -157,11 +157,6 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
                 const FilterOperations& operations = toAnimatableFilterOperations(frame->getAnimatableValue().get())->operations();
                 if (operations.hasFilterThatMovesPixels())
                     return false;
-                for (size_t i = 0; i < operations.size(); i++) {
-                    const FilterOperation& op = *operations.at(i);
-                    if (op.type() == FilterOperation::VALIDATED_CUSTOM || op.type() == FilterOperation::CUSTOM)
-                        return false;
-                }
                 break;
             }
             default:

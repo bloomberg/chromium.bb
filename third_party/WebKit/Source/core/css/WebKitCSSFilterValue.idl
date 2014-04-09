@@ -41,7 +41,6 @@
     const unsigned short CSS_FILTER_CONTRAST = 9;
     const unsigned short CSS_FILTER_BLUR = 10;
     const unsigned short CSS_FILTER_DROP_SHADOW = 11;
-    const unsigned short CSS_FILTER_CUSTOM = 12;
 
     readonly attribute unsigned short operationType;
     [ImplementedAs=item] getter CSSValue (unsigned long index);

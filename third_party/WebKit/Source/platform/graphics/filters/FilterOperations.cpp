@@ -148,12 +148,6 @@ FilterOutsets FilterOperations::outsets() const
             }
             break;
         }
-        case FilterOperation::CUSTOM:
-        case FilterOperation::VALIDATED_CUSTOM: {
-            // FIXME: Need to include the filter margins here.
-            // https://bugs.webkit.org/show_bug.cgi?id=71400
-            break;
-        }
         default:
             break;
         }

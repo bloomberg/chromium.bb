@@ -54,8 +54,6 @@ public:
         CONTRAST,
         BLUR,
         DROP_SHADOW,
-        CUSTOM,
-        VALIDATED_CUSTOM,
         NONE
     };
 
@@ -72,8 +70,6 @@ public:
         case CONTRAST:
         case BLUR:
         case DROP_SHADOW:
-        case CUSTOM:
-        case VALIDATED_CUSTOM:
             return true;
         case REFERENCE:
             return false;
