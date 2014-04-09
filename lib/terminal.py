@@ -77,4 +77,5 @@ class Color(object):
   def UserEnabled():
     """See if the global colorization preference is enabled ($NOCOLOR env)"""
     return not cros_build_lib.BooleanShellValue(
-        os.environ.get('NOCOLOR'), False, msg='$NOCOLOR env var is invalid')
+        os.environ.get('NOCOLOR'), msg='$NOCOLOR env var is invalid',
+        default=False)

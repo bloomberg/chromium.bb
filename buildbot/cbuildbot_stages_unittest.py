@@ -67,17 +67,34 @@ import mock
 MANIFEST_CONTENTS = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
-  <remote fetch="https://chromium.googlesource.com" name="cros" \
-review="chromium-review.googlesource.com"/>
+  <remote fetch="https://chromium.googlesource.com"
+          name="cros"
+          review="chromium-review.googlesource.com"/>
 
   <default remote="cros" revision="refs/heads/master" sync-j="8"/>
 
-  <project groups="minilayout,buildtools" name="chromiumos/chromite" \
-path="chromite" revision="refs/heads/special-branch"/>
-  <project name="chromiumos/special" path="src/special-new" \
-revision="new-special-branch"/>
-  <project name="chromiumos/special" path="src/special-old" \
-revision="old-special-branch"/>
+  <project groups="minilayout,buildtools"
+           name="chromiumos/chromite"
+           path="chromite"
+           revision="refs/heads/special-branch"/>
+
+  <project name="chromiumos/special"
+           path="src/special-new"
+           revision="new-special-branch"/>
+
+  <project name="chromiumos/special"
+           path="src/special-old"
+           revision="old-special-branch"/>
+
+  <project name="faraway/external"
+           path="external"
+           revision="refs/heads/master"/>
+
+  <project name="faraway/unpinned"
+           path="unpinned"
+           revision="refs/heads/master"
+           pin="False" />
+
 </manifest>"""
 
 CHROMITE_REVISION = "fb46d34d7cd4b9c167b74f494f2a99b68df50b18"
@@ -3120,8 +3137,8 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
     # the regular, user-maintained manifests.
     manifests = {
         '.repo/manifest.xml': VERSIONED_MANIFEST_CONTENTS,
-        'manifest/full.xml': MANIFEST_CONTENTS,
-        'manifest-internal/full.xml': MANIFEST_CONTENTS,
+        'manifest/default.xml': MANIFEST_CONTENTS,
+        'manifest-internal/official.xml': MANIFEST_CONTENTS,
     }
     for m_path, m_content in manifests.iteritems():
       full_path = os.path.join(self.build_root, m_path)
@@ -3181,6 +3198,10 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
     self.rc_mock.AddCmdResult(
         partial_mock.ListRegex('git show-ref .*%s' % self.RELEASE_BRANCH_NAME),
         returncode=1)
+    # SHA1 of HEAD for pinned branches.
+    self.rc_mock.AddCmdResult(
+        partial_mock.ListRegex('git rev-parse HEAD'),
+        output='12345')
 
     before = manifest_version.VersionInfo.from_repo(self.build_root)
     self.RunStage()
@@ -3189,13 +3210,16 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
     self.assertEquals(int(after.chrome_branch) - int(before.chrome_branch), 1)
     self.assertEquals(int(after.build_number) - int(before.build_number), 1)
 
-    # Verify that manifests were branched properly.
+    # Verify that manifests were branched properly. Notice that external
+    # is pinned to a SHA1, not an actual branch.
     branch_names = {
       'chromite': self.norm_name,
+      'external': '12345',
       'src/special-new': self.norm_name + '-new-special-branch',
       'src/special-old': self.norm_name + '-old-special-branch',
+      'unpinned': 'refs/heads/master',
     }
-    for m in ['manifest/full.xml', 'manifest-internal/full.xml']:
+    for m in ['manifest/default.xml', 'manifest-internal/official.xml']:
       manifest = git.Manifest(os.path.join(self.build_root, m))
       for project_data in manifest.checkouts_by_path.itervalues():
         branch_name = branch_names[project_data['path']]

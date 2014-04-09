@@ -2048,6 +2048,8 @@ class BranchUtilStage(bs.BuilderStage):
     new_branch_name = self.rename_to if self.rename_to else self.branch_name
     new_branch_name = git.NormalizeRef(new_branch_name)
 
+    cros_build_lib.Info('Updating manifest for %s', new_branch_name)
+
     for node in root.findall('project'):
       path = node.attrib['path']
       checkout = src_manifest.FindCheckoutFromPath(path)
@@ -2058,9 +2060,23 @@ class BranchUtilStage(bs.BuilderStage):
         suffix = self._GetBranchSuffix(src_manifest, checkout)
         if suffix:
           node.attrib['revision'] = '%s%s' % (new_branch_name, suffix)
+          cros_build_lib.Info('Pointing project %s at: %s',
+                              node.attrib['name'], node.attrib['revision'])
       else:
-        # We can't branch this repository. Just use TOT of the repository.
-        node.attrib['revision'] = checkout['revision']
+        # Set this tag to any string to avoid pinning to a SHA1 on branch.
+        if cros_build_lib.BooleanShellValue(node.get('pin'), True):
+          git_repo = checkout.GetPath(absolute=True)
+          repo_head = git.GetGitRepoRevision(git_repo)
+          node.attrib['revision'] = repo_head
+          cros_build_lib.Info('Pinning project %s at: %s',
+                              node.attrib['name'], node.attrib['revision'])
+        else:
+          cros_build_lib.Info('Updating project %s', node.attrib['name'])
+          # We can't branch this repository. Leave it alone.
+          node.attrib['revision'] = checkout['revision']
+          cros_build_lib.Info('Project %s UNPINNED using: %s',
+                              node.attrib['name'], node.attrib['revision'])
+
         # Can not use the default version of get() here since
         # 'upstream' can be a valid key with a None value.
         upstream = checkout.get('upstream')
@@ -2071,6 +2087,7 @@ class BranchUtilStage(bs.BuilderStage):
       node.attrib['revision'] = new_branch_name
 
     doc.write(manifest_path)
+    return [node.attrib['name'] for node in root.findall('include')]
 
   def _FixUpManifests(self, repo_manifest):
     """Points the checkouts at the new branch in the manifests.
@@ -2098,12 +2115,29 @@ class BranchUtilStage(bs.BuilderStage):
       git.CreateBranch(
           manifest_dir, manifest_version.PUSH_BRANCH, src_ref)
 
-      # Look for all manifest files in manifest_dir.
-      for manifest_path in glob.glob(os.path.join(manifest_dir, '*.xml')):
-        # Accept only non-symlink xml files directly in manifest_dir.
-        if not os.path.islink(manifest_path):
-          cros_build_lib.Debug('Fixing manifest at %s.', manifest_path)
-          self._UpdateManifest(manifest_path)
+      # We want to process default.xml and official.xml + their imports.
+      pending_manifests = [constants.DEFAULT_MANIFEST,
+                           constants.OFFICIAL_MANIFEST]
+      processed_manifests = []
+
+      while pending_manifests:
+        # Canonicalize the manifest name (resolve dir and symlinks).
+        manifest_path = os.path.join(manifest_dir, pending_manifests.pop())
+        manifest_path = os.path.realpath(manifest_path)
+
+        # Don't process a manifest more than once.
+        if manifest_path in processed_manifests:
+          continue
+
+        processed_manifests.append(manifest_path)
+
+        if not os.path.exists(manifest_path):
+          cros_build_lib.Info('Manifest not found: %s', manifest_path)
+          continue
+
+        cros_build_lib.Debug('Fixing manifest at %s.', manifest_path)
+        included_manifests = self._UpdateManifest(manifest_path)
+        pending_manifests += included_manifests
 
       git.RunGit(manifest_dir, ['add', '-A'], print_cmd=True)
       message = 'Fix up manifest after branching %s.' % branch_ref
