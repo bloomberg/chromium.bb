@@ -171,7 +171,10 @@ syncer::SyncDataList GenericChangeProcessor::GetAllSyncData(
 
 syncer::SyncError GenericChangeProcessor::UpdateDataTypeContext(
     syncer::ModelType type,
+    syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
     const std::string& context) {
+  DCHECK(syncer::ProtocolTypes().Has(type));
+
   if (context.size() > static_cast<size_t>(kContextSizeLimit)) {
     return syncer::SyncError(FROM_HERE,
                              syncer::SyncError::DATATYPE_ERROR,
@@ -180,10 +183,11 @@ syncer::SyncError GenericChangeProcessor::UpdateDataTypeContext(
   }
 
   syncer::WriteTransaction trans(FROM_HERE, share_handle());
-  trans.SetDataTypeContext(type, context);
+  trans.SetDataTypeContext(type, refresh_status, context);
 
-  // TODO(zea): consider forcing a nudge? For we'll just use the context on
-  // the next organically triggered sync cycle.
+  // TODO(zea): plumb a pointer to the PSS or SyncManagerImpl here so we can
+  // trigger a datatype nudge if |refresh_status == REFRESH_NEEDED|.
+
   return syncer::SyncError();
 }
 

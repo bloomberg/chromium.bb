@@ -87,8 +87,10 @@ class SharedChangeProcessor
   virtual syncer::SyncError GetAllSyncDataReturnError(
       syncer::ModelType type,
       syncer::SyncDataList* data) const;
-  virtual syncer::SyncError UpdateDataTypeContext(syncer::ModelType type,
-                                                  const std::string& context);
+  virtual syncer::SyncError UpdateDataTypeContext(
+      syncer::ModelType type,
+      syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
+      const std::string& context);
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
   virtual bool CryptoReadyIfNecessary();
 

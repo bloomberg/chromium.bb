@@ -1053,6 +1053,66 @@ TEST_F(SyncerTest, TestPurgeWithJournal) {
   }
 }
 
+TEST_F(SyncerTest, ResetVersions) {
+  // Download the top level pref node and some pref items.
+  mock_server_->AddUpdateDirectory(
+      parent_id_, root_id_, "prefs", 1, 10, std::string(), std::string());
+  mock_server_->SetLastUpdateServerTag(ModelTypeToRootTag(PREFERENCES));
+  mock_server_->AddUpdatePref("id1", parent_id_.GetServerId(), "tag1", 20, 20);
+  mock_server_->AddUpdatePref("id2", parent_id_.GetServerId(), "tag2", 30, 30);
+  mock_server_->AddUpdatePref("id3", parent_id_.GetServerId(), "tag3", 40, 40);
+  SyncShareNudge();
+
+  {
+    // Modify one of the preferences locally, mark another one as unapplied,
+    // and create another unsynced preference.
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
+    MutableEntry entry(&wtrans, GET_BY_CLIENT_TAG, "tag1");
+    entry.PutIsUnsynced(true);
+
+    MutableEntry entry2(&wtrans, GET_BY_CLIENT_TAG, "tag2");
+    entry2.PutIsUnappliedUpdate(true);
+
+    MutableEntry entry4(&wtrans, CREATE, PREFERENCES, parent_id_, "name");
+    entry4.PutUniqueClientTag("tag4");
+    entry4.PutIsUnsynced(true);
+  }
+
+  {
+    // Reset the versions.
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
+    ASSERT_TRUE(directory()->ResetVersionsForType(&wtrans, PREFERENCES));
+  }
+
+  {
+    // Verify the synced items are all with version 1 now, with
+    // unsynced/unapplied state preserved.
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry entry(&trans, GET_BY_CLIENT_TAG, "tag1");
+    EXPECT_EQ(1, entry.GetBaseVersion());
+    EXPECT_EQ(1, entry.GetServerVersion());
+    EXPECT_TRUE(entry.GetIsUnsynced());
+    EXPECT_FALSE(entry.GetIsUnappliedUpdate());
+    Entry entry2(&trans, GET_BY_CLIENT_TAG, "tag2");
+    EXPECT_EQ(1, entry2.GetBaseVersion());
+    EXPECT_EQ(1, entry2.GetServerVersion());
+    EXPECT_FALSE(entry2.GetIsUnsynced());
+    EXPECT_TRUE(entry2.GetIsUnappliedUpdate());
+    Entry entry3(&trans, GET_BY_CLIENT_TAG, "tag3");
+    EXPECT_EQ(1, entry3.GetBaseVersion());
+    EXPECT_EQ(1, entry3.GetServerVersion());
+    EXPECT_FALSE(entry3.GetIsUnsynced());
+    EXPECT_FALSE(entry3.GetIsUnappliedUpdate());
+
+    // Entry 4 (the locally created one) should remain the same.
+    Entry entry4(&trans, GET_BY_CLIENT_TAG, "tag4");
+    EXPECT_EQ(-1, entry4.GetBaseVersion());
+    EXPECT_EQ(0, entry4.GetServerVersion());
+    EXPECT_TRUE(entry4.GetIsUnsynced());
+    EXPECT_FALSE(entry4.GetIsUnappliedUpdate());
+  }
+}
+
 TEST_F(SyncerTest, TestCommitListOrderingTwoItemsTall) {
   CommitOrderingTest items[] = {
     {1, ids_.FromNumber(-1001), ids_.FromNumber(-1000)},

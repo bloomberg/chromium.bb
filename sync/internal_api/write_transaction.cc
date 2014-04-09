@@ -37,8 +37,12 @@ syncable::BaseTransaction* WriteTransaction::GetWrappedTrans() const {
   return transaction_;
 }
 
-void WriteTransaction::SetDataTypeContext(ModelType type,
-                                          const std::string& context) {
+void WriteTransaction::SetDataTypeContext(
+    ModelType type,
+    syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
+    const std::string& context) {
+  DCHECK(ProtocolTypes().Has(type));
+  int field_number = GetSpecificsFieldNumberFromModelType(type);
   sync_pb::DataTypeContext local_context;
   GetDirectory()->GetDataTypeContext(transaction_,
                                      type,
@@ -46,18 +50,34 @@ void WriteTransaction::SetDataTypeContext(ModelType type,
   if (local_context.context() == context)
     return;
 
-  if (!local_context.has_data_type_id()) {
-    local_context.set_data_type_id(
-        syncer::GetSpecificsFieldNumberFromModelType(type));
-  }
-  DCHECK_EQ(syncer::GetSpecificsFieldNumberFromModelType(type),
-            local_context.data_type_id());
+  if (!local_context.has_data_type_id())
+    local_context.set_data_type_id(field_number);
+
+  DCHECK_EQ(field_number, local_context.data_type_id());
   DCHECK_GE(local_context.version(), 0);
   local_context.set_version(local_context.version() + 1);
   local_context.set_context(context);
   GetDirectory()->SetDataTypeContext(transaction_,
                                      type,
                                      local_context);
+  if (refresh_status == syncer::SyncChangeProcessor::REFRESH_NEEDED) {
+    DVLOG(1) << "Forcing refresh of type " << ModelTypeToString(type);
+    // Clear the progress token from the progress markers. Preserve all other
+    // state, in case a GC directive was present.
+    sync_pb::DataTypeProgressMarker progress_marker;
+    GetDirectory()->GetDownloadProgress(type, &progress_marker);
+    progress_marker.clear_token();
+    GetDirectory()->SetDownloadProgress(type, progress_marker);
+
+    // Go through and reset the versions for all the synced entities of this
+    // data type.
+    GetDirectory()->ResetVersionsForType(transaction_, type);
+  }
+
+  // Note that it's possible for a GetUpdatesResponse that arrives immediately
+  // after the context update to override the cleared progress markers.
+  // TODO(zea): add a flag in the directory to prevent this from happening.
+  // See crbug.com/360280
 }
 
 }  // namespace syncer

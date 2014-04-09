@@ -27,8 +27,10 @@ syncer::SyncDataList SharedChangeProcessorRef::GetAllSyncData(
 
 syncer::SyncError SharedChangeProcessorRef::UpdateDataTypeContext(
     syncer::ModelType type,
+    syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
     const std::string& context) {
-  return change_processor_->UpdateDataTypeContext(type, context);
+  return change_processor_->UpdateDataTypeContext(
+      type, refresh_status, context);
 }
 
 syncer::SyncError SharedChangeProcessorRef::CreateAndUploadError(

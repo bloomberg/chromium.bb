@@ -31,6 +31,7 @@ class SharedChangeProcessorRef : public syncer::SyncChangeProcessor,
       syncer::ModelType type) const OVERRIDE;
   virtual syncer::SyncError UpdateDataTypeContext(
       syncer::ModelType type,
+      syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
       const std::string& context) OVERRIDE;
 
   // syncer::SyncErrorFactory implementation.

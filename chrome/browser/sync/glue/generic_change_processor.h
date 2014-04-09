@@ -70,6 +70,7 @@ class GenericChangeProcessor : public ChangeProcessor,
       const OVERRIDE;
   virtual syncer::SyncError UpdateDataTypeContext(
       syncer::ModelType type,
+      syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
       const std::string& context) OVERRIDE;
 
   // Similar to above, but returns a SyncError for use by direct clients

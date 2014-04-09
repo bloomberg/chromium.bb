@@ -144,6 +144,7 @@ syncer::SyncError SharedChangeProcessor::GetAllSyncDataReturnError(
 
 syncer::SyncError SharedChangeProcessor::UpdateDataTypeContext(
     syncer::ModelType type,
+    syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
     const std::string& context) {
   DCHECK(backend_loop_.get());
   DCHECK(backend_loop_->BelongsToCurrentThread());
@@ -155,7 +156,8 @@ syncer::SyncError SharedChangeProcessor::UpdateDataTypeContext(
                             type_);
     return error;
   }
-  return generic_change_processor_->UpdateDataTypeContext(type, context);
+  return generic_change_processor_->UpdateDataTypeContext(
+      type, refresh_status, context);
 }
 
 bool SharedChangeProcessor::SyncModelHasUserCreatedNodes(bool* has_nodes) {

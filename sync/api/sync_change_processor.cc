@@ -12,6 +12,7 @@ SyncChangeProcessor::~SyncChangeProcessor() {}
 
 syncer::SyncError SyncChangeProcessor::UpdateDataTypeContext(
     ModelType type,
+    syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
     const std::string& context) {
   // Do nothing.
   return syncer::SyncError();

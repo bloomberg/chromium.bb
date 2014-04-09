@@ -378,6 +378,11 @@ class SYNC_EXPORT Directory {
                                       ModelTypeSet types_to_journal,
                                       ModelTypeSet types_to_unapply);
 
+  // Resets the base_versions and server_versions of all synced entities
+  // associated with |type| to 1.
+  // WARNING! This can be slow, as it iterates over all entries for a type.
+  bool ResetVersionsForType(BaseWriteTransaction* trans, ModelType type);
+
  protected:  // for friends, mainly used by Entry constructors
   virtual EntryKernel* GetEntryByHandle(int64 handle);
   virtual EntryKernel* GetEntryByHandle(int64 metahandle,

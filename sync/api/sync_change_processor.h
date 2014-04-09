@@ -25,6 +25,8 @@ typedef std::vector<SyncChange> SyncChangeList;
 // An interface for services that handle receiving SyncChanges.
 class SYNC_EXPORT SyncChangeProcessor {
  public:
+  // Whether a context change should force a datatype refresh or not.
+  enum ContextRefreshStatus { NO_REFRESH, REFRESH_NEEDED };
   typedef base::Callback<void(const SyncData&)> GetSyncDataCallback;
 
   SyncChangeProcessor();
@@ -64,11 +66,15 @@ class SYNC_EXPORT SyncChangeProcessor {
                            const std::string& sync_tag,
                            const GetSyncDataCallback& callback) const {}
 
-  // Updates the context for |type|. Default implementation does nothing.
-  // A type's context is a per-client blob that can affect all SyncData
-  // sent to/from the server, much like a cookie.
-  virtual syncer::SyncError UpdateDataTypeContext(ModelType type,
-                                                  const std::string& context);
+  // Updates the context for |type|, triggering an optional context refresh.
+  // Default implementation does nothing. A type's context is a per-client blob
+  // that can affect all SyncData sent to/from the server, much like a cookie.
+  // TODO(zea): consider pulling the refresh logic into a separate method
+  // unrelated to datatype implementations.
+  virtual syncer::SyncError UpdateDataTypeContext(
+      ModelType type,
+      ContextRefreshStatus refresh_status,
+      const std::string& context);
 };
 
 }  // namespace syncer
