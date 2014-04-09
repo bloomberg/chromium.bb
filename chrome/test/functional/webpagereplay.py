@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -19,7 +20,7 @@ import urllib
 
 
 _CHROME_SRC_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir))
+    os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
 REPLAY_DIR = os.path.join(
     _CHROME_SRC_DIR, 'third_party', 'webpagereplay')
 LOG_PATH = os.path.join(
@@ -53,7 +54,6 @@ class ReplayError(Exception):
 
 class ReplayNotFoundError(ReplayError):
   def __init__(self, label, path):
-    super(ReplayNotFoundError, self).__init__()
     self.args = (label, path)
 
   def __str__(self):
