@@ -458,20 +458,6 @@ void RenderWidgetFullscreenPepper::Close() {
   RenderWidget::Close();
 }
 
-PepperPluginInstanceImpl*
-    RenderWidgetFullscreenPepper::GetBitmapForOptimizedPluginPaint(
-        const gfx::Rect& paint_bounds,
-        TransportDIB** dib,
-        gfx::Rect* location,
-        gfx::Rect* clip,
-        float* scale_factor) {
-  if (plugin_ && plugin_->GetBitmapForOptimizedPluginPaint(
-          paint_bounds, dib, location, clip, scale_factor)) {
-    return plugin_;
-  }
-  return NULL;
-}
-
 void RenderWidgetFullscreenPepper::OnResize(
     const ViewMsg_Resize_Params& params) {
   if (layer_)

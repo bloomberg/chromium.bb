@@ -674,12 +674,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void OnResize(const ViewMsg_Resize_Params& params) OVERRIDE;
   virtual void DidInitiatePaint() OVERRIDE;
   virtual void DidFlushPaint() OVERRIDE;
-  virtual PepperPluginInstanceImpl* GetBitmapForOptimizedPluginPaint(
-      const gfx::Rect& paint_bounds,
-      TransportDIB** dib,
-      gfx::Rect* location,
-      gfx::Rect* clip,
-      float* scale_factor) OVERRIDE;
   virtual gfx::Vector2d GetScrollOffset() OVERRIDE;
   virtual void DidHandleKeyEvent() OVERRIDE;
   virtual void WillProcessUserGesture() OVERRIDE;

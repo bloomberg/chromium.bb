@@ -220,17 +220,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
 
-  // If this plugin can be painted merely by copying the backing store to the
-  // screen, and the plugin bounds encloses the given paint bounds, returns
-  // true. In this case, the location, clipping, and ID of the backing store
-  // will be filled into the given output parameters.
-  bool GetBitmapForOptimizedPluginPaint(
-      const gfx::Rect& paint_bounds,
-      TransportDIB** dib,
-      gfx::Rect* dib_bounds,
-      gfx::Rect* clip,
-      float* scale_factor);
-
   // Tracks all live PluginObjects.
   void AddPluginObject(PluginObject* plugin_object);
   void RemovePluginObject(PluginObject* plugin_object);

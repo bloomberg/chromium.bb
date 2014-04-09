@@ -407,23 +407,6 @@ class CONTENT_EXPORT RenderWidget
 
   virtual bool ForceCompositingModeEnabled();
 
-  // Detects if a suitable opaque plugin covers the given paint bounds with no
-  // compositing necessary.
-  //
-  // Returns the plugin instance that's the source of the paint if the paint
-  // can be handled by just blitting the plugin bitmap. In this case, the
-  // location, clipping, and ID of the backing store will be filled into the
-  // given output parameters.
-  //
-  // A return value of null means optimized painting can not be used and we
-  // should continue with the normal painting code path.
-  virtual PepperPluginInstanceImpl* GetBitmapForOptimizedPluginPaint(
-      const gfx::Rect& paint_bounds,
-      TransportDIB** dib,
-      gfx::Rect* location,
-      gfx::Rect* clip,
-      float* scale_factor);
-
   // Gets the scroll offset of this widget, if this widget has a notion of
   // scroll offset.
   virtual gfx::Vector2d GetScrollOffset();

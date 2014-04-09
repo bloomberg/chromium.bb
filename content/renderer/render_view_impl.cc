@@ -3733,27 +3733,6 @@ void RenderViewImpl::DidFlushPaint() {
   }
 }
 
-PepperPluginInstanceImpl* RenderViewImpl::GetBitmapForOptimizedPluginPaint(
-    const gfx::Rect& paint_bounds,
-    TransportDIB** dib,
-    gfx::Rect* location,
-    gfx::Rect* clip,
-    float* scale_factor) {
-#if defined(ENABLE_PLUGINS)
-  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
-       i != active_pepper_instances_.end(); ++i) {
-    PepperPluginInstanceImpl* instance = *i;
-    // In Flash fullscreen , the plugin contents should be painted onto the
-    // fullscreen widget instead of the web page.
-    if (!instance->FlashIsFullscreenOrPending() &&
-        instance->GetBitmapForOptimizedPluginPaint(paint_bounds, dib, location,
-                                                   clip, scale_factor))
-      return *i;
-  }
-#endif
-  return NULL;
-}
-
 gfx::Vector2d RenderViewImpl::GetScrollOffset() {
   WebSize scroll_offset = webview()->mainFrame()->scrollOffset();
   return gfx::Vector2d(scroll_offset.width, scroll_offset.height);

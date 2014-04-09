@@ -1227,65 +1227,6 @@ void PepperPluginInstanceImpl::ViewFlushedPaint() {
     bound_graphics_3d_->ViewFlushedPaint();
 }
 
-bool PepperPluginInstanceImpl::GetBitmapForOptimizedPluginPaint(
-    const gfx::Rect& paint_bounds,
-    TransportDIB** dib,
-    gfx::Rect* location,
-    gfx::Rect* clip,
-    float* scale_factor) {
-  if (!always_on_top_)
-    return false;
-  if (!bound_graphics_2d_platform_ ||
-      !bound_graphics_2d_platform_->IsAlwaysOpaque()) {
-    return false;
-  }
-
-  // We specifically want to compare against the area covered by the backing
-  // store when seeing if we cover the given paint bounds, since the backing
-  // store could be smaller than the declared plugin area.
-  PPB_ImageData_Impl* image_data = bound_graphics_2d_platform_->ImageData();
-  // ImageDatas created by NaCl don't have a TransportDIB, so can't be
-  // optimized this way.
-  if (!image_data->GetTransportDIB())
-    return false;
-
-  gfx::Point plugin_origin = PP_ToGfxPoint(view_data_.rect.point);
-  gfx::Vector2d plugin_offset = plugin_origin.OffsetFromOrigin();
-  // Convert |paint_bounds| to be relative to the left-top corner of the plugin.
-  gfx::Rect relative_paint_bounds(paint_bounds);
-  relative_paint_bounds.Offset(-plugin_offset);
-
-  gfx::Rect pixel_plugin_backing_store_rect(
-      0, 0, image_data->width(), image_data->height());
-  float scale = bound_graphics_2d_platform_->GetScale();
-  gfx::Rect plugin_backing_store_rect = gfx::ToEnclosedRect(
-      gfx::ScaleRect(pixel_plugin_backing_store_rect, scale));
-
-  gfx::Rect clip_page = PP_ToGfxRect(view_data_.clip_rect);
-  gfx::Rect plugin_paint_rect =
-      gfx::IntersectRects(plugin_backing_store_rect, clip_page);
-  if (!plugin_paint_rect.Contains(relative_paint_bounds))
-    return false;
-
-  // Don't do optimized painting if the area to paint intersects with the
-  // cut-out rects, otherwise we will paint over them.
-  for (std::vector<gfx::Rect>::const_iterator iter = cut_outs_rects_.begin();
-       iter != cut_outs_rects_.end(); ++iter) {
-    if (relative_paint_bounds.Intersects(*iter))
-      return false;
-  }
-
-  *dib = image_data->GetTransportDIB();
-  plugin_backing_store_rect.Offset(plugin_offset);
-  *location = plugin_backing_store_rect;
-  clip_page.Offset(plugin_offset);
-  *clip = clip_page;
-  // The plugin scale factor is inverted, e.g. for a device scale factor of 2x
-  // the plugin scale factor is 0.5.
-  *scale_factor = 1.0 / scale;
-  return true;
-}
-
 void PepperPluginInstanceImpl::SetSelectedText(
     const base::string16& selected_text) {
   selected_text_ = selected_text;

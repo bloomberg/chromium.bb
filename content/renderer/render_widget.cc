@@ -1305,60 +1305,22 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     canvas->restore();
   }
 
-  // First see if this rect is a plugin that can paint itself faster.
-  TransportDIB* optimized_dib = NULL;
-  gfx::Rect optimized_copy_rect, optimized_copy_location;
-  float dib_scale_factor;
-  PepperPluginInstanceImpl* optimized_instance =
-      GetBitmapForOptimizedPluginPaint(rect, &optimized_dib,
-                                       &optimized_copy_location,
-                                       &optimized_copy_rect,
-                                       &dib_scale_factor);
-  if (optimized_instance) {
-#if defined(ENABLE_PLUGINS)
-    // This plugin can be optimize-painted and we can just ask it to paint
-    // itself. We don't actually need the TransportDIB in this case.
-    //
-    // This is an optimization for PPAPI plugins that know they're on top of
-    // the page content. If this rect is inside such a plugin, we can save some
-    // time and avoid re-rendering the page content which we know will be
-    // covered by the plugin later (this time can be significant, especially
-    // for a playing movie that is invalidating a lot).
-    //
-    // In the plugin movie case, hopefully the similar call to
-    // GetBitmapForOptimizedPluginPaint in DoDeferredUpdate handles the
-    // painting, because that avoids copying the plugin image to a different
-    // paint rect. Unfortunately, if anything on the page is animating other
-    // than the movie, it break this optimization since the union of the
-    // invalid regions will be larger than the plugin.
-    //
-    // This code optimizes that case, where we can still avoid painting in
-    // WebKit and filling the background (which can be slow) and just painting
-    // the plugin. Unlike the DoDeferredUpdate case, an extra copy is still
-    // required.
-    SkAutoCanvasRestore auto_restore(canvas, true);
-    canvas->scale(device_scale_factor_, device_scale_factor_);
-    optimized_instance->Paint(canvas, optimized_copy_location, rect);
-    canvas->restore();
-#endif
-  } else {
-    // Normal painting case.
-    base::TimeTicks start_time;
-    if (!is_accelerated_compositing_active_)
-      start_time = legacy_software_mode_stats_->StartRecording();
+  // Normal painting case.
+  base::TimeTicks start_time;
+  if (!is_accelerated_compositing_active_)
+    start_time = legacy_software_mode_stats_->StartRecording();
 
-    webwidget_->paint(canvas, rect);
+  webwidget_->paint(canvas, rect);
 
-    if (!is_accelerated_compositing_active_) {
-      base::TimeDelta paint_time =
-          legacy_software_mode_stats_->EndRecording(start_time);
-      int64 painted_pixel_count = rect.width() * rect.height();
-      legacy_software_mode_stats_->AddPaint(paint_time, painted_pixel_count);
-    }
-
-    // Flush to underlying bitmap.  TODO(darin): is this needed?
-    skia::GetTopDevice(*canvas)->accessBitmap(false);
+  if (!is_accelerated_compositing_active_) {
+    base::TimeDelta paint_time =
+        legacy_software_mode_stats_->EndRecording(start_time);
+    int64 painted_pixel_count = rect.width() * rect.height();
+    legacy_software_mode_stats_->AddPaint(paint_time, painted_pixel_count);
   }
+
+  // Flush to underlying bitmap.  TODO(darin): is this needed?
+  skia::GetTopDevice(*canvas)->accessBitmap(false);
 
   PaintDebugBorder(rect, canvas);
   canvas->restore();
@@ -1589,20 +1551,6 @@ void RenderWidget::DoDeferredUpdate() {
   gfx::Rect scroll_damage = update.GetScrollDamage();
   gfx::Rect bounds = gfx::UnionRects(update.GetPaintBounds(), scroll_damage);
 
-  // A plugin may be able to do an optimized paint. First check this, in which
-  // case we can skip all of the bitmap generation and regular paint code.
-  // This optimization allows PPAPI plugins that declare themselves on top of
-  // the page (like a traditional windowed plugin) to be able to animate (think
-  // movie playing) without repeatedly re-painting the page underneath, or
-  // copying the plugin backing store (since we can send the plugin's backing
-  // store directly to the browser).
-  //
-  // This optimization only works when the entire invalid region is contained
-  // within the plugin. There is a related optimization in PaintRect for the
-  // case where there may be multiple invalid regions.
-  TransportDIB* dib = NULL;
-  gfx::Rect optimized_copy_rect, optimized_copy_location;
-  float dib_scale_factor = 1;
   DCHECK(!pending_update_params_.get());
   pending_update_params_.reset(new ViewHostMsg_UpdateRect_Params);
   pending_update_params_->scroll_delta = update.scroll_delta;
@@ -1621,18 +1569,7 @@ void RenderWidget::DoDeferredUpdate() {
 
   latency_info_.clear();
 
-  if (update.scroll_rect.IsEmpty() &&
-      !is_accelerated_compositing_active_ &&
-      GetBitmapForOptimizedPluginPaint(bounds, &dib, &optimized_copy_location,
-                                       &optimized_copy_rect,
-                                       &dib_scale_factor)) {
-    // Only update the part of the plugin that actually changed.
-    optimized_copy_rect.Intersect(bounds);
-    pending_update_params_->bitmap = dib->id();
-    pending_update_params_->bitmap_rect = optimized_copy_location;
-    pending_update_params_->copy_rects.push_back(optimized_copy_rect);
-    pending_update_params_->scale_factor = dib_scale_factor;
-  } else if (!is_accelerated_compositing_active_) {
+  if (!is_accelerated_compositing_active_) {
     // Compute a buffer for painting and cache it.
 
     bool fractional_scale = device_scale_factor_ -
@@ -2356,16 +2293,6 @@ void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
   } else {
     scheduleComposite();
   }
-}
-
-PepperPluginInstanceImpl* RenderWidget::GetBitmapForOptimizedPluginPaint(
-    const gfx::Rect& paint_bounds,
-    TransportDIB** dib,
-    gfx::Rect* location,
-    gfx::Rect* clip,
-    float* scale_factor) {
-  // Bare RenderWidgets don't support optimized plugin painting.
-  return NULL;
 }
 
 gfx::Vector2d RenderWidget::GetScrollOffset() {
