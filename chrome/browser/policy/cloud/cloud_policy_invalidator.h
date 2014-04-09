@@ -48,6 +48,14 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // once the invalidation service starts up.
   static const int kInvalidationGracePeriod;
 
+  // Time, in seconds, for which unknown version invalidations are ignored after
+  // fetching a policy.
+  static const int kUnknownVersionIgnorePeriod;
+
+  // The max tolerated discrepancy, in seconds, between policy timestamps and
+  // invalidation timestamps when determining if an invalidation is expired.
+  static const int kMaxInvalidationTimeDelta;
+
   // |core| is the cloud policy core which connects the various policy objects.
   // It must remain valid until Shutdown is called.
   // |task_runner| is used for scheduling delayed tasks. It must post tasks to
@@ -124,9 +132,17 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // previous call.
   bool IsPolicyChanged(const enterprise_management::PolicyData* policy);
 
+  // Determine if an invalidation has expired.
+  // |version| is the version of the invalidation, or zero for unknown.
+  bool IsInvalidationExpired(int64 version);
+
   // Get the kMetricPolicyRefresh histogram metric which should be incremented
   // when a policy is stored.
   int GetPolicyRefreshMetric(bool policy_changed);
+
+  // Get the kMetricPolicyInvalidations histogram metric which should be
+  // incremented when an invalidation is received.
+  int GetInvalidationMetric(bool is_missing_payload, bool is_expired);
 
   // Determine if invalidations have been enabled longer than the grace period.
   bool GetInvalidationsEnabled();

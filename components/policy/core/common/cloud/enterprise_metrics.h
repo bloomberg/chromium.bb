@@ -192,6 +192,20 @@ enum MetricPolicyRefresh {
   METRIC_POLICY_REFRESH_SIZE  // Must be the last.
 };
 
+// Types of policy invalidations.
+enum PolicyInvalidationType {
+  // The invalidation contained no payload.
+  POLICY_INVALIDATION_TYPE_NO_PAYLOAD,
+  // A normal invalidation containing a payload.
+  POLICY_INVALIDATION_TYPE_NORMAL,
+  // The invalidation contained no payload and was considered expired.
+  POLICY_INVALIDATION_TYPE_NO_PAYLOAD_EXPIRED,
+  // The invalidation contained a payload and was considered expired.
+  POLICY_INVALIDATION_TYPE_EXPIRED,
+
+  POLICY_INVALIDATION_TYPE_SIZE  // Must be the last.
+};
+
 // Names for the UMA counters. They are shared from here since the events
 // from the same enum above can be triggered in different files, and must use
 // the same UMA histogram name.

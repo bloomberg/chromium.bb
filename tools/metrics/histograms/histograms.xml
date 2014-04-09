@@ -32295,8 +32295,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
-  <int value="0" label="No payload"/>
-  <int value="1" label="Payload"/>
+  <int value="0" label="No payload; not expired"/>
+  <int value="1" label="Payload; not expired"/>
+  <int value="2" label="No payload; expired"/>
+  <int value="3" label="Payload; expired"/>
 </enum>
 
 <enum name="EnterprisePolicyLoadStatus" type="int">

@@ -12,6 +12,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
@@ -312,10 +313,12 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, InvalidatePolicy) {
 
   // Update the homepage in the policy and trigger an invalidation.
   ASSERT_NO_FATAL_FAILURE(SetServerPolicy(GetTestPolicy("youtube.com", 0)));
+  base::TimeDelta now =
+      base::Time::NowFromSystemTime() - base::Time::UnixEpoch();
   GetInvalidationService()->EmitInvalidationForTest(
       syncer::Invalidation::Init(
           invalidation::ObjectId(16, "test_policy"),
-          1 /* version */,
+          now.InMicroseconds() /* version */,
           "payload"));
   {
     base::RunLoop run_loop;
