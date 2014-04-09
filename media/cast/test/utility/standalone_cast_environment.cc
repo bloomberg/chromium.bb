@@ -26,7 +26,6 @@ StandaloneCastEnvironment::StandaloneCastEnvironment()
                      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   CREATE_TASK_RUNNER(audio, base::Thread::Options());
   CREATE_TASK_RUNNER(video, base::Thread::Options());
-
 #undef CREATE_TASK_RUNNER
 }
 

@@ -23,7 +23,7 @@ class StandaloneCastEnvironment : public CastEnvironment,
   // complete.
   void Shutdown();
 
- private:
+ protected:
   virtual ~StandaloneCastEnvironment();
 
   base::Thread main_thread_;

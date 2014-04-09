@@ -47,10 +47,9 @@ class AudioDecoder;
 // Two types of frames can be requested: 1) A frame of decoded audio data; or 2)
 // a frame of still-encoded audio data, to be passed into an external audio
 // decoder.  Each request for a frame includes a callback which AudioReceiver
-// guarantees will be called at some point in the future.  Clients should
-// generally limit the number of outstanding requests (perhaps to just one or
-// two).  When AudioReceiver is destroyed, any outstanding requests will be
-// immediately invoked with a NULL frame.
+// guarantees will be called at some point in the future unless the
+// AudioReceiver is destroyed.  Clients should generally limit the number of
+// outstanding requests (perhaps to just one or two).
 //
 // This class is not thread safe.  Should only be called from the Main cast
 // thread.

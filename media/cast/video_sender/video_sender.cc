@@ -407,6 +407,11 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
 
 void VideoSender::ReceivedAck(uint32 acked_frame_id) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  if (acked_frame_id == UINT32_C(0xFFFFFFFF)) {
+    // Receiver is sending a status message before any frames are ready to
+    // be acked. Ignore.
+    return;
+  }
   // Start sending RTCP packets only after receiving the first ACK, i.e. only
   // after establishing that the receiver is active.
   if (last_acked_frame_id_ == -1) {
@@ -421,8 +426,8 @@ void VideoSender::ReceivedAck(uint32 acked_frame_id) {
       now, kVideoAckReceived, rtp_timestamp, acked_frame_id);
 
   VLOG(2) << "ReceivedAck:" << static_cast<int>(acked_frame_id);
-  last_acked_frame_id_ = acked_frame_id;
   active_session_ = true;
+  DCHECK_NE(-1, last_acked_frame_id_);
   UpdateFramesInFlight();
 }
 

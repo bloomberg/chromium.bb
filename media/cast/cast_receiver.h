@@ -31,8 +31,7 @@ class PacketSender;
 // |is_continuous| will be false to indicate the loss of data due to a loss of
 // frames (or decoding errors).  This allows the client to take steps to smooth
 // discontinuities for playback.  Note: A NULL pointer can be returned when data
-// is not available (e.g., bad packet or when flushing callbacks during
-// shutdown).
+// is not available (e.g., bad/missing packet).
 typedef base::Callback<void(scoped_ptr<AudioBus> audio_bus,
                             const base::TimeTicks& playout_time,
                             bool is_continuous)> AudioFrameDecodedCallback;
@@ -45,7 +44,7 @@ typedef base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
 // with the frame's corresponding play-out time.  The client should examine the
 // EncodedXXXFrame::frame_id field to determine whether any frames have been
 // dropped (i.e., frame_id should be incrementing by one each time).  Note: A
-// NULL pointer can be returned on error/shutdown.
+// NULL pointer can be returned on error.
 typedef base::Callback<void(scoped_ptr<transport::EncodedAudioFrame>,
                             const base::TimeTicks&)> AudioFrameEncodedCallback;
 typedef base::Callback<void(scoped_ptr<transport::EncodedVideoFrame>,

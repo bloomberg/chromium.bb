@@ -79,12 +79,11 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> video_thread_proxy_;
+  scoped_ptr<base::TickClock> clock_;
+  scoped_ptr<LoggingImpl> logging_;
 
  private:
   friend class base::RefCountedThreadSafe<CastEnvironment>;
-
-  scoped_ptr<base::TickClock> clock_;
-  scoped_ptr<LoggingImpl> logging_;
 
   DISALLOW_COPY_AND_ASSIGN(CastEnvironment);
 };

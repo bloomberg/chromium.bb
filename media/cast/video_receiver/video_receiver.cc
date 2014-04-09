@@ -70,16 +70,6 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
 
 VideoReceiver::~VideoReceiver() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-
-  // If any callbacks for encoded video frames are queued, flush them out now.
-  // This is critical because some Closures in |frame_request_queue_| may have
-  // Unretained references to |this|.
-  while (!frame_request_queue_.empty()) {
-    frame_request_queue_.front().Run(
-        make_scoped_ptr<transport::EncodedVideoFrame>(NULL), base::TimeTicks());
-    frame_request_queue_.pop_front();
-  }
-
   cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber_);
 }
 

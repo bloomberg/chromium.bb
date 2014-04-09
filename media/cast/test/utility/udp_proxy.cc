@@ -410,19 +410,33 @@ class UDPProxyImpl : public UDPProxy {
       destination_(destination),
       proxy_thread_("media::cast::test::UdpProxy Thread"),
       to_dest_pipe_(to_dest_pipe.Pass()),
-      from_dest_pipe_(to_dest_pipe.Pass()),
-      start_event_(false, false) {
+      from_dest_pipe_(to_dest_pipe.Pass()) {
     proxy_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+    base::WaitableEvent start_event(false, false);
     proxy_thread_.message_loop_proxy()->PostTask(
         FROM_HERE,
         base::Bind(&UDPProxyImpl::Start,
                    base::Unretained(this),
+                   base::Unretained(&start_event),
                    net_log));
-    start_event_.Wait();
+    start_event.Wait();
   }
 
-  void Start(net::NetLog* net_log) {
+  virtual ~UDPProxyImpl() {
+    base::WaitableEvent stop_event(false, false);
+    proxy_thread_.message_loop_proxy()->PostTask(
+        FROM_HERE,
+        base::Bind(&UDPProxyImpl::Stop,
+                   base::Unretained(this),
+                   base::Unretained(&stop_event)));
+    stop_event.Wait();
+    proxy_thread_.Stop();
+  }
+
+ private:
+  void Start(base::WaitableEvent* start_event,
+             net::NetLog* net_log) {
     socket_.reset(new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
                                      net::RandIntCallback(),
                                      net_log,
@@ -438,12 +452,15 @@ class UDPProxyImpl : public UDPProxy {
 
     CHECK_GE(socket_->Bind(local_port_), 0);
 
-    start_event_.Signal();
+    start_event->Signal();
     PollRead();
   }
 
-  virtual ~UDPProxyImpl() {
-    proxy_thread_.Stop();
+  void Stop(base::WaitableEvent* stop_event) {
+    to_dest_pipe_.reset(NULL);
+    from_dest_pipe_.reset(NULL);
+    socket_.reset(NULL);
+    stop_event->Signal();
   }
 
   void ProcessPacket(scoped_refptr<net::IOBuffer> recv_buf,
@@ -488,7 +505,7 @@ class UDPProxyImpl : public UDPProxy {
     }
   }
 
- private:
+
   net::IPEndPoint local_port_;
   net::IPEndPoint destination_;
   net::IPEndPoint recv_address_;
@@ -497,7 +514,6 @@ class UDPProxyImpl : public UDPProxy {
   scoped_ptr<net::UDPSocket> socket_;
   scoped_ptr<PacketPipe> to_dest_pipe_;
   scoped_ptr<PacketPipe> from_dest_pipe_;
-  base::WaitableEvent start_event_;
   scoped_ptr<transport::Packet> packet_;
 };
 

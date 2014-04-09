@@ -49,10 +49,9 @@ class VideoDecoder;
 // Two types of frames can be requested: 1) A frame of decoded video data; or 2)
 // a frame of still-encoded video data, to be passed into an external video
 // decoder.  Each request for a frame includes a callback which VideoReceiver
-// guarantees will be called at some point in the future.  Clients should
-// generally limit the number of outstanding requests (perhaps to just one or
-// two).  When VideoReceiver is destroyed, any outstanding requests will be
-// immediately invoked with a NULL frame.
+// guarantees will be called at some point in the future unless the
+// VideoReceiver is destroyed. Clients should generally limit the number of
+// outstanding requests (perhaps to just one or two).
 //
 // This class is not thread safe.  Should only be called from the Main cast
 // thread.

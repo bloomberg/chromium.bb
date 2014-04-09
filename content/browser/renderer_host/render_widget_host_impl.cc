@@ -1544,8 +1544,14 @@ void RenderWidgetHostImpl::OnRequestMove(const gfx::Rect& pos) {
 #if defined(OS_MACOSX)
 void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
       const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params) {
+  // This trace event is used in
+  // chrome/browser/extensions/api/cast_streaming/performance_test.cc
   TRACE_EVENT0("renderer_host",
                "RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped");
+  // This trace event is used in
+  // chrome/browser/extensions/api/cast_streaming/performance_test.cc
+  UNSHIPPED_TRACE_EVENT0("test_fps",
+                         TRACE_DISABLED_BY_DEFAULT("OnSwapCompositorFrame"));
   if (!ui::LatencyInfo::Verify(params.latency_info,
                                "ViewHostMsg_CompositorSurfaceBuffersSwapped"))
     return;
@@ -1574,6 +1580,10 @@ void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
 
 bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     const IPC::Message& message) {
+  // This trace event is used in
+  // chrome/browser/extensions/api/cast_streaming/performance_test.cc
+  UNSHIPPED_TRACE_EVENT0("test_fps",
+                         TRACE_DISABLED_BY_DEFAULT("OnSwapCompositorFrame"));
   ViewHostMsg_SwapCompositorFrame::Param param;
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return false;

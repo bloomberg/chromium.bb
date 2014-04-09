@@ -12,6 +12,7 @@
 #endif
 #include "base/strings/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
+#include "base/time/default_tick_clock.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -72,6 +73,30 @@ enum TestFlags {
   k60fps               = 1 << 5, // use 60 fps video
   kProxyWifi           = 1 << 6, // Run UDP through UDPProxy wifi profile
   kProxyEvil           = 1 << 7, // Run UDP through UDPProxy evil profile
+  kSlowClock           = 1 << 8, // Receiver clock is 10 seconds slow
+  kFastClock           = 1 << 9, // Receiver clock is 10 seconds fast
+};
+
+class SkewedTickClock : public base::DefaultTickClock {
+ public:
+  explicit SkewedTickClock(const base::TimeDelta& delta) : delta_(delta) {
+  }
+  virtual base::TimeTicks NowTicks() OVERRIDE {
+    return DefaultTickClock::NowTicks() + delta_;
+  }
+ private:
+  base::TimeDelta delta_;
+};
+
+class SkewedCastEnvironment : public media::cast::StandaloneCastEnvironment {
+ public:
+  explicit SkewedCastEnvironment(const base::TimeDelta& delta) :
+      StandaloneCastEnvironment() {
+    clock_.reset(new SkewedTickClock(delta));
+  }
+
+ protected:
+  virtual ~SkewedCastEnvironment() {}
 };
 
 // We log one of these for each call to OnAudioFrame/OnVideoFrame.
@@ -122,7 +147,7 @@ class MeanAndError {
                                          true);
     } else {
       LOG(ERROR) << "Not enough events for "
-                 << measurement << " " << modifier << " " << trace;
+                 << measurement << modifier << " " << trace;
     }
   }
 
@@ -291,6 +316,10 @@ class CastV2PerformanceTest
       suffix += "_wifi";
     if (HasFlag(kProxyEvil))
       suffix += "_evil";
+    if (HasFlag(kSlowClock))
+      suffix += "_slow";
+    if (HasFlag(kFastClock))
+      suffix += "_fast";
     return suffix;
   }
 
@@ -367,7 +396,8 @@ class CastV2PerformanceTest
         (trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_BEGIN) ||
          trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_BEGIN) ||
          trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_FLOW_BEGIN) ||
-         trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_INSTANT));
+         trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_INSTANT) ||
+         trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_COMPLETE));
     analyzer->FindEvents(query, events);
   }
 
@@ -554,8 +584,15 @@ class CastV2PerformanceTest
 
     // Start the in-process receiver that examines audio/video for the expected
     // test patterns.
+    base::TimeDelta delta = base::TimeDelta::FromSeconds(0);
+    if (HasFlag(kFastClock)) {
+      delta = base::TimeDelta::FromSeconds(10);
+    }
+    if (HasFlag(kSlowClock)) {
+      delta = base::TimeDelta::FromSeconds(-10);
+    }
     scoped_refptr<media::cast::StandaloneCastEnvironment> cast_environment(
-        new media::cast::StandaloneCastEnvironment);
+        new SkewedCastEnvironment(delta));
     TestPatternReceiver* const receiver =
         new TestPatternReceiver(cast_environment, receiver_end_point);
     receiver->Start();
@@ -598,16 +635,9 @@ class CastV2PerformanceTest
     analyzer.reset(trace_analyzer::TraceAnalyzer::Create(json_events));
     analyzer->AssociateAsyncBeginEndEvents();
 
-    // Only one of these PrintResults should actually print something.
-    // The printed result will be the average time between frames in the
-    // browser window.
-    MeanAndError sw_frame_data = AnalyzeTraceDistance(analyzer.get(),
-                                                      "TestFrameTickSW");
-    MeanAndError frame_data = AnalyzeTraceDistance(analyzer.get(),
-                                                   "TestFrameTickGPU");
-    if (frame_data.num_values == 0) {
-      frame_data = sw_frame_data;
-    }
+    MeanAndError frame_data = AnalyzeTraceDistance(
+        analyzer.get(),
+        TRACE_DISABLED_BY_DEFAULT("OnSwapCompositorFrame"));
     EXPECT_GT(frame_data.num_values, 0UL);
     // Lower is better.
     frame_data.Print(test_name,
@@ -648,4 +678,6 @@ INSTANTIATE_TEST_CASE_P(
         kUseGpu | k60fps,
         kUseGpu | k24fps | kDisableVsync,
         kUseGpu | k30fps | kProxyWifi,
-        kUseGpu | k30fps | kProxyEvil));
+        kUseGpu | k30fps | kProxyEvil,
+        kUseGpu | k30fps | kSlowClock,
+        kUseGpu | k30fps | kFastClock));
