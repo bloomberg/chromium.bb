@@ -44,6 +44,5 @@
     attribute DOMString search;
     // Not yet implemented.
     // attribute URLSearchParams searchParams;
-    // attribute URLQuery? query;
     attribute DOMString hash;
 };
