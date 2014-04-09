@@ -493,8 +493,9 @@ TEST_F(TransportSecurityStateTest, BuiltinCertPins) {
   EXPECT_TRUE(HasPublicKeyPins("chrome.google.com"));
 
   HashValueVector hashes;
+  std::string failure_log;
   // Checks that a built-in list does exist.
-  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes));
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes, &failure_log));
   EXPECT_FALSE(HasPublicKeyPins("www.paypal.com"));
 
   EXPECT_TRUE(HasPublicKeyPins("docs.google.com"));
@@ -579,8 +580,9 @@ TEST_F(TransportSecurityStateTest, PinValidationWithoutRejectedCerts) {
   EXPECT_TRUE(state.GetDomainState("blog.torproject.org", true, &domain_state));
   EXPECT_TRUE(domain_state.HasPublicKeyPins());
 
-  EXPECT_TRUE(domain_state.CheckPublicKeyPins(good_hashes));
-  EXPECT_FALSE(domain_state.CheckPublicKeyPins(bad_hashes));
+  std::string failure_log;
+  EXPECT_TRUE(domain_state.CheckPublicKeyPins(good_hashes, &failure_log));
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(bad_hashes, &failure_log));
 }
 
 TEST_F(TransportSecurityStateTest, OptionalHSTSCertPins) {

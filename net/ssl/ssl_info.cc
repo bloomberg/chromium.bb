@@ -33,6 +33,7 @@ SSLInfo& SSLInfo::operator=(const SSLInfo& info) {
   handshake_type = info.handshake_type;
   public_key_hashes = info.public_key_hashes;
   signed_certificate_timestamps = info.signed_certificate_timestamps;
+  pinning_failure_log = info.pinning_failure_log;
 
   return *this;
 }
@@ -48,6 +49,7 @@ void SSLInfo::Reset() {
   handshake_type = HANDSHAKE_UNKNOWN;
   public_key_hashes.clear();
   signed_certificate_timestamps.clear();
+  pinning_failure_log.clear();
 }
 
 void SSLInfo::SetCertError(int error) {

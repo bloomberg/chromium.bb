@@ -168,19 +168,20 @@ TEST_F(TransportSecurityPersisterTest, PublicKeyHashes) {
   static const char kTestDomain[] = "example.com";
   EXPECT_FALSE(state_.GetDomainState(kTestDomain, false, &domain_state));
   net::HashValueVector hashes;
-  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes));
+  std::string failure_log;
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes, &failure_log));
 
   net::HashValue sha1(net::HASH_VALUE_SHA1);
   memset(sha1.data(), '1', sha1.size());
   domain_state.dynamic_spki_hashes.push_back(sha1);
 
-  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes));
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes, &failure_log));
 
   hashes.push_back(sha1);
-  EXPECT_TRUE(domain_state.CheckPublicKeyPins(hashes));
+  EXPECT_TRUE(domain_state.CheckPublicKeyPins(hashes, &failure_log));
 
   hashes[0].data()[0] = '2';
-  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes));
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes, &failure_log));
 
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);

@@ -201,6 +201,11 @@ class SSLClientSocketNSS : public SSLClientSocket {
 
   TransportSecurityState* transport_security_state_;
 
+  // pinning_failure_log contains a message produced by
+  // TransportSecurityState::DomainState::CheckPublicKeyPins in the event of a
+  // pinning failure. It is a (somewhat) human-readable string.
+  std::string pinning_failure_log_;
+
   // The following two variables are added for debugging bug 65948. Will
   // remove this code after fixing bug 65948.
   // Added the following code Debugging in release mode.

@@ -77,7 +77,8 @@ class NET_EXPORT TransportSecurityState
     //
     // |bad_static_spki_hashes| contains public keys that we don't want to
     // trust.
-    bool CheckPublicKeyPins(const HashValueVector& hashes) const;
+    bool CheckPublicKeyPins(const HashValueVector& hashes,
+                            std::string* failure_log) const;
 
     // Returns true if any of the HashValueVectors |static_spki_hashes|,
     // |bad_static_spki_hashes|, or |dynamic_spki_hashes| contains any
@@ -247,18 +248,6 @@ class NET_EXPORT TransportSecurityState
   // entry, the exact match determines the return value.
   static bool IsGooglePinnedProperty(const std::string& host,
                                      bool sni_enabled);
-
-  // GetPinsForDebugging finds the preloaded entry for the given host. If none
-  // exists, it returns false. Otherwise it returns true and sets |out_pins|
-  // and |out_bad_pins| to point to arrays of SHA-1 hashes, each 20 bytes long
-  // with a NULL pointer signalling the end of the array, for the required and
-  // excluded pins, respectively.
-  // This is a temporary debugging measure to check for binary alteration /
-  // corruption.
-  static bool GetPinsForDebugging(
-    const std::string& host,
-    const char* const** out_pins,
-    const char* const** out_bad_pins);
 
   // The maximum number of seconds for which we'll cache an HSTS request.
   static const long int kMaxHSTSAgeSecs;
