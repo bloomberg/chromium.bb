@@ -311,6 +311,18 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_DISTILLATION_QUALITY_ANSWER_NO" desc="Text for the answering whether the text from a web page was extracted correctly and the answer is no.">
         No
       </message>
+
+      <!-- TalkBack upgrade -->
+      <message name="IDS_OLD_TALKBACK_TITLE" desc="Title of dialog notifying user that the version of TalkBack they're running is too old.">
+        You need to update TalkBack to a newer version.
+      </message>
+      <message name="IDS_UPDATE_FROM_MARKET" desc="Title of button that will direct the user to update TalkBack from the market (Play Store)">
+        Update
+      </message>
+      <message name="IDS_CANCEL_TALKBACK_ALERT" desc="Title of button that will cancel the TalkBack alert dialog dialog.">
+        Cancel
+      </message>
+
     </messages>
   </release>
 </grit>

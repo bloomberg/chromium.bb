@@ -4,15 +4,41 @@
 
 package org.chromium.chrome.browser;
 
+import android.accessibilityservice.AccessibilityServiceInfo;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.view.accessibility.AccessibilityManager;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.chrome.R;
+
+import java.util.List;
 
 /**
  * Exposes information about the current accessibility state
  */
 public class AccessibilityUtil {
+    // Whether we've already shown an alert that they have an old version of TalkBack running.
+    private static boolean sOldTalkBackVersionAlertShown = false;
+
+    // The link to download or update TalkBack from the Play Store.
+    private static final String TALKBACK_MARKET_LINK =
+            "market://search?q=pname:com.google.android.marvin.talkback";
+
+    // The package name for TalkBack, an Android accessibility service.
+    private static final String TALKBACK_PACKAGE_NAME =
+            "com.google.android.marvin.talkback";
+
+    // The minimum TalkBack version that we support. This is the version that shipped with
+    // KitKat, from fall 2013. Versions older than that should be updated.
+    private static final int MIN_TALKBACK_VERSION = 105;
+
     private AccessibilityUtil() { }
 
     /**
@@ -25,5 +51,73 @@ public class AccessibilityUtil {
         AccessibilityManager manager = (AccessibilityManager)
                 context.getSystemService(Context.ACCESSIBILITY_SERVICE);
         return manager != null && manager.isEnabled() && manager.isTouchExplorationEnabled();
+    }
+
+    /**
+     * Checks to see if an old version of TalkBack is running that Chrome doesn't support,
+     * and if so, shows an alert dialog prompting the user to update the app.
+     * @param context A {@link Context} instance.
+     * @return        True if the dialog was shown.
+     */
+    public static boolean showWarningIfOldTalkbackRunning(Context context) {
+        AccessibilityManager manager = (AccessibilityManager)
+                context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        if (manager == null) return false;
+
+        boolean isTalkbackRunning = false;
+        try {
+            List<AccessibilityServiceInfo> services =
+                    manager.getEnabledAccessibilityServiceList(
+                            AccessibilityServiceInfo.FEEDBACK_SPOKEN);
+            for (AccessibilityServiceInfo service : services) {
+                if (service.getId().contains(TALKBACK_PACKAGE_NAME)) isTalkbackRunning = true;
+            }
+        } catch (NullPointerException e) {
+            // getEnabledAccessibilityServiceList() can throw an NPE due to a bad
+            // AccessibilityService.
+        }
+        if (!isTalkbackRunning) return false;
+
+        try {
+            PackageInfo talkbackInfo = context.getPackageManager().getPackageInfo(
+                    TALKBACK_PACKAGE_NAME, 0);
+            if (talkbackInfo != null && talkbackInfo.versionCode < MIN_TALKBACK_VERSION &&
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN &&
+                    !sOldTalkBackVersionAlertShown) {
+                showOldTalkbackVersionAlertOnce(context);
+                return true;
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            // Do nothing, default to false.
+        }
+
+        return false;
+    }
+
+    private static void showOldTalkbackVersionAlertOnce(final Context context) {
+        if (sOldTalkBackVersionAlertShown) return;
+        sOldTalkBackVersionAlertShown = true;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+            .setTitle(R.string.old_talkback_title)
+            .setPositiveButton(R.string.update_from_market,
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                            Uri marketUri = Uri.parse(TALKBACK_MARKET_LINK);
+                            Intent marketIntent = new Intent(
+                                    Intent.ACTION_VIEW, marketUri);
+                            context.startActivity(marketIntent);
+                        }
+                    })
+            .setNegativeButton(R.string.cancel_talkback_alert,
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                            // Do nothing, this alert is only shown once either way.
+                        }
+                    });
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }
