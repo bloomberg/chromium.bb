@@ -57,7 +57,7 @@ namespace WebCore {
     }
     {% endfor %}
     {% if method.arguments %}
-    v8::Handle<v8::Value> argv[] = { {{method.arguments | join(', ', attribute='handle')}} };
+    v8::Handle<v8::Value> argv[] = { {{method.arguments | join(', ', 'handle')}} };
     {% else %}
     v8::Handle<v8::Value> *argv = 0;
     {% endif %}

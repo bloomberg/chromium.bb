@@ -46,7 +46,7 @@
 {% set attribute_configuration_list = attribute_configuration_list
                                     + [on_prototype] %}
 {% endif %}
-{{'{'}}{{attribute_configuration_list|join(', ')}}{{'}'}}
+{{'{'}}{{attribute_configuration_list | join(', ')}}{{'}'}}
 {%- endmacro %}
 
 
@@ -139,7 +139,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
     {% set getter_name = getter.name or 'anonymousIndexedGetter' %}
     {% set getter_arguments = ['index', 'exceptionState']
            if getter.is_raises_exception else ['index'] %}
-    {{getter.cpp_type}} result = impl->{{getter_name}}({{getter_arguments|join(', ')}});
+    {{getter.cpp_type}} result = impl->{{getter_name}}({{getter_arguments | join(', ')}});
     {% if getter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -195,7 +195,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
     {% set setter_name = setter.name or 'anonymousIndexedSetter' %}
     {% set setter_arguments = ['index', 'propertyValue', 'exceptionState']
            if setter.is_raises_exception else ['index', 'propertyValue'] %}
-    bool result = impl->{{setter_name}}({{setter_arguments|join(', ')}});
+    bool result = impl->{{setter_name}}({{setter_arguments | join(', ')}});
     {% if setter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -241,7 +241,7 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
     {% set deleter_name = deleter.name or 'anonymousIndexedDeleter' %}
     {% set deleter_arguments = ['index', 'exceptionState']
            if deleter.is_raises_exception else ['index'] %}
-    DeleteResult result = impl->{{deleter_name}}({{deleter_arguments|join(', ')}});
+    DeleteResult result = impl->{{deleter_name}}({{deleter_arguments | join(', ')}});
     {% if deleter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -356,7 +356,7 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
            ['propertyName', 'propertyValue', 'exceptionState']
            if setter.is_raises_exception else
            ['propertyName', 'propertyValue'] %}
-    bool result = impl->{{setter_name}}({{setter_arguments|join(', ')}});
+    bool result = impl->{{setter_name}}({{setter_arguments | join(', ')}});
     {% if setter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -447,7 +447,7 @@ static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyC
     {% set deleter_name = deleter.name or 'anonymousNamedDeleter' %}
     {% set deleter_arguments = ['propertyName', 'exceptionState']
            if deleter.is_raises_exception else ['propertyName'] %}
-    DeleteResult result = impl->{{deleter_name}}({{deleter_arguments|join(', ')}});
+    DeleteResult result = impl->{{deleter_name}}({{deleter_arguments | join(', ')}});
     {% if deleter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -586,7 +586,7 @@ v8::Handle<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolat
 
 {##############################################################################}
 {% block overloaded_constructor %}
-{% if constructors|length > 1 %}
+{% if constructors | length > 1 %}
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     {% for constructor in constructors %}
