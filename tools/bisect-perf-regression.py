@@ -38,7 +38,7 @@ An example usage (using git hashes):
 import copy
 import datetime
 import errno
-import imp
+import hashlib
 import math
 import optparse
 import os
@@ -51,15 +51,11 @@ import sys
 import time
 import zipfile
 
+sys.path.append(os.path.join(os.path.dirname(__file__), 'telemetry'))
+
 import bisect_utils
 import post_perf_builder_job
-
-
-try:
-  from telemetry.page import cloud_storage
-except ImportError:
-  sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), 'telemetry'))
-  from telemetry.page import cloud_storage
+from telemetry.page import cloud_storage
 
 # The additional repositories that might need to be bisected.
 # If the repository has any dependant repositories (such as skia/src needs
@@ -72,20 +68,23 @@ except ImportError:
 #   repository in svn.
 # svn: Needed for git workflow to resolve hashes to svn revisions.
 # from: Parent depot that must be bisected before this is bisected.
+# deps_var: Key name in vars varible in DEPS file that has revision information.
 DEPOT_DEPS_NAME = {
   'chromium' : {
     "src" : "src",
     "recurse" : True,
     "depends" : None,
     "from" : ['cros', 'android-chrome'],
-    'viewvc': 'http://src.chromium.org/viewvc/chrome?view=revision&revision='
+    'viewvc': 'http://src.chromium.org/viewvc/chrome?view=revision&revision=',
+    'deps_var': None
   },
   'webkit' : {
     "src" : "src/third_party/WebKit",
     "recurse" : True,
     "depends" : None,
     "from" : ['chromium'],
-    'viewvc': 'http://src.chromium.org/viewvc/blink?view=revision&revision='
+    'viewvc': 'http://src.chromium.org/viewvc/blink?view=revision&revision=',
+    'deps_var': 'webkit_revision'
   },
   'angle' : {
     "src" : "src/third_party/angle",
@@ -94,6 +93,7 @@ DEPOT_DEPS_NAME = {
     "depends" : None,
     "from" : ['chromium'],
     "platform": 'nt',
+    'deps_var': 'angle_revision'
   },
   'v8' : {
     "src" : "src/v8",
@@ -102,6 +102,7 @@ DEPOT_DEPS_NAME = {
     "from" : ['chromium'],
     "custom_deps": bisect_utils.GCLIENT_CUSTOM_DEPS_V8,
     'viewvc': 'https://code.google.com/p/v8/source/detail?r=',
+    'deps_var': 'v8_revision'
   },
   'v8_bleeding_edge' : {
     "src" : "src/v8_bleeding_edge",
@@ -110,6 +111,7 @@ DEPOT_DEPS_NAME = {
     "svn": "https://v8.googlecode.com/svn/branches/bleeding_edge",
     "from" : ['v8'],
     'viewvc': 'https://code.google.com/p/v8/source/detail?r=',
+    'deps_var': 'v8_revision'
   },
   'skia/src' : {
     "src" : "src/third_party/skia/src",
@@ -118,6 +120,7 @@ DEPOT_DEPS_NAME = {
     "depends" : ['skia/include', 'skia/gyp'],
     "from" : ['chromium'],
     'viewvc': 'https://code.google.com/p/skia/source/detail?r=',
+    'deps_var': 'skia_revision'
   },
   'skia/include' : {
     "src" : "src/third_party/skia/include",
@@ -126,6 +129,7 @@ DEPOT_DEPS_NAME = {
     "depends" : None,
     "from" : ['chromium'],
     'viewvc': 'https://code.google.com/p/skia/source/detail?r=',
+    'deps_var': 'None'
   },
   'skia/gyp' : {
     "src" : "src/third_party/skia/gyp",
@@ -134,6 +138,7 @@ DEPOT_DEPS_NAME = {
     "depends" : None,
     "from" : ['chromium'],
     'viewvc': 'https://code.google.com/p/skia/source/detail?r=',
+    'deps_var': 'None'
   },
 }
 
@@ -151,6 +156,26 @@ BUILD_RESULT_SUCCEED = 0
 BUILD_RESULT_FAIL = 1
 BUILD_RESULT_SKIPPED = 2
 
+# Maximum time in seconds to wait after posting build request to tryserver.
+# TODO: Change these values based on the actual time taken by buildbots on
+# the tryserver.
+MAX_MAC_BUILD_TIME = 7200
+MAX_WIN_BUILD_TIME = 7200
+MAX_LINUX_BUILD_TIME = 7200
+
+# Patch template to add a new file, DEPS.sha under src folder.
+# This file contains SHA1 value of the DEPS changes made while bisecting
+# dependency repositories. This patch send along with DEPS patch to tryserver.
+# When a build requested is posted with a patch, bisect builders on tryserver,
+# once build is produced, it reads SHA value from this file and appends it
+# to build archive filename.
+DEPS_SHA_PATCH = """diff --git src/DEPS.sha src/DEPS.sha
+new file mode 100644
+--- /dev/null
++++ src/DEPS.sha
+@@ -0,0 +1 @@
++%(deps_sha)s
+"""
 
 def _AddAdditionalDepotInfo(depot_info):
   """Adds additional depot info to the global depot variables."""
@@ -315,7 +340,12 @@ def IsMac():
   return sys.platform.startswith('darwin')
 
 
-def GetZipFileName(build_revision=None, target_arch='ia32'):
+def GetSHA1HexDigest(contents):
+  """Returns secured hash containing hexadecimal for the given contents."""
+  return hashlib.sha1(contents).hexdigest()
+
+
+def GetZipFileName(build_revision=None, target_arch='ia32', patch_sha=None):
   """Gets the archive file name for the given revision."""
   def PlatformName():
     """Return a string to be used in paths for the platform."""
@@ -334,10 +364,12 @@ def GetZipFileName(build_revision=None, target_arch='ia32'):
   base_name = 'full-build-%s' % PlatformName()
   if not build_revision:
     return base_name
+  if patch_sha:
+    build_revision = '%s_%s' % (build_revision , patch_sha)
   return '%s_%s.zip' % (base_name, build_revision)
 
 
-def GetRemoteBuildPath(build_revision, target_arch='ia32'):
+def GetRemoteBuildPath(build_revision, target_arch='ia32', patch_sha=None):
   """Compute the url to download the build from."""
   def GetGSRootFolderName():
     """Gets Google Cloud Storage root folder names"""
@@ -351,7 +383,7 @@ def GetRemoteBuildPath(build_revision, target_arch='ia32'):
       return 'Mac Builder'
     raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
 
-  base_filename = GetZipFileName(build_revision, target_arch)
+  base_filename = GetZipFileName(build_revision, target_arch, patch_sha)
   builder_folder = GetGSRootFolderName()
   return '%s/%s' % (builder_folder, base_filename)
 
@@ -377,10 +409,10 @@ def FetchFromCloudStorage(bucket_name, source_path, destination_path):
     else:
       print ('File gs://%s/%s not found in cloud storage.' % (
           bucket_name, source_path))
-  except e:
+  except Exception as e:
     print 'Something went wrong while fetching file from cloud: %s' % e
     if os.path.exists(target_file):
-       os.remove(target_file)
+      os.remove(target_file)
   return False
 
 
@@ -563,6 +595,28 @@ def BuildWithVisualStudio(targets):
   return_code = RunProcess(cmd)
 
   return not return_code
+
+
+def WriteStringToFile(text, file_name):
+  with open(file_name, "w") as f:
+    f.write(text)
+
+
+def ReadStringFromFile(file_name):
+  with open(file_name) as f:
+    return f.read()
+
+
+def ChangeBackslashToSlashInPatch(diff_text):
+  """Formats file paths in the given text to unix-style paths."""
+  if diff_text:
+    diff_lines = diff_text.split('\n')
+    for i in range(len(diff_lines)):
+      if (diff_lines[i].startswith('--- ') or
+          diff_lines[i].startswith('+++ ')):
+        diff_lines[i] = diff_lines[i].replace('\\', '/')
+    return '\n'.join(diff_lines)
+  return None
 
 
 class Builder(object):
@@ -979,7 +1033,7 @@ class GitSourceControl(SourceControl):
 
     return log_output == "master"
 
-  def SVNFindRev(self, revision):
+  def SVNFindRev(self, revision, cwd=None):
     """Maps directly to the 'git svn find-rev' command.
 
     Args:
@@ -991,7 +1045,7 @@ class GitSourceControl(SourceControl):
 
     cmd = ['svn', 'find-rev', revision]
 
-    output = CheckRunGit(cmd)
+    output = CheckRunGit(cmd, cwd)
     svn_revision = output.strip()
 
     if IsStringInt(svn_revision):
@@ -1042,7 +1096,7 @@ class GitSourceControl(SourceControl):
       True if successful.
     """
     # Reset doesn't seem to return 0 on success.
-    RunGit(['reset', 'HEAD', bisect_utils.FILE_DEPS_GIT])
+    RunGit(['reset', 'HEAD', file_name])
 
     return not RunGit(['checkout', bisect_utils.FILE_DEPS_GIT])[1]
 
@@ -1173,7 +1227,7 @@ class BisectPerformanceMetrics(object):
                 bleeding_edge_revision, 'v8_bleeding_edge', 1,
                 cwd=v8_bleeding_edge_dir)
             return git_revision
-          except IndexError, ValueError:
+          except (IndexError, ValueError):
             pass
 
         if not git_revision:
@@ -1252,12 +1306,12 @@ class BisectPerformanceMetrics(object):
               locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src_old'])):
             if locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src']):
               re_results = rxp.search(locals['deps'][DEPOT_DEPS_NAME[d]['src']])
-              self.depot_cwd[d] =\
+              self.depot_cwd[d] = \
                   os.path.join(self.src_cwd, DEPOT_DEPS_NAME[d]['src'][4:])
             elif locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src_old']):
-              re_results =\
+              re_results = \
                   rxp.search(locals['deps'][DEPOT_DEPS_NAME[d]['src_old']])
-              self.depot_cwd[d] =\
+              self.depot_cwd[d] = \
                   os.path.join(self.src_cwd, DEPOT_DEPS_NAME[d]['src_old'][4:])
 
             if re_results:
@@ -1276,7 +1330,7 @@ class BisectPerformanceMetrics(object):
              CROS_CHROMEOS_PATTERN]
       (output, return_code) = RunProcessAndRetrieveOutput(cmd)
 
-      assert not return_code, 'An error occurred while running'\
+      assert not return_code, 'An error occurred while running' \
                               ' "%s"' % ' '.join(cmd)
 
       if len(output) > CROS_CHROMEOS_PATTERN:
@@ -1291,7 +1345,7 @@ class BisectPerformanceMetrics(object):
           version = contents[2]
 
           if contents[3] != '0':
-            warningText = 'Chrome version: %s.%s but using %s.0 to bisect.' %\
+            warningText = 'Chrome version: %s.%s but using %s.0 to bisect.' % \
                 (version, contents[3], version)
             if not warningText in self.warnings:
               self.warnings.append(warningText)
@@ -1334,7 +1388,7 @@ class BisectPerformanceMetrics(object):
       return destination_dir
     return None
 
-  def DownloadCurrentBuild(self, revision, build_type='Release'):
+  def DownloadCurrentBuild(self, revision, build_type='Release', patch=None):
     """Download the build archive for the given revision.
 
     Args:
@@ -1344,38 +1398,53 @@ class BisectPerformanceMetrics(object):
     Returns:
       True if download succeeds, otherwise False.
     """
+    patch_sha = None
+    if patch:
+      # Get the SHA of the DEPS changes patch.
+      patch_sha = GetSHA1HexDigest(patch)
+
+      # Update the DEPS changes patch with a patch to create a new file named
+      # 'DEPS.sha' and add patch_sha evaluated above to it.
+      patch = '%s\n%s' % (patch, DEPS_SHA_PATCH % {'deps_sha': patch_sha})
+
+    # Source archive file path on cloud storage.
+    source_file = GetRemoteBuildPath(revision, self.opts.target_arch, patch_sha)
+
+    # Get Build output directory
     abs_build_dir = os.path.abspath(
         self.builder.GetBuildOutputDirectory(self.opts, self.src_cwd))
-    target_build_output_dir = os.path.join(abs_build_dir, build_type)
-    # Get build target architecture.
-    build_arch = self.opts.target_arch
-    # File path of the downloaded archive file.
-    archive_file_dest = os.path.join(abs_build_dir,
-                                     GetZipFileName(revision, build_arch))
-    remote_build = GetRemoteBuildPath(revision, build_arch)
+    # Downloaded archive file path.
+    downloaded_file = os.path.join(
+        abs_build_dir,
+        GetZipFileName(revision, self.opts.target_arch, patch_sha))
+
     fetch_build_func = lambda: FetchFromCloudStorage(self.opts.gs_bucket,
-                                                     remote_build,
+                                                     source_file,
                                                      abs_build_dir)
+
     if not fetch_build_func():
-      if not self.PostBuildRequestAndWait(revision, condition=fetch_build_func):
+      if not self.PostBuildRequestAndWait(revision,
+                                          condition=fetch_build_func,
+                                          patch=patch):
         raise RuntimeError('Somewthing went wrong while processing build'
                            'request for: %s' % revision)
-
     # Generic name for the archive, created when archive file is extracted.
-    output_dir = os.path.join(abs_build_dir,
-                              GetZipFileName(target_arch=build_arch))
+    output_dir = os.path.join(
+        abs_build_dir, GetZipFileName(target_arch=self.opts.target_arch))
     # Unzip build archive directory.
     try:
       RmTreeAndMkDir(output_dir, skip_makedir=True)
-      ExtractZip(archive_file_dest, abs_build_dir)
+      ExtractZip(downloaded_file, abs_build_dir)
       if os.path.exists(output_dir):
         self.BackupOrRestoreOutputdirectory(restore=False)
+        # Build output directory based on target(e.g. out/Release, out/Debug).
+        target_build_output_dir = os.path.join(abs_build_dir, build_type)
         print 'Moving build from %s to %s' % (
             output_dir, target_build_output_dir)
         shutil.move(output_dir, target_build_output_dir)
         return True
       raise IOError('Missing extracted folder %s ' % output_dir)
-    except e:
+    except Exception as e:
       print 'Somewthing went wrong while extracting archive file: %s' % e
       self.BackupOrRestoreOutputdirectory(restore=True)
       # Cleanup any leftovers from unzipping.
@@ -1383,23 +1452,25 @@ class BisectPerformanceMetrics(object):
         RmTreeAndMkDir(output_dir, skip_makedir=True)
     finally:
       # Delete downloaded archive
-      if os.path.exists(archive_file_dest):
-        os.remove(archive_file_dest)
+      if os.path.exists(downloaded_file):
+        os.remove(downloaded_file)
     return False
 
   def PostBuildRequestAndWait(self, revision, condition, patch=None):
     """POSTs the build request job to the tryserver instance."""
 
     def GetBuilderNameAndBuildTime(target_arch='ia32'):
-      """Gets builder name and buildtime in seconds based on platform."""
+      """Gets builder bot name and buildtime in seconds based on platform."""
+      # Bot names should match the one listed in tryserver.chromium's
+      # master.cfg which produces builds for bisect.
       if IsWindows():
         if Is64BitWindows() and target_arch == 'x64':
-          return ('Win x64 Bisect Builder', 3600)
-        return ('Win Bisect Builder', 3600)
+          return ('win_perf_bisect_builder', MAX_WIN_BUILD_TIME)
+        return ('win_perf_bisect_builder', MAX_WIN_BUILD_TIME)
       if IsLinux():
-        return ('Linux Bisect Builder', 1800)
+        return ('linux_perf_bisect_builder', MAX_LINUX_BUILD_TIME)
       if IsMac():
-        return ('Mac Bisect Builder', 2700)
+        return ('mac_perf_bisect_builder', MAX_MAC_BUILD_TIME)
       raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
     if not condition:
       return False
@@ -1409,7 +1480,7 @@ class BisectPerformanceMetrics(object):
     # Creates a try job description.
     job_args = {'host': self.opts.builder_host,
                 'port': self.opts.builder_port,
-                'revision': revision,
+                'revision': 'src@%s' % revision,
                 'bot': bot_name,
                 'name': 'Bisect Job-%s' % revision
                }
@@ -1433,6 +1504,184 @@ class BisectPerformanceMetrics(object):
         time.sleep(poll_interval)
     return False
 
+  def IsDownloadable(self, depot):
+    """Checks if we can download builds for the depot from cloud."""
+    return (depot == 'chromium' or 'chromium' in DEPOT_DEPS_NAME[depot]['from']
+        or 'v8' in DEPOT_DEPS_NAME[depot]['from'])
+
+  def UpdateDeps(self, revision, depot, deps_file):
+    """Updates DEPS file with new revision of dependency repository.
+
+    This method search DEPS for a particular pattern in which depot revision
+    is specified (e.g "webkit_revision": "123456"). If a match is found then
+    it resolves the given git hash to SVN revision and replace it in DEPS file.
+
+    Args:
+      revision: A git hash revision of the dependency repository.
+      depot: Current depot being bisected.
+      deps_file: Path to DEPS file.
+
+    Returns:
+      True if DEPS file is modified successfully, otherwise False.
+    """
+    if not os.path.exists(deps_file):
+      return False
+
+    deps_var = DEPOT_DEPS_NAME[depot]['deps_var']
+    # Don't update DEPS file if deps_var is not set in DEPOT_DEPS_NAME.
+    if not deps_var:
+      print 'DEPS update not supported for Depot: %s', depot
+      return False
+
+    # Hack to Angle repository because, in DEPS file "vars" dictionary variable
+    # contains "angle_revision" key that holds git hash instead of SVN revision.
+    # And sometime "angle_revision" key is not specified in "vars" variable,
+    # in such cases check "deps" dictionary variable that matches
+    # angle.git@[a-fA-F0-9]{40}$ and replace git hash.
+    if depot == 'angle':
+      return self.UpdateDEPSForAngle(revision, depot, deps_file)
+
+    try:
+      deps_contents = ReadStringFromFile(deps_file)
+      # Check whether the depot and revision pattern in DEPS file vars
+      # e.g. for webkit the format is "webkit_revision": "12345".
+      deps_revision = re.compile(r'(?<="%s": ")([0-9]+)(?=")' % deps_var,
+                                 re.MULTILINE)
+      match = re.search(deps_revision, deps_contents)
+      if match:
+        svn_revision = self.source_control.SVNFindRev(
+            revision, self._GetDepotDirectory(depot))
+        if not svn_revision:
+          print 'Could not determine SVN revision for %s' % revision
+          return False
+        # Update the revision information for the given depot
+        new_data = re.sub(deps_revision, str(svn_revision), deps_contents)
+
+        # For v8_bleeding_edge revisions change V8 branch in order
+        # to fetch bleeding edge revision.
+        if depot == 'v8_bleeding_edge':
+          new_data = self.UpdateV8Branch(new_data)
+          if not new_data:
+            return False
+        # Write changes to DEPS file
+        WriteStringToFile(new_data, deps_file)
+        return True
+    except IOError, e:
+      print 'Something went wrong while updating DEPS file. [%s]' % e
+    return False
+
+  def UpdateV8Branch(self, deps_content):
+    """Updates V8 branch in DEPS file to process v8_bleeding_edge.
+
+    Check for "v8_branch" in DEPS file if exists update its value
+    with v8_bleeding_edge branch. Note: "v8_branch" is added to DEPS
+    variable from DEPS revision 254916, therefore check for "src/v8":
+    <v8 source path> in DEPS in order to support prior DEPS revisions
+    and update it.
+
+    Args:
+      deps_content: DEPS file contents to be modified.
+
+    Returns:
+      Modified DEPS file contents as a string.
+    """
+    new_branch = r'branches/bleeding_edge'
+    v8_branch_pattern = re.compile(r'(?<="v8_branch": ")(.*)(?=")')
+    if re.search(v8_branch_pattern, deps_content):
+      deps_content = re.sub(v8_branch_pattern, new_branch, deps_content)
+    else:
+      # Replaces the branch assigned to "src/v8" key in DEPS file.
+      # Format of "src/v8" in DEPS:
+      # "src/v8":
+      #    (Var("googlecode_url") % "v8") + "/trunk@" + Var("v8_revision"),
+      # So, "/trunk@" is replace with "/branches/bleeding_edge@"
+      v8_src_pattern = re.compile(
+          r'(?<="v8"\) \+ "/)(.*)(?=@" \+ Var\("v8_revision"\))', re.MULTILINE)
+      if re.search(v8_src_pattern, deps_content):
+        deps_content = re.sub(v8_src_pattern, new_branch, deps_content)
+    return deps_content
+
+  def UpdateDEPSForAngle(self, revision, depot, deps_file):
+    """Updates DEPS file with new revision for Angle repository.
+
+    This is a hack for Angle depot case because, in DEPS file "vars" dictionary
+    variable contains "angle_revision" key that holds git hash instead of
+    SVN revision.
+
+    And sometimes "angle_revision" key is not specified in "vars" variable,
+    in such cases check "deps" dictionary variable that matches
+    angle.git@[a-fA-F0-9]{40}$ and replace git hash.
+    """
+    deps_var = DEPOT_DEPS_NAME[depot]['deps_var']
+    try:
+      deps_contents = ReadStringFromFile(deps_file)
+      # Check whether the depot and revision pattern in DEPS file vars variable
+      # e.g. "angle_revision": "fa63e947cb3eccf463648d21a05d5002c9b8adfa".
+      angle_rev_pattern = re.compile(r'(?<="%s": ")([a-fA-F0-9]{40})(?=")' %
+                                     deps_var, re.MULTILINE)
+      match = re.search(angle_rev_pattern % deps_var, deps_contents)
+      if match:
+        # Update the revision information for the given depot
+        new_data = re.sub(angle_rev_pattern, revision, deps_contents)
+      else:
+        # Check whether the depot and revision pattern in DEPS file deps
+        # variable. e.g.,
+        # "src/third_party/angle": Var("chromium_git") +
+        # "/angle/angle.git@fa63e947cb3eccf463648d21a05d5002c9b8adfa",.
+        angle_rev_pattern = re.compile(
+            r'(?<=angle\.git@)([a-fA-F0-9]{40})(?=")', re.MULTILINE)
+        match = re.search(angle_rev_pattern, deps_contents)
+        if not match:
+          print 'Could not find angle revision information in DEPS file.'
+          return False
+        new_data = re.sub(angle_rev_pattern, revision, deps_contents)
+      # Write changes to DEPS file
+      WriteStringToFile(new_data, deps_file)
+      return True
+    except IOError, e:
+      print 'Something went wrong while updating DEPS file, %s' % e
+    return False
+
+  def CreateDEPSPatch(self, depot, revision):
+    """Modifies DEPS and returns diff as text.
+
+    Args:
+      depot: Current depot being bisected.
+      revision: A git hash revision of the dependency repository.
+
+    Returns:
+      A tuple with git hash of chromium revision and DEPS patch text.
+    """
+    deps_file_path = os.path.join(self.src_cwd, bisect_utils.FILE_DEPS)
+    if not os.path.exists(deps_file_path):
+      raise RuntimeError('DEPS file does not exists.[%s]' % deps_file_path)
+    # Get current chromium revision (git hash).
+    chromium_sha = CheckRunGit(['rev-parse', 'HEAD']).strip()
+    if not chromium_sha:
+      raise RuntimeError('Failed to determine Chromium revision for %s' %
+                         revision)
+    if ('chromium' in DEPOT_DEPS_NAME[depot]['from'] or
+        'v8' in DEPOT_DEPS_NAME[depot]['from']):
+      # Checkout DEPS file for the current chromium revision.
+      if self.source_control.CheckoutFileAtRevision(bisect_utils.FILE_DEPS,
+                                                    chromium_sha,
+                                                    cwd=self.src_cwd):
+        if self.UpdateDeps(revision, depot, deps_file_path):
+          diff_command = ['diff',
+                          '--src-prefix=src/',
+                          '--dst-prefix=src/',
+                          '--no-ext-diff',
+                           bisect_utils.FILE_DEPS]
+          diff_text = CheckRunGit(diff_command, cwd=self.src_cwd)
+          return (chromium_sha, ChangeBackslashToSlashInPatch(diff_text))
+        else:
+          raise RuntimeError('Failed to update DEPS file for chromium: [%s]' %
+                             chromium_sha)
+      else:
+        raise RuntimeError('DEPS checkout Failed for chromium revision : [%s]' %
+                           chromium_sha)
+    return (None, None)
+
   def BuildCurrentRevision(self, depot, revision=None):
     """Builds chrome and performance_ui_tests on the current revision.
 
@@ -1445,15 +1694,24 @@ class BisectPerformanceMetrics(object):
     os.chdir(self.src_cwd)
     # Fetch build archive for the given revision from the cloud storage when
     # the storage bucket is passed.
-    if depot == 'chromium' and self.opts.gs_bucket and revision:
+    if self.IsDownloadable(depot) and self.opts.gs_bucket and revision:
+      deps_patch = None
+      if depot != 'chromium':
+        # Create a DEPS patch with new revision for dependency repository.
+        (revision, deps_patch) = self.CreateDEPSPatch(depot, revision)
       # Get SVN revision for the given SHA, since builds are archived using SVN
       # revision.
-      revision = self.source_control.SVNFindRev(revision)
-      if not revision:
+      chromium_revision = self.source_control.SVNFindRev(revision)
+      if not chromium_revision:
         raise RuntimeError(
-            'Failed to determine SVN revision for %s' % sha_revision)
-      if self.DownloadCurrentBuild(revision):
+            'Failed to determine SVN revision for %s' % revision)
+      if self.DownloadCurrentBuild(chromium_revision, patch=deps_patch):
         os.chdir(cwd)
+        if deps_patch:
+          # Reverts the changes to DEPS file.
+          self.source_control.CheckoutFileAtRevision(bisect_utils.FILE_DEPS,
+                                                     revision,
+                                                     cwd=self.src_cwd)
         return True
       raise RuntimeError('Failed to download build archive for revision %s.\n'
                          'Unfortunately, bisection couldn\'t continue any '
@@ -1769,7 +2027,7 @@ class BisectPerformanceMetrics(object):
 
     # Having these pyc files around between runs can confuse the
     # perf tests and cause them to crash.
-    for (path, dir, files) in os.walk(self.src_cwd):
+    for (path, _, files) in os.walk(self.src_cwd):
       for cur_file in files:
         if cur_file.endswith('.pyc'):
           path_to_file = os.path.join(path, cur_file)
@@ -1999,8 +2257,7 @@ class BisectPerformanceMetrics(object):
       return self.depot_cwd[depot_name]
     else:
       assert False, 'Unknown depot [ %s ] encountered. Possibly a new one'\
-                    ' was added without proper support?' %\
-                    (depot_name,)
+                    ' was added without proper support?' % depot_name
 
   def ChangeToDepotWorkingDirectory(self, depot_name):
     """Given a depot, changes to the appropriate working directory.
@@ -2167,7 +2424,7 @@ class BisectPerformanceMetrics(object):
 
     num_depot_revisions = len(revisions)
 
-    for k, v in revision_data.iteritems():
+    for _, v in revision_data.iteritems():
       if v['sort'] > sort:
         v['sort'] += num_depot_revisions
 
@@ -2490,7 +2747,7 @@ class BisectPerformanceMetrics(object):
 
             if not new_revision_list:
               results['error'] = 'An error occurred attempting to retrieve'\
-                                 ' revision range: [%s..%s]' %\
+                                 ' revision range: [%s..%s]' % \
                                  (earliest_revision, latest_revision)
               return results
 
@@ -2582,8 +2839,6 @@ class BisectPerformanceMetrics(object):
     revision_data_sorted = sorted(revision_data.iteritems(),
                                   key = lambda x: x[1]['sort'])
     results_dict = self._GetResultsDict(revision_data, revision_data_sorted)
-    first_working_revision = results_dict['first_working_revision']
-    last_broken_revision = results_dict['last_broken_revision']
 
     self._PrintTestedCommitsTable(revision_data_sorted,
                                   results_dict['first_working_revision'],
@@ -3015,7 +3270,7 @@ def DetermineAndCreateSourceControl(opts):
     is unsupported.
   """
 
-  (output, return_code) = RunGit(['rev-parse', '--is-inside-work-tree'])
+  (output, _) = RunGit(['rev-parse', '--is-inside-work-tree'])
 
   if output.strip() == 'true':
     return GitSourceControl(opts)
@@ -3238,7 +3493,7 @@ class BisectOptions(object):
   def ParseCommandLine(self):
     """Parses the command line for bisect options."""
     parser = self._CreateCommandLineParser()
-    (opts, args) = parser.parse_args()
+    (opts, _) = parser.parse_args()
 
     try:
       if not opts.command:
@@ -3331,7 +3586,7 @@ def main():
 
   try:
     opts = BisectOptions()
-    parse_results = opts.ParseCommandLine()
+    opts.ParseCommandLine()
 
     if opts.extra_src:
       extra_src = bisect_utils.LoadExtraSrc(opts.extra_src)
