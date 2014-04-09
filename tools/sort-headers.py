@@ -39,9 +39,9 @@ def YesNo(prompt):
 
 def IncludeCompareKey(line):
   """Sorting comparator key used for comparing two #include lines.
-  Returns the filename without the #include/#import prefix.
+  Returns the filename without the #include/#import/import prefix.
   """
-  for prefix in ('#include ', '#import '):
+  for prefix in ('#include ', '#import ', 'import '):
     if line.startswith(prefix):
       line = line[len(prefix):]
       break
@@ -67,8 +67,9 @@ def IncludeCompareKey(line):
 
 
 def IsInclude(line):
-  """Returns True if the line is an #include/#import line."""
-  return line.startswith('#include ') or line.startswith('#import ')
+  """Returns True if the line is an #include/#import/import line."""
+  return any([line.startswith('#include '), line.startswith('#import '),
+              line.startswith('import ')])
 
 
 def SortHeader(infile, outfile):
