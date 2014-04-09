@@ -1137,7 +1137,7 @@ RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(IncludeSelfOrNot i
 
 RenderLayer* RenderLayer::ancestorCompositedScrollingLayer() const
 {
-    if (!compositor()->legacyAcceleratedCompositingForOverflowScrollEnabled())
+    if (!compositor()->legacyOrCurrentAcceleratedCompositingForOverflowScrollEnabled())
         return 0;
 
     RenderObject* containingBlock = renderer()->containingBlock();

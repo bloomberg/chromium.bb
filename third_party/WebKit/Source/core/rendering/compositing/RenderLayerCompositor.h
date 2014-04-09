@@ -82,7 +82,9 @@ public:
     bool hasAcceleratedCompositing() const { return m_hasAcceleratedCompositing; }
     bool layerSquashingEnabled() const;
 
+    bool legacyOrCurrentAcceleratedCompositingForOverflowScrollEnabled() const;
     bool legacyAcceleratedCompositingForOverflowScrollEnabled() const;
+
     bool acceleratedCompositingForOverflowScrollEnabled() const;
 
     bool canRender3DTransforms() const;

@@ -49,9 +49,15 @@ void CompositingReasonFinder::updateTriggers()
     if (!(m_compositingTriggers & LegacyOverflowScrollTrigger))
         m_compositingTriggers &= ~OverflowScrollTrigger;
 
-    // Enable universal overflow scrolling for the new fast path.
-    if (RuntimeEnabledFeatures::bleedingEdgeFastPathsEnabled())
-        m_compositingTriggers |= OverflowScrollTrigger | LegacyOverflowScrollTrigger;
+    // Enable universal overflow scrolling (and only universal overflow scrolling)
+    // on the new bleeding edge path. The above requirement (having legacy enabled)
+    // was only necessary to avoid explosions; the legacy path created far fewer
+    // layers. In the world of squashing, this doesn't make sense. We never want
+    // to use the old path in that case.
+    if (RuntimeEnabledFeatures::bleedingEdgeFastPathsEnabled()) {
+        m_compositingTriggers |= OverflowScrollTrigger;
+        m_compositingTriggers &= ~LegacyOverflowScrollTrigger;
+    }
 }
 
 bool CompositingReasonFinder::has3DTransformTrigger() const

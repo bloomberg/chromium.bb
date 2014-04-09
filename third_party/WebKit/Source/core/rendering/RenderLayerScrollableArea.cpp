@@ -1442,23 +1442,19 @@ void RenderLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
 void RenderLayerScrollableArea::updateNeedsCompositedScrolling()
 {
     TRACE_EVENT0("comp-scroll", "RenderLayer::updateNeedsCompositedScrolling");
-
-    layer()->stackingNode()->updateDescendantsAreContiguousInStackingOrder();
-    layer()->updateDescendantDependentFlags();
     RenderLayerCompositor* compositor = m_box->view()->compositor();
-
+    bool needsToBeStackingContainerDidChange = false;
+    bool needsCompositedScrolling = compositor->acceleratedCompositingForOverflowScrollEnabled();
     ASSERT(scrollsOverflow());
-    const bool needsToBeStackingContainer = compositor->legacyAcceleratedCompositingForOverflowScrollEnabled()
-        && layer()->stackingNode()->descendantsAreContiguousInStackingOrder()
-        && !layer()->hasUnclippedDescendant();
-
-    const bool needsToBeStackingContainerDidChange = layer()->stackingNode()->setNeedsToBeStackingContainer(needsToBeStackingContainer);
-
-    const bool needsCompositedScrolling = needsToBeStackingContainer
-        || compositor->acceleratedCompositingForOverflowScrollEnabled();
+    if (compositor->legacyAcceleratedCompositingForOverflowScrollEnabled()) {
+        layer()->stackingNode()->updateDescendantsAreContiguousInStackingOrder();
+        layer()->updateDescendantDependentFlags();
+        const bool needsToBeStackingContainer = layer()->stackingNode()->descendantsAreContiguousInStackingOrder() && !layer()->hasUnclippedDescendant();
+        needsToBeStackingContainerDidChange = layer()->stackingNode()->setNeedsToBeStackingContainer(needsToBeStackingContainer);
+        needsCompositedScrolling |= needsToBeStackingContainer;
+    }
 
     const bool needsCompositedScrollingDidChange = setNeedsCompositedScrolling(needsCompositedScrolling);
-
     if (needsToBeStackingContainerDidChange || needsCompositedScrollingDidChange) {
         // Note, the z-order lists may need to be rebuilt, but our code guarantees
         // that we have not affected stacking, so we will not dirty
