@@ -221,12 +221,13 @@ struct VideoDecoderConfig {
   enum VideoCodec {
     kUnknownVideoCodec = 0,
     kCodecVp8,
-    kCodecH264
+    kCodecH264,
+    kCodecVp9
   };
 
   enum VideoCodecProfile {
     kUnknownVideoCodecProfile = 0,
-    kVp8ProfileMain,
+    kProfileNotNeeded,
     kH264ProfileBaseline,
     kH264ProfileMain,
     kH264ProfileExtended,
