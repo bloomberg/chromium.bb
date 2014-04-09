@@ -107,7 +107,7 @@ static const struct eventop *eventops[] = {
 /* Global state */
 struct event_base *current_base = NULL;
 extern struct event_base *evsignal_base;
-static int use_monotonic;
+static int use_monotonic = 1;
 
 /* Prototypes */
 static void	event_queue_insert(struct event_base *, struct event *, int);
@@ -120,17 +120,6 @@ static int	timeout_next(struct event_base *, struct timeval **);
 static void	timeout_process(struct event_base *);
 static void	timeout_correct(struct event_base *, struct timeval *);
 
-static void
-detect_monotonic(void)
-{
-#if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_MONOTONIC)
-	struct timespec	ts;
-
-	if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0)
-		use_monotonic = 1;
-#endif
-}
-
 static int
 gettime(struct event_base *base, struct timeval *tp)
 {
@@ -140,17 +129,17 @@ gettime(struct event_base *base, struct timeval *tp)
 	}
 
 #if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_MONOTONIC)
-	if (use_monotonic) {
-		struct timespec	ts;
+	struct timespec	ts;
 
-		if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1)
-			return (-1);
-
+	if (use_monotonic &&
+	    clock_gettime(CLOCK_MONOTONIC, &ts) == 0) {
 		tp->tv_sec = ts.tv_sec;
 		tp->tv_usec = ts.tv_nsec / 1000;
 		return (0);
 	}
 #endif
+
+	use_monotonic = 0;
 
 	return (evutil_gettimeofday(tp, NULL));
 }
@@ -175,7 +164,6 @@ event_base_new(void)
 	if ((base = calloc(1, sizeof(struct event_base))) == NULL)
 		event_err(1, "%s: calloc", __func__);
 
-	detect_monotonic();
 	gettime(base, &base->event_tv);
 	
 	min_heap_ctor(&base->timeheap);
