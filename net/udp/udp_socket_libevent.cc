@@ -315,20 +315,22 @@ int UDPSocketLibevent::Bind(const IPEndPoint& address) {
   return rv;
 }
 
-bool UDPSocketLibevent::SetReceiveBufferSize(int32 size) {
+int UDPSocketLibevent::SetReceiveBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
   int rv = setsockopt(socket_, SOL_SOCKET, SO_RCVBUF,
                       reinterpret_cast<const char*>(&size), sizeof(size));
-  DCHECK(!rv) << "Could not set socket receive buffer size: " << errno;
-  return rv == 0;
+  int last_error = errno;
+  DCHECK(!rv) << "Could not set socket receive buffer size: " << last_error;
+  return rv == 0 ? OK : MapSystemError(last_error);
 }
 
-bool UDPSocketLibevent::SetSendBufferSize(int32 size) {
+int UDPSocketLibevent::SetSendBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
   int rv = setsockopt(socket_, SOL_SOCKET, SO_SNDBUF,
                       reinterpret_cast<const char*>(&size), sizeof(size));
-  DCHECK(!rv) << "Could not set socket send buffer size: " << errno;
-  return rv == 0;
+  int last_error = errno;
+  DCHECK(!rv) << "Could not set socket send buffer size: " << last_error;
+  return rv == 0 ? OK : MapSystemError(last_error);
 }
 
 void UDPSocketLibevent::AllowAddressReuse() {

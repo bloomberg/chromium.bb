@@ -103,13 +103,14 @@ void FakeSocket::DoAsyncWrite(scoped_refptr<net::IOBuffer> buf, int buf_len,
   callback.Run(buf_len);
 }
 
-bool FakeSocket::SetReceiveBufferSize(int32 size) {
+int FakeSocket::SetReceiveBufferSize(int32 size) {
   NOTIMPLEMENTED();
-  return false;
+  return net::ERR_NOT_IMPLEMENTED;
 }
-bool FakeSocket::SetSendBufferSize(int32 size) {
+
+int FakeSocket::SetSendBufferSize(int32 size) {
   NOTIMPLEMENTED();
-  return false;
+  return net::ERR_NOT_IMPLEMENTED;
 }
 
 int FakeSocket::Connect(const net::CompletionCallback& callback) {

@@ -484,18 +484,18 @@ int PseudoTcpAdapter::Write(net::IOBuffer* buffer, int buffer_size,
   return core_->Write(buffer, buffer_size, callback);
 }
 
-bool PseudoTcpAdapter::SetReceiveBufferSize(int32 size) {
+int PseudoTcpAdapter::SetReceiveBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
 
   core_->SetReceiveBufferSize(size);
-  return false;
+  return net::OK;
 }
 
-bool PseudoTcpAdapter::SetSendBufferSize(int32 size) {
+int PseudoTcpAdapter::SetSendBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
 
   core_->SetSendBufferSize(size);
-  return false;
+  return net::OK;
 }
 
 int PseudoTcpAdapter::Connect(const net::CompletionCallback& callback) {

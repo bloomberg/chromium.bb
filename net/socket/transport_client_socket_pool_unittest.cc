@@ -145,8 +145,8 @@ class MockClientSocket : public StreamSocket {
                     const CompletionCallback& callback) OVERRIDE {
     return ERR_FAILED;
   }
-  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE { return true; }
-  virtual bool SetSendBufferSize(int32 size) OVERRIDE { return true; }
+  virtual int SetReceiveBufferSize(int32 size) OVERRIDE { return OK; }
+  virtual int SetSendBufferSize(int32 size) OVERRIDE { return OK; }
 
  private:
   bool connected_;
@@ -210,8 +210,8 @@ class MockFailingClientSocket : public StreamSocket {
                     const CompletionCallback& callback) OVERRIDE {
     return ERR_FAILED;
   }
-  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE { return true; }
-  virtual bool SetSendBufferSize(int32 size) OVERRIDE { return true; }
+  virtual int SetReceiveBufferSize(int32 size) OVERRIDE { return OK; }
+  virtual int SetSendBufferSize(int32 size) OVERRIDE { return OK; }
 
  private:
   const AddressList addrlist_;
@@ -299,8 +299,8 @@ class MockPendingClientSocket : public StreamSocket {
                     const CompletionCallback& callback) OVERRIDE {
     return ERR_FAILED;
   }
-  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE { return true; }
-  virtual bool SetSendBufferSize(int32 size) OVERRIDE { return true; }
+  virtual int SetReceiveBufferSize(int32 size) OVERRIDE { return OK; }
+  virtual int SetSendBufferSize(int32 size) OVERRIDE { return OK; }
 
  private:
   void DoCallback(const CompletionCallback& callback) {

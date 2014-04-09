@@ -778,11 +778,11 @@ int SSLClientSocketOpenSSL::Write(IOBuffer* buf,
   return rv;
 }
 
-bool SSLClientSocketOpenSSL::SetReceiveBufferSize(int32 size) {
+int SSLClientSocketOpenSSL::SetReceiveBufferSize(int32 size) {
   return transport_->socket()->SetReceiveBufferSize(size);
 }
 
-bool SSLClientSocketOpenSSL::SetSendBufferSize(int32 size) {
+int SSLClientSocketOpenSSL::SetSendBufferSize(int32 size) {
   return transport_->socket()->SetSendBufferSize(size);
 }
 

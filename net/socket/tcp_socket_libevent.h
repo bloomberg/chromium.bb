@@ -61,8 +61,8 @@ class NET_EXPORT TCPSocketLibevent : public base::NonThreadSafe {
   // - SetKeepAlive(true, 45).
   void SetDefaultOptionsForClient();
   int SetAddressReuse(bool allow);
-  bool SetReceiveBufferSize(int32 size);
-  bool SetSendBufferSize(int32 size);
+  int SetReceiveBufferSize(int32 size);
+  int SetSendBufferSize(int32 size);
   bool SetKeepAlive(bool enable, int delay);
   bool SetNoDelay(bool no_delay);
 

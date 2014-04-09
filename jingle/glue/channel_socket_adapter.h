@@ -48,8 +48,8 @@ class TransportChannelSocketAdapter : public net::Socket,
   virtual int Write(net::IOBuffer* buf, int buf_len,
                     const net::CompletionCallback& callback) OVERRIDE;
 
-  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
-  virtual bool SetSendBufferSize(int32 size) OVERRIDE;
+  virtual int SetReceiveBufferSize(int32 size) OVERRIDE;
+  virtual int SetSendBufferSize(int32 size) OVERRIDE;
 
  private:
   void OnNewPacket(cricket::TransportChannel* channel,

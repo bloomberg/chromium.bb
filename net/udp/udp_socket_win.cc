@@ -388,44 +388,47 @@ int UDPSocketWin::CreateSocket(int addr_family) {
   return OK;
 }
 
-bool UDPSocketWin::SetReceiveBufferSize(int32 size) {
+int UDPSocketWin::SetReceiveBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
-  setsockopt(socket_, SOL_SOCKET, SO_RCVBUF,
-             reinterpret_cast<const char*>(&size), sizeof(size));
-  // If the setsockopt fails, but the buffer is big enough, we will return
-  // success. It is not worth testing the return value as we still need to check
-  // via getsockopt anyway according to Windows documentation.
+  int rv = setsockopt(socket_, SOL_SOCKET, SO_RCVBUF,
+                      reinterpret_cast<const char*>(&size), sizeof(size));
+  if (rv != 0)
+    return MapSystemError(WSAGetLastError());
+
+  // According to documentation, setsockopt may succeed, but we need to check
+  // the results via getsockopt to be sure it works on Windows.
   int32 actual_size = 0;
   int option_size = sizeof(actual_size);
-  int rv = getsockopt(socket_, SOL_SOCKET, SO_RCVBUF,
-                      reinterpret_cast<char*>(&actual_size), &option_size);
+  rv = getsockopt(socket_, SOL_SOCKET, SO_RCVBUF,
+                  reinterpret_cast<char*>(&actual_size), &option_size);
   if (rv != 0)
-    return false;
-  if (actual_size < size) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SocketReceiveBufferUnchangeable",
-                                actual_size, 1000, 1000000, 50);
-  }
-  return actual_size >= size;
+    return MapSystemError(WSAGetLastError());
+  if (actual_size >= size)
+    return OK;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SocketUnchangeableReceiveBuffer",
+                              actual_size, 1000, 1000000, 50);
+  return ERR_SOCKET_RECEIVE_BUFFER_SIZE_UNCHANGEABLE;
 }
 
-bool UDPSocketWin::SetSendBufferSize(int32 size) {
+int UDPSocketWin::SetSendBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
-  setsockopt(socket_, SOL_SOCKET, SO_SNDBUF,
-             reinterpret_cast<const char*>(&size), sizeof(size));
-  // If the setsockopt fails, but the buffer is big enough, we will return
-  // success. It is not worth testing the return value as we still need to check
-  // via getsockopt anyway according to Windows documentation.
+  int rv = setsockopt(socket_, SOL_SOCKET, SO_SNDBUF,
+                      reinterpret_cast<const char*>(&size), sizeof(size));
+  if (rv != 0)
+    return MapSystemError(WSAGetLastError());
+  // According to documentation, setsockopt may succeed, but we need to check
+  // the results via getsockopt to be sure it works on Windows.
   int32 actual_size = 0;
   int option_size = sizeof(actual_size);
-  int rv = getsockopt(socket_, SOL_SOCKET, SO_SNDBUF,
-                      reinterpret_cast<char*>(&actual_size), &option_size);
+  rv = getsockopt(socket_, SOL_SOCKET, SO_SNDBUF,
+                  reinterpret_cast<char*>(&actual_size), &option_size);
   if (rv != 0)
-    return false;
-  if (actual_size < size) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SocketUnchangeableSendBuffer",
-                                actual_size, 1000, 1000000, 50);
-  }
-  return actual_size >= size;
+    return MapSystemError(WSAGetLastError());
+  if (actual_size >= size)
+    return OK;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SocketUnchangeableSendBuffer",
+                              actual_size, 1000, 1000000, 50);
+  return ERR_SOCKET_SEND_BUFFER_SIZE_UNCHANGEABLE;
 }
 
 void UDPSocketWin::AllowAddressReuse() {

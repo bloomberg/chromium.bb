@@ -237,16 +237,16 @@ int SpdyProxyClientSocket::Write(IOBuffer* buf, int buf_len,
   return ERR_IO_PENDING;
 }
 
-bool SpdyProxyClientSocket::SetReceiveBufferSize(int32 size) {
+int SpdyProxyClientSocket::SetReceiveBufferSize(int32 size) {
   // Since this StreamSocket sits on top of a shared SpdySession, it
-  // is not safe for callers to set change this underlying socket.
-  return false;
+  // is not safe for callers to change this underlying socket.
+  return ERR_NOT_IMPLEMENTED;
 }
 
-bool SpdyProxyClientSocket::SetSendBufferSize(int32 size) {
+int SpdyProxyClientSocket::SetSendBufferSize(int32 size) {
   // Since this StreamSocket sits on top of a shared SpdySession, it
-  // is not safe for callers to set change this underlying socket.
-  return false;
+  // is not safe for callers to change this underlying socket.
+  return ERR_NOT_IMPLEMENTED;
 }
 
 int SpdyProxyClientSocket::GetPeerAddress(IPEndPoint* address) const {

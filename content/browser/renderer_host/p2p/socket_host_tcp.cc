@@ -205,12 +205,12 @@ void P2PSocketHostTcpBase::ProcessTlsSslConnectDone(int status) {
 void P2PSocketHostTcpBase::OnOpen() {
   state_ = STATE_OPEN;
   // Setting socket send and receive buffer size.
-  if (!socket_->SetReceiveBufferSize(kRecvSocketBufferSize)) {
+  if (net::OK != socket_->SetReceiveBufferSize(kRecvSocketBufferSize)) {
     LOG(WARNING) << "Failed to set socket receive buffer size to "
                  << kRecvSocketBufferSize;
   }
 
-  if (!socket_->SetSendBufferSize(kSendSocketBufferSize)) {
+  if (net::OK != socket_->SetSendBufferSize(kSendSocketBufferSize)) {
     LOG(WARNING) << "Failed to set socket send buffer size to "
                  << kSendSocketBufferSize;
   }
@@ -412,9 +412,9 @@ bool P2PSocketHostTcpBase::SetOption(P2PSocketOption option, int value) {
   DCHECK_EQ(STATE_OPEN, state_);
   switch (option) {
     case P2P_SOCKET_OPT_RCVBUF:
-      return socket_->SetReceiveBufferSize(value);
+      return socket_->SetReceiveBufferSize(value) == net::OK;
     case P2P_SOCKET_OPT_SNDBUF:
-      return socket_->SetSendBufferSize(value);
+      return socket_->SetSendBufferSize(value) == net::OK;
     case P2P_SOCKET_OPT_DSCP:
       return false;  // For TCP sockets DSCP setting is not available.
     default:

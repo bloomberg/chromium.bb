@@ -254,21 +254,22 @@ void PepperTCPSocket::SetOption(PP_TCPSocket_Option name,
         return;
       }
 
-      bool result = false;
+      int net_result = net::OK;
       if (name == PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE) {
         if (integer_value > ppapi::TCPSocketShared::kMaxSendBufferSize) {
           SendSetOptionACK(PP_ERROR_BADARGUMENT);
           return;
         }
-        result = tcp_socket->SetSendBufferSize(integer_value);
+        net_result = tcp_socket->SetSendBufferSize(integer_value);
       } else {
         if (integer_value > ppapi::TCPSocketShared::kMaxReceiveBufferSize) {
           SendSetOptionACK(PP_ERROR_BADARGUMENT);
           return;
         }
-        result = tcp_socket->SetReceiveBufferSize(integer_value);
+        net_result = tcp_socket->SetReceiveBufferSize(integer_value);
       }
-      SendSetOptionACK(result ? PP_OK : PP_ERROR_FAILED);
+      // TODO(wtc): Add error mapping.
+      SendSetOptionACK((net_result == net::OK) ? PP_OK : PP_ERROR_FAILED);
       return;
     }
     default: {

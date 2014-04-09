@@ -34,8 +34,8 @@ class PseudoTcpAdapter : public net::StreamSocket, base::NonThreadSafe {
                    const net::CompletionCallback& callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buffer, int buffer_size,
                     const net::CompletionCallback& callback) OVERRIDE;
-  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
-  virtual bool SetSendBufferSize(int32 size) OVERRIDE;
+  virtual int SetReceiveBufferSize(int32 size) OVERRIDE;
+  virtual int SetSendBufferSize(int32 size) OVERRIDE;
 
   // net::StreamSocket implementation.
   virtual int Connect(const net::CompletionCallback& callback) OVERRIDE;
