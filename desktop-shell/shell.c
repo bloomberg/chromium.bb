@@ -4501,6 +4501,19 @@ touch_to_activate_binding(struct weston_seat *seat, uint32_t time, void *data)
 }
 
 static void
+unfocus_all_seats(struct desktop_shell *shell)
+{
+	struct weston_seat *seat, *next;
+
+	wl_list_for_each_safe(seat, next, &shell->compositor->seat_list, link) {
+		if (seat->keyboard == NULL)
+			continue;
+
+		weston_keyboard_set_focus(seat->keyboard, NULL);
+	}
+}
+
+static void
 lock(struct desktop_shell *shell)
 {
 	struct workspace *ws = get_current_workspace(shell);
@@ -4525,6 +4538,11 @@ lock(struct desktop_shell *shell)
 		       &shell->lock_layer.link);
 
 	launch_screensaver(shell);
+
+	/* Remove the keyboard focus on all seats. This will be
+	 * restored to the workspace's saved state via
+	 * restore_focus_state when the compositor is unlocked */
+	unfocus_all_seats(shell);
 
 	/* TODO: disable bindings that should not work while locked. */
 
