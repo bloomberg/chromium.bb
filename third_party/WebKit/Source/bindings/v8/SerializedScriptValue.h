@@ -32,10 +32,15 @@
 #define SerializedScriptValue_h
 
 #include "bindings/v8/ScriptValue.h"
-
 #include "wtf/HashMap.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include <v8.h>
+
+namespace blink {
+
+class WebBlobInfo;
+
+}
 
 namespace WTF {
 
@@ -53,6 +58,7 @@ class MessagePort;
 typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
 typedef Vector<RefPtr<WTF::ArrayBuffer>, 1> ArrayBufferArray;
 typedef HashMap<String, RefPtr<BlobDataHandle> > BlobDataHandleMap;
+typedef Vector<blink::WebBlobInfo> WebBlobInfoArray;
 
 class SerializedScriptValue FINAL : public ThreadSafeRefCounted<SerializedScriptValue> {
 public:
@@ -61,7 +67,8 @@ public:
     // Version 3: Switched to using uuids as blob data identifiers.
     // Version 4: Extended File serialization to be complete.
     // Version 5: Added CryptoKeyTag for Key objects.
-    static const uint32_t wireFormatVersion = 5;
+    // Version 6: Added indexed serialization for File, Blob, and FileList.
+    static const uint32_t wireFormatVersion = 6;
 
     ~SerializedScriptValue();
 
@@ -76,8 +83,7 @@ public:
     static PassRefPtr<SerializedScriptValue> create(const String&);
     static PassRefPtr<SerializedScriptValue> create(const String&, v8::Isolate*);
     static PassRefPtr<SerializedScriptValue> create();
-
-    static PassRefPtr<SerializedScriptValue> create(const ScriptValue&, ExceptionState&, ScriptState*);
+    static PassRefPtr<SerializedScriptValue> create(const ScriptValue&, WebBlobInfoArray*, ExceptionState&, ScriptState*);
 
     // Never throws exceptions.
     static PassRefPtr<SerializedScriptValue> createAndSwallowExceptions(v8::Handle<v8::Value>, v8::Isolate*);
@@ -90,7 +96,7 @@ public:
     // Deserializes the value (in the current context). Returns a null value in
     // case of failure.
     v8::Handle<v8::Value> deserialize(MessagePortArray* = 0);
-    v8::Handle<v8::Value> deserialize(v8::Isolate*, MessagePortArray* = 0);
+    v8::Handle<v8::Value> deserialize(v8::Isolate*, MessagePortArray* = 0, const WebBlobInfoArray* = 0);
 
     // Helper function which pulls the values out of a JS sequence and into a MessagePortArray.
     // Also validates the elements per sections 4.1.13 and 4.1.15 of the WebIDL spec and section 8.3.3
@@ -116,7 +122,7 @@ private:
     typedef Vector<WTF::ArrayBufferContents, 1> ArrayBufferContentsArray;
 
     SerializedScriptValue();
-    SerializedScriptValue(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, ExceptionState&, v8::Isolate*);
+    SerializedScriptValue(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, ExceptionState&, v8::Isolate*);
     explicit SerializedScriptValue(const String& wireData);
 
     static PassOwnPtr<ArrayBufferContentsArray> transferArrayBuffers(ArrayBufferArray&, ExceptionState&, v8::Isolate*);

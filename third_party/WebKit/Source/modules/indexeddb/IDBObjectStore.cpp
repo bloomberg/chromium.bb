@@ -168,7 +168,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
         return nullptr;
     }
 
-    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(value, exceptionState, state);
+    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(value, 0, exceptionState, state);
     if (exceptionState.hadException())
         return nullptr;
 

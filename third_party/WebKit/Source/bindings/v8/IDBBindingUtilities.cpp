@@ -359,7 +359,7 @@ static v8::Handle<v8::Value> deserializeIDBValueBuffer(SharedBuffer* buffer, v8:
     Vector<uint8_t> value;
     value.append(buffer->data(), buffer->size());
     RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::createFromWireBytes(value);
-    return serializedValue->deserialize(isolate);
+    return serializedValue->deserialize(isolate, 0, 0);
 }
 
 bool injectV8KeyIntoV8Value(v8::Handle<v8::Value> key, v8::Handle<v8::Value> value, const IDBKeyPath& keyPath, v8::Isolate* isolate)

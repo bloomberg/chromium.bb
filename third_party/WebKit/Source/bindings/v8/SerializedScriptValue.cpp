@@ -65,6 +65,7 @@
 #include "heap/Handle.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoKey.h"
 #include "public/platform/WebCryptoKeyAlgorithm.h"
@@ -199,10 +200,13 @@ enum SerializationTag {
     DateTag = 'D', // value:double -> Date (ref)
     MessagePortTag = 'M', // index:int -> MessagePort. Fills the result with transferred MessagePort.
     NumberTag = 'N', // value:double -> Number
-    BlobTag = 'b', // url:WebCoreString, type:WebCoreString, size:uint64_t -> Blob (ref)
+    BlobTag = 'b', // uuid:WebCoreString, type:WebCoreString, size:uint64_t -> Blob (ref)
+    BlobIndexTag = 'i', // index:int32_t -> Blob (ref)
     FileTag = 'f', // file:RawFile -> File (ref)
-    DOMFileSystemTag = 'd', // type:int32_t, name:WebCoreString, url:WebCoreString -> FileSystem (ref)
+    FileIndexTag = 'e', // index:int32_t -> File (ref)
+    DOMFileSystemTag = 'd', // type:int32_t, name:WebCoreString, uuid:WebCoreString -> FileSystem (ref)
     FileListTag = 'l', // length:uint32_t, files:RawFile[length] -> FileList (ref)
+    FileListIndexTag = 'L', // length:uint32_t, files:int32_t[length] -> FileList (ref)
     ImageDataTag = '#', // width:uint32_t, height:uint32_t, pixelDataLength:uint32_t, data:byte[pixelDataLength] -> ImageData (ref)
     ObjectTag = '{', // numProperties:uint32_t -> pops the last object from the open stack;
                      //                           fills it with the last numProperties name,value pairs pushed onto the deserialization stack
@@ -458,6 +462,13 @@ public:
         doWriteUint64(size);
     }
 
+    void writeBlobIndex(int blobIndex)
+    {
+        ASSERT(blobIndex >= 0);
+        append(BlobIndexTag);
+        doWriteUint32(blobIndex);
+    }
+
     void writeDOMFileSystem(int type, const String& name, const String& url)
     {
         append(DOMFileSystemTag);
@@ -472,6 +483,12 @@ public:
         doWriteFile(file);
     }
 
+    void writeFileIndex(int blobIndex)
+    {
+        append(FileIndexTag);
+        doWriteUint32(blobIndex);
+    }
+
     void writeFileList(const FileList& fileList)
     {
         append(FileListTag);
@@ -479,6 +496,15 @@ public:
         doWriteUint32(length);
         for (unsigned i = 0; i < length; ++i)
             doWriteFile(*fileList.item(i));
+    }
+
+    void writeFileListIndex(const Vector<int>& blobIndices)
+    {
+        append(FileListIndexTag);
+        uint32_t length = blobIndices.size();
+        doWriteUint32(length);
+        for (unsigned i = 0; i < length; ++i)
+            doWriteUint32(blobIndices[i]);
     }
 
     bool writeCryptoKey(const blink::WebCryptoKey& key)
@@ -910,12 +936,13 @@ public:
         JSException
     };
 
-    Serializer(Writer& writer, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, v8::Isolate* isolate)
+    Serializer(Writer& writer, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, v8::Isolate* isolate)
         : m_writer(writer)
         , m_tryCatch(tryCatch)
         , m_depth(0)
         , m_status(Success)
         , m_nextObjectReference(0)
+        , m_blobInfo(blobInfo)
         , m_blobDataHandles(blobDataHandles)
         , m_isolate(isolate)
     {
@@ -1259,8 +1286,12 @@ private:
             return 0;
         if (blob->hasBeenClosed())
             return handleError(DataCloneError, "A Blob object has been closed, and could therefore not be cloned.", next);
-        m_writer.writeBlob(blob->uuid(), blob->type(), blob->size());
+        int blobIndex = -1;
         m_blobDataHandles.add(blob->uuid(), blob->blobDataHandle());
+        if (appendBlobInfo(blob->uuid(), blob->type(), blob->size(), &blobIndex))
+            m_writer.writeBlobIndex(blobIndex);
+        else
+            m_writer.writeBlob(blob->uuid(), blob->type(), blob->size());
         return 0;
     }
 
@@ -1282,20 +1313,41 @@ private:
             return 0;
         if (file->hasBeenClosed())
             return handleError(DataCloneError, "A File object has been closed, and could therefore not be cloned.", next);
-        m_writer.writeFile(*file);
+        int blobIndex = -1;
         m_blobDataHandles.add(file->uuid(), file->blobDataHandle());
+        if (appendFileInfo(file->uuid(), file->path(), file->name(), file->type(), &blobIndex)) {
+            ASSERT(blobIndex >= 0);
+            m_writer.writeFileIndex(blobIndex);
+        } else {
+            m_writer.writeFile(*file);
+        }
         return 0;
     }
 
-    void writeFileList(v8::Handle<v8::Value> value)
+    StateBase* writeFileList(v8::Handle<v8::Value> value, StateBase* next)
     {
         FileList* fileList = V8FileList::toNative(value.As<v8::Object>());
         if (!fileList)
-            return;
-        m_writer.writeFileList(*fileList);
+            return 0;
         unsigned length = fileList->length();
-        for (unsigned i = 0; i < length; ++i)
-            m_blobDataHandles.add(fileList->item(i)->uuid(), fileList->item(i)->blobDataHandle());
+        Vector<int> blobIndices;
+        for (unsigned i = 0; i < length; ++i) {
+            int blobIndex = -1;
+            const File* file = fileList->item(i);
+            if (file->hasBeenClosed())
+                return handleError(DataCloneError, "A File object has been closed, and could therefore not be cloned.", next);
+            m_blobDataHandles.add(file->uuid(), file->blobDataHandle());
+            if (appendFileInfo(file->uuid(), file->path(), file->name(), file->type(), &blobIndex)) {
+                ASSERT(!i || blobIndex > 0);
+                ASSERT(blobIndex >= 0);
+                blobIndices.append(blobIndex);
+            }
+        }
+        if (!blobIndices.isEmpty())
+            m_writer.writeFileListIndex(blobIndices);
+        else
+            m_writer.writeFileList(*fileList);
+        return 0;
     }
 
     bool writeCryptoKey(v8::Handle<v8::Value> value)
@@ -1414,6 +1466,24 @@ private:
         m_objectPool.set(object, objectReference);
     }
 
+    bool appendBlobInfo(const String& uuid, const String& type, unsigned long long size, int* index)
+    {
+        if (!m_blobInfo)
+            return false;
+        *index = m_blobInfo->size();
+        m_blobInfo->append(blink::WebBlobInfo(uuid, type, size));
+        return true;
+    }
+
+    bool appendFileInfo(const String& uuid, const String& filePath, const String& fileName, const String& type, int* index)
+    {
+        if (!m_blobInfo)
+            return false;
+        *index = m_blobInfo->size();
+        m_blobInfo->append(blink::WebBlobInfo(uuid, filePath, fileName, type));
+        return true;
+    }
+
     Writer& m_writer;
     v8::TryCatch& m_tryCatch;
     int m_depth;
@@ -1424,6 +1494,7 @@ private:
     ObjectPool m_transferredMessagePorts;
     ObjectPool m_transferredArrayBuffers;
     uint32_t m_nextObjectReference;
+    WebBlobInfoArray* m_blobInfo;
     BlobDataHandleMap& m_blobDataHandles;
     v8::Isolate* m_isolate;
 };
@@ -1500,7 +1571,7 @@ Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, Stat
         else if (V8DOMFileSystem::hasInstance(value, m_isolate))
             return writeDOMFileSystem(value, next);
         else if (V8FileList::hasInstance(value, m_isolate))
-            writeFileList(value);
+            return writeFileList(value, next);
         else if (V8Key::hasInstance(value, m_isolate)) {
             if (!writeCryptoKey(value))
                 return handleError(DataCloneError, "Couldn't serialize key data", next);
@@ -1543,12 +1614,13 @@ public:
 // restoring information about saved objects of composite types.
 class Reader {
 public:
-    Reader(const uint8_t* buffer, int length, v8::Isolate* isolate,  const BlobDataHandleMap& blobDataHandles)
+    Reader(const uint8_t* buffer, int length, v8::Isolate* isolate, const WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles)
         : m_buffer(buffer)
         , m_length(length)
         , m_position(0)
         , m_version(0)
         , m_isolate(isolate)
+        , m_blobInfo(blobInfo)
         , m_blobDataHandles(blobDataHandles)
     {
         ASSERT(!(reinterpret_cast<size_t>(buffer) & 1));
@@ -1638,12 +1710,14 @@ public:
             creator.pushObjectReference(*value);
             break;
         case BlobTag:
-            if (!readBlob(value))
+        case BlobIndexTag:
+            if (!readBlob(value, tag == BlobIndexTag))
                 return false;
             creator.pushObjectReference(*value);
             break;
         case FileTag:
-            if (!readFile(value))
+        case FileIndexTag:
+            if (!readFile(value, tag == FileIndexTag))
                 return false;
             creator.pushObjectReference(*value);
             break;
@@ -1653,7 +1727,8 @@ public:
             creator.pushObjectReference(*value);
             break;
         case FileListTag:
-            if (!readFileList(value))
+        case FileListIndexTag:
+            if (!readFileList(value, tag == FileListIndexTag))
                 return false;
             creator.pushObjectReference(*value);
             break;
@@ -2064,20 +2139,34 @@ private:
         return true;
     }
 
-    bool readBlob(v8::Handle<v8::Value>* value)
+    bool readBlob(v8::Handle<v8::Value>* value, bool isIndexed)
     {
         if (m_version < 3)
             return false;
-        String uuid;
-        String type;
-        uint64_t size;
-        if (!readWebCoreString(&uuid))
-            return false;
-        if (!readWebCoreString(&type))
-            return false;
-        if (!doReadUint64(&size))
-            return false;
-        RefPtrWillBeRawPtr<Blob> blob = Blob::create(getOrCreateBlobDataHandle(uuid, type, size));
+        RefPtrWillBeRawPtr<Blob> blob;
+        if (isIndexed) {
+            if (m_version < 6)
+                return false;
+            ASSERT(m_blobInfo);
+            uint32_t index;
+            if (!doReadUint32(&index) || index >= m_blobInfo->size())
+                return false;
+            const blink::WebBlobInfo& info = (*m_blobInfo)[index];
+            blob = Blob::create(getOrCreateBlobDataHandle(info.uuid(), info.type(), info.size()));
+        } else {
+            ASSERT(!m_blobInfo);
+            String uuid;
+            String type;
+            uint64_t size;
+            ASSERT(!m_blobInfo);
+            if (!readWebCoreString(&uuid))
+                return false;
+            if (!readWebCoreString(&type))
+                return false;
+            if (!doReadUint64(&size))
+                return false;
+            blob = Blob::create(getOrCreateBlobDataHandle(uuid, type, size));
+        }
         *value = toV8(blob.release(), v8::Handle<v8::Object>(), m_isolate);
         return true;
     }
@@ -2098,16 +2187,23 @@ private:
         return true;
     }
 
-    bool readFile(v8::Handle<v8::Value>* value)
+    bool readFile(v8::Handle<v8::Value>* value, bool isIndexed)
     {
-        RefPtrWillBeRawPtr<File> file = doReadFileHelper();
+        RefPtrWillBeRawPtr<File> file;
+        if (isIndexed) {
+            if (m_version < 6)
+                return false;
+            file = readFileIndexHelper();
+        } else {
+            file = readFileHelper();
+        }
         if (!file)
             return false;
         *value = toV8(file.release(), v8::Handle<v8::Object>(), m_isolate);
         return true;
     }
 
-    bool readFileList(v8::Handle<v8::Value>* value)
+    bool readFileList(v8::Handle<v8::Value>* value, bool isIndexed)
     {
         if (m_version < 3)
             return false;
@@ -2116,7 +2212,14 @@ private:
             return false;
         RefPtrWillBeRawPtr<FileList> fileList = FileList::create();
         for (unsigned i = 0; i < length; ++i) {
-            RefPtrWillBeRawPtr<File> file = doReadFileHelper();
+            RefPtrWillBeRawPtr<File> file;
+            if (isIndexed) {
+                if (m_version < 6)
+                    return false;
+                file = readFileIndexHelper();
+            } else {
+                file = readFileHelper();
+            }
             if (!file)
                 return false;
             fileList->append(file.release());
@@ -2181,10 +2284,11 @@ private:
         return true;
     }
 
-    PassRefPtrWillBeRawPtr<File> doReadFileHelper()
+    PassRefPtrWillBeRawPtr<File> readFileHelper()
     {
         if (m_version < 3)
             return nullptr;
+        ASSERT(!m_blobInfo);
         String path;
         String name;
         String relativePath;
@@ -2212,6 +2316,18 @@ private:
                 return nullptr;
         }
         return File::create(path, name, relativePath, hasSnapshot > 0, size, lastModified, getOrCreateBlobDataHandle(uuid, type));
+    }
+
+    PassRefPtrWillBeRawPtr<File> readFileIndexHelper()
+    {
+        if (m_version < 3)
+            return nullptr;
+        ASSERT(m_blobInfo);
+        uint32_t index;
+        if (!doReadUint32(&index) || index >= m_blobInfo->size())
+            return nullptr;
+        const blink::WebBlobInfo& info = (*m_blobInfo)[index];
+        return File::create(info.filePath(), info.fileName(), info.size(), info.lastModified(), getOrCreateBlobDataHandle(info.uuid(), info.type(), info.size()));
     }
 
     template<class T>
@@ -2261,7 +2377,7 @@ private:
         // the collection of BDH's for blobs to work, which would encourage lifetimes to be considered
         // when passing ssv's around cross process. At present, we get 'lucky' in some cases because
         // the blob in the src process happens to still exist at the time the dest process is deserializing.
-        // For example in sharedWorker.postMesssage(...).
+        // For example in sharedWorker.postMessage(...).
         BlobDataHandleMap::const_iterator it = m_blobDataHandles.find(uuid);
         if (it != m_blobDataHandles.end()) {
             // make assertions about type and size?
@@ -2432,6 +2548,7 @@ private:
     unsigned m_position;
     uint32_t m_version;
     v8::Isolate* m_isolate;
+    const WebBlobInfoArray* m_blobInfo;
     const BlobDataHandleMap& m_blobDataHandles;
 };
 
@@ -2674,19 +2791,19 @@ private:
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(v8::Handle<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ExceptionState& exceptionState, v8::Isolate* isolate)
 {
-    return adoptRef(new SerializedScriptValue(value, messagePorts, arrayBuffers, exceptionState, isolate));
+    return adoptRef(new SerializedScriptValue(value, messagePorts, arrayBuffers, 0, exceptionState, isolate));
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::createAndSwallowExceptions(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     TrackExceptionState exceptionState;
-    return adoptRef(new SerializedScriptValue(value, 0, 0, exceptionState, isolate));
+    return adoptRef(new SerializedScriptValue(value, 0, 0, 0, exceptionState, isolate));
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(const ScriptValue& value, ExceptionState& exceptionState, ScriptState* state)
+PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(const ScriptValue& value, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState, ScriptState* state)
 {
     ScriptScope scope(state);
-    return adoptRef(new SerializedScriptValue(value.v8Value(), 0, 0, exceptionState, state->isolate()));
+    return adoptRef(new SerializedScriptValue(value.v8Value(), 0, 0, blobInfo, exceptionState, state->isolate()));
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::createFromWire(const String& data)
@@ -2810,7 +2927,7 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
     return contents.release();
 }
 
-SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ExceptionState& exceptionState, v8::Isolate* isolate)
+SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState, v8::Isolate* isolate)
     : m_externallyAllocatedMemory(0)
 {
     Writer writer;
@@ -2818,7 +2935,7 @@ SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, Messag
     String errorMessage;
     {
         v8::TryCatch tryCatch;
-        Serializer serializer(writer, messagePorts, arrayBuffers, m_blobDataHandles, tryCatch, isolate);
+        Serializer serializer(writer, messagePorts, arrayBuffers, blobInfo, m_blobDataHandles, tryCatch, isolate);
         status = serializer.serialize(value);
         if (status == Serializer::JSException) {
             // If there was a JS exception thrown, re-throw it.
@@ -2853,10 +2970,10 @@ SerializedScriptValue::SerializedScriptValue(const String& wireData)
 
 v8::Handle<v8::Value> SerializedScriptValue::deserialize(MessagePortArray* messagePorts)
 {
-    return deserialize(v8::Isolate::GetCurrent(), messagePorts);
+    return deserialize(v8::Isolate::GetCurrent(), messagePorts, 0);
 }
 
-v8::Handle<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, MessagePortArray* messagePorts)
+v8::Handle<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, MessagePortArray* messagePorts, const WebBlobInfoArray* blobInfo)
 {
     if (!m_data.impl())
         return v8::Null(isolate);
@@ -2866,7 +2983,7 @@ v8::Handle<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, M
     // storage. Instead, it should use SharedBuffer or Vector<uint8_t>. The
     // information stored in m_data isn't even encoded in UTF-16. Instead,
     // unicode characters are encoded as UTF-8 with two code units per UChar.
-    Reader reader(reinterpret_cast<const uint8_t*>(m_data.impl()->characters16()), 2 * m_data.length(), isolate, m_blobDataHandles);
+    Reader reader(reinterpret_cast<const uint8_t*>(m_data.impl()->characters16()), 2 * m_data.length(), isolate, blobInfo, m_blobDataHandles);
     Deserializer deserializer(reader, messagePorts, m_arrayBufferContentsArray.get());
 
     // deserialize() can run arbitrary script (e.g., setters), which could result in |this| being destroyed.

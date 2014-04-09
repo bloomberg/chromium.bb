@@ -20,7 +20,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: ff053f004b021005011030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021005011030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -40,7 +40,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: ff053f004b022005012000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022005012000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -60,7 +60,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is "sign"
-Serialized key bytes: ff053f004b021005091030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021005091030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -80,7 +80,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is "sign"
-Serialized key bytes: ff053f004b022005092000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022005092000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -100,7 +100,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is "verify"
-Serialized key bytes: ff053f004b021005111030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021005111030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -120,7 +120,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is "verify"
-Serialized key bytes: ff053f004b022005112000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022005112000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -140,7 +140,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is "sign,verify"
-Serialized key bytes: ff053f004b021005191030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021005191030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -160,7 +160,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is "sign,verify"
-Serialized key bytes: ff053f004b022005192000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022005192000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -180,7 +180,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: ff053f004b021005001030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021005001030112233445566778899aabbccddeeff
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -199,7 +199,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: ff053f004b022005002000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022005002000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -218,7 +218,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is "sign"
-Serialized key bytes: ff053f004b021005081030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021005081030112233445566778899aabbccddeeff
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -237,7 +237,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is "sign"
-Serialized key bytes: ff053f004b022005082000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022005082000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -256,7 +256,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is "verify"
-Serialized key bytes: ff053f004b021005101030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021005101030112233445566778899aabbccddeeff
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -275,7 +275,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is "verify"
-Serialized key bytes: ff053f004b022005102000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022005102000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -294,7 +294,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is "sign,verify"
-Serialized key bytes: ff053f004b021005181030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021005181030112233445566778899aabbccddeeff
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -313,7 +313,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-1"
 PASS clonedKey.usages.join(',') is "sign,verify"
-Serialized key bytes: ff053f004b022005182000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022005182000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -332,7 +332,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: ff053f004b021006011030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021006011030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -352,7 +352,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: ff053f004b022006012000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022006012000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -372,7 +372,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is "sign"
-Serialized key bytes: ff053f004b021006091030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021006091030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -392,7 +392,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is "sign"
-Serialized key bytes: ff053f004b022006092000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022006092000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -412,7 +412,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is "verify"
-Serialized key bytes: ff053f004b021006111030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021006111030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -432,7 +432,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is "verify"
-Serialized key bytes: ff053f004b022006112000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022006112000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -452,7 +452,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is "sign,verify"
-Serialized key bytes: ff053f004b021006191030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021006191030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -472,7 +472,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is "sign,verify"
-Serialized key bytes: ff053f004b022006192000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022006192000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -492,7 +492,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: ff053f004b021006001030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021006001030112233445566778899aabbccddeeff
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -511,7 +511,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: ff053f004b022006002000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022006002000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -530,7 +530,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is "sign"
-Serialized key bytes: ff053f004b021006081030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021006081030112233445566778899aabbccddeeff
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -549,7 +549,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is "sign"
-Serialized key bytes: ff053f004b022006082000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022006082000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -568,7 +568,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is "verify"
-Serialized key bytes: ff053f004b021006101030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021006101030112233445566778899aabbccddeeff
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -587,7 +587,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is "verify"
-Serialized key bytes: ff053f004b022006102000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022006102000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -606,7 +606,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is "sign,verify"
-Serialized key bytes: ff053f004b021006181030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021006181030112233445566778899aabbccddeeff
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -625,7 +625,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-256"
 PASS clonedKey.usages.join(',') is "sign,verify"
-Serialized key bytes: ff053f004b022006182000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022006182000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -644,7 +644,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: ff053f004b021008011030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021008011030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -664,7 +664,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: ff053f004b022008012000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022008012000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -684,7 +684,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is "sign"
-Serialized key bytes: ff053f004b021008091030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021008091030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -704,7 +704,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is "sign"
-Serialized key bytes: ff053f004b022008092000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022008092000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -724,7 +724,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is "verify"
-Serialized key bytes: ff053f004b021008111030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021008111030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -744,7 +744,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is "verify"
-Serialized key bytes: ff053f004b022008112000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022008112000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -764,7 +764,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is "sign,verify"
-Serialized key bytes: ff053f004b021008191030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021008191030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -784,7 +784,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is "sign,verify"
-Serialized key bytes: ff053f004b022008192000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022008192000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
 PASS importedKey.extraProperty is "hi"
@@ -804,7 +804,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: ff053f004b021008001030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021008001030112233445566778899aabbccddeeff
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -823,7 +823,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is ""
-Serialized key bytes: ff053f004b022008002000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022008002000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -842,7 +842,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is "sign"
-Serialized key bytes: ff053f004b021008081030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021008081030112233445566778899aabbccddeeff
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -861,7 +861,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is "sign"
-Serialized key bytes: ff053f004b022008082000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022008082000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -880,7 +880,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is "verify"
-Serialized key bytes: ff053f004b021008101030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021008101030112233445566778899aabbccddeeff
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -899,7 +899,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is "verify"
-Serialized key bytes: ff053f004b022008102000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022008102000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -918,7 +918,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is "sign,verify"
-Serialized key bytes: ff053f004b021008181030112233445566778899aabbccddeeff
+Serialized key bytes: ff063f004b021008181030112233445566778899aabbccddeeff
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -937,7 +937,7 @@ PASS clonedKey.algorithm.name is "HMAC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.algorithm.hash.name is "SHA-512"
 PASS clonedKey.usages.join(',') is "sign,verify"
-Serialized key bytes: ff053f004b022008182000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
+Serialized key bytes: ff063f004b022008182000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 
 PASS successfullyParsed is true
 
