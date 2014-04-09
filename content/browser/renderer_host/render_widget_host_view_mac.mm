@@ -144,9 +144,7 @@ static float ScaleFactorForView(NSView* view) {
 
 + (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event;
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
-- (void)gotUnhandledWheelEvent;
-- (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right;
-- (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar;
+- (void)gotWheelEventConsumed:(BOOL)consumed;
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification;
 - (void)windowChangedGlobalFrame:(NSNotification*)notification;
@@ -1860,13 +1858,10 @@ gfx::GLSurfaceHandle RenderWidgetHostViewMac::GetCompositingSurface() {
 
 void RenderWidgetHostViewMac::SetHasHorizontalScrollbar(
     bool has_horizontal_scrollbar) {
-  [cocoa_view_ setHasHorizontalScrollbar:has_horizontal_scrollbar];
 }
 
 void RenderWidgetHostViewMac::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
-  [cocoa_view_ scrollOffsetPinnedToLeft:is_pinned_to_left
-                                toRight:is_pinned_to_right];
 }
 
 bool RenderWidgetHostViewMac::LockMouse() {
@@ -1898,12 +1893,11 @@ void RenderWidgetHostViewMac::UnlockMouse() {
     render_widget_host_->LostMouseLock();
 }
 
-void RenderWidgetHostViewMac::UnhandledWheelEvent(
-    const blink::WebMouseWheelEvent& event) {
-  // Only record a wheel event as unhandled if JavaScript handlers got a chance
-  // to see it (no-op wheel events are ignored by the event dispatcher)
+void RenderWidgetHostViewMac::HandledWheelEvent(
+    const blink::WebMouseWheelEvent& event,
+    bool consumed) {
   if (event.deltaX || event.deltaY)
-    [cocoa_view_ gotUnhandledWheelEvent];
+    [cocoa_view_ gotWheelEventConsumed:consumed];
 }
 
 bool RenderWidgetHostViewMac::Send(IPC::Message* message) {
@@ -2371,28 +2365,8 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
   }
 }
 
-- (void)gotUnhandledWheelEvent {
-  if (responderDelegate_ &&
-      [responderDelegate_
-          respondsToSelector:@selector(gotUnhandledWheelEvent)]) {
-    [responderDelegate_ gotUnhandledWheelEvent];
-  }
-}
-
-- (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right {
-  if (responderDelegate_ &&
-      [responderDelegate_
-          respondsToSelector:@selector(scrollOffsetPinnedToLeft:toRight:)]) {
-    [responderDelegate_ scrollOffsetPinnedToLeft:left toRight:right];
-  }
-}
-
-- (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar {
-  if (responderDelegate_ &&
-      [responderDelegate_
-          respondsToSelector:@selector(setHasHorizontalScrollbar:)]) {
-    [responderDelegate_ setHasHorizontalScrollbar:has_horizontal_scrollbar];
-  }
+- (void)gotWheelEventConsumed:(BOOL)consumed {
+  [responderDelegate_ gotWheelEventConsumed:consumed];
 }
 
 - (BOOL)respondsToSelector:(SEL)selector {

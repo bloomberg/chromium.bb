@@ -152,8 +152,6 @@ class RenderWidgetHostViewAndroid
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
-  virtual void UnhandledWheelEvent(
-      const blink::WebMouseWheelEvent& event) OVERRIDE;
   virtual InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event) OVERRIDE;
   virtual void OnSetNeedsFlushInput() OVERRIDE;

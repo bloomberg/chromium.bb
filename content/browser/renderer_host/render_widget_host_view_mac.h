@@ -334,8 +334,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
-  virtual void UnhandledWheelEvent(
-      const blink::WebMouseWheelEvent& event) OVERRIDE;
+  virtual void HandledWheelEvent(const blink::WebMouseWheelEvent& event,
+                                 bool consumed) OVERRIDE;
 
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;

@@ -466,9 +466,12 @@ class TestView : public TestRenderWidgetHostView {
     acked_event_ = touch.event;
     ++acked_event_count_;
   }
-  virtual void UnhandledWheelEvent(const WebMouseWheelEvent& event) OVERRIDE {
-    unhandled_wheel_event_count_++;
-    unhandled_wheel_event_ = event;
+  virtual void HandledWheelEvent(const blink::WebMouseWheelEvent& event,
+                                 bool consumed) OVERRIDE {
+    if (!consumed) {
+      unhandled_wheel_event_count_++;
+      unhandled_wheel_event_ = event;
+    }
   }
   virtual void GestureEventAck(const WebGestureEvent& event,
                                InputEventAckState ack_result) OVERRIDE {

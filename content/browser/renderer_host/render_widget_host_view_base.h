@@ -58,8 +58,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual void SetShowingContextMenu(bool showing_menu) OVERRIDE;
   virtual base::string16 GetSelectedText() const OVERRIDE;
   virtual bool IsMouseLocked() OVERRIDE;
-  virtual void UnhandledWheelEvent(
-      const blink::WebMouseWheelEvent& event) OVERRIDE;
+  virtual void HandledWheelEvent(const blink::WebMouseWheelEvent& event,
+                                 bool consumed) OVERRIDE;
   virtual InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event) OVERRIDE;
   virtual void OnSetNeedsFlushInput() OVERRIDE;

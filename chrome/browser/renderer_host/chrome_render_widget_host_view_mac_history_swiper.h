@@ -17,10 +17,18 @@
 @end
 
 namespace history_swiper {
+
 enum NavigationDirection {
   kBackwards = 0,
   kForwards,
 };
+
+enum GestureHandledState {
+  kPending,    // Still waiting to determine whether the gesture was handled.
+  kHandled,    // At least 1 event in the gesture was handled by blink.
+  kUnhandled,  // No events so far have been handled by blink.
+};
+
 } // history_swiper
 
 // Responsible for maintaining state for 2-finger swipe history navigation.
@@ -33,20 +41,10 @@ enum NavigationDirection {
 @class HistoryOverlayController;
 @interface HistorySwiper : NSObject {
  @private
-  // If the viewport is scrolled all the way to the left or right.
-  // Used for history swiping.
-  BOOL isPinnedLeft_;
-  BOOL isPinnedRight_;
-
-  // If the main frame has a horizontal scrollbar.
-  // Used for history swiping.
-  BOOL hasHorizontalScrollbar_;
-
-  // If a scroll event came back unhandled from the renderer. Set to |NO| at
-  // the start of a scroll gesture, and then to |YES| if a scroll event comes
-  // back unhandled from the renderer.
-  // Used for history swiping.
-  BOOL gotUnhandledWheelEvent_;
+  // Whether blink has handled the gesture.  This enum gets reset to kPending
+  // whenever a new gesture starts.  History swiping is only enabled if blink
+  // has never handled any of the events in the gesture.
+  history_swiper::GestureHandledState gestureHandledState_;
 
   // This controller will exist if and only if the UI is in history swipe mode.
   HistoryOverlayController* historyOverlay_;
@@ -95,9 +93,7 @@ enum NavigationDirection {
 // NSScrollWheel. We look at the phase to determine whether to trigger history
 // swiping
 - (BOOL)handleEvent:(NSEvent*)event;
-- (void)gotUnhandledWheelEvent;
-- (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right;
-- (void)setHasHorizontalScrollbar:(BOOL)hasHorizontalScrollbar;
+- (void)gotWheelEventConsumed:(BOOL)consumed;
 
 // The event passed in is a gesture event, and has touch data associated with
 // the trackpad.

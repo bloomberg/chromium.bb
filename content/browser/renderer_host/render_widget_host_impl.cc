@@ -2116,10 +2116,13 @@ void RenderWidgetHostImpl::OnWheelEventAck(
         ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT, 0, 0);
   }
 
-  const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
-  if (!processed && !is_hidden() && view_) {
-    if (!delegate_->HandleWheelEvent(wheel_event.event))
-      view_->UnhandledWheelEvent(wheel_event.event);
+  bool consumed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
+  if (!is_hidden() && view_) {
+    // If the renderer did not consume the event, give the delegate a chance
+    // to consume it.
+    if (!consumed)
+      consumed = delegate_->HandleWheelEvent(wheel_event.event);
+    view_->HandledWheelEvent(wheel_event.event, consumed);
   }
 }
 

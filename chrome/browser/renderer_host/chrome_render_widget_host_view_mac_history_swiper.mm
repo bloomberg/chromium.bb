@@ -43,17 +43,12 @@ static BOOL forceMagicMouse = NO;
   return NO;
 }
 
-- (void)gotUnhandledWheelEvent {
-  gotUnhandledWheelEvent_ = YES;
-}
-
-- (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right {
-  isPinnedLeft_ = left;
-  isPinnedRight_ = right;
-}
-
-- (void)setHasHorizontalScrollbar:(BOOL)hasHorizontalScrollbar {
-  hasHorizontalScrollbar_ = hasHorizontalScrollbar;
+- (void)gotWheelEventConsumed:(BOOL)consumed {
+  if (consumed) {
+    gestureHandledState_ = history_swiper::kHandled;
+  } else if (gestureHandledState_ == history_swiper::kPending) {
+    gestureHandledState_ = history_swiper::kUnhandled;
+  }
 }
 
 - (BOOL)canRubberbandLeft:(NSView*)view {
@@ -93,7 +88,7 @@ static BOOL forceMagicMouse = NO;
   // Reset state pertaining to previous gestures.
   historySwipeCancelled_ = NO;
   gestureStartPointValid_ = NO;
-  gotUnhandledWheelEvent_ = NO;
+  gestureHandledState_ = history_swiper::kPending;
   receivedTouch_ = NO;
   mouseScrollDelta_ = NSZeroSize;
 }
@@ -343,14 +338,6 @@ static BOOL forceMagicMouse = NO;
   if (!browserCanMove)
     return NO;
 
-  if (isRightScroll) {
-    if (hasHorizontalScrollbar_ && !isPinnedRight_)
-      return NO;
-  } else {
-    if (hasHorizontalScrollbar_ && !isPinnedLeft_)
-      return NO;
-  }
-
   [self initiateMagicMouseHistorySwipe:isRightScroll event:theEvent];
   return YES;
 }
@@ -487,9 +474,9 @@ static BOOL forceMagicMouse = NO;
   if (![delegate_ shouldAllowHistorySwiping])
     return NO;
 
-  // Don't even consider enabling history swiping until blink has decided it is
-  // not going to handle the event.
-  if (!gotUnhandledWheelEvent_)
+  // Only enable history swiping if blink has never handled any of the events in
+  // the gesture.
+  if (gestureHandledState_ != history_swiper::kUnhandled)
     return NO;
 
   // If the window has a horizontal scroll bar, sometimes Cocoa gets confused
@@ -524,14 +511,6 @@ static BOOL forceMagicMouse = NO;
   BOOL inverted = [self isEventDirectionInverted:theEvent];
   if (inverted)
     isRightScroll = !isRightScroll;
-
-  if (isRightScroll) {
-    if (hasHorizontalScrollbar_ && !isPinnedRight_)
-      return NO;
-  } else {
-    if (hasHorizontalScrollbar_ && !isPinnedLeft_)
-      return NO;
-  }
 
   history_swiper::NavigationDirection direction =
       isRightScroll ? history_swiper::kForwards : history_swiper::kBackwards;

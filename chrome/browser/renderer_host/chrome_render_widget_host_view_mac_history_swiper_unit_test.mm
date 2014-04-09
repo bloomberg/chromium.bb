@@ -168,9 +168,7 @@ void MacHistorySwiperTest::moveGestureInMiddle() {
   moveGestureAtPoint(makePoint(0.5, 0.5));
 
   // Callbacks from blink to set the relevant state for history swiping.
-  [historySwiper_ gotUnhandledWheelEvent];
-  [historySwiper_ scrollOffsetPinnedToLeft:YES toRight:YES];
-  [historySwiper_ setHasHorizontalScrollbar:NO];
+  [historySwiper_ gotWheelEventConsumed:NO];
 }
 
 void MacHistorySwiperTest::moveGestureAtPoint(NSPoint point) {
@@ -322,9 +320,7 @@ TEST_F(MacHistorySwiperTest, MomentumSwipeLeft) {
   EXPECT_EQ(end_count_, 0);
 
   // Callbacks from blink to set the relevant state for history swiping.
-  [historySwiper_ gotUnhandledWheelEvent];
-  [historySwiper_ scrollOffsetPinnedToLeft:YES toRight:YES];
-  [historySwiper_ setHasHorizontalScrollbar:NO];
+  [historySwiper_ gotWheelEventConsumed:NO];
 
   momentumMoveGestureAtPoint(makePoint(0.2, 0.5));
   EXPECT_EQ(begin_count_, 1);
@@ -354,9 +350,7 @@ TEST_F(MacHistorySwiperTest, MagicMouseMomentumSwipe) {
   [historySwiper_ handleEvent:scrollEvent];
 
   // Callbacks from blink to set the relevant state for history swiping.
-  [historySwiper_ gotUnhandledWheelEvent];
-  [historySwiper_ scrollOffsetPinnedToLeft:YES toRight:YES];
-  [historySwiper_ setHasHorizontalScrollbar:NO];
+  [historySwiper_ gotWheelEventConsumed:NO];
 
   // Send a momentum move gesture.
   scrollEvent =
@@ -405,4 +399,24 @@ TEST_F(MacHistorySwiperTest, TouchEventAfterGestureFinishes) {
   // New events should not be swallowed.
   NSEvent* beganEvent = scrollWheelEventWithPhase(NSEventPhaseBegan);
   EXPECT_FALSE([historySwiper_ handleEvent:beganEvent]);
+}
+
+// If any event is handled by blink, history swiping should not trigger.
+TEST_F(MacHistorySwiperTest, EventHandledByBlink) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
+  startGestureInMiddle();
+  moveGestureInMiddle();
+
+  // An event is handled by blink.
+  [historySwiper_ gotWheelEventConsumed:YES];
+
+  // A new event comes in, that isn't handled by blink.
+  moveGestureAtPoint(makePoint(0.2, 0.5));
+  [historySwiper_ gotWheelEventConsumed:NO];
+
+  EXPECT_EQ(begin_count_, 0);
 }
