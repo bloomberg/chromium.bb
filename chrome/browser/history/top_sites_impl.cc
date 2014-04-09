@@ -661,7 +661,9 @@ size_t TopSitesImpl::MergeCachedForcedURLs(MostVisitedURLList* new_list) {
   std::set<GURL> all_new_urls;
   size_t num_forced = 0;
   for (size_t i = 0; i < new_list->size(); ++i) {
-    all_new_urls.insert((*new_list)[i].url);
+    for (size_t j = 0; j < (*new_list)[i].redirects.size(); j++) {
+      all_new_urls.insert((*new_list)[i].redirects[j]);
+    }
     if (!(*new_list)[i].last_forced_time.is_null())
       ++num_forced;
   }

@@ -1444,6 +1444,34 @@ TEST_F(TopSitesImplTest, SetTopSitesIdentical) {
   ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 3));
 }
 
+TEST_F(TopSitesImplTest, SetTopSitesWithAlreadyExistingForcedURLs) {
+  // Set the initial list of URLs.
+  MostVisitedURLList old_url_list;
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://url/0/redir"), 1000);
+  AppendForcedMostVisitedURL(&old_url_list, GURL("http://url/1"), 2000);
+  SetTopSites(old_url_list);
+
+  // Setup a new URL list that will cause collisions.
+  MostVisitedURLList new_url_list;
+  AppendMostVisitedURLWithRedirect(&new_url_list, GURL("http://url/0/redir"),
+                                   GURL("http://url/0"));
+  AppendMostVisitedURL(&new_url_list, GURL("http://url/1"));
+  SetTopSites(new_url_list);
+
+  // Query all URLs.
+  TopSitesQuerier querier;
+  querier.QueryAllTopSites(top_sites(), false, true);
+
+  // Check URLs. When collision occurs, the non-forced one is always preferred.
+  ASSERT_EQ(2u + GetPrepopulatePages().size(), querier.urls().size());
+  EXPECT_EQ("http://url/0", querier.urls()[0].url.spec());
+  EXPECT_EQ("http://url/0/redir", querier.urls()[0].redirects[0].spec());
+  EXPECT_TRUE(querier.urls()[0].last_forced_time.is_null());
+  EXPECT_EQ("http://url/1", querier.urls()[1].url.spec());
+  EXPECT_TRUE(querier.urls()[1].last_forced_time.is_null());
+  ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 2));
+}
+
 TEST_F(TopSitesImplTest, AddForcedURL) {
   // Set the initial list of URLs.
   MostVisitedURLList url_list;
