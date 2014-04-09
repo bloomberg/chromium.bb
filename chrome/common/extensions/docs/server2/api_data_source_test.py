@@ -42,45 +42,6 @@ class _FakeAvailabilityFinder(object):
     return ChannelInfo('stable', '396', 5)
 
 
-class _FakeSamplesDataSource(object):
-
-  def Create(self, request):
-    return {}
-
-
-# Sad irony :(
-class _FakeAPIDataSource(object):
-
-  def __init__(self, json_data):
-    self._json = json_data
-
-  def Create(self, *args, **kwargs):
-    return self
-
-  def get(self, key, disable_refs=False):
-    if key not in self._json:
-      raise FileNotFoundError(key)
-    return self._json[key]
-
-
-class _FakeNamespace(object):
-
-  def __init__(self):
-    self.documentation_options = {}
-
-
-class _FakeAPIModels(object):
-
-  def __init__(self, names):
-    self._names = names
-
-  def GetNames(self):
-    return self._names
-
-  def GetModel(self, name):
-    return Future(value=_FakeNamespace())
-
-
 class _FakeTemplateCache(object):
 
   def GetFromFile(self, key):
@@ -120,7 +81,6 @@ class APIDataSourceTest(unittest.TestCase):
   def testCreateId(self):
     dict_ = _JSCModel('tester',
                       self._api_models,
-                      False,
                       _FakeAvailabilityFinder(),
                       self._json_cache,
                       _FakeTemplateCache(),
@@ -137,7 +97,6 @@ class APIDataSourceTest(unittest.TestCase):
     expected_json = self._LoadJSON('expected_tester.json')
     dict_ = _JSCModel('tester',
                       self._api_models,
-                      False,
                       _FakeAvailabilityFinder(),
                       self._json_cache,
                       _FakeTemplateCache(),
@@ -162,7 +121,6 @@ class APIDataSourceTest(unittest.TestCase):
     for api_name, availability in api_availabilities.iteritems():
       model = _JSCModel(api_name,
                         self._avail_api_models,
-                        True,
                         self._avail_finder,
                         self._avail_json_cache,
                         _FakeTemplateCache(),
@@ -173,7 +131,6 @@ class APIDataSourceTest(unittest.TestCase):
   def testGetIntroList(self):
     model = _JSCModel('tester',
                       self._api_models,
-                      False,
                       _FakeAvailabilityFinder(),
                       self._json_cache,
                       _FakeTemplateCache(),
@@ -245,7 +202,6 @@ class APIDataSourceTest(unittest.TestCase):
   def testAddRules(self):
     dict_ = _JSCModel('add_rules_tester',
                       self._api_models,
-                      False,
                       _FakeAvailabilityFinder(),
                       self._json_cache,
                       _FakeTemplateCache(),

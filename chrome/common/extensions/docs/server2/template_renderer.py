@@ -51,7 +51,6 @@ class TemplateRenderer(object):
     server_instance = self._server_instance
     data_sources = CreateDataSources(server_instance, request=request)
     data_sources.update({
-      'apis': server_instance.api_data_source_factory.Create(request),
       'samples': server_instance.samples_data_source_factory.Create(request),
     })
     return data_sources

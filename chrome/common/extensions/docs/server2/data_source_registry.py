@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from api_data_source import APIDataSource
 from api_list_data_source import APIListDataSource
 from data_source import DataSource
 from manifest_data_source import ManifestDataSource
@@ -14,6 +15,7 @@ from whats_new_data_source import WhatsNewDataSource
 
 
 _all_data_sources = {
+  'apis': APIDataSource,
   'api_list': APIListDataSource,
   'articles': ArticleDataSource,
   'intros': IntroDataSource,
