@@ -105,8 +105,6 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
-import yaml
-
 
 debug = False
 
@@ -1194,7 +1192,13 @@ def ReadUnknownEncodedFile(file_path, logging_text=None):
 
 
 def main(args):
+  # We are imported by src/repohooks/pre-upload.py in a non chroot environment
+  # where yaml may not be there, so we only import yaml if we're being run
+  # through the normal workflow.
   # pylint: disable=W0603
+  global yaml
+  import yaml
+
   global debug
   # pylint: enable=W0603
 
