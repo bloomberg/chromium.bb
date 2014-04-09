@@ -13,7 +13,6 @@
 #include "ui/gl/gl_surface_cgl.h"
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
-#include "ui/gl/gl_surface_nsview.h"
 
 namespace gfx {
 
@@ -38,11 +37,8 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
     case kGLImplementationAppleGL: {
-      scoped_refptr<GLSurface> surface(new GLSurfaceNSView(window));
-      if (!surface->Initialize())
-        return NULL;
-
-      return surface;
+      NOTIMPLEMENTED() << "No onscreen support on Mac.";
+      return NULL;
     }
     case kGLImplementationMockGL:
       return new GLSurfaceStub;

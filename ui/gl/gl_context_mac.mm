@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/mesa/src/include/GL/osmesa.h"
 #include "ui/gl/gl_context_cgl.h"
-#include "ui/gl/gl_context_nsview.h"
 #include "ui/gl/gl_context_osmesa.h"
 #include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_implementation.h"
@@ -28,10 +27,11 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
     case kGLImplementationDesktopGL:
     case kGLImplementationAppleGL: {
       scoped_refptr<GLContext> context;
-      if (compatible_surface->IsOffscreen())
-        context = new GLContextCGL(share_group);
-      else
-        context = new GLContextNSView(share_group);
+      // Note that with virtualization we might still be able to make current
+      // a different onscreen surface with this context later. But we should
+      // always be creating the context with an offscreen surface first.
+      DCHECK(compatible_surface->IsOffscreen());
+      context = new GLContextCGL(share_group);
       if (!context->Initialize(compatible_surface, gpu_preference))
         return NULL;
 
