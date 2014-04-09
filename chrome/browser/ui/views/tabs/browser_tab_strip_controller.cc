@@ -39,7 +39,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message.h"
-#include "net/base/net_util.h"
+#include "net/base/filename_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/image/image.h"

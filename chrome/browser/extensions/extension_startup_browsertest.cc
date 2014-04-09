@@ -34,7 +34,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
-#include "net/base/net_util.h"
+#include "net/base/filename_util.h"
 
 using extensions::FeatureSwitch;
 

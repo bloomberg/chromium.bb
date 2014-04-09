@@ -23,8 +23,8 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/generated_resources.h"
+#include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
-#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(ENABLE_PLUGINS)

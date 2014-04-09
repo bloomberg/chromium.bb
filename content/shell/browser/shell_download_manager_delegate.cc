@@ -26,7 +26,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/shell/browser/webkit_test_controller.h"
 #include "content/shell/common/shell_switches.h"
-#include "net/base/net_util.h"
+#include "net/base/filename_util.h"
 
 #if defined(OS_WIN)
 #include "ui/aura/window.h"

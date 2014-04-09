@@ -23,7 +23,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
-#include "net/base/net_util.h"
+#include "net/base/filename_util.h"
 
 using content::BrowserThread;
 using content::PluginService;

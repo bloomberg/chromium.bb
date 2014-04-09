@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/download/drag_download_item.h"
 #include "content/public/browser/download_item.h"
-#include "net/base/net_util.h"
+#include "net/base/filename_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"

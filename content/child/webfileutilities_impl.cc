@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "content/child/blink_glue.h"
 #include "net/base/file_stream.h"
-#include "net/base/net_util.h"
+#include "net/base/filename_util.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"

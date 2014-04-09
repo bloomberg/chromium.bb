@@ -13,7 +13,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/message_bundle.h"
-#include "net/base/net_util.h"
+#include "net/base/filename_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace extensions {

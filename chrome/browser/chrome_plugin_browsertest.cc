@@ -31,7 +31,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "net/base/net_util.h"
+#include "net/base/filename_util.h"
 
 #if defined(OS_WIN)
 #include "content/public/browser/web_contents_view.h"
