@@ -71,7 +71,6 @@ CHROMEOS_EXPORT extern const char kDisableFirstRunUI[];
 CHROMEOS_EXPORT extern const char kForceFirstRunUI[];
 CHROMEOS_EXPORT extern const char kEnableFirstRunUITransitions[];
 CHROMEOS_EXPORT extern const char kDisableSamlSignin[];
-CHROMEOS_EXPORT extern const char kGAIAAuthExtensionManifest[];
 CHROMEOS_EXPORT extern const char kTestAutoUpdateUI[];
 
 }  // namespace switches

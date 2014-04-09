@@ -109,15 +109,6 @@ void OobeBaseTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
                                   gaia_url.spec());
   fake_gaia_->Initialize();
-
-  // Allow GAIA to be served over http.
-  base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-  command_line->AppendSwitchASCII(
-      chromeos::switches::kGAIAAuthExtensionManifest,
-      test_data_dir.Append("login")
-                   .Append("gaia_auth_http_manifest.json")
-                   .value());
 }
 
 void OobeBaseTest::SimulateNetworkOffline() {

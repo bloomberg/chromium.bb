@@ -83,6 +83,7 @@ class FakeSamlIdp {
 
   void SetLoginHTMLTemplate(const std::string& template_file);
   void SetLoginAuthHTMLTemplate(const std::string& template_file);
+  void SetRefreshURL(const GURL& refresh_url);
 
   scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request);
 
@@ -99,6 +100,7 @@ class FakeSamlIdp {
   std::string login_html_template_;
   std::string login_auth_html_template_;
   GURL gaia_assertion_url_;
+  GURL refresh_url_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSamlIdp);
 };
@@ -129,6 +131,10 @@ void FakeSamlIdp::SetLoginAuthHTMLTemplate(const std::string& template_file) {
   EXPECT_TRUE(base::ReadFileToString(
       html_template_dir_.Append(template_file),
       &login_auth_html_template_));
+}
+
+void FakeSamlIdp::SetRefreshURL(const GURL& refresh_url) {
+  refresh_url_ = refresh_url;
 }
 
 scoped_ptr<HttpResponse> FakeSamlIdp::HandleRequest(
@@ -179,6 +185,8 @@ scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
   std::string response_html = html_template;
   ReplaceSubstringsAfterOffset(&response_html, 0, "$RelayState", relay_state);
   ReplaceSubstringsAfterOffset(&response_html, 0, "$Post", next_path);
+  ReplaceSubstringsAfterOffset(
+      &response_html, 0, "$Refresh", refresh_url_.spec());
 
   scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
   http_response->set_code(net::HTTP_OK);
@@ -550,12 +558,26 @@ IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
 }
 
 // Verifies that when GAIA attempts to redirect to a SAML IdP served over http,
-// not https, the redirect is blocked by CSP and an error message is shown.
+// not https, the redirect is blocked and an error message is shown.
 IN_PROC_BROWSER_TEST_F(SamlTest, HTTPRedirectDisallowed) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
 
   WaitForSigninScreen();
   GetLoginDisplay()->ShowSigninScreenForCreds(kHTTPSAMLUserEmail, "");
+
+  OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
+}
+
+// Verifies that when GAIA attempts to redirect to a page served over http, not
+// https, via an HTML meta refresh, the redirect is blocked and an error message
+// is shown. This guards against regressions of http://crbug.com/359515.
+IN_PROC_BROWSER_TEST_F(SamlTest, MetaRefreshToHTTPDisallowed) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login_instant_meta_refresh.html");
+  fake_saml_idp()->SetRefreshURL(
+      embedded_test_server()->base_url().Resolve("/SSO"));
+
+  WaitForSigninScreen();
+  GetLoginDisplay()->ShowSigninScreenForCreds(kFirstSAMLUserEmail, "");
 
   OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
 }

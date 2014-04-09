@@ -189,9 +189,6 @@ const char kDisableUserImageSync[]          = "disable-user-image-sync";
 // Disables SAML sigin support.
 const char kDisableSamlSignin[]             = "disable-saml-signin";
 
-// Overrides the manifest of the GAIA auth extension with the given file.
-const char kGAIAAuthExtensionManifest[]     = "gaia-auth-extension-manifest";
-
 // Disables new first-run overlay UI.
 const char kDisableFirstRunUI[] = "disable-first-run-ui";
 

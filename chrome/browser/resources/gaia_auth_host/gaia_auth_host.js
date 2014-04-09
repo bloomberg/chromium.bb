@@ -173,6 +173,11 @@ cr.define('cr.login', function() {
     noPasswordCallback_: null,
 
     /**
+     * Invoked when the authentication flow had to be aborted because content
+     * served over an unencrypted connection was detected.
+    insecureContentBlockedCallback_: null,
+
+    /**
      * The iframe container.
      * @type {HTMLIFrameElement}
      */
@@ -202,6 +207,14 @@ cr.define('cr.login', function() {
      */
     set noPasswordCallback(callback) {
       this.noPasswordCallback_ = callback;
+    },
+
+    /**
+     * Sets insecureContentBlockedCallback_.
+     * @type {function()}
+     */
+    set insecureContentBlockedCallback(callback) {
+      this.insecureContentBlockedCallback_ = callback;
     },
 
     /**
@@ -371,6 +384,16 @@ cr.define('cr.login', function() {
       if (msg.method == 'authPageLoaded') {
         this.authDomain = msg.domain;
         this.authFlow = msg.isSAML ? AuthFlow.SAML : AuthFlow.GAIA;
+        return;
+      }
+
+      if (msg.method == 'insecureContentBlocked') {
+        if (this.insecureContentBlockedCallback_) {
+          this.insecureContentBlockedCallback_();
+        } else {
+          console.error(
+              'GaiaAuthHost: Invalid insecureContentBlockedCallback_.');
+        }
         return;
       }
 

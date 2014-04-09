@@ -188,7 +188,7 @@ Authenticator.prototype = {
 
   /**
    * Invoked when 'enableSAML' event is received to initialize SAML support on
-   * ChromeOS, or when initDesktopChannel_ is called on desktop.
+   * Chrome OS, or when initDesktopChannel_ is called on desktop.
    */
   onEnableSAML_: function() {
     this.isSAMLEnabled_ = true;
@@ -202,11 +202,23 @@ Authenticator.prototype = {
     this.supportChannel_.registerMessage(
         'onAuthPageLoaded', this.onAuthPageLoaded_.bind(this));
     this.supportChannel_.registerMessage(
+        'onInsecureContentBlocked', this.onInsecureContentBlocked_.bind(this));
+    this.supportChannel_.registerMessage(
         'apiCall', this.onAPICall_.bind(this));
     this.supportChannel_.send({
       name: 'setGaiaUrl',
       gaiaUrl: this.gaiaUrl_
     });
+    if (!this.desktopMode_ && this.gaiaUrl_.indexOf('https://') == 0) {
+      // Abort the login flow when content served over an unencrypted connection
+      // is detected on Chrome OS. This does not apply to tests that explicitly
+      // set a non-https GAIA URL and want to perform all authentication over
+      // http.
+      this.supportChannel_.send({
+        name: 'setBlockInsecureContent',
+        blockInsecureContent: true
+      });
+    }
   },
 
   /**
@@ -230,6 +242,15 @@ Authenticator.prototype = {
       'isSAML': this.isSAMLFlow_,
       'domain': extractDomain(msg.url)
     }, this.parentPage_);
+  },
+
+  /**
+   * Invoked when the background page sends an 'onInsecureContentBlocked'
+   * message.
+   */
+  onInsecureContentBlocked_: function() {
+    window.parent.postMessage({'method': 'insecureContentBlocked'},
+                              this.parentPage_);
   },
 
   /**
