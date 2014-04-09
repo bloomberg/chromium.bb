@@ -340,6 +340,9 @@ public:
 
     static FinalizedHeapObjectHeader* fromPayload(const void*);
 
+    NO_SANITIZE_ADDRESS
+    bool hasVTable() { return m_gcInfo->hasVTable(); }
+
 private:
     const GCInfo* m_gcInfo;
 };
@@ -455,6 +458,7 @@ protected:
     void populateObjectStartBitMap();
     bool isObjectStartBitMapComputed() { return m_objectStartBitMapComputed; }
     TraceCallback traceCallback(Header*);
+    bool hasVTable(Header*);
 
     HeapPage<Header>* m_next;
     ThreadHeap<Header>* m_heap;
@@ -1578,6 +1582,7 @@ const GCInfo GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> >::info = {
     FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator> >::finalize,
     // Finalizer is needed to destruct things stored in the inline capacity.
     inlineCapacity && VectorTraits<T>::needsDestruction,
+    VTableTrait<Vector<T, inlineCapacity, HeapAllocator> >::hasVTable,
 };
 
 template<typename T>
@@ -1621,6 +1626,7 @@ const GCInfo GCInfoTrait<HeapVectorBacking<T, Traits> >::info = {
     TraceTrait<HeapVectorBacking<T, Traits> >::trace,
     FinalizerTrait<HeapVectorBacking<T, Traits> >::finalize,
     Traits::needsDestruction,
+    false, // We don't support embedded objects in HeapVectors with vtables.
 };
 
 template<typename Table>

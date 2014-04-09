@@ -44,6 +44,11 @@
 
 namespace WebCore {
 
+static bool vTableInitialized(void* objectPointer)
+{
+    return !!(*reinterpret_cast<Address*>(objectPointer));
+}
+
 #if OS(WIN)
 static bool IsPowerOf2(size_t power)
 {
@@ -383,14 +388,20 @@ bool LargeHeapObject<Header>::checkAndMarkPointer(Visitor* visitor, Address addr
 template<>
 void LargeHeapObject<FinalizedHeapObjectHeader>::mark(Visitor* visitor)
 {
-    visitor->mark(heapObjectHeader(), heapObjectHeader()->traceCallback());
+    if (heapObjectHeader()->hasVTable() && !vTableInitialized(payload()))
+        visitor->markConservatively(heapObjectHeader());
+    else
+        visitor->mark(heapObjectHeader(), heapObjectHeader()->traceCallback());
 }
 
 template<>
 void LargeHeapObject<HeapObjectHeader>::mark(Visitor* visitor)
 {
     ASSERT(gcInfo());
-    visitor->mark(heapObjectHeader(), gcInfo()->m_trace);
+    if (gcInfo()->hasVTable() && !vTableInitialized(payload()))
+        visitor->markConservatively(heapObjectHeader());
+    else
+        visitor->mark(heapObjectHeader(), gcInfo()->m_trace);
 }
 
 template<>
@@ -1000,7 +1011,10 @@ bool HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address addr)
     if (header->isFree())
         return false;
 
-    visitor->mark(header, traceCallback(header));
+    if (hasVTable(header) && !vTableInitialized(header->payload()))
+        visitor->markConservatively(header);
+    else
+        visitor->mark(header, traceCallback(header));
     return true;
 }
 
@@ -1043,6 +1057,19 @@ template<>
 inline TraceCallback HeapPage<FinalizedHeapObjectHeader>::traceCallback(FinalizedHeapObjectHeader* header)
 {
     return header->traceCallback();
+}
+
+template<>
+inline bool HeapPage<HeapObjectHeader>::hasVTable(HeapObjectHeader* header)
+{
+    ASSERT(gcInfo());
+    return gcInfo()->hasVTable();
+}
+
+template<>
+inline bool HeapPage<FinalizedHeapObjectHeader>::hasVTable(FinalizedHeapObjectHeader* header)
+{
+    return header->hasVTable();
 }
 
 template<typename Header>
@@ -1193,6 +1220,35 @@ public:
         visitHeader(header, header->payload(), callback);
     }
 
+
+    inline void visitConservatively(HeapObjectHeader* header, void* objectPointer, size_t objectSize)
+    {
+        ASSERT(header);
+        ASSERT(objectPointer);
+        if (header->isMarked())
+            return;
+        header->mark();
+
+        // Scan through the object's fields and visit them conservatively.
+        Address* objectFields = reinterpret_cast<Address*>(objectPointer);
+        for (size_t i = 0; i < objectSize / sizeof(Address); ++i)
+            Heap::checkAndMarkPointer(this, objectFields[i]);
+    }
+
+    virtual void markConservatively(HeapObjectHeader* header)
+    {
+        // We need both the HeapObjectHeader and FinalizedHeapObjectHeader
+        // version to correctly find the payload.
+        visitConservatively(header, header->payload(), header->payloadSize());
+    }
+
+    virtual void markConservatively(FinalizedHeapObjectHeader* header)
+    {
+        // We need both the HeapObjectHeader and FinalizedHeapObjectHeader
+        // version to correctly find the payload.
+        visitConservatively(header, header->payload(), header->payloadSize());
+    }
+
     virtual void registerWeakMembers(const void* closure, const void* containingObject, WeakPointerCallback callback) OVERRIDE
     {
         Heap::pushWeakObjectPointerCallback(const_cast<void*>(closure), const_cast<void*>(containingObject), callback);
@@ -1259,6 +1315,9 @@ BaseHeapPage* Heap::contains(Address address)
 Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
 {
     ASSERT(ThreadState::isAnyThreadInGC());
+    if (!address)
+        return 0;
+
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
         if ((*it)->checkAndMarkPointer(visitor, address)) {

@@ -156,6 +156,16 @@ public:
         m_count++;
     }
 
+    virtual void markConservatively(HeapObjectHeader* header) OVERRIDE
+    {
+        ASSERT_NOT_REACHED();
+    }
+
+    virtual void markConservatively(FinalizedHeapObjectHeader* header) OVERRIDE
+    {
+        ASSERT_NOT_REACHED();
+    }
+
     virtual void registerWeakMembers(const void*, const void*, WeakPointerCallback) OVERRIDE { }
     virtual void registerWeakCell(void**, WeakPointerCallback) OVERRIDE { }
     virtual bool isMarked(const void*) OVERRIDE { return false; }

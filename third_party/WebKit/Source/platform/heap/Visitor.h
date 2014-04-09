@@ -81,9 +81,11 @@ struct TraceMethodDelegate {
 // inherits from GarbageCollected or GarbageCollectedFinalized.
 struct GCInfo {
     bool hasFinalizer() const { return m_nonTrivialFinalizer; }
+    bool hasVTable() const { return m_hasVTable; }
     TraceCallback m_trace;
     FinalizationCallback m_finalize;
     bool m_nonTrivialFinalizer;
+    bool m_hasVTable;
 };
 
 // The FinalizerTraitImpl specifies how to finalize objects. Object
@@ -114,6 +116,12 @@ template<typename T>
 struct FinalizerTrait {
     static const bool nonTrivialFinalizer = WTF::IsSubclassOfTemplate<T, GarbageCollectedFinalized>::value;
     static void finalize(void* obj) { FinalizerTraitImpl<T, nonTrivialFinalizer>::finalize(obj); }
+};
+
+// The VTableTrait is used to determine if a type has at least one virtual method.
+template<typename T>
+struct VTableTrait {
+    static const bool hasVTable = __is_polymorphic(T);
 };
 
 // Trait to get the GCInfo structure for types that have their
@@ -316,6 +324,8 @@ public:
     // Used to mark objects during conservative scanning.
     virtual void mark(HeapObjectHeader*, TraceCallback) = 0;
     virtual void mark(FinalizedHeapObjectHeader*, TraceCallback) = 0;
+    virtual void markConservatively(HeapObjectHeader*) = 0;
+    virtual void markConservatively(FinalizedHeapObjectHeader*) = 0;
 
     // If the object calls this during the regular trace callback, then the
     // WeakPointerCallback argument may be called later, when the strong roots
@@ -597,6 +607,7 @@ struct GCInfoAtBase {
             TraceTrait<T>::trace,
             FinalizerTrait<T>::finalize,
             FinalizerTrait<T>::nonTrivialFinalizer,
+            VTableTrait<T>::hasVTable,
         };
         return &gcInfo;
     }
