@@ -24,6 +24,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/apps/install_chrome_app.h"
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -387,6 +388,11 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
                               LM_TO_BE_DECIDED : LM_WITH_URLS);
 
     ProcessLaunchURLs(process_startup, urls_to_open, desktop_type);
+
+    if (command_line_.HasSwitch(switches::kInstallChromeApp)) {
+      install_chrome_app::InstallChromeApp(
+          command_line_.GetSwitchValueASCII(switches::kInstallChromeApp));
+    }
 
     // If this is an app launch, but we didn't open an app window, it may
     // be an app tab.

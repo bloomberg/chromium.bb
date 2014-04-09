@@ -87,6 +87,8 @@
         'browser/apps/ephemeral_app_service_factory.h',
         'browser/apps/ephemeral_app_throttle.cc',
         'browser/apps/ephemeral_app_throttle.h',
+        'browser/apps/install_chrome_app.cc',
+        'browser/apps/install_chrome_app.h',
         'browser/apps/per_app_settings_service.cc',
         'browser/apps/per_app_settings_service.h',
         'browser/apps/per_app_settings_service_factory.cc',
