@@ -65,48 +65,21 @@
 namespace WebCore {
 class DataObject;
 class Frame;
-class GraphicsLayerFactory;
-class HistoryItem;
-class HitTestResult;
-class KeyboardEvent;
-class Page;
-class PagePopup;
-class PagePopupClient;
-class PlatformKeyboardEvent;
-class PopupMenuClient;
 class RenderLayerCompositor;
 }
 
 namespace blink {
-class AutocompletePopupMenuClient;
-class ContextFeaturesClientImpl;
-class ContextMenuClientImpl;
 class GeolocationClientProxy;
 class LinkHighlight;
-class MIDIClientProxy;
 class PopupContainer;
-class PrerendererClientImpl;
-class SpeechInputClientImpl;
-class SpeechRecognitionClientProxy;
 class UserMediaClientImpl;
-class ValidationMessageClientImpl;
-class WebAXObject;
 class WebActiveGestureAnimation;
-class WebDevToolsAgentClient;
 class WebDevToolsAgentPrivate;
 class WebFrameImpl;
-class WebGestureEvent;
 class WebImage;
-class WebKeyboardEvent;
-class WebLayerTreeView;
-class WebMouseEvent;
-class WebMouseWheelEvent;
 class WebPagePopupImpl;
 class WebPlugin;
-class WebPrerendererClient;
 class WebSettingsImpl;
-class WebTouchEvent;
-class WorkerGlobalScopeProxyProviderImpl;
 class FullscreenController;
 
 class WebViewImpl FINAL : public WebView
