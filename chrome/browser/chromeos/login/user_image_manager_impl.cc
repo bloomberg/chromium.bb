@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -33,7 +32,6 @@
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "policy/policy_constants.h"
@@ -982,9 +980,7 @@ void UserImageManagerImpl::TryToCreateImageSyncObserver() {
   // must not be started so that the policy-set image does not get synced out.
   if (!user_image_sync_observer_ &&
       user && user->CanSyncImage() &&
-      !IsUserImageManaged() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableUserImageSync)) {
+      !IsUserImageManaged()) {
     user_image_sync_observer_.reset(new UserImageSyncObserver(user));
   }
 }

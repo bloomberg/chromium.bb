@@ -1522,15 +1522,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(app_list::switches::kEnableAppInfo)
   },
 #endif
-#if defined(OS_CHROMEOS)
-  {
-    "disable-user-image-sync",
-    IDS_FLAGS_DISABLE_USER_IMAGE_SYNC_NAME,
-    IDS_FLAGS_DISABLE_USER_IMAGE_SYNC_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kDisableUserImageSync)
-  },
-#endif
 #if defined(OS_ANDROID)
   {
     "enable-accessibility-tab-switcher",

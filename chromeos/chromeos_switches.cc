@@ -183,9 +183,6 @@ const char kSmsTestMessages[]               = "sms-test-messages";
 // This option is for testing the chromeos build of chrome on the desktop only.
 const char kStubCrosSettings[]              = "stub-cros-settings";
 
-// Disables user image sync.
-const char kDisableUserImageSync[]          = "disable-user-image-sync";
-
 // Disables SAML sigin support.
 const char kDisableSamlSignin[]             = "disable-saml-signin";
 
