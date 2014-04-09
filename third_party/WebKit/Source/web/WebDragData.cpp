@@ -98,12 +98,20 @@ WebVector<WebDragData::Item> WebDragData::items() const
                 item.storageType = Item::StorageTypeBinaryData;
                 item.binaryData = originalItem->sharedBuffer();
             } else if (originalItem->isFilename()) {
-                item.storageType = Item::StorageTypeFilename;
                 RefPtrWillBeRawPtr<WebCore::Blob> blob = originalItem->getAsFile();
                 if (blob->isFile()) {
                     File* file = toFile(blob.get());
-                    item.filenameData = file->path();
-                    item.displayNameData = file->name();
+                    if (!file->path().isEmpty()) {
+                        item.storageType = Item::StorageTypeFilename;
+                        item.filenameData = file->path();
+                        item.displayNameData = file->name();
+                    } else if (!file->fileSystemURL().isEmpty()) {
+                        item.storageType = Item::StorageTypeFileSystemFile;
+                        item.fileSystemURL = file->fileSystemURL();
+                        item.fileSystemFileSize = file->size();
+                    } else {
+                        ASSERT_NOT_REACHED();
+                    }
                 } else
                     ASSERT_NOT_REACHED();
             } else
@@ -142,6 +150,14 @@ void WebDragData::addItem(const Item& item)
     case Item::StorageTypeBinaryData:
         // This should never happen when dragging in.
         ASSERT_NOT_REACHED();
+        return;
+    case Item::StorageTypeFileSystemFile:
+        {
+            FileMetadata fileMetadata;
+            fileMetadata.length = item.fileSystemFileSize;
+            m_private->add(File::createForFileSystemFile(item.fileSystemURL, fileMetadata));
+        }
+        return;
     }
 }
 

@@ -57,6 +57,8 @@ public:
             // An image being dragged out of the renderer. Contains a buffer holding the image data
             // as well as the suggested name for saving the image to.
             StorageTypeBinaryData,
+            // Stores the filesystem URL of one file being dragged into the renderer.
+            StorageTypeFileSystemFile,
         };
 
         StorageType storageType;
@@ -75,6 +77,10 @@ public:
         // Title associated with a link when stringType == "text/uri-list".
         // Filename when storageType == StorageTypeBinaryData.
         WebString title;
+
+        // Only valid when storageType == StorageTypeFileSystemFile.
+        WebURL fileSystemURL;
+        long long fileSystemFileSize;
 
         // Only valid when stringType == "text/html".
         WebURL baseURL;
