@@ -308,6 +308,7 @@ MediaStreamVideoSource::MediaStreamVideoSource(
     : state_(NEW),
       factory_(factory),
       capture_adapter_(NULL) {
+  DCHECK(factory_);
 }
 
 MediaStreamVideoSource::~MediaStreamVideoSource() {

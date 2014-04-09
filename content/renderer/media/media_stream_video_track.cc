@@ -5,6 +5,7 @@
 #include "content/renderer/media/media_stream_video_track.h"
 
 #include "content/renderer/media/media_stream_dependency_factory.h"
+#include "content/renderer/media/webrtc/webrtc_video_sink_adapter.h"
 
 namespace content {
 
@@ -41,12 +42,18 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       enabled_(enabled),
       source_(source),
       factory_(factory) {
-  source->AddTrack(this, constraints, callback);
+  // TODO(perkj): source can be NULL if this is actually a remote video track.
+  // Remove as soon as we only have one implementation of video tracks.
+  if (source)
+    source->AddTrack(this, constraints, callback);
 }
 
 MediaStreamVideoTrack::~MediaStreamVideoTrack() {
   DCHECK(sinks_.empty());
-  source_->RemoveTrack(this);
+  // TODO(perkj): source can be NULL if this is actually a remote video track.
+  // Remove as soon as we only have one implementation of video tracks.
+  if (source_)
+    source_->RemoveTrack(this);
 }
 
 void MediaStreamVideoTrack::AddSink(MediaStreamVideoSink* sink) {
@@ -107,6 +114,45 @@ void MediaStreamVideoTrack::OnReadyStateChanged(
        it != sinks_.end(); ++it) {
     (*it)->OnReadyStateChanged(state);
   }
+}
+
+// Wrapper which allows to use std::find_if() when adding and removing
+// sinks to/from |sinks_|.
+struct SinkWrapper {
+  explicit SinkWrapper(MediaStreamVideoSink* sink) : sink_(sink) {}
+  bool operator()(
+      const WebRtcVideoSinkAdapter* owner) {
+    return owner->sink() == sink_;
+  }
+  MediaStreamVideoSink* sink_;
+};
+
+WebRtcMediaStreamVideoTrack::WebRtcMediaStreamVideoTrack(
+    webrtc::VideoTrackInterface* track)
+    : MediaStreamVideoTrack(NULL,
+                            blink::WebMediaConstraints(),
+                            MediaStreamVideoSource::ConstraintsCallback(),
+                            track->enabled(),
+                            NULL) {
+  track_ = track;
+}
+
+WebRtcMediaStreamVideoTrack::~WebRtcMediaStreamVideoTrack() {
+}
+
+void WebRtcMediaStreamVideoTrack::AddSink(MediaStreamVideoSink* sink) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(std::find_if(sinks_.begin(), sinks_.end(),
+                      SinkWrapper(sink)) == sinks_.end());
+  sinks_.push_back(new WebRtcVideoSinkAdapter(GetVideoAdapter(), sink));
+}
+
+void WebRtcMediaStreamVideoTrack::RemoveSink(MediaStreamVideoSink* sink) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ScopedVector<WebRtcVideoSinkAdapter>::iterator it =
+      std::find_if(sinks_.begin(), sinks_.end(), SinkWrapper(sink));
+  DCHECK(it != sinks_.end());
+  sinks_.erase(it);
 }
 
 }  // namespace content

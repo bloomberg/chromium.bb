@@ -283,64 +283,60 @@ int MockVideoSource::GetFrameNum() const {
   return static_cast<MockRtcVideoCapturer*>(capturer_.get())->GetFrameNum();
 }
 
-MockWebRtcVideoTrack::MockWebRtcVideoTrack(
-    std::string id,
-    webrtc::VideoSourceInterface* source)
+MockLocalVideoTrack::MockLocalVideoTrack(std::string id,
+                                         webrtc::VideoSourceInterface* source)
     : enabled_(false),
       id_(id),
       state_(MediaStreamTrackInterface::kLive),
       source_(source),
-      observer_(NULL),
-      renderer_(NULL) {
+      observer_(NULL) {
 }
 
-MockWebRtcVideoTrack::~MockWebRtcVideoTrack() {}
+MockLocalVideoTrack::~MockLocalVideoTrack() {}
 
-void MockWebRtcVideoTrack::AddRenderer(VideoRendererInterface* renderer) {
-  DCHECK(!renderer_);
-  renderer_ = renderer;
+void MockLocalVideoTrack::AddRenderer(VideoRendererInterface* renderer) {
+  NOTIMPLEMENTED();
 }
 
-void MockWebRtcVideoTrack::RemoveRenderer(VideoRendererInterface* renderer) {
-  DCHECK_EQ(renderer_, renderer);
-  renderer_ = NULL;
+void MockLocalVideoTrack::RemoveRenderer(VideoRendererInterface* renderer) {
+  NOTIMPLEMENTED();
 }
 
-std::string MockWebRtcVideoTrack::kind() const {
+std::string MockLocalVideoTrack::kind() const {
   NOTIMPLEMENTED();
   return std::string();
 }
 
-std::string MockWebRtcVideoTrack::id() const { return id_; }
+std::string MockLocalVideoTrack::id() const { return id_; }
 
-bool MockWebRtcVideoTrack::enabled() const { return enabled_; }
+bool MockLocalVideoTrack::enabled() const { return enabled_; }
 
-MockWebRtcVideoTrack::TrackState MockWebRtcVideoTrack::state() const {
+MockLocalVideoTrack::TrackState MockLocalVideoTrack::state() const {
   return state_;
 }
 
-bool MockWebRtcVideoTrack::set_enabled(bool enable) {
+bool MockLocalVideoTrack::set_enabled(bool enable) {
   enabled_ = enable;
   return true;
 }
 
-bool MockWebRtcVideoTrack::set_state(TrackState new_state) {
+bool MockLocalVideoTrack::set_state(TrackState new_state) {
   state_ = new_state;
   if (observer_)
     observer_->OnChanged();
   return true;
 }
 
-void MockWebRtcVideoTrack::RegisterObserver(ObserverInterface* observer) {
+void MockLocalVideoTrack::RegisterObserver(ObserverInterface* observer) {
   observer_ = observer;
 }
 
-void MockWebRtcVideoTrack::UnregisterObserver(ObserverInterface* observer) {
+void MockLocalVideoTrack::UnregisterObserver(ObserverInterface* observer) {
   DCHECK(observer_ == observer);
   observer_ = NULL;
 }
 
-VideoSourceInterface* MockWebRtcVideoTrack::GetSource() const {
+VideoSourceInterface* MockLocalVideoTrack::GetSource() const {
   return source_.get();
 }
 
@@ -484,7 +480,7 @@ MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
     const std::string& id,
     webrtc::VideoSourceInterface* source) {
   scoped_refptr<webrtc::VideoTrackInterface> track(
-      new talk_base::RefCountedObject<MockWebRtcVideoTrack>(
+      new talk_base::RefCountedObject<MockLocalVideoTrack>(
           id, source));
   return track;
 }
@@ -497,8 +493,7 @@ MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
       new talk_base::RefCountedObject<MockVideoSource>();
   source->SetVideoCapturer(capturer);
 
-  return
-      new talk_base::RefCountedObject<MockWebRtcVideoTrack>(id, source.get());
+  return new talk_base::RefCountedObject<MockLocalVideoTrack>(id, source.get());
 }
 
 SessionDescriptionInterface*

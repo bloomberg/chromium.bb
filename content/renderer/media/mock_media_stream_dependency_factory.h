@@ -104,9 +104,9 @@ class MockAudioSource : public webrtc::AudioSourceInterface {
   webrtc::MediaConstraintsInterface::Constraints mandatory_constraints_;
 };
 
-class MockWebRtcVideoTrack : public webrtc::VideoTrackInterface {
+class MockLocalVideoTrack : public webrtc::VideoTrackInterface {
  public:
-  MockWebRtcVideoTrack(std::string id,
+  MockLocalVideoTrack(std::string id,
                       webrtc::VideoSourceInterface* source);
   virtual void AddRenderer(webrtc::VideoRendererInterface* renderer) OVERRIDE;
   virtual void RemoveRenderer(
@@ -122,7 +122,7 @@ class MockWebRtcVideoTrack : public webrtc::VideoTrackInterface {
   virtual webrtc::VideoSourceInterface* GetSource() const OVERRIDE;
 
  protected:
-  virtual ~MockWebRtcVideoTrack();
+  virtual ~MockLocalVideoTrack();
 
  private:
   bool enabled_;
@@ -130,7 +130,6 @@ class MockWebRtcVideoTrack : public webrtc::VideoTrackInterface {
   TrackState state_;
   scoped_refptr<webrtc::VideoSourceInterface> source_;
   webrtc::ObserverInterface* observer_;
-  webrtc::VideoRendererInterface* renderer_;
 };
 
 class MockMediaStream : public webrtc::MediaStreamInterface {
