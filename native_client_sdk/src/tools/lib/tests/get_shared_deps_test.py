@@ -43,7 +43,8 @@ class TestGetNeeded(unittest.TestCase):
   def setUp(self):
     self.tempdir = None
     toolchain = os.path.join(CHROME_SRC, 'native_client', 'toolchain')
-    self.toolchain = os.path.join(toolchain, '%s_x86' % getos.GetPlatform())
+    self.toolchain = os.path.join(toolchain, '%s_x86' % getos.GetPlatform(),
+                                  'nacl_x86_glibc')
     self.objdump = os.path.join(self.toolchain, 'bin', 'i686-nacl-objdump')
     if os.name == 'nt':
       self.objdump += '.exe'

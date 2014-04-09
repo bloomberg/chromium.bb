@@ -29,7 +29,7 @@
             'inputs': [
               'pnacl_component_crx_gen.py',
               # A stamp file representing the contents of pnacl_translator.
-              '<(DEPTH)/native_client/toolchain/pnacl_translator/SOURCE_SHA1',
+              '<(DEPTH)/native_client/toolchain/<(OS)_x86/pnacl_translator/SOURCE_SHA1',
               '<(DEPTH)/native_client/pnacl/driver/pnacl_info_template.json',
               '<(DEPTH)/native_client/TOOL_REVISIONS',
             ],
