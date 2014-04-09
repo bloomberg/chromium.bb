@@ -38,6 +38,16 @@ public:
     static RenderMultiColumnFlowThread* createAnonymous(Document&, RenderStyle* parentStyle);
 
     RenderBlockFlow* multiColumnBlockFlow() const { return toRenderBlockFlow(parent()); }
+
+    // Populate the flow thread with what's currently its siblings. Called when a regular block
+    // becomes a multicol container.
+    void populate();
+
+    // Empty the flow thread by moving everything to the parent. Remove all multicol specific
+    // renderers. Then destroy the flow thread. Called when a multicol container becomes a regular
+    // block.
+    void evacuateAndDestroy();
+
     unsigned columnCount() const { return m_columnCount; }
     LayoutUnit columnWidth() const { return m_columnWidth; }
     LayoutUnit columnHeightAvailable() const { return m_columnHeightAvailable; }

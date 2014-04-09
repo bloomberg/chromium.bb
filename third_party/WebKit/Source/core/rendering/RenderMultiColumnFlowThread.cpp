@@ -52,6 +52,40 @@ RenderMultiColumnFlowThread* RenderMultiColumnFlowThread::createAnonymous(Docume
     return renderer;
 }
 
+void RenderMultiColumnFlowThread::populate()
+{
+    RenderBlockFlow* multicolContainer = multiColumnBlockFlow();
+    ASSERT(!nextSibling());
+    // Reparent children preceding the flow thread into the flow thread. It's multicol content
+    // now. At this point there's obviously nothing after the flow thread, but renderers (column
+    // sets and spanners) will be inserted there as we insert elements into the flow thread.
+    multicolContainer->moveChildrenTo(this, multicolContainer->firstChild(), this, true);
+}
+
+void RenderMultiColumnFlowThread::evacuateAndDestroy()
+{
+    RenderBlockFlow* multicolContainer = multiColumnBlockFlow();
+
+    // Remove all sets.
+    for (RenderBox* sibling = nextSiblingBox(); sibling;) {
+        RenderBox* nextSibling = sibling->nextSiblingBox();
+        if (sibling->isRenderMultiColumnSet())
+            sibling->destroy();
+        sibling = nextSibling;
+    }
+
+    ASSERT(!previousSibling());
+    ASSERT(!nextSibling());
+
+    // Finally we can promote all flow thread's children. Before we move them to the flow thread's
+    // container, we need to unregister the flow thread, so that they aren't just re-added again to
+    // the flow thread that we're trying to empty.
+    multicolContainer->resetMultiColumnFlowThread();
+    moveAllChildrenTo(multicolContainer, true);
+
+    destroy();
+}
+
 void RenderMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
     // Update the dimensions of our regions before we lay out the flow thread.

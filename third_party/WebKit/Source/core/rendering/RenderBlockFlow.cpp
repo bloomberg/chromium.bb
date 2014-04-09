@@ -1866,7 +1866,8 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const RenderStyle* ol
         parentBlockFlow->markSiblingsWithFloatsForLayout();
     }
 
-    createMultiColumnFlowThreadIfNeeded();
+    if (diff == StyleDifferenceLayout || !oldStyle)
+        createOrDestroyMultiColumnFlowThreadIfNeeded();
 }
 
 void RenderBlockFlow::updateStaticInlinePositionForChild(RenderBox* child, LayoutUnit logicalTop)
@@ -2778,20 +2779,25 @@ RootInlineBox* RenderBlockFlow::createRootInlineBox()
     return new RootInlineBox(*this);
 }
 
-void RenderBlockFlow::createMultiColumnFlowThreadIfNeeded()
+void RenderBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded()
 {
-    if ((style()->hasAutoColumnCount() && style()->hasAutoColumnWidth()) || !document().regionBasedColumnsEnabled())
+    if (!document().regionBasedColumnsEnabled())
         return;
 
-    if (multiColumnFlowThread())
-        return;
-
-    setChildrenInline(false);
-    RenderMultiColumnFlowThread* flowThread = RenderMultiColumnFlowThread::createAnonymous(document(), style());
-    RenderBlock::addChild(flowThread);
-    RenderBlockFlowRareData& rareData = ensureRareData();
-    ASSERT(!rareData.m_multiColumnFlowThread);
-    rareData.m_multiColumnFlowThread = flowThread;
+    bool needsFlowThread = style()->specifiesColumns();
+    if (needsFlowThread != static_cast<bool>(multiColumnFlowThread())) {
+        if (needsFlowThread) {
+            RenderMultiColumnFlowThread* flowThread = RenderMultiColumnFlowThread::createAnonymous(document(), style());
+            addChild(flowThread);
+            flowThread->populate();
+            RenderBlockFlowRareData& rareData = ensureRareData();
+            ASSERT(!rareData.m_multiColumnFlowThread);
+            rareData.m_multiColumnFlowThread = flowThread;
+        } else {
+            multiColumnFlowThread()->evacuateAndDestroy();
+            ASSERT(!multiColumnFlowThread());
+        }
+    }
 }
 
 RenderBlockFlow::RenderBlockFlowRareData& RenderBlockFlow::ensureRareData()

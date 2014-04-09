@@ -197,6 +197,11 @@ public:
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 
     RenderMultiColumnFlowThread* multiColumnFlowThread() const { return m_rareData ? m_rareData->m_multiColumnFlowThread : 0; }
+    void resetMultiColumnFlowThread()
+    {
+        if (m_rareData)
+            m_rareData->m_multiColumnFlowThread = 0;
+    }
 
     void addOverflowFromInlineChildren();
 
@@ -301,7 +306,7 @@ private:
 
     virtual RootInlineBox* createRootInlineBox(); // Subclassed by SVG
 
-    void createMultiColumnFlowThreadIfNeeded();
+    void createOrDestroyMultiColumnFlowThreadIfNeeded();
 
     void updateLogicalWidthForAlignment(const ETextAlign&, const RootInlineBox*, BidiRun* trailingSpaceRun, float& logicalLeft, float& totalLogicalWidth, float& availableLogicalWidth, int expansionOpportunityCount);
     void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight);
