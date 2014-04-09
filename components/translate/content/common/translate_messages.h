@@ -10,6 +10,10 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 
+#if defined(CLD2_DYNAMIC_MODE)
+#include "ipc/ipc_platform_file.h"
+#endif
+
 #define IPC_MESSAGE_START TranslateMsgStart
 
 IPC_ENUM_TRAITS(TranslateErrors::Type)
