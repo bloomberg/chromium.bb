@@ -29,10 +29,6 @@ const char kInstantExtendedAPIParam[] = "espv";
 GURL LinkDoctorBaseURL();
 void SetMockLinkDoctorBaseURLForTesting();
 
-// Returns the Google locale.  This is the same string as
-// AppendGoogleLocaleParam adds to the URL, only without the leading "hl".
-std::string GetGoogleLocale();
-
 // Adds the Google locale string to the URL (e.g., hl=en-US).  This does not
 // check to see if the param already exists.
 GURL AppendGoogleLocaleParam(const GURL& url);
@@ -40,11 +36,9 @@ GURL AppendGoogleLocaleParam(const GURL& url);
 // String version of AppendGoogleLocaleParam.
 std::string StringAppendGoogleLocaleParam(const std::string& url);
 
-// Returns the Google country code string for the given profile.
-std::string GetGoogleCountryCode(Profile* profile);
-
-// Returns the Google search URL for the given profile.
-GURL GetGoogleSearchURL(Profile* profile);
+// Adds the Google TLD string for the given profile to the URL (e.g., sd=com).
+// This does not check to see if the param already exists.
+GURL AppendGoogleTLDParam(Profile* profile, const GURL& url);
 
 // Returns in |brand| the brand code or distribution tag that has been
 // assigned to a partner. Returns false if the information is not available.

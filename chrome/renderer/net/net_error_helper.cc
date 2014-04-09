@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
@@ -49,9 +48,9 @@ using content::kUnreachableWebDataURL;
 
 namespace {
 
-// Number of seconds to wait for the navigation correction service to return
-// suggestions.  If it takes too long, just use the local error page.
-static const int kNavigationCorrectionFetchTimeoutSec = 3;
+// Number of seconds to wait for the alternate error page server.  If it takes
+// too long, just use the local error page.
+static const int kAlterErrorPageFetchTimeoutSec = 3000;
 
 NetErrorHelperCore::PageType GetLoadingPageType(const blink::WebFrame* frame) {
   GURL url = frame->provisionalDataSource()->request().url();
@@ -64,18 +63,6 @@ NetErrorHelperCore::FrameType GetFrameType(const blink::WebFrame* frame) {
   if (!frame->parent())
     return NetErrorHelperCore::MAIN_FRAME;
   return NetErrorHelperCore::SUB_FRAME;
-}
-
-// Copied from localized_error.cc.
-// TODO(mmenke):  Share code?
-bool LocaleIsRTL() {
-#if defined(TOOLKIT_GTK)
-  // base::i18n::IsRTL() uses the GTK text direction, which doesn't work within
-  // the renderer sandbox.
-  return base::i18n::ICUIsRTL();
-#else
-  return base::i18n::IsRTL();
-#endif
 }
 
 }  // namespace
@@ -119,8 +106,7 @@ bool NetErrorHelper::OnMessageReceived(const IPC::Message& message) {
 
   IPC_BEGIN_MESSAGE_MAP(NetErrorHelper, message)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_NetErrorInfo, OnNetErrorInfo)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetNavigationCorrectionInfo,
-                        OnSetNavigationCorrectionInfo);
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAltErrorPageURL, OnSetAltErrorPageURL);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -144,11 +130,9 @@ bool NetErrorHelper::ShouldSuppressErrorPage(blink::WebFrame* frame,
   return core_.ShouldSuppressErrorPage(GetFrameType(frame), url);
 }
 
-void NetErrorHelper::GenerateLocalizedErrorPage(
-    const blink::WebURLError& error,
-    bool is_failed_post,
-    scoped_ptr<LocalizedError::ErrorPageParams> params,
-    std::string* error_html) const {
+void NetErrorHelper::GenerateLocalizedErrorPage(const blink::WebURLError& error,
+                                                bool is_failed_post,
+                                                std::string* error_html) const {
   error_html->clear();
 
   int resource_id = IDR_NET_ERROR_HTML;
@@ -164,7 +148,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
                                RenderThread::Get()->GetLocale(),
                                render_frame()->GetRenderView()->
                                    GetAcceptLanguages(),
-                               params.Pass(), &error_strings);
+                               &error_strings);
     // "t" is the id of the template's root node.
     *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
   }
@@ -194,7 +178,6 @@ void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
                              RenderThread::Get()->GetLocale(),
                              render_frame()->GetRenderView()->
                                  GetAcceptLanguages(),
-                             scoped_ptr<LocalizedError::ErrorPageParams>(),
                              &error_strings);
 
   std::string json;
@@ -211,32 +194,27 @@ void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
   render_frame()->ExecuteJavaScript(js16);
 }
 
-void NetErrorHelper::FetchNavigationCorrections(
-    const GURL& navigation_correction_url,
-    const std::string& navigation_correction_request_body) {
-  DCHECK(!correction_fetcher_.get());
+void NetErrorHelper::FetchErrorPage(const GURL& url) {
+  DCHECK(!alt_error_page_fetcher_.get());
 
   blink::WebView* web_view = render_frame()->GetRenderView()->GetWebView();
   if (!web_view)
     return;
   blink::WebFrame* frame = web_view->mainFrame();
 
-  correction_fetcher_.reset(
-      content::ResourceFetcher::Create(navigation_correction_url));
-  correction_fetcher_->SetMethod("POST");
-  correction_fetcher_->SetBody(navigation_correction_request_body);
-  correction_fetcher_->SetHeader("Content-Type", "application/json");
-  correction_fetcher_->Start(
+  alt_error_page_fetcher_.reset(content::ResourceFetcher::Create(url));
+
+  alt_error_page_fetcher_->Start(
       frame, blink::WebURLRequest::TargetIsMainFrame,
-      base::Bind(&NetErrorHelper::OnNavigationCorrectionsFetched,
+      base::Bind(&NetErrorHelper::OnAlternateErrorPageRetrieved,
                      base::Unretained(this)));
 
-  correction_fetcher_->SetTimeout(
-      base::TimeDelta::FromSeconds(kNavigationCorrectionFetchTimeoutSec));
+  alt_error_page_fetcher_->SetTimeout(
+      base::TimeDelta::FromSeconds(kAlterErrorPageFetchTimeoutSec));
 }
 
-void NetErrorHelper::CancelFetchNavigationCorrections() {
-  correction_fetcher_.reset();
+void NetErrorHelper::CancelFetchErrorPage() {
+  alt_error_page_fetcher_.reset();
 }
 
 void NetErrorHelper::ReloadPage() {
@@ -251,30 +229,20 @@ void NetErrorHelper::OnNetErrorInfo(int status_num) {
   core_.OnNetErrorInfo(static_cast<DnsProbeStatus>(status_num));
 }
 
-void NetErrorHelper::OnSetNavigationCorrectionInfo(
-    const GURL& navigation_correction_url,
-    const std::string& language,
-    const std::string& country_code,
-    const std::string& api_key,
-    const GURL& search_url) {
-  core_.OnSetNavigationCorrectionInfo(navigation_correction_url, language,
-                                      country_code, api_key, search_url);
+void NetErrorHelper::OnSetAltErrorPageURL(const GURL& alt_error_page_url) {
+  core_.set_alt_error_page_url(alt_error_page_url);
 }
 
-void NetErrorHelper::OnNavigationCorrectionsFetched(
+void NetErrorHelper::OnAlternateErrorPageRetrieved(
     const blink::WebURLResponse& response,
     const std::string& data) {
   // The fetcher may only be deleted after |data| is passed to |core_|.  Move
   // it to a temporary to prevent any potential re-entrancy issues.
   scoped_ptr<content::ResourceFetcher> fetcher(
-      correction_fetcher_.release());
+      alt_error_page_fetcher_.release());
   if (!response.isNull() && response.httpStatusCode() == 200) {
-    core_.OnNavigationCorrectionsFetched(
-        data, render_frame()->GetRenderView()->GetAcceptLanguages(),
-        LocaleIsRTL());
+    core_.OnAlternateErrorPageFetched(data);
   } else {
-    core_.OnNavigationCorrectionsFetched(
-        "", render_frame()->GetRenderView()->GetAcceptLanguages(),
-        LocaleIsRTL());
+    core_.OnAlternateErrorPageFetched("");
   }
 }

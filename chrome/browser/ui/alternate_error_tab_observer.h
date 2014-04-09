@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_NAVIGATION_CORRECTION_TAB_OBSERVER_H_
-#define CHROME_BROWSER_UI_NAVIGATION_CORRECTION_TAB_OBSERVER_H_
+#ifndef CHROME_BROWSER_UI_ALTERNATE_ERROR_TAB_OBSERVER_H_
+#define CHROME_BROWSER_UI_ALTERNATE_ERROR_TAB_OBSERVER_H_
 
 #include "base/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
@@ -17,19 +17,19 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// Per-tab class to implement navigation suggestion service functionality.
-class NavigationCorrectionTabObserver
+// Per-tab class to implement alternate error page functionality.
+class AlternateErrorPageTabObserver
     : public content::WebContentsObserver,
       public content::NotificationObserver,
-      public content::WebContentsUserData<NavigationCorrectionTabObserver> {
+      public content::WebContentsUserData<AlternateErrorPageTabObserver> {
  public:
-  virtual ~NavigationCorrectionTabObserver();
+  virtual ~AlternateErrorPageTabObserver();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
-  explicit NavigationCorrectionTabObserver(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<NavigationCorrectionTabObserver>;
+  explicit AlternateErrorPageTabObserver(content::WebContents* web_contents);
+  friend class content::WebContentsUserData<AlternateErrorPageTabObserver>;
 
   // content::WebContentsObserver overrides:
   virtual void RenderViewCreated(
@@ -42,21 +42,20 @@ class NavigationCorrectionTabObserver
 
   // Internal helpers ----------------------------------------------------------
 
-  // Returns the URL for the correction service.  If the returned URL
-  // is empty, the default error pages will be used.
-  GURL GetNavigationCorrectionURL() const;
+  // Returns the server that can provide alternate error pages.  If the returned
+  // URL is empty, the default error page built into WebKit will be used.
+  GURL GetAlternateErrorPageURL() const;
 
-  // Called when navigation corrections are enabled or disabled.
-  void OnEnabledChanged();
+  void OnAlternateErrorPagesEnabledChanged();
 
-  // Updates the renderer's navigation correction service configuration.
-  void UpdateNavigationCorrectionInfo(content::RenderViewHost* rvh);
+  // Send the alternate error page URL to the renderer.
+  void UpdateAlternateErrorPageURL(content::RenderViewHost* rvh);
 
   Profile* profile_;
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(NavigationCorrectionTabObserver);
+  DISALLOW_COPY_AND_ASSIGN(AlternateErrorPageTabObserver);
 };
 
-#endif  // CHROME_BROWSER_UI_NAVIGATION_CORRECTION_TAB_OBSERVER_H_
+#endif  // CHROME_BROWSER_UI_ALTERNATE_ERROR_TAB_OBSERVER_H_

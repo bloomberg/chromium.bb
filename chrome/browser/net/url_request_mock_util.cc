@@ -41,7 +41,7 @@ void SetUrlRequestMocksEnabled(bool enabled) {
     content::URLRequestMockHTTPJob::AddUrlHandler(root_http);
     content::URLRequestMockHTTPJob::AddHostnameToFileHandler(
         google_util::LinkDoctorBaseURL().host(),
-        root_http.AppendASCII("mock-link-doctor.json"));
+        root_http.AppendASCII("mock-link-doctor.html"));
   } else {
     // Revert to the default handlers.
     net::URLRequestFilter::GetInstance()->ClearHandlers();

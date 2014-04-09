@@ -20,13 +20,11 @@
           <span i18n-content="heading"></span>
         </h1>
         <div id="buttons">
-          <button id="reload-button" class="blue-button text-button"
-              onclick="location = this.url"
+          <button id="reload-button" onclick="location = this.url"
               jsselect="reload" jsvalues=".url:reloadUrl"
               jscontent="msg"></button>
-          <button id="more-less-button" class="text-button"
-              onclick="toggleHelpBox()" jsdisplay="more"
-              jsvalues=".moreText:more; .lessText:less;"
+          <button id="more-less-button" onclick="toggleHelpBox()"
+              jsdisplay="more" jsvalues=".moreText:more; .lessText:less;"
               jscontent="more"></button>
         </div>
       </div>
@@ -40,22 +38,9 @@
             <div class="suggestion-header" jsvalues=".innerHTML:header"></div>
             <div class="suggestion-body" jsvalues=".innerHTML:body"></div>
           </div>
-          <button class="text-button" id="diagnose-button"
-              onclick="diagnoseErrors()" jscontent="diagnose"
-              jsdisplay="diagnose"></button>
+          <button id="diagnose-button" onclick="diagnoseErrors()"
+            jscontent="diagnose" jsdisplay="diagnose"></button>
           <div id="diagnose-frame" class="hidden"></div>
-          <form class="suggestions" jsdisplay="searchUrl"
-              jsvalues=".url:searchUrl" onsubmit="return search(this.url)">
-            <div class="suggestion-header" jscontent="searchHeader"></div>
-            <div id="search-container">
-              <input type="text" name="q" id="search-box"
-                  jsvalues=".value:searchTerms" />
-              <button type="submit" id="search-button" class="blue-button"
-                  jsvalues="aria-label:searchHeader">
-                <img id="search-image">
-  	          </button>
-            </div>
-          </form>
           <div class="error-code" jscontent="errorCode"></div>
         </div>
       </div>

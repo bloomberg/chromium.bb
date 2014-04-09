@@ -46,7 +46,7 @@ html:not([subframe]) #sub-frame-error {
 #content-top #buttons,
 #content-top h1 {
   color: #666;
-  margin: 10px 0px 30px 0px;
+  margin: 10px 0px 25px 0px;
   font-weight: normal;
   font-size: 1.5em;
   text-align: center;
@@ -85,7 +85,7 @@ a {
 }
 
 #content-top {
-  margin: 20px;
+  margin: 20px 20px 20px 25px;
 }
 
 #help-box-outer {
@@ -97,16 +97,12 @@ a {
   background-color: #f9f9f9;
   border-top: 1px solid #EEE;
   color: #444;
-  padding: 20px;
+  padding: 25px 20px;
   text-align: start;
 }
 
-#suggestion {
+#suggestions {
   margin-top: 15px;
-}
-
-#short-suggestion {
-  margin-top: 5px;
 }
 
 #sub-frame-error-details {
@@ -125,7 +121,11 @@ button {
   border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 2px;
   color: #444;
+  margin: 0px 5px;
+  min-height: 29px;
+  min-width: 65px;
   -webkit-user-select: none;
+  padding: 8px 13px;
 <if expr="not is_android">
   /* iOS does not support linear-gradient without a prefix. */
   background-image: -webkit-linear-gradient(#ededed, #ededed 38%, #dedede);
@@ -170,14 +170,7 @@ button:active {
 </if>
 }
 
-.text-button {
-  margin: 0px 5px;
-  min-height: 29px;
-  min-width: 65px;
-  padding: 7px 13px;
-}
-
-.blue-button {
+#reload-button {
   color: #fff;
 <if expr="not is_android">
   background-image: -webkit-linear-gradient(#5d9aff, #5d9aff 38%, #5891f0);
@@ -193,7 +186,7 @@ button:active {
 </if>
 }
 
-.blue-button:hover {
+#reload-button:hover {
   color: #fff;
 <if expr="not is_android">
   background-image: -webkit-linear-gradient(#659efd, #659efd 38%, #6097f1);
@@ -204,7 +197,7 @@ button:active {
 </if>
 }
 
-.blue-button:active {
+#reload-button:active {
 <if expr="not is_android">
   background-image: -webkit-linear-gradient(#6095ed, #6095ed 38%, #6095ed);
   border: 1px solid rgb(38, 84, 160);
@@ -215,46 +208,6 @@ button:active {
 <if expr="not is_android and not is_ios">
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.1);
 </if>
-}
-
-#search-container {
-  /* Prevents a space between controls. */
-  display: flex;
-  margin-top: 20px;
-}
-
-#search-box {
-  border: 1px solid #cdcdcd;
-  flex-grow: 1;
-  font-size: 16px;
-  height: 26px;
-  margin-right: 0;
-  padding: 1px 9px;
-}
-
-#search-box:focus {
-  border: 1px solid #5d9aff;
-  outline: none;
-}
-
-#search-button {
-  border: none;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  box-shadow: none;
-  display: flex;
-  height: 30px;
-  margin: 0;
-  width: 60px;
-  padding: 0;
-}
-
-#search-image {
-  content:
-      -webkit-image-set(
-          url('../../app/theme/default_100_percent/common/omnibox_search_button_loupe.png') 1x,
-          url('../../app/theme/default_200_percent/common/omnibox_search_button_loupe.png') 2x);
-  margin: auto;
 }
 
 .hidden {

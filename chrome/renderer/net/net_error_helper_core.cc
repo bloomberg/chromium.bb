@@ -8,45 +8,16 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/i18n/rtl.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
-#include "base/strings/string16.h"
-#include "base/values.h"
 #include "chrome/common/localized_error.h"
-#include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace {
-
-struct CorrectionTypeToResourceTable {
-  int resource_id;
-  const char* correction_type;
-};
-
-const CorrectionTypeToResourceTable kCorrectionResourceTable[] = {
-  {IDS_ERRORPAGES_SUGGESTION_VISIT_GOOGLE_CACHE, "cachedPage"},
-  // "reloadPage" is has special handling.
-  {IDS_ERRORPAGES_SUGGESTION_CORRECTED_URL, "urlCorrection"},
-  {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "siteDomain"},
-  {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "host"},
-  {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "sitemap"},
-  {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "pathParentFolder"},
-  // "siteSearchQuery" is not yet supported.
-  // TODO(mmenke):  Figure out what format "siteSearchQuery" uses for its
-  // suggestions.
-  // "webSearchQuery" has special handling.
-  {IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL, "contentOverlap"},
-  {IDS_ERRORPAGES_SUGGESTION_CORRECTED_URL, "emphasizedUrlCorrection"},
-};
 
 base::TimeDelta GetAutoReloadTime(size_t reload_count) {
   static const int kDelaysMs[] = {
@@ -65,24 +36,16 @@ bool IsDnsError(const blink::WebURLError& error) {
           error.reason == net::ERR_NAME_RESOLUTION_FAILED);
 }
 
-GURL SanitizeURL(const GURL& url) {
-  GURL::Replacements remove_params;
-  remove_params.ClearUsername();
-  remove_params.ClearPassword();
-  remove_params.ClearQuery();
-  remove_params.ClearRef();
-  return url.ReplaceComponents(remove_params);
-}
+// If an alternate error page should be retrieved remotely for a main frame load
+// that failed with |error|, returns true and sets |error_page_url| to the URL
+// of the remote error page.
+bool GetErrorPageURL(const blink::WebURLError& error,
+                     const GURL& alt_error_page_url,
+                     GURL* error_page_url) {
+  if (!alt_error_page_url.is_valid())
+    return false;
 
-// If URL correction information should be retrieved remotely for a main frame
-// load that failed with |error|, returns true and sets
-// |correction_request_body| to be the body for the correction request.
-bool GetFixUrlRequestBody(const blink::WebURLError& error,
-                          const std::string& language,
-                          const std::string& country_code,
-                          const std::string& api_key,
-                          std::string* correction_request_body) {
-  // Parameter to send to the correction service indicating the error type.
+  // Parameter to send to the error page indicating the error type.
   std::string error_param;
 
   std::string domain = error.domain.utf8();
@@ -95,155 +58,43 @@ bool GetFixUrlRequestBody(const blink::WebURLError& error,
               error.reason == net::ERR_CONNECTION_REFUSED ||
               error.reason == net::ERR_ADDRESS_UNREACHABLE ||
               error.reason == net::ERR_CONNECTION_TIMED_OUT)) {
-    error_param = "connectionFailure";
+    error_param = "connectionfailure";
   } else {
     return false;
   }
 
-  // Don't use the correction service for HTTPS (for privacy reasons).
+  // Don't use the Link Doctor for HTTPS (for privacy reasons).
   GURL unreachable_url(error.unreachableURL);
   if (unreachable_url.SchemeIsSecure())
     return false;
 
-  // TODO(yuusuke): Change to net::FormatUrl when Link Doctor becomes
+  // Sanitize the unreachable URL.
+  GURL::Replacements remove_params;
+  remove_params.ClearUsername();
+  remove_params.ClearPassword();
+  remove_params.ClearQuery();
+  remove_params.ClearRef();
+  // TODO(yuusuke): change to net::FormatUrl when Link Doctor becomes
   // unicode-capable.
-  std::string spec_to_send = SanitizeURL(unreachable_url).spec();
+  std::string spec_to_send =
+      unreachable_url.ReplaceComponents(remove_params).spec();
 
-  // Notify navigation correction service of the url truncation by sending of
-  // "?" at the end.
+  // Notify Link Doctor of the url truncation by sending of "?" at the end.
   if (unreachable_url.has_query())
     spec_to_send.append("?");
 
-  // Assemble request body, which is a JSON string.
-  // TODO(mmenke):  Investigate open sourcing the relevant protocol buffers and
-  //                using those directly instead.
+  std::string params(alt_error_page_url.query());
+  params.append("&url=");
+  params.append(net::EscapeQueryParamValue(spec_to_send, true));
+  params.append("&sourceid=chrome");
+  params.append("&error=");
+  params.append(error_param);
 
-  base::DictionaryValue request_dict;
-  request_dict.SetString("method", "linkdoctor.fixurl.fixurl");
-  request_dict.SetString("apiVersion", "v1");
-
-  base::DictionaryValue* params_dict = new base::DictionaryValue();
-  request_dict.Set("params", params_dict);
-
-  params_dict->SetString("key", api_key);
-  params_dict->SetString("urlQuery", spec_to_send);
-  params_dict->SetString("clientName", "chrome");
-  params_dict->SetString("error", error_param);
-
-  if (!language.empty())
-    params_dict->SetString("language", language);
-
-  if (!country_code.empty())
-    params_dict->SetString("originCountry", country_code);
-
-  base::JSONWriter::Write(&request_dict, correction_request_body);
+  // Build the final url to request.
+  GURL::Replacements link_doctor_params;
+  link_doctor_params.SetQueryStr(params);
+  *error_page_url = alt_error_page_url.ReplaceComponents(link_doctor_params);
   return true;
-}
-
-base::string16 FormatURLForDisplay(const GURL& url, bool is_rtl,
-                                   const std::string accept_languages) {
-  // Translate punycode into UTF8, unescape UTF8 URLs.
-  base::string16 url_for_display(net::FormatUrl(
-      url, accept_languages, net::kFormatUrlOmitNothing,
-      net::UnescapeRule::NORMAL, NULL, NULL, NULL));
-  // URLs are always LTR.
-  if (is_rtl)
-    base::i18n::WrapStringWithLTRFormatting(&url_for_display);
-  return url_for_display;
-}
-
-LocalizedError::ErrorPageParams* ParseAdditionalSuggestions(
-    const std::string& data,
-    const GURL& original_url,
-    const GURL& search_url,
-    const std::string& accept_languages,
-    bool is_rtl) {
-  scoped_ptr<base::Value> parsed(base::JSONReader::Read(data));
-  if (!parsed)
-    return NULL;
-  // TODO(mmenke):  Open source related protocol buffers and use them directly.
-  base::DictionaryValue* parsed_dict;
-  base::ListValue* corrections;
-  if (!parsed->GetAsDictionary(&parsed_dict))
-    return NULL;
-  if (!parsed_dict->GetList("result.UrlCorrections", &corrections))
-    return NULL;
-
-  // Version of URL for display in suggestions.  It has to be sanitized first
-  // because any received suggestions will be relative to the sanitized URL.
-  base::string16 original_url_for_display =
-      FormatURLForDisplay(SanitizeURL(original_url), is_rtl, accept_languages);
-
-  scoped_ptr<LocalizedError::ErrorPageParams> params(
-      new LocalizedError::ErrorPageParams());
-  params->override_suggestions.reset(new base::ListValue());
-  scoped_ptr<base::ListValue> parsed_corrections(new base::ListValue());
-  for (base::ListValue::iterator it = corrections->begin();
-       it != corrections->end(); ++it) {
-    base::DictionaryValue* correction;
-    if (!(*it)->GetAsDictionary(&correction))
-      continue;
-
-    // Doesn't seem like a good idea to show these.
-    bool is_porn;
-    if (correction->GetBoolean("isPorn", &is_porn) && is_porn)
-      continue;
-    if (correction->GetBoolean("isSoftPorn", &is_porn) && is_porn)
-      continue;
-
-    std::string correction_type;
-    std::string url_correction;
-    if (!correction->GetString("correctionType", &correction_type) ||
-        !correction->GetString("urlCorrection", &url_correction)) {
-      continue;
-    }
-
-    std::string click_tracking_url;
-    correction->GetString("clickTrackingUrl", &click_tracking_url);
-
-    if (correction_type == "reloadPage") {
-      params->suggest_reload = true;
-      continue;
-    }
-
-    if (correction_type == "webSearchQuery") {
-      // If there are mutliple searches suggested, use the first suggestion.
-      if (params->search_terms.empty()) {
-        params->search_url = search_url;
-        params->search_terms = url_correction;
-      }
-      continue;
-    }
-
-    size_t correction_index;
-    for (correction_index = 0;
-         correction_index < arraysize(kCorrectionResourceTable);
-         ++correction_index) {
-      if (correction_type !=
-              kCorrectionResourceTable[correction_index].correction_type) {
-        continue;
-      }
-      base::DictionaryValue* suggest = new base::DictionaryValue();
-      suggest->SetString("header",
-          l10n_util::GetStringUTF16(
-              kCorrectionResourceTable[correction_index].resource_id));
-      suggest->SetString("urlCorrection",
-          !click_tracking_url.empty() ? click_tracking_url :
-                                        url_correction);
-      suggest->SetString(
-          "urlCorrectionForDisplay",
-          FormatURLForDisplay(GURL(url_correction), is_rtl, accept_languages));
-      suggest->SetString("originalUrlForDisplay", original_url_for_display);
-      params->override_suggestions->Append(suggest);
-      break;
-    }
-  }
-
-  if (params->override_suggestions->empty() &&
-      !params->search_url.is_valid()) {
-    return NULL;
-  }
-  return params.release();
 }
 
 }  // namespace
@@ -266,17 +117,11 @@ struct NetErrorHelperCore::ErrorPageInfo {
   // probe status.
   bool needs_dns_updates;
 
-  // Navigation correction service url, which will be used in response to
-  // certain types of network errors.  This is also stored by the
-  // NetErrorHelperCore itself, but it stored here as well in case its modified
-  // in the middle of an error page load.  Empty when no error page should be
-  // fetched, or if there's already a fetch in progress.
-  GURL navigation_correction_url;
-
-  // Request body to use when requesting corrections from a web service.
-  // TODO(mmenke):  Investigate loading the error page at the same time as
-  //                the blank page is loading, to get rid of these.
-  std::string navigation_correction_request_body;
+  // URL of an alternate error page to repace this error page with, if it's a
+  // valid URL.  Request will be issued when the error page finishes loading.
+  // This is done on load complete to ensure that there are two complete loads
+  // for tests to wait for.
+  GURL alternate_error_page_url;
 
   // True if a page has completed loading, at which point it can receive
   // updates.
@@ -320,15 +165,11 @@ void NetErrorHelperCore::CancelPendingFetches() {
                                      net::GetAllErrorCodesForUma());
     UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtStop", auto_reload_count_);
   }
-  if (committed_error_page_info_) {
-    committed_error_page_info_->navigation_correction_url = GURL();
-    committed_error_page_info_->navigation_correction_request_body.clear();
-  }
-  if (pending_error_page_info_) {
-    pending_error_page_info_->navigation_correction_url = GURL();
-    pending_error_page_info_->navigation_correction_request_body.clear();
-  }
-  delegate_->CancelFetchNavigationCorrections();
+  if (committed_error_page_info_)
+    committed_error_page_info_->alternate_error_page_url = GURL();
+  if (pending_error_page_info_)
+    pending_error_page_info_->alternate_error_page_url = GURL();
+  delegate_->CancelFetchErrorPage();
   auto_reload_timer_->Stop();
   can_auto_reload_page_ = false;
 }
@@ -390,14 +231,14 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
         committed_error_page_info_->error.unreachableURL);
   }
 
-  if (committed_error_page_info_->navigation_correction_url.is_valid()) {
-    // If there is another pending error page load, |fix_url| should have been
-    // cleared.
+  if (committed_error_page_info_->alternate_error_page_url.is_valid()) {
+    // If there is another pending error page load,
+    // |replace_with_alternate_error_page| should have been set to false.
     DCHECK(!pending_error_page_info_);
     DCHECK(!committed_error_page_info_->needs_dns_updates);
-    delegate_->FetchNavigationCorrections(
-        committed_error_page_info_->navigation_correction_url,
-        committed_error_page_info_->navigation_correction_request_body);
+    GURL error_page_url;
+    delegate_->FetchErrorPage(
+        committed_error_page_info_->alternate_error_page_url);
   } else if (auto_reload_enabled_ &&
              IsReloadableError(*committed_error_page_info_)) {
     MaybeStartAutoReloadTimer();
@@ -417,23 +258,10 @@ void NetErrorHelperCore::GetErrorHTML(
     bool is_failed_post,
     std::string* error_html) {
   if (frame_type == MAIN_FRAME) {
-    // If navigation corrections were needed before, that should have been
-    // cancelled earlier by starting a new page load (Which has now failed).
+    // If an alternate error page was going to be fetched, that should have been
+    // cancelled by loading a new page load (Which has now failed to load).
     DCHECK(!committed_error_page_info_ ||
-           !committed_error_page_info_->navigation_correction_url.is_valid());
-
-    std::string navigation_correction_request_body;
-
-    if (navigation_correction_url_.is_valid() &&
-        GetFixUrlRequestBody(error, language_, country_code_, api_key_,
-                             &navigation_correction_request_body)) {
-      pending_error_page_info_.reset(new ErrorPageInfo(error, is_failed_post));
-      pending_error_page_info_->navigation_correction_url =
-          navigation_correction_url_;
-      pending_error_page_info_->navigation_correction_request_body =
-          navigation_correction_request_body;
-      return;
-    }
+           !committed_error_page_info_->alternate_error_page_url.is_valid());
 
     // The last probe status needs to be reset if this is a DNS error.  This
     // means that if a DNS error page is committed but has not yet finished
@@ -442,38 +270,38 @@ void NetErrorHelperCore::GetErrorHTML(
     // will just get the results for the next page load.
     if (IsDnsError(error))
       last_probe_status_ = chrome_common_net::DNS_PROBE_POSSIBLE;
+
+    GURL error_page_url;
+    if (GetErrorPageURL(error, alt_error_page_url_, &error_page_url)) {
+      pending_error_page_info_.reset(new ErrorPageInfo(error, is_failed_post));
+      pending_error_page_info_->alternate_error_page_url = error_page_url;
+      return;
+    }
   }
 
-  GenerateLocalErrorPage(frame_type, error, is_failed_post,
-                         scoped_ptr<LocalizedError::ErrorPageParams>(),
-                         error_html);
+  GenerateLocalErrorPage(frame_type, error, is_failed_post, error_html);
 }
 
 void NetErrorHelperCore::GenerateLocalErrorPage(
     FrameType frame_type,
     const blink::WebURLError& error,
     bool is_failed_post,
-    scoped_ptr<LocalizedError::ErrorPageParams> params,
     std::string* error_html) {
   if (frame_type == MAIN_FRAME) {
     pending_error_page_info_.reset(new ErrorPageInfo(error, is_failed_post));
-    // Skip DNS logic if suggestions were received from a remote server.
-    if (IsDnsError(error) && !params) {
+    if (IsDnsError(error)) {
       // This is not strictly necessary, but waiting for a new status to be
       // sent as a result of the DidFinishLoading call keeps the histograms
       // consistent with older versions of the code, at no real cost.
       last_probe_status_ = chrome_common_net::DNS_PROBE_POSSIBLE;
 
       delegate_->GenerateLocalizedErrorPage(
-          GetUpdatedError(error), is_failed_post, params.Pass(),
-          error_html);
+          GetUpdatedError(error), is_failed_post, error_html);
       pending_error_page_info_->needs_dns_updates = true;
       return;
     }
   }
-
-  delegate_->GenerateLocalizedErrorPage(error, is_failed_post,
-                                        params.Pass(), error_html);
+  delegate_->GenerateLocalizedErrorPage(error, is_failed_post, error_html);
 }
 
 void NetErrorHelperCore::OnNetErrorInfo(
@@ -489,19 +317,6 @@ void NetErrorHelperCore::OnNetErrorInfo(
   }
 
   UpdateErrorPage();
-}
-
-void NetErrorHelperCore::OnSetNavigationCorrectionInfo(
-    const GURL& navigation_correction_url,
-    const std::string& language,
-    const std::string& country_code,
-    const std::string& api_key,
-    const GURL& search_url) {
-  navigation_correction_url_ = navigation_correction_url;
-  language_ = language;
-  country_code_ = country_code;
-  api_key_ = api_key;
-  search_url_ = search_url;
 }
 
 void NetErrorHelperCore::UpdateErrorPage() {
@@ -523,25 +338,30 @@ void NetErrorHelperCore::UpdateErrorPage() {
       committed_error_page_info_->was_failed_post);
 }
 
-void NetErrorHelperCore::OnNavigationCorrectionsFetched(
-    const std::string& corrections,
-    const std::string& accept_languages,
-    bool is_rtl) {
-  // Loading suggestions only starts when a blank error page finishes loading,
-  // and is cancelled with a new load.
+void NetErrorHelperCore::OnAlternateErrorPageFetched(const std::string& data) {
+  // Alternate error page load only starts when an error page finishes loading,
+  // and is cancelled with a new load
   DCHECK(!pending_error_page_info_);
   DCHECK(committed_error_page_info_->is_finished_loading);
 
-  scoped_ptr<LocalizedError::ErrorPageParams> params(
-    ParseAdditionalSuggestions(
-        corrections, GURL(committed_error_page_info_->error.unreachableURL),
-        search_url_, accept_languages, is_rtl));
-  std::string error_html;
-  GenerateLocalErrorPage(MAIN_FRAME,
-                         committed_error_page_info_->error,
-                         committed_error_page_info_->was_failed_post,
-                         params.Pass(),
-                         &error_html);
+  const std::string* error_html = NULL;
+  std::string generated_html;
+  if (!data.empty()) {
+    // If the request succeeded, use the response in place of a generated error
+    // page.
+    pending_error_page_info_.reset(
+        new ErrorPageInfo(committed_error_page_info_->error,
+                          committed_error_page_info_->was_failed_post));
+    error_html = &data;
+  } else {
+    // Otherwise, generate a local error page.  |pending_error_page_info_| will
+    // be set by GenerateLocalErrorPage.
+    GenerateLocalErrorPage(MAIN_FRAME,
+                           committed_error_page_info_->error,
+                           committed_error_page_info_->was_failed_post,
+                           &generated_html);
+    error_html = &generated_html;
+  }
 
   // |error_page_info| may have been destroyed by this point, since
   // |pending_error_page_info_| was set to a new ErrorPageInfo.
@@ -550,7 +370,7 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
   //                double page load by just updating the error page, like DNS
   //                probes do.
   delegate_->LoadErrorPageInMainFrame(
-      error_html,
+      *error_html,
       pending_error_page_info_->error.unreachableURL);
 }
 

@@ -28,13 +28,12 @@
 #include "chrome/browser/google/google_util_chromeos.h"
 #endif
 
-// Only use Link Doctor on official builds.  It uses an API key, too, but
-// seems best to just disable it, for more responsive error pages and to reduce
-// server load.
 #if defined(GOOGLE_CHROME_BUILD)
-#define LINKDOCTOR_SERVER_REQUEST_URL "https://www.googleapis.com/rpc"
-#else
-#define LINKDOCTOR_SERVER_REQUEST_URL ""
+#include "chrome/browser/google/linkdoctor_internal/linkdoctor_internal.h"
+#endif
+
+#ifndef LINKDOCTOR_SERVER_REQUEST_URL
+#define LINKDOCTOR_SERVER_REQUEST_URL std::string()
 #endif
 
 
@@ -76,17 +75,13 @@ void SetMockLinkDoctorBaseURLForTesting() {
   gUseMockLinkDoctorBaseURLForTesting = true;
 }
 
-std::string GetGoogleLocale() {
-  std::string locale = g_browser_process->GetApplicationLocale();
+GURL AppendGoogleLocaleParam(const GURL& url) {
   // Google does not yet recognize 'nb' for Norwegian Bokmal, but it uses
   // 'no' for that.
+  std::string locale = g_browser_process->GetApplicationLocale();
   if (locale == "nb")
-    return "no";
-  return locale;
-}
-
-GURL AppendGoogleLocaleParam(const GURL& url) {
-  return net::AppendQueryParameter(url, "hl", GetGoogleLocale());
+    locale = "no";
+  return net::AppendQueryParameter(url, "hl", locale);
 }
 
 std::string StringAppendGoogleLocaleParam(const std::string& url) {
@@ -96,37 +91,18 @@ std::string StringAppendGoogleLocaleParam(const std::string& url) {
   return localized_url.spec();
 }
 
-std::string GetGoogleCountryCode(Profile* profile) {
-  const std::string google_hostname =
-      GoogleURLTracker::GoogleURL(profile).host();
-  const size_t last_dot = google_hostname.find_last_of('.');
-  if (last_dot == std::string::npos) {
+GURL AppendGoogleTLDParam(Profile* profile, const GURL& url) {
+  const std::string google_domain(
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          GoogleURLTracker::GoogleURL(profile),
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES));
+  const size_t first_dot = google_domain.find('.');
+  if (first_dot == std::string::npos) {
     NOTREACHED();
+    return url;
   }
-  std::string country_code = google_hostname.substr(last_dot + 1);
-  // Assume the com TLD implies the US.
-  if (country_code == "com")
-    return "us";
-  // Google uses the Unicode Common Locale Data Repository (CLDR), and the CLDR
-  // code for the UK is "gb".
-  if (country_code == "uk")
-    return "gb";
-  // Catalonia does not have a CLDR country code, since it's a region in Spain,
-  // so use Spain instead.
-  if (country_code == "cat")
-    return "es";
-  return country_code;
-}
-
-GURL GetGoogleSearchURL(Profile* profile) {
-  // The url returned by the tracker does not include the "/search" or the
-  // "q=" query string.
-  std::string search_path = "search";
-  std::string query_string = "q=";
-  GURL::Replacements replacements;
-  replacements.SetPathStr(search_path);
-  replacements.SetQueryStr(query_string);
-  return GoogleURLTracker::GoogleURL(profile).ReplaceComponents(replacements);
+  return net::AppendQueryParameter(url, "sd",
+                                   google_domain.substr(first_dot + 1));
 }
 
 #if defined(OS_WIN)

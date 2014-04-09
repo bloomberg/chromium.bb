@@ -19,11 +19,11 @@
 #include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/navigation_correction_tab_observer.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -114,6 +114,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
   // --- Common tab helpers ---
 
+  AlternateErrorPageTabObserver::CreateForWebContents(web_contents);
   autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents);
   autofill::ContentAutofillDriver::CreateForWebContentsAndDelegate(
       web_contents,
@@ -128,7 +129,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   FindTabHelper::CreateForWebContents(web_contents);
   HistoryTabHelper::CreateForWebContents(web_contents);
   InfoBarService::CreateForWebContents(web_contents);
-  NavigationCorrectionTabObserver::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
   ChromePasswordManagerClient::CreateForWebContents(web_contents);
   PopupBlockerTabHelper::CreateForWebContents(web_contents);

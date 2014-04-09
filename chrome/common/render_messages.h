@@ -385,14 +385,9 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_SetAsInterstitial)
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_NetErrorInfo,
                     int /* DNS probe status */)
 
-// Provides the information needed by the renderer process to contact a
-// navigation correction service.  Handled by the NetErrorHelper.
-IPC_MESSAGE_ROUTED5(ChromeViewMsg_SetNavigationCorrectionInfo,
-                    GURL /* Navigation correction service base URL */,
-                    std::string /* language */,
-                    std::string /* origin_country */,
-                    std::string /* API key to use */,
-                    GURL /* Google Search URL to use */)
+// Sets the alternate error page URL (Link Doctor) for the renderer process.
+// Handled by the NetErrorHelper.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAltErrorPageURL, GURL)
 
 //-----------------------------------------------------------------------------
 // Misc messages
