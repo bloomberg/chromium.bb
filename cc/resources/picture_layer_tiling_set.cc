@@ -103,8 +103,12 @@ void PictureLayerTilingSet::SetCanUseLCDText(bool can_use_lcd_text) {
 }
 
 PictureLayerTiling* PictureLayerTilingSet::AddTiling(float contents_scale) {
-  for (size_t i = 0; i < tilings_.size(); ++i)
-    DCHECK_NE(tilings_[i]->contents_scale(), contents_scale);
+  for (size_t i = 0; i < tilings_.size(); ++i) {
+    // TODO(enne): temporary sanity CHECK for http://crbug.com/358350.
+    // If a duplicate tiling gets added, then many assumptions in
+    // PictureLayerImpl fail.
+    CHECK_NE(tilings_[i]->contents_scale(), contents_scale);
+  }
 
   tilings_.push_back(PictureLayerTiling::Create(contents_scale,
                                                 layer_bounds_,

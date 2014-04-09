@@ -1143,6 +1143,8 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
     // NON_IDEAL_RESOLUTION.
     if (twin_tiling && twin_tiling->resolution() == NON_IDEAL_RESOLUTION)
       twin->RemoveTiling(to_remove[i]->contents_scale());
+    // TODO(enne): temporary sanity CHECK for http://crbug.com/358350
+    CHECK_NE(HIGH_RESOLUTION, to_remove[i]->resolution());
     tilings_->Remove(to_remove[i]);
   }
   DCHECK_GT(tilings_->num_tilings(), 0u);
