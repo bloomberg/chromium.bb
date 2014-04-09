@@ -411,6 +411,11 @@ void PictureLayerImpl::ReleaseResources() {
     RemoveAllTilings();
 
   ResetRasterScale();
+
+  // To avoid an edge case after lost context where the tree is up to date but
+  // the tilings have not been managed, request an update draw properties
+  // to force tilings to get managed.
+  layer_tree_impl()->set_needs_update_draw_properties();
 }
 
 void PictureLayerImpl::CalculateContentsScale(
@@ -667,6 +672,16 @@ void PictureLayerImpl::SyncTiling(
   if (!CanHaveTilingWithScale(tiling->contents_scale()))
     return;
   tilings_->AddTiling(tiling->contents_scale());
+
+  if (!layer_tree_impl()->needs_update_draw_properties()) {
+    // When the tree is up to date, the set of tilings must either be empty or
+    // contain at least one high resolution tiling.  (If it is up to date,
+    // then it would be invalid to sync a tiling if it is the first tiling
+    // on the layer, since there would be no high resolution tiling.)
+    SanityCheckTilingState();
+    // TODO(enne): temporary sanity CHECK for http://crbug.com/358350
+    CHECK_GT(tilings_->num_tilings(), 1u);
+  }
 
   // If this tree needs update draw properties, then the tiling will
   // get updated prior to drawing or activation.  If this tree does not

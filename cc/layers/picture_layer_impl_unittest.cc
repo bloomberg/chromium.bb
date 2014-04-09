@@ -1615,11 +1615,23 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterReleaseResource) {
   // Contrived unit test of a real crash. A layer is transparent during a
   // context loss, and later becomes opaque, causing active layer SyncTiling to
   // be called.
-  const float tile_scale = 2.f;
+  float new_scale = 1.f;
   active_layer_->ReleaseResources();
-  EXPECT_FALSE(active_layer_->tilings()->TilingAtScale(tile_scale));
-  pending_layer_->AddTiling(2.f);
-  EXPECT_TRUE(active_layer_->tilings()->TilingAtScale(tile_scale));
+  pending_layer_->ReleaseResources();
+  EXPECT_FALSE(active_layer_->tilings()->TilingAtScale(new_scale));
+  pending_layer_->AddTiling(new_scale);
+  EXPECT_TRUE(active_layer_->tilings()->TilingAtScale(new_scale));
+
+  // UpdateDrawProperties early-outs if the tree doesn't need it.  It is also
+  // responsible for calling ManageTilings.  These checks verify that
+  // ReleaseResources has set needs update draw properties so that the
+  // new tiling gets the appropriate resolution set in ManageTilings.
+  EXPECT_TRUE(host_impl_.active_tree()->needs_update_draw_properties());
+  host_impl_.active_tree()->UpdateDrawProperties();
+  PictureLayerTiling* high_res =
+      active_layer_->tilings()->TilingAtScale(new_scale);
+  ASSERT_TRUE(!!high_res);
+  EXPECT_EQ(HIGH_RESOLUTION, high_res->resolution());
 }
 
 TEST_F(PictureLayerImplTest, TilingWithoutGpuRasterization) {
