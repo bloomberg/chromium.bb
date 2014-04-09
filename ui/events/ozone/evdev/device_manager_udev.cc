@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_ozone.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/events/ozone/evdev/device_manager_evdev.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
@@ -99,6 +100,10 @@ bool UdevEnumerateInputDevices(struct udev* udev,
 
     const char* path = udev_device_get_devnode(device.get());
     if (!path)
+      continue;
+
+    // Filter non-evdev device notes.
+    if (!StartsWithASCII(path, "/dev/input/event", true))
       continue;
 
     // Found input device node; attach.
