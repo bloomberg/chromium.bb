@@ -102,7 +102,6 @@ public:
     virtual void setEnableTouchAdjustment(bool) OVERRIDE;
     virtual void setRegionBasedColumnsEnabled(bool) OVERRIDE;
     virtual void setExperimentalWebGLEnabled(bool) OVERRIDE;
-    virtual void setExperimentalWebSocketEnabled(bool) OVERRIDE;
     virtual void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) OVERRIDE;
     virtual void setFixedFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) OVERRIDE;
     virtual void setForceCompositingMode(bool) OVERRIDE;

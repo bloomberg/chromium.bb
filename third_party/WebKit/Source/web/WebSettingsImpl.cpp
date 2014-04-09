@@ -397,11 +397,6 @@ void WebSettingsImpl::setExperimentalWebGLEnabled(bool enabled)
     m_settings->setWebGLEnabled(enabled);
 }
 
-void WebSettingsImpl::setExperimentalWebSocketEnabled(bool enabled)
-{
-    m_settings->setExperimentalWebSocketEnabled(enabled);
-}
-
 void WebSettingsImpl::setRegionBasedColumnsEnabled(bool enabled)
 {
     m_settings->setRegionBasedColumnsEnabled(enabled);

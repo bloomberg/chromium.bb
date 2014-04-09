@@ -52,7 +52,6 @@ public:
 
         bool m_originalCSSExclusionsEnabled;
         bool m_originalAuthorShadowDOMForAnyElementEnabled;
-        bool m_originalExperimentalWebSocketEnabled;
         bool m_originalStyleScoped;
         bool m_originalCSP;
         bool m_originalOverlayScrollbarsEnabled;
@@ -116,7 +115,6 @@ public:
     // be removed or moved onto internals.runtimeFlags:
     void setAuthorShadowDOMForAnyElementEnabled(bool);
     void setCSSExclusionsEnabled(bool);
-    void setExperimentalWebSocketEnabled(bool);
     void setLangAttributeAwareFormControlUIEnabled(bool);
     void setOverlayScrollbarsEnabled(bool);
     void setStyleScopedEnabled(bool);

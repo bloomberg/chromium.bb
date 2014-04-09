@@ -227,8 +227,6 @@ wideViewportQuirkEnabled initial=false
 # crbug.com/304873 tracks removal once it's been enabled on all platforms.
 touchEditingEnabled initial=false
 
-experimentalWebSocketEnabled initial=false
-
 # Settings for experimental desktop pinch-zoom support (with semantics
 # optimized for large screens).  Pinch-zoom generally is implemented mainly
 # outside of blink (in the compositor) and doesn't require any settings.
