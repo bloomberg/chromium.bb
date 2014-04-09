@@ -149,19 +149,25 @@ void AnimationPlayer::setCurrentTime(double newCurrentTime)
     if (!std::isfinite(newCurrentTime))
         return;
     updateTimingState(newCurrentTime);
+    // FIXME: Restart animation on compositor.
+    cancelAnimationOnCompositor();
 }
 
 void AnimationPlayer::setStartTime(double newStartTime)
 {
     if (!std::isfinite(newStartTime))
         return;
+    if (newStartTime == m_startTime)
+        return;
     updateCurrentTimingState(); // Update the value of held
     m_startTime = newStartTime;
     m_sortInfo.m_startTime = newStartTime;
+    cancelAnimationOnCompositor();
     if (m_held)
         return;
     updateCurrentTimingState();
     setOutdated();
+    // FIXME: Restart animation on compositor.
 }
 
 void AnimationPlayer::setSource(TimedItem* newSource)
@@ -187,7 +193,6 @@ void AnimationPlayer::pause()
         return;
     m_paused = true;
     updateTimingState(currentTime());
-    // FIXME: resume compositor animation rather than pull back to main-thread
     cancelAnimationOnCompositor();
 }
 
@@ -197,6 +202,7 @@ void AnimationPlayer::unpause()
         return;
     m_paused = false;
     updateTimingState(currentTime());
+    // FIXME: Resume compositor animation.
 }
 
 void AnimationPlayer::play()
@@ -210,6 +216,8 @@ void AnimationPlayer::play()
     else if (m_playbackRate < 0 && (currentTime <= 0 || currentTime > sourceEnd()))
         setCurrentTime(sourceEnd());
     m_finished = false;
+    // FIXME: Restart animation on compositor.
+    cancelAnimationOnCompositor();
 }
 
 void AnimationPlayer::reverse()
@@ -224,6 +232,8 @@ void AnimationPlayer::reverse()
     }
     setPlaybackRate(-m_playbackRate);
     unpause();
+    // FIXME: Restart animation on compositor.
+    cancelAnimationOnCompositor();
 }
 
 void AnimationPlayer::finish(ExceptionState& exceptionState)
@@ -240,6 +250,7 @@ void AnimationPlayer::finish(ExceptionState& exceptionState)
         setCurrentTime(sourceEnd());
     }
     ASSERT(finished());
+    cancelAnimationOnCompositor();
 }
 
 const AtomicString& AnimationPlayer::interfaceName() const
@@ -265,6 +276,8 @@ void AnimationPlayer::setPlaybackRate(double playbackRate)
         m_finished = false;
     m_playbackRate = playbackRate;
     updateTimingState(storedCurrentTime);
+    // FIXME: Restart animation on compositor.
+    cancelAnimationOnCompositor();
 }
 
 void AnimationPlayer::setOutdated()
@@ -276,13 +289,14 @@ void AnimationPlayer::setOutdated()
 
 bool AnimationPlayer::maybeStartAnimationOnCompositor()
 {
-    // FIXME: Support starting compositor animations that have a fixed
-    // start time.
-    ASSERT(!hasStartTime());
+    // FIXME: Need compositor support for playback rate != 1.
+    if (playbackRate() != 1)
+        return false;
+
     if (!m_content || !m_content->isAnimation() || paused())
         return false;
 
-    return toAnimation(m_content.get())->maybeStartAnimationOnCompositor();
+    return toAnimation(m_content.get())->maybeStartAnimationOnCompositor(startTime());
 }
 
 bool AnimationPlayer::hasActiveAnimationsOnCompositor()

@@ -89,10 +89,12 @@ double TimedItem::activeDuration() const
 
 void TimedItem::updateSpecifiedTiming(const Timing& timing)
 {
+    // FIXME: Test whether the timing is actually different?
     m_specified = timing;
     invalidate();
     if (m_player)
         m_player->setOutdated();
+    specifiedTimingChanged();
 }
 
 void TimedItem::updateInheritedTime(double inheritedTime) const

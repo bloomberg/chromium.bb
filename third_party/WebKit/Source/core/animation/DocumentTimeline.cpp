@@ -83,6 +83,7 @@ AnimationPlayer* DocumentTimeline::play(TimedItem* child)
         return 0;
     AnimationPlayer* player = createAnimationPlayer(child);
     player->setStartTime(effectiveTime());
+    m_document->compositorPendingAnimations().add(player);
     return player;
 }
 

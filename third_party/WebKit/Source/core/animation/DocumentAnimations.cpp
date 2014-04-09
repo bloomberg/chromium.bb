@@ -88,7 +88,7 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
 void DocumentAnimations::startPendingAnimations(Document& document)
 {
     ASSERT(document.lifecycle().state() == DocumentLifecycle::CompositingClean);
-    if (document.cssPendingAnimations().startPendingAnimations()) {
+    if (document.compositorPendingAnimations().startPendingAnimations()) {
         ASSERT(document.view());
         document.view()->scheduleAnimation();
     }

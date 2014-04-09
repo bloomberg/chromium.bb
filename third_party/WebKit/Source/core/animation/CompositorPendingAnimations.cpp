@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/animation/css/CSSPendingAnimations.h"
+#include "core/animation/CompositorPendingAnimations.h"
 
 #include "core/animation/Animation.h"
 #include "core/animation/DocumentTimeline.h"
@@ -39,43 +39,44 @@
 
 namespace WebCore {
 
-void CSSPendingAnimations::add(AnimationPlayer* player)
+void CompositorPendingAnimations::add(AnimationPlayer* player)
 {
-    ASSERT(player->source()->isAnimation());
-
     Page* page = player->timeline()->document()->page();
     bool visible = page && page->visibilityState() == PageVisibilityStateVisible;
-    if (!player->hasStartTime() && !visible) {
+    if (!player->hasStartTime() && !visible)
         player->setStartTime(player->timeline()->currentTime());
-        return;
-    }
 
     m_pending.append(player);
 }
 
-bool CSSPendingAnimations::startPendingAnimations()
+bool CompositorPendingAnimations::startPendingAnimations()
 {
-    bool startedOnCompositor = false;
+    bool startedSynchronizedOnCompositor = false;
     for (size_t i = 0; i < m_pending.size(); ++i) {
-        if (m_pending[i]->maybeStartAnimationOnCompositor())
-            startedOnCompositor = true;
+        if (!m_pending[i]->hasActiveAnimationsOnCompositor() && m_pending[i]->maybeStartAnimationOnCompositor() && !m_pending[i]->hasStartTime())
+            startedSynchronizedOnCompositor = true;
     }
 
-    // If any animations were started on the compositor, all remaining
-    // need to wait for a synchronized start time. Otherwise they may
-    // start immediately.
-    if (startedOnCompositor) {
-        for (size_t i = 0; i < m_pending.size(); ++i)
-            m_waitingForCompositorAnimationStart.append(m_pending[i]);
+    // If any synchronized animations were started on the compositor, all
+    // remaning synchronized animations need to wait for the synchronized
+    // start time. Otherwise they may start immediately.
+    if (startedSynchronizedOnCompositor) {
+        for (size_t i = 0; i < m_pending.size(); ++i) {
+            if (!m_pending[i]->hasStartTime()) {
+                m_waitingForCompositorAnimationStart.append(m_pending[i]);
+            }
+        }
     } else {
         for (size_t i = 0; i < m_pending.size(); ++i) {
-            m_pending[i]->setStartTime(m_pending[i]->timeline()->currentTime());
-            m_pending[i]->update(AnimationPlayer::UpdateOnDemand);
+            if (!m_pending[i]->hasStartTime()) {
+                m_pending[i]->setStartTime(m_pending[i]->timeline()->currentTime());
+                m_pending[i]->update(AnimationPlayer::UpdateOnDemand);
+            }
         }
     }
     m_pending.clear();
 
-    if (startedOnCompositor || m_waitingForCompositorAnimationStart.isEmpty())
+    if (startedSynchronizedOnCompositor || m_waitingForCompositorAnimationStart.isEmpty())
         return !m_waitingForCompositorAnimationStart.isEmpty();
 
     // Check if we're still waiting for any compositor animations to start.
@@ -89,7 +90,7 @@ bool CSSPendingAnimations::startPendingAnimations()
     return false;
 }
 
-void CSSPendingAnimations::notifyCompositorAnimationStarted(double monotonicAnimationStartTime)
+void CompositorPendingAnimations::notifyCompositorAnimationStarted(double monotonicAnimationStartTime)
 {
     for (size_t i = 0; i < m_waitingForCompositorAnimationStart.size(); ++i) {
         AnimationPlayer* player = m_waitingForCompositorAnimationStart[i].get();

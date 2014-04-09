@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSPendingAnimations_h
-#define CSSPendingAnimations_h
+#ifndef CompositorPendingAnimations_h
+#define CompositorPendingAnimations_h
 
 #include "wtf/Vector.h"
 
@@ -37,9 +37,12 @@ namespace WebCore {
 
 class AnimationPlayer;
 
-// Used to synchronize the start of main-thread animations with compositor
-// animations when both classes of CSS Animations are triggered by the same recalc
-class CSSPendingAnimations FINAL {
+// Manages the starting of pending animations on the compositor following a
+// compositing update.
+// For CSS Animations, used to synchronize the start of main-thread animations
+// with compositor animations when both classes of CSS Animations are triggered
+// by the same recalc
+class CompositorPendingAnimations FINAL {
 public:
     void add(AnimationPlayer*);
     // Returns whether we are waiting for an animation to start and should

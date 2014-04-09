@@ -112,6 +112,12 @@ void Animation::willDetach()
         clearEffects();
 }
 
+void Animation::specifiedTimingChanged()
+{
+    // FIXME: Restart on compositor.
+    cancelAnimationOnCompositor();
+}
+
 static AnimationStack& ensureAnimationStack(Element* element)
 {
     return element->ensureActiveAnimations().defaultStack();
@@ -141,15 +147,7 @@ void Animation::clearEffects()
     ASSERT(player());
     ASSERT(m_activeInAnimationStack);
     ensureAnimationStack(m_target.get()).remove(this);
-
-    {
-        // FIXME: clearEffects is called from withins style recalc.
-        // This queries compositingState, which is not necessarily up to date.
-        // https://code.google.com/p/chromium/issues/detail?id=339847
-        DisableCompositingQueryAsserts disabler;
-        cancelAnimationOnCompositor();
-    }
-
+    cancelAnimationOnCompositor();
     m_activeInAnimationStack = false;
     m_activeInterpolations.clear();
     m_target->setNeedsAnimationStyleRecalc();
@@ -181,7 +179,12 @@ double Animation::calculateTimeToEffectChange(bool forwards, double localTime, d
         if (forwards && hasActiveAnimationsOnCompositor()) {
             ASSERT(specifiedTiming().playbackRate == 1);
             // Need service to apply fill / fire events.
-            return std::min(end - localTime, timeToNextIteration);
+            const double timeToEnd = end - localTime;
+            if (hasEvents()) {
+                return std::min(timeToEnd, timeToNextIteration);
+            } else {
+                return timeToEnd;
+            }
         }
         return 0;
     case PhaseAfter:
@@ -208,14 +211,14 @@ bool Animation::isCandidateForAnimationOnCompositor() const
     return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *effect());
 }
 
-bool Animation::maybeStartAnimationOnCompositor()
+bool Animation::maybeStartAnimationOnCompositor(double startTime)
 {
     ASSERT(!hasActiveAnimationsOnCompositor());
     if (!isCandidateForAnimationOnCompositor())
         return false;
     if (!CompositorAnimations::instance()->canStartAnimationOnCompositor(*m_target.get()))
         return false;
-    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target.get(), specifiedTiming(), *effect(), m_compositorAnimationIds))
+    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target.get(), startTime, specifiedTiming(), *effect(), m_compositorAnimationIds))
         return false;
     ASSERT(!m_compositorAnimationIds.isEmpty());
     return true;
@@ -238,6 +241,10 @@ bool Animation::affects(CSSPropertyID property) const
 
 void Animation::cancelAnimationOnCompositor()
 {
+    // FIXME: cancelAnimationOnCompositor is called from withins style recalc.
+    // This queries compositingState, which is not necessarily up to date.
+    // https://code.google.com/p/chromium/issues/detail?id=339847
+    DisableCompositingQueryAsserts disabler;
     if (!hasActiveAnimationsOnCompositor())
         return;
     if (!m_target || !m_target->renderer())

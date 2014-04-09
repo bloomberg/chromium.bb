@@ -108,7 +108,7 @@ public:
     }
     void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
     {
-        return CompositorAnimationsImpl::getAnimationOnCompositor(timing, effect, animations);
+        return CompositorAnimationsImpl::getAnimationOnCompositor(timing, std::numeric_limits<double>::quiet_NaN(), effect, animations);
     }
 
     bool duplicateSingleKeyframeAndTestIsCandidateOnResult(AnimatableValueKeyframe* frame)

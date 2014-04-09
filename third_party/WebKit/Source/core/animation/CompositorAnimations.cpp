@@ -191,7 +191,7 @@ bool CompositorAnimations::canStartAnimationOnCompositor(const Element& element)
     return element.renderer() && element.renderer()->compositingState() == PaintsIntoOwnBacking;
 }
 
-bool CompositorAnimations::startAnimationOnCompositor(const Element& element, const Timing& timing, const AnimationEffect& effect, Vector<int>& startedAnimationIds)
+bool CompositorAnimations::startAnimationOnCompositor(const Element& element, double startTime, const Timing& timing, const AnimationEffect& effect, Vector<int>& startedAnimationIds)
 {
     ASSERT(startedAnimationIds.isEmpty());
     ASSERT(isCandidateForAnimationOnCompositor(timing, effect));
@@ -203,7 +203,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, co
     ASSERT(layer);
 
     Vector<OwnPtr<blink::WebAnimation> > animations;
-    CompositorAnimationsImpl::getAnimationOnCompositor(timing, keyframeEffect, animations);
+    CompositorAnimationsImpl::getAnimationOnCompositor(timing, startTime, keyframeEffect, animations);
     ASSERT(!animations.isEmpty());
     for (size_t i = 0; i < animations.size(); ++i) {
         int id = animations[i]->id();
@@ -408,16 +408,12 @@ void CompositorAnimationsImpl::addKeyframesToCurve(blink::WebAnimationCurve& cur
     }
 }
 
-void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, const KeyframeEffectModelBase& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
+void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, double startTime, const KeyframeEffectModelBase& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
 {
     ASSERT(animations.isEmpty());
     CompositorTiming compositorTiming;
     bool timingValid = convertTimingForCompositor(timing, compositorTiming);
     ASSERT_UNUSED(timingValid, timingValid);
-
-    RefPtr<TimingFunction> timingFunction = timing.timingFunction;
-    if (compositorTiming.reverse)
-        timingFunction = CompositorAnimationsTimingFunctionReverser::reverse(timingFunction.get());
 
     PropertySet properties = effect.properties();
     ASSERT(!properties.isEmpty());
@@ -458,6 +454,9 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, co
         ASSERT(curve.get());
 
         OwnPtr<blink::WebAnimation> animation = adoptPtr(blink::Platform::current()->compositorSupport()->createAnimation(*curve, targetProperty));
+
+        if (!std::isnan(startTime))
+            animation->setStartTime(startTime);
 
         animation->setIterations(compositorTiming.adjustedIterationCount);
         animation->setTimeOffset(compositorTiming.scaledTimeOffset);

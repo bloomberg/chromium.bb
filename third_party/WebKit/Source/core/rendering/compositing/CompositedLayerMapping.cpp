@@ -2056,7 +2056,7 @@ void CompositedLayerMapping::verifyNotPainting()
 
 void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double monotonicTime)
 {
-    renderer()->node()->document().cssPendingAnimations().notifyCompositorAnimationStarted(monotonicTime);
+    renderer()->node()->document().compositorPendingAnimations().notifyCompositorAnimationStarted(monotonicTime);
 }
 
 IntRect CompositedLayerMapping::pixelSnappedCompositedBounds() const

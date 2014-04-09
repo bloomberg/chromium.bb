@@ -105,6 +105,7 @@ protected:
     // updateChildrenAndEffects.
     void updateInheritedTime(double inheritedTime) const;
     void invalidate() const { m_needsUpdate = true; };
+    bool hasEvents() const { return m_eventDelegate; }
 
 private:
 
@@ -116,6 +117,7 @@ private:
     virtual double calculateTimeToEffectChange(bool forwards, double localTime, double timeToNextIteration) const = 0;
     virtual void didAttach() { };
     virtual void willDetach() { };
+    virtual void specifiedTimingChanged() { };
 
     void attach(AnimationPlayer* player)
     {

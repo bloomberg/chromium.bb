@@ -394,9 +394,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         OwnPtr<AnimationEventDelegate> eventDelegate = adoptPtr(new AnimationEventDelegate(element, iter->name));
         RefPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specifiedTiming(), Animation::DefaultPriority, eventDelegate.release());
         RefPtr<AnimationPlayer> player = element->document().timeline().createAnimationPlayer(animation.get());
+        element->document().compositorPendingAnimations().add(player.get());
         if (inertAnimation->paused())
             player->pause();
-        element->document().cssPendingAnimations().add(player.get());
         player->update(AnimationPlayer::UpdateOnDemand);
         m_animations.set(iter->name, player.get());
     }
@@ -454,8 +454,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 
         RefPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specifiedTiming(), Animation::TransitionPriority, eventDelegate.release());
         RefPtr<AnimationPlayer> player = element->document().transitionTimeline().createAnimationPlayer(transition.get());
+        element->document().compositorPendingAnimations().add(player.get());
         player->update(AnimationPlayer::UpdateOnDemand);
-        element->document().cssPendingAnimations().add(player.get());
         runningTransition.transition = transition.get();
         m_transitions.set(id, runningTransition);
         ASSERT(id != CSSPropertyInvalid);

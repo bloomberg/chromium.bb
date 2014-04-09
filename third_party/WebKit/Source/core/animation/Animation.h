@@ -73,8 +73,8 @@ public:
     Element* target() { return m_target.get(); }
 
     bool isCandidateForAnimationOnCompositor() const;
-    // Must only be called once and assumes to be part of a player without a start time.
-    bool maybeStartAnimationOnCompositor();
+    // Must only be called once.
+    bool maybeStartAnimationOnCompositor(double startTime);
     bool hasActiveAnimationsOnCompositor() const;
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
     void cancelAnimationOnCompositor();
@@ -86,6 +86,7 @@ protected:
     virtual void updateChildrenAndEffects() const OVERRIDE;
     virtual void didAttach() OVERRIDE;
     virtual void willDetach() OVERRIDE;
+    virtual void specifiedTimingChanged() OVERRIDE;
     virtual double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const OVERRIDE;
 
 private:
