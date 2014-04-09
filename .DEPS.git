@@ -191,7 +191,7 @@ deps_os = {
         'src/third_party/libaddressinput/src/testdata':
             None,
         'src/third_party/lss':
-            Var('git_url') + '/external/linux-syscall-support/lss.git@e6c7682c40c27527894fbb8bcba38f77edbbb6b7',
+            Var('git_url') + '/external/linux-syscall-support/lss.git@43de052f217a96dcb22e1b092953121413c9cfab',
     },
     'ios':
     {
@@ -326,7 +326,7 @@ deps_os = {
         'src/third_party/liblouis/src':
             Var('git_url') + '/external/liblouis.git@3c2daee56250162e5a75830871601d74328d39f5',
         'src/third_party/lss':
-            Var('git_url') + '/external/linux-syscall-support/lss.git@e6c7682c40c27527894fbb8bcba38f77edbbb6b7',
+            Var('git_url') + '/external/linux-syscall-support/lss.git@43de052f217a96dcb22e1b092953121413c9cfab',
         'src/third_party/pyelftools':
             Var('git_url') + '/chromiumos/third_party/pyelftools.git@bdc1d380acd88d4bfaf47265008091483b0d614e',
         'src/third_party/swig/linux':
