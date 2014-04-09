@@ -24,7 +24,7 @@ cr.define('speech', function() {
    * @extends {cr.EventTarget}
    */
   function AudioManager() {
-    var audioContext = new window.webkitAudioContext();
+    var audioContext = new window.AudioContext();
     this.sampleRate = audioContext.sampleRate;
     this.audioProc_ = null;
     this.audioIn_ = null;
@@ -57,7 +57,7 @@ cr.define('speech', function() {
    * @private
    */
   AudioManager.prototype.onAudioReady_ = function(stream) {
-    var audioContext = new window.webkitAudioContext();
+    var audioContext = new window.AudioContext();
     this.stream_ = stream;
     this.audioIn_ = audioContext.createMediaStreamSource(stream);
     this.audioProc_ = audioContext.createScriptProcessor(

@@ -132,7 +132,7 @@ AppListStartPageWebUITest.prototype = {
     this.mockHandler.stubs().launchApp(ANYTHING);
 
     this.registerMockSpeechRecognition_();
-    window.webkitAudioContext = mockAudioContext;
+    window.AudioContext = mockAudioContext;
     navigator.webkitGetUserMedia = this.mockGetUserMedia_.bind(this);
     this.audioTrackMocks = [mock(MediaStreamTrack), mock(MediaStreamTrack)];
   }
