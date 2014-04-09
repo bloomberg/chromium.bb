@@ -65,7 +65,7 @@ shouldBeEqualToString('selection.type', 'Range');
 shouldBe('selection.anchorNode', '$("test").querySelectorAll("li")[0].childNodes[0]');
 shouldBe('selection.anchorOffset', '0');
 shouldBe('selection.focusNode', '$("test").querySelectorAll("li a")[3].firstChild');
-shouldBe('selection.focusOffset', '5');
+shouldBe('selection.focusOffset', '4');
 if (window.testRunner)
     $('container').outerHTML = '';
 </script>

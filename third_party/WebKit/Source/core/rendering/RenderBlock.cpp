@@ -4,7 +4,6 @@
  *           (C) 2007 David Smith (catfish.man@gmail.com)
  * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
- * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -3896,6 +3895,24 @@ static RenderStyle* styleForFirstLetter(RenderObject* firstLetterBlock, RenderOb
     return pseudoStyle;
 }
 
+// CSS 2.1 http://www.w3.org/TR/CSS21/selector.html#first-letter
+// "Punctuation (i.e, characters defined in Unicode [UNICODE] in the "open" (Ps), "close" (Pe),
+// "initial" (Pi). "final" (Pf) and "other" (Po) punctuation classes), that precedes or follows the first letter should be included"
+static inline bool isPunctuationForFirstLetter(UChar c)
+{
+    CharCategory charCategory = category(c);
+    return charCategory == Punctuation_Open
+        || charCategory == Punctuation_Close
+        || charCategory == Punctuation_InitialQuote
+        || charCategory == Punctuation_FinalQuote
+        || charCategory == Punctuation_Other;
+}
+
+static inline bool isSpaceForFirstLetter(UChar c)
+{
+    return isSpaceOrNewline(c) || c == noBreakSpace;
+}
+
 static inline RenderObject* findFirstLetterBlock(RenderBlock* start)
 {
     RenderObject* firstLetterBlock = start;
@@ -3969,6 +3986,40 @@ void RenderBlock::updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderO
     }
 }
 
+static inline unsigned firstLetterLength(const String& text)
+{
+    unsigned length = 0;
+    unsigned textLength = text.length();
+
+    // Account for leading spaces first.
+    while (length < textLength && isSpaceForFirstLetter(text[length]))
+        length++;
+
+    // Now account for leading punctuation.
+    while (length < textLength && isPunctuationForFirstLetter(text[length]))
+        length++;
+
+    // Bail if we didn't find a letter before the end of the text or before a space.
+    if (isSpaceForFirstLetter(text[length]) || (textLength && length == textLength))
+        return 0;
+
+    // Account the next character for first letter.
+    length++;
+
+    // Keep looking allowed punctuation for the :first-letter.
+    for (unsigned scanLength = length; scanLength < textLength; ++scanLength) {
+        UChar c = text[scanLength];
+
+        if (!isPunctuationForFirstLetter(c))
+            break;
+
+        length = scanLength + 1;
+    }
+
+    // FIXME: If textLength is 0, length may still be 1!
+    return length;
+}
+
 void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, RenderObject* currentChild, unsigned length)
 {
     ASSERT(length && currentChild->isText());
@@ -4013,205 +4064,11 @@ void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, Rend
     textObj->destroy();
 }
 
-static bool isRendererAllowedForFirstLetter(RenderObject* renderer)
-{
-    // FIXME: This black-list of disallowed RenderText subclasses is fragile.
-    // Should counter be on this list? What about RenderTextFragment?
-    return renderer->isText() && !renderer->isBR() && !toRenderText(renderer)->isWordBreak();
-}
-
-typedef Vector<std::pair<RenderObject*, unsigned> > FirstLetterRenderersList;
-
-enum FirstLetterSearchState {
-    SearchLeadingSpaces,
-    SearchLeadingPunctuation,
-    SearchFirstLetterCharacter,
-    SearchTrailingPunctuation
-};
-
-class FirstLetterFinder {
-    WTF_MAKE_NONCOPYABLE(FirstLetterFinder);
-public:
-    FirstLetterFinder(RenderObject* block)
-        : m_containerBlock(block)
-        , m_renderers()
-        , m_searchState(SearchLeadingSpaces)
-        , m_firstLetterFound(false)
-    {
-        // The purpose of this class is to find the renderers that would be part
-        // of the first-letter pseudo element, so go find them right now.
-        findTextRenderers();
-    }
-
-    FirstLetterRenderersList& renderers() { return m_renderers; }
-    RenderObject* containerBlock() { return m_containerBlock; }
-
-private:
-    void findTextRenderers()
-    {
-        // Drill into inlines looking for the render objects to be transformed into first-letter pseudoelements.
-        RenderObject* currentChild = m_containerBlock->firstChild();
-        unsigned currentLength = 0;
-
-        while (currentChild) {
-            if (currentChild->isText()) {
-                // Process the renderer and store it in the list if valid text was found.
-                currentLength = processTextRenderer(currentChild);
-                if (currentLength)
-                    m_renderers.append(std::make_pair(currentChild, currentLength));
-
-                // No need to keep looking if we haven't found anything with the
-                // current renderer or if we already made a decision.
-                String text = rendererTextForFirstLetter(currentChild);
-                if (!currentLength || currentLength < text.length())
-                    break;
-
-                // We need to look the next object traversing the tree in preorder as if the current renderer
-                // was a leaf node (which probably is anyway) but without leaving the scope of the parent block.
-                currentChild = currentChild->nextInPreOrderAfterChildren(m_containerBlock);
-            } else if (currentChild->isListMarker()) {
-                currentChild = currentChild->nextSibling();
-            } else if (currentChild->isFloatingOrOutOfFlowPositioned()) {
-                if (currentChild->style()->styleType() == FIRST_LETTER) {
-                    currentChild = currentChild->firstChild();
-                    if (currentChild) {
-                        // If found a floating/out-of-flow element with the first-letter
-                        // style already applied, it means it has been previously identified
-                        // and so we should discard whatever we found so far and use that.
-                        m_firstLetterFound = true;
-                        m_renderers.append(std::make_pair(currentChild, rendererTextForFirstLetter(currentChild).length()));
-                    }
-                    break;
-                }
-                currentChild = currentChild->nextSibling();
-            } else if (currentChild->isReplaced() || currentChild->isRenderButton() || currentChild->isMenuList()) {
-                break;
-            } else if (currentChild->style()->hasPseudoStyle(FIRST_LETTER) && currentChild->canHaveGeneratedChildren())  {
-                // We found a lower-level node with first-letter, which supersedes the higher-level style.
-                m_containerBlock = currentChild;
-                currentChild = currentChild->firstChild();
-            } else {
-                currentChild = currentChild->firstChild();
-            }
-        }
-
-        if (!m_firstLetterFound) {
-            // Empty the list of renderers if we did not find a correct set of them
-            // to further generate new elements to apply the first-letter style over.
-            m_renderers.clear();
-        }
-    }
-
-    String rendererTextForFirstLetter(RenderObject* renderer) const
-    {
-        ASSERT(renderer->isText());
-        RenderText* textRenderer = toRenderText(renderer);
-
-        String result = textRenderer->originalText();
-        if (!result.isNull())
-            return result;
-
-        if (isRendererAllowedForFirstLetter(renderer))
-            return textRenderer->text();
-
-        return String();
-    }
-
-    unsigned processTextRenderer(RenderObject* renderer)
-    {
-        ASSERT(renderer->isText());
-        String text = rendererTextForFirstLetter(renderer);
-
-        // Early return in case we encounter the wrong characters at the beginning.
-        if (text.isEmpty()
-            || (m_searchState == SearchLeadingPunctuation && isSpaceForFirstLetter(text[0]))
-            || (m_firstLetterFound && !isPunctuationForFirstLetter(text[0])))
-            return 0;
-
-        // Now start looking for valid characters for the first-letter pseudo element.
-        bool doneSearching = false;
-        unsigned textLength = text.length();
-        unsigned length = 0;
-
-        while (!doneSearching && length < textLength) {
-            switch (m_searchState) {
-            case SearchLeadingSpaces:
-                advancePositionWhile<isSpaceForFirstLetter>(text, length);
-                if (length < textLength)
-                    m_searchState = SearchLeadingPunctuation;
-                break;
-
-            case SearchLeadingPunctuation:
-                advancePositionWhile<isPunctuationForFirstLetter>(text, length);
-                if (length < textLength)
-                    m_searchState = SearchFirstLetterCharacter;
-                break;
-
-            case SearchFirstLetterCharacter:
-                // Now spaces are allowed between leading punctuation and the letter.
-                if (isSpaceForFirstLetter(text[length]))
-                    return 0;
-
-                m_firstLetterFound = true;
-                m_searchState = SearchTrailingPunctuation;
-                length++;
-                break;
-
-            case SearchTrailingPunctuation:
-                for (unsigned scanLength = length; scanLength < textLength; ++scanLength) {
-                    UChar c = text[scanLength];
-                    if (!isPunctuationForFirstLetter(c)) {
-                        doneSearching = true;
-                        break;
-                    }
-                    length = scanLength + 1;
-                }
-                break;
-            }
-        }
-
-        ASSERT(length <= textLength);
-        return length;
-    }
-
-    template<bool characterPredicate(UChar)>
-    void advancePositionWhile(const String& text, unsigned& position)
-    {
-        unsigned textLength = text.length();
-        while (position < textLength && characterPredicate(text[position]))
-            position++;
-    }
-
-    // CSS 2.1 http://www.w3.org/TR/CSS21/selector.html#first-letter
-    // "Punctuation (i.e, characters defined in Unicode [UNICODE] in the "open" (Ps), "close" (Pe),
-    // "initial" (Pi). "final" (Pf) and "other" (Po) punctuation classes), that precedes or follows the first letter should be included"
-    static inline bool isPunctuationForFirstLetter(UChar c)
-    {
-        CharCategory charCategory = category(c);
-        return charCategory == Punctuation_Open
-            || charCategory == Punctuation_Close
-            || charCategory == Punctuation_InitialQuote
-            || charCategory == Punctuation_FinalQuote
-            || charCategory == Punctuation_Other;
-    }
-
-    static inline bool isSpaceForFirstLetter(UChar c)
-    {
-        return isSpaceOrNewline(c) || c == noBreakSpace;
-    }
-
-    RenderObject* m_containerBlock;
-    FirstLetterRenderersList m_renderers;
-    FirstLetterSearchState m_searchState;
-    bool m_firstLetterFound;
-};
-
 void RenderBlock::updateFirstLetter()
 {
     if (!document().styleEngine()->usesFirstLetterRules())
         return;
-
-    // Early return if the renderer is already known to be part of a first-letter pseudo element.
+    // Don't recur
     if (style()->styleType() == FIRST_LETTER)
         return;
 
@@ -4221,40 +4078,55 @@ void RenderBlock::updateFirstLetter()
     if (!firstLetterBlock)
         return;
 
-    // Find the renderers to apply the first-letter style over.
-    FirstLetterFinder firstLetterFinder(firstLetterBlock);
-    FirstLetterRenderersList& renderers = firstLetterFinder.renderers();
-    if (renderers.isEmpty())
+    // Drill into inlines looking for our first text child.
+    RenderObject* currChild = firstLetterBlock->firstChild();
+    unsigned length = 0;
+    while (currChild) {
+        if (currChild->isText()) {
+            // FIXME: If there is leading punctuation in a different RenderText than
+            // the first letter, we'll not apply the correct style to it.
+            length = firstLetterLength(toRenderText(currChild)->originalText());
+            if (length)
+                break;
+            currChild = currChild->nextSibling();
+        } else if (currChild->isListMarker()) {
+            currChild = currChild->nextSibling();
+        } else if (currChild->isFloatingOrOutOfFlowPositioned()) {
+            if (currChild->style()->styleType() == FIRST_LETTER) {
+                currChild = currChild->firstChild();
+                break;
+            }
+            currChild = currChild->nextSibling();
+        } else if (currChild->isReplaced() || currChild->isRenderButton() || currChild->isMenuList())
+            break;
+        else if (currChild->style()->hasPseudoStyle(FIRST_LETTER) && currChild->canHaveGeneratedChildren())  {
+            // We found a lower-level node with first-letter, which supersedes the higher-level style
+            firstLetterBlock = currChild;
+            currChild = currChild->firstChild();
+        } else
+            currChild = currChild->firstChild();
+    }
+
+    if (!currChild)
         return;
 
-    // The FindLetterFinder might change what considers to be the container block
-    // for the render objects that form the first-letter pseudo element from the one
-    // originally passed to the constructor so we need to update the pointer now.
-    firstLetterBlock = firstLetterFinder.containerBlock();
-
-    // Create the new renderers for the first-letter pseudo elements.
-    for (FirstLetterRenderersList::const_iterator it = renderers.begin(); it != renderers.end(); ++it) {
-        RenderObject* currentRenderer = it->first;
-        ASSERT(currentRenderer->isText());
-
-        // If the child already has style, then it has already been created, so we just want
-        // to update it.
-        if (currentRenderer->parent()->style()->styleType() == FIRST_LETTER) {
-            updateFirstLetterStyle(firstLetterBlock, currentRenderer);
-            continue;
-        }
-
-        if (!isRendererAllowedForFirstLetter(currentRenderer))
-            continue;
-
-        // Our layout state is not valid for the repaints we are going to trigger by
-        // adding and removing children of firstLetterContainer.
-        LayoutStateDisabler layoutStateDisabler(*this);
-
-        unsigned lengthForRenderer = it->second;
-        if (lengthForRenderer)
-            createFirstLetterRenderer(firstLetterBlock, currentRenderer, lengthForRenderer);
+    // If the child already has style, then it has already been created, so we just want
+    // to update it.
+    if (currChild->parent()->style()->styleType() == FIRST_LETTER) {
+        updateFirstLetterStyle(firstLetterBlock, currChild);
+        return;
     }
+
+    // FIXME: This black-list of disallowed RenderText subclasses is fragile.
+    // Should counter be on this list? What about RenderTextFragment?
+    if (!currChild->isText() || currChild->isBR() || toRenderText(currChild)->isWordBreak())
+        return;
+
+    // Our layout state is not valid for the repaints we are going to trigger by
+    // adding and removing children of firstLetterContainer.
+    LayoutStateDisabler layoutStateDisabler(*this);
+
+    createFirstLetterRenderer(firstLetterBlock, currChild, length);
 }
 
 // Helper methods for obtaining the last line, computing line counts and heights for line counts
