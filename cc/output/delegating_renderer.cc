@@ -62,7 +62,7 @@ bool DelegatingRenderer::Initialize() {
 
   if (!output_surface_->context_provider()) {
     capabilities_.using_shared_memory_resources = true;
-    capabilities_.using_map_image = settings_->use_map_image;
+    capabilities_.using_map_image = true;
     return true;
   }
 
