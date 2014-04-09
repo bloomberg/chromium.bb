@@ -43,7 +43,8 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
       uninstalled_(false),
       enabled_(enabled),
       incognito_enabled_(incognito_enabled),
-      version_(*extension.version()),
+      version_(extension.from_bookmark() ? base::Version("0")
+                                         : *extension.version()),
       update_url_(ManifestURL::GetUpdateURL(&extension)),
       name_(extension.non_localized_name()) {
 }
