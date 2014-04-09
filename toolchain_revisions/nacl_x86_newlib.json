@@ -1,0 +1,34 @@
+{
+  "package_name": "nacl_x86_newlib",
+  "package_targets": {
+    "linux_x86": [
+      {
+        "extract_dir": "",
+        "hash": "e428cf7db18973c66f5d29ac74d96d8fee944f00",
+        "name": "naclsdk.tgz",
+        "tar_src_dir": "sdk/nacl-sdk",
+        "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13014/naclsdk_linux_x86.tgz"
+      }
+    ],
+    "mac_x86": [
+      {
+        "extract_dir": "",
+        "hash": "4bc7f9811b771c5ad0b3d14de254c3001a9763cf",
+        "name": "naclsdk.tgz",
+        "tar_src_dir": "sdk/nacl-sdk",
+        "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13014/naclsdk_mac_x86.tgz"
+      }
+    ],
+    "win_x86": [
+      {
+        "extract_dir": "",
+        "hash": "045247468ba3cc2549a3bdfbc81fff82bfeef22f",
+        "name": "naclsdk.tgz",
+        "tar_src_dir": "sdk/nacl-sdk",
+        "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13014/naclsdk_win_x86.tgz"
+      }
+    ]
+  },
+  "revision": 13014,
+  "revision_hash": "5d0680aea06a133d6f48834e7a35b4bee78612ae"
+}

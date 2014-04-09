@@ -1,0 +1,34 @@
+{
+  "package_name": "nacl_x86_glibc",
+  "package_targets": {
+    "linux_x86": [
+      {
+        "extract_dir": "",
+        "hash": "bcf3eaf934bef6269308d841d2a8b8d3cc1b222d",
+        "name": "toolchain.tar.bz2",
+        "tar_src_dir": "toolchain/linux_x86",
+        "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r13014/toolchain_linux_x86.tar.bz2"
+      }
+    ],
+    "mac_x86": [
+      {
+        "extract_dir": "",
+        "hash": "96d9024917281592f6a6da88f909071ebf68d36e",
+        "name": "toolchain.tar.bz2",
+        "tar_src_dir": "toolchain/mac_x86",
+        "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r13014/toolchain_mac_x86.tar.bz2"
+      }
+    ],
+    "win_x86": [
+      {
+        "extract_dir": "",
+        "hash": "161c00d6d555d205b83d2dab7dab6f222cf53d16",
+        "name": "toolchain.tar.bz2",
+        "tar_src_dir": "toolchain/win_x86",
+        "url": "https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r13014/toolchain_win_x86.tar.bz2"
+      }
+    ]
+  },
+  "revision": 13014,
+  "revision_hash": "eb703d44fc6ca1da904eef355f1a8f678a7bae22"
+}

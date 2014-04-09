@@ -1,0 +1,16 @@
+{
+  "package_name": "arm_trusted",
+  "package_targets": {
+    "linux_x86": [
+      {
+        "extract_dir": "",
+        "hash": "dbea575fc43c5c20d61f706d165888f2509fdbe8",
+        "name": "sysroot-arm-trusted.tgz",
+        "tar_src_dir": "",
+        "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/12292/sysroot-arm-trusted.tgz"
+      }
+    ]
+  },
+  "revision": 12292,
+  "revision_hash": "713a4a6634ad8804722b4d725161eca6e99aebc4"
+}
