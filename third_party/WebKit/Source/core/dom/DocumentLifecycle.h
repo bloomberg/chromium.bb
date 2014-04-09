@@ -97,6 +97,8 @@ public:
     bool isActive() const { return m_state > Inactive && m_state < Stopping; }
     State state() const { return m_state; }
 
+    bool stateAllowsTreeMutations() const;
+
     void advanceTo(State);
     void rewindTo(State);
 
@@ -107,6 +109,15 @@ private:
 
     State m_state;
 };
+
+inline bool DocumentLifecycle::stateAllowsTreeMutations() const
+{
+    // FIXME: We should not allow mutations in InPreLayout or AfterPerformLayout either,
+    // but we need to fix MediaList listeners and plugins first.
+    return m_state != InStyleRecalc
+        && m_state != InPerformLayout
+        && m_state != InCompositingUpdate;
+}
 
 }
 
