@@ -19,12 +19,21 @@ function doWork()
 
 function test()
 {
-    function runEventsSanityCheck(events)
+    function runEventsSanityCheck()
     {
+        var events = [];
         var phaseComplete = 0;
         var knownEvents = {};
-        var processes = {};
-        var threads = {};
+        var processes = 0;
+        var threads = 0;
+
+        tracingModel.sortedProcesses().forEach(function(process) {
+            processes++;
+            process.sortedThreads().forEach(function(thread) {
+                threads++;
+                events = events.concat(thread.events());
+            });
+        });
 
         knownEvents["MessageLoop::PostTask"] = 0;
         knownEvents["v8.callFunction"] = 0;
@@ -33,44 +42,35 @@ function test()
 
         for (var i = 0; i < events.length; ++i) {
             var event = events[i];
-            if (event.ph === "X")
+            if (event.phase === WebInspector.TracingModel.Phase.Complete)
                 ++phaseComplete;
             if (event.name in knownEvents)
                 ++knownEvents[event.name];
-            processes[event.pid] = (processes[event.pid] || 0) + 1;
-            threads[event.tid] = (threads[event.tid] || 0) + 1;
         }
         InspectorTest.assertGreaterOrEqual(events.length, 100, "Too few trace events recorded");
         InspectorTest.assertGreaterOrEqual(knownEvents["v8.callFunction"], 10, "Too few v8.callFunction");
         InspectorTest.assertGreaterOrEqual(knownEvents["Document::updateRenderTree"], 1, "Too few Document::recalcStyle");
         InspectorTest.assertGreaterOrEqual(knownEvents["FrameView::layout"], 1, "Too few FrameView::layout");
         InspectorTest.assertGreaterOrEqual(phaseComplete, 50, "Too few begin events");
-        InspectorTest.assertGreaterOrEqual(Object.keys(processes).length, 2, "Too few processes");
-        InspectorTest.assertGreaterOrEqual(Object.keys(threads).length, 4, "Too few threads");
+        InspectorTest.assertGreaterOrEqual(processes, 2, "Too few processes");
+        InspectorTest.assertGreaterOrEqual(threads, 4, "Too few threads");
         InspectorTest.addResult("Event sanity test done");
-    }
-
-    var events = [];
-    function onTraceEvents(event)
-    {
-        events = events.concat(event.data);
     }
 
     function onTracingComplete()
     {
         InspectorTest.addResult("Tracing complete");
-        WebInspector.tracingAgent.removeEventListener(WebInspector.TracingAgent.Events.EventsCollected, onTraceEvents);
-        runEventsSanityCheck(events);
+        runEventsSanityCheck();
         InspectorTest.completeTest();
     }
 
-    WebInspector.tracingAgent.addEventListener(WebInspector.TracingAgent.Events.EventsCollected, onTraceEvents);
-    WebInspector.tracingAgent.start("", "", onTracingStarted);
+    var tracingModel = new WebInspector.TracingModel();
+    tracingModel.start("", "", onTracingStarted);
     function onTracingStarted(error)
     {
         InspectorTest.addResult("Tracing started (error: " + JSON.stringify(error) + ")");
         InspectorTest.evaluateInPage("doWork()", function() {
-            WebInspector.tracingAgent.stop(onTracingComplete);
+            tracingModel.stop(onTracingComplete);
         });
     }
 }
