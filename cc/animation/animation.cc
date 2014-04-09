@@ -210,17 +210,13 @@ double Animation::TrimTimeToCurrentIteration(double monotonic_time) const {
   return trimmed;
 }
 
-scoped_ptr<Animation> Animation::Clone() const {
-  return CloneAndInitialize(run_state_, start_time_);
-}
-
-scoped_ptr<Animation> Animation::CloneAndInitialize(RunState initial_run_state,
-                                                    double start_time) const {
+scoped_ptr<Animation> Animation::CloneAndInitialize(
+    RunState initial_run_state) const {
   scoped_ptr<Animation> to_return(
       new Animation(curve_->Clone(), id_, group_, target_property_));
   to_return->run_state_ = initial_run_state;
   to_return->iterations_ = iterations_;
-  to_return->start_time_ = start_time;
+  to_return->start_time_ = start_time_;
   to_return->pause_time_ = pause_time_;
   to_return->total_paused_time_ = total_paused_time_;
   to_return->time_offset_ = time_offset_;

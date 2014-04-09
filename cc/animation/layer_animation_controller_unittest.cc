@@ -99,6 +99,57 @@ TEST(LayerAnimationControllerTest, DoNotClobberStartTimes) {
                                           Animation::Opacity)->start_time());
 }
 
+TEST(LayerAnimationControllerTest, UseSpecifiedStartTimes) {
+  FakeLayerAnimationValueObserver dummy_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+
+  AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
+  int group_id = controller->GetAnimation(Animation::Opacity)->group();
+
+  const double start_time = 123;
+  controller->GetAnimation(Animation::Opacity)->set_start_time(start_time);
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
+  EXPECT_EQ(Animation::WaitingForTargetAvailability,
+            controller_impl->GetAnimation(group_id,
+                                          Animation::Opacity)->run_state());
+
+  AnimationEventsVector events;
+  controller_impl->Animate(kInitialTickTime);
+  controller_impl->UpdateState(true, &events);
+
+  // Synchronize the start times.
+  EXPECT_EQ(1u, events.size());
+  controller->NotifyAnimationStarted(events[0]);
+
+  EXPECT_EQ(start_time,
+            controller->GetAnimation(group_id,
+                                     Animation::Opacity)->start_time());
+  EXPECT_EQ(controller->GetAnimation(group_id,
+                                     Animation::Opacity)->start_time(),
+            controller_impl->GetAnimation(group_id,
+                                          Animation::Opacity)->start_time());
+
+  // Start the animation on the main thread. Should not affect the start time.
+  controller->Animate(kInitialTickTime + 0.5);
+  controller->UpdateState(true, NULL);
+  EXPECT_EQ(start_time,
+            controller->GetAnimation(group_id,
+                                     Animation::Opacity)->start_time());
+  EXPECT_EQ(controller->GetAnimation(group_id,
+                                     Animation::Opacity)->start_time(),
+            controller_impl->GetAnimation(group_id,
+                                          Animation::Opacity)->start_time());
+}
+
 // Tests that controllers activate and deactivate as expected.
 TEST(LayerAnimationControllerTest, Activation) {
   scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::Create();

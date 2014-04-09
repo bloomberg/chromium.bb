@@ -118,9 +118,7 @@ class CC_EXPORT Animation {
   // of iterations, returns the relative time in the current iteration.
   double TrimTimeToCurrentIteration(double monotonic_time) const;
 
-  scoped_ptr<Animation> Clone() const;
-  scoped_ptr<Animation> CloneAndInitialize(RunState initial_run_state,
-                                           double start_time) const;
+  scoped_ptr<Animation> CloneAndInitialize(RunState initial_run_state) const;
   bool is_controlling_instance() const { return is_controlling_instance_; }
 
   void PushPropertiesTo(Animation* other) const;

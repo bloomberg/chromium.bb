@@ -298,7 +298,8 @@ void LayerAnimationController::NotifyAnimationStarted(
         active_animations_[i]->target_property() == event.target_property &&
         active_animations_[i]->needs_synchronized_start_time()) {
       active_animations_[i]->set_needs_synchronized_start_time(false);
-      active_animations_[i]->set_start_time(event.monotonic_time);
+      if (!active_animations_[i]->has_set_start_time())
+        active_animations_[i]->set_start_time(event.monotonic_time);
 
       FOR_EACH_OBSERVER(LayerAnimationEventObserver, event_observers_,
                         OnAnimationStarted(event));
@@ -523,9 +524,8 @@ void LayerAnimationController::PushNewAnimationsToImplThread(
     // The new animation should be set to run as soon as possible.
     Animation::RunState initial_run_state =
         Animation::WaitingForTargetAvailability;
-    double start_time = 0;
     scoped_ptr<Animation> to_add(active_animations_[i]->CloneAndInitialize(
-        initial_run_state, start_time));
+        initial_run_state));
     DCHECK(!to_add->needs_synchronized_start_time());
     controller_impl->AddAnimation(to_add.Pass());
   }
@@ -631,7 +631,8 @@ void LayerAnimationController::PromoteStartedAnimations(
   for (size_t i = 0; i < active_animations_.size(); ++i) {
     if (active_animations_[i]->run_state() == Animation::Starting) {
       active_animations_[i]->SetRunState(Animation::Running, monotonic_time);
-      if (!active_animations_[i]->has_set_start_time())
+      if (!active_animations_[i]->has_set_start_time() &&
+          !active_animations_[i]->needs_synchronized_start_time())
         active_animations_[i]->set_start_time(monotonic_time);
       if (events) {
         AnimationEvent started_event(
