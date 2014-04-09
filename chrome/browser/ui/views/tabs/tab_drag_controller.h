@@ -24,6 +24,7 @@ namespace gfx {
 class Screen;
 }
 namespace ui {
+class EventHandler;
 class ListSelectionModel;
 }
 namespace views {
@@ -48,7 +49,6 @@ class TabStripModel;
 // is the default on aura.
 class TabDragController : public content::WebContentsDelegate,
                           public content::NotificationObserver,
-                          public base::MessageLoopForUI::Observer,
                           public views::WidgetObserver,
                           public TabStripModelObserver {
  public:
@@ -237,10 +237,6 @@ class TabDragController : public content::WebContentsDelegate,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // Overridden from MessageLoop::Observer:
-  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
   // Overriden from views::WidgetObserver:
   virtual void OnWidgetBoundsChanged(views::Widget* widget,
@@ -636,6 +632,8 @@ class TabDragController : public content::WebContentsDelegate,
   // See comment around use for more details.
   int attach_x_;
   int attach_index_;
+
+  scoped_ptr<ui::EventHandler> escape_tracker_;
 
   base::WeakPtrFactory<TabDragController> weak_factory_;
 
