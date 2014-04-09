@@ -674,8 +674,9 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
   if (template_url && template_url->url_ref().HasGoogleBaseURLs())
     GoogleURLTracker::GoogleURLSearchCommitted(profile_);
 
+  DCHECK(popup_model());
   view_->OpenMatch(match, disposition, alternate_nav_url, base::string16(),
-                   OmniboxPopupModel::kNoMatch);
+                   popup_model()->selected_line());
 }
 
 void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
@@ -701,7 +702,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
 
   // We only care about cases where there is a selection (i.e. the popup is
   // open).
-  if (popup_model() && popup_model()->IsOpen()) {
+  if (popup_model()->IsOpen()) {
     base::TimeDelta elapsed_time_since_last_change_to_default_match(
         now - autocomplete_controller()->last_time_default_match_changed());
     // These elapsed times don't really make sense for ZeroSuggest matches
@@ -715,11 +716,12 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       elapsed_time_since_last_change_to_default_match =
           base::TimeDelta::FromMilliseconds(-1);
     }
+    DCHECK_NE(OmniboxPopupModel::kNoMatch, index);
     OmniboxLog log(
         input_text,
         just_deleted_text_,
         autocomplete_controller()->input().type(),
-        popup_model()->selected_line(),
+        index,
         -1,  // don't yet know tab ID; set later if appropriate
         ClassifyPage(),
         elapsed_time_since_user_first_modified_omnibox,
@@ -738,9 +740,6 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
         << "We should've got the notification that the user modified the "
         << "omnibox text at same time or before the most recent time the "
         << "default match changed.";
-
-    if (index != OmniboxPopupModel::kNoMatch)
-      log.selected_index = index;
 
     if ((disposition == CURRENT_TAB) && delegate_->CurrentPageExists()) {
       // If we know the destination is being opened in the current tab,
