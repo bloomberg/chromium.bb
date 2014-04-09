@@ -254,6 +254,7 @@ class MediaDrmBridge {
      * Check whether the crypto scheme is supported for the given container.
      * If |containerMimeType| is an empty string, we just return whether
      * the crypto scheme is supported.
+     * TODO(xhwang): Implement container check. See: http://crbug.com/350481
      *
      * @return true if the container and the crypto scheme is supported, or
      * false otherwise.
@@ -261,12 +262,7 @@ class MediaDrmBridge {
     @CalledByNative
     private static boolean isCryptoSchemeSupported(byte[] schemeUUID, String containerMimeType) {
         UUID cryptoScheme = getUUIDFromBytes(schemeUUID);
-
-        if (containerMimeType.isEmpty()) {
-            return MediaDrm.isCryptoSchemeSupported(cryptoScheme);
-        }
-
-        return MediaDrm.isCryptoSchemeSupported(cryptoScheme, containerMimeType);
+        return MediaDrm.isCryptoSchemeSupported(cryptoScheme);
     }
 
     /**

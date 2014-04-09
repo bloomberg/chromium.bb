@@ -292,8 +292,10 @@ static void AddAndroidWidevine(
   SupportedKeySystemResponse response;
 
   request.key_system = kWidevineKeySystem;
+#if defined(USE_PROPRIETARY_CODECS)
   request.codecs = static_cast<android::SupportedCodecs>(
-      android::WEBM_VP8_AND_VORBIS | android::MP4_AAC | android::MP4_AVC1);
+      android::MP4_AAC | android::MP4_AVC1);
+#endif  // defined(USE_PROPRIETARY_CODECS)
   content::RenderThread::Get()->Send(
       new ChromeViewHostMsg_GetSupportedKeySystems(request, &response));
   DCHECK_EQ(response.compositing_codecs >> 3, 0) << "unrecognized codec";

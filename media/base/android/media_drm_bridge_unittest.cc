@@ -31,12 +31,6 @@ const MediaDrmBridge::SecurityLevel kLNone =
 const MediaDrmBridge::SecurityLevel kL1 = MediaDrmBridge::SECURITY_LEVEL_1;
 const MediaDrmBridge::SecurityLevel kL3 = MediaDrmBridge::SECURITY_LEVEL_3;
 
-// Helper functions to avoid typing "MediaDrmBridge::" in tests.
-
-static bool IsKeySystemSupported(const std::string& key_system) {
-  return MediaDrmBridge::IsKeySystemSupported(key_system);
-}
-
 static bool IsKeySystemSupportedWithType(
     const std::string& key_system,
     const std::string& container_mime_type) {
@@ -65,32 +59,26 @@ TEST(MediaDrmBridgeTest, IsSecurityLevelSupported_InvalidKeySystem) {
   EXPECT_FALSE(IsSecurityLevelSupported(kInvalidKeySystem, kL3));
 }
 
-TEST(MediaDrmBridgeTest, IsKeySystemSupported_Widevine) {
-  EXPECT_TRUE_IF_AVAILABLE(IsKeySystemSupported(kWidevineKeySystem));
-
-  // TODO(xhwang): Enable when b/13564917 is fixed.
-  // EXPECT_TRUE_IF_AVAILABLE(
-  //     IsKeySystemSupportedWithType(kWidevineKeySystem, kAudioMp4));
+TEST(MediaDrmBridgeTest, IsTypeSupported_Widevine) {
+  EXPECT_TRUE_IF_AVAILABLE(
+      IsKeySystemSupportedWithType(kWidevineKeySystem, kAudioMp4));
   EXPECT_TRUE_IF_AVAILABLE(
       IsKeySystemSupportedWithType(kWidevineKeySystem, kVideoMp4));
 
-  EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, kAudioWebM));
-  EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, kVideoWebM));
-  EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, "unknown"));
-  EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, "video/avi"));
-  EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, "audio/mp3"));
+  // TODO(xhwang): MediaDrmBridge.IsKeySystemSupportedWithType() doesn't check
+  // the container type. Fix IsKeySystemSupportedWithType() and update this test
+  // as necessary. See: http://crbug.com/350481
+  EXPECT_TRUE_IF_AVAILABLE(
+      IsKeySystemSupportedWithType(kWidevineKeySystem, kAudioWebM));
+  EXPECT_TRUE_IF_AVAILABLE(
+      IsKeySystemSupportedWithType(kWidevineKeySystem, kVideoWebM));
 }
 
 // Invalid keysytem is NOT supported regardless whether MediaDrm is available.
-TEST(MediaDrmBridgeTest, IsKeySystemSupported_InvalidKeySystem) {
-  EXPECT_FALSE(IsKeySystemSupported(kInvalidKeySystem));
-  EXPECT_FALSE(IsKeySystemSupportedWithType(kInvalidKeySystem, kAudioMp4));
+TEST(MediaDrmBridgeTest, IsTypeSupported_InvalidKeySystem) {
+  EXPECT_FALSE(IsKeySystemSupportedWithType(kInvalidKeySystem, ""));
   EXPECT_FALSE(IsKeySystemSupportedWithType(kInvalidKeySystem, kVideoMp4));
-  EXPECT_FALSE(IsKeySystemSupportedWithType(kInvalidKeySystem, kAudioWebM));
   EXPECT_FALSE(IsKeySystemSupportedWithType(kInvalidKeySystem, kVideoWebM));
-  EXPECT_FALSE(IsKeySystemSupportedWithType(kInvalidKeySystem, "unknown"));
-  EXPECT_FALSE(IsKeySystemSupportedWithType(kInvalidKeySystem, "video/avi"));
-  EXPECT_FALSE(IsKeySystemSupportedWithType(kInvalidKeySystem, "audio/mp3"));
 }
 
 }  // namespace media
