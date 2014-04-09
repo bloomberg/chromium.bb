@@ -16,6 +16,9 @@
 # not SKIP, just WONTFIX.
 fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
+# Platform specific virtual test suites.
+[ Win Mac Android ] virtual/linux-subpixel [ WontFix ]
+
 # Chrome Win/Linux doesn't support emacs key-bindings.
 [ Win Linux ] editing/pasteboard/emacs-cntl-y-001.html [ WontFix ]
 [ Win Linux ] editing/pasteboard/emacs-ctrl-a-k-y.html [ WontFix ]

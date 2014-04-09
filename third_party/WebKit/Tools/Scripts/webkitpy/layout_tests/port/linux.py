@@ -139,15 +139,6 @@ class LinuxPort(base.Port):
     def operating_system(self):
         return 'linux'
 
-    def virtual_test_suites(self):
-        result = super(LinuxPort, self).virtual_test_suites()
-        result.extend([
-            base.VirtualTestSuite('linux-subpixel',
-                                  'platform/linux/fast/text/subpixel',
-                                  ['--enable-webkit-text-subpixel-positioning']),
-        ])
-        return result
-
     #
     # PROTECTED METHODS
     #

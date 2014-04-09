@@ -1593,6 +1593,9 @@ class Port(object):
             VirtualTestSuite('stable',
                              'http/tests/websocket',
                              ['--stable-release-mode']),
+            VirtualTestSuite('linux-subpixel',
+                             'platform/linux/fast/text/subpixel',
+                             ['--enable-webkit-text-subpixel-positioning']),
         ]
 
     @memoized
