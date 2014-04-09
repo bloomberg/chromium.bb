@@ -1596,6 +1596,9 @@ class Port(object):
             VirtualTestSuite('linux-subpixel',
                              'platform/linux/fast/text/subpixel',
                              ['--enable-webkit-text-subpixel-positioning']),
+            VirtualTestSuite('windows-directwrite',
+                             'fast/text',
+                             ['--enable-direct-write', '--enable-font-smoothing']),
         ]
 
     @memoized
