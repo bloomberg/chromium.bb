@@ -1918,7 +1918,8 @@ TEST_F(MediaSourcePlayerTest,
   EXPECT_EQ(1, demuxer_->num_seek_requests());
 }
 
-TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenStart) {
+// Flaky. See http://crbug.com/361359.
+TEST_F(MediaSourcePlayerTest, DISABLED_SeekToThenReleaseThenStart) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test if Release() occurs after a SeekTo()'s subsequent DemuxerSeeK IPC
