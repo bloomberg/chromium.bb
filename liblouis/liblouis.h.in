@@ -153,6 +153,22 @@ void EXPORT_CALL lou_registerTableResolver (char ** (* resolver) (const char *ta
 //  char EXPORT_CALL * lou_getTablePaths ();
   /* Get a list of paths actually used in seraching for tables */
 
+typedef void (*logfunction)(const char *message);
+typedef struct logcallback
+  {
+    logfunction errorCB;
+    logfunction warningCB;
+    logfunction infoCB;
+    logfunction debugCB;
+  } logcallback;
+/* structure for all log callback functions */
+  void EXPORT_CALL lou_registerLogCallback(logcallback callbacks);
+/* Register logging callbacks */
+  void EXPORT_CALL lou_logError(const char *format, ...);
+  void EXPORT_CALL lou_logWarning(const char *format, ...);
+  void EXPORT_CALL lou_logInfo(const char *format, ...);
+  void EXPORT_CALL lou_logDebug(const char *format, ...);
+/* functions for calling logging callbacks */
   void EXPORT_CALL lou_free ();
 /* This function should be called at the end of 
 * the application to free all memory allocated by liblouis. */
