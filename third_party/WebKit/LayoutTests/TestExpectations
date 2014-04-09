@@ -1488,3 +1488,8 @@ crbug.com/347510 [ Linux Mac Mavericks SnowLeopard Lion MountainLion Retina ] ta
 crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
 
 crbug.com/361588 inspector/jump-to-previous-editing-location.html [ Pass Failure ]
+
+crbug.com/361795 [ Mac ] compositing/overflow/paint-neg-z-order-descendants-into-scrolling-contents-layer.html [ ImageOnlyFailure Pass ]
+crbug.com/361795 [ Mac ] virtual/gpu/compositedscrolling/overflow/paint-neg-z-order-descendants-into-scrolling-contents-layer.html [ ImageOnlyFailure Pass ]
+crbug.com/361795 [ Mac ] virtual/gpu/compositedscrolling/overflow/scroll-ancestor-update.html [ ImageOnlyFailure Pass ]
+crbug.com/361795 [ Mac ] virtual/gpu/compositedscrolling/overflow/image-load-overflow-scrollbars.html [ ImageOnlyFailure Pass ]
