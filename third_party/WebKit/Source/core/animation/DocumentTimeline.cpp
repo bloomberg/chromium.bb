@@ -187,8 +187,6 @@ void DocumentTimeline::setOutdatedAnimationPlayer(AnimationPlayer* player)
 
 size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
 {
-    if (isNull(m_zeroTime))
-        return 0;
     // Includes all players whose directly associated timed items
     // are current or in effect.
     if (isNull(m_zeroTime))
