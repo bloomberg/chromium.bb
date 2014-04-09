@@ -469,8 +469,6 @@ public:
     bool hasDirectReasonsForCompositing() const { return compositingReasons() & CompositingReasonComboAllDirectReasons; }
     CompositingReasons styleDeterminedCompositingReasons() const { return compositingReasons() & CompositingReasonComboAllStyleDeterminedReasons; }
 
-    void clearAncestorDependentPropertyCache();
-
     class AncestorDependentProperties {
     public:
         IntRect clippedAbsoluteBoundingBox;
@@ -510,31 +508,6 @@ public:
     void didUpdateNeedsCompositedScrolling();
 
 private:
-    // FIXME: Merge with AncestorDependentProperties.
-    class AncestorDependentPropertyCache {
-        WTF_MAKE_NONCOPYABLE(AncestorDependentPropertyCache);
-    public:
-        AncestorDependentPropertyCache();
-
-        RenderLayer* ancestorCompositedScrollingLayer() const;
-        void setAncestorCompositedScrollingLayer(RenderLayer*);
-
-        RenderLayer* scrollParent() const;
-        void setScrollParent(RenderLayer*);
-
-        bool ancestorCompositedScrollingLayerDirty() const { return m_ancestorCompositedScrollingLayerDirty; }
-        bool scrollParentDirty() const { return m_scrollParentDirty; }
-
-    private:
-        RenderLayer* m_ancestorCompositedScrollingLayer;
-        RenderLayer* m_scrollParent;
-
-        bool m_ancestorCompositedScrollingLayerDirty;
-        bool m_scrollParentDirty;
-    };
-
-    void ensureAncestorDependentPropertyCache() const;
-
     // Bounding box in the coordinates of this layer.
     LayoutRect logicalBoundingBox() const;
 
@@ -772,7 +745,6 @@ private:
         IntSize offsetFromSquashingLayerOrigin;
     };
 
-    // FIXME: Merge m_ancestorDependentPropertyCache into m_ancestorDependentProperties;
     AncestorDependentProperties m_ancestorDependentProperties;
 
     CompositingProperties m_compositingProperties;
@@ -781,8 +753,6 @@ private:
 
     OwnPtr<CompositedLayerMapping> m_compositedLayerMapping;
     OwnPtr<RenderLayerScrollableArea> m_scrollableArea;
-
-    mutable OwnPtr<AncestorDependentPropertyCache> m_ancestorDependentPropertyCache;
 
     CompositedLayerMapping* m_groupedMapping;
 

@@ -1135,36 +1135,14 @@ RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(IncludeSelfOrNot i
     return 0;
 }
 
-void RenderLayer::clearAncestorDependentPropertyCache()
-{
-    ASSERT(isInCompositingUpdate());
-    m_ancestorDependentPropertyCache.clear();
-}
-
-void RenderLayer::ensureAncestorDependentPropertyCache() const
-{
-    ASSERT(isInCompositingUpdate());
-    if (m_ancestorDependentPropertyCache)
-        return;
-    m_ancestorDependentPropertyCache = adoptPtr(new AncestorDependentPropertyCache());
-}
-
 RenderLayer* RenderLayer::ancestorCompositedScrollingLayer() const
 {
     if (!compositor()->legacyAcceleratedCompositingForOverflowScrollEnabled())
         return 0;
 
-    ASSERT(isInCompositingUpdate() || !m_ancestorDependentPropertyCache);
-
-    if (m_ancestorDependentPropertyCache && !m_ancestorDependentPropertyCache->ancestorCompositedScrollingLayerDirty())
-        return m_ancestorDependentPropertyCache->ancestorCompositedScrollingLayer();
-
     RenderObject* containingBlock = renderer()->containingBlock();
     if (!containingBlock)
         return 0;
-
-    if (isInCompositingUpdate())
-        ensureAncestorDependentPropertyCache();
 
     RenderLayer* ancestorCompositedScrollingLayer = 0;
     for (RenderLayer* ancestorLayer = containingBlock->enclosingLayer(); ancestorLayer; ancestorLayer = ancestorLayer->parent()) {
@@ -1173,9 +1151,6 @@ RenderLayer* RenderLayer::ancestorCompositedScrollingLayer() const
             break;
         }
     }
-
-    if (m_ancestorDependentPropertyCache)
-        m_ancestorDependentPropertyCache->setAncestorCompositedScrollingLayer(ancestorCompositedScrollingLayer);
 
     return ancestorCompositedScrollingLayer;
 }
@@ -1731,10 +1706,6 @@ RenderLayer* RenderLayer::scrollParent() const
     if (stackingNode()->isNormalFlowOnly())
         return 0;
 
-    // We should never have an ancestor dependent property cache outside of the
-    // compositing update phase.
-    ASSERT(isInCompositingUpdate() || !m_ancestorDependentPropertyCache);
-
     // A layer scrolls with its containing block. So to find the overflow scrolling layer
     // that we scroll with respect to, we must ascend the layer tree until we reach the
     // first overflow scrolling div at or above our containing block. I will refer to this
@@ -1747,15 +1718,10 @@ RenderLayer* RenderLayer::scrollParent() const
     // our scrolling ancestor, and we will therefore not scroll with it. In this case, we must
     // be a composited layer since the compositor will need to take special measures to ensure
     // that we scroll with our scrolling ancestor and it cannot do this if we do not promote.
-    if (m_ancestorDependentPropertyCache && !m_ancestorDependentPropertyCache->scrollParentDirty())
-        return m_ancestorDependentPropertyCache->scrollParent();
 
     RenderLayer* scrollParent = ancestorCompositedScrollingLayer();
-    if (!scrollParent || scrollParent->stackingNode()->isStackingContainer()) {
-        if (m_ancestorDependentPropertyCache)
-            m_ancestorDependentPropertyCache->setScrollParent(0);
+    if (!scrollParent || scrollParent->stackingNode()->isStackingContainer())
         return 0;
-    }
 
     // If we hit a stacking context on our way up to the ancestor scrolling layer, it will already
     // be composited due to an overflow scrolling parent, so we don't need to.
@@ -1764,18 +1730,8 @@ RenderLayer* RenderLayer::scrollParent() const
             scrollParent = 0;
             break;
         }
-        if (!isInCompositingUpdate())
-            continue;
-        if (AncestorDependentPropertyCache* ancestorCache = ancestor->m_ancestorDependentPropertyCache.get()) {
-            if (!ancestorCache->ancestorCompositedScrollingLayerDirty() && ancestorCache->ancestorCompositedScrollingLayer() == scrollParent) {
-                scrollParent = ancestorCache->scrollParent();
-                break;
-            }
-        }
     }
 
-    if (m_ancestorDependentPropertyCache)
-        m_ancestorDependentPropertyCache->setScrollParent(scrollParent);
     return scrollParent;
 }
 
@@ -4076,36 +4032,6 @@ DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
     : m_disabler(gCompositingQueryMode, CompositingQueriesAreAllowed) { }
 
 COMPILE_ASSERT(1 << RenderLayer::ViewportConstrainedNotCompositedReasonBits >= RenderLayer::NumNotCompositedReasons, too_many_viewport_constrained_not_compositing_reasons);
-
-RenderLayer::AncestorDependentPropertyCache::AncestorDependentPropertyCache()
-    : m_ancestorCompositedScrollingLayer(0)
-    , m_scrollParent(0)
-    , m_ancestorCompositedScrollingLayerDirty(true)
-    , m_scrollParentDirty(true) { }
-
-RenderLayer* RenderLayer::AncestorDependentPropertyCache::scrollParent() const
-{
-    ASSERT(!m_scrollParentDirty);
-    return m_scrollParent;
-}
-
-void RenderLayer::AncestorDependentPropertyCache::setScrollParent(RenderLayer* scrollParent)
-{
-    m_scrollParent = scrollParent;
-    m_scrollParentDirty = false;
-}
-
-RenderLayer* RenderLayer::AncestorDependentPropertyCache::ancestorCompositedScrollingLayer() const
-{
-    ASSERT(!m_ancestorCompositedScrollingLayerDirty);
-    return m_ancestorCompositedScrollingLayer;
-}
-
-void RenderLayer::AncestorDependentPropertyCache::setAncestorCompositedScrollingLayer(RenderLayer* layer)
-{
-    m_ancestorCompositedScrollingLayer = layer;
-    m_ancestorCompositedScrollingLayerDirty = false;
-}
 
 } // namespace WebCore
 

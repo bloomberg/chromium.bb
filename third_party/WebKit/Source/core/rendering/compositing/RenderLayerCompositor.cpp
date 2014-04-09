@@ -218,14 +218,6 @@ static RenderVideo* findFullscreenVideoRenderer(Document& document)
     return toRenderVideo(renderer);
 }
 
-static void clearAncestorDependentPropertyCacheRecursive(RenderLayer* layer)
-{
-    layer->clearAncestorDependentPropertyCache();
-    RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), AllChildren);
-    for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling())
-        clearAncestorDependentPropertyCacheRecursive(child);
-}
-
 void RenderLayerCompositor::updateIfNeededRecursive()
 {
     for (LocalFrame* child = m_renderView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling())
@@ -237,9 +229,6 @@ void RenderLayerCompositor::updateIfNeededRecursive()
     lifecycle().advanceTo(DocumentLifecycle::InCompositingUpdate);
 
     updateIfNeeded();
-
-    // Clear data only valid during compositing updates.
-    clearAncestorDependentPropertyCacheRecursive(rootRenderLayer());
 
     lifecycle().advanceTo(DocumentLifecycle::CompositingClean);
 
