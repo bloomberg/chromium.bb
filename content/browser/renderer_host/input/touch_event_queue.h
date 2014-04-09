@@ -53,7 +53,7 @@ class CONTENT_EXPORT TouchEventQueue {
     // events to being dispatched synchronously (so scrolling may be hijacked
     // when a scroll limit is reached, and later resumed). http://goo.gl/RShsdN
     TOUCH_SCROLLING_MODE_ABSORB_TOUCHMOVE,
-    TOUCH_SCROLLING_MODE_DEFAULT = TOUCH_SCROLLING_MODE_ABSORB_TOUCHMOVE
+    TOUCH_SCROLLING_MODE_DEFAULT = TOUCH_SCROLLING_MODE_TOUCHCANCEL
   };
 
   // The |client| must outlive the TouchEventQueue. If
