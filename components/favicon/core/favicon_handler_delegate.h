@@ -35,6 +35,9 @@ class FaviconHandlerDelegate {
   // |icon_url_changed| is true if a favicon with a different icon URL has
   // been selected since the previous call to NotifyFaviconUpdated().
   virtual void NotifyFaviconUpdated(bool icon_url_changed) = 0;
+
+  // Returns whether the user is operating in an off-the-record context.
+  virtual bool IsOffTheRecord() = 0;
 };
 
 #endif  // COMPONENTS_FAVICON_CORE_FAVICON_HANDLER_DELEGATE_H_

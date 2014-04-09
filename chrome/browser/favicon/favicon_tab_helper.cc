@@ -153,6 +153,11 @@ void FaviconTabHelper::NotifyFaviconUpdated(bool icon_url_changed) {
   web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
 }
 
+bool FaviconTabHelper::IsOffTheRecord() {
+  DCHECK(web_contents());
+  return web_contents()->GetBrowserContext()->IsOffTheRecord();
+}
+
 void FaviconTabHelper::DidStartNavigationToPendingEntry(
     const GURL& url,
     NavigationController::ReloadType reload_type) {

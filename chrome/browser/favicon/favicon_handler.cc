@@ -472,7 +472,7 @@ void FaviconHandler::SetHistoryFavicons(const GURL& page_url,
 }
 
 bool FaviconHandler::ShouldSaveFavicon(const GURL& url) {
-  if (!profile_->IsOffTheRecord())
+  if (!delegate_->IsOffTheRecord())
     return true;
 
   // Otherwise store the favicon if the page is bookmarked.
@@ -549,7 +549,7 @@ void FaviconHandler::DownloadFaviconOrAskFaviconService(
     // We don't know the favicon, but we may have previously downloaded the
     // favicon for another page that shares the same favicon. Ask for the
     // favicon given the favicon URL.
-    if (profile_->IsOffTheRecord()) {
+    if (delegate_->IsOffTheRecord()) {
       GetFaviconFromFaviconService(
           icon_url, icon_type,
           base::Bind(&FaviconHandler::OnFaviconData, base::Unretained(this)),

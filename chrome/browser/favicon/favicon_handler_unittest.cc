@@ -176,6 +176,8 @@ class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
   virtual ~TestFaviconHandlerDelegate() {
   }
 
+  virtual bool IsOffTheRecord() OVERRIDE { return false; }
+
   virtual NavigationEntry* GetActiveEntry() OVERRIDE {
     ADD_FAILURE() << "TestFaviconHandlerDelegate::GetActiveEntry() "
                   << "should never be called in tests.";
