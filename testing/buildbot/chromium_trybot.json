@@ -1,4 +1,5 @@
 [
+  "app_list_unittests",
   "device_unittests",
   "gcm_unit_tests",
   "gfx_unittests",
