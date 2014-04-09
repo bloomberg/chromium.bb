@@ -465,6 +465,18 @@ hooks = [
     'action':
          [
     'python',
+    'src/build/vs_toolchain.py',
+    'update'
+],
+    'pattern':
+         '.',
+    'name':
+         'win_toolchain'
+},
+    {
+    'action':
+         [
+    'python',
     'src/build/util/lastchange.py',
     '-o',
     'src/build/util/LASTCHANGE'
