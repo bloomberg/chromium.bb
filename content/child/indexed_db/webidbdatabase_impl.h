@@ -11,6 +11,7 @@
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 
 namespace blink {
+class WebBlobInfo;
 class WebIDBCallbacks;
 class WebIDBDatabaseCallbacks;
 class WebString;
@@ -45,9 +46,20 @@ class WebIDBDatabaseImpl : public blink::WebIDBDatabase {
                    const blink::WebIDBKeyRange&,
                    bool keyOnly,
                    blink::WebIDBCallbacks*);
+// TODO(ericu): Remove this once it's obsolete.  It's only here for the
+// three-sided-patch dance.
   virtual void put(long long transactionId,
                    long long objectStoreId,
                    const blink::WebData& value,
+                   const blink::WebIDBKey&,
+                   PutMode,
+                   blink::WebIDBCallbacks*,
+                   const blink::WebVector<long long>& indexIds,
+                   const blink::WebVector<WebIndexKeys>&);
+  virtual void put(long long transactionId,
+                   long long objectStoreId,
+                   const blink::WebData& value,
+                   const blink::WebVector<blink::WebBlobInfo>& webBlobInfo,
                    const blink::WebIDBKey&,
                    PutMode,
                    blink::WebIDBCallbacks*,

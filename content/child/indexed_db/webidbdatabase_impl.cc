@@ -11,11 +11,13 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
+#include "third_party/WebKit/public/platform/WebBlobInfo.h"
 #include "third_party/WebKit/public/platform/WebIDBKeyPath.h"
 #include "third_party/WebKit/public/platform/WebIDBMetadata.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
+using blink::WebBlobInfo;
 using blink::WebIDBCallbacks;
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
@@ -106,9 +108,35 @@ void WebIDBDatabaseImpl::get(long long transaction_id,
                                     callbacks);
 }
 
+// TODO(ericu): Remove this once it's obsolete.  It's only here for the
+// three-sided-patch dance.
 void WebIDBDatabaseImpl::put(long long transaction_id,
                              long long object_store_id,
                              const blink::WebData& value,
+                             const WebIDBKey& key,
+                             PutMode put_mode,
+                             WebIDBCallbacks* callbacks,
+                             const WebVector<long long>& web_index_ids,
+                             const WebVector<WebIndexKeys>& web_index_keys) {
+  IndexedDBDispatcher* dispatcher =
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
+  const blink::WebVector<WebBlobInfo> web_blob_info;
+  dispatcher->RequestIDBDatabasePut(ipc_database_id_,
+                                    transaction_id,
+                                    object_store_id,
+                                    value,
+                                    web_blob_info,
+                                    IndexedDBKeyBuilder::Build(key),
+                                    put_mode,
+                                    callbacks,
+                                    web_index_ids,
+                                    web_index_keys);
+}
+
+void WebIDBDatabaseImpl::put(long long transaction_id,
+                             long long object_store_id,
+                             const blink::WebData& value,
+                             const blink::WebVector<WebBlobInfo>& web_blob_info,
                              const WebIDBKey& key,
                              PutMode put_mode,
                              WebIDBCallbacks* callbacks,
@@ -120,6 +148,7 @@ void WebIDBDatabaseImpl::put(long long transaction_id,
                                     transaction_id,
                                     object_store_id,
                                     value,
+                                    web_blob_info,
                                     IndexedDBKeyBuilder::Build(key),
                                     put_mode,
                                     callbacks,

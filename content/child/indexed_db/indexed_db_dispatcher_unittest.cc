@@ -13,9 +13,11 @@
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebBlobInfo.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
 
+using blink::WebBlobInfo;
 using blink::WebData;
 using blink::WebIDBCallbacks;
 using blink::WebIDBCursor;
@@ -71,6 +73,7 @@ class IndexedDBDispatcherTest : public testing::Test {
 TEST_F(IndexedDBDispatcherTest, ValueSizeTest) {
   const std::vector<char> data(kMaxIDBValueSizeInBytes + 1);
   const WebData value(&data.front(), data.size());
+  const WebVector<WebBlobInfo> web_blob_info;
   const int32 ipc_dummy_id = -1;
   const int64 transaction_id = 1;
   const int64 object_store_id = 2;
@@ -82,6 +85,7 @@ TEST_F(IndexedDBDispatcherTest, ValueSizeTest) {
                                    transaction_id,
                                    object_store_id,
                                    value,
+                                   web_blob_info,
                                    key,
                                    WebIDBDatabase::AddOrUpdate,
                                    &callbacks,
@@ -96,6 +100,7 @@ TEST_F(IndexedDBDispatcherTest, KeyAndValueSizeTest) {
 
   const std::vector<char> data(kMaxIDBValueSizeInBytes - kKeySize);
   const WebData value(&data.front(), data.size());
+  const WebVector<WebBlobInfo> web_blob_info;
   const IndexedDBKey key(
       base::string16(kKeySize / sizeof(base::string16::value_type), 'x'));
 
@@ -109,6 +114,7 @@ TEST_F(IndexedDBDispatcherTest, KeyAndValueSizeTest) {
                                    transaction_id,
                                    object_store_id,
                                    value,
+                                   web_blob_info,
                                    key,
                                    WebIDBDatabase::AddOrUpdate,
                                    &callbacks,
@@ -124,11 +130,11 @@ class CursorCallbacks : public WebIDBCallbacks {
  public:
   CursorCallbacks(scoped_ptr<WebIDBCursor>* cursor) : cursor_(cursor) {}
 
-  virtual void onSuccess(const WebData&) {}
+  virtual void onSuccess(const WebData&) OVERRIDE {}
   virtual void onSuccess(WebIDBCursor* cursor,
                          const WebIDBKey& key,
                          const WebIDBKey& primaryKey,
-                         const WebData& value) {
+                         const WebData& value) OVERRIDE {
     cursor_->reset(cursor);
   }
 

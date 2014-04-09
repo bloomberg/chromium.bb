@@ -21,6 +21,7 @@
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
 
+using blink::WebBlobInfo;
 using blink::WebData;
 using blink::WebIDBCallbacks;
 using blink::WebIDBCursor;
@@ -324,6 +325,7 @@ void IndexedDBDispatcher::RequestIDBDatabasePut(
     int64 transaction_id,
     int64 object_store_id,
     const WebData& value,
+    const blink::WebVector<WebBlobInfo>& web_blob_info,
     const IndexedDBKey& key,
     WebIDBDatabase::PutMode put_mode,
     WebIDBCallbacks* callbacks,
@@ -361,6 +363,23 @@ void IndexedDBDispatcher::RequestIDBDatabasePut(
       params.index_keys[i].second[j] =
           IndexedDBKey(IndexedDBKeyBuilder::Build(index_keys[i][j]));
     }
+  }
+
+  params.blob_or_file_info.resize(web_blob_info.size());
+  for (size_t i = 0; i < web_blob_info.size(); ++i) {
+    const WebBlobInfo& info = web_blob_info[i];
+    IndexedDBMsg_BlobOrFileInfo& blob_or_file_info =
+        params.blob_or_file_info[i];
+    blob_or_file_info.is_file = info.isFile();
+    if (info.isFile()) {
+      blob_or_file_info.file_path = info.filePath();
+      blob_or_file_info.file_name = info.fileName();
+    } else {
+      blob_or_file_info.size = info.size();
+    }
+    blob_or_file_info.uuid = info.uuid().latin1();
+    DCHECK(blob_or_file_info.uuid.size());
+    blob_or_file_info.mime_type = info.type();
   }
 
   Send(new IndexedDBHostMsg_DatabasePut(params));
