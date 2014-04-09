@@ -24,7 +24,10 @@ class ScratchBuffer : public Buffer {
       MOJO_OVERRIDE;
 
  private:
-  enum { kMinSegmentSize = 512 };
+  enum {
+    kMinSegmentSize = 512,
+    kMaxSegmentSize = 1024 * 1024 * 1024,
+  };
 
   struct Segment {
     Segment* next;
@@ -33,7 +36,7 @@ class ScratchBuffer : public Buffer {
   };
 
   void* AllocateInSegment(Segment* segment, size_t num_bytes);
-  void AddOverflowSegment(size_t delta);
+  bool AddOverflowSegment(size_t delta);
 
   char fixed_data_[kMinSegmentSize];
   Segment fixed_;

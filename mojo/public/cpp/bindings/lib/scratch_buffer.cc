@@ -46,19 +46,14 @@ ScratchBuffer::~ScratchBuffer() {
 
 void* ScratchBuffer::Allocate(size_t delta, Destructor func) {
   delta = internal::Align(delta);
-
   void* result = AllocateInSegment(&fixed_, delta);
-  if (!result) {
-    if (overflow_)
-      result = AllocateInSegment(overflow_, delta);
+  if (!result && overflow_)
+    result = AllocateInSegment(overflow_, delta);
 
-    if (!result) {
-      AddOverflowSegment(delta);
-      result = AllocateInSegment(overflow_, delta);
-    }
-  }
+  if (!result && AddOverflowSegment(delta))
+    result = AllocateInSegment(overflow_, delta);
 
-  if (func) {
+  if (func && result) {
     PendingDestructor dtor;
     dtor.func = func;
     dtor.address = result;
@@ -68,30 +63,34 @@ void* ScratchBuffer::Allocate(size_t delta, Destructor func) {
 }
 
 void* ScratchBuffer::AllocateInSegment(Segment* segment, size_t delta) {
-  void* result;
   if (static_cast<size_t>(segment->end - segment->cursor) >= delta) {
-    result = segment->cursor;
-    memset(result, 0, delta);
+    void* result = segment->cursor;
+    memset(result, 0, delta);  // Required to avoid info leaks.
     segment->cursor += delta;
-  } else {
-    result = NULL;
+    return result;
   }
-  return result;
+  return NULL;
 }
 
-void ScratchBuffer::AddOverflowSegment(size_t delta) {
+bool ScratchBuffer::AddOverflowSegment(size_t delta) {
   if (delta < kMinSegmentSize)
     delta = kMinSegmentSize;
 
+  if (delta > kMaxSegmentSize)
+    return false;
+
   // Ensure segment buffer is aligned.
   size_t segment_size = internal::Align(sizeof(Segment)) + delta;
-
   Segment* segment = static_cast<Segment*>(malloc(segment_size));
-  segment->next = overflow_;
-  segment->cursor = reinterpret_cast<char*>(segment + 1);
-  segment->end = segment->cursor + delta;
+  if (segment) {
+    segment->next = overflow_;
+    segment->cursor = reinterpret_cast<char*>(segment + 1);
+    segment->end = segment->cursor + delta;
+    overflow_ = segment;
+    return true;
+  }
 
-  overflow_ = segment;
+  return false;
 }
 
 }  // namespace internal

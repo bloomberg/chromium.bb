@@ -43,6 +43,14 @@ TEST(ScratchBufferTest, Basic) {
   small = buf.Allocate(10);
   EXPECT_TRUE(IsZero(small, 10));
   EXPECT_TRUE(small >= &buf && small < (&buf + sizeof(buf)));
+
+  // And a request so large it will fail.
+  void* fail = buf.Allocate(std::numeric_limits<size_t>::max() - 1024u);
+  EXPECT_TRUE(!fail);
+
+  // And a request so large it will overflow and fail.
+  void* overflow = buf.Allocate(std::numeric_limits<size_t>::max() - 12u);
+  EXPECT_TRUE(!overflow);
 }
 
 // Tests that Buffer::current() returns the correct value.
@@ -124,6 +132,10 @@ TEST(FixedBufferTest, TooBig) {
 
   // Move the cursor forward.
   EXPECT_NE(reinterpret_cast<void*>(0), buf.Allocate(16));
+
+  // A lot too large.
+  EXPECT_EQ(reinterpret_cast<void*>(0),
+            buf.Allocate(std::numeric_limits<size_t>::max() - 1024u));
 
   // A lot too large, leading to possible integer overflow.
   EXPECT_EQ(reinterpret_cast<void*>(0),
