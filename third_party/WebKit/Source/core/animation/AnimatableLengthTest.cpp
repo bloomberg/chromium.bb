@@ -80,7 +80,7 @@ protected:
         return AnimatableLength::create(cssValue)->toCSSValue();
     }
 
-    AnimatableLength::LengthUnitType commonUnitType(PassRefPtrWillBeRawPtr<AnimatableLength> a, PassRefPtrWillBeRawPtr<AnimatableLength> b)
+    CSSPrimitiveValue::LengthUnitType commonUnitType(PassRefPtrWillBeRawPtr<AnimatableLength> a, PassRefPtrWillBeRawPtr<AnimatableLength> b)
     {
         return a->commonUnitType(b.get());
     }
@@ -336,32 +336,32 @@ TEST_F(AnimationAnimatableLengthTest, IsUnitless)
 TEST_F(AnimationAnimatableLengthTest, CommonUnitType)
 {
     RefPtrWillBeRawPtr<AnimatableLength> length10px = create(10, CSSPrimitiveValue::CSS_PX);
-    EXPECT_EQ(AnimatableLength::UnitTypePixels,  commonUnitType(length10px, create(1, CSSPrimitiveValue::CSS_PX).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(length10px, create(2, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(length10px, create(3, CSSPrimitiveValue::CSS_EMS).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(length10px, create(4, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_CM).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(length10px, create(0, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypePixels, commonUnitType(length10px, create(1, CSSPrimitiveValue::CSS_PX).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypeCalc, commonUnitType(length10px, create(2, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypeCalc, commonUnitType(length10px, create(3, CSSPrimitiveValue::CSS_EMS).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypeCalc, commonUnitType(length10px, create(4, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_CM).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypeCalc, commonUnitType(length10px, create(0, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
 
     RefPtrWillBeRawPtr<AnimatableLength> length0px = create(0, CSSPrimitiveValue::CSS_PX);
-    EXPECT_EQ(AnimatableLength::UnitTypePixels,     commonUnitType(length0px, create(1, CSSPrimitiveValue::CSS_PX).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypePercentage, commonUnitType(length0px, create(2, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypeFontSize,   commonUnitType(length0px, create(3, CSSPrimitiveValue::CSS_EMS).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypeCalc,    commonUnitType(length0px, create(4, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_CM).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypePercentage, commonUnitType(length0px, create(0, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypePixels, commonUnitType(length0px, create(1, CSSPrimitiveValue::CSS_PX).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypePercentage, commonUnitType(length0px, create(2, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypeFontSize, commonUnitType(length0px, create(3, CSSPrimitiveValue::CSS_EMS).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypeCalc, commonUnitType(length0px, create(4, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_CM).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypePercentage, commonUnitType(length0px, create(0, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
 
     RefPtrWillBeRawPtr<AnimatableLength> length0percent = create(0, CSSPrimitiveValue::CSS_PERCENTAGE);
-    EXPECT_EQ(AnimatableLength::UnitTypeCalc,    commonUnitType(length0percent, create(1, CSSPrimitiveValue::CSS_PX).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypePercentage, commonUnitType(length0percent, create(2, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypeCalc,    commonUnitType(length0percent, create(3, CSSPrimitiveValue::CSS_EMS).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypeCalc,    commonUnitType(length0percent, create(4, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_CM).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypePercentage, commonUnitType(length0percent, create(0, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypeCalc, commonUnitType(length0percent, create(1, CSSPrimitiveValue::CSS_PX).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypePercentage, commonUnitType(length0percent, create(2, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypeCalc, commonUnitType(length0percent, create(3, CSSPrimitiveValue::CSS_EMS).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypeCalc, commonUnitType(length0percent, create(4, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_CM).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypePercentage, commonUnitType(length0percent, create(0, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
 
     RefPtrWillBeRawPtr<AnimatableLength> lengthCalc = create(3, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_CM);
-    EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(lengthCalc, create(1, CSSPrimitiveValue::CSS_PX).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(lengthCalc, create(2, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(lengthCalc, create(3, CSSPrimitiveValue::CSS_EMS).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(lengthCalc, create(4, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_CM).get()));
-    EXPECT_EQ(AnimatableLength::UnitTypeCalc, commonUnitType(lengthCalc, create(0, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypeCalc, commonUnitType(lengthCalc, create(1, CSSPrimitiveValue::CSS_PX).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypeCalc, commonUnitType(lengthCalc, create(2, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypeCalc, commonUnitType(lengthCalc, create(3, CSSPrimitiveValue::CSS_EMS).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypeCalc, commonUnitType(lengthCalc, create(4, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_CM).get()));
+    EXPECT_EQ(CSSPrimitiveValue::UnitTypeCalc, commonUnitType(lengthCalc, create(0, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
 }
 
 } // namespace WebCore

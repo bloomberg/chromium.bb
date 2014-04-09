@@ -48,23 +48,10 @@ enum NumberRange {
 // If created from a CSSPrimitiveValue this class will cache it to be returned in toCSSValue().
 class AnimatableLength FINAL : public AnimatableValue {
 public:
-    enum LengthUnitType {
-        UnitTypePixels,
-        UnitTypePercentage,
-        UnitTypeFontSize,
-        UnitTypeFontXSize,
-        UnitTypeRootFontSize,
-        UnitTypeViewportWidth,
-        UnitTypeViewportHeight,
-        UnitTypeViewportMin,
-        UnitTypeViewportMax,
-        UnitTypeCalc,
-    };
-
     virtual ~AnimatableLength() { }
     static bool canCreateFrom(const CSSValue*);
     static PassRefPtrWillBeRawPtr<AnimatableLength> create(CSSValue*);
-    static PassRefPtrWillBeRawPtr<AnimatableLength> create(double number, LengthUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue = 0)
+    static PassRefPtrWillBeRawPtr<AnimatableLength> create(double number, CSSPrimitiveValue::LengthUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue = 0)
     {
         return adoptRefWillBeNoop(new AnimatableLength(number, unitType, cssPrimitiveValue));
     }
@@ -83,31 +70,33 @@ protected:
     virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
 
 private:
-    AnimatableLength(double number, LengthUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue)
+    AnimatableLength(double number, CSSPrimitiveValue::LengthUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue)
         : m_lengthValue(number)
         , m_lengthUnitType(unitType)
         , m_cachedCSSPrimitiveValue(cssPrimitiveValue)
     {
-        ASSERT(m_lengthUnitType != UnitTypeCalc);
+        ASSERT(!isCalc());
     }
     AnimatableLength(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue)
-        : m_lengthUnitType(UnitTypeCalc)
+        : m_lengthUnitType(CSSPrimitiveValue::UnitTypeCalc)
         , m_calcExpression(calcExpression)
         , m_cachedCSSPrimitiveValue(cssPrimitiveValue)
     {
+        ASSERT(isCalc());
         ASSERT(m_calcExpression);
     }
     virtual AnimatableType type() const OVERRIDE { return TypeLength; }
     virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
-    bool isCalc() const
-    {
-        return m_lengthUnitType == UnitTypeCalc;
-    }
+    static bool isCalc(CSSPrimitiveValue::LengthUnitType type) { return type == CSSPrimitiveValue::UnitTypeCalc; }
+    bool isCalc() const { return isCalc(m_lengthUnitType); }
 
     bool isViewportUnit() const
     {
-        return m_lengthUnitType == UnitTypeViewportWidth || m_lengthUnitType == UnitTypeViewportHeight || m_lengthUnitType == UnitTypeViewportMin || m_lengthUnitType == UnitTypeViewportMax;
+        return m_lengthUnitType == CSSPrimitiveValue::UnitTypeViewportWidth
+            || m_lengthUnitType == CSSPrimitiveValue::UnitTypeViewportHeight
+            || m_lengthUnitType == CSSPrimitiveValue::UnitTypeViewportMin
+            || m_lengthUnitType == CSSPrimitiveValue::UnitTypeViewportMax;
     }
 
     static PassRefPtrWillBeRawPtr<AnimatableLength> create(const AnimatableLength* leftAddend, const AnimatableLength* rightAddend)
@@ -126,20 +115,15 @@ private:
         return (range == NonNegativeValues && m_lengthValue <= 0) ? 0 : m_lengthValue;
     }
 
-    // Returns true and populates lengthType, if primitiveUnit is a length unit. Otherwise, returns false.
-    static bool primitiveUnitToLengthType(unsigned short primitiveUnit, LengthUnitType&);
-
-    static unsigned short lengthTypeToPrimitiveUnit(LengthUnitType);
-
     // Zero is effectively unitless, except in the case of percentage.
     // http://www.w3.org/TR/css3-values/#calc-computed-value
     // e.g. calc(100% - 100% + 1em) resolves to calc(0% + 1em), not to calc(1em)
     bool isUnitlessZero() const
     {
-        return !isCalc() && !m_lengthValue && m_lengthUnitType != UnitTypePercentage;
+        return !isCalc() && !m_lengthValue && m_lengthUnitType != CSSPrimitiveValue::UnitTypePercentage;
     }
 
-    LengthUnitType commonUnitType(const AnimatableLength* length) const
+    CSSPrimitiveValue::LengthUnitType commonUnitType(const AnimatableLength* length) const
     {
         if (m_lengthUnitType == length->m_lengthUnitType)
             return m_lengthUnitType;
@@ -149,11 +133,11 @@ private:
         if (length->isUnitlessZero())
             return m_lengthUnitType;
 
-        return UnitTypeCalc;
+        return CSSPrimitiveValue::UnitTypeCalc;
     }
 
     double m_lengthValue;
-    const LengthUnitType m_lengthUnitType;
+    const CSSPrimitiveValue::LengthUnitType m_lengthUnitType;
 
     RefPtrWillBeMember<CSSCalcExpressionNode> m_calcExpression;
 

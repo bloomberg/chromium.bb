@@ -140,6 +140,23 @@ public:
         CSS_VALUE_ID = 118
     };
 
+    enum LengthUnitType {
+        UnitTypePixels,
+        UnitTypePercentage,
+        UnitTypeFontSize,
+        UnitTypeFontXSize,
+        UnitTypeRootFontSize,
+        UnitTypeZeroCharacterWidth,
+        UnitTypeViewportWidth,
+        UnitTypeViewportHeight,
+        UnitTypeViewportMin,
+        UnitTypeViewportMax,
+
+        // FIXME: This is used by AnimatableLength to represent calc objects and is not a type of length value.
+        //        Remove this once we no longer need the distinction.
+        UnitTypeCalc,
+    };
+
     // This enum follows the BisonCSSParser::Units enum augmented with UNIT_FREQUENCY for frequencies.
     enum UnitCategory {
         UNumber,
@@ -346,6 +363,10 @@ public:
 
     static UnitTypes canonicalUnitTypeForCategory(UnitCategory);
     static double conversionToCanonicalUnitsScaleFactor(unsigned short unitType);
+
+    // Returns true and populates lengthUnitType, if unitType is a length unit. Otherwise, returns false.
+    static bool unitTypeToLengthUnitType(unsigned short unitType, LengthUnitType&);
+    static unsigned short lengthUnitTypeToUnitType(LengthUnitType);
 
 private:
     CSSPrimitiveValue(CSSValueID);

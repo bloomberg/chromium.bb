@@ -833,6 +833,79 @@ bool CSSPrimitiveValue::getDoubleValueInternal(UnitTypes requestedUnitType, doub
     return true;
 }
 
+bool CSSPrimitiveValue::unitTypeToLengthUnitType(unsigned short unitType, LengthUnitType& lengthType)
+{
+    switch (unitType) {
+    case CSSPrimitiveValue::CSS_PX:
+    case CSSPrimitiveValue::CSS_CM:
+    case CSSPrimitiveValue::CSS_MM:
+    case CSSPrimitiveValue::CSS_IN:
+    case CSSPrimitiveValue::CSS_PT:
+    case CSSPrimitiveValue::CSS_PC:
+        lengthType = UnitTypePixels;
+        return true;
+    case CSSPrimitiveValue::CSS_EMS:
+        lengthType = UnitTypeFontSize;
+        return true;
+    case CSSPrimitiveValue::CSS_EXS:
+        lengthType = UnitTypeFontXSize;
+        return true;
+    case CSSPrimitiveValue::CSS_REMS:
+        lengthType = UnitTypeRootFontSize;
+        return true;
+    case CSSPrimitiveValue::CSS_CHS:
+        lengthType = UnitTypeZeroCharacterWidth;
+        return true;
+    case CSSPrimitiveValue::CSS_PERCENTAGE:
+        lengthType = UnitTypePercentage;
+        return true;
+    case CSSPrimitiveValue::CSS_VW:
+        lengthType = UnitTypeViewportWidth;
+        return true;
+    case CSSPrimitiveValue::CSS_VH:
+        lengthType = UnitTypeViewportHeight;
+        return true;
+    case CSSPrimitiveValue::CSS_VMIN:
+        lengthType = UnitTypeViewportMin;
+        return true;
+    case CSSPrimitiveValue::CSS_VMAX:
+        lengthType = UnitTypeViewportMax;
+        return true;
+    default:
+        return false;
+    }
+}
+
+unsigned short CSSPrimitiveValue::lengthUnitTypeToUnitType(LengthUnitType type)
+{
+    switch (type) {
+    case UnitTypePixels:
+        return CSSPrimitiveValue::CSS_PX;
+    case UnitTypeFontSize:
+        return CSSPrimitiveValue::CSS_EMS;
+    case UnitTypeFontXSize:
+        return CSSPrimitiveValue::CSS_EXS;
+    case UnitTypeRootFontSize:
+        return CSSPrimitiveValue::CSS_REMS;
+    case UnitTypeZeroCharacterWidth:
+        return CSSPrimitiveValue::CSS_CHS;
+    case UnitTypePercentage:
+        return CSSPrimitiveValue::CSS_PERCENTAGE;
+    case UnitTypeViewportWidth:
+        return CSSPrimitiveValue::CSS_VW;
+    case UnitTypeViewportHeight:
+        return CSSPrimitiveValue::CSS_VH;
+    case UnitTypeViewportMin:
+        return CSSPrimitiveValue::CSS_VMIN;
+    case UnitTypeViewportMax:
+        return CSSPrimitiveValue::CSS_VMAX;
+    case UnitTypeCalc:
+        break;
+    }
+    ASSERT_NOT_REACHED();
+    return CSSPrimitiveValue::CSS_UNKNOWN;
+}
+
 void CSSPrimitiveValue::setStringValue(unsigned short, const String&, ExceptionState& exceptionState)
 {
     // Keeping values immutable makes optimizations easier and allows sharing of the primitive value objects.
