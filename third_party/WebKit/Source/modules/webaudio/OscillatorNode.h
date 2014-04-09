@@ -61,7 +61,6 @@ public:
 
     String type() const;
 
-    bool setType(unsigned); // Returns true on success.
     void setType(const String&);
 
     AudioParam* frequency() { return m_frequency.get(); }
@@ -71,6 +70,8 @@ public:
 
 private:
     OscillatorNode(AudioContext*, float sampleRate);
+
+    bool setType(unsigned); // Returns true on success.
 
     // Returns true if there are sample-accurate timeline parameter changes.
     bool calculateSampleAccuratePhaseIncrements(size_t framesToProcess);

@@ -107,8 +107,6 @@ void OscillatorNode::setType(const String& type)
         setType(SAWTOOTH);
     else if (type == "triangle")
         setType(TRIANGLE);
-    else
-        ASSERT_NOT_REACHED();
 }
 
 bool OscillatorNode::setType(unsigned type)

@@ -211,7 +211,6 @@
             'v8/custom/V8MessagePortCustom.cpp',
             'v8/custom/V8MutationObserverCustom.cpp',
             'v8/custom/V8NodeCustom.cpp',
-            'v8/custom/V8OscillatorNodeCustom.cpp',
             'v8/custom/V8PerformanceEntryCustom.cpp',
             'v8/custom/V8PopStateEventCustom.cpp',
             'v8/custom/V8PromiseCustom.cpp',
