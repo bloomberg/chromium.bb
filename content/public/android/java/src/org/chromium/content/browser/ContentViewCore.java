@@ -2372,7 +2372,8 @@ public class ContentViewCore
     @CalledByNative
     private void updateImeAdapter(long nativeImeAdapterAndroid, int textInputType,
             String text, int selectionStart, int selectionEnd,
-            int compositionStart, int compositionEnd, boolean showImeIfNeeded, boolean requireAck) {
+            int compositionStart, int compositionEnd, boolean showImeIfNeeded,
+            boolean isNonImeChange) {
         TraceEvent.begin();
         mSelectionEditable = (textInputType != ImeAdapter.getTextInputTypeNone());
 
@@ -2382,7 +2383,7 @@ public class ContentViewCore
 
         if (mInputConnection != null) {
             mInputConnection.updateState(text, selectionStart, selectionEnd, compositionStart,
-                    compositionEnd, requireAck);
+                    compositionEnd, isNonImeChange);
         }
         TraceEvent.end();
     }

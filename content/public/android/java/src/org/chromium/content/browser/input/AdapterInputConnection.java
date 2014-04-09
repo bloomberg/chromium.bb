@@ -128,16 +128,18 @@ public class AdapterInputConnection extends BaseInputConnection {
      *                         composition.
      * @param compositionEnd The character offset of the composition end, or -1 if there is no
      *                       selection.
-     * @param requireAck True when the update was not caused by IME, false otherwise.
+     * @param isNonImeChange True when the update was caused by non-IME (e.g. Javascript).
      */
     @VisibleForTesting
     public void updateState(String text, int selectionStart, int selectionEnd, int compositionStart,
-            int compositionEnd, boolean requireAck) {
+            int compositionEnd, boolean isNonImeChange) {
         if (DEBUG) {
             Log.w(TAG, "updateState [" + text + "] [" + selectionStart + " " + selectionEnd + "] ["
-                    + compositionStart + " " + compositionEnd + "] [" + requireAck + "]");
+                    + compositionStart + " " + compositionEnd + "] [" + isNonImeChange + "]");
         }
-        if (!requireAck) return;
+        // If this update is from the IME, no further state modification is necessary because the
+        // state should have been updated already by the IM framework directly.
+        if (!isNonImeChange) return;
 
         // Non-breaking spaces can cause the IME to get confused. Replace with normal spaces.
         text = text.replace('\u00A0', ' ');

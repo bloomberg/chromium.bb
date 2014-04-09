@@ -389,6 +389,7 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       is_threaded_compositing_enabled_(false),
       next_output_surface_id_(0),
 #if defined(OS_ANDROID)
+      text_field_is_dirty_(false),
       outstanding_ime_acks_(0),
 #endif
       popup_origin_scale_for_emulation_(0.f),
@@ -1227,13 +1228,13 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   // Allow the IME to be shown when the focus changes as a consequence
   // of a processed touch end event.
   if (input_event->type == WebInputEvent::TouchEnd && processed)
-    UpdateTextInputState(true, true);
+    UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_NON_IME);
 #elif defined(USE_AURA)
   // Show the virtual keyboard if enabled and a user gesture triggers a focus
   // change.
   if (processed && (input_event->type == WebInputEvent::TouchEnd ||
       input_event->type == WebInputEvent::MouseUp))
-    UpdateTextInputState(true, false);
+    UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_IME);
 #endif
 
   TRACE_EVENT_SYNTHETIC_DELAY_END("blink.HandleInputEvent");
@@ -1887,7 +1888,7 @@ void RenderWidget::willBeginCompositorFrame() {
   // is done.
   UpdateTextInputType();
 #if defined(OS_ANDROID)
-  UpdateTextInputState(false, true);
+  UpdateTextInputState(NO_SHOW_IME, FROM_NON_IME);
   UpdateSelectionRootBounds();
 #endif
   UpdateSelectionBounds();
@@ -2261,7 +2262,7 @@ void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
 
 #if defined(OS_ANDROID)
 void RenderWidget::OnShowImeIfNeeded() {
-  UpdateTextInputState(true, true);
+  UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_NON_IME);
 }
 
 void RenderWidget::IncrementOutstandingImeEventAcks() {
@@ -2387,7 +2388,7 @@ void RenderWidget::FinishHandlingImeEvent() {
 #endif
   UpdateSelectionBounds();
 #if defined(OS_ANDROID)
-  UpdateTextInputState(false, false);
+  UpdateTextInputState(NO_SHOW_IME, FROM_IME);
 #endif
 }
 
@@ -2428,11 +2429,11 @@ void RenderWidget::UpdateTextInputType() {
 }
 
 #if defined(OS_ANDROID) || defined(USE_AURA)
-void RenderWidget::UpdateTextInputState(bool show_ime_if_needed,
-                                        bool send_ime_ack) {
+void RenderWidget::UpdateTextInputState(ShowIme show_ime,
+                                        ChangeSource change_source) {
   if (handling_ime_event_)
     return;
-  if (!show_ime_if_needed && !input_method_is_active_)
+  if (show_ime == NO_SHOW_IME && !input_method_is_active_)
     return;
   ui::TextInputType new_type = GetTextInputType();
   if (IsDateTimeInput(new_type))
@@ -2446,13 +2447,15 @@ void RenderWidget::UpdateTextInputState(bool show_ime_if_needed,
 
   // Only sends text input params if they are changed or if the ime should be
   // shown.
-  if (show_ime_if_needed || (text_input_type_ != new_type
-      || text_input_info_ != new_info
-      || can_compose_inline_ != new_can_compose_inline)) {
-    ViewHostMsg_TextInputState_Params p;
-#if defined(USE_AURA)
-    p.require_ack = false;
+  if (show_ime == SHOW_IME_IF_NEEDED ||
+      (text_input_type_ != new_type ||
+       text_input_info_ != new_info ||
+       can_compose_inline_ != new_can_compose_inline)
+#if defined(OS_ANDROID)
+      || text_field_is_dirty_
 #endif
+      ) {
+    ViewHostMsg_TextInputState_Params p;
     p.type = new_type;
     p.value = new_info.value.utf8();
     p.selection_start = new_info.selectionStart;
@@ -2460,11 +2463,16 @@ void RenderWidget::UpdateTextInputState(bool show_ime_if_needed,
     p.composition_start = new_info.compositionStart;
     p.composition_end = new_info.compositionEnd;
     p.can_compose_inline = new_can_compose_inline;
-    p.show_ime_if_needed = show_ime_if_needed;
+    p.show_ime_if_needed = (show_ime == SHOW_IME_IF_NEEDED);
+#if defined(USE_AURA)
+    p.is_non_ime_change = true;
+#endif
 #if defined(OS_ANDROID)
-    p.require_ack = send_ime_ack;
-    if (p.require_ack)
+    p.is_non_ime_change = (change_source == FROM_NON_IME) ||
+                         text_field_is_dirty_;
+    if (p.is_non_ime_change)
       IncrementOutstandingImeEventAcks();
+    text_field_is_dirty_ = false;
 #endif
     Send(new ViewHostMsg_TextInputStateChanged(routing_id(), p));
 
@@ -2646,7 +2654,7 @@ void RenderWidget::didHandleGestureEvent(
     return;
   if (event.type == WebInputEvent::GestureTap ||
       event.type == WebInputEvent::GestureLongPress) {
-    UpdateTextInputState(true, true);
+    UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_NON_IME);
   }
 #endif
 }
@@ -2725,6 +2733,12 @@ void RenderWidget::setTouchAction(
    content::TouchAction content_touch_action =
        static_cast<content::TouchAction>(web_touch_action);
   Send(new InputHostMsg_SetTouchAction(routing_id_, content_touch_action));
+}
+
+void RenderWidget::didUpdateTextOfFocusedElementByNonUserInput() {
+#if defined(OS_ANDROID)
+  text_field_is_dirty_ = true;
+#endif
 }
 
 #if defined(OS_ANDROID)

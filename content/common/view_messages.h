@@ -391,8 +391,8 @@ IPC_STRUCT_BEGIN(ViewHostMsg_TextInputState_Params)
   // TEXT_INPUT_TYPE_NONE).
   IPC_STRUCT_MEMBER(bool, show_ime_if_needed)
 
-  // Whether an acknowledgement is required for this update.
-  IPC_STRUCT_MEMBER(bool, require_ack)
+  // Whether this change is originated from non-IME (e.g. Javascript, Autofill).
+  IPC_STRUCT_MEMBER(bool, is_non_ime_change)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)

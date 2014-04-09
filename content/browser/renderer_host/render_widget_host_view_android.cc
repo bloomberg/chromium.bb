@@ -430,11 +430,11 @@ long RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
 
 void RenderWidgetHostViewAndroid::OnTextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
-  // If an acknowledgement is required for this event, regardless of how we exit
-  // from this method, we must acknowledge that we processed the input state
-  // change.
+  // If the change is not originated from IME (e.g. Javascript, autofill),
+  // send back the renderer an acknowledgement, regardless of how we exit from
+  // this method.
   base::ScopedClosureRunner ack_caller;
-  if (params.require_ack)
+  if (params.is_non_ime_change)
     ack_caller.Reset(base::Bind(&SendImeEventAck, host_));
 
   if (!IsShowing())
@@ -445,7 +445,7 @@ void RenderWidgetHostViewAndroid::OnTextInputStateChanged(
       static_cast<int>(params.type),
       params.value, params.selection_start, params.selection_end,
       params.composition_start, params.composition_end,
-      params.show_ime_if_needed, params.require_ack);
+      params.show_ime_if_needed, params.is_non_ime_change);
 }
 
 void RenderWidgetHostViewAndroid::OnDidChangeBodyBackgroundColor(

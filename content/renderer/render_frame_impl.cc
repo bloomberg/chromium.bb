@@ -2035,7 +2035,8 @@ void RenderFrameImpl::didChangeSelection(bool is_empty_selection) {
   GetRenderWidget()->UpdateTextInputType();
   SyncSelectionIfRequired();
 #if defined(OS_ANDROID)
-  GetRenderWidget()->UpdateTextInputState(false, true);
+  GetRenderWidget()->UpdateTextInputState(RenderWidget::NO_SHOW_IME,
+                                          RenderWidget::FROM_NON_IME);
 #endif
 }
 

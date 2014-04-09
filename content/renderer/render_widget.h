@@ -234,13 +234,23 @@ class CONTENT_EXPORT RenderWidget
   void OnShowHostContextMenu(ContextMenuParams* params);
 
 #if defined(OS_ANDROID) || defined(USE_AURA)
-  // |show_ime_if_needed| should be true iff the update may cause the ime to be
-  // displayed, e.g. after a tap on an input field on mobile.
-  // |send_ime_ack| should be true iff the browser side is required to
-  // acknowledge the change before the renderer handles any more IME events.
-  // This is when the event did not originate from the browser side IME, such as
-  // changes from JavaScript or autofill.
-  void UpdateTextInputState(bool show_ime_if_needed, bool send_ime_ack);
+  enum ShowIme {
+    SHOW_IME_IF_NEEDED,
+    NO_SHOW_IME,
+  };
+
+  enum ChangeSource {
+    FROM_NON_IME,
+    FROM_IME,
+  };
+
+  // |show_ime| should be SHOW_IME_IF_NEEDED iff the update may cause the ime to
+  // be displayed, e.g. after a tap on an input field on mobile.
+  // |change_source| should be FROM_NON_IME when the renderer has to wait for
+  // the browser to acknowledge the change before the renderer handles any more
+  // IME events. This is when the text change did not originate from the IME in
+  // the browser side, such as changes by JavaScript or autofill.
+  void UpdateTextInputState(ShowIme show_ime, ChangeSource change_source);
 #endif
 
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
@@ -504,6 +514,10 @@ class CONTENT_EXPORT RenderWidget
   // Tell the browser about the actions permitted for a new touch point.
   virtual void setTouchAction(blink::WebTouchAction touch_action);
 
+  // Called when value of focused text field gets dirty, e.g. value is modified
+  // by script, not by user input.
+  virtual void didUpdateTextOfFocusedElementByNonUserInput();
+
 #if defined(OS_ANDROID)
   // Checks if the selection root bounds have changed. If they have changed, the
   // new value will be sent to the browser process.
@@ -745,6 +759,10 @@ class CONTENT_EXPORT RenderWidget
   uint32 next_output_surface_id_;
 
 #if defined(OS_ANDROID)
+  // Indicates value in the focused text field is in dirty state, i.e. modified
+  // by script etc., not by user input.
+  bool text_field_is_dirty_;
+
   // A counter for number of outstanding messages from the renderer to the
   // browser regarding IME-type events that have not been acknowledged by the
   // browser. If this value is not 0 IME events will be dropped.

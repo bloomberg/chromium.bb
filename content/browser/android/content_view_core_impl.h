@@ -266,7 +266,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                         const std::string& text,
                         int selection_start, int selection_end,
                         int composition_start, int composition_end,
-                        bool show_ime_if_needed, bool require_ack);
+                        bool show_ime_if_needed, bool is_non_ime_change);
   void SetTitle(const base::string16& title);
   void OnBackgroundColorChanged(SkColor color);
 
