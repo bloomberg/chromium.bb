@@ -317,6 +317,13 @@ int AddAnimatedTransformToLayer(LayerImpl* layer,
                               delta_y);
 }
 
+int AddAnimatedTransformToLayer(Layer* layer,
+                                double duration,
+                                TransformOperations start_operations,
+                                TransformOperations operations) {
+  return AddAnimatedTransform(layer, duration, start_operations, operations);
+}
+
 int AddAnimatedTransformToLayer(LayerImpl* layer,
                                 double duration,
                                 TransformOperations start_operations,

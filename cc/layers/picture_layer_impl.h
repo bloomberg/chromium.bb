@@ -97,6 +97,7 @@ class CC_EXPORT PictureLayerImpl
   virtual void CalculateContentsScale(float ideal_contents_scale,
                                       float device_scale_factor,
                                       float page_scale_factor,
+                                      float maximum_animation_contents_scale,
                                       bool animating_transform_to_screen,
                                       float* contents_scale_x,
                                       float* contents_scale_y,
@@ -145,14 +146,15 @@ class CC_EXPORT PictureLayerImpl
   void RemoveTiling(float contents_scale);
   void RemoveAllTilings();
   void SyncFromActiveLayer(const PictureLayerImpl* other);
-  void ManageTilings(bool animating_transform_to_screen);
+  void ManageTilings(bool animating_transform_to_screen,
+                     float maximum_animation_contents_scale);
   bool ShouldHaveLowResTiling() const {
     return should_use_low_res_tiling_ && !ShouldUseGpuRasterization();
   }
   virtual bool ShouldAdjustRasterScale(
       bool animating_transform_to_screen) const;
-  virtual void RecalculateRasterScales(
-      bool animating_transform_to_screen);
+  virtual void RecalculateRasterScales(bool animating_transform_to_screen,
+                                       float maximum_animation_contents_scale);
   void CleanUpTilingsOnActiveLayer(
       std::vector<PictureLayerTiling*> used_tilings);
   float MinimumContentsScale() const;

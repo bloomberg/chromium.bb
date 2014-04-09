@@ -31,6 +31,7 @@ void PictureImageLayerImpl::CalculateContentsScale(
     float ideal_contents_scale,
     float device_scale_factor,
     float page_scale_factor,
+    float maximum_animation_contents_scale,
     bool animating_transform_to_screen,
     float* contents_scale_x,
     float* contents_scale_y,
@@ -41,6 +42,7 @@ void PictureImageLayerImpl::CalculateContentsScale(
   PictureLayerImpl::CalculateContentsScale(ideal_contents_scale,
                                            device_scale_factor,
                                            page_scale_factor,
+                                           maximum_animation_contents_scale,
                                            animating_transform_to_screen,
                                            contents_scale_x,
                                            contents_scale_y,
@@ -59,9 +61,11 @@ bool PictureImageLayerImpl::ShouldAdjustRasterScale(
 }
 
 void PictureImageLayerImpl::RecalculateRasterScales(
-    bool animating_transform_to_screen) {
+    bool animating_transform_to_screen,
+    float maximum_animation_contents_scale) {
   // Defaults from PictureLayerImpl.
-  PictureLayerImpl::RecalculateRasterScales(animating_transform_to_screen);
+  PictureLayerImpl::RecalculateRasterScales(animating_transform_to_screen,
+                                            maximum_animation_contents_scale);
 
   // Don't scale images during rastering to ensure image quality, save memory
   // and avoid frequent re-rastering on change of scale.

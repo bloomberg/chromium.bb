@@ -116,6 +116,7 @@ void FakeTiledLayer::UpdateContentsScale(float ideal_contents_scale) {
   CalculateContentsScale(ideal_contents_scale,
                          1.f,
                          1.f,
+                         1.f,
                          false,  // animating_transform_to_screen
                          &draw_properties().contents_scale_x,
                          &draw_properties().contents_scale_y,
@@ -156,6 +157,7 @@ void FakeTiledLayerWithScaledBounds::CalculateContentsScale(
     float ideal_contents_scale,
     float device_scale_factor,
     float page_scale_factor,
+    float maximum_animation_contents_scale,
     bool animating_transform_to_screen,
     float* contents_scale_x,
     float* contents_scale_y,

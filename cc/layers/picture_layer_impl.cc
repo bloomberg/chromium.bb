@@ -417,6 +417,7 @@ void PictureLayerImpl::CalculateContentsScale(
     float ideal_contents_scale,
     float device_scale_factor,
     float page_scale_factor,
+    float maximum_animation_contents_scale,
     bool animating_transform_to_screen,
     float* contents_scale_x,
     float* contents_scale_y,
@@ -459,7 +460,8 @@ void PictureLayerImpl::CalculateContentsScale(
   ideal_device_scale_ = ideal_device_scale;
   ideal_source_scale_ = std::max(ideal_source_scale, min_source_scale);
 
-  ManageTilings(animating_transform_to_screen);
+  ManageTilings(animating_transform_to_screen,
+                maximum_animation_contents_scale);
 
   // The content scale and bounds for a PictureLayerImpl is somewhat fictitious.
   // There are (usually) several tilings at different scales.  However, the
@@ -914,7 +916,8 @@ inline float PositiveRatio(float float1, float float2) {
 
 }  // namespace
 
-void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
+void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen,
+                                     float maximum_animation_contents_scale) {
   DCHECK(ideal_contents_scale_);
   DCHECK(ideal_page_scale_);
   DCHECK(ideal_device_scale_);
@@ -944,7 +947,8 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
   if (!layer_tree_impl()->device_viewport_valid_for_tile_management())
     return;
 
-  RecalculateRasterScales(animating_transform_to_screen);
+  RecalculateRasterScales(animating_transform_to_screen,
+                          maximum_animation_contents_scale);
 
   PictureLayerTiling* high_res = NULL;
   PictureLayerTiling* low_res = NULL;
@@ -997,7 +1001,7 @@ bool PictureLayerImpl::ShouldAdjustRasterScale(
   // tree. This will allow CSS scale changes to get re-rastered at an
   // appropriate rate.
 
-  if (raster_source_scale_was_animating_ && !animating_transform_to_screen)
+  if (raster_source_scale_was_animating_ != animating_transform_to_screen)
     return true;
 
   if (animating_transform_to_screen &&
@@ -1045,7 +1049,8 @@ float PictureLayerImpl::SnappedContentsScale(float scale) {
 }
 
 void PictureLayerImpl::RecalculateRasterScales(
-    bool animating_transform_to_screen) {
+    bool animating_transform_to_screen,
+    float maximum_animation_contents_scale) {
   raster_device_scale_ = ideal_device_scale_;
   raster_source_scale_ = ideal_source_scale_;
 
@@ -1069,11 +1074,18 @@ void PictureLayerImpl::RecalculateRasterScales(
   raster_contents_scale_ =
       std::max(raster_contents_scale_, MinimumContentsScale());
 
-  // Don't allow animating CSS scales to drop below 1 if we're not
-  // re-rasterizing during the animation.
+  // If we're not re-rasterizing during animation, rasterize at the maximum
+  // scale that will occur during the animation, if the maximum scale is
+  // known.
   if (animating_transform_to_screen && !ShouldUseGpuRasterization()) {
-    raster_contents_scale_ = std::max(
-        raster_contents_scale_, 1.f * ideal_page_scale_ * ideal_device_scale_);
+    if (maximum_animation_contents_scale > 0.f) {
+      raster_contents_scale_ =
+          std::max(raster_contents_scale_, maximum_animation_contents_scale);
+    } else {
+      raster_contents_scale_ =
+          std::max(raster_contents_scale_,
+                   1.f * ideal_page_scale_ * ideal_device_scale_);
+    }
   }
 
   // If this layer would only create one tile at this content scale,

@@ -344,7 +344,7 @@ void EdgeEffect::ApplyToLayers(gfx::SizeF size, Edge edge) {
 
   // Glow
   gfx::Size glow_image_bounds;
-  glow_->CalculateContentsScale(1.f, 1.f, 1.f, false,
+  glow_->CalculateContentsScale(1.f, 1.f, 1.f, 0.f, false,
                                 &dummy_scale_x, &dummy_scale_y,
                                 &glow_image_bounds);
   const int glow_height = glow_image_bounds.height();
@@ -356,7 +356,7 @@ void EdgeEffect::ApplyToLayers(gfx::SizeF size, Edge edge) {
 
   // Edge
   gfx::Size edge_image_bounds;
-  edge_->CalculateContentsScale(1.f, 1.f, 1.f, false,
+  edge_->CalculateContentsScale(1.f, 1.f, 1.f, 0.f, false,
                                 &dummy_scale_x, &dummy_scale_y,
                                 &edge_image_bounds);
   const int edge_height = edge_image_bounds.height();

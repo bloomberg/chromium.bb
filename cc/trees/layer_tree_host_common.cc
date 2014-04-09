@@ -903,14 +903,17 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
 }
 
 template <typename LayerType>
-static inline void CalculateContentsScale(LayerType* layer,
-                                          float contents_scale,
-                                          float device_scale_factor,
-                                          float page_scale_factor,
-                                          bool animating_transform_to_screen) {
+static inline void CalculateContentsScale(
+    LayerType* layer,
+    float contents_scale,
+    float device_scale_factor,
+    float page_scale_factor,
+    float maximum_animation_contents_scale,
+    bool animating_transform_to_screen) {
   layer->CalculateContentsScale(contents_scale,
                                 device_scale_factor,
                                 page_scale_factor,
+                                maximum_animation_contents_scale,
                                 animating_transform_to_screen,
                                 &layer->draw_properties().contents_scale_x,
                                 &layer->draw_properties().contents_scale_y,
@@ -922,6 +925,7 @@ static inline void CalculateContentsScale(LayerType* layer,
         contents_scale,
         device_scale_factor,
         page_scale_factor,
+        maximum_animation_contents_scale,
         animating_transform_to_screen,
         &mask_layer->draw_properties().contents_scale_x,
         &mask_layer->draw_properties().contents_scale_y,
@@ -935,6 +939,7 @@ static inline void CalculateContentsScale(LayerType* layer,
         contents_scale,
         device_scale_factor,
         page_scale_factor,
+        maximum_animation_contents_scale,
         animating_transform_to_screen,
         &replica_mask_layer->draw_properties().contents_scale_x,
         &replica_mask_layer->draw_properties().contents_scale_y,
@@ -948,11 +953,13 @@ static inline void UpdateLayerContentsScale(
     float ideal_contents_scale,
     float device_scale_factor,
     float page_scale_factor,
+    float maximum_animation_contents_scale,
     bool animating_transform_to_screen) {
   CalculateContentsScale(layer,
                          ideal_contents_scale,
                          device_scale_factor,
                          page_scale_factor,
+                         maximum_animation_contents_scale,
                          animating_transform_to_screen);
 }
 
@@ -962,6 +969,7 @@ static inline void UpdateLayerContentsScale(
     float ideal_contents_scale,
     float device_scale_factor,
     float page_scale_factor,
+    float maximum_animation_contents_scale,
     bool animating_transform_to_screen) {
   if (can_adjust_raster_scale) {
     float ideal_raster_scale =
@@ -998,12 +1006,99 @@ static inline void UpdateLayerContentsScale(
                          contents_scale,
                          device_scale_factor,
                          page_scale_factor,
+                         maximum_animation_contents_scale,
                          animating_transform_to_screen);
 
   if (layer->content_bounds() != old_content_bounds ||
       layer->contents_scale_x() != old_contents_scale_x ||
       layer->contents_scale_y() != old_contents_scale_y)
     layer->SetNeedsPushProperties();
+}
+
+static inline void CalculateAnimationContentsScale(
+    Layer* layer,
+    bool ancestor_is_animating_scale,
+    float ancestor_maximum_animation_contents_scale,
+    const gfx::Transform& parent_transform,
+    const gfx::Transform& combined_transform,
+    bool* combined_is_animating_scale,
+    float* combined_maximum_animation_contents_scale) {
+  *combined_is_animating_scale = false;
+  *combined_maximum_animation_contents_scale = 0.f;
+}
+
+static inline void CalculateAnimationContentsScale(
+    LayerImpl* layer,
+    bool ancestor_is_animating_scale,
+    float ancestor_maximum_animation_contents_scale,
+    const gfx::Transform& ancestor_transform,
+    const gfx::Transform& combined_transform,
+    bool* combined_is_animating_scale,
+    float* combined_maximum_animation_contents_scale) {
+  if (ancestor_is_animating_scale &&
+      ancestor_maximum_animation_contents_scale == 0.f) {
+    // We've already failed to compute a maximum animated scale at an
+    // ancestor, so we'll continue to fail.
+    *combined_maximum_animation_contents_scale = 0.f;
+    *combined_is_animating_scale = true;
+    return;
+  }
+
+  if (!combined_transform.IsScaleOrTranslation()) {
+    // Computing maximum animated scale in the presence of
+    // non-scale/translation transforms isn't supported.
+    *combined_maximum_animation_contents_scale = 0.f;
+    *combined_is_animating_scale = true;
+    return;
+  }
+
+  // We currently only support computing maximum scale for combinations of
+  // scales and translations. We treat all non-translations as potentially
+  // affecting scale. Animations that include non-translation/scale components
+  // will cause the computation of MaximumScale below to fail.
+  bool layer_is_animating_scale =
+      !layer->layer_animation_controller()->HasOnlyTranslationTransforms();
+
+  if (!layer_is_animating_scale && !ancestor_is_animating_scale) {
+    *combined_maximum_animation_contents_scale = 0.f;
+    *combined_is_animating_scale = false;
+    return;
+  }
+
+  // We don't attempt to accumulate animation scale from multiple nodes,
+  // because of the risk of significant overestimation. For example, one node
+  // may be increasing scale from 1 to 10 at the same time as a descendant is
+  // decreasing scale from 10 to 1. Naively combining these scales would produce
+  // a scale of 100.
+  if (layer_is_animating_scale && ancestor_is_animating_scale) {
+    *combined_maximum_animation_contents_scale = 0.f;
+    *combined_is_animating_scale = true;
+    return;
+  }
+
+  // At this point, we know either the layer or an ancestor, but not both,
+  // is animating scale.
+  *combined_is_animating_scale = true;
+  if (!layer_is_animating_scale) {
+    gfx::Vector2dF layer_transform_scales =
+        MathUtil::ComputeTransform2dScaleComponents(layer->transform(), 0.f);
+    *combined_maximum_animation_contents_scale =
+        ancestor_maximum_animation_contents_scale *
+        std::max(layer_transform_scales.x(), layer_transform_scales.y());
+    return;
+  }
+
+  float layer_maximum_animated_scale = 0.f;
+  if (!layer->layer_animation_controller()->MaximumScale(
+          &layer_maximum_animated_scale)) {
+    *combined_maximum_animation_contents_scale = 0.f;
+    return;
+  }
+  gfx::Vector2dF ancestor_transform_scales =
+      MathUtil::ComputeTransform2dScaleComponents(ancestor_transform, 0.f);
+  *combined_maximum_animation_contents_scale =
+      layer_maximum_animated_scale *
+      std::max(ancestor_transform_scales.x(), ancestor_transform_scales.y());
 }
 
 static inline RenderSurface* CreateOrReuseRenderSurface(Layer* layer) {
@@ -1165,6 +1260,11 @@ struct DataForRecursion {
   // passed down the recursion to the children that actually use it.
   gfx::Rect clip_rect_of_target_surface_in_target_space;
 
+  // The maximum amount by which this layer will be scaled during the lifetime
+  // of currently running animations.
+  float maximum_animation_contents_scale;
+
+  bool ancestor_is_animating_scale;
   bool ancestor_clips_subtree;
   typename LayerType::RenderSurfaceType*
       nearest_occlusion_immune_ancestor_surface;
@@ -1546,6 +1646,22 @@ static void CalculateDrawPropertiesInternal(
   ApplyPositionAdjustment(layer, data_from_ancestor.fixed_container,
       data_from_ancestor.scroll_compensation_matrix, &combined_transform);
 
+  bool combined_is_animating_scale = false;
+  float combined_maximum_animation_contents_scale = 0.f;
+  if (globals.can_adjust_raster_scales) {
+    CalculateAnimationContentsScale(
+        layer,
+        data_from_ancestor.ancestor_is_animating_scale,
+        data_from_ancestor.maximum_animation_contents_scale,
+        data_from_ancestor.parent_matrix,
+        combined_transform,
+        &combined_is_animating_scale,
+        &combined_maximum_animation_contents_scale);
+  }
+  data_for_children.ancestor_is_animating_scale = combined_is_animating_scale;
+  data_for_children.maximum_animation_contents_scale =
+      combined_maximum_animation_contents_scale;
+
   // Compute the 2d scale components of the transform hierarchy up to the target
   // surface. From there, we can decide on a contents scale for the layer.
   float layer_scale_factors = globals.device_scale_factor;
@@ -1566,8 +1682,10 @@ static void CalculateDrawPropertiesInternal(
       globals.can_adjust_raster_scales,
       ideal_contents_scale,
       globals.device_scale_factor,
-      data_from_ancestor.in_subtree_of_page_scale_application_layer ?
-          globals.page_scale_factor : 1.f,
+      data_from_ancestor.in_subtree_of_page_scale_application_layer
+          ? globals.page_scale_factor
+          : 1.f,
+      combined_maximum_animation_contents_scale,
       animating_transform_to_screen);
 
   // The draw_transform that gets computed below is effectively the layer's
@@ -2167,6 +2285,8 @@ static void ProcessCalcDrawPropsInputs(
   data_for_recursion->clip_rect_in_target_space = device_viewport_rect;
   data_for_recursion->clip_rect_of_target_surface_in_target_space =
       device_viewport_rect;
+  data_for_recursion->maximum_animation_contents_scale = 0.f;
+  data_for_recursion->ancestor_is_animating_scale = false;
   data_for_recursion->ancestor_clips_subtree = true;
   data_for_recursion->nearest_occlusion_immune_ancestor_surface = NULL;
   data_for_recursion->in_subtree_of_page_scale_application_layer = false;

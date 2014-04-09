@@ -1036,14 +1036,14 @@ void LayerImpl::SetContentsScale(float contents_scale_x,
   NoteLayerPropertyChanged();
 }
 
-void LayerImpl::CalculateContentsScale(
-    float ideal_contents_scale,
-    float device_scale_factor,
-    float page_scale_factor,
-    bool animating_transform_to_screen,
-    float* contents_scale_x,
-    float* contents_scale_y,
-    gfx::Size* content_bounds) {
+void LayerImpl::CalculateContentsScale(float ideal_contents_scale,
+                                       float device_scale_factor,
+                                       float page_scale_factor,
+                                       float maximum_animation_contents_scale,
+                                       bool animating_transform_to_screen,
+                                       float* contents_scale_x,
+                                       float* contents_scale_y,
+                                       gfx::Size* content_bounds) {
   // Base LayerImpl has all of its content scales and content bounds pushed
   // from its Layer during commit and just reuses those values as-is.
   *contents_scale_x = this->contents_scale_x();

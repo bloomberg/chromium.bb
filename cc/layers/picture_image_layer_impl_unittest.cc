@@ -84,8 +84,13 @@ TEST_F(PictureImageLayerImplTest, CalculateContentsScale) {
   float contents_scale_x;
   float contents_scale_y;
   gfx::Size content_bounds;
-  layer->CalculateContentsScale(2.f, 3.f, 4.f, false,
-                                &contents_scale_x, &contents_scale_y,
+  layer->CalculateContentsScale(2.f,
+                                3.f,
+                                4.f,
+                                1.f,
+                                false,
+                                &contents_scale_x,
+                                &contents_scale_y,
                                 &content_bounds);
   EXPECT_FLOAT_EQ(1.f, contents_scale_x);
   EXPECT_FLOAT_EQ(1.f, contents_scale_y);
@@ -102,8 +107,13 @@ TEST_F(PictureImageLayerImplTest, AreVisibleResourcesReady) {
   float contents_scale_x;
   float contents_scale_y;
   gfx::Size content_bounds;
-  layer->CalculateContentsScale(2.f, 3.f, 4.f, false,
-                                &contents_scale_x, &contents_scale_y,
+  layer->CalculateContentsScale(2.f,
+                                3.f,
+                                4.f,
+                                1.f,
+                                false,
+                                &contents_scale_x,
+                                &contents_scale_y,
                                 &content_bounds);
   layer->UpdateTilePriorities();
 
@@ -120,6 +130,7 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
   const float suggested_ideal_contents_scale = 2.f;
   const float device_scale_factor = 3.f;
   const float page_scale_factor = 4.f;
+  const float maximum_animation_contents_scale = 1.f;
   const bool animating_transform_to_screen = false;
   float contents_scale_x;
   float contents_scale_y;
@@ -127,6 +138,7 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
   pending_layer->CalculateContentsScale(suggested_ideal_contents_scale,
                                         device_scale_factor,
                                         page_scale_factor,
+                                        maximum_animation_contents_scale,
                                         animating_transform_to_screen,
                                         &contents_scale_x,
                                         &contents_scale_y,
@@ -140,6 +152,7 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
   active_layer->CalculateContentsScale(suggested_ideal_contents_scale,
                                        device_scale_factor,
                                        page_scale_factor,
+                                       maximum_animation_contents_scale,
                                        animating_transform_to_screen,
                                        &contents_scale_x,
                                        &contents_scale_y,
