@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -14,6 +16,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chromeos/chromeos_switches.h"
@@ -30,6 +33,10 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "policy/policy_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #else  // !defined(OS_CHROMEOS)
@@ -61,6 +68,32 @@ namespace {
 
 #if defined(OS_CHROMEOS)
 const char kUser1ProfilePath[] = "/profile/user1/shill";
+
+class TestListener : public content::NotificationObserver {
+ public:
+  TestListener(const std::string& message, const base::Closure& callback)
+      : message_(message), callback_(callback) {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
+                   content::NotificationService::AllSources());
+  }
+
+  virtual void Observe(int type,
+                       const content::NotificationSource& /* source */,
+                       const content::NotificationDetails& details) OVERRIDE {
+    const std::string& message = *content::Details<std::string>(details).ptr();
+    if (message == message_)
+      callback_.Run();
+  }
+
+ private:
+  std::string message_;
+  base::Closure callback_;
+
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestListener);
+};
 #else  // !defined(OS_CHROMEOS)
 
 // Stub Verify* methods implementation to satisfy expectations of
@@ -91,10 +124,18 @@ class CryptoVerifyStub
 };
 #endif  // defined(OS_CHROMEOS)
 
-class ExtensionNetworkingPrivateApiTest :
-    public ExtensionApiTest,
-    public testing::WithParamInterface<bool> {
+class ExtensionNetworkingPrivateApiTest
+    : public ExtensionApiTest,
+      public testing::WithParamInterface<bool> {
  public:
+  ExtensionNetworkingPrivateApiTest()
+      :
+#if defined(OS_CHROMEOS)
+        detector_(NULL)
+#endif
+  {
+  }
+
   bool RunNetworkingSubtest(const std::string& subtest) {
     return RunExtensionSubtest(
         "networking", "main.html?" + subtest,
@@ -151,6 +192,9 @@ class ExtensionNetworkingPrivateApiTest :
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    detector_ = new NetworkPortalDetectorTestImpl();
+    NetworkPortalDetector::InitializeForTesting(detector_);
+
     ExtensionApiTest::SetUpOnMainThread();
     content::RunAllPendingInMessageLoop();
 
@@ -290,6 +334,9 @@ class ExtensionNetworkingPrivateApiTest :
 
  protected:
 #if defined(OS_CHROMEOS)
+  NetworkPortalDetectorTestImpl* detector() { return detector_; }
+
+  NetworkPortalDetectorTestImpl* detector_;
   policy::MockConfigurationPolicyProvider provider_;
   std::string userhash_;
 #endif
@@ -463,23 +510,35 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        GetCaptivePortalStatus) {
-  NetworkPortalDetectorTestImpl* detector = new NetworkPortalDetectorTestImpl();
-  NetworkPortalDetector::InitializeForTesting(detector);
   NetworkPortalDetector::CaptivePortalState state;
   state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
-  detector->SetDetectionResultsForTesting("stub_ethernet", state);
+  detector()->SetDetectionResultsForTesting("stub_ethernet", state);
 
   state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
-  detector->SetDetectionResultsForTesting("stub_wifi1", state);
+  detector()->SetDetectionResultsForTesting("stub_wifi1", state);
 
   state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
-  detector->SetDetectionResultsForTesting("stub_wifi2", state);
+  detector()->SetDetectionResultsForTesting("stub_wifi2", state);
 
   state.status =
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED;
-  detector->SetDetectionResultsForTesting("stub_cellular1", state);
+  detector()->SetDetectionResultsForTesting("stub_cellular1", state);
 
   EXPECT_TRUE(RunNetworkingSubtest("getCaptivePortalStatus")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+                       CaptivePortalNotification) {
+  detector()->SetDefaultNetworkPathForTesting("wifi");
+  NetworkPortalDetector::CaptivePortalState state;
+  state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
+  detector()->SetDetectionResultsForTesting("wifi", state);
+
+  TestListener listener(
+      "notifyPortalDetectorObservers",
+      base::Bind(&NetworkPortalDetectorTestImpl::NotifyObserversForTesting,
+                 base::Unretained(detector())));
+  EXPECT_TRUE(RunNetworkingSubtest("captivePortalNotification")) << message_;
 }
 #endif  // defined(OS_CHROMEOS)
 

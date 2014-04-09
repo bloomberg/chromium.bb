@@ -702,9 +702,6 @@ bool NetworkingPrivateGetCaptivePortalStatusFunction::RunImpl() {
       api::GetCaptivePortalStatus::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // The |network_guid| parameter is storing the service path.
-  const std::string& service_path = params->network_guid;
-
   NetworkPortalDetector* detector = NetworkPortalDetector::Get();
   if (!detector) {
     error_ = "Error.NotReady";
@@ -712,7 +709,7 @@ bool NetworkingPrivateGetCaptivePortalStatusFunction::RunImpl() {
   }
 
   NetworkPortalDetector::CaptivePortalState state =
-      detector->GetCaptivePortalState(service_path);
+      detector->GetCaptivePortalState(params->network_path);
 
   SetResult(new base::StringValue(
       NetworkPortalDetector::CaptivePortalStatusString(state.status)));

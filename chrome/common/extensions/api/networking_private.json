@@ -413,9 +413,9 @@
         "description": "Returns captive portal status for the network with networkGuid.",
         "parameters": [
           {
-            "name": "networkGuid",
+            "name": "networkPath",
             "type": "string",
-            "description": "The unique identifier of the network to get captive portal status."
+            "description": "The path of the network to get captive portal status."
           },
           {
             "name": "callback",
@@ -453,6 +453,21 @@
             "name": "changes",
             "type": "array",
             "items": { "type": "string" }
+          }
+        ]
+      },
+      {
+        "name": "onPortalDetectionCompleted",
+        "type": "function",
+        "description": "Fired when a portal detection for a network completes. Sends a name of the network and corresponding captive portal status.",
+        "parameters": [
+          {
+            "name": "networkPath",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "$ref": "CaptivePortalStatus"
           }
         ]
       }
