@@ -65,6 +65,9 @@ def DownloadPackageInfoFiles(local_package_file, remote_package_file,
 
   pynacl.file_tools.MakeParentDirectoryIfAbsent(local_package_file)
   downloader(remote_package_file, local_package_file)
+  if not os.path.isfile(local_package_file):
+    raise IOError('Could not download package file: %s.' %
+                  remote_package_file)
 
   archive_list = ReadPackageFile(local_package_file)
   local_package_name = GetLocalPackageName(local_package_file)

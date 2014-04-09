@@ -65,7 +65,6 @@ BUILD_DIR = os.path.dirname(CURRENT_DIR)
 NACL_DIR = os.path.dirname(BUILD_DIR)
 
 TEMP_SUFFIX = '.tmp'
-SHARED_FOLDER = 'shared'
 
 DEFAULT_PACKAGES_JSON = os.path.join(CURRENT_DIR, 'standard_packages.json')
 DEFAULT_REVISIONS_DIR = os.path.join(NACL_DIR, 'toolchain_revisions')
@@ -846,7 +845,9 @@ def ParseArgs(args):
   else:
     packages_set.update(arguments.packages.split(','))
 
-  arguments.packages = sorted(packages_set)
+  # Append/exclude any extra packages that were specified.
+  packages_set.update(arguments.append_packages)
+  packages_set.difference_update(arguments.exclude_packages)
 
   # Build a dictionary that organizes packages to their respective package
   # targets. Packages may exist in multiple package targets so we will have
@@ -862,7 +863,7 @@ def ParseArgs(args):
   # The package_target_packages is a list of tuples (package_target, package),
   # for every package along with the associated package target.
   package_target_packages = []
-  for package in arguments.packages:
+  for package in sorted(packages_set):
     package_targets = package_targets_dict.get(package, None)
     if package_targets is None:
       custom_package_targets = GetPackageTargetPackages(package, [])

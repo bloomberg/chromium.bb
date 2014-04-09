@@ -8,6 +8,8 @@
 import os
 import posixpath
 
+SHARED_FOLDER = 'shared'
+
 
 def GetRemotePackageKey(is_shared, rev_num, package_target, package_name):
   """Returns key for package files in the google storage cloud.

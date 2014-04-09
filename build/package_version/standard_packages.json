@@ -67,6 +67,7 @@
     ],
 
     "linux_x86": [
+      "arm_trusted",
       "nacl_arm_newlib",
       "nacl_x86_glibc",
       "nacl_x86_newlib",
