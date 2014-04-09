@@ -40,7 +40,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
       OVERRIDE;
   virtual InputHandlerManagerClient* GetInputHandlerManagerClient() OVERRIDE;
   virtual scoped_refptr<webkit::gpu::ContextProviderWebContext>
-      GetOffscreenContextProviderForMainThread() OVERRIDE;
+      GetSharedOffscreenContextProviderForMainThread() OVERRIDE;
   // This is called on both renderer main thread (offscreen context creation
   // path shared between cross-process and in-process platforms) and renderer
   // compositor impl thread (InitializeHwDraw) in order to support Android
@@ -51,6 +51,8 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
       GetOffscreenContextProviderForCompositorThread() OVERRIDE;
   virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
       int view_id) OVERRIDE;
+  virtual blink::WebGraphicsContext3D* CreateOffscreenGraphicsContext3D(
+      const blink::WebGraphicsContext3D::Attributes& attributes) OVERRIDE;
 
   SynchronousInputEventFilter* synchronous_input_event_filter() {
     return &synchronous_input_event_filter_;

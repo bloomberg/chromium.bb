@@ -1031,7 +1031,7 @@ RenderThreadImpl::OffscreenCompositorContextProvider() {
       SynchronousCompositorFactory::GetInstance()) {
     if (compositor_message_loop_proxy_)
       return factory->GetOffscreenContextProviderForCompositorThread();
-    return factory->GetOffscreenContextProviderForMainThread();
+    return factory->GetSharedOffscreenContextProviderForMainThread();
   }
 #endif
 
@@ -1050,7 +1050,7 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
 #if defined(OS_ANDROID)
   if (SynchronousCompositorFactory* factory =
       SynchronousCompositorFactory::GetInstance())
-    return factory->GetOffscreenContextProviderForMainThread();
+    return factory->GetSharedOffscreenContextProviderForMainThread();
 #endif
 
   if (!shared_main_thread_contexts_ ||

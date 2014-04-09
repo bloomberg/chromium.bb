@@ -32,10 +32,11 @@ blink::WebGraphicsContext3D::Attributes GetDefaultAttribs() {
 
 using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
-scoped_ptr<gpu::GLInProcessContext> CreateContext(
+scoped_ptr<gpu::GLInProcessContext> CreateContextWithAttributes(
     scoped_refptr<gfx::GLSurface> surface,
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
-    gpu::GLInProcessContext* share_context) {
+    gpu::GLInProcessContext* share_context,
+    const blink::WebGraphicsContext3D::Attributes& attributes) {
   const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
   if (!surface)
@@ -43,12 +44,20 @@ scoped_ptr<gpu::GLInProcessContext> CreateContext(
 
   gpu::GLInProcessContextAttribs in_process_attribs;
   WebGraphicsContext3DInProcessCommandBufferImpl::ConvertAttributes(
-      GetDefaultAttribs(), &in_process_attribs);
+      attributes, &in_process_attribs);
   in_process_attribs.lose_context_when_out_of_memory = 1;
   scoped_ptr<gpu::GLInProcessContext> context(
       gpu::GLInProcessContext::CreateWithSurface(
           surface, service, share_context, in_process_attribs, gpu_preference));
   return context.Pass();
+}
+
+scoped_ptr<gpu::GLInProcessContext> CreateContext(
+    scoped_refptr<gfx::GLSurface> surface,
+    scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
+    gpu::GLInProcessContext* share_context) {
+  return CreateContextWithAttributes(
+      surface, service, share_context, GetDefaultAttribs());
 }
 
 scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> WrapContext(
@@ -122,8 +131,8 @@ SynchronousCompositorFactoryImpl::GetInputHandlerManagerClient() {
   return synchronous_input_event_filter();
 }
 
-scoped_refptr<ContextProviderWebContext>
-SynchronousCompositorFactoryImpl::GetOffscreenContextProviderForMainThread() {
+scoped_refptr<ContextProviderWebContext> SynchronousCompositorFactoryImpl::
+    GetSharedOffscreenContextProviderForMainThread() {
   bool failed = false;
   if ((!offscreen_context_for_main_thread_.get() ||
        offscreen_context_for_main_thread_->DestroyedOnMainThread())) {
@@ -195,6 +204,13 @@ SynchronousCompositorFactoryImpl::CreateStreamTextureFactory(int view_id) {
               base::Unretained(this)),
           view_id));
   return factory;
+}
+
+blink::WebGraphicsContext3D*
+SynchronousCompositorFactoryImpl::CreateOffscreenGraphicsContext3D(
+    const blink::WebGraphicsContext3D::Attributes& attributes) {
+  return WrapContext(CreateContextWithAttributes(NULL, NULL, NULL, attributes))
+      .release();
 }
 
 void SynchronousCompositorFactoryImpl::CompositorInitializedHardwareDraw() {

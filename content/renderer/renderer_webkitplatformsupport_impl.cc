@@ -78,6 +78,7 @@
 #include "webkit/common/quota/quota_types.h"
 
 #if defined(OS_ANDROID)
+#include "content/renderer/android/synchronous_compositor_factory.h"
 #include "content/renderer/media/android/audio_decoder_android.h"
 #endif
 
@@ -998,6 +999,13 @@ RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
     blink::WebGraphicsContext3D* share_context) {
   if (!RenderThreadImpl::current())
     return NULL;
+
+#if defined(OS_ANDROID)
+  if (SynchronousCompositorFactory* factory =
+          SynchronousCompositorFactory::GetInstance()) {
+    return factory->CreateOffscreenGraphicsContext3D(attributes);
+  }
+#endif
 
   scoped_refptr<GpuChannelHost> gpu_channel_host(
       RenderThreadImpl::current()->EstablishGpuChannelSync(

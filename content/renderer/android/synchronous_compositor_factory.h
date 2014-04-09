@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -48,11 +49,13 @@ class SynchronousCompositorFactory {
   virtual InputHandlerManagerClient* GetInputHandlerManagerClient() = 0;
 
   virtual scoped_refptr<webkit::gpu::ContextProviderWebContext>
-      GetOffscreenContextProviderForMainThread() = 0;
+      GetSharedOffscreenContextProviderForMainThread() = 0;
   virtual scoped_refptr<cc::ContextProvider>
       GetOffscreenContextProviderForCompositorThread() = 0;
   virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
       int view_id) = 0;
+  virtual blink::WebGraphicsContext3D* CreateOffscreenGraphicsContext3D(
+      const blink::WebGraphicsContext3D::Attributes& attributes) = 0;
 
  protected:
   SynchronousCompositorFactory() {}
