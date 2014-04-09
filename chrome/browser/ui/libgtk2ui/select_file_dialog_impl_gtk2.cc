@@ -54,6 +54,9 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
  protected:
   virtual ~SelectFileDialogImplGTK();
 
+  // BaseShellDialog implementation:
+  virtual bool IsRunning(gfx::NativeWindow parent_window) const OVERRIDE;
+
   // SelectFileDialog implementation.
   // |params| is user data we pass back via the Listener interface.
   virtual void SelectFileImpl(
@@ -151,6 +154,9 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
   // All our dialogs.
   std::set<GtkWidget*> dialogs_;
 
+  // The set of all parent windows for which we are currently running dialogs.
+  std::set<aura::Window*> parents_;
+
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImplGTK);
 };
 
@@ -177,6 +183,10 @@ SelectFileDialogImplGTK::~SelectFileDialogImplGTK() {
   while (dialogs_.begin() != dialogs_.end()) {
     gtk_widget_destroy(*(dialogs_.begin()));
   }
+}
+
+bool SelectFileDialogImplGTK::IsRunning(gfx::NativeWindow parent_window) const {
+  return parents_.find(parent_window) != parents_.end();
 }
 
 bool SelectFileDialogImplGTK::HasMultipleFileTypeChoicesImpl() {

@@ -83,10 +83,6 @@ void SelectFileDialogImpl::ListenerDestroyed() {
   listener_ = NULL;
 }
 
-bool SelectFileDialogImpl::IsRunning(gfx::NativeWindow parent_window) const {
-  return parents_.find(parent_window) != parents_.end();
-}
-
 bool SelectFileDialogImpl::CallDirectoryExistsOnUIThread(
     const base::FilePath& path) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
