@@ -405,8 +405,6 @@ crbug.com/290411 [ Linux ] fast/text/sub-pixel/text-scaling-pixel.html [ Pass Fa
 
 crbug.com/334269 [ Mac ] fast/text/font-variant-ligatures.html [ ImageOnlyFailure ]
 
-crbug.com/356743 [ Mac ] inspector/device-emulation/device-emulation-scale-only.html [ Pass Failure ]
-
 # Switching to content shell failures
 crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
 crbug.com/235110 [ Mac ] virtual/softwarecompositing [ Skip ]
