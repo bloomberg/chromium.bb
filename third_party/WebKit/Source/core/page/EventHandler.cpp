@@ -1133,7 +1133,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result, bool shif
         return NoCursorChange;
 #endif
 
-    Node* node = result.targetNode();
+    Node* node = result.innerPossiblyPseudoNode();
     if (!node)
         return selectAutoCursor(result, node, iBeamCursor(), shiftKey);
 
