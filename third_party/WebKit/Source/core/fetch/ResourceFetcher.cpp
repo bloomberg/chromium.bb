@@ -923,9 +923,16 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     }
 
     // During the initial load, avoid loading the same resource multiple times for a single document,
-    // even if the cache policies would tell us to. Raw resources are exempted.
-    if (type != Resource::Raw && document() && !document()->loadEventFinished() && m_validatedURLs.contains(existingResource->url()))
-        return Use;
+    // even if the cache policies would tell us to.
+    // We also group loads of the same resource together.
+    // Raw resources are exempted, as XHRs fall into this category and may have user-set Cache-Control:
+    // headers or other factors that require separate requests.
+    if (type != Resource::Raw) {
+        if (document() && !document()->loadEventFinished() && m_validatedURLs.contains(existingResource->url()))
+            return Use;
+        if (existingResource->isLoading())
+            return Use;
+    }
 
     // CachePolicyReload always reloads
     if (cachePolicy == CachePolicyReload) {
@@ -938,11 +945,6 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicye reloading due to resource being in the error state");
         return Reload;
     }
-
-    // For resources that are not yet loaded we ignore the cache policy.
-    if (existingResource->isLoading())
-        return Use;
-
     // If any of the redirects in the chain to loading the resource were not cacheable, we cannot reuse our cached resource.
     if (!existingResource->canReuseRedirectChain()) {
         WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to an uncacheable redirect");

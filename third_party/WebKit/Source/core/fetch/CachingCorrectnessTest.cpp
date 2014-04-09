@@ -94,6 +94,8 @@ protected:
         return m_fetcher->fetchSynchronously(fetchRequest);
     }
 
+    ResourceFetcher* fetcher() const { return m_fetcher.get(); }
+
 private:
     // A simple platform that mocks out the clock, for cache freshness testing.
     class ProxyPlatform : public blink::Platform {
@@ -402,6 +404,23 @@ TEST_F(CachingCorrectnessTest, FreshWithStaleRedirect)
 
     ResourcePtr<Resource> fetched = fetch();
     EXPECT_NE(firstResource, fetched);
+}
+
+TEST_F(CachingCorrectnessTest, PostToSameURLTwice)
+{
+    ResourceRequest request1(KURL(ParsedURLString, kResourceURL));
+    request1.setHTTPMethod("POST");
+    ResourcePtr<Resource> resource1 = new Resource(ResourceRequest(request1.url()), Resource::Raw);
+    resource1->setLoading(true);
+    memoryCache()->add(resource1.get());
+
+    ResourceRequest request2(KURL(ParsedURLString, kResourceURL));
+    request2.setHTTPMethod("POST");
+    FetchRequest fetch2(request2, FetchInitiatorInfo());
+    ResourcePtr<Resource> resource2 = fetcher()->fetchSynchronously(fetch2);
+
+    EXPECT_EQ(resource2, memoryCache()->resourceForURL(request2.url()));
+    EXPECT_NE(resource1, resource2);
 }
 
 } // namespace

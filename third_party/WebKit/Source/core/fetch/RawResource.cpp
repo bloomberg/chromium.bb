@@ -143,11 +143,20 @@ static bool shouldIgnoreHeaderForCacheReuse(AtomicString headerName)
     return m_headers.contains(headerName);
 }
 
+static bool isCacheableHTTPMethod(const AtomicString& method)
+{
+    // Per http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.10,
+    // these methods always invalidate the cache entry.
+    return method != "POST" && method != "PUT" && method != "DELETE";
+}
+
 bool RawResource::canReuse(const ResourceRequest& newRequest) const
 {
     if (m_options.dataBufferingPolicy == DoNotBufferData)
         return false;
 
+    if (!isCacheableHTTPMethod(m_resourceRequest.httpMethod()))
+        return false;
     if (m_resourceRequest.httpMethod() != newRequest.httpMethod())
         return false;
 
