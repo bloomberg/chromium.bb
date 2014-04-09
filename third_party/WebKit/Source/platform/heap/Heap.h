@@ -1413,6 +1413,46 @@ public:
     }
 };
 
+template<typename T, size_t inlineCapacity = 0>
+class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
+public:
+    HeapDeque() { }
+
+    explicit HeapDeque(size_t size) : Deque<T, inlineCapacity, HeapAllocator>(size)
+    {
+    }
+
+    HeapDeque(size_t size, const T& val) : Deque<T, inlineCapacity, HeapAllocator>(size, val)
+    {
+    }
+
+    // FIXME: Doesn't work if there is an inline buffer, due to crbug.com/360572
+    HeapDeque<T, 0>& operator=(const HeapDeque& other)
+    {
+        HeapDeque<T> copy(other);
+        swap(copy);
+        return *this;
+    }
+
+    // FIXME: Doesn't work if there is an inline buffer, due to crbug.com/360572
+    inline void swap(HeapDeque& other)
+    {
+        Deque<T, inlineCapacity, HeapAllocator>::swap(other);
+    }
+
+    template<size_t otherCapacity>
+    HeapDeque(const HeapDeque<T, otherCapacity>& other)
+        : Deque<T, inlineCapacity, HeapAllocator>(other)
+    {
+    }
+
+    template<typename U>
+    void append(const U& other)
+    {
+        Deque<T, inlineCapacity, HeapAllocator>::append(other);
+    }
+};
+
 template<typename T>
 struct ThreadingTrait<Member<T> > {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
@@ -1453,6 +1493,11 @@ struct ThreadingTrait<HeapVectorBacking<T, Traits> > {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
+template<typename T, size_t inlineCapacity>
+struct ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator> > {
+    static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+};
+
 template<typename Table>
 struct ThreadingTrait<HeapHashTableBacking<Table> > {
     typedef typename Table::KeyType Key;
@@ -1471,10 +1516,13 @@ struct ThreadingTrait<HeapHashSet<T, U, V> > : public ThreadingTrait<HashSet<T, 
 template<typename T, size_t inlineCapacity>
 struct ThreadingTrait<HeapVector<T, inlineCapacity> > : public ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator> > { };
 
+template<typename T, size_t inlineCapacity>
+struct ThreadingTrait<HeapDeque<T, inlineCapacity> > : public ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator> > { };
+
 // The standard implementation of GCInfoTrait<T>::get() just returns a static
-// from the class T, but we can't do that for HashMap, HashSet and Vector
-// because they are in WTF and know nothing of GCInfos. Instead we have a
-// specialization of GCInfoTrait for these three classes here.
+// from the class T, but we can't do that for HashMap, HashSet, Deque and
+// Vector because they are in WTF and know nothing of GCInfos. Instead we have
+// a specialization of GCInfoTrait for these four classes here.
 
 template<typename Key, typename Value, typename T, typename U, typename V>
 struct GCInfoTrait<HashMap<Key, Value, T, U, V, HeapAllocator> > {
@@ -1528,6 +1576,36 @@ template<typename T, size_t inlineCapacity>
 const GCInfo GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> >::info = {
     TraceTrait<Vector<T, inlineCapacity, HeapAllocator> >::trace,
     FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator> >::finalize,
+    // Finalizer is needed to destruct things stored in the inline capacity.
+    inlineCapacity && VectorTraits<T>::needsDestruction,
+};
+
+template<typename T>
+struct GCInfoTrait<Deque<T, 0, HeapAllocator> > {
+    static const GCInfo* get() { return &info; }
+    static const GCInfo info;
+};
+
+template<typename T>
+const GCInfo GCInfoTrait<Deque<T, 0, HeapAllocator> >::info = {
+    TraceTrait<Deque<T, 0, HeapAllocator> >::trace,
+    0,
+    false, // Deque needs no finalizer if it has no inline capacity.
+};
+
+template<typename T, size_t inlineCapacity>
+struct GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator> > {
+    static const GCInfo* get() { return &info; }
+    static const GCInfo info;
+};
+
+template<typename T, size_t inlineCapacity>
+struct FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator> > : public FinalizerTraitImpl<Deque<T, inlineCapacity, HeapAllocator>, true> { };
+
+template<typename T, size_t inlineCapacity>
+const GCInfo GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator> >::info = {
+    TraceTrait<Deque<T, inlineCapacity, HeapAllocator> >::trace,
+    FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator> >::finalize,
     // Finalizer is needed to destruct things stored in the inline capacity.
     inlineCapacity && VectorTraits<T>::needsDestruction,
 };
@@ -1694,7 +1772,7 @@ struct TraceTrait<HeapVectorBacking<T, Traits> > {
     typedef HeapVectorBacking<T, Traits> Backing;
     static void trace(WebCore::Visitor* visitor, void* self)
     {
-        COMPILE_ASSERT(!Traits::isWeak, WeDontSupportWeaknessInHeapVectors);
+        COMPILE_ASSERT(!Traits::isWeak, WeDontSupportWeaknessInHeapVectorsOrDeques);
         if (WTF::ShouldBeTraced<Traits>::value)
             CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, false, false, HeapVectorBacking<T, Traits>, void>::mark(visitor, self);
     }
@@ -1762,6 +1840,8 @@ template<typename T, typename U, typename V>
 struct GCInfoTrait<HeapHashSet<T, U, V> > : public GCInfoTrait<HashSet<T, U, V, HeapAllocator> > { };
 template<typename T, size_t inlineCapacity>
 struct GCInfoTrait<HeapVector<T, inlineCapacity> > : public GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> > { };
+template<typename T, size_t inlineCapacity>
+struct GCInfoTrait<HeapDeque<T, inlineCapacity> > : public GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator> > { };
 
 template<typename T>
 struct IfWeakMember;

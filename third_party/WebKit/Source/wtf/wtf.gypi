@@ -205,6 +205,7 @@
         'wtf_unittest_files': [
             'ArrayBufferBuilderTest.cpp',
             'CheckedArithmeticTest.cpp',
+            'DequeTest.cpp',
             'FunctionalTest.cpp',
             'HashMapTest.cpp',
             'HashSetTest.cpp',

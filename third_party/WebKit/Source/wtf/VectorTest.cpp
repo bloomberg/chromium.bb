@@ -140,8 +140,8 @@ TEST(WTF_Vector, OwnPtr)
 
     OwnPtr<DestructCounter>& counter0 = vector.first();
     ASSERT_EQ(0, counter0->get());
-    OwnPtr<DestructCounter>& counter1 = vector.last();
-    ASSERT_EQ(1, counter1->get());
+    int counter1 = vector.last()->get();
+    ASSERT_EQ(1, counter1);
     ASSERT_EQ(0, destructNumber);
 
     size_t index = 0;
@@ -169,7 +169,7 @@ TEST(WTF_Vector, OwnPtr)
 
     OwnPtr<DestructCounter> ownCounter1 = vector[0].release();
     vector.remove(0);
-    ASSERT_EQ(counter1.get(), ownCounter1.get());
+    ASSERT_EQ(counter1, ownCounter1->get());
     ASSERT_EQ(0u, vector.size());
     ASSERT_EQ(1, destructNumber);
 

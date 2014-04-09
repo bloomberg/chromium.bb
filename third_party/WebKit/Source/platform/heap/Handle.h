@@ -52,12 +52,14 @@ template<typename T> class HeapTerminatedArray;
         typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashSet> HeapHashSetSubclass;                \
         typedef WTF::IsSubclassOfTemplate5<NonConstType, HeapHashMap> HeapHashMapSubclass;                \
         typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapVector> HeapVectorSubclass;       \
+        typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapDeque> HeapDequeSubclass;         \
         typedef WTF::IsSubclassOfTemplate<NonConstType, HeapTerminatedArray> HeapTerminatedArraySubclass; \
         COMPILE_ASSERT(GarbageCollectedSubclass::value ||                                                 \
             GarbageCollectedMixinSubclass::value ||                                                       \
             HeapHashSetSubclass::value ||                                                                 \
             HeapHashMapSubclass::value ||                                                                 \
             HeapVectorSubclass::value ||                                                                  \
+            HeapDequeSubclass::value ||                                                                   \
             HeapTerminatedArraySubclass::value,                                                           \
             ErrorMessage);                                                                                \
     } while (0)
@@ -420,6 +422,18 @@ public:
     }
 };
 
+template<typename T, size_t inlineCapacity = 0>
+class PersistentHeapDeque : public PersistentHeapCollectionBase<HeapDeque<T, inlineCapacity> > {
+public:
+    PersistentHeapDeque() { }
+
+    template<size_t otherCapacity>
+    PersistentHeapDeque(const HeapDeque<T, otherCapacity>& other)
+        : PersistentHeapCollectionBase<HeapDeque<T, inlineCapacity> >(other)
+    {
+    }
+};
+
 // Members are used in classes to contain strong pointers to other oilpan heap
 // allocated objects.
 // All Member fields of a class must be traced in the class' trace method.
@@ -728,6 +742,8 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define WillBePersistentHeapHashSet WebCore::PersistentHeapHashSet
 #define WillBeHeapVector WebCore::HeapVector
 #define WillBePersistentHeapVector WebCore::PersistentHeapVector
+#define WillBeHeapDeque WebCore::HeapDeque
+#define WillBePersistentHeapDeque WebCore::PersistentHeapDeque
 #define WillBeGarbageCollectedMixin WebCore::GarbageCollectedMixin
 #define WillBeHeapSupplement WebCore::HeapSupplement
 #define WillBeHeapSupplementable WebCore::HeapSupplementable
@@ -798,6 +814,8 @@ public:
 #define WillBePersistentHeapHashSet WTF::HashSet
 #define WillBeHeapVector WTF::Vector
 #define WillBePersistentHeapVector WTF::Vector
+#define WillBeHeapDeque WTF::Deque
+#define WillBePersistentHeapDeque WTF::Deque
 #define WillBeGarbageCollectedMixin WebCore::DummyBase<void>
 #define WillBeHeapSupplement WebCore::Supplement
 #define WillBeHeapSupplementable WebCore::Supplementable
@@ -846,7 +864,19 @@ template <typename T> struct VectorTraits<WebCore::HeapVector<T, 0> > : VectorTr
     static const bool canMoveWithMemcpy = true;
 };
 
+template <typename T> struct VectorTraits<WebCore::HeapDeque<T, 0> > : VectorTraitsBase<WebCore::HeapDeque<T, 0> > {
+    static const bool needsDestruction = false;
+    static const bool canInitializeWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
 template <typename T, size_t inlineCapacity> struct VectorTraits<WebCore::HeapVector<T, inlineCapacity> > : VectorTraitsBase<WebCore::HeapVector<T, inlineCapacity> > {
+    static const bool needsDestruction = VectorTraits<T>::needsDestruction;
+    static const bool canInitializeWithMemset = VectorTraits<T>::canInitializeWithMemset;
+    static const bool canMoveWithMemcpy = VectorTraits<T>::canMoveWithMemcpy;
+};
+
+template <typename T, size_t inlineCapacity> struct VectorTraits<WebCore::HeapDeque<T, inlineCapacity> > : VectorTraitsBase<WebCore::HeapDeque<T, inlineCapacity> > {
     static const bool needsDestruction = VectorTraits<T>::needsDestruction;
     static const bool canInitializeWithMemset = VectorTraits<T>::canInitializeWithMemset;
     static const bool canMoveWithMemcpy = VectorTraits<T>::canMoveWithMemcpy;

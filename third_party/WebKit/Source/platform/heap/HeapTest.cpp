@@ -1862,12 +1862,20 @@ public:
     HeapVector<Member<IntWrapper>, 2> vector;
     HeapVector<PairWrappedUnwrapped, 2> vectorWU;
     HeapVector<PairUnwrappedWrapped, 2> vectorUW;
+    HeapDeque<Member<IntWrapper>, 0> deque;
+    HeapDeque<PairWrappedUnwrapped, 0> dequeWU;
+    HeapDeque<PairUnwrappedWrapped, 0> dequeUW;
     void trace(Visitor* visitor)
     {
         visitor->trace(map);
         visitor->trace(set);
         visitor->trace(set2);
         visitor->trace(vector);
+        visitor->trace(vectorWU);
+        visitor->trace(vectorUW);
+        visitor->trace(deque);
+        visitor->trace(dequeWU);
+        visitor->trace(dequeUW);
     }
 };
 
@@ -2000,6 +2008,17 @@ TEST(HeapTest, HeapVectorWithInlineCapacity)
     }
 }
 
+template<typename T, size_t inlineCapacity, typename U>
+bool dequeContains(HeapDeque<T, inlineCapacity>& deque, U u)
+{
+    typedef typename HeapDeque<T, inlineCapacity>::iterator iterator;
+    for (iterator it = deque.begin(); it != deque.end(); ++it) {
+        if (*it == u)
+            return true;
+    }
+    return false;
+}
+
 TEST(HeapTest, HeapCollectionTypes)
 {
     HeapStats initialHeapSize;
@@ -2012,9 +2031,12 @@ TEST(HeapTest, HeapCollectionTypes)
     typedef HeapHashSet<Member<IntWrapper> > MemberSet;
 
     typedef HeapVector<Member<IntWrapper>, 2> MemberVector;
+    typedef HeapDeque<Member<IntWrapper>, 0> MemberDeque;
 
     typedef HeapVector<PairWrappedUnwrapped, 2> VectorWU;
     typedef HeapVector<PairUnwrappedWrapped, 2> VectorUW;
+    typedef HeapDeque<PairWrappedUnwrapped, 0> DequeWU;
+    typedef HeapDeque<PairUnwrappedWrapped, 0> DequeUW;
 
     Persistent<MemberMember> memberMember = new MemberMember();
     Persistent<MemberMember> memberMember2 = new MemberMember();
@@ -2029,6 +2051,12 @@ TEST(HeapTest, HeapCollectionTypes)
     Persistent<VectorWU> vectorWU2 = new VectorWU();
     Persistent<VectorUW> vectorUW = new VectorUW();
     Persistent<VectorUW> vectorUW2 = new VectorUW();
+    Persistent<MemberDeque> deque = new MemberDeque();
+    Persistent<MemberDeque> deque2 = new MemberDeque();
+    Persistent<DequeWU> dequeWU = new DequeWU();
+    Persistent<DequeWU> dequeWU2 = new DequeWU();
+    Persistent<DequeUW> dequeUW = new DequeUW();
+    Persistent<DequeUW> dequeUW2 = new DequeUW();
     Persistent<Container> container = Container::create();
 
     clearOutOldGarbage(&initialHeapSize);
@@ -2039,17 +2067,25 @@ TEST(HeapTest, HeapCollectionTypes)
         Persistent<IntWrapper> twoB(IntWrapper::create(2));
         Persistent<IntWrapper> oneC(IntWrapper::create(1));
         Persistent<IntWrapper> oneD(IntWrapper::create(1));
+        Persistent<IntWrapper> oneE(IntWrapper::create(1));
+        Persistent<IntWrapper> oneF(IntWrapper::create(1));
         {
-            IntWrapper* three(IntWrapper::create(3));
-            IntWrapper* four(IntWrapper::create(4));
             IntWrapper* threeB(IntWrapper::create(3));
-            IntWrapper* fourB(IntWrapper::create(4));
             IntWrapper* threeC(IntWrapper::create(3));
-            IntWrapper* fourC(IntWrapper::create(4));
-            IntWrapper* fiveC(IntWrapper::create(5));
             IntWrapper* threeD(IntWrapper::create(3));
+            IntWrapper* threeE(IntWrapper::create(3));
+            IntWrapper* threeF(IntWrapper::create(3));
+            IntWrapper* three(IntWrapper::create(3));
+            IntWrapper* fourB(IntWrapper::create(4));
+            IntWrapper* fourC(IntWrapper::create(4));
             IntWrapper* fourD(IntWrapper::create(4));
+            IntWrapper* fourE(IntWrapper::create(4));
+            IntWrapper* fourF(IntWrapper::create(4));
+            IntWrapper* four(IntWrapper::create(4));
+            IntWrapper* fiveC(IntWrapper::create(5));
             IntWrapper* fiveD(IntWrapper::create(5));
+            IntWrapper* fiveE(IntWrapper::create(5));
+            IntWrapper* fiveF(IntWrapper::create(5));
 
             // Member Collections.
             memberMember2->add(one, two);
@@ -2070,20 +2106,36 @@ TEST(HeapTest, HeapCollectionTypes)
             set2->add(four);
             set->add(oneB);
             vector->append(oneB);
+            deque->append(oneB);
             vector2->append(threeB);
             vector2->append(fourB);
+            deque2->append(threeE);
+            deque2->append(fourE);
             vectorWU->append(PairWrappedUnwrapped(&*oneC, 42));
+            dequeWU->append(PairWrappedUnwrapped(&*oneE, 42));
             vectorWU2->append(PairWrappedUnwrapped(&*threeC, 43));
             vectorWU2->append(PairWrappedUnwrapped(&*fourC, 44));
             vectorWU2->append(PairWrappedUnwrapped(&*fiveC, 45));
+            dequeWU2->append(PairWrappedUnwrapped(&*threeE, 43));
+            dequeWU2->append(PairWrappedUnwrapped(&*fourE, 44));
+            dequeWU2->append(PairWrappedUnwrapped(&*fiveE, 45));
             vectorUW->append(PairUnwrappedWrapped(1, &*oneD));
             vectorUW2->append(PairUnwrappedWrapped(103, &*threeD));
             vectorUW2->append(PairUnwrappedWrapped(104, &*fourD));
             vectorUW2->append(PairUnwrappedWrapped(105, &*fiveD));
+            dequeUW->append(PairUnwrappedWrapped(1, &*oneF));
+            dequeUW2->append(PairUnwrappedWrapped(103, &*threeF));
+            dequeUW2->append(PairUnwrappedWrapped(104, &*fourF));
+            dequeUW2->append(PairUnwrappedWrapped(105, &*fiveF));
+
+            EXPECT_TRUE(dequeContains(*deque, oneB));
 
             // Collect garbage. This should change nothing since we are keeping
             // alive the IntWrapper objects with on-stack pointers.
             Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+
+            EXPECT_TRUE(dequeContains(*deque, oneB));
+
             EXPECT_EQ(0u, memberMember->size());
             EXPECT_EQ(4u, memberMember2->size());
             EXPECT_EQ(4u, primitiveMember->size());
@@ -2096,6 +2148,12 @@ TEST(HeapTest, HeapCollectionTypes)
             EXPECT_EQ(3u, vectorWU2->size());
             EXPECT_EQ(1u, vectorUW->size());
             EXPECT_EQ(3u, vectorUW2->size());
+            EXPECT_EQ(1u, deque->size());
+            EXPECT_EQ(2u, deque2->size());
+            EXPECT_EQ(1u, dequeWU->size());
+            EXPECT_EQ(3u, dequeWU2->size());
+            EXPECT_EQ(1u, dequeUW->size());
+            EXPECT_EQ(3u, dequeUW2->size());
 
             MemberVector& cvec = container->vector;
             cvec.swap(*vector.get());
@@ -2111,6 +2169,21 @@ TEST(HeapTest, HeapCollectionTypes)
             cvecUW.swap(*vectorUW.get());
             vectorUW2->swap(cvecUW);
             vectorUW->swap(cvecUW);
+
+            MemberDeque& cDeque = container->deque;
+            cDeque.swap(*deque.get());
+            deque2->swap(cDeque);
+            deque->swap(cDeque);
+
+            DequeWU& cDequeWU = container->dequeWU;
+            cDequeWU.swap(*dequeWU.get());
+            dequeWU2->swap(cDequeWU);
+            dequeWU->swap(cDequeWU);
+
+            DequeUW& cDequeUW = container->dequeUW;
+            cDequeUW.swap(*dequeUW.get());
+            dequeUW2->swap(cDequeUW);
+            dequeUW->swap(cDequeUW);
 
             // Swap set and set2 in a roundabout way.
             MemberSet& cset1 = container->set;
@@ -2146,8 +2219,12 @@ TEST(HeapTest, HeapCollectionTypes)
             EXPECT_TRUE(set2->contains(oneB));
             EXPECT_TRUE(vector->contains(threeB));
             EXPECT_TRUE(vector->contains(fourB));
+            EXPECT_TRUE(dequeContains(*deque, threeE));
+            EXPECT_TRUE(dequeContains(*deque, fourE));
             EXPECT_TRUE(vector2->contains(oneB));
             EXPECT_FALSE(vector2->contains(threeB));
+            EXPECT_TRUE(dequeContains(*deque2, oneB));
+            EXPECT_FALSE(dequeContains(*deque2, threeE));
             EXPECT_TRUE(vectorWU->contains(PairWrappedUnwrapped(&*threeC, 43)));
             EXPECT_TRUE(vectorWU->contains(PairWrappedUnwrapped(&*fourC, 44)));
             EXPECT_TRUE(vectorWU->contains(PairWrappedUnwrapped(&*fiveC, 45)));
@@ -2158,6 +2235,16 @@ TEST(HeapTest, HeapCollectionTypes)
             EXPECT_TRUE(vectorUW->contains(PairUnwrappedWrapped(105, &*fiveD)));
             EXPECT_TRUE(vectorUW2->contains(PairUnwrappedWrapped(1, &*oneD)));
             EXPECT_FALSE(vectorUW2->contains(PairUnwrappedWrapped(103, &*threeD)));
+            EXPECT_TRUE(dequeContains(*dequeWU, PairWrappedUnwrapped(&*threeE, 43)));
+            EXPECT_TRUE(dequeContains(*dequeWU, PairWrappedUnwrapped(&*fourE, 44)));
+            EXPECT_TRUE(dequeContains(*dequeWU, PairWrappedUnwrapped(&*fiveE, 45)));
+            EXPECT_TRUE(dequeContains(*dequeWU2, PairWrappedUnwrapped(&*oneE, 42)));
+            EXPECT_FALSE(dequeContains(*dequeWU2, PairWrappedUnwrapped(&*threeE, 43)));
+            EXPECT_TRUE(dequeContains(*dequeUW, PairUnwrappedWrapped(103, &*threeF)));
+            EXPECT_TRUE(dequeContains(*dequeUW, PairUnwrappedWrapped(104, &*fourF)));
+            EXPECT_TRUE(dequeContains(*dequeUW, PairUnwrappedWrapped(105, &*fiveF)));
+            EXPECT_TRUE(dequeContains(*dequeUW2, PairUnwrappedWrapped(1, &*oneF)));
+            EXPECT_FALSE(dequeContains(*dequeUW2, PairUnwrappedWrapped(103, &*threeF)));
         }
 
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
@@ -2172,6 +2259,10 @@ TEST(HeapTest, HeapCollectionTypes)
         EXPECT_EQ(1u, vector2->size());
         EXPECT_EQ(3u, vectorUW->size());
         EXPECT_EQ(1u, vector2->size());
+        EXPECT_EQ(2u, deque->size());
+        EXPECT_EQ(1u, deque2->size());
+        EXPECT_EQ(3u, dequeUW->size());
+        EXPECT_EQ(1u, deque2->size());
 
         EXPECT_TRUE(memberMember->get(one) == two);
         EXPECT_TRUE(primitiveMember->get(1) == two);
@@ -2184,6 +2275,7 @@ TEST(HeapTest, HeapCollectionTypes)
         EXPECT_TRUE(set2->contains(oneB));
         EXPECT_EQ(3, vector->at(0)->value());
         EXPECT_EQ(4, vector->at(1)->value());
+        EXPECT_EQ(3, deque->begin()->get()->value());
     }
 
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
@@ -2200,6 +2292,12 @@ TEST(HeapTest, HeapCollectionTypes)
     EXPECT_EQ(1u, vectorWU2->size());
     EXPECT_EQ(3u, vectorUW->size());
     EXPECT_EQ(1u, vectorUW2->size());
+    EXPECT_EQ(2u, deque->size());
+    EXPECT_EQ(1u, deque2->size());
+    EXPECT_EQ(3u, dequeWU->size());
+    EXPECT_EQ(1u, dequeWU2->size());
+    EXPECT_EQ(3u, dequeUW->size());
+    EXPECT_EQ(1u, dequeUW2->size());
 }
 
 template<typename T>
@@ -2916,10 +3014,12 @@ TEST(HeapTest, PersistentHeapCollectionTypes)
     typedef PersistentHeapVector<Member<IntWrapper> > PVec;
     typedef PersistentHeapHashSet<Member<IntWrapper> > PSet;
     typedef PersistentHeapHashMap<Member<IntWrapper>, Member<IntWrapper> > PMap;
+    typedef PersistentHeapDeque<Member<IntWrapper> > PDeque;
 
     clearOutOldGarbage(&initialHeapSize);
     {
         PVec pVec;
+        PDeque pDeque;
         PSet pSet;
         PMap pMap;
 
@@ -2929,9 +3029,13 @@ TEST(HeapTest, PersistentHeapCollectionTypes)
         IntWrapper* four(IntWrapper::create(4));
         IntWrapper* five(IntWrapper::create(5));
         IntWrapper* six(IntWrapper::create(6));
+        IntWrapper* seven(IntWrapper::create(7));
 
         pVec.append(one);
         pVec.append(two);
+
+        pDeque.append(seven);
+        pDeque.append(two);
 
         Vec* vec = new Vec();
         vec->swap(pVec);
@@ -2948,41 +3052,66 @@ TEST(HeapTest, PersistentHeapCollectionTypes)
         EXPECT_EQ(1, IntWrapper::s_destructorCalls);
 
         EXPECT_EQ(2u, pVec.size());
-        EXPECT_TRUE(pVec.at(0) == two);
-        EXPECT_TRUE(pVec.at(1) == three);
+        EXPECT_EQ(two, pVec.at(0));
+        EXPECT_EQ(three, pVec.at(1));
+
+        EXPECT_EQ(2u, pDeque.size());
+        EXPECT_EQ(seven, pDeque.first());
+        EXPECT_EQ(seven, pDeque.takeFirst());
+        EXPECT_EQ(two, pDeque.first());
+
+        EXPECT_EQ(1u, pDeque.size());
 
         EXPECT_EQ(1u, pSet.size());
         EXPECT_TRUE(pSet.contains(four));
 
         EXPECT_EQ(1u, pMap.size());
-        EXPECT_TRUE(pMap.get(five) == six);
+        EXPECT_EQ(six, pMap.get(five));
     }
 
     // Collect previous roots.
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    EXPECT_EQ(6, IntWrapper::s_destructorCalls);
+    EXPECT_EQ(7, IntWrapper::s_destructorCalls);
 }
 
 TEST(HeapTest, CollectionNesting)
 {
     HeapStats initialStats;
     clearOutOldGarbage(&initialStats);
-    void* key = &IntWrapper::s_destructorCalls;
+    int* key = &IntWrapper::s_destructorCalls;
     IntWrapper::s_destructorCalls = 0;
     typedef HeapVector<Member<IntWrapper> > IntVector;
+    typedef HeapDeque<Member<IntWrapper> > IntDeque;
     HeapHashMap<void*, IntVector>* map = new HeapHashMap<void*, IntVector>();
+    HeapHashMap<void*, IntDeque>* map2 = new HeapHashMap<void*, IntDeque>();
 
     map->add(key, IntVector());
+    map2->add(key, IntDeque());
 
     HeapHashMap<void*, IntVector>::iterator it = map->find(key);
     EXPECT_EQ(0u, map->get(key).size());
 
+    HeapHashMap<void*, IntDeque>::iterator it2 = map2->find(key);
+    EXPECT_EQ(0u, map2->get(key).size());
+
     it->value.append(IntWrapper::create(42));
     EXPECT_EQ(1u, map->get(key).size());
 
+    it2->value.append(IntWrapper::create(42));
+    EXPECT_EQ(1u, map2->get(key).size());
+
     Persistent<HeapHashMap<void*, IntVector> > keepAlive(map);
+    Persistent<HeapHashMap<void*, IntDeque> > keepAlive2(map2);
+
+    for (int i = 0; i < 100; i++) {
+        map->add(key + 1 + i, IntVector());
+        map2->add(key + 1 + i, IntDeque());
+    }
+
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+
     EXPECT_EQ(1u, map->get(key).size());
+    EXPECT_EQ(1u, map2->get(key).size());
     EXPECT_EQ(0, IntWrapper::s_destructorCalls);
 
     keepAlive = nullptr;
@@ -3040,19 +3169,28 @@ TEST(HeapTest, CollectionNesting3)
     clearOutOldGarbage(&initialStats);
     IntWrapper::s_destructorCalls = 0;
     typedef HeapVector<Member<IntWrapper> > IntVector;
+    typedef HeapDeque<Member<IntWrapper> > IntDeque;
     HeapVector<IntVector>* vector = new HeapVector<IntVector>();
+    HeapDeque<IntDeque>* deque = new HeapDeque<IntDeque>();
 
     vector->append(IntVector());
+    deque->append(IntDeque());
 
     HeapVector<IntVector>::iterator it = vector->begin();
+    HeapDeque<IntDeque>::iterator it2 = deque->begin();
     EXPECT_EQ(0u, it->size());
+    EXPECT_EQ(0u, it2->size());
 
     it->append(IntWrapper::create(42));
+    it2->append(IntWrapper::create(42));
     EXPECT_EQ(1u, it->size());
+    EXPECT_EQ(1u, it2->size());
 
     Persistent<HeapVector<IntVector> > keepAlive(vector);
+    Persistent<HeapDeque<IntDeque> > keepAlive2(deque);
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(1u, it->size());
+    EXPECT_EQ(1u, it2->size());
     EXPECT_EQ(0, IntWrapper::s_destructorCalls);
 }
 
@@ -3089,6 +3227,46 @@ TEST(HeapTest, EmbeddedInVector)
         VectorObjectNoTrace n1, n2;
         vectorNoTrace.append(n1);
         vectorNoTrace.append(n2);
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(2, SimpleFinalizedObject::s_destructorCalls);
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(8, SimpleFinalizedObject::s_destructorCalls);
+}
+
+TEST(HeapTest, EmbeddedInDeque)
+{
+    HeapStats initialStats;
+    clearOutOldGarbage(&initialStats);
+    SimpleFinalizedObject::s_destructorCalls = 0;
+    {
+        PersistentHeapDeque<VectorObject, 2> inlineDeque;
+        PersistentHeapDeque<VectorObject> outlineDeque;
+        VectorObject i1, i2;
+        inlineDeque.append(i1);
+        inlineDeque.append(i2);
+
+        VectorObject o1, o2;
+        outlineDeque.append(o1);
+        outlineDeque.append(o2);
+
+        PersistentHeapDeque<VectorObjectInheritedTrace> dequeInheritedTrace;
+        VectorObjectInheritedTrace it1, it2;
+        dequeInheritedTrace.append(it1);
+        dequeInheritedTrace.append(it2);
+
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
+
+        // Since VectorObjectNoTrace has no trace method it will
+        // not be traced and hence be collected when doing GC.
+        // We trace items in a collection braced on the item's
+        // having a trace method. This is determined via the
+        // NeedsTracing trait in wtf/TypeTraits.h.
+        PersistentHeapDeque<VectorObjectNoTrace> dequeNoTrace;
+        VectorObjectNoTrace n1, n2;
+        dequeNoTrace.append(n1);
+        dequeNoTrace.append(n2);
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
         EXPECT_EQ(2, SimpleFinalizedObject::s_destructorCalls);
     }
