@@ -149,9 +149,14 @@ void RunCreateWritableSnapshotFileCallback(
 // Runs |callback| with |error| and |platform_file|.
 void RunOpenFileCallback(const OpenFileCallback& callback,
                          const base::Closure& close_callback,
-                         base::File::Error* error,
-                         base::PlatformFile platform_file) {
-  callback.Run(*error, platform_file, close_callback);
+                         base::File file) {
+  base::File::Error error = file.IsValid() ? base::File::FILE_OK :
+                                             file.error_details();
+  callback.Run(error, file.TakePlatformFile(), close_callback);
+}
+
+base::File OpenFile(const base::FilePath& path, int flags) {
+  return base::File(path, flags);
 }
 
 // Part of OpenFile(). Called after FileSystem::OpenFile().
@@ -174,27 +179,22 @@ void OpenFileAfterFileSystemOpenFile(int file_flags,
   // unexpected file creation, CREATE, OPEN_ALWAYS and CREATE_ALWAYS are
   // translated into OPEN or OPEN_TRUNCATED, here. Keep OPEN and OPEN_TRUNCATED
   // as is.
-  if (file_flags & (base::PLATFORM_FILE_CREATE |
-                    base::PLATFORM_FILE_OPEN_ALWAYS)) {
-    file_flags &= ~(base::PLATFORM_FILE_CREATE |
-                    base::PLATFORM_FILE_OPEN_ALWAYS);
-    file_flags |= base::PLATFORM_FILE_OPEN;
-  } else if (file_flags & base::PLATFORM_FILE_CREATE_ALWAYS) {
-    file_flags &= ~base::PLATFORM_FILE_CREATE_ALWAYS;
-    file_flags |= base::PLATFORM_FILE_OPEN_TRUNCATED;
+  if (file_flags & (base::File::FLAG_CREATE |
+                    base::File::FLAG_OPEN_ALWAYS)) {
+    file_flags &= ~(base::File::FLAG_CREATE |
+                    base::File::FLAG_OPEN_ALWAYS);
+    file_flags |= base::File::FLAG_OPEN;
+  } else if (file_flags & base::File::FLAG_CREATE_ALWAYS) {
+    file_flags &= ~base::File::FLAG_CREATE_ALWAYS;
+    file_flags |= base::File::FLAG_OPEN_TRUNCATED;
   }
 
   // Cache file prepared for modification is available. Open it locally.
-  // TODO(rvargas): Convert this to base::File.
-  base::File::Error* result =
-      new base::File::Error(base::File::FILE_ERROR_FAILED);
   bool posted = base::PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool(), FROM_HERE,
-      base::Bind(&base::CreatePlatformFile,
-                 local_path, file_flags, static_cast<bool*>(NULL),
-                 reinterpret_cast<base::PlatformFileError*>(result)),
+      base::Bind(&OpenFile, local_path, file_flags),
       base::Bind(&RunOpenFileCallback,
-                 callback, close_callback, base::Owned(result)));
+                 callback, close_callback));
   DCHECK(posted);
 }
 
