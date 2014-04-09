@@ -34,6 +34,7 @@ class WebViewImpl : public WebView {
  public:
   WebViewImpl(const std::string& id,
               int build_no,
+              int blink_revision,
               scoped_ptr<DevToolsClient> client);
   virtual ~WebViewImpl();
 

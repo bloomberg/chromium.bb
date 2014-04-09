@@ -15,10 +15,10 @@
 namespace {
 
 // NavigationTracker::OnEvent handles the Page.frameStoppedLoading event
-// differently, depending on whether the build number. See the comment in that
+// differently, depending on the blink revision. See the comment in that
 // function for details.
-static const int kOld = 1916;
-static const int kNew = 1917;
+static const int kOld = 170247;
+static const int kNew = 170248;
 
 void AssertPendingState(NavigationTracker* tracker,
                         const std::string& frame_id,

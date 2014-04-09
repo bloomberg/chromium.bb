@@ -113,12 +113,13 @@ const char* GetAsString(KeyEventType type) {
 
 WebViewImpl::WebViewImpl(const std::string& id,
                          int build_no,
+                         int blink_revision,
                          scoped_ptr<DevToolsClient> client)
     : id_(id),
       build_no_(build_no),
       dom_tracker_(new DomTracker(client.get())),
       frame_tracker_(new FrameTracker(client.get())),
-      navigation_tracker_(new NavigationTracker(client.get(), build_no)),
+      navigation_tracker_(new NavigationTracker(client.get(), blink_revision)),
       dialog_manager_(new JavaScriptDialogManager(client.get())),
       geolocation_override_manager_(
           new GeolocationOverrideManager(client.get())),

@@ -9,20 +9,20 @@
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
-NavigationTracker::NavigationTracker(DevToolsClient* client, int build_no)
+NavigationTracker::NavigationTracker(DevToolsClient* client, int blink_revision)
     : client_(client),
       loading_state_(kUnknown),
-      build_no_(build_no),
+      blink_revision_(blink_revision),
       num_frames_pending_(0) {
   client_->AddListener(this);
 }
 
 NavigationTracker::NavigationTracker(DevToolsClient* client,
                                      LoadingState known_state,
-                                     int build_no)
+                                     int blink_revision)
     : client_(client),
       loading_state_(known_state),
-      build_no_(build_no),
+      blink_revision_(blink_revision),
       num_frames_pending_(0) {
   client_->AddListener(this);
 }
@@ -99,7 +99,7 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     // TODO(samuong): we can get rid of this once we stop supporting Chrome 35,
     // which will be when Chrome 39 is released.
     num_frames_pending_--;
-    if (num_frames_pending_ <= 0 || build_no_ <= 1916) {
+    if (num_frames_pending_ <= 0 || blink_revision_ < 170248) {
       num_frames_pending_ = 0;
       loading_state_ = kNotLoading;
     }

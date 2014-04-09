@@ -78,9 +78,10 @@ class DevToolsHttpClient {
 
   const std::string& version() const;
   int build_no() const;
+  int blink_revision() const;
 
  private:
-  Status GetVersion(std::string* version);
+  Status GetVersion(std::string* browser_version, std::string* blink_version);
   Status CloseFrontends(const std::string& for_client_id);
   bool FetchUrlAndLog(const std::string& url,
                       URLRequestContextGetter* getter,
@@ -92,6 +93,7 @@ class DevToolsHttpClient {
   std::string web_socket_url_prefix_;
   std::string version_;
   int build_no_;
+  int blink_revision_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpClient);
 };
@@ -100,7 +102,8 @@ namespace internal {
 Status ParseWebViewsInfo(const std::string& data,
                          WebViewsInfo* views_info);
 Status ParseVersionInfo(const std::string& data,
-                        std::string* version);
+                        std::string* browser_version,
+                        std::string* blink_version);
 }  // namespace internal
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_DEVTOOLS_HTTP_CLIENT_H_

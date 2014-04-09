@@ -28,6 +28,10 @@ int ChromeImpl::GetBuildNo() {
   return devtools_http_client_->build_no();
 }
 
+int ChromeImpl::GetBlinkRevision() {
+  return devtools_http_client_->blink_revision();
+}
+
 bool ChromeImpl::HasCrashedWebView() {
   for (WebViewList::iterator it = web_views_.begin();
        it != web_views_.end(); ++it) {
@@ -86,7 +90,7 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
         // OnConnected will fire when DevToolsClient connects later.
       }
       web_views_.push_back(make_linked_ptr(new WebViewImpl(
-          view.id, GetBuildNo(), client.Pass())));
+          view.id, GetBuildNo(), GetBlinkRevision(), client.Pass())));
     }
   }
 

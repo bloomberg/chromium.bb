@@ -22,6 +22,8 @@ class Chrome {
 
   virtual int GetBuildNo() = 0;
 
+  virtual int GetBlinkRevision() = 0;
+
   virtual bool HasCrashedWebView() = 0;
 
   // Return ids of opened WebViews. The list is not guaranteed to be in the same

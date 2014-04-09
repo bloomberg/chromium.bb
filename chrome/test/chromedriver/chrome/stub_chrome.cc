@@ -22,6 +22,10 @@ int StubChrome::GetBuildNo() {
   return 9999;
 }
 
+int StubChrome::GetBlinkRevision() {
+  return 999999;
+}
+
 bool StubChrome::HasCrashedWebView() {
   return false;
 }

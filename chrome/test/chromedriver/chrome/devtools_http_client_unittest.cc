@@ -147,9 +147,11 @@ namespace {
 
 void AssertVersionFails(const std::string& data) {
   std::string version;
-  Status status = internal::ParseVersionInfo(data, &version);
+  std::string blink_version;
+  Status status = internal::ParseVersionInfo(data, &version, &blink_version);
   ASSERT_TRUE(status.IsError());
   ASSERT_TRUE(version.empty());
+  ASSERT_TRUE(blink_version.empty());
 }
 
 }  // namespace
@@ -167,9 +169,12 @@ TEST(ParseVersionInfo, NoBrowserKey) {
 }
 
 TEST(ParseVersionInfo, Valid) {
+  std::string data = "{\"Browser\": \"1\", \"WebKit-Version\": \"2\"}";
   std::string version;
-  Status status = internal::ParseVersionInfo("{\"Browser\": \"1\"}", &version);
+  std::string blink_version;
+  Status status = internal::ParseVersionInfo(data, &version, &blink_version);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ("1", version);
+  ASSERT_EQ("2", blink_version);
 }
 
