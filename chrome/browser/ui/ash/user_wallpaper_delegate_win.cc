@@ -58,8 +58,9 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
     }
 #endif
     gfx::ImageSkia wallpaper = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-    ash::Shell::GetInstance()->desktop_background_controller()->
-        SetCustomWallpaper(wallpaper, ash::WALLPAPER_LAYOUT_TILE);
+    ash::Shell::GetInstance()
+        ->desktop_background_controller()
+        ->SetWallpaperImage(wallpaper, ash::WALLPAPER_LAYOUT_TILE);
   }
 
   virtual void InitializeWallpaper() OVERRIDE {

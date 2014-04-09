@@ -44,17 +44,17 @@ bool CycleDesktopBackgroundMode() {
           InitializeWallpaper();
       break;
     case 1:
-      desktop_background_controller->SetCustomWallpaper(
+      desktop_background_controller->SetWallpaperImage(
           CreateWallpaperImage(SK_ColorRED, SK_ColorBLUE),
           WALLPAPER_LAYOUT_STRETCH);
       break;
     case 2:
-      desktop_background_controller->SetCustomWallpaper(
+      desktop_background_controller->SetWallpaperImage(
           CreateWallpaperImage(SK_ColorBLUE, SK_ColorGREEN),
           WALLPAPER_LAYOUT_CENTER);
       break;
     case 3:
-      desktop_background_controller->SetCustomWallpaper(
+      desktop_background_controller->SetWallpaperImage(
           CreateWallpaperImage(SK_ColorGREEN, SK_ColorRED),
           WALLPAPER_LAYOUT_CENTER_CROPPED);
       break;

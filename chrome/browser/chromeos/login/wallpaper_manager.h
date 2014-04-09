@@ -68,10 +68,28 @@ extern const char kLargeWallpaperSubDir[];
 extern const char kOriginalWallpaperSubDir[];
 extern const char kThumbnailWallpaperSubDir[];
 
+// The width and height of small/large resolution wallpaper. When screen size is
+// smaller than |kSmallWallpaperMaxWidth| and |kSmallWallpaperMaxHeight|, the
+// small resolution wallpaper should be used. Otherwise, use the large
+// resolution wallpaper.
+extern const int kSmallWallpaperMaxWidth;
+extern const int kSmallWallpaperMaxHeight;
+extern const int kLargeWallpaperMaxWidth;
+extern const int kLargeWallpaperMaxHeight;
+
+// The width and height of wallpaper thumbnails.
+extern const int kWallpaperThumbnailWidth;
+extern const int kWallpaperThumbnailHeight;
+
 // This class maintains wallpapers for users who have logged into this Chrome
 // OS device.
 class WallpaperManager: public content::NotificationObserver {
  public:
+  enum WallpaperResolution {
+    WALLPAPER_RESOLUTION_LARGE,
+    WALLPAPER_RESOLUTION_SMALL
+  };
+
   // For testing.
   class TestApi {
    public:
@@ -98,6 +116,7 @@ class WallpaperManager: public content::NotificationObserver {
    public:
     virtual ~Observer() {}
     virtual void OnWallpaperAnimationFinished(const std::string& user_id) = 0;
+    virtual void OnUpdateWallpaperForTesting() {}
   };
 
   // This is "wallpaper either scheduled to load, or loading right now".
@@ -171,9 +190,7 @@ class WallpaperManager: public content::NotificationObserver {
   WallpaperManager();
   virtual ~WallpaperManager();
 
-  void set_command_line_for_testing(base::CommandLine* command_line) {
-    command_line_for_testing_ = command_line;
-  }
+  void SetCommandLineForTesting(base::CommandLine* command_line);
 
   // Indicates imminent shutdown, allowing the WallpaperManager to remove any
   // observers it has registered.
@@ -224,16 +241,19 @@ class WallpaperManager: public content::NotificationObserver {
                        ash::WallpaperLayout layout,
                        int preferred_width,
                        int preferred_height,
-                       scoped_refptr<base::RefCountedBytes>* output) const;
+                       scoped_refptr<base::RefCountedBytes>* output,
+                       gfx::ImageSkia* output_skia) const;
 
   // Resizes |wallpaper| to a resolution which is nearest to |preferred_width|
   // and |preferred_height| while maintaining aspect ratio. And saves the
-  // resized wallpaper to |path|.
-  void ResizeAndSaveWallpaper(const UserImage& wallpaper,
+  // resized wallpaper to |path|. |result| is optional (may be NULL).
+  // Returns true on success.
+  bool ResizeAndSaveWallpaper(const UserImage& wallpaper,
                               const base::FilePath& path,
                               ash::WallpaperLayout layout,
                               int preferred_width,
-                              int preferred_height) const;
+                              int preferred_height,
+                              gfx::ImageSkia* result_out) const;
 
   // Saves custom wallpaper to file, post task to generate thumbnail and updates
   // local state preferences. If |update_wallpaper| is false, don't change
@@ -305,9 +325,13 @@ class WallpaperManager: public content::NotificationObserver {
                        const std::string& user_id,
                        scoped_ptr<std::string> data);
 
+  // Returns the appropriate wallpaper resolution for all root windows.
+  static WallpaperResolution GetAppropriateResolution();
+
  private:
   friend class TestApi;
   friend class WallpaperManagerBrowserTest;
+  friend class WallpaperManagerBrowserTestDefaultWallpaper;
   friend class WallpaperManagerPolicyTest;
 
   typedef std::map<std::string, gfx::ImageSkia> CustomWallpaperMap;
@@ -356,7 +380,7 @@ class WallpaperManager: public content::NotificationObserver {
   void EnsureCustomWallpaperDirectories(const std::string& user_id_hash);
 
   // Gets the CommandLine representing the current process's command line.
-  base::CommandLine* GetComandLine();
+  base::CommandLine* GetCommandLine();
 
   // Initialize wallpaper of registered device after device policy is trusted.
   // Note that before device is enrolled, it proceeds with untrusted setting.
@@ -427,7 +451,9 @@ class WallpaperManager: public content::NotificationObserver {
                            const UserImage& wallpaper);
 
   // Saves wallpaper image raw |data| to |path| (absolute path) in file system.
-  void SaveWallpaperInternal(const base::FilePath& path, const char* data,
+  // True on success.
+  bool SaveWallpaperInternal(const base::FilePath& path,
+                             const char* data,
                              int size) const;
 
   // Creates new PendingWallpaper request (or updates currently pending).
@@ -463,6 +489,26 @@ class WallpaperManager: public content::NotificationObserver {
   // the time passed after last wallpaper load. So usual user experience results
   // in zero delay.
   base::TimeDelta GetWallpaperLoadDelay() const;
+
+  // Init |*default_*_wallpaper_file_| from given command line and
+  // clear |default_wallpaper_image_|.
+  void SetDefaultWallpaperPathsFromCommandLine(base::CommandLine* command_line);
+
+  // Sets wallpaper to decoded default.
+  void OnDefaultWallpaperDecoded(const base::FilePath& path,
+                                 const ash::WallpaperLayout layout,
+                                 scoped_ptr<UserImage>* result,
+                                 MovableOnDestroyCallbackHolder on_finish,
+                                 const UserImage& wallpaper);
+
+  // Start decoding given default wallpaper.
+  void StartLoadAndSetDefaultWallpaper(const base::FilePath& path,
+                                       const ash::WallpaperLayout layout,
+                                       MovableOnDestroyCallbackHolder on_finish,
+                                       scoped_ptr<UserImage>* result_out);
+
+  // Returns wallpaper subdirectory name for current resolution.
+  const char* GetCustomWallpaperSubdirForCurrentResolution();
 
   // The number of loaded wallpapers.
   int loaded_wallpapers_;
@@ -519,6 +565,15 @@ class WallpaperManager: public content::NotificationObserver {
   // All pending will be finally deleted on destroy.
   typedef std::vector<scoped_refptr<PendingWallpaper> > PendingList;
   PendingList loading_;
+
+  base::FilePath default_small_wallpaper_file_;
+  base::FilePath default_large_wallpaper_file_;
+
+  base::FilePath guest_small_wallpaper_file_;
+  base::FilePath guest_large_wallpaper_file_;
+
+  // Current decoded default image is stored in cache.
+  scoped_ptr<UserImage> default_wallpaper_image_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperManager);
 };

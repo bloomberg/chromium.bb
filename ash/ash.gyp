@@ -756,6 +756,8 @@
         'ash_resources',
       ],
       'sources': [
+        'desktop_background/desktop_background_controller_test_api.cc',
+        'desktop_background/desktop_background_controller_test_api.h',
         'shell/keyboard_controller_proxy_stub.cc',
         'shell/keyboard_controller_proxy_stub.h',
         'shell/toplevel_window.cc',

@@ -293,15 +293,15 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunImpl() {
 
   base::FilePath wallpaper_path;
   base::FilePath fallback_path;
-  ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
-      desktop_background_controller()->GetAppropriateResolution();
+  chromeos::WallpaperManager::WallpaperResolution resolution =
+      chromeos::WallpaperManager::GetAppropriateResolution();
 
   std::string file_name = GURL(params->url).ExtractFileName();
   CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS,
                          &wallpaper_path));
   fallback_path = wallpaper_path.Append(file_name);
   if (params->layout != wallpaper_private::WALLPAPER_LAYOUT_STRETCH &&
-      resolution == ash::WALLPAPER_RESOLUTION_SMALL) {
+      resolution == chromeos::WallpaperManager::WALLPAPER_RESOLUTION_SMALL) {
     file_name = base::FilePath(file_name).InsertBeforeExtension(
         chromeos::kSmallWallpaperSuffix).value();
   }
@@ -444,8 +444,9 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
         wallpaper,
         file_path,
         ash::WALLPAPER_LAYOUT_CENTER_CROPPED,
-        ash::kSmallWallpaperMaxWidth,
-        ash::kSmallWallpaperMaxHeight);
+        chromeos::kSmallWallpaperMaxWidth,
+        chromeos::kSmallWallpaperMaxHeight,
+        NULL);
   } else {
     std::string error = base::StringPrintf(
         "Failed to create/write wallpaper to %s.", file_name.c_str());
@@ -586,9 +587,10 @@ void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
   chromeos::WallpaperManager::Get()->ResizeWallpaper(
       wallpaper,
       ash::WALLPAPER_LAYOUT_STRETCH,
-      ash::kWallpaperThumbnailWidth,
-      ash::kWallpaperThumbnailHeight,
-      &data);
+      chromeos::kWallpaperThumbnailWidth,
+      chromeos::kWallpaperThumbnailHeight,
+      &data,
+      NULL);
   BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(

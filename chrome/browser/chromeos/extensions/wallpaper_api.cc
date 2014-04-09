@@ -176,9 +176,10 @@ void WallpaperSetWallpaperFunction::GenerateThumbnail(
   chromeos::WallpaperManager::Get()->ResizeWallpaper(
       wallpaper,
       ash::WALLPAPER_LAYOUT_STRETCH,
-      ash::kWallpaperThumbnailWidth,
-      ash::kWallpaperThumbnailHeight,
-      &data);
+      chromeos::kWallpaperThumbnailWidth,
+      chromeos::kWallpaperThumbnailHeight,
+      &data,
+      NULL);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(

@@ -61,6 +61,14 @@ class AshTestHelper {
     return test_screenshot_delegate_;
   }
 
+  // True if the running environment supports multiple displays,
+  // or false otherwise (e.g. win8 bot).
+  static bool SupportsMultipleDisplays();
+
+  // True if the running environment supports host window resize,
+  // or false otherwise (e.g. win8 bot).
+  static bool SupportsHostWindowResize();
+
  private:
   base::MessageLoopForUI* message_loop_;  // Not owned.
   TestShellDelegate* test_shell_delegate_;  // Owned by ash::Shell.

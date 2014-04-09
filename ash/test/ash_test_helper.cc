@@ -30,6 +30,10 @@
 #include "ui/keyboard/keyboard.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 #if defined(USE_X11)
 #include "ui/aura/window_tree_host_x11.h"
 #endif
@@ -145,6 +149,24 @@ aura::Window* AshTestHelper::CurrentContext() {
     root_window = Shell::GetPrimaryRootWindow();
   DCHECK(root_window);
   return root_window;
+}
+
+// static
+bool AshTestHelper::SupportsMultipleDisplays() {
+#if defined(OS_WIN)
+  return base::win::GetVersion() < base::win::VERSION_WIN8;
+#else
+  return true;
+#endif
+}
+
+// static
+bool AshTestHelper::SupportsHostWindowResize() {
+#if defined(OS_WIN)
+  return base::win::GetVersion() < base::win::VERSION_WIN8;
+#else
+  return true;
+#endif
 }
 
 }  // namespace test

@@ -7,6 +7,8 @@
 #include <numeric>
 #include <vector>
 
+#include "ash/ash_switches.h"
+#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -39,12 +41,15 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_util.h"
 
 using content::BrowserThread;
+
+namespace chromeos {
 
 namespace {
 
@@ -114,8 +119,6 @@ bool MoveCustomWallpaperDirectory(const char* sub_dir,
 
 }  // namespace
 
-namespace chromeos {
-
 const char kWallpaperSequenceTokenName[] = "wallpaper-sequence";
 
 const char kSmallWallpaperSuffix[] = "_small";
@@ -125,6 +128,13 @@ const char kSmallWallpaperSubDir[] = "small";
 const char kLargeWallpaperSubDir[] = "large";
 const char kOriginalWallpaperSubDir[] = "original";
 const char kThumbnailWallpaperSubDir[] = "thumb";
+
+const int kSmallWallpaperMaxWidth = 1366;
+const int kSmallWallpaperMaxHeight = 800;
+const int kLargeWallpaperMaxWidth = 2560;
+const int kLargeWallpaperMaxHeight = 1700;
+const int kWallpaperThumbnailWidth = 108;
+const int kWallpaperThumbnailHeight = 68;
 
 static WallpaperManager* g_wallpaper_manager = NULL;
 
@@ -208,9 +218,9 @@ void WallpaperManager::PendingWallpaper::ProcessRequest() {
   if (default_) {
     manager->DoSetDefaultWallpaper(user_id_, on_finish_.Pass());
   } else if (!user_wallpaper_.isNull()) {
-    ash::Shell::GetInstance()->
-        desktop_background_controller()->
-            SetCustomWallpaper(user_wallpaper_, info_.layout);
+    ash::Shell::GetInstance()
+        ->desktop_background_controller()
+        ->SetWallpaperImage(user_wallpaper_, info_.layout);
   } else if (!wallpaper_path_.empty()) {
     manager->task_runner_->PostTask(
         FROM_HERE,
@@ -306,6 +316,8 @@ WallpaperManager::WallpaperManager()
       should_cache_wallpaper_(false),
       weak_factory_(this),
       pending_inactive_(NULL) {
+  SetDefaultWallpaperPathsFromCommandLine(
+      base::CommandLine::ForCurrentProcess());
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                  content::NotificationService::AllSources());
@@ -432,7 +444,7 @@ void WallpaperManager::InitializeWallpaper() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UserManager* user_manager = UserManager::Get();
 
-  CommandLine* command_line = GetComandLine();
+  CommandLine* command_line = GetCommandLine();
   if (command_line->HasSwitch(chromeos::switches::kGuestSession)) {
     // Guest wallpaper should be initialized when guest login.
     // Note: This maybe called before login. So IsLoggedInAsGuest can not be
@@ -477,7 +489,7 @@ void WallpaperManager::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE: {
-      if (!GetComandLine()->HasSwitch(switches::kDisableBootAnimation)) {
+      if (!GetCommandLine()->HasSwitch(switches::kDisableBootAnimation)) {
         BrowserThread::PostDelayedTask(
             BrowserThread::UI, FROM_HERE,
             base::Bind(&WallpaperManager::CacheUsersWallpapers,
@@ -520,7 +532,8 @@ bool WallpaperManager::ResizeWallpaper(
     ash::WallpaperLayout layout,
     int preferred_width,
     int preferred_height,
-    scoped_refptr<base::RefCountedBytes>* output) const {
+    scoped_refptr<base::RefCountedBytes>* output,
+    gfx::ImageSkia* output_skia) const {
   DCHECK(BrowserThread::GetBlockingPool()->
       IsRunningSequenceOnCurrentThread(sequence_token_));
   int width = wallpaper.image().width();
@@ -567,27 +580,39 @@ bool WallpaperManager::ResizeWallpaper(
       image.height(),
       image.width() * image.bytesPerPixel(),
       kDefaultEncodingQuality, &(*output)->data());
+
+  if (output_skia) {
+    resized_image.MakeThreadSafe();
+    *output_skia = resized_image;
+  }
+
   return true;
 }
 
-void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
-                                              const base::FilePath& path,
-                                              ash::WallpaperLayout layout,
-                                              int preferred_width,
-                                              int preferred_height) const {
+bool WallpaperManager::ResizeAndSaveWallpaper(
+    const UserImage& wallpaper,
+    const base::FilePath& path,
+    ash::WallpaperLayout layout,
+    int preferred_width,
+    int preferred_height,
+    gfx::ImageSkia* result_out) const {
   if (layout == ash::WALLPAPER_LAYOUT_CENTER) {
     // TODO(bshe): Generates cropped custom wallpaper for CENTER layout.
     if (base::PathExists(path))
       base::DeleteFile(path, false);
-    return;
+    return false;
   }
   scoped_refptr<base::RefCountedBytes> data;
-  if (ResizeWallpaper(wallpaper, layout, preferred_width, preferred_height,
-                      &data)) {
-    SaveWallpaperInternal(path,
-                          reinterpret_cast<const char*>(data->front()),
-                          data->size());
+  if (ResizeWallpaper(wallpaper,
+                      layout,
+                      preferred_width,
+                      preferred_height,
+                      &data,
+                      result_out)) {
+    return SaveWallpaperInternal(
+        path, reinterpret_cast<const char*>(data->front()), data->size());
   }
+  return false;
 }
 
 bool WallpaperManager::IsPolicyControlled(const std::string& user_id) const {
@@ -626,6 +651,18 @@ void WallpaperManager::OnPolicyFetched(const std::string& policy,
       base::Bind(&WallpaperManager::SetPolicyControlledWallpaper,
                  weak_factory_.GetWeakPtr(),
                  user_id));
+}
+
+// static
+WallpaperManager::WallpaperResolution
+WallpaperManager::GetAppropriateResolution() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  gfx::Size size =
+      ash::DesktopBackgroundController::GetMaxDisplaySizeInNative();
+  return (size.width() > kSmallWallpaperMaxWidth ||
+          size.height() > kSmallWallpaperMaxHeight)
+             ? WALLPAPER_RESOLUTION_LARGE
+             : WALLPAPER_RESOLUTION_SMALL;
 }
 
 void WallpaperManager::SetPolicyControlledWallpaper(
@@ -742,9 +779,43 @@ void WallpaperManager::DoSetDefaultWallpaper(
   // up the tests.
   if (!ash::Shell::HasInstance())
     return;
-  if (ash::Shell::GetInstance()->desktop_background_controller()->
-          SetDefaultWallpaper(UserManager::Get()->IsLoggedInAsGuest()))
-    loaded_wallpapers_++;
+
+  WallpaperResolution resolution = GetAppropriateResolution();
+  const bool use_small = (resolution == WALLPAPER_RESOLUTION_SMALL);
+
+  const base::FilePath* file = NULL;
+
+  if (UserManager::Get()->IsLoggedInAsGuest()) {
+    file =
+        use_small ? &guest_small_wallpaper_file_ : &guest_large_wallpaper_file_;
+  } else {
+    file = use_small ? &default_small_wallpaper_file_
+                     : &default_large_wallpaper_file_;
+  }
+  const ash::WallpaperLayout layout =
+      use_small ? ash::WALLPAPER_LAYOUT_CENTER
+                : ash::WALLPAPER_LAYOUT_CENTER_CROPPED;
+  DCHECK(file);
+  if (!default_wallpaper_image_.get() ||
+      default_wallpaper_image_->url().spec() != file->value()) {
+    default_wallpaper_image_.reset();
+    if (!file->empty()) {
+      loaded_wallpapers_++;
+      StartLoadAndSetDefaultWallpaper(
+          *file, layout, on_finish.Pass(), &default_wallpaper_image_);
+      return;
+    }
+
+    const int resource_id = use_small ? IDR_AURA_WALLPAPER_DEFAULT_SMALL
+                                      : IDR_AURA_WALLPAPER_DEFAULT_LARGE;
+
+    loaded_wallpapers_ += ash::Shell::GetInstance()
+                              ->desktop_background_controller()
+                              ->SetWallpaperResource(resource_id, layout);
+    return;
+  }
+  ash::Shell::GetInstance()->desktop_background_controller()->SetWallpaperImage(
+      default_wallpaper_image_->image(), layout);
 }
 
 void WallpaperManager::InitInitialUserWallpaper(const std::string& user_id,
@@ -829,14 +900,7 @@ void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
         ->ResetSetWallpaperImage(user_wallpaper, info);
   } else {
     if (info.type == User::CUSTOMIZED || info.type == User::POLICY) {
-      ash::WallpaperResolution resolution =
-          ash::Shell::GetInstance()->
-              desktop_background_controller()->
-                  GetAppropriateResolution();
-      const char* sub_dir = (resolution == ash::WALLPAPER_RESOLUTION_SMALL)
-                                ? kSmallWallpaperSubDir
-                                : kLargeWallpaperSubDir;
-
+      const char* sub_dir = GetCustomWallpaperSubdirForCurrentResolution();
       // Wallpaper is not resized when layout is ash::WALLPAPER_LAYOUT_CENTER.
       // Original wallpaper should be used in this case.
       // TODO(bshe): Generates cropped custom wallpaper for CENTER layout.
@@ -888,6 +952,7 @@ void WallpaperManager::SetWallpaperFromImageSkia(
 }
 
 void WallpaperManager::UpdateWallpaper(bool clear_cache) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnUpdateWallpaperForTesting());
   if (clear_cache)
     wallpaper_cache_.clear();
   current_wallpaper_path_.clear();
@@ -953,10 +1018,7 @@ void WallpaperManager::CacheUserWallpaper(const std::string& user_id) {
     base::FilePath wallpaper_dir;
     base::FilePath wallpaper_path;
     if (info.type == User::CUSTOMIZED || info.type == User::POLICY) {
-      ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
-          desktop_background_controller()->GetAppropriateResolution();
-      const char* sub_dir  = (resolution == ash::WALLPAPER_RESOLUTION_SMALL) ?
-            kSmallWallpaperSubDir : kLargeWallpaperSubDir;
+      const char* sub_dir = GetCustomWallpaperSubdirForCurrentResolution();
       base::FilePath wallpaper_path = GetCustomWallpaperDir(sub_dir);
       wallpaper_path = wallpaper_path.Append(info.file);
       task_runner_->PostTask(
@@ -1070,7 +1132,13 @@ void WallpaperManager::EnsureCustomWallpaperDirectories(
     base::CreateDirectory(dir);
 }
 
-CommandLine* WallpaperManager::GetComandLine() {
+void WallpaperManager::SetCommandLineForTesting(
+    base::CommandLine* command_line) {
+  command_line_for_testing_ = command_line;
+  SetDefaultWallpaperPathsFromCommandLine(command_line);
+}
+
+CommandLine* WallpaperManager::GetCommandLine() {
   CommandLine* command_line = command_line_for_testing_ ?
       command_line_for_testing_ : CommandLine::ForCurrentProcess();
   return command_line;
@@ -1080,8 +1148,8 @@ void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
   if (UserManager::Get()->IsUserLoggedIn())
     return;
 
-  bool disable_boot_animation = GetComandLine()->
-      HasSwitch(switches::kDisableBootAnimation);
+  bool disable_boot_animation =
+      GetCommandLine()->HasSwitch(switches::kDisableBootAnimation);
   bool show_users = true;
   bool result = CrosSettings::Get()->GetBoolean(
       kAccountsPrefShowUserNamesOnSignIn, &show_users);
@@ -1110,12 +1178,11 @@ void WallpaperManager::LoadWallpaper(const std::string& user_id,
   base::FilePath wallpaper_path;
   if (info.type == User::ONLINE) {
     std::string file_name = GURL(info.file).ExtractFileName();
-    ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
-        desktop_background_controller()->GetAppropriateResolution();
+    WallpaperResolution resolution = GetAppropriateResolution();
     // Only solid color wallpapers have stretch layout and they have only one
     // resolution.
     if (info.layout != ash::WALLPAPER_LAYOUT_STRETCH &&
-        resolution == ash::WALLPAPER_RESOLUTION_SMALL) {
+        resolution == WALLPAPER_RESOLUTION_SMALL) {
       file_name = base::FilePath(file_name).InsertBeforeExtension(
           kSmallWallpaperSuffix).value();
     }
@@ -1323,8 +1390,9 @@ void WallpaperManager::OnWallpaperDecoded(
   }
 
   if (update_wallpaper) {
-    ash::Shell::GetInstance()->desktop_background_controller()->
-        SetCustomWallpaper(wallpaper.image(), layout);
+    ash::Shell::GetInstance()
+        ->desktop_background_controller()
+        ->SetWallpaperImage(wallpaper.image(), layout);
   }
 }
 
@@ -1359,19 +1427,27 @@ void WallpaperManager::SaveCustomWallpaper(const std::string& user_id_hash,
   // Re-encode orginal file to jpeg format and saves the result in case that
   // resized wallpaper is not generated (i.e. chrome shutdown before resized
   // wallpaper is saved).
-  ResizeAndSaveWallpaper(wallpaper, original_path,
+  ResizeAndSaveWallpaper(wallpaper,
+                         original_path,
                          ash::WALLPAPER_LAYOUT_STRETCH,
                          wallpaper.image().width(),
-                         wallpaper.image().height());
+                         wallpaper.image().height(),
+                         NULL);
   DeleteAllExcept(original_path);
 
-  ResizeAndSaveWallpaper(wallpaper, small_wallpaper_path, layout,
-                         ash::kSmallWallpaperMaxWidth,
-                         ash::kSmallWallpaperMaxHeight);
+  ResizeAndSaveWallpaper(wallpaper,
+                         small_wallpaper_path,
+                         layout,
+                         kSmallWallpaperMaxWidth,
+                         kSmallWallpaperMaxHeight,
+                         NULL);
   DeleteAllExcept(small_wallpaper_path);
-  ResizeAndSaveWallpaper(wallpaper, large_wallpaper_path, layout,
-                         ash::kLargeWallpaperMaxWidth,
-                         ash::kLargeWallpaperMaxHeight);
+  ResizeAndSaveWallpaper(wallpaper,
+                         large_wallpaper_path,
+                         layout,
+                         kLargeWallpaperMaxWidth,
+                         kLargeWallpaperMaxHeight,
+                         NULL);
   DeleteAllExcept(large_wallpaper_path);
 }
 
@@ -1380,11 +1456,11 @@ void WallpaperManager::RecordUma(User::WallpaperType type, int index) const {
                             User::WALLPAPER_TYPE_COUNT);
 }
 
-void WallpaperManager::SaveWallpaperInternal(const base::FilePath& path,
+bool WallpaperManager::SaveWallpaperInternal(const base::FilePath& path,
                                              const char* data,
                                              int size) const {
   int written_bytes = base::WriteFile(path, data, size);
-  DCHECK(written_bytes == size);
+  return written_bytes == size;
 }
 
 void WallpaperManager::StartLoad(const std::string& user_id,
@@ -1455,6 +1531,53 @@ WallpaperManager::PendingWallpaper* WallpaperManager::GetPendingWallpaper(
     pending_inactive_ = loading_.back();
   }
   return pending_inactive_;
+}
+
+void WallpaperManager::SetDefaultWallpaperPathsFromCommandLine(
+    base::CommandLine* command_line) {
+  default_small_wallpaper_file_ = command_line->GetSwitchValuePath(
+      ash::switches::kAshDefaultWallpaperSmall);
+  default_large_wallpaper_file_ = command_line->GetSwitchValuePath(
+      ash::switches::kAshDefaultWallpaperLarge);
+  guest_small_wallpaper_file_ =
+      command_line->GetSwitchValuePath(ash::switches::kAshGuestWallpaperSmall);
+  guest_large_wallpaper_file_ =
+      command_line->GetSwitchValuePath(ash::switches::kAshGuestWallpaperLarge);
+  default_wallpaper_image_.reset();
+}
+
+void WallpaperManager::OnDefaultWallpaperDecoded(
+    const base::FilePath& path,
+    const ash::WallpaperLayout layout,
+    scoped_ptr<chromeos::UserImage>* result_out,
+    MovableOnDestroyCallbackHolder on_finish,
+    const UserImage& wallpaper) {
+  result_out->reset(new UserImage(wallpaper.image()));
+  (*result_out)->set_url(GURL(path.value()));
+  ash::Shell::GetInstance()->desktop_background_controller()->SetWallpaperImage(
+      wallpaper.image(), layout);
+}
+
+void WallpaperManager::StartLoadAndSetDefaultWallpaper(
+    const base::FilePath& path,
+    const ash::WallpaperLayout layout,
+    MovableOnDestroyCallbackHolder on_finish,
+    scoped_ptr<chromeos::UserImage>* result_out) {
+  wallpaper_loader_->Start(
+      path.value(),
+      0,  // Do not crop.
+      base::Bind(&WallpaperManager::OnDefaultWallpaperDecoded,
+                 weak_factory_.GetWeakPtr(),
+                 path,
+                 layout,
+                 base::Unretained(result_out),
+                 base::Passed(on_finish.Pass())));
+}
+
+const char* WallpaperManager::GetCustomWallpaperSubdirForCurrentResolution() {
+  WallpaperResolution resolution = GetAppropriateResolution();
+  return resolution == WALLPAPER_RESOLUTION_SMALL ? kSmallWallpaperSubDir
+                                                  : kLargeWallpaperSubDir;
 }
 
 }  // namespace chromeos

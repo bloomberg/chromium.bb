@@ -207,22 +207,12 @@ aura::test::EventGenerator& AshTestBase::GetEventGenerator() {
   return *event_generator_.get();
 }
 
-// static
 bool AshTestBase::SupportsMultipleDisplays() {
-#if defined(OS_WIN)
-  return base::win::GetVersion() < base::win::VERSION_WIN8;
-#else
-  return true;
-#endif
+  return AshTestHelper::SupportsMultipleDisplays();
 }
 
-// static
 bool AshTestBase::SupportsHostWindowResize() {
-#if defined(OS_WIN)
-  return base::win::GetVersion() < base::win::VERSION_WIN8;
-#else
-  return true;
-#endif
+  return AshTestHelper::SupportsHostWindowResize();
 }
 
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {

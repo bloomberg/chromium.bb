@@ -102,12 +102,10 @@ class AshTestBase : public testing::Test {
     NUMBER_OF_BLOCK_REASONS
   };
 
-  // True if the running environment supports multiple displays,
-  // or false otherwise (e.g. win8 bot).
+  // Proxy to AshTestHelper::SupportsMultipleDisplays().
   static bool SupportsMultipleDisplays();
 
-  // True if the running environment supports host window resize,
-  // or false otherwise (e.g. win8 bot).
+  // Proxy to AshTestHelper::SupportsHostWindowResize().
   static bool SupportsHostWindowResize();
 
   void set_start_session(bool start_session) { start_session_ = start_session; }

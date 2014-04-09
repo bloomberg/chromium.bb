@@ -5,14 +5,21 @@
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 
 #include "ash/ash_resources/grit/ash_resources.h"
+#include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
+#include "ash/desktop_background/desktop_background_controller_test_api.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
+#include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ash/test/test_user_wallpaper_delegate.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -30,6 +37,9 @@
 #include "content/public/test/test_utils.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 using namespace ash;
 
@@ -41,9 +51,9 @@ const int kLargeWallpaperResourceId = IDR_AURA_WALLPAPER_DEFAULT_LARGE;
 const int kSmallWallpaperResourceId = IDR_AURA_WALLPAPER_DEFAULT_SMALL;
 
 int kLargeWallpaperWidth = 256;
-int kLargeWallpaperHeight = ash::kLargeWallpaperMaxHeight;
+int kLargeWallpaperHeight = chromeos::kLargeWallpaperMaxHeight;
 int kSmallWallpaperWidth = 256;
-int kSmallWallpaperHeight = ash::kSmallWallpaperMaxHeight;
+int kSmallWallpaperHeight = chromeos::kSmallWallpaperMaxHeight;
 
 const char kTestUser1[] = "test1@domain.com";
 const char kTestUser1Hash[] = "test1@domain.com-hash";
@@ -53,7 +63,6 @@ const char kTestUser2Hash[] = "test2@domain.com-hash";
 }  // namespace
 
 class WallpaperManagerBrowserTest : public InProcessBrowserTest,
-                                    public DesktopBackgroundControllerObserver,
                                     public testing::WithParamInterface<bool> {
  public:
   WallpaperManagerBrowserTest () : controller_(NULL),
@@ -64,8 +73,9 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest,
 
   virtual void SetUpOnMainThread() OVERRIDE {
     controller_ = ash::Shell::GetInstance()->desktop_background_controller();
-    controller_->AddObserver(this);
     local_state_ = g_browser_process->local_state();
+    DesktopBackgroundController::TestAPI(controller_)
+        .set_wallpaper_reload_delay_for_test(0);
     UpdateDisplay("800x600");
   }
 
@@ -77,7 +87,6 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest,
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
-    controller_->RemoveObserver(this);
     controller_ = NULL;
   }
 
@@ -90,22 +99,34 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest,
   }
 
   void WaitAsyncWallpaperLoadStarted() {
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void WaitAsyncWallpaperLoadFinished() {
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     while (WallpaperManager::Get()->loading_.size()) {
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     }
   }
 
-  virtual void OnWallpaperDataChanged() OVERRIDE {
-    base::MessageLoop::current()->Quit();
-  }
-
  protected:
+  // Colors used for different default wallpapers by
+  // WriteWallpapers().
+  static const SkColor kLargeWallpaperColor = SK_ColorRED;
+  static const SkColor kSmallWallpaperColor = SK_ColorGREEN;
+  static const SkColor kLargeGuestWallpaperColor = SK_ColorBLUE;
+  static const SkColor kSmallGuestWallpaperColor = SK_ColorYELLOW;
+
+  // A color that can be passed to CreateImage(). Specifically chosen to not
+  // conflict with any of the default wallpaper colors.
+  static const SkColor kCustomWallpaperColor = SK_ColorMAGENTA;
+
+  // Dimension used for width and height of default wallpaper images. A
+  // small value is used to minimize the amount of time spent compressing
+  // and writing images.
+  static const int kWallpaperSize = 2;
+
   // Return custom wallpaper path. Create directory if not exist.
   base::FilePath GetCustomWallpaperPath(const char* sub_dir,
                                         const std::string& username_hash,
@@ -143,8 +164,148 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest,
     return WallpaperManager::Get()->loaded_wallpapers();
   }
 
+  // Creates a test image of size 1x1.
+  gfx::ImageSkia CreateTestImage(int width, int height, SkColor color) {
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+    bitmap.allocPixels();
+    bitmap.eraseColor(color);
+    return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+  }
+
+  // Writes a JPEG image of the specified size and color to |path|. Returns
+  // true on success.
+  bool WriteJPEGFile(const base::FilePath& path,
+                     int width,
+                     int height,
+                     SkColor color) {
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height, 0);
+    bitmap.allocPixels();
+    bitmap.eraseColor(color);
+
+    const int kQuality = 80;
+    std::vector<unsigned char> output;
+    if (!gfx::JPEGCodec::Encode(
+            static_cast<const unsigned char*>(bitmap.getPixels()),
+            gfx::JPEGCodec::FORMAT_SkBitmap,
+            width,
+            height,
+            bitmap.rowBytes(),
+            kQuality,
+            &output)) {
+      LOG(ERROR) << "Unable to encode " << width << "x" << height << " bitmap";
+      return false;
+    }
+
+    size_t bytes_written = base::WriteFile(
+        path, reinterpret_cast<const char*>(&output[0]), output.size());
+    if (bytes_written != output.size()) {
+      LOG(ERROR) << "Wrote " << bytes_written << " byte(s) instead of "
+                 << output.size() << " to " << path.value();
+      return false;
+    }
+
+    return true;
+  }
+
+  // Initializes default wallpaper paths "*default_*file" and writes JPEG
+  // wallpaper images to them.
+  // Only needs to be called (once) by tests that want to test loading of
+  // default wallpapers.
+  void WriteWallpapers() {
+    wallpaper_dir_.reset(new base::ScopedTempDir);
+    ASSERT_TRUE(wallpaper_dir_->CreateUniqueTempDir());
+
+    std::vector<std::string> options;
+    options.push_back(std::string("WM_Test_cmdline"));
+    const base::FilePath small_file =
+        wallpaper_dir_->path().Append(FILE_PATH_LITERAL("small.jpg"));
+    options.push_back(std::string("--") +
+                      ash::switches::kAshDefaultWallpaperSmall + "=" +
+                      small_file.value());
+    const base::FilePath large_file =
+        wallpaper_dir_->path().Append(FILE_PATH_LITERAL("large.jpg"));
+    options.push_back(std::string("--") +
+                      ash::switches::kAshDefaultWallpaperLarge + "=" +
+                      large_file.value());
+    const base::FilePath guest_small_file =
+        wallpaper_dir_->path().Append(FILE_PATH_LITERAL("guest_small.jpg"));
+    options.push_back(std::string("--") +
+                      ash::switches::kAshGuestWallpaperSmall + "=" +
+                      guest_small_file.value());
+    const base::FilePath guest_large_file =
+        wallpaper_dir_->path().Append(FILE_PATH_LITERAL("guest_large.jpg"));
+    options.push_back(std::string("--") +
+                      ash::switches::kAshGuestWallpaperLarge + "=" +
+                      guest_large_file.value());
+
+    ASSERT_TRUE(WriteJPEGFile(small_file,
+                              kWallpaperSize,
+                              kWallpaperSize,
+                              kSmallWallpaperColor));
+    ASSERT_TRUE(WriteJPEGFile(large_file,
+                              kWallpaperSize,
+                              kWallpaperSize,
+                              kLargeWallpaperColor));
+    ASSERT_TRUE(WriteJPEGFile(guest_small_file,
+                              kWallpaperSize,
+                              kWallpaperSize,
+                              kSmallGuestWallpaperColor));
+    ASSERT_TRUE(WriteJPEGFile(guest_large_file,
+                              kWallpaperSize,
+                              kWallpaperSize,
+                              kLargeGuestWallpaperColor));
+
+    wallpaper_manager_command_line_.reset(new base::CommandLine(options));
+    WallpaperManager::Get()->SetCommandLineForTesting(
+        wallpaper_manager_command_line_.get());
+  }
+
+  // Returns true if the color at the center of |image| is close to
+  // |expected_color|. (The center is used so small wallpaper images can be
+  // used.)
+  bool ImageIsNearColor(gfx::ImageSkia image, SkColor expected_color) {
+    if (image.size().IsEmpty()) {
+      LOG(ERROR) << "Image is empty";
+      return false;
+    }
+
+    const SkBitmap* bitmap = image.bitmap();
+    if (!bitmap) {
+      LOG(ERROR) << "Unable to get bitmap from image";
+      return false;
+    }
+
+    bitmap->lockPixels();
+    gfx::Point center = gfx::Rect(image.size()).CenterPoint();
+    SkColor image_color = bitmap->getColor(center.x(), center.y());
+    bitmap->unlockPixels();
+
+    const int kDiff = 3;
+    if (std::abs(static_cast<int>(SkColorGetA(image_color)) -
+                 static_cast<int>(SkColorGetA(expected_color))) > kDiff ||
+        std::abs(static_cast<int>(SkColorGetR(image_color)) -
+                 static_cast<int>(SkColorGetR(expected_color))) > kDiff ||
+        std::abs(static_cast<int>(SkColorGetG(image_color)) -
+                 static_cast<int>(SkColorGetG(expected_color))) > kDiff ||
+        std::abs(static_cast<int>(SkColorGetB(image_color)) -
+                 static_cast<int>(SkColorGetB(expected_color))) > kDiff) {
+      LOG(ERROR) << "Expected color near 0x" << std::hex << expected_color
+                 << " but got 0x" << image_color;
+      return false;
+    }
+
+    return true;
+  }
+
   DesktopBackgroundController* controller_;
   PrefService* local_state_;
+  scoped_ptr<base::CommandLine> wallpaper_manager_command_line_;
+
+  // Directory created by WriteWallpapersAndSetFlags() to store default
+  // wallpaper images.
+  scoped_ptr<base::ScopedTempDir> wallpaper_dir_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WallpaperManagerBrowserTest);
@@ -195,7 +356,7 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest,
 
   // Hook up another 800x600 display. This shouldn't trigger a reload.
   UpdateDisplay("800x600,800x600");
-  content::RunAllPendingInMessageLoop();
+  WaitAsyncWallpaperLoadFinished();
   // The small resolution custom wallpaper is expected.
   EXPECT_EQ(kSmallWallpaperWidth, wallpaper.width());
   EXPECT_EQ(kSmallWallpaperHeight, wallpaper.height());
@@ -569,5 +730,218 @@ INSTANTIATE_TEST_CASE_P(WallpaperManagerBrowserTestCrashRestoreInstantiation,
 INSTANTIATE_TEST_CASE_P(WallpaperManagerBrowserTestCacheUpdateInstantiation,
                         WallpaperManagerBrowserTestCacheUpdate,
                         testing::Bool());
+
+// ----------------------------------------------------------------------
+// Test default wallpapers.
+
+class TestObserver : public WallpaperManager::Observer {
+ public:
+  explicit TestObserver(WallpaperManager* wallpaper_manager)
+      : update_wallpaper_count_(0), wallpaper_manager_(wallpaper_manager) {
+    DCHECK(wallpaper_manager_);
+    wallpaper_manager_->AddObserver(this);
+  }
+
+  virtual ~TestObserver() {
+    wallpaper_manager_->RemoveObserver(this);
+  }
+
+  virtual void OnWallpaperAnimationFinished(const std::string&) OVERRIDE {
+  }
+
+  virtual void OnUpdateWallpaperForTesting() OVERRIDE {
+    ++update_wallpaper_count_;
+  }
+
+  int GetUpdateWallpaperCountAndReset() {
+    const size_t old = update_wallpaper_count_;
+    update_wallpaper_count_ = 0;
+    return old;
+  }
+
+ private:
+  int update_wallpaper_count_;
+  WallpaperManager* wallpaper_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestObserver);
+};
+
+IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, DisplayChange) {
+  // TODO(derat|oshima|bshe): Host windows can't be resized on Win8.
+  if (!ash::test::AshTestHelper::SupportsHostWindowResize())
+    return;
+
+  TestObserver observer(WallpaperManager::Get());
+
+  // Set the wallpaper to ensure that UpdateWallpaper() will be called when the
+  // display configuration changes.
+  gfx::ImageSkia image = CreateTestImage(640, 480, kCustomWallpaperColor);
+  controller_->SetWallpaperImage(image, WALLPAPER_LAYOUT_STRETCH);
+
+  // Small wallpaper images should be used for configurations less than or
+  // equal to kSmallWallpaperMaxWidth by kSmallWallpaperMaxHeight, even if
+  // multiple displays are connected.
+  UpdateDisplay("800x600");
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_SMALL,
+            WallpaperManager::Get()->GetAppropriateResolution());
+  EXPECT_EQ(0, observer.GetUpdateWallpaperCountAndReset());
+
+  UpdateDisplay("800x600,800x600");
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_SMALL,
+            WallpaperManager::Get()->GetAppropriateResolution());
+  EXPECT_EQ(0, observer.GetUpdateWallpaperCountAndReset());
+
+  UpdateDisplay("1366x800");
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_SMALL,
+            WallpaperManager::Get()->GetAppropriateResolution());
+  EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
+
+  // At larger sizes, large wallpapers should be used.
+  UpdateDisplay("1367x800");
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_LARGE,
+            WallpaperManager::Get()->GetAppropriateResolution());
+  EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
+
+  UpdateDisplay("1367x801");
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_LARGE,
+            WallpaperManager::Get()->GetAppropriateResolution());
+  EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
+
+  UpdateDisplay("2560x1700");
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_LARGE,
+            WallpaperManager::Get()->GetAppropriateResolution());
+  EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
+
+  // Rotated smaller screen may use larger image.
+  UpdateDisplay("800x600/r");
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_SMALL,
+            WallpaperManager::Get()->GetAppropriateResolution());
+  EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
+
+  UpdateDisplay("800x600/r,800x600");
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_SMALL,
+            WallpaperManager::Get()->GetAppropriateResolution());
+  EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
+  UpdateDisplay("1366x800/r");
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_LARGE,
+            WallpaperManager::Get()->GetAppropriateResolution());
+  EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
+
+  // Max display size didn't chagne.
+  UpdateDisplay("900x800/r,400x1366");
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_EQ(0, observer.GetUpdateWallpaperCountAndReset());
+}
+
+// Test that WallpaperManager loads the appropriate wallpaper
+// images as specified via command-line flags in various situations.
+// Splitting these into separate tests avoids needing to run animations.
+// TODO(derat): Combine these into a single test
+IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, SmallDefaultWallpaper) {
+  if (!ash::test::AshTestHelper::SupportsMultipleDisplays())
+    return;
+
+  WriteWallpapers();
+
+  // At 800x600, the small wallpaper should be loaded.
+  UpdateDisplay("800x600");
+  WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_TRUE(
+      ImageIsNearColor(controller_->GetWallpaper(), kSmallWallpaperColor));
+}
+
+IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, LargeDefaultWallpaper) {
+  if (!ash::test::AshTestHelper::SupportsMultipleDisplays())
+    return;
+
+  WriteWallpapers();
+  UpdateDisplay("1600x1200");
+  WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_TRUE(
+      ImageIsNearColor(controller_->GetWallpaper(), kLargeWallpaperColor));
+}
+
+IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest,
+                       LargeDefaultWallpaperWhenRotated) {
+  if (!ash::test::AshTestHelper::SupportsMultipleDisplays())
+    return;
+  WriteWallpapers();
+
+  UpdateDisplay("1200x800/r");
+  WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_TRUE(
+      ImageIsNearColor(controller_->GetWallpaper(), kLargeWallpaperColor));
+}
+
+IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, SmallGuestWallpaper) {
+  if (!ash::test::AshTestHelper::SupportsMultipleDisplays())
+    return;
+  WriteWallpapers();
+  UserManager::Get()->UserLoggedIn(
+      UserManager::kGuestUserName, UserManager::kGuestUserName, false);
+  UpdateDisplay("800x600");
+  WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_TRUE(
+      ImageIsNearColor(controller_->GetWallpaper(), kSmallGuestWallpaperColor));
+}
+
+IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, LargeGuestWallpaper) {
+  if (!ash::test::AshTestHelper::SupportsMultipleDisplays())
+    return;
+
+  WriteWallpapers();
+  UserManager::Get()->UserLoggedIn(
+      UserManager::kGuestUserName, UserManager::kGuestUserName, false);
+  UpdateDisplay("1600x1200");
+  WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
+  WaitAsyncWallpaperLoadFinished();
+  EXPECT_TRUE(
+      ImageIsNearColor(controller_->GetWallpaper(), kLargeGuestWallpaperColor));
+}
+
+IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest,
+                       SwitchBetweenDefaultAndCustom) {
+  // Start loading the default wallpaper.
+  UpdateDisplay("640x480");
+  WriteWallpapers();
+  UserManager::Get()->UserLoggedIn(UserManager::kStubUser, "test_hash", false);
+
+  WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
+
+  // Custom wallpaper should be applied immediately, canceling the default
+  // wallpaper load task.
+  gfx::ImageSkia image = CreateTestImage(640, 480, kCustomWallpaperColor);
+  UserImage wallpaper(image);
+  WallpaperManager::Get()->SetCustomWallpaper(UserManager::kStubUser,
+                                              "test_hash",
+                                              "test-nofile.jpeg",
+                                              WALLPAPER_LAYOUT_STRETCH,
+                                              User::CUSTOMIZED,
+                                              wallpaper,
+                                              true);
+  WaitAsyncWallpaperLoadFinished();
+
+  EXPECT_TRUE(
+      ImageIsNearColor(controller_->GetWallpaper(), kCustomWallpaperColor));
+
+  WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
+  WaitAsyncWallpaperLoadFinished();
+
+  EXPECT_TRUE(
+      ImageIsNearColor(controller_->GetWallpaper(), kSmallWallpaperColor));
+}
 
 }  // namespace chromeos

@@ -18,6 +18,8 @@ namespace ash {
 
 class WallpaperResizerObserver;
 
+extern const int kInvalidResourceID;
+
 // Stores the current wallpaper data and resize it to |target_size| if needed.
 class ASH_EXPORT WallpaperResizer {
  public:
@@ -39,6 +41,8 @@ class ASH_EXPORT WallpaperResizer {
   const gfx::ImageSkia& image() const { return image_; }
   uint32_t original_image_id() const { return original_image_id_; }
   WallpaperLayout layout() const { return layout_; }
+
+  int resource_id() const { return resource_id_; }
 
   // Called on the UI thread to run Resize() on the worker pool and post an
   // OnResizeFinished() task back to the UI thread on completion.
@@ -62,6 +66,9 @@ class ASH_EXPORT WallpaperResizer {
 
   // Unique identifier corresponding to the original (i.e. pre-resize) |image_|.
   uint32_t original_image_id_;
+
+  // kInvalidResourceID if image was not obtained from resources.
+  const int resource_id_;
 
   gfx::Size target_size_;
 
