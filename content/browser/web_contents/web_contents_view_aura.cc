@@ -1273,12 +1273,12 @@ void WebContentsViewAura::OnImplicitAnimationsCompleted() {
 
   if (ShouldNavigateForward(web_contents_->GetController(),
                             completed_overscroll_gesture_)) {
-    PrepareOverscrollNavigationOverlay();
     web_contents_->GetController().GoForward();
+    PrepareOverscrollNavigationOverlay();
   } else if (ShouldNavigateBack(web_contents_->GetController(),
                                 completed_overscroll_gesture_)) {
-    PrepareOverscrollNavigationOverlay();
     web_contents_->GetController().GoBack();
+    PrepareOverscrollNavigationOverlay();
   } else {
     if (touch_editable_)
       touch_editable_->OverscrollCompleted();

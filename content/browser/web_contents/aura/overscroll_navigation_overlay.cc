@@ -131,6 +131,14 @@ void OverscrollNavigationOverlay::StartObserving() {
   // Make sure the overlay window is on top.
   if (window_.get() && window_->parent())
     window_->parent()->StackChildAtTop(window_.get());
+
+  // Assumes the navigation has been initiated.
+  NavigationEntry* pending_entry =
+      web_contents_->GetController().GetPendingEntry();
+  // Save id of the pending entry to identify when it loads and paints later.
+  // Under some circumstances navigation can leave a null pending entry -
+  // see comments in NavigationControllerImpl::NavigateToPendingEntry().
+  pending_entry_id_ = pending_entry ? pending_entry->GetUniqueID() : 0;
 }
 
 void OverscrollNavigationOverlay::SetOverlayWindow(
@@ -235,10 +243,6 @@ void OverscrollNavigationOverlay::OnWindowSlideCompleting() {
   if (slide_direction_ == SLIDE_UNKNOWN)
     return;
 
-  // Reset state and wait for the new navigation page to complete
-  // loading/painting.
-  StartObserving();
-
   // Perform the navigation.
   if (slide_direction_ == SLIDE_BACK)
     web_contents_->GetController().GoBack();
@@ -247,12 +251,9 @@ void OverscrollNavigationOverlay::OnWindowSlideCompleting() {
   else
     NOTREACHED();
 
-  NavigationEntry* pending_entry =
-      web_contents_->GetController().GetPendingEntry();
-  // Save id of the pending entry to identify when it loads and paints later.
-  // Under some circumstances navigation can leave a null pending entry -
-  // see comments in NavigationControllerImpl::NavigateToPendingEntry().
-  pending_entry_id_ = pending_entry ? pending_entry->GetUniqueID() : 0;
+  // Reset state and wait for the new navigation page to complete
+  // loading/painting.
+  StartObserving();
 }
 
 void OverscrollNavigationOverlay::OnWindowSlideCompleted() {

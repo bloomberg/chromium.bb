@@ -37,6 +37,8 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
   // updates. This function makes sure that the screenshot window is stacked
   // on top, so that it hides the content window behind it, and destroys the
   // screenshot window when the page is done loading/painting.
+  // This should be called immediately after initiating the navigation,
+  // otherwise the overlay may be dismissed prematurely.
   void StartObserving();
 
   // Sets the screenshot window and the delegate. This takes ownership of
