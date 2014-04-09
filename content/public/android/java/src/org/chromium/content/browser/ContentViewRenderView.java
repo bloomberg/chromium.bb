@@ -25,8 +25,9 @@ import org.chromium.ui.base.WindowAndroid;
 
 /***
  * This view is used by a ContentView to render its content.
- * Call {@link #setCurrentContentView(ContentView)} with the contentView that should be displayed.
- * Note that only one ContentView can be shown at a time.
+ * Call {@link #setCurrentContentViewCore(ContentViewCore)} with the contentViewCore that should be
+ * managing the view.
+ * Note that only one ContentViewCore can be shown at a time.
  */
 @JNINamespace("content")
 public class ContentViewRenderView extends FrameLayout {
@@ -43,7 +44,7 @@ public class ContentViewRenderView extends FrameLayout {
     private int mPendingSwapBuffers;
     private boolean mNeedToRender;
 
-    private ContentView mCurrentContentView;
+    private ContentViewCore mContentViewCore;
 
     private final Runnable mRenderRunnable = new Runnable() {
         @Override
@@ -71,8 +72,8 @@ public class ContentViewRenderView extends FrameLayout {
                 assert mNativeContentViewRenderView != 0;
                 nativeSurfaceChanged(mNativeContentViewRenderView,
                         format, width, height, holder.getSurface());
-                if (mCurrentContentView != null) {
-                    mCurrentContentView.getContentViewCore().onPhysicalBackingSizeChanged(
+                if (mContentViewCore != null) {
+                    mContentViewCore.onPhysicalBackingSizeChanged(
                             width, height);
                 }
             }
@@ -204,20 +205,25 @@ public class ContentViewRenderView extends FrameLayout {
 
     /**
      * Makes the passed ContentView the one displayed by this ContentViewRenderView.
+     * TODO(yfriedman): Remove once this rolls downstream and callers are updated.
      */
+    @Deprecated
     public void setCurrentContentView(ContentView contentView) {
+        setCurrentContentViewCore(contentView != null ? contentView.getContentViewCore() : null);
+    }
+
+
+    public void setCurrentContentViewCore(ContentViewCore contentViewCore) {
         assert mNativeContentViewRenderView != 0;
-        mCurrentContentView = contentView;
+        mContentViewCore = contentViewCore;
 
-        ContentViewCore contentViewCore =
-                contentView != null ? contentView.getContentViewCore() : null;
-
-        nativeSetCurrentContentView(mNativeContentViewRenderView,
-                contentViewCore != null ? contentViewCore.getNativeContentViewCore() : 0);
-
-        if (contentViewCore != null) {
-            contentViewCore.onPhysicalBackingSizeChanged(getWidth(), getHeight());
-            mVSyncAdapter.setVSyncListener(contentViewCore.getVSyncListener(mVSyncAdapter));
+        if (mContentViewCore != null) {
+            mContentViewCore.onPhysicalBackingSizeChanged(getWidth(), getHeight());
+            mVSyncAdapter.setVSyncListener(mContentViewCore.getVSyncListener(mVSyncAdapter));
+            nativeSetCurrentContentViewCore(mNativeContentViewRenderView,
+                                            mContentViewCore.getNativeContentViewCore());
+        } else {
+            nativeSetCurrentContentViewCore(mNativeContentViewRenderView, 0);
         }
     }
 
@@ -268,11 +274,8 @@ public class ContentViewRenderView extends FrameLayout {
 
     @CalledByNative
     private void requestRender() {
-        ContentViewCore contentViewCore = mCurrentContentView != null ?
-                mCurrentContentView.getContentViewCore() : null;
-
         boolean rendererHasFrame =
-                contentViewCore != null && contentViewCore.consumePendingRendererFrame();
+                mContentViewCore != null && mContentViewCore.consumePendingRendererFrame();
 
         if (rendererHasFrame && mPendingSwapBuffers + mPendingRenders < MAX_SWAP_BUFFER_COUNT) {
             TraceEvent.instant("requestRender:now");
@@ -310,9 +313,7 @@ public class ContentViewRenderView extends FrameLayout {
 
         // Waiting for the content view contents to be ready avoids compositing
         // when the surface texture is still empty.
-        if (mCurrentContentView == null) return;
-        ContentViewCore contentViewCore = mCurrentContentView.getContentViewCore();
-        if (contentViewCore == null || !contentViewCore.isReady()) {
+        if (mContentViewCore == null || !mContentViewCore.isReady()) {
             return;
         }
 
@@ -332,8 +333,8 @@ public class ContentViewRenderView extends FrameLayout {
 
     private native long nativeInit(long rootWindowNativePointer);
     private native void nativeDestroy(long nativeContentViewRenderView);
-    private native void nativeSetCurrentContentView(long nativeContentViewRenderView,
-            long nativeContentView);
+    private native void nativeSetCurrentContentViewCore(long nativeContentViewRenderView,
+            long nativeContentViewCore);
     private native void nativeSurfaceCreated(long nativeContentViewRenderView);
     private native void nativeSurfaceDestroyed(long nativeContentViewRenderView);
     private native void nativeSurfaceChanged(long nativeContentViewRenderView,

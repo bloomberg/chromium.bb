@@ -23,6 +23,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.ui.base.WindowAndroid;
@@ -259,7 +260,7 @@ public class Shell extends LinearLayout {
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
         mContentView.requestFocus();
-        mContentViewRenderView.setCurrentContentView(mContentView);
+        mContentViewRenderView.setCurrentContentViewCore(mContentView.getContentViewCore());
     }
 
     /**

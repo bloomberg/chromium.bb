@@ -30,14 +30,17 @@ public class TabUtils {
         return testClient;
     }
 
+    /**
+     * Provides some callback helpers when waiting for certain tab-based events to occur.
+     */
     public static class TestCallbackHelperContainerForTab extends TestCallbackHelperContainer {
-        private final OnCloseTabHelper mOnCloseTabHelper;
+        private final CallbackHelper mOnCloseTabHelper;
         private final OnContextMenuShownHelper mOnContextMenuShownHelper;
 
         public TestCallbackHelperContainerForTab(Tab tab) {
             super(createTestContentViewClientForTab(tab),
                     new TestWebContentsObserver(tab.getContentView().getContentViewCore()));
-            mOnCloseTabHelper = new OnCloseTabHelper();
+            mOnCloseTabHelper = new CallbackHelper();
             mOnContextMenuShownHelper = new OnContextMenuShownHelper();
             tab.addObserver(new EmptyTabObserver() {
                 @Override
@@ -52,9 +55,9 @@ public class TabUtils {
             });
         }
 
-        public static class OnCloseTabHelper extends CallbackHelper {
-        }
-
+        /**
+         * Callback helper that also provides access to the last display ContextMenu.
+         */
         public static class OnContextMenuShownHelper extends CallbackHelper {
             private WeakReference<ContextMenu> mContextMenu;
 
@@ -69,7 +72,7 @@ public class TabUtils {
             }
         }
 
-        public OnCloseTabHelper getOnCloseTabHelper() {
+        public CallbackHelper getOnCloseTabHelper() {
             return mOnCloseTabHelper;
         }
 

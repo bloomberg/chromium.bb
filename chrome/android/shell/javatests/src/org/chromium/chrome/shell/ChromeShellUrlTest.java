@@ -16,6 +16,9 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Basic sanity test for loading urls in ChromeShell.
+ */
 public class ChromeShellUrlTest extends ChromeShellTestBase {
     // URL used for base tests.
     private static final String URL = "data:text";
@@ -101,7 +104,8 @@ public class ChromeShellUrlTest extends ChromeShellTestBase {
                     ContentViewRenderView contentViewRenderView =
                             new ContentViewRenderView(getInstrumentation().getTargetContext(),
                                     activity.getWindowAndroid());
-                    contentViewRenderView.setCurrentContentView(activity.getActiveContentView());
+                    contentViewRenderView.setCurrentContentViewCore(
+                            activity.getActiveContentView().getContentViewCore());
                 }
             });
         } catch (Throwable e) {

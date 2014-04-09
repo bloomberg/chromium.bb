@@ -153,8 +153,8 @@ public class ShellManager extends FrameLayout {
         mActiveShell = shellView;
         ContentView contentView = mActiveShell.getContentView();
         if (contentView != null) {
-            mContentViewRenderView.setCurrentContentView(contentView);
-            contentView.onShow();
+            mContentViewRenderView.setCurrentContentViewCore(contentView.getContentViewCore());
+            contentView.getContentViewCore().onShow();
         }
     }
 

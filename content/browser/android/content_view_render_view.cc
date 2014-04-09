@@ -56,13 +56,13 @@ void ContentViewRenderView::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
-void ContentViewRenderView::SetCurrentContentView(
-    JNIEnv* env, jobject obj, jlong native_content_view) {
+void ContentViewRenderView::SetCurrentContentViewCore(
+    JNIEnv* env, jobject obj, jlong native_content_view_core) {
   InitCompositor();
-  ContentViewCoreImpl* content_view =
-      reinterpret_cast<ContentViewCoreImpl*>(native_content_view);
-  if (content_view)
-    compositor_->SetRootLayer(content_view->GetLayer());
+  ContentViewCoreImpl* content_view_core =
+      reinterpret_cast<ContentViewCoreImpl*>(native_content_view_core);
+  if (content_view_core)
+    compositor_->SetRootLayer(content_view_core->GetLayer());
   else
     compositor_->SetRootLayer(cc::Layer::Create());
 }

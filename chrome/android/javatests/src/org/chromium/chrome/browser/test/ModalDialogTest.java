@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.JavascriptAppModalDialog;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.TabUtils;
 import org.chromium.chrome.test.util.TabUtils.TestCallbackHelperContainerForTab;
+import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -281,7 +282,7 @@ public class ModalDialogTest extends ChromeShellTestBase {
             throws InterruptedException, TimeoutException, ExecutionException {
         executeJavaScriptAndWaitForDialog("alert('Android')");
 
-        final TestCallbackHelperContainerForTab.OnCloseTabHelper onTabClosed =
+        final CallbackHelper onTabClosed =
                 getActiveTabTestCallbackHelperContainer().getOnCloseTabHelper();
         int callCount = onTabClosed.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
