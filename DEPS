@@ -36,7 +36,7 @@ vars = {
   "libaddressinput_revision": "176",
   "libphonenumber_revision": "621",
   "libvpx_revision": "261575",
-  "lss_revision": "24",
+  "lss_revision": "25",
 
   # These two FFmpeg variables must be updated together.  One is used for SVN
   # checkouts and the other for Git checkouts.
