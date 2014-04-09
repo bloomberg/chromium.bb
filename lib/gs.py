@@ -509,12 +509,14 @@ class GSContext(object):
 
   # TODO(mtennant): Make a private method.
   def DoCommand(self, gsutil_cmd, headers=(), retries=None, version=None,
-                **kwargs):
+                parallel=True, **kwargs):
     """Run a gsutil command, suppressing output, and setting retry/sleep.
 
     Args:
       gsutil_cmd: The (mostly) constructed gsutil subcommand to run.
       headers: A list of raw headers to pass down.
+      parallel: Whether gsutil should enable parallel copy/update of multiple
+        files.
       retries: How many times to retry this command (defaults to setting given
         at object creation).
       version: If given, the generation; essentially the timestamp of the last
@@ -541,7 +543,7 @@ class GSContext(object):
     # Enable parallel copy/update of multiple files if stdin is not to
     # be piped to the command. This does not split a single file into
     # smaller components for upload.
-    if kwargs.get('input') is None:
+    if parallel and kwargs.get('input') is None:
       cmd += ['-m']
 
     cmd.extend(gsutil_cmd)

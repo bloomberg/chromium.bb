@@ -34,7 +34,7 @@ def Copy(ctx, uri, filename):
   temp_path = '%s.tmp' % filename
   osutils.SafeUnlink(temp_path)
   try:
-    ctx.Copy(uri, temp_path, log_output=True)
+    ctx.Copy(uri, temp_path, parallel=False, log_output=True)
     shutil.move(temp_path, filename)
   finally:
     osutils.SafeUnlink(temp_path)
