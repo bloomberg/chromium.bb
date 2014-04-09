@@ -20,6 +20,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
@@ -335,10 +336,15 @@ bool BrokerProcess::HandleRequest() const {
   // will write the reply.
   if (msg_len < 0 || fds.size() != 1 || fds.at(0) < 0) {
     PLOG(ERROR) << "Error reading message from the client";
+    // The client could try to DoS us by sending more file descriptors, so
+    // make sure we close them.
+    for (std::vector<int>::iterator it = fds.begin(); it != fds.end(); ++it) {
+      PCHECK(0 == IGNORE_EINTR(close(*it)));
+    }
     return false;
   }
 
-  const int temporary_ipc = fds.at(0);
+  base::ScopedFD temporary_ipc(fds.at(0));
 
   Pickle pickle(buf, msg_len);
   PickleIterator iter(pickle);
@@ -351,15 +357,13 @@ bool BrokerProcess::HandleRequest() const {
       case kCommandOpen:
         // We reply on the file descriptor sent to us via the IPC channel.
         r = HandleRemoteCommand(static_cast<IPCCommands>(command_type),
-                                temporary_ipc, pickle, iter);
+                                temporary_ipc.get(), pickle, iter);
         break;
       default:
         NOTREACHED();
         r = false;
         break;
     }
-    int ret = IGNORE_EINTR(close(temporary_ipc));
-    DCHECK(!ret) << "Could not close temporary IPC channel";
     return r;
   }
 
@@ -402,7 +406,7 @@ bool BrokerProcess::HandleRemoteCommand(IPCCommands command_type, int reply_ipc,
 
   // Close anything we have opened in this process.
   for (std::vector<int>::iterator it = opened_files.begin();
-       it < opened_files.end(); ++it) {
+       it != opened_files.end(); ++it) {
     int ret = IGNORE_EINTR(close(*it));
     DCHECK(!ret) << "Could not close file descriptor";
   }
