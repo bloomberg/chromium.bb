@@ -349,10 +349,6 @@ _COPY_PATHS = (
        optional=True),
   Path('libffmpegsumo.so',
        exe=True),
-  # Set as optional for backwards compatibility.
-  Path('lib/libmojo_system.so',
-       exe=True,
-       optional=True),
   Path('libpdf.so',
        exe=True,
        cond=C.StagingFlagSet(_PDF_FLAG)),
