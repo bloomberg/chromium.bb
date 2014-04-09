@@ -57,6 +57,9 @@ void RenderCombineText::setTextInternal(PassRefPtr<StringImpl> text)
 
 float RenderCombineText::width(unsigned from, unsigned length, const Font& font, float xPosition, TextDirection direction, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
 {
+    if (!length)
+        return 0;
+
     if (hasEmptyText())
         return 0;
 
