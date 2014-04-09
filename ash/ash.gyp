@@ -364,8 +364,6 @@
         'system/chromeos/power/power_status_view.h',
         'system/chromeos/power/tray_power.cc',
         'system/chromeos/power/tray_power.h',
-        'system/chromeos/power/user_activity_notifier.cc',
-        'system/chromeos/power/user_activity_notifier.h',
         'system/chromeos/power/video_activity_notifier.cc',
         'system/chromeos/power/video_activity_notifier.h',
         'system/chromeos/screen_security/screen_capture_observer.h',
@@ -691,6 +689,7 @@
             # Ash #includes power_supply_properties.pb.h directly.
             '../chromeos/chromeos.gyp:power_manager_proto',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+            '../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
             '../ui/display/display.gyp:display',
           ],
         }, { # else: chromeos!=1

@@ -51,6 +51,7 @@ class Rect;
 namespace ui {
 class DisplayConfigurator;
 class Layer;
+class UserActivityNotifier;
 }
 namespace views {
 class NonClientFrameView;
@@ -137,7 +138,6 @@ class SystemTrayNotifier;
 class ToplevelWindowEventHandler;
 class TouchObserverHUD;
 class UserActivityDetector;
-class UserActivityNotifier;
 class UserWallpaperDelegate;
 class VideoActivityNotifier;
 class VideoDetector;
@@ -691,7 +691,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<PowerEventObserver> power_event_observer_;
-  scoped_ptr<UserActivityNotifier> user_activity_notifier_;
+  scoped_ptr<ui::UserActivityNotifier> user_activity_notifier_;
   scoped_ptr<VideoActivityNotifier> video_activity_notifier_;
   scoped_ptr<StickyKeysController> sticky_keys_controller_;
   scoped_ptr<ResolutionNotificationController>

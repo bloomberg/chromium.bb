@@ -128,12 +128,12 @@
 #include "ash/system/chromeos/brightness/brightness_controller_chromeos.h"
 #include "ash/system/chromeos/power/power_event_observer.h"
 #include "ash/system/chromeos/power/power_status.h"
-#include "ash/system/chromeos/power/user_activity_notifier.h"
 #include "ash/system/chromeos/power/video_activity_notifier.h"
 #include "ash/system/chromeos/session/last_window_closed_logout_reminder.h"
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
 #include "base/bind_helpers.h"
 #include "base/sys_info.h"
+#include "ui/chromeos/user_activity_notifier.h"
 #include "ui/display/chromeos/display_configurator.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -1003,7 +1003,7 @@ void Shell::Init() {
 
   power_event_observer_.reset(new PowerEventObserver());
   user_activity_notifier_.reset(
-      new UserActivityNotifier(user_activity_detector_.get()));
+      new ui::UserActivityNotifier(user_activity_detector_.get()));
   video_activity_notifier_.reset(
       new VideoActivityNotifier(video_detector_.get()));
   bluetooth_notification_controller_.reset(new BluetoothNotificationController);
