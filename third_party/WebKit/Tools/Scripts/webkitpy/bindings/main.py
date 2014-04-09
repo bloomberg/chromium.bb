@@ -134,6 +134,13 @@ def bindings_tests(output_directory, verbose):
     def identical_file(reference_filename, output_filename):
         reference_basename = os.path.basename(reference_filename)
 
+        if not os.path.isfile(reference_filename):
+            print 'Missing reference file!'
+            print '(if adding new test, update reference files)'
+            print reference_basename
+            print
+            return False
+
         if not filecmp.cmp(reference_filename, output_filename):
             # cmp is much faster than diff, and usual case is "no differance",
             # so only run diff if cmp detects a difference
