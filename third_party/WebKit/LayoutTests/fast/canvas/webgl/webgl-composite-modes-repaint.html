@@ -42,7 +42,6 @@ void main() {
 }
 </script>
 <script src="resources/webgl-test-utils.js"></script>
-<script src="../../repaint/resources/repaint.js"></script>
 <script>
 
 var ctxs = []
@@ -118,5 +117,17 @@ drawAll(0);
 
 function repaintTest() {
     drawAll(50);
+    if (window.testRunner) {
+        testRunner.notifyDone();
+    }
+}
+
+function runRepaintTest() {
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        testRunner.displayAsyncThen(repaintTest);
+    } else {
+        setTimeout(repaintTest, 100);
+    }
 }
 </script>

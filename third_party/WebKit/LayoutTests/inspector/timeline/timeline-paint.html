@@ -9,8 +9,7 @@ function display(callback)
     requestAnimationFrame(function() {
         document.body.style.backgroundColor = "blue";
         if (window.testRunner)
-            testRunner.display();
-        callback();
+            testRunner.displayAsyncThen(callback);
     });
 }
 
@@ -19,8 +18,7 @@ function updateSubframeAndDisplay(callback)
     requestAnimationFrame(function() {
         frames[0].document.body.children[0].style.backgroundColor = "green";
         if (window.testRunner)
-            testRunner.display();
-        callback();
+            testRunner.displayAsyncThen(callback);
     });
 }
 
