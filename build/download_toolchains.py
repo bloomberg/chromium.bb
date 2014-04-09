@@ -128,12 +128,48 @@ def FlavorOutDir(options, flavor):
         flavor)
 
 
-def OldFlavorOutDir(options, flavor):
-  """Given a flavor, returns old flavor directory (transitional)."""
-  if isinstance(flavor, tuple):
-    return os.path.join(options.toolchain_dir, flavor[0])
-  else:
-    return os.path.join(options.toolchain_dir, flavor)
+def RemoveOldToolchainDir(toolchain_dir):
+  """Temporary code to delete old toolchain directory."""
+  # Delete any top level directories that do not conform to $OS_$ARCH.
+  valid_top_level_dirs = set()
+  for os_name in pynacl.platform.OS_LIST:
+    for arch_name in pynacl.platform.ARCH_LIST:
+      valid_top_level_dirs.add('%s_%s' % (os_name, arch_name))
+
+  # Delete any files and directories that do not conform to the standard.
+  # Do not touch any system files that begin with '.', including ".tars".
+  top_level_dirs = []
+  for dir_item in os.listdir(toolchain_dir):
+    if dir_item.startswith('.'):
+      continue
+
+    full_path = os.path.join(toolchain_dir, dir_item)
+    if dir_item in valid_top_level_dirs:
+      top_level_dirs.append(full_path)
+      continue
+    print 'Removing stale toolchain item:', full_path
+    if os.path.isfile(full_path):
+      os.unlink(full_path)
+    else:
+      pynacl.file_tools.RemoveDir(full_path)
+
+  # Delete any second level dirs that do not conform one of the following:
+  #  1. It must be of the format "nacl_*".
+  #  2. It must be of the format "pnacl_*".
+  #  3. It must be of the format "*_trusted".
+  for top_level_dir in top_level_dirs:
+    for dir_item in os.listdir(top_level_dir):
+      if (dir_item.startswith('nacl_') or
+          dir_item.startswith('pnacl_') or
+          dir_item.endswith('_trusted')):
+        continue
+
+      full_path = os.path.join(top_level_dir, dir_item)
+      print 'Removing stale toolchain item:', full_path
+      if os.path.isfile(full_path):
+        os.unlink(full_path)
+      else:
+        pynacl.file_tools.RemoveDir(full_path)
 
 
 def FlavorName(flavor):
@@ -425,11 +461,14 @@ def main(args):
              for flavor in platform_mapping[host_os][arch]
              if IsFlavorNeeded(options, flavor)]
 
+  # Now that we have standardized the toolchain directories to a new format,
+  # temporarily have code to delete the old directories to clean up machines.
+  RemoveOldToolchainDir(options.toolchain_dir)
+
   for flavor in flavors:
     version = VersionSelect(versions, flavor)
     urls = FlavorUrls(options, versions, flavor)
     dst = FlavorOutDir(options, flavor)
-    old_dst = OldFlavorOutDir(options, flavor)
     hashes = FlavorHashes(versions, flavor)
     flavor_name = FlavorName(flavor)
 
@@ -440,11 +479,6 @@ def main(args):
       force = False
 
     try:
-      # While we are still transitioning to the new toolchain directory format,
-      # keep on syncing to the old destination. Eventually we will remove this.
-      SyncFlavor(flavor, urls, old_dst, hashes, script_time, force=force,
-                 keep=options.keep, verbose=options.verbose)
-
       if SyncFlavor(flavor, urls, dst, hashes, script_time, force=force,
                     keep=options.keep, verbose=options.verbose):
         print flavor_name + ': updated to version ' + version + '.'
