@@ -12,14 +12,12 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/gfx/rect.h"
 #include "ui/keyboard/keyboard_export.h"
 #include "url/gurl.h"
 
 namespace aura {
 class Window;
-}
-namespace gfx {
-class Rect;
 }
 namespace ui {
 class InputMethod;
@@ -92,6 +90,12 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Returns true if keyboard is currently visible.
   bool keyboard_visible() { return keyboard_visible_; }
 
+  // Returns the current keyboard bounds. When the keyboard is not shown,
+  // an empty rectangle will get returned.
+  const gfx::Rect& current_keyboard_bounds() {
+    return current_keyboard_bounds_;
+  }
+
  private:
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;
@@ -138,6 +142,9 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   ObserverList<KeyboardControllerObserver> observer_list_;
 
   base::WeakPtrFactory<KeyboardController> weak_factory_;
+
+  // The currently used keyboard position.
+  gfx::Rect current_keyboard_bounds_;
 
   static KeyboardController* instance_;
 

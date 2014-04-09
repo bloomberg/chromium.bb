@@ -229,6 +229,7 @@ aura::Window* KeyboardController::GetContainerWindow() {
 
 void KeyboardController::NotifyKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
+  current_keyboard_bounds_ = new_bounds;
   if (proxy_->HasKeyboardWindow() && proxy_->GetKeyboardWindow()->IsVisible()) {
     FOR_EACH_OBSERVER(KeyboardControllerObserver,
                       observer_list_,

@@ -10,13 +10,20 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/gfx/screen.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_controller_proxy.h"
+#include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/test/capture_tracking_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -140,6 +147,21 @@ class TransientWindowObserver : public aura::WindowObserver {
 
 class SystemModalContainerLayoutManagerTest : public AshTestBase {
  public:
+  virtual void SetUp() OVERRIDE {
+    // Allow a virtual keyboard (and initialize it per default).
+   CommandLine::ForCurrentProcess()->AppendSwitch(
+       keyboard::switches::kEnableVirtualKeyboard);
+    AshTestBase::SetUp();
+    Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
+        keyboard::KeyboardController::GetInstance());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
+        keyboard::KeyboardController::GetInstance());
+    AshTestBase::TearDown();
+  }
+
   aura::Window* OpenToplevelTestWindow(bool modal) {
     views::Widget* widget = views::Widget::CreateWindowWithContext(
         new TestWindow(modal), CurrentContext());
@@ -152,6 +174,40 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
         views::Widget::CreateWindowWithParent(new TestWindow(modal), parent);
     widget->Show();
     return widget->GetNativeView();
+  }
+
+  // Show or hide the keyboard.
+  void ShowKeyboard(bool show) {
+    keyboard::KeyboardController* keyboard =
+        keyboard::KeyboardController::GetInstance();
+    ASSERT_TRUE(keyboard);
+    if (show == keyboard->keyboard_visible())
+      return;
+
+    // The animation has to run in order to get the notification. Run the
+    // animation and wait until its finished.
+    ui::ScopedAnimationDurationScaleMode normal_duration_mode(
+        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+    if (show)
+      keyboard->ShowAndLockKeyboard();
+    else
+      keyboard->HideKeyboard(keyboard::KeyboardController::HIDE_REASON_MANUAL);
+
+    WaitForWindowAnimationToBeFinished(keyboard->GetContainerWindow());
+
+    DCHECK_EQ(show, keyboard->keyboard_visible());
+  }
+
+  void WaitForWindowAnimationToBeFinished(aura::Window* window) {
+    DCHECK(window);
+    ui::Layer* layer = window->layer();
+    ui::LayerAnimatorTestController controller(layer->GetAnimator());
+    gfx::AnimationContainerElement* element = layer->GetAnimator();
+    while (controller.animator()->is_animating()) {
+      controller.StartThreadedAnimationsIfNeeded();
+      base::TimeTicks step_time = controller.animator()->last_step_time();
+      element->Step(step_time + base::TimeDelta::FromMilliseconds(1000));
+    }
   }
 };
 
@@ -491,6 +547,42 @@ TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
   TestWindow::CloseTestWindow(modal1.release());
   EXPECT_FALSE(AllRootWindowsHaveModalBackgrounds());
   EXPECT_TRUE(wm::IsActiveWindow(normal.get()));
+}
+
+// Test that with the visible keyboard, an existing system modal dialog gets
+// positioned into the visible area.
+TEST_F(SystemModalContainerLayoutManagerTest,
+       SystemModalDialogGetPushedFromKeyboard) {
+  const gfx::Rect& container_bounds = GetModalContainer()->bounds();
+  // Place the window at the bottom of the screen.
+  gfx::Size modal_size(100, 100);
+  gfx::Point modal_origin = gfx::Point(
+      (container_bounds.right() - modal_size.width()) / 2,  // X centered
+      container_bounds.bottom() - modal_size.height());     // at bottom
+  gfx::Rect modal_bounds = gfx::Rect(modal_origin, modal_size);
+
+  // Create a modal window.
+  scoped_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
+  scoped_ptr<aura::Window> modal_window(
+      OpenTestWindowWithParent(parent.get(), true));
+  modal_window->SetBounds(modal_bounds);
+  parent->Show();
+  modal_window->Show();
+
+  EXPECT_EQ(modal_bounds.ToString(), modal_window->bounds().ToString());
+
+  // The keyboard gets shown and the dialog should get pushed.
+  ShowKeyboard(true);
+  EXPECT_NE(modal_bounds.ToString(), modal_window->bounds().ToString());
+  EXPECT_GT(modal_bounds.y(), modal_window->bounds().y());
+  EXPECT_EQ(modal_size.ToString(), modal_window->bounds().size().ToString());
+  EXPECT_EQ(modal_origin.x(), modal_window->bounds().x());
+
+  // After the keyboard is gone, the window will remain where it was.
+  ShowKeyboard(false);
+  EXPECT_NE(modal_bounds.ToString(), modal_window->bounds().ToString());
+  EXPECT_EQ(modal_size.ToString(), modal_window->bounds().size().ToString());
+  EXPECT_EQ(modal_origin.x(), modal_window->bounds().x());
 }
 
 }  // namespace test
