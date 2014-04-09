@@ -169,6 +169,18 @@ typedef struct logcallback
   void EXPORT_CALL lou_logInfo(const char *format, ...);
   void EXPORT_CALL lou_logDebug(const char *format, ...);
 /* functions for calling logging callbacks */
+
+  typedef enum
+  {
+    ALL = -2147483648,
+    DEBUG = 10000,
+    INFO = 20000,
+    WARN = 30000,
+    ERROR = 40000,
+    FATAL = 50000
+  } logLevels;
+  void lou_log(int level, const char *format, ...);
+/* General log function for callback logging */
   void EXPORT_CALL lou_free ();
 /* This function should be called at the end of 
 * the application to free all memory allocated by liblouis. */

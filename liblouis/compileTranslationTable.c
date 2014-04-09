@@ -5277,3 +5277,43 @@ void EXPORT_CALL lou_logDebug(const char *format, ...)
 #endif
   }
 
+void EXPORT_CALL lou_log(int level, const char *format, ...)
+  {
+    if (format == NULL)
+      {
+	return;
+      }
+    logfunction cb;
+    switch (level)
+      {
+      case DEBUG:
+	cb = logCallbacks->debugCB;
+	break;
+      case INFO:
+	cb = logCallbacks->infoCB;
+	break;
+      case WARN:
+	cb = logCallbacks->warningCB;
+	break;
+      case ERROR:
+	cb = logCallbacks->errorCB;
+	break;
+      }
+    if (cb != 0)
+      {
+	char *s;
+	size_t len;
+	va_list argp;
+	va_start(argp, format);
+	len = vsnprintf(0, 0, format, argp);
+	va_end(argp);
+	if ((s = malloc(len+1)) != 0)
+	  {
+	    va_start(argp, format);
+	    vsnprintf(s, len+1, format, argp);
+	    va_end(argp);
+	    cb(s);
+	    free(s);
+	  }
+      }
+  }
