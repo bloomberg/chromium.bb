@@ -102,15 +102,15 @@ struct GPU_EXPORT ContextState {
   void Initialize();
 
   void RestoreState(const ContextState* prev_state) const;
-  void InitCapabilities() const;
-  void InitState() const;
+  void InitCapabilities(const ContextState* prev_state) const;
+  void InitState(const ContextState* prev_state) const;
 
   void RestoreActiveTexture() const;
   void RestoreAllTextureUnitBindings(const ContextState* prev_state) const;
   void RestoreActiveTextureUnitBinding(unsigned int target) const;
   void RestoreAttribute(GLuint index) const;
   void RestoreBufferBindings() const;
-  void RestoreGlobalState() const;
+  void RestoreGlobalState(const ContextState* prev_state) const;
   void RestoreProgramBindings() const;
   void RestoreRenderbufferBindings() const;
   void RestoreTextureUnitBindings(

@@ -7158,40 +7158,82 @@ bool %s::GetStateAs%s(
     file.Write("}\n")
 
     file.Write("""
-void ContextState::InitCapabilities() const {
+void ContextState::InitCapabilities(const ContextState* prev_state) const {
 """)
-    for capability in _CAPABILITY_FLAGS:
-      file.Write("  EnableDisable(GL_%s, enable_flags.%s);\n" %
-                 (capability['name'].upper(), capability['name']))
+    def WriteCapabilities(test_prev):
+      for capability in _CAPABILITY_FLAGS:
+        capability_name = capability['name']
+        if test_prev:
+          file.Write("  if (prev_state->enable_flags.%s != enable_flags.%s)\n" %
+                     (capability_name, capability_name))
+        file.Write("    EnableDisable(GL_%s, enable_flags.%s);\n" %
+                   (capability_name.upper(), capability_name))
+
+    file.Write("  if (prev_state) {")
+    WriteCapabilities(True)
+    file.Write("  } else {")
+    WriteCapabilities(False)
+    file.Write("  }")
+
     file.Write("""}
 
-void ContextState::InitState() const {
+void ContextState::InitState(const ContextState *prev_state) const {
 """)
 
-    # We need to sort the keys so the expectations match
-    for state_name in sorted(_STATES.keys()):
-      state = _STATES[state_name]
-      if state['type'] == 'FrontBack':
-        num_states = len(state['states'])
-        for ndx, group in enumerate(Grouper(num_states / 2, state['states'])):
+    def WriteStates(test_prev):
+      # We need to sort the keys so the expectations match
+      for state_name in sorted(_STATES.keys()):
+        state = _STATES[state_name]
+        if state['type'] == 'FrontBack':
+          num_states = len(state['states'])
+          for ndx, group in enumerate(Grouper(num_states / 2, state['states'])):
+            if test_prev:
+              file.Write("  if (")
+            args = []
+            for place, item in enumerate(group):
+              item_name = item['name']
+              args.append('%s' % item_name)
+              if test_prev:
+                if place > 0:
+                  file.Write(' ||\n')
+                file.Write("(%s != prev_state->%s)" % (item_name, item_name))
+            if test_prev:
+              file.Write(")\n")
+            file.Write(
+                "  gl%s(%s, %s);\n" %
+                (state['func'], ('GL_FRONT', 'GL_BACK')[ndx], ", ".join(args)))
+        elif state['type'] == 'NamedParameter':
+          for item in state['states']:
+            if 'extension_flag' in item:
+              file.Write("  if (feature_info_->feature_flags().%s)\n  " %
+                         item['extension_flag'])
+            if test_prev:
+              file.Write("  if (prev_state->%s != %s)\n" %
+                         (item['name'], item['name']))
+            file.Write("  gl%s(%s, %s);\n" %
+                       (state['func'], item['enum'], item['name']))
+        else:
+          if test_prev:
+            file.Write("  if (")
           args = []
-          for item in group:
-            args.append('%s' % item['name'])
-          file.Write(
-              "  gl%s(%s, %s);\n" %
-              (state['func'], ('GL_FRONT', 'GL_BACK')[ndx], ", ".join(args)))
-      elif state['type'] == 'NamedParameter':
-        for item in state['states']:
-          if 'extension_flag' in item:
-            file.Write("  if (feature_info_->feature_flags().%s)\n  " %
-                       item['extension_flag'])
-          file.Write("  gl%s(%s, %s);\n" %
-                     (state['func'], item['enum'], item['name']))
-      else:
-        args = []
-        for item in state['states']:
-          args.append('%s' % item['name'])
-        file.Write("  gl%s(%s);\n" % (state['func'], ", ".join(args)))
+          for place, item in enumerate(state['states']):
+            item_name = item['name']
+            args.append('%s' % item_name)
+            if test_prev:
+              if place > 0:
+                file.Write(' ||\n')
+              file.Write("(%s != prev_state->%s)" %
+                         (item_name, item_name))
+          if test_prev:
+            file.Write("    )\n")
+          file.Write("  gl%s(%s);\n" % (state['func'], ", ".join(args)))
+
+    file.Write("  if (prev_state) {")
+    WriteStates(True)
+    file.Write("  } else {")
+    WriteStates(False)
+    file.Write("  }")
+
     file.Write("}\n")
 
     file.Write("""bool ContextState::GetEnabled(GLenum cap) const {

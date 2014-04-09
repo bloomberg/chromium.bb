@@ -618,7 +618,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
     state_.RestoreBufferBindings();
   }
   virtual void RestoreGlobalState() const OVERRIDE {
-    state_.RestoreGlobalState();
+    state_.RestoreGlobalState(NULL);
   }
   virtual void RestoreProgramBindings() const OVERRIDE {
     state_.RestoreProgramBindings();
@@ -2598,8 +2598,8 @@ bool GLES2DecoderImpl::Initialize(
   state_.scissor_height = state_.viewport_height;
 
   // Set all the default state because some GL drivers get it wrong.
-  state_.InitCapabilities();
-  state_.InitState();
+  state_.InitCapabilities(NULL);
+  state_.InitState(NULL);
   glActiveTexture(GL_TEXTURE0 + state_.active_texture_unit);
 
   DoBindBuffer(GL_ARRAY_BUFFER, 0);

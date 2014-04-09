@@ -213,9 +213,9 @@ void ContextState::RestoreAttribute(GLuint attrib_index) const {
   glVertexAttrib4fv(attrib_index, attrib_values[attrib_index].v);
 }
 
-void ContextState::RestoreGlobalState() const {
-  InitCapabilities();
-  InitState();
+void ContextState::RestoreGlobalState(const ContextState* prev_state) const {
+  InitCapabilities(prev_state);
+  InitState(prev_state);
 }
 
 void ContextState::RestoreState(const ContextState* prev_state) const {
@@ -235,7 +235,7 @@ void ContextState::RestoreState(const ContextState* prev_state) const {
   RestoreBufferBindings();
   RestoreRenderbufferBindings();
   RestoreProgramBindings();
-  RestoreGlobalState();
+  RestoreGlobalState(prev_state);
 }
 
 ErrorState* ContextState::GetErrorState() {
