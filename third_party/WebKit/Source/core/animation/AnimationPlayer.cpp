@@ -34,6 +34,7 @@
 #include "core/animation/Animation.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/events/AnimationPlayerEvent.h"
+#include "core/frame/UseCounter.h"
 
 namespace WebCore {
 
@@ -365,6 +366,13 @@ bool AnimationPlayer::SortInfo::operator<(const SortInfo& other) const
     if (m_startTime > other.m_startTime)
         return false;
     return m_sequenceNumber < other.m_sequenceNumber;
+}
+
+bool AnimationPlayer::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+{
+    if (eventType == EventTypeNames::finish)
+        UseCounter::count(executionContext(), UseCounter::AnimationPlayerFinishEvent);
+    return EventTargetWithInlineData::addEventListener(eventType, listener, useCapture);
 }
 
 void AnimationPlayer::pauseForTesting(double pauseTime)

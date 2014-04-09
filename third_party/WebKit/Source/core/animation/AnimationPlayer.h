@@ -128,6 +128,8 @@ public:
         return player1->sortInfo() < player2->sortInfo();
     }
 
+    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) OVERRIDE;
+
 private:
     AnimationPlayer(DocumentTimeline&, TimedItem*);
     double sourceEnd() const;

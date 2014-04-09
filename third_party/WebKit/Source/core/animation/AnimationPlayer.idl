@@ -44,5 +44,5 @@
     void pause();
     void reverse();
 
-    attribute EventHandler onfinish;
+    [MeasureAs=AnimationPlayerFinishEvent] attribute EventHandler onfinish;
 };
