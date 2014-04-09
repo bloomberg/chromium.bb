@@ -5328,8 +5328,6 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
                 nodesToAddToChain[i]->dispatchMouseEvent(*event, EventTypeNames::mouseenter, 0, oldHoverNode.get());
         }
     }
-
-    updateRenderTreeIfNeeded();
 }
 
 bool Document::haveStylesheetsLoaded() const
