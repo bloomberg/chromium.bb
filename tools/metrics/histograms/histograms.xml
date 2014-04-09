@@ -33830,6 +33830,16 @@ other types of suffix sets.
   <int value="312" label="NamedNodeMapRemoveNamedItemNS"/>
   <int value="313" label="OpenWebDatabaseInWorker"/>
   <int value="314" label="OpenWebDatabaseSyncInWorker"/>
+  <int value="315" label="PrefixedAllowFullscreenAttribute"/>
+  <int value="316" label="XHRProgressEventPosition"/>
+  <int value="317" label="XHRProgressEventTotalSize"/>
+  <int value="318" label="PrefixedDocumentIsFullscreen"/>
+  <int value="319" label="PrefixedDocumentFullScreenKeyboardInputAllowed"/>
+  <int value="320" label="PrefixedDocumentCurrentFullScreenElement"/>
+  <int value="321" label="PrefixedDocumentCancelFullScreen"/>
+  <int value="322" label="PrefixedDocumentFullscreenEnabled"/>
+  <int value="323" label="PrefixedDocumentFullscreenElement"/>
+  <int value="324" label="PrefixedDocumentExitFullscreen"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
