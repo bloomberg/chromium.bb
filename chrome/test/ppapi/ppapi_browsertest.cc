@@ -57,34 +57,19 @@ using content::RenderViewHost;
       RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
     }
 
+// NaCl glibc tests are included for x86 only, as there is no glibc support
+// for other architectures (ARM/MIPS).
+#if defined(ARCH_CPU_X86_FAMILY)
+#define MAYBE_GLIBC(test_name) test_name
+#else
+#define MAYBE_GLIBC(test_name) DISABLED_##test_name
+#endif
+
 #if defined(DISABLE_NACL)
+
 #define TEST_PPAPI_NACL(test_name)
 #define TEST_PPAPI_NACL_DISALLOWED_SOCKETS(test_name)
 #define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name)
-
-#elif defined(ARCH_CPU_ARM_FAMILY) || defined(ARCH_CPU_MIPS_FAMILY)
-// NaCl glibc tests are not included in ARM and MIPS as there is no glibc
-// support on ARM and MIPS today.
-#define TEST_PPAPI_NACL(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, test_name) { \
-      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-    }
-
-#define TEST_PPAPI_NACL_DISALLOWED_SOCKETS(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClTestDisallowedSockets, test_name) { \
-      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-    }
-
-#define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, test_name) { \
-      RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
-    }
 
 #else
 
@@ -93,7 +78,7 @@ using content::RenderViewHost;
     IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, test_name) { \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(test_name)) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     } \
     IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, test_name) { \
@@ -111,24 +96,14 @@ using content::RenderViewHost;
     IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
       RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
     } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, test_name) { \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(test_name)) { \
       RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
     } \
     IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, test_name) { \
       RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
     }
 
-#endif
-
-
-// NaCl glibc tests are included for x86 only, as there is no glibc support
-// for other architectures (ARM/MIPS).
-#if defined(ARCH_CPU_X86_FAMILY)
-#define MAYBE_GLIBC(test_name) test_name
-#else
-#define MAYBE_GLIBC(test_name) DISABLED_##test_name
-#endif
-
+#endif  // DISABLE_NACL
 
 //
 // Interface tests.
