@@ -30,13 +30,15 @@ using ppapi::MakeTypedId;
 using ppapi::PPIdType;
 using ppapi::ResourceTracker;
 using blink::WebConsoleMessage;
+using blink::WebFrame;
+using blink::WebPluginContainer;
 using blink::WebString;
 
 namespace content {
 
 namespace {
 
-typedef std::set<blink::WebPluginContainer*> ContainerSet;
+typedef std::set<WebPluginContainer*> ContainerSet;
 
 // Adds all WebPluginContainers associated with the given module to the set.
 void GetAllContainersForModule(PluginModule* module,
@@ -44,8 +46,14 @@ void GetAllContainersForModule(PluginModule* module,
   const PluginModule::PluginInstanceSet& instances =
       module->GetAllInstances();
   for (PluginModule::PluginInstanceSet::const_iterator i = instances.begin();
-       i != instances.end(); ++i)
-    containers->insert((*i)->container());
+       i != instances.end(); ++i) {
+    WebPluginContainer* container = (*i)->container();
+    // If "Delete" is called on an instance, the instance sets its container to
+    // NULL, but the instance may actually outlive its container. Callers of
+    // GetAllContainersForModule only want to know about valid containers.
+    if (container)
+      containers->insert(container);
+  }
 }
 
 WebConsoleMessage::Level LogLevelToWebLogLevel(PP_LogLevel level) {
@@ -173,8 +181,11 @@ void HostGlobals::BroadcastLogWithSource(PP_Module pp_module,
 
   WebConsoleMessage message = MakeLogMessage(level, source, value);
   for (ContainerSet::iterator i = containers.begin();
-       i != containers.end(); ++i)
-     (*i)->element().document().frame()->addMessageToConsole(message);
+       i != containers.end(); ++i) {
+     WebFrame* frame = (*i)->element().document().frame();
+     if (frame)
+       frame->addMessageToConsole(message);
+  }
 }
 
 base::TaskRunner* HostGlobals::GetFileTaskRunner() {
