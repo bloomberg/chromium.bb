@@ -114,6 +114,12 @@ void SVGScriptElement::didNotifySubtreeInsertionsToDocument()
     }
 }
 
+void SVGScriptElement::didMoveToNewDocument(Document& oldDocument)
+{
+    SVGElement::didMoveToNewDocument(oldDocument);
+    m_loader->cancel(&oldDocument);
+}
+
 void SVGScriptElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     SVGElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);

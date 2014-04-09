@@ -90,6 +90,12 @@ void HTMLScriptElement::didNotifySubtreeInsertionsToDocument()
     m_loader->didNotifySubtreeInsertionsToDocument();
 }
 
+void HTMLScriptElement::didMoveToNewDocument(Document& oldDocument)
+{
+    HTMLElement::didMoveToNewDocument(oldDocument);
+    m_loader->cancel(&oldDocument);
+}
+
 void HTMLScriptElement::setText(const String &value)
 {
     RefPtr<Node> protectFromMutationEvents(this);

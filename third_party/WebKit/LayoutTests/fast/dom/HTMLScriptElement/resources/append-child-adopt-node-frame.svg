@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+<script>
+function init()
+{
+    var epilogue = document.createElementNS("http://www.w3.org/2000/svg", "script");
+    epilogue.setAttributeNS('http://www.w3.org/1999/xlink', 'href', "should-not-run.js");
+    document.documentElement.appendChild(epilogue);
+    window.top.document.adoptNode(document.documentElement);
+    window.top.done();
+}
+
+init();
+</script>
+</svg>

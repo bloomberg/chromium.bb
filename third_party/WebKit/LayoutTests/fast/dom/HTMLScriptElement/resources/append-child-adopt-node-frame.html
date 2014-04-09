@@ -1,0 +1,17 @@
+<body>
+<script>
+function init()
+{
+    document.createElement("canvas").getContext("webgl", null);
+    var epilogue = document.createElement("script");
+    epilogue.src = "should-not-run.js";
+    document.body.appendChild(epilogue);
+    window.top.document.adoptNode(document.documentElement);
+
+    window.top.done();
+}
+
+init();
+</script>
+</body>
+</html>

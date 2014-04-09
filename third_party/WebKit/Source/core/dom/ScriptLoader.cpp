@@ -363,15 +363,16 @@ void ScriptLoader::execute(ScriptResource* resource)
     resource->removeClient(this);
 }
 
+void ScriptLoader::cancel(Document* contextDocument)
+{
+    if (!m_resource)
+        return;
+    finishLoading(contextDocument, FinishWithErrorOrCancel);
+    stopLoadRequest();
+}
+
 void ScriptLoader::notifyFinished(Resource* resource)
 {
-    ASSERT(!m_willBeParserExecuted);
-
-    RefPtr<Document> elementDocument(m_element->document());
-    RefPtr<Document> contextDocument = elementDocument->contextDocument().get();
-    if (!contextDocument)
-        return;
-
     // Resource possibly invokes this notifyFinished() more than
     // once because ScriptLoader doesn't unsubscribe itself from
     // Resource here and does it in execute() instead.
@@ -379,7 +380,20 @@ void ScriptLoader::notifyFinished(Resource* resource)
     ASSERT_UNUSED(resource, resource == m_resource);
     if (!m_resource)
         return;
-    if (m_resource->errorOccurred()) {
+
+    RefPtr<Document> elementDocument(m_element->document());
+    RefPtr<Document> contextDocument = elementDocument->contextDocument().get();
+    finishLoading(contextDocument.get(), resource->errorOccurred() ? FinishWithErrorOrCancel : FinishSuccessfully);
+}
+
+void ScriptLoader::finishLoading(Document* contextDocument, ScriptLoader::FinishType type)
+{
+    ASSERT(!m_willBeParserExecuted);
+
+    if (!contextDocument)
+        return;
+
+    if (type == FinishWithErrorOrCancel) {
         dispatchErrorEvent();
         contextDocument->scriptRunner()->notifyScriptLoadError(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
         return;
