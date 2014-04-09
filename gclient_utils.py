@@ -776,7 +776,7 @@ class ExecutionQueue(object):
 ----------------------------------------
 %s
 ----------------------------------------""" % (
-    task.name, comment, task.outbuf.getvalue().strip(), elapsed)
+    task.name, comment, elapsed, task.outbuf.getvalue().strip())
 
   def flush(self, *args, **kwargs):
     """Runs all enqueued items until all are executed."""
