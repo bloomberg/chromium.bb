@@ -141,6 +141,8 @@ public:
     bool layoutStateEnabled() const { return m_layoutStateDisableCount == 0 && m_layoutState; }
     LayoutState* layoutState() const { return m_layoutState; }
 
+    bool canUseLayoutStateForContainer(const RenderObject* container) const { return layoutStateEnabled() && (!container || container == this); }
+
     virtual void updateHitTestResult(HitTestResult&, const LayoutPoint&) OVERRIDE;
 
     LayoutUnit pageLogicalHeight() const { return m_pageLogicalHeight; }

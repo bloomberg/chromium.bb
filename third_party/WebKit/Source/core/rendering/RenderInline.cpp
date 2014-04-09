@@ -1056,7 +1056,7 @@ void RenderInline::computeRectForRepaint(const RenderLayerModelObject* repaintCo
 {
     if (RenderView* v = view()) {
         // LayoutState is only valid for root-relative repainting
-        if (v->layoutStateEnabled() && !repaintContainer) {
+        if (v->canUseLayoutStateForContainer(repaintContainer)) {
             LayoutState* layoutState = v->layoutState();
             if (style()->hasInFlowPosition() && layer())
                 rect.move(layer()->offsetForInFlowPosition());
@@ -1143,7 +1143,7 @@ void RenderInline::mapLocalToContainer(const RenderLayerModelObject* repaintCont
         return;
 
     if (RenderView *v = view()) {
-        if (v->layoutStateEnabled() && !repaintContainer) {
+        if (v->canUseLayoutStateForContainer(repaintContainer)) {
             LayoutState* layoutState = v->layoutState();
             LayoutSize offset = layoutState->paintOffset();
             if (style()->hasInFlowPosition() && layer())

@@ -1874,7 +1874,7 @@ void RenderBox::mapLocalToContainer(const RenderLayerModelObject* repaintContain
         return;
 
     if (RenderView* v = view()) {
-        if (v->layoutStateEnabled() && !repaintContainer) {
+        if (v->canUseLayoutStateForContainer(repaintContainer)) {
             LayoutState* layoutState = v->layoutState();
             LayoutSize offset = layoutState->paintOffset() + locationOffset();
             if (style()->hasInFlowPosition() && layer())
@@ -2070,7 +2070,7 @@ void RenderBox::computeRectForRepaint(const RenderLayerModelObject* repaintConta
     RenderStyle* styleToUse = style();
     if (RenderView* v = view()) {
         // LayoutState is only valid for root-relative, non-fixed position repainting
-        if (v->layoutStateEnabled() && !repaintContainer && styleToUse->position() != FixedPosition) {
+        if (v->canUseLayoutStateForContainer(repaintContainer) && styleToUse->position() != FixedPosition) {
             LayoutState* layoutState = v->layoutState();
 
             if (layer() && layer()->transform())
