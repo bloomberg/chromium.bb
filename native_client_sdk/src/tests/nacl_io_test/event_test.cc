@@ -312,3 +312,38 @@ TEST_F(SelectPollTest, SelectMemPipe) {
   EXPECT_EQ(0, FD_ISSET(fds[1], &ex_set));
 }
 
+/**
+ * Test that calling select() only writes the initial parts of the fd_sets
+ * passed in.
+ * We had an issue when select() was calling FD_ZERO() on the incoming fd_sets
+ * which was causing corruption in ssh which always allocates the fd_sets to be
+ * hold 'nfds' worth of descriptors.
+ */
+TEST_F(SelectPollTest, SelectPartialFdset) {
+  int fds[2];
+
+  // Both FDs for regular files should be read/write but not exception.
+  fds[0] = kp->open("/test.txt", O_CREAT | O_WRONLY);
+  fds[1] = kp->open("/test.txt", O_RDONLY);
+  ASSERT_GT(fds[0], -1);
+  ASSERT_GT(fds[1], -1);
+  ASSERT_LT(fds[1], 8);
+  SetFDs(fds, 2);
+
+  // Fill in all the remaining bytes in the fd_sets a constant value
+  static const char guard_value = 0xab;
+  for (int i = 1; i < sizeof(fd_set); i++) {
+    ((char*)&rd_set)[i] = guard_value;
+    ((char*)&wr_set)[i] = guard_value;
+    ((char*)&ex_set)[i] = guard_value;
+  }
+
+  ASSERT_EQ(4, kp->select(fds[1] + 1, &rd_set, &wr_set, &ex_set, &tv));
+
+  // Verify guard values were not touched.
+  for (int i = 1; i < sizeof(fd_set); i++) {
+    ASSERT_EQ(guard_value, ((char*)&rd_set)[i]);
+    ASSERT_EQ(guard_value, ((char*)&wr_set)[i]);
+    ASSERT_EQ(guard_value, ((char*)&ex_set)[i]);
+  }
+}

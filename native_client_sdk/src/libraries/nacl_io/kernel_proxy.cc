@@ -1029,28 +1029,24 @@ int KernelProxy::sigaction(int signum, const struct sigaction* action,
 
 int KernelProxy::select(int nfds, fd_set* readfds, fd_set* writefds,
                         fd_set* exceptfds, struct timeval* timeout) {
-  fd_set ignore;
   std::vector<pollfd> pollfds;
-
-  // Simplify logic, by using an IGNORE set for any undefined set
-  FD_ZERO(&ignore);
-  if (NULL == readfds)
-    readfds = &ignore;
-  if (NULL == writefds)
-    writefds = &ignore;
-  if (NULL == exceptfds)
-    exceptfds = &ignore;
 
   for (int fd = 0; fd < nfds; fd++) {
     int events = 0;
-    if (FD_ISSET(fd, readfds))
+    if (readfds && FD_ISSET(fd, readfds)) {
       events |= POLLIN;
+      FD_CLR(fd, readfds);
+    }
 
-    if (FD_ISSET(fd, writefds))
+    if (writefds && FD_ISSET(fd, writefds)) {
       events |= POLLOUT;
+      FD_CLR(fd, writefds);
+    }
 
-    if (FD_ISSET(fd, exceptfds))
+    if (exceptfds && FD_ISSET(fd, exceptfds)) {
       events |= POLLERR | POLLHUP;
+      FD_CLR(fd, exceptfds);
+    }
 
     if (events) {
       pollfd info;
@@ -1059,10 +1055,6 @@ int KernelProxy::select(int nfds, fd_set* readfds, fd_set* writefds,
       pollfds.push_back(info);
     }
   }
-
-  FD_ZERO(readfds);
-  FD_ZERO(writefds);
-  FD_ZERO(exceptfds);
 
   // NULL timeout signals wait forever.
   int ms_timeout = -1;
