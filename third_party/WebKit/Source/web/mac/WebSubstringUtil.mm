@@ -132,7 +132,7 @@ NSAttributedString* WebSubstringUtil::attributedWordAtPoint(WebView* view, WebPo
 
     // Compute bottom left corner and convert to AppKit coordinates.
     IntRect stringRect = enclosingIntRect(wordRange->boundingRect());
-    IntPoint stringPoint = frameView->contentsToWindow(stringRect).minXMaxYCorner();
+    IntPoint stringPoint = stringRect.minXMaxYCorner();
     stringPoint.setY(frameView->height() - stringPoint.y());
 
     // Adjust for the font's descender. AppKit wants the baseline point.
