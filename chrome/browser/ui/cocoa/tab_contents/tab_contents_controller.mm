@@ -188,6 +188,11 @@ class FullscreenObserver : public WebContentsObserver {
   }
   [contentsNativeView setAutoresizingMask:NSViewWidthSizable|
                                           NSViewHeightSizable];
+
+  // TODO(miu): The following can be removed once we use a CALayer in
+  // TabContentsContainerView.  http://crbug.com/354598
+  [contentsContainer setNeedsDisplay:YES];
+
   // The rendering path with overlapping views disabled causes bugs when
   // transitioning between composited and non-composited mode.
   // http://crbug.com/279472
