@@ -466,11 +466,6 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_DevModeControllerTest) {
 #endif
 
 TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
-  // The API this test is exercising has not been release on all channels.
-  // TODO(finnur): Remove the if check once it is released.
-  if (chrome::VersionInfo::GetChannel() > chrome::VersionInfo::CHANNEL_DEV)
-    return;
-
   Init();
   extensions::ExtensionPrefs* prefs =
       extensions::ExtensionPrefs::Get(profile());

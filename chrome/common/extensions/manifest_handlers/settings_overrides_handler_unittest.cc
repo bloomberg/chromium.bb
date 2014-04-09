@@ -6,7 +6,6 @@
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
@@ -61,7 +60,6 @@ class OverrideSettingsTest : public testing::Test {
 
 
 TEST_F(OverrideSettingsTest, ParseManifest) {
-  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
   std::string manifest(kManifest);
   JSONStringValueSerializer json(&manifest);
   std::string error;
@@ -105,7 +103,6 @@ TEST_F(OverrideSettingsTest, ParseManifest) {
 }
 
 TEST_F(OverrideSettingsTest, ParseBrokenManifest) {
-  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
   std::string manifest(kBrokenManifest);
   JSONStringValueSerializer json(&manifest);
   std::string error;
