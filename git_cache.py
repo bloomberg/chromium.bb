@@ -158,7 +158,7 @@ class Mirror(object):
       if sys.platform.startswith('win'):
         for suffix in ('.bat', '.cmd', '.exe'):
           alt_target = target + suffix
-          if os.path.isfile(alt_target) and os.access(target, os.X_OK):
+          if os.path.isfile(alt_target) and os.access(alt_target, os.X_OK):
             return alt_target
     return None
 
