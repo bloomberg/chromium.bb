@@ -455,7 +455,6 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
         'extensions_common',
@@ -474,6 +473,7 @@
         'common/url_pattern_set_unittest.cc',
         'common/url_pattern_unittest.cc',
         'common/user_script_unittest.cc',
+        'test/extensions_unittests_main.cc',
       ],
     },
   ]
