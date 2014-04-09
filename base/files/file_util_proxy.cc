@@ -90,15 +90,15 @@ class CreateTemporaryHelper {
         PLATFORM_FILE_CREATE_ALWAYS |
         additional_file_flags;
 
-    error_ = File::FILE_OK;
-    // TODO(rvargas): Convert this code to use File.
-    file_handle_ =
-        CreatePlatformFile(file_path_, file_flags, NULL,
-                           reinterpret_cast<PlatformFileError*>(&error_));
-    if (error_ != File::FILE_OK) {
+    File file(file_path_, file_flags);
+    if (!file.IsValid()) {
       base::DeleteFile(file_path_, false);
       file_path_.clear();
+      error_ = file.error_details();
+      return;
     }
+    error_ = File::FILE_OK;
+    file_handle_ = file.TakePlatformFile();
   }
 
   void Reply(const FileUtilProxy::CreateTemporaryCallback& callback) {
@@ -212,11 +212,14 @@ File::Error CreateOrOpenAdapter(
     // If its parent does not exist, should return NOT_FOUND error.
     return File::FILE_ERROR_NOT_FOUND;
   }
-  File::Error error = File::FILE_OK;
-  *file_handle =
-      CreatePlatformFile(file_path, file_flags, created,
-                         reinterpret_cast<PlatformFileError*>(&error));
-  return error;
+
+  File file(file_path, file_flags);
+  if (!file.IsValid())
+    return file.error_details();
+
+  *file_handle = file.TakePlatformFile();
+  *created = file.created();
+  return File::FILE_OK;
 }
 
 File::Error CloseAdapter(PlatformFile file_handle) {

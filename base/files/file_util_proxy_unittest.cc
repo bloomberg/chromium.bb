@@ -88,11 +88,10 @@ class FileUtilProxyTest : public testing::Test {
   PlatformFile GetTestPlatformFile(int flags) {
     if (file_ != kInvalidPlatformFileValue)
       return file_;
-    bool created;
-    PlatformFileError error;
-    file_ = CreatePlatformFile(test_path(), flags, &created, &error);
-    EXPECT_EQ(PLATFORM_FILE_OK, error);
-    EXPECT_NE(kInvalidPlatformFileValue, file_);
+
+    File file(test_path(), flags);
+    EXPECT_TRUE(file.IsValid());
+    file_ = file.TakePlatformFile();
     return file_;
   }
 
