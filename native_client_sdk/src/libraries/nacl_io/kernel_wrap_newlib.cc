@@ -161,7 +161,7 @@ int WRAP(ftruncate)(int fd, off_t length) {
 
 int WRAP(isatty)(int fd, int* result) {
   *result = ki_isatty(fd);
-  if (*result == 1)
+  if (*result == 0)
     return errno;
   return 0;
 }

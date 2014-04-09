@@ -296,6 +296,14 @@ TEST_F(KernelWrapTest, ioctl) {
 TEST_F(KernelWrapTest, isatty) {
   EXPECT_CALL(mock, isatty(kDummyInt)).WillOnce(Return(kDummyInt2));
   EXPECT_EQ(kDummyInt2, isatty(kDummyInt));
+
+  // This test verifies that the IRT interception wrapper for isatty
+  // ignores the value of errno when isatty() returns 1.  We had a bug
+  // where returning 1 from ki_isatty resulted in errno being returned
+  // by the IRT interface.
+  errno = kDummyInt3;
+  EXPECT_CALL(mock, isatty(kDummyInt)).WillOnce(Return(1));
+  EXPECT_EQ(1, isatty(kDummyInt));
 }
 #endif
 
