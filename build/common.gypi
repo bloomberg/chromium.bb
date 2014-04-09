@@ -4380,7 +4380,7 @@
               ],
             }],
             ['OS=="ios" and target_subarch!="arm32" and \
-              "<(GENERATOR)"=="ninja"', {
+              "<(GENERATOR)"=="xcode"', {
               'OTHER_CFLAGS': [
                 # TODO(ios): when building Chrome for iOS on 64-bit platform
                 # with Xcode, the -Wshorted-64-to-32 warning is automatically
