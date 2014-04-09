@@ -33,6 +33,10 @@ class WebMessagePortChannelImpl
                             int message_port_id,
                             base::MessageLoopProxy* child_thread_loop);
 
+  static void CreatePair(base::MessageLoopProxy* child_thread_loop,
+                         blink::WebMessagePortChannel** channel1,
+                         blink::WebMessagePortChannel** channel2);
+
   // Extracts port IDs for passing on to the browser process, and queues any
   // received messages. Takes ownership of the passed array (and deletes it).
   static std::vector<int> ExtractMessagePortIDs(

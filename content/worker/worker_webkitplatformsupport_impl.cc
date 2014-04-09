@@ -142,18 +142,11 @@ bool WorkerWebKitPlatformSupportImpl::isLinkVisited(
   return false;
 }
 
-WebMessagePortChannel*
-WorkerWebKitPlatformSupportImpl::createMessagePortChannel() {
-  return new WebMessagePortChannelImpl(child_thread_loop_.get());
-}
-
 void WorkerWebKitPlatformSupportImpl::createMessageChannel(
     blink::WebMessagePortChannel** channel1,
     blink::WebMessagePortChannel** channel2) {
-  *channel1 = new WebMessagePortChannelImpl(child_thread_loop_.get());
-  *channel2 = new WebMessagePortChannelImpl(child_thread_loop_.get());
-  (*channel1)->entangle(*channel2);
-  (*channel2)->entangle(*channel1);
+  WebMessagePortChannelImpl::CreatePair(
+      child_thread_loop_.get(), channel1, channel2);
 }
 
 void WorkerWebKitPlatformSupportImpl::setCookies(

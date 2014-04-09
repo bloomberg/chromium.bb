@@ -60,6 +60,23 @@ WebMessagePortChannelImpl::~WebMessagePortChannelImpl() {
 }
 
 // static
+void WebMessagePortChannelImpl::CreatePair(
+    base::MessageLoopProxy* child_thread_loop,
+    blink::WebMessagePortChannel** channel1,
+    blink::WebMessagePortChannel** channel2) {
+  WebMessagePortChannelImpl* impl1 =
+      new WebMessagePortChannelImpl(child_thread_loop);
+  WebMessagePortChannelImpl* impl2 =
+      new WebMessagePortChannelImpl(child_thread_loop);
+
+  impl1->Entangle(impl2);
+  impl2->Entangle(impl1);
+
+  *channel1 = impl1;
+  *channel2 = impl2;
+}
+
+// static
 std::vector<int> WebMessagePortChannelImpl::ExtractMessagePortIDs(
     WebMessagePortChannelArray* channels) {
   std::vector<int> message_port_ids;
@@ -93,12 +110,7 @@ void WebMessagePortChannelImpl::destroy() {
 }
 
 void WebMessagePortChannelImpl::entangle(WebMessagePortChannel* channel) {
-  // The message port ids might not be set up yet, if this channel wasn't
-  // created on the main thread.  So need to wait until we're on the main thread
-  // before getting the other message port id.
-  scoped_refptr<WebMessagePortChannelImpl> webchannel(
-      static_cast<WebMessagePortChannelImpl*>(channel));
-  Entangle(webchannel);
+  NOTREACHED();  // DEPRECATED
 }
 
 void WebMessagePortChannelImpl::postMessage(
@@ -160,6 +172,9 @@ void WebMessagePortChannelImpl::Init() {
 
 void WebMessagePortChannelImpl::Entangle(
     scoped_refptr<WebMessagePortChannelImpl> channel) {
+  // The message port ids might not be set up yet, if this channel wasn't
+  // created on the main thread.  So need to wait until we're on the main thread
+  // before getting the other message port id.
   if (!child_thread_loop_->BelongsToCurrentThread()) {
     child_thread_loop_->PostTask(
         FROM_HERE,

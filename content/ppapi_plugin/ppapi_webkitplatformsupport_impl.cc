@@ -183,10 +183,12 @@ bool PpapiWebKitPlatformSupportImpl::isLinkVisited(
   return false;
 }
 
-blink::WebMessagePortChannel*
-PpapiWebKitPlatformSupportImpl::createMessagePortChannel() {
+void PpapiWebKitPlatformSupportImpl::createMessageChannel(
+    blink::WebMessagePortChannel** channel1,
+    blink::WebMessagePortChannel** channel2) {
   NOTREACHED();
-  return NULL;
+  *channel1 = NULL;
+  *channel2 = NULL;
 }
 
 void PpapiWebKitPlatformSupportImpl::setCookies(

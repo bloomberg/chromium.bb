@@ -47,10 +47,8 @@ class WorkerWebKitPlatformSupportImpl : public BlinkPlatformImpl,
   virtual unsigned long long visitedLinkHash(const char* canonicalURL,
                                              size_t length);
   virtual bool isLinkVisited(unsigned long long linkHash);
-  virtual blink::WebMessagePortChannel* createMessagePortChannel();
-  virtual void createMessageChannel(
-      blink::WebMessagePortChannel** channel1,
-      blink::WebMessagePortChannel** channel2);
+  virtual void createMessageChannel(blink::WebMessagePortChannel** channel1,
+                                    blink::WebMessagePortChannel** channel2);
   virtual void setCookies(const blink::WebURL& url,
                           const blink::WebURL& first_party_for_cookies,
                           const blink::WebString& value);
