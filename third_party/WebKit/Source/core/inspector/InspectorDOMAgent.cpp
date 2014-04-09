@@ -1743,9 +1743,8 @@ Node* InspectorDOMAgent::innerParentNode(Node* node)
 {
     if (node->isDocumentNode()) {
         Document* document = toDocument(node);
-        HTMLImportChild* importChild = toHTMLImportChild(document->import());
-        if (importChild)
-            return importChild->link();
+        if (document->import() && document->import()->isChild())
+            return toHTMLImportChild(document->import())->link();
         return document->ownerElement();
     }
     return node->parentOrShadowHostNode();
