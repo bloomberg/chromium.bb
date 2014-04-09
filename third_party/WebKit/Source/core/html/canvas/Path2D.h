@@ -49,6 +49,10 @@ public:
 
     const Path& path() const { return m_path; }
 
+    void addPath(Path2D* path, ExceptionState& exceptionState)
+    {
+        addPath(path, 0, exceptionState);
+    }
 
     void addPath(Path2D* path, SVGMatrixTearOff* transform, ExceptionState& exceptionState)
     {

@@ -1,7 +1,9 @@
 description("Test addPath() method.");
-var ctx = document.createElement('canvas').getContext('2d');
+var canvas = document.createElement('canvas');
+var ctx = canvas.getContext('2d');
 
 debug("Test addPath() with transform as identity matrix.")
+ctx.clearRect(0, 0, canvas.width, canvas.height);
 ctx.beginPath();
 var p1 = new Path2D();
 p1.rect(0,0,100,100);
@@ -21,6 +23,7 @@ shouldBe("imgdata[7]", "255");
 debug("");
 
 debug("Test addPath() with transform as translate(100, -100).")
+ctx.clearRect(0, 0, canvas.width, canvas.height);
 ctx.beginPath();
 var p3 = new Path2D();
 p3.rect(0,0,100,100);
@@ -42,6 +45,7 @@ shouldBe("imgdata[7]", "255");
 debug("");
 
 debug("Test addPath() with non-invertible transform.")
+ctx.clearRect(0, 0, canvas.width, canvas.height);
 ctx.beginPath();
 var p5 = new Path2D();
 p5.rect(0,0,100,100);
@@ -63,6 +67,7 @@ shouldNotBe("imgdata[7]", "255");
 debug("");
 
 debug("Test addPath() with transform as null or invalid type.")
+ctx.clearRect(0, 0, canvas.width, canvas.height);
 ctx.beginPath();
 var p7 = new Path2D();
 p7.rect(0,0,100,100);
@@ -80,6 +85,24 @@ shouldBe("imgdata[4]", "255");
 shouldBe("imgdata[5]", "0");
 shouldBe("imgdata[6]", "0");
 shouldBe("imgdata[7]", "255");
+debug("");
+
+debug("Test addPath() with transform omitted.")
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+ctx.beginPath();
+var p9 = new Path2D();
+var p10 = new Path2D();
+p9.rect(0,0,10,10);
+p10.addPath(p9);
+ctx.fillStyle = 'red';
+ctx.currentPath = p10;
+ctx.fill();
+imageData = ctx.getImageData(1, 1, 1, 1);
+imgdata = imageData.data;
+shouldBe("imgdata[0]", "255");
+shouldBe("imgdata[1]", "0");
+shouldBe("imgdata[2]", "0");
+shouldBe("imgdata[3]", "255");
 debug("");
 
 debug("Test addPath() with path as null and invalid type");
