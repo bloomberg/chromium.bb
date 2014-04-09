@@ -117,6 +117,10 @@ void UserSwichAnimatorChromeOS::AdvanceUserTransitionAnimation() {
   }
 }
 
+void UserSwichAnimatorChromeOS::CancelAnimation() {
+  animation_step_ = ANIMATION_STEP_ENDED;
+}
+
 void UserSwichAnimatorChromeOS::FinalizeAnimation() {
   user_changed_animation_timer_.reset();
   while (ANIMATION_STEP_ENDED != animation_step_)

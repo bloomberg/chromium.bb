@@ -226,6 +226,12 @@ MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
 }
 
 MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
+  // When the MultiUserWindowManager gets destroyed, ash::Shell is mostly gone.
+  // As such we should not try to finalize any outstanding user animations.
+  // Note that the destruction of the object can be done later.
+  if (animation_.get())
+    animation_->CancelAnimation();
+
   // Remove all window observers.
   WindowToEntryMap::iterator window = window_to_entry_.begin();
   while (window != window_to_entry_.end()) {

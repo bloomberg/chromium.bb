@@ -728,6 +728,21 @@ TEST_F(MultiUserWindowManagerChromeOSTest, FullUserSwitchAnimationTests) {
   EXPECT_EQ("H[A], H[B], S[C]", GetStatus());
 }
 
+// Make sure that we do not crash upon shutdown when an animation is pending and
+// a shutdown happens.
+TEST_F(MultiUserWindowManagerChromeOSTest, SystemShutdownWithActiveAnimation) {
+  SetUpForThisManyWindows(2);
+  // Turn the use of delays and animation on.
+  multi_user_window_manager()->SetAnimationsForTest(false);
+  // Set some owners and make sure we got what we asked for.
+  multi_user_window_manager()->SetWindowOwner(window(0), "A");
+  multi_user_window_manager()->SetWindowOwner(window(1), "B");
+  StartUserTransitionAnimation("B");
+  // We don't do anything more here - the animations are pending and with the
+  // shutdown of the framework the animations should get cancelled. If not a
+  // crash would happen.
+}
+
 // Test that using the full user switch, the animations are transitioning as
 // we expect them to in all animation steps.
 TEST_F(MultiUserWindowManagerChromeOSTest, AnimationSteps) {

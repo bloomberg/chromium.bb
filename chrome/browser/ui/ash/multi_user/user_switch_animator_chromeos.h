@@ -55,6 +55,10 @@ class UserSwichAnimatorChromeOS {
   // timer (if one exists) will get destroyed.
   void AdvanceUserTransitionAnimation();
 
+  // When the system is shutting down, the animation can be stopped without
+  // ending it.
+  void CancelAnimation();
+
  private:
   // The window configuration of screen covering windows before an animation.
   enum TransitioningScreenCover {
