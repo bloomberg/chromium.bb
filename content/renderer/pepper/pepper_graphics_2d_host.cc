@@ -8,13 +8,16 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "cc/resources/shared_bitmap.h"
 #include "cc/resources/texture_mailbox.h"
+#include "content/child/child_shared_bitmap_manager.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
+#include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_rect.h"
@@ -564,7 +567,7 @@ int32_t PepperGraphics2DHost::OnHostMsgReadImageData(
   return ReadImageData(image, &top_left) ? PP_OK : PP_ERROR_FAILED;
 }
 
-void ReleaseCallback(scoped_ptr<base::SharedMemory> memory,
+void ReleaseCallback(scoped_ptr<cc::SharedBitmap> bitmap,
                      uint32 sync_point,
                      bool lost_resource) {}
 
@@ -575,18 +578,21 @@ bool PepperGraphics2DHost::PrepareTextureMailbox(
     return false;
   // TODO(jbauman): Send image_data_ through mailbox to avoid copy.
   gfx::Size pixel_image_size(image_data_->width(), image_data_->height());
-  int buffer_size = pixel_image_size.GetArea() * 4;
-  scoped_ptr<base::SharedMemory> memory =
-      RenderThread::Get()->HostAllocateSharedMemoryBuffer(buffer_size);
-  if (!memory || !memory->Map(buffer_size))
+  scoped_ptr<cc::SharedBitmap> shared_bitmap =
+      RenderThreadImpl::current()
+          ->shared_bitmap_manager()
+          ->AllocateSharedBitmap(pixel_image_size);
+  if (!shared_bitmap)
     return false;
   void* src = image_data_->Map();
-  memcpy(memory->memory(), src, buffer_size);
+  memcpy(shared_bitmap->pixels(),
+         src,
+         cc::SharedBitmap::CheckedSizeInBytes(pixel_image_size));
   image_data_->Unmap();
 
-  *mailbox = cc::TextureMailbox(memory.get(), pixel_image_size);
+  *mailbox = cc::TextureMailbox(shared_bitmap->memory(), pixel_image_size);
   *release_callback = cc::SingleReleaseCallback::Create(
-      base::Bind(&ReleaseCallback, base::Passed(&memory)));
+      base::Bind(&ReleaseCallback, base::Passed(&shared_bitmap)));
   texture_mailbox_modified_ = false;
   return true;
 }
