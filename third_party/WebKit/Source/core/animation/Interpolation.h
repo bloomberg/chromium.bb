@@ -79,7 +79,7 @@ public:
         return adoptRefWillBeNoop(new LegacyStyleInterpolation(InterpolableAnimatableValue::create(start), InterpolableAnimatableValue::create(end), id));
     }
 
-    virtual void apply(StyleResolverState&) const;
+    virtual void apply(StyleResolverState&) const OVERRIDE;
 
     virtual bool isLegacyStyleInterpolation() const OVERRIDE FINAL { return true; }
     PassRefPtrWillBeRawPtr<AnimatableValue> currentValue() const
@@ -97,8 +97,31 @@ private:
     }
 };
 
+class LengthStyleInterpolation : public StyleInterpolation {
+public:
+    static PassRefPtrWillBeRawPtr<LengthStyleInterpolation> create(CSSValue* start, CSSValue* end, CSSPropertyID id)
+    {
+        return adoptRefWillBeNoop(new LengthStyleInterpolation(lengthToInterpolableValue(start), lengthToInterpolableValue(end), id));
+    }
+
+    virtual void apply(StyleResolverState&) const OVERRIDE;
+
+    virtual void trace(Visitor*) OVERRIDE;
+
+private:
+    LengthStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id)
+        : StyleInterpolation(start, end, id)
+    { }
+
+    static PassOwnPtr<InterpolableValue> lengthToInterpolableValue(CSSValue*);
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLength(InterpolableValue*);
+
+    friend class AnimationInterpolationTest;
+};
+
 DEFINE_TYPE_CASTS(StyleInterpolation, Interpolation, value, value->isStyleInterpolation(), value.isStyleInterpolation());
 DEFINE_TYPE_CASTS(LegacyStyleInterpolation, Interpolation, value, value->isLegacyStyleInterpolation(), value.isLegacyStyleInterpolation());
 
 }
+
 #endif

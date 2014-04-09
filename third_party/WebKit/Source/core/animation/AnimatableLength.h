@@ -144,6 +144,7 @@ private:
     mutable RefPtrWillBeMember<CSSPrimitiveValue> m_cachedCSSPrimitiveValue;
 
     friend class AnimationAnimatableLengthTest;
+    friend class LengthStyleInterpolation;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLength, isLength());

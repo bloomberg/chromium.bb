@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/animation/StringKeyframe.h"
 
+#include "core/animation/AnimatableLength.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -69,6 +70,18 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
 {
     CSSValue* fromCSSValue = m_value.get();
     CSSValue* toCSSValue = toStringPropertySpecificKeyframe(end)->value();
+
+    switch (property) {
+    case CSSPropertyLeft:
+    case CSSPropertyRight:
+    case CSSPropertyWidth:
+    case CSSPropertyHeight:
+        if (AnimatableLength::canCreateFrom(fromCSSValue) && AnimatableLength::canCreateFrom(toCSSValue))
+            return LengthStyleInterpolation::create(fromCSSValue, toCSSValue, property);
+        break;
+    default:
+        break;
+    }
 
     // FIXME: Remove the use of AnimatableValues, RenderStyles and Elements here.
     // FIXME: Remove this cache

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<div id='container'>
+<div id='element'></div>
+</div>
+
+<script>
+var element = document.getElementById('element');
+test(function() {
+    element.style.fontSize = '10px';
+    container.style.width = '1000px';
+    var player = element.animate([{left: 'calc(100px + 80%)', offset: 0}, {left: '10em', offset: 1}], 10);
+    player.pause();
+    player.currentTime = 5;
+    assert_equals(getComputedStyle(element).left, '500px');
+    element.style.fontSize = '20px';
+    assert_equals(getComputedStyle(element).left, '550px');
+    container.style.width = '500px';
+    assert_equals(getComputedStyle(element).left, '350px');
+}, 'Lengths responsive to style changes');
+</script>
+
