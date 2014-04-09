@@ -59,6 +59,7 @@
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/install_warning.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
@@ -361,11 +362,12 @@ DeveloperPrivateGetItemsInfoFunction::CreateItemInfo(const Extension& item,
   if (Manifest::IsUnpackedLocation(item.location())) {
     info->path.reset(
         new std::string(base::UTF16ToUTF8(item.path().LossyDisplayName())));
-    // If the ErrorConsole is enabled, get the errors for the extension and add
-    // them to the list. Otherwise, use the install warnings (using both is
-    // redundant).
+    // If the ErrorConsole is enabled and the extension is unpacked, use the
+    // more detailed errors from the ErrorConsole. Otherwise, use the install
+    // warnings (using both is redundant).
     ErrorConsole* error_console = ErrorConsole::Get(GetProfile());
-    if (error_console->IsEnabledForAppsDeveloperTools()) {
+    if (error_console->IsEnabledForAppsDeveloperTools() &&
+        item.location() == Manifest::UNPACKED) {
       const ErrorList& errors = error_console->GetErrorsForExtension(item.id());
       if (!errors.empty()) {
         for (ErrorList::const_iterator iter = errors.begin();

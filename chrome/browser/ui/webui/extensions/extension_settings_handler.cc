@@ -82,6 +82,7 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "grit/browser_resources.h"
@@ -334,12 +335,13 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     }
   }
 
-  // If the ErrorConsole is enabled, get the errors for the extension and add
-  // them to the list. Otherwise, use the install warnings (using both is
-  // redundant).
+  // If the ErrorConsole is enabled and the extension is unpacked, use the more
+  // detailed errors from the ErrorConsole. Otherwise, use the install warnings
+  // (using both is redundant).
   ErrorConsole* error_console =
       ErrorConsole::Get(extension_service_->profile());
-  if (error_console->IsEnabledForChromeExtensionsPage()) {
+  if (error_console->IsEnabledForChromeExtensionsPage() &&
+      extension->location() == Manifest::UNPACKED) {
     const ErrorList& errors =
         error_console->GetErrorsForExtension(extension->id());
     if (!errors.empty()) {
