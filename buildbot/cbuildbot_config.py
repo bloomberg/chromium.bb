@@ -1947,17 +1947,14 @@ _release.add_config('butterfly-release',
 
 _release.add_config('clapper-release',
   boards=['clapper'],
-  hw_tests=[],
 )
 
 _release.add_config('enguarde-release',
   boards=['enguarde'],
-  hw_tests=[],
 )
 
 _release.add_config('expresso-release',
   boards=['expresso'],
-  hw_tests=[],
 )
 
 _release.add_config('falco-release',
@@ -1966,7 +1963,6 @@ _release.add_config('falco-release',
 
 _release.add_config('falco_li-release',
   boards=['falco_li'],
-  hw_tests=[],
 )
 
 _release.add_config('fox_wtm2-release',
@@ -1979,17 +1975,14 @@ _release.add_config('fox_wtm2-release',
 
 _release.add_config('glimmer-release',
   boards=['glimmer'],
-  hw_tests=[],
 )
 
 _release.add_config('gnawty-release',
   boards=['gnawty'],
-  hw_tests=[],
 )
 
 _release.add_config('kip-release',
   boards=['kip'],
-  hw_tests=[],
 )
 
 _release.add_config('leon-release',
@@ -2029,7 +2022,6 @@ _release.add_config('peppy-release',
 
 _release.add_config('quawks-release',
   boards=['quawks'],
-  hw_tests=[],
 )
 
 _release.add_config('rambi-release',
@@ -2038,12 +2030,10 @@ _release.add_config('rambi-release',
 
 _release.add_config('samus-release',
   boards=['samus'],
-  hw_tests=[],
 )
 
 _release.add_config('slippy-release',
   boards=['slippy'],
-  hw_tests=[],
 )
 
 _release.add_config('sonic-release',
@@ -2068,7 +2058,6 @@ _release.add_config('stumpy-release',
 
 _release.add_config('winky-release',
   boards=['winky'],
-  hw_tests=[],
 )
 
 _release.add_config('wolf-release',
@@ -2102,7 +2091,6 @@ _arm_release.add_config('peach_pit-release',
 
 _arm_release.add_config('nyan-release',
   boards=['nyan'],
-  hw_tests=[],
 )
 
 _arm_release.add_config('peach_pi-release',
@@ -2111,7 +2099,6 @@ _arm_release.add_config('peach_pi-release',
 
 _arm_release.add_config('nyan_big-release',
   boards=['nyan_big'],
-  hw_tests=[],
 )
 
 # Brillo devices do not have Chrome or currently need for test or dev images.
