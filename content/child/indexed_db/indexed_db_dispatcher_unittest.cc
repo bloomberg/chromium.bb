@@ -212,8 +212,10 @@ TEST_F(IndexedDBDispatcherTest, CursorTransactionId) {
     int32 ipc_callbacks_id = dispatcher.cursor_transaction_ids_.begin()->first;
 
     // Now simululate a "null cursor" response.
-    dispatcher.OnSuccessValue(
-        dispatcher.CurrentWorkerId(), ipc_callbacks_id, std::string());
+    IndexedDBMsg_CallbacksSuccessValue_Params params;
+    params.ipc_thread_id = dispatcher.CurrentWorkerId();
+    params.ipc_callbacks_id = ipc_callbacks_id;
+    dispatcher.OnSuccessValue(params);
 
     // Ensure the map result was deleted.
     EXPECT_EQ(0UL, dispatcher.cursor_transaction_ids_.size());

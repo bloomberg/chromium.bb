@@ -501,38 +501,33 @@ void IndexedDBDispatcher::OnSuccessStringList(
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
 
-void IndexedDBDispatcher::OnSuccessValue(int32 ipc_thread_id,
-                                         int32 ipc_callbacks_id,
-                                         const std::string& value) {
-  DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
-  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
+void IndexedDBDispatcher::OnSuccessValue(
+    const IndexedDBMsg_CallbacksSuccessValue_Params& p) {
+  DCHECK_EQ(p.ipc_thread_id, CurrentWorkerId());
+  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(p.ipc_callbacks_id);
   if (!callbacks)
     return;
   WebData web_value;
-  if (value.size())
-    web_value.assign(&*value.begin(), value.size());
+  if (!p.value.empty())
+    web_value.assign(&*p.value.begin(), p.value.size());
   callbacks->onSuccess(web_value);
-  pending_callbacks_.Remove(ipc_callbacks_id);
-  cursor_transaction_ids_.erase(ipc_callbacks_id);
+  pending_callbacks_.Remove(p.ipc_callbacks_id);
+  cursor_transaction_ids_.erase(p.ipc_callbacks_id);
 }
 
 void IndexedDBDispatcher::OnSuccessValueWithKey(
-    int32 ipc_thread_id,
-    int32 ipc_callbacks_id,
-    const std::string& value,
-    const IndexedDBKey& primary_key,
-    const IndexedDBKeyPath& key_path) {
-  DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
-  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
+    const IndexedDBMsg_CallbacksSuccessValueWithKey_Params& p) {
+  DCHECK_EQ(p.ipc_thread_id, CurrentWorkerId());
+  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(p.ipc_callbacks_id);
   if (!callbacks)
     return;
   WebData web_value;
-  if (value.size())
-    web_value.assign(&*value.begin(), value.size());
+  if (p.value.size())
+    web_value.assign(&*p.value.begin(), p.value.size());
   callbacks->onSuccess(web_value,
-                       WebIDBKeyBuilder::Build(primary_key),
-                       WebIDBKeyPathBuilder::Build(key_path));
-  pending_callbacks_.Remove(ipc_callbacks_id);
+                       WebIDBKeyBuilder::Build(p.primary_key),
+                       WebIDBKeyPathBuilder::Build(p.key_path));
+  pending_callbacks_.Remove(p.ipc_callbacks_id);
 }
 
 void IndexedDBDispatcher::OnSuccessInteger(int32 ipc_thread_id,

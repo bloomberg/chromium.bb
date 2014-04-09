@@ -277,17 +277,15 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBValue* value,
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
   DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
-  std::string value_copy;
+  IndexedDBMsg_CallbacksSuccessValueWithKey_Params params;
+  params.ipc_thread_id = ipc_thread_id_;
+  params.ipc_callbacks_id = ipc_callbacks_id_;
+  params.primary_key = key;
+  params.key_path = key_path;
   if (value && !value->empty())
-    std::swap(value_copy, value->bits);
+    std::swap(params.value, value->bits);
 
-  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessValueWithKey(
-      ipc_thread_id_,
-      ipc_callbacks_id_,
-      // TODO(alecflett): Avoid a copy here.
-      value_copy,
-      key,
-      key_path));
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessValueWithKey(params));
   dispatcher_host_ = NULL;
 }
 
@@ -300,15 +298,13 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBValue* value) {
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
   DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
-  std::string value_copy;
+  IndexedDBMsg_CallbacksSuccessValue_Params params;
+  params.ipc_thread_id = ipc_thread_id_;
+  params.ipc_callbacks_id = ipc_callbacks_id_;
   if (value && !value->empty())
-    std::swap(value_copy, value->bits);
+    std::swap(params.value, value->bits);
 
-  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessValue(
-      ipc_thread_id_,
-      ipc_callbacks_id_,
-      // TODO(alecflett): avoid a copy here.
-      value_copy));
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessValue(params));
   dispatcher_host_ = NULL;
 }
 

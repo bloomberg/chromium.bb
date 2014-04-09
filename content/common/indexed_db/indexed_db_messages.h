@@ -121,6 +121,16 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseGet_Params)
   IPC_STRUCT_MEMBER(bool, key_only)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(IndexedDBMsg_BlobOrFileInfo)
+IPC_STRUCT_MEMBER(bool, is_file)
+IPC_STRUCT_MEMBER(std::string, uuid)
+IPC_STRUCT_MEMBER(base::string16, mime_type)
+IPC_STRUCT_MEMBER(uint64, size)
+IPC_STRUCT_MEMBER(base::string16, file_path)
+IPC_STRUCT_MEMBER(base::string16, file_name)
+IPC_STRUCT_MEMBER(double, last_modified)
+IPC_STRUCT_END()
+
 // Used to set a value in an object store.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabasePut_Params)
   // The id any response should contain.
@@ -142,6 +152,8 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabasePut_Params)
   IPC_STRUCT_MEMBER(blink::WebIDBDatabase::PutMode, put_mode)
   // The index ids and the list of keys for each index.
   IPC_STRUCT_MEMBER(std::vector<IndexKeys>, index_keys)
+  // Sideband data for any blob or file encoded in value.
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_BlobOrFileInfo>, blob_or_file_info)
 IPC_STRUCT_END()
 
 // Used to open both cursors and object cursors in IndexedDB.
@@ -238,6 +250,8 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessIDBCursor_Params)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, key)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
   IPC_STRUCT_MEMBER(std::string, value)
+  // Sideband data for any blob or file encoded in value.
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_BlobOrFileInfo>, blob_or_file_info)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorContinue_Params)
@@ -247,6 +261,8 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorContinue_Params)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, key)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
   IPC_STRUCT_MEMBER(std::string, value)
+  // Sideband data for any blob or file encoded in value.
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_BlobOrFileInfo>, blob_or_file_info)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
@@ -256,6 +272,27 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
   IPC_STRUCT_MEMBER(std::vector<content::IndexedDBKey>, keys)
   IPC_STRUCT_MEMBER(std::vector<content::IndexedDBKey>, primary_keys)
   IPC_STRUCT_MEMBER(std::vector<std::string>, values)
+  // Sideband data for any blob or file encoded in value.
+  IPC_STRUCT_MEMBER(std::vector<std::vector<IndexedDBMsg_BlobOrFileInfo> >,
+                    blob_or_file_infos)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessValue_Params)
+  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
+  IPC_STRUCT_MEMBER(std::string, value)
+  // Sideband data for any blob or file encoded in value.
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_BlobOrFileInfo>, blob_or_file_info)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessValueWithKey_Params)
+  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
+  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
+  IPC_STRUCT_MEMBER(std::string, value)
+  IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, key_path)
+  // Sideband data for any blob or file encoded in value.
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_BlobOrFileInfo>, blob_or_file_info)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBIndexMetadata)
@@ -324,16 +361,13 @@ IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessIndexedDBKey,
                      int32 /* ipc_thread_id */,
                      int32 /* ipc_callbacks_id */,
                      content::IndexedDBKey /* indexed_db_key */)
-IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessValue,
-                     int32 /* ipc_thread_id */,
-                     int32 /* ipc_callbacks_id */,
-                     std::string /* value */)
-IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessValueWithKey,
-                     int32 /* ipc_thread_id */,
-                     int32 /* ipc_callbacks_id */,
-                     std::string /* value */,
-                     content::IndexedDBKey /* indexed_db_key */,
-                     content::IndexedDBKeyPath /* indexed_db_keypath */)
+
+IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessValue,
+                     IndexedDBMsg_CallbacksSuccessValue_Params)
+
+IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessValueWithKey,
+                     IndexedDBMsg_CallbacksSuccessValueWithKey_Params)
+
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessInteger,
                      int32 /* ipc_thread_id */,
                      int32 /* ipc_callbacks_id */,
