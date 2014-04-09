@@ -416,6 +416,15 @@ NET_EXPORT_PRIVATE int GetPortFromSockaddr(const struct sockaddr* address,
 // machine.
 NET_EXPORT_PRIVATE bool IsLocalhost(const std::string& host);
 
+// Category of network interface types.
+enum NetworkInterfaceType {
+  NETWORK_INTERFACE_UNKNOWN,
+  NETWORK_INTERFACE_ETHERNET,
+  NETWORK_INTERFACE_WIFI,
+  NETWORK_INTERFACE_CELLULAR,
+  NETWORK_INTERFACE_VPN
+};
+
 // struct that is used by GetNetworkList() to represent a network
 // interface.
 struct NET_EXPORT NetworkInterface {
@@ -423,6 +432,7 @@ struct NET_EXPORT NetworkInterface {
   NetworkInterface(const std::string& name,
                    const std::string& friendly_name,
                    uint32 interface_index,
+                   NetworkInterfaceType type,
                    const IPAddressNumber& address,
                    size_t network_prefix);
   ~NetworkInterface();
@@ -430,6 +440,7 @@ struct NET_EXPORT NetworkInterface {
   std::string name;
   std::string friendly_name;  // Same as |name| on non-Windows.
   uint32 interface_index;  // Always 0 on Android.
+  NetworkInterfaceType type;
   IPAddressNumber address;
   size_t network_prefix;
 };

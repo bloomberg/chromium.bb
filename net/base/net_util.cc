@@ -1784,17 +1784,21 @@ bool IsLocalhost(const std::string& host) {
   return false;
 }
 
-NetworkInterface::NetworkInterface() : network_prefix(0) {
+NetworkInterface::NetworkInterface()
+    : type(NETWORK_INTERFACE_UNKNOWN),
+      network_prefix(0) {
 }
 
 NetworkInterface::NetworkInterface(const std::string& name,
                                    const std::string& friendly_name,
                                    uint32 interface_index,
+                                   NetworkInterfaceType type,
                                    const IPAddressNumber& address,
                                    size_t network_prefix)
     : name(name),
       friendly_name(friendly_name),
       interface_index(interface_index),
+      type(type),
       address(address),
       network_prefix(network_prefix) {
 }
