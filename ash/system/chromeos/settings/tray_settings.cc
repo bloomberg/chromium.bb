@@ -47,6 +47,7 @@ class SettingsDefaultView : public ActionableView,
           new ash::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
       icon->SetImage(
           rb.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToImageSkia());
+      icon->set_id(test::kSettingsTrayItemViewId);
       AddChildView(icon);
 
       base::string16 text = rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_SETTINGS);
@@ -138,10 +139,8 @@ views::View* TraySettings::CreateDefaultView(user::LoginStatus status) {
   if ((status == user::LOGGED_IN_NONE || status == user::LOGGED_IN_LOCKED) &&
       !PowerStatus::Get()->IsBatteryPresent())
     return NULL;
-
   if (!ash::Shell::GetInstance()->system_tray_delegate()->ShouldShowSettings())
     return NULL;
-
   CHECK(default_view_ == NULL);
   default_view_ =  new tray::SettingsDefaultView(status);
   return default_view_;

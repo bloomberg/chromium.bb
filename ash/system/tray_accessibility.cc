@@ -80,6 +80,7 @@ class DefaultAccessibilityView : public TrayItemMore {
         IDS_ASH_STATUS_TRAY_ACCESSIBILITY);
     SetLabel(label);
     SetAccessibleName(label);
+    set_id(test::kAccessibilityTrayItemViewId);
   }
 
   virtual ~DefaultAccessibilityView() {

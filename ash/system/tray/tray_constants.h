@@ -79,6 +79,11 @@ int GetTraySpacing();
 // (Determined by ash::switches::UseAlternateShelfLayout).
 int GetShelfItemHeight();
 
+namespace test {
+const int kSettingsTrayItemViewId = 10000;
+const int kAccessibilityTrayItemViewId = 10001;
+}  // namespace test
+
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_

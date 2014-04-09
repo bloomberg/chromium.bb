@@ -6,22 +6,27 @@
 
 #include <vector>
 
+#include "ash/accessibility_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_types.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -133,6 +138,20 @@ class TestNoViewItem : public SystemTrayItem {
   virtual void UpdateAfterLoginStatusChange(
       user::LoginStatus status) OVERRIDE {
   }
+};
+
+class ModalWidgetDelegate : public views::WidgetDelegateView {
+ public:
+  ModalWidgetDelegate() {}
+  virtual ~ModalWidgetDelegate() {}
+
+  virtual views::View* GetContentsView() OVERRIDE { return this; }
+  virtual ui::ModalType GetModalType() const OVERRIDE {
+    return ui::MODAL_TYPE_SYSTEM;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ModalWidgetDelegate);
 };
 
 }  // namespace
@@ -416,6 +435,52 @@ TEST_F(SystemTrayTest, PersistentBubble) {
     generator.ClickLeftButton();
     ASSERT_TRUE(tray->HasSystemBubble());
   }
+}
+
+#if defined(OS_CHROMEOS)
+// Accessibility/Settings tray items are available only on cros.
+#define MAYBE_WithSystemModal WithSystemModal
+#else
+#define MAYBE_WithSystemModal DISABLED_WithSystemModal
+#endif
+TEST_F(SystemTrayTest, MAYBE_WithSystemModal) {
+  // Check if the accessibility item is created even with system modal
+  // dialog.
+  Shell::GetInstance()->accessibility_delegate()->SetVirtualKeyboardEnabled(
+      true);
+  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+      new ModalWidgetDelegate(),
+      Shell::GetPrimaryRootWindow(),
+      gfx::Rect(0, 0, 100, 100));
+  widget->Show();
+
+  SystemTray* tray = GetSystemTray();
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+
+  ASSERT_TRUE(tray->HasSystemBubble());
+  const views::View* accessibility =
+      tray->GetSystemBubble()->bubble_view()->GetViewByID(
+          test::kAccessibilityTrayItemViewId);
+  ASSERT_TRUE(accessibility);
+  EXPECT_TRUE(accessibility->visible());
+  EXPECT_FALSE(tray->GetSystemBubble()->bubble_view()->GetViewByID(
+      test::kSettingsTrayItemViewId));
+
+  widget->Close();
+
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  // System modal is gone. The bubble should now contains settings
+  // as well.
+  accessibility = tray->GetSystemBubble()->bubble_view()->GetViewByID(
+      test::kAccessibilityTrayItemViewId);
+  ASSERT_TRUE(accessibility);
+  EXPECT_TRUE(accessibility->visible());
+
+  const views::View* settings =
+      tray->GetSystemBubble()->bubble_view()->GetViewByID(
+          test::kSettingsTrayItemViewId);
+  ASSERT_TRUE(settings);
+  EXPECT_TRUE(settings->visible());
 }
 
 }  // namespace test
