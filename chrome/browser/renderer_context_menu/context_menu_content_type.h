@@ -12,7 +12,6 @@
 class Profile;
 
 namespace content {
-class RenderFrameHost;
 class WebContents;
 }
 
@@ -21,7 +20,7 @@ class Extension;
 }
 
 // ContextMenuContentType is a helper to decide which category/group of items
-// are relevant for a given RenderFrameHost and a context.
+// are relevant for a given WebContents and a context.
 //
 // Subclasses can override the behavior of showing/hiding a category.
 class ContextMenuContentType {
@@ -54,14 +53,13 @@ class ContextMenuContentType {
 
   static ContextMenuContentType* Create(
       content::WebContents* web_contents,
-      content::RenderFrameHost* render_frame_host,
       const content::ContextMenuParams& params);
 
   // Returns if |group| is enabled.
   virtual bool SupportsGroup(int group);
 
  protected:
-  ContextMenuContentType(content::RenderFrameHost* render_frame_host,
+  ContextMenuContentType(content::WebContents* web_contents,
                          const content::ContextMenuParams& params,
                          bool supports_custom_items);
 

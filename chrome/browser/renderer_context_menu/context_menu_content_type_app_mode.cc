@@ -5,9 +5,9 @@
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_app_mode.h"
 
 ContextMenuContentTypeAppMode::ContextMenuContentTypeAppMode(
-    content::RenderFrameHost* render_frame_host,
+    content::WebContents* web_contents,
     const content::ContextMenuParams& params)
-    : ContextMenuContentType(render_frame_host, params, false) {
+    : ContextMenuContentType(web_contents, params, false) {
 }
 
 ContextMenuContentTypeAppMode::~ContextMenuContentTypeAppMode() {

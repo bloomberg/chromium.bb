@@ -5,9 +5,9 @@
 #include "chrome/browser/guestview/webview/context_menu_content_type_webview.h"
 
 ContextMenuContentTypeWebView::ContextMenuContentTypeWebView(
-    content::RenderFrameHost* render_frame_host,
+    content::WebContents* web_contents,
     const content::ContextMenuParams& params)
-    : ContextMenuContentType(render_frame_host, params, true) {
+    : ContextMenuContentType(web_contents, params, true) {
 }
 
 ContextMenuContentTypeWebView::~ContextMenuContentTypeWebView() {

@@ -418,8 +418,7 @@ RenderViewContextMenu::RenderViewContextMenu(
           ProtocolHandlerRegistryFactory::GetForProfile(profile_)),
       command_executed_(false) {
   content_type_.reset(ContextMenuContentTypeFactory::Create(
-                          source_web_contents_,
-                          render_frame_host, params));
+                          source_web_contents_, params));
 }
 
 RenderViewContextMenu::~RenderViewContextMenu() {

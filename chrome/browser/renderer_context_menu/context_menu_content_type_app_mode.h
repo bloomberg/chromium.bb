@@ -15,7 +15,7 @@ class ContextMenuContentTypeAppMode : public ContextMenuContentType {
   virtual bool SupportsGroup(int group) OVERRIDE;
 
  protected:
-  ContextMenuContentTypeAppMode(content::RenderFrameHost* render_frame_host,
+  ContextMenuContentTypeAppMode(content::WebContents* web_contents,
                                 const content::ContextMenuParams& params);
 
  private:

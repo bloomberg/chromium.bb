@@ -16,7 +16,7 @@ class ContextMenuContentTypeExtensionPopup : public ContextMenuContentType {
 
  protected:
   ContextMenuContentTypeExtensionPopup(
-      content::RenderFrameHost* render_frame_host,
+      content::WebContents* web_contents,
       const content::ContextMenuParams& params);
 
  private:

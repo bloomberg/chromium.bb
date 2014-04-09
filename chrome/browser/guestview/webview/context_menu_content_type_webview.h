@@ -19,7 +19,7 @@ class ContextMenuContentTypeWebView : public ContextMenuContentType {
   virtual bool SupportsGroup(int group) OVERRIDE;
 
  protected:
-  ContextMenuContentTypeWebView(content::RenderFrameHost* render_frame_host,
+  ContextMenuContentTypeWebView(content::WebContents* web_contents,
                                 const content::ContextMenuParams& params);
 
  private:

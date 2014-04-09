@@ -10,7 +10,6 @@
 class ContextMenuContentType;
 
 namespace content {
-class RenderFrameHost;
 class WebContents;
 }
 
@@ -18,7 +17,6 @@ class ContextMenuContentTypeFactory {
  public:
   static ContextMenuContentType* Create(
       content::WebContents* web_contents,
-      content::RenderFrameHost* render_frame_host,
       const content::ContextMenuParams& params);
 
  private:

@@ -15,7 +15,7 @@ class ContextMenuContentTypePanel : public ContextMenuContentType {
   virtual bool SupportsGroup(int group) OVERRIDE;
 
  protected:
-  ContextMenuContentTypePanel(content::RenderFrameHost* render_frame_host,
+  ContextMenuContentTypePanel(content::WebContents* web_contents,
                               const content::ContextMenuParams& params);
 
  private:

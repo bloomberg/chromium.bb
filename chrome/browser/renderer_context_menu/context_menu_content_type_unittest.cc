@@ -17,9 +17,9 @@ using extensions::MenuItem;
 class ContextMenuContentTypeTest : public ChromeRenderViewHostTestHarness {
  public:
   static ContextMenuContentType* Create(
-      content::RenderFrameHost* render_frame_host,
+      content::WebContents* web_contents,
       content::ContextMenuParams& params) {
-    return new ContextMenuContentType(render_frame_host, params, true);
+    return new ContextMenuContentType(web_contents, params, true);
   }
 };
 
@@ -66,7 +66,8 @@ content::ContextMenuParams CreateParams(int contexts) {
 TEST_F(ContextMenuContentTypeTest, CheckTypes) {
   {
     content::ContextMenuParams params = CreateParams(MenuItem::LINK);
-    scoped_ptr<ContextMenuContentType> content_type(Create(main_rfh(), params));
+    scoped_ptr<ContextMenuContentType> content_type(Create(web_contents(),
+                                                           params));
     EXPECT_TRUE(content_type->SupportsGroup(
                     ContextMenuContentType::ITEM_GROUP_LINK));
     EXPECT_TRUE(content_type->SupportsGroup(
@@ -77,7 +78,8 @@ TEST_F(ContextMenuContentTypeTest, CheckTypes) {
 
   {
     content::ContextMenuParams params = CreateParams(MenuItem::SELECTION);
-    scoped_ptr<ContextMenuContentType> content_type(Create(main_rfh(), params));
+    scoped_ptr<ContextMenuContentType> content_type(Create(web_contents(),
+                                                           params));
     EXPECT_FALSE(content_type->SupportsGroup(
                     ContextMenuContentType::ITEM_GROUP_LINK));
     EXPECT_TRUE(content_type->SupportsGroup(
@@ -90,7 +92,8 @@ TEST_F(ContextMenuContentTypeTest, CheckTypes) {
 
   {
     content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
-    scoped_ptr<ContextMenuContentType> content_type(Create(main_rfh(), params));
+    scoped_ptr<ContextMenuContentType> content_type(Create(web_contents(),
+                                                           params));
     EXPECT_FALSE(content_type->SupportsGroup(
                     ContextMenuContentType::ITEM_GROUP_LINK));
     EXPECT_FALSE(content_type->SupportsGroup(
@@ -101,7 +104,8 @@ TEST_F(ContextMenuContentTypeTest, CheckTypes) {
 
   {
     content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
-    scoped_ptr<ContextMenuContentType> content_type(Create(main_rfh(), params));
+    scoped_ptr<ContextMenuContentType> content_type(Create(web_contents(),
+                                                           params));
     EXPECT_TRUE(content_type->SupportsGroup(
                     ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE));
     EXPECT_TRUE(content_type->SupportsGroup(
@@ -119,7 +123,8 @@ TEST_F(ContextMenuContentTypeTest, CheckTypes) {
 
   {
     content::ContextMenuParams params = CreateParams(MenuItem::VIDEO);
-    scoped_ptr<ContextMenuContentType> content_type(Create(main_rfh(), params));
+    scoped_ptr<ContextMenuContentType> content_type(Create(web_contents(),
+                                                           params));
     EXPECT_TRUE(content_type->SupportsGroup(
                     ContextMenuContentType::ITEM_GROUP_MEDIA_VIDEO));
 
@@ -133,7 +138,8 @@ TEST_F(ContextMenuContentTypeTest, CheckTypes) {
 
   {
     content::ContextMenuParams params = CreateParams(MenuItem::AUDIO);
-    scoped_ptr<ContextMenuContentType> content_type(Create(main_rfh(), params));
+    scoped_ptr<ContextMenuContentType> content_type(Create(web_contents(),
+                                                           params));
     EXPECT_TRUE(content_type->SupportsGroup(
                     ContextMenuContentType::ITEM_GROUP_MEDIA_AUDIO));
 
@@ -147,7 +153,8 @@ TEST_F(ContextMenuContentTypeTest, CheckTypes) {
 
   {
     content::ContextMenuParams params = CreateParams(MenuItem::FRAME);
-    scoped_ptr<ContextMenuContentType> content_type(Create(main_rfh(), params));
+    scoped_ptr<ContextMenuContentType> content_type(Create(web_contents(),
+                                                           params));
     EXPECT_TRUE(content_type->SupportsGroup(
                     ContextMenuContentType::ITEM_GROUP_FRAME));
     EXPECT_TRUE(content_type->SupportsGroup(
