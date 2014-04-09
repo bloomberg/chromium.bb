@@ -33,9 +33,6 @@ const int kMiniTabWidth = 64;
 const int kMiniTabWidth = 56;
 #endif
 
-// Should session restore restore popup windows?
-extern const bool kRestorePopups;
-
 // Can the browser be alive without any browser windows?
 extern const bool kBrowserAliveWithNoWindows;
 

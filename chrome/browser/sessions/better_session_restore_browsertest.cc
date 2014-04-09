@@ -476,9 +476,6 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, SessionCookiesBrowserClose) {
 // Test that leaving a popup open will not prevent session restore.
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
                        SessionCookiesBrowserCloseWithPopupOpen) {
-  if (browser_defaults::kRestorePopups)
-    return;
-
   // Set the startup preference to "continue where I left off" and visit a page
   // which stores a session cookie.
   StoreDataWithPage("session_cookies.html");

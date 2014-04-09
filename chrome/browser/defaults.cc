@@ -16,8 +16,6 @@ const bool kCanToggleSystemTitleBar = true;
 
 const int kOmniboxFontPixelSize = 16;
 
-const bool kRestorePopups = false;
-
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX)
 const bool kBrowserAliveWithNoWindows = true;
 const bool kShowExitMenuItem = false;

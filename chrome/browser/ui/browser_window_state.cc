@@ -55,10 +55,9 @@ bool ShouldSaveWindowPlacement(const Browser* browser) {
   case Browser::TYPE_TABBED:
     return true;
   case Browser::TYPE_POPUP:
-    // Only save the window placement of popups if they are restored,
-    // or the window belongs to DevTools or an App.
-    return browser_defaults::kRestorePopups || browser->is_devtools() ||
-        browser->is_app();
+    // Only save the window placement of popups if the window belongs to
+    // DevTools or an App.
+    return browser->is_devtools() || browser->is_app();
   default:
     return false;
   }

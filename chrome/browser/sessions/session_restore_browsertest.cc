@@ -299,9 +299,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MaximizedApps) {
 // up with an extra tab.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
                        MAYBE_RestoreOnNewWindowWithNoTabbedBrowsers) {
-  if (browser_defaults::kRestorePopups)
-    return;
-
   const base::FilePath::CharType* kTitle1File =
       FILE_PATH_LITERAL("title1.html");
   GURL url(ui_test_utils::GetTestUrl(base::FilePath(
@@ -852,51 +849,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ActiveIndexUpdatedAtInsert) {
   ASSERT_EQ(url1_,
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
   ASSERT_EQ(new_browser->tab_strip_model()->active_index(), 1);
-}
-
-// Creates a tabbed browser and popup and makes sure we restore both.
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NormalAndPopup) {
-  if (!browser_defaults::kRestorePopups)
-    return;  // Test only applicable if restoring popups.
-
-  ui_test_utils::NavigateToURL(browser(), url1_);
-
-  // Make sure we have one window.
-  AssertOneWindowWithOneTab(browser());
-
-  // Open a popup.
-  Browser* popup = new Browser(
-      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(),
-                            browser()->host_desktop_type()));
-  popup->window()->Show();
-  ASSERT_EQ(2u, active_browser_list_->size());
-
-  ui_test_utils::NavigateToURL(popup, url1_);
-
-  // Simulate an exit by shuting down the session service. If we don't do this
-  // the first window close is treated as though the user closed the window
-  // and won't be restored.
-  SessionServiceFactory::ShutdownForProfile(browser()->profile());
-
-  // Restart and make sure we have two windows.
-  QuitBrowserAndRestore(browser(), 1);
-
-  ASSERT_EQ(2u, active_browser_list_->size());
-
-  Browser* browser1 = active_browser_list_->get(0);
-  Browser* browser2 = active_browser_list_->get(1);
-
-  Browser::Type type1 = browser1->type();
-  Browser::Type type2 = browser2->type();
-
-  // The order of whether the normal window or popup is first depends upon
-  // activation order, which is not necessarily consistant across runs.
-  if (type1 == Browser::TYPE_TABBED) {
-    EXPECT_EQ(type2, Browser::TYPE_POPUP);
-  } else {
-    EXPECT_EQ(type1, Browser::TYPE_POPUP);
-    EXPECT_EQ(type2, Browser::TYPE_TABBED);
-  }
 }
 
 #if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)

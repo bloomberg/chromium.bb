@@ -487,9 +487,6 @@ TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
 
 // Makes sure we don't track popups.
 TEST_F(SessionServiceTest, IgnorePopups) {
-  if (browser_defaults::kRestorePopups)
-    return;  // This test is only applicable if popups aren't restored.
-
   SessionID window2_id;
   SessionID tab_id;
   SessionID tab2_id;
@@ -525,59 +522,6 @@ TEST_F(SessionServiceTest, IgnorePopups) {
   SessionTab* tab = windows[0]->tabs[0];
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
-}
-
-// Makes sure we track popups.
-TEST_F(SessionServiceTest, RestorePopup) {
-  if (!browser_defaults::kRestorePopups)
-    return;  // This test is only applicable if popups are restored.
-
-  SessionID window2_id;
-  SessionID tab_id;
-  SessionID tab2_id;
-  ASSERT_NE(window2_id.id(), window_id.id());
-
-  service()->SetWindowType(
-      window2_id, Browser::TYPE_POPUP, SessionService::TYPE_NORMAL);
-  service()->SetWindowBounds(window2_id,
-                             window_bounds,
-                             ui::SHOW_STATE_NORMAL);
-
-  SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
-  SerializedNavigationEntry nav2 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google2.com", "abcd");
-
-  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
-  UpdateNavigation(window_id, tab_id, nav1, true);
-
-  helper_.PrepareTabInWindow(window2_id, tab2_id, 0, false);
-  UpdateNavigation(window2_id, tab2_id, nav2, true);
-
-  ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()), NULL);
-
-  ASSERT_EQ(2U, windows.size());
-  int tabbed_index = windows[0]->type == Browser::TYPE_TABBED ?
-      0 : 1;
-  int popup_index = tabbed_index == 0 ? 1 : 0;
-  ASSERT_EQ(0, windows[tabbed_index]->selected_tab_index);
-  ASSERT_EQ(window_id.id(), windows[tabbed_index]->window_id.id());
-  ASSERT_EQ(1U, windows[tabbed_index]->tabs.size());
-
-  SessionTab* tab = windows[tabbed_index]->tabs[0];
-  helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
-  helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
-
-  ASSERT_EQ(0, windows[popup_index]->selected_tab_index);
-  ASSERT_EQ(window2_id.id(), windows[popup_index]->window_id.id());
-  ASSERT_EQ(1U, windows[popup_index]->tabs.size());
-
-  tab = windows[popup_index]->tabs[0];
-  helper_.AssertTabEquals(window2_id, tab2_id, 0, 0, 1, *tab);
-  helper_.AssertNavigationEquals(nav2, tab->navigations[0]);
 }
 
 #if defined (OS_CHROMEOS)
