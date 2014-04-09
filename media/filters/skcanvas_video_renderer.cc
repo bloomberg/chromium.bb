@@ -106,7 +106,10 @@ static void FastPaint(
 
   // No point painting if the destination rect doesn't intersect with the
   // clip rect.
-  if (!local_dest_irect.intersect(canvas->getTotalClip().getBounds()))
+  SkIRect device_bounds;
+  if (!canvas->getClipDeviceBounds(&device_bounds))
+    return;
+  if (!local_dest_irect.intersect(device_bounds))
     return;
 
   // At this point |local_dest_irect| contains the rect that we should draw

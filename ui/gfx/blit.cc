@@ -29,21 +29,28 @@ namespace {
 
 // Returns true if the given canvas has any part of itself clipped out or
 // any non-identity tranform.
-bool HasClipOrTransform(const SkCanvas& canvas) {
+bool HasClipOrTransform(SkCanvas& canvas) {
   if (!canvas.getTotalMatrix().isIdentity())
     return true;
 
-  const SkRegion& clip_region = canvas.getTotalClip();
-  if (clip_region.isEmpty() || clip_region.isComplex())
+  if (!canvas.isClipRect())
     return true;
 
   // Now we know the clip is a regular rectangle, make sure it covers the
   // entire canvas.
-  const SkBitmap& bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);
-  const SkIRect& clip_bounds = clip_region.getBounds();
+  SkIRect clip_bounds;
+  canvas.getClipDeviceBounds(&clip_bounds);
+
+  SkImageInfo info;
+  size_t row_bytes;
+  void* pixels = canvas.accessTopLayerPixels(&info, &row_bytes);
+  DCHECK(pixels);
+  if (!pixels)
+    return true;
+
   if (clip_bounds.fLeft != 0 || clip_bounds.fTop != 0 ||
-      clip_bounds.fRight != bitmap.width() ||
-      clip_bounds.fBottom != bitmap.height())
+      clip_bounds.fRight != info.width() ||
+      clip_bounds.fBottom != info.height())
     return true;
 
   return false;
