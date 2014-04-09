@@ -150,7 +150,6 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def testRunCommandException(self):
     options = self.Options(verbose=False)
-    gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
 
     self.mox.ReplayAll()
@@ -171,7 +170,6 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
         ).AndReturn('1.5.1')
     # It'll to a checkout instead.
-    gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     # Checkout.
     gclient_scm.os.path.exists(self.base_path).AndReturn(False)
@@ -203,7 +201,6 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.isdir(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.isdir(join(self.base_path, '.hg')).AndReturn(False)
     # Checkout.
-    gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(False)
     parent = gclient_scm.os.path.dirname(self.base_path)
@@ -329,7 +326,6 @@ class SVNWrapperTestCase(BaseTestCase):
     file_info.url = self.url
     file_info.uuid = 'ABC'
     file_info.revision = 42
-    gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     # Checkout.
     gclient_scm.os.path.exists(self.base_path).AndReturn(False)
@@ -362,8 +358,9 @@ class SVNWrapperTestCase(BaseTestCase):
       'UUID': 'ABC',
       'Revision': 42,
     }
-    gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
+    gclient_scm.scm.GIT.IsGitSvn(self.base_path).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
 
     # Checkout or update.
@@ -408,8 +405,9 @@ class SVNWrapperTestCase(BaseTestCase):
       'UUID': 'ABC',
       'Revision': 42,
     }
-    gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
+    gclient_scm.scm.GIT.IsGitSvn(self.base_path).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
 
     # Checkout or update.
@@ -444,8 +442,9 @@ class SVNWrapperTestCase(BaseTestCase):
       'UUID': 'ABC',
       'Revision': 42,
     }
-    gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
+    gclient_scm.scm.GIT.IsGitSvn(self.base_path).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
 
     # Checkout or update.
@@ -510,8 +509,9 @@ class SVNWrapperTestCase(BaseTestCase):
         file_list=files_list)
 
     # Now we fall back on scm.update().
-    gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
+    gclient_scm.scm.GIT.IsGitSvn(self.base_path).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
     gclient_scm.scm.SVN._CaptureInfo([], dotted_path).AndReturn(file_info)
     gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
@@ -580,8 +580,9 @@ class SVNWrapperTestCase(BaseTestCase):
         file_list=files_list)
 
     # Now we fall back on scm.update().
-    gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
+    gclient_scm.scm.GIT.IsGitSvn(self.base_path).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
     gclient_scm.scm.SVN._CaptureInfo(
         [], join(self.base_path, ".")).AndReturn(file_info)
@@ -616,8 +617,9 @@ class SVNWrapperTestCase(BaseTestCase):
 
     # Now we fall back on scm.update().
     files_list = self.mox.CreateMockAnything()
-    gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
+    gclient_scm.scm.GIT.IsGitSvn(self.base_path).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
     gclient_scm.scm.SVN._CaptureInfo(
         [], join(self.base_path, '.')).AndReturn(file_info)
@@ -635,20 +637,83 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def testUpdateGit(self):
     options = self.Options(verbose=True)
-    file_path = gclient_scm.os.path.join(self.root_dir, self.relpath, '.git')
-    gclient_scm.os.path.exists(file_path).AndReturn(True)
+    file_path = gclient_scm.os.path.join(self.root_dir, self.relpath, '.hg')
+    gclient_scm.os.path.exists(file_path).AndReturn(False)
+    gclient_scm.os.path.exists(self.base_path).AndReturn(True)
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
+    gclient_scm.scm.GIT.IsGitSvn(self.base_path).AndReturn(False)
+    error = gclient_scm.subprocess2.CalledProcessError(
+        1, 'cmd', '/cwd', 'stdout', 'stderr')
+    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.').AndRaise(error)
+
+    gclient_scm.os.path.exists(self.root_dir).AndReturn(True)
+    gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
+        ).AndReturn('1.5.1')
+    gclient_scm.scm.SVN.RunAndGetFileList(
+        options.verbose,
+        ['checkout', self.url, self.base_path, '--force', '--ignore-externals'],
+        cwd=self.root_dir,
+        file_list=[])
+
+    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
+        ).AndReturn({'Revision': 100})
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    scm.update(options, None, [])
+
+  def testUpdateGitForce(self):
+    options = self.Options(verbose=True, force=True)
+    file_path = gclient_scm.os.path.join(self.root_dir, self.relpath, '.hg')
+    gclient_scm.os.path.exists(file_path).AndReturn(False)
+    gclient_scm.os.path.exists(self.base_path).AndReturn(True)
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
+    gclient_scm.scm.GIT.IsGitSvn(self.base_path).AndReturn(False)
+    error = gclient_scm.subprocess2.CalledProcessError(
+        1, 'cmd', '/cwd', 'stdout', 'stderr')
+    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.').AndRaise(error)
+    gclient_scm.os.path.exists(self.root_dir).AndReturn(True)
+    gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
+        ).AndReturn('1.5.1')
+    gclient_scm.scm.SVN.RunAndGetFileList(
+        options.verbose,
+        ['checkout', self.url, self.base_path, '--force', '--ignore-externals'],
+        cwd=self.root_dir,
+        file_list=[])
+
+    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
+        ).AndReturn({'Revision': 100})
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     file_list = []
-    scm.update(options, self.args, file_list)
+    scm.update(options, None, file_list)
+
+  def testUpdateGitSvn(self):
+    options = self.Options(verbose=True)
+    file_path = gclient_scm.os.path.join(self.root_dir, self.relpath, '.hg')
+    gclient_scm.os.path.exists(file_path).AndReturn(False)
+    gclient_scm.os.path.exists(self.base_path).AndReturn(True)
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
+    gclient_scm.scm.GIT.IsGitSvn(self.base_path).AndReturn(True)
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'Capture', True)
+    gclient_scm.scm.GIT.Capture(['config', '--local', '--get',
+                                 'svn-remote.svn.url'],
+                                cwd=self.base_path).AndReturn(self.url)
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    file_list = []
+    scm.update(options, [], file_list)
     self.checkstdout(
-        ('________ found .git directory; skipping %s\n' % self.relpath))
+        ('\n_____ %s looks like a git-svn checkout. Skipping.\n' % self.relpath)
+        )
 
   def testUpdateHg(self):
     options = self.Options(verbose=True)
-    gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(True)
 
     self.mox.ReplayAll()
@@ -1109,6 +1174,12 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
   def Options(self, *args, **kwargs):
     return self.OptionsObject(*args, **kwargs)
 
+  def checkstdout(self, expected):
+    value = sys.stdout.getvalue()
+    sys.stdout.close() 
+    # pylint: disable=E1101
+    self.assertEquals(expected, strip_timestamps(value))
+
   def setUp(self):
     BaseTestCase.setUp(self)
     self.fake_hash_1 = 't0ta11yf4k3'
@@ -1218,6 +1289,77 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     # numbers, so assure that numeric revs >= 1000000 don't work.
     self.assertRaises(gclient_scm.gclient_utils.Error,
                       git_svn_scm.GetUsableRev, too_big, options)
+
+  def testUpdateNoDotGit(self):
+    options = self.Options()
+
+    gclient_scm.os.path.exists(self.base_path).AndReturn(True)
+    gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
+    gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
+                               ).AndReturn(False)
+    gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
+    gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
+                               ).AndReturn(False)
+
+    self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Clone', True)
+    # pylint: disable=E1120
+    gclient_scm.GitWrapper._Clone('refs/remotes/origin/master', self.url,
+                                  options)
+    # pylint: disable=E1120
+    self.mox.StubOutWithMock(gclient_scm.GitWrapper, 'UpdateSubmoduleConfig',
+                             True)
+    gclient_scm.GitWrapper.UpdateSubmoduleConfig()
+    self.mox.StubOutWithMock(gclient_scm.subprocess2, 'check_output', True)
+    gclient_scm.subprocess2.check_output(['git', 'ls-files'],
+                                         cwd=self.base_path,
+                                         stderr=-1,
+                                         ).AndReturn('')
+    gclient_scm.subprocess2.check_output(
+        ['git', 'rev-parse', '--verify', 'HEAD'],
+        cwd=self.base_path,
+        stderr=-1,
+        ).AndReturn('')
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    scm.update(options, None, [])
+    self.checkstdout('\n')
+
+  def testUpdateNoDotGitForce(self):
+    options = self.Options(force=True)
+
+    gclient_scm.os.path.exists(self.base_path).AndReturn(True)
+    gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
+    gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
+                               ).AndReturn(False)
+    gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
+    gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
+                               ).AndReturn(False)
+    self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Clone', True)
+    # pylint: disable=E1120
+    gclient_scm.GitWrapper._Clone('refs/remotes/origin/master', self.url,
+                                  options)
+    # pylint: disable=E1120
+    self.mox.StubOutWithMock(gclient_scm.GitWrapper, 'UpdateSubmoduleConfig',
+                             True)
+    gclient_scm.GitWrapper.UpdateSubmoduleConfig()
+    self.mox.StubOutWithMock(gclient_scm.subprocess2, 'check_output', True)
+    gclient_scm.subprocess2.check_output(['git', 'ls-files'],
+                                         cwd=self.base_path,
+                                         stderr=-1,
+                                         ).AndReturn('')
+    gclient_scm.subprocess2.check_output(
+        ['git', 'rev-parse', '--verify', 'HEAD'],
+        cwd=self.base_path,
+        stderr=-1,
+        ).AndReturn('')
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    scm.update(options, None, [])
+    self.checkstdout('\n')
 
 
 class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):

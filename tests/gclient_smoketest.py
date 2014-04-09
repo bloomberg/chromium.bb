@@ -23,8 +23,6 @@ sys.path.insert(0, ROOT_DIR)
 from testing_support.fake_repos import join, write
 from testing_support.fake_repos import FakeReposTestBase, FakeRepoTransitive
 
-import gclient_utils
-
 import subprocess2
 
 GCLIENT_PATH = os.path.join(ROOT_DIR, 'gclient')
@@ -762,21 +760,6 @@ class GClientSmokeSVN(GClientSmokeBase):
     res = self.gclient(['sync', '--jobs', '1'], src)
     self.checkBlock(res[0],
                     ['running', 'running', 'running'])
-
-  def testUnversionedRepository(self):
-    # Check that gclient automatically deletes crippled SVN repositories.
-    if not self.enabled:
-      return
-    self.gclient(['config', self.svn_base + 'trunk/src/'])
-    cmd = ['sync', '--jobs', '1', '--delete_unversioned_trees', '--reset']
-    self.assertEquals(0, self.gclient(cmd)[-1])
-    third_party = join(self.root_dir, 'src', 'third_party')
-    subprocess2.check_call(['svn', 'propset', '-q', 'svn:ignore', 'foo', '.'],
-                           cwd=third_party)
-
-    # Cripple src/third_party/foo and make sure gclient still succeeds.
-    gclient_utils.rmtree(join(third_party, 'foo', '.svn'))
-    self.assertEquals(0, self.gclient(cmd)[-1])
 
 
 class GClientSmokeSVNTransitive(GClientSmokeBase):

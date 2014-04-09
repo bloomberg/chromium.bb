@@ -194,6 +194,22 @@ class SCMWrapper(object):
       # valid git or svn checkout.
       return False
 
+  # TODO(borenet): Remove this once SCMWrapper._DeleteOrMove is enabled.
+  # pylint: disable=R0201
+  def _DeleteOrMove(self, force):
+    """Delete the checkout directory or move it out of the way.
+
+    Args:
+        force: bool; if True, delete the directory. Otherwise, just move it.
+    """
+    gclient_utils.AddWarning('WARNING: Upcoming change in '
+                             'https://codereview.chromium.org/225403015 would '
+                             'cause %s to be deleted or moved to the side. '
+                             'This is intended to ease changes to DEPS in the '
+                             'future. If you are seeing this warning and '
+                             'haven\'t changed the DEPS file, please contact '
+                             'borenet@ immediately.' % self.checkout_path)
+
 
 class GitWrapper(SCMWrapper):
   """Wrapper for Git"""
@@ -359,6 +375,9 @@ class GitWrapper(SCMWrapper):
     if (not os.path.exists(self.checkout_path) or
         (os.path.isdir(self.checkout_path) and
          not os.path.exists(os.path.join(self.checkout_path, '.git')))):
+      if (os.path.isdir(self.checkout_path) and
+          not os.path.exists(os.path.join(self.checkout_path, '.git'))):
+        self._DeleteOrMove(options.force)
       self._Clone(revision, url, options)
       self._UpdateBranchHeads(options, fetch=True)
       self.UpdateSubmoduleConfig()
@@ -377,14 +396,6 @@ class GitWrapper(SCMWrapper):
       self.Print('________ unmanaged solution; skipping %s' % self.relpath)
       return self._Capture(['rev-parse', '--verify', 'HEAD'])
 
-    if not os.path.exists(os.path.join(self.checkout_path, '.git')):
-      raise gclient_utils.Error('\n____ %s%s\n'
-                                '\tPath is not a git repo. No .git dir.\n'
-                                '\tTo resolve:\n'
-                                '\t\trm -rf %s\n'
-                                '\tAnd run gclient sync again\n'
-                                % (self.relpath, rev_str, self.relpath))
-
     # See if the url has changed (the unittests use git://foo for the url, let
     # that through).
     current_url = self._Capture(['config', 'remote.%s.url' % self.remote])
@@ -394,7 +405,7 @@ class GitWrapper(SCMWrapper):
     # Skip url auto-correction if remote.origin.gclient-auto-fix-url is set.
     # This allows devs to use experimental repos which have a different url
     # but whose branch(s) are the same as official repos.
-    if (current_url != url and
+    if (current_url.rstrip('/') != url.rstrip('/') and
         url != 'git://foo' and
         subprocess2.capture(
             ['git', 'config', 'remote.%s.gclient-auto-fix-url' % self.remote],
@@ -1064,12 +1075,7 @@ class SVNWrapper(SCMWrapper):
     Raises:
       Error: if can't get URL for relative path.
     """
-    # Only update if git or hg is not controlling the directory.
-    git_path = os.path.join(self.checkout_path, '.git')
-    if os.path.exists(git_path):
-      self.Print('________ found .git directory; skipping %s' % self.relpath)
-      return
-
+    # Only update if hg is not controlling the directory.
     hg_path = os.path.join(self.checkout_path, '.hg')
     if os.path.exists(hg_path):
       self.Print('________ found .hg directory; skipping %s' % self.relpath)
@@ -1100,21 +1106,26 @@ class SVNWrapper(SCMWrapper):
       forced_revision = False
       rev_str = ''
 
-    # Get the existing scm url and the revision number of the current checkout.
     exists = os.path.exists(self.checkout_path)
+    if exists and managed:
+      # Git is only okay if it's a git-svn checkout of the right repo.
+      if scm.GIT.IsGitSvn(self.checkout_path):
+        remote_url = scm.GIT.Capture(['config', '--local', '--get',
+                                      'svn-remote.svn.url'],
+                                     cwd=self.checkout_path).rstrip()
+        if remote_url.rstrip('/') == base_url.rstrip('/'):
+          print('\n_____ %s looks like a git-svn checkout. Skipping.'
+                % self.relpath)
+          return # TODO(borenet): Get the svn revision number?
+
+    # Get the existing scm url and the revision number of the current checkout.
     if exists and managed:
       try:
         from_info = scm.SVN.CaptureLocalInfo(
             [], os.path.join(self.checkout_path, '.'))
       except (gclient_utils.Error, subprocess2.CalledProcessError):
-        if options.reset and options.delete_unversioned_trees:
-          self.Print('Removing troublesome path %s' % self.checkout_path)
-          gclient_utils.rmtree(self.checkout_path)
-          exists = False
-        else:
-          msg = ('Can\'t update/checkout %s if an unversioned directory is '
-                 'present. Delete the directory and try again.')
-          raise gclient_utils.Error(msg % self.checkout_path)
+        self._DeleteOrMove(options.force)
+        exists = False
 
     BASE_URLS = {
         '/chrome/trunk/src': 'gs://chromium-svn-checkout/chrome/',
@@ -1194,7 +1205,9 @@ class SVNWrapper(SCMWrapper):
 
     if not managed:
       self.Print(('________ unmanaged solution; skipping %s' % self.relpath))
-      return self.Svnversion()
+      if os.path.exists(os.path.join(self.checkout_path, '.svn')):
+        return self.Svnversion()
+      return
 
     if 'URL' not in from_info:
       raise gclient_utils.Error(
@@ -1238,7 +1251,7 @@ class SVNWrapper(SCMWrapper):
       revision = str(from_info_live['Revision'])
       rev_str = ' at %s' % revision
 
-    if from_info['URL'] != base_url:
+    if from_info['URL'].rstrip('/') != base_url.rstrip('/'):
       # The repository url changed, need to switch.
       try:
         to_info = scm.SVN.CaptureRemoteInfo(url)

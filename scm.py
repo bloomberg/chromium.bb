@@ -171,7 +171,7 @@ class GIT(object):
 
   @staticmethod
   def IsGitSvn(cwd):
-    """Returns true if this repo looks like it's using git-svn."""
+    """Returns True if this repo looks like it's using git-svn."""
     # If you have any "svn-remote.*" config keys, we think you're using svn.
     try:
       GIT.Capture(['config', '--local', '--get-regexp', r'^svn-remote\.'],
