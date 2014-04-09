@@ -46,9 +46,8 @@ class RenderWidgetHostBrowserTest : public ContentBrowserTest {
   base::FilePath test_dir_;
 };
 
-// Disabled on Ozone due to flake: crbug.com/315392.
 // Disabled on Aura since this is not possible with ubercomp.
-#if defined(USE_AURA) || defined(USE_OZONE)
+#if defined(USE_AURA)
 #define MAYBE_GetSnapshotFromRendererTest DISABLED_GetSnapshotFromRendererTest
 #else
 #define MAYBE_GetSnapshotFromRendererTest GetSnapshotFromRendererTest
