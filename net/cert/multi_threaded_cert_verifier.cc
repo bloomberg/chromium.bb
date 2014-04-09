@@ -348,14 +348,23 @@ class CertVerifierJob {
   }
 
   void HandleResult(
-      const MultiThreadedCertVerifier::CachedResult& verify_result) {
+      const MultiThreadedCertVerifier::CachedResult& verify_result,
+      bool is_first_job) {
     worker_ = NULL;
     net_log_.EndEvent(NetLog::TYPE_CERT_VERIFIER_JOB);
+    base::TimeDelta latency = base::TimeTicks::Now() - start_time_;
     UMA_HISTOGRAM_CUSTOM_TIMES("Net.CertVerifier_Job_Latency",
-                               base::TimeTicks::Now() - start_time_,
+                               latency,
                                base::TimeDelta::FromMilliseconds(1),
                                base::TimeDelta::FromMinutes(10),
                                100);
+    if (is_first_job) {
+      UMA_HISTOGRAM_CUSTOM_TIMES("Net.CertVerifier_First_Job_Latency",
+                                 latency,
+                                 base::TimeDelta::FromMilliseconds(1),
+                                 base::TimeDelta::FromMinutes(10),
+                                 100);
+    }
     PostAll(verify_result);
   }
 
@@ -391,6 +400,7 @@ class CertVerifierJob {
 MultiThreadedCertVerifier::MultiThreadedCertVerifier(
     CertVerifyProc* verify_proc)
     : cache_(kMaxCacheEntries),
+      first_job_(NULL),
       requests_(0),
       cache_hits_(0),
       inflight_joins_(0),
@@ -474,6 +484,10 @@ int MultiThreadedCertVerifier::Verify(X509Certificate* cert,
       return ERR_INSUFFICIENT_RESOURCES;  // Just a guess.
     }
     inflight_.insert(std::make_pair(key, job));
+    if (requests_ == 1) {
+      // Cleared in HandleResult.
+      first_job_ = job;
+    }
   }
 
   CertVerifierRequest* request =
@@ -551,8 +565,13 @@ void MultiThreadedCertVerifier::HandleResult(
   }
   CertVerifierJob* job = j->second;
   inflight_.erase(j);
+  bool is_first_job = false;
+  if (first_job_ == job) {
+    is_first_job = true;
+    first_job_ = NULL;
+  }
 
-  job->HandleResult(cached_result);
+  job->HandleResult(cached_result, is_first_job);
   delete job;
 }
 

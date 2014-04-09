@@ -10642,6 +10642,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.CertVerifier_First_Job_Latency" units="milliseconds">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    The actual amount of time spent verifying a certificate using the underlying
+    cryptographic APIs. Because parallel verifications for the same certificate
+    may be coalesced, histograms such as Net.SSLCertVerificationTime may be
+    skewed, due to later verifications taking less overall time. This records
+    the overall time spent verifying the first job to capture initialization
+    costs.
+  </summary>
+</histogram>
+
 <histogram name="Net.CertVerifier_Job_Latency" units="milliseconds">
   <owner>rsleevi@chromium.org</owner>
   <summary>

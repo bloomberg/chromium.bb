@@ -153,6 +153,9 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
   // place.
   std::map<RequestParams, CertVerifierJob*> inflight_;
 
+  // A non-owning pointer to the first job for histogramming.
+  CertVerifierJob* first_job_;
+
   uint64 requests_;
   uint64 cache_hits_;
   uint64 inflight_joins_;
