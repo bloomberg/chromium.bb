@@ -40,20 +40,16 @@ namespace cast {
 #define DEFAULT_SEND_PORT "0"
 #define DEFAULT_RECEIVE_PORT "2344"
 #define DEFAULT_SEND_IP "0.0.0.0"
-#define DEFAULT_RESTART "0"
 #define DEFAULT_AUDIO_FEEDBACK_SSRC "2"
 #define DEFAULT_AUDIO_INCOMING_SSRC "1"
 #define DEFAULT_AUDIO_PAYLOAD_TYPE "127"
 #define DEFAULT_VIDEO_FEEDBACK_SSRC "12"
 #define DEFAULT_VIDEO_INCOMING_SSRC "11"
 #define DEFAULT_VIDEO_PAYLOAD_TYPE "96"
-#define DEFAULT_VIDEO_CODEC_WIDTH "640"
-#define DEFAULT_VIDEO_CODEC_HEIGHT "480"
-#define DEFAULT_VIDEO_CODEC_BITRATE "2000"
 
 #if defined(OS_LINUX)
-const int kVideoWindowWidth = 1280;
-const int kVideoWindowHeight = 720;
+const char* kVideoWindowWidth = "1280";
+const char* kVideoWindowHeight = "720";
 #endif  // OS_LINUX
 
 void GetPorts(int* tx_port, int* rx_port) {
@@ -97,6 +93,19 @@ void GetSsrcs(VideoReceiverConfig* video_config) {
   video_config->incoming_ssrc = input_rx.GetIntInput();
 }
 
+#if defined(OS_LINUX)
+void GetResolution(int* height, int* width) {
+  // Resolution values based on sender settings
+   test::InputBuilder input_h(
+      "Choose video height.", kVideoWindowHeight, 176, 1080);
+  *height = input_h.GetIntInput();
+
+  test::InputBuilder input_w(
+      "Choose video width.", kVideoWindowWidth, 144, 1920);
+  *width = input_w.GetIntInput();
+}
+#endif  // OS_LINUX
+
 void GetPayloadtype(AudioReceiverConfig* audio_config) {
   test::InputBuilder input("Choose audio receiver payload type.",
                            DEFAULT_AUDIO_PAYLOAD_TYPE,
@@ -135,14 +144,16 @@ class ReceiverDisplay : public InProcessReceiver {
                   const net::IPEndPoint& local_end_point,
                   const net::IPEndPoint& remote_end_point,
                   const AudioReceiverConfig& audio_config,
-                  const VideoReceiverConfig& video_config)
+                  const VideoReceiverConfig& video_config,
+                  int width,
+                  int height)
       : InProcessReceiver(cast_environment,
                           local_end_point,
                           remote_end_point,
                           audio_config,
                           video_config),
 #if defined(OS_LINUX)
-        render_(0, 0, kVideoWindowWidth, kVideoWindowHeight, "Cast_receiver"),
+        render_(0, 0, width, height, "Cast_receiver"),
 #endif  // OS_LINUX
         last_playout_time_(),
         last_render_time_() {
@@ -226,12 +237,19 @@ int main(int argc, char** argv) {
   net::IPEndPoint remote_end_point(remote_ip_number, remote_port);
   net::IPEndPoint local_end_point(local_ip_number, local_port);
 
+  int width = 0;
+  int height = 0;
+#if defined(OS_LINUX)
+  media::cast::GetResolution(&height, &width);
+#endif  // OS_LINUX
   media::cast::ReceiverDisplay* const receiver_display =
       new media::cast::ReceiverDisplay(cast_environment,
                                        local_end_point,
                                        remote_end_point,
                                        audio_config,
-                                       video_config);
+                                       video_config,
+                                       width,
+                                       height);
   receiver_display->Start();
 
   base::MessageLoop().Run();  // Run forever (i.e., until SIGTERM).
