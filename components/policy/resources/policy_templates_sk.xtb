@@ -1792,7 +1792,7 @@ Zoznam nepovolených položiek ExtensionInstallBlacklist je tomuto pravidlu nadr
 <translation id="2660846099862559570">Nikdy nepoužívať server proxy</translation>
 <translation id="1956493342242507974">Konfigurácia správy napájania na prihlasovacej obrazovke systému <ph name="PRODUCT_OS_NAME"/>.
 
-      Toto pravidlo umožňuje nakonfigurovať správanie systému <ph name="PRODUCT_OS_NAME"/> v prípadoch, keď je zobrazená prihlasovacia obrazovka a používateľ určitý čas nevykonáva žiadnu činnosť. Toto pravidla riadi niekoľko nastavení. Ak chcete zobraziť ich individuálnu sémantiku a rozsahy hodnôt, prejdite na zodpovedajúce pravidlá, ktoré riadia správu napájania v rámci relácie. Jedinými výnimkami z týchto pravidiel sú:
+      Toto pravidlo umožňuje nakonfigurovať správanie systému <ph name="PRODUCT_OS_NAME"/> v prípadoch, keď je zobrazená prihlasovacia obrazovka a používateľ určitý čas nevykonáva žiadnu činnosť. Toto pravidlo riadi niekoľko nastavení. Ak chcete zobraziť ich individuálnu sémantiku a rozsahy hodnôt, prejdite na zodpovedajúce pravidlá, ktoré riadia správu napájania v rámci relácie. Jedinými výnimkami z týchto pravidiel sú:
       * Akcie, ktoré budú vykonané pri nečinnosti alebo zavretí krytu, nemôžu ukončiť reláciu.
       * Predvolenou akciou, ktorá bude vykonaná počas nečinnosti pri používaní napájacieho zdroja, je vypnutie.
 

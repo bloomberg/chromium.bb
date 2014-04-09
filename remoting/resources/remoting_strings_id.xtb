@@ -16,6 +16,7 @@ Chromoting</translation>
 <translation id="5397086374758643919">Pencopot Pemasangan Host Chrome Desktop Jarak Jauh</translation>
 <translation id="3258789396564295715">Mungkin Anda dapat mengakses komputer ini dengan aman menggunakan Chrome Desktop Jarak Jauh.</translation>
 <translation id="5070121137485264635">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chrome Desktop Jarak Jauh untuk mengakses alamat ini:</translation>
+<translation id="2124408767156847088">Akses komputer dari perangkat Android Anda dengan aman.</translation>
 <translation id="4808503597364150972">Masukkan PIN Anda untuk <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Sambungan jarak jauh untuk komputer ini telah dinonaktifkan.</translation>
 <translation id="8244400547700556338">Pelajari caranya.</translation>
@@ -31,6 +32,7 @@ Chromoting</translation>
 <translation id="7868137160098754906">Masukkan PIN komputer jarak jauh Anda.</translation>
 <translation id="677755392401385740">Host dimulai untuk pengguna: <ph name="HOST_USERNAME"/>.</translation>
 <translation id="8864965950780407789">Untuk menggunakan Chromoting, Anda harus memberikan izin akses yang diperpanjang ke komputer. Anda hanya perlu melakukan ini satu kali.</translation>
+<translation id="3197730452537982411">Desktop Jarak Jauh</translation>
 <translation id="8355326866731426344">Kode akses ini akan kedaluwarsa dalam waktu <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">Penulis Chromium</translation>
 <translation id="2498359688066513246">Bantuan &amp; masukan</translation>
@@ -59,7 +61,16 @@ Chromoting</translation>
 <translation id="5379087427956679853">Chrome Desktop Jarak Jauh memungkinkan Anda berbagi komputer melalui web dengan aman. Kedua pengguna harus menjalankan aplikasi Chrome Desktop Jarak Jauh yang dapat ditemukan di <ph name="URL"/>.</translation>
 <translation id="1409991159633941777">Beberapa komponen yang diperlukan untuk Chrome Desktop Jarak Jauh hilang. Pastikan bahwa Anda menjalankan versi Chrome teranyar dan coba lagi.</translation>
 <translation id="174018511426417793">Anda tidak memiliki komputer yang terdaftar. Untuk mengaktifkan sambungan jarak jauh ke komputer, pasang Chrome Desktop Jarak Jauh di komputer tersebut, lalu klik “<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="9126115402994542723">Jangan minta PIN lagi saat menyambungkan ke hosting ini dari perangkat ini.</translation>
 <translation id="253387295088602549">Mengizinkan pengguna lain mengakses komputer Anda dengan aman melalui internet.</translation>
+<translation id="1300633907480909701">Akses komputer dari perangkat Android Anda dengan aman.
+
+• Di tiap komputer, siapkan akses jarak jauh menggunakan aplikasi Chrome Desktop Jarak Jauh dari Toko Web Chrome: https://chrome.google.com/remotedesktop
+• Agar tersambung, pada perangkat Android, buka aplikasi dan ketuk di komputer yang terhubung ke internet.
+
+Komputer jarak jauh dengan keyboard non Inggris-AS mungkin menerima masukan teks yang tidak benar. Dukungan untuk tata letak keyboard lainnya akan segera hadir!
+
+Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/SyrVzj) dan Kebijakan Privasi Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="629730747756840877">Akun</translation>
 <translation id="8525306231823319788">Layar penuh</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (kedaluwarsa)</translation>
@@ -68,6 +79,7 @@ Chromoting</translation>
 <translation id="5702987232842159181">Tersambung:</translation>
 <translation id="8509907436388546015">Proses Integrasi Desktop</translation>
 <translation id="4736223761657662401">Riwayat Sambungan</translation>
+<translation id="5285241842433869526">Pelajari cara menyiapkan komputer untuk akses jarak jauh.</translation>
 <translation id="4430915108080446161">Membuat kode akses...</translation>
 <translation id="2013996867038862849">Semua klien yang disandingkan telah dihapus.</translation>
 <translation id="7081428606750359611">Host Chromoting</translation>
@@ -113,6 +125,12 @@ Chromoting</translation>
 <translation id="5773590752998175013">Tanggal penyandingan</translation>
 <translation id="5265129178187621741">(fitur ini belum tersedia untuk Chromebook... nantikan kabar berikutnya)</translation>
 <translation id="5156271271724754543">Masukkan PIN yang sama di kedua kotak.</translation>
+<translation id="2118549242412205620">Akses komputer dari perangkat Android Anda dengan aman.
+
+• Di tiap komputer, siapkan akses jarak jauh menggunakan aplikasi Chrome Desktop Jarak Jauh dari Toko Web Chrome: https://chrome.google.com/remotedesktop
+• Agar tersambung, pada perangkat Android, buka aplikasi dan ketuk di komputer yang terhubung ke internet.
+
+Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/SyrVzj) dan Kebijakan Privasi Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="4361728918881830843">Untuk mengaktifkan sambungan jarak jauh ke komputer yang berbeda, pasang Chrome Desktop Jarak Jauh di komputer tersebut, lalu klik “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="7444276978508498879">Klien tersambung: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="4913529628896049296">menunggu sambungan...</translation>
@@ -171,6 +189,7 @@ Desktop Jarak Jauh</translation>
 <translation id="5308380583665731573">Hubungkan</translation>
 <translation id="7319983568955948908">Hentikan Berbagi</translation>
 <translation id="6681800064886881394">Hak cipta 2013 Google Inc. Semua Hak Dilindungi Undang-Undang.</translation>
+<translation id="8038108135592087998">Rilis pertama Chrome Desktop Jarak Jauh untuk Android.</translation>
 <translation id="6668065415969892472">PIN Anda telah diperbarui.</translation>
 <translation id="4513946894732546136">Masukan</translation>
 <translation id="4277736576214464567">Kode akses tidak valid. Harap coba lagi.</translation>
@@ -190,6 +209,7 @@ Desktop Jarak Jauh</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="7434397035092923453">Akses ditolak untuk klien: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Setelan kebijakan tidak mengizinkan berbagi komputer ini sebagai inang Chromoting. Hubungi administrator sistem Anda untuk mendapatkan bantuan.</translation>
+<translation id="7312846573060934304">Hosting offline.</translation>
 <translation id="9016232822027372900">Tetap sambungkan</translation>
 <translation id="1818475040640568770">Anda tidak memiliki komputer yang terdaftar.</translation>
 <translation id="4394049700291259645">Nonaktifkan</translation>

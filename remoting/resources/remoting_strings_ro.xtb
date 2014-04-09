@@ -16,6 +16,7 @@ Chromoting</translation>
 <translation id="5397086374758643919">Program de dezinstalare a gazdei pentru Desktop la distanță Chrome</translation>
 <translation id="3258789396564295715">Puteți accesa acest computer în siguranță utilizând Desktop la distanță Chrome.</translation>
 <translation id="5070121137485264635">Gazda la distanță solicită să vă autentificați pe un site terță parte. Pentru a continua, trebuie să acordați permisiuni suplimentare aplicației Desktop la distanță Chrome pentru a accesa această adresă:</translation>
+<translation id="2124408767156847088">Accesați în siguranță computerele dvs. de pe dispozitivul Android.</translation>
 <translation id="4808503597364150972">Introduceți codul PIN pentru <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Conexiunile la distanță pentru acest computer au fost dezactivate.</translation>
 <translation id="8244400547700556338">Aflați cum.</translation>
@@ -31,6 +32,7 @@ Chromoting</translation>
 <translation id="7868137160098754906">Introduceți codul PIN pentru computerul la distanță.</translation>
 <translation id="677755392401385740">Gazda a fost inițiată pentru utilizatorul: <ph name="HOST_USERNAME"/>.</translation>
 <translation id="8864965950780407789">Pentru a utiliza Chromoting, trebuie să acordați permisiuni extinse de acces la computer. Este necesar să faceți acest lucru o singură dată.</translation>
+<translation id="3197730452537982411">Desktop la distanță</translation>
 <translation id="8355326866731426344">Acest cod de acces va expira în <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="2498359688066513246">Ajutor și feedback</translation>
@@ -61,6 +63,14 @@ Chromoting</translation>
 <translation id="174018511426417793">Nu aveți niciun computer înregistrat. Pentru a activa conexiunile la distanță pentru un alt computer, instalați Desktop la distanță Chrome pe acesta și dați clic pe „<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="9126115402994542723">Nu mai solicita un cod PIN când mă conectez la această gazdă de pe acest dispozitiv.</translation>
 <translation id="253387295088602549">Permiteți altui utilizator să vă acceseze computerul în siguranță prin internet.</translation>
+<translation id="1300633907480909701">Accesați în siguranță computerele dvs. de pe dispozitivul Android.
+
+• Pe fiecare computer, configurați accesul la distanță folosind aplicația Desktop la distanță Chrome din Magazinul web Chrome: https://chrome.google.com/remotedesktop
+• Pe dispozitivul Android, pentru a vă conecta, deschideți aplicația și atingeți oricare dintre computerele online.
+
+Este posibil ca textul introdus să fie recunoscut incorect pe computerele la distanță care au tastaturi cu alt aspect decât engleză S.U.A. În curând vor fi disponibile și alte aspecte de tastatură!
+
+Pentru informații privind confidențialitatea, accesați Politica de confidențialitate Google (http://goo.gl/SyrVzj) și Politica de confidențialitate Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="629730747756840877">Cont</translation>
 <translation id="8525306231823319788">Ecran complet</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (neactualizată)</translation>
@@ -115,6 +125,12 @@ Chromoting</translation>
 <translation id="5773590752998175013">Data împerecherii</translation>
 <translation id="5265129178187621741">(această funcție nu este încă disponibilă pentru Chromebookuri...urmăriți-ne în continuare)</translation>
 <translation id="5156271271724754543">Introduceți același cod PIN în ambele casete.</translation>
+<translation id="2118549242412205620">Accesați în siguranță computerele dvs. de pe dispozitivul Android.
+
+• Pe fiecare computer, configurați accesul la distanță folosind aplicația Desktop la distanță Chrome din Magazinul web Chrome: https://chrome.google.com/remotedesktop
+• Pe dispozitivul Android, pentru a vă conecta, deschideți aplicația și atingeți oricare dintre computerele online.
+
+Pentru informații privind confidențialitatea, accesați Politica de confidențialitate Google (http://goo.gl/SyrVzj) și Politica de confidențialitate Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="4361728918881830843">Pentru a activa conexiunile la distanță pentru un alt computer, instalați Desktop la distanță Chrome pe acesta și dați clic pe „<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="7444276978508498879">Client conectat: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="4913529628896049296">se așteaptă realizarea conexiunii...</translation>
@@ -173,6 +189,7 @@ la distanță Chrome</translation>
 <translation id="5308380583665731573">Conectați-vă</translation>
 <translation id="7319983568955948908">Opriți permiterea accesului</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Toate drepturile rezervate.</translation>
+<translation id="8038108135592087998">Prima versiune a aplicației Desktop la distanță Chrome pentru Android.</translation>
 <translation id="6668065415969892472">Codul PIN a fost actualizat.</translation>
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4277736576214464567">Codul de acces este greșit. Încercați din nou.</translation>

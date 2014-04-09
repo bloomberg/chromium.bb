@@ -16,6 +16,7 @@ gazdagép</translation>
 <translation id="5397086374758643919">Chrome távoliasztal-szolgáltatási gazdagép eltávolítóprogramja</translation>
 <translation id="3258789396564295715">Biztonságosan hozzáférhet a számítógéphez a Chrome távoliasztal-szolgáltatás segítségével.</translation>
 <translation id="5070121137485264635">A távoli gazdagép hitelesítést kér egy harmadik féltől származó webhelyhez. A folytatáshoz további engedélyeket kell adnia a Chrome távoliasztal-szolgáltatásnak a cím eléréséhez:</translation>
+<translation id="2124408767156847088">Számítógépek biztonságos elérése androidos eszközéről</translation>
 <translation id="4808503597364150972">Kérjük, adja meg a(z) <ph name="HOSTNAME"/> PIN kódját.</translation>
 <translation id="7672203038394118626">A távoli kapcsolatok le vannak tiltva ezen a számítógépen.</translation>
 <translation id="8244400547700556338">Tudja meg, hogyan.</translation>
@@ -31,6 +32,7 @@ gazdagép</translation>
 <translation id="7868137160098754906">Kérjük, adja meg a PIN kódot a távoli számítógéphez.</translation>
 <translation id="677755392401385740">Gazdagép elindítva a következő felhasználó számára: <ph name="HOST_USERNAME"/>.</translation>
 <translation id="8864965950780407789">A Chromoting használatához kiterjesztett hozzáférési jogosultságokat kell adnia a számítógépéhez. Ezt csak egyszer kell elvégezni.</translation>
+<translation id="3197730452537982411">Távoli asztal</translation>
 <translation id="8355326866731426344">Ez az elérési kód lejár a következő időtartamon belül: <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">A Chromium szerzői</translation>
 <translation id="2498359688066513246">Súgó és visszajelzés</translation>
@@ -61,6 +63,14 @@ gazdagép</translation>
 <translation id="174018511426417793">Önnek nincs regisztrált számítógépe. Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy számítógépen, telepítse a gépre a Chrome távoliasztal-szolgáltatást, majd kattintson a következő gombra: „<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="9126115402994542723">Ne kérje újra a PIN kódot, amikor erről az eszközről csatlakozom a szerverhez.</translation>
 <translation id="253387295088602549">Engedélyezi egy másik felhasználónak, hogy az interneten keresztül biztonságosan hozzáférjen a számítógéphez.</translation>
+<translation id="1300633907480909701">Számítógépek biztonságos elérése androidos eszközéről
+
+• Állítsa be a távoli hozzáférést mindegyik eszközén a Chrome távoliasztal-szolgáltatás alkalmazásával, melyet a Chrome Internetes áruházból tölthet le: https://chrome.google.com/remotedesktop.
+• Nyissa meg az alkalmazást androidos eszközén, nyissa meg az alkalmazást, és érintse meg bármelyik online számítógép ikonját a csatlakozáshoz.
+
+Előfordulhat, hogy a nem amerikai angol nyelvi kiosztású billentyűzettel rendelkező számítógépeken hibás lesz a szövegbevitel. Hamarosan további billentyűzetkiosztásokat is lehet majd használni!
+
+Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (http://goo.gl/SyrVzj), valamint a Chrome adatvédelmi irányelveit (http://goo.gl/0uXE5d).</translation>
 <translation id="629730747756840877">Fiók</translation>
 <translation id="8525306231823319788">Teljes képernyő</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (elavult)</translation>
@@ -115,6 +125,12 @@ gazdagép</translation>
 <translation id="5773590752998175013">Párosítási dátum</translation>
 <translation id="5265129178187621741">(Ez a funkció még nem érhető el Chromebookok számára... látogasson vissza később)</translation>
 <translation id="5156271271724754543">Kérjük, ugyanazt a PIN kódot adja meg mindkét mezőben.</translation>
+<translation id="2118549242412205620">Számítógépek biztonságos elérése androidos eszközéről
+
+• Állítsa be a távoli hozzáférést mindegyik eszközén a Chrome távoliasztal-szolgáltatás alkalmazásával, melyet a Chrome Internetes áruházból tölthet le: https://chrome.google.com/remotedesktop.
+• Nyissa meg az alkalmazást androidos eszközén, és érintse meg bármelyik online számítógép ikonját a csatlakozáshoz.
+
+Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (http://goo.gl/SyrVzj), valamint a Chrome adatvédelmi irányelveit (http://goo.gl/0uXE5d).</translation>
 <translation id="4361728918881830843">Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy másik számítógépen, telepítse a gépre a Chrome távoliasztal-szolgáltatást, majd kattintson a következő gombra: „<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="7444276978508498879">Kliens csatlakoztatva: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="4913529628896049296">várakozás a kapcsolatra...</translation>
@@ -173,6 +189,7 @@ gazdagép</translation>
 <translation id="5308380583665731573">Csatlakozás</translation>
 <translation id="7319983568955948908">Megosztás leállítása</translation>
 <translation id="6681800064886881394">Copyright 2013 – Google Inc. Minden jog fenntartva.</translation>
+<translation id="8038108135592087998">A Chrome távoliasztal-szolgáltatás androidos verziójának első kiadása.</translation>
 <translation id="6668065415969892472">A PIN kód frissült.</translation>
 <translation id="4513946894732546136">Visszajelzés</translation>
 <translation id="4277736576214464567">A hozzáférési kód érvénytelen. Kérjük, próbálja újra.</translation>

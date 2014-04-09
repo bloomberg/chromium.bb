@@ -16,6 +16,7 @@ Chromoting</translation>
 <translation id="5397086374758643919">Desinstalador do host da Área de trabalho remota do Google Chrome</translation>
 <translation id="3258789396564295715">Você pode acessar este computador com segurança, usando a Área de trabalho remota do Google Chrome.</translation>
 <translation id="5070121137485264635">O host remoto requer a autenticação em um website de terceiros. Para continuar, você deve conceder à Área de trabalho remota do Google Chrome acesso a permissões adicionais para acessar este endereço:</translation>
+<translation id="2124408767156847088">Acesse com segurança seus computadores no seu dispositivo Android.</translation>
 <translation id="4808503597364150972">Digite seu PIN para <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">As conexões remotas deste computador foram desativadas.</translation>
 <translation id="8244400547700556338">Saiba como.</translation>
@@ -31,6 +32,7 @@ Chromoting</translation>
 <translation id="7868137160098754906">Digite seu PIN do computador remoto.</translation>
 <translation id="677755392401385740">Host iniciado para o usuário <ph name="HOST_USERNAME"/>.</translation>
 <translation id="8864965950780407789">Para utilizar o Chromoting, é necessário conceder permissões de acesso estendidas a seu computador. Você só precisará fazer isto uma vez.</translation>
+<translation id="3197730452537982411">Computador remoto</translation>
 <translation id="8355326866731426344">Este código de acesso expira em <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">Autores do Chromium</translation>
 <translation id="2498359688066513246">Ajuda e feedback</translation>
@@ -61,6 +63,14 @@ Chromoting</translation>
 <translation id="174018511426417793">Você não tem computadores cadastrados. Para ativar conexões remotas a um computador, instale a Área de trabalho remota do Google Chrome no computador desejado e clique em &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="9126115402994542723">Não pedir um PIN novamente ao se conectar a este host neste dispositivo.</translation>
 <translation id="253387295088602549">Permita que outro usuário acesse seu computador de forma segura pela Internet.</translation>
+<translation id="1300633907480909701">Acesse com segurança seus computadores no seu dispositivo Android.
+
+• Em cada um dos seus computadores, configure o acesso remoto usando o aplicativo &quot;Área de trabalho remota do Google Chrome&quot; da Chrome Web Store: https://chrome.google.com/remotedesktop
+• No seu dispositivo Android, abra o aplicativo e toque em qualquer um dos seus computadores on-line para se conectar a ele.
+
+Computadores remotos que tenham teclados não compatíveis com o inglês dos EUA podem receber entrada de texto incorreta. Em breve, ofereceremos suporte para outros layouts de teclados.
+
+Para ver mais informações sobre privacidade, consulte a Política de Privacidade do Google (http://goo.gl/SyrVzj) e a Política de Privacidade do Google Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="629730747756840877">Conta</translation>
 <translation id="8525306231823319788">Tela cheia</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (desatualizado)</translation>
@@ -115,6 +125,12 @@ Chromoting</translation>
 <translation id="5773590752998175013">Data do pareamento</translation>
 <translation id="5265129178187621741">Este recurso ainda não está disponível para Chromebooks... fique ligado</translation>
 <translation id="5156271271724754543">Digite o mesmo PIN nas duas caixas.</translation>
+<translation id="2118549242412205620">Acesse com segurança seus computadores no seu dispositivo Android.
+
+• Em cada um dos seus computadores, configure o acesso remoto usando o aplicativo &quot;Área de trabalho remota do Google Chrome&quot; da Chrome Web Store: https://chrome.google.com/remotedesktop
+• No seu dispositivo Android, abra o aplicativo e toque em qualquer um dos seus computadores on-line para se conectar a ele.
+
+Para ver mais informações sobre privacidade, consulte a Política de Privacidade do Google (http://goo.gl/SyrVzj) e a Política de Privacidade do Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="4361728918881830843">Para ativar conexões remotas a um computador diferente, instale a Área de trabalho remota do Google Chrome no computador desejado e clique em &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="7444276978508498879">Cliente conectado: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="4913529628896049296">aguardando conexão...</translation>
@@ -173,6 +189,7 @@ remota do Google Chrome</translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="7319983568955948908">Parar compartilhamento</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Todos os direitos reservados.</translation>
+<translation id="8038108135592087998">Primeira versão do aplicativo Área de trabalho remota do Google Chrome para Android.</translation>
 <translation id="6668065415969892472">O PIN foi atualizado.</translation>
 <translation id="4513946894732546136">Comentários</translation>
 <translation id="4277736576214464567">Código de acesso inválido. Tente novamente.</translation>

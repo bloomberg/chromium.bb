@@ -556,7 +556,7 @@
 
       Ako se postavka omogući, interval u kojem će Chrome čekati WPAD poslužitelje temeljene na DNS-u bit će kraći.
 
-      Ako se pravilo ne postavi, to će biti omogućeno i korisnik to neće moći promijeniti.</translation>
+      Ako se pravilo ne postavi, postavka će se omogućiti, a korisnik je neće moći promijeniti.</translation>
 <translation id="6376842084200599664">Omogućuje vam da odredite popis proširenja koja će biti instalirana u pozadini, bez interakcije korisnika.
 
           Svaka stavka na popisu niz je koji sadrži ID proširenja i URL za ažuriranje razgraničen točkom-zarezom (<ph name="SEMICOLON"/>). ID proširenja niz je koji sadrži 32 slova i nalazi se u npr. vezi <ph name="CHROME_EXTENSIONS_LINK"/> dok je u načinu razvojnih programera. URL treba otvarati XML dokument manifesta za ažuriranje kao što je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC1"/>. Imajte na umu da se URL za ažuriranje postavljen u ovom pravilu upotrebljava samo za početnu instalaciju. Za naknadna ažuriranja proširenja upotrijebit će se URL za ažuriranje naveden u manifestu proširenja.

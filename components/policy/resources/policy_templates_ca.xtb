@@ -1491,8 +1491,8 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="1956493342242507974">Configuració de la gestió d'energia a la pantalla d'inici de <ph name="PRODUCT_OS_NAME"/>
 
       Aquesta política us permet configurar de quina manera es comporta <ph name="PRODUCT_OS_NAME"/> quan no hi ha activitat de l'usuari durant un temps determinat quan es mostra la pantalla d'inici. La política controla diversos paràmetres. Per conèixer la semàntica i els intervals de valors, consulteu les polítiques corresponents que controlen la gestió d'energia d'una sessió. Les úniques desviacions d'aquestes polítiques són les següents:
-      * Les accions que s'han de dur a terme si l'usuari està inactiu o si es tanca la tapa no poden ser per finalitzar la sessió.
-      * L'acció predeterminada que es duu a terme quan l'usuari està inactiu en utilitzar energia de CA és l'apagada.
+      * Les accions que s'han de dur a terme si l'usuari està inactiu o si es tanca la tapa no poden ser finalitzar la sessió.
+      * L'acció predeterminada que es duu a terme quan l'usuari està inactiu i el dispositiu està connectat al corrent és l'apagada.
 
       Si no s'especifica un paràmetre, s'utilitza un valor predeterminat.
 

@@ -13,6 +13,7 @@
 <translation id="2770231113462710648">Změnit výchozí prohlížeč na:</translation>
 <translation id="6613594504749178791">Změny se projeví po příštím restartu prohlížeče Chromium.</translation>
 <translation id="9089354809943900324">Prohlížeč Chromium je zastaralý</translation>
+<translation id="59625444380784159">Podrobnosti vašich kontaktů vám mohou pomoci vyplňovat formuláře v prohlížeči Chromium rychleji.</translation>
 <translation id="3748537968684000502">Zobrazujete zabezpečenou stránku Chromium.</translation>
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
 <translation id="1065672644894730302">Nelze číst vaše nastavení.
@@ -60,7 +61,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="466053073629175099">Jste přihlášeni do prohlížeče Chromium. Záložky, historie a další nastavení se synchronizují s účtem Google.</translation>
 <translation id="3849925841547750267">Nastavení prohlížeče Mozilla Firefox nejsou bohužel k dispozici, pokud je spuštěn. Chcete-li tato nastavení importovat do prohlížeče Chromium, uložte si práci a zavřete všechna okna prohlížeče Firefox. Poté klikněte na tlačítko Pokračovat.</translation>
 <translation id="7771626876550251690">V tomto případě adresa uvedená v certifikátu neodpovídá adrese webu, na který se snaží prohlížeč přejít. Jedním z důvodů může být to, že vaši komunikaci zachytává útočník, který předkládá certifikát pro jiné webové stránky, a způsobuje tak neshodu. Dalším možným důvodem je, že je server nastaven tak, aby vracel stejný certifikát pro více různých webových stránek včetně té, kterou se snažíte navštívit, a to i přesto, že daný certifikát není platný pro všechny tyto webové stránky. Chromium může s jistotou potvrdit, že jste se dostali do domény &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ale nemůže ověřit, zda se jedná o stejné stránky jako &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, na které jste chtěli přejít. Pokud budete pokračovat, nebude Chromium kontrolovat žádné další neshody názvů.</translation>
-<translation id="7027298027173928763">Prohlížeč Chromium se nemohl aktualizovat na nejnovější verzi. Nebudete mít proto k dispozici skvělé nové funkce a opravy zabezpečení. Chromium je potřeba ručně přeinstalovat.</translation>
+<translation id="7027298027173928763">Prohlížeč Chromium se nemohl aktualizovat na nejnovější verzi. Nebudete mít proto k dispozici skvělé nové funkce a opravy zabezpečení. Chromium je potřeba přeinstalovat ručně.</translation>
 <translation id="8897323336392112261">Také řídí, která stránka se zobrazí při spuštění prohlížeče Chromium nebo po kliknutí na tlačítko Domovská stránka.</translation>
 <translation id="4330585738697551178">O tomto modulu je známo, že u něj dochází ke konfliktu s prohlížečem Chromium.</translation>
 <translation id="3190315855212034486">Ouha! Prohlížeč Chromium spadl. Chcete jej znovu spustit?</translation>
@@ -159,7 +160,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="5398878173008909840">K dispozici je nová verze prohlížeče Chromium.</translation>
 <translation id="2648074677641340862">Během instalace došlo k chybě operačního systému. Stáhněte prosím Chromium znovu.</translation>
 <translation id="5942520288919337908">Do prohlížeče Chromium bylo přidáno rozšíření <ph name="EXTENSION_NAME"/>.</translation>
-<translation id="377819400056480591">Chcete-li odebrat svůj účet, je třeba Chromium restartovat. Před pokračováním si nezapomeňte uložit veškerou otevřenou práci.</translation>
+<translation id="377819400056480591">Chcete-li odebrat svůj účet, je třeba Chromium restartovat. Než budete pokračovat, nezapomeňte si uložit veškerou otevřenou práci.</translation>
 <translation id="4559775032954821361">Přejděte do
           nabídky Chromium &gt;
           <ph name="SETTINGS_TITLE"/>

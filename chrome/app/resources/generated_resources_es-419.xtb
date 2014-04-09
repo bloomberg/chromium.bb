@@ -66,6 +66,7 @@
 <translation id="4940047036413029306">Comilla</translation>
 <translation id="1497897566809397301">Permitir que se establezcan datos locales (recomendado)</translation>
 <translation id="3275778913554317645">Abrir como ventana</translation>
+<translation id="3005547175126169847">Si habilitas esta opción, podrás utilizar Direct3D 11 en configuraciones que lo admitan.</translation>
 <translation id="7994370417837006925">Acceso múltiple</translation>
 <translation id="1420684932347524586">¡Ay! Error al generar clave privada RSA aleatoria.</translation>
 <translation id="7323509342138776962">Última sincronización</translation>
@@ -116,6 +117,7 @@
 <translation id="5704565838965461712">Seleccionar un certificado para presentar como identificación:</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME"/> se ha bloqueado. Haz clic en este globo para volver a cargar la extensión.</translation>
 <translation id="4581823559337371475">El servicio de acceso que se muestra a continuación se aloja en <ph name="SAML_DOMAIN"/>. Accede para continuar.</translation>
+<translation id="6325051797777592677">Usar tu cámara</translation>
 <translation id="6322279351188361895">Error al leer la clave privada.</translation>
 <translation id="7401543881546089382">Eliminar acceso directo</translation>
 <translation id="3781072658385678636">Se bloquearon los siguientes complementos en esta página:</translation>
@@ -184,7 +186,7 @@
 <translation id="3909473918841141600">Las lecturas de los recursos web provendrán de las entradas de caché inactivas disponibles cuando la fuente no esté disponible.</translation>
 <translation id="5376169624176189338">Haz clic para volver atrás o espera para ver el historial</translation>
 <translation id="9181716872983600413">Unicode</translation>
-<translation id="2566124945717127842">Realiza un powerwash para restablecer el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> y que quede como nuevo.</translation>
+<translation id="2566124945717127842">Usa la función Powerwash para restablecer el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> y que quede como nuevo.</translation>
 <translation id="3609785682760573515">Sincronizando…</translation>
 <translation id="1383861834909034572">Abrir cuando haya finalizado</translation>
 <translation id="5727728807527375859">Las extensiones, las aplicaciones y los temas pueden dañar tu computadora. ¿Estás seguro de que deseas continuar?</translation>
@@ -474,6 +476,7 @@
 <translation id="3245321423178950146">Artista desconocido</translation>
 <translation id="2437838871182492352">Veces que se habilitó una extensión</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>
+<translation id="4880320188904265650">Abrir todos los vínculos de <ph name="PROTOCOL"/></translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="8787254343425541995">Permitir proxies para redes compartidas</translation>
 <translation id="4755860829306298968">Administrar el bloqueo del complemento...</translation>
@@ -603,6 +606,7 @@
 <translation id="4779735050989188948">Manipular la configuración que controla el acceso de sitios web a las cookies, a JavaScript y a los complementos</translation>
 <translation id="168841957122794586">El certificado del servidor contiene una clave criptográfica no segura.</translation>
 <translation id="4181841719683918333">Idiomas</translation>
+<translation id="1758831820837444715">Configurar la red Ethernet</translation>
 <translation id="6535131196824081346">Este error puede ocurrir durante la conexión a un servidor seguro (HTTPS). 
         Significa que el servidor está tratando de establecer una conexión segura pero, debido una desconfiguración considerable, la conexión no sería segura en absoluto.
         <ph name="LINE_BREAK"/> En este caso es necesario
@@ -675,6 +679,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4869253927035988743">Permite habilitar la compatibilidad del directorio para el sistema de archivos de sincronización.</translation>
 <translation id="611611105360092934">Habilita la composición acelerada para marcos con desplazamiento.</translation>
 <translation id="1995173078718234136">Examinando contenido...</translation>
+<translation id="3530751398950974194">Actualizar la frase de contraseña de sincronización</translation>
 <translation id="5979681173469464041">Enfocar panel siguiente</translation>
 <translation id="4735819417216076266">Estilo de entrada de espacio</translation>
 <translation id="220138918934036434">Ocultar botón</translation>
@@ -909,9 +914,11 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="1725149567830788547">Mostrar &amp;controles</translation>
 <translation id="8216351761227087153">Ver</translation>
 <translation id="3066618299368568534">Eliminar cookies y otros datos del sitio y de complementos al salir del navegador</translation>
+<translation id="805563736893476872">Usar tu micrófono</translation>
 <translation id="3528033729920178817">Esta página está rastreando tu ubicación.</translation>
 <translation id="1774367687019337077">Permite que el usuario solicite un sitio de tablet. El contenido web suele optimizarse para tablets. Cuando esta opción está seleccionada, la cadena de agente de usuario se cambia para indicar que se trata de una tablet. A partir de entonces, se recibe contenido web optimizado para tablets en la pestaña actual.</translation>
 <translation id="5518584115117143805">Enviar por correo electrónico certificado de encriptación</translation>
+<translation id="7318394916728052423">Tener control absoluto sobre los dispositivos MIDI</translation>
 <translation id="9203398526606335860">&amp;Perfiles activados</translation>
 <translation id="4307281933914537745">Más información acerca de la recuperación del sistema</translation>
 <translation id="2849936225196189499">Crítico</translation>
@@ -1090,6 +1097,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="3798449238516105146">Versión</translation>
 <translation id="3608576286259426129">Vista previa de la imagen del usuario</translation>
 <translation id="5764483294734785780">Guardar audio como...</translation>
+<translation id="3034071689579835976">Este sitio quiere realizar lo siguiente:</translation>
 <translation id="5252456968953390977">Itinerancia:</translation>
 <translation id="8744641000906923997">Romaji</translation>
 <translation id="348620396154188443">Permitir que todos los sitios muestren notificaciones de escritorio</translation>
@@ -1106,6 +1114,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5956585768868398362">¿Esta es la página de búsqueda que esperabas ver?</translation>
 <translation id="2103460544384441978">Continúa bajo tu propia responsabilidad.</translation>
 <translation id="939736085109172342">Nueva carpeta</translation>
+<translation id="5182671122927417841">Inhabilitar extensión</translation>
 <translation id="4242577469625748426">Se produjo un error al instalar la configuración de la política en el dispositivo: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="8165208966034452696"><ph name="PLUGIN_NAME"/></translation>
 <translation id="4933484234309072027">insertado en <ph name="URL"/></translation>
@@ -1314,7 +1323,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7541121857749629630">Excepciones de imágenes</translation>
 <translation id="9033857511263905942">&amp;Pegar</translation>
 <translation id="1028690605877243613">Usa el diseño de biblioteca alternativo.</translation>
-<translation id="7928256373967083114">Permite inhabilitar la sincronización del Selector de aplicaciones.</translation>
 <translation id="6736045498964449756">Las contraseñas no coinciden.</translation>
 <translation id="1221825588892235038">Solo selección</translation>
 <translation id="5582883434676861778"><ph name="PRODUCT_NAME"/> ha bloqueado el acceso a <ph name="HOST_NAME"/>. Este sitio web ha sido identificado como un sitio web de suplantación de identidad.</translation>
@@ -1698,6 +1706,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="7784067724422331729">La configuración de seguridad de tu computadora bloqueó este archivo.</translation>
 <translation id="3822265067668554284">No permitir que los sitios rastreen mi ubicación física</translation>
 <translation id="2758939858455657368">Es posible que las notificaciones, las ventanas y los cuadros de diálogo posteriores se dividan entre los escritorios.</translation>
+<translation id="8143602169284966549">Utilizar la ubicación de tu dispositivo</translation>
 <translation id="4181898366589410653">No se ha encontrado ningún mecanismo de revocación en el certificado del servidor.</translation>
 <translation id="1515163294334130951">Iniciar</translation>
 <translation id="6914291514448387591">Se necesita tu permiso para ejecutar <ph name="PLUGIN_NAME"/>.</translation>
@@ -1849,6 +1858,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="1410616244180625362">Seguir permitiendo que <ph name="HOST"/> acceda a la cámara</translation>
 <translation id="8494214181322051417">¡Nuevo!</translation>
 <translation id="1745087082567737511">Activar el elemento selector 1</translation>
+<translation id="2937174152333875430">Habilitar sincronización del Selector de aplicaciones</translation>
 <translation id="2386255080630008482">Se ha revocado el certificado del servidor.</translation>
 <translation id="1586260122947707821">Inhabilitar la extensión del componente de Quickoffice</translation>
 <translation id="6365411474437319296">Agregar familiares y amigos</translation>
@@ -1871,6 +1881,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="1278049586634282054">Analizar vistas:</translation>
 <translation id="3254434849914415189">Seleccionar la aplicación predeterminada para los archivos <ph name="FILE_TYPE"/>:</translation>
 <translation id="4991420928586866460">Tratar las teclas de la fila superior como teclas de función</translation>
+<translation id="4350019051035968019">Este dispositivo no se puede registrar en el dominio al que pertenece tu cuenta porque ya lo administra otro dominio.</translation>
 <translation id="3699624789011381381">Dirección de correo electrónico</translation>
 <translation id="5275799318132317934">En este caso, el certificado presentado al navegador ha sido revocado por su emisor. Esto suele indicar que se ha vulnerado la integridad del certificado y que este no es de confianza.</translation>
 <translation id="7970236555047307207">Hacer coincidir el dominio de sufijo público para autocompletar contraseñas</translation>
@@ -1993,6 +2004,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="7772127298218883077">Acerca de <ph name="PRODUCT_NAME"/></translation>
 <translation id="2090876986345970080">Configuración de seguridad del sistema</translation>
 <translation id="3728067901555601989">OTP:</translation>
+<translation id="3565831235433694786">Habilitar D3D11</translation>
 <translation id="3475447146579922140">Hoja de cálculo de Google</translation>
 <translation id="6856526171412069413">Habilitar escala de acercamiento</translation>
 <translation id="9219103736887031265">Imágenes</translation>
@@ -2122,7 +2134,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="313407085116013672">Debido a que <ph name="IDS_SHORT_PRODUCT_OS_NAME"/> encripta de forma segura todos tus datos locales, debes ingresar la contraseña anterior ahora para desbloquear esos datos.</translation>
 <translation id="3551320343578183772">Cerrar pestaña</translation>
 <translation id="3345886924813989455">No se ha encontrado el navegador compatible</translation>
-<translation id="5921853983939304988">Inhabilitar las carpetas del Selector de aplicaciones</translation>
 <translation id="3712897371525859903">Gu&amp;ardar página como...</translation>
 <translation id="4572659312570518089">La autenticación se canceló mientras se establecía la conexión a &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="4925542575807923399">El administrador de esta cuenta requiere que sea la primera a la que se acceda al crear una sesión de acceso múltiple.</translation>
@@ -2140,6 +2151,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="2007404777272201486">Informar de un problema...</translation>
 <translation id="4366509400410520531">Permitido por ti</translation>
 <translation id="2218947405056773815"><ph name="API_NAME"/> encontró un problema.</translation>
+<translation id="6797509194603611336">Abrir todos los vínculos de <ph name="PROTOCOL"/> en lugar de <ph name="REPLACED_HANDLER_TITLE"/></translation>
 <translation id="1783075131180517613">Actualiza tu frase de contraseña de sincronización.</translation>
 <translation id="1601560923496285236">Aplicar</translation>
 <translation id="2390045462562521613">No recordar esta red</translation>
@@ -2180,6 +2192,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="7548916768233393626">Forzar modo de alta resolución por pulgada</translation>
 <translation id="33562952999632466">DevTools solicita acceso completo a <ph name="FOLDER_PATH"/>.
 Asegúrate de no revelar información confidencial.</translation>
+<translation id="2725200716980197196">Conexión de red restaurada</translation>
 <translation id="7019805045859631636">Rápido</translation>
 <translation id="4880520557730313061">Autocorrección</translation>
 <translation id="6122589160611523048">¡Se detectó suplantación de identidad!</translation>
@@ -2227,6 +2240,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="8758455334359714415">DNS asíncrono integrado</translation>
 <translation id="5585912436068747822">Error al dar formato</translation>
 <translation id="8766796754185931010">Kotoeri</translation>
+<translation id="6357619544108132570">Te damos la bienvenida a la familia <ph name="SHORT_PRODUCT_NAME"/>. Esta no es una computadora convencional.</translation>
 <translation id="3359256513598016054">Restricciones de directivas para certificados</translation>
 <translation id="4433914671537236274">Crear una recuperación de datos</translation>
 <translation id="4165327781976388410"><ph name="BEGIN_BOLD"/>Estás en modo incógnito.<ph name="END_BOLD"/>
@@ -2330,6 +2344,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="3897224341549769789">Habilitaciones</translation>
 <translation id="4648491805942548247">Permisos insuficientes</translation>
 <translation id="1183083053288481515">Se está utilizando un certificado proporcionado por el administrador</translation>
+<translation id="7513664956626906164">Mostrar notificaciones de escritorio</translation>
 <translation id="6231782223312638214">Sugerida</translation>
 <translation id="8302838426652833913">Ve a
           <ph name="BEGIN_BOLD"/>
@@ -2438,7 +2453,6 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="59174027418879706">Activado</translation>
 <translation id="4194415033234465088">Dachen 26</translation>
 <translation id="8725798467599003282">Habilita el cuadro de contraseñas, el cual facilita el almacenamiento y la administración de las contraseñas de un sitio web. Reemplaza la barra de información para el almacenamiento de contraseñas.</translation>
-<translation id="8800004011501252845">Mostrando destinos para</translation>
 <translation id="3554751249011484566">La siguiente información se compartirá con <ph name="SITE"/>.</translation>
 <translation id="872537912056138402">Croata</translation>
 <translation id="6639554308659482635">Memoria SQLite</translation>
@@ -2633,6 +2647,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="2580093683987647761">Llama al (866) 628-1371 (Estados Unidos), (866) 628-1372 (Canadá) o 0800 026 0613 (Reino Unido) para solicitar un cargador de reemplazo de forma gratuita.</translation>
 <translation id="3996912167543967198">Restableciendo…</translation>
 <translation id="8006846872564153081">Inhabilitar accesos directos de aplicaciones empaquetadas</translation>
+<translation id="7509822997156351101">Modificar la configuración de accesibilidad</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="1541724327541608484">Comprobar la ortografía de los campos de texto</translation>
 <translation id="8637688295594795546">Actualización del sistema disponible. Preparando para descargar...</translation>
@@ -2652,6 +2667,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="3714633008798122362">Calendario web</translation>
 <translation id="3251759466064201842">&lt;No forma parte de un certificado&gt;</translation>
 <translation id="6186096729871643580">Suavizado de texto LCD</translation>
+<translation id="3882882270042324158">Habilitar la inyección de secuencias de comandos para utilizar la accesibilidad</translation>
 <translation id="7303492016543161086">Mostrar opciones de accesibilidad en el menú del sistema</translation>
 <translation id="6410257289063177456">Archivos de imagen</translation>
 <translation id="6419902127459849040">Europa Central</translation>
@@ -2889,7 +2905,6 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="7260002739296185724">Permite habilitar el uso de AVFoundation para capturar videos y supervisar dispositivos de video en OS X &gt;= 10.7. De lo contrario, se utilizará QTKit.</translation>
 <translation id="1463985642028688653">bloquear</translation>
 <translation id="1715941336038158809">Nombre de usuario o contraseña no válidos</translation>
-<translation id="9162797315375836845">Inhabilitar la sincronización del Selector de aplicaciones</translation>
 <translation id="1901303067676059328">Seleccionar &amp;todo</translation>
 <translation id="8230667681230828532">Habilitar modo de varios perfiles</translation>
 <translation id="674375294223700098">Error de certificado de servidor desconocido.</translation>
@@ -3150,6 +3165,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="3700834376805760154"><ph name="ISSUER"/> verificó la identidad de <ph name="ORGANIZATION"/> en <ph name="LOCALITY"/>, y se pudo confirmar su transparencia.</translation>
 <translation id="436701661737309601">El emisor de un certificado que no haya caducado es el responsable de mantener la llamada &quot;lista de revocación&quot;. Si un certificado es sospechoso, el emisor puede revocarlo al agregarlo a esta lista y el navegador dejará de considerarlo fiable. No es necesario mantener el estado de revocación en aquellos certificados que hayan caducado. Por consiguiente, aunque un certificado haya sido válido para el sitio web que visitas actualmente, en este momento no es posible determinar si se convirtió en sospechoso y se revocó o si sigue siendo seguro. Por tanto, es imposible saber si te estás comunicando con un sitio web legítimo o si el certificado fue vulnerado y ahora te comunicas con el atacante al que pertenece.</translation>
 <translation id="4342311272543222243">Se produjo un error de TPM.</translation>
+<translation id="3727884750434605207">Habilita la inyección de secuencias de comandos en lugar de la accesibilidad nativa de Android.</translation>
 <translation id="1285484354230578868">Almacenar datos en tu cuenta de Google Drive</translation>
 <translation id="7106346894903675391">Comprar más almacenamiento...</translation>
 <translation id="994289308992179865">Bucle</translation>
@@ -3393,7 +3409,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="5917011688104426363">Enfocar la barra de direcciones en el modo de búsqueda</translation>
 <translation id="3269101346657272573">Ingresa el PIN.</translation>
 <translation id="2822854841007275488">Árabe</translation>
-<translation id="6559948977408379772">Este ícono aparece cuando tú y tu teléfono se encuentran cerca y el desbloqueo sencillo está disponible. No necesitas contraseña para entrar; solo debes hacer clic.</translation>
+<translation id="6559948977408379772">Este ícono aparece cuando tú y tu teléfono se encuentran cerca y el desbloqueo sencillo está disponible. No necesitas contraseña para acceder; solo debes hacer clic.</translation>
 <translation id="5857090052475505287">Nueva carpeta</translation>
 <translation id="2301276680333099344">Acceder a todos los datos del dispositivo y a los sitios web que visites</translation>
 <translation id="7450732239874446337">Entrada/salida de red suspendida</translation>
@@ -3460,7 +3476,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="656398493051028875">Eliminando &quot;<ph name="FILENAME"/>&quot;…</translation>
 <translation id="7517786267097410259">Crear una contraseña:</translation>
 <translation id="5832669303303483065">Agregar nueva dirección postal...</translation>
-<translation id="5837112309980178195">Realiza un powerwash en el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> para recuperar una actualización previa.</translation>
+<translation id="5837112309980178195">Usa la función Powerwash en el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> para recuperar una actualización previa.</translation>
 <translation id="3127919023693423797">Autenticando...</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
 <translation id="8030169304546394654">Desconectado</translation>
@@ -3683,6 +3699,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="5321676762462132688">Si se habilita esta opción, la Configuración aparecerá en una ventana separada en lugar de en una pestaña de navegador.</translation>
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="2377619091472055321">Restablecer configuración modificada de <ph name="IDS_SHORT_PRODUCT_NAME"/></translation>
+<translation id="4062251648694601778">Disfruta tu dispositivo <ph name="SHORT_PRODUCT_NAME"/>. Si tienes alguna pregunta, puedes hacer clic en el signo &quot;?&quot; de la bandeja de estado en cualquier momento para obtener ayuda.</translation>
 <translation id="7070714457904110559">Habilita extensiones experimentales para la función de ubicación geográfica. Incluye la utilización del sistema operativo de ubicación de las API (si está disponible), y el envío de datos adicionales de configuración de la red local al servicio de ubicación de Google para brindar un posicionamiento de mayor exactitud.</translation>
 <translation id="6701535245008341853">No se pudo obtener el perfil.</translation>
 <translation id="8303655282093186569">Configuración de entradas en pinyin</translation>
@@ -3905,6 +3922,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="3527085408025491307">Carpeta</translation>
 <translation id="2375701438512326360">Fuerza la compatibilidad de pantalla táctil para que siempre esté habilitada o inhabilitada, o para que se habilite cuando se detecta una pantalla táctil al iniciar el sistema (la configuración predeterminada es Automática).</translation>
 <translation id="3665842570601375360">Seguridad:</translation>
+<translation id="2487925617007598659">Almacenar datos de forma permanente en el dispositivo</translation>
 <translation id="8812832766208874265">Sigue usando <ph name="CURRENT_GOOGLE_HOST"/></translation>
 <translation id="5699533844376998780">Se agregó la extensión &quot;<ph name="EXTENSION_NAME"/>&quot;.</translation>
 <translation id="4522331920508731608">Administrar galerías</translation>
@@ -3925,7 +3943,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="8830796635868321089">La búsqueda de actualizaciones no pudo usar la configuración del servidor proxy actual. Ajusta tu <ph name="PROXY_SETTINGS_LINK_START"/>configuración de proxy<ph name="PROXY_SETTINGS_LINK_END"/>.</translation>
 <translation id="7801746894267596941">Solo alguien con tu frase de contraseña puede leer tus datos encriptados. Google no almacena ni recibe la frase de contraseña; si la olvidas, deberás</translation>
 <translation id="9218350802691534808">Habilitar función de mostrar con primer trazo para las aplicaciones</translation>
-<translation id="5771849619911534867">El análisis del dispositivo se detuvo.</translation>
+<translation id="5771849619911534867">Se detuvo la búsqueda de dispositivos.</translation>
 <translation id="291886813706048071">Puedes realizar búsquedas desde aquí con <ph name="SEARCH_ENGINE"/>.</translation>
 <translation id="556042886152191864">Botón</translation>
 <translation id="1638861483461592770">Habilita la implementación del resalte de toques gestuales experimental.</translation>
@@ -4307,6 +4325,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="4104163789986725820">E&amp;xportar...</translation>
 <translation id="9022026332614591902">Ventanas emerg. bloqueadas (<ph name="POP_UP_COUNT"/>)</translation>
 <translation id="380408572480438692">Si habilitas la recopilación de datos de rendimiento, ayudarás a Google a mejorar el sistema con el tiempo. Para que se envíen los datos, debes presentar un informe de comentarios (Alt+Mayúscula+I) e incluir datos de rendimiento. Puedes volver a esta pantalla para inhabilitar la recopilación en cualquier momento.</translation>
+<translation id="3654045516529121250">Leer la configuración de accesibilidad</translation>
 <translation id="2113479184312716848">Abrir &amp;archivo...</translation>
 <translation id="884264119367021077">Dirección de envío</translation>
 <translation id="8405710043622376215">Permite reorganizar las sugerencias de HistoryQuickProvider en la función Autocompletar del cuadro multifunción para que aparezca primero una que se pueda insertar.</translation>
@@ -4530,7 +4549,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="3954582159466790312">Deshacer Silenciar</translation>
 <translation id="1110772031432362678">No se encontraron redes.</translation>
 <translation id="6187344976531853059">El movimiento de las ventanas a otro escritorio puede generar un comportamiento inesperado.</translation>
-<translation id="5355515193538070444">Un powerwash restablece el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> para que quede como nuevo.</translation>
+<translation id="5355515193538070444">La función Powerwash restablece el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> para que quede como nuevo.</translation>
 <translation id="1839913225882990152">¿Cuál es el problema?</translation>
 <translation id="3936390757709632190">Abrir audio en una nueva pestaña</translation>
 <translation id="7297622089831776169">&amp;Métodos de entrada</translation>
@@ -4596,6 +4615,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="2335676733040881300">Se produjo un error al descargar esta función.</translation>
 <translation id="5023310440958281426">Revisa las políticas del administrador.</translation>
 <translation id="8931394284949551895">Nuevos dispositivos</translation>
+<translation id="4105880234226240143">Utilizar tu cámara y micrófono</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="4253787465144837701">El certificado del servidor contiene un nombre de dominio que no debería aparecer</translation>
 <translation id="5563986351966648191">Mejorar la detección de software malicioso enviando datos adicionales a Google cuando reciba advertencias como esta (<ph name="PRIVACY_PAGE_LINK"/>)</translation>
@@ -4831,6 +4851,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="8940081510938872932">El equipo está trabajando demasiado en este momento. Intenta nuevamente más tarde.</translation>
 <translation id="8848709220963126773">Cambiar interruptor de modo clave</translation>
 <translation id="3703445029708071516">Activar la sincronización de URL escritas</translation>
+<translation id="6316806695097060329">Este dispositivo <ph name="SHORT_PRODUCT_NAME"/> se diseñó para brindarte la mejor experiencia en la Web.</translation>
 <translation id="8828933418460119530">Nombre de DNS</translation>
 <translation id="988159990683914416">Build para desarrolladores</translation>
 <translation id="1097658378307015415">Antes de acceder, ingresa como Invitado para activar la red <ph name="NETWORK_ID"/>.</translation>
@@ -4903,7 +4924,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5830720307094128296">Guardar p&amp;ágina como...</translation>
 <translation id="2448312741937722512">Tipo</translation>
 <translation id="2568958845983666692">Kilobytes</translation>
-<translation id="1870677474902800104">Al habilitar esta opción, se impide que el usuario cree y administre carpetas en el Selector de aplicaciones.</translation>
 <translation id="5209320130288484488">No se encontraron dispositivos.</translation>
 <translation id="473221644739519769">Cuando agregas tus impresoras a Google Cloud Print, puedes imprimir documentos
         estés donde estés. Comparte las impresoras con quien quieras e imprime
@@ -5112,6 +5132,7 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="8248821880964244299">¿Realmente deseas eliminar esta aplicación?</translation>
 <translation id="6845038076637626672">Abrir de forma maximizada</translation>
 <translation id="3184560914950696195">No se puede guardar en $1. Las imágenes editadas se guardarán en la carpeta de descargas.</translation>
+<translation id="8366396658833131068">Se restauró la conexión de red. Selecciona una red distinta o presiona el botón &quot;Continuar&quot; para iniciar la aplicación de kiosko.</translation>
 <translation id="4664482161435122549">Error en la exportación de PKCS #12</translation>
 <translation id="2445081178310039857">Se requiere un directorio de raíz de la extensión.</translation>
 <translation id="146187176629751223">Un participante en este Hangout te ofreció ayuda mediante el control de tu computadora. Si aceptas:
@@ -5268,7 +5289,7 @@ Debes acceder para utilizar esta función.</translation>
 <translation id="969892804517981540">Build oficial</translation>
 <translation id="1691608011302982743">¡Retiraste tu dispositivo antes de tiempo!</translation>
 <translation id="445923051607553918">Unirte a la red Wi-Fi</translation>
-<translation id="1898137169133852367">Un powerwash restablece el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> para que quede como nuevo. Además, el dispositivo recuperará una actualización previa de <ph name="IDS_SHORT_PRODUCT_NAME"/>.</translation>
+<translation id="1898137169133852367">La función Powerwash restablece el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> para que quede como nuevo. Además, el dispositivo recuperará una actualización previa de <ph name="IDS_SHORT_PRODUCT_NAME"/>.</translation>
 <translation id="4215898373199266584">¡No se lo digas a nadie! El modo incógnito (<ph name="INCOGNITO_MODE_SHORTCUT"/>) puede resultarte útil la próxima vez.</translation>
 <translation id="1048597748939794622">Forzado en todas las capas</translation>
 <translation id="420676372321767680">Habilitar la decodificación sin composición</translation>

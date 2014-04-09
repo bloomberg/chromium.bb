@@ -1475,8 +1475,8 @@
 <translation id="1956493342242507974">Configurează gestionarea consumului de energie pe ecranul de conectare din <ph name="PRODUCT_OS_NAME"/>.
 
       Această politică vă permite să configurați comportamentul <ph name="PRODUCT_OS_NAME"/> în cazul în care nu a existat o activitate inițiată de utilizator într-un interval de timp în care s-a afișat ecranul de conectare. Politica controlează mai multe setări. Pentru intervalele de valori și semantica fiecăreia dintre acestea, consultați politicile corespunzătoare care controlează gestionarea consumului de energie în timpul unei sesiuni. Singurele abateri de la această politică sunt următoarele:
-      * Acțiunile de urmat după intervalul de inactivitate sau la închiderea capacului nu pot duce la terminarea sesiunii.
-      * Acțiunea prestabilită de urmat după trecerea intervalului de inactivitate, dacă se utilizează o sursă de c.a., este oprirea dispozitivului.
+      * Acțiunile de urmat la intrarea în modul inactiv sau la închiderea capacului nu pot duce la terminarea sesiunii.
+      * Acțiunea prestabilită de urmat la intrarea în modul inactiv, dacă se utilizează o sursă de c.a., este oprirea dispozitivului.
 
       Dacă o setare rămâne nespecificată, este utilizată o valoare prestabilită.
 

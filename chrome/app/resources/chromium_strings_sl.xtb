@@ -13,6 +13,7 @@
 <translation id="2770231113462710648">Spremeni privzeti brskalnik na:</translation>
 <translation id="6613594504749178791">Spremembe bodo začele veljati ob naslednjem zagonu Chromiuma.</translation>
 <translation id="9089354809943900324">Chromium je zastarel</translation>
+<translation id="59625444380784159">S podatki iz stikov lahko hitreje izpolnjujete obrazce v Chromiumu.</translation>
 <translation id="3748537968684000502">Ogledujete si varno stran Chromiuma.</translation>
 <translation id="2077129598763517140">Uporabi strojno pospeševanje, če je na voljo</translation>
 <translation id="1065672644894730302">Nastavitev ni mogoče prebrati.
@@ -60,7 +61,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="466053073629175099">Zdaj ste prijavljeni v Chromium. Vaši zaznamki, zgodovina in druge nastavitve bodo sinhronizirani z Google Računom.</translation>
 <translation id="3849925841547750267">Žal nastavitve brskalnika Mozilla Firefox niso na voljo, medtem ko ga uporabljate. Če želite te nastavitve uvoziti v Chromium, shranite delo in zaprite vsa okna Firefoxa. Nato kliknite »Naprej«.</translation>
 <translation id="7771626876550251690">V tem primeru se naslov, ki je naveden v potrdilu, ne ujema z naslovom spletnega mesta, ki ga je poskusil odpreti vaš brskalnik. Morda vašo komunikacijo prestreza napadalec, ki navede potrdilo za drugo spletno mesto, kar povzroči neujemanje. Morda je strežnik nastavljen tako, da vrne isto potrdilo za več spletnih mest, vključno z mestom, ki ga poskušate obiskati, čeprav potrdilo ni veljavno za vsa ta mesta. Chromium ve, da ste dosegli &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, vendar ne more preveriti, ali je to mesto enako kot &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ki ste ga nameravali odpreti. Če nadaljujete, Chromium ne bo preveril morebitnih nadaljnjih neujemanj imena.</translation>
-<translation id="7027298027173928763">Chromium se ni mogel posodobiti na najnovejšo različico, zato ste prikrajšani za izjemne nove funkcije in varnostne popravke. Chromium morate ročno znova namestiti.</translation>
+<translation id="7027298027173928763">Chromium se ni mogel posodobiti na najnovejšo različico, zato ste prikrajšani za izjemne nove funkcije in varnostne popravke. Chromium morate znova namestiti ročno.</translation>
 <translation id="8897323336392112261">Določa tudi, katera stran je prikazana, ko zaženete Chromium ali kliknete gumb za domačo stran.</translation>
 <translation id="4330585738697551178">Za ta modul je znano, da je v sporu s Chromiumom.</translation>
 <translation id="3190315855212034486">Opa! Chromium se je zrušil. Ga želite znova zagnati?</translation>

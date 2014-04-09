@@ -16,6 +16,7 @@ host</translation>
 <translation id="5397086374758643919">Verwijderprogramma voor Chrome Remote Desktop-host</translation>
 <translation id="3258789396564295715">Je kunt veilig toegang krijgen tot deze computer via Chrome Remote Desktop.</translation>
 <translation id="5070121137485264635">De externe host vereist dat je op een website van derden wordt geverifieerd. Als je wilt doorgaan, moet je Chrome Remote Desktop aanvullende machtigingen geven om toegang tot dit adres te krijgen:</translation>
+<translation id="2124408767156847088">Veilig toegang tot je computers vanaf je Android-apparaat.</translation>
 <translation id="4808503597364150972">Geef je pincode voor <ph name="HOSTNAME"/> op.</translation>
 <translation id="7672203038394118626">Externe verbindingen voor deze computer zijn uitgeschakeld.</translation>
 <translation id="8244400547700556338">Meer informatie.</translation>
@@ -31,6 +32,7 @@ host</translation>
 <translation id="7868137160098754906">Voer je pincode voor de externe computer in.</translation>
 <translation id="677755392401385740">Host gestart voor gebruiker: <ph name="HOST_USERNAME"/>.</translation>
 <translation id="8864965950780407789">Om Chromoting te gebruiken, moet je eerst uitgebreide toegangsrechten voor je computer verlenen. Je hoeft dit slechts één keer te doen.</translation>
+<translation id="3197730452537982411">Remote Desktop</translation>
 <translation id="8355326866731426344">Deze toegangscode verloopt over <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">De auteurs van Chromium</translation>
 <translation id="2498359688066513246">Help en feedback</translation>
@@ -61,6 +63,14 @@ host</translation>
 <translation id="174018511426417793">Je hebt geen geregistreerde computers. Als je externe verbindingen met een computer mogelijk wilt maken, installeer je Chrome Remote Desktop op die computer en klik je op '<ph name="BUTTON_NAME"/>'.</translation>
 <translation id="9126115402994542723">Niet meer vragen naar een pincode bij het aansluiten van dit apparaat op deze host.</translation>
 <translation id="253387295088602549">Een andere gebruiker toestemming geven veilig toegang te krijgen tot je computer via internet.</translation>
+<translation id="1300633907480909701">Veilig toegang tot je computers vanaf je Android-apparaat.
+
+• Stel op elk van je computers externe toegang in via de app Chrome Remote Desktop uit de Chrome Web Store: https://chrome.google.com/remotedesktop
+• Open de app op je Android-apparaat en tik op een van je online computers om verbinding te maken.
+
+Externe computers met toetsenborden met een niet-Amerikaanse indeling kunnen onjuiste tekstinvoer ontvangen. Ondersteuning voor andere toetsenbordindelingen komt binnenkort beschikbaar.
+
+Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http://goo.gl/SyrVzj) en het Privacybeleid van Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="8525306231823319788">Volledig scherm</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (verouderd)</translation>
@@ -115,6 +125,12 @@ host</translation>
 <translation id="5773590752998175013">Koppelingsdatum</translation>
 <translation id="5265129178187621741">(deze functie is nog niet beschikbaar voor Chromebooks… nog even geduld)</translation>
 <translation id="5156271271724754543">Geef dezelfde pincode in beide vakken op.</translation>
+<translation id="2118549242412205620">Veilig toegang tot je computers vanaf je Android-apparaat.
+
+• Stel op elk van je computers externe toegang in via de app Chrome Remote Desktop uit de Chrome Web Store: https://chrome.google.com/remotedesktop
+• Open de app op je Android-apparaat en tik op een van je online computers om verbinding te maken.
+
+Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http://goo.gl/SyrVzj) en het Privacybeleid van Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="4361728918881830843">Als je externe verbindingen met een andere computer mogelijk wilt maken, installeer je Chrome Remote Desktop op die computer en klik je op '<ph name="BUTTON_NAME"/>'.</translation>
 <translation id="7444276978508498879">Client verbonden: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="4913529628896049296">wachten op verbinding…</translation>
@@ -173,6 +189,7 @@ Desktop-host</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="7319983568955948908">Delen stoppen</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Alle rechten voorbehouden.</translation>
+<translation id="8038108135592087998">Eerste release van Chrome Remote Desktop voor Android.</translation>
 <translation id="6668065415969892472">Je pincode is bijgewerkt.</translation>
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4277736576214464567">De toegangscode is ongeldig. Probeer het opnieuw.</translation>

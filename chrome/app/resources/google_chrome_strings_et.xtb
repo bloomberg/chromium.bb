@@ -18,7 +18,7 @@
 <translation id="2144822863799338346">Tere tulemast Chrome'i. Tulge siia tagasi, et teha järgmist.</translation>
 <translation id="1225016890511909183">Chrome salvestab turvaliselt teie teabe, nii et te ei pea seda uuesti sisestama, kuid peate ka tulevaste maksete puhul kinnitama oma kaardi turvakoodi.</translation>
 <translation id="2770231113462710648">Asenda vaikebrauser:</translation>
-<translation id="8838365799985821335">Laiendus muutis seda, mis leht kuvatakse Chrome'i käivitamisel.</translation>
+<translation id="8838365799985821335">Laiendus muutis Chrome'i käivitamisel kuvatavat lehte.</translation>
 <translation id="2077129598763517140">Kasuta võimaluse korral riistvarakiirendust</translation>
 <translation id="1065672644894730302">Teie eelistusi ei saa lugeda. Mõned funktsioonid ei pruugi saadaval olla ja eelistuste muudatusi ei salvestata.</translation>
 <translation id="7781002470561365167">Saadaval on uus Google Chrome'i versioon.</translation>
@@ -145,6 +145,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="1140117203923356735"><ph name="FILE_NAME"/> teeb mõne pahavaraga sarnaseid seadete muudatusi, seega on Chrome selle blokeerinud.</translation>
 <translation id="5941830788786076944">Tee Google Chrome vaikebrauseriks</translation>
+<translation id="1759301979429102118">Kontaktide üksikasjad aitavad Chrome'is kiiremini vorme täita.</translation>
 <translation id="7787950393032327779">Tundub, et mõni muu Google Chrome'i protsess (<ph name="PROCESS_ID"/>) mõnes teises arvutis (<ph name="HOST_NAME"/>) kasutab profiili.  Chrome on profiili lukustanud, et seda ei saaks rikkuda.  Kui olete kindel, et ükski teine protsess seda profiili ei kasuta, võite selle avada ja Chrome'i taaskäivitada.</translation>
 <translation id="1469002951682717133">Chrome'i rakenduste käiviti</translation>
 <translation id="8568392309447938879">Rakenduste kasutamiseks peate olema Chrome'i sisse logitud. See võimaldab Chrome'il sünkroonida teie rakendusi, järjehoidjaid, ajalugu, paroole ja muid seadeid erinevates seadmetes.</translation>
@@ -187,7 +188,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="576822117893741893">Chrome'i menüü kuvamine</translation>
 <translation id="338432196642384904">Kustuta Chrome'i kasutaja</translation>
 <translation id="3444832043240812445">Lehel näidatakse vaid teavet hiljutiste krahhide kohta, kui olete <ph name="BEGIN_LINK"/>krahhide aruandluse lubanud<ph name="END_LINK"/>.</translation>
-<translation id="4566427205701379461">Kasutate Chrome'i kraami sünkroonimiseks kontot <ph name="PROFILE_EMAIL"/>. Sünkroonimiseelistuste värskendamiseks või ilma Google'i kontota Chrome'i kasutamiseks avage seaded.</translation>
+<translation id="4566427205701379461">Kasutate Chrome'i kraami sünkroonimiseks kontot <ph name="PROFILE_EMAIL"/>. Sünkroonimiseelistuste värskendamiseks või Chrome'i kasutamiseks ilma Google`i kontota avage seaded.</translation>
 <translation id="8614913330719544658">Google Chrome ei reageeri. Kas soovite kohe taaskäivitada?</translation>
 <translation id="2681064822612051220">Süsteemist leiti Google Chrome'i konfliktne install. Desinstallige see ja proovige uuesti.</translation>
 <translation id="1175529839152551794">Kui olete sisse logitud, näete oma vahelehti, järjehoidjaid ja muud Chrome'i kraami kõikjal oma sülearvutis, telefonis ja tahvelarvutis. Google'i teenused pakuvad teile ka asjakohasemaid soovitusi ja funktsioone.</translation>
@@ -227,7 +228,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="1061257178446858647">Olete nüüd Chrome'i sisse logitud. Teie järjehoidjad, ajalugu ja muud seaded sünkroonitakse teie Google'i kontoga.</translation>
 <translation id="3335672657969596251">Google Chrome ei toeta <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Muudatuse jõustamiseks logige välja ja uuesti sisse.</translation>
-<translation id="8679801911857917785">Lisaks juhib see seda, mis leht kuvatakse Chrome'i käivitamisel.</translation>
+<translation id="8679801911857917785">Lisaks juhib see Chrome'i käivitamisel kuvatavat lehte.</translation>
 <translation id="5334545119300433702">Sel moodulil on teadaolev vastuolu Google Chrome'iga.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome on ajakohane.</translation>
@@ -242,7 +243,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="2246246234298806438">Google Chrome ei saa kuvada printimise eelvaadet, kui sisseehitatud PDF-vaatur puudub.</translation>
 <translation id="6626317981028933585">Kahjuks pole teie Mozilla Firefoxi seaded saadaval samal ajal kui brauser töötab. Nende seadete Google Chrome'i importimiseks salvestage oma töö ja sulgege kõik Firefoxi aknad. Siis klõpsake Jätka.</translation>
 <translation id="7242029209006116544">Logite sisse hallatud kontoga ja annate selle administraatorile üle oma Google Chrome'i profiili juhtimise. Teie Chrome'i andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME"/>. Saate need andmed Google'i kontode juhtpaneeli kaudu kustutada, kuid te ei saa neid seostada teise kontoga. Võite olemasolevate Chrome'i andmete eraldi hoidmiseks luua aga uue profiili. <ph name="LEARN_MORE"/></translation>
-<translation id="5386244825306882791">Lisaks juhib see seda, mis leht kuvatakse Chrome'i käivitamisel või omnikastikeses otsingu tegemisel.</translation>
+<translation id="5386244825306882791">Lisaks juhib Chrome'i käivitamisel kuvatavat lehte või omnikastikese otsingut.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="2334084861041072223">Autoriõigus <ph name="YEAR"/> Google Inc. Kõik õigused on kaitstud.</translation>
 <translation id="1698376642261615901">Google Chrome on veebibrauser, mis käitab veebilehti ja rakendusi välgukiirusel. See on kiire, töökindel ja lihtsalt kasutatav. Veebi sirvimine on turvalisem tänu Google Chrome'i sisseehitatud pahavara- ja andmepüügivastasele kaitsele.</translation>
@@ -252,7 +253,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="4338032231047635328">Püüdsite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid serveri esitatud sertifikaat sisaldab vigu. Google Chrome ei saa kasutada vigadega sertifikaati ega saa kinnitada soovitud saidi identiteeti.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3836351788193713666">Rakendus on peaaegu ajakohane! Värskendamise lõpuleviimiseks taaskäivitage Google Chrome.</translation>
-<translation id="884296878221830158">Lisaks juhib see seda, mis leht kuvatakse Chrome'i käivitamisel või avalehe nupul klõpsamisel.</translation>
+<translation id="884296878221830158">Lisaks juhib see Chrome'i käivitamise lehte või avalehe nupu  klõpsamist.</translation>
 <translation id="7106741999175697885">Tegumihaldur - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome impordib asukohast <ph name="BROWSER_COMPONENT"/> järgnevat:</translation>
 <translation id="3396977131400919238">Installimisel ilmnes operatsioonisüsteemi viga. Palun laadige Google Chrome uuesti alla.</translation>

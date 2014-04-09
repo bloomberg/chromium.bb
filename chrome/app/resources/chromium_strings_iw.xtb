@@ -13,6 +13,7 @@
 <translation id="2770231113462710648">שנה את דפדפן ברירת המחדל ל:</translation>
 <translation id="6613594504749178791">‏השינויים שביצעת ייכנסו לתוקף בפעם הבאה שתפעיל מחדש את Chromium‏.</translation>
 <translation id="9089354809943900324">‏Chromium אינו מעודכן</translation>
+<translation id="59625444380784159">‏פרטים מאנשי הקשר שלך יכולים לעזור לך למלא טפסים במהירות רבה יותר ב-Chromium.</translation>
 <translation id="3748537968684000502">‏אתה מציג דף Chromium מאובטח.</translation>
 <translation id="2077129598763517140">השתמש בהאצת חומרה כשניתן</translation>
 <translation id="1065672644894730302">לא היתה אפשרות לקרוא את ההעדפות שלך. ייתכן שחלק מהתכונות לא יהיו זמינות ושינויים בהעדפות לא יישמרו.</translation>
@@ -58,7 +59,7 @@
 <translation id="466053073629175099">‏נכנסת ל-Chromium! הסימניות, ההיסטוריה, והגדרות אחרות שלך יסונכרנו עם חשבון Google שלך.</translation>
 <translation id="3849925841547750267">‏למרבה הצער, הגדרות Mozilla Firefox שלך אינן זמינות בזמן שהדפדפן פועל. כדי לייבא הגדרות אלו ל-Chromium, שמור את עבודתך וסגור את כל חלונות Firefox. לאחר מכן לחץ על המשך.</translation>
 <translation id="7771626876550251690">‏במקרה כזה, הכתובת שמופיעה באישור אינה תואמת לכתובת של האתר שאליו הדפדפן שלך ניסה להגיע. סיבה אפשרית  לכך היא שהתקשורת שלך יורטה על ידי תוקף שמציג אישור עבור אתר שונה, וכך נוצרה אי התאמה. סיבה אפשרית נוספת היא שהשרת מוגדר להחזיר את אותו אישור עבור אתרים מרובים, כולל האתר שבו אתה מנסה לבקר, אפילו שהאישור אינו תקף לכל אותם אתרים. Chromium יכול לומר בוודאות שהגעת אל &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/ strong&gt;, אך אינו יכול לאמת שהוא זהה ל-&lt;strong&gt;<ph name="DOMAIN"/>&lt;/ strong&gt;, שאליו ניסית להגיע. אם תמשיך, Chromium לא יחפש אי התאמות שמיות נוספות.</translation>
-<translation id="7027298027173928763">‏נכשל העדכון העצמי של Chromium לגרסה העדכנית ביותר, לכן אתה מחמיץ תכונות חדשות מדליקות ותיקוני אבטחה. עליך להתקין מחדש את Chromium באופן ידני.</translation>
+<translation id="7027298027173928763">‏העדכון העצמי של Chromium לגרסה העדכנית ביותר נכשל, לכן אתה מחמיץ תכונות חדשות מדליקות ותיקוני אבטחה. עליך להתקין מחדש את Chromium באופן ידני.</translation>
 <translation id="8897323336392112261">‏הגדרה זו גם קובעת איזה דף מוצג שאתה מפעיל את Chromium או לוחץ על הלחצן 'דף הבית'.</translation>
 <translation id="4330585738697551178">‏מודול זה מתנגש עם Chromium.</translation>
 <translation id="3190315855212034486">‏וואו! Chromium קרס. להפעיל מחדש עכשיו?</translation>
@@ -81,12 +82,12 @@
 <translation id="7463979740390522693">‏Chromium - הודעות (<ph name="QUANTITY"/> שלא נקראו)</translation>
 <translation id="4345520932254577235">‏ברוכים הבאים אל Chromium. ניתן לחזור לכאן על מנת:</translation>
 <translation id="225614027745146050">ברוכים הבאים</translation>
-<translation id="5823381412099532241">‏נכשל העדכון העצמי של Chromium לגרסה העדכנית ביותר, לכן אתה מחמיץ תכונות חדשות מדליקות ותיקוני אבטחה. עליך לעדכן את Chromium.</translation>
+<translation id="5823381412099532241">‏העדכון העצמי של Chromium לגרסה העדכנית ביותר נכשל, לכן אתה מחמיץ תכונות חדשות מדליקות ותיקוני אבטחה. עליך לעדכן את Chromium.</translation>
 <translation id="9191268552238695869">‏מנהל המערכת התקין Chromium במערכת זו, והוא זמין לכל המשתמשים. Chromium ברמת המערכת יחליף כעת את ההתקנה שלך ברמת המשתמש.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">‏סגור את כל חלונות Chromium ונסה שוב.</translation>
 <translation id="4077262827416206768">‏סגור את כל החלונות של Chromium והפעל אותו מחדש כדי שהשינוי ייכנס לתוקף.</translation>
-<translation id="6475912303565314141">‏הגדרה זו גם קובעת איזה דף מוצג שאתה מפעיל את Chromium.</translation>
+<translation id="6475912303565314141">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chromium.</translation>
 <translation id="750717762378961310">‏הקובץ הזה זדוני, ו-Chromium חסם אותו.</translation>
 <translation id="6944967875980567883">‏מודולים שנטענו ב-Chromium</translation>
 <translation id="6899795326977034905">‏ב-Mac, סיסמאות נשמרות ב-Keychain שלך ומשתמשי Chromium אחרים המשתפים חשבון OS X זה יכולים לגשת אליהן או לסנכרן אותן.</translation>
@@ -98,7 +99,7 @@
 <translation id="7707841053049645517">‏אתר זה משתמש בפלאגין Chromium Frame, שבקרוב לא ייתמך. הסר את התקנתו ושדרג לדפדפן מתקדם.</translation>
 <translation id="7338384957110970244">‏Chromium לא הצליח ליצור קיצור דרך ליישום.</translation>
 <translation id="3656661827369545115">‏הפעל את Chromium אוטומטית בעת הפעלת המחשב</translation>
-<translation id="2241627712206172106">‏אם אתה חולק מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chromium בדיוק כפי שהם רוצים.</translation>
+<translation id="2241627712206172106">‏אם אתה משתף מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chromium בדיוק כפי שהם רוצים.</translation>
 <translation id="6055895534982063517">‏גרסה חדשה של Chromium זמינה, והיא מהירה יותר מאי פעם.</translation>
 <translation id="8821041990367117597">‏Chromium לא הצליח לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="4677944499843243528">‏נראה שהפרופיל נמצא בשימוש על ידי תהליך Chromium אחר (<ph name="PROCESS_ID"/>) במחשב אחר (<ph name="HOST_NAME"/>)‏. Chromium נעל את הפרופיל כדי שלא ייפגם. אם אתה משוכנע שאף תהליך אחר אינו משתמש בפרופיל זה, תוכל לבטל את נעילת הפרופיל ולהפעיל את Chromium מחדש.</translation>
@@ -122,7 +123,7 @@
 <translation id="6734080038664603509">‏עדכן &amp;את Chromium‏</translation>
 <translation id="8862326446509486874">אין לך זכויות שמתאימות להתקנה ברמת המערכת. נסה להפעיל שוב את המתקין כמנהל מערכת.</translation>
 <translation id="2535480412977113886">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
-<translation id="8697124171261953979">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chromium או מבצע חיפוש מה-Omnibox.</translation>
+<translation id="8697124171261953979">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chromium או מבצע חיפוש מסרגל הכתובות.</translation>
 <translation id="894903460958736500">‏תוכנה שפועלת במחשב שלך אינה תואמת ל-Chromium.</translation>
 <translation id="1774152462503052664">‏אפשר ל-Chromium לפעול ברקע</translation>
 <translation id="9022552996538154597">‏היכנס אל Chromium</translation>
@@ -200,7 +201,7 @@
 <translation id="6424492062988593837">‏‫Chromium ממשיך להשתפר! קיימת גירסה חדשה.</translation>
 <translation id="811857857463334932">‏קבלת העדכונים של Chromium תופסק בקרוב למחשב זה מאחר והחומרה שלו אינה נתמכת עוד.</translation>
 <translation id="2910007522516064972">‏מידע על &amp;Chromium‏</translation>
-<translation id="1800685724563744906">‏אתה משתמש ב-<ph name="PROFILE_EMAIL"/> כדי לסנכרן את הדברים שלך ב-Chromium. עבור אל 'הגדרות' כדי לעדכן את העדפות הסנכרון או להשתמש ב-Chromium ללא חשבון Google.</translation>
+<translation id="1800685724563744906">‏אתה משתמש ב-<ph name="PROFILE_EMAIL"/> כדי לסנכרן את הפריטים שלך ב-Chromium. עבור אל 'הגדרות' כדי לעדכן את העדפות הסנכרון או להשתמש ב-Chromium ללא חשבון Google.</translation>
 <translation id="8453117565092476964">‏הארכיון של המתקין פגום או שאינו חוקי. הורד שוב את Chromium.</translation>
 <translation id="6763060723530774166">‏כדי להשתמש במפעיל היישומים, עליך להפעיל מחדש את Chromium בשולחן העבודה.</translation>
 <translation id="3889543394854987837">‏לחץ על השם שלך כדי לפתוח את Chromium ולהתחיל לגלוש.</translation>

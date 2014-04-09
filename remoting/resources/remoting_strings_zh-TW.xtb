@@ -16,6 +16,7 @@
 <translation id="5397086374758643919">Chrome 遠端桌面主機端解除安裝程式</translation>
 <translation id="3258789396564295715">您可以透過 Chrome 遠端桌面安全地存取這台電腦。</translation>
 <translation id="5070121137485264635">遠端主機要求您向第三方網站進行驗證。如要繼續，您必須授予額外權限，讓 Chrome 遠端桌面能夠存取這個位址：</translation>
+<translation id="2124408767156847088">透過 Android 裝置安全存取您的電腦。</translation>
 <translation id="4808503597364150972">請輸入 <ph name="HOSTNAME"/> 的 PIN。</translation>
 <translation id="7672203038394118626">這台電腦的遠端連線已停用。</translation>
 <translation id="8244400547700556338">瞭解詳情</translation>
@@ -31,6 +32,7 @@
 <translation id="7868137160098754906">請為遠端電腦輸入您的 PIN。</translation>
 <translation id="677755392401385740">已為下列使用者啟動主機：<ph name="HOST_USERNAME"/>。</translation>
 <translation id="8864965950780407789">如要使用 Chromoting，您必須將電腦的延伸存取權限授予該應用程式，這個步驟只需執行一次。</translation>
+<translation id="3197730452537982411">遠端桌面</translation>
 <translation id="8355326866731426344">這個存取碼將於 <ph name="TIMEOUT"/> 後失效</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="2498359688066513246">說明與意見回饋</translation>
@@ -59,8 +61,16 @@
 <translation id="5379087427956679853">Chrome 遠端桌面提供了安全的連線機制，可讓您透過網路與他人共用自己的電腦。您和共用對象都必須執行 Chrome 遠端桌面應用程式，請前往 <ph name="URL"/> 安裝。</translation>
 <translation id="1409991159633941777">找不到 Chrome 遠端桌面所需的部分元件。請確認您執行的是最新版本的 Chrome，然後再試一次。</translation>
 <translation id="174018511426417793">您尚未註冊任何電腦。如要為電腦啟用遠端連線，請在電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME"/>]。</translation>
-<translation id="9126115402994542723">從這個裝置連線至這個主機時，請勿再次詢問 PIN。</translation>
+<translation id="9126115402994542723">此裝置連線至這個主機時，不必再次詢問 PIN。</translation>
 <translation id="253387295088602549">在安全連線機制下，允許其他使用者透過網際網路存取您的電腦。</translation>
+<translation id="1300633907480909701">透過 Android 裝置安全存取您的電腦。
+
+• 在您的電腦上，透過 Chrome 遠端桌面應用程式設定遠端存取權限。您可前往 Chrome 線上應用程式商店 (https://chrome.google.com/remotedesktop) 下載該應用程式。
+• 在 Android 裝置上開啟應用程式，然後輕按任一線上電腦進行連線。
+
+如果遠端電腦沒有美式英文鍵盤配置，輸入時可能會產生不相符的文字。我們即將推出可支援其他鍵盤配置的版本，敬請期待！
+
+如需隱私權相關資訊，請參閱《Google 隱私權政策》(http://goo.gl/SyrVzj) 和《Chrome 隱私權政策》(http://goo.gl/0uXE5d)。</translation>
 <translation id="629730747756840877">帳戶</translation>
 <translation id="8525306231823319788">全螢幕</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (版本過舊)</translation>
@@ -115,6 +125,12 @@
 <translation id="5773590752998175013">配對日期</translation>
 <translation id="5265129178187621741">(Chromebook 目前暫不支援這項功能，請密切注意)</translation>
 <translation id="5156271271724754543">請在兩個方塊中輸入相同的 PIN。</translation>
+<translation id="2118549242412205620">透過 Android 裝置安全存取您的電腦。
+
+• 在您的電腦上，透過 Chrome 遠端桌面應用程式設定遠端存取權限。您可前往 Chrome 線上應用程式商店 (https://chrome.google.com/remotedesktop) 下載該應用程式。
+• 在 Android 裝置上開啟應用程式，然後輕按任一線上電腦進行連線。
+
+如需隱私權相關資訊，請參閱《Google 隱私權政策》(http://goo.gl/SyrVzj) 和《Chrome 隱私權政策》(http://goo.gl/0uXE5d)。</translation>
 <translation id="4361728918881830843">如要為其他電腦啟用遠端連線，請在您想要連線的電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME"/>]。</translation>
 <translation id="7444276978508498879">已連線至用戶端：<ph name="CLIENT_USERNAME"/>。</translation>
 <translation id="4913529628896049296">正在等待連線...</translation>
@@ -173,6 +189,7 @@
 <translation id="5308380583665731573">連線</translation>
 <translation id="7319983568955948908">停止共用</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. 保留所有權利。</translation>
+<translation id="8038108135592087998">Chrome 遠端桌面 Android 版 (第 1 版)。</translation>
 <translation id="6668065415969892472">您的 PIN 已更新。</translation>
 <translation id="4513946894732546136">意見回饋</translation>
 <translation id="4277736576214464567">存取碼無效，請再試一次。</translation>

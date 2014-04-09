@@ -66,6 +66,7 @@
 <translation id="4940047036413029306">Virg.</translation>
 <translation id="1497897566809397301">Consenti il salvataggio dei dati in locale (consigliata)</translation>
 <translation id="3275778913554317645">Apri come finestra</translation>
+<translation id="3005547175126169847">L'attivazione di questa opzione consente l'utilizzo di Direct3D 11 sulle configurazioni che lo supportano.</translation>
 <translation id="7994370417837006925">Accesso simultaneo</translation>
 <translation id="1420684932347524586">Spiacenti, operazione di generazione della chiave privata RSA casuale non riuscita.</translation>
 <translation id="7323509342138776962">Ultima sincronizzazione</translation>
@@ -116,6 +117,7 @@
 <translation id="5704565838965461712">Scegli un certificato da presentare come identificazione:</translation>
 <translation id="2025632980034333559">Arresto anomalo di <ph name="APP_NAME"/>. Fai clic su questo fumetto per riavviare l'estensione.</translation>
 <translation id="4581823559337371475">Il servizio di accesso che segue è in hosting su <ph name="SAML_DOMAIN"/>. Accedi per continuare.</translation>
+<translation id="6325051797777592677">utilizza la fotocamera.</translation>
 <translation id="6322279351188361895">Operazione di lettura della chiave privata non riuscita.</translation>
 <translation id="7401543881546089382">Elimina collegamento</translation>
 <translation id="3781072658385678636">In questa pagina sono stati bloccati i seguenti plug-in:</translation>
@@ -477,6 +479,7 @@
 <translation id="3245321423178950146">Artista sconosciuto</translation>
 <translation id="2437838871182492352">Occorrenze in caso di attivazione di un'estensione</translation>
 <translation id="9050666287014529139">Passphrase</translation>
+<translation id="4880320188904265650">aprire tutti i link <ph name="PROTOCOL"/>?</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="8787254343425541995">Consenti proxy per reti condivise</translation>
 <translation id="4755860829306298968">Gestisci il blocco dei plug-in...</translation>
@@ -527,7 +530,7 @@
 <translation id="6522350652862471760">Attiva nome e icona del profilo Google</translation>
 <translation id="7803858317875482956">Attiva chip di origine in omnibox</translation>
 <translation id="919325981389444398">https://chrome.google.com/webstore/signin-helper/<ph name="EXTENSION_ID"/></translation>
-<translation id="6181259999130430430">Attiva Sblocco facile per questo dispositivo.</translation>
+<translation id="6181259999130430430">Attiva Sblocco facilitato per questo dispositivo.</translation>
 <translation id="8703575177326907206">La connessione a <ph name="DOMAIN"/> non è crittografata.</translation>
 <translation id="6135622770221372891">ID canali</translation>
 <translation id="8472623782143987204">basato sull'hardware</translation>
@@ -597,6 +600,7 @@
 <translation id="4779735050989188948">Modifica delle impostazioni che controllano l'accesso dei siti web a cookie, JavaScript e plug-in</translation>
 <translation id="168841957122794586">Il certificato del server contiene una chiave crittografica debole.</translation>
 <translation id="4181841719683918333">Lingue</translation>
+<translation id="1758831820837444715">Configura rete Ethernet</translation>
 <translation id="6535131196824081346">Questo errore può verificarsi durante la connessione a un server sicuro (HTTPS).
         Significa che il server sta tentando di configurare una connessione sicura ma, a causa di
         un grave errore di configurazione, la connessione non sarebbe affatto sicura.
@@ -670,6 +674,7 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="4869253927035988743">Consente di attivare il supporto della directory del filesystem sync.</translation>
 <translation id="611611105360092934">Consente di attivare la composizione accelerata per i frame scorrevoli.</translation>
 <translation id="1995173078718234136">Ricerca contenuti in corso...</translation>
+<translation id="3530751398950974194">Aggiorna passphrase di sincronizzazione</translation>
 <translation id="5979681173469464041">Evidenzia riquadro successivo</translation>
 <translation id="4735819417216076266">Stile di immissione spazi</translation>
 <translation id="220138918934036434">Nascondi pulsante</translation>
@@ -693,7 +698,7 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="6867678160199975333">Passa a <ph name="NEW_PROFILE_NAME"/></translation>
 <translation id="9007571140651859763">Modifica il comportamento dell'evento tocco durante lo scorrimento. Il comportamento &quot;touchcancel&quot; è quello utilizzato in passato da Chrome, mentre &quot;absorb-touchmove&quot; è la nuova modalità preferita.</translation>
 <translation id="3718720264653688555">Tastiera virtuale</translation>
-<translation id="7760004034676677601">Questa pagina iniziale è quella prevista?</translation>
+<translation id="7760004034676677601">È la pagina iniziale prevista?</translation>
 <translation id="3504135463003295723">Nome gruppo:</translation>
 <translation id="3314070176311241517">Consenti l'esecuzione di JavaScript in tutti i siti (consigliata)</translation>
 <translation id="4663254525753315077">Quando è possibile, posiziona i contenuti scorrevoli di un elemento di overflow in un livello composito per velocizzare lo scorrimento.</translation>
@@ -904,9 +909,11 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="1725149567830788547">Mostra &amp;controlli</translation>
 <translation id="8216351761227087153">Guarda</translation>
 <translation id="3066618299368568534">Cancella cookie e altri dati di siti e plug-in quando chiudi il browser</translation>
+<translation id="805563736893476872">utilizza il microfono.</translation>
 <translation id="3528033729920178817">Questa pagina sta monitorando la tua posizione.</translation>
 <translation id="1774367687019337077">Consente all'utente di richiedere il sito per il tablet. I contenuti web vengono spesso ottimizzati per i tablet. Se viene selezionata questa opzione, la stringa dello user-agent viene modificata per indicare che il dispositivo è un tablet. Dopodiché per la scheda corrente vengono ricevuti i contenuti web ottimizzati per il tablet.</translation>
 <translation id="5518584115117143805">Certificato crittografia email</translation>
+<translation id="7318394916728052423">avere il controllo completo dei tuoi dispositivi MIDI.</translation>
 <translation id="9203398526606335860">&amp;Profiling attivato</translation>
 <translation id="4307281933914537745">Ulteriori informazioni sul ripristino del sistema</translation>
 <translation id="2849936225196189499">Critica</translation>
@@ -1085,6 +1092,7 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="3798449238516105146">Versione</translation>
 <translation id="3608576286259426129">Anteprima immagine utente</translation>
 <translation id="5764483294734785780">Sal&amp;va audio come...</translation>
+<translation id="3034071689579835976">Il sito richiede di:</translation>
 <translation id="5252456968953390977">Roaming</translation>
 <translation id="8744641000906923997">Romaji</translation>
 <translation id="348620396154188443">Consenti la visualizzazione di notifiche desktop da parte di tutti i siti</translation>
@@ -1098,9 +1106,10 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="8818152613617627612">Dati di fatturazione</translation>
 <translation id="2164938406766990399">Ulteriori informazioni sulla registrazione aziendale</translation>
 <translation id="5746169159649715125">Salva come PDF</translation>
-<translation id="5956585768868398362">Questa pagina di ricerca è quella prevista?</translation>
+<translation id="5956585768868398362">È la pagina di ricerca prevista?</translation>
 <translation id="2103460544384441978">Procedi a tuo rischio</translation>
 <translation id="939736085109172342">Nuova cartella</translation>
+<translation id="5182671122927417841">Disattiva estensione</translation>
 <translation id="4242577469625748426">Installazione delle impostazioni criterio sul dispositivo non riuscita. <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="8165208966034452696"><ph name="PLUGIN_NAME"/></translation>
 <translation id="4933484234309072027">incorporata su <ph name="URL"/></translation>
@@ -1276,7 +1285,7 @@ La pagina potrà essere caricata dopo che ti sei connesso a una rete.</translati
 <translation id="8442065444327205563">Il documento può essere visualizzato.</translation>
 <translation id="236141728043665931">Impedisci sempre l'accesso al microfono</translation>
 <translation id="2307462900900812319">Configura rete</translation>
-<translation id="3324301154597925148">Questa pagina di ricerca è quella prevista?</translation>
+<translation id="3324301154597925148">È la pagina di ricerca prevista?</translation>
 <translation id="5911798608827489036">Scambio di dati con qualsiasi computer sulla rete locale o su Internet</translation>
 <translation id="220858061631308971">Inserisci questo codice PIN su &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">Versione CA Microsoft</translation>
@@ -1307,7 +1316,6 @@ La pagina potrà essere caricata dopo che ti sei connesso a una rete.</translati
 <translation id="7541121857749629630">Eccezioni immagini</translation>
 <translation id="9033857511263905942">&amp;Incolla</translation>
 <translation id="1028690605877243613">Consente di utilizzare il layout scaffale alternativo.</translation>
-<translation id="7928256373967083114">Disattiva sincronizzazione Avvio applicazioni.</translation>
 <translation id="6736045498964449756">Spiacenti, le password non corrispondono.</translation>
 <translation id="1221825588892235038">Solo selezione</translation>
 <translation id="5582883434676861778"><ph name="PRODUCT_NAME"/> ha bloccato l'accesso a <ph name="HOST_NAME"/>. Questo sito web è stato segnalato come sito di phishing.</translation>
@@ -1509,7 +1517,7 @@ La pagina potrà essere caricata dopo che ti sei connesso a una rete.</translati
 <translation id="6980956047710795611">Esegui la migrazione di tutti i dati di Chrome OS alla nuova password (occorre la password precedente)</translation>
 <translation id="8652487083013326477">pulsante di opzione dell'intervallo di pagine</translation>
 <translation id="5204967432542742771">Inserisci la password</translation>
-<translation id="6412410999555546694">Configura Sblocco facile</translation>
+<translation id="6412410999555546694">Configura Sblocco facilitato</translation>
 <translation id="6686817083349815241">Salva la password</translation>
 <translation id="9025098623496448965">OK, riportami nella schermata di accesso</translation>
 <translation id="589737135092634133">Controlla le impostazioni del proxy o contatta il tuo amministratore di rete per
@@ -1588,7 +1596,7 @@ La pagina potrà essere caricata dopo che ti sei connesso a una rete.</translati
 <translation id="4250680216510889253">No</translation>
 <translation id="5109044022078737958">Mia</translation>
 <translation id="6291953229176937411">Mo&amp;stra nel Finder</translation>
-<translation id="8571032220281885258">Quando pronunci &quot;OK Google&quot; Chrome cerca le parole pronunciate dopo.</translation>
+<translation id="8571032220281885258">Quando pronunci &quot;OK Google&quot;, Chrome cerca le parole pronunciate dopo.</translation>
 <translation id="8598687241883907630">Disconnetti il tuo account Google...</translation>
 <translation id="3790571977176307462">Seleziona il caricabatterie collegato al tuo Chromebook:</translation>
 <translation id="4781649528196590732">Evidenzia riquadro precedente</translation>
@@ -1683,6 +1691,7 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestire le impostazioni i
 <translation id="7784067724422331729">Le impostazioni di sicurezza del computer hanno bloccato questo file.</translation>
 <translation id="3822265067668554284">Non consentire ad alcun sito di monitorare la tua posizione fisica</translation>
 <translation id="2758939858455657368">Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere divise tra i desktop.</translation>
+<translation id="8143602169284966549">utilizzare la posizione del tuo dispositivo.</translation>
 <translation id="4181898366589410653">Nessun sistema di revoca trovato nel certificato del server.</translation>
 <translation id="1515163294334130951">Avvia</translation>
 <translation id="6914291514448387591">L'esecuzione di <ph name="PLUGIN_NAME"/> richiede la tua autorizzazione.</translation>
@@ -1834,6 +1843,7 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="1410616244180625362">Continua a consentire l'accesso di <ph name="HOST"/> alla webcam</translation>
 <translation id="8494214181322051417">Novità!</translation>
 <translation id="1745087082567737511">Consente di attivare l'elemento 1 di Avvio applicazioni</translation>
+<translation id="2937174152333875430">Attiva sincronizzazione di Avvio applicazioni</translation>
 <translation id="2386255080630008482">Il certificato del server è stato revocato.</translation>
 <translation id="1586260122947707821">Disattiva l'estensione del componente Quickoffice</translation>
 <translation id="6365411474437319296">Aggiungi amici e familiari</translation>
@@ -1856,6 +1866,7 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="1278049586634282054">Esamina visualizzazioni:</translation>
 <translation id="3254434849914415189">Seleziona l'applicazione predefinita per i file <ph name="FILE_TYPE"/>:</translation>
 <translation id="4991420928586866460">Considera i tasti della fila superiore come tasti funzione</translation>
+<translation id="4350019051035968019">Questo dispositivo non può essere registrato sul dominio a cui appartiene il tuo account perché è contrassegnato per essere gestito da un altro dominio.</translation>
 <translation id="3699624789011381381">Indirizzo email</translation>
 <translation id="5275799318132317934">In questo caso il certificato presentato al browser è stato revocato dall'autorità di certificazione. In genere questo significa che l'integrità del certificato è stata compromessa e il certificato non è attendibile.</translation>
 <translation id="7970236555047307207">Corrispondenza dominio suffissi pubblico per compilazione automatica delle password.</translation>
@@ -1978,6 +1989,7 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="7772127298218883077">Informazioni su <ph name="PRODUCT_NAME"/></translation>
 <translation id="2090876986345970080">Impostazioni di sicurezza del sistema</translation>
 <translation id="3728067901555601989">OTP:</translation>
+<translation id="3565831235433694786">Attiva D3D11</translation>
 <translation id="3475447146579922140">Foglio di calcolo Google</translation>
 <translation id="6856526171412069413">Attiva ridimensionamento tramite pizzico.</translation>
 <translation id="9219103736887031265">Immagini</translation>
@@ -2105,7 +2117,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="313407085116013672">Siccome <ph name="IDS_SHORT_PRODUCT_OS_NAME"/> crittografa in modo sicuro tutti i tuoi dati locali, ora devi inserire la vecchia password per sbloccare tali dati.</translation>
 <translation id="3551320343578183772">Chiudi scheda</translation>
 <translation id="3345886924813989455">Non è stato trovato nessun browser supportato</translation>
-<translation id="5921853983939304988">Disattiva cartelle Avvio applicazioni.</translation>
 <translation id="3712897371525859903">Salva pagina &amp;con nome...</translation>
 <translation id="4572659312570518089">Autenticazione annullata durante la connessione a &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="4925542575807923399">L'amministratore di questo account richiede che questo account sia il primo account registrato in una sessione con accesso simultaneo.</translation>
@@ -2123,6 +2134,7 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="2007404777272201486">Segnala un problema...</translation>
 <translation id="4366509400410520531">Consentito da te</translation>
 <translation id="2218947405056773815">Accidenti! <ph name="API_NAME"/> ha avuto un problemino.</translation>
+<translation id="6797509194603611336">aprire tutti i link <ph name="PROTOCOL"/> al posto di <ph name="REPLACED_HANDLER_TITLE"/>?</translation>
 <translation id="1783075131180517613">Aggiorna la tua passphrase di sincronizzazione.</translation>
 <translation id="1601560923496285236">Applica</translation>
 <translation id="2390045462562521613">Annulla memorizzazione di questa rete</translation>
@@ -2163,6 +2175,7 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="7548916768233393626">Forza modalità DPI alti</translation>
 <translation id="33562952999632466">DevTools richiede l'accesso completo a <ph name="FOLDER_PATH"/>.
 Assicurati di non mostrare informazioni riservate.</translation>
+<translation id="2725200716980197196">Connettività di rete ripristinata</translation>
 <translation id="7019805045859631636">Veloce</translation>
 <translation id="4880520557730313061">Correzione automatica</translation>
 <translation id="6122589160611523048">Phishing in vista!</translation>
@@ -2210,6 +2223,7 @@ Assicurati di non mostrare informazioni riservate.</translation>
 <translation id="8758455334359714415">DNS asincrono integrato</translation>
 <translation id="5585912436068747822">Formattazione non riuscita</translation>
 <translation id="8766796754185931010">Kotoeri</translation>
+<translation id="6357619544108132570">Benvenuto nella famiglia di <ph name="SHORT_PRODUCT_NAME"/>. Questo non è un computer come gli altri.</translation>
 <translation id="3359256513598016054">Vincoli criteri certificati</translation>
 <translation id="4433914671537236274">Crea supporto di ripristino</translation>
 <translation id="4165327781976388410"><ph name="BEGIN_BOLD"/>Sei passato alla navigazione in incognito.<ph name="END_BOLD"/>
@@ -2313,6 +2327,7 @@ Le pagine visualizzate nelle schede di navigazione in incognito non vengono memo
 <translation id="3897224341549769789">Attivazioni</translation>
 <translation id="4648491805942548247">Autorizzazioni insufficienti</translation>
 <translation id="1183083053288481515">Utilizzo di un certificato fornito dall'amministratore</translation>
+<translation id="7513664956626906164">mostrare le notifiche desktop</translation>
 <translation id="6231782223312638214">Suggerito</translation>
 <translation id="8302838426652833913">Seleziona
           <ph name="BEGIN_BOLD"/>
@@ -2419,7 +2434,6 @@ Le pagine visualizzate nelle schede di navigazione in incognito non vengono memo
 <translation id="59174027418879706">Attiva</translation>
 <translation id="4194415033234465088">Dachen 26</translation>
 <translation id="8725798467599003282">Consente di attivare il fumetto delle password, che permette di memorizzare e gestire facilmente le password relative a un sito web. Questo fumetto sostituisce la barra delle informazioni per il salvataggio delle password.</translation>
-<translation id="8800004011501252845">Sono visualizzate le destinazioni per</translation>
 <translation id="3554751249011484566">I seguenti dati saranno condivisi con <ph name="SITE"/></translation>
 <translation id="872537912056138402">Croato</translation>
 <translation id="6639554308659482635">Memoria SQLite</translation>
@@ -2614,6 +2628,7 @@ Le pagine visualizzate nelle schede di navigazione in incognito non vengono memo
 <translation id="2580093683987647761">Chiama il numero (866) 628-1371 (Stati Uniti), (866) 628-1372 (Canada) o 0800 026 0613 (Regno Unito) per richiedere il caricabatterie sostitutivo gratuito.</translation>
 <translation id="3996912167543967198">Ripristino...</translation>
 <translation id="8006846872564153081">Disattiva scorciatoie app in pacchetto.</translation>
+<translation id="7509822997156351101">Modifica delle impostazioni di accessibilità</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="1541724327541608484">Controlla l'ortografia dei campi di testo</translation>
 <translation id="8637688295594795546">Aggiornamento del sistema disponibile. Preparazione per il download in corso…</translation>
@@ -2633,6 +2648,7 @@ Le pagine visualizzate nelle schede di navigazione in incognito non vengono memo
 <translation id="3714633008798122362">Calendario web</translation>
 <translation id="3251759466064201842">&lt;Non parte del certificato&gt;</translation>
 <translation id="6186096729871643580">Antialiasing testo LCD</translation>
+<translation id="3882882270042324158">Attiva script injection per l'accessibilità.</translation>
 <translation id="7303492016543161086">Mostra le opzioni di accessibilità nel menu di sistema</translation>
 <translation id="6410257289063177456">File di immagine</translation>
 <translation id="6419902127459849040">Europa centrale</translation>
@@ -2650,7 +2666,7 @@ Le pagine visualizzate nelle schede di navigazione in incognito non vengono memo
 <translation id="5154176924561037127">F8</translation>
 <translation id="5298219193514155779">Tema creato da</translation>
 <translation id="6307722552931206656">Assegnazione nomi ai server da Google - <ph name="BEGIN_LINK"/>Ulteriori informazioni<ph name="END_LINK"/></translation>
-<translation id="6628328486509726751">Caricamento: <ph name="WEBRTC_LOG_UPLOAD_TIME"/></translation>
+<translation id="6628328486509726751">Data/ora caricamento: <ph name="WEBRTC_LOG_UPLOAD_TIME"/></translation>
 <translation id="1047726139967079566">Aggiungi questa pagina ai Preferiti...</translation>
 <translation id="4547199772337927857">Estensioni sospette disattivate</translation>
 <translation id="151279668805528202">Attiva il nuovo audio player</translation>
@@ -2870,7 +2886,6 @@ Le pagine visualizzate nelle schede di navigazione in incognito non vengono memo
 <translation id="7260002739296185724">Consente di attivare l'utilizzo di AVFoundation per l'acquisizione di video e il monitoraggio di dispositivi video su OS X &gt;= 10.7. In caso contrario verrà utilizzato QTKit.</translation>
 <translation id="1463985642028688653">blocca</translation>
 <translation id="1715941336038158809">Password o nome utente non valido.</translation>
-<translation id="9162797315375836845">Disattiva sincronizzazione Avvio applicazioni</translation>
 <translation id="1901303067676059328">Seleziona &amp;tutto</translation>
 <translation id="8230667681230828532">Attiva modalità multiprofilo.</translation>
 <translation id="674375294223700098">Errore sconosciuto del certificato del server.</translation>
@@ -3131,6 +3146,7 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="3700834376805760154">L'identità di <ph name="ORGANIZATION"/> a <ph name="LOCALITY"/> è stata verificata da <ph name="ISSUER"/> e può essere controllata pubblicamente.</translation>
 <translation id="436701661737309601">Per un certificato non scaduto, l'autorità di certificazione è responsabile del mantenimento di un cosiddetto &quot;elenco di revoche&quot;. Se un certificato venisse compromesso, l'autorità di certificazione potrebbe revocarlo aggiungendolo all'elenco di revoche, dopodiché il certificato non sarebbe più considerato attendibile dal tuo browser. Non è necessario mantenere lo stato di revoca per i certificati scaduti quindi, anche se il certificato era valido per il sito web visitato, a questo punto non è possibile stabilire se il certificato è stato compromesso e successivamente revocato oppure se rimane sicuro. Di conseguenza è impossibile stabilire se stai comunicando con il sito web legittimo o se il certificato è stato compromesso ed è ora nelle mani di un malintenzionato con cui stai comunicando.</translation>
 <translation id="4342311272543222243">Spiacenti, errore TPM.</translation>
+<translation id="3727884750434605207">Consente di attivare lo script injection anziché l'accessibilità nativa Android.</translation>
 <translation id="1285484354230578868">Memorizza dati nel tuo account Google Drive</translation>
 <translation id="7106346894903675391">Acquista più spazio di archiviazione...</translation>
 <translation id="994289308992179865">&amp;Ripeti</translation>
@@ -3367,7 +3383,7 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="5917011688104426363">Imposta barra degli indirizzi su modalità di ricerca</translation>
 <translation id="3269101346657272573">Inserisci il PIN.</translation>
 <translation id="2822854841007275488">Arabo</translation>
-<translation id="6559948977408379772">Questa icona viene visualizzata quando il tuo telefono è vicino a te ed è disponibile la funzione Sblocco facile. Fai clic per accedere; non servono password.</translation>
+<translation id="6559948977408379772">Questa icona viene visualizzata quando il tuo telefono è vicino a te ed è disponibile la funzione Sblocco facilitato. Fai clic per accedere; non servono password.</translation>
 <translation id="5857090052475505287">Nuova cartella</translation>
 <translation id="2301276680333099344">Accesso a tutti i dati sul dispositivo e ai siti web visitati</translation>
 <translation id="7450732239874446337">Operazioni di I/O di rete sospese.</translation>
@@ -3494,7 +3510,7 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="1526560967942511387">Documento senza titolo</translation>
 <translation id="3979748722126423326">Abilita <ph name="NETWORKDEVICE"/></translation>
 <translation id="7819857487979277519">PSK (WPA o RSN)</translation>
-<translation id="7561031016893995297">Gestisci i dispositivi con Sblocco facile nelle impostazioni del tuo account.</translation>
+<translation id="7561031016893995297">Gestisci i dispositivi con Sblocco facilitato nelle impostazioni del tuo account.</translation>
 <translation id="2238379619048995541">Dati sullo stato di frequenza</translation>
 <translation id="4367133129601245178">C&amp;opia URL immagine</translation>
 <translation id="6326175484149238433">Rimuovi da Chrome</translation>
@@ -3660,6 +3676,7 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="5321676762462132688">Se questa funzione viene attivata, le impostazioni vengono visualizzate in una finestra separata anziché in una scheda del browser.</translation>
 <translation id="8986494364107987395">Invia automaticamente a Google statistiche sull'utilizzo e segnalazioni sugli arresti anomali</translation>
 <translation id="2377619091472055321">Ripristina impostazioni di <ph name="IDS_SHORT_PRODUCT_NAME"/> modificate</translation>
+<translation id="4062251648694601778">Utilizza al meglio il tuo dispositivo <ph name="SHORT_PRODUCT_NAME"/>. Hai domande? Puoi ricevere assistenza in qualsiasi momento facendo clic su &quot;?&quot; nella barra di stato.</translation>
 <translation id="7070714457904110559">Consente di attivare estensioni sperimentali per la funzione di localizzazione geografica. Include l'utilizzo di API di localizzazione del sistema operativo (ove disponibili) e l'invio di dati aggiuntivi sulla configurazione della rete locale al servizio di localizzazione di Google per fornire una posizione più precisa.</translation>
 <translation id="6701535245008341853">Impossibile caricare il profilo.</translation>
 <translation id="8303655282093186569">Impostazioni di immissione pinyin</translation>
@@ -3882,6 +3899,7 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="3527085408025491307">Cartella</translation>
 <translation id="2375701438512326360">Forza il supporto del touchscreen in modo che sia sempre attivo o disattivo o in modo che venga attivato quando viene rilevato un touchscreen all'avvio (Automatico per impostazione predefinita).</translation>
 <translation id="3665842570601375360">Sicurezza:</translation>
+<translation id="2487925617007598659">memorizzare in modo permanente i dati sul tuo dispositivo.</translation>
 <translation id="8812832766208874265">Continua a utilizzare <ph name="CURRENT_GOOGLE_HOST"/></translation>
 <translation id="5699533844376998780">L'estensione &quot;<ph name="EXTENSION_NAME"/>&quot; è stata aggiunta.</translation>
 <translation id="4522331920508731608">Gestisci gallerie</translation>
@@ -4227,7 +4245,7 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="5457599981699367932">Esplora come ospite</translation>
 <translation id="8525428584879632762">Attivato nelle pagine dei risultati di ricerca o durante l'inserimento</translation>
 <translation id="1812514023095547458">Seleziona colore</translation>
-<translation id="2487656424763972284">Sblocco facile</translation>
+<translation id="2487656424763972284">Sblocco facilitato</translation>
 <translation id="7047998246166230966">Puntatore</translation>
 <translation id="743268637741709136">Disattiva ricerca vocale in Avvio applicazioni. Se disattivi la funzione, l'utente non potrà eseguire ricerche utilizzando comandi vocali.</translation>
 <translation id="3252266817569339921">Francese</translation>
@@ -4243,7 +4261,7 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="4839303808932127586">Sal&amp;va video come...</translation>
 <translation id="317583078218509884">Le nuove impostazioni delle autorizzazioni per i siti avranno effetto una volta ricaricata la pagina.</translation>
 <translation id="3135204511829026971">Ruota lo schermo</translation>
-<translation id="1317502925920562130">Questa pagina iniziale è quella prevista?</translation>
+<translation id="1317502925920562130">È la pagina iniziale prevista?</translation>
 <translation id="7763146744708046348">Non aggregare i dati: ciò potrebbe causare un rallentamento.</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="4899837262951879307">Modalità di scorrimento al tocco.</translation>
@@ -4282,6 +4300,7 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="4104163789986725820">E&amp;sporta...</translation>
 <translation id="9022026332614591902">Popup bloccati (<ph name="POP_UP_COUNT"/>)</translation>
 <translation id="380408572480438692">Se attivi la raccolta dei dati sul rendimento, consenti a Google di migliorare il sistema nel tempo. I dati vengono inviati soltanto quando presenti un rapporto di feedback (Alt+Maiusc+I) e includi dati sul rendimento. Puoi tornare in qualsiasi momento in questa schermata per disattivare la raccolta.</translation>
+<translation id="3654045516529121250">Lettura delle impostazioni di accessibilità</translation>
 <translation id="2113479184312716848">Apri &amp;file...</translation>
 <translation id="884264119367021077">Indirizzo di spedizione</translation>
 <translation id="8405710043622376215">Nel completamento automatico della omnibox, riordina i suggerimenti in HistoryQuickProvider per fare in modo che uno incorporabile venga visualizzato per primo.</translation>
@@ -4486,7 +4505,7 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="8148264977957212129">Metodo di immissione Pinyin</translation>
 <translation id="2288278176040912387">Giradischi</translation>
 <translation id="7772032839648071052">Conferma passphrase</translation>
-<translation id="3676582787770338561">Attiva Sblocco facile per questo <ph name="DEVICE_TYPE"/>.</translation>
+<translation id="3676582787770338561">Attiva Sblocco facilitato per il dispositivo <ph name="DEVICE_TYPE"/>.</translation>
 <translation id="2871813825302180988">Questo account è già in uso su questo dispositivo.</translation>
 <translation id="6277518330158259200">&amp;Acquisisci screenshot</translation>
 <translation id="2521963687654627706"><ph name="APP_NAME"/> desidera condividere i contenuti dello schermo con <ph name="TARGET_NAME"/>. Seleziona uno schermo intero o una singola finestra da condividere.</translation>
@@ -4567,10 +4586,11 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="7818135753970109980">Nuovo tema aggiunto (<ph name="EXTENSION_NAME"/>)</translation>
 <translation id="917306543655291301">Nel frattempo puoi trovare ulteriori informazioni all'indirizzo</translation>
 <translation id="5448293924669608770">Spiacenti, qualcosa è andato storto in fase di accesso</translation>
-<translation id="5521078259930077036">Questa pagina iniziale è quella prevista?</translation>
+<translation id="5521078259930077036">È la pagina iniziale prevista?</translation>
 <translation id="2335676733040881300">Si è verificato un problema durante il download della funzione.</translation>
 <translation id="5023310440958281426">Consulta le norme dell'amministratore</translation>
 <translation id="8931394284949551895">Nuovi dispositivi</translation>
+<translation id="4105880234226240143">utilizza la fotocamera e il microfono.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="4253787465144837701">Il certificato del server contiene un nome di dominio che non dovrebbe essere indicato.</translation>
 <translation id="5563986351966648191">Migliora il rilevamento di malware inviando altri dati a Google quando vengono visualizzati avvisi simili. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -4714,7 +4734,7 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="5143151113947480436">Accedere ai dati copiati e incollati</translation>
 <translation id="6051028581720248124">Se stampi presso una sede FedEx Office, accetti i relativi <ph name="START_LINK"/>termini e condizioni d'uso<ph name="END_LINK"/>.</translation>
 <translation id="5435226530530647560">Uscita non corretta</translation>
-<translation id="1979718561647571293">Questa pagina iniziale è quella prevista?</translation>
+<translation id="1979718561647571293">È la pagina iniziale prevista?</translation>
 <translation id="6608140561353073361">Tutti i cookie e i dati dei siti...</translation>
 <translation id="6485131920355264772">Impossibile recuperare le informazioni sullo spazio</translation>
 <translation id="8007030362289124303">Batteria in esaurimento</translation>
@@ -4806,6 +4826,7 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="8940081510938872932">Troppe operazioni in corso al momento. Riprova più tardi.</translation>
 <translation id="8848709220963126773">Passaggio a modalità tasto Maiusc</translation>
 <translation id="3703445029708071516">Attiva sincronizzazione URL digitati</translation>
+<translation id="6316806695097060329">Questo dispositivo <ph name="SHORT_PRODUCT_NAME"/> è stato ideato per offrirti un'esperienza ottimale sul Web.</translation>
 <translation id="8828933418460119530">Nome DNS</translation>
 <translation id="988159990683914416">Build</translation>
 <translation id="1097658378307015415">Prima di accedere, entra come Ospite per attivare la rete <ph name="NETWORK_ID"/></translation>
@@ -4878,7 +4899,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5830720307094128296">S&amp;alva pagina con nome...</translation>
 <translation id="2448312741937722512">Tipo</translation>
 <translation id="2568958845983666692">Kilobyte</translation>
-<translation id="1870677474902800104">L'attivazione di questa opzione impedisce all'utente di creare e gestire cartelle in Avvio applicazioni.</translation>
 <translation id="5209320130288484488">Nessun dispositivo trovato</translation>
 <translation id="473221644739519769">L'aggiunta di stampanti a Google Cloud Print ti consente di stampare da qualsiasi luogo a qualsiasi luogo. Condividi le tue stampanti con chi vuoi e stampa da Chrome, dal telefono, dal tablet, dal PC o da qualsiasi altro dispositivo connesso a Internet.</translation>
 <translation id="6154080734794712683">Un'estensione ha cambiato la pagina visualizzata quando fai clic sul pulsante Pagina iniziale.</translation>
@@ -5084,6 +5104,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="8248821880964244299">Vuoi eliminare questa applicazione?</translation>
 <translation id="6845038076637626672">Apri ingrandita</translation>
 <translation id="3184560914950696195">Impossibile salvare su $1. Le immagini modificate verranno salvate nella cartella Download.</translation>
+<translation id="8366396658833131068">La connettività di rete è stata ripristinata. Seleziona un'altra rete o premi il pulsante &quot;Continua&quot; sotto per avviare l'app kiosk.</translation>
 <translation id="4664482161435122549">Errore di esportazione di PKCS #12</translation>
 <translation id="2445081178310039857">La directory principale dell'estensione è obbligatoria.</translation>
 <translation id="146187176629751223">Un partecipante a questo Hangout si è offerto di aiutarti a controllare il tuo computer. Se accetti:
@@ -5234,7 +5255,7 @@ Le pagine visualizzate nelle schede di navigazione in incognito non vengono memo
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="7353601530677266744">Riga di comando</translation>
 <translation id="2766006623206032690">In&amp;colla e vai</translation>
-<translation id="5286673433070377078">Bleeding Edge Renderer Paths - IL BROWSER POTREBBE ARRESTARSI IN MODO ANOMALO</translation>
+<translation id="5286673433070377078">Percorsi rendering Bleeding Edge - IL BROWSER POTREBBE ARRESTARSI IN MODO ANOMALO</translation>
 <translation id="4682551433947286597">Gli sfondi vengono visualizzati sulla schermata di accesso.</translation>
 <translation id="4394049700291259645">Disabilita</translation>
 <translation id="969892804517981540">Build ufficiale</translation>

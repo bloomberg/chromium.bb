@@ -16,6 +16,7 @@
 <translation id="5397086374758643919">Chrome 远程桌面主机卸载程序</translation>
 <translation id="3258789396564295715">您可使用 Chrome 远程桌面安全地访问此计算机。</translation>
 <translation id="5070121137485264635">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>
+<translation id="2124408767156847088">通过您的Android设备安全地访问自己的计算机。</translation>
 <translation id="4808503597364150972">请输入您用于“<ph name="HOSTNAME"/>”的 PIN。</translation>
 <translation id="7672203038394118626">此计算机的远程连接已停用。</translation>
 <translation id="8244400547700556338">了解详情。</translation>
@@ -31,6 +32,7 @@
 <translation id="7868137160098754906">请为远程计算机输入PIN码。</translation>
 <translation id="677755392401385740">已为用户<ph name="HOST_USERNAME"/>启动主机。</translation>
 <translation id="8864965950780407789">要使用 Chrome 远程访问，您必须向您的计算机授予更多访问权限。此操作只需执行一次。</translation>
+<translation id="3197730452537982411">远程桌面</translation>
 <translation id="8355326866731426344">此访问代码将在 <ph name="TIMEOUT"/> 后失效。</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="2498359688066513246">帮助和反馈</translation>
@@ -61,6 +63,14 @@
 <translation id="174018511426417793">您未注册任何计算机。要启用到某台计算机的远程连接，请在该计算机上安装 Chrome 远程桌面并点击“<ph name="BUTTON_NAME"/>”。</translation>
 <translation id="9126115402994542723">从这台设备连接到此主机时不再要求输入PIN码。</translation>
 <translation id="253387295088602549">允许其他用户通过互联网安全访问您的计算机。</translation>
+<translation id="1300633907480909701">通过您的Android设备安全地访问自己的计算机。
+
+• 在您的每台计算机上，使用Chrome网上应用店中的Chrome远程桌面应用（下载地址：https://chrome.google.com/remotedesktop）设置远程访问
+• 在您的Android设备上，打开该应用，然后点按任意一台已连网的计算机即可建立连接。
+
+使用非美式英语键盘的远程计算机收到的文字输入可能不正确。即将为其他键盘布局提供支持！
+
+有关隐私权方面的信息，请参阅《Google隐私权政策》(http://goo.gl/SyrVzj)和《Chrome隐私权政策》(http://goo.gl/0uXE5d)。</translation>
 <translation id="629730747756840877">帐户</translation>
 <translation id="8525306231823319788">全屏</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/>（已过期）</translation>
@@ -115,6 +125,12 @@
 <translation id="5773590752998175013">配对日期</translation>
 <translation id="5265129178187621741">（Chromebook 尚不支持此功能…敬请期待）</translation>
 <translation id="5156271271724754543">请在两个框中输入相同的 PIN。</translation>
+<translation id="2118549242412205620">通过您的Android设备安全地访问自己的计算机。
+
+• 在您的每台计算机上，使用Chrome网上应用店中的Chrome远程桌面应用（下载地址：https://chrome.google.com/remotedesktop）设置远程访问
+• 在您的Android设备上，打开该应用，然后点按任意一台已连网的计算机即可建立连接。
+
+有关隐私权方面的信息，请参阅《Google隐私权政策》(http://goo.gl/SyrVzj)和《Chrome隐私权政策》(http://goo.gl/0uXE5d)。</translation>
 <translation id="4361728918881830843">要启用到另一台计算机的远程连接，请在该计算机上安装 Chrome 远程桌面并点击“<ph name="BUTTON_NAME"/>”。</translation>
 <translation id="7444276978508498879">已连接客户端：<ph name="CLIENT_USERNAME"/>。</translation>
 <translation id="4913529628896049296">正在等待建立连接…</translation>
@@ -173,6 +189,7 @@
 <translation id="5308380583665731573">连接</translation>
 <translation id="7319983568955948908">停止共享</translation>
 <translation id="6681800064886881394">版权所有2013 Google Inc。保留所有权利。</translation>
+<translation id="8038108135592087998">首次发布Android版Chrome远程桌面应用。</translation>
 <translation id="6668065415969892472">您的 PIN 已更新。</translation>
 <translation id="4513946894732546136">反馈</translation>
 <translation id="4277736576214464567">访问代码无效，请重试。</translation>

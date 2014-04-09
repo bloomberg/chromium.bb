@@ -544,6 +544,12 @@
 <translation id="7132877481099023201">URL yang akan diberi akses ke perangkat perekam video tanpa peringatan</translation>
 <translation id="8947415621777543415">Laporkan lokasi perangkat</translation>
 <translation id="1655229863189977773">Setel ukuran cache disk dalam byte</translation>
+<translation id="3358275192586364144">Mengaktifkan pengoptimalan WPAD pada <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan ini.
+
+      Menyetel kebijakan ini menjadi aktif akan menyebabkan Chrome menunggu dalam interval yang lebih pendek bagi server WPAD berbasis DNS.
+
+      Jika tidak disetel, kebijakan ini akan diaktifkan dan pengguna tidak
+      akan dapat mengubahnya.</translation>
 <translation id="6376842084200599664">Memungkinkan Anda untuk menentukan daftar ekstensi yang akan dipasang secara diam-diam, tanpa interaksi pengguna.
 
           Setiap item dari daftar merupakan string yang berisi ID ekstensi dan URL pembaruan yang dibatasi dengan titik koma (<ph name="SEMICOLON"/>). ID ekstensi merupakan string 32 huruf yang ditemukan misalnya, di <ph name="CHROME_EXTENSIONS_LINK"/> saat dalam mode pengembang. URL pembaruan harus mengarah ke dokumen XML Manifes Pembaruan seperti yang dideskripsikan di <ph name="LINK_TO_EXTENSION_DOC1"/>. Perhatikan bahwa URL pembaruan yang disetel dalam kebijakan ini hanya digunakan untuk pemasangan awal; pembaruan ekstensi berikutnya akan menggunakan URL pembaruan yang ditunjukkan dalam manifes ekstensi.
@@ -1466,6 +1472,15 @@
       Kebijakan ini harus disetel ke URL di tempat <ph name="PRODUCT_OS_NAME"/> dapat mengunduh Persyaratan Layanan tersebut. Persyaratan Layanan ini harus dalam teks biasa, yang disajikan sebagai teks/biasa jenis MIME. Tidak ada markup yang diizinkan.</translation>
 <translation id="2623014935069176671">Tunggu aktivitas pengguna awal</translation>
 <translation id="2660846099862559570">Jangan pernah gunakan proxy</translation>
+<translation id="1956493342242507974">Mengonfigurasi pengelolaan daya di layar masuk pada <ph name="PRODUCT_OS_NAME"/>.
+
+      Kebijakan ini memungkinkan Anda mengonfigurasi bagaimana <ph name="PRODUCT_OS_NAME"/> berperilaku saat tidak ada aktivitas pengguna untuk jangka waktu tertentu saat layar masuk ditampilkan. Kebijakan mengontrol beberapa setelan. Untuk rentang nilai dan semantik individunya, lihat kebijakan terkait yang mengontrol pengelolaan daya dalam satu sesi. Penyimpangan dari kebijakan ini hanya:
+      * Tindakan untuk menganggur atau menutup penutup tidak dapat digunakan untuk mengakhiri sesi.
+      * Tindakan default yang dilakukan saat menganggur saat menjalankan daya AC adalah mematikan perangkat.
+
+      Jika setelan tidak ditetapkan, nilai default akan digunakan.
+
+      Jika kebijakan ini tidak disetel, setelan default digunakan untuk semua setelan.</translation>
 <translation id="1435659902881071157">Konfigurasi jaringan tingkat perangkat</translation>
 <translation id="2131902621292742709">Penundaan peredupan layar saat menggunakan daya baterai</translation>
 <translation id="5781806558783210276">Menentukan panjang waktu tanpa masukan pengguna sebelum tindakan menganggur diambil saat menggunakan daya baterai.

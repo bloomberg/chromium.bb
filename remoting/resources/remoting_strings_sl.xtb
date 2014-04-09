@@ -16,6 +16,7 @@ povezovanje s Chromom</translation>
 <translation id="5397086374758643919">Odstranitveni program gostitelja za Oddaljeno namizje za Chrome</translation>
 <translation id="3258789396564295715">Oddaljeno namizje za Chrome omogoča varen dostop do tega računalnika.</translation>
 <translation id="5070121137485264635">Oddaljeni gostitelj zahteva, da previte pristnost na spletnem mestu tretje osebe. Če želite nadaljevati, morate Oddaljenemu namizju za Chrome dodeliti dodatna dovoljenja za dostop do tega naslova:</translation>
+<translation id="2124408767156847088">Varno dostopajte do računalnikov iz naprave s sistemom Android.</translation>
 <translation id="4808503597364150972">Vnesite kodo PIN za gostitelja <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Oddaljene povezave za ta računalnik so onemogočene.</translation>
 <translation id="8244400547700556338">Več o tem.</translation>
@@ -31,6 +32,7 @@ povezovanje s Chromom</translation>
 <translation id="7868137160098754906">Vnesite PIN za oddaljeni računalnik.</translation>
 <translation id="677755392401385740">Gostitelj zagnan za uporabnika: <ph name="HOST_USERNAME"/>.</translation>
 <translation id="8864965950780407789">Če želite uporabljati storitev Oddaljeno povezovanje s Chromom, morate odobriti razširjena dovoljenja za dostop do računalnika. To morate storiti samo enkrat.</translation>
+<translation id="3197730452537982411">Oddaljeno namizje</translation>
 <translation id="8355326866731426344">Ta koda za dostop bo potekla čez <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">Ustvarjalci Chromiuma</translation>
 <translation id="2498359688066513246">Pomoč in povratne informacije</translation>
@@ -61,6 +63,14 @@ povezovanje s Chromom</translation>
 <translation id="174018511426417793">Nimate registriranih računalnikov. Če želite omogočiti oddaljene povezave z računalnikom, vanj namestite Oddaljeno namizje za Chrome in kliknite »<ph name="BUTTON_NAME"/>«.</translation>
 <translation id="9126115402994542723">Pri povezovanju s tem gostiteljem iz tega računalnika ne zahtevaj več kode PIN.</translation>
 <translation id="253387295088602549">Omogočite drugemu uporabniku varen dostop do vašega računalnika prek interneta.</translation>
+<translation id="1300633907480909701">Varno dostopajte do računalnikov iz naprave s sistemom Android.
+
+• Z aplikacijo Oddaljeno namizje za Chrome iz Spletne trgovine Chrome (https://chrome.google.com/remotedesktop) nastavite oddaljeni dostop v vseh računalnikih.
+• Če se želite povezati z računalnikom, v napravi s sistemom Android odprite aplikacijo in se dotaknite enega od računalnikov, povezanih s spletom.
+
+Vnos besedila v oddaljene računalnike, ki ne uporabljajo tipkovnice za angleščino (Združene države), morda ne bo pravilen. Podpora za druge postavitve tipkovnic bo kmalu na voljo.
+
+Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http://goo.gl/SyrVzj) in Chrome pravilnik o zasebnosti (http://goo.gl/0uXE5d).</translation>
 <translation id="629730747756840877">Račun</translation>
 <translation id="8525306231823319788">Celozaslonsko</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (zastarelo)</translation>
@@ -115,6 +125,12 @@ povezovanje s Chromom</translation>
 <translation id="5773590752998175013">Datum seznanjenja</translation>
 <translation id="5265129178187621741">(ta funkcija še ni na voljo za računalnike Chromebook … preverite pozneje)</translation>
 <translation id="5156271271724754543">V polji vnesite isto kodo PIN.</translation>
+<translation id="2118549242412205620">Varno dostopajte do računalnikov iz naprave s sistemom Android.
+
+• Z aplikacijo Oddaljeno namizje za Chrome iz Spletne trgovine Chrome (https://chrome.google.com/remotedesktop) nastavite oddaljeni dostop v vseh računalnikih.
+• Če se želite povezati z računalnikom, v napravi s sistemom Android odprite aplikacijo in se dotaknite enega od računalnikov, povezanih s spletom.
+
+Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http://goo.gl/SyrVzj) in Chrome pravilnik o zasebnosti (http://goo.gl/0uXE5d).</translation>
 <translation id="4361728918881830843">Če želite omogočiti oddaljene povezave z drugim računalnikom, vanj namestite Oddaljeno namizje za Chrome in kliknite »<ph name="BUTTON_NAME"/>«.</translation>
 <translation id="7444276978508498879">Odjemalec povezan: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="4913529628896049296">čakanje na povezavo ...</translation>
@@ -173,6 +189,7 @@ namizje za Chrome</translation>
 <translation id="5308380583665731573">Vzpostavi povezavo</translation>
 <translation id="7319983568955948908">Prekliči skupno rabo</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Vse pravice pridržane.</translation>
+<translation id="8038108135592087998">Prva izdaja aplikacije Oddaljeno namizje za Chrome za Android.</translation>
 <translation id="6668065415969892472">PIN je posodobljen.</translation>
 <translation id="4513946894732546136">Povratne informacije</translation>
 <translation id="4277736576214464567">Koda za dostop je neveljavna. Poskusite znova.</translation>

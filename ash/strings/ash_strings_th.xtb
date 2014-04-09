@@ -81,6 +81,7 @@
 <translation id="3892641579809465218">จอแสดงผลภายใน</translation>
 <translation id="7823564328645135659">เปลี่ยนภาษาจาก &quot;<ph name="FROM_LOCALE"/>&quot; เป็น &quot;<ph name="TO_LOCALE"/>&quot; หลังจากซิงค์การตั้งค่าของคุณ</translation>
 <translation id="3368922792935385530">เชื่อมต่อแล้ว</translation>
+<translation id="3606978283550408104">เชื่อมต่ออุปกรณ์แสดงผลอักษรเบรลล์แล้ว</translation>
 <translation id="8654520615680304441">เปิด WiFi...</translation>
 <translation id="6650933572246256093">อุปกรณ์บลูทูธ &quot;<ph name="DEVICE_NAME"/>&quot; ต้องการสิทธิ์ในการจับคู่ โปรดป้อนรหัสผ่านนี้บนอุปกรณ์นั้น: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>

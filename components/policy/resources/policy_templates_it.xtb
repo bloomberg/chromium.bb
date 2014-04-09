@@ -1464,7 +1464,7 @@ Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME"/
 <translation id="1956493342242507974">Questa norma consente di configurare la gestione dell'alimentazione in relazione alla schermata di accesso di <ph name="PRODUCT_OS_NAME"/>.
 
       Questa norma consente di configurare il comportamento di <ph name="PRODUCT_OS_NAME"/> quando non c'è attività dell'utente per un periodo di tempo mentre è visualizzata la schermata di accesso. La norma consente di controllare diverse impostazioni. Per conoscere la semantica e gli intervalli di valori di ogni impostazione, leggi le norme corrispondenti che consentono di controllare la gestione dell'alimentazione all'interno di una sessione. Le uniche differenze rispetto a queste norme sono:
-      * Le azioni da compiere in caso di inattività o chiusura del coperchio non possono essere la chiusura della sessione.
+      * Le azioni da compiere in caso di inattività o chiusura del coperchio non possono essere l'interruzione della sessione.
       * L'azione predefinita compiuta in caso di inattività durante l'alimentazione con corrente alternata è lo spegnimento.
 
       Se un'impostazione non viene specificata, viene utilizzato un valore predefinito.

@@ -16,6 +16,7 @@ Host</translation>
 <translation id="5397086374758643919">Uninstaller ng Host ng Remote na Desktop ng Chrome</translation>
 <translation id="3258789396564295715">Maaari mong ligtas na ma-access ang computer na ito gamit ang Remote na Desktop ng Chrome.</translation>
 <translation id="5070121137485264635">Hinihiling sa iyo ng remote host na magpatunay sa isang website ng third-party. Upang makapagpatuloy, dapat mong bigyan ng mga karagdagang pahintulot ang Remote na Desktop ng Chrome upang ma-access ang address na ito:</translation>
+<translation id="2124408767156847088">Ligtas na i-access ang iyong mga computer mula sa iyong Android device.</translation>
 <translation id="4808503597364150972">Pakilagay ang iyong PIN para sa <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Hindi pinagana ang mga malayuang koneksyon para sa computer na ito.</translation>
 <translation id="8244400547700556338">Matutunan kung paano.</translation>
@@ -31,6 +32,7 @@ Host</translation>
 <translation id="7868137160098754906">Pakilagay ang iyong PIN para sa remote na computer.</translation>
 <translation id="677755392401385740">Sinimulan ang host para sa user: <ph name="HOST_USERNAME"/>.</translation>
 <translation id="8864965950780407789">Upang magamit ang Chromoting, dapat kang magbigay ng mga pagpapahintulot sa pinalawak na access sa iyong computer. Isang beses mo lang ito kailangang gawin.</translation>
+<translation id="3197730452537982411">Remote na Desktop</translation>
 <translation id="8355326866731426344">Mag-e-expire ang access code sa loob ng <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">Ang Mga May-akda ng Chromium</translation>
 <translation id="2498359688066513246">Tulong at feedback</translation>
@@ -61,6 +63,14 @@ Host</translation>
 <translation id="174018511426417793">Wala kang mga nakarehistrong computer. Upang paganahin ang mga malayuang koneksyon sa isang computer, i-install ang Remote na Desktop ng Chrome doon at i-click ang “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="9126115402994542723">Huwag muling humingi ng PIN kapag kumokonekta sa host na ito mula sa device na ito.</translation>
 <translation id="253387295088602549">Payagan ang isa pang user na secure na i-access sa Internet ang iyong computer.</translation>
+<translation id="1300633907480909701">Ligtas na i-access ang iyong mga computer mula sa iyong Android device.
+
+• Sa bawat isa sa iyong mga computer, i-set up ang malayuang pag-access gamit ang Chrome Remote Desktop app mula sa Chrome Web Store: https://chrome.google.com/remotedesktop
+• Sa iyong Android device, buksan ang app at pindutin ang alinman sa iyong mga online na computer upang kumonekta.
+
+Ang mga remote na computer na may mga keyboard na hindi US-Ingles ay maaaring makatanggap ng hindi tamang pag-input ng teksto. Paparating na ang suporta para sa iba pang mga layout ng keyboard!
+
+Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa Privacy ng Google (http://goo.gl/SyrVzj) at ang Patakaran sa Privacy ng Chrome Privacy Policy (http://goo.gl/0uXE5d).</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="8525306231823319788">Buong screen</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (luma)</translation>
@@ -115,6 +125,12 @@ Host</translation>
 <translation id="5773590752998175013">Petsa ng pagpapares</translation>
 <translation id="5265129178187621741">(hindi pa available ang tampok na ito para sa mga Chromebook… manatiling nakasubaybay)</translation>
 <translation id="5156271271724754543">Pakilagay ang parehong PIN sa parehong kahon.</translation>
+<translation id="2118549242412205620">Ligtas na i-access ang iyong mga computer mula sa iyong Android device.
+
+• Sa bawat isa sa iyong mga computer, i-set up ang malayuang pag-access gamit ang Chrome Remote Desktop app mula sa Chrome Web Store: https://chrome.google.com/remotedesktop
+• Sa iyong Android device, buksan ang app at pindutin ang alinman sa iyong mga online na computer upang kumonekta.
+
+Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa Privacy ng Google (http://goo.gl/SyrVzj) at ang Patakaran sa Privacy ng Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="4361728918881830843">Upang paganahin ang mga malayuang koneksyon sa ibang computer, i-install ang Remote na Desktop ng Chrome doon at i-click ang “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="7444276978508498879">Nakakonekta ang client: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="4913529628896049296">naghihintay ng koneksyon…</translation>
@@ -173,6 +189,7 @@ Desktop ng Chrome</translation>
 <translation id="5308380583665731573">Kumunekta</translation>
 <translation id="7319983568955948908">Ihinto ang Pagbabahagi</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Nakalaan ang Lahat ng Karapatan.</translation>
+<translation id="8038108135592087998">Unang labas ng Remote na Desktop ng Chrome para sa Android.</translation>
 <translation id="6668065415969892472">Na-update na ang iyong PIN.</translation>
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4277736576214464567">Di-wasto ang access code. Pakisubukang muli.</translation>

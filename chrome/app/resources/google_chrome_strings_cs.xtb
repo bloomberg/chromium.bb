@@ -52,7 +52,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3080151273017101988">Po ukončení prohlížeče Google Chrome nechat aplikace na pozadí spuštěné</translation>
 <translation id="4149882025268051530">Instalačnímu programu se nepodařilo rozbalit archiv. Stáhněte prosím Google Chrome ještě jednou.</translation>
 <translation id="7054640471403081847">Tento počítač brzy přestane dostávat aktualizace Google Chrome, protože jeho hardware již není podporován.</translation>
-<translation id="6326709553577195251">Chcete-li odebrat svůj účet, je třeba Chrome restartovat. Před pokračováním si nezapomeňte uložit veškerou otevřenou práci.</translation>
+<translation id="6326709553577195251">Chcete-li odebrat svůj účet, je třeba Chrome restartovat. Než budete pokračovat, nezapomeňte si uložit veškerou otevřenou práci.</translation>
 <translation id="6989339256997917931">Prohlížeč Google Chrome byl aktualizován, ale minimálně po 30 dnů jste jej nepoužili.</translation>
 <translation id="7060865993964054389">Spouštěč aplikací Google Chrome</translation>
 <translation id="1682634494516646069">Aplikace Google Chrome nemůže číst ani zapisovat do svého datového adresáře:
@@ -148,6 +148,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="1140117203923356735">Soubor <ph name="FILE_NAME"/> provádí změny podobně jako malware, proto jej prohlížeč Chrome zablokoval.</translation>
 <translation id="5941830788786076944">Nastavit Google Chrome jako výchozí prohlížeč</translation>
+<translation id="1759301979429102118">Podrobnosti vašich kontaktů vám mohou pomoci vyplňovat formuláře v Chromu rychleji.</translation>
 <translation id="7787950393032327779">Profil je zřejmě využíván jiným procesem prohlížeče Google Chrome (<ph name="PROCESS_ID"/>) nebo v jiném počítač (<ph name="HOST_NAME"/>). Chrome profil uzamkl, aby nedošlo k jeho poškození. Pokud jste si jisti, že žádný jiný proces tento profil nevyužívá, můžete jej odemknout a Chrome znovu spustit.</translation>
 <translation id="1469002951682717133">Spouštěč aplikací Chrome</translation>
 <translation id="8568392309447938879">Chcete-li používat aplikace, musíte být do Chromu přihlášeni. To Chromu umožňuje synchronizovat vaše aplikace, záložky, historii, hesla a další nastavení mezi zařízeními.</translation>

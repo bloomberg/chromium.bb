@@ -16,6 +16,7 @@
 <translation id="5397086374758643919">Chrome 원격 데스크톱 호스트 제거 프로그램</translation>
 <translation id="3258789396564295715">Chrome 원격 데스크톱을 사용하여 컴퓨터에 안전하게 액세스할 수 있습니다.</translation>
 <translation id="5070121137485264635">원격 호스트는 타사 웹사이트에 대한 인증이 필요합니다. 계속하려면 이 주소에 액세스할 수 있도록 Chrome 원격 데스크톱에 추가 권한을 허용해야 합니다.</translation>
+<translation id="2124408767156847088">Android 기기에서 컴퓨터에 안전하게 액세스하세요.</translation>
 <translation id="4808503597364150972"><ph name="HOSTNAME"/>의 PIN을 입력하세요.</translation>
 <translation id="7672203038394118626">컴퓨터의 원격 연결이 사용중지되었습니다.</translation>
 <translation id="8244400547700556338">자세히 알아보기</translation>
@@ -31,6 +32,7 @@
 <translation id="7868137160098754906">원격 컴퓨터의 PIN을 입력하세요.</translation>
 <translation id="677755392401385740">사용자(<ph name="HOST_USERNAME"/>)의 호스트가 시작되었습니다.</translation>
 <translation id="8864965950780407789">Chromoting을 사용하려면 내 컴퓨터에 확장 액세스 권한을 부여해야 합니다. 이 작업은 한 번만 수행하면 됩니다.</translation>
+<translation id="3197730452537982411">원격 데스크톱</translation>
 <translation id="8355326866731426344">액세스 코드가 <ph name="TIMEOUT"/>초 후에 만료됩니다.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="2498359688066513246">도움말 및 의견</translation>
@@ -61,6 +63,14 @@
 <translation id="174018511426417793">등록된 컴퓨터가 없습니다. 컴퓨터에 원격 연결을 사용하려면 Chrome 원격 데스크톱을 설치하고 '<ph name="BUTTON_NAME"/>' 버튼을 클릭하세요.</translation>
 <translation id="9126115402994542723">이 기기에서 이 호스트로 연결할 때 PIN을 다시 요청하지 않습니다.</translation>
 <translation id="253387295088602549">다른 사용자가 인터넷을 통해 안전하게 내 컴퓨터에 액세스할 수 있습니다.</translation>
+<translation id="1300633907480909701">Android 기기에서 컴퓨터에 안전하게 액세스하세요.
+
+• Chrome 웹 스토어의 Chrome 원격 데스크톱 앱(https://chrome.google.com/remotedesktop)을 사용하여 각 컴퓨터에서 원격 액세스를 설정합니다.
+• Android 기기에서 앱을 열고 연결할 온라인 컴퓨터를 탭합니다.
+
+원격 컴퓨터에서 미국식 영어 키보드를 사용하지 않는 경우 잘못된 텍스트가 입력될 수 있습니다. 미국식 영어 이외의 키보드 레이아웃은 곧 지원될 예정입니다.
+
+개인정보 보호에 대한 자세한 내용은 Google 개인정보취급방침(http://goo.gl/SyrVzj)과 Chrome 개인정보취급방침(http://goo.gl/0uXE5d)을 참조하세요.</translation>
 <translation id="629730747756840877">계정</translation>
 <translation id="8525306231823319788">전체화면</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/>(이전 버전)</translation>
@@ -115,6 +125,12 @@
 <translation id="5773590752998175013">페어링 날짜</translation>
 <translation id="5265129178187621741">(아직 Chromebook에서 사용할 수 없는 기능입니다. 조금만 기다려 주시기 바랍니다.)</translation>
 <translation id="5156271271724754543">두 입력란에 같은 PIN을 입력하세요.</translation>
+<translation id="2118549242412205620">Android 기기에서 컴퓨터에 안전하게 액세스하세요.
+
+• Chrome 웹 스토어의 Chrome 원격 데스크톱 앱(https://chrome.google.com/remotedesktop)을 사용하여 각 컴퓨터에서 원격 액세스를 설정할 수 있습니다.
+• Android 기기에서 앱을 열고 연결할 온라인 컴퓨터를 탭합니다.
+
+개인정보 보호에 대한 자세한 내용은 Google 개인정보취급방침(http://goo.gl/SyrVzj)과 Chrome 개인정보취급방침(http://goo.gl/0uXE5d)을 참조하세요.</translation>
 <translation id="4361728918881830843">다른 컴퓨터에 원격 연결을 사용하려면 Chrome 원격 데스크톱을 설치하고 '<ph name="BUTTON_NAME"/>' 버튼을 클릭하세요.</translation>
 <translation id="7444276978508498879">연결된 클라이언트: <ph name="CLIENT_USERNAME"/></translation>
 <translation id="4913529628896049296">연결 대기 중...</translation>
@@ -173,6 +189,7 @@
 <translation id="5308380583665731573">연결</translation>
 <translation id="7319983568955948908">공유 중지</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. All Rights Reserved.</translation>
+<translation id="8038108135592087998">Android용 Chrome 원격 데스크톱의 첫 번째 버전입니다.</translation>
 <translation id="6668065415969892472">PIN이 업데이트되었습니다.</translation>
 <translation id="4513946894732546136">문제 신고</translation>
 <translation id="4277736576214464567">액세스 코드가 잘못되었습니다. 다시 시도해 주세요.</translation>

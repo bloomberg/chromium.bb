@@ -18,7 +18,7 @@
 <translation id="2144822863799338346">欢迎使用您的专属Chrome。在这里，您可以：</translation>
 <translation id="1225016890511909183">Chrome 会妥善地存储您的信息，这样您日后就不必重新输入了。不过，您将来付款时仍需验证信用卡的安全码。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
-<translation id="8838365799985821335">某个扩展程序更改了您启动Chrome后系统显示的页面。</translation>
+<translation id="8838365799985821335">某个扩展程序更改了Chrome启动后显示的页面。</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
 <translation id="7781002470561365167">Google Chrome 浏览器现已推出新版本。</translation>
@@ -134,6 +134,7 @@
 <translation id="5328989068199000832">Google Chrome 二进制文件</translation>
 <translation id="1140117203923356735"><ph name="FILE_NAME"/> 对设置所做的更改类似于部分恶意软件所进行的更改，因此 Chrome 已将其拦截。</translation>
 <translation id="5941830788786076944">将 Google Chrome 浏览器设为默认浏览器</translation>
+<translation id="1759301979429102118">通讯录中的详细信息有助于您在Chrome中更快速地填写表单。</translation>
 <translation id="7787950393032327779">其他计算机 (<ph name="HOST_NAME"/>) 的另一个 Google Chrome 进程 (<ph name="PROCESS_ID"/>) 好像正在使用此个人资料。Chrome 已锁定此个人资料以防止其受损。如果您确定其他进程目前未使用此个人资料，请为其解锁并重新启动 Chrome。</translation>
 <translation id="1469002951682717133">Chrome 应用启动器</translation>
 <translation id="8568392309447938879">您需要先登录Chrome，再使用各项应用。这样，Chrome就可以在各个设备上同步您的应用、书签、历史记录、密码和其他设置。</translation>
@@ -197,7 +198,7 @@
 <translation id="1061257178446858647">您现已登录 Chrome 浏览器！您的书签、历史记录和其他设置都会同步到您的 Google 帐户。</translation>
 <translation id="3335672657969596251">Google Chrome 浏览器不支持 <ph name="OS_NAME"/>。</translation>
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
-<translation id="8679801911857917785">它还能够控制您启动Chrome后系统显示的页面。</translation>
+<translation id="8679801911857917785">它还能够控制Chrome启动后显示的页面。</translation>
 <translation id="5334545119300433702">已知此模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="4407807842708586359">Google Chrome 操作系统</translation>
 <translation id="6634887557811630702">Google Chrome 已是最新版本。</translation>
@@ -223,7 +224,7 @@
 浏览器无法使用有错误的证书，也无法验证所尝试连接的网站的身份。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3836351788193713666">即将更新到最新版本！重新启动 Google Chrome 以完成更新。</translation>
-<translation id="884296878221830158">它还能够控制您启动Chrome或点击“首页”按钮后系统显示的页面。</translation>
+<translation id="884296878221830158">它还能够控制您启动Chrome或点击“主页”按钮后系统显示的页面。</translation>
 <translation id="7106741999175697885">任务管理器 - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome 浏览器正在从<ph name="BROWSER_COMPONENT"/>中导入以下内容：</translation>
 <translation id="3396977131400919238">安装过程中出现操作系统错误。请重新下载 Google Chrome。</translation>

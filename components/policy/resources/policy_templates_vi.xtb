@@ -1769,7 +1769,7 @@
 
       Nếu cài đặt không được chỉ định, giá trị mặc định sẽ được sử dụng.
 
-      Nếu chính sách này không được thiết lập, các mặc định sẽ được sử dụng cho tất cả cài đặt.</translation>
+      Nếu chính sách này không được thiết lập, các giá trị mặc định sẽ được sử dụng cho tất cả cài đặt.</translation>
 <translation id="1435659902881071157">Cấu hình mạng ở mức thiết bị</translation>
 <translation id="2131902621292742709">Độ trễ mờ màn hình khi chạy trên nguồn pin</translation>
 <translation id="5781806558783210276">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó hành động không sử dụng được thực hiện khi chạy trên nguồn pin.

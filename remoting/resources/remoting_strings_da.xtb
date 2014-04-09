@@ -16,6 +16,7 @@ host</translation>
 <translation id="5397086374758643919">Afinstallationsprogram til host for Chrome Fjernskrivebord</translation>
 <translation id="3258789396564295715">Du kan få sikker adgang til denne computer via Chrome Fjernskrivebord.</translation>
 <translation id="5070121137485264635">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chrome Fjernskrivebord yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>
+<translation id="2124408767156847088">Sikker adgang til dine computere fra din Android-enhed.</translation>
 <translation id="4808503597364150972">Indtast din pinkode til <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Fjernforbindelserne til denne computer er blevet deaktiveret.</translation>
 <translation id="8244400547700556338">Få flere oplysninger.</translation>
@@ -31,6 +32,7 @@ host</translation>
 <translation id="7868137160098754906">Indtast din pinkode til fjerncomputeren.</translation>
 <translation id="677755392401385740">Host er startet for bruger: <ph name="HOST_USERNAME"/>.</translation>
 <translation id="8864965950780407789">Hvis du vil bruge Chromoting, skal du give udvidet adgangstilladelse til din computer. Du skal kun gøre dette én gang.</translation>
+<translation id="3197730452537982411">Fjernskrivebord</translation>
 <translation id="8355326866731426344">Denne adgangskode udløber om <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">Forfatterne til Chromium</translation>
 <translation id="2498359688066513246">Hjælp og feedback</translation>
@@ -61,6 +63,14 @@ host</translation>
 <translation id="174018511426417793">Du har ingen registrerede computere. Hvis du vil aktivere fjernforbindelser til en computer, skal du installere Chrome Fjernskrivebord på den pågældende computer og klikke på &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="9126115402994542723">Bed ikke om en pinkode igen, når der oprettes forbindelse til denne host fra denne enhed.</translation>
 <translation id="253387295088602549">Giv en anden bruger sikker adgang til din computer via internettet.</translation>
+<translation id="1300633907480909701">Få adgang til dine computere fra din Android-enhed på sikker vis.
+
+• Konfigurer fjernadgang på dine computere ved hjælp af appen Chrome Fjernskrivebord fra Chrome Webshop: https://chrome.google.com/remotedesktop
+• Åbn appen på din Android-enhed, og tryk på en af dine computere, der er online, for at oprette forbindelse.
+
+Fjerncomputere, som ikke har engelsk tastatur, kan modtage forkert tekstinput. Understøttelse af andre tastaturlayouts introduceres snart.
+
+Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (http://goo.gl/SyrVzj) og Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="8525306231823319788">Fuld skærm</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (forældet)</translation>
@@ -115,6 +125,12 @@ host</translation>
 <translation id="5773590752998175013">Dato for parring</translation>
 <translation id="5265129178187621741">(denne funktion er endnu ikke tilgængelig for Chromebooks... hold dig opdateret)</translation>
 <translation id="5156271271724754543">Indtast den samme pinkode i begge felter.</translation>
+<translation id="2118549242412205620">Få adgang til dine computere fra din Android-enhed på sikker vis.
+
+• Konfigurer fjernadgang på dine computere ved hjælp af appen Chrome Fjernskrivebord fra Chrome Webshop: https://chrome.google.com/remotedesktop
+• Åbn appen på din Android-enhed, og tryk på en af dine computere, der er online, for at oprette forbindelse.
+
+Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (http://goo.gl/SyrVzj) og Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="4361728918881830843">Hvis du vil aktivere fjernforbindelser til en anden computer, skal du installere Chrome Fjernskrivebord på den pågældende computer og klikke på &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="7444276978508498879">Tilsluttet klient: <ph name="CLIENT_USERNAME"/> .</translation>
 <translation id="4913529628896049296">venter på forbindelse...</translation>
@@ -173,6 +189,7 @@ Fjernskrivebord</translation>
 <translation id="5308380583665731573">Opret forbindelse</translation>
 <translation id="7319983568955948908">Stop deling</translation>
 <translation id="6681800064886881394">Copyright © 2013 Google Inc. Alle rettigheder forbeholdes.</translation>
+<translation id="8038108135592087998">Første udgivelse af Chrome Fjernskrivebord til Android.</translation>
 <translation id="6668065415969892472">Din pinkode er blevet opdateret.</translation>
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4277736576214464567">Adgangskoden er ugyldig. Prøv igen.</translation>

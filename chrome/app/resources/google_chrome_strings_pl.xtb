@@ -141,6 +141,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="5328989068199000832">Pliki binarne Google Chrome</translation>
 <translation id="1140117203923356735">Plik <ph name="FILE_NAME"/> zmienia ustawienia podobnie jak niektóre złośliwe programy, więc został zablokowany przez Chrome.</translation>
 <translation id="5941830788786076944">Ustaw Google Chrome jako domyślną przeglądarkę</translation>
+<translation id="1759301979429102118">Informacje z Twoich kontaktów pomogą Ci szybciej wypełniać formularze w Chrome.</translation>
 <translation id="7787950393032327779">Wygląda na to, że profil jest używany przez inny proces Google Chrome (<ph name="PROCESS_ID"/>) na innym komputerze (<ph name="HOST_NAME"/>). Chrome zablokował profil, by zapobiec jego uszkodzeniu. Jeśli masz pewność, że żadne inne procesy nie używają tego profilu, możesz go odblokować i ponownie uruchomić Chrome.</translation>
 <translation id="1469002951682717133">Program uruchamiający aplikacje Chrome</translation>
 <translation id="8568392309447938879">Jeśli chcesz korzystać z aplikacji, musisz zalogować się w Chrome, by Twoje aplikacje, zakładki, historia, hasła i inne ustawienia były synchronizowane między urządzeniami.</translation>
@@ -166,7 +167,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="8547799825197623713">Program uruchamiający aplikacje Chrome w wersji poglądowej</translation>
 <translation id="6326175484149238433">Usuń z Chrome</translation>
 <translation id="2871893339301912279">Jesteś zalogowany w Chrome.</translation>
-<translation id="7890208801193284374">Jeśli dzielisz się komputerem ze znajomymi lub rodziną, wszyscy możecie niezależnie przeglądać internet i po swojemu skonfigurować Chrome.</translation>
+<translation id="7890208801193284374">Jeśli dzielisz komputer ze znajomymi lub rodziną, wszyscy możecie niezależnie przeglądać internet i po swojemu skonfigurować Chrome.</translation>
 <translation id="7161904924553537242">Google Chrome – witamy</translation>
 <translation id="4147555960264124640">Logujesz się na zarządzane konto i przekazujesz jego administratorowi kontrolę nad swoim profilem Google Chrome. Twoje dane Chrome, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME"/>. Będzie można je usunąć w Panelu kont Google, ale nie będzie można ich powiązać z innym kontem. <ph name="LEARN_MORE"/></translation>
 <translation id="4568169453579447500">Nie można zaktualizować Google Chrome z powodu niespójnych ustawień zasad grupy dotyczących Google Update. Użyj edytora zasad grupy, aby zmienić zasady aktualizacji aplikacji Google Chrome Binaries, i spróbuj ponownie. Szczegółowe informacje znajdziesz na http://goo.gl/uJ9gV</translation>

@@ -141,6 +141,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="1140117203923356735">A(z) <ph name="FILE_NAME"/> egyes rosszindulatú programokhoz hasonló módon módosítja a beállításokat, ezért a Chrome letiltotta.</translation>
 <translation id="5941830788786076944">A Google Chrome beállítása alapértelmezett böngészőként</translation>
+<translation id="1759301979429102118">A névjegyek részletei révén gyorsabban kitöltheti az űrlapokat a Chrome-ban.</translation>
 <translation id="7787950393032327779">Úgy tűnik, a profilt egy másik Google Chrome-folyamat (<ph name="PROCESS_ID"/>) használja egy másik számítógépen (<ph name="HOST_NAME"/>). A Chrome zárolta a profilt, hogy az ne sérülhessen. Ha biztos benne, hogy nem használja másik folyamat a profilt, feloldhatja azt, és újraindíthatja a Chrome-ot.</translation>
 <translation id="1469002951682717133">Chrome Alkalmazásindító</translation>
 <translation id="8568392309447938879">Be kell jelentkeznie a Chrome-ba az alkalmazások használatához. Ez lehetővé teszi a Chrome számára, hogy szinkronizálja alkalmazásait, könyvjelzőit, előzményeit, jelszavait és egyéb beállításait a különböző eszközök között.</translation>

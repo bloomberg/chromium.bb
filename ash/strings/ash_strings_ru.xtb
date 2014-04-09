@@ -81,6 +81,7 @@
 <translation id="3892641579809465218">Встроенный дисплей</translation>
 <translation id="7823564328645135659">В результате синхронизации настроек язык изменен. Теперь используется <ph name="TO_LOCALE"/>, а не <ph name="FROM_LOCALE"/>.</translation>
 <translation id="3368922792935385530">Подключено</translation>
+<translation id="3606978283550408104">Брайлевский дисплей подключен</translation>
 <translation id="8654520615680304441">Включение Wi-Fi...</translation>
 <translation id="6650933572246256093">Устройству <ph name="DEVICE_NAME"/> требуется разрешение на подключение через Bluetooth. Введите на нем код: <ph name="PASSKEY"/>.</translation>
 <translation id="8828714802988429505">90°</translation>

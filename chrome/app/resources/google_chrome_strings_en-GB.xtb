@@ -149,6 +149,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="1140117203923356735"><ph name="FILE_NAME"/> makes settings changes similar to some malware, so Chrome has blocked it.</translation>
 <translation id="5941830788786076944">Make Google Chrome the default browser</translation>
+<translation id="1759301979429102118">Details from your contacts can help you fill out forms more quickly in Chrome.</translation>
 <translation id="7787950393032327779">The profile appears to be in use by another Google Chrome process (<ph name="PROCESS_ID"/>) on another computer (<ph name="HOST_NAME"/>). Chrome has locked the profile so that it doesn't get corrupted. If you are sure no other processes are using this profile, you can unlock the profile and relaunch Chrome.</translation>
 <translation id="1469002951682717133">Chrome App Launcher</translation>
 <translation id="8568392309447938879">You need to be signed in to Chrome to use apps. This allows Chrome to sync your apps, bookmarks, history, passwords and other settings across devices.</translation>

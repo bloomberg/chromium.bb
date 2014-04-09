@@ -18,7 +18,7 @@
 <translation id="2144822863799338346">Bun venit la Chrome. Reveniți aici ca să:</translation>
 <translation id="1225016890511909183">Chrome va stoca în siguranță informațiile dvs., astfel încât să nu trebuiască să le introduceți din nou, dar va trebui în continuare să confirmați codul de securitate al cardului pentru viitoarele plăți.</translation>
 <translation id="2770231113462710648">Schimbați browserul prestabilit la:</translation>
-<translation id="8838365799985821335">O extensie a modificat care pagină se afișează când porniți Chrome.</translation>
+<translation id="8838365799985821335">O extensie a modificat ce pagină se afișează când porniți Chrome.</translation>
 <translation id="2077129598763517140">Utilizați accelerarea hardware când este disponibilă</translation>
 <translation id="1065672644894730302">Preferințele dvs. nu pot fi citite. Este posibil ca unele funcții să nu fie disponibile, iar modificările aduse preferințelor nu vor fi salvate.</translation>
 <translation id="7781002470561365167">Este disponibilă o nouă versiune a browserului Google Chrome.</translation>
@@ -141,6 +141,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="1140117203923356735">Fișierul <ph name="FILE_NAME"/> aduce setărilor modificări asemănătoare celor efectuate de unele programe malware și, prin urmare, a fost blocat de Chrome.</translation>
 <translation id="5941830788786076944">Setați Google Chrome ca browser prestabilit</translation>
+<translation id="1759301979429102118">Detaliile din agendă vă pot ajuta să completați mai rapid formularele în Chrome.</translation>
 <translation id="7787950393032327779">Profilul pare să fie utilizat de alt proces Google Chrome (<ph name="PROCESS_ID"/>), pe alt computer (<ph name="HOST_NAME"/>). Chrome a blocat profilul pentru a nu se deteriora. Dacă aveți certitudinea că profilul nu este utilizat de alte procese, puteți să îl deblocați și să relansați Chrome.</translation>
 <translation id="1469002951682717133">Lansatorul de aplicații Chrome</translation>
 <translation id="8568392309447938879">Trebuie să vă conectați la Chrome pentru a folosi aplicațiile. Astfel, Chrome vă poate sincroniza aplicațiile, marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
@@ -190,7 +191,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="6126631249883707068">Doriți ca Google Chrome să vă salveze parola?</translation>
 <translation id="7773845170078702898">Doriți ca Google Chrome să salveze parola pentru acest site?</translation>
 <translation id="4251615635259297716">Vă conectați datele Chrome cu acest cont?</translation>
-<translation id="7125719106133729027">Chrome nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât ratați noi funcții excelente și remedieri de securitate. Trebuie să reinstalați Chrome manual.</translation>
+<translation id="7125719106133729027">Chrome nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât pierdeți noi funcții excelente și remedieri de securitate. Trebuie să reinstalați Chrome manual.</translation>
 <translation id="5940385492829620908">Experiența web personalizată, marcajele și celelalte date Chrome chiar aici.</translation>
 <translation id="5788515153694509397">Ștergeți utilizatorul Chrome gestionat</translation>
 <translation id="8865765905101981392">Browser de Internet</translation>
@@ -223,7 +224,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="1061257178446858647">Acum sunteți conectat(ă) la Chrome! Marcajele, istoricul și alte setări vor fi sincronizate cu Contul dvs. Google.</translation>
 <translation id="3335672657969596251">Google Chrome nu acceptă <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Pentru ca modificarea să fie aplicată, deconectați-vă și conectați-vă din nou.</translation>
-<translation id="8679801911857917785">Stabilește și care pagină se afișează când porniți Chrome.</translation>
+<translation id="8679801911857917785">Stabilește și ce pagină se afișează când porniți Chrome.</translation>
 <translation id="5334545119300433702">Acest modul este cunoscut că intră în conflict cu Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome este actualizat.</translation>
@@ -238,17 +239,17 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="2246246234298806438">Google Chrome nu poate afișa previzualizarea înainte de printare când vizualizatorul PDF încorporat lipsește.</translation>
 <translation id="6626317981028933585">Din păcate, setările dvs. Mozilla Firefox nu sunt disponibile în timp ce browser-ul respectiv rulează. Pentru a importa aceste setări în Google Chrome, salvați ceea ce lucrați și închideți toate ferestrele Firefox. Apoi faceți clic pe Continuați.</translation>
 <translation id="7242029209006116544">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME"/>. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. Aveți opțiunea de a crea un profil nou, pentru a păstra separat datele Chrome existente. <ph name="LEARN_MORE"/></translation>
-<translation id="5386244825306882791">Stabilește și care pagină se afișează când porniți Chrome sau când căutați din caseta polivalentă.</translation>
+<translation id="5386244825306882791">Stabilește și ce pagină se afișează când porniți Chrome sau când căutați din caseta polivalentă.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR"/> Google Inc. Toate drepturile rezervate.</translation>
 <translation id="1698376642261615901">Google Chrome este un browser web care rulează pagini web și aplicații cu o viteză extraordinară. Este rapid, stabil și ușor de utilizat. Navigați pe web beneficiind de mai multă siguranță datorită protecției împotriva programelor malware și a phishingului, care este încorporată în Google Chrome.</translation>
 <translation id="853189717709780425">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele dvs. Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME"/>. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu un alt cont.</translation>
 <translation id="6049075767726609708">Un administrator a instalat Google Chrome pe acest sistem, iar acum acesta este disponibil pentru toți utilizatorii. Versiunea Google Chrome la nivel de sistem o va înlocui acum pe cea la nivel de utilizator.</translation>
-<translation id="1818142563254268765">Chrome nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât ratați noi funcții excelente și remedieri de securitate. Trebuie să actualizați Chrome.</translation>
+<translation id="1818142563254268765">Chrome nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât pierdeți noi funcții excelente și remedieri de securitate. Trebuie să actualizați Chrome.</translation>
 <translation id="4338032231047635328">Ați încercat să accesați &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar certificatul furnizat de server conține erori. Google Chrome nu poate utiliza un certificat cu erori și nu poate valida identitatea site-ului la care ați încercat să vă conectați.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3836351788193713666">Sistemul de operare este aproape actualizat! Reporniți Google Chrome pentru a finaliza actualizarea.</translation>
-<translation id="884296878221830158">Stabilește și care pagină se afișează când porniți Chrome sau când dați clic pe butonul Pagină de pornire.</translation>
+<translation id="884296878221830158">Stabilește și ce pagină se afișează când porniți Chrome sau când dați clic pe butonul Pagină de pornire.</translation>
 <translation id="7106741999175697885">Manager de activități - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome importă acum următoarele elemente din <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="3396977131400919238">S-a produs o eroare de sistem de operare în timpul instalării. Descărcați din nou Google Chrome.</translation>

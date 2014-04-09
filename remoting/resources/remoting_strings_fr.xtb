@@ -16,6 +16,7 @@ Chromoting</translation>
 <translation id="5397086374758643919">Programme de désinstallation de l'hôte Bureau à distance Google Chrome</translation>
 <translation id="3258789396564295715">Vous pouvez accéder à cet ordinateur en toute sécurité via le bureau à distance Google Chrome.</translation>
 <translation id="5070121137485264635">L'hôte distant nécessite votre authentification auprès d'un site Web tiers. Pour continuer, vous devez accorder au Bureau à distance Chrome des autorisations supplémentaires afin d'accéder à l'adresse suivante :</translation>
+<translation id="2124408767156847088">Accédez à vos ordinateurs en toute sécurité depuis votre appareil Android</translation>
 <translation id="4808503597364150972">Veuillez saisir le code d'accès pour <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Les connexions à distance ont été désactivées pour cet ordinateur.</translation>
 <translation id="8244400547700556338">En savoir plus</translation>
@@ -31,6 +32,7 @@ Chromoting</translation>
 <translation id="7868137160098754906">Veuillez saisir le code d'accès de l'ordinateur distant.</translation>
 <translation id="677755392401385740">Hôte démarré pour l'utilisateur &quot;<ph name="HOST_USERNAME"/>&quot;</translation>
 <translation id="8864965950780407789">Pour utiliser Google Chromoting, vous devez autoriser l'accès étendu à votre ordinateur. Vous n'aurez à effectuer cette opération qu'une seule fois.</translation>
+<translation id="3197730452537982411">Bureau à distance</translation>
 <translation id="8355326866731426344">Ce code d'accès expire dans <ph name="TIMEOUT"/>.</translation>
 <translation id="985602178874221306">Auteurs de Chromium</translation>
 <translation id="2498359688066513246">Aide et commentaires</translation>
@@ -61,6 +63,14 @@ Chromoting</translation>
 <translation id="174018511426417793">Aucun ordinateur n'est enregistré. Pour activer les connexions à distance à un ordinateur, installez l'application Bureau à distance Google Chrome sur celui-ci, puis cliquez sur &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="9126115402994542723">Ne plus demander de code d'accès en cas de connexion à cet hôte depuis cet appareil</translation>
 <translation id="253387295088602549">Autoriser un autre utilisateur à accéder à votre ordinateur en toute sécurité sur Internet</translation>
+<translation id="1300633907480909701">Accédez à vos ordinateurs en toute sécurité depuis votre appareil Android.
+
+• Sur chacun de vos ordinateurs, configurez l'accès à distance à l'aide de l'application Chrome Bureau à distance, disponible sur le Chrome Web Store : https://chrome.google.com/remotedesktop.
+• Sur votre appareil Android, ouvrez l'application, puis appuyez sur l'un de vos ordinateurs en ligne afin de vous y connecter.
+
+Le texte saisi sur les ordinateurs à distance non dotés d'un clavier en anglais des États-Unis risque d'être incorrect. Les autres claviers seront bientôt compatibles.
+
+Pour en savoir plus sur la confidentialité, veuillez consulter les règles de confidentialité de Google (http://goo.gl/SyrVzj) et l'avis de confidentialité de Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="629730747756840877">Compte</translation>
 <translation id="8525306231823319788">Plein écran</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (obsolète)</translation>
@@ -115,6 +125,12 @@ Chromoting</translation>
 <translation id="5773590752998175013">Date d'association</translation>
 <translation id="5265129178187621741">Cette fonctionnalité n'est pas encore disponible pour les Chromebooks. Merci de votre patience.</translation>
 <translation id="5156271271724754543">Veuillez saisir le même code d'accès dans les deux champs.</translation>
+<translation id="2118549242412205620">Accédez à vos ordinateurs en toute sécurité depuis votre appareil Android.
+
+• Sur chacun de vos ordinateurs, configurez l'accès à distance à l'aide de l'application Chrome Bureau à distance, qui est disponible sur le Chrome Web Store : https://chrome.google.com/remotedesktop.
+• Sur votre appareil Android, ouvrez l'application, puis appuyez sur l'un de vos ordinateurs en ligne afin de vous y connecter.
+
+Pour en savoir plus sur la confidentialité, veuillez consulter les règles de confidentialité de Google (http://goo.gl/SyrVzj) et l'avis de confidentialité de Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="4361728918881830843">Pour activer les connexions à distance à un autre ordinateur, installez l'application Bureau à distance Google Chrome sur celui-ci, puis cliquez sur &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="7444276978508498879">Client connecté : <ph name="CLIENT_USERNAME"/></translation>
 <translation id="4913529628896049296">en attente de connexion…</translation>
@@ -173,6 +189,7 @@ Google Chrome</translation>
 <translation id="5308380583665731573">Se connecter</translation>
 <translation id="7319983568955948908">Arrêter le partage</translation>
 <translation id="6681800064886881394">Copyright © Google Inc. 2013. Tous droits réservés.</translation>
+<translation id="8038108135592087998">Première version du Bureau à distance Chrome pour Android</translation>
 <translation id="6668065415969892472">Votre code d'accès a été mis à jour.</translation>
 <translation id="4513946894732546136">Commentaires</translation>
 <translation id="4277736576214464567">Le code d'accès n'est pas valide. Veuillez réessayer.</translation>

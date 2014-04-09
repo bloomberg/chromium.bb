@@ -13,6 +13,7 @@
 <translation id="2770231113462710648">Schimbați browserul prestabilit la:</translation>
 <translation id="6613594504749178791">Modificările dvs. vor intra în vigoare următoarea dată când reporniți Chromium.</translation>
 <translation id="9089354809943900324">Chromium nu este actualizat</translation>
+<translation id="59625444380784159">Detaliile din agendă vă pot ajuta să completați mai rapid formularele în Chromium.</translation>
 <translation id="3748537968684000502">Acum afișați o pagină Chromium securizată.</translation>
 <translation id="2077129598763517140">Utilizați accelerarea hardware când este disponibilă</translation>
 <translation id="1065672644894730302">Preferințele dvs. nu pot fi citite. Este posibil ca unele funcții să nu fie disponibile, iar modificările aduse preferințelor nu vor fi salvate.</translation>
@@ -58,8 +59,8 @@
 <translation id="466053073629175099">Acum sunteți conectat(ă) la Chromium! Marcajele, istoricul și alte setări vor fi sincronizate cu Contul dvs. Google.</translation>
 <translation id="3849925841547750267">Ne pare rău, setările dvs. Mozilla Firefox nu sunt disponibile cât timp browserul respectiv rulează. Pentru a importa aceste setări în Chromium, salvați ceea ce lucrați și închideți toate ferestrele Firefox. Apoi faceți clic pe Continuați.</translation>
 <translation id="7771626876550251690">În acest caz, adresa afișată în certificat nu se potrivește cu adresa site-ului web pe care a încercat să o acceseze browserul dvs. Un motiv posibil pentru acest fapt este interceptarea comunicațiilor dvs. de către un atacator, care furnizează un certificat pentru un alt site web, cauzând o astfel de nepotrivire. Un alt motiv posibil este că serverul este setat să afișeze același certificat pentru mai multe site-uri web, inclusiv cel pe care încercați să-l accesați, chiar dacă acel certificat nu este valabil pentru toate site-urile respective. Chromium poate confirma că ați accesat &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, dar nu poate confirma că este același site ca &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pe care ați intenționat să-l accesați. Dacă veți continua, Chromium nu va mai căuta nicio altă nepotrivire de nume.</translation>
-<translation id="7027298027173928763">Chromium nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât ratați noi funcții excelente și remedieri de securitate. Trebuie să reinstalați Chromium manual.</translation>
-<translation id="8897323336392112261">Stabilește și care pagină se afișează când porniți Chromium sau când dați clic pe butonul Pagină de pornire.</translation>
+<translation id="7027298027173928763">Chromium nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât pierdeți noi funcții excelente și remedieri de securitate. Trebuie să reinstalați Chromium manual.</translation>
+<translation id="8897323336392112261">Stabilește și ce pagină se afișează când porniți Chromium sau când dați clic pe butonul Pagină de pornire.</translation>
 <translation id="4330585738697551178">Despre acest modul se cunoaște că intră în conflict cu Chromium.</translation>
 <translation id="3190315855212034486">Hopa! Chromium s-a închis cu eroare. Reporniți acum?</translation>
 <translation id="5750436165037325892">V-ați conectat cu un cont gestionat, controlat de un administrator. Dacă vă deconectați de la acest cont, acest utilizator Chromium și toate datele Chromium asociate, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi eliminate de pe acest computer.</translation>
@@ -81,12 +82,12 @@
 <translation id="7463979740390522693">Chromium – Notificări (<ph name="QUANTITY"/> necitite)</translation>
 <translation id="4345520932254577235">Bun venit la Chromium. Reveniți aici ca să:</translation>
 <translation id="225614027745146050">Bun venit</translation>
-<translation id="5823381412099532241">Chromium nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât ratați noi funcții excelente și remedieri de securitate. Trebuie să actualizați Chromium.</translation>
+<translation id="5823381412099532241">Chromium nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât pierdeți noi funcții excelente și remedieri de securitate. Trebuie să actualizați Chromium.</translation>
 <translation id="9191268552238695869">Un administrator a instalat Chromium pe acest sistem, iar acesta este disponibil pentru toți utilizatorii. Chromium instalat la nivel de sistem va înlocui acum instalarea la nivel de utilizator.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Închideți toate ferestrele Chromium și încercați din nou.</translation>
 <translation id="4077262827416206768">Închideți toate ferestrele Chromium și reporniți sistemul de operare pentru ca această modificare să aibă efect.</translation>
-<translation id="6475912303565314141">Stabilește și care pagină se afișează când porniți Chromium.</translation>
+<translation id="6475912303565314141">Stabilește și ce pagină se afișează când porniți Chromium.</translation>
 <translation id="750717762378961310">Acest fișier este rău-intenționat și a fost blocat de Chromium.</translation>
 <translation id="6944967875980567883">Module încărcate în Chromium</translation>
 <translation id="6899795326977034905">Pe Mac, parolele sunt salvate în aplicația Keychain și pot fi accesate sau sincronizate de alți utilizatori Chromium care utilizează același cont OS X.</translation>
@@ -124,14 +125,14 @@
 <translation id="6734080038664603509">Actualizați &amp;Chromium</translation>
 <translation id="8862326446509486874">Nu aveți drepturile adecvate pentru instalarea la nivel de sistem. Încercați să rulați din nou programul de instalare ca Administrator.</translation>
 <translation id="2535480412977113886">Sistemul de operare Chromium nu a putut sincroniza datele, deoarece detaliile de conectare pentru contul dvs. nu sunt actualizate.</translation>
-<translation id="8697124171261953979">Stabilește și care pagină se afișează când porniți Chromium sau când căutați din caseta polivalentă.</translation>
+<translation id="8697124171261953979">Stabilește și ce pagină se afișează când porniți Chromium sau când căutați din caseta polivalentă.</translation>
 <translation id="894903460958736500">Software-ul care rulează pe computer este incompatibil cu Chromium.</translation>
 <translation id="1774152462503052664">Permiteți Chromium să ruleze în fundal</translation>
 <translation id="9022552996538154597">Conectați-vă la Chromium</translation>
 <translation id="4365115785552740256">Chromium există mulțumită proiectului open source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> și a altor <ph name="BEGIN_LINK_OSS"/>produse software open source<ph name="END_LINK_OSS"/>.</translation>
 <translation id="4987820182225656817">Invitații pot folosi Chromium fără a lăsa nicio urmă.</translation>
 <translation id="2216475571518225820">Acest site utilizează pluginul Chromium Frame, care nu va mai fi acceptat în curând. Dezinstalați-l și descărcați un browser compatibil.</translation>
-<translation id="3487263810738775861">O extensie a modificat care pagină se afișează când porniți Chromium.</translation>
+<translation id="3487263810738775861">O extensie a modificat ce pagină se afișează când porniți Chromium.</translation>
 <translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>
 <translation id="6248213926982192922">Setați Chromium ca browser prestabilit</translation>
 <translation id="6309712487085796862">Chromium utilizează camera foto.</translation>

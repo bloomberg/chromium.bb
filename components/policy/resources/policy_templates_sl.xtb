@@ -1821,8 +1821,8 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2660846099862559570">Nikoli ne uporabi proxyja</translation>
 <translation id="1956493342242507974">Nastavitev upravljanja porabe na prijavnem zaslonu v sistemu <ph name="PRODUCT_OS_NAME"/>.
 
-      S tem pravilnikom lahko nastavite, kako <ph name="PRODUCT_OS_NAME"/> deluje, ko nekaj časa ni uporabniške dejavnosti in je prikazan prijavni zaslon. Pravilnik nadzira več nastavitev. Za podrobnosti posameznih nastavitev in njihove obsege vrednosti si oglejte ustrezne pravilnike, ki v seji nadzirajo upravljanje porabe. Edina odstopanja od teh pravilnikov so:
-      * dejanja, ki se izvedejo v stanju nedejavnosti ali ko se zapre pokrov, ne smejo končati seje;
+      S tem pravilnikom lahko nastavite, kako deluje <ph name="PRODUCT_OS_NAME"/>, ko uporabnik nekaj časa ni dejaven in je prikazan prijavni zaslon. Pravilnik nadzira več nastavitev. Za podrobnosti posameznih nastavitev in njihove obsege vrednosti si oglejte ustrezne pravilnike, ki v seji nadzirajo upravljanje porabe. Edini odstopanji od teh pravilnikov sta:
+      * dejanja, ki se izvedejo v stanju nedejavnosti ali ob zapiranju pokrova, ne smejo končati seje;
       * privzeto dejanje v stanju nedejavnosti, ko se računalnik napaja iz električnega omrežja, je zaustavitev.
 
       Če nastavitev ni določena, se uporabi privzeta vrednost.

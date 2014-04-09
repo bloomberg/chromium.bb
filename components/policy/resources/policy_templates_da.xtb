@@ -882,7 +882,7 @@
 
           Hvis denne politik er angivet til falsk, ignoreres anmodninger om aktiveringslås for skærm.</translation>
 <translation id="467236746355332046">Understøttede funktioner:</translation>
-<translation id="5447306928176905178">Aktiver rapportering af hukommelsesoplysninger (JavaScript heap size) til siden. (Udfaset)</translation>
+<translation id="5447306928176905178">Aktiver rapportering af hukommelsesoplysninger (størrelse på JavaScript-heap) til siden. (Udfaset)</translation>
 <translation id="7632724434767231364">Navn på GSSAPI-samling</translation>
 <translation id="3038323923255997294">Fortsætter med at køre baggrundsapps, når <ph name="PRODUCT_NAME"/> er lukket</translation>
 <translation id="8909280293285028130">Angiver den tid uden brugerinput, der udløser skærmlås, når strømforsyningen er tilsluttet.

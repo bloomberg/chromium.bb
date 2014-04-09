@@ -13,6 +13,7 @@
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
 <translation id="6613594504749178791">您所做的更改会在下次重新启动 Chromium 时生效。</translation>
 <translation id="9089354809943900324">Chromium版本太旧</translation>
+<translation id="59625444380784159">通讯录中的详细信息有助于您在Chromium中更快速地填写表单。</translation>
 <translation id="3748537968684000502">您正在查看的是安全的 Chromium 网页。</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
@@ -52,7 +53,7 @@
 <translation id="3849925841547750267">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Chromium，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
 <translation id="7771626876550251690">在此例中，证书中所列的地址与浏览器尝试访问的网站网址不一致。一种可能的原因是某个攻击者拦截了您的通信内容，并向其他网站出示某个证书，这就会导致出现不一致的情况。另一种可能的原因是服务器已设置为对多个网站（包括您尝试访问的网站）返回同一证书，即使该证书并非对所有网站都有效。Chromium 可以确定您已转到 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但无法确认这与您要访问的 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; 是不是同一网站。如果您继续操作，Chromium 就不会再检查其他任何名称不一致的情况了。</translation>
 <translation id="7027298027173928763">Chromium无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要手动重新安装Chromium。</translation>
-<translation id="8897323336392112261">它还能够控制您启动Chromium或点击“首页”按钮后系统显示的页面。</translation>
+<translation id="8897323336392112261">它还能够控制您启动Chromium或点击“主页”按钮后系统显示的页面。</translation>
 <translation id="4330585738697551178">已知此模块与 Chromium 存在冲突。</translation>
 <translation id="3190315855212034486">哎呀！Chromium 崩溃了。要立即重新启动吗？</translation>
 <translation id="5750436165037325892">您登录的是由管理员控制的托管帐户。您取消与此帐户的关联后，此Chromium用户及所有关联的Chromium数据（如应用、书签、历史记录、密码和其他设置）都会从这台计算机中移除。</translation>
@@ -72,7 +73,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">请关闭所有 Chromium 窗口并重试。</translation>
 <translation id="4077262827416206768">请关闭所有 Chromium 窗口，然后重新启动 Chromium，以便让此更改生效。</translation>
-<translation id="6475912303565314141">它还能够控制您启动Chromium后系统显示的页面。</translation>
+<translation id="6475912303565314141">它还能够控制Chromium启动后显示的页面。</translation>
 <translation id="750717762378961310">这是恶意文件，Chromium 已将其拦截。</translation>
 <translation id="6944967875980567883">模块已加载到 Chromium 中</translation>
 <translation id="6899795326977034905">在 Mac 上，密码会保存到您的钥匙串 (Keychain) 中，可供其他共用此 OS X 帐户的 Chromium 用户访问或同步。</translation>
@@ -117,7 +118,7 @@
 <translation id="4365115785552740256">Chromium 的诞生离不开 <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> 开放源代码项目以及其他<ph name="BEGIN_LINK_OSS"/>开放源代码软件<ph name="END_LINK_OSS"/>。</translation>
 <translation id="4987820182225656817">访客使用Chromium不会留下任何痕迹。</translation>
 <translation id="2216475571518225820">此网站使用的 Chromium 内嵌框架插件很快将不受支持。请卸载该插件，然后下载兼容的浏览器。</translation>
-<translation id="3487263810738775861">某个扩展程序更改了您启动Chromium后系统显示的页面。</translation>
+<translation id="3487263810738775861">某个扩展程序更改了Chromium启动后显示的页面。</translation>
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
 <translation id="6248213926982192922">将 Chromium 设置为默认浏览器</translation>
 <translation id="6309712487085796862">Chromium 正在使用您的摄像头。</translation>

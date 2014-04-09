@@ -140,6 +140,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="5328989068199000832">Binaris Google Chrome</translation>
 <translation id="1140117203923356735"><ph name="FILE_NAME"/> fa canvis a la configuració que recorden a alguns tipus de programari maliciós, de manera que Chrome l'ha bloquejat.</translation>
 <translation id="5941830788786076944">Estableix Google Chrome com el navegador predeterminat</translation>
+<translation id="1759301979429102118">Disposar de detalls dels vostres contactes us pot ajudar a emplenar formularis amb més rapidesa a Chrome.</translation>
 <translation id="7787950393032327779">Sembla que un altre procés de Google Chrome (<ph name="PROCESS_ID"/>) està fent servir el perfil en un altre ordinador (<ph name="HOST_NAME"/>). Chrome ha bloquejat el perfil perquè no es malmeti. Si esteu segur que no hi ha cap altre procés que utilitzi el perfil, podeu desbloquejar-lo i tornar a iniciar Chrome.</translation>
 <translation id="1469002951682717133">Menú d'aplicacions de Chrome</translation>
 <translation id="8568392309447938879">Heu de tenir la sessió iniciada a Chrome per utilitzar les aplicacions. Això permet que Chrome sincronitzi les aplicacions, les adreces d'interès, l'historial, les contrasenyes i altres configuracions a tots els dispositius.</translation>
@@ -160,7 +161,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
         Si això no resol el problema, us recomanem que torneu a seleccionar
         aquesta opció per obtenir un rendiment millorat.</translation>
 <translation id="61852838583753520">Actualitza &amp;SO Chrome</translation>
-<translation id="5028489144783860647">Google Chrome no ha pogut sincronitzar les dades. Actualitzeu la contrasenya de sincronització.</translation>
+<translation id="5028489144783860647">Google Chrome no ha pogut sincronitzar les dades. Actualitzeu la frase de contrasenya de sincronització.</translation>
 <translation id="9026991721384951619">Chrome OS no ha pogut sincronitzar les vostres dades perquè les dades d'inici de sessió del compte no estan actualitzades.</translation>
 <translation id="8547799825197623713">Menú d'aplicacions de Chrome per a Canary</translation>
 <translation id="6326175484149238433">Elimina de Chrome</translation>

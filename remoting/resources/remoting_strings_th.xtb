@@ -16,6 +16,7 @@ Host</translation>
 <translation id="5397086374758643919">Chrome Remote Desktop Host Uninstaller</translation>
 <translation id="3258789396564295715">คุณสามารถเข้าถึงคอมพิวเตอร์เครื่องนี้ได้อย่างปลอดภัยโดยใช้ Chrome Remote Desktop</translation>
 <translation id="5070121137485264635">โฮสต์ระยะไกลกำหนดให้คุณตรวจสอบสิทธิ์กับเว็บไซต์ของบุคคลที่สาม หากต้องการดำเนินการต่อ คุณต้องให้สิทธิ์อนุญาตเพิ่มเติมแก่ Chrome Remote Desktop เพื่อเข้าถึงที่อยู่นี้:</translation>
+<translation id="2124408767156847088">เข้าถึงคอมพิวเตอร์ของคุณจากอุปกรณ์แอนดรอยด์ได้อย่างปลอดภัย</translation>
 <translation id="4808503597364150972">โปรดป้อน PIN ของคุณสำหรับ <ph name="HOSTNAME"/></translation>
 <translation id="7672203038394118626">การเชื่อมต่อระยะไกลสำหรับคอมพิวเตอร์เครื่องนี้ถูกปิดใช้งานแล้ว</translation>
 <translation id="8244400547700556338">เรียนรู้วิธีการ</translation>
@@ -31,6 +32,7 @@ Host</translation>
 <translation id="7868137160098754906">โปรดป้อน PIN สำหรับคอมพิวเตอร์ระยะไกล</translation>
 <translation id="677755392401385740">โฮสต์เริ่มใช้งานสำหรับผู้ใช้: <ph name="HOST_USERNAME"/></translation>
 <translation id="8864965950780407789">ในการใช้ Chromoting คุณต้องให้สิทธิ์การเข้าถึงเพิ่มเติมสำหรับคอมพิวเตอร์ของคุณ คุณจะต้องทำเช่นนี้เพียงครั้งเดียว</translation>
+<translation id="3197730452537982411">Remote Desktop</translation>
 <translation id="8355326866731426344">รหัสการเข้าถึงนี้จะหมดอายุในอีก <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="2498359688066513246">ความช่วยเหลือและความคิดเห็น</translation>
@@ -61,6 +63,14 @@ Host</translation>
 <translation id="174018511426417793">คุณไม่มีคอมพิวเตอร์ที่ได้ลงทะเบียนไว้ หากต้องการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์ ให้ติดตั้ง Chrome Remote Desktop ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก &quot;<ph name="BUTTON_NAME"/>&quot;</translation>
 <translation id="9126115402994542723">อย่าขอ PIN อีกเมื่อเชื่อมต่อไปยังโฮสต์นี้จากอุปกรณ์เครื่องนี้</translation>
 <translation id="253387295088602549">อนุญาตให้ผู้ใช้อื่นเข้าถึงคอมพิวเตอร์ของคุณอย่างปลอดภัยผ่านทางอินเทอร์เน็ต</translation>
+<translation id="1300633907480909701">เข้าถึงคอมพิวเตอร์ของคุณจากอุปกรณ์แอนดรอยด์ได้อย่างปลอดภัย
+
+• บนคอมพิวเตอร์แต่ละเครื่อง ให้ตั้งค่าการเข้าถึงระยะไกลโดยใช้แอป Chrome Remote Desktop จาก Chrome เว็บสโตร์ที่ https://chrome.google.com/remotedesktop
+• บนอุปกรณ์แอนดรอยด์ ให้เปิดแอปและแตะคอมพิวเตอร์เครื่องที่ออนไลน์อยู่เพื่อเชื่อมต่อ
+
+สำหรับคอมพิวเตอร์ระยะไกลที่มีแป้นพิมพ์ที่ไม่ใช่แบบอังกฤษ-อเมริกา ข้อความที่ได้รับอาจไม่ถูกต้อง สำหรับการจัดวางแป้นพิมพ์แบบอื่นๆ จะมีการสนับสนุนในเร็วๆ นี้!
+
+สำหรับข้อมูลเกี่ยวกับความเป็นส่วนตัว โปรดดูนโยบายส่วนบุคคลของ Google (http://goo.gl/SyrVzj) และนโยบายส่วนบุคคลของ Chrome (http://goo.gl/0uXE5d)</translation>
 <translation id="629730747756840877">บัญชี</translation>
 <translation id="8525306231823319788">เต็มหน้าจอ</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (ล้าสมัย)</translation>
@@ -115,6 +125,12 @@ Host</translation>
 <translation id="5773590752998175013">วันที่จับคู่</translation>
 <translation id="5265129178187621741">(คุณลักษณะนี้ยังไม่มีให้ใช้งานใน Chromebook... โปรดคอยติดตาม)</translation>
 <translation id="5156271271724754543">โปรดป้อน PIN เดียวกันลงในทั้งสองช่อง</translation>
+<translation id="2118549242412205620">เข้าถึงคอมพิวเตอร์ของคุณจากอุปกรณ์แอนดรอยด์ได้อย่างปลอดภัย
+
+• บนคอมพิวเตอร์แต่ละเครื่อง ให้ตั้งค่าการเข้าถึงระยะไกลโดยใช้แอป Chrome Remote Desktop จาก Chrome เว็บสโตร์ที่ https://chrome.google.com/remotedesktop
+• บนอุปกรณ์แอนดรอยด์ ให้เปิดแอปและแตะคอมพิวเตอร์เครื่องที่ออนไลน์อยู่เพื่อเชื่อมต่อ
+
+สำหรับข้อมูลเกี่ยวกับความเป็นส่วนตัว โปรดดูนโยบายส่วนบุคคลของ Google (http://goo.gl/SyrVzj) และนโยบายส่วนบุคคลของ Chrome (http://goo.gl/0uXE5d)</translation>
 <translation id="4361728918881830843">ในการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์เครื่องอื่น ให้ติดตั้ง Chrome Remote Desktop ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก &quot;<ph name="BUTTON_NAME"/>&quot;</translation>
 <translation id="7444276978508498879">ไคลเอ็นต์ที่เชื่อมต่อ: <ph name="CLIENT_USERNAME"/></translation>
 <translation id="4913529628896049296">กำลังรอการเชื่อมต่อ...</translation>
@@ -173,6 +189,7 @@ Desktop Host</translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
 <translation id="7319983568955948908">หยุดการแบ่งปัน</translation>
 <translation id="6681800064886881394">ลิขสิทธิ์ 2013 Google Inc. สงวนลิขสิทธิ์</translation>
+<translation id="8038108135592087998">Chrome Remote Desktop รุ่นแรกสำหรับแอนดรอยด์</translation>
 <translation id="6668065415969892472">PIN ของคุณได้รับการอัปเดตแล้ว</translation>
 <translation id="4513946894732546136">ความคิดเห็น</translation>
 <translation id="4277736576214464567">รหัสการเข้าถึงไม่ถูกต้อง โปรดลองอีกครั้ง</translation>

@@ -81,6 +81,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="3892641579809465218">Tampilan Internal</translation>
 <translation id="7823564328645135659">Bahasa telah diubah dari &quot;<ph name="FROM_LOCALE"/>&quot; menjadi &quot;<ph name="TO_LOCALE"/>&quot; setelah menyinkronkan setelan Anda.</translation>
 <translation id="3368922792935385530">Tersambung</translation>
+<translation id="3606978283550408104">Layar Braille tersambung.</translation>
 <translation id="8654520615680304441">Aktifkan Wi-Fi...</translation>
 <translation id="6650933572246256093">Perangkat Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; meminta izin untuk bersanding. Masukkan kunci sandi ini pada perangkat tersebut: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
@@ -194,6 +195,7 @@ Pesan server: <ph name="SERVER_MSG"/></translation>
 <translation id="1195412055398077112">pemindaian berlebih</translation>
 <translation id="607652042414456612">Komputer Anda dapat ditemukan pada perangkat Bluetooth terdekat dan akan muncul sebagai &quot;<ph name="NAME"/>&quot; dengan alamat <ph name="ADDRESS"/></translation>
 <translation id="112308213915226829">Sembunyikan otomatis rak</translation>
+<translation id="6732801395666424405">Sertifikat tidak dimuat</translation>
 <translation id="7573962313813535744">Mode digalangkan</translation>
 <translation id="8927026611342028580">Sambungan Diminta</translation>
 <translation id="8300849813060516376">OTASP gagal</translation>

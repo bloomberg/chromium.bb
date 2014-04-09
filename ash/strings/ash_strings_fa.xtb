@@ -80,6 +80,7 @@
 <translation id="3892641579809465218">صفحه نمایش داخلی</translation>
 <translation id="7823564328645135659">بعد از همگام‌سازی تنظیمات شما، زبان از «<ph name="FROM_LOCALE"/>» به «<ph name="TO_LOCALE"/>» تغییر کرد.</translation>
 <translation id="3368922792935385530">متصل</translation>
+<translation id="3606978283550408104">صفحه‌نمایش بریل متصل شد.</translation>
 <translation id="8654520615680304441">‏روشن کردن Wi-Fi در...</translation>
 <translation id="6650933572246256093">دستگاه بلوتوث «<ph name="DEVICE_NAME"/>» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کلید عبور را در آن دستگاه وارد کنید: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">۹۰°</translation>
@@ -192,7 +193,7 @@
 <translation id="1195412055398077112">بزرگتر از صفحه</translation>
 <translation id="607652042414456612">رایانه شما توسط دستگاه‌های بلوتوث نزدیک قابل شناسایی است و با نام «<ph name="NAME"/>» و آدرس <ph name="ADDRESS"/> نشان داده می‌شود</translation>
 <translation id="112308213915226829">پنهان کردن خودکار قفسه</translation>
-<translation id="6732801395666424405">گواهی‌ها دانلود نشدند</translation>
+<translation id="6732801395666424405">گواهی‌ها بارگیری نشدند</translation>
 <translation id="7573962313813535744">حالت اتصال به پایه</translation>
 <translation id="8927026611342028580">درخواست اتصال</translation>
 <translation id="8300849813060516376">‏OTASP انجام نشد</translation>

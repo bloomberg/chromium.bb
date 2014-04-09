@@ -66,6 +66,7 @@
 <translation id="4940047036413029306">Quote</translation>
 <translation id="1497897566809397301">Allow local data to be set (recommended)</translation>
 <translation id="3275778913554317645">Open as window</translation>
+<translation id="3005547175126169847">Enabling this option allows the use of Direct3D 11 on configurations that support it.</translation>
 <translation id="7994370417837006925">Multiple sign-in</translation>
 <translation id="1420684932347524586">Yikes! Failed to generate random RSA private key.</translation>
 <translation id="7323509342138776962">Last synced</translation>
@@ -116,6 +117,7 @@
 <translation id="5704565838965461712">Choose a certificate to present as identification:</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME"/> has crashed. Click this balloon to reload the extension.</translation>
 <translation id="4581823559337371475">The sign-in service below is hosted by <ph name="SAML_DOMAIN"/>. Sign in to continue.</translation>
+<translation id="6325051797777592677">use your camera.</translation>
 <translation id="6322279351188361895">Failed to read private key.</translation>
 <translation id="7401543881546089382">Delete shortcut</translation>
 <translation id="3781072658385678636">The following plug-ins were blocked on this page:</translation>
@@ -485,6 +487,7 @@
 <translation id="3245321423178950146">Unknown Artist</translation>
 <translation id="2437838871182492352">Occurrences when an extension was enabled</translation>
 <translation id="9050666287014529139">Passphrase</translation>
+<translation id="4880320188904265650">open all <ph name="PROTOCOL"/> links?</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="8787254343425541995">Allow proxies for shared networks</translation>
 <translation id="4755860829306298968">Manage plug-in blocking...</translation>
@@ -613,6 +616,7 @@
 <translation id="4779735050989188948">Manipulate settings that control websites' access to cookies, JavaScript, and plug-ins</translation>
 <translation id="168841957122794586">The server certificate contains a weak cryptographic key.</translation>
 <translation id="4181841719683918333">Languages</translation>
+<translation id="1758831820837444715">Configure Ethernet network</translation>
 <translation id="6535131196824081346">This error can occur when connecting to a secure (HTTPS) server. It
         means that the server is trying to set up a secure connection but, due to
         a disastrous misconfiguration, the connection wouldn't be secure at all!
@@ -686,6 +690,7 @@ All users must sign out to continue.</translation>
 <translation id="4869253927035988743">Enables directory support for sync filesystem.</translation>
 <translation id="611611105360092934">Enables accelerated compositing for scrollable frames.</translation>
 <translation id="1995173078718234136">Scanning content...</translation>
+<translation id="3530751398950974194">Update sync passphrase</translation>
 <translation id="5979681173469464041">Focus next pane</translation>
 <translation id="4735819417216076266">Space input style</translation>
 <translation id="220138918934036434">Hide button</translation>
@@ -921,9 +926,11 @@ All users must sign out to continue.</translation>
 <translation id="1725149567830788547">Show &amp;Controls</translation>
 <translation id="8216351761227087153">Watch</translation>
 <translation id="3066618299368568534">Clear cookies and other site and plug-in data when you quit your browser</translation>
+<translation id="805563736893476872">use your microphone.</translation>
 <translation id="3528033729920178817">This page is tracking your location.</translation>
 <translation id="1774367687019337077">Allows the user to request tablet site. Web content is often optimised for tablet devices. When this option is selected the user agent string is changed to indicate a tablet device. Web content optimised for tablets is received there after for the current tab.</translation>
 <translation id="5518584115117143805">Email Encryption Certificate</translation>
+<translation id="7318394916728052423">fully control your MIDI devices.</translation>
 <translation id="9203398526606335860">&amp;Profiling enabled</translation>
 <translation id="4307281933914537745">Learn more about system recovery</translation>
 <translation id="2849936225196189499">Critical</translation>
@@ -1103,6 +1110,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY"/> may come in handy next time.</tra
 <translation id="3798449238516105146">Version</translation>
 <translation id="3608576286259426129">User image preview</translation>
 <translation id="5764483294734785780">Sa&amp;ve audio as...</translation>
+<translation id="3034071689579835976">This site would like to:</translation>
 <translation id="5252456968953390977">Roaming</translation>
 <translation id="8744641000906923997">Romaji</translation>
 <translation id="348620396154188443">Allow all sites to show desktop notifications</translation>
@@ -1119,6 +1127,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY"/> may come in handy next time.</tra
 <translation id="5956585768868398362">Is this the search page that you were expecting?</translation>
 <translation id="2103460544384441978">Proceed at your own risk</translation>
 <translation id="939736085109172342">New folder</translation>
+<translation id="5182671122927417841">Disable extension</translation>
 <translation id="4242577469625748426">Failed to install policy settings on the device: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="8165208966034452696"><ph name="PLUGIN_NAME"/></translation>
 <translation id="4933484234309072027">embedded on <ph name="URL"/></translation>
@@ -1328,7 +1337,6 @@ Calculating remaining time</translation>
 <translation id="7541121857749629630">Image exceptions</translation>
 <translation id="9033857511263905942">&amp;Paste</translation>
 <translation id="1028690605877243613">Use the alternative shelf layout.</translation>
-<translation id="7928256373967083114">Disable App Launcher sync.</translation>
 <translation id="6736045498964449756">Whoops, passwords do not match!</translation>
 <translation id="1221825588892235038">Selection only</translation>
 <translation id="5582883434676861778"><ph name="PRODUCT_NAME"/> has blocked access to <ph name="HOST_NAME"/>. This website has been reported as a phishing website.</translation>
@@ -1715,6 +1723,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="7784067724422331729">Security settings on your computer blocked this file.</translation>
 <translation id="3822265067668554284">Do not allow any site to track your physical location</translation>
 <translation id="2758939858455657368">Subsequent notifications, windows and dialogues may be split between desktops.</translation>
+<translation id="8143602169284966549">use your device's location.</translation>
 <translation id="4181898366589410653">No revocation mechanism found in the server's certificate.</translation>
 <translation id="1515163294334130951">Launch</translation>
 <translation id="6914291514448387591"><ph name="PLUGIN_NAME"/> needs your permission to run.</translation>
@@ -1867,6 +1876,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="1410616244180625362">Continue allowing <ph name="HOST"/> to access your camera</translation>
 <translation id="8494214181322051417">New!</translation>
 <translation id="1745087082567737511">Activate launcher item 1</translation>
+<translation id="2937174152333875430">Enable App Launcher sync</translation>
 <translation id="2386255080630008482">Server's certificate has been revoked</translation>
 <translation id="1586260122947707821">Disable Quickoffice component extension</translation>
 <translation id="6365411474437319296">Add family and friends</translation>
@@ -1889,6 +1899,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="1278049586634282054">Inspect views:</translation>
 <translation id="3254434849914415189">Choose the default app for <ph name="FILE_TYPE"/> files:</translation>
 <translation id="4991420928586866460">Treat top-row keys as function keys</translation>
+<translation id="4350019051035968019">This device cannot be enrolled to the domain that your account belongs to because the device is marked for management by a different domain.</translation>
 <translation id="3699624789011381381">Email address</translation>
 <translation id="5275799318132317934">In this case, the certificate presented to your browser has been revoked by its issuer. This usually means that the integrity of this certificate has been compromised and that the certificate should not be trusted.</translation>
 <translation id="7970236555047307207">Public suffix domain matching for autofill of passwords.</translation>
@@ -2011,6 +2022,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="7772127298218883077">About <ph name="PRODUCT_NAME"/></translation>
 <translation id="2090876986345970080">System security setting</translation>
 <translation id="3728067901555601989">OTP:</translation>
+<translation id="3565831235433694786">Enable D3D11</translation>
 <translation id="3475447146579922140">Google spreadsheet</translation>
 <translation id="6856526171412069413">Enable pinch scale.</translation>
 <translation id="9219103736887031265">Images</translation>
@@ -2141,7 +2153,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="313407085116013672">Because <ph name="IDS_SHORT_PRODUCT_OS_NAME"/> securely encrypts all your local data, you must enter the old password now to unlock that data.</translation>
 <translation id="3551320343578183772">Close Tab</translation>
 <translation id="3345886924813989455">No supported browser found</translation>
-<translation id="5921853983939304988">Disable App Launcher folders.</translation>
 <translation id="3712897371525859903">Save page &amp;as...</translation>
 <translation id="4572659312570518089">Authentication cancelled while connecting to &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="4925542575807923399">The administrator for this account requires this account to be the first signed-in account in a multiple sign-in session.</translation>
@@ -2159,6 +2170,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2007404777272201486">Report an Issue...</translation>
 <translation id="4366509400410520531">Allowed by you</translation>
 <translation id="2218947405056773815">Rats! <ph name="API_NAME"/> hit a snag.</translation>
+<translation id="6797509194603611336">open all <ph name="PROTOCOL"/> links instead of <ph name="REPLACED_HANDLER_TITLE"/>?</translation>
 <translation id="1783075131180517613">Please update your sync passphrase.</translation>
 <translation id="1601560923496285236">Apply</translation>
 <translation id="2390045462562521613">Forget this network</translation>
@@ -2199,6 +2211,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="7548916768233393626">Force high DPI mode</translation>
 <translation id="33562952999632466">DevTools requests full access to <ph name="FOLDER_PATH"/>.
 Make sure that you do not expose any sensitive information.</translation>
+<translation id="2725200716980197196">Network connectivity restored</translation>
 <translation id="7019805045859631636">Fast</translation>
 <translation id="4880520557730313061">Auto-fix</translation>
 <translation id="6122589160611523048">Phishing Ahead!</translation>
@@ -2246,6 +2259,7 @@ Make sure that you do not expose any sensitive information.</translation>
 <translation id="8758455334359714415">Built-in Asynchronous DNS</translation>
 <translation id="5585912436068747822">Formatting failed</translation>
 <translation id="8766796754185931010">Kotoeri</translation>
+<translation id="6357619544108132570">Welcome to the <ph name="SHORT_PRODUCT_NAME"/> family. This is no ordinary computer.</translation>
 <translation id="3359256513598016054">Certificate Policy Constraints</translation>
 <translation id="4433914671537236274">Create Recovery Media</translation>
 <translation id="4165327781976388410"><ph name="BEGIN_BOLD"/>You've gone incognito.<ph name="END_BOLD"/>
@@ -2348,6 +2362,7 @@ Make sure that you do not expose any sensitive information.</translation>
 <translation id="3897224341549769789">Enables</translation>
 <translation id="4648491805942548247">Insufficient permissions</translation>
 <translation id="1183083053288481515">Using an administrator-provided certificate</translation>
+<translation id="7513664956626906164">show desktop notifications</translation>
 <translation id="6231782223312638214">Suggested</translation>
 <translation id="8302838426652833913">Go to
           <ph name="BEGIN_BOLD"/>
@@ -2456,7 +2471,6 @@ Make sure that you do not expose any sensitive information.</translation>
 <translation id="59174027418879706">Enabled</translation>
 <translation id="4194415033234465088">Dachen 26</translation>
 <translation id="8725798467599003282">Enables the Passwords Bubble. The Passwords Bubble provides an easy way to store and manage passwords for a website. It replaced the infobad for saving passwords.</translation>
-<translation id="8800004011501252845">Showing destinations for</translation>
 <translation id="3554751249011484566">The following details will be shared with <ph name="SITE"/></translation>
 <translation id="872537912056138402">Croatian</translation>
 <translation id="6639554308659482635">SQLite memory</translation>
@@ -2651,6 +2665,7 @@ Make sure that you do not expose any sensitive information.</translation>
 <translation id="2580093683987647761">Please call (866) 628-1371 (US), (866) 628-1372 (Canada) or 0800 026 0613 (UK) to request your free replacement charger.</translation>
 <translation id="3996912167543967198">Resetting...</translation>
 <translation id="8006846872564153081">Disable packaged app shortcuts.</translation>
+<translation id="7509822997156351101">Modify your accessibility settings</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="1541724327541608484">Check the spelling of text fields</translation>
 <translation id="8637688295594795546">System update available. Preparing to download…</translation>
@@ -2670,6 +2685,7 @@ Make sure that you do not expose any sensitive information.</translation>
 <translation id="3714633008798122362">web calendar</translation>
 <translation id="3251759466064201842">&lt;Not Part Of Certificate&gt;</translation>
 <translation id="6186096729871643580">LCD text anti-aliasing</translation>
+<translation id="3882882270042324158">Enable Script Injection For Accessibility.</translation>
 <translation id="7303492016543161086">Show accessibility options in the system menu</translation>
 <translation id="6410257289063177456">Image Files</translation>
 <translation id="6419902127459849040">Central European</translation>
@@ -2907,7 +2923,6 @@ Make sure that you do not expose any sensitive information.</translation>
 <translation id="7260002739296185724">Enable AVFoundation use for video capture and video device monitoring on OS X &gt;= 10.7. QTKit will be used otherwise.</translation>
 <translation id="1463985642028688653">block</translation>
 <translation id="1715941336038158809">Invalid user name or password.</translation>
-<translation id="9162797315375836845">Disable App Launcher sync</translation>
 <translation id="1901303067676059328">Select &amp;all</translation>
 <translation id="8230667681230828532">Enable multiprofiles mode.</translation>
 <translation id="674375294223700098">Unknown server certificate error.</translation>
@@ -3170,6 +3185,7 @@ Make sure that you do not expose any sensitive information.</translation>
 <translation id="3700834376805760154">The identity of <ph name="ORGANIZATION"/> at <ph name="LOCALITY"/> has been verified by <ph name="ISSUER"/> and is publicly auditable.</translation>
 <translation id="436701661737309601">For a certificate which has not expired, the issuer of that certificate is responsible for maintaining something called a &quot;revocation list&quot;. If a certificate is ever compromised, the issuer can revoke it by adding it to the revocation list and then this certificate will no longer be trusted by your browser. Revocation status is not required to be maintained for expired certificates, so while this certificate used to be valid for the website you're visiting, at this point it is not possible to determine whether the certificate was compromised and subsequently revoked, or whether it remains secure. As such, it is impossible to tell whether you're communicating with the legitimate website or whether the certificate was compromised and is now in the possession of an attacker with whom you are communicating.</translation>
 <translation id="4342311272543222243">Oops, TPM error.</translation>
+<translation id="3727884750434605207">Enable script injection instead of native Android accessibility.</translation>
 <translation id="1285484354230578868">Store data in your Google Drive account</translation>
 <translation id="7106346894903675391">Buy more storage...</translation>
 <translation id="994289308992179865">&amp;Loop</translation>
@@ -3707,6 +3723,7 @@ Make sure that you do not expose any sensitive information.</translation>
 <translation id="5321676762462132688">If enabled, Settings will be shown in a dedicated window instead of as a browser tab.</translation>
 <translation id="8986494364107987395">Automatically send usage statistics and crash reports to Google</translation>
 <translation id="2377619091472055321">Reset Altered <ph name="IDS_SHORT_PRODUCT_NAME"/> Settings</translation>
+<translation id="4062251648694601778">Enjoy your <ph name="SHORT_PRODUCT_NAME"/> device. Questions? You can always get help by clicking the &quot;?&quot; in the status tray.</translation>
 <translation id="7070714457904110559">Enables experimental extensions to the geolocation feature. Includes using operating system location APIs (where available) and sending additional local network configuration data to the Google location service to provide higher accuracy positioning.</translation>
 <translation id="6701535245008341853">Could not get profile.</translation>
 <translation id="8303655282093186569">Pinyin Input Settings</translation>
@@ -3931,6 +3948,7 @@ Make sure that you do not expose any sensitive information.</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="2375701438512326360">Force touchscreen support to always be enabled or disabled, or to be enabled when a touchscreen is detected on startup (Automatic, the default).</translation>
 <translation id="3665842570601375360">Security:</translation>
+<translation id="2487925617007598659">permanently store data on your device.</translation>
 <translation id="8812832766208874265">Keep using <ph name="CURRENT_GOOGLE_HOST"/></translation>
 <translation id="5699533844376998780">The extension &quot;<ph name="EXTENSION_NAME"/>&quot; has been installed.</translation>
 <translation id="4522331920508731608">Manage galleries</translation>
@@ -4335,6 +4353,7 @@ Make sure that you do not expose any sensitive information.</translation>
 <translation id="4104163789986725820">E&amp;xport...</translation>
 <translation id="9022026332614591902">Pop-ups blocked (<ph name="POP_UP_COUNT"/>)</translation>
 <translation id="380408572480438692">Enabling collection of performance data will help Google improve the system over time. No data is sent until you file a feedback report (Alt-Shift-I) and include performance data. You can return to this screen to disable collection at any time.</translation>
+<translation id="3654045516529121250">Read your accessibility settings</translation>
 <translation id="2113479184312716848">Open &amp;File...</translation>
 <translation id="884264119367021077">Delivery address</translation>
 <translation id="8405710043622376215">In omnibox autocomplete, reorder suggestions in HistoryQuickProvider to make an inlineable one appear first.</translation>
@@ -4624,6 +4643,7 @@ Make sure that you do not expose any sensitive information.</translation>
 <translation id="2335676733040881300">There was a problem downloading this feature.</translation>
 <translation id="5023310440958281426">Check your administrator's policies</translation>
 <translation id="8931394284949551895">New devices</translation>
+<translation id="4105880234226240143">use your camera and microphone.</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="4253787465144837701">The server certificate contains a domain name that shouldn't be there.</translation>
 <translation id="5563986351966648191">Improve malware detection by sending additional data to Google when I encounter warnings like this. <ph name="PRIVACY_PAGE_LINK"/></translation>
@@ -4860,6 +4880,7 @@ Calculating time until full</translation>
 <translation id="8940081510938872932">Your computer is doing too many things right now.  Try again later.</translation>
 <translation id="8848709220963126773">Shift-key mode switch</translation>
 <translation id="3703445029708071516">Enable syncing typed URLs</translation>
+<translation id="6316806695097060329">This <ph name="SHORT_PRODUCT_NAME"/> device was designed to deliver the best experience of the web to you.</translation>
 <translation id="8828933418460119530">DNS Name</translation>
 <translation id="988159990683914416">Developer Build</translation>
 <translation id="1097658378307015415">Before signing in, please enter as Guest to activate the network <ph name="NETWORK_ID"/></translation>
@@ -4932,7 +4953,6 @@ Press any key to continue exploring.</translation>
 <translation id="5830720307094128296">Save Page &amp;As...</translation>
 <translation id="2448312741937722512">Types</translation>
 <translation id="2568958845983666692">Kilobytes</translation>
-<translation id="1870677474902800104">Enabling this option prevents the user from creating and managing folders in App Launcher.</translation>
 <translation id="5209320130288484488">No devices found</translation>
 <translation id="473221644739519769">Adding your printers to Google Cloud Print allows you to print from
           anywhere, to anywhere. Share your printers with whoever you choose and
@@ -5143,6 +5163,7 @@ Press any key to continue exploring.</translation>
 <translation id="8248821880964244299">Do you really want to delete this application?</translation>
 <translation id="6845038076637626672">Open Maximised</translation>
 <translation id="3184560914950696195">Cannot save to $1. Edited images will be saved in the Downloads folder.</translation>
+<translation id="8366396658833131068">Your network connectivity is restored. Please select a different network or press 'Continue' button below to launch your kiosk app.</translation>
 <translation id="4664482161435122549">PKCS No.12 Export Error</translation>
 <translation id="2445081178310039857">Extension root directory is required.</translation>
 <translation id="146187176629751223">A participant in this hangout has offered to help you by controlling your computer. If you accept:

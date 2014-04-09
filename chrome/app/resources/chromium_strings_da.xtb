@@ -13,6 +13,7 @@
 <translation id="2770231113462710648">Skift standardbrowser til:</translation>
 <translation id="6613594504749178791">Dine ændringer træder i kraft, næste gang du genstarter Chromium.</translation>
 <translation id="9089354809943900324">Chromium er forældet</translation>
+<translation id="59625444380784159">Oplysninger om dine kontaktpersoner kan hjælpe dig med at udfylde formularer hurtigere i Chromium.</translation>
 <translation id="3748537968684000502">Du får vist en sikker Chromium-side.</translation>
 <translation id="2077129598763517140">Brug hardwareacceleration, når det er muligt</translation>
 <translation id="1065672644894730302">Dine præferencer kan ikke læses. Visse funktioner er muligvis ikke tilgængelige, og ændringer af præferencer gemmes ikke.</translation>
@@ -238,7 +239,7 @@ Hvis du logger ind alligevel, flettes Chromium-oplysninger, som f.eks. bogmærke
 <translation id="5862307444128926510">Velkommen til Chromium</translation>
 <translation id="7318036098707714271">Din præferencefil er beskadiget eller ugyldig.
 
-Chromium kan ikke gendanne dine indstillinger.</translation>
+Chromium kan ikke gendanne dine præferencer.</translation>
 <translation id="6403826409255603130">Chromium er en webbrowser, der kører websider og applikationer med lynets hast. Den er hurtig, stabil og brugervenlig. Beskyttelse mod malware og phishing er indbygget i Chromium, så du kan søge mere sikkert på internettet.</translation>
 <translation id="9079155260087892529">Slet Chromium-bruger</translation>
 <translation id="4019464536895378627">Du forsøgte at oprette forbindelse til &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men serveren præsenterede et certifikat, der er udstedt af en enhed, som Chromium ikke har tillid til. Dette kan betyde, at serveren har genereret sine egne sikkerhedsoplysninger, som Chromium ikke kan benytte til at skaffe identitetsoplysninger, eller at en ondsindet person forsøger at opsnappe din kommunikation.</translation>

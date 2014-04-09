@@ -1701,15 +1701,15 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Denne innnstillingen må konfigureres med en nettadresse der <ph name="PRODUCT_OS_NAME"/> kan laste ned vilkårene. Vilkårene må være i ren tekst, levert som MIME-typen tekst/ren. Det er ikke tillatt med koding.</translation>
 <translation id="2623014935069176671">Vent på første brukeraktivitet</translation>
 <translation id="2660846099862559570">Aldri bruk mellomtjener</translation>
-<translation id="1956493342242507974">Konfigurer strømadministrering på påloggingssiden i <ph name="PRODUCT_OS_NAME"/>.
+<translation id="1956493342242507974">Konfigurer strømstrømstyring på påloggingssiden i <ph name="PRODUCT_OS_NAME"/>.
 
-      Med denne funksjonen kan du konfigurere hvordan <ph name="PRODUCT_OS_NAME"/> skal oppføre seg når det ikke har vært noen brukeraktivitet på en stund mens påloggingsskjermen vises. Funksjonen styrer flere innstillinger. For individuelle verdiområder og semantikk kan du se tilsvarende funksjoner som kontrollerer strømadministrering innad i økten. De eneste avvikene fra disse funksjonene er:
-      * Handlingene for inaktiv tilstand eller lukking av lokket, kan ikke innebære å avslutte økten.
+      Med denne planen kan du konfigurere hvordan <ph name="PRODUCT_OS_NAME"/> skal oppføre seg når det ikke har vært noen brukeraktivitet på en stund mens påloggingsskjermen vises. Planen styrer flere innstillinger. For verdiområder og semantikk for enkeltinnstillinger kan du se tilsvarende planer som kontrollerer strømstyring innad i økten. De eneste avvikene fra disse planene er:
+      * Handlingen for inaktiv tilstand eller lukking av lokket, kan ikke være å avslutte økten.
       * Standardhandlingen for inaktiv tilstand når nettstrøm brukes, er å slå av.
 
       Hvis en innstilling ikke angis, brukes en standardverdi.
 
-      Hvis denne funksjonen ikke angis, brukes standardverdiene for alle innstillinger.</translation>
+      Hvis denne planen ikke angis, brukes standardverdiene for alle innstillingene.</translation>
 <translation id="1435659902881071157">Nettverkskonfigurasjon på enhetsnivå</translation>
 <translation id="2131902621292742709">Forsinkelse for nedtonet skjerm når enheten kjører på batteristrøm</translation>
 <translation id="5781806558783210276">Angir hvor lenge brukeren kan være inaktiv før inaktivitetshandlingen blir utført når enheten kjører på batteristrøm.

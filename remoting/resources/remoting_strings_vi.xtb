@@ -16,6 +16,7 @@ trên Chrome</translation>
 <translation id="5397086374758643919">Trình gỡ cài đặt máy chủ Chrome Remote Desktop</translation>
 <translation id="3258789396564295715">Bạn có thể truy cập an toàn vào máy tính này bằng Chrome Remote Desktop.</translation>
 <translation id="5070121137485264635">Máy chủ lưu trữ từ xa yêu cầu bạn xác thực với một trang web của bên thứ ba. Để tiếp tục, bạn phải cấp cho Chrome Remote Desktop thêm quyền truy cập vào địa chỉ sau:</translation>
+<translation id="2124408767156847088">Truy cập máy tính an toàn từ thiết bị Android của bạn.</translation>
 <translation id="4808503597364150972">Vui lòng nhập mã PIN của bạn cho <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Kết nối từ xa cho máy tính này đã bị tắt.</translation>
 <translation id="8244400547700556338">Tìm hiểu cách thức.</translation>
@@ -31,6 +32,7 @@ trên Chrome</translation>
 <translation id="7868137160098754906">Hãy nhập mã PIN của bạn cho máy tính từ xa.</translation>
 <translation id="677755392401385740">Máy chủ đã khởi động cho người dùng: <ph name="HOST_USERNAME"/>.</translation>
 <translation id="8864965950780407789">Để sử dụng Kết nối từ xa trên Chrome, bạn phải cấp các quyền truy cập mở rộng cho máy tính của mình. Bạn chỉ phải thực hiện việc này một lần.</translation>
+<translation id="3197730452537982411">Máy tính từ xa</translation>
 <translation id="8355326866731426344">Mã truy cập này sẽ hết hạn sau <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">Tác giả Chromium</translation>
 <translation id="2498359688066513246">Trợ giúp và phản hồi</translation>
@@ -61,6 +63,14 @@ trên Chrome</translation>
 <translation id="174018511426417793">Bạn chưa đăng ký máy tính nào. Để bật kết nối từ xa với một máy tính, hãy cài đặt Chrome Remote Desktop trên máy tính đó và nhấp “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="9126115402994542723">Không yêu cầu lại mã PIN khi kết nối với máy chủ này từ thiết bị này.</translation>
 <translation id="253387295088602549">Cho phép người dùng khác truy cập máy tính của bạn một cách an toàn qua Internet.</translation>
+<translation id="1300633907480909701">Truy cập máy tính an toàn từ thiết bị Android của bạn.
+
+• Trên mỗi máy tính của bạn, hãy thiết lập truy cập từ xa sử dụng ứng dụng Chrome Remote Desktop từ Cửa hàng Chrome trực tuyến: https://chrome.google.com/remotedesktop
+• Trên thiết bị Android của bạn, hãy mở ứng dụng và nhấn vào bất kỳ máy tính trực tuyến nào của bạn để kết nối.
+
+Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể nhận được phương thức nhập văn bản không chính xác. Sắp có hỗ trợ bố cục bàn phím khác!
+
+Để biết thông tin về bảo mật, hãy xem Chính sách bảo mật của Google (http://goo.gl/SyrVzj) và Chính sách bảo mật của Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="629730747756840877">Tài khoản</translation>
 <translation id="8525306231823319788">Toàn màn hình</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (lỗi thời)</translation>
@@ -115,6 +125,12 @@ trên Chrome</translation>
 <translation id="5773590752998175013">Ngày ghép nối</translation>
 <translation id="5265129178187621741">(tính năng này chưa khả dụng đối với Chromebook… hãy chú ý theo dõi)</translation>
 <translation id="5156271271724754543">Vui lòng nhập cùng một mã PIN vào cả hai hộp.</translation>
+<translation id="2118549242412205620">Truy cập máy tính an toàn từ thiết bị Android của bạn.
+
+• Trên mỗi máy tính của bạn, hãy thiết lập truy cập từ xa sử dụng ứng dụng Chrome Remote Desktop từ Cửa hàng Chrome trực tuyến: https://chrome.google.com/remotedesktop
+• Trên thiết bị Android của bạn, hãy mở ứng dụng và nhấn vào bất kỳ máy tính trực tuyến nào của bạn để kết nối.
+
+Để biết thông tin về bảo mật, hãy xem Chính sách bảo mật của Google (http://goo.gl/SyrVzj) và Chính sách bảo mật của Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="4361728918881830843">Để bật kết nối từ xa với một máy tính khác, hãy cài đặt Chrome Remote Desktop trên máy tính đó và nhấp “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="7444276978508498879">Ứng dụng khách đã kết nối: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="4913529628896049296">đang đợi kết nối…</translation>
@@ -173,6 +189,7 @@ Remote Desktop</translation>
 <translation id="5308380583665731573">Kết nối</translation>
 <translation id="7319983568955948908">Ngừng chia sẻ</translation>
 <translation id="6681800064886881394">Bản quyền 2013 Google Inc. Mọi quyền được bảo lưu.</translation>
+<translation id="8038108135592087998">Lần phát hành đầu tiên của Chrome Remote Desktop dành cho Android.</translation>
 <translation id="6668065415969892472">Mã PIN của bạn đã được cập nhật.</translation>
 <translation id="4513946894732546136">Phản hồi</translation>
 <translation id="4277736576214464567">Mã truy cập không hợp lệ. Vui lòng thử lại.</translation>

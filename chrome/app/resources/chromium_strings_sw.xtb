@@ -13,6 +13,7 @@
 <translation id="2770231113462710648">Badilisha kivinjari chaguo msingi kiwe:</translation>
 <translation id="6613594504749178791">Mabadiliko yako yataanza kufanya kazi wakati ujao utakapozindua upya Chromium.</translation>
 <translation id="9089354809943900324">Chromium imepitwa na wakati</translation>
+<translation id="59625444380784159">Maelezo kutoka kwa anwani zako yanaweza kukusaidia kujaza fomu kwa haraka zaidi katika Chromium.</translation>
 <translation id="3748537968684000502">Unatazama ukurasa salama wa Chromium.</translation>
 <translation id="2077129598763517140">Tumia uongezaji kasi wa maunzi wakati unapatikana</translation>
 <translation id="1065672644894730302">Mapendeleo yako hayawezi kusomwa.
@@ -60,7 +61,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="466053073629175099">Sasa umeingia katika Chromium! Alamisho zako, historia, na mipangilio mingine italandanishwa kwenye Akunti yako ya Google.</translation>
 <translation id="3849925841547750267">Cha kusikitisha, mipangilio yako ya Mozilla Firefox haipatikani kivinjari hicho kinapoendesha. Ili kuleta mipangilio hiyo kwenye Chromium, hifadhi kazi yako na ufunge madirisha yote ya Firefox. Kisha bofya Endelea.</translation>
 <translation id="7771626876550251690">Katika hali hii, anwani iliyoorodheshwa katika cheti hailingani na anwani ya tovuti ambayo kivinjari chako kilijaribu kwenda kwacho. Sababu moja inayowezekana kwa jambo hili ni kwamba mawasiliano yako yanakatizwa na mshambulizi anayewasilisha cheti cha  tovuti tofauti, kinachoweza kusababisha kutolingana. Sabau nyingine inayowezekana ni kuwa seva imesanidiwa kurejesha cheti kicho hicho kwenye tovuti mbalimbali, ikiwa ni pamoja na ile unayojaribu kutembelea, hata ingawa cheti hicho si halali kwa tovuti hizo zote. Chromium inaweza kusema kuwa kwa kweli ulifika &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, lakini haiwezi kuthibitisha kuwa hiyo ni tovuti sawa na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; uliyonuia kufikia. Ukiendelea, Chromium haitakagua kutolingana kokote zaidi kwa jina.</translation>
-<translation id="7027298027173928763">Chromium haikuweza kupata toleo jipya, hivyo unakosa vipengele vipya vizuri na marekebisho ya usalama. Unahitaji kusakinisha Chromium tena mwenyewe.</translation>
+<translation id="7027298027173928763">Chromium haikuweza kupata toleo jipya, kwa hivyo unakosa vipengele vipya vizuri na marekebisho ya usalama. Unahitaji kusakinisha Chromium tena mwenyewe.</translation>
 <translation id="8897323336392112261">Pia inadhibiti ukurasa unaoonyeshwa unapoanzisha Chromium au unapobofya kitufe cha Mwanzo.</translation>
 <translation id="4330585738697551178">Kijenzi hiki kinajulikana kwa kuwa na ukinzani na Chromium.</translation>
 <translation id="3190315855212034486">Lo! Chromium imevurugika. Unataka kuzindua upya sasa?</translation>
@@ -82,7 +83,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="7463979740390522693">Chromium - Arifa (<ph name="QUANTITY"/> hazijasomwa)</translation>
 <translation id="4345520932254577235">Karibu kwenye Chromium yako. Angalia hapa baadaye ili:</translation>
 <translation id="225614027745146050">Karibu</translation>
-<translation id="5823381412099532241">Chromium haikuweza kupata toleo jipya, hivyo unakosa vipengele vipya vizuri na marekebisho ya usalama. Unahitaji kupata toleo jipya la Chromium.</translation>
+<translation id="5823381412099532241">Chromium haikuweza kupata toleo jipya, kwa hivyo unakosa vipengele vipya vizuri na marekebisho ya usalama. Unahitaji kupata toleo jipya la Chromium.</translation>
 <translation id="9191268552238695869">Msimamizi amesakinisha Chromium kwenye mfumo, na inapatikana kwa watumiaji wote. Chromium ya kiwango cha mfumo itabadilisha usakinishaji wa kiwango cha mtumiaji sasa.</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Tafadhali funga madirisha yote ya Chromium na ujaribu tena.</translation>
@@ -99,7 +100,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="7707841053049645517">Tovuti hii inatumia programu jalizi ya Fremu ya Chromium ambayo haitaweza kutumika hivi karibuni. Tafadhali isanidue na upate toleo jipya la kivinjari cha kisasa.</translation>
 <translation id="7338384957110970244">Chromium haikuweza kuunda njia mkato ya programu.</translation>
 <translation id="3656661827369545115">Fungua Chromium kiotomatiki kompyuta yako inapowashwa</translation>
-<translation id="2241627712206172106">Kama unashiriki kompyuta, marafiki na familia wanaweza kuvinjari tofauti na kusanidi Chromium wanavyotaka.</translation>
+<translation id="2241627712206172106">Kama unatumia kompyuta pamoja na wengine, marafiki na familia wanaweza kuvinjari tofauti na kusanidi Chromium jinsi wapendavyo.</translation>
 <translation id="6055895534982063517">Kuna toleo jipya la Chromium linalopatikana, na ni la kasi kuliko la awali.</translation>
 <translation id="8821041990367117597">Chromium haikuweza kusawazisha data yako kwa sababu maelezo yako ya kuingia katika akaunti yamemalizika muda.</translation>
 <translation id="4677944499843243528">Wasifu unaonekana kuwa unatumika na mchakato mwingine wa Chromium (<ph name="PROCESS_ID"/>) kwenye kompyuta nyingine (<ph name="HOST_NAME"/>). Chromium imefunga wasifu huu ili usifisidiwe. Kama una uhakika hakuna michakato mingine inatumia wasifu huu, unaweza kufungua wasifu na uzindue tena Chromium.</translation>
@@ -125,7 +126,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="6734080038664603509">Sasisha &amp;Chromium</translation>
 <translation id="8862326446509486874">Huna haki zifaazo ili kufanya usakinishaji wa kiwango cha mfumo. Jaribu kutumia kisakinishi kama msimamiaji kompyuta.</translation>
 <translation id="2535480412977113886">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako kwa sababu maelezo yako ya kuingia katika akaunti yanahitaji kusasishwa.</translation>
-<translation id="8697124171261953979">Pia inadhibiti ukurasa unaoonyeshwa unapoanzisha Chromium au unapotafuta kutoka Sanduku kuu.</translation>
+<translation id="8697124171261953979">Pia inadhibiti ukurasa unaoonyeshwa unapoanzisha Chromium au unapotafuta kutoka Sanduku Kuu.</translation>
 <translation id="894903460958736500">Programu unayotumia kwenye kompyuta haioani na Chromium.</translation>
 <translation id="1774152462503052664">Acha Chromium iendeshe katika mandharinyuma</translation>
 <translation id="9022552996538154597">Ingia kwenye Chromium</translation>
@@ -202,7 +203,7 @@ Baadhi ya vipengele huenda visipatikane. Tafadhali bainisha saraka tofauti ya wa
 <translation id="6424492062988593837">Chromium imekuwa bora! Toleo jipya linapatikana.</translation>
 <translation id="811857857463334932">Kompyuta hii haitapokea tena sasisho za Chromium kwa sababu maunzi yake hayatumiki tena.</translation>
 <translation id="2910007522516064972">Kuhusu Chromium</translation>
-<translation id="1800685724563744906">Unatumia <ph name="PROFILE_EMAIL"/> kusawazisha mambo yako ya Chromium. Kusasisha mapendeleo yako ya usawazishaji au kutumia Chromium bila akaunti ya Google, tembelea mipangilio.</translation>
+<translation id="1800685724563744906">Unatumia <ph name="PROFILE_EMAIL"/> kusawazisha vitu vyako ya Chromium. Ili kusasisha mapendeleo yako ya usawazishaji au kutumia Chromium bila akaunti ya Google, tembelea mipangilio.</translation>
 <translation id="8453117565092476964">Kumbukumbu ya kisakinishi imeharibika au ni batili. Tafadhali pakua Chromium tena.</translation>
 <translation id="6763060723530774166">Ili kutumia kizinduzi cha programu, lazima uzindue upya Chromium kwenye eneo-kazi.</translation>
 <translation id="3889543394854987837">Bofya jina lako ili ufungue Chromium na uanze kuvinjari.</translation>

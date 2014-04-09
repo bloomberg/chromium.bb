@@ -642,7 +642,7 @@ Mpangilio huu umeondolewa kutoka Chrome 29 na matoleo mapya.</translation>
 
  Kuweka hii ikiwa imewashwa husababisha Chrome kusubiri muda mfupi zaidi kwa seva za WPAD zinazotegemea DNS. 
 
-Sera hii isipoweka, hii itawashwa na mtumiaji hataweza kuibadilisha.</translation>
+Sera hii isipoweka, mpangilio huu utawashwa na mtumiaji hataweza kuibadilisha.</translation>
 <translation id="6376842084200599664">Inakuruhusu kubainisha orodha ya viendelezi ambavyo vitasakinishwa kimya kimya, bila uchachawizaji wa mtumiaji.
 
           Kila kipengee cha orodha ni mtungo ambao una Utambulisho endelezi na URL ya usasishaji iliyotenganishwa kwa  nukta mkato (<ph name="SEMICOLON"/>). Utambulisho endelezi ni mtungo wa herufi 32 inayopatikana k.m. kwenye <ph name="CHROME_EXTENSIONS_LINK"/> wakati uko kwenye modi ya msanidi programu. URL ya usasishaji inafaa kuonyesha hati ya Dhihirisho ya Usasishaji wa XML kama ilivyofafanuliwa katika <ph name="LINK_TO_EXTENSION_DOC1"/>. Kumbuka kuwa URL sasishi iliyowekwa kwenye sera hii inatumika tu kwa usakinishaji wa kwanza; sasisho zinazofuata za kiendelezi zitatumia URL ya usasishaji iliyoonyeshwa kwenye dhihirisho la kiendelezi.
@@ -1796,9 +1796,9 @@ Sera hii ikiwekwa kuwa sivyo au isiwekwe, kibodi itatoa amri za vitufe vya media
 <translation id="2660846099862559570">Usitumie proksi kamwe</translation>
 <translation id="1956493342242507974">Sanidi usimamizi wa nishati kwenye skrini ya kuingia katika akaunti ya <ph name="PRODUCT_OS_NAME"/>. 
 
-Sera hii hukuruhusu kusanidi jinsi <ph name="PRODUCT_OS_NAME"/> hufanya kazi kunapokuwa hakuna shughuli ya mtumiaji kwa muda wakati skrini ya kuingia katika akaunti ikiwa inaonyeshwa. Sera hii hudhibiti mipangilio mingi. Kwa vigezo maalum na mfululizo wa thamani, tazama sera zinazoendana ambazo hudhibiti usimamizi wa nishati wakati wa kipindi. Tofauti pekee zilizoko kutoka kwenye sera hizi ni:
+Sera hii hukuruhusu kusanidi jinsi <ph name="PRODUCT_OS_NAME"/> hufanya kazi kunapokuwa hakuna shughuli ya mtumiaji kwa muda huku skrini ya kuingia katika akaunti ikiwa inaonyeshwa. Sera hii hudhibiti mipangilio mingi. Kwa vigezo maalum na mfululizo wa thamani, tazama sera zinazolingana ambazo hudhibiti usimamizi wa nishati wakati wa kipindi. Tofauti za pekee zilizoko kwenye sera hizi ni:
 * Vitendo vya kuchukua wakati haifanyi kitu au kifuniko kimefunikwa haviwezi kuwa kumaliza kipindi  
-* Kitendo chaguo-msingi cha kuchukua wakati haifanyi kitu inapoendeshwa kutumia nishati ya AC ni kuzima.
+* Kitendo chaguo-msingi cha kuchukua wakati kifaa hakifanyi kitu kinapoendeshwa kutumia nishati ya AC ni kuzima.
 
 Kama mpangilio usipobainishwa, thamani chaguo-msingi inatumika.
 

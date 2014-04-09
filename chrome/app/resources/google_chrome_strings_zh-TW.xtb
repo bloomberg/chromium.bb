@@ -20,7 +20,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="2144822863799338346">歡迎使用 Chrome！您可以回到這個畫面執行以下操作：</translation>
 <translation id="1225016890511909183">Chrome 會妥善保存您的資訊，讓您日後付款時不必再重新輸入。不過，您仍然必需驗證驗證信用卡安全碼。</translation>
 <translation id="2770231113462710648">將預設瀏覽器變更為：</translation>
-<translation id="8838365799985821335">擴充功能已變更您啟動 Chrome 時顯示的網頁。</translation>
+<translation id="8838365799985821335">擴充功能已變更 Chrome 啟動時所顯示的網頁。</translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="1065672644894730302">系統無法讀取您的偏好設定。部分功能可能無法使用，且系統也不會儲存任何偏好設定的變更。</translation>
 <translation id="7781002470561365167">Google Chrome 已推出新版。</translation>
@@ -142,6 +142,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="1140117203923356735"><ph name="FILE_NAME"/> 會擅自變更某些設定 (類似部分惡意軟體的行為模式)，因此已遭到 Chrome 封鎖。</translation>
 <translation id="5941830788786076944">使用 Google Chrome 做為我的預設瀏覽器</translation>
+<translation id="1759301979429102118">利用您的通訊錄詳細資料，快速在 Chrome 中填寫表單。</translation>
 <translation id="7787950393032327779">另一台電腦 (<ph name="HOST_NAME"/>) 的 Google Chrome 處理程序 (<ph name="PROCESS_ID"/>) 正在使用這個設定檔。Chrome 已鎖定此設定檔，確保其不致受損。如果您確定其他處理程序目前未使用此設定檔，請予以解除鎖定，然後重新啟動 Chrome。</translation>
 <translation id="1469002951682717133">Chrome 應用程式啟動器</translation>
 <translation id="8568392309447938879">您必須登入 Chrome 才能使用應用程式。在登入狀態下，Chrome 可同步處理您在多個裝置上的應用程式、書籤、紀錄、密碼和其他設定。</translation>
@@ -184,14 +185,14 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="576822117893741893">顯示 Chrome 選單</translation>
 <translation id="338432196642384904">刪除 Chrome 使用者</translation>
 <translation id="3444832043240812445">如果您<ph name="BEGIN_LINK"/>啟用當機報告功能<ph name="END_LINK"/>，這個頁面僅會顯示最近的當機資訊。</translation>
-<translation id="4566427205701379461">您正在使用 <ph name="PROFILE_EMAIL"/> 同步處理您的 Chrome 資料。如要更新您的偏好設定，或是在未登入 Google 帳戶的情況下使用 Chrome，請前往 [設定]。</translation>
+<translation id="4566427205701379461">您正在使用 <ph name="PROFILE_EMAIL"/> 帳戶同步處理您的 Chrome 資料。如要更新您的偏好設定，或是在未登入 Google 帳戶的情況下使用 Chrome，請前往 [設定]。</translation>
 <translation id="8614913330719544658">Google Chrome 沒有回應，要立即重新啟動嗎？</translation>
 <translation id="2681064822612051220">系統在安裝 Google Chrome 時發生衝突問題，請先解除安裝，然後再試一次。</translation>
 <translation id="1175529839152551794">您已成功登入 Chrome，現在可以使用您在筆電、手機和平板電腦中的分頁、書籤和其他 Chrome 設定。此外，您將收到更多 Google 服務的相關建議和功能。</translation>
 <translation id="6126631249883707068">您希望 Google Chrome 儲存密碼嗎？</translation>
 <translation id="7773845170078702898">您要讓 Google Chrome 儲存您在這個網站的密碼嗎？</translation>
 <translation id="4251615635259297716">要將您的 Chrome 資料連結至這個帳戶嗎？</translation>
-<translation id="7125719106133729027">由於 Chrome 無法更新至最新版本，您現在無法使用各種最新功能和安全性修正。請手動重新安裝 Chrome。</translation>
+<translation id="7125719106133729027">由於 Chrome 無法更新至最新版本，您現在無法使用各種最新功能和安全性修正。請以人工方式重新安裝 Chrome。</translation>
 <translation id="5940385492829620908">您瀏覽的網頁、書籤和其他 Chrome 設定都在這裡。</translation>
 <translation id="5788515153694509397">刪除受管理的 Chrome 使用者</translation>
 <translation id="8865765905101981392">網際網路瀏覽器</translation>
@@ -224,7 +225,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="1061257178446858647">您現在已登入 Chrome！系統會將您的書籤、紀錄和其他設定同步處理至 Google 帳戶。</translation>
 <translation id="3335672657969596251">Google Chrome 不支援 <ph name="OS_NAME"/>。</translation>
 <translation id="4458285410772214805">請先登出，然後重新登入，這項變更才會生效。</translation>
-<translation id="8679801911857917785">這個擴充功能也會控制您啟動 Chrome 時顯示的網頁。</translation>
+<translation id="8679801911857917785">這個擴充功能也會控管 Chrome 啟動時所顯示的網頁。</translation>
 <translation id="5334545119300433702">已知這個模組與 Google Chrome 衝突。</translation>
 <translation id="4407807842708586359">Google Chrome 作業系統</translation>
 <translation id="6634887557811630702">Google Chrome 目前是最新版本。</translation>
@@ -239,7 +240,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="2246246234298806438">缺乏內建的 PDF 檢視器時，Google Chrome 無法顯示列印預覽。</translation>
 <translation id="6626317981028933585">抱歉，我們無法在 Mozilla Firefox 執行時取得其設定。如果要將這些設定匯入到 Google Chrome，請儲存您的工作，並關閉所有 Firefox 視窗。然後按一下 [繼續]。</translation>
 <translation id="7242029209006116544">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chrome 設定檔。您的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME"/> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。如要另行保留現有的 Chromium 資料，您可以選擇建立新的設定檔。<ph name="LEARN_MORE"/></translation>
-<translation id="5386244825306882791">這個擴充功能也會控制您啟動 Chrome 或使用網址列搜尋時顯示的網頁。</translation>
+<translation id="5386244825306882791">這個擴充功能也會控管 Chrome 啟動時或您使用網址列搜尋時所顯示的網頁。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR"/> Google Inc. 版權所有。</translation>
 <translation id="1698376642261615901">Google Chrome 瀏覽器開啟網頁和執行應用程式的速度奇快無比！除了執行速度迅速、穩定且容易使用之外，內建防護機制還可讓您安心瀏覽網頁，無需擔心受到網路釣魚與惡意軟體的威脅。</translation>
@@ -249,7 +250,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="4338032231047635328">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但是伺服器提供的憑證含有錯誤資訊。Google Chrome 無法使用含有錯誤資訊的憑證，也無法驗證您要連結的網站的身分。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3836351788193713666">即將更新成最新版本！重新啟動 Google Chrome，即可完成更新程序。</translation>
-<translation id="884296878221830158">這個擴充功能也會控制您啟動 Chrome 或點選 [首頁] 按鈕時顯示的網頁。</translation>
+<translation id="884296878221830158">這個擴充功能也會控管 Chrome 啟動時或您點選 [首頁] 按鈕時所顯示的網頁。</translation>
 <translation id="7106741999175697885">工作管理員 - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome 正從 <ph name="BROWSER_COMPONENT"/> 匯入下列項目:</translation>
 <translation id="3396977131400919238">安裝過程中發生作業系統錯誤，請再次下載 Google Chrome。</translation>

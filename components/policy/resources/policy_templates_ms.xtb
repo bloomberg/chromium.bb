@@ -1811,7 +1811,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Dasar ini membolehkan anda mengkonfigurasikan cara <ph name="PRODUCT_OS_NAME"/> bertingkah laku apabila tiada aktiviti pengguna untuk suatu tempoh masa semasa skrin log masuk ditunjukkan. Dasar ini mengawal berbilang tetapan. Untuk setiap semantik dan julat nilai, lihat dasar sepadan yang mengawal pengurusan kuasa dalam sesi. Satu-satunya penyimpangan daripada dasar ini ialah:
       * Tindakan yang diambil semasa melahu atau penutup ditutup tidak boleh menamatkan sesi.
-      * Tindakan lalai yang diambil apabila melahu semasa dijalankan pada kuasa AC adalah menutup.
+      * Tindakan lalai yang diambil apabila melahu semasa dijalankan pada kuasa AC ialah menutup.
 
       Jika tetapan dibiarkan tanpa ditentukan, nilai lalai akan digunakan.
 

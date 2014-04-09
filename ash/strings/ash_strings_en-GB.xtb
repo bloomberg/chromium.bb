@@ -81,6 +81,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="3892641579809465218">Internal Display</translation>
 <translation id="7823564328645135659">The language has changed from &quot;<ph name="FROM_LOCALE"/>&quot; to &quot;<ph name="TO_LOCALE"/>&quot; after syncing your settings.</translation>
 <translation id="3368922792935385530">Connected</translation>
+<translation id="3606978283550408104">Braille display connected.</translation>
 <translation id="8654520615680304441">Turn Wi-Fi on...</translation>
 <translation id="6650933572246256093">Bluetooth device &quot;<ph name="DEVICE_NAME"/>&quot; would like permission to pair. Please enter this passkey on that device: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>

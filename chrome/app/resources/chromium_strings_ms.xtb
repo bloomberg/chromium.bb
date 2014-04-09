@@ -13,6 +13,7 @@
 <translation id="2770231113462710648">Tukar penyemak imbas lalai kepada:</translation>
 <translation id="6613594504749178791">Perubahan anda akan dilaksanakan apabila anda melancarkan semula Chromium pada masa hadapan.</translation>
 <translation id="9089354809943900324">Chromium sudah usang</translation>
+<translation id="59625444380784159">Butiran daripada kenalan anda dapat membantu anda mengisi borang dengan lebih cepat di Chromium.</translation>
 <translation id="3748537968684000502">Anda melihat halaman Chromium yang selamat.</translation>
 <translation id="2077129598763517140">Gunakan pecutan perkakasan apabila tersedia</translation>
 <translation id="1065672644894730302">Pilihan anda tidak dapat dibaca. Beberapa ciri mungkin tidak tersedia dan perubahan terhadap pilihan tidak akan disimpan.</translation>
@@ -115,7 +116,7 @@
 <translation id="5358375970380395591">Anda log masuk menggunakan akaun yang terurus dan memberikan pentadbirnya kawalan ke atas profil Chromium anda. Data Chromium anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME"/> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Mulakan Chromium</translation>
 <translation id="9036189287518468038">Pelancar Apl Chromium</translation>
-<translation id="8493179195440786826">Chromium Usang</translation>
+<translation id="8493179195440786826">Chromium sudah usang</translation>
 <translation id="911206726377975832">Padamkan juga data menyemak imbas anda?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> menghendaki anda membaca dan menerima Syarat Perkhidmatan berikut sebelum menggunakan peranti ini. Syarat ini tidak meluaskan, mengubah suai atau mengehadkan Syarat OS Chromium.</translation>
 <translation id="5603085937604338780">chromium</translation>
@@ -156,7 +157,7 @@
 <translation id="5398878173008909840">Terdapat versi baharu Chromium tersedia.</translation>
 <translation id="2648074677641340862">Ralat sistem pengendalian berlaku semasa pemasangan. Sila muat turun Chromium semula.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> telah ditambahkan pada Chromium.</translation>
-<translation id="377819400056480591">Untuk mengalih keluar akaun anda, Chromium perlu dimulakan semula. Pastikan anda telah menyimpan sebarang kerja yang terbuka sebelum meneruskan.</translation>
+<translation id="377819400056480591">Untuk mengalih keluar akaun anda, Chromium perlu dimulakan semula. Pastikan anda telah menyimpan yang sedang dilaksanakan sebelum meneruskan.</translation>
 <translation id="4559775032954821361">Pergi ke
           menu Chromium &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -203,7 +204,7 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="6424492062988593837">Chromium telah dipertingkatkan! Versi baharu kini boleh didapati.</translation>
 <translation id="811857857463334932">Komputer ini akan menerima kemas kini Chromium lagi kerana perkakasan komputer ini tidak lagi disokong.</translation>
 <translation id="2910007522516064972">Mengenai &amp;Chromium</translation>
-<translation id="1800685724563744906">Anda menggunakan <ph name="PROFILE_EMAIL"/> untuk menyegerakkan bahan Chromium anda. Untuk mengemas kini pilihan penyegerakan anda atau menggunakan Chromium tanpa akaun Google, lawati tetapan.</translation>
+<translation id="1800685724563744906">Anda menggunakan <ph name="PROFILE_EMAIL"/> untuk menyegerakkan bahan digital Chromium anda. Untuk mengemas kini pilihan penyegerakan anda atau menggunakan Chromium tanpa akaun Google, lawati tetapan.</translation>
 <translation id="8453117565092476964">Arkib pemasang rosak atau tidak sah. Sila muat turun Chromium sekali lagi.</translation>
 <translation id="6763060723530774166">Untuk menggunakan pelancar apl, anda hendaklah melancarkan semula Chromium pada desktop.</translation>
 <translation id="3889543394854987837">Klik nama anda untuk membuka Chromium dan mula menyemak imbas.</translation>

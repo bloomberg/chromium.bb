@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="8588878054171169263">Simpan gambar</translation>
+<translation id="4996978546172906250">Bagikan melalui</translation>
 <translation id="5578795271662203820">Telusuri <ph name="SEARCH_ENGINE"/> untuk gambar ini</translation>
 <translation id="6831043979455480757">Boleh</translation>
 <translation id="7644305409888602715">Menerjemahkan laman ke <ph name="SOURCE_LANGUAGE"/>...</translation>
@@ -42,6 +43,7 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="4195643157523330669">Buka di tab baru</translation>
 <translation id="3089395242580810162">Buka di tab penyamaran</translation>
 <translation id="8725066075913043281">Coba lagi</translation>
+<translation id="8909135823018751308">Bagikan...</translation>
 <translation id="4269820728363426813">Salin alamat tautan</translation>
 <translation id="4510973599275542560">Jangan muat ulang</translation>
 <translation id="1206892813135768548">Salin teks tautan</translation>
@@ -57,6 +59,7 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="4881695831933465202">Buka</translation>
 <translation id="6512448926095770873">Keluar dari Laman</translation>
 <translation id="7947953824732555851">Terima dan masuk</translation>
+<translation id="6333140779060797560">Bagikan melalui <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="969096075394517431">Ubah bahasa</translation>
 <translation id="5032574515228824816">Meminta</translation>
