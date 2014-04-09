@@ -28414,6 +28414,167 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="UpdateEngine.SuccessfulUpdate.AttemptCount" units="count">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The total number of update attempts required to update the device.
+
+    This is reported on every successful update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.SuccessfulUpdate.BytesDownloadedMiB" units="MiB">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The total number of bytes downloaded in mebibytes (1048576 bytes) using all
+    available sources (e.g. HTTP, HTTPS, HTTP Peer).
+
+    This is reported on every successful update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.SuccessfulUpdate.BytesDownloadedMiBHttpPeer"
+    units="MiB">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The total number of bytes downloaded in mebibytes (1048576 bytes) using HTTP
+    from a local peer.
+
+    This is reported on every successful update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.SuccessfulUpdate.BytesDownloadedMiBHttpServer"
+    units="MiB">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The total number of bytes downloaded in mebibytes (1048576 bytes) using
+    HTTP.
+
+    This is reported on every successful update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.SuccessfulUpdate.BytesDownloadedMiBHttpsServer"
+    units="MiB">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The total number of bytes downloaded in mebibytes (1048576 bytes) using
+    HTTPS.
+
+    This is reported on every successful update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.SuccessfulUpdate.DownloadOverheadPercentage"
+    units="%">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The ratio between bytes downloaded and payload size minus 100.
+
+    This is reported on every successful update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.SuccessfulUpdate.DownloadSourcesUsed"
+    enum="UpdateEngineDownloadSources">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The various download sources used - this is a combination of the values
+    &quot;HTTPS Server&quot;, &quot;HTTP Server&quot; and &quot;HTTP Peer&quot;.
+
+    This is reported on every successful update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.SuccessfulUpdate.PayloadSizeMiB" units="MiB">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The size of the payload, in mebibytes (1048576 bytes).
+
+    This is reported on every successful update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.SuccessfulUpdate.PayloadType"
+    enum="UpdateEnginePayloadFormat">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The payload type (&quot;Delta&quot;, &quot;Full&quot;,
+    &quot;ForcedFull&quot;) used.
+
+    This is reported on every successful update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.SuccessfulUpdate.RebootCount" units="count">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The total number of reboots during the update.
+
+    This is reported on every successful update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.SuccessfulUpdate.TotalDurationMinutes"
+    units="minutes">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The total number of minutes from when an update was detected until an update
+    (possibly another update) was applied. This includes the time waiting for
+    update checks and time the device spent sleeping.
+
+    This is reported on every successful update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.SuccessfulUpdate.UpdatesAbandonedCount"
+    units="count">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The total number of updates that were abandoned since the last successful
+    update.
+
+    This is reported on every successful update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.SuccessfulUpdate.UrlSwitchCount" units="count">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The total number of times the URL was switched (from e.g. HTTPS to HTTP)
+    because of failures.
+
+    This is reported on every successful update.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
 <histogram name="UpdateEngine.TimeToRebootMinutes" units="minutes">
   <owner>zeuthen@chromium.org</owner>
   <summary>
