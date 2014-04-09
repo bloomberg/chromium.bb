@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/platform_file.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "extensions/common/extension.h"
@@ -55,7 +55,7 @@ class ZipFileCreator : public content::UtilityProcessHostClient {
   void OpenFileHandleOnBlockingThreadPool();
 
   // Starts the utility process that creates the zip file.
-  void StartProcessOnIOThread(base::PlatformFile dest_file);
+  void StartProcessOnIOThread(base::File dest_file);
 
   // UtilityProcessHostClient
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

@@ -70,12 +70,10 @@ void ZipFileCreator::OnProcessCrashed(int exit_code) {
 
 void ZipFileCreator::OpenFileHandleOnBlockingThreadPool() {
   // Create the destination zip file only if it does not already exist.
-  int flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE;
-  base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
-  base::PlatformFile dest_file =
-      base::CreatePlatformFile(dest_file_, flags, NULL, &error_code);
+  base::File dest_file(dest_file_,
+                       base::File::FLAG_CREATE | base::File::FLAG_WRITE);
 
-  if (error_code != base::PLATFORM_FILE_OK) {
+  if (!dest_file.IsValid()) {
     LOG(ERROR) << "Failed to create dest zip file " << dest_file_.value();
 
     BrowserThread::GetMessageLoopProxyForThread(thread_identifier_)->PostTask(
@@ -86,13 +84,12 @@ void ZipFileCreator::OpenFileHandleOnBlockingThreadPool() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ZipFileCreator::StartProcessOnIOThread, this, dest_file));
+      base::Bind(&ZipFileCreator::StartProcessOnIOThread, this,
+                 Passed(&dest_file)));
 }
 
-void ZipFileCreator::StartProcessOnIOThread(base::PlatformFile dest_file) {
-  base::FileDescriptor dest_fd;
-  dest_fd.fd = dest_file;
-  dest_fd.auto_close = true;
+void ZipFileCreator::StartProcessOnIOThread(base::File dest_file) {
+  base::FileDescriptor dest_fd(dest_file.Pass());
 
   UtilityProcessHost* host = UtilityProcessHost::Create(
       this,
