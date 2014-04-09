@@ -249,7 +249,7 @@ err_allocs:
 }
 
 int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
-                 uint8_t bpp, uint32_t pitch, uint32_t bo_handle,
+		 uint8_t bpp, uint32_t pitch, uint32_t bo_handle,
 		 uint32_t *buf_id)
 {
 	struct drm_mode_fb_cmd f;
@@ -374,7 +374,7 @@ drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 }
 
 int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
-                   uint32_t x, uint32_t y, uint32_t *connectors, int count,
+		   uint32_t x, uint32_t y, uint32_t *connectors, int count,
 		   drmModeModeInfoPtr mode)
 {
 	struct drm_mode_crtc crtc;
