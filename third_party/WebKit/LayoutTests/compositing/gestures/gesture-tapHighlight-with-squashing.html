@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  div {
+    border: black solid 1px;
+  }
+
+  .composited {
+    transform: translateZ(0);
+  }
+
+  .fixed {
+    position: fixed;
+    background-color: red;
+    width: 500px;
+    height: 500px;
+  }
+
+  .container {
+    overflow: scroll;
+    height: 200px;
+    background-color: gray;
+  }
+
+  .filler {
+    height: 800px;
+    width: 800px;
+    background-color: orange;
+  }
+
+  .target {
+    position: relative;
+    top: 80px;
+  }
+</style>
+
+<script>
+  if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+  }
+
+  if (window.internals) {
+    window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
+    window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
+    window.internals.settings.setCompositorDrivenAcceleratedScrollingEnabled(true);
+    window.internals.settings.setLayerSquashingEnabled(true);
+  }
+
+  function runTest() {
+    var clientRect = document.getElementById('targetLink').getBoundingClientRect();
+    x = (clientRect.left + clientRect.right) / 2;
+    y = (clientRect.top + clientRect.bottom) / 2;
+
+    if (window.eventSender) {
+      eventSender.gestureShowPress(x, y);
+      window.testRunner.notifyDone();
+    }
+  }
+
+  window.onload = runTest;
+</script>
+</head>
+<body>
+  <div class='fixed composited'></div>
+  <div class='container'>
+    <div class='composited'></div>
+    <div class='target'>
+      <a href='#' id='targetLink'>Target Link.</a>
+    </div>
+    <div class='filler'></div>
+  </div>
+
+  This test is successful if it doesn't crash.
+</body>
+</html>

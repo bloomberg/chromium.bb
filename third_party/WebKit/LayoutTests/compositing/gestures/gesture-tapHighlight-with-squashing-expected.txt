@@ -1,0 +1,2 @@
+Target Link.
+This test is successful if it doesn't crash.

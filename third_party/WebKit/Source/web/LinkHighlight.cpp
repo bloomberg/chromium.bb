@@ -127,13 +127,15 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
     if (!renderLayer || renderLayer->compositingState() == NotComposited)
         return 0;
 
-    GraphicsLayer* newGraphicsLayer = renderLayer->compositedLayerMapping()->mainGraphicsLayer();
+    CompositedLayerMappingPtr compositedLayerMapping = renderLayer->compositingState() == PaintsIntoGroupedBacking ? renderLayer->groupedMapping() : renderLayer->compositedLayerMapping();
+    GraphicsLayer* newGraphicsLayer = compositedLayerMapping->mainGraphicsLayer();
+
     m_clipLayer->setTransform(SkMatrix44());
 
     if (!newGraphicsLayer->drawsContent()) {
         if (renderLayer->scrollableArea() && renderLayer->scrollableArea()->usesCompositedScrolling()) {
             ASSERT(renderLayer->hasCompositedLayerMapping() && renderLayer->compositedLayerMapping()->scrollingContentsLayer());
-            newGraphicsLayer = renderLayer->compositedLayerMapping()->scrollingContentsLayer();
+            newGraphicsLayer = compositedLayerMapping->scrollingContentsLayer();
         }
     }
 
