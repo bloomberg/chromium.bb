@@ -4,7 +4,9 @@
 
 #include "net/cronet/android/url_request_context_peer.h"
 
+#include "base/file_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log_logger.h"
 #include "net/cert/cert_verifier.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
@@ -149,6 +151,7 @@ void URLRequestContextPeer::InitializeURLRequestContext() {
   storage->set_network_delegate(network_delegate);
 
   storage->set_host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
+  storage->set_net_log(new net::NetLog);
 
   net::ProxyConfigService* proxy_config_service =
       new net::ProxyConfigServiceFixed(net::ProxyConfig());
@@ -190,21 +193,26 @@ void URLRequestContextPeer::InitializeURLRequestContext() {
       new net::URLRequestJobFactoryImpl;
   storage->set_job_factory(job_factory);
 
-  context_.reset(context);
-
   if (VLOG_IS_ON(2)) {
-    context_->set_net_log(new net::NetLog);
-    netlog_observer_.reset(new NetLogObserver(logging_level_));
-    context_->net_log()->AddThreadSafeObserver(netlog_observer_.get(),
-                                               net::NetLog::LOG_ALL_BUT_BYTES);
+    net_log_observer_.reset(new NetLogObserver(logging_level_));
+    context->net_log()->AddThreadSafeObserver(net_log_observer_.get(),
+                                              net::NetLog::LOG_ALL_BUT_BYTES);
   }
+
+  context_.reset(context);
 
   net::HttpStreamFactory::EnableNpnSpdy31();
 
   delegate_->OnContextInitialized(this);
 }
 
-URLRequestContextPeer::~URLRequestContextPeer() {}
+URLRequestContextPeer::~URLRequestContextPeer() {
+  if (net_log_observer_) {
+    context_->net_log()->RemoveThreadSafeObserver(net_log_observer_.get());
+    net_log_observer_.reset();
+  }
+  StopNetLog();
+}
 
 const std::string& URLRequestContextPeer::GetUserAgent(const GURL& url) const {
   return user_agent_;
@@ -220,6 +228,28 @@ net::URLRequestContext* URLRequestContextPeer::GetURLRequestContext() {
 scoped_refptr<base::SingleThreadTaskRunner>
 URLRequestContextPeer::GetNetworkTaskRunner() const {
   return network_thread_->message_loop_proxy();
+}
+
+void URLRequestContextPeer::StartNetLogToFile(const std::string& file_name) {
+  // Do nothing if already logging to a file.
+  if (net_log_logger_)
+    return;
+
+  base::FilePath file_path(file_name);
+  FILE* file = base::OpenFile(file_path, "w");
+  if (!file)
+    return;
+
+  scoped_ptr<base::Value> constants(net::NetLogLogger::GetConstants());
+  net_log_logger_.reset(new net::NetLogLogger(file, *constants));
+  net_log_logger_->StartObserving(context_->net_log());
+}
+
+void URLRequestContextPeer::StopNetLog() {
+  if (net_log_logger_) {
+    net_log_logger_->StopObserving();
+    net_log_logger_.reset();
+  }
 }
 
 void NetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {

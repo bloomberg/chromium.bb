@@ -5,8 +5,10 @@
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/android/jni_string.h"
 #include "base/at_exit.h"
 #include "base/i18n/icu_util.h"
+#include "base/metrics/statistics_recorder.h"
 #include "jni/UrlRequestContext_jni.h"
 #include "net/android/net_jni_registrar.h"
 #include "net/cronet/android/org_chromium_net_UrlRequest.h"
@@ -128,6 +130,39 @@ static void ReleaseRequestContextPeer(JNIEnv* env,
   // URLRequestContextPeer is a ref-counted object, and may have pending tasks,
   // so we need to release it instead of deleting here.
   peer->Release();
+}
+
+// Starts recording statistics.
+static void InitializeStatistics(JNIEnv* env, jobject jcaller) {
+  base::StatisticsRecorder::Initialize();
+}
+
+// Gets current statistics with |filter| as a substring as JSON text (an empty
+// |filter| will include all registered histograms).
+static jstring GetStatisticsJSON(JNIEnv* env, jobject jcaller, jstring filter) {
+  std::string query = base::android::ConvertJavaStringToUTF8(env, filter);
+  std::string json = base::StatisticsRecorder::ToJSON(query);
+  return base::android::ConvertUTF8ToJavaString(env, json).Release();
+}
+
+// Starts recording NetLog into file with |fileName|.
+static void StartNetLogToFile(JNIEnv* env,
+                              jobject jcaller,
+                              jlong urlRequestContextPeer,
+                              jstring fileName) {
+  URLRequestContextPeer* peer =
+      reinterpret_cast<URLRequestContextPeer*>(urlRequestContextPeer);
+  std::string file_name = base::android::ConvertJavaStringToUTF8(env, fileName);
+  peer->StartNetLogToFile(file_name);
+}
+
+// Stops recording NetLog.
+static void StopNetLog(JNIEnv* env,
+                       jobject jcaller,
+                       jlong urlRequestContextPeer) {
+  URLRequestContextPeer* peer =
+      reinterpret_cast<URLRequestContextPeer*>(urlRequestContextPeer);
+  peer->StopNetLog();
 }
 
 }  // namespace net

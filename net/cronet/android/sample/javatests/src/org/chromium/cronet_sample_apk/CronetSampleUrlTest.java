@@ -8,6 +8,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 
+import java.io.File;
+
 /**
  * Example test that just starts the cronet sample.
  */
@@ -62,5 +64,26 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
         // Make sure that the URL is set as expected.
         assertEquals(URL, activity.getUrl());
         assertEquals(200, activity.getHttpStatusCode());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testNetLog() throws Exception {
+        CronetSampleActivity activity = launchCronetSampleWithUrl(
+                "127.0.0.1:8000");
+
+        // Make sure the activity was created as expected.
+        assertNotNull(activity);
+
+        waitForActiveShellToBeDoneLoading();
+        File file = File.createTempFile("cronet", "json");
+        activity.mRequestContext.startNetLogToFile(file.getPath());
+        activity.startWithURL_UrlRequest(URL);
+        Thread.sleep(5000);
+        activity.mRequestContext.stopNetLog();
+        assertTrue(file.exists());
+        assertTrue(file.length() != 0);
+        assertTrue(file.delete());
+        assertTrue(!file.exists());
     }
 }

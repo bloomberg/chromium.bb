@@ -5,6 +5,8 @@
 #ifndef NET_CRONET_ANDROID_URL_REQUEST_CONTEXT_PEER_H_
 #define NET_CRONET_ANDROID_URL_REQUEST_CONTEXT_PEER_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -14,6 +16,10 @@
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+
+namespace net {
+class NetLogLogger;
+}  // namespace net
 
 // Implementation of the Chromium NetLog observer interface.
 class NetLogObserver : public net::NetLog::ThreadSafeObserver {
@@ -61,6 +67,9 @@ class URLRequestContextPeer : public net::URLRequestContextGetter {
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const OVERRIDE;
 
+  void StartNetLogToFile(const std::string& file_name);
+  void StopNetLog();
+
  private:
   scoped_refptr<URLRequestContextPeerDelegate> delegate_;
   scoped_ptr<net::URLRequestContext> context_;
@@ -69,7 +78,8 @@ class URLRequestContextPeer : public net::URLRequestContextGetter {
   std::string user_agent_;
   base::Thread* network_thread_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  scoped_ptr<NetLogObserver> netlog_observer_;
+  scoped_ptr<NetLogObserver> net_log_observer_;
+  scoped_ptr<net::NetLogLogger> net_log_logger_;
 
   virtual ~URLRequestContextPeer();
 

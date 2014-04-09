@@ -190,7 +190,7 @@ public class CronetSampleActivity extends Activity {
         request.start();
     }
 
-    private void startWithURL_UrlRequest(String url) {
+    public void startWithURL_UrlRequest(String url) {
         Log.i(TAG, "Cronet started: " + url);
         mUrl = url;
         mLoading = true;
@@ -213,5 +213,13 @@ public class CronetSampleActivity extends Activity {
 
     public int getHttpStatusCode() {
         return mHttpStatusCode;
+    }
+
+    public void startNetLog() {
+        mRequestContext.startNetLogToFile("/sdcard/cronet_sample_netlog.json");
+    }
+
+    public void stopNetLog() {
+        mRequestContext.stopNetLog();
     }
 }
