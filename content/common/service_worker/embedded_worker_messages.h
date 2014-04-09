@@ -35,12 +35,20 @@ IPC_MESSAGE_CONTROL2(EmbeddedWorkerHostMsg_WorkerStarted,
 IPC_MESSAGE_CONTROL1(EmbeddedWorkerHostMsg_WorkerStopped,
                      int /* embedded_worker_id */)
 
-// Renderer ->Browser message to send message.
+// Renderer -> Browser message to send message.
 // |request_id| might be used for bi-directional messaging.
 IPC_MESSAGE_CONTROL3(EmbeddedWorkerHostMsg_SendMessageToBrowser,
                      int /* embedded_worker_id */,
                      int /* request_id */,
                      IPC::Message /* message */)
+
+// Renderer -> Browser message to report an exception.
+IPC_MESSAGE_CONTROL5(EmbeddedWorkerHostMsg_ReportException,
+                     int /* embedded_worker_id */,
+                     base::string16 /* error_message */,
+                     int /* line_number */,
+                     int /* column_number */,
+                     GURL /* source_url */)
 
 // ---------------------------------------------------------------------------
 // For EmbeddedWorkerContext related messages, which are directly sent from

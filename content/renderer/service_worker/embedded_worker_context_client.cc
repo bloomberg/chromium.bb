@@ -154,6 +154,16 @@ void EmbeddedWorkerContextClient::workerContextDestroyed() {
                  embedded_worker_id_));
 }
 
+void EmbeddedWorkerContextClient::reportException(
+    const blink::WebString& error_message,
+    int line_number,
+    int column_number,
+    const blink::WebString& source_url) {
+  sender_->Send(new EmbeddedWorkerHostMsg_ReportException(
+      embedded_worker_id_, error_message, line_number,
+      column_number, GURL(source_url)));
+}
+
 void EmbeddedWorkerContextClient::didHandleActivateEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {

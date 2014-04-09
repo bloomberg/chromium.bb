@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DISPATCHER_HOST_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/public/browser/browser_message_filter.h"
 
@@ -59,6 +60,11 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void OnSendMessageToBrowser(int embedded_worker_id,
                               int request_id,
                               const IPC::Message& message);
+  void OnReportException(int embedded_worker_id,
+                         const base::string16& error_message,
+                         int line_number,
+                         int column_number,
+                         const GURL& source_url);
   void OnPostMessage(int64 version_id,
                      const base::string16& message,
                      const std::vector<int>& sent_message_port_ids);

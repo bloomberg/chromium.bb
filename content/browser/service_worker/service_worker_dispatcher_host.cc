@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
@@ -100,6 +101,8 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnWorkerStopped)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_SendMessageToBrowser,
                         OnSendMessageToBrowser)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_ReportException,
+                        OnReportException)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -289,6 +292,18 @@ void ServiceWorkerDispatcherHost::OnSendMessageToBrowser(
     return;
   context_->embedded_worker_registry()->OnSendMessageToBrowser(
       embedded_worker_id, request_id, message);
+}
+
+void ServiceWorkerDispatcherHost::OnReportException(
+    int embedded_worker_id,
+    const base::string16& error_message,
+    int line_number,
+    int column_number,
+    const GURL& source_url) {
+  // TODO(horo, nhiroki): Show the error on serviceworker-internals
+  // (http://crbug.com/359517).
+  DVLOG(2) << "[Error] " << error_message << " (" << source_url
+           << ":" << line_number << "," << column_number << ")";
 }
 
 void ServiceWorkerDispatcherHost::UnregistrationComplete(
