@@ -30,7 +30,6 @@
 
 #include "platform/network/FormData.h"
 #include "platform/network/HTTPHeaderMap.h"
-#include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
@@ -210,10 +209,6 @@ public:
     TargetType targetType() const { return m_targetType; }
     void setTargetType(TargetType type) { m_targetType = type; }
 
-    bool cacheControlContainsNoCache();
-    bool cacheControlContainsNoStore();
-    bool hasCacheValidatorFields();
-
     static double defaultTimeoutInterval(); // May return 0 when using platform default.
     static void setDefaultTimeoutInterval(double);
 
@@ -243,7 +238,6 @@ private:
     RefPtr<ExtraData> m_extraData;
     TargetType m_targetType;
     ReferrerPolicy m_referrerPolicy;
-    CacheControlHeader m_cacheControlHeader;
 
     static double s_defaultTimeoutInterval;
 };

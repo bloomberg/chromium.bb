@@ -282,7 +282,7 @@ static double currentAge(const ResourceResponse& response, double responseTimest
     return correctedReceivedAge + residentTime;
 }
 
-static double freshnessLifetime(ResourceResponse& response, double responseTimestamp)
+static double freshnessLifetime(const ResourceResponse& response, double responseTimestamp)
 {
 #if !OS(ANDROID)
     // On desktop, local files should be reloaded in case they change.
@@ -311,7 +311,7 @@ static double freshnessLifetime(ResourceResponse& response, double responseTimes
     return 0;
 }
 
-static bool canUseResponse(ResourceResponse& response, double responseTimestamp)
+static bool canUseResponse(const ResourceResponse& response, double responseTimestamp)
 {
     if (response.isNull())
         return false;
@@ -493,7 +493,7 @@ void Resource::removeClient(ResourceClient* client)
         // "no-store: ... MUST make a best-effort attempt to remove the information from volatile storage as promptly as possible"
         // "... History buffers MAY store such responses as part of their normal operation."
         // We allow non-secure content to be reused in history, but we do not allow secure content to be reused.
-        if (hasCacheControlNoStoreHeader() && url().protocolIs("https")) {
+        if (response().cacheControlContainsNoStore() && url().protocolIs("https")) {
             memoryCache()->remove(this);
             memoryCache()->prune();
         } else {
@@ -742,35 +742,28 @@ void Resource::unregisterHandle(ResourcePtrBase* h)
     }
 }
 
-bool Resource::canReuseRedirectChain()
+bool Resource::canReuseRedirectChain() const
 {
     for (size_t i = 0; i < m_redirectChain.size(); ++i) {
         if (!canUseResponse(m_redirectChain[i].m_redirectResponse, m_responseTimestamp))
-            return false;
-        if (m_redirectChain[i].m_request.cacheControlContainsNoCache() || m_redirectChain[i].m_request.cacheControlContainsNoStore())
             return false;
     }
     return true;
 }
 
-bool Resource::hasCacheControlNoStoreHeader()
+bool Resource::mustRevalidateDueToCacheHeaders() const
 {
-    return m_response.cacheControlContainsNoStore() || m_resourceRequest.cacheControlContainsNoStore();
+    return !canUseResponse(m_response, m_responseTimestamp);
 }
 
-bool Resource::mustRevalidateDueToCacheHeaders()
-{
-    return !canUseResponse(m_response, m_responseTimestamp) || m_resourceRequest.cacheControlContainsNoCache() || m_resourceRequest.cacheControlContainsNoStore();
-}
-
-bool Resource::canUseCacheValidator()
+bool Resource::canUseCacheValidator() const
 {
     if (m_loading || errorOccurred())
         return false;
 
-    if (hasCacheControlNoStoreHeader())
+    if (m_response.cacheControlContainsNoStore())
         return false;
-    return m_response.hasCacheValidatorFields() || m_resourceRequest.hasCacheValidatorFields();
+    return m_response.hasCacheValidatorFields();
 }
 
 bool Resource::isPurgeable() const

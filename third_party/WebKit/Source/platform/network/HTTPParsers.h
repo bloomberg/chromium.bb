@@ -70,23 +70,6 @@ enum ReflectedXSSDisposition {
     BlockReflectedXSS
 };
 
-struct CacheControlHeader {
-    bool parsed : 1;
-    bool containsNoCache : 1;
-    bool containsNoStore : 1;
-    bool containsMustRevalidate : 1;
-    double maxAge;
-
-    CacheControlHeader()
-        : parsed(false)
-        , containsNoCache(false)
-        , containsNoStore(false)
-        , containsMustRevalidate(false)
-        , maxAge(0.0)
-    {
-    }
-};
-
 PLATFORM_EXPORT ContentDispositionType contentDispositionType(const String&);
 PLATFORM_EXPORT bool isValidHTTPHeaderValue(const String&);
 PLATFORM_EXPORT bool isValidHTTPToken(const String&);
@@ -99,7 +82,6 @@ PLATFORM_EXPORT void findCharsetInMediaType(const String& mediaType, unsigned& c
 PLATFORM_EXPORT ReflectedXSSDisposition parseXSSProtectionHeader(const String& header, String& failureReason, unsigned& failurePosition, String& reportURL);
 PLATFORM_EXPORT String extractReasonPhraseFromHTTPStatusLine(const String&);
 PLATFORM_EXPORT XFrameOptionsDisposition parseXFrameOptionsHeader(const String&);
-PLATFORM_EXPORT CacheControlHeader parseCacheControlDirectives(const AtomicString& cacheControlHeader, const AtomicString& pragmaHeader);
 
 // -1 could be set to one of the return parameters to indicate the value is not specified.
 PLATFORM_EXPORT bool parseRange(const String&, long long& rangeOffset, long long& rangeEnd, long long& rangeSuffixLength);
