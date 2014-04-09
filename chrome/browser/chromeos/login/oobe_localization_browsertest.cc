@@ -97,12 +97,12 @@ class OobeLocalizationTest : public InProcessBrowserTest {
   // Verifies that the comma-separated |values| corresponds with the first
   // values in |select_id|, optionally checking for an options group label after
   // the first set of options.
-  void VerifyInitialOptions(const char* select_id,
+  bool VerifyInitialOptions(const char* select_id,
                             const char* values,
                             bool check_separator);
 
   // Verifies that |value| exists in |select_id|.
-  void VerifyOptionExists(const char* select_id, const char* value);
+  bool VerifyOptionExists(const char* select_id, const char* value);
 
   // Dumps OOBE select control (language or keyboard) to string.
   std::string DumpOptions(const char* select_id);
@@ -132,7 +132,7 @@ OobeLocalizationTest::~OobeLocalizationTest() {
   system::StatisticsProvider::SetTestProvider(NULL);
 }
 
-void OobeLocalizationTest::VerifyInitialOptions(const char* select_id,
+bool OobeLocalizationTest::VerifyInitialOptions(const char* select_id,
                                                 const char* values,
                                                 bool check_separator) {
   const std::string expression = base::StringPrintf(
@@ -150,10 +150,12 @@ void OobeLocalizationTest::VerifyInitialOptions(const char* select_id,
       "    correct = select.children[values.length].tagName === 'OPTGROUP';\n"
       "  return correct;\n"
       "})()", select_id, values, check_separator);
-  ASSERT_TRUE(checker.GetBool(expression)) << expression;
+  const bool execute_status = checker.GetBool(expression);
+  EXPECT_TRUE(execute_status) << expression;
+  return execute_status;
 }
 
-void OobeLocalizationTest::VerifyOptionExists(const char* select_id,
+bool OobeLocalizationTest::VerifyOptionExists(const char* select_id,
                                               const char* value) {
   const std::string expression = base::StringPrintf(
       "(function () {\n"
@@ -166,7 +168,9 @@ void OobeLocalizationTest::VerifyOptionExists(const char* select_id,
       "  }\n"
       "  return false;\n"
       "})()", select_id, value);
-  ASSERT_TRUE(checker.GetBool(expression)) << expression;
+  const bool execute_status = checker.GetBool(expression);
+  EXPECT_TRUE(execute_status) << expression;
+  return execute_status;
 }
 
 std::string OobeLocalizationTest::DumpOptions(const char* select_id) {
@@ -193,6 +197,11 @@ std::string OobeLocalizationTest::DumpOptions(const char* select_id) {
       "    return result;\n"
       "  };\n"
       "  var result = '';\n"
+      "  if (select.selectedIndex != 0) {\n"
+      "    result += '(selectedIndex=' + select.selectedIndex + \n"
+      "        ', selected \"' + select.options[select.selectedIndex].value +\n"
+      "        '\")';\n"
+      "  }\n"
       "  var children = select.children;\n"
       "  for (var i = 0; i < children.length; i++) {\n"
       "    if (i > 0) {\n"
@@ -210,6 +219,23 @@ std::string OobeLocalizationTest::DumpOptions(const char* select_id) {
       "})()\n",
       select_id);
   return checker.GetString(expression);
+}
+
+std::string TranslateXKB2Extension(const std::string& src) {
+  std::string result(src);
+  if (!extension_ime_util::UseWrappedExtensionKeyboardLayouts())
+    return result;
+  // Modifies the expected keyboard select control options for the new
+  // extension based xkb id.
+  size_t pos = 0;
+  std::string repl_old = "xkb:";
+  std::string repl_new =
+      extension_ime_util::GetInputMethodIDByKeyboardLayout("xkb:");
+  while ((pos = result.find(repl_old, pos)) != std::string::npos) {
+    result.replace(pos, repl_old.length(), repl_new);
+    pos += repl_new.length();
+  }
+  return result;
 }
 
 void OobeLocalizationTest::RunLocalizationTest(
@@ -232,20 +258,8 @@ void OobeLocalizationTest::RunLocalizationTest(
       ->GetInputMethodUtil()
       ->InitXkbInputMethodsForTesting();
 
-  std::string expected_keyboard_select = expected_keyboard_select_control;
-  if (extension_ime_util::UseWrappedExtensionKeyboardLayouts()) {
-    // Modifies the expected keyboard select control options for the new
-    // extension based xkb id.
-    size_t pos = 0;
-    std::string repl_old = "xkb:";
-    std::string repl_new =
-        extension_ime_util::GetInputMethodIDByKeyboardLayout("xkb:");
-    while ((pos = expected_keyboard_select.find(repl_old, pos)) !=
-           std::string::npos) {
-      expected_keyboard_select.replace(pos, repl_old.length(), repl_new);
-      pos += repl_new.length();
-    }
-  }
+  const std::string expected_keyboard_select =
+      TranslateXKB2Extension(expected_keyboard_select_control);
 
   // Bring up the OOBE network screen.
   chromeos::ShowLoginWizard(chromeos::WizardController::kNetworkScreenName);
@@ -257,16 +271,25 @@ void OobeLocalizationTest::RunLocalizationTest(
                            chromeos::LoginDisplayHostImpl::default_host())->
                            GetOobeUI()->web_ui()->GetWebContents());
 
-  VerifyInitialOptions(kLocaleSelect, expected_locale.c_str(), true);
-  VerifyInitialOptions(kKeyboardSelect,
-                       extension_ime_util::GetInputMethodIDByKeyboardLayout(
-                           expected_keyboard_layout).c_str(),
-                       false);
+  if (!VerifyInitialOptions(kLocaleSelect, expected_locale.c_str(), true)) {
+    LOG(ERROR) << "Actual value of " << kLocaleSelect << ":\n"
+               << DumpOptions(kLocaleSelect);
+  }
+  if (!VerifyInitialOptions(
+          kKeyboardSelect,
+          TranslateXKB2Extension(expected_keyboard_layout).c_str(),
+          false)) {
+    LOG(ERROR) << "Actual value of " << kKeyboardSelect << ":\n"
+               << DumpOptions(kKeyboardSelect);
+  }
 
   // Make sure we have a fallback keyboard.
-  VerifyOptionExists(
-      kKeyboardSelect,
-      extension_ime_util::GetInputMethodIDByKeyboardLayout(kUSLayout).c_str());
+  if (!VerifyOptionExists(kKeyboardSelect,
+                          extension_ime_util::GetInputMethodIDByKeyboardLayout(
+                              kUSLayout).c_str())) {
+    LOG(ERROR) << "Actual value of " << kKeyboardSelect << ":\n"
+               << DumpOptions(kKeyboardSelect);
+  }
 
   // Note, that sort order is locale-specific, but is unlikely to change.
   // Especially for keyboard layouts.
@@ -333,6 +356,24 @@ IN_PROC_BROWSER_TEST_F(OobeLocalizationTest, NetworkScreenMultipleLocales) {
   RunLocalizationTest("ru,de", "xkb:ru::rus",
                       "ru,de", kUSLayout,
                       "xkb:us::eng");
+}
+
+IN_PROC_BROWSER_TEST_F(OobeLocalizationTest, NetworkScreenRegionalLocales) {
+  // Syntetic example to test correct merging of different locales.
+  RunLocalizationTest("fr-CH,it-CH,de-CH",
+                      "xkb:fr::fra,xkb:it::ita,xkb:de::ger",
+                      "fr-CH,it-CH,de-CH",
+                      "xkb:fr::fra",
+                      "xkb:fr::fra,xkb:it::ita,xkb:de::ger,["
+                          "xkb:be::fra,xkb:ca::fra,xkb:ch:fr:fra,"
+                          "xkb:ca:multix:fra,xkb:us::eng"
+                      "]");
+  // Another syntetic example. Check that british keyboard is available.
+  RunLocalizationTest("en-AU",
+                      "xkb:us::eng",
+                      "en-AU",
+                      "xkb:us::eng",
+                      "xkb:us::eng,[xkb:gb:extd:eng,xkb:gb:dvorak:eng]");
 }
 
 }  // namespace chromeos

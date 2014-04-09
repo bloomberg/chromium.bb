@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/customization_document.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
@@ -37,6 +39,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 
@@ -304,6 +307,12 @@ void StartupCustomizationDocument::Init(
                                            &keyboard_layout_);
   configured_locales_.resize(0);
   base::SplitString(initial_locale_, ',', &configured_locales_);
+
+  // Convert ICU locale to chrome ("en_US" to "en-US", etc.).
+  std::for_each(configured_locales_.begin(),
+                configured_locales_.end(),
+                l10n_util::GetCanonicalLocale);
+
   // Let's always have configured_locales_.front() a valid entry.
   if (configured_locales_.size() == 0)
     configured_locales_.push_back(std::string());

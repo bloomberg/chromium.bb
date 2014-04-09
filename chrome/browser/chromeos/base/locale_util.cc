@@ -64,7 +64,7 @@ void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
       input_method::InputMethodManager* manager =
           input_method::InputMethodManager::Get();
       manager->EnableLoginLayouts(
-          data->locale,
+          data->loaded_locale,
           manager->GetInputMethodUtil()->GetHardwareLoginInputMethodIds());
       if (!data->login_layouts_only) {
         // Enable all the other layouts
@@ -72,7 +72,9 @@ void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
         input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
         // Add input methods associated with the language.
         util->GetInputMethodIdsFromLanguageCode(
-            data->locale, input_method::kKeyboardLayoutsOnly, &candidates);
+            data->loaded_locale,
+            input_method::kKeyboardLayoutsOnly,
+            &candidates);
         for (std::vector<std::string>::const_iterator i = candidates.begin();
              i != candidates.end();
              ++i)

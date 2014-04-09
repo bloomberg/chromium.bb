@@ -72,6 +72,23 @@ void AddOptgroupOtherLayouts(base::ListValue* input_methods_list) {
   input_methods_list->Append(optgroup);
 }
 
+// For "UI Language" drop-down menu at OOBE screen we need to decide which
+// entry to mark "selected". If user has just selected "requested_locale",
+// but "loaded_locale" was actually loaded, we mark original user choice
+// "selected" only if loaded_locale is a backup for "requested_locale".
+std::string CalculateSelectedLanguage(const std::string& requested_locale,
+                                      const std::string& loaded_locale) {
+
+  std::string resolved_locale;
+  if (!l10n_util::CheckAndResolveLocale(requested_locale, &resolved_locale))
+    return loaded_locale;
+
+  if (resolved_locale == loaded_locale)
+    return requested_locale;
+
+  return loaded_locale;
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -116,6 +133,15 @@ void NetworkScreenHandler::Show() {
   if (!page_is_ready()) {
     show_on_init_ = true;
     return;
+  }
+
+  // Here we should handle default locales, for which we do not have UI
+  // resources. This would load fallback, but properly show "selected" locale
+  // in the UI.
+  if (selected_language_code_.empty()) {
+    const StartupCustomizationDocument* startup_manifest =
+        StartupCustomizationDocument::GetInstance();
+    HandleOnLanguageChanged(startup_manifest->initial_locale_default());
   }
 
   ShowScreen(OobeUI::kScreenOobeNetwork, NULL);
@@ -239,13 +265,25 @@ struct NetworkScreenHandlerOnLanguageChangedCallbackData {
 // static
 void NetworkScreenHandler::OnLanguageChangedCallback(
     scoped_ptr<NetworkScreenHandlerOnLanguageChangedCallbackData> context,
-    const std::string& /*requested locale*/,
-    const std::string& /*loaded_locale*/,
-    const bool /*success*/) {
+    const std::string& requested_locale,
+    const std::string& loaded_locale,
+    const bool success) {
   if (!context or !context->handler_)
     return;
 
   NetworkScreenHandler* const self = context->handler_.get();
+
+  if (success) {
+    if (requested_locale == loaded_locale) {
+      self->selected_language_code_ = requested_locale;
+    } else {
+      self->selected_language_code_ =
+          CalculateSelectedLanguage(requested_locale, loaded_locale);
+    }
+  } else {
+    self->selected_language_code_ = loaded_locale;
+  }
+
   self->ReloadLocalizedContent();
 
   AccessibilityManager::Get()->OnLocaleChanged();
@@ -374,7 +412,6 @@ bool NetworkScreenHandler::IsDerelict() {
   return time_on_oobe_ >= derelict_detection_timeout_;
 }
 
-// static
 base::ListValue* NetworkScreenHandler::GetLanguageList() {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   input_method::InputMethodManager* manager =
@@ -416,7 +453,13 @@ base::ListValue* NetworkScreenHandler::GetLanguageList() {
 
     language_info->SetString("value", value);
     language_info->SetString("title", display_name);
-    language_info->SetBoolean("selected", value == app_locale);
+    if (selected_language_code_.empty()) {
+      if (value == app_locale)
+        language_info->SetBoolean("selected", true);
+    } else {
+      if (value == selected_language_code_)
+        language_info->SetBoolean("selected", true);
+    }
   }
   return languages_list;
 }

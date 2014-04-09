@@ -96,7 +96,7 @@ class NetworkScreenHandler : public NetworkScreenActor,
 
   // Returns available languages. Caller gets the ownership. Note, it does
   // depend on the current locale.
-  static base::ListValue* GetLanguageList();
+  base::ListValue* GetLanguageList();
 
   // Returns available input methods. Caller gets the ownership. Note, it does
   // depend on the current locale.
@@ -137,6 +137,9 @@ class NetworkScreenHandler : public NetworkScreenActor,
   // True if should reinitialize language and keyboard list once the page
   // is ready.
   bool should_reinitialize_language_keyboard_list_;
+
+  // The exact language code selected by user in the menu.
+  std::string selected_language_code_;
 
   base::WeakPtrFactory<NetworkScreenHandler> weak_ptr_factory_;
 
