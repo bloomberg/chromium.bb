@@ -63,7 +63,7 @@ namespace WebCore {
         WrapperTypeExceptionPrototype
     };
 
-    enum WrappedObjectType {
+    enum GCType {
         GarbageCollectedObject,
         WillBeGarbageCollectedObject,
         RefCountedObject,
@@ -144,7 +144,7 @@ namespace WebCore {
         const InstallPerContextEnabledPrototypePropertiesFunction installPerContextEnabledMethodsFunction;
         const WrapperTypeInfo* parentClass;
         const WrapperTypePrototype wrapperTypePrototype;
-        const WrappedObjectType wrappedObjectType;
+        const GCType gcType;
     };
 
 
@@ -195,12 +195,12 @@ namespace WebCore {
     inline void releaseObject(v8::Handle<v8::Object> wrapper)
     {
         const WrapperTypeInfo* typeInfo = toWrapperTypeInfo(wrapper);
-        if (typeInfo->wrappedObjectType == GarbageCollectedObject) {
+        if (typeInfo->gcType == GarbageCollectedObject) {
             const PersistentNode* handle = toPersistentHandle(wrapper);
             // This will be null iff a wrapper for a hidden wrapper object,
             // see V8DOMWrapper::setNativeInfoForHiddenWrapper().
             delete handle;
-        } else if (typeInfo->wrappedObjectType == WillBeGarbageCollectedObject) {
+        } else if (typeInfo->gcType == WillBeGarbageCollectedObject) {
 #if ENABLE(OILPAN)
             const PersistentNode* handle = toPersistentHandle(wrapper);
             // This will be null iff a wrapper for a hidden wrapper object,

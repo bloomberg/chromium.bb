@@ -115,7 +115,7 @@ public:
        FIXME: Remove this internal field, and share one field for either:
        * a persistent handle (if the object is in oilpan) or
        * a C++ pointer to the DOM object (if the object is not in oilpan) #}
-    {% if not garbage_collection_type == 'RefCountedObject' %}
+    {% if not gc_type == 'RefCountedObject' %}
     static const int persistentHandleIndex = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
     {% set custom_internal_field_counter = custom_internal_field_counter + 1 %}
     {% endif %}

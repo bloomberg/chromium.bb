@@ -68,9 +68,9 @@ struct WrapperTypeInfo;
         ASSERT(object);
         ASSERT(wrapperTypeInfo);
 #if ENABLE(OILPAN)
-        ASSERT(wrapperTypeInfo->wrappedObjectType == RefCountedObject);
+        ASSERT(wrapperTypeInfo->gcType == RefCountedObject);
 #else
-        ASSERT(wrapperTypeInfo->wrappedObjectType == RefCountedObject || wrapperTypeInfo->wrappedObjectType == WillBeGarbageCollectedObject);
+        ASSERT(wrapperTypeInfo->gcType == RefCountedObject || wrapperTypeInfo->gcType == WillBeGarbageCollectedObject);
 #endif
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, object);
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(wrapperTypeInfo));
@@ -83,9 +83,9 @@ struct WrapperTypeInfo;
         ASSERT(object);
         ASSERT(wrapperTypeInfo);
 #if ENABLE(OILPAN)
-        ASSERT(wrapperTypeInfo->wrappedObjectType != RefCountedObject);
+        ASSERT(wrapperTypeInfo->gcType != RefCountedObject);
 #else
-        ASSERT(wrapperTypeInfo->wrappedObjectType == RefCountedObject || wrapperTypeInfo->wrappedObjectType == WillBeGarbageCollectedObject);
+        ASSERT(wrapperTypeInfo->gcType == RefCountedObject || wrapperTypeInfo->gcType == WillBeGarbageCollectedObject);
 #endif
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, object);
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(wrapperTypeInfo));
@@ -98,7 +98,7 @@ struct WrapperTypeInfo;
         ASSERT(wrapper->InternalFieldCount() >= 3);
         ASSERT(object);
         ASSERT(wrapperTypeInfo);
-        ASSERT(wrapperTypeInfo->wrappedObjectType != RefCountedObject);
+        ASSERT(wrapperTypeInfo->gcType != RefCountedObject);
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, object);
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(wrapperTypeInfo));
         // Persistent handle is stored in the last internal field.
@@ -110,7 +110,7 @@ struct WrapperTypeInfo;
         ASSERT(wrapper->InternalFieldCount() >= 2);
         ASSERT(wrapperTypeInfo);
         // clearNativeInfo() is used only by NP objects, which are not garbage collected.
-        ASSERT(wrapperTypeInfo->wrappedObjectType == RefCountedObject);
+        ASSERT(wrapperTypeInfo->gcType == RefCountedObject);
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(wrapperTypeInfo));
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, 0);
     }

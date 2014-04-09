@@ -130,9 +130,9 @@ def generate_interface(interface):
 
     # [WillBeGarbageCollected]
     if 'WillBeGarbageCollected' in extended_attributes:
-        garbage_collection_type = 'WillBeGarbageCollectedObject'
+        gc_type = 'WillBeGarbageCollectedObject'
     else:
-        garbage_collection_type = 'RefCountedObject'
+        gc_type = 'RefCountedObject'
 
     # [Custom=Wrap], [SetWrapperReferenceFrom]
     has_visit_dom_wrapper = (
@@ -143,7 +143,7 @@ def generate_interface(interface):
     template_contents = {
         'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class': cpp_name(interface),
-        'garbage_collection_type': garbage_collection_type,
+        'gc_type': gc_type,
         'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
         'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
         'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]
@@ -160,9 +160,9 @@ def generate_interface(interface):
         'is_node': inherits_interface(interface.name, 'Node'),
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'parent_interface': parent_interface,
-        'pass_ref_ptr': cpp_ptr_type('PassRefPtr', 'RawPtr', garbage_collection_type),
+        'pass_ref_ptr': cpp_ptr_type('PassRefPtr', 'RawPtr', gc_type),
         'reachable_node_function': reachable_node_function,
-        'ref_ptr': cpp_ptr_type('RefPtr', 'RawPtr', garbage_collection_type),
+        'ref_ptr': cpp_ptr_type('RefPtr', 'RawPtr', gc_type),
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
         'set_wrapper_reference_to_list': set_wrapper_reference_to_list,
         'special_wrap_for': special_wrap_for,
