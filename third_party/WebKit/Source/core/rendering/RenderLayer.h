@@ -284,8 +284,8 @@ public:
     LayoutRect physicalBoundingBox(const RenderLayer* ancestorLayer, const LayoutPoint* offsetFromRoot = 0) const;
     LayoutRect physicalBoundingBoxIncludingReflectionAndStackingChildren(const RenderLayer* ancestorLayer, const LayoutPoint& offsetFromRoot) const;
 
-    // FIXME: It's likely this function should use physicalBoundingBox rather than logicalBoundingBox.
-    LayoutRect boundingBoxForCompositingOverlapTest() const { return overlapBoundsIncludeChildren() ? boundingBoxForCompositing(this) : logicalBoundingBox(); }
+    // FIXME: This function is inconsistent as to whether the returned rect has been flipped for writing mode.
+    LayoutRect boundingBoxForCompositingOverlapTest() const { return overlapBoundsIncludeChildren() ? boundingBoxForCompositing() : logicalBoundingBox(); }
 
     // If true, this layer's children are included in its bounds for overlap testing.
     // We can't rely on the children's positions if this layer has a filter that could have moved the children's pixels around.
@@ -295,7 +295,7 @@ public:
         ApplyBoundsChickenEggHacks,
         DoNotApplyBoundsChickenEggHacks,
     };
-    LayoutRect boundingBoxForCompositing(const RenderLayer* ancestorLayer, CalculateBoundsOptions = DoNotApplyBoundsChickenEggHacks) const;
+    LayoutRect boundingBoxForCompositing(const RenderLayer* ancestorLayer = 0, CalculateBoundsOptions = DoNotApplyBoundsChickenEggHacks) const;
 
     // WARNING: This method returns the offset for the parent as this is what updateLayerPositions expects.
     LayoutPoint computeOffsetFromRoot(bool& hasLayerOffset) const;

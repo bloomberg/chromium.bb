@@ -370,7 +370,7 @@ void CompositedLayerMapping::updateCompositedBounds(GraphicsLayerUpdater::Update
     // on whether or not descendands will paint into our backing). Update this value now.
     updateDrawsContent();
 
-    LayoutRect layerBounds = compositor()->calculateCompositedBounds(&m_owningLayer);
+    LayoutRect layerBounds = m_owningLayer.boundingBoxForCompositing();
 
     // Clip to the size of the document or enclosing overflow-scroll layer.
     // If this or an ancestor is transformed, we can't currently compute the correct rect to intersect with.
@@ -584,7 +584,7 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const IntPoint& delta)
 
     LayoutRect totalSquashBounds;
     for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
-        LayoutRect squashedBounds = compositor()->calculateCompositedBounds(m_squashedLayers[i].renderLayer);
+        LayoutRect squashedBounds = m_squashedLayers[i].renderLayer->boundingBoxForCompositing();
 
         // Store the local bounds of the RenderLayer subtree before applying the offset.
         m_squashedLayers[i].compositedBounds = squashedBounds;

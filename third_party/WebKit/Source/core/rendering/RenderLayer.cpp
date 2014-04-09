@@ -3448,6 +3448,9 @@ LayoutRect RenderLayer::boundingBoxForCompositing(const RenderLayer* ancestorLay
     if (!isSelfPaintingLayer())
         return LayoutRect();
 
+    if (!ancestorLayer)
+        ancestorLayer = this;
+
     // FIXME: This could be improved to do a check like hasVisibleNonCompositingDescendantLayers() (bug 92580).
     if (this != ancestorLayer && !hasVisibleContent() && !hasVisibleDescendant())
         return LayoutRect();

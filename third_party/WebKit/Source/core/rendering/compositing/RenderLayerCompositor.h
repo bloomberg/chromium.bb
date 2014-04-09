@@ -123,8 +123,6 @@ public:
     bool needsFixedRootBackgroundLayer(const RenderLayer*) const;
     GraphicsLayer* fixedRootBackgroundLayer() const;
 
-    LayoutRect calculateCompositedBounds(const RenderLayer*) const;
-
     // Repaint the appropriate layers when the given RenderLayer starts or stops being composited.
     void repaintOnCompositingChange(RenderLayer*);
 
