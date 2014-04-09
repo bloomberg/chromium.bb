@@ -57,55 +57,6 @@ struct GpuProcessTransportFactory::PerCompositorData {
   scoped_refptr<ReflectorImpl> reflector;
 };
 
-class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
- public:
-  OwnedTexture(const scoped_refptr<ContextProvider>& provider,
-               const gfx::Size& size,
-               float device_scale_factor,
-               GLuint texture_id)
-      : ui::Texture(true, size, device_scale_factor),
-        provider_(provider),
-        texture_id_(texture_id) {
-    ImageTransportFactory::GetInstance()->AddObserver(this);
-  }
-
-  // ui::Texture overrides:
-  virtual unsigned int PrepareTexture() OVERRIDE {
-    // It's possible that we may have lost the context owning our
-    // texture but not yet fired the OnLostResources callback, so poll to see if
-    // it's still valid.
-    if (provider_ && provider_->IsContextLost())
-      texture_id_ = 0u;
-    return texture_id_;
-  }
-
-  // ImageTransportFactory overrides:
-  virtual void OnLostResources() OVERRIDE {
-    DeleteTexture();
-    provider_ = NULL;
-  }
-
- protected:
-  virtual ~OwnedTexture() {
-    ImageTransportFactory::GetInstance()->RemoveObserver(this);
-    DeleteTexture();
-  }
-
- protected:
-  void DeleteTexture() {
-    if (texture_id_) {
-      provider_->ContextGL()->DeleteTextures(1, &texture_id_);
-      texture_id_ = 0;
-    }
-  }
-
-  scoped_refptr<cc::ContextProvider> provider_;
-  GLuint texture_id_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OwnedTexture);
-};
-
 GpuProcessTransportFactory::GpuProcessTransportFactory()
     : callback_factory_(this), offscreen_content_bound_to_other_thread_(false) {
   output_surface_proxy_ = new BrowserCompositorOutputSurfaceProxy(
@@ -233,12 +184,8 @@ scoped_refptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(
   PerCompositorData* data = per_compositor_data_[source];
   DCHECK(data);
 
-  if (data->reflector.get())
-    RemoveObserver(data->reflector.get());
-
   data->reflector = new ReflectorImpl(
       source, target, &output_surface_map_, data->surface_id);
-  AddObserver(data->reflector.get());
   return data->reflector;
 }
 
@@ -249,7 +196,6 @@ void GpuProcessTransportFactory::RemoveReflector(
   PerCompositorData* data =
       per_compositor_data_[reflector_impl->mirrored_compositor()];
   DCHECK(data);
-  RemoveObserver(reflector_impl);
   data->reflector->Shutdown();
   data->reflector = NULL;
 }
@@ -288,19 +234,6 @@ gfx::GLSurfaceHandle GpuProcessTransportFactory::GetSharedSurfaceHandle() {
   handle.parent_client_id =
       BrowserGpuChannelHostFactory::instance()->GetGpuChannelId();
   return handle;
-}
-
-scoped_refptr<ui::Texture> GpuProcessTransportFactory::CreateOwnedTexture(
-    const gfx::Size& size,
-    float device_scale_factor,
-    unsigned int texture_id) {
-  scoped_refptr<cc::ContextProvider> provider =
-      SharedMainThreadContextProvider();
-  if (!provider.get())
-    return NULL;
-  scoped_refptr<OwnedTexture> image(new OwnedTexture(
-      provider, size, device_scale_factor, texture_id));
-  return image;
 }
 
 GLHelper* GpuProcessTransportFactory::GetGLHelper() {

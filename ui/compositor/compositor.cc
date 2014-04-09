@@ -63,19 +63,6 @@ void ContextFactory::SetInstance(ContextFactory* instance) {
   g_context_factory = instance;
 }
 
-Texture::Texture(bool flipped, const gfx::Size& size, float device_scale_factor)
-    : size_(size),
-      flipped_(flipped),
-      device_scale_factor_(device_scale_factor) {
-}
-
-Texture::~Texture() {
-}
-
-gpu::Mailbox Texture::Produce() {
-  return gpu::Mailbox();
-}
-
 CompositorLock::CompositorLock(Compositor* compositor)
     : compositor_(compositor) {
   base::MessageLoop::current()->PostDelayedTask(

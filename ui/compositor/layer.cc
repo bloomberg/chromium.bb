@@ -501,49 +501,35 @@ void Layer::SwitchCCLayerForTest() {
   content_layer_ = new_layer;
 }
 
-void Layer::SetExternalTexture(Texture* texture) {
-  DCHECK(texture);
-
-  // Hold a ref to the old |Texture| until we have updated all
-  // compositor references to the texture id that it holds.
-  scoped_refptr<ui::Texture> old_texture = texture_;
-
-  DCHECK_EQ(type_, LAYER_TEXTURED);
-  DCHECK(!solid_color_layer_.get());
-  texture_ = texture;
-  if (!texture_layer_.get()) {
-    scoped_refptr<cc::TextureLayer> new_layer = cc::TextureLayer::Create(this);
-    new_layer->SetFlipped(texture_->flipped());
-    SwitchToLayer(new_layer);
-    texture_layer_ = new_layer;
-  }
-  RecomputeDrawsContentAndUVRect();
-}
-
 void Layer::SetTextureMailbox(
     const cc::TextureMailbox& mailbox,
     scoped_ptr<cc::SingleReleaseCallback> release_callback,
-    float scale_factor) {
+    gfx::Size texture_size_in_dip) {
   DCHECK_EQ(type_, LAYER_TEXTURED);
   DCHECK(!solid_color_layer_.get());
-  texture_ = NULL;
-  if (!texture_layer_.get() || !texture_layer_->uses_mailbox()) {
+  DCHECK(mailbox.IsValid());
+  DCHECK(release_callback);
+  if (!texture_layer_) {
     scoped_refptr<cc::TextureLayer> new_layer =
         cc::TextureLayer::CreateForMailbox(this);
-    new_layer->SetFlipped(false);
+    new_layer->SetFlipped(true);
     SwitchToLayer(new_layer);
     texture_layer_ = new_layer;
   }
-  texture_layer_->SetTextureMailbox(mailbox, release_callback.Pass());
+  if (mailbox_release_callback_)
+    mailbox_release_callback_->Run(0, false);
+  mailbox_release_callback_ = release_callback.Pass();
   mailbox_ = mailbox;
-  mailbox_scale_factor_ = scale_factor;
-  RecomputeDrawsContentAndUVRect();
+  SetTextureSize(texture_size_in_dip);
 }
 
-cc::TextureMailbox Layer::GetTextureMailbox(float* scale_factor) {
-  if (scale_factor)
-    *scale_factor = mailbox_scale_factor_;
-  return mailbox_;
+void Layer::SetTextureSize(gfx::Size texture_size_in_dip) {
+  DCHECK(texture_layer_.get());
+  if (frame_size_in_dip_ == texture_size_in_dip)
+    return;
+  frame_size_in_dip_ = texture_size_in_dip;
+  RecomputeDrawsContentAndUVRect();
+  texture_layer_->SetNeedsDisplay();
 }
 
 void Layer::SetShowDelegatedContent(cc::DelegatedFrameProvider* frame_provider,
@@ -555,7 +541,7 @@ void Layer::SetShowDelegatedContent(cc::DelegatedFrameProvider* frame_provider,
   SwitchToLayer(new_layer);
   delegated_renderer_layer_ = new_layer;
 
-  delegated_frame_size_in_dip_ = frame_size_in_dip;
+  frame_size_in_dip_ = frame_size_in_dip;
   RecomputeDrawsContentAndUVRect();
 }
 
@@ -572,15 +558,17 @@ void Layer::SetShowPaintedContent() {
   content_layer_ = new_layer;
 
   mailbox_ = cc::TextureMailbox();
-  texture_ = NULL;
-
+  if (mailbox_release_callback_) {
+    mailbox_release_callback_->Run(0, false);
+    mailbox_release_callback_.reset();
+  }
   RecomputeDrawsContentAndUVRect();
 }
 
 void Layer::SetColor(SkColor color) { GetAnimator()->SetColor(color); }
 
 bool Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
-  if (type_ == LAYER_SOLID_COLOR || (!delegate_ && !texture_.get()))
+  if (type_ == LAYER_SOLID_COLOR || (!delegate_ && !mailbox_.IsValid()))
     return false;
 
   damaged_region_.op(invalid_rect.x(),
@@ -599,7 +587,7 @@ void Layer::ScheduleDraw() {
 }
 
 void Layer::SendDamagedRects() {
-  if ((delegate_ || texture_.get()) && !damaged_region_.isEmpty()) {
+  if ((delegate_ || mailbox_.IsValid()) && !damaged_region_.isEmpty()) {
     for (SkRegion::Iterator iter(damaged_region_); !iter.done(); iter.next()) {
       const SkIRect& sk_damaged = iter.rect();
       gfx::Rect damaged(
@@ -671,15 +659,19 @@ void Layer::PaintContents(SkCanvas* sk_canvas,
 bool Layer::FillsBoundsCompletely() const { return fills_bounds_completely_; }
 
 unsigned Layer::PrepareTexture() {
-  DCHECK(texture_layer_.get());
-  return texture_->PrepareTexture();
+  NOTREACHED();
+  return 0;
 }
 
 bool Layer::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
     scoped_ptr<cc::SingleReleaseCallback>* release_callback,
     bool use_shared_memory) {
-  return false;
+  if (!mailbox_release_callback_)
+    return false;
+  *mailbox = mailbox_;
+  *release_callback = mailbox_release_callback_.Pass();
+  return true;
 }
 
 void Layer::SetForceRenderSurface(bool force) {
@@ -946,29 +938,16 @@ void Layer::RecomputeDrawsContentAndUVRect() {
   DCHECK(cc_layer_);
   gfx::Size size(bounds_.size());
   if (texture_layer_.get()) {
-    gfx::Size texture_size;
-    if (!texture_layer_->uses_mailbox()) {
-      DCHECK(texture_.get());
-      float texture_scale_factor = 1.0f / texture_->device_scale_factor();
-      texture_size = gfx::ToFlooredSize(
-          gfx::ScaleSize(texture_->size(), texture_scale_factor));
-    } else {
-      DCHECK(mailbox_.IsSharedMemory());
-      float texture_scale_factor = 1.0f / mailbox_scale_factor_;
-      texture_size = gfx::ToFlooredSize(
-          gfx::ScaleSize(mailbox_.shared_memory_size(), texture_scale_factor));
-    }
-    size.SetToMin(texture_size);
-
+    size.SetToMin(frame_size_in_dip_);
     gfx::PointF uv_top_left(0.f, 0.f);
     gfx::PointF uv_bottom_right(
-        static_cast<float>(size.width())/texture_size.width(),
-        static_cast<float>(size.height())/texture_size.height());
+        static_cast<float>(size.width()) / frame_size_in_dip_.width(),
+        static_cast<float>(size.height()) / frame_size_in_dip_.height());
     texture_layer_->SetUV(uv_top_left, uv_bottom_right);
   } else if (delegated_renderer_layer_.get()) {
+    size.SetToMin(frame_size_in_dip_);
     delegated_renderer_layer_->SetDisplaySize(
-        ConvertSizeToPixel(this, delegated_frame_size_in_dip_));
-    size.SetToMin(delegated_frame_size_in_dip_);
+        ConvertSizeToPixel(this, frame_size_in_dip_));
   }
   cc_layer_->SetBounds(ConvertSizeToPixel(this, size));
 }

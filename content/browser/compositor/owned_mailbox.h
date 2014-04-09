@@ -22,6 +22,7 @@ class CONTENT_EXPORT OwnedMailbox : public base::RefCounted<OwnedMailbox>,
  public:
   explicit OwnedMailbox(GLHelper* gl_helper);
 
+  const gpu::MailboxHolder& holder() const { return mailbox_holder_; }
   const gpu::Mailbox& mailbox() const { return mailbox_holder_.mailbox; }
   uint32 texture_id() const { return texture_id_; }
   uint32 target() const { return mailbox_holder_.texture_target; }

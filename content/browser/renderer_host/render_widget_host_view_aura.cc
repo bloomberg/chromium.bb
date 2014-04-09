@@ -1490,10 +1490,6 @@ bool RenderWidgetHostViewAura::HasAcceleratedSurface(
   return false;
 }
 
-void RenderWidgetHostViewAura::SetSurfaceNotInUseByCompositor(
-    scoped_refptr<ui::Texture>) {
-}
-
 // static
 void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResult(
     const gfx::Size& dst_size_in_pixel,

@@ -48,7 +48,6 @@ namespace ui {
 class Compositor;
 class LayerAnimator;
 class LayerOwner;
-class Texture;
 
 // Layer manages a texture, transform and a set of child Layers. Any View that
 // has enabled layers ends up creating a Layer to manage the texture.
@@ -256,19 +255,12 @@ class COMPOSITOR_EXPORT Layer
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
 
-  const ui::Texture* texture() const { return texture_.get(); }
-
-  // Assigns a new external texture.  |texture| can be NULL to disable external
-  // updates.
-  void SetExternalTexture(ui::Texture* texture);
-  ui::Texture* external_texture() { return texture_.get(); }
-
   // Set new TextureMailbox for this layer. Note that |mailbox| may hold a
   // shared memory resource or an actual mailbox for a texture.
   void SetTextureMailbox(const cc::TextureMailbox& mailbox,
                          scoped_ptr<cc::SingleReleaseCallback> release_callback,
-                         float scale_factor);
-  cc::TextureMailbox GetTextureMailbox(float* scale_factor);
+                         gfx::Size texture_size_in_dip);
+  void SetTextureSize(gfx::Size texture_size_in_dip);
 
   // Begins showing delegated frames from the |frame_provider|.
   void SetShowDelegatedContent(cc::DelegatedFrameProvider* frame_provider,
@@ -414,8 +406,6 @@ class COMPOSITOR_EXPORT Layer
 
   Compositor* compositor_;
 
-  scoped_refptr<ui::Texture> texture_;
-
   Layer* parent_;
 
   // This layer's children, in bottom-to-top stacking order.
@@ -485,15 +475,16 @@ class COMPOSITOR_EXPORT Layer
   // A cached copy of |Compositor::device_scale_factor()|.
   float device_scale_factor_;
 
-  // A cached copy of the TextureMailbox given texture_layer_.
+  // The mailbox used by texture_layer_.
   cc::TextureMailbox mailbox_;
 
-  // Device scale factor in which mailbox_ was rendered in.
-  float mailbox_scale_factor_;
+  // The callback to release the mailbox. This is only set after
+  // SetTextureMailbox is called, before we give it to the TextureLayer.
+  scoped_ptr<cc::SingleReleaseCallback> mailbox_release_callback_;
 
-  // The size of the delegated frame in DIP, set when SetShowDelegatedContent
-  // was called.
-  gfx::Size delegated_frame_size_in_dip_;
+  // The size of the frame or texture in DIP, set when SetShowDelegatedContent
+  // or SetTextureMailbox was called.
+  gfx::Size frame_size_in_dip_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

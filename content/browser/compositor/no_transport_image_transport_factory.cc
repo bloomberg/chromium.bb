@@ -26,13 +26,6 @@ NoTransportImageTransportFactory::GetSharedSurfaceHandle() {
   return gfx::GLSurfaceHandle();
 }
 
-scoped_refptr<ui::Texture> NoTransportImageTransportFactory::CreateOwnedTexture(
-    const gfx::Size& size,
-    float device_scale_factor,
-    unsigned int texture_id) {
-  return NULL;
-}
-
 GLHelper* NoTransportImageTransportFactory::GetGLHelper() {
   if (!gl_helper_) {
     context_provider_ = context_factory_->SharedMainThreadContextProvider();

@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/compositor/image_transport_factory.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gfx/size.h"
 
@@ -24,12 +25,12 @@ class Layer;
 
 namespace content {
 
+class OwnedMailbox;
 class BrowserCompositorOutputSurface;
 
 // A reflector implementation that copies the framebuffer content
 // to the texture, then draw it onto the mirroring compositor.
-class ReflectorImpl : public ImageTransportFactoryObserver,
-                      public base::SupportsWeakPtr<ReflectorImpl>,
+class ReflectorImpl : public base::SupportsWeakPtr<ReflectorImpl>,
                       public ui::Reflector {
  public:
   ReflectorImpl(
@@ -39,10 +40,10 @@ class ReflectorImpl : public ImageTransportFactoryObserver,
       int surface_id);
 
   ui::Compositor* mirrored_compositor() {
-    return mirrored_compositor_;
+    return GetMain().mirrored_compositor;
   }
 
-  void InitOnImplThread();
+  void InitOnImplThread(const gpu::MailboxHolder& mailbox_holder);
   void Shutdown();
   void ShutdownOnImplThread();
 
@@ -52,13 +53,6 @@ class ReflectorImpl : public ImageTransportFactoryObserver,
 
   // ui::Reflector implementation.
   virtual void OnMirroringCompositorResized() OVERRIDE;
-
-  // ImageTransportFactoryObsever implementation.
-  virtual void OnLostResources() OVERRIDE;
-
-  // Called when the output surface's size has changed.
-  // This must be called on ImplThread.
-  void OnReshape(gfx::Size size);
 
   // Called in |BrowserCompositorOutputSurface::SwapBuffers| to copy
   // the full screen image to the |texture_id_|. This must be called
@@ -78,12 +72,36 @@ class ReflectorImpl : public ImageTransportFactoryObserver,
 
   // Called when the source surface is bound and available. This must
   // be called on ImplThread.
-  void OnSourceSurfaceReady(int surface_id);
+  void OnSourceSurfaceReady(BrowserCompositorOutputSurface* surface);
+
+  void DetachFromOutputSurface();
 
  private:
+  struct MainThreadData {
+    MainThreadData(ui::Compositor* mirrored_compositor,
+                   ui::Layer* mirroring_layer);
+    ~MainThreadData();
+    scoped_refptr<OwnedMailbox> mailbox;
+    bool needs_set_mailbox;
+    ui::Compositor* mirrored_compositor;
+    ui::Layer* mirroring_layer;
+  };
+
+  struct ImplThreadData {
+    explicit ImplThreadData(
+        IDMap<BrowserCompositorOutputSurface>* output_surface_map);
+    ~ImplThreadData();
+    IDMap<BrowserCompositorOutputSurface>* output_surface_map;
+    BrowserCompositorOutputSurface* output_surface;
+    scoped_ptr<GLHelper> gl_helper;
+    unsigned texture_id;
+    gpu::MailboxHolder mailbox_holder;
+  };
+
   virtual ~ReflectorImpl();
 
   void AttachToOutputSurfaceOnImplThread(
+      const gpu::MailboxHolder& mailbox_holder,
       BrowserCompositorOutputSurface* surface);
 
   void UpdateTextureSizeOnMainThread(gfx::Size size);
@@ -101,25 +119,16 @@ class ReflectorImpl : public ImageTransportFactoryObserver,
   // so the ReflectorImpl gets deleted when the function returns.
   static void DeleteOnMainThread(scoped_refptr<ReflectorImpl> reflector) {}
 
-  // These variables are initialized on MainThread before
-  // the reflector is attached to the output surface. Once
-  // attached, they must be accessed only on ImplThraed unless
-  // the context is lost. When the context is lost, these
-  // will be re-ininitiailzed when the new output-surface
-  // is created on MainThread.
-  int texture_id_;
-  base::Lock texture_lock_;
-  gfx::Size texture_size_;
+  MainThreadData& GetMain();
+  ImplThreadData& GetImpl();
 
-  // Must be accessed only on ImplThread.
-  IDMap<BrowserCompositorOutputSurface>* output_surface_map_;
-  scoped_ptr<GLHelper> gl_helper_;
+  // Must be accessed only on ImplThread, through GetImpl().
+  ImplThreadData impl_unsafe_;
 
-  // Must be accessed only on MainThread.
-  ui::Compositor* mirrored_compositor_;
-  ui::Compositor* mirroring_compositor_;
-  ui::Layer* mirroring_layer_;
-  scoped_refptr<ui::Texture> shared_texture_;
+  // Must be accessed only on MainThread, through GetMain().
+  MainThreadData main_unsafe_;
+
+  // Can be accessed on both.
   scoped_refptr<base::MessageLoopProxy> impl_message_loop_;
   scoped_refptr<base::MessageLoopProxy> main_message_loop_;
   int surface_id_;

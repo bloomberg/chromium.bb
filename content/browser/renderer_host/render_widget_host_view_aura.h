@@ -477,10 +477,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Called prior to removing |window_| from a WindowEventDispatcher.
   void RemovingFromRootWindow();
 
-  // Called after commit for the last reference to the texture going away
-  // after it was released as the frontbuffer.
-  void SetSurfaceNotInUseByCompositor(scoped_refptr<ui::Texture>);
-
   // Called after async thumbnailer task completes.  Scales and crops the result
   // of the copy.
   static void CopyFromCompositingSurfaceHasResult(

@@ -642,17 +642,6 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
   DISALLOW_COPY_AND_ASSIGN(LayerWithNullDelegateTest);
 };
 
-class FakeTexture : public Texture {
- public:
-  FakeTexture(bool flipped, const gfx::Size& size, float device_scale_factor)
-      : Texture(flipped, size, device_scale_factor) {}
-
-  virtual unsigned int PrepareTexture() OVERRIDE { return 0; }
-
- protected:
-  virtual ~FakeTexture() {}
-};
-
 TEST_F(LayerWithNullDelegateTest, EscapedDebugNames) {
   scoped_ptr<Layer> layer(CreateLayer(LAYER_NOT_DRAWN));
   std::string name = "\"\'\\/\b\f\n\r\t\n";
@@ -673,6 +662,10 @@ TEST_F(LayerWithNullDelegateTest, EscapedDebugNames) {
   EXPECT_EQ(name, roundtrip);
 }
 
+void ReturnMailbox(bool* run, uint32 sync_point, bool is_lost) {
+  *run = true;
+}
+
 TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
@@ -689,9 +682,12 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
 
   cc::Layer* before_layer = l1->cc_layer();
 
-  scoped_refptr<Texture> texture =
-      new FakeTexture(false, gfx::Size(10, 10), 1.f);
-  l1->SetExternalTexture(texture.get());
+  bool callback1_run = false;
+  cc::TextureMailbox mailbox(gpu::Mailbox::Generate(), 0, 0);
+  l1->SetTextureMailbox(mailbox,
+                        cc::SingleReleaseCallback::Create(
+                            base::Bind(ReturnMailbox, &callback1_run)),
+                        gfx::Size(1, 1));
 
   EXPECT_NE(before_layer, l1->cc_layer());
 
@@ -701,6 +697,25 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   EXPECT_TRUE(l1->cc_layer()->contents_opaque());
   EXPECT_TRUE(l1->cc_layer()->force_render_surface());
   EXPECT_TRUE(l1->cc_layer()->hide_layer_and_subtree());
+  EXPECT_FALSE(callback1_run);
+
+  bool callback2_run = false;
+  mailbox = cc::TextureMailbox(gpu::Mailbox::Generate(), 0, 0);
+  l1->SetTextureMailbox(mailbox,
+                        cc::SingleReleaseCallback::Create(
+                            base::Bind(ReturnMailbox, &callback2_run)),
+                        gfx::Size(1, 1));
+  EXPECT_TRUE(callback1_run);
+  EXPECT_FALSE(callback2_run);
+
+  l1->SetShowPaintedContent();
+  EXPECT_EQ(gfx::PointF().ToString(),
+            l1->cc_layer()->anchor_point().ToString());
+  EXPECT_TRUE(l1->cc_layer()->DrawsContent());
+  EXPECT_TRUE(l1->cc_layer()->contents_opaque());
+  EXPECT_TRUE(l1->cc_layer()->force_render_surface());
+  EXPECT_TRUE(l1->cc_layer()->hide_layer_and_subtree());
+  EXPECT_TRUE(callback2_run);
 }
 
 // Various visibile/drawn assertions.

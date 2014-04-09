@@ -69,12 +69,6 @@ class CONTENT_EXPORT ImageTransportFactory {
 
   virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() = 0;
 
-  // Creates a ui::Texture that deletes the GL texture when deleted.
-  virtual scoped_refptr<ui::Texture> CreateOwnedTexture(
-      const gfx::Size& size,
-      float device_scale_factor,
-      unsigned int texture_id) = 0;
-
   // Gets a GLHelper instance, associated with the shared context. This
   // GLHelper will get destroyed whenever the shared context is lost
   // (ImageTransportFactoryObserver::OnLostResources is called).

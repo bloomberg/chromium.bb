@@ -1690,7 +1690,7 @@ std::string View::DoPrintViewGraph(bool first, View* view_with_children) {
   if (!parent_)
     result.append(", shape=box");
   if (layer()) {
-    if (layer()->texture())
+    if (layer()->has_external_content())
       result.append(", color=green");
     else
       result.append(", color=red");

@@ -5,6 +5,7 @@
 #include "base/run_loop.h"
 #include "cc/output/context_provider.h"
 #include "content/browser/compositor/image_transport_factory.h"
+#include "content/browser/compositor/owned_mailbox.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/test/content_browser_test.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -38,15 +39,10 @@ IN_PROC_BROWSER_TEST_F(ImageTransportFactoryBrowserTest,
     return;
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  ui::ContextFactory* context_factory = ui::ContextFactory::GetInstance();
-  gpu::gles2::GLES2Interface* gl =
-      context_factory->SharedMainThreadContextProvider()->ContextGL();
-  GLuint texture_id = 0;
-  gl->GenTextures(1, &texture_id);
 
-  scoped_refptr<ui::Texture> texture =
-      factory->CreateOwnedTexture(gfx::Size(1, 1), 1.f, texture_id);
-  ASSERT_TRUE(texture.get());
+  scoped_refptr<OwnedMailbox> mailbox =
+      new OwnedMailbox(factory->GetGLHelper());
+  EXPECT_FALSE(mailbox->mailbox().IsZero());
 
   MockImageTransportFactoryObserver observer;
   factory->AddObserver(&observer);
@@ -55,6 +51,9 @@ IN_PROC_BROWSER_TEST_F(ImageTransportFactoryBrowserTest,
   EXPECT_CALL(observer, OnLostResources())
       .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
+  ui::ContextFactory* context_factory = ui::ContextFactory::GetInstance();
+  gpu::gles2::GLES2Interface* gl =
+      context_factory->SharedMainThreadContextProvider()->ContextGL();
   gl->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                           GL_INNOCENT_CONTEXT_RESET_ARB);
 
@@ -63,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(ImageTransportFactoryBrowserTest,
   gl->Flush();
 
   run_loop.Run();
-  EXPECT_EQ(0u, texture->PrepareTexture());
+  EXPECT_TRUE(mailbox->mailbox().IsZero());
 
   factory->RemoveObserver(&observer);
 }

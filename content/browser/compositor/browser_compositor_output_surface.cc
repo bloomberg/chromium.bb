@@ -40,6 +40,9 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
 
 BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
   DCHECK(CalledOnValidThread());
+  if (reflector_)
+    reflector_->DetachFromOutputSurface();
+  DCHECK(!reflector_);
   if (!HasClient())
     return;
   output_surface_map_->Remove(surface_id_);
@@ -62,16 +65,9 @@ bool BrowserCompositorOutputSurface::BindToClient(
 
   output_surface_map_->AddWithID(this, surface_id_);
   if (reflector_)
-    reflector_->OnSourceSurfaceReady(surface_id_);
+    reflector_->OnSourceSurfaceReady(this);
   vsync_manager_->AddObserver(this);
   return true;
-}
-
-void BrowserCompositorOutputSurface::Reshape(const gfx::Size& size,
-                                             float scale_factor) {
-  OutputSurface::Reshape(size, scale_factor);
-  if (reflector_.get())
-    reflector_->OnReshape(size);
 }
 
 void BrowserCompositorOutputSurface::OnUpdateVSyncParameters(

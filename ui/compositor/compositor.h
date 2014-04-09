@@ -103,39 +103,6 @@ class COMPOSITOR_EXPORT ContextFactory {
   virtual bool DoesCreateTestContexts() = 0;
 };
 
-// Texture provide an abstraction over the external texture that can be passed
-// to a layer.
-class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
- public:
-  Texture(bool flipped, const gfx::Size& size, float device_scale_factor);
-
-  bool flipped() const { return flipped_; }
-  gfx::Size size() const { return size_; }
-  float device_scale_factor() const { return device_scale_factor_; }
-
-  virtual unsigned int PrepareTexture() = 0;
-
-  // Replaces the texture with the texture from the specified mailbox.
-  virtual void Consume(const gpu::Mailbox& mailbox,
-                       const gfx::Size& new_size) {}
-
-  // Moves the texture into the mailbox and returns the mailbox name.
-  // The texture must have been previously consumed from a mailbox.
-  virtual gpu::Mailbox Produce();
-
- protected:
-  virtual ~Texture();
-  gfx::Size size_;  // in pixel
-
- private:
-  friend class base::RefCounted<Texture>;
-
-  bool flipped_;
-  float device_scale_factor_;
-
-  DISALLOW_COPY_AND_ASSIGN(Texture);
-};
-
 // This class represents a lock on the compositor, that can be used to prevent
 // commits to the compositor tree while we're waiting for an asynchronous
 // event. The typical use case is when waiting for a renderer to produce a frame
