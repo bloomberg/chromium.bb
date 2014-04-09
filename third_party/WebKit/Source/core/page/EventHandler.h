@@ -195,6 +195,7 @@ private:
     bool handleMousePressEventSingleClick(const MouseEventWithHitTestResults&);
     bool handleMousePressEventDoubleClick(const MouseEventWithHitTestResults&);
     bool handleMousePressEventTripleClick(const MouseEventWithHitTestResults&);
+    bool handleMouseFocus(const PlatformMouseEvent&);
     bool handleMouseDraggedEvent(const MouseEventWithHitTestResults&);
     bool handleMouseReleaseEvent(const MouseEventWithHitTestResults&);
 

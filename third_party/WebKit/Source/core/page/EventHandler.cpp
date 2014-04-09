@@ -1389,6 +1389,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     m_frame->selection().setCaretBlinkingSuspended(true);
 
     bool swallowEvent = !dispatchMouseEvent(EventTypeNames::mousedown, mev.targetNode(), m_clickCount, mouseEvent, true);
+    swallowEvent = swallowEvent || !handleMouseFocus(mouseEvent);
     m_capturesDragging = !swallowEvent || mev.scrollbar();
 
     // If the hit testing originally determined the event was in a scrollbar, refetch the MouseEventWithHitTestResults
@@ -2049,15 +2050,12 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
 bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targetNode, int clickCount, const PlatformMouseEvent& mouseEvent, bool setUnder)
 {
     updateMouseEventTargetNode(targetNode, mouseEvent, setUnder);
+    return !m_nodeUnderMouse || m_nodeUnderMouse->dispatchMouseEvent(mouseEvent, eventType, clickCount);
+}
 
-    bool proceedDefault = true;
-
-    if (m_nodeUnderMouse)
-        proceedDefault = m_nodeUnderMouse->dispatchMouseEvent(mouseEvent, eventType, clickCount);
-
-    if (!proceedDefault || eventType != EventTypeNames::mousedown)
-        return proceedDefault;
-
+// The return value means 'continue default handling.'
+bool EventHandler::handleMouseFocus(const PlatformMouseEvent& mouseEvent)
+{
     // If clicking on a frame scrollbar, do not mess up with content focus.
     if (FrameView* view = m_frame->view()) {
         if (view->scrollbarAtPoint(mouseEvent.position()))
