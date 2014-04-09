@@ -6267,3 +6267,11 @@
    fun:_ZN3gpu13CommandParser14ProcessCommandEv
    fun:_ZN3gpu12GpuScheduler10PutChangedEv
 }
+{
+  bug_361594
+  Memcheck:Uninitialized
+  ...
+  fun:*SkA8_Shader_Blitter*blitH*
+  ...
+  fun:*content*ScreenshotData*EncodeOnWorker*
+}
