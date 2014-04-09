@@ -130,49 +130,6 @@ void dump_output(struct StringBuffer *sb, int d, size_t nbytes) {
   free(bytes);
 }
 
-int EnumerateNames(struct StringBuffer *sb, NaClSrpcChannel *nschan) {
-  char      buffer[1024];
-  uint32_t  nbytes = sizeof buffer;
-  char      *p;
-  size_t    name_len;
-
-  if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeBySignature(nschan,
-                                                       NACL_NAME_SERVICE_LIST,
-                                                       &nbytes, buffer)) {
-    return 0;
-  }
-  StringBufferPrintf(sb, "nbytes = %zu\n", (size_t) nbytes);
-  if (nbytes == sizeof buffer) {
-    fprintf(stderr, "Insufficent space for namespace enumeration\n");
-    return 0;
-  }
-  for (p = buffer; p - buffer < nbytes; p += name_len) {
-    name_len = strlen(p) + 1;
-    StringBufferPrintf(sb, "%s\n", p);
-  }
-  return 1;
-}
-
-/*
- * Return name service output
- */
-void NameServiceDump(NaClSrpcRpc *rpc,
-                     NaClSrpcArg **in_args,
-                     NaClSrpcArg **out_args,
-                     NaClSrpcClosure *done) {
-  struct StringBuffer sb;
-  StringBufferCtor(&sb);
-
-  if (EnumerateNames(&sb, &ns_channel)) {
-    out_args[0]->arrays.str = strdup(sb.buffer);
-    rpc->result = NACL_SRPC_RESULT_OK;
-  } else {
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  }
-  done->Run(done);
-  StringBufferDtor(&sb);
-}
-
 /*
  * Dump RNG output into a string.
  */
@@ -253,7 +210,6 @@ void ManifestTest(NaClSrpcRpc *rpc,
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {
   /* Export the methods as taking no arguments and returning a string. */
-  { "namedump::s", NameServiceDump },
   { "rngdump::s", RngDump },
   { "manifest_test::s", ManifestTest },
   { NULL, NULL },

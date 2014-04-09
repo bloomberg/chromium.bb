@@ -1,7 +1,3 @@
-rpc call initiated namedump::s
-rpc call complete namedump::s
-output 0:  s("nbytes = 47\nKernelService\nManifestNameService\nSecureRandom\n")
-
 rpc call initiated manifest_test::s
 rpc call complete manifest_test::s
 output 0:  s("ManifestTest: basic connectivity ok\n")
