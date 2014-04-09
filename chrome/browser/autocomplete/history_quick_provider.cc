@@ -64,13 +64,9 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
   if (disabled_)
     return;
 
-  // Don't bother with INVALID and FORCED_QUERY.  Also pass when looking for
-  // BEST_MATCH and there is no inline autocompletion because none of the HQP
-  // matches can score highly enough to qualify.
+  // Don't bother with INVALID and FORCED_QUERY.
   if ((input.type() == AutocompleteInput::INVALID) ||
-      (input.type() == AutocompleteInput::FORCED_QUERY) ||
-      (input.matches_requested() == AutocompleteInput::BEST_MATCH &&
-       input.prevent_inline_autocomplete()))
+      (input.type() == AutocompleteInput::FORCED_QUERY))
     return;
 
   autocomplete_input_ = input;
