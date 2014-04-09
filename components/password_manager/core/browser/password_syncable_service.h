@@ -30,8 +30,6 @@ namespace syncer {
 class SyncErrorFactory;
 }
 
-namespace password_manager {
-
 class PasswordStore;
 
 class PasswordSyncableService : public syncer::SyncableService,
@@ -128,7 +126,5 @@ void PasswordFromSpecifics(const sync_pb::PasswordSpecificsData& password,
 // Returns the unique tag that will serve as the sync identifier for the
 // |password| entry.
 std::string MakePasswordSyncTag(const sync_pb::PasswordSpecificsData& password);
-
-}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNCABLE_SERVICE_H__

@@ -39,8 +39,6 @@
 #include "chrome/browser/password_manager/password_store_x.h"
 #endif
 
-using password_manager::PasswordStore;
-
 #if !defined(OS_CHROMEOS) && defined(USE_X11)
 namespace {
 
@@ -99,8 +97,7 @@ PasswordStoreFactory::~PasswordStoreFactory() {}
 #if !defined(OS_CHROMEOS) && defined(USE_X11)
 LocalProfileId PasswordStoreFactory::GetLocalProfileId(
     PrefService* prefs) const {
-  LocalProfileId id =
-      prefs->GetInteger(password_manager::prefs::kLocalProfileId);
+  LocalProfileId id = prefs->GetInteger(prefs::kLocalProfileId);
   if (id == kInvalidLocalProfileId) {
     // Note that there are many more users than this. Thus, by design, this is
     // not a unique id. However, it is large enough that it is very unlikely
@@ -113,7 +110,7 @@ LocalProfileId PasswordStoreFactory::GetLocalProfileId(
       id = rand() & kLocalProfileIdMask;
       // TODO(mdm): scan other profiles to make sure they are not using this id?
     } while (id == kInvalidLocalProfileId);
-    prefs->SetInteger(password_manager::prefs::kLocalProfileId, id);
+    prefs->SetInteger(prefs::kLocalProfileId, id);
   }
   return id;
 }
@@ -125,8 +122,7 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
 
   base::FilePath login_db_file_path = profile->GetPath();
   login_db_file_path = login_db_file_path.Append(chrome::kLoginDataFileName);
-  scoped_ptr<password_manager::LoginDatabase> login_db(
-      new password_manager::LoginDatabase());
+  scoped_ptr<LoginDatabase> login_db(new LoginDatabase());
   {
     // TODO(paivanof@gmail.com): execution of login_db->Init() should go
     // to DB thread. http://crbug.com/138903
@@ -159,7 +155,7 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // For now, we use PasswordStoreDefault. We might want to make a native
   // backend for PasswordStoreX (see below) in the future though.
-  ps = new password_manager::PasswordStoreDefault(
+  ps = new PasswordStoreDefault(
       main_thread_runner, db_thread_runner, login_db.release());
 #elif defined(USE_X11)
   // On POSIX systems, we try to use the "native" password management system of
@@ -220,7 +216,7 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
                           login_db.release(),
                           backend.release());
 #elif defined(USE_OZONE)
-  ps = new password_manager::PasswordStoreDefault(
+  ps = new PasswordStoreDefault(
       main_thread_runner, db_thread_runner, login_db.release());
 #else
   NOTIMPLEMENTED();
@@ -240,7 +236,7 @@ void PasswordStoreFactory::RegisterProfilePrefs(
   // Notice that the preprocessor conditions above are exactly those that will
   // result in using PasswordStoreX in BuildServiceInstanceFor().
   registry->RegisterIntegerPref(
-      password_manager::prefs::kLocalProfileId,
+      prefs::kLocalProfileId,
       kInvalidLocalProfileId,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif

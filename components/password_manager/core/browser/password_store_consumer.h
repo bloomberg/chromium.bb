@@ -13,8 +13,6 @@ namespace autofill {
 struct PasswordForm;
 }
 
-namespace password_manager {
-
 // Reads from the PasswordStore are done asynchronously on a separate
 // thread. PasswordStoreConsumer provides the virtual callback method, which is
 // guaranteed to be executed on this (the UI) thread. It also provides the
@@ -47,7 +45,5 @@ class PasswordStoreConsumer {
   base::CancelableTaskTracker cancelable_task_tracker_;
   base::WeakPtrFactory<PasswordStoreConsumer> weak_ptr_factory_;
 };
-
-}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_CONSUMER_H_

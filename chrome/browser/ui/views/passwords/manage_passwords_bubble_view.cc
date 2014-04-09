@@ -123,7 +123,7 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
 
 // static
 void ManagePasswordsBubbleView::CloseBubble(
-    password_manager::metrics_util::UIDismissalReason reason) {
+    password_manager_metrics_util::UIDismissalReason reason) {
   if (manage_passwords_bubble_)
     manage_passwords_bubble_->Close(reason);
 }
@@ -167,10 +167,10 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
 }
 
 ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {
-  if (dismissal_reason_ == password_manager::metrics_util::NOT_DISPLAYED)
+  if (dismissal_reason_ == password_manager_metrics_util::NOT_DISPLAYED)
     return;
 
-  password_manager::metrics_util::LogUIDismissalReason(dismissal_reason_);
+  password_manager_metrics_util::LogUIDismissalReason(dismissal_reason_);
 }
 
 void ManagePasswordsBubbleView::BuildColumnSet(views::GridLayout* layout,
@@ -236,7 +236,7 @@ void ManagePasswordsBubbleView::AdjustForFullscreen(
 }
 
 void ManagePasswordsBubbleView::Close(
-    password_manager::metrics_util::UIDismissalReason reason) {
+    password_manager_metrics_util::UIDismissalReason reason) {
   dismissal_reason_ = reason;
   icon_view_->SetTooltip(
       manage_passwords_bubble_model_->manage_passwords_bubble_state() ==
@@ -250,7 +250,7 @@ void ManagePasswordsBubbleView::Init() {
   // Default to a dismissal reason of "no interaction". If the user interacts
   // with the button in such a way that it closes, we'll reset this value
   // accordingly.
-  dismissal_reason_ = password_manager::metrics_util::NO_DIRECT_INTERACTION;
+  dismissal_reason_ = password_manager_metrics_util::NO_DIRECT_INTERACTION;
 
   GridLayout* layout = new GridLayout(this);
   SetFocusable(true);
@@ -393,12 +393,12 @@ void ManagePasswordsBubbleView::ButtonPressed(views::Button* sender,
                                               const ui::Event& event) {
   DCHECK(sender == save_button_ || sender == done_button_);
 
-  password_manager::metrics_util::UIDismissalReason reason;
+  password_manager_metrics_util::UIDismissalReason reason;
   if (sender == save_button_) {
     manage_passwords_bubble_model_->OnSaveClicked();
-    reason = password_manager::metrics_util::CLICKED_SAVE;
+    reason = password_manager_metrics_util::CLICKED_SAVE;
   } else {
-    reason = password_manager::metrics_util::CLICKED_DONE;
+    reason = password_manager_metrics_util::CLICKED_DONE;
   }
   Close(reason);
 }
@@ -407,21 +407,21 @@ void ManagePasswordsBubbleView::LinkClicked(views::Link* source,
                                             int event_flags) {
   DCHECK_EQ(source, manage_link_);
   manage_passwords_bubble_model_->OnManageLinkClicked();
-  Close(password_manager::metrics_util::CLICKED_MANAGE);
+  Close(password_manager_metrics_util::CLICKED_MANAGE);
 }
 
 void ManagePasswordsBubbleView::OnPerformAction(views::Combobox* source) {
   DCHECK_EQ(source, refuse_combobox_);
-  password_manager::metrics_util::UIDismissalReason reason =
-      password_manager::metrics_util::NOT_DISPLAYED;
+  password_manager_metrics_util::UIDismissalReason reason =
+      password_manager_metrics_util::NOT_DISPLAYED;
   switch (refuse_combobox_->selected_index()) {
     case SavePasswordRefusalComboboxModel::INDEX_NOPE:
       manage_passwords_bubble_model_->OnNopeClicked();
-      reason = password_manager::metrics_util::CLICKED_NOPE;
+      reason = password_manager_metrics_util::CLICKED_NOPE;
       break;
     case SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE:
       manage_passwords_bubble_model_->OnNeverForThisSiteClicked();
-      reason = password_manager::metrics_util::CLICKED_NEVER;
+      reason = password_manager_metrics_util::CLICKED_NEVER;
       break;
     default:
       NOTREACHED();

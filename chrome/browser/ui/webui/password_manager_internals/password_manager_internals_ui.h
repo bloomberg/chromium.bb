@@ -8,9 +8,8 @@
 #include "components/password_manager/core/browser/password_manager_logger.h"
 #include "content/public/browser/web_ui_controller.h"
 
-class PasswordManagerInternalsUI
-    : public content::WebUIController,
-      public password_manager::PasswordManagerLogger {
+class PasswordManagerInternalsUI : public content::WebUIController,
+                                   public PasswordManagerLogger {
  public:
   explicit PasswordManagerInternalsUI(content::WebUI* web_ui);
   virtual ~PasswordManagerInternalsUI();

@@ -9,8 +9,6 @@
 
 #include "components/autofill/core/common/password_form.h"
 
-namespace password_manager {
-
 class PasswordStoreChange {
  public:
   enum Type {
@@ -53,7 +51,5 @@ class PasswordStoreChange {
 };
 
 typedef std::vector<PasswordStoreChange> PasswordStoreChangeList;
-
-}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_CHANGE_H_

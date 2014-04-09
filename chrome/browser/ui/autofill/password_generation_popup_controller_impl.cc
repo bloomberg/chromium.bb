@@ -37,7 +37,7 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
     const gfx::RectF& bounds,
     const PasswordForm& form,
     int max_length,
-    password_manager::PasswordManager* password_manager,
+    PasswordManager* password_manager,
     PasswordGenerationPopupObserver* observer,
     content::WebContents* web_contents,
     gfx::NativeView container_view) {
@@ -67,7 +67,7 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
     const gfx::RectF& bounds,
     const PasswordForm& form,
     int max_length,
-    password_manager::PasswordManager* password_manager,
+    PasswordManager* password_manager,
     PasswordGenerationPopupObserver* observer,
     content::WebContents* web_contents,
     gfx::NativeView container_view)

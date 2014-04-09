@@ -16,8 +16,7 @@ using content::WebContents;
 
 namespace {
 
-class MockPasswordManagerLogger
-    : public password_manager::PasswordManagerLogger {
+class MockPasswordManagerLogger : public PasswordManagerLogger {
  public:
   MockPasswordManagerLogger() {}
 

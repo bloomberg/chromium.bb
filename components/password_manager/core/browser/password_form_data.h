@@ -12,8 +12,6 @@
 
 // TODO(sync): This file must eventually be refactored away -- crbug.com/87185.
 
-namespace password_manager {
-
 // Struct used for creation of PasswordForms from static arrays of data.
 // Note: This is only meant to be used in unit test.
 struct PasswordFormData {
@@ -51,7 +49,5 @@ bool ContainsSamePasswordForms(
 MATCHER_P(ContainsAllPasswordForms, forms, "") {
   return ContainsSamePasswordFormsPtr(forms, arg);
 }
-
-}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_DATA_H_

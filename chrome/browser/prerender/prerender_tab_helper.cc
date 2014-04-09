@@ -45,7 +45,7 @@ void ReportTabHelperURLSeenToLocalPredictor(
 // static
 void PrerenderTabHelper::CreateForWebContentsWithPasswordManager(
     content::WebContents* web_contents,
-    password_manager::PasswordManager* password_manager) {
+    PasswordManager* password_manager) {
   if (!FromWebContents(web_contents)) {
     web_contents->SetUserData(UserDataKey(),
                               new PrerenderTabHelper(web_contents,
@@ -53,9 +53,8 @@ void PrerenderTabHelper::CreateForWebContentsWithPasswordManager(
   }
 }
 
-PrerenderTabHelper::PrerenderTabHelper(
-    content::WebContents* web_contents,
-    password_manager::PasswordManager* password_manager)
+PrerenderTabHelper::PrerenderTabHelper(content::WebContents* web_contents,
+                                       PasswordManager* password_manager)
     : content::WebContentsObserver(web_contents),
       origin_(ORIGIN_NONE),
       next_load_is_control_prerender_(false),

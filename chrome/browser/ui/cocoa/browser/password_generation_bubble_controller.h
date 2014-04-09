@@ -21,11 +21,8 @@ class RenderViewHost;
 }
 
 class Browser;
-@class PasswordGenerationBubbleController;
-
-namespace password_manager {
 class PasswordManager;
-}
+@class PasswordGenerationBubbleController;
 
 // Customized text field that is used to display the regenerate icon.
 @interface PasswordGenerationTextField : StyledTextField {
@@ -42,7 +39,7 @@ class PasswordManager;
  @private
   // |renderViewHost_| and |passwordManager_| may be nil in testing.
   content::RenderViewHost* renderViewHost_;
-  password_manager::PasswordManager* passwordManager_;
+  PasswordManager* passwordManager_;
   autofill::PasswordGenerator* passwordGenerator_;
   autofill::PasswordForm form_;
   autofill::password_generation::PasswordGenerationActions actions_;
@@ -55,7 +52,7 @@ class PasswordManager;
 - (id)initWithWindow:(NSWindow*)parentWindow
           anchoredAt:(NSPoint)point
       renderViewHost:(content::RenderViewHost*)renderViewHost
-     passwordManager:(password_manager::PasswordManager*)passwordManager
+     passwordManager:(PasswordManager*)passwordManager
       usingGenerator:(autofill::PasswordGenerator*)passwordGenerator
              forForm:(const autofill::PasswordForm&)form;
 - (void)performLayout;

@@ -14,9 +14,10 @@ using base::WaitableEvent;
 namespace browser_sync {
 
 PasswordModelWorker::PasswordModelWorker(
-    const scoped_refptr<password_manager::PasswordStore>& password_store,
+    const scoped_refptr<PasswordStore>& password_store,
     syncer::WorkerLoopDestructionObserver* observer)
-    : syncer::ModelSafeWorker(observer), password_store_(password_store) {
+  : syncer::ModelSafeWorker(observer),
+    password_store_(password_store) {
   DCHECK(password_store.get());
 }
 

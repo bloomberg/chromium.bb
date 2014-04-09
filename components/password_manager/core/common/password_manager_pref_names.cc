@@ -4,8 +4,6 @@
 
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 
-namespace password_manager {
-
 namespace prefs {
 
 #if defined(OS_WIN)
@@ -40,5 +38,3 @@ const char kLocalProfileId[] = "profile.local_profile_id";
 #endif
 
 }  // namespace prefs
-
-}  // namespace password_manager

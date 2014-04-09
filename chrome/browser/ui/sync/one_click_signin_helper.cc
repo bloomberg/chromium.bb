@@ -680,9 +680,8 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper);
 // static
 const int OneClickSigninHelper::kMaxNavigationsSince = 10;
 
-OneClickSigninHelper::OneClickSigninHelper(
-    content::WebContents* web_contents,
-    password_manager::PasswordManager* password_manager)
+OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents,
+                                           PasswordManager* password_manager)
     : content::WebContentsObserver(web_contents),
       showing_signin_(false),
       auto_accept_(AUTO_ACCEPT_NONE),
@@ -772,7 +771,7 @@ void OneClickSigninHelper::LogHistogramValue(
 // static
 void OneClickSigninHelper::CreateForWebContentsWithPasswordManager(
     content::WebContents* contents,
-    password_manager::PasswordManager* password_manager) {
+    PasswordManager* password_manager) {
   if (!FromWebContents(contents)) {
     contents->SetUserData(UserDataKey(),
                           new OneClickSigninHelper(contents, password_manager));

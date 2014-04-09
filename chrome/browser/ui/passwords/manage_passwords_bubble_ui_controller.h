@@ -25,7 +25,7 @@ class ManagePasswordsBubbleUIController
   // can handle later requests to save or blacklist that login information.
   // This stores the provided object in form_manager_ and triggers the UI to
   // prompt the user about whether they would like to save the password.
-  void OnPasswordSubmitted(password_manager::PasswordFormManager* form_manager);
+  void OnPasswordSubmitted(PasswordFormManager* form_manager);
 
   // Called when a form is autofilled with login information, so we can manage
   // password credentials for the current site which are stored in
@@ -112,7 +112,7 @@ class ManagePasswordsBubbleUIController
   // information.  If the user responds to a subsequent "Do you want to save
   // this password?" prompt, we ask this object to save or blacklist the
   // associated login information in Chrome's password store.
-  scoped_ptr<password_manager::PasswordFormManager> form_manager_;
+  scoped_ptr<PasswordFormManager> form_manager_;
 
   // All previously stored credentials for a specific site.  Set by
   // OnPasswordSubmitted() or OnPasswordAutofilled().

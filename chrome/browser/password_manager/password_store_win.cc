@@ -18,7 +18,6 @@
 
 using autofill::PasswordForm;
 using content::BrowserThread;
-using password_manager::PasswordStoreDefault;
 
 // Handles requests to WebDataService.
 class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
@@ -167,7 +166,7 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
 PasswordStoreWin::PasswordStoreWin(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-    password_manager::LoginDatabase* login_database,
+    LoginDatabase* login_database,
     WebDataService* web_data_service)
     : PasswordStoreDefault(main_thread_runner,
                            db_thread_runner,

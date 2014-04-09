@@ -20,8 +20,6 @@
 
 using autofill::PasswordForm;
 
-namespace password_manager {
-
 namespace {
 
 // Calls |consumer| back with the request result, if |consumer| is still alive.
@@ -255,5 +253,3 @@ void PasswordStore::DestroySyncableService() {
   syncable_service_.reset();
 }
 #endif
-
-}  // namespace password_manager

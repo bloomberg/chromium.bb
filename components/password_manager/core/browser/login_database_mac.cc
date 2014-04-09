@@ -8,8 +8,6 @@
 // rest of the database as a suplemental storage system to complement Keychain,
 // providing storage of fields Keychain doesn't allow.
 
-namespace password_manager {
-
 LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
     const base::string16& plain_text,
     std::string* cipher_text) const {
@@ -23,5 +21,3 @@ LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
   *plain_text = base::string16();
   return ENCRYPTION_RESULT_SUCCESS;
 }
-
-}  // namespace password_manager

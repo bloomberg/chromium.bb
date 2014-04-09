@@ -12,36 +12,31 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/autofill/core/common/password_form.h"
 
-namespace password_manager {
 class PasswordStore;
-}
 
 namespace passwords_helper {
 
 // Adds the login held in |form| to the password store |store|. Even though
 // logins are normally added asynchronously, this method will block until the
 // login is added.
-void AddLogin(password_manager::PasswordStore* store,
-              const autofill::PasswordForm& form);
+void AddLogin(PasswordStore* store, const autofill::PasswordForm& form);
 
 // Update the data held in password store |store| with a modified |form|.
 // This method blocks until the operation is complete.
-void UpdateLogin(password_manager::PasswordStore* store,
-                 const autofill::PasswordForm& form);
+void UpdateLogin(PasswordStore* store, const autofill::PasswordForm& form);
 
 // Searches |store| for all logins matching a fake signon realm used only by
 // LivePasswordsSyncTest and adds the results to |matches|. Note that the
 // caller is responsible for deleting the forms added to |matches|.
-void GetLogins(password_manager::PasswordStore* store,
+void GetLogins(PasswordStore* store,
                std::vector<autofill::PasswordForm>& matches);
 
 // Removes the login held in |form| from the password store |store|.  This
 // method blocks until the operation is complete.
-void RemoveLogin(password_manager::PasswordStore* store,
-                 const autofill::PasswordForm& form);
+void RemoveLogin(PasswordStore* store, const autofill::PasswordForm& form);
 
 // Removes all password forms from the password store |store|.
-void RemoveLogins(password_manager::PasswordStore* store);
+void RemoveLogins(PasswordStore* store);
 
 // Sets the cryptographer's encryption passphrase for the profile at index
 // |index| to |passphrase|, and passphrase type |type|.
@@ -55,10 +50,10 @@ void SetEncryptionPassphrase(int index,
 bool SetDecryptionPassphrase(int index, const std::string& passphrase);
 
 // Gets the password store of the profile with index |index|.
-password_manager::PasswordStore* GetPasswordStore(int index);
+PasswordStore* GetPasswordStore(int index);
 
 // Gets the password store of the verifier profile.
-password_manager::PasswordStore* GetVerifierPasswordStore();
+PasswordStore* GetVerifierPasswordStore();
 
 // Returns true iff the profile with index |index| contains the same password
 // forms as the verifier profile.

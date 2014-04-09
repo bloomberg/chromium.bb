@@ -402,7 +402,7 @@ class NativeBackendGnomeTest : public testing::Test {
   void CheckCredentialAvailability(const PasswordForm& credentials,
                                    const std::string& url,
                                    bool should_credential_be_available_to_url) {
-    password_manager::PSLMatchingHelper helper;
+    PSLMatchingHelper helper;
     ASSERT_TRUE(helper.IsMatchingEnabled())
         << "PSL matching needs to be enabled.";
 

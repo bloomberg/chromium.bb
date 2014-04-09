@@ -7,12 +7,10 @@
 
 #include "chrome/browser/password_manager/password_store_factory.h"
 
+class PasswordStore;
+
 namespace content {
 class BrowserContext;
-}
-
-namespace password_manager {
-class PasswordStore;
 }
 
 class TestPasswordStoreService : public PasswordStoreService {
@@ -21,7 +19,7 @@ class TestPasswordStoreService : public PasswordStoreService {
 
  private:
   explicit TestPasswordStoreService(
-      scoped_refptr<password_manager::PasswordStore> password_store);
+      scoped_refptr<PasswordStore> password_store);
 
   virtual ~TestPasswordStoreService();
 

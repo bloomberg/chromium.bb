@@ -21,8 +21,6 @@ using testing::_;
 using testing::DoAll;
 using testing::WithArg;
 
-namespace password_manager {
-
 namespace {
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
@@ -210,5 +208,3 @@ TEST_F(PasswordStoreTest, StartSyncFlare) {
   store->Shutdown();
   base::MessageLoop::current()->RunUntilIdle();
 }
-
-}  // namespace password_manager

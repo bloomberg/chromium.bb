@@ -30,7 +30,7 @@ class URLRequest;
 // authentication info to the net::URLRequest that needs it. These functions
 // must be implemented in a thread safe manner.
 class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
-                     public password_manager::LoginModelObserver,
+                     public LoginModelObserver,
                      public content::NotificationObserver {
  public:
   LoginHandler(net::AuthChallengeInfo* auth_info, net::URLRequest* request);
@@ -45,13 +45,13 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
 
   // Initializes the underlying platform specific view.
   virtual void BuildViewForPasswordManager(
-      password_manager::PasswordManager* manager,
+      PasswordManager* manager,
       const base::string16& explanation) = 0;
 
   // Sets information about the authentication type (|form|) and the
   // |password_manager| for this profile.
   void SetPasswordForm(const autofill::PasswordForm& form);
-  void SetPasswordManager(password_manager::PasswordManager* password_manager);
+  void SetPasswordManager(PasswordManager* password_manager);
 
   // Returns the WebContents that needs authentication.
   content::WebContents* GetWebContentsForLogin() const;
@@ -81,7 +81,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
  protected:
   virtual ~LoginHandler();
 
-  void SetModel(password_manager::LoginModel* model);
+  void SetModel(LoginModel* model);
 
   // Notify observers that authentication is needed.
   void NotifyAuthNeeded();
@@ -142,7 +142,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
 
   // Points to the password manager owned by the WebContents requesting auth.
   // This should only be accessed on the UI loop.
-  password_manager::PasswordManager* password_manager_;
+  PasswordManager* password_manager_;
 
   // Cached from the net::URLRequest, in case it goes NULL on us.
   int render_process_host_id_;
@@ -150,7 +150,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
 
   // If not null, points to a model we need to notify of our own destruction
   // so it doesn't try and access this when its too late.
-  password_manager::LoginModel* login_model_;
+  LoginModel* login_model_;
 
   // Observes other login handlers so this login handler can respond.
   // This is only accessed on the UI thread.

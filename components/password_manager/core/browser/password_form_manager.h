@@ -20,8 +20,6 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-namespace password_manager {
-
 class PasswordManager;
 class PasswordManagerClient;
 
@@ -317,7 +315,4 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };
-
-}  // namespace password_manager
-
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_MANAGER_H_

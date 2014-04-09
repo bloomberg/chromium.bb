@@ -11,7 +11,6 @@
 #include "content/public/browser/notification_service.h"
 
 using autofill::PasswordFormMap;
-using password_manager::PasswordFormManager;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ManagePasswordsBubbleUIController);
 

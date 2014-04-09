@@ -174,7 +174,7 @@ void TabAutofillManagerDelegate::WebContentsDestroyed(
 
 void TabAutofillManagerDelegate::DetectAccountCreationForms(
     const std::vector<autofill::FormStructure*>& forms) {
-  password_manager::PasswordGenerationManager* manager =
+  PasswordGenerationManager* manager =
       ChromePasswordManagerClient::GetGenerationManagerFromWebContents(
           web_contents_);
   if (manager)

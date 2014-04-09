@@ -33,7 +33,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   // if empty, the usage is not reported, otherwise the suffix is used to choose
   // the right histogram.
   static void Create(content::WebContents* web_contents,
-                     password_manager::PasswordFormManager* form_to_save,
+                     PasswordFormManager* form_to_save,
                      const std::string& uma_histogram_suffix);
 
   virtual ~SavePasswordInfoBarDelegate();
@@ -44,9 +44,8 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
       bool use_additional_authentication);
 
  private:
-  SavePasswordInfoBarDelegate(
-      password_manager::PasswordFormManager* form_to_save,
-      const std::string& uma_histogram_suffix);
+  SavePasswordInfoBarDelegate(PasswordFormManager* form_to_save,
+                              const std::string& uma_histogram_suffix);
 
   // Returns a save password infobar that owns |delegate|.
   static scoped_ptr<InfoBar> CreateInfoBar(
@@ -68,10 +67,10 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // The PasswordFormManager managing the form we're asking the user about,
   // and should update as per her decision.
-  scoped_ptr<password_manager::PasswordFormManager> form_to_save_;
+  scoped_ptr<PasswordFormManager> form_to_save_;
 
   // Used to track the results we get from the info bar.
-  password_manager::metrics_util::ResponseType infobar_response_;
+  password_manager_metrics_util::ResponseType infobar_response_;
 
   // Measures the "Save password?" prompt lifetime. Used to report an UMA
   // signal.

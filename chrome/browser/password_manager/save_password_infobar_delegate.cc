@@ -22,7 +22,7 @@
 // static
 void SavePasswordInfoBarDelegate::Create(
     content::WebContents* web_contents,
-    password_manager::PasswordFormManager* form_to_save,
+    PasswordFormManager* form_to_save,
     const std::string& uma_histogram_suffix) {
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   // Don't show the password manager infobar if this form is for a google
@@ -53,9 +53,9 @@ void SavePasswordInfoBarDelegate::Create(
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.InfoBarResponse",
                             infobar_response_,
-                            password_manager::metrics_util::NUM_RESPONSE_TYPES);
+                            password_manager_metrics_util::NUM_RESPONSE_TYPES);
 
-  password_manager::metrics_util::LogUIDismissalReason(infobar_response_);
+  password_manager_metrics_util::LogUIDismissalReason(infobar_response_);
 
   // The shortest period for which the prompt needs to live, so that we don't
   // consider it killed prematurely, as might happen, e.g., if a pre-rendered
@@ -64,11 +64,11 @@ SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
       base::TimeDelta::FromSeconds(1);
 
   if (!uma_histogram_suffix_.empty()) {
-    password_manager::metrics_util::LogUMAHistogramEnumeration(
+    password_manager_metrics_util::LogUMAHistogramEnumeration(
         "PasswordManager.SavePasswordPromptResponse_" + uma_histogram_suffix_,
         infobar_response_,
-        password_manager::metrics_util::NUM_RESPONSE_TYPES);
-    password_manager::metrics_util::LogUMAHistogramBoolean(
+        password_manager_metrics_util::NUM_RESPONSE_TYPES);
+    password_manager_metrics_util::LogUMAHistogramBoolean(
         "PasswordManager.SavePasswordPromptDisappearedQuickly_" +
             uma_histogram_suffix_,
         timer_.Elapsed() < kMinimumPromptDisplayTime);
@@ -82,14 +82,14 @@ void SavePasswordInfoBarDelegate::SetUseAdditionalPasswordAuthentication(
 }
 
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
-    password_manager::PasswordFormManager* form_to_save,
+    PasswordFormManager* form_to_save,
     const std::string& uma_histogram_suffix)
     : ConfirmInfoBarDelegate(),
       form_to_save_(form_to_save),
-      infobar_response_(password_manager::metrics_util::NO_RESPONSE),
+      infobar_response_(password_manager_metrics_util::NO_RESPONSE),
       uma_histogram_suffix_(uma_histogram_suffix) {
   if (!uma_histogram_suffix_.empty()) {
-    password_manager::metrics_util::LogUMAHistogramBoolean(
+    password_manager_metrics_util::LogUMAHistogramBoolean(
         "PasswordManager.SavePasswordPromptDisplayed_" + uma_histogram_suffix_,
         true);
   }
@@ -136,20 +136,20 @@ base::string16 SavePasswordInfoBarDelegate::GetButtonLabel(
 bool SavePasswordInfoBarDelegate::Accept() {
   DCHECK(form_to_save_.get());
   form_to_save_->Save();
-  infobar_response_ = password_manager::metrics_util::REMEMBER_PASSWORD;
+  infobar_response_ = password_manager_metrics_util::REMEMBER_PASSWORD;
   return true;
 }
 
 bool SavePasswordInfoBarDelegate::Cancel() {
   DCHECK(form_to_save_.get());
   form_to_save_->PermanentlyBlacklist();
-  infobar_response_ = password_manager::metrics_util::NEVER_REMEMBER_PASSWORD;
+  infobar_response_ = password_manager_metrics_util::NEVER_REMEMBER_PASSWORD;
   return true;
 }
 
 void SavePasswordInfoBarDelegate::InfoBarDismissed() {
   DCHECK(form_to_save_.get());
-  infobar_response_ = password_manager::metrics_util::INFOBAR_DISMISSED;
+  infobar_response_ = password_manager_metrics_util::INFOBAR_DISMISSED;
 }
 
 InfoBarDelegate::InfoBarAutomationType

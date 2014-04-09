@@ -7,8 +7,6 @@
 #include "base/strings/string_util.h"
 #include "components/os_crypt/os_crypt.h"
 
-namespace password_manager {
-
 LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
     const base::string16& plain_text,
     std::string* cipher_text) const {
@@ -24,5 +22,3 @@ LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
     return ENCRYPTION_RESULT_SUCCESS;
   return ENCRYPTION_RESULT_ITEM_FAILURE;
 }
-
-}  // namespace password_manager

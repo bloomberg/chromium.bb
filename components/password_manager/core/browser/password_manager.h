@@ -18,6 +18,10 @@
 #include "components/password_manager/core/browser/login_model.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 
+class PasswordManagerClient;
+class PasswordManagerDriver;
+class PasswordManagerTest;
+class PasswordFormManager;
 class PrefRegistrySimple;
 
 namespace content {
@@ -27,13 +31,6 @@ class WebContents;
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
-
-namespace password_manager {
-
-class PasswordManagerClient;
-class PasswordManagerDriver;
-class PasswordManagerTest;
-class PasswordFormManager;
 
 // Per-tab password manager. Handles creation and management of UI elements,
 // receiving password form data from the renderer and managing the password
@@ -178,7 +175,5 @@ class PasswordManager : public LoginModel {
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };
-
-}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_H_

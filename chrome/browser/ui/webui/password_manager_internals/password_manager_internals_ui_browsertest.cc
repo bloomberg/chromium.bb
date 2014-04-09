@@ -51,8 +51,7 @@ void PasswordManagerInternalsWebUIBrowserTest::SetUpOnMainThread() {
 
 void PasswordManagerInternalsWebUIBrowserTest::SetUpCommandLine(
     CommandLine* command_line) {
-  command_line->AppendSwitch(
-      password_manager::switches::kEnablePasswordManagerInternalsUI);
+  command_line->AppendSwitch(switches::kEnablePasswordManagerInternalsUI);
 }
 
 content::WebContents*

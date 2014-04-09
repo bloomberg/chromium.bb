@@ -22,8 +22,6 @@
 using autofill::PasswordForm;
 using autofill::PasswordFormMap;
 
-namespace password_manager {
-
 namespace {
 
 const char kSpdyProxyRealm[] = "/SpdyProxy";
@@ -202,12 +200,12 @@ void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.ProvisionalSaveFailure",
                             failure, MAX_FAILURE_VALUE);
 
-  std::string group_name = metrics_util::GroupIdToString(
-      metrics_util::MonitoredDomainGroupId(form_origin, client_->GetPrefs()));
+  std::string group_name = password_manager_metrics_util::GroupIdToString(
+      password_manager_metrics_util::MonitoredDomainGroupId(
+          form_origin, client_->GetPrefs()));
   if (!group_name.empty()) {
-    metrics_util::LogUMAHistogramEnumeration(
-        "PasswordManager.ProvisionalSaveFailure_" + group_name,
-        failure,
+    password_manager_metrics_util::LogUMAHistogramEnumeration(
+        "PasswordManager.ProvisionalSaveFailure_" + group_name, failure,
         MAX_FAILURE_VALUE);
   }
 }
@@ -392,5 +390,3 @@ void PasswordManager::Autofill(
 
   client_->PasswordWasAutofilled(best_matches);
 }
-
-}  // namespace password_manager

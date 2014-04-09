@@ -8,10 +8,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace password_manager {
-
-namespace {
-
 TEST(PSLMatchingUtilsTest, IsPublicSuffixDomainMatch) {
   struct TestPair {
     const char* url1;
@@ -40,7 +36,3 @@ TEST(PSLMatchingUtilsTest, IsPublicSuffixDomainMatch) {
         << ", second URL = " << pairs[i].url2;
   }
 }
-
-}  // namespace
-
-}  // namespace password_manager

@@ -20,7 +20,6 @@
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
 using autofill::PasswordForm;
-using password_manager::PasswordStore;
 using sync_datatype_helper::test;
 
 const std::string kFakeSignonRealm = "http://fake-signon-realm.google.com/";
@@ -36,11 +35,11 @@ void PasswordStoreCallback(base::WaitableEvent* wait_event) {
   wait_event->Signal();
 }
 
-class PasswordStoreConsumerHelper
-    : public password_manager::PasswordStoreConsumer {
+class PasswordStoreConsumerHelper : public PasswordStoreConsumer {
  public:
   explicit PasswordStoreConsumerHelper(std::vector<PasswordForm>* result)
-      : password_manager::PasswordStoreConsumer(), result_(result) {}
+      : PasswordStoreConsumer(),
+        result_(result) {}
 
   virtual void OnGetPasswordStoreResults(
       const std::vector<PasswordForm*>& result) OVERRIDE {
@@ -135,8 +134,7 @@ bool ProfileContainsSamePasswordFormsAsVerifier(int index) {
   std::vector<PasswordForm> forms;
   GetLogins(GetVerifierPasswordStore(), verifier_forms);
   GetLogins(GetPasswordStore(index), forms);
-  bool result =
-      password_manager::ContainsSamePasswordForms(verifier_forms, forms);
+  bool result = ContainsSamePasswordForms(verifier_forms, forms);
   if (!result) {
     LOG(ERROR) << "Password forms in Verifier Profile:";
     for (std::vector<PasswordForm>::iterator it = verifier_forms.begin();
@@ -157,7 +155,7 @@ bool ProfilesContainSamePasswordForms(int index_a, int index_b) {
   std::vector<PasswordForm> forms_b;
   GetLogins(GetPasswordStore(index_a), forms_a);
   GetLogins(GetPasswordStore(index_b), forms_b);
-  bool result = password_manager::ContainsSamePasswordForms(forms_a, forms_b);
+  bool result = ContainsSamePasswordForms(forms_a, forms_b);
   if (!result) {
     LOG(ERROR) << "Password forms in Profile" << index_a << ":";
     for (std::vector<PasswordForm>::iterator it = forms_a.begin();

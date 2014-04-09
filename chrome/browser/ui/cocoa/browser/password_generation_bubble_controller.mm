@@ -293,7 +293,7 @@ const CGFloat kIconSize = 26.0;
 - (id)initWithWindow:(NSWindow*)parentWindow
           anchoredAt:(NSPoint)point
       renderViewHost:(content::RenderViewHost*)renderViewHost
-     passwordManager:(password_manager::PasswordManager*)passwordManager
+     passwordManager:(PasswordManager*)passwordManager
       usingGenerator:(autofill::PasswordGenerator*)passwordGenerator
              forForm:(const autofill::PasswordForm&)form {
   CGFloat width = (kBorderSize*2 +

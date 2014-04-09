@@ -21,8 +21,6 @@ namespace content {
 class WebContents;
 }
 
-namespace password_manager {
-
 class ContentPasswordManagerDriver : public PasswordManagerDriver,
                                      public content::WebContentsObserver {
  public:
@@ -55,7 +53,5 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver,
 
   DISALLOW_COPY_AND_ASSIGN(ContentPasswordManagerDriver);
 };
-
-}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_CONTENT_PASSWORD_MANAGER_DRIVER_H_

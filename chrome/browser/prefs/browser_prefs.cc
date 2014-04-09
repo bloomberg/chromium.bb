@@ -325,7 +325,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_WIN)
   app_metro_launch::RegisterPrefs(registry);
-  password_manager::PasswordManager::RegisterLocalPrefs(registry);
+  PasswordManager::RegisterLocalPrefs(registry);
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -364,7 +364,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   NetPrefObserver::RegisterProfilePrefs(registry);
   NetworkTimeService::RegisterProfilePrefs(registry);
   NewTabUI::RegisterProfilePrefs(registry);
-  password_manager::PasswordManager::RegisterProfilePrefs(registry);
+  PasswordManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   PrefsTabHelper::RegisterProfilePrefs(registry);
   Profile::RegisterProfilePrefs(registry);

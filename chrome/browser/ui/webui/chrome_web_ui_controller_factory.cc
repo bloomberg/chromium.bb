@@ -298,7 +298,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<OmniboxUI>;
   if (url.host() == chrome::kChromeUIPasswordManagerInternalsHost &&
       CommandLine::ForCurrentProcess()->HasSwitch(
-          password_manager::switches::kEnablePasswordManagerInternalsUI)) {
+          switches::kEnablePasswordManagerInternalsUI)) {
     return &NewWebUI<PasswordManagerInternalsUI>;
   }
   if (url.host() == chrome::kChromeUIPredictorsHost)

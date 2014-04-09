@@ -33,8 +33,6 @@ namespace autofill {
 class AutofillManager;
 }
 
-namespace password_manager {
-
 namespace {
 
 void RunAllPendingTasks() {
@@ -701,5 +699,3 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   EXPECT_CALL(*mock_store(), UpdateLogin(complete_form));
   form_manager.Save();
 }
-
-}  // namespace password_manager

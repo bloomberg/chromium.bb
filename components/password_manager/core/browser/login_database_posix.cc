@@ -6,8 +6,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 
-namespace password_manager {
-
 // TODO: Actually encrypt passwords on Linux.
 
 LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
@@ -23,5 +21,3 @@ LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
   *plain_text = base::UTF8ToUTF16(cipher_text);
   return ENCRYPTION_RESULT_SUCCESS;
 }
-
-}  // namespace password_manager

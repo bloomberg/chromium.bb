@@ -11,8 +11,6 @@
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store.h"
 
-namespace password_manager {
-
 // Simple password store implementation that delegates everything to
 // the LoginDatabase.
 class PasswordStoreDefault : public PasswordStore {
@@ -57,7 +55,5 @@ class PasswordStoreDefault : public PasswordStore {
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreDefault);
 };
-
-}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_DEFAULT_H_

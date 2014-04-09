@@ -12,8 +12,6 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 
-namespace password_manager {
-
 PasswordGenerationManager::PasswordGenerationManager(
     PasswordManagerClient* client)
     : client_(client),
@@ -56,5 +54,3 @@ bool PasswordGenerationManager::IsGenerationEnabled() const {
 
   return true;
 }
-
-}  // namespace password_manager

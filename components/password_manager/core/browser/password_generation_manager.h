@@ -9,14 +9,12 @@
 
 #include "base/basictypes.h"
 
+class PasswordManagerClient;
+class PasswordManagerDriver;
+
 namespace autofill {
 class FormStructure;
 }
-
-namespace password_manager {
-
-class PasswordManagerClient;
-class PasswordManagerDriver;
 
 // Per-tab manager for password generation. Will enable this feature only if
 //
@@ -58,7 +56,5 @@ class PasswordGenerationManager {
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationManager);
 };
-
-}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_GENERATION_MANAGER_H_

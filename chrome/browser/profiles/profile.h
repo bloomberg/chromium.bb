@@ -21,6 +21,7 @@ class ExtensionService;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
 class HostContentSettingsMap;
+class PasswordStore;
 class PrefProxyConfigTracker;
 class PrefService;
 class PromoCounter;

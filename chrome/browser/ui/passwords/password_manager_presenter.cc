@@ -19,8 +19,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 
-using password_manager::PasswordStore;
-
 PasswordManagerPresenter::PasswordManagerPresenter(
     PasswordUIView* password_view)
     : populater_(this),
@@ -46,7 +44,7 @@ void PasswordManagerPresenter::Initialize() {
     return;
 
   show_passwords_.Init(
-      password_manager::prefs::kPasswordManagerAllowShowPasswords,
+      prefs::kPasswordManagerAllowShowPasswords,
       password_view_->GetProfile()->GetPrefs(),
       base::Bind(&PasswordManagerPresenter::UpdatePasswordLists,
                  base::Unretained(this)));
@@ -58,7 +56,7 @@ void PasswordManagerPresenter::Initialize() {
 }
 
 void PasswordManagerPresenter::OnLoginsChanged(
-    const password_manager::PasswordStoreChangeList& changes) {
+    const PasswordStoreChangeList& changes) {
   // Entire list is updated for convenience.
   UpdatePasswordLists();
 }

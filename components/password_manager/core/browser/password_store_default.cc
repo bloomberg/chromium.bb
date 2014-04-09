@@ -13,8 +13,6 @@
 
 using autofill::PasswordForm;
 
-namespace password_manager {
-
 PasswordStoreDefault::PasswordStoreDefault(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
@@ -105,5 +103,3 @@ bool PasswordStoreDefault::FillBlacklistLogins(
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_db_->GetBlacklistLogins(forms);
 }
-
-}  // namespace password_manager

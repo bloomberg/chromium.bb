@@ -14,12 +14,10 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
 
+class PasswordManager;
+
 namespace autofill {
 struct PasswordForm;
-}
-
-namespace password_manager {
-class PasswordManager;
 }
 
 namespace prerender {
@@ -46,7 +44,7 @@ class PrerenderTabHelper
 
   static void CreateForWebContentsWithPasswordManager(
       content::WebContents* web_contents,
-      password_manager::PasswordManager* password_manager);
+      PasswordManager* password_manager);
 
   virtual ~PrerenderTabHelper();
 
@@ -83,7 +81,7 @@ class PrerenderTabHelper
 
  private:
   PrerenderTabHelper(content::WebContents* web_contents,
-                     password_manager::PasswordManager* password_manager);
+                     PasswordManager* password_manager);
   friend class content::WebContentsUserData<PrerenderTabHelper>;
 
   void RecordEvent(Event event) const;

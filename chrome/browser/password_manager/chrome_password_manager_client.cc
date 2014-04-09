@@ -64,7 +64,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
 ChromePasswordManagerClient::~ChromePasswordManagerClient() {}
 
 void ChromePasswordManagerClient::PromptUserToSavePassword(
-    password_manager::PasswordFormManager* form_to_save) {
+    PasswordFormManager* form_to_save) {
   if (IsTheHotNewBubbleUIEnabled()) {
     ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
         ManagePasswordsBubbleUIController::FromWebContents(web_contents());
@@ -75,8 +75,8 @@ void ChromePasswordManagerClient::PromptUserToSavePassword(
     }
   } else {
     std::string uma_histogram_suffix(
-        password_manager::metrics_util::GroupIdToString(
-            password_manager::metrics_util::MonitoredDomainGroupId(
+        password_manager_metrics_util::GroupIdToString(
+            password_manager_metrics_util::MonitoredDomainGroupId(
                 form_to_save->realm(), GetPrefs())));
     SavePasswordInfoBarDelegate::Create(
         web_contents(), form_to_save, uma_histogram_suffix);
@@ -126,8 +126,7 @@ PrefService* ChromePasswordManagerClient::GetPrefs() {
   return GetProfile()->GetPrefs();
 }
 
-password_manager::PasswordStore*
-ChromePasswordManagerClient::GetPasswordStore() {
+PasswordStore* ChromePasswordManagerClient::GetPasswordStore() {
   // Always use EXPLICIT_ACCESS as the password manager checks IsOffTheRecord
   // itself when it shouldn't access the PasswordStore.
   // TODO(gcasto): Is is safe to change this to Profile::IMPLICIT_ACCESS?
@@ -135,8 +134,7 @@ ChromePasswordManagerClient::GetPasswordStore() {
                                              Profile::EXPLICIT_ACCESS).get();
 }
 
-password_manager::PasswordManagerDriver*
-ChromePasswordManagerClient::GetDriver() {
+PasswordManagerDriver* ChromePasswordManagerClient::GetDriver() {
   return &driver_;
 }
 
@@ -144,8 +142,7 @@ base::FieldTrial::Probability
 ChromePasswordManagerClient::GetProbabilityForExperiment(
     const std::string& experiment_name) {
   base::FieldTrial::Probability enabled_probability = 0;
-  if (experiment_name ==
-      password_manager::PasswordManager::kOtherPossibleUsernamesExperiment) {
+  if (experiment_name == PasswordManager::kOtherPossibleUsernamesExperiment) {
     switch (chrome::VersionInfo::GetChannel()) {
       case chrome::VersionInfo::CHANNEL_DEV:
       case chrome::VersionInfo::CHANNEL_BETA:
@@ -167,7 +164,7 @@ bool ChromePasswordManagerClient::IsPasswordSyncEnabled() {
 }
 
 void ChromePasswordManagerClient::SetLogger(
-    password_manager::PasswordManagerLogger* logger) {
+    PasswordManagerLogger* logger) {
   // We should never be replacing one logger with a different one, because that
   // will leave the first without further updates, and the user likely confused.
   // TODO(vabr): For the reason above, before moving the internals page from
@@ -184,7 +181,7 @@ void ChromePasswordManagerClient::LogSavePasswordProgress(
 }
 
 // static
-password_manager::PasswordGenerationManager*
+PasswordGenerationManager*
 ChromePasswordManagerClient::GetGenerationManagerFromWebContents(
     content::WebContents* contents) {
   ChromePasswordManagerClient* client =
@@ -195,8 +192,7 @@ ChromePasswordManagerClient::GetGenerationManagerFromWebContents(
 }
 
 // static
-password_manager::PasswordManager*
-ChromePasswordManagerClient::GetManagerFromWebContents(
+PasswordManager* ChromePasswordManagerClient::GetManagerFromWebContents(
     content::WebContents* contents) {
   ChromePasswordManagerClient* client =
       ChromePasswordManagerClient::FromWebContents(contents);

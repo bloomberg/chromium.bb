@@ -36,8 +36,6 @@ namespace autofill {
 class AutofillManager;
 }
 
-namespace password_manager {
-
 namespace {
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
@@ -605,5 +603,3 @@ TEST_F(PasswordManagerTest, PasswordFormReappearance) {
   manager()->OnPasswordFormsParsed(observed);
   manager()->OnPasswordFormsRendered(observed);
 }
-
-}  // namespace password_manager

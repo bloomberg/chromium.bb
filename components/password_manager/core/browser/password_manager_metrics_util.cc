@@ -20,9 +20,7 @@
 using base::ListValue;
 using base::FundamentalValue;
 
-namespace password_manager {
-
-namespace metrics_util {
+namespace password_manager_metrics_util {
 
 namespace {
 
@@ -145,6 +143,4 @@ void LogUIDismissalReason(UIDismissalReason reason) {
                             NUM_UI_RESPONSES);
 }
 
-}  // namespace metrics_util
-
-}  // namespace password_manager
+}  // namespace password_manager_metrics_util

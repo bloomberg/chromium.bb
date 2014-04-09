@@ -21,8 +21,6 @@ using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using ::testing::Eq;
 
-namespace password_manager {
-
 class LoginDatabaseTest : public testing::Test {
  protected:
   virtual void SetUp() {
@@ -768,5 +766,3 @@ TEST_F(LoginDatabaseTest, FilePermissions) {
   EXPECT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
 }
 #endif  // defined(OS_POSIX)
-
-}  // namespace password_manager

@@ -7,17 +7,15 @@
 
 #include <vector>
 
+class PasswordGenerationManager;
+class PasswordManager;
+
 namespace autofill {
 class AutofillManager;
 struct FormData;
 struct PasswordForm;
 struct PasswordFormFillData;
 }  // namespace autofill
-
-namespace password_manager {
-
-class PasswordGenerationManager;
-class PasswordManager;
 
 // Interface that allows PasswordManager core code to interact with its driver
 // (i.e., obtain information from it and give information to it).
@@ -56,7 +54,5 @@ class PasswordManagerDriver {
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDriver);
 };
-
-}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_DRIVER_H_

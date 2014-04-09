@@ -15,8 +15,6 @@
 
 using autofill::PasswordForm;
 
-namespace password_manager {
-
 #if !defined(OS_IOS)
 namespace {
 
@@ -76,5 +74,3 @@ bool PSLMatchingHelper::DeterminePSLEnabled() {
 #endif
   return enabled;
 }
-
-}  // namespace password_manager
