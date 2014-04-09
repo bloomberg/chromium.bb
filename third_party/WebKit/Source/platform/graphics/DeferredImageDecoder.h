@@ -52,6 +52,7 @@ public:
     static bool isLazyDecoded(const SkBitmap&);
 
     static void setEnabled(bool);
+    static bool enabled();
 
     String filenameExtension() const;
 

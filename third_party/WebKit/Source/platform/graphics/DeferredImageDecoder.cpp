@@ -93,6 +93,11 @@ void DeferredImageDecoder::setEnabled(bool enabled)
 #endif
 }
 
+bool DeferredImageDecoder::enabled()
+{
+    return s_enabled;
+}
+
 String DeferredImageDecoder::filenameExtension() const
 {
     return m_actualDecoder ? m_actualDecoder->filenameExtension() : m_filenameExtension;

@@ -21,6 +21,7 @@
 #include "config.h"
 #include "platform/image-decoders/ImageDecoder.h"
 
+#include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 #include "platform/image-decoders/ico/ICOImageDecoder.h"
@@ -130,6 +131,11 @@ unsigned ImageDecoder::frameBytesAtIndex(size_t index) const
         return 0;
     // FIXME: Use the dimension of the requested frame.
     return m_size.area() * sizeof(ImageFrame::PixelData);
+}
+
+bool ImageDecoder::deferredImageDecodingEnabled()
+{
+    return DeferredImageDecoder::enabled();
 }
 
 size_t ImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame)

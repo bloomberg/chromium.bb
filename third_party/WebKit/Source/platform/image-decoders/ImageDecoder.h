@@ -149,6 +149,8 @@ public:
     // Number of bytes in the decoded frame requested. Return 0 if not yet decoded.
     virtual unsigned frameBytesAtIndex(size_t) const;
 
+    static bool deferredImageDecodingEnabled();
+
     void setIgnoreGammaAndColorProfile(bool flag) { m_ignoreGammaAndColorProfile = flag; }
     bool ignoresGammaAndColorProfile() const { return m_ignoreGammaAndColorProfile; }
 
