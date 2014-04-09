@@ -702,7 +702,7 @@ def main():
                                               relativedelta(months=2))
   parser.add_option(
       '-Q', '--last_quarter', action='store_true',
-      help='Use last quarter\'s dates, e.g. %s to %s' % (
+      help='Use last quarter\'s dates, i.e. %s to %s' % (
         quarter_begin.strftime('%Y-%m-%d'), quarter_end.strftime('%Y-%m-%d')))
   parser.add_option(
       '-Y', '--this_year', action='store_true',
@@ -710,6 +710,9 @@ def main():
   parser.add_option(
       '-w', '--week_of', metavar='<date>',
       help='Show issues for week of the date')
+  parser.add_option(
+      '-W', '--last_week', action='store_true',
+      help='Show last week\'s issues')
   parser.add_option(
       '-a', '--auth',
       action='store_true',
@@ -791,6 +794,8 @@ def main():
       begin, end = get_year_of(datetime.today())
     elif options.week_of:
       begin, end = (get_week_of(datetime.strptime(options.week_of, '%m/%d/%y')))
+    elif options.last_week:
+      begin, end = (get_week_of(datetime.today() - timedelta(days=7)))
     else:
       begin, end = (get_week_of(datetime.today() - timedelta(days=1)))
   else:
