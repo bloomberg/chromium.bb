@@ -507,7 +507,9 @@
         'geometry/size_unittest.cc',
         'geometry/vector2d_unittest.cc',
         'geometry/vector3d_unittest.cc',
+        'range/range_mac_unittest.mm',
         'range/range_unittest.cc',
+        'range/range_win_unittest.cc',
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
