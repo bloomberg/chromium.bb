@@ -32,8 +32,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/events/MutationEvent.h"
 #include "core/inspector/InspectorInstrumentation.h"
-
-using namespace std;
+#include "wtf/CheckedArithmetic.h"
 
 namespace WebCore {
 
@@ -105,45 +104,49 @@ void CharacterData::insertData(unsigned offset, const String& data, ExceptionSta
     document().didInsertText(this, offset, data.length());
 }
 
-void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& exceptionState, RecalcStyleBehavior recalcStyleBehavior)
+static bool validateOffsetCount(unsigned offset, unsigned count, unsigned length, unsigned& realCount, ExceptionState& exceptionState)
 {
-    if (offset > length()) {
-        exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ").");
-        return;
+    if (offset > length) {
+        exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length) + ").");
+        return false;
     }
 
-    unsigned realCount;
-    if (offset + count > length())
-        realCount = length() - offset;
+    Checked<unsigned, RecordOverflow> offsetCount = offset;
+    offsetCount += count;
+
+    if (offsetCount.hasOverflowed() || offset + count > length)
+        realCount = length - offset;
     else
         realCount = count;
+
+    return true;
+}
+
+void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& exceptionState, RecalcStyleBehavior recalcStyleBehavior)
+{
+    unsigned realCount;
+    if (!validateOffsetCount(offset, count, length(), realCount, exceptionState))
+        return;
 
     String newStr = m_data;
     newStr.remove(offset, realCount);
 
-    setDataAndUpdate(newStr, offset, count, 0, recalcStyleBehavior);
+    setDataAndUpdate(newStr, offset, realCount, 0, recalcStyleBehavior);
 
     document().didRemoveText(this, offset, realCount);
 }
 
 void CharacterData::replaceData(unsigned offset, unsigned count, const String& data, ExceptionState& exceptionState)
 {
-    if (offset > length()) {
-        exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ").");
-        return;
-    }
-
     unsigned realCount;
-    if (offset + count > length())
-        realCount = length() - offset;
-    else
-        realCount = count;
+    if (!validateOffsetCount(offset, count, length(), realCount, exceptionState))
+        return;
 
     String newStr = m_data;
     newStr.remove(offset, realCount);
     newStr.insert(data, offset);
 
-    setDataAndUpdate(newStr, offset, count, data.length());
+    setDataAndUpdate(newStr, offset, realCount, data.length());
 
     // update the markers for spell checking and grammar checking
     document().didRemoveText(this, offset, realCount);
