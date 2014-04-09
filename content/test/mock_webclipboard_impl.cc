@@ -177,9 +177,9 @@ void MockWebClipboardImpl::writeDataObject(const WebDragData& data) {
         m_customData.insert(std::make_pair(item.stringType, item.stringData));
         continue;
       }
-      case WebDragData::Item::StorageTypeFilename:
-      case WebDragData::Item::StorageTypeBinaryData:
-        NOTREACHED();  // Currently unused by the clipboard implementation.
+      default:
+        // Currently other types are unused by the clipboard implementation.
+        NOTREACHED();
     }
   }
 }

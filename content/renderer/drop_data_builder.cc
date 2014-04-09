@@ -59,6 +59,8 @@ DropData DropDataBuilder::Build(const WebDragData& drag_data) {
             base::FilePath::FromUTF16Unsafe(item.filenameData),
             base::FilePath::FromUTF16Unsafe(item.displayNameData)));
         break;
+      default:  // TODO(hashimoto): Remove this "default".
+        NOTREACHED();
     }
   }
 
