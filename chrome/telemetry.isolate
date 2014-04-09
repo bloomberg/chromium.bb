@@ -20,7 +20,6 @@
       # precise to ../build/android/pylib/.
       'variables': {
         'isolate_dependency_tracked': [
-          '../chrome/test/functional/webpagereplay.py',
           '../third_party/WebKit/PerformanceTests/resources/jquery.tablesorter.min.js',
           '../third_party/WebKit/PerformanceTests/resources/statistics.js',
           '../third_party/flot/jquery.flot.min.js',
