@@ -27,6 +27,7 @@
 #define CSSSegmentedFontFace_h
 
 #include "platform/fonts/FontTraits.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/PassRefPtr.h"
@@ -43,11 +44,11 @@ class FontDescription;
 class FontFace;
 class SegmentedFontData;
 
-class CSSSegmentedFontFace : public RefCounted<CSSSegmentedFontFace> {
+class CSSSegmentedFontFace : public RefCountedWillBeGarbageCollectedFinalized<CSSSegmentedFontFace> {
 public:
-    static PassRefPtr<CSSSegmentedFontFace> create(CSSFontSelector* selector, FontTraits traits)
+    static PassRefPtrWillBeRawPtr<CSSSegmentedFontFace> create(CSSFontSelector* selector, FontTraits traits)
     {
-        return adoptRef(new CSSSegmentedFontFace(selector, traits));
+        return adoptRefWillBeNoop(new CSSSegmentedFontFace(selector, traits));
     }
     ~CSSSegmentedFontFace();
 
@@ -67,6 +68,8 @@ public:
     void match(const String&, Vector<RefPtr<FontFace> >&) const;
     void willUseFontData(const FontDescription&);
 
+    void trace(Visitor* visitor) { visitor->trace(m_fontSelector); }
+
 private:
     CSSSegmentedFontFace(CSSFontSelector*, FontTraits);
 
@@ -77,7 +80,7 @@ private:
 
     typedef ListHashSet<RefPtr<FontFace> > FontFaceList;
 
-    CSSFontSelector* m_fontSelector;
+    RawPtrWillBeMember<CSSFontSelector> m_fontSelector;
     FontTraits m_traits;
     HashMap<unsigned, RefPtr<SegmentedFontData> > m_fontDataTable;
     // All non-CSS-connected FontFaces are stored after the CSS-connected ones.

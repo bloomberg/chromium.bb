@@ -32,15 +32,17 @@
 #define FontCacheClient_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class PLATFORM_EXPORT FontCacheClient : public RefCounted<FontCacheClient> {
+class PLATFORM_EXPORT FontCacheClient : public RefCountedWillBeGarbageCollectedFinalized<FontCacheClient> {
 public:
     virtual ~FontCacheClient() { }
 
     virtual void fontCacheInvalidated() = 0;
+    virtual void trace(Visitor*) = 0;
 };
 
 } // namespace WebCore

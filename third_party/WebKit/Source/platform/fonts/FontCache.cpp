@@ -243,24 +243,32 @@ void FontCache::purge(PurgeSeverity PurgeSeverity)
     purgeFontVerticalDataCache();
 }
 
-static HashSet<FontCacheClient*>* gClients;
+static bool invalidateFontCache = false;
+
+WillBeHeapHashSet<RawPtrWillBeWeakMember<FontCacheClient> >& fontCacheClients()
+{
+#if ENABLE(OILPAN)
+    DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<WeakMember<FontCacheClient> > >, clients, (new HeapHashSet<WeakMember<FontCacheClient> >()));
+#else
+    DEFINE_STATIC_LOCAL(HashSet<RawPtr<FontCacheClient> >*, clients, (new HashSet<RawPtr<FontCacheClient> >()));
+#endif
+    invalidateFontCache = true;
+    return *clients;
+}
 
 void FontCache::addClient(FontCacheClient* client)
 {
-    if (!gClients)
-        gClients = new HashSet<FontCacheClient*>;
-
-    ASSERT(!gClients->contains(client));
-    gClients->add(client);
+    ASSERT(!fontCacheClients().contains(client));
+    fontCacheClients().add(client);
 }
 
+#if !ENABLE(OILPAN)
 void FontCache::removeClient(FontCacheClient* client)
 {
-    ASSERT(gClients);
-    ASSERT(gClients->contains(client));
-
-    gClients->remove(client);
+    ASSERT(fontCacheClients().contains(client));
+    fontCacheClients().remove(client);
 }
+#endif
 
 static unsigned short gGeneration = 0;
 
@@ -271,7 +279,7 @@ unsigned short FontCache::generation()
 
 void FontCache::invalidate()
 {
-    if (!gClients) {
+    if (!invalidateFontCache) {
         ASSERT(!gFontPlatformDataCache);
         return;
     }
@@ -283,11 +291,11 @@ void FontCache::invalidate()
 
     gGeneration++;
 
-    Vector<RefPtr<FontCacheClient> > clients;
-    size_t numClients = gClients->size();
+    WillBeHeapVector<RefPtrWillBeMember<FontCacheClient> > clients;
+    size_t numClients = fontCacheClients().size();
     clients.reserveInitialCapacity(numClients);
-    HashSet<FontCacheClient*>::iterator end = gClients->end();
-    for (HashSet<FontCacheClient*>::iterator it = gClients->begin(); it != end; ++it)
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<FontCacheClient> >::iterator end = fontCacheClients().end();
+    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<FontCacheClient> >::iterator it = fontCacheClients().begin(); it != end; ++it)
         clients.append(*it);
 
     ASSERT(numClients == clients.size());

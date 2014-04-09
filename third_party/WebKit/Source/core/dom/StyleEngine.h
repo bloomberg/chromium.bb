@@ -245,7 +245,7 @@ private:
     bool m_didCalculateResolver;
     OwnPtrWillBeMember<StyleResolver> m_resolver;
 
-    RefPtr<CSSFontSelector> m_fontSelector;
+    RefPtrWillBeMember<CSSFontSelector> m_fontSelector;
 
     WillBeHeapHashMap<AtomicString, RawPtrWillBeMember<StyleSheetContents> > m_textToSheetCache;
     WillBeHeapHashMap<RawPtrWillBeMember<StyleSheetContents>, AtomicString> m_sheetToTextCache;
