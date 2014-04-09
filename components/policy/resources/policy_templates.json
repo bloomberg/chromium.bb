@@ -5286,6 +5286,7 @@
               'AC': {
                 'description': 'Delays and actions to take when the device is idle and running on AC power',
                 'type': 'object',
+                'id': 'PowerManagementDelays',
                 'properties': {
                   'Delays': {
                     'type': 'object',
@@ -5321,42 +5322,8 @@
               },
               'Battery': {
                 'description': 'Delays and actions to take when the device is idle and running on battery',
-                'type': 'object',
-                # TODO(binjin): Use $ref placeholder here once generated policy
-                # constants get full support of it. http://crbug.com/347082
-                'properties': {
-                  'Delays': {
-                    'type': 'object',
-                    'properties': {
-                      'ScreenDim': {
-                        'description': 'The length of time without user input after which the screen is dimmed, in milliseconds',
-                        'type': 'integer',
-                        'minimum': 0
-                      },
-                      'ScreenOff': {
-                        'description': 'The length of time without user input after which the screen is turned off, in milliseconds',
-                        'type': 'integer',
-                        'minimum': 0
-                      },
-                      'IdleWarning': {
-                        'description': 'The length of time without user input after which a warning dialog is shown, in milliseconds',
-                        'type': 'integer',
-                        'minimum': 0
-                      },
-                      'Idle': {
-                        'description': 'The length of time without user input after which the idle action is taken, in milliseconds',
-                        'type': 'integer',
-                        'minimum': 0
-                      }
-                    }
-                  },
-                  'IdleAction': {
-                    'description': 'Action to take when the idle delay is reached',
-                    'type': 'string',
-                    'enum': [ 'Suspend', 'Logout', 'Shutdown', 'DoNothing' ]
-                  }
-                }
-              },
+                '$ref': 'PowerManagementDelays'
+              }
             }
           },
           'supported_on': ['chrome_os:35-'],
@@ -5453,6 +5420,7 @@
           'AC': {
             'description': 'Power management settings applicable only when running on AC power',
             'type': 'object',
+            'id': 'DeviceLoginScreenPowerSettings',
             'properties': {
               'Delays': {
                 'type': 'object',
@@ -5483,34 +5451,7 @@
           },
           'Battery': {
             'description': 'Power management settings applicable only when running on battery power',
-            'type': 'object',
-            'properties': {
-              'Delays': {
-                'type': 'object',
-                'properties': {
-                  'ScreenDim': {
-                    'description': 'The length of time without user input after which the screen is dimmed, in milliseconds',
-                    'type': 'integer',
-                    'minimum': 0
-                  },
-                  'ScreenOff': {
-                    'description': 'The length of time without user input after which the screen is turned off, in milliseconds',
-                    'type': 'integer',
-                    'minimum': 0
-                  },
-                  'Idle': {
-                    'description': 'The length of time without user input after which the idle action is taken, in milliseconds',
-                    'type': 'integer',
-                    'minimum': 0
-                  }
-                }
-              },
-              'IdleAction': {
-                'description': 'Action to take when the idle delay is reached',
-                'type': 'string',
-                'enum': [ 'Suspend', 'Shutdown', 'DoNothing' ]
-              }
-            }
+            '$ref': 'DeviceLoginScreenPowerSettings'
           },
           'LidCloseAction': {
             'description': 'Action to take when the lid is closed',

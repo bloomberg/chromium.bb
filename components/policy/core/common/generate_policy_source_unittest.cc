@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cstring>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -16,6 +17,40 @@
 // chrome/tools/build/generate_policy_source.py.
 
 namespace policy {
+
+namespace {
+
+// Checks if two schemas are the same or not. Note that this function doesn't
+// consider restrictions on integers and strings nor pattern properties.
+bool IsSameSchema(Schema a, Schema b) {
+  if (a.valid() != b.valid())
+    return false;
+  if (!a.valid())
+    return true;
+  if (a.type() != b.type())
+    return false;
+  if (a.type() == base::Value::TYPE_LIST)
+    return IsSameSchema(a.GetItems(), b.GetItems());
+  if (a.type() != base::Value::TYPE_DICTIONARY)
+    return true;
+  Schema::Iterator a_it = a.GetPropertiesIterator();
+  Schema::Iterator b_it = b.GetPropertiesIterator();
+  while (!a_it.IsAtEnd()) {
+    if (b_it.IsAtEnd())
+      return false;
+    if (strcmp(a_it.key(), b_it.key()) != 0)
+      return false;
+    if (!IsSameSchema(a_it.schema(), b_it.schema()))
+      return false;
+    a_it.Advance();
+    b_it.Advance();
+  }
+  if (!b_it.IsAtEnd())
+    return false;
+  return IsSameSchema(a.GetAdditionalProperties(), b.GetAdditionalProperties());
+}
+
+}  // namespace
 
 TEST(GeneratePolicySource, ChromeSchemaData) {
   Schema schema = Schema::Wrap(GetChromeSchemaData());
@@ -83,6 +118,20 @@ TEST(GeneratePolicySource, ChromeSchemaData) {
     EXPECT_EQ(base::Value::TYPE_STRING, it.schema().type());
   }
   EXPECT_TRUE(*next == NULL);
+
+#if defined(OS_CHROMEOS)
+  subschema = schema.GetKnownProperty(key::kPowerManagementIdleSettings);
+  ASSERT_TRUE(subschema.valid());
+
+  EXPECT_TRUE(IsSameSchema(subschema.GetKnownProperty("AC"),
+                           subschema.GetKnownProperty("Battery")));
+
+  subschema = schema.GetKnownProperty(key::kDeviceLoginScreenPowerManagement);
+  ASSERT_TRUE(subschema.valid());
+
+  EXPECT_TRUE(IsSameSchema(subschema.GetKnownProperty("AC"),
+                           subschema.GetKnownProperty("Battery")));
+#endif
 }
 
 TEST(GeneratePolicySource, PolicyDetails) {
