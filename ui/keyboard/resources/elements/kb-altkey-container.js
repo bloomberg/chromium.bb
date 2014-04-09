@@ -18,6 +18,13 @@ Polymer('kb-altkey-container', {
     this.resetActiveElement();
     this.keyset = null;
   },
+  out: function(event) {
+    // Check if touch is outside container boundaries.
+    if(!(this.compareDocumentPosition(event.relatedTarget)
+        & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
+      this.hidden = true;
+    }
+  },
 
   hiddenChanged: function() {
     this.fire('stateChange', {
