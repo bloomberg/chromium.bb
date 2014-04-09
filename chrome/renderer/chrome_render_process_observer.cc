@@ -392,6 +392,8 @@ void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
     const std::string& group_name) {
   base::FieldTrial* trial =
       base::FieldTrialList::CreateFieldTrial(field_trial_name, group_name);
+  // TODO(mef): Remove this check after the investigation of 359406 is complete.
+  CHECK(trial) << field_trial_name << ":" << group_name;
   // Ensure the trial is marked as "used" by calling group() on it. This is
   // needed to ensure the trial is properly reported in renderer crash reports.
   trial->group();
