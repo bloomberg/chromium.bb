@@ -3225,6 +3225,7 @@ nonvariant_tests = [
     'tests/chrome_extension/nacl.scons',
     'tests/custom_desc/nacl.scons',
     'tests/faulted_thread_queue/nacl.scons',
+    'tests/gold_plugin/nacl.scons',
     'tests/imc_sockets/nacl.scons',
     'tests/minnacl/nacl.scons',
     'tests/multiple_sandboxes/nacl.scons',
