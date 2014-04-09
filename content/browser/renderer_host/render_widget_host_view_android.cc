@@ -330,7 +330,7 @@ void RenderWidgetHostViewAndroid::Hide() {
     return;
 
   is_showing_ = false;
-  if (layer_)
+  if (layer_ && locks_on_frame_count_ == 0)
     layer_->SetHideLayerAndSubtree(true);
 
   frame_evictor_->SetVisible(false);
@@ -360,10 +360,15 @@ void RenderWidgetHostViewAndroid::UnlockCompositingSurface() {
   frame_evictor_->UnlockFrame();
   locks_on_frame_count_--;
 
-  if (locks_on_frame_count_ == 0 && last_frame_info_) {
-    InternalSwapCompositorFrame(last_frame_info_->output_surface_id,
-                                last_frame_info_->frame.Pass());
-    last_frame_info_.reset();
+  if (locks_on_frame_count_ == 0) {
+    if (last_frame_info_) {
+      InternalSwapCompositorFrame(last_frame_info_->output_surface_id,
+                                  last_frame_info_->frame.Pass());
+      last_frame_info_.reset();
+    }
+
+    if (!is_showing_ && layer_)
+      layer_->SetHideLayerAndSubtree(true);
   }
 }
 
