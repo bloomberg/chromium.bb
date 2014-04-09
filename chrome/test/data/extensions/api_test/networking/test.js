@@ -55,6 +55,20 @@ var privateHelpers = {
           self.listenForChanges);
       done();
     };
+  },
+  watchForCaptivePortalState: function(expectedNetworkPath,
+                                       expectedState,
+                                       done) {
+    var self = this;
+    this.onPortalDetectionCompleted = function(networkPath, state) {
+      assertEq(expectedNetworkPath, networkPath);
+      assertEq(expectedState, state);
+      chrome.networkingPrivate.onPortalDetectionCompleted.removeListener(
+          self.onPortalDetectionCompleted);
+      done();
+    };
+    chrome.networkingPrivate.onPortalDetectionCompleted.addListener(
+        self.onPortalDetectionCompleted);
   }
 };
 
@@ -397,7 +411,13 @@ var availableTests = [
           assertEq(expectedStatus, status);
         }));
     });
-  }
+  },
+  function captivePortalNotification() {
+    var done = chrome.test.callbackAdded();
+    var listener =
+        new privateHelpers.watchForCaptivePortalState('wifi', 'Online', done);
+    chrome.test.sendMessage('notifyPortalDetectorObservers');
+  },
 ];
 
 var testToRun = window.location.search.substring(1);
