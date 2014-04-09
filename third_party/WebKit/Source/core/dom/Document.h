@@ -612,7 +612,6 @@ public:
     bool historyItemDocumentStateDirty() const { return m_historyItemDocumentStateDirty; }
 
     bool shouldScheduleLayout() const;
-    bool shouldParserYieldAgressivelyBeforeScriptExecution();
     int elapsedTime() const;
 
     TextLinkColors& textLinkColors() { return m_textLinkColors; }

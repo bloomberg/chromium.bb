@@ -291,7 +291,7 @@ bool HTMLDocumentParser::canTakeNextToken(SynchronousMode mode, PumpSession& ses
 
     if (isWaitingForScripts()) {
         if (mode == AllowYield)
-            m_parserScheduler->checkForYieldBeforeScript(session);
+            session.didSeeScript = true;
 
         // If we don't run the script, we cannot allow the next token to be taken.
         if (session.needsYield)

@@ -2635,11 +2635,6 @@ bool Document::shouldScheduleLayout() const
         || (documentElement() && !isHTMLHtmlElement(*documentElement()));
 }
 
-bool Document::shouldParserYieldAgressivelyBeforeScriptExecution()
-{
-    return view() && view()->layoutPending();
-}
-
 int Document::elapsedTime() const
 {
     return static_cast<int>((currentTime() - m_startTime) * 1000);
