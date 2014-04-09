@@ -118,9 +118,34 @@ def _VerifyFilesInCloud(input_api, output_api):
   return results
 
 
+def _IsNewJsonPageSet(affected_file):
+  return (affected_file.Action() == 'A' and
+          'page_sets/data/' not in affected_file.AbsoluteLocalPath()
+          and affected_file.AbsoluteLocalPath().endswith('.json'))
+
+
+def _GetNewJsonPageSets(input_api):
+  return input_api.AffectedFiles(file_filter=_IsNewJsonPageSet)
+
+# TODO(nednguyen): Remove this check when crbug.com/239179 is marked fixed.
+def _NewJsonPageSetsCheck(input_api, output_api):
+  """Validates that no new json page set are added.
+  """
+  results = []
+  for path in _GetNewJsonPageSets(input_api):
+    results.append(output_api.PresubmitError(
+      'Json page set will soon be deprecated (see: crbug.com/239179), '
+      'please convert %s to a python page set.' % path))
+  return results
+
+
 def CheckChangeOnUpload(input_api, output_api):
-  return _SyncFilesToCloud(input_api, output_api)
+  results = _SyncFilesToCloud(input_api, output_api)
+  results.extend(_NewJsonPageSetsCheck(input_api, output_api))
+  return results
 
 
 def CheckChangeOnCommit(input_api, output_api):
-  return _VerifyFilesInCloud(input_api, output_api)
+  results = _VerifyFilesInCloud(input_api, output_api)
+  results.extend(_NewJsonPageSetsCheck(input_api, output_api))
+  return results

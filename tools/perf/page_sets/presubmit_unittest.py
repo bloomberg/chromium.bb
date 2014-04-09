@@ -16,25 +16,42 @@ from page_sets import PRESUBMIT
 
 
 class AffectedFileStub(object):
-  def __init__(self, absolute_local_path):
+  def __init__(self, absolute_local_path, action):
     self._absolute_local_path = absolute_local_path
+    self.action = action
 
   def AbsoluteLocalPath(self):
     return self._absolute_local_path
 
+  def Action(self):
+    return self.action
 
 class InputAPIStub(object):
-  def __init__(self, paths, deleted_paths=None):
+  def __init__(self, paths, deleted_paths=None, added_paths=None):
     self._paths = paths
-    if deleted_paths:
-      self._deleted_paths = deleted_paths
-    else:
-      self._deleted_paths = []
+    self._deleted_paths = deleted_paths if deleted_paths else []
+    self._added_paths = added_paths if added_paths else []
 
-  def AffectedFiles(self, include_deletes=True):
-    affected_files = [AffectedFileStub(path) for path in self._paths]
+  def AffectedFiles(self, include_deletes=True, file_filter=None):
+    if not file_filter:
+      file_filter = lambda x: True
+
+    affected_files = []
+    for path in self._paths:
+      affected_file_stub = AffectedFileStub(path, 'M')
+      if file_filter(affected_file_stub):
+        affected_files.append(affected_file_stub)
+
+    for path in self._added_paths:
+      affected_file_stub = AffectedFileStub(path, 'A')
+      if file_filter(affected_file_stub):
+        affected_files.append(affected_file_stub)
+
     if include_deletes:
-      affected_files += [AffectedFileStub(path) for path in self._deleted_paths]
+      for path in self._deleted_paths:
+        affected_file_stub = AffectedFileStub(path, 'D')
+        if file_filter(affected_file_stub):
+          affected_files.append(affected_file_stub)
     return affected_files
 
   def AbsoluteLocalPaths(self):
@@ -99,12 +116,22 @@ class PresubmitTest(unittest.TestCase):
         msg='Expected %d notifications, but got %d. Results: %s' %
         (expected_notifications, actual_notifications, results))
 
-  def _CheckUpload(self, paths, deleted_paths=None):
-    input_api = InputAPIStub(paths, deleted_paths)
+  def _CheckUpload(self, paths, deleted_paths=None, added_paths=None):
+    input_api = InputAPIStub(paths, deleted_paths, added_paths)
     return PRESUBMIT.CheckChangeOnUpload(input_api, OutputAPIStub())
 
   def testIgnoreDeleted(self):
     results = self._CheckUpload([], ['/path/to/deleted.wpr.sha1'])
+    self.assertResultCount(results, 0, 0)
+
+  def testNewJsonPageSetError(self):
+    results = self._CheckUpload([], [],
+                                ['/data/to/page_sets/new_page_set.json'])
+    self.assertResultCount(results, 1, 0)
+
+  def testNoNewJsonPageSetError(self):
+    results = self._CheckUpload([], [],
+                                ['/path/page_sets/data/new_page_set.json'])
     self.assertResultCount(results, 0, 0)
 
   def testIgnoreNonHashes(self):

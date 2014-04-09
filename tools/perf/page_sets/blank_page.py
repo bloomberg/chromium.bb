@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page.actions.navigate import NavigateAction
 from telemetry.page.page_set import PageSet
 from telemetry.page.page import PageWithDefaultRunNavigate
 
