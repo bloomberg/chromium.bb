@@ -156,6 +156,19 @@ ContentSettingsObserver::ContentSettingsObserver(
       npapi_plugins_blocked_(false) {
   ClearBlockedContentSettings();
   render_frame->GetWebFrame()->setPermissionClient(this);
+
+  if (render_frame->GetRenderView()->GetMainRenderFrame() != render_frame) {
+    // Copy all the settings from the main render frame to avoid race conditions
+    // when initializing this data. See http://crbug.com/333308.
+    ContentSettingsObserver* parent = ContentSettingsObserver::Get(
+        render_frame->GetRenderView()->GetMainRenderFrame());
+    allow_displaying_insecure_content_ =
+        parent->allow_displaying_insecure_content_;
+    allow_running_insecure_content_ = parent->allow_running_insecure_content_;
+    temporarily_allowed_plugins_ = parent->temporarily_allowed_plugins_;
+    is_interstitial_page_ = parent->is_interstitial_page_;
+    npapi_plugins_blocked_ = parent->npapi_plugins_blocked_;
+  }
 }
 
 ContentSettingsObserver::~ContentSettingsObserver() {

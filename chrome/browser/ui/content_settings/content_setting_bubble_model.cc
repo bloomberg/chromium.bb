@@ -27,6 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -993,9 +994,10 @@ ContentSettingMixedScriptBubbleModel::ContentSettingMixedScriptBubbleModel(
 void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
   content::RecordAction(UserMetricsAction("MixedScript_LoadAnyway_Bubble"));
   DCHECK(web_contents());
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  host->Send(new ChromeViewMsg_SetAllowRunningInsecureContent(
-      host->GetRoutingID(), true));
+  web_contents()->SendToAllFrames(
+      new ChromeViewMsg_SetAllowRunningInsecureContent(MSG_ROUTING_NONE, true));
+  web_contents()->GetMainFrame()->Send(new ChromeViewMsg_ReloadFrame(
+      web_contents()->GetMainFrame()->GetRoutingID()));
 }
 
 ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
