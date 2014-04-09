@@ -18,9 +18,7 @@
 #include "tools/gn/err.h"
 
 class BuildSettings;
-class InputFile;
 class Label;
-class LocationRange;
 class SourceFile;
 class Target;
 
@@ -73,13 +71,10 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
                  Err* err) const;
 
   // Checks that the given file in the given target can include the given
-  // include file. If disallowed, returns false and sets the error. The
-  // range indicates the location of the include in the file for error
-  // reporting.
+  // include file. If disallowed, returns false and sets the error.
   bool CheckInclude(const Target* from_target,
-                    const InputFile& source_file,
+                    const SourceFile& source_file,
                     const SourceFile& include_file,
-                    const LocationRange& range,
                     Err* err) const;
 
   // Returns true if the given search_for target is a dependency of

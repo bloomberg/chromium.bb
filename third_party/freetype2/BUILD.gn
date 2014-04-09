@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-assert(is_linux, "This file should only be depended on from Linux.")
-
 config("freetype2_config") {
   include_dirs = [ "include", "src/include" ]
 }

@@ -78,13 +78,11 @@ bool Visibility::Set(const SourceDir& current_dir,
 }
 
 void Visibility::SetPublic() {
-  patterns_.clear();
   patterns_.push_back(
       VisPattern(VisPattern::RECURSIVE_DIRECTORY, SourceDir(), std::string()));
 }
 
 void Visibility::SetPrivate(const SourceDir& current_dir) {
-  patterns_.clear();
   patterns_.push_back(
       VisPattern(VisPattern::DIRECTORY, current_dir, std::string()));
 }

@@ -37,7 +37,7 @@ Value ParseValueOrScope(const Settings* settings,
   std::vector<Token>* tokens;
   scoped_ptr<ParseNode>* parse_root_ptr;
   g_scheduler->input_file_manager()->AddDynamicInput(
-      SourceFile(), &input_file, &tokens, &parse_root_ptr);
+      &input_file, &tokens, &parse_root_ptr);
 
   input_file->SetContents(input);
   if (origin) {

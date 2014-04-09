@@ -79,8 +79,7 @@ class InputFileManager : public base::RefCountedThreadSafe<InputFileManager> {
   // the values and lose context for error reporting, or somehow keep the
   // associated parse nodes, tokens, and file data in memory. This function
   // allows the latter.
-  void AddDynamicInput(const SourceFile& name,
-                       InputFile** file,
+  void AddDynamicInput(InputFile** file,
                        std::vector<Token>** tokens,
                        scoped_ptr<ParseNode>** parse_root);
 

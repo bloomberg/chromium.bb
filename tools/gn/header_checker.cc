@@ -19,35 +19,6 @@
 #include "tools/gn/target.h"
 #include "tools/gn/trace.h"
 
-namespace {
-
-// This class makes InputFiles on the stack as it reads files to check. When
-// we throw an error, the Err indicates a locatin which has a pointer to
-// an InputFile that must persist as long as the Err does.
-//
-// To make this work, this function creates a clone of the InputFile managed
-// by the InputFileManager so the error can refer to something that
-// persists. This means that the current file contents will live as long as
-// the program, but this is OK since we're erroring out anyway.
-LocationRange CreatePersistentRange(const InputFile& input_file,
-                                    const LocationRange& range) {
-  InputFile* clone_input_file;
-  std::vector<Token>* tokens;  // Don't care about this.
-  scoped_ptr<ParseNode>* parse_root;  // Don't care about this.
-
-  g_scheduler->input_file_manager()->AddDynamicInput(
-      input_file.name(), &clone_input_file, &tokens, &parse_root);
-  clone_input_file->SetContents(input_file.contents());
-
-  return LocationRange(
-      Location(clone_input_file, range.begin().line_number(),
-               range.begin().char_offset()),
-      Location(clone_input_file, range.end().line_number(),
-               range.end().char_offset()));
-}
-
-}  // namespace
-
 HeaderChecker::HeaderChecker(const BuildSettings* build_settings,
                              const std::vector<const Target*>& targets)
     : main_loop_(base::MessageLoop::current()),
@@ -166,15 +137,11 @@ bool HeaderChecker::CheckFile(const Target* from_target,
     return false;
   }
 
-  InputFile input_file(file);
-  input_file.SetContents(contents);
-
-  CIncludeIterator iter(&input_file);
+  CIncludeIterator iter(contents);
   base::StringPiece current_include;
-  LocationRange range;
-  while (iter.GetNextIncludeString(&current_include, &range)) {
+  while (iter.GetNextIncludeString(&current_include)) {
     SourceFile include = SourceFileForInclude(current_include);
-    if (!CheckInclude(from_target, input_file, include, range, err))
+    if (!CheckInclude(from_target, file, include, err))
       return false;
   }
 
@@ -184,9 +151,8 @@ bool HeaderChecker::CheckFile(const Target* from_target,
 // If the file exists, it must be in a dependency of the given target, and it
 // must be public in that dependency.
 bool HeaderChecker::CheckInclude(const Target* from_target,
-                                 const InputFile& source_file,
+                                 const SourceFile& source_file,
                                  const SourceFile& include_file,
-                                 const LocationRange& range,
                                  Err* err) const {
   // Assume if the file isn't declared in our sources that we don't need to
   // check it. It would be nice if we could give an error if this happens, but
@@ -210,28 +176,17 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
       return true;
 
     if (IsDependencyOf(targets[i].target, from_target)) {
-      // The include is in a target that's a proper dependency. Verify that
-      // the including target has visibility.
-      if (!targets[i].target->visibility().CanSeeMe(from_target->label())) {
-        std::string msg = "The included file is in " +
-            targets[i].target->label().GetUserVisibleName(false) +
-            "\nwhich is not visible from " +
-            from_target->label().GetUserVisibleName(false) +
-            "\n(see \"gn help visibility\").";
-
-        // Danger: must call CreatePersistentRange to put in Err.
-        *err = Err(CreatePersistentRange(source_file, range),
-            "Including a header from non-visible target.", msg);
-        return false;
-      }
-
-      // The file must also be public in the target.
+      // The include is in a target that's a proper dependency. Now verify
+      // that the include is a public file.
       if (!targets[i].is_public) {
-        // Danger: must call CreatePersistentRange to put in Err.
-        *err = Err(CreatePersistentRange(source_file, range),
-                   "Including a private header.",
-                   "This file is private to the target " +
-                       targets[i].target->label().GetUserVisibleName(false));
+        // Depending on a private header.
+        std::string msg = "The file " + source_file.value() +
+            "\nincludes " + include_file.value() +
+            "\nwhich is private to the target " +
+            targets[i].target->label().GetUserVisibleName(false);
+
+        // TODO(brettw) blame the including file.
+        *err = Err(NULL, "Including a private header.", msg);
         return false;
       }
       found_dependency = true;
@@ -239,19 +194,21 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
   }
 
   if (!found_dependency) {
-    std::string msg = "It is not in any dependency of " +
+    std::string msg =
+        source_file.value() + " includes the header\n" +
+        include_file.value() + " which is not in any dependency of\n" +
         from_target->label().GetUserVisibleName(false);
-    msg += "\nThe include file is in the target(s):\n";
+    msg += "\n\nThe include file is in the target(s):\n";
     for (size_t i = 0; i < targets.size(); i++)
       msg += "  " + targets[i].target->label().GetUserVisibleName(false) + "\n";
-    if (targets.size() > 1)
-      msg += "at least one of ";
-    msg += "which should somehow be reachable from " +
-        from_target->label().GetUserVisibleName(false);
 
-    // Danger: must call CreatePersistentRange to put in Err.
-    *err = Err(CreatePersistentRange(source_file, range),
-               "Include not allowed.", msg);
+    msg += "\nMake sure one of these is a direct or indirect dependency\n"
+        "of " + from_target->label().GetUserVisibleName(false);
+
+    // TODO(brettw) blame the including file.
+    // Probably this means making and leaking an input file for it, and also
+    // tracking the locations for each include.
+    *err = Err(NULL, "Include not allowed.", msg);
     return false;
   }
 

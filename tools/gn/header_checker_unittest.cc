@@ -15,16 +15,11 @@ namespace {
 class HeaderCheckerTest : public testing::Test {
  public:
   HeaderCheckerTest()
-      : a_(setup_.settings(), Label(SourceDir("//a/"), "a")),
-        b_(setup_.settings(), Label(SourceDir("//b/"), "a")),
-        c_(setup_.settings(), Label(SourceDir("//c/"), "c")) {
+      : a_(setup_.settings(), Label(SourceDir("//"), "a")),
+        b_(setup_.settings(), Label(SourceDir("//"), "a")),
+        c_(setup_.settings(), Label(SourceDir("//"), "c")) {
     a_.deps().push_back(LabelTargetPair(&b_));
     b_.deps().push_back(LabelTargetPair(&c_));
-
-    // Start with all public visibility.
-    a_.visibility().SetPublic();
-    b_.visibility().SetPublic();
-    c_.visibility().SetPublic();
 
     targets_.push_back(&a_);
     targets_.push_back(&b_);
@@ -58,10 +53,6 @@ TEST_F(HeaderCheckerTest, IsDependencyOf) {
 }
 
 TEST_F(HeaderCheckerTest, CheckInclude) {
-  InputFile input_file(SourceFile("//some_file.cc"));
-  input_file.SetContents(std::string());
-  LocationRange range;  // Dummy value.
-
   // Add a disconnected target d with a header to check that you have to have
   // to depend on a target listing a header.
   Target d(setup_.settings(), Label(SourceDir("//"), "d"));
@@ -87,31 +78,25 @@ TEST_F(HeaderCheckerTest, CheckInclude) {
   // A file in target A can't include a header from D because A has no
   // dependency on D.
   Err err;
-  EXPECT_FALSE(checker->CheckInclude(&a_, input_file, d_header, range, &err));
+  SourceFile source_file("//some_file.cc");
+  EXPECT_FALSE(checker->CheckInclude(&a_, source_file, d_header, &err));
   EXPECT_TRUE(err.has_error());
 
   // A can include the public header in B.
   err = Err();
-  EXPECT_TRUE(checker->CheckInclude(&a_, input_file, b_public, range, &err));
+  EXPECT_TRUE(checker->CheckInclude(&a_, source_file, b_public, &err));
   EXPECT_FALSE(err.has_error());
 
   // Check A depending on the public and private headers in C.
   err = Err();
-  EXPECT_TRUE(checker->CheckInclude(&a_, input_file, c_public, range, &err));
+  EXPECT_TRUE(checker->CheckInclude(&a_, source_file, c_public, &err));
   EXPECT_FALSE(err.has_error());
-  EXPECT_FALSE(checker->CheckInclude(&a_, input_file, c_private, range, &err));
+  EXPECT_FALSE(checker->CheckInclude(&a_, source_file, c_private, &err));
   EXPECT_TRUE(err.has_error());
 
   // A can depend on a random file unknown to the build.
   err = Err();
-  EXPECT_TRUE(checker->CheckInclude(&a_, input_file, SourceFile("//random.h"),
-                                    range, &err));
+  EXPECT_TRUE(checker->CheckInclude(&a_, source_file, SourceFile("//random.h"),
+                                    &err));
   EXPECT_FALSE(err.has_error());
-
-  // If C is not visible from A, A can't include public headers even if there
-  // is a dependency path.
-  c_.visibility().SetPrivate(c_.label().dir());
-  err = Err();
-  EXPECT_FALSE(checker->CheckInclude(&a_, input_file, c_public, range, &err));
-  EXPECT_TRUE(err.has_error());
 }
