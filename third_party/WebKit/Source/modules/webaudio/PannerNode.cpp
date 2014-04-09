@@ -127,8 +127,8 @@ void PannerNode::process(size_t framesToProcess)
     // The audio thread can't block on this lock, so we call tryLock() instead.
     MutexTryLocker tryLocker(m_processLock);
     if (tryLocker.locked()) {
-        // HRTFDatabase should be loaded before proceeding for offline audio context when panningModel() is "HRTF".
-        if (panningModel() == "HRTF" && !m_hrtfDatabaseLoader->isLoaded()) {
+        // HRTFDatabase should be loaded before proceeding for offline audio context when the panning model is HRTF.
+        if (m_panningModel == HRTF && !m_hrtfDatabaseLoader->isLoaded()) {
             if (context()->isOfflineContext()) {
                 m_hrtfDatabaseLoader->waitForLoaderThreadCompletion();
             } else {
