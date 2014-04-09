@@ -2140,8 +2140,6 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       target_outputs[qualified_target] = target
       if qualified_target in all_targets:
         all_outputs.add(target.FinalOutput())
-    else:
-      target_short_names.setdefault(name, [])
 
   if target_short_names:
     # Write a short name to build this target.  This benefits both the
