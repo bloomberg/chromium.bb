@@ -379,8 +379,11 @@ GoogleUpdateMetrics::~GoogleUpdateMetrics() {}
 static base::LazyInstance<std::string>::Leaky
     g_version_extension = LAZY_INSTANCE_INITIALIZER;
 
-MetricsLog::MetricsLog(const std::string& client_id, int session_id)
-    : MetricsLogBase(client_id, session_id, MetricsLog::GetVersionString()),
+MetricsLog::MetricsLog(const std::string& client_id,
+                       int session_id,
+                       LogType log_type)
+    : MetricsLogBase(client_id, session_id, log_type,
+                     MetricsLog::GetVersionString()),
       creation_time_(base::TimeTicks::Now()),
       extension_metrics_(uma_proto()->client_id()) {
 #if defined(OS_CHROMEOS)
@@ -422,9 +425,7 @@ const std::string& MetricsLog::version_extension() {
 }
 
 void MetricsLog::RecordStabilityMetrics(base::TimeDelta incremental_uptime,
-                                        base::TimeDelta uptime,
-                                        LogType log_type) {
-  DCHECK_NE(NO_LOG, log_type);
+                                        base::TimeDelta uptime) {
   DCHECK(!locked());
   DCHECK(HasEnvironment());
   DCHECK(!HasStabilityMetrics());
@@ -446,7 +447,7 @@ void MetricsLog::RecordStabilityMetrics(base::TimeDelta incremental_uptime,
   WriteRealtimeStabilityAttributes(pref, incremental_uptime, uptime);
 
   // Omit some stats unless this is the initial stability log.
-  if (log_type != INITIAL_LOG)
+  if (log_type() != INITIAL_STABILITY_LOG)
     return;
 
   int incomplete_shutdown_count =

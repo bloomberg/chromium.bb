@@ -57,7 +57,7 @@ class TestMetricsLogChromeOS : public MetricsLogChromeOS {
 class TestMetricsLog : public MetricsLog {
  public:
   TestMetricsLog(const std::string& client_id, int session_id)
-      : MetricsLog(client_id, session_id) {
+      : MetricsLog(client_id, session_id, MetricsLog::ONGOING_LOG) {
 #if defined(OS_CHROMEOS)
     metrics_log_chromeos_.reset(new TestMetricsLogChromeOS(
         MetricsLog::uma_proto()));
@@ -289,8 +289,8 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   // Ensure that time has advanced by at least a tick before proceeding.
   WaitUntilTimeChanges(base::TimeTicks::Now());
 
-  service.log_manager_.BeginLoggingWithLog(new MetricsLog("clientID", 1),
-                                           MetricsLog::INITIAL_LOG);
+  service.log_manager_.BeginLoggingWithLog(
+      new MetricsLog("clientID", 1, MetricsLog::INITIAL_STABILITY_LOG));
   // Save the time when the log was started (it's okay for this to be greater
   // than the time recorded by the above call since it's used to ensure the
   // value changes).
@@ -327,8 +327,8 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
 
   // Start a new log and ensure all three trials appear in it.
   service.log_manager_.FinishCurrentLog();
-  service.log_manager_.BeginLoggingWithLog(new MetricsLog("clientID", 1),
-                                           MetricsLog::ONGOING_LOG);
+  service.log_manager_.BeginLoggingWithLog(
+      new MetricsLog("clientID", 1, MetricsLog::ONGOING_LOG));
   service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
   EXPECT_EQ(3U, synthetic_trials.size());
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "Group2"));
@@ -352,7 +352,6 @@ TEST_F(MetricsServiceTest, MetricsReportingEnabled) {
 #endif
 }
 
-
 TEST_F(MetricsServiceTest, CrashReportingEnabled) {
 #if defined(GOOGLE_CHROME_BUILD)
 // ChromeOS has different device settings for crash reporting.
@@ -368,11 +367,11 @@ TEST_F(MetricsServiceTest, CrashReportingEnabled) {
   EXPECT_TRUE(MetricsServiceHelper::IsCrashReportingEnabled());
   GetLocalState()->ClearPref(crash_pref);
   EXPECT_FALSE(MetricsServiceHelper::IsCrashReportingEnabled());
-#endif // !defined(OS_CHROMEOS)
-#else // defined(GOOGLE_CHROME_BUILD)
+#endif  // !defined(OS_CHROMEOS)
+#else  // defined(GOOGLE_CHROME_BUILD)
   // Chromium branded browsers never have crash reporting enabled.
   EXPECT_FALSE(MetricsServiceHelper::IsCrashReportingEnabled());
-#endif // defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 // Check that setting the kMetricsResetIds pref to true causes the client id to

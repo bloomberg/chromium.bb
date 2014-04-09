@@ -50,10 +50,14 @@ SystemProfileProto::Channel AsProtobufChannel(
 
 }  // namespace
 
-MetricsLogBase::MetricsLogBase(const std::string& client_id, int session_id,
+MetricsLogBase::MetricsLogBase(const std::string& client_id,
+                               int session_id,
+                               LogType log_type,
                                const std::string& version_string)
     : num_events_(0),
-      locked_(false) {
+      locked_(false),
+      log_type_(log_type) {
+  DCHECK_NE(NO_LOG, log_type);
   if (IsTestingID(client_id))
     uma_proto_.set_client_id(0);
   else

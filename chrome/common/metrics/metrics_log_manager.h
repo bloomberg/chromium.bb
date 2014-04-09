@@ -60,9 +60,9 @@ class MetricsLogManager {
     PROVISIONAL_STORE,  // A store operation that can be easily reverted later.
   };
 
-  // Takes ownership of |log|, which has type |log_type|, and makes it the
-  // current_log. This should only be called if there is not a current log.
-  void BeginLoggingWithLog(MetricsLogBase* log, LogType log_type);
+  // Takes ownership of |log| and makes it the current_log. This should only be
+  // called if there is not a current log.
+  void BeginLoggingWithLog(MetricsLogBase* log);
 
   // Returns the in-progress log.
   MetricsLogBase* current_log() { return current_log_.get(); }
@@ -177,11 +177,9 @@ class MetricsLogManager {
 
   // The log that we are still appending to.
   scoped_ptr<MetricsLogBase> current_log_;
-  LogType current_log_type_;
 
   // A paused, previously-current log.
   scoped_ptr<MetricsLogBase> paused_log_;
-  LogType paused_log_type_;
 
   // Helper class to handle serialization/deserialization of logs for persistent
   // storage. May be NULL.

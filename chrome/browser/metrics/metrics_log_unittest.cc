@@ -128,8 +128,8 @@ class TestMetricsLogChromeOS : public MetricsLogChromeOS {
 
 class TestMetricsLog : public MetricsLog {
  public:
-  TestMetricsLog(const std::string& client_id, int session_id)
-      : MetricsLog(client_id, session_id),
+  TestMetricsLog(const std::string& client_id, int session_id, LogType log_type)
+      : MetricsLog(client_id, session_id, log_type),
         prefs_(&scoped_prefs_),
         brand_for_testing_(kBrandForTesting) {
 #if defined(OS_CHROMEOS)
@@ -143,8 +143,9 @@ class TestMetricsLog : public MetricsLog {
   // Useful for tests that need to re-use the local state prefs between logs.
   TestMetricsLog(const std::string& client_id,
                  int session_id,
+                 LogType log_type,
                  TestingPrefServiceSimple* prefs)
-      : MetricsLog(client_id, session_id),
+      : MetricsLog(client_id, session_id, log_type),
         prefs_(prefs),
         brand_for_testing_(kBrandForTesting) {
 #if defined(OS_CHROMEOS)
@@ -302,8 +303,8 @@ class MetricsLogTest : public testing::Test {
 
  protected:
 #if defined(OS_CHROMEOS)
-   FakeBluetoothAdapterClient* fake_bluetooth_adapter_client_;
-   FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
+  FakeBluetoothAdapterClient* fake_bluetooth_adapter_client_;
+  FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
 #endif  // OS_CHROMEOS
 
  private:
@@ -313,7 +314,7 @@ class MetricsLogTest : public testing::Test {
 };
 
 TEST_F(MetricsLogTest, RecordEnvironment) {
-  TestMetricsLog log(kClientId, kSessionId);
+  TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG);
 
   std::vector<content::WebPluginInfo> plugins;
   GoogleUpdateMetrics google_update_metrics;
@@ -348,13 +349,13 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
 
   // The pref value is empty, so loading it from prefs should fail.
   {
-    TestMetricsLog log(kClientId, kSessionId, &prefs);
+    TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &prefs);
     EXPECT_FALSE(log.LoadSavedEnvironmentFromPrefs());
   }
 
   // Do a RecordEnvironment() call and check whether the pref is recorded.
   {
-    TestMetricsLog log(kClientId, kSessionId, &prefs);
+    TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &prefs);
     log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                           GoogleUpdateMetrics(),
                           std::vector<chrome_variations::ActiveGroupId>());
@@ -363,7 +364,7 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
   }
 
   {
-    TestMetricsLog log(kClientId, kSessionId, &prefs);
+    TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &prefs);
     EXPECT_TRUE(log.LoadSavedEnvironmentFromPrefs());
     // Check some values in the system profile.
     EXPECT_EQ(kInstallDateExpected, log.system_profile().install_date());
@@ -375,7 +376,7 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
 
   // Ensure that a non-matching hash results in the pref being invalid.
   {
-    TestMetricsLog log(kClientId, kSessionId, &prefs);
+    TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &prefs);
     // Call RecordEnvironment() to record the pref again.
     log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                           GoogleUpdateMetrics(),
@@ -385,7 +386,7 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
   {
     // Set the hash to a bad value.
     prefs.SetString(kSystemProfileHashPref, "deadbeef");
-    TestMetricsLog log(kClientId, kSessionId, &prefs);
+    TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &prefs);
     EXPECT_FALSE(log.LoadSavedEnvironmentFromPrefs());
     // Ensure that the prefs are cleared, even if the call failed.
     EXPECT_TRUE(prefs.GetString(kSystemProfilePref).empty());
@@ -394,12 +395,11 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
 }
 
 TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
-  TestMetricsLog log(kClientId, kSessionId);
+  TestMetricsLog log(kClientId, kSessionId, MetricsLog::INITIAL_STABILITY_LOG);
   log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(),
                         std::vector<chrome_variations::ActiveGroupId>());
-  log.RecordStabilityMetrics(
-      base::TimeDelta(), base::TimeDelta(), MetricsLog::INITIAL_LOG);
+  log.RecordStabilityMetrics(base::TimeDelta(), base::TimeDelta());
   const metrics::SystemProfileProto_Stability& stability =
       log.system_profile().stability();
   // Required metrics:
@@ -414,12 +414,11 @@ TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
 }
 
 TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
-  TestMetricsLog log(kClientId, kSessionId);
+  TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG);
   log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(),
                         std::vector<chrome_variations::ActiveGroupId>());
-  log.RecordStabilityMetrics(
-      base::TimeDelta(), base::TimeDelta(), MetricsLog::ONGOING_LOG);
+  log.RecordStabilityMetrics(base::TimeDelta(), base::TimeDelta());
   const metrics::SystemProfileProto_Stability& stability =
       log.system_profile().stability();
   // Required metrics:
@@ -435,7 +434,7 @@ TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
 
 #if defined(ENABLE_PLUGINS)
 TEST_F(MetricsLogTest, Plugins) {
-  TestMetricsLog log(kClientId, kSessionId);
+  TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG);
 
   std::vector<content::WebPluginInfo> plugins;
   plugins.push_back(CreateFakePluginInfo("p1", FILE_PATH_LITERAL("p1.plugin"),
@@ -468,8 +467,7 @@ TEST_F(MetricsLogTest, Plugins) {
     update.Get()->Append(plugin_dict.release());
   }
 
-  log.RecordStabilityMetrics(
-      base::TimeDelta(), base::TimeDelta(), MetricsLog::ONGOING_LOG);
+  log.RecordStabilityMetrics(base::TimeDelta(), base::TimeDelta());
   const metrics::SystemProfileProto_Stability& stability =
       log.system_profile().stability();
   ASSERT_EQ(1, stability.plugin_stability_size());
@@ -492,7 +490,7 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
   EXPECT_EQ(GG_UINT64_C(1518842999910132863),
             metrics::HashMetricName("birth_thread*"));
 
-  TestMetricsLog log(kClientId, kSessionId);
+  TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG);
   EXPECT_EQ(0, log.uma_proto().profiler_event_size());
 
   {
@@ -668,7 +666,7 @@ TEST_F(MetricsLogTest, MultiProfileUserCount) {
   user_manager->LoginUser(user1);
   user_manager->LoginUser(user3);
 
-  TestMetricsLog log(kClientId, kSessionId);
+  TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG);
   std::vector<content::WebPluginInfo> plugins;
   GoogleUpdateMetrics google_update_metrics;
   std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
@@ -690,7 +688,7 @@ TEST_F(MetricsLogTest, MultiProfileCountInvalidated) {
 
   user_manager->LoginUser(user1);
 
-  TestMetricsLog log(kClientId, kSessionId);
+  TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG);
   EXPECT_EQ(1u, log.system_profile().multi_profile_user_count());
 
   user_manager->LoginUser(user2);
@@ -701,7 +699,7 @@ TEST_F(MetricsLogTest, MultiProfileCountInvalidated) {
 }
 
 TEST_F(MetricsLogTest, BluetoothHardwareDisabled) {
-  TestMetricsLog log(kClientId, kSessionId);
+  TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG);
   log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(),
                         std::vector<chrome_variations::ActiveGroupId>());
@@ -719,7 +717,7 @@ TEST_F(MetricsLogTest, BluetoothHardwareEnabled) {
           dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
   properties->powered.ReplaceValue(true);
 
-  TestMetricsLog log(kClientId, kSessionId);
+  TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG);
   log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(),
                         std::vector<chrome_variations::ActiveGroupId>());
@@ -749,7 +747,7 @@ TEST_F(MetricsLogTest, BluetoothPairedDevices) {
           dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath));
   properties->paired.ReplaceValue(true);
 
-  TestMetricsLog log(kClientId, kSessionId);
+  TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG);
   log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(),
                         std::vector<chrome_variations::ActiveGroupId>());

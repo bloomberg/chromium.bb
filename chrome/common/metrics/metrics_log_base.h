@@ -25,18 +25,19 @@ class HistogramSamples;
 // This class provides base functionality for logging metrics data.
 class MetricsLogBase {
  public:
-  // TODO(asvitkine): Make this a field on the log and remove the NO_LOG value.
+  // TODO(asvitkine): Remove the NO_LOG value.
   enum LogType {
-    INITIAL_LOG,  // The first log of a session.
-    ONGOING_LOG,  // Subsequent logs in a session.
-    NO_LOG,       // Placeholder value for when there is no log.
+    INITIAL_STABILITY_LOG,  // The initial log containing stability stats.
+    ONGOING_LOG,            // Subsequent logs in a session.
+    NO_LOG,                 // Placeholder value for when there is no log.
   };
 
-  // Creates a new metrics log
+  // Creates a new metrics log of the specified type.
   // client_id is the identifier for this profile on this installation
   // session_id is an integer that's incremented on each application launch
   MetricsLogBase(const std::string& client_id,
                  int session_id,
+                 LogType log_type,
                  const std::string& version_string);
   virtual ~MetricsLogBase();
 
@@ -45,7 +46,7 @@ class MetricsLogBase {
   static uint64 Hash(const std::string& value);
 
   // Get the GMT buildtime for the current binary, expressed in seconds since
-  // Januray 1, 1970 GMT.
+  // January 1, 1970 GMT.
   // The value is used to identify when a new build is run, so that previous
   // reliability stats, from other builds, can be abandoned.
   static int64 GetBuildTime();
@@ -77,6 +78,8 @@ class MetricsLogBase {
         hardware_class);
   }
 
+  LogType log_type() const { return log_type_; }
+
  protected:
   bool locked() const { return locked_; }
 
@@ -93,6 +96,9 @@ class MetricsLogBase {
   // no longer be written to.  It is only used for sanity checking and is
   // not a real lock.
   bool locked_;
+
+  // The type of the log, i.e. initial or ongoing.
+  const LogType log_type_;
 
   // Stores the protocol buffer representation for this log.
   metrics::ChromeUserMetricsExtension uma_proto_;

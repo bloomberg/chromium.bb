@@ -16,7 +16,9 @@ namespace {
 
 class TestMetricsLogBase : public MetricsLogBase {
  public:
-  TestMetricsLogBase() : MetricsLogBase("client_id", 1, "1.2.3.4") {}
+  TestMetricsLogBase()
+      : MetricsLogBase("client_id", 1, MetricsLogBase::ONGOING_LOG, "1.2.3.4") {
+  }
   virtual ~TestMetricsLogBase() {}
 
   using MetricsLogBase::uma_proto;
@@ -27,8 +29,17 @@ class TestMetricsLogBase : public MetricsLogBase {
 
 }  // namespace
 
+TEST(MetricsLogBaseTest, LogType) {
+  MetricsLogBase log1("id", 0, MetricsLogBase::ONGOING_LOG, "1.2.3");
+  EXPECT_EQ(MetricsLogBase::ONGOING_LOG, log1.log_type());
+
+  MetricsLogBase log2("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "1.2.3");
+  EXPECT_EQ(MetricsLogBase::INITIAL_STABILITY_LOG, log2.log_type());
+}
+
 TEST(MetricsLogBaseTest, EmptyRecord) {
-  MetricsLogBase log("totally bogus client ID", 137, "bogus version");
+  MetricsLogBase log("totally bogus client ID", 137,
+                     MetricsLogBase::ONGOING_LOG, "bogus version");
   log.set_hardware_class("sample-class");
   log.CloseLog();
 

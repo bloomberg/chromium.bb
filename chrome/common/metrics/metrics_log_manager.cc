@@ -40,33 +40,26 @@ void MetricsLogManager::SerializedLog::Swap(
 
 MetricsLogManager::MetricsLogManager()
     : unsent_logs_loaded_(false),
-      current_log_type_(MetricsLogBase::NO_LOG),
-      paused_log_type_(MetricsLogBase::NO_LOG),
       staged_log_type_(MetricsLogBase::NO_LOG),
       max_ongoing_log_store_size_(0),
       last_provisional_store_index_(-1),
-      last_provisional_store_type_(MetricsLogBase::INITIAL_LOG) {}
+      last_provisional_store_type_(MetricsLogBase::INITIAL_STABILITY_LOG) {}
 
 MetricsLogManager::~MetricsLogManager() {}
 
-void MetricsLogManager::BeginLoggingWithLog(MetricsLogBase* log,
-                                            LogType log_type) {
-  DCHECK_NE(MetricsLogBase::NO_LOG, log_type);
+void MetricsLogManager::BeginLoggingWithLog(MetricsLogBase* log) {
   DCHECK(!current_log_.get());
   current_log_.reset(log);
-  current_log_type_ = log_type;
 }
 
 void MetricsLogManager::FinishCurrentLog() {
   DCHECK(current_log_.get());
-  DCHECK_NE(MetricsLogBase::NO_LOG, current_log_type_);
   current_log_->CloseLog();
   SerializedLog compressed_log;
   CompressCurrentLog(&compressed_log);
   if (!compressed_log.IsEmpty())
-    StoreLog(&compressed_log, current_log_type_, NORMAL_STORE);
+    StoreLog(&compressed_log, current_log_->log_type(), NORMAL_STORE);
   current_log_.reset();
-  current_log_type_ = MetricsLogBase::NO_LOG;
 }
 
 void MetricsLogManager::StageNextLogForUpload() {
@@ -75,7 +68,7 @@ void MetricsLogManager::StageNextLogForUpload() {
       unsent_initial_logs_.empty() ? &unsent_ongoing_logs_
                                    : &unsent_initial_logs_;
   LogType source_type = (source_list == &unsent_ongoing_logs_) ?
-      MetricsLogBase::ONGOING_LOG : MetricsLogBase::INITIAL_LOG;
+      MetricsLogBase::ONGOING_LOG : MetricsLogBase::INITIAL_STABILITY_LOG;
   // CHECK, rather than DCHECK, because swap()ing with an empty list causes
   // hard-to-identify crashes much later.
   CHECK(!source_list->empty());
@@ -107,23 +100,16 @@ void MetricsLogManager::DiscardStagedLog() {
 void MetricsLogManager::DiscardCurrentLog() {
   current_log_->CloseLog();
   current_log_.reset();
-  current_log_type_ = MetricsLogBase::NO_LOG;
 }
 
 void MetricsLogManager::PauseCurrentLog() {
   DCHECK(!paused_log_.get());
-  DCHECK_EQ(MetricsLogBase::NO_LOG, paused_log_type_);
   paused_log_.reset(current_log_.release());
-  paused_log_type_ = current_log_type_;
-  current_log_type_ = MetricsLogBase::NO_LOG;
 }
 
 void MetricsLogManager::ResumePausedLog() {
   DCHECK(!current_log_.get());
-  DCHECK_EQ(MetricsLogBase::NO_LOG, current_log_type_);
   current_log_.reset(paused_log_.release());
-  current_log_type_ = paused_log_type_;
-  paused_log_type_ = MetricsLogBase::NO_LOG;
 }
 
 void MetricsLogManager::StoreStagedLogAsUnsent(StoreType store_type) {
@@ -142,8 +128,8 @@ void MetricsLogManager::StoreLog(SerializedLog* log,
                                  StoreType store_type) {
   DCHECK_NE(MetricsLogBase::NO_LOG, log_type);
   std::vector<SerializedLog>* destination_list =
-      (log_type == MetricsLogBase::INITIAL_LOG) ? &unsent_initial_logs_
-                                                : &unsent_ongoing_logs_;
+      (log_type == MetricsLogBase::INITIAL_STABILITY_LOG) ?
+      &unsent_initial_logs_ : &unsent_ongoing_logs_;
   destination_list->push_back(SerializedLog());
   destination_list->back().Swap(log);
 
@@ -189,7 +175,7 @@ void MetricsLogManager::PersistUnsentLogs() {
     }
   }
   log_serializer_->SerializeLogs(unsent_initial_logs_,
-                                 MetricsLogBase::INITIAL_LOG);
+                                 MetricsLogBase::INITIAL_STABILITY_LOG);
   log_serializer_->SerializeLogs(unsent_ongoing_logs_,
                                  MetricsLogBase::ONGOING_LOG);
   UMA_HISTOGRAM_TIMES("UMA.StoreLogsTime", timer.Elapsed());
@@ -201,7 +187,7 @@ void MetricsLogManager::LoadPersistedUnsentLogs() {
     return;
 
   base::ElapsedTimer timer;
-  log_serializer_->DeserializeLogs(MetricsLogBase::INITIAL_LOG,
+  log_serializer_->DeserializeLogs(MetricsLogBase::INITIAL_STABILITY_LOG,
                                    &unsent_initial_logs_);
   log_serializer_->DeserializeLogs(MetricsLogBase::ONGOING_LOG,
                                    &unsent_ongoing_logs_);

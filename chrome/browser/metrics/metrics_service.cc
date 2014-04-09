@@ -1116,8 +1116,10 @@ void MetricsService::ReceivedProfilerData(
 
   // Upon the first callback, create the initial log so that we can immediately
   // save the profiler data.
-  if (!initial_metrics_log_.get())
-    initial_metrics_log_.reset(new MetricsLog(client_id_, session_id_));
+  if (!initial_metrics_log_.get()) {
+    initial_metrics_log_.reset(
+        new MetricsLog(client_id_, session_id_, MetricsLog::ONGOING_LOG));
+  }
 
   initial_metrics_log_->RecordProfilerData(process_data, process_type);
 }
@@ -1240,8 +1242,8 @@ void MetricsService::SaveLocalState() {
 void MetricsService::OpenNewLog() {
   DCHECK(!log_manager_.current_log());
 
-  log_manager_.BeginLoggingWithLog(new MetricsLog(client_id_, session_id_),
-                                   MetricsLog::ONGOING_LOG);
+  log_manager_.BeginLoggingWithLog(
+      new MetricsLog(client_id_, session_id_, MetricsLog::ONGOING_LOG));
   if (state_ == INITIALIZED) {
     // We only need to schedule that run once.
     state_ = INIT_TASK_SCHEDULED;
@@ -1291,8 +1293,7 @@ void MetricsService::CloseCurrentLog() {
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
   GetUptimes(pref, &incremental_uptime, &uptime);
-  current_log->RecordStabilityMetrics(incremental_uptime, uptime,
-                                      MetricsLog::ONGOING_LOG);
+  current_log->RecordStabilityMetrics(incremental_uptime, uptime);
 
   RecordCurrentHistograms();
 
@@ -1538,16 +1539,16 @@ void MetricsService::PrepareInitialStabilityLog() {
   DCHECK_NE(0, pref->GetInteger(prefs::kStabilityCrashCount));
 
   scoped_ptr<MetricsLog> initial_stability_log(
-      new MetricsLog(client_id_, session_id_));
+      new MetricsLog(client_id_, session_id_,
+                     MetricsLog::INITIAL_STABILITY_LOG));
   if (!initial_stability_log->LoadSavedEnvironmentFromPrefs())
     return;
-  initial_stability_log->RecordStabilityMetrics(
-      base::TimeDelta(), base::TimeDelta(), MetricsLog::INITIAL_LOG);
+  initial_stability_log->RecordStabilityMetrics(base::TimeDelta(),
+                                                base::TimeDelta());
   log_manager_.LoadPersistedUnsentLogs();
 
   log_manager_.PauseCurrentLog();
-  log_manager_.BeginLoggingWithLog(initial_stability_log.release(),
-                                   MetricsLog::INITIAL_LOG);
+  log_manager_.BeginLoggingWithLog(initial_stability_log.release());
 #if defined(OS_ANDROID)
   ConvertAndroidStabilityPrefsToHistograms(pref);
   RecordCurrentStabilityHistograms();
@@ -1574,14 +1575,12 @@ void MetricsService::PrepareInitialMetricsLog() {
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
   GetUptimes(pref, &incremental_uptime, &uptime);
-  initial_metrics_log_->RecordStabilityMetrics(incremental_uptime, uptime,
-                                               MetricsLog::ONGOING_LOG);
+  initial_metrics_log_->RecordStabilityMetrics(incremental_uptime, uptime);
 
   // Histograms only get written to the current log, so make the new log current
   // before writing them.
   log_manager_.PauseCurrentLog();
-  log_manager_.BeginLoggingWithLog(initial_metrics_log_.release(),
-                                   MetricsLog::ONGOING_LOG);
+  log_manager_.BeginLoggingWithLog(initial_metrics_log_.release());
 #if defined(OS_ANDROID)
   ConvertAndroidStabilityPrefsToHistograms(pref);
 #endif  // defined(OS_ANDROID)
