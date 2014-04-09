@@ -718,6 +718,15 @@
     { "name": "feedbin.com", "mode": "force-https" },
     { "name": "heha.co", "include_subdomains": true, "mode": "force-https" },
     { "name": "passwordbox.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "python.org", "mode": "force-https" },
+    { "name": "pypi.python.org", "include_subdomains": true, "mode": "force-https" },
+    { "name": "www.python.org", "include_subdomains": true, "mode": "force-https" },
+    { "name": "docs.python.org", "include_subdomains": true, "mode": "force-https" },
+    { "name": "encircleapp.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "onedrive.live.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "onedrive.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "keepersecurity.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "keeperapp.com", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
