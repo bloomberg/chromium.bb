@@ -265,7 +265,7 @@ if __name__ == '__main__':
       not 'OS=ios' in os.environ.get('GYP_DEFINES', []):
     os.environ['GYP_GENERATORS'] = 'ninja'
 
-  vs2013_runtime_dll_dirs = vs_toolchain.DownloadVsToolchain()
+  vs2013_runtime_dll_dirs = vs_toolchain.SetEnvironmentAndGetRuntimeDllDirs()
 
   # If CHROMIUM_GYP_SYNTAX_CHECK is set to 1, it will invoke gyp with --check
   # to enfore syntax checking.

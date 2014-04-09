@@ -50,6 +50,7 @@ v8.log
 /build/ipch/
 /build/Release
 /build/Release_x64
+/build/win_toolchain.json
 /build/util/LASTCHANGE*
 /build/util/support
 /build/x64/

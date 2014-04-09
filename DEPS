@@ -637,6 +637,12 @@ hooks = [
     "action": ["python", "src/tools/clang/scripts/update.py", "--if-needed"],
   },
   {
+    # Update the Windows toolchain if necessary.
+    "name": "win_toolchain",
+    "pattern": ".",
+    "action": ["python", "src/build/vs_toolchain.py", "update"],
+  },
+  {
     # Update LASTCHANGE. This is also run by export_tarball.py in
     # src/tools/export_tarball - please keep them in sync.
     "name": "lastchange",
