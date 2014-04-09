@@ -30,10 +30,7 @@ from third_party import upload
 import third_party.oauth2client.client as oa2client
 from third_party import httplib2
 
-# Hack out upload logging.info()
-upload.logging = logging.getLogger('upload')
-# Mac pylint choke on this line.
-upload.logging.setLevel(logging.WARNING)  # pylint: disable=E1103
+upload.LOGGER.setLevel(logging.WARNING)  # pylint: disable=E1103
 
 
 class Rietveld(object):
