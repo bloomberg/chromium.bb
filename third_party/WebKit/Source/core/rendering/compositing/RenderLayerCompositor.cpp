@@ -256,25 +256,6 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
         return;
 
     m_pendingUpdateType = std::max(m_pendingUpdateType, updateType);
-
-    switch (updateType) {
-    case CompositingUpdateNone:
-        ASSERT_NOT_REACHED();
-        break;
-    case CompositingUpdateAfterStyleChange:
-        m_needsToRecomputeCompositingRequirements = true;
-        break;
-    case CompositingUpdateAfterLayout:
-        m_needsToRecomputeCompositingRequirements = true;
-        break;
-    case CompositingUpdateOnScroll:
-        m_needsToRecomputeCompositingRequirements = true; // Overlap can change with scrolling, so need to check for hierarchy updates.
-        break;
-    case CompositingUpdateOnCompositedScroll:
-    case CompositingUpdateAfterCanvasContextChange:
-        break;
-    }
-
     page()->animator().scheduleVisualUpdate();
 }
 
@@ -302,10 +283,13 @@ void RenderLayerCompositor::updateIfNeeded()
     if (m_forceCompositingMode && !m_compositing)
         enableCompositingMode(true);
 
+    CompositingUpdateType updateType = m_pendingUpdateType;
+
+    if (updateType >= CompositingUpdateAfterStyleChange)
+        m_needsToRecomputeCompositingRequirements = true;
+
     if (!m_needsToRecomputeCompositingRequirements && !m_compositing)
         return;
-
-    CompositingUpdateType updateType = m_pendingUpdateType;
 
     bool needCompositingRequirementsUpdate = m_needsToRecomputeCompositingRequirements;
     bool needHierarchyAndGeometryUpdate = m_compositingLayersNeedRebuild;
@@ -362,7 +346,7 @@ void RenderLayerCompositor::updateIfNeeded()
             needHierarchyAndGeometryUpdate = true;
     }
 
-    if (updateType >= CompositingUpdateAfterStyleChange || needHierarchyAndGeometryUpdate) {
+    if (updateType > CompositingUpdateNone || needHierarchyAndGeometryUpdate) {
         TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::updateRecursive");
         GraphicsLayerUpdater updater;
         updater.update(*updateRoot, graphicsLayerUpdateType);
