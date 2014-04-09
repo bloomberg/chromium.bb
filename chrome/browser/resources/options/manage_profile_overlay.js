@@ -113,6 +113,10 @@ cr.define('options', function() {
       };
 
       $('import-existing-managed-user-link').onclick = function(event) {
+        // Hide the import button to trigger a cursor update. The import button
+        // is shown again when the import overlay loads. TODO(akuegel): Remove
+        // this temporary fix when crbug/246304 is resolved.
+        $('import-existing-managed-user-link').hidden = true;
         OptionsPage.navigateToPage('managedUserImport');
       };
     },

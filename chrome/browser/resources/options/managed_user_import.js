@@ -74,6 +74,12 @@ cr.define('options', function() {
      * @override
      */
     didShowPage: function() {
+      // When the import link is clicked to open this overlay, it is hidden in
+      // order to trigger a cursor update. We can show the import link again
+      // now. TODO(akuegel): Remove this temporary fix when crbug/246304 is
+      // resolved.
+      $('import-existing-managed-user-link').hidden = false;
+
       options.ManagedUserListData.requestExistingManagedUsers().then(
           this.receiveExistingManagedUsers_, this.onSigninError_.bind(this));
       options.ManagedUserListData.addObserver(this);
