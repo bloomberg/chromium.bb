@@ -31,8 +31,8 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/events/WindowEventContext.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/FrameView.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -41,6 +41,8 @@ static HashSet<Node*>* gNodesDispatchingSimulatedClicks = 0;
 
 bool EventDispatcher::dispatchEvent(Node* node, PassRefPtr<EventDispatchMediator> mediator)
 {
+    if (!node->document().canDispatchEvents())
+        return true;
     TRACE_EVENT0("webkit", "EventDispatcher::dispatchEvent");
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
     if (!mediator->event())
@@ -100,6 +102,9 @@ void EventDispatcher::dispatchSimulatedClick(Node* node, Event* underlyingEvent,
 
 bool EventDispatcher::dispatch()
 {
+    if (!m_node->document().canDispatchEvents())
+        return true;
+
     TRACE_EVENT0("webkit", "EventDispatcher::dispatch");
 
 #ifndef NDEBUG

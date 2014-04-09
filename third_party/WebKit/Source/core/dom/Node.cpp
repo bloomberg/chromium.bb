@@ -2192,6 +2192,9 @@ void Node::dispatchSubtreeModifiedEvent()
     if (isInShadowTree())
         return;
 
+    if (!document().canDispatchEvents())
+        return;
+
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
     if (!document().hasListenerType(Document::DOMSUBTREEMODIFIED_LISTENER))

@@ -320,9 +320,11 @@ enum PageshowEventPersistence {
         void enqueuePageshowEvent(PageshowEventPersistence);
         void enqueueHashchangeEvent(const String& oldURL, const String& newURL);
         void enqueuePopstateEvent(PassRefPtr<SerializedScriptValue>);
-        void dispatchWindowLoadEvent();
         void documentWasClosed();
         void statePopped(PassRefPtr<SerializedScriptValue>);
+
+        // FIXME: Remove this.
+        void dispatchWindowLoadEvent() { dispatchLoadEvent(); }
 
         // FIXME: This shouldn't be public once DOMWindow becomes ExecutionContext.
         void clearEventQueue();

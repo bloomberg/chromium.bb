@@ -438,12 +438,6 @@ void DOMWindow::enqueueDocumentEvent(PassRefPtrWillBeRawPtr<Event> event)
     m_eventQueue->enqueueEvent(event);
 }
 
-void DOMWindow::dispatchWindowLoadEvent()
-{
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
-    dispatchLoadEvent();
-}
-
 void DOMWindow::documentWasClosed()
 {
     dispatchWindowLoadEvent();
@@ -1595,6 +1589,8 @@ void DOMWindow::dispatchLoadEvent()
 
 bool DOMWindow::dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassRefPtr<EventTarget> prpTarget)
 {
+    if (!m_document || !m_document->canDispatchEvents())
+        return true;
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
     RefPtr<EventTarget> protect = this;
