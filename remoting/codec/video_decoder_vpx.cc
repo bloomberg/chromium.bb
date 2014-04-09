@@ -99,9 +99,10 @@ bool VideoDecoderVpx::DecodePacket(const VideoPacket& packet) {
       codec_.get(), reinterpret_cast<const uint8*>(packet.data().data()),
       packet.data().size(), NULL, 0);
   if (ret != VPX_CODEC_OK) {
-    LOG(ERROR) << "Decoding failed:" << vpx_codec_err_to_string(ret) << "\n"
-               << "Details: " << vpx_codec_error(codec_.get()) << "\n"
-               << vpx_codec_error_detail(codec_.get());
+    const char* error = vpx_codec_error(codec_.get());
+    const char* error_detail = vpx_codec_error_detail(codec_.get());
+    LOG(ERROR) << "Decoding failed:" << (error ? error : "(NULL)") << "\n"
+               << "Details: " << (error_detail ? error_detail : "(NULL)");
     return false;
   }
 
