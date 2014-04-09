@@ -1861,7 +1861,8 @@ TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenDemuxerSeekAndDone) {
   EXPECT_EQ(1, demuxer_->num_seek_requests());
 }
 
-TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenDemuxerSeekThenStart) {
+TEST_F(MediaSourcePlayerTest,
+       DISABLED_SeekToThenReleaseThenDemuxerSeekThenStart) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test if Release() occurs after SeekTo(), but the DemuxerSeek IPC request
@@ -1889,7 +1890,8 @@ TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenDemuxerSeekThenStart) {
   EXPECT_EQ(1, demuxer_->num_seek_requests());
 }
 
-TEST_F(MediaSourcePlayerTest, SeekToThenDemuxerSeekThenReleaseThenSeekDone) {
+TEST_F(MediaSourcePlayerTest,
+       DISABLED_SeekToThenDemuxerSeekThenReleaseThenSeekDone) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test if Release() occurs after a SeekTo()'s subsequent DemuxerSeek IPC
