@@ -128,7 +128,7 @@ private:
     WrapMethod m_wrap;
     mutable String m_value;
     mutable bool m_isDirty;
-    bool m_valueMatchesRenderer;
+    bool m_valueIsUpToDate;
     String m_suggestedValue;
 };
 

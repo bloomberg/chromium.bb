@@ -83,7 +83,7 @@ HTMLTextAreaElement::HTMLTextAreaElement(Document& document, HTMLFormElement* fo
     , m_cols(defaultCols)
     , m_wrap(SoftWrap)
     , m_isDirty(false)
-    , m_valueMatchesRenderer(true)
+    , m_valueIsUpToDate(true)
 {
     ScriptWrappable::init(this);
 }
@@ -271,7 +271,7 @@ void HTMLTextAreaElement::handleFocusEvent(Element*, FocusType)
 void HTMLTextAreaElement::subtreeHasChanged()
 {
     setChangedSinceLastFormControlChangeEvent(true);
-    m_valueMatchesRenderer = false;
+    m_valueIsUpToDate = false;
     setNeedsValidityCheck();
 
     if (!focused())
@@ -319,12 +319,12 @@ String HTMLTextAreaElement::sanitizeUserInputValue(const String& proposedValue, 
 
 void HTMLTextAreaElement::updateValue() const
 {
-    if (m_valueMatchesRenderer)
+    if (m_valueIsUpToDate)
         return;
 
     ASSERT(renderer());
     m_value = innerTextValue();
-    const_cast<HTMLTextAreaElement*>(this)->m_valueMatchesRenderer = true;
+    const_cast<HTMLTextAreaElement*>(this)->m_valueIsUpToDate = true;
     const_cast<HTMLTextAreaElement*>(this)->notifyFormStateChanged();
     m_isDirty = true;
     const_cast<HTMLTextAreaElement*>(this)->updatePlaceholderVisibility(false);
@@ -372,7 +372,6 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
         setLastChangeWasNotUserEdit();
     updatePlaceholderVisibility(false);
     setNeedsStyleRecalc(SubtreeStyleChange);
-    m_valueMatchesRenderer = true;
     m_suggestedValue = String();
 
     // Set the caret to the end of the text value.
@@ -394,7 +393,7 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
 void HTMLTextAreaElement::setInnerTextValue(const String& value)
 {
     HTMLTextFormControlElement::setInnerTextValue(value);
-    m_valueMatchesRenderer = true;
+    m_valueIsUpToDate = true;
 }
 
 String HTMLTextAreaElement::defaultValue() const
