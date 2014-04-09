@@ -133,16 +133,6 @@ const AtomicString& InputType::normalizeTypeName(const AtomicString& typeName)
     return it == factoryMap()->end() ? InputTypeNames::text : it->key;
 }
 
-bool InputType::canChangeFromAnotherType(const AtomicString& normalizedTypeName)
-{
-    // Don't allow the type to be changed to file after the first type change.
-    // In other engines this might mean a JavaScript programmer could set a text
-    // field's value to something like /etc/passwd and then change it to a file
-    // input. I don't think this would actually occur in Blink, but this rule
-    // still may be important for compatibility.
-    return normalizedTypeName != InputTypeNames::file;
-}
-
 InputType::~InputType()
 {
 }

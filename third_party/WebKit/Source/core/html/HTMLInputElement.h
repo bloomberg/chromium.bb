@@ -385,7 +385,6 @@ private:
     bool m_isChecked : 1;
     bool m_reflectsCheckedAttribute : 1;
     bool m_isIndeterminate : 1;
-    bool m_hasType : 1;
     bool m_isActivatedSubmit : 1;
     unsigned m_autocomplete : 2; // AutoCompleteSetting
     bool m_hasNonEmptyList : 1;

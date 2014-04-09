@@ -110,7 +110,6 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
     , m_isChecked(false)
     , m_reflectsCheckedAttribute(true)
     , m_isIndeterminate(false)
-    , m_hasType(false)
     , m_isActivatedSubmit(false)
     , m_autocomplete(Uninitialized)
     , m_hasNonEmptyList(false)
@@ -401,17 +400,9 @@ void HTMLInputElement::setType(const AtomicString& type)
 void HTMLInputElement::updateType()
 {
     const AtomicString& newTypeName = InputType::normalizeTypeName(fastGetAttribute(typeAttr));
-    bool hadType = m_hasType;
-    m_hasType = true;
+
     if (m_inputType->formControlType() == newTypeName)
         return;
-
-    if (hadType && !InputType::canChangeFromAnotherType(newTypeName)) {
-        // Set the attribute back to the old value.
-        // Useful in case we were called from inside parseAttribute.
-        setAttribute(typeAttr, type());
-        return;
-    }
 
     RefPtr<InputType> newType = InputType::create(*this, newTypeName);
     removeFromRadioButtonGroup();
@@ -771,9 +762,6 @@ RenderObject* HTMLInputElement::createRenderer(RenderStyle* style)
 
 void HTMLInputElement::attach(const AttachContext& context)
 {
-    if (!m_hasType)
-        updateType();
-
     HTMLTextFormControlElement::attach(context);
 
     m_inputTypeView->startResourceLoading();

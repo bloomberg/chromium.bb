@@ -26,12 +26,6 @@ function check(value, expected, expectedAttributeValue)
         testFailed('input.getAttribute("type") for "' + value + '" is incorrectly "' + input.getAttribute('type') + '", should be "' + expectedAttributeValue + '".');
 }
 
-// The type is not specified explicitly.  We can change it to "file".
-check("file", "file");
-// http://webkit.org/b/57343
-check("file", "file");
-check("FILE", "file", "FILE");
-
 check("text", "text");
 check("TEXT", "text", "TEXT");  // input.type must return a lower case value according to DOM Level 2.
 check(" text ", "text", " text ");
@@ -39,7 +33,7 @@ check("button", "button");
 check(" button ", "text", " button ");
 check("checkbox", "checkbox");
 check("email", "email");
-check("file", "email"); // We can't change a concrete type to file for a security reason.
+check("file", "file");
 check("hidden", "hidden");
 check("image", "image");
 check("isindex", "text", "isindex");

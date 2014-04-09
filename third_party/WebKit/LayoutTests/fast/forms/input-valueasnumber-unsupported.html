@@ -15,8 +15,9 @@ document.body.appendChild(input);
 
 function checkValueAsNumber(type) {
     debug('Check for type=' + type);
-    input.value = '0';
     input.type = type;
+    // Not allowed to set the value of file to anything except empty string.
+    input.value = (type == 'file') ? '' : '0';
     shouldBe('input.valueAsNumber', 'Number.NaN');
     shouldThrow('input.valueAsNumber = 0', '"InvalidStateError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': This input element does not support Number values."');
 }

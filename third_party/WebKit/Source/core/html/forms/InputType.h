@@ -63,8 +63,6 @@ public:
     static const AtomicString& normalizeTypeName(const AtomicString&);
     virtual ~InputType();
 
-    static bool canChangeFromAnotherType(const AtomicString& normalizedTypeName);
-
     virtual const AtomicString& formControlType() const = 0;
 
     // Type query functions

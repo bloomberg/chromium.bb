@@ -5,12 +5,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS input.type is "text"
 PASS input.getAttribute('type') is null
-PASS input.type for "file" is correctly "file".
-PASS input.getAttribute("type") for "file" is correctly "file".
-PASS input.type for "file" is correctly "file".
-PASS input.getAttribute("type") for "file" is correctly "file".
-PASS input.type for "FILE" is correctly "file".
-PASS input.getAttribute("type") for "FILE" is correctly "FILE".
 PASS input.type for "text" is correctly "text".
 PASS input.getAttribute("type") for "text" is correctly "text".
 PASS input.type for "TEXT" is correctly "text".
@@ -25,8 +19,8 @@ PASS input.type for "checkbox" is correctly "checkbox".
 PASS input.getAttribute("type") for "checkbox" is correctly "checkbox".
 PASS input.type for "email" is correctly "email".
 PASS input.getAttribute("type") for "email" is correctly "email".
-PASS input.type for "file" is correctly "email".
-PASS input.getAttribute("type") for "file" is correctly "email".
+PASS input.type for "file" is correctly "file".
+PASS input.getAttribute("type") for "file" is correctly "file".
 PASS input.type for "hidden" is correctly "hidden".
 PASS input.getAttribute("type") for "hidden" is correctly "hidden".
 PASS input.type for "image" is correctly "image".
