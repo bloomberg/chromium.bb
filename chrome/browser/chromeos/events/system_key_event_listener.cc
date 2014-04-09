@@ -10,10 +10,10 @@
 #include <X11/XKBlib.h>
 #undef Status
 
-#include "base/message_loop/message_loop.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/platform/platform_event_source.h"
 
 namespace chromeos {
 
@@ -62,7 +62,7 @@ SystemKeyEventListener::SystemKeyEventListener()
     LOG(WARNING) << "Could not install Xkb Indicator observer";
   }
 
-  base::MessageLoopForUI::current()->AddObserver(this);
+  ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
 }
 
 SystemKeyEventListener::~SystemKeyEventListener() {
@@ -72,7 +72,7 @@ SystemKeyEventListener::~SystemKeyEventListener() {
 void SystemKeyEventListener::Stop() {
   if (stopped_)
     return;
-  base::MessageLoopForUI::current()->RemoveObserver(this);
+  ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);
   stopped_ = true;
 }
 

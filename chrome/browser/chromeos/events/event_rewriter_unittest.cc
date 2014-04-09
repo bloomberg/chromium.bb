@@ -2332,20 +2332,30 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
 class EventRewriterAshTest : public ash::test::AshTestBase {
  public:
   EventRewriterAshTest() {
-    chromeos::Preferences::RegisterProfilePrefs(prefs_.registry());
-    rewriter_.set_pref_service_for_testing(&prefs_);
   }
   virtual ~EventRewriterAshTest() {}
 
   bool RewriteFunctionKeys(XEvent* event) {
-    return rewriter_.RewriteFunctionKeys(event);
+    return rewriter_->RewriteFunctionKeys(event);
   }
 
  protected:
+  virtual void SetUp() OVERRIDE {
+    AshTestBase::SetUp();
+    rewriter_.reset(new EventRewriter());
+    chromeos::Preferences::RegisterProfilePrefs(prefs_.registry());
+    rewriter_->set_pref_service_for_testing(&prefs_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    rewriter_.reset();
+    AshTestBase::TearDown();
+  }
+
   TestingPrefServiceSyncable prefs_;
 
  private:
-  EventRewriter rewriter_;
+  scoped_ptr<EventRewriter> rewriter_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRewriterAshTest);
 };

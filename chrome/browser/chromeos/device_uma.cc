@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/events/x/device_data_manager.h"
 
 // Enum type for CrOS gesture lib UMA
@@ -32,41 +33,29 @@ DeviceUMA* DeviceUMA::GetInstance() {
 }
 
 DeviceUMA::DeviceUMA()
-    :is_observing_(false) {
-  AddMessageLoopObserver();
+    : stopped_(false) {
+  ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
 }
 
 DeviceUMA::~DeviceUMA() {
-  RemoveMessageLoopObserver();
+  Stop();
 }
 
 void DeviceUMA::Stop() {
-  RemoveMessageLoopObserver();
+  if (stopped_)
+    return;
+  ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);
+  stopped_ = true;
 }
 
-void DeviceUMA::AddMessageLoopObserver() {
-  if (!is_observing_) {
-    base::MessageLoopForUI::current()->AddObserver(this);
-    is_observing_ = true;
-  }
-}
-
-void DeviceUMA::RemoveMessageLoopObserver() {
-  if (is_observing_) {
-    base::MessageLoopForUI::current()->RemoveObserver(this);
-    is_observing_ = false;
-  }
-}
-
-void DeviceUMA::WillProcessEvent(const base::NativeEvent& event) {
+void DeviceUMA::WillProcessEvent(const ui::PlatformEvent& event) {
   CheckIncomingEvent(event);
 }
 
-void DeviceUMA::DidProcessEvent(
-    const base::NativeEvent& event) {
+void DeviceUMA::DidProcessEvent(const ui::PlatformEvent& event) {
 }
 
-void DeviceUMA::CheckTouchpadEvent(const base::NativeEvent& native_event) {
+void DeviceUMA::CheckTouchpadEvent(XEvent* native_event) {
   XIDeviceEvent* xiev =
       static_cast<XIDeviceEvent*>(native_event->xcookie.data);
   // We take only the slave event since there is no need to count twice.
@@ -93,7 +82,7 @@ void DeviceUMA::CheckTouchpadEvent(const base::NativeEvent& native_event) {
   }
 }
 
-void DeviceUMA::CheckIncomingEvent(const base::NativeEvent& event) {
+void DeviceUMA::CheckIncomingEvent(XEvent* event) {
   switch (event->type) {
     case GenericEvent: {
       if (ui::DeviceDataManager::GetInstance()->IsXIDeviceEvent(event) &&

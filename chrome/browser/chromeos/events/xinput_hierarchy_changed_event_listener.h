@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_EVENTS_XINPUT_HIERARCHY_CHANGED_EVENT_LISTENER_H_
 
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/device_hierarchy_observer.h"
+#include "ui/events/platform/platform_event_observer.h"
 
 typedef union _XEvent XEvent;
 
@@ -18,8 +18,7 @@ namespace chromeos {
 // which is sent to Chrome when X detects a system or USB keyboard (or mouse),
 // then tells X to change the current XKB keyboard layout. Start by just calling
 // instance() to get it going.
-class XInputHierarchyChangedEventListener
-    : public base::MessageLoopForUI::Observer {
+class XInputHierarchyChangedEventListener : public ui::PlatformEventObserver {
  public:
   static XInputHierarchyChangedEventListener* GetInstance();
 
@@ -36,9 +35,9 @@ class XInputHierarchyChangedEventListener
   XInputHierarchyChangedEventListener();
   virtual ~XInputHierarchyChangedEventListener();
 
-  // MessageLoopForUI::Observer overrides.
-  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
+  // ui::PlatformEventObserver:
+  virtual void WillProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
 
   // Returns true if the event was processed, false otherwise.
   void ProcessedXEvent(XEvent* xevent);

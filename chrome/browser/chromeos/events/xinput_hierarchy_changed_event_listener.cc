@@ -10,6 +10,7 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/platform/platform_event_source.h"
 
 namespace chromeos {
 namespace {
@@ -57,7 +58,7 @@ XInputHierarchyChangedEventListener::GetInstance() {
 
 XInputHierarchyChangedEventListener::XInputHierarchyChangedEventListener()
     : stopped_(false) {
-  base::MessageLoopForUI::current()->AddObserver(this);
+  ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
 }
 
 XInputHierarchyChangedEventListener::~XInputHierarchyChangedEventListener() {
@@ -68,7 +69,7 @@ void XInputHierarchyChangedEventListener::Stop() {
   if (stopped_)
     return;
 
-  base::MessageLoopForUI::current()->RemoveObserver(this);
+  ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);
   stopped_ = true;
 }
 
@@ -83,12 +84,12 @@ void XInputHierarchyChangedEventListener::RemoveObserver(
 }
 
 void XInputHierarchyChangedEventListener::WillProcessEvent(
-    const base::NativeEvent& event) {
+    const ui::PlatformEvent& event) {
   ProcessedXEvent(event);
 }
 
 void XInputHierarchyChangedEventListener::DidProcessEvent(
-    const base::NativeEvent& event) {
+    const ui::PlatformEvent& event) {
 }
 
 void XInputHierarchyChangedEventListener::ProcessedXEvent(XEvent* xevent) {

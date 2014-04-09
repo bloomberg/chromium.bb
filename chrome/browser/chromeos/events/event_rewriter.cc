@@ -34,6 +34,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/wm/core/window_util.h"
 
 namespace {
@@ -135,7 +136,7 @@ EventRewriter::EventRewriter()
       xkeyboard_for_testing_(NULL),
       keyboard_driven_event_rewriter_(new KeyboardDrivenEventRewriter),
       pref_service_for_testing_(NULL) {
-  base::MessageLoopForUI::current()->AddObserver(this);
+  ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
   if (base::SysInfo::IsRunningOnChromeOS()) {
     XInputHierarchyChangedEventListener::GetInstance()->AddObserver(this);
   }
@@ -143,7 +144,7 @@ EventRewriter::EventRewriter()
 }
 
 EventRewriter::~EventRewriter() {
-  base::MessageLoopForUI::current()->RemoveObserver(this);
+  ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);
   if (base::SysInfo::IsRunningOnChromeOS()) {
     XInputHierarchyChangedEventListener::GetInstance()->RemoveObserver(this);
   }
@@ -193,7 +194,7 @@ void EventRewriter::DeviceKeyPressedOrReleased(int device_id) {
   last_device_id_ = device_id;
 }
 
-void EventRewriter::WillProcessEvent(const base::NativeEvent& event) {
+void EventRewriter::WillProcessEvent(const ui::PlatformEvent& event) {
   XEvent* xevent = event;
   if (xevent->type == KeyPress || xevent->type == KeyRelease) {
     Rewrite(xevent);
@@ -213,7 +214,7 @@ void EventRewriter::WillProcessEvent(const base::NativeEvent& event) {
   }
 }
 
-void EventRewriter::DidProcessEvent(const base::NativeEvent& event) {
+void EventRewriter::DidProcessEvent(const ui::PlatformEvent& event) {
 }
 
 void EventRewriter::DeviceHierarchyChanged() {}

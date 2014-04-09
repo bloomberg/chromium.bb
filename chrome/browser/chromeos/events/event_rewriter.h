@@ -13,9 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_pump_observer.h"
 #include "chrome/browser/chromeos/device_hierarchy_observer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/platform/platform_event_observer.h"
 
 class PrefService;
 typedef union _XEvent XEvent;
@@ -27,7 +27,7 @@ class XKeyboard;
 }
 
 class EventRewriter : public DeviceHierarchyObserver,
-                      public base::MessagePumpObserver {
+                      public ui::PlatformEventObserver {
  public:
   enum DeviceType {
     kDeviceUnknown = 0,
@@ -65,11 +65,11 @@ class EventRewriter : public DeviceHierarchyObserver,
 
   void DeviceKeyPressedOrReleased(int device_id);
 
-  // base::MessagePumpObserver overrides:
-  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
+  // ui::PlatformEventObserver:
+  virtual void WillProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
 
-  // DeviceHierarchyObserver overrides:
+  // DeviceHierarchyObserver:
   virtual void DeviceHierarchyChanged() OVERRIDE;
   virtual void DeviceAdded(int device_id) OVERRIDE;
   virtual void DeviceRemoved(int device_id) OVERRIDE;
