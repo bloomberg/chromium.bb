@@ -33,6 +33,7 @@
 #endif
 
 #if defined(OS_LINUX)
+#include "components/nacl/loader/nonsfi/irt_random.h"
 #include "components/nacl/loader/nonsfi/nonsfi_main.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #include "ppapi/nacl_irt/plugin_startup.h"
@@ -261,13 +262,22 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 #if !defined(OS_LINUX)
   CHECK(!uses_nonsfi_mode_) << "Non-SFI NaCl is only supported on Linux";
 #endif
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  int urandom_fd = dup(base::GetUrandomFD());
-  if (urandom_fd < 0) {
-    LOG(ERROR) << "Failed to dup() the urandom FD";
-    return;
+
+  // Random number source initialization.
+#if defined(OS_LINUX)
+  if (uses_nonsfi_mode_) {
+    nacl::nonsfi::SetUrandomFd(base::GetUrandomFD());
   }
-  NaClChromeMainSetUrandomFd(urandom_fd);
+#endif
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  if (!uses_nonsfi_mode_) {
+    int urandom_fd = dup(base::GetUrandomFD());
+    if (urandom_fd < 0) {
+      LOG(ERROR) << "Failed to dup() the urandom FD";
+      return;
+    }
+    NaClChromeMainSetUrandomFd(urandom_fd);
+  }
 #endif
 
   struct NaClApp* nap = NULL;

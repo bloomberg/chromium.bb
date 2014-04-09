@@ -212,6 +212,7 @@
                 'nacl/loader/nonsfi/irt_interfaces.h',
                 'nacl/loader/nonsfi/irt_memory.cc',
                 'nacl/loader/nonsfi/irt_ppapi.cc',
+                'nacl/loader/nonsfi/irt_random.cc',
                 'nacl/loader/nonsfi/irt_thread.cc',
                 'nacl/loader/nonsfi/irt_util.h',
                 'nacl/loader/nonsfi/nonsfi_main.cc',

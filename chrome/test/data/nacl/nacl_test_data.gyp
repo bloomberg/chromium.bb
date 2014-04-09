@@ -1085,6 +1085,7 @@
               '<(DEPTH)/ppapi/native_client/tools/browser_tester/browserdata/nacltest.js',
               'nonsfi/libc_free.html',
               'nonsfi/libc_free.nmf',
+              'nonsfi/irt_test.html',
             ],
           },
           'dependencies': [

@@ -23,6 +23,7 @@ extern const struct nacl_irt_futex kIrtFutex;
 extern const struct nacl_irt_tls kIrtTls;
 extern const struct nacl_irt_clock kIrtClock;
 extern const struct nacl_irt_ppapihook kIrtPpapiHook;
+extern const struct nacl_irt_random kIrtRandom;
 
 }  // namespace nonsfi
 }  // namespace nacl
