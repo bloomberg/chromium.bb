@@ -4,6 +4,8 @@
     <style>
         d\eeeex {}
         D\eeeeX {}
+        x { background-image: url('http://w/\aaaa/1b\aaaa.gif'); }
+        y { background-image: url(http://w/\aaaa/1b\aaaa.gif); }
     </style>
 
     <script src="../../resources/testharness.js"></script>
@@ -16,9 +18,11 @@
             var stylesheet = styleElm.sheet;
             assert_not_equals(stylesheet, undefined, "style.sheet exists");
             rules = stylesheet.cssRules;
-            assert_equals(rules.length, 2, "cssRules.length == 2");
+            assert_equals(rules.length, 4, "cssRules.length == 4");
             assert_equals(rules[0].selectorText, "d\ueeeex", "Lowercase identifier with escapes");
             assert_equals(rules[1].selectorText, "d\ueeeex", "Uppercase identifier with escapes");
+            assert_equals(rules[2].style.cssText, "background-image: url(http://w/%EA%AA%AA/1b%EA%AA%AA.gif);", "Escaped url string");
+            assert_equals(rules[3].style.cssText, "background-image: url(http://w/%EA%AA%AA/1b%EA%AA%AA.gif);", "Escaped url without string");
         }, "Correctly parsed identifier with escapes");
     </script>
 </head>

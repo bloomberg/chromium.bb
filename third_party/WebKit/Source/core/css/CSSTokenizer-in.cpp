@@ -353,13 +353,17 @@ inline bool CSSTokenizer::isIdentifierStart()
     return isIdentifierStartAfterDash((*currentCharacter<CharacterType>() != '-') ? currentCharacter<CharacterType>() : currentCharacter<CharacterType>() + 1);
 }
 
+enum CheckStringValidationMode {
+    AbortIfInvalid,
+    SkipInvalid
+};
+
 template <typename CharacterType>
-static inline CharacterType* checkAndSkipString(CharacterType* currentCharacter, int quote)
+static inline CharacterType* checkAndSkipString(CharacterType* currentCharacter, int quote, CheckStringValidationMode mode)
 {
-    // Returns with 0, if string check is failed. Otherwise
-    // it returns with the following character. This is necessary
-    // since we cannot revert escape sequences, thus strings
-    // must be validated before parsing.
+    // If mode is AbortIfInvalid and the string check fails it returns
+    // with 0. Otherwise it returns with a pointer to the first
+    // character after the string.
     while (true) {
         if (UNLIKELY(*currentCharacter == quote)) {
             // String parsing is successful.
@@ -369,7 +373,7 @@ static inline CharacterType* checkAndSkipString(CharacterType* currentCharacter,
             // String parsing is successful up to end of input.
             return currentCharacter;
         }
-        if (UNLIKELY(*currentCharacter <= '\r' && (*currentCharacter == '\n' || (*currentCharacter | 0x1) == '\r'))) {
+        if (mode == AbortIfInvalid && UNLIKELY(*currentCharacter <= '\r' && (*currentCharacter == '\n' || (*currentCharacter | 0x1) == '\r'))) {
             // String parsing is failed for character '\n', '\f' or '\r'.
             return 0;
         }
@@ -381,9 +385,13 @@ static inline CharacterType* checkAndSkipString(CharacterType* currentCharacter,
         } else if (currentCharacter[1] == '\r') {
             currentCharacter += currentCharacter[2] == '\n' ? 3 : 2;
         } else {
-            currentCharacter = checkAndSkipEscape(currentCharacter);
-            if (!currentCharacter)
-                return 0;
+            CharacterType* next = checkAndSkipEscape(currentCharacter);
+            if (!next) {
+                if (mode == AbortIfInvalid)
+                    return 0;
+                next = currentCharacter + 1;
+            }
+            currentCharacter = next;
         }
     }
 }
@@ -518,7 +526,7 @@ size_t CSSTokenizer::peekMaxStringLen(SrcCharacterType* src, UChar quote)
     // codepoints) than the input. This code can therefore ignore
     // escape sequences completely and just return the length of the
     // input string (possibly including terminating quote if any).
-    SrcCharacterType* end = checkAndSkipString(src, quote);
+    SrcCharacterType* end = checkAndSkipString(src, quote, SkipInvalid);
     return end ? end - src : 0;
 }
 
@@ -535,8 +543,6 @@ inline bool CSSTokenizer::parseStringInternal(SrcCharacterType*& src, DestCharac
             // String parsing is done, but don't advance pointer if at the end of input.
             return true;
         }
-        ASSERT(*src > '\r' || (*src < '\n' && *src) || *src == '\v');
-
         if (LIKELY(src[0] != '\\')) {
             *result++ = *src++;
         } else if (src[1] == '\n' || src[1] == '\f') {
@@ -589,7 +595,7 @@ inline bool CSSTokenizer::findURI(CharacterType*& start, CharacterType*& end, UC
 
     if (*start == '"' || *start == '\'') {
         quote = *start++;
-        end = checkAndSkipString(start, quote);
+        end = checkAndSkipString(start, quote, AbortIfInvalid);
         if (!end)
             return false;
     } else {
@@ -1368,7 +1374,7 @@ restartAfterComment:
         break;
 
     case CharacterQuote:
-        if (checkAndSkipString(currentCharacter<SrcCharacterType>(), m_token)) {
+        if (checkAndSkipString(currentCharacter<SrcCharacterType>(), m_token, AbortIfInvalid)) {
             ++result;
             parseString<SrcCharacterType>(result, yylval->string, m_token);
             m_token = STRING;
