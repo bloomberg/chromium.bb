@@ -1487,6 +1487,43 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
   EXPECT_FALSE(active_layer_->needs_post_commit_initialization());
 }
 
+TEST_F(PictureLayerImplTest, RemoveInvalidTilesOnActivation) {
+  SetupDefaultTrees(gfx::Size(1500, 1500));
+  AddDefaultTilingsWithInvalidation(gfx::Rect(0, 0, 1, 1));
+
+  FakePictureLayerImpl* recycled_layer = pending_layer_;
+  host_impl_.ActivatePendingTree();
+
+  active_layer_ = static_cast<FakePictureLayerImpl*>(
+      host_impl_.active_tree()->LayerById(id_));
+
+  EXPECT_EQ(3u, active_layer_->num_tilings());
+  EXPECT_EQ(3u, recycled_layer->num_tilings());
+  EXPECT_FALSE(host_impl_.pending_tree());
+  for (size_t i = 0; i < active_layer_->num_tilings(); ++i) {
+    PictureLayerTiling* active_tiling = active_layer_->tilings()->tiling_at(i);
+    PictureLayerTiling* recycled_tiling =
+        recycled_layer->tilings()->tiling_at(i);
+
+    ASSERT_TRUE(active_tiling);
+    ASSERT_TRUE(recycled_tiling);
+
+    EXPECT_TRUE(active_tiling->TileAt(0, 0));
+    EXPECT_TRUE(active_tiling->TileAt(1, 0));
+    EXPECT_TRUE(active_tiling->TileAt(0, 1));
+    EXPECT_TRUE(active_tiling->TileAt(1, 1));
+
+    EXPECT_FALSE(recycled_tiling->TileAt(0, 0));
+    EXPECT_TRUE(recycled_tiling->TileAt(1, 0));
+    EXPECT_TRUE(recycled_tiling->TileAt(0, 1));
+    EXPECT_TRUE(recycled_tiling->TileAt(1, 1));
+
+    EXPECT_EQ(active_tiling->TileAt(1, 0), recycled_tiling->TileAt(1, 0));
+    EXPECT_EQ(active_tiling->TileAt(0, 1), recycled_tiling->TileAt(0, 1));
+    EXPECT_EQ(active_tiling->TileAt(1, 1), recycled_tiling->TileAt(1, 1));
+  }
+}
+
 TEST_F(PictureLayerImplTest, SyncTilingAfterReleaseResource) {
   SetupDefaultTrees(gfx::Size(10, 10));
   host_impl_.active_tree()->UpdateDrawProperties();

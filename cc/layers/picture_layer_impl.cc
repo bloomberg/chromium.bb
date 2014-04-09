@@ -98,9 +98,13 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->pile_ = pile_;
   layer_impl->SetHasGpuRasterizationHint(has_gpu_rasterization_hint_);
 
-  // Tilings would be expensive to push, so we swap.  This optimization requires
-  // an extra invalidation in SyncFromActiveLayer.
+  // Tilings would be expensive to push, so we swap.
   layer_impl->tilings_.swap(tilings_);
+
+  // Ensure that we don't have any tiles that are out of date.
+  if (tilings_)
+    tilings_->RemoveTilesInRegion(invalidation_);
+
   layer_impl->tilings_->SetClient(layer_impl);
   if (tilings_)
     tilings_->SetClient(this);
@@ -647,15 +651,8 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   invalidation_.Union(difference_region);
 
   if (CanHaveTilings()) {
-    // The recycle tree's tiling set is two frames out of date, so it needs to
-    // have both this frame's invalidation and the previous frame's invalidation
-    // (stored on the active layer).
-    Region tiling_invalidation = other->invalidation_;
-    tiling_invalidation.Union(invalidation_);
-    tilings_->SyncTilings(*other->tilings_,
-                          bounds(),
-                          tiling_invalidation,
-                          MinimumContentsScale());
+    tilings_->SyncTilings(
+        *other->tilings_, bounds(), invalidation_, MinimumContentsScale());
   } else {
     RemoveAllTilings();
   }

@@ -92,6 +92,11 @@ void PictureLayerTilingSet::SyncTilings(
   layer_bounds_ = new_layer_bounds;
 }
 
+void PictureLayerTilingSet::RemoveTilesInRegion(const Region& region) {
+  for (size_t i = 0; i < tilings_.size(); ++i)
+    tilings_[i]->RemoveTilesInRegion(region);
+}
+
 void PictureLayerTilingSet::SetCanUseLCDText(bool can_use_lcd_text) {
   for (size_t i = 0; i < tilings_.size(); ++i)
     tilings_[i]->SetCanUseLCDText(can_use_lcd_text);

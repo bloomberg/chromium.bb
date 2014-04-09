@@ -31,6 +31,8 @@ class CC_EXPORT PictureLayerTilingSet {
      const Region& layer_invalidation,
      float minimum_contents_scale);
 
+  void RemoveTilesInRegion(const Region& region);
+
   gfx::Size layer_bounds() const { return layer_bounds_; }
 
   void SetCanUseLCDText(bool can_use_lcd_text);

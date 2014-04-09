@@ -123,6 +123,7 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Size layer_bounds() const { return layer_bounds_; }
   void SetLayerBounds(const gfx::Size& layer_bounds);
   void Invalidate(const Region& layer_region);
+  void RemoveTilesInRegion(const Region& layer_region);
   void CreateMissingTilesInLiveTilesRect();
 
   void SetCanUseLCDText(bool can_use_lcd_text);
@@ -276,6 +277,7 @@ class CC_EXPORT PictureLayerTiling {
       const;
 
   void UpdateEvictionCacheIfNeeded(WhichTree tree);
+  void DoInvalidate(const Region& layer_region, bool recreate_tiles);
 
   // Given properties.
   float contents_scale_;
