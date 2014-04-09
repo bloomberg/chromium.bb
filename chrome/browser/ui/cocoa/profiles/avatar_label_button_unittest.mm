@@ -1,11 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/browser/avatar_label_button.h"
+#import "chrome/browser/ui/cocoa/profiles/avatar_label_button.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"

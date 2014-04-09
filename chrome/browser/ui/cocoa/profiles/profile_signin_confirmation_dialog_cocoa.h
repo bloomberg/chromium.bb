@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_PROFILE_SIGNIN_CONFIRMATION_DIALOG_COCOA_
-#define CHROME_BROWSER_UI_COCOA_PROFILE_SIGNIN_CONFIRMATION_DIALOG_COCOA_
+#ifndef CHROME_BROWSER_UI_COCOA_PROFILES_PROFILE_SIGNIN_CONFIRMATION_DIALOG_COCOA_
+#define CHROME_BROWSER_UI_COCOA_PROFILES_PROFILE_SIGNIN_CONFIRMATION_DIALOG_COCOA_
 
 #import <Cocoa/Cocoa.h>
 
@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
-#include "chrome/browser/ui/cocoa/profile_signin_confirmation_view_controller.h"
+#include "chrome/browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller.h"
 
 class Browser;
 class Profile;
@@ -57,4 +57,4 @@ class ProfileSigninConfirmationDialogCocoa : ConstrainedWindowMacDelegate {
   DISALLOW_COPY_AND_ASSIGN(ProfileSigninConfirmationDialogCocoa);
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_PROFILE_SIGNIN_CONFIRMATION_DIALOG_COCOA_
+#endif  // CHROME_BROWSER_UI_COCOA_PROFILES_PROFILE_SIGNIN_CONFIRMATION_DIALOG_COCOA_

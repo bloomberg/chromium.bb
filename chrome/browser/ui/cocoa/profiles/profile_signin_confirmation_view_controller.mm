@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/profile_signin_confirmation_view_controller.h"
+#import "chrome/browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller.h"
 
 #include <algorithm>
 #include <cmath>

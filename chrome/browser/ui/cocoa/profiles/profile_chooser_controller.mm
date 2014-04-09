@@ -1,10 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/cocoa/browser/profile_chooser_controller.h"
+#import "chrome/browser/ui/cocoa/profiles/profile_chooser_controller.h"
 
 #include "base/mac/bundle_locations.h"
 #include "base/prefs/pref_service.h"
@@ -32,7 +32,7 @@
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#import "chrome/browser/ui/cocoa/user_manager_mac.h"
+#import "chrome/browser/ui/cocoa/profiles/user_manager_mac.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"

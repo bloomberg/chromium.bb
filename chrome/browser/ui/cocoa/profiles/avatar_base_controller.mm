@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/browser/avatar_base_controller.h"
+#import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -14,9 +14,9 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
-#import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
-#import "chrome/browser/ui/cocoa/browser/profile_chooser_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/profiles/avatar_menu_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/profiles/profile_chooser_controller.h"
 #include "chrome/common/profile_management_switches.h"
 #include "ui/base/resource/resource_bundle.h"
 

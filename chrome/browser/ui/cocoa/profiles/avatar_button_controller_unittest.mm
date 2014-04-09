@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
+#import "chrome/browser/ui/cocoa/profiles/avatar_button_controller.h"
 
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
-#import "chrome/browser/ui/cocoa/browser/profile_chooser_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/info_bubble_window.h"
+#import "chrome/browser/ui/cocoa/profiles/profile_chooser_controller.h"
 #include "chrome/common/chrome_switches.h"
 
 const char kDefaultProfileName[] = "default";

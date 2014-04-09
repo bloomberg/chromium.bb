@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_USER_MANAGER_MAC_H_
-#define CHROME_BROWSER_UI_COCOA_USER_MANAGER_MAC_H_
+#ifndef CHROME_BROWSER_UI_COCOA_PROFILES_USER_MANAGER_MAC_H_
+#define CHROME_BROWSER_UI_COCOA_PROFILES_USER_MANAGER_MAC_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -59,4 +59,4 @@ class UserManagerMac {
   DISALLOW_COPY_AND_ASSIGN(UserManagerMac);
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_USER_MANAGER_MAC_H_
+#endif  // CHROME_BROWSER_UI_COCOA_PROFILES_USER_MANAGER_MAC_H_
