@@ -859,7 +859,9 @@ def _ReviewersFromChange(change):
     reviewers.update(set([r.strip() for r in change.R.split(',')]))
   if change.TBR:
     reviewers.update(set([r.strip() for r in change.TBR.split(',')]))
-  return reviewers
+
+  # Drop reviewers that aren't specified in email address format.
+  return set(reviewer for reviewer in reviewers if '@' in reviewer)
 
 
 def _RietveldOwnerAndReviewers(input_api, email_regexp, approval_needed=False):

@@ -2572,7 +2572,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def AssertOwnersWorks(self, tbr=False, issue='1', approvers=None,
       reviewers=None, is_committing=True, rietveld_response=None,
-      uncovered_files=None, expected_output='', author_counts_as_owner=True):
+      uncovered_files=None, expected_output='', author_counts_as_owner=True,
+      manually_specified_reviewers=None):
     if approvers is None:
       # The set of people who lgtm'ed a change.
       approvers = set()
@@ -2583,11 +2584,13 @@ class CannedChecksUnittest(PresubmitTestsBase):
       reviewers = approvers
     if uncovered_files is None:
       uncovered_files = set()
+    if manually_specified_reviewers is None:
+      manually_specified_reviewers = []
 
     change = self.mox.CreateMock(presubmit.Change)
     change.issue = issue
     change.author_email = 'john@example.com'
-    change.R = ''
+    change.R = ','.join(manually_specified_reviewers)
     change.TBR = ''
     affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
     input_api = self.MockInputApi(change, False)
@@ -2614,7 +2617,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
         people = approvers
       else:
         people = reviewers
-        change.R = ','.join(reviewers)
 
       if issue:
         input_api.rietveld.get_issue_properties(
@@ -2729,12 +2731,27 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testCannedCheckOwners_NoIssueLocalReviewers(self):
     self.AssertOwnersWorks(issue=None,
         reviewers=set(['jane@example.com']),
+        manually_specified_reviewers=['jane@example.com'],
         expected_output="OWNERS check failed: this change has no Rietveld "
                         "issue number, so we can't check it for approvals.\n")
     self.AssertOwnersWorks(issue=None,
         reviewers=set(['jane@example.com']),
+        manually_specified_reviewers=['jane@example.com'],
         is_committing=False,
         expected_output='')
+
+  def testCannedCheckOwners_NoIssueLocalReviewersDontInferEmailDomain(self):
+    self.AssertOwnersWorks(issue=None,
+        reviewers=set(['jane']),
+        manually_specified_reviewers=['jane@example.com'],
+        expected_output="OWNERS check failed: this change has no Rietveld "
+                        "issue number, so we can't check it for approvals.\n")
+    self.AssertOwnersWorks(issue=None,
+        uncovered_files=set(['foo']),
+        manually_specified_reviewers=['jane'],
+        is_committing=False,
+        expected_output='Missing OWNER reviewers for these files:\n'
+                        '    foo\n')
 
   def testCannedCheckOwners_NoLGTM(self):
     self.AssertOwnersWorks(expected_output='Missing LGTM from someone '
