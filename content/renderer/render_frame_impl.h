@@ -19,6 +19,8 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
+// TODO(jam): remove this header after the blink roll.
+#include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
@@ -37,6 +39,11 @@ class WebSecurityOrigin;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
+
+// TODO(jam): remove this after blink roll
+class WebColorChooser;
+class WebColorChooserClient;
+struct WebColorSuggestion;
 }
 
 namespace gfx {
@@ -283,6 +290,10 @@ class CONTENT_EXPORT RenderFrameImpl
                                      bool is_new_navigation);
   virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   virtual void didChangeSelection(bool is_empty_selection);
+  virtual blink::WebColorChooser* createColorChooser(
+      blink::WebColorChooserClient*,
+      const blink::WebColor& initial_color,
+      const blink::WebVector<blink::WebColorSuggestion>& suggestions);
   virtual void runModalAlertDialog(const blink::WebString& message);
   virtual bool runModalConfirmDialog(const blink::WebString& message);
   virtual bool runModalPromptDialog(const blink::WebString& message,
