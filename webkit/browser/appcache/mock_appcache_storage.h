@@ -20,6 +20,10 @@
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/appcache_storage.h"
 
+namespace content {
+class AppCacheRequestHandlerTest;
+}
+
 namespace appcache {
 
 // For use in unit tests.
@@ -62,7 +66,7 @@ class MockAppCacheStorage : public AppCacheStorage {
       const std::vector<int64>& response_ids) OVERRIDE;
 
  private:
-  friend class AppCacheRequestHandlerTest;
+  friend class content::AppCacheRequestHandlerTest;
   friend class AppCacheServiceTest;
   friend class AppCacheUpdateJobTest;
 

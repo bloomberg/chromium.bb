@@ -22,7 +22,18 @@ class URLRequest;
 }  // namespace net
 
 namespace content {
+FORWARD_DECLARE_TEST(AppCacheHostTest, Basic);
+FORWARD_DECLARE_TEST(AppCacheHostTest, SelectNoCache);
+FORWARD_DECLARE_TEST(AppCacheHostTest, ForeignEntry);
+FORWARD_DECLARE_TEST(AppCacheHostTest, FailedCacheLoad);
+FORWARD_DECLARE_TEST(AppCacheHostTest, FailedGroupLoad);
+FORWARD_DECLARE_TEST(AppCacheHostTest, SetSwappableCache);
+FORWARD_DECLARE_TEST(AppCacheHostTest, ForDedicatedWorker);
+FORWARD_DECLARE_TEST(AppCacheHostTest, SelectCacheAllowed);
+FORWARD_DECLARE_TEST(AppCacheHostTest, SelectCacheBlocked);
+class AppCacheHostTest;
 class AppCacheStorageImplTest;
+class AppCacheRequestHandlerTest;
 }
 
 namespace appcache {
@@ -161,6 +172,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
   void CompleteTransfer(int host_id, AppCacheFrontend* frontend);
 
  private:
+  friend class content::AppCacheHostTest;
+  friend class content::AppCacheStorageImplTest;
+  friend class content::AppCacheRequestHandlerTest;
+  friend class AppCacheUpdateJobTest;
+
   Status GetStatus();
   void LoadSelectedCache(int64 cache_id);
   void LoadOrCreateGroup(const GURL& manifest_url);
@@ -295,20 +311,17 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
   // First party url to be used in policy checks.
   GURL first_party_url_;
 
-  friend class content::AppCacheStorageImplTest;
-  friend class AppCacheRequestHandlerTest;
-  friend class AppCacheUpdateJobTest;
   FRIEND_TEST_ALL_PREFIXES(AppCacheTest, CleanupUnusedCache);
   FRIEND_TEST_ALL_PREFIXES(AppCacheGroupTest, CleanupUnusedGroup);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheHostTest, Basic);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheHostTest, SelectNoCache);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheHostTest, ForeignEntry);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheHostTest, FailedCacheLoad);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheHostTest, FailedGroupLoad);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheHostTest, SetSwappableCache);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheHostTest, ForDedicatedWorker);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheHostTest, SelectCacheAllowed);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheHostTest, SelectCacheBlocked);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, SelectNoCache);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, ForeignEntry);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, FailedCacheLoad);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, FailedGroupLoad);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, SetSwappableCache);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, ForDedicatedWorker);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, SelectCacheAllowed);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, SelectCacheBlocked);
   FRIEND_TEST_ALL_PREFIXES(AppCacheGroupTest, QueueUpdate);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheHost);

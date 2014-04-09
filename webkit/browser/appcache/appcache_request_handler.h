@@ -18,6 +18,10 @@ class URLRequest;
 class URLRequestJob;
 }  // namespace net
 
+namespace content {
+class AppCacheRequestHandlerTest;
+}
+
 namespace appcache {
 
 class AppCacheURLRequestJob;
@@ -139,7 +143,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheRequestHandler
   // from the old processes structures over to the new structures.
   scoped_ptr<AppCacheHost> host_for_cross_site_transfer_;
 
-  friend class AppCacheRequestHandlerTest;
+  friend class content::AppCacheRequestHandlerTest;
   DISALLOW_COPY_AND_ASSIGN(AppCacheRequestHandler);
 };
 

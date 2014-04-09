@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "content/browser/appcache/mock_appcache_policy.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -23,10 +24,22 @@
 #include "webkit/browser/appcache/appcache_backend_impl.h"
 #include "webkit/browser/appcache/appcache_request_handler.h"
 #include "webkit/browser/appcache/appcache_url_request_job.h"
-#include "webkit/browser/appcache/mock_appcache_policy.h"
 #include "webkit/browser/appcache/mock_appcache_service.h"
 
-namespace appcache {
+using appcache::AppCache;
+using appcache::AppCacheBackendImpl;
+using appcache::AppCacheEntry;
+using appcache::AppCacheFrontend;
+using appcache::AppCacheGroup;
+using appcache::AppCacheHost;
+using appcache::AppCacheInfo;
+using appcache::AppCacheRequestHandler;
+using appcache::AppCacheURLRequestJob;
+using appcache::kNoCacheId;
+using appcache::MockAppCacheService;
+using appcache::MockAppCacheStorage;
+
+namespace content {
 
 static const int kMockProcessId = 1;
 
@@ -971,4 +984,4 @@ TEST_F(AppCacheRequestHandlerTest, MainResource_Blocked) {
   RunTestOnIOThread(&AppCacheRequestHandlerTest::MainResource_Blocked);
 }
 
-}  // namespace appcache
+}  // namespace content

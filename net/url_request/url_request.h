@@ -45,8 +45,10 @@ class StackTrace;
 
 // Temporary layering violation to allow existing users of a deprecated
 // interface.
-namespace appcache {
+namespace content {
 class AppCacheRequestHandlerTest;
+}
+namespace appcache {
 class AppCacheURLRequestJobTest;
 }
 
@@ -168,9 +170,9 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
     friend class ::ChildProcessSecurityPolicyTest;
     friend class TestInterceptor;
     friend class URLRequestFilter;
-    friend class appcache::AppCacheRequestHandlerTest;
     friend class appcache::AppCacheURLRequestJobTest;
     friend class content::AppCacheInterceptor;
+    friend class content::AppCacheRequestHandlerTest;
     friend class content::BlobURLRequestJobTest;
     friend class content::FileSystemDirURLRequestJobTest;
     friend class content::FileSystemURLRequestJobTest;

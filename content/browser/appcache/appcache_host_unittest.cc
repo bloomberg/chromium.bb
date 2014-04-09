@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,17 +6,32 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "content/browser/appcache/mock_appcache_policy.h"
 #include "net/url_request/url_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_backend_impl.h"
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_host.h"
-#include "webkit/browser/appcache/mock_appcache_policy.h"
 #include "webkit/browser/appcache/mock_appcache_service.h"
 #include "webkit/browser/quota/quota_manager.h"
 
-namespace appcache {
+using appcache::AppCache;
+using appcache::AppCacheBackendImpl;
+using appcache::AppCacheEntry;
+using appcache::AppCacheFrontend;
+using appcache::AppCacheGroup;
+using appcache::AppCacheHost;
+using appcache::kNoCacheId;
+using appcache::MockAppCacheService;
+using appcache::ERROR_EVENT;
+using appcache::OBSOLETE;
+using appcache::OBSOLETE_EVENT;
+using appcache::PROGRESS_EVENT;
+using appcache::Status;
+using appcache::UNCACHED;
+
+namespace content {
 
 class AppCacheHostTest : public testing::Test {
  public:
@@ -537,4 +552,4 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
   service_.set_quota_manager_proxy(NULL);
 }
 
-}  // namespace appcache
+}  // namespace content

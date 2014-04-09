@@ -1,17 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_APPCACHE_MOCK_APPCACHE_POLICY_H_
-#define WEBKIT_BROWSER_APPCACHE_MOCK_APPCACHE_POLICY_H_
+#ifndef CONTENT_BROWSER_APPCACHE_MOCK_APPCACHE_POLICY_H_
+#define CONTENT_BROWSER_APPCACHE_MOCK_APPCACHE_POLICY_H_
 
 #include "base/compiler_specific.h"
 #include "url/gurl.h"
 #include "webkit/browser/appcache/appcache_policy.h"
 
-namespace appcache {
+namespace content {
 
-class MockAppCachePolicy : public AppCachePolicy {
+class MockAppCachePolicy : public appcache::AppCachePolicy {
  public:
   MockAppCachePolicy();
   virtual ~MockAppCachePolicy();
@@ -26,6 +26,6 @@ class MockAppCachePolicy : public AppCachePolicy {
   GURL requested_manifest_url_;
 };
 
-}  // namespace appcache
+}  // namespace content
 
-#endif  // WEBKIT_BROWSER_APPCACHE_MOCK_APPCACHE_POLICY_H_
+#endif  // CONTENT_BROWSER_APPCACHE_MOCK_APPCACHE_POLICY_H_

@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/appcache/mock_appcache_policy.h"
+#include "content/browser/appcache/mock_appcache_policy.h"
 
-namespace appcache {
+namespace content {
 
 MockAppCachePolicy::MockAppCachePolicy()
     : can_load_return_value_(true), can_create_return_value_(true) {
@@ -25,4 +25,4 @@ bool MockAppCachePolicy::CanCreateAppCache(const GURL& manifest_url,
   return can_create_return_value_;
 }
 
-}  // namespace appcache
+}  // namespace content
