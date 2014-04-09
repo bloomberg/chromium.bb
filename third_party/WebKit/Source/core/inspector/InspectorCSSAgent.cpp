@@ -667,13 +667,20 @@ bool InspectorCSSAgent::forcePseudoState(Element* element, CSSSelector::PseudoTy
 void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int nodeId, const bool* includePseudo, const bool* includeInherited, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> >& matchedCSSRules, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches> >& pseudoIdMatches, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry> >& inheritedEntries)
 {
     Element* element = elementForId(errorString, nodeId);
-    if (!element)
+    if (!element) {
+        *errorString = "Node not found";
         return;
+    }
 
     Element* originalElement = element;
     PseudoId elementPseudoId = element->pseudoId();
-    if (elementPseudoId)
+    if (elementPseudoId) {
         element = element->parentOrShadowHostElement();
+        if (!element) {
+            *errorString = "Pseudo element has no parent";
+            return;
+        }
+    }
 
     Document* ownerDocument = element->ownerDocument();
     // A non-active document has no styles.
