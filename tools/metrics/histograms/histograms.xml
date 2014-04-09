@@ -20,20 +20,23 @@ three sections:
   and optionally a more detailed description.
 * The enums section defines and documents the enumerated types referred to by
   the histograms.
-* The fieldtrials section defines active field trials and their groups, along
-  with their descriptions.
+* The histogram_suffixes section provides a compact way of defining histograms
+  by applying affixes to existing histograms. This could be done recursively
+  and the max recursion depth is 5. See the example below for details on how it
+  works.
 
-Each field trial lists the histograms that it affects. The complete list of
-histograms is computed by appending the field trial group names to each of
-the affected histograms. For example, define the following:
+Each histogram_suffixes tag lists the histograms that it affects. The complete
+list of histograms is computed by appending (or prepending - see blow) the
+histogram_suffixes suffix names to each of the affected histograms. For example,
+define the following:
 
   <histogram name="FileLoadLatency"/>
 
-  <fieldtrial name="SuperHttpExperiment">
-    <group name="SuperHttpEnabled"/>
-    <group name="SuperHttpDisabled"/>
+  <histogram_suffixes name="SuperHttpExperiment">
+    <suffix name="SuperHttpEnabled"/>
+    <suffix name="SuperHttpDisabled"/>
     <affected-histogram name="FileLoadLatency"/>
-  </fieldtrial>
+  </histogram_suffixes>
 
 The complete list of histograms will be:
 
@@ -41,12 +44,23 @@ The complete list of histograms will be:
   FileLoadLatency_SuperHttpEnabled
   FileLoadLatency_SuperHttpDisabled
 
-Field trial definitions can currently be used in any situation where multiple
-suffixes need to be appended to a histogram name; they do not have to
-correspond to actual field trials in the Chrome source code.
+histogram_suffixes can also be used to insert affix in the middle. Example:
 
-TODO(mlloyd): Refactor the XML so that field trials can be distinguished from
-other types of suffix sets.
+  <histogram name="Prerender.Events"/>
+
+  <histogram_suffixes name="SuperHttpExperiment" ordering="prefix">
+    <suffix name="HoverStats50"/>
+    <affected-histogram name="Prerender.Events"/>
+  </histogram_suffixes>
+
+The complete list of histograms will be:
+
+  Prerender.Events
+  Prerender.HoverStats50_Events
+
+When 'ordering="prefix"' is present in the histogram_suffixes tag, the suffix
+will be inserted after the first dot separator of the affected-histogram name.
+Therefore, the affected-histogram name has to have at least one dot in it.
 -->
 
 <histogram-configuration>
@@ -41802,58 +41816,58 @@ other types of suffix sets.
 
 </enums>
 
-<!-- Field trials -->
+<!-- Histogram suffixes list -->
 
-<fieldtrials>
+<histogram_suffixes_list>
 
-<fieldtrial name="ActiveNetworkState">
-  <group name="Offline"
+<histogram_suffixes name="ActiveNetworkState">
+  <suffix name="Offline"
       label="network manager thinks that the active network is offline"/>
-  <group name="Online"
+  <suffix name="Online"
       label="network manager thinks that the active network is online"/>
-  <group name="RestrictedPool"
+  <suffix name="RestrictedPool"
       label="network manager thinks that the active network is behind portal"/>
   <affected-histogram name="CaptivePortal.OOBE.DiscrepancyWithShill"/>
   <affected-histogram name="CaptivePortal.Session.DiscrepancyWithShill"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="AsyncSlowStart">
-  <group name="AsyncSlowStart" label="Async Slow Start on"/>
-  <group name="AsyncSlowStart_off" label="Async Slow Start off"/>
-  <group name="AsyncSlowStart_on" label="Async Slow Start on"/>
+<histogram_suffixes name="AsyncSlowStart">
+  <suffix name="AsyncSlowStart" label="Async Slow Start on"/>
+  <suffix name="AsyncSlowStart_off" label="Async Slow Start off"/>
+  <suffix name="AsyncSlowStart_on" label="Async Slow Start on"/>
   <affected-histogram name="Net.Transaction_Connected_New"/>
   <affected-histogram name="Renderer4.StartToFinish"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="AutofillServerExperiments">
-  <group name="ar06" label="Acceptance ratio: 0.6"/>
-  <group name="ar1" label="Acceptance ratio: 1.0"/>
-  <group name="ar2" label="Acceptance ratio: 2.0"/>
-  <group name="ar4" label="Acceptance ratio: 4.0"/>
-  <group name="ar04wr3fs4"
+<histogram_suffixes name="AutofillServerExperiments">
+  <suffix name="ar06" label="Acceptance ratio: 0.6"/>
+  <suffix name="ar1" label="Acceptance ratio: 1.0"/>
+  <suffix name="ar2" label="Acceptance ratio: 2.0"/>
+  <suffix name="ar4" label="Acceptance ratio: 4.0"/>
+  <suffix name="ar04wr3fs4"
       label="Acceptance ratio: 0.4; winner lead ratio: 3.0; min form score: 4"/>
-  <group name="ar05wlr15"
+  <suffix name="ar05wlr15"
       label="Acceptance ratio: 0.5; winner lead ratio: 1.5"/>
-  <group name="ar05wlr25"
+  <suffix name="ar05wlr25"
       label="Acceptance ratio: 0.5; winner lead ratio: 2.5"/>
-  <group name="ar05wr15fs5"
+  <suffix name="ar05wr15fs5"
       label="Acceptance ratio: 0.5; winner lead ratio: 1.5; min form score: 5"/>
-  <group name="fp05" label="Probability picker algorithm, p=0.5"/>
-  <group name="fp025" label="Probability picker algorithm, p=0.25"/>
-  <group name="fp05cc03"
+  <suffix name="fp05" label="Probability picker algorithm, p=0.5"/>
+  <suffix name="fp025" label="Probability picker algorithm, p=0.25"/>
+  <suffix name="fp05cc03"
       label="Probability picker algorithm, p=0.5; p_ccname=0.3"/>
-  <group name="fp05cco03"
+  <suffix name="fp05cco03"
       label="Probability picker algorithm, p=0.5;
              p_ccname_given_other_cc_fields=0.3"/>
-  <group name="fp05cco03cstd"
+  <suffix name="fp05cco03cstd"
       label="Probability picker algorithm, p=0.5;
              p_ccname_given_other_cc_fields=0.3; with fallback to the default
              algorithm"/>
-  <group name="fp05cc03e1"
+  <suffix name="fp05cc03e1"
       label="Probability picker algorithm, p=0.5 for cc and company name
              fields; p_ccname_given_other_cc_fields=0.3; with fallback to the
              default algorithm;"/>
-  <group name="tbar1" label="Use only Toolbar upload data"/>
+  <suffix name="tbar1" label="Use only Toolbar upload data"/>
   <affected-histogram name="Autofill.Quality"/>
   <affected-histogram name="AutoFill.Quality"/>
   <affected-histogram name="Autofill.Quality.HeuristicType"/>
@@ -41862,12 +41876,12 @@ other types of suffix sets.
   <affected-histogram name="Autofill.Quality.PredictedType.ByFieldType"/>
   <affected-histogram name="Autofill.Quality.ServerType"/>
   <affected-histogram name="Autofill.Quality.ServerType.ByFieldType"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="CacheListSize">
-  <group name="CacheListSize_12" label="Control"/>
-  <group name="CacheListSize_13" label="Extended deleted list (2x)"/>
-  <group name="CacheListSize_14" label="Out of the experiment"/>
+<histogram_suffixes name="CacheListSize">
+  <suffix name="CacheListSize_12" label="Control"/>
+  <suffix name="CacheListSize_13" label="Extended deleted list (2x)"/>
+  <suffix name="CacheListSize_14" label="Out of the experiment"/>
   <affected-histogram name="DiskCache.TotalIOTime"/>
   <affected-histogram name="Net.HttpJob.TotalTime"/>
   <affected-histogram name="Net.HttpJob.TotalTimeCached"/>
@@ -41883,20 +41897,20 @@ other types of suffix sets.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadStaleOk"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
   <affected-histogram name="PLT.BeginToFinish_Reload"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="CacheSensitivityAnalysis">
-  <group name="No" label="Turned off"/>
-  <group name="Control" label="Control group"/>
-  <group name="ControlA" label="Control, Group A"/>
-  <group name="ControlB" label="Control, Group B"/>
-  <group name="100" label="100% slowdown"/>
-  <group name="100A" label="100% slowdown, Group A"/>
-  <group name="100B" label="100% slowdown, Group B"/>
-  <group name="200A" label="200% slowdown, Group A"/>
-  <group name="200B" label="200% slowdown, Group B"/>
-  <group name="400A" label="400% slowdown, Group A"/>
-  <group name="400B" label="400% slowdown, Group B"/>
+<histogram_suffixes name="CacheSensitivityAnalysis">
+  <suffix name="No" label="Turned off"/>
+  <suffix name="Control" label="Control group"/>
+  <suffix name="ControlA" label="Control, Group A"/>
+  <suffix name="ControlB" label="Control, Group B"/>
+  <suffix name="100" label="100% slowdown"/>
+  <suffix name="100A" label="100% slowdown, Group A"/>
+  <suffix name="100B" label="100% slowdown, Group B"/>
+  <suffix name="200A" label="200% slowdown, Group A"/>
+  <suffix name="200B" label="200% slowdown, Group B"/>
+  <suffix name="400A" label="400% slowdown, Group A"/>
+  <suffix name="400B" label="400% slowdown, Group B"/>
   <affected-histogram name="Net.HttpJob.TotalTime"/>
   <affected-histogram name="Net.HttpJob.TotalTimeCached"/>
   <affected-histogram name="Net.HttpJob.TotalTimeCancel"/>
@@ -41906,24 +41920,24 @@ other types of suffix sets.
   <affected-histogram name="PLT.BeginToFinishDoc_CacheSensitivity"/>
   <affected-histogram name="PLT.BeginToFirstPaint_CacheSensitivity"/>
   <affected-histogram name="PLT.CommitToFirstPaint_CacheSensitivity"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="CacheSensitivityHistograms">
-  <group name="CacheSensitivity" label="Cache Sensivitiy Analysis"/>
+<histogram_suffixes name="CacheSensitivityHistograms">
+  <suffix name="CacheSensitivity" label="Cache Sensivitiy Analysis"/>
   <affected-histogram name="PLT.BeginToFinish"/>
   <affected-histogram name="PLT.BeginToFinishDoc"/>
   <affected-histogram name="PLT.BeginToFirstPaint"/>
   <affected-histogram name="PLT.CommitToFirstPaint"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="CertificateTypeAlgorithms" separator=".">
-  <group name="DH" label="DH"/>
-  <group name="DSA" label="DSA"/>
-  <group name="ECDH" label="ECDH"/>
-  <group name="ECDSA" label="ECDSA"/>
-  <group name="RSA" label="RSA"/>
-  <group name="Unknown" label="SPKI unrecognized by cert library"/>
-  <group name="Unsupported" label="Un-histogrammed type - please fix"/>
+<histogram_suffixes name="CertificateTypeAlgorithms" separator=".">
+  <suffix name="DH" label="DH"/>
+  <suffix name="DSA" label="DSA"/>
+  <suffix name="ECDH" label="ECDH"/>
+  <suffix name="ECDSA" label="ECDSA"/>
+  <suffix name="RSA" label="RSA"/>
+  <suffix name="Unknown" label="SPKI unrecognized by cert library"/>
+  <suffix name="Unsupported" label="Un-histogrammed type - please fix"/>
   <affected-histogram name="CertificateType.BR.Intermediate"/>
   <affected-histogram name="CertificateType.BR.Leaf"/>
   <affected-histogram name="CertificateType.BR.Root"/>
@@ -41936,9 +41950,9 @@ other types of suffix sets.
   <affected-histogram name="CertificateType2.NonBR.Intermediate"/>
   <affected-histogram name="CertificateType2.NonBR.Leaf"/>
   <affected-histogram name="CertificateType2.NonBR.Root"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="CertificateTypeBRValidity" separator=".">
+<histogram_suffixes name="CertificateTypeBRValidity" separator=".">
   <obsolete>
     Deprecated as of 8/2013. This histogram only considered the leaf certificate
     expiry date as a proxy for whether a certificate was in-scope for the BRs,
@@ -41947,57 +41961,57 @@ other types of suffix sets.
     being subject to the BRs, but non-compliant, when in reality they're not
     subject.
   </obsolete>
-  <group name="BR"
+  <suffix name="BR"
       label="The *leaf* certificate of the chain expires after 2013-12-31,
              meaning that it should be in scope for the Baseline
              Requirement's key size requirements"/>
-  <group name="NonBR"
+  <suffix name="NonBR"
       label="The *leaf* certificate of the chain expires on or before
              2013-12-31"/>
   <affected-histogram name="CertificateType"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="CertificateTypeBRValidity2" separator=".">
-  <group name="BR"
+<histogram_suffixes name="CertificateTypeBRValidity2" separator=".">
+  <suffix name="BR"
       label="The *leaf* certificate of the chain expires after 2013-12-31 and
              was issued on or after 2012-07-01, as judged by the notBefore,
              meaning that it should be in scope for the Baseline
              Requirement's key size requirements"/>
-  <group name="NonBR"
+  <suffix name="NonBR"
       label="The *leaf* certificate of the chain expires on or before
              2013-12-31 or was issued before 2012-07-01"/>
   <affected-histogram name="CertificateType2"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="CertificateTypeChainPosition" separator=".">
-  <group name="Intermediate" label="Intermediate's SPKI"/>
-  <group name="Leaf" label="Leaf's SPKI"/>
-  <group name="Root" label="Root's SPKI"/>
+<histogram_suffixes name="CertificateTypeChainPosition" separator=".">
+  <suffix name="Intermediate" label="Intermediate's SPKI"/>
+  <suffix name="Leaf" label="Leaf's SPKI"/>
+  <suffix name="Root" label="Root's SPKI"/>
   <affected-histogram name="CertificateType.BR"/>
   <affected-histogram name="CertificateType.NonBR"/>
   <affected-histogram name="CertificateType2.BR"/>
   <affected-histogram name="CertificateType2.NonBR"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="CloudPrintRequests" separator=".">
-  <group name="Register" label="Register request"/>
-  <group name="UpdatePrinter" label="Update printer request"/>
-  <group name="DownloadData" label="Download data request"/>
-  <group name="Other" label="Other requests"/>
+<histogram_suffixes name="CloudPrintRequests" separator=".">
+  <suffix name="Register" label="Register request"/>
+  <suffix name="UpdatePrinter" label="Update printer request"/>
+  <suffix name="DownloadData" label="Download data request"/>
+  <suffix name="Other" label="Other requests"/>
   <affected-histogram name="CloudPrint.UrlFetcherDownloadSize"/>
   <affected-histogram name="CloudPrint.UrlFetcherRequestTime"/>
   <affected-histogram name="CloudPrint.UrlFetcherRetries"/>
   <affected-histogram name="CloudPrint.UrlFetcherUploadSize"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="ConnCountImpact">
-  <group name="conn_count_16" label="with 16 persistent connections per host"/>
-  <group name="conn_count_4" label="with 4 persistent connections per host"/>
-  <group name="conn_count_5" label="with 5 persistent connections per host"/>
-  <group name="conn_count_6" label="with 6 persistent connections per host"/>
-  <group name="conn_count_7" label="with 7 persistent connections per host"/>
-  <group name="conn_count_8" label="with 8 persistent connections per host"/>
-  <group name="conn_count_9" label="with 9 persistent connections per host"/>
+<histogram_suffixes name="ConnCountImpact">
+  <suffix name="conn_count_16" label="with 16 persistent connections per host"/>
+  <suffix name="conn_count_4" label="with 4 persistent connections per host"/>
+  <suffix name="conn_count_5" label="with 5 persistent connections per host"/>
+  <suffix name="conn_count_6" label="with 6 persistent connections per host"/>
+  <suffix name="conn_count_7" label="with 7 persistent connections per host"/>
+  <suffix name="conn_count_8" label="with 8 persistent connections per host"/>
+  <suffix name="conn_count_9" label="with 9 persistent connections per host"/>
   <affected-histogram name="Net.Transaction_Connected_New"/>
   <affected-histogram name="PLT.Abandoned"/>
   <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
@@ -42009,28 +42023,28 @@ other types of suffix sets.
   <affected-histogram name="Renderer4.BeginToFinish_LinkLoadReload"/>
   <affected-histogram name="Renderer4.BeginToFinish_LinkLoadStaleOk"/>
   <affected-histogram name="Renderer4.BeginToFinish_NormalLoad"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="ConnectivityDiagnostics" separator=".">
-  <group name="0" label="INTERNET_DISCONNECTED"/>
-  <group name="1" label="CHROME_VERSION"/>
-  <group name="2" label="CHROMEOS_VERSION"/>
-  <group name="3" label="DNS_RESOLVER_PRESENT"/>
-  <group name="4" label="CAPTIVE_PORTAL_DNS"/>
-  <group name="5" label="CAPTIVE_PORTAL_HTTP"/>
-  <group name="6" label="FIREWALL_80"/>
-  <group name="7" label="FIREWALL_443"/>
-  <group name="8" label="RESOLVER_LATENCY"/>
-  <group name="9" label="HTTP_LATENCY"/>
-  <group name="10" label="NIC_SIGNAL_STRENGTH"/>
-  <group name="11" label="PING_GATEWAY"/>
+<histogram_suffixes name="ConnectivityDiagnostics" separator=".">
+  <suffix name="0" label="INTERNET_DISCONNECTED"/>
+  <suffix name="1" label="CHROME_VERSION"/>
+  <suffix name="2" label="CHROMEOS_VERSION"/>
+  <suffix name="3" label="DNS_RESOLVER_PRESENT"/>
+  <suffix name="4" label="CAPTIVE_PORTAL_DNS"/>
+  <suffix name="5" label="CAPTIVE_PORTAL_HTTP"/>
+  <suffix name="6" label="FIREWALL_80"/>
+  <suffix name="7" label="FIREWALL_443"/>
+  <suffix name="8" label="RESOLVER_LATENCY"/>
+  <suffix name="9" label="HTTP_LATENCY"/>
+  <suffix name="10" label="NIC_SIGNAL_STRENGTH"/>
+  <suffix name="11" label="PING_GATEWAY"/>
   <affected-histogram name="ConnectivityDiagnostics.TestVerdict"/>
   <affected-histogram name="ConnectivityDiagnostics.TimeTaken"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="ConnnectBackupJobs">
-  <group name="ConnectBackupJobsEnabled"/>
-  <group name="ConnectBackupJobsDisabled"/>
+<histogram_suffixes name="ConnnectBackupJobs">
+  <suffix name="ConnectBackupJobsEnabled"/>
+  <suffix name="ConnectBackupJobsDisabled"/>
   <affected-histogram name="Net.PreconnectUtilization"/>
   <affected-histogram name="Net.PreconnectUtilization2"/>
   <affected-histogram name="PLT.Abandoned"/>
@@ -42038,29 +42052,29 @@ other types of suffix sets.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
   <affected-histogram name="PLT.LoadType"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="ContextualSearch">
-  <group name="Control"/>
-  <group name="Tap"/>
-  <group name="TapForced"/>
+<histogram_suffixes name="ContextualSearch">
+  <suffix name="Control"/>
+  <suffix name="Tap"/>
+  <suffix name="TapForced"/>
   <affected-histogram name="Search.ContextualSearchOptCard"/>
   <affected-histogram name="Search.ContextualSearchOptPeekCard"/>
   <affected-histogram name="Search.ContextualSearchPeekCard"/>
   <affected-histogram name="Search.ContextualSearchTap"/>
   <affected-histogram name="Search.ContextualSearchTapUndecided"/>
   <affected-histogram name="Search.ContextualSearchTimeToSearch"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="CrosFirstRunStep" separator="">
-  <group name="AppList"/>
-  <group name="Tray"/>
-  <group name="Help"/>
+<histogram_suffixes name="CrosFirstRunStep" separator="">
+  <suffix name="AppList"/>
+  <suffix name="Tray"/>
+  <suffix name="Help"/>
   <affected-histogram name="CrosFirstRun.TimeSpentOnStep"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="DataReductionProxy">
-  <group name="DataReductionProxy"
+<histogram_suffixes name="DataReductionProxy">
+  <suffix name="DataReductionProxy"
       label="Only page loads through the data reduction proxy are considered."/>
   <affected-histogram name="PLT.NT_Connect"/>
   <affected-histogram name="PLT.NT_DelayBeforeConnect"/>
@@ -42091,11 +42105,11 @@ other types of suffix sets.
   <affected-histogram name="PLT.PT_RequestToStart"/>
   <affected-histogram name="PLT.PT_StartToCommit"/>
   <affected-histogram name="PLT.PT_StartToFinish"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="DefaultAppsExperiment">
-  <group name="NoDefaultApps" label="User's without default apps installed"/>
-  <group name="WithDefaultApps" label="User's with default apps installed"/>
+<histogram_suffixes name="DefaultAppsExperiment">
+  <suffix name="NoDefaultApps" label="User's without default apps installed"/>
+  <suffix name="WithDefaultApps" label="User's with default apps installed"/>
   <affected-histogram name="Extensions.AppTabLaunchType"/>
   <affected-histogram name="Extensions.ExtensionInstalled"/>
   <affected-histogram name="Extensions.ExtensionUninstalled"/>
@@ -42104,26 +42118,26 @@ other types of suffix sets.
   <affected-histogram name="NtpHandler.AttachShownPageType"/>
   <affected-histogram name="NtpHandler.SelectedShownPageType"/>
   <affected-histogram name="Profile.AppCount"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="DefaultPinnedApps">
+<histogram_suffixes name="DefaultPinnedApps">
   <obsolete>
     Deprecated as of 12/2013. Default pinned apps trial is finished.
   </obsolete>
-  <group name="Existing"/>
-  <group name="Control"/>
-  <group name="Alternate"/>
+  <suffix name="Existing"/>
+  <suffix name="Control"/>
+  <suffix name="Alternate"/>
   <affected-histogram name="Cros.ClickOnShelf"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="DiskUsagePerUserCount" separator=".">
-  <group name="1User" label="Only 1 user exists on device."/>
-  <group name="2Users" label="2 users exist on device."/>
-  <group name="3Users" label="3 users exist on device."/>
-  <group name="4Users" label="4 users exist on device."/>
-  <group name="5Users" label="5 users exist on device."/>
-  <group name="6Users" label="6 users exist on device."/>
-  <group name="7OrMoreUsers" label="7 or more users exist on device."/>
+<histogram_suffixes name="DiskUsagePerUserCount" separator=".">
+  <suffix name="1User" label="Only 1 user exists on device."/>
+  <suffix name="2Users" label="2 users exist on device."/>
+  <suffix name="3Users" label="3 users exist on device."/>
+  <suffix name="4Users" label="4 users exist on device."/>
+  <suffix name="5Users" label="5 users exist on device."/>
+  <suffix name="6Users" label="6 users exist on device."/>
+  <suffix name="7OrMoreUsers" label="7 or more users exist on device."/>
   <affected-histogram name="Platform.DiskUsage.Cache_Avg"/>
   <affected-histogram name="Platform.DiskUsage.Cache_Max"/>
   <affected-histogram name="Platform.DiskUsage.Downloads_Avg"/>
@@ -42131,24 +42145,24 @@ other types of suffix sets.
   <affected-histogram name="Platform.DiskUsage.GCache_Avg"/>
   <affected-histogram name="Platform.DiskUsage.GCache_Max"/>
   <affected-histogram name="Platform.DiskUsage.LeastUsedAccountDays"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="DnsImpact2">
-  <group name="disabled_prefetch"
+<histogram_suffixes name="DnsImpact2">
+  <suffix name="disabled_prefetch"
       label="DNS pre-resolving is disabled in these clients"/>
-  <group name="disabled_prefetch_4_connections"
+  <suffix name="disabled_prefetch_4_connections"
       label="DNS pre-resolving is disabled in these clients, and a maximum of
              4 connections per host was allowed"/>
-  <group name="enabled_prefetch_4_connections"
+  <suffix name="enabled_prefetch_4_connections"
       label="a maximum of 4 connections per host was allowed in these clients"/>
-  <group name="parallel_4_prefetch"
+  <suffix name="parallel_4_prefetch"
       label="DNS pre-resolving was only doing 4 concurrent speculative
              resolutions in this test"/>
   <affected-histogram name="Net.Dns_Resolution_And_TCP_Connection_Latency"/>
   <affected-histogram name="Net.TCP_Connection_Idle_Sockets">
-    <with-group name="disabled_prefetch"/>
-    <with-group name="disabled_prefetch_4_connections"/>
-    <with-group name="enabled_prefetch_4_connections"/>
+    <with-suffix name="disabled_prefetch"/>
+    <with-suffix name="disabled_prefetch_4_connections"/>
+    <with-suffix name="enabled_prefetch_4_connections"/>
   </affected-histogram>
   <affected-histogram name="Net.TCP_Connection_Latency"/>
   <affected-histogram name="Net.Transaction_Connected"/>
@@ -42164,21 +42178,21 @@ other types of suffix sets.
   <affected-histogram name="Net.Transaction_Latency_Total_Under_10"/>
   <affected-histogram name="Net.Transaction_Latency_Under_10"/>
   <affected-histogram name="PLT.RequestToFinish">
-    <with-group name="parallel_4_prefetch"/>
+    <with-suffix name="parallel_4_prefetch"/>
   </affected-histogram>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="DnsImpact3">
-  <group name="disabled_prefetch" label="with DNS pre-resolving disabled"/>
-  <group name="parallel_4_prefetch"
+<histogram_suffixes name="DnsImpact3">
+  <suffix name="disabled_prefetch" label="with DNS pre-resolving disabled"/>
+  <suffix name="parallel_4_prefetch"
       label="with only 4 concurrent speculative resolutions done in parallel"/>
   <affected-histogram name="Net.Transaction_Connected_New">
-    <with-group name="disabled_prefetch"/>
+    <with-suffix name="disabled_prefetch"/>
   </affected-histogram>
   <affected-histogram name="Renderer2.FinishDocToFinish"/>
   <affected-histogram name="Renderer2.RequestToFinish"/>
   <affected-histogram name="Renderer2.RequestToFinish_L">
-    <with-group name="disabled_prefetch"/>
+    <with-suffix name="disabled_prefetch"/>
   </affected-histogram>
   <affected-histogram name="Renderer2.RequestToFirstLayout"/>
   <affected-histogram name="Renderer2.RequestToStart"/>
@@ -42186,76 +42200,76 @@ other types of suffix sets.
   <affected-histogram name="Renderer2.StartToFinishDoc"/>
   <affected-histogram name="Renderer2.StartToFirstLayout"/>
   <affected-histogram name="Renderer4.RequestToFinish">
-    <with-group name="parallel_4_prefetch"/>
+    <with-suffix name="parallel_4_prefetch"/>
   </affected-histogram>
   <affected-histogram name="Renderer4.StartToFinish">
-    <with-group name="parallel_4_prefetch"/>
+    <with-suffix name="parallel_4_prefetch"/>
   </affected-histogram>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="DnsParallelism">
-  <group name="parallel_10"
+<histogram_suffixes name="DnsParallelism">
+  <suffix name="parallel_10"
       label="with only 10 concurrent resolutions done in parallel"/>
-  <group name="parallel_14"
+  <suffix name="parallel_14"
       label="with only 14 concurrent resolutions done in parallel"/>
-  <group name="parallel_20"
+  <suffix name="parallel_20"
       label="with only 20 concurrent resolutions done in parallel"/>
-  <group name="parallel_6"
+  <suffix name="parallel_6"
       label="with only 6 concurrent resolutions done in parallel"/>
-  <group name="parallel_7"
+  <suffix name="parallel_7"
       label="with only 7 concurrent resolutions done in parallel"/>
-  <group name="parallel_8"
+  <suffix name="parallel_8"
       label="with only 8 concurrent resolutions done in parallel"/>
-  <group name="parallel_9"
+  <suffix name="parallel_9"
       label="with only 9 concurrent resolutions done in parallel"/>
-  <group name="parallel_default"
+  <suffix name="parallel_default"
       label="with the default number of concurrent resolutions done in
              parallel"/>
   <affected-histogram name="DNS.ResolveCategory"/>
   <affected-histogram name="DNS.ResolveSuccess"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="DocsSpecific" separator="">
-  <group name="Docs" label="Only for docs.google.com"/>
+<histogram_suffixes name="DocsSpecific" separator="">
+  <suffix name="Docs" label="Only for docs.google.com"/>
   <affected-histogram name="appcache.MainResourceResponseRetrieval"/>
   <affected-histogram name="appcache.SubResourceResponseRetrieval"/>
   <affected-histogram name="appcache.UpdateJobResult"/>
   <affected-histogram name="appcache.UpdateProgressAtPointOfFaliure"/>
   <affected-histogram name="appcache.UpdateWasOffOriginAtPointOfFailure"/>
   <affected-histogram name="appcache.UpdateWasStalledAtPointOfFailure"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="DomainGoogle" separator="">
-  <group name="Google" label="only Google cookies are recorded."/>
-  <group name="Other" label="only NON-Google cookies are recorded."/>
+<histogram_suffixes name="DomainGoogle" separator="">
+  <suffix name="Google" label="only Google cookies are recorded."/>
+  <suffix name="Other" label="only NON-Google cookies are recorded."/>
   <affected-histogram name="Cookie.ReinstatedCookies"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="ExternalExtensionEvent" separator="">
-  <group name="NonWebstore"
+<histogram_suffixes name="ExternalExtensionEvent" separator="">
+  <suffix name="NonWebstore"
       label="sideloaded extensions that don't update from the webstore"/>
-  <group name="Webstore"
+  <suffix name="Webstore"
       label="sideloaded extensions that update from the webstore"/>
   <affected-histogram name="Extensions.ExternalExtensionEvent"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="FileBrowserLoad" separator=".">
-  <group name="Construct"
+<histogram_suffixes name="FileBrowserLoad" separator=".">
+  <suffix name="Construct"
       label="Time spent constructing the main Javascript object."/>
-  <group name="DOM" label="Time to initialize DOM."/>
-  <group name="FileSystem"
+  <suffix name="DOM" label="Time to initialize DOM."/>
+  <suffix name="FileSystem"
       label="Deprecated as of 9/2013. Time to get access to the local file
              system."/>
-  <group name="Parse" label="Time to parse Javascript and CSS."/>
-  <group name="Roots" label="Time to enumerate file system roots."/>
-  <group name="Total"
+  <suffix name="Parse" label="Time to parse Javascript and CSS."/>
+  <suffix name="Roots" label="Time to enumerate file system roots."/>
+  <suffix name="Total"
       label="Total load time from the moment the Javascript started parsing
              till the moment the empty file list is displayed."/>
   <affected-histogram name="FileBrowser.Load"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="FromGWS">
-  <group name="FromGWS"
+<histogram_suffixes name="FromGWS">
+  <suffix name="FromGWS"
       label="Only page loads that are a result of a navigation from a web
              search are considered."/>
   <affected-histogram name="PLT.BeginToFinish"/>
@@ -42274,86 +42288,86 @@ other types of suffix sets.
   <affected-histogram name="PLT.PT_RequestToStart"/>
   <affected-histogram name="PLT.PT_StartToCommit"/>
   <affected-histogram name="PLT.PT_StartToFinish"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="GWSChromeJointExperiment">
-  <group name="Experiment1"
+<histogram_suffixes name="GWSChromeJointExperiment">
+  <suffix name="Experiment1"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment2"
+  <suffix name="Experiment2"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment3"
+  <suffix name="Experiment3"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment4"
+  <suffix name="Experiment4"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment5"
+  <suffix name="Experiment5"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment6"
+  <suffix name="Experiment6"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment7"
+  <suffix name="Experiment7"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment8"
+  <suffix name="Experiment8"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment9"
+  <suffix name="Experiment9"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment10"
+  <suffix name="Experiment10"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment11"
+  <suffix name="Experiment11"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment12"
+  <suffix name="Experiment12"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment13"
+  <suffix name="Experiment13"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment14"
+  <suffix name="Experiment14"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment15"
+  <suffix name="Experiment15"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment16"
+  <suffix name="Experiment16"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment17"
+  <suffix name="Experiment17"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment18"
+  <suffix name="Experiment18"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment19"
+  <suffix name="Experiment19"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
-  <group name="Experiment20"
+  <suffix name="Experiment20"
       label="Only page loads that are a result of a navigation from a web
              search under a specific web search/Chrome joint experiment.
              Unused at this moment."/>
@@ -42421,11 +42435,11 @@ other types of suffix sets.
   <affected-histogram name="PLT.PT_StartToFinish_NoPreview"/>
   <affected-histogram name="PLT.PT_StartToFinish_Preview"/>
   <affected-histogram name="PLT.PT_StartToFinish_WithPreview"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="HttpPipeliningCompatibility">
-  <group name="disable_test" label="Do nothing"/>
-  <group name="enable_test" label="Test connection for HTTP pipelining"/>
+<histogram_suffixes name="HttpPipeliningCompatibility">
+  <suffix name="disable_test" label="Do nothing"/>
+  <suffix name="enable_test" label="Test connection for HTTP pipelining"/>
   <affected-histogram name="NetConnectivity.Pipeline.0.NetworkError"/>
   <affected-histogram name="NetConnectivity.Pipeline.0.ResponseCode"/>
   <affected-histogram name="NetConnectivity.Pipeline.0.Status"/>
@@ -42448,76 +42462,76 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity.Pipeline.CanarySuccess"/>
   <affected-histogram name="NetConnectivity.Pipeline.Depth"/>
   <affected-histogram name="NetConnectivity.Pipeline.Success"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="IndexedDBLevelDBErrnoMethods" separator=".">
-  <group name="NewLogger" label="ChromiumEnv::NewLogger"/>
-  <group name="NewSequentialFile" label="ChromiumEnv::NewSequentialFile"/>
-  <group name="NewWritableFile" label="ChromiumEnv::NewWritableFile"/>
-  <group name="SequentialFileRead" label="ChromiumSequentialFile::Read"/>
-  <group name="SequentialFileSkip" label="ChromiumSequentialFile::Skip"/>
-  <group name="WritableFileAppend" label="ChromiumWritableFile::Append"/>
-  <group name="WritableFileClose" label="ChromiumWritableFile::Close"/>
-  <group name="WritableFileFlush" label="ChromiumWritableFile::Flush"/>
-  <group name="WritableFileSync" label="ChromiumWritableFile::Sync"/>
-  <group name="WritableFileSyncParent"
+<histogram_suffixes name="IndexedDBLevelDBErrnoMethods" separator=".">
+  <suffix name="NewLogger" label="ChromiumEnv::NewLogger"/>
+  <suffix name="NewSequentialFile" label="ChromiumEnv::NewSequentialFile"/>
+  <suffix name="NewWritableFile" label="ChromiumEnv::NewWritableFile"/>
+  <suffix name="SequentialFileRead" label="ChromiumSequentialFile::Read"/>
+  <suffix name="SequentialFileSkip" label="ChromiumSequentialFile::Skip"/>
+  <suffix name="WritableFileAppend" label="ChromiumWritableFile::Append"/>
+  <suffix name="WritableFileClose" label="ChromiumWritableFile::Close"/>
+  <suffix name="WritableFileFlush" label="ChromiumWritableFile::Flush"/>
+  <suffix name="WritableFileSync" label="ChromiumWritableFile::Sync"/>
+  <suffix name="WritableFileSyncParent"
       label="ChromiumWritableFile::SyncParent"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBOpenErrors.Errno"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBReadErrors.Errno"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBWriteErrors.Errno"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="IndexedDBLevelDBPFEMethods" separator=".">
-  <group name="CreateDir" label="ChromiumEnv::CreateDir"/>
-  <group name="DeleteDir" label="ChromiumEnv::DeleteDir"/>
-  <group name="DeleteFile" label="ChromiumEnv::DeleteFile"/>
-  <group name="GetChildren" label="ChromiumEnv::GetChildren"/>
-  <group name="GetFileSize" label="ChromiumEnv::GetFileSize"/>
-  <group name="LockFile" label="ChromiumEnv::LockFile"/>
-  <group name="NewRandomAccessFile" label="ChromiumEnv::NewRandomAccessFile"/>
-  <group name="RandomAccessFileRead" label="ChromiumRandomAccessFile::Read"/>
-  <group name="RenameFile" label="ChromiumEnv::RenameFile"/>
-  <group name="UnlockFile" label="ChromiumEnv::UnlockFile"/>
+<histogram_suffixes name="IndexedDBLevelDBPFEMethods" separator=".">
+  <suffix name="CreateDir" label="ChromiumEnv::CreateDir"/>
+  <suffix name="DeleteDir" label="ChromiumEnv::DeleteDir"/>
+  <suffix name="DeleteFile" label="ChromiumEnv::DeleteFile"/>
+  <suffix name="GetChildren" label="ChromiumEnv::GetChildren"/>
+  <suffix name="GetFileSize" label="ChromiumEnv::GetFileSize"/>
+  <suffix name="LockFile" label="ChromiumEnv::LockFile"/>
+  <suffix name="NewRandomAccessFile" label="ChromiumEnv::NewRandomAccessFile"/>
+  <suffix name="RandomAccessFileRead" label="ChromiumRandomAccessFile::Read"/>
+  <suffix name="RenameFile" label="ChromiumEnv::RenameFile"/>
+  <suffix name="UnlockFile" label="ChromiumEnv::UnlockFile"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBOpenErrors.PFE"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBReadErrors.PFE"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBWriteErrors.PFE"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="InstallerDownloadSources" separator="">
-  <group name="HttpPeer" label="Download Source: HTTP Peer"/>
-  <group name="HttpServer" label="Download Source: HTTP Server"/>
-  <group name="HttpsServer" label="Download Source: HTTPS Server"/>
+<histogram_suffixes name="InstallerDownloadSources" separator="">
+  <suffix name="HttpPeer" label="Download Source: HTTP Peer"/>
+  <suffix name="HttpServer" label="Download Source: HTTP Server"/>
+  <suffix name="HttpsServer" label="Download Source: HTTPS Server"/>
   <affected-histogram name="Installer.SuccessfulMBsDownloadedFrom"/>
   <affected-histogram name="Installer.TotalMBsDownloadedFrom"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="Instant">
-  <group name="Extended" label="Suggestions + Results"/>
-  <group name="Instant" label="Results"/>
+<histogram_suffixes name="Instant">
+  <suffix name="Extended" label="Suggestions + Results"/>
+  <suffix name="Instant" label="Results"/>
   <affected-histogram name="Instant.SessionsStorageNamespace"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="InstantExtended_QuerytoQuery">
-  <group name="400" label="Omnibox width &lt; 400"/>
-  <group name="700" label="Omnibox width &lt; 700"/>
-  <group name="1200" label="Omnibox width &lt; 1200"/>
-  <group name="large" label="Omnibox width &gt;= 1200"/>
+<histogram_suffixes name="InstantExtended_QuerytoQuery">
+  <suffix name="400" label="Omnibox width &lt; 400"/>
+  <suffix name="700" label="Omnibox width &lt; 700"/>
+  <suffix name="1200" label="Omnibox width &lt; 1200"/>
+  <suffix name="large" label="Omnibox width &gt;= 1200"/>
   <affected-histogram name="InstantExtended.PercentageMatchV2_QuerytoQuery"/>
   <affected-histogram name="InstantExtended.PercentageMatchV2_QuerytoURL"/>
   <affected-histogram name="InstantExtended.PercentageMatchV2_URLtoQuery"/>
   <affected-histogram name="InstantExtended.PercentageMatchV2_URLtoURL"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="InstantSearchClicks">
-  <group name="WithPreview"
+<histogram_suffixes name="InstantSearchClicks">
+  <suffix name="WithPreview"
       label="Only page loads through data reduction proxy that are result of
              navigation from web search and preview version of the page shown
              are considered."/>
-  <group name="Preview"
+  <suffix name="Preview"
       label="Only page loads through data reduction proxy that are result of
              navigation from web search and preview version of the page shown
              are considered."/>
-  <group name="NoPreview"
+  <suffix name="NoPreview"
       label="Only page loads through data reduction proxy that are result of
              navigation from web search and preview version of the page shown
              are considered."/>
@@ -42539,41 +42553,41 @@ other types of suffix sets.
   <affected-histogram name="PLT.PT_RequestToStart"/>
   <affected-histogram name="PLT.PT_StartToCommit"/>
   <affected-histogram name="PLT.PT_StartToFinish"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="Interval" separator="_">
-  <group name="Interval" label="Interval between two consecutive connects is"/>
+<histogram_suffixes name="Interval" separator="_">
+  <suffix name="Interval" label="Interval between two consecutive connects is"/>
   <affected-histogram name="Net.TCP_Connection_Latency"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="Interval_20ms_plus_and_minus" separator="_">
-  <group name="Interval_20ms_Minus"
+<histogram_suffixes name="Interval_20ms_plus_and_minus" separator="_">
+  <suffix name="Interval_20ms_Minus"
       label="Interval between two consecutive connects is less than 20ms."/>
-  <group name="Interval_20ms_Plus"
+  <suffix name="Interval_20ms_Plus"
       label="Interval between two consecutive connects is greater than or
              equal to 20ms."/>
   <affected-histogram name="Net.TCP_Connection_Latency"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="Interval_lt_gt_20ms" separator="_">
-  <group name="LessThanOrEqual_10ms" label="less than or equal to 10ms."/>
-  <group name="LessThanOrEqual_20ms"
+<histogram_suffixes name="Interval_lt_gt_20ms" separator="_">
+  <suffix name="LessThanOrEqual_10ms" label="less than or equal to 10ms."/>
+  <suffix name="LessThanOrEqual_20ms"
       label="more than 10ms, and less than or equal to 20ms."/>
-  <group name="GreaterThan_20ms" label="greater than 20ms."/>
+  <suffix name="GreaterThan_20ms" label="greater than 20ms."/>
   <affected-histogram name="Net.TCP_Connection_Latency_Interval"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="IPv6_Probe">
-  <group name="IPv6_probe_skipped"
+<histogram_suffixes name="IPv6_Probe">
+  <suffix name="IPv6_probe_skipped"
       label="with IPv6 not probed, and default OS settings used"/>
-  <group name="IPv6_probe_done"
+  <suffix name="IPv6_probe_done"
       label="with IPv6 probed for and possibly disabled"/>
   <affected-histogram name="DNS.PrefetchResolution"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="LateBindingExperiment">
-  <group name="disable_late_binding" label="socket late binding is disabled"/>
-  <group name="enable_late_binding" label="socket late binding is enabled"/>
+<histogram_suffixes name="LateBindingExperiment">
+  <suffix name="disable_late_binding" label="socket late binding is disabled"/>
+  <suffix name="enable_late_binding" label="socket late binding is enabled"/>
   <affected-histogram name="Net.SocketIdleTimeBeforeNextUse_ReusedSocket"/>
   <affected-histogram name="Net.SocketIdleTimeBeforeNextUse_UnusedSocket"/>
   <affected-histogram name="Net.SocketIdleTimeOnIOError2_ReusedSocket"/>
@@ -42592,148 +42606,149 @@ other types of suffix sets.
   <affected-histogram name="Renderer4.BeginToFinishDoc_NormalLoad"/>
   <affected-histogram name="Renderer4.RequestToFinish"/>
   <affected-histogram name="Renderer4.StartToFinish"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="LevelDBEnvBackupRestore" separator="">
-  <group name="Backup" label="Backing up an ldb file."/>
-  <group name="Restore" label="Restoring an ldb file."/>
+<histogram_suffixes name="LevelDBEnvBackupRestore" separator="">
+  <suffix name="Backup" label="Backing up an ldb file."/>
+  <suffix name="Restore" label="Restoring an ldb file."/>
   <affected-histogram name="LevelDBEnv.IDB.Table"/>
   <affected-histogram name="LevelDBEnv.Table"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="LevelDBEnvMaxFDs" separator=".">
-  <group name="Success"
+<histogram_suffixes name="LevelDBEnvMaxFDs" separator=".">
+  <suffix name="Success"
       label="This histogram shows the limit when open succeeded."/>
-  <group name="TooManyOpened"
+  <suffix name="TooManyOpened"
       label="This histogram shows the limit when open failed because the
              limit had been reached."/>
-  <group name="OtherError"
+  <suffix name="OtherError"
       label="This histogram shows the limit when open failed for reasons
              other than exceeding the limit."/>
   <affected-histogram name="LevelDBEnv.IDB.MaxFDs"/>
   <affected-histogram name="LevelDBEnv.MaxFDs"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="LevelDBEnvPlatformFileErrors" separator="">
-  <group name="CreateDir" label="ChromiumEnv::CreateDir"/>
-  <group name="GetChildren" label="ChromiumEnv::GetChildren"/>
-  <group name="LockFile" label="ChromiumEnv::LockFile"/>
-  <group name="NewRandomAccessFile" label="ChromiumEnv::NewRandomAccessFile"/>
-  <group name="RenameFile" label="ChromiumEnv::RenameFile"/>
+<histogram_suffixes name="LevelDBEnvPlatformFileErrors" separator="">
+  <suffix name="CreateDir" label="ChromiumEnv::CreateDir"/>
+  <suffix name="GetChildren" label="ChromiumEnv::GetChildren"/>
+  <suffix name="LockFile" label="ChromiumEnv::LockFile"/>
+  <suffix name="NewRandomAccessFile" label="ChromiumEnv::NewRandomAccessFile"/>
+  <suffix name="RenameFile" label="ChromiumEnv::RenameFile"/>
   <affected-histogram name="LevelDBEnv.IDB.IOError."/>
   <affected-histogram name="LevelDBEnv.IOError."/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="LevelDBEnvRetry" separator="">
-  <group name="RenameFile" label="RenameFile"/>
-  <group name="LockFile" label="LockFile"/>
-  <group name="CreateDir" label="CreateDir"/>
+<histogram_suffixes name="LevelDBEnvRetry" separator="">
+  <suffix name="RenameFile" label="RenameFile"/>
+  <suffix name="LockFile" label="LockFile"/>
+  <suffix name="CreateDir" label="CreateDir"/>
   <affected-histogram name="LevelDBEnv.IDB.RetryRecoveredFromErrorIn"/>
   <affected-histogram name="LevelDBEnv.IDB.TimeUntilSuccessFor"/>
   <affected-histogram name="LevelDBEnv.RetryRecoveredFromErrorIn"/>
   <affected-histogram name="LevelDBEnv.TimeUntilSuccessFor"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="LevelDBEnvRetryTimes" separator="">
+<histogram_suffixes name="LevelDBEnvRetryTimes" separator="">
   <obsolete>
     Deprecated 2013-04 in favor of LevelDBEnvRetry.
   </obsolete>
-  <group name="Rename" label="RenameFile"/>
-  <group name="LockFile" label="LockFile"/>
+  <suffix name="Rename" label="RenameFile"/>
+  <suffix name="LockFile" label="LockFile"/>
   <affected-histogram name="LevelDBEnv.IDB.TimeTo"/>
   <affected-histogram name="LevelDBEnv.TimeTo"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="MediaAudioInputControllerTime" separator=".">
-  <group name="CloseTime" label="Measures the time taken for DoClose()."/>
-  <group name="CreateTime" label="Measures the time taken for DoCreate()."/>
-  <group name="RecordTime" label="Measures the time taken for DoRecord()."/>
+<histogram_suffixes name="MediaAudioInputControllerTime" separator=".">
+  <suffix name="CloseTime" label="Measures the time taken for DoClose()."/>
+  <suffix name="CreateTime" label="Measures the time taken for DoCreate()."/>
+  <suffix name="RecordTime" label="Measures the time taken for DoRecord()."/>
   <affected-histogram name="Media.AudioInputController"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="MediaAudioInputDeviceManagerTime" separator=".">
-  <group name="OpenOnDeviceThreadTime"
+<histogram_suffixes name="MediaAudioInputDeviceManagerTime" separator=".">
+  <suffix name="OpenOnDeviceThreadTime"
       label="Measures the time taken for OpenOnDeviceThread()."/>
-  <group name="EnumerateOnDeviceThreadTime"
+  <suffix name="EnumerateOnDeviceThreadTime"
       label="Measures the time taken for EnumerateOnDeviceThread()."/>
   <affected-histogram name="Media.AudioInputDeviceManager"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="MediaAudioOutputControllerTime" separator=".">
-  <group name="CloseTime" label="Measures the time taken for DoClose()."/>
-  <group name="CreateTime" label="Measures the time taken for DoCreate()."/>
-  <group name="DeviceChangeTime"
+<histogram_suffixes name="MediaAudioOutputControllerTime" separator=".">
+  <suffix name="CloseTime" label="Measures the time taken for DoClose()."/>
+  <suffix name="CreateTime" label="Measures the time taken for DoCreate()."/>
+  <suffix name="DeviceChangeTime"
       label="Measures the time taken for OnDeviceChange()."/>
-  <group name="PauseTime" label="Measures the time taken for DoPause()."/>
-  <group name="PlayTime"
+  <suffix name="PauseTime" label="Measures the time taken for DoPause()."/>
+  <suffix name="PlayTime"
       label="Measures the time taken for DoPlay(). Technically only the
              worker method AudioOutputController::PollAndStartIfDataReady()."/>
   <affected-histogram name="Media.AudioOutputController"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="MediaVideoCaptureManagerTime" separator=".">
-  <group name="OnEnumerateDevicesTime"
+<histogram_suffixes name="MediaVideoCaptureManagerTime" separator=".">
+  <suffix name="OnEnumerateDevicesTime"
       label="Measures the time taken for OnEnumerateDevices()."/>
-  <group name="OnOpenTime" label="Measures the time taken for OnOpen()."/>
-  <group name="OnCloseTime" label="Measures the time taken for OnClose()."/>
-  <group name="OnStartTime" label="Measures the time taken for OnStart()."/>
-  <group name="OnStopTime" label="Measures the time taken for OnStop()."/>
+  <suffix name="OnOpenTime" label="Measures the time taken for OnOpen()."/>
+  <suffix name="OnCloseTime" label="Measures the time taken for OnClose()."/>
+  <suffix name="OnStartTime" label="Measures the time taken for OnStart()."/>
+  <suffix name="OnStopTime" label="Measures the time taken for OnStop()."/>
   <affected-histogram name="Media.VideoCaptureManager"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="Net.QuicSession.21CumulativePackets" separator="_">
-  <group name="First21"
+<histogram_suffixes name="Net.QuicSession.21CumulativePackets" separator="_">
+  <suffix name="First21"
       label="Only the first group of 21 packets in a connection via"/>
-  <group name="Some21s"
+  <suffix name="Some21s"
       label="After the first 21, this records data for some groups of 21
              consecutive sequence nmubers, arriving via."/>
   <affected-histogram name="Net.QuicSession.21CumulativePacketsReceived"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="Net.QuicSession.6PacketPatterns" separator="_">
-  <group name="First6"
+<histogram_suffixes name="Net.QuicSession.6PacketPatterns" separator="_">
+  <suffix name="First6"
       label="Only the first group of 6 packets in a connection via"/>
-  <group name="Some6s"
+  <suffix name="Some6s"
       label="After the first 6, this records patterns for some groups of 6
              consecutive sequence numbers, arriving via."/>
   <affected-histogram name="Net.QuicSession.6PacketsPatternsReceived"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="Net.QuicSession.PacketReceived" separator="_">
-  <group name="Ack"
+<histogram_suffixes name="Net.QuicSession.PacketReceived" separator="_">
+  <suffix name="Ack"
       label="Only packets that were received by Chrome as well being part of
              connections via"/>
-  <group name="Nack"
+  <suffix name="Nack"
       label="Only packets that were missed by Chrome as well being part of
              connections via"/>
-  <group name="IsAnAck"
+  <suffix name="IsAnAck"
       label="Only packets that were probably solo ACK packets when recieved
              by Chrome as well being part of connections via"/>
-  <group name="IsNotAck"
+  <suffix name="IsNotAck"
       label="Only packets that were probably NOT solo ACK packets when
              recieved by Chrome as well being part of connections via"/>
   <affected-histogram name="Net.QuicSession.PacketReceived"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="Net.QuicSession.PacketReceived_CONNECTION_TYPE" separator="_">
-  <group name="CONNECTION_UNKNOWN" label="WiFi are tallied."/>
-  <group name="CONNECTION_ETHERNET"
+<histogram_suffixes name="Net.QuicSession.PacketReceived_CONNECTION_TYPE"
+    separator="_">
+  <suffix name="CONNECTION_UNKNOWN" label="WiFi are tallied."/>
+  <suffix name="CONNECTION_ETHERNET"
       label="ethernet are tallied, but this may include connections to a WiFi
              bridge."/>
-  <group name="CONNECTION_WIFI"
+  <suffix name="CONNECTION_WIFI"
       label="WiFi are tallied, but this may include connections to a mobile
              hotspot. Also check similar histograms that end in WIFI_802.11*
              for more details on some platforms."/>
-  <group name="CONNECTION_WIFI_ANCIENT"
+  <suffix name="CONNECTION_WIFI_ANCIENT"
       label="802.11 that are no longer standard are tallied."/>
-  <group name="CONNECTION_WIFI_802.11a" label="802.11a are tallied."/>
-  <group name="CONNECTION_WIFI_802.11b" label="802.11b are tallied."/>
-  <group name="CONNECTION_WIFI_802.11g" label="802.11g are tallied."/>
-  <group name="CONNECTION_WIFI_802.11n" label="802.11n are tallied."/>
-  <group name="CONNECTION_2G" label="mobile 2G are tallied."/>
-  <group name="CONNECTION_3G" label="mobile 3G are tallied."/>
-  <group name="CONNECTION_4G" label="mobile 4G are tallied."/>
-  <group name="CONNECTION_NONE"
+  <suffix name="CONNECTION_WIFI_802.11a" label="802.11a are tallied."/>
+  <suffix name="CONNECTION_WIFI_802.11b" label="802.11b are tallied."/>
+  <suffix name="CONNECTION_WIFI_802.11g" label="802.11g are tallied."/>
+  <suffix name="CONNECTION_WIFI_802.11n" label="802.11n are tallied."/>
+  <suffix name="CONNECTION_2G" label="mobile 2G are tallied."/>
+  <suffix name="CONNECTION_3G" label="mobile 3G are tallied."/>
+  <suffix name="CONNECTION_4G" label="mobile 4G are tallied."/>
+  <suffix name="CONNECTION_NONE"
       label="NO(?) network are tallied (should be empty)."/>
   <affected-histogram
       name="Net.QuicSession.21CumulativePacketsReceived_First21"/>
@@ -42746,73 +42761,75 @@ other types of suffix sets.
   <affected-histogram name="Net.QuicSession.PacketReceived_IsAnAck"/>
   <affected-histogram name="Net.QuicSession.PacketReceived_IsNotAck"/>
   <affected-histogram name="Net.QuicSession.PacketReceived_Nack"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity" separator=".">
-  <group name="53.100B" label="100 bytes of data on port 53."/>
-  <group name="53.100B.NoProxy"
+<histogram_suffixes name="NetConnectivity" separator=".">
+  <suffix name="53.100B" label="100 bytes of data on port 53."/>
+  <suffix name="53.100B.NoProxy"
       label="100 bytes of data on port 53 with no proxy."/>
-  <group name="53.1K" label="1K bytes of data on port 53."/>
-  <group name="53.1K.NoProxy"
+  <suffix name="53.1K" label="1K bytes of data on port 53."/>
+  <suffix name="53.1K.NoProxy"
       label="1K bytes of data on port 53 with no proxy."/>
-  <group name="53.100B.RTT" label="100 bytes of data on port 53 successfully."/>
-  <group name="53.100B.RTT.NoProxy"
+  <suffix name="53.100B.RTT"
+      label="100 bytes of data on port 53 successfully."/>
+  <suffix name="53.100B.RTT.NoProxy"
       label="100 bytes of data on port 53 successfully with no proxy."/>
-  <group name="53.1K.RTT" label="1K bytes of data on port 53 successfully."/>
-  <group name="53.1K.RTT.NoProxy"
+  <suffix name="53.1K.RTT" label="1K bytes of data on port 53 successfully."/>
+  <suffix name="53.1K.RTT.NoProxy"
       label="1K bytes of data on port 53 successfully with no proxy."/>
-  <group name="587.100B" label="100 bytes of data on port 587."/>
-  <group name="587.100B.NoProxy"
+  <suffix name="587.100B" label="100 bytes of data on port 587."/>
+  <suffix name="587.100B.NoProxy"
       label="100 bytes of data on port 587 with no proxy."/>
-  <group name="587.1K" label="1K bytes of data on port 587."/>
-  <group name="587.1K.NoProxy"
+  <suffix name="587.1K" label="1K bytes of data on port 587."/>
+  <suffix name="587.1K.NoProxy"
       label="1K bytes of data on port 587 with no proxy."/>
-  <group name="587.100B.RTT"
+  <suffix name="587.100B.RTT"
       label="100 bytes of data on port 587 successfully."/>
-  <group name="587.100B.RTT.NoProxy"
+  <suffix name="587.100B.RTT.NoProxy"
       label="100 bytes of data on port 587 successfully with no proxy."/>
-  <group name="587.1K.RTT" label="1K bytes of data on port 587 successfully."/>
-  <group name="587.1K.RTT.NoProxy"
+  <suffix name="587.1K.RTT" label="1K bytes of data on port 587 successfully."/>
+  <suffix name="587.1K.RTT.NoProxy"
       label="1K bytes of data on port 587 successfully with no proxy."/>
-  <group name="6121.100B" label="100 bytes of data on port 6121."/>
-  <group name="6121.100B.NoProxy"
+  <suffix name="6121.100B" label="100 bytes of data on port 6121."/>
+  <suffix name="6121.100B.NoProxy"
       label="100 bytes of data on port 6121 with no proxy."/>
-  <group name="6121.1K" label="1K bytes of data on port 6121."/>
-  <group name="6121.1K.NoProxy"
+  <suffix name="6121.1K" label="1K bytes of data on port 6121."/>
+  <suffix name="6121.1K.NoProxy"
       label="1K bytes of data on port 6121 with no proxy."/>
-  <group name="6121.100B.RTT"
+  <suffix name="6121.100B.RTT"
       label="100 bytes of data on port 6121 successfully."/>
-  <group name="6121.100B.RTT.NoProxy"
+  <suffix name="6121.100B.RTT.NoProxy"
       label="100 bytes of data on port 6121 successfully with no proxy."/>
-  <group name="6121.1K.RTT"
+  <suffix name="6121.1K.RTT"
       label="1K bytes of data on port 6121 successfully."/>
-  <group name="6121.1K.RTT.NoProxy"
+  <suffix name="6121.1K.RTT.NoProxy"
       label="1K bytes of data on port 6121 successfully with no proxy."/>
-  <group name="80.100B" label="100 bytes of data on port 80."/>
-  <group name="80.100B.NoProxy"
+  <suffix name="80.100B" label="100 bytes of data on port 80."/>
+  <suffix name="80.100B.NoProxy"
       label="100 bytes of data on port 80 with no proxy."/>
-  <group name="80.1K" label="1K bytes of data on port 80."/>
-  <group name="80.1K.NoProxy"
+  <suffix name="80.1K" label="1K bytes of data on port 80."/>
+  <suffix name="80.1K.NoProxy"
       label="1K bytes of data on port 80 with no proxy."/>
-  <group name="80.100B.RTT" label="100 bytes of data on port 80 successfully."/>
-  <group name="80.100B.RTT.NoProxy"
+  <suffix name="80.100B.RTT"
+      label="100 bytes of data on port 80 successfully."/>
+  <suffix name="80.100B.RTT.NoProxy"
       label="100 bytes of data on port 80 successfully with no proxy."/>
-  <group name="80.1K.RTT" label="1K bytes of data on port 80 successfully."/>
-  <group name="80.1K.RTT.NoProxy"
+  <suffix name="80.1K.RTT" label="1K bytes of data on port 80 successfully."/>
+  <suffix name="80.1K.RTT.NoProxy"
       label="1K bytes of data on port 80 successfully with no proxy."/>
-  <group name="8080.100B" label="100 bytes of data on port 8080."/>
-  <group name="8080.100B.NoProxy"
+  <suffix name="8080.100B" label="100 bytes of data on port 8080."/>
+  <suffix name="8080.100B.NoProxy"
       label="100 bytes of data on port 8080 with no proxy."/>
-  <group name="8080.1K" label="1K bytes of data on port 8080."/>
-  <group name="8080.1K.NoProxy"
+  <suffix name="8080.1K" label="1K bytes of data on port 8080."/>
+  <suffix name="8080.1K.NoProxy"
       label="1K bytes of data on port 8080 with no proxy."/>
-  <group name="8080.100B.RTT"
+  <suffix name="8080.100B.RTT"
       label="100 bytes of data on port 8080 successfully."/>
-  <group name="8080.100B.RTT.NoProxy"
+  <suffix name="8080.100B.RTT.NoProxy"
       label="100 bytes of data on port 8080 successfully with no proxy."/>
-  <group name="8080.1K.RTT"
+  <suffix name="8080.1K.RTT"
       label="1K bytes of data on port 8080 successfully."/>
-  <group name="8080.1K.RTT.NoProxy"
+  <suffix name="8080.1K.RTT.NoProxy"
       label="1K bytes of data on port 8080 successfully with no proxy."/>
   <affected-histogram name="NetConnectivity.TCP.Status"/>
   <affected-histogram name="NetConnectivity.TCP.Success"/>
@@ -42820,316 +42837,317 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity.UDP.PacketLoss6"/>
   <affected-histogram name="NetConnectivity.UDP.Status"/>
   <affected-histogram name="NetConnectivity.UDP.Success"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity2" separator=".">
-  <group name="AcksReceivedFromFirst2Packets" label="2 packets."/>
-  <group name="AcksReceivedFromFirst3Packets" label="3 packets."/>
-  <group name="AcksReceivedFromFirst4Packets" label="4 packets."/>
-  <group name="AcksReceivedFromFirst5Packets" label="5 packets."/>
-  <group name="AcksReceivedFromFirst6Packets" label="6 packets."/>
-  <group name="AcksReceivedFromFirst7Packets" label="7 packets."/>
-  <group name="AcksReceivedFromFirst8Packets" label="8 packets."/>
-  <group name="AcksReceivedFromFirst9Packets" label="9 packets."/>
-  <group name="AcksReceivedFromFirst10Packets" label="10 packets."/>
-  <group name="AcksReceivedFromFirst11Packets" label="11 packets."/>
-  <group name="AcksReceivedFromFirst12Packets" label="12 packets."/>
-  <group name="AcksReceivedFromFirst13Packets" label="13 packets."/>
-  <group name="AcksReceivedFromFirst14Packets" label="14 packets."/>
-  <group name="AcksReceivedFromFirst15Packets" label="15 packets."/>
-  <group name="AcksReceivedFromFirst16Packets" label="16 packets."/>
-  <group name="AcksReceivedFromFirst17Packets" label="17 packets."/>
-  <group name="AcksReceivedFromFirst18Packets" label="18 packets."/>
-  <group name="AcksReceivedFromFirst19Packets" label="19 packets."/>
-  <group name="AcksReceivedFromFirst20Packets" label="20 packets."/>
-  <group name="AcksReceivedFromFirst21Packets" label="21 packets."/>
+<histogram_suffixes name="NetConnectivity2" separator=".">
+  <suffix name="AcksReceivedFromFirst2Packets" label="2 packets."/>
+  <suffix name="AcksReceivedFromFirst3Packets" label="3 packets."/>
+  <suffix name="AcksReceivedFromFirst4Packets" label="4 packets."/>
+  <suffix name="AcksReceivedFromFirst5Packets" label="5 packets."/>
+  <suffix name="AcksReceivedFromFirst6Packets" label="6 packets."/>
+  <suffix name="AcksReceivedFromFirst7Packets" label="7 packets."/>
+  <suffix name="AcksReceivedFromFirst8Packets" label="8 packets."/>
+  <suffix name="AcksReceivedFromFirst9Packets" label="9 packets."/>
+  <suffix name="AcksReceivedFromFirst10Packets" label="10 packets."/>
+  <suffix name="AcksReceivedFromFirst11Packets" label="11 packets."/>
+  <suffix name="AcksReceivedFromFirst12Packets" label="12 packets."/>
+  <suffix name="AcksReceivedFromFirst13Packets" label="13 packets."/>
+  <suffix name="AcksReceivedFromFirst14Packets" label="14 packets."/>
+  <suffix name="AcksReceivedFromFirst15Packets" label="15 packets."/>
+  <suffix name="AcksReceivedFromFirst16Packets" label="16 packets."/>
+  <suffix name="AcksReceivedFromFirst17Packets" label="17 packets."/>
+  <suffix name="AcksReceivedFromFirst18Packets" label="18 packets."/>
+  <suffix name="AcksReceivedFromFirst19Packets" label="19 packets."/>
+  <suffix name="AcksReceivedFromFirst20Packets" label="20 packets."/>
+  <suffix name="AcksReceivedFromFirst21Packets" label="21 packets."/>
   <affected-histogram name="NetConnectivity.Sent21"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity2a" separator=".">
-  <group name="6121.100B" label="100 bytes of data is sent on port 6121."/>
-  <group name="6121.500B" label="500 bytes of data is sent on port 6121."/>
-  <group name="6121.1K" label="1K bytes of data is sent on port 6121."/>
+<histogram_suffixes name="NetConnectivity2a" separator=".">
+  <suffix name="6121.100B" label="100 bytes of data is sent on port 6121."/>
+  <suffix name="6121.500B" label="500 bytes of data is sent on port 6121."/>
+  <suffix name="6121.1K" label="1K bytes of data is sent on port 6121."/>
   <affected-histogram name="NetConnectivity2.Sent21.AckReceivedForNthPacket"/>
   <affected-histogram name="NetConnectivity2.Sent21.GotAnAck"/>
   <affected-histogram name="NetConnectivity2.Sent21.PacketsSent"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity2b" separator=".">
-  <group name="AcksReceivedFromFirst2Packets.6121.100B"
+<histogram_suffixes name="NetConnectivity2b" separator=".">
+  <suffix name="AcksReceivedFromFirst2Packets.6121.100B"
       label="2 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst3Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst3Packets.6121.100B"
       label="3 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst4Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst4Packets.6121.100B"
       label="4 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst5Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst5Packets.6121.100B"
       label="5 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst6Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst6Packets.6121.100B"
       label="6 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst7Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst7Packets.6121.100B"
       label="7 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst8Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst8Packets.6121.100B"
       label="8 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst9Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst9Packets.6121.100B"
       label="9 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst10Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst10Packets.6121.100B"
       label="10 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst11Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst11Packets.6121.100B"
       label="11 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst12Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst12Packets.6121.100B"
       label="12 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst13Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst13Packets.6121.100B"
       label="13 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst14Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst14Packets.6121.100B"
       label="14 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst15Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst15Packets.6121.100B"
       label="15 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst16Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst16Packets.6121.100B"
       label="16 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst17Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst17Packets.6121.100B"
       label="17 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst18Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst18Packets.6121.100B"
       label="18 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst19Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst19Packets.6121.100B"
       label="19 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst20Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst20Packets.6121.100B"
       label="20 packets. 100 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst21Packets.6121.100B"
+  <suffix name="AcksReceivedFromFirst21Packets.6121.100B"
       label="21 packets. 100 bytes of data is sent on port 6121."/>
   <affected-histogram name="NetConnectivity2.Sent21"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity2c" separator=".">
-  <group name="6121.100B" label="100 bytes of data is sent on port 6121."/>
-  <group name="6121.100B.NoProxy"
+<histogram_suffixes name="NetConnectivity2c" separator=".">
+  <suffix name="6121.100B" label="100 bytes of data is sent on port 6121."/>
+  <suffix name="6121.100B.NoProxy"
       label="100 bytes of data is sent on port 6121 with no proxy."/>
-  <group name="6121.500B" label="500 bytes of data is sent on port 6121."/>
-  <group name="6121.500B.NoProxy"
+  <suffix name="6121.500B" label="500 bytes of data is sent on port 6121."/>
+  <suffix name="6121.500B.NoProxy"
       label="500 bytes of data is sent on port 6121 with no proxy."/>
-  <group name="6121.1K" label="1K bytes of data is sent on port 6121."/>
-  <group name="6121.1K.NoProxy"
+  <suffix name="6121.1K" label="1K bytes of data is sent on port 6121."/>
+  <suffix name="6121.1K.NoProxy"
       label="1K bytes of data is sent on port 6121 with no proxy."/>
   <affected-histogram name="NetConnectivity2.Send6.PacketsSent"/>
   <affected-histogram name="NetConnectivity2.Send6.SeriesAcked"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity2d" separator=".">
-  <group name="AcksReceivedFromFirst2Packets.6121.500B"
+<histogram_suffixes name="NetConnectivity2d" separator=".">
+  <suffix name="AcksReceivedFromFirst2Packets.6121.500B"
       label="2 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst3Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst3Packets.6121.500B"
       label="3 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst4Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst4Packets.6121.500B"
       label="4 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst5Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst5Packets.6121.500B"
       label="5 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst6Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst6Packets.6121.500B"
       label="6 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst7Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst7Packets.6121.500B"
       label="7 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst8Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst8Packets.6121.500B"
       label="8 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst9Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst9Packets.6121.500B"
       label="9 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst10Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst10Packets.6121.500B"
       label="10 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst11Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst11Packets.6121.500B"
       label="11 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst12Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst12Packets.6121.500B"
       label="12 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst13Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst13Packets.6121.500B"
       label="13 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst14Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst14Packets.6121.500B"
       label="14 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst15Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst15Packets.6121.500B"
       label="15 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst16Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst16Packets.6121.500B"
       label="16 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst17Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst17Packets.6121.500B"
       label="17 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst18Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst18Packets.6121.500B"
       label="18 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst19Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst19Packets.6121.500B"
       label="19 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst20Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst20Packets.6121.500B"
       label="20 packets. 500 bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst21Packets.6121.500B"
+  <suffix name="AcksReceivedFromFirst21Packets.6121.500B"
       label="21 packets. 500 bytes of data is sent on port 6121."/>
   <affected-histogram name="NetConnectivity2.Sent21"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity2e" separator=".">
-  <group name="AcksReceivedFromFirst2Packets.6121.1K"
+<histogram_suffixes name="NetConnectivity2e" separator=".">
+  <suffix name="AcksReceivedFromFirst2Packets.6121.1K"
       label="2 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst3Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst3Packets.6121.1K"
       label="3 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst4Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst4Packets.6121.1K"
       label="4 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst5Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst5Packets.6121.1K"
       label="5 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst6Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst6Packets.6121.1K"
       label="6 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst7Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst7Packets.6121.1K"
       label="7 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst8Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst8Packets.6121.1K"
       label="8 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst9Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst9Packets.6121.1K"
       label="9 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst10Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst10Packets.6121.1K"
       label="10 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst11Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst11Packets.6121.1K"
       label="11 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst12Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst12Packets.6121.1K"
       label="12 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst13Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst13Packets.6121.1K"
       label="13 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst14Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst14Packets.6121.1K"
       label="14 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst15Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst15Packets.6121.1K"
       label="15 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst16Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst16Packets.6121.1K"
       label="16 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst17Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst17Packets.6121.1K"
       label="17 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst18Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst18Packets.6121.1K"
       label="18 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst19Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst19Packets.6121.1K"
       label="19 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst20Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst20Packets.6121.1K"
       label="20 packets. 1K bytes of data is sent on port 6121."/>
-  <group name="AcksReceivedFromFirst21Packets.6121.1K"
+  <suffix name="AcksReceivedFromFirst21Packets.6121.1K"
       label="21 packets. 1K bytes of data is sent on port 6121."/>
   <affected-histogram name="NetConnectivity2.Sent21"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity3a" separator=".">
-  <group name="NonPacedPacket"
+<histogram_suffixes name="NetConnectivity3a" separator=".">
+  <suffix name="NonPacedPacket"
       label="In this histogram results are only shown if at least two packets
              were ACKed in the Startup Test. Packets were sent as rapidly as
              possible."/>
-  <group name="PacedPacket"
+  <suffix name="PacedPacket"
       label="In this histogram results are only shown if at least two packets
              were ACKed in the Startup Test. Packets are sent at equal
              intervals. The interval is selected to match the bandwidth
              discovered during the StartPacket test."/>
-  <group name="StartPacket"
+  <suffix name="StartPacket"
       label="Packets are sent as rapidly as possible, just after successfully
              sending an UMA upload. Each packet was numbered, as was its ACK
              sent back by Google. If no packets (of the 21) were ever ACKed,
              then the port is assumed to be blocked, and no data is recorded
              in this histogram."/>
   <affected-histogram name="NetConnectivity3"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity3aa" separator=".">
-  <group name="Sent21"
+<histogram_suffixes name="NetConnectivity3aa" separator=".">
+  <suffix name="Sent21"
       label="This histogram shows the number of echo responses received from
              the first"/>
   <affected-histogram name="NetConnectivity3.NonPacedPacket"/>
   <affected-histogram name="NetConnectivity3.PacedPacket"/>
   <affected-histogram name="NetConnectivity3.StartPacket"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity3AckReceivedForNthPacket" separator=".">
-  <group name="Sent21.AckReceivedForNthPacket"
+<histogram_suffixes name="NetConnectivity3AckReceivedForNthPacket"
+    separator=".">
+  <suffix name="Sent21.AckReceivedForNthPacket"
       label="Each packet was numbered, as was its ACK sent back by Google.
              This histogram records, for each packet number, how often we
              received an ACK for that packet."/>
   <affected-histogram name="NetConnectivity3.NonPacedPacket"/>
   <affected-histogram name="NetConnectivity3.PacedPacket"/>
   <affected-histogram name="NetConnectivity3.StartPacket"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity3AcksReceivedFromFirst" separator=".">
-  <group name="AcksReceivedFromFirst02Packets" label="2 packets."/>
-  <group name="AcksReceivedFromFirst03Packets" label="3 packets."/>
-  <group name="AcksReceivedFromFirst04Packets" label="4 packets."/>
-  <group name="AcksReceivedFromFirst05Packets" label="5 packets."/>
-  <group name="AcksReceivedFromFirst06Packets" label="6 packets."/>
-  <group name="AcksReceivedFromFirst07Packets" label="7 packets."/>
-  <group name="AcksReceivedFromFirst08Packets" label="8 packets."/>
-  <group name="AcksReceivedFromFirst09Packets" label="9 packets."/>
-  <group name="AcksReceivedFromFirst10Packets" label="10 packets."/>
-  <group name="AcksReceivedFromFirst11Packets" label="11 packets."/>
-  <group name="AcksReceivedFromFirst12Packets" label="12 packets."/>
-  <group name="AcksReceivedFromFirst13Packets" label="13 packets."/>
-  <group name="AcksReceivedFromFirst14Packets" label="14 packets."/>
-  <group name="AcksReceivedFromFirst15Packets" label="15 packets."/>
-  <group name="AcksReceivedFromFirst16Packets" label="16 packets."/>
-  <group name="AcksReceivedFromFirst17Packets" label="17 packets."/>
-  <group name="AcksReceivedFromFirst18Packets" label="18 packets."/>
-  <group name="AcksReceivedFromFirst19Packets" label="19 packets."/>
-  <group name="AcksReceivedFromFirst20Packets" label="20 packets."/>
-  <group name="AcksReceivedFromFirst21Packets" label="21 packets."/>
+<histogram_suffixes name="NetConnectivity3AcksReceivedFromFirst" separator=".">
+  <suffix name="AcksReceivedFromFirst02Packets" label="2 packets."/>
+  <suffix name="AcksReceivedFromFirst03Packets" label="3 packets."/>
+  <suffix name="AcksReceivedFromFirst04Packets" label="4 packets."/>
+  <suffix name="AcksReceivedFromFirst05Packets" label="5 packets."/>
+  <suffix name="AcksReceivedFromFirst06Packets" label="6 packets."/>
+  <suffix name="AcksReceivedFromFirst07Packets" label="7 packets."/>
+  <suffix name="AcksReceivedFromFirst08Packets" label="8 packets."/>
+  <suffix name="AcksReceivedFromFirst09Packets" label="9 packets."/>
+  <suffix name="AcksReceivedFromFirst10Packets" label="10 packets."/>
+  <suffix name="AcksReceivedFromFirst11Packets" label="11 packets."/>
+  <suffix name="AcksReceivedFromFirst12Packets" label="12 packets."/>
+  <suffix name="AcksReceivedFromFirst13Packets" label="13 packets."/>
+  <suffix name="AcksReceivedFromFirst14Packets" label="14 packets."/>
+  <suffix name="AcksReceivedFromFirst15Packets" label="15 packets."/>
+  <suffix name="AcksReceivedFromFirst16Packets" label="16 packets."/>
+  <suffix name="AcksReceivedFromFirst17Packets" label="17 packets."/>
+  <suffix name="AcksReceivedFromFirst18Packets" label="18 packets."/>
+  <suffix name="AcksReceivedFromFirst19Packets" label="19 packets."/>
+  <suffix name="AcksReceivedFromFirst20Packets" label="20 packets."/>
+  <suffix name="AcksReceivedFromFirst21Packets" label="21 packets."/>
   <affected-histogram name="NetConnectivity3.NonPacedPacket.Sent21"/>
   <affected-histogram name="NetConnectivity3.PacedPacket.Sent21"/>
   <affected-histogram name="NetConnectivity3.StartPacket.Sent21"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity3GotAnAck" separator=".">
-  <group name="Sent21.GotAnAck"
+<histogram_suffixes name="NetConnectivity3GotAnAck" separator=".">
+  <suffix name="Sent21.GotAnAck"
       label="The histogram shows if we ever got an ACK for a packet in our
              series of 21."/>
   <affected-histogram name="NetConnectivity3.NonPacedPacket"/>
   <affected-histogram name="NetConnectivity3.PacedPacket"/>
   <affected-histogram name="NetConnectivity3.StartPacket"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity3PacketDelay1" separator=".">
-  <group name="Sent21.443"
+<histogram_suffixes name="NetConnectivity3PacketDelay1" separator=".">
+  <suffix name="Sent21.443"
       label="This histogram shows the difference between the time when we
              have received 1st byte from the server and the last time when we
              have received data from the server on port 443."/>
-  <group name="Sent21.6121"
+  <suffix name="Sent21.6121"
       label="This histogram shows the difference between the time when we
              have received 1st byte from the server and the last time when we
              have received data from the server on port 6121."/>
   <affected-histogram name="NetConnectivity3.NonPacedPacket"/>
   <affected-histogram name="NetConnectivity3.PacedPacket"/>
   <affected-histogram name="NetConnectivity3.StartPacket"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity3PacketDelay2" separator=".">
-  <group name="443.100B.PacketDelay"
+<histogram_suffixes name="NetConnectivity3PacketDelay2" separator=".">
+  <suffix name="443.100B.PacketDelay"
       label="100 bytes of data is sent on port 443."/>
-  <group name="443.1200B.PacketDelay"
+  <suffix name="443.1200B.PacketDelay"
       label="1200 bytes of data is sent on port 443."/>
-  <group name="443.500B.PacketDelay"
+  <suffix name="443.500B.PacketDelay"
       label="500 bytes of data is sent on port 443."/>
-  <group name="6121.100B.PacketDelay"
+  <suffix name="6121.100B.PacketDelay"
       label="100 bytes of data is sent on port 6121."/>
-  <group name="6121.1200B.PacketDelay"
+  <suffix name="6121.1200B.PacketDelay"
       label="1200 bytes of data is sent on port 6121."/>
-  <group name="6121.500B.PacketDelay"
+  <suffix name="6121.500B.PacketDelay"
       label="500 bytes of data is sent on port 6121."/>
   <affected-histogram name="NetConnectivity3.NonPacedPacket.Sent21"/>
   <affected-histogram name="NetConnectivity3.PacedPacket.Sent21"/>
   <affected-histogram name="NetConnectivity3.StartPacket.Sent21"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity3PacketRTT" separator=".">
-  <group name="Sent21.Success.RTT" label="The histogram shows the RTT for"/>
+<histogram_suffixes name="NetConnectivity3PacketRTT" separator=".">
+  <suffix name="Sent21.Success.RTT" label="The histogram shows the RTT for"/>
   <affected-histogram name="NetConnectivity3.NonPacedPacket"/>
   <affected-histogram name="NetConnectivity3.PacedPacket"/>
   <affected-histogram name="NetConnectivity3.StartPacket"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity3Packets" separator=".">
-  <group name="Packet01" label="1st packet."/>
-  <group name="Packet02" label="2nd packet."/>
-  <group name="Packet03" label="3rd packet."/>
-  <group name="Packet10" label="10th packet."/>
-  <group name="Packet20" label="20th packet."/>
+<histogram_suffixes name="NetConnectivity3Packets" separator=".">
+  <suffix name="Packet01" label="1st packet."/>
+  <suffix name="Packet02" label="2nd packet."/>
+  <suffix name="Packet03" label="3rd packet."/>
+  <suffix name="Packet10" label="10th packet."/>
+  <suffix name="Packet20" label="20th packet."/>
   <affected-histogram
       name="NetConnectivity3.NonPacedPacket.Sent21.Success.RTT"/>
   <affected-histogram name="NetConnectivity3.PacedPacket.Sent21.Success.RTT"/>
   <affected-histogram name="NetConnectivity3.StartPacket.Sent21.Success.RTT"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity3PacketsSent" separator=".">
-  <group name="Sent21.PacketsSent"
+<histogram_suffixes name="NetConnectivity3PacketsSent" separator=".">
+  <suffix name="Sent21.PacketsSent"
       label="This histogram records how many packets (out of 21 attempted)
              were sent to the server via UDP."/>
-  <group name="Send6.SeriesAcked"
+  <suffix name="Send6.SeriesAcked"
       label="Chrome sends 6 UDP packets in a row to test to see if there is a
              probabalistic dependency in packet loss for consecutive packets.
              We record a bit vector of packets received, where the least
@@ -43140,15 +43158,15 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity3.NonPacedPacket"/>
   <affected-histogram name="NetConnectivity3.PacedPacket"/>
   <affected-histogram name="NetConnectivity3.StartPacket"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity3PacketsSentBytes" separator=".">
-  <group name="443.100B" label="100 bytes of data is sent on port 443."/>
-  <group name="443.500B" label="500 bytes of data is sent on port 443."/>
-  <group name="443.1200B" label="1200 bytes of data is sent on port 443."/>
-  <group name="6121.100B" label="100 bytes of data is sent on port 6121."/>
-  <group name="6121.500B" label="500 bytes of data is sent on port 6121."/>
-  <group name="6121.1200B" label="1200 bytes of data is sent on port 6121."/>
+<histogram_suffixes name="NetConnectivity3PacketsSentBytes" separator=".">
+  <suffix name="443.100B" label="100 bytes of data is sent on port 443."/>
+  <suffix name="443.500B" label="500 bytes of data is sent on port 443."/>
+  <suffix name="443.1200B" label="1200 bytes of data is sent on port 443."/>
+  <suffix name="6121.100B" label="100 bytes of data is sent on port 6121."/>
+  <suffix name="6121.500B" label="500 bytes of data is sent on port 6121."/>
+  <suffix name="6121.1200B" label="1200 bytes of data is sent on port 6121."/>
   <affected-histogram
       name="NetConnectivity3.NonPacedPacket.Sent21.AckReceivedForNthPacket"/>
   <affected-histogram
@@ -43312,78 +43330,78 @@ other types of suffix sets.
       name="NetConnectivity3.StartPacket.Sent21.Success.RTT.Packet10"/>
   <affected-histogram
       name="NetConnectivity3.StartPacket.Sent21.Success.RTT.Packet20"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity3Send6Acked" separator=".">
-  <group name="443.100B" label="100 bytes of data is sent on port 443."/>
-  <group name="443.100B.NoProxy"
+<histogram_suffixes name="NetConnectivity3Send6Acked" separator=".">
+  <suffix name="443.100B" label="100 bytes of data is sent on port 443."/>
+  <suffix name="443.100B.NoProxy"
       label="100 bytes of data is sent on port 443 with no proxy."/>
-  <group name="443.500B" label="500 bytes of data is sent on port 443."/>
-  <group name="443.500B.NoProxy"
+  <suffix name="443.500B" label="500 bytes of data is sent on port 443."/>
+  <suffix name="443.500B.NoProxy"
       label="500 bytes of data is sent on port 443 with no proxy."/>
-  <group name="443.1200B" label="1200 bytes of data is sent on port 443."/>
-  <group name="443.1200B.NoProxy"
+  <suffix name="443.1200B" label="1200 bytes of data is sent on port 443."/>
+  <suffix name="443.1200B.NoProxy"
       label="1200 bytes of data is sent on port 443 with no proxy."/>
-  <group name="6121.100B" label="100 bytes of data is sent on port 6121."/>
-  <group name="6121.100B.NoProxy"
+  <suffix name="6121.100B" label="100 bytes of data is sent on port 6121."/>
+  <suffix name="6121.100B.NoProxy"
       label="100 bytes of data is sent on port 6121 with no proxy."/>
-  <group name="6121.500B" label="500 bytes of data is sent on port 6121."/>
-  <group name="6121.500B.NoProxy"
+  <suffix name="6121.500B" label="500 bytes of data is sent on port 6121."/>
+  <suffix name="6121.500B.NoProxy"
       label="500 bytes of data is sent on port 6121 with no proxy."/>
-  <group name="6121.1200B" label="1200 bytes of data is sent on port 6121."/>
-  <group name="6121.1200B.NoProxy"
+  <suffix name="6121.1200B" label="1200 bytes of data is sent on port 6121."/>
+  <suffix name="6121.1200B.NoProxy"
       label="1200 bytes of data is sent on port 6121 with no proxy."/>
   <affected-histogram name="NetConnectivity3.NonPacedPacket.Send6.SeriesAcked"/>
   <affected-histogram name="NetConnectivity3.PacedPacket.Send6.SeriesAcked"/>
   <affected-histogram name="NetConnectivity3.StartPacket.Send6.PacketsSent"/>
   <affected-histogram name="NetConnectivity3.StartPacket.Send6.SeriesAcked"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity4a" separator=".">
-  <group name="NATBind.Sent2"
+<histogram_suffixes name="NetConnectivity4a" separator=".">
+  <suffix name="NATBind.Sent2"
       label="Two packets were sent spreading over a random period, to test if
              the NAT dropped the binding. Afterwords, an extra (short) packet
              was sent with renewed NAT binding to test whether the network
              that was used to deliver the first packet is still connected.
              Results are only shown in this histogram if at least ten packets
              were received in the StartPacket test."/>
-  <group name="NonPacedPacket"
+  <suffix name="NonPacedPacket"
       label="21 Packets were sent as rapidly as possible. Results are only
              shown in this histogram if at least two packets were received in
              the StartPacket Test."/>
-  <group name="PacedPacket"
+  <suffix name="PacedPacket"
       label="21 Packets were sent at equal intervals, which were selected to
              match the bandwidth discovered during the StartPacket test.
              Results are only shown in this histogram if at least two packets
              were received in the StartPacket Test."/>
-  <group name="StartPacket"
+  <suffix name="StartPacket"
       label="21 Packets were sent as rapidly as possible, just after the
              client successfully sent a UMA upload. Each packet was numbered
              when it was sent by Google."/>
   <affected-histogram name="NetConnectivity4"/>
   <affected-histogram name="NetConnectivity5"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity4NATBindPacketReceives" separator=".">
-  <group name="Bind.Failure"
+<histogram_suffixes name="NetConnectivity4NATBindPacketReceives" separator=".">
+  <suffix name="Bind.Failure"
       label="Only when the second packet never arrived (we wait for 10 extra
              seconds) and the first and the extra (short) packets arrived did
              we record the duration in seconds between the sendings of the
              first two packets in this histogram."/>
-  <group name="Bind.Success"
+  <suffix name="Bind.Success"
       label="Only when all three packets including the extra (short) packet
              arrived did we record the duration in seconds between the
              sendings of the first two packets in this histogram."/>
-  <group name="Connectivity.Failure"
+  <suffix name="Connectivity.Failure"
       label="Only when the extra (short) packet (with renewed NAT binding)
              never arrived (we wait for 10 extra seconds) did we record the
              duration in seconds between the sendings of the first two
              packets in this histogram."/>
-  <group name="Connectivity.Success"
+  <suffix name="Connectivity.Success"
       label="Only when the extra (short) packet arrived did we record the
              duration in seconds between the sendings of the first two
              packets in this histogram."/>
-  <group name="SendToLastRecvDelay"
+  <suffix name="SendToLastRecvDelay"
       label="This histogram records the time duration (in milliseconds)
              between the client sending the request and the receiving of the
              second packet sent from the server, excluding the idle time
@@ -43391,16 +43409,16 @@ other types of suffix sets.
              shown if the first two packets are both received."/>
   <affected-histogram name="NetConnectivity4.NATBind.Sent2"/>
   <affected-histogram name="NetConnectivity5.NATBind.Sent2"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity4PacketFirst6" separator=".">
-  <group name="First6.SeriesRecv"
+<histogram_suffixes name="NetConnectivity4PacketFirst6" separator=".">
+  <suffix name="First6.SeriesRecv"
       label="This histogram records a bit vector of the first 6 packets sent,
              where the least significant bit is a 1 if the first packet was
              received, etc. For example, if all packets other than packet 2
              and 4 are received, then we'd have a sample (in binary) of
              110101B, or 53."/>
-  <group name="Sent21"
+  <suffix name="Sent21"
       label="This histogram shows the number of packets received from the
              first"/>
   <affected-histogram name="NetConnectivity4.NonPacedPacket"/>
@@ -43409,75 +43427,76 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity5.NonPacedPacket"/>
   <affected-histogram name="NetConnectivity5.PacedPacket"/>
   <affected-histogram name="NetConnectivity5.StartPacket"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity4PacketReceives" separator=".">
-  <group name="NumRecvFromFirst01Packets" label="1 packet."/>
-  <group name="NumRecvFromFirst02Packets" label="2 packets."/>
-  <group name="NumRecvFromFirst03Packets" label="3 packets."/>
-  <group name="NumRecvFromFirst04Packets" label="4 packets."/>
-  <group name="NumRecvFromFirst05Packets" label="5 packets."/>
-  <group name="NumRecvFromFirst06Packets" label="6 packets."/>
-  <group name="NumRecvFromFirst07Packets" label="7 packets."/>
-  <group name="NumRecvFromFirst08Packets" label="8 packets."/>
-  <group name="NumRecvFromFirst09Packets" label="9 packets."/>
-  <group name="NumRecvFromFirst10Packets" label="10 packets."/>
-  <group name="NumRecvFromFirst11Packets" label="11 packets."/>
-  <group name="NumRecvFromFirst12Packets" label="12 packets."/>
-  <group name="NumRecvFromFirst13Packets" label="13 packets."/>
-  <group name="NumRecvFromFirst14Packets" label="14 packets."/>
-  <group name="NumRecvFromFirst15Packets" label="15 packets."/>
-  <group name="NumRecvFromFirst16Packets" label="16 packets."/>
-  <group name="NumRecvFromFirst17Packets" label="17 packets."/>
-  <group name="NumRecvFromFirst18Packets" label="18 packets."/>
-  <group name="NumRecvFromFirst19Packets" label="19 packets."/>
-  <group name="NumRecvFromFirst20Packets" label="20 packets."/>
-  <group name="NumRecvFromFirst21Packets" label="21 packets."/>
+<histogram_suffixes name="NetConnectivity4PacketReceives" separator=".">
+  <suffix name="NumRecvFromFirst01Packets" label="1 packet."/>
+  <suffix name="NumRecvFromFirst02Packets" label="2 packets."/>
+  <suffix name="NumRecvFromFirst03Packets" label="3 packets."/>
+  <suffix name="NumRecvFromFirst04Packets" label="4 packets."/>
+  <suffix name="NumRecvFromFirst05Packets" label="5 packets."/>
+  <suffix name="NumRecvFromFirst06Packets" label="6 packets."/>
+  <suffix name="NumRecvFromFirst07Packets" label="7 packets."/>
+  <suffix name="NumRecvFromFirst08Packets" label="8 packets."/>
+  <suffix name="NumRecvFromFirst09Packets" label="9 packets."/>
+  <suffix name="NumRecvFromFirst10Packets" label="10 packets."/>
+  <suffix name="NumRecvFromFirst11Packets" label="11 packets."/>
+  <suffix name="NumRecvFromFirst12Packets" label="12 packets."/>
+  <suffix name="NumRecvFromFirst13Packets" label="13 packets."/>
+  <suffix name="NumRecvFromFirst14Packets" label="14 packets."/>
+  <suffix name="NumRecvFromFirst15Packets" label="15 packets."/>
+  <suffix name="NumRecvFromFirst16Packets" label="16 packets."/>
+  <suffix name="NumRecvFromFirst17Packets" label="17 packets."/>
+  <suffix name="NumRecvFromFirst18Packets" label="18 packets."/>
+  <suffix name="NumRecvFromFirst19Packets" label="19 packets."/>
+  <suffix name="NumRecvFromFirst20Packets" label="20 packets."/>
+  <suffix name="NumRecvFromFirst21Packets" label="21 packets."/>
   <affected-histogram name="NetConnectivity4.NonPacedPacket.Sent21"/>
   <affected-histogram name="NetConnectivity4.PacedPacket.Sent21"/>
   <affected-histogram name="NetConnectivity4.StartPacket.Sent21"/>
   <affected-histogram name="NetConnectivity5.NonPacedPacket.Sent21"/>
   <affected-histogram name="NetConnectivity5.PacedPacket.Sent21"/>
   <affected-histogram name="NetConnectivity5.StartPacket.Sent21"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity4PacketRTT" separator=".">
-  <group name="Sent21.GotAPacket"
+<histogram_suffixes name="NetConnectivity4PacketRTT" separator=".">
+  <suffix name="Sent21.GotAPacket"
       label="The histogram shows if we ever got at least one packet in our
              series of 21."/>
-  <group name="Sent21.PacketDelay"
+  <suffix name="Sent21.PacketDelay"
       label="The histogram shows the average inter-arrival time between every
              two consecutive packets we receive in our series of 21
              multiplied by 20 (so this is essentially the time duration
              between the first and the last received packets)."/>
-  <group name="Sent21.PacketsRecv"
+  <suffix name="Sent21.PacketsRecv"
       label="The histogram shows how many packets we receive in our series of
              21."/>
-  <group name="Sent21.RecvNthPacket"
+  <suffix name="Sent21.RecvNthPacket"
       label="Each packet was numbered when it was sent by Google. This
              histogram records, for each packet number, how often we received
              that packet."/>
-  <group name="Sent21.SendToLastRecvDelay"
+  <suffix name="Sent21.SendToLastRecvDelay"
       label="This histogram records the time duration between the client
              sending the request and the receiving of the last packet sent
              from the server, excluding the total pacing time requested by
              the client. Results are only shown if at least two packets are
              received."/>
-  <group name="Sent21.Success.RTT" label="The histogram shows the RTT for the"/>
+  <suffix name="Sent21.Success.RTT"
+      label="The histogram shows the RTT for the"/>
   <affected-histogram name="NetConnectivity4.NonPacedPacket"/>
   <affected-histogram name="NetConnectivity4.PacedPacket"/>
   <affected-histogram name="NetConnectivity4.StartPacket"/>
   <affected-histogram name="NetConnectivity5.NonPacedPacket"/>
   <affected-histogram name="NetConnectivity5.PacedPacket"/>
   <affected-histogram name="NetConnectivity5.StartPacket"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity4PacketRTTSeries" separator=".">
-  <group name="Packet01" label="1st packet."/>
-  <group name="Packet02" label="2nd packet."/>
-  <group name="Packet03" label="3rd packet."/>
-  <group name="Packet10" label="10th packet."/>
-  <group name="Packet20" label="20th packet."/>
+<histogram_suffixes name="NetConnectivity4PacketRTTSeries" separator=".">
+  <suffix name="Packet01" label="1st packet."/>
+  <suffix name="Packet02" label="2nd packet."/>
+  <suffix name="Packet03" label="3rd packet."/>
+  <suffix name="Packet10" label="10th packet."/>
+  <suffix name="Packet20" label="20th packet."/>
   <affected-histogram
       name="NetConnectivity4.NonPacedPacket.Sent21.Success.RTT"/>
   <affected-histogram name="NetConnectivity4.PacedPacket.Sent21.Success.RTT"/>
@@ -43486,15 +43505,15 @@ other types of suffix sets.
       name="NetConnectivity5.NonPacedPacket.Sent21.Success.RTT"/>
   <affected-histogram name="NetConnectivity5.PacedPacket.Sent21.Success.RTT"/>
   <affected-histogram name="NetConnectivity5.StartPacket.Sent21.Success.RTT"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity4PacketsAll" separator=".">
-  <group name="443.100B" label="100 bytes of data is sent on port 443."/>
-  <group name="443.1200B" label="1200 bytes of data is sent on port 443."/>
-  <group name="443.500B" label="500 bytes of data is sent on port 443."/>
-  <group name="80.100B" label="100 bytes of data is sent on port 80."/>
-  <group name="80.1200B" label="1200 bytes of data is sent on port 80."/>
-  <group name="80.500B" label="500 bytes of data is sent on port 80."/>
+<histogram_suffixes name="NetConnectivity4PacketsAll" separator=".">
+  <suffix name="443.100B" label="100 bytes of data is sent on port 443."/>
+  <suffix name="443.1200B" label="1200 bytes of data is sent on port 443."/>
+  <suffix name="443.500B" label="500 bytes of data is sent on port 443."/>
+  <suffix name="80.100B" label="100 bytes of data is sent on port 80."/>
+  <suffix name="80.1200B" label="1200 bytes of data is sent on port 80."/>
+  <suffix name="80.500B" label="500 bytes of data is sent on port 80."/>
   <affected-histogram name="NetConnectivity4.NATBind.Sent2.Bind.Failure"/>
   <affected-histogram name="NetConnectivity4.NATBind.Sent2.Bind.Success"/>
   <affected-histogram
@@ -43865,22 +43884,22 @@ other types of suffix sets.
       name="NetConnectivity5.StartPacket.Sent21.Success.RTT.Packet10"/>
   <affected-histogram
       name="NetConnectivity5.StartPacket.Sent21.Success.RTT.Packet20"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity4PacketSizeTest" separator=".">
-  <group name="PacketSizeTest.Connectivity.Failure"
+<histogram_suffixes name="NetConnectivity4PacketSizeTest" separator=".">
+  <suffix name="PacketSizeTest.Connectivity.Failure"
       label="This histogram records the size of the packet size that was not
              received from the server."/>
-  <group name="PacketSizeTest.Connectivity.Success"
+  <suffix name="PacketSizeTest.Connectivity.Success"
       label="This histogram records the size of the packet size that was
              received from the server."/>
   <affected-histogram name="NetConnectivity4"/>
   <affected-histogram name="NetConnectivity5"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity4PacketSizeTestPort" separator=".">
-  <group name="443" label="Packet is sent on port 443."/>
-  <group name="80" label="Packet is sent on port 80."/>
+<histogram_suffixes name="NetConnectivity4PacketSizeTestPort" separator=".">
+  <suffix name="443" label="Packet is sent on port 443."/>
+  <suffix name="80" label="Packet is sent on port 80."/>
   <affected-histogram
       name="NetConnectivity4.PacketSizeTest.Connectivity.Failure"/>
   <affected-histogram
@@ -43889,26 +43908,26 @@ other types of suffix sets.
       name="NetConnectivity5.PacketSizeTest.Connectivity.Failure"/>
   <affected-histogram
       name="NetConnectivity5.PacketSizeTest.Connectivity.Success"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetConnectivity4SeriesRecv" separator=".">
-  <group name="443.100B" label="100 bytes of data is sent on port 443."/>
-  <group name="443.100B.NoProxy"
+<histogram_suffixes name="NetConnectivity4SeriesRecv" separator=".">
+  <suffix name="443.100B" label="100 bytes of data is sent on port 443."/>
+  <suffix name="443.100B.NoProxy"
       label="100 bytes of data is sent on port 443 with no proxy."/>
-  <group name="443.1200B" label="1200 bytes of data is sent on port 443."/>
-  <group name="443.1200B.NoProxy"
+  <suffix name="443.1200B" label="1200 bytes of data is sent on port 443."/>
+  <suffix name="443.1200B.NoProxy"
       label="1200 bytes of data is sent on port 443 with no proxy."/>
-  <group name="443.500B" label="500 bytes of data is sent on port 443."/>
-  <group name="443.500B.NoProxy"
+  <suffix name="443.500B" label="500 bytes of data is sent on port 443."/>
+  <suffix name="443.500B.NoProxy"
       label="500 bytes of data is sent on port 443 with no proxy."/>
-  <group name="80.100B" label="100 bytes of data is sent on port 80."/>
-  <group name="80.100B.NoProxy"
+  <suffix name="80.100B" label="100 bytes of data is sent on port 80."/>
+  <suffix name="80.100B.NoProxy"
       label="100 bytes of data is sent on port 80 with no proxy."/>
-  <group name="80.1200B" label="1200 bytes of data is sent on port 80."/>
-  <group name="80.1200B.NoProxy"
+  <suffix name="80.1200B" label="1200 bytes of data is sent on port 80."/>
+  <suffix name="80.1200B.NoProxy"
       label="1200 bytes of data is sent on port 80 with no proxy."/>
-  <group name="80.500B" label="500 bytes of data is sent on port 80."/>
-  <group name="80.500B.NoProxy"
+  <suffix name="80.500B" label="500 bytes of data is sent on port 80."/>
+  <suffix name="80.500B.NoProxy"
       label="500 bytes of data is sent on port 80 with no proxy."/>
   <affected-histogram name="NetConnectivity4.NonPacedPacket.First6.SeriesRecv"/>
   <affected-histogram name="NetConnectivity4.PacedPacket.First6.SeriesRecv"/>
@@ -43916,47 +43935,47 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity5.NonPacedPacket.First6.SeriesRecv"/>
   <affected-histogram name="NetConnectivity5.PacedPacket.First6.SeriesRecv"/>
   <affected-histogram name="NetConnectivity5.StartPacket.First6.SeriesRecv"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NetProxyResolverExecutionTime">
-  <group name="UrlOver2K" label="URL length was over 2K"/>
-  <group name="UrlOver4K" label="URL length was over 4K"/>
-  <group name="UrlOver8K" label="URL length was over 8K"/>
-  <group name="UrlOver128K" label="URL length was over 128K"/>
+<histogram_suffixes name="NetProxyResolverExecutionTime">
+  <suffix name="UrlOver2K" label="URL length was over 2K"/>
+  <suffix name="UrlOver4K" label="URL length was over 4K"/>
+  <suffix name="UrlOver8K" label="URL length was over 8K"/>
+  <suffix name="UrlOver128K" label="URL length was over 128K"/>
   <affected-histogram name="Net.ProxyResolver.ExecutionTime"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="NewTabPageProviders" separator=".">
-  <group name="client" label="Suggestions coming from the client."/>
-  <group name="client0" label="Suggestions coming from the client source 0."/>
-  <group name="server" label="Suggestions coming from the server."/>
-  <group name="server0" label="Suggestions coming from server source 0."/>
-  <group name="server1" label="Suggestions coming from server source 1."/>
-  <group name="server2" label="Suggestions coming from server source 2."/>
-  <group name="server3" label="Suggestions coming from server source 3."/>
-  <group name="server4" label="Suggestions coming from server source 4."/>
+<histogram_suffixes name="NewTabPageProviders" separator=".">
+  <suffix name="client" label="Suggestions coming from the client."/>
+  <suffix name="client0" label="Suggestions coming from the client source 0."/>
+  <suffix name="server" label="Suggestions coming from the server."/>
+  <suffix name="server0" label="Suggestions coming from server source 0."/>
+  <suffix name="server1" label="Suggestions coming from server source 1."/>
+  <suffix name="server2" label="Suggestions coming from server source 2."/>
+  <suffix name="server3" label="Suggestions coming from server source 3."/>
+  <suffix name="server4" label="Suggestions coming from server source 4."/>
   <affected-histogram name="NewTabPage.MostVisited"/>
   <affected-histogram name="NewTabPage.SuggestionsImpression"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="OmniboxProviderTime" separator=".">
-  <group name="Bookmark"/>
-  <group name="Builtin"/>
-  <group name="Contact"/>
-  <group name="ExtensionApp"/>
-  <group name="HistoryContents"/>
-  <group name="HistoryQuick"/>
-  <group name="HistoryURL"/>
-  <group name="Keyword"/>
-  <group name="Search"/>
-  <group name="Shortcuts"/>
-  <group name="ZeroSuggest"/>
+<histogram_suffixes name="OmniboxProviderTime" separator=".">
+  <suffix name="Bookmark"/>
+  <suffix name="Builtin"/>
+  <suffix name="Contact"/>
+  <suffix name="ExtensionApp"/>
+  <suffix name="HistoryContents"/>
+  <suffix name="HistoryQuick"/>
+  <suffix name="HistoryURL"/>
+  <suffix name="Keyword"/>
+  <suffix name="Search"/>
+  <suffix name="Shortcuts"/>
+  <suffix name="ZeroSuggest"/>
   <affected-histogram name="Omnibox.ProviderTime"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="OverlappedReadImpact">
-  <group name="OverlappedReadDisabled" label="Non-blocking reads"/>
-  <group name="OverlappedReadEnabled" label="Default, async reads"/>
+<histogram_suffixes name="OverlappedReadImpact">
+  <suffix name="OverlappedReadDisabled" label="Non-blocking reads"/>
+  <suffix name="OverlappedReadEnabled" label="Default, async reads"/>
   <affected-histogram name="Net.HttpJob.TotalTime"/>
   <affected-histogram name="Net.HttpJob.TotalTimeCached"/>
   <affected-histogram name="Net.HttpJob.TotalTimeCancel"/>
@@ -43968,107 +43987,109 @@ other types of suffix sets.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadStaleOk"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
   <affected-histogram name="PLT.LoadType"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="PageLoadType">
-  <group name="HistoryLoad" label="but only for user pressing back or forward"/>
-  <group name="LinkLoad"
+<histogram_suffixes name="PageLoadType">
+  <suffix name="HistoryLoad"
+      label="but only for user pressing back or forward"/>
+  <suffix name="LinkLoad"
       label="deprecated - see LinkLoadReload, LinkLoadNormal,
              LinkLoadStaleOk, LinkLoadCacheOnly; content initiated, commonly
              back to a posted page"/>
-  <group name="LinkLoadCacheOnly"
+  <suffix name="LinkLoadCacheOnly"
       label="content initiated, commonly back to a posted page, where browser
              must ONLY use cache"/>
-  <group name="LinkLoadNormal"
+  <suffix name="LinkLoadNormal"
       label="content initiated, ordinary link traversal or post"/>
-  <group name="LinkLoadReload" label="content initiated, calling reload()"/>
-  <group name="LinkLoadStaleOk"
+  <suffix name="LinkLoadReload" label="content initiated, calling reload()"/>
+  <suffix name="LinkLoadStaleOk"
       label="content initiated, commonly forward or back where stale cached
              data is very acceptable"/>
-  <group name="NormalLoad"
+  <suffix name="NormalLoad"
       label="but only for user entered URL or omnibox search"/>
-  <group name="Reload" label="but only for user pressed reload"/>
-  <group name="UndefLoad"
+  <suffix name="Reload" label="but only for user pressed reload"/>
+  <suffix name="UndefLoad"
       label="should never happen... as it is only for an client-code error
              case which should not exist"/>
   <affected-histogram name="PLT.BeginToFinish"/>
   <affected-histogram name="PLT.BeginToFinishDoc"/>
   <affected-histogram name="PLT.StartToCommit">
-    <with-group name="LinkLoadNormal"/>
-    <with-group name="NormalLoad"/>
+    <with-suffix name="LinkLoadNormal"/>
+    <with-suffix name="NormalLoad"/>
   </affected-histogram>
   <affected-histogram name="PLT.StartToFinish">
-    <with-group name="LinkLoadNormal"/>
-    <with-group name="NormalLoad"/>
+    <with-suffix name="LinkLoadNormal"/>
+    <with-suffix name="NormalLoad"/>
   </affected-histogram>
   <affected-histogram name="Renderer4.BeginToFinish"/>
   <affected-histogram name="Renderer4.BeginToFinishDoc"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="PasswordManagerMonitor">
-  <group name="group_1" label="group 1"/>
-  <group name="group_2" label="group 2"/>
-  <group name="group_3" label="group 3"/>
-  <group name="group_4" label="group 4"/>
-  <group name="group_5" label="group 5"/>
-  <group name="group_6" label="group 6"/>
-  <group name="group_7" label="group 7"/>
-  <group name="group_8" label="group 8"/>
-  <group name="group_9" label="group 9"/>
-  <group name="group_10" label="group 10"/>
-  <group name="group_11" label="group 11"/>
-  <group name="group_12" label="group 12"/>
-  <group name="group_13" label="group 13"/>
-  <group name="group_14" label="group 14"/>
-  <group name="group_15" label="group 15"/>
-  <group name="group_16" label="group 16"/>
-  <group name="group_17" label="group 17"/>
-  <group name="group_18" label="group 18"/>
-  <group name="group_19" label="group 19"/>
-  <group name="group_20" label="group 20"/>
-  <group name="" label=""/>
+<histogram_suffixes name="PasswordManagerMonitor">
+  <suffix name="group_1" label="group 1"/>
+  <suffix name="group_2" label="group 2"/>
+  <suffix name="group_3" label="group 3"/>
+  <suffix name="group_4" label="group 4"/>
+  <suffix name="group_5" label="group 5"/>
+  <suffix name="group_6" label="group 6"/>
+  <suffix name="group_7" label="group 7"/>
+  <suffix name="group_8" label="group 8"/>
+  <suffix name="group_9" label="group 9"/>
+  <suffix name="group_10" label="group 10"/>
+  <suffix name="group_11" label="group 11"/>
+  <suffix name="group_12" label="group 12"/>
+  <suffix name="group_13" label="group 13"/>
+  <suffix name="group_14" label="group 14"/>
+  <suffix name="group_15" label="group 15"/>
+  <suffix name="group_16" label="group 16"/>
+  <suffix name="group_17" label="group 17"/>
+  <suffix name="group_18" label="group 18"/>
+  <suffix name="group_19" label="group 19"/>
+  <suffix name="group_20" label="group 20"/>
+  <suffix name="" label=""/>
   <affected-histogram name="PasswordManager.ProvisionalSaveFailure"/>
   <affected-histogram
       name="PasswordManager.SavePasswordPromptDisappearedQuickly"/>
   <affected-histogram name="PasswordManager.SavePasswordPromptDisplayed"/>
   <affected-histogram name="PasswordManager.SavePasswordPromptResponse"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="PerformanceMonitor" separator=".">
-  <group name="BrowserProcess"/>
-  <group name="RendererProcess"/>
-  <group name="PluginProcess"/>
-  <group name="WorkerProcess"/>
-  <group name="GPUProcess"/>
-  <group name="PPAPIProcess"/>
+<histogram_suffixes name="PerformanceMonitor" separator=".">
+  <suffix name="BrowserProcess"/>
+  <suffix name="RendererProcess"/>
+  <suffix name="PluginProcess"/>
+  <suffix name="WorkerProcess"/>
+  <suffix name="GPUProcess"/>
+  <suffix name="PPAPIProcess"/>
   <affected-histogram name="PerformanceMonitor.AverageCPU"/>
   <affected-histogram name="PerformanceMonitor.HighCPU"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="PpapiPluginName">
-  <group name="libpepflashplayer.so" label="Flash player on Linux or Cros"/>
-  <group name="libwidevinecdmadapter.so" label="Widevine CDM on Linux or Cros"/>
-  <group name="pepflashplayer.dll" label="Flash player on Windows"/>
-  <group name="PepperFlashPlayer.plugin" label="Flash player on Mac"/>
-  <group name="widevinecdmadapter.dll" label="Widevine CDM on Windows"/>
-  <group name="widevinecdmadapter.plugin" label="Widevine CDM on Mac"/>
+<histogram_suffixes name="PpapiPluginName">
+  <suffix name="libpepflashplayer.so" label="Flash player on Linux or Cros"/>
+  <suffix name="libwidevinecdmadapter.so"
+      label="Widevine CDM on Linux or Cros"/>
+  <suffix name="pepflashplayer.dll" label="Flash player on Windows"/>
+  <suffix name="PepperFlashPlayer.plugin" label="Flash player on Mac"/>
+  <suffix name="widevinecdmadapter.dll" label="Widevine CDM on Windows"/>
+  <suffix name="widevinecdmadapter.plugin" label="Widevine CDM on Mac"/>
   <affected-histogram name="Plugin.PpapiBrokerLoadErrorCode"/>
   <affected-histogram name="Plugin.PpapiBrokerLoadResult"/>
   <affected-histogram name="Plugin.PpapiPluginLoadErrorCode"/>
   <affected-histogram name="Plugin.PpapiPluginLoadResult"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="PrecacheCellular" separator=".">
-  <group name="Cellular"
+<histogram_suffixes name="PrecacheCellular" separator=".">
+  <suffix name="Cellular"
       label="covers fetches when connected to cellular networks"/>
   <affected-histogram name="Precache.DownloadedNonPrecache"/>
   <affected-histogram name="Precache.Saved"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="Prefetch">
-  <group name="ContentPrefetchPrefetchOff"
+<histogram_suffixes name="Prefetch">
+  <suffix name="ContentPrefetchPrefetchOff"
       label="Prefetch is completely disabled."/>
-  <group name="ContentPrefetchPrefetchOn"
+  <suffix name="ContentPrefetchPrefetchOn"
       label="prefetch is enabled but prerender is disabled."/>
   <affected-histogram name="HttpCache.EntryLockWait"/>
   <affected-histogram name="Net.HttpTimeToFirstByte"/>
@@ -44081,16 +44102,16 @@ other types of suffix sets.
   <affected-histogram name="PLT.BeginToFinishDoc_ContentPrefetcherReferrer"/>
   <affected-histogram name="PLT.PerceivedLoadTime"/>
   <affected-histogram name="PLT.PerceivedLoadTime_PrerenderLoad"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="Prerender">
-  <group name="PrerenderEnabled" label="prerender is enabled."/>
-  <group name="PrerenderControl" label="prerender is disabled."/>
-  <group name="PrerenderNoUse"
+<histogram_suffixes name="Prerender">
+  <suffix name="PrerenderEnabled" label="prerender is enabled."/>
+  <suffix name="PrerenderControl" label="prerender is disabled."/>
+  <suffix name="PrerenderNoUse"
       label="prerender is enabled, but pages are not swapped in."/>
-  <group name="PrerenderMulti"
+  <suffix name="PrerenderMulti"
       label="prerender is enabled with multiple simultanious prerenders."/>
-  <group name="Prerender5minTTL"
+  <suffix name="Prerender5minTTL"
       label="prerender is enabled, and the TTL is extended to 5 minutes."/>
   <affected-histogram name="HttpCache.EntryLockWait"/>
   <affected-histogram name="Net.HttpTimeToFirstByte"/>
@@ -44127,54 +44148,54 @@ other types of suffix sets.
   <affected-histogram name="Prerender.RendererTimeUntilDisplay"/>
   <affected-histogram name="Prerender.SimulatedLocalBrowsingBaselinePLT"/>
   <affected-histogram name="Prerender.SimulatedLocalBrowsingPLT"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="PrerenderHoverType" ordering="prefix">
+<histogram_suffixes name="PrerenderHoverType" ordering="prefix">
   <obsolete>
     deprecated May 10 2012
   </obsolete>
-  <group name="HoverStats_50" label="Hover stats @ threshold 50 ms."/>
-  <group name="HoverStats_75" label="Hover stats @ threshold 75 ms."/>
-  <group name="HoverStats_100" label="Hover stats @ threshold 100 ms."/>
-  <group name="HoverStats_150" label="Hover stats @ threshold 150 ms."/>
-  <group name="HoverStats_200" label="Hover stats @ threshold 200 ms."/>
-  <group name="HoverStats_250" label="Hover stats @ threshold 250 ms."/>
-  <group name="HoverStats_300" label="Hover stats @ threshold 300 ms."/>
-  <group name="HoverStats_400" label="Hover stats @ threshold 400 ms."/>
-  <group name="HoverStats_500" label="Hover stats @ threshold 500 ms."/>
-  <group name="HoverStats_750" label="Hover stats @ threshold 750 ms."/>
-  <group name="HoverStats_1000" label="Hover stats @ threshold 1000 ms."/>
-  <group name="HoverStats_1500" label="Hover stats @ threshold 1500 ms."/>
-  <group name="HoverStats_2000" label="Hover stats @ threshold 2000 ms."/>
-  <group name="HoverStats_3000" label="Hover stats @ threshold 3000 ms."/>
-  <group name="HoverStats_4000" label="Hover stats @ threshold 4000 ms."/>
-  <group name="HoverStats_5000" label="Hover stats @ threshold 5000 ms."/>
+  <suffix name="HoverStats_50" label="Hover stats @ threshold 50 ms."/>
+  <suffix name="HoverStats_75" label="Hover stats @ threshold 75 ms."/>
+  <suffix name="HoverStats_100" label="Hover stats @ threshold 100 ms."/>
+  <suffix name="HoverStats_150" label="Hover stats @ threshold 150 ms."/>
+  <suffix name="HoverStats_200" label="Hover stats @ threshold 200 ms."/>
+  <suffix name="HoverStats_250" label="Hover stats @ threshold 250 ms."/>
+  <suffix name="HoverStats_300" label="Hover stats @ threshold 300 ms."/>
+  <suffix name="HoverStats_400" label="Hover stats @ threshold 400 ms."/>
+  <suffix name="HoverStats_500" label="Hover stats @ threshold 500 ms."/>
+  <suffix name="HoverStats_750" label="Hover stats @ threshold 750 ms."/>
+  <suffix name="HoverStats_1000" label="Hover stats @ threshold 1000 ms."/>
+  <suffix name="HoverStats_1500" label="Hover stats @ threshold 1500 ms."/>
+  <suffix name="HoverStats_2000" label="Hover stats @ threshold 2000 ms."/>
+  <suffix name="HoverStats_3000" label="Hover stats @ threshold 3000 ms."/>
+  <suffix name="HoverStats_4000" label="Hover stats @ threshold 4000 ms."/>
+  <suffix name="HoverStats_5000" label="Hover stats @ threshold 5000 ms."/>
   <affected-histogram name="Prerender.Events"/>
   <affected-histogram name="Prerender.TimeToClick"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="PrerenderSource" ordering="prefix">
-  <group name="" label="All prerenders."/>
-  <group name="exp1" label="Likelihood threshold experiment 1."/>
-  <group name="exp2" label="Likelihood threshold experiment 2."/>
-  <group name="exp3" label="Likelihood threshold experiment 3."/>
-  <group name="exp4" label="Likelihood threshold experiment 4."/>
-  <group name="exp5" label="Likelihood threshold experiment 5."/>
-  <group name="exp6" label="Likelihood threshold experiment 6."/>
-  <group name="exp7" label="Likelihood threshold experiment 7."/>
-  <group name="exp8" label="Likelihood threshold experiment 8."/>
-  <group name="exp9" label="Likelihood threshold experiment 9."/>
-  <group name="gws" label="GWS triggered prerender."/>
-  <group name="instant" label="Instant search prerender."/>
-  <group name="localpredictor" label="Local predictor triggered prerender."/>
-  <group name="omnibox" label="Triggered from the omnibox."/>
-  <group name="wash" label="Multiple sources could have triggered."/>
-  <group name="web" label="Link triggered prerender."/>
-  <group name="webcross"
+<histogram_suffixes name="PrerenderSource" ordering="prefix">
+  <suffix name="" label="All prerenders."/>
+  <suffix name="exp1" label="Likelihood threshold experiment 1."/>
+  <suffix name="exp2" label="Likelihood threshold experiment 2."/>
+  <suffix name="exp3" label="Likelihood threshold experiment 3."/>
+  <suffix name="exp4" label="Likelihood threshold experiment 4."/>
+  <suffix name="exp5" label="Likelihood threshold experiment 5."/>
+  <suffix name="exp6" label="Likelihood threshold experiment 6."/>
+  <suffix name="exp7" label="Likelihood threshold experiment 7."/>
+  <suffix name="exp8" label="Likelihood threshold experiment 8."/>
+  <suffix name="exp9" label="Likelihood threshold experiment 9."/>
+  <suffix name="gws" label="GWS triggered prerender."/>
+  <suffix name="instant" label="Instant search prerender."/>
+  <suffix name="localpredictor" label="Local predictor triggered prerender."/>
+  <suffix name="omnibox" label="Triggered from the omnibox."/>
+  <suffix name="wash" label="Multiple sources could have triggered."/>
+  <suffix name="web" label="Link triggered prerender."/>
+  <suffix name="webcross"
       label="Link triggered prerender, rel=prerender, cross domain."/>
-  <group name="websame"
+  <suffix name="websame"
       label="Link triggered prerender, rel=prerender, same domain."/>
-  <group name="webnext" label="Link triggered prerender, rel=next."/>
+  <suffix name="webnext" label="Link triggered prerender, rel=next."/>
   <affected-histogram name="Prerender.AbandonTimeUntilUsed"/>
   <affected-histogram name="Prerender.CookieSendType"/>
   <affected-histogram name="Prerender.CookieStatus"/>
@@ -44350,36 +44371,36 @@ other types of suffix sets.
   <affected-histogram name="Prerender.TimeBetweenPrerenderRequests"/>
   <affected-histogram name="Prerender.TimeSinceLastRecentVisit"/>
   <affected-histogram name="Prerender.TimeUntilUsed2"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="ProfilePictureDownload" separator=".">
-  <group name="Default.OOBE" label="default picture, in OOBE"/>
-  <group name="Default.LoggedIn" label="default picture, after login"/>
-  <group name="Default.Preferences" label="default picture, in Prefs"/>
-  <group name="Failure.OOBE" label="download has failed, in OOBE"/>
-  <group name="Failure.LoggedIn" label="download has failed, after login"/>
-  <group name="Failure.Preferences" label="download has failed, in Prefs"/>
-  <group name="Success.OOBE" label="download was successful, in OOBE"/>
-  <group name="Success.LoggedIn" label="download was successful, after login"/>
-  <group name="Success.Preferences" label="download was successful, in Prefs"/>
+<histogram_suffixes name="ProfilePictureDownload" separator=".">
+  <suffix name="Default.OOBE" label="default picture, in OOBE"/>
+  <suffix name="Default.LoggedIn" label="default picture, after login"/>
+  <suffix name="Default.Preferences" label="default picture, in Prefs"/>
+  <suffix name="Failure.OOBE" label="download has failed, in OOBE"/>
+  <suffix name="Failure.LoggedIn" label="download has failed, after login"/>
+  <suffix name="Failure.Preferences" label="download has failed, in Prefs"/>
+  <suffix name="Success.OOBE" label="download was successful, in OOBE"/>
+  <suffix name="Success.LoggedIn" label="download was successful, after login"/>
+  <suffix name="Success.Preferences" label="download was successful, in Prefs"/>
   <affected-histogram name="UserImage.ProfileDownloadTime"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="ProgressiveScan">
-  <group name="FullScan" label="Using WPA_supplicant to scan."/>
-  <group name="33Percent_4MinMax"
+<histogram_suffixes name="ProgressiveScan">
+  <suffix name="FullScan" label="Using WPA_supplicant to scan."/>
+  <suffix name="33Percent_4MinMax"
       label="Progressive scan @ 33%, 4 frequency bins."/>
-  <group name="50Percent_4MinMax"
+  <suffix name="50Percent_4MinMax"
       label="Progressive scan @ 50%, 4 frequency bins."/>
-  <group name="50Percent_8MinMax"
+  <suffix name="50Percent_8MinMax"
       label="Progressive scan @ 50%, 8 frequency bins."/>
-  <group name="100Percent_8MinMax"
+  <suffix name="100Percent_8MinMax"
       label="Progressive scan @ 100%, 8 frequency bins."/>
-  <group name="100Percent_1MinSeen_A"
+  <suffix name="100Percent_1MinSeen_A"
       label="Progressive scan @ all previously seen frequencies (A)."/>
-  <group name="100Percent_1MinSeen_B"
+  <suffix name="100Percent_1MinSeen_B"
       label="Progressive scan @ all previously seen frequencies (B)."/>
-  <group name="100Percent_1Min_4Max"
+  <suffix name="100Percent_1Min_4Max"
       label="Progressive scan @ 100%, minimum 1/maximum 4 frequencies."/>
   <affected-histogram name="Network.Shill.TimeToDrop"/>
   <affected-histogram name="Network.Shill.WiFi.ScanResult"/>
@@ -44387,34 +44408,34 @@ other types of suffix sets.
   <affected-histogram name="Network.Shill.Wifi.TimeToJoin"/>
   <affected-histogram name="Network.Shill.Wifi.TimeToScan"/>
   <affected-histogram name="Network.Shill.Wifi.TimeToScanAndConnect"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="ProtectorSettingChange" separator=".">
+<histogram_suffixes name="ProtectorSettingChange" separator=".">
   <obsolete>
     Deprecated 8/2013. No longer tracked.
   </obsolete>
-  <group name="Applied" label="change has been accepted by user"/>
-  <group name="Corrupt" label="possibly hijacked, backup invalid"/>
-  <group name="Discarded" label="change has been reverted by user"/>
-  <group name="Fallback" label="fallback provider used (no backup available)"/>
-  <group name="Hijacked" label="hijacked, with a valid backup"/>
-  <group name="Missing" label="fallback provider missing, added"/>
-  <group name="New" label="(obsolete, was sum of Corrupt+Hijacked)"/>
-  <group name="Restored"
+  <suffix name="Applied" label="change has been accepted by user"/>
+  <suffix name="Corrupt" label="possibly hijacked, backup invalid"/>
+  <suffix name="Discarded" label="change has been reverted by user"/>
+  <suffix name="Fallback" label="fallback provider used (no backup available)"/>
+  <suffix name="Hijacked" label="hijacked, with a valid backup"/>
+  <suffix name="Missing" label="fallback provider missing, added"/>
+  <suffix name="New" label="(obsolete, was sum of Corrupt+Hijacked)"/>
+  <suffix name="Restored"
       label="search provider restored by Protector before showing the bubble"/>
-  <group name="Timeout" label="change has been ignored by user (timed out)"/>
+  <suffix name="Timeout" label="change has been ignored by user (timed out)"/>
   <affected-histogram name="Protector.SearchProvider"/>
   <affected-histogram name="Protector.StartupSettings"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="ProxyConnectionImpact">
-  <group name="proxy_connections_16"
+<histogram_suffixes name="ProxyConnectionImpact">
+  <suffix name="proxy_connections_16"
       label="with 16 connections per proxy server"/>
-  <group name="proxy_connections_32"
+  <suffix name="proxy_connections_32"
       label="with 32 connections per proxy server"/>
-  <group name="proxy_connections_64"
+  <suffix name="proxy_connections_64"
       label="with 64 connections per proxy server"/>
-  <group name="proxy_connections_8"
+  <suffix name="proxy_connections_8"
       label="with 8 connections per proxy server"/>
   <affected-histogram name="Net.HttpProxySocketRequestTime"/>
   <affected-histogram name="Net.SocksSocketRequestTime"/>
@@ -44423,147 +44444,148 @@ other types of suffix sets.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
   <affected-histogram name="PLT.BeginToFinish_LinkLoadStaleOk"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="QueryTimeSuffix" separator=".">
-  <group name="0" label="N = 0"/>
-  <group name="1" label="N = 1"/>
-  <group name="2" label="N = 2"/>
-  <group name="3" label="N = 3"/>
-  <group name="4" label="N = 4"/>
-  <group name="5" label="N = 5"/>
+<histogram_suffixes name="QueryTimeSuffix" separator=".">
+  <suffix name="0" label="N = 0"/>
+  <suffix name="1" label="N = 1"/>
+  <suffix name="2" label="N = 2"/>
+  <suffix name="3" label="N = 3"/>
+  <suffix name="4" label="N = 4"/>
+  <suffix name="5" label="N = 5"/>
   <affected-histogram name="Omnibox.QueryTime"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="QuicPortSelection" separator="">
-  <group name="SelectPort"
+<histogram_suffixes name="QuicPortSelection" separator="">
+  <suffix name="SelectPort"
       label="An effort was mode to (try to) consistently connect using the
              same source port for the given server IP/port."/>
-  <group name="RandomPort"
+  <suffix name="RandomPort"
       label="The operating system randomly selected a source port for the
              connection."/>
   <affected-histogram name="Net.QuicSession.Connect"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="QuicRttCount" separator="">
-  <group name="ForHTTP" label="Only insecure HTTP connections are counted."/>
-  <group name="ForHTTPS" label="Only secure HTTPS connections are counted."/>
+<histogram_suffixes name="QuicRttCount" separator="">
+  <suffix name="ForHTTP" label="Only insecure HTTP connections are counted."/>
+  <suffix name="ForHTTPS" label="Only secure HTTPS connections are counted."/>
   <affected-histogram name="Net.QuicSession.ConnectRandomPort"/>
   <affected-histogram name="Net.QuicSession.ConnectSelectPort"/>
   <affected-histogram name="Net.QuicSession.HandshakeRoundTrips"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="RemoteProcessWarmStartFast" separator="">
-  <group name="" label="Normal start."/>
-  <group name="Fast" label="Fast start by skipping normal chrome.dll startup."/>
+<histogram_suffixes name="RemoteProcessWarmStartFast" separator="">
+  <suffix name="" label="Normal start."/>
+  <suffix name="Fast"
+      label="Fast start by skipping normal chrome.dll startup."/>
   <affected-histogram name="Startup.WarmStartTimeFromRemoteProcessStart"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="RendererEventLatency" separator=".">
-  <group name="Char" label="The Char event occurs on textual keyboard input."/>
-  <group name="ContextMenu" label="For ContextMenu event."/>
-  <group name="GestureDoubleTap"
+<histogram_suffixes name="RendererEventLatency" separator=".">
+  <suffix name="Char" label="The Char event occurs on textual keyboard input."/>
+  <suffix name="ContextMenu" label="For ContextMenu event."/>
+  <suffix name="GestureDoubleTap"
       label="A GestureDoubleTap occurs when the user double taps on a
              touchscreen."/>
-  <group name="GestureFlingCancel"
+  <suffix name="GestureFlingCancel"
       label="A GestureFlingCancel is sent to the renderer to cancel any
              active flings."/>
-  <group name="GestureFlingStart"
+  <suffix name="GestureFlingStart"
       label="A GestureFlingStart is sent when the user quickly flicks on a
              touchscreen."/>
-  <group name="GestureLongPress"
+  <suffix name="GestureLongPress"
       label="A GestureLongPress is sent when the user taps down and holds
              their finger on a touchscreen."/>
-  <group name="GestureLongTap"
+  <suffix name="GestureLongTap"
       label="A GestureLongTap is sent when the user taps down on a
              touchscreen, holds their finger for a while, then releases."/>
-  <group name="GesturePinchBegin"
+  <suffix name="GesturePinchBegin"
       label="A GesturePinchBegin is sent when a user starts a pinch zoom
              motion on a touchscreen."/>
-  <group name="GesturePinchEnd"
+  <suffix name="GesturePinchEnd"
       label="A GesturePinchEnd is sent when the user releases their fingers
              from the touchscreen after performing a pinch zoom motion."/>
-  <group name="GesturePinchUpdate"
+  <suffix name="GesturePinchUpdate"
       label="GesturePinchUpdate events are sent while the user is performing
              a pinch zoom motion on a touch screen. GesturePinchUpdate events
              are sent as the user changes the distance between their fingers."/>
-  <group name="GestureScrollBegin"
+  <suffix name="GestureScrollBegin"
       label="A GestureScrollBegin is sent at the beginning of a gesture
              scroll on a touchscreen."/>
-  <group name="GestureScrollEnd"
+  <suffix name="GestureScrollEnd"
       label="A GestureScrollEnd is sent when the user releases their finger
              after a gesture scroll on a touchscreen."/>
-  <group name="GestureScrollUpdate"
+  <suffix name="GestureScrollUpdate"
       label="GestureScrollUpdate events are sent as the user drags their
              finger along the touchscreen during a gesture scroll."/>
-  <group name="GestureScrollUpdateWithoutPropagation"
+  <suffix name="GestureScrollUpdateWithoutPropagation"
       label="GestureScrollUpdateWithoutPropagation events are scroll updates
              that shouldn't bubble, generated by a gesture fling."/>
-  <group name="GestureShowPress"
+  <suffix name="GestureShowPress"
       label="A GestureShowPress event is sent when the user presses down on
              the touchscreen but before a GestureTapDown."/>
-  <group name="GestureTap"
+  <suffix name="GestureTap"
       label="A GestureTap is sent when the user presses down and releases on
              a touchscreen."/>
-  <group name="GestureTapUnconfirmed"
+  <suffix name="GestureTapUnconfirmed"
       label="A GestureTapUnconfirmed is sent when the user taps the
              touchscreen but, due to a delay, the GestureTap isn't sent yet."/>
-  <group name="GestureTapCancel"
+  <suffix name="GestureTapCancel"
       label="A GestureTapCancel is sent to cancel a pending GestureTap event.
              For example, if the user taps down but drags their finger
              instead of releasing it."/>
-  <group name="GestureTapDown"
+  <suffix name="GestureTapDown"
       label="A GestureTapDown is sent when the user presses on the
              touchscreen in what could potentially be a full GestureTap
              event."/>
-  <group name="GestureTwoFingerTap"
+  <suffix name="GestureTwoFingerTap"
       label="A GestureTwoFingerTap is sent when the user presses down a
              releases on a touchscreen with two fingers."/>
-  <group name="KeyDown"
+  <suffix name="KeyDown"
       label="A KeyDown event is sent when a keyboard key is pressed down."/>
-  <group name="KeyUp"
+  <suffix name="KeyUp"
       label="A KeyUp event is sent when a depressed keyboard key is released."/>
-  <group name="MouseDown"
+  <suffix name="MouseDown"
       label="A MouseDown event is sent when the user click down a mouse
              button."/>
-  <group name="MouseEnter"
+  <suffix name="MouseEnter"
       label="A MouseEnter event is sent when the mouse cursor enters the
              renderer area."/>
-  <group name="MouseLeave"
+  <suffix name="MouseLeave"
       label="A MouseLeave event is sent when the mouse cursor leaves the
              renderer area."/>
-  <group name="MouseMove"
+  <suffix name="MouseMove"
       label="A MouseMove event is sent when the mouse cursor moves within the
              renderer area."/>
-  <group name="MouseUp"
+  <suffix name="MouseUp"
       label="A MouseUp event is sent when a depressed mouse button is
              released."/>
-  <group name="MouseWheel"
+  <suffix name="MouseWheel"
       label="A MouseWheel event is sent when the user scrolls using the mouse
              wheel within the renderer area."/>
-  <group name="RawKeyDown"
+  <suffix name="RawKeyDown"
       label="A RawKeyDown event is a wrapper around a native key event."/>
-  <group name="TouchCancel"
+  <suffix name="TouchCancel"
       label="A TouchCancel is used to cancel an existing touch point. For
              example, if the user drags a finger outside the bounds of the
              renderer."/>
-  <group name="TouchEnd"
+  <suffix name="TouchEnd"
       label="A TouchEnd is send when the user lifts a finger from the
              touchscreen."/>
-  <group name="TouchMove"
+  <suffix name="TouchMove"
       label="A TouchMove is sent when the user moves a finger along the
              touchscreen."/>
-  <group name="TouchStart"
+  <suffix name="TouchStart"
       label="A TouchStart is sent when the user first touches a finger to the
              touchscreen."/>
-  <group name="Undefined" label="For unknown or undefined events."/>
+  <suffix name="Undefined" label="For unknown or undefined events."/>
   <affected-histogram name="Event.Latency.Renderer"/>
   <affected-histogram name="Event.Latency.Renderer2"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="SBInterstitial">
-  <group name="V1" label="original interstitial"/>
-  <group name="V2" label="version 2 (new interstitial)"/>
+<histogram_suffixes name="SBInterstitial">
+  <suffix name="V1" label="original interstitial"/>
+  <suffix name="V2" label="version 2 (new interstitial)"/>
   <affected-histogram name="SB2.InterstitialAction"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeClosed"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeDiagnostic"/>
@@ -44571,17 +44593,18 @@ other types of suffix sets.
   <affected-histogram name="SB2.MalwareInterstitialTimePrivacyPolicy"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeProceed"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeTakeMeBack"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="ShowAppListWarmStartFast" separator="">
-  <group name="" label="Normal start."/>
-  <group name="Fast" label="Fast start by skipping normal chrome.dll startup."/>
+<histogram_suffixes name="ShowAppListWarmStartFast" separator="">
+  <suffix name="" label="Normal start."/>
+  <suffix name="Fast"
+      label="Fast start by skipping normal chrome.dll startup."/>
   <affected-histogram name="Startup.ShowAppListWarmStart"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="SideloadWipeout">
-  <group name="Enabled" label="Sideload Wipeout Active."/>
-  <group name="Disabled" label="Control group."/>
+<histogram_suffixes name="SideloadWipeout">
+  <suffix name="Enabled" label="Sideload Wipeout Active."/>
+  <suffix name="Disabled" label="Control group."/>
   <affected-histogram name="DisabledExtension.ExtensionWipedStatus"/>
   <affected-histogram name="DisabledExtension.SideloadWipeoutCount"/>
   <affected-histogram name="DisabledExtension.SideloadWipeoutNeeded"/>
@@ -44589,37 +44612,37 @@ other types of suffix sets.
   <affected-histogram name="Extensions.ExternalExtensionEvent"/>
   <affected-histogram name="Extensions.InstallSource"/>
   <affected-histogram name="Extensions.UpdateSource"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="SocketType">
-  <group name="HTTPProxy" label="HTTP proxy socket"/>
-  <group name="SOCK" label="SOCKS socket"/>
-  <group name="SSL" label="(Obsolete, SSL socket)"/>
-  <group name="SSL2" label="SSL2 socket"/>
-  <group name="SSLForProxies"
+<histogram_suffixes name="SocketType">
+  <suffix name="HTTPProxy" label="HTTP proxy socket"/>
+  <suffix name="SOCK" label="SOCKS socket"/>
+  <suffix name="SSL" label="(Obsolete, SSL socket)"/>
+  <suffix name="SSL2" label="SSL2 socket"/>
+  <suffix name="SSLForProxies"
       label="SSLClientSocket wrapping the TCPClient socket eventually used
              for connection to a proxy"/>
-  <group name="SSLforHTTPSProxy"
+  <suffix name="SSLforHTTPSProxy"
       label="SSLClientSocket wrapping the TCPClient socket eventually used
              for connection to an HTTPS proxy"/>
-  <group name="TCP" label="plain, no proxy, no SSL socket"/>
-  <group name="TCPforHTTPProxy"
+  <suffix name="TCP" label="plain, no proxy, no SSL socket"/>
+  <suffix name="TCPforHTTPProxy"
       label="TCPClientSocket eventually used for connection to an HTTP proxy"/>
-  <group name="TCPforHTTPSProxy"
+  <suffix name="TCPforHTTPSProxy"
       label="TCPClientSocket eventually used for connection to an HTTPS proxy"/>
-  <group name="TCPforSOCKS"
+  <suffix name="TCPforSOCKS"
       label="TCPClientSocket eventually used for connection to a SOCKS proxy"/>
   <affected-histogram name="Net.SocketIdleTimeBeforeNextUse_ReusedSocket"/>
   <affected-histogram name="Net.SocketIdleTimeBeforeNextUse_UnusedSocket"/>
   <affected-histogram name="Net.SocketInitErrorCodes"/>
   <affected-histogram name="Net.SocketRequestTime"/>
   <affected-histogram name="Net.SocketType"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="SpdyImpact">
-  <group name="npn_with_http"
+<histogram_suffixes name="SpdyImpact">
+  <suffix name="npn_with_http"
       label="with NPN negotiated but using HTTP instead of SPDY"/>
-  <group name="npn_with_spdy" label="with NPN negotiated and using SPDY"/>
+  <suffix name="npn_with_spdy" label="with NPN negotiated and using SPDY"/>
   <affected-histogram name="Net.Transaction_Connected"/>
   <affected-histogram name="Net.Transaction_Connected_New"/>
   <affected-histogram name="Net.Transaction_Connected_New_b"/>
@@ -44631,127 +44654,127 @@ other types of suffix sets.
   <affected-histogram name="PLT.StartToCommit_NormalLoad"/>
   <affected-histogram name="PLT.StartToFinish_LinkLoadNormal"/>
   <affected-histogram name="PLT.StartToFinish_NormalLoad"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="SpdySettingsCwnd" separator="">
-  <group name="10K" label="where at least 10KB was transferred."/>
-  <group name="25K" label="where at least 25KB was transferred."/>
-  <group name="50K" label="where at least 50KB was transferred."/>
-  <group name="100K" label="where at least 100KB was transferred."/>
+<histogram_suffixes name="SpdySettingsCwnd" separator="">
+  <suffix name="10K" label="where at least 10KB was transferred."/>
+  <suffix name="25K" label="where at least 25KB was transferred."/>
+  <suffix name="50K" label="where at least 50KB was transferred."/>
+  <suffix name="100K" label="where at least 100KB was transferred."/>
   <affected-histogram name="Net.SpdySettingsCwnd"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="SqliteDatabases" separator=".">
-  <group name="Activity" label="Activity"/>
-  <group name="AppCache" label="AppCache"/>
-  <group name="Cookie" label="Cookie"/>
-  <group name="DatabaseTracker" label="DatabaseTracker"/>
-  <group name="DomainBoundCerts" label="DomainBoundCerts"/>
-  <group name="DomStorageDatabase" label="DomStorageDatabase"/>
-  <group name="History" label="History"/>
-  <group name="Predictor" label="Predictor"/>
-  <group name="Quota" label="Quota"/>
-  <group name="Shortcuts" label="Shortcuts"/>
-  <group name="SyncDirectory" label="SyncDirectory"/>
-  <group name="Text" label="Text (obsolete 7/24/13)"/>
-  <group name="Thumbnail" label="Thumbnail"/>
-  <group name="TopSites" label="TopSites"/>
-  <group name="Web" label="Web"/>
+<histogram_suffixes name="SqliteDatabases" separator=".">
+  <suffix name="Activity" label="Activity"/>
+  <suffix name="AppCache" label="AppCache"/>
+  <suffix name="Cookie" label="Cookie"/>
+  <suffix name="DatabaseTracker" label="DatabaseTracker"/>
+  <suffix name="DomainBoundCerts" label="DomainBoundCerts"/>
+  <suffix name="DomStorageDatabase" label="DomStorageDatabase"/>
+  <suffix name="History" label="History"/>
+  <suffix name="Predictor" label="Predictor"/>
+  <suffix name="Quota" label="Quota"/>
+  <suffix name="Shortcuts" label="Shortcuts"/>
+  <suffix name="SyncDirectory" label="SyncDirectory"/>
+  <suffix name="Text" label="Text (obsolete 7/24/13)"/>
+  <suffix name="Thumbnail" label="Thumbnail"/>
+  <suffix name="TopSites" label="TopSites"/>
+  <suffix name="Web" label="Web"/>
   <affected-histogram name="Sqlite.Error"/>
   <affected-histogram name="Sqlite.SizeKB"/>
   <affected-histogram name="Sqlite.Version"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="SSLFalseStart">
-  <group name="FalseStart_enabled"/>
-  <group name="FalseStart_disabled"/>
+<histogram_suffixes name="SSLFalseStart">
+  <suffix name="FalseStart_enabled"/>
+  <suffix name="FalseStart_disabled"/>
   <affected-histogram name="Net.SSL_Connection_Latency"/>
   <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="SSLResumption">
-  <group name="Resume_Handshake" label="Session Resumption"/>
-  <group name="Full_Handshake" label="Full"/>
+<histogram_suffixes name="SSLResumption">
+  <suffix name="Resume_Handshake" label="Session Resumption"/>
+  <suffix name="Full_Handshake" label="Full"/>
   <affected-histogram name="Net.SSL_Connection_Latency"/>
   <affected-histogram name="Net.SSL_Connection_Latency_Google"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="SyzygyStartupTime">
-  <group name="PreReadEnabled"/>
-  <group name="PreReadDisabled"/>
-  <group name="XP_PreReadEnabled"/>
-  <group name="XP_PreReadDisabled"/>
-  <group name="PreRead_0"/>
-  <group name="PreRead_5"/>
-  <group name="PreRead_10"/>
-  <group name="PreRead_15"/>
-  <group name="PreRead_20"/>
-  <group name="PreRead_25"/>
-  <group name="PreRead_30"/>
-  <group name="PreRead_35"/>
-  <group name="PreRead_40"/>
-  <group name="PreRead_45"/>
-  <group name="PreRead_50"/>
-  <group name="PreRead_55"/>
-  <group name="PreRead_60"/>
-  <group name="PreRead_65"/>
-  <group name="PreRead_70"/>
-  <group name="PreRead_75"/>
-  <group name="PreRead_80"/>
-  <group name="PreRead_85"/>
-  <group name="PreRead_90"/>
-  <group name="PreRead_95"/>
-  <group name="PreRead_100"/>
-  <group name="XP_PreRead_0"/>
-  <group name="XP_PreRead_5"/>
-  <group name="XP_PreRead_10"/>
-  <group name="XP_PreRead_15"/>
-  <group name="XP_PreRead_20"/>
-  <group name="XP_PreRead_25"/>
-  <group name="XP_PreRead_30"/>
-  <group name="XP_PreRead_35"/>
-  <group name="XP_PreRead_40"/>
-  <group name="XP_PreRead_45"/>
-  <group name="XP_PreRead_50"/>
-  <group name="XP_PreRead_55"/>
-  <group name="XP_PreRead_60"/>
-  <group name="XP_PreRead_65"/>
-  <group name="XP_PreRead_70"/>
-  <group name="XP_PreRead_75"/>
-  <group name="XP_PreRead_80"/>
-  <group name="XP_PreRead_85"/>
-  <group name="XP_PreRead_90"/>
-  <group name="XP_PreRead_95"/>
-  <group name="XP_PreRead_100"/>
+<histogram_suffixes name="SyzygyStartupTime">
+  <suffix name="PreReadEnabled"/>
+  <suffix name="PreReadDisabled"/>
+  <suffix name="XP_PreReadEnabled"/>
+  <suffix name="XP_PreReadDisabled"/>
+  <suffix name="PreRead_0"/>
+  <suffix name="PreRead_5"/>
+  <suffix name="PreRead_10"/>
+  <suffix name="PreRead_15"/>
+  <suffix name="PreRead_20"/>
+  <suffix name="PreRead_25"/>
+  <suffix name="PreRead_30"/>
+  <suffix name="PreRead_35"/>
+  <suffix name="PreRead_40"/>
+  <suffix name="PreRead_45"/>
+  <suffix name="PreRead_50"/>
+  <suffix name="PreRead_55"/>
+  <suffix name="PreRead_60"/>
+  <suffix name="PreRead_65"/>
+  <suffix name="PreRead_70"/>
+  <suffix name="PreRead_75"/>
+  <suffix name="PreRead_80"/>
+  <suffix name="PreRead_85"/>
+  <suffix name="PreRead_90"/>
+  <suffix name="PreRead_95"/>
+  <suffix name="PreRead_100"/>
+  <suffix name="XP_PreRead_0"/>
+  <suffix name="XP_PreRead_5"/>
+  <suffix name="XP_PreRead_10"/>
+  <suffix name="XP_PreRead_15"/>
+  <suffix name="XP_PreRead_20"/>
+  <suffix name="XP_PreRead_25"/>
+  <suffix name="XP_PreRead_30"/>
+  <suffix name="XP_PreRead_35"/>
+  <suffix name="XP_PreRead_40"/>
+  <suffix name="XP_PreRead_45"/>
+  <suffix name="XP_PreRead_50"/>
+  <suffix name="XP_PreRead_55"/>
+  <suffix name="XP_PreRead_60"/>
+  <suffix name="XP_PreRead_65"/>
+  <suffix name="XP_PreRead_70"/>
+  <suffix name="XP_PreRead_75"/>
+  <suffix name="XP_PreRead_80"/>
+  <suffix name="XP_PreRead_85"/>
+  <suffix name="XP_PreRead_90"/>
+  <suffix name="XP_PreRead_95"/>
+  <suffix name="XP_PreRead_100"/>
   <affected-histogram name="Startup.BrowserMessageLoopStartTime"/>
   <affected-histogram name="Startup.BrowserOpenTabs"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="Tps65090Fets" separator=".">
-  <group name="Fet1" label="FET1 on tps65090 (register 0xf)"/>
-  <group name="Fet2" label="FET2 on tps65090 (register 0x10)"/>
-  <group name="Fet3" label="FET3 on tps65090 (register 0x11)"/>
-  <group name="Fet4" label="FET4 on tps65090 (register 0x12)"/>
-  <group name="Fet5" label="FET5 on tps65090 (register 0x13)"/>
-  <group name="Fet6" label="FET6 on tps65090 (register 0x14)"/>
-  <group name="Fet7" label="FET7 on tps65090 (register 0x15)"/>
+<histogram_suffixes name="Tps65090Fets" separator=".">
+  <suffix name="Fet1" label="FET1 on tps65090 (register 0xf)"/>
+  <suffix name="Fet2" label="FET2 on tps65090 (register 0x10)"/>
+  <suffix name="Fet3" label="FET3 on tps65090 (register 0x11)"/>
+  <suffix name="Fet4" label="FET4 on tps65090 (register 0x12)"/>
+  <suffix name="Fet5" label="FET5 on tps65090 (register 0x13)"/>
+  <suffix name="Fet6" label="FET6 on tps65090 (register 0x14)"/>
+  <suffix name="Fet7" label="FET7 on tps65090 (register 0x15)"/>
   <affected-histogram name="Platform.Tps65090Retries"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="TrackedSplitPreferences" separator=".">
-  <group name="extensions.settings" label="Extension IDs dictionary"/>
+<histogram_suffixes name="TrackedSplitPreferences" separator=".">
+  <suffix name="extensions.settings" label="Extension IDs dictionary"/>
   <affected-histogram name="Settings.TrackedSplitPreferenceChanged"/>
-</fieldtrial>
+</histogram_suffixes>
 
-<fieldtrial name="WebStoreLinkExperiment">
-  <group name="Disabled" label="Neither extra webstore link is visible"/>
-  <group name="FooterLink" label="Link in bottom right of footer"/>
-  <group name="PlusIcon" label="Plus icon in apps page"/>
+<histogram_suffixes name="WebStoreLinkExperiment">
+  <suffix name="Disabled" label="Neither extra webstore link is visible"/>
+  <suffix name="FooterLink" label="Link in bottom right of footer"/>
+  <suffix name="PlusIcon" label="Plus icon in apps page"/>
   <affected-histogram name="Extensions.AppLaunch"/>
   <affected-histogram name="NewTabPage.DefaultPageType"/>
-</fieldtrial>
+</histogram_suffixes>
 
-</fieldtrials>
+</histogram_suffixes_list>
 
 </histogram-configuration>

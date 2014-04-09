@@ -36,6 +36,11 @@ ALPHABETIZATION_RULES = {
   'histograms': ('histogram', lambda n: n.attributes['name'].value.lower()),
   'enums': ('enum', lambda n: n.attributes['name'].value.lower()),
   'enum': ('int', lambda n: int(n.attributes['value'].value)),
+  'histogram_suffixes_list': (
+      'histogram_suffixes', lambda n: n.attributes['name'].value.lower()),
+  'histogram_suffixes': ('affected-histogram',
+                         lambda n: n.attributes['name'].value.lower()),
+  # TODO(yiyaoliu): Remove fieldtrial related pieces when it is not used.
   'fieldtrials': ('fieldtrial', lambda n: n.attributes['name'].value.lower()),
   'fieldtrial': ('affected-histogram',
                  lambda n: n.attributes['name'].value.lower()),

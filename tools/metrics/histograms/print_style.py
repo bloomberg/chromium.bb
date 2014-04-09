@@ -18,16 +18,22 @@ ATTRIBUTE_ORDER = {
   'enum': ['name', 'type'],
   'histogram': ['name', 'enum', 'units'],
   'int': ['value', 'label'],
+  'histogram_suffixes': ['name', 'separator', 'ordering'],
+  'suffix': ['name', 'label'],
+  # TODO(yiyaoliu): Remove fieldtrial related pieces when it is not used.
   'fieldtrial': ['name', 'separator', 'ordering'],
   'group': ['name', 'label'],
   'affected-histogram': ['name'],
   'with-group': ['name'],
+  'with-suffix': ['name'],
 }
 
 # Tag names for top-level nodes whose children we don't want to indent.
 TAGS_THAT_DONT_INDENT = [
   'histogram-configuration',
   'histograms',
+  'histogram_suffixes_list',
+  # TODO(yiyaoliu): Remove fieldtrial related pieces when it is not used.
   'fieldtrials',
   'enums'
 ]
@@ -37,7 +43,10 @@ TAGS_THAT_DONT_INDENT = [
 TAGS_THAT_HAVE_EXTRA_NEWLINE = {
   'histogram-configuration': (2, 1, 1),
   'histograms': (2, 1, 1),
+  # TODO(yiyaoliu): Remove fieldtrial related pieces when it is not used.
   'fieldtrials': (2, 1, 1),
+  'histogram_suffixes_list': (2, 1, 1),
+  'histogram_suffixes': (1, 1, 1),
   'enums': (2, 1, 1),
   'histogram': (1, 1, 1),
   'enum': (1, 1, 1),
