@@ -9,7 +9,6 @@
 #include <unistd.h>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
@@ -95,11 +94,11 @@ intptr_t CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux) {
 // TODO(jln): refactor the reporting functions.
 
 intptr_t SIGSYSCloneFailure(const struct arch_seccomp_data& args, void* aux) {
+  static const char kSeccompCloneError[] =
+      __FILE__":**CRASHING**:clone() failure\n";
+  WriteToStdErr(kSeccompCloneError, sizeof(kSeccompCloneError) - 1);
   // "flags" is the first argument in the kernel's clone().
   // Mark as volatile to be able to find the value on the stack in a minidump.
-#if !defined(NDEBUG)
-  RAW_LOG(ERROR, __FILE__":**CRASHING**:clone() failure\n");
-#endif
   volatile uint64_t clone_flags = args.args[0];
   volatile char* addr;
   if (IsArchitectureX86_64()) {
@@ -115,10 +114,10 @@ intptr_t SIGSYSCloneFailure(const struct arch_seccomp_data& args, void* aux) {
 
 intptr_t SIGSYSPrctlFailure(const struct arch_seccomp_data& args,
                             void* /* aux */) {
+  static const char kSeccompPrctlError[] =
+      __FILE__":**CRASHING**:prctl() failure\n";
+  WriteToStdErr(kSeccompPrctlError, sizeof(kSeccompPrctlError) - 1);
   // Mark as volatile to be able to find the value on the stack in a minidump.
-#if !defined(NDEBUG)
-  RAW_LOG(ERROR, __FILE__":**CRASHING**:prctl() failure\n");
-#endif
   volatile uint64_t option = args.args[0];
   volatile char* addr =
       reinterpret_cast<volatile char*>(option & 0xFFF);
@@ -129,10 +128,10 @@ intptr_t SIGSYSPrctlFailure(const struct arch_seccomp_data& args,
 
 intptr_t SIGSYSIoctlFailure(const struct arch_seccomp_data& args,
                             void* /* aux */) {
+  static const char kSeccompIoctlError[] =
+      __FILE__":**CRASHING**:ioctl() failure\n";
+  WriteToStdErr(kSeccompIoctlError, sizeof(kSeccompIoctlError) - 1);
   // Make "request" volatile so that we can see it on the stack in a minidump.
-#if !defined(NDEBUG)
-  RAW_LOG(ERROR, __FILE__":**CRASHING**:ioctl() failure\n");
-#endif
   volatile uint64_t request = args.args[1];
   volatile char* addr = reinterpret_cast<volatile char*>(request & 0xFFFF);
   *addr = '\0';
