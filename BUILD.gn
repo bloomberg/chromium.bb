@@ -32,7 +32,6 @@ group("root") {
     #"//sdch",
     #"//skia",
     #"//third_party/WebKit/Source/platform",
-    "//third_party/freetype2",
     #"//third_party/icu:icudata",
     #"//third_party/leveldatabase",
     "//third_party/libpng",
@@ -47,4 +46,10 @@ group("root") {
     "//ui/gfx/geometry",
     "//url",
   ]
+
+  if (is_linux) {
+    deps += [
+      "//third_party/freetype2",
+    ]
+  }
 }

@@ -167,10 +167,11 @@ const ParseNode* InputFileManager::SyncLoadFile(
   return data->parsed_root.get();
 }
 
-void InputFileManager::AddDynamicInput(InputFile** file,
+void InputFileManager::AddDynamicInput(const SourceFile& name,
+                                       InputFile** file,
                                        std::vector<Token>** tokens,
                                        scoped_ptr<ParseNode>** parse_root) {
-  InputFileData* data = new InputFileData(SourceFile());
+  InputFileData* data = new InputFileData(name);
   {
     base::AutoLock lock(lock_);
     dynamic_inputs_.push_back(data);
