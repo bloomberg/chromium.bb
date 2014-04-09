@@ -88,7 +88,7 @@ def main():
 
   if options.force and not options.dry_run:
     subprocess2.check_call(['git', 'clean', '-d', '-f'])
-    subprocess2.check_call(['git', 'rebase', '--abort'])
+    subprocess2.call(['git', 'rebase', '--abort'])
 
   old_branch = scm.GIT.GetBranch(root_dir)
   new_branch = '%s_roll' % project
