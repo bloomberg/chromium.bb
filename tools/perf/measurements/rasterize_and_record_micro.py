@@ -13,6 +13,7 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
   def __init__(self):
     super(RasterizeAndRecordMicro, self).__init__('', True)
     self._compositing_features_enabled = False
+    self._chrome_branch_number = None
 
   @classmethod
   def AddCommandLineArgs(cls, parser):
@@ -48,8 +49,9 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
     # TODO(vmpstr): Remove this temporary workaround when reference build has
     # been updated to branch 1713 or later.
     backend = browser._browser_backend # pylint: disable=W0212
-    if (not hasattr(backend, 'chrome_branch_number') or
-        (sys.platform != 'android' and backend.chrome_branch_number < 1713)):
+    self._chrome_branch_number = getattr(backend, 'chrome_branch_number', None)
+    if (not self._chrome_branch_number or
+        (sys.platform != 'android' and self._chrome_branch_number < 1713)):
       raise page_test.TestNotSupportedOnPlatformFailure(
           'rasterize_and_record_micro requires Chrome branch 1713 '
           'or later. Skipping measurement.')
@@ -103,18 +105,24 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
 
     pixels_recorded = data['pixels_recorded']
     record_time = data['record_time_ms']
-    record_time_sk_null_canvas = data['record_time_sk_null_canvas_ms']
-    record_time_painting_disabled = data['record_time_painting_disabled_ms']
     pixels_rasterized = data['pixels_rasterized']
     rasterize_time = data['rasterize_time_ms']
 
     results.Add('pixels_recorded', 'pixels', pixels_recorded)
     results.Add('record_time', 'ms', record_time)
-    results.Add('record_time_sk_null_canvas', 'ms', record_time_sk_null_canvas)
-    results.Add('record_time_painting_disabled', 'ms',
-        record_time_painting_disabled)
     results.Add('pixels_rasterized', 'pixels', pixels_rasterized)
     results.Add('rasterize_time', 'ms', rasterize_time)
+
+    # TODO(skyostil): Remove this temporary workaround when reference build has
+    # been updated to branch 1931 or later.
+    if ((self._chrome_branch_number and self._chrome_branch_number >= 1931) or
+        sys.platform == 'android'):
+      record_time_sk_null_canvas = data['record_time_sk_null_canvas_ms']
+      record_time_painting_disabled = data['record_time_painting_disabled_ms']
+      results.Add('record_time_sk_null_canvas', 'ms',
+          record_time_sk_null_canvas)
+      results.Add('record_time_painting_disabled', 'ms',
+          record_time_painting_disabled)
 
     if self.options.report_detailed_results:
       pixels_rasterized_with_non_solid_color = \
