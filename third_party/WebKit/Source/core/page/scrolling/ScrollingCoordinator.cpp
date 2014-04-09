@@ -100,7 +100,6 @@ ScrollingCoordinator::~ScrollingCoordinator()
         GraphicsLayer::unregisterContentsLayer(it->value->layer());
     for (ScrollbarMap::iterator it = m_verticalScrollbars.begin(); it != m_verticalScrollbars.end(); ++it)
         GraphicsLayer::unregisterContentsLayer(it->value->layer());
-
 }
 
 bool ScrollingCoordinator::touchHitTestingEnabled() const
@@ -560,6 +559,11 @@ void ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded()
 
 void ScrollingCoordinator::reset()
 {
+    for (ScrollbarMap::iterator it = m_horizontalScrollbars.begin(); it != m_horizontalScrollbars.end(); ++it)
+        GraphicsLayer::unregisterContentsLayer(it->value->layer());
+    for (ScrollbarMap::iterator it = m_verticalScrollbars.begin(); it != m_verticalScrollbars.end(); ++it)
+        GraphicsLayer::unregisterContentsLayer(it->value->layer());
+
     m_horizontalScrollbars.clear();
     m_verticalScrollbars.clear();
     m_layersWithTouchRects.clear();
