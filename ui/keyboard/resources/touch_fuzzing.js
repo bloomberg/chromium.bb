@@ -67,7 +67,12 @@
      */
     findClosestKey: function(x, y) {
       var closestNode = this.tree.findClosestNode(x, y);
-      return closestNode.data ? closestNode.data.key : null;
+      var key = closestNode.data;
+      if (!key)
+        return;
+      // Ignore touches that aren't close.
+      return key.distanceTo(x,y) <= MAX_TOUCH_FUZZ_DISTANCE ?
+          key.key : null;
     },
 
     /**
@@ -107,7 +112,8 @@
      * @return {number}.
      */
     distanceTo: function (x, y) {
-      return Math.abs(this.intersect(x)) + Math.abs(this.intersect(y, true));
+      return Math.abs(this.intersect(new Line(x))) +
+          Math.abs(this.intersect(new Line(y, true)));
     },
 
     /**
