@@ -9,9 +9,9 @@
 
 #include "components/autofill/core/common/save_password_progress_logger.h"
 
-namespace password_manager {
-
 class PasswordManagerClient;
+
+namespace password_manager {
 
 // This is the SavePasswordProgressLogger specialization for the browser code,
 // where the PasswordManagerClient can be directly called.
