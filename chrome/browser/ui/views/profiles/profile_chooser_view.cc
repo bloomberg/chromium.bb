@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/profile_chooser_view.h"
+#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/browser/ui/views/user_manager_view.h"
+#include "chrome/browser/ui/views/profiles/user_manager_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"

@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/ui/views/avatar_label.h"
-#include "chrome/browser/ui/views/avatar_menu_button.h"
+#include "chrome/browser/ui/views/profiles/avatar_label.h"
+#include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/profile_management_switches.h"
 #include "ui/gfx/font.h"

@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/profile_reset_bubble_view.h"
+#include "chrome/browser/ui/views/profiles/profile_reset_bubble_view.h"
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/google/google_util.h"

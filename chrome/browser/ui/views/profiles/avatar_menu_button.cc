@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/avatar_menu_button.h"
+#include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
@@ -12,9 +12,9 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/profile_chooser_view.h"
+#include "chrome/browser/ui/views/profiles/avatar_menu_bubble_view.h"
+#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"

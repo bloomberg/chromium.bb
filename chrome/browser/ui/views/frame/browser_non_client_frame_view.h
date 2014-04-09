@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 
-#include "chrome/browser/ui/views/new_avatar_button.h"
+#include "chrome/browser/ui/views/profiles/new_avatar_button.h"
 #include "ui/views/window/non_client_view.h"
 
 class AvatarLabel;

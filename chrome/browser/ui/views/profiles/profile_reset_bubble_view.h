@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PROFILE_RESET_BUBBLE_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_PROFILE_RESET_BUBBLE_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_RESET_BUBBLE_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_RESET_BUBBLE_VIEW_H_
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -135,4 +135,4 @@ class ProfileResetBubbleView : public views::BubbleDelegateView,
   DISALLOW_COPY_AND_ASSIGN(ProfileResetBubbleView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PROFILE_RESET_BUBBLE_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_RESET_BUBBLE_VIEW_H_
