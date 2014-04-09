@@ -244,9 +244,15 @@
         'target_conditions': [
           ['>(nacl_untrusted_build)==1', {
             'sources': [
-              'proxy/irt_ppapi.c',
-              'proxy/plugin_main_irt.cc',
-              'proxy/plugin_main_irt.h',
+              'nacl_irt/irt_ppapi.cc',
+              'nacl_irt/irt_ppapi.h',
+              'nacl_irt/irt_start.cc',
+              'nacl_irt/plugin_main.cc',
+              'nacl_irt/plugin_main.h',
+              'nacl_irt/plugin_startup.cc',
+              'nacl_irt/plugin_startup.h',
+              'nacl_irt/ppapi_dispatcher.cc',
+              'nacl_irt/ppapi_dispatcher.h',
             ],
             'sources!': [
               'proxy/audio_input_resource.cc',

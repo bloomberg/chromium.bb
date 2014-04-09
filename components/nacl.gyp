@@ -216,8 +216,12 @@
                 'nacl/loader/nonsfi/irt_util.h',
                 'nacl/loader/nonsfi/nonsfi_main.cc',
                 'nacl/loader/nonsfi/nonsfi_main.h',
-                '../ppapi/proxy/plugin_main_irt.cc',
-                '../ppapi/proxy/plugin_main_irt.h',
+                '../ppapi/nacl_irt/plugin_main.cc',
+                '../ppapi/nacl_irt/plugin_main.h',
+                '../ppapi/nacl_irt/plugin_startup.cc',
+                '../ppapi/nacl_irt/plugin_startup.h',
+                '../ppapi/nacl_irt/ppapi_dispatcher.cc',
+                '../ppapi/nacl_irt/ppapi_dispatcher.h',
               ],
               'conditions': [
                 ['toolkit_uses_gtk == 1', {

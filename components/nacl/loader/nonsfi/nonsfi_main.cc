@@ -20,6 +20,7 @@
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
+#include "ppapi/nacl_irt/plugin_startup.h"
 
 namespace nacl {
 namespace nonsfi {
@@ -42,6 +43,7 @@ class PluginMainDelegate : public base::PlatformThread::Delegate {
     // This will only happen once per process, so we give the permission to
     // create Singletons.
     base::ThreadRestrictions::SetSingletonAllowed(true);
+    ppapi::StartUpPlugin();
     uintptr_t info[] = {
       0,  // Do not use fini.
       0,  // envc.

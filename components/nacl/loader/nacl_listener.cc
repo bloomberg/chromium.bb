@@ -35,7 +35,7 @@
 #if defined(OS_LINUX)
 #include "components/nacl/loader/nonsfi/nonsfi_main.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
-#include "ppapi/proxy/plugin_main_irt.h"
+#include "ppapi/nacl_irt/plugin_startup.h"
 #endif
 
 #if defined(OS_WIN)
@@ -310,7 +310,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
       }
 
       // Set the plugin IPC channel FDs.
-      SetIPCFileDescriptors(
+      ppapi::SetIPCFileDescriptors(
           browser_server_ppapi_fd, renderer_server_ppapi_fd);
 
       // Send back to the client side IPC channel FD to the host.

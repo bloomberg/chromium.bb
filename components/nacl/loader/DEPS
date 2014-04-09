@@ -23,7 +23,7 @@ include_rules = [
   "+ppapi/proxy/serialized_handle.h",
 
   # For setting FDs in non-SFI mode.
-  "+ppapi/proxy/plugin_main_irt.h",
+  "+ppapi/nacl_irt",
 
   # For sending PpapiHostMsg_ChannelCreated in nacl_ipc_adapter.cc:
   "+ppapi/proxy/ppapi_messages.h"

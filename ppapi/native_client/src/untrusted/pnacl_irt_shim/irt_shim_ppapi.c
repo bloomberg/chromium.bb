@@ -9,7 +9,7 @@
 #include "native_client/src/untrusted/irt/irt.h"
 #include "ppapi/nacl_irt/public/irt_ppapi.h"
 #include "ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_shim.h"
-#include "ppapi/proxy/plugin_main_irt.h"
+#include "ppapi/nacl_irt/plugin_main.h"
 
 /*
  * Defines a version of the version irt_ppapi_start and of the irt_ppapihook
