@@ -143,7 +143,9 @@ void ServiceWorkerRequestHandler::PrepareForMainResource(const GURL& url) {
   DCHECK(context_);
   // The corresponding provider_host may already have associate version in
   // redirect case, unassociate it now.
-  provider_host_->AssociateVersion(NULL);
+  provider_host_->SetActiveVersion(NULL);
+  provider_host_->SetPendingVersion(NULL);
+  provider_host_->set_document_url(url);
   context_->storage()->FindRegistrationForDocument(
       url,
       base::Bind(&self::DidLookupRegistrationForMainResource,
@@ -160,14 +162,15 @@ void ServiceWorkerRequestHandler::DidLookupRegistrationForMainResource(
     return;
   }
   DCHECK(registration);
-  provider_host_->AssociateVersion(registration->active_version());
+  provider_host_->SetActiveVersion(registration->active_version());
+  provider_host_->SetPendingVersion(registration->pending_version());
   job_->ForwardToServiceWorker();
 }
 
 void ServiceWorkerRequestHandler::PrepareForSubResource() {
   DCHECK(job_.get());
   DCHECK(context_);
-  DCHECK(provider_host_->associated_version());
+  DCHECK(provider_host_->active_version());
   job_->ForwardToServiceWorker();
 }
 

@@ -103,7 +103,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     scoped_ptr<ServiceWorkerProviderHost> provider_host(
         new ServiceWorkerProviderHost(kProcessID, kProviderID,
                                       context_->AsWeakPtr(), NULL));
-    provider_host->AssociateVersion(version_.get());
+    provider_host->SetActiveVersion(version_.get());
 
     url_request_job_factory_.SetProtocolHandler(
         "http", new MockProtocolHandler(provider_host->AsWeakPtr()));

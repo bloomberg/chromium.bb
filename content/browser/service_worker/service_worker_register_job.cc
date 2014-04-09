@@ -175,6 +175,9 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
   registration_->set_pending_version(pending_version_);
   RunCallbacks(status, registration_, pending_version_.get());
 
+  // TODO(kinuko): Iterate over all provider hosts and call SetPendingVersion()
+  // for documents that are in-scope.
+
   InstallAndContinue();
 }
 

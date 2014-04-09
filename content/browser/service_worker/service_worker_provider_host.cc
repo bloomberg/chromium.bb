@@ -24,7 +24,8 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
-  AssociateVersion(NULL);
+  if (active_version_)
+    active_version_->RemoveControllee(this);
 }
 
 void ServiceWorkerProviderHost::AddScriptClient(int thread_id) {
@@ -37,13 +38,14 @@ void ServiceWorkerProviderHost::RemoveScriptClient(int thread_id) {
   script_client_thread_ids_.erase(thread_id);
 }
 
-void ServiceWorkerProviderHost::AssociateVersion(
+void ServiceWorkerProviderHost::SetActiveVersion(
     ServiceWorkerVersion* version) {
-  if (associated_version())
-    associated_version_->RemoveProcessFromWorker(process_id_);
-  associated_version_ = version;
+  scoped_refptr<ServiceWorkerVersion> previous_version = active_version_;
+  active_version_ = version;
   if (version)
-    version->AddProcessToWorker(process_id_);
+    version->AddControllee(this);
+  if (previous_version)
+    previous_version->RemoveControllee(this);
 
   if (!dispatcher_host_)
     return;  // Could be NULL in some tests.
@@ -52,16 +54,29 @@ void ServiceWorkerProviderHost::AssociateVersion(
        it != script_client_thread_ids_.end();
        ++it) {
     dispatcher_host_->RegisterServiceWorkerHandle(
-        ServiceWorkerHandle::Create(context_, dispatcher_host_, *it, version));
+        ServiceWorkerHandle::Create(context_, dispatcher_host_,
+                                    *it, version));
+    // TODO(kinuko): dispatch activechange event to the script clients.
   }
-  // TODO(kinuko): change this method into two for .active and .pending,
-  // and dispatch activechange/pendingchange event to the script clients here.
+}
+
+void ServiceWorkerProviderHost::SetPendingVersion(
+    ServiceWorkerVersion* version) {
+  pending_version_ = version;
+  for (std::set<int>::iterator it = script_client_thread_ids_.begin();
+       it != script_client_thread_ids_.end();
+       ++it) {
+    dispatcher_host_->RegisterServiceWorkerHandle(
+        ServiceWorkerHandle::Create(context_, dispatcher_host_,
+                                    *it, version));
+    // TODO(kinuko): dispatch pendingchange event to the script clients.
+  }
 }
 
 bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
   if (!context_)
     return true;  // System is shutting down.
-  if (associated_version_)
+  if (active_version_)
     return false;  // Unexpected bad message.
 
   ServiceWorkerVersion* live_version = context_->GetLiveVersion(version_id);
@@ -85,7 +100,7 @@ bool ServiceWorkerProviderHost::ShouldHandleRequest(
   if (ServiceWorkerUtils::IsMainResourceType(resource_type))
     return true;
 
-  if (associated_version())
+  if (active_version())
     return true;
 
   // TODO(kinuko): Handle ServiceWorker cases.

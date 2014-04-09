@@ -24,6 +24,7 @@ namespace content {
 
 class EmbeddedWorkerRegistry;
 class ServiceWorkerContextCore;
+class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerVersionInfo;
 
@@ -167,6 +168,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void AddProcessToWorker(int process_id);
   void RemoveProcessFromWorker(int process_id);
 
+  // Adds and removes a controllee's |provider_host|.
+  void AddControllee(ServiceWorkerProviderHost* provider_host);
+  void RemoveControllee(ServiceWorkerProviderHost* provider_host);
+
   EmbeddedWorkerInstance* embedded_worker() { return embedded_worker_.get(); }
 
   // EmbeddedWorkerInstance::Observer overrides:
@@ -177,6 +182,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
  private:
   typedef ServiceWorkerVersion self;
+  typedef std::set<ServiceWorkerProviderHost*> ProviderHostSet;
   friend class base::RefCounted<ServiceWorkerVersion>;
 
   virtual ~ServiceWorkerVersion();
@@ -190,6 +196,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::vector<StatusCallback> stop_callbacks_;
   std::vector<base::Closure> status_change_callbacks_;
   IDMap<MessageCallback, IDMapOwnPointer> message_callbacks_;
+
+  ProviderHostSet controllee_providers_;
+
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
 

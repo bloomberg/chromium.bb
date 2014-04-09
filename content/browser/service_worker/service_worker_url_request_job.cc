@@ -138,13 +138,13 @@ void ServiceWorkerURLRequestJob::StartRequest() {
       return;
 
     case FORWARD_TO_SERVICE_WORKER:
-      DCHECK(provider_host_ && provider_host_->associated_version());
+      DCHECK(provider_host_ && provider_host_->active_version());
       DCHECK(!fetch_dispatcher_);
 
       // Send a fetch event to the ServiceWorker associated to the
       // provider_host.
       fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
-          request(), provider_host_->associated_version(),
+          request(), provider_host_->active_version(),
           base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
                      weak_factory_.GetWeakPtr())));
       fetch_dispatcher_->Run();
