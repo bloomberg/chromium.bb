@@ -490,11 +490,7 @@
             ],
             'conditions': [
               ['OS!="android"', {
-                'variables': {
-                  'pak_inputs': [
-                    '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
-                  ],
-                },
+                'pak_inputs': ['<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',],
                 'pak_output': '<(PRODUCT_DIR)/content_shell.pak',
               }, {
                 'pak_output': '<(PRODUCT_DIR)/content_shell/assets/content_shell.pak',
