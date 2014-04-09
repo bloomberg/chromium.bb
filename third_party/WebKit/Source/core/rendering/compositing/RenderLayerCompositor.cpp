@@ -375,7 +375,12 @@ void RenderLayerCompositor::updateIfNeeded()
 
     if (updateType >= CompositingUpdateAfterStyleChange || needHierarchyAndGeometryUpdate) {
         TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::updateRecursive");
-        GraphicsLayerUpdater().update(*updateRoot, graphicsLayerUpdateType);
+        GraphicsLayerUpdater updater;
+        updater.update(*updateRoot, graphicsLayerUpdateType);
+
+        if (updater.needsRebuildTree())
+            needHierarchyAndGeometryUpdate = true;
+
 #if !ASSERT_DISABLED
         // FIXME: Move this check to the end of the compositing update.
         GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(*updateRoot);

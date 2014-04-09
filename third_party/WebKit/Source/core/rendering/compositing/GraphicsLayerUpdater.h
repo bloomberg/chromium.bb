@@ -49,9 +49,14 @@ public:
     void update(RenderLayer&, UpdateType);
     void rebuildTree(RenderLayer&, GraphicsLayerVector& childLayersOfEnclosingLayer);
 
+    bool needsRebuildTree() const { return m_needsRebuildTree; }
+
 #if !ASSERT_DISABLED
     static void assertNeedsToUpdateGraphicsLayerBitsCleared(RenderLayer&);
 #endif
+
+private:
+    bool m_needsRebuildTree;
 };
 
 } // namespace WebCore

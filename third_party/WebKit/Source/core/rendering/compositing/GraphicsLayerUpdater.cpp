@@ -49,6 +49,7 @@ static bool shouldAppendLayer(const RenderLayer& layer)
 }
 
 GraphicsLayerUpdater::GraphicsLayerUpdater()
+    : m_needsRebuildTree(false)
 {
 }
 
@@ -136,7 +137,9 @@ void GraphicsLayerUpdater::update(RenderLayer& layer, UpdateType updateType)
                 reflection->reflectionLayer()->compositedLayerMapping()->updateCompositedBounds(ForceUpdate);
         }
 
-        mapping->updateGraphicsLayerConfiguration(updateType);
+        if (mapping->updateGraphicsLayerConfiguration(updateType))
+            m_needsRebuildTree = true;
+
         mapping->updateGraphicsLayerGeometry(updateType);
 
         updateType = mapping->updateTypeForChildren(updateType);
