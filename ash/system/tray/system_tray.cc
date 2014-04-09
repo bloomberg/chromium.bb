@@ -257,8 +257,14 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
                                   bool activate,
                                   BubbleCreationType creation_type) {
   std::vector<SystemTrayItem*> items;
+  // The detailed view with timeout means a UI to show the current system state,
+  // like the audio level or brightness. Such UI should behave as persistent and
+  // keep its own logic for the appearance.
+  bool persistent = (
+      !activate && close_delay > 0 && creation_type == BUBBLE_CREATE_NEW);
   items.push_back(item);
-  ShowItems(items, true, activate, creation_type, GetTrayXOffset(item), false);
+  ShowItems(
+      items, true, activate, creation_type, GetTrayXOffset(item), persistent);
   if (system_bubble_)
     system_bubble_->bubble()->StartAutoCloseTimer(close_delay);
 }
