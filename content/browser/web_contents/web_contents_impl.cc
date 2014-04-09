@@ -2381,9 +2381,10 @@ void WebContentsImpl::DidNavigateMainFramePreCommit(
   // Ensure fullscreen mode is exited before committing the navigation to a
   // different page.  The next page will not start out assuming it is in
   // fullscreen mode.
-  if (params.was_within_same_page) {
-    // No document change?  Then, the renderer shall decide whether to exit
-    // fullscreen.
+  if (controller_.IsURLInPageNavigation(params.url,
+                                        params.was_within_same_page,
+                                        NAVIGATION_TYPE_UNKNOWN)) {
+    // No page change?  Then, the renderer and browser can remain in fullscreen.
     return;
   }
   if (IsFullscreenForCurrentTab())
