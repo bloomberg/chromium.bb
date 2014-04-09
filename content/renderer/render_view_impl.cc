@@ -2117,14 +2117,6 @@ void RenderViewImpl::initializeLayerTreeView() {
 
 // blink::WebFrameClient -----------------------------------------------------
 
-WebMediaPlayer* RenderViewImpl::createMediaPlayer(
-    WebLocalFrame* frame,
-    const blink::WebURL& url,
-    WebMediaPlayerClient* client) {
-  NOTREACHED();
-  return NULL;
-}
-
 blink::WebMediaPlayer* RenderViewImpl::CreateMediaPlayer(
     RenderFrame* render_frame,
     blink::WebLocalFrame* frame,
@@ -2528,19 +2520,6 @@ void RenderViewImpl::didUpdateCurrentHistoryItem(WebLocalFrame* frame) {
   StartNavStateSyncTimerIfNecessary();
 }
 
-void RenderViewImpl::willSendRequest(WebLocalFrame* frame,
-                                     unsigned identifier,
-                                     WebURLRequest& request,
-                                     const WebURLResponse& redirect_response) {
-  NOTREACHED();
-}
-
-void RenderViewImpl::didReceiveResponse(WebLocalFrame* frame,
-                                        unsigned identifier,
-                                        const WebURLResponse& response) {
-  NOTREACHED();
-}
-
 void RenderViewImpl::didFinishResourceLoad(WebLocalFrame* frame,
                                            unsigned identifier) {
   InternalDocumentStateData* internal_data =
@@ -2563,36 +2542,6 @@ void RenderViewImpl::didFinishResourceLoad(WebLocalFrame* frame,
     error.reason = http_status_code;
     LoadNavigationErrorPage(frame, frame->dataSource()->request(), error, true);
   }
-}
-
-void RenderViewImpl::didLoadResourceFromMemoryCache(
-    WebLocalFrame* frame,
-    const WebURLRequest& request,
-    const WebURLResponse& response) {
-  NOTREACHED();
-}
-
-void RenderViewImpl::didDisplayInsecureContent(WebLocalFrame* frame) {
-  NOTREACHED();
-}
-
-void RenderViewImpl::didRunInsecureContent(WebLocalFrame* frame,
-                                           const WebSecurityOrigin& origin,
-                                           const WebURL& target) {
-  NOTREACHED();
-}
-
-void RenderViewImpl::didCreateScriptContext(WebLocalFrame* frame,
-                                            v8::Handle<v8::Context> context,
-                                            int extension_group,
-                                            int world_id) {
-  NOTREACHED();
-}
-
-void RenderViewImpl::willReleaseScriptContext(WebLocalFrame* frame,
-                                              v8::Handle<v8::Context> context,
-                                              int world_id) {
-  NOTREACHED();
 }
 
 void RenderViewImpl::CheckPreferredSize() {
@@ -2703,10 +2652,6 @@ void RenderViewImpl::didChangeScrollOffset(WebLocalFrame* frame) {
       RenderViewObserver, observers_, DidChangeScrollOffset(frame));
 }
 
-void RenderViewImpl::willInsertBody(blink::WebLocalFrame* frame) {
-  NOTREACHED();
-}
-
 void RenderViewImpl::didFirstVisuallyNonEmptyLayout(WebLocalFrame* frame) {
   if (frame != webview()->mainFrame())
     return;
@@ -2743,26 +2688,6 @@ void RenderViewImpl::SendFindReply(int request_id,
                                   selection_rect,
                                   ordinal,
                                   final_status_update));
-}
-
-void RenderViewImpl::reportFindInPageMatchCount(int request_id,
-                                                int count,
-                                                bool final_update) {
-  NOTREACHED();
-}
-
-void RenderViewImpl::reportFindInPageSelection(int request_id,
-                                               int active_match_ordinal,
-                                               const WebRect& selection_rect) {
-  NOTREACHED();
-}
-
-void RenderViewImpl::requestStorageQuota(
-    WebLocalFrame* frame,
-    WebStorageQuotaType type,
-    unsigned long long requested_size,
-    blink::WebStorageQuotaCallbacks callbacks) {
-  NOTREACHED();
 }
 
 bool RenderViewImpl::willCheckAndDispatchMessageEvent(
@@ -2807,40 +2732,8 @@ bool RenderViewImpl::willCheckAndDispatchMessageEvent(
   return true;
 }
 
-void RenderViewImpl::willOpenSocketStream(
-    WebSocketStreamHandle* handle) {
-  NOTREACHED();
-}
-
-void RenderViewImpl::willStartUsingPeerConnectionHandler(
-    blink::WebLocalFrame* frame,
-    blink::WebRTCPeerConnectionHandler* handler) {
-  NOTREACHED();
-}
-
 blink::WebString RenderViewImpl::acceptLanguages() {
   return WebString::fromUTF8(renderer_preferences_.accept_languages);
-}
-
-blink::WebString RenderViewImpl::userAgentOverride(blink::WebLocalFrame* frame,
-                                                   const blink::WebURL& url) {
-  NOTREACHED();
-  return blink::WebString();
-}
-
-WebString RenderViewImpl::doNotTrackValue(WebLocalFrame* frame) {
-  NOTREACHED();
-  return blink::WebString();
-}
-
-bool RenderViewImpl::allowWebGL(WebLocalFrame* frame, bool default_value) {
-  NOTREACHED();
-  return false;
-}
-
-void RenderViewImpl::didLoseWebGLContext(blink::WebLocalFrame* frame,
-                                         int arb_robustness_status_code) {
-  NOTREACHED();
 }
 
 // blink::WebPageSerializerClient implementation ------------------------------

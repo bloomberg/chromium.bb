@@ -525,10 +525,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // blink::WebFrameClient implementation -------------------------------------
 
-  virtual blink::WebMediaPlayer* createMediaPlayer(
-      blink::WebLocalFrame* frame,
-      const blink::WebURL& url,
-      blink::WebMediaPlayerClient* client);
   virtual void didAccessInitialDocument(blink::WebLocalFrame* frame);
   virtual void didDisownOpener(blink::WebLocalFrame* frame);
   virtual void frameDetached(blink::WebFrame* frame);
@@ -558,62 +554,18 @@ class CONTENT_EXPORT RenderViewImpl
                            const blink::WebURLError& error);
   virtual void didFinishLoad(blink::WebLocalFrame* frame);
   virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
-  virtual void willSendRequest(blink::WebLocalFrame* frame,
-                               unsigned identifier,
-                               blink::WebURLRequest& request,
-                               const blink::WebURLResponse& redirect_response);
-  virtual void didReceiveResponse(blink::WebLocalFrame* frame,
-                                  unsigned identifier,
-                                  const blink::WebURLResponse& response);
   virtual void didFinishResourceLoad(blink::WebLocalFrame* frame,
                                      unsigned identifier);
-  virtual void didLoadResourceFromMemoryCache(
-      blink::WebLocalFrame* frame,
-      const blink::WebURLRequest& request,
-      const blink::WebURLResponse&);
-  virtual void didDisplayInsecureContent(blink::WebLocalFrame* frame);
-  virtual void didRunInsecureContent(blink::WebLocalFrame* frame,
-                                     const blink::WebSecurityOrigin& origin,
-                                     const blink::WebURL& target);
-  virtual void didCreateScriptContext(blink::WebLocalFrame* frame,
-                                      v8::Handle<v8::Context>,
-                                      int extension_group,
-                                      int world_id);
-  virtual void willReleaseScriptContext(blink::WebLocalFrame* frame,
-                                        v8::Handle<v8::Context>,
-                                        int world_id);
   virtual void didChangeScrollOffset(blink::WebLocalFrame* frame);
-  virtual void willInsertBody(blink::WebLocalFrame* frame);
   virtual void didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame*);
   virtual void didChangeContentsSize(blink::WebLocalFrame* frame,
                                      const blink::WebSize& size);
-  virtual void reportFindInPageMatchCount(int request_id,
-                                          int count,
-                                          bool final_update);
-  virtual void reportFindInPageSelection(int request_id,
-                                         int active_match_ordinal,
-                                         const blink::WebRect& sel);
-  virtual void requestStorageQuota(blink::WebLocalFrame* frame,
-                                   blink::WebStorageQuotaType type,
-                                   unsigned long long requested_size,
-                                   blink::WebStorageQuotaCallbacks callbacks);
-  virtual void willOpenSocketStream(
-      blink::WebSocketStreamHandle* handle);
-  virtual void willStartUsingPeerConnectionHandler(
-      blink::WebLocalFrame* frame,
-      blink::WebRTCPeerConnectionHandler* handler);
   virtual bool willCheckAndDispatchMessageEvent(
       blink::WebLocalFrame* sourceFrame,
       blink::WebFrame* targetFrame,
       blink::WebSecurityOrigin targetOrigin,
       blink::WebDOMMessageEvent event);
   virtual blink::WebString acceptLanguages();
-  virtual blink::WebString userAgentOverride(blink::WebLocalFrame* frame,
-                                             const blink::WebURL& url);
-  virtual blink::WebString doNotTrackValue(blink::WebLocalFrame* frame);
-  virtual bool allowWebGL(blink::WebLocalFrame* frame, bool default_value);
-  virtual void didLoseWebGLContext(blink::WebLocalFrame* frame,
-                                   int arb_robustness_status_code);
 
   // blink::WebPageSerializerClient implementation ----------------------------
 
