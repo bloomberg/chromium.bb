@@ -381,7 +381,7 @@ def BitcodeLibs(host, bias_arch):
                   'CPPFLAGS=' + NewlibIsystemCflags(bias_arch),
                   'CFLAGS_FOR_TARGET=' + LibStdcxxCflags(bias_arch),
                   'CXXFLAGS_FOR_TARGET=' + LibStdcxxCflags(bias_arch),
-                  '--host=armv7-none-linux-gnueabi',
+                  '--host=arm-none-linux-gnueabi',
                   '--prefix=',
                   '--enable-cxx-flags=-D__SIZE_MAX__=4294967295',
                   '--disable-multilib',
