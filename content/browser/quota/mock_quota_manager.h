@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
-#define WEBKIT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
+#ifndef CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
+#define CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
 
 #include <map>
 #include <set>
@@ -17,7 +17,15 @@
 #include "webkit/browser/quota/quota_task.h"
 #include "webkit/common/quota/quota_types.h"
 
-namespace quota {
+using quota::GetOriginsCallback;
+using quota::QuotaClient;
+using quota::QuotaManager;
+using quota::QuotaStatusCode;
+using quota::SpecialStoragePolicy;
+using quota::StatusCallback;
+using quota::StorageType;
+
+namespace content {
 
 // Mocks the pieces of QuotaManager's interface.
 //
@@ -141,4 +149,4 @@ class MockQuotaManager : public QuotaManager {
 
 }  // namespace quota
 
-#endif  // WEBKIT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
+#endif  // CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_

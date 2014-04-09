@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/quota/mock_quota_manager_proxy.h"
+#include "content/browser/quota/mock_quota_manager_proxy.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "url/gurl.h"
 
-namespace quota {
+using quota::kStorageTypeUnknown;
+
+namespace content {
 
 MockQuotaManagerProxy::MockQuotaManagerProxy(
     MockQuotaManager* quota_manager,
@@ -56,4 +58,4 @@ MockQuotaManagerProxy::~MockQuotaManagerProxy() {
   DCHECK(!registered_client_);
 }
 
-}  // namespace quota
+}  // namespace content

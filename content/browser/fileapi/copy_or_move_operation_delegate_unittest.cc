@@ -12,6 +12,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "content/browser/quota/mock_quota_manager.h"
+#include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/test_file_system_backend.h"
 #include "content/public/test/test_file_system_context.h"
@@ -25,8 +27,6 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/quota/mock_quota_manager.h"
-#include "webkit/browser/quota/mock_quota_manager_proxy.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -194,12 +194,12 @@ class CopyOrMoveOperationTestHelper {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
     base::FilePath base_dir = base_.path();
     quota_manager_ =
-        new quota::MockQuotaManager(false /* is_incognito */,
+        new MockQuotaManager(false /* is_incognito */,
                                     base_dir,
                                     base::MessageLoopProxy::current().get(),
                                     base::MessageLoopProxy::current().get(),
                                     NULL /* special storage policy */);
-    quota_manager_proxy_ = new quota::MockQuotaManagerProxy(
+    quota_manager_proxy_ = new MockQuotaManagerProxy(
         quota_manager_.get(), base::MessageLoopProxy::current().get());
     file_system_context_ =
         CreateFileSystemContextForTesting(quota_manager_proxy_.get(), base_dir);
@@ -392,8 +392,8 @@ class CopyOrMoveOperationTestHelper {
 
   base::MessageLoopForIO message_loop_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-  scoped_refptr<quota::MockQuotaManagerProxy> quota_manager_proxy_;
-  scoped_refptr<quota::MockQuotaManager> quota_manager_;
+  scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<MockQuotaManager> quota_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyOrMoveOperationTestHelper);
 };

@@ -13,6 +13,8 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/fileapi/mock_file_change_observer.h"
+#include "content/browser/quota/mock_quota_manager.h"
+#include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/sandbox_file_system_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,8 +24,6 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
-#include "webkit/browser/quota/mock_quota_manager.h"
-#include "webkit/browser/quota/mock_quota_manager_proxy.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/common/blob/shareable_file_reference.h"
@@ -68,12 +68,12 @@ class FileSystemOperationImplTest
 
     base::FilePath base_dir = base_.path().AppendASCII("filesystem");
     quota_manager_ =
-        new quota::MockQuotaManager(false /* is_incognito */,
+        new MockQuotaManager(false /* is_incognito */,
                                     base_dir,
                                     base::MessageLoopProxy::current().get(),
                                     base::MessageLoopProxy::current().get(),
                                     NULL /* special storage policy */);
-    quota_manager_proxy_ = new quota::MockQuotaManagerProxy(
+    quota_manager_proxy_ = new MockQuotaManagerProxy(
         quota_manager(), base::MessageLoopProxy::current().get());
     sandbox_file_system_.SetUp(base_dir, quota_manager_proxy_.get());
     sandbox_file_system_.AddFileChangeObserver(&change_observer_);
@@ -102,12 +102,12 @@ class FileSystemOperationImplTest
     return shareable_file_ref_.get();
   }
 
-  quota::MockQuotaManager* quota_manager() {
-    return static_cast<quota::MockQuotaManager*>(quota_manager_.get());
+  MockQuotaManager* quota_manager() {
+    return static_cast<MockQuotaManager*>(quota_manager_.get());
   }
 
-  quota::MockQuotaManagerProxy* quota_manager_proxy() {
-    return static_cast<quota::MockQuotaManagerProxy*>(
+  MockQuotaManagerProxy* quota_manager_proxy() {
+    return static_cast<MockQuotaManagerProxy*>(
         quota_manager_proxy_.get());
   }
 

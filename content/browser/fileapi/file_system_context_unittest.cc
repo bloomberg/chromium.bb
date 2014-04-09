@@ -7,12 +7,12 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/quota/mock_quota_manager.h"
 #include "content/public/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/quota/mock_quota_manager.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)
@@ -56,7 +56,7 @@ class FileSystemContextTest : public testing::Test {
     storage_policy_ = new quota::MockSpecialStoragePolicy();
 
     mock_quota_manager_ =
-        new quota::MockQuotaManager(false /* is_incognito */,
+        new MockQuotaManager(false /* is_incognito */,
                                     data_dir_.path(),
                                     base::MessageLoopProxy::current().get(),
                                     base::MessageLoopProxy::current().get(),
@@ -100,7 +100,7 @@ class FileSystemContextTest : public testing::Test {
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
   scoped_refptr<quota::SpecialStoragePolicy> storage_policy_;
-  scoped_refptr<quota::MockQuotaManager> mock_quota_manager_;
+  scoped_refptr<MockQuotaManager> mock_quota_manager_;
 };
 
 // It is not valid to pass NULL ExternalMountPoints to FileSystemContext on

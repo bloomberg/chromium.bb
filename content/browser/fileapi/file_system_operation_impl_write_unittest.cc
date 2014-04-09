@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "content/browser/fileapi/mock_file_change_observer.h"
+#include "content/browser/quota/mock_quota_manager.h"
 #include "content/public/test/mock_blob_url_request_context.h"
 #include "content/public/test/test_file_system_backend.h"
 #include "content/public/test/test_file_system_context.h"
@@ -26,7 +27,6 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/local_file_util.h"
-#include "webkit/browser/quota/mock_quota_manager.h"
 #include "webkit/common/blob/blob_data.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -67,7 +67,7 @@ class FileSystemOperationImplWriteTest
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
     quota_manager_ =
-        new quota::MockQuotaManager(false /* is_incognito */,
+        new MockQuotaManager(false /* is_incognito */,
                                     dir_.path(),
                                     base::MessageLoopProxy::current().get(),
                                     base::MessageLoopProxy::current().get(),
@@ -153,7 +153,7 @@ class FileSystemOperationImplWriteTest
   }
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-  scoped_refptr<quota::MockQuotaManager> quota_manager_;
+  scoped_refptr<MockQuotaManager> quota_manager_;
 
   base::MessageLoopForIO loop_;
 

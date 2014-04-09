@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "content/browser/quota/mock_quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/quota/mock_quota_manager.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/mock_storage_client.h"
 
-namespace quota {
+using quota::kQuotaStatusOk;
+using quota::kStorageTypePersistent;
+using quota::kStorageTypeTemporary;
+using quota::MockSpecialStoragePolicy;
+
+namespace content {
 
 const char kTestOrigin1[] = "http://host1:1/";
 const char kTestOrigin2[] = "http://host2:1/";
@@ -76,7 +81,7 @@ class MockQuotaManagerTest : public testing::Test {
 
   void DeletedOriginData(QuotaStatusCode status) {
     ++deletion_callback_count_;
-    EXPECT_EQ(quota::kQuotaStatusOk, status);
+    EXPECT_EQ(kQuotaStatusOk, status);
   }
 
   int deletion_callback_count() const {
@@ -219,4 +224,4 @@ TEST_F(MockQuotaManagerTest, ModifiedOrigins) {
   EXPECT_EQ(0UL, origins().count(kOrigin1));
   EXPECT_EQ(1UL, origins().count(kOrigin2));
 }
-}  // Namespace quota
+}  // Namespace content

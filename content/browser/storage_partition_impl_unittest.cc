@@ -8,6 +8,7 @@
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/gpu/shader_disk_cache.h"
+#include "content/browser/quota/mock_quota_manager.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
@@ -19,7 +20,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/quota/mock_quota_manager.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/quota_manager.h"
 
@@ -331,9 +331,9 @@ class StoragePartitionImplTest : public testing::Test {
         browser_context_(new TestBrowserContext()) {
   }
 
-  quota::MockQuotaManager* GetMockManager() {
+  MockQuotaManager* GetMockManager() {
     if (!quota_manager_.get()) {
-      quota_manager_ = new quota::MockQuotaManager(
+      quota_manager_ = new MockQuotaManager(
           browser_context_->IsOffTheRecord(),
           browser_context_->GetPath(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
@@ -350,7 +350,7 @@ class StoragePartitionImplTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestBrowserContext> browser_context_;
-  scoped_refptr<quota::MockQuotaManager> quota_manager_;
+  scoped_refptr<MockQuotaManager> quota_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImplTest);
 };
@@ -439,7 +439,7 @@ TEST_F(StoragePartitionImplTest, QuotaClientMaskGeneration) {
                 StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
 }
 
-void PopulateTestQuotaManagedPersistentData(quota::MockQuotaManager* manager) {
+void PopulateTestQuotaManagedPersistentData(MockQuotaManager* manager) {
   manager->AddOrigin(kOrigin2, kPersistent, kClientFile, base::Time());
   manager->AddOrigin(kOrigin3, kPersistent, kClientFile,
       base::Time::Now() - base::TimeDelta::FromDays(1));
@@ -449,7 +449,7 @@ void PopulateTestQuotaManagedPersistentData(quota::MockQuotaManager* manager) {
   EXPECT_TRUE(manager->OriginHasData(kOrigin3, kPersistent, kClientFile));
 }
 
-void PopulateTestQuotaManagedTemporaryData(quota::MockQuotaManager* manager) {
+void PopulateTestQuotaManagedTemporaryData(MockQuotaManager* manager) {
   manager->AddOrigin(kOrigin1, kTemporary, kClientFile, base::Time::Now());
   manager->AddOrigin(kOrigin3, kTemporary, kClientFile,
       base::Time::Now() - base::TimeDelta::FromDays(1));
@@ -459,7 +459,7 @@ void PopulateTestQuotaManagedTemporaryData(quota::MockQuotaManager* manager) {
   EXPECT_TRUE(manager->OriginHasData(kOrigin3, kTemporary, kClientFile));
 }
 
-void PopulateTestQuotaManagedData(quota::MockQuotaManager* manager) {
+void PopulateTestQuotaManagedData(MockQuotaManager* manager) {
   // Set up kOrigin1 with a temporary quota, kOrigin2 with a persistent
   // quota, and kOrigin3 with both. kOrigin1 is modified now, kOrigin2
   // is modified at the beginning of time, and kOrigin3 is modified one day
@@ -468,7 +468,7 @@ void PopulateTestQuotaManagedData(quota::MockQuotaManager* manager) {
   PopulateTestQuotaManagedTemporaryData(manager);
 }
 
-void PopulateTestQuotaManagedNonBrowsingData(quota::MockQuotaManager* manager) {
+void PopulateTestQuotaManagedNonBrowsingData(MockQuotaManager* manager) {
   manager->AddOrigin(kOriginDevTools, kTemporary, kClientFile, base::Time());
   manager->AddOrigin(kOriginDevTools, kPersistent, kClientFile, base::Time());
 }

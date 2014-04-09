@@ -19,6 +19,12 @@
 
 class GURL;
 
+namespace content {
+FORWARD_DECLARE_TEST(AppCacheStorageTest, DelegateReferences);
+FORWARD_DECLARE_TEST(AppCacheStorageTest, UsageMap);
+class AppCacheStorageTest;
+}
+
 namespace appcache {
 
 class AppCache;
@@ -196,7 +202,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheStorage {
  protected:
   friend class AppCacheQuotaClientTest;
   friend class AppCacheResponseTest;
-  friend class AppCacheStorageTest;
+  friend class content::AppCacheStorageTest;
 
   // Helper to call a collection of delegates.
   #define FOR_EACH_DELEGATE(delegates, func_and_args)                \
@@ -311,8 +317,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheStorage {
   // The set of last ids must be retrieved from storage prior to being used.
   static const int64 kUnitializedId;
 
-  FRIEND_TEST_ALL_PREFIXES(AppCacheStorageTest, DelegateReferences);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheStorageTest, UsageMap);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheStorageTest, DelegateReferences);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheStorageTest, UsageMap);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheStorage);
 };

@@ -1,17 +1,24 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/appcache_storage.h"
 #include "webkit/browser/appcache/mock_appcache_service.h"
-#include "webkit/browser/quota/mock_quota_manager_proxy.h"
 
-namespace appcache {
+using appcache::AppCache;
+using appcache::AppCacheGroup;
+using appcache::AppCacheResponseInfo;
+using appcache::AppCacheStorage;
+using appcache::kUnkownResponseDataSize;
+using appcache::MockAppCacheService;
+
+namespace content {
 
 namespace {
 const quota::StorageType kTemp = quota::kStorageTypeTemporary;
@@ -118,8 +125,8 @@ TEST_F(AppCacheStorageTest, UsageMap) {
   const GURL kOrigin2("http://origin2/");
 
   MockAppCacheService service;
-  scoped_refptr<quota::MockQuotaManagerProxy> mock_proxy(
-      new quota::MockQuotaManagerProxy(NULL, NULL));
+  scoped_refptr<MockQuotaManagerProxy> mock_proxy(
+      new MockQuotaManagerProxy(NULL, NULL));
   service.set_quota_manager_proxy(mock_proxy.get());
 
   service.storage()->UpdateUsageMapAndNotify(kOrigin, 0);
@@ -162,4 +169,4 @@ TEST_F(AppCacheStorageTest, UsageMap) {
   EXPECT_TRUE(service.storage()->usage_map_.empty());
 }
 
-}  // namespace appcache
+}  // namespace content

@@ -38,9 +38,12 @@ namespace quota_internals {
 class QuotaInternalsProxy;
 }
 
+namespace content {
+class MockQuotaManager;
+}
+
 namespace quota {
 
-class MockQuotaManager;
 class QuotaDatabase;
 class QuotaManagerProxy;
 class QuotaTemporaryStorageEvictor;

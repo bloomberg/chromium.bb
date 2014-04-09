@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/quota/mock_quota_manager.h"
+#include "content/browser/quota/mock_quota_manager.h"
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -10,7 +10,9 @@
 #include "base/single_thread_task_runner.h"
 #include "url/gurl.h"
 
-namespace quota {
+using quota::kQuotaStatusOk;
+
+namespace content {
 
 MockQuotaManager::OriginInfo::OriginInfo(
     const GURL& origin,
@@ -142,4 +144,4 @@ void MockQuotaManager::DidDeleteOriginData(
   callback.Run(status);
 }
 
-}  // namespace quota
+}  // namespace content

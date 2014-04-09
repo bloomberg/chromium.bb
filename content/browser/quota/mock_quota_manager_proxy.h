@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_PROXY_H_
-#define WEBKIT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_PROXY_H_
+#ifndef CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_PROXY_H_
+#define CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_PROXY_H_
 
+#include "content/browser/quota/mock_quota_manager.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/mock_quota_manager.h"
 #include "webkit/browser/quota/quota_client.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/common/quota/quota_types.h"
 
-namespace quota {
+using quota::QuotaManagerProxy;
+
+namespace content {
 
 class MockQuotaManager;
 
@@ -80,6 +82,6 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   DISALLOW_COPY_AND_ASSIGN(MockQuotaManagerProxy);
 };
 
-}  // namespace quota
+}  // namespace content
 
-#endif  // WEBKIT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_PROXY_H_
+#endif  // CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_PROXY_H_

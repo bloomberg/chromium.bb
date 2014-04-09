@@ -14,11 +14,11 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
+#include "content/browser/quota/mock_quota_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/quota/mock_quota_manager.h"
 #include "webkit/common/database/database_identifier.h"
 
 // Declared to shorten the line lengths.
@@ -44,7 +44,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     browser_context_.reset(new TestBrowserContext());
 
     scoped_refptr<quota::QuotaManager> quota_manager =
-        new quota::MockQuotaManager(
+        new MockQuotaManager(
             false /*in_memory*/,
             browser_context_->GetPath(),
             base::MessageLoop::current()->message_loop_proxy(),
