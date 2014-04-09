@@ -89,7 +89,7 @@ class DepsChecker(DepsBuilder):
     # Collect a list of all files and directories to check.
     files_to_check = []
     dirs_to_check = []
-    contents = os.listdir(dir_name)
+    contents = sorted(os.listdir(dir_name))
     for cur in contents:
       full_name = os.path.join(dir_name, cur)
       if os.path.isdir(full_name):

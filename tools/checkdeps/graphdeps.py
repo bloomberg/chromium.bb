@@ -114,7 +114,7 @@ class DepsGrapher(DepsBuilder):
           include_specific_rules=not self.ignore_specific_rules)
       self.deps.update(deps)
 
-    for item in os.listdir(full_path):
+    for item in sorted(os.listdir(full_path)):
       next_full_path = os.path.join(full_path, item)
       if os.path.isdir(next_full_path):
         self._BuildDepsGraph(next_full_path)
