@@ -421,27 +421,29 @@ def _ParseSendChangeOptions(bot_spec, options):
   _SendChangeGit.
   """
   values = [
-    ('user', options.user),
-    ('name', options.name),
+      ('user', options.user),
+      ('name', options.name),
   ]
-  if options.email:
-    values.append(('email', options.email))
-  if options.revision:
-    values.append(('revision', options.revision))
+  # A list of options to copy.
+  optional_values = (
+      'email',
+      'revision',
+      'root',
+      'patchlevel',
+      'issue',
+      'patchset',
+      'target',
+      'project',
+  )
+  for option_name in optional_values:
+    value = getattr(options, option_name)
+    if value:
+      values.append((option_name, value))
+
+  # Not putting clobber to optional_names
+  # because it used to have lower-case 'true'.
   if options.clobber:
     values.append(('clobber', 'true'))
-  if options.root:
-    values.append(('root', options.root))
-  if options.patchlevel:
-    values.append(('patchlevel', options.patchlevel))
-  if options.issue:
-    values.append(('issue', options.issue))
-  if options.patchset:
-    values.append(('patchset', options.patchset))
-  if options.target:
-    values.append(('target', options.target))
-  if options.project:
-    values.append(('project', options.project))
 
   for bot, tests in bot_spec:
     values.append(('bot', ('%s:%s' % (bot, ','.join(tests)))))
