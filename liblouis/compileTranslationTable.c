@@ -5163,118 +5163,16 @@ debugHook ()
   printf ("%s\n", hook);
 }
 
-static logcallback *logCallbacks;
+static logcallback logCallbackFunction;
 void EXPORT_CALL lou_registerLogCallback(logcallback callback)
   {
-    logCallbacks = &callback;
+    logCallbackFunction = callback;
   }
 
-void EXPORT_CALL lou_logError(const char *format, ...)
+static int logLevel = INFO;
+void EXPORT_CALL lou_setLogLevel(int level)
   {
-#ifndef __SYMBIAN32__
-    if (format == NULL)
-      {
-	return;
-      }
-    if (logCallbacks->errorCB != 0)
-      {
-	char *s;
-	size_t len;
-	va_list argp;
-	va_start(argp, format);
-	len = vsnprintf(0, 0, format, argp);
-	va_end(argp);
-	if ((s = malloc(len+1)) != 0)
-	  {
-	    va_start(argp,  format);
-	    vsnprintf(s, len+1, format, argp);
-	    va_end(argp);
-	    logCallbacks->errorCB(s);
-	    free(s);
-	  }
-      }
-#endif
-  }
-
-void EXPORT_CALL lou_logWarning(const char *format, ...)
-  {
-#ifndef __SYMBIAN32__
-    if (format == NULL)
-      {
-	return;
-      }
-    if (logCallbacks->warningCB != 0)
-      {
-	char *s;
-	size_t len;
-	va_list argp;
-	va_start(argp, format);
-	len = vsnprintf(0, 0, format, argp);
-	va_end(argp);
-	if ((s = malloc(len+1)) != 0)
-	  {
-	    va_start(argp, format);
-	    vsnprintf(s, len+1, format, argp);
-	    va_end(argp);
-	    logCallbacks->warningCB(s);
-	    free(s);
-	  }
-      }
-#endif
-  }
-
-void EXPORT_CALL lou_logInfo(const char *format, ...)
-  {
-#ifndef __SYMBIAN32__
-    if (format == NULL)
-      {
-	return;
-      }
-    if (logCallbacks->infoCB != 0)
-      {
-	char *s;
-	size_t len;
-	va_list argp;
-	va_start (argp, format);
-	len = vsnprintf(0, 0, format, argp);
-	va_end (argp);
-	if ((s = malloc(len+1)) != 0)
-	  {
-	    va_start(argp, format);
-	    vsnprintf(s, len+1, format, argp);
-	    va_end(argp);
-	    logCallbacks->infoCB(s);
-	    free(s);
-	  }
-      }
-#endif
-  }
-
-void EXPORT_CALL lou_logDebug(const char *format, ...)
-  {
-#ifndef __SYMBIAN32__
-    if (format == NULL)
-      {
-	return;
-      }
-    if (logCallbacks->debugCB != 0)
-      {
-	char *s;
-	size_t len;
-	va_list argp;
-	va_start(argp, format);
-	len = vsnprintf(0, 0, format, argp);
-	va_end(argp);
-	if ((s = malloc(len+1)) != 0)
-	  {
-	    va_start(argp, format);
-	    vsnprintf(s, len+1, format, argp);
-	    va_end(argp);
-	    logCallbacks->debugCB(s);
-	    free(s);
-	  }
-      }
-#endif
+    logLevel = level;
   }
 
 void EXPORT_CALL lou_log(int level, const char *format, ...)
@@ -5283,23 +5181,11 @@ void EXPORT_CALL lou_log(int level, const char *format, ...)
       {
 	return;
       }
-    logfunction cb;
-    switch (level)
+    if (level < logLevel)
       {
-      case DEBUG:
-	cb = logCallbacks->debugCB;
-	break;
-      case INFO:
-	cb = logCallbacks->infoCB;
-	break;
-      case WARN:
-	cb = logCallbacks->warningCB;
-	break;
-      case ERROR:
-	cb = logCallbacks->errorCB;
-	break;
+	return;
       }
-    if (cb != 0)
+    if (logCallbackFunction != 0)
       {
 	char *s;
 	size_t len;
@@ -5312,7 +5198,7 @@ void EXPORT_CALL lou_log(int level, const char *format, ...)
 	    va_start(argp, format);
 	    vsnprintf(s, len+1, format, argp);
 	    va_end(argp);
-	    cb(s);
+	    logCallbackFunction(level, s);
 	    free(s);
 	  }
       }
