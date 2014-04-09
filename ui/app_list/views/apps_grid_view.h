@@ -326,9 +326,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // to anther folder target.
   void ReparentItemToAnotherFolder(views::View* item_view, const Index& target);
 
-  // Updates both data model and view_model_ for removing last item from
-  // |source_folder| which is the parent folder of the re-parenting item.
-  void RemoveLastItemFromReparentItemFolder(AppListFolderItem* source_folder);
+  // If there is only 1 item left in the source folder after reparenting an item
+  // from it, updates both data model and view_model_ for removing last item
+  // from the source folder and removes the source folder.
+  void RemoveLastItemFromReparentItemFolderIfNecessary(
+      const std::string& source_folder_id);
 
   // If user does not drop the re-parenting folder item to any valid target,
   // cancel the re-parenting action, let the item go back to its original
