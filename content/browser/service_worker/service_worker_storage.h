@@ -72,6 +72,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStorageTest, PatternMatches);
 
+  // TODO(michaeln,kinuko): Make this not own ServiceWorkerRegistration.
   typedef std::map<GURL, scoped_refptr<ServiceWorkerRegistration> >
       PatternToRegistrationMap;
 

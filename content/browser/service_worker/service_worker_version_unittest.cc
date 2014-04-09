@@ -122,9 +122,7 @@ class ServiceWorkerVersionTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    version_->Shutdown();
     version_ = 0;
-    registration_->Shutdown();
     registration_ = 0;
     helper_.reset();
     context_.reset();

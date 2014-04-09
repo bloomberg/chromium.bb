@@ -6,6 +6,7 @@
 #define CONTENT_CHILD_SERVICE_WORKER_WEB_SERVICE_WORKER_IMPL_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebServiceWorker.h"
@@ -17,18 +18,16 @@ class ThreadSafeSender;
 class WebServiceWorkerImpl
     : NON_EXPORTED_BASE(public blink::WebServiceWorker) {
  public:
-  WebServiceWorkerImpl(int64 version_id,
-                       ThreadSafeSender* thread_safe_sender)
-      : version_id_(version_id),
-        thread_safe_sender_(thread_safe_sender) {}
+  WebServiceWorkerImpl(int handle_id,
+                       ThreadSafeSender* thread_safe_sender);
   virtual ~WebServiceWorkerImpl();
 
   virtual void postMessage(const blink::WebString& message,
                            blink::WebMessagePortChannelArray* channels);
 
  private:
-  int64 version_id_;
-  ThreadSafeSender* thread_safe_sender_;
+  const int handle_id_;
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerImpl);
 };

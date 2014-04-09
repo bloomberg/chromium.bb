@@ -93,6 +93,7 @@ void ServiceWorkerContextCore::UnregisterServiceWorker(
 void ServiceWorkerContextCore::RegistrationComplete(
     const ServiceWorkerContextCore::RegistrationCallback& callback,
     ServiceWorkerStatusCode status,
+    ServiceWorkerRegistration* registration,
     ServiceWorkerVersion* version) {
   if (status != SERVICE_WORKER_OK) {
     DCHECK(!version);
@@ -102,9 +103,10 @@ void ServiceWorkerContextCore::RegistrationComplete(
     return;
   }
 
-  DCHECK(version->registration());
+  DCHECK(version);
+  DCHECK_EQ(version->registration_id(), registration->id());
   callback.Run(status,
-               version->registration()->id(),
+               registration->id(),
                version->version_id());
 }
 

@@ -85,7 +85,7 @@ void ServiceWorkerRegisterJob::HandleExistingRegistrationAndContinue(
       UpdateAndContinue(status);
       return;
     }
-    RunCallbacks(status, registration_->active_version());
+    RunCallbacks(status, registration_, registration_->active_version());
     Complete(SERVICE_WORKER_OK);
     return;
   }
@@ -101,7 +101,6 @@ void ServiceWorkerRegisterJob::HandleExistingRegistrationAndContinue(
   // registering a new one.
   // TODO(falken): Match the spec. We now throw away the active_version_ and
   // pending_version_ of the existing registration, which isn't in the spec.
-  registration->Shutdown();
   context_->storage()->DeleteRegistration(
       pattern_,
       base::Bind(&ServiceWorkerRegisterJob::RegisterAndContinue,
@@ -174,7 +173,7 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
   // to the callbacks, so pendingWorker must be set first.
   DCHECK(!registration_->pending_version());
   registration_->set_pending_version(pending_version_);
-  RunCallbacks(status, pending_version_.get());
+  RunCallbacks(status, registration_, pending_version_.get());
 
   InstallAndContinue();
 }
@@ -222,28 +221,19 @@ void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
   // (so this is no-op), otherwise we must have come here for abort case,
   // so dispatch callbacks with NULL.
   DCHECK(callbacks_.empty() || status != SERVICE_WORKER_OK);
-  RunCallbacks(status, NULL);
-
-  // If |pending_version_| exists, it was not activated, so we are the sole
-  // owner of it, so it will be destroyed when this job ends, so Shutdown here.
-  // We should be able to remove this code later, when something else holds a
-  // reference to |pending_version_|.
-  // TODO(kinuko): Fix these ownership and shutdown semantics.
-  if (pending_version_) {
-    DCHECK(!registration_->pending_version());
-    DCHECK(!registration_->active_version());
-    pending_version_->Shutdown();
-  }
+  RunCallbacks(status, NULL, NULL);
 
   context_->job_coordinator()->FinishJob(pattern_, this);
 }
 
-void ServiceWorkerRegisterJob::RunCallbacks(ServiceWorkerStatusCode status,
-                                            ServiceWorkerVersion* version) {
+void ServiceWorkerRegisterJob::RunCallbacks(
+    ServiceWorkerStatusCode status,
+    ServiceWorkerRegistration* registration,
+    ServiceWorkerVersion* version) {
   for (std::vector<RegistrationCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end();
        ++it) {
-    it->Run(status, version);
+    it->Run(status, registration, version);
   }
   callbacks_.clear();
 }

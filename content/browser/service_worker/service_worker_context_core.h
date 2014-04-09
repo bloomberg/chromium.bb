@@ -106,6 +106,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void RegistrationComplete(
       const RegistrationCallback& callback,
       ServiceWorkerStatusCode status,
+      ServiceWorkerRegistration* registration,
       ServiceWorkerVersion* version);
 
   ProcessToProviderMap providers_;

@@ -40,9 +40,6 @@ class CONTENT_EXPORT ServiceWorkerRegistration
                             int64 registration_id,
                             base::WeakPtr<ServiceWorkerContextCore> context);
 
-  void Shutdown();
-  bool is_shutdown() const { return is_shutdown_; }
-
   int64 id() const { return registration_id_; }
   const GURL& script_url() const { return script_url_; }
   const GURL& pattern() const { return pattern_; }

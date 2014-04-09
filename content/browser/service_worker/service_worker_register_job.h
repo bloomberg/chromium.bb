@@ -34,6 +34,7 @@ class ServiceWorkerStorage;
 class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status,
+                              ServiceWorkerRegistration* registration,
                               ServiceWorkerVersion* version)>
       RegistrationCallback;
 
@@ -66,6 +67,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void Complete(ServiceWorkerStatusCode status);
 
   void RunCallbacks(ServiceWorkerStatusCode status,
+                    ServiceWorkerRegistration* registration,
                     ServiceWorkerVersion* version);
 
   // The ServiceWorkerStorage object should always outlive this.

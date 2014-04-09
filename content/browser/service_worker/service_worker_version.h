@@ -67,16 +67,18 @@ class CONTENT_EXPORT ServiceWorkerVersion
                  // different states for different termination sequences)
   };
 
+  class Listener {
+   public:
+    virtual void OnVersionStateChanged(ServiceWorkerVersion* version) = 0;
+  };
+
   ServiceWorkerVersion(
       ServiceWorkerRegistration* registration,
       int64 version_id,
       base::WeakPtr<ServiceWorkerContextCore> context);
 
   int64 version_id() const { return version_id_; }
-  ServiceWorkerRegistration* registration() { return registration_.get(); }
-
-  void Shutdown();
-  bool is_shutdown() const { return is_shutdown_; }
+  int64 registration_id() const { return registration_id_; }
 
   RunningStatus running_status() const {
     return static_cast<RunningStatus>(embedded_worker_->status());
@@ -163,7 +165,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // same-origin as for this ServiceWorkerVersion is created.  The added
   // processes are used to run an in-renderer embedded worker.
   void AddProcessToWorker(int process_id);
-  void RemoveProcessToWorker(int process_id);
+  void RemoveProcessFromWorker(int process_id);
 
   EmbeddedWorkerInstance* embedded_worker() { return embedded_worker_.get(); }
 
@@ -180,9 +182,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   virtual ~ServiceWorkerVersion();
 
   const int64 version_id_;
+  int64 registration_id_;
+  GURL script_url_;
   Status status_;
-  bool is_shutdown_;
-  scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_ptr<EmbeddedWorkerInstance> embedded_worker_;
   std::vector<StatusCallback> start_callbacks_;
   std::vector<StatusCallback> stop_callbacks_;

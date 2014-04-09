@@ -48,7 +48,6 @@ void ServiceWorkerUnregisterJob::DeleteExistingRegistration(
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   if (status == SERVICE_WORKER_OK) {
-    registration->Shutdown();
     context_->storage()->DeleteRegistration(
         pattern_,
         base::Bind(&ServiceWorkerUnregisterJob::Complete,

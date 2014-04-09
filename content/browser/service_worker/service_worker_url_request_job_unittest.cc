@@ -102,7 +102,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
 
     scoped_ptr<ServiceWorkerProviderHost> provider_host(
         new ServiceWorkerProviderHost(kProcessID, kProviderID,
-                                      context_->AsWeakPtr()));
+                                      context_->AsWeakPtr(), NULL));
     provider_host->AssociateVersion(version_.get());
 
     url_request_job_factory_.SetProtocolHandler(
@@ -113,10 +113,8 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    version_->Shutdown();
-    version_ = 0;
-    registration_->Shutdown();
-    registration_ = 0;
+    version_ = NULL;
+    registration_ = NULL;
     helper_.reset();
     context_.reset();
   }

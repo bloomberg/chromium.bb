@@ -36,14 +36,6 @@ ServiceWorkerStorage::ServiceWorkerStorage(
 }
 
 ServiceWorkerStorage::~ServiceWorkerStorage() {
-  // TODO(michaeln): fix the onwership model such that workers can get shutdown
-  // prior to browser close time.
-  for (PatternToRegistrationMap::const_iterator iter =
-           registration_by_pattern_.begin();
-       iter != registration_by_pattern_.end();
-       ++iter) {
-    iter->second->Shutdown();
-  }
   registration_by_pattern_.clear();
 }
 

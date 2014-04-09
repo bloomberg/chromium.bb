@@ -167,24 +167,21 @@ ServiceWorkerVersion::ServiceWorkerVersion(
     int64 version_id,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : version_id_(version_id),
+      registration_id_(kInvalidServiceWorkerVersionId),
       status_(NEW),
-      is_shutdown_(false),
-      registration_(registration),
       weak_factory_(this),
       context_(context) {
   DCHECK(context_);
+  if (registration) {
+    registration_id_ = registration->id();
+    script_url_ = registration->script_url();
+  }
   context_->AddLiveVersion(this);
   embedded_worker_ = context_->embedded_worker_registry()->CreateWorker();
   embedded_worker_->AddObserver(this);
 }
 
 ServiceWorkerVersion::~ServiceWorkerVersion() {
-  DCHECK(is_shutdown_);
-}
-
-void ServiceWorkerVersion::Shutdown() {
-  is_shutdown_ = true;
-  registration_ = NULL;
   status_change_callbacks_.clear();
   if (embedded_worker_) {
     embedded_worker_->RemoveObserver(this);
@@ -219,9 +216,7 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
 }
 
 void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
-  DCHECK(!is_shutdown_);
   DCHECK(embedded_worker_);
-  DCHECK(registration_);
   if (running_status() == RUNNING) {
     RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
     return;
@@ -233,7 +228,7 @@ void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
   if (start_callbacks_.empty()) {
     ServiceWorkerStatusCode status = embedded_worker_->Start(
         version_id_,
-        registration_->script_url());
+        script_url_);
     if (status != SERVICE_WORKER_OK) {
       RunSoon(base::Bind(callback, status));
       return;
@@ -243,7 +238,6 @@ void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
 }
 
 void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
-  DCHECK(!is_shutdown_);
   DCHECK(embedded_worker_);
   if (running_status() == STOPPED) {
     RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
@@ -261,7 +255,6 @@ void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
 
 void ServiceWorkerVersion::SendMessage(
     const IPC::Message& message, const StatusCallback& callback) {
-  DCHECK(!is_shutdown_);
   DCHECK(embedded_worker_);
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
@@ -280,7 +273,6 @@ void ServiceWorkerVersion::SendMessage(
 
 void ServiceWorkerVersion::SendMessageAndRegisterCallback(
     const IPC::Message& message, const MessageCallback& callback) {
-  DCHECK(!is_shutdown_);
   DCHECK(embedded_worker_);
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
@@ -357,14 +349,11 @@ void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
 }
 
 void ServiceWorkerVersion::AddProcessToWorker(int process_id) {
-  DCHECK(!is_shutdown_);
   embedded_worker_->AddProcessReference(process_id);
 }
 
-void ServiceWorkerVersion::RemoveProcessToWorker(int process_id) {
-  // We may have been shutdown.
-  if (embedded_worker_)
-    embedded_worker_->ReleaseProcessReference(process_id);
+void ServiceWorkerVersion::RemoveProcessFromWorker(int process_id) {
+  embedded_worker_->ReleaseProcessReference(process_id);
 }
 
 void ServiceWorkerVersion::OnStarted() {

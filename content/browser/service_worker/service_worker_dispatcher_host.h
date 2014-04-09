@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DISPATCHER_HOST_H_
 
+#include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
@@ -17,6 +18,7 @@ namespace content {
 class MessagePortMessageFilter;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
+class ServiceWorkerHandle;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 
@@ -32,6 +34,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   virtual void OnDestruct() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
+
+  // Returns a new handle id.
+  int RegisterServiceWorkerHandle(scoped_ptr<ServiceWorkerHandle> handle);
 
  protected:
   virtual ~ServiceWorkerDispatcherHost();
@@ -65,9 +70,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                          int line_number,
                          int column_number,
                          const GURL& source_url);
-  void OnPostMessage(int64 version_id,
+  void OnPostMessage(int handle_id,
                      const base::string16& message,
                      const std::vector<int>& sent_message_port_ids);
+  void OnServiceWorkerObjectDestroyed(int handle_id);
 
   // Callbacks from ServiceWorkerContextCore
   void RegistrationComplete(int32 thread_id,
@@ -86,8 +92,11 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
 
   int render_process_id_;
   MessagePortMessageFilter* const message_port_message_filter_;
-
   base::WeakPtr<ServiceWorkerContextCore> context_;
+
+  IDMap<ServiceWorkerHandle, IDMapOwnPointer> handles_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDispatcherHost);
 };
 
 }  // namespace content

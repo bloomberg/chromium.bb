@@ -27,18 +27,6 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
 
 ServiceWorkerRegistration::~ServiceWorkerRegistration() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(is_shutdown_);
-}
-
-void ServiceWorkerRegistration::Shutdown() {
-  DCHECK(!is_shutdown_);
-  if (active_version_)
-    active_version_->Shutdown();
-  active_version_ = NULL;
-  if (pending_version_)
-    pending_version_->Shutdown();
-  pending_version_ = NULL;
-  is_shutdown_ = true;
   if (context_)
     context_->RemoveLiveRegistration(registration_id_);
 }
@@ -61,7 +49,6 @@ ServiceWorkerVersion* ServiceWorkerRegistration::GetNewestVersion() {
 
 void ServiceWorkerRegistration::ActivatePendingVersion() {
   active_version_->SetStatus(ServiceWorkerVersion::DEACTIVATED);
-  active_version_->Shutdown();
   active_version_ = pending_version_;
   // TODO(kinuko): This should be set to ACTIVATING until activation finishes.
   active_version_->SetStatus(ServiceWorkerVersion::ACTIVE);

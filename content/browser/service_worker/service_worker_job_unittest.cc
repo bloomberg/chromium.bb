@@ -24,12 +24,15 @@ namespace {
 void SaveRegistrationCallback(
     ServiceWorkerStatusCode expected_status,
     bool* called,
-    scoped_refptr<ServiceWorkerRegistration>* registration,
+    scoped_refptr<ServiceWorkerRegistration>* registration_out,
     ServiceWorkerStatusCode status,
-    ServiceWorkerVersion* result) {
+    ServiceWorkerRegistration* registration,
+    ServiceWorkerVersion* version) {
+  ASSERT_TRUE(!version || version->registration_id() == registration->id())
+      << version << " " << registration;
   EXPECT_EQ(expected_status, status);
   *called = true;
-  *registration = result ? result->registration() : NULL;
+  *registration_out = registration;
 }
 
 void SaveFoundRegistrationCallback(
@@ -453,8 +456,6 @@ TEST_F(ServiceWorkerJobTest, ParallelRegUnreg) {
   ASSERT_TRUE(registration_called);
   ASSERT_TRUE(unregistration_called);
 
-  ASSERT_TRUE(registration->is_shutdown());
-
   bool find_called = false;
   storage()->FindRegistrationForPattern(
       pattern,
@@ -507,8 +508,6 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(registration1->is_shutdown());
-  EXPECT_FALSE(registration2->is_shutdown());
   ASSERT_EQ(registration2, registration);
 }
 

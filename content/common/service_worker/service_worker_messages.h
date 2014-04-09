@@ -68,6 +68,10 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderCreated,
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderDestroyed,
                      int /* provider_id */)
 
+// Informs the browser of a ServiceWorker object being destroyed.
+IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed,
+                     int /* handle_id */)
+
 // Informs the browser that |provider_id| is associated
 // with a service worker script running context and
 // |version_id| identifies which ServcieWorkerVersion.
@@ -105,7 +109,7 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_FetchEventFinished,
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerRegistered,
                      int32 /* thread_id */,
                      int32 /* request_id */,
-                     int64 /* version_id */)
+                     int /* handle_id */)
 
 // Response to ServiceWorkerMsg_UnregisterServiceWorker
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_ServiceWorkerUnregistered,

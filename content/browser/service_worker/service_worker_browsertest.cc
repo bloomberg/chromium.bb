@@ -223,14 +223,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   virtual ~ServiceWorkerVersionBrowserTest() {}
 
   virtual void TearDownOnIOThread() OVERRIDE {
-    if (registration_) {
-      registration_->Shutdown();
-      registration_ = NULL;
-    }
-    if (version_) {
-      version_->Shutdown();
-      version_ = NULL;
-    }
+    registration_ = NULL;
+    version_ = NULL;
   }
 
   void InstallTestHelper(const std::string& worker_url,

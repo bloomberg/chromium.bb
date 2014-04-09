@@ -32,28 +32,6 @@ class ServiceWorkerRegistrationTest : public testing::Test {
   BrowserThreadImpl io_thread_;
 };
 
-TEST_F(ServiceWorkerRegistrationTest, Shutdown) {
-  const int64 registration_id = -1L;
-  const int64 version_id = -1L;
-  scoped_refptr<ServiceWorkerRegistration> registration =
-      new ServiceWorkerRegistration(
-          GURL("http://www.example.com/*"),
-          GURL("http://www.example.com/service_worker.js"),
-          registration_id,
-          context_ptr_);
-
-  scoped_refptr<ServiceWorkerVersion> active_version =
-      new ServiceWorkerVersion(registration, version_id, context_ptr_);
-  registration->set_active_version(active_version);
-
-  registration->Shutdown();
-
-  DCHECK(registration->is_shutdown());
-  DCHECK(active_version->is_shutdown());
-  DCHECK(registration->HasOneRef());
-  DCHECK(active_version->HasOneRef());
-}
-
 // Make sure that activation does not leak
 TEST_F(ServiceWorkerRegistrationTest, ActivatePending) {
   int64 registration_id = -1L;
@@ -77,19 +55,10 @@ TEST_F(ServiceWorkerRegistrationTest, ActivatePending) {
 
   registration->ActivatePendingVersion();
   DCHECK_EQ(version_2, registration->active_version());
-  DCHECK(version_1->is_shutdown());
   DCHECK(version_1->HasOneRef());
   version_1 = NULL;
 
-  DCHECK(!version_2->is_shutdown());
   DCHECK(!version_2->HasOneRef());
-
-  registration->Shutdown();
-
-  DCHECK(registration->is_shutdown());
-  DCHECK(version_2->is_shutdown());
-  DCHECK(registration->HasOneRef());
-  DCHECK(version_2->HasOneRef());
 }
 
 }  // namespace content

@@ -8,6 +8,7 @@
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_thread_task_runner.h"
+#include "content/common/service_worker/service_worker_messages.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace content {
@@ -36,6 +37,25 @@ bool ServiceWorkerMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   ServiceWorkerDispatcher::ThreadSpecificInstance(thread_safe_sender_.get())
       ->OnMessageReceived(msg);
   return true;
+}
+
+void ServiceWorkerMessageFilter::OnStaleMessageReceived(
+    const IPC::Message& msg) {
+  // Specifically handle some messages in case we failed to post task
+  // to the thread (meaning that the context on the thread is now gone).
+  IPC_BEGIN_MESSAGE_MAP(ServiceWorkerMessageFilter, msg)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistered,
+                        OnStaleRegistered)
+  IPC_END_MESSAGE_MAP()
+}
+
+void ServiceWorkerMessageFilter::OnStaleRegistered(int32 thread_id,
+                                                   int32 request_id,
+                                                   int handle_id) {
+  // Inform the browser that the context seems to have been destroyed
+  // (so that it can delete the corresponding ServiceWorker handle).
+  thread_safe_sender_->Send(
+      new ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed(handle_id));
 }
 
 }  // namespace content

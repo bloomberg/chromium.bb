@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
@@ -103,10 +104,17 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnSendMessageToBrowser)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_ReportException,
                         OnReportException)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed,
+                        OnServiceWorkerObjectDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+int ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(
+    scoped_ptr<ServiceWorkerHandle> handle) {
+  return handles_.Add(handle.release());
 }
 
 void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
@@ -171,7 +179,7 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
 }
 
 void ServiceWorkerDispatcherHost::OnPostMessage(
-    int64 version_id,
+    int handle_id,
     const base::string16& message,
     const std::vector<int>& sent_message_port_ids) {
   if (!context_ || !ServiceWorkerUtils::IsFeatureEnabled())
@@ -186,13 +194,13 @@ void ServiceWorkerDispatcherHost::OnPostMessage(
         new_routing_ids[i]);
   }
 
-  // TODO(kinuko,michaeln): Make sure we keep the version that has
-  // corresponding WebServiceWorkerImpl alive.
-  ServiceWorkerVersion* version = context_->GetLiveVersion(version_id);
-  if (!version)
+  ServiceWorkerHandle* handle = handles_.Lookup(handle_id);
+  if (!handle) {
+    BadMessageReceived();
     return;
+  }
 
-  version->SendMessage(
+  handle->version()->SendMessage(
       ServiceWorkerMsg_Message(message, sent_message_port_ids, new_routing_ids),
       base::Bind(&NoOpStatusCallback));
 }
@@ -206,7 +214,7 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(int provider_id) {
   }
   scoped_ptr<ServiceWorkerProviderHost> provider_host(
       new ServiceWorkerProviderHost(
-          render_process_id_, provider_id, context_));
+          render_process_id_, provider_id, context_, this));
   context_->AddProviderHost(provider_host.Pass());
 }
 
@@ -260,13 +268,21 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
     ServiceWorkerStatusCode status,
     int64 registration_id,
     int64 version_id) {
+  if (!context_)
+    return;
+
   if (status != SERVICE_WORKER_OK) {
     SendRegistrationError(thread_id, request_id, status);
     return;
   }
 
+  ServiceWorkerVersion* version = context_->GetLiveVersion(version_id);
+  DCHECK(version);
+  DCHECK_EQ(registration_id, version->registration_id());
+  int handle_id = RegisterServiceWorkerHandle(
+      ServiceWorkerHandle::Create(context_, this, thread_id, version));
   Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
-      thread_id, request_id, version_id));
+      thread_id, request_id, handle_id));
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerStarted(
@@ -304,6 +320,11 @@ void ServiceWorkerDispatcherHost::OnReportException(
   // (http://crbug.com/359517).
   DVLOG(2) << "[Error] " << error_message << " (" << source_url
            << ":" << line_number << "," << column_number << ")";
+}
+
+void ServiceWorkerDispatcherHost::OnServiceWorkerObjectDestroyed(
+    int handle_id) {
+  handles_.Remove(handle_id);
 }
 
 void ServiceWorkerDispatcherHost::UnregistrationComplete(

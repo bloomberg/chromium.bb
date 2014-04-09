@@ -12,9 +12,14 @@
 #include "content/common/content_export.h"
 #include "webkit/common/resource_type.h"
 
+namespace ipc {
+class Sender;
+}
+
 namespace content {
 
 class ServiceWorkerContextCore;
+class ServiceWorkerDispatcherHost;
 class ServiceWorkerVersion;
 
 // This class is the browser-process representation of a serice worker
@@ -27,7 +32,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
  public:
   ServiceWorkerProviderHost(int process_id,
                             int provider_id,
-                            base::WeakPtr<ServiceWorkerContextCore> context);
+                            base::WeakPtr<ServiceWorkerContextCore> context,
+                            ServiceWorkerDispatcherHost* dispatcher_host);
   ~ServiceWorkerProviderHost();
 
   int process_id() const { return process_id_; }
@@ -54,6 +60,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void AddScriptClient(int thread_id);
   void RemoveScriptClient(int thread_id);
 
+  // TODO(kinuko): Change this into two set methods for .active and .pending.
   // Associate |version| to this provider host. Giving NULL to this method
   // will unset the associated version.
   void AssociateVersion(ServiceWorkerVersion* version);
@@ -73,6 +80,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   scoped_refptr<ServiceWorkerVersion> associated_version_;
   scoped_refptr<ServiceWorkerVersion> hosted_version_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
+  ServiceWorkerDispatcherHost* dispatcher_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHost);
 };
 
 }  // namespace content

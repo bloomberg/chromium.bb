@@ -16,12 +16,21 @@ using blink::WebString;
 
 namespace content {
 
-WebServiceWorkerImpl::~WebServiceWorkerImpl() {}
+WebServiceWorkerImpl::WebServiceWorkerImpl(
+    int handle_id,
+    ThreadSafeSender* thread_safe_sender)
+    : handle_id_(handle_id),
+      thread_safe_sender_(thread_safe_sender) {}
+
+WebServiceWorkerImpl::~WebServiceWorkerImpl() {
+  thread_safe_sender_->Send(
+      new ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed(handle_id_));
+}
 
 void WebServiceWorkerImpl::postMessage(const WebString& message,
                                        WebMessagePortChannelArray* channels) {
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_PostMessage(
-      version_id_,
+      handle_id_,
       message,
       WebMessagePortChannelImpl::ExtractMessagePortIDs(channels)));
 }

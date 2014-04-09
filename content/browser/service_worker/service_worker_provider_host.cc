@@ -6,6 +6,8 @@
 
 #include "base/stl_util.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_dispatcher_host.h"
+#include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 
@@ -13,10 +15,12 @@ namespace content {
 
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     int process_id, int provider_id,
-    base::WeakPtr<ServiceWorkerContextCore> context)
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    ServiceWorkerDispatcherHost* dispatcher_host)
     : process_id_(process_id),
       provider_id_(provider_id),
-      context_(context) {
+      context_(context),
+      dispatcher_host_(dispatcher_host) {
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
@@ -36,10 +40,22 @@ void ServiceWorkerProviderHost::RemoveScriptClient(int thread_id) {
 void ServiceWorkerProviderHost::AssociateVersion(
     ServiceWorkerVersion* version) {
   if (associated_version())
-    associated_version_->RemoveProcessToWorker(process_id_);
+    associated_version_->RemoveProcessFromWorker(process_id_);
   associated_version_ = version;
   if (version)
     version->AddProcessToWorker(process_id_);
+
+  if (!dispatcher_host_)
+    return;  // Could be NULL in some tests.
+
+  for (std::set<int>::iterator it = script_client_thread_ids_.begin();
+       it != script_client_thread_ids_.end();
+       ++it) {
+    dispatcher_host_->RegisterServiceWorkerHandle(
+        ServiceWorkerHandle::Create(context_, dispatcher_host_, *it, version));
+  }
+  // TODO(kinuko): change this method into two for .active and .pending,
+  // and dispatch activechange/pendingchange event to the script clients here.
 }
 
 bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
