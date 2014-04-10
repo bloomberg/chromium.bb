@@ -250,15 +250,6 @@ void PermissionSet::InitImplicitPermissions() {
   if (apis_.find(APIPermission::kDownloads) != apis_.end())
     apis_.insert(APIPermission::kDownloadsInternal);
 
-  // TODO(fsamuel): Is there a better way to request access to the WebRequest
-  // API without exposing it to the Chrome App?
-  if (apis_.find(APIPermission::kWebView) != apis_.end())
-    apis_.insert(APIPermission::kWebRequestInternal);
-
-  // The webRequest permission implies the internal version as well.
-  if (apis_.find(APIPermission::kWebRequest) != apis_.end())
-    apis_.insert(APIPermission::kWebRequestInternal);
-
   // The fileBrowserHandler permission implies the internal version as well.
   if (apis_.find(APIPermission::kFileBrowserHandler) != apis_.end())
     apis_.insert(APIPermission::kFileBrowserHandlerInternal);

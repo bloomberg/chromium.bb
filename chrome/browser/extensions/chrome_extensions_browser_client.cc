@@ -217,10 +217,6 @@ void ChromeExtensionsBrowserClient::RegisterExtensionFunctions(
 // ChromeExtensionsBrowserClient and refactor so this ifdef isn't necessary.
 // See http://crbug.com/349436
 #if defined(ENABLE_EXTENSIONS)
-  // WebRequest.
-  registry->RegisterFunction<WebRequestAddEventListener>();
-  registry->RegisterFunction<WebRequestEventHandled>();
-
   // Preferences.
   registry->RegisterFunction<extensions::GetPreferenceFunction>();
   registry->RegisterFunction<extensions::SetPreferenceFunction>();

@@ -162,7 +162,6 @@ class APIPermission {
     kWebNavigation,
     kWebRequest,
     kWebRequestBlocking,
-    kWebRequestInternal,
     kWebrtcAudioPrivate,
     kWebrtcLoggingPrivate,
     kWebstorePrivate,

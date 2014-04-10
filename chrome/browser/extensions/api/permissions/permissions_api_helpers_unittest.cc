@@ -30,8 +30,8 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 TEST(ExtensionPermissionsAPIHelpers, Pack) {
   APIPermissionSet apis;
   apis.insert(APIPermission::kTab);
-  apis.insert(APIPermission::kWebRequest);
-  // Note: kWebRequest implies also kWebRequestInternal.
+  apis.insert(APIPermission::kFileBrowserHandler);
+  // Note: kFileBrowserHandler implies kFileBrowserHandlerInternal.
   URLPatternSet hosts;
   AddPattern(&hosts, "http://a.com/*");
   AddPattern(&hosts, "http://b.com/*");
@@ -50,7 +50,8 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
   EXPECT_EQ(3u, api_list->GetSize());
   EXPECT_EQ(2u, origin_list->GetSize());
 
-  std::string expected_apis[] = { "tabs", "webRequest" };
+  std::string expected_apis[] = {"tabs", "fileBrowserHandler",
+                                 "fileBrowserHandlerInternal"};
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(expected_apis); ++i) {
     scoped_ptr<base::Value> value(new base::StringValue(expected_apis[i]));
     EXPECT_NE(api_list->end(), api_list->Find(*value));

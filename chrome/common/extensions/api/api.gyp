@@ -31,6 +31,7 @@
           'music_manager_private.idl',
           'principals_private.idl',
           'top_sites.json',
+          'web_request_internal.json',
         ],
         'conditions': [
           ['OS!="android"', {

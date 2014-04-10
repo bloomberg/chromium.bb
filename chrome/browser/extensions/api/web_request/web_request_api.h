@@ -467,25 +467,27 @@ class ExtensionWebRequestEventRouter
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };
 
-class WebRequestAddEventListener : public SyncIOThreadExtensionFunction {
+class WebRequestInternalAddEventListenerFunction
+    : public SyncIOThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webRequestInternal.addEventListener",
                              WEBREQUESTINTERNAL_ADDEVENTLISTENER)
 
  protected:
-  virtual ~WebRequestAddEventListener() {}
+  virtual ~WebRequestInternalAddEventListenerFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class WebRequestEventHandled : public SyncIOThreadExtensionFunction {
+class WebRequestInternalEventHandledFunction
+    : public SyncIOThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webRequestInternal.eventHandled",
                              WEBREQUESTINTERNAL_EVENTHANDLED)
 
  protected:
-  virtual ~WebRequestEventHandled() {}
+  virtual ~WebRequestInternalEventHandledFunction() {}
 
   // Unblocks the network request and sets |error_| such that the developer
   // console will show the respective error message. Use this function to handle

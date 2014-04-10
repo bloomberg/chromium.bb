@@ -771,7 +771,7 @@
   "webRequestInternal": {
     "internal": true,
     "channel": "stable",
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+    "contexts": ["blessed_extension", "unblessed_extension"]
   },
   "webrtcAudioPrivate": {
     "dependencies": ["permission:webrtcAudioPrivate"],
