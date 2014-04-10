@@ -59,10 +59,10 @@ public class UiUtils {
         if (rootView == null) return false;
         Rect appRect = new Rect();
         rootView.getWindowVisibleDisplayFrame(appRect);
-        final float screenHeight = context.getResources().getDisplayMetrics().heightPixels;
-        final float bottomMargin = Math.abs(appRect.bottom - screenHeight);
+
         final float density = context.getResources().getDisplayMetrics().density;
-        return bottomMargin > KEYBOARD_DETECT_BOTTOM_THRESHOLD_DP * density;
+        final float bottomMarginDp = Math.abs(rootView.getHeight() - appRect.height()) / density;
+        return bottomMarginDp > KEYBOARD_DETECT_BOTTOM_THRESHOLD_DP;
     }
 
     /**
