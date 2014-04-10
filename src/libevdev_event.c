@@ -490,14 +490,19 @@ Event_Process(EvdevPtr device, struct input_event* ev)
  * Dump the log of input events to disk
  */
 void
-Event_Dump_Debug_Log(void* vinfo)
+Event_Dump_Debug_Log(void* vinfo) {
+    Event_Dump_Debug_Log_To(vinfo, "/var/log/xorg/cmt_input_events.dat");
+}
+
+void
+Event_Dump_Debug_Log_To(void* vinfo, const char* filename)
 {
     EvdevPtr device = (EvdevPtr) vinfo;
     size_t i;
     int ret;
     EventStatePtr evstate = device->evstate;
 
-    FILE* fp = fopen("/var/log/xorg/cmt_input_events.dat", "wb");
+    FILE* fp = fopen(filename, "wb");
     if (!fp) {
         LOG_ERROR(device, "fopen() failed for debug log");
         return;
