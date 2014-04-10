@@ -23,55 +23,11 @@ InspectorTest.findLayerTreeElement = function(layer)
     return element.listItemElement;
 }
 
-InspectorTest.find3DViewElement = function(layer)
-{
-    var layers3DView = WebInspector.inspectorView.panel("layers")._layers3DView;
-    return layers3DView._elementForLayer(layer);
-}
-
-InspectorTest.dispatchMouseEvent = function(eventType, button, element, offsetX, offsetY)
-{
-    var totalOffset = element.totalOffset();
-    var scrollOffset = element.scrollOffset();
-    var eventArguments = {
-        bubbles: true,
-        cancelable: true,
-        view: window,
-        screenX: totalOffset.left - scrollOffset.left + offsetX,
-        screenY: totalOffset.top - scrollOffset.top + offsetY,
-        clientX: totalOffset.left + offsetX,
-        clientY: totalOffset.top + offsetY,
-        button: button
-    };
-    if (eventType === "mouseout") {
-        eventArguments.screenX = 0;
-        eventArguments.screenY = 0;
-        eventArguments.clientX = 0;
-        eventArguments.clientY = 0;
-    }
-    element.dispatchEvent(new MouseEvent(eventType, eventArguments));
-}
-
 InspectorTest.dispatchMouseEventToLayerTree = function(eventType, button, layer)
 {
     var element = InspectorTest.findLayerTreeElement(layer);
     InspectorTest.assertTrue(!!element);
     InspectorTest.dispatchMouseEvent(eventType, button, element, element.clientWidth >> 1, element.clientHeight >> 1);
-}
-
-InspectorTest.dispatchMouseEventTo3DView = function(eventType, button, layer)
-{
-    // Caveat: this will blow if layers are transformed. We only take root layer scale into account.
-    var layer3DView = WebInspector.inspectorView.panel("layers")._layers3DView;
-    const borderWidth = 1;
-    var offsetX = borderWidth;
-    var offsetY = borderWidth;
-    for (var currentLayer = layer; currentLayer && currentLayer.node(); currentLayer = currentLayer.parent()) {
-         offsetX += Math.round(layer3DView._scale * currentLayer.offsetX()) + borderWidth;
-         offsetY += Math.round(layer3DView._scale * currentLayer.offsetY()) + borderWidth;
-    }
-    var rootElement = layer3DView._elementForLayer(InspectorTest.layerTreeModel.contentRoot());
-    InspectorTest.dispatchMouseEvent(eventType, button, rootElement, offsetX, offsetY);
 }
 
 InspectorTest.dumpSelectedStyles = function(message, element)
@@ -93,18 +49,14 @@ function test()
     {
         var layerB1 = InspectorTest.findLayerByNodeIdAttribute("b1");
         var treeElementB1 = InspectorTest.findLayerTreeElement(layerB1);
-        var viewElementB1 = InspectorTest.find3DViewElement(layerB1);
 
         var layerB3 = InspectorTest.findLayerByNodeIdAttribute("b3");
         var treeElementB3 = InspectorTest.findLayerTreeElement(layerB3);
-        var viewElementB3 = InspectorTest.find3DViewElement(layerB3);
 
         function dumpElementSelectionState()
         {
             InspectorTest.dumpSelectedStyles("Layer b1 in tree", treeElementB1);
             InspectorTest.dumpSelectedStyles("Layer b3 in tree", treeElementB3);
-            InspectorTest.dumpSelectedStyles("Layer b1 in view", viewElementB1);
-            InspectorTest.dumpSelectedStyles("Layer b3 in view", viewElementB3);
         }
         InspectorTest.addResult("Hovering b1 in tree");
         InspectorTest.dispatchMouseEventToLayerTree("mousemove", -1, layerB1);
@@ -124,26 +76,6 @@ function test()
 
         InspectorTest.addResult("Selecting b3 in tree");
         InspectorTest.dispatchMouseEventToLayerTree("mousedown", 0, layerB3);
-        dumpElementSelectionState();
-
-        InspectorTest.addResult("Hovering b1 in view");
-        InspectorTest.dispatchMouseEventTo3DView("mousemove", -1, layerB1);
-        dumpElementSelectionState();
-
-        InspectorTest.addResult("Hovering b3 in view");
-        InspectorTest.dispatchMouseEventTo3DView("mousemove", -1, layerB3);
-        dumpElementSelectionState();
-
-        InspectorTest.addResult("Hovering away from view");
-        InspectorTest.dispatchMouseEventTo3DView("mouseout", -1, layerB3);
-        dumpElementSelectionState();
-
-        InspectorTest.addResult("Selecting b1 in view");
-        InspectorTest.dispatchMouseEventTo3DView("click", 0, layerB1);
-        dumpElementSelectionState();
-
-        InspectorTest.addResult("Selecting b3 in view");
-        InspectorTest.dispatchMouseEventTo3DView("click", 1, layerB3);
         dumpElementSelectionState();
 
         InspectorTest.completeTest();

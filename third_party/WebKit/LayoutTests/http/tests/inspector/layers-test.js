@@ -7,6 +7,7 @@ function initialize_LayerTreeTests()
             WebInspector.inspectorView.addPanel(new WebInspector.ModuleManagerExtensionPanelDescriptor(extension));
     });
     InspectorTest.layerTreeModel = WebInspector.inspectorView.panel("layers")._model;
+    InspectorTest.layers3DView = WebInspector.inspectorView.panel("layers")._layers3DView;
 
     InspectorTest.labelForLayer = function(layer)
     {
@@ -53,7 +54,7 @@ function initialize_LayerTreeTests()
         if (!prefix)
             prefix = "";
         if (!root)
-            root = WebInspector.inspectorView.panel("layers")._layers3DView._rotatingContainerElement;
+            root = InspectorTest.layers3DView._rotatingContainerElement;
         if (root.__layer)
             InspectorTest.addResult(prefix + InspectorTest.labelForLayer(root.__layer));
         for (var element = root.firstElementChild; element; element = element.nextSibling)
@@ -102,36 +103,38 @@ function initialize_LayerTreeTests()
         }
     }
 
-    InspectorTest.dumpViewScrollRect = function(element)
-    {
-        var value = {
-            className: element.className,
-            title: element.title,
-            width: element.style.width,
-            height: element.style.height,
-            left: element.style.left,
-            top: element.style.top
-        };
-        if (element.__unchanged)
-            value.__unchanged = element.__unchanged;
-        InspectorTest.addObject(value, null, "", "scroll-rect: ");
-    }
-
-    InspectorTest.dumpViewScrollRects = function()
-    {
-        InspectorTest.addResult("View elements dump");
-        var root = WebInspector.inspectorView.panel("layers")._layers3DView._rotatingContainerElement;
-        Array.prototype.forEach.call(root.querySelectorAll('.scroll-rect'), InspectorTest.dumpViewScrollRect.bind(InspectorTest));
-    }
-
     InspectorTest.dumpModelScrollRects = function()
     {
         function dumpScrollRectsForLayer(layer)
         {
-            InspectorTest.addObject(layer._scrollRects);
+            if (layer._scrollRects.length > 0)
+                InspectorTest.addObject(layer._scrollRects);
         }
 
         InspectorTest.addResult("Model elements dump");
         InspectorTest.layerTreeModel.forEachLayer(dumpScrollRectsForLayer.bind(this));
+    }
+
+    InspectorTest.dispatchMouseEvent = function(eventType, button, element, offsetX, offsetY)
+    {
+        var totalOffset = element.totalOffset();
+        var scrollOffset = element.scrollOffset();
+        var eventArguments = {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            screenX: totalOffset.left - scrollOffset.left + offsetX,
+            screenY: totalOffset.top - scrollOffset.top + offsetY,
+            clientX: totalOffset.left + offsetX,
+            clientY: totalOffset.top + offsetY,
+            button: button
+        };
+        if (eventType === "mouseout") {
+            eventArguments.screenX = 0;
+            eventArguments.screenY = 0;
+            eventArguments.clientX = 0;
+            eventArguments.clientY = 0;
+        }
+        element.dispatchEvent(new MouseEvent(eventType, eventArguments));
     }
 }

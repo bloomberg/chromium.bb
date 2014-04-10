@@ -1,51 +1,16 @@
 Hovering b1 in tree
 Layer b1 in tree: hovered
 Layer b3 in tree: 
-Layer b1 in view: hovered
-Layer b3 in view: 
 Hovering b3 in tree
 Layer b1 in tree: 
 Layer b3 in tree: hovered
-Layer b1 in view: 
-Layer b3 in view: hovered
 Hovering away from tree
 Layer b1 in tree: 
 Layer b3 in tree: 
-Layer b1 in view: 
-Layer b3 in view: 
 Selecting b1 in tree
 Layer b1 in tree: selected
 Layer b3 in tree: 
-Layer b1 in view: selected
-Layer b3 in view: 
 Selecting b3 in tree
 Layer b1 in tree: 
 Layer b3 in tree: selected
-Layer b1 in view: 
-Layer b3 in view: selected
-Hovering b1 in view
-Layer b1 in tree: hovered
-Layer b3 in tree: selected
-Layer b1 in view: hovered
-Layer b3 in view: selected
-Hovering b3 in view
-Layer b1 in tree: 
-Layer b3 in tree: selected, hovered
-Layer b1 in view: 
-Layer b3 in view: selected, hovered
-Hovering away from view
-Layer b1 in tree: 
-Layer b3 in tree: selected
-Layer b1 in view: 
-Layer b3 in view: selected
-Selecting b1 in view
-Layer b1 in tree: selected
-Layer b3 in tree: 
-Layer b1 in view: selected
-Layer b3 in view: 
-Selecting b3 in view
-Layer b1 in tree: 
-Layer b3 in tree: selected
-Layer b1 in view: 
-Layer b3 in view: selected
 

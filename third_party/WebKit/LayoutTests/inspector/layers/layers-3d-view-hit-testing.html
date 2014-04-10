@@ -1,0 +1,107 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/layers-test.js"></script>
+<script>
+function test()
+{
+    var contentRoot;
+    var layers;
+    var rootOffsetXInPixels, rootOffsetYInPixels, rootHeightInPixels, rootWidthInPixels;
+    var canvas;
+    const ButtonByEventType = { mousemove: -1, mousedown: 0, mouseup: 0 };
+
+    function initLayers()
+    {
+        layerA = InspectorTest.findLayerByNodeIdAttribute("a");
+        layerB = InspectorTest.findLayerByNodeIdAttribute("b");
+        contentRoot = InspectorTest.layerTreeModel.contentRoot();
+        layers = [{layer: layerA, name: "layer a"}, {layer: layerB, name: "layer b"}, {layer: contentRoot, name: "content root"}];
+    }
+
+    function initSizes()
+    {
+        canvas = InspectorTest.layers3DView._canvasElement;
+        var canvasWidth = canvas.offsetWidth;
+        var canvasHeight = canvas.offsetHeight;
+        var rootWidth = contentRoot.width();
+        var rootHeight = contentRoot.height();
+        var scaleX = rootWidth / canvasWidth;
+        var scaleY = rootHeight / canvasHeight;
+        var resultScale = Math.max(scaleX, scaleY);
+        var width = canvasWidth * resultScale;
+        var height = canvasHeight * resultScale;
+        var rootOffsetX = (width - rootWidth) / 2;
+        var rootOffsetY = (height - rootHeight) / 2;
+        rootOffsetXInPixels = rootOffsetX / width * canvasWidth;
+        rootOffsetYInPixels = rootOffsetY / height * canvasHeight;
+        rootHeightInPixels = rootHeight / height * canvasHeight;
+        rootWidthInPixels = rootHeight / width * canvasWidth;
+    }
+
+    function dispatchMouseEventOnCanvas(eventType, x, y)
+    {
+        InspectorTest.dispatchMouseEvent(eventType, ButtonByEventType[eventType], canvas, rootOffsetXInPixels + rootWidthInPixels * x, rootOffsetYInPixels + rootHeightInPixels * y);
+    }
+
+    function dumpStateForOutlineType(type)
+    {
+        var outlined = "none";
+
+        function checkLayer(layerInfo)
+        {
+            if (layerInfo.layer.id() === InspectorTest.layers3DView._lastOutlinedLayerId[type])
+                outlined = layerInfo.name;
+        }
+
+        layers.forEach(checkLayer);
+        InspectorTest.addResult(type + " layer: " + outlined);
+    }
+
+    function dumpOutlinedStateForLayers()
+    {
+        InspectorTest.addResult("State of layers:");
+        dumpStateForOutlineType(WebInspector.Layers3DView.OutlineType.Hovered);
+        dumpStateForOutlineType(WebInspector.Layers3DView.OutlineType.Selected);
+    }
+
+    function onGotLayers()
+    {
+        initLayers();
+        initSizes();
+
+        InspectorTest.addResult("Initial state");
+        dumpOutlinedStateForLayers();
+
+        InspectorTest.addResult("\nHovering content root");
+        dispatchMouseEventOnCanvas("mousemove", 0.1237135833164431, 0.11536508236291274);
+        dumpOutlinedStateForLayers();
+
+        InspectorTest.addResult("\nSelecting layer b");
+        dispatchMouseEventOnCanvas("mousedown", 0.5, 0.5);
+        dispatchMouseEventOnCanvas("mouseup", 0.5, 0.5);
+        dumpOutlinedStateForLayers();
+
+        InspectorTest.addResult("\nHovering layer a");
+        dispatchMouseEventOnCanvas("mousemove", 0.4, 0.1);
+        dumpOutlinedStateForLayers();
+
+        InspectorTest.addResult("\nSelecting content root");
+        dispatchMouseEventOnCanvas("mousedown", 0.5, 0.001);
+        dispatchMouseEventOnCanvas("mouseup", 0.5, 0.001);
+        dumpOutlinedStateForLayers();
+
+        InspectorTest.completeTest();
+    }
+
+    WebInspector.inspectorView.showPanel("layers");
+    InspectorTest.requestLayers(onGotLayers);
+}
+</script>
+</head>
+<body onload="runTest()" style="height:500px;width:500px;">
+<div id="a" style="-webkit-transform:translateZ(0px) translateY(60px) rotateZ(45deg);width:300px;height:300px;margin-left:100px;">
+    <div id="b" style="-webkit-transform:translateX(0px) translateY(0px) translateZ(0px) rotateX(45deg) rotateY(45deg);width:300px;height:300px;"></div>
+</div>
+</body>
+</html>
