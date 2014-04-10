@@ -84,7 +84,7 @@ component("ssl") {
   }
 
   if (is_linux) {
-    include_dirs = [ "bodge" ]
+    include_dirs = [ "ssl/bodge" ]
     configs += [ "//third_party/nss:nss_linux_config" ]
   }
   if (is_mac) {
