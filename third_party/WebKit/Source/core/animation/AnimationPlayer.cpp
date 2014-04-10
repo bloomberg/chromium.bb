@@ -325,18 +325,22 @@ bool AnimationPlayer::update(UpdateReason reason)
         m_content->updateInheritedTime(inheritedTime);
     }
 
-    if (reason == UpdateForAnimationFrame) {
+    if (finished() && !m_finished) {
         const AtomicString& eventType = EventTypeNames::finish;
-        if (finished() && !m_finished && executionContext() && hasEventListeners(eventType)) {
-            RefPtrWillBeRawPtr<AnimationPlayerEvent> event = AnimationPlayerEvent::create(eventType, currentTime(), timeline()->currentTime());
-            event->setTarget(this);
-            event->setCurrentTarget(this);
-            m_timeline->document()->enqueueAnimationFrameEvent(event.release());
+        if (executionContext() && hasEventListeners(eventType)) {
+            if (reason == UpdateForAnimationFrame) {
+                RefPtrWillBeRawPtr<AnimationPlayerEvent> event = AnimationPlayerEvent::create(eventType, currentTime(), timeline()->currentTime());
+                event->setTarget(this);
+                event->setCurrentTarget(this);
+                m_timeline->document()->enqueueAnimationFrameEvent(event.release());
+                m_finished = true;
+            }
+        } else {
+            m_finished = true;
         }
-        m_finished = finished();
     }
     ASSERT(!m_outdated);
-    return !m_finished || (m_content && (m_content->isCurrent() || m_content->isInEffect()));
+    return !m_finished || !finished();
 }
 
 double AnimationPlayer::timeToEffectChange()
@@ -362,6 +366,12 @@ bool AnimationPlayer::SortInfo::operator<(const SortInfo& other) const
     if (m_startTime > other.m_startTime)
         return false;
     return m_sequenceNumber < other.m_sequenceNumber;
+}
+
+bool AnimationPlayer::canFree() const
+{
+    ASSERT(m_content);
+    return hasOneRef() && m_content->isAnimation() && m_content->hasOneRef();
 }
 
 bool AnimationPlayer::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)

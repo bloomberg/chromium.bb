@@ -9,31 +9,15 @@
     }
   </style>
   <script>
-    var started = false;
-    function checkRunning()
-    {
-      if (!started) {
-        if (internals.numberOfActiveAnimations() > 0)
-          started = true;
-      } else if (internals.numberOfActiveAnimations() == 0) {
-        document.getElementById('result').innerHTML = "Number of active animations before transition is (0) as expected";
-        testRunner.notifyDone();
-        return;
-      }
-      // Loop until we see the expected state transitions, if we don't see them the test will time out.
-      requestAnimationFrame(checkRunning);
-    }
-
     if (window.testRunner) {
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
     }
     onload = function() {
-        document.getElementById("doomSpan").style.opacity=1;
-        // Force a layout so that the animation is running when checkRunning is first called.
-        document.body.offsetHeight;
-        if (window.testRunner)
-            checkRunning();
+        var doomSpan = document.getElementById("doomSpan");
+        doomSpan.style.opacity=1;
+        if (testRunner)
+            doomSpan.addEventListener('webkitTransitionEnd', function() { testRunner.notifyDone(); });
     }
   </script>
 </head>

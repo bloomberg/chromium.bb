@@ -43,6 +43,7 @@ namespace WebCore {
 class Dictionary;
 class Element;
 class ExceptionState;
+class SampledEffect;
 
 class Animation FINAL : public TimedItem {
 
@@ -60,17 +61,13 @@ public:
 
     virtual bool isAnimation() const OVERRIDE { return true; }
 
-    const WillBeHeapVector<RefPtrWillBeMember<Interpolation> >& activeInterpolations() const
-    {
-        ASSERT(m_activeInterpolations);
-        return *m_activeInterpolations;
-    }
-
     bool affects(CSSPropertyID) const;
     const AnimationEffect* effect() const { return m_effect.get(); }
     AnimationEffect* effect() { return m_effect.get(); }
     Priority priority() const { return m_priority; }
     Element* target() { return m_target.get(); }
+
+    void notifySampledEffectRemovedFromAnimationStack();
 
     bool isCandidateForAnimationOnCompositor() const;
     // Must only be called once.
@@ -81,7 +78,7 @@ public:
     void pauseAnimationForTestingOnCompositor(double pauseTime);
 
 protected:
-    void applyEffects(bool previouslyInEffect);
+    void applyEffects();
     void clearEffects();
     virtual void updateChildrenAndEffects() const OVERRIDE;
     virtual void didAttach() OVERRIDE;
@@ -95,8 +92,7 @@ private:
     RefPtr<Element> m_target;
     RefPtrWillBePersistent<AnimationEffect> m_effect;
 
-    bool m_activeInAnimationStack;
-    OwnPtrWillBePersistent<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > m_activeInterpolations;
+    SampledEffect* m_sampledEffect;
 
     Priority m_priority;
 

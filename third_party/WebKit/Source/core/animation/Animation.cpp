@@ -89,7 +89,7 @@ Animation::Animation(PassRefPtr<Element> target, PassRefPtrWillBeRawPtr<Animatio
     : TimedItem(timing, eventDelegate)
     , m_target(target)
     , m_effect(effect)
-    , m_activeInAnimationStack(false)
+    , m_sampledEffect(0)
     , m_priority(priority)
 {
 }
@@ -108,7 +108,7 @@ void Animation::willDetach()
         m_target->activeAnimations()->players().remove(player());
         m_target->setNeedsAnimationStyleRecalc();
     }
-    if (m_activeInAnimationStack)
+    if (m_sampledEffect)
         clearEffects();
 }
 
@@ -123,33 +123,38 @@ static AnimationStack& ensureAnimationStack(Element* element)
     return element->ensureActiveAnimations().defaultStack();
 }
 
-void Animation::applyEffects(bool previouslyInEffect)
+void Animation::applyEffects()
 {
     ASSERT(isInEffect());
     ASSERT(player());
     if (!m_target || !m_effect)
         return;
 
-    if (!previouslyInEffect) {
-        ensureAnimationStack(m_target.get()).add(this);
-        m_activeInAnimationStack = true;
-    }
-
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
     // FIXME: Handle iteration values which overflow int.
-    m_activeInterpolations = m_effect->sample(static_cast<int>(iteration), timeFraction(), duration());
+    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > interpolations = m_effect->sample(static_cast<int>(iteration), timeFraction(), duration());
+    if (m_sampledEffect) {
+        m_sampledEffect->setInterpolations(interpolations.release());
+    } else if (!interpolations->isEmpty()) {
+        OwnPtr<SampledEffect> sampledEffect = SampledEffect::create(this, interpolations.release());
+        m_sampledEffect = sampledEffect.get();
+        ensureAnimationStack(m_target.get()).add(sampledEffect.release());
+    } else {
+        return;
+    }
+
     m_target->setNeedsAnimationStyleRecalc();
 }
 
 void Animation::clearEffects()
 {
     ASSERT(player());
-    ASSERT(m_activeInAnimationStack);
-    ensureAnimationStack(m_target.get()).remove(this);
+    ASSERT(m_sampledEffect);
+
+    m_sampledEffect->clear();
+    m_sampledEffect = 0;
     cancelAnimationOnCompositor();
-    m_activeInAnimationStack = false;
-    m_activeInterpolations.clear();
     m_target->setNeedsAnimationStyleRecalc();
     invalidate();
 }
@@ -159,8 +164,8 @@ void Animation::updateChildrenAndEffects() const
     if (!m_effect)
         return;
     if (isInEffect())
-        const_cast<Animation*>(this)->applyEffects(m_activeInAnimationStack);
-    else if (m_activeInAnimationStack)
+        const_cast<Animation*>(this)->applyEffects();
+    else if (m_sampledEffect)
         const_cast<Animation*>(this)->clearEffects();
 }
 
@@ -202,6 +207,12 @@ double Animation::calculateTimeToEffectChange(bool forwards, double localTime, d
         ASSERT_NOT_REACHED();
         return std::numeric_limits<double>::infinity();
     }
+}
+
+void Animation::notifySampledEffectRemovedFromAnimationStack()
+{
+    ASSERT(m_sampledEffect);
+    m_sampledEffect = 0;
 }
 
 bool Animation::isCandidateForAnimationOnCompositor() const

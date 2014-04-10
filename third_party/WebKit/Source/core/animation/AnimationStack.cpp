@@ -33,6 +33,9 @@
 
 #include "core/animation/Interpolation.h"
 #include "core/animation/css/CSSAnimations.h"
+#include "wtf/BitArray.h"
+#include "wtf/NonCopyingSort.h"
+#include <algorithm>
 
 namespace WebCore {
 
@@ -40,17 +43,16 @@ namespace {
 
 void copyToActiveInterpolationMap(const WillBeHeapVector<RefPtrWillBeMember<WebCore::Interpolation> >& source, WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<WebCore::Interpolation> >& target)
 {
-    for (WillBeHeapVector<RefPtrWillBeMember<WebCore::Interpolation> >::const_iterator iter = source.begin(); iter != source.end(); ++iter) {
-        RefPtrWillBeRawPtr<WebCore::Interpolation> interpolation = *iter;
-        WebCore::StyleInterpolation *styleInterpolation = toStyleInterpolation(interpolation.get());
-        target.set(styleInterpolation->id(), styleInterpolation);
+    for (size_t i = 0; i < source.size(); ++i) {
+        Interpolation* interpolation = source[i].get();
+        target.set(toStyleInterpolation(interpolation)->id(), interpolation);
     }
 }
 
-bool compareAnimations(Animation* animation1, Animation* animation2)
+bool compareEffects(const OwnPtr<SampledEffect>& effect1, const OwnPtr<SampledEffect>& effect2)
 {
-    ASSERT(animation1->player() && animation2->player());
-    return AnimationPlayer::hasLowerPriority(animation1->player(), animation2->player());
+    ASSERT(effect1 && effect2);
+    return effect1->sortInfo() < effect2->sortInfo();
 }
 
 void copyNewAnimationsToActiveInterpolationMap(const Vector<InertAnimation*>& newAnimations, WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& result)
@@ -71,8 +73,8 @@ AnimationStack::AnimationStack()
 
 bool AnimationStack::affects(CSSPropertyID property) const
 {
-    for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
-        if (m_activeAnimations[i]->affects(property))
+    for (size_t i = 0; i < m_effects.size(); ++i) {
+        if (m_effects[i]->animation() && m_effects[i]->animation()->affects(property))
             return true;
     }
     return false;
@@ -80,8 +82,8 @@ bool AnimationStack::affects(CSSPropertyID property) const
 
 bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) const
 {
-    for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
-        if (m_activeAnimations[i]->hasActiveAnimationsOnCompositor(property))
+    for (size_t i = 0; i < m_effects.size(); ++i) {
+        if (m_effects[i]->animation() && m_effects[i]->animation()->hasActiveAnimationsOnCompositor(property))
             return true;
     }
     return false;
@@ -94,19 +96,19 @@ WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > AnimationSt
     WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > result;
 
     if (animationStack) {
-        Vector<Animation*>& animations = animationStack->m_activeAnimations;
-        std::sort(animations.begin(), animations.end(), compareAnimations);
-        for (size_t i = 0; i < animations.size(); ++i) {
-            Animation* animation = animations[i];
-            if (animation->priority() != priority)
+        Vector<OwnPtr<SampledEffect> >& effects = animationStack->m_effects;
+        // std::sort doesn't work with OwnPtrs
+        nonCopyingSort(effects.begin(), effects.end(), compareEffects);
+        animationStack->simplifyEffects();
+        for (size_t i = 0; i < effects.size(); ++i) {
+            const SampledEffect& effect = *effects[i];
+            if (effect.priority() != priority || (cancelledAnimationPlayers && effect.animation() && cancelledAnimationPlayers->contains(effect.animation()->player())))
                 continue;
-            if (cancelledAnimationPlayers && cancelledAnimationPlayers->contains(animation->player()))
-                continue;
-            if (animation->player()->startTime() > timelineCurrentTime && newAnimations) {
+            if (newAnimations && effect.sortInfo().startTime() > timelineCurrentTime) {
                 copyNewAnimationsToActiveInterpolationMap(*newAnimations, result);
                 newAnimations = 0;
             }
-            copyToActiveInterpolationMap(animation->activeInterpolations(), result);
+            copyToActiveInterpolationMap(effect.interpolations(), result);
         }
     }
 
@@ -114,6 +116,32 @@ WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > AnimationSt
         copyNewAnimationsToActiveInterpolationMap(*newAnimations, result);
 
     return result;
+}
+
+void AnimationStack::simplifyEffects()
+{
+    // FIXME: This will need to be updated when we have 'add' keyframes.
+
+    BitArray<numCSSProperties> replacedProperties;
+    for (size_t i = m_effects.size(); i--; ) {
+        SampledEffect& effect = *m_effects[i];
+        effect.removeReplacedInterpolationsIfNeeded(replacedProperties);
+        if (!effect.canChange()) {
+            for (size_t i = 0; i < effect.interpolations().size(); ++i)
+                replacedProperties.set(toStyleInterpolation(effect.interpolations()[i].get())->id());
+        }
+    }
+
+    size_t dest = 0;
+    for (size_t i = 0; i < m_effects.size(); ++i) {
+        if (!m_effects[i]->interpolations().isEmpty()) {
+            swap(m_effects[dest++], m_effects[i]);
+            continue;
+        }
+        if (m_effects[i]->animation())
+            m_effects[i]->animation()->notifySampledEffectRemovedFromAnimationStack();
+    }
+    m_effects.shrink(dest);
 }
 
 } // namespace WebCore

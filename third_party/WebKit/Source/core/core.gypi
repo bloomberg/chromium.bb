@@ -648,6 +648,8 @@
             'animation/InterpolationEffect.h',
             'animation/KeyframeEffectModel.cpp',
             'animation/KeyframeEffectModel.h',
+            'animation/SampledEffect.cpp',
+            'animation/SampledEffect.h',
             'animation/StringKeyframe.cpp',
             'animation/StringKeyframe.h',
             'animation/TimedItem.cpp',

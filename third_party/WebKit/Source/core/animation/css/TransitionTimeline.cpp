@@ -33,7 +33,6 @@
 
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimationClock.h"
-#include "core/animation/AnimationStack.h"
 
 namespace WebCore {
 

@@ -184,7 +184,7 @@ private:
             visitor->trace(to);
         }
 
-        Animation* transition; // The TransitionTimeline keeps the AnimationPlayers alive
+        RefPtr<AnimationPlayer> player;
         RawPtrWillBeMember<const AnimatableValue> from;
         RawPtrWillBeMember<const AnimatableValue> to;
     };

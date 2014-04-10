@@ -114,7 +114,6 @@ void DocumentTimeline::serviceAnimations(AnimationPlayer::UpdateReason reason)
             m_playersNeedingUpdate.remove(player);
     }
 
-    ASSERT(!m_playersNeedingUpdate.isEmpty() || timeToNextEffect == std::numeric_limits<double>::infinity());
     if (timeToNextEffect < s_minimumDelay)
         m_timing->serviceOnNextFrame();
     else if (timeToNextEffect != std::numeric_limits<double>::infinity())

@@ -12,9 +12,7 @@
 #include "core/animation/KeyframeEffectModel.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
-
-namespace {
+namespace WebCore {
 
 class AnimationAnimationStackTest : public ::testing::Test {
 protected:
@@ -33,6 +31,17 @@ protected:
         player->setStartTime(startTime);
         player->update(AnimationPlayer::UpdateOnDemand);
         return player;
+    }
+
+    void updateTimeline(double time)
+    {
+        document->animationClock().updateTime(time);
+        timeline->serviceAnimations(AnimationPlayer::UpdateOnDemand);
+    }
+
+    const Vector<OwnPtr<SampledEffect> >& effects()
+    {
+        return element->ensureActiveAnimations().defaultStack().m_effects;
     }
 
     PassRefPtrWillBeRawPtr<AnimationEffect> makeAnimationEffect(CSSPropertyID id, PassRefPtrWillBeRawPtr<AnimatableValue> value)
@@ -54,10 +63,11 @@ protected:
         return InertAnimation::create(effect, timing, false);
     }
 
-    PassRefPtr<Animation> makeAnimation(PassRefPtrWillBeRawPtr<AnimationEffect> effect)
+    PassRefPtr<Animation> makeAnimation(PassRefPtrWillBeRawPtr<AnimationEffect> effect, double duration = 10)
     {
         Timing timing;
         timing.fillMode = Timing::FillModeBoth;
+        timing.iterationDuration = duration;
         return Animation::create(element, effect, timing);
     }
 
@@ -99,11 +109,50 @@ TEST_F(AnimationAnimationStackTest, NewAnimations)
 TEST_F(AnimationAnimationStackTest, CancelledAnimationPlayers)
 {
     HashSet<const AnimationPlayer*> cancelledAnimationPlayers;
-    cancelledAnimationPlayers.add(play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(1))).get(), 0));
+    RefPtr<AnimationPlayer> player = play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(1))).get(), 0);
+    cancelledAnimationPlayers.add(player.get());
     play(makeAnimation(makeAnimationEffect(CSSPropertyZIndex, AnimatableDouble::create(2))).get(), 0);
     WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > result = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), 0, &cancelledAnimationPlayers, Animation::DefaultPriority, 0);
     EXPECT_EQ(1u, result.size());
     EXPECT_TRUE(interpolationValue(result.get(CSSPropertyZIndex))->equals(AnimatableDouble::create(2).get()));
+}
+
+TEST_F(AnimationAnimationStackTest, ForwardsFillDiscarding)
+{
+    play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(1))).get(), 2);
+    play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(2))).get(), 6);
+    play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(3))).get(), 4);
+    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > interpolations;
+
+    updateTimeline(11);
+    interpolations = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
+    EXPECT_TRUE(interpolationValue(interpolations.get(CSSPropertyFontSize))->equals(AnimatableDouble::create(2).get()));
+    EXPECT_EQ(3u, effects().size());
+    EXPECT_EQ(1u, interpolations.size());
+    EXPECT_EQ(2, effects()[0]->sortInfo().startTime());
+    EXPECT_EQ(4, effects()[1]->sortInfo().startTime());
+    EXPECT_EQ(6, effects()[2]->sortInfo().startTime());
+
+    updateTimeline(13);
+    interpolations = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
+    EXPECT_TRUE(interpolationValue(interpolations.get(CSSPropertyFontSize))->equals(AnimatableDouble::create(2).get()));
+    EXPECT_EQ(3u, effects().size());
+    EXPECT_EQ(2, effects()[0]->sortInfo().startTime());
+    EXPECT_EQ(4, effects()[1]->sortInfo().startTime());
+    EXPECT_EQ(6, effects()[2]->sortInfo().startTime());
+
+    updateTimeline(15);
+    interpolations = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
+    EXPECT_TRUE(interpolationValue(interpolations.get(CSSPropertyFontSize))->equals(AnimatableDouble::create(2).get()));
+    EXPECT_EQ(2u, effects().size());
+    EXPECT_EQ(4, effects()[0]->sortInfo().startTime());
+    EXPECT_EQ(6, effects()[1]->sortInfo().startTime());
+
+    updateTimeline(17);
+    interpolations = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
+    EXPECT_TRUE(interpolationValue(interpolations.get(CSSPropertyFontSize))->equals(AnimatableDouble::create(2).get()));
+    EXPECT_EQ(1u, effects().size());
+    EXPECT_EQ(6, effects()[0]->sortInfo().startTime());
 }
 
 }
