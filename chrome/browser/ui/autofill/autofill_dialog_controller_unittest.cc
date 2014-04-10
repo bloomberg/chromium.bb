@@ -3404,4 +3404,14 @@ TEST_F(AutofillDialogControllerTest, SuggestCountrylessProfiles) {
   EXPECT_EQ(NAME_FULL, controller()->popup_input_type());
 }
 
+TEST_F(AutofillDialogControllerTest, SwitchFromWalletWithFirstName) {
+  controller()->MenuModelForSection(SECTION_CC_BILLING)->ActivatedAt(2);
+
+  FieldValueMap outputs;
+  outputs[NAME_FULL] = ASCIIToUTF16("madonna");
+  controller()->GetView()->SetUserInput(SECTION_CC_BILLING, outputs);
+
+  ASSERT_NO_FATAL_FAILURE(SwitchToAutofill());
+}
+
 }  // namespace autofill

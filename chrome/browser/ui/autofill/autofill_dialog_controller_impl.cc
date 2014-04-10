@@ -1811,9 +1811,8 @@ base::string16 AutofillDialogControllerImpl::InputValidityMessage(
 
     case NAME_FULL:
       // Wallet requires a first and last billing name.
-      if (section == SECTION_CC_BILLING && !value.empty() &&
+      if (IsPayingWithWallet() && !value.empty() &&
           !IsCardHolderNameValidForWallet(value)) {
-        DCHECK(IsPayingWithWallet());
         return l10n_util::GetStringUTF16(
             IDS_AUTOFILL_DIALOG_VALIDATION_WALLET_REQUIRES_TWO_NAMES);
       }
