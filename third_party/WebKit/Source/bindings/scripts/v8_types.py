@@ -417,15 +417,17 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, used_as_argument=True)
 
     idl_type = idl_type.preprocessed_type
-    if idl_type.base_type == 'DOMString' and not idl_type.array_or_sequence_type:
-        format_string = 'V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID({cpp_type}, {variable_name}, {cpp_value})'
-    elif idl_type.is_integer_type:
-        format_string = 'V8TRYCATCH_EXCEPTION_VOID({cpp_type}, {variable_name}, {cpp_value}, exceptionState)'
-    else:
-        format_string = 'V8TRYCATCH_VOID({cpp_type}, {variable_name}, {cpp_value})'
-
     cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index)
-    return format_string.format(cpp_type=this_cpp_type, cpp_value=cpp_value, variable_name=variable_name)
+    args = [this_cpp_type, variable_name, cpp_value]
+    if idl_type.base_type == 'DOMString' and not idl_type.array_or_sequence_type:
+        v8trycatch_void = 'V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID'
+    elif idl_type.is_integer_type:
+        v8trycatch_void = 'V8TRYCATCH_EXCEPTION_VOID'
+        args.append('exceptionState')
+    else:
+        v8trycatch_void = 'V8TRYCATCH_VOID'
+
+    return '%s(%s)' % (v8trycatch_void, ', '.join(args))
 
 IdlType.v8_value_to_local_cpp_value = v8_value_to_local_cpp_value
 IdlUnionType.v8_value_to_local_cpp_value = v8_value_to_local_cpp_value
