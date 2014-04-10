@@ -26,6 +26,7 @@ void BrowserPluginGeolocationPermissionContext::RequestGeolocationPermission(
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame,
+    bool user_gesture,
     base::Callback<void(bool)> callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
@@ -38,6 +39,7 @@ void BrowserPluginGeolocationPermissionContext::RequestGeolocationPermission(
             render_view_id,
             bridge_id,
             requesting_frame,
+            user_gesture,
             callback));
     return;
   }
@@ -56,6 +58,7 @@ void BrowserPluginGeolocationPermissionContext::RequestGeolocationPermission(
     BrowserPluginGuest* guest = guest_web_contents->GetBrowserPluginGuest();
     guest->AskEmbedderForGeolocationPermission(bridge_id,
                                                requesting_frame,
+                                               user_gesture,
                                                callback);
   }
 }

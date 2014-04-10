@@ -12,6 +12,7 @@
 #include "third_party/WebKit/public/web/WebGeolocationClient.h"
 #include "third_party/WebKit/public/web/WebGeolocationPosition.h"
 #include "third_party/WebKit/public/web/WebGeolocationError.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 using blink::WebGeolocationController;
 using blink::WebGeolocationError;
@@ -89,7 +90,8 @@ void GeolocationDispatcher::requestPermission(
   int bridge_id = pending_permissions_->add(permissionRequest);
   base::string16 origin = permissionRequest.securityOrigin().toString();
   Send(new GeolocationHostMsg_RequestPermission(
-      routing_id(), bridge_id, GURL(origin)));
+      routing_id(), bridge_id, GURL(origin),
+      blink::WebUserGestureIndicator::isProcessingUserGesture()));
 }
 
 // TODO(jknotten): Change the messages to use a security origin, so no

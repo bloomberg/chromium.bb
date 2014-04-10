@@ -41,6 +41,7 @@ class GeolocationPermissionRequest : public PermissionBubbleRequest {
       ChromeGeolocationPermissionContext* context,
       const PermissionRequestID& id,
       const GURL& requesting_frame,
+      bool user_gesture,
       base::Callback<void(bool)> callback,
       const std::string& display_languages);
   virtual ~GeolocationPermissionRequest();
@@ -60,6 +61,7 @@ class GeolocationPermissionRequest : public PermissionBubbleRequest {
   ChromeGeolocationPermissionContext* context_;
   PermissionRequestID id_;
   GURL requesting_frame_;
+  bool user_gesture_;
   base::Callback<void(bool)> callback_;
   std::string display_languages_;
 };
@@ -68,11 +70,13 @@ GeolocationPermissionRequest::GeolocationPermissionRequest(
     ChromeGeolocationPermissionContext* context,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
+    bool user_gesture,
     base::Callback<void(bool)> callback,
     const std::string& display_languages)
     : context_(context),
       id_(id),
       requesting_frame_(requesting_frame),
+      user_gesture_(user_gesture),
       callback_(callback),
       display_languages_(display_languages) {}
 
@@ -92,8 +96,7 @@ base::string16 GeolocationPermissionRequest::GetMessageTextFragment() const {
 }
 
 bool GeolocationPermissionRequest::HasUserGesture() const {
-  // TODO(gbillock): plumb this through from GeolocationDispatcher.
-  return false;
+  return user_gesture_;
 }
 
 GURL GeolocationPermissionRequest::GetRequestingHostname() const {
@@ -135,6 +138,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame,
+    bool user_gesture,
     base::Callback<void(bool)> callback) {
   GURL requesting_frame_origin = requesting_frame.GetOrigin();
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
@@ -143,7 +147,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
         base::Bind(
             &ChromeGeolocationPermissionContext::RequestGeolocationPermission,
             this, render_process_id, render_view_id, bridge_id,
-            requesting_frame_origin, callback));
+            requesting_frame_origin, user_gesture, callback));
     return;
   }
 
@@ -193,7 +197,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
     return;
   }
 
-  DecidePermission(web_contents, id, requesting_frame_origin,
+  DecidePermission(web_contents, id, requesting_frame_origin, user_gesture,
                    embedder, "", callback);
 }
 
@@ -211,6 +215,7 @@ void ChromeGeolocationPermissionContext::DecidePermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
+    bool user_gesture,
     const GURL& embedder,
     const std::string& accept_button_label,
     base::Callback<void(bool)> callback) {
@@ -232,7 +237,7 @@ void ChromeGeolocationPermissionContext::DecidePermission(
         PermissionBubbleManager* mgr =
             PermissionBubbleManager::FromWebContents(web_contents);
         mgr->AddRequest(new GeolocationPermissionRequest(
-                this, id, requesting_frame, callback,
+                this, id, requesting_frame, user_gesture, callback,
                 profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)));
       } else {
         // setting == ask. Prompt the user.

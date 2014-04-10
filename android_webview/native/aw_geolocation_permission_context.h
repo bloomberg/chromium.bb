@@ -25,6 +25,7 @@ class AwGeolocationPermissionContext :
       int render_view_id,
       int bridge_id,
       const GURL& requesting_frame,
+      bool user_gesture,
       base::Callback<void(bool)> callback) OVERRIDE;
   virtual void CancelGeolocationPermissionRequest(
       int render_process_id,
@@ -41,6 +42,7 @@ class AwGeolocationPermissionContext :
       int render_view_id,
       int bridge_id,
       const GURL& requesting_frame,
+      bool user_gesture,
       base::Callback<void(bool)> callback);
 
   void CancelGeolocationPermissionRequestOnUIThread(

@@ -45,10 +45,11 @@ IPC_MESSAGE_ROUTED1(GeolocationMsg_PositionUpdated,
 // The |render_view_id| and |bridge_id| representing |host| is requesting
 // permission to access geolocation position.
 // This will be replied by GeolocationMsg_PermissionSet.
-IPC_MESSAGE_CONTROL3(GeolocationHostMsg_RequestPermission,
+IPC_MESSAGE_CONTROL4(GeolocationHostMsg_RequestPermission,
                      int /* render_view_id */,
                      int /* bridge_id */,
-                     GURL /* GURL of the frame requesting geolocation */)
+                     GURL /* GURL of the frame requesting geolocation */,
+                     bool /* user_gesture */)
 
 // The |render_view_id| and |bridge_id| representing |GURL| is cancelling its
 // previous permission request to access geolocation position.

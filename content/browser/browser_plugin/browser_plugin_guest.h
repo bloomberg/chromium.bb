@@ -292,6 +292,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   // Requests geolocation permission through Embedder JavaScript API.
   void AskEmbedderForGeolocationPermission(int bridge_id,
                                            const GURL& requesting_frame,
+                                           bool user_gesture,
                                            const GeolocationCallback& callback);
   // Cancels pending geolocation request.
   void CancelGeolocationRequest(int bridge_id);

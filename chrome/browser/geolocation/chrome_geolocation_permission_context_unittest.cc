@@ -161,7 +161,7 @@ void GeolocationPermissionContextTests::RequestGeolocationPermission(
     const GURL& requesting_frame) {
   geolocation_permission_context_->RequestGeolocationPermission(
       id.render_process_id(), id.render_view_id(), id.bridge_id(),
-      requesting_frame,
+      requesting_frame, false,
       base::Bind(&GeolocationPermissionContextTests::PermissionResponse,
                  base::Unretained(this), id));
   content::BrowserThread::GetBlockingPool()->FlushForTesting();

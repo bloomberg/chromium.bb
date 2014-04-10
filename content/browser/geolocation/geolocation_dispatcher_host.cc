@@ -103,7 +103,8 @@ class GeolocationDispatcherHostImpl : public GeolocationDispatcherHost {
 
   void OnRequestPermission(int render_view_id,
                            int bridge_id,
-                           const GURL& requesting_frame);
+                           const GURL& requesting_frame,
+                           bool user_gesture);
   void OnCancelPermissionRequest(int render_view_id,
                                  int bridge_id,
                                  const GURL& requesting_frame);
@@ -203,7 +204,8 @@ void GeolocationDispatcherHostImpl::OnLocationUpdate(
 void GeolocationDispatcherHostImpl::OnRequestPermission(
     int render_view_id,
     int bridge_id,
-    const GURL& requesting_frame) {
+    const GURL& requesting_frame,
+    bool user_gesture) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << __FUNCTION__ << " " << render_process_id_ << ":"
            << render_view_id << ":" << bridge_id;
@@ -213,6 +215,7 @@ void GeolocationDispatcherHostImpl::OnRequestPermission(
         render_view_id,
         bridge_id,
         requesting_frame,
+        user_gesture,
         base::Bind(&SendGeolocationPermissionResponse,
                    render_process_id_,
                    render_view_id,

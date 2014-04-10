@@ -22,6 +22,7 @@ AwGeolocationPermissionContext::RequestGeolocationPermissionOnUIThread(
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame,
+    bool user_gesture,
     base::Callback<void(bool)> callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -40,6 +41,7 @@ AwGeolocationPermissionContext::RequestGeolocationPermission(
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame,
+    bool user_gesture,
     base::Callback<void(bool)> callback) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
@@ -51,6 +53,7 @@ AwGeolocationPermissionContext::RequestGeolocationPermission(
           render_view_id,
           bridge_id,
           requesting_frame,
+          user_gesture,
           callback));
 }
 

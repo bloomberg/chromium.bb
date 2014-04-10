@@ -112,10 +112,12 @@ class BrowserPluginGuest::GeolocationRequest : public PermissionRequest {
  public:
   GeolocationRequest(const base::WeakPtr<BrowserPluginGuest>& guest,
                      GeolocationCallback callback,
-                     int bridge_id)
+                     int bridge_id,
+                     bool user_gesture)
                      : PermissionRequest(guest),
                        callback_(callback),
-                       bridge_id_(bridge_id) {
+                       bridge_id_(bridge_id),
+                       user_gesture_(user_gesture) {
     RecordAction(
         base::UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Geolocation"));
   }
@@ -145,6 +147,7 @@ class BrowserPluginGuest::GeolocationRequest : public PermissionRequest {
               // permission. Therefore we use an invalid |bridge_id|.
               -1 /* bridge_id */,
               web_contents->GetLastCommittedURL(),
+              user_gesture_,
               geolocation_callback);
           return;
         }
@@ -157,6 +160,7 @@ class BrowserPluginGuest::GeolocationRequest : public PermissionRequest {
   virtual ~GeolocationRequest() {}
   base::Callback<void(bool)> callback_;
   int bridge_id_;
+  bool user_gesture_;
 };
 
 class BrowserPluginGuest::MediaRequest : public PermissionRequest {
@@ -1057,6 +1061,7 @@ void BrowserPluginGuest::SetDelegate(BrowserPluginGuestDelegate* delegate) {
 void BrowserPluginGuest::AskEmbedderForGeolocationPermission(
     int bridge_id,
     const GURL& requesting_frame,
+    bool user_gesture,
     const GeolocationCallback& callback) {
   base::DictionaryValue request_info;
   request_info.Set(browser_plugin::kURL,
@@ -1066,7 +1071,8 @@ void BrowserPluginGuest::AskEmbedderForGeolocationPermission(
       RequestPermission(BROWSER_PLUGIN_PERMISSION_TYPE_GEOLOCATION,
                         new GeolocationRequest(weak_ptr_factory_.GetWeakPtr(),
                                                callback,
-                                               bridge_id),
+                                               bridge_id,
+                                               user_gesture),
                         request_info);
 
   DCHECK(bridge_id_to_request_id_map_.find(bridge_id) ==

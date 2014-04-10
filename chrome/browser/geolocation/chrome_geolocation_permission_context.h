@@ -32,6 +32,7 @@ class ChromeGeolocationPermissionContext
       int render_view_id,
       int bridge_id,
       const GURL& requesting_frame,
+      bool user_gesture,
       base::Callback<void(bool)> callback) OVERRIDE;
   virtual void CancelGeolocationPermissionRequest(
       int render_process_id,
@@ -68,6 +69,7 @@ class ChromeGeolocationPermissionContext
   virtual void DecidePermission(content::WebContents* web_contents,
                                 const PermissionRequestID& id,
                                 const GURL& requesting_frame,
+                                bool user_gesture,
                                 const GURL& embedder,
                                 const std::string& accept_button_label,
                                 base::Callback<void(bool)> callback);

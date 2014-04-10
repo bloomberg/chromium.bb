@@ -27,6 +27,7 @@ class CONTENT_EXPORT GeolocationPermissionContext
       int render_view_id,
       int bridge_id,
       const GURL& requesting_frame,
+      bool user_gesture,
       base::Callback<void(bool)> callback) = 0;
 
   // The renderer is cancelling a pending permission request.

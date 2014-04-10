@@ -6,11 +6,15 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/android/google_location_settings_helper.h"
-#include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+
+ChromeGeolocationPermissionContextAndroid::
+PermissionRequestInfo::PermissionRequestInfo()
+    : id(0, 0, 0, 0),
+      user_gesture(false) {}
 
 ChromeGeolocationPermissionContextAndroid::
     ChromeGeolocationPermissionContextAndroid(Profile* profile)
@@ -25,23 +29,19 @@ ChromeGeolocationPermissionContextAndroid::
 
 void ChromeGeolocationPermissionContextAndroid::ProceedDecidePermission(
     content::WebContents* web_contents,
-    const PermissionRequestID& id,
-    const GURL& requesting_frame,
-    const GURL& embedder,
+    const PermissionRequestInfo& info,
     const std::string& accept_button_label,
     base::Callback<void(bool)> callback) {
   // Super class implementation expects everything in UI thread instead.
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ChromeGeolocationPermissionContext::DecidePermission(
-      web_contents, id, requesting_frame, embedder,
-      accept_button_label, callback);
+      web_contents, info.id, info.requesting_frame, info.user_gesture,
+      info.embedder, accept_button_label, callback);
 }
 
 void ChromeGeolocationPermissionContextAndroid::CheckMasterLocation(
     content::WebContents* web_contents,
-    const PermissionRequestID& id,
-    const GURL& requesting_frame,
-    const GURL& embedder,
+    const PermissionRequestInfo& info,
     base::Callback<void(bool)> callback) {
   // Check to see if the feature in its entirety has been disabled.
   // This must happen before other services (e.g. tabs, extensions)
@@ -68,12 +68,11 @@ void ChromeGeolocationPermissionContextAndroid::CheckMasterLocation(
         google_location_settings_helper_->GetAcceptButtonLabel(allow_label);
     ui_closure = base::Bind(
         &ChromeGeolocationPermissionContextAndroid::ProceedDecidePermission,
-        this, web_contents, id, requesting_frame, embedder,
-        accept_button_label, callback);
+        this, web_contents, info, accept_button_label, callback);
   } else {
     ui_closure = base::Bind(
         &ChromeGeolocationPermissionContextAndroid::PermissionDecided,
-        this, id, requesting_frame, embedder, callback, false);
+        this, info.id, info.requesting_frame, info.embedder, callback, false);
   }
 
   // This method is executed from the BlockingPool, post the result
@@ -86,9 +85,16 @@ void ChromeGeolocationPermissionContextAndroid::DecidePermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
+    bool user_gesture,
     const GURL& embedder,
     const std::string& accept_button_label,
     base::Callback<void(bool)> callback) {
+
+  PermissionRequestInfo info;
+  info.id = id;
+  info.requesting_frame = requesting_frame;
+  info.user_gesture = user_gesture;
+  info.embedder = embedder;
 
   // Called on the UI thread. However, do the work on a separate thread
   // to avoid strict mode violation.
@@ -96,7 +102,7 @@ void ChromeGeolocationPermissionContextAndroid::DecidePermission(
   content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
       base::Bind(
           &ChromeGeolocationPermissionContextAndroid::CheckMasterLocation,
-          this, web_contents, id, requesting_frame, embedder, callback));
+          this, web_contents, info, callback));
 }
 
 void ChromeGeolocationPermissionContextAndroid::PermissionDecided(
@@ -110,8 +116,8 @@ void ChromeGeolocationPermissionContextAndroid::PermissionDecided(
   // the infobar to go back to the 'settings' to turn it back on.
   if (allowed &&
       !google_location_settings_helper_->IsGoogleAppsLocationSettingEnabled()) {
-    QueueController()->CreateInfoBarRequest(id, requesting_frame, embedder, "",
-                                            callback);
+    QueueController()->CreateInfoBarRequest(
+        id, requesting_frame, embedder, "", callback);
     return;
   }
 
