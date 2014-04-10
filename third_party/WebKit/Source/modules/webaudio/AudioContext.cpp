@@ -118,7 +118,6 @@ AudioContext::AudioContext(Document* document)
     , m_audioThread(0)
     , m_graphOwnerThread(UndefinedThreadIdentifier)
     , m_isOfflineContext(false)
-    , m_activeSourceCount(0)
 {
     constructCommon();
 
@@ -138,7 +137,6 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
     , m_audioThread(0)
     , m_graphOwnerThread(UndefinedThreadIdentifier)
     , m_isOfflineContext(true)
-    , m_activeSourceCount(0)
 {
     constructCommon();
 
@@ -1005,16 +1003,6 @@ void AudioContext::fireCompletionEvent()
         // Call the offline rendering completion event listener.
         dispatchEvent(OfflineAudioCompletionEvent::create(renderedBuffer));
     }
-}
-
-void AudioContext::incrementActiveSourceCount()
-{
-    atomicIncrement(&m_activeSourceCount);
-}
-
-void AudioContext::decrementActiveSourceCount()
-{
-    atomicDecrement(&m_activeSourceCount);
 }
 
 } // namespace WebCore

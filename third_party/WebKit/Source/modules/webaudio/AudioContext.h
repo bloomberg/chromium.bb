@@ -95,10 +95,6 @@ public:
     size_t currentSampleFrame() const { return m_destinationNode->currentSampleFrame(); }
     double currentTime() const { return m_destinationNode->currentTime(); }
     float sampleRate() const { return m_destinationNode->sampleRate(); }
-    unsigned long activeSourceCount() const { return static_cast<unsigned long>(m_activeSourceCount); }
-
-    void incrementActiveSourceCount();
-    void decrementActiveSourceCount();
 
     PassRefPtr<AudioBuffer> createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
     PassRefPtr<AudioBuffer> createBuffer(ArrayBuffer*, bool mixToMono, ExceptionState&);
@@ -325,9 +321,6 @@ private:
     // This is considering 32 is large enough for multiple channels audio.
     // It is somewhat arbitrary and could be increased if necessary.
     enum { MaxNumberOfChannels = 32 };
-
-    // Number of AudioBufferSourceNodes that are active (playing).
-    int m_activeSourceCount;
 };
 
 } // WebCore
