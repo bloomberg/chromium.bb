@@ -18,9 +18,18 @@ import StringIO
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.gsd_storage
 import pynacl.hashing_tools
 import pynacl.platform
 import pynacl.repo_tools
+
+BUILD_SCRIPT = os.path.abspath(__file__)
+TOOLCHAIN_BUILD = os.path.dirname(BUILD_SCRIPT)
+NATIVE_CLIENT = os.path.dirname(TOOLCHAIN_BUILD)
+PKG_VERSION = os.path.join(NATIVE_CLIENT, 'build', 'package_version')
+sys.path.append(PKG_VERSION)
+import archive_info
+import package_info
 
 import toolchain_build
 import toolchain_main
@@ -31,14 +40,10 @@ from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 BIONIC_VERSION = 'dfb812021017bceb2593657669dcdc6a902a0b2e'
 ARCHES = ['arm']
-
-BUILD_SCRIPT = os.path.abspath(__file__)
-TOOLCHAIN_BUILD = os.path.dirname(BUILD_SCRIPT)
 TOOLCHAIN_BUILD_SRC = os.path.join(TOOLCHAIN_BUILD, 'src')
 TOOLCHAIN_BUILD_OUT = os.path.join(TOOLCHAIN_BUILD, 'out')
 
 BIONIC_SRC = os.path.join(TOOLCHAIN_BUILD_SRC, 'bionic')
-NATIVE_CLIENT = os.path.dirname(TOOLCHAIN_BUILD)
 TOOLCHAIN = os.path.join(NATIVE_CLIENT, 'toolchain')
 
 PROJECTS = [
@@ -105,8 +110,8 @@ def Clobber():
       Rmdir(os.path.join(TOOLCHAIN_BUILD_OUT, workdir % arch))
 
 
-def FetchAndBuild_gcc_libs(extra_args):
-  tc_args = extra_args + ['-y', '--no-use-remote-cache', 'gcc_libs_arm']
+def FetchAndBuild_gcc_libs():
+  tc_args = ['-y', '--no-use-remote-cache', 'gcc_libs_arm']
   # TODO(dyen): Fill in PACKAGE_TARGETS for bionic.
   toolchain_main.PackageBuilder(toolchain_build.PACKAGES, {}, tc_args).Main()
 
@@ -485,49 +490,57 @@ def MakeBionicProject(project, targets=[], clobber=False):
   print 'Done with %s for %s.\n' % (project, arch)
 
 
-def ArchiveAndUpload(version, zipname, zippath):
-  if 'BUILDBOT_BUILDERNAME' in os.environ:
-    GSUTIL = '../buildbot/gsutil.sh'
-  else:
-    GSUTIL = 'gsutil'
-  GSUTIL_ARGS = [GSUTIL, 'cp', '-a', 'public-read']
-  GSUTIL_PATH = 'gs://nativeclient-archive2/toolchain'
+def ArchiveAndUpload(version, zipname, zippath, packages_file):
+  sys.stdout.flush()
+  print >>sys.stderr, '@@@BUILD_STEP archive_and_upload@@@'
 
-  urldir = os.path.join(GSUTIL_PATH, version)
-  zipurl = os.path.join(urldir, zipname)
+  bucket_path = 'nativeclient-archive2/toolchain/%s' % version
+  gsd_store = pynacl.gsd_storage.GSDStorage(bucket_path, [bucket_path])
+
   zipname = os.path.join(TOOLCHAIN_BUILD_OUT, zipname)
-
   try:
     os.remove(zipname)
   except:
     pass
 
-  sys.stdout.flush()
-  print >>sys.stderr, '@@@STEP_LINK@download@%s@@@' % urldir
-
+  # Archive the zippath to the zipname.
   if process.Run(['tar', '-czf', zipname, zippath],
                  cwd=TOOLCHAIN_BUILD_OUT,
                  outfile=sys.stdout):
       raise RuntimeError('Failed to zip %s from %s.\n' % (zipname, zippath))
 
+  # Create Zip Hash file using the hash of the zip file.
   hashzipname = zipname + '.sha1hash'
-  hashzipurl = zipurl + '.sha1hash'
   hashval = pynacl.hashing_tools.HashFileContents(zipname)
-
   with open(hashzipname, 'w') as f:
     f.write(hashval)
 
-  if process.Run(GSUTIL_ARGS + [zipname, zipurl],
-                 cwd=TOOLCHAIN_BUILD,
-                 outfile=sys.stdout):
-    err = 'Failed to upload zip %s to %s.\n' % (zipname, zipurl)
-    raise RuntimeError(err)
+  # Upload the Zip file.
+  zipurl = gsd_store.PutFile(zipname, os.path.basename(zipname))
+  sys.stdout.flush()
+  print >>sys.stderr, ('@@@STEP_LINK@download (%s)@%s@@@' %
+                       (os.path.basename(zipname), zipurl))
 
-  if process.Run(GSUTIL_ARGS + [hashzipname, hashzipurl],
-                 cwd=TOOLCHAIN_BUILD,
-                 outfile=sys.stdout):
-    err = 'Failed to upload hash %s to %s.\n' % (hashzipname, hashzipurl)
-    raise RuntimeError(err)
+  # Upload the Zip Hash file.
+  hashurl = gsd_store.PutFile(hashzipname, os.path.basename(hashzipname))
+  sys.stdout.flush()
+  print >>sys.stderr, ('@@@STEP_LINK@download (%s)@%s@@@' %
+                       (os.path.basename(hashzipname), hashurl))
+
+  # Create a package info file for the nacl_arm_bionic package.
+  archive_desc = archive_info.ArchiveInfo(name=os.path.basename(zipname),
+                                          archive_hash=haslval,
+                                          url=zipurl)
+  package_desc = package_info.PackageInfo()
+  package_desc.AppendArchive(archive_desc)
+
+  package_info_file = os.path.join(TOOLCHAIN_BUILD_OUT, 'nacl_arm_bionic.json')
+  package_desc.SavePackageFile(package_info_file)
+
+  # If packages_file is specified, write out our packages file of 1 package.
+  if packages_file:
+    with open(packages_file, 'wt') as f:
+      f.write(package_info_file)
 
 
 def main(argv):
@@ -554,6 +567,11 @@ def main(argv):
       '-u', '--upload', dest='upload',
       default=False, action='store_true',
       help='Upload build artifacts.')
+
+  parser.add_option(
+        '--packages-file', dest='packages_file',
+        default=None,
+        help='Output packages file describing list of package files built.')
 
   parser.add_argument(
       '--skip-gcc', dest='skip_gcc',
@@ -586,7 +604,7 @@ def main(argv):
 
   if not options.skip_gcc:
     # Build newlib gcc_libs for use by bionic
-    FetchAndBuild_gcc_libs(leftover_args)
+    FetchAndBuild_gcc_libs()
 
   # Configure and build libgcc.a
   ConfigureAndBuild_libgcc()
@@ -615,7 +633,8 @@ def main(argv):
 
   if options.buildbot or options.upload:
     zipname = 'naclsdk_linux_arm_bionic.tgz'
-    ArchiveAndUpload(version, zipname, 'linux_arm_bionic')
+    ArchiveAndUpload(version, zipname, 'linux_arm_bionic',
+                     options.packages_file)
 
 
 if __name__ == '__main__':
