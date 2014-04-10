@@ -29,8 +29,8 @@
 // Declares internal implementation details for functionality in omap.h and
 // omap.cc.
 
-#ifndef COMMON_WINDOWS_OMAP_INTERNAL_H__
-#define COMMON_WINDOWS_OMAP_INTERNAL_H__
+#ifndef COMMON_WINDOWS_OMAP_INTERNAL_H_
+#define COMMON_WINDOWS_OMAP_INTERNAL_H_
 
 #include <windows.h>
 #include <dia2.h>
@@ -134,4 +134,4 @@ struct ImageMap {
 
 }  // namespace google_breakpad
 
-#endif  // COMMON_WINDOWS_OMAP_INTERNAL_H__
+#endif  // COMMON_WINDOWS_OMAP_INTERNAL_H_

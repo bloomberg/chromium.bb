@@ -28,6 +28,9 @@
 
 // Utilities for loading debug streams and tables from a PDB file.
 
+#ifndef COMMON_WINDOWS_DIA_UTIL_H_
+#define COMMON_WINDOWS_DIA_UTIL_H_
+
 #include <Windows.h>
 #include <dia2.h>
 
@@ -57,3 +60,5 @@ bool FindTable(IDiaSession* session, InterfaceType** table) {
 }
 
 }  // namespace google_breakpad
+
+#endif  // COMMON_WINDOWS_DIA_UTIL_H_

@@ -74,7 +74,7 @@ enum UnwindOperationCodes {
   UWOP_SET_FPREG,       /* no info, FP = RSP + UNWIND_INFO.FPRegOffset*16 */
   UWOP_SAVE_NONVOL,     /* info == register number, offset in next slot */
   UWOP_SAVE_NONVOL_FAR, /* info == register number, offset in next 2 slots */
-  //XXX: these are missing from MSDN!
+  // XXX: these are missing from MSDN!
   // See: http://www.osronline.com/ddkx/kmarch/64bitamd_4rs7.htm
   UWOP_SAVE_XMM,
   UWOP_SAVE_XMM_FAR,
@@ -125,8 +125,19 @@ PDBSourceLineWriter::PDBSourceLineWriter() : output_(NULL) {
 PDBSourceLineWriter::~PDBSourceLineWriter() {
 }
 
+bool PDBSourceLineWriter::SetCodeFile(const wstring &exe_file) {
+  if (code_file_.empty()) {
+    code_file_ = exe_file;
+    return true;
+  }
+  // Setting a different code file path is an error.  It is success only if the
+  // file paths are the same.
+  return exe_file == code_file_;
+}
+
 bool PDBSourceLineWriter::Open(const wstring &file, FileFormat format) {
   Close();
+  code_file_.clear();
 
   if (FAILED(CoInitialize(NULL))) {
     fprintf(stderr, "CoInitialize failed\n");
@@ -140,6 +151,7 @@ bool PDBSourceLineWriter::Open(const wstring &file, FileFormat format) {
     StringFromGUID2(CLSID_DiaSource, classid, kGuidSize);
     // vc80 uses bce36434-2c24-499e-bf49-8bd99b0eeb68.
     // vc90 uses 4C41678E-887B-4365-A09E-925D28DB33C2.
+    // vc100 uses B86AE24D-BF2F-4AC9-B5A2-34B14E4CE11D.
     fprintf(stderr, "CoCreateInstance CLSID_DiaSource %S failed "
             "(msdia*.dll unregistered?)\n", classid);
     return false;
@@ -162,7 +174,8 @@ bool PDBSourceLineWriter::Open(const wstring &file, FileFormat format) {
     case ANY_FILE:
       if (FAILED(data_source->loadDataFromPdb(file.c_str()))) {
         if (FAILED(data_source->loadDataForExe(file.c_str(), NULL, NULL))) {
-          fprintf(stderr, "loadDataForPdb and loadDataFromExe failed for %ws\n", file.c_str());
+          fprintf(stderr, "loadDataForPdb and loadDataFromExe failed for %ws\n",
+                  file.c_str());
           return false;
         }
         code_file_ = file;
@@ -641,7 +654,7 @@ bool PDBSourceLineWriter::PrintFrameDataUsingEXE() {
                      unwind_rva,
                      &img->LastRvaSection));
 
-    DWORD stack_size = 8; // minimal stack size is 8 for RIP
+    DWORD stack_size = 8;  // minimal stack size is 8 for RIP
     DWORD rip_offset = 8;
     do {
       for (UBYTE c = 0; c < unwind_info->count_of_codes; c++) {
@@ -674,12 +687,12 @@ bool PDBSourceLineWriter::PrintFrameDataUsingEXE() {
             break;
           case UWOP_SAVE_NONVOL:
           case UWOP_SAVE_XMM128: {
-            c++; //skip slot with offset
+            c++;  // skip slot with offset
             break;
           }
           case UWOP_SAVE_NONVOL_FAR:
           case UWOP_SAVE_XMM128_FAR: {
-            c += 2; //skip 2 slots with offset
+            c += 2;  // skip 2 slots with offset
             break;
           }
           case UWOP_PUSH_MACHFRAME: {
@@ -832,7 +845,7 @@ bool PDBSourceLineWriter::FindPEFile() {
   CComBSTR symbols_file;
   if (SUCCEEDED(global->get_symbolsFileName(&symbols_file))) {
     wstring file(symbols_file);
-    
+
     // Look for an EXE or DLL file.
     const wchar_t *extensions[] = { L"exe", L"dll" };
     for (int i = 0; i < sizeof(extensions) / sizeof(extensions[0]); i++) {
@@ -1064,7 +1077,7 @@ bool PDBSourceLineWriter::WriteMap(FILE *map_file) {
   // This is not a critical piece of the symbol file.
   PrintPEInfo();
   ret = ret &&
-      PrintSourceFiles() && 
+      PrintSourceFiles() &&
       PrintFunctions() &&
       PrintFrameData();
 
@@ -1206,8 +1219,7 @@ bool PDBSourceLineWriter::GetPEInfo(PEModuleInfo *info) {
   if (opt->Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
     // 64-bit PE file.
     SizeOfImage = opt->SizeOfImage;
-  }
-  else {
+  } else {
     // 32-bit PE file.
     SizeOfImage = img->FileHeader->OptionalHeader.SizeOfImage;
   }

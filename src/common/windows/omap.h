@@ -32,8 +32,8 @@
 // transforming addresses prior to querying symbols (the way it is typically
 // done by Windows-native tools, including the DIA).
 
-#ifndef COMMON_WINDOWS_OMAP_H__
-#define COMMON_WINDOWS_OMAP_H__
+#ifndef COMMON_WINDOWS_OMAP_H_
+#define COMMON_WINDOWS_OMAP_H_
 
 #include "common/windows/omap_internal.h"
 
@@ -69,4 +69,4 @@ void MapAddressRange(const ImageMap& image_map,
 
 }  // namespace google_breakpad
 
-#endif  // COMMON_WINDOWS_OMAP_H__
+#endif  // COMMON_WINDOWS_OMAP_H_
