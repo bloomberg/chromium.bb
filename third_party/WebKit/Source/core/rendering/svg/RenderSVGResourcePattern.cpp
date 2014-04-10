@@ -118,14 +118,6 @@ PatternData* RenderSVGResourcePattern::buildPattern(RenderObject* object, unsign
     if (!patternTransform.isIdentity())
         patternData->transform = patternTransform * patternData->transform;
 
-    // Account for text drawing resetting the context to non-scaled, see SVGInlineTextBox::paintTextWithShadows.
-    if (resourceMode & ApplyToTextMode) {
-        AffineTransform additionalTextTransformation;
-        if (shouldTransformOnTextPainting(object, additionalTextTransformation))
-            patternData->transform *= additionalTextTransformation;
-    }
-    patternData->pattern->setPatternSpaceTransform(patternData->transform);
-
     // Various calls above may trigger invalidations in some fringe cases (ImageBuffer allocation
     // failures in the SVG image cache for example). To avoid having our PatternData deleted by
     // removeAllClientsFromCache(), we only make it visible in the cache at the very end.
@@ -151,19 +143,20 @@ bool RenderSVGResourcePattern::applyResource(RenderObject* object, RenderStyle* 
     if (!patternData)
         return false;
 
-    // Draw pattern
-    context->save();
-
     const SVGRenderStyle* svgStyle = style->svgStyle();
     ASSERT(svgStyle);
+
+    AffineTransform computedPatternSpaceTransform = computeResourceSpaceTransform(object, patternData->transform, svgStyle, resourceMode);
+    patternData->pattern->setPatternSpaceTransform(computedPatternSpaceTransform);
+
+    // Draw pattern
+    context->save();
 
     if (resourceMode & ApplyToFillMode) {
         context->setAlphaAsFloat(svgStyle->fillOpacity());
         context->setFillPattern(patternData->pattern);
         context->setFillRule(svgStyle->fillRule());
     } else if (resourceMode & ApplyToStrokeMode) {
-        if (svgStyle->vectorEffect() == VE_NON_SCALING_STROKE)
-            patternData->pattern->setPatternSpaceTransform(transformOnNonScalingStroke(object, patternData->transform));
         context->setAlphaAsFloat(svgStyle->strokeOpacity());
         context->setStrokePattern(patternData->pattern);
         SVGRenderSupport::applyStrokeStyleToContext(context, style, object);

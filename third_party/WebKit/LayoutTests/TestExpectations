@@ -935,6 +935,10 @@ crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359960 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359961 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
+crbug.com/360571 svg/custom/js-late-gradient-creation.svg [ NeedsRebaseline ]
+crbug.com/360571 svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
+crbug.com/360571 svg/transforms/text-with-pattern-with-svg-transform.svg [ NeedsRebaseline ]
+
 # Side loading Ahem doesn't work for DirectWrite yet.
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/apply-start-width-after-skipped-text.html [ Skip ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/bidi-embedding-pop-and-push-same-2.html [ Skip ]

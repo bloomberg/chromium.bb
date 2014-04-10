@@ -232,6 +232,26 @@ void RenderSVGResourceContainer::registerResource()
     }
 }
 
+AffineTransform RenderSVGResourceContainer::computeResourceSpaceTransform(RenderObject* object, const AffineTransform& baseTransform, const SVGRenderStyle* svgStyle, unsigned short resourceMode)
+{
+    AffineTransform computedSpaceTransform = baseTransform;
+    if (resourceMode & ApplyToTextMode) {
+        // Depending on the font scaling factor, we may need to apply an
+        // additional transform (scale-factor) the paintserver, since text
+        // painting removes the scale factor from the context. (See
+        // SVGInlineTextBox::paintTextWithShadows.)
+        AffineTransform additionalTextTransformation;
+        if (shouldTransformOnTextPainting(object, additionalTextTransformation))
+            computedSpaceTransform = additionalTextTransformation * computedSpaceTransform;
+    }
+    if (resourceMode & ApplyToStrokeMode) {
+        // Non-scaling stroke needs to reset the transform back to the host transform.
+        if (svgStyle->vectorEffect() == VE_NON_SCALING_STROKE)
+            computedSpaceTransform = transformOnNonScalingStroke(object, computedSpaceTransform);
+    }
+    return computedSpaceTransform;
+}
+
 bool RenderSVGResourceContainer::shouldTransformOnTextPainting(RenderObject* object, AffineTransform& resourceTransform)
 {
     ASSERT_UNUSED(object, object);

@@ -123,8 +123,11 @@ void SVGTextRunRenderingContext::drawSVGGlyphs(GraphicsContext* context, const T
     glyphOrigin.setX(svgFontData->horizontalOriginX() * scale);
     glyphOrigin.setY(svgFontData->horizontalOriginY() * scale);
 
+    unsigned short resourceMode = context->textDrawingMode() == TextModeStroke ? ApplyToStrokeMode : ApplyToFillMode;
+    // From a resource perspective this ought to be treated as "text mode".
+    resourceMode |= ApplyToTextMode;
+
     FloatPoint currentPoint = point;
-    RenderSVGResourceMode resourceMode = context->textDrawingMode() == TextModeStroke ? ApplyToStrokeMode : ApplyToFillMode;
     for (int i = 0; i < numGlyphs; ++i) {
         Glyph glyph = glyphBuffer.glyphAt(from + i);
         if (!glyph)

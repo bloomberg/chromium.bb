@@ -64,6 +64,8 @@ protected:
 
     void clearInvalidationMask() { m_invalidationMask = 0; }
 
+    static AffineTransform computeResourceSpaceTransform(RenderObject*, const AffineTransform& baseTransform, const SVGRenderStyle*, unsigned short resourceMode);
+
     bool m_isInLayout;
 
 private:

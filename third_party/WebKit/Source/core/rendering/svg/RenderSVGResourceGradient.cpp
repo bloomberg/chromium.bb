@@ -85,8 +85,6 @@ bool RenderSVGResourceGradient::applyResource(RenderObject* object, RenderStyle*
     if (!gradientData)
         gradientData = adoptPtr(new GradientData);
 
-    bool isPaintingText = resourceMode & ApplyToTextMode;
-
     // Create gradient object
     if (!gradientData->gradient) {
         buildGradient(gradientData.get());
@@ -101,35 +99,28 @@ bool RenderSVGResourceGradient::applyResource(RenderObject* object, RenderStyle*
         calculateGradientTransform(gradientTransform);
 
         gradientData->userspaceTransform *= gradientTransform;
-        if (isPaintingText) {
-            // Depending on font scaling factor, we may need to rescale the gradient here since
-            // text painting removes the scale factor from the context.
-            AffineTransform additionalTextTransform;
-            if (shouldTransformOnTextPainting(object, additionalTextTransform))
-                gradientData->userspaceTransform *= additionalTextTransform;
-        }
-        gradientData->gradient->setGradientSpaceTransform(gradientData->userspaceTransform);
     }
 
     if (!gradientData->gradient)
         return false;
 
+    const SVGRenderStyle* svgStyle = style->svgStyle();
+    ASSERT(svgStyle);
+
+    AffineTransform computedGradientSpaceTransform = computeResourceSpaceTransform(object, gradientData->userspaceTransform, svgStyle, resourceMode);
+    gradientData->gradient->setGradientSpaceTransform(computedGradientSpaceTransform);
+
     // Draw gradient
     context->save();
 
-    if (isPaintingText)
+    if (resourceMode & ApplyToTextMode)
         context->setTextDrawingMode(resourceMode & ApplyToFillMode ? TextModeFill : TextModeStroke);
-
-    const SVGRenderStyle* svgStyle = style->svgStyle();
-    ASSERT(svgStyle);
 
     if (resourceMode & ApplyToFillMode) {
         context->setAlphaAsFloat(svgStyle->fillOpacity());
         context->setFillGradient(gradientData->gradient);
         context->setFillRule(svgStyle->fillRule());
     } else if (resourceMode & ApplyToStrokeMode) {
-        if (svgStyle->vectorEffect() == VE_NON_SCALING_STROKE)
-            gradientData->gradient->setGradientSpaceTransform(transformOnNonScalingStroke(object, gradientData->userspaceTransform));
         context->setAlphaAsFloat(svgStyle->strokeOpacity());
         context->setStrokeGradient(gradientData->gradient);
         SVGRenderSupport::applyStrokeStyleToContext(context, style, object);
