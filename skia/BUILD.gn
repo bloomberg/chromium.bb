@@ -341,7 +341,7 @@ source_set("skia_opts") {
       "//third_party/skia/src/opts/SkBlurImage_opts_SSE2.cpp",
       "//third_party/skia/src/opts/SkMorphology_opts_SSE2.cpp",
       "//third_party/skia/src/opts/SkUtils_opts_SSE2.cpp",
-      "//third_party/skia/src/opts/SkXfermode_opts_none.cpp",
+      "//third_party/skia/src/opts/SkXfermode_opts_SSE2.cpp",
 
       # SSE 3
       "//third_party/skia/src/opts/SkBitmapProcState_opts_SSSE3.cpp",
