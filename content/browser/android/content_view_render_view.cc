@@ -69,6 +69,7 @@ void ContentViewRenderView::SetCurrentContentViewCore(
 
 void ContentViewRenderView::SurfaceCreated(
     JNIEnv* env, jobject obj) {
+  current_surface_format_ = 0;
   InitCompositor();
 }
 
