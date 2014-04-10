@@ -355,8 +355,6 @@
           'message_loop/message_pump_android.h',
           'message_loop/message_pump_default.cc',
           'message_loop/message_pump_default.h',
-          'message_loop/message_pump_ozone.cc',
-          'message_loop/message_pump_ozone.h',
           'message_loop/message_pump_win.cc',
           'message_loop/message_pump_win.h',
           'metrics/sample_map.cc',

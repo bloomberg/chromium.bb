@@ -18,7 +18,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_pump_ozone.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/ozone/event_factory_ozone.h"
@@ -69,7 +69,7 @@ void TouchEventConverterEvdev::Init() {
 }
 
 void TouchEventConverterEvdev::Start() {
-  base::MessagePumpOzone::Current()->WatchFileDescriptor(
+  base::MessageLoopForUI::current()->WatchFileDescriptor(
       fd_, true, base::MessagePumpLibevent::WATCH_READ, &controller_, this);
 }
 

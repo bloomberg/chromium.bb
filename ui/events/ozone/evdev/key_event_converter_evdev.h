@@ -18,7 +18,7 @@ namespace ui {
 
 class EVENTS_EXPORT KeyEventConverterEvdev
     : public EventConverterEvdev,
-      base::MessagePumpLibevent::Watcher {
+      public base::MessagePumpLibevent::Watcher {
  public:
   KeyEventConverterEvdev(int fd,
                          base::FilePath path,

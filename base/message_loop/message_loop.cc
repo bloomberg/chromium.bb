@@ -219,6 +219,9 @@ scoped_ptr<MessagePump> MessageLoop::CreateMessagePumpForType(Type type) {
 // ipc_channel_nacl.cc uses a worker thread to do socket reads currently, and
 // doesn't require extra support for watching file descriptors.
 #define MESSAGE_PUMP_IO scoped_ptr<MessagePump>(new MessagePumpDefault())
+#elif defined(USE_OZONE)
+#define MESSAGE_PUMP_UI scoped_ptr<MessagePump>(new MessagePumpLibevent())
+#define MESSAGE_PUMP_IO scoped_ptr<MessagePump>(new MessagePumpLibevent())
 #elif defined(OS_POSIX)  // POSIX but not MACOSX.
 #define MESSAGE_PUMP_UI scoped_ptr<MessagePump>(new MessagePumpForUI())
 #define MESSAGE_PUMP_IO scoped_ptr<MessagePump>(new MessagePumpLibevent())
@@ -666,7 +669,7 @@ void MessageLoopForUI::Attach() {
 }
 #endif
 
-#if !defined(OS_NACL) && (defined(TOOLKIT_GTK) || defined(USE_OZONE) || \
+#if !defined(OS_NACL) && (defined(TOOLKIT_GTK) || \
                           defined(OS_WIN) || defined(USE_X11))
 void MessageLoopForUI::AddObserver(Observer* observer) {
   pump_ui()->AddObserver(observer);
@@ -676,6 +679,22 @@ void MessageLoopForUI::RemoveObserver(Observer* observer) {
   pump_ui()->RemoveObserver(observer);
 }
 #endif  //  !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_ANDROID)
+
+#if defined(USE_OZONE)
+bool MessageLoopForUI::WatchFileDescriptor(
+    int fd,
+    bool persistent,
+    MessagePumpLibevent::Mode mode,
+    MessagePumpLibevent::FileDescriptorWatcher *controller,
+    MessagePumpLibevent::Watcher *delegate) {
+  return pump_libevent()->WatchFileDescriptor(
+      fd,
+      persistent,
+      mode,
+      controller,
+      delegate);
+}
+#endif
 
 //------------------------------------------------------------------------------
 // MessageLoopForIO

@@ -21,7 +21,7 @@ class TouchEvent;
 
 class EVENTS_EXPORT TouchEventConverterEvdev
     : public EventConverterEvdev,
-      base::MessagePumpLibevent::Watcher {
+      public base::MessagePumpLibevent::Watcher {
  public:
   enum {
     MAX_FINGERS = 11
