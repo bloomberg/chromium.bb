@@ -57,29 +57,6 @@ void dump_output(int d, size_t nbytes) {
   free(bytes);
 }
 
-int EnumerateNames(NaClSrpcChannel *nschan) {
-  char      buffer[1024];
-  uint32_t  nbytes = sizeof buffer;
-  char      *p;
-  size_t    name_len;
-
-  if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeBySignature(nschan,
-                                                       NACL_NAME_SERVICE_LIST,
-                                                       &nbytes, buffer)) {
-    return 0;
-  }
-  printf("nbytes = %"PRIu32"\n", nbytes);
-  if (nbytes == sizeof buffer) {
-    fprintf(stderr, "Insufficent space for namespace enumeration\n");
-    return 0;
-  }
-  for (p = buffer; p - buffer < nbytes; p += name_len) {
-    name_len = strlen(p) + 1;
-    printf("%s\n", p);
-  }
-  return 1;
-}
-
 int main(void) {
   int ns;
   NaClSrpcChannel channel;
@@ -104,11 +81,6 @@ int main(void) {
     return 1;
   }
   printf("NaClSrpcClientCtor succeeded\n");
-  if (!EnumerateNames(&channel)) {
-    fprintf(stderr, "Could not enumerate names\n");
-    return 1;
-  }
-  printf("EnumerateNames succeeded\n");
   if (NACL_SRPC_RESULT_OK !=
       NaClSrpcInvokeBySignature(&channel, NACL_NAME_SERVICE_LOOKUP,
                                 "SecureRandom", O_RDONLY, &status, &rng)) {

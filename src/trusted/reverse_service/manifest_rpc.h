@@ -10,7 +10,6 @@
  * Manifest RPC signatures, for use by C and C++ code.
  */
 
-#define NACL_MANIFEST_LIST    "manifest_list::C"
 #define NACL_MANIFEST_LOOKUP  "manifest_lookup:si:ihllC"
 
 #endif

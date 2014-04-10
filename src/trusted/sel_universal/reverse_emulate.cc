@@ -47,7 +47,6 @@ class ReverseEmulate : public nacl::ReverseInterface {
   virtual void StartupInitializationComplete();
 
   // Name service use.
-  virtual bool EnumerateManifestKeys(std::set<nacl::string>* keys);
   virtual bool OpenManifestEntry(nacl::string url_key,
                                  struct NaClFileInfo* info);
   virtual bool CloseManifestEntry(int32_t desc);
@@ -249,19 +248,6 @@ void ReverseEmulate::Log(nacl::string message) {
 
 void ReverseEmulate::StartupInitializationComplete() {
   NaClLog(1, "ReverseEmulate::StartupInitializationComplete ()\n");
-}
-
-bool ReverseEmulate::EnumerateManifestKeys(std::set<nacl::string>* keys) {
-  NaClLog(1, "ReverseEmulate::StartupInitializationComplete ()\n");
-  // Enumerate the keys.
-  std::set<nacl::string> manifest_keys;
-  for (KeyToFileMap::iterator i = g_key_to_file.begin();
-       i != g_key_to_file.end();
-       ++i) {
-    manifest_keys.insert(i->first);
-  }
-  *keys = manifest_keys;
-  return true;
 }
 
 bool ReverseEmulate::OpenManifestEntry(nacl::string url_key,

@@ -118,21 +118,6 @@ struct NaClNameServiceVtbl {
   int                           (*DeleteName)(
       struct NaClNameService  *self,
       char const              *name);
-
-  /*
-   * Enumerate always succeeds and returns the number of bytes
-   * written.  To see if the buffer was large enough, check that the
-   * number of bytes written is less than the supplied buffer size.
-   * NB: if the number of bytes is equal to the buffer size, even if
-   * the last byte is a NUL we cannot know that there aren't more
-   * entries.  (A partially written entry is only one possibility; it
-   * could happen that the initial entries exactly fit the buffer, but
-   * there are more.)
-   */
-  size_t                        (*Enumerate)(
-      struct NaClNameService  *self,
-      char                    *dest,
-      size_t                  nbytes);
 };
 
 extern struct NaClNameServiceVtbl kNaClNameServiceVtbl;

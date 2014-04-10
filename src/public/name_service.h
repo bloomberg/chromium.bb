@@ -16,9 +16,6 @@
 #define NACL_NAME_SERVICE_PERMISSION_DENIED       4
 #define NACL_NAME_SERVICE_INVALID_ARGUMENT        5
 
-#define NACL_NAME_SERVICE_LIST            "list::C"
-/* output buffer contains NUL separated names */
-
 #define NACL_NAME_SERVICE_INSERT          "insert:sih:i"
 /* object name, max access mode, descriptor -> status */
 

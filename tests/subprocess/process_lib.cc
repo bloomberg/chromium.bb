@@ -56,55 +56,6 @@ bool SrpcClientConnection::InitializeFromConnectionCapability(int cap) {
   return InitializeFromConnectedDesc(conn);
 }
 
-std::vector<std::string> NameServiceClient::List() {
-  std::vector<std::string> rv;
-  if (!initialized()) {
-    return rv;
-  }
-  NaClSrpcResultCodes result;
-  uint32_t buffer_size = 4096;
-  uint32_t used_bytes;
-  char *buffer = NULL;
-  for (;;) {
-    buffer = new char[buffer_size];
-    used_bytes = buffer_size;
-    result = NaClSrpcInvokeBySignature(chan(),
-                                       NACL_NAME_SERVICE_LIST,
-                                       &used_bytes, buffer);
-    if (NACL_SRPC_RESULT_OK != result) {
-      // Some kind of internal error, abort and indicate by returning
-      // an empty vector.
-      return rv;
-    }
-    if (used_bytes < buffer_size) {
-      break;
-    }
-    buffer_size = 2 * buffer_size;
-    delete[] buffer;
-    buffer = new char[buffer_size];
-  }
-  std::string name_list(buffer, used_bytes);
-  delete[] buffer;
-  // Parse name_list, separating at the ASCII NUL character
-  // (forbidden in names), into a vector of strings.
-  size_t start_ix = 0;
-  size_t space_ix;
-
-  while (start_ix < name_list.size()) {
-    space_ix = name_list.find('\0', start_ix);
-    if (space_ix == std::string::npos) {
-      space_ix = used_bytes;
-    }
-    rv.push_back(name_list.substr(start_ix, space_ix - start_ix));
-    if (space_ix != std::string::npos) {
-      start_ix = space_ix + 1;
-    } else {
-      start_ix = space_ix;
-    }
-  }
-  return rv;
-}
-
 int NameServiceClient::Resolve(std::string name) {
   NaClSrpcResultCodes result;
   int status;

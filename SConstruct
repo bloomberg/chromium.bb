@@ -3154,7 +3154,6 @@ irt_variant_tests = [
     'tests/longjmp/nacl.scons',
     'tests/loop/nacl.scons',
     'tests/mandel/nacl.scons',
-    'tests/manifest_file/nacl.scons',
     'tests/math/nacl.scons',
     'tests/memcheck_test/nacl.scons',
     'tests/mmap/nacl.scons',

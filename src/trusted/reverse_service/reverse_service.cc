@@ -51,45 +51,6 @@ void StartupInitializationComplete(NaClReverseInterface* self) {
   }
 }
 
-size_t EnumerateManifestKeys(NaClReverseInterface* self,
-                             char* buffer,
-                             size_t buffer_bytes) {
-  ReverseInterfaceWrapper* wrapper =
-      reinterpret_cast<ReverseInterfaceWrapper*>(self);
-  if (NULL == wrapper->iface) {
-    NaClLog(1, "EnumerateManifestKeys, no reverse_interface.\n");
-    return 0;
-  }
-
-  std::set<nacl::string> manifest_keys;
-  if (!wrapper->iface->EnumerateManifestKeys(&manifest_keys)) {
-    NaClLog(LOG_WARNING, "EnumerateManifestKeys failed\n");
-    return 0;
-  }
-
-  size_t size = 0;
-  for (std::set<nacl::string>::iterator it = manifest_keys.begin();
-       it != manifest_keys.end();
-       ++it) {
-    if (size >= buffer_bytes) {
-      size += it->size() + 1;
-      continue;
-    }
-
-    size_t to_write = buffer_bytes - size;
-    if (it->size() + 1 < to_write) {
-      to_write = it->size() + 1;
-    } else {
-      NaClLog(3,
-              "EnumerateManifestKeys: truncating entry %s\n", it->c_str());
-    }
-    strncpy(buffer + size, it->c_str(), to_write);
-    NaClLog(3, "EnumerateManifestKeys: %.*s\n", (int) to_write, buffer + size);
-    size += to_write;
-  }
-  return size;
-}
-
 int OpenManifestEntry(NaClReverseInterface* self,
                       char const* url_key,
                       struct NaClFileInfo* info) {
@@ -226,7 +187,6 @@ static NaClReverseInterfaceVtbl const kReverseInterfaceWrapperVtbl = {
     ReverseInterfaceWrapperDtor,
   },
   StartupInitializationComplete,
-  EnumerateManifestKeys,
   OpenManifestEntry,
   ReportCrash,
   ReportExitStatus,

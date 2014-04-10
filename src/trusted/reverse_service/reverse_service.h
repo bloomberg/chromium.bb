@@ -74,8 +74,6 @@ class ReverseInterface : public RefCountBase {
   // the WeakRefAnchor or by bombing their CompletionCallbackFactory).
   // Since shutdown/surfaway is the only admissible error, we use bool
   // as the return type.
-  virtual bool EnumerateManifestKeys(std::set<nacl::string>* keys) = 0;
-
   virtual bool OpenManifestEntry(nacl::string url_key,
                                  struct NaClFileInfo* info) = 0;
   virtual void ReportCrash() = 0;

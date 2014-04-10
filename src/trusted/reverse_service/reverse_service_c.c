@@ -281,36 +281,6 @@ static void NaClReverseServiceCreateProcessFunctorResultRpc(
  */
 
 /*
- * Enumerate all names in the manifest.
- */
-static void NaClReverseServiceManifestListRpc(
-    struct NaClSrpcRpc      *rpc,
-    struct NaClSrpcArg      **in_args,
-    struct NaClSrpcArg      **out_args,
-    struct NaClSrpcClosure  *done_cls) {
-  struct NaClReverseService *nrsp =
-    (struct NaClReverseService *) rpc->channel->server_instance_data;
-  char                      *buffer = out_args[0]->arrays.carr;
-  nacl_abi_size_t           buffer_bytes = out_args[0]->u.count;
-  size_t                    size;
-  UNREFERENCED_PARAMETER(in_args);
-
-  NaClLog(4, "Entered ManifestListRpc: 0x%08"NACL_PRIxPTR"\n",
-          (uintptr_t) nrsp);
-  if ((size = (*NACL_VTBL(NaClReverseInterface, nrsp->iface)->
-               EnumerateManifestKeys)(nrsp->iface, buffer, buffer_bytes))
-      > NACL_ABI_SIZE_T_MAX) {
-    NaClLog(LOG_FATAL,
-            ("ManifestListRpc: buffer size required is too large"
-             ", %08"NACL_PRIdS"\n"),
-            size);
-  }
-  out_args[0]->u.count = (nacl_abi_size_t) size;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  (*done_cls->Run)(done_cls);
-}
-
-/*
  * Look up by string name, resulting in a handle (if name is in the
  * preimage), a object proxy handle, and an error code.
  */
@@ -512,7 +482,6 @@ struct NaClSrpcHandlerDesc const kNaClReverseServiceHandlers[] = {
   { NACL_REVERSE_CONTROL_CREATE_PROCESS, NaClReverseServiceCreateProcessRpc, },
   { NACL_REVERSE_CONTROL_CREATE_PROCESS_INTERLOCKED,
     NaClReverseServiceCreateProcessFunctorResultRpc, },
-  { NACL_MANIFEST_LIST, NaClReverseServiceManifestListRpc, },
   { NACL_MANIFEST_LOOKUP, NaClReverseServiceManifestLookupRpc, },
   { NACL_REVERSE_REQUEST_QUOTA_FOR_WRITE, NaClReverseServiceRequestQuotaForWriteRpc, },
   { (char const *) NULL, (NaClSrpcMethod) NULL, },
@@ -659,17 +628,6 @@ void NaClReverseInterfaceStartupInitializationComplete(
           (uintptr_t) self);
 }
 
-size_t NaClReverseInterfaceEnumerateManifestKeys(
-    struct NaClReverseInterface   *self,
-    char                          *buffer,
-    size_t                        buffer_bytes) {
-  NaClLog(3,
-          ("NaClReverseInterfaceEnumerateManifestKeys(0x%08"NACL_PRIxPTR
-           ", 0x%08"NACL_PRIxPTR", %08"NACL_PRIdS")\n"),
-          (uintptr_t) self, (uintptr_t) buffer, buffer_bytes);
-  return 0;
-}
-
 int NaClReverseInterfaceOpenManifestEntry(
     struct NaClReverseInterface   *self,
     char const                    *url_key,
@@ -758,7 +716,6 @@ struct NaClReverseInterfaceVtbl const kNaClReverseInterfaceVtbl = {
     NaClReverseInterfaceDtor,
   },
   NaClReverseInterfaceStartupInitializationComplete,
-  NaClReverseInterfaceEnumerateManifestKeys,
   NaClReverseInterfaceOpenManifestEntry,
   NaClReverseInterfaceReportCrash,
   NaClReverseInterfaceReportExitStatus,

@@ -330,31 +330,6 @@ int NaClNameServiceDeleteName(struct NaClNameService *nnsp,
   return status;
 }
 
-size_t NaClNameServiceEnumerate(struct NaClNameService  *nnsp,
-                                char                    *dest,
-                                size_t                  nbytes) {
-  struct NaClNameServiceEntry *p;
-  size_t                      written;
-  size_t                      to_write;
-  size_t                      name_len;
-
-  NaClXMutexLock(&nnsp->mu);
-
-  for (p = nnsp->head, written = 0;
-       NULL != p && written < nbytes;
-       p = p->next, written += to_write) {
-    name_len = strlen(p->name) + 1;  /* cannot overflow */
-    to_write = (name_len < nbytes - written) ? name_len
-        : nbytes - written;
-    /* written + to_write <= nbytes */
-    strncpy(dest, p->name, to_write);
-    dest += to_write;
-  }
-
-  NaClXMutexUnlock(&nnsp->mu);
-  return written;
-}
-
 static void NaClNameServiceNameInsertRpc(
     struct NaClSrpcRpc      *rpc,
     struct NaClSrpcArg      **in_args,
@@ -442,25 +417,7 @@ static void NaClNameServiceNameDeleteRpc(
   (*done_cls->Run)(done_cls);
 }
 
-static void NaClNameServiceListRpc(
-    struct NaClSrpcRpc      *rpc,
-    struct NaClSrpcArg      **in_args,
-    struct NaClSrpcArg      **out_args,
-    struct NaClSrpcClosure  *done_cls) {
-  struct NaClNameService  *nnsp =
-      (struct NaClNameService *) rpc->channel->server_instance_data;
-  size_t                  nbytes = out_args[0]->u.count;
-  char                    *dest = out_args[0]->arrays.carr;
-
-  UNREFERENCED_PARAMETER(in_args);
-  out_args[0]->u.count = (uint32_t) (*NACL_VTBL(NaClNameService, nnsp)->
-                                     Enumerate)(nnsp, dest, nbytes);
-  rpc->result = NACL_SRPC_RESULT_OK;
-  (*done_cls->Run)(done_cls);
-}
-
 struct NaClSrpcHandlerDesc const kNaClNameServiceHandlers[] = {
-  { NACL_NAME_SERVICE_LIST, NaClNameServiceListRpc, },
   { NACL_NAME_SERVICE_INSERT, NaClNameServiceNameInsertRpc, },
   { NACL_NAME_SERVICE_LOOKUP_DEPRECATED, NaClNameServiceNameLookupOldRpc, },
   { NACL_NAME_SERVICE_LOOKUP, NaClNameServiceNameLookupRpc, },
@@ -497,5 +454,4 @@ struct NaClNameServiceVtbl kNaClNameServiceVtbl = {
   NaClNameServiceCreateFactoryEntry,
   NaClNameServiceResolveName,
   NaClNameServiceDeleteName,
-  NaClNameServiceEnumerate,
 };

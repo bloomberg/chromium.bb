@@ -1,5 +1,0 @@
-rpc namedump * s("")
-rpc manifest_test * s("")
-reverse_service_add_manifest_mapping my_object ${obj_file}
-reverse_service_add_manifest_mapping my_nexe ${nexe_file}
-rpc manifest_test * s("")

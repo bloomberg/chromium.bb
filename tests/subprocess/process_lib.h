@@ -41,10 +41,6 @@ class NameServiceClient : public SrpcClientConnection {
  public:
   NameServiceClient() {}
 
-  std::vector<std::string> List();
-  // TODO(bsy) consider instead implementing:
-  // template typename<Cont> List(Cont::insert_iterator<Cont> it);
-
   int Resolve(std::string name);
 };
 

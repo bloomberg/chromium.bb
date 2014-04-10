@@ -44,51 +44,6 @@ static void NaClManifestReleaseChannel_release_mu(
   NaClXMutexUnlock(&self->mu);
 }
 
-static void NaClManifestNameServiceListRpc(
-    struct NaClSrpcRpc      *rpc,
-    struct NaClSrpcArg      **in_args,
-    struct NaClSrpcArg      **out_args,
-    struct NaClSrpcClosure  *done_cls) {
-  struct NaClManifestProxyConnection  *proxy_conn =
-      (struct NaClManifestProxyConnection *) rpc->channel->server_instance_data;
-  uint32_t                            nbytes = out_args[0]->u.count;
-  char                                *dest = out_args[0]->arrays.carr;
-  NaClSrpcError                       srpc_error;
-
-  UNREFERENCED_PARAMETER(in_args);
-  NaClLog(4,
-          "NaClManifestNameServiceListRpc, proxy_conn 0x%"NACL_PRIxPTR"\n",
-          (uintptr_t) proxy_conn);
-
-  NaClManifestWaitForChannel_yield_mu(proxy_conn);
-
-  NaClLog(4,
-          ("NaClManifestNameServiceListRpc: nbytes %"NACL_PRIu32", dest"
-           " 0x%"NACL_PRIxPTR"\n"),
-          nbytes, (uintptr_t) dest);
-  if (NACL_SRPC_RESULT_OK !=
-      (srpc_error =
-       NaClSrpcInvokeBySignature(&proxy_conn->client_channel,
-                                 NACL_MANIFEST_LIST,
-                                 &nbytes, dest))) {
-    NaClLog(LOG_ERROR,
-            ("Manifest list via channel 0x%"NACL_PRIxPTR" with RPC "
-             NACL_MANIFEST_LIST" failed: %d\n"),
-            (uintptr_t) &proxy_conn->client_channel,
-            srpc_error);
-    rpc->result = srpc_error;
-  } else {
-    NaClLog(3,
-            "NaClManifestNameServiceListRpc, proxy returned %"NACL_PRId32
-            " bytes\n",
-            nbytes);
-    out_args[0]->u.count = nbytes;
-    rpc->result = NACL_SRPC_RESULT_OK;
-  }
-  (*done_cls->Run)(done_cls);
-  NaClManifestReleaseChannel_release_mu(proxy_conn);
-}
-
 static void NaClManifestNameServiceInsertRpc(
     struct NaClSrpcRpc      *rpc,
     struct NaClSrpcArg      **in_args,
@@ -198,7 +153,6 @@ static void NaClManifestNameServiceDeleteRpc(
 }
 
 struct NaClSrpcHandlerDesc const kNaClManifestProxyHandlers[] = {
-  { NACL_NAME_SERVICE_LIST, NaClManifestNameServiceListRpc, },
   { NACL_NAME_SERVICE_INSERT, NaClManifestNameServiceInsertRpc, },
   { NACL_NAME_SERVICE_LOOKUP, NaClManifestNameServiceLookupRpc, },
   { NACL_NAME_SERVICE_DELETE, NaClManifestNameServiceDeleteRpc, },
