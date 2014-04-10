@@ -521,6 +521,11 @@ const char kEnableTargetedStyleRecalc[] =
 // is denied by the sandbox.
 const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
 
+// Enables seccomp-bpf support for Android. Requires experimental kernel
+// support. <http://crbug.com/166704>
+const char kEnableSeccompFilterSandbox[] =
+    "enable-seccomp-filter-sandbox";
+
 // Enables the Skia benchmarking extension
 const char kEnableSkiaBenchmarking[]        = "enable-skia-benchmarking";
 

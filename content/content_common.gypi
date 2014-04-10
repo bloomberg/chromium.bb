@@ -392,6 +392,8 @@
     'common/sandbox_init_mac.cc',
     'common/sandbox_init_mac.h',
     'common/sandbox_init_win.cc',
+    'common/sandbox_linux/android/sandbox_bpf_base_policy_android.cc',
+    'common/sandbox_linux/android/sandbox_bpf_base_policy_android.h',
     'common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.cc',
     'common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.h',
     'common/sandbox_linux/bpf_gpu_policy_linux.cc',
@@ -450,6 +452,14 @@
     'common/worker_messages.h',
     'common/zygote_commands_linux.h',
     'port/common/input_event_ack_state.h',
+  ],
+  'target_conditions': [
+    ['OS=="android"', {
+      'sources/': [
+        ['include', '^common/sandbox_linux/sandbox_bpf_base_policy_linux\\.cc$'],
+        ['include', '^common/sandbox_linux/sandbox_bpf_base_policy_linux\\.h$'],
+      ],
+    }],
   ],
   'conditions': [
     ['use_aura==1', {

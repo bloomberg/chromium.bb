@@ -1094,6 +1094,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnablePinch,
     switches::kEnablePreparsedJsCaching,
     switches::kEnableRepaintAfterLayout,
+    switches::kEnableSeccompFilterSandbox,
     switches::kEnableServiceWorker,
     switches::kEnableSkiaBenchmarking,
     switches::kEnableSoftwareCompositing,
