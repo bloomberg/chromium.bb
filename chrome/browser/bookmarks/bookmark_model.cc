@@ -1015,14 +1015,15 @@ void BookmarkModel::LoadFavicon(BookmarkNode* node) {
       profile_, Profile::EXPLICIT_ACCESS);
   if (!favicon_service)
     return;
-  FaviconService::Handle handle = favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(node->url(),
-                                          chrome::FAVICON,
-                                          gfx::kFaviconSize),
-      base::Bind(&BookmarkModel::OnFaviconDataAvailable,
-                 base::Unretained(this), node),
-      &cancelable_task_tracker_);
-  node->set_favicon_load_task_id(handle);
+  base::CancelableTaskTracker::TaskId taskId =
+      favicon_service->GetFaviconImageForURL(
+          FaviconService::FaviconForURLParams(
+              node->url(), chrome::FAVICON, gfx::kFaviconSize),
+          base::Bind(&BookmarkModel::OnFaviconDataAvailable,
+                     base::Unretained(this),
+                     node),
+          &cancelable_task_tracker_);
+  node->set_favicon_load_task_id(taskId);
 }
 
 void BookmarkModel::FaviconLoaded(const BookmarkNode* node) {

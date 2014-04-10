@@ -11,7 +11,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/common/favicon/favicon_types.h"
 #include "chrome/common/ref_counted_util.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -28,10 +27,7 @@ struct FaviconImageResult;
 
 // The favicon service provides methods to access favicons. It calls the history
 // backend behind the scenes.
-//
-// This service is thread safe. Each request callback is invoked in the
-// thread that made the request.
-class FaviconService : public CancelableRequestProvider, public KeyedService {
+class FaviconService : public KeyedService {
  public:
   explicit FaviconService(Profile* profile);
 

@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_FAVICON_FAVICON_HANDLER_H_
 #define CHROME_BROWSER_FAVICON_FAVICON_HANDLER_H_
 
+#include <deque>
 #include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
