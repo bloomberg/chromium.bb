@@ -1178,15 +1178,6 @@ const Experiment kExperiments[] = {
         autofill::switches::kWalletServiceUseSandbox, "1",
         autofill::switches::kWalletServiceUseSandbox, "0")
   },
-  {
-    "enable-interactive-autocomplete",
-    IDS_FLAGS_ENABLE_INTERACTIVE_AUTOCOMPLETE_NAME,
-    IDS_FLAGS_ENABLE_INTERACTIVE_AUTOCOMPLETE_DESCRIPTION,
-    kOsWin | kOsCrOS | kOsAndroid | kOsMac,
-    ENABLE_DISABLE_VALUE_TYPE(
-        autofill::switches::kEnableInteractiveAutocomplete,
-        autofill::switches::kDisableInteractiveAutocomplete)
-  },
 #if defined(USE_AURA)
   {
     "overscroll-history-navigation",

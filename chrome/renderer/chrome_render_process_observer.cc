@@ -259,11 +259,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   }
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
-  bool enable_autofill = !command_line.HasSwitch(
-      autofill::switches::kDisableInteractiveAutocomplete);
-  WebRuntimeFeatures::enableRequestAutocomplete(
-      enable_autofill ||
-      command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures));
+  WebRuntimeFeatures::enableRequestAutocomplete(true);
 #endif
 
   RenderThread* thread = RenderThread::Get();
