@@ -224,12 +224,6 @@ class ManagedUserService : public KeyedService,
   // corresponding preference is changed.
   void UpdateManualURLs();
 
-  // Records some events (opening the managed user profile, switching from the
-  // managed user profile, and quitting the browser); each is stored
-  // using a key with a prefix (|key_prefix|) indicating the type of the event.
-  // Each entry is a dictionary which has the timestamp of the event.
-  void RecordProfileAndBrowserEventsHelper(const char* key_prefix);
-
   // Owns us via the KeyedService mechanism.
   Profile* profile_;
 
