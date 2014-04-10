@@ -19,6 +19,7 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
+class FaviconClient;
 class FaviconHandlerDelegate;
 class Profile;
 class SkBitmap;
@@ -84,6 +85,7 @@ class FaviconHandler {
   };
 
   FaviconHandler(Profile* profile,
+                 FaviconClient* client,
                  FaviconHandlerDelegate* delegate,
                  Type icon_type);
   virtual ~FaviconHandler();
@@ -151,8 +153,6 @@ class FaviconHandler {
                                   const GURL& icon_url,
                                   chrome::IconType icon_type,
                                   const gfx::Image& image);
-
-  virtual FaviconService* GetFaviconService();
 
   // Returns true if the favicon should be saved.
   virtual bool ShouldSaveFavicon(const GURL& url);
@@ -285,6 +285,9 @@ class FaviconHandler {
 
   // The Profile associated with this handler.
   Profile* profile_;
+
+  // The client which implements embedder-specific Favicon operations.
+  FaviconClient* client_;  // weak
 
   // This handler's delegate.
   FaviconHandlerDelegate* delegate_;  // weak

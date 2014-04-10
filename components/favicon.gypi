@@ -8,6 +8,7 @@
       'target_name': 'favicon_core',
       'type': 'none',
       'sources': [
+        'favicon/core/browser/favicon_client.h',
         'favicon/core/favicon_handler_delegate.h',
       ],
     },

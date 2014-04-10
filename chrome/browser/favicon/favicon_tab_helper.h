@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "components/favicon/core/browser/favicon_client.h"
 #include "components/favicon/core/favicon_handler_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -30,6 +31,7 @@ class SkBitmap;
 // downloaded and saved in the history backend.
 //
 class FaviconTabHelper : public content::WebContentsObserver,
+                         public FaviconClient,
                          public FaviconHandlerDelegate,
                          public content::WebContentsUserData<FaviconTabHelper> {
  public:
@@ -79,6 +81,9 @@ class FaviconTabHelper : public content::WebContentsObserver,
       const GURL& image_url,
       const std::vector<SkBitmap>& bitmaps,
       const std::vector<gfx::Size>& original_bitmap_sizes);
+
+  // FaviconClient implementation:
+  virtual FaviconService* GetFaviconService() OVERRIDE;
 
  private:
   explicit FaviconTabHelper(content::WebContents* web_contents);

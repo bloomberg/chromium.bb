@@ -38,11 +38,11 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(FaviconTabHelper);
 FaviconTabHelper::FaviconTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
-  favicon_handler_.reset(new FaviconHandler(profile_, this,
-                                            FaviconHandler::FAVICON));
+  favicon_handler_.reset(
+      new FaviconHandler(profile_, this, this, FaviconHandler::FAVICON));
   if (chrome::kEnableTouchIcon)
-    touch_icon_handler_.reset(new FaviconHandler(profile_, this,
-                                                 FaviconHandler::TOUCH));
+    touch_icon_handler_.reset(
+        new FaviconHandler(profile_, this, this, FaviconHandler::TOUCH));
 }
 
 FaviconTabHelper::~FaviconTabHelper() {
@@ -190,6 +190,11 @@ void FaviconTabHelper::DidUpdateFaviconURL(
   favicon_handler_->OnUpdateFaviconURL(page_id, candidates);
   if (touch_icon_handler_.get())
     touch_icon_handler_->OnUpdateFaviconURL(page_id, candidates);
+}
+
+FaviconService* FaviconTabHelper::GetFaviconService() {
+  return FaviconServiceFactory::GetForProfile(profile_,
+                                              Profile::EXPLICIT_ACCESS);
 }
 
 void FaviconTabHelper::DidDownloadFavicon(

@@ -210,13 +210,16 @@ FaviconHandler::FaviconCandidate::FaviconCandidate(
 ////////////////////////////////////////////////////////////////////////////////
 
 FaviconHandler::FaviconHandler(Profile* profile,
+                               FaviconClient* client,
                                FaviconHandlerDelegate* delegate,
                                Type icon_type)
     : got_favicon_from_history_(false),
       favicon_expired_or_incomplete_(false),
-      icon_types_(icon_type == FAVICON ? chrome::FAVICON :
-          chrome::TOUCH_ICON | chrome::TOUCH_PRECOMPOSED_ICON),
+      icon_types_(icon_type == FAVICON
+                      ? chrome::FAVICON
+                      : chrome::TOUCH_ICON | chrome::TOUCH_PRECOMPOSED_ICON),
       profile_(profile),
+      client_(client),
       delegate_(delegate) {
   DCHECK(profile_);
   DCHECK(delegate_);
@@ -236,7 +239,7 @@ void FaviconHandler::FetchFavicon(const GURL& url) {
   // Request the favicon from the history service. In parallel to this the
   // renderer is going to notify us (well WebContents) when the favicon url is
   // available.
-  if (GetFaviconService()) {
+  if (client_->GetFaviconService()) {
     GetFaviconForURLFromFaviconService(
         url_,
         icon_types_,
@@ -245,11 +248,6 @@ void FaviconHandler::FetchFavicon(const GURL& url) {
             base::Unretained(this)),
         &cancelable_task_tracker_);
   }
-}
-
-FaviconService* FaviconHandler::GetFaviconService() {
-  return FaviconServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
 }
 
 bool FaviconHandler::UpdateFaviconCandidate(const GURL& url,
@@ -272,7 +270,7 @@ void FaviconHandler::SetFavicon(
     const GURL& icon_url,
     const gfx::Image& image,
     chrome::IconType icon_type) {
-  if (GetFaviconService() && ShouldSaveFavicon(url))
+  if (client_->GetFaviconService() && ShouldSaveFavicon(url))
     SetHistoryFavicons(url, icon_url, icon_type, image);
 
   if (UrlMatches(url, url_) && icon_type == chrome::FAVICON) {
@@ -332,7 +330,7 @@ void FaviconHandler::OnUpdateFaviconURL(
   if (image_urls_.empty())
     return;
 
-  if (!GetFaviconService())
+  if (!client_->GetFaviconService())
     return;
 
   ProcessCurrentUrl();
@@ -439,7 +437,7 @@ void FaviconHandler::UpdateFaviconMappingAndFetch(
   // UpdateFaviconMappingsAndFetch().
   std::vector<GURL> icon_urls;
   icon_urls.push_back(icon_url);
-  GetFaviconService()->UpdateFaviconMappingsAndFetch(
+  client_->GetFaviconService()->UpdateFaviconMappingsAndFetch(
       page_url, icon_urls, icon_type, preferred_icon_size(), callback, tracker);
 }
 
@@ -448,7 +446,7 @@ void FaviconHandler::GetFaviconFromFaviconService(
     chrome::IconType icon_type,
     const FaviconService::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  GetFaviconService()->GetFavicon(
+  client_->GetFaviconService()->GetFavicon(
       icon_url, icon_type, preferred_icon_size(), callback, tracker);
 }
 
@@ -457,9 +455,9 @@ void FaviconHandler::GetFaviconForURLFromFaviconService(
     int icon_types,
     const FaviconService::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  GetFaviconService()->GetFaviconForURL(
-      FaviconService::FaviconForURLParams(page_url, icon_types,
-                                          preferred_icon_size()),
+  client_->GetFaviconService()->GetFaviconForURL(
+      FaviconService::FaviconForURLParams(
+          page_url, icon_types, preferred_icon_size()),
       callback,
       tracker);
 }
@@ -468,7 +466,8 @@ void FaviconHandler::SetHistoryFavicons(const GURL& page_url,
                                         const GURL& icon_url,
                                         chrome::IconType icon_type,
                                         const gfx::Image& image) {
-  GetFaviconService()->SetFavicons(page_url, icon_url, icon_type, image);
+  client_->GetFaviconService()->SetFavicons(
+      page_url, icon_url, icon_type, image);
 }
 
 bool FaviconHandler::ShouldSaveFavicon(const GURL& url) {
@@ -545,7 +544,7 @@ void FaviconHandler::DownloadFaviconOrAskFaviconService(
   if (favicon_expired_or_incomplete_) {
     // We have the mapping, but the favicon is out of date. Download it now.
     ScheduleDownload(page_url, icon_url, icon_type);
-  } else if (GetFaviconService()) {
+  } else if (client_->GetFaviconService()) {
     // We don't know the favicon, but we may have previously downloaded the
     // favicon for another page that shares the same favicon. Ask for the
     // favicon given the favicon URL.

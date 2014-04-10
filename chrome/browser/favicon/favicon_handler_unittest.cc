@@ -167,6 +167,13 @@ class HistoryRequestHandler {
 
 }  // namespace
 
+class TestFaviconClient : public FaviconClient {
+ public:
+  virtual FaviconService* GetFaviconService() OVERRIDE {
+    // Just give none NULL value, so overridden methods can be hit.
+    return (FaviconService*)(1);
+  }
+};
 
 class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
  public:
@@ -207,9 +214,10 @@ class TestFaviconHandler : public FaviconHandler {
  public:
   TestFaviconHandler(const GURL& page_url,
                      Profile* profile,
+                     FaviconClient* client,
                      FaviconHandlerDelegate* delegate,
                      Type type)
-      : FaviconHandler(profile, delegate, type),
+      : FaviconHandler(profile, client, delegate, type),
         entry_(NavigationEntry::Create()),
         download_id_(0),
         num_favicon_updates_(0) {
@@ -300,11 +308,6 @@ class TestFaviconHandler : public FaviconHandler {
                                            bytes->front() + bytes->size());
     history_handler_.reset(new HistoryRequestHandler(
         page_url, icon_url, icon_type, bitmap_data));
-  }
-
-  virtual FaviconService* GetFaviconService() OVERRIDE {
-    // Just give none NULL value, so overridden methods can be hit.
-    return (FaviconService*)(1);
   }
 
   virtual bool ShouldSaveFavicon(const GURL& url) OVERRIDE {
@@ -439,10 +442,11 @@ TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
   const GURL icon_url("http://www.google.com/favicon");
 
   TestFaviconHandlerDelegate delegate;
+  TestFaviconClient client;
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  TestFaviconHandler helper(page_url, profile,
-                            &delegate, FaviconHandler::FAVICON);
+  TestFaviconHandler helper(
+      page_url, profile, &client, &delegate, FaviconHandler::FAVICON);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -481,10 +485,11 @@ TEST_F(FaviconHandlerTest, DownloadFavicon) {
   const GURL icon_url("http://www.google.com/favicon");
 
   TestFaviconHandlerDelegate delegate;
+  TestFaviconClient client;
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  TestFaviconHandler helper(page_url, profile,
-                            &delegate, FaviconHandler::FAVICON);
+  TestFaviconHandler helper(
+      page_url, profile, &client, &delegate, FaviconHandler::FAVICON);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -550,10 +555,11 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
   TestFaviconHandlerDelegate delegate;
+  TestFaviconClient client;
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  TestFaviconHandler helper(page_url, profile,
-                            &delegate, FaviconHandler::FAVICON);
+  TestFaviconHandler helper(
+      page_url, profile, &client, &delegate, FaviconHandler::FAVICON);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -633,10 +639,11 @@ TEST_F(FaviconHandlerTest, FaviconInHistoryInvalid) {
   const GURL icon_url("http://www.google.com/favicon");
 
   TestFaviconHandlerDelegate delegate;
+  TestFaviconClient client;
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  TestFaviconHandler helper(page_url, profile,
-                            &delegate, FaviconHandler::FAVICON);
+  TestFaviconHandler helper(
+      page_url, profile, &client, &delegate, FaviconHandler::FAVICON);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -707,10 +714,11 @@ TEST_F(FaviconHandlerTest, UpdateFavicon) {
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
   TestFaviconHandlerDelegate delegate;
+  TestFaviconClient client;
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  TestFaviconHandler helper(page_url, profile,
-                            &delegate, FaviconHandler::FAVICON);
+  TestFaviconHandler helper(
+      page_url, profile, &client, &delegate, FaviconHandler::FAVICON);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -770,10 +778,11 @@ TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
   TestFaviconHandlerDelegate delegate;
+  TestFaviconClient client;
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  TestFaviconHandler helper(page_url, profile,
-                            &delegate, FaviconHandler::TOUCH);
+  TestFaviconHandler helper(
+      page_url, profile, &client, &delegate, FaviconHandler::TOUCH);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -883,10 +892,11 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
   TestFaviconHandlerDelegate delegate;
+  TestFaviconClient client;
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  TestFaviconHandler helper(page_url, profile,
-                            &delegate, FaviconHandler::TOUCH);
+  TestFaviconHandler helper(
+      page_url, profile, &client, &delegate, FaviconHandler::TOUCH);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -1027,8 +1037,9 @@ TEST_F(FaviconHandlerTest, MultipleFavicons) {
   // 1) Test that if there are several single resolution favicons to choose from
   // that the largest exact match is chosen.
   TestFaviconHandlerDelegate delegate1;
-  TestFaviconHandler handler1(kPageURL, profile,
-                              &delegate1, FaviconHandler::FAVICON);
+  TestFaviconClient client;
+  TestFaviconHandler handler1(
+      kPageURL, profile, &client, &delegate1, FaviconHandler::FAVICON);
   const int kSizes1[] = { 16, 24, 32, 48, 256 };
   std::vector<FaviconURL> urls1(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSizes1));
@@ -1048,8 +1059,8 @@ TEST_F(FaviconHandlerTest, MultipleFavicons) {
   // 2) Test that if there are several single resolution favicons to choose
   // from, the exact match is preferred even if it results in upsampling.
   TestFaviconHandlerDelegate delegate2;
-  TestFaviconHandler handler2(kPageURL, profile,
-                              &delegate2, FaviconHandler::FAVICON);
+  TestFaviconHandler handler2(
+      kPageURL, profile, &client, &delegate2, FaviconHandler::FAVICON);
   const int kSizes2[] = { 16, 24, 48, 256 };
   std::vector<FaviconURL> urls2(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSizes2));
@@ -1063,8 +1074,8 @@ TEST_F(FaviconHandlerTest, MultipleFavicons) {
   // 3) Test that favicons which need to be upsampled a little or downsampled
   // a little are preferred over huge favicons.
   TestFaviconHandlerDelegate delegate3;
-  TestFaviconHandler handler3(kPageURL, profile,
-                              &delegate3, FaviconHandler::FAVICON);
+  TestFaviconHandler handler3(
+      kPageURL, profile, &client, &delegate3, FaviconHandler::FAVICON);
   const int kSizes3[] = { 256, 48 };
   std::vector<FaviconURL> urls3(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSizes3));
@@ -1076,8 +1087,8 @@ TEST_F(FaviconHandlerTest, MultipleFavicons) {
             handler3.GetEntry()->GetFavicon().url);
 
   TestFaviconHandlerDelegate delegate4;
-  TestFaviconHandler handler4(kPageURL, profile,
-                              &delegate4, FaviconHandler::FAVICON);
+  TestFaviconHandler handler4(
+      kPageURL, profile, &client, &delegate4, FaviconHandler::FAVICON);
   const int kSizes4[] = { 17, 256 };
   std::vector<FaviconURL> urls4(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSizes4));
