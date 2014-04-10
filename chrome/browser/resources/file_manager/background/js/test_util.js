@@ -229,13 +229,13 @@ test.util.sync.inputText = function(contentWindow, query, text) {
  * @return {boolean} True if file got selected, false otherwise.
  */
 test.util.sync.selectFile = function(contentWindow, filename) {
-  var table = contentWindow.document.querySelector('#detail-table');
-  var rows = table.querySelectorAll('li');
+  var rows = contentWindow.document.querySelectorAll('#detail-table li');
+  test.util.sync.fakeKeyDown(contentWindow, '#file-list', 'Home', false);
   for (var index = 0; index < rows.length; ++index) {
-    test.util.sync.fakeKeyDown(contentWindow, '#file-list', 'Down', false);
     var selection = test.util.sync.getSelectedFiles(contentWindow);
     if (selection.length === 1 && selection[0] === filename)
       return true;
+    test.util.sync.fakeKeyDown(contentWindow, '#file-list', 'Down', false);
   }
   console.error('Failed to select file "' + filename + '"');
   return false;

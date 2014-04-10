@@ -2416,7 +2416,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var input = this.renameInput_;
 
     input.value = label.textContent;
-    label.parentNode.setAttribute('renaming', '');
+    item.setAttribute('renaming', '');
     label.parentNode.appendChild(input);
     input.focus();
     var selectionEnd = input.value.lastIndexOf('.');
@@ -2430,6 +2430,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // This has to be set late in the process so we don't handle spurious
     // blur events.
     input.currentEntry = this.currentList_.dataModel.item(item.listIndex);
+    this.table_.startBatchUpdates();
+    this.grid_.startBatchUpdates();
   };
 
   /**
@@ -2480,21 +2482,27 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
     }
 
-    var nameNode = this.findListItemForNode_(this.renameInput_).
-                   querySelector('.filename-label');
+    var renamedItemElement = this.findListItemForNode_(this.renameInput_);
+    var nameNode = renamedItemElement.querySelector('.filename-label');
 
     input.validation_ = true;
     var validationDone = function(valid) {
       input.validation_ = false;
-      // Alert dialog restores focus unless the item removed from DOM.
-      if (this.document_.activeElement != input)
-        this.cancelRename_();
-      if (!valid)
+
+      if (!valid) {
+        // Cancel rename if it fails to restore focus from alert dialog.
+        // Otherwise, just cancel the commitment and continue to rename.
+        if (this.document_.activeElement != input)
+          this.cancelRename_();
         return;
+      }
 
       // Validation succeeded. Do renaming.
+      this.renameInput_.currentEntry = null;
+      if (this.renameInput_.parentNode)
+        this.renameInput_.parentNode.removeChild(this.renameInput_);
+      renamedItemElement.setAttribute('renaming', 'provisional');
 
-      this.cancelRename_();
       // Optimistically apply new name immediately to avoid flickering in
       // case of success.
       nameNode.textContent = newName;
@@ -2503,10 +2511,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           entry, newName,
           function(newEntry) {
             this.directoryModel_.onRenameEntry(entry, newEntry);
+            renamedItemElement.removeAttribute('renaming');
+            this.table_.endBatchUpdates();
+            this.grid_.endBatchUpdates();
           }.bind(this),
           function(error) {
             // Write back to the old name.
             nameNode.textContent = entry.name;
+            renamedItemElement.removeAttribute('renaming');
+            this.table_.endBatchUpdates();
+            this.grid_.endBatchUpdates();
 
             // Show error dialog.
             var message;
@@ -2550,11 +2564,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.cancelRename_ = function() {
     this.renameInput_.currentEntry = null;
 
+    var item = this.findListItemForNode_(this.renameInput_);
+    if (item)
+      item.removeAttribute('renaming');
+
     var parent = this.renameInput_.parentNode;
-    if (parent) {
-      parent.removeAttribute('renaming');
+    if (parent)
       parent.removeChild(this.renameInput_);
-    }
+
+    this.table_.endBatchUpdates();
+    this.grid_.endBatchUpdates();
   };
 
   /**

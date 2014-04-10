@@ -932,7 +932,7 @@ input.rename {
   -webkit-box-flex: 1;
 }
 
-[renaming] > .filename-label {
+li[renaming=''] .filename-label {
   display: none;
 }
 
