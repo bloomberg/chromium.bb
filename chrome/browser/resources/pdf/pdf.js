@@ -8,243 +8,267 @@
 <include src="../../../../ui/webui/resources/js/util.js"></include>
 <include src="viewport.js"></include>
 
-// The plugin element is sized to fill the entire window and is set to be fixed
-// positioning, acting as a viewport. The plugin renders into this viewport
-// according to the scroll position of the window.
-var plugin;
-
-// This element is placed behind the plugin element to cause scrollbars to be
-// displayed in the window. It is sized according to the document size of the
-// pdf and zoom level.
-var sizer;
-
-// The toolbar element.
-var viewerToolbar;
-
-// The page indicator element.
-var viewerPageIndicator;
-
-// The progress bar element.
-var viewerProgressBar;
-
-// The element indicating there was an error loading the document.
-var viewerErrorScreen;
-
-// The viewport object.
-var viewport;
-
-// The element displaying the password screen.
-var viewerPasswordScreen;
-
-// The document dimensions.
-var documentDimensions;
-
-// Notify the plugin to print.
-function print() {
-  plugin.postMessage({
-    type: 'print',
-  });
-}
-
-// Returns true if the fit-to-page button is enabled.
-function isFitToPageEnabled() {
-  return $('fit-to-page-button').classList.contains('polymer-selected');
-}
-
-function updateProgress(progress) {
-  viewerProgressBar.progress = progress;
-  if (progress == -1) {
-    // Document load failed.
-    viewerErrorScreen.style.visibility = 'visible';
-    sizer.style.display = 'none';
-    viewerToolbar.style.visibility = 'hidden';
-    if (viewerPasswordScreen.active) {
-      viewerPasswordScreen.deny();
-      viewerPasswordScreen.active = false;
-    }
-  }
-}
-
-function onPasswordSubmitted(event) {
-  plugin.postMessage({
-    type: 'getPasswordComplete',
-    password: event.detail.password
-  });
-}
-
-// Called when a message is received from the plugin.
-function handleMessage(message) {
-  switch (message.data.type.toString()) {
-    case 'documentDimensions':
-      documentDimensions = message.data;
-      viewport.setDocumentDimensions(documentDimensions);
-      viewerToolbar.style.visibility = 'visible';
-      // If we received the document dimensions, the password was good so we can
-      // dismiss the password screen.
-      if (viewerPasswordScreen.active)
-        viewerPasswordScreen.accept();
-
-      viewerPageIndicator.initialFadeIn();
-      viewerToolbar.initialFadeIn();
-      break;
-    case 'loadProgress':
-      updateProgress(message.data.progress);
-      break;
-    case 'goToPage':
-      viewport.goToPage(message.data.page);
-      break;
-    case 'getPassword':
-      // If the password screen isn't up, put it up. Otherwise we're responding
-      // to an incorrect password so deny it.
-      if (!viewerPasswordScreen.active)
-        viewerPasswordScreen.active = true;
-      else
-        viewerPasswordScreen.deny();
-  }
-}
-
-// Callback that's called when the viewport changes.
-function viewportChangedCallback(zoom,
-                                 x,
-                                 y,
-                                 scrollbarWidth,
-                                 hasScrollbars,
-                                 page) {
-  // Offset the toolbar position so that it doesn't move if scrollbars appear.
-  var toolbarRight = hasScrollbars.y ? 0 : scrollbarWidth;
-  var toolbarBottom = hasScrollbars.x ? 0 : scrollbarWidth;
-  viewerToolbar.style.right = toolbarRight + 'px';
-  viewerToolbar.style.bottom = toolbarBottom + 'px';
-
-  // Show or hide the page indicator.
-  if (documentDimensions.pageDimensions.length > 1 && hasScrollbars.y)
-    viewerPageIndicator.style.visibility = 'visible';
-  else
-    viewerPageIndicator.style.visibility = 'hidden';
-
-  // Update the most visible page.
-  viewerPageIndicator.text = page + 1;
-
-  // Notify the plugin of the viewport change.
-  plugin.postMessage({
-    type: 'viewport',
-    zoom: zoom,
-    xOffset: x,
-    yOffset: y
-  });
-}
-
-function load() {
-  sizer = $('sizer');
-  viewerToolbar = $('toolbar');
-  viewerPageIndicator = $('page-indicator');
-  viewerProgressBar = $('progress-bar');
-  viewerPasswordScreen = $('password-screen');
-  viewerPasswordScreen.addEventListener('password-submitted',
-                                        onPasswordSubmitted);
-  viewerErrorScreen = $('error-screen');
-  viewerErrorScreen.text = 'Failed to load PDF document';
+/**
+ * Creates a new PDFViewer. There should only be one of these objects per
+ * document.
+ */
+function PDFViewer() {
+  // The sizer element is placed behind the plugin element to cause scrollbars
+  // to be displayed in the window. It is sized according to the document size
+  // of the pdf and zoom level.
+  this.sizer_ = $('sizer');
+  this.toolbar_ = $('toolbar');
+  this.pageIndicator_ = $('page-indicator');
+  this.progressBar_ = $('progress-bar');
+  this.passwordScreen_ = $('password-screen');
+  this.passwordScreen_.addEventListener('password-submitted',
+                                        this.onPasswordSubmitted_.bind(this));
+  this.errorScreen_ = $('error-screen');
+  this.errorScreen_.text = 'Failed to load PDF document';
 
   // Create the viewport.
-  viewport = new Viewport(window,
-                          sizer,
-                          isFitToPageEnabled,
-                          viewportChangedCallback);
+  this.viewport_ = new Viewport(window,
+                                this.sizer_,
+                                this.isFitToPageEnabled_.bind(this),
+                                this.viewportChangedCallback_.bind(this));
 
-  // Create the plugin object dynamically so we can set its src.
-  plugin = document.createElement('object');
-  plugin.id = 'plugin';
-  plugin.type = 'application/x-google-chrome-pdf';
-  plugin.addEventListener('message', handleMessage, false);
+  // Create the plugin object dynamically so we can set its src. The plugin
+  // element is sized to fill the entire window and is set to be fixed
+  // positioning, acting as a viewport. The plugin renders into this viewport
+  // according to the scroll position of the window.
+  this.plugin_ = document.createElement('object');
+  this.plugin_.id = 'plugin';
+  this.plugin_.type = 'application/x-google-chrome-pdf';
+  this.plugin_.addEventListener('message', this.handleMessage_.bind(this),
+                                false);
   // The pdf location is passed in stream details in the background page.
   var streamDetails = chrome.extension.getBackgroundPage().popStreamDetails();
-  plugin.setAttribute('src', streamDetails.streamUrl);
-  document.body.appendChild(plugin);
+  this.plugin_.setAttribute('src', streamDetails.streamUrl);
+  document.body.appendChild(this.plugin_);
 
-  // Setup the button event listeners.
-  $('fit-to-width-button').addEventListener('click',
-      viewport.fitToWidth.bind(viewport));
-  $('fit-to-page-button').addEventListener('click',
-      viewport.fitToPage.bind(viewport));
-  $('zoom-in-button').addEventListener('click',
-      viewport.zoomIn.bind(viewport));
-  $('zoom-out-button').addEventListener('click',
-      viewport.zoomOut.bind(viewport));
-  $('save-button-link').href = streamDetails.originalUrl;
-  $('print-button').addEventListener('click', print);
-
-
-  // Setup keyboard event listeners.
-  document.onkeydown = function(e) {
-    switch (e.keyCode) {
-      case 37:  // Left arrow key.
-        // Go to the previous page if there are no horizontal scrollbars.
-        if (!viewport.documentHasScrollbars().x) {
-          viewport.goToPage(viewport.getMostVisiblePage() - 1);
-          // Since we do the movement of the page.
-          e.preventDefault();
-        }
-        return;
-      case 33:  // Page up key.
-        // Go to the previous page if we are fit-to-page.
-        if (isFitToPageEnabled()) {
-          viewport.goToPage(viewport.getMostVisiblePage() - 1);
-          // Since we do the movement of the page.
-          e.preventDefault();
-        }
-        return;
-      case 39:  // Right arrow key.
-        // Go to the next page if there are no horizontal scrollbars.
-        if (!viewport.documentHasScrollbars().x) {
-          viewport.goToPage(viewport.getMostVisiblePage() + 1);
-          // Since we do the movement of the page.
-          e.preventDefault();
-        }
-        return;
-      case 34:  // Page down key.
-        // Go to the next page if we are fit-to-page.
-        if (isFitToPageEnabled()) {
-          viewport.goToPage(viewport.getMostVisiblePage() + 1);
-          // Since we do the movement of the page.
-          e.preventDefault();
-        }
-        return;
-      case 187:  // +/= key.
-      case 107:  // Numpad + key.
-        if (e.ctrlKey || e.metaKey) {
-          viewport.zoomIn();
-          // Since we do the zooming of the page.
-          e.preventDefault();
-        }
-        return;
-      case 189:  // -/_ key.
-      case 109:  // Numpad - key.
-        if (e.ctrlKey || e.metaKey) {
-          viewport.zoomOut();
-          // Since we do the zooming of the page.
-          e.preventDefault();
-        }
-        return;
-      case 83:  // s key.
-        if (e.ctrlKey || e.metaKey) {
-          // Simulate a click on the button so that the <a download ...>
-          // attribute is used.
-          $('save-button-link').click();
-          // Since we do the saving of the page.
-          e.preventDefault();
-        }
-        return;
-      case 80:  // p key.
-        if (e.ctrlKey || e.metaKey) {
-          print();
-          // Since we do the printing of the page.
-          e.preventDefault();
-        }
-        return;
-    }
-  };
+  this.setupEventListeners_(streamDetails);
 }
 
-load();
+PDFViewer.prototype = {
+  /**
+   * @private
+   * Sets up event listeners for key shortcuts and also the UI buttons.
+   * @param {Object} streamDetails the details of the original HTTP request for
+   *     the PDF.
+   */
+  setupEventListeners_: function(streamDetails) {
+    // Setup the button event listeners.
+    $('fit-to-width-button').addEventListener('click',
+        this.viewport_.fitToWidth.bind(this.viewport_));
+    $('fit-to-page-button').addEventListener('click',
+        this.viewport_.fitToPage.bind(this.viewport_));
+    $('zoom-in-button').addEventListener('click',
+        this.viewport_.zoomIn.bind(this.viewport_));
+    $('zoom-out-button').addEventListener('click',
+        this.viewport_.zoomOut.bind(this.viewport_));
+    $('save-button-link').href = streamDetails.originalUrl;
+    $('print-button').addEventListener('click', this.print_.bind(this));
+
+    // Setup keyboard event listeners.
+    document.onkeydown = function(e) {
+      switch (e.keyCode) {
+        case 37:  // Left arrow key.
+          // Go to the previous page if there are no horizontal scrollbars.
+          if (!this.viewport_.documentHasScrollbars().x) {
+            this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
+            // Since we do the movement of the page.
+            e.preventDefault();
+          }
+          return;
+        case 33:  // Page up key.
+          // Go to the previous page if we are fit-to-page.
+          if (isFitToPageEnabled()) {
+            this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
+            // Since we do the movement of the page.
+            e.preventDefault();
+          }
+          return;
+        case 39:  // Right arrow key.
+          // Go to the next page if there are no horizontal scrollbars.
+          if (!this.viewport_.documentHasScrollbars().x) {
+            this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
+            // Since we do the movement of the page.
+            e.preventDefault();
+          }
+          return;
+        case 34:  // Page down key.
+          // Go to the next page if we are fit-to-page.
+          if (isFitToPageEnabled()) {
+            this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
+            // Since we do the movement of the page.
+            e.preventDefault();
+          }
+          return;
+        case 187:  // +/= key.
+        case 107:  // Numpad + key.
+          if (e.ctrlKey || e.metaKey) {
+            this.viewport_.zoomIn();
+            // Since we do the zooming of the page.
+            e.preventDefault();
+          }
+          return;
+        case 189:  // -/_ key.
+        case 109:  // Numpad - key.
+          if (e.ctrlKey || e.metaKey) {
+            this.viewport_.zoomOut();
+            // Since we do the zooming of the page.
+            e.preventDefault();
+          }
+          return;
+        case 83:  // s key.
+          if (e.ctrlKey || e.metaKey) {
+            // Simulate a click on the button so that the <a download ...>
+            // attribute is used.
+            $('save-button-link').click();
+            // Since we do the saving of the page.
+            e.preventDefault();
+          }
+          return;
+        case 80:  // p key.
+          if (e.ctrlKey || e.metaKey) {
+            this.print_();
+            // Since we do the printing of the page.
+            e.preventDefault();
+          }
+          return;
+      }
+    }.bind(this);
+  },
+
+
+  /**
+   * @private
+   * Notify the plugin to print.
+   */
+  print_: function() {
+    this.plugin_.postMessage({
+      type: 'print',
+    });
+  },
+
+  /**
+   * @private
+   * @return {boolean} true if the fit-to-page button is enabled.
+   */
+  isFitToPageEnabled_: function() {
+    return $('fit-to-page-button').classList.contains('polymer-selected');
+  },
+
+  /**
+   * @private
+   * Update the loading progress of the document in response to a progress
+   * message being received from the plugin.
+   * @param {number} progress the progress as a percentage.
+   */
+  updateProgress_: function(progress) {
+    this.progressBar_.progress = progress;
+    if (progress == -1) {
+      // Document load failed.
+      this.errorScreen_.style.visibility = 'visible';
+      this.sizer_.style.display = 'none';
+      this.toolbar_.style.visibility = 'hidden';
+      if (this.passwordScreen_.active) {
+        this.passwordScreen_.deny();
+        this.passwordScreen_.active = false;
+      }
+    }
+  },
+
+  /**
+   * @private
+   * An event handler for handling password-submitted events. These are fired
+   * when an event is entered into the password screen.
+   * @param {Object} event a password-submitted event.
+   */
+  onPasswordSubmitted_: function(event) {
+    this.plugin_.postMessage({
+      type: 'getPasswordComplete',
+      password: event.detail.password
+    });
+  },
+
+  /**
+   * @private
+   * An event handler for handling message events received from the plugin.
+   * @param {MessageObject} message a message event.
+   */
+  handleMessage_: function(message) {
+    switch (message.data.type.toString()) {
+      case 'documentDimensions':
+        this.documentDimensions_ = message.data;
+        this.viewport_.setDocumentDimensions(this.documentDimensions_);
+        this.toolbar_.style.visibility = 'visible';
+        // If we received the document dimensions, the password was good so we
+        // can dismiss the password screen.
+        if (this.passwordScreen_.active)
+          this.passwordScreen_.accept();
+
+        this.pageIndicator_.initialFadeIn();
+        this.toolbar_.initialFadeIn();
+        break;
+      case 'loadProgress':
+        this.updateProgress_(message.data.progress);
+        break;
+      case 'goToPage':
+        this.viewport_.goToPage(message.data.page);
+        break;
+      case 'getPassword':
+        // If the password screen isn't up, put it up. Otherwise we're
+        // responding to an incorrect password so deny it.
+        if (!this.passwordScreen_.active)
+          this.passwordScreen_.active = true;
+        else
+          this.passwordScreen_.deny();
+    }
+  },
+
+  /**
+   * @private
+   * A callback that's called when the viewport changes.
+   * @param {number} zoom the zoom level.
+   * @param {number} x the x scroll coordinate.
+   * @param {number} y the y scroll coordinate.
+   * @param {number} scrollbarWidth the width of scrollbars on the page.
+   * @param {Object} hasScrollbars whether the viewport has a
+   *     horizontal/vertical scrollbar.
+   * @param {number} page the index of the most visible page in the viewport.
+   */
+  viewportChangedCallback_: function(zoom,
+                                     x,
+                                     y,
+                                     scrollbarWidth,
+                                     hasScrollbars,
+                                     page) {
+    // Offset the toolbar position so that it doesn't move if scrollbars appear.
+    var toolbarRight = hasScrollbars.y ? 0 : scrollbarWidth;
+    var toolbarBottom = hasScrollbars.x ? 0 : scrollbarWidth;
+    this.toolbar_.style.right = toolbarRight + 'px';
+    this.toolbar_.style.bottom = toolbarBottom + 'px';
+
+    // Show or hide the page indicator.
+    if (this.documentDimensions_.pageDimensions.length > 1 && hasScrollbars.y)
+      this.pageIndicator_.style.visibility = 'visible';
+    else
+      this.pageIndicator_.style.visibility = 'hidden';
+
+    // Update the most visible page.
+    this.pageIndicator_.text = page + 1;
+
+    // Notify the plugin of the viewport change.
+    this.plugin_.postMessage({
+      type: 'viewport',
+      zoom: zoom,
+      xOffset: x,
+      yOffset: y
+    });
+  },
+}
+
+new PDFViewer();
 
 })();
