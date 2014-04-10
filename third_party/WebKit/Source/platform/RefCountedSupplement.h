@@ -71,6 +71,40 @@ public:
     }
 };
 
+// FIXME: Oilpan: Consider moving all supplements to the managed heap (as HeapSupplement) and removing this wrapper.
+template<typename T, typename S>
+class RefCountedGarbageCollectedSupplement : public RefCountedGarbageCollected<S> {
+public:
+    typedef RefCountedGarbageCollectedSupplement<T, S> ThisType;
+
+    virtual ~RefCountedGarbageCollectedSupplement() { }
+
+    class Wrapper FINAL : public Supplement<T> {
+    public:
+        explicit Wrapper(ThisType* wrapped) : m_wrapped(wrapped) { }
+        virtual ~Wrapper() { }
+        ThisType* wrapped() const { return m_wrapped; }
+        virtual void trace(Visitor* visitor) OVERRIDE { visitor->trace(m_wrapped); }
+    private:
+        Member<ThisType> m_wrapped;
+    };
+
+    static void provideTo(Supplementable<T>& host, const char* key, ThisType* supplement)
+    {
+        host.provideSupplement(key, adoptPtr(new Wrapper(supplement)));
+    }
+
+    static ThisType* from(Supplementable<T>& host, const char* key)
+    {
+        Supplement<T>* found = static_cast<Supplement<T>*>(host.requireSupplement(key));
+        if (!found)
+            return nullptr;
+        return static_cast<Wrapper*>(found)->wrapped();
+    }
+
+    virtual void trace(Visitor*) = 0;
+};
+
 } // namespace WebCore
 
 #endif // RefCountedSupplement_h

@@ -555,9 +555,9 @@ static const char* supplementName()
     return "FontFaceSet";
 }
 
-PassRefPtr<FontFaceSet> FontFaceSet::from(Document& document)
+PassRefPtrWillBeRawPtr<FontFaceSet> FontFaceSet::from(Document& document)
 {
-    RefPtr<FontFaceSet> fonts = static_cast<FontFaceSet*>(SupplementType::from(document, supplementName()));
+    RefPtrWillBeRawPtr<FontFaceSet> fonts = static_cast<FontFaceSet*>(SupplementType::from(document, supplementName()));
     if (!fonts) {
         fonts = FontFaceSet::create(document);
         SupplementType::provideTo(document, supplementName(), fonts);
@@ -572,5 +572,10 @@ void FontFaceSet::didLayout(Document& document)
         fonts->didLayout();
 }
 
+#if ENABLE(OILPAN)
+void FontFaceSet::trace(Visitor* visitor)
+{
+}
+#endif
 
 } // namespace WebCore

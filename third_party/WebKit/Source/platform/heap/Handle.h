@@ -722,6 +722,7 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define RefCountedWillBeGarbageCollected WebCore::GarbageCollected
 #define RefCountedWillBeGarbageCollectedFinalized WebCore::GarbageCollectedFinalized
 #define RefCountedWillBeRefCountedGarbageCollected WebCore::RefCountedGarbageCollected
+#define RefCountedSupplementWillBeRefCountedGarbageCollectedSupplement WebCore::RefCountedGarbageCollectedSupplement
 #define ThreadSafeRefCountedWillBeGarbageCollected WebCore::GarbageCollected
 #define ThreadSafeRefCountedWillBeGarbageCollectedFinalized WebCore::GarbageCollectedFinalized
 #define RefPtrWillBePersistent WebCore::Persistent
@@ -794,6 +795,7 @@ public:
 #define RefCountedWillBeGarbageCollected WTF::RefCounted
 #define RefCountedWillBeGarbageCollectedFinalized WTF::RefCounted
 #define RefCountedWillBeRefCountedGarbageCollected WTF::RefCounted
+#define RefCountedSupplementWillBeRefCountedGarbageCollectedSupplement WebCore::RefCountedSupplement
 #define ThreadSafeRefCountedWillBeGarbageCollected WTF::ThreadSafeRefCounted
 #define ThreadSafeRefCountedWillBeGarbageCollectedFinalized WTF::ThreadSafeRefCounted
 #define RefPtrWillBePersistent WTF::RefPtr
