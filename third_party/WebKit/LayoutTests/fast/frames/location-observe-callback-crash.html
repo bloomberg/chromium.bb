@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<script>
+description("Accessing the Location object from a V8-triggered callback should not crash");
+jsTestIsAsync = true;
+
+var obj = {};
+Object.observe(obj, function() {
+    window.location.hash = 'foo';
+    testPassed("Did not crash");
+    finishJSTest();
+});
+obj.foo = 1;
+</script>
