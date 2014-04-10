@@ -505,7 +505,6 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
   void AddWebPageOverlay();
   void RemoveWebPageOverlay();
 
-  void Display();
   void DisplayAsync();
   void DisplayAsyncThen(v8::Handle<v8::Function> callback);
 

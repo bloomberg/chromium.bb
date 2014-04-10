@@ -249,7 +249,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   bool WasMockSpeechRecognitionAborted();
   void AddWebPageOverlay();
   void RemoveWebPageOverlay();
-  void Display();
   void DisplayAsync();
   void DisplayAsyncThen(v8::Handle<v8::Function> callback);
 
@@ -481,7 +480,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
       .SetMethod("removeWebPageOverlay",
                  &TestRunnerBindings::RemoveWebPageOverlay)
-      .SetMethod("display", &TestRunnerBindings::Display)
       .SetMethod("displayAsync", &TestRunnerBindings::DisplayAsync)
       .SetMethod("displayAsyncThen", &TestRunnerBindings::DisplayAsyncThen)
 
@@ -1231,11 +1229,6 @@ void TestRunnerBindings::AddWebPageOverlay() {
 void TestRunnerBindings::RemoveWebPageOverlay() {
   if (runner_)
     runner_->RemoveWebPageOverlay();
-}
-
-void TestRunnerBindings::Display() {
-  if (runner_)
-    runner_->Display();
 }
 
 void TestRunnerBindings::DisplayAsync() {
@@ -2582,10 +2575,6 @@ void TestRunner::RemoveWebPageOverlay() {
     delete page_overlay_;
     page_overlay_ = NULL;
   }
-}
-
-void TestRunner::Display() {
-  proxy_->display(base::Closure());
 }
 
 void TestRunner::DisplayAsync() {
