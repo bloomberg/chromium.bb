@@ -189,13 +189,20 @@ def _AddAdditionalDepotInfo(depot_info):
 def CalculateTruncatedMean(data_set, truncate_percent):
   """Calculates the truncated mean of a set of values.
 
+  Note that this isn't just the mean of the set of values with the highest
+  and lowest values discarded; the non-discarded values are also weighted
+  differently depending how many values are discarded.
+
   Args:
-    data_set: Set of values to use in calculation.
-    truncate_percent: The % from the upper/lower portions of the data set to
-        discard, expressed as a value in [0, 1].
+    data_set: Non-empty list of values.
+    truncate_percent: The % from the upper and lower portions of the data set
+        to discard, expressed as a value in [0, 1].
 
   Returns:
     The truncated mean as a float.
+
+  Raises:
+    TypeError: The data set was empty after discarding values.
   """
   if len(data_set) > 2:
     data_set = sorted(data_set)
@@ -224,14 +231,61 @@ def CalculateTruncatedMean(data_set, truncate_percent):
   return truncated_mean
 
 
-def CalculateStandardDeviation(v):
-  if len(v) == 1:
+def CalculateMean(values):
+  """Calculates the arithmetic mean of a list of values."""
+  return CalculateTruncatedMean(values, 0.0)
+
+
+def CalculateConfidence(good_results_lists, bad_results_lists):
+  """Calculates a confidence percentage.
+
+  This is calculated based on how distinct the "good" and "bad" values are,
+  and how noisy the results are. More precisely, the confidence is the quotient
+  of the difference between the closest values across the good and bad groups
+  and the sum of the standard deviations of the good and bad groups.
+
+  TODO(qyearsley): Replace this confidence function with a function that
+      uses a Student's t-test. The confidence would be (1 - p-value), where
+      p-value is the probability of obtaining the given a set of good and bad
+      values just by chance.
+
+  Args:
+    good_results_lists: A list of lists of "good" result numbers.
+    bad_results_lists: A list of lists of "bad" result numbers.
+
+  Returns:
+    A number between in the range [0, 100].
+  """
+  # Get the distance between the two groups.
+  means_good = map(CalculateMean, good_results_lists)
+  means_bad = map(CalculateMean, bad_results_lists)
+  bounds_good = (min(means_good), max(means_good))
+  bounds_bad = (min(means_bad), max(means_bad))
+  dist_between_groups = min(
+      math.fabs(bounds_bad[1] - bounds_good[0]),
+      math.fabs(bounds_bad[0] - bounds_good[1]))
+
+  # Get the sum of the standard deviations of the two groups.
+  good_results_flattened = sum(good_results_lists, [])
+  bad_results_flattened = sum(bad_results_lists, [])
+  stddev_good = CalculateStandardDeviation(good_results_flattened)
+  stddev_bad = CalculateStandardDeviation(bad_results_flattened)
+  stddev_sum = stddev_good + stddev_bad
+
+  confidence = dist_between_groups / (max(0.0001, stddev_sum))
+  confidence = int(min(1.0, max(confidence, 0.0)) * 100.0)
+  return confidence
+
+
+def CalculateStandardDeviation(values):
+  """Calculates the sample standard deviation of the given list of values."""
+  if len(values) == 1:
     return 0.0
 
-  mean = CalculateTruncatedMean(v, 0.0)
-  variances = [float(x) - mean for x in v]
-  variances = [x * x for x in variances]
-  variance = reduce(lambda x, y: float(x) + float(y), variances) / (len(v) - 1)
+  mean = CalculateMean(values)
+  differences_from_mean = [float(x) - mean for x in values]
+  squared_differences = [float(x * x) for x in differences_from_mean]
+  variance = sum(squared_differences) / (len(values) - 1)
   std_dev = math.sqrt(variance)
 
   return std_dev
@@ -253,13 +307,14 @@ def CalculatePooledStandardError(work_sets):
   return 0.0
 
 
-def CalculateStandardError(v):
-  if len(v) <= 1:
+def CalculateStandardError(values):
+  """Calculates the standard error of a list of values."""
+  if len(values) <= 1:
     return 0.0
 
-  std_dev = CalculateStandardDeviation(v)
+  std_dev = CalculateStandardDeviation(values)
 
-  return std_dev / math.sqrt(len(v))
+  return std_dev / math.sqrt(len(values))
 
 
 def IsStringFloat(string_to_check):
@@ -3022,11 +3077,9 @@ class BisectPerformanceMetrics(object):
       if current_values:
         current_values = current_values['values']
         if previous_values:
-          confidence = self._CalculateConfidence(previous_values,
-              [current_values])
-          mean_of_prev_runs = CalculateTruncatedMean(
-              sum(previous_values, []), 0)
-          mean_of_current_runs = CalculateTruncatedMean(current_values, 0)
+          confidence = CalculateConfidence(previous_values, [current_values])
+          mean_of_prev_runs = CalculateMean(sum(previous_values, []))
+          mean_of_current_runs = CalculateMean(current_values)
 
           # Check that the potential regression is in the same direction as
           # the overall regression. If the mean of the previous runs < the
@@ -3043,34 +3096,6 @@ class BisectPerformanceMetrics(object):
         previous_id = current_id
     return other_regressions
 
-  def _CalculateConfidence(self, working_means, broken_means):
-    bounds_working = []
-    bounds_broken = []
-    for m in working_means:
-      current_mean = CalculateTruncatedMean(m, 0)
-      if bounds_working:
-        bounds_working[0] = min(current_mean, bounds_working[0])
-        bounds_working[1] = max(current_mean, bounds_working[0])
-      else:
-        bounds_working = [current_mean, current_mean]
-    for m in broken_means:
-      current_mean = CalculateTruncatedMean(m, 0)
-      if bounds_broken:
-        bounds_broken[0] = min(current_mean, bounds_broken[0])
-        bounds_broken[1] = max(current_mean, bounds_broken[0])
-      else:
-        bounds_broken = [current_mean, current_mean]
-    dist_between_groups = min(math.fabs(bounds_broken[1] - bounds_working[0]),
-        math.fabs(bounds_broken[0] - bounds_working[1]))
-    working_mean = sum(working_means, [])
-    broken_mean = sum(broken_means, [])
-    len_working_group = CalculateStandardDeviation(working_mean)
-    len_broken_group = CalculateStandardDeviation(broken_mean)
-
-    confidence = (dist_between_groups / (
-        max(0.0001, (len_broken_group + len_working_group ))))
-    confidence = int(min(1.0, max(confidence, 0.0)) * 100.0)
-    return confidence
 
   def _GetResultsDict(self, revision_data, revision_data_sorted):
     # Find range where it possibly broke.
@@ -3106,8 +3131,8 @@ class BisectPerformanceMetrics(object):
       broken_mean = sum(broken_means, [])
 
       # Calculate the approximate size of the regression
-      mean_of_bad_runs = CalculateTruncatedMean(broken_mean, 0.0)
-      mean_of_good_runs = CalculateTruncatedMean(working_mean, 0.0)
+      mean_of_bad_runs = CalculateMean(broken_mean)
+      mean_of_good_runs = CalculateMean(working_mean)
 
       regression_size = math.fabs(max(mean_of_good_runs, mean_of_bad_runs) /
           max(0.0001, min(mean_of_good_runs, mean_of_bad_runs))) * 100.0 - 100.0
@@ -3119,7 +3144,7 @@ class BisectPerformanceMetrics(object):
       # Give a "confidence" in the bisect. At the moment we use how distinct the
       # values are before and after the last broken revision, and how noisy the
       # overall graph is.
-      confidence = self._CalculateConfidence(working_means, broken_means)
+      confidence = CalculateConfidence(working_means, broken_means)
 
       culprit_revisions = []
 
