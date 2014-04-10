@@ -20,6 +20,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] FileReaderSync
 [Worker] Float32Array
 [Worker] Float64Array
+[Worker] FormData
 [Worker] Function
 [Worker] IDBCursor
 [Worker] IDBCursorWithValue

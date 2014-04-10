@@ -29,9 +29,10 @@
  */
 
 [
+    Constructor(optional HTMLFormElement form),
+    GlobalContext=Window&WorkerGlobalScope,
+    ImplementedAs=DOMFormData,
     WillBeGarbageCollected,
-    Constructor([Default=Undefined] optional HTMLFormElement form),
-    ImplementedAs=DOMFormData
 ] interface FormData {
     void append(DOMString name, Blob value, optional DOMString filename);
     void append(DOMString name, DOMString value);

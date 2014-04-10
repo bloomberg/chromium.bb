@@ -32,7 +32,7 @@
 #define DOMFormData_h
 
 #include "core/html/FormDataList.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -48,7 +48,7 @@ class HTMLFormElement;
 
 class DOMFormData : public RefCountedWillBeGarbageCollectedFinalized<DOMFormData>, public FormDataList, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<DOMFormData> create(HTMLFormElement* form)
+    static PassRefPtrWillBeRawPtr<DOMFormData> create(HTMLFormElement* form = 0)
     {
         return adoptRefWillBeNoop(new DOMFormData(form));
     }
