@@ -115,8 +115,6 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   virtual scoped_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) OVERRIDE;
 
-  virtual void FixWedgedAudio() OVERRIDE;
-
  protected:
   AudioManagerBase(AudioLogFactory* audio_log_factory);
 

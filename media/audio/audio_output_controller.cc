@@ -435,15 +435,8 @@ void AudioOutputController::WedgeCheck() {
 
   // If we should be playing and we haven't, that's a wedge.
   if (state_ == kPlaying) {
-    const bool playback_success =
-        base::AtomicRefCountIsOne(&on_more_io_data_called_);
-
-    UMA_HISTOGRAM_BOOLEAN(
-        "Media.AudioOutputControllerPlaybackStartupSuccess", playback_success);
-
-    // Let the AudioManager try and fix it.
-    if (!playback_success)
-      audio_manager_->FixWedgedAudio();
+    UMA_HISTOGRAM_BOOLEAN("Media.AudioOutputControllerPlaybackStartupSuccess",
+                          base::AtomicRefCountIsOne(&on_more_io_data_called_));
   }
 }
 

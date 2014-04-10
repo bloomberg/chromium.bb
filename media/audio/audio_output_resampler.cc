@@ -298,37 +298,6 @@ void AudioOutputResampler::Shutdown() {
   DCHECK(callbacks_.empty());
 }
 
-void AudioOutputResampler::CloseStreamsForWedgeFix() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  // Stop and close all active streams.  Once all streams across all dispatchers
-  // have been closed the AudioManager will call RestartStreamsForWedgeFix().
-  for (CallbackMap::iterator it = callbacks_.begin(); it != callbacks_.end();
-       ++it) {
-    if (it->second->started())
-      dispatcher_->StopStream(it->first);
-    dispatcher_->CloseStream(it->first);
-  }
-
-  // Close all idle streams as well.
-  dispatcher_->CloseStreamsForWedgeFix();
-}
-
-void AudioOutputResampler::RestartStreamsForWedgeFix() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  // By opening all streams first and then starting them one by one we ensure
-  // the dispatcher only opens streams for those which will actually be used.
-  for (CallbackMap::iterator it = callbacks_.begin(); it != callbacks_.end();
-       ++it) {
-    dispatcher_->OpenStream();
-  }
-  for (CallbackMap::iterator it = callbacks_.begin(); it != callbacks_.end();
-       ++it) {
-    if (it->second->started())
-      dispatcher_->StartStream(it->second, it->first);
-  }
-}
-
 OnMoreDataConverter::OnMoreDataConverter(const AudioParameters& input_params,
                                          const AudioParameters& output_params)
     : io_ratio_(static_cast<double>(input_params.GetBytesPerSecond()) /

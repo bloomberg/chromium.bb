@@ -176,11 +176,6 @@ class MEDIA_EXPORT AudioManager {
   virtual scoped_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) = 0;
 
-  // Called when a component has detected a OS level audio wedge.  Shuts down
-  // all active audio streams and then restarts them transparently.  See
-  // http://crbug.com/160920
-  virtual void FixWedgedAudio() = 0;
-
  protected:
   AudioManager();
 

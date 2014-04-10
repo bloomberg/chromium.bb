@@ -65,13 +65,6 @@ class MEDIA_EXPORT AudioOutputDispatcher
   // Called on the audio thread when the AudioManager is shutting down.
   virtual void Shutdown() = 0;
 
-  // Called by the AudioManager to restart streams when a wedge is detected.  A
-  // wedge means the OS failed to request any audio after StartStream().  When a
-  // wedge is detected all streams across all dispatchers must be closed.  After
-  // all streams are closed, streams are restarted.  See http://crbug.com/160920
-  virtual void CloseStreamsForWedgeFix() = 0;
-  virtual void RestartStreamsForWedgeFix() = 0;
-
   const std::string& device_id() const { return device_id_; }
 
  protected:

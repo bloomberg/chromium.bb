@@ -107,6 +107,4 @@ scoped_ptr<AudioLog> MockAudioManager::CreateAudioLog(
   return scoped_ptr<AudioLog>();
 }
 
-void MockAudioManager::FixWedgedAudio() {}
-
 }  // namespace media.
