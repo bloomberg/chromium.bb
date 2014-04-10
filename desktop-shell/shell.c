@@ -2340,7 +2340,6 @@ unset_fullscreen(struct shell_surface *shsurf)
 	    shell_surface_is_top_fullscreen(shsurf)) {
 		restore_output_mode(shsurf->fullscreen_output);
 	}
-	shsurf->fullscreen_output = NULL;
 
 	shsurf->fullscreen.type = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
 	shsurf->fullscreen.framerate = 0;
