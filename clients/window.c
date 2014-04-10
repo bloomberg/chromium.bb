@@ -230,6 +230,8 @@ struct window {
 	int fullscreen;
 	int maximized;
 
+	int next_attach_serial;
+
 	enum preferred_format preferred_format;
 
 	window_key_handler_t key_handler;
@@ -1336,6 +1338,12 @@ surface_flush(struct surface *surface)
 					    surface->input_region);
 		wl_region_destroy(surface->input_region);
 		surface->input_region = NULL;
+	}
+
+	if (surface->window->next_attach_serial > 0) {
+		xdg_surface_ack_configure(surface->window->xdg_surface,
+					  surface->window->next_attach_serial);
+		surface->window->next_attach_serial = 0;
 	}
 
 	surface->toysurface->swap(surface->toysurface,
@@ -3849,37 +3857,39 @@ widget_schedule_resize(struct widget *widget, int32_t width, int32_t height)
 
 static void
 handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
-			 int32_t width, int32_t height)
+			 int32_t width, int32_t height,
+			 struct wl_array *states, uint32_t serial)
 {
 	struct window *window = data;
+	uint32_t *p;
 
-	window_schedule_resize(window, width, height);
-}
-
-static void
-handle_surface_change_state(void *data, struct xdg_surface *xdg_surface,
-			    uint32_t state,
-			    uint32_t value,
-			    uint32_t serial)
-{
-	struct window *window = data;
-
-	switch (state) {
-	case XDG_SURFACE_STATE_MAXIMIZED:
-		window->maximized = value;
-		break;
-	case XDG_SURFACE_STATE_FULLSCREEN:
-		window->fullscreen = value;
-		break;
-	}
-
-	if (!window->fullscreen && !window->maximized)
+	if (width > 0 && height > 0) {
+		window_schedule_resize(window, width, height);
+	} else {
 		window_schedule_resize(window,
 				       window->saved_allocation.width,
 				       window->saved_allocation.height);
+	}
 
-	xdg_surface_ack_change_state(xdg_surface, state, value, serial);
-	window_schedule_redraw(window);
+	window->maximized = 0;
+	window->fullscreen = 0;
+
+	wl_array_for_each(p, states) {
+		uint32_t state = *p;
+		switch (state) {
+		case XDG_SURFACE_STATE_MAXIMIZED:
+			window->maximized = 1;
+			break;
+		case XDG_SURFACE_STATE_FULLSCREEN:
+			window->fullscreen = 1;
+			break;
+		default:
+			/* Unknown state */
+			break;
+		}
+	}
+
+	window->next_attach_serial = serial;
 }
 
 static void
@@ -3905,7 +3915,6 @@ handle_surface_delete(void *data, struct xdg_surface *xdg_surface)
 
 static const struct xdg_surface_listener xdg_surface_listener = {
 	handle_surface_configure,
-	handle_surface_change_state,
 	handle_surface_activated,
 	handle_surface_deactivated,
 	handle_surface_delete,
@@ -4145,10 +4154,10 @@ window_set_fullscreen(struct window *window, int fullscreen)
 	if (window->fullscreen == fullscreen)
 		return;
 
-	xdg_surface_request_change_state(window->xdg_surface,
-					 XDG_SURFACE_STATE_FULLSCREEN,
-					 fullscreen ? 1 : 0,
-					 0);
+	if (fullscreen)
+		xdg_surface_set_fullscreen(window->xdg_surface, NULL);
+	else
+		xdg_surface_unset_fullscreen(window->xdg_surface);
 }
 
 int
@@ -4166,10 +4175,10 @@ window_set_maximized(struct window *window, int maximized)
 	if (window->maximized == maximized)
 		return;
 
-	xdg_surface_request_change_state(window->xdg_surface,
-					 XDG_SURFACE_STATE_MAXIMIZED,
-					 maximized ? 1 : 0,
-					 0);
+	if (maximized)
+		xdg_surface_set_maximized(window->xdg_surface);
+	else
+		xdg_surface_unset_maximized(window->xdg_surface);
 }
 
 void
