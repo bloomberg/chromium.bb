@@ -104,7 +104,7 @@ class InvokeCallbackTask : public WebMethodTask<content::TestRunner> {
   }
 
  private:
-  v8::Persistent<v8::Function> callback_;
+  v8::UniquePersistent<v8::Function> callback_;
 };
 
 class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
