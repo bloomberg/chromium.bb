@@ -142,7 +142,7 @@ private:
 
     Document& document() const;
 
-    PassRefPtr<VTTCueBox> displayTreeInternal();
+    VTTCueBox& ensureDisplayTree();
     PassRefPtr<VTTCueBox> getDisplayTree(const IntSize& videoSize);
 
     virtual void cueDidChange() OVERRIDE;

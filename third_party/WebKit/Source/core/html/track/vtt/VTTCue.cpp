@@ -223,7 +223,10 @@ VTTCue::VTTCue(Document& document, double startTime, double endTime, const Strin
 
 VTTCue::~VTTCue()
 {
-    displayTreeInternal()->remove(ASSERT_NO_EXCEPTION);
+    // FIXME: This is scary, we should make the life cycle smarter so the destructor
+    // doesn't need to do DOM mutations.
+    if (m_displayTree)
+        m_displayTree->remove(ASSERT_NO_EXCEPTION);
 }
 
 #ifndef NDEBUG
@@ -233,11 +236,11 @@ String VTTCue::toString() const
 }
 #endif
 
-PassRefPtr<VTTCueBox> VTTCue::displayTreeInternal()
+VTTCueBox& VTTCue::ensureDisplayTree()
 {
     if (!m_displayTree)
         m_displayTree = VTTCueBox::create(document(), this);
-    return m_displayTree;
+    return *m_displayTree;
 }
 
 void VTTCue::cueDidChange()
@@ -714,7 +717,7 @@ void VTTCue::updateDisplayTree(double movieTime)
 
 PassRefPtr<VTTCueBox> VTTCue::getDisplayTree(const IntSize& videoSize)
 {
-    RefPtr<VTTCueBox> displayTree = displayTreeInternal();
+    RefPtr<VTTCueBox> displayTree(ensureDisplayTree());
     if (!m_displayTreeShouldChange || !track()->isRendered())
         return displayTree;
 
@@ -765,7 +768,8 @@ void VTTCue::removeDisplayTree()
             region->willRemoveVTTCueBox(m_displayTree.get());
     }
 
-    displayTreeInternal()->remove(ASSERT_NO_EXCEPTION);
+    if (m_displayTree)
+        m_displayTree->remove(ASSERT_NO_EXCEPTION);
 }
 
 void VTTCue::updateDisplay(const IntSize& videoSize, HTMLDivElement& container)
