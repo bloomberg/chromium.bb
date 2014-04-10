@@ -6188,7 +6188,7 @@
    fun:_ZN7WebCore11ThreadState10visitStackEPNS_7VisitorE
    fun:_ZN7WebCore11ThreadState5traceEPNS_7VisitorE
    fun:_ZN7WebCore11ThreadState10visitRootsEPNS_7VisitorE
-   fun:_ZN7WebCore4Heap14collectGarbageENS_11ThreadState10StackStateENS0_6GCTypeE
+   fun:_ZN7WebCore4Heap14collectGarbageENS_11ThreadState10StackState*
 }
 {
    bug_345432
