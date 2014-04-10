@@ -92,6 +92,9 @@ class TestProfileSyncService : public ProfileSyncService {
 
   syncer::TestIdFactory* id_factory();
 
+  // Raise visibility to ease testing.
+  using ProfileSyncService::NotifyObservers;
+
  protected:
   static KeyedService* TestFactoryFunction(content::BrowserContext* profile);
 

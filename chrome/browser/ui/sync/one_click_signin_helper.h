@@ -47,8 +47,7 @@ class PasswordManager;
 // more about what this means.
 class OneClickSigninHelper
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<OneClickSigninHelper>,
-      public ProfileSyncServiceObserver {
+      public content::WebContentsUserData<OneClickSigninHelper> {
  public:
   // Represents user's decision about sign in process.
   enum AutoAccept {
@@ -256,8 +255,6 @@ class OneClickSigninHelper
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest, SigninFailed);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest,
                            CleanTransientStateOnNavigate);
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest,
-                           RemoveObserverFromProfileSyncService);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest, CanOfferOnIOThread);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
                            CanOfferOnIOThreadIncognito);
@@ -345,10 +342,6 @@ class OneClickSigninHelper
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
-
-  // ProfileSyncServiceObserver.
-  virtual void OnStateChanged() OVERRIDE;
 
   OneClickSigninSyncStarter::Callback CreateSyncStarterCallback();
 

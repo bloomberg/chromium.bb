@@ -1611,6 +1611,8 @@
         'browser/ui/sync/one_click_signin_helper.cc',
         'browser/ui/sync/one_click_signin_helper.h',
         'browser/ui/sync/one_click_signin_histogram.h',
+        'browser/ui/sync/one_click_signin_sync_observer.cc',
+        'browser/ui/sync/one_click_signin_sync_observer.h',
         'browser/ui/sync/one_click_signin_sync_starter.cc',
         'browser/ui/sync/one_click_signin_sync_starter.h',
         'browser/ui/sync/profile_signin_confirmation_helper.cc',

@@ -1702,6 +1702,7 @@
         'browser/ui/search/search_tab_helper_unittest.cc',
         'browser/ui/startup/session_crashed_infobar_delegate_unittest.cc',
         'browser/ui/sync/one_click_signin_helper_unittest.cc',
+        'browser/ui/sync/one_click_signin_sync_observer_unittest.cc',
         'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',
         'browser/ui/sync/profile_signin_confirmation_helper_unittest.cc',
         'browser/ui/sync/sync_promo_ui_unittest.cc',

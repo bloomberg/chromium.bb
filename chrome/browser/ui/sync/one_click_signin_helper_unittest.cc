@@ -24,7 +24,6 @@
 #include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -49,6 +48,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -171,39 +171,47 @@ public:
 };
 
 class OneClickTestProfileSyncService : public TestProfileSyncService {
-  public:
-   virtual ~OneClickTestProfileSyncService() {}
+ public:
+  virtual ~OneClickTestProfileSyncService() {}
 
-   // Helper routine to be used in conjunction with
-   // BrowserContextKeyedServiceFactory::SetTestingFactory().
-   static KeyedService* Build(content::BrowserContext* profile) {
-     return new OneClickTestProfileSyncService(static_cast<Profile*>(profile));
-   }
+  // Helper routine to be used in conjunction with
+  // BrowserContextKeyedServiceFactory::SetTestingFactory().
+  static KeyedService* Build(content::BrowserContext* profile) {
+    return new OneClickTestProfileSyncService(static_cast<Profile*>(profile));
+  }
 
-   // Need to control this for certain tests.
-   virtual bool FirstSetupInProgress() const OVERRIDE {
-     return first_setup_in_progress_;
-   }
+  // Need to control this for certain tests.
+  virtual bool FirstSetupInProgress() const OVERRIDE {
+    return first_setup_in_progress_;
+  }
 
-   // Controls return value of FirstSetupInProgress. Because some bits
-   // of UI depend on that value, it's useful to control it separately
-   // from the internal work and components that are triggered (such as
-   // ReconfigureDataTypeManager) to facilitate unit tests.
-   void set_first_setup_in_progress(bool in_progress) {
-     first_setup_in_progress_ = in_progress;
-   }
+  virtual bool sync_initialized() const OVERRIDE { return sync_initialized_; }
 
-  private:
-   explicit OneClickTestProfileSyncService(Profile* profile)
-       : TestProfileSyncService(
-         NULL,
-         profile,
-         SigninManagerFactory::GetForProfile(profile),
-         ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-         browser_sync::MANUAL_START),
-         first_setup_in_progress_(false) {}
+  // Controls return value of FirstSetupInProgress. Because some bits
+  // of UI depend on that value, it's useful to control it separately
+  // from the internal work and components that are triggered (such as
+  // ReconfigureDataTypeManager) to facilitate unit tests.
+  void set_first_setup_in_progress(bool in_progress) {
+    first_setup_in_progress_ = in_progress;
+  }
 
-   bool first_setup_in_progress_;
+  void set_sync_initialized(bool initialized) {
+    sync_initialized_ = initialized;
+  }
+
+ private:
+  explicit OneClickTestProfileSyncService(Profile* profile)
+      : TestProfileSyncService(
+          NULL,
+          profile,
+          SigninManagerFactory::GetForProfile(profile),
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+          browser_sync::MANUAL_START),
+        first_setup_in_progress_(false),
+        sync_initialized_(false) {}
+
+  bool first_setup_in_progress_;
+  bool sync_initialized_;
 };
 
 }  // namespace
@@ -228,7 +236,6 @@ class OneClickSigninHelperTest : public ChromeRenderViewHostTestHarness {
   void EnableOneClick(bool enable);
   void AllowSigninCookies(bool enable);
   void SetAllowedUsernamePattern(const std::string& pattern);
-  ProfileSyncServiceMock* CreateProfileSyncServiceMock();
   void SubmitGAIAPassword(OneClickSigninHelper* helper);
 
   SigninManagerMock* signin_manager_;
@@ -309,24 +316,6 @@ void OneClickSigninHelperTest::SetAllowedUsernamePattern(
     const std::string& pattern) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kGoogleServicesUsernamePattern, pattern);
-}
-
-ProfileSyncServiceMock*
-OneClickSigninHelperTest::CreateProfileSyncServiceMock() {
-  ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
-      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(),
-          ProfileSyncServiceMock::BuildMockProfileSyncService));
-  EXPECT_CALL(*sync_service, FirstSetupInProgress()).WillRepeatedly(
-      Return(false));
-  EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*sync_service, GetAuthError()).
-      WillRepeatedly(::testing::ReturnRef(no_error_));
-  EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(false));
-  ON_CALL(*sync_service, GetRegisteredDataTypes())
-      .WillByDefault(Return(syncer::ModelTypeSet()));
-  sync_service->Initialize();
-  return sync_service;
 }
 
 void OneClickSigninHelperTest::SubmitGAIAPassword(
@@ -473,9 +462,10 @@ TEST_F(OneClickSigninHelperTest, CanOfferFirstSetup) {
   OneClickTestProfileSyncService* sync =
       static_cast<OneClickTestProfileSyncService*>(
           ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-              static_cast<Profile*>(browser_context()),
-              OneClickTestProfileSyncService::Build));
+              profile(), OneClickTestProfileSyncService::Build));
+  sync->set_sync_initialized(false);
   sync->Initialize();
+  sync->set_sync_initialized(true);
   sync->set_first_setup_in_progress(true);
 
   EXPECT_TRUE(OneClickSigninHelper::CanOffer(
@@ -685,10 +675,11 @@ TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_))
       .WillRepeatedly(Return(true));
 
-  ProfileSyncServiceMock* sync_service = CreateProfileSyncServiceMock();
-  EXPECT_CALL(*sync_service, AddObserver(_)).Times(AtLeast(1));
-  EXPECT_CALL(*sync_service, RemoveObserver(_)).Times(AtLeast(1));
-  EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(true));
+  OneClickTestProfileSyncService* sync_service =
+      static_cast<OneClickTestProfileSyncService*>(
+          ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+              profile(), OneClickTestProfileSyncService::Build));
+  sync_service->set_sync_initialized(true);
 
   content::WebContents* contents = web_contents();
 
@@ -709,8 +700,8 @@ TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
 
   NavigateAndCommit(GURL("https://chrome.google.com/webstore?source=3"));
   helper->DidStopLoading(rvh());
-  helper->OnStateChanged();
-  EXPECT_EQ(GURL(continueUrl), contents->GetURL());
+  sync_service->NotifyObservers();
+  EXPECT_EQ(GURL(continueUrl), contents->GetVisibleURL());
 }
 
 // Checks that the state of OneClickSigninHelper is cleaned when there is a
@@ -732,25 +723,6 @@ TEST_F(OneClickSigninHelperTest, CleanTransientStateOnNavigate) {
   helper->DidNavigateMainFrame(details, params);
 
   EXPECT_EQ(OneClickSigninHelper::AUTO_ACCEPT_NONE, helper->auto_accept_);
-}
-
-// Checks that OneClickSigninHelper doesn't stay an observer of the profile
-// sync service after it's deleted.
-TEST_F(OneClickSigninHelperTest, RemoveObserverFromProfileSyncService) {
-  content::WebContents* contents = web_contents();
-
-  ProfileSyncServiceMock* sync_service = CreateProfileSyncServiceMock();
-
-  OneClickSigninHelper::CreateForWebContentsWithPasswordManager(contents, NULL);
-  OneClickSigninHelper* helper =
-      OneClickSigninHelper::FromWebContents(contents);
-  helper->SetDoNotClearPendingEmailForTesting();
-
-  // Need to expect two calls, because sync service also tears down observers.
-  // TODO(signin): gmock probably isn't the best solution here.
-  EXPECT_CALL(*sync_service, RemoveObserver(_));
-  EXPECT_CALL(*sync_service, RemoveObserver(helper));
-  SetContents(NULL);
 }
 
 TEST_F(OneClickSigninHelperTest, NoRedirectToNTPWithPendingEntry) {
