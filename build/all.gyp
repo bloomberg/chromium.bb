@@ -1160,6 +1160,7 @@
             '../ui/aura/aura.gyp:*',
             '../ui/compositor/compositor.gyp:*',
             '../ui/events/events.gyp:*',
+            '../ui/wm/wm.gyp:*',
             '../ui/gfx/gfx.gyp:gfx_unittests',
             '../ui/keyboard/keyboard.gyp:*',
             '../ui/message_center/message_center.gyp:*',
