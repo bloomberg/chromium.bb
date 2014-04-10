@@ -48,16 +48,18 @@ namespace WebCore {
 ScheduledAction::ScheduledAction(v8::Handle<v8::Context> context, v8::Handle<v8::Function> function, int argc, v8::Handle<v8::Value> argv[], v8::Isolate* isolate)
     : m_context(isolate, context)
     , m_function(isolate, function)
+    , m_info(isolate)
     , m_code(String(), KURL(), TextPosition::belowRangePosition())
     , m_isolate(isolate)
 {
-    m_info.reserveCapacity(argc);
+    m_info.ReserveCapacity(argc);
     for (int i = 0; i < argc; ++i)
-        m_info.append(UnsafePersistent<v8::Value>(m_isolate, argv[i]));
+        m_info.Append(argv[i]);
 }
 
 ScheduledAction::ScheduledAction(v8::Handle<v8::Context> context, const String& code, const KURL& url, v8::Isolate* isolate)
     : m_context(isolate, context)
+    , m_info(isolate)
     , m_code(code, url)
     , m_isolate(isolate)
 {
@@ -65,8 +67,6 @@ ScheduledAction::ScheduledAction(v8::Handle<v8::Context> context, const String& 
 
 ScheduledAction::~ScheduledAction()
 {
-    for (size_t i = 0; i < m_info.size(); ++i)
-        m_info[i].dispose();
 }
 
 void ScheduledAction::execute(ExecutionContext* context)
@@ -122,9 +122,9 @@ void ScheduledAction::execute(WorkerGlobalScope* worker)
 
 void ScheduledAction::createLocalHandlesForArgs(Vector<v8::Handle<v8::Value> >* handles)
 {
-    handles->reserveCapacity(m_info.size());
-    for (size_t i = 0; i < m_info.size(); ++i)
-        handles->append(m_info[i].newLocal(m_isolate));
+    handles->reserveCapacity(m_info.Size());
+    for (size_t i = 0; i < m_info.Size(); ++i)
+        handles->append(m_info.Get(i));
 }
 
 } // namespace WebCore

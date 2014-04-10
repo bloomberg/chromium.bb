@@ -28,42 +28,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScheduledAction_h
-#define ScheduledAction_h
+#ifndef V8PersistentValueVector_h
+#define V8PersistentValueVector_h
 
-#include "bindings/v8/ScopedPersistent.h"
-#include "bindings/v8/ScriptSourceCode.h"
-#include "bindings/v8/V8PersistentValueVector.h"
+#include "wtf/Vector.h"
+#include <v8-util.h>
 #include <v8.h>
-#include "wtf/Forward.h"
 
 namespace WebCore {
 
-class LocalFrame;
-class ExecutionContext;
-class WorkerGlobalScope;
-
-class ScheduledAction {
-    WTF_MAKE_NONCOPYABLE(ScheduledAction);
+class WTFVectorPersistentValueVectorTraits {
 public:
-    ScheduledAction(v8::Handle<v8::Context>, v8::Handle<v8::Function>, int argc, v8::Handle<v8::Value> argv[], v8::Isolate*);
-    ScheduledAction(v8::Handle<v8::Context>, const String&, const KURL&, v8::Isolate*);
-    ~ScheduledAction();
+    typedef Vector<v8::PersistentContainerValue> Impl;
+    static void Append(Impl* impl, v8::PersistentContainerValue value)
+    {
+        impl->append(value);
+    }
+    static bool IsEmpty(const Impl* impl)
+    {
+        return impl->isEmpty();
+    }
+    static size_t Size(const Impl* impl)
+    {
+        return impl->size();
+    }
+    static v8::PersistentContainerValue Get(const Impl* impl, size_t i)
+    {
+        return (i < impl->size()) ? impl->at(i) : v8::kPersistentContainerNotFound;
+    }
+    static void ReserveCapacity(Impl* impl, size_t capacity)
+    {
+        impl->reserveCapacity(capacity);
+    }
+    static void Clear(Impl* impl)
+    {
+        impl->clear();
+    }
+};
 
-    void execute(ExecutionContext*);
-
-private:
-    void execute(LocalFrame*);
-    void execute(WorkerGlobalScope*);
-    void createLocalHandlesForArgs(Vector<v8::Handle<v8::Value> >* handles);
-
-    ScopedPersistent<v8::Context> m_context;
-    ScopedPersistent<v8::Function> m_function;
-    V8PersistentValueVector<v8::Value> m_info;
-    ScriptSourceCode m_code;
-    v8::Isolate* m_isolate;
+template<class ValueType>
+class V8PersistentValueVector : public v8::PersistentValueVector<ValueType, WTFVectorPersistentValueVectorTraits> {
+public:
+    explicit V8PersistentValueVector(v8::Isolate* isolate) : v8::PersistentValueVector<ValueType, WTFVectorPersistentValueVectorTraits>(isolate) { }
 };
 
 } // namespace WebCore
 
-#endif // ScheduledAction
+#endif // V8PersistentValueVector_h
