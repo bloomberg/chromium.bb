@@ -21,10 +21,6 @@ namespace chrome {
 
 namespace {
 
-// The animation time in milliseconds for the fade in and / or out when
-// switching users.
-const int kUserFadeTimeMS = 110;
-
 // The minimal possible animation time for animations which should happen
 // "instantly".
 const int kMinimalAnimationTimeMS = 1;
@@ -52,20 +48,20 @@ class UserChangeActionDisabler {
 UserSwichAnimatorChromeOS::UserSwichAnimatorChromeOS(
     MultiUserWindowManagerChromeOS* owner,
     const std::string& new_user_id,
-    bool animation_disabled)
+    int animation_speed_ms)
     : owner_(owner),
       new_user_id_(new_user_id),
-      animation_disabled_(animation_disabled),
+      animation_speed_ms_(animation_speed_ms),
       animation_step_(ANIMATION_STEP_HIDE_OLD_USER),
       screen_cover_(GetScreenCover()) {
   AdvanceUserTransitionAnimation();
 
-  if (animation_disabled_) {
+  if (!animation_speed_ms_) {
     FinalizeAnimation();
   } else {
     user_changed_animation_timer_.reset(new base::Timer(
         FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kUserFadeTimeMS),
+        base::TimeDelta::FromMilliseconds(animation_speed_ms_),
         base::Bind(
             &UserSwichAnimatorChromeOS::AdvanceUserTransitionAnimation,
             base::Unretained(this)),
@@ -135,9 +131,10 @@ void UserSwichAnimatorChromeOS::TransitionWallpaper(
   if (animation_step == ANIMATION_STEP_HIDE_OLD_USER) {
     // Set the wallpaper cross dissolve animation duration to our complete
     // animation cycle for a fade in and fade out.
+    int duration =
+        NO_USER_COVERS_SCREEN == screen_cover_ ? (2 * animation_speed_ms_) : 0;
     wallpaper_delegate->SetAnimationDurationOverride(
-        NO_USER_COVERS_SCREEN == screen_cover_ ? (2 * kUserFadeTimeMS) :
-                                                 kMinimalAnimationTimeMS);
+        std::max(duration, kMinimalAnimationTimeMS));
     if (screen_cover_ != NEW_USER_COVERS_SCREEN) {
       chromeos::WallpaperManager::Get()->SetUserWallpaperNow(new_user_id_);
       wallpaper_user_id_ =
@@ -160,7 +157,7 @@ void UserSwichAnimatorChromeOS::TransitionWallpaper(
 void UserSwichAnimatorChromeOS::TransitionUserShelf(
     AnimationStep animation_step) {
   // The shelf animation duration override.
-  int duration_override = kUserFadeTimeMS;
+  int duration_override = animation_speed_ms_;
   // Handle the shelf order of items. This is done once the old user is hidden.
   if (animation_step == ANIMATION_STEP_SHOW_NEW_USER) {
     // Some unit tests have no ChromeLauncherController.
@@ -171,7 +168,7 @@ void UserSwichAnimatorChromeOS::TransitionUserShelf(
     duration_override = 0;
   }
 
-  if (animation_disabled_ || animation_step == ANIMATION_STEP_FINALIZE)
+  if (!animation_speed_ms_ || animation_step == ANIMATION_STEP_FINALIZE)
     return;
 
   ash::Shell::RootWindowControllerList controller =
@@ -253,7 +250,8 @@ void UserSwichAnimatorChromeOS::TransitionWindows(
           } else if (should_be_visible != is_visible) {
             bool animate = true;
             int duration = animation_step == ANIMATION_STEP_FINALIZE ?
-                kMinimalAnimationTimeMS : (2 * kUserFadeTimeMS);
+                               0 : (2 * animation_speed_ms_);
+            duration = std::max(kMinimalAnimationTimeMS, duration);
             if (animation_step != ANIMATION_STEP_FINALIZE &&
                 screen_cover_ == BOTH_USERS_COVER_SCREEN &&
                 CoversScreen(window)) {

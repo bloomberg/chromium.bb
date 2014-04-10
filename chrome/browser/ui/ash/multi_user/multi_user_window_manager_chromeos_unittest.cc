@@ -157,7 +157,8 @@ void MultiUserWindowManagerChromeOSTest::SetUpForThisManyWindows(int windows) {
     window_[i]->Show();
   }
   multi_user_window_manager_ = new chrome::MultiUserWindowManagerChromeOS("A");
-  multi_user_window_manager_->SetAnimationsForTest(true);
+  multi_user_window_manager_->SetAnimationSpeedForTest(
+      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
   chrome::MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager_,
         chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED);
   EXPECT_TRUE(multi_user_window_manager_);
@@ -700,7 +701,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest,
 TEST_F(MultiUserWindowManagerChromeOSTest, FullUserSwitchAnimationTests) {
   SetUpForThisManyWindows(3);
   // Turn the use of delays and animation on.
-  multi_user_window_manager()->SetAnimationsForTest(false);
+  multi_user_window_manager()->SetAnimationSpeedForTest(
+      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), "A");
   multi_user_window_manager()->SetWindowOwner(window(1), "B");
@@ -733,7 +735,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, FullUserSwitchAnimationTests) {
 TEST_F(MultiUserWindowManagerChromeOSTest, SystemShutdownWithActiveAnimation) {
   SetUpForThisManyWindows(2);
   // Turn the use of delays and animation on.
-  multi_user_window_manager()->SetAnimationsForTest(false);
+  multi_user_window_manager()->SetAnimationSpeedForTest(
+      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), "A");
   multi_user_window_manager()->SetWindowOwner(window(1), "B");
@@ -748,7 +751,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, SystemShutdownWithActiveAnimation) {
 TEST_F(MultiUserWindowManagerChromeOSTest, AnimationSteps) {
   SetUpForThisManyWindows(3);
   // Turn the use of delays and animation on.
-  multi_user_window_manager()->SetAnimationsForTest(false);
+  multi_user_window_manager()->SetAnimationSpeedForTest(
+      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), "A");
   multi_user_window_manager()->SetWindowOwner(window(1), "B");
@@ -811,7 +815,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsScreenCoverage) {
 TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsMaximizeToNormal) {
   SetUpForThisManyWindows(3);
   // Turn the use of delays and animation on.
-  multi_user_window_manager()->SetAnimationsForTest(false);
+  multi_user_window_manager()->SetAnimationSpeedForTest(
+      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), "A");
   wm::GetWindowState(window(0))->Maximize();
@@ -849,7 +854,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsMaximizeToNormal) {
 TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsNormalToMaximized) {
   SetUpForThisManyWindows(3);
   // Turn the use of delays and animation on.
-  multi_user_window_manager()->SetAnimationsForTest(false);
+  multi_user_window_manager()->SetAnimationSpeedForTest(
+      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), "A");
   multi_user_window_manager()->SetWindowOwner(window(1), "B");
@@ -888,7 +894,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsNormalToMaximized) {
 TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsMaximizedToMaximized) {
   SetUpForThisManyWindows(3);
   // Turn the use of delays and animation on.
-  multi_user_window_manager()->SetAnimationsForTest(false);
+  multi_user_window_manager()->SetAnimationSpeedForTest(
+      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), "A");
   wm::GetWindowState(window(0))->Maximize();

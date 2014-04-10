@@ -48,6 +48,10 @@ namespace {
 // in / out.
 const int kAnimationTimeMS = 100;
 
+// The animation time in milliseconds for the fade in and / or out when
+// switching users.
+const int kUserFadeTimeMS = 110;
+
 // The animation time in ms for a window which get teleported to another screen.
 const int kTeleportAnimationTimeMS = 300;
 
@@ -208,7 +212,7 @@ MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
       notification_blocker_(new MultiUserNotificationBlockerChromeOS(
           message_center::MessageCenter::Get(), this, current_user_id)),
       suppress_visibility_changes_(false),
-      animations_disabled_(false) {
+      animation_speed_(ANIMATION_SPEED_NORMAL) {
   // Add a session state observer to be able to monitor session changes.
   if (ash::Shell::HasInstance())
     ash::Shell::GetInstance()->session_state_delegate()->
@@ -393,7 +397,8 @@ void MultiUserWindowManagerChromeOS::ActiveUserChanged(
   current_user_id_ = user_id;
 
   animation_.reset(
-      new UserSwichAnimatorChromeOS(this, user_id, animations_disabled_));
+      new UserSwichAnimatorChromeOS(
+          this, user_id, GetAdjustedAnimationTimeInMS(kUserFadeTimeMS)));
 }
 
 void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {
@@ -485,8 +490,9 @@ void MultiUserWindowManagerChromeOS::Observe(
     AddBrowserWindow(content::Source<Browser>(source).ptr());
 }
 
-void MultiUserWindowManagerChromeOS::SetAnimationsForTest(bool disable) {
-  animations_disabled_ = disable;
+void MultiUserWindowManagerChromeOS::SetAnimationSpeedForTest(
+    MultiUserWindowManagerChromeOS::AnimationSpeed speed) {
+  animation_speed_ = speed;
 }
 
 bool MultiUserWindowManagerChromeOS::IsAnimationRunningForTest() {
@@ -682,7 +688,7 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
     int animation_time_in_ms) {
   AnimationSetter animation_setter(
       window,
-      animations_disabled_ ? 0 : animation_time_in_ms);
+      GetAdjustedAnimationTimeInMS(animation_time_in_ms));
 
   if (visible)
     window->Show();
@@ -692,6 +698,12 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
   // Make sure that animations have no influence on the window state after the
   // call.
   DCHECK_EQ(visible, window->IsVisible());
+}
+
+int MultiUserWindowManagerChromeOS::GetAdjustedAnimationTimeInMS(
+    int default_time_in_ms) {
+  return animation_speed_ == ANIMATION_SPEED_NORMAL ? default_time_in_ms :
+      (animation_speed_ == ANIMATION_SPEED_FAST ? 10 : 0);
 }
 
 }  // namespace chrome

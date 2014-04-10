@@ -61,6 +61,13 @@ class MultiUserWindowManagerChromeOS
       public content::NotificationObserver,
       public wm::TransientWindowObserver {
  public:
+  // The speed which should be used to perform animations.
+  enum AnimationSpeed {
+    ANIMATION_SPEED_NORMAL,   // The normal animation speed.
+    ANIMATION_SPEED_FAST,     // Unit test speed which test animations.
+    ANIMATION_SPEED_DISABLED  // Unit tests which do not require animations.
+  };
+
   // Create the manager and use |active_user_id| as the active user.
   explicit MultiUserWindowManagerChromeOS(const std::string& active_user_id);
   virtual ~MultiUserWindowManagerChromeOS();
@@ -104,7 +111,7 @@ class MultiUserWindowManagerChromeOS
                const content::NotificationDetails& details) OVERRIDE;
 
   // Disable any animations for unit tests.
-  void SetAnimationsForTest(bool disable);
+  void SetAnimationSpeedForTest(AnimationSpeed speed);
 
   // Returns true when a user switch animation is running. For unit tests.
   bool IsAnimationRunningForTest();
@@ -212,6 +219,10 @@ class MultiUserWindowManagerChromeOS
                         bool visible,
                         int aimation_time_in_ms);
 
+  // Get the animation time in milliseconds dependent on the |AnimationSpeed|
+  // from the passed |default_time_in_ms|.
+  int GetAdjustedAnimationTimeInMS(int default_time_in_ms);
+
   // A lookup to see to which user the given window belongs to, where and if it
   // should get shown.
   WindowToEntryMap window_to_entry_;
@@ -244,8 +255,8 @@ class MultiUserWindowManagerChromeOS
   // used is quite expensive.
   static MultiProfileMode multi_user_mode_;
 
-  // If true, all animations will be suppressed.
-  bool animations_disabled_;
+  // The speed which is used to perform any animations.
+  AnimationSpeed animation_speed_;
 
   // The animation between users.
   scoped_ptr<UserSwichAnimatorChromeOS> animation_;

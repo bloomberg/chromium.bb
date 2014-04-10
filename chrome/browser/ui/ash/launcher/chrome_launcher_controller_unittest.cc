@@ -880,7 +880,8 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     chrome::MultiUserWindowManagerChromeOS* manager =
         static_cast<chrome::MultiUserWindowManagerChromeOS*>(
             chrome::MultiUserWindowManager::GetInstance());
-    manager->SetAnimationsForTest(true);
+    manager->SetAnimationSpeedForTest(
+        chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
     manager->ActiveUserChanged(name);
     launcher_controller_->browser_status_monitor_for_test()->
         ActiveUserChanged(name);

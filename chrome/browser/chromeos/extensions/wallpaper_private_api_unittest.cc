@@ -230,7 +230,8 @@ void WallpaperPrivateApiMultiUserUnittest::SetUpMultiUserWindowManager(
   chrome::MultiUserWindowManager::SetInstanceForTest(
       multi_user_window_manager_, mode);
   // We do not want animations while the test is going on.
-  multi_user_window_manager_->SetAnimationsForTest(true);
+  multi_user_window_manager_->SetAnimationSpeedForTest(
+      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
   EXPECT_TRUE(multi_user_window_manager_);
 }
 

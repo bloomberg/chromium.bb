@@ -35,7 +35,7 @@ class UserSwichAnimatorChromeOS {
 
   UserSwichAnimatorChromeOS(MultiUserWindowManagerChromeOS* owner,
                             const std::string& new_user_id,
-                            bool animation_disabled);
+                            int animation_speed_ms);
   ~UserSwichAnimatorChromeOS();
 
   // Check if a window is covering the entire work area of the screen it is on.
@@ -93,8 +93,8 @@ class UserSwichAnimatorChromeOS {
   // The new user to set.
   std::string new_user_id_;
 
-  // If true, all animations will be suppressed.
-  bool animation_disabled_;
+  // The animation speed in ms. If 0, animations are disabled.
+  int animation_speed_ms_;
 
   // The next animation step for AdvanceUserTransitionAnimation().
   AnimationStep animation_step_;

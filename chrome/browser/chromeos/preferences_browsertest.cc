@@ -121,7 +121,8 @@ class PreferencesTest : public LoginManagerTest {
     chrome::MultiUserWindowManagerChromeOS* manager =
         static_cast<chrome::MultiUserWindowManagerChromeOS*>(
             chrome::MultiUserWindowManager::GetInstance());
-    manager->SetAnimationsForTest(true);
+    manager->SetAnimationSpeedForTest(
+        chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
   }
 
  private:
