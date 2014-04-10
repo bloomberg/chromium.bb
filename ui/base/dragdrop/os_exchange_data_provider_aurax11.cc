@@ -154,9 +154,20 @@ void OSExchangeDataProviderAuraX11::SetURL(const GURL& url,
 
     format_map_.Insert(atom_cache_.GetAtom(kMimeTypeMozillaURL), mem);
 
-    // Set _NETSCAPE_URL as well, since some file managers like Nautilus use it
-    // to create a link to the URL. Setting text/uri-list doesn't work as well,
-    // because Nautilus tries to fetch the contents of the URL instead.
+    // Set a string fallback as well.
+    SetString(spec);
+
+    // Return early if this drag already contains file contents (this implies
+    // that file contents must be populated before URLs). Nautilus (and possibly
+    // other file managers) prefer _NETSCAPE_URL over the X Direct Save
+    // protocol, but we want to prioritize XDS in this case.
+    if (!file_contents_name_.empty())
+      return;
+
+    // Set _NETSCAPE_URL for file managers like Nautilus that use it as a hint
+    // to create a link to the URL. Setting text/uri-list doesn't work because
+    // Nautilus will fetch and copy the contents of the URL to the drop target
+    // instead of linking...
     // Format is UTF8: URL + "\n" + title.
     std::string netscape_url = url.spec();
     netscape_url += "\n";
@@ -164,9 +175,6 @@ void OSExchangeDataProviderAuraX11::SetURL(const GURL& url,
     format_map_.Insert(atom_cache_.GetAtom(kNetscapeURL),
                        scoped_refptr<base::RefCountedMemory>(
                            base::RefCountedString::TakeString(&netscape_url)));
-
-    // And finally a string fallback as well.
-    SetString(spec);
   }
 }
 
@@ -409,6 +417,8 @@ void OSExchangeDataProviderAuraX11::SetFileContents(
     const base::FilePath& filename,
     const std::string& file_contents) {
   DCHECK(!filename.empty());
+  DCHECK(format_map_.end() ==
+         format_map_.find(atom_cache_.GetAtom(kMimeTypeMozillaURL)));
 
   file_contents_name_ = filename;
 
