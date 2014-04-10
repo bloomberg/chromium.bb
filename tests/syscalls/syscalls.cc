@@ -280,6 +280,38 @@ bool test_open(const char *test_file) {
   return passed(testname, "all");
 }
 
+bool test_stat(const char *test_file) {
+  struct stat buf;
+
+  // Test incoming test_file for read and write permission.
+  ASSERT_EQ(stat(test_file, &buf), 0);
+  ASSERT_MSG(buf.st_mode & S_IRUSR, "stat() failed to report S_IRUSR");
+  ASSERT_MSG(buf.st_mode & S_IWUSR, "stat() failed to report S_IWUSR");
+
+  // Test a new read-only file
+  // The current unlink() implemenation in the sel_ldr for Windows
+  // doesn't support removing read-only files.
+  // TODO(sbc): enable this part of the test once this gets fixed.
+#if 0
+  char buffer[PATH_MAX];
+  snprintf(buffer, PATH_MAX, "%s.readonly", test_file);
+  buffer[PATH_MAX - 1] = '\0';
+  unlink(buffer);
+  ASSERT_EQ(stat(buffer, &buf), -1);
+  int fd = open(buffer, O_RDWR | O_CREAT, S_IRUSR);
+  ASSERT_NE(fd, -1);
+  ASSERT_EQ(close(fd), 0);
+  ASSERT_EQ(stat(buffer, &buf), 0);
+  ASSERT_MSG(buf.st_mode & S_IRUSR, "stat() failed to report S_IRUSR");
+  ASSERT_MSG(!(buf.st_mode & S_IWUSR), "S_IWUSR report for a read-only file");
+#endif
+
+  // Windows doesn't support the concept of write only files,
+  // so we can't test this case.
+
+  return passed("test_stat", "all");
+}
+
 // close() returns 0 on success, -1 on error
 bool test_close(const char *test_file) {
   int fd;
@@ -661,6 +693,7 @@ bool testSuite(const char *test_file) {
   // The order of executing these tests matters!
   ret &= test1();
   ret &= test2();
+  ret &= test_stat(test_file);
   ret &= test_open(test_file);
   ret &= test_close(test_file);
   ret &= test_read(test_file);
