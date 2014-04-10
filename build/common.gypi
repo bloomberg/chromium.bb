@@ -1182,6 +1182,10 @@
     'debug_unwind_tables%': 1,
     'release_unwind_tables%': 1,
 
+    # Override where to find binutils
+    'binutils_version%': 0,
+    'binutils_dir%': '',
+
     # Enable TCMalloc.
     # TODO(dmikurube): Change Linux default of use_allocator to "tcmalloc".
     # TODO(dmikurube): Change Android default of use_allocator to "none".
