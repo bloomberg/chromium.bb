@@ -35,6 +35,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media_switches.h"
+#include "third_party/cros_system_api/switches/chrome_switches.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
@@ -205,6 +206,7 @@ std::string DeriveCommandLine(const GURL& start_url,
     chromeos::switches::kHasChromeOSKeyboard,
     chromeos::switches::kLoginProfile,
     chromeos::switches::kNaturalScrollDefault,
+    chromeos::switches::kSystemInDevMode,
     ::switches::kEnableBrowserTextSubpixelPositioning,
     ::switches::kEnableWebkitTextSubpixelPositioning,
     policy::switches::kDeviceManagementUrl,

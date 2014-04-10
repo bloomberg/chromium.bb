@@ -17,6 +17,7 @@
 #include "base/process/launch.h"
 #include "base/threading/thread.h"
 #include "chromeos/process_proxy/process_output_watcher.h"
+#include "third_party/cros_system_api/switches/chrome_switches.h"
 
 namespace {
 
@@ -223,6 +224,10 @@ bool ProcessProxy::LaunchProcess(const std::string& command, int slave_fd,
   fds_mapping.push_back(std::make_pair(slave_fd, STDOUT_FILENO));
   fds_mapping.push_back(std::make_pair(slave_fd, STDERR_FILENO));
   base::LaunchOptions options;
+  // Do not set NO_NEW_PRIVS on processes if the system is in dev-mode. This
+  // permits sudo in the crosh shell when in developer mode.
+  options.allow_new_privs = base::CommandLine::ForCurrentProcess()->
+      HasSwitch(chromeos::switches::kSystemInDevMode);
   options.fds_to_remap = &fds_mapping;
   options.ctrl_terminal_fd = slave_fd;
   options.environ["TERM"] = "xterm";
