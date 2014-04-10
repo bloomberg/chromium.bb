@@ -352,7 +352,8 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
     return;
 
   double monotonic_time_sec = InSecondsF(time);
-  if (!fling_parameters_.startTime) {
+  if (!fling_parameters_.startTime ||
+      monotonic_time_sec <= fling_parameters_.startTime) {
     fling_parameters_.startTime = monotonic_time_sec;
     input_handler_->ScheduleAnimation();
     return;
