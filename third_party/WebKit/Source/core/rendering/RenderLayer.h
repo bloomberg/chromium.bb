@@ -471,7 +471,16 @@ public:
 
     class AncestorDependentProperties {
     public:
+        AncestorDependentProperties()
+            : opacityAncestor(0)
+            , transformAncestor(0)
+            , filterAncestor(0)
+        { }
+
         IntRect clippedAbsoluteBoundingBox;
+        const RenderLayer* opacityAncestor;
+        const RenderLayer* transformAncestor;
+        const RenderLayer* filterAncestor;
     };
 
     void setNeedsToUpdateAncestorDependentProperties();
@@ -481,7 +490,7 @@ public:
     void updateAncestorDependentProperties(const AncestorDependentProperties&);
     void clearChildNeedsToUpdateAncestorDependantProperties();
 
-    const AncestorDependentProperties& ancestorDependentProperties() { ASSERT(!m_needsToUpdateAncestorDependentProperties); return m_ancestorDependentProperties; }
+    const AncestorDependentProperties& ancestorDependentProperties() const { ASSERT(!m_needsToUpdateAncestorDependentProperties); return m_ancestorDependentProperties; }
 
     bool lostGroupedMapping() const { return m_compositingProperties.lostGroupedMapping; }
     void setLostGroupedMapping(bool b) { m_compositingProperties.lostGroupedMapping = b; }

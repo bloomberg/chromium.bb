@@ -49,6 +49,11 @@ void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* 
 
             IntRect clipRect = pixelSnappedIntRect(layer->clipper().backgroundClipRect(ClipRectsContext(m_rootRenderLayer, AbsoluteClipRects)).rect());
             properties.clippedAbsoluteBoundingBox.intersect(clipRect);
+
+            const RenderLayer* parent = layer->parent();
+            properties.opacityAncestor = parent->isTransparent() ? parent : parent->ancestorDependentProperties().opacityAncestor;
+            properties.transformAncestor = parent->hasTransform() ? parent : parent->ancestorDependentProperties().transformAncestor;
+            properties.filterAncestor = parent->hasFilter() ? parent : parent->ancestorDependentProperties().filterAncestor;
         }
 
         layer->updateAncestorDependentProperties(properties);

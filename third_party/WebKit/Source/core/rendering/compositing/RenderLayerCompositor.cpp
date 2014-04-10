@@ -638,11 +638,25 @@ bool RenderLayerCompositor::updateLayerIfViewportConstrained(RenderLayer* layer)
 bool RenderLayerCompositor::canSquashIntoCurrentSquashingOwner(const RenderLayer* layer, const RenderLayerCompositor::SquashingState& squashingState)
 {
     // FIXME: this is not efficient, since it walks up the tree . We should store these values on the AncestorDependentPropertiesCache.
-    if (layer->renderer()->clippingContainer() != squashingState.mostRecentMapping->owningLayer().renderer()->clippingContainer())
+    ASSERT(squashingState.hasMostRecentMapping);
+    const RenderLayer& squashingLayer = squashingState.mostRecentMapping->owningLayer();
+
+    if (layer->renderer()->clippingContainer() != squashingLayer.renderer()->clippingContainer())
         return false;
 
-    ASSERT(squashingState.hasMostRecentMapping);
-    if (layer->scrollsWithRespectTo(&squashingState.mostRecentMapping->owningLayer()))
+    if (layer->scrollsWithRespectTo(&squashingLayer))
+        return false;
+
+    const RenderLayer::AncestorDependentProperties& ancestorDependentProperties = layer->ancestorDependentProperties();
+    const RenderLayer::AncestorDependentProperties& squashingLayerAncestorDependentProperties = squashingLayer.ancestorDependentProperties();
+
+    if (ancestorDependentProperties.opacityAncestor != squashingLayerAncestorDependentProperties.opacityAncestor)
+        return false;
+
+    if (ancestorDependentProperties.transformAncestor != squashingLayerAncestorDependentProperties.transformAncestor)
+        return false;
+
+    if (ancestorDependentProperties.filterAncestor != squashingLayerAncestorDependentProperties.filterAncestor)
         return false;
 
     return true;
