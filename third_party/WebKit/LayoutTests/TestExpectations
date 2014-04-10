@@ -815,6 +815,8 @@ crbug.com/309197 [ Win ] webaudio/oscillator-custom.html [ NeedsManualRebaseline
 crbug.com/309197 [ Win ] webaudio/oscillator-sine.html [ NeedsManualRebaseline ]
 crbug.com/309197 [ Win ] webaudio/oscillator-square.html [ NeedsManualRebaseline ]
 
+crbug.com/362146 [ Linux ] fast/workers/worker-multi-startup.html [ Crash ]
+
 crbug.com/350011 [ Debug ] svg/W3C-SVG-1.1/animate-elem-40-t.svg [ ImageOnlyFailure ]
 crbug.com/350011 [ Debug ] svg/W3C-SVG-1.1/animate-elem-41-t.svg [ ImageOnlyFailure ]
 
