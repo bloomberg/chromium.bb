@@ -117,6 +117,10 @@ class XKeyboardImpl : public XKeyboard {
   XKeyboardImpl();
   virtual ~XKeyboardImpl() {}
 
+  // Adds/removes observer.
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+
   // Overridden from XKeyboard:
   virtual bool SetCurrentKeyboardLayoutByName(
       const std::string& layout_name) OVERRIDE;
@@ -169,6 +173,8 @@ class XKeyboardImpl : public XKeyboard {
 
   base::WeakPtrFactory<XKeyboardImpl> weak_factory_;
 
+  ObserverList<Observer> observers_;
+
   DISALLOW_COPY_AND_ASSIGN(XKeyboardImpl);
 };
 
@@ -191,6 +197,14 @@ XKeyboardImpl::XKeyboardImpl()
   }
 
   current_caps_lock_status_ = CapsLockIsEnabled();
+}
+
+void XKeyboardImpl::AddObserver(XKeyboard::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void XKeyboardImpl::RemoveObserver(XKeyboard::Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 unsigned int XKeyboardImpl::GetNumLockMask() {
@@ -378,7 +392,12 @@ bool XKeyboardImpl::SetAutoRepeatRate(const AutoRepeatRate& rate) {
 }
 
 void XKeyboardImpl::SetCapsLockEnabled(bool enable_caps_lock) {
+  bool old_state = current_caps_lock_status_;
   SetLockedModifiers(enable_caps_lock);
+  if (old_state != enable_caps_lock) {
+    FOR_EACH_OBSERVER(XKeyboard::Observer, observers_,
+                      OnCapsLockChanged(enable_caps_lock));
+  }
 }
 
 bool XKeyboardImpl::SetCurrentKeyboardLayoutByName(

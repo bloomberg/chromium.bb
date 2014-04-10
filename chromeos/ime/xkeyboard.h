@@ -36,7 +36,17 @@ class InputMethodUtil;
 
 class CHROMEOS_EXPORT XKeyboard {
  public:
+  class Observer {
+   public:
+    // Called when the caps lock state has changed.
+    virtual void OnCapsLockChanged(bool enabled) = 0;
+  };
+
   virtual ~XKeyboard() {}
+
+  // Adds/removes observer.
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Sets the current keyboard layout to |layout_name|. This function does not
   // change the current mapping of the modifier keys. Returns true on success.

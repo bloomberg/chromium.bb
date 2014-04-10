@@ -20,6 +20,8 @@ class CHROMEOS_EXPORT FakeXKeyboard : public XKeyboard {
   FakeXKeyboard();
   virtual ~FakeXKeyboard() {}
 
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual bool SetCurrentKeyboardLayoutByName(const std::string& layout_name)
       OVERRIDE;
   virtual bool ReapplyCurrentKeyboardLayout() OVERRIDE;

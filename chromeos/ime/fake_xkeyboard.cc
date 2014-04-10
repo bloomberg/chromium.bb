@@ -13,6 +13,12 @@ FakeXKeyboard::FakeXKeyboard()
       auto_repeat_is_enabled_(false) {
 }
 
+void FakeXKeyboard::AddObserver(XKeyboard::Observer* observer) {
+}
+
+void FakeXKeyboard::RemoveObserver(XKeyboard::Observer* observer) {
+}
+
 bool FakeXKeyboard::SetCurrentKeyboardLayoutByName(
     const std::string& layout_name) {
   ++set_current_keyboard_layout_by_name_count_;
