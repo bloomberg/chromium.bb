@@ -27,6 +27,13 @@ function onload()
     console.log("%o", array);
     console.log("%O", array);
     console.log("Test for zero \"%f\" in formatter", 0);
+    console.log("%% self-escape1", "dummy");
+    console.log("%%s self-escape2", "dummy");
+    console.log("%%ss self-escape3", "dummy");
+    console.log("%%s%s%%s self-escape4", "dummy");
+    console.log("%%%%% self-escape5", "dummy");
+    console.log("%%%s self-escape6", "dummy");
+    
     // Populate Globals
     var regex1 = /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i;
     var regex2 = new RegExp("foo\\\\bar\\sbaz", "i");

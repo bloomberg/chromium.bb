@@ -2,6 +2,12 @@ CONSOLE MESSAGE: line 26: test,test2,,,test4,,,,,
 CONSOLE MESSAGE: line 27: %o
 CONSOLE MESSAGE: line 28: %O
 CONSOLE MESSAGE: line 29: Test for zero "%f" in formatter
+CONSOLE MESSAGE: line 30: %% self-escape1
+CONSOLE MESSAGE: line 31: %%s self-escape2
+CONSOLE MESSAGE: line 32: %%ss self-escape3
+CONSOLE MESSAGE: line 33: %%s%s%%s self-escape4
+CONSOLE MESSAGE: line 34: %%%%% self-escape5
+CONSOLE MESSAGE: line 35: %%%s self-escape6
 CONSOLE MESSAGE: line 12: /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
 CONSOLE MESSAGE: line 13: /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
 CONSOLE MESSAGE: line 12: /foo\\bar\sbaz/i
@@ -74,6 +80,12 @@ Tests that console logging dumps proper messages.
 Array[10]0: "test"1: "test2"4: "test4"foo: Objectlength: 10__proto__: Array[0] console-format.html:27
 Array[10]0: "test"1: "test2"4: "test4"foo: Objectlength: 10__proto__: Array[0] console-format.html:28
 Test for zero "0" in formatter console-format.html:29
+% self-escape1 dummy console-format.html:30
+%s self-escape2 dummy console-format.html:31
+%ss self-escape3 dummy console-format.html:32
+%sdummy%s self-escape4 console-format.html:33
+%%% self-escape5 dummy console-format.html:34
+%dummy self-escape6 console-format.html:35
 /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i console-format.html:12
 [/^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\…?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i]0: /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/ilength: 1__proto__: Array[0] console-format.html:13
 globals[0]
@@ -105,7 +117,7 @@ globals[6]
 function () { return 1; } console-format.html:12
 [function]0: function () { return 1; }length: 1__proto__: Array[0] console-format.html:13
 globals[7]
-function () { return 1; } console-format.html:38
+function () { return 1; } console-format.html:45
 function () {
         return 2;
     } console-format.html:12
@@ -113,7 +125,7 @@ function () {
 globals[8]
 function () {
         return 2;
-    } console-format.html:39
+    } console-format.html:46
 0.12 console-format.html:12
 [0.12] console-format.html:13
 globals[9]
@@ -201,5 +213,5 @@ Object {}
 function () {} console-format.html:12
 [function]0: function () {}length: 1__proto__: Array[0] console-format.html:13
 globals[30]
-function () {} console-format.html:55
+function () {} console-format.html:62
 
