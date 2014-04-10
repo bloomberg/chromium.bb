@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/omaha_query_params/omaha_query_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -165,6 +166,10 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
                    content::Source<Profile>(profile));
   }
 #endif
+
+  web_ui()->CallJavascriptFunction(
+      "appList.startPage.setNaclArch",
+      base::StringValue(chrome::OmahaQueryParams::GetNaclArch()));
 
   if (!app_list::switches::IsExperimentalAppListEnabled()) {
     web_ui()->CallJavascriptFunction(

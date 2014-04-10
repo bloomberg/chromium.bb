@@ -27,6 +27,22 @@ cr.define('speech', function() {
   };
 
   /**
+   * Checks the prefix for the hotword module based on the language. This is
+   * fragile if the file structure has changed.
+   */
+  function getHotwordPrefix() {
+    var prefix = navigator.language.toLowerCase();
+    if (prefix == 'en-gb')
+      return prefix;
+    var hyphen = prefix.indexOf('-');
+    if (hyphen >= 0)
+      prefix = prefix.substr(0, hyphen);
+    if (prefix == 'en')
+      prefix = '';
+    return prefix;
+  }
+
+  /**
    * @constructor
    */
   function SpeechManager() {
@@ -78,7 +94,6 @@ cr.define('speech', function() {
     this.pluginManager_.startRecognizer();
     this.audioManager_.start();
     this.setState_(SpeechState.HOTWORD_RECOGNIZING);
-    chrome.send('setHotwordRecognizerState', [true]);
   };
 
   /**
@@ -163,11 +178,17 @@ cr.define('speech', function() {
     if (enabled) {
       if (recognizer)
         return;
+      if (!this.naclArch)
+        return;
+
+      var prefix = getHotwordPrefix();
       var pluginManager = new speech.PluginManager(
+          prefix,
           this.onHotwordRecognizerReady_.bind(this),
           this.onHotwordRecognized_.bind(this));
-      pluginManager.scheduleInitialize(
-          this.audioManager_.sampleRate, 'chrome://app-list/hotword.data');
+      var modelUrl = 'chrome://app-list/_platform_specific/' + this.naclArch +
+          '_' + prefix + '/hotword.data';
+      pluginManager.scheduleInitialize(this.audioManager_.sampleRate, modelUrl);
     } else {
       if (!recognizer)
         return;
@@ -178,6 +199,15 @@ cr.define('speech', function() {
         this.setState_(SpeechState.READY);
       }
     }
+  };
+
+  /**
+   * Sets the NaCl architecture for the hotword module.
+   *
+   * @param {string} arch The architecture.
+   */
+  SpeechManager.prototype.setNaclArch = function(arch) {
+    this.naclArch = arch;
   };
 
   /**

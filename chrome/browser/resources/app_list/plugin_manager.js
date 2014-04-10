@@ -39,7 +39,7 @@ cr.define('speech', function() {
   /**
    * @constructor
    */
-  function PluginManager(onReady, onRecognized) {
+  function PluginManager(prefix, onReady, onRecognized) {
     this.state = PluginState.UNINITIALIZED;
     this.onReady_ = onReady;
     this.onRecognized_ = onRecognized;
@@ -50,7 +50,7 @@ cr.define('speech', function() {
       recognizer = document.createElement('EMBED');
       recognizer.id = 'recognizer';
       recognizer.type = 'application/x-nacl';
-      recognizer.src = 'chrome://app-list/greconacl.nmf';
+      recognizer.src = 'chrome://app-list/hotword_' + prefix + '.nmf';
       recognizer.width = '1';
       recognizer.height = '1';
       document.body.appendChild(recognizer);

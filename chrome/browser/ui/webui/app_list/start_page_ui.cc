@@ -24,12 +24,9 @@
 namespace app_list {
 namespace {
 #if defined(OS_CHROMEOS)
-const char* kHotwordFilenames[] = {
-  "greconacl.nmf",
-  "hotword.data",
-  "_platform_specific/arm/hotword_arm.nexe",
-  "_platform_specific/x86-32/hotword_x86_32.nexe",
-  "_platform_specific/x86-64/hotword_x86_64.nexe",
+const char* kHotwordFilePrefixes[] = {
+  "hotword_",
+  "_platform_specific/",
 };
 
 void LoadModelData(const base::FilePath& base_dir,
@@ -53,8 +50,8 @@ bool HandleHotwordFilesResourceFilter(
   if (!extension)
     return false;
 
-  for (size_t i = 0; i < arraysize(kHotwordFilenames); ++i) {
-    if (path == kHotwordFilenames[i]) {
+  for (size_t i = 0; i < arraysize(kHotwordFilePrefixes); ++i) {
+    if (path.find(kHotwordFilePrefixes[i]) == 0) {
       content::BrowserThread::PostTask(
           content::BrowserThread::FILE,
           FROM_HERE,
