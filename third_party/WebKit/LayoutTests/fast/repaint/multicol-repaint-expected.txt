@@ -2,6 +2,5 @@
 XXXXXX
 (repaint rects
   (rect 9 9 400 100)
-  (rect 8 8 402 1)
 )
 

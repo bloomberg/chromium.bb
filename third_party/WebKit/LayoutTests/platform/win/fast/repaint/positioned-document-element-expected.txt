@@ -1,12 +1,13 @@
 Tests that the entire viewport is painted with a floated html element.
 
 (repaint rects
+  (rect 0 0 800 600)
   (rect 0 0 800 52)
   (rect 0 0 800 52)
-  (rect 0 0 800 52)
-  (rect 100 100 419 52)
-  (rect 511 16 381 20)
   (rect 108 16 784 20)
   (rect 108 16 403 20)
+  (rect 511 16 381 20)
+  (rect 0 0 800 52)
+  (rect 100 100 419 52)
 )
 

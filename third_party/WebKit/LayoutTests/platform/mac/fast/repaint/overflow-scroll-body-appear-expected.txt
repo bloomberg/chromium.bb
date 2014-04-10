@@ -4,6 +4,7 @@ This is the test for Bug 36461 - No vertical scrollbar after the CSS class chang
 
 (repaint rects
   (rect 0 0 800 600)
+  (rect 8 16 2000 2068)
   (rect 0 0 785 585)
 )
 

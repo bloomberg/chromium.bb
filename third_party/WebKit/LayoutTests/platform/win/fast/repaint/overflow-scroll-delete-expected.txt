@@ -12,6 +12,5 @@ This is a repaint test for http://bugs.webkit.org/show_bug.cgi?id=11277 REGRESSI
 Passed Test
 (repaint rects
   (rect 8 136 80 17)
-  (rect 8 84 80 17)
 )
 

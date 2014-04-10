@@ -3,9 +3,9 @@ This is a test for http://bugzilla.opendarwin.org/show_bug.cgi?id=9388 REGRESSIO
 There should be a green square and no trace of red.
 
 (repaint rects
-  (rect 4 16 788 206)
-  (rect 8 16 784 202)
   (rect 4 114 108 108)
   (rect 8 118 100 100)
+  (rect 4 16 788 206)
+  (rect 8 16 784 202)
 )
 

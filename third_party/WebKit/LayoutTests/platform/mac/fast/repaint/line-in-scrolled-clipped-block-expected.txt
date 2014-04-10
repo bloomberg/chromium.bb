@@ -1,6 +1,5 @@
                          PASS     .
 (repaint rects
   (rect 8 8 100 18)
-  (rect 8 8 40 100)
 )
 

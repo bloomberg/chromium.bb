@@ -3,9 +3,7 @@ Repaint test for http://bugzilla.opendarwin.org/show_bug.cgi?id=9334 Incomplete 
 (repaint rects
   (rect 8 332 100 100)
   (rect 8 82 100 100)
-  (rect 8 82 100 100)
   (rect 8 132 100 100)
-  (rect 8 332 100 100)
   (rect 8 282 100 100)
 )
 

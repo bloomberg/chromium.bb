@@ -5,10 +5,10 @@ TEST PASS: There should be a white square with a blue border below, and no line 
 TEST FAIL: The white square will have a blue border and a blue horizontal line running through its middle.
 
 (repaint rects
-  (rect 0 200 800 52)
-  (rect 8 192 784 52)
-  (rect 8 192 784 52)
   (rect 132 140 10 48)
   (rect 132 140 10 52)
+  (rect 8 192 784 52)
+  (rect 0 200 800 52)
+  (rect 8 192 784 52)
 )
 

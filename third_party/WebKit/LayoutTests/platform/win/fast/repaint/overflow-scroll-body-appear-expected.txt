@@ -1,0 +1,10 @@
+You should see both vertical and horizontal scrollbars.
+
+This is the test for Bug 36461 - No vertical scrollbar after the CSS class change.
+
+(repaint rects
+  (rect 0 0 800 600)
+  (rect 8 16 2000 2072)
+  (rect 0 0 785 585)
+)
+

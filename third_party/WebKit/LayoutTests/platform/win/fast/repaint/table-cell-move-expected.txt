@@ -9,5 +9,6 @@ TEST FAIL: There will be a red square and a green rectangle.
   (rect 8 146 61 180)
   (rect 8 206 61 180)
   (rect 8 326 61 60)
+  (rect 8 326 61 60)
 )
 
