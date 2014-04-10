@@ -42,12 +42,7 @@ class WM_CORE_EXPORT NativeCursorManager {
     bool visible,
     wm::NativeCursorManagerDelegate* delegate) = 0;
 
-  // A request to set the scale of the cursor icon.
-  virtual void SetScale(
-      float scale,
-      wm::NativeCursorManagerDelegate* delegate) = 0;
-
-  // A request to set the scale of the cursor icon.
+  // A request to set the cursor set.
   virtual void SetCursorSet(
       ui::CursorSetType cursor_set,
       wm::NativeCursorManagerDelegate* delegate) = 0;

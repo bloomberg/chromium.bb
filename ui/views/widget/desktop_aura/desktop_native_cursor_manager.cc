@@ -85,12 +85,6 @@ void DesktopNativeCursorManager::SetCursorSet(
   NOTIMPLEMENTED();
 }
 
-void DesktopNativeCursorManager::SetScale(
-    float scale,
-    wm::NativeCursorManagerDelegate* delegate) {
-  NOTIMPLEMENTED();
-}
-
 void DesktopNativeCursorManager::SetMouseEventsEnabled(
     bool enabled,
     wm::NativeCursorManagerDelegate* delegate) {

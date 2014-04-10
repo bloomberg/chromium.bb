@@ -24,7 +24,6 @@ class WM_CORE_EXPORT NativeCursorManagerDelegate {
 
   virtual void CommitCursor(gfx::NativeCursor cursor) = 0;
   virtual void CommitVisibility(bool visible) = 0;
-  virtual void CommitScale(float scale) = 0;
   virtual void CommitCursorSet(ui::CursorSetType cursor_set) = 0;
   virtual void CommitMouseEventsEnabled(bool enabled) = 0;
 };
