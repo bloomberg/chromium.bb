@@ -42,7 +42,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
-#include "content/public/common/url_constants.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "grit/generated_resources.h"
@@ -1006,8 +1005,8 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
         exception->SetString(kOrigin, i->host);
         break;
       case content::HostZoomMap::ZOOM_CHANGED_FOR_SCHEME_AND_HOST:
-        exception->SetString(
-            kOrigin, i->scheme + content::kStandardSchemeSeparator + i->host);
+        // These are not stored in preferences and get cleared on next browser
+        // start. Therefore, we don't care for them.
         break;
       case content::HostZoomMap::ZOOM_CHANGED_TEMPORARY_ZOOM:
         NOTREACHED();
@@ -1242,17 +1241,7 @@ void ContentSettingsHandler::RemoveZoomLevelException(
   content::HostZoomMap* host_zoom_map =
       content::HostZoomMap::GetForBrowserContext(Profile::FromWebUI(web_ui()));
   double default_level = host_zoom_map->GetDefaultZoomLevel();
-
-  std::string::size_type scheme_separator_position =
-      pattern.find(content::kStandardSchemeSeparator);
-  if (scheme_separator_position == std::string::npos) {
-    host_zoom_map->SetZoomLevelForHost(pattern, default_level);
-  } else {
-    std::string scheme = pattern.substr(0, scheme_separator_position);
-    std::string host = pattern.substr(
-        scheme_separator_position + strlen(content::kStandardSchemeSeparator));
-    host_zoom_map->SetZoomLevelForHostAndScheme(scheme, host, default_level);
-  }
+  host_zoom_map->SetZoomLevelForHost(pattern, default_level);
 }
 
 void ContentSettingsHandler::RegisterMessages() {
