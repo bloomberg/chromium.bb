@@ -94,7 +94,7 @@ void ObserveStatusChanges(ServiceWorkerVersion* version,
                           std::vector<ServiceWorkerVersion::Status>* statuses) {
   statuses->push_back(version->status());
   version->RegisterStatusChangeCallback(
-      base::Bind(&ObserveStatusChanges, make_scoped_refptr(version), statuses));
+      base::Bind(&ObserveStatusChanges, base::Unretained(version), statuses));
 }
 
 }  // namespace
@@ -300,7 +300,7 @@ TEST_F(ServiceWorkerVersionTest, ActivateAndWaitCompletion) {
   EXPECT_EQ(ServiceWorkerVersion::ACTIVE, version_->status());
 }
 
-TEST_F(ServiceWorkerVersionTest, DISABLED_RepeatedlyObserveStatusChanges) {
+TEST_F(ServiceWorkerVersionTest, RepeatedlyObserveStatusChanges) {
   EXPECT_EQ(ServiceWorkerVersion::NEW, version_->status());
 
   // Repeatedly observe status changes (the callback re-registers itself).

@@ -182,7 +182,6 @@ ServiceWorkerVersion::ServiceWorkerVersion(
 }
 
 ServiceWorkerVersion::~ServiceWorkerVersion() {
-  status_change_callbacks_.clear();
   if (embedded_worker_) {
     embedded_worker_->RemoveObserver(this);
     embedded_worker_.reset();
