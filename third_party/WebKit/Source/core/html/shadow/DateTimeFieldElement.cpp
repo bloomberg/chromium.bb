@@ -58,10 +58,15 @@ void DateTimeFieldElement::defaultEventHandler(Event* event)
         KeyboardEvent* keyboardEvent = toKeyboardEvent(event);
         if (!isDisabled() && !isFieldOwnerDisabled() && !isFieldOwnerReadOnly()) {
             handleKeyboardEvent(keyboardEvent);
-            if (keyboardEvent->defaultHandled())
+            if (keyboardEvent->defaultHandled()) {
+                if (m_fieldOwner)
+                    m_fieldOwner->fieldDidChangeValueByKeyboard();
                 return;
+            }
         }
         defaultKeyboardEventHandler(keyboardEvent);
+        if (m_fieldOwner)
+            m_fieldOwner->fieldDidChangeValueByKeyboard();
         if (keyboardEvent->defaultHandled())
             return;
     }

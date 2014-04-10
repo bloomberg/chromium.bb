@@ -67,6 +67,7 @@ private:
     virtual bool isEditControlOwnerDisabled() const OVERRIDE FINAL;
     virtual bool isEditControlOwnerReadOnly() const OVERRIDE FINAL;
     virtual AtomicString localeIdentifier() const OVERRIDE FINAL;
+    virtual void editControlDidChangeValueByKeyboard() OVERRIDE FINAL;
 
     // SpinButtonElement::SpinButtonOwner functions.
     virtual void focusAndSelectSpinButtonOwner() OVERRIDE;

@@ -34,6 +34,11 @@ function testSpinButtonChangeAndInputEvents(inputType, initialValue, expectedVal
     var spinButton = getElementByPseudoId(internals.oldestShadowRoot(testInput), "-webkit-inner-spin-button");
     eventSender.mouseMoveTo(testInput.offsetLeft + spinButton.offsetLeft, testInput.offsetTop + testInput.offsetHeight / 4);
     eventSender.mouseDown();
+    debug('Triggers only input event on mouseDown');
+    shouldBeEqualToString('testInput.value', expectedValue);
+    shouldEvaluateTo('changeEventCounter', 0);
+    shouldEvaluateTo('inputEventCounter', 1);
+    debug('Triggers only change event on mouseUp');
     eventSender.mouseUp();
     shouldBeEqualToString('testInput.value', expectedValue);
     shouldEvaluateTo('changeEventCounter', 1);
