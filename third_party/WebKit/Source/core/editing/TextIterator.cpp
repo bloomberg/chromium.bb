@@ -52,6 +52,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/CharacterNames.h"
 #include <unicode/usearch.h>
+#include <unicode/utf16.h>
 
 using namespace WTF::Unicode;
 using namespace std;
@@ -2074,10 +2075,31 @@ static PassRefPtrWillBeRawPtr<Range> collapsedToBoundary(const Range* range, boo
     return result.release();
 }
 
+// Check if there's any unpaird surrogate code point.
+// Non-character code points are not checked.
+static bool isValidUTF16(const String& s)
+{
+    if (s.is8Bit())
+        return true;
+    const UChar* ustr = s.characters16();
+    size_t length = s.length();
+    size_t position = 0;
+    while (position < length) {
+        UChar32 character;
+        U16_NEXT(ustr, position, length, character);
+        if (U_IS_SURROGATE(character))
+            return false;
+    }
+    return true;
+}
+
 static size_t findPlainTextInternal(CharacterIterator& it, const String& target, FindOptions options, size_t& matchStart)
 {
     matchStart = 0;
     size_t matchLength = 0;
+
+    if (!isValidUTF16(target))
+        return 0;
 
     SearchBuffer buffer(target, options);
 

@@ -428,4 +428,38 @@ TEST_F(TextIteratorTest, IgnoresContainersClipDistributed)
     EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersAuthorShadowRoots));
 }
 
+TEST_F(TextIteratorTest, FindPlainTextInvalidTarget)
+{
+    static const char* bodyContent = "<div>foo bar test</div>";
+    setBodyInnerHTML(bodyContent);
+    RefPtrWillBeRawPtr<Range> range = getBodyRange();
+
+    RefPtrWillBeRawPtr<Range> expectedRange = range->cloneRange(ASSERT_NO_EXCEPTION);
+    expectedRange->collapse(false, ASSERT_NO_EXCEPTION);
+
+    // A lone lead surrogate (0xDA0A) example taken from fuzz-58.
+    static const UChar invalid1[] = {
+        0x1461u, 0x2130u, 0x129bu, 0xd711u, 0xd6feu, 0xccadu, 0x7064u,
+        0xd6a0u, 0x4e3bu, 0x03abu, 0x17dcu, 0xb8b7u, 0xbf55u, 0xfca0u,
+        0x07fau, 0x0427u, 0xda0au, 0
+    };
+
+    // A lone trailing surrogate (U+DC01).
+    static const UChar invalid2[] = {
+        0x1461u, 0x2130u, 0x129bu, 0xdc01u, 0xd6feu, 0xccadu, 0
+    };
+    // A trailing surrogate followed by a lead surrogate (U+DC03 U+D901).
+    static const UChar invalid3[] = {
+        0xd800u, 0xdc00u, 0x0061u, 0xdc03u, 0xd901u, 0xccadu, 0
+    };
+
+    static const UChar* invalidUStrings[] = { invalid1, invalid2, invalid3 };
+
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(invalidUStrings); ++i) {
+        String invalidTarget(invalidUStrings[i]);
+        RefPtrWillBeRawPtr<Range> actualRange = findPlainText(range.get(), invalidTarget, 0);
+        EXPECT_TRUE(areRangesEqual(expectedRange.get(), actualRange.get()));
+    }
+}
+
 }
