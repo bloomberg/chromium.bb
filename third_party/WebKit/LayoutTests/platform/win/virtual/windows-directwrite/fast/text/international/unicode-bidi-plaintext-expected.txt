@@ -1,0 +1,40 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x199
+  RenderBlock {HTML} at (0,0) size 800x199
+    RenderBody {BODY} at (8,8) size 784x178
+      RenderBlock {DIV} at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 510x17
+          text run at (0,0) width 510: "This tests proper handling of unicode-bidi: plaintext. You should not see any red."
+      RenderBlock {DIV} at (0,18) size 784x72
+        RenderText {#text} at (0,0) size 44x17
+          text run at (0,0) width 44: "!hello. "
+        RenderBR {BR} at (44,0) size 0x17
+        RenderText {#text} at (742,18) size 42x17
+          text run at (742,18) width 42 RTL: "!\x{5E9}\x{5DC}\x{5D5}\x{5DD}. "
+        RenderBR {BR} at (742,18) size 0x17
+        RenderText {#text} at (0,36) size 63x17
+          text run at (0,36) width 39: "hello, "
+          text run at (39,36) width 15 RTL: "\x{5DC}\x{5D5}\x{5D9}"
+          text run at (54,36) width 9: "! "
+        RenderBR {BR} at (63,36) size 0x17
+        RenderText {#text} at (692,54) size 92x17
+          text run at (692,54) width 5 RTL: "!"
+          text run at (697,54) width 50: "WebKit"
+          text run at (747,54) width 37 RTL: "\x{5E9}\x{5DC}\x{5D5}\x{5DD}, "
+      RenderBlock {PRE} at (0,103) size 784x75
+        RenderText {#text} at (0,0) size 784x75
+          text run at (0,0) width 8: "a"
+          text run at (8,0) width 0: " "
+          text run at (0,15) width 8: "("
+          text run at (8,15) width 0: " "
+          text run at (680,30) width 0 RTL: " "
+          text run at (680,30) width 8 RTL: "!"
+          text run at (688,30) width 48: "WebKit"
+          text run at (736,30) width 48 RTL: "\x{5E9}\x{5DC}\x{5D5}\x{5DD}, "
+          text run at (0,45) width 56: "hello, "
+          text run at (56,45) width 24 RTL: "\x{5DC}\x{5D5}\x{5D9}"
+          text run at (80,45) width 8: "!"
+          text run at (88,45) width 0: " "
+          text run at (0,60) width 8: ")"
+          text run at (8,60) width 0: " "

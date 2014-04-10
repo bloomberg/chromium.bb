@@ -1,0 +1,13 @@
+CONSOLE ERROR: line 7: Uncaught SyntaxError: Illegal return statement
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderText {#text} at (0,0) size 757x39
+        text run at (0,0) width 757: "This tests an isolated script's ability to XHR a blob that is in its security origin, which is not the same as the document's security"
+        text run at (0,20) width 37: "origin."
+      RenderBR {BR} at (37,35) size 0x0
+      RenderText {#text} at (0,40) size 234x19
+        text run at (0,40) width 234: "We pass if there are no console errors."
+      RenderText {#text} at (0,0) size 0x0

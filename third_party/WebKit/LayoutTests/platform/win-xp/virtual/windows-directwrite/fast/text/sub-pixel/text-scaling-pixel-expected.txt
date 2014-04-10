@@ -1,0 +1,992 @@
+layer at (0,0) size 804x1353
+  RenderView at (0,0) size 785x585
+layer at (0,0) size 785x1353
+  RenderBlock {HTML} at (0,0) size 785x1353
+    RenderBody {BODY} at (8,8) size 769x1337
+      RenderBlock {SECTION} at (0,0) size 796x1321
+        RenderBlock {H1} at (0,0) size 796x27
+          RenderText {#text} at (0,0) size 282x26
+            text run at (0,0) width 282: "Font Size Scaling Pixel Test"
+        RenderBlock {P} at (0,31) size 796x20
+          RenderText {#text} at (0,0) size 713x19
+            text run at (0,0) width 232: "Size of the text should scale smoothly. "
+            text run at (232,0) width 481: "Reported width should be within 0.01px of that of the highlighted reference row."
+        RenderBlock {DIV} at (0,55) size 796x1266
+          RenderBlock {DIV} at (0,0) size 796x14 [border: none (1px solid #000000) none]
+            RenderBlock {DIV} at (0,0) size 65x13
+              RenderText {#text} at (15,0) size 45x13
+                text run at (15,0) width 45: "Font Size"
+            RenderBlock {DIV} at (65,0) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "Width"
+            RenderBlock {DIV} at (130,0) size 65x13
+              RenderText {#text} at (6,0) size 54x13
+                text run at (6,0) width 54: "Normalized"
+            RenderBlock {DIV} at (195,0) size 65x13
+              RenderText {#text} at (44,0) size 16x13
+                text run at (44,0) width 16: "Diff"
+            RenderInline {SPAN} at (0,0) size 37x13
+              RenderText {#text} at (260,0) size 37x13
+                text run at (260,0) width 37: "Content"
+          RenderBlock {DIV} at (0,14) size 796x13
+            RenderBlock {DIV} at (0,0) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "10.00"
+            RenderBlock {DIV} at (65,0) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "223.00"
+            RenderBlock {DIV} at (130,0) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "267.60"
+            RenderBlock {DIV} at (195,0) size 65x12 [color=#FF0000]
+              RenderText {#text} at (39,0) size 21x12
+                text run at (39,0) width 21: "7.60"
+            RenderInline {SPAN} at (0,0) size 223x13
+              RenderText {#text} at (260,0) size 223x13
+                text run at (260,0) width 223: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,27) size 796x13
+            RenderBlock {DIV} at (0,0) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "10.25"
+            RenderBlock {DIV} at (65,0) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "223.00"
+            RenderBlock {DIV} at (130,0) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "261.07"
+            RenderBlock {DIV} at (195,0) size 65x12 [color=#FF0000]
+              RenderText {#text} at (39,0) size 21x12
+                text run at (39,0) width 21: "1.07"
+            RenderInline {SPAN} at (0,0) size 223x13
+              RenderText {#text} at (260,0) size 223x13
+                text run at (260,0) width 223: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,40) size 796x14
+            RenderBlock {DIV} at (0,1) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "10.50"
+            RenderBlock {DIV} at (65,1) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "235.00"
+            RenderBlock {DIV} at (130,1) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "268.57"
+            RenderBlock {DIV} at (195,1) size 65x12 [color=#FF0000]
+              RenderText {#text} at (39,0) size 21x12
+                text run at (39,0) width 21: "8.57"
+            RenderInline {SPAN} at (0,0) size 235x14
+              RenderText {#text} at (260,0) size 235x14
+                text run at (260,0) width 235: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,54) size 796x14
+            RenderBlock {DIV} at (0,1) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "10.75"
+            RenderBlock {DIV} at (65,1) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "235.00"
+            RenderBlock {DIV} at (130,1) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "262.33"
+            RenderBlock {DIV} at (195,1) size 65x12 [color=#FF0000]
+              RenderText {#text} at (39,0) size 21x12
+                text run at (39,0) width 21: "2.33"
+            RenderInline {SPAN} at (0,0) size 235x14
+              RenderText {#text} at (260,0) size 235x14
+                text run at (260,0) width 235: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,68) size 796x14
+            RenderBlock {DIV} at (0,1) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "11.00"
+            RenderBlock {DIV} at (65,1) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "235.00"
+            RenderBlock {DIV} at (130,1) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "256.36"
+            RenderBlock {DIV} at (195,1) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-3.64"
+            RenderInline {SPAN} at (0,0) size 235x14
+              RenderText {#text} at (260,0) size 235x14
+                text run at (260,0) width 235: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,82) size 796x14
+            RenderBlock {DIV} at (0,1) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "11.25"
+            RenderBlock {DIV} at (65,1) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "235.00"
+            RenderBlock {DIV} at (130,1) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "250.67"
+            RenderBlock {DIV} at (195,1) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-9.33"
+            RenderInline {SPAN} at (0,0) size 235x14
+              RenderText {#text} at (260,0) size 235x14
+                text run at (260,0) width 235: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,96) size 796x15
+            RenderBlock {DIV} at (0,2) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "11.50"
+            RenderBlock {DIV} at (65,2) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "260.00"
+            RenderBlock {DIV} at (130,2) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "271.30"
+            RenderBlock {DIV} at (195,2) size 65x12 [color=#FF0000]
+              RenderText {#text} at (33,0) size 27x12
+                text run at (33,0) width 27: "11.30"
+            RenderInline {SPAN} at (0,0) size 260x15
+              RenderText {#text} at (260,0) size 260x15
+                text run at (260,0) width 260: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,111) size 796x15
+            RenderBlock {DIV} at (0,2) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "11.75"
+            RenderBlock {DIV} at (65,2) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "260.00"
+            RenderBlock {DIV} at (130,2) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "265.53"
+            RenderBlock {DIV} at (195,2) size 65x12 [color=#FF0000]
+              RenderText {#text} at (39,0) size 21x12
+                text run at (39,0) width 21: "5.53"
+            RenderInline {SPAN} at (0,0) size 260x15
+              RenderText {#text} at (260,0) size 260x15
+                text run at (260,0) width 260: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,126) size 796x15 [bgcolor=#FBFCC5]
+            RenderBlock {DIV} at (0,2) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "12.00"
+            RenderBlock {DIV} at (65,2) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "260.00"
+            RenderBlock {DIV} at (130,2) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "260.00"
+            RenderBlock {DIV} at (195,2) size 65x13
+              RenderText {#text} at (39,0) size 21x13
+                text run at (39,0) width 21: "0.00"
+            RenderInline {SPAN} at (0,0) size 260x15
+              RenderText {#text} at (260,0) size 260x15
+                text run at (260,0) width 260: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,141) size 796x15
+            RenderBlock {DIV} at (0,2) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "12.25"
+            RenderBlock {DIV} at (65,2) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "260.00"
+            RenderBlock {DIV} at (130,2) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "254.69"
+            RenderBlock {DIV} at (195,2) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-5.31"
+            RenderInline {SPAN} at (0,0) size 260x15
+              RenderText {#text} at (260,0) size 260x15
+                text run at (260,0) width 260: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,156) size 796x16
+            RenderBlock {DIV} at (0,3) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "12.50"
+            RenderBlock {DIV} at (65,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "276.00"
+            RenderBlock {DIV} at (130,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "264.96"
+            RenderBlock {DIV} at (195,3) size 65x12 [color=#FF0000]
+              RenderText {#text} at (39,0) size 21x12
+                text run at (39,0) width 21: "4.96"
+            RenderInline {SPAN} at (0,0) size 276x16
+              RenderText {#text} at (260,0) size 276x16
+                text run at (260,0) width 276: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,172) size 796x16
+            RenderBlock {DIV} at (0,3) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "12.75"
+            RenderBlock {DIV} at (65,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "276.00"
+            RenderBlock {DIV} at (130,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "259.76"
+            RenderBlock {DIV} at (195,3) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-0.24"
+            RenderInline {SPAN} at (0,0) size 276x16
+              RenderText {#text} at (260,0) size 276x16
+                text run at (260,0) width 276: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,188) size 796x16
+            RenderBlock {DIV} at (0,3) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "13.00"
+            RenderBlock {DIV} at (65,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "276.00"
+            RenderBlock {DIV} at (130,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "254.77"
+            RenderBlock {DIV} at (195,3) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-5.23"
+            RenderInline {SPAN} at (0,0) size 276x16
+              RenderText {#text} at (260,0) size 276x16
+                text run at (260,0) width 276: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,204) size 796x16
+            RenderBlock {DIV} at (0,3) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "13.25"
+            RenderBlock {DIV} at (65,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "276.00"
+            RenderBlock {DIV} at (130,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "249.96"
+            RenderBlock {DIV} at (195,3) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-10.04"
+            RenderInline {SPAN} at (0,0) size 276x16
+              RenderText {#text} at (260,0) size 276x16
+                text run at (260,0) width 276: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,220) size 796x16
+            RenderBlock {DIV} at (0,3) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "13.50"
+            RenderBlock {DIV} at (65,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "298.00"
+            RenderBlock {DIV} at (130,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "264.89"
+            RenderBlock {DIV} at (195,3) size 65x12 [color=#FF0000]
+              RenderText {#text} at (39,0) size 21x12
+                text run at (39,0) width 21: "4.89"
+            RenderInline {SPAN} at (0,0) size 298x16
+              RenderText {#text} at (260,0) size 298x16
+                text run at (260,0) width 298: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,236) size 796x16
+            RenderBlock {DIV} at (0,3) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "13.75"
+            RenderBlock {DIV} at (65,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "298.00"
+            RenderBlock {DIV} at (130,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "260.07"
+            RenderBlock {DIV} at (195,3) size 65x12 [color=#FF0000]
+              RenderText {#text} at (39,0) size 21x12
+                text run at (39,0) width 21: "0.07"
+            RenderInline {SPAN} at (0,0) size 298x16
+              RenderText {#text} at (260,0) size 298x16
+                text run at (260,0) width 298: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,252) size 796x16
+            RenderBlock {DIV} at (0,3) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "14.00"
+            RenderBlock {DIV} at (65,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "298.00"
+            RenderBlock {DIV} at (130,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "255.43"
+            RenderBlock {DIV} at (195,3) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-4.57"
+            RenderInline {SPAN} at (0,0) size 298x16
+              RenderText {#text} at (260,0) size 298x16
+                text run at (260,0) width 298: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,268) size 796x16
+            RenderBlock {DIV} at (0,3) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "14.25"
+            RenderBlock {DIV} at (65,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "298.00"
+            RenderBlock {DIV} at (130,3) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "250.95"
+            RenderBlock {DIV} at (195,3) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-9.05"
+            RenderInline {SPAN} at (0,0) size 298x16
+              RenderText {#text} at (260,0) size 298x16
+                text run at (260,0) width 298: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,284) size 796x17
+            RenderBlock {DIV} at (0,4) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "14.50"
+            RenderBlock {DIV} at (65,4) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "309.00"
+            RenderBlock {DIV} at (130,4) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "255.72"
+            RenderBlock {DIV} at (195,4) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-4.28"
+            RenderInline {SPAN} at (0,0) size 309x17
+              RenderText {#text} at (260,0) size 309x17
+                text run at (260,0) width 309: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,301) size 796x17
+            RenderBlock {DIV} at (0,4) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "14.75"
+            RenderBlock {DIV} at (65,4) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "309.00"
+            RenderBlock {DIV} at (130,4) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "251.39"
+            RenderBlock {DIV} at (195,4) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-8.61"
+            RenderInline {SPAN} at (0,0) size 309x17
+              RenderText {#text} at (260,0) size 309x17
+                text run at (260,0) width 309: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,318) size 796x17
+            RenderBlock {DIV} at (0,4) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "15.00"
+            RenderBlock {DIV} at (65,4) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "309.00"
+            RenderBlock {DIV} at (130,4) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "247.20"
+            RenderBlock {DIV} at (195,4) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-12.80"
+            RenderInline {SPAN} at (0,0) size 309x17
+              RenderText {#text} at (260,0) size 309x17
+                text run at (260,0) width 309: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,335) size 796x17
+            RenderBlock {DIV} at (0,4) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "15.25"
+            RenderBlock {DIV} at (65,4) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "309.00"
+            RenderBlock {DIV} at (130,4) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "243.15"
+            RenderBlock {DIV} at (195,4) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-16.85"
+            RenderInline {SPAN} at (0,0) size 309x17
+              RenderText {#text} at (260,0) size 309x17
+                text run at (260,0) width 309: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,352) size 796x19
+            RenderBlock {DIV} at (0,5) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "15.50"
+            RenderBlock {DIV} at (65,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "330.00"
+            RenderBlock {DIV} at (130,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "255.48"
+            RenderBlock {DIV} at (195,5) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-4.52"
+            RenderInline {SPAN} at (0,0) size 330x18
+              RenderText {#text} at (260,0) size 330x18
+                text run at (260,0) width 330: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,371) size 796x19
+            RenderBlock {DIV} at (0,5) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "15.75"
+            RenderBlock {DIV} at (65,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "330.00"
+            RenderBlock {DIV} at (130,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "251.43"
+            RenderBlock {DIV} at (195,5) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-8.57"
+            RenderInline {SPAN} at (0,0) size 330x18
+              RenderText {#text} at (260,0) size 330x18
+                text run at (260,0) width 330: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,390) size 796x19
+            RenderBlock {DIV} at (0,5) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "16.00"
+            RenderBlock {DIV} at (65,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "330.00"
+            RenderBlock {DIV} at (130,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "247.50"
+            RenderBlock {DIV} at (195,5) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-12.50"
+            RenderInline {SPAN} at (0,0) size 330x18
+              RenderText {#text} at (260,0) size 330x18
+                text run at (260,0) width 330: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,409) size 796x19
+            RenderBlock {DIV} at (0,5) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "16.25"
+            RenderBlock {DIV} at (65,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "330.00"
+            RenderBlock {DIV} at (130,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "243.69"
+            RenderBlock {DIV} at (195,5) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-16.31"
+            RenderInline {SPAN} at (0,0) size 330x18
+              RenderText {#text} at (260,0) size 330x18
+                text run at (260,0) width 330: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,428) size 796x20
+            RenderBlock {DIV} at (0,5) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "16.50"
+            RenderBlock {DIV} at (65,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "345.00"
+            RenderBlock {DIV} at (130,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "250.91"
+            RenderBlock {DIV} at (195,5) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-9.09"
+            RenderInline {SPAN} at (0,0) size 345x19
+              RenderText {#text} at (260,0) size 345x19
+                text run at (260,0) width 345: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,448) size 796x20
+            RenderBlock {DIV} at (0,5) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "16.75"
+            RenderBlock {DIV} at (65,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "345.00"
+            RenderBlock {DIV} at (130,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "247.16"
+            RenderBlock {DIV} at (195,5) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-12.84"
+            RenderInline {SPAN} at (0,0) size 345x19
+              RenderText {#text} at (260,0) size 345x19
+                text run at (260,0) width 345: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,468) size 796x20
+            RenderBlock {DIV} at (0,5) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "17.00"
+            RenderBlock {DIV} at (65,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "345.00"
+            RenderBlock {DIV} at (130,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "243.53"
+            RenderBlock {DIV} at (195,5) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-16.47"
+            RenderInline {SPAN} at (0,0) size 345x19
+              RenderText {#text} at (260,0) size 345x19
+                text run at (260,0) width 345: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,488) size 796x20
+            RenderBlock {DIV} at (0,5) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "17.25"
+            RenderBlock {DIV} at (65,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "345.00"
+            RenderBlock {DIV} at (130,5) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "240.00"
+            RenderBlock {DIV} at (195,5) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-20.00"
+            RenderInline {SPAN} at (0,0) size 345x19
+              RenderText {#text} at (260,0) size 345x19
+                text run at (260,0) width 345: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,508) size 796x22
+            RenderBlock {DIV} at (0,7) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "17.50"
+            RenderBlock {DIV} at (65,7) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "378.00"
+            RenderBlock {DIV} at (130,7) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "259.20"
+            RenderBlock {DIV} at (195,7) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-0.80"
+            RenderInline {SPAN} at (0,0) size 378x21
+              RenderText {#text} at (260,0) size 378x21
+                text run at (260,0) width 378: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,530) size 796x22
+            RenderBlock {DIV} at (0,7) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "17.75"
+            RenderBlock {DIV} at (65,7) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "378.00"
+            RenderBlock {DIV} at (130,7) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "255.55"
+            RenderBlock {DIV} at (195,7) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-4.45"
+            RenderInline {SPAN} at (0,0) size 378x21
+              RenderText {#text} at (260,0) size 378x21
+                text run at (260,0) width 378: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,552) size 796x22
+            RenderBlock {DIV} at (0,7) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "18.00"
+            RenderBlock {DIV} at (65,7) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "378.00"
+            RenderBlock {DIV} at (130,7) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "252.00"
+            RenderBlock {DIV} at (195,7) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-8.00"
+            RenderInline {SPAN} at (0,0) size 378x21
+              RenderText {#text} at (260,0) size 378x21
+                text run at (260,0) width 378: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,574) size 796x22
+            RenderBlock {DIV} at (0,7) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "18.25"
+            RenderBlock {DIV} at (65,7) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "378.00"
+            RenderBlock {DIV} at (130,7) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "248.55"
+            RenderBlock {DIV} at (195,7) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-11.45"
+            RenderInline {SPAN} at (0,0) size 378x21
+              RenderText {#text} at (260,0) size 378x21
+                text run at (260,0) width 378: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,596) size 796x23
+            RenderBlock {DIV} at (0,8) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "18.50"
+            RenderBlock {DIV} at (65,8) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "404.00"
+            RenderBlock {DIV} at (130,8) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "262.05"
+            RenderBlock {DIV} at (195,8) size 65x12 [color=#FF0000]
+              RenderText {#text} at (39,0) size 21x12
+                text run at (39,0) width 21: "2.05"
+            RenderInline {SPAN} at (0,0) size 404x22
+              RenderText {#text} at (260,0) size 404x22
+                text run at (260,0) width 404: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,619) size 796x23
+            RenderBlock {DIV} at (0,8) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "18.75"
+            RenderBlock {DIV} at (65,8) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "404.00"
+            RenderBlock {DIV} at (130,8) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "258.56"
+            RenderBlock {DIV} at (195,8) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-1.44"
+            RenderInline {SPAN} at (0,0) size 404x22
+              RenderText {#text} at (260,0) size 404x22
+                text run at (260,0) width 404: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,642) size 796x23
+            RenderBlock {DIV} at (0,8) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "19.00"
+            RenderBlock {DIV} at (65,8) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "404.00"
+            RenderBlock {DIV} at (130,8) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "255.16"
+            RenderBlock {DIV} at (195,8) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-4.84"
+            RenderInline {SPAN} at (0,0) size 404x22
+              RenderText {#text} at (260,0) size 404x22
+                text run at (260,0) width 404: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,665) size 796x23
+            RenderBlock {DIV} at (0,8) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "19.25"
+            RenderBlock {DIV} at (65,8) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "404.00"
+            RenderBlock {DIV} at (130,8) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "251.84"
+            RenderBlock {DIV} at (195,8) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-8.16"
+            RenderInline {SPAN} at (0,0) size 404x22
+              RenderText {#text} at (260,0) size 404x22
+                text run at (260,0) width 404: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,688) size 796x24
+            RenderBlock {DIV} at (0,9) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "19.50"
+            RenderBlock {DIV} at (65,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "416.00"
+            RenderBlock {DIV} at (130,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "256.00"
+            RenderBlock {DIV} at (195,9) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-4.00"
+            RenderInline {SPAN} at (0,0) size 416x23
+              RenderText {#text} at (260,0) size 416x23
+                text run at (260,0) width 416: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,712) size 796x24
+            RenderBlock {DIV} at (0,9) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "19.75"
+            RenderBlock {DIV} at (65,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "416.00"
+            RenderBlock {DIV} at (130,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "252.76"
+            RenderBlock {DIV} at (195,9) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-7.24"
+            RenderInline {SPAN} at (0,0) size 416x23
+              RenderText {#text} at (260,0) size 416x23
+                text run at (260,0) width 416: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,736) size 796x24
+            RenderBlock {DIV} at (0,9) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "20.00"
+            RenderBlock {DIV} at (65,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "416.00"
+            RenderBlock {DIV} at (130,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "249.60"
+            RenderBlock {DIV} at (195,9) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-10.40"
+            RenderInline {SPAN} at (0,0) size 416x23
+              RenderText {#text} at (260,0) size 416x23
+                text run at (260,0) width 416: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,760) size 796x24
+            RenderBlock {DIV} at (0,9) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "20.25"
+            RenderBlock {DIV} at (65,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "416.00"
+            RenderBlock {DIV} at (130,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "246.52"
+            RenderBlock {DIV} at (195,9) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-13.48"
+            RenderInline {SPAN} at (0,0) size 416x23
+              RenderText {#text} at (260,0) size 416x23
+                text run at (260,0) width 416: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,784) size 796x25
+            RenderBlock {DIV} at (0,9) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "20.50"
+            RenderBlock {DIV} at (65,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "441.00"
+            RenderBlock {DIV} at (130,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "258.15"
+            RenderBlock {DIV} at (195,9) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-1.85"
+            RenderInline {SPAN} at (0,0) size 441x24
+              RenderText {#text} at (260,0) size 441x24
+                text run at (260,0) width 441: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,809) size 796x25
+            RenderBlock {DIV} at (0,9) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "20.75"
+            RenderBlock {DIV} at (65,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "441.00"
+            RenderBlock {DIV} at (130,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "255.04"
+            RenderBlock {DIV} at (195,9) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-4.96"
+            RenderInline {SPAN} at (0,0) size 441x24
+              RenderText {#text} at (260,0) size 441x24
+                text run at (260,0) width 441: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,834) size 796x25
+            RenderBlock {DIV} at (0,9) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "21.00"
+            RenderBlock {DIV} at (65,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "441.00"
+            RenderBlock {DIV} at (130,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "252.00"
+            RenderBlock {DIV} at (195,9) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-8.00"
+            RenderInline {SPAN} at (0,0) size 441x24
+              RenderText {#text} at (260,0) size 441x24
+                text run at (260,0) width 441: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,859) size 796x25
+            RenderBlock {DIV} at (0,9) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "21.25"
+            RenderBlock {DIV} at (65,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "441.00"
+            RenderBlock {DIV} at (130,9) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "249.04"
+            RenderBlock {DIV} at (195,9) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-10.96"
+            RenderInline {SPAN} at (0,0) size 441x24
+              RenderText {#text} at (260,0) size 441x24
+                text run at (260,0) width 441: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,884) size 796x26
+            RenderBlock {DIV} at (0,10) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "21.50"
+            RenderBlock {DIV} at (65,10) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "457.00"
+            RenderBlock {DIV} at (130,10) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "255.07"
+            RenderBlock {DIV} at (195,10) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-4.93"
+            RenderInline {SPAN} at (0,0) size 457x25
+              RenderText {#text} at (260,0) size 457x25
+                text run at (260,0) width 457: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,910) size 796x26
+            RenderBlock {DIV} at (0,10) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "21.75"
+            RenderBlock {DIV} at (65,10) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "457.00"
+            RenderBlock {DIV} at (130,10) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "252.14"
+            RenderBlock {DIV} at (195,10) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-7.86"
+            RenderInline {SPAN} at (0,0) size 457x25
+              RenderText {#text} at (260,0) size 457x25
+                text run at (260,0) width 457: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,936) size 796x26
+            RenderBlock {DIV} at (0,10) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "22.00"
+            RenderBlock {DIV} at (65,10) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "457.00"
+            RenderBlock {DIV} at (130,10) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "249.27"
+            RenderBlock {DIV} at (195,10) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-10.73"
+            RenderInline {SPAN} at (0,0) size 457x25
+              RenderText {#text} at (260,0) size 457x25
+                text run at (260,0) width 457: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,962) size 796x26
+            RenderBlock {DIV} at (0,10) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "22.25"
+            RenderBlock {DIV} at (65,10) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "457.00"
+            RenderBlock {DIV} at (130,10) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "246.47"
+            RenderBlock {DIV} at (195,10) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-13.53"
+            RenderInline {SPAN} at (0,0) size 457x25
+              RenderText {#text} at (260,0) size 457x25
+                text run at (260,0) width 457: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,988) size 796x27
+            RenderBlock {DIV} at (0,11) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "22.50"
+            RenderBlock {DIV} at (65,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "475.00"
+            RenderBlock {DIV} at (130,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "253.33"
+            RenderBlock {DIV} at (195,11) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-6.67"
+            RenderInline {SPAN} at (0,0) size 475x26
+              RenderText {#text} at (260,0) size 475x26
+                text run at (260,0) width 475: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,1015) size 796x27
+            RenderBlock {DIV} at (0,11) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "22.75"
+            RenderBlock {DIV} at (65,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "475.00"
+            RenderBlock {DIV} at (130,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "250.55"
+            RenderBlock {DIV} at (195,11) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-9.45"
+            RenderInline {SPAN} at (0,0) size 475x26
+              RenderText {#text} at (260,0) size 475x26
+                text run at (260,0) width 475: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,1042) size 796x27
+            RenderBlock {DIV} at (0,11) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "23.00"
+            RenderBlock {DIV} at (65,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "475.00"
+            RenderBlock {DIV} at (130,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "247.83"
+            RenderBlock {DIV} at (195,11) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-12.17"
+            RenderInline {SPAN} at (0,0) size 475x26
+              RenderText {#text} at (260,0) size 475x26
+                text run at (260,0) width 475: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,1069) size 796x27
+            RenderBlock {DIV} at (0,11) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "23.25"
+            RenderBlock {DIV} at (65,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "475.00"
+            RenderBlock {DIV} at (130,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "245.16"
+            RenderBlock {DIV} at (195,11) size 65x12 [color=#FF0000]
+              RenderText {#text} at (30,0) size 30x12
+                text run at (30,0) width 30: "-14.84"
+            RenderInline {SPAN} at (0,0) size 475x26
+              RenderText {#text} at (260,0) size 475x26
+                text run at (260,0) width 475: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,1096) size 796x28
+            RenderBlock {DIV} at (0,11) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "23.50"
+            RenderBlock {DIV} at (65,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "512.00"
+            RenderBlock {DIV} at (130,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "261.45"
+            RenderBlock {DIV} at (195,11) size 65x12 [color=#FF0000]
+              RenderText {#text} at (39,0) size 21x12
+                text run at (39,0) width 21: "1.45"
+            RenderInline {SPAN} at (0,0) size 512x27
+              RenderText {#text} at (260,0) size 512x27
+                text run at (260,0) width 512: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,1124) size 796x28
+            RenderBlock {DIV} at (0,11) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "23.75"
+            RenderBlock {DIV} at (65,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "512.00"
+            RenderBlock {DIV} at (130,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "258.69"
+            RenderBlock {DIV} at (195,11) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-1.31"
+            RenderInline {SPAN} at (0,0) size 512x27
+              RenderText {#text} at (260,0) size 512x27
+                text run at (260,0) width 512: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,1152) size 796x28
+            RenderBlock {DIV} at (0,11) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "24.00"
+            RenderBlock {DIV} at (65,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "512.00"
+            RenderBlock {DIV} at (130,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "256.00"
+            RenderBlock {DIV} at (195,11) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-4.00"
+            RenderInline {SPAN} at (0,0) size 512x27
+              RenderText {#text} at (260,0) size 512x27
+                text run at (260,0) width 512: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,1180) size 796x28
+            RenderBlock {DIV} at (0,11) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "24.25"
+            RenderBlock {DIV} at (65,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "512.00"
+            RenderBlock {DIV} at (130,11) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "253.36"
+            RenderBlock {DIV} at (195,11) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-6.64"
+            RenderInline {SPAN} at (0,0) size 512x27
+              RenderText {#text} at (260,0) size 512x27
+                text run at (260,0) width 512: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,1208) size 796x29
+            RenderBlock {DIV} at (0,13) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "24.50"
+            RenderBlock {DIV} at (65,13) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "536.00"
+            RenderBlock {DIV} at (130,13) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "262.53"
+            RenderBlock {DIV} at (195,13) size 65x12 [color=#FF0000]
+              RenderText {#text} at (39,0) size 21x12
+                text run at (39,0) width 21: "2.53"
+            RenderInline {SPAN} at (0,0) size 536x28
+              RenderText {#text} at (260,0) size 536x28
+                text run at (260,0) width 536: "Amazingly few discotheques provide jukeboxes."
+          RenderBlock {DIV} at (0,1237) size 796x29
+            RenderBlock {DIV} at (0,13) size 65x13
+              RenderText {#text} at (33,0) size 27x13
+                text run at (33,0) width 27: "24.75"
+            RenderBlock {DIV} at (65,13) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "536.00"
+            RenderBlock {DIV} at (130,13) size 65x13
+              RenderText {#text} at (27,0) size 33x13
+                text run at (27,0) width 33: "259.88"
+            RenderBlock {DIV} at (195,13) size 65x12 [color=#FF0000]
+              RenderText {#text} at (36,0) size 24x12
+                text run at (36,0) width 24: "-0.12"
+            RenderInline {SPAN} at (0,0) size 536x28
+              RenderText {#text} at (260,0) size 536x28
+                text run at (260,0) width 536: "Amazingly few discotheques provide jukeboxes."
+      RenderText {#text} at (0,0) size 0x0
+      RenderText {#text} at (0,0) size 0x0

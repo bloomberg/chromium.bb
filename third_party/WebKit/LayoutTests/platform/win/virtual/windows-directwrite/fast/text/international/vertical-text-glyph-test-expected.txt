@@ -1,0 +1,22 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x598
+  RenderBlock {HTML} at (0,0) size 800x597.97
+    RenderBody {BODY} at (8,21.33) size 784x568.64
+      RenderBlock {P} at (0,0) size 784x25
+        RenderText {#text} at (0,0) size 140x24
+          text run at (0,0) width 140: "Simple text path"
+      RenderBlock (anonymous) at (0,46.33) size 784x219
+        RenderBlock {SPAN} at (0,0) size 25x213.66
+          RenderText {#text} at (0,0) size 24x214
+            text run at (0,0) width 214: "string\x{300C}\x{3042}\x{3001}\x{5909}\x{3063}\x{FF01}\x{300D}\x{3002}"
+        RenderText {#text} at (0,0) size 0x0
+      RenderBlock {HR} at (0,275.98) size 784x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {P} at (0,299.31) size 784x25
+        RenderText {#text} at (0,0) size 158x24
+          text run at (0,0) width 158: "Complex text path"
+      RenderBlock (anonymous) at (0,345.64) size 784x223
+        RenderBlock {SPAN} at (0,0) size 25x217.34
+          RenderText {#text} at (0,0) size 24x218
+            text run at (0,0) width 218: "string\x{300C}\x{3042}\x{3001}\x{5909}\x{3063}\x{FF01}\x{300D}\x{3002}"
+        RenderText {#text} at (0,0) size 0x0

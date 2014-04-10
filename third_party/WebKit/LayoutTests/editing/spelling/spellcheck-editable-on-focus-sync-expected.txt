@@ -1,15 +1,5 @@
-Spell checking should be triggered on focus of an editable. To test manually type focus above editable and textarea. Misspellings in them should be marked on focus.
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-PASS internals.markerCountForNode(findFirstTextNode(testEditable), "spelling") is 0
-PASS internals.markerCountForNode(findFirstTextNode(testEditable), "spelling") is 3
-PASS internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling") is 0
-PASS internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling") is 3
-PASS internals.markerCountForNode(findFirstTextNode(testTextField), "spelling") is 0
-PASS internals.markerCountForNode(findFirstTextNode(testTextField), "spelling") is 3
-PASS successfullyParsed is true
+CONSOLE ERROR: line 27: Uncaught SyntaxError: Illegal return statement
+FAIL successfullyParsed should be true. Was false.
 
 TEST COMPLETE
 zz zz zz.

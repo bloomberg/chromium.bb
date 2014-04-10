@@ -1,0 +1,28 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderBlock {P} at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 441x17
+          text run at (0,0) width 441: "This pixel test verifies that we position combining characters properly."
+      RenderBlock {P} at (0,34) size 784x18
+        RenderText {#text} at (0,0) size 708x17
+          text run at (0,0) width 708: "The backslash-looking mark should connect into the the character on the center, not be positioned off to the side."
+      RenderBlock {DIV} at (0,68) size 784x80
+        RenderText {#text} at (0,1) size 268x77
+          text run at (0,1) width 268: "\x{915}+\x{947} = \x{915}\x{947}"
+      RenderBlock {DIV} at (0,148) size 784x34
+        RenderText {#text} at (0,0) size 115x33
+          text run at (0,0) width 115: "\x{915}+\x{947} = \x{915}\x{947}"
+      RenderBlock {P} at (0,198) size 784x18
+        RenderText {#text} at (0,0) size 603x17
+          text run at (0,0) width 603: "The three words should be separated by spaces, and there should be no marks above the spaces."
+      RenderBlock {DIV} at (0,232) size 784x80
+        RenderText {#text} at (0,1) size 754x77
+          text run at (0,1) width 419: "\x{E40}\x{E01}\x{E21}\x{E2A}\x{E4C} \x{E1F}\x{E31}\x{E07}\x{E40}\x{E1E}\x{E25}\x{E07} "
+          text run at (419,1) width 335: "\x{E42}\x{E1B}\x{E23}\x{E42}\x{E21}\x{E17}\x{E40}\x{E27}\x{E47}\x{E1A}"
+      RenderBlock {DIV} at (0,312) size 784x34
+        RenderText {#text} at (0,0) size 325x33
+          text run at (0,0) width 180: "\x{E40}\x{E01}\x{E21}\x{E2A}\x{E4C} \x{E1F}\x{E31}\x{E07}\x{E40}\x{E1E}\x{E25}\x{E07} "
+          text run at (180,0) width 145: "\x{E42}\x{E1B}\x{E23}\x{E42}\x{E21}\x{E17}\x{E40}\x{E27}\x{E47}\x{E1A}"
