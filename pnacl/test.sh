@@ -43,10 +43,6 @@ readonly NACL_ROOT="$(pwd)"
 
 readonly DRYRUN=${DRYRUN:-false}
 
-# This is only used by Spec2K test scripts.
-readonly PNACL_LIBMODE=newlib
-export PNACL_LIBMODE
-
 source pnacl/scripts/common-tools.sh
 SetScriptPath "${NACL_ROOT}/pnacl/test.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/test-log"

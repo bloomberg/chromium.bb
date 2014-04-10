@@ -239,46 +239,42 @@ NACL_GCC_NEWLIB64=$(NNACL_NEWLIB_ROOT)/bin/x86_64-nacl-gcc \
 
 # nacl x86 gcc
 $(IT).nacl.x8632: $(SRC) $(CPPSRC)
-	$(NACL_GCC_NEWLIB32) -O0 -m32 $(CFLAGS) $^ -static -lstdc++ -lm \
-		-lnosys -o $@
+	$(NACL_GCC_NEWLIB32) -O0 -m32 $(CFLAGS) $^ -static -lstdc++ -lm -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl optimized x86 gcc
 $(IT).nacl.opt.x8632: $(SRC) $(CPPSRC)
-	$(NACL_GCC_NEWLIB32) -O3 -m32 $(CFLAGS) $^ -static -lstdc++ -lm \
-		-lnosys -o $@
+	$(NACL_GCC_NEWLIB32) -O3 -m32 $(CFLAGS) $^ -static -lstdc++ -lm -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl x86 gcc, dynamic
 $(IT).nacl.dyn.x8632: $(SRC) $(CPPSRC)
-	$(NACL_GCC) -O0 -m32 $(CFLAGS) -fPIC -g $^ -lstdc++ -lm  -lnosys -o $@
+	$(NACL_GCC) -O0 -m32 $(CFLAGS) -fPIC -g $^ -lstdc++ -lm -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl optimized x86 gcc, dynamic
 $(IT).nacl.dyn.opt.x8632: $(SRC) $(CPPSRC)
-	$(NACL_GCC) -O3 -m32 $(CFLAGS) -fPIC -g $^ -lstdc++ -lm  -lnosys -o $@
+	$(NACL_GCC) -O3 -m32 $(CFLAGS) -fPIC -g $^ -lstdc++ -lm -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl x86-64 gcc
 $(IT).nacl.x8664: $(SRC) $(CPPSRC)
-	$(NACL_GCC_NEWLIB64) -O0 -m64 $(CFLAGS) $^  -static -lstdc++ -lm \
-		-lnosys -o $@
+	$(NACL_GCC_NEWLIB64) -O0 -m64 $(CFLAGS) $^  -static -lstdc++ -lm -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl optimized x86-64 gcc
 $(IT).nacl.opt.x8664: $(SRC) $(CPPSRC)
-	$(NACL_GCC_NEWLIB64) -O3 -m64 $(CFLAGS) $^  -static -lstdc++ -lm \
-		-lnosys -o $@
+	$(NACL_GCC_NEWLIB64) -O3 -m64 $(CFLAGS) $^  -static -lstdc++ -lm -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl x86-64 gcc, dynamic
 $(IT).nacl.dyn.x8664: $(SRC) $(CPPSRC)
-	$(NACL_GCC) -O0 -m64 $(CFLAGS) -fPIC -g $^ -lstdc++ -lm  -lnosys -o $@
+	$(NACL_GCC) -O0 -m64 $(CFLAGS) -fPIC -g $^ -lstdc++ -lm -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl optimized x86-64 gcc, dynamic
 $(IT).nacl.dyn.opt.x8664: $(SRC) $(CPPSRC)
-	$(NACL_GCC) -O3 -m64 $(CFLAGS) -fPIC -g $^ -lstdc++ -lm  -lnosys -o $@
+	$(NACL_GCC) -O3 -m64 $(CFLAGS) -fPIC -g $^ -lstdc++ -lm -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 ######################################################################
@@ -310,11 +306,6 @@ PNACL_FINALIZE=$(PNACL_BIN)/pnacl-finalize
 PNACL_FLAGS=--pnacl-driver-verbose
 
 PNACL_FLAGS_COMMON=$(PNACL_FLAGS) $(CFLAGS)
-ifeq ($(PNACL_LIBMODE), newlib)
-  PNACL_EXTRA_LIB=-lnosys
-else
-  PNACL_EXTRA_LIB=
-endif
 
 %.bc: %.c
 	$(PNACL_CC) -O0 $(PNACL_FLAGS_COMMON) $< -c -o $@
@@ -327,8 +318,7 @@ endif
 	$(PNACL_CXX) -O3 $(PNACL_FLAGS_COMMON) $< -c -o $@
 
 $(IT).unopt.pexe: $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc)
-	$(PNACL_CXX) -O0  $(PNACL_FLAGS_COMMON) $^ \
-	-static -lm $(PNACL_EXTRA_LIB)  -o $@
+	$(PNACL_CXX) -O0  $(PNACL_FLAGS_COMMON) $^ -static -lm -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 $(IT).unopt.stripped.pexe: $(IT).unopt.pexe
@@ -336,8 +326,7 @@ $(IT).unopt.stripped.pexe: $(IT).unopt.pexe
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 $(IT).opt.pexe: $(SRC:%.c=%.o3.bc) $(CPPSRC:%.cc=%.o3.bc)
-	$(PNACL_CXX) -O3 $(PNACL_FLAGS_COMMON) $^ -static -lm \
-	$(PNACL_EXTRA_LIB) -o $@
+	$(PNACL_CXX) -O3 $(PNACL_FLAGS_COMMON) $^ -static -lm -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 $(IT).opt.stripped.pexe: $(IT).opt.pexe

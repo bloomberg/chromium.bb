@@ -55,7 +55,6 @@ export COMPILE_REPEATER="$(pwd)/compile_repeater.sh"
 export SPEC_RUN_REPETITIONS=${SPEC_RUN_REPETITIONS:-1}
 export SPEC_COMPILE_REPETITIONS=${SPEC_COMPILE_REPETITIONS:-1}
 
-export PNACL_LIBMODE=${PNACL_LIBMODE:-newlib}
 export DASHDASH=""
 
 ######################################################################
@@ -727,7 +726,6 @@ BuildBenchmarks() {
          COMPILE_REPEATER="${COMPILE_REPEATER}" \
          SCONS_BUILD_PLATFORM=${SCONS_BUILD_PLATFORM} \
          BUILD_ARCH_SHORT=${BUILD_ARCH_SHORT} \
-         PNACL_LIBMODE=${PNACL_LIBMODE} \
          ${i#*.}.${SUFFIX}
     cd ..
   done
