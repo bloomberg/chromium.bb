@@ -72,13 +72,19 @@ void MediaDecoderJob::OnDataReceived(const DemuxerData& data) {
   is_requesting_demuxer_data_ = false;
 
   base::Closure done_cb = base::ResetAndReturn(&on_data_received_cb_);
+
+  // If this data request is for the inactive chunk, or |on_data_received_cb_|
+  // was set to null by ClearData() or Release(), do nothing.
+  if (done_cb.is_null())
+    return;
+
   if (stop_decode_pending_) {
+    DCHECK(is_decoding());
     OnDecodeCompleted(MEDIA_CODEC_STOPPED, kNoTimestamp(), 0);
     return;
   }
 
-  if (!done_cb.is_null())
-    done_cb.Run();
+  done_cb.Run();
 }
 
 void MediaDecoderJob::Prefetch(const base::Closure& prefetch_cb) {
