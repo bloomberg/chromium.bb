@@ -41,6 +41,9 @@ class CC_EXPORT PictureLayer : public Layer {
   ContentLayerClient* client() { return client_; }
 
   void SetHasGpuRasterizationHint(bool has_hint);
+  bool ShouldUseGpuRasterization() const;
+
+  PicturePile* GetPicturePileForTesting() const { return pile_.get(); }
 
  protected:
   explicit PictureLayer(ContentLayerClient* client);
@@ -57,7 +60,9 @@ class CC_EXPORT PictureLayer : public Layer {
   Region pile_invalidation_;
   gfx::Rect last_updated_visible_content_rect_;
   bool is_mask_;
-  bool has_gpu_rasterization_hint_;
+
+  enum TriBool { TRIBOOL_UNKNOWN, TRIBOOL_FALSE, TRIBOOL_TRUE };
+  TriBool has_gpu_rasterization_hint_;
 
   int update_source_frame_number_;
 

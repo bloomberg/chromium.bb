@@ -20,7 +20,7 @@ PictureLayer::PictureLayer(ContentLayerClient* client)
       pile_(make_scoped_refptr(new PicturePile())),
       instrumentation_object_tracker_(id()),
       is_mask_(false),
-      has_gpu_rasterization_hint_(false),
+      has_gpu_rasterization_hint_(TRIBOOL_UNKNOWN),
       update_source_frame_number_(-1) {}
 
 PictureLayer::~PictureLayer() {
@@ -50,7 +50,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   }
 
   layer_impl->SetIsMask(is_mask_);
-  layer_impl->SetHasGpuRasterizationHint(has_gpu_rasterization_hint_);
+  layer_impl->SetUseGpuRasterization(ShouldUseGpuRasterization());
 
   // Unlike other properties, invalidation must always be set on layer_impl.
   // See PictureLayerImpl::PushPropertiesTo for more details.
@@ -138,11 +138,37 @@ void PictureLayer::SetIsMask(bool is_mask) {
 }
 
 void PictureLayer::SetHasGpuRasterizationHint(bool has_hint) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (has_gpu_rasterization_hint_ == has_hint)
-    return;
-  has_gpu_rasterization_hint_ = has_hint;
-  SetNeedsCommit();
+  switch (has_gpu_rasterization_hint_) {
+    case TRIBOOL_UNKNOWN:  // Fall-through.
+    case TRIBOOL_TRUE:
+      has_gpu_rasterization_hint_ = has_hint ? TRIBOOL_TRUE : TRIBOOL_FALSE;
+      break;
+    case TRIBOOL_FALSE:
+      // GPU rasterization cannot be enabled once disabled.
+      // This is done to prevent frequent invalidations and visual flashing.
+      break;
+    default:
+      NOTREACHED();
+  }
+  // No need to set needs commit or push-properties.
+  // If only the hint changes and the layer is still valid, there is no need
+  // to invalidate the rasterization for the whole layer. If there is an
+  // invalidation (current or future) we will re-raster everything so that it
+  // is consistent across the layer.
+}
+
+bool PictureLayer::ShouldUseGpuRasterization() const {
+  switch (layer_tree_host()->settings().rasterization_site) {
+    case LayerTreeSettings::CpuRasterization:
+      return false;
+    case LayerTreeSettings::HybridRasterization:
+      return has_gpu_rasterization_hint_ == TRIBOOL_TRUE &&
+             pile_->is_suitable_for_gpu_rasterization();
+    case LayerTreeSettings::GpuRasterization:
+      return true;
+  }
+  NOTREACHED();
+  return false;
 }
 
 bool PictureLayer::SupportsLCDText() const {

@@ -10,6 +10,8 @@
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
+#include "cc/test/gpu_rasterization_settings.h"
+#include "cc/test/hybrid_rasterization_settings.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -65,6 +67,87 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
     EXPECT_TRUE(layer_impl->pile()->size() == gfx::Size(0, 0));
     EXPECT_FALSE(layer_impl->pile()->HasRecordings());
   }
+}
+
+TEST(PictureLayerTest, ForcedCpuRaster) {
+  MockContentLayerClient client;
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(layer);
+
+  // The default value is false.
+  EXPECT_FALSE(layer->ShouldUseGpuRasterization());
+
+  // Gpu rasterization cannot be enabled even with raster hint.
+  layer->SetHasGpuRasterizationHint(true);
+  EXPECT_FALSE(layer->ShouldUseGpuRasterization());
+}
+
+TEST(PictureLayerTest, ForcedGpuRaster) {
+  MockContentLayerClient client;
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
+
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(GpuRasterizationSettings());
+  host->SetRootLayer(layer);
+
+  // The default value is true.
+  EXPECT_TRUE(layer->ShouldUseGpuRasterization());
+
+  // Gpu rasterization cannot be disabled even with raster hint.
+  layer->SetHasGpuRasterizationHint(false);
+  EXPECT_TRUE(layer->ShouldUseGpuRasterization());
+
+  // Gpu rasterization cannot be disabled even with skia veto.
+  PicturePile* pile = layer->GetPicturePileForTesting();
+  EXPECT_TRUE(pile->is_suitable_for_gpu_rasterization());
+  pile->SetUnsuitableForGpuRasterizationForTesting();
+  EXPECT_TRUE(layer->ShouldUseGpuRasterization());
+}
+
+TEST(PictureLayerTest, HybridRaster) {
+  MockContentLayerClient client;
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
+
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(HybridRasterizationSettings());
+  host->SetRootLayer(layer);
+
+  // The default value is false.
+  EXPECT_FALSE(layer->ShouldUseGpuRasterization());
+
+  // Gpu rasterization can be enabled first time.
+  layer->SetHasGpuRasterizationHint(true);
+  EXPECT_TRUE(layer->ShouldUseGpuRasterization());
+
+  // Gpu rasterization can always be disabled.
+  layer->SetHasGpuRasterizationHint(false);
+  EXPECT_FALSE(layer->ShouldUseGpuRasterization());
+
+  // Gpu rasterization cannot be enabled once disabled.
+  layer->SetHasGpuRasterizationHint(true);
+  EXPECT_FALSE(layer->ShouldUseGpuRasterization());
+}
+
+TEST(PictureLayerTest, VetoGpuRaster) {
+  MockContentLayerClient client;
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
+
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(HybridRasterizationSettings());
+  host->SetRootLayer(layer);
+
+  EXPECT_FALSE(layer->ShouldUseGpuRasterization());
+
+  layer->SetHasGpuRasterizationHint(true);
+  EXPECT_TRUE(layer->ShouldUseGpuRasterization());
+
+  // Veto gpu rasterization.
+  PicturePile* pile = layer->GetPicturePileForTesting();
+  EXPECT_TRUE(pile->is_suitable_for_gpu_rasterization());
+  pile->SetUnsuitableForGpuRasterizationForTesting();
+  EXPECT_FALSE(layer->ShouldUseGpuRasterization());
 }
 
 }  // namespace

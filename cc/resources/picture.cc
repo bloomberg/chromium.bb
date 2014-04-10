@@ -197,6 +197,19 @@ Picture* Picture::GetCloneForDrawingOnThread(unsigned thread_index) {
   return thread_index == clones_.size() ? this : clones_[thread_index].get();
 }
 
+bool Picture::IsSuitableForGpuRasterization() const {
+  DCHECK(picture_);
+
+  // TODO(alokp): SkPicture::suitableForGpuRasterization needs a GrContext.
+  // Ideally this GrContext should be the same as that for rasterizing this
+  // picture. But we are on the main thread while the rasterization context
+  // may be on the compositor or raster thread.
+  // SkPicture::suitableForGpuRasterization is not implemented yet.
+  // Pass a NULL context for now and discuss with skia folks if the context
+  // is really needed.
+  return picture_->suitableForGpuRasterization(NULL);
+}
+
 void Picture::CloneForDrawing(int num_threads) {
   TRACE_EVENT1("cc", "Picture::CloneForDrawing", "num_threads", num_threads);
 

@@ -37,11 +37,20 @@ class CC_EXPORT PicturePile : public PicturePileBase {
     show_debug_picture_borders_ = show;
   }
 
+  bool is_suitable_for_gpu_rasterization() const {
+    return is_suitable_for_gpu_rasterization_;
+  }
+  void SetUnsuitableForGpuRasterizationForTesting() {
+    is_suitable_for_gpu_rasterization_ = false;
+  }
+
  protected:
   virtual ~PicturePile();
 
  private:
   friend class PicturePileImpl;
+
+  bool is_suitable_for_gpu_rasterization_;
 
   DISALLOW_COPY_AND_ASSIGN(PicturePile);
 };

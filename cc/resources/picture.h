@@ -70,6 +70,8 @@ class CC_EXPORT Picture
   // Has Record() been called yet?
   bool HasRecording() const { return picture_.get() != NULL; }
 
+  bool IsSuitableForGpuRasterization() const;
+
   // Apply this scale and raster the negated region into the canvas. See comment
   // in PicturePileImpl::RasterCommon for explanation on negated content region.
   int Raster(SkCanvas* canvas,
