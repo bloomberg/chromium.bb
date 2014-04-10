@@ -680,7 +680,7 @@ void MessageLoopForUI::RemoveObserver(Observer* observer) {
 }
 #endif  //  !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_ANDROID)
 
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) && !defined(OS_NACL)
 bool MessageLoopForUI::WatchFileDescriptor(
     int fd,
     bool persistent,
