@@ -1381,6 +1381,10 @@
               'cert/jwk_serializer_nss.cc',
               'cert/nss_cert_database.cc',
               'cert/nss_cert_database.h',
+              'cert/nss_cert_database_chromeos.cc',
+              'cert/nss_cert_database_chromeos.h',
+              'cert/nss_profile_filter_chromeos.cc',
+              'cert/nss_profile_filter_chromeos.h',
               'cert/scoped_nss_types.h',
               'cert/test_root_certs_nss.cc',
               'cert/x509_certificate_nss.cc',
@@ -1519,6 +1523,8 @@
               'cert/cert_verify_proc_nss.h',
               'ssl/client_cert_store_nss.cc',
               'ssl/client_cert_store_nss.h',
+              'ssl/client_cert_store_chromeos.cc',
+              'ssl/client_cert_store_chromeos.h',
             ],
         }],
         [ 'enable_websockets != 1', {
@@ -2199,6 +2205,7 @@
         [ 'use_nss != 1', {
           'sources!': [
             'ssl/client_cert_store_nss_unittest.cc',
+            'ssl/client_cert_store_chromeos_unittest.cc',
           ],
         }],
         [ 'use_openssl == 1', {
@@ -2263,6 +2270,8 @@
               'cert/ct_objects_extractor_unittest.cc',
               'cert/multi_log_ct_verifier_unittest.cc',
               'cert/nss_cert_database_unittest.cc',
+              'cert/nss_cert_database_chromeos_unittest.cc',
+              'cert/nss_profile_filter_chromeos_unittest.cc',
               'cert/x509_util_nss_unittest.cc',
               'quic/test_tools/crypto_test_utils_nss.cc',
             ],

@@ -31,8 +31,8 @@ class KeygenHandlerTest : public ::testing::Test {
   virtual ~KeygenHandlerTest() {}
 
   virtual void SetUp() {
-#if defined(OS_CHROMEOS)
-  crypto::OpenPersistentNSSDB();
+#if defined(OS_CHROMEOS) && defined(USE_NSS)
+    crypto::OpenPersistentNSSDB();
 #endif
   }
 };
