@@ -122,8 +122,10 @@ bool ManagedModeWarningInfoBarDelegate::ShouldExpire(
 }
 
 void ManagedModeWarningInfoBarDelegate::InfoBarDismissed() {
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
   ManagedModeNavigationObserver::FromWebContents(
-      web_contents())->WarnInfoBarDismissed();
+      web_contents)->WarnInfoBarDismissed();
 }
 
 base::string16 ManagedModeWarningInfoBarDelegate::GetMessageText() const {
@@ -146,7 +148,7 @@ bool ManagedModeWarningInfoBarDelegate::Accept() {
   // http://crbug.com/313377
   NOTIMPLEMENTED();
 #else
-  GoBackToSafety(web_contents());
+  GoBackToSafety(InfoBarService::WebContentsFromInfoBar(infobar()));
 #endif
 
   return false;

@@ -57,6 +57,10 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
     height_ = InfoBar::kDefaultBarTargetHeight;
 }
 
+content::WebContents* ExtensionInfoBarDelegate::GetWebContents() {
+  return InfoBarService::WebContentsFromInfoBar(infobar());
+}
+
 // ExtensionInfoBarDelegate::CreateInfoBar() is implemented in platform-specific
 // files.
 

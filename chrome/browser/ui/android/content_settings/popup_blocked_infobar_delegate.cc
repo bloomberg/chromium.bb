@@ -99,8 +99,10 @@ bool PopupBlockedInfoBarDelegate::Accept() {
       url_, url_, CONTENT_SETTINGS_TYPE_POPUPS, CONTENT_SETTING_ALLOW);
 
   // Launch popups.
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
   PopupBlockerTabHelper* popup_blocker_helper =
-      PopupBlockerTabHelper::FromWebContents(web_contents());
+      PopupBlockerTabHelper::FromWebContents(web_contents);
   DCHECK(popup_blocker_helper);
   PopupBlockerTabHelper::PopupIdMap blocked_popups =
       popup_blocker_helper->GetBlockedPopupRequests();

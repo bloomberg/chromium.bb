@@ -89,7 +89,8 @@ void AutoLoginInfoBarDelegateAndroid::LoginSuccess(JNIEnv* env,
 
   // TODO(miguelg): Test whether the Stop() and RemoveInfoBar() calls here are
   // necessary, or whether OpenURL() will do this for us.
-  content::WebContents* contents = web_contents();
+  content::WebContents* contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
   contents->Stop();
   infobar()->RemoveSelf();
   // WARNING: |this| may be deleted at this point!  Do not access any members!
@@ -106,8 +107,8 @@ void AutoLoginInfoBarDelegateAndroid::LoginFailed(JNIEnv* env, jobject obj) {
   // TODO(miguelg): Using SimpleAlertInfoBarDelegate::Create() animates in a new
   // infobar while we animate the current one closed.  It would be better to use
   // ReplaceInfoBar().
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(
+      InfoBarService::WebContentsFromInfoBar(infobar()));
   DCHECK(infobar_service);
   SimpleAlertInfoBarDelegate::Create(
       infobar_service, IDR_INFOBAR_WARNING,

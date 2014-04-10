@@ -144,6 +144,9 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   bool ShouldShowNeverTranslateShortcut();
   bool ShouldShowAlwaysTranslateShortcut();
 
+  // Returns the WebContents associated with the TranslateInfoBarDelegate.
+  content::WebContents* GetWebContents();
+
   // Convenience method that returns the displayable language name for
   // |language_code| in the current application locale.
   static base::string16 GetLanguageDisplayableName(

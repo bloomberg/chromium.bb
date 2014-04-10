@@ -210,15 +210,19 @@ base::string16 AutoLoginInfoBarDelegate::GetButtonLabel(
 
 bool AutoLoginInfoBarDelegate::Accept() {
   // AutoLoginRedirector deletes itself.
-  new AutoLoginRedirector(web_contents(), params_.header.args);
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
+  new AutoLoginRedirector(web_contents, params_.header.args);
   RecordHistogramAction(ACCEPTED);
   button_pressed_ = true;
   return true;
 }
 
 bool AutoLoginInfoBarDelegate::Cancel() {
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
   PrefService* pref_service = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext())->GetPrefs();
+      web_contents->GetBrowserContext())->GetPrefs();
   pref_service->SetBoolean(prefs::kAutologinEnabled, false);
   RecordHistogramAction(REJECTED);
   button_pressed_ = true;

@@ -58,7 +58,8 @@ void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
     new_search_url = search_url_.ReplaceComponents(replacements);
   }
 
-  content::WebContents* contents = web_contents();
+  content::WebContents* contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
   infobar()->RemoveSelf();
   // WARNING: |this| may be deleted at this point!  Do not access any members!
 
@@ -106,13 +107,14 @@ base::string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
 
 bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  web_contents()->OpenURL(content::OpenURLParams(
-      google_util::AppendGoogleLocaleParam(GURL(
-          "https://www.google.com/support/chrome/bin/answer.py?"
-          "answer=1618699")),
-      content::Referrer(),
-      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false));
+  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
+      content::OpenURLParams(
+          google_util::AppendGoogleLocaleParam(GURL(
+              "https://www.google.com/support/chrome/bin/answer.py?"
+              "answer=1618699")),
+          content::Referrer(),
+          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+          content::PAGE_TRANSITION_LINK, false));
   return false;
 }
 

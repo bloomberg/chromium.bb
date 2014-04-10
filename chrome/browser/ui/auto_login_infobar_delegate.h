@@ -15,6 +15,7 @@ class Profile;
 
 namespace content {
 class NavigationController;
+class WebContents;
 }
 
 // This is the actual infobar displayed to prompt the user to auto-login.

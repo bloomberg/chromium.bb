@@ -115,10 +115,12 @@ bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   content::RecordAction(
       base::UserMetricsAction("RegisterProtocolHandler.InfoBar_LearnMore"));
-  web_contents()->OpenURL(content::OpenURLParams(
-      GURL(chrome::kLearnMoreRegisterProtocolHandlerURL), content::Referrer(),
-      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false));
+  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
+      content::OpenURLParams(
+          GURL(chrome::kLearnMoreRegisterProtocolHandlerURL),
+          content::Referrer(),
+          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+          content::PAGE_TRANSITION_LINK, false));
   return false;
 }
 

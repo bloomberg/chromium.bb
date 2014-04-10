@@ -13,6 +13,10 @@
 class Browser;
 class GURL;
 
+namespace content {
+class WebContents;
+}
+
 namespace extensions {
 class Extension;
 class ExtensionViewHost;
@@ -40,6 +44,9 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   int height() { return height_; }
 
   bool closing() const { return closing_; }
+
+  // Returns the WebContents associated with the ExtensionInfoBarDelegate.
+  content::WebContents* GetWebContents();
 
  private:
   ExtensionInfoBarDelegate(Browser* browser,

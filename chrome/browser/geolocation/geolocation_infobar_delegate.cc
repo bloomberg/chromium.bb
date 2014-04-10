@@ -113,9 +113,11 @@ bool GeolocationInfoBarDelegate::Accept() {
 
 void GeolocationInfoBarDelegate::SetPermission(bool update_content_setting,
                                                bool allowed) {
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
   controller_->OnPermissionSet(
         id_, requesting_frame_,
-        web_contents()->GetLastCommittedURL().GetOrigin(),
+        web_contents->GetLastCommittedURL().GetOrigin(),
         update_content_setting, allowed);
 }
 
@@ -175,10 +177,11 @@ bool GeolocationInfoBarDelegate::LinkClicked(
       "https://www.google.com/support/chrome/bin/answer.py?answer=142065";
 #endif
 
-  web_contents()->OpenURL(content::OpenURLParams(
-      google_util::AppendGoogleLocaleParam(GURL(kGeolocationLearnMoreUrl)),
-      content::Referrer(),
-      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false));
+  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
+      content::OpenURLParams(
+          google_util::AppendGoogleLocaleParam(GURL(kGeolocationLearnMoreUrl)),
+          content::Referrer(),
+          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+          content::PAGE_TRANSITION_LINK, false));
   return false;  // Do not dismiss the info bar.
 }

@@ -43,10 +43,11 @@ base::string16 GoogleApiKeysInfoBarDelegate::GetLinkText() const {
 
 bool GoogleApiKeysInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  web_contents()->OpenURL(content::OpenURLParams(
-      GURL("http://www.chromium.org/developers/how-tos/api-keys"),
-      content::Referrer(),
-      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false));
+  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
+      content::OpenURLParams(
+          GURL("http://www.chromium.org/developers/how-tos/api-keys"),
+          content::Referrer(),
+          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+          content::PAGE_TRANSITION_LINK, false));
   return false;
 }

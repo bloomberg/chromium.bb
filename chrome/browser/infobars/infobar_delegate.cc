@@ -95,9 +95,13 @@ TranslateInfoBarDelegate* InfoBarDelegate::AsTranslateInfoBarDelegate() {
 }
 
 void InfoBarDelegate::StoreActiveEntryUniqueID() {
-  DCHECK(web_contents());
+  // TODO(droger): Remove this dependency on InfoBarService, see
+  // http://crbug.com/354379.
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
+  DCHECK(web_contents);
   NavigationEntry* active_entry =
-      web_contents()->GetController().GetActiveEntry();
+      web_contents->GetController().GetActiveEntry();
   contents_unique_id_ = active_entry ? active_entry->GetUniqueID() : 0;
 }
 
@@ -105,10 +109,6 @@ gfx::Image InfoBarDelegate::GetIcon() const {
   int icon_id = GetIconID();
   return (icon_id == kNoIconID) ? gfx::Image() :
       ResourceBundle::GetSharedInstance().GetNativeImageNamed(icon_id);
-}
-
-content::WebContents* InfoBarDelegate::web_contents() {
-  return InfoBarService::WebContentsFromInfoBar(infobar_);
 }
 
 InfoBarDelegate::InfoBarDelegate() : contents_unique_id_(0) {

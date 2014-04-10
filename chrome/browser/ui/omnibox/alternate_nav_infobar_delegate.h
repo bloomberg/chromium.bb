@@ -9,6 +9,10 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 
+namespace content {
+class WebContents;
+}
+
 class AlternateNavInfoBarDelegate : public InfoBarDelegate {
  public:
   virtual ~AlternateNavInfoBarDelegate();

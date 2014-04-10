@@ -91,13 +91,15 @@ bool InsecureContentInfoBarDelegate::Cancel() {
       (type_ == DISPLAY) ? DISPLAY_USER_OVERRIDE : RUN_USER_OVERRIDE,
       NUM_EVENTS);
 
-  web_contents()->SendToAllFrames((type_ == DISPLAY) ?
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
+  web_contents->SendToAllFrames((type_ == DISPLAY) ?
       static_cast<IPC::Message*>(
           new ChromeViewMsg_SetAllowDisplayingInsecureContent(MSG_ROUTING_NONE,
                                                               true)) :
       new ChromeViewMsg_SetAllowRunningInsecureContent(MSG_ROUTING_NONE, true));
-  web_contents()->GetMainFrame()->Send(new ChromeViewMsg_ReloadFrame(
-      web_contents()->GetMainFrame()->GetRoutingID()));
+  web_contents->GetMainFrame()->Send(new ChromeViewMsg_ReloadFrame(
+      web_contents->GetMainFrame()->GetRoutingID()));
   return true;
 }
 
@@ -107,11 +109,13 @@ base::string16 InsecureContentInfoBarDelegate::GetLinkText() const {
 
 bool InsecureContentInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  web_contents()->OpenURL(content::OpenURLParams(
-      google_util::AppendGoogleLocaleParam(GURL("https://www.google.com/"
-          "support/chrome/bin/answer.py?answer=1342714")),
-      content::Referrer(),
-      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false));
+  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
+      content::OpenURLParams(
+          google_util::AppendGoogleLocaleParam(GURL(
+              "https://www.google.com/"
+              "support/chrome/bin/answer.py?answer=1342714")),
+          content::Referrer(),
+          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+          content::PAGE_TRANSITION_LINK, false));
   return false;
 }

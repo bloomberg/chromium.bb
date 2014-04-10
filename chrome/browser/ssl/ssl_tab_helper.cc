@@ -118,8 +118,10 @@ base::string16 SSLCertResultInfoBarDelegate::GetButtonLabel(
 }
 
 bool SSLCertResultInfoBarDelegate::Accept() {
-  ShowCertificateViewer(web_contents(),
-                        web_contents()->GetView()->GetTopLevelNativeWindow(),
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
+  ShowCertificateViewer(web_contents,
+                        web_contents->GetView()->GetTopLevelNativeWindow(),
                         cert_.get());
   return false;  // Hiding the infobar just as the dialog opens looks weird.
 }

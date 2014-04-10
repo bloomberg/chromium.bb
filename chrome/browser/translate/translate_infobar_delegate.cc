@@ -133,7 +133,7 @@ void TranslateInfoBarDelegate::RevertTranslation() {
 
 void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
   TranslateManager* manager =
-      TranslateTabHelper::GetManagerFromWebContents(web_contents());
+      TranslateTabHelper::GetManagerFromWebContents(GetWebContents());
   if (!manager)
     return;
   manager->ReportLanguageDetectionError();
@@ -145,7 +145,7 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
 
 bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() {
   Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+      Profile::FromBrowserContext(GetWebContents()->GetBrowserContext());
   Profile* original_profile = profile->GetOriginalProfile();
   scoped_ptr<TranslatePrefs> translate_prefs(
       TranslateTabHelper::CreateTranslatePrefs(original_profile->GetPrefs()));
@@ -255,7 +255,7 @@ void TranslateInfoBarDelegate::MessageInfoBarButtonPressed() {
   }
   // This is the "Try again..." case.
   TranslateManager* manager =
-      TranslateTabHelper::GetManagerFromWebContents(web_contents());
+      TranslateTabHelper::GetManagerFromWebContents(GetWebContents());
   DCHECK(manager);
   manager->TranslatePage(
       original_language_code(), target_language_code(), false);
@@ -267,16 +267,20 @@ bool TranslateInfoBarDelegate::ShouldShowMessageInfoBarButton() {
 
 bool TranslateInfoBarDelegate::ShouldShowNeverTranslateShortcut() {
   DCHECK_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE, step_);
-  return !web_contents()->GetBrowserContext()->IsOffTheRecord() &&
+  return !GetWebContents()->GetBrowserContext()->IsOffTheRecord() &&
       (prefs_->GetTranslationDeniedCount(original_language_code()) >=
           kNeverTranslateMinCount);
 }
 
 bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateShortcut() {
   DCHECK_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE, step_);
-  return !web_contents()->GetBrowserContext()->IsOffTheRecord() &&
+  return !GetWebContents()->GetBrowserContext()->IsOffTheRecord() &&
       (prefs_->GetTranslationAcceptedCount(original_language_code()) >=
           kAlwaysTranslateMinCount);
+}
+
+content::WebContents* TranslateInfoBarDelegate::GetWebContents() {
+  return InfoBarService::WebContentsFromInfoBar(infobar());
 }
 
 // static

@@ -93,6 +93,8 @@ bool MidiPermissionInfoBarDelegate::Cancel() {
 
 void MidiPermissionInfoBarDelegate::SetPermission(bool update_content_setting,
                                                   bool allowed) {
-  controller_->OnPermissionSet(id_, requesting_frame_, web_contents()->GetURL(),
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
+  controller_->OnPermissionSet(id_, requesting_frame_, web_contents->GetURL(),
                                update_content_setting, allowed);
 }
