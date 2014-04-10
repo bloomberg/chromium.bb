@@ -358,22 +358,26 @@ static ContainerNode* nextTraversingShadowTree(const ContainerNode& node, const 
     if (ShadowRoot* shadowRoot = authorShadowRootOf(node))
         return shadowRoot;
 
-    if (Element* next = ElementTraversal::next(node, rootNode))
-        return next;
+    const ContainerNode* current = &node;
+    while (current) {
+        if (Element* next = ElementTraversal::next(*current, rootNode))
+            return next;
 
-    if (!node.isInShadowTree())
-        return 0;
+        if (!current->isInShadowTree())
+            return 0;
 
-    ShadowRoot* shadowRoot = node.containingShadowRoot();
-    if (shadowRoot == rootNode)
-        return 0;
-    if (ShadowRoot* youngerShadowRoot = shadowRoot->youngerShadowRoot()) {
-        // Should not obtain any elements in user-agent shadow root.
-        ASSERT(youngerShadowRoot->type() == ShadowRoot::AuthorShadowRoot);
-        return youngerShadowRoot;
+        ShadowRoot* shadowRoot = current->containingShadowRoot();
+        if (shadowRoot == rootNode)
+            return 0;
+        if (ShadowRoot* youngerShadowRoot = shadowRoot->youngerShadowRoot()) {
+            // Should not obtain any elements in user-agent shadow root.
+            ASSERT(youngerShadowRoot->type() == ShadowRoot::AuthorShadowRoot);
+            return youngerShadowRoot;
+        }
+
+        current = shadowRoot->host();
     }
-    Element* shadowHost = shadowRoot->host();
-    return ElementTraversal::next(*shadowHost, rootNode);
+    return 0;
 }
 
 template <typename SelectorQueryTrait>
