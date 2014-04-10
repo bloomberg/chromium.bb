@@ -269,7 +269,7 @@ private:
     template <StyleResolver::StyleApplicationPass pass>
     static inline bool isPropertyForPass(CSSPropertyID);
     template <StyleApplicationPass pass>
-    void applyMatchedProperties(StyleResolverState&, const MatchResult&, bool important, const RuleRange&, bool inheritedOnly);
+    void applyMatchedProperties(StyleResolverState&, const MatchResult&, bool important, int startIndex, int endIndex, bool inheritedOnly);
     template <StyleApplicationPass pass>
     void applyProperties(StyleResolverState&, const StylePropertySet* properties, StyleRule*, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
     template <StyleApplicationPass pass>

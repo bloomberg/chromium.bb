@@ -33,58 +33,23 @@ namespace WebCore {
 class StylePropertySet;
 class StyleRule;
 
-class RuleRange {
-public:
-    RuleRange() :  m_firstRuleIndex(-1), m_lastRuleIndex(-1) { }
-    RuleRange(int firstRuleIndex, int lastRuleIndex) : m_firstRuleIndex(firstRuleIndex), m_lastRuleIndex(lastRuleIndex) { }
-
-    int first() const { return m_firstRuleIndex; }
-    int last() const { return m_lastRuleIndex; }
-
-    bool collapsed() const { return m_firstRuleIndex == -1; }
-
-    void setLast(int position) { m_lastRuleIndex = position; }
-
-    void shiftLast(int position)
-    {
-        m_lastRuleIndex = position;
-        if (m_firstRuleIndex == -1)
-            m_firstRuleIndex = position;
-    }
-
-    void shiftLastByOne()
-    {
-        ++m_lastRuleIndex;
-        if (m_firstRuleIndex == -1)
-            m_firstRuleIndex = m_lastRuleIndex;
-    }
-
-private:
-    int m_firstRuleIndex;
-    int m_lastRuleIndex;
+struct RuleRange {
+    RuleRange(int& firstRuleIndex, int& lastRuleIndex): firstRuleIndex(firstRuleIndex), lastRuleIndex(lastRuleIndex) { }
+    int& firstRuleIndex;
+    int& lastRuleIndex;
 };
 
-inline bool operator==(const RuleRange& a, const RuleRange& b)
-{
-    return a.first() == b.first() && a.last() == b.last();
-}
-
-class MatchRanges {
-public:
-    MatchRanges() { }
-
-    RuleRange& UARuleRange() { return m_uaRuleRange; }
-    RuleRange& authorRuleRange() { return m_authorRuleRange; }
-    RuleRange& userRuleRange() { return m_userRuleRange; }
-
-    const RuleRange& UARuleRange() const { return m_uaRuleRange; }
-    const RuleRange& authorRuleRange() const { return m_authorRuleRange; }
-    const RuleRange& userRuleRange() const { return m_userRuleRange; }
-
-private:
-    RuleRange m_uaRuleRange;
-    RuleRange m_authorRuleRange;
-    RuleRange m_userRuleRange;
+struct MatchRanges {
+    MatchRanges() : firstUARule(-1), lastUARule(-1), firstAuthorRule(-1), lastAuthorRule(-1), firstUserRule(-1), lastUserRule(-1) { }
+    int firstUARule;
+    int lastUARule;
+    int firstAuthorRule;
+    int lastAuthorRule;
+    int firstUserRule;
+    int lastUserRule;
+    RuleRange UARuleRange() { return RuleRange(firstUARule, lastUARule); }
+    RuleRange authorRuleRange() { return RuleRange(firstAuthorRule, lastAuthorRule); }
+    RuleRange userRuleRange() { return RuleRange(firstUserRule, lastUserRule); }
 };
 
 struct MatchedProperties {
@@ -116,7 +81,12 @@ public:
 
 inline bool operator==(const MatchRanges& a, const MatchRanges& b)
 {
-    return a.UARuleRange() == b.UARuleRange() && a.authorRuleRange() == b.authorRuleRange() && a.userRuleRange() == b.userRuleRange();
+    return a.firstUARule == b.firstUARule
+        && a.lastUARule == b.lastUARule
+        && a.firstAuthorRule == b.firstAuthorRule
+        && a.lastAuthorRule == b.lastAuthorRule
+        && a.firstUserRule == b.firstUserRule
+        && a.lastUserRule == b.lastUserRule;
 }
 
 inline bool operator!=(const MatchRanges& a, const MatchRanges& b)

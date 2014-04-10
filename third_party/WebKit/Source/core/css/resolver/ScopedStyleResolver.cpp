@@ -132,9 +132,10 @@ void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& colle
         behaviorAtBoundary |= SelectorChecker::ScopeIsShadowHost;
     }
 
+    RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
         MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, scopingNode, m_authorStyleSheets[i], applyAuthorStyles, i);
-        collector.collectMatchingRules(matchRequest, collector.matchedResult().ranges.authorRuleRange(), static_cast<SelectorChecker::BehaviorAtBoundary>(behaviorAtBoundary), cascadeScope, cascadeOrder);
+        collector.collectMatchingRules(matchRequest, ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(behaviorAtBoundary), cascadeScope, cascadeOrder);
     }
 }
 
