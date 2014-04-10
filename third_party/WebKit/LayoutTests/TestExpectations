@@ -1071,3 +1071,5 @@ crbug.com/361795 [ Mac ] compositing/overflow/paint-neg-z-order-descendants-into
 crbug.com/361795 [ Mac ] virtual/gpu/compositedscrolling/overflow/paint-neg-z-order-descendants-into-scrolling-contents-layer.html [ ImageOnlyFailure ]
 crbug.com/361795 [ Mac ] virtual/gpu/compositedscrolling/overflow/scroll-ancestor-update.html [ ImageOnlyFailure ]
 crbug.com/361795 [ Mac ] virtual/gpu/compositedscrolling/overflow/image-load-overflow-scrollbars.html [ ImageOnlyFailure Pass ]
+
+crbug.com/361987 [ Win Linux ] virtual/softwarecompositing/layer-creation/translatez-removed.html [ Failure ]
