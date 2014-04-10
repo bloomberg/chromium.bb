@@ -310,6 +310,7 @@ class BluetoothDetailedView : public TrayDetailsView,
     HoverHighlightView* container = new HoverHighlightView(this);
     container->AddLabel(
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BLUETOOTH_MANAGE_DEVICES),
+        gfx::ALIGN_LEFT,
         gfx::Font::NORMAL);
     container->SetEnabled(delegate->GetBluetoothAvailable());
     AddChildView(container);

@@ -81,6 +81,9 @@ class ASH_EXPORT ShellDelegate {
   // Returns true if we're running in forced app mode.
   virtual bool IsRunningInForcedAppMode() const = 0;
 
+  // Returns true if multi account is enabled.
+  virtual bool IsMultiAccountEnabled() const = 0;
+
   // Called before processing |Shell::Init()| so that the delegate
   // can perform tasks necessary before the shell is initialized.
   virtual void PreInit() = 0;

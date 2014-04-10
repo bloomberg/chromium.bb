@@ -134,6 +134,11 @@ const base::string16 TestSessionStateDelegate::GetUserDisplayName(
   return base::UTF8ToUTF16("Über tray Über tray Über tray Über tray");
 }
 
+const base::string16 TestSessionStateDelegate::GetUserGivenName(
+    MultiProfileIndex index) const {
+  return base::UTF8ToUTF16("Über Über Über Über");
+}
+
 const std::string TestSessionStateDelegate::GetUserEmail(
     MultiProfileIndex index) const {
   switch (index) {

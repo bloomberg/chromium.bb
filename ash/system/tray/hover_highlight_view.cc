@@ -64,20 +64,21 @@ void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
 }
 
 views::Label* HoverHighlightView::AddLabel(const base::string16& text,
+                                           gfx::HorizontalAlignment alignment,
                                            gfx::Font::FontStyle style) {
   SetLayoutManager(new views::FillLayout());
   text_label_ = new views::Label(text);
-  int margin = kTrayPopupPaddingHorizontal +
-      kTrayPopupDetailsLabelExtraLeftMargin;
-  int left_margin = 0;
-  int right_margin = 0;
-  if (base::i18n::IsRTL())
-    right_margin = margin;
-  else
-    left_margin = margin;
+  int left_margin = kTrayPopupPaddingHorizontal;
+  int right_margin = kTrayPopupPaddingHorizontal;
+  if (alignment != gfx::ALIGN_CENTER) {
+    if (base::i18n::IsRTL())
+      right_margin += kTrayPopupDetailsLabelExtraLeftMargin;
+    else
+      left_margin += kTrayPopupDetailsLabelExtraLeftMargin;
+  }
   text_label_->SetBorder(
       views::Border::CreateEmptyBorder(5, left_margin, 5, right_margin));
-  text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  text_label_->SetHorizontalAlignment(alignment);
   text_label_->SetFontList(text_label_->font_list().DeriveWithStyle(style));
   // Do not set alpha value in disable color. It will have issue with elide
   // blending filter in disabled state for rendering label text color.
@@ -119,7 +120,7 @@ views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
     SetAccessibleName(text);
     return text_label_;
   }
-  return AddLabel(text, style);
+  return AddLabel(text, gfx::ALIGN_LEFT, style);
 }
 
 void HoverHighlightView::SetExpandable(bool expandable) {

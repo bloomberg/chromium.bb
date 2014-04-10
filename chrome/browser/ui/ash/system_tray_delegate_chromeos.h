@@ -13,6 +13,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -134,6 +135,8 @@ class SystemTrayDelegateChromeOS
   virtual bool IsNetworkBehindCaptivePortal(
       const std::string& service_path) const OVERRIDE;
   virtual bool IsSearchKeyMappedToCapsLock() OVERRIDE;
+  virtual ash::tray::UserAccountsDelegate* GetUserAccountsDelegate(
+      const std::string& user_id) OVERRIDE;
 
   // browser tests need to call ShouldUse24HourClock().
   bool GetShouldUse24HourClockForTesting() const;
@@ -278,6 +281,8 @@ class SystemTrayDelegateChromeOS
   scoped_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
   scoped_ptr<CrosSettingsObserverSubscription> device_settings_observer_;
   scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
+  base::ScopedPtrHashMap<std::string, ash::tray::UserAccountsDelegate>
+      accounts_delegates_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegateChromeOS);
 };

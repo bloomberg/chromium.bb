@@ -98,6 +98,10 @@ bool ShellDelegateImpl::IsRunningInForcedAppMode() const {
   return false;
 }
 
+bool ShellDelegateImpl::IsMultiAccountEnabled() const {
+  return false;
+}
+
 void ShellDelegateImpl::PreInit() {
 }
 

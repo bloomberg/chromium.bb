@@ -294,6 +294,11 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
     return false;
   }
 
+  virtual ash::tray::UserAccountsDelegate* GetUserAccountsDelegate(
+      const std::string& user_id) OVERRIDE {
+    return NULL;
+  }
+
  private:
   ash::SystemTrayNotifier* GetSystemTrayNotifier() {
     return ash::Shell::GetInstance()->system_tray_notifier();

@@ -118,6 +118,14 @@ const base::string16 SessionStateDelegateChromeos::GetUserDisplayName(
              GetLRULoggedInUsers()[index]->display_name();
 }
 
+const base::string16 SessionStateDelegateChromeos::GetUserGivenName(
+    ash::MultiProfileIndex index) const {
+  DCHECK_LT(index, NumberOfLoggedInUsers());
+  return chromeos::UserManager::Get()
+      ->GetLRULoggedInUsers()[index]
+      ->given_name();
+}
+
 const std::string SessionStateDelegateChromeos::GetUserEmail(
     ash::MultiProfileIndex index) const {
   DCHECK_LT(index, NumberOfLoggedInUsers());

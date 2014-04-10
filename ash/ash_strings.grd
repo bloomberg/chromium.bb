@@ -629,6 +629,18 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_SEARCH_KEY" desc="Name of [Search] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
         search
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCOUNTS_TITLE" desc="The footer label of the menu which is used to manage the profile accounts.">
+        Manage accounts
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCOUNT_LIST_TITLE" desc="The title label for the menu which holds the accounts list.">
+        Accounts
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_PRIMARY_ACCOUNT_LABEL" desc="The primary user account label in the accounts menu.">
+        <ph name="PRIMARY_ACCOUNT">$1<ex>test@gmail.com</ex></ph> (primary)
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ADD_ACCOUNT_LABEL" desc="The label of the button which launches the dialog to add a new account.">
+        Add an account for <ph name="GIVEN_NAME">$1<ex>Jenn</ex></ph>
+      </message>
 
       <!-- Overview Mode -->
       <message name="IDS_ASH_OVERVIEW_BUTTON_ACCESSIBLE_NAME" desc="The accessible name for the Overview button in the system tray.">

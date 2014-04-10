@@ -22,9 +22,10 @@ class Label;
 }
 
 namespace ash {
+
 namespace tray {
-class UserView;
 class RoundedImageView;
+class UserView;
 }
 
 class ASH_EXPORT TrayUser : public SystemTrayItem,

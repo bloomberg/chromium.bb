@@ -74,6 +74,11 @@ const base::string16 SessionStateDelegateStub::GetUserDisplayName(
   return base::UTF8ToUTF16("stub-user");
 }
 
+const base::string16 SessionStateDelegateStub::GetUserGivenName(
+    MultiProfileIndex index) const {
+  return base::UTF8ToUTF16("Stub");
+}
+
 const std::string SessionStateDelegateStub::GetUserEmail(
     MultiProfileIndex index) const {
   return "stub-user@domain.com";

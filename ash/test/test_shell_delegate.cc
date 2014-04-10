@@ -77,6 +77,10 @@ bool TestShellDelegate::IsRunningInForcedAppMode() const {
   return false;
 }
 
+bool TestShellDelegate::IsMultiAccountEnabled() const {
+  return false;
+}
+
 void TestShellDelegate::PreInit() {
 }
 

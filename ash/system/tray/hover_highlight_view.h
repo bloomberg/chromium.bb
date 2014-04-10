@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/text_constants.h"
 
 namespace views {
 class Label;
@@ -35,6 +36,7 @@ class HoverHighlightView : public ActionableView {
   // blank icon.  This also sets the accessible name.
   // Returns label after parenting it.
   views::Label* AddLabel(const base::string16& text,
+                         gfx::HorizontalAlignment alignment,
                          gfx::Font::FontStyle style);
 
   // Convenience function for adding an optional check and a label.  In the

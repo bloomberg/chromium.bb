@@ -72,6 +72,12 @@ const base::string16 SessionStateDelegate::GetUserDisplayName(
   return base::UTF8ToUTF16("");
 }
 
+const base::string16 SessionStateDelegate::GetUserGivenName(
+    ash::MultiProfileIndex index) const {
+  NOTIMPLEMENTED();
+  return base::UTF8ToUTF16("");
+}
+
 const std::string SessionStateDelegate::GetUserEmail(
     ash::MultiProfileIndex index) const {
   NOTIMPLEMENTED();

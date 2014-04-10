@@ -348,6 +348,8 @@
         'browser/ui/ash/session_state_delegate_chromeos.h',
         'browser/ui/ash/session_state_delegate_views.cc',
         'browser/ui/ash/session_state_delegate_views.h',
+        'browser/ui/ash/stub_user_accounts_delegate.cc',
+        'browser/ui/ash/stub_user_accounts_delegate.h',
         'browser/ui/ash/system_tray_delegate_chromeos.cc',
         'browser/ui/ash/system_tray_delegate_chromeos.h',
         'browser/ui/ash/system_tray_delegate_win.cc',

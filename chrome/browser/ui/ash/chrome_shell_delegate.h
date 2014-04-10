@@ -51,6 +51,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual bool IsMultiProfilesEnabled() const OVERRIDE;
   virtual bool IsIncognitoAllowed() const OVERRIDE;
   virtual bool IsRunningInForcedAppMode() const OVERRIDE;
+  virtual bool IsMultiAccountEnabled() const OVERRIDE;
   virtual void PreInit() OVERRIDE;
   virtual void PreShutdown() OVERRIDE;
   virtual void Exit() OVERRIDE;

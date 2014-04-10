@@ -111,6 +111,10 @@ typedef std::vector<IMEInfo> IMEInfoList;
 
 class VolumeControlDelegate;
 
+namespace tray {
+class UserAccountsDelegate;
+}  // namespace tray
+
 class ASH_EXPORT SystemTrayDelegate {
  public:
   virtual ~SystemTrayDelegate() {}
@@ -333,7 +337,12 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Returns true when the Search key is configured to be treated as Caps Lock.
   virtual bool IsSearchKeyMappedToCapsLock() = 0;
+
+  // Returns accounts delegate for given user.
+  virtual tray::UserAccountsDelegate* GetUserAccountsDelegate(
+      const std::string& user_id) = 0;
 };
+
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_

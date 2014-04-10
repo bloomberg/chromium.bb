@@ -46,6 +46,7 @@ const int kTrayPopupAutoCloseDelayForTextInSeconds = 5;
 const int kTrayPopupPaddingHorizontal = 18;
 const int kTrayPopupPaddingBetweenItems = 10;
 const int kTrayPopupTextSpacingVertical = 4;
+const int kTrayPopupUserCardVerticalPadding = 10;
 
 const int kTrayPopupItemHeight = 48;
 const int kTrayPopupDetailsIconWidth = 25;
@@ -76,6 +77,10 @@ const int kNotificationButtonWidth = 32;
 const int kTrayNotificationContentsWidth = kTrayPopupMinWidth -
     (kNotificationIconWidth + kNotificationButtonWidth +
      (kTrayPopupPaddingHorizontal / 2) * 3);
+
+const int kTrayAvatarCornerRadius = 2;
+const int kTrayAvatarSize = 27;
+
 const int kTraySpacing = 8;
 const int kAlternateTraySpacing = 4;
 const int kShelfItemHeight = 31;

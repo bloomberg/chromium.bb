@@ -94,6 +94,8 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   virtual bool IsNetworkBehindCaptivePortal(
       const std::string& service_path) const OVERRIDE;
   virtual bool IsSearchKeyMappedToCapsLock() OVERRIDE;
+  virtual tray::UserAccountsDelegate* GetUserAccountsDelegate(
+      const std::string& user_id) OVERRIDE;
 
  private:
   bool bluetooth_enabled_;

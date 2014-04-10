@@ -52,7 +52,7 @@ views::View* LabelTrayView::CreateChildView(
     child->text_label()->SetMultiLine(true);
     child->text_label()->SizeToFit(kTrayNotificationContentsWidth);
   } else {
-    child->AddLabel(message, gfx::Font::NORMAL);
+    child->AddLabel(message, gfx::ALIGN_LEFT, gfx::Font::NORMAL);
     child->text_label()->SetMultiLine(true);
     child->text_label()->SizeToFit(kTrayNotificationContentsWidth +
                                    kNotificationIconWidth);

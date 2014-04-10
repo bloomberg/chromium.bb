@@ -94,6 +94,12 @@ class ASH_EXPORT SessionStateDelegate {
   virtual const base::string16 GetUserDisplayName(
       MultiProfileIndex index) const = 0;
 
+  // Gets the given name of the user with |index|. An empty string can be
+  // returned if the given name of the user is unknown.
+  // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
+  virtual const base::string16 GetUserGivenName(
+      MultiProfileIndex index) const = 0;
+
   // Gets the display email address for the user with the given |index|.
   // The display email address might contains some periods in the email name
   // as well as capitalized letters. For example: "Foo.Bar@mock.com".

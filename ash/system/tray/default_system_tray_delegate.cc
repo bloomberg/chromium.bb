@@ -297,4 +297,9 @@ bool DefaultSystemTrayDelegate::IsSearchKeyMappedToCapsLock() {
   return false;
 }
 
+tray::UserAccountsDelegate* DefaultSystemTrayDelegate::GetUserAccountsDelegate(
+    const std::string& user_id) {
+  return NULL;
+}
+
 }  // namespace ash
