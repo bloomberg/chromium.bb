@@ -162,7 +162,7 @@ class SCMWrapper(object):
     if os.path.exists(os.path.join(self.checkout_path, '.git')):
       actual_remote_url = shlex.split(self._Capture(
           ['config', '--local', '--get-regexp', r'remote.*.url'],
-          self.checkout_path))[1]
+          cwd=self.checkout_path))[1]
 
       # If a cache_dir is used, obtain the actual remote URL from the cache.
       if getattr(self, 'cache_dir', None):
@@ -948,7 +948,7 @@ class GitWrapper(SCMWrapper):
       return None
     return branch
 
-  def _Capture(self, args, cwd=None, **kwargs):
+  def _Capture(self, args, **kwargs):
     kwargs.setdefault('cwd', self.checkout_path)
     kwargs.setdefault('stderr', subprocess2.PIPE)
     return subprocess2.check_output(['git'] + args, **kwargs).strip()
