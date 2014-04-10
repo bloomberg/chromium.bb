@@ -14,7 +14,7 @@
 
 namespace WebCore {
 
-SVGFontFaceSource::SVGFontFaceSource(PassRefPtr<SVGFontFaceElement> element)
+SVGFontFaceSource::SVGFontFaceSource(SVGFontFaceElement* element)
     : m_svgFontFaceElement(element)
 {
 }
@@ -22,7 +22,7 @@ SVGFontFaceSource::SVGFontFaceSource(PassRefPtr<SVGFontFaceElement> element)
 PassRefPtr<SimpleFontData> SVGFontFaceSource::createFontData(const FontDescription& fontDescription)
 {
     return SimpleFontData::create(
-        SVGFontData::create(m_svgFontFaceElement.get()),
+        SVGFontData::create(m_svgFontFaceElement),
         fontDescription.effectiveFontSize(),
         fontDescription.isSyntheticBold(),
         fontDescription.isSyntheticItalic());

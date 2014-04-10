@@ -25,10 +25,12 @@
 #if ENABLE(SVG_FONTS)
 #include "SVGNames.h"
 #include "core/svg/SVGElement.h"
+#include "wtf/WeakPtr.h"
 
 namespace WebCore {
 
 class SVGFontElement;
+class SVGFontData;
 class StyleRuleFontFace;
 
 class SVGFontFaceElement FINAL : public SVGElement {
@@ -51,6 +53,7 @@ public:
     void rebuildFontFace();
 
     StyleRuleFontFace* fontFaceRule() const { return m_fontFaceRule.get(); }
+    WeakPtr<SVGFontFaceElement> createWeakRef() { return m_weakFactory.createWeakPtr(); }
 
 private:
     explicit SVGFontFaceElement(Document&);
@@ -65,6 +68,7 @@ private:
 
     RefPtrWillBePersistent<StyleRuleFontFace> m_fontFaceRule;
     SVGFontElement* m_fontElement;
+    WeakPtrFactory<SVGFontFaceElement> m_weakFactory;
 };
 
 } // namespace WebCore

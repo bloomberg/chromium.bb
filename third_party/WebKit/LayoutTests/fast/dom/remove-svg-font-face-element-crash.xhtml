@@ -36,6 +36,7 @@ function runTest() {
         fontWillBeRemoved.parentNode.removeChild(fontWillBeRemoved);
         delete fontWillBeRemoved; 
         fontWillBeRemoved = null;
+	gc();
         use.appendChild(text);
     }, 0);
 }

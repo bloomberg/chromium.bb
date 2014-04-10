@@ -15,12 +15,14 @@ class SVGFontFaceElement;
 
 class SVGFontFaceSource : public CSSFontFaceSource {
 public:
-    SVGFontFaceSource(PassRefPtr<SVGFontFaceElement>);
+    SVGFontFaceSource(SVGFontFaceElement*);
 
 private:
     virtual PassRefPtr<SimpleFontData> createFontData(const FontDescription&) OVERRIDE;
 
-    RefPtr<SVGFontFaceElement> m_svgFontFaceElement;
+    // This is a raw ptr as the element resides in the same document as the FontFace. This is to avoid a reference cycle.
+    // FIXME: Oilpan: This should be a Member when we move SVGFontFaceElement to oilpan.
+    SVGFontFaceElement* m_svgFontFaceElement;
 };
 
 } // namespace WebCore

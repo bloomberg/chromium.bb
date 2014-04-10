@@ -22,6 +22,7 @@
 
 #if ENABLE(SVG_FONTS)
 #include "platform/fonts/CustomFontData.h"
+#include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -37,16 +38,16 @@ public:
         return adoptRef(new SVGFontData(element));
     }
 
-    virtual ~SVGFontData() { }
+    virtual ~SVGFontData();
 
     virtual bool isSVGFont() const OVERRIDE { return true; };
+    virtual bool shouldSkipDrawing() const OVERRIDE;
     virtual void initializeFontData(SimpleFontData*, float fontSize) OVERRIDE;
     virtual float widthForSVGGlyph(Glyph, float fontSize) const OVERRIDE;
     virtual bool fillSVGGlyphPage(GlyphPage*, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength, const SimpleFontData*) const OVERRIDE;
     virtual bool applySVGGlyphSelection(WidthIterator&, GlyphData&, bool mirror, int currentCharacter, unsigned& advanceLength) const OVERRIDE;
 
-
-    SVGFontFaceElement* svgFontFaceElement() const { return m_svgFontFaceElement; }
+    SVGFontFaceElement* svgFontFaceElement() const;
 
     float horizontalOriginX() const { return m_horizontalOriginX; }
     float horizontalOriginY() const { return m_horizontalOriginY; }
@@ -70,7 +71,7 @@ private:
     // 2) in the in-document font case: by virtue of being in the document tree and making sure that when it is removed
     //    from the document, it removes the @font-face rule it owns from the document's mapped element sheet and forces
     //    a style update.
-    SVGFontFaceElement* m_svgFontFaceElement;
+    WeakPtr<SVGFontFaceElement> m_svgFontFaceElement;
 
     float m_horizontalOriginX;
     float m_horizontalOriginY;

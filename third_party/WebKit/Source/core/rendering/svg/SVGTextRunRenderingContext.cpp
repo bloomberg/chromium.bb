@@ -46,6 +46,10 @@ static inline const SVGFontData* svgFontAndFontFaceElementForFontData(const Simp
     RefPtr<CustomFontData> customFontData = fontData->customFontData();
     const SVGFontData* svgFontData = static_cast<const SVGFontData*>(customFontData.get());
 
+    // FIXME crbug.com/359380 : The current editing impl references the font after the svg font nodes are removed.
+    if (svgFontData->shouldSkipDrawing())
+        return 0;
+
     fontFace = svgFontData->svgFontFaceElement();
     ASSERT(fontFace);
 
