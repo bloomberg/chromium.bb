@@ -296,6 +296,10 @@ typedef struct _drmModeConnector {
 	uint32_t *encoders; /**< List of encoder ids */
 } drmModeConnector, *drmModeConnectorPtr;
 
+#define DRM_PLANE_TYPE_OVERLAY 0
+#define DRM_PLANE_TYPE_PRIMARY 1
+#define DRM_PLANE_TYPE_CURSOR  2
+
 typedef struct _drmModeObjectProperties {
 	uint32_t count_props;
 	uint32_t *props;

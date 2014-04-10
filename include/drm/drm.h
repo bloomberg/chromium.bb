@@ -627,6 +627,14 @@ struct drm_get_cap {
  */
 #define DRM_CLIENT_CAP_STEREO_3D	1
 
+/**
+ * DRM_CLIENT_CAP_UNIVERSAL_PLANES
+ *
+ * if set to 1, the DRM core will expose the full universal plane list
+ * (including primary and cursor planes).
+ */
+#define DRM_CLIENT_CAP_UNIVERSAL_PLANES 2
+
 /** DRM_IOCTL_SET_CLIENT_CAP ioctl argument type */
 struct drm_set_client_cap {
 	__u64 capability;
