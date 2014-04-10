@@ -34,7 +34,7 @@ class SearchTermsData {
 
   // Returns the value for the Chrome Omnibox rlz.  This implementation returns
   // the empty string.
-  virtual base::string16 GetRlzParameterValue() const;
+  virtual base::string16 GetRlzParameterValue(bool from_app_list) const;
 
   // The optional client parameter passed with Google search requests.  This
   // implementation returns the empty string.
@@ -71,7 +71,8 @@ class UIThreadSearchTermsData : public SearchTermsData {
 
   virtual std::string GoogleBaseURLValue() const OVERRIDE;
   virtual std::string GetApplicationLocale() const OVERRIDE;
-  virtual base::string16 GetRlzParameterValue() const OVERRIDE;
+  virtual base::string16 GetRlzParameterValue(bool from_app_list) const
+      OVERRIDE;
   virtual std::string GetSearchClient() const OVERRIDE;
   virtual std::string GetSuggestClient() const OVERRIDE;
   virtual std::string GetSuggestRequestIdentifier() const OVERRIDE;

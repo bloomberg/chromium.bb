@@ -207,7 +207,8 @@ TemplateURLRef::SearchTermsArgs::SearchTermsArgs(
       page_classification(AutocompleteInput::INVALID_SPEC),
       bookmark_bar_pinned(false),
       append_extra_query_params(false),
-      force_instant_results(false) {
+      force_instant_results(false),
+      from_app_list(false) {
 }
 
 TemplateURLRef::SearchTermsArgs::~SearchTermsArgs() {
@@ -946,7 +947,8 @@ std::string TemplateURLRef::HandleReplacements(
         // to happen so that we replace the RLZ template with the
         // empty string.  (If we don't handle this case, we hit a
         // NOTREACHED below.)
-        base::string16 rlz_string = search_terms_data.GetRlzParameterValue();
+        base::string16 rlz_string = search_terms_data.GetRlzParameterValue(
+            search_terms_args.from_app_list);
         if (!rlz_string.empty()) {
           HandleReplacement("rlz", base::UTF16ToUTF8(rlz_string), *i, &url);
         }

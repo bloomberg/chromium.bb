@@ -60,7 +60,7 @@ std::string SearchTermsData::GetApplicationLocale() const {
   return "en";
 }
 
-base::string16 SearchTermsData::GetRlzParameterValue() const {
+base::string16 SearchTermsData::GetRlzParameterValue(bool from_app_list) const {
   return base::string16();
 }
 
@@ -109,7 +109,8 @@ std::string UIThreadSearchTermsData::GetApplicationLocale() const {
 
 // Android implementations are located in search_terms_data_android.cc.
 #if !defined(OS_ANDROID)
-base::string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
+base::string16 UIThreadSearchTermsData::GetRlzParameterValue(
+    bool from_app_list) const {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
       BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::string16 rlz_string;
@@ -122,7 +123,12 @@ base::string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
     // This call will return false the first time(s) it is called until the
     // value has been cached. This normally would mean that at most one omnibox
     // search might not send the RLZ data but this is not really a problem.
-    RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz_string);
+    rlz_lib::AccessPoint access_point = RLZTracker::CHROME_OMNIBOX;
+#if !defined(OS_IOS)
+    if (from_app_list)
+      access_point = RLZTracker::CHROME_APP_LIST;
+#endif
+    RLZTracker::GetAccessPointRlz(access_point, &rlz_string);
   }
 #endif
   return rlz_string;

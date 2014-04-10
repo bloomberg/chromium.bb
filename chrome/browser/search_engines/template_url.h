@@ -133,6 +133,10 @@ class TemplateURLRef {
     // disabled by google.com preferences. See comments on
     // chrome::ForceInstantResultsParam().
     bool force_instant_results;
+
+    // True if the search was made using the app list search box. Otherwise, the
+    // search was made using the omnibox.
+    bool from_app_list;
   };
 
   TemplateURLRef(TemplateURL* owner, Type type);

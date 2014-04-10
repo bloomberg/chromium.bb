@@ -12,7 +12,8 @@ base::LazyInstance<base::string16>::Leaky
 base::LazyInstance<std::string>::Leaky
     SearchTermsDataAndroid::search_client_ = LAZY_INSTANCE_INITIALIZER;
 
-base::string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
+base::string16 UIThreadSearchTermsData::GetRlzParameterValue(
+    bool from_app_list) const {
   DCHECK(!content::BrowserThread::IsThreadInitialized(
              content::BrowserThread::UI) ||
          content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
