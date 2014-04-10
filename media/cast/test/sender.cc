@@ -216,7 +216,6 @@ VideoSenderConfig GetVideoSenderConfig() {
   video_config.max_frame_rate = 30;
   video_config.codec = transport::kVp8;
   video_config.max_number_of_video_buffers_used = 1;
-  video_config.number_of_cores = 1;
   return video_config;
 }
 

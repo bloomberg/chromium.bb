@@ -79,10 +79,10 @@ void Vp8Encoder::Initialize() {
     acked_frame_buffers_[i] = true;
     used_buffers_frame_id_[i] = kStartFrameId;
   }
-  InitEncode(cast_config_.number_of_cores);
+  InitEncode(cast_config_.number_of_encode_threads);
 }
 
-void Vp8Encoder::InitEncode(int number_of_cores) {
+void Vp8Encoder::InitEncode(int number_of_encode_threads) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Populate encoder configuration with default values.
   if (vpx_codec_enc_config_default(vpx_codec_vp8_cx(), config_.get(), 0)) {
@@ -102,13 +102,7 @@ void Vp8Encoder::InitEncode(int number_of_cores) {
     // codec requirements.
     config_->g_error_resilient = 1;
   }
-
-  if (cast_config_.width * cast_config_.height > 640 * 480 &&
-      number_of_cores >= 2) {
-    config_->g_threads = 2;  // 2 threads for qHD/HD.
-  } else {
-    config_->g_threads = 1;  // 1 thread for VGA or less.
-  }
+  config_->g_threads = number_of_encode_threads;
 
   // Rate control settings.
   // TODO(pwestin): revisit these constants. Currently identical to webrtc.

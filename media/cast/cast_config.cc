@@ -38,7 +38,7 @@ VideoSenderConfig::VideoSenderConfig()
       max_frame_rate(kDefaultMaxFrameRate),
       max_number_of_video_buffers_used(kDefaultNumberOfVideoBuffers),
       codec(transport::kVp8),
-      number_of_cores(0) {}
+      number_of_encode_threads(1) {}
 
 AudioSenderConfig::AudioSenderConfig()
     : sender_ssrc(0),

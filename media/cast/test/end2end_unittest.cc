@@ -476,7 +476,6 @@ class End2EndTest : public ::testing::Test {
     video_sender_config_.max_number_of_video_buffers_used =
         max_number_of_video_buffers_used;
     video_sender_config_.codec = transport::kVp8;
-    video_sender_config_.number_of_cores = 1;
 
     video_receiver_config_.feedback_ssrc =
         video_sender_config_.incoming_feedback_ssrc;

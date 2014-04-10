@@ -71,7 +71,7 @@ struct VideoSenderConfig {
   int max_frame_rate;
   int max_number_of_video_buffers_used;  // Max value depend on codec.
   transport::VideoCodec codec;
-  int number_of_cores;
+  int number_of_encode_threads;
 };
 
 struct AudioReceiverConfig {

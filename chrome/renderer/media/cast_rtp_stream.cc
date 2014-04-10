@@ -8,6 +8,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sys_info.h"
 #include "chrome/renderer/media/cast_session.h"
 #include "chrome/renderer/media/cast_udp_transport.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
@@ -119,6 +120,19 @@ bool IsHardwareH264EncodingSupported() {
   return false;
 }
 
+int NumberOfEncodeThreads() {
+  // We want to give CPU cycles for capturing and not to saturate the system
+  // just for encoding. So on a lower end system with only 1 or 2 cores we
+  // use only one thread for encoding.
+  if (base::SysInfo::NumberOfProcessors() <= 2)
+    return 1;
+
+  // On higher end we want to use 2 threads for encoding to reduce latency.
+  // In theory a physical CPU core has maximum 2 hyperthreads. Having 3 or
+  // more logical processors means the system has at least 2 physical cores.
+  return 2;
+}
+
 std::vector<CastRtpParams> SupportedAudioParams() {
   // TODO(hclam): Fill in more codecs here.
   std::vector<CastRtpParams> supported_params;
@@ -172,6 +186,9 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
     config->codec = media::cast::transport::kH264;
   } else {
     return false;
+  }
+  if (!config->use_external_encoder) {
+    config->number_of_encode_threads = NumberOfEncodeThreads();
   }
   return true;
 }
