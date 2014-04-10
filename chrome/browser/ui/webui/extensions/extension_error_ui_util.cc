@@ -15,7 +15,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -24,7 +23,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_error.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/file_highlighter.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -80,13 +79,14 @@ void HandleRequestFileSource(const base::DictionaryValue* args,
     return;
   }
 
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile)->extension_service();
-  if (!extension_service)
-    return;
+  const Extension* extension =
+      ExtensionRegistry::Get(profile)->GetExtensionById(
+          extension_id, ExtensionRegistry::EVERYTHING);
 
-  const Extension* extension = extension_service->GetExtensionById(
-      extension_id, true /* include disabled */);
+  if (!extension) {
+    NOTREACHED();
+    return;
+  }
 
   // Under no circumstances should we ever need to reference a file outside of
   // the extension's directory. If it tries to, abort.
