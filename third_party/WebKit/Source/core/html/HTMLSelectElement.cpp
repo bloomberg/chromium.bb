@@ -1123,7 +1123,7 @@ bool HTMLSelectElement::platformHandleKeydownEvent(KeyboardEvent* event)
             // Calling focus() may cause us to lose our renderer. Return true so
             // that our caller doesn't process the event further, but don't set
             // the event as handled.
-            if (!renderer() || isDisabledFormControl())
+            if (!renderer() || !renderer()->isMenuList() || isDisabledFormControl())
                 return true;
 
             // Save the selection so it can be compared to the new selection
@@ -1351,7 +1351,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
     } else if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         focus();
         // Calling focus() may cause us to lose our renderer, in which case do not want to handle the event.
-        if (!renderer())
+        if (!renderer() || !renderer()->isListBox() || isDisabledFormControl())
             return;
 
         // Convert to coords relative to the list box if needed.

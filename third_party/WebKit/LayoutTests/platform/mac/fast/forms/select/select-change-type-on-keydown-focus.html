@@ -1,0 +1,22 @@
+<html>
+<body>
+<script src="../../../../../resources/js-test.js"></script>
+<select id="select">
+<option>option 1</option>
+<option>option 2</option>
+<option>option 3</option>
+<option>option 4</option>
+</select>
+
+<script>
+description('This tests that no crash occurs when changing the type of a select element during a focus event.');
+var s = document.getElementById('select');
+s.addEventListener('focus', function() {
+    s.size = 3;
+});
+s.offsetLeft;
+s.dispatchEvent(new KeyboardEvent('keydown', { keyIdentifier: 'Down' }));
+testPassed('Did not crash');
+</script>
+</body>
+</html>
