@@ -30,9 +30,22 @@ importHmacKey().then(function(result) {
     key = result;
 
     // Pass invalid signature parameters to verify()
-    shouldThrow("crypto.subtle.verify(hmac, key, null, data)");
-    shouldThrow("crypto.subtle.verify(hmac, key, 'a', data)");
-    shouldThrow("crypto.subtle.verify(hmac, key, [], data)");
+    return crypto.subtle.verify(hmac, key, null, data);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    // Pass invalid signature parameters to verify()
+    return crypto.subtle.verify(hmac, key, 'a', data);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    // Pass invalid signature parameters to verify()
+    return crypto.subtle.verify(hmac, key, [], data);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
 
     // Operation does not support signing.
     return crypto.subtle.sign({name: 'sha-1'}, key, data);

@@ -13,16 +13,29 @@ description("Tests incorrect calls to crypto.subtle.digest()");
 
 jsTestIsAsync = true;
 
-// Pass invalid data to digest()
+// Called with too few parameters.
 shouldThrow("crypto.subtle.digest({name: 'sha-1'})");
-shouldThrow("crypto.subtle.digest({name: 'sha-1'}, null)");
-shouldThrow("crypto.subtle.digest({name: 'sha-1'}, 10)");
-
-// Pass invalid algorithmIdentifiers to digest()
-data = new Uint8Array([0]);
-shouldThrow("crypto.subtle.digest(null, data)");
 
 Promise.resolve(null).then(function(result) {
+    // "null" is not a valid data argument.
+    return crypto.subtle.digest({name: 'sha-1'}, null);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    // 10 is not a valid data argument.
+    return crypto.subtle.digest({name: 'sha-1'}, 10);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    // null is not a valid algorithm argument.
+    data = new Uint8Array([0]);
+    return crypto.subtle.digest(null, data);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
     // "sha" is not a recognized algorithm name
     return crypto.subtle.digest({name: 'sha'}, data);
 }).then(failAndFinishJSTest, function(result) {

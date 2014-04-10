@@ -32,17 +32,17 @@
     WillBeGarbageCollected,
     NoInterfaceObject
 ] interface SubtleCrypto {
-    [RaisesException] Promise encrypt(Dictionary algorithm, Key key, ArrayBufferView data);
-    [RaisesException] Promise decrypt(Dictionary algorithm, Key key, ArrayBufferView data);
-    [RaisesException] Promise sign(Dictionary algorithm, Key key, ArrayBufferView data);
-    [RaisesException, ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, ArrayBufferView signature, ArrayBufferView data);
-    [RaisesException] Promise digest(Dictionary algorithm, ArrayBufferView data);
+    Promise encrypt(Dictionary algorithm, Key key, ArrayBufferView data);
+    Promise decrypt(Dictionary algorithm, Key key, ArrayBufferView data);
+    Promise sign(Dictionary algorithm, Key key, ArrayBufferView data);
+    [ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, ArrayBufferView signature, ArrayBufferView data);
+    Promise digest(Dictionary algorithm, ArrayBufferView data);
 
-    [RaisesException] Promise generateKey(Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
-    [RaisesException] Promise importKey(DOMString format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
-    [RaisesException] Promise exportKey(DOMString format, Key key);
+    Promise generateKey(Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
+    Promise importKey(DOMString format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
+    Promise exportKey(DOMString format, Key key);
 
-    [RaisesException] Promise wrapKey(DOMString format, Key key, Key wrappingKey, Dictionary wrapAlgorithm);
-    [RaisesException] Promise unwrapKey(DOMString format, ArrayBufferView wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, DOMString[] keyUsages);
+    Promise wrapKey(DOMString format, Key key, Key wrappingKey, Dictionary wrapAlgorithm);
+    Promise unwrapKey(DOMString format, ArrayBufferView wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, DOMString[] keyUsages);
 };
 

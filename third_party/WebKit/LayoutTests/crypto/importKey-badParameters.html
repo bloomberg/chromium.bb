@@ -21,14 +21,25 @@ var extractable = true;
 // FIXME: http://crbug.com/262383
 //shouldThrow("crypto.subtle.importKey('raw', aesKeyBytes, aesCbc, extractable, undefined)");
 
-// Invalid data
-shouldThrow("crypto.subtle.importKey('raw', [], aesCbc, extractable, ['encrypt'])");
-shouldThrow("crypto.subtle.importKey('raw', null, aesCbc, extractable, ['encrypt'])");
-
-// Invalid algorithm
-shouldThrow("crypto.subtle.importKey('raw', aesCbc, null, extractable, ['encrypt'])");
-
 Promise.resolve(null).then(function() {
+    // Invalid data
+    return crypto.subtle.importKey('raw', [], aesCbc, extractable, ['encrypt']);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    // Invalid data
+    return crypto.subtle.importKey('raw', null, aesCbc, extractable, ['encrypt']);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    // Invalid algorithm
+    return crypto.subtle.importKey('raw', aesKeyBytes, null, extractable, ['encrypt']);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
     // Invalid format.
     return crypto.subtle.importKey('invalid format', aesKeyBytes, aesCbc, extractable, ['encrypt']);
 }).then(failAndFinishJSTest, function(result) {

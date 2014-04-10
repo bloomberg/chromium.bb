@@ -1,3 +1,6 @@
+CONSOLE ERROR: Invalid wrappedKey argument
+CONSOLE ERROR: Invalid unwrappingKey argument
+CONSOLE ERROR: Algorithm: Not an object
 CONSOLE ERROR: Invalid keyFormat argument
 CONSOLE ERROR: Algorithm: SHA-1: Unsupported operation
 CONSOLE ERROR: key.algorithm does not match that of operation
@@ -6,10 +9,10 @@ Tests calls to unwrapKey() with bad inputs.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS crypto.subtle.unwrapKey('raw', null, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages) threw exception TypeError: Failed to execute 'unwrapKey' on 'SubtleCrypto': Invalid wrappedKey argument.
-PASS crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages) threw exception TypeError: Failed to execute 'unwrapKey' on 'SubtleCrypto': Invalid unwrappingKey argument.
+PASS error is null
+PASS error is null
 PASS crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, null, extractable, 9) threw exception TypeError: The 7th argument is neither an array, nor does it have indexed properties..
-PASS crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, null, unwrappedKeyAlgorithm, extractable, keyUsages) threw exception TypeError: Failed to execute 'unwrapKey' on 'SubtleCrypto': Algorithm: Not an object.
+PASS error is null
 PASS crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, unwrapAlgorithm, 3, extractable, keyUsages) threw exception TypeError: Failed to execute 'unwrapKey' on 'SubtleCrypto': parameter 5 ('unwrappedKeyAlgorithm') is not an object..
 PASS error is null
 PASS error is null

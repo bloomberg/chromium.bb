@@ -31,16 +31,25 @@ importUnwrappingKey().then(function(result) {
     keyUsages = ['encrypt'];
 
     // Invalid wrappedKey
-    shouldThrow("crypto.subtle.unwrapKey('raw', null, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages)");
+    return crypto.subtle.unwrapKey('raw', null, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
 
     // Invalid unwrappingKey
-    shouldThrow("crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages)");
+    return crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
 
     // Invalid keyUsages (also, unwrappedKeyAlgorithm is set to null).
     shouldThrow("crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, null, extractable, 9)");
 
     // Invalid unwrapAlgorithm
-    shouldThrow("crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, null, unwrappedKeyAlgorithm, extractable, keyUsages)");
+    return crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, null, unwrappedKeyAlgorithm, extractable, keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
 
     // Invalid unwrappedKeyAlgorithm (specified but bad).
     shouldThrow("crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, unwrapAlgorithm, 3, extractable, keyUsages)");

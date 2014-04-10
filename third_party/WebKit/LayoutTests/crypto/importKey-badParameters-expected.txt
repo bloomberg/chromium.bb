@@ -1,3 +1,6 @@
+CONSOLE ERROR: Invalid keyData argument
+CONSOLE ERROR: Invalid keyData argument
+CONSOLE ERROR: Algorithm: Not an object
 CONSOLE ERROR: Invalid keyFormat argument
 CONSOLE ERROR: Invalid keyUsages argument
 CONSOLE ERROR: Invalid keyFormat argument
@@ -8,9 +11,9 @@ Tests calling cypto.subtle.importKey with bad parameters
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS crypto.subtle.importKey('raw', [], aesCbc, extractable, ['encrypt']) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyData argument.
-PASS crypto.subtle.importKey('raw', null, aesCbc, extractable, ['encrypt']) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyData argument.
-PASS crypto.subtle.importKey('raw', aesCbc, null, extractable, ['encrypt']) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyData argument.
+PASS error is null
+PASS error is null
+PASS error is null
 PASS error is null
 PASS error is null
 PASS error is null

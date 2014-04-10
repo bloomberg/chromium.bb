@@ -40,13 +40,22 @@ importWrappingKey().then(function(result) {
     wrapAlgorithm = {name: 'aes-cbc', iv: new Uint8Array(16)};
 
     // Invalid key
-    shouldThrow("crypto.subtle.wrapKey('raw', 1, wrappingKey, wrapAlgorithm)");
+    return crypto.subtle.wrapKey('raw', 1, wrappingKey, wrapAlgorithm);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
 
     // Invalid wrappingKey
-    shouldThrow("crypto.subtle.wrapKey('raw', key, '', wrapAlgorithm)");
+    return crypto.subtle.wrapKey('raw', key, '', wrapAlgorithm);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
 
     // Invalid wrapAlgorithm
-    shouldThrow("crypto.subtle.wrapKey('raw', key, wrappingKey, undefined)");
+    return crypto.subtle.wrapKey('raw', key, wrappingKey, undefined);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
 
     // Invalid format for wrapKey
     return crypto.subtle.wrapKey('bad-format', key, wrappingKey, wrapAlgorithm);

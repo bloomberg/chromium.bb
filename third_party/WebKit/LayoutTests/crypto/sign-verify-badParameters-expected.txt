@@ -1,3 +1,6 @@
+CONSOLE ERROR: Invalid signature argument
+CONSOLE ERROR: Invalid signature argument
+CONSOLE ERROR: Invalid signature argument
 CONSOLE ERROR: Algorithm: SHA-1: Unsupported operation
 CONSOLE ERROR: Algorithm: RSAES-PKCS1-v1_5: Unsupported operation
 Tests calling cypto.subtle.sign and crypto.subtle.verify with incorrect inputs
@@ -5,9 +8,9 @@ Tests calling cypto.subtle.sign and crypto.subtle.verify with incorrect inputs
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS crypto.subtle.verify(hmac, key, null, data) threw exception TypeError: Failed to execute 'verify' on 'SubtleCrypto': Invalid signature argument.
-PASS crypto.subtle.verify(hmac, key, 'a', data) threw exception TypeError: Failed to execute 'verify' on 'SubtleCrypto': Invalid signature argument.
-PASS crypto.subtle.verify(hmac, key, [], data) threw exception TypeError: Failed to execute 'verify' on 'SubtleCrypto': Invalid signature argument.
+PASS error is null
+PASS error is null
+PASS error is null
 PASS error is null
 PASS error is null
 PASS successfullyParsed is true

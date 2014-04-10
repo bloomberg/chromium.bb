@@ -1,3 +1,6 @@
+CONSOLE ERROR: Invalid dataBuffer argument
+CONSOLE ERROR: Invalid dataBuffer argument
+CONSOLE ERROR: Algorithm: Not an object
 CONSOLE ERROR: Algorithm: Unrecognized algorithm name
 CONSOLE ERROR: Algorithm: name: Missing or not a string
 Tests incorrect calls to crypto.subtle.digest()
@@ -6,9 +9,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS crypto.subtle.digest({name: 'sha-1'}) threw exception TypeError: Failed to execute 'digest' on 'SubtleCrypto': 2 arguments required, but only 1 present..
-PASS crypto.subtle.digest({name: 'sha-1'}, null) threw exception TypeError: Failed to execute 'digest' on 'SubtleCrypto': Invalid dataBuffer argument.
-PASS crypto.subtle.digest({name: 'sha-1'}, 10) threw exception TypeError: Failed to execute 'digest' on 'SubtleCrypto': Invalid dataBuffer argument.
-PASS crypto.subtle.digest(null, data) threw exception TypeError: Failed to execute 'digest' on 'SubtleCrypto': Algorithm: Not an object.
+PASS error is null
+PASS error is null
+PASS error is null
 PASS error is null
 PASS error is null
 PASS successfullyParsed is true

@@ -41,7 +41,6 @@
 namespace WebCore {
 
 class Dictionary;
-class ExceptionState;
 class Key;
 
 class SubtleCrypto : public RefCountedWillBeGarbageCollectedFinalized<SubtleCrypto>,  public ScriptWrappable {
@@ -51,19 +50,19 @@ public:
         return adoptRefWillBeNoop(new SubtleCrypto());
     }
 
-    ScriptPromise encrypt(const Dictionary&, Key*, ArrayBufferView* data, ExceptionState&);
-    ScriptPromise decrypt(const Dictionary&, Key*, ArrayBufferView* data, ExceptionState&);
-    ScriptPromise sign(const Dictionary&, Key*, ArrayBufferView* data, ExceptionState&);
+    ScriptPromise encrypt(const Dictionary&, Key*, ArrayBufferView* data);
+    ScriptPromise decrypt(const Dictionary&, Key*, ArrayBufferView* data);
+    ScriptPromise sign(const Dictionary&, Key*, ArrayBufferView* data);
     // Note that this is not named "verify" because when compiling on Mac that expands to a macro and breaks.
-    ScriptPromise verifySignature(const Dictionary&, Key*, ArrayBufferView* signature, ArrayBufferView* data, ExceptionState&);
-    ScriptPromise digest(const Dictionary&, ArrayBufferView* data, ExceptionState&);
+    ScriptPromise verifySignature(const Dictionary&, Key*, ArrayBufferView* signature, ArrayBufferView* data);
+    ScriptPromise digest(const Dictionary&, ArrayBufferView* data);
 
-    ScriptPromise generateKey(const Dictionary&, bool extractable, const Vector<String>& keyUsages, ExceptionState&);
-    ScriptPromise importKey(const String&, ArrayBufferView*, const Dictionary&, bool extractable, const Vector<String>& keyUsages, ExceptionState&);
-    ScriptPromise exportKey(const String&, Key*, ExceptionState&);
+    ScriptPromise generateKey(const Dictionary&, bool extractable, const Vector<String>& keyUsages);
+    ScriptPromise importKey(const String&, ArrayBufferView*, const Dictionary&, bool extractable, const Vector<String>& keyUsages);
+    ScriptPromise exportKey(const String&, Key*);
 
-    ScriptPromise wrapKey(const String&, Key*, Key*, const Dictionary&, ExceptionState&);
-    ScriptPromise unwrapKey(const String&, ArrayBufferView*, Key*, const Dictionary&, const Dictionary&, bool, const Vector<String>&, ExceptionState&);
+    ScriptPromise wrapKey(const String&, Key*, Key*, const Dictionary&);
+    ScriptPromise unwrapKey(const String&, ArrayBufferView*, Key*, const Dictionary&, const Dictionary&, bool, const Vector<String>&);
 
     void trace(Visitor*) { }
 
