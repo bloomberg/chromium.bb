@@ -165,7 +165,7 @@ deps_os = {
     'android':
     {
         'src/third_party/android_tools':
-            Var('git_url') + '/android_tools.git@9086a711deef9b1f85bf9290b7b9598be32458d5',
+            Var('git_url') + '/android_tools.git@f1adc927bf3fb00bbff98bf1ec5885c96b80bd81',
         'src/third_party/aosp':
             Var('git_url') + '/chromium/deps/aosp.git@bbafe5155dff86bbba1e92b42a073ffcfcfbf28c',
         'src/third_party/apache-mime4j':
