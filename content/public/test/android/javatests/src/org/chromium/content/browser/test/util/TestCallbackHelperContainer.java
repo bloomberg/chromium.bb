@@ -30,6 +30,9 @@ public class TestCallbackHelperContainer {
         mTestWebContentsObserver = contentsObserver;
     }
 
+    /**
+     * CallbackHelper for OnPageFinished.
+     */
     public static class OnPageFinishedHelper extends CallbackHelper {
         private String mUrl;
         public void notifyCalled(String url) {
@@ -42,6 +45,9 @@ public class TestCallbackHelperContainer {
         }
     }
 
+    /**
+     * CallbackHelper for OnPageStarted.
+     */
     public static class OnPageStartedHelper extends CallbackHelper {
         private String mUrl;
         public void notifyCalled(String url) {
@@ -54,6 +60,9 @@ public class TestCallbackHelperContainer {
         }
     }
 
+    /**
+     * CallbackHelper for OnReceivedError.
+     */
     public static class OnReceivedErrorHelper extends CallbackHelper {
         private int mErrorCode;
         private String mDescription;
@@ -78,6 +87,11 @@ public class TestCallbackHelperContainer {
         }
     }
 
+    /**
+     * CallbackHelper for OnEvaluateJavaScriptResult.
+     * This class wraps the evaluation of JavaScript code allowing test code to
+     * synchronously evaluate JavaScript and then test the result.
+     */
     public static class OnEvaluateJavaScriptResultHelper extends CallbackHelper {
         private String mJsonResult;
 
@@ -152,6 +166,9 @@ public class TestCallbackHelperContainer {
         }
     }
 
+    /**
+     * CallbackHelper for OnStartContentIntent.
+     */
     public static class OnStartContentIntentHelper extends CallbackHelper {
         private String mIntentUrl;
         public void notifyCalled(String intentUrl) {

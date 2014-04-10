@@ -8,8 +8,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedLoginRequestHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;
@@ -19,53 +19,6 @@ import java.util.List;
  * Tests for the AwContentsClient.onReceivedLoginRequest callback.
  */
 public class AwContentsClientAutoLoginTest extends AwTestBase {
-    public static class OnReceivedLoginRequestHelper extends CallbackHelper {
-        String mRealm;
-        String mAccount;
-        String mArgs;
-
-        public String getRealm() {
-            assert getCallCount() > 0;
-            return mRealm;
-        }
-
-        public String getAccount() {
-            assert getCallCount() > 0;
-            return mAccount;
-        }
-
-        public String getArgs() {
-            assert getCallCount() > 0;
-            return mArgs;
-        }
-
-        public void notifyCalled(String realm, String account, String args) {
-            mRealm = realm;
-            mAccount = account;
-            mArgs = args;
-            notifyCalled();
-        }
-    }
-
-    private static class TestAwContentsClient
-            extends org.chromium.android_webview.test.TestAwContentsClient {
-
-        private OnReceivedLoginRequestHelper mOnReceivedLoginRequestHelper;
-
-        public TestAwContentsClient() {
-            mOnReceivedLoginRequestHelper = new OnReceivedLoginRequestHelper();
-        }
-
-        public OnReceivedLoginRequestHelper getOnReceivedLoginRequestHelper() {
-            return mOnReceivedLoginRequestHelper;
-        }
-
-        @Override
-        public void onReceivedLoginRequest(String realm, String account, String args) {
-            getOnReceivedLoginRequestHelper().notifyCalled(realm, account, args);
-        }
-    }
-
     private TestAwContentsClient mContentsClient = new TestAwContentsClient();
 
     private void autoLoginTestHelper(final String testName, final String xAutoLoginHeader,
