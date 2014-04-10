@@ -208,7 +208,6 @@ TEST(ChromiumEnv, BackupTables) {
 
   // Ensure that deleting an ldb file also deletes its backup.
   int orig_ldb_files = CountFilesWithExtension(dir, FPL(".ldb"));
-  int orig_bak_files = CountFilesWithExtension(dir, FPL(".bak"));
   EXPECT_GT(ldb_files, 0);
   EXPECT_EQ(ldb_files, bak_files);
   EXPECT_TRUE(GetFirstLDBFile(dir, &ldb_file));
@@ -228,7 +227,7 @@ TEST(ChromiumEnv, GetChildrenEmptyDir) {
   std::vector<std::string> result;
   leveldb::Status status = env->GetChildren(dir.AsUTF8Unsafe(), &result);
   EXPECT_TRUE(status.ok());
-  EXPECT_EQ(0, result.size());
+  EXPECT_EQ(0U, result.size());
 }
 
 TEST(ChromiumEnv, GetChildrenPriorResults) {
