@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
@@ -73,10 +72,9 @@ class PrefHashCalculator {
   const GetLegacyDeviceIdCallback get_legacy_device_id_callback_;
 
   // A cache for the legacy device id which is hard to compute and thus lazily
-  // computed when/if required. The same instance is used across all
-  // PrefHashCalculators.
-  static base::LazyInstance<scoped_ptr<const std::string> >::Leaky
-      legacy_device_id_instance_;
+  // computed when/if required (computing the original value for this instance
+  // is allowed in const methods).
+  mutable scoped_ptr<const std::string> legacy_device_id_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashCalculator);
 };
