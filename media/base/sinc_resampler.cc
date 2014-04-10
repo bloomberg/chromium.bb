@@ -153,8 +153,7 @@ SincResampler::SincResampler(double io_sample_rate_ratio,
       input_buffer_(static_cast<float*>(
           base::AlignedAlloc(sizeof(float) * input_buffer_size_, 16))),
       r1_(input_buffer_.get()),
-      r2_(input_buffer_.get() + kKernelSize / 2),
-      not_currently_resampling_(1) {
+      r2_(input_buffer_.get() + kKernelSize / 2) {
   CHECK_GT(request_frames_, 0);
   Flush();
   CHECK_GT(block_size_, kKernelSize)
@@ -170,10 +169,7 @@ SincResampler::SincResampler(double io_sample_rate_ratio,
   InitializeKernel();
 }
 
-SincResampler::~SincResampler() {
-  // TODO(dalecurtis): Remove debugging for http://crbug.com/295278
-  CHECK(!base::AtomicRefCountDec(&not_currently_resampling_));
-}
+SincResampler::~SincResampler() {}
 
 void SincResampler::UpdateRegions(bool second_load) {
   // Setup various region pointers in the buffer (see diagram above).  If we're
@@ -256,8 +252,6 @@ void SincResampler::SetRatio(double io_sample_rate_ratio) {
 }
 
 void SincResampler::Resample(int frames, float* destination) {
-  CHECK(!base::AtomicRefCountDec(&not_currently_resampling_));
-
   int remaining_frames = frames;
 
   // Step (1) -- Prime the input buffer at the start of the input stream.
@@ -306,10 +300,8 @@ void SincResampler::Resample(int frames, float* destination) {
       virtual_source_idx_ += current_io_ratio;
       source_idx = virtual_source_idx_;
 
-      if (!--remaining_frames) {
-        base::AtomicRefCountInc(&not_currently_resampling_);
+      if (!--remaining_frames)
         return;
-      }
     }
 
     // Wrap back around to the start.
@@ -327,8 +319,6 @@ void SincResampler::Resample(int frames, float* destination) {
     // Step (5) -- Refresh the buffer with more input.
     read_cb_.Run(request_frames_, r0_);
   }
-
-  base::AtomicRefCountInc(&not_currently_resampling_);
 }
 
 #undef CONVOLVE_FUNC
@@ -338,7 +328,6 @@ int SincResampler::ChunkSize() const {
 }
 
 void SincResampler::Flush() {
-  CHECK(base::AtomicRefCountIsOne(&not_currently_resampling_));
   virtual_source_idx_ = 0;
   buffer_primed_ = false;
   memset(input_buffer_.get(), 0,

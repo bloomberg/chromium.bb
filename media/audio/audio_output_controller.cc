@@ -41,7 +41,6 @@ AudioOutputController::AudioOutputController(
       diverting_to_stream_(NULL),
       volume_(1.0),
       state_(kEmpty),
-      not_currently_in_on_more_io_data_(1),
       sync_reader_(sync_reader),
       message_loop_(audio_manager->GetTaskRunner()),
 #if defined(AUDIO_POWER_MONITORING)
@@ -58,8 +57,6 @@ AudioOutputController::AudioOutputController(
 
 AudioOutputController::~AudioOutputController() {
   DCHECK_EQ(kClosed, state_);
-  // TODO(dalecurtis): Remove debugging for http://crbug.com/349651
-  CHECK(!base::AtomicRefCountDec(&not_currently_in_on_more_io_data_));
 }
 
 // static
@@ -304,7 +301,6 @@ int AudioOutputController::OnMoreData(AudioBus* dest,
 int AudioOutputController::OnMoreIOData(AudioBus* source,
                                         AudioBus* dest,
                                         AudioBuffersState buffers_state) {
-  CHECK(!base::AtomicRefCountDec(&not_currently_in_on_more_io_data_));
   TRACE_EVENT0("audio", "AudioOutputController::OnMoreIOData");
 
   // Indicate that we haven't wedged (at least not indefinitely, WedgeCheck()
@@ -324,7 +320,6 @@ int AudioOutputController::OnMoreIOData(AudioBus* source,
   power_monitor_.Scan(*dest, frames);
 #endif
 
-  base::AtomicRefCountInc(&not_currently_in_on_more_io_data_);
   return frames;
 }
 

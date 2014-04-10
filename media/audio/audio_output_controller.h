@@ -237,11 +237,6 @@ class MEDIA_EXPORT AudioOutputController
   // is not required for reading on the audio manager thread.
   State state_;
 
-  // Atomic ref count indicating when when we're in the middle of handling an
-  // OnMoreIOData() callback.  Will be CHECK'd to find crashes.
-  // TODO(dalecurtis): Remove debug helpers for http://crbug.com/349651
-  base::AtomicRefCount not_currently_in_on_more_io_data_;
-
   // SyncReader is used only in low latency mode for synchronous reading.
   SyncReader* const sync_reader_;
 
