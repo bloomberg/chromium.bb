@@ -1,7 +1,10 @@
+# Author: Trevor Perrin
+# See the LICENSE file for legal information regarding use of this file.
+
 """OpenSSL/M2Crypto 3DES implementation."""
 
-from cryptomath import *
-from tripledes import *
+from .cryptomath import *
+from .tripledes import *
 
 if m2cryptoLoaded:
 
@@ -27,7 +30,7 @@ if m2cryptoLoaded:
             ciphertext = m2.cipher_update(context, plaintext)
             m2.cipher_ctx_free(context)
             self.IV = ciphertext[-self.block_size:]
-            return ciphertext
+            return bytearray(ciphertext)
 
         def decrypt(self, ciphertext):
             TripleDES.decrypt(self, ciphertext)
@@ -41,4 +44,4 @@ if m2cryptoLoaded:
             plaintext = plaintext[:len(ciphertext)]
             m2.cipher_ctx_free(context)
             self.IV = ciphertext[-self.block_size:]
-            return plaintext
+            return bytearray(plaintext)

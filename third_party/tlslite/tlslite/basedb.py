@@ -1,9 +1,19 @@
+# Authors: 
+#   Trevor Perrin
+#   Martin von Loewis - python 3 port
+#
+# See the LICENSE file for legal information regarding use of this file.
+
 """Base class for SharedKeyDB and VerifierDB."""
 
-import anydbm
-import thread
+try:
+    import anydbm
+except ImportError:
+    # Python 3
+    import dbm as anydbm
+import threading
 
-class BaseDB:
+class BaseDB(object):
     def __init__(self, filename, type):
         self.type = type
         self.filename = filename
@@ -11,7 +21,7 @@ class BaseDB:
             self.db = None
         else:
             self.db = {}
-        self.lock = thread.allocate_lock()
+        self.lock = threading.Lock()
 
     def create(self):
         """Create a new on-disk database.

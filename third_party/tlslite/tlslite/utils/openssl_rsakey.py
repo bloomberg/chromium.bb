@@ -1,9 +1,12 @@
+# Author: Trevor Perrin
+# See the LICENSE file for legal information regarding use of this file.
+
 """OpenSSL/M2Crypto RSA implementation."""
 
-from cryptomath import *
+from .cryptomath import *
 
-from rsakey import *
-from python_rsakey import Python_RSAKey
+from .rsakey import *
+from .python_rsakey import Python_RSAKey
 
 #copied from M2Crypto.util.py, so when we load the local copy of m2
 #we can still use it
@@ -55,33 +58,16 @@ if m2cryptoLoaded:
         def hasPrivateKey(self):
             return self._hasPrivateKey
 
-        def hash(self):
-            return Python_RSAKey(self.n, self.e).hash()
-
         def _rawPrivateKeyOp(self, m):
-            s = numberToString(m)
-            byteLength = numBytes(self.n)
-            if len(s)== byteLength:
-                pass
-            elif len(s) == byteLength-1:
-                s = '\0' + s
-            else:
-                raise AssertionError()
-            c = stringToNumber(m2.rsa_private_encrypt(self.rsa, s,
-                                                      m2.no_padding))
+            b = numberToByteArray(m, numBytes(self.n))
+            s = m2.rsa_private_encrypt(self.rsa, bytes(b), m2.no_padding)
+            c = bytesToNumber(bytearray(s))
             return c
 
         def _rawPublicKeyOp(self, c):
-            s = numberToString(c)
-            byteLength = numBytes(self.n)
-            if len(s)== byteLength:
-                pass
-            elif len(s) == byteLength-1:
-                s = '\0' + s
-            else:
-                raise AssertionError()
-            m = stringToNumber(m2.rsa_public_decrypt(self.rsa, s,
-                                                     m2.no_padding))
+            b = numberToByteArray(c, numBytes(self.n))
+            s = m2.rsa_public_decrypt(self.rsa, bytes(b), m2.no_padding)
+            m = bytesToNumber(bytearray(s))
             return m
 
         def acceptsPassword(self): return True
@@ -103,9 +89,6 @@ if m2cryptoLoaded:
             m2.bio_free(bio)
             return s
 
-        def writeXMLPublicKey(self, indent=''):
-            return Python_RSAKey(self.n, self.e).write(indent)
-
         def generate(bits):
             key = OpenSSL_RSAKey()
             def f():pass
@@ -115,6 +98,11 @@ if m2cryptoLoaded:
         generate = staticmethod(generate)
 
         def parse(s, passwordCallback=None):
+            # Skip forward to the first PEM header
+            start = s.find("-----BEGIN ")
+            if start == -1:
+                raise SyntaxError()
+            s = s[start:]            
             if s.startswith("-----BEGIN "):
                 if passwordCallback==None:
                     callback = password_callback

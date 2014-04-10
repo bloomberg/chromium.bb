@@ -1,13 +1,18 @@
+# Author: Trevor Perrin
+# See the LICENSE file for legal information regarding use of this file.
+
 """Class representing an X.509 certificate chain."""
 
-from utils import cryptomath
-from x509 import X509
+from .utils import cryptomath
+from .utils.tackwrapper import *
+from .utils.pem import *
+from .x509 import X509
 
-class X509CertChain:
+class X509CertChain(object):
     """This class represents a chain of X.509 certificates.
 
     @type x509List: list
-    @ivar x509List: A list of L{tlslite.X509.X509} instances,
+    @ivar x509List: A list of L{tlslite.x509.X509} instances,
     starting with the end-entity certificate and with every
     subsequent certificate certifying the previous.
     """
@@ -16,7 +21,7 @@ class X509CertChain:
         """Create a new X509CertChain.
 
         @type x509List: list
-        @param x509List: A list of L{tlslite.X509.X509} instances,
+        @param x509List: A list of L{tlslite.x509.X509} instances,
         starting with the end-entity certificate and with every
         subsequent certificate certifying the previous.
         """
@@ -25,65 +30,18 @@ class X509CertChain:
         else:
             self.x509List = []
 
-    def parseChain(self, s):
-        """Parse a PEM-encoded X.509 certificate file chain file.
+    def parsePemList(self, s):
+        """Parse a string containing a sequence of PEM certs.
 
-        @type s: str
-        @param s: A PEM-encoded (eg: Base64) X.509 certificate file, with every
-        certificate wrapped within "-----BEGIN CERTIFICATE-----" and
-        "-----END CERTIFICATE-----" tags). Extraneous data outside such tags,
-        such as human readable representations, will be ignored.
+        Raise a SyntaxError if input is malformed.
         """
-
-        class PEMIterator(object):
-            """Simple iterator over PEM-encoded certificates within a string.
-
-            @type data: string
-            @ivar data: A string containing PEM-encoded (Base64) certificates,
-            with every certificate wrapped within "-----BEGIN CERTIFICATE-----"
-            and "-----END CERTIFICATE-----" tags). Extraneous data outside such
-            tags, such as human readable representations, will be ignored.
-
-            @type index: integer
-            @ivar index: The current offset within data to begin iterating from.
-            """
-
-            _CERTIFICATE_HEADER = "-----BEGIN CERTIFICATE-----"
-            """The PEM encoding block header for X.509 certificates."""
-
-            _CERTIFICATE_FOOTER = "-----END CERTIFICATE-----"
-            """The PEM encoding block footer for X.509 certificates."""
-
-            def __init__(self, s):
-                self.data = s
-                self.index = 0
-
-            def __iter__(self):
-                return self
-
-            def next(self):
-                """Iterates and returns the next L{tlslite.X509.X509}
-                certificate in data.
-
-                @rtype tlslite.X509.X509
-                """
-
-                self.index = self.data.find(self._CERTIFICATE_HEADER,
-                                            self.index)
-                if self.index == -1:
-                    raise StopIteration
-                end = self.data.find(self._CERTIFICATE_FOOTER, self.index)
-                if end == -1:
-                    raise StopIteration
-
-                certStr = self.data[self.index+len(self._CERTIFICATE_HEADER) :
-                                    end]
-                self.index = end + len(self._CERTIFICATE_FOOTER)
-                bytes = cryptomath.base64ToBytes(certStr)
-                return X509().parseBinary(bytes)
-
-        self.x509List = list(PEMIterator(s))
-        return self
+        x509List = []
+        bList = dePemList(s, "CERTIFICATE")
+        for b in bList:
+            x509 = X509()
+            x509.parseBinary(b)
+            x509List.append(x509)
+        self.x509List = x509List
 
     def getNumCerts(self):
         """Get the number of certificates in this chain.
@@ -95,7 +53,7 @@ class X509CertChain:
     def getEndEntityPublicKey(self):
         """Get the public key from the end-entity certificate.
 
-        @rtype: L{tlslite.utils.RSAKey.RSAKey}
+        @rtype: L{tlslite.utils.rsakey.RSAKey}
         """
         if self.getNumCerts() == 0:
             raise AssertionError()
@@ -110,133 +68,24 @@ class X509CertChain:
         if self.getNumCerts() == 0:
             raise AssertionError()
         return self.x509List[0].getFingerprint()
-
-    def getCommonName(self):
-        """Get the Subject's Common Name from the end-entity certificate.
-
-        The cryptlib_py module must be installed in order to use this
-        function.
-
-        @rtype: str or None
-        @return: The CN component of the certificate's subject DN, if
-        present.
-        """
-        if self.getNumCerts() == 0:
-            raise AssertionError()
-        return self.x509List[0].getCommonName()
-
-    def validate(self, x509TrustList):
-        """Check the validity of the certificate chain.
-
-        This checks that every certificate in the chain validates with
-        the subsequent one, until some certificate validates with (or
-        is identical to) one of the passed-in root certificates.
-
-        The cryptlib_py module must be installed in order to use this
-        function.
-
-        @type x509TrustList: list of L{tlslite.X509.X509}
-        @param x509TrustList: A list of trusted root certificates.  The
-        certificate chain must extend to one of these certificates to
-        be considered valid.
-        """
-
-        import cryptlib_py
-        c1 = None
-        c2 = None
-        lastC = None
-        rootC = None
-
-        try:
-            rootFingerprints = [c.getFingerprint() for c in x509TrustList]
-
-            #Check that every certificate in the chain validates with the
-            #next one
-            for cert1, cert2 in zip(self.x509List, self.x509List[1:]):
-
-                #If we come upon a root certificate, we're done.
-                if cert1.getFingerprint() in rootFingerprints:
-                    return True
-
-                c1 = cryptlib_py.cryptImportCert(cert1.writeBytes(),
-                                                 cryptlib_py.CRYPT_UNUSED)
-                c2 = cryptlib_py.cryptImportCert(cert2.writeBytes(),
-                                                 cryptlib_py.CRYPT_UNUSED)
-                try:
-                    cryptlib_py.cryptCheckCert(c1, c2)
-                except:
-                    return False
-                cryptlib_py.cryptDestroyCert(c1)
-                c1 = None
-                cryptlib_py.cryptDestroyCert(c2)
-                c2 = None
-
-            #If the last certificate is one of the root certificates, we're
-            #done.
-            if self.x509List[-1].getFingerprint() in rootFingerprints:
+        
+    def checkTack(self, tack):
+        if self.x509List:
+            tlsCert = TlsCertificate(self.x509List[0].bytes)
+            if tlsCert.matches(tack):
                 return True
-
-            #Otherwise, find a root certificate that the last certificate
-            #chains to, and validate them.
-            lastC = cryptlib_py.cryptImportCert(self.x509List[-1].writeBytes(),
-                                                cryptlib_py.CRYPT_UNUSED)
-            for rootCert in x509TrustList:
-                rootC = cryptlib_py.cryptImportCert(rootCert.writeBytes(),
-                                                    cryptlib_py.CRYPT_UNUSED)
-                if self._checkChaining(lastC, rootC):
-                    try:
-                        cryptlib_py.cryptCheckCert(lastC, rootC)
-                        return True
-                    except:
-                        return False
-            return False
-        finally:
-            if not (c1 is None):
-                cryptlib_py.cryptDestroyCert(c1)
-            if not (c2 is None):
-                cryptlib_py.cryptDestroyCert(c2)
-            if not (lastC is None):
-                cryptlib_py.cryptDestroyCert(lastC)
-            if not (rootC is None):
-                cryptlib_py.cryptDestroyCert(rootC)
-
-
-
-    def _checkChaining(self, lastC, rootC):
-        import cryptlib_py
-        import array
-        def compareNames(name):
-            try:
-                length = cryptlib_py.cryptGetAttributeString(lastC, name, None)
-                lastName = array.array('B', [0] * length)
-                cryptlib_py.cryptGetAttributeString(lastC, name, lastName)
-                lastName = lastName.tostring()
-            except cryptlib_py.CryptException, e:
-                if e[0] == cryptlib_py.CRYPT_ERROR_NOTFOUND:
-                    lastName = None
-            try:
-                length = cryptlib_py.cryptGetAttributeString(rootC, name, None)
-                rootName = array.array('B', [0] * length)
-                cryptlib_py.cryptGetAttributeString(rootC, name, rootName)
-                rootName = rootName.tostring()
-            except cryptlib_py.CryptException, e:
-                if e[0] == cryptlib_py.CRYPT_ERROR_NOTFOUND:
-                    rootName = None
-
-            return lastName == rootName
-
-        cryptlib_py.cryptSetAttribute(lastC,
-                                      cryptlib_py.CRYPT_CERTINFO_ISSUERNAME,
-                                      cryptlib_py.CRYPT_UNUSED)
-
-        if not compareNames(cryptlib_py.CRYPT_CERTINFO_COUNTRYNAME):
-            return False
-        if not compareNames(cryptlib_py.CRYPT_CERTINFO_LOCALITYNAME):
-            return False
-        if not compareNames(cryptlib_py.CRYPT_CERTINFO_ORGANIZATIONNAME):
-            return False
-        if not compareNames(cryptlib_py.CRYPT_CERTINFO_ORGANIZATIONALUNITNAME):
-            return False
-        if not compareNames(cryptlib_py.CRYPT_CERTINFO_COMMONNAME):
-            return False
-        return True
+        return False
+        
+    def getTackExt(self):
+        """Get the TACK and/or Break Sigs from a TACK Cert in the chain."""
+        tackExt = None
+        # Search list in backwards order
+        for x509 in self.x509List[::-1]:
+            tlsCert = TlsCertificate(x509.bytes)
+            if tlsCert.tackExt:
+                if tackExt:
+                    raise SyntaxError("Multiple TACK Extensions")
+                else:
+                    tackExt = tlsCert.tackExt
+        return tackExt
+                

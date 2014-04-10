@@ -1,3 +1,6 @@
+# Author: Trevor Perrin
+# See the LICENSE file for legal information regarding use of this file.
+
 """TLS Lite + SocketServer."""
 
 from tlslite.tlsconnection import TLSConnection
@@ -17,7 +20,7 @@ class TLSSocketServerMixIn:
         from SocketServer import *
         from BaseHTTPServer import *
         from SimpleHTTPServer import *
-        from tlslite.api import *
+        from tlslite import *
 
         s = open("./serverX509Cert.pem").read()
         x509 = X509()

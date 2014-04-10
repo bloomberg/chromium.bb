@@ -1,13 +1,28 @@
+# Authors: 
+#   Trevor Perrin
+#   Dave Baggett (Arcode Corporation) - Added TLSUnsupportedError.
+#
+# See the LICENSE file for legal information regarding use of this file.
+
 """Exception classes.
 @sort: TLSError, TLSAbruptCloseError, TLSAlert, TLSLocalAlert, TLSRemoteAlert,
 TLSAuthenticationError, TLSNoAuthenticationError, TLSAuthenticationTypeError,
-TLSFingerprintError, TLSAuthorizationError, TLSValidationError, TLSFaultError
+TLSFingerprintError, TLSAuthorizationError, TLSValidationError, TLSFaultError,
+TLSUnsupportedError
 """
+import socket
 
-from constants import AlertDescription, AlertLevel
+from .constants import AlertDescription, AlertLevel
 
 class TLSError(Exception):
     """Base class for all TLS Lite exceptions."""
+    
+    def __str__(self):
+        """"At least print out the Exception time for str(...)."""
+        return repr(self)    
+
+class TLSClosedConnectionError(TLSError, socket.error):
+    """An attempt was made to use the connection after it was closed."""
     pass
 
 class TLSAbruptCloseError(TLSError):
@@ -51,8 +66,7 @@ class TLSAlert(TLSError):
         AlertDescription.inappropriate_fallback: "inappropriate_fallback",\
         AlertDescription.user_canceled: "user_canceled",\
         AlertDescription.no_renegotiation: "no_renegotiation",\
-        AlertDescription.unknown_srp_username: "unknown_srp_username",\
-        AlertDescription.missing_srp_username: "missing_srp_username"}
+        AlertDescription.unknown_psk_identity: "unknown_psk_identity"}
 
 class TLSLocalAlert(TLSAlert):
     """A TLS alert has been signalled by the local implementation.
@@ -138,7 +152,10 @@ class TLSAuthorizationError(TLSAuthenticationError):
 class TLSValidationError(TLSAuthenticationError):
     """The Checker has determined that the other party's certificate
     chain is invalid."""
-    pass
+    def __init__(self, msg, info=None):
+        # Include a dict containing info about this validation failure
+        TLSAuthenticationError.__init__(self, msg)
+        self.info = info
 
 class TLSFaultError(TLSError):
     """The other party responded incorrectly to an induced fault.
@@ -147,4 +164,10 @@ class TLSFaultError(TLSError):
     TLSConnection's fault variable is set to induce some sort of
     faulty behavior, and the other party doesn't respond appropriately.
     """
+    pass
+
+
+class TLSUnsupportedError(TLSError):
+    """The implementation doesn't support the requested (or required)
+    capabilities."""
     pass

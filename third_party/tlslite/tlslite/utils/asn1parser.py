@@ -1,9 +1,14 @@
+# Author: Trevor Perrin
+# Patch from Google adding getChildBytes()
+#
+# See the LICENSE file for legal information regarding use of this file.
+
 """Class for parsing ASN.1"""
-from compat import *
-from codec import *
+from .compat import *
+from .codec import *
 
 #Takes a byte array which has a DER TLV field at its head
-class ASN1Parser:
+class ASN1Parser(object):
     def __init__(self, bytes):
         p = Parser(bytes)
         p.get(1) #skip Type

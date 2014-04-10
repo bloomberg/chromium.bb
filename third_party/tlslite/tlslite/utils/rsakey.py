@@ -1,15 +1,18 @@
+# Author: Trevor Perrin
+# See the LICENSE file for legal information regarding use of this file.
+
 """Abstract class for RSA."""
 
-from cryptomath import *
+from .cryptomath import *
 
 
-class RSAKey:
+class RSAKey(object):
     """This is an abstract base class for RSA keys.
 
     Particular implementations of RSA keys, such as
-    L{OpenSSL_RSAKey.OpenSSL_RSAKey},
-    L{Python_RSAKey.Python_RSAKey}, and
-    L{PyCrypto_RSAKey.PyCrypto_RSAKey},
+    L{openssl_rsakey.OpenSSL_RSAKey},
+    L{python_rsakey.Python_RSAKey}, and
+    L{pycrypto_rsakey.PyCrypto_RSAKey},
     inherit from this.
 
     To create or parse an RSA key, don't use one of these classes
@@ -44,36 +47,19 @@ class RSAKey:
         """
         raise NotImplementedError()
 
-    def hash(self):
-        """Return the cryptoID <keyHash> value corresponding to this
-        key.
-
-        @rtype: str
-        """
-        raise NotImplementedError()
-
-    def getSigningAlgorithm(self):
-        """Return the cryptoID sigAlgo value corresponding to this key.
-
-        @rtype: str
-        """
-        return "pkcs1-sha1"
-
     def hashAndSign(self, bytes):
         """Hash and sign the passed-in bytes.
 
         This requires the key to have a private component.  It performs
         a PKCS1-SHA1 signature on the passed-in data.
 
-        @type bytes: str or L{array.array} of unsigned bytes
+        @type bytes: str or L{bytearray} of unsigned bytes
         @param bytes: The value which will be hashed and signed.
 
-        @rtype: L{array.array} of unsigned bytes.
+        @rtype: L{bytearray} of unsigned bytes.
         @return: A PKCS1-SHA1 signature on the passed-in data.
         """
-        if not isinstance(bytes, type("")):
-            bytes = bytesToString(bytes)
-        hashBytes = stringToBytes(sha.sha(bytes).digest())
+        hashBytes = SHA1(bytearray(bytes))
         prefixedHashBytes = self._addPKCS1SHA1Prefix(hashBytes)
         sigBytes = self.sign(prefixedHashBytes)
         return sigBytes
@@ -83,20 +69,23 @@ class RSAKey:
 
         This verifies a PKCS1-SHA1 signature on the passed-in data.
 
-        @type sigBytes: L{array.array} of unsigned bytes
+        @type sigBytes: L{bytearray} of unsigned bytes
         @param sigBytes: A PKCS1-SHA1 signature.
 
-        @type bytes: str or L{array.array} of unsigned bytes
+        @type bytes: str or L{bytearray} of unsigned bytes
         @param bytes: The value which will be hashed and verified.
 
         @rtype: bool
         @return: Whether the signature matches the passed-in data.
         """
-        if not isinstance(bytes, type("")):
-            bytes = bytesToString(bytes)
-        hashBytes = stringToBytes(sha.sha(bytes).digest())
-        prefixedHashBytes = self._addPKCS1SHA1Prefix(hashBytes)
-        return self.verify(sigBytes, prefixedHashBytes)
+        hashBytes = SHA1(bytearray(bytes))
+        
+        # Try it with/without the embedded NULL
+        prefixedHashBytes1 = self._addPKCS1SHA1Prefix(hashBytes, False)
+        prefixedHashBytes2 = self._addPKCS1SHA1Prefix(hashBytes, True)
+        result1 = self.verify(sigBytes, prefixedHashBytes1)
+        result2 = self.verify(sigBytes, prefixedHashBytes2)
+        return (result1 or result2)
 
     def sign(self, bytes):
         """Sign the passed-in bytes.
@@ -104,10 +93,10 @@ class RSAKey:
         This requires the key to have a private component.  It performs
         a PKCS1 signature on the passed-in data.
 
-        @type bytes: L{array.array} of unsigned bytes
+        @type bytes: L{bytearray} of unsigned bytes
         @param bytes: The value which will be signed.
 
-        @rtype: L{array.array} of unsigned bytes.
+        @rtype: L{bytearray} of unsigned bytes.
         @return: A PKCS1 signature on the passed-in data.
         """
         if not self.hasPrivateKey():
@@ -117,7 +106,7 @@ class RSAKey:
         if m >= self.n:
             raise ValueError()
         c = self._rawPrivateKeyOp(m)
-        sigBytes = numberToBytes(c, numBytes(self.n))
+        sigBytes = numberToByteArray(c, numBytes(self.n))
         return sigBytes
 
     def verify(self, sigBytes, bytes):
@@ -125,21 +114,23 @@ class RSAKey:
 
         This verifies a PKCS1 signature on the passed-in data.
 
-        @type sigBytes: L{array.array} of unsigned bytes
+        @type sigBytes: L{bytearray} of unsigned bytes
         @param sigBytes: A PKCS1 signature.
 
-        @type bytes: L{array.array} of unsigned bytes
+        @type bytes: L{bytearray} of unsigned bytes
         @param bytes: The value which will be verified.
 
         @rtype: bool
         @return: Whether the signature matches the passed-in data.
         """
+        if len(sigBytes) != numBytes(self.n):
+            return False
         paddedBytes = self._addPKCS1Padding(bytes, 1)
         c = bytesToNumber(sigBytes)
         if c >= self.n:
             return False
         m = self._rawPublicKeyOp(c)
-        checkBytes = numberToBytes(m)
+        checkBytes = numberToByteArray(m, numBytes(self.n))
         return checkBytes == paddedBytes
 
     def encrypt(self, bytes):
@@ -147,10 +138,10 @@ class RSAKey:
 
         This performs PKCS1 encryption of the passed-in data.
 
-        @type bytes: L{array.array} of unsigned bytes
+        @type bytes: L{bytearray} of unsigned bytes
         @param bytes: The value which will be encrypted.
 
-        @rtype: L{array.array} of unsigned bytes.
+        @rtype: L{bytearray} of unsigned bytes.
         @return: A PKCS1 encryption of the passed-in data.
         """
         paddedBytes = self._addPKCS1Padding(bytes, 2)
@@ -158,7 +149,7 @@ class RSAKey:
         if m >= self.n:
             raise ValueError()
         c = self._rawPublicKeyOp(m)
-        encBytes = numberToBytes(c)
+        encBytes = numberToByteArray(c, numBytes(self.n))
         return encBytes
 
     def decrypt(self, encBytes):
@@ -167,25 +158,27 @@ class RSAKey:
         This requires the key to have a private component.  It performs
         PKCS1 decryption of the passed-in data.
 
-        @type encBytes: L{array.array} of unsigned bytes
+        @type encBytes: L{bytearray} of unsigned bytes
         @param encBytes: The value which will be decrypted.
 
-        @rtype: L{array.array} of unsigned bytes or None.
+        @rtype: L{bytearray} of unsigned bytes or None.
         @return: A PKCS1 decryption of the passed-in data or None if
         the data is not properly formatted.
         """
         if not self.hasPrivateKey():
             raise AssertionError()
+        if len(encBytes) != numBytes(self.n):
+            return None
         c = bytesToNumber(encBytes)
         if c >= self.n:
             return None
         m = self._rawPrivateKeyOp(c)
-        decBytes = numberToBytes(m)
-        if (len(decBytes) != numBytes(self.n)-1): #Check first byte
+        decBytes = numberToByteArray(m, numBytes(self.n))
+        #Check first two bytes
+        if decBytes[0] != 0 or decBytes[1] != 2:
             return None
-        if decBytes[0] != 2: #Check second byte
-            return None
-        for x in range(len(decBytes)-1): #Scan through for zero separator
+        #Scan through for zero separator
+        for x in range(1, len(decBytes)-1):
             if decBytes[x]== 0:
                 break
         else:
@@ -210,18 +203,10 @@ class RSAKey:
         """Return a string containing the key.
 
         @rtype: str
-        @return: A string describing the key, in whichever format (PEM
-        or XML) is native to the implementation.
+        @return: A string describing the key, in whichever format (PEM)
+        is native to the implementation.
         """
         raise NotImplementedError()
-
-    def writeXMLPublicKey(self, indent=''):
-        """Return a string containing the key.
-
-        @rtype: str
-        @return: A string describing the public key, in XML format.
-        """
-        return Python_RSAKey(self.n, self.e).write(indent)
 
     def generate(bits):
         """Generate a new key with the specified bit length.
@@ -236,9 +221,22 @@ class RSAKey:
     # Helper Functions for RSA Keys
     # **************************************************************************
 
-    def _addPKCS1SHA1Prefix(self, bytes):
-        prefixBytes = createByteArraySequence(\
-            [48,33,48,9,6,5,43,14,3,2,26,5,0,4,20])
+    def _addPKCS1SHA1Prefix(self, bytes, withNULL=True):
+        # There is a long history of confusion over whether the SHA1 
+        # algorithmIdentifier should be encoded with a NULL parameter or 
+        # with the parameter omitted.  While the original intention was 
+        # apparently to omit it, many toolkits went the other way.  TLS 1.2
+        # specifies the NULL should be included, and this behavior is also
+        # mandated in recent versions of PKCS #1, and is what tlslite has
+        # always implemented.  Anyways, verification code should probably 
+        # accept both.  However, nothing uses this code yet, so this is 
+        # all fairly moot.
+        if not withNULL:
+            prefixBytes = bytearray(\
+            [0x30,0x1f,0x30,0x07,0x06,0x05,0x2b,0x0e,0x03,0x02,0x1a,0x04,0x14])            
+        else:
+            prefixBytes = bytearray(\
+            [0x30,0x21,0x30,0x09,0x06,0x05,0x2b,0x0e,0x03,0x02,0x1a,0x05,0x00,0x04,0x14])            
         prefixedBytes = prefixBytes + bytes
         return prefixedBytes
 
@@ -247,7 +245,7 @@ class RSAKey:
         if blockType == 1: #Signature padding
             pad = [0xFF] * padLength
         elif blockType == 2: #Encryption padding
-            pad = createByteArraySequence([])
+            pad = bytearray(0)
             while len(pad) < padLength:
                 padBytes = getRandomBytes(padLength * 2)
                 pad = [b for b in padBytes if b != 0]
@@ -255,10 +253,6 @@ class RSAKey:
         else:
             raise AssertionError()
 
-        #NOTE: To be proper, we should add [0,blockType].  However,
-        #the zero is lost when the returned padding is converted
-        #to a number, so we don't even bother with it.  Also,
-        #adding it would cause a misalignment in verify()
-        padding = createByteArraySequence([blockType] + pad + [0])
+        padding = bytearray([0,blockType] + pad + [0])
         paddedBytes = padding + bytes
         return paddedBytes

@@ -1,7 +1,10 @@
+# Author: Trevor Perrin
+# See the LICENSE file for legal information regarding use of this file.
+
 """OpenSSL/M2Crypto AES implementation."""
 
-from cryptomath import *
-from aes import *
+from .cryptomath import *
+from .aes import *
 
 if m2cryptoLoaded:
 
@@ -32,7 +35,7 @@ if m2cryptoLoaded:
             ciphertext = m2.cipher_update(context, plaintext)
             m2.cipher_ctx_free(context)
             self.IV = ciphertext[-self.block_size:]
-            return ciphertext
+            return bytearray(ciphertext)
 
         def decrypt(self, ciphertext):
             AES.decrypt(self, ciphertext)
@@ -46,4 +49,4 @@ if m2cryptoLoaded:
             plaintext = plaintext[:len(ciphertext)]
             m2.cipher_ctx_free(context)
             self.IV = ciphertext[-self.block_size:]
-            return plaintext
+            return bytearray(plaintext)

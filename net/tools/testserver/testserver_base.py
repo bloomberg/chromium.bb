@@ -14,6 +14,8 @@ import struct
 import sys
 import warnings
 
+import tlslite.errors
+
 # Ignore deprecation warnings, they make our output more cluttered.
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -71,6 +73,9 @@ class BrokenPipeHandlerMixIn:
 
   def handle_error(self, request, client_address):
     value = sys.exc_info()[1]
+    if isinstance(value, tlslite.errors.TLSClosedConnectionError):
+      print "testserver.py: Closed connection"
+      return
     if isinstance(value, socket.error):
       err = value.args[0]
       if sys.platform in ('win32', 'cygwin'):
@@ -80,6 +85,9 @@ class BrokenPipeHandlerMixIn:
         pipe_err = errno.EPIPE
       if err == pipe_err:
         print "testserver.py: Broken pipe"
+        return
+      if err == errno.ECONNRESET:
+        print "testserver.py: Connection reset by peer"
         return
     SocketServer.BaseServer.handle_error(self, request, client_address)
 

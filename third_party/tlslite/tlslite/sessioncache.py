@@ -1,9 +1,15 @@
+# Authors: 
+#   Trevor Perrin
+#   Martin von Loewis - python 3 port
+#
+# See the LICENSE file for legal information regarding use of this file.
+
 """Class for caching TLS sessions."""
 
-import thread
+import threading
 import time
 
-class SessionCache:
+class SessionCache(object):
     """This class is used by the server to cache TLS sessions.
 
     Caching sessions allows the client to use TLS session resumption
@@ -31,7 +37,7 @@ class SessionCache:
         @param maxAge:  The number of seconds before a session expires
         from the cache.  The default is 14400 (i.e. 4 hours)."""
 
-        self.lock = thread.allocate_lock()
+        self.lock = threading.Lock()
 
         # Maps sessionIDs to sessions
         self.entriesDict = {}
@@ -47,7 +53,7 @@ class SessionCache:
         self.lock.acquire()
         try:
             self._purge() #Delete old items, so we're assured of a new one
-            session = self.entriesDict[sessionID]
+            session = self.entriesDict[bytes(sessionID)]
 
             #When we add sessions they're resumable, but it's possible
             #for the session to be invalidated later on (if a fatal alert
@@ -66,7 +72,7 @@ class SessionCache:
         self.lock.acquire()
         try:
             #Add the new element
-            self.entriesDict[sessionID] = session
+            self.entriesDict[bytes(sessionID)] = session
             self.entriesList[self.lastIndex] = (sessionID, time.time())
             self.lastIndex = (self.lastIndex+1) % len(self.entriesList)
 

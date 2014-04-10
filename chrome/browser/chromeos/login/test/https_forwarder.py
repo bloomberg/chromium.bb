@@ -84,7 +84,8 @@ class MultiThreadedHTTPSServer(SocketServer.ThreadingMixIn,
       request_hander_class: The class that will handle requests to the server.
       pem_cert_and_key: Path to file containing the https cert and private key.
     """
-    self.cert_chain = tlslite.api.X509CertChain().parseChain(pem_cert_and_key)
+    self.cert_chain = tlslite.api.X509CertChain()
+    self.cert_chain.parsePemList(pem_cert_and_key)
     # Force using only python implementation - otherwise behavior is different
     # depending on whether m2crypto Python module is present (error is thrown
     # when it is). m2crypto uses a C (based on OpenSSL) implementation under

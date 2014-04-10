@@ -1,19 +1,21 @@
+# Author: Trevor Perrin
+# See the LICENSE file for legal information regarding use of this file.
+
 """Factory functions for asymmetric cryptography.
-@sort: generateRSAKey, parseXMLKey, parsePEMKey, parseAsPublicKey,
-parseAsPrivateKey
+@sort: generateRSAKey, parsePEMKey, parseAsPublicKey
 """
 
-from compat import *
+from .compat import *
 
-from rsakey import RSAKey
-from python_rsakey import Python_RSAKey
-import cryptomath
+from .rsakey import RSAKey
+from .python_rsakey import Python_RSAKey
+from tlslite.utils import cryptomath
 
 if cryptomath.m2cryptoLoaded:
-    from openssl_rsakey import OpenSSL_RSAKey
+    from .openssl_rsakey import OpenSSL_RSAKey
 
 if cryptomath.pycryptoLoaded:
-    from pycrypto_rsakey import PyCrypto_RSAKey
+    from .pycrypto_rsakey import PyCrypto_RSAKey
 
 # **************************************************************************
 # Factory Functions for RSA Keys
@@ -25,7 +27,7 @@ def generateRSAKey(bits, implementations=["openssl", "python"]):
     @type bits: int
     @param bits: Desired bit length of the new key's modulus.
 
-    @rtype: L{tlslite.utils.RSAKey.RSAKey}
+    @rtype: L{tlslite.utils.rsakey.RSAKey}
     @return: A new RSA private key.
     """
     for implementation in implementations:
@@ -34,54 +36,6 @@ def generateRSAKey(bits, implementations=["openssl", "python"]):
         elif implementation == "python":
             return Python_RSAKey.generate(bits)
     raise ValueError("No acceptable implementations")
-
-def parseXMLKey(s, private=False, public=False, implementations=["python"]):
-    """Parse an XML-format key.
-
-    The XML format used here is specific to tlslite and cryptoIDlib.  The
-    format can store the public component of a key, or the public and
-    private components.  For example::
-
-        <publicKey xmlns="http://trevp.net/rsa">
-            <n>4a5yzB8oGNlHo866CAspAC47M4Fvx58zwK8pou...
-            <e>Aw==</e>
-        </publicKey>
-
-        <privateKey xmlns="http://trevp.net/rsa">
-            <n>4a5yzB8oGNlHo866CAspAC47M4Fvx58zwK8pou...
-            <e>Aw==</e>
-            <d>JZ0TIgUxWXmL8KJ0VqyG1V0J3ern9pqIoB0xmy...
-            <p>5PreIj6z6ldIGL1V4+1C36dQFHNCQHJvW52GXc...
-            <q>/E/wDit8YXPCxx126zTq2ilQ3IcW54NJYyNjiZ...
-            <dP>mKc+wX8inDowEH45Qp4slRo1YveBgExKPROu6...
-            <dQ>qDVKtBz9lk0shL5PR3ickXDgkwS576zbl2ztB...
-            <qInv>j6E8EA7dNsTImaXexAmLA1DoeArsYeFAInr...
-        </privateKey>
-
-    @type s: str
-    @param s: A string containing an XML public or private key.
-
-    @type private: bool
-    @param private: If True, a L{SyntaxError} will be raised if the private
-    key component is not present.
-
-    @type public: bool
-    @param public: If True, the private key component (if present) will be
-    discarded, so this function will always return a public key.
-
-    @rtype: L{tlslite.utils.RSAKey.RSAKey}
-    @return: An RSA key.
-
-    @raise SyntaxError: If the key is not properly formatted.
-    """
-    for implementation in implementations:
-        if implementation == "python":
-            key = Python_RSAKey.parseXML(s)
-            break
-    else:
-        raise ValueError("No acceptable implementations")
-
-    return _parseKeyHelper(key, private, public)
 
 #Parse as an OpenSSL or Python key
 def parsePEMKey(s, private=False, public=False, passwordCallback=None,
@@ -171,36 +125,30 @@ def _parseKeyHelper(key, private, public):
     return key
 
 def parseAsPublicKey(s):
-    """Parse an XML or PEM-formatted public key.
+    """Parse a PEM-formatted public key.
 
     @type s: str
-    @param s: A string containing an XML or PEM-encoded public or private key.
+    @param s: A string containing a PEM-encoded public or private key.
 
-    @rtype: L{tlslite.utils.RSAKey.RSAKey}
+    @rtype: L{tlslite.utils.rsakey.RSAKey}
     @return: An RSA public key.
 
     @raise SyntaxError: If the key is not properly formatted.
     """
-    try:
-        return parsePEMKey(s, public=True)
-    except:
-        return parseXMLKey(s, public=True)
+    return parsePEMKey(s, public=True)
 
 def parsePrivateKey(s):
-    """Parse an XML or PEM-formatted private key.
+    """Parse a PEM-formatted private key.
 
     @type s: str
-    @param s: A string containing an XML or PEM-encoded private key.
+    @param s: A string containing a PEM-encoded private key.
 
-    @rtype: L{tlslite.utils.RSAKey.RSAKey}
+    @rtype: L{tlslite.utils.rsakey.RSAKey}
     @return: An RSA private key.
 
     @raise SyntaxError: If the key is not properly formatted.
     """
-    try:
-        return parsePEMKey(s, private=True)
-    except:
-        return parseXMLKey(s, private=True)
+    return parsePEMKey(s, private=True)
 
 def _createPublicKey(key):
     """

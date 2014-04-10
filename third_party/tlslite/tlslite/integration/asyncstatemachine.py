@@ -1,3 +1,6 @@
+# Author: Trevor Perrin
+# See the LICENSE file for legal information regarding use of this file.
+
 """
 A state machine for using TLS Lite with asynchronous I/O.
 """
@@ -203,7 +206,7 @@ class AsyncStateMachine:
         """Start a handshake operation.
 
         The arguments passed to this function will be forwarded to
-        L{tlslite.TLSConnection.TLSConnection.handshakeServerAsync}.
+        L{tlslite.tlsconnection.TLSConnection.handshakeServerAsync}.
         """
         handshaker = self.tlsConnection.handshakeServerAsync(**args)
         self.setHandshakeOp(handshaker)

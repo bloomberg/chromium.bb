@@ -1,36 +1,18 @@
 Name: tlslite
 URL: http://trevp.net/tlslite/
-Version: 0.3.8
+Version: 0.4.6
 Security Critical: No
-License: Public domain
+License: Public domain and BSD
+
+Description: Python TLS implementation for use with test server.
+
+Source: https://pypi.python.org/packages/source/t/tlslite/tlslite-0.4.6.tar.gz
+MD5: 2f92ebea557802969653f29c7faafbc2
+SHA-512: 7b933499dfdafbdf3775c7e86bbc82a6fcee0b37a818d9106fe84436176df7f4
+         2f185f61a64c6548214909cfce530f5d143414173ffc8f074faf87f34c87f38c
 
 Local Modifications:
-
-- patches/close_notify.patch: tlslite/TLSRecordLayer.py was changed to force
-  the socket to be closed when the SSL connection is closed. This is is
-  necessary at this point since WinHTTP does not seem to react to the SSL
-  close notify. It's also needed to prevent a hang on Linux.  See also 
-  http://sourceforge.net/mailarchive/forum.php?thread_name=41C9B18B.2010201%40ag.com&forum_name=tlslite-users
-- patches/python26.patch: Replace sha, md5 module imports with hashlib, as
-  they are deprecated in Python 2.6
-- patches/ca_request.patch: tlslite/X509.py was changed to obtain the
-  DER-encoded distinguished name for a certificate, without requiring any
-  addition libraries.
-  tlslite/utils/ASN1Parser.py was changed to allow obtaining the unparsed
-  data for an element in a SEQUENCE, in addition to providing the parsed
-  value (tag and length removed)
-  tlslite/messages.py was changed from accepting/returning a single byte
-  array in the CertificateRequest message for the CA names to accept a list
-  of byte arrays, each containing a DER-encoded distinguished name.
-  tlslite/TLSConnection.py was changed to take a list of such byte arrays
-  when creating a TLS server that will request client authentication.
-- patches/send_certificate_types.patch: tlslite/message.py was changed to
-  default to a certificate_types of [rsa_sign] in CertificateRequest. Apple's
-  Secure Transport library rejects an empty list and raises an SSL protocol
-  error.
-- patches/parse_chain.patch: tlslite/X509CertChain.py and tlslite/X509.py were
-  updated to add a parseChain method, that can parse multiple certificates from
-  a PEM string.
+- Drop docs/, scripts/, and tests/ directories.
 - patches/tls_intolerant.patch: allow TLSLite to simulate a TLS-intolerant server.
 - patches/channel_id.patch: add basic ChannelID support. (Signatures are not
   checked.)
@@ -39,6 +21,12 @@ Local Modifications:
 - patches/fallback_scsv.patch: add support for TLS_FALLBACK_SCSV. See
   https://tools.ietf.org/html/draft-bmoeller-tls-downgrade-scsv-01
 - patches/status_request.patch: add support for sending stapled OCSP responses.
-- patches/rsa_signature_length.patch: Ensure that RSA signatures have the
-  correct length.
-- Rename all Python files to lowercase in preparation for 0.4.6 update.
+- patches/pycrypto.patch: fix PyCrypto support code.
+- patches/client_cipher_preferences.patch: honor client cipher preferences.
+  tlslite's current ordering will otherwise negotiate
+  TLS_RSA_WITH_3DES_EDE_CBC_SHA.
+- patches/ssl3_padding.patch: SSL3 requires minimal padding in CBC mode.
+- patches/srp_cert.patch: Prefer srp + cert over srp, to fix tlslite tests after
+  client_cipher_preferences.patch.
+- patches/fix_test_file.patch: Fix #! line in random test file to appease our
+  presubmit checks.

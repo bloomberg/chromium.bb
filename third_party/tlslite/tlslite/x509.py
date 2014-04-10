@@ -1,25 +1,32 @@
+# Authors: 
+#   Trevor Perrin
+#   Google - parsing subject field
+#
+# See the LICENSE file for legal information regarding use of this file.
+
 """Class representing an X.509 certificate."""
 
-from utils.asn1parser import ASN1Parser
-from utils.cryptomath import *
-from utils.keyfactory import _createPublicRSAKey
+from .utils.asn1parser import ASN1Parser
+from .utils.cryptomath import *
+from .utils.keyfactory import _createPublicRSAKey
+from .utils.pem import *
 
 
-class X509:
+class X509(object):
     """This class represents an X.509 certificate.
 
-    @type bytes: L{array.array} of unsigned bytes
+    @type bytes: L{bytearray} of unsigned bytes
     @ivar bytes: The DER-encoded ASN.1 certificate
 
-    @type publicKey: L{tlslite.utils.RSAKey.RSAKey}
+    @type publicKey: L{tlslite.utils.rsakey.RSAKey}
     @ivar publicKey: The subject public key from the certificate.
 
-    @type subject: L{array.array} of unsigned bytes
+    @type subject: L{bytearray} of unsigned bytes
     @ivar subject: The DER-encoded ASN.1 subject distinguished name.
     """
 
     def __init__(self):
-        self.bytes = createByteArraySequence([])
+        self.bytes = bytearray(0)
         self.publicKey = None
         self.subject = None
 
@@ -32,29 +39,18 @@ class X509:
         "-----END CERTIFICATE-----" tags).
         """
 
-        start = s.find("-----BEGIN CERTIFICATE-----")
-        end = s.find("-----END CERTIFICATE-----")
-        if start == -1:
-            raise SyntaxError("Missing PEM prefix")
-        if end == -1:
-            raise SyntaxError("Missing PEM postfix")
-        s = s[start+len("-----BEGIN CERTIFICATE-----") : end]
-
-        bytes = base64ToBytes(s)
+        bytes = dePem(s, "CERTIFICATE")
         self.parseBinary(bytes)
         return self
 
     def parseBinary(self, bytes):
         """Parse a DER-encoded X.509 certificate.
 
-        @type bytes: str or L{array.array} of unsigned bytes
+        @type bytes: str or L{bytearray} of unsigned bytes
         @param bytes: A DER-encoded X.509 certificate.
         """
 
-        if isinstance(bytes, type("")):
-            bytes = stringToBytes(bytes)
-
-        self.bytes = bytes
+        self.bytes = bytearray(bytes)
         p = ASN1Parser(bytes)
 
         #Get the tbsCertificate
@@ -99,7 +95,6 @@ class X509:
 
         #Create a public key instance
         self.publicKey = _createPublicRSAKey(n, e)
-        return self
 
     def getFingerprint(self):
         """Get the hex-encoded fingerprint of this certificate.
@@ -107,34 +102,7 @@ class X509:
         @rtype: str
         @return: A hex-encoded fingerprint.
         """
-        return sha.sha(self.bytes).hexdigest()
-
-    def getCommonName(self):
-        """Get the Subject's Common Name from the certificate.
-
-        The cryptlib_py module must be installed in order to use this
-        function.
-
-        @rtype: str or None
-        @return: The CN component of the certificate's subject DN, if
-        present.
-        """
-        import cryptlib_py
-        import array
-        c = cryptlib_py.cryptImportCert(self.bytes, cryptlib_py.CRYPT_UNUSED)
-        name = cryptlib_py.CRYPT_CERTINFO_COMMONNAME
-        try:
-            try:
-                length = cryptlib_py.cryptGetAttributeString(c, name, None)
-                returnVal = array.array('B', [0] * length)
-                cryptlib_py.cryptGetAttributeString(c, name, returnVal)
-                returnVal = returnVal.tostring()
-            except cryptlib_py.CryptException, e:
-                if e[0] == cryptlib_py.CRYPT_ERROR_NOTFOUND:
-                    returnVal = None
-            return returnVal
-        finally:
-            cryptlib_py.cryptDestroyCert(c)
+        return b2a_hex(SHA1(self.bytes))
 
     def writeBytes(self):
         return self.bytes

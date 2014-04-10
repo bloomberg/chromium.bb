@@ -1,16 +1,24 @@
+# Authors: 
+#   Trevor Perrin
+#   Google - defining ClientCertificateType
+#   Google (adapted by Sam Rushing) - NPN support
+#   Dimitris Moraitis - Anon ciphersuites
+#   Dave Baggett (Arcode Corporation) - canonicalCipherName
+#
+# See the LICENSE file for legal information regarding use of this file.
+
 """Constants used in various places."""
 
 class CertificateType:
     x509 = 0
     openpgp = 1
-    cryptoID = 2
 
 class ClientCertificateType:
     rsa_sign = 1
     dss_sign = 2
     rsa_fixed_dh = 3
     dss_fixed_dh = 4
-
+ 
 class HandshakeType:
     hello_request = 0
     client_hello = 1
@@ -23,6 +31,7 @@ class HandshakeType:
     client_key_exchange = 16
     finished = 20
     certificate_status = 22
+    next_protocol = 67
     encrypted_extensions = 203
 
 class ContentType:
@@ -35,10 +44,18 @@ class ContentType:
 class CertificateStatusType:
     ocsp = 1
 
-class ExtensionType:
-    status_request = 5  # OCSP stapling
-    signed_cert_timestamps = 18  # signed_certificate_timestamp in RFC 6962
+class ExtensionType:    # RFC 6066 / 4366
+    server_name = 0     # RFC 6066 / 4366
+    status_request = 5  # RFC 6066 / 4366
+    srp = 12            # RFC 5054  
+    cert_type = 9       # RFC 6091
+    signed_cert_timestamps = 18  # RFC 6962
+    tack = 0xF300
+    supports_npn = 13172
     channel_id = 30031
+    
+class NameType:
+    host_name = 0
 
 class AlertLevel:
     warning = 1
@@ -48,7 +65,7 @@ class AlertDescription:
     """
     @cvar bad_record_mac: A TLS record failed to decrypt properly.
 
-    If this occurs during a shared-key or SRP handshake it most likely
+    If this occurs during a SRP handshake it most likely
     indicates a bad password.  It may also indicate an implementation
     error, or some tampering with the data in transit.
 
@@ -56,8 +73,6 @@ class AlertDescription:
     may also be signalled by the server if the SRP username is unknown to the
     server, but it doesn't wish to reveal that fact.
 
-    This alert will be signalled by the client if the shared-key username is
-    bad.
 
     @cvar handshake_failure: A problem occurred while handshaking.
 
@@ -99,74 +114,37 @@ class AlertDescription:
     inappropriate_fallback = 86
     user_canceled = 90
     no_renegotiation = 100
-    unknown_srp_username = 120
-    missing_srp_username = 121
-    untrusted_srp_parameters = 122
+    unknown_psk_identity = 115
+
 
 class CipherSuite:
-    TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA  = 0x0050
-    TLS_SRP_SHA_WITH_AES_128_CBC_SHA = 0x0053
-    TLS_SRP_SHA_WITH_AES_256_CBC_SHA = 0x0056
+    # Weird pseudo-ciphersuite from RFC 5746
+    # Signals that "secure renegotiation" is supported
+    # We actually don't do any renegotiation, but this
+    # prevents renegotiation attacks
+    TLS_EMPTY_RENEGOTIATION_INFO_SCSV = 0x00FF
 
-    TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA = 0x0051
-    TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA = 0x0054
-    TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA = 0x0057
+    # draft-bmoeller-tls-downgrade-scsv-01
+    TLS_FALLBACK_SCSV = 0x5600
+    
+    TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA  = 0xC01A
+    TLS_SRP_SHA_WITH_AES_128_CBC_SHA = 0xC01D
+    TLS_SRP_SHA_WITH_AES_256_CBC_SHA = 0xC020
+
+    TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA = 0xC01B
+    TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA = 0xC01E
+    TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA = 0xC021
+
 
     TLS_RSA_WITH_3DES_EDE_CBC_SHA = 0x000A
     TLS_RSA_WITH_AES_128_CBC_SHA = 0x002F
     TLS_RSA_WITH_AES_256_CBC_SHA = 0x0035
     TLS_RSA_WITH_RC4_128_SHA = 0x0005
+    
+    TLS_RSA_WITH_RC4_128_MD5 = 0x0004
 
-    srpSuites = []
-    srpSuites.append(TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA)
-    srpSuites.append(TLS_SRP_SHA_WITH_AES_128_CBC_SHA)
-    srpSuites.append(TLS_SRP_SHA_WITH_AES_256_CBC_SHA)
-    def getSrpSuites(ciphers):
-        suites = []
-        for cipher in ciphers:
-            if cipher == "aes128":
-                suites.append(CipherSuite.TLS_SRP_SHA_WITH_AES_128_CBC_SHA)
-            elif cipher == "aes256":
-                suites.append(CipherSuite.TLS_SRP_SHA_WITH_AES_256_CBC_SHA)
-            elif cipher == "3des":
-                suites.append(CipherSuite.TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA)
-        return suites
-    getSrpSuites = staticmethod(getSrpSuites)
-
-    srpRsaSuites = []
-    srpRsaSuites.append(TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA)
-    srpRsaSuites.append(TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA)
-    srpRsaSuites.append(TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA)
-    def getSrpRsaSuites(ciphers):
-        suites = []
-        for cipher in ciphers:
-            if cipher == "aes128":
-                suites.append(CipherSuite.TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA)
-            elif cipher == "aes256":
-                suites.append(CipherSuite.TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA)
-            elif cipher == "3des":
-                suites.append(CipherSuite.TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA)
-        return suites
-    getSrpRsaSuites = staticmethod(getSrpRsaSuites)
-
-    rsaSuites = []
-    rsaSuites.append(TLS_RSA_WITH_3DES_EDE_CBC_SHA)
-    rsaSuites.append(TLS_RSA_WITH_AES_128_CBC_SHA)
-    rsaSuites.append(TLS_RSA_WITH_AES_256_CBC_SHA)
-    rsaSuites.append(TLS_RSA_WITH_RC4_128_SHA)
-    def getRsaSuites(ciphers):
-        suites = []
-        for cipher in ciphers:
-            if cipher == "aes128":
-                suites.append(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA)
-            elif cipher == "aes256":
-                suites.append(CipherSuite.TLS_RSA_WITH_AES_256_CBC_SHA)
-            elif cipher == "rc4":
-                suites.append(CipherSuite.TLS_RSA_WITH_RC4_128_SHA)
-            elif cipher == "3des":
-                suites.append(CipherSuite.TLS_RSA_WITH_3DES_EDE_CBC_SHA)
-        return suites
-    getRsaSuites = staticmethod(getRsaSuites)
+    TLS_DH_ANON_WITH_AES_128_CBC_SHA = 0x0034
+    TLS_DH_ANON_WITH_AES_256_CBC_SHA = 0x003A
 
     tripleDESSuites = []
     tripleDESSuites.append(TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA)
@@ -177,48 +155,155 @@ class CipherSuite:
     aes128Suites.append(TLS_SRP_SHA_WITH_AES_128_CBC_SHA)
     aes128Suites.append(TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA)
     aes128Suites.append(TLS_RSA_WITH_AES_128_CBC_SHA)
+    aes128Suites.append(TLS_DH_ANON_WITH_AES_128_CBC_SHA)
 
     aes256Suites = []
     aes256Suites.append(TLS_SRP_SHA_WITH_AES_256_CBC_SHA)
     aes256Suites.append(TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA)
     aes256Suites.append(TLS_RSA_WITH_AES_256_CBC_SHA)
+    aes256Suites.append(TLS_DH_ANON_WITH_AES_256_CBC_SHA)
 
     rc4Suites = []
     rc4Suites.append(TLS_RSA_WITH_RC4_128_SHA)
+    rc4Suites.append(TLS_RSA_WITH_RC4_128_MD5)
+    
+    shaSuites = []
+    shaSuites.append(TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA)
+    shaSuites.append(TLS_SRP_SHA_WITH_AES_128_CBC_SHA)
+    shaSuites.append(TLS_SRP_SHA_WITH_AES_256_CBC_SHA)
+    shaSuites.append(TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA)
+    shaSuites.append(TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA)
+    shaSuites.append(TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA)
+    shaSuites.append(TLS_RSA_WITH_3DES_EDE_CBC_SHA)
+    shaSuites.append(TLS_RSA_WITH_AES_128_CBC_SHA)
+    shaSuites.append(TLS_RSA_WITH_AES_256_CBC_SHA)
+    shaSuites.append(TLS_RSA_WITH_RC4_128_SHA)
+    shaSuites.append(TLS_DH_ANON_WITH_AES_128_CBC_SHA)
+    shaSuites.append(TLS_DH_ANON_WITH_AES_256_CBC_SHA)
+    
+    md5Suites = []
+    md5Suites.append(TLS_RSA_WITH_RC4_128_MD5)
+
+    @staticmethod
+    def _filterSuites(suites, settings):
+        macNames = settings.macNames
+        cipherNames = settings.cipherNames
+        macSuites = []
+        if "sha" in macNames:
+            macSuites += CipherSuite.shaSuites
+        if "md5" in macNames:
+            macSuites += CipherSuite.md5Suites
+
+        cipherSuites = []
+        if "aes128" in cipherNames:
+            cipherSuites += CipherSuite.aes128Suites
+        if "aes256" in cipherNames:
+            cipherSuites += CipherSuite.aes256Suites
+        if "3des" in cipherNames:
+            cipherSuites += CipherSuite.tripleDESSuites
+        if "rc4" in cipherNames:
+            cipherSuites += CipherSuite.rc4Suites
+
+        return [s for s in suites if s in macSuites and s in cipherSuites]
+
+    srpSuites = []
+    srpSuites.append(TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA)
+    srpSuites.append(TLS_SRP_SHA_WITH_AES_128_CBC_SHA)
+    srpSuites.append(TLS_SRP_SHA_WITH_AES_256_CBC_SHA)
+    
+    @staticmethod
+    def getSrpSuites(settings):
+        return CipherSuite._filterSuites(CipherSuite.srpSuites, settings)
+
+    srpCertSuites = []
+    srpCertSuites.append(TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA)
+    srpCertSuites.append(TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA)
+    srpCertSuites.append(TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA)
+    
+    @staticmethod
+    def getSrpCertSuites(settings):
+        return CipherSuite._filterSuites(CipherSuite.srpCertSuites, settings)
+
+    srpAllSuites = srpCertSuites + srpSuites
+
+    @staticmethod
+    def getSrpAllSuites(settings):
+        return CipherSuite._filterSuites(CipherSuite.srpAllSuites, settings)
+
+    certSuites = []
+    certSuites.append(TLS_RSA_WITH_3DES_EDE_CBC_SHA)
+    certSuites.append(TLS_RSA_WITH_AES_128_CBC_SHA)
+    certSuites.append(TLS_RSA_WITH_AES_256_CBC_SHA)
+    certSuites.append(TLS_RSA_WITH_RC4_128_SHA)
+    certSuites.append(TLS_RSA_WITH_RC4_128_MD5)
+    certAllSuites = srpCertSuites + certSuites
+    
+    @staticmethod
+    def getCertSuites(settings):
+        return CipherSuite._filterSuites(CipherSuite.certSuites, settings)
+
+    anonSuites = []
+    anonSuites.append(TLS_DH_ANON_WITH_AES_128_CBC_SHA)
+    anonSuites.append(TLS_DH_ANON_WITH_AES_256_CBC_SHA)
+    
+    @staticmethod
+    def getAnonSuites(settings):
+        return CipherSuite._filterSuites(CipherSuite.anonSuites, settings)
+
+    @staticmethod
+    def canonicalCipherName(ciphersuite):
+        "Return the canonical name of the cipher whose number is provided."
+        if ciphersuite in CipherSuite.aes128Suites:
+            return "aes128"
+        elif ciphersuite in CipherSuite.aes256Suites:
+            return "aes256"
+        elif ciphersuite in CipherSuite.rc4Suites:
+            return "rc4"
+        elif ciphersuite in CipherSuite.tripleDESSuites:
+            return "3des"
+        else:
+            return None
+
+    @staticmethod
+    def canonicalMacName(ciphersuite):
+        "Return the canonical name of the MAC whose number is provided."
+        if ciphersuite in CipherSuite.shaSuites:
+            return "sha"
+        elif ciphersuite in CipherSuite.md5Suites:
+            return "md5"
+        else:
+            return None
 
 
+# The following faults are induced as part of testing.  The faultAlerts
+# dictionary describes the allowed alerts that may be triggered by these
+# faults.
 class Fault:
     badUsername = 101
     badPassword = 102
     badA = 103
-    clientSrpFaults = range(101,104)
+    clientSrpFaults = list(range(101,104))
 
     badVerifyMessage = 601
-    clientCertFaults = range(601,602)
+    clientCertFaults = list(range(601,602))
 
     badPremasterPadding = 501
     shortPremasterSecret = 502
-    clientNoAuthFaults = range(501,503)
-
-    badIdentifier = 401
-    badSharedKey = 402
-    clientSharedKeyFaults = range(401,403)
+    clientNoAuthFaults = list(range(501,503))
 
     badB = 201
-    serverFaults = range(201,202)
+    serverFaults = list(range(201,202))
 
     badFinished = 300
     badMAC = 301
     badPadding = 302
-    genericFaults = range(300,303)
+    genericFaults = list(range(300,303))
 
     faultAlerts = {\
-        badUsername: (AlertDescription.unknown_srp_username, \
+        badUsername: (AlertDescription.unknown_psk_identity, \
                       AlertDescription.bad_record_mac),\
         badPassword: (AlertDescription.bad_record_mac,),\
         badA: (AlertDescription.illegal_parameter,),\
-        badIdentifier: (AlertDescription.handshake_failure,),\
-        badSharedKey: (AlertDescription.bad_record_mac,),\
         badPremasterPadding: (AlertDescription.bad_record_mac,),\
         shortPremasterSecret: (AlertDescription.bad_record_mac,),\
         badVerifyMessage: (AlertDescription.decrypt_error,),\
@@ -231,8 +316,6 @@ class Fault:
         badUsername: "bad username",\
         badPassword: "bad password",\
         badA: "bad A",\
-        badIdentifier: "bad identifier",\
-        badSharedKey: "bad sharedkey",\
         badPremasterPadding: "bad premaster padding",\
         shortPremasterSecret: "short premaster secret",\
         badVerifyMessage: "bad verify message",\

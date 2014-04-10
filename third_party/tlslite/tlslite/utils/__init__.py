@@ -1,16 +1,14 @@
+# Author: Trevor Perrin
+# See the LICENSE file for legal information regarding use of this file.
+
 """Toolkit for crypto and other stuff."""
 
 __all__ = ["aes",
            "asn1parser",
            "cipherfactory",
            "codec",
-           "cryptlib_aes",
-           "cryptlib_rc4",
-           "cryptlib_tripledes",
-           "cryptomath: cryptomath module",
+           "cryptomath",
            "datefuncs",
-           "hmac",
-           "jce_rsakey",
            "compat",
            "keyfactory",
            "openssl_aes",
@@ -27,5 +25,5 @@ __all__ = ["aes",
            "rc4",
            "rijndael",
            "rsakey",
-           "tripledes",
-           "xmltools"]
+           "tackpywrapper",
+           "tripledes"]

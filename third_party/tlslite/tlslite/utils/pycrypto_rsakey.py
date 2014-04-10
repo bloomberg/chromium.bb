@@ -1,9 +1,12 @@
+# Author: Trevor Perrin
+# See the LICENSE file for legal information regarding use of this file.
+
 """PyCrypto RSA implementation."""
 
-from cryptomath import *
+from .cryptomath import *
 
-from rsakey import *
-from python_rsakey import Python_RSAKey
+from .rsakey import *
+from .python_rsakey import Python_RSAKey
 
 if pycryptoLoaded:
 
@@ -22,40 +25,20 @@ if pycryptoLoaded:
         def hasPrivateKey(self):
             return self.rsa.has_private()
 
-        def hash(self):
-            return Python_RSAKey(self.n, self.e).hash()
-
         def _rawPrivateKeyOp(self, m):
-            s = numberToString(m)
-            byteLength = numBytes(self.n)
-            if len(s)== byteLength:
-                pass
-            elif len(s) == byteLength-1:
-                s = '\0' + s
-            else:
-                raise AssertionError()
-            c = stringToNumber(self.rsa.decrypt((s,)))
+            s = bytes(numberToByteArray(m, numBytes(self.n)))
+            c = bytesToNumber(bytearray(self.rsa.decrypt((s,))))
             return c
 
         def _rawPublicKeyOp(self, c):
-            s = numberToString(c)
-            byteLength = numBytes(self.n)
-            if len(s)== byteLength:
-                pass
-            elif len(s) == byteLength-1:
-                s = '\0' + s
-            else:
-                raise AssertionError()
-            m = stringToNumber(self.rsa.encrypt(s, None)[0])
+            s = bytes(numberToByteArray(c, numBytes(self.n)))
+            m = bytesToNumber(bytearray(self.rsa.encrypt(s, None)[0]))
             return m
-
-        def writeXMLPublicKey(self, indent=''):
-            return Python_RSAKey(self.n, self.e).write(indent)
 
         def generate(bits):
             key = PyCrypto_RSAKey()
             def f(numBytes):
-                return bytesToString(getRandomBytes(numBytes))
+                return bytes(getRandomBytes(numBytes))
             key.rsa = RSA.generate(bits, f)
             return key
         generate = staticmethod(generate)

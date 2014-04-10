@@ -39,23 +39,36 @@ import zlib
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(BASE_DIR)))
 
-import echo_message
-import testserver_base
+# Temporary hack to deal with tlslite 0.3.8 -> 0.4.6 upgrade.
+#
+# TODO(davidben): Remove this when it has cycled through all the bots and
+# developer checkouts or when http://crbug.com/356276 is resolved.
+try:
+  os.remove(os.path.join(ROOT_DIR, 'third_party', 'tlslite',
+                         'tlslite', 'utils', 'hmac.pyc'))
+except Exception:
+  pass
 
 # Append at the end of sys.path, it's fine to use the system library.
 sys.path.append(os.path.join(ROOT_DIR, 'third_party', 'pyftpdlib', 'src'))
-sys.path.append(os.path.join(ROOT_DIR, 'third_party', 'tlslite'))
-import pyftpdlib.ftpserver
-import tlslite
-import tlslite.api
 
-# Insert at the beginning of the path, we want this to be used
+# Insert at the beginning of the path, we want to use our copies of the library
 # unconditionally.
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'pywebsocket', 'src'))
+sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'tlslite'))
+
 import mod_pywebsocket.standalone
 from mod_pywebsocket.standalone import WebSocketServer
 # import manually
 mod_pywebsocket.standalone.ssl = ssl
+
+import pyftpdlib.ftpserver
+
+import tlslite
+import tlslite.api
+
+import echo_message
+import testserver_base
 
 SERVER_HTTP = 0
 SERVER_FTP = 1
@@ -142,7 +155,8 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
                ssl_client_auth, ssl_client_cas, ssl_bulk_ciphers,
                record_resume_info, tls_intolerant, signed_cert_timestamps,
                fallback_scsv_enabled, ocsp_response):
-    self.cert_chain = tlslite.api.X509CertChain().parseChain(pem_cert_and_key)
+    self.cert_chain = tlslite.api.X509CertChain()
+    self.cert_chain.parsePemList(pem_cert_and_key)
     # Force using only python implementation - otherwise behavior is different
     # depending on whether m2crypto Python module is present (error is thrown
     # when it is). m2crypto uses a C (based on OpenSSL) implementation under
@@ -152,7 +166,10 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
                                                implementations=['python'])
     self.ssl_client_auth = ssl_client_auth
     self.ssl_client_cas = []
-    self.tls_intolerant = tls_intolerant
+    if tls_intolerant == 0:
+      self.tls_intolerant = None
+    else:
+      self.tls_intolerant = (3, tls_intolerant)
     self.signed_cert_timestamps = signed_cert_timestamps
     self.fallback_scsv_enabled = fallback_scsv_enabled
     self.ocsp_response = ocsp_response
@@ -1436,11 +1453,14 @@ class TestPageHandler(testserver_base.BasePageHandler):
     self.send_header('Content-Type', 'text/plain')
     self.end_headers()
     try:
-      for (action, sessionID) in self.server.session_cache.log:
-        self.wfile.write('%s\t%s\n' % (action, sessionID.encode('hex')))
+      log = self.server.session_cache.log
     except AttributeError:
       self.wfile.write('Pass --https-record-resume in order to use' +
                        ' this request')
+      return True
+
+    for (action, sessionID) in log:
+      self.wfile.write('%s\t%s\n' % (action, bytes(sessionID).encode('hex')))
     return True
 
   def SSLManySmallRecords(self):
@@ -1470,7 +1490,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
     self.send_response(200)
     self.send_header('Content-Type', 'text/plain')
     self.end_headers()
-    channel_id = self.server.tlsConnection.channel_id.tostring()
+    channel_id = bytes(self.server.tlsConnection.channel_id)
     self.wfile.write(hashlib.sha256(channel_id).digest().encode('base64'))
     return True
 

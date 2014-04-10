@@ -1,27 +1,45 @@
+# Authors: 
+#   Trevor Perrin
+#   Kees Bos - Fixes for compatibility with different Python versions
+#   Martin von Loewis - python 3 port
+#
+# See the LICENSE file for legal information regarding use of this file.
+
+
 """TLS Lite + xmlrpclib."""
 
-import xmlrpclib
-import httplib
+try:
+    import xmlrpclib
+    import httplib
+except ImportError:
+    # Python 3
+    from xmlrpc import client as xmlrpclib
+    from http import client as httplib
 from tlslite.integration.httptlsconnection import HTTPTLSConnection
 from tlslite.integration.clienthelper import ClientHelper
+import tlslite.errors
 
 
 class XMLRPCTransport(xmlrpclib.Transport, ClientHelper):
     """Handles an HTTPS transaction to an XML-RPC server."""
 
-    def __init__(self,
-                 username=None, password=None, sharedKey=None,
+    # Pre python 2.7, the make_connection returns a HTTP class
+    transport = xmlrpclib.Transport()
+    conn_class_is_http = not hasattr(transport, '_connection')
+    del(transport)
+
+    def __init__(self, use_datetime=0,
+                 username=None, password=None,
                  certChain=None, privateKey=None,
-                 cryptoID=None, protocol=None,
-                 x509Fingerprint=None,
-                 x509TrustList=None, x509CommonName=None,
-                 settings=None):
+                 checker=None,
+                 settings=None,
+                 ignoreAbruptClose=False):
         """Create a new XMLRPCTransport.
 
         An instance of this class can be passed to L{xmlrpclib.ServerProxy}
         to use TLS with XML-RPC calls::
 
-            from tlslite.api import XMLRPCTransport
+            from tlslite import XMLRPCTransport
             from xmlrpclib import ServerProxy
 
             transport = XMLRPCTransport(user="alice", password="abra123")
@@ -30,20 +48,16 @@ class XMLRPCTransport(xmlrpclib.Transport, ClientHelper):
         For client authentication, use one of these argument
         combinations:
          - username, password (SRP)
-         - username, sharedKey (shared-key)
          - certChain, privateKey (certificate)
 
         For server authentication, you can either rely on the
         implicit mutual authentication performed by SRP or
-        shared-keys, or you can do certificate-based server
+        you can do certificate-based server
         authentication with one of these argument combinations:
-         - cryptoID[, protocol] (requires cryptoIDlib)
          - x509Fingerprint
-         - x509TrustList[, x509CommonName] (requires cryptlib_py)
 
         Certificate-based server authentication is compatible with
-        SRP or certificate-based client authentication.  It is
-        not compatible with shared-keys.
+        SRP or certificate-based client authentication.
 
         The constructor does not perform the TLS handshake itself, but
         simply stores these arguments for later.  The handshake is
@@ -55,83 +69,65 @@ class XMLRPCTransport(xmlrpclib.Transport, ClientHelper):
         exceptions might be raised.
 
         @type username: str
-        @param username: SRP or shared-key username.  Requires the
-        'password' or 'sharedKey' argument.
+        @param username: SRP username.  Requires the
+        'password' argument.
 
         @type password: str
         @param password: SRP password for mutual authentication.
         Requires the 'username' argument.
 
-        @type sharedKey: str
-        @param sharedKey: Shared key for mutual authentication.
-        Requires the 'username' argument.
-
-        @type certChain: L{tlslite.X509CertChain.X509CertChain} or
-        L{cryptoIDlib.CertChain.CertChain}
+        @type certChain: L{tlslite.x509certchain.X509CertChain}
         @param certChain: Certificate chain for client authentication.
-        Requires the 'privateKey' argument.  Excludes the SRP or
-        shared-key related arguments.
+        Requires the 'privateKey' argument.  Excludes the SRP arguments.
 
-        @type privateKey: L{tlslite.utils.RSAKey.RSAKey}
+        @type privateKey: L{tlslite.utils.rsakey.RSAKey}
         @param privateKey: Private key for client authentication.
-        Requires the 'certChain' argument.  Excludes the SRP or
-        shared-key related arguments.
+        Requires the 'certChain' argument.  Excludes the SRP arguments.
 
-        @type cryptoID: str
-        @param cryptoID: cryptoID for server authentication.  Mutually
-        exclusive with the 'x509...' arguments.
+        @type checker: L{tlslite.checker.Checker}
+        @param checker: Callable object called after handshaking to 
+        evaluate the connection and raise an Exception if necessary.
 
-        @type protocol: str
-        @param protocol: cryptoID protocol URI for server
-        authentication.  Requires the 'cryptoID' argument.
-
-        @type x509Fingerprint: str
-        @param x509Fingerprint: Hex-encoded X.509 fingerprint for
-        server authentication.  Mutually exclusive with the 'cryptoID'
-        and 'x509TrustList' arguments.
-
-        @type x509TrustList: list of L{tlslite.X509.X509}
-        @param x509TrustList: A list of trusted root certificates.  The
-        other party must present a certificate chain which extends to
-        one of these root certificates.  The cryptlib_py module must be
-        installed to use this parameter.  Mutually exclusive with the
-        'cryptoID' and 'x509Fingerprint' arguments.
-
-        @type x509CommonName: str
-        @param x509CommonName: The end-entity certificate's 'CN' field
-        must match this value.  For a web server, this is typically a
-        server name such as 'www.amazon.com'.  Mutually exclusive with
-        the 'cryptoID' and 'x509Fingerprint' arguments.  Requires the
-        'x509TrustList' argument.
-
-        @type settings: L{tlslite.HandshakeSettings.HandshakeSettings}
+        @type settings: L{tlslite.handshakesettings.HandshakeSettings}
         @param settings: Various settings which can be used to control
         the ciphersuites, certificate types, and SSL/TLS versions
         offered by the client.
+
+        @type ignoreAbruptClose: bool
+        @param ignoreAbruptClose: ignore the TLSAbruptCloseError on 
+        unexpected hangup.
         """
 
+        # self._connection is new in python 2.7, since we're using it here,
+        # we'll add this ourselves too, just in case we're pre-2.7
+        self._connection = (None, None)
+        xmlrpclib.Transport.__init__(self, use_datetime)
+        self.ignoreAbruptClose = ignoreAbruptClose
         ClientHelper.__init__(self,
-                 username, password, sharedKey,
+                 username, password, 
                  certChain, privateKey,
-                 cryptoID, protocol,
-                 x509Fingerprint,
-                 x509TrustList, x509CommonName,
+                 checker,
                  settings)
 
-
     def make_connection(self, host):
-        # create a HTTPS connection object from a host descriptor
-        host, extra_headers, x509 = self.get_host_info(host)
-        http = HTTPTLSConnection(host, None,
-                                 self.username, self.password,
-                                 self.sharedKey,
-                                 self.certChain, self.privateKey,
-                                 self.checker.cryptoID,
-                                 self.checker.protocol,
-                                 self.checker.x509Fingerprint,
-                                 self.checker.x509TrustList,
-                                 self.checker.x509CommonName,
-                                 self.settings)
+        # return an existing connection if possible.  This allows
+        # HTTP/1.1 keep-alive.
+        if self._connection and host == self._connection[0]:
+            http = self._connection[1]
+        else:
+            # create a HTTPS connection object from a host descriptor
+            chost, extra_headers, x509 = self.get_host_info(host)
+
+            http = HTTPTLSConnection(chost, None,
+                                     username=self.username, password=self.password,
+                                     certChain=self.certChain, privateKey=self.privateKey,
+                                     checker=self.checker,
+                                     settings=self.settings,
+                                     ignoreAbruptClose=self.ignoreAbruptClose)
+            # store the host argument along with the connection object
+            self._connection = host, http
+        if not self.conn_class_is_http:
+            return http
         http2 = httplib.HTTP()
         http2._setup(http)
         return http2

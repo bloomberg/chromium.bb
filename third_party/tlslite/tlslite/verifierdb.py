@@ -1,9 +1,12 @@
+# Author: Trevor Perrin
+# See the LICENSE file for legal information regarding use of this file.
+
 """Class for storing SRP password verifiers."""
 
-from utils.cryptomath import *
-from utils.compat import *
-import mathtls
-from basedb import BaseDB
+from .utils.cryptomath import *
+from .utils.compat import *
+from tlslite import mathtls
+from .basedb import BaseDB
 
 class VerifierDB(BaseDB):
     """This class represent an in-memory or on-disk database of SRP
@@ -27,10 +30,10 @@ class VerifierDB(BaseDB):
 
     def _getItem(self, username, valueStr):
         (N, g, salt, verifier) = valueStr.split(" ")
-        N = base64ToNumber(N)
-        g = base64ToNumber(g)
-        salt = base64ToString(salt)
-        verifier = base64ToNumber(verifier)
+        N = bytesToNumber(a2b_base64(N))
+        g = bytesToNumber(a2b_base64(g))
+        salt = a2b_base64(salt)
+        verifier = bytesToNumber(a2b_base64(verifier))
         return (N, g, salt, verifier)
 
     def __setitem__(self, username, verifierEntry):
@@ -43,7 +46,7 @@ class VerifierDB(BaseDB):
 
         @type verifierEntry: tuple
         @param verifierEntry: The verifier entry to add.  Use
-        L{tlslite.VerifierDB.VerifierDB.makeVerifier} to create a
+        L{tlslite.verifierdb.VerifierDB.makeVerifier} to create a
         verifier entry.
         """
         BaseDB.__setitem__(self, username, verifierEntry)
@@ -53,10 +56,10 @@ class VerifierDB(BaseDB):
         if len(username)>=256:
             raise ValueError("username too long")
         N, g, salt, verifier = value
-        N = numberToBase64(N)
-        g = numberToBase64(g)
-        salt = stringToBase64(salt)
-        verifier = numberToBase64(verifier)
+        N = b2a_base64(numberToByteArray(N))
+        g = b2a_base64(numberToByteArray(g))
+        salt = b2a_base64(salt)
+        verifier = b2a_base64(numberToByteArray(verifier))
         valueStr = " ".join( (N, g, salt, verifier)  )
         return valueStr
 
@@ -86,5 +89,7 @@ class VerifierDB(BaseDB):
         @rtype: tuple
         @return: A tuple which may be stored in a VerifierDB.
         """
-        return mathtls.makeVerifier(username, password, bits)
+        usernameBytes = bytearray(username, "utf-8")
+        passwordBytes = bytearray(password, "utf-8")
+        return mathtls.makeVerifier(usernameBytes, passwordBytes, bits)
     makeVerifier = staticmethod(makeVerifier)

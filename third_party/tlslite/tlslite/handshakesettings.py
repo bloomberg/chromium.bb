@@ -1,13 +1,26 @@
+# Authors: 
+#   Trevor Perrin
+#   Dave Baggett (Arcode Corporation) - cleanup handling of constants
+#
+# See the LICENSE file for legal information regarding use of this file.
+
 """Class for setting handshake parameters."""
 
-from constants import CertificateType
-from utils import cryptomath
-from utils import cipherfactory
+from .constants import CertificateType
+from .utils import cryptomath
+from .utils import cipherfactory
 
-class HandshakeSettings:
+# RC4 is preferred as faster in Python, works in SSL3, and immune to CBC
+# issues such as timing attacks
+CIPHER_NAMES = ["rc4", "aes256", "aes128", "3des"]
+MAC_NAMES = ["sha"] # "md5" is allowed
+CIPHER_IMPLEMENTATIONS = ["openssl", "pycrypto", "python"]
+CERTIFICATE_TYPES = ["x509"]
+
+class HandshakeSettings(object):
     """This class encapsulates various parameters that can be used with
     a TLS handshake.
-    @sort: minKeySize, maxKeySize, cipherNames, certificateTypes,
+    @sort: minKeySize, maxKeySize, cipherNames, macNames, certificateTypes,
     minVersion, maxVersion
 
     @type minKeySize: int
@@ -40,19 +53,25 @@ class HandshakeSettings:
     add-on library that supports 3DES, then '3des' will be silently
     removed.
 
-    The default value is ['aes256', 'aes128', '3des', 'rc4'].
+    The default value is ['rc4', 'aes256', 'aes128', '3des'].
+
+    @type macNames: list
+    @ivar macNames: The allowed MAC algorithms.
+    
+    The allowed values in this list are 'sha' and 'md5'.
+    
+    The default value is ['sha'].
+
 
     @type certificateTypes: list
     @ivar certificateTypes: The allowed certificate types, in order of
     preference.
 
-    The allowed values in this list are 'x509' and 'cryptoID'.  This
-    list is only used with a client handshake.  The client will
-    advertise to the server which certificate types are supported, and
-    will check that the server uses one of the appropriate types.
+    The only allowed certificate type is 'x509'.  This list is only used with a
+    client handshake.  The client will advertise to the server which certificate
+    types are supported, and will check that the server uses one of the
+    appropriate types.
 
-    NOTE:  If 'cryptoID' is used in this list, but cryptoIDlib is not
-    installed, then 'cryptoID' will be silently removed.
 
     @type minVersion: tuple
     @ivar minVersion: The minimum allowed SSL/TLS version.
@@ -71,23 +90,32 @@ class HandshakeSettings:
     The default is (3,2).  (WARNING: Some servers may (improperly)
     reject clients which offer support for TLS 1.1.  In this case,
     try lowering maxVersion to (3,1)).
+    
+    @type useExperimentalTackExtension: bool
+    @ivar useExperimentalTackExtension: Whether to enabled TACK support.
+    
+    Note that TACK support is not standardized by IETF and uses a temporary
+    TLS Extension number, so should NOT be used in production software.
     """
     def __init__(self):
         self.minKeySize = 1023
         self.maxKeySize = 8193
-        self.cipherNames = ["aes256", "aes128", "3des", "rc4"]
-        self.cipherImplementations = ["cryptlib", "openssl", "pycrypto",
-                                      "python"]
-        self.certificateTypes = ["x509", "cryptoID"]
+        self.cipherNames = CIPHER_NAMES
+        self.macNames = MAC_NAMES
+        self.cipherImplementations = CIPHER_IMPLEMENTATIONS
+        self.certificateTypes = CERTIFICATE_TYPES
         self.minVersion = (3,0)
         self.maxVersion = (3,2)
+        self.useExperimentalTackExtension = False
 
-    #Filters out options that are not supported
+    # Validates the min/max fields, and certificateTypes
+    # Filters out unsupported cipherNames and cipherImplementations
     def _filter(self):
         other = HandshakeSettings()
         other.minKeySize = self.minKeySize
         other.maxKeySize = self.maxKeySize
         other.cipherNames = self.cipherNames
+        other.macNames = self.macNames
         other.cipherImplementations = self.cipherImplementations
         other.certificateTypes = self.certificateTypes
         other.minVersion = self.minVersion
@@ -97,24 +125,15 @@ class HandshakeSettings:
             other.cipherNames = [e for e in self.cipherNames if e != "3des"]
         if len(other.cipherNames)==0:
             raise ValueError("No supported ciphers")
-
-        try:
-            import cryptoIDlib
-        except ImportError:
-            other.certificateTypes = [e for e in self.certificateTypes \
-                                      if e != "cryptoID"]
         if len(other.certificateTypes)==0:
             raise ValueError("No supported certificate types")
 
-        if not cryptomath.cryptlibpyLoaded:
-            other.cipherImplementations = [e for e in \
-                self.cipherImplementations if e != "cryptlib"]
         if not cryptomath.m2cryptoLoaded:
-            other.cipherImplementations = [e for e in \
-                other.cipherImplementations if e != "openssl"]
+            other.cipherImplementations = \
+                [e for e in other.cipherImplementations if e != "openssl"]
         if not cryptomath.pycryptoLoaded:
-            other.cipherImplementations = [e for e in \
-                other.cipherImplementations if e != "pycrypto"]
+            other.cipherImplementations = \
+                [e for e in other.cipherImplementations if e != "pycrypto"]
         if len(other.cipherImplementations)==0:
             raise ValueError("No supported cipher implementations")
 
@@ -127,13 +146,13 @@ class HandshakeSettings:
         if other.maxKeySize>16384:
             raise ValueError("maxKeySize too large")
         for s in other.cipherNames:
-            if s not in ("aes256", "aes128", "rc4", "3des"):
+            if s not in CIPHER_NAMES:
                 raise ValueError("Unknown cipher name: '%s'" % s)
         for s in other.cipherImplementations:
-            if s not in ("cryptlib", "openssl", "python", "pycrypto"):
+            if s not in CIPHER_IMPLEMENTATIONS:
                 raise ValueError("Unknown cipher implementation: '%s'" % s)
         for s in other.certificateTypes:
-            if s not in ("x509", "cryptoID"):
+            if s not in CERTIFICATE_TYPES:
                 raise ValueError("Unknown certificate type: '%s'" % s)
 
         if other.minVersion > other.maxVersion:
@@ -152,8 +171,6 @@ class HandshakeSettings:
         for ct in self.certificateTypes:
             if ct == "x509":
                 l.append(CertificateType.x509)
-            elif ct == "cryptoID":
-                l.append(CertificateType.cryptoID)
             else:
                 raise AssertionError()
         return l

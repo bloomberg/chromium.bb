@@ -1,39 +1,28 @@
-"""
-TLS Lite is a free python library that implements SSL v3, TLS v1, and
-TLS v1.1.  TLS Lite supports non-traditional authentication methods
-such as SRP, shared keys, and cryptoIDs, in addition to X.509
-certificates.  TLS Lite is pure python, however it can access OpenSSL,
-cryptlib, pycrypto, and GMPY for faster crypto operations.  TLS Lite
-integrates with httplib, xmlrpclib, poplib, imaplib, smtplib,
-SocketServer, asyncore, and Twisted.
+# Author: Trevor Perrin
+# See the LICENSE file for legal information regarding use of this file.
+
+"""TLS Lite is a free python library that implements SSL and TLS. TLS Lite
+supports RSA and SRP ciphersuites. TLS Lite is pure python, however it can use
+other libraries for faster crypto operations. TLS Lite integrates with several
+stdlib neworking libraries.
+
+API documentation is available in the 'docs' directory.
+
+If you have questions or feedback, feel free to contact me.
 
 To use, do::
 
+    from tlslite import TLSConnection, ...
+    
+If you want to import the most useful objects, the cleanest way is:
+
     from tlslite.api import *
 
-Then use the L{tlslite.TLSConnection.TLSConnection} class with a socket,
-or use one of the integration classes in L{tlslite.integration}.
+Then use the L{tlslite.TLSConnection.TLSConnection} class with a socket.
+(Or, use one of the integration classes in L{tlslite.integration}).
 
-@version: 0.3.8
+@version: 0.4.6
 """
-__version__ = "0.3.8"
 
-__all__ = ["api",
-           "basedb",
-           "checker",
-           "constants",
-           "errors",
-           "fileobject",
-           "handshakesettings",
-           "mathtls",
-           "messages",
-           "session",
-           "sessioncache",
-           "sharedkeydb",
-           "tlsconnection",
-           "tlsrecordlayer",
-           "verifierdb",
-           "x509",
-           "x509certchain",
-           "integration",
-           "utils"]
+from tlslite.api import *
+from tlslite.api import __version__ # Unsure why this is needed, but it is

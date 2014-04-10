@@ -1,9 +1,12 @@
+# Author: Trevor Perrin
+# See the LICENSE file for legal information regarding use of this file.
+
 """Pure-Python RSA implementation."""
 
-from cryptomath import *
-import xmltools
-from asn1parser import ASN1Parser
-from rsakey import *
+from .cryptomath import *
+from .asn1parser import ASN1Parser
+from .rsakey import *
+from .pem import *
 
 class Python_RSAKey(RSAKey):
     def __init__(self, n=0, e=0, d=0, p=0, q=0, dP=0, dQ=0, qInv=0):
@@ -22,10 +25,6 @@ class Python_RSAKey(RSAKey):
 
     def hasPrivateKey(self):
         return self.d != 0
-
-    def hash(self):
-        s = self.writeXMLPublicKey('\t\t')
-        return hashAndBase64(s.strip())
 
     def _rawPrivateKeyOp(self, m):
         #Create blinding values, on the first pass:
@@ -68,38 +67,13 @@ class Python_RSAKey(RSAKey):
 
     def acceptsPassword(self): return False
 
-    def write(self, indent=''):
-        if self.d:
-            s = indent+'<privateKey xmlns="http://trevp.net/rsa">\n'
-        else:
-            s = indent+'<publicKey xmlns="http://trevp.net/rsa">\n'
-        s += indent+'\t<n>%s</n>\n' % numberToBase64(self.n)
-        s += indent+'\t<e>%s</e>\n' % numberToBase64(self.e)
-        if self.d:
-            s += indent+'\t<d>%s</d>\n' % numberToBase64(self.d)
-            s += indent+'\t<p>%s</p>\n' % numberToBase64(self.p)
-            s += indent+'\t<q>%s</q>\n' % numberToBase64(self.q)
-            s += indent+'\t<dP>%s</dP>\n' % numberToBase64(self.dP)
-            s += indent+'\t<dQ>%s</dQ>\n' % numberToBase64(self.dQ)
-            s += indent+'\t<qInv>%s</qInv>\n' % numberToBase64(self.qInv)
-            s += indent+'</privateKey>'
-        else:
-            s += indent+'</publicKey>'
-        #Only add \n if part of a larger structure
-        if indent != '':
-            s += '\n'
-        return s
-
-    def writeXMLPublicKey(self, indent=''):
-        return Python_RSAKey(self.n, self.e).write(indent)
-
     def generate(bits):
         key = Python_RSAKey()
-        p = getRandomPrime(bits/2, False)
-        q = getRandomPrime(bits/2, False)
+        p = getRandomPrime(bits//2, False)
+        q = getRandomPrime(bits//2, False)
         t = lcm(p-1, q-1)
         key.n = p * q
-        key.e = 3L  #Needed to be long, for Java
+        key.e = 65537
         key.d = invMod(key.e, t)
         key.p = p
         key.q = q
@@ -113,30 +87,15 @@ class Python_RSAKey(RSAKey):
         """Parse a string containing a <privateKey> or <publicKey>, or
         PEM-encoded key."""
 
-        start = s.find("-----BEGIN PRIVATE KEY-----")
-        if start != -1:
-            end = s.find("-----END PRIVATE KEY-----")
-            if end == -1:
-                raise SyntaxError("Missing PEM Postfix")
-            s = s[start+len("-----BEGIN PRIVATE KEY -----") : end]
-            bytes = base64ToBytes(s)
+        if pemSniff(s, "PRIVATE KEY"):
+            bytes = dePem(s, "PRIVATE KEY")
             return Python_RSAKey._parsePKCS8(bytes)
+        elif pemSniff(s, "RSA PRIVATE KEY"):
+            bytes = dePem(s, "RSA PRIVATE KEY")
+            return Python_RSAKey._parseSSLeay(bytes)
         else:
-            start = s.find("-----BEGIN RSA PRIVATE KEY-----")
-            if start != -1:
-                end = s.find("-----END RSA PRIVATE KEY-----")
-                if end == -1:
-                    raise SyntaxError("Missing PEM Postfix")
-                s = s[start+len("-----BEGIN RSA PRIVATE KEY -----") : end]
-                bytes = base64ToBytes(s)
-                return Python_RSAKey._parseSSLeay(bytes)
-        raise SyntaxError("Missing PEM Prefix")
+            raise SyntaxError("Not a PEM private key file")
     parsePEM = staticmethod(parsePEM)
-
-    def parseXML(s):
-        element = xmltools.parseAndStripWhitespace(s)
-        return Python_RSAKey._parseXML(element)
-    parseXML = staticmethod(parseXML)
 
     def _parsePKCS8(bytes):
         p = ASN1Parser(bytes)
@@ -177,33 +136,3 @@ class Python_RSAKey(RSAKey):
         qInv = bytesToNumber(privateKeyP.getChild(8).value)
         return Python_RSAKey(n, e, d, p, q, dP, dQ, qInv)
     _parseASN1PrivateKey = staticmethod(_parseASN1PrivateKey)
-
-    def _parseXML(element):
-        try:
-            xmltools.checkName(element, "privateKey")
-        except SyntaxError:
-            xmltools.checkName(element, "publicKey")
-
-        #Parse attributes
-        xmltools.getReqAttribute(element, "xmlns", "http://trevp.net/rsa\Z")
-        xmltools.checkNoMoreAttributes(element)
-
-        #Parse public values (<n> and <e>)
-        n = base64ToNumber(xmltools.getText(xmltools.getChild(element, 0, "n"), xmltools.base64RegEx))
-        e = base64ToNumber(xmltools.getText(xmltools.getChild(element, 1, "e"), xmltools.base64RegEx))
-        d = 0
-        p = 0
-        q = 0
-        dP = 0
-        dQ = 0
-        qInv = 0
-        #Parse private values, if present
-        if element.childNodes.length>=3:
-            d = base64ToNumber(xmltools.getText(xmltools.getChild(element, 2, "d"), xmltools.base64RegEx))
-            p = base64ToNumber(xmltools.getText(xmltools.getChild(element, 3, "p"), xmltools.base64RegEx))
-            q = base64ToNumber(xmltools.getText(xmltools.getChild(element, 4, "q"), xmltools.base64RegEx))
-            dP = base64ToNumber(xmltools.getText(xmltools.getChild(element, 5, "dP"), xmltools.base64RegEx))
-            dQ = base64ToNumber(xmltools.getText(xmltools.getChild(element, 6, "dQ"), xmltools.base64RegEx))
-            qInv = base64ToNumber(xmltools.getText(xmltools.getLastChild(element, 7, "qInv"), xmltools.base64RegEx))
-        return Python_RSAKey(n, e, d, p, q, dP, dQ, qInv)
-    _parseXML = staticmethod(_parseXML)
