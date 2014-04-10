@@ -43,13 +43,12 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     // otherwise adds |buffer| to |buffers_|.
     bool AddBuffer(const scoped_refptr<StreamParserBuffer>& buffer);
 
-    // If |last_added_buffer_missing_duration_| is set, updates its duration
-    // to be the first non-kNoTimestamp() value of |default_duration_|,
-    // |estimated_next_frame_duration_|, or an arbitrary default, then adds it
-    // to |buffers_| and unsets |last_added_buffer_missing_duration_|. (This
-    // method helps stream parser emit all buffers in a media segment before
-    // signaling end of segment.)
-    void ApplyDurationDefaultOrEstimateIfNeeded();
+    // If |last_added_buffer_missing_duration_| is set, updates its duration to
+    // be non-kNoTimestamp() value of |estimated_next_frame_duration_| or an
+    // arbitrary default, then adds it to |buffers_| and unsets
+    // |last_added_buffer_missing_duration_|. (This method helps stream parser
+    // emit all buffers in a media segment before signaling end of segment.)
+    void ApplyDurationEstimateIfNeeded();
 
     // Clears all buffer state, except a possibly held-aside buffer that is
     // missing duration.
@@ -65,6 +64,8 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     // |size| indicates the number of bytes in |data|.
     bool IsKeyframe(const uint8* data, int size) const;
 
+    base::TimeDelta default_duration() const { return default_duration_; }
+
    private:
     // Helper that sanity-checks |buffer| duration, updates
     // |estimated_next_frame_duration_|, and adds |buffer| to |buffers_|.
@@ -73,8 +74,8 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     bool QueueBuffer(const scoped_refptr<StreamParserBuffer>& buffer);
 
     // Helper that calculates the buffer duration to use in
-    // ApplyDurationDefaultOrEstimateIfNeeded().
-    base::TimeDelta GetDurationDefaultOrEstimate();
+    // ApplyDurationEstimateIfNeeded().
+    base::TimeDelta GetDurationEstimate();
 
     int track_num_;
     std::deque<scoped_refptr<StreamParserBuffer> > buffers_;
@@ -86,6 +87,9 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     // If kNoTimestamp(), then a default value will be used. This estimate is
     // the maximum duration seen or derived so far for this track, and is valid
     // only if |default_duration_| is kNoTimestamp().
+    //
+    // TODO(wolenetz): Add unittests for duration estimation and default
+    // duration handling. http://crbug.com/361786 .
     base::TimeDelta estimated_next_frame_duration_;
   };
 

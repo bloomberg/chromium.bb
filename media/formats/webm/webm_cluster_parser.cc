@@ -113,13 +113,13 @@ int WebMClusterParser::Parse(const uint8* buf, int size) {
 
 const WebMClusterParser::BufferQueue& WebMClusterParser::GetAudioBuffers() {
   if (cluster_ended_)
-    audio_.ApplyDurationDefaultOrEstimateIfNeeded();
+    audio_.ApplyDurationEstimateIfNeeded();
   return audio_.buffers();
 }
 
 const WebMClusterParser::BufferQueue& WebMClusterParser::GetVideoBuffers() {
   if (cluster_ended_)
-    video_.ApplyDurationDefaultOrEstimateIfNeeded();
+    video_.ApplyDurationEstimateIfNeeded();
   return video_.buffers();
 }
 
@@ -133,7 +133,7 @@ WebMClusterParser::GetTextBuffers() {
        ++itr) {
     // Per OnBlock(), all text buffers should already have valid durations, so
     // there is no need to call
-    // itr->second.ApplyDurationDefaultOrEstimateIfNeeded() here.
+    // itr->second.ApplyDurationEstimateIfNeeded() here.
     const BufferQueue& text_buffers = itr->second.buffers();
     if (!text_buffers.empty())
       text_buffers_map_.insert(std::make_pair(itr->first, text_buffers));
@@ -407,6 +407,9 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
   if (block_duration >= 0) {
     buffer->set_duration(base::TimeDelta::FromMicroseconds(
         block_duration * timecode_multiplier_));
+  } else {
+    DCHECK_NE(buffer_type, DemuxerStream::TEXT);
+    buffer->set_duration(track->default_duration());
   }
 
   if (discard_padding != 0) {
@@ -465,14 +468,13 @@ bool WebMClusterParser::Track::AddBuffer(
   return QueueBuffer(buffer);
 }
 
-void WebMClusterParser::Track::ApplyDurationDefaultOrEstimateIfNeeded() {
+void WebMClusterParser::Track::ApplyDurationEstimateIfNeeded() {
   if (!last_added_buffer_missing_duration_)
     return;
 
-  last_added_buffer_missing_duration_->set_duration(
-      GetDurationDefaultOrEstimate());
+  last_added_buffer_missing_duration_->set_duration(GetDurationEstimate());
 
-  DVLOG(2) << "ApplyDurationDefaultOrEstimateIfNeeded() : new dur : "
+  DVLOG(2) << "ApplyDurationEstimateIfNeeded() : new dur : "
            << " ts "
            << last_added_buffer_missing_duration_->timestamp().InSecondsF()
            << " dur "
@@ -536,13 +538,10 @@ bool WebMClusterParser::Track::QueueBuffer(
   return true;
 }
 
-base::TimeDelta WebMClusterParser::Track::GetDurationDefaultOrEstimate() {
-  base::TimeDelta duration = default_duration_;
+base::TimeDelta WebMClusterParser::Track::GetDurationEstimate() {
+  base::TimeDelta duration = estimated_next_frame_duration_;
   if (duration != kNoTimestamp()) {
-    DVLOG(3) << __FUNCTION__ << " : using TrackEntry DefaultDuration";
-  } else if (estimated_next_frame_duration_ != kNoTimestamp()) {
     DVLOG(3) << __FUNCTION__ << " : using estimated duration";
-    duration = estimated_next_frame_duration_;
   } else {
     DVLOG(3) << __FUNCTION__ << " : using hardcoded default duration";
     if (is_video_) {
