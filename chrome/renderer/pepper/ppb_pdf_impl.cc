@@ -436,25 +436,26 @@ void SetLinkUnderCursor(PP_Instance instance_id, const char* url) {
   instance->SetLinkUnderCursor(url);
 }
 
-const PPB_PDF ppb_pdf = {                            //
-    &GetLocalizedString,                             //
-    &GetResourceImage,                               //
-    &GetFontFileWithFallback,                        //
-    &GetFontTableForPrivateFontFile, &SearchString,  //
-    &DidStartLoading,                                //
-    &DidStopLoading,                                 //
-    &SetContentRestriction,                          //
-    &HistogramPDFPageCount,                          //
-    &UserMetricsRecordAction,                        //
-    &HasUnsupportedFeature,                          //
-    &SaveAs,                                         //
-    &PPB_PDF_Impl::InvokePrintingForInstance,        //
-    &IsFeatureEnabled,                               //
-    &GetResourceImageForScale,                       //
-    &ModalPromptForPassword,                         //
-    &IsOutOfProcess,                                 //
-    &SetSelectedText,                                //
-    &SetLinkUnderCursor,                             //
+const PPB_PDF ppb_pdf = {                      //
+    &GetLocalizedString,                       //
+    &GetResourceImage,                         //
+    &GetFontFileWithFallback,                  //
+    &GetFontTableForPrivateFontFile,           //
+    &SearchString,                             //
+    &DidStartLoading,                          //
+    &DidStopLoading,                           //
+    &SetContentRestriction,                    //
+    &HistogramPDFPageCount,                    //
+    &UserMetricsRecordAction,                  //
+    &HasUnsupportedFeature,                    //
+    &SaveAs,                                   //
+    &PPB_PDF_Impl::InvokePrintingForInstance,  //
+    &IsFeatureEnabled,                         //
+    &GetResourceImageForScale,                 //
+    &ModalPromptForPassword,                   //
+    &IsOutOfProcess,                           //
+    &SetSelectedText,                          //
+    &SetLinkUnderCursor,                       //
 };
 
 }  // namespace
