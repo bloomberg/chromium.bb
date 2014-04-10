@@ -7,6 +7,7 @@ TestGyp.py:  a testing framework for GYP integration tests.
 """
 
 import collections
+from contextlib import contextmanager
 import itertools
 import os
 import re
@@ -24,9 +25,10 @@ __all__.extend([
   'TestGyp',
 ])
 
+
 def remove_debug_line_numbers(contents):
   """Function to remove the line numbers from the debug output
-  of gyp and thus remove the exremem fragility of the stdout
+  of gyp and thus reduce the extreme fragility of the stdout
   comparison tests.
   """
   lines = contents.splitlines()
@@ -37,11 +39,25 @@ def remove_debug_line_numbers(contents):
   lines = [len(l) > 3 and ":".join(l[3:]) or l for l in lines]
   return "\n".join(lines)
 
+
 def match_modulo_line_numbers(contents_a, contents_b):
   """File contents matcher that ignores line numbers."""
   contents_a = remove_debug_line_numbers(contents_a)
   contents_b = remove_debug_line_numbers(contents_b)
   return TestCommon.match_exact(contents_a, contents_b)
+
+
+@contextmanager
+def LocalEnv(local_env):
+  """Context manager to provide a local OS environment."""
+  old_env = os.environ.copy()
+  os.environ.update(local_env)
+  try:
+    yield
+  finally:
+    os.environ.clear()
+    os.environ.update(old_env)
+
 
 class TestGypBase(TestCommon.TestCommon):
   """
