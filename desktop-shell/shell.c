@@ -3741,6 +3741,12 @@ terminate_screensaver(struct desktop_shell *shell)
 	if (shell->screensaver.process.pid == 0)
 		return;
 
+	/* Disarm the screensaver timer, otherwise it may fire when the
+	 * compositor is not in the idle state. In that case, the screen will
+	 * be locked, but the wake_signal won't fire on user input, making the
+	 * system unresponsive. */
+	wl_event_source_timer_update(shell->screensaver.timer, 0);
+
 	kill(shell->screensaver.process.pid, SIGTERM);
 }
 
