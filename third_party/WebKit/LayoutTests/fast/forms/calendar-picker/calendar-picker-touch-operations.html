@@ -18,6 +18,9 @@ shouldBeNull('document.getElementById("mock-page-popup")');
 
 openPicker(document.getElementById('date'), test);
 
+var position;
+eventSender.clearTouchPoints();
+
 function test() {
     debug('Open the month popup.');
     shouldBeFalse('popupWindow.global.picker.monthPopupView.isVisible');
@@ -26,14 +29,18 @@ function test() {
 
     debug('Check that touch swiping scrolls the list in the month popup.');
 
-    window.internals.settings.setTouchEventEmulationEnabled(true);
     checkYearListViewScrollOffset();
 
     popupWindow.global.picker.monthPopupView.yearListView.element.addEventListener('touchend', testAfterSwipingDown, false);
-    hoverOverMonthButton(2000, 0);
-    eventSender.mouseDown();
-    hoverOverMonthButton(2000, 11);
-    eventSender.mouseUp();
+
+    position = skipAnimationAndGetPositionOfMonthButton(2000, 0);
+    eventSender.addTouchPoint(position.x, position.y);
+    eventSender.touchStart();
+    position = skipAnimationAndGetPositionOfMonthButton(2000, 11);
+    eventSender.updateTouchPoint(0, position.x, position.y);
+    eventSender.touchMove();
+    eventSender.releaseTouchPoint(0);
+    eventSender.touchEnd();
 }
 
 function testAfterSwipingDown() {
@@ -45,15 +52,19 @@ function testAfterSwipingDown() {
 function testSwipingUp() {
     checkYearListViewScrollOffset();
     popupWindow.global.picker.monthPopupView.yearListView.element.addEventListener('touchend', testAfterSwipingUp, false);
-    eventSender.mouseDown();
-    hoverOverMonthPopupButton();
-    eventSender.mouseUp();
+
+    eventSender.addTouchPoint(position.x, position.y);
+    eventSender.touchStart();
+    position = skipAnimationAndGetPositionOfMonthPopupButton();
+    eventSender.updateTouchPoint(0, position.x, position.y);
+    eventSender.touchMove();
+    eventSender.releaseTouchPoint(0);
+    eventSender.touchEnd();
 }
 
 function testAfterSwipingUp() {
     shouldBeTrue('checkYearListViewScrollOffset() < 0');
     popupWindow.global.picker.monthPopupView.yearListView.element.removeEventListener('touchend', testAfterSwipingUp, false);
-    window.internals.settings.setTouchEventEmulationEnabled(false);
     finishJSTest();
 }
 </script>

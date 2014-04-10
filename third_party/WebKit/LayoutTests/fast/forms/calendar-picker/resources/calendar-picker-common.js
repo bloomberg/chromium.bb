@@ -88,11 +88,16 @@ function highlightedMonthButton() {
     }).sort().join();
 }
 
-function hoverOverMonthPopupButton() {
+function skipAnimationAndGetPositionOfMonthPopupButton() {
     skipAnimation();
     var buttonElement = popupWindow.global.picker.calendarHeaderView.monthPopupButton.element;
     var offset = cumulativeOffset(buttonElement);
-    eventSender.mouseMoveTo(offset[0] + buttonElement.offsetWidth / 2, offset[1] + buttonElement.offsetHeight / 2);
+    return {x: offset[0] + buttonElement.offsetWidth / 2, y: offset[1] + buttonElement.offsetHeight / 2};
+}
+
+function hoverOverMonthPopupButton() {
+    var position = skipAnimationAndGetPositionOfMonthPopupButton();
+    eventSender.mouseMoveTo(position.x, position.y);
 }
 
 function clickMonthPopupButton() {
@@ -118,7 +123,7 @@ function clickYearListCell(year) {
     eventSender.mouseUp();
 }
 
-function hoverOverMonthButton(year, month) {
+function skipAnimationAndGetPositionOfMonthButton(year, month) {
     skipAnimation();
     var row = year - 1;
     var rowCell = popupWindow.global.picker.monthPopupView.yearListView.cellAtRow(row);
@@ -135,7 +140,12 @@ function hoverOverMonthButton(year, month) {
     var scrollViewOffset = cumulativeOffset(popupWindow.global.picker.monthPopupView.yearListView.scrollView.element);
     var buttonCenterX = scrollViewOffset[0] + buttonOffsetRelativeToRowCell[0] + button.offsetWidth / 2;
     var buttonCenterY = scrollViewOffset[1] + buttonOffsetRelativeToRowCell[1] + rowOffsetFromViewportTop + button.offsetHeight / 2;
-    eventSender.mouseMoveTo(buttonCenterX, buttonCenterY);
+    return {x: buttonCenterX, y: buttonCenterY};
+}
+
+function hoverOverMonthButton(year, month) {
+    var position = skipAnimationAndGetPositionOfMonthButton(year, month);
+    eventSender.mouseMoveTo(position.x, position.y);
 }
 
 function clickMonthButton(year, month) {
