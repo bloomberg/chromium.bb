@@ -20,13 +20,15 @@
 #pragma comment(lib, "iphlpapi.lib")
 #elif defined(OS_POSIX)
 #include <fcntl.h>
-#if !defined(OS_ANDROID)
-#include <ifaddrs.h>
-#endif
-#include <net/if.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#endif
+#if !defined(OS_NACL)
+#include <net/if.h>
+#if !defined(OS_ANDROID)
+#include <ifaddrs.h>
+#endif  // !defined(OS_NACL)
+#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_POSIX)
 
 #include "base/basictypes.h"
 #include "base/i18n/time_formatting.h"
@@ -55,16 +57,10 @@
 #include "url/url_canon.h"
 #include "url/url_canon_ip.h"
 #include "url/url_parse.h"
-#if defined(OS_ANDROID)
-#include "net/android/network_library.h"
-#endif
 #include "net/base/dns_util.h"
 #include "net/base/escape.h"
 #include "net/base/net_module.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#if defined(OS_WIN)
-#include "net/base/winsock_init.h"
-#endif
 #include "net/http/http_content_disposition.h"
 #include "third_party/icu/source/common/unicode/uidna.h"
 #include "third_party/icu/source/common/unicode/uniset.h"
@@ -73,6 +69,13 @@
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
+
+#if defined(OS_ANDROID)
+#include "net/android/network_library.h"
+#endif
+#if defined(OS_WIN)
+#include "net/base/winsock_init.h"
+#endif
 
 using base::Time;
 
@@ -1264,6 +1267,10 @@ std::string IPAddressToPackedString(const IPAddressNumber& addr) {
 }
 
 std::string GetHostName() {
+#if defined(OS_NACL)
+  NOTIMPLEMENTED();
+  return std::string();
+#else  // defined(OS_NACL)
 #if defined(OS_WIN)
   EnsureWinsockInit();
 #endif
@@ -1276,6 +1283,7 @@ std::string GetHostName() {
     buffer[0] = '\0';
   }
   return std::string(buffer);
+#endif  // !defined(OS_NACL)
 }
 
 void GetIdentityFromURL(const GURL& url,
@@ -1541,6 +1549,9 @@ ScopedPortException::~ScopedPortException() {
 bool HaveOnlyLoopbackAddresses() {
 #if defined(OS_ANDROID)
   return android::HaveOnlyLoopbackAddresses();
+#elif defined(OS_NACL)
+  NOTIMPLEMENTED();
+  return false;
 #elif defined(OS_POSIX)
   struct ifaddrs* interface_addr = NULL;
   int rv = getifaddrs(&interface_addr);

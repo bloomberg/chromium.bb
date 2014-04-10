@@ -18,11 +18,11 @@
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_NACL)
 #include <ifaddrs.h>
-#endif
 #include <net/if.h>
 #include <netinet/in.h>
+#endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include <netinet/in_var.h>
@@ -86,7 +86,10 @@ void RemovePermanentIPv6AddressesWhereTemporaryExists(
 }  // namespace
 
 bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
-#if defined(OS_ANDROID)
+#if defined(OS_NACL)
+  NOTIMPLEMENTED();
+  return false;
+#elif defined(OS_ANDROID)
   std::string network_list = android::GetNetworkList();
   base::StringTokenizer network_interfaces(network_list, "\n");
   while (network_interfaces.GetNext()) {
