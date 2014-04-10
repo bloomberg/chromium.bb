@@ -9,8 +9,9 @@ from telemetry import test
 
 # RasterizeAndRecord disabled on mac because Chrome DCHECKS.
 # TODO: Re-enable when unittests are happy: crbug.com/350684.
+# TODO(skyostil): Re-enable on windows (crbug.com/360666).
 
-@test.Disabled('android', 'linux', 'mac')
+@test.Disabled
 class RasterizeAndRecordMicroTop25(test.Test):
   """Measures rasterize and record performance on the top 25 web pages.
 
