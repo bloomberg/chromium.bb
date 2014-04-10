@@ -121,9 +121,10 @@ def DevserverURLToLocalPath(url, static_dir, file_type):
 class USBImager(object):
   """Copy image to the target removable device."""
 
-  def __init__(self, device, image, debug=False, yes=False):
+  def __init__(self, device, board, image, debug=False, yes=False):
     """Initalizes USBImager."""
     self.device = device
+    self.board = board if board else cros_build_lib.GetDefaultBoard()
     self.image = image
     self.debug = debug
     self.debug_level = logging.DEBUG if debug else logging.INFO
@@ -213,7 +214,7 @@ class USBImager(object):
     except OSError:
       logging.error('Failed to create %s', static_dir)
 
-    ds = ds_wrapper.DevServerWrapper(static_dir=static_dir)
+    ds = ds_wrapper.DevServerWrapper(static_dir=static_dir, board=self.board)
     req = GenerateXbuddyRequest(path, 'image')
     logging.info('Starting local devserver to get image path...')
     try:
@@ -924,6 +925,7 @@ Examples:
         logging.info('Preparing to image the removable device %s',
                      self.options.device)
         imager = USBImager(self.usb_dev,
+                           self.options.board,
                            self.options.image,
                            debug=self.options.debug,
                            yes=self.options.yes)
