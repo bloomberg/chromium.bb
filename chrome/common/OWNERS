@@ -50,5 +50,5 @@ per-file search_types.*=samarth@chromium.org
 per-file autocomplete_match_type.*=mpearson@chromium.org
 per-file autocomplete_match_type.*=pkasting@chromium.org
 per-file autocomplete_match_type.*=sky@chromium.org
-per-file crash_keys.*=rsesek@chromium.org
+per-file crash_keys*=rsesek@chromium.org
 per-file profile_management_switches.*=bcwhite@chromium.org
