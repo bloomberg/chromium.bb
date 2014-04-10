@@ -141,7 +141,7 @@ void AppListFolderView::OnAppListItemWillBeDeleted(AppListItem* item) {
     folder_item_ = NULL;
 
     // Do not change state if it is hidden.
-    if (layer()->opacity() == 0.0f)
+    if (hide_for_reparent_ || layer()->opacity() == 0.0f)
       return;
 
     // If the folder item associated with this view is removed from the model,
