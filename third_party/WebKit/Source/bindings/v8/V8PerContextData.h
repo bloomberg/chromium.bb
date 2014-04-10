@@ -33,8 +33,8 @@
 
 #include "bindings/v8/CustomElementBinding.h"
 #include "bindings/v8/ScopedPersistent.h"
-#include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8DOMActivityLogger.h"
+#include "bindings/v8/V8PersistentValueMap.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "gin/public/context_holder.h"
 #include "gin/public/gin_embedders.h"
@@ -74,16 +74,14 @@ public:
     // This is faster than going through the full object creation process.
     v8::Local<v8::Object> createWrapperFromCache(const WrapperTypeInfo* type)
     {
-        UnsafePersistent<v8::Object> boilerplate = m_wrapperBoilerplates.get(type);
-        return !boilerplate.isEmpty() ? boilerplate.newLocal(m_isolate)->Clone() : createWrapperFromCacheSlowCase(type);
+        v8::Local<v8::Object> boilerplate = m_wrapperBoilerplates.Get(type);
+        return !boilerplate.IsEmpty() ? boilerplate->Clone() : createWrapperFromCacheSlowCase(type);
     }
 
     v8::Local<v8::Function> constructorForType(const WrapperTypeInfo* type)
     {
-        UnsafePersistent<v8::Function> function = m_constructorMap.get(type);
-        if (!function.isEmpty())
-            return function.newLocal(m_isolate);
-        return constructorForTypeSlowCase(type);
+        v8::Local<v8::Function> function = m_constructorMap.Get(type);
+        return (!function.IsEmpty()) ? function : constructorForTypeSlowCase(type);
     }
 
     v8::Local<v8::Object> prototypeForType(const WrapperTypeInfo*);
@@ -104,10 +102,10 @@ private:
 
     // For each possible type of wrapper, we keep a boilerplate object.
     // The boilerplate is used to create additional wrappers of the same type.
-    typedef WTF::HashMap<const WrapperTypeInfo*, UnsafePersistent<v8::Object> > WrapperBoilerplateMap;
+    typedef V8PersistentValueMap<const WrapperTypeInfo*, v8::Object, false> WrapperBoilerplateMap;
     WrapperBoilerplateMap m_wrapperBoilerplates;
 
-    typedef WTF::HashMap<const WrapperTypeInfo*, UnsafePersistent<v8::Function> > ConstructorMap;
+    typedef V8PersistentValueMap<const WrapperTypeInfo*, v8::Function, false> ConstructorMap;
     ConstructorMap m_constructorMap;
 
     V8NPObjectMap m_v8NPObjectMap;

@@ -40,17 +40,10 @@
 
 namespace WebCore {
 
-template<typename Map>
-static void disposeMapWithUnsafePersistentValues(Map* map)
-{
-    typename Map::iterator it = map->begin();
-    for (; it != map->end(); ++it)
-        it->value.dispose();
-    map->clear();
-}
-
 V8PerContextData::V8PerContextData(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
-    : m_activityLogger(0)
+    : m_wrapperBoilerplates(context->GetIsolate())
+    , m_constructorMap(context->GetIsolate())
+    , m_activityLogger(0)
     , m_isolate(context->GetIsolate())
     , m_contextHolder(adoptPtr(new gin::ContextHolder(context->GetIsolate())))
     , m_context(m_isolate, context)
@@ -69,8 +62,6 @@ V8PerContextData::V8PerContextData(v8::Handle<v8::Context> context, PassRefPtr<D
 
 V8PerContextData::~V8PerContextData()
 {
-    disposeMapWithUnsafePersistentValues(&m_wrapperBoilerplates);
-    disposeMapWithUnsafePersistentValues(&m_constructorMap);
 }
 
 PassOwnPtr<V8PerContextData> V8PerContextData::create(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
@@ -91,7 +82,7 @@ v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(const Wra
     v8::Local<v8::Function> function = constructorForType(type);
     v8::Local<v8::Object> instanceTemplate = V8ObjectConstructor::newInstance(m_isolate, function);
     if (!instanceTemplate.IsEmpty()) {
-        m_wrapperBoilerplates.set(type, UnsafePersistent<v8::Object>(m_isolate, instanceTemplate));
+        m_wrapperBoilerplates.Set(type, instanceTemplate);
         return instanceTemplate->Clone();
     }
     return v8::Local<v8::Object>();
@@ -127,7 +118,7 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
             prototypeObject->SetPrototype(m_errorPrototype.newLocal(m_isolate));
     }
 
-    m_constructorMap.set(type, UnsafePersistent<v8::Function>(m_isolate, function));
+    m_constructorMap.Set(type, function);
 
     return function;
 }
