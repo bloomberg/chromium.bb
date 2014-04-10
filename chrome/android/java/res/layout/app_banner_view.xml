@@ -35,18 +35,18 @@
     <!-- Button that triggers installation and opening of the app. -->
     <Button
             android:id="@+id/app_install_button"
-            android:background="@drawable/app_banner_button_install"
+            style="@style/AppBannerButton"
+            android:textColor="@color/app_banner_install_button_fg"
+            android:ellipsize="end"
+            android:singleLine="true"
             android:minHeight="@dimen/app_banner_button_height"
-            android:lines="1"
-            android:textAppearance="@style/AppBannerButton"
             android:paddingStart="@dimen/app_banner_button_padding_sides"
             android:paddingEnd="@dimen/app_banner_button_padding_sides"
             android:paddingTop="@dimen/app_banner_button_padding_above_below"
             android:paddingBottom="@dimen/app_banner_button_padding_above_below"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/app_banner_button_margin_top"
-            android:layout_marginStart="@dimen/app_banner_button_margin_start" />
+            android:layout_marginTop="@dimen/app_banner_button_margin_top" />
 
     <!-- Logo for the store. -->
     <ImageView
@@ -56,7 +56,8 @@
             android:layout_width="wrap_content"
             android:layout_height="@dimen/app_banner_logo_height"
             android:layout_marginTop="@dimen/app_banner_logo_margin_top"
-            android:layout_marginBottom="@dimen/app_banner_logo_margin_bottom" />
+            android:layout_marginBottom="@dimen/app_banner_logo_margin_bottom"
+            android:layout_marginEnd="@dimen/app_banner_logo_margin_end"/>
 
     <!-- View showing how well the app is rated. -->
     <org.chromium.chrome.browser.banners.RatingView

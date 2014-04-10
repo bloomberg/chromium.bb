@@ -296,7 +296,7 @@ public class AppBannerView extends SwipableOverlayView
                 PackageManager packageManager = getContext().getPackageManager();
                 Intent appIntent = packageManager.getLaunchIntentForPackage(packageName);
                 try {
-                    getContext().startActivity(appIntent);
+                    if (appIntent != null) getContext().startActivity(appIntent);
                 } catch (ActivityNotFoundException e) {
                     Log.e(TAG, "Failed to find app package: " + packageName);
                 }
@@ -634,8 +634,13 @@ public class AppBannerView extends SwipableOverlayView
         final int contentWidth =
                 maxControlWidth - getWidthWithMargins(mIconView) - mPaddingControls;
         final int contentHeight = biggestStackHeight - mPaddingControls;
-        measureChildForSpace(mInstallButtonView, contentWidth, contentHeight);
         measureChildForSpace(mLogoView, contentWidth, contentHeight);
+
+        // Restrict the button size to prevent overrunning the Google Play logo.
+        int remainingButtonWidth =
+                maxControlWidth - getWidthWithMargins(mLogoView) - getWidthWithMargins(mIconView);
+        mInstallButtonView.setMaxWidth(remainingButtonWidth);
+        measureChildForSpace(mInstallButtonView, contentWidth, contentHeight);
 
         // Measure the star rating, which sits below the title and above the logo.
         final int ratingWidth = contentWidth;
