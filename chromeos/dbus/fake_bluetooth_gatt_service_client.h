@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/bluetooth_gatt_service_client.h"
@@ -54,6 +55,13 @@ class CHROMEOS_EXPORT FakeBluetoothGattServiceClient
   void ExposeHeartRateService(const dbus::ObjectPath& device_path);
   void HideHeartRateService();
 
+  // Returns whether or not the Heart Rate Service is visible.
+  bool IsHeartRateVisible() const;
+
+  // Returns the current object path of the visible Heart Rate service. If the
+  // service is not visible, returns an invalid empty path.
+  dbus::ObjectPath GetHeartRateServicePath() const;
+
   // Final object path components and the corresponding UUIDs of the GATT
   // services that we emulate. Service paths are hierarchical to Bluetooth
   // device paths, so if the path component is "service0000", and the device
@@ -71,6 +79,12 @@ class CHROMEOS_EXPORT FakeBluetoothGattServiceClient
   void NotifyServiceAdded(const dbus::ObjectPath& object_path);
   void NotifyServiceRemoved(const dbus::ObjectPath& object_path);
 
+  // Tells FakeBluetoothGattCharacteristicClient to expose GATT characteristics.
+  // This is scheduled from ExposeHeartRateService to simulate asynchronous
+  // retrieval of characteristics. If the Heart Rate Service is hidden at the
+  // time this method is called, then it does nothing.
+  void ExposeHeartRateCharacteristics();
+
   // Static properties we return. As long as a service is exposed, this will be
   // non-null. Otherwise it will be null.
   scoped_ptr<Properties> heart_rate_service_properties_;
@@ -78,6 +92,12 @@ class CHROMEOS_EXPORT FakeBluetoothGattServiceClient
 
   // List of observers interested in event notifications from us.
   ObserverList<Observer> observers_;
+
+  // Weak pointer factory for generating 'this' pointers that might live longer
+  // than we do.
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<FakeBluetoothGattServiceClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothGattServiceClient);
 };

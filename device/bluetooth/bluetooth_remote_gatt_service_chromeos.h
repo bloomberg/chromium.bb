@@ -5,11 +5,13 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_CHROMEOS_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_CHROMEOS_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chromeos/dbus/bluetooth_gatt_characteristic_client.h"
 #include "chromeos/dbus/bluetooth_gatt_service_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
@@ -24,26 +26,30 @@ class BluetoothGattCharacteristic;
 namespace chromeos {
 
 class BluetoothDeviceChromeOS;
+class BluetoothRemoteGattCharacteristicChromeOS;
 
 // The BluetoothRemoteGattServiceChromeOS class implements BluetootGattService
 // for remote GATT services on the the Chrome OS platform.
 class BluetoothRemoteGattServiceChromeOS
     : public device::BluetoothGattService,
-      public BluetoothGattServiceClient::Observer {
+      public BluetoothGattServiceClient::Observer,
+      public BluetoothGattCharacteristicClient::Observer {
  public:
   // device::BluetoothGattService overrides.
-  virtual std::string GetIdentifier() const OVERRIDE;
-  virtual device::BluetoothUUID GetUUID() const OVERRIDE;
-  virtual bool IsLocal() const OVERRIDE;
-  virtual bool IsPrimary() const OVERRIDE;
-  virtual const std::vector<device::BluetoothGattCharacteristic*>&
-      GetCharacteristics() const OVERRIDE;
-  virtual const std::vector<device::BluetoothGattService*>&
-      GetIncludedServices() const OVERRIDE;
   virtual void AddObserver(
       device::BluetoothGattService::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(
       device::BluetoothGattService::Observer* observer) OVERRIDE;
+  virtual std::string GetIdentifier() const OVERRIDE;
+  virtual device::BluetoothUUID GetUUID() const OVERRIDE;
+  virtual bool IsLocal() const OVERRIDE;
+  virtual bool IsPrimary() const OVERRIDE;
+  virtual std::vector<device::BluetoothGattCharacteristic*>
+      GetCharacteristics() const OVERRIDE;
+  virtual std::vector<device::BluetoothGattService*>
+      GetIncludedServices() const OVERRIDE;
+  virtual device::BluetoothGattCharacteristic* GetCharacteristic(
+      const std::string& identifier) OVERRIDE;
   virtual bool AddCharacteristic(
       device::BluetoothGattCharacteristic* characteristic) OVERRIDE;
   virtual bool AddIncludedService(
@@ -68,6 +74,15 @@ class BluetoothRemoteGattServiceChromeOS
       const dbus::ObjectPath& object_path,
       const std::string& property_name) OVERRIDE;
 
+  // BluetoothGattCharacteristicClient::Observer override.
+  virtual void GattCharacteristicAdded(
+      const dbus::ObjectPath& object_path) OVERRIDE;
+  virtual void GattCharacteristicRemoved(
+      const dbus::ObjectPath& object_path) OVERRIDE;
+  virtual void GattCharacteristicPropertyChanged(
+      const dbus::ObjectPath& object_path,
+      const std::string& property_name) OVERRIDE;
+
   // Object path of the GATT service.
   dbus::ObjectPath object_path_;
 
@@ -77,11 +92,13 @@ class BluetoothRemoteGattServiceChromeOS
   // The device this GATT service belongs to.
   BluetoothDeviceChromeOS* device_;
 
-  // The list of characteristics that belong to this service.
-  std::vector<device::BluetoothGattCharacteristic*> characteristics_;
-
-  // The list of GATT services included by this service.
-  std::vector<device::BluetoothGattService*> includes_;
+  // Mapping from GATT characteristic object paths to characteristic objects.
+  // owned by this service. Since the Chrome OS implementation uses object
+  // paths as unique identifiers, we also use this mapping to return
+  // characteristics by identifier.
+  typedef std::map<dbus::ObjectPath, BluetoothRemoteGattCharacteristicChromeOS*>
+      CharacteristicMap;
+  CharacteristicMap characteristics_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

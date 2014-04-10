@@ -49,7 +49,10 @@ void FakeBluetoothGattCharacteristicClient::Properties::Get(
     dbus::PropertyBase* property,
     dbus::PropertySet::GetCallback callback) {
   VLOG(1) << "Get " << property->name();
-  callback.Run(false);
+
+  // TODO(armansito): Return success or failure here based on characteristic
+  // read permission.
+  callback.Run(true);
 }
 
 void FakeBluetoothGattCharacteristicClient::Properties::GetAll() {
@@ -116,8 +119,8 @@ FakeBluetoothGattCharacteristicClient::GetProperties(
     return heart_rate_measurement_properties_.get();
   }
   if (object_path.value() == body_sensor_location_path_) {
-    DCHECK(heart_rate_measurement_properties_.get());
-    return heart_rate_measurement_properties_.get();
+    DCHECK(body_sensor_location_properties_.get());
+    return body_sensor_location_properties_.get();
   }
   if (object_path.value() == heart_rate_control_point_path_) {
     DCHECK(heart_rate_control_point_properties_.get());
@@ -224,6 +227,21 @@ void FakeBluetoothGattCharacteristicClient::HideHeartRateCharacteristics() {
   body_sensor_location_path_.clear();
   heart_rate_control_point_path_.clear();
   heart_rate_visible_ = false;
+}
+
+dbus::ObjectPath
+FakeBluetoothGattCharacteristicClient::GetHeartRateMeasurementPath() const {
+  return dbus::ObjectPath(heart_rate_measurement_path_);
+}
+
+dbus::ObjectPath
+FakeBluetoothGattCharacteristicClient::GetBodySensorLocationPath() const {
+  return dbus::ObjectPath(body_sensor_location_path_);
+}
+
+dbus::ObjectPath
+FakeBluetoothGattCharacteristicClient::GetHeartRateControlPointPath() const {
+  return dbus::ObjectPath(heart_rate_control_point_path_);
 }
 
 void FakeBluetoothGattCharacteristicClient::OnPropertyChanged(

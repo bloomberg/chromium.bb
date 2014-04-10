@@ -146,7 +146,7 @@ class BluetoothGattDescriptor {
 
   // Returns a pointer to the GATT characteristic that this characteristic
   // descriptor belongs to.
-  virtual const BluetoothGattCharacteristic* GetCharacteristic() const = 0;
+  virtual BluetoothGattCharacteristic* GetCharacteristic() const = 0;
 
   // Sends a read request to a remote characteristic descriptor to read its
   // value. |callback| is called to return the read value on success and

@@ -89,6 +89,9 @@ class BluetoothUUID {
   std::string canonical_value_;
 };
 
+// This is required by gtest to print a readable output on test failures.
+void PrintTo(const BluetoothUUID& uuid, std::ostream* out);
+
 }  // namespace device
 
 #endif  // DEVICE_BLUETOOTH_BLUETOOTH_UUID_H_

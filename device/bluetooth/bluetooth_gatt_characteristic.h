@@ -5,6 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_GATT_CHARACTERISTIC_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_GATT_CHARACTERISTIC_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -37,6 +38,8 @@ class BluetoothGattCharacteristic {
   // indicates that there is a characteristic descriptor (namely the
   // "Characteristic Extended Properties Descriptor" with UUID 0x2900) that
   // contains additional properties pertaining to the characteristic.
+  // The properties "ReliableWrite| and |WriteAuxiliaries| are retrieved from
+  // that characteristic.
   enum Property {
     kPropertyNone = 0,
     kPropertyBroadcast = 1 << 0,
@@ -46,7 +49,9 @@ class BluetoothGattCharacteristic {
     kPropertyNotify = 1 << 4,
     kPropertyIndicate = 1 << 5,
     kPropertyAuthenticatedSignedWrites = 1 << 6,
-    kPropertyExtendedProperties = 1 << 7
+    kPropertyExtendedProperties = 1 << 7,
+    kPropertyReliableWrite = 1 << 8,
+    kPropertyWriteableAuxiliaries = 1 << 9
   };
   typedef uint32 Properties;
 
@@ -71,7 +76,7 @@ class BluetoothGattCharacteristic {
   typedef uint32 Permissions;
 
   // The ErrorCallback is used by methods to asynchronously report errors.
-  typedef base::Callback<void(const std::string&)> ErrorCallback;
+  typedef base::Closure ErrorCallback;
 
   // The ValueCallback is used to return the value of a remote characteristic
   // upon a read request.
@@ -100,6 +105,13 @@ class BluetoothGattCharacteristic {
                                              Properties properties,
                                              Permissions permissions);
 
+  // Identifier used to uniquely identify a GATT characteristic object. This is
+  // different from the characteristic UUID: while multiple characteristics with
+  // the same UUID can exist on a Bluetooth device, the identifier returned from
+  // this method is unique among all characteristics of a device. The contents
+  // of the identifier are platform specific.
+  virtual std::string GetIdentifier() const = 0;
+
   // The Bluetooth-specific UUID of the characteristic.
   virtual BluetoothUUID GetUUID() const = 0;
 
@@ -113,11 +125,17 @@ class BluetoothGattCharacteristic {
   virtual const std::vector<uint8>& GetValue() const = 0;
 
   // Returns a pointer to the GATT service this characteristic belongs to.
-  virtual const BluetoothGattService* GetService() const = 0;
+  virtual BluetoothGattService* GetService() const = 0;
+
+  // Returns the bitmask of characteristic properties.
+  virtual Properties GetProperties() const = 0;
+
+  // Returns the bitmask of characteristic attribute permissions.
+  virtual Permissions GetPermissions() const = 0;
 
   // Returns the list of GATT characteristic descriptors that provide more
   // information about this characteristic.
-  virtual const std::vector<BluetoothGattDescriptor*>
+  virtual std::vector<BluetoothGattDescriptor*>
       GetDescriptors() const = 0;
 
   // Adds a characteristic descriptor to the locally hosted characteristic
@@ -147,12 +165,11 @@ class BluetoothGattCharacteristic {
       const ErrorCallback& error_callback) = 0;
 
   // Sends a write request to a remote characteristic, to modify the
-  // characteristic's value starting at offset |offset| with the new value
-  // |new_value|. |callback| is called to signal success and |error_callback|
-  // for failures. This method only applies to remote characteristics and will
-  // fail for those that are locally hosted.
+  // characteristic's value with the new value |new_value|. |callback| is
+  // called to signal success and |error_callback| for failures. This method
+  // only applies to remote characteristics and will fail for those that are
+  // locally hosted.
   virtual void WriteRemoteCharacteristic(
-      int offset,
       const std::vector<uint8>& new_value,
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;

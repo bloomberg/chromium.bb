@@ -60,6 +60,8 @@
         'bluetooth_profile_mac.mm',
         'bluetooth_profile_win.cc',
         'bluetooth_profile_win.h',
+        'bluetooth_remote_gatt_characteristic_chromeos.cc',
+        'bluetooth_remote_gatt_characteristic_chromeos.h',
         'bluetooth_remote_gatt_service_chromeos.cc',
         'bluetooth_remote_gatt_service_chromeos.h',
         'bluetooth_service_record.cc',

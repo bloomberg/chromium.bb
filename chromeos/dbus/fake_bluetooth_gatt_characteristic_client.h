@@ -56,6 +56,16 @@ class CHROMEOS_EXPORT FakeBluetoothGattCharacteristicClient
   void ExposeHeartRateCharacteristics(const dbus::ObjectPath& service_path);
   void HideHeartRateCharacteristics();
 
+  // Returns whether or not the heart rate characteristics are visible and
+  // performs the appropriate assertions.
+  bool IsHeartRateVisible() const;
+
+  // Returns the current object paths of exposed characteristics. If the
+  // characteristic is not visible, returns an invalid empty path.
+  dbus::ObjectPath GetHeartRateMeasurementPath() const;
+  dbus::ObjectPath GetBodySensorLocationPath() const;
+  dbus::ObjectPath GetHeartRateControlPointPath() const;
+
   // Object path components and UUIDs of GATT characteristics.
   // Heart Rate Service:
   static const char kHeartRateMeasurementPathComponent[];
@@ -82,10 +92,6 @@ class CHROMEOS_EXPORT FakeBluetoothGattCharacteristicClient
   // are populated according to the the fake behavior. The measurement value
   // is a random value within a reasonable range.
   std::vector<uint8> GetHeartRateMeasurementValue();
-
-  // Returns whether or not the heart rate characteristics are visible and
-  // performs the appropriate assertions.
-  bool IsHeartRateVisible() const;
 
   // If true, characteristics of the Heart Rate Service are visible. Use
   // IsHeartRateVisible() to check the value.

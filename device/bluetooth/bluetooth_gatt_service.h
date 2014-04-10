@@ -132,14 +132,50 @@ class BluetoothGattService {
    public:
     // Called when properties of the remote GATT service |service| have changed.
     // This will get called for properties such as UUID, as well as for changes
-    // to the list of known characteristics. Observers should read all GATT
-    // characteristic and descriptors objects and do any necessary set up
-    // required for a changed service.
+    // to the list of known characteristics and included services. Observers
+    // should read all GATT characteristic and descriptors objects and do any
+    // necessary set up required for a changed service. This method may be
+    // called several times, especially when the service is discovered for the
+    // first time. It will be called for each characteristic that is discovered
+    // or removed. Hence this method should be used to check whether or not all
+    // characteristics of a service have been discovered that correspond to the
+    // profile implemented by the Observer.
     virtual void GattServiceChanged(BluetoothGattService* service) {}
 
-    // Called when the value of a characteristic has been retrieved or updated
-    // via a notification or inidication.
-    virtual void CharacteristicValueChanged(
+    // Called when the remote GATT characteristic |characteristic| belonging to
+    // GATT service |service| has been discovered. Use this to issue any initial
+    // read/write requests to the characteristic but don't cache the pointer as
+    // it may become invalid. Instead, use the specially assigned identifier
+    // to obtain a characteristic and cache that identifier as necessary, as it
+    // can be used to retrieve the characteristic from its GATT service. The
+    // number of characteristics with the same UUID belonging to a service
+    // depends on the particular profile the remote device implements, hence the
+    // client of a GATT based profile will usually operate on the whole set of
+    // characteristics and not just one.
+    //
+    // This method will always be followed by a call to GattServiceChanged,
+    // which can be used by observers to get all the characteristics of a
+    // service and perform the necessary updates. GattCharacteristicAdded exists
+    // mostly for convenience.
+    virtual void GattCharacteristicAdded(
+        BluetoothGattService* service,
+        BluetoothGattCharacteristic* characteristic) {}
+
+    // Called when a GATT characteristic |characteristic| belonging to GATT
+    // service |service| has been removed. This method is for convenience
+    // and will be followed by a call to GattServiceChanged (except when called
+    // after the service gets removed) which should be used for bootstrapping a
+    // GATT based profile. See the documentation of GattCharacteristicAdded and
+    // GattServiceChanged for more information. Try to obtain the service from
+    // its device to see whether or not the service has been removed.
+    virtual void GattCharacteristicRemoved(
+        BluetoothGattService* service,
+        BluetoothGattCharacteristic* characteristic) {}
+
+    // Called when the value of a characteristic has changed. This might be a
+    // result of a read/write request to, or a notification/indication from, a
+    // remote GATT characteristic.
+    virtual void GattCharacteristicValueChanged(
         BluetoothGattService* service,
         BluetoothGattCharacteristic* characteristic,
         const std::vector<uint8>& value) {}
@@ -168,11 +204,11 @@ class BluetoothGattService {
                                       bool is_primary,
                                       Delegate* delegate);
 
-  // Identifier used to uniquely identify a GATT service object. This different
-  // from the service UUID: while multiple services with the same UUID can exist
-  // on a Bluetooth device, the identifier returned from this method is unique
-  // among all services of a device. The contents of the identifier are platform
-  // specific.
+  // Identifier used to uniquely identify a GATT service object. This is
+  // different from the service UUID: while multiple services with the same UUID
+  // can exist on a Bluetooth device, the identifier returned from this method
+  // is unique among all services of a device. The contents of the identifier
+  // are platform specific.
   virtual std::string GetIdentifier() const = 0;
 
   // The Bluetooth-specific UUID of the service.
@@ -190,12 +226,17 @@ class BluetoothGattService {
   virtual bool IsPrimary() const = 0;
 
   // List of characteristics that belong to this service.
-  virtual const std::vector<BluetoothGattCharacteristic*>&
+  virtual std::vector<BluetoothGattCharacteristic*>
       GetCharacteristics() const = 0;
 
   // List of GATT services that are included by this service.
-  virtual const std::vector<BluetoothGattService*>&
+  virtual std::vector<BluetoothGattService*>
       GetIncludedServices() const = 0;
+
+  // Returns the GATT characteristic with identifier |identifier| if it belongs
+  // to this GATT service.
+  virtual BluetoothGattCharacteristic* GetCharacteristic(
+      const std::string& identifier) = 0;
 
   // Adds characteristics and included services to the local attribute hierarchy
   // represented by this service. These methods only make sense for local
