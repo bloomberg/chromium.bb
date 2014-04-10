@@ -64,7 +64,9 @@ def main(args):
 
   stampfile = tarball + '.stamp'
   if os.path.exists(stampfile):
-    if checksum == ReadFile(stampfile):
+    if (os.path.exists(tarball) and
+        os.path.exists(outdir) and
+        checksum == ReadFile(stampfile)):
       return 0
     else:
       os.unlink(stampfile)
