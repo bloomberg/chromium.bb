@@ -227,6 +227,7 @@ Option
 OscillatorNode
 OverflowEvent
 PageTransitionEvent
+Path2D
 Performance
 PerformanceEntry
 PerformanceMark

@@ -69,26 +69,24 @@ interface CanvasRenderingContext2D {
 
     // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
     void fill();
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void fill(Path2D? path);
+    [RuntimeEnabled=Path2D, RaisesException] void fill(Path2D? path);
     void fill(CanvasWindingRule winding);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void fill(Path2D? path, CanvasWindingRule winding);
+    [RuntimeEnabled=Path2D, RaisesException] void fill(Path2D? path, CanvasWindingRule winding);
     void stroke();
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void stroke(Path2D? path);
+    [RuntimeEnabled=Path2D, RaisesException] void stroke(Path2D? path);
     // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
     void clip();
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void clip(Path2D? path);
+    [RuntimeEnabled=Path2D, RaisesException] void clip(Path2D? path);
     void clip(CanvasWindingRule winding);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void clip(Path2D? path, CanvasWindingRule winding);
+    [RuntimeEnabled=Path2D, RaisesException] void clip(Path2D? path, CanvasWindingRule winding);
 
     // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
     boolean isPointInPath(float x, float y);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] boolean isPointInPath(Path2D? path, float x, float y);
+    [RuntimeEnabled=Path2D, RaisesException] boolean isPointInPath(Path2D? path, float x, float y);
     boolean isPointInPath(float x, float y, CanvasWindingRule winding);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] boolean isPointInPath(Path2D? path, float x, float y, CanvasWindingRule winding);
-
-    // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
+    [RuntimeEnabled=Path2D, RaisesException] boolean isPointInPath(Path2D? path, float x, float y, CanvasWindingRule winding);
     boolean isPointInStroke(float x, float y);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] boolean isPointInStroke(Path2D? path, float x, float y);
+    [RuntimeEnabled=Path2D, RaisesException] boolean isPointInStroke(Path2D? path, float x, float y);
 
     [RuntimeEnabled=ExperimentalCanvasFeatures] void scrollPathIntoView();
     [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void scrollPathIntoView(Path2D? path);
