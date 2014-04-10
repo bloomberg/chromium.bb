@@ -319,7 +319,6 @@ class COMPOSITOR_EXPORT Layer
   cc::Layer* cc_layer() { return cc_layer_; }
 
   // TextureLayerClient
-  virtual unsigned PrepareTexture() OVERRIDE;
   virtual bool PrepareTextureMailbox(
       cc::TextureMailbox* mailbox,
       scoped_ptr<cc::SingleReleaseCallback>* release_callback,

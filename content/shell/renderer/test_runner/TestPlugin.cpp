@@ -321,11 +321,6 @@ bool TestPlugin::isPlaceholder()
     return false;
 }
 
-unsigned TestPlugin::PrepareTexture() {
-    NOTREACHED();
-    return 0;
-}
-
 static void ignoreReleaseCallback(uint32 sync_point, bool lost) {}
 
 static void releaseSharedMemory(scoped_ptr<base::SharedMemory> bitmap,

@@ -60,11 +60,6 @@ void WebExternalTextureLayerImpl::setRateLimitContext(bool rate_limit) {
   static_cast<TextureLayer*>(layer_->layer())->SetRateLimitContext(rate_limit);
 }
 
-unsigned WebExternalTextureLayerImpl::PrepareTexture() {
-  NOTREACHED();
-  return 0;
-}
-
 bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
     scoped_ptr<cc::SingleReleaseCallback>* release_callback,

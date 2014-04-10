@@ -68,13 +68,6 @@ class CC_EXPORT SchedulerStateMachine {
   };
   static const char* CommitStateToString(CommitState state);
 
-  enum TextureState {
-    LAYER_TEXTURE_STATE_UNLOCKED,
-    LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD,
-    LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD,
-  };
-  static const char* TextureStateToString(TextureState state);
-
   enum SynchronousReadbackState {
     READBACK_STATE_IDLE,
     READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME,
@@ -117,7 +110,6 @@ class CC_EXPORT SchedulerStateMachine {
     ACTION_DRAW_AND_SWAP_ABORT,
     ACTION_DRAW_AND_READBACK,
     ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
-    ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD,
     ACTION_MANAGE_TILES,
   };
   static const char* ActionToString(Action action);
@@ -209,13 +201,6 @@ class CC_EXPORT SchedulerStateMachine {
   // If did_handle is false, then another commit will be retried soon.
   void BeginMainFrameAborted(bool did_handle);
 
-  // Request exclusive access to the textures that back single buffered
-  // layers on behalf of the main thread. Upon acquisition,
-  // ACTION_DRAW_AND_SWAP_IF_POSSIBLE will not draw until the main thread
-  // releases the
-  // textures to the impl thread by committing the layers.
-  void SetMainThreadNeedsLayerTextures();
-
   // Set that we can create the first OutputSurface and start the scheduler.
   void SetCanStart() { can_start_ = true; }
 
@@ -262,7 +247,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldDrawForced() const;
   bool ShouldDraw() const;
   bool ShouldActivatePendingTree() const;
-  bool ShouldAcquireLayerTexturesForMainThread() const;
   bool ShouldUpdateVisibleTiles() const;
   bool ShouldSendBeginMainFrame() const;
   bool ShouldCommit() const;
@@ -284,7 +268,6 @@ class CC_EXPORT SchedulerStateMachine {
   OutputSurfaceState output_surface_state_;
   BeginImplFrameState begin_impl_frame_state_;
   CommitState commit_state_;
-  TextureState texture_state_;
   ForcedRedrawOnTimeoutState forced_redraw_state_;
   SynchronousReadbackState readback_state_;
 
@@ -306,7 +289,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool needs_manage_tiles_;
   bool swap_used_incomplete_tile_;
   bool needs_commit_;
-  bool main_thread_needs_layer_textures_;
   bool inside_poll_for_anticipated_draw_triggers_;
   bool visible_;
   bool can_start_;

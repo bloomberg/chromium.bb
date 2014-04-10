@@ -658,11 +658,6 @@ void Layer::PaintContents(SkCanvas* sk_canvas,
 
 bool Layer::FillsBoundsCompletely() const { return fills_bounds_completely_; }
 
-unsigned Layer::PrepareTexture() {
-  NOTREACHED();
-  return 0;
-}
-
 bool Layer::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
     scoped_ptr<cc::SingleReleaseCallback>* release_callback,

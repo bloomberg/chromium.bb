@@ -64,7 +64,6 @@ class ThreadProxy : public Proxy,
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual size_t MaxPartialTextureUpdates() const OVERRIDE;
-  virtual void AcquireLayerTextures() OVERRIDE;
   virtual void ForceSerializeOnSwapBuffers() OVERRIDE;
   virtual void SetDebugState(const LayerTreeDebugState& debug_state) OVERRIDE;
   virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
@@ -111,7 +110,6 @@ class ThreadProxy : public Proxy,
   virtual void ScheduledActionUpdateVisibleTiles() OVERRIDE;
   virtual void ScheduledActionActivatePendingTree() OVERRIDE;
   virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE;
-  virtual void ScheduledActionAcquireLayerTexturesForMainThread() OVERRIDE;
   virtual void ScheduledActionManageTiles() OVERRIDE;
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) OVERRIDE;
   virtual base::TimeDelta DrawDurationEstimate() OVERRIDE;
@@ -182,8 +180,6 @@ class ThreadProxy : public Proxy,
       RendererCapabilities* capabilities);
   void FinishGLOnImplThread(CompletionEvent* completion);
   void LayerTreeHostClosedOnImplThread(CompletionEvent* completion);
-  void AcquireLayerTexturesForMainThreadOnImplThread(
-      CompletionEvent* completion);
   DrawSwapReadbackResult DrawSwapReadbackInternal(bool forced_draw,
                                                   bool swap_requested,
                                                   bool readback_requested);
@@ -220,7 +216,6 @@ class ThreadProxy : public Proxy,
     bool created_offscreen_context_provider;
 
     bool started;
-    bool textures_acquired;
     bool in_composite_and_readback;
     bool manage_tiles_pending;
     bool can_cancel_commit;
@@ -279,9 +274,6 @@ class ThreadProxy : public Proxy,
 
     // Set when the main thread is waiting on a pending tree activation.
     CompletionEvent* completion_event_for_commit_held_on_tree_activation;
-
-    // Set when the main thread is waiting on layers to be drawn.
-    CompletionEvent* texture_acquisition_completion_event;
 
     scoped_ptr<ResourceUpdateController> current_resource_update_controller;
 

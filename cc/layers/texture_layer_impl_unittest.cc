@@ -25,9 +25,8 @@ TEST(TextureLayerImplTest, Occlusion) {
       mailbox.name);
   TextureMailbox texture_mailbox(mailbox, GL_TEXTURE_2D, 0);
 
-  bool uses_mailbox = true;
   TextureLayerImpl* texture_layer_impl =
-      impl.AddChildToRoot<TextureLayerImpl>(uses_mailbox);
+      impl.AddChildToRoot<TextureLayerImpl>();
   texture_layer_impl->SetAnchorPoint(gfx::PointF());
   texture_layer_impl->SetBounds(layer_size);
   texture_layer_impl->SetContentBounds(layer_size);

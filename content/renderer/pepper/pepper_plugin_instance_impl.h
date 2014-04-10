@@ -498,7 +498,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   struct _NPP* instanceNPP();
 
   // cc::TextureLayerClient implementation.
-  virtual unsigned PrepareTexture() OVERRIDE;
   virtual bool PrepareTextureMailbox(
       cc::TextureMailbox* mailbox,
       scoped_ptr<cc::SingleReleaseCallback>* release_callback,

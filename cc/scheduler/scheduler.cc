@@ -99,11 +99,6 @@ void Scheduler::SetSmoothnessTakesPriority(bool smoothness_takes_priority) {
   ProcessScheduledActions();
 }
 
-void Scheduler::SetMainThreadNeedsLayerTextures() {
-  state_machine_.SetMainThreadNeedsLayerTextures();
-  ProcessScheduledActions();
-}
-
 void Scheduler::NotifyReadyToCommit() {
   TRACE_EVENT0("cc", "Scheduler::NotifyReadyToCommit");
   state_machine_.NotifyReadyToCommit();
@@ -400,9 +395,6 @@ void Scheduler::ProcessScheduledActions() {
         break;
       case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
         client_->ScheduledActionBeginOutputSurfaceCreation();
-        break;
-      case SchedulerStateMachine::ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
-        client_->ScheduledActionAcquireLayerTexturesForMainThread();
         break;
       case SchedulerStateMachine::ACTION_MANAGE_TILES:
         client_->ScheduledActionManageTiles();

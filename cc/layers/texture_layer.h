@@ -81,27 +81,14 @@ class CC_EXPORT TextureLayer : public Layer {
     DISALLOW_COPY_AND_ASSIGN(TextureMailboxHolder);
   };
 
-  // If this texture layer requires special preparation logic for each frame
-  // driven by the compositor, pass in a non-nil client. Pass in a nil client
-  // pointer if texture updates are driven by an external process.
-  static scoped_refptr<TextureLayer> Create(TextureLayerClient* client);
-
   // Used when mailbox names are specified instead of texture IDs.
   static scoped_refptr<TextureLayer> CreateForMailbox(
       TextureLayerClient* client);
 
-  // Resets the client, which also resets the texture. This may synchronize with
-  // the impl thread if it is currently drawing a texture from the client, that
-  // was given via TextureLayerClient::PrepareTexture. After this call it is
-  // safe to destroy that texture. Note: it doesn't synchronize for mailboxes,
-  // those can only be destroyed after the release callback has been called.
+  // Resets the client, which also resets the texture.
   void ClearClient();
 
-  // Resets the texture. This may synchronize with the impl thread if it is
-  // currently drawing a texture from the client, that was given via
-  // TextureLayerClient::PrepareTexture. After this call it is safe to destroy
-  // that texture. Note: it doesn't synchronize for mailboxes, those can only be
-  // destroyed after the release callback has been called.
+  // Resets the texture.
   void ClearTexture();
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
@@ -135,7 +122,6 @@ class CC_EXPORT TextureLayer : public Layer {
   void SetRateLimitContext(bool rate_limit);
 
   // Code path for plugins which supply their own mailbox.
-  bool uses_mailbox() const { return uses_mailbox_; }
   void SetTextureMailbox(const TextureMailbox& mailbox,
                          scoped_ptr<SingleReleaseCallback> release_callback);
 
@@ -155,7 +141,7 @@ class CC_EXPORT TextureLayer : public Layer {
   virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
 
  protected:
-  TextureLayer(TextureLayerClient* client, bool uses_mailbox);
+  explicit TextureLayer(TextureLayerClient* client);
   virtual ~TextureLayer();
 
  private:
@@ -166,7 +152,6 @@ class CC_EXPORT TextureLayer : public Layer {
       bool allow_mailbox_reuse);
 
   TextureLayerClient* client_;
-  bool uses_mailbox_;
 
   bool flipped_;
   gfx::PointF uv_top_left_;
@@ -176,9 +161,7 @@ class CC_EXPORT TextureLayer : public Layer {
   bool premultiplied_alpha_;
   bool blend_background_color_;
   bool rate_limit_context_;
-  bool impl_may_draw_client_data_;
 
-  unsigned texture_id_;
   scoped_ptr<TextureMailboxHolder::MainThreadReference> holder_ref_;
   bool needs_set_mailbox_;
 

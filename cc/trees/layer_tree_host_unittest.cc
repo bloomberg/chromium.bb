@@ -940,67 +940,6 @@ class LayerTreeHostTestCanDrawBlocksDrawing : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestCanDrawBlocksDrawing);
 
-// beginLayerWrite should prevent draws from executing until a commit occurs
-class LayerTreeHostTestWriteLayersRedraw : public LayerTreeHostTest {
- public:
-  LayerTreeHostTestWriteLayersRedraw() : num_commits_(0), num_draws_(0) {}
-
-  virtual void BeginTest() OVERRIDE {
-    PostAcquireLayerTextures();
-    PostSetNeedsRedrawToMainThread();  // should be inhibited without blocking
-    PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    num_draws_++;
-    EXPECT_EQ(num_draws_, num_commits_);
-  }
-
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    num_commits_++;
-    EndTest();
-  }
-
-  virtual void AfterTest() OVERRIDE { EXPECT_EQ(1, num_commits_); }
-
- private:
-  int num_commits_;
-  int num_draws_;
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostTestWriteLayersRedraw);
-
-// Verify that when resuming visibility, Requesting layer write permission
-// will not deadlock the main thread even though there are not yet any
-// scheduled redraws. This behavior is critical for reliably surviving tab
-// switching. There are no failure conditions to this test, it just passes
-// by not timing out.
-class LayerTreeHostTestWriteLayersAfterVisible : public LayerTreeHostTest {
- public:
-  LayerTreeHostTestWriteLayersAfterVisible() : num_commits_(0) {}
-
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
-
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    num_commits_++;
-    if (num_commits_ == 2)
-      EndTest();
-    else if (num_commits_ < 2) {
-      PostSetVisibleToMainThread(false);
-      PostSetVisibleToMainThread(true);
-      PostAcquireLayerTextures();
-      PostSetNeedsCommitToMainThread();
-    }
-  }
-
-  virtual void AfterTest() OVERRIDE {}
-
- private:
-  int num_commits_;
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostTestWriteLayersAfterVisible);
-
 // A compositeAndReadback while invisible should force a normal commit without
 // assertion.
 class LayerTreeHostTestCompositeAndReadbackWhileInvisible
@@ -1879,7 +1818,6 @@ class LayerTreeHostTestFinishAllRendering : public LayerTreeHostTest {
       return;
     once_ = true;
     layer_tree_host()->SetNeedsRedraw();
-    layer_tree_host()->AcquireLayerTextures();
     {
       base::AutoLock lock(lock_);
       draw_count_ = 0;

@@ -48,7 +48,6 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual size_t MaxPartialTextureUpdates() const OVERRIDE;
-  virtual void AcquireLayerTextures() OVERRIDE {}
   virtual void ForceSerializeOnSwapBuffers() OVERRIDE;
   virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
   virtual bool CommitPendingForTesting() OVERRIDE;

@@ -17,10 +17,8 @@ class ScopedResource;
 
 class CC_EXPORT TextureLayerImpl : public LayerImpl {
  public:
-  static scoped_ptr<TextureLayerImpl> Create(LayerTreeImpl* tree_impl,
-                                             int id,
-                                             bool uses_mailbox) {
-    return make_scoped_ptr(new TextureLayerImpl(tree_impl, id, uses_mailbox));
+  static scoped_ptr<TextureLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
+    return make_scoped_ptr(new TextureLayerImpl(tree_impl, id));
   }
   virtual ~TextureLayerImpl();
 
@@ -32,11 +30,8 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
                         ResourceProvider* resource_provider) OVERRIDE;
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE;
-  virtual void DidDraw(ResourceProvider* resource_provider) OVERRIDE;
   virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
   virtual void ReleaseResources() OVERRIDE;
-
-  unsigned texture_id() const { return texture_id_; }
 
   // These setter methods don't cause any implicit damage, so the texture client
   // must explicitly invalidate if they intend to cause a visible change in the
@@ -57,12 +52,11 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
                          scoped_ptr<SingleReleaseCallback> release_callback);
 
  private:
-  TextureLayerImpl(LayerTreeImpl* tree_impl, int id, bool uses_mailbox);
+  TextureLayerImpl(LayerTreeImpl* tree_impl, int id);
 
   virtual const char* LayerTypeAsString() const OVERRIDE;
   void FreeTextureMailbox();
 
-  unsigned texture_id_;
   ResourceProvider::ResourceId external_texture_resource_;
   bool premultiplied_alpha_;
   bool blend_background_color_;
@@ -75,7 +69,6 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
 
   TextureMailbox texture_mailbox_;
   scoped_ptr<SingleReleaseCallback> release_callback_;
-  bool uses_mailbox_;
   bool own_mailbox_;
   bool valid_texture_copy_;
 

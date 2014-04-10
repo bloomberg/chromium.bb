@@ -33,7 +33,6 @@ class SchedulerClient {
   virtual void ScheduledActionUpdateVisibleTiles() = 0;
   virtual void ScheduledActionActivatePendingTree() = 0;
   virtual void ScheduledActionBeginOutputSurfaceCreation() = 0;
-  virtual void ScheduledActionAcquireLayerTexturesForMainThread() = 0;
   virtual void ScheduledActionManageTiles() = 0;
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) = 0;
   virtual base::TimeDelta DrawDurationEstimate() = 0;
@@ -73,8 +72,6 @@ class CC_EXPORT Scheduler {
   void SetNeedsRedraw();
 
   void SetNeedsManageTiles();
-
-  void SetMainThreadNeedsLayerTextures();
 
   void SetSwapUsedIncompleteTile(bool used_incomplete_tile);
 

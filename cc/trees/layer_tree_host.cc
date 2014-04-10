@@ -234,11 +234,6 @@ void LayerTreeHost::DeleteContentsTexturesOnImplThread(
     contents_texture_manager_->ClearAllMemory(resource_provider);
 }
 
-void LayerTreeHost::AcquireLayerTextures() {
-  DCHECK(proxy_->IsMainThread());
-  proxy_->AcquireLayerTextures();
-}
-
 void LayerTreeHost::DidBeginMainFrame() {
   client_->DidBeginMainFrame();
 }

@@ -429,13 +429,6 @@ void LayerTreeTest::PostReadbackToMainThread() {
       base::Bind(&LayerTreeTest::DispatchReadback, main_thread_weak_ptr_));
 }
 
-void LayerTreeTest::PostAcquireLayerTextures() {
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&LayerTreeTest::DispatchAcquireLayerTextures,
-                 main_thread_weak_ptr_));
-}
-
 void LayerTreeTest::PostSetNeedsRedrawToMainThread() {
   main_task_runner_->PostTask(FROM_HERE,
                               base::Bind(&LayerTreeTest::DispatchSetNeedsRedraw,
@@ -568,13 +561,6 @@ void LayerTreeTest::DispatchReadback() {
     char pixels[4];
     layer_tree_host()->CompositeAndReadback(&pixels, gfx::Rect(0, 0, 1, 1));
   }
-}
-
-void LayerTreeTest::DispatchAcquireLayerTextures() {
-  DCHECK(!proxy() || proxy()->IsMainThread());
-
-  if (layer_tree_host_)
-    layer_tree_host_->AcquireLayerTextures();
 }
 
 void LayerTreeTest::DispatchSetNeedsRedraw() {

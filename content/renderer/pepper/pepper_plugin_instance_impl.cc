@@ -1961,10 +1961,6 @@ void PepperPluginInstanceImpl::UpdateLayer() {
   UpdateLayerTransform();
 }
 
-unsigned PepperPluginInstanceImpl::PrepareTexture() {
-  return 0;
-}
-
 bool PepperPluginInstanceImpl::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
     scoped_ptr<cc::SingleReleaseCallback>* release_callback,

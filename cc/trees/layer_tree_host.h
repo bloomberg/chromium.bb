@@ -131,7 +131,6 @@ class CC_EXPORT LayerTreeHost {
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
   void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
   void DeleteContentsTexturesOnImplThread(ResourceProvider* resource_provider);
-  virtual void AcquireLayerTextures();
   // Returns false if we should abort this frame due to initialization failure.
   bool InitializeOutputSurfaceIfNeeded();
   bool UpdateLayers(ResourceUpdateQueue* queue);

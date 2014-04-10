@@ -69,7 +69,6 @@ public:
     virtual bool isPlaceholder();
 
     // cc::TextureLayerClient methods:
-    virtual unsigned PrepareTexture() OVERRIDE;
     virtual bool PrepareTextureMailbox(
         cc::TextureMailbox* mailbox,
         scoped_ptr<cc::SingleReleaseCallback>* releaseCallback,

@@ -18,7 +18,6 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       output_surface_state_(OUTPUT_SURFACE_LOST),
       begin_impl_frame_state_(BEGIN_IMPL_FRAME_STATE_IDLE),
       commit_state_(COMMIT_STATE_IDLE),
-      texture_state_(LAYER_TEXTURE_STATE_UNLOCKED),
       forced_redraw_state_(FORCED_REDRAW_STATE_IDLE),
       readback_state_(READBACK_STATE_IDLE),
       commit_count_(0),
@@ -32,7 +31,6 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       needs_manage_tiles_(false),
       swap_used_incomplete_tile_(false),
       needs_commit_(false),
-      main_thread_needs_layer_textures_(false),
       inside_poll_for_anticipated_draw_triggers_(false),
       visible_(false),
       can_start_(false),
@@ -101,19 +99,6 @@ const char* SchedulerStateMachine::CommitStateToString(CommitState state) {
   return "???";
 }
 
-const char* SchedulerStateMachine::TextureStateToString(TextureState state) {
-  switch (state) {
-    case LAYER_TEXTURE_STATE_UNLOCKED:
-      return "LAYER_TEXTURE_STATE_UNLOCKED";
-    case LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD:
-      return "LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD";
-    case LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD:
-      return "LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD";
-  }
-  NOTREACHED();
-  return "???";
-}
-
 const char* SchedulerStateMachine::SynchronousReadbackStateToString(
     SynchronousReadbackState state) {
   switch (state) {
@@ -174,8 +159,6 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
       return "ACTION_DRAW_AND_READBACK";
     case ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
       return "ACTION_BEGIN_OUTPUT_SURFACE_CREATION";
-    case ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
-      return "ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD";
     case ACTION_MANAGE_TILES:
       return "ACTION_MANAGE_TILES";
   }
@@ -191,8 +174,6 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
   major_state->SetString("begin_impl_frame_state",
                          BeginImplFrameStateToString(begin_impl_frame_state_));
   major_state->SetString("commit_state", CommitStateToString(commit_state_));
-  major_state->SetString("texture_state_",
-                         TextureStateToString(texture_state_));
   major_state->SetString("output_surface_state_",
                          OutputSurfaceStateToString(output_surface_state_));
   major_state->SetString(
@@ -254,8 +235,6 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
   minor_state->SetBoolean("swap_used_incomplete_tile",
                           swap_used_incomplete_tile_);
   minor_state->SetBoolean("needs_commit", needs_commit_);
-  minor_state->SetBoolean("main_thread_needs_layer_textures",
-                          main_thread_needs_layer_textures_);
   minor_state->SetBoolean("visible", visible_);
   minor_state->SetBoolean("can_start", can_start_);
   minor_state->SetBoolean("can_draw", can_draw_);
@@ -315,11 +294,6 @@ bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
   // activation of the pending tree is blocked by drawing of the active tree and
   // the main thread might be blocked on activation of the most recent commit.
   if (PendingActivationsShouldBeForced())
-    return true;
-
-  // Impl thread should not draw anymore when texture is acquired by main thread
-  // because texture is controlled under main thread.
-  if (texture_state_ == LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD)
     return true;
 
   // Additional states where we should abort draws.
@@ -404,15 +378,6 @@ bool SchedulerStateMachine::ShouldDraw() const {
     return true;
 
   return needs_redraw_;
-}
-
-bool SchedulerStateMachine::ShouldAcquireLayerTexturesForMainThread() const {
-  if (!main_thread_needs_layer_textures_)
-    return false;
-  if (texture_state_ == LAYER_TEXTURE_STATE_UNLOCKED)
-    return true;
-  DCHECK_EQ(texture_state_, LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD);
-  return false;
 }
 
 bool SchedulerStateMachine::ShouldActivatePendingTree() const {
@@ -551,8 +516,6 @@ bool SchedulerStateMachine::ShouldManageTiles() const {
 }
 
 SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
-  if (ShouldAcquireLayerTexturesForMainThread())
-    return ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD;
   if (ShouldUpdateVisibleTiles())
     return ACTION_UPDATE_VISIBLE_TILES;
   if (ShouldActivatePendingTree())
@@ -583,11 +546,6 @@ void SchedulerStateMachine::CheckInvariants() {
   // timeout simultaneously.
   DCHECK(!(forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW &&
            readback_state_ == READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK));
-
-  // Main thread should never have the texture locked when there is a pending
-  // tree or active tree is not drawn for the first time.
-  if (has_pending_tree_ || active_tree_needs_first_draw_)
-    DCHECK(texture_state_ != LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD);
 }
 
 void SchedulerStateMachine::UpdateState(Action action) {
@@ -649,11 +607,6 @@ void SchedulerStateMachine::UpdateState(Action action) {
       DCHECK_EQ(commit_state_, COMMIT_STATE_IDLE);
       DCHECK(!has_pending_tree_);
       DCHECK(!active_tree_needs_first_draw_);
-      return;
-
-    case ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
-      texture_state_ = LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD;
-      main_thread_needs_layer_textures_ = false;
       return;
 
     case ACTION_MANAGE_TILES:
@@ -736,13 +689,6 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_was_aborted) {
   if (draw_if_possible_failed_)
     last_frame_number_swap_performed_ = -1;
 
-  // If we are planing to draw with the new commit, lock the layer textures for
-  // use on the impl thread. Otherwise, leave them unlocked.
-  if (has_pending_tree_ || needs_redraw_)
-    texture_state_ = LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD;
-  else
-    texture_state_ = LAYER_TEXTURE_STATE_UNLOCKED;
-
   if (continuous_painting_)
     needs_commit_ = true;
 }
@@ -805,9 +751,6 @@ void SchedulerStateMachine::UpdateStateOnDraw(bool did_swap) {
   if (commit_state_ == COMMIT_STATE_WAITING_FOR_FIRST_DRAW)
     commit_state_ = COMMIT_STATE_IDLE;
 
-  if (texture_state_ == LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD)
-    texture_state_ = LAYER_TEXTURE_STATE_UNLOCKED;
-
   needs_redraw_ = false;
   draw_if_possible_failed_ = false;
   active_tree_needs_first_draw_ = false;
@@ -818,12 +761,6 @@ void SchedulerStateMachine::UpdateStateOnDraw(bool did_swap) {
 
 void SchedulerStateMachine::UpdateStateOnManageTiles() {
   needs_manage_tiles_ = false;
-}
-
-void SchedulerStateMachine::SetMainThreadNeedsLayerTextures() {
-  DCHECK(!main_thread_needs_layer_textures_);
-  DCHECK_NE(texture_state_, LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD);
-  main_thread_needs_layer_textures_ = true;
 }
 
 void SchedulerStateMachine::SetSkipNextBeginMainFrameToReduceLatency() {
