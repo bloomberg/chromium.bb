@@ -317,14 +317,14 @@ bool AnimationPlayer::update(UpdateReason reason)
 {
     m_outdated = false;
 
-    // FIXME(ericwilligers): Support finish events with null m_content
-    if (!m_timeline || !m_content)
+    if (!m_timeline)
         return false;
 
-    double inheritedTime = isNull(m_timeline->currentTime()) ? nullValue() : currentTime();
-    m_content->updateInheritedTime(inheritedTime);
+    if (m_content) {
+        double inheritedTime = isNull(m_timeline->currentTime()) ? nullValue() : currentTime();
+        m_content->updateInheritedTime(inheritedTime);
+    }
 
-    ASSERT(!m_outdated);
     if (reason == UpdateForAnimationFrame) {
         const AtomicString& eventType = EventTypeNames::finish;
         if (finished() && !m_finished && executionContext() && hasEventListeners(eventType)) {
@@ -335,7 +335,8 @@ bool AnimationPlayer::update(UpdateReason reason)
         }
         m_finished = finished();
     }
-    return !m_finished || m_content->isCurrent() || m_content->isInEffect();
+    ASSERT(!m_outdated);
+    return !m_finished || (m_content && (m_content->isCurrent() || m_content->isInEffect()));
 }
 
 double AnimationPlayer::timeToEffectChange()
@@ -350,12 +351,7 @@ double AnimationPlayer::timeToEffectChange()
 
 void AnimationPlayer::cancel()
 {
-    if (!m_content)
-        return;
-
-    ASSERT(m_content->player() == this);
-    m_content->detach();
-    m_content = nullptr;
+    setSource(0);
 }
 
 bool AnimationPlayer::SortInfo::operator<(const SortInfo& other) const
