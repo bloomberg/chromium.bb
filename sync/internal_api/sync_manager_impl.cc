@@ -941,14 +941,6 @@ void SyncManagerImpl::SetJsEventHandler(
   js_sync_encryption_handler_observer_.SetJsEventHandler(event_handler);
 }
 
-// TODO(rlarocque): This function is no longer needed and should be removed.
-// See http://crbug.com/357821.
-void SyncManagerImpl::ProcessJsMessage(
-    const std::string& name, const JsArgList& args,
-    const WeakHandle<JsReplyHandler>& reply_handler) {
-  NOTREACHED();
-}
-
 scoped_ptr<base::ListValue> SyncManagerImpl::GetAllNodesForType(
     syncer::ModelType type) {
   DirectoryTypeDebugInfoEmitterMap* emitter_map =

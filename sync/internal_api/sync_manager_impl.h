@@ -156,9 +156,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   // JsBackend implementation.
   virtual void SetJsEventHandler(
       const WeakHandle<JsEventHandler>& event_handler) OVERRIDE;
-  virtual void ProcessJsMessage(
-      const std::string& name, const JsArgList& args,
-      const WeakHandle<JsReplyHandler>& reply_handler) OVERRIDE;
 
   // DirectoryChangeDelegate implementation.
   // This listener is called upon completion of a syncable transaction, and

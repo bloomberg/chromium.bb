@@ -1743,7 +1743,6 @@
         'browser/ui/webui/performance_monitor/performance_monitor_ui_util_unittest.cc',
         'browser/ui/webui/print_preview/print_preview_ui_unittest.cc',
         'browser/ui/webui/signin/login_ui_service_unittest.cc',
-        'browser/ui/webui/sync_internals_ui_unittest.cc',
         'browser/ui/webui/sync_setup_handler_unittest.cc',
         'browser/ui/webui/theme_source_unittest.cc',
         'browser/ui/webui/web_dialog_web_contents_delegate_unittest.cc',

@@ -13,7 +13,6 @@
 #include "sync/js/js_backend.h"
 #include "sync/js/js_controller.h"
 #include "sync/js/js_event_handler.h"
-#include "sync/js/js_reply_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -23,17 +22,10 @@ class ListValue;
 
 namespace syncer {
 
-class JsArgList;
 class JsEventDetails;
 
 // Defined for googletest.  Equivalent to "*os << args.ToString()".
-void PrintTo(const JsArgList& args, ::std::ostream* os);
 void PrintTo(const JsEventDetails& details, ::std::ostream* os);
-
-// A gmock matcher for JsArgList.  Use like:
-//
-//   EXPECT_CALL(mock, HandleJsReply("foo", HasArgs(expected_args)));
-::testing::Matcher<const JsArgList&> HasArgs(const JsArgList& expected_args);
 
 // A gmock matcher for JsEventDetails.  Use like:
 //
@@ -56,8 +48,6 @@ class MockJsBackend : public JsBackend,
   WeakHandle<JsBackend> AsWeakHandle();
 
   MOCK_METHOD1(SetJsEventHandler, void(const WeakHandle<JsEventHandler>&));
-  MOCK_METHOD3(ProcessJsMessage, void(const ::std::string&, const JsArgList&,
-                                    const WeakHandle<JsReplyHandler>&));
 };
 
 class MockJsController : public JsController,
@@ -68,9 +58,6 @@ class MockJsController : public JsController,
 
   MOCK_METHOD1(AddJsEventHandler, void(JsEventHandler*));
   MOCK_METHOD1(RemoveJsEventHandler, void(JsEventHandler*));
-  MOCK_METHOD3(ProcessJsMessage,
-               void(const ::std::string&, const JsArgList&,
-                    const WeakHandle<JsReplyHandler>&));
 };
 
 class MockJsEventHandler
@@ -84,19 +71,6 @@ class MockJsEventHandler
 
   MOCK_METHOD2(HandleJsEvent,
                void(const ::std::string&, const JsEventDetails&));
-};
-
-class MockJsReplyHandler
-    : public JsReplyHandler,
-      public base::SupportsWeakPtr<MockJsReplyHandler> {
- public:
-  MockJsReplyHandler();
-  virtual ~MockJsReplyHandler();
-
-  WeakHandle<JsReplyHandler> AsWeakHandle();
-
-  MOCK_METHOD2(HandleJsReply,
-               void(const ::std::string&, const JsArgList&));
 };
 
 }  // namespace syncer

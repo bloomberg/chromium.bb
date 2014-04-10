@@ -19,7 +19,6 @@
 #include "sync/internal_api/public/test/sync_manager_factory_for_profile_sync_test.h"
 #include "sync/internal_api/public/test/test_internal_components_factory.h"
 #include "sync/internal_api/public/user_share.h"
-#include "sync/js/js_reply_handler.h"
 #include "sync/protocol/encryption.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

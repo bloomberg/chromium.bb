@@ -13,9 +13,7 @@
 
 namespace syncer {
 
-class JsArgList;
 class JsEventHandler;
-class JsReplyHandler;
 template <typename T> class WeakHandle;
 
 // An interface for objects that JsEventHandlers directly interact
@@ -35,12 +33,6 @@ class SYNC_EXPORT JsController {
   // Removes the given event handler if it has been added.  It will
   // immediately stop receiving any JS events.
   virtual void RemoveJsEventHandler(JsEventHandler* event_handler) = 0;
-
-  // Processes a JS message.  The reply (if any) will be sent to
-  // |reply_handler| if it is initialized.
-  virtual void ProcessJsMessage(
-      const std::string& name, const JsArgList& args,
-      const WeakHandle<JsReplyHandler>& reply_handler) = 0;
 
  protected:
   virtual ~JsController() {}

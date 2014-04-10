@@ -6,50 +6,15 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 
 namespace syncer {
-
-void PrintTo(const JsArgList& args, ::std::ostream* os) {
-  *os << args.ToString();
-}
 
 void PrintTo(const JsEventDetails& details, ::std::ostream* os) {
   *os << details.ToString();
 }
 
 namespace {
-
-// Matcher implementation for HasArgs().
-class HasArgsMatcher
-    : public ::testing::MatcherInterface<const JsArgList&> {
- public:
-  explicit HasArgsMatcher(const JsArgList& expected_args)
-      : expected_args_(expected_args) {}
-
-  virtual ~HasArgsMatcher() {}
-
-  virtual bool MatchAndExplain(
-      const JsArgList& args,
-      ::testing::MatchResultListener* listener) const {
-    // No need to annotate listener since we already define PrintTo().
-    return args.Get().Equals(&expected_args_.Get());
-  }
-
-  virtual void DescribeTo(::std::ostream* os) const {
-    *os << "has args " << expected_args_.ToString();
-  }
-
-  virtual void DescribeNegationTo(::std::ostream* os) const {
-    *os << "doesn't have args " << expected_args_.ToString();
-  }
-
- private:
-  const JsArgList expected_args_;
-
-  DISALLOW_COPY_AND_ASSIGN(HasArgsMatcher);
-};
 
 // Matcher implementation for HasDetails().
 class HasDetailsMatcher
@@ -83,10 +48,6 @@ class HasDetailsMatcher
 
 }  // namespace
 
-::testing::Matcher<const JsArgList&> HasArgs(const JsArgList& expected_args) {
-  return ::testing::MakeMatcher(new HasArgsMatcher(expected_args));
-}
-
 ::testing::Matcher<const JsEventDetails&> HasDetails(
     const JsEventDetails& expected_details) {
   return ::testing::MakeMatcher(new HasDetailsMatcher(expected_details));
@@ -118,14 +79,6 @@ WeakHandle<JsEventHandler> MockJsEventHandler::AsWeakHandle() {
 }
 
 MockJsEventHandler::~MockJsEventHandler() {}
-
-MockJsReplyHandler::MockJsReplyHandler() {}
-
-MockJsReplyHandler::~MockJsReplyHandler() {}
-
-WeakHandle<JsReplyHandler> MockJsReplyHandler::AsWeakHandle() {
-  return MakeWeakHandle(AsWeakPtr());
-}
 
 }  // namespace syncer
 

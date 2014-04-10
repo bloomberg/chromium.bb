@@ -14,7 +14,6 @@
 #include "base/observer_list.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/js/js_arg_list.h"
 #include "sync/js/js_controller.h"
 #include "sync/js/js_event_handler.h"
 
@@ -39,39 +38,18 @@ class SYNC_EXPORT SyncJsController
   // JsController implementation.
   virtual void AddJsEventHandler(JsEventHandler* event_handler) OVERRIDE;
   virtual void RemoveJsEventHandler(JsEventHandler* event_handler) OVERRIDE;
-  // Queues up any messages that are sent when there is no attached
-  // initialized backend.
-  virtual void ProcessJsMessage(
-      const std::string& name, const JsArgList& args,
-      const WeakHandle<JsReplyHandler>& reply_handler) OVERRIDE;
 
   // JsEventHandler implementation.
   virtual void HandleJsEvent(const std::string& name,
                              const JsEventDetails& details) OVERRIDE;
 
  private:
-  // A struct used to hold the arguments to ProcessJsMessage() for
-  // future invocation.
-  struct PendingJsMessage {
-    std::string name;
-    JsArgList args;
-    WeakHandle<JsReplyHandler> reply_handler;
-
-    PendingJsMessage(const std::string& name, const JsArgList& args,
-                     const WeakHandle<JsReplyHandler>& reply_handler);
-
-    ~PendingJsMessage();
-  };
-
-  typedef std::vector<PendingJsMessage> PendingJsMessageList;
-
   // Sets |js_backend_|'s event handler depending on how many
   // underlying event handlers we have.
   void UpdateBackendEventHandler();
 
   WeakHandle<JsBackend> js_backend_;
   ObserverList<JsEventHandler> js_event_handlers_;
-  PendingJsMessageList pending_js_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncJsController);
 };

@@ -13,9 +13,7 @@
 
 namespace syncer {
 
-class JsArgList;
 class JsEventHandler;
-class JsReplyHandler;
 template <typename T> class WeakHandle;
 
 // Interface representing the backend of chrome://sync-internals.  A
@@ -26,12 +24,6 @@ class SYNC_EXPORT_PRIVATE JsBackend {
   // Starts emitting events to the given handler, if initialized.
   virtual void SetJsEventHandler(
       const WeakHandle<JsEventHandler>& event_handler) = 0;
-
-  // Processes the given message and replies via the given handler, if
-  // initialized.
-  virtual void ProcessJsMessage(
-      const std::string& name, const JsArgList& args,
-      const WeakHandle<JsReplyHandler>& reply_handler) = 0;
 
  protected:
   virtual ~JsBackend() {}
