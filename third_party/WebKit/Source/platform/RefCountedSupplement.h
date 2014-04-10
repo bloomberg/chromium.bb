@@ -98,7 +98,7 @@ public:
     {
         Supplement<T>* found = static_cast<Supplement<T>*>(host.requireSupplement(key));
         if (!found)
-            return nullptr;
+            return 0;
         return static_cast<Wrapper*>(found)->wrapped();
     }
 
