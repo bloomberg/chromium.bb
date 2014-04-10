@@ -239,6 +239,9 @@ Status LaunchDesktopChrome(
     if (!command.HasSwitch(kEnableCrashReport))
       command.AppendSwitch(kEnableCrashReport);
   }
+
+  // We need to allow new privileges so that chrome's setuid sandbox can run.
+  options.allow_new_privs = true;
 #endif
 
 #if !defined(OS_WIN)
