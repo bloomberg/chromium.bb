@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/cronet/android/org_chromium_net_UrlRequest.h"
+#include "components/cronet/android/org_chromium_net_UrlRequest.h"
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
+#include "components/cronet/android/url_request_context_peer.h"
+#include "components/cronet/android/url_request_peer.h"
 #include "jni/UrlRequest_jni.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
-#include "net/cronet/android/url_request_context_peer.h"
-#include "net/cronet/android/url_request_peer.h"
 
 namespace net {
 namespace {

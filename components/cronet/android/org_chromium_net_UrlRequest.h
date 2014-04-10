@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_CRONET_ANDROID_URLREQUEST_H_
-#define NET_CRONET_ANDROID_URLREQUEST_H_
+#ifndef COMPONENTS_CRONET_ANDROID_URLREQUEST_H_
+#define COMPONENTS_CRONET_ANDROID_URLREQUEST_H_
 
 #include <jni.h>
 
@@ -13,7 +13,7 @@ namespace net {
 // way that ensures they're always the same than their Java counterpart.
 enum UrlRequestPriority {
 #define DEFINE_REQUEST_PRIORITY(x, y) REQUEST_PRIORITY_##x = y,
-#include "net/cronet/android/org_chromium_net_UrlRequest_priority_list.h"
+#include "components/cronet/android/org_chromium_net_UrlRequest_priority_list.h"
 #undef DEFINE_REQUEST_PRIORITY
 };
 
@@ -21,7 +21,7 @@ enum UrlRequestPriority {
 // way that ensures they're always the same than their Java counterpart.
 enum UrlRequestError {
 #define DEFINE_REQUEST_ERROR(x, y) REQUEST_ERROR_##x = y,
-#include "net/cronet/android/org_chromium_net_UrlRequest_error_list.h"
+#include "components/cronet/android/org_chromium_net_UrlRequest_error_list.h"
 #undef DEFINE_REQUEST_ERROR
 };
 
@@ -29,4 +29,4 @@ bool UrlRequestRegisterJni(JNIEnv* env);
 
 }  // namespace net
 
-#endif  // NET_CRONET_ANDROID_URLREQUEST_H_
+#endif  // COMPONENTS_CRONET_ANDROID_URLREQUEST_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_CRONET_ANDROID_URL_REQUEST_PEER_H_
-#define NET_CRONET_ANDROID_URL_REQUEST_PEER_H_
+#ifndef COMPONENTS_CRONET_ANDROID_URL_REQUEST_PEER_H_
+#define COMPONENTS_CRONET_ANDROID_URL_REQUEST_PEER_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/cronet/android/url_request_context_peer.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_data_stream.h"
-#include "net/cronet/android/url_request_context_peer.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 
@@ -134,4 +134,4 @@ class URLRequestPeer : public net::URLRequest::Delegate {
   DISALLOW_COPY_AND_ASSIGN(URLRequestPeer);
 };
 
-#endif  // NET_CRONET_ANDROID_URL_REQUEST_PEER_H_
+#endif  // COMPONENTS_CRONET_ANDROID_URL_REQUEST_PEER_H_

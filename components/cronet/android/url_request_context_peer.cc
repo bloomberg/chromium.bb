@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/cronet/android/url_request_context_peer.h"
+#include "components/cronet/android/url_request_context_peer.h"
 
 #include "base/file_util.h"
 #include "net/base/net_errors.h"

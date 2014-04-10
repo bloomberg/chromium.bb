@@ -9,6 +9,6 @@ package org.chromium.net;
 // net/cronet/android/org_chromium_net_UrlRequest.h
 public interface UrlRequestError {
 #define DEFINE_REQUEST_ERROR(x,y) public static final int x = y;
-#include "net/cronet/android/org_chromium_net_UrlRequest_error_list.h"
+#include "components/cronet/android/org_chromium_net_UrlRequest_error_list.h"
 #undef DEFINE_REQUEST_ERROR
 }

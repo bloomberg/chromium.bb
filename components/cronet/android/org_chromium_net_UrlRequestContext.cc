@@ -9,11 +9,11 @@
 #include "base/at_exit.h"
 #include "base/i18n/icu_util.h"
 #include "base/metrics/statistics_recorder.h"
+#include "components/cronet/android/org_chromium_net_UrlRequest.h"
+#include "components/cronet/android/url_request_context_peer.h"
+#include "components/cronet/android/url_request_peer.h"
 #include "jni/UrlRequestContext_jni.h"
 #include "net/android/net_jni_registrar.h"
-#include "net/cronet/android/org_chromium_net_UrlRequest.h"
-#include "net/cronet/android/url_request_context_peer.h"
-#include "net/cronet/android/url_request_peer.h"
 
 // Version of this build of Chromium NET.
 #define CHROMIUM_NET_VERSION "1"

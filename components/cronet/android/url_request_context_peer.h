@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_CRONET_ANDROID_URL_REQUEST_CONTEXT_PEER_H_
-#define NET_CRONET_ANDROID_URL_REQUEST_CONTEXT_PEER_H_
+#ifndef COMPONENTS_CRONET_ANDROID_URL_REQUEST_CONTEXT_PEER_H_
+#define COMPONENTS_CRONET_ANDROID_URL_REQUEST_CONTEXT_PEER_H_
 
 #include <string>
 
@@ -89,4 +89,4 @@ class URLRequestContextPeer : public net::URLRequestContextGetter {
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextPeer);
 };
 
-#endif  // NET_CRONET_ANDROID_URL_REQUEST_CONTEXT_PEER_H_
+#endif  // COMPONENTS_CRONET_ANDROID_URL_REQUEST_CONTEXT_PEER_H_

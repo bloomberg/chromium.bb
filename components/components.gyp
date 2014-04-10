@@ -14,6 +14,7 @@
     'autofill.gypi',
     'breakpad.gypi',
     'cloud_devices.gypi',
+    'cronet.gypi',
     'dom_distiller.gypi',
     'domain_reliability.gypi',
     'favicon.gypi',
