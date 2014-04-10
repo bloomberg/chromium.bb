@@ -69,9 +69,7 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id,
 #else
   // Share contexts when compositing webview plugin or using share groups
   // for asynchronous texture uploads.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableBrowserPluginCompositing) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableShareGroupAsyncTextureUpload))
     share_contexts_ = true;
 #endif

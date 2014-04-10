@@ -119,10 +119,6 @@ const char kDisableApplicationCache[]       = "disable-application-cache";
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 
-// Disable browser plugin compositing experiment.
-const char kDisableBrowserPluginCompositing[] =
-    "disable-browser-plugin-compositing";
-
 // See comment for kEnableCompositingForFixedPosition.
 const char kDisableCompositingForFixedPosition[] =
      "disable-fixed-position-compositing";
