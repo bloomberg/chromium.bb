@@ -14,7 +14,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
 #include "ui/events/x/touch_factory_x11.h"
 #endif
 
@@ -30,7 +30,7 @@ SystemGestureEventFilter::~SystemGestureEventFilter() {
 }
 
 void SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
-#if defined(OS_CHROMEOS) && !defined(USE_OZONE)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
   if (event->type() == ui::ET_MOUSE_PRESSED && event->native_event() &&
       ui::TouchFactory::GetInstance()->IsTouchDevicePresent() &&
       Shell::GetInstance()->delegate()) {
