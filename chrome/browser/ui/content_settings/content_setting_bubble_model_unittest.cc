@@ -9,7 +9,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
@@ -235,9 +234,9 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
                 std::string()));
 
-  InfoBarManager* infobar_manager =
-      InfoBarService::FromWebContents(web_contents())->infobar_manager();
-  infobar_manager->RemoveInfoBar(infobar_manager->infobar_at(0));
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents());
+  infobar_service->RemoveInfoBar(infobar_service->infobar_at(0));
 }
 
 TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {

@@ -832,9 +832,8 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
     devtools_web_view_->SetWebContents(NULL);
   }
 
-  InfoBarManager* infobar_manager =
-      InfoBarService::InfoBarManagerFromWebContents(new_contents);
-  infobar_container_->ChangeInfoBarManager(infobar_manager);
+  infobar_container_->ChangeInfoBarManager(
+      InfoBarService::FromWebContents(new_contents));
 
   if (old_contents && PermissionBubbleManager::FromWebContents(old_contents))
     PermissionBubbleManager::FromWebContents(old_contents)->SetView(NULL);

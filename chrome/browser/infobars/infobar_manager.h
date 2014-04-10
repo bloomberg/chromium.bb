@@ -31,8 +31,13 @@ class InfoBarManager {
     virtual void OnManagerShuttingDown(InfoBarManager* manager) = 0;
   };
 
-  explicit InfoBarManager(content::WebContents* web_contents);
-  ~InfoBarManager();
+  InfoBarManager();
+  virtual ~InfoBarManager();
+
+  // Must be called before destruction.
+  // TODO(droger): Merge this method with the destructor once the virtual calls
+  // for notifications are removed (see http://crbug.com/354380).
+  void ShutDown();
 
   // Adds the specified |infobar|, which already owns a delegate.
   //
@@ -42,7 +47,7 @@ class InfoBarManager {
   // immediately without being added.
   //
   // Returns the infobar if it was successfully added.
-  virtual InfoBar* AddInfoBar(scoped_ptr<InfoBar> infobar);
+  InfoBar* AddInfoBar(scoped_ptr<InfoBar> infobar);
 
   // Removes the specified |infobar|.  This in turn may close immediately or
   // animate closed; at the end the infobar will delete itself.
@@ -76,19 +81,20 @@ class InfoBarManager {
   // Warning: Does not sanity check |index|.
   InfoBar* infobar_at(size_t index) { return infobars_[index]; }
 
-  // Retrieve the WebContents for the tab this service is associated with.
-  // Do not add new call sites for this.
-  // TODO(droger): remove this method. See http://crbug.com/354379.
-  content::WebContents* web_contents() { return web_contents_; }
-
   // Must be called when a navigation happens.
   void OnNavigation(const InfoBarDelegate::NavigationDetails& details);
 
-  // Called when the associated WebContents is being destroyed.
-  void OnWebContentsDestroyed();
-
   void AddObserver(Observer* obs);
   void RemoveObserver(Observer* obs);
+
+ protected:
+  // Notifies the observer in |observer_list_|.
+  // TODO(droger): Absorb these methods back into their callers once virtual
+  // overrides are removed (see http://crbug.com/354380).
+  virtual void NotifyInfoBarAdded(InfoBar* infobar);
+  virtual void NotifyInfoBarRemoved(InfoBar* infobar, bool animate);
+  virtual void NotifyInfoBarReplaced(InfoBar* old_infobar,
+                                     InfoBar* new_infobar);
 
  private:
   // InfoBars associated with this InfoBarManager.  We own these pointers.
@@ -102,9 +108,6 @@ class InfoBarManager {
 
   InfoBars infobars_;
   bool infobars_enabled_;
-
-  // TODO(droger): remove this field. See http://crbug.com/354379.
-  content::WebContents* web_contents_;
 
   ObserverList<Observer, true> observer_list_;
 

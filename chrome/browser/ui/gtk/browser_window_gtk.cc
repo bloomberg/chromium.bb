@@ -802,9 +802,8 @@ void BrowserWindowGtk::OnActiveTabChanged(WebContents* old_contents,
 
   // Update various elements that are interested in knowing the current
   // WebContents.
-  InfoBarManager* infobar_manager =
-      InfoBarService::InfoBarManagerFromWebContents(new_contents);
-  infobar_container_->ChangeInfoBarManager(infobar_manager);
+  infobar_container_->ChangeInfoBarManager(
+      InfoBarService::FromWebContents(new_contents));
   contents_container_->SetTab(new_contents);
   UpdateDevToolsForContents(new_contents);
 

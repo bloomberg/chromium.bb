@@ -68,10 +68,9 @@
 
 - (void)changeWebContents:(content::WebContents*)contents {
   currentWebContents_ = contents;
-  InfoBarManager* infobar_manager = NULL;
-  if (contents)
-      infobar_manager = InfoBarService::InfoBarManagerFromWebContents(contents);
-  containerCocoa_->ChangeInfoBarManager(infobar_manager);
+  InfoBarService* infobar_service =
+      contents ? InfoBarService::FromWebContents(contents) : NULL;
+  containerCocoa_->ChangeInfoBarManager(infobar_service);
 }
 
 - (void)tabDetachedWithContents:(content::WebContents*)contents {

@@ -246,7 +246,7 @@ class InfobarBridge {
     extensions::ExtensionViewHost* extensionViewHost =
         [self delegate]->AsExtensionInfoBarDelegate()->extension_view_host();
     Browser* browser = chrome::FindBrowserWithWebContents(
-        [self infobar]->OwnerCocoa()->web_contents());
+        [self delegate]->AsExtensionInfoBarDelegate()->web_contents());
     contextMenuController_.reset([[ExtensionActionContextMenuController alloc]
         initWithExtension:extensionViewHost->extension()
                   browser:browser

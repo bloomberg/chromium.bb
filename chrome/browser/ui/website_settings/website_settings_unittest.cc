@@ -13,7 +13,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/content_settings.h"
@@ -365,9 +364,9 @@ TEST_F(WebsiteSettingsTest, NoInfoBar) {
   SetDefaultUIExpectations(mock_ui());
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
       WebsiteSettingsUI::TAB_ID_PERMISSIONS));
-  EXPECT_EQ(0u, infobar_service()->infobar_manager()->infobar_count());
+  EXPECT_EQ(0u, infobar_service()->infobar_count());
   website_settings()->OnUIClosing();
-  EXPECT_EQ(0u, infobar_service()->infobar_manager()->infobar_count());
+  EXPECT_EQ(0u, infobar_service()->infobar_count());
 }
 
 TEST_F(WebsiteSettingsTest, ShowInfoBar) {
@@ -387,12 +386,11 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
 
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
       WebsiteSettingsUI::TAB_ID_PERMISSIONS));
-  InfoBarManager* infobar_manager = infobar_service()->infobar_manager();
-  EXPECT_EQ(0u, infobar_manager->infobar_count());
+  EXPECT_EQ(0u, infobar_service()->infobar_count());
   website_settings()->OnSitePermissionChanged(
       CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
   website_settings()->OnUIClosing();
-  ASSERT_EQ(1u, infobar_manager->infobar_count());
+  ASSERT_EQ(1u, infobar_service()->infobar_count());
 
-  infobar_manager->RemoveInfoBar(infobar_manager->infobar_at(0));
+  infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
 }

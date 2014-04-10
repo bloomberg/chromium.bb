@@ -14,7 +14,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -148,19 +147,13 @@ class TranslateManagerRenderViewHostTest
     return InfoBarService::FromWebContents(web_contents());
   }
 
-  InfoBarManager* infobar_manager() {
-    return infobar_service()->infobar_manager();
-  }
-
   // Returns the translate infobar if there is 1 infobar and it is a translate
   // infobar.
   TranslateInfoBarDelegate* GetTranslateInfoBar() {
-    return (infobar_manager()->infobar_count() == 1)
-               ? infobar_manager()
-                     ->infobar_at(0)
-                     ->delegate()
-                     ->AsTranslateInfoBarDelegate()
-               : NULL;
+    return (infobar_service()->infobar_count() == 1) ?
+        infobar_service()->infobar_at(0)->delegate()->
+            AsTranslateInfoBarDelegate() :
+        NULL;
   }
 
   // If there is 1 infobar and it is a translate infobar, closes it and returns
@@ -170,7 +163,7 @@ class TranslateManagerRenderViewHostTest
     if (!infobar)
       return false;
     infobar->InfoBarDismissed();  // Simulates closing the infobar.
-    infobar_manager()->RemoveInfoBar(infobar_manager()->infobar_at(0));
+    infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
     return true;
   }
 
@@ -194,7 +187,7 @@ class TranslateManagerRenderViewHostTest
     if (!infobar)
       return false;
     infobar->TranslationDeclined();
-    infobar_manager()->RemoveInfoBar(infobar_manager()->infobar_at(0));
+    infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
     return true;
   }
 
@@ -749,18 +742,18 @@ TEST_F(TranslateManagerRenderViewHostTest, MultipleOnPageContents) {
 
   // Simulate clicking 'Nope' (don't translate).
   EXPECT_TRUE(DenyTranslation());
-  EXPECT_EQ(0U, infobar_manager()->infobar_count());
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
 
   // Send a new PageContents, we should not show an infobar.
   SimulateOnTranslateLanguageDetermined("fr", true);
-  EXPECT_EQ(0U, infobar_manager()->infobar_count());
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
 
   // Do the same steps but simulate closing the infobar this time.
   SimulateNavigation(GURL("http://www.youtube.fr"), "fr", true);
   EXPECT_TRUE(CloseTranslateInfoBar());
-  EXPECT_EQ(0U, infobar_manager()->infobar_count());
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
   SimulateOnTranslateLanguageDetermined("fr", true);
-  EXPECT_EQ(0U, infobar_manager()->infobar_count());
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
 }
 
 // Test that reloading the page brings back the infobar if the

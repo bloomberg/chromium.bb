@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
@@ -53,7 +52,6 @@ ManagedModeInterstitial::ManagedModeInterstitial(
 
   InfoBarService* service = InfoBarService::FromWebContents(web_contents);
   if (service) {
-    InfoBarManager* infobar_manager = service->infobar_manager();
     // Remove all the infobars which are attached to |web_contents| and for
     // which ShouldExpire() returns true.
     content::LoadCommittedDetails details;
@@ -69,12 +67,12 @@ ManagedModeInterstitial::ManagedModeInterstitial(
       details.previous_url = controller.GetLastCommittedEntry()->GetURL();
     }
     details.type = content::NAVIGATION_TYPE_NEW_PAGE;
-    for (int i = infobar_manager->infobar_count() - 1; i >= 0; --i) {
-      InfoBar* infobar = infobar_manager->infobar_at(i);
+    for (int i = service->infobar_count() - 1; i >= 0; --i) {
+      InfoBar* infobar = service->infobar_at(i);
       if (infobar->delegate()->ShouldExpire(
               InfoBarService::NavigationDetailsFromLoadCommittedDetails(
                   details)))
-        infobar_manager->RemoveInfoBar(infobar);
+        service->RemoveInfoBar(infobar);
     }
   }
 

@@ -8,7 +8,6 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -82,11 +81,11 @@ TEST_F(SessionCrashedInfoBarDelegateUnitTest, DetachingTabWithCrashedInfoBar) {
   TabStripModel* tab_strip = first_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
   content::WebContents* web_contents = tab_strip->GetWebContentsAt(0);
-  InfoBarManager* infobar_manager =
-      InfoBarService::FromWebContents(web_contents)->infobar_manager();
-  EXPECT_EQ(1U, infobar_manager->infobar_count());
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  EXPECT_EQ(1U, infobar_service->infobar_count());
   ConfirmInfoBarDelegate* infobar =
-      infobar_manager->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
+      infobar_service->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar);
 
   // Open another browser.
@@ -103,9 +102,9 @@ TEST_F(SessionCrashedInfoBarDelegateUnitTest, DetachingTabWithCrashedInfoBar) {
   first_browser.reset();
 
   ASSERT_EQ(1, tab_strip->count());
-  InfoBarService* infobar_service =
+  infobar_service =
       InfoBarService::FromWebContents(tab_strip->GetWebContentsAt(0));
-  EXPECT_EQ(1U, infobar_service->infobar_manager()->infobar_count());
+  EXPECT_EQ(1U, infobar_service->infobar_count());
 
   // This used to crash.
   infobar->Accept();

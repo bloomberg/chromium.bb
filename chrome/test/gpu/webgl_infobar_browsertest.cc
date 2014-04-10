@@ -8,7 +8,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -91,8 +90,8 @@ IN_PROC_BROWSER_TEST_F(WebGLInfoBarTest, DISABLED_ContextLossRaisesInfoBar) {
   infobar_added.Wait();
   EXPECT_EQ(1u,
             InfoBarService::FromWebContents(
-                browser()->tab_strip_model()->GetActiveWebContents())
-                    ->infobar_manager()->infobar_count());
+                browser()->tab_strip_model()->GetActiveWebContents())->
+                    infobar_count());
 }
 
 // This test is flaky. http://crbug.com/324555
@@ -132,9 +131,8 @@ IN_PROC_BROWSER_TEST_F(WebGLInfoBarTest, DISABLED_ContextLossInfoBarReload) {
   infobar_added.Wait();
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
-  ASSERT_EQ(1u, infobar_service->infobar_manager()->infobar_count());
-  InfoBarDelegate* delegate =
-      infobar_service->infobar_manager()->infobar_at(0)->delegate();
+  ASSERT_EQ(1u, infobar_service->infobar_count());
+  InfoBarDelegate* delegate = infobar_service->infobar_at(0)->delegate();
   ASSERT_EQ(IDR_INFOBAR_3D_BLOCKED, delegate->GetIconID());
   delegate->AsConfirmInfoBarDelegate()->Cancel();
 

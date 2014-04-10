@@ -21,36 +21,37 @@ class InfoBar;
 
 // Associates a Tab to a InfoBarManager and manages its lifetime.
 // It manages the infobar notifications and responds to navigation events.
-class InfoBarService : public content::WebContentsObserver,
-                       public content::WebContentsUserData<InfoBarService>,
-                       public InfoBarManager::Observer {
+class InfoBarService : public InfoBarManager,
+                       public content::WebContentsObserver,
+                       public content::WebContentsUserData<InfoBarService> {
  public:
-  // Helper function to get the InfoBarManager attached to |web_contents|.
-  static InfoBarManager* InfoBarManagerFromWebContents(
-      content::WebContents* web_contents);
-
   static InfoBarDelegate::NavigationDetails
       NavigationDetailsFromLoadCommittedDetails(
           const content::LoadCommittedDetails& details);
 
-  // These methods are simple pass-throughs to InfoBarManager, and are here to
-  // prepare for the componentization of Infobars, see http://crbug.com/354379.
-  InfoBar* AddInfoBar(scoped_ptr<InfoBar> infobar);
-  InfoBar* ReplaceInfoBar(InfoBar* old_infobar,
-                          scoped_ptr<InfoBar> new_infobar);
+  // This function must only be called on infobars that are owned by an
+  // InfoBarService instance (or not owned at all, in which case this returns
+  // NULL).
+  static content::WebContents* WebContentsFromInfoBar(InfoBar* infobar);
 
   // Retrieve the WebContents for the tab this service is associated with.
   content::WebContents* web_contents() {
     return content::WebContentsObserver::web_contents();
   }
 
-  InfoBarManager* infobar_manager() { return &infobar_manager_; }
-
  private:
   friend class content::WebContentsUserData<InfoBarService>;
 
   explicit InfoBarService(content::WebContents* web_contents);
   virtual ~InfoBarService();
+
+  // InfoBarManager:
+  // TODO(droger): Remove these functions once infobar notifications are
+  // removed. See http://crbug.com/354380
+  virtual void NotifyInfoBarAdded(InfoBar* infobar) OVERRIDE;
+  virtual void NotifyInfoBarRemoved(InfoBar* infobar, bool animate) OVERRIDE;
+  virtual void NotifyInfoBarReplaced(InfoBar* old_infobar,
+                                     InfoBar* new_infobar) OVERRIDE;
 
   // content::WebContentsObserver:
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
@@ -60,18 +61,10 @@ class InfoBarService : public content::WebContentsObserver,
       content::WebContents* web_contents) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // InfoBarManager::Observer:
-  virtual void OnInfoBarAdded(InfoBar* infobar) OVERRIDE;
-  virtual void OnInfoBarReplaced(InfoBar* old_infobar,
-                                 InfoBar* new_infobar) OVERRIDE;
-  virtual void OnInfoBarRemoved(InfoBar* infobar, bool animate) OVERRIDE;
-  virtual void OnManagerShuttingDown(InfoBarManager* manager) OVERRIDE;
-
   // Message handlers.
   void OnDidBlockDisplayingInsecureContent();
   void OnDidBlockRunningInsecureContent();
 
-  InfoBarManager infobar_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarService);
 };

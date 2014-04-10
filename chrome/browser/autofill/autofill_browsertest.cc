@@ -19,7 +19,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -71,10 +70,8 @@ class WindowedPersonalDataManagerObserver
   }
 
   virtual ~WindowedPersonalDataManagerObserver() {
-    if (infobar_service_ &&
-        (infobar_service_->infobar_manager()->infobar_count() > 0)) {
-      InfoBarManager* infobar_manager = infobar_service_->infobar_manager();
-      infobar_manager->RemoveInfoBar(infobar_manager->infobar_at(0));
+    if (infobar_service_ && (infobar_service_->infobar_count() > 0)) {
+      infobar_service_->RemoveInfoBar(infobar_service_->infobar_at(0));
     }
   }
 
@@ -107,9 +104,8 @@ class WindowedPersonalDataManagerObserver
     EXPECT_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED, type);
     infobar_service_ = InfoBarService::FromWebContents(
         browser_->tab_strip_model()->GetActiveWebContents());
-    InfoBarManager* infobar_manager = infobar_service_->infobar_manager();
     ConfirmInfoBarDelegate* infobar_delegate =
-        infobar_manager->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
+        infobar_service_->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
     ASSERT_TRUE(infobar_delegate);
     infobar_delegate->Accept();
   }
@@ -495,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, InvalidCreditCardNumberIsNotAggregated) {
   SubmitCreditCard("Bob Smith", card.c_str(), "12", "2014");
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
-  ASSERT_EQ(0u, infobar_service->infobar_manager()->infobar_count());
+  ASSERT_EQ(0u, infobar_service->infobar_count());
 }
 
 // Test whitespaces and separator chars are stripped for valid CC numbers.
@@ -681,7 +677,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, CCInfoNotStoredWhenAutocompleteOff) {
 
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
-  ASSERT_EQ(0u, infobar_service->infobar_manager()->infobar_count());
+  ASSERT_EQ(0u, infobar_service->infobar_count());
 }
 
 // Test profile not aggregated if email found in non-email field.

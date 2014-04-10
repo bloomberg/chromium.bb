@@ -13,7 +13,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -112,13 +111,12 @@ void PPAPITestBase::InfoBarObserver::VerifyInfoBarState() {
       InfoBarService::FromWebContents(web_contents);
   ASSERT_TRUE(infobar_service != NULL);
 
-  InfoBarManager* infobar_manager = infobar_service->infobar_manager();
-  EXPECT_EQ(expecting_infobar_ ? 1U : 0U, infobar_manager->infobar_count());
+  EXPECT_EQ(expecting_infobar_ ? 1U : 0U, infobar_service->infobar_count());
   if (!expecting_infobar_)
     return;
   expecting_infobar_ = false;
 
-  InfoBar* infobar = infobar_manager->infobar_at(0);
+  InfoBar* infobar = infobar_service->infobar_at(0);
   ConfirmInfoBarDelegate* delegate =
       infobar->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(delegate != NULL);
@@ -127,7 +125,7 @@ void PPAPITestBase::InfoBarObserver::VerifyInfoBarState() {
   else
     delegate->Cancel();
 
-  infobar_manager->RemoveInfoBar(infobar);
+  infobar_service->RemoveInfoBar(infobar);
 }
 
 PPAPITestBase::PPAPITestBase() {

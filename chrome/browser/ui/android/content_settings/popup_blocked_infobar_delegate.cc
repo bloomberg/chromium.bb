@@ -7,7 +7,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
@@ -29,21 +28,21 @@ void PopupBlockedInfoBarDelegate::Create(content::WebContents* web_contents,
           new PopupBlockedInfoBarDelegate(
                 num_popups, url, profile->GetHostContentSettingsMap()))));
 
-  InfoBarManager* infobar_manager =
-      InfoBarService::FromWebContents(web_contents)->infobar_manager();
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
   // See if there is an existing popup infobar already.
   // TODO(dfalcantara) When triggering more than one popup the infobar
   // will be shown once, then hide then be shown again.
   // This will be fixed once we have an in place replace infobar mechanism.
-  for (size_t i = 0; i < infobar_manager->infobar_count(); ++i) {
-    InfoBar* existing_infobar = infobar_manager->infobar_at(i);
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
+    InfoBar* existing_infobar = infobar_service->infobar_at(i);
     if (existing_infobar->delegate()->AsPopupBlockedInfoBarDelegate()) {
-      infobar_manager->ReplaceInfoBar(existing_infobar, infobar.Pass());
+      infobar_service->ReplaceInfoBar(existing_infobar, infobar.Pass());
       return;
     }
   }
 
-  infobar_manager->AddInfoBar(infobar.Pass());
+  infobar_service->AddInfoBar(infobar.Pass());
 }
 
 PopupBlockedInfoBarDelegate::~PopupBlockedInfoBarDelegate() {

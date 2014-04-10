@@ -127,6 +127,8 @@ class InfoBarDelegate {
 
   // This trivial getter is defined out-of-line in order to avoid needing to
   // #include infobar.h, which would lead to circular #includes.
+  // TODO(droger): Remove this function and have callers use
+  // InfoBarService::WebContentsFromInfoBar() instead.
   content::WebContents* web_contents();
 
  protected:

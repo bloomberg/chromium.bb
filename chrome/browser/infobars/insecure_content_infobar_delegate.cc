@@ -8,7 +8,6 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -27,9 +26,8 @@ void InsecureContentInfoBarDelegate::Create(InfoBarService* infobar_service,
 
   // Only supsersede an existing insecure content infobar if we are upgrading
   // from DISPLAY to RUN.
-  InfoBarManager* infobar_manager = infobar_service->infobar_manager();
-  for (size_t i = 0; i < infobar_manager->infobar_count(); ++i) {
-    InfoBar* old_infobar = infobar_manager->infobar_at(i);
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
+    InfoBar* old_infobar = infobar_service->infobar_at(i);
     InsecureContentInfoBarDelegate* delegate =
         old_infobar->delegate()->AsInsecureContentInfoBarDelegate();
     if (delegate != NULL) {

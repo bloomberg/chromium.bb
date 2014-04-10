@@ -90,10 +90,9 @@ static jlong Init(JNIEnv* env,
                   jobject auto_login_delegate) {
   InfoBarContainerAndroid* infobar_container =
       new InfoBarContainerAndroid(env, obj, auto_login_delegate);
-  InfoBarManager* infobar_manager =
-      InfoBarService::InfoBarManagerFromWebContents(
-          content::WebContents::FromJavaWebContents(web_contents));
-  infobar_container->ChangeInfoBarManager(infobar_manager);
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(
+      content::WebContents::FromJavaWebContents(web_contents));
+  infobar_container->ChangeInfoBarManager(infobar_service);
   return reinterpret_cast<intptr_t>(infobar_container);
 }
 

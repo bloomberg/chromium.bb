@@ -13,7 +13,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -279,14 +278,13 @@ void HungPluginTabHelper::PluginCrashed(const base::FilePath& plugin_path,
   if (!infobar_service)
     return;
 
-  InfoBarManager* infobar_manager = infobar_service->infobar_manager();
   // For now, just do a brute-force search to see if we have this plugin. Since
   // we'll normally have 0 or 1, this is fast.
   for (PluginStateMap::iterator i = hung_plugins_.begin();
        i != hung_plugins_.end(); ++i) {
     if (i->second->path == plugin_path) {
       if (i->second->infobar)
-        infobar_manager->RemoveInfoBar(i->second->infobar);
+        infobar_service->RemoveInfoBar(i->second->infobar);
       hung_plugins_.erase(i);
       break;
     }
@@ -302,13 +300,12 @@ void HungPluginTabHelper::PluginHungStatusChanged(
   if (!infobar_service)
     return;
 
-  InfoBarManager* infobar_manager = infobar_service->infobar_manager();
   PluginStateMap::iterator found = hung_plugins_.find(plugin_child_id);
   if (found != hung_plugins_.end()) {
     if (!is_hung) {
       // Hung plugin became un-hung, close the infobar and delete our info.
       if (found->second->infobar)
-        infobar_manager->RemoveInfoBar(found->second->infobar);
+        infobar_service->RemoveInfoBar(found->second->infobar);
       hung_plugins_.erase(found);
     }
     return;
@@ -419,7 +416,7 @@ void HungPluginTabHelper::CloseBar(PluginState* state) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents());
   if (infobar_service && state->infobar) {
-    infobar_service->infobar_manager()->RemoveInfoBar(state->infobar);
+    infobar_service->RemoveInfoBar(state->infobar);
     state->infobar = NULL;
   }
 }

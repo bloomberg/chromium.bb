@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
@@ -275,12 +274,11 @@ bool AccessibilityPrivateGetAlertsForTabFunction::RunImpl() {
 
   base::ListValue* alerts_value = new base::ListValue;
 
-  InfoBarManager* infobar_manager =
-      InfoBarService::FromWebContents(contents)->infobar_manager();
-  for (size_t i = 0; i < infobar_manager->infobar_count(); ++i) {
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(contents);
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
     // TODO(hashimoto): Make other kind of alerts available.  crosbug.com/24281
     ConfirmInfoBarDelegate* confirm_infobar_delegate =
-        infobar_manager->infobar_at(i)->delegate()->AsConfirmInfoBarDelegate();
+        infobar_service->infobar_at(i)->delegate()->AsConfirmInfoBarDelegate();
     if (confirm_infobar_delegate) {
       base::DictionaryValue* alert_value = new base::DictionaryValue;
       const base::string16 message_text =

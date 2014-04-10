@@ -9,7 +9,6 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
@@ -222,9 +221,9 @@ void WebRtcTestBase::CloseInfoBarInTab(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
       content::NotificationService::AllSources());
 
-  InfoBarManager* infobar_manager =
-      InfoBarService::FromWebContents(tab_contents)->infobar_manager();
-  infobar_manager->RemoveInfoBar(infobar);
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(tab_contents);
+  infobar_service->RemoveInfoBar(infobar);
 
   infobar_removed.Wait();
 }

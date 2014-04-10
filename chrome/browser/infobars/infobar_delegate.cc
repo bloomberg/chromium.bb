@@ -108,8 +108,7 @@ gfx::Image InfoBarDelegate::GetIcon() const {
 }
 
 content::WebContents* InfoBarDelegate::web_contents() {
-  return (infobar_ && infobar_->owner()) ?
-      infobar_->owner()->web_contents() : NULL;
+  return InfoBarService::WebContentsFromInfoBar(infobar_);
 }
 
 InfoBarDelegate::InfoBarDelegate() : contents_unique_id_(0) {

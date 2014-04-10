@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -41,14 +40,14 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
     WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents);
-    InfoBarManager* infobar_manager =
-        InfoBarService::FromWebContents(web_contents)->infobar_manager();
-    ASSERT_EQ(1U, infobar_manager->infobar_count());
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents);
+    ASSERT_EQ(1U, infobar_service->infobar_count());
     ConfirmInfoBarDelegate* delegate =
-        infobar_manager->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
+        infobar_service->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
     ASSERT_TRUE(delegate);
     delegate->Cancel();
-    ASSERT_EQ(0U, infobar_manager->infobar_count());
+    ASSERT_EQ(0U, infobar_service->infobar_count());
   }
 
   // Install the given theme from the data dir and verify expected name.

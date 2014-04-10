@@ -7,7 +7,6 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -82,9 +81,10 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
   InstallExtension("theme2.crx");
   infobar_added_2.Wait();
   infobar_removed_1.Wait();
-  EXPECT_EQ(0u,
-            InfoBarService::FromWebContents(browser()->tab_strip_model()->
-                GetWebContentsAt(0))->infobar_manager()->infobar_count());
+  EXPECT_EQ(
+      0u,
+      InfoBarService::FromWebContents(
+          browser()->tab_strip_model()->GetWebContentsAt(0))->infobar_count());
 
   content::WindowedNotificationObserver infobar_removed_2(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -92,6 +92,7 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
   ThemeServiceFactory::GetForProfile(browser()->profile())->UseDefaultTheme();
   infobar_removed_2.Wait();
   EXPECT_EQ(0u,
-            InfoBarService::FromWebContents(browser()->tab_strip_model()->
-                GetActiveWebContents())->infobar_manager()->infobar_count());
+            InfoBarService::FromWebContents(
+                browser()->tab_strip_model()->GetActiveWebContents())->
+                infobar_count());
 }

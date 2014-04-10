@@ -11,7 +11,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -89,10 +88,9 @@ void TranslateInfoBarDelegate::Create(bool replace_existing_infobar,
   InfoBar* old_infobar = NULL;
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
-  InfoBarManager* infobar_manager = infobar_service->infobar_manager();
   TranslateInfoBarDelegate* old_delegate = NULL;
-  for (size_t i = 0; i < infobar_manager->infobar_count(); ++i) {
-    old_infobar = infobar_manager->infobar_at(i);
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
+    old_infobar = infobar_service->infobar_at(i);
     old_delegate = old_infobar->delegate()->AsTranslateInfoBarDelegate();
     if (old_delegate) {
       if (!replace_existing_infobar)

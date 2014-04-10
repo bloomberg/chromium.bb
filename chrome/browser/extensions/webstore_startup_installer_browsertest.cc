@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/browser/extensions/webstore_installer_test.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
@@ -201,9 +200,8 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerManagedUsersTest,
 
   // No error infobar should show up.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  InfoBarManager* infobar_manager =
-      InfoBarService::FromWebContents(contents)->infobar_manager();
-  EXPECT_EQ(infobar_manager->infobar_count(), 0u);
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(contents);
+  EXPECT_EQ(0u, infobar_service->infobar_count());
 }
 
 // The unpack failure test needs to use a different install .crx, which is

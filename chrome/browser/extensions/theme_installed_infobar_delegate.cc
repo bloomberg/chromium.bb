@@ -10,7 +10,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -48,7 +47,6 @@ void ThemeInstalledInfoBarDelegate::Create(
     return;
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
-  InfoBarManager* infobar_manager = infobar_service->infobar_manager();
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
   scoped_ptr<InfoBar> new_infobar(ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new ThemeInstalledInfoBarDelegate(
@@ -57,8 +55,8 @@ void ThemeInstalledInfoBarDelegate::Create(
 
   // If there's a previous theme infobar, just replace that instead of adding a
   // new one.
-  for (size_t i = 0; i < infobar_manager->infobar_count(); ++i) {
-    InfoBar* old_infobar = infobar_manager->infobar_at(i);
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
+    InfoBar* old_infobar = infobar_service->infobar_at(i);
     ThemeInstalledInfoBarDelegate* theme_infobar =
         old_infobar->delegate()->AsThemePreviewInfobarDelegate();
     if (theme_infobar) {

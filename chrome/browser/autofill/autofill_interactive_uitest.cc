@@ -19,7 +19,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -147,9 +146,8 @@ class WindowedPersonalDataManagerObserver
 
   virtual ~WindowedPersonalDataManagerObserver() {
     if (infobar_service_) {
-      InfoBarManager* infobar_manager = infobar_service_->infobar_manager();
-      while (infobar_manager->infobar_count() > 0) {
-        infobar_manager->RemoveInfoBar(infobar_manager->infobar_at(0));
+      while (infobar_service_->infobar_count() > 0) {
+        infobar_service_->RemoveInfoBar(infobar_service_->infobar_at(0));
       }
     }
   }
@@ -173,8 +171,8 @@ class WindowedPersonalDataManagerObserver
                        const content::NotificationDetails& details) OVERRIDE {
     infobar_service_ = InfoBarService::FromWebContents(
         browser_->tab_strip_model()->GetActiveWebContents());
-    infobar_service_->infobar_manager()->infobar_at(0)->delegate()
-        ->AsConfirmInfoBarDelegate()->Accept();
+    infobar_service_->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate()->
+        Accept();
   }
 
   void Wait() {
@@ -980,10 +978,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
 
   // Wait for the translation bar to appear and get it.
   infobar_observer.Wait();
-  InfoBarManager* infobar_manager =
-      InfoBarService::FromWebContents(GetWebContents())->infobar_manager();
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(GetWebContents());
   TranslateInfoBarDelegate* delegate =
-      infobar_manager->infobar_at(0)->delegate()->AsTranslateInfoBarDelegate();
+      infobar_service->infobar_at(0)->delegate()->AsTranslateInfoBarDelegate();
   ASSERT_TRUE(delegate);
   EXPECT_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
             delegate->translate_step());
