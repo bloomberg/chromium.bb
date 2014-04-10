@@ -30,7 +30,6 @@ function test()
             dumpDictionary(next);
         },
 
-
         function testSetText(next)
         {
             textEditor.setText("dog cat 'mouse';dog bird");
@@ -49,6 +48,12 @@ function test()
             InspectorTest.typeIn(textEditor, "\b\b\b\b\b\b", dumpDictionary.bind(null, next));
         },
 
+        function testCSSMimeType(next)
+        {
+            textEditor.setText(".my-class { -webkit-border: 1px solid black; }");
+            textEditor.setMimeType("text/css");
+            dumpDictionary(next);
+        },
     ]);
 
     function dumpDictionary(next) {

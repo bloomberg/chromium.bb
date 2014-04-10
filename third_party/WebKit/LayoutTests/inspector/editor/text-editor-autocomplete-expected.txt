@@ -42,3 +42,10 @@ Running: testDeleteOneDogAndOneCat
 [bird, dog, mouse]
 =============
 
+Running: testCSSMimeType
+========= Text in editor =========
+|.my-class { -webkit-border: 1px solid black; }
+======= Words in dictionary =======
+[-webkit-border, .my-class, black, solid]
+=============
+
