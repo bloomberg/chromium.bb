@@ -1463,7 +1463,7 @@ const Experiment kExperiments[] = {
     "enable-new-profile-management",
     IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_NAME,
     IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_DESCRIPTION,
-    kOsAndroid | kOsMac | kOsWin | kOsLinux,
+    kOsMac | kOsWin | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kNewProfileManagement)
   },
   {
