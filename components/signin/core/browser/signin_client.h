@@ -17,6 +17,14 @@ class CanonicalCookie;
 class URLRequestContextGetter;
 }
 
+#if defined(OS_IOS)
+namespace ios {
+// TODO(msarda): http://crbug.com/358544 Remove this iOS specific code from the
+// core SigninClient.
+class ProfileOAuth2TokenServiceIOSProvider;
+}
+#endif
+
 // An interface that needs to be supplied to the Signin component by its
 // embedder.
 class SigninClient {
@@ -57,6 +65,12 @@ class SigninClient {
   // Called when Google signin has succeeded.
   virtual void GoogleSigninSucceeded(const std::string& username,
                                      const std::string& password) {}
+
+#if defined(OS_IOS)
+  // TODO(msarda): http://crbug.com/358544 Remove this iOS specific code from
+  // the core SigninClient.
+  virtual ios::ProfileOAuth2TokenServiceIOSProvider* GetIOSProvider() = 0;
+#endif
 };
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_CLIENT_H_

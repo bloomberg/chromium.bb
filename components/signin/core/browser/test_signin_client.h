@@ -39,6 +39,10 @@ class TestSigninClient : public SigninClient {
   // Returns a TestURLRequestContextGetter.
   virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
 
+#if defined(OS_IOS)
+  virtual ios::ProfileOAuth2TokenServiceIOSProvider* GetIOSProvider() OVERRIDE;
+#endif
+
   // Returns true.
   virtual bool ShouldMergeSigninCredentialsIntoCookieJar() OVERRIDE;
 

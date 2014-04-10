@@ -103,4 +103,25 @@
       ],
     },
   ],
+  'conditions': [
+    ['OS == "ios"', {
+      'targets': [
+        {
+          'target_name': 'signin_ios_browser',
+          'type': 'static_library',
+          'dependencies': [
+            'signin_core_browser',
+            '../ios/provider/ios_components.gyp:ios_components',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'signin/ios/browser/profile_oauth2_token_service_ios.h',
+            'signin/ios/browser/profile_oauth2_token_service_ios.mm',
+          ],
+        },
+      ],
+    }],
+  ],
 }

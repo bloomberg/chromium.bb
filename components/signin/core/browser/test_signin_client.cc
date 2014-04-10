@@ -53,3 +53,11 @@ bool TestSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
 
 void TestSigninClient::SetCookieChangedCallback(
     const CookieChangedCallback& callback) {}
+
+#if defined(OS_IOS)
+ios::ProfileOAuth2TokenServiceIOSProvider* TestSigninClient::GetIOSProvider() {
+  // Just returns NULL for now. It should be changed to return an
+  // |ios::FakeProfileOAuth2TokenServiceIOSProvider|.
+  return NULL;
+}
+#endif
