@@ -35,7 +35,6 @@ void SegregatedPrefStore::AggregatingObserver::OnInitializationCompleted(
   DCHECK_LE(failed_sub_initializations_ + successful_sub_initializations_, 2);
 
   if (failed_sub_initializations_ + successful_sub_initializations_ == 2) {
-
     if (!outer_->on_initialization_.is_null())
       outer_->on_initialization_.Run();
 
@@ -151,8 +150,8 @@ SegregatedPrefStore::~SegregatedPrefStore() {
   selected_pref_store_->RemoveObserver(&aggregating_observer_);
 }
 
-const PersistentPrefStore*
-SegregatedPrefStore::StoreForKey(const std::string& key) const {
+const PersistentPrefStore* SegregatedPrefStore::StoreForKey(
+    const std::string& key) const {
   if (ContainsKey(selected_preference_names_, key) ||
       selected_pref_store_->GetValue(key, NULL)) {
     return selected_pref_store_.get();
@@ -170,12 +169,14 @@ PersistentPrefStore* SegregatedPrefStore::StoreForKey(const std::string& key) {
   // permit us to enumerate its contents.
   const base::Value* value = NULL;
   if (selected_pref_store_->GetValue(key, &value)) {
-    scoped_ptr<base::Value> migrated_value(value->DeepCopy());
-    value = NULL;
-    default_pref_store_->SetValue(key, migrated_value.release());
+    default_pref_store_->SetValue(key, value->DeepCopy());
+    // Commit |default_pref_store_| to guarantee that the migrated value is
+    // flushed to disk before the removal from |selected_pref_store_| is
+    // eventually flushed to disk.
     default_pref_store_->CommitPendingWrite();
+
+    value = NULL;
     selected_pref_store_->RemoveValue(key);
-    selected_pref_store_->CommitPendingWrite();
   }
 
   return default_pref_store_.get();

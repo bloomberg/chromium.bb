@@ -29,6 +29,7 @@ namespace {
 const char kAtomicPref[] = "atomic_pref";
 const char kAtomicPref2[] = "atomic_pref2";
 const char kAtomicPref3[] = "pref3";
+const char kAtomicPref4[] = "pref4";
 const char kReportOnlyPref[] = "report_only";
 const char kReportOnlySplitPref[] = "report_only_split_pref";
 const char kSplitPref[] = "split_pref";
@@ -56,6 +57,10 @@ const PrefHashFilter::TrackedPreferenceMetadata kTestTrackedPrefs[] = {
   },
   {
     5, kAtomicPref3, PrefHashFilter::ENFORCE_ON_LOAD,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    6, kAtomicPref4, PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
 };
@@ -323,9 +328,9 @@ class PrefHashFilterTest
   }
 
  protected:
-  // Creates a PrefHashFilter that uses a MockPrefHashStore. The
-  // MockPrefHashStore (owned by the PrefHashFilter) is returned in
-  // |mock_pref_hash_store|.
+  // Initializes |pref_hash_filter_| with a PrefHashFilter that uses a
+  // MockPrefHashStore. The raw pointer to the MockPrefHashStore (owned by the
+  // PrefHashFilter) is stored in |mock_pref_hash_store_|.
   void InitializePrefHashFilter(const std::vector<
       PrefHashFilter::TrackedPreferenceMetadata>& configuration) {
     scoped_ptr<MockPrefHashStore> temp_mock_pref_hash_store(
@@ -910,21 +915,37 @@ TEST_P(PrefHashFilterTest, MigrateValuesTest) {
   scoped_refptr<TestingPrefStore> source(new TestingPrefStore);
   scoped_refptr<TestingPrefStore> destination(new TestingPrefStore);
 
+  // If enforcing, should be migrated.
   source->SetString(kAtomicPref, "foobar");
-  source->SetString(kAtomicPref2, "foobar2");
-  destination->SetString(kAtomicPref2, "foobar2 preexisting");
-  destination->SetString(kAtomicPref3, "foobar3");
-  source->SetString(kReportOnlyPref, "helloworld");
-
   mock_pref_hash_store_->SetCheckResult(kAtomicPref,
                                         PrefHashStoreTransaction::UNCHANGED);
+
+  // If enforcing, should be discarded due to pre-existing value in
+  // |destination|.
+  source->SetString(kAtomicPref2, "foobar2");
   mock_pref_hash_store_->SetCheckResult(kAtomicPref2,
                                         PrefHashStoreTransaction::UNCHANGED);
+
+  // If enforcing, should be kept preferentially to value from |source|. If not
+  // enforcing, should still be unaffected.
+  destination->SetString(kAtomicPref2, "foobar2 preexisting");
+  // Should stay in |destination| in both scenarios.
+  destination->SetString(kAtomicPref3, "foobar3");
   mock_pref_hash_store_->SetCheckResult(kAtomicPref3,
                                         PrefHashStoreTransaction::UNCHANGED);
+
+  // When enforcing, should be discarded due to MAC mismatch. If not enforcing,
+  // stays in |source|.
+  source->SetString(kAtomicPref4, "foobar4");
+  mock_pref_hash_store_->SetCheckResult(kAtomicPref4,
+                                        PrefHashStoreTransaction::CHANGED);
+
+  // Should remain in |source| in both scenarios.
+  source->SetString(kReportOnlyPref, "helloworld");
   mock_pref_hash_store_->SetCheckResult(kReportOnlyPref,
                                         PrefHashStoreTransaction::UNCHANGED);
 
+  // Perform the migration.
   pref_hash_filter_->MigrateValues(source, destination);
   ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
 
@@ -934,6 +955,7 @@ TEST_P(PrefHashFilterTest, MigrateValuesTest) {
     ASSERT_FALSE(source->GetValue(kAtomicPref, NULL));
     ASSERT_FALSE(source->GetValue(kAtomicPref2, NULL));
     ASSERT_FALSE(source->GetValue(kAtomicPref3, NULL));
+    ASSERT_FALSE(source->GetValue(kAtomicPref4, NULL));
     ASSERT_TRUE(source->GetString(kReportOnlyPref, &value));
     ASSERT_EQ("helloworld", value);
 
@@ -944,6 +966,7 @@ TEST_P(PrefHashFilterTest, MigrateValuesTest) {
     ASSERT_TRUE(destination->GetString(kAtomicPref3, &value));
     ASSERT_EQ("foobar3", value);
     ASSERT_FALSE(destination->GetValue(kReportOnlyPref, NULL));
+    ASSERT_FALSE(destination->GetValue(kAtomicPref4, NULL));
   } else {
     std::string value;
 
@@ -952,13 +975,17 @@ TEST_P(PrefHashFilterTest, MigrateValuesTest) {
     ASSERT_TRUE(source->GetString(kAtomicPref2, &value));
     ASSERT_EQ("foobar2", value);
     ASSERT_FALSE(source->GetString(kAtomicPref3, &value));
+    ASSERT_TRUE(source->GetString(kAtomicPref4, &value));
+    ASSERT_EQ("foobar4", value);
     ASSERT_TRUE(source->GetString(kReportOnlyPref, &value));
     ASSERT_EQ("helloworld", value);
 
     ASSERT_FALSE(destination->GetValue(kAtomicPref, NULL));
     ASSERT_TRUE(destination->GetString(kAtomicPref2, &value));
     ASSERT_EQ("foobar2 preexisting", value);
-    ASSERT_TRUE(destination->GetValue(kAtomicPref3, NULL));
+    ASSERT_TRUE(destination->GetString(kAtomicPref3, &value));
+    ASSERT_EQ("foobar3", value);
+    ASSERT_FALSE(destination->GetValue(kAtomicPref4, NULL));
     ASSERT_FALSE(destination->GetValue(kReportOnlyPref, NULL));
   }
   EXPECT_FALSE(mock_pref_hash_store_->commit_performed());

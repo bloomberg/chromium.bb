@@ -134,23 +134,10 @@ class DictionaryPrefStore : public PrefStore {
   DISALLOW_COPY_AND_ASSIGN(DictionaryPrefStore);
 };
 
-}  // namespace
-
-// TODO(erikwright): Enable this on Chrome OS and Android once MACs are moved
-// out of Local State. This will resolve a race condition on Android and a
-// privacy issue on ChromeOS. http://crbug.com/349158
-const bool ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking =
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    false;
-#else
-    true;
-#endif
-
 // Waits for a PrefStore to be initialized and then initializes the
 // corresponding PrefHashStore.
 // The observer deletes itself when its work is completed.
-class ProfilePrefStoreManager::InitializeHashStoreObserver
-    : public PrefStore::Observer {
+class InitializeHashStoreObserver : public PrefStore::Observer {
  public:
   // Creates an observer that will initialize |pref_hash_store| with the
   // contents of |pref_store| when the latter is fully loaded.
@@ -181,15 +168,11 @@ class ProfilePrefStoreManager::InitializeHashStoreObserver
   DISALLOW_COPY_AND_ASSIGN(InitializeHashStoreObserver);
 };
 
-ProfilePrefStoreManager::InitializeHashStoreObserver::
-    ~InitializeHashStoreObserver() {}
+InitializeHashStoreObserver::~InitializeHashStoreObserver() {}
 
-void ProfilePrefStoreManager::InitializeHashStoreObserver::OnPrefValueChanged(
-    const std::string& key) {}
+void InitializeHashStoreObserver::OnPrefValueChanged(const std::string& key) {}
 
-void
-ProfilePrefStoreManager::InitializeHashStoreObserver::OnInitializationCompleted(
-    bool succeeded) {
+void InitializeHashStoreObserver::OnInitializationCompleted(bool succeeded) {
   // If we successfully loaded the preferences _and_ the PrefHashStoreImpl
   // hasn't been initialized by someone else in the meantime, initialize it now.
   const PrefHashStoreImpl::StoreVersion pre_update_version =
@@ -206,6 +189,18 @@ ProfilePrefStoreManager::InitializeHashStoreObserver::OnInitializationCompleted(
   pref_store_->RemoveObserver(this);
   delete this;
 }
+
+}  // namespace
+
+// TODO(erikwright): Enable this on Chrome OS and Android once MACs are moved
+// out of Local State. This will resolve a race condition on Android and a
+// privacy issue on ChromeOS. http://crbug.com/349158
+const bool ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking =
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    false;
+#else
+    true;
+#endif
 
 ProfilePrefStoreManager::ProfilePrefStoreManager(
     const base::FilePath& profile_path,
@@ -255,7 +250,7 @@ base::Time ProfilePrefStoreManager::GetResetTime(PrefService* pref_service) {
 
   // PrefHashFilter::GetResetTime will read the value through the pref service,
   // and thus through the SegregatedPrefStore. Even though it's not listed as
-  // "protected" it will be read from the protected store prefentially to the
+  // "protected" it will be read from the protected store preferentially to the
   // (NULL) value in the unprotected pref store.
   return PrefHashFilter::GetResetTime(pref_service);
 }

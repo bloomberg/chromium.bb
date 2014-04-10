@@ -357,8 +357,6 @@ void PrepareFactory(
 // path matches |ignored_profile_path|.
 void UpdateAllPrefHashStoresIfRequired(
     const base::FilePath& ignored_profile_path) {
-  if (GetSettingsEnforcementGroup() >= GROUP_ENFORCE_ALWAYS)
-    return;
   const ProfileInfoCache& profile_info_cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   const size_t n_profiles = profile_info_cache.GetNumberOfProfiles();
@@ -454,6 +452,9 @@ void SchedulePrefHashStoresUpdateCheck(
         g_browser_process->local_state());
     return;
   }
+
+  if (GetSettingsEnforcementGroup() >= GROUP_ENFORCE_ALWAYS)
+    return;
 
   const int kDefaultPrefHashStoresUpdateCheckDelaySeconds = 55;
   BrowserThread::PostDelayedTask(

@@ -94,38 +94,47 @@ void PrefHashFilter::ClearResetTime(PrefService* user_prefs) {
 
 void PrefHashFilter::MigrateValues(PersistentPrefStore* source,
                                    PersistentPrefStore* destination) {
+  bool commit_source = false;
+  bool commit_destination = false;
+
   scoped_ptr<PrefHashStoreTransaction> transaction =
       pref_hash_store_->BeginTransaction();
   for (TrackedPreferencesMap::const_iterator it = tracked_paths_.begin();
        it != tracked_paths_.end();
        ++it) {
     const base::Value* source_value = NULL;
-    if (source->GetValue(it->first, &source_value) &&
-        !destination->GetValue(it->first, NULL)) {
-      base::DictionaryValue temp_dictionary;
-      // Copy the value from |source| into a suitable place for a
-      // TrackedPreference to act on it.
-      temp_dictionary.Set(it->first, source_value->DeepCopy());
-      // Check whether the value is correct according to our MAC. May remove the
-      //  value from |temp_dictionary|.
-      it->second->EnforceAndReport(&temp_dictionary, transaction.get());
-      // Now take the value as it appears in |temp_dictionary| and put it in
-      // |destination|.
-      scoped_ptr<base::Value> checked_value;
-      if (temp_dictionary.Remove(it->first, &checked_value))
-        destination->SetValue(it->first, checked_value.release());
+    if (source->GetValue(it->first, &source_value)) {
+      if (!destination->GetValue(it->first, NULL)) {
+        base::DictionaryValue temp_dictionary;
+        // Copy the value from |source| into a suitable place for a
+        // TrackedPreference to act on it.
+        temp_dictionary.Set(it->first, source_value->DeepCopy());
+        // Check whether the value is correct according to our MAC. May remove
+        // the value from |temp_dictionary|.
+        it->second->EnforceAndReport(&temp_dictionary, transaction.get());
+        // Now take the value as it appears in |temp_dictionary| and put it in
+        // |destination|.
+        scoped_ptr<base::Value> checked_value;
+        if (temp_dictionary.Remove(it->first, &checked_value)) {
+          destination->SetValue(it->first, checked_value.release());
+          commit_destination = true;
+        }
+      }
+      source->RemoveValue(it->first);
+      commit_source = true;
     }
-    source->RemoveValue(it->first);
   }
 
   // Order these such that a crash at any point is still recoverable. We assume
   // that they are configured such that the writes will occur on worker threads
   // in the order that we asked for them.
-  destination->CommitPendingWrite();
+  if (commit_destination)
+    destination->CommitPendingWrite();
   transaction.reset();
   // If we crash here, we will just delete the values from |source| in a future
   // invocation of MigrateValues.
-  source->CommitPendingWrite();
+  if (commit_source)
+    source->CommitPendingWrite();
 }
 
 void PrefHashFilter::Initialize(const PrefStore& pref_store) {

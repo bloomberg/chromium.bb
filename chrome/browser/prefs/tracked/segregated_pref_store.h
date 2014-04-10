@@ -37,7 +37,7 @@ class SegregatedPrefStore : public PersistentPrefStore {
   // be migrated back to |default_pref_store| upon access via a non-const
   // method.
   // |on_initialization| will be invoked when both stores have been initialized,
-  // before observers of the combined store are notified.
+  // before observers of the SegregatedPrefStore store are notified.
   SegregatedPrefStore(
       const scoped_refptr<PersistentPrefStore>& default_pref_store,
       const scoped_refptr<PersistentPrefStore>& selected_pref_store,
