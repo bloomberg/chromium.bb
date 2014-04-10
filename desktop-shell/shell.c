@@ -2165,6 +2165,7 @@ shell_surface_update_child_surface_layers (struct shell_surface *shsurf)
 	 * stacked above shsurf. */
 	wl_list_for_each_reverse(child, &shsurf->children_list, children_link) {
 		if (shsurf->view->layer_link.prev != &child->view->layer_link) {
+			weston_view_damage_below(child->view);
 			weston_view_geometry_dirty(child->view);
 			wl_list_remove(&child->view->layer_link);
 			wl_list_insert(shsurf->view->layer_link.prev,
