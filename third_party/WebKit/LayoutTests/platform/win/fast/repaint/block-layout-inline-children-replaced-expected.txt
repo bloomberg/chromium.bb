@@ -3,7 +3,7 @@ This is a test for regression against https://bugs.webkit.org/show_bug.cgi?id=40
 
 (repaint rects
   (rect 0 36 402 152)
-  (rect 0 37 402 100)
   (rect 201 37 92 100)
+  (rect 0 37 402 100)
 )
 

@@ -6,16 +6,20 @@ TEST FAIL: The purple and green rects will resize, but the blue separator will d
 
 Curabitur pretium, quam quis semper malesuada, est libero feugiat libero, vel fringilla orci nibh sed neque. Quisque eu nulla non nisi molestie accumsan. Etiam tellus urna, laoreet ac, laoreet non, suscipit sed, sapien. Phasellus vehicula, sem at posuere vehicula, augue nibh molestie nisl, nec ullamcorper lacus ante vulputate pede.
 (repaint rects
-  (rect 0 341 800 36)
-  (rect 8 333 784 36)
-  (rect 8 333 300 36)
   (rect 10 132 292 199)
-  (rect 10 132 242 235)
+  (rect 304 132 2 199)
   (rect 10 132 292 144)
   (rect 10 132 242 180)
-  (rect 10 281 292 50)
-  (rect 10 317 242 50)
-  (rect 304 132 2 199)
+  (rect 252 281 50 50)
+  (rect 10 132 242 199)
+  (rect 10 132 242 235)
+  (rect 304 132 52 199)
+  (rect 304 132 52 199)
+  (rect 304 132 52 235)
+  (rect 304 132 52 199)
   (rect 254 132 52 235)
+  (rect 8 333 300 36)
+  (rect 8 333 784 36)
+  (rect 0 341 800 36)
 )
 

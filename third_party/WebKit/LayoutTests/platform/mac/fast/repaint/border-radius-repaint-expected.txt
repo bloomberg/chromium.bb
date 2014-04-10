@@ -2,11 +2,11 @@ Repaint test for http://bugs.webkit.org/show_bug.cgi?id=10699 div with border-ra
 
 
 (repaint rects
-  (rect 19 147 200 20)
   (rect 33 93 172 60)
   (rect 33 93 172 40)
-  (rect 19 307 200 20)
+  (rect 19 147 200 20)
   (rect 33 253 172 40)
   (rect 33 253 172 60)
+  (rect 19 307 200 20)
 )
 

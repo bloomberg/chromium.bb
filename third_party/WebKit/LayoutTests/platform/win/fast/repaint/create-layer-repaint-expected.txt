@@ -2,7 +2,6 @@ If you see red, the test failed
 
 (repaint rects
   (rect 28 56 500 50)
-  (rect 28 56 500 50)
   (rect 28 56 250 50)
 )
 

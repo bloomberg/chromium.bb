@@ -7,9 +7,9 @@ TEST FAIL: Another copy of the word “Hello” will appear.
  
 Hello
 (repaint rects
-  (rect 0 182 800 30)
-  (rect 8 166 784 30)
   (rect 8 166 784 30)
   (rect 8 130 784 66)
+  (rect 8 166 784 30)
+  (rect 0 182 800 30)
 )
 

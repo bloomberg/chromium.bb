@@ -1,15 +1,20 @@
 Repaint test for Bugzilla bug 23524 Make sure that a table section doesn't stop painting when vertical alignment of cells dynamically changes.
 
 (repaint rects
-  (rect 0 87 808 99)
-  (rect 8 79 800 99)
-  (rect 8 79 800 99)
-  (rect 18 72 100 106)
-  (rect 8 79 110 99)
   (rect 10 74 2 3)
-  (rect 10 74 102 102)
   (rect 11 75 100 100)
+  (rect 10 74 102 3)
+  (rect 10 74 102 103)
+  (rect 10 74 102 103)
+  (rect 10 74 102 102)
+  (rect 14 74 2 3)
+  (rect 14 74 2 102)
   (rect 14 74 2 3)
   (rect 114 74 2 102)
+  (rect 18 72 100 106)
+  (rect 8 79 110 99)
+  (rect 8 79 800 99)
+  (rect 8 79 800 99)
+  (rect 0 87 808 99)
 )
 

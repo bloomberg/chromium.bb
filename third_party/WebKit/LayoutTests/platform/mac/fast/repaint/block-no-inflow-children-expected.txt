@@ -1,7 +1,7 @@
 La la la la
 (repaint rects
-  (rect 47 0 15 18)
   (rect 0 0 47 18)
   (rect 0 0 62 18)
+  (rect 47 0 15 18)
 )
 

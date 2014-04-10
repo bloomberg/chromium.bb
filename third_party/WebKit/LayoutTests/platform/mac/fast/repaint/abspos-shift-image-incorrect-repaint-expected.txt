@@ -4,5 +4,9 @@ The images below should be correctly repainted.
 (repaint rects
   (rect 0 0 1500 236)
   (rect -250 0 1500 236)
+  (rect 0 0 700 236)
+  (rect -250 0 700 236)
+  (rect 704 0 700 236)
+  (rect 454 0 700 236)
 )
 

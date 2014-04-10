@@ -5,5 +5,6 @@ This is a test for regression against https://bugs.webkit.org/show_bug.cgi?id=40
   (rect 0 34 402 152)
   (rect 201 35 92 100)
   (rect 0 35 402 100)
+  (rect 155 35 92 100)
 )
 

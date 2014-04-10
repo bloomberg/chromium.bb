@@ -4,6 +4,7 @@ There should be a green square below.
 
 (repaint rects
   (rect 8 104 784 100)
+  (rect 8 104 100 100)
   (rect 8 204 100 100)
 )
 
