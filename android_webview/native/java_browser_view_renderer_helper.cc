@@ -83,7 +83,7 @@ bool JavaBrowserViewRendererHelper::RenderViaAuxilaryBitmapIfNeeded(
 
     // Workarounds for http://crbug.com/271096: SW draw only supports
     // translate & scale transforms, and a simple rectangular clip.
-    if (canvas && (!canvas->getTotalClip().isRect() ||
+    if (canvas && (!canvas->isClipRect() ||
                    (canvas->getTotalMatrix().getType() &
                     ~(SkMatrix::kTranslate_Mask | SkMatrix::kScale_Mask)))) {
       canvas.clear();
