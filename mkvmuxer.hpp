@@ -353,6 +353,10 @@ class Track {
     seek_pre_roll_ = seek_pre_roll;
   }
   uint64 seek_pre_roll() const { return seek_pre_roll_; }
+  void set_default_duration(uint64 default_duration) {
+    default_duration_ = default_duration;
+  }
+  uint64 default_duration() const { return default_duration_; }
 
   uint64 codec_private_length() const { return codec_private_length_; }
   uint32 content_encoding_entries_size() const {
@@ -360,7 +364,7 @@ class Track {
   }
 
  private:
-  // Track element names
+  // Track element names.
   char* codec_id_;
   uint8* codec_private_;
   char* language_;
@@ -371,6 +375,7 @@ class Track {
   uint64 uid_;
   uint64 codec_delay_;
   uint64 seek_pre_roll_;
+  uint64 default_duration_;
 
   // Size of the CodecPrivate data in bytes.
   uint64 codec_private_length_;
@@ -993,6 +998,8 @@ class SegmentInfo {
   uint64 timecode_scale() const { return timecode_scale_; }
   void set_writing_app(const char* app);
   const char* writing_app() const { return writing_app_; }
+  void set_date_utc(int64 date_utc) { date_utc_ = date_utc; }
+  int64 date_utc() const { return date_utc_; }
 
  private:
   // Segment Information element names.
@@ -1004,6 +1011,8 @@ class SegmentInfo {
   uint64 timecode_scale_;
   // Initially set to libwebm-%d.%d.%d.%d, major, minor, build, revision.
   char* writing_app_;
+  // LLONG_MIN when DateUTC is not set.
+  int64 date_utc_;
 
   // The file position of the duration element.
   int64 duration_pos_;

@@ -523,6 +523,7 @@ Track::Track(unsigned int* seed)
       uid_(MakeUID(seed)),
       codec_delay_(0),
       seek_pre_roll_(0),
+      default_duration_(0),
       codec_private_length_(0),
       content_encoding_entries_(NULL),
       content_encoding_entries_size_(0) {
@@ -600,6 +601,8 @@ uint64 Track::PayloadSize() const {
     size += EbmlElementSize(kMkvCodecDelay, codec_delay_);
   if (seek_pre_roll_)
     size += EbmlElementSize(kMkvSeekPreRoll, seek_pre_roll_);
+  if (default_duration_)
+    size += EbmlElementSize(kMkvDefaultDuration, default_duration_);
 
   if (content_encoding_entries_size_ > 0) {
     uint64 content_encodings_size = 0;
@@ -652,7 +655,8 @@ bool Track::Write(IMkvWriter* writer) const {
     size += EbmlElementSize(kMkvCodecDelay, codec_delay_);
   if (seek_pre_roll_)
     size += EbmlElementSize(kMkvSeekPreRoll, seek_pre_roll_);
-
+  if (default_duration_)
+    size += EbmlElementSize(kMkvDefaultDuration, default_duration_);
 
   const int64 payload_position = writer->Position();
   if (payload_position < 0)
@@ -677,6 +681,10 @@ bool Track::Write(IMkvWriter* writer) const {
   }
   if (seek_pre_roll_) {
     if (!WriteEbmlElement(writer, kMkvSeekPreRoll, seek_pre_roll_))
+      return false;
+  }
+  if (default_duration_) {
+    if (!WriteEbmlElement(writer, kMkvDefaultDuration, default_duration_))
       return false;
   }
   if (codec_id_) {
@@ -1888,6 +1896,7 @@ SegmentInfo::SegmentInfo()
       muxing_app_(NULL),
       timecode_scale_(1000000ULL),
       writing_app_(NULL),
+      date_utc_(LLONG_MIN),
       duration_pos_(-1) {
 }
 
@@ -1975,6 +1984,8 @@ bool SegmentInfo::Write(IMkvWriter* writer) {
   uint64 size = EbmlElementSize(kMkvTimecodeScale, timecode_scale_);
   if (duration_ > 0.0)
     size += EbmlElementSize(kMkvDuration, static_cast<float>(duration_));
+  if (date_utc_ != LLONG_MIN)
+    size += EbmlDateElementSize(kMkvDateUTC, date_utc_);
   size += EbmlElementSize(kMkvMuxingApp, muxing_app_);
   size += EbmlElementSize(kMkvWritingApp, writing_app_);
 
@@ -1995,6 +2006,9 @@ bool SegmentInfo::Write(IMkvWriter* writer) {
     if (!WriteEbmlElement(writer, kMkvDuration, static_cast<float>(duration_)))
       return false;
   }
+
+  if (date_utc_ != LLONG_MIN)
+    WriteEbmlDateElement(writer, kMkvDateUTC, date_utc_);
 
   if (!WriteEbmlElement(writer, kMkvMuxingApp, muxing_app_))
     return false;
@@ -2977,12 +2991,12 @@ bool Segment::DoNewClusterProcessing(uint64 track_number,
     if (result < 0)  // error
       return false;
 
-  // Always set force_new_cluster_ to false after TestFrame.
-  force_new_cluster_ = false;
+    // Always set force_new_cluster_ to false after TestFrame.
+    force_new_cluster_ = false;
 
-  // A non-zero result means create a new cluster.
-  if (result > 0 && !MakeNewCluster(frame_timestamp_ns))
-    return false;
+    // A non-zero result means create a new cluster.
+    if (result > 0 && !MakeNewCluster(frame_timestamp_ns))
+      return false;
 
     // Write queued (audio) frames.
     const int frame_count = WriteFramesAll();
