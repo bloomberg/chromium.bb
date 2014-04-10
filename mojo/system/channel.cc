@@ -67,7 +67,7 @@ void Channel::Shutdown() {
   // things in an inconsistent state, which is worse. Note that if the map is
   // nonempty, we probably won't be destroyed, since the endpoints have a
   // reference to us.)
-  LOG_IF(ERROR, local_id_to_endpoint_info_map_.empty())
+  LOG_IF(ERROR, !local_id_to_endpoint_info_map_.empty())
       << "Channel shutting down with endpoints still attached";
   // TODO(vtl): This currently blows up, but the fix will be nontrivial.
   // crbug.com/360081
