@@ -188,8 +188,21 @@ TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
   app_window_views()->InstallEasyResizeTargeterOnContainer();
 
   {
+    // Ensure that the window has an event targeter (there should be an
+    // EasyResizeWindowTargeter installed).
+    EXPECT_TRUE(static_cast<ui::EventTarget*>(window)->GetEventTargeter());
+  }
+  {
     // An event in the center of the window should always have
     // |window| as its target.
+    // TODO(mgiuca): This isn't really testing anything (note that it has the
+    // same expectation as the border case below). In the real environment, the
+    // target will actually be the RenderWidgetHostViewAura's window that is the
+    // child of the child of |window|, whereas in the border case it *will* be
+    // |window|. However, since this test environment does not have a
+    // RenderWidgetHostViewAura, we cannot differentiate the two cases. Fix
+    // the test environment so that the test can assert that non-border events
+    // bubble down to a child of |window|.
     ui::MouseEvent move(ui::ET_MOUSE_MOVED,
                         gfx::Point(80, 80), gfx::Point(80, 80),
                         ui::EF_NONE, ui::EF_NONE);
@@ -201,13 +214,13 @@ TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
   {
     // With an EasyResizeTargeter on the container, an event
     // inside the window and within 5px of an edge should have
-    // root_window() as its target.
+    // |window| as its target.
     ui::MouseEvent move(ui::ET_MOUSE_MOVED,
                         gfx::Point(32, 37), gfx::Point(32, 37),
                         ui::EF_NONE, ui::EF_NONE);
     ui::EventDispatchDetails details =
         event_processor()->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
-    EXPECT_EQ(root_window(), move.target());
+    EXPECT_EQ(window, move.target());
   }
 }

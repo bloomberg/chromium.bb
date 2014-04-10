@@ -332,11 +332,14 @@ void ChromeNativeAppWindowViews::InitializePanelWindow(
 }
 
 void ChromeNativeAppWindowViews::InstallEasyResizeTargeterOnContainer() const {
-  aura::Window* root_window = widget()->GetNativeWindow()->GetRootWindow();
+  aura::Window* window = widget()->GetNativeWindow();
   gfx::Insets inset(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
                     kResizeInsideBoundsSize, kResizeInsideBoundsSize);
-  root_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
-      new wm::EasyResizeWindowTargeter(root_window, inset, inset)));
+  // Add the EasyResizeWindowTargeter on the window, not its root window. The
+  // root window does not have a delegate, which is needed to handle the event
+  // in Linux.
+  window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
+      new wm::EasyResizeWindowTargeter(window, inset, inset)));
 }
 
 apps::AppWindowFrameView*
@@ -671,7 +674,7 @@ void ChromeNativeAppWindowViews::InitializeWindow(
       extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
       NULL));
 
-#if defined(OS_WIN)
+#if !defined(OS_CHROMEOS)
   if ((IsFrameless() || has_frame_color_) &&
       chrome::GetHostDesktopTypeForNativeWindow(widget()->GetNativeWindow()) !=
           chrome::HOST_DESKTOP_TYPE_ASH) {
