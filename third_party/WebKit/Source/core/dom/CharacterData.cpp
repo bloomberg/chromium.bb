@@ -124,7 +124,7 @@ static bool validateOffsetCount(unsigned offset, unsigned count, unsigned length
 
 void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& exceptionState, RecalcStyleBehavior recalcStyleBehavior)
 {
-    unsigned realCount;
+    unsigned realCount = 0;
     if (!validateOffsetCount(offset, count, length(), realCount, exceptionState))
         return;
 
@@ -138,7 +138,7 @@ void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& 
 
 void CharacterData::replaceData(unsigned offset, unsigned count, const String& data, ExceptionState& exceptionState)
 {
-    unsigned realCount;
+    unsigned realCount = 0;
     if (!validateOffsetCount(offset, count, length(), realCount, exceptionState))
         return;
 
