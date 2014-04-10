@@ -51,6 +51,7 @@ const uint64 kBlankAndroidId = 999999UL;
 const uint64 kBlankSecurityToken = 999999UL;
 const char kChromeVersion[] = "Version String";
 const uint64 kSecurityToken = 77;
+const char kSettingsDigest[] = "settings_digest";
 
 class CheckinRequestTest : public testing::Test {
  public:
@@ -65,7 +66,8 @@ class CheckinRequestTest : public testing::Test {
   CheckinRequestTest();
   virtual ~CheckinRequestTest();
 
-  void FetcherCallback(uint64 android_id, uint64 security_token);
+  void FetcherCallback(
+      const checkin_proto::AndroidCheckinResponse& response);
 
   void CreateRequest(uint64 android_id, uint64 security_token);
 
@@ -102,11 +104,13 @@ CheckinRequestTest::CheckinRequestTest()
 
 CheckinRequestTest::~CheckinRequestTest() {}
 
-void CheckinRequestTest::FetcherCallback(uint64 android_id,
-                                         uint64 security_token) {
+void CheckinRequestTest::FetcherCallback(
+    const checkin_proto::AndroidCheckinResponse& checkin_response) {
   callback_called_ = true;
-  android_id_ = android_id;
-  security_token_ = security_token;
+  if (checkin_response.has_android_id())
+    android_id_ = checkin_response.android_id();
+  if (checkin_response.has_security_token())
+    security_token_ = checkin_response.security_token();
 }
 
 void CheckinRequestTest::CreateRequest(uint64 android_id,
@@ -117,15 +121,19 @@ void CheckinRequestTest::CreateRequest(uint64 android_id,
   chrome_build_proto_.set_channel(
       checkin_proto::ChromeBuildProto::CHANNEL_CANARY);
   chrome_build_proto_.set_chrome_version(kChromeVersion);
+
+  CheckinRequest::RequestInfo request_info(
+      android_id,
+      security_token,
+      kSettingsDigest,
+      account_ids_,
+      chrome_build_proto_);
   // Then create a request with that protobuf and specified android_id,
   // security_token.
   request_.reset(new CheckinRequest(
-      base::Bind(&CheckinRequestTest::FetcherCallback, base::Unretained(this)),
+      request_info,
       kDefaultBackoffPolicy,
-      chrome_build_proto_,
-      android_id,
-      security_token,
-      account_ids_,
+      base::Bind(&CheckinRequestTest::FetcherCallback, base::Unretained(this)),
       url_request_context_getter_.get()));
 
   // Setting android_id_ and security_token_ to blank value, not used elsewhere
@@ -198,6 +206,7 @@ TEST_F(CheckinRequestTest, FetcherData) {
             request_proto.checkin().type());
 #endif
 
+  EXPECT_EQ(kSettingsDigest, request_proto.digest());
   EXPECT_EQ(1, request_proto.account_cookie_size());
   EXPECT_EQ("[account_id]", request_proto.account_cookie(0));
 }
@@ -244,8 +253,8 @@ TEST_F(CheckinRequestTest, ResponseHttpStatusUnauthorized) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(0u, android_id_);
-  EXPECT_EQ(0u, security_token_);
+  EXPECT_EQ(kBlankAndroidId, android_id_);
+  EXPECT_EQ(kBlankSecurityToken, security_token_);
 }
 
 TEST_F(CheckinRequestTest, ResponseHttpStatusBadRequest) {
@@ -256,8 +265,8 @@ TEST_F(CheckinRequestTest, ResponseHttpStatusBadRequest) {
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(0u, android_id_);
-  EXPECT_EQ(0u, security_token_);
+  EXPECT_EQ(kBlankAndroidId, android_id_);
+  EXPECT_EQ(kBlankSecurityToken, security_token_);
 }
 
 TEST_F(CheckinRequestTest, ResponseHttpStatusNotOK) {
