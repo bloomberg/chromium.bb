@@ -134,7 +134,7 @@ WebGLDraftExtensions status=experimental
 WebMIDI status=test
 WebKitMediaSource status=stable
 WebVTTRegions depends_on=Media, status=experimental
-WOFF2 status=stable
+WOFF2 status=experimental
 XSLT status=stable
 
 PseudoClassesInMatchingCriteriaInAuthorShadowTrees status=test
