@@ -151,7 +151,7 @@
             }
           },
           "startup_pages": {
-            "description": "URLs to be added to the list of startup pages.",
+            "description": "An array of length one containing a URL to be used as the startup page.",
             "optional": true,
             "type": "array",
             "items": {"type": "string"}
