@@ -443,33 +443,35 @@ void MutableStylePropertySet::removeBlockProperties()
     removePropertiesInSet(blockProperties().data(), blockProperties().size());
 }
 
+inline bool containsId(const CSSPropertyID* set, unsigned length, CSSPropertyID id)
+{
+    for (unsigned i = 0; i < length; ++i) {
+        if (set[i] == id)
+            return true;
+    }
+    return false;
+}
+
 bool MutableStylePropertySet::removePropertiesInSet(const CSSPropertyID* set, unsigned length)
 {
     if (m_propertyVector.isEmpty())
         return false;
 
-    // FIXME: This is always used with static sets and in that case constructing the hash repeatedly is pretty pointless.
-    HashSet<CSSPropertyID> toRemove;
-    for (unsigned i = 0; i < length; ++i)
-        toRemove.add(set[i]);
-
-    WillBeHeapVector<CSSProperty> newProperties;
+    WillBeHeapVector<CSSProperty, 4> newProperties;
     newProperties.reserveInitialCapacity(m_propertyVector.size());
 
-    unsigned size = m_propertyVector.size();
-    for (unsigned n = 0; n < size; ++n) {
-        const CSSProperty& property = m_propertyVector.at(n);
+    unsigned initialSize = m_propertyVector.size();
+    const CSSProperty* properties = m_propertyVector.data();
+    for (unsigned n = 0; n < initialSize; ++n) {
+        const CSSProperty& property = properties[n];
         // Not quite sure if the isImportant test is needed but it matches the existing behavior.
-        if (!property.isImportant()) {
-            if (toRemove.contains(property.id()))
-                continue;
-        }
+        if (!property.isImportant() && containsId(set, length, property.id()))
+            continue;
         newProperties.append(property);
     }
 
-    bool changed = newProperties.size() != m_propertyVector.size();
-    m_propertyVector = newProperties;
-    return changed;
+    m_propertyVector.swap(newProperties);
+    return initialSize != m_propertyVector.size();
 }
 
 CSSProperty* MutableStylePropertySet::findCSSPropertyWithID(CSSPropertyID propertyID)
