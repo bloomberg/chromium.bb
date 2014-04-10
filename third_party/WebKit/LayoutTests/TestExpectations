@@ -1246,8 +1246,6 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/word-space-with-k
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/word-space-with-kerning.html [ Skip ]
 
 # Way to Underline position code changed, need to rebase files after https://codereview.chromium.org/182923003/ .
-crbug.com/347510 [ Linux Mac Mavericks SnowLeopard Lion MountainLion Retina ] editing/inserting/insert-div-026.html [ NeedsRebaseline ]
-crbug.com/347510 [ Linux Mac Mavericks SnowLeopard Lion MountainLion Retina ] editing/deleting/delete-4083333-fix.html [ NeedsRebaseline ]
 crbug.com/347510 [ Linux Mac Mavericks SnowLeopard Lion MountainLion Retina ] css1/basic/containment.html [ NeedsRebaseline ]
 crbug.com/347510 [ Linux Mac Mavericks SnowLeopard Lion MountainLion Retina ] css1/basic/inheritance.html [ NeedsRebaseline ]
 crbug.com/347510 [ Linux Mac Mavericks SnowLeopard Lion MountainLion Retina ] css1/box_properties/acid_test.html [ NeedsRebaseline ]
