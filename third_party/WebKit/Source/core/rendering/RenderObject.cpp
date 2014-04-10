@@ -2739,14 +2739,6 @@ void RenderObject::destroyAndCleanupAnonymousWrappers()
     // WARNING: |this| is deleted here.
 }
 
-void RenderObject::removeShapeImageClient(ShapeValue* shapeValue)
-{
-    if (!shapeValue)
-        return;
-    if (StyleImage* shapeImage = shapeValue->image())
-        shapeImage->removeClient(this);
-}
-
 void RenderObject::destroy()
 {
     willBeDestroyed();
@@ -2772,8 +2764,6 @@ void RenderObject::postDestroy()
 
         if (StyleImage* maskBoxImage = m_style->maskBoxImage().image())
             maskBoxImage->removeClient(this);
-
-        removeShapeImageClient(m_style->shapeOutside());
     }
 
     delete this;

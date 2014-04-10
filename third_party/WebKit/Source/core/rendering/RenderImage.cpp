@@ -150,7 +150,7 @@ void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
     if (documentBeingDestroyed())
         return;
 
-    if (hasBoxDecorations() || hasMask())
+    if (hasBoxDecorations() || hasMask() || hasShapeOutside())
         RenderReplaced::imageChanged(newImage, rect);
 
     if (!m_imageResource)

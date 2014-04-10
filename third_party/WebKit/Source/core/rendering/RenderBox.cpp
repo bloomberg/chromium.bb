@@ -105,9 +105,19 @@ void RenderBox::willBeDestroyed()
 
     RenderBlock::removePercentHeightDescendantIfNeeded(this);
 
-    ShapeOutsideInfo::removeInfo(*this);
+    clearShapeOutside();
 
     RenderBoxModelObject::willBeDestroyed();
+}
+
+void RenderBox::clearShapeOutside()
+{
+    if (const ShapeValue* shapeValue = style() ? style()->shapeOutside() : 0) {
+        if (StyleImage* shapeImage = shapeValue->image())
+            shapeImage->removeClient(this);
+    }
+
+    ShapeOutsideInfo::removeInfo(*this);
 }
 
 void RenderBox::removeFloatingOrPositionedChildFromBlockLists()

@@ -581,6 +581,8 @@ public:
 
     bool hasBlendMode() const;
 
+    bool hasShapeOutside() const { return style() && style()->shapeOutside(); }
+
     inline bool preservesNewline() const;
 
     // The pseudo element style can be cached or uncached.  Use the cached method if the pseudo element doesn't respect
@@ -1074,8 +1076,6 @@ private:
     StyleDifference adjustStyleDifference(StyleDifference, unsigned contextSensitiveProperties) const;
 
     Color selectionColor(int colorProperty) const;
-
-    void removeShapeImageClient(ShapeValue*);
 
 #ifndef NDEBUG
     void checkBlockPositionedObjectsNeedLayout();
