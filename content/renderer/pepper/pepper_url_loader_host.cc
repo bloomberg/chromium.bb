@@ -21,13 +21,12 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebURLLoaderOptions.h"
 
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebURLError;
@@ -248,7 +247,7 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
   if (loader_.get())
     return PP_ERROR_INPROGRESS;
 
-  WebFrame* frame = GetFrame();
+  WebLocalFrame* frame = GetFrame();
   if (!frame)
     return PP_ERROR_FAILED;
 
@@ -368,7 +367,7 @@ void PepperURLLoaderHost::Close() {
     GetFrame()->stopLoading();
 }
 
-blink::WebFrame* PepperURLLoaderHost::GetFrame() {
+blink::WebLocalFrame* PepperURLLoaderHost::GetFrame() {
   PepperPluginInstance* instance_object =
       renderer_ppapi_host_->GetPluginInstance(pp_instance());
   if (!instance_object)

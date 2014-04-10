@@ -470,7 +470,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   blink::WebView* web_view = blink::WebView::create(NULL);
   web_view->settings()->setJavaScriptEnabled(true);
 
-  blink::WebFrame* frame = blink::WebFrame::create(NULL);
+  blink::WebLocalFrame* frame = blink::WebLocalFrame::create(NULL);
   web_view->setMainFrame(frame);
 
   base::StringValue html(
@@ -692,7 +692,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
   blink::WebView* web_view = blink::WebView::create(this);
   owns_web_view_ = true;
   content::ApplyWebPreferences(prefs, web_view);
-  web_view->setMainFrame(blink::WebFrame::create(this));
+  web_view->setMainFrame(blink::WebLocalFrame::create(this));
   frame_.Reset(web_view->mainFrame()->toWebLocalFrame());
   node_to_print_.reset();
 

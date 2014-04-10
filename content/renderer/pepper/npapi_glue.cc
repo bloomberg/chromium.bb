@@ -20,7 +20,7 @@
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "v8/include/v8.h"
 
@@ -30,7 +30,7 @@ using ppapi::StringVar;
 using ppapi::Var;
 using blink::WebArrayBuffer;
 using blink::WebBindings;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebPluginContainer;
 
 namespace content {
@@ -179,7 +179,7 @@ PP_Var NPObjectToPPVar(PepperPluginInstanceImpl* instance, NPObject* object) {
   // the DOM (but the PluginInstance is not destroyed yet).
   if (!container)
     return PP_MakeUndefined();
-  WebFrame* frame = container->element().document().frame();
+  WebLocalFrame* frame = container->element().document().frame();
   if (!frame)
     return PP_MakeUndefined();
 

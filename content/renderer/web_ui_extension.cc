@@ -16,8 +16,8 @@
 #include "gin/arguments.h"
 #include "gin/function_template.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
@@ -29,7 +29,7 @@ namespace {
 bool ShouldRespondToRequest(
     blink::WebFrame** frame_ptr,
     RenderView** render_view_ptr) {
-  blink::WebFrame* frame = blink::WebFrame::frameForCurrentContext();
+  blink::WebFrame* frame = blink::WebLocalFrame::frameForCurrentContext();
   if (!frame || !frame->view())
     return false;
 

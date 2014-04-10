@@ -28,7 +28,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebPageSerializer.h"
@@ -41,6 +41,7 @@ using blink::WebDocument;
 using blink::WebElement;
 using blink::WebElementCollection;
 using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebNodeList;
 using blink::WebPageSerializer;
@@ -78,7 +79,7 @@ WebFrame* FindSubFrameByURL(WebView* web_view, const GURL& url) {
       // Check frame tag and iframe tag
       if (!element.hasTagName("frame") && !element.hasTagName("iframe"))
         continue;
-      WebFrame* sub_frame = WebFrame::fromFrameOwnerElement(element);
+      WebFrame* sub_frame = WebLocalFrame::fromFrameOwnerElement(element);
       if (sub_frame)
         stack.push_back(sub_frame);
     }

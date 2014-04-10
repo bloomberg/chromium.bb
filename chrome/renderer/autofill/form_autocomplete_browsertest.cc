@@ -11,8 +11,8 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
-using blink::WebFrame;
 using blink::WebString;
 using blink::WebURLError;
 

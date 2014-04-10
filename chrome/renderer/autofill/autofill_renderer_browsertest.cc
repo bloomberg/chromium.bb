@@ -17,7 +17,6 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
@@ -216,7 +215,7 @@ class RequestAutocompleteRendererTest : public AutofillRendererTest {
 
     WebElement sibling = GetMainFrame()->document().getElementById("sibling");
     ASSERT_FALSE(sibling.isNull());
-    sibling_frame_ = WebFrame::fromFrameOwnerElement(sibling);
+    sibling_frame_ = WebLocalFrame::fromFrameOwnerElement(sibling);
     ASSERT_TRUE(sibling_frame());
 
     WebVector<WebFormElement> forms;

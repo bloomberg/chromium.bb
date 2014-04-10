@@ -9,11 +9,11 @@
 #include "base/time/time.h"
 #include "content/public/renderer/document_state.h"
 #include "net/http/http_response_info.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
 
 using blink::WebDataSource;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebNavigationType;
 using content::DocumentState;
 
@@ -98,7 +98,7 @@ class LoadTimesExtensionWrapper : public v8::Extension {
   }
 
   static void GetLoadTimes(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    WebFrame* frame = WebFrame::frameForCurrentContext();
+    WebLocalFrame* frame = WebLocalFrame::frameForCurrentContext();
     if (frame) {
       WebDataSource* data_source = frame->dataSource();
       if (data_source) {
@@ -167,7 +167,7 @@ class LoadTimesExtensionWrapper : public v8::Extension {
   }
 
   static void GetCSI(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    WebFrame* frame = WebFrame::frameForCurrentContext();
+    WebLocalFrame* frame = WebLocalFrame::frameForCurrentContext();
     if (frame) {
       WebDataSource* data_source = frame->dataSource();
       if (data_source) {

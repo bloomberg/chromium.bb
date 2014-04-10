@@ -7,11 +7,11 @@
 #include "chrome/common/render_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebView;
 using content::RenderView;
 
@@ -79,7 +79,7 @@ void PrincipalsExtensionWrapper::GetManagedAccounts(
 
   std::vector<std::string> accounts;
   render_view->Send(new ChromeViewHostMsg_GetManagedAccounts(
-      WebFrame::frameForCurrentContext()->document().url(),
+      WebLocalFrame::frameForCurrentContext()->document().url(),
       &accounts));
 
   v8::Isolate* isolate = args.GetIsolate();
@@ -104,7 +104,7 @@ void PrincipalsExtensionWrapper::ShowBrowserAccountManagementUI(
 }
 
 RenderView* PrincipalsExtensionWrapper::GetRenderView() {
-  WebFrame* webframe = WebFrame::frameForCurrentContext();
+  WebLocalFrame* webframe = WebLocalFrame::frameForCurrentContext();
   DCHECK(webframe) << "There should be an active frame since we just got "
       "a native function called.";
   if (!webframe)

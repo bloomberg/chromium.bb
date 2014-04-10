@@ -14,8 +14,8 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -25,6 +25,7 @@ using blink::WebElement;
 using blink::WebElementCollection;
 using blink::WebFrame;
 using blink::WebInputElement;
+using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebNodeList;
 using blink::WebString;
@@ -71,7 +72,7 @@ void GetSavableResourceLinkForElement(
   // Handle frame and iframe tag.
   if (element.hasTagName("iframe") ||
       element.hasTagName("frame")) {
-    WebFrame* sub_frame = WebFrame::fromFrameOwnerElement(element);
+    WebFrame* sub_frame = WebLocalFrame::fromFrameOwnerElement(element);
     if (sub_frame)
       unique_check->frames->push_back(sub_frame);
     return;

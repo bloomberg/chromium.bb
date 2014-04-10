@@ -11,6 +11,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/test/base/chrome_render_view_test.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
 
 typedef ChromeRenderViewTest InstantProcessNavigationTest;

@@ -7,12 +7,11 @@
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "grit/component_resources.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 
-using blink::WebFrame;
 using blink::WebScriptSource;
 
 namespace {

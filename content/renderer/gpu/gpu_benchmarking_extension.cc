@@ -22,8 +22,8 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/skia_benchmarking_extension.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebImageCache.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkGraphics.h"
@@ -34,7 +34,7 @@
 #include "v8/include/v8.h"
 
 using blink::WebCanvas;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebImageCache;
 using blink::WebPrivatePtr;
 using blink::WebSize;
@@ -151,7 +151,7 @@ class GpuBenchmarkingContext {
         compositor_(NULL) {}
 
   bool Init(bool init_compositor) {
-    web_frame_ = WebFrame::frameForCurrentContext();
+    web_frame_ = WebLocalFrame::frameForCurrentContext();
     if (!web_frame_)
       return false;
 
@@ -182,7 +182,7 @@ class GpuBenchmarkingContext {
     return true;
   }
 
-  WebFrame* web_frame() const {
+  WebLocalFrame* web_frame() const {
     DCHECK(web_frame_ != NULL);
     return web_frame_;
   }
@@ -200,7 +200,7 @@ class GpuBenchmarkingContext {
   }
 
  private:
-  WebFrame* web_frame_;
+  WebLocalFrame* web_frame_;
   WebView* web_view_;
   RenderViewImpl* render_view_impl_;
   RenderWidgetCompositor* compositor_;
@@ -418,7 +418,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     v8::HandleScope scope(isolate);
     v8::Handle<v8::Context> context = callback_and_context->GetContext();
     v8::Context::Scope context_scope(context);
-    WebFrame* frame = WebFrame::frameForContext(context);
+    WebLocalFrame* frame = WebLocalFrame::frameForContext(context);
     if (frame) {
       frame->callFunctionEvenIfScriptDisabled(
           callback_and_context->GetCallback(),
@@ -740,7 +740,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     v8::HandleScope scope(isolate);
     v8::Handle<v8::Context> context = callback_and_context->GetContext();
     v8::Context::Scope context_scope(context);
-    WebFrame* frame = WebFrame::frameForContext(context);
+    WebLocalFrame* frame = WebLocalFrame::frameForContext(context);
     if (frame) {
 
       v8::Handle<v8::Value> result;
@@ -813,7 +813,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     v8::HandleScope scope(isolate);
     v8::Handle<v8::Context> context = callback_and_context->GetContext();
     v8::Context::Scope context_scope(context);
-    WebFrame* frame = WebFrame::frameForContext(context);
+    WebLocalFrame* frame = WebLocalFrame::frameForContext(context);
     if (frame) {
       scoped_ptr<V8ValueConverter> converter =
           make_scoped_ptr(V8ValueConverter::create());

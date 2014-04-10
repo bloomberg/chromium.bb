@@ -13,7 +13,7 @@
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using ::testing::_;
@@ -23,7 +23,7 @@ using ::testing::InSequence;
 using ::testing::NiceMock;
 using ::testing::StrictMock;
 
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebString;
 using blink::WebURLLoader;
 using blink::WebURLResponse;
@@ -49,7 +49,7 @@ class MockBufferedDataSource : public BufferedDataSource {
  public:
   MockBufferedDataSource(
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
-      WebFrame* frame,
+      WebLocalFrame* frame,
       BufferedDataSourceHost* host)
       : BufferedDataSource(message_loop, frame, new media::MediaLog(), host,
                            base::Bind(&MockBufferedDataSource::set_downloading,
@@ -105,11 +105,13 @@ static const char kFileUrl[] = "file:///tmp/bar.webm";
 class BufferedDataSourceTest : public testing::Test {
  public:
   BufferedDataSourceTest()
-      : view_(WebView::create(NULL)), frame_(WebFrame::create(&client_)) {
+      : view_(WebView::create(NULL)), frame_(WebLocalFrame::create(&client_)) {
     view_->setMainFrame(frame_);
 
-    data_source_.reset(new MockBufferedDataSource(
-        message_loop_.message_loop_proxy(), view_->mainFrame(), &host_));
+    data_source_.reset(
+        new MockBufferedDataSource(message_loop_.message_loop_proxy(),
+                                   view_->mainFrame()->toWebLocalFrame(),
+                                   &host_));
   }
 
   virtual ~BufferedDataSourceTest() {
@@ -222,7 +224,7 @@ class BufferedDataSourceTest : public testing::Test {
   scoped_ptr<TestResponseGenerator> response_generator_;
   MockWebFrameClient client_;
   WebView* view_;
-  WebFrame* frame_;
+  WebLocalFrame* frame_;
 
   StrictMock<MockBufferedDataSourceHost> host_;
   base::MessageLoop message_loop_;

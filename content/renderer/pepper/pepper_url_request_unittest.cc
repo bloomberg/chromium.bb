@@ -14,8 +14,8 @@
 #include "ppapi/thunk/thunk.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 // This test is a end-to-end test from the resource to the WebKit request
@@ -24,7 +24,6 @@
 // time.
 
 using blink::WebCString;
-using blink::WebFrame;
 using blink::WebFrameClient;
 using blink::WebString;
 using blink::WebView;

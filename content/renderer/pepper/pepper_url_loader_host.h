@@ -15,9 +15,9 @@
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace blink {
-class WebFrame;
 class WebURLLoader;
 }
 
@@ -97,7 +97,7 @@ class PepperURLLoaderHost
   void Close();
 
   // Returns the frame for the current request.
-  blink::WebFrame* GetFrame();
+  blink::WebLocalFrame* GetFrame();
 
   // Calls SetDefersLoading on the current load. This encapsulates the logic
   // differences between document loads and regular ones.

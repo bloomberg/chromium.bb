@@ -21,7 +21,7 @@
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -146,7 +146,8 @@ v8::Handle<v8::Object> GenerateMostVisitedItem(
 // most visited data to pages with origin chrome-search://most-visited and
 // chrome-search://suggestions.
 content::RenderView* GetRenderViewWithCheckedOrigin(const GURL& origin) {
-  blink::WebFrame* webframe = blink::WebFrame::frameForCurrentContext();
+  blink::WebLocalFrame* webframe =
+      blink::WebLocalFrame::frameForCurrentContext();
   if (!webframe)
     return NULL;
   blink::WebView* webview = webframe->view();
@@ -607,7 +608,8 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
 
 // static
 content::RenderView* SearchBoxExtensionWrapper::GetRenderView() {
-  blink::WebFrame* webframe = blink::WebFrame::frameForCurrentContext();
+  blink::WebLocalFrame* webframe =
+      blink::WebLocalFrame::frameForCurrentContext();
   if (!webframe) return NULL;
 
   blink::WebView* webview = webframe->view();

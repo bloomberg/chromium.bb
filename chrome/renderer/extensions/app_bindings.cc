@@ -22,10 +22,11 @@
 #include "extensions/common/manifest.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
 
 using blink::WebFrame;
+using blink::WebLocalFrame;
 using content::V8ValueConverter;
 
 namespace extensions {
@@ -110,7 +111,7 @@ void AppBindings::GetDetailsForFrame(
       v8::Local<v8::Object>::Cast(args[0])->CreationContext();
   CHECK(!context.IsEmpty());
 
-  WebFrame* target_frame = WebFrame::frameForContext(context);
+  WebLocalFrame* target_frame = WebLocalFrame::frameForContext(context);
   if (!target_frame) {
     console::Error(args.GetIsolate()->GetCallingContext(),
                    "Could not find frame for specified object.");

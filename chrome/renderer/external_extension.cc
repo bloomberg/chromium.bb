@@ -8,11 +8,11 @@
 #include "chrome/common/search_provider.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebView;
 using content::RenderView;
 
@@ -82,7 +82,7 @@ ExternalExtensionWrapper::GetNativeFunctionTemplate(
 
 // static
 RenderView* ExternalExtensionWrapper::GetRenderView() {
-  WebFrame* webframe = WebFrame::frameForCurrentContext();
+  WebLocalFrame* webframe = WebLocalFrame::frameForCurrentContext();
   DCHECK(webframe) << "There should be an active frame since we just got "
       "a native function called.";
   if (!webframe) return NULL;
@@ -123,7 +123,7 @@ void ExternalExtensionWrapper::IsSearchProviderInstalled(
   RenderView* render_view = GetRenderView();
   if (!render_view) return;
 
-  WebFrame* webframe = WebFrame::frameForCurrentContext();
+  WebLocalFrame* webframe = WebLocalFrame::frameForCurrentContext();
   if (!webframe) return;
 
   search_provider::InstallState install = search_provider::DENIED;

@@ -12,8 +12,8 @@
 #include "content/renderer/render_view_impl.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 namespace content {
@@ -21,7 +21,8 @@ namespace content {
 namespace {
 
 bool CurrentRenderViewImpl(RenderViewImpl** out) {
-  blink::WebFrame* web_frame = blink::WebFrame::frameForCurrentContext();
+  blink::WebLocalFrame* web_frame =
+      blink::WebLocalFrame::frameForCurrentContext();
   if (!web_frame)
     return false;
 

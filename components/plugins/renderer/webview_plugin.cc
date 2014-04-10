@@ -15,8 +15,8 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/common/webpreferences.h"
@@ -25,7 +25,6 @@ using blink::WebCanvas;
 using blink::WebCursorInfo;
 using blink::WebDragData;
 using blink::WebDragOperationsMask;
-using blink::WebFrame;
 using blink::WebImage;
 using blink::WebInputEvent;
 using blink::WebLocalFrame;
@@ -46,7 +45,7 @@ WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate)
     : delegate_(delegate),
       container_(NULL),
       web_view_(WebView::create(this)),
-      web_frame_(WebFrame::create(this)),
+      web_frame_(WebLocalFrame::create(this)),
       finished_loading_(false),
       focused_(false) {
   web_view_->setMainFrame(web_frame_);

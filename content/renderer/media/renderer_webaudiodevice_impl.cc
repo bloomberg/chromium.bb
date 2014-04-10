@@ -11,11 +11,11 @@
 #include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/media_switches.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using blink::WebAudioDevice;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebVector;
 using blink::WebView;
 
@@ -48,7 +48,7 @@ void RendererWebAudioDeviceImpl::start() {
   // starting the audio device.  The reason for all this is because the creator
   // of the WebAudio objects might not be the actual source of the audio (e.g.,
   // an extension creates a object that is passed and used within a page).
-  WebFrame* const web_frame = WebFrame::frameForCurrentContext();
+  WebLocalFrame* const web_frame = WebLocalFrame::frameForCurrentContext();
   WebView* const web_view = web_frame ? web_frame->view() : NULL;
   RenderFrame* const render_frame =
       web_frame ? RenderFrame::FromWebFrame(web_frame) : NULL;

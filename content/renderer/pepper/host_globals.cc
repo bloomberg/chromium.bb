@@ -22,7 +22,7 @@
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 
 using ppapi::CheckIdType;
@@ -30,7 +30,7 @@ using ppapi::MakeTypedId;
 using ppapi::PPIdType;
 using ppapi::ResourceTracker;
 using blink::WebConsoleMessage;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebPluginContainer;
 using blink::WebString;
 
@@ -182,7 +182,7 @@ void HostGlobals::BroadcastLogWithSource(PP_Module pp_module,
   WebConsoleMessage message = MakeLogMessage(level, source, value);
   for (ContainerSet::iterator i = containers.begin();
        i != containers.end(); ++i) {
-     WebFrame* frame = (*i)->element().document().frame();
+     WebLocalFrame* frame = (*i)->element().document().frame();
      if (frame)
        frame->addMessageToConsole(message);
   }

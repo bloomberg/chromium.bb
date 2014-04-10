@@ -9,7 +9,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
 #include "webkit/common/fileapi/file_system_util.h"
 

@@ -21,7 +21,7 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using ::testing::_;
@@ -30,7 +30,7 @@ using ::testing::Return;
 using ::testing::Truly;
 using ::testing::NiceMock;
 
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebString;
 using blink::WebURLError;
 using blink::WebURLResponse;
@@ -64,7 +64,7 @@ static bool CorrectAcceptEncoding(const blink::WebURLRequest &request) {
 class BufferedResourceLoaderTest : public testing::Test {
  public:
   BufferedResourceLoaderTest()
-      : view_(WebView::create(NULL)), frame_(WebFrame::create(&client_)) {
+      : view_(WebView::create(NULL)), frame_(WebLocalFrame::create(&client_)) {
     view_->setMainFrame(frame_);
 
     for (int i = 0; i < kDataSize; ++i) {
@@ -297,7 +297,7 @@ class BufferedResourceLoaderTest : public testing::Test {
 
   MockWebFrameClient client_;
   WebView* view_;
-  WebFrame* frame_;
+  WebLocalFrame* frame_;
 
   base::MessageLoop message_loop_;
 
