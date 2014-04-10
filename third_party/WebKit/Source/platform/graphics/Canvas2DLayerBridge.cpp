@@ -122,7 +122,7 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
     Vector<MailboxInfo>::iterator mailboxInfo;
     for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); ++mailboxInfo) {
         ASSERT(mailboxInfo->m_status != MailboxInUse);
-        ASSERT(mailboxInfo->m_status != MailboxReleased);
+        ASSERT(mailboxInfo->m_status != MailboxReleased || m_contextProvider->context3d()->isContextLost() || !m_isSurfaceValid);
     }
 #endif
     m_mailboxes.clear();

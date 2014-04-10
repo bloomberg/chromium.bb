@@ -555,7 +555,7 @@ crbug.com/298045 [ Mac ] virtual/implsidepainting [ Skip ]
 crbug.com/267888 [ Android ] crypto [ Skip ]
 
 crbug.com/327698 [ Win Release ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
-crbug.com/327698 [ Debug Mac Win ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Crash Timeout ]
+crbug.com/327698 [ Debug Mac Win ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 
 crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure ]
 crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
