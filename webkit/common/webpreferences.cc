@@ -72,6 +72,7 @@ WebPreferences::WebPreferences()
       accelerated_2d_canvas_msaa_sample_count(0),
       accelerated_filters_enabled(false),
       deferred_filters_enabled(false),
+      container_culling_enabled(false),
       gesture_tap_highlight_enabled(false),
       accelerated_compositing_for_plugins_enabled(false),
       allow_displaying_insecure_content(true),

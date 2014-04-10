@@ -231,6 +231,9 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   // Enable deferred filter rendering if requested on the command line.
   settings->setDeferredFiltersEnabled(prefs.deferred_filters_enabled);
 
+  // Enable container culling if requested on the command line.
+  settings->setContainerCullingEnabled(prefs.container_culling_enabled);
+
   // Enable gesture tap highlight if requested on the command line.
   settings->setGestureTapHighlightEnabled(prefs.gesture_tap_highlight_enabled);
 

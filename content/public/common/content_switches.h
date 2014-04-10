@@ -112,6 +112,7 @@ CONTENT_EXPORT extern const char kEnableDeferredFilters[];
 CONTENT_EXPORT extern const char kEnableAcceleratedFixedRootBackground[];
 CONTENT_EXPORT extern const char kEnableAcceleratedOverflowScroll[];
 CONTENT_EXPORT extern const char kEnableLayerSquashing[];
+CONTENT_EXPORT extern const char kEnableContainerCulling[];
 extern const char kEnableAccessibilityLogging[];
 CONTENT_EXPORT extern const char kEnableBeginFrameScheduling[];
 CONTENT_EXPORT extern const char kEnableBrowserPluginForAllViewTypes[];

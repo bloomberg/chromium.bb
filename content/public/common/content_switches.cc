@@ -364,6 +364,9 @@ const char kEnableLCDText[]                 = "enable-lcd-text";
 const char kEnableLayerSquashing[] =
     "enable-layer-squashing";
 
+// Enable experimental container node culling.
+const char kEnableContainerCulling[]        = "enable-container-culling";
+
 // Turns on extremely verbose logging of accessibility events.
 const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 

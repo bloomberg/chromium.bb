@@ -120,6 +120,7 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   int accelerated_2d_canvas_msaa_sample_count;
   bool accelerated_filters_enabled;
   bool deferred_filters_enabled;
+  bool container_culling_enabled;
   bool gesture_tap_highlight_enabled;
   bool accelerated_compositing_for_plugins_enabled;
   bool allow_displaying_insecure_content;
