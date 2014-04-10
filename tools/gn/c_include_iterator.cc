@@ -5,6 +5,9 @@
 #include "tools/gn/c_include_iterator.h"
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
+#include "tools/gn/input_file.h"
+#include "tools/gn/location.h"
 
 namespace {
 
@@ -47,24 +50,34 @@ bool ShouldCountTowardNonIncludeLines(const base::StringPiece& line) {
     return false;  // Don't count comments.
   if (StartsWith(line, "#"))
     return false;  // Don't count preprocessor.
+  if (base::ContainsOnlyChars(line, base::kWhitespaceASCII))
+    return false;  // Don't count whitespace lines.
   return true;  // Count everything else.
 }
 
 // Given a line, checks to see if it looks like an include or import and
 // extract the path. The type of include is returned. Returns INCLUDE_NONE on
 // error or if this is not an include line.
+//
+// The 1-based character number on the line that the include was found at
+// will be filled into *begin_char.
 IncludeType ExtractInclude(const base::StringPiece& line,
-                           base::StringPiece* path) {
+                           base::StringPiece* path,
+                           int* begin_char) {
   static const char kInclude[] = "#include";
   static const size_t kIncludeLen = arraysize(kInclude) - 1;  // No null.
   static const char kImport[] = "#import";
   static const size_t kImportLen = arraysize(kImport) - 1;  // No null.
 
+  base::StringPiece trimmed = TrimLeadingWhitespace(line);
+  if (trimmed.empty())
+    return INCLUDE_NONE;
+
   base::StringPiece contents;
-  if (StartsWith(line, base::StringPiece(kInclude, kIncludeLen)))
-    contents = TrimLeadingWhitespace(line.substr(kIncludeLen));
-  else if (StartsWith(line, base::StringPiece(kImport, kImportLen)))
-    contents = TrimLeadingWhitespace(line.substr(kImportLen));
+  if (StartsWith(trimmed, base::StringPiece(kInclude, kIncludeLen)))
+    contents = TrimLeadingWhitespace(trimmed.substr(kIncludeLen));
+  else if (StartsWith(trimmed, base::StringPiece(kImport, kImportLen)))
+    contents = TrimLeadingWhitespace(trimmed.substr(kImportLen));
 
   if (contents.empty())
     return INCLUDE_NONE;
@@ -87,6 +100,8 @@ IncludeType ExtractInclude(const base::StringPiece& line,
     return INCLUDE_NONE;
 
   *path = contents.substr(1, terminator_index - 1);
+  // Note: one based so we do "+ 1".
+  *begin_char = static_cast<int>(path->data() - line.data()) + 1;
   return type;
 }
 
@@ -94,47 +109,55 @@ IncludeType ExtractInclude(const base::StringPiece& line,
 
 const int CIncludeIterator::kMaxNonIncludeLines = 10;
 
-CIncludeIterator::CIncludeIterator(const base::StringPiece& file)
-    : file_(file),
+CIncludeIterator::CIncludeIterator(const InputFile* input)
+    : input_file_(input),
+      file_(input->contents()),
       offset_(0),
+      line_number_(0),
       lines_since_last_include_(0) {
 }
 
 CIncludeIterator::~CIncludeIterator() {
 }
 
-bool CIncludeIterator::GetNextIncludeString(base::StringPiece* out) {
+bool CIncludeIterator::GetNextIncludeString(base::StringPiece* out,
+                                            LocationRange* location) {
   base::StringPiece line;
+  int cur_line_number = 0;
   while (lines_since_last_include_ <= kMaxNonIncludeLines &&
-         GetNextLine(&line)) {
-    base::StringPiece trimmed = TrimLeadingWhitespace(line);
-    if (trimmed.empty())
-      continue;  // Just ignore all empty lines.
-
+         GetNextLine(&line, &cur_line_number)) {
     base::StringPiece include_contents;
-    IncludeType type = ExtractInclude(trimmed, &include_contents);
+    int begin_char;
+    IncludeType type = ExtractInclude(line, &include_contents, &begin_char);
     if (type == INCLUDE_USER) {
       // Only count user includes for now.
       *out = include_contents;
+      *location = LocationRange(
+          Location(input_file_, cur_line_number, begin_char),
+          Location(input_file_, cur_line_number,
+                   begin_char + static_cast<int>(include_contents.size())));
+
       lines_since_last_include_ = 0;
       return true;
     }
 
-    if (ShouldCountTowardNonIncludeLines(trimmed))
+    if (ShouldCountTowardNonIncludeLines(line))
       lines_since_last_include_++;
   }
   return false;
 }
 
-bool CIncludeIterator::GetNextLine(base::StringPiece* line) {
+bool CIncludeIterator::GetNextLine(base::StringPiece* line, int* line_number) {
   if (offset_ == file_.size())
     return false;
 
   size_t begin = offset_;
   while (offset_ < file_.size() && file_[offset_] != '\n')
     offset_++;
+  line_number_++;
 
   *line = file_.substr(begin, offset_ - begin);
+  *line_number = line_number_;
 
   // If we didn't hit EOF, skip past the newline for the next one.
   if (offset_ < file_.size())

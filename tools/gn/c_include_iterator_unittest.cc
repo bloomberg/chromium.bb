@@ -4,6 +4,20 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/c_include_iterator.h"
+#include "tools/gn/input_file.h"
+#include "tools/gn/location.h"
+
+namespace {
+
+bool RangeIs(const LocationRange& range,
+             int line, int begin_char, int end_char) {
+  return range.begin().line_number() == line &&
+         range.end().line_number() == line &&
+         range.begin().char_offset() == begin_char &&
+         range.end().char_offset() == end_char;
+}
+
+}  // namespace
 
 TEST(CIncludeIterator, Basic) {
   std::string buffer;
@@ -19,18 +33,30 @@ TEST(CIncludeIterator, Basic) {
   buffer.append("\n");
   buffer.append("void SomeCode() {\n");
 
-  CIncludeIterator iter(buffer);
+  InputFile file(SourceFile("//foo.cc"));
+  file.SetContents(buffer);
+
+  CIncludeIterator iter(&file);
 
   base::StringPiece contents;
-  EXPECT_TRUE(iter.GetNextIncludeString(&contents));
+  LocationRange range;
+  EXPECT_TRUE(iter.GetNextIncludeString(&contents, &range));
   EXPECT_EQ("foo/bar.h", contents);
-  EXPECT_TRUE(iter.GetNextIncludeString(&contents));
+  EXPECT_TRUE(RangeIs(range, 3, 11, 20)) << range.begin().Describe(true);
+
+  EXPECT_TRUE(iter.GetNextIncludeString(&contents, &range));
   EXPECT_EQ("foo/baz.h", contents);
-  EXPECT_TRUE(iter.GetNextIncludeString(&contents));
+  EXPECT_TRUE(RangeIs(range, 7, 12, 21)) << range.begin().Describe(true);
+
+  EXPECT_TRUE(iter.GetNextIncludeString(&contents, &range));
   EXPECT_EQ("la/deda.h", contents);
-  EXPECT_TRUE(iter.GetNextIncludeString(&contents));
+  EXPECT_TRUE(RangeIs(range, 8, 11, 20)) << range.begin().Describe(true);
+
+  EXPECT_TRUE(iter.GetNextIncludeString(&contents, &range));
   EXPECT_EQ("weird_mac_import.h", contents);
-  EXPECT_FALSE(iter.GetNextIncludeString(&contents));
+  EXPECT_TRUE(RangeIs(range, 9, 10, 28)) << range.begin().Describe(true);
+
+  EXPECT_FALSE(iter.GetNextIncludeString(&contents, &range));
 }
 
 // Tests that we don't search for includes indefinitely.
@@ -40,10 +66,14 @@ TEST(CIncludeIterator, GiveUp) {
     buffer.append("x\n");
   buffer.append("#include \"foo/bar.h\"\n");
 
-  base::StringPiece contents;
+  InputFile file(SourceFile("//foo.cc"));
+  file.SetContents(buffer);
 
-  CIncludeIterator iter(buffer);
-  EXPECT_FALSE(iter.GetNextIncludeString(&contents));
+  base::StringPiece contents;
+  LocationRange range;
+
+  CIncludeIterator iter(&file);
+  EXPECT_FALSE(iter.GetNextIncludeString(&contents, &range));
   EXPECT_TRUE(contents.empty());
 }
 
@@ -58,10 +88,14 @@ TEST(CIncludeIterator, DontGiveUp) {
     buffer.append("#preproc\n");
   buffer.append("#include \"foo/bar.h\"\n");
 
-  base::StringPiece contents;
+  InputFile file(SourceFile("//foo.cc"));
+  file.SetContents(buffer);
 
-  CIncludeIterator iter(buffer);
-  EXPECT_TRUE(iter.GetNextIncludeString(&contents));
+  base::StringPiece contents;
+  LocationRange range;
+
+  CIncludeIterator iter(&file);
+  EXPECT_TRUE(iter.GetNextIncludeString(&contents, &range));
   EXPECT_EQ("foo/bar.h", contents);
 }
 
@@ -81,12 +115,16 @@ TEST(CIncludeIterator, TolerateNonIncludes) {
     buffer.append("#include \"" + include + "\"\n");
   }
 
-  base::StringPiece contents;
+  InputFile file(SourceFile("//foo.cc"));
+  file.SetContents(buffer);
 
-  CIncludeIterator iter(buffer);
+  base::StringPiece contents;
+  LocationRange range;
+
+  CIncludeIterator iter(&file);
   for (size_t group = 0; group < kGroupCount; group++) {
-    EXPECT_TRUE(iter.GetNextIncludeString(&contents));
+    EXPECT_TRUE(iter.GetNextIncludeString(&contents, &range));
     EXPECT_EQ(include, contents.as_string());
   }
-  EXPECT_FALSE(iter.GetNextIncludeString(&contents));
+  EXPECT_FALSE(iter.GetNextIncludeString(&contents, &range));
 }
