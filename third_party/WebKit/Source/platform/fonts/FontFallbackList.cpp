@@ -49,7 +49,7 @@ FontFallbackList::FontFallbackList()
 {
 }
 
-void FontFallbackList::invalidate(PassRefPtr<FontSelector> fontSelector)
+void FontFallbackList::invalidate(PassRefPtrWillBeRawPtr<FontSelector> fontSelector)
 {
     releaseFontData();
     m_fontList.clear();

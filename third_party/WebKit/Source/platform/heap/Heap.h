@@ -883,7 +883,18 @@ class GarbageCollected {
 
     // For now direct allocation of arrays on the heap is not allowed.
     void* operator new[](size_t size);
+#if OS(WIN) && COMPILER(MSVC)
+    // Due to some quirkiness in the MSVC compiler we have to provide
+    // the delete[] operator in the GarbageCollected subclasses as it
+    // is called when a class is exported in a DLL.
+protected:
+    void operator delete[](void* p)
+    {
+        ASSERT_NOT_REACHED();
+    }
+#else
     void operator delete[](void* p);
+#endif
 public:
     typedef T GarbageCollectedBase;
 

@@ -27,6 +27,7 @@
 #ifndef FontFaceCache_h
 #define FontFaceCache_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
@@ -40,7 +41,7 @@ class CSSSegmentedFontFace;
 class FontDescription;
 class StyleRuleFontFace;
 
-class FontFaceCache {
+class FontFaceCache FINAL : NoBaseWillBeGarbageCollectedFinalized<FontFaceCache> {
 public:
     FontFaceCache();
 
@@ -60,9 +61,11 @@ public:
 
     unsigned version() const { return m_version; }
 
+    void trace(Visitor*);
+
 private:
-    typedef HashMap<unsigned, RefPtr<CSSSegmentedFontFace> > TraitsMap;
-    typedef HashMap<String, OwnPtr<TraitsMap>, CaseFoldingHash> FamilyToTraitsMap;
+    typedef WillBeHeapHashMap<unsigned, RefPtrWillBeMember<CSSSegmentedFontFace> > TraitsMap;
+    typedef WillBeHeapHashMap<String, OwnPtrWillBeMember<TraitsMap>, CaseFoldingHash> FamilyToTraitsMap;
     typedef HashMap<const StyleRuleFontFace*, RefPtr<FontFace> > StyleRuleToFontFace;
     FamilyToTraitsMap m_fontFaces;
     FamilyToTraitsMap m_fonts;

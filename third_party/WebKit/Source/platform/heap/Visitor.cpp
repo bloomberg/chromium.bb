@@ -40,7 +40,11 @@ namespace WebCore {
 void Visitor::checkGCInfo(const void* payload, const GCInfo* gcInfo)
 {
     FinalizedHeapObjectHeader::fromPayload(payload)->checkHeader();
+#if !defined(COMPONENT_BUILD)
+    // On component builds we cannot compare the gcInfos as they are statically
+    // defined in each of the components and hence will not match.
     ASSERT(FinalizedHeapObjectHeader::fromPayload(payload)->gcInfo() == gcInfo);
+#endif
 }
 
 #define DEFINE_VISITOR_CHECK_MARKER(Type)                                    \

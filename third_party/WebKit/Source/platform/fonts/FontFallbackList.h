@@ -67,7 +67,7 @@ public:
     static PassRefPtr<FontFallbackList> create() { return adoptRef(new FontFallbackList()); }
 
     ~FontFallbackList() { releaseFontData(); }
-    void invalidate(PassRefPtr<FontSelector>);
+    void invalidate(PassRefPtrWillBeRawPtr<FontSelector>);
 
     bool isFixedPitch(const FontDescription& fontDescription) const
     {
@@ -109,7 +109,7 @@ private:
     mutable GlyphPages m_pages;
     mutable GlyphPageTreeNode* m_pageZero;
     mutable const SimpleFontData* m_cachedPrimarySimpleFontData;
-    RefPtr<FontSelector> m_fontSelector;
+    RefPtrWillBePersistent<FontSelector> m_fontSelector;
     mutable WidthCache m_widthCache;
     unsigned m_fontSelectorVersion;
     mutable int m_familyIndex;

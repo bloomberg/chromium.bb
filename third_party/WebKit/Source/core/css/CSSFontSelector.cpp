@@ -121,7 +121,9 @@ CSSFontSelector::CSSFontSelector(Document* document)
 CSSFontSelector::~CSSFontSelector()
 {
     clearDocument();
+#if !ENABLE(OILPAN)
     FontCache::fontCache()->removeClient(this);
+#endif
 }
 
 void CSSFontSelector::registerForInvalidationCallbacks(CSSFontSelectorClient* client)
@@ -225,6 +227,13 @@ void CSSFontSelector::updateGenericFontFamilySettings(Document& document)
 {
     ASSERT(document.settings());
     m_genericFontFamilySettings = document.settings()->genericFontFamilySettings();
+}
+
+void CSSFontSelector::trace(Visitor* visitor)
+{
+    visitor->trace(m_fontFaceCache);
+    visitor->trace(m_clients);
+    visitor->trace(m_fontLoader);
 }
 
 }
