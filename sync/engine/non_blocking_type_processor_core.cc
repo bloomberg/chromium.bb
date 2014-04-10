@@ -44,7 +44,7 @@ void NonBlockingTypeProcessorCore::GetDataTypeContext(
   context->Clear();
 }
 
-void NonBlockingTypeProcessorCore::ProcessGetUpdatesResponse(
+SyncerError NonBlockingTypeProcessorCore::ProcessGetUpdatesResponse(
     const sync_pb::DataTypeProgressMarker& progress_marker,
     const sync_pb::DataTypeContext& mutated_context,
     const SyncEntityList& applicable_updates,
@@ -53,6 +53,7 @@ void NonBlockingTypeProcessorCore::ProcessGetUpdatesResponse(
   // TODO(rlarocque): Implement this properly.  crbug.com/351005.
   DVLOG(1) << "Processing updates response for: " << ModelTypeToString(type_);
   progress_marker_ = progress_marker;
+  return SYNCER_OK;
 }
 
 void NonBlockingTypeProcessorCore::ApplyUpdates(

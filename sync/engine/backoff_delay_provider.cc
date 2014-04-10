@@ -97,6 +97,11 @@ TimeDelta BackoffDelayProvider::GetInitialDelay(
     return short_initial_backoff_;
   }
 
+  // If a datatype decides the GetUpdates must be retried (e.g. because the
+  // context has been updated since the request), use the short delay.
+  if (state.last_download_updates_result == DATATYPE_TRIGGERED_RETRY)
+    return short_initial_backoff_;
+
   // When the server tells us we have a conflict, then we should download the
   // latest updates so we can see the conflict ourselves, resolve it locally,
   // then try again to commit.  Running another sync cycle will do all these
@@ -105,9 +110,8 @@ TimeDelta BackoffDelayProvider::GetInitialDelay(
   // TODO(sync): We shouldn't need to handle this in BackoffDelayProvider.
   // There should be a way to deal with protocol errors before we get to this
   // point.
-  if (state.commit_result == SERVER_RETURN_CONFLICT) {
+  if (state.commit_result == SERVER_RETURN_CONFLICT)
     return short_initial_backoff_;
-  }
 
   return default_initial_backoff_;
 }

@@ -37,19 +37,12 @@ void DirectoryUpdateHandler::GetDataTypeContext(
   dir_->GetDataTypeContext(&trans, type_, context);
 }
 
-void DirectoryUpdateHandler::ProcessGetUpdatesResponse(
+SyncerError DirectoryUpdateHandler::ProcessGetUpdatesResponse(
     const sync_pb::DataTypeProgressMarker& progress_marker,
     const sync_pb::DataTypeContext& mutated_context,
     const SyncEntityList& applicable_updates,
     sessions::StatusController* status) {
   syncable::ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir_);
-  UpdateSyncEntities(&trans, applicable_updates, status);
-
-  if (IsValidProgressMarker(progress_marker)) {
-    ExpireEntriesIfNeeded(&trans, progress_marker);
-    UpdateProgressMarker(progress_marker);
-  }
-
   if (mutated_context.has_context()) {
     sync_pb::DataTypeContext local_context;
     dir_->GetDataTypeContext(&trans, type_, &local_context);
@@ -61,8 +54,21 @@ void DirectoryUpdateHandler::ProcessGetUpdatesResponse(
         local_context.context() != mutated_context.context()) {
       dir_->SetDataTypeContext(&trans, type_, mutated_context);
       // TODO(zea): trigger the datatype's UpdateDataTypeContext method.
+    } else if (mutated_context.version() < local_context.version()) {
+      // A GetUpdates using the old context was in progress when the context was
+      // set. Fail this get updates cycle, to force a retry.
+      DVLOG(1) << "GU Context conflict detected, forcing GU retry.";
+      return DATATYPE_TRIGGERED_RETRY;
     }
   }
+
+  UpdateSyncEntities(&trans, applicable_updates, status);
+
+  if (IsValidProgressMarker(progress_marker)) {
+    ExpireEntriesIfNeeded(&trans, progress_marker);
+    UpdateProgressMarker(progress_marker);
+  }
+  return SYNCER_OK;
 }
 
 void DirectoryUpdateHandler::ApplyUpdates(sessions::StatusController* status) {

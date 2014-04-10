@@ -31,6 +31,9 @@ enum SYNC_EXPORT_PRIVATE SyncerError {
   SERVER_RESPONSE_VALIDATION_FAILED,
   SERVER_RETURN_DISABLED_BY_ADMIN,
 
+  // A datatype decided the sync cycle needed to be performed again.
+  DATATYPE_TRIGGERED_RETRY,
+
   SERVER_MORE_TO_DOWNLOAD,
 
   SYNCER_OK

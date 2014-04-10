@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/util/syncer_error.h"
 
 namespace sync_pb {
 class DataTypeContext;
@@ -49,7 +50,10 @@ class SYNC_EXPORT_PRIVATE UpdateHandler {
   //
   // In this context, "applicable_updates" means the set of updates belonging to
   // this type.
-  virtual void ProcessGetUpdatesResponse(
+  //
+  // Returns SYNCER_OK if the all data was processed successfully, a syncer
+  // error otherwise.
+  virtual SyncerError ProcessGetUpdatesResponse(
       const sync_pb::DataTypeProgressMarker& progress_marker,
       const sync_pb::DataTypeContext& mutated_context,
       const SyncEntityList& applicable_updates,

@@ -57,6 +57,10 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
   EXPECT_EQ(kInitialBackoffRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 
+  state.last_download_updates_result = DATATYPE_TRIGGERED_RETRY;
+  EXPECT_EQ(kInitialBackoffImmediateRetrySeconds,
+            delay->GetInitialDelay(state).InSeconds());
+
   state.last_download_updates_result = SYNCER_OK;
   // Note that updating credentials triggers a canary job, trumping
   // the initial delay, but in theory we still expect this function to treat
@@ -97,6 +101,10 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelayWithOverride) {
 
   state.last_download_updates_result = SERVER_RESPONSE_VALIDATION_FAILED;
   EXPECT_EQ(kInitialBackoffShortRetrySeconds,
+            delay->GetInitialDelay(state).InSeconds());
+
+  state.last_download_updates_result = DATATYPE_TRIGGERED_RETRY;
+  EXPECT_EQ(kInitialBackoffImmediateRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 
   state.last_download_updates_result = SYNCER_OK;

@@ -82,7 +82,7 @@ class SYNC_EXPORT_PRIVATE GetUpdatesProcessor {
                               sessions::StatusController* status);
 
   // Processes a GetUpdates responses for each type.
-  bool ProcessGetUpdatesResponse(
+  syncer::SyncerError ProcessGetUpdatesResponse(
       ModelTypeSet gu_types,
       const sync_pb::GetUpdatesResponse& gu_response,
       sessions::StatusController* status_controller);

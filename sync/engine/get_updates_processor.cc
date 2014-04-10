@@ -284,9 +284,10 @@ SyncerError GetUpdatesProcessor::ProcessResponse(
   }
   status->set_num_server_changes_remaining(gu_response.changes_remaining());
 
-  if (!ProcessGetUpdatesResponse(request_types, gu_response, status)) {
-    return SERVER_RESPONSE_VALIDATION_FAILED;
-  }
+  syncer::SyncerError result =
+      ProcessGetUpdatesResponse(request_types, gu_response, status);
+  if (result != syncer::SYNCER_OK)
+    return result;
 
   if (gu_response.changes_remaining() == 0) {
     return SYNCER_OK;
@@ -295,7 +296,7 @@ SyncerError GetUpdatesProcessor::ProcessResponse(
   }
 }
 
-bool GetUpdatesProcessor::ProcessGetUpdatesResponse(
+syncer::SyncerError GetUpdatesProcessor::ProcessGetUpdatesResponse(
     ModelTypeSet gu_types,
     const sync_pb::GetUpdatesResponse& gu_response,
     sessions::StatusController* status_controller) {
@@ -309,7 +310,7 @@ bool GetUpdatesProcessor::ProcessGetUpdatesResponse(
                                  &progress_index_by_type);
   if (gu_types.Size() != progress_index_by_type.size()) {
     NOTREACHED() << "Missing progress markers in GetUpdates response.";
-    return false;
+    return syncer::SERVER_RESPONSE_VALIDATION_FAILED;
   }
 
   TypeToIndexMap context_by_type;
@@ -334,11 +335,14 @@ bool GetUpdatesProcessor::ProcessGetUpdatesResponse(
       context.CopyFrom(gu_response.context_mutations(context_iter->second));
 
     if (update_handler_iter != update_handler_map_->end()) {
-      update_handler_iter->second->ProcessGetUpdatesResponse(
-          gu_response.new_progress_marker(progress_marker_iter->second),
-          context,
-          updates_iter->second,
-          status_controller);
+      syncer::SyncerError result =
+          update_handler_iter->second->ProcessGetUpdatesResponse(
+              gu_response.new_progress_marker(progress_marker_iter->second),
+              context,
+              updates_iter->second,
+              status_controller);
+      if (result != syncer::SYNCER_OK)
+        return result;
     } else {
       DLOG(WARNING)
           << "Ignoring received updates of a type we can't handle.  "
@@ -349,7 +353,7 @@ bool GetUpdatesProcessor::ProcessGetUpdatesResponse(
   DCHECK(progress_marker_iter == progress_index_by_type.end() &&
          updates_iter == updates_by_type.end());
 
-  return true;
+  return syncer::SYNCER_OK;
 }
 
 void GetUpdatesProcessor::ApplyUpdates(

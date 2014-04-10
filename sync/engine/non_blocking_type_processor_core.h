@@ -59,7 +59,7 @@ class SYNC_EXPORT NonBlockingTypeProcessorCore
       sync_pb::DataTypeProgressMarker* progress_marker) const OVERRIDE;
   virtual void GetDataTypeContext(sync_pb::DataTypeContext* context) const
       OVERRIDE;
-  virtual void ProcessGetUpdatesResponse(
+  virtual SyncerError ProcessGetUpdatesResponse(
       const sync_pb::DataTypeProgressMarker& progress_marker,
       const sync_pb::DataTypeContext& mutated_context,
       const SyncEntityList& applicable_updates,
