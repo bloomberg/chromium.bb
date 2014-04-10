@@ -1273,8 +1273,7 @@ chromium_info_daisy.add_config('daisy-webrtc-chromium-pfq-informational',
   archive_build_debug=True,
 )
 
-_arm_full_boards = frozenset([
-  'arm-generic',
+_arm_release_boards = frozenset([
   'daisy',
   'daisy_skate',
   'daisy_spring',
@@ -1284,9 +1283,13 @@ _arm_full_boards = frozenset([
   'peach_pi',
   'peach_pit',
 ])
+_arm_full_boards = _arm_release_boards | frozenset([
+  'arm-generic',
+])
 
-_x86_full_boards = frozenset([
-  'amd64-generic',
+_x86_release_boards = frozenset([
+  'bayleybay',
+  'beltino',
   'butterfly',
   'clapper',
   'enguarde',
@@ -1306,20 +1309,26 @@ _x86_full_boards = frozenset([
   'peppy',
   'quawks',
   'rambi',
+  'samus',
+  'slippy',
   'squawks',
   'stout',
   'stumpy',
+  'swanky',
   'winky',
   'wolf',
-  'x32-generic',
   'x86-alex',
   'x86-alex_he',
-  'x86-generic',
   'x86-mario',
-  'x86-pineview',
   'x86-zgb',
   'x86-zgb_he',
   'zako',
+])
+_x86_full_boards = _x86_release_boards | frozenset([
+  'amd64-generic',
+  'x32-generic',
+  'x86-generic',
+  'x86-pineview',
 ])
 
 def _AddFullConfigs():
@@ -1917,6 +1926,15 @@ _config.add_group('x86-zgb-release-group',
   ),
 )
 
+_config.add_group('parrot-release-group',
+  _release.add_config('parrot-release',
+    boards=['parrot'],
+  ),
+  _grouped_variant_release.add_config('parrot_ivb-release',
+    boards=['parrot_ivb'],
+  )
+)
+
 ### Release PGO configs.
 
 release_pgo = _release.derive(
@@ -1991,52 +2009,12 @@ _release.add_config('beltino-release',
   vm_tests=[],
 )
 
-_release.add_config('butterfly-release',
-  boards=['butterfly'],
-)
-
-_release.add_config('clapper-release',
-  boards=['clapper'],
-)
-
-_release.add_config('enguarde-release',
-  boards=['enguarde'],
-)
-
-_release.add_config('expresso-release',
-  boards=['expresso'],
-)
-
-_release.add_config('falco-release',
-  boards=['falco'],
-)
-
-_release.add_config('falco_li-release',
-  boards=['falco_li'],
-)
-
 _release.add_config('fox_wtm2-release',
   boards=['fox_wtm2'],
   # Until these are configured and ready, disable them.
   signer_tests=False,
   vm_tests=[],
   hw_tests=[],
-)
-
-_release.add_config('glimmer-release',
-  boards=['glimmer'],
-)
-
-_release.add_config('gnawty-release',
-  boards=['gnawty'],
-)
-
-_release.add_config('kip-release',
-  boards=['kip'],
-)
-
-_release.add_config('leon-release',
-  boards=['leon'],
 )
 
 _release.add_config('link-release',
@@ -2049,75 +2027,6 @@ _release.add_config('lumpy-release',
   critical_for_chrome=True,
 )
 
-_release.add_config('monroe-release',
-  boards=['monroe'],
-)
-
-_release.add_config('panther-release',
-  boards=['panther'],
-)
-
-_config.add_group('parrot-release-group',
-  _release.add_config('parrot-release',
-    boards=['parrot'],
-  ),
-  _grouped_variant_release.add_config('parrot_ivb-release',
-    boards=['parrot_ivb'],
-  )
-)
-
-_release.add_config('peppy-release',
-  boards=['peppy'],
-)
-
-_release.add_config('quawks-release',
-  boards=['quawks'],
-)
-
-_release.add_config('rambi-release',
-  boards=['rambi'],
-)
-
-_release.add_config('samus-release',
-  boards=['samus'],
-)
-
-_release.add_config('slippy-release',
-  boards=['slippy'],
-)
-
-_release.add_config('sonic-release',
-  sonic,
-)
-
-_release.add_config('squawks-release',
-  boards=['squawks'],
-)
-
-_release.add_config('stout-release',
-  boards=['stout'],
-)
-
-_release.add_config('stumpy-release',
-  boards=['stumpy'],
-)
-
-_release.add_config('swanky-release',
-  boards=['swanky'],
-)
-
-_release.add_config('winky-release',
-  boards=['winky'],
-)
-
-_release.add_config('wolf-release',
-  boards=['wolf'],
-)
-
-_release.add_config('zako-release',
-  boards=['zako'],
-)
-
 ### Arm release configs.
 
 _arm_release = _release.derive(arm)
@@ -2127,34 +2036,29 @@ _arm_release.add_config('daisy-release',
   critical_for_chrome=True,
 )
 
-_arm_release.add_config('daisy_skate-release',
-  boards=['daisy_skate'],
-)
-
-_arm_release.add_config('daisy_spring-release',
-  boards=['daisy_spring'],
-)
-
-_arm_release.add_config('peach_pit-release',
-  boards=['peach_pit'],
-)
-
-_arm_release.add_config('nyan-release',
-  boards=['nyan'],
-)
-
-_arm_release.add_config('peach_pi-release',
-  boards=['peach_pi'],
-)
-
-_arm_release.add_config('nyan_big-release',
-  boards=['nyan_big'],
-)
-
 _arm_release.add_config('nyan_blaze-release',
   boards=['nyan_blaze'],
   hw_tests=[],
 )
+
+_release.add_config('sonic-release',
+  sonic,
+)
+
+# Now generate generic release configs if we haven't created anything more
+# specific above already.
+def _AddReleaseConfigs():
+  for board in _x86_release_boards:
+    config_name = '%s-release' % board
+    if config_name not in config:
+      _release.add_config(config_name, boards=(board,))
+
+  for board in _arm_release_boards:
+    config_name = '%s-release' % board
+    if config_name not in config:
+      _arm_release.add_config(config_name, boards=(board,))
+
+_AddReleaseConfigs()
 
 # Brillo devices do not have Chrome or currently need for test or dev images.
 _brillo_release = _release.derive(brillo,
