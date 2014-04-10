@@ -36,21 +36,6 @@
 
 namespace WebCore {
 
-LocalFrame* HTMLImport::frame()
-{
-    return master()->frame();
-}
-
-Document* HTMLImport::master()
-{
-    return root()->document();
-}
-
-HTMLImportsController* HTMLImport::controller()
-{
-    return root()->toController();
-}
-
 void HTMLImport::appendChild(HTMLImport* child)
 {
     TreeNode<HTMLImport>::appendChild(child);
@@ -107,13 +92,6 @@ void HTMLImport::recalcTreeState(HTMLImport* root)
 
     for (size_t i = 0; i < updated.size(); ++i)
         updated[i]->stateDidChange();
-}
-
-bool HTMLImport::isMaster(Document* document)
-{
-    if (!document->import())
-        return true;
-    return (document->import()->master() == document);
 }
 
 #if !defined(NDEBUG)

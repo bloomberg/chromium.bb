@@ -41,6 +41,7 @@
 #include "core/dom/custom/CustomElementMicrotaskResolutionStep.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/html/imports/HTMLImportChild.h"
+#include "core/html/imports/HTMLImportLoader.h"
 
 namespace WebCore {
 
@@ -73,9 +74,9 @@ void CustomElementScheduler::resolveOrScheduleResolution(PassRefPtr<CustomElemen
         return;
     }
 
-    HTMLImport* import = element->document().import();
+    HTMLImportLoader* loader = element->document().importLoader();
     OwnPtr<CustomElementMicrotaskResolutionStep> step = CustomElementMicrotaskResolutionStep::create(context, element, descriptor);
-    CustomElementMicrotaskDispatcher::instance().enqueue(import, step.release());
+    CustomElementMicrotaskDispatcher::instance().enqueue(loader ? loader->firstImport() : 0, step.release());
 }
 
 CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImportChild* import)

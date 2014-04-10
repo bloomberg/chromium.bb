@@ -105,13 +105,8 @@ public:
         Async = 1
     };
 
-    static bool isMaster(Document*);
-
     virtual ~HTMLImport() { }
 
-    LocalFrame* frame();
-    Document* master();
-    HTMLImportsController* controller();
     bool isRoot() const { return !isChild(); }
     bool isSync() const { return SyncMode(m_sync) == Sync; }
     const HTMLImportState& state() const { return m_state; }
@@ -121,9 +116,6 @@ public:
     virtual bool isChild() const { return false; }
     virtual HTMLImportRoot* root() = 0;
     virtual Document* document() const = 0;
-    virtual void wasDetachedFromDocument() = 0;
-    virtual void didFinishParsing() { };
-    virtual void didRemoveAllPendingStylesheet() { }
     virtual bool isDone() const = 0; // FIXME: Should be renamed to haveFinishedLoading()
     virtual bool hasLoader() const = 0;
     virtual bool ownsLoader() const { return false; }

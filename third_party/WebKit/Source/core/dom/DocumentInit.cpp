@@ -61,13 +61,13 @@ static Document* ownerDocument(LocalFrame* frame)
     return ownerFrame->document();
 }
 
-DocumentInit::DocumentInit(const KURL& url, LocalFrame* frame, WeakPtr<Document> contextDocument, HTMLImport* import)
+DocumentInit::DocumentInit(const KURL& url, LocalFrame* frame, WeakPtr<Document> contextDocument, HTMLImportsController* importsController)
     : m_url(url)
     , m_frame(frame)
     , m_parent(parentDocument(frame))
     , m_owner(ownerDocument(frame))
     , m_contextDocument(contextDocument)
-    , m_import(import)
+    , m_importsController(importsController)
     , m_createNewRegistrationContext(false)
 {
 }
@@ -78,7 +78,7 @@ DocumentInit::DocumentInit(const DocumentInit& other)
     , m_parent(other.m_parent)
     , m_owner(other.m_owner)
     , m_contextDocument(other.m_contextDocument)
-    , m_import(other.m_import)
+    , m_importsController(other.m_importsController)
     , m_registrationContext(other.m_registrationContext)
     , m_createNewRegistrationContext(other.m_createNewRegistrationContext)
 {
@@ -103,8 +103,8 @@ LocalFrame* DocumentInit::frameForSecurityContext() const
 {
     if (m_frame)
         return m_frame;
-    if (m_import)
-        return m_import->frame();
+    if (m_importsController)
+        return m_importsController->frame();
     return 0;
 }
 

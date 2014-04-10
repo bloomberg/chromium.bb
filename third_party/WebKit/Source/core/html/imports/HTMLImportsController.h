@@ -57,10 +57,13 @@ public:
     explicit HTMLImportsController(Document&);
     virtual ~HTMLImportsController();
 
+    bool isMaster(const Document& document) const { return m_master == &document; }
+    bool shouldBlockScriptExecution(const Document&) const;
+    void wasDetachedFrom(const Document&);
+
     // HTMLImport
     virtual HTMLImportRoot* root() OVERRIDE;
     virtual Document* document() const OVERRIDE;
-    virtual void wasDetachedFromDocument() OVERRIDE;
     virtual bool isDone() const OVERRIDE;
     virtual bool hasLoader() const OVERRIDE;
     virtual void stateDidChange() OVERRIDE;
@@ -75,6 +78,8 @@ public:
 
     SecurityOrigin* securityOrigin() const;
     ResourceFetcher* fetcher() const;
+    LocalFrame* frame() const;
+    Document* master() const { return m_master; }
 
     void recalcTimerFired(Timer<HTMLImportsController>*);
 
@@ -84,6 +89,8 @@ public:
 
     size_t loaderCount() const { return m_loaders.size(); }
     HTMLImportLoader* loaderAt(size_t i) const { return m_loaders[i].get(); }
+    HTMLImportLoader* loaderFor(const Document&) const;
+
 
 private:
     HTMLImportChild* createChild(const KURL&, HTMLImport* parent, HTMLImportChildClient*);

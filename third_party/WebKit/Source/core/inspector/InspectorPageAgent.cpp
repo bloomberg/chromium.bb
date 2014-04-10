@@ -553,8 +553,7 @@ static Vector<Resource*> cachedResourcesForFrame(LocalFrame* frame)
     Document* rootDocument = frame->document();
 
     cachedResourcesForDocument(rootDocument, result);
-    if (HTMLImport* rootImport = rootDocument->import()) {
-        HTMLImportsController* controller = rootImport->root()->toController();
+    if (HTMLImportsController* controller = rootDocument->importsController()) {
         for (size_t i = 0; i < controller->loaderCount(); ++i)
             cachedResourcesForDocument(controller->loaderAt(i)->document(), result);
     }
@@ -567,8 +566,7 @@ static Vector<HTMLImportLoader*> importsForFrame(LocalFrame* frame)
     Vector<HTMLImportLoader*> result;
     Document* rootDocument = frame->document();
 
-    if (HTMLImport* rootImport = rootDocument->import()) {
-        HTMLImportsController* controller = rootImport->root()->toController();
+    if (HTMLImportsController* controller = rootDocument->importsController()) {
         for (size_t i = 0; i < controller->loaderCount(); ++i)
             result.append(controller->loaderAt(i));
     }

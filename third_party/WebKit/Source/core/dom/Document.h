@@ -113,6 +113,8 @@ class HTMLFrameOwnerElement;
 class HTMLHeadElement;
 class HTMLIFrameElement;
 class HTMLImport;
+class HTMLImportLoader;
+class HTMLImportsController;
 class HTMLMapElement;
 class HTMLNameCollection;
 class HTMLScriptElement;
@@ -984,8 +986,10 @@ public:
     ScriptValue registerElement(WebCore::NewScriptState*, const AtomicString& name, const Dictionary& options, ExceptionState&, CustomElement::NameSet validNames = CustomElement::StandardNames);
     CustomElementRegistrationContext* registrationContext() { return m_registrationContext.get(); }
 
-    void setImport(HTMLImport*);
-    HTMLImport* import() const { return m_import; }
+    void setImportsController(HTMLImportsController*);
+    HTMLImportsController* importsController() const { return m_importsController; }
+    HTMLImportLoader* importLoader() const;
+
     bool haveImportsLoaded() const;
     void didLoadAllImports();
 
@@ -1172,7 +1176,7 @@ private:
 
     LocalFrame* m_frame;
     DOMWindow* m_domWindow;
-    HTMLImport* m_import;
+    HTMLImportsController* m_importsController;
 
     RefPtr<ResourceFetcher> m_fetcher;
     RefPtr<DocumentParser> m_parser;

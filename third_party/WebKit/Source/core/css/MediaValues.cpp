@@ -11,7 +11,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/html/imports/HTMLImport.h"
+#include "core/html/imports/HTMLImportsController.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
@@ -196,7 +196,7 @@ PassRefPtr<MediaValues> MediaValues::create(LocalFrame* frame, RenderStyle* styl
 PassRefPtr<MediaValues> MediaValues::create(Document* document, MediaValuesMode mode)
 {
     ASSERT(document);
-    Document* executingDocument = document->import() ? document->import()->master() : document;
+    Document* executingDocument = document->importsController() ? document->importsController()->master() : document;
     ASSERT(executingDocument->frame());
     ASSERT(executingDocument->renderer());
     ASSERT(executingDocument->renderer()->style());

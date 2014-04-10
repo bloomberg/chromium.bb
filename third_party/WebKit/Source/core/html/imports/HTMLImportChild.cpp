@@ -142,25 +142,6 @@ Document* HTMLImportChild::document() const
     return (m_loader && m_loader->isOwnedBy(this)) ? m_loader->document() : 0;
 }
 
-void HTMLImportChild::wasDetachedFromDocument()
-{
-    // For imported documens this shouldn't be called because Document::m_import is
-    // cleared before Document is destroyed by HTMLImportChild::importDestroyed().
-    ASSERT_NOT_REACHED();
-}
-
-void HTMLImportChild::didFinishParsing()
-{
-    ASSERT(m_loader->isOwnedBy(this));
-    m_loader->didFinishParsing();
-}
-
-void HTMLImportChild::didRemoveAllPendingStylesheet()
-{
-    ASSERT(m_loader->isOwnedBy(this));
-    m_loader->didRemoveAllPendingStylesheet();
-}
-
 void HTMLImportChild::stateDidChange()
 {
     HTMLImport::stateDidChange();

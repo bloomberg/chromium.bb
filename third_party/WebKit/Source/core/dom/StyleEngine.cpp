@@ -41,7 +41,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLLinkElement.h"
-#include "core/html/imports/HTMLImport.h"
+#include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/InjectedStyleSheets.h"
 #include "core/page/Page.h"
@@ -55,7 +55,7 @@ using namespace HTMLNames;
 
 StyleEngine::StyleEngine(Document& document)
     : m_document(document)
-    , m_isMaster(HTMLImport::isMaster(&document))
+    , m_isMaster(!document.importsController() || document.importsController()->isMaster(document) )
     , m_pendingStylesheets(0)
     , m_injectedStyleSheetCacheValid(false)
     , m_documentStyleSheetCollection(document)
@@ -106,7 +106,7 @@ inline Document* StyleEngine::master()
 {
     if (isMaster())
         return &m_document;
-    HTMLImport* import = m_document.import();
+    HTMLImportsController* import = m_document.importsController();
     if (!import) // Document::import() can return null while executing its destructor.
         return 0;
     return import->master();
@@ -561,8 +561,8 @@ void StyleEngine::markTreeScopeDirty(TreeScope& scope)
 void StyleEngine::markDocumentDirty()
 {
     m_documentScopeDirty = true;
-    if (!HTMLImport::isMaster(&m_document))
-        m_document.import()->master()->styleEngine()->markDocumentDirty();
+    if (m_document.importLoader())
+        m_document.importsController()->master()->styleEngine()->markDocumentDirty();
 }
 
 static bool isCacheableForStyleElement(const StyleSheetContents& contents)

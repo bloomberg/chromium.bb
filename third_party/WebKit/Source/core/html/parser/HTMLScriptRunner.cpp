@@ -76,7 +76,7 @@ static KURL documentURLForScriptExecution(Document* document)
         return KURL();
 
     if (!document->frame()) {
-        if (document->import())
+        if (document->importsController())
             return document->url();
         return KURL();
     }

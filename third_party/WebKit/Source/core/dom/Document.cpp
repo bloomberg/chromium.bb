@@ -139,7 +139,8 @@
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/html/forms/FormController.h"
-#include "core/html/imports/HTMLImport.h"
+#include "core/html/imports/HTMLImportLoader.h"
+#include "core/html/imports/HTMLImportsController.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
@@ -409,7 +410,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_pendingSheetLayout(NoLayoutWithPendingSheets)
     , m_frame(initializer.frame())
     , m_domWindow(m_frame ? m_frame->domWindow() : 0)
-    , m_import(initializer.import())
+    , m_importsController(initializer.importsController())
     , m_activeParserCount(0)
     , m_contextFeatures(ContextFeatures::defaultSwitch())
     , m_wellFormed(false)
@@ -545,9 +546,9 @@ Document::~Document()
     if (m_styleSheetList)
         m_styleSheetList->detachFromDocument();
 
-    if (m_import) {
-        m_import->wasDetachedFromDocument();
-        m_import = 0;
+    if (m_importsController) {
+        m_importsController->wasDetachedFrom(*this);
+        m_importsController = 0;
     }
 
     m_timeline->detachFromDocument();
@@ -600,9 +601,9 @@ void Document::dispose()
 
     m_registrationContext.clear();
 
-    if (m_import) {
-        m_import->wasDetachedFromDocument();
-        m_import = 0;
+    if (m_importsController) {
+        m_importsController->wasDetachedFrom(*this);
+        m_importsController = 0;
     }
 
     // removeDetachedChildren() doesn't always unregister IDs,
@@ -800,24 +801,31 @@ ScriptValue Document::registerElement(WebCore::NewScriptState* scriptState, cons
     return constructorBuilder.bindingsReturnValue();
 }
 
-void Document::setImport(HTMLImport* import)
+void Document::setImportsController(HTMLImportsController* controller)
 {
-    ASSERT(!m_import || !import);
-    m_import = import;
+    ASSERT(!m_importsController || !controller);
+    m_importsController = controller;
+}
+
+HTMLImportLoader* Document::importLoader() const
+{
+    if (!m_importsController)
+        return 0;
+    return m_importsController->loaderFor(*this);
 }
 
 bool Document::haveImportsLoaded() const
 {
-    if (!m_import)
+    if (!m_importsController)
         return true;
-    return !m_import->state().shouldBlockScriptExecution();
+    return !m_importsController->shouldBlockScriptExecution(*this);
 }
 
 DOMWindow* Document::executingWindow()
 {
     if (DOMWindow* owningWindow = domWindow())
         return owningWindow;
-    if (HTMLImport* import = this->import())
+    if (HTMLImportsController* import = this->importsController())
         return import->master()->domWindow();
     return 0;
 }
@@ -2901,8 +2909,9 @@ void Document::didRemoveAllPendingStylesheet()
 
     styleResolverChanged(RecalcStyleDeferred, hasNodesWithPlaceholderStyle() ? FullStyleUpdate : AnalyzedStyleUpdate);
 
-    if (m_import)
-        m_import->didRemoveAllPendingStylesheet();
+    if (HTMLImportLoader* import = importLoader())
+        import->didRemoveAllPendingStylesheet();
+
     if (!haveImportsLoaded())
         return;
 
@@ -2960,7 +2969,7 @@ void Document::processHttpEquiv(const AtomicString& equiv, const AtomicString& c
 
 void Document::processHttpEquivContentSecurityPolicy(const AtomicString& equiv, const AtomicString& content)
 {
-    if (import() && import()->isChild())
+    if (importLoader())
         return;
     if (equalIgnoringCase(equiv, "content-security-policy"))
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceMeta);
@@ -4502,8 +4511,8 @@ void Document::finishedParsing()
     // Parser should have picked up all preloads by now
     m_fetcher->clearPreloads();
 
-    if (m_import)
-        m_import->didFinishParsing();
+    if (HTMLImportLoader* import = importLoader())
+        import->didFinishParsing();
 }
 
 void Document::elementDataCacheClearTimerFired(Timer<Document>*)
@@ -4576,13 +4585,13 @@ bool Document::useSecureKeyboardEntryWhenActive() const
 
 void Document::initSecurityContext()
 {
-    initSecurityContext(DocumentInit(m_url, m_frame, contextDocument(), m_import));
+    initSecurityContext(DocumentInit(m_url, m_frame, contextDocument(), m_importsController));
 }
 
 static PassRefPtr<ContentSecurityPolicy> contentSecurityPolicyFor(Document* document)
 {
-    if (document->import() && document->import()->isChild())
-        return document->import()->master()->contentSecurityPolicy();
+    if (document->importsController())
+        return document->importsController()->master()->contentSecurityPolicy();
     return ContentSecurityPolicy::create(document);
 }
 

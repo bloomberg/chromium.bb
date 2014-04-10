@@ -45,7 +45,7 @@
 #include "core/fetch/XSLStyleSheetResource.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/imports/HTMLImport.h"
+#include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
@@ -259,8 +259,8 @@ LocalFrame* ResourceFetcher::frame() const
 {
     if (m_documentLoader)
         return m_documentLoader->frame();
-    if (m_document && m_document->import())
-        return m_document->import()->frame();
+    if (m_document && m_document->importsController())
+        return m_document->importsController()->frame();
     return 0;
 }
 

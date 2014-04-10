@@ -35,6 +35,7 @@
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/imports/HTMLImportChild.h"
+#include "core/html/imports/HTMLImportLoader.h"
 #include "core/html/imports/HTMLImportsController.h"
 
 
@@ -72,7 +73,7 @@ void LinkImport::process()
     if (!shouldLoadResource())
         return;
 
-    if (!m_owner->document().import()) {
+    if (!m_owner->document().importsController()) {
         ASSERT(m_owner->document().frame()); // The document should be the master.
         HTMLImportsController::provideTo(m_owner->document());
     }
@@ -83,8 +84,9 @@ void LinkImport::process()
         return;
     }
 
-    HTMLImport* parent = m_owner->document().import();
-    HTMLImportsController* controller = parent->controller();
+    HTMLImportsController* controller = m_owner->document().importsController();
+    HTMLImportLoader* loader = m_owner->document().importLoader();
+    HTMLImport* parent = loader ? static_cast<HTMLImport*>(loader->firstImport()) : static_cast<HTMLImport*>(controller);
     m_child = controller->load(parent, this, builder.build(true));
     if (!m_child) {
         didFinish();
