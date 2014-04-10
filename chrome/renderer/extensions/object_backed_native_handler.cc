@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(dcarney): Remove this when UnsafePersistent is removed.
-#define V8_ALLOW_ACCESS_TO_RAW_HANDLE_CONSTRUCTOR
-
 #include "chrome/renderer/extensions/object_backed_native_handler.h"
 
 #include "base/logging.h"

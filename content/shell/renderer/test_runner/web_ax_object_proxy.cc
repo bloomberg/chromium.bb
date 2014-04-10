@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(hajimehoshi): Remove this when UnsafePersistent is removed.
-#define V8_ALLOW_ACCESS_TO_RAW_HANDLE_CONSTRUCTOR
-
 #include "content/shell/renderer/test_runner/web_ax_object_proxy.h"
 
 #include "base/strings/stringprintf.h"
