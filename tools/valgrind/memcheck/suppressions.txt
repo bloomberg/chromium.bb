@@ -960,17 +960,6 @@
    fun:CERT_VerifyCert
 }
 {
-   bug_38138
-   Memcheck:Param
-   write(buf)
-   obj:*libpthread*
-   fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
-   ...
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN4base11MessageLoop11RunInternalEv
-   fun:_ZN4base11MessageLoop10RunHandlerEv
-}
-{
    bug_30633_39325
    Memcheck:Leak
    fun:_Znw*
@@ -3588,10 +3577,6 @@
    fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
    fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
    fun:_ZN7content13BrowserThread16PostTaskAndReplyENS0_2IDERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESB_
-   fun:_ZN5gdata15GDataFileSystem37PostBlockingPoolSequencedTaskAndReplyERKSsRKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESC_
-   fun:_ZN5gdata15GDataFileSystem29PostBlockingPoolSequencedTaskERKSsRKN15tracked_objects8LocationERKN4base8CallbackIFvvEEE
-   fun:_ZN5gdata15GDataFileSystem8SaveFeedE10scoped_ptrIN4base5ValueEE*
-   fun:_ZN5gdata15GDataFileSystem14OnGetDocumentsEPNS0_18GetDocumentsParamsENS_14GDataErrorCodeE10scoped_ptrIN4base5ValueEE
 }
 {
    bug_122752a
@@ -4078,12 +4063,10 @@
    fun:_Znw*
    ...
    fun:_ZN7content16SiteInstanceImpl10GetProcessEv
-   fun:_ZN7content18RenderViewHostImplC1EPNS_12SiteInstanceEPNS_22RenderViewHostDelegateEPNS_24RenderWidgetHostDelegateEibPNS_23SessionStorageNamespaceE
-   fun:_ZN7content21RenderViewHostFactory6CreateEPNS_12SiteInstanceEPNS_22RenderViewHostDelegateEPNS_24RenderWidgetHostDelegateEibPNS_23SessionStorageNamespaceE
-   fun:_ZN7content22RenderFrameHostManager4InitEPNS_14BrowserContextEPNS_12SiteInstanceEi
+   fun:_ZN7content*Render*SiteInstance*
+   fun:_ZN7content*Render*SiteInstance*
+   ...
    fun:_ZN7content15WebContentsImpl4InitERKNS_11WebContents12CreateParamsE
-   fun:_ZN7content15TestWebContents6CreateEPNS_14BrowserContextEPNS_12SiteInstanceE
-   fun:_ZN7content17WebContentsTester21CreateTestWebContentsEPNS_14BrowserContextEPNS_12SiteInstanceE
 }
 {
    bug_145704
@@ -5275,16 +5258,6 @@
    fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
    fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
    fun:_ZN7content13BrowserThread16PostTaskAndReplyENS0_2IDERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESB_
-   fun:_ZN7content23DevToolsHttpHandlerImpl4StopEv
-   fun:_ZN7content21ShellDevToolsDelegate4StopEv
-   fun:_ZN7content21ShellBrowserMainParts22PostMainMessageLoopRunEv
-   fun:_ZN7content15BrowserMainLoop25ShutdownThreadsAndCleanUpEv
-   fun:_ZN7content21BrowserMainRunnerImpl8ShutdownEv
-   fun:_Z16ShellBrowserMainRKN7content18MainFunctionParams*
-   fun:_ZN7content17ShellMainDelegate10RunProcessERKSsRKNS_18MainFunctionParamsE
-   fun:_ZN7content23RunNamedProcessTypeMainERKSsRKNS_18MainFunctionParamsEPNS_19ContentMainDelegateE
-   fun:_ZN7content21ContentMainRunnerImpl3RunEv
-   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
 }
 {
    bug_245866
@@ -6191,11 +6164,21 @@
    fun:_ZN7WebCore4Heap14collectGarbageENS_11ThreadState10StackState*
 }
 {
+   bug_342591
+   Memcheck:Param
+   write(buf)
+   obj:*libpthread*
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
+   fun:_ZN3IPC7Channel11ChannelImpl4SendEPNS_7MessageE
+   fun:_ZN3IPC7Channel4SendEPNS_7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context13OnSendMessageE10scoped_ptrINS_7MessageEN4base14DefaultDeleterIS3_EEE
+}
+{
    bug_345432
    Memcheck:Leak
    ...
-   fun:_ZN7content14GpuChannelHost7ConnectERKN3IPC13ChannelHandleE
-   fun:_ZN7content14GpuChannelHost6CreateEPNS_21GpuChannelHostFactoryERKN3gpu7GPUInfoERKN3IPC13ChannelHandleE
+   fun:_ZN7content14GpuChannelHost7ConnectERKN3IPC13ChannelHandle*
+   fun:_ZN7content14GpuChannelHost6CreateEPNS_21GpuChannelHostFactoryERKN3gpu7GPUInfoERKN3IPC13ChannelHandle*
    fun:_ZN7content28BrowserGpuChannelHostFactory21GpuChannelEstablishedEv
    fun:_ZN7content28BrowserGpuChannelHostFactory16EstablishRequest12FinishOnMainEv
    fun:_ZN7content28BrowserGpuChannelHostFactory16EstablishRequest4WaitEv
@@ -6243,7 +6226,6 @@
    fun:_ZN7content17ShellMainDelegate10RunProcessERKSsRKNS_18MainFunctionParamsE
    fun:_ZN7content23RunNamedProcessTypeMainERKSsRKNS_18MainFunctionParamsEPNS_19ContentMainDelegateE
    fun:_ZN7content21ContentMainRunnerImpl3RunEv
-   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
 }
 {
    bug_347683
@@ -6266,6 +6248,17 @@
    fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
    fun:_ZN3gpu13CommandParser14ProcessCommandEv
    fun:_ZN3gpu12GpuScheduler10PutChangedEv
+}
+{
+   bug_348863
+   Memcheck:Unaddressable
+   fun:_ZNK7WebCore32PlatformSpeechSynthesisUtterance6clientEv
+   fun:_ZN7WebCore15SpeechSynthesis17didFinishSpeakingEN3WTF10PassRefPtrINS_32PlatformSpeechSynthesisUtteranceEEE
+   fun:_ZN7WebCore29PlatformSpeechSynthesizerMock16speakingFinishedEPNS_5TimerIS0_EE
+   fun:_ZN7WebCore5TimerINS_29PlatformSpeechSynthesizerMockEE5firedEv
+   fun:_ZN7WebCore12ThreadTimers24sharedTimerFiredInternalEv
+   fun:_ZN7WebCore12ThreadTimers16sharedTimerFiredEv
+   fun:_ZN7content17BlinkPlatformImpl9DoTimeoutEv
 }
 {
   bug_361594
