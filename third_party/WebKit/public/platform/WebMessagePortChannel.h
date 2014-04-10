@@ -47,8 +47,6 @@ class WebMessagePortChannel {
 public:
     virtual void setClient(WebMessagePortChannelClient*) = 0;
     virtual void destroy() = 0;
-    // DEPRECATED: Use Platform::createMessageChannel instead.
-    virtual void entangle(WebMessagePortChannel*) = 0;
     // Callee receives ownership of the passed vector.
     // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
     virtual void postMessage(const WebString&, WebMessagePortChannelArray*) = 0;
