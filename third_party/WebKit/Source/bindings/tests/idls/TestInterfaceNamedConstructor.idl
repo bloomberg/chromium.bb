@@ -33,7 +33,8 @@
         [Default=Undefined] optional boolean defaultUndefinedOptionalBooleanArg,
         [Default=Undefined] optional long defaultUndefinedOptionalLongArg,
         [Default=Undefined] optional DOMString defaultUndefinedOptionalStringArg,
-        [Default=NullString] optional DOMString defaultNullStringOptionalstringArg),
+        [Default=NullString] optional DOMString defaultNullStringOptionalstringArg,
+        optional DOMString optionalStringArg),
     RaisesException=Constructor,
 ] interface TestInterfaceNamedConstructor {
     // An attribute of type {interface_name}ConstructorConstructor is generated

@@ -43,6 +43,7 @@
         long longArg,
         [Default=Undefined] optional DOMString defaultUndefinedOptionalStringArg,
         [Default=NullString] optional DOMString defaultNullStringOptionalStringArg,
-        [Default=Undefined] optional Dictionary defaultUndefinedOptionalDictionaryArg),
+        [Default=Undefined] optional Dictionary defaultUndefinedOptionalDictionaryArg,
+        optional DOMString optionalStringArg),
 ] interface TestInterfaceConstructor2 {
 };

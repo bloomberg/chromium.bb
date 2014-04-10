@@ -157,9 +157,9 @@ def generate_argument(interface, method, argument, index):
         'has_event_listener_argument': any(
             argument_so_far for argument_so_far in method.arguments[:index]
             if argument_so_far.idl_type.name == 'EventListener'),
-        'idl_type_object': idl_type,
         # Dictionary is special-cased, but arrays and sequences shouldn't be
         'idl_type': not idl_type.array_or_sequence_type and idl_type.base_type,
+        'idl_type_object': idl_type,
         'index': index,
         'is_clamp': 'Clamp' in extended_attributes,
         'is_callback_interface': idl_type.is_callback_interface,
@@ -206,14 +206,21 @@ def cpp_value(interface, method, number_of_arguments):
         not method.is_static):
         cpp_arguments.append('*impl')
     cpp_arguments.extend(cpp_argument(argument) for argument in arguments)
-    this_union_arguments = method.idl_type.union_arguments
+    this_union_arguments = method.idl_type and method.idl_type.union_arguments
     if this_union_arguments:
         cpp_arguments.extend(this_union_arguments)
 
     if 'RaisesException' in method.extended_attributes:
         cpp_arguments.append('exceptionState')
 
-    cpp_method_name = v8_utilities.scoped_name(interface, method, v8_utilities.cpp_name(method))
+    if method.name == 'Constructor':
+        base_name = 'create'
+    elif method.name == 'NamedConstructor':
+        base_name = 'createForJSConstructor'
+    else:
+        base_name = v8_utilities.cpp_name(method)
+
+    cpp_method_name = v8_utilities.scoped_name(interface, method, base_name)
     return '%s(%s)' % (cpp_method_name, ', '.join(cpp_arguments))
 
 

@@ -113,7 +113,8 @@ def scoped_name(interface, definition, base_name):
     partial_interface_implemented_as = definition.extended_attributes.get('PartialInterfaceImplementedAs')
     if partial_interface_implemented_as:
         return '%s::%s' % (partial_interface_implemented_as, base_name)
-    if definition.is_static:
+    if (definition.is_static or
+        definition.name in ('Constructor', 'NamedConstructor')):
         return '%s::%s' % (cpp_name(interface), base_name)
     return 'impl->%s' % base_name
 

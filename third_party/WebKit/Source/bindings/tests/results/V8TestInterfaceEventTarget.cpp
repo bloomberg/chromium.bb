@@ -49,27 +49,28 @@ const WrapperTypeInfo V8TestInterfaceEventTargetConstructor::wrapperTypeInfo = {
 
 static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    v8::Isolate* isolate = info.GetIsolate();
     if (!info.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("Name"), info.GetIsolate());
+        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("Name"), isolate);
         return;
     }
 
-    if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
+    if (ConstructorMode::current(isolate) == ConstructorMode::WrapExistingObject) {
         v8SetReturnValue(info, info.Holder());
         return;
     }
 
-    Document* document = currentDOMWindow(info.GetIsolate())->document();
+    Document* document = currentDOMWindow(isolate)->document();
     ASSERT(document);
 
     // Make sure the document is added to the DOM Node map. Otherwise, the TestInterfaceEventTarget instance
     // may end up being the only node in the map and get garbage-collected prematurely.
-    toV8(document, info.Holder(), info.GetIsolate());
+    toV8(document, info.Holder(), isolate);
 
     RefPtr<TestInterfaceEventTarget> impl = TestInterfaceEventTarget::createForJSConstructor(*document);
 
     v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceEventTarget>(impl.release(), &V8TestInterfaceEventTargetConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceEventTarget>(impl.release(), &V8TestInterfaceEventTargetConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
 }
 

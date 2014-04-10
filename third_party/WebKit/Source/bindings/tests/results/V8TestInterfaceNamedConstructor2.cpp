@@ -49,22 +49,23 @@ const WrapperTypeInfo V8TestInterfaceNamedConstructor2Constructor::wrapperTypeIn
 
 static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    v8::Isolate* isolate = info.GetIsolate();
     if (!info.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("Audio"), info.GetIsolate());
+        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("Audio"), isolate);
         return;
     }
 
-    if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
+    if (ConstructorMode::current(isolate) == ConstructorMode::WrapExistingObject) {
         v8SetReturnValue(info, info.Holder());
         return;
     }
 
-    Document* document = currentDOMWindow(info.GetIsolate())->document();
+    Document* document = currentDOMWindow(isolate)->document();
     ASSERT(document);
 
     // Make sure the document is added to the DOM Node map. Otherwise, the TestInterfaceNamedConstructor2 instance
     // may end up being the only node in the map and get garbage-collected prematurely.
-    toV8(document, info.Holder(), info.GetIsolate());
+    toV8(document, info.Holder(), isolate);
 
     if (UNLIKELY(info.Length() < 1)) {
         throwArityTypeErrorForConstructor("TestInterfaceNamedConstructor2", 1, info.Length(), info.GetIsolate());
@@ -74,7 +75,7 @@ static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::Functi
     RefPtr<TestInterfaceNamedConstructor2> impl = TestInterfaceNamedConstructor2::createForJSConstructor(*document, stringArg);
 
     v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNamedConstructor2>(impl.release(), &V8TestInterfaceNamedConstructor2Constructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNamedConstructor2>(impl.release(), &V8TestInterfaceNamedConstructor2Constructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
 }
 

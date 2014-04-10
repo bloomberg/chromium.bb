@@ -453,7 +453,7 @@ def overload_check_argument(index, argument):
 def generate_constructor(interface, constructor):
     return {
         'argument_list': constructor_argument_list(interface, constructor),
-        'arguments': [constructor_argument(argument, index)
+        'arguments': [constructor_argument(interface, constructor, argument, index)
                       for index, argument in enumerate(constructor.arguments)],
         'has_exception_state':
             # [RaisesException=Constructor]
@@ -462,6 +462,7 @@ def generate_constructor(interface, constructor):
                 if argument.idl_type.name == 'SerializedScriptValue' or
                    argument.idl_type.is_integer_type),
         'is_constructor': True,
+        'is_named_constructor': False,
         'is_variadic': False,  # Required for overload resolution
         'number_of_required_arguments':
             number_of_required_arguments(constructor),
@@ -486,13 +487,15 @@ def constructor_argument_list(interface, constructor):
     return arguments
 
 
-def constructor_argument(argument, index):
+def constructor_argument(interface, constructor, argument, index):
     idl_type = argument.idl_type
     return {
+        'cpp_value':
+            v8_methods.cpp_value(interface, constructor, index),
         'has_default': 'Default' in argument.extended_attributes,
-        'idl_type_object': idl_type,
         # Dictionary is special-cased, but arrays and sequences shouldn't be
         'idl_type': not idl_type.array_or_sequence_type and idl_type.base_type,
+        'idl_type_object': idl_type,
         'index': index,
         'is_optional': argument.is_optional,
         'is_strict_type_checking': False,  # Required for overload resolution
@@ -524,7 +527,10 @@ def generate_named_constructor(interface):
     idl_constructor = interface.constructors[0]
     constructor = generate_constructor(interface, idl_constructor)
     constructor['argument_list'].insert(0, '*document')
-    constructor['name'] = extended_attributes['NamedConstructor']
+    constructor.update({
+        'name': extended_attributes['NamedConstructor'],
+        'is_named_constructor': True,
+    })
     return constructor
 
 

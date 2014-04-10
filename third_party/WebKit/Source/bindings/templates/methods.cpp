@@ -200,6 +200,8 @@ RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.num
 {# Call #}
 {% if method.idl_type == 'void' %}
 {{cpp_value}};
+{% elif method.is_constructor %}
+{{ref_ptr}}<{{cpp_class}}> impl = {{cpp_value}};
 {% elif method.is_call_with_script_state or method.is_call_with_new_script_state or method.is_raises_exception %}
 {# FIXME: consider always using a local variable #}
 {{method.cpp_type}} result = {{cpp_value}};
@@ -210,7 +212,8 @@ if (exceptionState.throwIfNeeded())
     return;
 {% endif %}
 {# Set return value #}
-{% if method.union_arguments %}
+{% if method.is_constructor %}
+{{generate_constructor_wrapper(method)}}{% elif method.union_arguments %}
 {{union_type_method_call_and_set_return_value(method)}}
 {% elif v8_set_return_value %}{{v8_set_return_value}};{% endif %}{# None for void #}
 {% endmacro %}
@@ -393,14 +396,23 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
         return;
     {% endif %}
 
-    {% if has_custom_wrap %}
-    v8::Handle<v8::Object> wrapper = wrap(impl.get(), info.Holder(), isolate);
-    {% else %}
-    v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, isolate, {{wrapper_configuration}});
-    {% endif %}
-    v8SetReturnValue(info, wrapper);
+    {{generate_constructor_wrapper(constructor) | indent}}
 }
+{% endmacro %}
+
+
+{##############################################################################}
+{% macro generate_constructor_wrapper(constructor) %}
+{% if has_custom_wrap %}
+v8::Handle<v8::Object> wrapper = wrap(impl.get(), info.Holder(), isolate);
+{% else %}
+{% set constructor_class = v8_class + ('Constructor'
+                                       if constructor.is_named_constructor else
+                                       '') %}
+v8::Handle<v8::Object> wrapper = info.Holder();
+V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{constructor_class}}::wrapperTypeInfo, wrapper, isolate, {{wrapper_configuration}});
+{% endif %}
+v8SetReturnValue(info, wrapper);
 {% endmacro %}
 
 
@@ -408,25 +420,26 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
 {% macro named_constructor_callback(constructor) %}
 static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    v8::Isolate* isolate = info.GetIsolate();
     if (!info.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("{{constructor.name}}"), info.GetIsolate());
+        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("{{constructor.name}}"), isolate);
         return;
     }
 
-    if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
+    if (ConstructorMode::current(isolate) == ConstructorMode::WrapExistingObject) {
         v8SetReturnValue(info, info.Holder());
         return;
     }
 
-    Document* document = currentDOMWindow(info.GetIsolate())->document();
+    Document* document = currentDOMWindow(isolate)->document();
     ASSERT(document);
 
     // Make sure the document is added to the DOM Node map. Otherwise, the {{cpp_class}} instance
     // may end up being the only node in the map and get garbage-collected prematurely.
-    toV8(document, info.Holder(), info.GetIsolate());
+    toV8(document, info.Holder(), isolate);
 
     {% if constructor.has_exception_state %}
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), isolate);
     {% endif %}
     {% if constructor.number_of_required_arguments %}
     if (UNLIKELY(info.Length() < {{constructor.number_of_required_arguments}})) {
@@ -437,18 +450,12 @@ static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::V
     {% for argument in constructor.arguments %}
     {{generate_argument(constructor, argument) | indent}}
     {% endfor %}
-    RefPtr<{{cpp_class}}> impl = {{cpp_class}}::createForJSConstructor({{constructor.argument_list | join(', ')}});
+    {{ref_ptr}}<{{cpp_class}}> impl = {{cpp_class}}::createForJSConstructor({{constructor.argument_list | join(', ')}});
     {% if is_constructor_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
     {% endif %}
 
-    {% if has_custom_wrap %}
-    v8::Handle<v8::Object> wrapper = wrap(impl.get(), info.Holder(), info.GetIsolate());
-    {% else %}
-    v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}Constructor::wrapperTypeInfo, wrapper, info.GetIsolate(), {{wrapper_configuration}});
-    {% endif %}
-    v8SetReturnValue(info, wrapper);
+    {{generate_constructor_wrapper(constructor) | indent}}
 }
 {% endmacro %}

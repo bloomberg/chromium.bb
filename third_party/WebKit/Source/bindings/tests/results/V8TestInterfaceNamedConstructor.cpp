@@ -73,24 +73,25 @@ const WrapperTypeInfo V8TestInterfaceNamedConstructorConstructor::wrapperTypeInf
 
 static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    v8::Isolate* isolate = info.GetIsolate();
     if (!info.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("Audio"), info.GetIsolate());
+        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("Audio"), isolate);
         return;
     }
 
-    if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
+    if (ConstructorMode::current(isolate) == ConstructorMode::WrapExistingObject) {
         v8SetReturnValue(info, info.Holder());
         return;
     }
 
-    Document* document = currentDOMWindow(info.GetIsolate())->document();
+    Document* document = currentDOMWindow(isolate)->document();
     ASSERT(document);
 
     // Make sure the document is added to the DOM Node map. Otherwise, the TestInterfaceNamedConstructor instance
     // may end up being the only node in the map and get garbage-collected prematurely.
-    toV8(document, info.Holder(), info.GetIsolate());
+    toV8(document, info.Holder(), isolate);
 
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceNamedConstructor", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceNamedConstructor", info.Holder(), isolate);
     if (UNLIKELY(info.Length() < 1)) {
         throwArityTypeError(exceptionState, 1, info.Length());
         return;
@@ -100,12 +101,20 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
     V8TRYCATCH_EXCEPTION_VOID(int, defaultUndefinedOptionalLongArg, toInt32(info[2], exceptionState), exceptionState);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, defaultUndefinedOptionalStringArg, info[3]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, defaultNullStringOptionalstringArg, argumentOrNull(info, 4));
-    RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(*document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, exceptionState);
+    if (UNLIKELY(info.Length() <= 5)) {
+        RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg);
+        v8::Handle<v8::Object> wrapper = info.Holder();
+        V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNamedConstructor>(impl.release(), &V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
+        v8SetReturnValue(info, wrapper);
+        return;
+    }
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, optionalStringArg, info[5]);
+    RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(*document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, optionalStringArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
 
     v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNamedConstructor>(impl.release(), &V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNamedConstructor>(impl.release(), &V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
     v8SetReturnValue(info, wrapper);
 }
 

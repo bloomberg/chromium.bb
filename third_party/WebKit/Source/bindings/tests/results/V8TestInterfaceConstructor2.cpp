@@ -70,7 +70,15 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         exceptionState.throwIfNeeded();
         return;
     }
-    RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg);
+    if (UNLIKELY(info.Length() <= 5)) {
+        RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg);
+        v8::Handle<v8::Object> wrapper = info.Holder();
+        V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor2>(impl.release(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+        v8SetReturnValue(info, wrapper);
+        return;
+    }
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, optionalStringArg, info[5]);
+    RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg, optionalStringArg);
 
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor2>(impl.release(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
@@ -83,7 +91,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         TestInterfaceConstructor2V8Internal::constructor1(info);
         return;
     }
-    if (((info.Length() == 2) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()))) || ((info.Length() == 3) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()))) || ((info.Length() == 4) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()))) || ((info.Length() == 5) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) && (info[4]->IsUndefined() || info[4]->IsObject()))) {
+    if (((info.Length() == 2) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()))) || ((info.Length() == 3) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()))) || ((info.Length() == 4) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()))) || ((info.Length() == 5) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) && (info[4]->IsUndefined() || info[4]->IsObject())) || ((info.Length() == 6) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) && (info[4]->IsUndefined() || info[4]->IsObject()))) {
         TestInterfaceConstructor2V8Internal::constructor2(info);
         return;
     }
