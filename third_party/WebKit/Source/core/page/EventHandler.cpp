@@ -3940,16 +3940,13 @@ TouchAction EventHandler::computeEffectiveTouchAction(const LayoutPoint& point)
     if (!node)
         return TouchActionAuto;
 
-    // Start by permitting all actions, then walk the block level elements from
-    // the target node up to the nearest scrollable ancestor and exclude any
-    // prohibited actions. For now this is trivial, but when we add more types
-    // of actions it'll get a little more complex.
+    // Start by permitting all actions, then walk the elements supporting
+    // touch-action from the target node up to the nearest scrollable ancestor
+    // and exclude any prohibited actions.
     TouchAction effectiveTouchAction = TouchActionAuto;
     for (const Node* curNode = node; curNode; curNode = NodeRenderingTraversal::parent(curNode)) {
-        // The spec says only block and SVG elements get touch-action.
-        // FIXME(rbyers): Add correct support for SVG, crbug.com/247396.
         if (RenderObject* renderer = curNode->renderer()) {
-            if (renderer->isRenderBlockFlow()) {
+            if (renderer->visibleForTouchAction()) {
                 TouchAction action = renderer->style()->touchAction();
                 effectiveTouchAction = intersectTouchAction(action, effectiveTouchAction);
                 if (effectiveTouchAction == TouchActionNone)

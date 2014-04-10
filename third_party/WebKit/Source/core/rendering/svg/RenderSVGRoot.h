@@ -65,7 +65,6 @@ public:
 
     virtual bool hasRelativeIntrinsicLogicalWidth() const OVERRIDE;
     virtual bool hasRelativeLogicalHeight() const OVERRIDE;
-    virtual bool visibleForTouchAction() const OVERRIDE { return true; }
 
     // localToBorderBoxTransform maps local SVG viewport coordinates to local CSS box coordinates.
     const AffineTransform& localToBorderBoxTransform() const { return m_localToBorderBoxTransform; }

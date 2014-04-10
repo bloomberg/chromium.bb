@@ -3145,6 +3145,20 @@ bool RenderObject::isInert() const
     return renderer->node()->isInert();
 }
 
+// touch-action applies to all elements with both width AND height properties.
+// According to the CSS Box Model Spec (http://dev.w3.org/csswg/css-box/#the-width-and-height-properties)
+// width applies to all elements but non-replaced inline elements, table rows, and row groups and
+// height applies to all elements but non-replaced inline elements, table columns, and column groups.
+bool RenderObject::visibleForTouchAction() const
+{
+    if (isInline() && !isReplaced())
+        return false;
+    if (isTableRow() || isRenderTableCol())
+        return false;
+
+    return true;
+}
+
 void RenderObject::imageChanged(ImageResource* image, const IntRect* rect)
 {
     imageChanged(static_cast<WrappedImagePtr>(image), rect);

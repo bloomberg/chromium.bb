@@ -944,7 +944,9 @@ public:
     void remove() { if (parent()) parent()->removeChild(this); }
 
     bool isInert() const;
-    virtual bool visibleForTouchAction() const { return false; }
+
+    bool visibleForTouchAction() const;
+
     bool visibleToHitTestRequest(const HitTestRequest& request) const
     {
         if (request.touchAction() && !visibleForTouchAction())

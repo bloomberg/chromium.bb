@@ -51,8 +51,33 @@
   </span>
 </div>
 
+<svg class='ta-none' expected-action='none' style="height: 50px" xmlns="http://www.w3.org/2000/svg">
+  touch-action should be inherited by svg root element
+</svg>
+
 <div class='ta-none' style='height: 0; margin-bottom: 50px'>
   <svg expected-action='none' xmlns="http://www.w3.org/2000/svg">
   touch-action should be inherited by svg root element
   </svg>
 </div>
+
+<div>
+  <img class='ta-none' expected-action='none' src='white-1x1.png'></img>
+  touch-action should be applicable to img element
+</div>
+
+<div class='ta-none' style='height: 0; margin-bottom: 100px'>
+  <img expected-action='none' src='white-1x1.png'></img>
+  touch-action should be inherited by img element
+</div>
+
+<table style='margin-left: 15px; margin-bottom: 50px'>
+  <tr class='ta-none'> <td expected-action='auto'>Test Cell</td> </tr>
+</table>
+
+<table style='margin-left: 15px'>
+  <colgroup>
+    <col class='ta-none'>
+  </colgroup>
+  <tr> <td expected-action='auto'>Test Cell</td> </tr>
+</table>
