@@ -166,7 +166,8 @@ class SCMWrapper(object):
 
       # If a cache_dir is used, obtain the actual remote URL from the cache.
       if getattr(self, 'cache_dir', None):
-        mirror = git_cache.Mirror(self.url)
+        url, _ = gclient_utils.SplitUrlRevision(self.url)
+        mirror = git_cache.Mirror(url)
         if (mirror.exists() and mirror.mirror_path.replace('\\', '/') ==
             actual_remote_url.replace('\\', '/')):
           actual_remote_url = shlex.split(self._Capture(
