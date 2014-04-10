@@ -155,7 +155,8 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
             toRenderImage(renderer())->updateAltText();
     } else if (name == srcAttr || name == srcsetAttr) {
         if (RuntimeEnabledFeatures::srcsetEnabled()) {
-            ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
+            int effectiveSize = -1; // FIXME - hook up the real value from `sizes`
+            ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
             m_bestFitImageURL = candidate.toAtomicString();
             float candidateScaleFactor = candidate.scaleFactor();
             if (candidateScaleFactor > 0)

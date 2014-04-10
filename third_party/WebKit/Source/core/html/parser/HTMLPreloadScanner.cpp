@@ -171,16 +171,17 @@ private:
             else if (match(attributeName, crossoriginAttr))
                 setCrossOriginAllowed(attributeValue);
         } else if (match(m_tagImpl, imgTag)) {
+            int effectiveSize = -1; // FIXME - hook up the real value from `sizes`
             if (match(attributeName, srcAttr) && !m_encounteredImgSrc) {
                 m_encounteredImgSrc = true;
-                setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), attributeValue, m_srcsetImageCandidate), AllowURLReplacement);
+                setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), effectiveSize, attributeValue, m_srcsetImageCandidate), AllowURLReplacement);
             } else if (match(attributeName, crossoriginAttr)) {
                 setCrossOriginAllowed(attributeValue);
             } else if (RuntimeEnabledFeatures::srcsetEnabled()
                 && match(attributeName, srcsetAttr)
                 && m_srcsetImageCandidate.isEmpty()) {
-                m_srcsetImageCandidate = bestFitSourceForSrcsetAttribute(m_mediaValues->devicePixelRatio(), attributeValue);
-                setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), m_urlToLoad, m_srcsetImageCandidate), AllowURLReplacement);
+                m_srcsetImageCandidate = bestFitSourceForSrcsetAttribute(m_mediaValues->devicePixelRatio(), effectiveSize, attributeValue);
+                setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), effectiveSize, m_urlToLoad, m_srcsetImageCandidate), AllowURLReplacement);
             }
         } else if (match(m_tagImpl, linkTag)) {
             if (match(attributeName, hrefAttr))

@@ -3366,6 +3366,7 @@
             'html/LinkRelAttributeTest.cpp',
             'html/TimeRangesTest.cpp',
             'html/parser/HTMLParserThreadTest.cpp',
+            'html/parser/HTMLSrcsetParserTest.cpp',
             'html/track/vtt/BufferedLineReaderTest.cpp',
             'html/track/vtt/VTTScannerTest.cpp',
             'rendering/RenderOverflowTest.cpp',

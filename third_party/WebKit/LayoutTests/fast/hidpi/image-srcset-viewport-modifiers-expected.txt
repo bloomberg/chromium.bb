@@ -1,6 +1,0 @@
-PASS successfullyParsed is true
-
-TEST COMPLETE
-PASS document.getElementById("foo").clientWidth==200 is true
-This test passes if the image below is a green square, since srcset is handled, even though it uses a viewport modifier.
-

@@ -35,6 +35,22 @@
 
 namespace WebCore {
 
+struct DescriptorParsingResult {
+    float scaleFactor;
+    int resourceWidth;
+
+    DescriptorParsingResult()
+    {
+        scaleFactor = -1.0;
+        resourceWidth = -1;
+    }
+
+    bool foundDescriptor() const
+    {
+        return (scaleFactor >= 0 || resourceWidth >= 0);
+    }
+};
+
 class ImageCandidate {
 public:
     ImageCandidate()
@@ -42,9 +58,10 @@ public:
     {
     }
 
-    ImageCandidate(const String& source, unsigned start, unsigned length, float scaleFactor)
+    ImageCandidate(const String& source, unsigned start, unsigned length, const DescriptorParsingResult& result)
         : m_string(source.createView(start, length))
-        , m_scaleFactor(scaleFactor)
+        , m_scaleFactor(result.scaleFactor)
+        , m_resourceWidth(result.resourceWidth)
     {
     }
 
@@ -58,9 +75,19 @@ public:
         return AtomicString(m_string.toString());
     }
 
-    inline float scaleFactor() const
+    void setScaleFactor(float factor)
+    {
+        m_scaleFactor = factor;
+    }
+
+    float scaleFactor() const
     {
         return m_scaleFactor;
+    }
+
+    int resourceWidth() const
+    {
+        return m_resourceWidth;
     }
 
     inline bool isEmpty() const
@@ -71,13 +98,14 @@ public:
 private:
     StringView m_string;
     float m_scaleFactor;
+    int m_resourceWidth;
 };
 
-ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, const String& srcsetAttribute);
+ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, int effectiveSize, const String& srcsetAttribute);
 
-ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFactor, const String& srcAttribute, const String& srcsetAttribute);
+ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFactor, int effectiveSize, const String& srcAttribute, const String& srcsetAttribute);
 
-String bestFitSourceForImageAttributes(float deviceScaleFactor, const String& srcAttribute, ImageCandidate& srcsetImageCandidate);
+String bestFitSourceForImageAttributes(float deviceScaleFactor, int effectiveSize, const String& srcAttribute, ImageCandidate& srcsetImageCandidate);
 
 }
 
