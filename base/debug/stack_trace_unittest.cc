@@ -35,6 +35,7 @@ typedef testing::Test StackTraceTest;
 #else
 #define MAYBE_OutputToStream OutputToStream
 #endif
+#if !defined(__UCLIBC__)
 TEST_F(StackTraceTest, MAYBE_OutputToStream) {
   StackTrace trace;
 
@@ -130,6 +131,7 @@ TEST_F(StackTraceTest, DebugOutputToStream) {
 TEST_F(StackTraceTest, DebugPrintBacktrace) {
   StackTrace().Print();
 }
+#endif  // !defined(__UCLIBC__)
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
 #if !defined(OS_IOS)
