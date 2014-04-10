@@ -8,13 +8,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/user_metrics.h"
 #include "content/browser/utility_process_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/plugin_list.h"
 #include "content/common/utility_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/user_metrics.h"
 
 namespace content {
 

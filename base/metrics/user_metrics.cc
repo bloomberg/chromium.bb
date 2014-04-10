@@ -7,39 +7,68 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/threading/thread_checker.h"
 
 namespace base {
 namespace {
 
-base::LazyInstance<std::vector<ActionCallback> > g_action_callbacks =
-    LAZY_INSTANCE_INITIALIZER;
+// A helper class for tracking callbacks and ensuring thread-safety.
+class Callbacks {
+ public:
+  Callbacks() {}
 
-void Record(const char *action) {
-  for (size_t i = 0; i < g_action_callbacks.Get().size(); i++)
-    g_action_callbacks.Get()[i].Run(action);
-}
+  // Records the |action|.
+  void Record(const std::string& action) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    for (size_t i = 0; i < callbacks_.size(); ++i) {
+      callbacks_[i].Run(action);
+    }
+  }
+
+  // Adds |callback| to the list of |callbacks_|.
+  void AddCallback(const ActionCallback& callback) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    callbacks_.push_back(callback);
+  }
+
+  // Removes the first instance of |callback| from the list of |callbacks_|, if
+  // there is one.
+  void RemoveCallback(const ActionCallback& callback) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    for (size_t i = 0; i < callbacks_.size(); ++i) {
+      if (callbacks_[i].Equals(callback)) {
+        callbacks_.erase(callbacks_.begin() + i);
+        return;
+      }
+    }
+  }
+
+ private:
+  base::ThreadChecker thread_checker_;
+  std::vector<ActionCallback> callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(Callbacks);
+};
+
+base::LazyInstance<Callbacks> g_callbacks = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 void RecordAction(const UserMetricsAction& action) {
-  Record(action.str_);
+  g_callbacks.Get().Record(action.str_);
 }
 
 void RecordComputedAction(const std::string& action) {
-  Record(action.c_str());
+  g_callbacks.Get().Record(action);
 }
 
 void AddActionCallback(const ActionCallback& callback) {
-  g_action_callbacks.Get().push_back(callback);
+  g_callbacks.Get().AddCallback(callback);
 }
 
 void RemoveActionCallback(const ActionCallback& callback) {
-  for (size_t i = 0; i < g_action_callbacks.Get().size(); i++) {
-    if (g_action_callbacks.Get()[i].Equals(callback)) {
-      g_action_callbacks.Get().erase(g_action_callbacks.Get().begin() + i);
-      return;
-    }
-  }
+  g_callbacks.Get().RemoveCallback(callback);
+
 }
 
 }  // namespace base

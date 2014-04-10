@@ -17,6 +17,8 @@ namespace base {
 // the user metrics system.
 
 // Record that the user performed an action.
+// This method *must* be called from the main thread.
+//
 // "Action" here means a user-generated event:
 //   good: "Reload", "CloseTab", and "IMEInvoked"
 //   not good: "SSLDialogShown", "PageLoaded", "DiskFull"
