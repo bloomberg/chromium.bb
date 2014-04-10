@@ -157,11 +157,6 @@ void AutofillExternalDelegate::OnPopupShown() {
 void AutofillExternalDelegate::OnPopupHidden() {
 }
 
-bool AutofillExternalDelegate::ShouldRepostEvent(const ui::MouseEvent& event) {
-  NOTREACHED();
-  return true;
-}
-
 void AutofillExternalDelegate::DidSelectSuggestion(
     const base::string16& value,
     int identifier) {

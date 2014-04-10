@@ -48,6 +48,7 @@ class Widget;
 
 namespace ui {
 class ComboboxModel;
+class EventHandler;
 class KeyEvent;
 }
 
@@ -89,8 +90,6 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void GetUserInput(DialogSection section,
                             FieldValueMap* output) OVERRIDE;
   virtual base::string16 GetCvc() OVERRIDE;
-  virtual bool HitTestInput(ServerFieldType type,
-                            const gfx::Point& screen_point) OVERRIDE;
   virtual bool SaveDetailsLocally() OVERRIDE;
   virtual const content::NavigationController* ShowSignIn() OVERRIDE;
   virtual void HideSignIn() OVERRIDE;
@@ -124,6 +123,7 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // views::WidgetObserver implementation:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
   virtual void OnWidgetBoundsChanged(views::Widget* widget,
                                      const gfx::Rect& new_bounds) OVERRIDE;
 
@@ -586,6 +586,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // state.
   void SetEditabilityForSection(DialogSection section);
 
+  // Handles mouse presses on the non-client view.
+  void NonClientMousePressed();
+
   // The delegate that drives this view. Weak pointer, always non-NULL.
   AutofillDialogViewDelegate* const delegate_;
 
@@ -672,6 +675,9 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // Delegate for the sign-in dialog's webview.
   scoped_ptr<AutofillDialogSignInDelegate> sign_in_delegate_;
+
+  // Used to tell the delegate when focus moves to hide the Autofill popup.
+  scoped_ptr<ui::EventHandler> event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogViews);
 };

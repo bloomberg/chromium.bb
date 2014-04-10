@@ -204,10 +204,6 @@ class TestAutofillDialogView : public AutofillDialogView {
   }
 
   virtual base::string16 GetCvc() OVERRIDE { return base::string16(); }
-  virtual bool HitTestInput(ServerFieldType type,
-                            const gfx::Point& screen_point) OVERRIDE {
-    return false;
-  }
 
   virtual bool SaveDetailsLocally() OVERRIDE {
     return save_details_locally_checked_;

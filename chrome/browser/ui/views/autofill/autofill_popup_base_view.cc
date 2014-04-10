@@ -8,10 +8,7 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/border.h"
-#include "ui/views/event_utils.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
@@ -51,6 +48,7 @@ AutofillPopupBaseView::~AutofillPopupBaseView() {
 void AutofillPopupBaseView::DoShow() {
   if (!GetWidget()) {
     observing_widget_->AddObserver(this);
+    views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
 
     views::FocusManager* focus_manager = observing_widget_->GetFocusManager();
     focus_manager->RegisterAccelerator(
@@ -83,9 +81,6 @@ void AutofillPopupBaseView::DoShow() {
 
   DoUpdateBoundsAndRedrawPopup();
   GetWidget()->Show();
-
-  if (ShouldHideOnOutsideClick())
-    GetWidget()->SetCapture(this);
 }
 
 void AutofillPopupBaseView::DoHide() {
@@ -108,11 +103,19 @@ void AutofillPopupBaseView::DoHide() {
 void AutofillPopupBaseView::RemoveObserver() {
   observing_widget_->GetFocusManager()->UnregisterAccelerators(this);
   observing_widget_->RemoveObserver(this);
+  views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 }
 
 void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
   GetWidget()->SetBounds(delegate_->popup_bounds());
   SchedulePaint();
+}
+
+void AutofillPopupBaseView::OnNativeFocusChange(
+    gfx::NativeView focused_before,
+    gfx::NativeView focused_now) {
+  if (GetWidget() && GetWidget()->GetNativeView() != focused_now)
+    HideController();
 }
 
 void AutofillPopupBaseView::OnWidgetBoundsChanged(views::Widget* widget,
@@ -157,39 +160,10 @@ void AutofillPopupBaseView::OnMouseMoved(const ui::MouseEvent& event) {
 }
 
 bool AutofillPopupBaseView::OnMousePressed(const ui::MouseEvent& event) {
-  if (HitTestPoint(event.location()))
-    return true;
-
-  if (ShouldHideOnOutsideClick()) {
-    GetWidget()->ReleaseCapture();
-
-    gfx::Point screen_loc = event.location();
-    views::View::ConvertPointToScreen(this, &screen_loc);
-
-    ui::MouseEvent mouse_event = event;
-    mouse_event.set_location(screen_loc);
-
-    if (ShouldRepostEvent(mouse_event)) {
-      gfx::NativeView native_view = GetWidget()->GetNativeView();
-      gfx::Screen* screen = gfx::Screen::GetScreenFor(native_view);
-      gfx::NativeWindow window = screen->GetWindowAtScreenPoint(screen_loc);
-      views::RepostLocatedEvent(window, mouse_event);
-    }
-
-    HideController();
-    // |this| is now deleted.
-  }
-
-  return false;
+  return true;
 }
 
 void AutofillPopupBaseView::OnMouseReleased(const ui::MouseEvent& event) {
-  // Because this view can can be shown in response to a mouse press, it can
-  // receive an OnMouseReleased event just after showing. This breaks the mouse
-  // capture, so restart capturing here.
-  if (ShouldHideOnOutsideClick() && GetWidget())
-    GetWidget()->SetCapture(this);
-
   // We only care about the left click.
   if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location()))
     AcceptSelection(event.location());
@@ -256,22 +230,9 @@ void AutofillPopupBaseView::ClearSelection() {
     delegate_->SelectionCleared();
 }
 
-bool AutofillPopupBaseView::ShouldHideOnOutsideClick() {
-  if (delegate_)
-    return delegate_->ShouldHideOnOutsideClick();
-
-  // |this| instance should be in the process of being destroyed, so the return
-  // value shouldn't matter.
-  return false;
-}
-
 void AutofillPopupBaseView::HideController() {
   if (delegate_)
     delegate_->Hide();
-}
-
-bool AutofillPopupBaseView::ShouldRepostEvent(const ui::MouseEvent& event) {
-  return delegate_->ShouldRepostEvent(event);
 }
 
 gfx::NativeView AutofillPopupBaseView::container_view() {

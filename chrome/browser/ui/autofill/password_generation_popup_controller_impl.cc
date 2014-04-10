@@ -303,16 +303,6 @@ void PasswordGenerationPopupControllerImpl::SelectionCleared() {
   PasswordSelected(false);
 }
 
-bool PasswordGenerationPopupControllerImpl::ShouldRepostEvent(
-    const ui::MouseEvent& event) {
-  return false;
-}
-
-bool PasswordGenerationPopupControllerImpl::ShouldHideOnOutsideClick() const {
-  // Will be hidden when focus changes anyway.
-  return false;
-}
-
 gfx::NativeView PasswordGenerationPopupControllerImpl::container_view() {
   return controller_common_.container_view();
 }

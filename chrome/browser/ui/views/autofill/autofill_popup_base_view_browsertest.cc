@@ -29,8 +29,6 @@ class MockAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
   MOCK_METHOD0(AcceptSelectedLine, bool());
   MOCK_METHOD0(SelectionCleared, void());
   // TODO(jdduke): Mock this method upon resolution of crbug.com/352463.
-  bool ShouldRepostEvent(const ui::MouseEvent&) { return false; }
-  MOCK_CONST_METHOD0(ShouldHideOnOutsideClick, bool());
   MOCK_CONST_METHOD0(popup_bounds, gfx::Rect&());
   MOCK_METHOD0(container_view, gfx::NativeView());
 };
@@ -46,8 +44,6 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
     gfx::NativeWindow window = browser()->window()->GetNativeWindow();
     EXPECT_CALL(mock_delegate_, container_view())
         .WillRepeatedly(Return(window));
-    EXPECT_CALL(mock_delegate_, ShouldHideOnOutsideClick())
-        .WillRepeatedly(Return(false));
     EXPECT_CALL(mock_delegate_, ViewDestroyed());
 
     view_ = new AutofillPopupBaseView(

@@ -91,8 +91,6 @@ class PasswordGenerationPopupControllerImpl
   virtual void SetSelectionAtPoint(const gfx::Point& point) OVERRIDE;
   virtual bool AcceptSelectedLine() OVERRIDE;
   virtual void SelectionCleared() OVERRIDE;
-  virtual bool ShouldRepostEvent(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool ShouldHideOnOutsideClick() const OVERRIDE;
   virtual void OnSavedPasswordsLinkClicked() OVERRIDE;
   virtual gfx::NativeView container_view() OVERRIDE;
   virtual const gfx::FontList& font_list() const OVERRIDE;

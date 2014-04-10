@@ -102,7 +102,6 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       view_(NULL),
       delegate_(delegate),
       text_direction_(text_direction),
-      hide_on_outside_click_(false),
       weak_ptr_factory_(this) {
   ClearState();
   controller_common_->SetKeyPressCallback(
@@ -236,7 +235,7 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
 
 void AutofillPopupControllerImpl::Hide() {
   controller_common_->RemoveKeyPressCallback();
-  if (delegate_.get())
+  if (delegate_)
     delegate_->OnPopupHidden();
 
   if (view_)
@@ -318,15 +317,6 @@ bool AutofillPopupControllerImpl::AcceptSelectedLine() {
 
 void AutofillPopupControllerImpl::SelectionCleared() {
   SetSelectedLine(kNoSelection);
-}
-
-bool AutofillPopupControllerImpl::ShouldRepostEvent(
-    const ui::MouseEvent& event) {
-  return delegate_->ShouldRepostEvent(event);
-}
-
-bool AutofillPopupControllerImpl::ShouldHideOnOutsideClick() const {
-  return hide_on_outside_click_;
 }
 
 void AutofillPopupControllerImpl::AcceptSuggestion(size_t index) {
@@ -426,11 +416,6 @@ const gfx::FontList& AutofillPopupControllerImpl::subtext_font_list() const {
 
 int AutofillPopupControllerImpl::selected_line() const {
   return selected_line_;
-}
-
-void AutofillPopupControllerImpl::set_hide_on_outside_click(
-    bool hide_on_outside_click) {
-  hide_on_outside_click_ = hide_on_outside_click;
 }
 
 void AutofillPopupControllerImpl::SetSelectedLine(int selected_line) {

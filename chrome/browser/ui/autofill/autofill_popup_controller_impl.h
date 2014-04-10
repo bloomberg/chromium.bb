@@ -77,8 +77,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   virtual void SetSelectionAtPoint(const gfx::Point& point) OVERRIDE;
   virtual bool AcceptSelectedLine() OVERRIDE;
   virtual void SelectionCleared() OVERRIDE;
-  virtual bool ShouldRepostEvent(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool ShouldHideOnOutsideClick() const OVERRIDE;
   virtual void AcceptSuggestion(size_t index) OVERRIDE;
   virtual int GetIconResourceID(
       const base::string16& resource_name) const OVERRIDE;
@@ -201,9 +199,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // The line that is currently selected by the user.
   // |kNoSelection| indicates that no line is currently selected.
   int selected_line_;
-
-  // Whether the popup view should hide on mouse presses outside of it.
-  bool hide_on_outside_click_;
 
   base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_;
 };

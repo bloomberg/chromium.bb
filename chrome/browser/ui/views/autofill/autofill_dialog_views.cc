@@ -33,6 +33,7 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -65,6 +66,7 @@
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
+#include "ui/views/window/non_client_view.h"
 
 using web_modal::WebContentsModalDialogManager;
 using web_modal::WebContentsModalDialogManagerDelegate;
@@ -457,6 +459,24 @@ views::View* GetAncestralInputView(views::View* view) {
   return view->GetAncestorWithClassName(ExpandingTextfield::kViewClassName);
 }
 
+// A class that informs |delegate_| when an unhandled mouse press occurs.
+class MousePressedHandler : public ui::EventHandler {
+ public:
+  explicit MousePressedHandler(AutofillDialogViewDelegate* delegate)
+      : delegate_(delegate) {}
+
+  // ui::EventHandler implementation.
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_MOUSE_PRESSED && !event->handled())
+      delegate_->FocusMoved();
+  }
+
+ private:
+  AutofillDialogViewDelegate* const delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(MousePressedHandler);
+};
+
 }  // namespace
 
 // AutofillDialogViews::AccountChooser -----------------------------------------
@@ -767,6 +787,11 @@ void AutofillDialogViews::NotificationArea::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
+void AutofillDialogViews::OnWidgetDestroying(views::Widget* widget) {
+  if (widget == window_)
+    window_->GetRootView()->RemovePostTargetHandler(event_handler_.get());
+}
+
 void AutofillDialogViews::OnWidgetClosing(views::Widget* widget) {
   observer_.Remove(widget);
   if (error_bubble_ && error_bubble_->GetWidget() == widget)
@@ -775,6 +800,9 @@ void AutofillDialogViews::OnWidgetClosing(views::Widget* widget) {
 
 void AutofillDialogViews::OnWidgetBoundsChanged(views::Widget* widget,
                                                 const gfx::Rect& new_bounds) {
+  if (error_bubble_ && error_bubble_->GetWidget() == widget)
+    return;
+
   // Notify the web contents of its new auto-resize limits.
   if (sign_in_delegate_ && sign_in_web_view_->visible()) {
     sign_in_delegate_->UpdateLimitsAndEnableAutoResize(
@@ -1234,6 +1262,11 @@ void AutofillDialogViews::Show() {
       views::Widget::GetTopLevelWidgetForNativeView(
           delegate_->GetWebContents()->GetView()->GetNativeView());
   observer_.Add(browser_widget);
+
+  // Listen for unhandled mouse presses on the non-client view.
+  event_handler_.reset(new MousePressedHandler(delegate_));
+  window_->GetRootView()->AddPostTargetHandler(event_handler_.get());
+  observer_.Add(window_);
 }
 
 void AutofillDialogViews::Hide() {
@@ -1375,22 +1408,6 @@ void AutofillDialogViews::GetUserInput(DialogSection section,
 base::string16 AutofillDialogViews::GetCvc() {
   return GroupForSection(GetCreditCardSection())->suggested_info->
       textfield()->GetText();
-}
-
-bool AutofillDialogViews::HitTestInput(ServerFieldType type,
-                                       const gfx::Point& screen_point) {
-  views::View* view = TextfieldForType(type);
-  if (!view)
-    view = ComboboxForType(type);
-
-  if (view) {
-    gfx::Point target_point(screen_point);
-    views::View::ConvertPointFromScreen(view, &target_point);
-    return view->HitTestPoint(target_point);
-  }
-
-  NOTREACHED();
-  return false;
 }
 
 bool AutofillDialogViews::SaveDetailsLocally() {
@@ -2485,6 +2502,10 @@ void AutofillDialogViews::SetEditabilityForSection(DialogSection section) {
       combobox->SetEnabled(editable);
     }
   }
+}
+
+void AutofillDialogViews::NonClientMousePressed() {
+  delegate_->FocusMoved();
 }
 
 AutofillDialogViews::DetailsGroup::DetailsGroup(DialogSection section)

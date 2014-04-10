@@ -186,8 +186,8 @@ const char* NonClientView::GetClassName() const {
   return kViewClassName;
 }
 
-views::View* NonClientView::GetEventHandlerForRect(const gfx::Rect& rect) {
-  if (!views::UsePointBasedTargeting(rect))
+View* NonClientView::GetEventHandlerForRect(const gfx::Rect& rect) {
+  if (!UsePointBasedTargeting(rect))
     return View::GetEventHandlerForRect(rect);
 
   // Because of the z-ordering of our child views (the client view is positioned
@@ -212,7 +212,7 @@ views::View* NonClientView::GetEventHandlerForRect(const gfx::Rect& rect) {
   return View::GetEventHandlerForRect(rect);
 }
 
-views::View* NonClientView::GetTooltipHandlerForPoint(const gfx::Point& point) {
+View* NonClientView::GetTooltipHandlerForPoint(const gfx::Point& point) {
   // The same logic as for |GetEventHandlerForRect()| applies here.
   if (frame_view_->parent() == this) {
     // During the reset of the frame_view_ it's possible to be in this code
@@ -220,7 +220,7 @@ views::View* NonClientView::GetTooltipHandlerForPoint(const gfx::Point& point) {
     // removed from the NonClientView.
     gfx::Point point_in_child_coords(point);
     View::ConvertPointToTarget(this, frame_view_.get(), &point_in_child_coords);
-    views::View* handler =
+    View* handler =
         frame_view_->GetTooltipHandlerForPoint(point_in_child_coords);
     if (handler)
       return handler;

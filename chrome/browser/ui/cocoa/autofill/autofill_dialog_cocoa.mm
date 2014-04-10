@@ -108,12 +108,6 @@ base::string16 AutofillDialogCocoa::GetCvc() {
   return base::SysNSStringToUTF16([sheet_delegate_ getCvc]);
 }
 
-bool AutofillDialogCocoa::HitTestInput(ServerFieldType type,
-                                       const gfx::Point& screen_point) {
-  // TODO(dbeam): implement.
-  return false;
-}
-
 bool AutofillDialogCocoa::SaveDetailsLocally() {
   return [sheet_delegate_ saveDetailsLocally];
 }

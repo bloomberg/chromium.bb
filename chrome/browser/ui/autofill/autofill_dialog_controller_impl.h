@@ -164,7 +164,6 @@ class AutofillDialogControllerImpl
   // AutofillPopupDelegate implementation.
   virtual void OnPopupShown() OVERRIDE;
   virtual void OnPopupHidden() OVERRIDE;
-  virtual bool ShouldRepostEvent(const ui::MouseEvent& event) OVERRIDE;
   virtual void DidSelectSuggestion(const base::string16& value,
                                    int identifier) OVERRIDE;
   virtual void DidAcceptSuggestion(const base::string16& value,
