@@ -11,22 +11,6 @@
 
 namespace media {
 
-// TODO(sandersd): Rename to BufferedDataSourceHost and move to
-// content/renderer/media/.
-class MEDIA_EXPORT DataSourceHost {
- public:
-  // Set the total size of the media file.
-  virtual void SetTotalBytes(int64 total_bytes) = 0;
-
-  // Notify the host that byte range [start,end] has been buffered.
-  // TODO(fischman): remove this method when demuxing is push-based instead of
-  // pull-based.  http://crbug.com/131444
-  virtual void AddBufferedByteRange(int64 start, int64 end) = 0;
-
- protected:
-  virtual ~DataSourceHost();
-};
-
 class MEDIA_EXPORT DataSource {
  public:
   typedef base::Callback<void(int64, int64)> StatusCallback;

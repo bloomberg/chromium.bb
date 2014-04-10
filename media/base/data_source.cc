@@ -11,8 +11,6 @@ namespace media {
 // static
 const int DataSource::kReadError = -1;
 
-DataSourceHost::~DataSourceHost() {}
-
 DataSource::DataSource() {}
 
 DataSource::~DataSource() {}

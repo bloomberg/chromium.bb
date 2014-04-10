@@ -27,6 +27,20 @@ class MediaLog;
 
 namespace content {
 
+class CONTENT_EXPORT BufferedDataSourceHost {
+ public:
+  // Notify the host of the total size of the media file.
+  virtual void SetTotalBytes(int64 total_bytes) = 0;
+
+  // Notify the host that byte range [start,end] has been buffered.
+  // TODO(fischman): remove this method when demuxing is push-based instead of
+  // pull-based.  http://crbug.com/131444
+  virtual void AddBufferedByteRange(int64 start, int64 end) = 0;
+
+ protected:
+  virtual ~BufferedDataSourceHost() {};
+};
+
 // A data source capable of loading URLs and buffering the data using an
 // in-memory sliding window.
 //
@@ -38,12 +52,10 @@ class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
 
   // Buffered byte range changes will be reported to |host|. |downloading_cb|
   // will be called whenever the downloading/paused state of the source changes.
-  // TODO(sandersd): Move media::DataSourceHost to
-  // content::BufferedDataSourceHost.
   BufferedDataSource(const scoped_refptr<base::MessageLoopProxy>& render_loop,
                      blink::WebFrame* frame,
                      media::MediaLog* media_log,
-                     media::DataSourceHost* host,
+                     BufferedDataSourceHost* host,
                      const DownloadingCB& downloading_cb);
   virtual ~BufferedDataSource();
 
@@ -206,7 +218,7 @@ class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
   scoped_refptr<media::MediaLog> media_log_;
 
   // Host object to report buffered byte range changes to.
-  media::DataSourceHost* host_;
+  BufferedDataSourceHost* host_;
 
   DownloadingCB downloading_cb_;
 

@@ -28,9 +28,6 @@ namespace content {
 
 const int64 kPositionNotSpecified = -1;
 
-const char kHttpScheme[] = "http";
-const char kHttpsScheme[] = "https";
-
 // BufferedResourceLoader is single threaded and must be accessed on the
 // render thread. It wraps a WebURLLoader and does in-memory buffering,
 // pausing resource loading when the in-memory buffer is full and resuming

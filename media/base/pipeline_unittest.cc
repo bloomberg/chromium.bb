@@ -38,8 +38,6 @@ using ::testing::WithArg;
 
 namespace media {
 
-const int kTotalBytes = 1024;
-
 ACTION_P(SetDemuxerProperties, duration) {
   arg0->SetDuration(duration);
 }
@@ -217,13 +215,6 @@ class PipelineTest : public ::testing::Test {
       EXPECT_CALL(callbacks_, OnPrerollCompleted());
     }
 
-    // HACK: This is required to test the time range code now that DemuxerHost
-    // does not include SetTotalBytes(). The test cases that depend on this will
-    // be moved out of pipeline_unittest when Pipeline stops implementing
-    // DataSourceHost, see http://crbug.com/122071.
-    DataSourceHost* host = pipeline_.get();
-    host->SetTotalBytes(kTotalBytes);
-
     pipeline_->Start(
         filter_collection_.Pass(),
         base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
@@ -377,8 +368,6 @@ TEST_F(PipelineTest, NotStarted) {
   EXPECT_TRUE(kZero == pipeline_->GetMediaTime());
   EXPECT_EQ(0u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_TRUE(kZero == pipeline_->GetMediaDuration());
-
-  EXPECT_EQ(0, pipeline_->GetTotalBytes());
 }
 
 TEST_F(PipelineTest, NeverInitializes) {
@@ -558,7 +547,6 @@ TEST_F(PipelineTest, Properties) {
   InitializePipeline(PIPELINE_OK);
   EXPECT_EQ(kDuration.ToInternalValue(),
             pipeline_->GetMediaDuration().ToInternalValue());
-  EXPECT_EQ(kTotalBytes, pipeline_->GetTotalBytes());
   EXPECT_FALSE(pipeline_->DidLoadingProgress());
 }
 
@@ -576,13 +564,10 @@ TEST_F(PipelineTest, GetBufferedTimeRanges) {
   EXPECT_EQ(0u, pipeline_->GetBufferedTimeRanges().size());
 
   EXPECT_FALSE(pipeline_->DidLoadingProgress());
-  pipeline_->AddBufferedByteRange(0, kTotalBytes / 8);
+  pipeline_->AddBufferedTimeRange(base::TimeDelta(), kDuration / 8);
   EXPECT_TRUE(pipeline_->DidLoadingProgress());
   EXPECT_FALSE(pipeline_->DidLoadingProgress());
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
-  EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
-  EXPECT_EQ(kDuration / 8, pipeline_->GetBufferedTimeRanges().end(0));
-  pipeline_->AddBufferedTimeRange(base::TimeDelta(), kDuration / 8);
   EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
   EXPECT_EQ(kDuration / 8, pipeline_->GetBufferedTimeRanges().end(0));
 
@@ -590,27 +575,7 @@ TEST_F(PipelineTest, GetBufferedTimeRanges) {
   ExpectSeek(kSeekTime);
   DoSeek(kSeekTime);
 
-  EXPECT_TRUE(pipeline_->DidLoadingProgress());
   EXPECT_FALSE(pipeline_->DidLoadingProgress());
-  pipeline_->AddBufferedByteRange(kTotalBytes / 2,
-                                  kTotalBytes / 2 + kTotalBytes / 8);
-  EXPECT_TRUE(pipeline_->DidLoadingProgress());
-  EXPECT_FALSE(pipeline_->DidLoadingProgress());
-  EXPECT_EQ(2u, pipeline_->GetBufferedTimeRanges().size());
-  EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
-  EXPECT_EQ(kDuration / 8, pipeline_->GetBufferedTimeRanges().end(0));
-  EXPECT_EQ(kDuration / 2, pipeline_->GetBufferedTimeRanges().start(1));
-  EXPECT_EQ(kDuration / 2 + kDuration / 8,
-            pipeline_->GetBufferedTimeRanges().end(1));
-
-  pipeline_->AddBufferedTimeRange(kDuration / 4, 3 * kDuration / 8);
-  EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
-  EXPECT_EQ(kDuration / 8, pipeline_->GetBufferedTimeRanges().end(0));
-  EXPECT_EQ(kDuration / 4, pipeline_->GetBufferedTimeRanges().start(1));
-  EXPECT_EQ(3* kDuration / 8, pipeline_->GetBufferedTimeRanges().end(1));
-  EXPECT_EQ(kDuration / 2, pipeline_->GetBufferedTimeRanges().start(2));
-  EXPECT_EQ(kDuration / 2 + kDuration / 8,
-            pipeline_->GetBufferedTimeRanges().end(2));
 }
 
 TEST_F(PipelineTest, DisableAudioRenderer) {

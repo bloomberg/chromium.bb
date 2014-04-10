@@ -4,12 +4,12 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "content/public/common/url_constants.h"
 #include "content/renderer/media/buffered_data_source.h"
 #include "content/renderer/media/test_response_generator.h"
 #include "content/test/mock_webframeclient.h"
 #include "content/test/mock_weburlloader.h"
 #include "media/base/media_log.h"
-#include "media/base/mock_data_source_host.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
@@ -31,6 +31,18 @@ using blink::WebView;
 
 namespace content {
 
+class MockBufferedDataSourceHost : public BufferedDataSourceHost {
+ public:
+  MockBufferedDataSourceHost() {}
+  virtual ~MockBufferedDataSourceHost() {}
+
+  MOCK_METHOD1(SetTotalBytes, void(int64 total_bytes));
+  MOCK_METHOD2(AddBufferedByteRange, void(int64 start, int64 end));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockBufferedDataSourceHost);
+};
+
 // Overrides CreateResourceLoader() to permit injecting a MockWebURLLoader.
 // Also keeps track of whether said MockWebURLLoader is actively loading.
 class MockBufferedDataSource : public BufferedDataSource {
@@ -38,7 +50,7 @@ class MockBufferedDataSource : public BufferedDataSource {
   MockBufferedDataSource(
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
       WebFrame* frame,
-      media::DataSourceHost* host)
+      BufferedDataSourceHost* host)
       : BufferedDataSource(message_loop, frame, new media::MediaLog(), host,
                            base::Bind(&MockBufferedDataSource::set_downloading,
                                       base::Unretained(this))),
@@ -212,7 +224,7 @@ class BufferedDataSourceTest : public testing::Test {
   WebView* view_;
   WebFrame* frame_;
 
-  StrictMock<media::MockDataSourceHost> host_;
+  StrictMock<MockBufferedDataSourceHost> host_;
   base::MessageLoop message_loop_;
 
  private:

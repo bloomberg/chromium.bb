@@ -587,6 +587,7 @@
         'renderer/media/audio_message_filter_unittest.cc',
         'renderer/media/audio_renderer_mixer_manager_unittest.cc',
         'renderer/media/buffered_data_source_unittest.cc',
+        'renderer/media/buffered_data_source_host_impl_unittest.cc',
         'renderer/media/buffered_resource_loader_unittest.cc',
         'renderer/media/cache_util_unittest.cc',
         'renderer/media/crypto/key_systems_unittest.cc',

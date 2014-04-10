@@ -121,6 +121,8 @@ const char* kMediaEme = "Media.EME.";
 
 namespace content {
 
+class BufferedDataSourceHostImpl;
+
 #define COMPILE_ASSERT_MATCHING_ENUM(name) \
   COMPILE_ASSERT(static_cast<int>(WebMediaPlayer::CORSMode ## name) == \
                  static_cast<int>(BufferedResourceLoader::k ## name), \
@@ -308,13 +310,11 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   }
 
   // Otherwise it's a regular request which requires resolving the URL first.
-  // TODO(sandersd): Make WMPI a DataSourceHost and pass |this| instead of
-  // |&pipeline_|.
   data_source_.reset(new BufferedDataSource(
       main_loop_,
       frame_,
       media_log_.get(),
-      &pipeline_,
+      &buffered_data_source_host_,
       base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
   data_source_->Initialize(
       url, static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
@@ -497,10 +497,14 @@ WebMediaPlayer::ReadyState WebMediaPlayerImpl::readyState() const {
 
 const blink::WebTimeRanges& WebMediaPlayerImpl::buffered() {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  blink::WebTimeRanges web_ranges(
-      ConvertToWebTimeRanges(pipeline_.GetBufferedTimeRanges()));
-  buffered_.swap(web_ranges);
-  return buffered_;
+  media::Ranges<base::TimeDelta> buffered_time_ranges =
+      pipeline_.GetBufferedTimeRanges();
+  buffered_data_source_host_.AddBufferedTimeRanges(
+      &buffered_time_ranges, pipeline_.GetMediaDuration());
+  blink::WebTimeRanges buffered_web_time_ranges(
+      ConvertToWebTimeRanges(buffered_time_ranges));
+  buffered_web_time_ranges_.swap(buffered_web_time_ranges);
+  return buffered_web_time_ranges_;
 }
 
 double WebMediaPlayerImpl::maxTimeSeekable() const {
@@ -519,8 +523,9 @@ double WebMediaPlayerImpl::maxTimeSeekable() const {
 
 bool WebMediaPlayerImpl::didLoadingProgress() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
-
-  return pipeline_.DidLoadingProgress();
+  bool pipeline_progress = pipeline_.DidLoadingProgress();
+  bool data_progress = buffered_data_source_host_.DidLoadingProgress();
+  return pipeline_progress || data_progress;
 }
 
 void WebMediaPlayerImpl::paint(WebCanvas* canvas,

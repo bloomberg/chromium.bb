@@ -222,6 +222,8 @@
     'renderer/media/audio_renderer_mixer_manager.h',
     'renderer/media/buffered_data_source.cc',
     'renderer/media/buffered_data_source.h',
+    'renderer/media/buffered_data_source_host_impl.h',
+    'renderer/media/buffered_data_source_host_impl.cc',
     'renderer/media/buffered_resource_loader.cc',
     'renderer/media/buffered_resource_loader.h',
     'renderer/media/cache_util.cc',

@@ -39,7 +39,6 @@ Pipeline::Pipeline(
       media_log_(media_log),
       running_(false),
       did_loading_progress_(false),
-      total_bytes_(0),
       volume_(1.0f),
       playback_rate_(0.0f),
       clock_(new Clock(&default_tick_clock_)),
@@ -161,32 +160,12 @@ TimeDelta Pipeline::GetMediaTime() const {
 
 Ranges<TimeDelta> Pipeline::GetBufferedTimeRanges() {
   base::AutoLock auto_lock(lock_);
-  Ranges<TimeDelta> time_ranges;
-  for (size_t i = 0; i < buffered_time_ranges_.size(); ++i) {
-    time_ranges.Add(buffered_time_ranges_.start(i),
-                    buffered_time_ranges_.end(i));
-  }
-  if (clock_->Duration() == TimeDelta() || total_bytes_ == 0)
-    return time_ranges;
-  for (size_t i = 0; i < buffered_byte_ranges_.size(); ++i) {
-    TimeDelta start = TimeForByteOffset_Locked(buffered_byte_ranges_.start(i));
-    TimeDelta end = TimeForByteOffset_Locked(buffered_byte_ranges_.end(i));
-    // Cap approximated buffered time at the length of the video.
-    end = std::min(end, clock_->Duration());
-    time_ranges.Add(start, end);
-  }
-
-  return time_ranges;
+  return buffered_time_ranges_;
 }
 
 TimeDelta Pipeline::GetMediaDuration() const {
   base::AutoLock auto_lock(lock_);
   return clock_->Duration();
-}
-
-int64 Pipeline::GetTotalBytes() const {
-  base::AutoLock auto_lock(lock_);
-  return total_bytes_;
 }
 
 bool Pipeline::DidLoadingProgress() const {
@@ -371,38 +350,6 @@ void Pipeline::SetDuration(TimeDelta duration) {
   clock_->SetDuration(duration);
   if (!duration_change_cb_.is_null())
     duration_change_cb_.Run();
-}
-
-void Pipeline::SetTotalBytes(int64 total_bytes) {
-  media_log_->AddEvent(
-      media_log_->CreateStringEvent(
-          MediaLogEvent::TOTAL_BYTES_SET, "total_bytes",
-          base::Int64ToString(total_bytes)));
-  int64 total_mbytes = total_bytes >> 20;
-  if (total_mbytes > kint32max)
-    total_mbytes = kint32max;
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Media.TotalMBytes", static_cast<int32>(total_mbytes), 1, kint32max, 50);
-
-  base::AutoLock auto_lock(lock_);
-  total_bytes_ = total_bytes;
-}
-
-TimeDelta Pipeline::TimeForByteOffset_Locked(int64 byte_offset) const {
-  lock_.AssertAcquired();
-  // Use floating point to avoid potential overflow when using 64 bit integers.
-  double time_offset_in_ms = clock_->Duration().InMilliseconds() *
-      (static_cast<double>(byte_offset) / total_bytes_);
-  TimeDelta time_offset(TimeDelta::FromMilliseconds(
-      static_cast<int64>(time_offset_in_ms)));
-  // Since the byte->time calculation is approximate, fudge the beginning &
-  // ending areas to look better.
-  TimeDelta epsilon = clock_->Duration() / 100;
-  if (time_offset < epsilon)
-    return TimeDelta();
-  if (time_offset + epsilon > clock_->Duration())
-    return clock_->Duration();
-  return time_offset;
 }
 
 void Pipeline::OnStateTransition(PipelineStatus status) {
@@ -681,12 +628,6 @@ void Pipeline::OnStopCompleted(PipelineStatus status) {
     DCHECK_NE(status_, PIPELINE_OK);
     base::ResetAndReturn(&error_cb_).Run(status_);
   }
-}
-
-void Pipeline::AddBufferedByteRange(int64 start, int64 end) {
-  base::AutoLock auto_lock(lock_);
-  buffered_byte_ranges_.Add(start, end);
-  did_loading_progress_ = true;
 }
 
 void Pipeline::AddBufferedTimeRange(base::TimeDelta start,

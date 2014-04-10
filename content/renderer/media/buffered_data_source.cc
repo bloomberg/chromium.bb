@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "content/public/common/url_constants.h"
 #include "media/base/media_log.h"
 #include "net/base/net_errors.h"
 
@@ -81,7 +82,7 @@ BufferedDataSource::BufferedDataSource(
     const scoped_refptr<base::MessageLoopProxy>& render_loop,
     WebFrame* frame,
     media::MediaLog* media_log,
-    media::DataSourceHost* host,
+    BufferedDataSourceHost* host,
     const DownloadingCB& downloading_cb)
     : cors_mode_(BufferedResourceLoader::kUnspecified),
       total_bytes_(kPositionNotSpecified),
