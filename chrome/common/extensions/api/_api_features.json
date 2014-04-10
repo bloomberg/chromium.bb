@@ -376,7 +376,7 @@
   },
   "fileSystemProviderInternal": {
     "internal": true,
-    "dependencies": ["fileSystemProvider"],
+    "dependencies": ["permission:fileSystemProvider"],
     "contexts": ["blessed_extension"]
   },
   "firstRunPrivate": {
