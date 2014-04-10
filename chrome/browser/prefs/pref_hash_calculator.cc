@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/tracked/pref_hash_calculator_helper.h"
 #include "crypto/hmac.h"
@@ -91,6 +92,10 @@ std::string GenerateDeviceIdLikePrefMetricsServiceDid(
 
 }  // namespace
 
+// static
+base::LazyInstance<scoped_ptr<const std::string> >::Leaky
+    PrefHashCalculator::legacy_device_id_instance_ = LAZY_INSTANCE_INITIALIZER;
+
 PrefHashCalculator::PrefHashCalculator(const std::string& seed,
                                        const std::string& device_id)
     : seed_(seed),
@@ -136,10 +141,29 @@ PrefHashCalculator::ValidationResult PrefHashCalculator::Validate(
 }
 
 std::string PrefHashCalculator::RetrieveLegacyDeviceId() const {
-  if (!legacy_device_id_instance_) {
-    legacy_device_id_instance_.reset(
+  scoped_ptr<const std::string>* legacy_device_id_ptr =
+      legacy_device_id_instance_.Pointer();
+  if (!legacy_device_id_ptr->get()) {
+    // Allow IO on this thread to retrieve the legacy device ID. The result of
+    // this operation is stored in |legacy_device_id_instance_| and will thus
+    // only happen once in this browser's lifetime (as verified by the DCHECK
+    // below). This is not ideal, but this value is required synchronously to be
+    // able to continue loading prefs for this profile. This profile should then
+    // be migrated to a modern device ID and subsequent loads of this profile
+    // shouldn't need to run this code ever again. Another option would be to
+    // kick an early task on the FILE thread to start retrieving this ID on
+    // every startup and block here if the result still hasn't made it in when
+    // we need it, but this isn't great either as in most cases it will be
+    // computed for nothing.
+    // TODO(gab): Remove this when the legacy device ID (M33) becomes
+    // irrelevant.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    static bool legacy_device_id_computed = false;
+    DCHECK(!legacy_device_id_computed);
+    legacy_device_id_ptr->reset(
         new std::string(GenerateDeviceIdLikePrefMetricsServiceDid(
             get_legacy_device_id_callback_.Run(raw_device_id_))));
+    legacy_device_id_computed = true;
   }
-  return *legacy_device_id_instance_;
+  return *legacy_device_id_ptr->get();
 }
