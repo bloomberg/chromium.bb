@@ -17,11 +17,17 @@
 class IOBluetoothDevice;
 #endif
 
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
+
 namespace device {
 
 class BluetoothDeviceMac : public BluetoothDevice {
  public:
-  explicit BluetoothDeviceMac(IOBluetoothDevice* device);
+  explicit BluetoothDeviceMac(
+      const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
+      IOBluetoothDevice* device);
   virtual ~BluetoothDeviceMac();
 
   // BluetoothDevice override
@@ -81,6 +87,8 @@ class BluetoothDeviceMac : public BluetoothDevice {
   // List of observers interested in event notifications from us.
   ObserverList<Observer> observers_;
 
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  // (retained)
   IOBluetoothDevice* device_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceMac);

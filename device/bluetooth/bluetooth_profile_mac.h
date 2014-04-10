@@ -18,6 +18,10 @@
 class IOBluetoothDevice;
 #endif
 
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
+
 namespace device {
 
 class BluetoothProfileMac : public BluetoothProfile {
@@ -27,10 +31,15 @@ class BluetoothProfileMac : public BluetoothProfile {
   virtual void SetConnectionCallback(
       const ConnectionCallback& callback) OVERRIDE;
 
-  // Makes an outgoing connection to |device|.
-  // This method runs |socket_callback_| with the socket and returns true if the
-  // connection is made successfully.
-  bool Connect(IOBluetoothDevice* device);
+  typedef base::Callback<void(const std::string&)> ErrorCallback;
+
+  // Makes an outgoing connection to |device|, calling |callback| on succes or
+  // |error_callback| on error. If successful, this method also calls
+  // |connection_callback_| before calling |callback|.
+  void Connect(const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
+               IOBluetoothDevice* device,
+               const base::Closure& callback,
+               const ErrorCallback& error_callback);
 
  private:
   friend BluetoothProfile;

@@ -265,7 +265,7 @@ void BluetoothAdapterMac::UpdateDevices(NSArray* devices) {
   for (IOBluetoothDevice* device in devices) {
     std::string device_address =
         base::SysNSStringToUTF8([device addressString]);
-    devices_[device_address] = new BluetoothDeviceMac(device);
+    devices_[device_address] = new BluetoothDeviceMac(ui_task_runner_, device);
   }
 }
 
@@ -290,7 +290,8 @@ void BluetoothAdapterMac::DeviceFound(IOBluetoothDeviceInquiry* inquiry,
   DCHECK(device_inquiry_ == inquiry);
   std::string device_address = base::SysNSStringToUTF8([device addressString]);
   if (discovered_devices_.find(device_address) == discovered_devices_.end()) {
-    scoped_ptr<BluetoothDeviceMac> device_mac(new BluetoothDeviceMac(device));
+    scoped_ptr<BluetoothDeviceMac> device_mac(
+        new BluetoothDeviceMac(ui_task_runner_, device));
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       DeviceAdded(this, device_mac.get()));
     discovered_devices_.insert(device_address);

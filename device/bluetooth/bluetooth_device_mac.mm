@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/hash.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -35,8 +36,6 @@
 #endif  // MAC_OS_X_VERSION_10_7
 
 namespace {
-
-const char kFailedToConnect[] = "Connection failed";
 
 // Converts |uuid| to a IOBluetoothSDPUUID instance.
 //
@@ -64,9 +63,12 @@ IOBluetoothSDPUUID* GetIOBluetoothSDPUUID(const std::string& uuid) {
 
 namespace device {
 
-BluetoothDeviceMac::BluetoothDeviceMac(IOBluetoothDevice* device)
-    : BluetoothDevice(), device_([device retain]) {
-}
+BluetoothDeviceMac::BluetoothDeviceMac(
+    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
+    IOBluetoothDevice* device)
+    : BluetoothDevice(),
+      ui_task_runner_(ui_task_runner),
+      device_([device retain]) {}
 
 BluetoothDeviceMac::~BluetoothDeviceMac() {
   [device_ release];
@@ -199,9 +201,8 @@ void BluetoothDeviceMac::ConnectToService(
       [device_ getServiceRecordForUUID:GetIOBluetoothSDPUUID(
           service_uuid.canonical_value())];
   if (record != nil) {
-    BluetoothServiceRecordMac service_record(record);
     scoped_refptr<BluetoothSocket> socket(
-        BluetoothSocketMac::CreateBluetoothSocket(service_record));
+        BluetoothSocketMac::CreateBluetoothSocket(ui_task_runner_, record));
     if (socket.get() != NULL)
       callback.Run(socket);
   }
@@ -211,10 +212,9 @@ void BluetoothDeviceMac::ConnectToProfile(
     BluetoothProfile* profile,
     const base::Closure& callback,
     const ConnectToProfileErrorCallback& error_callback) {
-  if (static_cast<BluetoothProfileMac*>(profile)->Connect(device_))
-    callback.Run();
-  else
-    error_callback.Run(kFailedToConnect);
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  static_cast<BluetoothProfileMac*>(profile)
+      ->Connect(ui_task_runner_, device_, callback, error_callback);
 }
 
 void BluetoothDeviceMac::SetOutOfBandPairingData(
