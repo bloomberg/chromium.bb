@@ -1036,6 +1036,10 @@
           'dependencies': [
             '../ui/ozone/ozone.gyp:ozone',
           ],
+          'sources!': [
+            'browser/chromeos/input_method/input_method_engine.cc',
+            'browser/chromeos/input_method/input_method_engine.h',
+          ],
           'sources/': [
             ['exclude', '^browser/chromeos/events/'],
           ],

@@ -110,6 +110,8 @@
       'sources!': [
         'composition_text_util_pango.cc',
         'composition_text_util_pango.h',
+        'chromeos/character_composer.cc',
+        'chromeos/character_composer.h',
       ],
     }],
   ],

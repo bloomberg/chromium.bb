@@ -7,7 +7,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -18,6 +17,10 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_system.h"
+
+#if defined(USE_X11)
+#include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#endif
 
 namespace input_ime = extensions::api::input_ime;
 namespace KeyEventHandled = extensions::api::input_ime::KeyEventHandled;
@@ -308,11 +311,11 @@ InputImeEventRouter::GetInstance() {
   return Singleton<InputImeEventRouter>::get();
 }
 
-#if defined(OS_CHROMEOS)
 bool InputImeEventRouter::RegisterIme(
     Profile* profile,
     const std::string& extension_id,
     const extensions::InputComponentInfo& component) {
+#if defined(USE_X11)
   VLOG(1) << "RegisterIme: " << extension_id << " id: " << component.id;
 
   // If the engine exists already, it may be registered with an old profile.
@@ -349,6 +352,11 @@ bool InputImeEventRouter::RegisterIme(
   engine_map[component.id] = engine;
 
   return true;
+#else
+  // TODO(spang): IME support under ozone.
+  NOTIMPLEMENTED();
+  return false;
+#endif
 }
 
 void InputImeEventRouter::UnregisterAllImes(
@@ -361,7 +369,6 @@ void InputImeEventRouter::UnregisterAllImes(
     engines_.erase(engine_map);
   }
 }
-#endif
 
 InputMethodEngineInterface* InputImeEventRouter::GetEngine(
     const std::string& extension_id, const std::string& engine_id) {
@@ -542,10 +549,10 @@ bool InputImeSendKeyEventsFunction::RunImpl() {
 
   const std::vector<linked_ptr<input_ime::KeyboardEvent> >& key_data =
       params.key_data;
-  std::vector<chromeos::InputMethodEngine::KeyboardEvent> key_data_out;
+  std::vector<chromeos::InputMethodEngineInterface::KeyboardEvent> key_data_out;
 
   for (size_t i = 0; i < key_data.size(); ++i) {
-    chromeos::InputMethodEngine::KeyboardEvent event;
+    chromeos::InputMethodEngineInterface::KeyboardEvent event;
     event.type = input_ime::KeyboardEvent::ToString(key_data[i]->type);
     event.key = key_data[i]->key;
     event.code = key_data[i]->code;
@@ -639,7 +646,6 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunImpl() {
   return true;
 }
 
-#if defined(OS_CHROMEOS)
 bool InputImeSetCandidatesFunction::RunImpl() {
   InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
@@ -775,7 +781,6 @@ bool InputImeKeyEventHandledFunction::RunImpl() {
       extension_id(), params->request_id, params->response);
   return true;
 }
-#endif
 
 InputImeAPI::InputImeAPI(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)) {
