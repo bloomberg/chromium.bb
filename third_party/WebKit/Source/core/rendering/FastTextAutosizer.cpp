@@ -260,7 +260,7 @@ FastTextAutosizer::FastTextAutosizer(const Document* document)
     , m_pageNeedsAutosizing(false)
     , m_previouslyAutosized(false)
     , m_updatePageInfoDeferred(false)
-    , m_firstBlock(0)
+    , m_firstBlockToBeginLayout(0)
 #ifndef NDEBUG
     , m_blocksThatHaveBegunLayout()
 #endif
@@ -296,6 +296,27 @@ void FastTextAutosizer::destroy(const RenderBlock* block)
     m_fingerprintMapper.remove(block);
 }
 
+FastTextAutosizer::BeginLayoutBehavior FastTextAutosizer::prepareForLayout(const RenderBlock* block)
+{
+#ifndef NDEBUG
+    m_blocksThatHaveBegunLayout.add(block);
+#endif
+
+    if (!m_firstBlockToBeginLayout)  {
+#ifdef AUTOSIZING_DOM_DEBUG_INFO
+        writeDebugPageInfo(m_document, m_baseMultiplier, m_layoutWidth, m_frameWidth);
+#endif
+        m_firstBlockToBeginLayout = block;
+        prepareClusterStack(block->parent());
+    } else if (block == currentCluster()->m_root) {
+        // Ignore beginLayout on the same block twice.
+        // This can happen with paginated overflow.
+        return StopLayout;
+    }
+
+    return ContinueLayout;
+}
+
 void FastTextAutosizer::prepareClusterStack(const RenderObject* renderer)
 {
     if (!renderer)
@@ -315,21 +336,9 @@ void FastTextAutosizer::prepareClusterStack(const RenderObject* renderer)
 void FastTextAutosizer::beginLayout(RenderBlock* block)
 {
     ASSERT(enabled() && shouldHandleLayout());
-#ifndef NDEBUG
-    m_blocksThatHaveBegunLayout.add(block);
-#endif
 
-    if (!m_firstBlock)  {
-#ifdef AUTOSIZING_DOM_DEBUG_INFO
-        writeDebugPageInfo(m_document, m_baseMultiplier, m_layoutWidth, m_frameWidth);
-#endif
-        m_firstBlock = block;
-        prepareClusterStack(block->parent());
-    } else if (block == currentCluster()->m_root) {
-        // Ignore beginLayout on the same block twice.
-        // This can happen with paginated overflow.
+    if (prepareForLayout(block) == StopLayout)
         return;
-    }
 
     if (Cluster* cluster = maybeCreateCluster(block)) {
         m_clusterStack.append(adoptPtr(cluster));
@@ -346,9 +355,10 @@ void FastTextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMark
     if (!enabled() || !shouldHandleLayout())
         return;
     ASSERT(listItem && listItemMarker);
-#ifndef NDEBUG
-    m_blocksThatHaveBegunLayout.add(listItem);
-#endif
+
+    if (prepareForLayout(listItem) == StopLayout)
+        return;
+
     // Force the LI to be inside the DBCAT when computing the multiplier.
     // This guarantees that the DBCAT has entered layout, so we can ask for its width.
     // It also makes sense because the list marker is autosized like a text node.
@@ -408,8 +418,8 @@ void FastTextAutosizer::endLayout(RenderBlock* block)
 {
     ASSERT(enabled() && shouldHandleLayout());
 
-    if (block == m_firstBlock) {
-        m_firstBlock = 0;
+    if (block == m_firstBlockToBeginLayout) {
+        m_firstBlockToBeginLayout = 0;
         m_clusterStack.clear();
         m_superclusters.clear();
         m_stylesRetainedDuringLayout.clear();

@@ -97,6 +97,11 @@ private:
         LayoutNeeded // Use this if changing a multiplier outside of layout.
     };
 
+    enum BeginLayoutBehavior {
+        StopLayout,
+        ContinueLayout
+    };
+
     // A supercluster represents autosizing information about a set of two or
     // more blocks that all have the same fingerprint. Clusters whose roots
     // belong to a supercluster will share a common multiplier and
@@ -202,6 +207,7 @@ private:
     bool shouldHandleLayout() const;
     void setAllTextNeedsLayout();
     void resetMultipliers();
+    BeginLayoutBehavior prepareForLayout(const RenderBlock*);
     void prepareClusterStack(const RenderObject*);
     bool isFingerprintingCandidate(const RenderBlock*);
     bool clusterHasEnoughTextToAutosize(Cluster*, const RenderBlock* widthProvider = 0);
@@ -244,7 +250,7 @@ private:
     bool m_pageNeedsAutosizing;
     bool m_previouslyAutosized;
     bool m_updatePageInfoDeferred;
-    const RenderBlock* m_firstBlock; // First block to receive beginLayout.
+    const RenderBlock* m_firstBlockToBeginLayout;
 #ifndef NDEBUG
     BlockSet m_blocksThatHaveBegunLayout; // Used to ensure we don't compute properties of a block before beginLayout() is called on it.
 #endif
