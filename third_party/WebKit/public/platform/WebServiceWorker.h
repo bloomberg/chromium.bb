@@ -33,16 +33,29 @@
 
 #include "WebCommon.h"
 #include "WebMessagePortChannel.h"
+#include "WebServiceWorkerState.h"
+#include "WebString.h"
+#include "WebURL.h"
 #include "WebVector.h"
 
 namespace blink {
 
-class WebString;
+class WebServiceWorkerProxy;
 typedef WebVector<class WebMessagePortChannel*> WebMessagePortChannelArray;
 
 class WebServiceWorker {
 public:
     virtual ~WebServiceWorker() { }
+
+    // Sets ServiceWorkerProxy, with which callee can start making upcalls
+    // to the ServiceWorker object via the client. This doesn't pass the
+    // ownership to the callee, and the proxy's lifetime is same as that of
+    // WebServiceWorker.
+    virtual void setProxy(WebServiceWorkerProxy*) { }
+
+    virtual WebURL scope() const { return WebURL(); }
+    virtual WebURL url() const { return WebURL(); }
+    virtual WebServiceWorkerState state() const { return WebServiceWorkerStateUnknown; }
 
     // Callee receives ownership of the passed vector.
     // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753

@@ -33,6 +33,7 @@
 
 #include "bindings/v8/SerializedScriptValue.h"
 #include "public/platform/WebServiceWorker.h"
+#include "public/platform/WebServiceWorkerProxy.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -44,7 +45,9 @@ class WebServiceWorker;
 
 namespace WebCore {
 
-class ServiceWorker : public RefCounted<ServiceWorker> {
+class ServiceWorker
+    : public RefCounted<ServiceWorker>
+    , public blink::WebServiceWorkerProxy {
 public:
     static PassRefPtr<ServiceWorker> create(PassOwnPtr<blink::WebServiceWorker> worker)
     {
@@ -58,9 +61,12 @@ public:
         return create(adoptPtr(worker));
     }
 
-    ~ServiceWorker() { }
+    virtual ~ServiceWorker() { }
 
     void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
+
+    // WebServiceWorkerProxy overrides.
+    virtual void dispatchStateChangeEvent() OVERRIDE;
 
 private:
     explicit ServiceWorker(PassOwnPtr<blink::WebServiceWorker>);
