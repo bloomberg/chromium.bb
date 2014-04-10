@@ -38,8 +38,7 @@ namespace plugin {
 class PnaclManifest : public Manifest {
  public:
   PnaclManifest(const nacl::string& sandbox_arch)
-      : manifest_base_url_(PnaclUrls::GetBaseUrl()),
-        sandbox_arch_(sandbox_arch) { }
+      : sandbox_arch_(sandbox_arch) { }
 
   virtual ~PnaclManifest() { }
 
@@ -56,16 +55,6 @@ class PnaclManifest : public Manifest {
     error_info->SetReport(PP_NACL_ERROR_MANIFEST_GET_NEXE_URL,
                           "pnacl manifest does not contain a program.");
     return false;
-  }
-
-  virtual bool ResolveURL(const nacl::string& relative_url,
-                          nacl::string* full_url,
-                          ErrorInfo* error_info) const {
-    // Does not do general URL resolution, simply appends relative_url to
-    // the end of manifest_base_url_.
-    UNREFERENCED_PARAMETER(error_info);
-    *full_url = manifest_base_url_ + relative_url;
-    return true;
   }
 
   virtual bool GetFileKeys(std::set<nacl::string>* keys) const {
@@ -92,14 +81,13 @@ class PnaclManifest : public Manifest {
     // Resolve the full URL to the file. Provide it with a platform-specific
     // prefix.
     nacl::string key_basename = key.substr(kFilesPrefix.length());
-    return ResolveURL(sandbox_arch_ + "/" + key_basename,
-                      full_url, error_info);
+    *full_url = PnaclUrls::GetBaseUrl() + sandbox_arch_ + "/" + key_basename;
+    return true;
   }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclManifest);
 
-  nacl::string manifest_base_url_;
   nacl::string sandbox_arch_;
 };
 
@@ -451,7 +439,7 @@ void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
   // The component updater's resource throttles + OnDemand update/install
   // should block the URL request until the compiler is present. Now we
   // can load the resources (e.g. llc and ld nexes).
-  resources_.reset(new PnaclResources(plugin_, this, this->manifest_.get()));
+  resources_.reset(new PnaclResources(plugin_, this));
   CHECK(resources_ != NULL);
 
   // The first step of loading resources: read the resource info file.

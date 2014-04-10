@@ -48,11 +48,9 @@ class PnaclUrls {
 class PnaclResources {
  public:
   PnaclResources(Plugin* plugin,
-                 PnaclCoordinator* coordinator,
-                 const Manifest* manifest)
+                 PnaclCoordinator* coordinator)
       : plugin_(plugin),
-        coordinator_(coordinator),
-        manifest_(manifest) {
+        coordinator_(coordinator) {
   }
   virtual ~PnaclResources();
 
@@ -90,8 +88,6 @@ class PnaclResources {
   Plugin* plugin_;
   // The coordinator responsible for reporting errors, etc.
   PnaclCoordinator* coordinator_;
-  // The manifest for looking up resource URLs.
-  const Manifest* manifest_;
   // The descriptor wrappers for the downloaded URLs.  Only valid
   // once all_loaded_callback_ has been invoked.
   std::map<nacl::string, nacl::DescWrapper*> resource_wrappers_;

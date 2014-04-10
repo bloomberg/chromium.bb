@@ -53,11 +53,6 @@ class JsonManifest : public Manifest {
                              bool* uses_nonsfi_mode,
                              ErrorInfo* error_info) const;
 
-  // Resolves a URL relative to the manifest base URL
-  virtual bool ResolveURL(const nacl::string& relative_url,
-                          nacl::string* full_url,
-                          ErrorInfo* error_info) const;
-
   // Gets the file names from the "files" section of the manifest.  No
   // checking that the keys' values are proper ISA dictionaries -- it
   // is assumed that other consistency checks take care of that, and
@@ -75,6 +70,11 @@ class JsonManifest : public Manifest {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(JsonManifest);
+
+  // Resolves a URL relative to the manifest base URL
+  bool ResolveURL(const nacl::string& relative_url,
+                  nacl::string* full_url,
+                  ErrorInfo* error_info) const;
 
   // Checks that |dictionary_| is a valid manifest, according to the schema.
   // Returns true on success, and sets |error_info| to a detailed message

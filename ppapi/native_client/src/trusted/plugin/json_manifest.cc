@@ -580,26 +580,6 @@ bool JsonManifest::GetKeyUrl(const Json::Value& dictionary,
   return ResolveURL(relative_url, full_url, error_info);
 }
 
-bool JsonManifest::ResolveURL(const nacl::string& relative_url,
-                              nacl::string* full_url,
-                              ErrorInfo* error_info) const {
-  // The contents of the manifest are resolved relative to the manifest URL.
-  CHECK(url_util_ != NULL);
-  pp::Var resolved_url =
-      url_util_->ResolveRelativeToURL(pp::Var(manifest_base_url_),
-                                      relative_url);
-  if (!resolved_url.is_string()) {
-    error_info->SetReport(
-        PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
-        "could not resolve url '" + relative_url +
-        "' relative to manifest base url '" + manifest_base_url_.c_str() +
-        "'.");
-    return false;
-  }
-  *full_url = resolved_url.AsString();
-  return true;
-}
-
 bool JsonManifest::GetProgramURL(nacl::string* full_url,
                                  PnaclOptions* pnacl_options,
                                  bool* uses_nonsfi_mode,
@@ -684,6 +664,26 @@ bool JsonManifest::ResolveKey(const nacl::string& key,
     return false;
   }
   return GetKeyUrl(files, rest, full_url, pnacl_options, error_info);
+}
+
+bool JsonManifest::ResolveURL(const nacl::string& relative_url,
+                              nacl::string* full_url,
+                              ErrorInfo* error_info) const {
+  // The contents of the manifest are resolved relative to the manifest URL.
+  CHECK(url_util_ != NULL);
+  pp::Var resolved_url =
+      url_util_->ResolveRelativeToURL(pp::Var(manifest_base_url_),
+                                      relative_url);
+  if (!resolved_url.is_string()) {
+    error_info->SetReport(
+        PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
+        "could not resolve url '" + relative_url +
+        "' relative to manifest base url '" + manifest_base_url_.c_str() +
+        "'.");
+    return false;
+  }
+  *full_url = resolved_url.AsString();
+  return true;
 }
 
 }  // namespace plugin
