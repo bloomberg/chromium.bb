@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/raster_mode.h"
-#include "cc/resources/raster_worker_pool.h"
+#include "cc/resources/rasterizer.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
@@ -102,7 +102,7 @@ class CC_EXPORT ManagedTileState {
     SkColor solid_color_;
     bool has_text_;
     scoped_ptr<ScopedResource> resource_;
-    scoped_refptr<internal::RasterWorkerPoolTask> raster_task_;
+    scoped_refptr<internal::RasterTask> raster_task_;
   };
 
   ManagedTileState();

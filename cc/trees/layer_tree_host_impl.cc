@@ -49,6 +49,7 @@
 #include "cc/resources/picture_layer_tiling.h"
 #include "cc/resources/pixel_buffer_raster_worker_pool.h"
 #include "cc/resources/prioritized_resource_manager.h"
+#include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/texture_mailbox_deleter.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/scheduler/delay_based_time_source.h"
@@ -306,8 +307,7 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   pending_tree_.reset();
   active_tree_.reset();
   tile_manager_.reset();
-  image_raster_worker_pool_.reset();
-  pixel_buffer_raster_worker_pool_.reset();
+  raster_worker_pool_.reset();
   direct_raster_worker_pool_.reset();
 }
 
@@ -1796,27 +1796,26 @@ void LayerTreeHostImpl::CreateAndSetTileManager(
   DCHECK(resource_provider);
   DCHECK(proxy_->ImplThreadTaskRunner());
 
-  RasterWorkerPool* default_raster_worker_pool = NULL;
   if (using_map_image) {
-    image_raster_worker_pool_ = ImageRasterWorkerPool::Create(
+    raster_worker_pool_ = ImageRasterWorkerPool::Create(
         proxy_->ImplThreadTaskRunner(),
+        RasterWorkerPool::GetTaskGraphRunner(),
         resource_provider,
         GetMapImageTextureTarget(context_provider));
-    default_raster_worker_pool = image_raster_worker_pool_.get();
   } else {
-    pixel_buffer_raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
+    raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
         proxy_->ImplThreadTaskRunner(),
+        RasterWorkerPool::GetTaskGraphRunner(),
         resource_provider,
         GetMaxTransferBufferUsageBytes(context_provider));
-    default_raster_worker_pool = pixel_buffer_raster_worker_pool_.get();
   }
   direct_raster_worker_pool_ = DirectRasterWorkerPool::Create(
       proxy_->ImplThreadTaskRunner(), resource_provider, context_provider);
   tile_manager_ =
       TileManager::Create(this,
                           resource_provider,
-                          default_raster_worker_pool,
-                          direct_raster_worker_pool_.get(),
+                          raster_worker_pool_->AsRasterizer(),
+                          direct_raster_worker_pool_->AsRasterizer(),
                           GetMaxRasterTasksUsageBytes(context_provider),
                           allow_rasterize_on_demand,
                           rendering_stats_instrumentation_);
@@ -1843,8 +1842,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
   // Note: order is important here.
   renderer_.reset();
   tile_manager_.reset();
-  image_raster_worker_pool_.reset();
-  pixel_buffer_raster_worker_pool_.reset();
+  raster_worker_pool_.reset();
   direct_raster_worker_pool_.reset();
   resource_provider_.reset();
   output_surface_.reset();
@@ -1971,8 +1969,7 @@ void LayerTreeHostImpl::ReleaseGL() {
   ReleaseTreeResources();
   renderer_.reset();
   tile_manager_.reset();
-  image_raster_worker_pool_.reset();
-  pixel_buffer_raster_worker_pool_.reset();
+  raster_worker_pool_.reset();
   direct_raster_worker_pool_.reset();
   resource_provider_->InitializeSoftware();
 

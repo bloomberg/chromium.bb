@@ -40,16 +40,14 @@ namespace cc {
 class CompletionEvent;
 class CompositorFrameMetadata;
 class DebugRectHistory;
-class DirectRasterWorkerPool;
 class FrameRateCounter;
-class ImageRasterWorkerPool;
 class LayerImpl;
 class LayerTreeHostImplTimeSourceAdapter;
 class LayerTreeImpl;
 class MemoryHistory;
 class PageScaleAnimation;
 class PaintTimeCounter;
-class PixelBufferRasterWorkerPool;
+class RasterWorkerPool;
 class RenderPassDrawQuad;
 class RenderingStatsInstrumentation;
 class ScrollbarLayerImplBase;
@@ -540,9 +538,8 @@ class CC_EXPORT LayerTreeHostImpl
   // free rendering - see OutputSurface::ForcedDrawToSoftwareDevice().
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<TileManager> tile_manager_;
-  scoped_ptr<ImageRasterWorkerPool> image_raster_worker_pool_;
-  scoped_ptr<PixelBufferRasterWorkerPool> pixel_buffer_raster_worker_pool_;
-  scoped_ptr<DirectRasterWorkerPool> direct_raster_worker_pool_;
+  scoped_ptr<RasterWorkerPool> raster_worker_pool_;
+  scoped_ptr<RasterWorkerPool> direct_raster_worker_pool_;
   scoped_ptr<Renderer> renderer_;
 
   GlobalStateThatImpactsTilePriority global_tile_state_;

@@ -8,24 +8,24 @@
 #include <limits>
 
 #include "base/lazy_instance.h"
-#include "cc/resources/raster_worker_pool.h"
+#include "cc/resources/rasterizer.h"
 
 namespace cc {
 
 namespace {
 
-class FakeRasterWorkerPool : public RasterWorkerPool,
-                             public internal::WorkerPoolTaskClient {
+class FakeRasterizerImpl : public Rasterizer,
+                           public internal::RasterizerTaskClient {
  public:
-  // Overridden from RasterWorkerPool:
-  virtual void SetClient(RasterWorkerPoolClient* client) OVERRIDE {}
+  // Overridden from Rasterizer:
+  virtual void SetClient(RasterizerClient* client) OVERRIDE {}
   virtual void Shutdown() OVERRIDE {}
   virtual void ScheduleTasks(RasterTaskQueue* queue) OVERRIDE {
     for (RasterTaskQueue::Item::Vector::const_iterator it =
              queue->items.begin();
          it != queue->items.end();
          ++it) {
-      internal::RasterWorkerPoolTask* task = it->task;
+      internal::RasterTask* task = it->task;
 
       task->WillSchedule();
       task->ScheduleOnOriginThread(this);
@@ -35,11 +35,10 @@ class FakeRasterWorkerPool : public RasterWorkerPool,
     }
   }
   virtual void CheckForCompletedTasks() OVERRIDE {
-    for (internal::WorkerPoolTask::Vector::iterator it =
-             completed_tasks_.begin();
+    for (internal::RasterTask::Vector::iterator it = completed_tasks_.begin();
          it != completed_tasks_.end();
          ++it) {
-      internal::WorkerPoolTask* task = it->get();
+      internal::RasterTask* task = it->get();
 
       task->WillComplete();
       task->CompleteOnOriginThread(this);
@@ -56,18 +55,17 @@ class FakeRasterWorkerPool : public RasterWorkerPool,
     return RGBA_8888;
   }
 
-  // Overridden from internal::WorkerPoolTaskClient:
-  virtual SkCanvas* AcquireCanvasForRaster(internal::WorkerPoolTask* task,
-                                           const Resource* resource) OVERRIDE {
+  // Overridden from internal::RasterizerTaskClient:
+  virtual SkCanvas* AcquireCanvasForRaster(internal::RasterTask* task)
+      OVERRIDE {
     return NULL;
   }
-  virtual void ReleaseCanvasForRaster(internal::WorkerPoolTask* task,
-                                      const Resource* resource) OVERRIDE {}
+  virtual void ReleaseCanvasForRaster(internal::RasterTask* task) OVERRIDE {}
 
  private:
-  internal::WorkerPoolTask::Vector completed_tasks_;
+  internal::RasterTask::Vector completed_tasks_;
 };
-base::LazyInstance<FakeRasterWorkerPool> g_fake_raster_worker_pool =
+base::LazyInstance<FakeRasterizerImpl> g_fake_rasterizer =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -75,8 +73,8 @@ base::LazyInstance<FakeRasterWorkerPool> g_fake_raster_worker_pool =
 FakeTileManager::FakeTileManager(TileManagerClient* client)
     : TileManager(client,
                   NULL,
-                  g_fake_raster_worker_pool.Pointer(),
-                  g_fake_raster_worker_pool.Pointer(),
+                  g_fake_rasterizer.Pointer(),
+                  g_fake_rasterizer.Pointer(),
                   std::numeric_limits<unsigned>::max(),
                   true,
                   NULL) {}
@@ -85,8 +83,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourceProvider* resource_provider)
     : TileManager(client,
                   resource_provider,
-                  g_fake_raster_worker_pool.Pointer(),
-                  g_fake_raster_worker_pool.Pointer(),
+                  g_fake_rasterizer.Pointer(),
+                  g_fake_rasterizer.Pointer(),
                   std::numeric_limits<unsigned>::max(),
                   true,
                   NULL) {}
@@ -96,8 +94,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  bool allow_on_demand_raster)
     : TileManager(client,
                   resource_provider,
-                  g_fake_raster_worker_pool.Pointer(),
-                  g_fake_raster_worker_pool.Pointer(),
+                  g_fake_rasterizer.Pointer(),
+                  g_fake_rasterizer.Pointer(),
                   std::numeric_limits<unsigned>::max(),
                   allow_on_demand_raster,
                   NULL) {}
@@ -107,8 +105,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  size_t raster_task_limit_bytes)
     : TileManager(client,
                   resource_provider,
-                  g_fake_raster_worker_pool.Pointer(),
-                  g_fake_raster_worker_pool.Pointer(),
+                  g_fake_rasterizer.Pointer(),
+                  g_fake_rasterizer.Pointer(),
                   raster_task_limit_bytes,
                   true,
                   NULL) {}
