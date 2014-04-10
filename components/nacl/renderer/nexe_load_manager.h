@@ -28,6 +28,11 @@ class NexeLoadManager {
   explicit NexeLoadManager(PP_Instance instance);
   ~NexeLoadManager();
 
+  void NexeFileDidOpen(int32_t pp_error,
+                       int32_t fd,
+                       int32_t http_status,
+                       int64_t nexe_bytes_read,
+                       const std::string& url);
   void ReportLoadSuccess(const std::string& url,
                          uint64_t loaded_bytes,
                          uint64_t total_bytes);
@@ -91,7 +96,6 @@ class NexeLoadManager {
   void ReportStartupOverhead() const;
 
   int64_t nexe_size() const { return nexe_size_; }
-  void set_nexe_size(int64_t nexe_size) { nexe_size_ = nexe_size; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NexeLoadManager);

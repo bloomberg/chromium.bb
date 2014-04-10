@@ -271,6 +271,18 @@ interface PPB_NaCl_Private {
                      [in] uint64_t loaded_bytes,
                      [in] uint64_t total_bytes);
 
+  /* Report that the attempt to open the nexe has finished. Opening the file
+   * may have failed, as indicated by a pp_error value that is not PP_OK or an
+   * fd of -1. Failure to stat the file to determine its length results in
+   * nexe_bytes_read being -1.
+   */
+  void NexeFileDidOpen([in] PP_Instance instance,
+                       [in] int32_t pp_error,
+                       [in] int32_t fd,
+                       [in] int32_t http_status,
+                       [in] int64_t nexe_bytes_read,
+                       [in] str_t url);
+
   /* Report that the nexe loaded successfully. */
   void ReportLoadSuccess([in] PP_Instance instance,
                          [in] str_t url,

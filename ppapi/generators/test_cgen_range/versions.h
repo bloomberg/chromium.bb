@@ -9,6 +9,7 @@
 #define PPAPI_C_TEST_CGEN_RANGE_VERSIONS_H_
 
 #include "ppapi/c/pp_macros.h"
+#include "ppapi/c/test_cgen_range/dev_channel_interface.h"
 
 #define FOO_INTERFACE_0_0 "Foo;0.0"
 #define FOO_INTERFACE_1_0 "Foo;1.0"

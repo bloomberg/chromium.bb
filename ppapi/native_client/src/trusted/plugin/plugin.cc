@@ -191,8 +191,7 @@ void Plugin::HistogramEnumerateManifestIsDataURI(bool is_data_uri) {
   HistogramEnumerate("NaCl.Manifest.IsDataURI", is_data_uri, 2, -1);
 }
 
-void Plugin::HistogramHTTPStatusCode(const std::string& name,
-                                     int status) {
+void Plugin::HistogramHTTPStatusCode(const std::string& name, int status) {
   // Log the status codes in rough buckets - 1XX, 2XX, etc.
   int sample = status / 100;
   // HTTP status codes only go up to 5XX, using "6" to indicate an internal
@@ -614,53 +613,25 @@ void Plugin::HistogramStartupTimeMedium(const std::string& name, float dt) {
 }
 
 void Plugin::NexeFileDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("Plugin::NexeFileDidOpen (pp_error=%" NACL_PRId32 ")\n",
-                 pp_error));
   NaClFileInfo tmp_info(nexe_downloader_.GetFileInfo());
   NaClFileInfoAutoCloser info(&tmp_info);
-  PLUGIN_PRINTF(("Plugin::NexeFileDidOpen (file_desc=%" NACL_PRId32 ")\n",
-                 info.get_desc()));
-  HistogramHTTPStatusCode(
-      nacl_interface_->GetIsInstalled(pp_instance()) ?
-          "NaCl.HttpStatusCodeClass.Nexe.InstalledApp" :
-          "NaCl.HttpStatusCodeClass.Nexe.NotInstalledApp",
-      nexe_downloader_.status_code());
-  ErrorInfo error_info;
-  if (pp_error != PP_OK || info.get_desc() == NACL_NO_FILE_DESC) {
-    if (pp_error == PP_ERROR_ABORTED) {
-      ReportLoadAbort();
-    } else if (pp_error == PP_ERROR_NOACCESS) {
-      error_info.SetReport(PP_NACL_ERROR_NEXE_NOACCESS_URL,
-                           "access to nexe url was denied.");
-      ReportLoadError(error_info);
-    } else {
-      error_info.SetReport(PP_NACL_ERROR_NEXE_LOAD_URL,
-                           "could not load nexe url.");
-      ReportLoadError(error_info);
-    }
-    return;
-  }
-  struct stat stat_buf;
-  if (0 != fstat(info.get_desc(), &stat_buf)) {
-    error_info.SetReport(PP_NACL_ERROR_NEXE_STAT, "could not stat nexe file.");
-    ReportLoadError(error_info);
-    return;
-  }
-  size_t nexe_bytes_read = static_cast<size_t>(stat_buf.st_size);
 
-  nacl_interface_->SetNexeSize(pp_instance(), nexe_bytes_read);
-  HistogramSizeKB("NaCl.Perf.Size.Nexe",
-                  static_cast<int32_t>(nexe_bytes_read / 1024));
+  int64_t nexe_bytes_read = -1;
+  if (pp_error == PP_OK && info.get_desc() != NACL_NO_FILE_DESC) {
+    struct stat stat_buf;
+    if (0 == fstat(info.get_desc(), &stat_buf))
+      nexe_bytes_read = stat_buf.st_size;
+  }
+
+  nacl_interface_->NexeFileDidOpen(pp_instance(),
+                                   pp_error,
+                                   info.get_desc(),
+                                   nexe_downloader_.status_code(),
+                                   nexe_bytes_read,
+                                   nexe_downloader_.url().c_str());
   HistogramStartupTimeMedium(
       "NaCl.Perf.StartupTime.NexeDownload",
       static_cast<float>(nexe_downloader_.TimeSinceOpenMilliseconds()));
-
-  // Inform JavaScript that we successfully downloaded the nacl module.
-  EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS,
-                       nexe_downloader_.url(),
-                       LENGTH_IS_COMPUTABLE,
-                       nexe_bytes_read,
-                       nexe_bytes_read);
 
   load_start_ = NaClGetTimeOfDayMicroseconds();
   nacl::scoped_ptr<nacl::DescWrapper>

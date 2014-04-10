@@ -13,10 +13,6 @@ label Chrome {
   M17 = 4.0
 };
 
-describe {
-  int32_t;
-};
-
 /* Bogus Interface Foo */
 [version=0.0]
 interface Foo {

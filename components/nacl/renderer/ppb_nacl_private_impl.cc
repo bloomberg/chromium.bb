@@ -476,6 +476,22 @@ void DispatchEventOnMainThread(PP_Instance instance,
   }
 }
 
+void NexeFileDidOpen(PP_Instance instance,
+                     int32_t pp_error,
+                     int32_t fd,
+                     int32_t http_status,
+                     int64_t nexe_bytes_read,
+                     const char* url) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  if (load_manager) {
+    load_manager->NexeFileDidOpen(pp_error,
+                                  fd,
+                                  http_status,
+                                  nexe_bytes_read,
+                                  url);
+  }
+}
+
 void ReportLoadSuccess(PP_Instance instance,
                        const char* url,
                        uint64_t loaded_bytes,
@@ -517,6 +533,12 @@ void InstanceCreated(PP_Instance instance) {
 void InstanceDestroyed(PP_Instance instance) {
   NexeLoadManagerMap& map = g_load_manager_map.Get();
   DLOG_IF(ERROR, map.count(instance) == 0) << "Could not find instance ID";
+  // The erase may call NexeLoadManager's destructor prior to removing it from
+  // the map. In that case, it is possible for the trusted Plugin to re-enter
+  // the NexeLoadManager (e.g., by calling ReportLoadError). Passing out the
+  // NexeLoadManager to a local scoped_ptr just ensures that its entry is gone
+  // from the map prior to the destructor being invoked.
+  scoped_ptr<nacl::NexeLoadManager> temp(map.take(instance));
   map.erase(instance);
 }
 
@@ -629,13 +651,6 @@ int64_t GetNexeSize(PP_Instance instance) {
   return 0;
 }
 
-void SetNexeSize(PP_Instance instance, int64_t nexe_size) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  DCHECK(load_manager);
-  if (load_manager)
-    return load_manager->set_nexe_size(nexe_size);
-}
-
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -650,6 +665,7 @@ const PPB_NaCl_Private nacl_interface = {
   &ReportTranslationFinished,
   &OpenNaClExecutable,
   &DispatchEvent,
+  &NexeFileDidOpen,
   &ReportLoadSuccess,
   &ReportLoadError,
   &ReportLoadAbort,
@@ -669,8 +685,7 @@ const PPB_NaCl_Private nacl_interface = {
   &SetExitStatus,
   &Vlog,
   &SetInitTime,
-  &GetNexeSize,
-  &SetNexeSize
+  &GetNexeSize
 };
 
 }  // namespace

@@ -11,7 +11,6 @@
 #define PPAPI_C_TEST_CGEN_RANGE_DEV_CHANNEL_INTERFACE_H_
 
 #include "ppapi/c/pp_macros.h"
-#include "ppapi/c/test_cgen_range/versions.h"
 
 #define TESTDEV_INTERFACE_1_0 "TestDev;1.0"
 #define TESTDEV_INTERFACE_1_2 "TestDev;1.2"

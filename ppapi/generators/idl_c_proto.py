@@ -642,7 +642,7 @@ class CGen(object):
       # Add indentation
       line = tab + line
       space_break = line.rfind(' ', 0, 80)
-      if len(line) <= 80 or 'http' in line:
+      if len(line) <= 80 or 'http://' in line:
         # Ignore normal line and URLs permitted by the style guide.
         lines.append(line.rstrip())
       elif not '(' in line and space_break >= 0:
