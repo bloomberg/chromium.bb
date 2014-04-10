@@ -7,9 +7,9 @@
 
 #if defined(ADDRESS_SANITIZER)
 #include <crt_externs.h>  // for _NSGetArgc, _NSGetArgv
+#include <string.h>
 #endif  // ADDRESS_SANITIZER
 #include <stdlib.h>
-#include <string.h>
 
 #if defined(ADDRESS_SANITIZER)
 // NaCl requires its own SEGV handler, so we need to add handle_segv=0 to
