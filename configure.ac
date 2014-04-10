@@ -20,7 +20,7 @@
 
 AC_PREREQ([2.63])
 AC_INIT([libdrm],
-        [2.4.52],
+        [2.4.53],
         [https://bugs.freedesktop.org/enter_bug.cgi?product=DRI],
         [libdrm])
 
