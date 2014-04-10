@@ -66,13 +66,37 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     request.callback = null;
   });
 
+  apiFunctions.setCustomCallback('dropPermissionForMediaFileSystem',
+                                 function(name, request, response) {
+    var galleryId = response[0];
+    var result = response[1];
+
+    if (galleryId && result) {
+      for (var key in mediaGalleriesMetadata) {
+        if (mediaGalleriesMetadata[key].galleryId == galleryId) {
+          delete mediaGalleriesMetadata[key];
+          break;
+        }
+      }
+    }
+    if (request.callback)
+      request.callback(result);
+    request.callback = null;
+  });
+
   apiFunctions.setHandleRequest('getMediaFileSystemMetadata',
                                 function(filesystem) {
     if (filesystem && filesystem.name &&
-        mediaGalleriesMetadata[filesystem.name]) {
+        filesystem.name in mediaGalleriesMetadata) {
       return mediaGalleriesMetadata[filesystem.name];
     }
-    return {};
+    return {
+      'name': '',
+      'galleryId': '',
+      'isRemovable': false,
+      'isMediaDevice': false,
+      'isAvailable': false,
+    };
   });
 
   apiFunctions.setUpdateArgumentsPostValidate('getMetadata',

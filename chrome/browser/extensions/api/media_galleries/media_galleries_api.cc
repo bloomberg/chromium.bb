@@ -62,6 +62,8 @@ using web_modal::WebContentsModalDialogManager;
 namespace extensions {
 
 namespace MediaGalleries = api::media_galleries;
+namespace DropPermissionForMediaFileSystem =
+    MediaGalleries::DropPermissionForMediaFileSystem;
 namespace GetMediaFileSystems = MediaGalleries::GetMediaFileSystems;
 
 namespace {
@@ -641,6 +643,47 @@ MediaGalleriesAddUserSelectedFolderFunction::GetMediaFileSystemsForExtension(
   DCHECK(registry->GetPreferences(GetProfile())->IsInitialized());
   registry->GetMediaFileSystemsForExtension(
       render_view_host(), GetExtension(), cb);
+}
+
+MediaGalleriesDropPermissionForMediaFileSystemFunction::
+    ~MediaGalleriesDropPermissionForMediaFileSystemFunction() {}
+
+bool MediaGalleriesDropPermissionForMediaFileSystemFunction::RunImpl() {
+  media_galleries::UsageCount(
+      media_galleries::DROP_PERMISSION_FOR_MEDIA_FILE_SYSTEM);
+
+  scoped_ptr<DropPermissionForMediaFileSystem::Params> params(
+      DropPermissionForMediaFileSystem::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  MediaGalleryPrefId pref_id;
+  if (base::StringToUint64(params->gallery_id, &pref_id)) {
+    base::Closure callback = base::Bind(
+        &MediaGalleriesDropPermissionForMediaFileSystemFunction::
+            OnPreferencesInit,
+        this,
+        pref_id);
+    if (Setup(GetProfile(), &error_, callback))
+      return true;
+  }
+
+  scoped_ptr<base::ListValue> default_results(new base::ListValue());
+  default_results->AppendString(base::string16());
+  default_results->AppendBoolean(false);
+  SetResult(default_results.release());
+  return false;
+}
+
+void MediaGalleriesDropPermissionForMediaFileSystemFunction::OnPreferencesInit(
+    MediaGalleryPrefId pref_id) {
+  MediaGalleriesPreferences* preferences =
+      media_file_system_registry()->GetPreferences(GetProfile());
+  bool dropped = preferences->SetGalleryPermissionForExtension(
+      *GetExtension(), pref_id, false);
+  scoped_ptr<base::ListValue> results(new base::ListValue());
+  results->AppendString(base::Uint64ToString(pref_id));
+  results->AppendBoolean(dropped);
+  SetResult(results.release());
+  SendResponse(true);
 }
 
 MediaGalleriesStartMediaScanFunction::~MediaGalleriesStartMediaScanFunction() {}

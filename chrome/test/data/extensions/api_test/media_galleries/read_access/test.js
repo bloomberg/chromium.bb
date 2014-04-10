@@ -64,7 +64,7 @@ function GetMetadataTest() {
   TestFirstFilesystem(verifyFilesystem);
 }
 
-function GetMediaFileSystemMetadata() {
+function GetMediaFileSystemMetadataTest() {
   function verifyFilesystem(filesystem) {
     var metadata = mediaGalleries.getMediaFileSystemMetadata(filesystem);
     checkMetadata(metadata);
@@ -74,7 +74,7 @@ function GetMediaFileSystemMetadata() {
   TestFirstFilesystem(verifyFilesystem);
 }
 
-function GetAllMediaFileSystemMetadata() {
+function GetAllMediaFileSystemMetadataTest() {
   function verifyMetadataList(metadataList) {
     chrome.test.assertEq(1, metadataList.length)
     checkMetadata(metadataList[0]);
@@ -82,6 +82,46 @@ function GetAllMediaFileSystemMetadata() {
   }
 
   mediaGalleries.getAllMediaFileSystemMetadata(verifyMetadataList);
+}
+
+function DropPermissionForMediaFileSystemTest() {
+  var droppedFilesystem;
+  var droppedGalleryId;
+
+  function callDropPermission(filesystem) {
+    var metadata = mediaGalleries.getMediaFileSystemMetadata(filesystem);
+    droppedFilesystem = filesystem;
+    droppedGalleryId = metadata.galleryId;
+    mediaGalleries.dropPermissionForMediaFileSystem(
+        droppedGalleryId, verifyDropPermissionSucceeded);
+  }
+
+  function verifyDropPermissionSucceeded(dropped) {
+    chrome.test.assertTrue(dropped);
+    var metadata = mediaGalleries.getMediaFileSystemMetadata(droppedFilesystem);
+    var notFoundMetadata = {
+      "name": "",
+      "galleryId": "",
+      "isRemovable": false,
+      "isMediaDevice": false,
+      "isAvailable": false,
+    }
+    chrome.test.assertEq(notFoundMetadata, metadata);
+    mediaGalleries.getMediaFileSystems(verifyNoFileSystemAccess);
+  }
+
+  function verifyNoFileSystemAccess(results) {
+    chrome.test.assertEq(0, results.length);
+    mediaGalleries.dropPermissionForMediaFileSystem(
+        droppedGalleryId, verifyDropPermissionFailed);
+  }
+
+  function verifyDropPermissionFailed(dropped) {
+    chrome.test.assertFalse(dropped);
+    chrome.test.succeed();
+  }
+
+  TestFirstFilesystem(callDropPermission);
 }
 
 CreateDummyWindowToPreventSleep();
@@ -94,7 +134,8 @@ chrome.test.getConfig(function(config) {
     ReadDirectoryTest,
     ReadFileToBytesTest,
     GetMetadataTest,
-    GetMediaFileSystemMetadata,
-    GetAllMediaFileSystemMetadata,
+    GetMediaFileSystemMetadataTest,
+    GetAllMediaFileSystemMetadataTest,
+    DropPermissionForMediaFileSystemTest,
   ]);
 })

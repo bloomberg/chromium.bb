@@ -33259,6 +33259,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="716" label="FILESYSTEMPROVIDER_UNMOUNT"/>
   <int value="717" label="FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDSUCCESS"/>
   <int value="718" label="FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDERROR"/>
+  <int value="719" label="MEDIAGALLERIES_DROPPERMISSIONFORMEDIAFILESYSTEM"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
@@ -36484,6 +36485,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="19" label="AddScanResults dialog accepted"/>
   <int value="20" label="Gallery removed from AddScanResults dialog"/>
   <int value="21" label="Gallery removed from permission dialog"/>
+  <int value="22" label="DropPermissionForMediaFileSystem API invocations"/>
 </enum>
 
 <enum name="MediaKeyError" type="int">

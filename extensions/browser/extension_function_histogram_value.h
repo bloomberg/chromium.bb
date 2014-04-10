@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_HISTOGRAM_VALUE_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_HISTOGRAM_VALUE_H_
+#ifndef EXTENSIONS_BROWSER_EXTENSION_FUNCTION_HISTOGRAM_VALUE_H_
+#define EXTENSIONS_BROWSER_EXTENSION_FUNCTION_HISTOGRAM_VALUE_H_
 
 namespace extensions {
 namespace functions {
@@ -777,6 +777,7 @@ enum HistogramValue {
   FILESYSTEMPROVIDER_UNMOUNT,
   FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDSUCCESS,
   FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDERROR,
+  MEDIAGALLERIES_DROPPERMISSIONFORMEDIAFILESYSTEM,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY
@@ -785,4 +786,4 @@ enum HistogramValue {
 }  // namespace functions
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_HISTOGRAM_VALUE_H_
+#endif  // EXTENSIONS_BROWSER_EXTENSION_FUNCTION_HISTOGRAM_VALUE_H_

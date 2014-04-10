@@ -179,6 +179,21 @@ class MediaGalleriesAddUserSelectedFolderFunction
   void GetMediaFileSystemsForExtension(const MediaFileSystemsCallback& cb);
 };
 
+class MediaGalleriesDropPermissionForMediaFileSystemFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("mediaGalleries.dropPermissionForMediaFileSystem",
+                             MEDIAGALLERIES_DROPPERMISSIONFORMEDIAFILESYSTEM)
+
+ protected:
+  virtual ~MediaGalleriesDropPermissionForMediaFileSystemFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Bottom half for RunImpl, invoked after the preferences is initialized.
+  void OnPreferencesInit(MediaGalleryPrefId pref_id);
+};
+
 class MediaGalleriesStartMediaScanFunction
     : public ChromeAsyncExtensionFunction {
  public:
