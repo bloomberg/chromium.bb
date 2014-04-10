@@ -64,7 +64,11 @@ class AcceleratorDispatcherLinux : public AcceleratorDispatcher,
     if (IsKeyEvent(event)) {
       ui::KeyEvent key_event(event, false);
       if (MenuClosedForPossibleAccelerator(key_event)) {
+#if defined(USE_X11)
         XPutBackEvent(event->xany.display, event);
+#else
+        NOTIMPLEMENTED();
+#endif
         return ui::POST_DISPATCH_QUIT_LOOP;
       }
 

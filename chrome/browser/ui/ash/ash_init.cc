@@ -44,12 +44,14 @@ bool ShouldOpenAshOnStartup() {
 
 void OpenAsh() {
 #if defined(OS_CHROMEOS)
+#if defined(USE_X11)
   if (base::SysInfo::IsRunningOnChromeOS()) {
     // Hides the cursor outside of the Aura root window. The cursor will be
     // drawn within the Aura root window, and it'll remain hidden after the
     // Aura window is closed.
     ui::HideHostCursor();
   }
+#endif
 
   // Hide the mouse cursor completely at boot.
   if (!chromeos::LoginState::Get()->IsUserLoggedIn())
