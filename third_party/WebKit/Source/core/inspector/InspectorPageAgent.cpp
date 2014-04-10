@@ -275,14 +275,18 @@ TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::resourceTypeJson(Inspe
     switch (resourceType) {
     case DocumentResource:
         return TypeBuilder::Page::ResourceType::Document;
+    case FontResource:
+        return TypeBuilder::Page::ResourceType::Font;
     case ImageResource:
         return TypeBuilder::Page::ResourceType::Image;
-    case Font:
-        return TypeBuilder::Page::ResourceType::Font;
-    case StylesheetResource:
-        return TypeBuilder::Page::ResourceType::Stylesheet;
+    case MediaResource:
+        return TypeBuilder::Page::ResourceType::Media;
     case ScriptResource:
         return TypeBuilder::Page::ResourceType::Script;
+    case StylesheetResource:
+        return TypeBuilder::Page::ResourceType::Stylesheet;
+    case TextTrackResource:
+        return TypeBuilder::Page::ResourceType::TextTrack;
     case XHRResource:
         return TypeBuilder::Page::ResourceType::XHR;
     case WebSocketResource:
@@ -299,7 +303,11 @@ InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Re
     case Resource::Image:
         return InspectorPageAgent::ImageResource;
     case Resource::Font:
-        return InspectorPageAgent::Font;
+        return InspectorPageAgent::FontResource;
+    case Resource::Media:
+        return InspectorPageAgent::MediaResource;
+    case Resource::TextTrack:
+        return InspectorPageAgent::TextTrackResource;
     case Resource::CSSStyleSheet:
         // Fall through.
     case Resource::XSLStyleSheet:

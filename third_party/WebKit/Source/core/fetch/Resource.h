@@ -71,7 +71,8 @@ public:
         LinkSubresource,
         TextTrack,
         Shader,
-        ImportResource
+        ImportResource,
+        Media // Audio or video file requested by a HTML5 media element
     };
 
     enum Status {
@@ -152,7 +153,9 @@ public:
         return type() == MainResource
             || type() == LinkPrefetch
             || type() == LinkSubresource
-            || type() == Raw;
+            || type() == Media
+            || type() == Raw
+            || type() == TextTrack;
     }
 
     // Computes the status of an object after loading.

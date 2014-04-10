@@ -94,6 +94,8 @@ public:
     ResourcePtr<Resource> fetchLinkResource(Resource::Type, FetchRequest&);
     ResourcePtr<ShaderResource> fetchShader(FetchRequest&);
     ResourcePtr<RawResource> fetchImport(FetchRequest&);
+    ResourcePtr<RawResource> fetchMedia(FetchRequest&);
+    ResourcePtr<RawResource> fetchTextTrack(FetchRequest&);
 
     // Logs an access denied message to the console for the specified URL.
     void printAccessDeniedMessage(const KURL&) const;

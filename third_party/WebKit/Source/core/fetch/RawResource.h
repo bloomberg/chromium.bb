@@ -60,7 +60,7 @@ private:
 inline bool isRawResource(const Resource& resource)
 {
     Resource::Type type = resource.type();
-    return type == Resource::MainResource || type == Resource::Raw || type == Resource::TextTrack || type == Resource::ImportResource;
+    return type == Resource::MainResource || type == Resource::Raw || type == Resource::TextTrack || type == Resource::Media || type == Resource::ImportResource;
 }
 #endif
 inline RawResource* toRawResource(const ResourcePtr<Resource>& resource)

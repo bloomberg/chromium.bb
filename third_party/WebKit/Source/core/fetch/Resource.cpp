@@ -907,6 +907,8 @@ const char* Resource::resourceTypeToString(Type type, const FetchInitiatorInfo& 
         return "Shader";
     case Resource::ImportResource:
         return "Imported resource";
+    case Resource::Media:
+        return "Media";
     }
     ASSERT_NOT_REACHED();
     return initatorTypeNameToString(initiatorInfo.name);
@@ -942,6 +944,8 @@ const char* ResourceTypeName(Resource::Type type)
         return "Shader";
     case Resource::ImportResource:
         return "ImportResource";
+    case Resource::Media:
+        return "Media";
     }
     ASSERT_NOT_REACHED();
     return "Unknown";

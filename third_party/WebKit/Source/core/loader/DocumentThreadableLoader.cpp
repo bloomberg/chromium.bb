@@ -384,7 +384,10 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request)
 
         FetchRequest newRequest(request, m_options.initiator, options);
         ASSERT(!resource());
-        setResource(m_document.fetcher()->fetchRawResource(newRequest));
+        if (request.targetType() == ResourceRequest::TargetIsMedia)
+            setResource(m_document.fetcher()->fetchMedia(newRequest));
+        else
+            setResource(m_document.fetcher()->fetchRawResource(newRequest));
         if (resource() && resource()->loader()) {
             unsigned long identifier = resource()->identifier();
             InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(&m_document, identifier, m_client);

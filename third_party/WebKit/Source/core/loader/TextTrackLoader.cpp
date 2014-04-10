@@ -119,7 +119,7 @@ bool TextTrackLoader::load(const KURL& url, const AtomicString& crossOriginMode)
     }
 
     ResourceFetcher* fetcher = m_document.fetcher();
-    setResource(fetcher->fetchRawResource(cueRequest));
+    setResource(fetcher->fetchTextTrack(cueRequest));
     return resource();
 }
 

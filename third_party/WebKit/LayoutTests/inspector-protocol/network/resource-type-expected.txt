@@ -1,0 +1,12 @@
+Tests that responseReceived contains the documented resource types.
+
+Test started
+Network agent enabled
+Resource /resources-page.html got type Document
+Resource /stylesheet.css got type Stylesheet
+Resource /script.js got type Script
+Resource /abe.png got type Image
+Resource /test.wav got type Media
+Resource /test.ogv got type Media
+Resource /simple-captions.vtt got type TextTrack
+
