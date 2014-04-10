@@ -30,9 +30,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
-#include "chrome/browser/chromeos/events/event_rewriter.h"
-#include "chrome/browser/chromeos/events/system_key_event_listener.h"
-#include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/extensions/extension_system_event_observer.h"
 #include "chrome/browser/chromeos/external_metrics.h"
@@ -114,6 +111,9 @@
 // Exclude X11 dependents for ozone
 #if defined(USE_X11)
 #include "chrome/browser/chromeos/device_uma.h"
+#include "chrome/browser/chromeos/events/event_rewriter.h"
+#include "chrome/browser/chromeos/events/system_key_event_listener.h"
+#include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
 #endif
 
 namespace chromeos {
@@ -426,6 +426,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   imageburner::BurnManager::Initialize(
       downloads_directory, g_browser_process->system_request_context());
 
+#if defined(USE_X11)
   // Listen for system key events so that the user will be able to adjust the
   // volume on the login screen, if Chrome is running on Chrome OS
   // (i.e. not Linux desktop), and in non-test mode.
@@ -434,6 +435,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
       !parameters().ui_task) {  // ui_task is non-NULL when running tests.
     SystemKeyEventListener::Initialize();
   }
+#endif
 
   DeviceOAuth2TokenServiceFactory::Initialize();
 
@@ -692,17 +694,17 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 
   g_browser_process->metrics_service()->StartExternalMetrics();
 
+#if defined(USE_X11)
   // Listen for XI_HierarchyChanged events. Note: if this is moved to
   // PreMainMessageLoopRun() then desktopui_PageCyclerTests fail for unknown
   // reasons, see http://crosbug.com/24833.
   XInputHierarchyChangedEventListener::GetInstance();
 
-#if defined(USE_X11)
   // Start the CrOS input device UMA watcher
   DeviceUMA::GetInstance();
-#endif
 
   event_rewriter_.reset(new EventRewriter());
+#endif
 
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- immediately after ChildProcess::WaitForDebugger().
@@ -765,24 +767,26 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   retail_mode_power_save_blocker_.reset();
   peripheral_battery_observer_.reset();
   power_prefs_.reset();
-  event_rewriter_.reset();
 
   // Let the ScreenLocker unregister itself from SessionManagerClient before
   // DBusThreadManager is shut down.
   if (!KioskModeSettings::Get()->IsKioskModeEnabled())
     ScreenLocker::ShutDownClass();
 
+#if defined(USE_X11)
+  event_rewriter_.reset();
+
   // The XInput2 event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.
   XInputHierarchyChangedEventListener::GetInstance()->Stop();
 
-#if defined(USE_X11)
   DeviceUMA::GetInstance()->Stop();
-#endif
 
   // SystemKeyEventListener::Shutdown() is always safe to call,
   // even if Initialize() wasn't called.
   SystemKeyEventListener::Shutdown();
+#endif
+
   imageburner::BurnManager::Shutdown();
   CrasAudioHandler::Shutdown();
 

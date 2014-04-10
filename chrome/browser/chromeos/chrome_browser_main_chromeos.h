@@ -67,7 +67,10 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<DataPromoNotification> data_promo_notification_;
 
   scoped_ptr<internal::DBusServices> dbus_services_;
+
+#if defined(USE_X11)
   scoped_ptr<EventRewriter> event_rewriter_;
+#endif
 
   VersionLoader cros_version_loader_;
   base::CancelableTaskTracker tracker_;

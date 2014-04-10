@@ -7,9 +7,12 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "content/public/browser/browser_thread.h"
+
+#if defined(USE_X11)
+#include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
+#endif
 
 using content::BrowserThread;
 
@@ -21,13 +24,17 @@ PointerDeviceObserver::PointerDeviceObserver()
 }
 
 PointerDeviceObserver::~PointerDeviceObserver() {
+#if defined(USE_X11)
   XInputHierarchyChangedEventListener::GetInstance()
       ->RemoveObserver(this);
+#endif
 }
 
 void PointerDeviceObserver::Init() {
+#if defined(USE_X11)
   XInputHierarchyChangedEventListener::GetInstance()
       ->AddObserver(this);
+#endif
 }
 
 void PointerDeviceObserver::CheckDevices() {

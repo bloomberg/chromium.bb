@@ -1036,6 +1036,9 @@
           'dependencies': [
             '../ui/ozone/ozone.gyp:ozone',
           ],
+          'sources/': [
+            ['exclude', '^browser/chromeos/events/'],
+          ],
         }],
       ],
     },
