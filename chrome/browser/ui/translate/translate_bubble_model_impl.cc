@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
 
 #include "chrome/browser/translate/translate_tab_helper.h"
-#include "chrome/browser/translate/translate_ui_delegate.h"
 #include "components/translate/core/browser/language_state.h"
+#include "components/translate/core/browser/translate_ui_delegate.h"
 
 TranslateBubbleModelImpl::TranslateBubbleModelImpl(
     translate::TranslateStep step,
@@ -106,10 +106,7 @@ void TranslateBubbleModelImpl::TranslationDeclined(bool explicitly_closed) {
 }
 
 bool TranslateBubbleModelImpl::IsPageTranslatedInCurrentLanguages() const {
-  content::WebContents* web_contents = ui_delegate_->web_contents();
-  TranslateTabHelper* translate_tab_helper =
-      TranslateTabHelper::FromWebContents(web_contents);
-  LanguageState& language_state = translate_tab_helper->GetLanguageState();
+  const LanguageState& language_state = ui_delegate_->GetLanguageState();
   return ui_delegate_->GetOriginalLanguageCode() ==
       language_state.original_language() &&
       ui_delegate_->GetTargetLanguageCode() ==

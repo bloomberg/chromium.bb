@@ -28,7 +28,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
-#include "chrome/browser/translate/translate_ui_delegate.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -80,6 +79,7 @@
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
+#include "components/translate/core/browser/translate_ui_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -1790,8 +1790,11 @@ enum {
   TranslateTabHelper::GetTranslateLanguages(contents,
                                             &sourceLanguage, &targetLanguage);
 
-  scoped_ptr<TranslateUIDelegate> uiDelegate(
-      new TranslateUIDelegate(contents, sourceLanguage, targetLanguage));
+  scoped_ptr<TranslateUIDelegate> uiDelegate(new TranslateUIDelegate(
+      TranslateTabHelper::FromWebContents(contents),
+      TranslateTabHelper::GetManagerFromWebContents(contents),
+      sourceLanguage,
+      targetLanguage));
   scoped_ptr<TranslateBubbleModel> model(
       new TranslateBubbleModelImpl(step, uiDelegate.Pass()));
   translateBubbleController_ = [[TranslateBubbleController alloc]

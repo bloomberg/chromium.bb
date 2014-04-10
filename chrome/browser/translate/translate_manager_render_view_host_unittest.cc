@@ -387,8 +387,11 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
         translate_tab_helper->GetLanguageState().original_language();
     std::string target_language = TranslateDownloadManager::GetLanguageCode(
         g_browser_process->GetApplicationLocale());
-    scoped_ptr<TranslateUIDelegate> ui_delegate(new TranslateUIDelegate(
-        web_contents, source_language, target_language));
+    scoped_ptr<TranslateUIDelegate> ui_delegate(
+        new TranslateUIDelegate(translate_tab_helper,
+                                translate_tab_helper->GetTranslateManager(),
+                                source_language,
+                                target_language));
     model_.reset(new TranslateBubbleModelImpl(step, ui_delegate.Pass()));
   }
 

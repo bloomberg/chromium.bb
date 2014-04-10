@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_UI_DELEGATE_H_
-#define CHROME_BROWSER_TRANSLATE_TRANSLATE_UI_DELEGATE_H_
+#ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_UI_DELEGATE_H_
+#define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_UI_DELEGATE_H_
 
 #include <string>
 #include <vector>
@@ -11,32 +11,31 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/common/chrome_constants.h"
 #include "components/translate/core/common/translate_errors.h"
 
+class LanguageState;
+class TranslateClient;
+class TranslateDriver;
+class TranslateManager;
 class TranslatePrefs;
-
-namespace content {
-class WebContents;
-}  // namespace content
 
 // The TranslateUIDelegate is a generic delegate for UI which offers Translate
 // feature to the user.
 class TranslateUIDelegate {
  public:
-  enum {
-    NO_INDEX = -1,
-  };
+  enum { NO_INDEX = -1, };
 
-  TranslateUIDelegate(content::WebContents* web_contents,
+  TranslateUIDelegate(TranslateClient* translate_client,
+                      TranslateManager* translate_manager,
                       const std::string& original_language,
                       const std::string& target_language);
   virtual ~TranslateUIDelegate();
 
-  content::WebContents* web_contents() { return web_contents_; }
-
   // Handles when an error message is shown.
   void OnErrorShown(TranslateErrors::Type error_type);
+
+  // Returns the LanguageState associated with this object.
+  const LanguageState& GetLanguageState();
 
   // Returns the number of languages supported.
   size_t GetNumberOfLanguages() const;
@@ -99,7 +98,9 @@ class TranslateUIDelegate {
   // associated with the current page.
   std::string GetPageHost();
 
-  content::WebContents* web_contents_;
+  TranslateClient* translate_client_;
+  TranslateDriver* translate_driver_;
+  TranslateManager* translate_manager_;
 
   typedef std::pair<std::string, base::string16> LanguageNamePair;
 
@@ -128,4 +129,4 @@ class TranslateUIDelegate {
   DISALLOW_COPY_AND_ASSIGN(TranslateUIDelegate);
 };
 
-#endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_UI_DELEGATE_H_
+#endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_UI_DELEGATE_H_

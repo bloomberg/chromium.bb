@@ -335,7 +335,10 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     : InfoBarDelegate(),
       step_(step),
       background_animation_(NONE),
-      ui_delegate_(web_contents, original_language, target_language),
+      ui_delegate_(TranslateTabHelper::FromWebContents(web_contents),
+                   TranslateTabHelper::GetManagerFromWebContents(web_contents),
+                   original_language,
+                   target_language),
       error_type_(error_type),
       prefs_(TranslateTabHelper::CreateTranslatePrefs(prefs)),
       triggered_from_menu_(triggered_from_menu) {

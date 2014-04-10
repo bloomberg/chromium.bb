@@ -77,6 +77,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     web_contents_.reset(
         WebContents::Create(WebContents::CreateParams(profile())));
     InfoBarService::CreateForWebContents(web_contents_.get());
+    TranslateTabHelper::CreateForWebContents(web_contents_.get());
   }
 
   virtual void TearDown() OVERRIDE {

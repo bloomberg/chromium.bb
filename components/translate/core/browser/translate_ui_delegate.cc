@@ -1,21 +1,18 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/translate/translate_ui_delegate.h"
+#include "components/translate/core/browser/translate_ui_delegate.h"
 
 #include "base/i18n/string_compare.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
+#include "components/translate/core/browser/language_state.h"
+#include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_constants.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/web_contents.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -34,44 +31,52 @@ const char kShowErrorUI[] = "Translate.ShowErrorUI";
 
 }  // namespace
 
-TranslateUIDelegate::TranslateUIDelegate(content::WebContents* web_contents,
+TranslateUIDelegate::TranslateUIDelegate(TranslateClient* translate_client,
+                                         TranslateManager* translate_manager,
                                          const std::string& original_language,
                                          const std::string& target_language)
-    : web_contents_(web_contents),
+    : translate_client_(translate_client),
+      translate_driver_(translate_client->GetTranslateDriver()),
+      translate_manager_(translate_manager),
       original_language_index_(NO_INDEX),
       initial_original_language_index_(NO_INDEX),
       target_language_index_(NO_INDEX) {
-  DCHECK(web_contents_);
+  DCHECK(translate_client_);
+  DCHECK(translate_driver_);
+  DCHECK(translate_manager_);
 
   std::vector<std::string> language_codes;
   TranslateDownloadManager::GetSupportedLanguages(&language_codes);
 
   // Preparing for the alphabetical order in the locale.
   UErrorCode error = U_ZERO_ERROR;
-  std::string locale = g_browser_process->GetApplicationLocale();
+  std::string locale =
+      TranslateDownloadManager::GetInstance()->application_locale();
   icu::Locale loc(locale.c_str());
   scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(loc, error));
   collator->setStrength(icu::Collator::PRIMARY);
 
   languages_.reserve(language_codes.size());
   for (std::vector<std::string>::const_iterator iter = language_codes.begin();
-       iter != language_codes.end(); ++iter) {
+       iter != language_codes.end();
+       ++iter) {
     std::string language_code = *iter;
 
-    base::string16 language_name = l10n_util::GetDisplayNameForLocale(
-        language_code, g_browser_process->GetApplicationLocale(), true);
+    base::string16 language_name =
+        l10n_util::GetDisplayNameForLocale(language_code, locale, true);
     // Insert the language in languages_ in alphabetical order.
     std::vector<LanguageNamePair>::iterator iter2;
     for (iter2 = languages_.begin(); iter2 != languages_.end(); ++iter2) {
-      if (base::i18n::CompareString16WithCollator(collator.get(),
-          language_name, iter2->second) == UCOL_LESS) {
+      if (base::i18n::CompareString16WithCollator(
+              collator.get(), language_name, iter2->second) == UCOL_LESS) {
         break;
       }
     }
     languages_.insert(iter2, LanguageNamePair(language_code, language_name));
   }
   for (std::vector<LanguageNamePair>::const_iterator iter = languages_.begin();
-       iter != languages_.end(); ++iter) {
+       iter != languages_.end();
+       ++iter) {
     std::string language_code = iter->first;
     if (language_code == original_language) {
       original_language_index_ = iter - languages_.begin();
@@ -81,13 +86,10 @@ TranslateUIDelegate::TranslateUIDelegate(content::WebContents* web_contents,
       target_language_index_ = iter - languages_.begin();
   }
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  prefs_ = TranslateTabHelper::CreateTranslatePrefs(profile->GetPrefs());
+  prefs_ = translate_client_->GetTranslatePrefs();
 }
 
-TranslateUIDelegate::~TranslateUIDelegate() {
-}
+TranslateUIDelegate::~TranslateUIDelegate() {}
 
 void TranslateUIDelegate::OnErrorShown(TranslateErrors::Type error_type) {
   DCHECK_LE(TranslateErrors::NONE, error_type);
@@ -96,8 +98,12 @@ void TranslateUIDelegate::OnErrorShown(TranslateErrors::Type error_type) {
   if (error_type == TranslateErrors::NONE)
     return;
 
-  UMA_HISTOGRAM_ENUMERATION(kShowErrorUI, error_type,
-                            TranslateErrors::TRANSLATE_ERROR_MAX);
+  UMA_HISTOGRAM_ENUMERATION(
+      kShowErrorUI, error_type, TranslateErrors::TRANSLATE_ERROR_MAX);
+}
+
+const LanguageState& TranslateUIDelegate::GetLanguageState() {
+  return translate_driver_->GetLanguageState();
 }
 
 size_t TranslateUIDelegate::GetNumberOfLanguages() const {
@@ -129,7 +135,6 @@ void TranslateUIDelegate::UpdateTargetLanguageIndex(size_t language_index) {
   target_language_index_ = language_index;
 }
 
-
 std::string TranslateUIDelegate::GetLanguageCodeAt(size_t index) const {
   DCHECK_LT(index, GetNumberOfLanguages());
   return languages_[index].first;
@@ -143,9 +148,9 @@ base::string16 TranslateUIDelegate::GetLanguageNameAt(size_t index) const {
 }
 
 std::string TranslateUIDelegate::GetOriginalLanguageCode() const {
-  return (GetOriginalLanguageIndex() == static_cast<size_t>(NO_INDEX)) ?
-      translate::kUnknownLanguageCode :
-      GetLanguageCodeAt(GetOriginalLanguageIndex());
+  return (GetOriginalLanguageIndex() == static_cast<size_t>(NO_INDEX))
+             ? translate::kUnknownLanguageCode
+             : GetLanguageCodeAt(GetOriginalLanguageIndex());
 }
 
 std::string TranslateUIDelegate::GetTargetLanguageCode() const {
@@ -153,30 +158,24 @@ std::string TranslateUIDelegate::GetTargetLanguageCode() const {
 }
 
 void TranslateUIDelegate::Translate() {
-  if (!web_contents()->GetBrowserContext()->IsOffTheRecord()) {
+  if (!translate_driver_->IsOffTheRecord()) {
     prefs_->ResetTranslationDeniedCount(GetOriginalLanguageCode());
     prefs_->IncrementTranslationAcceptedCount(GetOriginalLanguageCode());
   }
-  TranslateManager* manager =
-      TranslateTabHelper::GetManagerFromWebContents(web_contents());
-  DCHECK(manager);
-  manager->TranslatePage(
+  translate_manager_->TranslatePage(
       GetOriginalLanguageCode(), GetTargetLanguageCode(), false);
 
   UMA_HISTOGRAM_BOOLEAN(kPerformTranslate, true);
 }
 
 void TranslateUIDelegate::RevertTranslation() {
-  TranslateManager* manager =
-      TranslateTabHelper::GetManagerFromWebContents(web_contents());
-  DCHECK(manager);
-  manager->RevertTranslation();
+  translate_manager_->RevertTranslation();
 
   UMA_HISTOGRAM_BOOLEAN(kRevertTranslation, true);
 }
 
 void TranslateUIDelegate::TranslationDeclined(bool explicitly_closed) {
-  if (!web_contents()->GetBrowserContext()->IsOffTheRecord()) {
+  if (!translate_driver_->IsOffTheRecord()) {
     prefs_->ResetTranslationAcceptedCount(GetOriginalLanguageCode());
     prefs_->IncrementTranslationDeniedCount(GetOriginalLanguageCode());
   }
@@ -186,8 +185,7 @@ void TranslateUIDelegate::TranslationDeclined(bool explicitly_closed) {
   // translations when getting a LANGUAGE_DETERMINED from the page, which
   // happens when a load stops. That could happen multiple times, including
   // after the user already declined the translation.)
-  TranslateTabHelper::FromWebContents(web_contents())->
-      GetLanguageState().set_translation_declined(true);
+  translate_driver_->GetLanguageState().set_translation_declined(true);
 
   UMA_HISTOGRAM_BOOLEAN(kDeclineTranslate, true);
 
@@ -202,10 +200,7 @@ bool TranslateUIDelegate::IsLanguageBlocked() {
 void TranslateUIDelegate::SetLanguageBlocked(bool value) {
   if (value) {
     prefs_->BlockLanguage(GetOriginalLanguageCode());
-    TranslateTabHelper* translate_tab_helper =
-        TranslateTabHelper::FromWebContents(web_contents());
-    DCHECK(translate_tab_helper);
-    translate_tab_helper->GetLanguageState().SetTranslateEnabled(false);
+    translate_driver_->GetLanguageState().SetTranslateEnabled(false);
   } else {
     prefs_->UnblockLanguage(GetOriginalLanguageCode());
   }
@@ -225,10 +220,7 @@ void TranslateUIDelegate::SetSiteBlacklist(bool value) {
 
   if (value) {
     prefs_->BlacklistSite(host);
-    TranslateTabHelper* translate_tab_helper =
-        TranslateTabHelper::FromWebContents(web_contents());
-    DCHECK(translate_tab_helper);
-    translate_tab_helper->GetLanguageState().SetTranslateEnabled(false);
+    translate_driver_->GetLanguageState().SetTranslateEnabled(false);
   } else {
     prefs_->RemoveSiteFromBlacklist(host);
   }
@@ -253,7 +245,7 @@ void TranslateUIDelegate::SetAlwaysTranslate(bool value) {
 }
 
 std::string TranslateUIDelegate::GetPageHost() {
-  content::NavigationEntry* entry =
-      web_contents()->GetController().GetActiveEntry();
-  return entry ? entry->GetURL().HostNoBrackets() : std::string();
+  if (!translate_driver_->HasCurrentPage())
+    return std::string();
+  return translate_driver_->GetActiveURL().HostNoBrackets();
 }

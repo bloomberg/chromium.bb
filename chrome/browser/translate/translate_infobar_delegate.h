@@ -13,8 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
-#include "chrome/browser/translate/translate_ui_delegate.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/translate/core/browser/translate_ui_delegate.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_errors.h"
 

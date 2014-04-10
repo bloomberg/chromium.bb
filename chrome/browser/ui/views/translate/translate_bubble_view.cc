@@ -17,12 +17,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
-#include "chrome/browser/translate/translate_ui_delegate.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
 #include "chrome/common/url_constants.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
+#include "components/translate/core/browser/translate_ui_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -141,8 +141,11 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
   TranslateTabHelper::GetTranslateLanguages(web_contents,
                                             &source_language, &target_language);
 
-  scoped_ptr<TranslateUIDelegate> ui_delegate(
-      new TranslateUIDelegate(web_contents, source_language, target_language));
+  scoped_ptr<TranslateUIDelegate> ui_delegate(new TranslateUIDelegate(
+      TranslateTabHelper::FromWebContents(web_contents),
+      TranslateTabHelper::GetManagerFromWebContents(web_contents),
+      source_language,
+      target_language));
   scoped_ptr<TranslateBubbleModel> model(
       new TranslateBubbleModelImpl(step, ui_delegate.Pass()));
   TranslateBubbleView* view = new TranslateBubbleView(anchor_view,

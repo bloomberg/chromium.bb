@@ -2551,8 +2551,6 @@
         'browser/translate/translate_service.h',
         'browser/translate/translate_tab_helper.cc',
         'browser/translate/translate_tab_helper.h',
-        'browser/translate/translate_ui_delegate.cc',
-        'browser/translate/translate_ui_delegate.h',
         'browser/undo/bookmark_renumber_observer.h',
         'browser/undo/bookmark_undo_service.cc',
         'browser/undo/bookmark_undo_service.h',
