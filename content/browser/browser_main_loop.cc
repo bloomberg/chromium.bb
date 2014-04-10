@@ -98,10 +98,6 @@
 #include "content/browser/device_monitor_mac.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include "ui/gfx/gtk_util.h"
-#endif
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <sys/stat.h>
 
@@ -382,10 +378,6 @@ void BrowserMainLoop::EarlyInitialization() {
   // definitely harmless, so retained as a reminder of this
   // requirement for gconf.
   g_type_init();
-#endif
-
-#if !defined(USE_AURA)
-  gfx::GtkInitFromCommandLine(parsed_command_line_);
 #endif
 
   SetUpGLibLogHandler();

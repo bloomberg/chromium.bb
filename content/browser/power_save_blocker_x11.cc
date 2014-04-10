@@ -22,6 +22,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/message_loop/message_pump_x11.h"
 #include "base/nix/xdg_util.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/browser_thread.h"
@@ -30,12 +31,6 @@
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "ui/gfx/x/x11_types.h"
-
-#if defined(TOOLKIT_GTK)
-#include "base/message_loop/message_pump_gtk.h"
-#else
-#include "base/message_loop/message_pump_x11.h"
-#endif
 
 namespace {
 

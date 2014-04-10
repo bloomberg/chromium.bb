@@ -46,11 +46,6 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
         }],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
         ['use_x11 == 1', {
           'dependencies': [
             '../build/linux/system.gyp:xext',

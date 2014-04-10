@@ -457,17 +457,6 @@
               'common/local_discovery/local_discovery_messages.h',
             ]
         }],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:x11',
-            '../build/linux/system.gyp:xrender',
-            '../build/linux/system.gyp:xext',
-          ],
-          'export_dependent_settings': [
-            '../third_party/sqlite/sqlite.gyp:sqlite',
-          ],
-        }],
         ['chromeos==1', {
           'sources!': [
             'common/chrome_version_info_linux.cc',

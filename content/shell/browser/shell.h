@@ -18,12 +18,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#include "ui/base/gtk/gtk_signal.h"
-
-typedef struct _GtkToolItem GtkToolItem;
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #elif defined(USE_AURA)
 #if defined(OS_CHROMEOS)
@@ -71,7 +66,7 @@ class Shell : public WebContentsDelegate,
   void ShowDevToolsForElementAt(int x, int y);
   void ShowDevToolsForTest(const std::string& settings);
   void CloseDevTools();
-#if defined(TOOLKIT_GTK) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   // Resizes the web content view to the given dimensions.
   void SizeTo(const gfx::Size& content_size);
 #endif

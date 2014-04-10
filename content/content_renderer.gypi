@@ -561,11 +561,6 @@
         'renderer/input_tag_speech_dispatcher.h',
       ]
     }],
-    ['toolkit_uses_gtk == 1', {
-      'dependencies': [
-        '../build/linux/system.gyp:gtk',
-      ],
-    }],
     ['OS=="mac"', {
       'sources!': [
         'common/process_watcher_posix.cc',

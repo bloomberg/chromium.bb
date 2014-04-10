@@ -13,10 +13,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#endif
-
 namespace extensions {
 
 namespace errors = manifest_errors;
@@ -141,13 +137,8 @@ TEST_F(InitValueManifestTest, InitFromValueValid) {
 }
 
 TEST_F(InitValueManifestTest, InitFromValueValidNameInRTL) {
-#if defined(TOOLKIT_GTK)
-  GtkTextDirection gtk_dir = gtk_widget_get_default_direction();
-  gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
-#else
   std::string locale = l10n_util::GetApplicationLocale("");
   base::i18n::SetICUDefaultLocale("he");
-#endif
 
   // No strong RTL characters in name.
   scoped_refptr<Extension> extension(LoadAndExpectSuccess(
@@ -165,11 +156,7 @@ TEST_F(InitValueManifestTest, InitFromValueValidNameInRTL) {
   EXPECT_EQ(localized_name, base::UTF8ToUTF16(extension->name()));
 
   // Reset locale.
-#if defined(TOOLKIT_GTK)
-  gtk_widget_set_default_direction(gtk_dir);
-#else
   base::i18n::SetICUDefaultLocale(locale);
-#endif
 }
 
 }  // namespace extensions

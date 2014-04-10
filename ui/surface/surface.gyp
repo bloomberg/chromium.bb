@@ -37,7 +37,6 @@
         'surface_export.h',
         'transport_dib.h',
         'transport_dib.cc',
-        'transport_dib_gtk.cc',
         'transport_dib_posix.cc',
         'transport_dib_win.cc',
       ],

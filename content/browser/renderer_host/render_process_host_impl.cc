@@ -1292,8 +1292,6 @@ TransportDIB* RenderProcessHostImpl::MapTransportDIB(
                   FILE_MAP_READ | FILE_MAP_WRITE,
                   FALSE, 0);
   return TransportDIB::Map(section);
-#elif defined(TOOLKIT_GTK)
-  return TransportDIB::Map(dib_id.shmkey);
 #elif defined(OS_ANDROID)
   return TransportDIB::Map(dib_id);
 #else
@@ -1332,11 +1330,7 @@ TransportDIB* RenderProcessHostImpl::GetTransportDIB(
       }
     }
 
-#if defined(TOOLKIT_GTK)
-    smallest_iterator->second->Detach();
-#else
     delete smallest_iterator->second;
-#endif
     cached_dibs_.erase(smallest_iterator);
   }
 
@@ -1346,15 +1340,8 @@ TransportDIB* RenderProcessHostImpl::GetTransportDIB(
 }
 
 void RenderProcessHostImpl::ClearTransportDIBCache() {
-#if defined(TOOLKIT_GTK)
-  std::map<TransportDIB::Id, TransportDIB*>::const_iterator dib =
-      cached_dibs_.begin();
-  for (; dib != cached_dibs_.end(); ++dib)
-    dib->second->Detach();
-#else
   STLDeleteContainerPairSecondPointers(
       cached_dibs_.begin(), cached_dibs_.end());
-#endif
   cached_dibs_.clear();
 }
 

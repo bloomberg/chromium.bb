@@ -222,10 +222,6 @@
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/chrome_browser_main_extra_parts_gtk.h"
-#endif
-
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 #endif
@@ -710,10 +706,6 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 
   // Construct additional browser parts. Stages are called in the order in
   // which they are added.
-#if defined(TOOLKIT_GTK)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsGtk());
-#endif
-
 #if defined(TOOLKIT_VIEWS)
   main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
 #endif

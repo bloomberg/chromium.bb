@@ -29,12 +29,6 @@ typedef unsigned long Cursor;
 typedef struct _XcursorImage XcursorImage;
 typedef union _XEvent XEvent;
 
-#if defined(TOOLKIT_GTK)
-typedef struct _GdkDrawable GdkWindow;
-typedef struct _GtkWidget GtkWidget;
-typedef struct _GtkWindow GtkWindow;
-#endif
-
 namespace gfx {
 class Canvas;
 class Point;
@@ -118,21 +112,6 @@ UI_BASE_EXPORT XID GetX11RootWindow();
 
 // Returns the user's current desktop.
 bool GetCurrentDesktop(int* desktop);
-
-#if defined(TOOLKIT_GTK)
-// Get the X window id for the given GTK widget.
-UI_BASE_EXPORT XID GetX11WindowFromGtkWidget(GtkWidget* widget);
-XID GetX11WindowFromGdkWindow(GdkWindow* window);
-
-// Get the GtkWindow* wrapping a given XID, if any.
-// Returns NULL if there isn't already a GtkWindow* wrapping this XID;
-// see gdk_window_foreign_new() etc. to wrap arbitrary XIDs.
-UI_BASE_EXPORT GtkWindow* GetGtkWindowFromX11Window(XID xid);
-
-// Get a Visual from the given widget. Since we don't include the Xlib
-// headers, this is returned as a void*.
-UI_BASE_EXPORT void* GetVisualFromGtkWidget(GtkWidget* widget);
-#endif  // defined(TOOLKIT_GTK)
 
 enum HideTitlebarWhenMaximized {
   SHOW_TITLEBAR_WHEN_MAXIMIZED = 0,

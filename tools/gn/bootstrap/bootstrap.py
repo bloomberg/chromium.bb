@@ -240,7 +240,6 @@ def write_ninja(path):
         'base/files/file_enumerator_posix.cc',
         'base/files/file_posix.cc',
         'base/message_loop/message_pump_glib.cc',
-        'base/message_loop/message_pump_gtk.cc',
         'base/message_loop/message_pump_libevent.cc',
         'base/nix/xdg_util.cc',
         'base/posix/file_descriptor_shuffle.cc',

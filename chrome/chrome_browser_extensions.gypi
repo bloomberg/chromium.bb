@@ -528,7 +528,6 @@
         'browser/extensions/api/system_display/display_info_provider.h',
         'browser/extensions/api/system_display/display_info_provider_aura.cc',
         'browser/extensions/api/system_display/display_info_provider_chromeos.cc',
-        'browser/extensions/api/system_display/display_info_provider_gtk.cc',
         'browser/extensions/api/system_display/display_info_provider_mac.cc',
         'browser/extensions/api/system_display/display_info_provider_win.cc',
         'browser/extensions/api/system_display/system_display_api.cc',
@@ -1048,18 +1047,6 @@
         ['safe_browsing==2', {
           'defines': [
             'MOBILE_SAFE_BROWSING',
-          ],
-        }],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:dbus',
-            '../build/linux/system.gyp:gconf',
-            '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:gtkprint',
-            '../build/linux/system.gyp:ssl',
-            '../build/linux/system.gyp:x11',
-            '../dbus/dbus.gyp:dbus',
-            '../third_party/undoview/undoview.gyp:undoview',
           ],
         }],
         ['configuration_policy==1', {

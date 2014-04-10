@@ -23,8 +23,6 @@
 
 #if defined(OS_WIN)
 typedef struct tagRECT RECT;
-#elif defined(TOOLKIT_GTK)
-typedef struct _GdkRectangle GdkRectangle;
 #elif defined(OS_IOS)
 #include <CoreGraphics/CoreGraphics.h>
 #elif defined(OS_MACOSX)
@@ -52,8 +50,6 @@ class GFX_EXPORT Rect
   explicit Rect(const RECT& r);
 #elif defined(OS_MACOSX)
   explicit Rect(const CGRect& r);
-#elif defined(TOOLKIT_GTK)
-  explicit Rect(const GdkRectangle& r);
 #endif
 
   explicit Rect(const gfx::Size& size)
@@ -67,8 +63,6 @@ class GFX_EXPORT Rect
 #if defined(OS_WIN)
   // Construct an equivalent Win32 RECT object.
   RECT ToRECT() const;
-#elif defined(TOOLKIT_GTK)
-  GdkRectangle ToGdkRectangle() const;
 #elif defined(OS_MACOSX)
   // Construct an equivalent CoreGraphics object.
   CGRect ToCGRect() const;

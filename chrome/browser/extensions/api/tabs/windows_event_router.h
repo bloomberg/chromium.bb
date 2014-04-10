@@ -14,8 +14,6 @@
 #include "content/public/browser/notification_registrar.h"
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/focus/widget_focus_manager.h"
-#elif defined(TOOLKIT_GTK)
-#include "ui/base/x/active_window_watcher_x_observer.h"
 #endif
 
 class Profile;
@@ -33,8 +31,6 @@ namespace extensions {
 class WindowsEventRouter : public WindowControllerListObserver,
 #if defined(TOOLKIT_VIEWS)
                           public views::WidgetFocusChangeListener,
-#elif defined(TOOLKIT_GTK)
-                          public ui::ActiveWindowWatcherXObserver,
 #endif
                           public content::NotificationObserver {
  public:
@@ -50,8 +46,6 @@ class WindowsEventRouter : public WindowControllerListObserver,
 #if defined(TOOLKIT_VIEWS)
   virtual void OnNativeFocusChange(gfx::NativeView focused_before,
                                    gfx::NativeView focused_now) OVERRIDE;
-#elif defined(TOOLKIT_GTK)
-  virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
 #endif
 
   // content::NotificationObserver.

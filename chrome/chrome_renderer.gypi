@@ -417,12 +417,6 @@
             '../third_party/mach_override/mach_override.gyp:mach_override',
           ],
         }],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-            '../sandbox/sandbox.gyp:sandbox',
-          ],
-        }],
         ['enable_printing==0', {
           'sources/': [
             ['exclude', '^renderer/printing/']

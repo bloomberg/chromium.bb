@@ -45,11 +45,6 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gdk/gdk.h>
-#include <gtk/gtk.h>
-#endif
-
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using base::Time;
@@ -114,19 +109,6 @@ const struct TestHistoryEntry {
   // name as the .com.
   {"http://bar/", "Bar", 1, 0, false },
 };
-
-#if defined(TOOLKIT_GTK)
-// Returns the text stored in the PRIMARY clipboard.
-std::string GetPrimarySelectionText() {
-  GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
-  DCHECK(clipboard);
-
-  gchar* selection_text = gtk_clipboard_wait_for_text(clipboard);
-  std::string result(selection_text ? selection_text : "");
-  g_free(selection_text);
-  return result;
-}
-#endif
 
 // Stores the given text to clipboard.
 void SetClipboardText(const base::string16& text) {
@@ -1384,7 +1366,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   EXPECT_EQ(old_text, omnibox_view->GetText());
 }
 
-#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedo) {
   ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
   chrome::FocusLocationBar(browser());
@@ -1460,7 +1442,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
   EXPECT_EQ(base::UTF8ToUTF16("\357\276\200"), omnibox_view->GetText());
 }
-#endif  // defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
+#endif  // defined(TOOLKIT_VIEWS)
 
 // Flaky test. crbug.com/356850
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
@@ -1486,40 +1468,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
   ASSERT_FALSE(popup_model->IsOpen());
   omnibox_view->GetSelectionBounds(&start, &end);
-#if !defined(TOOLKIT_GTK)
   EXPECT_TRUE(start == end);
-#endif
 
   EXPECT_EQ(old_autocomplete_text,
       omnibox_view->model()->autocomplete_controller()->input().text());
 }
-
-#if defined(TOOLKIT_GTK)
-// See http://crbug.com/63860
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PrimarySelection) {
-  OmniboxView* omnibox_view = NULL;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-  omnibox_view->SetUserText(ASCIIToUTF16("Hello world"));
-  EXPECT_FALSE(omnibox_view->IsSelectAll());
-
-  // Move the cursor to the end.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, 0));
-
-  // Select all text by pressing Shift+Home
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_HOME, ui::EF_SHIFT_DOWN));
-  EXPECT_TRUE(omnibox_view->IsSelectAll());
-
-  // The selected content should be saved to the PRIMARY clipboard.
-  EXPECT_EQ("Hello world", GetPrimarySelectionText());
-
-  // Move the cursor to the end.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, 0));
-  EXPECT_FALSE(omnibox_view->IsSelectAll());
-
-  // The content in the PRIMARY clipboard should not be cleared.
-  EXPECT_EQ("Hello world", GetPrimarySelectionText());
-}
-#endif  // defined(TOOLKIT_GTK)
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Paste) {
   OmniboxView* omnibox_view = NULL;
@@ -1714,7 +1667,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EditSearchEngines) {
   EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
 }
 
-#if !defined(TOOLKIT_GTK)
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BeginningShownAfterBlur) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
@@ -1736,7 +1688,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BeginningShownAfterBlur) {
   ASSERT_EQ(0U, start);
   ASSERT_EQ(0U, end);
 }
-#endif  // !defined(TOOLKIT_GTK)
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CtrlArrowAfterArrowSuggestions) {
   OmniboxView* omnibox_view = NULL;

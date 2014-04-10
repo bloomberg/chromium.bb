@@ -10,11 +10,4 @@ namespace autofill {
 
 AutofillDialogView::~AutofillDialogView() {}
 
-#if defined(TOOLKIT_GTK)
-AutofillDialogView* AutofillDialogView::Create(
-    AutofillDialogViewDelegate* delegate) {
-  return NULL;
-}
-#endif
-
 }  // namespace autofill

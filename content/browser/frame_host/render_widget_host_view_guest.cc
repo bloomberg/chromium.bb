@@ -497,16 +497,6 @@ void RenderWidgetHostViewGuest::ShowDisambiguationPopup(
 }
 #endif  // defined(OS_ANDROID)
 
-#if defined(TOOLKIT_GTK)
-GdkEventButton* RenderWidgetHostViewGuest::GetLastMouseDown() {
-  return NULL;
-}
-
-gfx::NativeView RenderWidgetHostViewGuest::BuildInputMethodsGtkMenu() {
-  return platform_view_->BuildInputMethodsGtkMenu();
-}
-#endif  // defined(TOOLKIT_GTK)
-
 #if defined(OS_WIN)
 void RenderWidgetHostViewGuest::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {

@@ -14,8 +14,6 @@
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
-#elif defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
 #elif defined(OS_ANDROID)
 #include "chrome/browser/ui/android/extensions/extension_view_android.h"
 #endif
@@ -48,8 +46,6 @@ class ExtensionViewHost
   typedef ExtensionViewViews PlatformExtensionView;
 #elif defined(OS_MACOSX)
   typedef ExtensionViewMac PlatformExtensionView;
-#elif defined(TOOLKIT_GTK)
-  typedef ExtensionViewGtk PlatformExtensionView;
 #elif defined(OS_ANDROID)
   // Android does not support extensions.
   typedef ExtensionViewAndroid PlatformExtensionView;

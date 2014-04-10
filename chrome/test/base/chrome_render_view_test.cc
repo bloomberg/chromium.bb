@@ -33,10 +33,6 @@
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-#if defined(OS_LINUX) && !defined(USE_AURA)
-#include "ui/base/gtk/event_synthesis_gtk.h"
-#endif
-
 using blink::WebFrame;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;

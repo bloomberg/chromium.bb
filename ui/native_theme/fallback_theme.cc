@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/skia_utils_gtk.h"
 #include "ui/native_theme/common_theme.h"
 
 namespace ui {

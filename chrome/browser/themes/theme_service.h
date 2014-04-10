@@ -91,12 +91,6 @@ class ThemeService : public base::NonThreadSafe,
   virtual NSColor* GetNSColor(int id) const OVERRIDE;
   virtual NSColor* GetNSColorTint(int id) const OVERRIDE;
   virtual NSGradient* GetNSGradient(int id) const OVERRIDE;
-#elif defined(OS_POSIX) && !defined(TOOLKIT_VIEWS) && !defined(OS_ANDROID)
-  // This mismatch between what this class defines and whether or not it
-  // overrides ui::ThemeProvider is http://crbug.com/105040 .
-  // GdkPixbufs returned by GetPixbufNamed and GetRTLEnabledPixbufNamed are
-  // shared instances owned by the theme provider and should not be freed.
-  virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const OVERRIDE;
 #endif
 
   // Overridden from content::NotificationObserver:
@@ -220,15 +214,7 @@ class ThemeService : public base::NonThreadSafe,
   // Sets the managed user theme if the user has no custom theme yet.
   void OnManagedUserInitialized();
 
-#if defined(TOOLKIT_GTK)
-  // Loads an image and flips it horizontally if |rtl_enabled| is true.
-  GdkPixbuf* GetPixbufImpl(int id, bool rtl_enabled) const;
-#endif
-
-#if defined(TOOLKIT_GTK)
-  typedef std::map<int, GdkPixbuf*> GdkPixbufMap;
-  mutable GdkPixbufMap gdk_pixbufs_;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   // |nsimage_cache_| retains the images it has cached.
   typedef std::map<int, NSImage*> NSImageMap;
   mutable NSImageMap nsimage_cache_;

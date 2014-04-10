@@ -85,11 +85,6 @@
           ],
         }],
       ],
-      'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': ['../build/linux/system.gyp:gtk'],
-        }],
-      ],
     },
   ],
   'conditions': [

@@ -25,7 +25,6 @@
         'snapshot_android.cc',
         'snapshot_aura.cc',
         'snapshot_export.h',
-        'snapshot_gtk.cc',
         'snapshot_ios.mm',
         'snapshot_mac.mm',
         'snapshot_win.cc',

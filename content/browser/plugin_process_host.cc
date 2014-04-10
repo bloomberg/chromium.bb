@@ -43,10 +43,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_switches.h"
 
-#if defined(USE_X11)
-#include "ui/gfx/gtk_native_view_id_manager.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "content/common/plugin_carbon_interpose_constants_mac.h"
@@ -109,16 +105,6 @@ class PluginSandboxedProcessLauncherDelegate
 
   DISALLOW_COPY_AND_ASSIGN(PluginSandboxedProcessLauncherDelegate);
 };
-
-#if defined(TOOLKIT_GTK)
-void PluginProcessHost::OnMapNativeViewId(gfx::NativeViewId id,
-                                          gfx::PluginWindowHandle* output) {
-  *output = 0;
-#if !defined(USE_AURA)
-  GtkNativeViewManager::GetInstance()->GetXIDForId(output, id);
-#endif
-}
-#endif  // defined(TOOLKIT_GTK)
 
 PluginProcessHost::PluginProcessHost()
 #if defined(OS_MACOSX)
@@ -299,10 +285,6 @@ bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginWindowDestroyed,
                         OnPluginWindowDestroyed)
-#endif
-#if defined(TOOLKIT_GTK)
-    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_MapNativeViewId,
-                        OnMapNativeViewId)
 #endif
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginSelectWindow,

@@ -28,9 +28,6 @@ class UI_BASE_EXPORT DragDropTypes {
 #if defined(OS_WIN)
   static uint32 DragOperationToDropEffect(int drag_operation);
   static int DropEffectToDragOperation(uint32 effect);
-#elif defined(TOOLKIT_GTK)
-  static int DragOperationToGdkDragAction(int drag_operation);
-  static int GdkDragActionToDragOperation(int gdk_drag_action);
 #endif
 };
 

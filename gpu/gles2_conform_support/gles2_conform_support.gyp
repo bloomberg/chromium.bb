@@ -16,7 +16,6 @@
        'bootstrap_sources_native': [
          'native/egl_native_aura.cc',
          'native/egl_native.cc',
-         'native/egl_native_gtk.cc',
          'native/egl_native_x11.cc',
        ],
      }],
@@ -66,11 +65,6 @@
       'dependencies': [
         'egl_native',
         '../../third_party/khronos/khronos.gyp:khronos_headers',
-      ],
-      'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': ['../../build/linux/system.gyp:gtk'],
-        }],
       ],
       'sources': [
         '<@(bootstrap_sources_native)',

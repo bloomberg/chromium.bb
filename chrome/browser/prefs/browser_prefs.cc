@@ -187,10 +187,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_layout_type_prefs.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/browser_window_gtk.h"
-#endif
-
 #if defined(USE_ASH)
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #endif
@@ -462,8 +458,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if defined(TOOLKIT_VIEWS)
   RegisterBrowserViewProfilePrefs(registry);
   RegisterInvertBubbleUserPrefs(registry);
-#elif defined(TOOLKIT_GTK)
-  BrowserWindowGtk::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(USE_ASH)

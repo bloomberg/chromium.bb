@@ -18,15 +18,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include <gdk-pixbuf/gdk-pixbuf.h>
-#include <gdk/gdk.h>
-#include <glib-object.h>
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/gtk_util.h"
-#include "ui/gfx/image/cairo_cached_surface.h"
-#include "ui/gfx/scoped_gobject.h"
-#elif defined(OS_IOS)
+#if defined(OS_IOS)
 #include "base/mac/foundation_util.h"
 #include "ui/gfx/image/image_skia_util_ios.h"
 #elif defined(OS_MACOSX)
@@ -37,81 +29,6 @@
 namespace gfx {
 
 namespace internal {
-
-#if defined(TOOLKIT_GTK)
-const ImageSkia ImageSkiaFromGdkPixbuf(GdkPixbuf* pixbuf) {
-  CHECK(pixbuf);
-  gfx::Canvas canvas(gfx::Size(gdk_pixbuf_get_width(pixbuf),
-                               gdk_pixbuf_get_height(pixbuf)),
-                     1.0f,
-                     false);
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
-  cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
-  gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
-  cairo_paint(cr);
-  return ImageSkia(canvas.ExtractImageRep());
-}
-
-// Returns a 16x16 red pixbuf to visually show error in decoding PNG.
-// Also logs error to console.
-GdkPixbuf* GetErrorPixbuf() {
-  LOG(ERROR) << "Unable to decode PNG.";
-  GdkPixbuf* pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, 16, 16);
-  gdk_pixbuf_fill(pixbuf, 0xff0000ff);
-  return pixbuf;
-}
-
-GdkPixbuf* GdkPixbufFromPNG(
-    const std::vector<gfx::ImagePNGRep>& image_png_reps) {
-  scoped_refptr<base::RefCountedMemory> png_bytes(NULL);
-  for (size_t i = 0; i < image_png_reps.size(); ++i) {
-    if (image_png_reps[i].scale == 1.0f)
-      png_bytes = image_png_reps[i].raw_data;
-  }
-
-  if (!png_bytes.get())
-    return GetErrorPixbuf();
-
-  GdkPixbuf* pixbuf = NULL;
-  ui::ScopedGObject<GdkPixbufLoader>::Type loader(gdk_pixbuf_loader_new());
-
-  bool ok = gdk_pixbuf_loader_write(loader.get(),
-      reinterpret_cast<const guint8*>(png_bytes->front()), png_bytes->size(),
-      NULL);
-
-  // Calling gdk_pixbuf_loader_close forces the data to be parsed by the
-  // loader. This must be done before calling gdk_pixbuf_loader_get_pixbuf.
-  if (ok)
-    ok = gdk_pixbuf_loader_close(loader.get(), NULL);
-  if (ok)
-    pixbuf = gdk_pixbuf_loader_get_pixbuf(loader.get());
-
-  if (pixbuf) {
-    // The pixbuf is owned by the scoped loader which will delete its ref when
-    // it goes out of scope. Add a ref so that the pixbuf still exists.
-    g_object_ref(pixbuf);
-  } else {
-    return GetErrorPixbuf();
-  }
-
-  return pixbuf;
-}
-
-scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromPixbuf(
-    GdkPixbuf* pixbuf) {
-  gchar* image = NULL;
-  gsize image_size;
-  GError* error = NULL;
-  CHECK(gdk_pixbuf_save_to_buffer(
-      pixbuf, &image, &image_size, "png", &error, NULL));
-  scoped_refptr<base::RefCountedBytes> png_bytes(
-      new base::RefCountedBytes());
-  png_bytes->data().assign(image, image + image_size);
-  g_free(image);
-  return png_bytes;
-}
-
-#endif // defined(TOOLKIT_GTK)
 
 #if defined(OS_IOS)
 scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromUIImage(
@@ -213,18 +130,6 @@ class ImageRep {
     return reinterpret_cast<ImageRepSkia*>(this);
   }
 
-#if defined(TOOLKIT_GTK)
-  ImageRepGdk* AsImageRepGdk() {
-    CHECK_EQ(type_, Image::kImageRepGdk);
-    return reinterpret_cast<ImageRepGdk*>(this);
-  }
-
-  ImageRepCairo* AsImageRepCairo() {
-    CHECK_EQ(type_, Image::kImageRepCairo);
-    return reinterpret_cast<ImageRepCairo*>(this);
-  }
-#endif
-
 #if defined(OS_IOS)
   ImageRepCocoaTouch* AsImageRepCocoaTouch() {
     CHECK_EQ(type_, Image::kImageRepCocoaTouch);
@@ -325,77 +230,6 @@ class ImageRepSkia : public ImageRep {
 
   DISALLOW_COPY_AND_ASSIGN(ImageRepSkia);
 };
-
-#if defined(TOOLKIT_GTK)
-class ImageRepGdk : public ImageRep {
- public:
-  explicit ImageRepGdk(GdkPixbuf* pixbuf)
-      : ImageRep(Image::kImageRepGdk),
-        pixbuf_(pixbuf) {
-    CHECK(pixbuf);
-  }
-
-  virtual ~ImageRepGdk() {
-    if (pixbuf_) {
-      g_object_unref(pixbuf_);
-      pixbuf_ = NULL;
-    }
-  }
-
-  virtual int Width() const OVERRIDE {
-    return gdk_pixbuf_get_width(pixbuf_);
-  }
-
-  virtual int Height() const OVERRIDE {
-    return gdk_pixbuf_get_height(pixbuf_);
-  }
-
-  virtual gfx::Size Size() const OVERRIDE {
-    return gfx::Size(Width(), Height());
-  }
-
-  GdkPixbuf* pixbuf() const { return pixbuf_; }
-
- private:
-  GdkPixbuf* pixbuf_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageRepGdk);
-};
-
-// Represents data that lives on the display server instead of in the client.
-class ImageRepCairo : public ImageRep {
- public:
-  explicit ImageRepCairo(GdkPixbuf* pixbuf)
-      : ImageRep(Image::kImageRepCairo),
-        cairo_cache_(new CairoCachedSurface) {
-    CHECK(pixbuf);
-    cairo_cache_->UsePixbuf(pixbuf);
-  }
-
-  virtual ~ImageRepCairo() {
-    delete cairo_cache_;
-  }
-
-  virtual int Width() const OVERRIDE {
-    return cairo_cache_->Width();
-  }
-
-  virtual int Height() const OVERRIDE {
-    return cairo_cache_->Height();
-  }
-
-  virtual gfx::Size Size() const OVERRIDE {
-    return gfx::Size(Width(), Height());
-  }
-
-  CairoCachedSurface* surface() const { return cairo_cache_; }
-
- private:
-  CairoCachedSurface* cairo_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageRepCairo);
-};
-#endif  // defined(TOOLKIT_GTK)
 
 #if defined(OS_IOS)
 class ImageRepCocoaTouch : public ImageRep {
@@ -550,16 +384,6 @@ Image::Image(const ImageSkia& image) {
   }
 }
 
-#if defined(TOOLKIT_GTK)
-Image::Image(GdkPixbuf* pixbuf) {
-  if (pixbuf) {
-    storage_ = new internal::ImageStorage(Image::kImageRepGdk);
-    internal::ImageRepGdk* rep = new internal::ImageRepGdk(pixbuf);
-    AddRepresentation(rep);
-  }
-}
-#endif
-
 #if defined(OS_IOS)
 Image::Image(UIImage* image)
     : storage_(new internal::ImageStorage(Image::kImageRepCocoaTouch)) {
@@ -632,15 +456,7 @@ const ImageSkia* Image::ToImageSkia() const {
             internal::ImageSkiaFromPNG(png_rep->image_reps()));
         break;
       }
-#if defined(TOOLKIT_GTK)
-      case kImageRepGdk: {
-        internal::ImageRepGdk* native_rep =
-            GetRepresentation(kImageRepGdk, true)->AsImageRepGdk();
-        rep = new internal::ImageRepSkia(new ImageSkia(
-            internal::ImageSkiaFromGdkPixbuf(native_rep->pixbuf())));
-        break;
-      }
-#elif defined(OS_IOS)
+#if defined(OS_IOS)
       case kImageRepCocoaTouch: {
         internal::ImageRepCocoaTouch* native_rep =
             GetRepresentation(kImageRepCocoaTouch, true)
@@ -666,47 +482,6 @@ const ImageSkia* Image::ToImageSkia() const {
   }
   return rep->AsImageRepSkia()->image();
 }
-
-#if defined(TOOLKIT_GTK)
-GdkPixbuf* Image::ToGdkPixbuf() const {
-  internal::ImageRep* rep = GetRepresentation(kImageRepGdk, false);
-  if (!rep) {
-    switch (DefaultRepresentationType()) {
-      case kImageRepPNG: {
-        internal::ImageRepPNG* png_rep =
-            GetRepresentation(kImageRepPNG, true)->AsImageRepPNG();
-        rep = new internal::ImageRepGdk(internal::GdkPixbufFromPNG(
-            png_rep->image_reps()));
-        break;
-      }
-      case kImageRepSkia: {
-        internal::ImageRepSkia* skia_rep =
-            GetRepresentation(kImageRepSkia, true)->AsImageRepSkia();
-        rep = new internal::ImageRepGdk(gfx::GdkPixbufFromSkBitmap(
-            *skia_rep->image()->bitmap()));
-        break;
-      }
-      default:
-        NOTREACHED();
-    }
-    CHECK(rep);
-    AddRepresentation(rep);
-  }
-  return rep->AsImageRepGdk()->pixbuf();
-}
-
-CairoCachedSurface* const Image::ToCairo() const {
-  internal::ImageRep* rep = GetRepresentation(kImageRepCairo, false);
-  if (!rep) {
-    // Handle any-to-Cairo conversion. This may create and cache an intermediate
-    // pixbuf before sending the data to the display server.
-    rep = new internal::ImageRepCairo(ToGdkPixbuf());
-    CHECK(rep);
-    AddRepresentation(rep);
-  }
-  return rep->AsImageRepCairo()->surface();
-}
-#endif
 
 #if defined(OS_IOS)
 UIImage* Image::ToUIImage() const {
@@ -788,14 +563,7 @@ scoped_refptr<base::RefCountedMemory> Image::As1xPNGBytes() const {
 
   scoped_refptr<base::RefCountedMemory> png_bytes(NULL);
   switch (DefaultRepresentationType()) {
-#if defined(TOOLKIT_GTK)
-    case kImageRepGdk: {
-      internal::ImageRepGdk* gdk_rep =
-          GetRepresentation(kImageRepGdk, true)->AsImageRepGdk();
-      png_bytes = internal::Get1xPNGBytesFromPixbuf(gdk_rep->pixbuf());
-      break;
-    }
-#elif defined(OS_IOS)
+#if defined(OS_IOS)
     case kImageRepCocoaTouch: {
       internal::ImageRepCocoaTouch* cocoa_touch_rep =
           GetRepresentation(kImageRepCocoaTouch, true)
@@ -869,14 +637,6 @@ ImageSkia* Image::CopyImageSkia() const {
 SkBitmap* Image::CopySkBitmap() const {
   return new SkBitmap(*ToSkBitmap());
 }
-
-#if defined(TOOLKIT_GTK)
-GdkPixbuf* Image::CopyGdkPixbuf() const {
-  GdkPixbuf* pixbuf = ToGdkPixbuf();
-  g_object_ref(pixbuf);
-  return pixbuf;
-}
-#endif
 
 #if defined(OS_IOS)
 UIImage* Image::CopyUIImage() const {

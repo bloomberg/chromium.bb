@@ -98,14 +98,7 @@ typedef struct _PangoFontDescription PangoFontDescription;
 typedef struct _cairo cairo_t;
 #endif
 
-#if defined(TOOLKIT_GTK)
-typedef struct _GdkCursor GdkCursor;
-typedef union _GdkEvent GdkEvent;
-typedef struct _GdkPixbuf GdkPixbuf;
-typedef struct _GdkRegion GdkRegion;
-typedef struct _GtkWidget GtkWidget;
-typedef struct _GtkWindow GtkWindow;
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
 struct ANativeWindow;
 namespace ui {
 class WindowAndroid;
@@ -132,12 +125,6 @@ typedef NSCursor* NativeCursor;
 typedef NSView* NativeView;
 typedef NSWindow* NativeWindow;
 typedef NSEvent* NativeEvent;
-#elif defined(TOOLKIT_GTK)
-typedef GdkCursor* NativeCursor;
-typedef GtkWidget* NativeView;
-typedef GtkWindow* NativeWindow;
-typedef GdkRegion* NativeRegion;
-typedef GdkEvent* NativeEvent;
 #elif defined(OS_ANDROID)
 typedef void* NativeCursor;
 typedef ui::ViewAndroid* NativeView;
@@ -159,11 +146,6 @@ typedef CGContext* NativeDrawingContext;
 typedef NSFont* NativeFont;
 typedef NSTextField* NativeEditView;
 typedef CGContext* NativeDrawingContext;
-typedef void* NativeViewAccessible;
-#elif defined(TOOLKIT_GTK)
-typedef PangoFontDescription* NativeFont;
-typedef GtkWidget* NativeEditView;
-typedef cairo_t* NativeDrawingContext;
 typedef void* NativeViewAccessible;
 #elif defined(USE_CAIRO)
 typedef PangoFontDescription* NativeFont;
@@ -188,8 +170,6 @@ const gfx::NativeCursor kNullCursor = static_cast<gfx::NativeCursor>(NULL);
 typedef UIImage NativeImageType;
 #elif defined(OS_MACOSX)
 typedef NSImage NativeImageType;
-#elif defined(TOOLKIT_GTK)
-typedef GdkPixbuf NativeImageType;
 #else
 typedef SkBitmap NativeImageType;
 #endif

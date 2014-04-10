@@ -4,9 +4,7 @@
 
 #include "content/renderer/npapi/webplugin_delegate_proxy.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#elif defined(USE_X11)
+#if defined(USE_X11)
 #include <cairo/cairo.h>
 #endif
 

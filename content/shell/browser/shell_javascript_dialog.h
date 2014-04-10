@@ -7,10 +7,6 @@
 
 #include "content/public/browser/javascript_dialog_manager.h"
 
-#if defined(TOOLKIT_GTK)
-#include "ui/base/gtk/gtk_signal.h"
-#endif
-
 #if defined(OS_MACOSX)
 #if __OBJC__
 @class ShellJavaScriptDialogHelper;
@@ -50,10 +46,6 @@ class ShellJavaScriptDialog {
   base::string16 default_prompt_text_;
   static INT_PTR CALLBACK DialogProc(HWND dialog, UINT message, WPARAM wparam,
                                      LPARAM lparam);
-#elif defined(TOOLKIT_GTK)
-  GtkWidget* gtk_dialog_;
-  gfx::NativeWindow parent_window_;
-  CHROMEGTK_CALLBACK_1(ShellJavaScriptDialog, void, OnResponse, int);
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ShellJavaScriptDialog);

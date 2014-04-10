@@ -7,14 +7,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/gfx/x/x11_types.h"
-
-#if defined(TOOLKIT_GTK)
-#include <gdk/gdkx.h>
-#else
-#include "ui/events/platform/x11/x11_event_source.h"
-#endif
 
 using content::BrowserThread;
 
@@ -72,13 +67,8 @@ void GlobalShortcutListenerX11::StartListening() {
   DCHECK(!is_listening_);  // Don't start twice.
   DCHECK(!registered_hot_keys_.empty());  // Also don't start if no hotkey is
                                           // registered.
-#if defined(TOOLKIT_GTK)
-  gdk_window_add_filter(gdk_get_default_root_window(),
-                        &GlobalShortcutListenerX11::OnXEventThunk,
-                        this);
-#else
+
   ui::X11EventSource::GetInstance()->AddPlatformEventDispatcher(this);
-#endif
 
   is_listening_ = true;
 }
@@ -88,18 +78,11 @@ void GlobalShortcutListenerX11::StopListening() {
   DCHECK(registered_hot_keys_.empty());  // Make sure the set is clean before
                                          // ending.
 
-#if defined(TOOLKIT_GTK)
-  gdk_window_remove_filter(NULL,
-                           &GlobalShortcutListenerX11::OnXEventThunk,
-                           this);
-#else
   ui::X11EventSource::GetInstance()->RemovePlatformEventDispatcher(this);
-#endif
 
   is_listening_ = false;
 }
 
-#if !defined(TOOLKIT_GTK)
 bool GlobalShortcutListenerX11::CanDispatchEvent(
     const ui::PlatformEvent& event) {
   return event->type == KeyPress;
@@ -112,7 +95,6 @@ uint32_t GlobalShortcutListenerX11::DispatchEvent(
 
   return ui::POST_DISPATCH_NONE;
 }
-#endif
 
 bool GlobalShortcutListenerX11::RegisterAcceleratorImpl(
     const ui::Accelerator& accelerator) {
@@ -159,17 +141,6 @@ void GlobalShortcutListenerX11::UnregisterAcceleratorImpl(
   }
   registered_hot_keys_.erase(accelerator);
 }
-
-#if defined(TOOLKIT_GTK)
-GdkFilterReturn GlobalShortcutListenerX11::OnXEvent(GdkXEvent* gdk_x_event,
-                                                    GdkEvent* gdk_event) {
-  XEvent* x_event = static_cast<XEvent*>(gdk_x_event);
-  if (x_event->type == KeyPress)
-    OnXKeyPressEvent(x_event);
-
-  return GDK_FILTER_CONTINUE;
-}
-#endif
 
 void GlobalShortcutListenerX11::OnXKeyPressEvent(::XEvent* x_event) {
   DCHECK(x_event->type == KeyPress);

@@ -34,13 +34,6 @@
 #include "ui/gfx/win/hwnd_util.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include <gdk/gdkx.h>
-#include <gtk/gtk.h>
-
-#include "content/browser/renderer_host/gtk_window_utils.h"
-#endif
-
 namespace content {
 
 // static

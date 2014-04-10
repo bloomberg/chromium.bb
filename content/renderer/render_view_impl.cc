@@ -3365,17 +3365,11 @@ void RenderViewImpl::OnSetRendererPrefs(
   renderer_preferences_ = renderer_prefs;
   UpdateFontRenderingFromRendererPrefs();
 
-#if defined(USE_DEFAULT_RENDER_THEME) || defined(TOOLKIT_GTK)
+#if defined(USE_DEFAULT_RENDER_THEME)
   if (renderer_prefs.use_custom_colors) {
     WebColorName name = blink::WebColorWebkitFocusRingColor;
     blink::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
     blink::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
-#if defined(TOOLKIT_GTK)
-    ui::NativeTheme::instance()->SetScrollbarColors(
-        renderer_prefs.thumb_inactive_color,
-        renderer_prefs.thumb_active_color,
-        renderer_prefs.track_color);
-#endif  // defined(TOOLKIT_GTK)
 
     if (webview()) {
       webview()->setSelectionColors(

@@ -9,10 +9,6 @@
 #include "base/strings/string16.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 
-#if defined(TOOLKIT_GTK)
-#include "ui/base/gtk/gtk_signal.h"
-#endif
-
 #if defined(OS_MACOSX)
 #if __OBJC__
 @class ShellLoginDialogHelper;
@@ -85,11 +81,6 @@ class ShellLoginDialog : public ResourceDispatcherHostLoginDelegate {
 #if defined(OS_MACOSX)
   // Threading: UI thread.
   ShellLoginDialogHelper* helper_;  // owned
-#elif defined(TOOLKIT_GTK)
-  GtkWidget* username_entry_;
-  GtkWidget* password_entry_;
-  GtkWidget* root_;
-  CHROMEGTK_CALLBACK_1(ShellLoginDialog, void, OnResponse, int);
 #endif
 };
 

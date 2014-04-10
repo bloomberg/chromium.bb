@@ -9,11 +9,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/switches.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#else
 #include <fontconfig/fontconfig.h>
-#endif
 
 #if defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS)
 #include "ui/gfx/linux_font_delegate.h"
@@ -39,58 +35,6 @@ bool SubpixelPositioningRequested(bool renderer) {
 // Initializes |params| with the system's default settings. |renderer| is true
 // when setting WebKit renderer defaults.
 void LoadDefaults(FontRenderParams* params, bool renderer) {
-#if defined(TOOLKIT_GTK)
-  params->antialiasing = true;
-  // TODO(wangxianzhu): autohinter is now true to keep original behavior
-  // of WebKit, but it might not be the best value.
-  params->autohinter = true;
-  params->use_bitmaps = true;
-  params->hinting = FontRenderParams::HINTING_SLIGHT;
-  params->subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_NONE;
-
-  GtkSettings* gtk_settings = gtk_settings_get_default();
-  CHECK(gtk_settings);
-  gint gtk_antialias = 0;
-  gint gtk_hinting = 0;
-  gchar* gtk_hint_style = NULL;
-  gchar* gtk_rgba = NULL;
-  g_object_get(gtk_settings,
-               "gtk-xft-antialias", &gtk_antialias,
-               "gtk-xft-hinting", &gtk_hinting,
-               "gtk-xft-hintstyle", &gtk_hint_style,
-               "gtk-xft-rgba", &gtk_rgba,
-               NULL);
-
-  // g_object_get() doesn't tell us whether the properties were present or not,
-  // but if they aren't (because gnome-settings-daemon isn't running), we'll get
-  // NULL values for the strings.
-  if (gtk_hint_style && gtk_rgba) {
-    params->antialiasing = gtk_antialias;
-
-    if (gtk_hinting == 0 || strcmp(gtk_hint_style, "hintnone") == 0)
-      params->hinting = FontRenderParams::HINTING_NONE;
-    else if (strcmp(gtk_hint_style, "hintslight") == 0)
-      params->hinting = FontRenderParams::HINTING_SLIGHT;
-    else if (strcmp(gtk_hint_style, "hintmedium") == 0)
-      params->hinting = FontRenderParams::HINTING_MEDIUM;
-    else if (strcmp(gtk_hint_style, "hintfull") == 0)
-      params->hinting = FontRenderParams::HINTING_FULL;
-
-    if (strcmp(gtk_rgba, "none") == 0)
-      params->subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_NONE;
-    else if (strcmp(gtk_rgba, "rgb") == 0)
-      params->subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_RGB;
-    else if (strcmp(gtk_rgba, "bgr") == 0)
-      params->subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_BGR;
-    else if (strcmp(gtk_rgba, "vrgb") == 0)
-      params->subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_VRGB;
-    else if (strcmp(gtk_rgba, "vbgr") == 0)
-      params->subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_VBGR;
-  }
-
-  g_free(gtk_hint_style);
-  g_free(gtk_rgba);
-#else
   // For non-GTK builds (read: Aura), just use reasonable hardcoded values.
   params->antialiasing = true;
   params->autohinter = true;
@@ -133,7 +77,6 @@ void LoadDefaults(FontRenderParams* params, bool renderer) {
     params->hinting = delegate->GetHintingStyle();
     params->subpixel_rendering = delegate->GetSubpixelRenderingStyle();
   }
-#endif
 #endif
 
   params->subpixel_positioning = SubpixelPositioningRequested(renderer);

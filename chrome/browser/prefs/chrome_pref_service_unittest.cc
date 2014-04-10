@@ -99,10 +99,6 @@ class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
     // Set some (WebKit) user preferences.
     TestingPrefServiceSyncable* pref_services =
         profile()->GetTestingPrefService();
-#if defined(TOOLKIT_GTK)
-    pref_services->SetUserPref(prefs::kUsesSystemTheme,
-                               base::Value::CreateBooleanValue(false));
-#endif
     pref_services->SetUserPref(prefs::kDefaultCharset,
                                base::Value::CreateStringValue("utf8"));
     pref_services->SetUserPref(prefs::kWebKitDefaultFontSize,

@@ -87,8 +87,6 @@
         'browser/ui/find_bar/find_bar_host_interactive_uitest.cc',
         'browser/ui/fullscreen/fullscreen_controller_interactive_browsertest.cc',
         'browser/ui/fullscreen/fullscreen_controller_state_interactive_browsertest.cc',
-        'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
-        'browser/ui/gtk/bookmarks/bookmark_bubble_gtk_browsertest.cc',
         'browser/ui/omnibox/omnibox_view_browsertest.cc',
         'browser/ui/panels/base_panel_browser_test.cc',
         'browser/ui/panels/base_panel_browser_test.h',
@@ -140,7 +138,6 @@
         'test/base/interactive_test_utils.h',
         'test/base/interactive_test_utils_aura.cc',
         'test/base/interactive_test_utils_aura.h',
-        'test/base/interactive_test_utils_gtk.cc',
         'test/base/interactive_test_utils_mac.mm',
         'test/base/interactive_test_utils_views.cc',
         'test/base/interactive_test_utils_win.cc',
@@ -160,9 +157,6 @@
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
-          'sources!': [
-            'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
-          ],
         }, {
           'sources!': [
             'browser/notifications/desktop_notifications_unittest.cc',
@@ -180,21 +174,6 @@
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
           'dependencies': [
             '../build/linux/system.gyp:ssl',
-          ],
-        }],
-        ['toolkit_uses_gtk == 1 and toolkit_views == 0', {
-          'sources!': [
-            # TODO(port)
-            'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
-            'browser/ui/views/button_dropdown_test.cc',
-            'browser/ui/views/constrained_window_views_browsertest.cc',
-            'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
-            'browser/ui/views/find_bar_host_interactive_uitest.cc',
-            'browser/ui/views/keyboard_access_browsertest.cc',
-            'browser/ui/views/menu_item_view_test.cc',
-            'browser/ui/views/menu_model_adapter_test.cc',
-            'test/base/view_event_test_base.cc',
-            'test/base/view_event_test_base.h',
           ],
         }],
         ['OS=="linux" and chromeos==0', {
@@ -235,12 +214,6 @@
             '../ash/drag_drop/drag_drop_interactive_uitest.cc',
             '../ash/wm/ash_native_cursor_manager_interactive_uitest.cc',
             'browser/ui/window_sizer/window_sizer_ash_uitest.cc',
-          ],
-        }],
-        ['OS=="linux" and toolkit_views==1', {
-          'sources!': [
-            # TODO(port)
-            'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
           ],
         }],
         ['OS=="mac"', {
@@ -1386,11 +1359,6 @@
         'browser/ui/find_bar/find_bar_host_browsertest.cc',
         'browser/ui/fullscreen/fullscreen_controller_browsertest.cc',
         'browser/ui/global_error/global_error_service_browsertest.cc',
-        'browser/ui/gtk/bubble/bubble_gtk_browsertest.cc',
-        'browser/ui/gtk/confirm_bubble_gtk_browsertest.cc',
-        'browser/ui/gtk/location_bar_view_gtk_browsertest.cc',
-        'browser/ui/gtk/one_click_signin_bubble_gtk_browsertest.cc',
-        'browser/ui/gtk/view_id_util_browsertest.cc',
         'browser/ui/login/login_prompt_browsertest.cc',
         'browser/ui/panels/panel_extension_browsertest.cc',
         'browser/ui/pdf/pdf_browsertest.cc',
@@ -1606,7 +1574,6 @@
       'conditions': [
         ['enable_one_click_signin==0', {
           'sources!': [
-            'browser/ui/gtk/one_click_signin_bubble_gtk_browsertest.cc',
             'browser/ui/sync/one_click_signin_bubble_links_delegate_browsertest.cc',
           ]
         }],
@@ -1775,11 +1742,6 @@
             '../pdf/pdf.gyp:pdf',
           ],
         }],
-        ['OS!="linux" or toolkit_views==1', {
-          'sources!': [
-            'browser/ui/gtk/view_id_util_browsertest.cc',
-          ],
-        }],
         ['enable_webrtc==0', {
           'sources!': [
             'browser/extensions/api/webrtc_audio_private/webrtc_audio_private_browsertest.cc',
@@ -1825,11 +1787,6 @@
             'app/chrome_dll.rc',
             'app/chrome_dll_resource.h',
             'app/chrome_version.rc.version',
-          ],
-        }],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
           ],
         }],
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
@@ -2122,11 +2079,6 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
           'dependencies': [
             '../build/linux/system.gyp:ssl',
@@ -2352,11 +2304,6 @@
         'browser/sync/test/integration/two_client_typed_urls_sync_test.cc',
       ],
       'conditions': [
-        ['toolkit_uses_gtk == 1', {
-           'dependencies': [
-             '../build/linux/system.gyp:gtk',
-           ],
-        }],
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
           'dependencies': [
             '../build/linux/system.gyp:ssl',
@@ -2462,11 +2409,6 @@
         'test/data/resource.rc',
       ],
       'conditions': [
-        ['toolkit_uses_gtk == 1', {
-           'dependencies': [
-             '../build/linux/system.gyp:gtk',
-           ],
-        }],
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
           'dependencies': [
             '../build/linux/system.gyp:ssl',
@@ -2647,11 +2589,6 @@
             ['use_x11==1', {
               'dependencies': [
                 '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-              ],
-            }],
-            ['toolkit_uses_gtk == 1', {
-              'dependencies': [
-                '../build/linux/system.gyp:gtk',
               ],
             }],
             ['OS=="win"', {

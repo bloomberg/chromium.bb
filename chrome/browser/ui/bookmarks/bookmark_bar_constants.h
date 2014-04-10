@@ -10,9 +10,7 @@
 namespace chrome {
 
 // The height of Bookmarks Bar, when visible in "New Tab Page" mode.
-#if defined(TOOLKIT_GTK)
-const int kNTPBookmarkBarHeight = 57;
-#elif defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 const int kNTPBookmarkBarHeight = 40;
 #endif
 
@@ -25,8 +23,6 @@ const int kBookmarkBarHeight = 28;
 // to compute values other than the actual height of the toolbar, be sure to add
 // |kVisualHeightOffset|.
 const int kBookmarkBarHeight = 26;
-#elif defined(TOOLKIT_GTK)
-const int kBookmarkBarHeight = 29;
 #endif
 
 }  // namespace chrome

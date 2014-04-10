@@ -53,7 +53,6 @@
       },
       'sources': [
         'app/chrome_exe_main_aura.cc',
-        'app/chrome_exe_main_gtk.cc',
         'app/chrome_exe_main_mac.cc',
         'app/chrome_exe_main_win.cc',
         'app/chrome_exe_resource.h',

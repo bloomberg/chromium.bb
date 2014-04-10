@@ -18,8 +18,6 @@ namespace test {
 typedef UIImage* PlatformImage;
 #elif defined(OS_MACOSX)
 typedef NSImage* PlatformImage;
-#elif defined(TOOLKIT_GTK)
-typedef GdkPixbuf* PlatformImage;
 #else
 typedef gfx::ImageSkia PlatformImage;
 #endif

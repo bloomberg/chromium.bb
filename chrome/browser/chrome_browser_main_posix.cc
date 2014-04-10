@@ -27,15 +27,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/chrome_browser_main_extra_parts_gtk.h"
-
-#if defined(ENABLE_PRINTING)
-#include "chrome/browser/printing/print_dialog_gtk.h"
-#include "chrome/browser/printing/printing_gtk_util.h"
-#endif  // defined(ENABLE_PRINTING)
-#endif  // defined(TOOLKIT_GTK)
-
 using content::BrowserThread;
 
 namespace {
@@ -351,13 +342,6 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
   // distros send SIGHUP, SIGTERM, and then SIGKILL.
   action.sa_handler = SIGHUPHandler;
   CHECK(sigaction(SIGHUP, &action, NULL) == 0);
-
-#if defined(TOOLKIT_GTK) && defined(ENABLE_PRINTING)
-  printing::PrintingContextLinux::SetCreatePrintDialogFunction(
-      &PrintDialogGtk::CreatePrintDialog);
-  printing::PrintingContextLinux::SetPdfPaperSizeFunction(
-      &GetPdfPaperSizeDeviceUnitsGtk);
-#endif
 }
 
 void ChromeBrowserMainPartsPosix::ShowMissingLocaleMessageBox() {
@@ -366,9 +350,6 @@ void ChromeBrowserMainPartsPosix::ShowMissingLocaleMessageBox() {
 #elif defined(OS_MACOSX)
   // Not called on Mac because we load the locale files differently.
   NOTREACHED();
-#elif defined(TOOLKIT_GTK)
-  ChromeBrowserMainExtraPartsGtk::ShowMessageBox(
-      chrome_browser::kMissingLocaleDataMessage);
 #elif defined(USE_AURA)
   // TODO(port): We may want a views based message dialog here eventually, but
   // for now, crash.

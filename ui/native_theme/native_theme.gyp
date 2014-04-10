@@ -37,8 +37,6 @@
         'native_theme_aurawin.h',
         'native_theme_base.cc',
         'native_theme_base.h',
-        'native_theme_gtk.cc',
-        'native_theme_gtk.h',
         'native_theme_mac.h',
         'native_theme_mac.mm',
         'native_theme_switches.cc',

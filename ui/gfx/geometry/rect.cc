@@ -8,8 +8,6 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(TOOLKIT_GTK)
-#include <gdk/gdk.h>
 #endif
 
 #include "base/logging.h"
@@ -35,12 +33,6 @@ Rect::Rect(const CGRect& r)
   set_width(r.size.width);
   set_height(r.size.height);
 }
-#elif defined(TOOLKIT_GTK)
-Rect::Rect(const GdkRectangle& r)
-    : RectBaseT(gfx::Point(r.x, r.y)) {
-  set_width(r.width);
-  set_height(r.height);
-}
 #endif
 
 #if defined(OS_WIN)
@@ -55,11 +47,6 @@ RECT Rect::ToRECT() const {
 #elif defined(OS_MACOSX)
 CGRect Rect::ToCGRect() const {
   return CGRectMake(x(), y(), width(), height());
-}
-#elif defined(TOOLKIT_GTK)
-GdkRectangle Rect::ToGdkRectangle() const {
-  GdkRectangle r = {x(), y(), width(), height()};
-  return r;
 }
 #endif
 

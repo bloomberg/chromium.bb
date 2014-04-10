@@ -18,10 +18,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d_f.h"
 
-#if defined(TOOLKIT_GTK)
-#include "content/browser/renderer_host/gtk_plugin_container_manager.h"
-#endif  // defined(TOOLKIT_GTK)
-
 namespace content {
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
@@ -148,11 +144,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
                                        const SkBitmap& zoomed_bitmap) OVERRIDE;
 #endif  // defined(OS_ANDROID)
-
-#if defined(TOOLKIT_GTK)
-  virtual GdkEventButton* GetLastMouseDown() OVERRIDE;
-  virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
-#endif  // defined(TOOLKIT_GTK)
 
 #if defined(OS_WIN)
   virtual void SetParentNativeViewAccessible(

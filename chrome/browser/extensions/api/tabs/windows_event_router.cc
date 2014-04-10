@@ -17,10 +17,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 
-#if defined(TOOLKIT_GTK)
-#include "ui/base/x/active_window_watcher_x.h"
-#endif
-
 using content::BrowserContext;
 
 namespace extensions {
@@ -36,8 +32,6 @@ WindowsEventRouter::WindowsEventRouter(Profile* profile)
   WindowControllerList::GetInstance()->AddObserver(this);
 #if defined(TOOLKIT_VIEWS)
   views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
-#elif defined(TOOLKIT_GTK)
-  ui::ActiveWindowWatcherX::AddObserver(this);
 #elif defined(OS_MACOSX)
   // Needed for when no suitable window can be passed to an extension as the
   // currently focused window.
@@ -50,8 +44,6 @@ WindowsEventRouter::~WindowsEventRouter() {
   WindowControllerList::GetInstance()->RemoveObserver(this);
 #if defined(TOOLKIT_VIEWS)
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
-#elif defined(TOOLKIT_GTK)
-  ui::ActiveWindowWatcherX::RemoveObserver(this);
 #endif
 }
 
@@ -86,12 +78,6 @@ void WindowsEventRouter::OnNativeFocusChange(
     gfx::NativeView focused_before,
     gfx::NativeView focused_now) {
   if (!focused_now)
-    OnActiveWindowChanged(NULL);
-}
-#elif defined(TOOLKIT_GTK)
-void WindowsEventRouter::ActiveWindowChanged(
-    GdkWindow* active_window) {
-  if (!active_window)
     OnActiveWindowChanged(NULL);
 }
 #endif

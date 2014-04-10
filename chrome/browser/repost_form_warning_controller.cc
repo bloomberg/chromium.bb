@@ -4,10 +4,6 @@
 
 #include "chrome/browser/repost_form_warning_controller.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#endif
-
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -33,16 +29,6 @@ base::string16 RepostFormWarningController::GetDialogMessage() {
 base::string16 RepostFormWarningController::GetAcceptButtonTitle() {
   return l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING_RESEND);
 }
-
-#if defined(TOOLKIT_GTK)
-const char* RepostFormWarningController::GetAcceptButtonIcon() {
-  return GTK_STOCK_REFRESH;
-}
-
-const char* RepostFormWarningController::GetCancelButtonIcon() {
-  return GTK_STOCK_CANCEL;
-}
-#endif  // defined(TOOLKIT_GTK)
 
 void RepostFormWarningController::OnAccepted() {
   web_contents()->GetController().ContinuePendingReload();

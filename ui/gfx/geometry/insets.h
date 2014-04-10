@@ -12,10 +12,6 @@
 #include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/gfx_export.h"
 
-#if defined(TOOLKIT_GTK)
-typedef struct _GtkBorder GtkBorder;
-#endif
-
 namespace gfx {
 
 // An integer version of gfx::Insets.
@@ -23,9 +19,6 @@ class GFX_EXPORT Insets : public InsetsBase<Insets, int> {
  public:
   Insets();
   Insets(int top, int left, int bottom, int right);
-#if defined(TOOLKIT_GTK)
-  explicit Insets(const GtkBorder& border);
-#endif
 
   ~Insets();
 

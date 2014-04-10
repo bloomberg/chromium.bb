@@ -272,7 +272,6 @@
         'browser/background/background_mode_manager.h',
         'browser/background/background_mode_manager_chromeos.cc',
         'browser/background/background_mode_manager_aura.cc',
-        'browser/background/background_mode_manager_gtk.cc',
         'browser/background/background_mode_manager_mac.mm',
         'browser/background/background_mode_manager_win.cc',
         'browser/bitmap_fetcher.cc',
@@ -611,7 +610,6 @@
         'browser/download/download_stats.h',
         'browser/download/download_status_updater.cc',
         'browser/download/download_status_updater.h',
-        'browser/download/download_status_updater_gtk.cc',
         'browser/download/download_status_updater_mac.mm',
         'browser/download/download_status_updater_win.cc',
         'browser/download/download_target_determiner.cc',
@@ -688,7 +686,6 @@
         'browser/fullscreen.h',
         'browser/fullscreen_aurax11.cc',
         'browser/fullscreen_chromeos.cc',
-        'browser/fullscreen_gtk.cc',
         'browser/fullscreen_mac.mm',
         'browser/fullscreen_win.cc',
         'browser/geolocation/chrome_access_token_store.cc',
@@ -980,7 +977,6 @@
         'browser/lifetime/application_lifetime_android.cc',
         'browser/lifetime/application_lifetime_android.h',
         'browser/lifetime/application_lifetime_aura.cc',
-        'browser/lifetime/application_lifetime_gtk.cc',
         'browser/lifetime/application_lifetime_mac.mm',
         'browser/lifetime/application_lifetime_stub.cc',
         'browser/lifetime/application_lifetime_win.cc',
@@ -1504,7 +1500,6 @@
         'browser/platform_util_android.cc',
         'browser/platform_util_aura.cc',
         'browser/platform_util_chromeos.cc',
-        'browser/platform_util_common_linux.cc',
         'browser/platform_util_linux.cc',
         'browser/platform_util_mac.mm',
         'browser/platform_util_win.cc',
@@ -1701,8 +1696,6 @@
         'browser/printing/cloud_print/cloud_print_url.h',
         'browser/printing/print_dialog_cloud.cc',
         'browser/printing/print_dialog_cloud.h',
-        'browser/printing/print_dialog_gtk.cc',
-        'browser/printing/print_dialog_gtk.h',
         'browser/printing/print_error_dialog.cc',
         'browser/printing/print_error_dialog.h',
         'browser/printing/print_job.cc',
@@ -2518,7 +2511,6 @@
         'browser/themes/theme_service.h',
         'browser/themes/theme_service_aurax11.cc',
         'browser/themes/theme_service_aurax11.h',
-        'browser/themes/theme_service_gtk.cc',
         'browser/themes/theme_service_mac.mm',
         'browser/themes/theme_syncable_service.cc',
         'browser/themes/theme_syncable_service.h',
@@ -3137,10 +3129,6 @@
             '../dbus/dbus.gyp:dbus',
             '../third_party/undoview/undoview.gyp:undoview',
           ],
-          'sources': [
-            'browser/printing/printing_gtk_util.cc',
-            'browser/printing/printing_gtk_util.h',
-          ],
           'conditions': [
             ['OS=="linux"', {
               'link_settings': {
@@ -3494,15 +3482,6 @@
                 '../build/linux/system.gyp:dbus',
                 '../build/linux/system.gyp:fontconfig',
                 '../dbus/dbus.gyp:dbus',
-              ],
-              'sources/': [
-                ['exclude', '^browser/platform_util_common_linux.cc'],
-              ],
-            }],
-            # GTK build only
-            ['toolkit_uses_gtk==1', {
-              'sources/': [
-                ['exclude', '^browser/lifetime/application_lifetime_stub.cc'],
               ],
             }],
             # x11 build

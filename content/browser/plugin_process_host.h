@@ -133,10 +133,6 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   void OnPluginWindowDestroyed(HWND window, HWND parent);
 #endif
 
-#if defined(USE_X11)
-  void OnMapNativeViewId(gfx::NativeViewId id, gfx::PluginWindowHandle* output);
-#endif
-
 #if defined(OS_MACOSX)
   void OnPluginSelectWindow(uint32 window_id, gfx::Rect window_rect,
                             bool modal);

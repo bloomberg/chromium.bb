@@ -190,11 +190,6 @@
             'browser/devtools/remote_debugging_server.h',
           ],
           'conditions': [
-            ['toolkit_uses_gtk == 1', {
-              'dependencies': [
-                '../build/linux/system.gyp:gtk',
-              ],
-            }],
             ['OS=="android"', {
               'dependencies!': [
                 '../third_party/libusb/libusb.gyp:libusb',
@@ -313,11 +308,6 @@
             'common/extensions/api/api.gyp:chrome_api',
           ],
           'conditions': [
-            ['toolkit_uses_gtk == 1', {
-              'dependencies': [
-                '../build/linux/system.gyp:gtk',
-              ],
-            }],
             ['OS=="win" or OS=="mac"', {
               'sources': [
                 'utility/media_galleries/iapps_xml_utils.cc',
@@ -1070,11 +1060,6 @@
             '..',
           ],
           'conditions': [
-            ['toolkit_uses_gtk == 1', {
-              'dependencies': [
-                '../build/linux/system.gyp:gtk',
-              ],
-            }],
             ['use_cups==1', {
               'dependencies': [
                 '../printing/printing.gyp:cups',

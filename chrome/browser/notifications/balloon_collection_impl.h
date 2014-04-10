@@ -51,10 +51,6 @@ class BalloonCollectionImpl : public BalloonCollection,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // MessageLoopForUI::Observer interface.
-  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
-  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
-
   // base_ is embedded, so this is a simple accessor for the number of
   // balloons in the collection.
   int count() const { return base_.count(); }

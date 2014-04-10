@@ -172,8 +172,6 @@
     'common/cursors/webcursor_aura.cc',
     'common/cursors/webcursor_aurawin.cc',
     'common/cursors/webcursor_aurax11.cc',
-    'common/cursors/webcursor_gtk.cc',
-    'common/cursors/webcursor_gtk_data.h',
     'common/cursors/webcursor_mac.mm',
     'common/cursors/webcursor_ozone.cc',
     'common/cursors/webcursor_win.cc',
@@ -553,11 +551,6 @@
      'dependencies': [
         'content.gyp:content_jni_headers',
         'content.gyp:common_aidl',
-      ],
-    }],
-    ['toolkit_uses_gtk == 1', {
-      'dependencies': [
-        '../build/linux/system.gyp:gtk',
       ],
     }],
     ['use_pango == 1', {

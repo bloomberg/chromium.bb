@@ -13,10 +13,6 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gdk/gdk.h>
-#endif
-
 class GURL;
 
 namespace gfx {
@@ -151,13 +147,6 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Stops speaking, if it is currently in progress.
   virtual void StopSpeaking() = 0;
 #endif  // defined(OS_MACOSX)
-
-#if defined(TOOLKIT_GTK)
-  // Gets the event for the last mouse down.
-  virtual GdkEventButton* GetLastMouseDown() = 0;
-  // Builds a submenu containing all the gtk input method commands.
-  virtual gfx::NativeView BuildInputMethodsGtkMenu() = 0;
-#endif  // defined(TOOLKIT_GTK)
 };
 
 }  // namespace content

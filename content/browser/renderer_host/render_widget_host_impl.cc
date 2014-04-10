@@ -69,9 +69,7 @@
 #include "ui/snapshot/snapshot.h"
 #include "webkit/common/webpreferences.h"
 
-#if defined(TOOLKIT_GTK)
-#include "content/browser/renderer_host/backing_store_gtk.h"
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #include "content/browser/renderer_host/backing_store_mac.h"
 #elif defined(OS_WIN)
 #include "content/common/plugin_constants_win.h"
@@ -761,17 +759,7 @@ void RenderWidgetHostImpl::UnlockBackingStore() {
 }
 #endif
 
-#if defined(TOOLKIT_GTK)
-bool RenderWidgetHostImpl::CopyFromBackingStoreToGtkWindow(
-    const gfx::Rect& dest_rect, GdkWindow* target) {
-  BackingStore* backing_store = GetBackingStore(false);
-  if (!backing_store)
-    return false;
-  (static_cast<BackingStoreGtk*>(backing_store))->PaintToRect(
-      dest_rect, target);
-  return true;
-}
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 gfx::Size RenderWidgetHostImpl::GetBackingStoreSize() {
   BackingStore* backing_store = GetBackingStore(false);
   return backing_store ? backing_store->size() : gfx::Size();

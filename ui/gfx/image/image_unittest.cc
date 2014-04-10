@@ -10,10 +10,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#include "ui/gfx/gtk_util.h"
-#elif defined(OS_IOS)
+#if defined(OS_IOS)
 #include "base/mac/foundation_util.h"
 #include "skia/ext/skia_utils_ios.h"
 #elif defined(OS_MACOSX)
@@ -75,7 +72,7 @@ TEST_F(ImageTest, EmptyImage) {
 
 // Test constructing a gfx::Image from an empty PlatformImage.
 TEST_F(ImageTest, EmptyImageFromEmptyPlatformImage) {
-#if defined(OS_IOS) || defined(OS_MACOSX) || defined(TOOLKIT_GTK)
+#if defined(OS_IOS) || defined(OS_MACOSX)
   gfx::Image image1(NULL);
   EXPECT_TRUE(image1.IsEmpty());
   EXPECT_EQ(0, image1.Width());
@@ -435,27 +432,6 @@ TEST_F(ImageTest, PlatformToSkiaToCopy) {
   EXPECT_FALSE(bitmap->isNull());
   delete bitmap;
 }
-
-#if defined(TOOLKIT_GTK)
-TEST_F(ImageTest, SkiaToGdkCopy) {
-  GdkPixbuf* pixbuf;
-
-  {
-    gfx::Image image(gt::CreateImageSkia(25, 25));
-    pixbuf = image.CopyGdkPixbuf();
-  }
-
-  EXPECT_TRUE(pixbuf);
-  g_object_unref(pixbuf);
-}
-
-TEST_F(ImageTest, SkiaToCairoCreatesGdk) {
-  gfx::Image image(gt::CreateImageSkia(25, 25));
-  EXPECT_FALSE(image.HasRepresentation(gfx::Image::kImageRepGdk));
-  EXPECT_TRUE(image.ToCairo());
-  EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepGdk));
-}
-#endif
 
 #if defined(OS_IOS)
 TEST_F(ImageTest, SkiaToCocoaTouchCopy) {

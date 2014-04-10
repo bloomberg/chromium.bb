@@ -4,10 +4,6 @@
 
 #include "ui/gfx/geometry/insets.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#endif
-
 #include "base/strings/stringprintf.h"
 
 namespace gfx {
@@ -18,15 +14,6 @@ Insets::Insets() : InsetsBase<Insets, int>(0, 0, 0, 0) {}
 
 Insets::Insets(int top, int left, int bottom, int right)
     : InsetsBase<Insets, int>(top, left, bottom, right) {}
-
-#if defined(TOOLKIT_GTK)
-Insets::Insets(const GtkBorder& border)
-    : InsetsBase<Insets, int>(border.top,
-                              border.left,
-                              border.bottom,
-                              border.right) {
-}
-#endif
 
 Insets::~Insets() {}
 

@@ -19,7 +19,6 @@
       'sources': [
         'base/test/ui_controls.h',
         'base/test/ui_controls_aura.cc',
-        'base/test/ui_controls_gtk.cc',
         'base/test/ui_controls_internal_win.cc',
         'base/test/ui_controls_internal_win.h',
         'base/test/ui_controls_mac.mm',

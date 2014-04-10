@@ -60,7 +60,6 @@ void DragDownloadItem(const content::DownloadItem* download,
       ui::FileInfo(full_path, download->GetFileNameToReportUser()));
   data.SetFilenames(file_infos);
 
-#if !defined(TOOLKIT_GTK)
 #if defined(USE_AURA)
   aura::Window* root_window = view->GetRootWindow();
   if (!root_window || !aura::client::GetDragDropClient(root_window))
@@ -86,18 +85,4 @@ void DragDownloadItem(const content::DownloadItem* download,
              DROPEFFECT_COPY | DROPEFFECT_LINK,
              &effects);
 #endif
-
-#else
-  GtkWidget* root = gtk_widget_get_toplevel(view);
-  if (!root)
-    return;
-
-  views::NativeWidgetGtk* widget = static_cast<views::NativeWidgetGtk*>(
-      views::Widget::GetWidgetForNativeView(root)->native_widget());
-  if (!widget)
-    return;
-
-  widget->DoDrag(data,
-                 ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK);
-#endif  // TOOLKIT_GTK
 }

@@ -42,8 +42,6 @@
         'keycodes/keyboard_code_conversion.h',
         'keycodes/keyboard_code_conversion_android.cc',
         'keycodes/keyboard_code_conversion_android.h',
-        'keycodes/keyboard_code_conversion_gtk.cc',
-        'keycodes/keyboard_code_conversion_gtk.h',
         'keycodes/keyboard_code_conversion_mac.h',
         'keycodes/keyboard_code_conversion_mac.mm',
         'keycodes/keyboard_code_conversion_win.cc',

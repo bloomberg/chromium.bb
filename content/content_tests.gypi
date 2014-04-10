@@ -281,11 +281,6 @@
             '../third_party/webrtc/modules/modules.gyp:video_capture_module',
           ],
         }],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
         ['use_glib == 1', {
           'dependencies': [
             '../build/linux/system.gyp:glib',
@@ -464,7 +459,6 @@
         'browser/quota/mock_quota_manager_proxy.h',
         'browser/quota/mock_quota_manager_unittest.cc',
         'browser/renderer_host/compositing_iosurface_transformer_mac_unittest.cc',
-        'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
         'browser/renderer_host/input/gesture_event_queue_unittest.cc',
         'browser/renderer_host/input/input_router_impl_unittest.cc',
         'browser/renderer_host/input/mock_input_ack_handler.cc',
@@ -501,7 +495,6 @@
         'browser/renderer_host/software_frame_manager_unittest.cc',
         'browser/renderer_host/text_input_client_mac_unittest.mm',
         'browser/renderer_host/web_input_event_aura_unittest.cc',
-        'browser/renderer_host/input/web_input_event_builders_gtk_unittest.cc',
         'browser/renderer_host/websocket_dispatcher_host_unittest.cc',
         'browser/resolve_proxy_msg_helper_unittest.cc',
         'browser/screen_orientation/screen_orientation_dispatcher_host_unittest.cc',
@@ -821,7 +814,6 @@
         }],
         ['chromeos==1', {
           'sources/': [
-            ['exclude', '^browser/renderer_host/gtk_key_bindings_handler_unittest.cc'],
             ['exclude', '^browser/geolocation/wifi_data_provider_linux_unittest.cc'],
           ],
         }],

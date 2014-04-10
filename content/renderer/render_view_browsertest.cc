@@ -52,10 +52,6 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/range/range.h"
 
-#if defined(OS_LINUX) && !defined(USE_AURA)
-#include "ui/base/gtk/event_synthesis_gtk.h"
-#endif
-
 #if defined(USE_AURA)
 #include "ui/events/event.h"
 #endif
@@ -269,39 +265,6 @@ class RenderViewImplTest : public RenderViewTest {
     long c = GetCharacterFromKeyCode(static_cast<ui::KeyboardCode>(key_code),
                                      flags);
     output->assign(1, static_cast<base::char16>(c));
-    return 1;
-#elif defined(TOOLKIT_GTK)
-    // We ignore |layout|, which means we are only testing the layout of the
-    // current locale. TODO(estade): fix this to respect |layout|.
-    std::vector<GdkEvent*> events;
-    ui::SynthesizeKeyPressEvents(
-        NULL, static_cast<ui::KeyboardCode>(key_code),
-        modifiers & (MockKeyboard::LEFT_CONTROL | MockKeyboard::RIGHT_CONTROL),
-        modifiers & (MockKeyboard::LEFT_SHIFT | MockKeyboard::RIGHT_SHIFT),
-        modifiers & (MockKeyboard::LEFT_ALT | MockKeyboard::RIGHT_ALT),
-        &events);
-
-    guint32 unicode_key = 0;
-    for (size_t i = 0; i < events.size(); ++i) {
-      // Only send the up/down events for key press itself (skip the up/down
-      // events for the modifier keys).
-      if ((i + 1) == (events.size() / 2) || i == (events.size() / 2)) {
-        unicode_key = gdk_keyval_to_unicode(events[i]->key.keyval);
-        NativeWebKeyboardEvent webkit_event(events[i]);
-        SendNativeKeyEvent(webkit_event);
-
-        // Need to add a char event after the key down.
-        if (webkit_event.type == blink::WebInputEvent::RawKeyDown) {
-          NativeWebKeyboardEvent char_event = webkit_event;
-          char_event.type = blink::WebInputEvent::Char;
-          char_event.skip_in_browser = true;
-          SendNativeKeyEvent(char_event);
-        }
-      }
-      gdk_event_free(events[i]);
-    }
-
-    output->assign(1, static_cast<base::char16>(unicode_key));
     return 1;
 #else
     NOTIMPLEMENTED();

@@ -24,10 +24,6 @@
 #include "ui/gfx/render_text_pango.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#endif
-
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::WideToUTF16;
@@ -63,10 +59,6 @@ base::string16 GetSelectedText(RenderText* render_text) {
 void SetRTL(bool rtl) {
   // Override the current locale/direction.
   base::i18n::SetICUDefaultLocale(rtl ? "he" : "en");
-#if defined(TOOLKIT_GTK)
-  // Do the same for GTK, which does not rely on the ICU default locale.
-  gtk_widget_set_default_direction(rtl ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
-#endif
   EXPECT_EQ(rtl, base::i18n::IsRTL());
 }
 

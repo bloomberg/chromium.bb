@@ -371,20 +371,6 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XF86XK_Launch9:
       return VKEY_F18;
 
-#if defined(TOOLKIT_GTK)
-    case XF86XK_Refresh:
-    case XF86XK_History:
-    case XF86XK_OpenURL:
-    case XF86XK_AddFavorite:
-    case XF86XK_Go:
-    case XF86XK_ZoomIn:
-    case XF86XK_ZoomOut:
-      // ui::AcceleratorGtk tries to convert the XF86XK_ keysyms on Chrome
-      // startup. It's safe to return VKEY_UNKNOWN here since ui::AcceleratorGtk
-      // also checks a Gdk keysym. http://crbug.com/109843
-      return VKEY_UNKNOWN;
-#endif
-
     // For supporting multimedia buttons on a USB keyboard.
     case XF86XK_Back:
       return VKEY_BROWSER_BACK;

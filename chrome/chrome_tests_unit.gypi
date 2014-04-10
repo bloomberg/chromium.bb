@@ -199,7 +199,6 @@
         'browser/ui/fullscreen/fullscreen_controller_state_tests.h',
         'browser/ui/fullscreen/fullscreen_controller_test.cc',
         'browser/ui/fullscreen/fullscreen_controller_test.h',
-        'browser/ui/gtk/find_bar_host_unittest_util_gtk.cc',
         'browser/ui/test/test_confirm_bubble_model.cc',
         'browser/ui/test/test_confirm_bubble_model.h',
         'browser/ui/views/find_bar_host_unittest_util_views.cc',
@@ -358,11 +357,6 @@
             ['exclude', '^browser/extensions/fake_safe_browsing_database_manager.h'],
           ],
         }],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
           'dependencies': [
             '../build/linux/system.gyp:ssl',
@@ -465,17 +459,6 @@
         'browser/sync/glue/session_sync_test_helper.cc',
         'browser/sync/glue/session_sync_test_helper.h',
         'test/base/run_all_unittests.cc',
-      ],
-      'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            # Needed for the following #include chain:
-            #   test/base/run_all_unittests.cc
-            #   test/base/chrome_test_suite.h
-            #   gtk/gtk.h
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
       ],
     },
     {
@@ -1670,19 +1653,6 @@
         'browser/ui/find_bar/find_backend_unittest.cc',
         'browser/ui/fullscreen/fullscreen_controller_state_unittest.cc',
         'browser/ui/global_error/global_error_service_unittest.cc',
-        'browser/ui/gtk/accelerators_gtk_unittest.cc',
-        'browser/ui/gtk/bookmarks/bookmark_bar_gtk_unittest.cc',
-        'browser/ui/gtk/bookmarks/bookmark_editor_gtk_unittest.cc',
-        'browser/ui/gtk/bookmarks/bookmark_utils_gtk_unittest.cc',
-        'browser/ui/gtk/event_utils_unittest.cc',
-        'browser/ui/gtk/extensions/media_galleries_dialog_gtk_unittest.cc',
-        'browser/ui/gtk/gtk_chrome_shrinkable_hbox_unittest.cc',
-        'browser/ui/gtk/gtk_theme_service_unittest.cc',
-        'browser/ui/gtk/omnibox/omnibox_popup_view_gtk_unittest.cc',
-        'browser/ui/gtk/omnibox/omnibox_view_gtk_unittest.cc',
-        'browser/ui/gtk/reload_button_gtk_unittest.cc',
-        'browser/ui/gtk/status_icons/status_tray_gtk_unittest.cc',
-        'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
         'browser/ui/libgtk2ui/x11_input_method_context_impl_gtk2_unittest.cc',
         'browser/ui/login/login_prompt_unittest.cc',
         'browser/ui/omnibox/omnibox_controller_unittest.cc',
@@ -2311,34 +2281,6 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
-        ['toolkit_uses_gtk == 1', {
-          'conditions': [
-            ['toolkit_views==1', {
-              'sources!': [
-                'browser/ui/gtk/accelerators_gtk_unittest.cc',
-                'browser/ui/gtk/bookmarks/bookmark_bar_gtk_unittest.cc',
-                'browser/ui/gtk/bookmarks/bookmark_editor_gtk_unittest.cc',
-                'browser/ui/gtk/gtk_chrome_shrinkable_hbox_unittest.cc',
-                'browser/ui/gtk/gtk_theme_service_unittest.cc',
-                'browser/ui/gtk/omnibox/omnibox_popup_view_gtk_unittest.cc',
-                'browser/ui/gtk/omnibox/omnibox_view_gtk_unittest.cc',
-                'browser/ui/gtk/reload_button_gtk_unittest.cc',
-                'browser/ui/gtk/status_icons/status_tray_gtk_unittest.cc',
-              ],
-            }],
-          ],
-          'dependencies': [
-            '../build/linux/system.gyp:dbus',
-            '../build/linux/system.gyp:gtk',
-            '../dbus/dbus.gyp:dbus_test_support',
-            '../sandbox/sandbox.gyp:*',
-          ],
-        }, { # else: toolkit_uses_gtk != 1
-          'sources!': [
-            'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
-            '../ui/views/focus/accelerator_handler_gtk_unittest.cc',
-          ],
-        }],
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
           'dependencies': [
             '../build/linux/system.gyp:ssl',
@@ -2391,7 +2333,6 @@
           ],
           'sources!': [
             'browser/ui/tests/ui_gfx_image_unittest.cc',
-            'browser/ui/gtk/reload_button_gtk_unittest.cc',
             'tools/convert_dict/convert_dict_unittest.cc',
             'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
           ],
@@ -2660,9 +2601,6 @@
             '../components/components.gyp:web_modal_test_support',
             '../ui/views/views.gyp:views',
             '../ui/views/views.gyp:views_test_support',
-          ],
-          'sources!': [
-            'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
           ],
         }, { # else: toolkit_views == 0
           'sources/': [
