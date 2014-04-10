@@ -601,6 +601,38 @@ function testExecuteScript() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the call of executeScript will fail and return null
+// if the webview has been navigated to another source.
+function testExecuteScriptIsAbortedWhenWebViewSourceIsChanged() {
+  var webview = document.createElement('webview');
+  var initial = true;
+  var navigationOccur = false;
+  var newSrc = 'data:text/html,trigger navigation';
+  webview.addEventListener('loadstart', function() {
+    if (initial) {
+      webview.setAttribute('src', newSrc);
+      navigationOccur = true;
+    }
+    initial = false;
+  });
+  webview.addEventListener('loadstop', function() {
+    webview.executeScript(
+      {code:'document.body.style.backgroundColor = "red";'},
+      function(results) {
+        if (navigationOccur) {
+          // Expect a null results because the executeScript failed;
+          // return "red", otherwise.
+          embedder.test.assertEq(null, results);
+          embedder.test.succeed();
+        }
+        navigationOccur = false;
+      }
+    );
+  });
+  webview.setAttribute('src', "about:blank");
+  document.body.appendChild(webview);
+}
+
 // This test calls terminate() on guest after it has already been
 // terminated. This makes sure we ignore the call gracefully.
 function testTerminateAfterExit() {
@@ -1480,6 +1512,8 @@ embedder.test.testList = {
   'testPartitionRaisesException': testPartitionRaisesException,
   'testExecuteScriptFail': testExecuteScriptFail,
   'testExecuteScript': testExecuteScript,
+  'testExecuteScriptIsAbortedWhenWebViewSourceIsChanged':
+      testExecuteScriptIsAbortedWhenWebViewSourceIsChanged,
   'testTerminateAfterExit': testTerminateAfterExit,
   'testAssignSrcAfterCrash': testAssignSrcAfterCrash,
   'testNavOnConsecutiveSrcAttributeChanges':

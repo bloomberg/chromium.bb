@@ -138,6 +138,7 @@ class WebviewExecuteCodeFunction : public extensions::ExecuteCodeFunction {
   // Guarded by a process ID check.
   virtual extensions::ScriptExecutor* GetScriptExecutor() OVERRIDE FINAL;
   virtual bool IsWebView() const OVERRIDE;
+  virtual const GURL& GetWebViewSrc() const OVERRIDE;
 
  private:
   // Contains extension resource built from path of file which is
@@ -145,6 +146,8 @@ class WebviewExecuteCodeFunction : public extensions::ExecuteCodeFunction {
   extensions::ExtensionResource resource_;
 
   int guest_instance_id_;
+
+  GURL guest_src_;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewExecuteCodeFunction);
 };

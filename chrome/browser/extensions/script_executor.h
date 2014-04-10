@@ -86,6 +86,7 @@ class ScriptExecutor {
                      UserScript::RunLocation run_at,
                      WorldType world_type,
                      ProcessType process_type,
+                     const GURL& webview_src,
                      const GURL& file_url,
                      bool user_gesture,
                      ResultType result_type,

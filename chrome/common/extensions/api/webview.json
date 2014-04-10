@@ -327,6 +327,11 @@
             "description": "The instance ID of the guest <webview> process."
           },
           {
+            "type": "string",
+            "name": "src",
+            "description": "The src of the guest <webview> process."
+          },
+          {
             "$ref": "tabs.InjectDetails",
             "name": "details",
             "description": "Details of the script to run."
@@ -357,6 +362,11 @@
             "type": "integer",
             "name": "instanceId",
             "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "string",
+            "name": "src",
+            "description": "The src of the guest <webview> process."
           },
           {
             "$ref": "tabs.InjectDetails",

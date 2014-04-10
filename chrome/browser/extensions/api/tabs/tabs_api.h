@@ -225,6 +225,7 @@ class ExecuteCodeInTabFunction : public ExecuteCodeFunction {
   virtual bool CanExecuteScriptOnPage() OVERRIDE;
   virtual ScriptExecutor* GetScriptExecutor() OVERRIDE;
   virtual bool IsWebView() const OVERRIDE;
+  virtual const GURL& GetWebViewSrc() const OVERRIDE;
 
  private:
   // Id of tab which executes code.

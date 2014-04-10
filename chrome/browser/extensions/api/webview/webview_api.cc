@@ -247,8 +247,7 @@ void WebviewClearDataFunction::ClearDataDone() {
 }
 
 WebviewExecuteCodeFunction::WebviewExecuteCodeFunction()
-    : guest_instance_id_(0) {
-}
+    : guest_instance_id_(0), guest_src_(GURL::EmptyGURL()) {}
 
 WebviewExecuteCodeFunction::~WebviewExecuteCodeFunction() {
 }
@@ -263,8 +262,16 @@ bool WebviewExecuteCodeFunction::Init() {
   if (!guest_instance_id_)
     return false;
 
+  std::string src;
+  if (!args_->GetString(1, &src))
+    return false;
+
+  guest_src_ = GURL(src);
+  if (!guest_src_.is_valid())
+    return false;
+
   base::DictionaryValue* details_value = NULL;
-  if (!args_->GetDictionary(1, &details_value))
+  if (!args_->GetDictionary(2, &details_value))
     return false;
   scoped_ptr<InjectDetails> details(new InjectDetails());
   if (!InjectDetails::Populate(*details_value, details.get()))
@@ -293,6 +300,10 @@ extensions::ScriptExecutor* WebviewExecuteCodeFunction::GetScriptExecutor() {
 
 bool WebviewExecuteCodeFunction::IsWebView() const {
   return true;
+}
+
+const GURL& WebviewExecuteCodeFunction::GetWebViewSrc() const {
+  return guest_src_;
 }
 
 WebviewExecuteScriptFunction::WebviewExecuteScriptFunction() {

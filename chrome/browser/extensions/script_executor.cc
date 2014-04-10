@@ -108,18 +108,18 @@ ScriptExecutor::ScriptExecutor(
 
 ScriptExecutor::~ScriptExecutor() {}
 
-void ScriptExecutor::ExecuteScript(
-    const std::string& extension_id,
-    ScriptExecutor::ScriptType script_type,
-    const std::string& code,
-    ScriptExecutor::FrameScope frame_scope,
-    UserScript::RunLocation run_at,
-    ScriptExecutor::WorldType world_type,
-    ScriptExecutor::ProcessType process_type,
-    const GURL& file_url,
-    bool user_gesture,
-    ScriptExecutor::ResultType result_type,
-    const ExecuteScriptCallback& callback) {
+void ScriptExecutor::ExecuteScript(const std::string& extension_id,
+                                   ScriptExecutor::ScriptType script_type,
+                                   const std::string& code,
+                                   ScriptExecutor::FrameScope frame_scope,
+                                   UserScript::RunLocation run_at,
+                                   ScriptExecutor::WorldType world_type,
+                                   ScriptExecutor::ProcessType process_type,
+                                   const GURL& webview_src,
+                                   const GURL& file_url,
+                                   bool user_gesture,
+                                   ScriptExecutor::ResultType result_type,
+                                   const ExecuteScriptCallback& callback) {
   ExtensionMsg_ExecuteCode_Params params;
   params.request_id = next_request_id_++;
   params.extension_id = extension_id;
@@ -129,6 +129,7 @@ void ScriptExecutor::ExecuteScript(
   params.run_at = static_cast<int>(run_at);
   params.in_main_world = (world_type == MAIN_WORLD);
   params.is_web_view = (process_type == WEB_VIEW_PROCESS);
+  params.webview_src = webview_src;
   params.file_url = file_url;
   params.wants_result = (result_type == JSON_SERIALIZED_RESULT);
   params.user_gesture = user_gesture;

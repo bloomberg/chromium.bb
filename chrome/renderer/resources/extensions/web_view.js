@@ -315,7 +315,8 @@ WebViewInternal.prototype.validateExecuteCodeCall  = function() {
  */
 WebViewInternal.prototype.executeScript = function(var_args) {
   this.validateExecuteCodeCall();
-  var args = $Array.concat([this.instanceId], $Array.slice(arguments));
+  var args = $Array.concat([this.instanceId, this.src],
+                           $Array.slice(arguments));
   $Function.apply(WebView.executeScript, null, args);
 };
 
@@ -324,7 +325,8 @@ WebViewInternal.prototype.executeScript = function(var_args) {
  */
 WebViewInternal.prototype.insertCSS = function(var_args) {
   this.validateExecuteCodeCall();
-  var args = $Array.concat([this.instanceId], $Array.slice(arguments));
+  var args = $Array.concat([this.instanceId, this.src],
+                           $Array.slice(arguments));
   $Function.apply(WebView.insertCSS, null, args);
 };
 

@@ -31,7 +31,7 @@ class ExecuteCodeFunction : public ChromeAsyncExtensionFunction {
   virtual bool CanExecuteScriptOnPage() = 0;
   virtual ScriptExecutor* GetScriptExecutor() = 0;
   virtual bool IsWebView() const = 0;
-
+  virtual const GURL& GetWebViewSrc() const = 0;
   virtual void OnExecuteCodeFinished(const std::string& error,
                                      int32 on_page_id,
                                      const GURL& on_url,
