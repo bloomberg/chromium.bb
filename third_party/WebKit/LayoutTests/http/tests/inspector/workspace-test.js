@@ -7,7 +7,7 @@ InspectorTest.createWorkspace = function(ignoreEvents)
     InspectorTest.testFileSystemMapping._excludedFoldersSetting = new InspectorTest.MockSetting({});
 
     InspectorTest.testWorkspace = new WebInspector.Workspace(InspectorTest.testFileSystemMapping);
-    InspectorTest.testNetworkWorkspaceBinding = new WebInspector.NetworkWorkspaceBinding(InspectorTest.testWorkspace);
+    InspectorTest.testNetworkWorkspaceProvider = new WebInspector.SimpleWorkspaceProvider(InspectorTest.testWorkspace, WebInspector.projectTypes.Network);
     if (ignoreEvents)
         return;
     InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
@@ -50,7 +50,7 @@ InspectorTest.addMockUISourceCodeToWorkspace = function(url, type, content)
 {
     var isDocument = type === WebInspector.resourceTypes.Document;
     var mockContentProvider = new WebInspector.StaticContentProvider(type, content);
-    InspectorTest.testNetworkWorkspaceBinding.addFileForURL(url, mockContentProvider, !isDocument);
+    InspectorTest.testNetworkWorkspaceProvider.addFileForURL(url, mockContentProvider, !isDocument);
 }
 
 InspectorTest._defaultWorkspaceEventHandler = function(event)

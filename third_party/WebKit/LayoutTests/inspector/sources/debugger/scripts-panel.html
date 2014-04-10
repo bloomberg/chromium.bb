@@ -33,19 +33,18 @@ function test()
     function createMockWorkspace()
     {
         InspectorTest.createWorkspace(true);
-        InspectorTest.testDebuggerProjectDelegate = new WebInspector.DebuggerProjectDelegate(InspectorTest.testWorkspace, "debugger:", WebInspector.projectTypes.Debugger);
+        InspectorTest.testDebuggerWorkspaceProvider = new WebInspector.SimpleWorkspaceProvider(InspectorTest.testWorkspace, WebInspector.projectTypes.Debugger);
         return InspectorTest.testWorkspace;
     }
 
     function addNetworkFile(workspace, url)
     {
-        return InspectorTest.testNetworkWorkspaceBinding.addFileForURL(url, createContentProvider(url), false);
+        return InspectorTest.testNetworkWorkspaceProvider.addFileForURL(url, createContentProvider(url), false);
     }
 
     function addDebuggerFile(workspace, url)
     {
-        var path = InspectorTest.testDebuggerProjectDelegate.addContentProvider("", url, url, createContentProvider(url), false);
-        return InspectorTest.testWorkspace.uiSourceCode("debugger:", path)
+        return InspectorTest.testDebuggerWorkspaceProvider.addFileForURL(url, createContentProvider(url), false);
     }
 
     InspectorTest.runTestSuite([
@@ -80,7 +79,7 @@ function test()
             sourcesNavigatorView.revealUISourceCode(uiSourceCode);
             dumpNavigator(sourcesNavigatorView);
 
-            InspectorTest.testNetworkWorkspaceBinding.reset();
+            InspectorTest.testNetworkWorkspaceProvider.reset();
             dumpNavigator(sourcesNavigatorView);
             uiSourceCode = addNetworkFile(workspace, "bar.js");
             sourcesNavigatorView.revealUISourceCode(uiSourceCode);

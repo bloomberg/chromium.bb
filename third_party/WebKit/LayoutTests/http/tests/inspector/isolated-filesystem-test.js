@@ -3,7 +3,7 @@ var initialize_IsolatedFileSystemTest = function() {
 InspectorTest.createIsolatedFileSystemManager = function(workspace, fileSystemMapping)
 {
     var manager = new MockIsolatedFileSystemManager();
-    manager.fileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(manager, workspace);
+    manager.fileSystemWorkspaceProvider = new WebInspector.FileSystemWorkspaceProvider(manager, workspace);
     manager.fileSystemMapping = fileSystemMapping;
     return manager;
 }
@@ -19,11 +19,6 @@ var MockIsolatedFileSystem = function(manager, path, name, rootURL)
 };
 MockIsolatedFileSystem.prototype = {
     path: function()
-    {
-        return this._path;
-    },
-
-    normalizedPath: function()
     {
         return this._path;
     },

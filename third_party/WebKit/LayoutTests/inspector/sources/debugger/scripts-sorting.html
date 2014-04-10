@@ -28,7 +28,7 @@ function test()
     function addUISourceCode(url, isContentScript)
     {
         var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-        var uiSourceCode = InspectorTest.testNetworkWorkspaceBinding.addFileForURL(url, contentProvider, false, isContentScript);
+        var uiSourceCode = InspectorTest.testNetworkWorkspaceProvider.addFileForURL(url, contentProvider, false, isContentScript);
         uiSourceCodes.push(uiSourceCode);
     }
 

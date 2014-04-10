@@ -11,7 +11,7 @@ function test()
     var cssModel;
     var liveLocation;
     var fileSystemPath = "/var/www";
-    var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+    var fileSystemProjectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
 
     function addMockHeader(sourceURL, sourceMapURL)
     {
@@ -63,7 +63,7 @@ function test()
     manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
     cssModel = new WebInspector.CSSStyleModel(WebInspector.targetManager.activeTarget(), InspectorTest.testWorkspace);
     WebInspector.targetManager.activeTarget().cssModel = cssModel;
-    new WebInspector.CSSStyleSheetMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceBinding);
+    new WebInspector.CSSStyleSheetMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceProvider);
 
     var resourcesURL = WebInspector.ParsedURL.completeURL(WebInspector.resourceTreeModel.inspectedPageURL(), "resources/");
     var namePrefix = "update-locations-on-filesystem-scss-load."
@@ -104,7 +104,7 @@ function test()
     var scssPath = namePrefix + "scss";
     fileSystem.setFileContent(scssPath, scssContent, function() {});
     InspectorTest.addMockUISourceCodeToWorkspace(scssURL, WebInspector.resourceTypes.Stylesheet, scssContent);
-    manager.fileSystemWorkspaceBinding._boundFileSystems.get(fileSystemPath)._addFile(scssPath);
+    manager.fileSystemWorkspaceProvider._projectDelegates[fileSystemProjectId]._addFile(scssPath);
 
     function afterBind()
     {

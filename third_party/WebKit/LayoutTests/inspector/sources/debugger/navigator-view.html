@@ -19,7 +19,7 @@ function test()
     function addUISourceCode(url, isContentScript)
     {
         var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-        var uiSourceCode = InspectorTest.testNetworkWorkspaceBinding.addFileForURL(url, contentProvider, false, isContentScript);
+        var uiSourceCode = InspectorTest.testNetworkWorkspaceProvider.addFileForURL(url, contentProvider, false, isContentScript);
         uiSourceCodes.push(uiSourceCode);
     }
 
@@ -98,7 +98,7 @@ function test()
     dumpNavigator();
 
     InspectorTest.addResult("Removing all resources:");
-    InspectorTest.testNetworkWorkspaceBinding.reset();
+    InspectorTest.testNetworkWorkspaceProvider.reset();
     dumpNavigator();
 
     InspectorTest.completeTest();

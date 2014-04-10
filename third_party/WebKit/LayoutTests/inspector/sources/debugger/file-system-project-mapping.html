@@ -49,7 +49,7 @@ function test()
             }
 
             var fileSystemPath = "/var/www";
-            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+            var fileSystemProjectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
             var files = {"/html/foo.js": "<foo content>", "/bar.js": "<bar content>"};
 
             createObjects();
@@ -65,7 +65,7 @@ function test()
             var networkUISourceCode = InspectorTest.testWorkspace.uiSourceCode("http://localhost", "html/foo.js");
             InspectorTest.override(WebInspector.SourcesPanel.prototype, "_suggestReload", function() { });
             InspectorTest.addResult("Adding mapping between network and file system resources.");
-            InspectorTest.testWorkspace.addMapping(networkUISourceCode, uiSourceCode, manager.fileSystemWorkspaceBinding);
+            InspectorTest.testWorkspace.addMapping(networkUISourceCode, uiSourceCode, manager.fileSystemWorkspaceProvider);
             var setting = InspectorTest.testFileSystemMapping._fileSystemMappingSetting;
             InspectorTest.addResult("Emulate reloading inspector.");
             createObjects();
@@ -112,7 +112,7 @@ function test()
             }
 
             var fileSystemPath = "/var/www";
-            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+            var fileSystemProjectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
             var files = {"/html/foo.js": originalFileContent, "/bar.js": "<bar content>"};
             createObjects();
             InspectorTest.addResult("Adding file system.");
@@ -223,7 +223,7 @@ function test()
 
                 var fileContent = "function f()\n{\n    return 0;\n}\n";
                 var fileSystemPath = "/var/www";
-                var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+                var fileSystemProjectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
                 var filePath = "/html/edit-me.js"; 
                 var files = {};
                 files[filePath] = fileContent;
@@ -288,7 +288,7 @@ function test()
             }
 
             var fileSystemPath = "/var/www";
-            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+            var fileSystemProjectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
             var files = {"/html/foo.js": "", "/.git/foogit.js": "", "/bar.js": "", "/html2/foo.js": ""};
             createObjects();
             InspectorTest.addResult("Adding file system.");
