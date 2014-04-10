@@ -8,6 +8,7 @@
 #include "base/android/jni_string.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -135,9 +136,13 @@ jobject GetCachedAvatarForPrimaryAccount(JNIEnv* env,
 
   ScopedJavaLocalRef<jobject> jbitmap;
   if (index != std::string::npos) {
-    const gfx::Image& img = info.GetAvatarIconOfProfileAtIndex(index);
-    if (!img.IsEmpty() && img.AsImageSkia().bitmap())
-      jbitmap = gfx::ConvertToJavaBitmap(img.AsImageSkia().bitmap());
+    gfx::Image avatar_image = info.GetAvatarIconOfProfileAtIndex(index);
+    if (!avatar_image.IsEmpty() &&
+        avatar_image.Width() > profiles::kAvatarIconWidth &&
+        avatar_image.Height() > profiles::kAvatarIconHeight &&
+        avatar_image.AsImageSkia().bitmap()) {
+      jbitmap = gfx::ConvertToJavaBitmap(avatar_image.AsImageSkia().bitmap());
+    }
   }
 
   return jbitmap.Release();
