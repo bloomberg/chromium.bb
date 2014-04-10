@@ -103,9 +103,9 @@ SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
       fast_path_canvas_(AllocBitmap(kWidth, kHeight, true)),
       slow_path_canvas_(AllocBitmap(kWidth, kHeight, false)) {
   // Give each frame a unique timestamp.
-  natural_frame_->SetTimestamp(base::TimeDelta::FromMilliseconds(1));
-  larger_frame_->SetTimestamp(base::TimeDelta::FromMilliseconds(2));
-  smaller_frame_->SetTimestamp(base::TimeDelta::FromMilliseconds(3));
+  natural_frame_->set_timestamp(base::TimeDelta::FromMilliseconds(1));
+  larger_frame_->set_timestamp(base::TimeDelta::FromMilliseconds(2));
+  smaller_frame_->set_timestamp(base::TimeDelta::FromMilliseconds(3));
 
   // Make sure the cropped video frame's aspect ratio matches the output device.
   // Update cropped_frame_'s crop dimensions if this is not the case.
@@ -271,14 +271,14 @@ TEST_F(SkCanvasVideoRendererTest, SlowPaint_Smaller) {
 
 TEST_F(SkCanvasVideoRendererTest, FastPaint_NoTimestamp) {
   VideoFrame* video_frame = natural_frame();
-  video_frame->SetTimestamp(media::kNoTimestamp());
+  video_frame->set_timestamp(media::kNoTimestamp());
   Paint(video_frame, fast_path_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(fast_path_canvas()));
 }
 
 TEST_F(SkCanvasVideoRendererTest, SlowPaint_NoTimestamp) {
   VideoFrame* video_frame = natural_frame();
-  video_frame->SetTimestamp(media::kNoTimestamp());
+  video_frame->set_timestamp(media::kNoTimestamp());
   Paint(video_frame, slow_path_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(slow_path_canvas()));
 }

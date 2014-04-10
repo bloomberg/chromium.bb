@@ -170,7 +170,7 @@ TEST(VideoFrame, CreateBlackFrame) {
   ASSERT_TRUE(frame.get());
 
   // Test basic properties.
-  EXPECT_EQ(0, frame->GetTimestamp().InMicroseconds());
+  EXPECT_EQ(0, frame->timestamp().InMicroseconds());
   EXPECT_FALSE(frame->end_of_stream());
 
   // Test |frame| properties.

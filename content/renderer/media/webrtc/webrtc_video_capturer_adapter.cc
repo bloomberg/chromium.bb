@@ -80,16 +80,16 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
   DCHECK(media::VideoFrame::I420 == frame->format() ||
          media::VideoFrame::YV12 == frame->format());
   if (first_frame_timestamp_ == media::kNoTimestamp())
-    first_frame_timestamp_ = frame->GetTimestamp();
+    first_frame_timestamp_ = frame->timestamp();
 
   cricket::CapturedFrame captured_frame;
   captured_frame.width = frame->visible_rect().width();
   captured_frame.height = frame->visible_rect().height();
   // cricket::CapturedFrame time is in nanoseconds.
   captured_frame.elapsed_time =
-      (frame->GetTimestamp() - first_frame_timestamp_).InMicroseconds() *
+      (frame->timestamp() - first_frame_timestamp_).InMicroseconds() *
       base::Time::kNanosecondsPerMicrosecond;
-  captured_frame.time_stamp = frame->GetTimestamp().InMicroseconds() *
+  captured_frame.time_stamp = frame->timestamp().InMicroseconds() *
                               base::Time::kNanosecondsPerMicrosecond;
   captured_frame.pixel_height = 1;
   captured_frame.pixel_width = 1;

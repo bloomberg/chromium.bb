@@ -294,8 +294,8 @@ void VideoRendererImpl::ThreadMain() {
     // the accuracy of our frame timing code. http://crbug.com/149829
     if (drop_frames_ && last_timestamp_ != kNoTimestamp()) {
       base::TimeDelta now = get_time_cb_.Run();
-      base::TimeDelta deadline = ready_frames_.front()->GetTimestamp() +
-          (ready_frames_.front()->GetTimestamp() - last_timestamp_) / 2;
+      base::TimeDelta deadline = ready_frames_.front()->timestamp() +
+          (ready_frames_.front()->timestamp() - last_timestamp_) / 2;
 
       if (now > deadline) {
         DropNextReadyFrame_Locked();
@@ -318,7 +318,7 @@ void VideoRendererImpl::PaintNextReadyFrame_Locked() {
   ready_frames_.pop_front();
   frames_decoded_++;
 
-  last_timestamp_ = next_frame->GetTimestamp();
+  last_timestamp_ = next_frame->timestamp();
 
   paint_cb_.Run(next_frame);
 
@@ -332,7 +332,7 @@ void VideoRendererImpl::DropNextReadyFrame_Locked() {
 
   lock_.AssertAcquired();
 
-  last_timestamp_ = ready_frames_.front()->GetTimestamp();
+  last_timestamp_ = ready_frames_.front()->timestamp();
   ready_frames_.pop_front();
   frames_decoded_++;
   frames_dropped_++;
@@ -396,7 +396,7 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
   // Maintain the latest frame decoded so the correct frame is displayed after
   // prerolling has completed.
   if (state_ == kPrerolling && preroll_timestamp_ != kNoTimestamp() &&
-      frame->GetTimestamp() <= preroll_timestamp_) {
+      frame->timestamp() <= preroll_timestamp_) {
     ready_frames_.clear();
   }
 
@@ -429,15 +429,15 @@ void VideoRendererImpl::AddReadyFrame_Locked(
   // frame rate.  Another way for this to happen is for the container to state
   // a smaller duration than the largest packet timestamp.
   base::TimeDelta duration = get_duration_cb_.Run();
-  if (frame->GetTimestamp() > duration) {
-    frame->SetTimestamp(duration);
+  if (frame->timestamp() > duration) {
+    frame->set_timestamp(duration);
   }
 
   ready_frames_.push_back(frame);
   DCHECK_LE(ready_frames_.size(),
             static_cast<size_t>(limits::kMaxVideoFrames));
 
-  max_time_cb_.Run(frame->GetTimestamp());
+  max_time_cb_.Run(frame->timestamp());
 
   // Avoid needlessly waking up |thread_| unless playing.
   if (state_ == kPlaying)
@@ -499,7 +499,7 @@ base::TimeDelta VideoRendererImpl::CalculateSleepDuration(
     float playback_rate) {
   // Determine the current and next presentation timestamps.
   base::TimeDelta now = get_time_cb_.Run();
-  base::TimeDelta next_pts = next_frame->GetTimestamp();
+  base::TimeDelta next_pts = next_frame->timestamp();
 
   // Scale our sleep based on the playback rate.
   base::TimeDelta sleep = next_pts - now;

@@ -235,7 +235,7 @@ class VideoRendererImplTest : public ::testing::Test {
     scoped_refptr<VideoFrame> frame = GetCurrentFrame();
     if (!frame.get())
       return -1;
-    return frame->GetTimestamp().InMilliseconds();
+    return frame->timestamp().InMilliseconds();
   }
 
   void WaitForError(PipelineStatus expected) {

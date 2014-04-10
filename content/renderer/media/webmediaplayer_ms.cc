@@ -48,7 +48,7 @@ scoped_refptr<media::VideoFrame> CopyFrameToYV12(
                                      frame->coded_size(),
                                      frame->visible_rect(),
                                      frame->natural_size(),
-                                     frame->GetTimestamp());
+                                     frame->timestamp());
 
   if (frame->format() == media::VideoFrame::NATIVE_TEXTURE) {
     SkBitmap bitmap;
@@ -427,7 +427,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
 
   if (!sequence_started_) {
     sequence_started_ = true;
-    start_time_ = frame->GetTimestamp();
+    start_time_ = frame->timestamp();
   }
   bool size_changed = !current_frame_.get() ||
                       current_frame_->natural_size() != frame->natural_size();
@@ -437,7 +437,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
     if (!current_frame_used_ && current_frame_.get())
       ++dropped_frame_count_;
     current_frame_ = frame;
-    current_time_ = frame->GetTimestamp() - start_time_;
+    current_time_ = frame->timestamp() - start_time_;
     current_frame_used_ = false;
   }
 

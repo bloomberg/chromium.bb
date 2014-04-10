@@ -234,7 +234,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
   DCHECK(frame->visible_rect().Contains(visible_rect));
   scoped_refptr<VideoFrame> wrapped_frame(new VideoFrame(
       frame->format(), frame->coded_size(), visible_rect, natural_size,
-      frame->GetTimestamp(), frame->end_of_stream()));
+      frame->timestamp(), frame->end_of_stream()));
 
   for (size_t i = 0; i < NumPlanes(frame->format()); ++i) {
     wrapped_frame->strides_[i] = frame->stride(i);

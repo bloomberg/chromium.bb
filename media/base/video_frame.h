@@ -212,10 +212,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns true if this VideoFrame represents the end of the stream.
   bool end_of_stream() const { return end_of_stream_; }
 
-  base::TimeDelta GetTimestamp() const {
+  base::TimeDelta timestamp() const {
     return timestamp_;
   }
-  void SetTimestamp(const base::TimeDelta& timestamp) {
+  void set_timestamp(const base::TimeDelta& timestamp) {
     timestamp_ = timestamp;
   }
 

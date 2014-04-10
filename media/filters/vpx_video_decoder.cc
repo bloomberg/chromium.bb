@@ -444,7 +444,7 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
   }
 
   CopyVpxImageTo(vpx_image, vpx_image_alpha, video_frame);
-  (*video_frame)->SetTimestamp(base::TimeDelta::FromMicroseconds(timestamp));
+  (*video_frame)->set_timestamp(base::TimeDelta::FromMicroseconds(timestamp));
   return true;
 }
 

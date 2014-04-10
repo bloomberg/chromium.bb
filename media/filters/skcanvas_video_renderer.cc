@@ -321,9 +321,9 @@ void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
 
   // Check if we should convert and update |last_frame_|.
   if (last_frame_.isNull() ||
-      video_frame->GetTimestamp() != last_frame_timestamp_) {
+      video_frame->timestamp() != last_frame_timestamp_) {
     ConvertVideoFrameToBitmap(video_frame, &last_frame_);
-    last_frame_timestamp_ = video_frame->GetTimestamp();
+    last_frame_timestamp_ = video_frame->timestamp();
   }
 
   // Do a slower paint using |last_frame_|.

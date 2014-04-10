@@ -218,7 +218,7 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
       &(buffer_manager()->GetBufferPointer(index)->video);
   buffer->header.size = buffer_manager()->buffer_size();
   buffer->header.type = ppapi::MediaStreamBuffer::TYPE_VIDEO;
-  buffer->timestamp = frame->GetTimestamp().InSecondsF();
+  buffer->timestamp = frame->timestamp().InSecondsF();
   buffer->format = format;
   buffer->size.width = size.width();
   buffer->size.height = size.height();

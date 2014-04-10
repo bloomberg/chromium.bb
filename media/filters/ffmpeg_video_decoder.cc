@@ -321,7 +321,7 @@ bool FFmpegVideoDecoder::FFmpegDecode(
   }
   *video_frame = static_cast<VideoFrame*>(av_frame_->opaque);
 
-  (*video_frame)->SetTimestamp(
+  (*video_frame)->set_timestamp(
       base::TimeDelta::FromMicroseconds(av_frame_->reordered_opaque));
 
   return true;

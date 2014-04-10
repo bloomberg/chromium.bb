@@ -211,7 +211,7 @@ void PepperVideoSourceHost::SendGetFrameReply() {
   host_resource.SetHostResource(pp_instance(), resource.get());
 
   // Convert a video timestamp to a PP_TimeTicks (a double, in seconds).
-  PP_TimeTicks timestamp = frame->GetTimestamp().InSecondsF();
+  PP_TimeTicks timestamp = frame->timestamp().InSecondsF();
 
   ppapi::proxy::SerializedHandle serialized_handle;
   serialized_handle.set_shmem(image_handle, byte_count);

@@ -53,7 +53,7 @@ void WebRtcVideoSinkAdapter::RenderFrame(const cricket::VideoFrame* frame) {
     NativeHandleImpl* handle =
         static_cast<NativeHandleImpl*>(frame->GetNativeHandle());
     video_frame = static_cast<media::VideoFrame*>(handle->GetHandle());
-    video_frame->SetTimestamp(timestamp);
+    video_frame->set_timestamp(timestamp);
   } else {
     gfx::Size size(frame->GetWidth(), frame->GetHeight());
     video_frame = media::VideoFrame::CreateFrame(

@@ -232,18 +232,18 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
     // capture and delivery here for the first frame. We do not account
     // for this delay.
     if (first_frame_timestamp_.is_null())
-      first_frame_timestamp_ = base::TimeTicks::Now() - frame->GetTimestamp();;
+      first_frame_timestamp_ = base::TimeTicks::Now() - frame->timestamp();
 
     // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
     TRACE_EVENT_INSTANT2(
         "mirroring", "MediaStreamVideoSink::OnVideoFrame",
         TRACE_EVENT_SCOPE_THREAD,
         "timestamp",
-        (first_frame_timestamp_ + frame->GetTimestamp()).ToInternalValue(),
-        "time_delta", frame->GetTimestamp().ToInternalValue());
+        (first_frame_timestamp_ + frame->timestamp()).ToInternalValue(),
+        "time_delta", frame->timestamp().ToInternalValue());
 
     frame_input_->InsertRawVideoFrame(
-        frame, first_frame_timestamp_ + frame->GetTimestamp());
+        frame, first_frame_timestamp_ + frame->timestamp());
   }
 
   // Attach this sink to a video track represented by |track_|.

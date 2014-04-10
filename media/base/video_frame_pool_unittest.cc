@@ -23,7 +23,7 @@ class VideoFramePoolTest : public ::testing::Test {
             base::TimeDelta::FromMilliseconds(timestamp_ms));
     EXPECT_EQ(format, frame->format());
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(timestamp_ms),
-              frame->GetTimestamp());
+              frame->timestamp());
     EXPECT_EQ(coded_size, frame->coded_size());
     EXPECT_EQ(visible_rect, frame->visible_rect());
     EXPECT_EQ(natural_size, frame->natural_size());

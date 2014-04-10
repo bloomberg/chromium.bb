@@ -64,7 +64,7 @@ TEST_F(VideoSourceHandlerTest, OpenClose) {
   // A new frame is captured.
   scoped_refptr<media::VideoFrame> captured_frame =
       media::VideoFrame::CreateBlackFrame(gfx::Size(width, height));
-  captured_frame->SetTimestamp(ts);
+  captured_frame->set_timestamp(ts);
 
   // The frame is delivered to VideoSourceHandler.
   MediaStreamVideoSink* receiver = handler_->GetReceiver(&reader);
@@ -75,7 +75,7 @@ TEST_F(VideoSourceHandlerTest, OpenClose) {
   ASSERT_TRUE(frame != NULL);
   EXPECT_EQ(width, frame->coded_size().width());
   EXPECT_EQ(height, frame->coded_size().height());
-  EXPECT_EQ(ts, frame->GetTimestamp());
+  EXPECT_EQ(ts, frame->timestamp());
   EXPECT_EQ(captured_frame->data(media::VideoFrame::kYPlane),
             frame->data(media::VideoFrame::kYPlane));
 

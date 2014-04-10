@@ -91,7 +91,7 @@ void RTCVideoRenderer::OnVideoFrame(
                        "OnVideoFrame",
                        TRACE_EVENT_SCOPE_THREAD,
                        "timestamp",
-                       frame->GetTimestamp().InMilliseconds());
+                       frame->timestamp().InMilliseconds());
   repaint_cb_.Run(frame);
 }
 
