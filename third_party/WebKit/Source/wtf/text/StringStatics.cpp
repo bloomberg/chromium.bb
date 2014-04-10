@@ -28,6 +28,7 @@
 
 #ifdef SKIP_STATIC_CONSTRUCTORS_ON_GCC
 #define ATOMICSTRING_HIDE_GLOBALS 1
+#define STRING_HIDE_GLOBALS 1
 #endif
 
 #include "AtomicString.h"
@@ -51,6 +52,11 @@ WTF_EXPORT DEFINE_GLOBAL(AtomicString, starAtom)
 WTF_EXPORT DEFINE_GLOBAL(AtomicString, xmlAtom)
 WTF_EXPORT DEFINE_GLOBAL(AtomicString, xmlnsAtom)
 WTF_EXPORT DEFINE_GLOBAL(AtomicString, xlinkAtom)
+
+// This is not an AtomicString because it is unlikely to be used as an
+// event/element/attribute name, so it shouldn't pollute the AtomicString hash
+// table.
+WTF_EXPORT DEFINE_GLOBAL(String, xmlnsWithColon)
 
 NEVER_INLINE unsigned StringImpl::hashSlowCase() const
 {
@@ -78,6 +84,7 @@ void StringStatics::init()
     new (NotNull, (void*)&xmlAtom) AtomicString("xml", AtomicString::ConstructFromLiteral);
     new (NotNull, (void*)&xmlnsAtom) AtomicString("xmlns", AtomicString::ConstructFromLiteral);
     new (NotNull, (void*)&xlinkAtom) AtomicString("xlink", AtomicString::ConstructFromLiteral);
+    new (NotNull, (void*)&xmlnsWithColon) String("xmlns:");
 }
 
 }

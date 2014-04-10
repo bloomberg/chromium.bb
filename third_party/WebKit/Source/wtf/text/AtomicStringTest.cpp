@@ -61,4 +61,20 @@ TEST(AtomicStringTest, Number)
     ASSERT_EQ(AtomicString::number(doubleValue, 9), "1234.56789");
 }
 
+TEST(AtomicStringTest, ImplEquality)
+{
+    AtomicString foo("foo");
+    AtomicString bar("bar");
+    AtomicString baz("baz");
+    AtomicString foo2("foo");
+    AtomicString baz2("baz");
+    AtomicString bar2("bar");
+    ASSERT_EQ(foo.impl(), foo2.impl());
+    ASSERT_EQ(bar.impl(), bar2.impl());
+    ASSERT_EQ(baz.impl(), baz2.impl());
+    ASSERT_NE(foo.impl(), bar.impl());
+    ASSERT_NE(foo.impl(), baz.impl());
+    ASSERT_NE(bar.impl(), baz.impl());
+}
+
 } // namespace

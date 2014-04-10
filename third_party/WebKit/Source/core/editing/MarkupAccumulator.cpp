@@ -114,7 +114,7 @@ String MarkupAccumulator::serializeNodes(Node& targetNode, EChildrenOnly childre
     Namespaces namespaceHash;
     if (!serializeAsHTMLDocument(targetNode)) {
         // Add pre-bound namespaces for XML fragments.
-        namespaceHash.set(xmlAtom.impl(), XMLNames::xmlNamespaceURI.impl());
+        namespaceHash.set(xmlAtom, XMLNames::xmlNamespaceURI);
         namespaces = &namespaceHash;
     }
 
@@ -237,31 +237,29 @@ bool MarkupAccumulator::shouldAddNamespaceElement(const Element& element, Namesp
     const AtomicString& prefix = element.prefix();
     if (prefix.isEmpty()) {
         if (element.hasAttribute(xmlnsAtom)) {
-            namespaces.set(emptyAtom.impl(), element.namespaceURI().impl());
+            namespaces.set(emptyAtom, element.namespaceURI());
             return false;
         }
         return true;
     }
 
-    DEFINE_STATIC_LOCAL(String, xmlnsWithColon, ("xmlns:"));
-    return !element.hasAttribute(xmlnsWithColon + prefix);
+    return !element.hasAttribute(WTF::xmlnsWithColon + prefix);
 }
 
-bool MarkupAccumulator::shouldAddNamespaceAttribute(const Attribute& attribute, Namespaces& namespaces)
+bool MarkupAccumulator::shouldAddNamespaceAttribute(const Attribute& attribute, const Element& element)
 {
-    // Don't add namespace attributes twice
-    if (attribute.name() == XMLNSNames::xmlnsAttr) {
-        namespaces.set(emptyAtom.impl(), attribute.value().impl());
-        return false;
-    }
+    // xmlns and xmlns:prefix attributes should be handled by another branch in appendAttribute.
+    ASSERT(attribute.namespaceURI() != XMLNSNames::xmlnsNamespaceURI);
 
-    QualifiedName xmlnsPrefixAttr(xmlnsAtom, attribute.localName(), XMLNSNames::xmlnsNamespaceURI);
-    if (attribute.name() == xmlnsPrefixAttr) {
-        namespaces.set(attribute.localName().impl(), attribute.value().impl());
+    // Attributes are in the null namespace by default.
+    if (!attribute.namespaceURI())
         return false;
-    }
 
-    return true;
+    // Attributes without a prefix will need one generated for them, and an xmlns attribute for that prefix.
+    if (!attribute.prefix())
+        return true;
+
+    return !element.hasAttribute(WTF::xmlnsWithColon + attribute.prefix());
 }
 
 void MarkupAccumulator::appendNamespace(StringBuilder& result, const AtomicString& prefix, const AtomicString& namespaceURI, Namespaces& namespaces)
@@ -269,11 +267,10 @@ void MarkupAccumulator::appendNamespace(StringBuilder& result, const AtomicStrin
     if (namespaceURI.isEmpty())
         return;
 
-    // Use emptyAtoms's impl() for both null and empty strings since the HashMap can't handle 0 as a key
-    StringImpl* pre = prefix.isEmpty() ? emptyAtom.impl() : prefix.impl();
-    StringImpl* foundNS = namespaces.get(pre);
-    if (foundNS != namespaceURI.impl()) {
-        namespaces.set(pre, namespaceURI.impl());
+    const AtomicString& lookupKey = (!prefix) ? emptyAtom : prefix;
+    AtomicString foundURI = namespaces.get(lookupKey);
+    if (foundURI != namespaceURI) {
+        namespaces.set(lookupKey, namespaceURI);
         result.append(' ');
         result.append(xmlnsAtom.string());
         if (!prefix.isEmpty()) {
@@ -438,10 +435,9 @@ void MarkupAccumulator::appendAttribute(StringBuilder& result, const Element& el
 {
     bool documentIsHTML = serializeAsHTMLDocument(element);
 
-    result.append(' ');
-
     QualifiedName prefixedName = attribute.name();
     if (documentIsHTML && !attributeIsInSerializedNamespace(attribute)) {
+        result.append(' ');
         result.append(attribute.name().localName());
     } else {
         if (attribute.namespaceURI() == XLinkNames::xlinkNamespaceURI) {
@@ -451,9 +447,30 @@ void MarkupAccumulator::appendAttribute(StringBuilder& result, const Element& el
             if (!attribute.prefix())
                 prefixedName.setPrefix(xmlAtom);
         } else if (attribute.namespaceURI() == XMLNSNames::xmlnsNamespaceURI) {
-            if (attribute.name() != XMLNSNames::xmlnsAttr && !attribute.prefix())
+            if (!attribute.prefix() && attribute.localName() != xmlnsAtom)
                 prefixedName.setPrefix(xmlnsAtom);
+            if (namespaces) { // Account for the namespace attribute we're about to append.
+                const AtomicString& lookupKey = (!attribute.prefix()) ? emptyAtom : attribute.localName();
+                namespaces->set(lookupKey, attribute.value());
+            }
+        } else if (namespaces && shouldAddNamespaceAttribute(attribute, element)) {
+            if (!attribute.prefix()) {
+                // This behavior is in process of being standardized. See crbug.com/248044 and https://www.w3.org/Bugs/Public/show_bug.cgi?id=24208
+                String prefixPrefix("ns", 2);
+                for (unsigned i = attribute.namespaceURI().impl()->existingHash(); ; ++i) {
+                    AtomicString newPrefix(String(prefixPrefix + String::number(i)));
+                    AtomicString foundURI = namespaces->get(newPrefix);
+                    if (foundURI == attribute.namespaceURI() || foundURI == nullAtom) {
+                        // We already generated a prefix for this namespace.
+                        prefixedName.setPrefix(newPrefix);
+                        break;
+                    }
+                }
+            }
+            ASSERT(prefixedName.prefix());
+            appendNamespace(result, prefixedName.prefix(), attribute.namespaceURI(), *namespaces);
         }
+        result.append(' ');
         result.append(prefixedName.toString());
     }
 
@@ -466,9 +483,6 @@ void MarkupAccumulator::appendAttribute(StringBuilder& result, const Element& el
         appendAttributeValue(result, attribute.value(), documentIsHTML);
         result.append('"');
     }
-
-    if (!documentIsHTML && namespaces && shouldAddNamespaceAttribute(attribute, *namespaces))
-        appendNamespace(result, prefixedName.prefix(), prefixedName.namespaceURI(), *namespaces);
 }
 
 void MarkupAccumulator::appendCDATASection(StringBuilder& result, const String& section)

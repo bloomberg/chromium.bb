@@ -39,7 +39,7 @@ class Element;
 class Node;
 class Range;
 
-typedef HashMap<StringImpl*, StringImpl*> Namespaces;
+typedef HashMap<AtomicString, AtomicString> Namespaces;
 
 enum EntityMask {
     EntityAmp = 0x0001,
@@ -85,7 +85,8 @@ protected:
     void appendAttributeValue(StringBuilder&, const String&, bool);
     virtual void appendCustomAttributes(StringBuilder&, const Element&, Namespaces*);
     bool shouldAddNamespaceElement(const Element&, Namespaces&);
-    bool shouldAddNamespaceAttribute(const Attribute&, Namespaces&);
+    bool shouldAddNamespaceAttribute(const Attribute&, const Element&);
+
     void appendNamespace(StringBuilder&, const AtomicString& prefix, const AtomicString& namespaceURI, Namespaces&);
     EntityMask entityMaskForText(const Text&) const;
     virtual void appendText(StringBuilder&, Text&);
