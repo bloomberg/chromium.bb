@@ -1885,6 +1885,10 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
             diff = StyleDifferenceRecompositeLayer;
     }
 
+    if ((contextSensitiveProperties & ContextSensitivePropertyTextOrColor) && diff < StyleDifferenceRepaint
+        && hasImmediateNonWhitespaceTextChildOrPropertiesDependentOnColor())
+        diff = StyleDifferenceRepaint;
+
     // The answer to layerTypeRequired() for plugins, iframes, and canvas can change without the actual
     // style changing, since it depends on whether we decide to composite these elements. When the
     // layer status of one of these elements changes, we need to force a layout.
@@ -1935,11 +1939,6 @@ inline bool RenderObject::hasImmediateNonWhitespaceTextChildOrPropertiesDependen
             return true;
     }
     return false;
-}
-
-inline bool RenderObject::shouldRepaintForStyleDifference(StyleDifference diff) const
-{
-    return diff == StyleDifferenceRepaint || (diff == StyleDifferenceRepaintIfTextOrColorChange && hasImmediateNonWhitespaceTextChildOrPropertiesDependentOnColor());
 }
 
 void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
@@ -2000,7 +1999,7 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
             setNeedsSimplifiedNormalFlowLayout();
     }
 
-    if (updatedDiff == StyleDifferenceRepaintLayer || shouldRepaintForStyleDifference(updatedDiff)) {
+    if (updatedDiff == StyleDifferenceRepaint || updatedDiff == StyleDifferenceRepaintLayer) {
         // Do a repaint with the new style now, e.g., for example if we go from
         // not having an outline to having an outline.
         repaint();
@@ -2040,7 +2039,7 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
             }
         }
 
-        if (m_parent && shouldRepaintForStyleDifference(diff))
+        if (m_parent && diff == StyleDifferenceRepaint)
             repaint();
         if (isFloating() && (m_style->floating() != newStyle.floating()))
             // For changes in float styles, we need to conceivably remove ourselves

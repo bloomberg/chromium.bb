@@ -45,20 +45,20 @@ enum PrintColorAdjust {
 };
 
 // The difference between two styles.  The following values are used:
-// (1) StyleDifferenceEqual - The two styles are identical.
-// (2) StyleDifferenceRecompositeLayer - The layer needs its position and transform updated, but no repaint.
-// (3) StyleDifferenceRepaint - The object just needs to be repainted.
-// (4) StyleDifferenceRepaintIfTextOrColorChange - The object needs to be repainted if it contains text or properties dependent on color (e.g., border or outline).
-// (5) StyleDifferenceRepaintLayer - The layer and its descendant layers needs to be repainted.
-// (6) StyleDifferenceLayoutPositionedMovementOnly - Only the position of this positioned object has been updated.
-// (7) StyleDifferenceSimplifiedLayout - Only overflow needs to be recomputed.
-// (8) StyleDifferenceSimplifiedLayoutAndPositionedMovement - Both positioned movement and simplified layout updates are required.
-// (9) StyleDifferenceLayout - A full layout is required.
+// - StyleDifferenceEqual - The two styles are identical.
+//   FIXME: When style difference is context sensitive, RenderStyle::visualInvalidationDiff() may return
+//   StyleDifferenceEqual even there is difference. Will resolve the issue when fixing crbug.com/358460.
+// - StyleDifferenceRecompositeLayer - The layer needs its position and transform updated, but no repaint.
+// - StyleDifferenceRepaint - The object just needs to be repainted.
+// - StyleDifferenceRepaintLayer - The layer and its descendant layers need to be repainted.
+// - StyleDifferenceLayoutPositionedMovementOnly - Only the position of this positioned object has been updated.
+// - StyleDifferenceSimplifiedLayout - Only overflow needs to be recomputed.
+// - StyleDifferenceSimplifiedLayoutAndPositionedMovement - Both positioned movement and simplified layout updates are required.
+// - StyleDifferenceLayout - A full layout is required.
 enum StyleDifference {
     StyleDifferenceEqual,
     StyleDifferenceRecompositeLayer,
     StyleDifferenceRepaint,
-    StyleDifferenceRepaintIfTextOrColorChange,
     StyleDifferenceRepaintLayer,
     StyleDifferenceLayoutPositionedMovementOnly,
     StyleDifferenceSimplifiedLayout,
@@ -69,12 +69,14 @@ enum StyleDifference {
 // When some style properties change, different amounts of work have to be done depending on
 // context (e.g. whether the property is changing on an element which has a compositing layer).
 // A simple StyleDifference does not provide enough information so we return a bit mask of
-// StyleDifferenceContextSensitiveProperties from RenderStyle::diff() too.
+// StyleDifferenceContextSensitiveProperties from RenderStyle::visualInvalidationDiff() too.
 enum StyleDifferenceContextSensitiveProperty {
     ContextSensitivePropertyNone = 0,
     ContextSensitivePropertyTransform = (1 << 0),
     ContextSensitivePropertyOpacity = (1 << 1),
-    ContextSensitivePropertyFilter = (1 << 2)
+    ContextSensitivePropertyFilter = (1 << 2),
+    // The object needs to be repainted if it contains text or properties dependent on color (e.g., border or outline).
+    ContextSensitivePropertyTextOrColor = (1 << 3)
 };
 
 // Static pseudo styles. Dynamic ones are produced on the fly.
