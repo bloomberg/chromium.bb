@@ -213,7 +213,11 @@ ErrorCode ErrnoTestPolicy(SandboxBPF*, int sysno, void*) {
   }
 
   switch (sysno) {
+#if defined(ANDROID)
+    case __NR_dup3:    // dup2 is a wrapper of dup3 in android
+#else
     case __NR_dup2:
+#endif
       // Pretend that dup2() worked, but don't actually do anything.
       return ErrorCode(0);
     case __NR_setuid:
@@ -703,9 +707,15 @@ intptr_t BrokerOpenTrapHandler(const struct arch_seccomp_data& args,
   BPF_ASSERT(aux);
   BrokerProcess* broker_process = static_cast<BrokerProcess*>(aux);
   switch (args.nr) {
+#if defined(ANDROID)
+    case __NR_faccessat:    // access is a wrapper of faccessat in android
+      return broker_process->Access(reinterpret_cast<const char*>(args.args[1]),
+                                    static_cast<int>(args.args[2]));
+#else
     case __NR_access:
       return broker_process->Access(reinterpret_cast<const char*>(args.args[0]),
                                     static_cast<int>(args.args[1]));
+#endif
     case __NR_open:
       return broker_process->Open(reinterpret_cast<const char*>(args.args[0]),
                                   static_cast<int>(args.args[1]));
@@ -728,7 +738,11 @@ ErrorCode DenyOpenPolicy(SandboxBPF* sandbox, int sysno, void* aux) {
   }
 
   switch (sysno) {
+#if defined(ANDROID)
+    case __NR_faccessat:
+#else
     case __NR_access:
+#endif
     case __NR_open:
     case __NR_openat:
       // We get a InitializedOpenBroker class, but our trap handler wants
@@ -799,6 +813,17 @@ ErrorCode SimpleCondTestPolicy(SandboxBPF* sandbox, int sysno, void*) {
   // can uniquely test for these values. In a "real" policy, you would want
   // to return more traditional values.
   switch (sysno) {
+#if defined(ANDROID)
+    case __NR_openat:    // open is a wrapper of openat in android
+      // Allow opening files for reading, but don't allow writing.
+      COMPILE_ASSERT(O_RDONLY == 0, O_RDONLY_must_be_all_zero_bits);
+      return sandbox->Cond(2,
+                           ErrorCode::TP_32BIT,
+                           ErrorCode::OP_HAS_ANY_BITS,
+                           O_ACCMODE /* 0x3 */,
+                           ErrorCode(EROFS),
+                           ErrorCode(ErrorCode::ERR_ALLOWED));
+#else
     case __NR_open:
       // Allow opening files for reading, but don't allow writing.
       COMPILE_ASSERT(O_RDONLY == 0, O_RDONLY_must_be_all_zero_bits);
@@ -808,6 +833,7 @@ ErrorCode SimpleCondTestPolicy(SandboxBPF* sandbox, int sysno, void*) {
                            O_ACCMODE /* 0x3 */,
                            ErrorCode(EROFS),
                            ErrorCode(ErrorCode::ERR_ALLOWED));
+#endif
     case __NR_prctl:
       // Allow prctl(PR_SET_DUMPABLE) and prctl(PR_GET_DUMPABLE), but
       // disallow everything else.
