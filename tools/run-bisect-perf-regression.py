@@ -115,6 +115,62 @@ def _LoadConfigFile(path_to_file):
     return {}
 
 
+def _ValidateConfigFile(config_contents, valid_parameters):
+  """Validates the config file contents, checking whether all values are
+  non-empty.
+
+  Args:
+    config_contents: Contents of the config file passed from _LoadConfigFile.
+    valid_parameters: A list of parameters to check for.
+
+  Returns:
+    True if valid.
+  """
+  try:
+    [config_contents[current_parameter]
+        for current_parameter in valid_parameters]
+    config_has_values = [v and type(v) is str
+        for v in config_contents.values() if v]
+    return config_has_values
+  except KeyError:
+    return False
+
+
+def _ValidatePerfConfigFile(config_contents):
+  """Validates that the perf config file contents. This is used when we're
+  doing a perf try job, rather than a bisect. The file is called
+  run-perf-test.cfg by default.
+
+  The parameters checked are the required parameters; any additional optional
+  parameters won't be checked and validation will still pass.
+
+  Args:
+    config_contents: Contents of the config file passed from _LoadConfigFile.
+
+  Returns:
+    True if valid.
+  """
+  valid_parameters = ['command', 'metric', 'repeat_count', 'truncate_percent',
+      'max_time_minutes']
+  return _ValidateConfigFile(config_contents, valid_parameters)
+
+
+def _ValidateBisectConfigFile(config_contents):
+  """Validates that the bisect config file contents. The parameters checked are
+  the required parameters; any additional optional parameters won't be checked
+  and validation will still pass.
+
+  Args:
+    config_contents: Contents of the config file passed from _LoadConfigFile.
+
+  Returns:
+    True if valid.
+  """
+  valid_params = ['command', 'good_revision', 'bad_revision', 'metric',
+      'repeat_count', 'truncate_percent', 'max_time_minutes']
+  return _ValidateConfigFile(config_contents, valid_params)
+
+
 def _OutputFailedResults(text_to_print):
   bisect_utils.OutputAnnotationStepStart('Results - Failed')
   print
@@ -369,6 +425,12 @@ def main():
                     type='str',
                     help='Path to goma directory. If this is supplied, goma '
                     'builds will be enabled.')
+  parser.add_option('--path_to_config',
+                    type='str',
+                    help='Path to the config file to use. If this is supplied, '
+                    'the bisect script will use this to override the default '
+                    'config file path. The script will attempt to load it '
+                    'as a bisect config first, then a perf config.')
   parser.add_option('--extra_src',
                     type='str',
                     help='Path to extra source file. If this is supplied, '
@@ -381,15 +443,20 @@ def main():
   (opts, args) = parser.parse_args()
 
   path_to_current_directory = os.path.abspath(os.path.dirname(sys.argv[0]))
-  path_to_bisect_cfg = os.path.join(path_to_current_directory,
-      'run-bisect-perf-regression.cfg')
+
+  # If they've specified their own config file, use that instead.
+  if opts.path_to_config:
+    path_to_bisect_cfg = opts.path_to_config
+  else:
+    path_to_bisect_cfg = os.path.join(path_to_current_directory,
+        'run-bisect-perf-regression.cfg')
 
   config = _LoadConfigFile(path_to_bisect_cfg)
 
-  # Check if the config is empty
-  config_has_values = [v for v in config.values() if v]
+  # Check if the config is valid.
+  config_is_valid = _ValidateBisectConfigFile(config)
 
-  if config and config_has_values:
+  if config and config_is_valid:
     if not opts.working_directory:
       print 'Error: missing required parameter: --working_directory'
       print
@@ -404,13 +471,17 @@ def main():
         'WebKit', 'Tools', 'run-perf-test.cfg')]
 
     for current_perf_cfg_file in perf_cfg_files:
-      path_to_perf_cfg = os.path.join(
-          os.path.abspath(os.path.dirname(sys.argv[0])), current_perf_cfg_file)
+      if opts.path_to_config:
+        path_to_perf_cfg = opts.path_to_config
+      else:
+        path_to_perf_cfg = os.path.join(
+            os.path.abspath(os.path.dirname(sys.argv[0])),
+            current_perf_cfg_file)
 
       config = _LoadConfigFile(path_to_perf_cfg)
-      config_has_values = [v for v in config.values() if v]
+      config_is_valid = _ValidatePerfConfigFile(config)
 
-      if config and config_has_values:
+      if config and config_is_valid:
         return _SetupAndRunPerformanceTest(config, path_to_current_directory,
             opts.path_to_goma)
 
