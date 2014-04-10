@@ -67,8 +67,6 @@
         'browser/blob/blob_data_handle.h',
         'browser/blob/blob_storage_context.cc',
         'browser/blob/blob_storage_context.h',
-        'browser/blob/blob_storage_host.cc',
-        'browser/blob/blob_storage_host.h',
         'browser/blob/blob_url_request_job.cc',
         'browser/blob/blob_url_request_job.h',
         'browser/blob/blob_url_request_job_factory.cc',

@@ -17,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/fileapi/blob_storage_host.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/streams/stream_registry.h"
@@ -29,7 +30,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 #include "webkit/browser/blob/blob_storage_context.h"
-#include "webkit/browser/blob/blob_storage_host.h"
 #include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -47,7 +47,6 @@ using fileapi::FileSystemOperation;
 using fileapi::FileSystemURL;
 using webkit_blob::BlobData;
 using webkit_blob::BlobStorageContext;
-using webkit_blob::BlobStorageHost;
 
 namespace content {
 

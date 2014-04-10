@@ -521,6 +521,8 @@
     'browser/download/save_package.h',
     'browser/download/save_types.cc',
     'browser/download/save_types.h',
+    'browser/fileapi/blob_storage_host.cc',
+    'browser/fileapi/blob_storage_host.h',
     'browser/fileapi/browser_file_system_helper.cc',
     'browser/fileapi/browser_file_system_helper.h',
     'browser/fileapi/chrome_blob_storage_context.cc',

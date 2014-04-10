@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_BLOB_BLOB_STORAGE_HOST_H_
-#define WEBKIT_BROWSER_BLOB_BLOB_STORAGE_HOST_H_
+#ifndef CONTENT_BROWSER_FILEAPI_STORAGE_HOST_H_
+#define CONTENT_BROWSER_FILEAPI_STORAGE_HOST_H_
 
 #include <map>
 #include <set>
@@ -11,23 +11,28 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "content/common/content_export.h"
 #include "webkit/common/blob/blob_data.h"
 
 class GURL;
 
 namespace webkit_blob {
-
 class BlobDataHandle;
 class BlobStorageHost;
 class BlobStorageContext;
+}
+
+using webkit_blob::BlobStorageContext;
+using webkit_blob::BlobData;
+
+namespace content {
 
 // This class handles the logistics of blob storage for a single child process.
 // There is one instance per child process. When the child process
 // terminates all blob references attibutable to that process go away upon
 // destruction of the instance. The class is single threaded and should
 // only be used on the IO thread.
-class WEBKIT_STORAGE_BROWSER_EXPORT BlobStorageHost {
+class CONTENT_EXPORT BlobStorageHost {
  public:
   explicit BlobStorageHost(BlobStorageContext* context);
   ~BlobStorageHost();
@@ -66,6 +71,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobStorageHost {
   DISALLOW_COPY_AND_ASSIGN(BlobStorageHost);
 };
 
-}  // namespace webkit_blob
+}  // namespace content
 
-#endif  // WEBKIT_BROWSER_BLOB_BLOB_STORAGE_HOST_H_
+#endif  // CONTENT_BROWSER_FILEAPI_STORAGE_HOST_H_

@@ -44,8 +44,11 @@ class URLRequestContext;
 class URLRequestContextGetter;
 }  // namespace net
 
-namespace webkit_blob {
+namespace content {
 class BlobStorageHost;
+}
+
+namespace webkit_blob {
 class ShareableFileReference;
 }
 
@@ -229,7 +232,7 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
 
   // Keeps track of blobs used in this process and cleans up
   // when the renderer process dies.
-  scoped_ptr<webkit_blob::BlobStorageHost> blob_storage_host_;
+  scoped_ptr<BlobStorageHost> blob_storage_host_;
 
   // Keep track of stream URLs registered in this process. Need to unregister
   // all of them when the renderer process dies.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
+#include "content/browser/fileapi/blob_storage_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/blob/blob_storage_context.h"
-#include "webkit/browser/blob/blob_storage_host.h"
 
-namespace webkit_blob {
+using webkit_blob::BlobDataHandle;
+
+namespace content {
 
 namespace {
 void SetupBasicBlob(BlobStorageHost* host, const std::string& id) {
@@ -205,4 +207,4 @@ TEST(BlobStorageContextTest, EarlyContextDeletion) {
 
 // TODO(michaeln): tests for the depcrecated url stuff
 
-}  // namespace webkit_blob
+}  // namespace content

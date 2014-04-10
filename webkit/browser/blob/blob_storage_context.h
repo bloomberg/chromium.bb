@@ -22,6 +22,10 @@ class FilePath;
 class Time;
 }
 
+namespace content {
+class BlobStorageHost;
+}
+
 namespace webkit_blob {
 
 class BlobDataHandle;
@@ -48,8 +52,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobStorageContext
   void RevokePublicBlobURL(const GURL& url);
 
  private:
+  friend class content::BlobStorageHost;
   friend class BlobDataHandle;
-  friend class BlobStorageHost;
   friend class ViewBlobInternalsJob;
 
   enum EntryFlags {

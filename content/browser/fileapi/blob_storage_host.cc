@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/blob/blob_storage_host.h"
+#include "content/browser/fileapi/blob_storage_host.h"
 
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
@@ -10,7 +10,10 @@
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/blob/blob_storage_context.h"
 
-namespace webkit_blob {
+using webkit_blob::BlobStorageContext;
+using webkit_blob::BlobData;
+
+namespace content {
 
 BlobStorageHost::BlobStorageHost(BlobStorageContext* context)
     : context_(context->AsWeakPtr()) {
@@ -111,4 +114,4 @@ bool BlobStorageHost::IsUrlRegisteredInHost(const GURL& blob_url) {
   return public_blob_urls_.find(blob_url) != public_blob_urls_.end();
 }
 
-}  // namespace webkit_blob
+}  // namespace content
