@@ -1308,7 +1308,6 @@ _x86_full_boards = frozenset([
   'rambi',
   'squawks',
   'stout',
-  'stout32',
   'stumpy',
   'winky',
   'wolf',
@@ -1728,12 +1727,6 @@ internal_paladin.add_config('stout-paladin',
   vm_tests=[constants.CROS_VM_TEST_TYPE],
 )
 
-internal_paladin.add_config('stout32-paladin',
-  boards=['stout32'],
-  paladin_builder_name='stout32 paladin',
-  important=False,
-)
-
 internal_paladin.add_config('stumpy-paladin',
   boards=['stumpy'],
   paladin_builder_name='stumpy paladin',
@@ -2099,10 +2092,6 @@ _release.add_config('stout-release',
   boards=['stout'],
 )
 
-_release.add_config('stout32-release',
-  boards=['stout32'],
-)
-
 _release.add_config('stumpy-release',
   boards=['stumpy'],
 )
@@ -2382,7 +2371,6 @@ _x86_firmware_boards = (
   'samus',
   'squawks',
   'stout',
-  'stout32',
   'slippy',
   'stumpy',
   'winky',
