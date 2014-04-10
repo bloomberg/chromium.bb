@@ -29,7 +29,7 @@ function test() {
                     return true;
                 }
             });
-            uiLocation = new WebInspector.UILocation(WebInspector.workspace.uiSourceCodeForOriginURL(resource.url), 2, 1);
+            uiLocation = WebInspector.workspace.uiSourceCodeForOriginURL(resource.url).uiLocation(2, 1);
 
             InspectorTest.nodeWithId("div", nodeCallback);
 

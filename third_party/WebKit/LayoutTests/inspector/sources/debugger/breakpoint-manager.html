@@ -13,7 +13,7 @@ function test()
     var defaultMapping = {
         rawLocationToUILocation: function(rawLocation)
         {
-            return new WebInspector.UILocation(uiSourceCodes[rawLocation.scriptId], rawLocation.lineNumber, 0);
+            return uiSourceCodes[rawLocation.scriptId].uiLocation(rawLocation.lineNumber, 0);
         },
 
         uiLocationToRawLocation: function(uiSourceCode, lineNumber)
@@ -34,7 +34,7 @@ function test()
         {
             if (this._disabled)
                 return null;
-            return new WebInspector.UILocation(uiSourceCodes[rawLocation.scriptId], rawLocation.lineNumber + 10, 0);
+            return uiSourceCodes[rawLocation.scriptId].uiLocation(rawLocation.lineNumber + 10, 0);
         },
 
         uiLocationToRawLocation: function(uiSourceCode, lineNumber)
@@ -55,7 +55,7 @@ function test()
             {
                 if (this._disabled)
                     return null;
-                return new WebInspector.UILocation(uiSourceCodeB, rawLocation.lineNumber + 10, 0);
+                return uiSourceCodeB.uiLocation(rawLocation.lineNumber + 10, 0);
             },
 
             uiLocationToRawLocation: function(uiSourceCode, lineNumber)

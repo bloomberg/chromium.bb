@@ -38,7 +38,7 @@ function test()
         InspectorTest.addResult("Dumping uiSourceCode location link texts:");
         for (var i = 0; i < uiSourceCodes.length; ++i) {
             var uiSourceCode = uiSourceCodes[i];
-            var uiLocation = new WebInspector.UILocation(uiSourceCode, lineNumber);
+            var uiLocation = uiSourceCode.uiLocation(lineNumber);
             InspectorTest.addResult(" - " + uiLocation.linkText());
         }
     }
