@@ -13,6 +13,10 @@
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#endif
+
 namespace app_list {
 
 // static
@@ -31,7 +35,12 @@ AppListSyncableServiceFactory* AppListSyncableServiceFactory::GetInstance() {
 KeyedService* AppListSyncableServiceFactory::BuildInstanceFor(
     content::BrowserContext* browser_context) {
   Profile* profile = static_cast<Profile*>(browser_context);
-  VLOG(1) << "BuildServiceInstanceFor: " << profile->GetDebugName();
+#if defined(OS_CHROMEOS)
+  if (chromeos::ProfileHelper::IsSigninProfile(profile))
+    return NULL;
+#endif
+  VLOG(1) << "BuildInstanceFor: " << profile->GetDebugName()
+          << " (" << profile << ")";
   return new AppListSyncableService(profile,
                                     extensions::ExtensionSystem::Get(profile));
 }
@@ -59,11 +68,8 @@ void AppListSyncableServiceFactory::RegisterProfilePrefs(
 
 content::BrowserContext* AppListSyncableServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  // In Guest session, off the record profile should not be redirected to the
-  // original one.
-  Profile* profile = static_cast<Profile*>(context);
-  if (profile->IsGuestSession())
-    return chrome::GetBrowserContextOwnInstanceInIncognito(context);
+  // This matches the logic in ExtensionSyncServiceFactory, which uses the
+  // orginal browser context.
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
