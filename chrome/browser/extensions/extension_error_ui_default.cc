@@ -5,15 +5,20 @@
 #include "chrome/browser/extensions/extension_error_ui_default.h"
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 
+namespace extensions {
+
 ExtensionErrorUIDefault::ExtensionErrorUIDefault(
-    ExtensionService* extension_service)
-    : ExtensionErrorUI(extension_service),
+    ExtensionErrorUI::Delegate* delegate)
+    : ExtensionErrorUI(delegate),
+      profile_(Profile::FromBrowserContext(delegate->GetContext())),
       browser_(NULL),
       global_error_(new ExtensionGlobalError(this)) {
 }
@@ -23,8 +28,7 @@ ExtensionErrorUIDefault::~ExtensionErrorUIDefault() {
 
 bool ExtensionErrorUIDefault::ShowErrorInBubbleView() {
   Browser* browser =
-      chrome::FindLastActiveWithProfile(extension_service()->profile(),
-                                        chrome::GetActiveDesktop());
+      chrome::FindLastActiveWithProfile(profile_, chrome::GetActiveDesktop());
   if (!browser)
     return false;
 
@@ -35,7 +39,7 @@ bool ExtensionErrorUIDefault::ShowErrorInBubbleView() {
 
 void ExtensionErrorUIDefault::ShowExtensions() {
   DCHECK(browser_);
-  chrome::ShowExtensions(browser_, std::string());
+  chrome::ShowExtensions(browser_, base::EmptyString());
 }
 
 void ExtensionErrorUIDefault::Close() {
@@ -90,15 +94,13 @@ base::string16 ExtensionErrorUIDefault::ExtensionGlobalError::
   return error_ui_->GetBubbleViewCancelButtonLabel();
 }
 
-void ExtensionErrorUIDefault::ExtensionGlobalError::
-    OnBubbleViewDidClose(Browser* browser) {
-  // Calling BubbleViewDidClose on |error_ui_| will delete it. It owns us, so
-  // |this| will be deleted too.
+void ExtensionErrorUIDefault::ExtensionGlobalError::OnBubbleViewDidClose(
+    Browser* browser) {
   error_ui_->BubbleViewDidClose();
 }
 
 void ExtensionErrorUIDefault::ExtensionGlobalError::
-    BubbleViewAcceptButtonPressed(Browser* browser) {
+      BubbleViewAcceptButtonPressed(Browser* browser) {
   error_ui_->BubbleViewAcceptButtonPressed();
 }
 
@@ -109,6 +111,8 @@ void ExtensionErrorUIDefault::ExtensionGlobalError::
 
 // static
 ExtensionErrorUI* ExtensionErrorUI::Create(
-    ExtensionService* extension_service) {
-  return new ExtensionErrorUIDefault(extension_service);
+    ExtensionErrorUI::Delegate* delegate) {
+  return new ExtensionErrorUIDefault(delegate);
 }
+
+}  // namespace extensions

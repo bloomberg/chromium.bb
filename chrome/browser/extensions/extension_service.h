@@ -34,7 +34,6 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/one_shot_event.h"
 
-class ExtensionErrorUI;
 class GURL;
 class Profile;
 
@@ -49,6 +48,7 @@ class BrowserEventRouter;
 class ComponentLoader;
 class CrxInstaller;
 class ExtensionActionStorageManager;
+class ExtensionErrorController;
 class ExtensionGarbageCollector;
 class ExtensionRegistry;
 class ExtensionSystem;
@@ -408,17 +408,6 @@ class ExtensionService
 
   void OnAllExternalProvidersReady();
 
-  // Once all external providers are done, generates any needed alerts about
-  // extensions.
-  void IdentifyAlertableExtensions();
-
-  // Given an ExtensionErrorUI alert, populates it with any extensions that
-  // need alerting. Returns true if the alert should be displayed at all.
-  //
-  // This method takes the extension_error_ui argument rather than using
-  // the member variable to make it easier to test the method in isolation.
-  bool PopulateExtensionErrorUI(ExtensionErrorUI* extension_error_ui);
-
   // Checks if there are any new external extensions to notify the user about.
   void UpdateExternalExtensionAlert();
 
@@ -433,18 +422,6 @@ class ExtensionService
 
   // Disable extensions that are known to be disabled yet are currently enabled.
   void ReconcileKnownDisabled();
-
-  // Opens the Extensions page because the user wants to get more details
-  // about the alerts.
-  void HandleExtensionAlertDetails();
-
-  // Called when the extension alert is closed. Updates prefs and deletes
-  // the active |extension_error_ui_|.
-  void HandleExtensionAlertClosed();
-
-  // Marks alertable extensions as acknowledged, after the user presses the
-  // accept button.
-  void HandleExtensionAlertAccept();
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -708,7 +685,10 @@ class ExtensionService
   // avoid trying to unload the same extension twice.
   std::set<std::string> extensions_being_terminated_;
 
-  scoped_ptr<ExtensionErrorUI> extension_error_ui_;
+  // The controller for the UI that alerts the user about any blacklisted
+  // extensions.
+  scoped_ptr<extensions::ExtensionErrorController> error_controller_;
+
   // Sequenced task runner for extension related file operations.
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 

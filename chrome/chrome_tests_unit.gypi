@@ -936,6 +936,7 @@
         'browser/extensions/extension_action_unittest.cc',
         'browser/extensions/extension_context_menu_model_unittest.cc',
         'browser/extensions/extension_creator_filter_unittest.cc',
+        'browser/extensions/extension_error_controller_unittest.cc',
         'browser/extensions/extension_function_test_utils.cc',
         'browser/extensions/extension_function_test_utils.h',
         'browser/extensions/extension_garbage_collector_unittest.cc',

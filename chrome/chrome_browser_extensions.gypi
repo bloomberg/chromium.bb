@@ -683,6 +683,8 @@
         'browser/extensions/extension_creator_filter.h',
         'browser/extensions/extension_disabled_ui.cc',
         'browser/extensions/extension_disabled_ui.h',
+        'browser/extensions/extension_error_controller.cc',
+        'browser/extensions/extension_error_controller.h',
         'browser/extensions/extension_error_reporter.cc',
         'browser/extensions/extension_error_reporter.h',
         'browser/extensions/extension_error_ui.cc',

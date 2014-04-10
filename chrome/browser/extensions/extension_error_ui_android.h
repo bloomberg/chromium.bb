@@ -5,15 +5,14 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_UI_ANDROID_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_UI_ANDROID_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
 
-class ExtensionService;
+namespace extensions {
 
 class ExtensionErrorUIAndroid : public ExtensionErrorUI {
  public:
-  explicit ExtensionErrorUIAndroid(ExtensionService* extension_service);
+  explicit ExtensionErrorUIAndroid(ExtensionErrorUI::Delegate* delegate);
   virtual ~ExtensionErrorUIAndroid();
 
   // ExtensionErrorUI implementation:
@@ -24,5 +23,7 @@ class ExtensionErrorUIAndroid : public ExtensionErrorUI {
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionErrorUIAndroid);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_UI_ANDROID_H_

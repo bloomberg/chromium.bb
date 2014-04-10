@@ -5,36 +5,47 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_UI_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_UI_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "chrome/browser/ui/global_error/global_error.h"
-#include "extensions/common/extension.h"
+#include <vector>
 
-class Browser;
-class ExtensionService;
+#include "base/macros.h"
+#include "base/strings/string16.h"
+
+namespace content {
+class BrowserContext;
+}
+
+namespace extensions {
+
+class ExtensionSet;
 
 // This class encapsulates the UI we want to show users when certain events
 // occur related to installed extensions.
 class ExtensionErrorUI {
  public:
-  static ExtensionErrorUI* Create(ExtensionService* extension_service);
+  class Delegate {
+   public:
+    // Get the BrowserContext associated with this UI.
+    virtual content::BrowserContext* GetContext() = 0;
+
+    // Get the set of external extensions to warn the user about.
+    virtual const ExtensionSet& GetExternalExtensions() = 0;
+
+    // Get the set of blacklisted extensions to warn the user about.
+    virtual const ExtensionSet& GetBlacklistedExtensions() = 0;
+
+    // Handle the user clicking to get more details on the extension alert.
+    virtual void OnAlertDetails() = 0;
+
+    // Handle the user clicking "accept" on the extension alert.
+    virtual void OnAlertAccept() = 0;
+
+    // Handle the alert closing.
+    virtual void OnAlertClosed() = 0;
+  };
+
+  static ExtensionErrorUI* Create(Delegate* delegate);
 
   virtual ~ExtensionErrorUI();
-
-  // Inform us that a given extension is of a certain type that the user
-  // hasn't yet acknowledged.
-  void AddExternalExtension(const std::string& id);
-  void AddBlacklistedExtension(const std::string& id);
-
-  // Returns sets replaying the IDs that have been added with the
-  // Add[...]Extension methods.
-  const extensions::ExtensionIdSet* get_external_extension_ids() const {
-    return external_extension_ids_.get();
-  }
-
-  const extensions::ExtensionIdSet* get_blacklisted_extension_ids() const {
-    return blacklisted_extension_ids_.get();
-  }
 
   // Shows the installation error in a bubble view. Should return true if a
   // bubble is shown, false if one could not be shown.
@@ -51,9 +62,7 @@ class ExtensionErrorUI {
   virtual void Close() = 0;
 
  protected:
-  explicit ExtensionErrorUI(ExtensionService* extension_service);
-
-  ExtensionService* extension_service() const { return extension_service_; }
+  explicit ExtensionErrorUI(Delegate* delegate);
 
   // Model methods for the bubble view.
   base::string16 GetBubbleViewTitle();
@@ -68,23 +77,15 @@ class ExtensionErrorUI {
   void BubbleViewCancelButtonPressed();
 
  private:
-  bool should_delete_self_on_close_;
-  ExtensionService* extension_service_;
-  scoped_ptr<extensions::ExtensionIdSet> external_extension_ids_;
-  scoped_ptr<extensions::ExtensionIdSet> blacklisted_extension_ids_;
-  base::string16 message_;  // Displayed in the body of the alert.
-
-  // For a given set of extension IDs, generates appropriate text
-  // describing what the user needs to know about them.
-  base::string16 GenerateMessageSection(
-      const extensions::ExtensionIdSet* extensions,
-      int extension_template_message_id,
-      int app_template_message_id);
-
-  // Generates the message displayed in the body of the alert.
   base::string16 GenerateMessage();
+
+  Delegate* delegate_;
+
+  base::string16 message_;  // Displayed in the body of the alert.
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionErrorUI);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_UI_H_

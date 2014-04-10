@@ -7,60 +7,40 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/global_error/global_error.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using extensions::ExtensionIdSet;
+namespace extensions {
 
-ExtensionErrorUI::ExtensionErrorUI(ExtensionService* extension_service)
-    : extension_service_(extension_service),
-      external_extension_ids_(new ExtensionIdSet),
-      blacklisted_extension_ids_(new ExtensionIdSet) {
-  DCHECK(extension_service_);
-}
+namespace {
 
-ExtensionErrorUI::~ExtensionErrorUI() {
-}
-
-void ExtensionErrorUI::AddExternalExtension(const std::string& id) {
-  external_extension_ids_->insert(id);
-}
-
-void ExtensionErrorUI::AddBlacklistedExtension(const std::string& id) {
-  blacklisted_extension_ids_->insert(id);
-}
-
-base::string16 ExtensionErrorUI::GenerateMessageSection(
-    const ExtensionIdSet* extensions,
-    int extension_template_message_id,
-    int app_template_message_id) {
-  CHECK(extensions);
+base::string16 GenerateMessageSection(const ExtensionSet& extensions,
+                                      int extension_template_message_id,
+                                      int app_template_message_id) {
   CHECK(extension_template_message_id);
   CHECK(app_template_message_id);
   base::string16 message;
 
-  for (ExtensionIdSet::const_iterator iter = extensions->begin();
-       iter != extensions->end(); ++iter) {
-    const extensions::Extension* e =
-        extension_service_->GetInstalledExtension(*iter);
+  for (ExtensionSet::const_iterator iter = extensions.begin();
+       iter != extensions.end();
+       ++iter) {
     message += l10n_util::GetStringFUTF16(
-        e->is_app() ? app_template_message_id : extension_template_message_id,
-        base::UTF8ToUTF16(e->name())) + base::char16('\n');
+        (*iter)->is_app() ? app_template_message_id
+                          : extension_template_message_id,
+        base::UTF8ToUTF16((*iter)->name())) + base::char16('\n');
   }
   return message;
 }
 
-base::string16 ExtensionErrorUI::GenerateMessage() {
-  return GenerateMessageSection(external_extension_ids_.get(),
-                                IDS_EXTENSION_ALERT_ITEM_EXTERNAL,
-                                IDS_APP_ALERT_ITEM_EXTERNAL) +
-         GenerateMessageSection(blacklisted_extension_ids_.get(),
-                                IDS_EXTENSION_ALERT_ITEM_BLACKLISTED,
-                                IDS_APP_ALERT_ITEM_BLACKLISTED);
-}
+}  // namespace
+
+ExtensionErrorUI::ExtensionErrorUI(Delegate* delegate) : delegate_(delegate) {}
+
+ExtensionErrorUI::~ExtensionErrorUI() {}
 
 std::vector<base::string16> ExtensionErrorUI::GetBubbleViewMessages() {
   if (message_.empty()) {
@@ -84,14 +64,24 @@ base::string16 ExtensionErrorUI::GetBubbleViewCancelButtonLabel() {
 }
 
 void ExtensionErrorUI::BubbleViewDidClose() {
-  // This call deletes ExtensionErrorUI object referenced by this.
-  extension_service_->HandleExtensionAlertClosed();
+  delegate_->OnAlertClosed();
 }
 
 void ExtensionErrorUI::BubbleViewAcceptButtonPressed() {
-  extension_service_->HandleExtensionAlertAccept();
+  delegate_->OnAlertAccept();
 }
 
 void ExtensionErrorUI::BubbleViewCancelButtonPressed() {
-  extension_service_->HandleExtensionAlertDetails();
+  delegate_->OnAlertDetails();
 }
+
+base::string16 ExtensionErrorUI::GenerateMessage() {
+  return GenerateMessageSection(delegate_->GetExternalExtensions(),
+                                IDS_EXTENSION_ALERT_ITEM_EXTERNAL,
+                                IDS_APP_ALERT_ITEM_EXTERNAL) +
+         GenerateMessageSection(delegate_->GetBlacklistedExtensions(),
+                                IDS_EXTENSION_ALERT_ITEM_BLACKLISTED,
+                                IDS_APP_ALERT_ITEM_BLACKLISTED);
+}
+
+}  // namespace extensions

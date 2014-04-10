@@ -32,8 +32,8 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/data_deleter.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
+#include "chrome/browser/extensions/extension_error_controller.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/extensions/extension_error_ui.h"
 #include "chrome/browser/extensions/extension_garbage_collector.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -387,6 +387,9 @@ ExtensionService::ExtensionService(Profile* profile,
   // Set this as the ExtensionService for app sorting to ensure it causes syncs
   // if required.
   is_first_run_ = !extension_prefs_->SetAlertSystemFirstRun();
+
+  error_controller_.reset(
+      new extensions::ExtensionErrorController(profile_, is_first_run_));
 
 #if defined(ENABLE_EXTENSIONS)
   extension_action_storage_manager_.reset(
@@ -1226,9 +1229,8 @@ void ExtensionService::CheckForExternalUpdates() {
 
   // Do any required work that we would have done after completion of all
   // providers.
-  if (external_extension_providers_.empty()) {
+  if (external_extension_providers_.empty())
     OnAllExternalProvidersReady();
-  }
 }
 
 void ExtensionService::OnExternalProviderReady(
@@ -1273,86 +1275,10 @@ void ExtensionService::OnAllExternalProvidersReady() {
     if (Manifest::IsExternalLocation(info->extension_location))
       CheckExternalUninstall(info->extension_id);
   }
-  IdentifyAlertableExtensions();
-}
 
-void ExtensionService::IdentifyAlertableExtensions() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Build up the lists of extensions that require acknowledgment. If this is
-  // the first time, grandfather extensions that would have caused
-  // notification.
-  extension_error_ui_.reset(ExtensionErrorUI::Create(this));
-
-  bool did_show_alert = false;
-  if (PopulateExtensionErrorUI(extension_error_ui_.get())) {
-    if (!is_first_run_) {
-      CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      did_show_alert = extension_error_ui_->ShowErrorInBubbleView();
-    } else {
-      // First run. Just acknowledge all the extensions, silently, by
-      // shortcutting the display of the UI and going straight to the
-      // callback for pressing the Accept button.
-      HandleExtensionAlertAccept();
-    }
-  }
+  error_controller_->ShowErrorIfNeeded();
 
   UpdateExternalExtensionAlert();
-
-  if (!did_show_alert)
-    extension_error_ui_.reset();
-}
-
-bool ExtensionService::PopulateExtensionErrorUI(
-    ExtensionErrorUI* extension_error_ui) {
-  bool needs_alert = false;
-
-  // Extensions that are blacklisted.
-  const ExtensionSet& blacklisted_set = registry_->blacklisted_extensions();
-  for (ExtensionSet::const_iterator it = blacklisted_set.begin();
-       it != blacklisted_set.end(); ++it) {
-    std::string id = (*it)->id();
-    if (!extension_prefs_->IsBlacklistedExtensionAcknowledged(id)) {
-      extension_error_ui->AddBlacklistedExtension(id);
-      needs_alert = true;
-    }
-  }
-
-  const ExtensionSet& enabled_set = registry_->enabled_extensions();
-  for (ExtensionSet::const_iterator iter = enabled_set.begin();
-       iter != enabled_set.end(); ++iter) {
-    const Extension* e = iter->get();
-
-    // Skip for extensions that have pending updates. They will be checked again
-    // once the pending update is finished.
-    if (pending_extension_manager()->IsIdPending(e->id()))
-      continue;
-
-    // Extensions disabled by policy. Note: this no longer includes blacklisted
-    // extensions, though we still show the same UI.
-    if (!system_->management_policy()->UserMayLoad(e, NULL)) {
-      if (!extension_prefs_->IsBlacklistedExtensionAcknowledged(e->id())) {
-        extension_error_ui->AddBlacklistedExtension(e->id());
-        needs_alert = true;
-      }
-    }
-  }
-
-  return needs_alert;
-}
-
-void ExtensionService::HandleExtensionAlertClosed() {
-  const ExtensionIdSet* extension_ids =
-      extension_error_ui_->get_blacklisted_extension_ids();
-  for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
-       iter != extension_ids->end(); ++iter) {
-    extension_prefs_->AcknowledgeBlacklistedExtension(*iter);
-  }
-  extension_error_ui_.reset();
-}
-
-void ExtensionService::HandleExtensionAlertAccept() {
-  extension_error_ui_->Close();
 }
 
 void ExtensionService::AcknowledgeExternalExtension(const std::string& id) {
@@ -1413,14 +1339,6 @@ void ExtensionService::ReconcileKnownDisabled() {
   registry_->SetDisabledModificationCallback(
       base::Bind(&extensions::ExtensionPrefs::SetKnownDisabled,
                  base::Unretained(extension_prefs_)));
-}
-
-void ExtensionService::HandleExtensionAlertDetails() {
-  extension_error_ui_->ShowExtensions();
-  // ShowExtensions may cause the error UI to close synchronously, e.g. if it
-  // causes a navigation.
-  if (extension_error_ui_)
-    extension_error_ui_->Close();
 }
 
 void ExtensionService::UpdateExternalExtensionAlert() {
@@ -2315,7 +2233,7 @@ void ExtensionService::Observe(int type,
 }
 
 void ExtensionService::OnExtensionInstallPrefChanged() {
-  IdentifyAlertableExtensions();
+  error_controller_->ShowErrorIfNeeded();
   CheckManagementPolicy();
 }
 
@@ -2451,7 +2369,7 @@ void ExtensionService::ManageBlacklist(
   UpdateBlockedExtensions(blocked, unchanged);
   UpdateGreylistedExtensions(greylist, unchanged, state_map);
 
-  IdentifyAlertableExtensions();
+  error_controller_->ShowErrorIfNeeded();
 }
 
 namespace {

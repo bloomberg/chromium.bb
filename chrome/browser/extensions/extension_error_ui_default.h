@@ -13,10 +13,13 @@
 
 class Browser;
 class ExtensionService;
+class Profile;
+
+namespace extensions {
 
 class ExtensionErrorUIDefault : public ExtensionErrorUI {
  public:
-  explicit ExtensionErrorUIDefault(ExtensionService* extension_service);
+  explicit ExtensionErrorUIDefault(ExtensionErrorUI::Delegate* delegate);
   virtual ~ExtensionErrorUIDefault();
 
   // ExtensionErrorUI implementation:
@@ -49,6 +52,9 @@ class ExtensionErrorUIDefault : public ExtensionErrorUI {
     DISALLOW_COPY_AND_ASSIGN(ExtensionGlobalError);
   };
 
+  // The profile associated with this error.
+  Profile* profile_;
+
   // The browser the bubble view was shown into.
   Browser* browser_;
 
@@ -56,5 +62,7 @@ class ExtensionErrorUIDefault : public ExtensionErrorUI {
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionErrorUIDefault);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_UI_DEFAULT_H_
