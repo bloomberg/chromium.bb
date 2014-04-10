@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/css/parser/MediaQueryTokenizer.h"
 
+#include "core/css/parser/MediaQueryBlockWatcher.h"
 #include "wtf/PassOwnPtr.h"
 #include <gtest/gtest.h>
 
@@ -14,6 +15,12 @@ typedef struct {
     const char* input;
     const char* output;
 } TestCase;
+
+typedef struct {
+    const char* input;
+    const unsigned maxLevel;
+    const unsigned finalLevel;
+} BlockTestCase;
 
 TEST(MediaQueryTokenizerTest, Basic)
 {
@@ -48,6 +55,54 @@ TEST(MediaQueryTokenizerTest, Basic)
         for (size_t j = 0; j < tokens.size(); ++j)
             output.append(tokens[j].textForUnitTests());
         ASSERT_STREQ(testCases[i].output, output.toString().ascii().data());
+    }
+}
+
+TEST(MediaQueryTokenizerBlockTest, Basic)
+{
+    BlockTestCase testCases[] = {
+        {"(max-width: 800px()), (max-width: 800px)", 2, 0},
+        {"(max-width: 900px(()), (max-width: 900px)", 3, 1},
+        {"(max-width: 600px(())))), (max-width: 600px)", 3, 0},
+        {"(max-width: 500px(((((((((())))), (max-width: 500px)", 11, 6},
+        {"(max-width: 800px[]), (max-width: 800px)", 2, 0},
+        {"(max-width: 900px[[]), (max-width: 900px)", 3, 2},
+        {"(max-width: 600px[[]]]]), (max-width: 600px)", 3, 0},
+        {"(max-width: 500px[[[[[[[[[[]]]]), (max-width: 500px)", 11, 7},
+        {"(max-width: 800px{}), (max-width: 800px)", 2, 0},
+        {"(max-width: 900px{{}), (max-width: 900px)", 3, 2},
+        {"(max-width: 600px{{}}}}), (max-width: 600px)", 3, 0},
+        {"(max-width: 500px{{{{{{{{{{}}}}), (max-width: 500px)", 11, 7},
+        {"[(), (max-width: 400px)", 2, 1},
+        {"[{}, (max-width: 500px)", 2, 1},
+        {"[{]}], (max-width: 900px)", 2, 0},
+        {"[{[]{}{{{}}}}], (max-width: 900px)", 5, 0},
+        {"[{[}], (max-width: 900px)", 3, 2},
+        {"[({)}], (max-width: 900px)", 3, 2},
+        {"[]((), (max-width: 900px)", 2, 1},
+        {"((), (max-width: 900px)", 2, 1},
+        {"(foo(), (max-width: 900px)", 2, 1},
+        {"[](()), (max-width: 900px)", 2, 0},
+        {"all an[isdfs bla())(i())]icalc(i)(()), (max-width: 400px)", 3, 0},
+        {"all an[isdfs bla())(]icalc(i)(()), (max-width: 500px)", 4, 2},
+        {"all an[isdfs bla())(]icalc(i)(())), (max-width: 600px)", 4, 1},
+        {"all an[isdfs bla())(]icalc(i)(()))], (max-width: 800px)", 4, 0},
+        {0, 0, 0} // Do not remove the terminator line.
+    };
+    for (int i = 0; testCases[i].input; ++i) {
+        Vector<MediaQueryToken> tokens;
+        MediaQueryTokenizer::tokenize(testCases[i].input, tokens);
+        MediaQueryBlockWatcher blockWatcher;
+
+        unsigned maxLevel = 0;
+        unsigned level = 0;
+        for (size_t j = 0; j < tokens.size(); ++j) {
+            blockWatcher.handleToken(tokens[j]);
+            level = blockWatcher.blockLevel();
+            maxLevel = std::max(level, maxLevel);
+        }
+        ASSERT_EQ(testCases[i].maxLevel, maxLevel);
+        ASSERT_EQ(testCases[i].finalLevel, level);
     }
 }
 

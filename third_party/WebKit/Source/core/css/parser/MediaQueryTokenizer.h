@@ -44,10 +44,14 @@ private:
     bool nextTwoCharsAreValidEscape(unsigned offset);
     bool nextCharsAreNumber();
     bool nextCharsAreIdentifier();
+    MediaQueryToken blockStart(MediaQueryTokenType);
+    MediaQueryToken blockStart(MediaQueryTokenType blockType, MediaQueryTokenType, String);
+    MediaQueryToken blockEnd(MediaQueryTokenType, MediaQueryTokenType startType);
 
     typedef MediaQueryToken (MediaQueryTokenizer::*CodePoint)(UChar);
 
     static const CodePoint codePoints[];
+    Vector<MediaQueryTokenType> m_blockStack;
 
     MediaQueryToken whiteSpace(UChar);
     MediaQueryToken leftParenthesis(UChar);

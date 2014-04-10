@@ -67,34 +67,62 @@ MediaQueryToken MediaQueryTokenizer::whiteSpace(UChar cc)
     return MediaQueryToken(WhitespaceToken);
 }
 
+static bool popIfBlockMatches(Vector<MediaQueryTokenType>& blockStack, MediaQueryTokenType type)
+{
+    if (!blockStack.isEmpty() && blockStack.last() == type) {
+        blockStack.removeLast();
+        return true;
+    }
+    return false;
+}
+
+MediaQueryToken MediaQueryTokenizer::blockStart(MediaQueryTokenType type)
+{
+    m_blockStack.append(type);
+    return MediaQueryToken(type, MediaQueryToken::BlockStart);
+}
+
+MediaQueryToken MediaQueryTokenizer::blockStart(MediaQueryTokenType blockType, MediaQueryTokenType type, String name)
+{
+    m_blockStack.append(blockType);
+    return MediaQueryToken(type, name, MediaQueryToken::BlockStart);
+}
+
+MediaQueryToken MediaQueryTokenizer::blockEnd(MediaQueryTokenType type, MediaQueryTokenType startType)
+{
+    if (popIfBlockMatches(m_blockStack, startType))
+        return MediaQueryToken(type, MediaQueryToken::BlockEnd);
+    return MediaQueryToken(type);
+}
+
 MediaQueryToken MediaQueryTokenizer::leftParenthesis(UChar cc)
 {
-    return MediaQueryToken(LeftParenthesisToken);
+    return blockStart(LeftParenthesisToken);
 }
 
 MediaQueryToken MediaQueryTokenizer::rightParenthesis(UChar cc)
 {
-    return MediaQueryToken(RightParenthesisToken);
+    return blockEnd(RightParenthesisToken, LeftParenthesisToken);
 }
 
 MediaQueryToken MediaQueryTokenizer::leftBracket(UChar cc)
 {
-    return MediaQueryToken(LeftBracketToken);
+    return blockStart(LeftBracketToken);
 }
 
 MediaQueryToken MediaQueryTokenizer::rightBracket(UChar cc)
 {
-    return MediaQueryToken(RightBracketToken);
+    return blockEnd(RightBracketToken, LeftBracketToken);
 }
 
 MediaQueryToken MediaQueryTokenizer::leftBrace(UChar cc)
 {
-    return MediaQueryToken(LeftBraceToken);
+    return blockStart(LeftBraceToken);
 }
 
 MediaQueryToken MediaQueryTokenizer::rightBrace(UChar cc)
 {
-    return MediaQueryToken(RightBraceToken);
+    return blockEnd(RightBraceToken, LeftBraceToken);
 }
 
 MediaQueryToken MediaQueryTokenizer::plusOrFullStop(UChar cc)
@@ -216,7 +244,6 @@ MediaQueryToken MediaQueryTokenizer::nextToken()
 
     if (codePointFunc)
         return ((this)->*(codePointFunc))(cc);
-
     return MediaQueryToken(DelimiterToken, cc);
 }
 
@@ -315,8 +342,9 @@ MediaQueryToken MediaQueryTokenizer::consumeNumericToken()
 MediaQueryToken MediaQueryTokenizer::consumeIdentLikeToken()
 {
     String name = consumeName();
-    if (consumeIfNext('('))
-        return MediaQueryToken(FunctionToken, name);
+    if (consumeIfNext('(')) {
+        return blockStart(LeftParenthesisToken, FunctionToken, name);
+    }
     return MediaQueryToken(IdentToken, name);
 }
 

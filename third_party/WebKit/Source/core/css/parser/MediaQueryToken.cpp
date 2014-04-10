@@ -12,11 +12,12 @@
 namespace WebCore {
 
 
-MediaQueryToken::MediaQueryToken(MediaQueryTokenType type)
+MediaQueryToken::MediaQueryToken(MediaQueryTokenType type, BlockType blockType)
     : m_type(type)
     , m_delimiter(0)
     , m_numericValue(0)
     , m_unit(CSSPrimitiveValue::CSS_UNKNOWN)
+    , m_blockType(blockType)
 {
 }
 
@@ -26,16 +27,18 @@ MediaQueryToken::MediaQueryToken(MediaQueryTokenType type, UChar c)
     , m_delimiter(c)
     , m_numericValue(0)
     , m_unit(CSSPrimitiveValue::CSS_UNKNOWN)
+    , m_blockType(NotBlock)
 {
     ASSERT(m_type == DelimiterToken);
 }
 
-MediaQueryToken::MediaQueryToken(MediaQueryTokenType type, String value)
+MediaQueryToken::MediaQueryToken(MediaQueryTokenType type, String value, BlockType blockType)
     : m_type(type)
     , m_value(value)
     , m_delimiter(0)
     , m_numericValue(0)
     , m_unit(CSSPrimitiveValue::CSS_UNKNOWN)
+    , m_blockType(blockType)
 {
 }
 
@@ -45,6 +48,7 @@ MediaQueryToken::MediaQueryToken(MediaQueryTokenType type, double numericValue, 
     , m_numericValueType(numericValueType)
     , m_numericValue(numericValue)
     , m_unit(CSSPrimitiveValue::CSS_NUMBER)
+    , m_blockType(NotBlock)
 {
     ASSERT(type == NumberToken);
 }

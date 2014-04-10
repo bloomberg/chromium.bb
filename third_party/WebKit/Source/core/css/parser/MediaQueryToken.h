@@ -40,8 +40,14 @@ enum NumericValueType {
 
 class MediaQueryToken {
 public:
-    MediaQueryToken(MediaQueryTokenType);
-    MediaQueryToken(MediaQueryTokenType, String);
+    enum BlockType {
+        NotBlock,
+        BlockStart,
+        BlockEnd,
+    };
+
+    MediaQueryToken(MediaQueryTokenType, BlockType = NotBlock);
+    MediaQueryToken(MediaQueryTokenType, String value, BlockType = NotBlock);
 
     MediaQueryToken(MediaQueryTokenType, UChar); // for DelimiterToken
     MediaQueryToken(MediaQueryTokenType, double, NumericValueType); // for NumberToken
@@ -60,6 +66,7 @@ public:
     NumericValueType numericValueType() const { return m_numericValueType; }
     double numericValue() const { return m_numericValue; }
     CSSPrimitiveValue::UnitTypes unitType() const { return m_unit; }
+    BlockType blockType() const { return m_blockType; }
 
 private:
     MediaQueryTokenType m_type;
@@ -70,8 +77,10 @@ private:
     NumericValueType m_numericValueType;
     double m_numericValue;
     CSSPrimitiveValue::UnitTypes m_unit;
+
+    BlockType m_blockType;
 };
 
-}
+} // namespace
 
 #endif // MediaQueryToken_h

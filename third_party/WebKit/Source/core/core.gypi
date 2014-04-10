@@ -896,6 +896,7 @@
             'css/parser/BisonCSSParser.h',
             'css/parser/CSSPropertyParser.cpp',
             'css/parser/CSSPropertyParser.h',
+            'css/parser/MediaQueryBlockWatcher.cpp',
             'css/parser/MediaQueryInputStream.cpp',
             'css/parser/MediaQueryParser.cpp',
             'css/parser/MediaQueryToken.cpp',
