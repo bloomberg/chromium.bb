@@ -20,6 +20,21 @@ const int kInvalidDisplaySizeList[][2] = {
   {160, 100},
 };
 
+// The DPI threshold to detect high density screen.
+// Higher DPI than this will use device_scale_factor=2.
+const unsigned int kHighDensityDPIThresholdSmall = 170;
+
+// The HiDPI threshold for large (usually external) monitors. Lower threshold
+// makes sense for large monitors, because such monitors should be located
+// farther from the user's face usually. See http://crbug.com/348279
+const unsigned int kHighDensityDPIThresholdLarge = 150;
+
+// The width threshold in mm for "large" monitors.
+const int kLargeDisplayWidthThresholdMM = 500;
+
+// 1 inch in mm.
+const float kInchInMm = 25.4f;
+
 }  // namespace
 
 bool IsDisplaySizeBlackListed(const gfx::Size& physical_size) {
@@ -38,6 +53,19 @@ bool IsDisplaySizeBlackListed(const gfx::Size& physical_size) {
     }
   }
   return false;
+}
+
+float GetScaleFactor(const gfx::Size& physical_size_in_mm,
+                     const gfx::Size& screen_size_in_pixels) {
+  if (IsDisplaySizeBlackListed(physical_size_in_mm))
+    return 1.0f;
+
+  const unsigned int dpi = (kInchInMm * screen_size_in_pixels.width() /
+                            physical_size_in_mm.width());
+  const unsigned int threshold =
+      (physical_size_in_mm.width() >= kLargeDisplayWidthThresholdMM) ?
+      kHighDensityDPIThresholdLarge : kHighDensityDPIThresholdSmall;
+  return (dpi > threshold) ? 2.0f : 1.0f;
 }
 
 }  // namespace ui

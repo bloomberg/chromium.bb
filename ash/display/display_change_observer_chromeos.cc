@@ -30,13 +30,6 @@ using ui::DisplayConfigurator;
 
 namespace {
 
-// The DPI threshold to detect high density screen.
-// Higher DPI than this will use device_scale_factor=2.
-const unsigned int kHighDensityDPIThreshold = 170;
-
-// 1 inch in mm.
-const float kInchInMm = 25.4f;
-
 // Display mode list is sorted by (in descending priority):
 //  * the area in pixels.
 //  * refresh rate.
@@ -133,12 +126,8 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     if (!mode_info)
       continue;
 
-    float device_scale_factor = 1.0f;
-    if (!ui::IsDisplaySizeBlackListed(state.display->physical_size()) &&
-        (kInchInMm * mode_info->size().width() /
-         state.display->physical_size().width()) > kHighDensityDPIThreshold) {
-      device_scale_factor = 2.0f;
-    }
+    float device_scale_factor = ui::GetScaleFactor(
+        state.display->physical_size(), mode_info->size());
     gfx::Rect display_bounds(state.display->origin(), mode_info->size());
 
     std::vector<DisplayMode> display_modes = GetDisplayModeList(state);

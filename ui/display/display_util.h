@@ -14,6 +14,12 @@ namespace ui {
 // be ignored.
 DISPLAY_EXPORT bool IsDisplaySizeBlackListed(const gfx::Size& physical_size);
 
+// Returns the desired device scale factor for the display with the given
+// physical_size and resoultion.
+DISPLAY_EXPORT float GetScaleFactor(
+    const gfx::Size& physical_size_in_mm,
+    const gfx::Size& screen_size_in_pixels);
+
 }  // namespace ui
 
 #endif  // UI_DISPLAY_DISPLAY_UTIL_H_

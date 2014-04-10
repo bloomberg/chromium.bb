@@ -4,6 +4,7 @@
 
 #display-options-page {
   background-color: rgb(240, 240, 240);
+  min-width: 450px;
 }
 
 #display-options-content-area {
@@ -92,5 +93,5 @@
 }
 
 .display-options-button {
-  width: 130px;
+  width: 155px;
 }
