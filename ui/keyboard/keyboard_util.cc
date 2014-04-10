@@ -120,7 +120,7 @@ bool IsInputViewEnabled() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableInputView))
     return false;
   // Default value if no command line flags specified.
-  return false;
+  return true;
 }
 
 bool InsertText(const base::string16& text, aura::Window* root_window) {
