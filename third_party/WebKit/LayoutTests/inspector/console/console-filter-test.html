@@ -43,12 +43,12 @@ function onload()
 
 function test()
 {
-    var messagesElement = WebInspector.ConsolePanel._view().messagesElement;
+    var messagesElement = WebInspector.ConsolePanel._view()._messagesElement;
 
     function dumpVisibleMessages(root, indent)
     {
         indent = indent || "";
-        root = root || WebInspector.ConsolePanel._view().topGroup.element; // .console-group
+        root = root || WebInspector.ConsolePanel._view()._topGroup.element; // .console-group
         var children = root.childNodes;
 
         for (var i = 0; i < children.length; i++) {
