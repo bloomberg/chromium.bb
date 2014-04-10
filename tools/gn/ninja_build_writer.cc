@@ -5,6 +5,7 @@
 #include "tools/gn/ninja_build_writer.h"
 
 #include <fstream>
+#include <map>
 
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -176,13 +177,19 @@ void NinjaBuildWriter::WriteSubninjas() {
 void NinjaBuildWriter::WritePhonyAndAllRules() {
   std::string all_rules;
 
-  // Write phony rules for the default toolchain (don't do other toolchains or
-  // we'll get naming conflicts).
+  // Write phony rules for all uniquely-named targets in the default toolchain.
+  // Don't do other toolchains or we'll get naming conflicts, and if the name
+  // isn't unique, also skip it.
+  std::map<std::string, int> small_name_count;
+  for (size_t i = 0; i < default_toolchain_targets_.size(); i++)
+    small_name_count[default_toolchain_targets_[i]->label().name()]++;
+
   for (size_t i = 0; i < default_toolchain_targets_.size(); i++) {
     const Target* target = default_toolchain_targets_[i];
 
     OutputFile target_file = helper_.GetTargetOutputFile(target);
-    if (target_file.value() != target->label().name()) {
+    if (target_file.value() != target->label().name() &&
+        small_name_count[default_toolchain_targets_[i]->label().name()] == 1) {
       out_ << "build " << target->label().name() << ": phony ";
       path_output_.WriteFile(out_, target_file);
       out_ << std::endl;
