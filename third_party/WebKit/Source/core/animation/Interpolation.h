@@ -113,7 +113,7 @@ private:
         : StyleInterpolation(start, end, id)
     { }
 
-    static PassOwnPtr<InterpolableValue> lengthToInterpolableValue(CSSValue*);
+    static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(CSSValue*);
     static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLength(InterpolableValue*);
 
     friend class AnimationInterpolationTest;

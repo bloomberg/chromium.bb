@@ -14,7 +14,7 @@ namespace WebCore {
 
 class AnimationInterpolationTest : public ::testing::Test {
 protected:
-    static PassOwnPtr<InterpolableValue> lengthToInterpolableValue(CSSValue* value)
+    static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(CSSValue* value)
     {
         return LengthStyleInterpolation::lengthToInterpolableValue(value);
     }
@@ -36,9 +36,9 @@ protected:
         EXPECT_EQ(unitType, toCSSPrimitiveValue(value.get())->primitiveType());
     }
 
-    static PassOwnPtr<InterpolableList> createInterpolableLength(double a, double b, double c, double d, double e, double f, double g, double h, double i, double j)
+    static PassOwnPtrWillBeRawPtr<InterpolableList> createInterpolableLength(double a, double b, double c, double d, double e, double f, double g, double h, double i, double j)
     {
-        OwnPtr<InterpolableList> list = InterpolableList::create(10);
+        OwnPtrWillBeRawPtr<InterpolableList> list = InterpolableList::create(10);
         list->set(0, InterpolableNumber::create(a));
         list->set(1, InterpolableNumber::create(b));
         list->set(2, InterpolableNumber::create(c));
@@ -101,7 +101,7 @@ TEST_F(AnimationInterpolationTest, MultipleUnits)
 {
     CSSLengthArray actual, expectation;
     initLengthArray(expectation);
-    OwnPtr<InterpolableList> list = createInterpolableLength(0, 10, 0, 10, 0, 10, 0, 10, 0, 10);
+    OwnPtrWillBeRawPtr<InterpolableList> list = createInterpolableLength(0, 10, 0, 10, 0, 10, 0, 10, 0, 10);
     toCSSPrimitiveValue(interpolableValueToLength(list.get()).get())->accumulateLengthArray(expectation);
     EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "calc(10%% + 10ex + 10ch + 10vh + 10vmax)")));
 }

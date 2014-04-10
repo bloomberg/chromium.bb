@@ -81,9 +81,9 @@ void LegacyStyleInterpolation::trace(Visitor* visitor)
     StyleInterpolation::trace(visitor);
 }
 
-PassOwnPtr<InterpolableValue> LengthStyleInterpolation::lengthToInterpolableValue(CSSValue* value)
+PassOwnPtrWillBeRawPtr<InterpolableValue> LengthStyleInterpolation::lengthToInterpolableValue(CSSValue* value)
 {
-    OwnPtr<InterpolableList> result = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
+    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
     CSSPrimitiveValue* primitive = toCSSPrimitiveValue(value);
 
     CSSLengthArray array;
@@ -104,12 +104,12 @@ static CSSPrimitiveValue::UnitTypes toUnitType(int lengthUnitType)
     return static_cast<CSSPrimitiveValue::UnitTypes>(CSSPrimitiveValue::lengthUnitTypeToUnitType(static_cast<CSSPrimitiveValue::LengthUnitType>(lengthUnitType)));
 }
 
-static PassRefPtr<CSSCalcExpressionNode> constructCalcExpression(PassRefPtr<CSSCalcExpressionNode> previous, InterpolableList* list, size_t position)
+static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> constructCalcExpression(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> previous, InterpolableList* list, size_t position)
 {
     while (position != CSSPrimitiveValue::LengthUnitTypeCount) {
         const InterpolableNumber *subValue = toInterpolableNumber(list->get(position));
         if (subValue->value()) {
-            RefPtr<CSSCalcExpressionNode> next;
+            RefPtrWillBeRawPtr<CSSCalcExpressionNode> next;
             if (previous)
                 next = CSSCalcValue::createExpressionNode(previous, CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(subValue->value(), toUnitType(position))), CalcAdd);
             else
@@ -145,7 +145,7 @@ PassRefPtrWillBeRawPtr<CSSValue> LengthStyleInterpolation::interpolableValueToLe
             }
         }
     default:
-        return CSSPrimitiveValue::create(CSSCalcValue::create(constructCalcExpression(PassRefPtr<CSSCalcExpressionNode>(), listValue, 0)));
+        return CSSPrimitiveValue::create(CSSCalcValue::create(constructCalcExpression(nullptr, listValue, 0)));
     }
 }
 
