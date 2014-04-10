@@ -37,8 +37,12 @@
              {
                'destination': '<(PRODUCT_DIR)',
                'target_conditions': [
-                 ['_toolset=="host"', { 'files': [ 'asan_osx_dynamic'] }], 
-                 ['_toolset=="target"', { 'files': [ 'asan_iossim_dynamic'] }], 
+                 ['_toolset=="host"', {
+                   'files': [ '<!(/bin/ls <(asan_osx_dynamic))'],
+                 }],
+                 ['_toolset=="target"', {
+                   'files': [ '<!(/bin/ls <(asan_iossim_dynamic))'],
+                 }],
                ],
              },
            ],
