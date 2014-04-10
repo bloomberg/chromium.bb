@@ -88,8 +88,8 @@ bool StreamResourceHandler::OnReadCompleted(int request_id,
 
   // Release the ownership of the buffer, and store a reference
   // to it. A new one will be allocated in OnWillRead().
-  net::IOBuffer* buffer = NULL;
-  read_buffer_.swap(&buffer);
+  scoped_refptr<net::IOBuffer> buffer;
+  read_buffer_.swap(buffer);
   stream_->AddData(buffer, bytes_read);
 
   if (!stream_->can_add_data())
