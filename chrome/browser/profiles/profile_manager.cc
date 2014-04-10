@@ -24,6 +24,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -633,6 +635,17 @@ void ProfileManager::ScheduleProfileForDeletion(
     const base::FilePath& profile_dir,
     const CreateCallback& callback) {
   DCHECK(profiles::IsMultipleProfilesEnabled());
+
+  // Cancel all in-progress downloads before deleting the profile to prevent a
+  // "Do you want to exit Google Chrome and cancel the downloads?" prompt
+  // (crbug.com/336725).
+  Profile* profile = GetProfileByPath(profile_dir);
+  if (profile) {
+    DownloadService* service =
+        DownloadServiceFactory::GetForBrowserContext(profile);
+    service->CancelDownloads();
+  }
+
   PrefService* local_state = g_browser_process->local_state();
   ProfileInfoCache& cache = GetProfileInfoCache();
 
@@ -1072,6 +1085,10 @@ void ProfileManager::FinishDeletingProfile(const base::FilePath& profile_dir) {
   Profile* profile = GetProfileByPath(profile_dir);
 
   if (profile) {
+    // By this point, all in-progress downloads for the profile being deleted
+    // must have been canceled (crbug.com/336725).
+    DCHECK(DownloadServiceFactory::GetForBrowserContext(profile)->
+           NonMaliciousDownloadCount() == 0);
     BrowserList::CloseAllBrowsersWithProfile(profile);
 
     // Disable sync for doomed profile.

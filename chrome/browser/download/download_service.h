@@ -47,10 +47,13 @@ class DownloadService : public KeyedService {
   // service.
   int NonMaliciousDownloadCount() const;
 
+  // Cancels all in-progress downloads for this profile.
+  void CancelDownloads();
+
   // Number of non-malicious downloads associated with all profiles.
   static int NonMaliciousDownloadCountAllProfiles();
 
-  // Cancels all in-progress downloads.
+  // Cancels all in-progress downloads for all profiles.
   static void CancelAllDownloads();
 
   // Sets the DownloadManagerDelegate associated with this object and
