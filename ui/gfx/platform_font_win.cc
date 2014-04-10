@@ -201,7 +201,12 @@ void PlatformFontWin::InitWithCopyOfHFONT(HFONT hfont) {
 
 void PlatformFontWin::InitWithFontNameAndSize(const std::string& font_name,
                                               int font_size) {
-  HFONT hf = ::CreateFont(-font_size, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  HFONT hf = ::CreateFont(-font_size, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE,
+                          DEFAULT_CHARSET,
+                          OUT_DEFAULT_PRECIS,
+                          CLIP_DEFAULT_PRECIS,
+                          DEFAULT_QUALITY,
+                          DEFAULT_PITCH | FF_DONTCARE,
                           base::UTF8ToUTF16(font_name).c_str());
   font_ref_ = CreateHFontRef(hf);
 }
