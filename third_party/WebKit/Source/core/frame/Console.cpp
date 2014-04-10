@@ -31,9 +31,9 @@
 
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/frame/ConsoleTypes.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PageConsole.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -69,11 +69,11 @@ void Console::reportMessageToClient(MessageLevel level, const String& message, P
         return;
 
     String stackTrace;
-    if (m_frame->host()->chrome().client().shouldReportDetailedMessageForSource(callStack->at(0).sourceURL())) {
+    if (m_frame->chromeClient().shouldReportDetailedMessageForSource(callStack->at(0).sourceURL())) {
         RefPtr<ScriptCallStack> fullStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
-        stackTrace = PageConsole::formatStackTraceString(message, fullStack);
+        stackTrace = FrameConsole::formatStackTraceString(message, fullStack);
     }
-    m_frame->host()->chrome().client().addMessageToConsole(ConsoleAPIMessageSource, level, message, callStack->at(0).lineNumber(), callStack->at(0).sourceURL(), stackTrace);
+    m_frame->chromeClient().addMessageToConsole(m_frame, ConsoleAPIMessageSource, level, message, callStack->at(0).lineNumber(), callStack->at(0).sourceURL(), stackTrace);
 }
 
 PassRefPtrWillBeRawPtr<MemoryInfo> Console::memory() const

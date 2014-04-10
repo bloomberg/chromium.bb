@@ -287,7 +287,7 @@ private:
 
     double timestamp();
 
-    FrameHost* frameHost() const;
+    LocalFrame* mainFrame() const;
 
     bool isStarted();
     void innerStart();

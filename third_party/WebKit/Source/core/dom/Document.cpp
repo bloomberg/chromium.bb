@@ -109,11 +109,11 @@
 #include "core/events/ScopedEventQueue.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMWindow.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/History.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PageConsole.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLAllCollection.h"
@@ -4822,8 +4822,8 @@ void Document::internalAddMessage(MessageSource source, MessageLevel level, cons
         m_taskRunner->postTask(AddConsoleMessageTask::create(source, level, message));
         return;
     }
-    FrameHost* host = frameHost();
-    if (!host)
+
+    if (!m_frame)
         return;
 
     String messageURL = sourceURL;
@@ -4835,7 +4835,7 @@ void Document::internalAddMessage(MessageSource source, MessageLevel level, cons
                 lineNumber = parser->lineNumber().oneBasedInt();
         }
     }
-    host->console().addMessage(source, level, message, messageURL, lineNumber, 0, callStack, state, 0);
+    m_frame->console().addMessage(source, level, message, messageURL, lineNumber, 0, callStack, state, 0);
 }
 
 void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, MessageLevel level, const String& message, unsigned long requestIdentifier)
@@ -4845,8 +4845,8 @@ void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, Mess
         return;
     }
 
-    if (FrameHost* host = frameHost())
-        host->console().addMessage(source, level, message, String(), 0, 0, nullptr, 0, requestIdentifier);
+    if (m_frame)
+        m_frame->console().addMessage(source, level, message, String(), 0, 0, nullptr, 0, requestIdentifier);
 }
 
 // FIXME(crbug.com/305497): This should be removed after ExecutionContext-DOMWindow migration.

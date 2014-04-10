@@ -369,11 +369,11 @@ bool ChromeClientImpl::shouldReportDetailedMessageForSource(const String& url)
     return webframe->client() && webframe->client()->shouldReportDetailedMessageForSource(url);
 }
 
-void ChromeClientImpl::addMessageToConsole(MessageSource source, MessageLevel level, const String& message, unsigned lineNumber, const String& sourceID, const String& stackTrace)
+void ChromeClientImpl::addMessageToConsole(LocalFrame* localFrame, MessageSource source, MessageLevel level, const String& message, unsigned lineNumber, const String& sourceID, const String& stackTrace)
 {
-    WebFrameImpl* webframe = m_webView->mainFrameImpl();
-    if (webframe->client()) {
-        webframe->client()->didAddMessageToConsole(
+    WebFrameImpl* frame = WebFrameImpl::fromFrame(localFrame);
+    if (frame && frame->client()) {
+        frame->client()->didAddMessageToConsole(
             WebConsoleMessage(static_cast<WebConsoleMessage::Level>(level), message),
             sourceID,
             lineNumber,

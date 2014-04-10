@@ -74,8 +74,8 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/dom/Document.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
-#include "core/frame/PageConsole.h"
 #include "core/frame/Settings.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -1836,7 +1836,7 @@ void BisonCSSParser::logError(const String& message, const CSSParserLocation& lo
     } else {
         lineNumberInStyleSheet = location.lineNumber;
     }
-    PageConsole& console = m_styleSheet->singleOwnerDocument()->frameHost()->console();
+    FrameConsole& console = m_styleSheet->singleOwnerDocument()->frame()->console();
     console.addMessage(CSSMessageSource, WarningMessageLevel, message, m_styleSheet->baseURL().string(), lineNumberInStyleSheet + m_startPosition.m_line.zeroBasedInt() + 1, columnNumber + 1);
 }
 

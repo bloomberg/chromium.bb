@@ -39,9 +39,9 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/V8WindowShell.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PageConsole.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptDebugListener.h"
@@ -302,13 +302,13 @@ String PageScriptDebugServer::preprocessEventListener(LocalFrame* frame, const S
 
 void PageScriptDebugServer::muteWarningsAndDeprecations()
 {
-    PageConsole::mute();
+    FrameConsole::mute();
     UseCounter::muteForInspector();
 }
 
 void PageScriptDebugServer::unmuteWarningsAndDeprecations()
 {
-    PageConsole::unmute();
+    FrameConsole::unmute();
     UseCounter::unmuteForInspector();
 }
 

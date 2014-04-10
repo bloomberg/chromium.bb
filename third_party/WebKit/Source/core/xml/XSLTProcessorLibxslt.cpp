@@ -33,9 +33,9 @@
 #include "core/editing/markup.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PageConsole.h"
 #include "core/xml/XSLStyleSheet.h"
 #include "core/xml/XSLTExtensions.h"
 #include "core/xml/XSLTUnicodeSort.h"
@@ -60,7 +60,7 @@ void XSLTProcessor::genericErrorFunc(void*, const char*, ...)
 
 void XSLTProcessor::parseErrorFunc(void* userData, xmlError* error)
 {
-    PageConsole* console = static_cast<PageConsole*>(userData);
+    FrameConsole* console = static_cast<FrameConsole*>(userData);
     if (!console)
         return;
 
@@ -108,10 +108,10 @@ static xmlDocPtr docLoaderFunc(const xmlChar* uri,
         if (!resource || !globalProcessor)
             return 0;
 
-        PageConsole* console = 0;
+        FrameConsole* console = 0;
         LocalFrame* frame = globalProcessor->xslStylesheet()->ownerDocument()->frame();
-        if (frame && frame->host())
-            console = &frame->host()->console();
+        if (frame)
+            console = &frame->console();
         xmlSetStructuredErrorFunc(console, XSLTProcessor::parseErrorFunc);
         xmlSetGenericErrorFunc(console, XSLTProcessor::genericErrorFunc);
 

@@ -33,8 +33,8 @@
 
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PageConsole.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorPageAgent.h"
@@ -114,12 +114,12 @@ InjectedScript PageRuntimeAgent::injectedScriptForEval(ErrorString* errorString,
 
 void PageRuntimeAgent::muteConsole()
 {
-    PageConsole::mute();
+    FrameConsole::mute();
 }
 
 void PageRuntimeAgent::unmuteConsole()
 {
-    PageConsole::unmute();
+    FrameConsole::unmute();
 }
 
 void PageRuntimeAgent::reportExecutionContextCreation()

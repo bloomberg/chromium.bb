@@ -26,8 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PageConsole_h
-#define PageConsole_h
+#ifndef FrameConsole_h
+#define FrameConsole_h
 
 #include "bindings/v8/ScriptState.h"
 #include "core/frame/ConsoleTypes.h"
@@ -39,15 +39,11 @@ namespace WebCore {
 
 class FrameHost;
 
-// PageConsole (bad name) takes per-frame/per-document
-// console messages and routes them up through the
-// FrameHost to the ChromeClient and Inspector.
-// It's meant as an abstraction around ChromeClient calls
-// and the way that Blink core/ can add messages to the console.
-
-class PageConsole FINAL {
+// FrameConsole takes per-frame console messages and routes them up through the FrameHost to the ChromeClient and Inspector.
+// It's meant as an abstraction around ChromeClient calls and the way that Blink core/ can add messages to the console.
+class FrameConsole FINAL {
 public:
-    static PassOwnPtr<PageConsole> create(FrameHost& host) { return adoptPtr(new PageConsole(host)); }
+    static PassOwnPtr<FrameConsole> create(LocalFrame& frame) { return adoptPtr(new FrameConsole(frame)); }
 
     void addMessage(MessageSource, MessageLevel, const String& message);
     void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, unsigned columnNumber = 0, PassRefPtr<ScriptCallStack> = nullptr, ScriptState* = 0, unsigned long requestIdentifier = 0);
@@ -58,11 +54,11 @@ public:
     static void unmute();
 
 private:
-    explicit PageConsole(FrameHost&);
+    explicit FrameConsole(LocalFrame&);
 
-    FrameHost& m_frameHost;
+    LocalFrame& m_frame;
 };
 
 } // namespace WebCore
 
-#endif // PageConsole_h
+#endif // FrameConsole_h

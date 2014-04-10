@@ -32,8 +32,9 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/DOMWindow.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
-#include "core/frame/PageConsole.h"
+#include "core/frame/LocalFrame.h"
 #include "public/platform/Platform.h"
 
 namespace WebCore {
@@ -623,12 +624,13 @@ void UseCounter::countDeprecation(const DOMWindow* window, Feature feature)
 void UseCounter::countDeprecation(const Document& document, Feature feature)
 {
     FrameHost* host = document.frameHost();
-    if (!host)
+    LocalFrame* frame = document.frame();
+    if (!host || !frame)
         return;
 
     if (host->useCounter().recordMeasurement(feature)) {
         ASSERT(!host->useCounter().deprecationMessage(feature).isEmpty());
-        host->console().addMessage(DeprecationMessageSource, WarningMessageLevel, host->useCounter().deprecationMessage(feature));
+        frame->console().addMessage(DeprecationMessageSource, WarningMessageLevel, host->useCounter().deprecationMessage(feature));
     }
 }
 

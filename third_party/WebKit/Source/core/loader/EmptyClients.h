@@ -105,7 +105,7 @@ public:
     virtual void setResizable(bool) OVERRIDE { }
 
     virtual bool shouldReportDetailedMessageForSource(const String&) OVERRIDE { return false; }
-    virtual void addMessageToConsole(MessageSource, MessageLevel, const String&, unsigned, const String&, const String&) OVERRIDE { }
+    virtual void addMessageToConsole(LocalFrame*, MessageSource, MessageLevel, const String&, unsigned, const String&, const String&) OVERRIDE { }
 
     virtual bool canRunBeforeUnloadConfirmPanel() OVERRIDE { return false; }
     virtual bool runBeforeUnloadConfirmPanel(const String&, LocalFrame*) OVERRIDE { return true; }

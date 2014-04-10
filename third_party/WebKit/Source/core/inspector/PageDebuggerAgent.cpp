@@ -34,8 +34,8 @@
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PageConsole.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -91,12 +91,12 @@ PageScriptDebugServer& PageDebuggerAgent::scriptDebugServer()
 
 void PageDebuggerAgent::muteConsole()
 {
-    PageConsole::mute();
+    FrameConsole::mute();
 }
 
 void PageDebuggerAgent::unmuteConsole()
 {
-    PageConsole::unmute();
+    FrameConsole::unmute();
 }
 
 void PageDebuggerAgent::overlayResumed()

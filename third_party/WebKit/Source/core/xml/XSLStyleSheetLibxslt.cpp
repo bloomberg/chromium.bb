@@ -128,10 +128,10 @@ bool XSLStyleSheet::parseString(const String& source)
         xmlFreeDoc(m_stylesheetDoc);
     m_stylesheetDocTaken = false;
 
-    PageConsole* console = 0;
+    FrameConsole* console = 0;
     LocalFrame* frame = ownerDocument()->frame();
-    if (frame && frame->host())
-        console = &frame->host()->console();
+    if (frame)
+        console = &frame->console();
 
     XMLDocumentParserScope scope(fetcher(), XSLTProcessor::genericErrorFunc, XSLTProcessor::parseErrorFunc, console);
     XMLParserInput input(source);

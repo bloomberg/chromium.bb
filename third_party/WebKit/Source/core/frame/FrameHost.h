@@ -41,7 +41,6 @@ namespace WebCore {
 
 class Chrome;
 class Page;
-class PageConsole;
 class PinchViewport;
 class Settings;
 class UseCounter;
@@ -66,7 +65,6 @@ public:
 
     Settings& settings() const;
     Chrome& chrome() const;
-    PageConsole& console() const;
     UseCounter& useCounter() const;
 
     // Corresponds to pixel density of the device where this Page is
@@ -80,7 +78,6 @@ private:
     explicit FrameHost(Page&);
 
     Page& m_page;
-    const OwnPtr<PageConsole> m_console;
     PinchViewport m_pinchViewport;
 };
 

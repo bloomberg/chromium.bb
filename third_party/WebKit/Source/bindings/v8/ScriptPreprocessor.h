@@ -40,7 +40,6 @@ namespace WebCore {
 class ScriptController;
 class ScriptSourceCode;
 class ScriptDebugServer;
-class PageConsole;
 
 class ScriptPreprocessor {
     WTF_MAKE_NONCOPYABLE(ScriptPreprocessor);

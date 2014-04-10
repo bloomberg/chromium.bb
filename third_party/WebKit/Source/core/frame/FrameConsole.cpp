@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/frame/PageConsole.h"
+#include "core/frame/FrameConsole.h"
 
 #include "core/dom/Document.h"
 #include "core/frame/FrameHost.h"
@@ -46,29 +46,29 @@ int muteCount = 0;
 
 }
 
-PageConsole::PageConsole(FrameHost& frameHost)
-    : m_frameHost(frameHost)
+FrameConsole::FrameConsole(LocalFrame& frame)
+    : m_frame(frame)
 {
 }
 
-void PageConsole::addMessage(MessageSource source, MessageLevel level, const String& message)
+void FrameConsole::addMessage(MessageSource source, MessageLevel level, const String& message)
 {
     addMessage(source, level, message, String(), 0, 0, nullptr, 0, 0);
 }
 
-void PageConsole::addMessage(MessageSource source, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack)
+void FrameConsole::addMessage(MessageSource source, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack)
 {
     addMessage(source, level, message, String(), 0, 0, callStack, 0);
 }
 
-void PageConsole::addMessage(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state, unsigned long requestIdentifier)
+void FrameConsole::addMessage(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state, unsigned long requestIdentifier)
 {
     if (muteCount)
         return;
 
     // FIXME: This should not need to reach for the main-frame.
     // Inspector code should just take the current frame and know how to walk itself.
-    ExecutionContext* context = m_frameHost.page().mainFrame()->document();
+    ExecutionContext* context = m_frame.document();
     if (!context)
         return;
 
@@ -85,13 +85,13 @@ void PageConsole::addMessage(MessageSource source, MessageLevel level, const Str
         return;
 
     String stackTrace;
-    if (callStack && m_frameHost.chrome().client().shouldReportDetailedMessageForSource(messageURL))
-        stackTrace = PageConsole::formatStackTraceString(message, callStack);
+    if (callStack && m_frame.chromeClient().shouldReportDetailedMessageForSource(messageURL))
+        stackTrace = FrameConsole::formatStackTraceString(message, callStack);
 
-    m_frameHost.chrome().client().addMessageToConsole(source, level, message, lineNumber, messageURL, stackTrace);
+    m_frame.chromeClient().addMessageToConsole(&m_frame, source, level, message, lineNumber, messageURL, stackTrace);
 }
 
-String PageConsole::formatStackTraceString(const String& originalMessage, PassRefPtr<ScriptCallStack> callStack)
+String FrameConsole::formatStackTraceString(const String& originalMessage, PassRefPtr<ScriptCallStack> callStack)
 {
     StringBuilder stackTrace;
     for (size_t i = 0; i < callStack->size(); ++i) {
@@ -109,12 +109,12 @@ String PageConsole::formatStackTraceString(const String& originalMessage, PassRe
     return stackTrace.toString();
 }
 
-void PageConsole::mute()
+void FrameConsole::mute()
 {
     muteCount++;
 }
 
-void PageConsole::unmute()
+void FrameConsole::unmute()
 {
     ASSERT(muteCount > 0);
     muteCount--;

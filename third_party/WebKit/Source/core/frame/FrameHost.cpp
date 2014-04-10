@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/frame/FrameHost.h"
 
-#include "core/frame/PageConsole.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -45,7 +44,6 @@ PassOwnPtr<FrameHost> FrameHost::create(Page& page)
 
 FrameHost::FrameHost(Page& page)
     : m_page(page)
-    , m_console(PageConsole::create(*this))
     , m_pinchViewport(*this)
 {
 }
@@ -63,11 +61,6 @@ Settings& FrameHost::settings() const
 Chrome& FrameHost::chrome() const
 {
     return m_page.chrome();
-}
-
-PageConsole& FrameHost::console() const
-{
-    return *m_console;
 }
 
 UseCounter& FrameHost::useCounter() const

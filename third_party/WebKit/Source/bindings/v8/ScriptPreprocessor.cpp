@@ -36,9 +36,9 @@
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ScriptRunner.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PageConsole.h"
 #include "wtf/TemporaryChange.h"
 
 namespace WebCore {
@@ -56,13 +56,13 @@ ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourc
     frame->script().executeScriptInIsolatedWorld(ScriptPreprocessorIsolatedWorldId, sources, DOMWrapperWorld::mainWorldExtensionGroup, &scriptResults);
 
     if (scriptResults.size() != 1) {
-        frame->host()->console().addMessage(JSMessageSource, ErrorMessageLevel, "ScriptPreprocessor internal error, one ScriptSourceCode must give exactly one result.");
+        frame->console().addMessage(JSMessageSource, ErrorMessageLevel, "ScriptPreprocessor internal error, one ScriptSourceCode must give exactly one result.");
         return;
     }
 
     ScriptValue preprocessorFunction = scriptResults[0];
     if (!preprocessorFunction.isFunction()) {
-        frame->host()->console().addMessage(JSMessageSource, ErrorMessageLevel, "The preprocessor must compile to a function.");
+        frame->console().addMessage(JSMessageSource, ErrorMessageLevel, "The preprocessor must compile to a function.");
         return;
     }
 

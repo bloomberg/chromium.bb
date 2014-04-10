@@ -100,7 +100,7 @@ public:
     virtual void setResizable(bool) OVERRIDE;
     virtual bool shouldReportDetailedMessageForSource(const WTF::String&) OVERRIDE;
     virtual void addMessageToConsole(
-        WebCore::MessageSource, WebCore::MessageLevel,
+        WebCore::LocalFrame*, WebCore::MessageSource, WebCore::MessageLevel,
         const WTF::String& message, unsigned lineNumber,
         const WTF::String& sourceID, const WTF::String& stackTrace) OVERRIDE;
     virtual bool canRunBeforeUnloadConfirmPanel() OVERRIDE;
