@@ -232,11 +232,13 @@
           'conditions': [
             ['OS != "ios"', {
               'sources': [
+                'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
               ],
               'dependencies': [
                 # Dependencies of autofill
                 'components.gyp:autofill_content_browser',
+                'components.gyp:autofill_content_renderer',
                 'components.gyp:autofill_content_test_support',
 
                 # Dependencies of dom_distiller

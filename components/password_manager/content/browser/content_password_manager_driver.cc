@@ -8,6 +8,7 @@
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -96,6 +97,9 @@ bool ContentPasswordManagerDriver::OnMessageReceived(
   IPC_MESSAGE_FORWARD(AutofillHostMsg_PasswordFormSubmitted,
                       &password_manager_,
                       PasswordManager::OnPasswordFormSubmitted)
+  IPC_MESSAGE_FORWARD(AutofillHostMsg_RecordSavePasswordProgress,
+                      password_manager_.client(),
+                      PasswordManagerClient::LogSavePasswordProgress)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

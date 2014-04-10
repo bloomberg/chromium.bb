@@ -14,9 +14,4 @@ PasswordManagerClient::GetProbabilityForExperiment(
 
 bool PasswordManagerClient::IsPasswordSyncEnabled() { return false; }
 
-void PasswordManagerClient::SetLogger(PasswordManagerLogger* /*logger*/) {}
-
-void PasswordManagerClient::LogSavePasswordProgress(
-    const std::string& /*text*/) {}
-
 }  // namespace password_manager

@@ -179,8 +179,12 @@ void ChromePasswordManagerClient::SetLogger(
 
 void ChromePasswordManagerClient::LogSavePasswordProgress(
     const std::string& text) {
-  if (logger_)
+  if (IsLoggingActive())
     logger_->LogSavePasswordProgress(text);
+}
+
+bool ChromePasswordManagerClient::IsLoggingActive() const {
+  return logger_ != NULL;
 }
 
 // static

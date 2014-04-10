@@ -14,9 +14,9 @@
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -60,7 +60,7 @@ class MockPasswordManagerDriver : public PasswordManagerDriver {
                void(const std::vector<autofill::FormData>&));
 };
 
-class TestPasswordManagerClient : public PasswordManagerClient {
+class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:
   explicit TestPasswordManagerClient(PasswordStore* password_store)
       : password_store_(password_store) {

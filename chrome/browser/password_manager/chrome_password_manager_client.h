@@ -54,6 +54,7 @@ class ChromePasswordManagerClient
   virtual void SetLogger(password_manager::PasswordManagerLogger* logger)
       OVERRIDE;
   virtual void LogSavePasswordProgress(const std::string& text) OVERRIDE;
+  virtual bool IsLoggingActive() const OVERRIDE;
 
   // Hides any visible generation UI.
   void HidePasswordGenerationPopup();

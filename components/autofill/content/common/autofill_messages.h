@@ -185,6 +185,10 @@ IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsRendered,
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormSubmitted,
                     autofill::PasswordForm /* form */)
 
+// Notification that logs during saving the password have been gathered.
+IPC_MESSAGE_ROUTED1(AutofillHostMsg_RecordSavePasswordProgress,
+                    std::string /* log */)
+
 // Notification that a form has been submitted.  The user hit the button.
 IPC_MESSAGE_ROUTED2(AutofillHostMsg_FormSubmitted,
                     autofill::FormData /* form */,

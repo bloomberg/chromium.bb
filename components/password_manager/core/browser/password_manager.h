@@ -99,6 +99,8 @@ class PasswordManager : public LoginModel {
   virtual void OnPasswordFormSubmitted(
       const autofill::PasswordForm& password_form);
 
+  PasswordManagerClient* client() { return client_; }
+
  private:
   enum ProvisionalSaveFailure {
     SAVING_DISABLED,

@@ -62,10 +62,14 @@ class PasswordManagerClient {
   virtual bool IsPasswordSyncEnabled();
 
   // Attach or detach (setting NULL) a logger for this client.
-  virtual void SetLogger(PasswordManagerLogger* logger);
+  virtual void SetLogger(PasswordManagerLogger* logger) = 0;
 
   // Send |text| to the logger.
-  virtual void LogSavePasswordProgress(const std::string& text);
+  virtual void LogSavePasswordProgress(const std::string& text) = 0;
+
+  // Returns true if logs recorded via LogSavePasswordProgress will be
+  // displayed, and false otherwise.
+  virtual bool IsLoggingActive() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

@@ -25,6 +25,9 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PasswordStore* GetPasswordStore() OVERRIDE;
   virtual PasswordManagerDriver* GetDriver() OVERRIDE;
+  virtual void SetLogger(PasswordManagerLogger* logger) OVERRIDE;
+  virtual void LogSavePasswordProgress(const std::string& text) OVERRIDE;
+  virtual bool IsLoggingActive() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubPasswordManagerClient);

@@ -15,7 +15,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -70,7 +70,7 @@ class TestPasswordManagerDriver : public PasswordManagerDriver {
   bool is_off_the_record_;
 };
 
-class TestPasswordManagerClient : public PasswordManagerClient {
+class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:
   TestPasswordManagerClient(scoped_ptr<PrefService> prefs)
       : prefs_(prefs.Pass()), driver_(this), is_sync_enabled_(false) {}

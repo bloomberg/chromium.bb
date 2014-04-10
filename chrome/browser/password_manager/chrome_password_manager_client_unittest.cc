@@ -16,6 +16,8 @@ using content::WebContents;
 
 namespace {
 
+const char kTestText[] = "abcd1234";
+
 class MockPasswordManagerLogger
     : public password_manager::PasswordManagerLogger {
  public:
@@ -32,6 +34,8 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   ChromePasswordManagerClient* GetClient();
+
+  testing::StrictMock<MockPasswordManagerLogger> logger;
 };
 
 void ChromePasswordManagerClientTest::SetUp() {
@@ -43,20 +47,32 @@ ChromePasswordManagerClient* ChromePasswordManagerClientTest::GetClient() {
   return ChromePasswordManagerClient::FromWebContents(web_contents());
 }
 
-TEST_F(ChromePasswordManagerClientTest, LogSavePasswordProgress) {
+TEST_F(ChromePasswordManagerClientTest, LogSavePasswordProgressNoLogger) {
   ChromePasswordManagerClient* client = GetClient();
-  testing::StrictMock<MockPasswordManagerLogger> logger;
-  const std::string text("abcd1234");
 
+  EXPECT_CALL(logger, LogSavePasswordProgress(kTestText)).Times(0);
   // Before attaching the logger, no text should be passed.
-  client->LogSavePasswordProgress(text);
+  client->LogSavePasswordProgress(kTestText);
+  EXPECT_FALSE(client->IsLoggingActive());
+}
+
+TEST_F(ChromePasswordManagerClientTest, LogSavePasswordProgressAttachLogger) {
+  ChromePasswordManagerClient* client = GetClient();
 
   // After attaching the logger, text should be passed.
   client->SetLogger(&logger);
-  EXPECT_CALL(logger, LogSavePasswordProgress(text)).Times(1);
-  client->LogSavePasswordProgress(text);
+  EXPECT_CALL(logger, LogSavePasswordProgress(kTestText)).Times(1);
+  client->LogSavePasswordProgress(kTestText);
+  EXPECT_TRUE(client->IsLoggingActive());
+}
 
-  // After detaching the logger, no text should be passed again.
+TEST_F(ChromePasswordManagerClientTest, LogSavePasswordProgressDetachLogger) {
+  ChromePasswordManagerClient* client = GetClient();
+
+  client->SetLogger(&logger);
+  // After detaching the logger, no text should be passed.
   client->SetLogger(NULL);
-  client->LogSavePasswordProgress(text);
+  EXPECT_CALL(logger, LogSavePasswordProgress(kTestText)).Times(0);
+  client->LogSavePasswordProgress(kTestText);
+  EXPECT_FALSE(client->IsLoggingActive());
 }
