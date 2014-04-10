@@ -44,14 +44,61 @@
       window.internals.settings.setCompositorDrivenAcceleratedScrollingEnabled(false);
     }
 
+    function write(str)
+    {
+      var pre = document.getElementById('console');
+      var text = document.createTextNode(str + '\n');
+      pre.appendChild(text);
+    }
+
+    var iteration = 0;
+    function printResult(expectedResult)
+    {
+      // Force a style recalc.
+      document.body.offsetTop;
+
+      if (window.internals) {
+        var layerTree = window.internals.layerTreeAsText(document);
+
+        if (!layerTree == !expectedResult)
+          write('Iteration ' + iteration.toString() + ': Passed')
+        else
+          write('Iteration ' + iteration.toString() + ': FAILED')
+
+        if (layerTree) {
+          write('Iteration ' + iteration.toString() + ', layer tree');
+          if (debugMode)
+              write(layerTree);
+        } else
+          write('Iteration ' + iteration.toString() + ', no layer tree');
+      }
+      iteration++;
+    }
+
     function doTest()
     {
       var descendant = document.getElementById('descendant');
-      descendant.style.visibility = 'hidden';
-      descendant.style.display = '';
 
-      if (window.internals)
-        document.getElementById('layers').innerText = window.internals.layerTreeAsText(document);
+      // Check that we don't promote if we have an out of flow descendant.
+      // We need to hide the predecessor and successor so they don't interfere
+      // with this experiment.
+      for (i = 0; i < 3; ++i) {
+        if (i == 0) {
+          descendant.style.visibility = 'hidden';
+          descendant.style.display = '';
+        } else if (i == 1) {
+          descendant.style.visibility = '';
+          descendant.style.display = '';
+        } else {
+          descendant.style.visibility = '';
+          descendant.style.display = 'none';
+        }
+
+        // If the out of flow positioned descendant is visible, we cannot opt
+        // into composited scrolling.
+        printResult(i != 1);
+      } // for i
+
     } // function doTest
 
     window.addEventListener('load', doTest, false);
@@ -64,6 +111,7 @@
     <div class="scrolled" id="secondChild"></div>
     <div class="positioned" id="descendant"></div>
   </div>
-  <pre id="layers"></pre>
+  <pre id="console"></pre>
 </body>
 </html>
+
