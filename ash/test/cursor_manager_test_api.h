@@ -26,6 +26,7 @@ class CursorManagerTestApi {
   explicit CursorManagerTestApi(::wm::CursorManager* cursor_manager);
   ~CursorManagerTestApi();
 
+  float GetCurrentScale() const;
   ui::CursorSetType GetCurrentCursorSet() const;
   gfx::NativeCursor GetCurrentCursor() const;
   gfx::Display GetDisplay() const;

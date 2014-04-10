@@ -120,6 +120,16 @@ void AshNativeCursorManager::SetCursorSet(
 #endif
 }
 
+void AshNativeCursorManager::SetScale(
+    float scale,
+    ::wm::NativeCursorManagerDelegate* delegate) {
+  image_cursors_->SetScale(scale);
+  delegate->CommitScale(scale);
+
+  // Sets the cursor to reflect the scale change immediately.
+  SetCursor(delegate->GetCursor(), delegate);
+}
+
 void AshNativeCursorManager::SetVisibility(
     bool visible,
     ::wm::NativeCursorManagerDelegate* delegate) {

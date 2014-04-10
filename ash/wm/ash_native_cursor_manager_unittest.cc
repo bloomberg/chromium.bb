@@ -62,7 +62,9 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
   EXPECT_EQ(ui::kCursorCopy, test_api.GetCurrentCursor().native_type());
   display.set_device_scale_factor(2.0f);
   display.set_rotation(gfx::Display::ROTATE_90);
+  cursor_manager->SetScale(2.5f);
   cursor_manager->SetDisplay(display);
+  EXPECT_EQ(2.5f, test_api.GetCurrentScale());
   EXPECT_EQ(2.0f, test_api.GetDisplay().device_scale_factor());
   EXPECT_EQ(ui::CURSOR_SET_NORMAL, test_api.GetCurrentCursorSet());
   EXPECT_EQ(gfx::Display::ROTATE_90, test_api.GetDisplay().rotation());
@@ -80,6 +82,13 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
   cursor_manager->SetCursorSet(ui::CURSOR_SET_NORMAL);
   EXPECT_EQ(ui::CURSOR_SET_NORMAL, test_api.GetCurrentCursorSet());
 
+  // Cusror scale does change even while cursor is locked.
+  EXPECT_EQ(2.5f, test_api.GetCurrentScale());
+  cursor_manager->SetScale(1.f);
+  EXPECT_EQ(1.f, test_api.GetCurrentScale());
+  cursor_manager->SetScale(1.5f);
+  EXPECT_EQ(1.5f, test_api.GetCurrentScale());
+
   // Cursor type does not change while cursor is locked.
   cursor_manager->SetCursor(ui::kCursorPointer);
   EXPECT_EQ(ui::kCursorCopy, test_api.GetCurrentCursor().native_type());
@@ -95,6 +104,7 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
   EXPECT_FALSE(cursor_manager->IsCursorLocked());
 
   // Cursor type changes to the one specified while cursor is locked.
+  EXPECT_EQ(1.5f, test_api.GetCurrentScale());
   EXPECT_EQ(ui::kCursorPointer, test_api.GetCurrentCursor().native_type());
   EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
@@ -128,6 +138,19 @@ TEST_F(AshNativeCursorManagerTest, SetCursorSet) {
 
   cursor_manager->SetCursorSet(ui::CURSOR_SET_NORMAL);
   EXPECT_EQ(ui::CURSOR_SET_NORMAL, test_api.GetCurrentCursorSet());
+}
+
+TEST_F(AshNativeCursorManagerTest, SetScale) {
+  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  CursorManagerTestApi test_api(cursor_manager);
+
+  EXPECT_EQ(1.f, test_api.GetCurrentScale());
+
+  cursor_manager->SetScale(2.5f);
+  EXPECT_EQ(2.5f, test_api.GetCurrentScale());
+
+  cursor_manager->SetScale(1.f);
+  EXPECT_EQ(1.f, test_api.GetCurrentScale());
 }
 
 TEST_F(AshNativeCursorManagerTest, SetDeviceScaleFactorAndRotation) {
