@@ -20,25 +20,13 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
-// Mac balloons grow from the top down and have close buttons on top, so
-// offsetting is not necessary for easy multiple-closing.  Other platforms grow
-// from the bottom up and have close buttons on top, so it is necessary.
-#if defined(OS_MACOSX)
-#define USE_OFFSETS 0
-#else
-#define USE_OFFSETS 1
-#endif
-
 // A balloon collection represents a set of notification balloons being
 // shown on the screen.  It positions new notifications according to
 // a layout, and monitors for balloons being closed, which it reports
 // up to its parent, the notification UI manager.
 class BalloonCollectionImpl : public BalloonCollection,
-                              public content::NotificationObserver
-#if USE_OFFSETS
-                            , public base::MessageLoopForUI::Observer
-#endif
-{
+                              public content::NotificationObserver,
+                              public base::MessageLoopForUI::Observer {
  public:
   BalloonCollectionImpl();
   virtual ~BalloonCollectionImpl();
@@ -64,13 +52,8 @@ class BalloonCollectionImpl : public BalloonCollection,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // MessageLoopForUI::Observer interface.
-#if defined(OS_WIN) || defined(USE_AURA)
-  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
-#elif defined(TOOLKIT_GTK)
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
   virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
-#endif
 
   // base_ is embedded, so this is a simple accessor for the number of
   // balloons in the collection.
@@ -207,11 +190,6 @@ class BalloonCollectionImpl : public BalloonCollection,
   // Cross-platform internal implementation for PositionBalloons.
   void PositionBalloonsInternal(bool is_reposition);
 
-#if defined(OS_MACOSX)
-  // Get the work area on Mac OS, without inverting the coordinates.
-  static gfx::Rect GetMacWorkArea();
-#endif
-
   // Base implementation for the collection of active balloons.
   BalloonCollectionBase base_;
 
@@ -220,7 +198,6 @@ class BalloonCollectionImpl : public BalloonCollection,
 
   content::NotificationRegistrar registrar_;
 
-#if USE_OFFSETS
   // Start and stop observing all UI events.
   void AddMessageLoopObserver();
   void RemoveMessageLoopObserver();
@@ -239,7 +216,6 @@ class BalloonCollectionImpl : public BalloonCollection,
 
   // Is the balloon collection currently listening for UI events?
   bool added_as_message_loop_observer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(BalloonCollectionImpl);
 };

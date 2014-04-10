@@ -31,19 +31,14 @@ const int kMinAllowedBalloonCount = 2;
 // The spacing between the balloon and the panel.
 const int kVerticalSpacingBetweenBalloonAndPanel = 5;
 
-#if USE_OFFSETS
 // Delay from the mouse leaving the balloon collection before
 // there is a relayout, in milliseconds.
 const int kRepositionDelayMs = 300;
-#endif  // USE_OFFSETS
 
 
 BalloonCollectionImpl::BalloonCollectionImpl()
-#if USE_OFFSETS
     : reposition_factory_(this),
-      added_as_message_loop_observer_(false)
-#endif
-{
+      added_as_message_loop_observer_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_PANEL_COLLECTION_UPDATED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
@@ -53,9 +48,7 @@ BalloonCollectionImpl::BalloonCollectionImpl()
 }
 
 BalloonCollectionImpl::~BalloonCollectionImpl() {
-#if USE_OFFSETS
   RemoveMessageLoopObserver();
-#endif
 }
 
 void BalloonCollectionImpl::AddImpl(const Notification& notification,
@@ -69,11 +62,9 @@ void BalloonCollectionImpl::AddImpl(const Notification& notification,
                                                 layout_.max_balloon_height()));
   new_balloon->SetPosition(layout_.OffScreenLocation(), false);
   new_balloon->Show();
-#if USE_OFFSETS
   int count = base_.count();
   if (count > 0 && layout_.RequiresOffsets())
     new_balloon->set_offset(base_.balloons()[count - 1]->offset());
-#endif
   base_.Add(new_balloon, add_to_front);
   PositionBalloons(false);
 
@@ -139,7 +130,6 @@ void BalloonCollectionImpl::DisplayChanged() {
 }
 
 void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
-#if USE_OFFSETS
   // We want to free the balloon when finished.
   const Balloons& balloons = base_.balloons();
 
@@ -166,7 +156,6 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
     if (apply_offset)
       AddMessageLoopObserver();
   }
-#endif
 
   base_.Remove(source);
   PositionBalloons(true);
@@ -232,7 +221,6 @@ gfx::Rect BalloonCollectionImpl::GetBalloonsBoundingBox() const {
   return bounds;
 }
 
-#if USE_OFFSETS
 void BalloonCollectionImpl::AddMessageLoopObserver() {
   if (!added_as_message_loop_observer_) {
     base::MessageLoopForUI::current()->AddObserver(this);
@@ -278,7 +266,6 @@ void BalloonCollectionImpl::HandleMouseMoveEvent() {
     reposition_factory_.InvalidateWeakPtrs();
   }
 }
-#endif
 
 BalloonCollectionImpl::Layout::Layout()
     : placement_(INVALID),
@@ -392,13 +379,6 @@ bool BalloonCollectionImpl::Layout::RequiresOffsets() const {
   // schemes that grow down do not require offsets.
   bool offsets = (placement_ == VERTICALLY_FROM_BOTTOM_LEFT ||
                   placement_ == VERTICALLY_FROM_BOTTOM_RIGHT);
-
-#if defined(OS_MACOSX)
-  // These schemes are in screen-coordinates, and top and bottom
-  // are inverted on Mac.
-  offsets = !offsets;
-#endif
-
   return offsets;
 }
 
@@ -470,13 +450,9 @@ bool BalloonCollectionImpl::Layout::ComputeOffsetToMoveAbovePanels() {
 bool BalloonCollectionImpl::Layout::RefreshSystemMetrics() {
   bool changed = false;
 
-#if defined(OS_MACOSX)
-  gfx::Rect new_work_area = GetMacWorkArea();
-#else
   // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
   gfx::Rect new_work_area =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area();
-#endif
   if (work_area_ != new_work_area) {
     work_area_.SetRect(new_work_area.x(), new_work_area.y(),
                        new_work_area.width(), new_work_area.height());

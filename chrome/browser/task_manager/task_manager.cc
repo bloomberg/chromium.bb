@@ -47,7 +47,7 @@
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/image/image_skia.h"
 
-#if !defined(OS_CHROMEOS)
+#if defined(TOOLKIT_GTK)
 #include "chrome/browser/task_manager/notification_resource_provider.h"
 #endif
 
@@ -276,7 +276,7 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       scoped_ptr<WebContentsInformation>(
           new task_manager::GuestInformation())));
 
-#if !defined(OS_CHROMEOS) && defined(ENABLE_NOTIFICATIONS)
+#if defined(TOOLKIT_GTK) && defined(ENABLE_NOTIFICATIONS)
   ResourceProvider* provider =
       task_manager::NotificationResourceProvider::Create(task_manager);
   if (provider)

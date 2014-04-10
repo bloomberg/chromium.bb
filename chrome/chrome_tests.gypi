@@ -75,7 +75,6 @@
         'browser/mouseleave_browsertest.cc',
         'browser/notifications/desktop_notifications_unittest.cc',
         'browser/notifications/desktop_notifications_unittest.h',
-        'browser/notifications/notification_browsertest.cc',
         'browser/password_manager/password_generation_interactive_uitest.cc',
         'browser/renderer_context_menu/render_view_context_menu_browsertest_util.cc',
         'browser/renderer_context_menu/render_view_context_menu_browsertest_util.h',
@@ -164,6 +163,12 @@
           'sources!': [
             'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
           ],
+        }, {
+          'sources!': [
+            'browser/notifications/desktop_notifications_unittest.cc',
+            'browser/notifications/desktop_notifications_unittest.h',
+            'browser/notifications/notification_browsertest.cc',
+          ]
         }],
         ['OS=="linux" and use_aura==1', {
           # TODO(gbillock): aura linux does not support the automation for
@@ -214,8 +219,6 @@
           'sources!': [
             # TODO(port): These tests fail because they don't have a Screen,
             # but expect one.
-            'browser/notifications/desktop_notifications_unittest.cc',
-            'browser/notifications/desktop_notifications_unittest.h',
             # TODO(port): I have no idea about the crashes in here; there's
             # nothing obviously wrong. It doesn't run on gtk today, either.
             'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
@@ -326,9 +329,6 @@
           ],
           'sources!': [
             # chromeos does not use cross-platform panels
-            'browser/notifications/desktop_notifications_unittest.cc',
-            'browser/notifications/desktop_notifications_unittest.h',
-            'browser/notifications/notification_browsertest.cc',
             'browser/ui/panels/detached_panel_browsertest.cc',
             'browser/ui/panels/docked_panel_browsertest.cc',
             'browser/ui/panels/panel_browsertest.cc',

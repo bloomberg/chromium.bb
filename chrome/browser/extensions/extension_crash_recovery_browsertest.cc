@@ -147,7 +147,7 @@ class MAYBE_ExtensionCrashRecoveryTest
         it++;
       std::string id = (*it)->id();
       message_center->ClickOnNotification(id);
-#if !defined(OS_CHROMEOS)
+#if defined(TOOLKIT_GTK)
     } else {
       Balloon* balloon = GetNotificationDelegate(index);
       ASSERT_TRUE(balloon);
@@ -167,7 +167,7 @@ class MAYBE_ExtensionCrashRecoveryTest
       for (size_t i=0; i < index; i++) { it++; }
       ASSERT_TRUE(g_browser_process->notification_ui_manager()->
           CancelById((*it)->id()));
-#if !defined(OS_CHROMEOS)
+#if defined(TOOLKIT_GTK)
     } else {
       Balloon* balloon = GetNotificationDelegate(index);
       ASSERT_TRUE(balloon);
@@ -181,17 +181,17 @@ class MAYBE_ExtensionCrashRecoveryTest
     if (message_center::IsRichNotificationEnabled())
       return message_center::MessageCenter::Get()->NotificationCount();
 
-#if defined(OS_CHROMEOS)
-    CHECK(false);
-    return 0;
-#else
+#if defined(TOOLKIT_GTK)
     return BalloonNotificationUIManager::GetInstanceForTesting()->
         balloon_collection()->GetActiveBalloons().size();
+#else
+    CHECK(false);
+    return 0;
 #endif
   }
 
  private:
-#if !defined(OS_CHROMEOS)
+#if defined(TOOLKIT_GTK)
   Balloon* GetNotificationDelegate(size_t index) {
     BalloonNotificationUIManager* manager =
         BalloonNotificationUIManager::GetInstanceForTesting();

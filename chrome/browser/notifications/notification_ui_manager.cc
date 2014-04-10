@@ -41,19 +41,13 @@ NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
         settings_provider.Pass());
   }
 
-#if defined(OS_CHROMEOS)
-  // Since we can't reach here for CrOS (see above), no point compiling all
-  // the dependent classes there.
-  CHECK(false);
-  return NULL;
-#elif defined(OS_MACOSX) || defined(USE_AURA)
-  // IsRichNotificationEnabled() always returns true in this case.
-  CHECK(false);
-  return NULL;
-#else
+#if defined(TOOLKIT_GTK)
   BalloonNotificationUIManager* balloon_manager =
       new BalloonNotificationUIManager(local_state);
   balloon_manager->SetBalloonCollection(BalloonCollection::Create());
   return balloon_manager;
+#else
+  CHECK(false);
+  return NULL;
 #endif
 }

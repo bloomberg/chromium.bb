@@ -1613,7 +1613,6 @@
         'browser/ui/cocoa/location_bar/selected_keyword_decoration_unittest.mm',
         'browser/ui/cocoa/media_picker/desktop_media_picker_controller_unittest.mm',
         'browser/ui/cocoa/menu_button_unittest.mm',
-        'browser/ui/cocoa/notifications/balloon_controller_unittest.mm',
         'browser/ui/cocoa/notifications/message_center_tray_bridge_unittest.mm',
         'browser/ui/cocoa/nsmenuitem_additions_unittest.mm',
         'browser/ui/cocoa/nsview_additions_unittest.mm',
