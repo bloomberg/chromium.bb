@@ -188,7 +188,7 @@
           '<(SHARED_LIB_DIR)/<(native_lib_target).>(android_product_extension)'
         ],
         'package_input_paths': [
-          '<(apk_package_native_libs_dir)/<(android_app_abi)/<(android_gdbserver_executable)',
+          '<(apk_package_native_libs_dir)/<(android_app_abi)/gdbserver',
         ],
       },
       'copies': [
