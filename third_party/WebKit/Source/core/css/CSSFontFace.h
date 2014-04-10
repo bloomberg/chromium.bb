@@ -112,6 +112,8 @@ private:
     void setLoadStatus(FontFace::LoadStatus);
 
     UnicodeRangeSet m_ranges;
+    // FIXME: Oilpan: Make m_segmentedFontFace a RawPtrWillBeMember when moving
+    // CSSFontFace to the heap.
     CSSSegmentedFontFace* m_segmentedFontFace;
     Deque<OwnPtr<CSSFontFaceSource> > m_sources;
     FontFace* m_fontFace;
