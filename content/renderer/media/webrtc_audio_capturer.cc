@@ -38,6 +38,13 @@ const int kValidInputRates[] = {48000, 44100};
 const int kValidInputRates[] = {44100};
 #endif
 
+// Time constant for AudioPowerMonitor.  See AudioPowerMonitor ctor comments
+// for semantics.  This value was arbitrarily chosen, but seems to work well.
+const int kPowerMonitorTimeConstantMs = 10;
+
+// The time between two audio power level samples.
+const int kPowerMonitorLogIntervalSeconds = 10;
+
 }  // namespace
 
 // Reference counted container of WebRtcLocalAudioTrack delegate.
@@ -222,7 +229,10 @@ WebRtcAudioCapturer::WebRtcAudioCapturer(
       peer_connection_mode_(false),
       key_pressed_(false),
       need_audio_processing_(false),
-      audio_device_(audio_device) {
+      audio_device_(audio_device),
+      audio_power_monitor_(
+          device_info_.device.input.sample_rate,
+          base::TimeDelta::FromMilliseconds(kPowerMonitorTimeConstantMs)) {
   DVLOG(1) << "WebRtcAudioCapturer::WebRtcAudioCapturer()";
 }
 
@@ -481,6 +491,20 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
        it != tracks_to_notify_format.end(); ++it) {
     (*it)->OnSetFormat(output_params);
     (*it)->SetAudioProcessor(audio_processor_);
+  }
+
+  if ((base::TimeTicks::Now() - last_audio_level_log_time_).InSeconds() >
+          kPowerMonitorLogIntervalSeconds) {
+    audio_power_monitor_.Scan(*audio_source, audio_source->frames());
+
+    last_audio_level_log_time_ = base::TimeTicks::Now();
+
+    std::pair<float, bool> result =
+        audio_power_monitor_.ReadCurrentPowerAndClip();
+    WebRtcLogMessage(base::StringPrintf(
+        "WAC::Capture: current_audio_power=%.2fdBFS.", result.first));
+
+    audio_power_monitor_.Reset();
   }
 
   // Push the data to the processor for processing.

@@ -17,6 +17,7 @@
 #include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/tagged_list.h"
 #include "media/audio/audio_input_device.h"
+#include "media/audio/audio_power_monitor.h"
 #include "media/base/audio_capturer_source.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 
@@ -206,6 +207,12 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // Raw pointer to the WebRtcAudioDeviceImpl, which is valid for the lifetime
   // of RenderThread.
   WebRtcAudioDeviceImpl* audio_device_;
+
+  // Audio power monitor for logging audio power level.
+  media::AudioPowerMonitor audio_power_monitor_;
+
+  // Records when the last time audio power level is logged.
+  base::TimeTicks last_audio_level_log_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioCapturer);
 };

@@ -202,15 +202,12 @@ void AudioInputController::DoCreateForStream(
 
   DCHECK(!no_data_timer_.get());
 
-  // This is a fix for crbug.com/357501.  The timer can trigger when closing
-  // the lid on Macs, which causes more problems than the timer fixes.
-  // Also, in crbug.com/357569, the goal is to remove usage of this timer
-  // since it was added to solve a crash on Windows that no longer can be
-  // reproduced.
+  // The timer is enabled for logging purposes. The NO_DATA_ERROR triggered
+  // from the timer must be ignored by the EventHandler.
   // TODO(henrika): remove usage of timer when it has been verified on Canary
   // that we are safe doing so. Goal is to get rid of |no_data_timer_| and
-  // everything that is tied to it.
-  enable_nodata_timer = false;
+  // everything that is tied to it. crbug.com/357569.
+  enable_nodata_timer = true;
 
   if (enable_nodata_timer) {
     // Create the data timer which will call DoCheckForNoData(). The timer
@@ -324,7 +321,6 @@ void AudioInputController::DoCheckForNoData() {
     // one second since a data packet was recorded. This can happen if a
     // capture device has been removed or disabled.
     handler_->OnError(this, NO_DATA_ERROR);
-    return;
   }
 
   // Mark data as non-active. The flag will be re-enabled in OnData() each

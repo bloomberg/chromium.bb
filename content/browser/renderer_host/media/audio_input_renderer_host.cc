@@ -182,8 +182,19 @@ void AudioInputRendererHost::DoHandleError(
     media::AudioInputController* controller,
     media::AudioInputController::ErrorCode error_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Log all errors even it is ignored later.
   MediaStreamManager::SendMessageToNativeLog(
       base::StringPrintf("AudioInputController error: %d", error_code));
+
+  // This is a fix for crbug.com/357501. The error can be triggered when closing
+  // the lid on Macs, which causes more problems than it fixes.
+  // Also, in crbug.com/357569, the goal is to remove usage of the error since
+  // it was added to solve a crash on Windows that no longer can be reproduced.
+  if (error_code == media::AudioInputController::NO_DATA_ERROR) {
+    DVLOG(1) << "AudioInputRendererHost@" << this << "::DoHandleError: "
+             << "NO_DATA_ERROR ignored.";
+    return;
+  }
 
   AudioEntry* entry = LookupByController(controller);
   if (!entry)
@@ -237,6 +248,7 @@ void AudioInputRendererHost::OnCreateStream(
   }
 
   // Check if we have the permission to open the device and which device to use.
+  std::string device_name;
   std::string device_id = media::AudioManagerBase::kDefaultDeviceId;
   if (audio_params.format() != media::AudioParameters::AUDIO_FAKE) {
     const StreamDeviceInfo* info = media_stream_manager_->
@@ -249,6 +261,7 @@ void AudioInputRendererHost::OnCreateStream(
     }
 
     device_id = info->device.id;
+    device_name = info->device.name;
   }
 
   // Create a new AudioEntry structure.
@@ -321,7 +334,7 @@ void AudioInputRendererHost::OnCreateStream(
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
 
   MediaStreamManager::SendMessageToNativeLog(
-      "Audio input stream created successfully.");
+      "Audio input stream created successfully. Device name: " + device_name);
   audio_log_->OnCreated(stream_id, audio_params, device_id);
 }
 
