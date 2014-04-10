@@ -361,13 +361,6 @@ ErrorCode SyntheticPolicy(SandboxBPF*, int sysno, void*) {
     return ErrorCode(ENOSYS);
   }
 
-// TODO(jorgelo): remove this once the new code generator lands.
-#if defined(__arm__)
-  if (sysno > static_cast<int>(MAX_PUBLIC_SYSCALL)) {
-    return ErrorCode(ENOSYS);
-  }
-#endif
-
   if (sysno == __NR_exit_group || sysno == __NR_write) {
     // exit_group() is special, we really need it to work.
     // write() is needed for BPF_ASSERT() to report a useful error message.
