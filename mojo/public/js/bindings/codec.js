@@ -111,6 +111,12 @@ define("mojo/public/js/bindings/codec", function() {
     return result;
   };
 
+  Decoder.prototype.read16 = function() {
+    var result = load16(this.memory, this.next);
+    this.next += 2;
+    return result;
+  };
+
   Decoder.prototype.read32 = function() {
     var result = this.viewU32[this.next / this.viewU32.BYTES_PER_ELEMENT];
     this.next += this.viewU32.BYTES_PER_ELEMENT;
@@ -201,6 +207,11 @@ define("mojo/public/js/bindings/codec", function() {
   Encoder.prototype.write8 = function(val) {
     store8(this.buffer.memory, this.next, val);
     this.next += 1;
+  };
+
+  Encoder.prototype.write16 = function(val) {
+    store16(this.buffer.memory, this.next, val);
+    this.next += 2;
   };
 
   Encoder.prototype.write32 = function(val) {
