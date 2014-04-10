@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeLinks) {
   result_list->GetString(1, &html);
   // A relative link should've been updated.
   EXPECT_THAT(html,
-              ContainsRegex("href=\"http://127.0.0.1:[0-9]*/relativelink.html\""));
+              ContainsRegex("href=\"http://127.0.0.1:.*/relativelink.html\""));
   EXPECT_THAT(html,
               HasSubstr("href=\"http://www.google.com/absolutelink.html\""));
 }
@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeImages) {
   result_list->GetString(1, &html);
   // A relative link should've been updated.
   EXPECT_THAT(html,
-              ContainsRegex("src=\"http://127.0.0.1:[0-9]*/relativeimage.png\""));
+              ContainsRegex("src=\"http://127.0.0.1:.*/relativeimage.png\""));
   EXPECT_THAT(html,
               HasSubstr("src=\"http://www.google.com/absoluteimage.png\""));
 }
