@@ -22,6 +22,7 @@
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -139,6 +140,33 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
                                                    TabStripModel::CLOSE_NONE);
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchTab("title1.html")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillTab) {
+  ShowTaskManager();
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchTab("title1.html")));
+
+  // Open a new tab and make sure the task manager notices it.
+  AddTabAtIndex(0, GetTestURL(), content::PAGE_TRANSITION_TYPED);
+
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+
+  // Killing the tab via task manager should remove the row.
+  int tab = FindResourceIndex(MatchTab("title1.html"));
+  ASSERT_NE(-1, tab);
+  ASSERT_TRUE(model()->GetResourceWebContents(tab) != NULL);
+  ASSERT_TRUE(model()->CanActivate(tab));
+  TaskManager::GetInstance()->KillProcess(tab);
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchTab("title1.html")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+
+  // Tab should reappear in task manager upon reload.
+  chrome::Reload(browser(), CURRENT_TAB);
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticePanel) {

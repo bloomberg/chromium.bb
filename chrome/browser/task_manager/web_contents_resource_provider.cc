@@ -42,6 +42,15 @@ class TaskManagerWebContentsObserver : public content::WebContentsObserver {
     provider_->AddToTaskManager(web_contents());
   }
 
+  virtual void RenderViewReady() OVERRIDE {
+    provider_->RemoveFromTaskManager(web_contents());
+    provider_->AddToTaskManager(web_contents());
+  }
+
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE {
+    provider_->RemoveFromTaskManager(web_contents());
+  }
+
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
     provider_->RemoveFromTaskManager(web_contents);
     provider_->DeleteObserver(this);  // Deletes |this|.
