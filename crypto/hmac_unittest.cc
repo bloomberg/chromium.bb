@@ -275,3 +275,21 @@ TEST(HMACTest, Verify) {
         base::StringPiece(empty_digest, kSHA1DigestSize)));
   }
 }
+
+TEST(HMACTest, EmptyKey) {
+  // Test vector from https://en.wikipedia.org/wiki/HMAC
+  const char* kExpectedDigest =
+      "\xFB\xDB\x1D\x1B\x18\xAA\x6C\x08\x32\x4B\x7D\x64\xB7\x1F\xB7\x63"
+      "\x70\x69\x0E\x1D";
+  base::StringPiece data("", 0u);
+
+  crypto::HMAC hmac(crypto::HMAC::SHA1);
+  ASSERT_TRUE(hmac.Init(NULL, 0));
+
+  unsigned char digest[kSHA1DigestSize];
+  EXPECT_TRUE(hmac.Sign(data, digest, kSHA1DigestSize));
+  EXPECT_EQ(0, memcmp(kExpectedDigest, digest, kSHA1DigestSize));
+
+  EXPECT_TRUE(hmac.Verify(
+      data, base::StringPiece(kExpectedDigest, kSHA1DigestSize)));
+}

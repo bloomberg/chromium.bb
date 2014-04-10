@@ -31,6 +31,14 @@ bool HMAC::Init(const unsigned char* key, size_t key_length) {
   DCHECK(plat_->key.empty());
 
   plat_->key.assign(key, key + key_length);
+  if (key_length == 0) {
+    // Special-case: if the key is empty, use a key with one zero
+    // byte. OpenSSL's HMAC function breaks when passed a NULL key. (It calls
+    // HMAC_Init_ex which treats a NULL key as having already been initialized
+    // with a key previously.) HMAC pads keys with zeros, so this key is
+    // equivalent.
+    plat_->key.push_back(0);
+  }
   return true;
 }
 
