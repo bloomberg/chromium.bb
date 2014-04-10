@@ -23,6 +23,7 @@ using blink::WebFloatPoint;
 using blink::WebFloatSize;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
+using blink::WebKeyboardEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebPoint;
 using blink::WebSize;
@@ -1255,6 +1256,58 @@ TEST_F(InputHandlerProxyTest, MultiTouchPointHitTestPositive) {
   touch.touches[1] = CreateWebTouchPoint(WebTouchPoint::StatePressed, 10, 10);
   touch.touches[2] = CreateWebTouchPoint(WebTouchPoint::StatePressed, -10, 10);
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(touch));
+}
+
+TEST_F(InputHandlerProxyTest, GestureFlingCancelledByKeyboardEvent) {
+  // We shouldn't send any events to the widget for this gesture.
+  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
+  VERIFY_AND_RESET_MOCKS();
+
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
+  gesture_.type = WebInputEvent::GestureScrollBegin;
+  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+
+  // Keyboard events received during a scroll should have no effect.
+  WebKeyboardEvent key_event;
+  key_event.type = WebInputEvent::KeyDown;
+  EXPECT_EQ(InputHandlerProxy::DID_NOT_HANDLE,
+            input_handler_->HandleInputEvent(key_event));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+
+  // On the fling start, animation should be scheduled, but no scrolling occurs.
+  gesture_.type = WebInputEvent::GestureFlingStart;
+  WebFloatPoint fling_delta = WebFloatPoint(1000, 1000);
+  gesture_.data.flingStart.velocityX = fling_delta.x;
+  gesture_.data.flingStart.velocityY = fling_delta.y;
+  EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
+      .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
+  EXPECT_CALL(mock_input_handler_, ScheduleAnimation());
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+
+  // Keyboard events received during a fling should cancel the active fling.
+  EXPECT_CALL(mock_input_handler_, ScrollEnd());
+  EXPECT_EQ(InputHandlerProxy::DID_NOT_HANDLE,
+            input_handler_->HandleInputEvent(key_event));
+  EXPECT_FALSE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+
+  // The call to animate should have no effect, as the fling was cancelled.
+  base::TimeTicks time = base::TimeTicks() + base::TimeDelta::FromSeconds(10);
+  input_handler_->Animate(time);
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+
+  // A fling cancel should be dropped, as there is nothing to cancel.
+  gesture_.type = WebInputEvent::GestureFlingCancel;
+  EXPECT_EQ(InputHandlerProxy::DROP_EVENT,
+            input_handler_->HandleInputEvent(gesture_));
+  EXPECT_FALSE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
 }
 
 } // namespace

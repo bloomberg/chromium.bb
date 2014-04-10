@@ -250,7 +250,10 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     }
     return DROP_EVENT;
   } else if (WebInputEvent::isKeyboardEventType(event.type)) {
-    CancelCurrentFling(true);
+    // Only call |CancelCurrentFling()| if a fling was active, as it will
+    // otherwise disrupt an in-progress touch scroll.
+    if (fling_curve_)
+      CancelCurrentFling(true);
   } else if (event.type == WebInputEvent::MouseMove) {
     const WebMouseEvent& mouse_event =
         *static_cast<const WebMouseEvent*>(&event);
