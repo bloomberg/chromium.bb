@@ -6,14 +6,17 @@
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.
 (repaint rects
-  (rect 0 214 800 72)
-  (rect 8 206 784 72)
-  (rect 8 206 784 72)
   (rect 148 116 252 162)
-  (rect 8 206 392 72)
-  (rect 400 116 392 162)
-  (rect 148 116 644 90)
+  (rect 8 116 392 162)
   (rect 400 116 392 162)
   (rect 400 116 644 90)
+  (rect 400 116 392 162)
+  (rect 400 116 644 90)
+  (rect 8 116 140 90)
+  (rect 400 116 392 162)
+  (rect 148 116 644 90)
+  (rect 8 206 784 72)
+  (rect 8 206 784 72)
+  (rect 0 214 800 72)
 )
 
