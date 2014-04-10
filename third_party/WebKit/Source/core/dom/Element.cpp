@@ -3280,6 +3280,7 @@ void Element::removeAllInlineStyleProperties()
 
 void Element::updatePresentationAttributeStyle()
 {
+    synchronizeAllAttributes();
     // ShareableElementData doesn't store presentation attribute style, so make sure we have a UniqueElementData.
     UniqueElementData& elementData = ensureUniqueElementData();
     elementData.m_presentationAttributeStyleIsDirty = false;

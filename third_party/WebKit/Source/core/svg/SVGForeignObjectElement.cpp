@@ -85,11 +85,39 @@ void SVGForeignObjectElement::parseAttribute(const QualifiedName& name, const At
     reportAttributeParsingError(parseError, name, value);
 }
 
+bool SVGForeignObjectElement::isPresentationAttribute(const QualifiedName& name) const
+{
+    if (name == SVGNames::widthAttr || name == SVGNames::heightAttr)
+        return true;
+    return SVGGraphicsElement::isPresentationAttribute(name);
+}
+
+void SVGForeignObjectElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
+{
+    if (name == SVGNames::widthAttr || name == SVGNames::heightAttr) {
+        RefPtr<SVGLength> length = SVGLength::create(LengthModeOther);
+        length->setValueAsString(value, IGNORE_EXCEPTION);
+        if (length->unitType() != LengthTypeUnknown) {
+            if (name == SVGNames::widthAttr)
+                addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, length->valueAsString());
+            else if (name == SVGNames::heightAttr)
+                addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, length->valueAsString());
+        }
+    } else {
+        SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
+    }
+}
+
 void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {
         SVGGraphicsElement::svgAttributeChanged(attrName);
         return;
+    }
+
+    if (attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr) {
+        invalidateSVGPresentationAttributeStyle();
+        setNeedsStyleRecalc(LocalStyleChange);
     }
 
     SVGElementInstance::InvalidationGuard invalidationGuard(this);

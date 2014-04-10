@@ -103,6 +103,7 @@ public:
     virtual AffineTransform* supplementalTransform() { return 0; }
 
     void invalidateSVGAttributes() { ensureUniqueElementData().m_animatedSVGAttributesAreDirty = true; }
+    void invalidateSVGPresentationAttributeStyle() { ensureUniqueElementData().m_presentationAttributeStyleIsDirty = true; }
 
     const HashSet<SVGElementInstance*>& instancesForElement() const;
 
