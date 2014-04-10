@@ -945,6 +945,45 @@ TEST_F(DisplayManagerTest, UIScale) {
   EXPECT_EQ("1280x850", display.bounds().size().ToString());
 }
 
+TEST_F(DisplayManagerTest, UIScaleUpgradeToHighDPI) {
+  int64 display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+  gfx::Display::SetInternalDisplayId(display_id);
+  UpdateDisplay("1920x1080");
+
+  DisplayInfo::SetAllowUpgradeToHighDPI(false);
+  display_manager()->SetDisplayUIScale(display_id, 1.125f);
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
+  EXPECT_EQ(1.125f, GetDisplayInfoAt(0).GetEffectiveUIScale());
+  EXPECT_EQ("2160x1215", GetDisplayForId(display_id).size().ToString());
+
+  display_manager()->SetDisplayUIScale(display_id, 0.5f);
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
+  EXPECT_EQ(0.5f, GetDisplayInfoAt(0).GetEffectiveUIScale());
+  EXPECT_EQ("960x540", GetDisplayForId(display_id).size().ToString());
+
+  DisplayInfo::SetAllowUpgradeToHighDPI(true);
+  display_manager()->SetDisplayUIScale(display_id, 1.125f);
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
+  EXPECT_EQ(1.125f, GetDisplayInfoAt(0).GetEffectiveUIScale());
+  EXPECT_EQ("2160x1215", GetDisplayForId(display_id).size().ToString());
+
+  display_manager()->SetDisplayUIScale(display_id, 0.5f);
+  EXPECT_EQ(2.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
+  EXPECT_EQ("960x540", GetDisplayForId(display_id).size().ToString());
+
+  // Upgrade only works on 1.0f DSF.
+  UpdateDisplay("1920x1080*2");
+  display_manager()->SetDisplayUIScale(display_id, 1.125f);
+  EXPECT_EQ(2.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
+  EXPECT_EQ(1.125f, GetDisplayInfoAt(0).GetEffectiveUIScale());
+  EXPECT_EQ("1080x607", GetDisplayForId(display_id).size().ToString());
+
+  display_manager()->SetDisplayUIScale(display_id, 0.5f);
+  EXPECT_EQ(2.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
+  EXPECT_EQ(0.5f, GetDisplayInfoAt(0).GetEffectiveUIScale());
+  EXPECT_EQ("480x270", GetDisplayForId(display_id).size().ToString());
+}
 
 #if defined(OS_WIN)
 // TODO(scottmg): RootWindow doesn't get resized on Windows

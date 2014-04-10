@@ -24,6 +24,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
@@ -157,6 +159,10 @@ DisplayManager::DisplayManager()
 #if defined(OS_CHROMEOS)
   change_display_upon_host_resize_ = !base::SysInfo::IsRunningOnChromeOS();
 #endif
+  DisplayInfo::SetAllowUpgradeToHighDPI(
+      ui::ResourceBundle::GetSharedInstance().GetMaxScaleFactor() ==
+      ui::SCALE_FACTOR_200P);
+
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE,
                                  screen_ash_.get());
   gfx::Screen* current_native =
@@ -1017,9 +1023,7 @@ gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64 id) {
 
   gfx::Display new_display(display_info.id());
   gfx::Rect bounds_in_native(display_info.size_in_pixel());
-  float device_scale_factor = display_info.device_scale_factor();
-  if (device_scale_factor == 2.0f && display_info.configured_ui_scale() == 2.0f)
-    device_scale_factor = 1.0f;
+  float device_scale_factor = display_info.GetEffectiveDeviceScaleFactor();
 
   // Simply set the origin to (0,0).  The primary display's origin is
   // always (0,0) and the secondary display's bounds will be updated

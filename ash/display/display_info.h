@@ -81,6 +81,11 @@ class ASH_EXPORT DisplayInfo {
   DisplayInfo(int64 id, const std::string& name, bool has_overscan);
   ~DisplayInfo();
 
+  // When this is set to true, Chrome switches High DPI when lower UI scale
+  // (<1.0f) is specified on 1x device to make UI sharp, e.g, upgrade 0.6
+  // scale on 1x DSF to 1.2 scale on 2x DSF.
+  static void SetAllowUpgradeToHighDPI(bool enable);
+
   int64 id() const { return id_; }
 
   // The name of the display.
@@ -123,8 +128,14 @@ class ASH_EXPORT DisplayInfo {
   float configured_ui_scale() const { return configured_ui_scale_; }
   void set_configured_ui_scale(float scale) { configured_ui_scale_ = scale; }
 
-  // Returns the ui scale used for the device scale factor. This
-  // return 1.0f if the ui scale and dsf are both set to 2.0.
+  // Returns the ui scale and device scale factor actually used to create
+  // display that chrome sees. This can be different from one obtained
+  // from dispaly or one specified by a user in following situation.
+  // 1) DSF is 2.0f and UI scale is 2.0f. (Returns 1.0f and 1.0f respectiely)
+  // 2) Lower UI scale (< 1.0) is specified on 1.0f DSF device
+  // when 2x resources is available. (Returns 2.0f DSF + 1.2f UI scale
+  // for 1.0DSF + 0.6 UI scale).
+  float GetEffectiveDeviceScaleFactor() const;
   float GetEffectiveUIScale() const;
 
   // Copy the display info except for fields that can be modified by a

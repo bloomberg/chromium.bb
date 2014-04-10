@@ -21,6 +21,11 @@
 #endif
 
 namespace ash {
+namespace {
+
+bool allow_upgrade_to_high_dpi = false;
+
+}
 
 DisplayMode::DisplayMode()
     : refresh_rate(0.0f), interlaced(false), native(false) {}
@@ -37,6 +42,11 @@ DisplayMode::DisplayMode(const gfx::Size& size,
 // satic
 DisplayInfo DisplayInfo::CreateFromSpec(const std::string& spec) {
   return CreateFromSpecWithID(spec, gfx::Display::kInvalidDisplayID);
+}
+
+// static
+void DisplayInfo::SetAllowUpgradeToHighDPI(bool enable) {
+  allow_upgrade_to_high_dpi = enable;
 }
 
 // static
@@ -235,9 +245,23 @@ void DisplayInfo::SetBounds(const gfx::Rect& new_bounds_in_native) {
   UpdateDisplaySize();
 }
 
-float DisplayInfo::GetEffectiveUIScale() const {
-  if (device_scale_factor_ == 2.0f && configured_ui_scale_ == 2.0f)
+float DisplayInfo::GetEffectiveDeviceScaleFactor() const {
+  if (allow_upgrade_to_high_dpi && configured_ui_scale_ < 1.0f &&
+      device_scale_factor_ == 1.0f) {
+    return 2.0f;
+  } else if (device_scale_factor_ == 2.0f && configured_ui_scale_ == 2.0f) {
     return 1.0f;
+  }
+  return device_scale_factor_;
+}
+
+float DisplayInfo::GetEffectiveUIScale() const {
+  if (allow_upgrade_to_high_dpi && configured_ui_scale_ < 1.0f &&
+      device_scale_factor_ == 1.0f) {
+    return configured_ui_scale_ * 2.0f;
+  } else if (device_scale_factor_ == 2.0f && configured_ui_scale_ == 2.0f) {
+    return 1.0f;
+  }
   return configured_ui_scale_;
 }
 
