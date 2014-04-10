@@ -18,6 +18,11 @@ namespace {
 const size_t kMessageBufSize = 2 * 1024;
 const size_t kHandleBufSize = 64;
 
+void CloseHandles(MojoHandle* handles, size_t count) {
+  for (size_t ix = 0; ix != count; ++count)
+    MojoClose(handles[ix]);
+}
+
 // In charge of processing messages that flow over a
 // single message pipe.
 class MessageProcessor :
@@ -43,8 +48,8 @@ class MessageProcessor :
     wait_flags.push_back(MOJO_WAIT_FLAG_READABLE);
     wait_flags.push_back(MOJO_WAIT_FLAG_READABLE);
 
-    scoped_ptr<char> mbuf(new char[kMessageBufSize]);
-    scoped_ptr<MojoHandle> hbuf(new MojoHandle[kHandleBufSize]);
+    scoped_ptr<char[]> mbuf(new char[kMessageBufSize]);
+    scoped_ptr<MojoHandle[]> hbuf(new MojoHandle[kHandleBufSize]);
 
     // Main processing loop:
     // 1- Wait for an endpoint to have a message.
@@ -87,10 +92,13 @@ class MessageProcessor :
       if (!CheckResult(WriteMessageRaw(write_handle,
                                        mbuf.get(), bytes_read,
                                        hbuf.get(), handles_read,
-                                       MOJO_WRITE_MESSAGE_FLAG_NONE)))
+                                       MOJO_WRITE_MESSAGE_FLAG_NONE))) {
+        // On failure we own the handles. For now just close them.
+        if (handles_read)
+          CloseHandles(hbuf.get(), handles_read);
         break;
+      }
     }
-
   }
 
  private:
