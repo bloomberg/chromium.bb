@@ -380,6 +380,13 @@ blink::WebScreenInfo GetWebScreenInfo(NSView* view) {
   return results;
 }
 
+void RemoveLayerFromSuperlayer(
+    base::scoped_nsobject<CompositingIOSurfaceLayer> layer) {
+  // Disable the fade-out animation as the layer is removed.
+  ScopedCAActionDisabler disabler;
+  [layer removeFromSuperlayer];
+}
+
 }  // namespace
 
 namespace content {
@@ -573,13 +580,16 @@ void RenderWidgetHostViewMac::EnsureCompositedIOSurfaceLayer() {
   [background_layer_ addSublayer:compositing_iosurface_layer_];
 }
 
-void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceLayer() {
+void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceLayer(
+    DestroyCompositedIOSurfaceLayerBehavior destroy_layer_behavior) {
   if (!compositing_iosurface_layer_)
     return;
 
-  // Disable the fade-out animation as the layer is removed.
-  ScopedCAActionDisabler disabler;
-  [compositing_iosurface_layer_ removeFromSuperlayer];
+  if (destroy_layer_behavior == kRemoveLayerFromHierarchy) {
+    // Disable the fade-out animation as the layer is removed.
+    ScopedCAActionDisabler disabler;
+    [compositing_iosurface_layer_ removeFromSuperlayer];
+  }
   [compositing_iosurface_layer_ disableCompositing];
   compositing_iosurface_layer_.reset();
 }
@@ -589,7 +599,7 @@ void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer(
   // Any pending frames will not be displayed, so ack them now.
   SendPendingSwapAck();
 
-  DestroyCompositedIOSurfaceLayer();
+  DestroyCompositedIOSurfaceLayer(kRemoveLayerFromHierarchy);
   compositing_iosurface_.reset();
 
   switch (destroy_context_behavior) {
@@ -1354,6 +1364,19 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
 
   AddPendingLatencyInfo(latency_info);
 
+  // If compositing_iosurface_ exists and has been poisoned, destroy it
+  // and allow EnsureCompositedIOSurface to recreate it below. Keep a
+  // reference to the destroyed layer around until after the below call
+  // to LayoutLayers, to avoid flickers.
+  base::ScopedClosureRunner scoped_layer_remover;
+  if (compositing_iosurface_context_ &&
+      compositing_iosurface_context_->HasBeenPoisoned()) {
+    scoped_layer_remover.Reset(
+        base::Bind(RemoveLayerFromSuperlayer, compositing_iosurface_layer_));
+    DestroyCompositedIOSurfaceLayer(kLeaveLayerInHierarchy);
+    DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
+  }
+
   // Ensure compositing_iosurface_ and compositing_iosurface_context_ be
   // allocated.
   if (!EnsureCompositedIOSurface()) {
@@ -2027,7 +2050,7 @@ void RenderWidgetHostViewMac::WindowFrameChanged() {
         GetViewBounds()));
   }
 
-  if (compositing_iosurface_) {
+  if (compositing_iosurface_ && !use_core_animation_) {
     // This will migrate the context to the appropriate window.
     if (!EnsureCompositedIOSurface())
       GotAcceleratedCompositingError();
@@ -2229,7 +2252,7 @@ void RenderWidgetHostViewMac::LayoutLayers() {
           respondsToSelector:(@selector(contentsScale))]) {
     if (compositing_iosurface_->scale_factor() !=
         [compositing_iosurface_layer_ contentsScale]) {
-      DestroyCompositedIOSurfaceLayer();
+      DestroyCompositedIOSurfaceLayer(kRemoveLayerFromHierarchy);
       EnsureCompositedIOSurfaceLayer();
     }
   }

@@ -42,9 +42,6 @@
 }
 
 - (void)disableCompositing{
-  // Disable the fade-out animation as the layer is removed.
-  ScopedCAActionDisabler disabler;
-  [self removeFromSuperlayer];
   renderWidgetHostView_ = nil;
 }
 

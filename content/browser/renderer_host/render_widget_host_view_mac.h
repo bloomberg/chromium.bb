@@ -546,13 +546,18 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   bool EnsureCompositedIOSurface() WARN_UNUSED_RESULT;
   void EnsureCompositedIOSurfaceLayer();
+  enum DestroyCompositedIOSurfaceLayerBehavior {
+    kLeaveLayerInHierarchy,
+    kRemoveLayerFromHierarchy,
+  };
+  void DestroyCompositedIOSurfaceLayer(
+      DestroyCompositedIOSurfaceLayerBehavior destroy_layer_behavior);
   enum DestroyContextBehavior {
     kLeaveContextBoundToView,
     kDestroyContext,
   };
-  void DestroyCompositedIOSurfaceLayer();
-  void DestroyCompositedIOSurfaceAndLayer(DestroyContextBehavior
-      destroy_context_behavior);
+  void DestroyCompositedIOSurfaceAndLayer(
+      DestroyContextBehavior destroy_context_behavior);
 
   void DestroyCompositingStateOnError();
 

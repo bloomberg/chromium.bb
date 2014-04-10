@@ -14,6 +14,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 #include "ui/gl/scoped_cgl.h"
 
 namespace content {
@@ -27,7 +28,8 @@ CoreAnimationStatus GetCoreAnimationStatus();
 class CompositingIOSurfaceShaderPrograms;
 
 class CompositingIOSurfaceContext
-    : public base::RefCounted<CompositingIOSurfaceContext> {
+    : public base::RefCounted<CompositingIOSurfaceContext>,
+      public content::GpuDataManagerObserver {
  public:
   enum {
     // The number used to look up the context used for async readback and for
@@ -58,6 +60,9 @@ class CompositingIOSurfaceContext
   bool is_vsync_disabled() const { return is_vsync_disabled_; }
   int window_number() const { return window_number_; }
 
+  // content::GpuDataManagerObserver implementation.
+  virtual void OnGpuSwitching() OVERRIDE;
+
  private:
   friend class base::RefCounted<CompositingIOSurfaceContext>;
 
@@ -68,7 +73,7 @@ class CompositingIOSurfaceContext
       CGLContextObj clg_context,
       bool is_vsync_disabled_,
       scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache);
-  ~CompositingIOSurfaceContext();
+  virtual ~CompositingIOSurfaceContext();
 
   int window_number_;
   base::scoped_nsobject<NSOpenGLContext> nsgl_context_;
