@@ -40,6 +40,8 @@ class BookmarkProvider : public AutocompleteProvider {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BookmarkProviderTest, InlineAutocompletion);
+
   virtual ~BookmarkProvider();
 
   // Performs the actual matching of |input| over the bookmarks and fills in
@@ -49,8 +51,13 @@ class BookmarkProvider : public AutocompleteProvider {
 
   // Compose an AutocompleteMatch based on |title_match| that has 1) the URL of
   // title_match's bookmark, and 2) the bookmark's title, not the URL's page
-  // title, as the description.
-  AutocompleteMatch TitleMatchToACMatch(const BookmarkTitleMatch& title_match);
+  // title, as the description.  |input| is used to compute the match's
+  // inline_autocompletion.  |fixed_up_input| is used in that way as well;
+  // it's passed separately so this function doesn't have to compute it.
+  AutocompleteMatch TitleMatchToACMatch(
+      const AutocompleteInput& input,
+      const AutocompleteInput& fixed_up_input,
+      const BookmarkTitleMatch& title_match);
 
   // Converts |positions| into ACMatchClassifications and returns the
   // classifications. |text_length| is used to determine the need to add an

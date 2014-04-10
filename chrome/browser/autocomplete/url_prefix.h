@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 
 struct URLPrefix;
 typedef std::vector<URLPrefix> URLPrefixes;
@@ -36,6 +37,22 @@ struct URLPrefix {
   static bool PrefixMatch(const URLPrefix& prefix,
                           const base::string16& text,
                           const base::string16& prefix_suffix);
+
+  // Sees if |text| is inlineable against either |input| or |fixed_up_input|,
+  // filling in |match_start| and |inline_autocomplete_offset| appropriately.
+  // |allow_www_prefix_without_scheme| says whether to consider an input such
+  // as "foo" to be allowed to match against text "www.foo.com".  This is
+  // needed because sometimes the string we're matching against here can come
+  // from a match's fill_into_edit, which can start with "www." without having
+  // a protocol at the beginning, and we want to allow these matches to be
+  // inlineable.  ("www." is not otherwise on the default prefix list.)
+  static void ComputeMatchStartAndInlineAutocompleteOffset(
+      const AutocompleteInput& input,
+      const AutocompleteInput& fixed_up_input,
+      const bool allow_www_prefix_without_scheme,
+      const base::string16& text,
+      size_t* match_start,
+      size_t* inline_autocomplete_offset);
 
   base::string16 prefix;
 

@@ -47,27 +47,6 @@ class DestinationURLEqualsURL {
   const GURL url_;
 };
 
-// Like URLPrefix::BestURLPrefix() except also handles the prefix of
-// "www.".  This is needed because sometimes the string we're matching
-// against here (which comes from |fill_into_edit|) can start with
-// "www." without having a protocol at the beginning.  Because "www."
-// is not on the default prefix list, we test for it explicitly here
-// and use that match if the default list didn't have a match or the
-// default list's match was shorter than it could've been.
-const URLPrefix* BestURLPrefixWithWWWCase(
-    const base::string16& text,
-    const base::string16& prefix_suffix) {
-  CR_DEFINE_STATIC_LOCAL(URLPrefix, www_prefix,
-                         (base::ASCIIToUTF16("www."), 1));
-  const URLPrefix* best_prefix = URLPrefix::BestURLPrefix(text, prefix_suffix);
-  if ((best_prefix == NULL) ||
-      (best_prefix->num_components < www_prefix.num_components)) {
-    if (URLPrefix::PrefixMatch(www_prefix, text, prefix_suffix))
-      best_prefix = &www_prefix;
-  }
-  return best_prefix;
-}
-
 }  // namespace
 
 ShortcutsProvider::ShortcutsProvider(AutocompleteProviderListener* listener,
@@ -158,12 +137,10 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   base::string16 term_string(base::i18n::ToLower(input.text()));
   DCHECK(!term_string.empty());
 
-  base::string16 fixed_up_term_string(term_string);
   AutocompleteInput fixed_up_input(input);
-  if (FixupUserInput(&fixed_up_input))
-    fixed_up_term_string = fixed_up_input.text();
-  const GURL& term_string_as_gurl = URLFixerUpper::FixupURL(
-      base::UTF16ToUTF8(term_string), std::string());
+  FixupUserInput(&fixed_up_input);
+  const GURL& input_as_gurl = URLFixerUpper::FixupURL(
+      base::UTF16ToUTF8(input.text()), std::string());
 
   int max_relevance;
   if (!OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
@@ -178,8 +155,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
     int relevance = CalculateScore(term_string, it->second, max_relevance);
     if (relevance) {
       matches_.push_back(ShortcutToACMatch(
-          it->second, relevance, term_string, fixed_up_term_string,
-          term_string_as_gurl, input.prevent_inline_autocomplete()));
+          it->second, relevance, input, fixed_up_input, input_as_gurl));
       matches_.back().ComputeStrippedDestinationURL(profile_);
     }
   }
@@ -220,11 +196,10 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
 AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
     const history::ShortcutsDatabase::Shortcut& shortcut,
     int relevance,
-    const base::string16& term_string,
-    const base::string16& fixed_up_term_string,
-    const GURL& term_string_as_gurl,
-    const bool prevent_inline_autocomplete) {
-  DCHECK(!term_string.empty());
+    const AutocompleteInput& input,
+    const AutocompleteInput& fixed_up_input,
+    const GURL& input_as_gurl) {
+  DCHECK(!input.text().empty());
   AutocompleteMatch match;
   match.provider = this;
   match.relevance = relevance;
@@ -251,48 +226,43 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
   // If the match is a search query this is easy: simply check whether the
   // user text is a prefix of the query.  If the match is a navigation, we
   // assume the fill_into_edit looks something like a URL, so we use
-  // BestURLPrefix() to try and strip off any prefixes that the user might
-  // not think would change the meaning, but would otherwise prevent inline
-  // autocompletion.  This allows, for example, the input of "foo.c" to
-  // autocomplete to "foo.com" for a fill_into_edit of "http://foo.com".
+  // URLPrefix::ComputeMatchStartAndInlineAutocompleteOffset() to try and strip
+  // off any prefixes that the user might not think would change the meaning,
+  // but would otherwise prevent inline autocompletion.  This allows, for
+  // example, the input of "foo.c" to autocomplete to "foo.com" for a
+  // fill_into_edit of "http://foo.com".
   if (AutocompleteMatch::IsSearchType(match.type)) {
-    if (StartsWith(match.fill_into_edit, term_string, false)) {
+    if (StartsWith(match.fill_into_edit, input.text(), false)) {
       match.inline_autocompletion =
-          match.fill_into_edit.substr(term_string.length());
+          match.fill_into_edit.substr(input.text().length());
       match.allowed_to_be_default_match =
-          !prevent_inline_autocomplete || match.inline_autocompletion.empty();
+          !input.prevent_inline_autocomplete() ||
+          match.inline_autocompletion.empty();
     }
   } else {
-    const URLPrefix* best_prefix =
-        BestURLPrefixWithWWWCase(match.fill_into_edit, term_string);
-    const base::string16* matching_string = &term_string;
-    // If we failed to find a best_prefix initially, try again using a
-    // fixed-up version of the user input.  This is especially useful to
-    // get about: URLs to inline against chrome:// shortcuts.  (about:
-    // URLs are fixed up to the chrome:// scheme.)
-    if ((best_prefix == NULL) && !fixed_up_term_string.empty() &&
-        (fixed_up_term_string != term_string)) {
-        best_prefix = BestURLPrefixWithWWWCase(
-            match.fill_into_edit, fixed_up_term_string);
-        matching_string = &fixed_up_term_string;
-    }
-    if (best_prefix != NULL) {
-      match.inline_autocompletion = match.fill_into_edit.substr(
-          best_prefix->prefix.length() + matching_string->length());
+    size_t match_start, inline_autocomplete_offset;
+    URLPrefix::ComputeMatchStartAndInlineAutocompleteOffset(
+        input, fixed_up_input, true, match.fill_into_edit,
+        &match_start, &inline_autocomplete_offset);
+    if (inline_autocomplete_offset != base::string16::npos) {
+      match.inline_autocompletion =
+          match.fill_into_edit.substr(inline_autocomplete_offset);
       match.allowed_to_be_default_match =
-          !prevent_inline_autocomplete || match.inline_autocompletion.empty();
+          !HistoryProvider::PreventInlineAutocomplete(input) ||
+          match.inline_autocompletion.empty();
     } else {
       // Also allow a user's input to be marked as default if it would be fixed
       // up to the same thing as the fill_into_edit.  This handles cases like
       // the user input containing a trailing slash absent in fill_into_edit.
-      match.allowed_to_be_default_match = (term_string_as_gurl ==
+      match.allowed_to_be_default_match = (input_as_gurl ==
           URLFixerUpper::FixupURL(base::UTF16ToUTF8(match.fill_into_edit),
                                   std::string()));
     }
   }
 
   // Try to mark pieces of the contents and description as matches if they
-  // appear in |term_string|.
+  // appear in |input.text()|.
+  const base::string16 term_string = base::i18n::ToLower(input.text());
   WordMap terms_map(CreateWordMapForString(term_string));
   if (!terms_map.empty()) {
     match.contents_class = ClassifyAllMatchesInString(term_string, terms_map,

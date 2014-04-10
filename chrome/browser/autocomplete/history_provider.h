@@ -18,6 +18,11 @@ class HistoryProvider : public AutocompleteProvider {
  public:
   virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
 
+  // Returns true if inline autocompletion should be prevented for URL-like
+  // input.  This method returns true if input.prevent_inline_autocomplete()
+  // is true or the input text contains trailing whitespace.
+  static bool PreventInlineAutocomplete(const AutocompleteInput& input);
+
  protected:
   HistoryProvider(AutocompleteProviderListener* listener,
                   Profile* profile,
@@ -27,13 +32,6 @@ class HistoryProvider : public AutocompleteProvider {
   // Finds and removes the match from the current collection of matches and
   // backing data.
   void DeleteMatchFromMatches(const AutocompleteMatch& match);
-
-  // Returns true if inline autocompletion should be prevented. Use this instead
-  // of |input.prevent_inline_autocomplete| if the input is passed through
-  // FixupUserInput(). This method returns true if
-  // |input.prevent_inline_autocomplete()| is true or the input text contains
-  // trailing whitespace.
-  bool PreventInlineAutocomplete(const AutocompleteInput& input);
 
   // Fill and return an ACMatchClassifications structure given the |matches|
   // to highlight.

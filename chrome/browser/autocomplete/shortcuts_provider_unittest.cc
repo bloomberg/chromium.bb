@@ -186,6 +186,16 @@ struct TestShortcutInfo {
     "0,1", "Foo - Typo in Input Corrected in fill_into_edit", "0,1",
     content::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "",
     1, 100 },
+  { "BD85DBA2-8C29-49F9-84AE-48E1E90880FB", "trailing1 ",
+    "http://trailing1.com", "http://trailing1.com/",
+    "Trailing1 - Space in Shortcut", "0,1",
+    "Trailing1 - Space in Shortcut", "0,1", content::PAGE_TRANSITION_TYPED,
+    AutocompleteMatchType::HISTORY_URL, "", 1, 100 },
+  { "BD85DBA2-8C29-49F9-84AE-48E1E90880FC", "about:trailing2 ",
+    "chrome://trailing2blah", "chrome://trailing2blah/",
+    "Trailing2 - Space in Shortcut", "0,1",
+    "Trailing2 - Space in Shortcut", "0,1", content::PAGE_TRANSITION_TYPED,
+    AutocompleteMatchType::HISTORY_URL, "", 1, 100 },
 };
 
 }  // namespace
@@ -511,6 +521,36 @@ TEST_F(ShortcutsProviderTest, TrickySingleMatch) {
   expected_urls.push_back(
       ExpectedURLAndAllowedToBeDefault(expected_url, true));
   RunTest(text, true, expected_urls, expected_url, base::string16());
+
+  // A foursome of tests to verify that trailing spaces prevent the shortcut
+  // from being allowed to be the default match.  For each of two tests, we
+  // first verify that the match is allowed to be default without the trailing
+  // space but is not allowed to be default with the trailing space.  In both
+  // of these with-trailing-space cases, we actually get an
+  // inline_autocompletion, though it's never used because the match is
+  // prohibited from being default.
+  text = ASCIIToUTF16("trailing1");
+  expected_url = "http://trailing1.com/";
+  expected_urls.clear();
+  expected_urls.push_back(
+      ExpectedURLAndAllowedToBeDefault(expected_url, true));
+  RunTest(text, false, expected_urls, expected_url, ASCIIToUTF16(".com"));
+  text = ASCIIToUTF16("trailing1 ");
+  expected_urls.clear();
+  expected_urls.push_back(
+      ExpectedURLAndAllowedToBeDefault(expected_url, false));
+  RunTest(text, false, expected_urls, expected_url, ASCIIToUTF16(".com"));
+  text = ASCIIToUTF16("about:trailing2");
+  expected_url = "chrome://trailing2blah/";
+  expected_urls.clear();
+  expected_urls.push_back(
+      ExpectedURLAndAllowedToBeDefault(expected_url, true));
+  RunTest(text, false, expected_urls, expected_url, ASCIIToUTF16("blah"));
+  text = ASCIIToUTF16("about:trailing2 ");
+  expected_urls.clear();
+  expected_urls.push_back(
+      ExpectedURLAndAllowedToBeDefault(expected_url, false));
+  RunTest(text, false, expected_urls, expected_url, ASCIIToUTF16("blah"));
 }
 
 TEST_F(ShortcutsProviderTest, MultiMatch) {

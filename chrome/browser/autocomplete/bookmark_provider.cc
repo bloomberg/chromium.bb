@@ -9,7 +9,10 @@
 #include <vector>
 
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
+#include "chrome/browser/autocomplete/history_provider.h"
+#include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_title_match.h"
@@ -39,14 +42,9 @@ void BookmarkProvider::Start(const AutocompleteInput& input,
     return;
   matches_.clear();
 
-  // Short-circuit any matching when inline autocompletion is disabled and
-  // we're looking for BEST_MATCH because none of the BookmarkProvider's
-  // matches can score high enough to qualify.
   if (input.text().empty() ||
       ((input.type() != AutocompleteInput::UNKNOWN) &&
-       (input.type() != AutocompleteInput::QUERY)) ||
-      ((input.matches_requested() == AutocompleteInput::BEST_MATCH) &&
-       input.prevent_inline_autocomplete()))
+       (input.type() != AutocompleteInput::QUERY)))
     return;
 
   DoAutocomplete(input,
@@ -94,11 +92,13 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input,
                                                   &matches);
   if (matches.empty())
     return;  // There were no matches.
+  AutocompleteInput fixed_up_input(input);
+  FixupUserInput(&fixed_up_input);
   for (TitleMatches::const_iterator i = matches.begin(); i != matches.end();
        ++i) {
     // Create and score the AutocompleteMatch. If its score is 0 then the
     // match is discarded.
-    AutocompleteMatch match(TitleMatchToACMatch(*i));
+    AutocompleteMatch match(TitleMatchToACMatch(input, fixed_up_input, *i));
     if (match.relevance > 0)
       matches_.push_back(match);
   }
@@ -153,6 +153,8 @@ class ScoringFunctor {
 }  // namespace
 
 AutocompleteMatch BookmarkProvider::TitleMatchToACMatch(
+    const AutocompleteInput& input,
+    const AutocompleteInput& fixed_up_input,
     const BookmarkTitleMatch& title_match) {
   // The AutocompleteMatch we construct is non-deletable because the only
   // way to support this would be to delete the underlying bookmark, which is
@@ -161,16 +163,36 @@ AutocompleteMatch BookmarkProvider::TitleMatchToACMatch(
                           AutocompleteMatchType::BOOKMARK_TITLE);
   const base::string16& title(title_match.node->GetTitle());
   DCHECK(!title.empty());
+
   const GURL& url(title_match.node->url());
+  const base::string16& url_utf16 = base::UTF8ToUTF16(url.spec());
+  size_t match_start, inline_autocomplete_offset;
+  URLPrefix::ComputeMatchStartAndInlineAutocompleteOffset(
+      input, fixed_up_input, false, url_utf16, &match_start,
+      &inline_autocomplete_offset);
   match.destination_url = url;
+  const bool trim_http = !AutocompleteInput::HasHTTPScheme(input.text()) &&
+      ((match_start == base::string16::npos) || (match_start != 0));
   match.contents = net::FormatUrl(url, languages_,
-      net::kFormatUrlOmitAll & net::kFormatUrlOmitHTTP,
-      net::UnescapeRule::SPACES, NULL, NULL, NULL);
+      net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP),
+      net::UnescapeRule::SPACES, NULL, NULL, &inline_autocomplete_offset);
   match.contents_class.push_back(
       ACMatchClassification(0, ACMatchClassification::URL));
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(url,
                                                               match.contents);
+  if (inline_autocomplete_offset != base::string16::npos) {
+    // |inline_autocomplete_offset| may be beyond the end of the
+    // |fill_into_edit| if the user has typed an URL with a scheme and the
+    // last character typed is a slash.  That slash is removed by the
+    // FormatURLWithOffsets call above.
+    if (inline_autocomplete_offset < match.fill_into_edit.length()) {
+      match.inline_autocompletion =
+          match.fill_into_edit.substr(inline_autocomplete_offset);
+    }
+    match.allowed_to_be_default_match = match.inline_autocompletion.empty() ||
+        !HistoryProvider::PreventInlineAutocomplete(input);
+  }
   match.description = title;
   match.description_class =
       ClassificationsFromMatch(title_match.match_positions,

@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
+#include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/url_constants.h"
 
@@ -119,7 +120,8 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
 
   for (size_t i = 0; i < matches_.size(); ++i)
     matches_[i].relevance = kRelevance + matches_.size() - (i + 1);
-  if (!input.prevent_inline_autocomplete() && (matches_.size() == 1)) {
+  if (!HistoryProvider::PreventInlineAutocomplete(input) &&
+      (matches_.size() == 1)) {
     // If there's only one possible completion of the user's input and
     // allowing completions is okay, give the match a high enough score to
     // allow it to beat url-what-you-typed and be inlined.

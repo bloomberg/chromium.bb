@@ -239,6 +239,7 @@ class AutocompleteProvider
 
  protected:
   friend class base::RefCountedThreadSafe<AutocompleteProvider>;
+  FRIEND_TEST_ALL_PREFIXES(BookmarkProviderTest, InlineAutocompletion);
 
   virtual ~AutocompleteProvider();
 

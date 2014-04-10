@@ -17,6 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_title_match.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,6 +35,12 @@ struct BookmarksTestInfo {
   { "jkl ghi", "http://www.catsanddogs.com/g" },
   { "frankly frankly frank", "http://www.catsanddogs.com/h" },
   { "foobar foobar", "http://www.foobar.com/" },
+  // For testing inline_autocompletion.
+  { "http://blah.com/", "http://blah.com/" },
+  { "http://fiddle.com/", "http://fiddle.com/" },
+  { "http://www.www.com/", "http://www.www.com/" },
+  { "chrome://version", "chrome://version" },
+  { "chrome://omnibox", "chrome://omnibox" },
   // For testing ranking with different URLs.
   {"achlorhydric featherheads resuscitates mockingbirds",
    "http://www.featherheads.com/a" },
@@ -339,7 +346,54 @@ TEST_F(BookmarkProviderTest, Rankings) {
                 base::UTF16ToUTF8(matches[j].description))
           << "    Mismatch at [" << base::IntToString(j) << "] for query '"
           << query_data[i].query << "'.";
-      EXPECT_FALSE(matches[j].allowed_to_be_default_match);
     }
+  }
+}
+
+TEST_F(BookmarkProviderTest, InlineAutocompletion) {
+  // Simulate searches.
+  struct QueryData {
+    const std::string query;
+    const std::string url;
+    const bool allowed_to_be_default_match;
+    const std::string inline_autocompletion;
+  } query_data[] = {
+    { "bla", "http://blah.com/", true, "h.com" },
+    { "blah ", "http://blah.com/", false, ".com" },
+    { "http://bl", "http://blah.com/", true, "ah.com" },
+    { "fiddle.c", "http://fiddle.com/", true, "om" },
+    { "www", "http://www.www.com/", true, ".com" },
+    { "chro", "chrome://version", true, "me://version" },
+    { "chrome://ve", "chrome://version", true, "rsion" },
+    { "chrome ver", "chrome://version", false, "" },
+    { "versi", "chrome://version", false, "" },
+    { "abou", "chrome://omnibox", false, "" },
+    { "about:om", "chrome://omnibox", true, "nibox" }
+    // Note: when adding a new URL to this test, be sure to add it to the list
+    // of bookmarks at the top of the file as well.  All items in this list
+    // need to be in the bookmarks list because BookmarkProvider's
+    // TitleMatchToACMatch() has an assertion that verifies the URL is
+    // actually bookmarked.
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
+    const std::string description = "for query=" + query_data[i].query +
+        " and url=" + query_data[i].url;
+    AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
+                            base::string16::npos, base::string16(), GURL(),
+                            AutocompleteInput::INVALID_SPEC, false, false,
+                            false, AutocompleteInput::ALL_MATCHES);
+    AutocompleteInput fixed_up_input(input);
+    provider_->FixupUserInput(&fixed_up_input);
+    BookmarkNode node(GURL(query_data[i].url));
+    node.SetTitle(base::ASCIIToUTF16(query_data[i].url));
+    BookmarkTitleMatch bookmark_match;
+    bookmark_match.node = &node;
+    const AutocompleteMatch& ac_match =
+        provider_->TitleMatchToACMatch(input, fixed_up_input, bookmark_match);
+    EXPECT_EQ(query_data[i].allowed_to_be_default_match,
+              ac_match.allowed_to_be_default_match) << description;
+    EXPECT_EQ(base::ASCIIToUTF16(query_data[i].inline_autocompletion),
+              ac_match.inline_autocompletion) << description;
   }
 }

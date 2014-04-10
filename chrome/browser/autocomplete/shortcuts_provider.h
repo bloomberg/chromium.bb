@@ -50,18 +50,15 @@ class ShortcutsProvider
 
   // Returns an AutocompleteMatch corresponding to |shortcut|. Assigns it
   // |relevance| score in the process, and highlights the description and
-  // contents against |term_string|, which should be the lower-cased version
-  // of the user's input. |term_string|, |fixed_up_term_string|, and
-  // |term_string_as_gurl| are used to decide what can be inlined. If
-  // |prevent_inline_autocomplete|, no matches with inline completions will
-  // be allowed to be the default match.
+  // contents against |input|, which should be the lower-cased version
+  // of the user's input. |input|, |fixed_up_input|, and
+  // |input_as_gurl| are used to decide what can be inlined.
   AutocompleteMatch ShortcutToACMatch(
       const history::ShortcutsDatabase::Shortcut& shortcut,
       int relevance,
-      const base::string16& term_string,
-      const base::string16& fixed_up_term_string,
-      const GURL& term_string_as_gurl,
-      const bool prevent_inline_autocomplete);
+      const AutocompleteInput& input,
+      const AutocompleteInput& fixed_up_input,
+      const GURL& input_as_gurl);
 
   // Returns a map mapping characters to groups of words from |text| that start
   // with those characters, ordered lexicographically descending so that longer
