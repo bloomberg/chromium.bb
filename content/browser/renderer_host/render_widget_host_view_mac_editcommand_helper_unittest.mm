@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -15,6 +16,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "ui/base/layout.h"
 
 using content::RenderWidgetHostViewMac;
 
@@ -98,27 +100,34 @@ class RenderWidgetHostViewMacEditCommandHelperTest : public PlatformTest {
 
 // Tests that editing commands make it through the pipeline all the way to
 // RenderWidgetHost.
-// Disabled, http://crbug.com/93286.
 TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
-       DISABLED_TestEditingCommandDelivery) {
+       TestEditingCommandDelivery) {
+  MockRenderWidgetHostDelegate delegate;
+  TestBrowserContext browser_context;
+  MockRenderProcessHost process_host(&browser_context);
+
+  // Populates |g_supported_scale_factors|.
+  std::vector<ui::ScaleFactor> supported_factors;
+  supported_factors.push_back(ui::SCALE_FACTOR_100P);
+  ui::test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
+
+  RenderWidgetHostEditCommandCounter* render_widget =
+      new RenderWidgetHostEditCommandCounter(
+          &delegate, &process_host, MSG_ROUTING_NONE);
+
+  base::mac::ScopedNSAutoreleasePool pool;
+
+  // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa|.
+  RenderWidgetHostViewMac* rwhv_mac = static_cast<RenderWidgetHostViewMac*>(
+      RenderWidgetHostView::CreateViewForWidget(render_widget));
+  base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa(
+      [rwhv_mac->cocoa_view() retain]);
+
   RenderWidgetHostViewMacEditCommandHelper helper;
   NSArray* edit_command_strings = helper.GetEditSelectorNames();
-
-  // Set up a mock render widget and set expectations.
-  base::MessageLoopForUI message_loop;
-  TestBrowserContext browser_context;
-  MockRenderProcessHost mock_process(&browser_context);
-  MockRenderWidgetHostDelegate delegate;
-  RenderWidgetHostEditCommandCounter render_widget(&delegate, &mock_process, 0);
-
-  // RenderWidgetHostViewMac self destructs (RenderWidgetHostViewMacCocoa
-  // takes ownership) so no need to delete it ourselves.
-  RenderWidgetHostViewMac* rwhvm = static_cast<RenderWidgetHostViewMac*>(
-      RenderWidgetHostView::CreateViewForWidget(&render_widget));
-
   RenderWidgetHostViewMacOwner* rwhwvm_owner =
       [[[RenderWidgetHostViewMacOwner alloc]
-          initWithRenderWidgetHostViewMac:rwhvm] autorelease];
+          initWithRenderWidgetHostViewMac:rwhv_mac] autorelease];
 
   helper.AddEditingSelectorsToClass([rwhwvm_owner class]);
 
@@ -128,7 +137,15 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
   }
 
   size_t num_edit_commands = [edit_command_strings count];
-  EXPECT_EQ(render_widget.edit_command_message_count_, num_edit_commands);
+  EXPECT_EQ(render_widget->edit_command_message_count_, num_edit_commands);
+  rwhv_cocoa.reset();
+  pool.Recycle();
+
+  {
+    // The |render_widget|'s process needs to be deleted within |message_loop|.
+    base::MessageLoop message_loop;
+    delete render_widget;
+  }
 }
 
 // Test RenderWidgetHostViewMacEditCommandHelper::AddEditingSelectorsToClass
