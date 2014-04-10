@@ -123,6 +123,7 @@ public:
     bool supportsFixedRootBackgroundCompositing() const;
     bool needsFixedRootBackgroundLayer(const RenderLayer*) const;
     GraphicsLayer* fixedRootBackgroundLayer() const;
+    void setNeedsUpdateFixedBackground() { m_needsUpdateFixedBackground = true; }
 
     // Repaint the appropriate layers when the given RenderLayer starts or stops being composited.
     void repaintOnCompositingChange(RenderLayer*);
@@ -315,6 +316,7 @@ private:
     bool m_compositingLayersNeedRebuild;
     bool m_forceCompositingMode;
     bool m_needsUpdateCompositingRequirementsState;
+    bool m_needsUpdateFixedBackground;
 
     bool m_isTrackingRepaints; // Used for testing.
 

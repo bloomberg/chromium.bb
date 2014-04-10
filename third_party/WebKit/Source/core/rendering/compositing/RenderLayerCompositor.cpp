@@ -430,6 +430,11 @@ void RenderLayerCompositor::updateIfNeeded()
             m_rootContentLayer->setChildren(childList);
     }
 
+    if (m_needsUpdateFixedBackground) {
+        rootFixedBackgroundsChanged();
+        m_needsUpdateFixedBackground = false;
+    }
+
     ASSERT(updateRoot || !m_compositingLayersNeedRebuild);
 
     if (!hasAcceleratedCompositing())
@@ -914,9 +919,6 @@ void RenderLayerCompositor::rootFixedBackgroundsChanged()
 {
     if (!supportsFixedRootBackgroundCompositing())
         return;
-
-    // crbug.com/343132.
-    DisableCompositingQueryAsserts disabler;
 
     // To avoid having to make the fixed root background layer fixed positioned to
     // stay put, we position it in the layer tree as follows:
