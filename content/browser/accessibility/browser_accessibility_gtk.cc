@@ -196,8 +196,8 @@ static AtkObject* browser_accessibility_get_parent(AtkObject* atk_object) {
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
   if (!obj)
     return NULL;
-  if (obj->parent())
-    return obj->parent()->ToBrowserAccessibilityGtk()->GetAtkObject();
+  if (obj->GetParent())
+    return obj->GetParent()->ToBrowserAccessibilityGtk()->GetAtkObject();
 
   BrowserAccessibilityManagerGtk* manager =
       static_cast<BrowserAccessibilityManagerGtk*>(obj->manager());
@@ -222,7 +222,7 @@ static AtkObject* browser_accessibility_ref_child(
     return NULL;
 
   AtkObject* result =
-      obj->children()[index]->ToBrowserAccessibilityGtk()->GetAtkObject();
+      obj->InternalGetChild(index)->ToBrowserAccessibilityGtk()->GetAtkObject();
   g_object_ref(result);
   return result;
 }
@@ -231,7 +231,7 @@ static gint browser_accessibility_get_index_in_parent(AtkObject* atk_object) {
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
   if (!obj)
     return 0;
-  return obj->index_in_parent();
+  return obj->GetIndexInParent();
 }
 
 static AtkAttributeSet* browser_accessibility_get_attributes(
@@ -253,7 +253,7 @@ static AtkStateSet* browser_accessibility_ref_state_set(AtkObject* atk_object) {
   AtkStateSet* state_set =
       ATK_OBJECT_CLASS(browser_accessibility_parent_class)->
           ref_state_set(atk_object);
-  int32 state = obj->state();
+  int32 state = obj->GetState();
 
   if (state & (1 << ui::AX_STATE_FOCUSABLE))
     atk_state_set_add_state(state_set, ATK_STATE_FOCUSABLE);
@@ -363,7 +363,7 @@ static int GetInterfaceMaskFromObject(BrowserAccessibilityGtk* obj) {
   // Component interface is always supported.
   interface_mask |= 1 << ATK_COMPONENT_INTERFACE;
 
-  int role = obj->role();
+  int role = obj->GetRole();
   if (role == ui::AX_ROLE_PROGRESS_INDICATOR ||
       role == ui::AX_ROLE_SCROLL_BAR ||
       role == ui::AX_ROLE_SLIDER) {
@@ -462,10 +462,10 @@ void BrowserAccessibilityGtk::PreInitialize() {
   if (!atk_object_) {
     interface_mask_ = GetInterfaceMaskFromObject(this);
     atk_object_ = ATK_OBJECT(browser_accessibility_new(this));
-    if (this->parent()) {
+    if (this->GetParent()) {
       atk_object_set_parent(
           atk_object_,
-          this->parent()->ToBrowserAccessibilityGtk()->GetAtkObject());
+          this->GetParent()->ToBrowserAccessibilityGtk()->GetAtkObject());
     }
   }
 }
@@ -475,7 +475,7 @@ bool BrowserAccessibilityGtk::IsNative() const {
 }
 
 void BrowserAccessibilityGtk::InitRoleAndState() {
-  switch(role()) {
+  switch(GetRole()) {
     case ui::AX_ROLE_DOCUMENT:
     case ui::AX_ROLE_ROOT_WEB_AREA:
     case ui::AX_ROLE_WEB_AREA:

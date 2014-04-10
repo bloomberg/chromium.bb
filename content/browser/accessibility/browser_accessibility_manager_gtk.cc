@@ -68,9 +68,9 @@ void BrowserAccessibilityManagerGtk::NotifyAccessibilityEvent(
 void BrowserAccessibilityManagerGtk::RecursivelySendChildrenChanged(
     BrowserAccessibilityGtk* node) {
   AtkObject* atkObject = node->ToBrowserAccessibilityGtk()->GetAtkObject();
-  for (unsigned int i = 0; i < node->children().size(); ++i) {
+  for (unsigned int i = 0; i < node->InternalChildCount(); ++i) {
     BrowserAccessibilityGtk* child =
-        node->children()[i]->ToBrowserAccessibilityGtk();
+        node->InternalGetChild(i)->ToBrowserAccessibilityGtk();
     g_signal_emit_by_name(atkObject,
                           "children-changed::add",
                           i,

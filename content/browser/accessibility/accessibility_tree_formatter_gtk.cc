@@ -34,7 +34,7 @@ void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
       states->AppendString(atk_state_type_get_name(state_type));
   }
   dict->Set("states", states);
-  dict->SetInteger("id", node.renderer_id());
+  dict->SetInteger("id", node.GetId());
 }
 
 base::string16 AccessibilityTreeFormatter::ToString(
@@ -43,8 +43,10 @@ base::string16 AccessibilityTreeFormatter::ToString(
   base::string16 line;
   std::string role_value;
   node.GetString("role", &role_value);
-  if (!role_value.empty())
-    WriteAttribute(true, base::StringPrintf("[%s]", role_value.c_str()), &line);
+  if (!role_value.empty()) {
+    WriteAttribute(true,
+        base::StringPrintf("[%s]", role_value.c_str()), &line);
+  }
 
   std::string name_value;
   node.GetString("name", &name_value);

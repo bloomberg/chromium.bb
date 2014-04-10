@@ -56,13 +56,13 @@ bool BrowserAccessibilityAndroid::IsNative() const {
 }
 
 bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
-  if (child_count() == 0)
+  if (InternalChildCount() == 0)
     return true;
 
   // Iframes are always allowed to contain children.
   if (IsIframe() ||
-      role() == ui::AX_ROLE_ROOT_WEB_AREA ||
-      role() == ui::AX_ROLE_WEB_AREA) {
+      GetRole() == ui::AX_ROLE_ROOT_WEB_AREA ||
+      GetRole() == ui::AX_ROLE_WEB_AREA) {
     return false;
   }
 
@@ -72,7 +72,7 @@ bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
 
   // Headings with text can drop their children.
   base::string16 name = GetText();
-  if (role() == ui::AX_ROLE_HEADING && !name.empty())
+  if (GetRole() == ui::AX_ROLE_HEADING && !name.empty())
     return true;
 
   // Focusable nodes with text can drop their children.
@@ -91,8 +91,8 @@ bool BrowserAccessibilityAndroid::IsCheckable() const {
   bool is_aria_pressed_defined;
   bool is_mixed;
   GetAriaTristate("aria-pressed", &is_aria_pressed_defined, &is_mixed);
-  if (role() == ui::AX_ROLE_CHECK_BOX ||
-      role() == ui::AX_ROLE_RADIO_BUTTON ||
+  if (GetRole() == ui::AX_ROLE_CHECK_BOX ||
+      GetRole() == ui::AX_ROLE_RADIO_BUTTON ||
       is_aria_pressed_defined) {
     checkable = true;
   }
@@ -110,21 +110,21 @@ bool BrowserAccessibilityAndroid::IsClickable() const {
 }
 
 bool BrowserAccessibilityAndroid::IsCollection() const {
-  return (role() == ui::AX_ROLE_GRID ||
-          role() == ui::AX_ROLE_LIST ||
-          role() == ui::AX_ROLE_LIST_BOX ||
-          role() == ui::AX_ROLE_TABLE ||
-          role() == ui::AX_ROLE_TREE);
+  return (GetRole() == ui::AX_ROLE_GRID ||
+          GetRole() == ui::AX_ROLE_LIST ||
+          GetRole() == ui::AX_ROLE_LIST_BOX ||
+          GetRole() == ui::AX_ROLE_TABLE ||
+          GetRole() == ui::AX_ROLE_TREE);
 }
 
 bool BrowserAccessibilityAndroid::IsCollectionItem() const {
-  return (role() == ui::AX_ROLE_CELL ||
-          role() == ui::AX_ROLE_COLUMN_HEADER ||
-          role() == ui::AX_ROLE_DESCRIPTION_LIST_TERM ||
-          role() == ui::AX_ROLE_LIST_BOX_OPTION ||
-          role() == ui::AX_ROLE_LIST_ITEM ||
-          role() == ui::AX_ROLE_ROW_HEADER ||
-          role() == ui::AX_ROLE_TREE_ITEM);
+  return (GetRole() == ui::AX_ROLE_CELL ||
+          GetRole() == ui::AX_ROLE_COLUMN_HEADER ||
+          GetRole() == ui::AX_ROLE_DESCRIPTION_LIST_TERM ||
+          GetRole() == ui::AX_ROLE_LIST_BOX_OPTION ||
+          GetRole() == ui::AX_ROLE_LIST_ITEM ||
+          GetRole() == ui::AX_ROLE_ROW_HEADER ||
+          GetRole() == ui::AX_ROLE_TREE_ITEM);
 }
 
 bool BrowserAccessibilityAndroid::IsContentInvalid() const {
@@ -143,7 +143,7 @@ bool BrowserAccessibilityAndroid::IsEnabled() const {
 bool BrowserAccessibilityAndroid::IsFocusable() const {
   bool focusable = HasState(ui::AX_STATE_FOCUSABLE);
   if (IsIframe() ||
-      role() == ui::AX_ROLE_WEB_AREA) {
+      GetRole() == ui::AX_ROLE_WEB_AREA) {
     focusable = false;
   }
   return focusable;
@@ -154,22 +154,23 @@ bool BrowserAccessibilityAndroid::IsFocused() const {
 }
 
 bool BrowserAccessibilityAndroid::IsHeading() const {
-  return (role() == ui::AX_ROLE_COLUMN_HEADER ||
-          role() == ui::AX_ROLE_HEADING ||
-          role() == ui::AX_ROLE_ROW_HEADER);
+  return (GetRole() == ui::AX_ROLE_COLUMN_HEADER ||
+          GetRole() == ui::AX_ROLE_HEADING ||
+          GetRole() == ui::AX_ROLE_ROW_HEADER);
 }
 
 bool BrowserAccessibilityAndroid::IsHierarchical() const {
-  return (role() == ui::AX_ROLE_LIST ||
-          role() == ui::AX_ROLE_TREE);
+  return (GetRole() == ui::AX_ROLE_LIST ||
+          GetRole() == ui::AX_ROLE_TREE);
 }
 
 bool BrowserAccessibilityAndroid::IsLink() const {
-  return role() == ui::AX_ROLE_LINK || role() == ui::AX_ROLE_IMAGE_MAP_LINK;
+  return GetRole() == ui::AX_ROLE_LINK ||
+         GetRole() == ui::AX_ROLE_IMAGE_MAP_LINK;
 }
 
 bool BrowserAccessibilityAndroid::IsMultiLine() const {
-  return role() == ui::AX_ROLE_TEXT_AREA;
+  return GetRole() == ui::AX_ROLE_TEXT_AREA;
 }
 
 bool BrowserAccessibilityAndroid::IsPassword() const {
@@ -177,9 +178,9 @@ bool BrowserAccessibilityAndroid::IsPassword() const {
 }
 
 bool BrowserAccessibilityAndroid::IsRangeType() const {
-  return (role() == ui::AX_ROLE_PROGRESS_INDICATOR ||
-          role() == ui::AX_ROLE_SCROLL_BAR ||
-          role() == ui::AX_ROLE_SLIDER);
+  return (GetRole() == ui::AX_ROLE_PROGRESS_INDICATOR ||
+          GetRole() == ui::AX_ROLE_SCROLL_BAR ||
+          GetRole() == ui::AX_ROLE_SLIDER);
 }
 
 bool BrowserAccessibilityAndroid::IsScrollable() const {
@@ -202,7 +203,7 @@ bool BrowserAccessibilityAndroid::CanOpenPopup() const {
 const char* BrowserAccessibilityAndroid::GetClassName() const {
   const char* class_name = NULL;
 
-  switch(role()) {
+  switch(GetRole()) {
     case ui::AX_ROLE_EDITABLE_TEXT:
     case ui::AX_ROLE_SPIN_BUTTON:
     case ui::AX_ROLE_TEXT_AREA:
@@ -263,7 +264,7 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
 
 base::string16 BrowserAccessibilityAndroid::GetText() const {
   if (IsIframe() ||
-      role() == ui::AX_ROLE_WEB_AREA) {
+      GetRole() == ui::AX_ROLE_WEB_AREA) {
     return base::string16();
   }
 
@@ -280,13 +281,13 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
   if (text.empty() && HasOnlyStaticTextChildren()) {
-    for (uint32 i = 0; i < child_count(); i++) {
-      BrowserAccessibility* child = children()[i];
+    for (uint32 i = 0; i < InternalChildCount(); i++) {
+      BrowserAccessibility* child = InternalGetChild(i);
       text += static_cast<BrowserAccessibilityAndroid*>(child)->GetText();
     }
   }
 
-  switch(role()) {
+  switch(GetRole()) {
     case ui::AX_ROLE_HEADING:
       // Only append "heading" if this node already has text.
       if (!text.empty())
@@ -299,11 +300,11 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
 
 int BrowserAccessibilityAndroid::GetItemIndex() const {
   int index = 0;
-  switch(role()) {
+  switch(GetRole()) {
     case ui::AX_ROLE_LIST_ITEM:
     case ui::AX_ROLE_LIST_BOX_OPTION:
     case ui::AX_ROLE_TREE_ITEM:
-      index = index_in_parent();
+      index = GetIndexInParent();
       break;
     case ui::AX_ROLE_SLIDER:
     case ui::AX_ROLE_PROGRESS_INDICATOR: {
@@ -320,7 +321,7 @@ int BrowserAccessibilityAndroid::GetItemIndex() const {
 
 int BrowserAccessibilityAndroid::GetItemCount() const {
   int count = 0;
-  switch(role()) {
+  switch(GetRole()) {
     case ui::AX_ROLE_LIST:
     case ui::AX_ROLE_LIST_BOX:
       count = PlatformChildCount();
@@ -479,14 +480,14 @@ int BrowserAccessibilityAndroid::AndroidRangeType() const {
 }
 
 int BrowserAccessibilityAndroid::RowCount() const {
-  if (role() == ui::AX_ROLE_GRID ||
-      role() == ui::AX_ROLE_TABLE) {
+  if (GetRole() == ui::AX_ROLE_GRID ||
+      GetRole() == ui::AX_ROLE_TABLE) {
     return CountChildrenWithRole(ui::AX_ROLE_ROW);
   }
 
-  if (role() == ui::AX_ROLE_LIST ||
-      role() == ui::AX_ROLE_LIST_BOX ||
-      role() == ui::AX_ROLE_TREE) {
+  if (GetRole() == ui::AX_ROLE_LIST ||
+      GetRole() == ui::AX_ROLE_LIST_BOX ||
+      GetRole() == ui::AX_ROLE_TREE) {
     return PlatformChildCount();
   }
 
@@ -494,18 +495,18 @@ int BrowserAccessibilityAndroid::RowCount() const {
 }
 
 int BrowserAccessibilityAndroid::ColumnCount() const {
-  if (role() == ui::AX_ROLE_GRID ||
-      role() == ui::AX_ROLE_TABLE) {
+  if (GetRole() == ui::AX_ROLE_GRID ||
+      GetRole() == ui::AX_ROLE_TABLE) {
     return CountChildrenWithRole(ui::AX_ROLE_COLUMN);
   }
   return 0;
 }
 
 int BrowserAccessibilityAndroid::RowIndex() const {
-  if (role() == ui::AX_ROLE_LIST_ITEM ||
-      role() == ui::AX_ROLE_LIST_BOX_OPTION ||
-      role() == ui::AX_ROLE_TREE_ITEM) {
-    return index_in_parent();
+  if (GetRole() == ui::AX_ROLE_LIST_ITEM ||
+      GetRole() == ui::AX_ROLE_LIST_BOX_OPTION ||
+      GetRole() == ui::AX_ROLE_TREE_ITEM) {
+    return GetIndexInParent();
   }
 
   return GetIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX);
@@ -538,8 +539,8 @@ float BrowserAccessibilityAndroid::RangeCurrentValue() const {
 bool BrowserAccessibilityAndroid::HasFocusableChild() const {
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
-  for (uint32 i = 0; i < child_count(); i++) {
-    BrowserAccessibility* child = children()[i];
+  for (uint32 i = 0; i < InternalChildCount(); i++) {
+    BrowserAccessibility* child = InternalGetChild(i);
     if (child->HasState(ui::AX_STATE_FOCUSABLE))
       return true;
     if (static_cast<BrowserAccessibilityAndroid*>(child)->HasFocusableChild())
@@ -551,9 +552,9 @@ bool BrowserAccessibilityAndroid::HasFocusableChild() const {
 bool BrowserAccessibilityAndroid::HasOnlyStaticTextChildren() const {
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
-  for (uint32 i = 0; i < child_count(); i++) {
-    BrowserAccessibility* child = children()[i];
-    if (child->role() != ui::AX_ROLE_STATIC_TEXT)
+  for (uint32 i = 0; i < InternalChildCount(); i++) {
+    BrowserAccessibility* child = InternalGetChild(i);
+    if (child->GetRole() != ui::AX_ROLE_STATIC_TEXT)
       return false;
   }
   return true;
@@ -575,7 +576,7 @@ void BrowserAccessibilityAndroid::PostInitialize() {
     }
   }
 
-  if (role() == ui::AX_ROLE_ALERT && first_time_)
+  if (GetRole() == ui::AX_ROLE_ALERT && first_time_)
     manager()->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, this);
 
   base::string16 live;
@@ -606,7 +607,7 @@ void BrowserAccessibilityAndroid::NotifyLiveRegionUpdate(
 int BrowserAccessibilityAndroid::CountChildrenWithRole(ui::AXRole role) const {
   int count = 0;
   for (uint32 i = 0; i < PlatformChildCount(); i++) {
-    if (PlatformGetChild(i)->role() == role)
+    if (PlatformGetChild(i)->GetRole() == role)
       count++;
   }
   return count;

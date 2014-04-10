@@ -772,10 +772,6 @@ BrowserAccessibilityWin
     return ia2_attributes_;
   }
 
-  // BrowserAccessibility::role is shadowed by IAccessible2::role, so
-  // we provide an alias for it.
-  int32 blink_role() const { return BrowserAccessibility::role(); }
-
  private:
   // Add one to the reference count and return the same object. Always
   // use this method when returning a BrowserAccessibilityWin object as
