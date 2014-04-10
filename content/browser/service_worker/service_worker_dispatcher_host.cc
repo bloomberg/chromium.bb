@@ -118,8 +118,9 @@ int ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(
 }
 
 void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
-    int32 thread_id,
-    int32 request_id,
+    int thread_id,
+    int request_id,
+    int provider_id,
     const GURL& pattern,
     const GURL& script_url) {
   if (!context_ || !ServiceWorkerUtils::IsFeatureEnabled()) {
@@ -143,10 +144,18 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     return;
   }
 
+  ServiceWorkerProviderHost* provider_host = context_->GetProviderHost(
+      render_process_id_, provider_id);
+  if (!provider_host) {
+    BadMessageReceived();
+    return;
+  }
+
   context_->RegisterServiceWorker(
       pattern,
       script_url,
       render_process_id_,
+      provider_host,
       base::Bind(&ServiceWorkerDispatcherHost::RegistrationComplete,
                  this,
                  thread_id,
@@ -154,8 +163,9 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
 }
 
 void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
-    int32 thread_id,
-    int32 request_id,
+    int thread_id,
+    int request_id,
+    int provider_id,
     const GURL& pattern) {
   // TODO(alecflett): This check is insufficient for release. Add a
   // ServiceWorker-specific policy query in
@@ -169,9 +179,17 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
     return;
   }
 
+  ServiceWorkerProviderHost* provider_host = context_->GetProviderHost(
+      render_process_id_, provider_id);
+  if (!provider_host) {
+    BadMessageReceived();
+    return;
+  }
+
   context_->UnregisterServiceWorker(
       pattern,
       render_process_id_,
+      provider_host,
       base::Bind(&ServiceWorkerDispatcherHost::UnregistrationComplete,
                  this,
                  thread_id,
@@ -263,8 +281,8 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(
 }
 
 void ServiceWorkerDispatcherHost::RegistrationComplete(
-    int32 thread_id,
-    int32 request_id,
+    int thread_id,
+    int request_id,
     ServiceWorkerStatusCode status,
     int64 registration_id,
     int64 version_id) {
@@ -328,8 +346,8 @@ void ServiceWorkerDispatcherHost::OnServiceWorkerObjectDestroyed(
 }
 
 void ServiceWorkerDispatcherHost::UnregistrationComplete(
-    int32 thread_id,
-    int32 request_id,
+    int thread_id,
+    int request_id,
     ServiceWorkerStatusCode status) {
   if (status != SERVICE_WORKER_OK) {
     SendRegistrationError(thread_id, request_id, status);
@@ -340,8 +358,8 @@ void ServiceWorkerDispatcherHost::UnregistrationComplete(
 }
 
 void ServiceWorkerDispatcherHost::SendRegistrationError(
-    int32 thread_id,
-    int32 request_id,
+    int thread_id,
+    int request_id,
     ServiceWorkerStatusCode status) {
   base::string16 error_message;
   blink::WebServiceWorkerError::ErrorType error_type;

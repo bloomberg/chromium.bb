@@ -74,14 +74,20 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void RemoveAllProviderHostsForProcess(int process_id);
 
   // The callback will be called on the IO thread.
+  // A child process of |source_process_id| may be used to run the created
+  // worker for initial installation.
+  // Non-null |provider_host| must be given if this is called from a document,
+  // whose process_id() must match with |source_process_id|.
   void RegisterServiceWorker(const GURL& pattern,
                              const GURL& script_url,
                              int source_process_id,
+                             ServiceWorkerProviderHost* provider_host,
                              const RegistrationCallback& callback);
 
   // The callback will be called on the IO thread.
   void UnregisterServiceWorker(const GURL& pattern,
                                int source_process_id,
+                               ServiceWorkerProviderHost* provider_host,
                                const UnregistrationCallback& callback);
 
   // This class maintains collections of live instances, this class

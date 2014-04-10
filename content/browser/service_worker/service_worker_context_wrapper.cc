@@ -83,6 +83,7 @@ void ServiceWorkerContextWrapper::RegisterServiceWorker(
       pattern,
       script_url,
       source_process_id,
+      NULL /* provider_host */,
       base::Bind(&FinishRegistrationOnIO, continuation));
 }
 
@@ -115,6 +116,7 @@ void ServiceWorkerContextWrapper::UnregisterServiceWorker(
   context()->UnregisterServiceWorker(
       pattern,
       source_process_id,
+      NULL /* provider_host */,
       base::Bind(&FinishUnregistrationOnIO, continuation));
 }
 

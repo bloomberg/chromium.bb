@@ -39,13 +39,15 @@ void WebServiceWorkerProviderImpl::registerServiceWorker(
     const WebURL& pattern,
     const WebURL& script_url,
     WebServiceWorkerCallbacks* callbacks) {
-  GetDispatcher()->RegisterServiceWorker(pattern, script_url, callbacks);
+  GetDispatcher()->RegisterServiceWorker(
+      provider_id_, pattern, script_url, callbacks);
 }
 
 void WebServiceWorkerProviderImpl::unregisterServiceWorker(
     const WebURL& pattern,
     WebServiceWorkerCallbacks* callbacks) {
-  GetDispatcher()->UnregisterServiceWorker(pattern, callbacks);
+  GetDispatcher()->UnregisterServiceWorker(
+      provider_id_, pattern, callbacks);
 }
 
 ServiceWorkerDispatcher* WebServiceWorkerProviderImpl::GetDispatcher() {

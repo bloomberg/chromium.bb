@@ -89,7 +89,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DisabledCausesError) {
 
   bool handled;
   dispatcher_host->OnMessageReceived(
-      ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, GURL(), GURL()),
+      ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, -1, GURL(), GURL()),
       &handled);
   EXPECT_TRUE(handled);
 
@@ -116,7 +116,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DISABLED_Enabled) {
 
   bool handled;
   dispatcher_host->OnMessageReceived(
-      ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, GURL(), GURL()),
+      ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, -1, GURL(), GURL()),
       &handled);
   EXPECT_TRUE(handled);
   base::RunLoop().RunUntilIdle();
@@ -144,7 +144,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, EarlyContextDeletion) {
 
   bool handled;
   dispatcher_host->OnMessageReceived(
-      ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, GURL(), GURL()),
+      ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, -1, GURL(), GURL()),
       &handled);
   EXPECT_TRUE(handled);
 

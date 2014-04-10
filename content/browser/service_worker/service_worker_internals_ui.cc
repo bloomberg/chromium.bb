@@ -284,6 +284,7 @@ void ServiceWorkerInternalsUI::OperationProxy::UnregisterOnIOThread(
   context->context()->UnregisterServiceWorker(
       scope,
       0,  // render process id?
+      NULL, // provider_host
       base::Bind(&ServiceWorkerInternalsUI::OperationProxy::OperationComplete,
                  this));
 }

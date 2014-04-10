@@ -47,12 +47,14 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   friend class TestingServiceWorkerDispatcherHost;
 
   // IPC Message handlers
-  void OnRegisterServiceWorker(int32 thread_id,
-                               int32 request_id,
+  void OnRegisterServiceWorker(int thread_id,
+                               int request_id,
+                               int provider_id,
                                const GURL& pattern,
                                const GURL& script_url);
-  void OnUnregisterServiceWorker(int32 thread_id,
-                                 int32 request_id,
+  void OnUnregisterServiceWorker(int thread_id,
+                                 int request_id,
+                                 int provider_id,
                                  const GURL& pattern);
   void OnProviderCreated(int provider_id);
   void OnProviderDestroyed(int provider_id);
@@ -76,18 +78,18 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void OnServiceWorkerObjectDestroyed(int handle_id);
 
   // Callbacks from ServiceWorkerContextCore
-  void RegistrationComplete(int32 thread_id,
-                            int32 request_id,
+  void RegistrationComplete(int thread_id,
+                            int request_id,
                             ServiceWorkerStatusCode status,
                             int64 registration_id,
                             int64 version_id);
 
-  void UnregistrationComplete(int32 thread_id,
-                              int32 request_id,
+  void UnregistrationComplete(int thread_id,
+                              int request_id,
                               ServiceWorkerStatusCode status);
 
-  void SendRegistrationError(int32 thread_id,
-                             int32 request_id,
+  void SendRegistrationError(int thread_id,
+                             int request_id,
                              ServiceWorkerStatusCode status);
 
   int render_process_id_;

@@ -59,22 +59,24 @@ bool ServiceWorkerDispatcher::Send(IPC::Message* msg) {
 }
 
 void ServiceWorkerDispatcher::RegisterServiceWorker(
+    int provider_id,
     const GURL& pattern,
     const GURL& script_url,
     WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks) {
   DCHECK(callbacks);
   int request_id = pending_callbacks_.Add(callbacks);
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_RegisterServiceWorker(
-      CurrentWorkerId(), request_id, pattern, script_url));
+      CurrentWorkerId(), request_id, provider_id, pattern, script_url));
 }
 
 void ServiceWorkerDispatcher::UnregisterServiceWorker(
+    int provider_id,
     const GURL& pattern,
     WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks) {
   DCHECK(callbacks);
   int request_id = pending_callbacks_.Add(callbacks);
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_UnregisterServiceWorker(
-      CurrentWorkerId(), request_id, pattern));
+      CurrentWorkerId(), request_id, provider_id, pattern));
 }
 
 void ServiceWorkerDispatcher::AddScriptClient(
@@ -112,8 +114,8 @@ ServiceWorkerDispatcher* ServiceWorkerDispatcher::ThreadSpecificInstance(
   return dispatcher;
 }
 
-void ServiceWorkerDispatcher::OnRegistered(int32 thread_id,
-                                           int32 request_id,
+void ServiceWorkerDispatcher::OnRegistered(int thread_id,
+                                           int request_id,
                                            int handle_id) {
   WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks =
       pending_callbacks_.Lookup(request_id);
@@ -134,8 +136,8 @@ void ServiceWorkerDispatcher::OnRegistered(int32 thread_id,
 }
 
 void ServiceWorkerDispatcher::OnUnregistered(
-    int32 thread_id,
-    int32 request_id) {
+    int thread_id,
+    int request_id) {
   WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks =
       pending_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
@@ -147,8 +149,8 @@ void ServiceWorkerDispatcher::OnUnregistered(
 }
 
 void ServiceWorkerDispatcher::OnRegistrationError(
-    int32 thread_id,
-    int32 request_id,
+    int thread_id,
+    int request_id,
     WebServiceWorkerError::ErrorType error_type,
     const base::string16& message) {
   WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks =

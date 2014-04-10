@@ -42,11 +42,13 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
 
   // Corresponds to navigator.serviceWorker.register()
   void RegisterServiceWorker(
+      int provider_id,
       const GURL& pattern,
       const GURL& script_url,
       blink::WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks);
   // Corresponds to navigator.serviceWorker.unregister()
   void UnregisterServiceWorker(
+      int provider_id,
       const GURL& pattern,
       blink::WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks);
 
@@ -68,14 +70,14 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   virtual void OnWorkerRunLoopStopped() OVERRIDE;
 
   // The asynchronous success response to RegisterServiceWorker.
-  void OnRegistered(int32 thread_id,
-                    int32 request_id,
+  void OnRegistered(int thread_id,
+                    int request_id,
                     int handle_id);
   // The asynchronous success response to UregisterServiceWorker.
-  void OnUnregistered(int32 thread_id,
-                      int32 request_id);
-  void OnRegistrationError(int32 thread_id,
-                           int32 request_id,
+  void OnUnregistered(int thread_id,
+                      int request_id);
+  void OnRegistrationError(int thread_id,
+                           int request_id,
                            blink::WebServiceWorkerError::ErrorType error_type,
                            const base::string16& message);
 

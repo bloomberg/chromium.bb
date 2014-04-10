@@ -42,15 +42,17 @@ IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the child process to the browser.
 
-IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_RegisterServiceWorker,
-                     int32 /* thread_id */,
-                     int32 /* request_id */,
+IPC_MESSAGE_CONTROL5(ServiceWorkerHostMsg_RegisterServiceWorker,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     int /* provider_id */,
                      GURL /* scope */,
                      GURL /* script_url */)
 
-IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_UnregisterServiceWorker,
-                     int32 /* thread_id */,
-                     int32 /* request_id */,
+IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_UnregisterServiceWorker,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     int /* provider_id */,
                      GURL /* scope (url pattern) */)
 
 // Sends a 'message' event to a service worker (renderer->browser).
@@ -107,20 +109,20 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_FetchEventFinished,
 
 // Response to ServiceWorkerMsg_RegisterServiceWorker
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerRegistered,
-                     int32 /* thread_id */,
-                     int32 /* request_id */,
+                     int /* thread_id */,
+                     int /* request_id */,
                      int /* handle_id */)
 
 // Response to ServiceWorkerMsg_UnregisterServiceWorker
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_ServiceWorkerUnregistered,
-                     int32 /* thread_id */,
-                     int32 /* request_id */)
+                     int /* thread_id */,
+                     int /* request_id */)
 
 // Sent when any kind of registration error occurs during a
 // RegisterServiceWorker / UnregisterServiceWorker handler above.
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistrationError,
-                     int32 /* thread_id */,
-                     int32 /* request_id */,
+                     int /* thread_id */,
+                     int /* request_id */,
                      blink::WebServiceWorkerError::ErrorType /* code */,
                      base::string16 /* message */)
 
