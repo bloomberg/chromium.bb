@@ -1884,6 +1884,8 @@ PassRefPtrWillBeRawPtr<ClientRectList> Internals::repaintRects(Element* element,
         return nullptr;
     }
 
+    element->document().frame()->view()->updateLayoutAndStyleForPainting();
+
     if (RenderLayer* layer = getRenderLayerForElement(element, exceptionState)) {
         if (layer->compositingState() == PaintsIntoOwnBacking) {
             OwnPtr<Vector<FloatRect> > rects = layer->collectTrackedRepaintRects();

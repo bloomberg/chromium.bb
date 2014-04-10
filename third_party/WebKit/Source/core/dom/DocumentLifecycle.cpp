@@ -74,9 +74,6 @@ DocumentLifecycle::~DocumentLifecycle()
 
 bool DocumentLifecycle::canAdvanceTo(State state) const
 {
-    // This transition is bogus, but we've whitelisted it anyway.
-    if (s_deprecatedTransitionStack && m_state == s_deprecatedTransitionStack->from() && state == s_deprecatedTransitionStack->to())
-        return true;
     if (state > m_state)
         return true;
     if (m_state == Disposed) {
@@ -85,8 +82,6 @@ bool DocumentLifecycle::canAdvanceTo(State state) const
         return state == Disposed;
     }
     if (m_state == StyleClean) {
-        if (state == StyleRecalcPending)
-            return true;
         // We can synchronously recalc style.
         if (state == InStyleRecalc)
             return true;
@@ -119,8 +114,6 @@ bool DocumentLifecycle::canAdvanceTo(State state) const
         return false;
     }
     if (m_state == LayoutClean) {
-        if (state == StyleRecalcPending)
-            return true;
         // We can synchronously recalc style.
         if (state == InStyleRecalc)
             return true;
@@ -138,8 +131,6 @@ bool DocumentLifecycle::canAdvanceTo(State state) const
         return false;
     }
     if (m_state == CompositingClean) {
-        if (state == StyleRecalcPending)
-            return true;
         if (state == InStyleRecalc)
             return true;
         if (state == InPreLayout)
@@ -151,11 +142,28 @@ bool DocumentLifecycle::canAdvanceTo(State state) const
     return false;
 }
 
+bool DocumentLifecycle::canRewindTo(State state) const
+{
+    // This transition is bogus, but we've whitelisted it anyway.
+    if (s_deprecatedTransitionStack && m_state == s_deprecatedTransitionStack->from() && state == s_deprecatedTransitionStack->to())
+        return true;
+    return m_state == StyleClean || m_state == AfterPerformLayout || m_state == LayoutClean || m_state == CompositingClean;
+}
+
 #endif
 
 void DocumentLifecycle::advanceTo(State state)
 {
     ASSERT(canAdvanceTo(state));
+    m_state = state;
+}
+
+void DocumentLifecycle::ensureStateAtMost(State state)
+{
+    ASSERT(state == VisualUpdatePending || state == StyleClean || state == LayoutClean);
+    if (m_state <= state)
+        return;
+    ASSERT(canRewindTo(state));
     m_state = state;
 }
 

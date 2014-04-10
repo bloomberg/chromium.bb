@@ -1798,7 +1798,9 @@ void FrameView::scheduleRelayout()
     if (m_hasPendingLayout)
         return;
     m_hasPendingLayout = true;
+
     page()->animator().scheduleVisualUpdate();
+    lifecycle().ensureStateAtMost(DocumentLifecycle::StyleClean);
 }
 
 static bool isObjectAncestorContainerOf(RenderObject* ancestor, RenderObject* descendant)
@@ -1813,6 +1815,10 @@ static bool isObjectAncestorContainerOf(RenderObject* ancestor, RenderObject* de
 void FrameView::scheduleRelayoutOfSubtree(RenderObject* relayoutRoot)
 {
     ASSERT(m_frame->view() == this);
+
+    // FIXME: Should this call shouldScheduleLayout instead?
+    if (!m_frame->document()->isActive())
+        return;
 
     RenderView* renderView = this->renderView();
     if (renderView && renderView->needsLayout()) {
@@ -1847,7 +1853,9 @@ void FrameView::scheduleRelayoutOfSubtree(RenderObject* relayoutRoot)
         ASSERT(!m_layoutSubtreeRoot->container() || !m_layoutSubtreeRoot->container()->needsLayout());
         InspectorInstrumentation::didInvalidateLayout(m_frame.get());
         m_hasPendingLayout = true;
+
         page()->animator().scheduleVisualUpdate();
+        lifecycle().ensureStateAtMost(DocumentLifecycle::StyleClean);
     }
 }
 

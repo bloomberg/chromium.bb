@@ -1083,7 +1083,7 @@ private:
     void scheduleRenderTreeUpdate();
 
     // FIXME: Rename the StyleRecalc state to RenderTreeUpdate.
-    bool hasPendingStyleRecalc() const { return m_lifecycle.state() == DocumentLifecycle::StyleRecalcPending; }
+    bool hasPendingStyleRecalc() const { return m_lifecycle.state() == DocumentLifecycle::VisualUpdatePending; }
 
     void inheritHtmlAndBodyElementStyles(StyleRecalcChange);
 

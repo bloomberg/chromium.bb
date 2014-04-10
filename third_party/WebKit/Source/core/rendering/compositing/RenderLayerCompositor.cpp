@@ -76,6 +76,34 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+class DeprecatedDirtyCompositingDuringCompositingUpdate {
+    WTF_MAKE_NONCOPYABLE(DeprecatedDirtyCompositingDuringCompositingUpdate);
+public:
+    DeprecatedDirtyCompositingDuringCompositingUpdate(DocumentLifecycle& lifecycle)
+        : m_lifecycle(lifecycle)
+        , m_deprecatedTransition(lifecycle.state(), DocumentLifecycle::LayoutClean)
+        , m_originalState(lifecycle.state())
+    {
+    }
+
+    ~DeprecatedDirtyCompositingDuringCompositingUpdate()
+    {
+        if (m_originalState != DocumentLifecycle::InCompositingUpdate)
+            return;
+        if (m_lifecycle.state() != m_originalState) {
+            // FIXME: It's crazy that we can trigger a style recalc from inside
+            // the compositing update, but that happens in compositing/visibility/hidden-iframe.html.
+            ASSERT(m_lifecycle.state() == DocumentLifecycle::LayoutClean || m_lifecycle.state() == DocumentLifecycle::VisualUpdatePending);
+            m_lifecycle.advanceTo(m_originalState);
+        }
+    }
+
+private:
+    DocumentLifecycle& m_lifecycle;
+    DocumentLifecycle::DeprecatedTransition m_deprecatedTransition;
+    DocumentLifecycle::State m_originalState;
+};
+
 RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     : m_renderView(renderView)
     , m_compositingReasonFinder(renderView)
@@ -180,7 +208,10 @@ void RenderLayerCompositor::setCompositingLayersNeedRebuild()
     // FIXME: crbug,com/332248 ideally this could be merged with setNeedsCompositingUpdate().
     if (inCompositingMode())
         m_compositingLayersNeedRebuild = true;
+    if (!lifecycle().isActive())
+        return;
     page()->animator().scheduleVisualUpdate();
+    lifecycle().ensureStateAtMost(DocumentLifecycle::LayoutClean);
 }
 
 void RenderLayerCompositor::updateCompositingRequirementsState()
@@ -264,7 +295,9 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
         return;
 
     m_pendingUpdateType = std::max(m_pendingUpdateType, updateType);
+
     page()->animator().scheduleVisualUpdate();
+    lifecycle().ensureStateAtMost(DocumentLifecycle::LayoutClean);
 }
 
 void RenderLayerCompositor::scheduleAnimationIfNeeded()
@@ -433,7 +466,10 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
     switch (compositedLayerUpdate) {
     case AllocateOwnCompositedLayerMapping:
         ASSERT(!layer->hasCompositedLayerMapping());
-        enableCompositingMode();
+        {
+            DeprecatedDirtyCompositingDuringCompositingUpdate marker(lifecycle());
+            enableCompositingMode();
+        }
 
         // If we need to repaint, do so before allocating the compositedLayerMapping
         repaintOnCompositingChange(layer);

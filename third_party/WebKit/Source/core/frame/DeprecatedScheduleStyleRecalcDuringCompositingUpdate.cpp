@@ -11,7 +11,7 @@ namespace WebCore {
 
 DeprecatedScheduleStyleRecalcDuringCompositingUpdate::DeprecatedScheduleStyleRecalcDuringCompositingUpdate(DocumentLifecycle& lifecycle)
     : m_lifecycle(lifecycle)
-    , m_deprecatedTransition(lifecycle.state(), DocumentLifecycle::StyleRecalcPending)
+    , m_deprecatedTransition(lifecycle.state(), DocumentLifecycle::VisualUpdatePending)
     , m_originalState(lifecycle.state())
 {
 }
@@ -23,7 +23,7 @@ DeprecatedScheduleStyleRecalcDuringCompositingUpdate::~DeprecatedScheduleStyleRe
         && m_originalState != DocumentLifecycle::InCompositingUpdate)
         return;
     if (m_lifecycle.state() != m_originalState) {
-        ASSERT(m_lifecycle.state() == DocumentLifecycle::StyleRecalcPending);
+        ASSERT(m_lifecycle.state() == DocumentLifecycle::VisualUpdatePending);
         m_lifecycle.advanceTo(m_originalState);
     }
 }

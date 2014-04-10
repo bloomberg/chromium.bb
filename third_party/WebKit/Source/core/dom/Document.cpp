@@ -1580,7 +1580,7 @@ void Document::scheduleRenderTreeUpdate()
     ASSERT(needsRenderTreeUpdate());
 
     page()->animator().scheduleVisualUpdate();
-    m_lifecycle.advanceTo(DocumentLifecycle::StyleRecalcPending);
+    m_lifecycle.ensureStateAtMost(DocumentLifecycle::VisualUpdatePending);
 
     InspectorInstrumentation::didScheduleStyleRecalculation(this);
 }
@@ -2630,9 +2630,16 @@ bool Document::shouldScheduleLayout() const
     //
     //    (a) Only schedule a layout once the stylesheets are loaded.
     //    (b) Only schedule layout once we have a body element.
+    if (!isActive())
+        return false;
 
-    return (isRenderingReady() && body())
-        || (documentElement() && !isHTMLHtmlElement(*documentElement()));
+    if (isRenderingReady() && body())
+        return true;
+
+    if (documentElement() && !isHTMLHtmlElement(*documentElement()))
+        return true;
+
+    return false;
 }
 
 int Document::elapsedTime() const

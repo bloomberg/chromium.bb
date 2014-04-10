@@ -396,8 +396,6 @@ String LocalFrame::layerTreeAsText(unsigned flags) const
     if (!contentRenderer())
         return String();
 
-    ASSERT(document()->lifecycle().state() >= DocumentLifecycle::CompositingClean);
-
     return contentRenderer()->compositor()->layerTreeAsText(static_cast<LayerTreeFlags>(flags));
 }
 

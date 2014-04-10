@@ -11,7 +11,7 @@ namespace WebCore {
 
 DeprecatedScheduleStyleRecalcDuringLayout::DeprecatedScheduleStyleRecalcDuringLayout(DocumentLifecycle& lifecycle)
     : m_lifecycle(lifecycle)
-    , m_deprecatedTransition(DocumentLifecycle::InPerformLayout, DocumentLifecycle::StyleRecalcPending)
+    , m_deprecatedTransition(DocumentLifecycle::InPerformLayout, DocumentLifecycle::VisualUpdatePending)
     , m_wasInPerformLayout(lifecycle.state() == DocumentLifecycle::InPerformLayout)
 {
 }
@@ -21,7 +21,7 @@ DeprecatedScheduleStyleRecalcDuringLayout::~DeprecatedScheduleStyleRecalcDuringL
     // This block of code is intended to restore the state machine to the
     // proper state. The style recalc will still have been schedule, however.
     if (m_wasInPerformLayout && m_lifecycle.state() != DocumentLifecycle::InPerformLayout) {
-        ASSERT(m_lifecycle.state() == DocumentLifecycle::StyleRecalcPending);
+        ASSERT(m_lifecycle.state() == DocumentLifecycle::VisualUpdatePending);
         m_lifecycle.advanceTo(DocumentLifecycle::InPerformLayout);
     }
 }

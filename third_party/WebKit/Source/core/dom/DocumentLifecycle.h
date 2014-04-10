@@ -44,7 +44,8 @@ public:
 
         // When the document is active, it traverses these states.
 
-        StyleRecalcPending,
+        VisualUpdatePending,
+
         InStyleRecalc,
         StyleClean,
 
@@ -100,11 +101,12 @@ public:
     bool stateAllowsTreeMutations() const;
 
     void advanceTo(State);
-    void rewindTo(State);
+    void ensureStateAtMost(State);
 
 private:
 #if !ASSERT_DISABLED
     bool canAdvanceTo(State) const;
+    bool canRewindTo(State) const;
 #endif
 
     State m_state;
