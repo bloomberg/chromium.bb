@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/search/search_tab_helper_delegate.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -97,6 +98,7 @@ class Browser : public TabStripModelObserver,
                 public content::WebContentsDelegate,
                 public CoreTabHelperDelegate,
                 public SearchEngineTabHelperDelegate,
+                public SearchTabHelperDelegate,
                 public ChromeWebModalDialogManagerDelegate,
                 public BookmarkTabHelperDelegate,
                 public ZoomObserver,
@@ -352,11 +354,6 @@ class Browser : public TabStripModelObserver,
 
   // Invoked when visible SSL state (as defined by SSLStatus) changes.
   void VisibleSSLStateChanged(content::WebContents* web_contents);
-
-  // Invoked when the |web_contents| no longer supports Instant. Refreshes the
-  // omnibox so it no longer shows search terms.
-  void OnWebContentsInstantSupportDisabled(
-      const content::WebContents* web_contents);
 
   // Assorted browser commands ////////////////////////////////////////////////
 
@@ -661,6 +658,16 @@ class Browser : public TabStripModelObserver,
   // Overridden from SearchEngineTabHelperDelegate:
   virtual void ConfirmAddSearchProvider(TemplateURL* template_url,
                                         Profile* profile) OVERRIDE;
+
+  // Overridden from SearchTabHelperDelegate:
+  virtual void NavigateOnThumbnailClick(
+      const GURL& url,
+      WindowOpenDisposition disposition,
+      content::WebContents* source_contents) OVERRIDE;
+  virtual void OnWebContentsInstantSupportDisabled(
+      const content::WebContents* web_contents) OVERRIDE;
+  virtual OmniboxView* GetOmniboxView() OVERRIDE;
+  virtual std::set<std::string> GetOpenUrls() OVERRIDE;
 
   // Overridden from WebContentsModalDialogManagerDelegate:
   virtual void SetWebContentsBlocked(content::WebContents* web_contents,

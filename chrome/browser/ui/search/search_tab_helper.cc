@@ -10,18 +10,14 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/most_visited_tiles_experiment.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -29,9 +25,8 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
+#include "chrome/browser/ui/search/search_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
 #include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -113,20 +108,6 @@ bool InInstantProcess(Profile* profile,
           contents->GetRenderProcessHost()->GetID());
 }
 
-// Updates the location bar to reflect |contents| Instant support state.
-void UpdateLocationBar(content::WebContents* contents) {
-// iOS and Android don't use the Instant framework.
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  if (!contents)
-    return;
-
-  Browser* browser = chrome::FindBrowserWithWebContents(contents);
-  if (!browser)
-    return;
-  browser->OnWebContentsInstantSupportDisabled(contents);
-#endif
-}
-
 // Called when an NTP finishes loading. If the load start time was noted,
 // calculates and logs the total load time.
 void RecordNewTabLoadTime(content::WebContents* contents) {
@@ -140,19 +121,6 @@ void RecordNewTabLoadTime(content::WebContents* contents) {
   core_tab_helper->set_new_tab_start_time(base::TimeTicks());
 }
 
-// Returns the OmniboxView for |contents| or NULL if not available.
-OmniboxView* GetOmniboxView(content::WebContents* contents) {
-  // iOS and Android don't use the Instant framework.
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  return NULL;
-#else
-  if (!contents)
-    return NULL;
-  Browser* browser = chrome::FindBrowserWithWebContents(contents);
-  return browser ? browser->window()->GetLocationBar()->GetOmniboxView() : NULL;
-#endif
-}
-
 }  // namespace
 
 SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
@@ -162,7 +130,8 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
       ipc_router_(web_contents, this,
                   make_scoped_ptr(new SearchIPCRouterPolicyImpl(web_contents))
                       .PassAs<SearchIPCRouter::Policy>()),
-      instant_service_(NULL) {
+      instant_service_(NULL),
+      delegate_(NULL) {
   if (!is_search_enabled_)
     return;
 
@@ -226,8 +195,8 @@ void SearchTabHelper::InstantSupportChanged(bool instant_support) {
       web_contents_->GetController().GetVisibleEntry();
   if (entry) {
     chrome::SetInstantSupportStateInNavigationEntry(new_state, entry);
-    if (!instant_support)
-      UpdateLocationBar(web_contents_);
+    if (delegate_ && !instant_support)
+      delegate_->OnWebContentsInstantSupportDisabled(web_contents_);
   }
 }
 
@@ -382,8 +351,8 @@ void SearchTabHelper::NavigationEntryCommitted(
     // location bar from here to turn off search terms replacement.
     chrome::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
                                                     entry);
-    if (model_.instant_support() == INSTANT_SUPPORT_NO)
-      UpdateLocationBar(web_contents_);
+    if (delegate_ && model_.instant_support() == INSTANT_SUPPORT_NO)
+      delegate_->OnWebContentsInstantSupportDisabled(web_contents_);
     return;
   }
 
@@ -418,38 +387,18 @@ void SearchTabHelper::OmniboxStartMarginChanged(int omnibox_start_margin) {
 
 void SearchTabHelper::MaybeRemoveMostVisitedItems(
     std::vector<InstantMostVisitedItem>* items) {
-// The code below uses APIs not available on Android and the experiment should
-// not run there.
-#if !defined(OS_ANDROID)
+  if (!delegate_)
+    return;
+
   if (!history::MostVisitedTilesExperiment::IsDontShowOpenURLsEnabled())
     return;
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  if (!profile)
-    return;
-
-  Browser* browser = chrome::FindBrowserWithProfile(profile,
-                                                    chrome::GetActiveDesktop());
-  if (!browser)
-    return;
-
-  TabStripModel* tab_strip_model = browser->tab_strip_model();
-  history::TopSites* top_sites = profile->GetTopSites();
-  if (!tab_strip_model || !top_sites) {
-    NOTREACHED();
-    return;
-  }
-
-  std::set<std::string> open_urls;
-  chrome::GetOpenUrls(*tab_strip_model, *top_sites, &open_urls);
   history::MostVisitedTilesExperiment::RemoveItemsMatchingOpenTabs(
-      open_urls, items);
-#endif
+      delegate_->GetOpenUrls(), items);
 }
 
 void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
-  OmniboxView* omnibox = GetOmniboxView(web_contents());
+  OmniboxView* omnibox = GetOmniboxView();
   if (!omnibox)
     return;
 
@@ -489,31 +438,13 @@ void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
 void SearchTabHelper::NavigateToURL(const GURL& url,
                                     WindowOpenDisposition disposition,
                                     bool is_most_visited_item_url) {
-// iOS and Android don't use the Instant framework.
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  // TODO(kmadhusu): Remove chrome::FindBrowser...() function call from here.
-  // Create a SearchTabHelperDelegate interface and have the Browser object
-  // implement that interface to provide the necessary functionality.
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  if (!browser || !profile)
-    return;
-
   if (is_most_visited_item_url) {
     content::RecordAction(
         base::UserMetricsAction("InstantExtended.MostVisitedClicked"));
   }
 
-  chrome::NavigateParams params(browser, url,
-                                content::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.referrer = content::Referrer();
-  params.source_contents = web_contents_;
-  params.disposition = disposition;
-  params.is_renderer_initiated = false;
-  params.initiating_profile = profile;
-  chrome::Navigate(&params);
-#endif
+  if (delegate_)
+    delegate_->NavigateOnThumbnailClick(url, disposition, web_contents_);
 }
 
 void SearchTabHelper::OnDeleteMostVisitedItem(const GURL& url) {
@@ -551,7 +482,7 @@ void SearchTabHelper::OnLogMostVisitedNavigation(
 }
 
 void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
-  OmniboxView* omnibox = GetOmniboxView(web_contents());
+  OmniboxView* omnibox = GetOmniboxView();
   if (!omnibox)
     return;
 
@@ -597,7 +528,7 @@ void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {
   if (!update_origin)
     origin = model_.mode().origin;
 
-  OmniboxView* omnibox = GetOmniboxView(web_contents());
+  OmniboxView* omnibox = GetOmniboxView();
   if (omnibox && omnibox->model()->user_input_in_progress())
     type = SearchMode::MODE_SEARCH_SUGGESTIONS;
 
@@ -639,7 +570,11 @@ void SearchTabHelper::RedirectToLocalNTP() {
 }
 
 bool SearchTabHelper::IsInputInProgress() const {
-  OmniboxView* omnibox = GetOmniboxView(web_contents());
+  OmniboxView* omnibox = GetOmniboxView();
   return !model_.mode().is_ntp() && omnibox &&
       omnibox->model()->focus_state() == OMNIBOX_FOCUS_VISIBLE;
+}
+
+OmniboxView* SearchTabHelper::GetOmniboxView() const {
+  return delegate_ ? delegate_->GetOmniboxView() : NULL;
 }

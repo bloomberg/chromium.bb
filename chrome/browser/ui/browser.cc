@@ -59,6 +59,7 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -131,6 +132,7 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "chrome/browser/ui/unload_controller.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
@@ -773,12 +775,6 @@ void Browser::VisibleSSLStateChanged(content::WebContents* web_contents) {
     UpdateToolbar(false);
 }
 
-void Browser::OnWebContentsInstantSupportDisabled(
-    const content::WebContents* web_contents) {
-  DCHECK(web_contents);
-  if (tab_strip_model_->GetActiveWebContents() == web_contents)
-    UpdateToolbar(false);
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Assorted browser commands:
@@ -1761,6 +1757,51 @@ void Browser::ConfirmAddSearchProvider(TemplateURL* template_url,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Browser, SearchTabHelperDelegate implementation:
+
+void Browser::NavigateOnThumbnailClick(const GURL& url,
+                                       WindowOpenDisposition disposition,
+                                       content::WebContents* source_contents) {
+  DCHECK(source_contents);
+  // We're guaranteed that AUTO_BOOKMARK is the right transition since this only
+  // gets called to handle clicks in the new tab page (to navigate to most
+  // visited item URLs) and in the search results page (to navigate to
+  // privileged destinations (e.g. chrome://URLs)).
+  //
+  // TODO(kmadhusu): Page transitions to privileged destinations should be
+  // marked as "LINK" instead of "AUTO_BOOKMARK"?
+  chrome::NavigateParams params(this, url,
+                                content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  params.referrer = content::Referrer();
+  params.source_contents = source_contents;
+  params.disposition = disposition;
+  params.is_renderer_initiated = false;
+  params.initiating_profile = profile_;
+  chrome::Navigate(&params);
+}
+
+void Browser::OnWebContentsInstantSupportDisabled(
+    const content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  if (tab_strip_model_->GetActiveWebContents() == web_contents)
+    UpdateToolbar(false);
+}
+
+OmniboxView* Browser::GetOmniboxView() {
+  return window_->GetLocationBar()->GetOmniboxView();
+}
+
+std::set<std::string> Browser::GetOpenUrls() {
+  history::TopSites* top_sites = profile_->GetTopSites();
+  if (!top_sites)  // NULL for Incognito profiles.
+    return std::set<std::string>();
+
+  std::set<std::string> open_urls;
+  chrome::GetOpenUrls(*tab_strip_model_, *top_sites, &open_urls);
+  return open_urls;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Browser, web_modal::WebContentsModalDialogManagerDelegate implementation:
 
 void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
@@ -2143,6 +2184,7 @@ void Browser::SetAsDelegate(WebContents* web_contents, Browser* delegate) {
       SetDelegate(delegate);
   CoreTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   SearchEngineTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
+  SearchTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   ZoomController::FromWebContents(web_contents)->set_observer(delegate);
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
