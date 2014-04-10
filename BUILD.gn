@@ -44,7 +44,7 @@ group("root") {
     "//third_party/zlib",
     "//tools/gn",
     "//ui/events",
-    "//ui/gfx/geometry",
+    "//ui/gfx",
     "//url",
   ]
 

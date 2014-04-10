@@ -380,6 +380,8 @@
     'src/core/SkPicturePlayback.h',
     'src/core/SkPictureRecord.cpp',
     'src/core/SkPictureRecord.h',
+    'src/core/SkPictureShader.cpp',
+    'src/core/SkPictureShader.h',
     'src/core/SkPictureStateTree.cpp',
     'src/core/SkPictureStateTree.h',
     'src/core/SkPixelRef.cpp',

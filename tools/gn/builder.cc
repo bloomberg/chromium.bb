@@ -251,6 +251,7 @@ BuilderRecord* Builder::GetOrCreateRecordOfType(const Label& label,
   if (!record) {
     // Not seen this record yet, create a new one.
     record = new BuilderRecord(type, label);
+    record->set_originally_referenced_from(request_from);
     records_[label] = record;
     return record;
   }
@@ -259,12 +260,14 @@ BuilderRecord* Builder::GetOrCreateRecordOfType(const Label& label,
   if (record->type() != type) {
     *err = Err(request_from, "Item type does not match.",
         "The item \"" + label.GetUserVisibleName(false) +
-        "\" was expected\nto be a " +
+        "\"\nwas expected to be a " +
         BuilderRecord::GetNameForType(type) +
-        " but was previously\n referenced as a " +
+        " but was previously referenced as a " +
         BuilderRecord::GetNameForType(record->type()));
-    err->AppendSubErr(Err(record->originally_referenced_from(),
-                          "The previous reference was here."));
+    if (record->originally_referenced_from()) {
+      err->AppendSubErr(Err(record->originally_referenced_from(),
+                            "The previous reference was here."));
+    }
     return NULL;
   }
 

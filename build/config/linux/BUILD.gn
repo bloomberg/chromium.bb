@@ -29,6 +29,10 @@ config("executable_ldconfig") {
   ]
 }
 
+pkg_config("dridrm") {
+  packages = [ "libdrm" ]
+}
+
 config("fontconfig") {
   libs = [ "fontconfig" ]
 }
