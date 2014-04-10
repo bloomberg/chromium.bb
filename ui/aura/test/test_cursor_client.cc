@@ -49,13 +49,6 @@ ui::CursorSetType TestCursorClient::GetCursorSet() const {
   return ui::CURSOR_SET_NORMAL;
 }
 
-void TestCursorClient::SetScale(float scale) {
-}
-
-float TestCursorClient::GetScale() const {
-  return 1.f;
-}
-
 bool TestCursorClient::IsCursorVisible() const {
   return visible_;
 }

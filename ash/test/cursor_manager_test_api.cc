@@ -23,10 +23,6 @@ CursorManagerTestApi::~CursorManagerTestApi() {
 }
 
 // TODO(tdanderson): CursorManagerTestApi may no longer be needed.
-float CursorManagerTestApi::GetCurrentScale() const {
-  return cursor_manager_->GetScale();
-}
-
 ui::CursorSetType CursorManagerTestApi::GetCurrentCursorSet() const {
   return cursor_manager_->GetCursorSet();
 }

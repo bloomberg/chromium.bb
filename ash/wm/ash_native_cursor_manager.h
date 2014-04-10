@@ -52,9 +52,6 @@ class ASH_EXPORT AshNativeCursorManager
   virtual void SetVisibility(
       bool visible,
       ::wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
-  virtual void SetScale(
-      float scale,
-      ::wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
   virtual void SetCursorSet(
       ui::CursorSetType cursor_set,
       ::wm::NativeCursorManagerDelegate* delegate) OVERRIDE;

@@ -39,12 +39,6 @@ class AURA_EXPORT CursorClient {
   // invisible.
   virtual void HideCursor() = 0;
 
-  // Sets the scale of the mouse cursor icon.
-  virtual void SetScale(float scale) = 0;
-
-  // Gets the current scale of the mouse cursor icon.
-  virtual float GetScale() const = 0;
-
   // Sets the type of the mouse cursor icon.
   virtual void SetCursorSet(ui::CursorSetType cursor_set) = 0;
 

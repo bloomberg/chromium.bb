@@ -21,7 +21,6 @@ class CursorState {
   CursorState()
       : cursor_(ui::kCursorNone),
         visible_(true),
-        scale_(1.f),
         cursor_set_(ui::CURSOR_SET_NORMAL),
         mouse_events_enabled_(true),
         visible_on_mouse_events_enabled_(true) {
@@ -35,11 +34,6 @@ class CursorState {
     if (mouse_events_enabled_)
       visible_ = visible;
     // Ignores the call when mouse events disabled.
-  }
-
-  float scale() const { return scale_; }
-  void set_scale(float scale) {
-    scale_ = scale;
   }
 
   ui::CursorSetType cursor_set() const { return cursor_set_; }
@@ -65,7 +59,6 @@ class CursorState {
  private:
   gfx::NativeCursor cursor_;
   bool visible_;
-  float scale_;
   ui::CursorSetType cursor_set_;
   bool mouse_events_enabled_;
 
@@ -121,16 +114,6 @@ void CursorManager::HideCursor() {
 
 bool CursorManager::IsCursorVisible() const {
   return current_state_->visible();
-}
-
-void CursorManager::SetScale(float scale) {
-  state_on_unlock_->set_scale(scale);
-  if (GetScale() != state_on_unlock_->scale())
-    delegate_->SetScale(state_on_unlock_->scale(), this);
-}
-
-float CursorManager::GetScale() const {
-  return current_state_->scale();
 }
 
 void CursorManager::SetCursorSet(ui::CursorSetType cursor_set) {
@@ -221,10 +204,6 @@ void CursorManager::CommitVisibility(bool visible) {
   FOR_EACH_OBSERVER(aura::client::CursorClientObserver, observers_,
                     OnCursorVisibilityChanged(visible));
   current_state_->SetVisible(visible);
-}
-
-void CursorManager::CommitScale(float scale) {
-  current_state_->set_scale(scale);
 }
 
 void CursorManager::CommitCursorSet(ui::CursorSetType cursor_set) {

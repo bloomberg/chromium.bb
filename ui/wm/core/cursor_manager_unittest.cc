@@ -40,12 +40,6 @@ class TestingCursorManager : public wm::NativeCursorManager {
       wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
     delegate->CommitCursorSet(cursor_set);
   }
-
-  virtual void SetScale(
-      float scale,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
-    delegate->CommitScale(scale);
-  }
 };
 
 }  // namespace
@@ -195,23 +189,6 @@ TEST_F(CursorManagerTest, SetCursorSet) {
 
   cursor_manager_.SetCursorSet(ui::CURSOR_SET_NORMAL);
   EXPECT_EQ(ui::CURSOR_SET_NORMAL, cursor_manager_.GetCursorSet());
-}
-
-TEST_F(CursorManagerTest, SetScale) {
-  EXPECT_EQ(1.f, cursor_manager_.GetScale());
-  cursor_manager_.SetScale(2.f);
-  EXPECT_EQ(2.f, cursor_manager_.GetScale());
-
-  // Cusror scale does change even while cursor is locked.
-  cursor_manager_.LockCursor();
-  EXPECT_EQ(2.f, cursor_manager_.GetScale());
-  cursor_manager_.SetScale(2.5f);
-  EXPECT_EQ(2.5f, cursor_manager_.GetScale());
-  cursor_manager_.UnlockCursor();
-
-  EXPECT_EQ(2.5f, cursor_manager_.GetScale());
-  cursor_manager_.SetScale(1.f);
-  EXPECT_EQ(1.f, cursor_manager_.GetScale());
 }
 
 TEST_F(CursorManagerTest, IsMouseEventsEnabled) {
