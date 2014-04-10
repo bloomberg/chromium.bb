@@ -529,7 +529,7 @@ def ArchiveAndUpload(version, zipname, zippath, packages_file):
 
   # Create a package info file for the nacl_arm_bionic package.
   archive_desc = archive_info.ArchiveInfo(name=os.path.basename(zipname),
-                                          archive_hash=haslval,
+                                          archive_hash=hashval,
                                           url=zipurl)
   package_desc = package_info.PackageInfo()
   package_desc.AppendArchive(archive_desc)
