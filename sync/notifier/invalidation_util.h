@@ -40,7 +40,7 @@ struct SYNC_EXPORT ObjectIdLessThan {
                   const invalidation::ObjectId& rhs) const;
 };
 
-struct InvalidationVersionLessThan {
+struct SYNC_EXPORT InvalidationVersionLessThan {
   bool operator()(const syncer::Invalidation& a,
                   const syncer::Invalidation& b) const;
 };
