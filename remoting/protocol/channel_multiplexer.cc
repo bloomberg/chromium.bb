@@ -14,7 +14,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
-#include "remoting/protocol/util.h"
+#include "remoting/protocol/message_serialization.h"
 
 namespace remoting {
 namespace protocol {

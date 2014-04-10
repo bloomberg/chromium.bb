@@ -8,9 +8,9 @@
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/audio.pb.h"
+#include "remoting/protocol/message_serialization.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
-#include "remoting/protocol/util.h"
 
 namespace remoting {
 namespace protocol {

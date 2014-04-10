@@ -12,7 +12,7 @@
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/host_stub.h"
-#include "remoting/protocol/util.h"
+#include "remoting/protocol/message_serialization.h"
 
 namespace remoting {
 namespace protocol {

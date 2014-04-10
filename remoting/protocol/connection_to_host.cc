@@ -22,7 +22,6 @@
 #include "remoting/protocol/transport.h"
 #include "remoting/protocol/video_reader.h"
 #include "remoting/protocol/video_stub.h"
-#include "remoting/protocol/util.h"
 
 namespace remoting {
 namespace protocol {

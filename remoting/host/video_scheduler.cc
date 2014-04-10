@@ -19,7 +19,6 @@
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/cursor_shape_stub.h"
 #include "remoting/protocol/message_decoder.h"
-#include "remoting/protocol/util.h"
 #include "remoting/protocol/video_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_shape.h"

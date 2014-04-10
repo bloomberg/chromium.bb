@@ -13,7 +13,7 @@
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/client_stub.h"
-#include "remoting/protocol/util.h"
+#include "remoting/protocol/message_serialization.h"
 
 namespace remoting {
 namespace protocol {

@@ -10,7 +10,7 @@
 #include "remoting/proto/event.pb.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"
-#include "remoting/protocol/util.h"
+#include "remoting/protocol/message_serialization.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
