@@ -21,12 +21,16 @@ namespace base {
 namespace subtle {
 
 inline void MemoryBarrier() {
-  __asm__ __volatile__ (  // NOLINT
-    "dmb ish                                  \n\t"  // Data memory barrier.
-    ::: "memory"
-  );  // NOLINT
+  __asm__ __volatile__ ("dmb ish" ::: "memory");  // NOLINT
 }
 
+// NoBarrier versions of the operation include "memory" in the clobber list.
+// This is not required for direct usage of the NoBarrier versions of the
+// operations. However this is required for correctness when they are used as
+// part of the Acquire or Release versions, to ensure that nothing from outside
+// the call is reordered between the operation and the memory barrier. This does
+// not change the code generated, so has no or minimal impact on the
+// NoBarrier operations.
 
 inline Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32* ptr,
                                          Atomic32 old_value,
@@ -42,13 +46,12 @@ inline Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32* ptr,
     "stxr %w[temp], %w[new_value], %[ptr]  \n\t"  // Try to store the new value.
     "cbnz %w[temp], 0b                     \n\t"  // Retry if it did not work.
     "1:                                    \n\t"
-    "clrex                                 \n\t"  // In case we didn't swap.
     : [prev]"=&r" (prev),
       [temp]"=&r" (temp),
       [ptr]"+Q" (*ptr)
-    : [old_value]"r" (old_value),
+    : [old_value]"IJr" (old_value),
       [new_value]"r" (new_value)
-    : "memory", "cc"
+    : "cc", "memory"
   );  // NOLINT
 
   return prev;
@@ -88,7 +91,7 @@ inline Atomic32 NoBarrier_AtomicIncrement(volatile Atomic32* ptr,
     : [result]"=&r" (result),
       [temp]"=&r" (temp),
       [ptr]"+Q" (*ptr)
-    : [increment]"r" (increment)
+    : [increment]"IJr" (increment)
     : "memory"
   );  // NOLINT
 
@@ -107,28 +110,8 @@ inline Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
 inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
                                        Atomic32 old_value,
                                        Atomic32 new_value) {
-  Atomic32 prev;
-  int32_t temp;
-
-  __asm__ __volatile__ (  // NOLINT
-    "0:                                    \n\t"
-    "ldxr %w[prev], %[ptr]                 \n\t"  // Load the previous value.
-    "cmp %w[prev], %w[old_value]           \n\t"
-    "bne 1f                                \n\t"
-    "stxr %w[temp], %w[new_value], %[ptr]  \n\t"  // Try to store the new value.
-    "cbnz %w[temp], 0b                     \n\t"  // Retry if it did not work.
-    "dmb ish                               \n\t"  // Data memory barrier.
-    "1:                                    \n\t"
-    // If the compare failed the 'dmb' is unnecessary, but we still need a
-    // 'clrex'.
-    "clrex                                 \n\t"
-    : [prev]"=&r" (prev),
-      [temp]"=&r" (temp),
-      [ptr]"+Q" (*ptr)
-    : [old_value]"r" (old_value),
-      [new_value]"r" (new_value)
-    : "memory", "cc"
-  );  // NOLINT
+  Atomic32 prev = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
+  MemoryBarrier();
 
   return prev;
 }
@@ -136,28 +119,8 @@ inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
 inline Atomic32 Release_CompareAndSwap(volatile Atomic32* ptr,
                                        Atomic32 old_value,
                                        Atomic32 new_value) {
-  Atomic32 prev;
-  int32_t temp;
-
   MemoryBarrier();
-
-  __asm__ __volatile__ (  // NOLINT
-    "0:                                    \n\t"
-    "ldxr %w[prev], %[ptr]                 \n\t"  // Load the previous value.
-    "cmp %w[prev], %w[old_value]           \n\t"
-    "bne 1f                                \n\t"
-    "stxr %w[temp], %w[new_value], %[ptr]  \n\t"  // Try to store the new value.
-    "cbnz %w[temp], 0b                     \n\t"  // Retry if it did not work.
-    "1:                                    \n\t"
-    // If the compare failed the we still need a 'clrex'.
-    "clrex                                 \n\t"
-    : [prev]"=&r" (prev),
-      [temp]"=&r" (temp),
-      [ptr]"+Q" (*ptr)
-    : [old_value]"r" (old_value),
-      [new_value]"r" (new_value)
-    : "memory", "cc"
-  );  // NOLINT
+  Atomic32 prev = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
 
   return prev;
 }
@@ -172,8 +135,12 @@ inline void Acquire_Store(volatile Atomic32* ptr, Atomic32 value) {
 }
 
 inline void Release_Store(volatile Atomic32* ptr, Atomic32 value) {
-  MemoryBarrier();
-  *ptr = value;
+  __asm__ __volatile__ (  // NOLINT
+    "stlr %w[value], %[ptr]  \n\t"
+    : [ptr]"=Q" (*ptr)
+    : [value]"r" (value)
+    : "memory"
+  );  // NOLINT
 }
 
 inline Atomic32 NoBarrier_Load(volatile const Atomic32* ptr) {
@@ -181,8 +148,15 @@ inline Atomic32 NoBarrier_Load(volatile const Atomic32* ptr) {
 }
 
 inline Atomic32 Acquire_Load(volatile const Atomic32* ptr) {
-  Atomic32 value = *ptr;
-  MemoryBarrier();
+  Atomic32 value;
+
+  __asm__ __volatile__ (  // NOLINT
+    "ldar %w[value], %[ptr]  \n\t"
+    : [value]"=r" (value)
+    : [ptr]"Q" (*ptr)
+    : "memory"
+  );  // NOLINT
+
   return value;
 }
 
@@ -208,13 +182,12 @@ inline Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64* ptr,
     "stxr %w[temp], %[new_value], %[ptr]   \n\t"
     "cbnz %w[temp], 0b                     \n\t"
     "1:                                    \n\t"
-    "clrex                                 \n\t"
     : [prev]"=&r" (prev),
       [temp]"=&r" (temp),
       [ptr]"+Q" (*ptr)
-    : [old_value]"r" (old_value),
+    : [old_value]"IJr" (old_value),
       [new_value]"r" (new_value)
-    : "memory", "cc"
+    : "cc", "memory"
   );  // NOLINT
 
   return prev;
@@ -254,7 +227,7 @@ inline Atomic64 NoBarrier_AtomicIncrement(volatile Atomic64* ptr,
     : [result]"=&r" (result),
       [temp]"=&r" (temp),
       [ptr]"+Q" (*ptr)
-    : [increment]"r" (increment)
+    : [increment]"IJr" (increment)
     : "memory"
   );  // NOLINT
 
@@ -273,26 +246,8 @@ inline Atomic64 Barrier_AtomicIncrement(volatile Atomic64* ptr,
 inline Atomic64 Acquire_CompareAndSwap(volatile Atomic64* ptr,
                                        Atomic64 old_value,
                                        Atomic64 new_value) {
-  Atomic64 prev;
-  int32_t temp;
-
-  __asm__ __volatile__ (  // NOLINT
-    "0:                                    \n\t"
-    "ldxr %[prev], %[ptr]                  \n\t"
-    "cmp %[prev], %[old_value]             \n\t"
-    "bne 1f                                \n\t"
-    "stxr %w[temp], %[new_value], %[ptr]   \n\t"
-    "cbnz %w[temp], 0b                     \n\t"
-    "dmb ish                               \n\t"
-    "1:                                    \n\t"
-    "clrex                                 \n\t"
-    : [prev]"=&r" (prev),
-      [temp]"=&r" (temp),
-      [ptr]"+Q" (*ptr)
-    : [old_value]"r" (old_value),
-      [new_value]"r" (new_value)
-    : "memory", "cc"
-  );  // NOLINT
+  Atomic64 prev = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
+  MemoryBarrier();
 
   return prev;
 }
@@ -300,27 +255,8 @@ inline Atomic64 Acquire_CompareAndSwap(volatile Atomic64* ptr,
 inline Atomic64 Release_CompareAndSwap(volatile Atomic64* ptr,
                                        Atomic64 old_value,
                                        Atomic64 new_value) {
-  Atomic64 prev;
-  int32_t temp;
-
   MemoryBarrier();
-
-  __asm__ __volatile__ (  // NOLINT
-    "0:                                    \n\t"
-    "ldxr %[prev], %[ptr]                  \n\t"
-    "cmp %[prev], %[old_value]             \n\t"
-    "bne 1f                                \n\t"
-    "stxr %w[temp], %[new_value], %[ptr]   \n\t"
-    "cbnz %w[temp], 0b                     \n\t"
-    "1:                                    \n\t"
-    "clrex                                 \n\t"
-    : [prev]"=&r" (prev),
-      [temp]"=&r" (temp),
-      [ptr]"+Q" (*ptr)
-    : [old_value]"r" (old_value),
-      [new_value]"r" (new_value)
-    : "memory", "cc"
-  );  // NOLINT
+  Atomic64 prev = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
 
   return prev;
 }
@@ -335,8 +271,12 @@ inline void Acquire_Store(volatile Atomic64* ptr, Atomic64 value) {
 }
 
 inline void Release_Store(volatile Atomic64* ptr, Atomic64 value) {
-  MemoryBarrier();
-  *ptr = value;
+  __asm__ __volatile__ (  // NOLINT
+    "stlr %x[value], %[ptr]  \n\t"
+    : [ptr]"=Q" (*ptr)
+    : [value]"r" (value)
+    : "memory"
+  );  // NOLINT
 }
 
 inline Atomic64 NoBarrier_Load(volatile const Atomic64* ptr) {
@@ -344,8 +284,15 @@ inline Atomic64 NoBarrier_Load(volatile const Atomic64* ptr) {
 }
 
 inline Atomic64 Acquire_Load(volatile const Atomic64* ptr) {
-  Atomic64 value = *ptr;
-  MemoryBarrier();
+  Atomic32 value;
+
+  __asm__ __volatile__ (  // NOLINT
+    "ldar %x[value], %[ptr]  \n\t"
+    : [value]"=r" (value)
+    : [ptr]"Q" (*ptr)
+    : "memory"
+  );  // NOLINT
+
   return value;
 }
 
