@@ -163,6 +163,8 @@ void initializeWithoutV8(Platform* platform)
     WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction);
     WTF::initializeMainThread(callOnMainThreadFunction);
     WebCore::Heap::init();
+
+    WebCore::ThreadState::attachMainThread();
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (WebThread* currentThread = platform->currentThread()) {
         ASSERT(!s_pendingGCRunner);
@@ -206,17 +208,6 @@ void shutdown()
     ASSERT(s_isolateInterruptor);
     WebCore::ThreadState::current()->removeInterruptor(s_isolateInterruptor);
 
-    WebCore::V8PerIsolateData::dispose(WebCore::V8PerIsolateData::mainThreadIsolate());
-    v8::V8::Dispose();
-
-    shutdownWithoutV8();
-}
-
-void shutdownWithoutV8()
-{
-    ASSERT(!s_endOfTaskRunner);
-    WebCore::ImageDecodingStore::shutdown();
-    WebCore::shutdown();
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (Platform::current()->currentThread()) {
         ASSERT(s_pendingGCRunner);
@@ -228,6 +219,22 @@ void shutdownWithoutV8()
         delete s_messageLoopInterruptor;
         s_messageLoopInterruptor = 0;
     }
+
+    // Detach the main thread before starting the shutdown sequence
+    // so that the main thread won't get involved in a GC during the shutdown.
+    WebCore::ThreadState::detachMainThread();
+
+    WebCore::V8PerIsolateData::dispose(WebCore::V8PerIsolateData::mainThreadIsolate());
+    v8::V8::Dispose();
+
+    shutdownWithoutV8();
+}
+
+void shutdownWithoutV8()
+{
+    ASSERT(!s_endOfTaskRunner);
+    WebCore::ImageDecodingStore::shutdown();
+    WebCore::shutdown();
     WebCore::Heap::shutdown();
     WTF::shutdown();
     Platform::shutdown();

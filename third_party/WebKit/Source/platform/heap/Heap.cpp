@@ -1294,7 +1294,15 @@ void Heap::init()
 
 void Heap::shutdown()
 {
+    // Do nothing. Actual shutdown is executed when the last ThreadState is detached.
+}
+
+void Heap::lastThreadDetached()
+{
+    ASSERT(!ThreadState::isAnyThreadInGC());
+    ASSERT(!ThreadState::attachedThreads().size());
     delete s_markingVisitor;
+    s_markingVisitor = 0;
     CallbackStack::shutdown(&s_weakCallbackStack);
     CallbackStack::shutdown(&s_markingStack);
     ThreadState::shutdown();

@@ -51,6 +51,7 @@ public:
 
     void postTask(const Closure&);
     blink::WebThread& platformThread();
+    bool isRunning();
 
 private:
     HTMLParserThread();

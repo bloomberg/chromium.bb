@@ -43,9 +43,19 @@ TaskSynchronizer::TaskSynchronizer()
 
 void TaskSynchronizer::waitForTaskCompletion()
 {
-    // Prevent the deadlock between park request by other threads and blocking
-    // by m_synchronousCondition.
-    ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
+    if (ThreadState::current()) {
+        // Prevent the deadlock between park request by other threads and blocking
+        // by m_synchronousCondition.
+        ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
+        waitForTaskCompletionInternal();
+    } else {
+        // If this thread is already detached, we no longer need to enter a safe point scope.
+        waitForTaskCompletionInternal();
+    }
+}
+
+void TaskSynchronizer::waitForTaskCompletionInternal()
+{
     m_synchronousMutex.lock();
     while (!m_taskCompleted)
         m_synchronousCondition.wait(m_synchronousMutex);

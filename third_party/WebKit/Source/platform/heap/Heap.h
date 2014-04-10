@@ -763,6 +763,7 @@ class PLATFORM_EXPORT Heap {
 public:
     static void init();
     static void shutdown();
+    static void lastThreadDetached();
 
     static BaseHeapPage* contains(Address);
     static BaseHeapPage* contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }

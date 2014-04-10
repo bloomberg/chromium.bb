@@ -54,6 +54,8 @@ public:
 #endif
 
 private:
+    void waitForTaskCompletionInternal();
+
     bool m_taskCompleted;
     Mutex m_synchronousMutex;
     ThreadCondition m_synchronousCondition;

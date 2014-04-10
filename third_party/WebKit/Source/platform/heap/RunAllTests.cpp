@@ -53,7 +53,9 @@ int main(int argc, char** argv)
     WTF::initialize(CurrentTime, 0);
     WTF::initializeMainThread(0);
     WebCore::Heap::init();
+    WebCore::ThreadState::attachMainThread();
     int result = base::RunUnitTestsUsingBaseTestSuite(argc, argv);
+    WebCore::ThreadState::detachMainThread();
     WebCore::Heap::shutdown();
     return result;
 }

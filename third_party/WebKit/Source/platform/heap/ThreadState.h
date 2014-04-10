@@ -236,6 +236,9 @@ public:
     static void init();
     static void shutdown();
 
+    static void attachMainThread();
+    static void detachMainThread();
+
     // Trace all GC roots, called when marking the managed heap objects.
     static void visitRoots(Visitor*);
 

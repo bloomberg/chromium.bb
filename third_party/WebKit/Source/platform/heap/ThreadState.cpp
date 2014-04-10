@@ -275,13 +275,31 @@ void ThreadState::init()
 {
     s_threadSpecific = new WTF::ThreadSpecific<ThreadState*>();
     s_safePointBarrier = new SafePointBarrier;
-    new(s_mainThreadStateStorage) ThreadState();
-    attachedThreads().add(mainThreadState());
 }
 
 void ThreadState::shutdown()
 {
-    mainThreadState()->~ThreadState();
+    delete s_safePointBarrier;
+    s_safePointBarrier = 0;
+    // We don't need to call ~ThreadSpecific().
+}
+
+void ThreadState::attachMainThread()
+{
+    MutexLocker locker(threadAttachMutex());
+    ThreadState* state = new(s_mainThreadStateStorage) ThreadState();
+    attachedThreads().add(state);
+}
+
+void ThreadState::detachMainThread()
+{
+    MutexLocker locker(threadAttachMutex());
+    ThreadState* state = mainThreadState();
+    ASSERT(attachedThreads().contains(state));
+    attachedThreads().remove(state);
+    state->~ThreadState();
+    if (!attachedThreads().size())
+        Heap::lastThreadDetached();
 }
 
 void ThreadState::attach()
@@ -328,8 +346,11 @@ void ThreadState::detach()
         state->enterSafePointWithoutPointers();
     MutexLocker locker(threadAttachMutex());
     state->leaveSafePoint();
+    ASSERT(attachedThreads().contains(state));
     attachedThreads().remove(state);
     delete state;
+    if (!attachedThreads().size())
+        Heap::lastThreadDetached();
 }
 
 void ThreadState::visitRoots(Visitor* visitor)
