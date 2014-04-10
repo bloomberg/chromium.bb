@@ -184,7 +184,7 @@ public:
 #endif
     }
 
-    void trace(Visitor* visitor) { visitor->trace(m_supplements); }
+    virtual void trace(Visitor* visitor) { visitor->trace(m_supplements); }
 
 private:
     typename SupplementableTraits<T, isGarbageCollected>::SupplementMap m_supplements;

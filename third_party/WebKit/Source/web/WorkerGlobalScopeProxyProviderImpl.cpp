@@ -57,7 +57,7 @@ WebCore::WorkerGlobalScopeProxy* WorkerGlobalScopeProxyProviderImpl::createWorke
     if (worker->executionContext()->isDocument()) {
         Document* document = toDocument(worker->executionContext());
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        OwnPtr<WorkerClients> workerClients = WorkerClients::create();
+        OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
         provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
         provideDatabaseClientToWorker(workerClients.get(), DatabaseClientImpl::create());
         providePermissionClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createWorkerPermissionClientProxy(webFrame)));

@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients> workerClients)
+WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : m_scriptURL(scriptURL.copy())
     , m_userAgent(userAgent.isolatedCopy())
     , m_sourceCode(sourceCode.isolatedCopy())
@@ -48,6 +48,11 @@ WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const St
 
 WorkerThreadStartupData::~WorkerThreadStartupData()
 {
+}
+
+void WorkerThreadStartupData::trace(Visitor* visitor)
+{
+    visitor->trace(m_workerClients);
 }
 
 } // namespace WebCore

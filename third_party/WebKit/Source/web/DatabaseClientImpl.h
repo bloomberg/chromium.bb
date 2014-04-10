@@ -46,7 +46,7 @@ public:
 
     virtual void trace(WebCore::Visitor*) OVERRIDE
     {
-        // FIXME: Oilpan: Move Page and WorkerClients to the managed heap before using this trace method.
+        // FIXME: Oilpan: Move Page to the managed heap before using this trace method.
     }
 
 private:

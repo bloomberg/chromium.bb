@@ -58,6 +58,8 @@ public:
 
     PassRefPtrWillBeRawPtr<DataObject> copy() const;
 
+    virtual ~DataObject();
+
     // DataTransferItemList support.
     size_t length() const;
     PassRefPtrWillBeRawPtr<DataObjectItem> item(unsigned long index);

@@ -59,10 +59,7 @@ public:
     static const char* supplementName();
     static WorkerPermissionClient* from(WebCore::ExecutionContext&);
 
-    virtual void trace(WebCore::Visitor*) OVERRIDE
-    {
-        // FIXME: Oilpan: Move WorkerClients to the managed heap before using this trace method.
-    }
+    virtual void trace(WebCore::Visitor*) OVERRIDE { }
 
 private:
     explicit WorkerPermissionClient(PassOwnPtr<WebWorkerPermissionClientProxy>);

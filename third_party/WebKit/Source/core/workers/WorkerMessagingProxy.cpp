@@ -82,7 +82,7 @@ private:
     OwnPtr<MessagePortChannelArray> m_channels;
 };
 
-WorkerMessagingProxy::WorkerMessagingProxy(Worker* workerObject, PassOwnPtr<WorkerClients> workerClients)
+WorkerMessagingProxy::WorkerMessagingProxy(Worker* workerObject, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : m_executionContext(workerObject->executionContext())
     , m_workerObjectProxy(WorkerObjectProxy::create(m_executionContext.get(), this))
     , m_workerObject(workerObject)

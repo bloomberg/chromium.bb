@@ -133,9 +133,7 @@ void Navigator::trace(Visitor* visitor)
 {
     visitor->trace(m_plugins);
     visitor->trace(m_mimeTypes);
-#if ENABLE(OILPAN)
-    HeapSupplementable<Navigator>::trace(visitor);
-#endif
+    WillBeHeapSupplementable<Navigator>::trace(visitor);
 }
 
 } // namespace WebCore

@@ -48,10 +48,7 @@ public:
     virtual void didHandleFetchEvent(int fetchEventID, PassRefPtr<WebCore::Response>) OVERRIDE;
     virtual void didHandleSyncEvent(int syncEventID) OVERRIDE;
 
-    virtual void trace(WebCore::Visitor*) OVERRIDE
-    {
-        // FIXME: Oilpan: Move WorkerClients to the managed heap before using this trace method.
-    }
+    virtual void trace(WebCore::Visitor*) OVERRIDE { }
 
 private:
     ServiceWorkerGlobalScopeClientImpl(PassOwnPtr<WebServiceWorkerContextClient>);

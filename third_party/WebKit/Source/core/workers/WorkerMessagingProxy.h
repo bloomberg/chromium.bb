@@ -48,7 +48,7 @@ namespace WebCore {
     class WorkerMessagingProxy FINAL : public WorkerGlobalScopeProxy, public WorkerLoaderProxy {
         WTF_MAKE_NONCOPYABLE(WorkerMessagingProxy); WTF_MAKE_FAST_ALLOCATED;
     public:
-        WorkerMessagingProxy(Worker*, PassOwnPtr<WorkerClients>);
+        WorkerMessagingProxy(Worker*, PassOwnPtrWillBeRawPtr<WorkerClients>);
 
         // Implementations of WorkerGlobalScopeProxy.
         // (Only use these methods in the worker object thread.)
@@ -100,7 +100,7 @@ namespace WebCore {
         Vector<OwnPtr<ExecutionContextTask> > m_queuedEarlyTasks; // Tasks are queued here until there's a thread object created.
         WorkerGlobalScopeProxy::PageInspector* m_pageInspector;
 
-        OwnPtr<WorkerClients> m_workerClients;
+        OwnPtrWillBePersistent<WorkerClients> m_workerClients;
     };
 
 } // namespace WebCore

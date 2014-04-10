@@ -43,11 +43,11 @@ namespace WebCore {
 
 class WorkerClients;
 
-class WorkerThreadStartupData : public NoBaseWillBeGarbageCollectedFinalized<WorkerThreadStartupData> {
+class WorkerThreadStartupData FINAL : public NoBaseWillBeGarbageCollectedFinalized<WorkerThreadStartupData> {
     WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients> workerClients)
+    static PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     {
         return adoptPtrWillBeNoop(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, startMode, contentSecurityPolicy, contentSecurityPolicyType, workerClients));
     }
@@ -60,12 +60,12 @@ public:
     WorkerThreadStartMode m_startMode;
     String m_contentSecurityPolicy;
     ContentSecurityPolicyHeaderType m_contentSecurityPolicyType;
-    OwnPtr<WorkerClients> m_workerClients;
+    OwnPtrWillBeMember<WorkerClients> m_workerClients;
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
-    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients>);
+    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, PassOwnPtrWillBeRawPtr<WorkerClients>);
 };
 
 } // namespace WebCore

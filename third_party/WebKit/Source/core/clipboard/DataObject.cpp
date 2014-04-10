@@ -67,6 +67,10 @@ PassRefPtrWillBeRawPtr<DataObject> DataObject::copy() const
     return adoptRefWillBeNoop(new DataObject(*this));
 }
 
+DataObject::~DataObject()
+{
+}
+
 size_t DataObject::length() const
 {
     return m_itemList.size();
@@ -268,9 +272,7 @@ void DataObject::internalAddFileItem(PassRefPtrWillBeRawPtr<DataObjectItem> item
 void DataObject::trace(Visitor* visitor)
 {
     visitor->trace(m_itemList);
-#if ENABLE(OILPAN)
-    HeapSupplementable<DataObject>::trace(visitor);
-#endif
+    WillBeHeapSupplementable<DataObject>::trace(visitor);
 }
 
 } // namespace WebCore

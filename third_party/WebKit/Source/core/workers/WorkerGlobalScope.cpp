@@ -74,7 +74,7 @@ public:
     virtual bool isCleanupTask() const { return true; }
 };
 
-WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, PassOwnPtr<WorkerClients> workerClients)
+WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : m_url(url)
     , m_userAgent(userAgent)
     , m_script(adoptPtr(new WorkerScriptController(*this)))
@@ -312,9 +312,8 @@ void WorkerGlobalScope::trace(Visitor* visitor)
     visitor->trace(m_console);
     visitor->trace(m_location);
     visitor->trace(m_navigator);
-#if ENABLE(OILPAN)
-    HeapSupplementable<WorkerGlobalScope>::trace(visitor);
-#endif
+    visitor->trace(m_workerClients);
+    WillBeHeapSupplementable<WorkerGlobalScope>::trace(visitor);
 }
 
 } // namespace WebCore

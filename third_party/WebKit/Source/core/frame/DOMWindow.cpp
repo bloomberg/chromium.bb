@@ -1885,9 +1885,7 @@ void DOMWindow::trace(Visitor* visitor)
     visitor->trace(m_applicationCache);
     visitor->trace(m_performance);
     visitor->trace(m_css);
-#if ENABLE(OILPAN)
-    HeapSupplementable<DOMWindow>::trace(visitor);
-#endif
+    WillBeHeapSupplementable<DOMWindow>::trace(visitor);
 }
 
 } // namespace WebCore

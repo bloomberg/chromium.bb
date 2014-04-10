@@ -247,7 +247,7 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
     // guaranteed to be around while the WorkerGlobalScope is alive.
     WebServiceWorkerContextClient* contextClient = m_workerContextClient.get();
 
-    OwnPtr<WorkerClients> workerClients = WorkerClients::create();
+    OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
     providePermissionClientToWorker(workerClients.get(), m_permissionClient.release());
     provideServiceWorkerGlobalScopeClientToWorker(workerClients.get(), ServiceWorkerGlobalScopeClientImpl::create(m_workerContextClient.release()));
 

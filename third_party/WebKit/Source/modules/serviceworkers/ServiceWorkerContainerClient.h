@@ -32,10 +32,7 @@ public:
     static const char* supplementName();
     static ServiceWorkerContainerClient* from(ExecutionContext*);
 
-    virtual void trace(Visitor*) OVERRIDE
-    {
-        // FIXME: Oilpan: Move WorkerClients to the managed heap before using this trace method.
-    }
+    virtual void trace(Visitor*) OVERRIDE { }
 
 protected:
     explicit ServiceWorkerContainerClient(PassOwnPtr<blink::WebServiceWorkerProvider>);

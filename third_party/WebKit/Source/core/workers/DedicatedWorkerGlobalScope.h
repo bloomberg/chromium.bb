@@ -64,7 +64,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    DedicatedWorkerGlobalScope(const KURL&, const String& userAgent, DedicatedWorkerThread*, double timeOrigin, PassOwnPtr<WorkerClients>);
+    DedicatedWorkerGlobalScope(const KURL&, const String& userAgent, DedicatedWorkerThread*, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerClients>);
 };
 
 } // namespace WebCore
