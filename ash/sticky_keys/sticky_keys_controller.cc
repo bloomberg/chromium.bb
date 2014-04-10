@@ -132,9 +132,13 @@ void StickyKeysController::Enable(bool enabled) {
       ctrl_sticky_key_.reset(
           new StickyKeysHandler(ui::EF_CONTROL_DOWN,
                                 new StickyKeysHandlerDelegateImpl()));
+      mod3_sticky_key_.reset(
+          new StickyKeysHandler(ui::EF_MOD3_DOWN,
+                                new StickyKeysHandlerDelegateImpl()));
 
       overlay_.reset(new StickyKeysOverlay());
       overlay_->SetModifierVisible(ui::EF_ALTGR_DOWN, altgr_enabled_);
+      overlay_->SetModifierVisible(ui::EF_MOD3_DOWN, mod3_enabled_);
     } else if (overlay_) {
       overlay_->Show(false);
     }
@@ -145,29 +149,34 @@ void StickyKeysController::SetModifiersEnabled(bool mod3_enabled,
                                                bool altgr_enabled) {
   mod3_enabled_ = mod3_enabled;
   altgr_enabled_ = altgr_enabled;
-  if (overlay_)
+  if (overlay_) {
     overlay_->SetModifierVisible(ui::EF_ALTGR_DOWN, altgr_enabled_);
+    overlay_->SetModifierVisible(ui::EF_MOD3_DOWN, mod3_enabled_);
+  }
 }
 
 bool StickyKeysController::HandleKeyEvent(ui::KeyEvent* event) {
   return shift_sticky_key_->HandleKeyEvent(event) ||
       alt_sticky_key_->HandleKeyEvent(event) ||
       altgr_sticky_key_->HandleKeyEvent(event) ||
-      ctrl_sticky_key_->HandleKeyEvent(event);
+      ctrl_sticky_key_->HandleKeyEvent(event) ||
+      mod3_sticky_key_->HandleKeyEvent(event);
 }
 
 bool StickyKeysController::HandleMouseEvent(ui::MouseEvent* event) {
   return shift_sticky_key_->HandleMouseEvent(event) ||
       alt_sticky_key_->HandleMouseEvent(event) ||
       altgr_sticky_key_->HandleMouseEvent(event) ||
-      ctrl_sticky_key_->HandleMouseEvent(event);
+      ctrl_sticky_key_->HandleMouseEvent(event) ||
+      mod3_sticky_key_->HandleMouseEvent(event);
 }
 
 bool StickyKeysController::HandleScrollEvent(ui::ScrollEvent* event) {
   return shift_sticky_key_->HandleScrollEvent(event) ||
       alt_sticky_key_->HandleScrollEvent(event) ||
       altgr_sticky_key_->HandleScrollEvent(event) ||
-      ctrl_sticky_key_->HandleScrollEvent(event);
+      ctrl_sticky_key_->HandleScrollEvent(event) ||
+      mod3_sticky_key_->HandleScrollEvent(event);
 }
 
 void StickyKeysController::OnKeyEvent(ui::KeyEvent* event) {
@@ -209,12 +218,15 @@ void StickyKeysController::UpdateOverlay() {
       ui::EF_ALT_DOWN, alt_sticky_key_->current_state());
   overlay_->SetModifierKeyState(
       ui::EF_ALTGR_DOWN, altgr_sticky_key_->current_state());
+  overlay_->SetModifierKeyState(
+      ui::EF_MOD3_DOWN, mod3_sticky_key_->current_state());
 
   bool key_in_use =
       shift_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED ||
       alt_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED ||
       altgr_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED ||
-      ctrl_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED;
+      ctrl_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED ||
+      mod3_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED;
 
   overlay_->Show(enabled_ && key_in_use);
 }
@@ -334,6 +346,8 @@ StickyKeysHandler::KeyEventType
     is_target_key = (modifier_flag_ == ui::EF_ALT_DOWN);
   } else if (event->key_code() == ui::VKEY_ALTGR) {
     is_target_key = (modifier_flag_ == ui::EF_ALTGR_DOWN);
+  } else if (event->key_code() == ui::VKEY_OEM_8) {
+    is_target_key = (modifier_flag_ == ui::EF_MOD3_DOWN);
   } else {
     return event->type() == ui::ET_KEY_PRESSED ?
         NORMAL_KEY_DOWN : NORMAL_KEY_UP;
@@ -461,6 +475,9 @@ void StickyKeysHandler::AppendNativeEventMask(unsigned int* state) {
       break;
     case ui::EF_SHIFT_DOWN:
       state_ref |= ShiftMask;
+      break;
+    case ui::EF_MOD3_DOWN:
+      state_ref |= Mod3Mask;
       break;
     default:
       NOTREACHED();

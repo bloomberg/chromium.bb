@@ -203,4 +203,36 @@ TEST_F(StickyKeysOverlayTest, ModifiersDisabled) {
             overlay_->GetModifierKeyState(ui::EF_ALT_DOWN));
 }
 
+TEST_F(StickyKeysOverlayTest, ModifierVisibility) {
+  // All but AltGr and Mod3 should initially be visible.
+  EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_CONTROL_DOWN));
+  EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_SHIFT_DOWN));
+  EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_ALT_DOWN));
+  EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_ALTGR_DOWN));
+  EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_MOD3_DOWN));
+
+  // Turn all modifiers on.
+  controller_->SetModifiersEnabled(true, true);
+  EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_CONTROL_DOWN));
+  EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_SHIFT_DOWN));
+  EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_ALT_DOWN));
+  EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_ALTGR_DOWN));
+  EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_MOD3_DOWN));
+
+  // Turn off Mod3.
+  controller_->SetModifiersEnabled(false, true);
+  EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_ALTGR_DOWN));
+  EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_MOD3_DOWN));
+
+  // Turn off AltGr.
+  controller_->SetModifiersEnabled(true, false);
+  EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_ALTGR_DOWN));
+  EXPECT_TRUE(overlay_->GetModifierVisible(ui::EF_MOD3_DOWN));
+
+  // Turn off AltGr and Mod3.
+  controller_->SetModifiersEnabled(false, false);
+  EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_ALTGR_DOWN));
+  EXPECT_FALSE(overlay_->GetModifierVisible(ui::EF_MOD3_DOWN));
+}
+
 }  // namespace ash

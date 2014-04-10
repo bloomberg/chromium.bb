@@ -89,6 +89,7 @@ enum EventFlags {
   EF_EXTENDED            = 1 << 8,  // Windows extended key (see WM_KEYDOWN doc)
   EF_IS_SYNTHESIZED      = 1 << 9,
   EF_ALTGR_DOWN          = 1 << 10,
+  EF_MOD3_DOWN           = 1 << 11,
 };
 
 // Flags specific to mouse events

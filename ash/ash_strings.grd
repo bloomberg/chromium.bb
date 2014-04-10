@@ -623,6 +623,9 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_ALTGR_KEY" desc="Name of [AltGr] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
         altgr
       </message>
+      <message name="IDS_ASH_MOD3_KEY" desc="Name of ISOLevel5 (mod3) key name. Shouldn't be translated in many languages actually. This name should be lower case.">
+        mod3
+      </message>
       <message name="IDS_ASH_SEARCH_KEY" desc="Name of [Search] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
         search
       </message>
