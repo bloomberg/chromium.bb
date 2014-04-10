@@ -932,6 +932,7 @@ Bug(simonhatch) http/tests/loading/promote-img-in-viewport-priority.html [ Skip 
 Bug(jochen) fast/js/const.html [ NeedsManualRebaseline ]
 
 crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
+crbug.com/359960 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359961 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
 # Side loading Ahem doesn't work for DirectWrite yet.
