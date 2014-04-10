@@ -179,6 +179,9 @@
             'components_strings.gyp:components_strings',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
 
+            # Dependencies of bookmarks
+            'components.gyp:bookmarks_core_common',
+
             # Dependencies of cloud_devices
             'components.gyp:cloud_devices',
 

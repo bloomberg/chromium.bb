@@ -12,6 +12,7 @@
   'includes': [
     'auto_login_parser.gypi',
     'autofill.gypi',
+    'bookmarks.gypi',
     'breakpad.gypi',
     'cloud_devices.gypi',
     'cronet.gypi',

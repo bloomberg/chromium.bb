@@ -4,6 +4,7 @@ include_rules = [
   "+chromeos",  # For chromeos_switches.h
   "+components/autofill/content/common",
   "+components/autofill/core/common",
+  "+components/bookmarks/core/common",
   "+components/nacl/common",
   "+components/password_manager/core/common",
   "+components/policy/core/common",

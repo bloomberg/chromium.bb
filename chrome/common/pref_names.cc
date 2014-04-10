@@ -289,17 +289,6 @@ const char kWebKitLoadsImagesAutomatically[] =
     "webkit.webprefs.loads_images_automatically";
 const char kWebKitPluginsEnabled[] = "webkit.webprefs.plugins_enabled";
 
-// Boolean which specifies whether the bookmark bar is visible on all tabs.
-const char kShowBookmarkBar[] = "bookmark_bar.show_on_all_tabs";
-
-// Boolean which specifies whether the apps shortcut is visible on the bookmark
-// bar.
-const char kShowAppsShortcutInBookmarkBar[] = "bookmark_bar.show_apps_shortcut";
-
-// Boolean which specifies the ids of the bookmark nodes that are expanded in
-// the bookmark editor.
-const char kBookmarkEditorExpandedNodes[] = "bookmark_editor.expanded_nodes";
-
 // Boolean that is true when SafeBrowsing is enabled.
 const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 
@@ -1116,9 +1105,6 @@ const char kAutofillGeneratedCardBubbleTimesShown[] =
 // of the requestAutocomplete dialog.
 const char kAutofillDialogDefaults[] = "autofill.rac_dialog_defaults";
 
-// Modifying bookmarks is completely disabled when this is set to false.
-const char kEditBookmarksEnabled[] = "bookmarks.editing_enabled";
-
 #if !defined(OS_ANDROID)
 const char kPinnedTabs[] = "pinned_tabs";
 #endif
@@ -1407,13 +1393,6 @@ const char kMetricsInitialLogs[] =
 // user activities.
 const char kMetricsOngoingLogs[] =
     "user_experience_metrics.ongoing_logs_as_protobufs";
-
-// Boolean that is true when bookmark prompt is enabled.
-const char kBookmarkPromptEnabled[] = "bookmark_prompt_enabled";
-
-// Number of times bookmark prompt displayed.
-const char kBookmarkPromptImpressionCount[] =
-    "bookmark_prompt_impression_count";
 
 // 64-bit integer serialization of the base::Time from the last successful seed
 // fetch (i.e. when the Variations server responds with 200 or 304).

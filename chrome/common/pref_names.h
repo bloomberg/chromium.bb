@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/bookmarks/core/common/bookmark_pref_names.h"
 #include "components/signin/core/common/signin_pref_names.h"
 
 namespace prefs {
@@ -50,9 +51,6 @@ extern const char kOwnerLocale[];
 extern const char kDefaultCharset[];
 extern const char kAcceptLanguages[];
 extern const char kStaticEncodings[];
-extern const char kShowBookmarkBar[];
-extern const char kShowAppsShortcutInBookmarkBar[];
-extern const char kBookmarkEditorExpandedNodes[];
 extern const char kWebKitCommonScript[];
 extern const char kWebKitStandardFontFamily[];
 extern const char kWebKitFixedFontFamily[];
@@ -354,7 +352,6 @@ extern const char kAutofillDialogSaveData[];
 extern const char kAutofillDialogWalletShippingSameAsBilling[];
 extern const char kAutofillGeneratedCardBubbleTimesShown[];
 extern const char kAutofillDialogDefaults[];
-extern const char kEditBookmarksEnabled[];
 
 extern const char kPinnedTabs[];
 
@@ -446,9 +443,6 @@ extern const char kCrashReportingEnabled[];
 #endif
 extern const char kMetricsInitialLogs[];
 extern const char kMetricsOngoingLogs[];
-
-extern const char kBookmarkPromptEnabled[];
-extern const char kBookmarkPromptImpressionCount[];
 
 extern const char kVariationsLastFetchTime[];
 extern const char kVariationsRestrictParameter[];
