@@ -1715,60 +1715,6 @@ bool RenderViewImpl::runFileChooser(
   return ScheduleFileChooser(ipc_params, chooser_completion);
 }
 
-void RenderViewImpl::runModalAlertDialog(WebLocalFrame* frame,
-                                         const WebString& message) {
-  RenderFrameImpl::FromWebFrame(frame)->runModalAlertDialog(message);
-}
-
-bool RenderViewImpl::runModalConfirmDialog(WebLocalFrame* frame,
-                                           const WebString& message) {
-  return RenderFrameImpl::FromWebFrame(frame)->runModalConfirmDialog(message);
-}
-
-bool RenderViewImpl::runModalPromptDialog(WebLocalFrame* frame,
-                                          const WebString& message,
-                                          const WebString& default_value,
-                                          WebString* actual_value) {
-  return RenderFrameImpl::FromWebFrame(frame)->
-      runModalPromptDialog(message, default_value, actual_value);
-}
-
-bool RenderViewImpl::runModalBeforeUnloadDialog(WebLocalFrame* frame,
-                                                const WebString& message) {
-  bool is_reload = false;
-  WebDataSource* ds = frame->provisionalDataSource();
-  if (ds)
-    is_reload = (ds->navigationType() == blink::WebNavigationTypeReload);
-  return RenderFrameImpl::FromWebFrame(frame)->
-      runModalBeforeUnloadDialog(is_reload, message);
-}
-
-void RenderViewImpl::runModalAlertDialog(const WebString& message) {
-  /* bogus version of the function to avoid errors */
-  NOTIMPLEMENTED();
-}
-
-bool RenderViewImpl::runModalConfirmDialog(const WebString& message) {
-  /* bogus version of the function to avoid errors */
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool RenderViewImpl::runModalPromptDialog(const WebString& message,
-                                          const WebString& default_value,
-                                          WebString* actual_value) {
-  /* bogus version of the function to avoid errors */
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool RenderViewImpl::runModalBeforeUnloadDialog(bool is_reload,
-                                                const WebString& message) {
-  /* bogus version of the function to avoid errors */
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void RenderViewImpl::showValidationMessage(
     const blink::WebRect& anchor_in_root_view,
     const blink::WebString& main_text,

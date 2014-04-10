@@ -440,25 +440,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool runFileChooser(
       const blink::WebFileChooserParams& params,
       blink::WebFileChooserCompletion* chooser_completion);
-  virtual void runModalAlertDialog(blink::WebLocalFrame* frame,
-                                   const blink::WebString& message);
-  virtual bool runModalConfirmDialog(blink::WebLocalFrame* frame,
-                                     const blink::WebString& message);
-  virtual bool runModalPromptDialog(blink::WebLocalFrame* frame,
-                                    const blink::WebString& message,
-                                    const blink::WebString& default_value,
-                                    blink::WebString* actual_value);
-  virtual bool runModalBeforeUnloadDialog(blink::WebLocalFrame* frame,
-                                          const blink::WebString& message);
-  // -- begin stub implementations --
-  virtual void runModalAlertDialog(const blink::WebString& message);
-  virtual bool runModalConfirmDialog(const blink::WebString& message);
-  virtual bool runModalPromptDialog(const blink::WebString& message,
-                                    const blink::WebString& default_value,
-                                    blink::WebString* actual_value);
-  virtual bool runModalBeforeUnloadDialog(bool is_reload,
-                                          const blink::WebString& message);
-  // -- end stub implementations --
   virtual void showValidationMessage(const blink::WebRect& anchor_in_root_view,
                                      const blink::WebString& main_text,
                                      const blink::WebString& sub_text,
