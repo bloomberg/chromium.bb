@@ -8,17 +8,11 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
 
-class GlassAppWindowFrameViewWin;
-
 // Windows-specific parts of the views-backed native shell window implementation
 // for packaged apps.
 class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
  public:
   ChromeNativeAppWindowViewsWin();
-
-  GlassAppWindowFrameViewWin* glass_frame_view() {
-    return glass_frame_view_;
-  };
 
  private:
   void ActivateParentDesktopIfNecessary();
@@ -33,8 +27,6 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
                                   views::Widget* widget) OVERRIDE;
   virtual void InitializeDefaultWindow(
       const apps::AppWindow::CreateParams& create_params) OVERRIDE;
-  virtual views::NonClientFrameView* CreateStandardDesktopAppFrame() OVERRIDE;
-  virtual apps::AppWindowFrameView* CreateNonStandardAppFrame() OVERRIDE;
 
   // Overridden from ui::BaseWindow:
   virtual void Show() OVERRIDE;
@@ -44,12 +36,6 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
   virtual void UpdateShelfMenu() OVERRIDE;
 
   base::WeakPtrFactory<ChromeNativeAppWindowViewsWin> weak_ptr_factory_;
-
-  // Populated if there is a glass frame, which provides special information
-  // to the native widget implementation. This will be NULL if there is no
-  // glass frame. Note, this can change from NULL to non-NULL and back again
-  // throughout the life of a window, e.g. if DWM is enabled and disabled.
-  GlassAppWindowFrameViewWin* glass_frame_view_;
 
   // The Windows Application User Model ID identifying the app.
   base::string16 app_model_id_;

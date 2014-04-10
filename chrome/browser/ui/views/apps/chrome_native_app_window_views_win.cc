@@ -6,7 +6,6 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
-#include "apps/ui/views/app_window_frame_view.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -19,8 +18,6 @@
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/views/apps/app_window_desktop_native_widget_aura_win.h"
-#include "chrome/browser/ui/views/apps/glass_app_window_frame_view_win.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_win.h"
 #include "chrome/common/chrome_icon_resources_win.h"
@@ -33,11 +30,6 @@
 #include "ui/base/win/shell.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/win/hwnd_util.h"
-#include "ui/wm/core/easy_resize_window_targeter.h"
-
-#if defined(USE_ASH)
-#include "chrome/browser/ui/ash/ash_util.h"
-#endif
 
 namespace {
 
@@ -76,7 +68,7 @@ void CreateIconAndSetRelaunchDetails(
 }  // namespace
 
 ChromeNativeAppWindowViewsWin::ChromeNativeAppWindowViewsWin()
-    : weak_ptr_factory_(this), glass_frame_view_(NULL) {}
+    : weak_ptr_factory_(this) {}
 
 void ChromeNativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
   if (!ash::Shell::HasInstance())
@@ -148,7 +140,7 @@ void ChromeNativeAppWindowViewsWin::OnBeforeWidgetInit(
   if (desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
     init_params->context = ash::Shell::GetPrimaryRootWindow();
   else
-    init_params->native_widget = new AppWindowDesktopNativeWidgetAuraWin(this);
+    init_params->native_widget = new views::DesktopNativeWidgetAura(widget);
 }
 
 void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
@@ -174,33 +166,6 @@ void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
                  weak_ptr_factory_.GetWeakPtr()));
 
   UpdateShelfMenu();
-}
-
-views::NonClientFrameView*
-ChromeNativeAppWindowViewsWin::CreateStandardDesktopAppFrame() {
-  glass_frame_view_ = NULL;
-  if (ui::win::IsAeroGlassEnabled()) {
-    glass_frame_view_ = new GlassAppWindowFrameViewWin(this, widget());
-    return glass_frame_view_;
-  }
-  return ChromeNativeAppWindowViews::CreateStandardDesktopAppFrame();
-}
-
-apps::AppWindowFrameView*
-ChromeNativeAppWindowViewsWin::CreateNonStandardAppFrame() {
-  apps::AppWindowFrameView* frame =
-      ChromeNativeAppWindowViews::CreateNonStandardAppFrame();
-
-  if (!chrome::IsNativeWindowInAsh(widget()->GetNativeWindow())) {
-    aura::Window* root_window = widget()->GetNativeWindow()->GetRootWindow();
-    int resize_inside = frame->resize_inside_bounds_size();
-    gfx::Insets inset(
-        resize_inside, resize_inside, resize_inside, resize_inside);
-    root_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
-        new wm::EasyResizeWindowTargeter(root_window, inset, inset)));
-  }
-
-  return frame;
 }
 
 void ChromeNativeAppWindowViewsWin::Show() {

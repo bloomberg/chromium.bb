@@ -29,11 +29,8 @@
 #endif
 
 namespace {
-
-const int kDefaultResizeInsideBoundsSize = 5;
-const int kDefaultResizeAreaCornerSize = 16;
+// Height of the chrome-style caption, in pixels.
 const int kCaptionHeight = 25;
-
 }  // namespace
 
 namespace apps {
@@ -41,26 +38,36 @@ namespace apps {
 const char AppWindowFrameView::kViewClassName[] =
     "browser/ui/views/extensions/AppWindowFrameView";
 
-AppWindowFrameView::AppWindowFrameView(views::Widget* widget,
-                                       NativeAppWindow* window,
-                                       bool draw_frame,
-                                       const SkColor& frame_color)
-    : widget_(widget),
-      window_(window),
-      draw_frame_(draw_frame),
-      frame_color_(frame_color),
+AppWindowFrameView::AppWindowFrameView()
+    : widget_(NULL),
+      window_(NULL),
       close_button_(NULL),
       maximize_button_(NULL),
       restore_button_(NULL),
       minimize_button_(NULL),
-      resize_inside_bounds_size_(kDefaultResizeInsideBoundsSize),
+      resize_inside_bounds_size_(0),
       resize_outside_bounds_size_(0),
-      resize_area_corner_size_(kDefaultResizeAreaCornerSize) {}
+      resize_area_corner_size_(0) {}
 
 AppWindowFrameView::~AppWindowFrameView() {}
 
-void AppWindowFrameView::Init() {
-  if (draw_frame_) {
+void AppWindowFrameView::Init(views::Widget* widget,
+                              NativeAppWindow* window,
+                              bool draw_frame,
+                              const SkColor& frame_color,
+                              int resize_inside_bounds_size,
+                              int resize_outside_bounds_size,
+                              int resize_outside_scale_for_touch,
+                              int resize_area_corner_size) {
+  widget_ = widget;
+  window_ = window;
+  draw_frame_ = draw_frame;
+  frame_color_ = frame_color;
+  resize_inside_bounds_size_ = resize_inside_bounds_size;
+  resize_outside_bounds_size_ = resize_outside_bounds_size;
+  resize_area_corner_size_ = resize_area_corner_size;
+
+  if (draw_frame) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button_ = new views::ImageButton(this);
     close_button_->SetImage(
@@ -118,14 +125,6 @@ void AppWindowFrameView::Init() {
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
     AddChildView(minimize_button_);
   }
-}
-
-void AppWindowFrameView::SetResizeSizes(int resize_inside_bounds_size,
-                                        int resize_outside_bounds_size,
-                                        int resize_area_corner_size) {
-  resize_inside_bounds_size_ = resize_inside_bounds_size;
-  resize_outside_bounds_size_ = resize_outside_bounds_size;
-  resize_area_corner_size_ = resize_area_corner_size;
 }
 
 // views::NonClientFrameView implementation.

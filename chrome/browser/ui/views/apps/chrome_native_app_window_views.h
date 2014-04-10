@@ -39,12 +39,18 @@ class ChromeNativeAppWindowViews : public apps::NativeAppWindowViews,
       const apps::AppWindow::CreateParams& create_params);
   virtual void InitializePanelWindow(
       const apps::AppWindow::CreateParams& create_params);
-  virtual views::NonClientFrameView* CreateStandardDesktopAppFrame();
-  virtual apps::AppWindowFrameView* CreateNonStandardAppFrame();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ShapedAppWindowTargeterTest,
                            ResizeInsetsWithinBounds);
+
+  // Installs an EasyResizeWindowTargeter on the containing window, which
+  // allows the window to be resized from within |kResizeInsideBoundsSize|
+  // pixels inside the window bounds.
+  void InstallEasyResizeTargeterOnContainer() const;
+
+  // Caller owns the returned object.
+  apps::AppWindowFrameView* CreateAppWindowFrameView();
 
   // ui::BaseWindow implementation.
   virtual ui::WindowShowState GetRestoredState() const OVERRIDE;
