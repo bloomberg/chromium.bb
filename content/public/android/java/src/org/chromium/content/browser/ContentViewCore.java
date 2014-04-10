@@ -432,7 +432,7 @@ public class ContentViewCore
     // a focused element.
     // Every time the user, IME, javascript (Blink), autofill etc. modifies the content, the new
     //  state must be reflected to this to keep consistency.
-    private Editable mEditable;
+    private final Editable mEditable;
 
     /**
      * PID used to indicate an invalid render process.
@@ -1472,7 +1472,7 @@ public class ContentViewCore
         hideSelectActionBar();
     }
 
-    void hideSelectActionBar() {
+    public void hideSelectActionBar() {
         if (mActionMode != null) {
             mActionMode.finish();
             mActionMode = null;
