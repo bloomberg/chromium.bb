@@ -2215,6 +2215,7 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
   // overlay and underlay resize at the same time, let them both to have
   // some time waiting. See crbug.com/352020.
   if (underlay_view_ &&
+      underlay_view_->render_widget_host_ &&
       !underlay_view_->render_widget_host_->
           CanPauseForPendingResizeOrRepaints())
     return;
