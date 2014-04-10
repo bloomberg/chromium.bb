@@ -128,6 +128,32 @@ class VideoCaptureDeviceTest : public testing::Test {
 
   const VideoCaptureFormat& last_format() const { return last_format_; }
 
+  scoped_ptr<VideoCaptureDevice::Name> GetFirstDeviceNameSupportingPixelFormat(
+      const VideoPixelFormat& pixel_format) {
+    VideoCaptureDevice::GetDeviceNames(&names_);
+    if (!names_.size()) {
+      DVLOG(1) << "No camera available.";
+      return scoped_ptr<VideoCaptureDevice::Name>();
+    }
+    VideoCaptureDevice::Names::iterator names_iterator;
+    for (names_iterator = names_.begin(); names_iterator != names_.end();
+         ++names_iterator) {
+      VideoCaptureFormats supported_formats;
+      VideoCaptureDevice::GetDeviceSupportedFormats(*names_iterator,
+                                                    &supported_formats);
+      VideoCaptureFormats::iterator formats_iterator;
+      for (formats_iterator = supported_formats.begin();
+           formats_iterator != supported_formats.end(); ++formats_iterator) {
+        if (formats_iterator->pixel_format == pixel_format) {
+          return scoped_ptr<VideoCaptureDevice::Name>(
+              new VideoCaptureDevice::Name(*names_iterator));
+        }
+      }
+    }
+    DVLOG(1) << "No camera can capture the format: " << pixel_format;
+    return scoped_ptr<VideoCaptureDevice::Name>();
+  }
+
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer initialize_com_;
 #endif
@@ -161,7 +187,7 @@ TEST_F(VideoCaptureDeviceTest, CaptureVGA) {
 
   scoped_ptr<VideoCaptureDevice> device(
       VideoCaptureDevice::Create(names_.front()));
-  ASSERT_FALSE(device.get() == NULL);
+  ASSERT_TRUE(device);
   DVLOG(1) << names_.front().id();
 
   EXPECT_CALL(*client_, OnErr())
@@ -189,7 +215,7 @@ TEST_F(VideoCaptureDeviceTest, Capture720p) {
 
   scoped_ptr<VideoCaptureDevice> device(
       VideoCaptureDevice::Create(names_.front()));
-  ASSERT_FALSE(device.get() == NULL);
+  ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())
       .Times(0);
@@ -213,7 +239,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
   }
   scoped_ptr<VideoCaptureDevice> device(
       VideoCaptureDevice::Create(names_.front()));
-  ASSERT_TRUE(device.get() != NULL);
+  ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())
       .Times(0);
@@ -284,7 +310,7 @@ TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
   }
   scoped_ptr<VideoCaptureDevice> device(
       VideoCaptureDevice::Create(names_.front()));
-  ASSERT_TRUE(device.get() != NULL);
+  ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())
       .Times(0);
@@ -312,7 +338,7 @@ TEST_F(VideoCaptureDeviceTest, FakeCapture) {
 
   scoped_ptr<VideoCaptureDevice> device(
       FakeVideoCaptureDevice::Create(names.front()));
-  ASSERT_TRUE(device.get() != NULL);
+  ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())
       .Times(0);
@@ -332,14 +358,14 @@ TEST_F(VideoCaptureDeviceTest, FakeCapture) {
 
 // Start the camera in 720p to capture MJPEG instead of a raw format.
 TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
-  VideoCaptureDevice::GetDeviceNames(&names_);
-  if (!names_.size()) {
-    DVLOG(1) << "No camera available. Exiting test.";
+  scoped_ptr<VideoCaptureDevice::Name> name =
+      GetFirstDeviceNameSupportingPixelFormat(PIXEL_FORMAT_MJPEG);
+  if (!name) {
+    DVLOG(1) << "No camera supports MJPEG format. Exiting test.";
     return;
   }
-  scoped_ptr<VideoCaptureDevice> device(
-      VideoCaptureDevice::Create(names_.front()));
-  ASSERT_TRUE(device.get() != NULL);
+  scoped_ptr<VideoCaptureDevice> device(VideoCaptureDevice::Create(*name));
+  ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())
       .Times(0);
@@ -359,19 +385,13 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
 }
 
 TEST_F(VideoCaptureDeviceTest, GetDeviceSupportedFormats) {
-  VideoCaptureDevice::GetDeviceNames(&names_);
-  if (!names_.size()) {
-    DVLOG(1) << "No camera available. Exiting test.";
-    return;
-  }
-  VideoCaptureFormats supported_formats;
-  VideoCaptureDevice::Names::iterator names_iterator;
-  for (names_iterator = names_.begin(); names_iterator != names_.end();
-       ++names_iterator) {
-    VideoCaptureDevice::GetDeviceSupportedFormats(*names_iterator,
-                                                  &supported_formats);
-    // Nothing to test here since we cannot forecast the hardware capabilities.
-  }
+  // Use PIXEL_FORMAT_MAX to iterate all device names for testing
+  // GetDeviceSupportedFormats().
+  scoped_ptr<VideoCaptureDevice::Name> name =
+      GetFirstDeviceNameSupportingPixelFormat(PIXEL_FORMAT_MAX);
+  // Verify no camera returned for PIXEL_FORMAT_MAX. Nothing else to test here
+  // since we cannot forecast the hardware capabilities.
+  ASSERT_FALSE(name);
 }
 
 TEST_F(VideoCaptureDeviceTest, FakeCaptureVariableResolution) {
@@ -388,7 +408,7 @@ TEST_F(VideoCaptureDeviceTest, FakeCaptureVariableResolution) {
 
   scoped_ptr<VideoCaptureDevice> device(
       FakeVideoCaptureDevice::Create(names.front()));
-  ASSERT_TRUE(device.get() != NULL);
+  ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())
       .Times(0);
