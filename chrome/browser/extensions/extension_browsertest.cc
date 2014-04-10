@@ -62,7 +62,9 @@ ExtensionBrowserTest::ExtensionBrowserTest()
 #if defined(OS_CHROMEOS)
       set_chromeos_user_(true),
 #endif
-      current_channel_(chrome::VersionInfo::CHANNEL_DEV),
+      // Default channel is STABLE but override with UNKNOWN so that unlaunched
+      // or incomplete APIs can write tests.
+      current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN),
       override_prompt_for_external_extensions_(
           FeatureSwitch::prompt_for_external_extensions(),
           false),
