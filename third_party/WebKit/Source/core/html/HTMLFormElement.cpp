@@ -27,6 +27,7 @@
 
 #include <limits>
 #include "HTMLNames.h"
+#include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attribute.h"
@@ -415,12 +416,12 @@ void HTMLFormElement::reset()
     m_isInResetFunction = false;
 }
 
-void HTMLFormElement::requestAutocomplete()
+void HTMLFormElement::requestAutocomplete(const Dictionary& details)
 {
     if (!document().frame() || !shouldAutocomplete() || !UserGestureIndicator::processingUserGesture())
         finishRequestAutocomplete(AutocompleteResultErrorDisabled);
     else
-        document().frame()->loader().client()->didRequestAutocomplete(this);
+        document().frame()->loader().client()->didRequestAutocomplete(this, details);
 }
 
 void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)

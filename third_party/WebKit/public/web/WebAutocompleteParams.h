@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,41 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebAutofillClient_h
-#define WebAutofillClient_h
+#ifndef WebAutocompleteParams_h
+#define WebAutocompleteParams_h
+
+#include "public/platform/WebString.h"
+
+#if BLINK_IMPLEMENTATION
+namespace WebCore {
+class Dictionary;
+}
+#endif
 
 namespace blink {
 
-class WebFormControlElement;
-class WebFormElement;
-class WebInputElement;
-class WebKeyboardEvent;
-class WebNode;
-struct WebAutocompleteParams;
+struct WebAutocompleteParams {
+    double transactionAmount;
 
-template <typename T> class WebVector;
+    WebString transactionCurrency;
 
-class WebAutofillClient {
-public:
-    // Informs the browser an interactive autocomplete has been requested.
-    virtual void didRequestAutocomplete(const WebFormElement&, const WebAutocompleteParams&) { }
+    WebAutocompleteParams()
+        : transactionAmount(0) { }
 
-    // These methods are called when the users edits a text-field.
-    virtual void textFieldDidEndEditing(const WebInputElement&) { }
-    virtual void textFieldDidChange(const WebFormControlElement&) { }
-    virtual void textFieldDidReceiveKeyDown(const WebInputElement&, const WebKeyboardEvent&) { }
-    // This is called when a datalist indicator is clicked.
-    virtual void openTextDataListChooser(const WebInputElement&) { }
-
-    // Informs the client whether or not any subsequent text changes should be ignored.
-    virtual void setIgnoreTextChanges(bool ignore) { }
-
-    virtual void didAssociateFormControls(const WebVector<WebNode>&) { }
-
-protected:
-    virtual ~WebAutofillClient() { }
+#if BLINK_IMPLEMENTATION
+    WebAutocompleteParams(const WebCore::Dictionary&);
+#endif
 };
 
 } // namespace blink
 
-#endif
+#endif // WebAutocompleteParams_h

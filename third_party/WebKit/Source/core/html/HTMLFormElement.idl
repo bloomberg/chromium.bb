@@ -40,5 +40,5 @@
     [CustomElementCallbacks] void reset();
     boolean checkValidity();
 
-    [RuntimeEnabled=RequestAutocomplete] void requestAutocomplete();
+    [RuntimeEnabled=RequestAutocomplete] void requestAutocomplete([Default=Undefined] optional Dictionary details);
 };

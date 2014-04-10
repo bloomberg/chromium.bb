@@ -246,7 +246,7 @@ public:
 
     virtual blink::WebCookieJar* cookieJar() const OVERRIDE { return 0; }
 
-    virtual void didRequestAutocomplete(HTMLFormElement*) OVERRIDE;
+    virtual void didRequestAutocomplete(HTMLFormElement*, const Dictionary&) OVERRIDE;
 
     virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider() OVERRIDE;
     virtual PassOwnPtr<blink::WebApplicationCacheHost> createApplicationCacheHost(blink::WebApplicationCacheHostClient*) OVERRIDE;

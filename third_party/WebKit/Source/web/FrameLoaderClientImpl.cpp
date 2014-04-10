@@ -35,6 +35,7 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "SharedWorkerRepositoryClientImpl.h"
+#include "WebAutocompleteParams.h"
 #include "WebAutofillClient.h"
 #include "WebCachedURLRequest.h"
 #include "WebDOMEvent.h"
@@ -53,6 +54,7 @@
 #include "WebSecurityOrigin.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFullscreen.h"
@@ -750,10 +752,10 @@ void FrameLoaderClientImpl::dispatchWillStartUsingPeerConnectionHandler(blink::W
     m_webFrame->client()->willStartUsingPeerConnectionHandler(webFrame(), handler);
 }
 
-void FrameLoaderClientImpl::didRequestAutocomplete(HTMLFormElement* form)
+void FrameLoaderClientImpl::didRequestAutocomplete(HTMLFormElement* form, const WebCore::Dictionary& details)
 {
     if (m_webFrame->viewImpl() && m_webFrame->viewImpl()->autofillClient())
-        m_webFrame->viewImpl()->autofillClient()->didRequestAutocomplete(m_webFrame, WebFormElement(form));
+        m_webFrame->viewImpl()->autofillClient()->didRequestAutocomplete(WebFormElement(form), WebAutocompleteParams(details));
 }
 
 bool FrameLoaderClientImpl::allowWebGL(bool enabledPerSettings)

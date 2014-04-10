@@ -58,6 +58,7 @@ class WebApplicationCacheHostClient;
 namespace WebCore {
 
     class Color;
+    class Dictionary;
     class DOMWindowExtension;
     class DOMWrapperWorld;
     class DocumentLoader;
@@ -208,7 +209,7 @@ namespace WebCore {
 
         virtual void dispatchWillStartUsingPeerConnectionHandler(blink::WebRTCPeerConnectionHandler*) { }
 
-        virtual void didRequestAutocomplete(HTMLFormElement*) = 0;
+        virtual void didRequestAutocomplete(HTMLFormElement*, const Dictionary&) = 0;
 
         virtual bool allowWebGL(bool enabledPerSettings) { return enabledPerSettings; }
         // Informs the embedder that a WebGL canvas inside this frame received a lost context

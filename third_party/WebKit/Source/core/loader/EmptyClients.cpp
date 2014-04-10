@@ -141,7 +141,7 @@ void EmptyTextCheckerClient::requestCheckingOfString(PassRefPtr<TextCheckingRequ
 {
 }
 
-void EmptyFrameLoaderClient::didRequestAutocomplete(HTMLFormElement*)
+void EmptyFrameLoaderClient::didRequestAutocomplete(HTMLFormElement*, const Dictionary&)
 {
 }
 

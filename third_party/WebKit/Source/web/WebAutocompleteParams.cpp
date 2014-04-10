@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,41 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebAutofillClient_h
-#define WebAutofillClient_h
+#include "config.h"
+#include "WebAutocompleteParams.h"
+
+#include "bindings/v8/Dictionary.h"
+#include "public/platform/WebString.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class WebFormControlElement;
-class WebFormElement;
-class WebInputElement;
-class WebKeyboardEvent;
-class WebNode;
-struct WebAutocompleteParams;
+WebAutocompleteParams::WebAutocompleteParams(const WebCore::Dictionary& details)
+    : transactionAmount(0)
+{
+    details.get("transactionAmount", transactionAmount);
 
-template <typename T> class WebVector;
-
-class WebAutofillClient {
-public:
-    // Informs the browser an interactive autocomplete has been requested.
-    virtual void didRequestAutocomplete(const WebFormElement&, const WebAutocompleteParams&) { }
-
-    // These methods are called when the users edits a text-field.
-    virtual void textFieldDidEndEditing(const WebInputElement&) { }
-    virtual void textFieldDidChange(const WebFormControlElement&) { }
-    virtual void textFieldDidReceiveKeyDown(const WebInputElement&, const WebKeyboardEvent&) { }
-    // This is called when a datalist indicator is clicked.
-    virtual void openTextDataListChooser(const WebInputElement&) { }
-
-    // Informs the client whether or not any subsequent text changes should be ignored.
-    virtual void setIgnoreTextChanges(bool ignore) { }
-
-    virtual void didAssociateFormControls(const WebVector<WebNode>&) { }
-
-protected:
-    virtual ~WebAutofillClient() { }
-};
+    String currency;
+    if (details.get("transactionCurrency", currency))
+        transactionCurrency = WebString(currency);
+}
 
 } // namespace blink
-
-#endif

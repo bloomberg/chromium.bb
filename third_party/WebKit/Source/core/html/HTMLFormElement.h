@@ -102,7 +102,7 @@ public:
         AutocompleteResultErrorInvalid,
     };
 
-    void requestAutocomplete();
+    void requestAutocomplete(const Dictionary&);
     void finishRequestAutocomplete(AutocompleteResult);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(autocomplete);
