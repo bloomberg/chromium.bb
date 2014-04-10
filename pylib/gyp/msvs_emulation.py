@@ -345,6 +345,15 @@ class MsvsSettings(object):
     else:
       return None
 
+  def GetAsmflags(self, config):
+    """Returns the flags that need to be added to ml invocations."""
+    config = self._TargetConfig(config)
+    asmflags = []
+    safeseh = self._Setting(('MASM', 'UseSafeExceptionHandlers'), config)
+    if safeseh == 'true':
+      asmflags.append('/safeseh')
+    return asmflags
+
   def GetCflags(self, config):
     """Returns the flags that need to be added to .c and .cc compilations."""
     config = self._TargetConfig(config)
@@ -528,6 +537,7 @@ class MsvsSettings(object):
     ld('Profile', map={'true': '/PROFILE'})
     ld('LargeAddressAware',
         map={'1': ':NO', '2': ''}, prefix='/LARGEADDRESSAWARE')
+    ld('ImageHasSafeExceptionHandlers', map={'true': '/SAFESEH'})
     # TODO(scottmg): This should sort of be somewhere else (not really a flag).
     ld('AdditionalDependencies', prefix='')
 

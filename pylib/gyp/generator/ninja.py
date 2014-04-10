@@ -825,6 +825,7 @@ class NinjaWriter:
       cflags_objcc = ['$cflags_cc'] + \
                      self.xcode_settings.GetCflagsObjCC(config_name)
     elif self.flavor == 'win':
+      asmflags = self.msvs_settings.GetAsmflags(config_name)
       cflags = self.msvs_settings.GetCflags(config_name)
       cflags_c = self.msvs_settings.GetCflagsC(config_name)
       cflags_cc = self.msvs_settings.GetCflagsCC(config_name)
@@ -859,6 +860,8 @@ class NinjaWriter:
     self.WriteVariableList(ninja_file, 'defines',
                            [Define(d, self.flavor) for d in defines])
     if self.flavor == 'win':
+      self.WriteVariableList(ninja_file, 'asmflags',
+                             map(self.ExpandSpecial, asmflags))
       self.WriteVariableList(ninja_file, 'rcflags',
           [QuoteShellArgument(self.ExpandSpecial(f), self.flavor)
            for f in self.msvs_settings.GetRcflags(config_name,
@@ -1889,7 +1892,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       'asm',
       description='ASM $in',
       command=('%s gyp-win-tool asm-wrapper '
-               '$arch $asm $defines $includes /c /Fo $out $in' %
+               '$arch $asm $defines $includes $asmflags /c /Fo $out $in' %
                sys.executable))
 
   if flavor != 'mac' and flavor != 'win':
