@@ -568,7 +568,7 @@ def main(argv):
       default=False, action='store_true',
       help='Upload build artifacts.')
 
-  parser.add_option(
+  parser.add_argument(
         '--packages-file', dest='packages_file',
         default=None,
         help='Output packages file describing list of package files built.')
