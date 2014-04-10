@@ -1,0 +1,27 @@
+<!doctype html>
+<style>
+    body {
+        background-image: url('resources/simple_image.png');
+        background-size: 200px 200px;
+        height: 3000px;
+    }
+
+    body.fixed {
+        background-attachment: fixed;
+    }
+</style>
+<script>
+    if (window.testRunner)
+        testRunner.dumpAsTextWithPixelResults();
+
+    if (window.internals) {
+        window.internals.settings.setForceCompositingMode(true);
+        window.internals.settings.setAcceleratedCompositingForFixedRootBackgroundEnabled(true);
+    }
+
+    window.onload = function() {
+        window.scrollTo(0, 300);
+        // crbug.com/343132 RenderLayerCompositor::rootFixedBackgroundsChanged should not query stale compositing state
+        document.querySelector('body').classList.add('fixed');
+    }
+</script>
