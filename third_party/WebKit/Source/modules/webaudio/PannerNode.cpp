@@ -76,9 +76,6 @@ PannerNode::PannerNode(AudioContext* context, float sampleRate)
     m_channelCountMode = ClampedMax;
     m_channelInterpretation = AudioBus::Speakers;
 
-    m_distanceGain = AudioParam::create(context, "distanceGain", 1.0, 0.0, 1.0);
-    m_coneGain = AudioParam::create(context, "coneGain", 1.0, 0.0, 1.0);
-
     m_cachedListener = AudioListener::create();
 
     setNodeType(NodeTypePanner);
@@ -429,12 +426,7 @@ float PannerNode::calculateDistanceConeGain()
 
     double listenerDistance = m_position.distanceTo(listenerPosition);
     double distanceGain = m_distanceEffect.gain(listenerDistance);
-
-    m_distanceGain->setValue(static_cast<float>(distanceGain));
-
     double coneGain = m_coneEffect.gain(m_position, m_orientation, listenerPosition);
-
-    m_coneGain->setValue(static_cast<float>(coneGain));
 
     return float(distanceGain * coneGain);
 }

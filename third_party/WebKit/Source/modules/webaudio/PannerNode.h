@@ -32,7 +32,6 @@
 #include "platform/audio/Panner.h"
 #include "modules/webaudio/AudioListener.h"
 #include "modules/webaudio/AudioNode.h"
-#include "modules/webaudio/AudioParam.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -159,8 +158,6 @@ private:
     FloatPoint3D m_cachedVelocity;
 
     // Gain
-    RefPtr<AudioParam> m_distanceGain;
-    RefPtr<AudioParam> m_coneGain;
     DistanceEffect m_distanceEffect;
     ConeEffect m_coneEffect;
     float m_lastGain;
