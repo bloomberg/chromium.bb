@@ -59,9 +59,11 @@ int main(int argc, char** argv)
     WebCore::TestingPlatformSupport platform(platformConfig);
 
     WebCore::Heap::init();
+    WebCore::ThreadState::attachMainThread();
     WebCore::Partitions::init();
     int result = base::RunUnitTestsUsingBaseTestSuite(argc, argv);
     WebCore::Partitions::shutdown();
+    WebCore::ThreadState::detachMainThread();
     WebCore::Heap::shutdown();
     return result;
 }
