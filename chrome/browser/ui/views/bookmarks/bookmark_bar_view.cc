@@ -20,7 +20,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -57,6 +56,9 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -311,9 +313,9 @@ class OverFlowButton : public views::MenuButton {
 };
 
 void RecordAppLaunch(Profile* profile, GURL url) {
-  DCHECK(profile->GetExtensionService());
   const extensions::Extension* extension =
-      profile->GetExtensionService()->GetInstalledApp(url);
+      extensions::ExtensionRegistry::Get(profile)
+          ->enabled_extensions().GetAppByURL(url);
   if (!extension)
     return;
 

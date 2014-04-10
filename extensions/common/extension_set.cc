@@ -89,6 +89,11 @@ const Extension* ExtensionSet::GetExtensionOrAppByURL(const GURL& url) const {
   return GetHostedAppByURL(url);
 }
 
+const Extension* ExtensionSet::GetAppByURL(const GURL& url) const {
+  const Extension* extension = GetExtensionOrAppByURL(url);
+  return (extension && extension->is_app()) ? extension : NULL;
+}
+
 const Extension* ExtensionSet::GetHostedAppByURL(const GURL& url) const {
   for (ExtensionMap::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {

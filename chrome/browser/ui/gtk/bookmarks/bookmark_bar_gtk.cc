@@ -17,7 +17,6 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
@@ -50,6 +49,9 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -123,9 +125,8 @@ void SetToolBarStyle() {
 }
 
 void RecordAppLaunch(Profile* profile, const GURL& url) {
-  DCHECK(profile->GetExtensionService());
   const extensions::Extension* extension =
-      profile->GetExtensionService()->GetInstalledApp(url);
+      ExtensionRegistry::Get(profile)->enabled_extensions().GetAppByURL(url);
   if (!extension)
     return;
 

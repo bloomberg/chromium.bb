@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -45,10 +46,9 @@ void ExtensionAppProvider::LaunchAppFromOmnibox(
     const AutocompleteMatch& match,
     Profile* profile,
     WindowOpenDisposition disposition) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
   const extensions::Extension* extension =
-      service->GetInstalledApp(match.destination_url);
+      extensions::ExtensionRegistry::Get(profile)
+          ->enabled_extensions().GetAppByURL(match.destination_url);
   // While the Omnibox popup is open, the extension can be updated, changing
   // its URL and leaving us with no extension being found. In this case, we
   // ignore the request.

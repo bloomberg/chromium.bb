@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
@@ -14,9 +13,11 @@
 #include "chrome/common/extensions/api/sync_file_system.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/common/extension_set.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -58,9 +59,8 @@ void ExtensionSyncEventObserver::Shutdown() {
 
 std::string ExtensionSyncEventObserver::GetExtensionId(
     const GURL& app_origin) {
-  const Extension* app = ExtensionSystem::Get(browser_context_)
-                             ->extension_service()
-                             ->GetInstalledApp(app_origin);
+  const Extension* app = ExtensionRegistry::Get(browser_context_)
+      ->enabled_extensions().GetAppByURL(app_origin);
   if (!app) {
     // The app is uninstalled or disabled.
     return std::string();

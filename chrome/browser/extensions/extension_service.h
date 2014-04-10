@@ -130,12 +130,6 @@ class ExtensionService
       public content::NotificationObserver,
       public extensions::Blacklist::Observer {
  public:
-  // Returns the Extension of hosted or packaged apps, NULL otherwise.
-  const extensions::Extension* GetInstalledApp(const GURL& url) const;
-
-  // Returns whether the URL is from either a hosted or packaged app.
-  bool IsInstalledApp(const GURL& url) const;
-
   // Attempts to uninstall an extension from a given ExtensionService. Returns
   // true iff the target extension exists.
   static bool UninstallExtensionHelper(ExtensionService* extensions_service,

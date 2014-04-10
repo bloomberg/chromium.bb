@@ -13,7 +13,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -52,6 +51,9 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -132,9 +134,9 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 const NSTimeInterval kDragAndDropAnimationDuration = 0.25;
 
 void RecordAppLaunch(Profile* profile, GURL url) {
-  DCHECK(profile->GetExtensionService());
   const extensions::Extension* extension =
-      profile->GetExtensionService()->GetInstalledApp(url);
+      extensions::ExtensionRegistry::Get(profile)->
+          enabled_extensions().GetAppByURL(url);
   if (!extension)
     return;
 

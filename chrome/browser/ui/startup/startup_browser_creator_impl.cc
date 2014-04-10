@@ -92,6 +92,8 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -228,11 +230,11 @@ void RecordCmdLineAppHistogram(extensions::Manifest::Type app_type) {
 void RecordAppLaunches(Profile* profile,
                        const std::vector<GURL>& cmd_line_urls,
                        StartupTabs& autolaunch_tabs) {
-  ExtensionService* extension_service = profile->GetExtensionService();
-  DCHECK(extension_service);
+  const extensions::ExtensionSet& extensions =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   for (size_t i = 0; i < cmd_line_urls.size(); ++i) {
     const extensions::Extension* extension =
-        extension_service->GetInstalledApp(cmd_line_urls.at(i));
+        extensions.GetAppByURL(cmd_line_urls.at(i));
     if (extension) {
       CoreAppLauncherHandler::RecordAppLaunchType(
           extension_misc::APP_LAUNCH_CMD_LINE_URL,
@@ -241,7 +243,7 @@ void RecordAppLaunches(Profile* profile,
   }
   for (size_t i = 0; i < autolaunch_tabs.size(); ++i) {
     const extensions::Extension* extension =
-        extension_service->GetInstalledApp(autolaunch_tabs.at(i).url);
+        extensions.GetAppByURL(autolaunch_tabs.at(i).url);
     if (extension) {
       CoreAppLauncherHandler::RecordAppLaunchType(
           extension_misc::APP_LAUNCH_AUTOLAUNCH,
@@ -513,7 +515,8 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
     if (policy->IsWebSafeScheme(url.scheme()) ||
         url.SchemeIs(content::kFileScheme)) {
       const extensions::Extension* extension =
-          profile->GetExtensionService()->GetInstalledApp(url);
+          extensions::ExtensionRegistry::Get(profile)
+              ->enabled_extensions().GetAppByURL(url);
       if (extension) {
         RecordCmdLineAppHistogram(extension->GetType());
       } else {

@@ -32,8 +32,10 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -297,10 +299,9 @@ bool DriveWebContentsManager::ShouldCreateWebContents(
     return true;
 
   // Check that the target URL is for the Drive app.
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  const extensions::Extension *extension =
-      service->GetInstalledApp(target_url);
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)
+          ->enabled_extensions().GetAppByURL(target_url);
   if (!extension || extension->id() != app_id_)
     return true;
 

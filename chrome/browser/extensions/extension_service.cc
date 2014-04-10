@@ -267,16 +267,6 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
   return true;
 }
 
-const Extension* ExtensionService::GetInstalledApp(const GURL& url) const {
-  const Extension* extension =
-      registry_->enabled_extensions().GetExtensionOrAppByURL(url);
-  return (extension && extension->is_app()) ? extension : NULL;
-}
-
-bool ExtensionService::IsInstalledApp(const GURL& url) const {
-  return !!GetInstalledApp(url);
-}
-
 // static
 // This function is used to implement the command-line switch
 // --uninstall-extension, and to uninstall an extension via sync.  The LOG

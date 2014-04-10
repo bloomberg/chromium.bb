@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -22,8 +21,10 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -105,9 +106,10 @@ base::string16 TabContentsResource::GetTitle() const {
   // Only classify as an app if the URL is an app and the tab is hosting an
   // extension process.  (It's possible to be showing the URL from before it
   // was installed as an app.)
-  ExtensionService* extension_service = profile_->GetExtensionService();
   extensions::ProcessMap* process_map = extensions::ProcessMap::Get(profile_);
-  bool is_app = extension_service->IsInstalledApp(url) &&
+  bool is_app =
+      extensions::ExtensionRegistry::Get(profile_)
+          ->enabled_extensions().GetAppByURL(url) != NULL &&
       process_map->Contains(web_contents_->GetRenderProcessHost()->GetID());
 
   int message_id = util::GetMessagePrefixID(

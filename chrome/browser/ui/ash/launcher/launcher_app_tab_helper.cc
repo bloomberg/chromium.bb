@@ -18,13 +18,16 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 
 namespace {
 
 const extensions::Extension* GetExtensionForTab(Profile* profile,
                                                 content::WebContents* tab) {
-  ExtensionService* extension_service = profile->GetExtensionService();
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!extension_service || !extension_service->extensions_enabled())
     return NULL;
 
@@ -32,23 +35,27 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
   // before it gets destroyed, in which case there is no browser.
   Browser* browser = chrome::FindBrowserWithWebContents(tab);
 
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+
   // Use the Browser's app name to determine the extension for app windows and
   // use the tab's url for app tabs.
   if (browser && browser->is_app()) {
-    return extension_service->GetInstalledExtension(
-        web_app::GetExtensionIdFromApplicationName(browser->app_name()));
+    return registry->GetExtensionById(
+        web_app::GetExtensionIdFromApplicationName(browser->app_name()),
+        extensions::ExtensionRegistry::EVERYTHING);
   }
 
   const GURL url = tab->GetURL();
-  if (extension_service->IsInstalledApp(url))
-    return extension_service->GetInstalledApp(url);
+  const extensions::ExtensionSet& extensions = registry->enabled_extensions();
+  const extensions::Extension* extension = extensions.GetAppByURL(url);
+  if (extension)
+    return extension;
 
   // Bookmark app windows should match their launch url extension despite
   // their web extents.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableStreamlinedHostedApps)) {
-    const extensions::ExtensionSet& extensions =
-        extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
     for (extensions::ExtensionSet::const_iterator it = extensions.begin();
          it != extensions.end(); ++it) {
       if (it->get()->from_bookmark() &&

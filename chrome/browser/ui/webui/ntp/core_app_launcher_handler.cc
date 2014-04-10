@@ -6,13 +6,14 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "net/base/escape.h"
 
 namespace {
@@ -98,9 +99,10 @@ void CoreAppLauncherHandler::RecordAppLaunchByUrl(
   CHECK(bucket != extension_misc::APP_LAUNCH_BUCKET_INVALID);
 
   GURL url(net::UnescapeURLComponent(escaped_url, kUnescapeRules));
-  DCHECK(profile->GetExtensionService());
-  if (!profile->GetExtensionService()->IsInstalledApp(url))
+  if (!extensions::ExtensionRegistry::Get(profile)
+          ->enabled_extensions().GetAppByURL(url)) {
     return;
+  }
 
   RecordAppLaunchType(bucket, extensions::Manifest::TYPE_HOSTED_APP);
 }

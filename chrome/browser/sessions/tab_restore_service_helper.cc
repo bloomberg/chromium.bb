@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -22,7 +21,9 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
@@ -37,9 +38,9 @@ namespace {
 void RecordAppLaunch(Profile* profile, const TabRestoreService::Tab& tab) {
 #if !defined(OS_ANDROID)
   GURL url = tab.navigations.at(tab.current_navigation_index).virtual_url();
-  DCHECK(profile->GetExtensionService());
   const extensions::Extension* extension =
-      profile->GetExtensionService()->GetInstalledApp(url);
+      extensions::ExtensionRegistry::Get(profile)
+          ->enabled_extensions().GetAppByURL(url);
   if (!extension)
     return;
 

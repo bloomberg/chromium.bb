@@ -101,6 +101,11 @@ class ExtensionSet {
   // EventBindings::HandleContextCreated)
   const Extension* GetExtensionOrAppByURL(const GURL& url) const;
 
+  // Returns the app specified by the given |url|, if one exists. This will
+  // return NULL if there is no entry with |url|, or if the extension with
+  // |url| is not an app.
+  const Extension* GetAppByURL(const GURL& url) const;
+
   // Returns the hosted app whose web extent contains the URL.
   const Extension* GetHostedAppByURL(const GURL& url) const;
 
