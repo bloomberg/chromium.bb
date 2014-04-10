@@ -42,6 +42,11 @@ class SyncedNotificationAppInfo : public notifier::ImageHolderDelegate {
 
   std::string settings_display_name() const { return settings_display_name_; }
 
+  // Sets/gets the link to navigate to when the user clicks on the body of the
+  // app's welcome notification.
+  void SetWelcomeLinkUrl(const GURL& settings_link_url);
+  GURL welcome_link_url() const { return welcome_link_url_; }
+
   // Set the URL for the low and high DPI bitmaps for the settings dialog.
   void SetSettingsURLs(const GURL& settings_low_dpi,
                        const GURL& settings_high_dpi);
@@ -103,6 +108,8 @@ class SyncedNotificationAppInfo : public notifier::ImageHolderDelegate {
   Profile* profile_;
   std::vector<std::string> app_ids_;
   std::string settings_display_name_;
+  GURL welcome_link_url_;
+
   // The 1x and 2x versions of the icon for settings, small.
   scoped_ptr<ImageHolder> settings_holder_;
   // Monochrome icons for app badging (1x and 2x), small.

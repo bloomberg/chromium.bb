@@ -59,6 +59,11 @@ void SyncedNotificationAppInfo::RemoveAppId(const std::string& app_id) {
   }
 }
 
+void SyncedNotificationAppInfo::SetWelcomeLinkUrl(
+    const GURL& welcome_link_url) {
+  welcome_link_url_ = welcome_link_url;
+}
+
 void SyncedNotificationAppInfo::SetSettingsURLs(
     const GURL& settings_low_dpi, const GURL& settings_high_dpi) {
   settings_holder_.reset(new ImageHolder(settings_low_dpi,

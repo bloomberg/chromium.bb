@@ -12,8 +12,10 @@
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
 #include "chrome/browser/notifications/sync_notifier/welcome_delegate.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_util.h"
+#include "url/gurl.h"
 
 namespace notifier {
 namespace {
@@ -31,10 +33,12 @@ void UpdateMessageCenter() {
 
 WelcomeDelegate::WelcomeDelegate(const std::string& notification_id,
                                  Profile* profile,
-                                 const message_center::NotifierId notifier_id)
+                                 const message_center::NotifierId notifier_id,
+                                 const GURL& on_click_link)
     : notification_id_(notification_id),
       profile_(profile),
-      notifier_id_(notifier_id) {
+      notifier_id_(notifier_id),
+      on_click_link_(on_click_link) {
   DCHECK_EQ(message_center::NotifierId::SYNCED_NOTIFICATION_SERVICE,
             notifier_id.type);
 }
@@ -47,13 +51,30 @@ void WelcomeDelegate::Error() {}
 
 void WelcomeDelegate::Close(bool by_user) {}
 
+bool WelcomeDelegate::HasClickedListener() {
+  return on_click_link_.is_valid();
+}
+
 void WelcomeDelegate::Click() {
   g_browser_process->notification_ui_manager()->CancelById(notification_id_);
 
-  // TODO(dewittj): Notifications that remove themselves are currently poorly
-  // supported.  We need to make it possible to completely remove a notification
-  // while the center is open, and then this section can be removed.
-  UpdateMessageCenter();
+  if (!on_click_link_.is_valid()) {
+    // TODO(dewittj): Notifications that remove themselves are currently poorly
+    // supported.  We need to make it possible to completely remove a
+    // notification
+    // while the center is open, and then this section can be removed.
+    UpdateMessageCenter();
+    return;
+  }
+
+  chrome::NavigateParams params(
+      profile_, on_click_link_, content::PAGE_TRANSITION_AUTO_BOOKMARK);
+
+  params.disposition = SINGLETON_TAB;
+  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  params.user_gesture = true;
+
+  chrome::Navigate(&params);
 }
 
 void WelcomeDelegate::ButtonClick(int button_index) {

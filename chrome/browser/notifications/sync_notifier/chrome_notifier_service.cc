@@ -820,7 +820,10 @@ const Notification ChromeNotifierService::CreateWelcomeNotificationForService(
   std::string welcome_notification_id = base::GenerateGUID();
   message_center::NotifierId notifier_id = app_info->GetNotifierId();
   scoped_refptr<WelcomeDelegate> delegate(
-      new WelcomeDelegate(welcome_notification_id, profile_, notifier_id));
+      new WelcomeDelegate(welcome_notification_id,
+                          profile_,
+                          notifier_id,
+                          app_info->welcome_link_url()));
 
   message_center::ButtonInfo button_info(
       l10n_util::GetStringUTF16(IDS_NOTIFIER_WELCOME_BUTTON));
