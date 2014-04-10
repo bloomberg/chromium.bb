@@ -5,7 +5,9 @@
 // Multiply-included message file, hence no include guard.
 
 #include <string>
+#include <vector>
 
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/autofill/content/common/autofill_param_traits_macros.h"
 #include "components/autofill/core/common/form_data.h"
@@ -22,6 +24,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "ui/gfx/rect.h"
+#include "url/gurl.h"
 
 #define IPC_MESSAGE_START AutofillMsgStart
 
