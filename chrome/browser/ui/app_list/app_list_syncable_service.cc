@@ -135,7 +135,8 @@ AppListSyncableService::SyncItem::~SyncItem() {
 class AppListSyncableService::ModelObserver : public AppListModelObserver {
  public:
   explicit ModelObserver(AppListSyncableService* owner)
-      : owner_(owner) {
+      : owner_(owner),
+        adding_item_(NULL) {
     DVLOG(2) << owner_ << ": ModelObserver Added";
     owner_->model()->AddObserver(this);
   }
@@ -148,21 +149,37 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
  private:
   // AppListModelObserver
   virtual void OnAppListItemAdded(AppListItem* item) OVERRIDE {
-    DVLOG(2) << owner_ << " OnAppListItemAdded: " << item->ToDebugString();
+    DCHECK(!adding_item_);
+    adding_item_ = item;  // Ignore updates while adding an item.
+    VLOG(2) << owner_ << " OnAppListItemAdded: " << item->ToDebugString();
     owner_->AddOrUpdateFromSyncItem(item);
+    adding_item_ = NULL;
   }
 
   virtual void OnAppListItemWillBeDeleted(AppListItem* item) OVERRIDE {
-    DVLOG(2) << owner_ << " OnAppListItemDeleted: " << item->ToDebugString();
+    DCHECK(!adding_item_);
+    VLOG(2) << owner_ << " OnAppListItemDeleted: " << item->ToDebugString();
+    // Don't sync folder removal in case the folder still exists on another
+    // device (e.g. with device specific items in it). Empty folders will be
+    // deleted when the last item is removed (in PruneEmptySyncFolders()).
+    if (item->GetItemType() == AppListFolderItem::kItemType)
+      return;
     owner_->RemoveSyncItem(item->id());
   }
 
   virtual void OnAppListItemUpdated(AppListItem* item) OVERRIDE {
-    DVLOG(2) << owner_ << " OnAppListItemUpdated: " << item->ToDebugString();
+    if (adding_item_) {
+      // Adding an item may trigger update notifications which should be
+      // ignored.
+      DCHECK_EQ(adding_item_, item);
+      return;
+    }
+    VLOG(2) << owner_ << " OnAppListItemUpdated: " << item->ToDebugString();
     owner_->UpdateSyncItem(item);
   }
 
   AppListSyncableService* owner_;
+  AppListItem* adding_item_;  // Unowned pointer to item being added.
 
   DISALLOW_COPY_AND_ASSIGN(ModelObserver);
 };
@@ -304,6 +321,7 @@ AppListSyncableService::CreateSyncItemFromAppItem(AppListItem* app_item) {
   sync_pb::AppListSpecifics::AppListItemType type;
   if (!GetAppListItemType(app_item, &type))
     return NULL;
+  VLOG(2) << this << " CreateSyncItemFromAppItem:" << app_item->ToDebugString();
   SyncItem* sync_item = CreateSyncItem(app_item->id(), type);
   UpdateSyncItemFromAppItem(app_item, sync_item);
   SendSyncChange(sync_item, SyncChange::ACTION_ADD);
@@ -343,7 +361,7 @@ bool AppListSyncableService::RemoveDefaultApp(AppListItem* item,
 
 void AppListSyncableService::DeleteSyncItem(SyncItem* sync_item) {
   if (SyncStarted()) {
-    DVLOG(2) << this << " -> SYNC DELETE: " << sync_item->ToString();
+    VLOG(2) << this << " -> SYNC DELETE: " << sync_item->ToString();
     SyncChange sync_change(FROM_HERE, SyncChange::ACTION_DELETE,
                            GetSyncDataFromSyncItem(sync_item));
     sync_processor_->ProcessSyncChanges(
@@ -406,8 +424,8 @@ void AppListSyncableService::RemoveSyncItem(const std::string& id) {
       AppIsDefault(extension_system_->extension_service(), id)) {
     // This is a Default app; update the entry to a REMOVE_DEFAULT entry. This
     // will overwrite any existing entry for the item.
-    DVLOG(2) << this << " -> SYNC UPDATE: REMOVE_DEFAULT: "
-             << sync_item->item_id;
+    VLOG(2) << this << " -> SYNC UPDATE: REMOVE_DEFAULT: "
+            << sync_item->item_id;
     sync_item->item_type = sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP;
     SendSyncChange(sync_item, SyncChange::ACTION_UPDATE);
     return;
@@ -510,7 +528,7 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
   for (std::set<std::string>::iterator iter = unsynced_items.begin();
        iter != unsynced_items.end(); ++iter) {
     SyncItem* sync_item = FindSyncItem(*iter);
-    DVLOG(2) << this << " -> SYNC ADD: " << sync_item->ToString();
+    VLOG(2) << this << " -> SYNC ADD: " << sync_item->ToString();
     change_list.push_back(SyncChange(FROM_HERE,  SyncChange::ACTION_ADD,
                                      GetSyncDataFromSyncItem(sync_item)));
   }
@@ -543,7 +561,7 @@ syncer::SyncDataList AppListSyncableService::GetAllSyncData(
   syncer::SyncDataList list;
   for (SyncItemMap::const_iterator iter = sync_items_.begin();
        iter != sync_items_.end(); ++iter) {
-    DVLOG(2) << this << " -> SYNC: " << iter->second->ToString();
+    VLOG(2) << this << " -> SYNC: " << iter->second->ToString();
     list.push_back(GetSyncDataFromSyncItem(iter->second));
   }
   return list;
@@ -566,9 +584,9 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
   for (syncer::SyncChangeList::const_iterator iter = change_list.begin();
        iter != change_list.end(); ++iter) {
     const SyncChange& change = *iter;
-    DVLOG(2) << this << "  Change: "
-             << change.sync_data().GetSpecifics().app_list().item_id()
-             << " (" << change.change_type() << ")";
+    VLOG(2) << this << "  Change: "
+            << change.sync_data().GetSpecifics().app_list().item_id()
+            << " (" << change.change_type() << ")";
     if (change.change_type() == SyncChange::ACTION_ADD ||
         change.change_type() == SyncChange::ACTION_UPDATE) {
       ProcessSyncItemSpecifics(change.sync_data().GetSpecifics().app_list());
@@ -600,7 +618,7 @@ bool AppListSyncableService::ProcessSyncItemSpecifics(
     if (sync_item->item_type == specifics.item_type()) {
       UpdateSyncItemFromSync(specifics, sync_item);
       ProcessExistingSyncItem(sync_item);
-      DVLOG(2) << this << " <- SYNC UPDATE: " << sync_item->ToString();
+      VLOG(2) << this << " <- SYNC UPDATE: " << sync_item->ToString();
       return false;
     }
     // Otherwise, one of the entries should be TYPE_REMOVE_DEFAULT_APP.
@@ -613,8 +631,8 @@ bool AppListSyncableService::ProcessSyncItemSpecifics(
                  << " Deleting item from model!";
       model_->DeleteItem(item_id);
     }
-    DVLOG(2) << this << " - ProcessSyncItem: Delete existing entry: "
-             << sync_item->ToString();
+    VLOG(2) << this << " - ProcessSyncItem: Delete existing entry: "
+            << sync_item->ToString();
     delete sync_item;
     sync_items_.erase(item_id);
   }
@@ -622,7 +640,7 @@ bool AppListSyncableService::ProcessSyncItemSpecifics(
   sync_item = CreateSyncItem(item_id, specifics.item_type());
   UpdateSyncItemFromSync(specifics, sync_item);
   ProcessNewSyncItem(sync_item);
-  DVLOG(2) << this << " <- SYNC ADD: " << sync_item->ToString();
+  VLOG(2) << this << " <- SYNC ADD: " << sync_item->ToString();
   return true;
 }
 
@@ -682,6 +700,7 @@ void AppListSyncableService::ProcessExistingSyncItem(SyncItem* sync_item) {
 void AppListSyncableService::UpdateAppItemFromSyncItem(
     const AppListSyncableService::SyncItem* sync_item,
     AppListItem* app_item) {
+  VLOG(2) << this << "UpdateAppItemFromSyncItem: " << sync_item->ToString();
   if (!app_item->position().Equals(sync_item->item_ordinal))
     model_->SetItemPosition(app_item, sync_item->item_ordinal);
   // Only update the item name if it is a Folder or the name is empty.
@@ -713,9 +732,9 @@ void AppListSyncableService::SendSyncChange(
     return;
   }
   if (sync_change_type == SyncChange::ACTION_ADD)
-    DVLOG(2) << this << " -> SYNC ADD: " << sync_item->ToString();
+    VLOG(2) << this << " -> SYNC ADD: " << sync_item->ToString();
   else
-    DVLOG(2) << this << " -> SYNC UPDATE: " << sync_item->ToString();
+    VLOG(2) << this << " -> SYNC UPDATE: " << sync_item->ToString();
   SyncChange sync_change(FROM_HERE, sync_change_type,
                          GetSyncDataFromSyncItem(sync_item));
   sync_processor_->ProcessSyncChanges(
@@ -753,7 +772,7 @@ void AppListSyncableService::DeleteSyncItemSpecifics(
     return;
   sync_pb::AppListSpecifics::AppListItemType item_type =
       iter->second->item_type;
-  DVLOG(2) << this << " <- SYNC DELETE: " << iter->second->ToString();
+  VLOG(2) << this << " <- SYNC DELETE: " << iter->second->ToString();
   delete iter->second;
   sync_items_.erase(iter);
   // Only delete apps from the model. Folders will be deleted when all
