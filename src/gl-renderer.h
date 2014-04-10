@@ -101,4 +101,3 @@ struct gl_renderer_interface {
 	void (*print_egl_error_state)(void);
 };
 
-struct gl_renderer_interface gl_renderer_interface;
