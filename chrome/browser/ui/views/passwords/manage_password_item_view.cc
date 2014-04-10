@@ -127,10 +127,7 @@ ManagePasswordItemView::ManagePasswordItemView(
   GetLayoutManager()->Layout(this);
 }
 
-ManagePasswordItemView::~ManagePasswordItemView() {
-  if (delete_password_)
-    manage_passwords_bubble_model_->DeleteFromBestMatches(password_form_);
-}
+ManagePasswordItemView::~ManagePasswordItemView() {}
 
 void ManagePasswordItemView::BuildColumnSet(views::GridLayout* layout,
                                             int column_set_id) {

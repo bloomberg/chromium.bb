@@ -320,7 +320,6 @@ void ManagePasswordsBubbleView::Init() {
     // TODO(mkwst): Do we really want the "No passwords" case? It would probably
     // be better to only clear the pending password upon navigation, rather than
     // as soon as the bubble closes.
-    int num_items_displayed = 0;
     if (!manage_passwords_bubble_model_->best_matches().empty()) {
       for (autofill::PasswordFormMap::const_iterator i(
                manage_passwords_bubble_model_->best_matches().begin());
@@ -330,36 +329,20 @@ void ManagePasswordsBubbleView::Init() {
             *i->second,
             first_field_width,
             second_field_width,
-            num_items_displayed == 0 ? ManagePasswordItemView::FIRST_ITEM
-                                     : ManagePasswordItemView::SUBSEQUENT_ITEM);
+            i == manage_passwords_bubble_model_->best_matches().begin()
+                ? ManagePasswordItemView::FIRST_ITEM
+                : ManagePasswordItemView::SUBSEQUENT_ITEM);
 
         layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
         layout->AddView(item);
-        num_items_displayed++;
       }
-    } else if (!manage_passwords_bubble_model_->password_submitted()) {
+    } else {
         views::Label* empty_label = new views::Label(
             l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_NO_PASSWORDS));
         empty_label->SetMultiLine(true);
 
         layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
         layout->AddView(empty_label);
-    }
-
-    // If the user just saved a password, it won't be in the 'best matches' list
-    // we just walked through. Display it explicitly.
-    if (manage_passwords_bubble_model_->password_submitted()) {
-      ManagePasswordItemView* item = new ManagePasswordItemView(
-          manage_passwords_bubble_model_,
-          manage_passwords_bubble_model_->pending_credentials(),
-          first_field_width,
-          second_field_width,
-          num_items_displayed ? ManagePasswordItemView::FIRST_ITEM
-                              : ManagePasswordItemView::SUBSEQUENT_ITEM);
-
-      layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-      layout->AddView(item);
-      num_items_displayed++;
     }
 
     // Build a "manage" link and "done" button, and throw them both into a new

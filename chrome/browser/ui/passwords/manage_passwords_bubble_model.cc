@@ -24,24 +24,16 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
       ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
 
-  password_submitted_ =
-      manage_passwords_bubble_ui_controller->password_submitted();
-  if (password_submitted_) {
-    if (manage_passwords_bubble_ui_controller->password_to_be_saved())
-      manage_passwords_bubble_state_ = PASSWORD_TO_BE_SAVED;
-    else
-      manage_passwords_bubble_state_ = MANAGE_PASSWORDS_AFTER_SAVING;
-  } else {
+  if (manage_passwords_bubble_ui_controller->password_to_be_saved())
+    manage_passwords_bubble_state_ = PASSWORD_TO_BE_SAVED;
+  else
     manage_passwords_bubble_state_ = MANAGE_PASSWORDS;
-  }
 
   title_ = l10n_util::GetStringUTF16(
       (manage_passwords_bubble_state_ == PASSWORD_TO_BE_SAVED) ?
           IDS_SAVE_PASSWORD : IDS_MANAGE_PASSWORDS);
-  if (password_submitted_) {
-    pending_credentials_ =
-        manage_passwords_bubble_ui_controller->pending_credentials();
-  }
+  pending_credentials_ =
+      manage_passwords_bubble_ui_controller->pending_credentials();
   best_matches_ = manage_passwords_bubble_ui_controller->best_matches();
   manage_link_ =
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK);
@@ -66,7 +58,7 @@ void ManagePasswordsBubbleModel::OnSaveClicked() {
       ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
   manage_passwords_bubble_ui_controller->SavePassword();
   manage_passwords_bubble_ui_controller->unset_password_to_be_saved();
-  manage_passwords_bubble_state_ = MANAGE_PASSWORDS_AFTER_SAVING;
+  manage_passwords_bubble_state_ = MANAGE_PASSWORDS;
 }
 
 void ManagePasswordsBubbleModel::OnManageLinkClicked() {
@@ -89,18 +81,6 @@ void ManagePasswordsBubbleModel::OnPasswordAction(
     password_store->RemoveLogin(password_form);
   else
     password_store->AddLogin(password_form);
-  // This is necessary in case the bubble is instantiated again, we thus do not
-  // display the pending credentials if they were deleted.
-  if (password_form.username_value == pending_credentials_.username_value) {
-    ManagePasswordsBubbleUIController::FromWebContents(web_contents_)
-        ->set_password_submitted(action == ADD_PASSWORD);
-  }
-}
-
-void ManagePasswordsBubbleModel::DeleteFromBestMatches(
-    autofill::PasswordForm password_form) {
-  ManagePasswordsBubbleUIController::FromWebContents(web_contents_)->
-      RemoveFromBestMatches(password_form);
 }
 
 void ManagePasswordsBubbleModel::WebContentsDestroyed(

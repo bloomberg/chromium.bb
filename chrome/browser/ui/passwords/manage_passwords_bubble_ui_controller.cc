@@ -5,13 +5,26 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "content/public/browser/notification_service.h"
 
 using autofill::PasswordFormMap;
 using password_manager::PasswordFormManager;
+
+namespace {
+
+password_manager::PasswordStore* GetPasswordStore(
+    content::WebContents* web_contents) {
+  return PasswordStoreFactory::GetForProfile(
+             Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+             Profile::EXPLICIT_ACCESS).get();
+}
+
+} // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ManagePasswordsBubbleUIController);
 
@@ -21,8 +34,12 @@ ManagePasswordsBubbleUIController::ManagePasswordsBubbleUIController(
       manage_passwords_icon_to_be_shown_(false),
       password_to_be_saved_(false),
       manage_passwords_bubble_needs_showing_(false),
-      password_submitted_(false),
-      autofill_blocked_(false) {}
+      autofill_blocked_(false) {
+  password_manager::PasswordStore* password_store =
+      GetPasswordStore(web_contents);
+  if (password_store)
+    password_store->AddObserver(this);
+}
 
 ManagePasswordsBubbleUIController::~ManagePasswordsBubbleUIController() {}
 
@@ -41,10 +58,10 @@ void ManagePasswordsBubbleUIController::OnPasswordSubmitted(
     PasswordFormManager* form_manager) {
   form_manager_.reset(form_manager);
   password_form_map_ = form_manager_->best_matches();
+  origin_ = pending_credentials().origin;
   manage_passwords_icon_to_be_shown_ = true;
   password_to_be_saved_ = true;
   manage_passwords_bubble_needs_showing_ = true;
-  password_submitted_ = true;
   autofill_blocked_ = false;
   UpdateBubbleAndIconVisibility();
 }
@@ -52,10 +69,10 @@ void ManagePasswordsBubbleUIController::OnPasswordSubmitted(
 void ManagePasswordsBubbleUIController::OnPasswordAutofilled(
     const PasswordFormMap& password_form_map) {
   password_form_map_ = password_form_map;
+  origin_ = password_form_map_.begin()->second->origin;
   manage_passwords_icon_to_be_shown_ = true;
   password_to_be_saved_ = false;
   manage_passwords_bubble_needs_showing_ = false;
-  password_submitted_ = false;
   autofill_blocked_ = false;
   UpdateBubbleAndIconVisibility();
 }
@@ -64,14 +81,36 @@ void ManagePasswordsBubbleUIController::OnBlacklistBlockedAutofill() {
   manage_passwords_icon_to_be_shown_ = true;
   password_to_be_saved_ = false;
   manage_passwords_bubble_needs_showing_ = false;
-  password_submitted_ = false;
   autofill_blocked_ = true;
   UpdateBubbleAndIconVisibility();
 }
 
-void ManagePasswordsBubbleUIController::RemoveFromBestMatches(
-    autofill::PasswordForm password_form) {
-  password_form_map_.erase(password_form.username_value);
+void ManagePasswordsBubbleUIController::WebContentsDestroyed(
+    content::WebContents* web_contents) {
+  password_manager::PasswordStore* password_store =
+      GetPasswordStore(web_contents);
+  if (password_store)
+    password_store->RemoveObserver(this);
+}
+
+void ManagePasswordsBubbleUIController::OnLoginsChanged(
+    const password_manager::PasswordStoreChangeList& changes) {
+  for (password_manager::PasswordStoreChangeList::const_iterator it =
+           changes.begin();
+       it != changes.end();
+       it++) {
+    const autofill::PasswordForm& changed_form = it->form();
+    if (changed_form.origin != origin_)
+      continue;
+
+    if (it->type() == password_manager::PasswordStoreChange::REMOVE) {
+      password_form_map_.erase(changed_form.username_value);
+    } else {
+      autofill::PasswordForm* new_form =
+          new autofill::PasswordForm(changed_form);
+      password_form_map_[changed_form.username_value] = new_form;
+    }
+  }
 }
 
 void ManagePasswordsBubbleUIController::OnBubbleShown() {
@@ -97,6 +136,5 @@ void ManagePasswordsBubbleUIController::DidNavigateMainFrame(
   manage_passwords_icon_to_be_shown_ = false;
   password_to_be_saved_ = false;
   manage_passwords_bubble_needs_showing_ = false;
-  password_submitted_ = false;
   UpdateBubbleAndIconVisibility();
 }
