@@ -17,6 +17,8 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/size.h"
 
+#error "The GTK+ port will be deleted later this week. If you are seeing this, you are trying to compile it. Please check your gyp flags for 'use_aura=0' and remove them."
+
 // The shmat system call uses this as it's invalid return address
 static void *const kInvalidAddress = (void*) -1;
 

@@ -9,6 +9,8 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 
+#error "The GTK+ port will be deleted later this week. If you are seeing this, you are trying to compile it. Please check your gyp flags for 'use_aura=0' and remove them."
+
 namespace gfx {
 
 GdkRegion* Path::CreateNativeRegion() const {

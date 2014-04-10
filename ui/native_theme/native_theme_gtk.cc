@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "ui/gfx/skia_utils_gtk.h"
 
+#error "The GTK+ port will be deleted later this week. If you are seeing this, you are trying to compile it. Please check your gyp flags for 'use_aura=0' and remove them."
+
 namespace {
 
 const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);

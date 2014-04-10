@@ -113,6 +113,8 @@ using content::SSLStatus;
 using content::WebContents;
 using web_modal::WebContentsModalDialogHost;
 
+#error "The GTK+ port will be deleted later this week. If you are seeing this, you are trying to compile it. Please check your gyp flags for 'use_aura=0' and remove them."
+
 namespace {
 
 // The number of milliseconds between loading animation frames.
