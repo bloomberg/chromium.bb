@@ -453,8 +453,12 @@ Node::InsertionNotificationRequest HTMLMediaElement::insertedInto(ContainerNode*
             scheduleDelayedAction(LoadMediaResource);
     }
 
+    return InsertionShouldCallDidNotifySubtreeInsertions;
+}
+
+void HTMLMediaElement::didNotifySubtreeInsertionsToDocument()
+{
     configureMediaControls();
-    return InsertionDone;
 }
 
 void HTMLMediaElement::removedFrom(ContainerNode* insertionPoint)

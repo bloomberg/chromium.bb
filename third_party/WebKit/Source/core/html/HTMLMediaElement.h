@@ -304,6 +304,7 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE FINAL;
+    virtual void didNotifySubtreeInsertionsToDocument() OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE FINAL;
     virtual void didRecalcStyle(StyleRecalcChange) OVERRIDE FINAL;
 
