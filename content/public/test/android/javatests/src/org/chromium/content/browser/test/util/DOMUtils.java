@@ -25,8 +25,7 @@ public class DOMUtils {
     /**
      * Returns the rect boundaries for a node by its id.
      */
-    public static Rect getNodeBounds(
-            final ContentViewCore viewCore, TestCallbackHelperContainer viewClient, String nodeId)
+    public static Rect getNodeBounds(final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
@@ -44,7 +43,7 @@ public class DOMUtils {
         sb.append("})();");
 
         String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                viewCore, viewClient, sb.toString());
+                viewCore, sb.toString());
 
         Assert.assertFalse("Failed to retrieve bounds for " + nodeId,
                 jsonText.trim().equalsIgnoreCase("null"));
@@ -72,7 +71,7 @@ public class DOMUtils {
      * Focus a DOM node by its id.
      */
     public static void focusNode(ActivityInstrumentationTestCase2 activityTestCase,
-            final ContentViewCore viewCore, TestCallbackHelperContainer viewClient, String nodeId)
+            final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
@@ -80,16 +79,16 @@ public class DOMUtils {
         sb.append("  if (node) node.focus();");
         sb.append("})();");
 
-        JavaScriptUtils.executeJavaScriptAndWaitForResult(viewCore, viewClient, sb.toString());
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(viewCore, sb.toString());
     }
 
     /**
      * Click a DOM node by its id.
      */
     public static void clickNode(ActivityInstrumentationTestCase2 activityTestCase,
-            final ContentView view, TestCallbackHelperContainer viewClient, String nodeId)
+            final ContentView view, String nodeId)
             throws InterruptedException, TimeoutException {
-        int[] clickTarget = getClickTargetForNode(view.getContentViewCore(), viewClient, nodeId);
+        int[] clickTarget = getClickTargetForNode(view.getContentViewCore(), nodeId);
         TouchCommon touchCommon = new TouchCommon(activityTestCase);
         touchCommon.singleClickView(view, clickTarget[0], clickTarget[1]);
     }
@@ -98,9 +97,9 @@ public class DOMUtils {
      * Long-press a DOM node by its id.
      */
     public static void longPressNode(ActivityInstrumentationTestCase2 activityTestCase,
-            final ContentView view, TestCallbackHelperContainer viewClient, String nodeId)
+            final ContentView view, String nodeId)
             throws InterruptedException, TimeoutException {
-        int[] clickTarget = getClickTargetForNode(view.getContentViewCore(), viewClient, nodeId);
+        int[] clickTarget = getClickTargetForNode(view.getContentViewCore(), nodeId);
         TouchCommon touchCommon = new TouchCommon(activityTestCase);
         touchCommon.longPressView(view, clickTarget[0], clickTarget[1]);
     }
@@ -108,33 +107,30 @@ public class DOMUtils {
     /**
      * Scrolls the view to ensure that the required DOM node is visible.
      */
-    public static void scrollNodeIntoView(final ContentViewCore viewCore,
-            TestCallbackHelperContainer viewClient, String nodeId)
+    public static void scrollNodeIntoView(ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
-        JavaScriptUtils.executeJavaScriptAndWaitForResult(viewCore, viewClient,
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(viewCore,
                 "document.getElementById('" + nodeId + "').scrollIntoView()");
     }
 
     /**
      * Returns the contents of the node by its id.
      */
-    public static String getNodeContents(final ContentViewCore viewCore,
-            TestCallbackHelperContainer viewClient, String nodeId)
+    public static String getNodeContents(ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
-        return getNodeField("textContent", viewCore, viewClient, nodeId);
+        return getNodeField("textContent", viewCore, nodeId);
     }
 
     /**
      * Returns the value of the node by its id.
      */
-    public static String getNodeValue(final ContentViewCore viewCore,
-            TestCallbackHelperContainer viewClient, String nodeId)
+    public static String getNodeValue(final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
-        return getNodeField("value", viewCore, viewClient, nodeId);
+        return getNodeField("value", viewCore, nodeId);
     }
 
     private static String getNodeField(String fieldName, final ContentViewCore viewCore,
-            TestCallbackHelperContainer viewClient, String nodeId)
+            String nodeId)
             throws InterruptedException, TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
@@ -145,7 +141,7 @@ public class DOMUtils {
         sb.append("})();");
 
         String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                viewCore, viewClient, sb.toString());
+                viewCore, sb.toString());
         Assert.assertFalse("Failed to retrieve contents for " + nodeId,
                 jsonText.trim().equalsIgnoreCase("null"));
 
@@ -169,13 +165,13 @@ public class DOMUtils {
      * @return Whether the node started having non-zero bounds.
      */
     public static boolean waitForNonZeroNodeBounds(final ContentViewCore viewCore,
-            final TestCallbackHelperContainer viewClient, final String nodeName)
+            final String nodeName)
             throws InterruptedException {
         return CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return !DOMUtils.getNodeBounds(viewCore, viewClient, nodeName).isEmpty();
+                    return !DOMUtils.getNodeBounds(viewCore, nodeName).isEmpty();
                 } catch (InterruptedException e) {
                     // Intentionally do nothing
                     return false;
@@ -190,10 +186,9 @@ public class DOMUtils {
     /**
      * Returns click targets for a given DOM node.
      */
-    private static int[] getClickTargetForNode(final ContentViewCore viewCore,
-            TestCallbackHelperContainer viewClient, String nodeName)
+    private static int[] getClickTargetForNode(ContentViewCore viewCore, String nodeName)
             throws InterruptedException, TimeoutException {
-        Rect bounds = getNodeBounds(viewCore, viewClient, nodeName);
+        Rect bounds = getNodeBounds(viewCore, nodeName);
         Assert.assertNotNull("Failed to get DOM element bounds of '" + nodeName + "'.", bounds);
 
         int clickX = (int) viewCore.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterX())

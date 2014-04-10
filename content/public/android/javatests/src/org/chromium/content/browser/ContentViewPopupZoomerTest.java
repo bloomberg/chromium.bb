@@ -92,7 +92,7 @@ public class ContentViewPopupZoomerTest extends ContentShellTestBase {
                 CriteriaHelper.pollForCriteria(new PopupShowingCriteria(view, false)));
 
         // Once clicked, the popup should show up.
-        DOMUtils.clickNode(this, view, viewClient, "clickme");
+        DOMUtils.clickNode(this, view, "clickme");
         assertTrue("The zoomer popup did not show up on click.",
                 CriteriaHelper.pollForCriteria(new PopupShowingCriteria(view, true)));
 

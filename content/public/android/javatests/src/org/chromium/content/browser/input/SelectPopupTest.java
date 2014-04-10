@@ -83,7 +83,7 @@ public class SelectPopupTest extends ContentShellTestBase {
                 viewClient.getOnPageFinishedHelper();
 
         // Once clicked, the popup should show up.
-        DOMUtils.clickNode(this, view, viewClient, "select");
+        DOMUtils.clickNode(this, view, "select");
         assertTrue("The select popup did not show up on click.",
                 CriteriaHelper.pollForCriteria(new PopupShowingCriteria()));
 
@@ -104,7 +104,7 @@ public class SelectPopupTest extends ContentShellTestBase {
                 CriteriaHelper.pollForCriteria(new PopupHiddenCriteria()));
 
         // Click the select and wait for the popup to show.
-        DOMUtils.clickNode(this, view, viewClient, "select");
+        DOMUtils.clickNode(this, view, "select");
         assertTrue("The select popup did not show on click after reload.",
                 CriteriaHelper.pollForCriteria(new PopupShowingCriteria()));
     }

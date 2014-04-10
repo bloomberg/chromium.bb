@@ -10,29 +10,15 @@ import android.view.WindowManager;
 
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 
 /**
  * Test suite for viewport-related properties.
  */
 public class ViewportTest extends ContentViewTestBase {
 
-    private TestCallbackHelperContainer mCallbackHelper;
-
-    /**
-     * Returns the TestCallbackHelperContainer associated with this ContentView,
-     * or creates it lazily.
-     */
-    protected TestCallbackHelperContainer getTestCallbackHelperContainer() {
-        if (mCallbackHelper == null) {
-            mCallbackHelper = new TestCallbackHelperContainer(getContentView());
-        }
-        return mCallbackHelper;
-    }
-
     protected String evaluateStringValue(String expression) throws Throwable {
         return JavaScriptUtils.executeJavaScriptAndWaitForResult(getContentViewCore(),
-                getTestCallbackHelperContainer(), expression);
+                expression);
     }
 
     protected float evaluateFloatValue(String expression) throws Throwable {

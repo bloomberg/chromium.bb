@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
@@ -112,8 +113,7 @@ public class NavigationTest extends ContentShellTestBase {
         ContentView contentView = activity.getActiveContentView();
         TestCallbackHelperContainer testCallbackHelperContainer =
                 new TestCallbackHelperContainer(contentView);
-        TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
-                testCallbackHelperContainer.getOnEvaluateJavaScriptResultHelper();
+        OnEvaluateJavaScriptResultHelper javascriptHelper = new OnEvaluateJavaScriptResultHelper();
 
         // Grab the first timestamp.
         javascriptHelper.evaluateJavaScript(contentView.getContentViewCore(), "getLoadtime();");

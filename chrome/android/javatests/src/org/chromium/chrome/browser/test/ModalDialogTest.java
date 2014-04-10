@@ -306,9 +306,7 @@ public class ModalDialogTest extends ChromeShellTestBase {
      */
     private OnEvaluateJavaScriptResultHelper executeJavaScriptAndWaitForDialog(String script)
             throws InterruptedException {
-        final OnEvaluateJavaScriptResultHelper helper =
-                getActiveTabTestCallbackHelperContainer().getOnEvaluateJavaScriptResultHelper();
-        return executeJavaScriptAndWaitForDialog(helper, script);
+        return executeJavaScriptAndWaitForDialog(new OnEvaluateJavaScriptResultHelper(), script);
     }
 
     /**

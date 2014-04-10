@@ -22,7 +22,6 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
@@ -115,10 +114,8 @@ public class SyncTest extends ChromeShellTestBase {
                 final ContentViewCore contentViewCore = getContentViewCore(getActivity());
                 String innerHtml = "";
                 try {
-                    final TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper helper =
-                            new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
                     innerHtml = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                            contentViewCore, helper, "document.documentElement.innerHTML");
+                            contentViewCore, "document.documentElement.innerHTML");
                 } catch (InterruptedException e) {
                     Log.w(TAG, "Interrupted while polling about:sync page for sync status.", e);
                 } catch (TimeoutException e) {

@@ -15,8 +15,8 @@ import java.util.concurrent.TimeoutException;
  * This class is used to provide callback hooks for tests and related classes.
  */
 public class TestCallbackHelperContainer {
-    private TestContentViewClient mTestContentViewClient;
-    private TestWebContentsObserver mTestWebContentsObserver;
+    private final TestContentViewClient mTestContentViewClient;
+    private final TestWebContentsObserver mTestWebContentsObserver;
 
     public TestCallbackHelperContainer(ContentView contentView) {
         mTestContentViewClient = new TestContentViewClient();
@@ -174,10 +174,6 @@ public class TestCallbackHelperContainer {
 
     public OnReceivedErrorHelper getOnReceivedErrorHelper() {
         return mTestWebContentsObserver.getOnReceivedErrorHelper();
-    }
-
-    public OnEvaluateJavaScriptResultHelper getOnEvaluateJavaScriptResultHelper() {
-        return mTestContentViewClient.getOnEvaluateJavaScriptResultHelper();
     }
 
     public OnStartContentIntentHelper getOnStartContentIntentHelper() {

@@ -22,7 +22,6 @@ import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
@@ -449,8 +448,7 @@ public class SelectionHandleTest extends ContentShellTestBase {
     }
 
     private Rect getNodeBoundsPix(String nodeId) throws Throwable {
-        Rect nodeBounds = DOMUtils.getNodeBounds(getContentViewCore(),
-                new TestCallbackHelperContainer(getContentView()), nodeId);
+        Rect nodeBounds = DOMUtils.getNodeBounds(getContentViewCore(), nodeId);
 
         RenderCoordinates renderCoordinates = getContentViewCore().getRenderCoordinates();
         int offsetX = getContentViewCore().getViewportSizeOffsetWidthPix();

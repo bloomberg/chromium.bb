@@ -12,7 +12,6 @@ import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
@@ -59,11 +58,9 @@ public class SelectPopupOtherContentViewTest extends ChromeShellTestBase {
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
 
         final ContentView view = getActivity().getActiveContentView();
-        final TestCallbackHelperContainer viewClient =
-                new TestCallbackHelperContainer(view);
 
         // Once clicked, the popup should show up.
-        DOMUtils.clickNode(this, view, viewClient, "select");
+        DOMUtils.clickNode(this, view, "select");
         assertTrue("The select popup did not show up on click.",
                 CriteriaHelper.pollForCriteria(new PopupShowingCriteria()));
 

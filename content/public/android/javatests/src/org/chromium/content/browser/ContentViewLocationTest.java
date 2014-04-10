@@ -11,6 +11,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.MockLocationProvider;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
 /**
@@ -91,7 +92,7 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         }
 
         mTestCallbackHelperContainer = new TestCallbackHelperContainer(getContentView());
-        mJavascriptHelper = mTestCallbackHelperContainer.getOnEvaluateJavaScriptResultHelper();
+        mJavascriptHelper = new OnEvaluateJavaScriptResultHelper();
 
         ensureGeolocationRunning(false);
     }
