@@ -26,7 +26,7 @@ public class TabUtils {
         if (client instanceof TestContentViewClient) return (TestContentViewClient) client;
 
         TestContentViewClient testClient = new TestContentViewClientWrapper(client);
-        tab.getContentView().setContentViewClient(testClient);
+        tab.getContentViewCore().setContentViewClient(testClient);
         return testClient;
     }
 

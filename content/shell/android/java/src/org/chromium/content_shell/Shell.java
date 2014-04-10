@@ -43,8 +43,8 @@ public class Shell extends LinearLayout {
         }
     };
 
-    // TODO(jrg): a mContentView.destroy() call is needed, both upstream and downstream.
     private ContentView mContentView;
+    private ContentViewCore mContentViewCore;
     private ContentViewClient mContentViewClient;
     private EditText mUrlTextView;
     private ImageButton mPrevButton;
@@ -160,7 +160,7 @@ public class Shell extends LinearLayout {
                 mNextButton.setVisibility(hasFocus ? GONE : VISIBLE);
                 mPrevButton.setVisibility(hasFocus ? GONE : VISIBLE);
                 if (!hasFocus) {
-                    mUrlTextView.setText(mContentView.getUrl());
+                    mUrlTextView.setText(mContentViewCore.getUrl());
                 }
             }
         });
@@ -175,10 +175,10 @@ public class Shell extends LinearLayout {
     public void loadUrl(String url) {
         if (url == null) return;
 
-        if (TextUtils.equals(url, mContentView.getUrl())) {
-            mContentView.getContentViewCore().reload(true);
+        if (TextUtils.equals(url, mContentViewCore.getUrl())) {
+            mContentViewCore.reload(true);
         } else {
-            mContentView.loadUrl(new LoadUrlParams(sanitizeUrl(url)));
+            mContentViewCore.loadUrl(new LoadUrlParams(sanitizeUrl(url)));
         }
         mUrlTextView.clearFocus();
         // TODO(aurimas): Remove this when crbug.com/174541 is fixed.
@@ -202,7 +202,7 @@ public class Shell extends LinearLayout {
         mPrevButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mContentView.canGoBack()) mContentView.goBack();
+                if (mContentViewCore.canGoBack()) mContentViewCore.goBack();
             }
         });
 
@@ -210,7 +210,7 @@ public class Shell extends LinearLayout {
         mNextButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mContentView.canGoForward()) mContentView.goForward();
+                if (mContentViewCore.canGoForward()) mContentViewCore.goForward();
             }
         });
     }
@@ -252,15 +252,17 @@ public class Shell extends LinearLayout {
     @CalledByNative
     private void initFromNativeTabContents(long nativeTabContents) {
         mContentView = ContentView.newInstance(getContext(), nativeTabContents, mWindow);
-        mContentView.setContentViewClient(mContentViewClient);
-        if (getParent() != null) mContentView.onShow();
-        if (mContentView.getUrl() != null) mUrlTextView.setText(mContentView.getUrl());
+        mContentViewCore = mContentView.getContentViewCore();
+        mContentViewCore.setContentViewClient(mContentViewClient);
+
+        if (getParent() != null) mContentViewCore.onShow();
+        if (mContentViewCore.getUrl() != null) mUrlTextView.setText(mContentViewCore.getUrl());
         ((FrameLayout) findViewById(R.id.contentview_holder)).addView(mContentView,
                 new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
         mContentView.requestFocus();
-        mContentViewRenderView.setCurrentContentViewCore(mContentView.getContentViewCore());
+        mContentViewRenderView.setCurrentContentViewCore(mContentViewCore);
     }
 
     /**
@@ -268,6 +270,13 @@ public class Shell extends LinearLayout {
      */
     public ContentView getContentView() {
         return mContentView;
+    }
+
+    /**
+     * @return The {@link ContentViewCore} currently managing the view shown by this Shell.
+     */
+    public ContentViewCore getContentViewCore() {
+        return mContentViewCore;
     }
 
     private void setKeyboardVisibilityForUrl(boolean visible) {

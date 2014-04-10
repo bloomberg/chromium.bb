@@ -18,8 +18,8 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellManager;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -129,7 +129,7 @@ public class ChromiumLinkerTestActivity extends Activity {
     private void finishInitialization(Bundle savedInstanceState) {
         String shellUrl = ShellManager.DEFAULT_SHELL_URL;
         mShellManager.launchShell(shellUrl);
-        getActiveContentView().setContentViewClient(new ContentViewClient());
+        getActiveContentViewCore().setContentViewClient(new ContentViewClient());
     }
 
     private void initializationFailed() {
@@ -155,16 +155,16 @@ public class ChromiumLinkerTestActivity extends Activity {
     protected void onStop() {
         super.onStop();
 
-        ContentView view = getActiveContentView();
-        if (view != null) view.onHide();
+        ContentViewCore contentViewCore = getActiveContentViewCore();
+        if (contentViewCore != null) contentViewCore.onHide();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        ContentView view = getActiveContentView();
-        if (view != null) view.onShow();
+        ContentViewCore contentViewCore = getActiveContentViewCore();
+        if (contentViewCore != null) contentViewCore.onShow();
     }
 
     @Override
@@ -178,10 +178,10 @@ public class ChromiumLinkerTestActivity extends Activity {
     }
 
     /**
-     * @return The {@link ContentView} owned by the currently visible {@link Shell} or null if one
-     *         is not showing.
+     * @return The {@link ContentViewCore} owned by the currently visible {@link Shell} or null if
+     *         one is not showing.
      */
-    public ContentView getActiveContentView() {
+    public ContentViewCore getActiveContentViewCore() {
         if (mShellManager == null)
             return null;
 
@@ -189,6 +189,6 @@ public class ChromiumLinkerTestActivity extends Activity {
         if (shell == null)
             return null;
 
-        return shell.getContentView();
+        return shell.getContentViewCore();
     }
 }

@@ -19,6 +19,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_shell.Shell;
@@ -125,9 +126,9 @@ public class ContentShellActivity extends Activity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        Shell activeShell = getActiveShell();
-        if (activeShell != null) {
-            outState.putString(ACTIVE_SHELL_URL_KEY, activeShell.getContentView().getUrl());
+        ContentViewCore contentViewCore = getActiveContentViewCore();
+        if (contentViewCore != null) {
+            outState.putString(ACTIVE_SHELL_URL_KEY, contentViewCore.getUrl());
         }
 
         mWindowAndroid.saveInstanceState(outState);
@@ -144,9 +145,9 @@ public class ContentShellActivity extends Activity {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            ContentView contentView = getActiveContentView();
-            if (contentView != null && contentView.canGoBack()) {
-                contentView.goBack();
+            ContentViewCore contentViewCore = getActiveContentViewCore();
+            if (contentViewCore != null && contentViewCore.canGoBack()) {
+                contentViewCore.goBack();
                 return true;
             }
         }
@@ -175,16 +176,16 @@ public class ContentShellActivity extends Activity {
     protected void onStop() {
         super.onStop();
 
-        ContentView view = getActiveContentView();
-        if (view != null) view.onHide();
+        ContentViewCore contentViewCore = getActiveContentViewCore();
+        if (contentViewCore != null) contentViewCore.onHide();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        ContentView view = getActiveContentView();
-        if (view != null) view.onShow();
+        ContentViewCore contentViewCore = getActiveContentViewCore();
+        if (contentViewCore != null) contentViewCore.onShow();
     }
 
     @Override
@@ -223,5 +224,14 @@ public class ContentShellActivity extends Activity {
     public ContentView getActiveContentView() {
         Shell shell = getActiveShell();
         return shell != null ? shell.getContentView() : null;
+    }
+
+    /**
+     * @return The {@link ContentViewCore} owned by the currently visible {@link Shell} or null if
+     *         one is not showing.
+     */
+    public ContentViewCore getActiveContentViewCore() {
+        Shell shell = getActiveShell();
+        return shell != null ? shell.getContentViewCore() : null;
     }
 }

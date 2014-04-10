@@ -120,10 +120,6 @@ public class ContentView extends FrameLayout
         return mContentViewCore.isAlive();
     }
 
-    public void setContentViewClient(ContentViewClient client) {
-        mContentViewCore.setContentViewClient(client);
-    }
-
     @VisibleForTesting
     public ContentViewClient getContentViewClient() {
         return mContentViewCore.getContentViewClient();
