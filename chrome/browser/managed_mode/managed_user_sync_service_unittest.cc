@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,6 +14,8 @@
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "sync/api/attachments/attachment_id.h"
+#include "sync/api/attachments/attachment_service_proxy_for_test.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/sync.pb.h"
@@ -98,6 +101,7 @@ class ManagedUserSyncServiceTest : public ::testing::Test {
   MockChangeProcessor* change_processor() { return change_processor_; }
 
  private:
+  base::MessageLoop message_loop;
   TestingProfile profile_;
   ManagedUserSyncService* service_;
 
@@ -139,7 +143,12 @@ SyncData ManagedUserSyncServiceTest::CreateRemoteData(
   if (!chrome_avatar.empty())
     specifics.mutable_managed_user()->set_chrome_avatar(chrome_avatar);
 
-  return SyncData::CreateRemoteData(++sync_data_id_, specifics, base::Time());
+  return SyncData::CreateRemoteData(
+      ++sync_data_id_,
+      specifics,
+      base::Time(),
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create());
 }
 
 TEST_F(ManagedUserSyncServiceTest, MergeEmpty) {

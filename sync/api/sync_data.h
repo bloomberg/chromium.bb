@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "sync/api/attachments/attachment.h"
@@ -64,18 +65,12 @@ class SYNC_EXPORT SyncData {
       const AttachmentList& attachments);
 
   // Helper method for creating SyncData objects originating from the syncer.
-  //
-  // TODO(maniscalco): Replace all calls to 3-arg CreateRemoteData with calls to
-  // the 5-arg version (bug 353296).
   static SyncData CreateRemoteData(
       int64 id,
       const sync_pb::EntitySpecifics& specifics,
       const base::Time& last_modified_time,
       const AttachmentIdList& attachment_ids,
       const syncer::AttachmentServiceProxy& attachment_service);
-  static SyncData CreateRemoteData(int64 id,
-                                   const sync_pb::EntitySpecifics& specifics,
-                                   const base::Time& last_modified_time);
 
   // Whether this SyncData holds valid data. The only way to have a SyncData
   // without valid data is to use the default constructor.

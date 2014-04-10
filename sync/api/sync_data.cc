@@ -143,17 +143,6 @@ SyncData SyncData::CreateRemoteData(
       id, &entity, &attachments, modification_time, attachment_service);
 }
 
-// Static.
-SyncData SyncData::CreateRemoteData(int64 id,
-                                    const sync_pb::EntitySpecifics& specifics,
-                                    const base::Time& modification_time) {
-  return CreateRemoteData(id,
-                          specifics,
-                          modification_time,
-                          AttachmentIdList(),
-                          AttachmentServiceProxy());
-}
-
 bool SyncData::IsValid() const { return is_valid_; }
 
 const sync_pb::EntitySpecifics& SyncData::GetSpecifics() const {

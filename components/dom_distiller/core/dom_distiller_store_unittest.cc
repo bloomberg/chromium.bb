@@ -7,11 +7,14 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/dom_distiller_test_util.h"
 #include "components/dom_distiller/core/fake_db.h"
+#include "sync/api/attachments/attachment_id.h"
+#include "sync/api/attachments/attachment_service_proxy_for_test.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -157,7 +160,11 @@ class DomDistillerStoreTest : public testing::Test {
   SyncData CreateSyncData(const ArticleEntry& entry) {
     EntitySpecifics specifics = SpecificsFromEntry(entry);
     return SyncData::CreateRemoteData(
-        next_sync_id_++, specifics, Time::UnixEpoch());
+        next_sync_id_++,
+        specifics,
+        Time::UnixEpoch(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create());
   }
 
   SyncDataList SyncDataFromEntryMap(const EntryMap& model) {
@@ -167,6 +174,8 @@ class DomDistillerStoreTest : public testing::Test {
     }
     return data;
   }
+
+  base::MessageLoop message_loop_;
 
   EntryMap db_model_;
   EntryMap sync_model_;

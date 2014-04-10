@@ -36,16 +36,26 @@ void ProxyDropCallback(
 
 }  // namespace
 
-AttachmentServiceProxy::AttachmentServiceProxy() {}
+AttachmentServiceProxy::AttachmentServiceProxy() {
+}
 
 AttachmentServiceProxy::AttachmentServiceProxy(
     const scoped_refptr<base::SequencedTaskRunner>& wrapped_task_runner,
-    base::WeakPtr<syncer::AttachmentService> wrapped)
-    : wrapped_task_runner_(wrapped_task_runner), wrapped_(wrapped) {
+    const base::WeakPtr<syncer::AttachmentService>& wrapped)
+    : wrapped_task_runner_(wrapped_task_runner), core_(new Core(wrapped)) {
   DCHECK(wrapped_task_runner_);
 }
 
-AttachmentServiceProxy::~AttachmentServiceProxy() {}
+AttachmentServiceProxy::AttachmentServiceProxy(
+    const scoped_refptr<base::SequencedTaskRunner>& wrapped_task_runner,
+    const scoped_refptr<Core>& core)
+    : wrapped_task_runner_(wrapped_task_runner), core_(core) {
+  DCHECK(wrapped_task_runner_);
+  DCHECK(core_);
+}
+
+AttachmentServiceProxy::~AttachmentServiceProxy() {
+}
 
 void AttachmentServiceProxy::GetOrDownloadAttachments(
     const AttachmentIdList& attachment_ids,
@@ -56,7 +66,7 @@ void AttachmentServiceProxy::GetOrDownloadAttachments(
   wrapped_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&AttachmentService::GetOrDownloadAttachments,
-                 wrapped_,
+                 core_,
                  attachment_ids,
                  proxy_callback));
 }
@@ -69,7 +79,7 @@ void AttachmentServiceProxy::DropAttachments(
       &ProxyDropCallback, base::MessageLoopProxy::current(), callback);
   wrapped_task_runner_->PostTask(FROM_HERE,
                                  base::Bind(&AttachmentService::DropAttachments,
-                                            wrapped_,
+                                            core_,
                                             attachment_ids,
                                             proxy_callback));
 }
@@ -78,14 +88,14 @@ void AttachmentServiceProxy::OnSyncDataAdd(const SyncData& sync_data) {
   DCHECK(wrapped_task_runner_);
   wrapped_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AttachmentService::OnSyncDataAdd, wrapped_, sync_data));
+      base::Bind(&AttachmentService::OnSyncDataAdd, core_, sync_data));
 }
 
 void AttachmentServiceProxy::OnSyncDataDelete(const SyncData& sync_data) {
   DCHECK(wrapped_task_runner_);
   wrapped_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AttachmentService::OnSyncDataDelete, wrapped_, sync_data));
+      base::Bind(&AttachmentService::OnSyncDataDelete, core_, sync_data));
 }
 
 void AttachmentServiceProxy::OnSyncDataUpdate(
@@ -95,9 +105,58 @@ void AttachmentServiceProxy::OnSyncDataUpdate(
   wrapped_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&AttachmentService::OnSyncDataUpdate,
-                 wrapped_,
+                 core_,
                  old_attachment_ids,
                  updated_sync_data));
+}
+
+AttachmentServiceProxy::Core::Core(
+    const base::WeakPtr<syncer::AttachmentService>& wrapped)
+    : wrapped_(wrapped) {
+}
+
+AttachmentServiceProxy::Core::~Core() {
+}
+
+void AttachmentServiceProxy::Core::GetOrDownloadAttachments(
+    const AttachmentIdList& attachment_ids,
+    const GetOrDownloadCallback& callback) {
+  if (!wrapped_) {
+    return;
+  }
+  wrapped_->GetOrDownloadAttachments(attachment_ids, callback);
+}
+
+void AttachmentServiceProxy::Core::DropAttachments(
+    const AttachmentIdList& attachment_ids,
+    const DropCallback& callback) {
+  if (!wrapped_) {
+    return;
+  }
+  wrapped_->DropAttachments(attachment_ids, callback);
+}
+
+void AttachmentServiceProxy::Core::OnSyncDataAdd(const SyncData& sync_data) {
+  if (!wrapped_) {
+    return;
+  }
+  wrapped_->OnSyncDataAdd(sync_data);
+}
+
+void AttachmentServiceProxy::Core::OnSyncDataDelete(const SyncData& sync_data) {
+  if (!wrapped_) {
+    return;
+  }
+  wrapped_->OnSyncDataDelete(sync_data);
+}
+
+void AttachmentServiceProxy::Core::OnSyncDataUpdate(
+    const AttachmentIdList& old_attachment_ids,
+    const SyncData& updated_sync_data) {
+  if (!wrapped_) {
+    return;
+  }
+  wrapped_->OnSyncDataUpdate(old_attachment_ids, updated_sync_data);
 }
 
 }  // namespace syncer

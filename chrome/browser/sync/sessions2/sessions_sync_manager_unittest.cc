@@ -25,6 +25,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "sync/api/attachments/attachment_id.h"
+#include "sync/api/attachments/attachment_service_proxy_for_test.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -167,8 +169,14 @@ syncer::SyncChange MakeRemoteChange(
   sync_pb::EntitySpecifics entity;
   entity.mutable_session()->CopyFrom(specifics);
   return syncer::SyncChange(
-      FROM_HERE, type,
-      syncer::SyncData::CreateRemoteData(id, entity, base::Time()));
+      FROM_HERE,
+      type,
+      syncer::SyncData::CreateRemoteData(
+          id,
+          entity,
+          base::Time(),
+          syncer::AttachmentIdList(),
+          syncer::AttachmentServiceProxyForTest::Create()));
 }
 
 void AddTabsToChangeList(
@@ -181,9 +189,14 @@ void AddTabsToChangeList(
     sync_pb::EntitySpecifics entity;
     entity.mutable_session()->CopyFrom(*iter);
     change_list->push_back(syncer::SyncChange(
-        FROM_HERE, type,
-        syncer::SyncData::CreateRemoteData(iter->tab_node_id(),
-                                           entity, base::Time())));
+        FROM_HERE,
+        type,
+        syncer::SyncData::CreateRemoteData(
+            iter->tab_node_id(),
+            entity,
+            base::Time(),
+            syncer::AttachmentIdList(),
+            syncer::AttachmentServiceProxyForTest::Create())));
   }
 }
 
@@ -193,7 +206,11 @@ void AddTabsToSyncDataList(const std::vector<sync_pb::SessionSpecifics> tabs,
     sync_pb::EntitySpecifics entity;
     entity.mutable_session()->CopyFrom(tabs[i]);
     list->push_back(SyncData::CreateRemoteData(
-        i + 2, entity, base::Time()));
+        i + 2,
+        entity,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
   }
 }
 
@@ -660,7 +677,12 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionNoTabs) {
   EXPECT_EQ(0, header_s2.window_size());
 
   // Now take that header node and feed it in as input.
-  SyncData d(SyncData::CreateRemoteData(1, data.GetSpecifics(), base::Time()));
+  SyncData d(SyncData::CreateRemoteData(
+      1,
+      data.GetSpecifics(),
+      base::Time(),
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
   syncer::SyncDataList in(&d, &d + 1);
   out.clear();
   SessionsSyncManager manager2(profile(), this, NewDummyRouter());
@@ -699,13 +721,26 @@ TEST_F(SessionsSyncManagerTest, SwappedOutOnRestore) {
   // * one "normal" fully loaded tab
   // * one "frozen" tab with no WebContents and a tab_id change
   // * one "frozen" tab with no WebContents and no tab_id change
-  SyncData t0(SyncData::CreateRemoteData(1, out[2].sync_data().GetSpecifics(),
-                                         base::Time()));
+  SyncData t0(SyncData::CreateRemoteData(
+      1,
+      out[2].sync_data().GetSpecifics(),
+      base::Time(),
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
   sync_pb::EntitySpecifics entity(out[4].sync_data().GetSpecifics());
   entity.mutable_session()->mutable_tab()->set_tab_id(kRestoredTabId);
-  SyncData t1(SyncData::CreateRemoteData(2, entity, base::Time()));
-  SyncData t2(SyncData::CreateRemoteData(3, out[6].sync_data().GetSpecifics(),
-                                         base::Time()));
+  SyncData t1(SyncData::CreateRemoteData(
+      2,
+      entity,
+      base::Time(),
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
+  SyncData t2(SyncData::CreateRemoteData(
+      3,
+      out[6].sync_data().GetSpecifics(),
+      base::Time(),
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
   in.push_back(t0);
   in.push_back(t1);
   in.push_back(t2);
@@ -775,15 +810,24 @@ TEST_F(SessionsSyncManagerTest, MergeWithInitialForeignSession) {
   syncer::SyncDataList initial_data;
   sync_pb::EntitySpecifics entity;
   entity.mutable_session()->CopyFrom(meta);
-  initial_data.push_back(SyncData::CreateRemoteData(1, entity, base::Time()));
+  initial_data.push_back(SyncData::CreateRemoteData(
+      1,
+      entity,
+      base::Time(),
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
   AddTabsToSyncDataList(tabs1, &initial_data);
 
   for (size_t i = 0; i < tab_list2.size(); ++i) {
     sync_pb::EntitySpecifics entity;
     helper()->BuildTabSpecifics(tag, 0, tab_list2[i],
                                 entity.mutable_session());
-    initial_data.push_back(
-        SyncData::CreateRemoteData(i + 10, entity, base::Time()));
+    initial_data.push_back(SyncData::CreateRemoteData(
+        i + 10,
+        entity,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
   }
 
   syncer::SyncChangeList output;
@@ -817,7 +861,12 @@ TEST_F(SessionsSyncManagerTest, MergeWithLocalAndForeignTabs) {
   syncer::SyncDataList foreign_data;
   sync_pb::EntitySpecifics entity;
   entity.mutable_session()->CopyFrom(meta);
-  foreign_data.push_back(SyncData::CreateRemoteData(1, entity, base::Time()));
+  foreign_data.push_back(SyncData::CreateRemoteData(
+      1,
+      entity,
+      base::Time(),
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
   AddTabsToSyncDataList(tabs1, &foreign_data);
 
   syncer::SyncChangeList output;
@@ -895,7 +944,11 @@ TEST_F(SessionsSyncManagerTest, UpdatesAfterMixedMerge) {
   sync_pb::EntitySpecifics entity;
   entity.mutable_session()->CopyFrom(meta1);
   foreign_data1.push_back(SyncData::CreateRemoteData(
-      1, entity, base::Time()));
+      1,
+      entity,
+      base::Time(),
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
   AddTabsToSyncDataList(tabs1, &foreign_data1);
 
   syncer::SyncChangeList output1;
@@ -1109,7 +1162,12 @@ TEST_F(SessionsSyncManagerTest, ProcessRemoteDeleteOfLocalSession) {
   InitWithSyncDataTakeOutput(syncer::SyncDataList(), &out);
   ASSERT_EQ(2U, out.size());
   sync_pb::EntitySpecifics entity(out[0].sync_data().GetSpecifics());
-  SyncData d(SyncData::CreateRemoteData(1, entity, base::Time()));
+  SyncData d(SyncData::CreateRemoteData(
+      1,
+      entity,
+      base::Time(),
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
   SetSyncData(syncer::SyncDataList(&d, &d + 1));
   out.clear();
 
@@ -1207,7 +1265,12 @@ TEST_F(SessionsSyncManagerTest, SaveUnassociatedNodesForReassociation) {
   // will be deleted before being added to the tab node pool.
   sync_pb::EntitySpecifics entity(changes[0].sync_data().GetSpecifics());
   entity.mutable_session()->mutable_tab()->set_tab_id(1);
-  SyncData d(SyncData::CreateRemoteData(1, entity, base::Time()));
+  SyncData d(SyncData::CreateRemoteData(
+      1,
+      entity,
+      base::Time(),
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
   syncer::SyncDataList in(&d, &d + 1);
   changes.clear();
   SessionsSyncManager manager2(profile(), this, NewDummyRouter());
@@ -1228,7 +1291,11 @@ TEST_F(SessionsSyncManagerTest, MergeDeletesCorruptNode) {
   std::string local_tag = manager()->current_machine_tag();
   int tab_node_id = manager()->local_tab_pool_.GetFreeTabNode(&changes);
   SyncData d(SyncData::CreateRemoteData(
-      1, changes[0].sync_data().GetSpecifics(), base::Time()));
+      1,
+      changes[0].sync_data().GetSpecifics(),
+      base::Time(),
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
   syncer::SyncDataList in(&d, &d + 1);
   changes.clear();
   TearDown();
@@ -1496,8 +1563,18 @@ TEST_F(SessionsSyncManagerTest, DoGarbageCollection) {
   sync_pb::EntitySpecifics entity1, entity2;
   entity1.mutable_session()->CopyFrom(meta);
   entity2.mutable_session()->CopyFrom(meta2);
-  foreign_data.push_back(SyncData::CreateRemoteData(1, entity1, tag1_time));
-  foreign_data.push_back(SyncData::CreateRemoteData(1, entity2, tag2_time));
+  foreign_data.push_back(SyncData::CreateRemoteData(
+      1,
+      entity1,
+      tag1_time,
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
+  foreign_data.push_back(SyncData::CreateRemoteData(
+      1,
+      entity2,
+      tag2_time,
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
   AddTabsToSyncDataList(tabs1, &foreign_data);
   AddTabsToSyncDataList(tabs2, &foreign_data);
 
@@ -1546,7 +1623,12 @@ TEST_F(SessionsSyncManagerTest, GarbageCollectionHonoursUpdate) {
   sync_pb::EntitySpecifics entity1;
   base::Time tag1_time = base::Time::Now() - base::TimeDelta::FromDays(21);
   entity1.mutable_session()->CopyFrom(meta);
-  foreign_data.push_back(SyncData::CreateRemoteData(1, entity1, tag1_time));
+  foreign_data.push_back(SyncData::CreateRemoteData(
+      1,
+      entity1,
+      tag1_time,
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
   AddTabsToSyncDataList(tabs1, &foreign_data);
   syncer::SyncChangeList output;
   InitWithSyncDataTakeOutput(foreign_data, &output);
@@ -1556,11 +1638,15 @@ TEST_F(SessionsSyncManagerTest, GarbageCollectionHonoursUpdate) {
   sync_pb::EntitySpecifics update_entity;
   update_entity.mutable_session()->CopyFrom(tabs1[0]);
   syncer::SyncChangeList changes;
-  changes.push_back(syncer::SyncChange(
-      FROM_HERE,
-      SyncChange::ACTION_UPDATE,
-      syncer::SyncData::CreateRemoteData(1, update_entity,
-                                         base::Time::Now())));
+  changes.push_back(
+      syncer::SyncChange(FROM_HERE,
+                         SyncChange::ACTION_UPDATE,
+                         syncer::SyncData::CreateRemoteData(
+                             1,
+                             update_entity,
+                             base::Time::Now(),
+                             syncer::AttachmentIdList(),
+                             syncer::AttachmentServiceProxyForTest::Create())));
   manager()->ProcessSyncChanges(FROM_HERE, changes);
 
   // Check that the foreign session was associated and retrieve the data.

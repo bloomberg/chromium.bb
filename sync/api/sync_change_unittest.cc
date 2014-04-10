@@ -7,8 +7,11 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "sync/api/attachments/attachment_id.h"
+#include "sync/api/attachments/attachment_service_proxy_for_test.h"
 #include "sync/protocol/preference_specifics.pb.h"
 #include "sync/protocol/proto_value_conversions.h"
 #include "sync/protocol/sync.pb.h"
@@ -21,7 +24,10 @@ typedef std::vector<SyncChange> SyncChangeList;
 
 namespace {
 
-typedef testing::Test SyncChangeTest;
+class SyncChangeTest : public testing::Test {
+ private:
+  base::MessageLoop message_loop;
+};
 
 TEST_F(SyncChangeTest, LocalDelete) {
   SyncChange::SyncChangeType change_type = SyncChange::ACTION_DELETE;
@@ -82,28 +88,43 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   sync_pb::PreferenceSpecifics* pref_specifics =
       update_specifics.mutable_preference();
   pref_specifics->set_name("update");
-  change_list.push_back(SyncChange(
-      FROM_HERE,
-      SyncChange::ACTION_UPDATE,
-      SyncData::CreateRemoteData(1, update_specifics, base::Time())));
+  change_list.push_back(
+      SyncChange(FROM_HERE,
+                 SyncChange::ACTION_UPDATE,
+                 SyncData::CreateRemoteData(
+                     1,
+                     update_specifics,
+                     base::Time(),
+                     syncer::AttachmentIdList(),
+                     syncer::AttachmentServiceProxyForTest::Create())));
 
   // Create an add.
   sync_pb::EntitySpecifics add_specifics;
   pref_specifics = add_specifics.mutable_preference();
   pref_specifics->set_name("add");
-  change_list.push_back(SyncChange(
-      FROM_HERE,
-      SyncChange::ACTION_ADD,
-      SyncData::CreateRemoteData(2, add_specifics, base::Time())));
+  change_list.push_back(
+      SyncChange(FROM_HERE,
+                 SyncChange::ACTION_ADD,
+                 SyncData::CreateRemoteData(
+                     2,
+                     add_specifics,
+                     base::Time(),
+                     syncer::AttachmentIdList(),
+                     syncer::AttachmentServiceProxyForTest::Create())));
 
   // Create a delete.
   sync_pb::EntitySpecifics delete_specifics;
   pref_specifics = delete_specifics.mutable_preference();
   pref_specifics->set_name("add");
-  change_list.push_back(SyncChange(
-      FROM_HERE,
-      SyncChange::ACTION_DELETE,
-      SyncData::CreateRemoteData(3, delete_specifics, base::Time())));
+  change_list.push_back(
+      SyncChange(FROM_HERE,
+                 SyncChange::ACTION_DELETE,
+                 SyncData::CreateRemoteData(
+                     3,
+                     delete_specifics,
+                     base::Time(),
+                     syncer::AttachmentIdList(),
+                     syncer::AttachmentServiceProxyForTest::Create())));
 
   ASSERT_EQ(3U, change_list.size());
 

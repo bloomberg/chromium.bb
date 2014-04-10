@@ -22,6 +22,8 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "sync/api/attachments/attachment_id.h"
+#include "sync/api/attachments/attachment_service_proxy_for_test.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error.h"
@@ -451,11 +453,15 @@ TEST_F(ThemeSyncableServiceTest, ProcessSyncThemeChange) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_theme()->CopyFrom(theme_specifics);
   syncer::SyncChangeList change_list;
-  change_list.push_back(syncer::SyncChange(
-      FROM_HERE,
-      syncer::SyncChange::ACTION_UPDATE,
-      syncer::SyncData::CreateRemoteData(
-          1, entity_specifics, base::Time())));
+  change_list.push_back(
+      syncer::SyncChange(FROM_HERE,
+                         syncer::SyncChange::ACTION_UPDATE,
+                         syncer::SyncData::CreateRemoteData(
+                             1,
+                             entity_specifics,
+                             base::Time(),
+                             syncer::AttachmentIdList(),
+                             syncer::AttachmentServiceProxyForTest::Create())));
   error = theme_sync_service_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.IsSet()) << error.message();
   EXPECT_EQ(fake_theme_service_->theme_extension(), theme_extension_.get());

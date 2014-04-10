@@ -120,16 +120,6 @@ TEST_F(SyncDataTest, CreateRemoteData) {
   EXPECT_TRUE(data.GetAttachmentIds().empty());
 }
 
-TEST_F(SyncDataTest, CreateRemoteData_WithoutAttachmentService) {
-  specifics.mutable_preference();
-  SyncData data = SyncData::CreateRemoteData(kId, specifics, kLastModifiedTime);
-  EXPECT_TRUE(data.IsValid());
-  EXPECT_FALSE(data.IsLocal());
-  EXPECT_EQ(kId, SyncDataRemote(data).GetId());
-  EXPECT_EQ(kLastModifiedTime, SyncDataRemote(data).GetModifiedTime());
-  EXPECT_TRUE(data.GetSpecifics().has_preference());
-}
-
 // TODO(maniscalco): Add test cases that verify GetLocalAttachmentsForUpload and
 // DropAttachments calls are passed through to the underlying AttachmentService.
 

@@ -22,6 +22,8 @@
     'api/attachments/attachment_service.h',
     'api/attachments/attachment_service_proxy.cc',
     'api/attachments/attachment_service_proxy.h',
+    'api/attachments/attachment_service_proxy_for_test.cc',
+    'api/attachments/attachment_service_proxy_for_test.h',
     'api/attachments/attachment_store.cc',
     'api/attachments/attachment_store.h',
     'api/attachments/fake_attachment_service.cc',

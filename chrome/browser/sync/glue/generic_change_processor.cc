@@ -80,9 +80,9 @@ GenericChangeProcessor::GenericChangeProcessor(
       share_handle_(user_share),
       attachment_service_(attachment_service.Pass()),
       attachment_service_weak_ptr_factory_(attachment_service_.get()),
-      attachment_service_proxy_(syncer::AttachmentServiceProxy(
+      attachment_service_proxy_(
           base::MessageLoopProxy::current(),
-          attachment_service_weak_ptr_factory_.GetWeakPtr())) {
+          attachment_service_weak_ptr_factory_.GetWeakPtr()) {
   DCHECK(CalledOnValidThread());
   DCHECK(attachment_service_);
 }

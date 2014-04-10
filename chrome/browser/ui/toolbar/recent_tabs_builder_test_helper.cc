@@ -11,6 +11,8 @@
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
+#include "sync/api/attachments/attachment_id.h"
+#include "sync/api/attachments/attachment_service_proxy_for_test.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -193,15 +195,25 @@ void RecentTabsBuilderTestHelper::ExportToSessionsSyncManager(
         sync_pb::SessionSpecifics* tab_base = entity.mutable_session();
         BuildTabSpecifics(s, w, t, tab_base);
         changes.push_back(syncer::SyncChange(
-            FROM_HERE, syncer::SyncChange::ACTION_ADD,
+            FROM_HERE,
+            syncer::SyncChange::ACTION_ADD,
             syncer::SyncData::CreateRemoteData(
-                tab_base->tab_node_id(), entity, GetTabTimestamp(s, w, t))));
+                tab_base->tab_node_id(),
+                entity,
+                GetTabTimestamp(s, w, t),
+                syncer::AttachmentIdList(),
+                syncer::AttachmentServiceProxyForTest::Create())));
       }
     }
     changes.push_back(syncer::SyncChange(
-        FROM_HERE, syncer::SyncChange::ACTION_ADD,
-        syncer::SyncData::CreateRemoteData(1, session_entity,
-                                          GetSessionTimestamp(s))));
+        FROM_HERE,
+        syncer::SyncChange::ACTION_ADD,
+        syncer::SyncData::CreateRemoteData(
+            1,
+            session_entity,
+            GetSessionTimestamp(s),
+            syncer::AttachmentIdList(),
+            syncer::AttachmentServiceProxyForTest::Create())));
   }
   manager->ProcessSyncChanges(FROM_HERE, changes);
   VerifyExport(manager);

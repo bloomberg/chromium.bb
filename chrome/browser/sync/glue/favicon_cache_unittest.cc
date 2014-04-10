@@ -11,6 +11,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "content/public/browser/notification_service.h"
+#include "sync/api/attachments/attachment_id.h"
+#include "sync/api/attachments/attachment_service_proxy_for_test.h"
 #include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/api/time.h"
@@ -614,16 +616,20 @@ TEST_F(SyncFaviconCacheTest, SyncExistingRemote) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(BuildFaviconData(i),
                        image_specifics.mutable_favicon_image());
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     FillTrackingSpecifics(BuildFaviconData(i),
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
   }
 
   syncer::SyncMergeResult merge_result =
@@ -689,16 +695,20 @@ TEST_F(SyncFaviconCacheTest, SyncMergesImages) {
     FillImageSpecifics(test_data,
                        image_specifics.mutable_favicon_image());
 
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     FillTrackingSpecifics(test_data,
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
   }
 
   syncer::SyncMergeResult merge_result =
@@ -770,16 +780,20 @@ TEST_F(SyncFaviconCacheTest, SyncMergesTracking) {
     FillImageSpecifics(test_data,
                        image_specifics.mutable_favicon_image());
 
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     FillTrackingSpecifics(test_data,
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
   }
 
   syncer::SyncMergeResult merge_result =
@@ -831,25 +845,31 @@ TEST_F(SyncFaviconCacheTest, ReceiveStaleImages) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(BuildFaviconData(i),
                        image_specifics.mutable_favicon_image());
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     expected_change_types.push_back(syncer::SyncChange::ACTION_UPDATE);
     image_specifics.mutable_favicon_image()->clear_favicon_web();
-    stale_changes.push_back(
-        syncer::SyncChange(
-             FROM_HERE,
-             syncer::SyncChange::ACTION_UPDATE,
-             syncer::SyncData::CreateRemoteData(1,
-                                                image_specifics,
-                                                base::Time())));
+    stale_changes.push_back(syncer::SyncChange(
+        FROM_HERE,
+        syncer::SyncChange::ACTION_UPDATE,
+        syncer::SyncData::CreateRemoteData(
+            1,
+            image_specifics,
+            base::Time(),
+            syncer::AttachmentIdList(),
+            syncer::AttachmentServiceProxyForTest::Create())));
     FillTrackingSpecifics(BuildFaviconData(i),
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
   }
 
   SetUpInitialSync(initial_image_data, initial_tracking_data);
@@ -877,25 +897,33 @@ TEST_F(SyncFaviconCacheTest, ReceiveNewImages) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(test_data,
                        image_specifics.mutable_favicon_image());
-    new_changes.push_back(
-        syncer::SyncChange(
-             FROM_HERE,
-             syncer::SyncChange::ACTION_UPDATE,
-             syncer::SyncData::CreateRemoteData(1,
-                                                image_specifics,
-                                                base::Time())));
-    image_specifics.mutable_favicon_image()->mutable_favicon_web()->
-        mutable_favicon()->append("old");
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    new_changes.push_back(syncer::SyncChange(
+        FROM_HERE,
+        syncer::SyncChange::ACTION_UPDATE,
+        syncer::SyncData::CreateRemoteData(
+            1,
+            image_specifics,
+            base::Time(),
+            syncer::AttachmentIdList(),
+            syncer::AttachmentServiceProxyForTest::Create())));
+    image_specifics.mutable_favicon_image()
+        ->mutable_favicon_web()
+        ->mutable_favicon()
+        ->append("old");
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     FillTrackingSpecifics(BuildFaviconData(i),
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
   }
 
   SetUpInitialSync(initial_image_data, initial_tracking_data);
@@ -917,23 +945,29 @@ TEST_F(SyncFaviconCacheTest, ReceiveSameImages) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(test_data,
                        image_specifics.mutable_favicon_image());
-    same_changes.push_back(
-        syncer::SyncChange(
-             FROM_HERE,
-             syncer::SyncChange::ACTION_UPDATE,
-             syncer::SyncData::CreateRemoteData(1,
-                                                image_specifics,
-                                                base::Time())));
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    same_changes.push_back(syncer::SyncChange(
+        FROM_HERE,
+        syncer::SyncChange::ACTION_UPDATE,
+        syncer::SyncData::CreateRemoteData(
+            1,
+            image_specifics,
+            base::Time(),
+            syncer::AttachmentIdList(),
+            syncer::AttachmentServiceProxyForTest::Create())));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     FillTrackingSpecifics(BuildFaviconData(i),
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
   }
 
   SetUpInitialSync(initial_image_data, initial_tracking_data);
@@ -956,25 +990,31 @@ TEST_F(SyncFaviconCacheTest, ReceiveStaleTracking) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(BuildFaviconData(i),
                        image_specifics.mutable_favicon_image());
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     expected_change_types.push_back(syncer::SyncChange::ACTION_UPDATE);
     FillTrackingSpecifics(BuildFaviconData(i),
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     tracking_specifics.mutable_favicon_tracking()->set_last_visit_time_ms(-1);
-    stale_changes.push_back(
-        syncer::SyncChange(
-             FROM_HERE,
-             syncer::SyncChange::ACTION_UPDATE,
-             syncer::SyncData::CreateRemoteData(1,
-                                                tracking_specifics,
-                                                base::Time())));
+    stale_changes.push_back(syncer::SyncChange(
+        FROM_HERE,
+        syncer::SyncChange::ACTION_UPDATE,
+        syncer::SyncData::CreateRemoteData(
+            1,
+            tracking_specifics,
+            base::Time(),
+            syncer::AttachmentIdList(),
+            syncer::AttachmentServiceProxyForTest::Create())));
   }
 
   SetUpInitialSync(initial_image_data, initial_tracking_data);
@@ -1002,24 +1042,30 @@ TEST_F(SyncFaviconCacheTest, ReceiveNewTracking) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(BuildFaviconData(i),
                        image_specifics.mutable_favicon_image());
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     FillTrackingSpecifics(BuildFaviconData(i),
                           tracking_specifics.mutable_favicon_tracking());
-    new_changes.push_back(
-        syncer::SyncChange(
-             FROM_HERE,
-             syncer::SyncChange::ACTION_UPDATE,
-             syncer::SyncData::CreateRemoteData(1,
-                                                tracking_specifics,
-                                                base::Time())));
+    new_changes.push_back(syncer::SyncChange(
+        FROM_HERE,
+        syncer::SyncChange::ACTION_UPDATE,
+        syncer::SyncData::CreateRemoteData(
+            1,
+            tracking_specifics,
+            base::Time(),
+            syncer::AttachmentIdList(),
+            syncer::AttachmentServiceProxyForTest::Create())));
     tracking_specifics.mutable_favicon_tracking()->set_last_visit_time_ms(i-1);
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
   }
 
   SetUpInitialSync(initial_image_data, initial_tracking_data);
@@ -1041,23 +1087,29 @@ TEST_F(SyncFaviconCacheTest, ReceiveSameTracking) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(BuildFaviconData(i),
                        image_specifics.mutable_favicon_image());
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     FillTrackingSpecifics(BuildFaviconData(i),
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
-    same_changes.push_back(
-        syncer::SyncChange(
-             FROM_HERE,
-             syncer::SyncChange::ACTION_UPDATE,
-             syncer::SyncData::CreateRemoteData(1,
-                                                tracking_specifics,
-                                                base::Time())));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
+    same_changes.push_back(syncer::SyncChange(
+        FROM_HERE,
+        syncer::SyncChange::ACTION_UPDATE,
+        syncer::SyncData::CreateRemoteData(
+            1,
+            tracking_specifics,
+            base::Time(),
+            syncer::AttachmentIdList(),
+            syncer::AttachmentServiceProxyForTest::Create())));
   }
 
   SetUpInitialSync(initial_image_data, initial_tracking_data);
@@ -1076,30 +1128,38 @@ TEST_F(SyncFaviconCacheTest, DeleteFavicons) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(BuildFaviconData(i),
                        image_specifics.mutable_favicon_image());
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     FillTrackingSpecifics(BuildFaviconData(i),
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
-    tracking_deletions.push_back(
-        syncer::SyncChange(
-             FROM_HERE,
-             syncer::SyncChange::ACTION_DELETE,
-             syncer::SyncData::CreateRemoteData(1,
-                                                tracking_specifics,
-                                                base::Time())));
-    image_deletions.push_back(
-        syncer::SyncChange(
-             FROM_HERE,
-             syncer::SyncChange::ACTION_DELETE,
-             syncer::SyncData::CreateRemoteData(1,
-                                                image_specifics,
-                                                base::Time())));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
+    tracking_deletions.push_back(syncer::SyncChange(
+        FROM_HERE,
+        syncer::SyncChange::ACTION_DELETE,
+        syncer::SyncData::CreateRemoteData(
+            1,
+            tracking_specifics,
+            base::Time(),
+            syncer::AttachmentIdList(),
+            syncer::AttachmentServiceProxyForTest::Create())));
+    image_deletions.push_back(syncer::SyncChange(
+        FROM_HERE,
+        syncer::SyncChange::ACTION_DELETE,
+        syncer::SyncData::CreateRemoteData(
+            1,
+            image_specifics,
+            base::Time(),
+            syncer::AttachmentIdList(),
+            syncer::AttachmentServiceProxyForTest::Create())));
   }
 
   SetUpInitialSync(initial_image_data, initial_tracking_data);
@@ -1129,16 +1189,20 @@ TEST_F(SyncFaviconCacheTest, ExpireOnMergeData) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(BuildFaviconData(i),
                        image_specifics.mutable_favicon_image());
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     FillTrackingSpecifics(BuildFaviconData(i),
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     expected_icons.push_back(i);
 
     TestFaviconData favicon = BuildFaviconData(i+kMaxSyncFavicons);
@@ -1196,36 +1260,44 @@ TEST_F(SyncFaviconCacheTest, NoExpireOnProcessSyncChanges) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(BuildFaviconData(i),
                        image_specifics.mutable_favicon_image());
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     FillTrackingSpecifics(BuildFaviconData(i),
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     // Set up new tracking specifics for the icons received at change time.
     expected_icons.push_back(i + kMaxSyncFavicons);
     FillImageSpecifics(BuildFaviconData(i + kMaxSyncFavicons),
                        image_specifics.mutable_favicon_image());
-    image_changes.push_back(
-        syncer::SyncChange(
-             FROM_HERE,
-             syncer::SyncChange::ACTION_ADD,
-             syncer::SyncData::CreateRemoteData(1,
-                                                image_specifics,
-                                                base::Time())));
+    image_changes.push_back(syncer::SyncChange(
+        FROM_HERE,
+        syncer::SyncChange::ACTION_ADD,
+        syncer::SyncData::CreateRemoteData(
+            1,
+            image_specifics,
+            base::Time(),
+            syncer::AttachmentIdList(),
+            syncer::AttachmentServiceProxyForTest::Create())));
     FillTrackingSpecifics(BuildFaviconData(i + kMaxSyncFavicons),
                           tracking_specifics.mutable_favicon_tracking());
-    tracking_changes.push_back(
-        syncer::SyncChange(
-             FROM_HERE,
-             syncer::SyncChange::ACTION_ADD,
-             syncer::SyncData::CreateRemoteData(1,
-                                                tracking_specifics,
-                                                base::Time())));
+    tracking_changes.push_back(syncer::SyncChange(
+        FROM_HERE,
+        syncer::SyncChange::ACTION_ADD,
+        syncer::SyncData::CreateRemoteData(
+            1,
+            tracking_specifics,
+            base::Time(),
+            syncer::AttachmentIdList(),
+            syncer::AttachmentServiceProxyForTest::Create())));
   }
 
   SetUpInitialSync(initial_image_data, initial_tracking_data);
@@ -1378,16 +1450,20 @@ TEST_F(SyncFaviconCacheTest, HistoryFullClear) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(test_data,
                        image_specifics.mutable_favicon_image());
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     FillTrackingSpecifics(BuildFaviconData(i),
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
   }
 
   SetUpInitialSync(initial_image_data, initial_tracking_data);
@@ -1436,16 +1512,20 @@ TEST_F(SyncFaviconCacheTest, HistorySubsetClear) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(test_data,
                        image_specifics.mutable_favicon_image());
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     FillTrackingSpecifics(BuildFaviconData(i),
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
   }
 
   SetUpInitialSync(initial_image_data, initial_tracking_data);
@@ -1557,20 +1637,28 @@ TEST_F(SyncFaviconCacheTest, UpdatedOrphans) {
       sync_pb::EntitySpecifics image_specifics;
       FillImageSpecifics(BuildFaviconData(i),
                          image_specifics.mutable_favicon_image());
-      initial_image_changes.push_back(
-          syncer::SyncChange(FROM_HERE,
-                             syncer::SyncChange::ACTION_ADD,
-                             syncer::SyncData::CreateRemoteData(
-                                 1, image_specifics, base::Time())));
+      initial_image_changes.push_back(syncer::SyncChange(
+          FROM_HERE,
+          syncer::SyncChange::ACTION_ADD,
+          syncer::SyncData::CreateRemoteData(
+              1,
+              image_specifics,
+              base::Time(),
+              syncer::AttachmentIdList(),
+              syncer::AttachmentServiceProxyForTest::Create())));
     } else {
       sync_pb::EntitySpecifics tracking_specifics;
       FillTrackingSpecifics(BuildFaviconData(i),
                             tracking_specifics.mutable_favicon_tracking());
-      initial_tracking_changes.push_back(
-          syncer::SyncChange(FROM_HERE,
-                             syncer::SyncChange::ACTION_ADD,
-                             syncer::SyncData::CreateRemoteData(
-                                 1, tracking_specifics, base::Time())));
+      initial_tracking_changes.push_back(syncer::SyncChange(
+          FROM_HERE,
+          syncer::SyncChange::ACTION_ADD,
+          syncer::SyncData::CreateRemoteData(
+              1,
+              tracking_specifics,
+              base::Time(),
+              syncer::AttachmentIdList(),
+              syncer::AttachmentServiceProxyForTest::Create())));
     }
   }
 
@@ -1629,10 +1717,12 @@ TEST_F(SyncFaviconCacheTest, PartialAssociationInfo) {
     sync_pb::EntitySpecifics image_specifics;
     FillImageSpecifics(BuildFaviconData(i),
                        image_specifics.mutable_favicon_image());
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     image_specifics.mutable_favicon_image()->clear_favicon_web();
   }
 
@@ -1654,18 +1744,22 @@ TEST_F(SyncFaviconCacheTest, NullFaviconVisitTime) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     FillImageSpecifics(BuildFaviconData(i),
                        image_specifics.mutable_favicon_image());
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     FillTrackingSpecifics(BuildFaviconData(i),
                           tracking_specifics.mutable_favicon_tracking());
     tracking_specifics.mutable_favicon_tracking()->set_last_visit_time_ms(
         syncer::TimeToProtoTime(base::Time()));
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
   }
 
   cache()->MergeDataAndStartSyncing(syncer::FAVICON_IMAGES,
@@ -1720,16 +1814,20 @@ TEST_F(SyncFaviconCacheTest, VisitFaviconClockSkew) {
             base::Time::Now() + base::TimeDelta::FromMinutes(kClockSkew));
     FillImageSpecifics(test_data,
                        image_specifics.mutable_favicon_image());
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
     FillTrackingSpecifics(test_data,
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
   }
   SetUpInitialSync(initial_image_data, initial_tracking_data);
 
@@ -1779,18 +1877,22 @@ TEST_F(SyncFaviconCacheTest, MixedThreshold) {
     // Push the images forward by 5, to match the unsynced favicons.
     FillImageSpecifics(BuildFaviconData(i + 5),
                        image_specifics.mutable_favicon_image());
-    initial_image_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           image_specifics,
-                                           base::Time()));
+    initial_image_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        image_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
 
     sync_pb::EntitySpecifics tracking_specifics;
     FillTrackingSpecifics(BuildFaviconData(i),
                           tracking_specifics.mutable_favicon_tracking());
-    initial_tracking_data.push_back(
-        syncer::SyncData::CreateRemoteData(1,
-                                           tracking_specifics,
-                                           base::Time()));
+    initial_tracking_data.push_back(syncer::SyncData::CreateRemoteData(
+        1,
+        tracking_specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
   }
   SetUpInitialSync(initial_image_data, initial_tracking_data);
 

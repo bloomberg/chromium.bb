@@ -15,6 +15,8 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_utils.h"
+#include "sync/api/attachments/attachment_id.h"
+#include "sync/api/attachments/attachment_service_proxy_for_test.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
@@ -60,7 +62,11 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
     pref_specifics->set_value(serialized_value);
 
     syncer::SyncData change_data = syncer::SyncData::CreateRemoteData(
-        ++next_sync_data_id_, specifics, base::Time());
+        ++next_sync_data_id_,
+        specifics,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create());
     syncer::SyncChange change(
         FROM_HERE, syncer::SyncChange::ACTION_UPDATE, change_data);
 

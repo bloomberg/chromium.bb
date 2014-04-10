@@ -21,6 +21,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "sync/api/attachments/attachment_id.h"
+#include "sync/api/attachments/attachment_service_proxy_for_test.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_error_factory_mock.h"
 
@@ -182,13 +184,21 @@ void ExtensionSessionsTest::CreateSessionModels() {
             switches::kDisableSyncSessionsV2)) {
       sync_pb::EntitySpecifics entity;
       entity.mutable_session()->CopyFrom(meta);
-      initial_data.push_back(
-          syncer::SyncData::CreateRemoteData(1, entity, base::Time()));
+      initial_data.push_back(syncer::SyncData::CreateRemoteData(
+          1,
+          entity,
+          base::Time(),
+          syncer::AttachmentIdList(),
+          syncer::AttachmentServiceProxyForTest::Create()));
       for (size_t i = 0; i < tabs1.size(); i++) {
         sync_pb::EntitySpecifics entity;
         entity.mutable_session()->CopyFrom(tabs1[i]);
         initial_data.push_back(syncer::SyncData::CreateRemoteData(
-            i + 2, entity, base::Time()));
+            i + 2,
+            entity,
+            base::Time(),
+            syncer::AttachmentIdList(),
+            syncer::AttachmentServiceProxyForTest::Create()));
       }
     } else {
       // Update associator with the session's meta node containing one window.
