@@ -26,7 +26,6 @@
 #include "CSSValueKeywords.h"
 
 #include "platform/fonts/FontDescription.h"
-#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
@@ -79,10 +78,10 @@ public:
     void setFontSmoothing(FontSmoothingMode);
 
     // FIXME: These need to just vend a Font object eventually.
-    void createFont(PassRefPtrWillBeRawPtr<FontSelector>, const RenderStyle* parentStyle, RenderStyle*);
+    void createFont(PassRefPtr<FontSelector>, const RenderStyle* parentStyle, RenderStyle*);
     // FIXME: This is nearly static, should either made fully static or decomposed into
     // FontBuilder calls at the callsite.
-    void createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector>, RenderStyle*);
+    void createFontForDocument(PassRefPtr<FontSelector>, RenderStyle*);
 
     bool fontSizeHasViewportUnits() { return m_fontSizehasViewportUnits; }
 

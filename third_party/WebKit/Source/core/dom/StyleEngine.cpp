@@ -638,7 +638,6 @@ void StyleEngine::trace(Visitor* visitor)
     visitor->trace(m_documentStyleSheetCollection);
     visitor->trace(m_styleSheetCollectionMap);
     visitor->trace(m_resolver);
-    visitor->trace(m_fontSelector);
     visitor->trace(m_textToSheetCache);
     visitor->trace(m_sheetToTextCache);
 }
