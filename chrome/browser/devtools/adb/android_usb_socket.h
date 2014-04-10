@@ -78,7 +78,6 @@ class AndroidUsbSocket : public net::StreamSocket,
   uint32 remote_id_;
   net::BoundNetLog net_log_;
   bool is_connected_;
-  bool is_closed_;
   std::string read_buffer_;
   net::CompletionCallback connect_callback_;
   std::deque<IORequest> read_requests_;

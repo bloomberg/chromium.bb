@@ -108,6 +108,10 @@ void UsbDeviceImpl::RunCommand(const std::string& command,
                                const CommandCallback& callback) {
   DCHECK(CalledOnValidThread());
   net::StreamSocket* socket = device_->CreateSocket(command);
+  if (!socket) {
+    callback.Run(net::ERR_CONNECTION_FAILED, std::string());
+    return;
+  }
   int result = socket->Connect(base::Bind(&UsbDeviceImpl::OpenedForCommand,
                                           this, callback, socket));
   if (result != net::ERR_IO_PENDING)
@@ -120,6 +124,10 @@ void UsbDeviceImpl::OpenSocket(const std::string& name,
   std::string socket_name =
       base::StringPrintf(kLocalAbstractCommand, name.c_str());
   net::StreamSocket* socket = device_->CreateSocket(socket_name);
+  if (!socket) {
+    callback.Run(net::ERR_CONNECTION_FAILED, NULL);
+    return;
+  }
   int result = socket->Connect(base::Bind(&UsbDeviceImpl::OnOpenSocket, this,
                                           callback, socket));
   if (result != net::ERR_IO_PENDING)

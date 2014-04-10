@@ -9,6 +9,7 @@
 #include <queue>
 #include <vector>
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/usb/usb_device_handle.h"
 
 namespace base {
@@ -76,7 +77,8 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
                    const std::string& serial,
                    int inbound_address,
                    int outbound_address,
-                   int zero_mask);
+                   int zero_mask,
+                   int interface_id);
 
   void InitOnCallerThread();
 
@@ -87,11 +89,9 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
             uint32 arg1,
             const std::string& body);
 
-  scoped_refptr<UsbDeviceHandle> usb_device() { return usb_device_; }
+  scoped_refptr<UsbDeviceHandle> usb_device() { return usb_handle_; }
 
   std::string serial() { return serial_; }
-
-  bool terminated() { return terminated_; }
 
   bool is_connected() { return is_connected_; }
 
@@ -105,7 +105,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
                            scoped_refptr<net::IOBuffer> buffer,
                            size_t result);
 
-  void ReadHeader(bool initial);
+  void ReadHeader();
   void ParseHeader(UsbTransferStatus status,
                    scoped_refptr<net::IOBuffer> buffer,
                    size_t result);
@@ -124,6 +124,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
 
   void TransferError(UsbTransferStatus status);
 
+  void TerminateIfReleased(scoped_refptr<UsbDeviceHandle> usb_handle);
   void Terminate();
 
   void SocketDeleted(uint32 socket_id);
@@ -133,18 +134,18 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   scoped_ptr<crypto::RSAPrivateKey> rsa_key_;
 
   // Device info
-  scoped_refptr<UsbDeviceHandle> usb_device_;
+  scoped_refptr<UsbDeviceHandle> usb_handle_;
   std::string serial_;
   int inbound_address_;
   int outbound_address_;
   int zero_mask_;
+  int interface_id_;
 
   bool is_connected_;
   bool signature_sent_;
 
   // Created sockets info
   uint32 last_socket_id_;
-  bool terminated_;
   typedef std::map<uint32, AndroidUsbSocket*> AndroidUsbSockets;
   AndroidUsbSockets sockets_;
 
@@ -155,6 +156,8 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   // Outgoing messages pending connect
   typedef std::vector<scoped_refptr<AdbMessage> > PendingMessages;
   PendingMessages pending_messages_;
+
+  base::WeakPtrFactory<AndroidUsbDevice> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidUsbDevice);
 };
