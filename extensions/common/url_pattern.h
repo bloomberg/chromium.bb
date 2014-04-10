@@ -189,9 +189,6 @@ class URLPattern {
   // Get an error string for a ParseResult.
   static const char* GetParseResultString(URLPattern::ParseResult parse_result);
 
-  // Checks whether the bit is set for the given scheme in the given scheme mask
-  static bool IsSchemeBitSet(const std::string& scheme, const int mask);
-
  private:
   // Returns true if any of the |schemes| items matches our scheme.
   bool MatchesAnyScheme(const std::vector<std::string>& schemes) const;
