@@ -6,6 +6,7 @@
 
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/public/browser/resource_request_info.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
@@ -25,6 +26,9 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   resource_type = info->GetResourceType();
   render_frame_id = info->GetRenderFrameID();
+  http_response_code =
+      request->response_info().headers.get() ?
+          request->response_info().headers.get()->response_code() : -1;
 
   // If request is from the worker process on behalf of a renderer, use
   // the renderer process id, since it consumes the notification response

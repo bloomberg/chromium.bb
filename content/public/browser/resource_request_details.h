@@ -40,6 +40,9 @@ struct ResourceRequestDetails {
   ResourceType::Type resource_type;
   net::HostPortPair socket_address;
   int render_frame_id;
+  // HTTP response code. See HttpResponseHeaders::response_code().
+  // -1 if there are no response headers yet.
+  int http_response_code;
 };
 
 // Details about a redirection of a resource request.
