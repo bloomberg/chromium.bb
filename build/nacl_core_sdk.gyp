@@ -40,7 +40,7 @@
           ],
           'copies': [
             {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/x86_64-nacl/lib32',
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86/nacl_x86_newlib/x86_64-nacl/lib32',
               'files': [
                 '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/crti.o',
                 '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/crtn.o',
@@ -52,7 +52,7 @@
               ],
             },
             {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/x86_64-nacl/lib',
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86/nacl_x86_newlib/x86_64-nacl/lib',
               'files': [
                 '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/crti.o',
                 '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/crtn.o',
@@ -64,7 +64,7 @@
               ],
             },
             {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/x86_64-nacl/lib32',
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86/nacl_x86_glibc/x86_64-nacl/lib32',
               'files': [
                 '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libnacl_dyncode.a',
                 '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libnacl_list_mappings.a',
@@ -73,7 +73,7 @@
               ],
             },
             {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/x86_64-nacl/lib',
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86/nacl_x86_glibc/x86_64-nacl/lib',
               'files': [
                 '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libnacl_dyncode.a',
                 '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libnacl_list_mappings.a',
