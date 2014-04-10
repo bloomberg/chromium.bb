@@ -215,10 +215,19 @@ class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
           self.imager_mock.patched['GetImagePathFromDevserver'].called)
       self.assertTrue(self.imager_mock.patched['CopyImageToDevice'].called)
 
-  def testNotRemovableDevice(self):
-    """Tests that exception is raised when the given device is not removable."""
-    self.SetupCommandMock(['usb:///dev/dummy', self.IMAGE])
-    self.assertRaises(cros_build_lib.DieSystemExit, self.cmd_mock.inst.Run)
+  def testConfirmNonRemovableDevice(self):
+    """Tests that we ask user to confirm if the device is not removable."""
+    with mock.patch.object(cros_build_lib, 'BooleanPrompt') as mock_prompt:
+      self.SetupCommandMock(['usb:///dev/dummy', self.IMAGE])
+      self.cmd_mock.inst.Run()
+      self.assertTrue(mock_prompt.called)
+
+  def testSkipPromptNonRemovableDevice(self):
+    """Tests that we skip the prompt for non-removable with --yes."""
+    with mock.patch.object(cros_build_lib, 'BooleanPrompt') as mock_prompt:
+      self.SetupCommandMock(['--yes', 'usb:///dev/dummy', self.IMAGE])
+      self.cmd_mock.inst.Run()
+      self.assertFalse(mock_prompt.called)
 
   def testChooseRemovableDevice(self):
     """Tests that we ask user to choose a device if none is given."""

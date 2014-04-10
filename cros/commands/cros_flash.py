@@ -121,12 +121,13 @@ def DevserverURLToLocalPath(url, static_dir, file_type):
 class USBImager(object):
   """Copy image to the target removable device."""
 
-  def __init__(self, device, image, debug=False):
+  def __init__(self, device, image, debug=False, yes=False):
     """Initalizes USBImager."""
     self.device = device
     self.image = image
     self.debug = debug
     self.debug_level = logging.DEBUG if debug else logging.INFO
+    self.yes = yes
 
   def DeviceNameToPath(self, device_name):
     return '/dev/%s' % device_name
@@ -264,20 +265,23 @@ class USBImager(object):
   def Run(self):
     """Image the removable device."""
     devices = self.ListAllRemovableDevices()
-    if not devices:
-      cros_build_lib.Die('No removable devices detected.')
-
+    # If user has specified a device, check if it is removable.
+    if (self.device and
+        self.device not in [self.DeviceNameToPath(x) for x in devices]):
+      msg = '%s is not a removable device.' % self.device
+      if not (self.yes or cros_build_lib.BooleanPrompt(
+          default=False, prolog=msg)):
+        cros_build_lib.Die('You can specify usb:// to choose from a list of '
+                           'removable devices.')
     target = None
     if self.device:
-      # If user has specified a device, check if it is removable.
-      if self.device not in [self.DeviceNameToPath(x) for x in devices]:
-        cros_build_lib.Die('Device %s is not a removable device.', self.device)
-      else:
-        # Get device name from path (e.g. sdc in /dev/sdc).
-        target = self.device.rsplit(os.path.sep, 1)[-1]
-    else:
+      # Get device name from path (e.g. sdc in /dev/sdc).
+      target = self.device.rsplit(os.path.sep, 1)[-1]
+    elif devices:
       # Ask user to choose from the list.
       target = self.ChooseRemovableDevice(devices)
+    else:
+      cros_build_lib.Die('No removable devices detected.')
 
     image_path = self._GetImagePath()
     logging.info('Using image %s', image_path)
@@ -921,7 +925,8 @@ Examples:
                      self.options.device)
         imager = USBImager(self.usb_dev,
                            self.options.image,
-                           debug=self.options.debug)
+                           debug=self.options.debug,
+                           yes=self.options.yes)
         imager.Run()
       elif self.run_mode == self.FILE_MODE:
         logging.info('Preparing to copy image to %s', self.copy_path)
