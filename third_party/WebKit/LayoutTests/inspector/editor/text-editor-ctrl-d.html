@@ -28,6 +28,11 @@ function test()
             textEditor._selectNextOccurrenceController.selectNextOccurrence();
     }
 
+    function undoLastSelection()
+    {
+        textEditor._selectNextOccurrenceController.undoLastSelection();
+    }
+
     function lineSelection(line, from, to)
     {
         if (typeof to !== "number")
@@ -90,6 +95,39 @@ function test()
             lineSelection(2, 13);
             nextOccurrence(3);
             dumpSelectionStats();
+            next();
+        },
+
+        function testUndoLastAddedSelection(next)
+        {
+            lineSelection(2, 13);
+            nextOccurrence(3);
+            undoLastSelection();
+            dumpSelectionStats();
+            next();
+        },
+
+        function testUndoSelectionPreservesFullWordState(next)
+        {
+            lineSelection(2, 51);
+            nextOccurrence(3);
+            undoLastSelection();
+            nextOccurrence(1);
+            dumpSelectionStats();
+            var lastSelection = textEditor.selections().pop();
+            InspectorTest.addResult("Last selection: " + lastSelection.toString());
+            next();
+        },
+
+        function testUndoSelectionPreservesPartialSelection(next)
+        {
+            lineSelection(2, 48, 52);
+            nextOccurrence(2);
+            undoLastSelection();
+            nextOccurrence(1);
+            dumpSelectionStats();
+            var lastSelection = textEditor.selections().pop();
+            InspectorTest.addResult("Last selection: " + lastSelection.toString());
             next();
         },
 

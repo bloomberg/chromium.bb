@@ -32,6 +32,17 @@ Running: testNextFullWord
 Running: testOccurrencesOnTheSameLine
 'original': 3
 
+Running: testUndoLastAddedSelection
+'original': 2
+
+Running: testUndoSelectionPreservesFullWordState
+'text': 3
+Last selection: {"startLine":17,"startColumn":42,"endLine":17,"endColumn":46}
+
+Running: testUndoSelectionPreservesPartialSelection
+'text': 3
+Last selection: {"startLine":4,"startColumn":96,"endLine":4,"endColumn":100}
+
 Running: testTwoCloseWords
 'text': 4
 
