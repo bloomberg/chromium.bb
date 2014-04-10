@@ -3,24 +3,15 @@
     <head>
         <title>Video with poster</title>
         <script>
-
-            var count = 0;
             function log(str)
             {
-                document.getElementById('result').innerHTML += str + "<br>";
+                document.getElementById('result').innerText += str + "\n";
             }
 
-            function hasLayers()
+            function logLayers(prefix)
             {
-                if (window.testRunner)
-                    return window.internals.layerTreeAsText(document) != "";
-                return false;
-            }
-
-            function checkLayers(prefix, wantsLayers)
-            {
-                var layers = hasLayers();
-                log(prefix + " <br>&nbsp;&nbsp;" + (wantsLayers == layers ? "PASS" : "FAIL") + ": wants layers = " + wantsLayers + ", has layers = " + layers);
+                log("Case: " + prefix);
+                log(window.internals.layerTreeAsText(document));
                 log("");
             }
 
@@ -31,16 +22,16 @@
                 switch (event.type)
                 {
                     case "load":
-                        checkLayers("No src, no poster", false);
+                        logLayers("No src, no poster");
                         video.src = "../resources/video." + (video.canPlayType("video/ogg") ? "ogv" : "mp4");
                         video.poster = "../resources/apple.jpg";
                         break;
                     case "canplaythrough":
-                        checkLayers("Displaying poster", false);
+                        logLayers("Displaying poster");
                         video.currentTime = 0.5;
                         break;
                     case "seeked":
-                        checkLayers("Displaying movie", true);
+                        logLayers("Displaying movie");
                         if (window.testRunner)
                             testRunner.notifyDone();
                         break;
@@ -55,12 +46,10 @@
         </script>
     </head>
     <body>
-    
         <video oncanplaythrough="layerTest()" onseeked="layerTest()"></video>
         
         <p>A &lt;video&gt; should not have a layer until playback begins.<br>
         This test can not be run manually, it requires testRunner.layerTreeAsText.</p>
-        <p id="result"></p>
-    
+        <pre id="result"></pre>
     </body>
 </html>
