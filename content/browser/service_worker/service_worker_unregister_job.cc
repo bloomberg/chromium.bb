@@ -41,7 +41,7 @@ bool ServiceWorkerUnregisterJob::Equals(ServiceWorkerRegisterJobBase* job) {
 }
 
 RegistrationJobType ServiceWorkerUnregisterJob::GetType() {
-  return ServiceWorkerRegisterJobBase::UNREGISTER;
+  return ServiceWorkerRegisterJobBase::UNREGISTRATION;
 }
 
 void ServiceWorkerUnregisterJob::DeleteExistingRegistration(

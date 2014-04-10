@@ -55,6 +55,32 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   virtual RegistrationJobType GetType() OVERRIDE;
 
  private:
+  enum Phase {
+     INITIAL,
+     START,
+     REGISTER,
+     UPDATE,
+     INSTALL,
+     ACTIVATE,
+     COMPLETE
+  };
+
+  // Holds internal state of ServiceWorkerRegistrationJob, to compel use of the
+  // getter/setter functions.
+  struct Internal {
+    Internal();
+    ~Internal();
+    scoped_refptr<ServiceWorkerRegistration> registration;
+    scoped_refptr<ServiceWorkerVersion> pending_version;
+  };
+
+  void set_registration(ServiceWorkerRegistration* registration);
+  ServiceWorkerRegistration* registration();
+  void set_pending_version(ServiceWorkerVersion* version);
+  ServiceWorkerVersion* pending_version();
+
+  void SetPhase(Phase phase);
+
   void HandleExistingRegistrationAndContinue(
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
@@ -70,14 +96,15 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
                     ServiceWorkerRegistration* registration,
                     ServiceWorkerVersion* version);
 
-  // The ServiceWorkerStorage object should always outlive this.
+  // The ServiceWorkerContextCore object should always outlive this.
   base::WeakPtr<ServiceWorkerContextCore> context_;
-  scoped_refptr<ServiceWorkerRegistration> registration_;
-  scoped_refptr<ServiceWorkerVersion> pending_version_;
+
   const GURL pattern_;
   const GURL script_url_;
   std::vector<RegistrationCallback> callbacks_;
   std::vector<int> pending_process_ids_;
+  Phase phase_;
+  Internal internal_;
   base::WeakPtrFactory<ServiceWorkerRegisterJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegisterJob);

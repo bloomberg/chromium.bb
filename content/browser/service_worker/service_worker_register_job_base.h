@@ -11,7 +11,7 @@ namespace content {
 // job lives only for the lifetime of a single registration or unregistration.
 class ServiceWorkerRegisterJobBase {
  public:
-  enum RegistrationJobType { REGISTER, UNREGISTER, };
+  enum RegistrationJobType { REGISTRATION, UNREGISTRATION, };
 
   virtual ~ServiceWorkerRegisterJobBase() {}
 
