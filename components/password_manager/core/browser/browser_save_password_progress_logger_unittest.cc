@@ -17,7 +17,7 @@ const char kTestText[] = "test";
 // The only purpose of TestLogger is to expose SendLog for the test.
 class TestLogger : public BrowserSavePasswordProgressLogger {
  public:
-  TestLogger(PasswordManagerClient* client)
+  explicit TestLogger(PasswordManagerClient* client)
       : BrowserSavePasswordProgressLogger(client) {}
 
   using BrowserSavePasswordProgressLogger::SendLog;

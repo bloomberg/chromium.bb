@@ -23,8 +23,6 @@ class PasswordGenerationManager;
 
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
-// TODO(vabr): Remove the next line once http://crbug.com/348523 is fixed.
-using password_manager::StubPasswordManagerClient;
 using testing::_;
 using testing::AnyNumber;
 using testing::DoAll;
