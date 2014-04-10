@@ -13,11 +13,11 @@ import sys
 import time
 
 from pylib import android_commands
+from pylib.device import device_utils
 
-
-def _SaveAppData(adb, package_name, from_apk=None, data_dir=None):
+def _SaveAppData(device, package_name, from_apk=None, data_dir=None):
   def _BackupAppData(data_dir=None):
-    adb.Adb().SendCommand('backup %s' % package_name)
+    device.old_interface.Adb().SendCommand('backup %s' % package_name)
     backup_file = os.path.join(os.getcwd(), 'backup.ab')
     assert os.path.exists(backup_file), 'Backup failed.'
     if data_dir:
@@ -29,7 +29,7 @@ def _SaveAppData(adb, package_name, from_apk=None, data_dir=None):
 
   if from_apk:
     logging.info('Installing %s...', from_apk)
-    output = adb.Install(from_apk, reinstall=True)
+    output = device.old_interface.Install(from_apk, reinstall=True)
     if 'Success' not in output:
       raise Exception('Unable to install %s. output: %s' % (from_apk, output))
 
@@ -38,16 +38,16 @@ def _SaveAppData(adb, package_name, from_apk=None, data_dir=None):
   _BackupAppData(data_dir)
 
 
-def _VerifyAppUpdate(adb, to_apk, app_data, from_apk=None):
+def _VerifyAppUpdate(device, to_apk, app_data, from_apk=None):
   def _RestoreAppData():
     assert os.path.exists(app_data), 'Backup file does not exist!'
-    adb.Adb().SendCommand('restore %s' % app_data)
+    device.old_interface.Adb().SendCommand('restore %s' % app_data)
     # It seems restore command is not synchronous.
     time.sleep(15)
 
   if from_apk:
     logging.info('Installing %s...', from_apk)
-    output = adb.Install(from_apk, reinstall=True)
+    output = device.old_interface.Install(from_apk, reinstall=True)
     if 'Success' not in output:
       raise Exception('Unable to install %s. output: %s' % (from_apk, output))
 
@@ -57,7 +57,7 @@ def _VerifyAppUpdate(adb, to_apk, app_data, from_apk=None):
 
   logging.info('Verifying that %s cannot be installed side-by-side...',
                to_apk)
-  output = adb.Install(to_apk)
+  output = device.old_interface.Install(to_apk)
   if 'INSTALL_FAILED_ALREADY_EXISTS' not in output:
     if 'Success' in output:
       raise Exception('Package name has changed! output: %s' % output)
@@ -65,7 +65,7 @@ def _VerifyAppUpdate(adb, to_apk, app_data, from_apk=None):
       raise Exception(output)
 
   logging.info('Verifying that %s can be overinstalled...', to_apk)
-  output = adb.Install(to_apk, reinstall=True)
+  output = device.old_interface.Install(to_apk, reinstall=True)
   if 'Success' not in output:
     raise Exception('Unable to install %s.\n output: %s' % (to_apk, output))
   logging.info('Successfully updated to the new apk. Please verify that the '
@@ -108,9 +108,10 @@ def main():
     parser.print_help(sys.stderr)
     parser.error('Unknown arguments: %s.' % args)
 
-  if len(android_commands.GetAttachedDevices()) != 1:
+  devices = android_commands.GetAttachedDevices()
+  if len(devices) != 1:
     parser.error('Exactly 1 device must be attached.')
-  adb = android_commands.AndroidCommands()
+  device = device_utils.DeviceUtils(devices[0])
 
   if options.from_apk:
     assert os.path.isfile(options.from_apk)
@@ -119,7 +120,7 @@ def main():
     if not options.package_name:
       parser.print_help(sys.stderr)
       parser.error('Missing --package-name.')
-    _SaveAppData(adb, options.package_name, from_apk=options.from_apk,
+    _SaveAppData(device, options.package_name, from_apk=options.from_apk,
                  data_dir=options.app_data)
   else:
     if not options.to_apk or not options.app_data:
@@ -127,7 +128,7 @@ def main():
       parser.error('Missing --to-apk or --app-data.')
     assert os.path.isfile(options.to_apk)
     assert os.path.isfile(options.app_data)
-    _VerifyAppUpdate(adb, options.to_apk, options.app_data,
+    _VerifyAppUpdate(device, options.to_apk, options.app_data,
                      from_apk=options.from_apk)
 
 

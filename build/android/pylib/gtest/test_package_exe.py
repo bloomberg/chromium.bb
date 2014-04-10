@@ -31,12 +31,12 @@ class TestPackageExecutable(TestPackage):
                                      'lib.target')
 
   #override
-  def GetGTestReturnCode(self, adb):
+  def GetGTestReturnCode(self, device):
     ret = None
     ret_code = 1  # Assume failure if we can't find it
     ret_code_file = tempfile.NamedTemporaryFile()
     try:
-      if not adb.Adb().Pull(
+      if not device.old_interface.Adb().Pull(
           constants.TEST_EXECUTABLE_DIR + '/' +
           TestPackageExecutable._TEST_RUNNER_RET_VAL_FILE,
           ret_code_file.name):
@@ -52,7 +52,7 @@ class TestPackageExecutable(TestPackage):
     return ret
 
   @staticmethod
-  def _AddNativeCoverageExports(adb):
+  def _AddNativeCoverageExports(device):
     # export GCOV_PREFIX set the path for native coverage results
     # export GCOV_PREFIX_STRIP indicates how many initial directory
     #                          names to strip off the hardwired absolute paths.
@@ -67,16 +67,16 @@ class TestPackageExecutable(TestPackage):
                    'No native coverage.')
       return ''
     export_string = ('export GCOV_PREFIX="%s/gcov"\n' %
-                     adb.GetExternalStorage())
+                     device.old_interface.GetExternalStorage())
     export_string += 'export GCOV_PREFIX_STRIP=%s\n' % depth
     return export_string
 
   #override
-  def ClearApplicationState(self, adb):
-    adb.KillAllBlocking(self.suite_name, 30)
+  def ClearApplicationState(self, device):
+    device.old_interface.KillAllBlocking(self.suite_name, 30)
 
   #override
-  def CreateCommandLineFileOnDevice(self, adb, test_filter, test_arguments):
+  def CreateCommandLineFileOnDevice(self, device, test_filter, test_arguments):
     tool_wrapper = self.tool.GetTestWrapper()
     sh_script_file = tempfile.NamedTemporaryFile()
     # We need to capture the exit status from the script since adb shell won't
@@ -86,14 +86,14 @@ class TestPackageExecutable(TestPackage):
                          '%s %s/%s --gtest_filter=%s %s\n'
                          'echo $? > %s' %
                          (constants.TEST_EXECUTABLE_DIR,
-                          self._AddNativeCoverageExports(adb),
+                          self._AddNativeCoverageExports(device),
                           tool_wrapper, constants.TEST_EXECUTABLE_DIR,
                           self.suite_name,
                           test_filter, test_arguments,
                           TestPackageExecutable._TEST_RUNNER_RET_VAL_FILE))
     sh_script_file.flush()
     cmd_helper.RunCmd(['chmod', '+x', sh_script_file.name])
-    adb.PushIfNeeded(
+    device.old_interface.PushIfNeeded(
         sh_script_file.name,
         constants.TEST_EXECUTABLE_DIR + '/chrome_test_runner.sh')
     logging.info('Conents of the test runner script: ')
@@ -101,8 +101,8 @@ class TestPackageExecutable(TestPackage):
       logging.info('  ' + line.rstrip())
 
   #override
-  def GetAllTests(self, adb):
-    all_tests = adb.RunShellCommand(
+  def GetAllTests(self, device):
+    all_tests = device.old_interface.RunShellCommand(
         '%s %s/%s --gtest_list_tests' %
         (self.tool.GetTestWrapper(),
          constants.TEST_EXECUTABLE_DIR,
@@ -110,14 +110,14 @@ class TestPackageExecutable(TestPackage):
     return self._ParseGTestListTests(all_tests)
 
   #override
-  def SpawnTestProcess(self, adb):
-    args = ['adb', '-s', adb.GetDevice(), 'shell', 'sh',
+  def SpawnTestProcess(self, device):
+    args = ['adb', '-s', device.old_interface.GetDevice(), 'shell', 'sh',
             constants.TEST_EXECUTABLE_DIR + '/chrome_test_runner.sh']
     logging.info(args)
     return pexpect.spawn(args[0], args[1:], logfile=sys.stdout)
 
   #override
-  def Install(self, adb):
+  def Install(self, device):
     if self.tool.NeedsDebugInfo():
       target_name = self.suite_path
     else:
@@ -136,4 +136,4 @@ class TestPackageExecutable(TestPackage):
              self.suite_name + '_stripped'))
 
     test_binary = constants.TEST_EXECUTABLE_DIR + '/' + self.suite_name
-    adb.PushIfNeeded(target_name, test_binary)
+    device.old_interface.PushIfNeeded(target_name, test_binary)

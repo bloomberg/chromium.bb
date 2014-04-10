@@ -15,7 +15,8 @@ import optparse
 import sys
 import time
 
-from pylib import android_commands, constants, forwarder
+from pylib import constants, forwarder
+from pylib.device import device_utils
 from pylib.utils import run_tests_helper
 
 
@@ -49,16 +50,16 @@ def main(argv):
     parser.error('Bad port number')
     sys.exit(1)
 
-  adb = android_commands.AndroidCommands(options.device)
+  device = device_utils.DeviceUtils(options.device)
   constants.SetBuildType(options.build_type)
   try:
-    forwarder.Forwarder.Map(port_pairs, adb)
+    forwarder.Forwarder.Map(port_pairs, device)
     while True:
       time.sleep(60)
   except KeyboardInterrupt:
     sys.exit(0)
   finally:
-    forwarder.Forwarder.UnmapAllDevicePorts(adb)
+    forwarder.Forwarder.UnmapAllDevicePorts(device)
 
 if __name__ == '__main__':
   main(sys.argv)

@@ -40,7 +40,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
            '--kill-process-after-error',
            self._options.extra_args,
            '%d' % self._options.event_count]
-    return self.adb.RunShellCommand(' '.join(cmd), timeout_time=timeout_ms)
+    return self.device.old_interface.RunShellCommand(
+        ' '.join(cmd), timeout_time=timeout_ms)
 
   def RunTest(self, test_name):
     """Run a Monkey test on the device.
@@ -51,21 +52,19 @@ class TestRunner(base_test_runner.BaseTestRunner):
     Returns:
       A tuple of (TestRunResults, retry).
     """
-    self.adb.StartActivity(self._package,
-                           self._activity,
-                           wait_for_completion=True,
-                           action='android.intent.action.MAIN',
-                           force_stop=True)
+    self.device.old_interface.StartActivity(
+        self._package, self._activity, wait_for_completion=True,
+        action='android.intent.action.MAIN', force_stop=True)
 
     # Chrome crashes are not always caught by Monkey test runner.
     # Verify Chrome has the same PID before and after the test.
-    before_pids = self.adb.ExtractPid(self._package)
+    before_pids = self.device.old_interface.ExtractPid(self._package)
 
     # Run the test.
     output = ''
     if before_pids:
       output = '\n'.join(self._LaunchMonkeyTest())
-      after_pids = self.adb.ExtractPid(self._package)
+      after_pids = self.device.old_interface.ExtractPid(self._package)
 
     crashed = True
     if not before_pids:
@@ -89,7 +88,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       if 'chrome' in self._options.package:
         logging.warning('Starting MinidumpUploadService...')
         try:
-          self.adb.StartCrashUploadService(self._package)
+          self.device.old_interface.StartCrashUploadService(self._package)
         except AssertionError as e:
           logging.error('Failed to start MinidumpUploadService: %s', e)
     results.AddResult(result)

@@ -39,6 +39,10 @@ class CommandTimeoutError(BaseError):
   pass
 
 
+class DeviceUnreachableError(BaseError):
+  """Exception for device unreachable failures."""
+  pass
+
 def _VerifyLocalFileExists(path):
   """Verifies a local file exists.
 
@@ -152,7 +156,7 @@ class AdbWrapper(object):
     output = cls._AdbCmd(['devices'], timeout, retries)
     lines = [line.split() for line in output.split('\n')]
     return [AdbWrapper(line[0]) for line in lines
-            if len(line) == 2 and line[1] == 'device'] 
+            if len(line) == 2 and line[1] == 'device']
 
   def GetDeviceSerial(self):
     """Gets the device serial number associated with this object.

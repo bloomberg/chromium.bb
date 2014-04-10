@@ -77,9 +77,9 @@ def _CheckPortStatus(port, expected_status):
   return _WaitUntil(lambda: ports.IsHostPortUsed(port) == expected_status)
 
 
-def _CheckDevicePortStatus(adb, port):
+def _CheckDevicePortStatus(device, port):
   """Returns whether the provided port is used."""
-  return _WaitUntil(lambda: ports.IsDevicePortUsed(adb, port))
+  return _WaitUntil(lambda: ports.IsDevicePortUsed(device, port))
 
 
 def _GetServerTypeCommandLine(server_type):
@@ -102,13 +102,13 @@ def _GetServerTypeCommandLine(server_type):
 class TestServerThread(threading.Thread):
   """A thread to run the test server in a separate process."""
 
-  def __init__(self, ready_event, arguments, adb, tool):
+  def __init__(self, ready_event, arguments, device, tool):
     """Initialize TestServerThread with the following argument.
 
     Args:
       ready_event: event which will be set when the test server is ready.
       arguments: dictionary of arguments to run the test server.
-      adb: instance of AndroidCommands.
+      device: An instance of DeviceUtils.
       tool: instance of runtime error detection tool.
     """
     threading.Thread.__init__(self)
@@ -117,7 +117,7 @@ class TestServerThread(threading.Thread):
     self.ready_event = ready_event
     self.ready_event.clear()
     self.arguments = arguments
-    self.adb = adb
+    self.device = device
     self.tool = tool
     self.test_server_process = None
     self.is_ready = False
@@ -252,11 +252,11 @@ class TestServerThread(threading.Thread):
       else:
         self.is_ready = _CheckPortStatus(self.host_port, True)
     if self.is_ready:
-      Forwarder.Map([(0, self.host_port)], self.adb, self.tool)
+      Forwarder.Map([(0, self.host_port)], self.device, self.tool)
       # Check whether the forwarder is ready on the device.
       self.is_ready = False
       device_port = Forwarder.DevicePortForHostPort(self.host_port)
-      if device_port and _CheckDevicePortStatus(self.adb, device_port):
+      if device_port and _CheckDevicePortStatus(self.device, device_port):
         self.is_ready = True
         self.forwarder_device_port = device_port
     # Wake up the request handler thread.
@@ -265,7 +265,7 @@ class TestServerThread(threading.Thread):
     _WaitUntil(lambda: self.stop_flag, max_attempts=sys.maxint)
     if self.process.poll() is None:
       self.process.kill()
-    Forwarder.UnmapDevicePort(self.forwarder_device_port, self.adb)
+    Forwarder.UnmapDevicePort(self.forwarder_device_port, self.device)
     self.process = None
     self.is_ready = False
     if self.pipe_out:
@@ -333,7 +333,7 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.server.test_server_instance = TestServerThread(
         ready_event,
         json.loads(test_server_argument_json),
-        self.server.adb,
+        self.server.device,
         self.server.tool)
     self.server.test_server_instance.setDaemon(True)
     self.server.test_server_instance.start()
@@ -401,11 +401,11 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 class SpawningServer(object):
   """The class used to start/stop a http server."""
 
-  def __init__(self, test_server_spawner_port, adb, tool):
+  def __init__(self, test_server_spawner_port, device, tool):
     logging.info('Creating new spawner on port: %d.', test_server_spawner_port)
     self.server = BaseHTTPServer.HTTPServer(('', test_server_spawner_port),
                                             SpawningServerRequestHandler)
-    self.server.adb = adb
+    self.server.device = device
     self.server.tool = tool
     self.server.test_server_instance = None
     self.server.build_type = constants.GetBuildType()

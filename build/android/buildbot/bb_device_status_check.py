@@ -30,6 +30,7 @@ from pylib import android_commands
 from pylib import constants
 from pylib.cmd_helper import GetCmdOutput
 from pylib.device import device_blacklist
+from pylib.device import device_utils
 
 def DeviceInfo(serial, options):
   """Gathers info on a device via various adb calls.
@@ -42,16 +43,14 @@ def DeviceInfo(serial, options):
     boolean indicating whether or not device can be used for testing.
   """
 
-  device_adb = android_commands.AndroidCommands(serial)
-
-  # TODO(navabi): Replace AdbShellCmd with device_adb.
-  device_type = device_adb.GetBuildProduct()
-  device_build = device_adb.GetBuildId()
-  device_build_type = device_adb.GetBuildType()
-  device_product_name = device_adb.GetProductName()
+  device_adb = device_utils.DeviceUtils(serial)
+  device_type = device_adb.old_interface.GetBuildProduct()
+  device_build = device_adb.old_interface.GetBuildId()
+  device_build_type = device_adb.old_interface.GetBuildType()
+  device_product_name = device_adb.old_interface.GetProductName()
 
   try:
-    battery = device_adb.GetBatteryInfo()
+    battery = device_adb.old_interface.GetBatteryInfo()
   except Exception as e:
     battery = None
     logging.error('Unable to obtain battery info for %s, %s', serial, e)
@@ -69,22 +68,23 @@ def DeviceInfo(serial, options):
   battery_temp = _GetData('temperature: (\d+)', battery,
                           lambda x: float(x) / 10.0)
   imei_slice = _GetData('Device ID = (\d+)',
-                        device_adb.GetSubscriberInfo(),
+                        device_adb.old_interface.GetSubscriberInfo(),
                         lambda x: x[-6:])
   report = ['Device %s (%s)' % (serial, device_type),
             '  Build: %s (%s)' %
-              (device_build, device_adb.GetBuildFingerprint()),
+              (device_build, device_adb.old_interface.GetBuildFingerprint()),
             '  Battery: %s%%' % battery_level,
             '  Battery temp: %s' % battery_temp,
             '  IMEI slice: %s' % imei_slice,
-            '  Wifi IP: %s' % device_adb.GetWifiIP(),
+            '  Wifi IP: %s' % device_adb.old_interface.GetWifiIP(),
             '']
 
   errors = []
   if battery_level < 15:
     errors += ['Device critically low in battery. Turning off device.']
   if not options.no_provisioning_check:
-    setup_wizard_disabled = device_adb.GetSetupWizardStatus() == 'DISABLED'
+    setup_wizard_disabled = (
+        device_adb.old_interface.GetSetupWizardStatus() == 'DISABLED')
     if not setup_wizard_disabled and device_build_type != 'user':
       errors += ['Setup wizard not disabled. Was it provisioned correctly?']
   if device_product_name == 'mantaray' and ac_power != 'true':
@@ -92,8 +92,8 @@ def DeviceInfo(serial, options):
 
   # Turn off devices with low battery.
   if battery_level < 15:
-    device_adb.EnableAdbRoot()
-    device_adb.Shutdown()
+    device_adb.old_interface.EnableAdbRoot()
+    device_adb.old_interface.Shutdown()
   full_report = '\n'.join(report)
   return device_type, device_build, battery_level, full_report, errors, True
 
@@ -176,7 +176,7 @@ def CheckForMissingDevices(options, adb_online_devs):
             'Cache file: %s\n\n' % last_devices_path,
             'adb devices: %s' % GetCmdOutput(['adb', 'devices']),
             'adb devices(GetAttachedDevices): %s' %
-            android_commands.GetAttachedDevices()]
+                android_commands.GetAttachedDevices()]
   else:
     new_devs = set(adb_online_devs) - set(last_devices)
     if new_devs and os.path.exists(last_devices_path):
@@ -304,9 +304,8 @@ def main():
 
   devices = android_commands.GetAttachedDevices()
   # TODO(navabi): Test to make sure this fails and then fix call
-  offline_devices = android_commands.GetAttachedDevices(hardware=False,
-                                                        emulator=False,
-                                                        offline=True)
+  offline_devices = android_commands.GetAttachedDevices(
+      hardware=False, emulator=False, offline=True)
 
   types, builds, batteries, reports, errors = [], [], [], [], []
   fail_step_lst = []

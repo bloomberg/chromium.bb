@@ -152,6 +152,7 @@ BAD_DEVICES_JSON = os.path.join(DIR_SOURCE_ROOT,
 
 UPSTREAM_FLAKINESS_SERVER = 'test-results.appspot.com'
 
+DEVICE_LOCAL_PROPERTIES_PATH = '/data/local.prop'
 
 def GetBuildType():
   try:

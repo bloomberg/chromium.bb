@@ -12,7 +12,7 @@ SHELL_PID_LINES=$(adb shell ps | grep ' org.chromium.content_shell_apk')
 VAL=$(echo "$SHELL_PID_LINES" | wc -l)
 if [ $VAL -lt 1 ] ; then
    echo "Not running Content shell."
-else 
+else
    SHELL_PID=$(echo $SHELL_PID_LINES | awk '{print $2}')
    if [ "$SHELL_PID" != "" ] ; then
       set -x

@@ -175,13 +175,13 @@ class TestRunner(base_test_runner.BaseTestRunner):
     """
     try:
       logging.warning('Unmapping device ports')
-      forwarder.Forwarder.UnmapAllDevicePorts(self.adb)
-      self.adb.RestartAdbdOnDevice()
+      forwarder.Forwarder.UnmapAllDevicePorts(self.device)
+      self.device.old_interface.RestartAdbdOnDevice()
     except Exception as e:
       logging.error('Exception when tearing down device %s', e)
 
     cmd = ('%s --device %s' %
-           (self._tests[test_name], self.device))
+           (self._tests[test_name], self.device.old_interface.GetDevice()))
     logging.info('%s : %s', test_name, cmd)
     start_time = datetime.datetime.now()
 
@@ -212,7 +212,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       exit_code = -1
     logging.info('%s : exit_code=%d in %d secs at %s',
                  test_name, exit_code, (end_time - start_time).seconds,
-                 self.device)
+                 self.device.old_interface.GetDevice())
     result_type = base_test_result.ResultType.FAIL
     if exit_code == 0:
       result_type = base_test_result.ResultType.PASS
@@ -231,7 +231,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
         'actual_exit_code': actual_exit_code,
         'result_type': result_type,
         'total_time': (end_time - start_time).seconds,
-        'device': self.device,
+        'device': self.device.old_interface.GetDevice(),
         'cmd': cmd,
     }
     self._SaveResult(persisted_result)

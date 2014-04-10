@@ -24,11 +24,11 @@ import logging
 import os
 import time
 
-from pylib import android_commands
 from pylib import constants
 from pylib import forwarder
 from pylib import valgrind_tools
 from pylib.base import base_test_result
+from pylib.device import device_utils
 from pylib.instrumentation import test_package
 from pylib.instrumentation import test_result
 from pylib.instrumentation import test_runner
@@ -50,8 +50,8 @@ class HostDrivenTestCase(object):
       instrumentation_options: An InstrumentationOptions object.
     """
     class_name = self.__class__.__name__
-    self.adb = None
     self.cleanup_test_files = False
+    self.device = None
     self.device_id = ''
     self.has_forwarded_ports = False
     self.instrumentation_options = instrumentation_options
@@ -73,7 +73,7 @@ class HostDrivenTestCase(object):
       ports_to_forward = []
     self.device_id = device
     self.shard_index = shard_index
-    self.adb = android_commands.AndroidCommands(self.device_id)
+    self.device = device_utils.DeviceUtils(self.device_id)
     self.push_deps = push_deps
     self.cleanup_test_files = cleanup_test_files
     if ports_to_forward:
@@ -104,9 +104,9 @@ class HostDrivenTestCase(object):
                     self.has_forwarded_ports)
     if self.ports_to_forward and not self.has_forwarded_ports:
       self.has_forwarded_ports = True
-      tool = valgrind_tools.CreateTool(None, self.adb)
+      tool = valgrind_tools.CreateTool(None, self.device)
       forwarder.Forwarder.Map([(port, port) for port in self.ports_to_forward],
-                              self.adb, tool)
+                              self.device, tool)
 
   def __RunJavaTest(self, test, test_pkg, additional_flags=None):
     """Runs a single Java test in a Java TestRunner.

@@ -13,6 +13,7 @@ import sys
 
 from pylib import android_commands
 from pylib import constants
+from pylib.device import device_utils
 from pylib.utils import apk_helper
 from pylib.utils import test_options_parser
 
@@ -44,7 +45,7 @@ def ValidateInstallAPKOption(option_parser, options):
 
 def _InstallApk(args):
   apk_path, apk_package, keep_data, device = args
-  android_commands.AndroidCommands(device=device).ManagedInstall(
+  device_utils.DeviceUtils(device=device).old_interface.ManagedInstall(
       apk_path, keep_data, apk_package)
   print '-----  Installed on %s  -----' % device
 

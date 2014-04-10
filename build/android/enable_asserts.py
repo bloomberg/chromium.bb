@@ -6,7 +6,7 @@
 
 """Enables dalvik vm asserts in the android device."""
 
-from pylib import android_commands
+from pylib.device import device_utils
 import optparse
 import sys
 
@@ -21,10 +21,10 @@ def main(argv):
       help='Removes the dalvik.vm.enableassertions property')
   options, _ = option_parser.parse_args(argv)
 
-  commands = android_commands.AndroidCommands()
+  device = device_utils.DeviceUtils()
   if options.set_asserts != None:
-    if commands.SetJavaAssertsEnabled(options.set_asserts):
-      commands.Reboot(full_reboot=False)
+    if device.old_interface.SetJavaAssertsEnabled(options.set_asserts):
+      device.old_interface.Reboot(full_reboot=False)
 
 
 if __name__ == '__main__':

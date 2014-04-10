@@ -13,6 +13,10 @@ from pylib import cmd_helper
 from pylib import constants
 from pylib import valgrind_tools
 
+# TODO(jbudorick) Remove once telemetry gets switched over.
+import pylib.android_commands
+import pylib.device.device_utils
+
 
 def _GetProcessStartTime(pid):
   return psutil.Process(pid).create_time
@@ -60,7 +64,7 @@ class Forwarder(object):
     os.environ[Forwarder._MULTIPROCESSING_ENV_VAR] = '1'
 
   @staticmethod
-  def Map(port_pairs, adb, tool=None):
+  def Map(port_pairs, device, tool=None):
     """Runs the forwarder.
 
     Args:
@@ -69,20 +73,23 @@ class Forwarder(object):
                  port will by dynamically assigned on the device. You can
                  get the number of the assigned port using the
                  DevicePortForHostPort method.
-      adb: An AndroidCommands instance.
+      device: A DeviceUtils instance.
       tool: Tool class to use to get wrapper, if necessary, for executing the
             forwarder (see valgrind_tools.py).
 
     Raises:
       Exception on failure to forward the port.
     """
+    # TODO(jbudorick) Remove once telemetry gets switched over.
+    if isinstance(device, pylib.android_commands.AndroidCommands):
+      device = pylib.device.device_utils.DeviceUtils(device)
     if not tool:
-      tool = valgrind_tools.CreateTool(None, adb)
+      tool = valgrind_tools.CreateTool(None, device)
     with _FileLock(Forwarder._LOCK_PATH):
       instance = Forwarder._GetInstanceLocked(tool)
-      instance._InitDeviceLocked(adb, tool)
+      instance._InitDeviceLocked(device, tool)
 
-      device_serial = adb.Adb().GetSerialNumber()
+      device_serial = device.old_interface.Adb().GetSerialNumber()
       redirection_commands = [
           ['--serial-id=' + device_serial, '--map', str(device),
            str(host)] for device, host in port_pairs]
@@ -113,38 +120,41 @@ class Forwarder(object):
                      device_port, host_port)
 
   @staticmethod
-  def UnmapDevicePort(device_port, adb):
+  def UnmapDevicePort(device_port, device):
     """Unmaps a previously forwarded device port.
 
     Args:
-      adb: An AndroidCommands instance.
+      device: A DeviceUtils instance.
       device_port: A previously forwarded port (through Map()).
     """
+    # TODO(jbudorick) Remove once telemetry gets switched over.
+    if isinstance(device, pylib.android_commands.AndroidCommands):
+      device = pylib.device.device_utils.DeviceUtils(device)
     with _FileLock(Forwarder._LOCK_PATH):
-      Forwarder._UnmapDevicePortLocked(device_port, adb)
+      Forwarder._UnmapDevicePortLocked(device_port, device)
 
   @staticmethod
-  def UnmapAllDevicePorts(adb):
+  def UnmapAllDevicePorts(device):
     """Unmaps all the previously forwarded ports for the provided device.
 
     Args:
-      adb: An AndroidCommands instance.
+      device: A DeviceUtils instance.
       port_pairs: A list of tuples (device_port, host_port) to unmap.
     """
     with _FileLock(Forwarder._LOCK_PATH):
       if not Forwarder._instance:
         return
-      adb_serial = adb.Adb().GetSerialNumber()
+      adb_serial = device.old_interface.Adb().GetSerialNumber()
       if adb_serial not in Forwarder._instance._initialized_devices:
         return
       port_map = Forwarder._GetInstanceLocked(
           None)._device_to_host_port_map
       for (device_serial, device_port) in port_map.keys():
         if adb_serial == device_serial:
-          Forwarder._UnmapDevicePortLocked(device_port, adb)
+          Forwarder._UnmapDevicePortLocked(device_port, device)
       # There are no more ports mapped, kill the device_forwarder.
-      tool = valgrind_tools.CreateTool(None, adb)
-      Forwarder._KillDeviceLocked(adb, tool)
+      tool = valgrind_tools.CreateTool(None, device)
+      Forwarder._KillDeviceLocked(device, tool)
       Forwarder._instance._initialized_devices.remove(adb_serial)
 
 
@@ -205,13 +215,13 @@ class Forwarder(object):
     self._InitHostLocked()
 
   @staticmethod
-  def _UnmapDevicePortLocked(device_port, adb):
+  def _UnmapDevicePortLocked(device_port, device):
     """Internal method used by UnmapDevicePort().
 
     Note that the global lock must be acquired before calling this method.
     """
     instance = Forwarder._GetInstanceLocked(None)
-    serial = adb.Adb().GetSerialNumber()
+    serial = device.old_interface.Adb().GetSerialNumber()
     serial_with_port = (serial, device_port)
     if not serial_with_port in instance._device_to_host_port_map:
       logging.error('Trying to unmap non-forwarded port %d' % device_port)
@@ -260,7 +270,7 @@ class Forwarder(object):
       pid_file.write(
           '%s:%s' % (pid_for_lock, str(_GetProcessStartTime(pid_for_lock))))
 
-  def _InitDeviceLocked(self, adb, tool):
+  def _InitDeviceLocked(self, device, tool):
     """Initializes the device_forwarder daemon for a specific device (once).
 
     Note that the global lock must be acquired before calling this method. This
@@ -269,18 +279,18 @@ class Forwarder(object):
     it.
 
     Args:
-      adb: An AndroidCommands instance.
+      device: A DeviceUtils instance.
       tool: Tool class to use to get wrapper, if necessary, for executing the
             forwarder (see valgrind_tools.py).
     """
-    device_serial = adb.Adb().GetSerialNumber()
+    device_serial = device.old_interface.Adb().GetSerialNumber()
     if device_serial in self._initialized_devices:
       return
-    Forwarder._KillDeviceLocked(adb, tool)
-    adb.PushIfNeeded(
+    Forwarder._KillDeviceLocked(device, tool)
+    device.old_interface.PushIfNeeded(
         self._device_forwarder_path_on_host,
         Forwarder._DEVICE_FORWARDER_FOLDER)
-    (exit_code, output) = adb.GetShellCommandStatusAndOutput(
+    (exit_code, output) = device.old_interface.GetShellCommandStatusAndOutput(
         '%s %s %s' % (Forwarder._LD_LIBRARY_PATH, tool.GetUtilWrapper(),
                       Forwarder._DEVICE_FORWARDER_PATH))
     if exit_code != 0:
@@ -304,28 +314,30 @@ class Forwarder(object):
               self._host_forwarder_path, exit_code, '\n'.join(output)))
 
   @staticmethod
-  def _KillDeviceLocked(adb, tool):
+  def _KillDeviceLocked(device, tool):
     """Kills the forwarder process running on the device.
 
     Note that the global lock must be acquired before calling this method.
 
     Args:
-      adb: Instance of AndroidCommands for talking to the device.
+      device: Instance of DeviceUtils for talking to the device.
       tool: Wrapper tool (e.g. valgrind) that can be used to execute the device
             forwarder (see valgrind_tools.py).
     """
     logging.info('Killing device_forwarder.')
-    if not adb.FileExistsOnDevice(Forwarder._DEVICE_FORWARDER_PATH):
+    if not device.old_interface.FileExistsOnDevice(
+        Forwarder._DEVICE_FORWARDER_PATH):
       return
-    adb.GetShellCommandStatusAndOutput(
+    device.old_interface.GetShellCommandStatusAndOutput(
         '%s %s --kill-server' % (tool.GetUtilWrapper(),
                                  Forwarder._DEVICE_FORWARDER_PATH))
     # TODO(pliard): Remove the following call to KillAllBlocking() when we are
     # sure that the old version of device_forwarder (not supporting
     # 'kill-server') is not running on the bots anymore.
     timeout_sec = 5
-    processes_killed = adb.KillAllBlocking('device_forwarder', timeout_sec)
+    processes_killed = device.old_interface.KillAllBlocking(
+        'device_forwarder', timeout_sec)
     if not processes_killed:
-      pids = adb.ExtractPid('device_forwarder')
+      pids = device.old_interface.ExtractPid('device_forwarder')
       if pids:
         raise Exception('Timed out while killing device_forwarder')

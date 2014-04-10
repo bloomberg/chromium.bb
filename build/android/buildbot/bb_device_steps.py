@@ -21,6 +21,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import provision_devices
 from pylib import android_commands
 from pylib import constants
+from pylib.device import device_utils
 from pylib.gtest import gtest_config
 
 CHROME_SRC_DIR = bb_utils.CHROME_SRC
@@ -102,7 +103,7 @@ def _GetRevision(options):
 def RebootDeviceSafe(device):
   """Reboot a device, wait for it to start, and squelch timeout exceptions."""
   try:
-    android_commands.AndroidCommands(device).Reboot(True)
+    device_utils.DeviceUtils(device).old_interface.Reboot(True)
   except errors.DeviceUnresponsiveError as e:
     return e
 
@@ -113,7 +114,7 @@ def RebootDevices():
   # which might not exist in this checkout.
   if bb_utils.TESTING:
     return
-  devices = android_commands.GetAttachedDevices(emulator=False)
+  devices = android_commands.GetAttachedDevices()
   print 'Rebooting: %s' % devices
   if devices:
     pool = multiprocessing.Pool(len(devices))
@@ -398,8 +399,7 @@ def ProvisionDevices(options):
 
   if not bb_utils.TESTING:
     # Restart adb to work around bugs, sleep to wait for usb discovery.
-    adb = android_commands.AndroidCommands()
-    adb.RestartAdbServer()
+    device_utils.DeviceUtils(None).old_interface.RestartAdbServer()
     RunCmd(['sleep', '1'])
 
   if not options.no_reboot:

@@ -13,7 +13,7 @@ import optparse
 import sys
 import time
 
-from pylib import android_commands
+from pylib.device import device_utils
 from pylib.perf import surface_stats_collector
 from pylib.utils import run_tests_helper
 
@@ -98,8 +98,8 @@ def main(argv):
   options, _ = parser.parse_args(argv)
   run_tests_helper.SetLogLevel(options.verbose_count)
 
-  adb = android_commands.AndroidCommands(options.device)
-  collector = surface_stats_collector.SurfaceStatsCollector(adb)
+  device = device_utils.DeviceUtils(options.device)
+  collector = surface_stats_collector.SurfaceStatsCollector(device)
   collector.DisableWarningAboutEmptyData()
 
   fields = options.fields.split(',')

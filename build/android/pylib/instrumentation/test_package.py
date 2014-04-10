@@ -33,5 +33,7 @@ class TestPackage(test_jar.TestJar):
     return self._package_name
 
   # Override.
-  def Install(self, adb):
-    adb.ManagedInstall(self.GetApkPath(), package_name=self.GetPackageName())
+  def Install(self, device):
+    device.old_interface.ManagedInstall(
+        self.GetApkPath(), package_name=self.GetPackageName())
+

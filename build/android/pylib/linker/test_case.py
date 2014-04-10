@@ -41,7 +41,6 @@ import re
 import time
 
 from pylib import constants
-from pylib import android_commands
 from pylib.base import base_test_result
 
 
@@ -109,11 +108,12 @@ def _GetBrowserSharedRelroConfig():
     return configs[0]
 
 
-def _WriteCommandLineFile(adb, command_line, command_line_file):
+def _WriteCommandLineFile(device, command_line, command_line_file):
   """Create a command-line file on the device. This does not use FlagChanger
      because its implementation assumes the device has 'su', and thus does
      not work at all with production devices."""
-  adb.RunShellCommand('echo "%s" > %s' % (command_line, command_line_file))
+  device.old_interface.RunShellCommand(
+      'echo "%s" > %s' % (command_line, command_line_file))
 
 
 def _CheckLinkerTestStatus(logcat):
@@ -148,24 +148,24 @@ def _CheckLinkerTestStatus(logcat):
   return (False, None, None)
 
 
-def _StartActivityAndWaitForLinkerTestStatus(adb, timeout):
+def _StartActivityAndWaitForLinkerTestStatus(device, timeout):
   """Force-start an activity and wait up to |timeout| seconds until the full
-     linker test status lines appear in the logcat, recorded through |adb|.
+     linker test status lines appear in the logcat, recorded through |device|.
   Args:
-    adb: An AndroidCommands instance.
+    device: A DeviceUtils instance.
     timeout: Timeout in seconds
   Returns:
     A (status, logs) tuple, where status is a ResultType constant, and logs
     if the final logcat output as a string.
   """
   # 1. Start recording logcat with appropriate filters.
-  adb.StartRecordingLogcat(clear=True, filters=_LOGCAT_FILTERS)
+  device.old_interface.StartRecordingLogcat(
+      clear=True, filters=_LOGCAT_FILTERS)
 
   try:
     # 2. Force-start activity.
-    adb.StartActivity(package=_PACKAGE_NAME,
-                      activity=_ACTIVITY_NAME,
-                      force_stop=True)
+    device.old_interface.StartActivity(
+        package=_PACKAGE_NAME, activity=_ACTIVITY_NAME, force_stop=True)
 
     # 3. Wait up to |timeout| seconds until the test status is in the logcat.
     num_tries = 0
@@ -175,12 +175,12 @@ def _StartActivityAndWaitForLinkerTestStatus(adb, timeout):
       time.sleep(1)
       num_tries += 1
       found, browser_ok, renderer_ok = _CheckLinkerTestStatus(
-          adb.GetCurrentRecordedLogcat())
+          device.old_interface.GetCurrentRecordedLogcat())
       if found:
         break
 
   finally:
-    logs = adb.StopRecordingLogcat()
+    logs = device.old_interface.StopRecordingLogcat()
 
   if num_tries >= max_tries:
     return ResultType.TIMEOUT, logs
@@ -295,10 +295,10 @@ class LinkerTestCaseBase(object):
     self.qualified_name = '%s.%s' % (class_name, test_suffix)
     self.tagged_name = self.qualified_name
 
-  def _RunTest(self, _adb):
+  def _RunTest(self, _device):
     """Run the test, must be overriden.
     Args:
-      _adb: An AndroidCommands instance to the device.
+      _device: A DeviceUtils interface.
     Returns:
       A (status, log) tuple, where <status> is a ResultType constant, and <log>
       is the logcat output captured during the test in case of error, or None
@@ -316,16 +316,15 @@ class LinkerTestCaseBase(object):
     margin = 8
     print '[ %-*s ] %s' % (margin, 'RUN', self.tagged_name)
     logging.info('Running linker test: %s', self.tagged_name)
-    adb = android_commands.AndroidCommands(device)
 
     # Create command-line file on device.
     command_line_flags = ''
     if self.is_low_memory:
       command_line_flags = '--low-memory-device'
-    _WriteCommandLineFile(adb, command_line_flags, _COMMAND_LINE_FILE)
+    _WriteCommandLineFile(device, command_line_flags, _COMMAND_LINE_FILE)
 
     # Run the test.
-    status, logs = self._RunTest(adb)
+    status, logs = self._RunTest(device)
 
     result_text = 'OK'
     if status == ResultType.FAIL:
@@ -374,9 +373,9 @@ class LinkerSharedRelroTest(LinkerTestCaseBase):
       - The test case passes if the <status> for both the browser and renderer
         process are SUCCESS. Otherwise its a fail.
   """
-  def _RunTest(self, adb):
+  def _RunTest(self, device):
     # Wait up to 30 seconds until the linker test status is in the logcat.
-    return _StartActivityAndWaitForLinkerTestStatus(adb, timeout=30)
+    return _StartActivityAndWaitForLinkerTestStatus(device, timeout=30)
 
 
 class LinkerLibraryAddressTest(LinkerTestCaseBase):
@@ -391,8 +390,8 @@ class LinkerLibraryAddressTest(LinkerTestCaseBase):
      - For regular devices, the browser process should load libraries above
        0x4000_0000, and renderer ones below it.
   """
-  def _RunTest(self, adb):
-    result, logs = _StartActivityAndWaitForLinkerTestStatus(adb, timeout=30)
+  def _RunTest(self, device):
+    result, logs = _StartActivityAndWaitForLinkerTestStatus(device, timeout=30)
 
     # Return immediately in case of timeout.
     if result == ResultType.TIMEOUT:
@@ -478,14 +477,15 @@ class LinkerRandomizationTest(LinkerTestCaseBase):
      that if there are more than one pair of identical addresses, then the
      load addresses are not random enough for this test.
   """
-  def _RunTest(self, adb):
+  def _RunTest(self, device):
     max_loops = 5
     browser_lib_map_list = []
     renderer_lib_map_list = []
     logs_list = []
     for _ in range(max_loops):
       # Start the activity.
-      result, logs = _StartActivityAndWaitForLinkerTestStatus(adb, timeout=30)
+      result, logs = _StartActivityAndWaitForLinkerTestStatus(
+          device, timeout=30)
       if result == ResultType.TIMEOUT:
         # Something bad happened. Return immediately.
         return result, logs

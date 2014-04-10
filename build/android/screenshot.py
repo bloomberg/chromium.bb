@@ -13,21 +13,21 @@ import sys
 
 from pylib import android_commands
 from pylib import screenshot
-
+from pylib.device import device_utils
 
 def _PrintMessage(heading, eol='\n'):
   sys.stdout.write('%s%s' % (heading, eol))
   sys.stdout.flush()
 
 
-def _CaptureScreenshot(adb, host_file):
-  host_file = adb.TakeScreenshot(host_file)
+def _CaptureScreenshot(device, host_file):
+  host_file = device.old_interface.TakeScreenshot(host_file)
   _PrintMessage('Screenshot written to %s' % os.path.abspath(host_file))
 
 
-def _CaptureVideo(adb, host_file, options):
+def _CaptureVideo(device, host_file, options):
   size = tuple(map(int, options.size.split('x'))) if options.size else None
-  recorder = screenshot.VideoRecorder(adb,
+  recorder = screenshot.VideoRecorder(device,
                                       host_file,
                                       megabits_per_second=options.bitrate,
                                       size=size,
@@ -77,12 +77,12 @@ def main():
   if len(args) > 1:
     parser.error('Too many positional arguments.')
   host_file = args[0] if args else options.file
-  adb = android_commands.AndroidCommands(options.device)
+  device = device_utils.DeviceUtils(options.device)
 
   if options.video:
-    _CaptureVideo(adb, host_file, options)
+    _CaptureVideo(device, host_file, options)
   else:
-    _CaptureScreenshot(adb, host_file)
+    _CaptureScreenshot(device, host_file)
   return 0
 
 

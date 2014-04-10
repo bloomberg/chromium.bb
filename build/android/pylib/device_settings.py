@@ -7,7 +7,7 @@ import logging
 from pylib import content_settings
 
 
-def ConfigureContentSettingsDict(adb, desired_settings):
+def ConfigureContentSettingsDict(device, desired_settings):
   """Configures device content setings from a dictionary.
 
   Many settings are documented at:
@@ -18,15 +18,17 @@ def ConfigureContentSettingsDict(adb, desired_settings):
   Many others are undocumented.
 
   Args:
-    adb: An AndroidCommands instance for the device to configure.
+    device: A DeviceUtils instance for the device to configure.
     desired_settings: A dict of {table: {key: value}} for all
         settings to configure.
   """
   try:
-    sdk_version = int(adb.system_properties['ro.build.version.sdk'])
+    sdk_version = int(device.old_interface.system_properties[
+        'ro.build.version.sdk'])
   except ValueError:
     logging.error('Skipping content settings configuration, unknown sdk %s',
-                  adb.system_properties['ro.build.version.sdk'])
+                  device.old_interface.system_properties[
+                      'ro.build.version.sdk'])
     return
 
   if sdk_version < 16:
@@ -34,7 +36,7 @@ def ConfigureContentSettingsDict(adb, desired_settings):
     return
 
   for table, key_value in sorted(desired_settings.iteritems()):
-    settings = content_settings.ContentSettings(table, adb)
+    settings = content_settings.ContentSettings(table, device)
     for key, value in key_value.iteritems():
       settings[key] = value
     logging.info('\n%s %s', table, (80 - len(table)) * '-')

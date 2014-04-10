@@ -10,17 +10,18 @@ class ContentSettings(dict):
   System properties are key/value pairs as exposed by adb shell content.
   """
 
-  def __init__(self, table, adb):
+  def __init__(self, table, device):
     super(ContentSettings, self).__init__()
+    sdk_version_string = device.old_interface.system_properties[
+        'ro.build.version.sdk']
     try:
-      sdk_version = int(adb.system_properties['ro.build.version.sdk'])
+      sdk_version = int(sdk_version_string)
       assert sdk_version >= 16, (
           'ContentSettings supported only on SDK 16 and later')
     except ValueError:
-      assert False, ('Unknown SDK version %s' %
-          adb.system_properties['ro.build.version.sdk'])
+      assert False, ('Unknown SDK version %s' % sdk_version_string)
     self._table = table
-    self._adb = adb
+    self._device = device
 
   @staticmethod
   def _GetTypeBinding(value):
@@ -39,7 +40,7 @@ class ContentSettings(dict):
   def iteritems(self):
     # Example row:
     # 'Row: 0 _id=13, name=logging_id2, value=-1fccbaa546705b05'
-    for row in self._adb.RunShellCommandWithSU(
+    for row in self._device.old_interface.RunShellCommandWithSU(
         'content query --uri content://%s' % self._table):
       fields = row.split(', ')
       key = None
@@ -54,19 +55,19 @@ class ContentSettings(dict):
       yield key, value
 
   def __getitem__(self, key):
-    return self._adb.RunShellCommandWithSU(
+    return self._device.old_interface.RunShellCommandWithSU(
         'content query --uri content://%s --where "name=\'%s\'" '
         '--projection value' % (self._table, key)).strip()
 
   def __setitem__(self, key, value):
     if key in self:
-      self._adb.RunShellCommandWithSU(
+      self._device.old_interface.RunShellCommandWithSU(
           'content update --uri content://%s '
           '--bind value:%s:%s --where "name=\'%s\'"' % (
               self._table,
               self._GetTypeBinding(value), value, key))
     else:
-      self._adb.RunShellCommandWithSU(
+      self._device.old_interface.RunShellCommandWithSU(
           'content insert --uri content://%s '
           '--bind name:%s:%s --bind value:%s:%s' % (
               self._table,
@@ -74,7 +75,7 @@ class ContentSettings(dict):
               self._GetTypeBinding(value), value))
 
   def __delitem__(self, key):
-    self._adb.RunShellCommandWithSU(
+    self._device.old_interface.RunShellCommandWithSU(
         'content delete --uri content://%s '
         '--bind name:%s:%s' % (
             self._table,

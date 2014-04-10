@@ -51,7 +51,7 @@ PEXPECT_LINE_RE = re.compile('\n([^\r]*)\r')
 SHELL_PROMPT = '~+~PQ\x17RS~+~'
 
 # Java properties file
-LOCAL_PROPERTIES_PATH = '/data/local.prop'
+LOCAL_PROPERTIES_PATH = constants.DEVICE_LOCAL_PROPERTIES_PATH
 
 # Property in /data/local.prop that controls Java assertions.
 JAVA_ASSERT_PROPERTY = 'dalvik.vm.enableassertions'

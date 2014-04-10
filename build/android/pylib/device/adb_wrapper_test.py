@@ -23,7 +23,7 @@ class TestAdbWrapper(unittest.TestCase):
   @staticmethod
   def _MakeTempFile(contents):
     """Make a temporary file with the given contents.
-    
+
     Args:
       contents: string to write to the temporary file.
 

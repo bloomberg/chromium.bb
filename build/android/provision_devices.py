@@ -22,7 +22,7 @@ from pylib import android_commands
 from pylib import constants
 from pylib import device_settings
 from pylib.cmd_helper import GetCmdOutput
-
+from pylib.device import device_utils
 
 def KillHostHeartbeat():
   ps = subprocess.Popen(['ps', 'aux'], stdout = subprocess.PIPE)
@@ -52,16 +52,16 @@ def PushAndLaunchAdbReboot(devices, target):
     target : The build target (example, Debug or Release) which helps in
              locating the adb_reboot binary.
   """
-  for device in devices:
-    print 'Will push and launch adb_reboot on %s' % device
-    android_cmd = android_commands.AndroidCommands(device)
+  for device_serial in devices:
+    print 'Will push and launch adb_reboot on %s' % device_serial
+    device = device_utils.DeviceUtils(device_serial)
     # Kill if adb_reboot is already running.
-    android_cmd.KillAllBlocking('adb_reboot', 2)
+    device.old_interface.KillAllBlocking('adb_reboot', 2)
     # Push adb_reboot
     print '  Pushing adb_reboot ...'
     adb_reboot = os.path.join(constants.DIR_SOURCE_ROOT,
                               'out/%s/adb_reboot' % target)
-    android_cmd.PushIfNeeded(adb_reboot, '/data/local/tmp/')
+    device.old_interface.PushIfNeeded(adb_reboot, '/data/local/tmp/')
     # Launch adb_reboot
     print '  Launching adb_reboot ...'
     p = subprocess.Popen(['adb', '-s', device, 'shell'], stdin=subprocess.PIPE)
@@ -69,7 +69,7 @@ def PushAndLaunchAdbReboot(devices, target):
   LaunchHostHeartbeat()
 
 
-def _ConfigureLocalProperties(adb):
+def _ConfigureLocalProperties(device):
   """Set standard readonly testing device properties prior to reboot."""
   local_props = [
       'ro.monkey=1',
@@ -77,11 +77,14 @@ def _ConfigureLocalProperties(adb):
       'ro.audio.silent=1',
       'ro.setupwizard.mode=DISABLED',
       ]
-  adb.SetProtectedFileContents(android_commands.LOCAL_PROPERTIES_PATH,
-                               '\n'.join(local_props))
+  device.old_interface.SetProtectedFileContents(
+      constants.DEVICE_LOCAL_PROPERTIES_PATH,
+      '\n'.join(local_props))
   # Android will not respect the local props file if it is world writable.
-  adb.RunShellCommandWithSU('chmod 644 %s' %
-                            android_commands.LOCAL_PROPERTIES_PATH)
+  device.old_interface.RunShellCommandWithSU(
+      'chmod 644 %s' % constants.DEVICE_LOCAL_PROPERTIES_PATH)
+
+  # LOCAL_PROPERTIES_PATH = '/data/local.prop'
 
 
 def WipeDeviceData(device):
@@ -96,19 +99,19 @@ def WipeDeviceData(device):
   Arguments:
     device: the device to wipe
   """
-  android_cmd = android_commands.AndroidCommands(device)
-  device_authorized = android_cmd.FileExistsOnDevice(constants.ADB_KEYS_FILE)
+  device_authorized = device.old_interface.FileExistsOnDevice(
+      constants.ADB_KEYS_FILE)
   if device_authorized:
-    adb_keys = android_cmd.RunShellCommandWithSU(
+    adb_keys = device.old_interface.RunShellCommandWithSU(
       'cat %s' % constants.ADB_KEYS_FILE)[0]
-  android_cmd.RunShellCommandWithSU('wipe data')
+  device.old_interface.RunShellCommandWithSU('wipe data')
   if device_authorized:
     path_list = constants.ADB_KEYS_FILE.split('/')
     dir_path = '/'.join(path_list[:len(path_list)-1])
-    android_cmd.RunShellCommandWithSU('mkdir -p %s' % dir_path)
-    adb_keys = android_cmd.RunShellCommand(
+    device.old_interface.RunShellCommandWithSU('mkdir -p %s' % dir_path)
+    adb_keys = device.old_interface.RunShellCommand(
       'echo %s > %s' % (adb_keys, constants.ADB_KEYS_FILE))
-  android_cmd.Reboot()
+  device.Reboot()
 
 
 def ProvisionDevices(options):
@@ -116,8 +119,8 @@ def ProvisionDevices(options):
     devices = [options.device]
   else:
     devices = android_commands.GetAttachedDevices()
-  for device in devices:
-    android_cmd = android_commands.AndroidCommands(device)
+  for device_serial in devices:
+    device = device_utils.DeviceUtils(device_serial)
     install_output = GetCmdOutput(
       ['%s/build/android/adb_install_apk.py' % constants.DIR_SOURCE_ROOT,
        '--apk',
@@ -126,15 +129,15 @@ def ProvisionDevices(options):
     failure_string = 'Failure [INSTALL_FAILED_INSUFFICIENT_STORAGE]'
     if failure_string in install_output:
       WipeDeviceData(device)
-    _ConfigureLocalProperties(android_cmd)
+    _ConfigureLocalProperties(device)
     device_settings.ConfigureContentSettingsDict(
-        android_cmd, device_settings.DETERMINISTIC_DEVICE_SETTINGS)
+        device, device_settings.DETERMINISTIC_DEVICE_SETTINGS)
     # TODO(tonyg): We eventually want network on. However, currently radios
     # can cause perfbots to drain faster than they charge.
     if 'perf' in os.environ.get('BUILDBOT_BUILDERNAME', '').lower():
       device_settings.ConfigureContentSettingsDict(
-          android_cmd, device_settings.NETWORK_DISABLED_SETTINGS)
-    android_cmd.RunShellCommandWithSU('date -u %f' % time.time())
+          device, device_settings.NETWORK_DISABLED_SETTINGS)
+    device.old_interface.RunShellCommandWithSU('date -u %f' % time.time())
   if options.auto_reconnect:
     PushAndLaunchAdbReboot(devices, options.target)
 

@@ -4,6 +4,9 @@
 
 import logging
 
+import pylib.android_commands
+import pylib.device.device_utils
+
 
 class FlagChanger(object):
   """Changes the flags Chrome runs with.
@@ -15,18 +18,22 @@ class FlagChanger(object):
     once the tests have completed.
   """
 
-  def __init__(self, adb, cmdline_file):
+  def __init__(self, device, cmdline_file):
     """Initializes the FlagChanger and records the original arguments.
 
     Args:
-      adb: An instance of AndroidCommands.
+      device: A DeviceUtils instance.
       cmdline_file: Path to the command line file on the device.
     """
-    self._adb = adb
+    # TODO(jbudorick) Remove once telemetry switches over.
+    if isinstance(device, pylib.android_commands.AndroidCommands):
+      device = pylib.device.device_utils.DeviceUtils(device)
+    self._device = device
     self._cmdline_file = cmdline_file
 
     # Save the original flags.
-    self._orig_line = self._adb.GetFileContents(self._cmdline_file)
+    self._orig_line = self._device.old_interface.GetFileContents(
+        self._cmdline_file)
     if self._orig_line:
       self._orig_line = self._orig_line[0].strip()
 
@@ -96,19 +103,25 @@ class FlagChanger(object):
       # launching the chrome executable using this command line.
       cmd_line = ' '.join(['_'] + self._current_flags)
       if use_root:
-        self._adb.SetProtectedFileContents(self._cmdline_file, cmd_line)
-        file_contents = self._adb.GetProtectedFileContents(self._cmdline_file)
+        self._device.old_interface.SetProtectedFileContents(
+            self._cmdline_file, cmd_line)
+        file_contents = self._device.old_interface.GetProtectedFileContents(
+            self._cmdline_file)
       else:
-        self._adb.SetFileContents(self._cmdline_file, cmd_line)
-        file_contents = self._adb.GetFileContents(self._cmdline_file)
+        self._device.old_interface.SetFileContents(self._cmdline_file, cmd_line)
+        file_contents = self._device.old_interface.GetFileContents(
+            self._cmdline_file)
       assert len(file_contents) == 1 and file_contents[0] == cmd_line, (
           'Failed to set the command line file at %s' % self._cmdline_file)
     else:
       if use_root:
-        self._adb.RunShellCommandWithSU('rm ' + self._cmdline_file)
+        self._device.old_interface.RunShellCommandWithSU(
+            'rm ' + self._cmdline_file)
       else:
-        self._adb.RunShellCommand('rm ' + self._cmdline_file)
-      assert not self._adb.FileExistsOnDevice(self._cmdline_file), (
+        self._device.old_interface.RunShellCommand('rm ' + self._cmdline_file)
+      assert (
+          not self._device.old_interface.FileExistsOnDevice(
+              self._cmdline_file)), (
           'Failed to remove the command line file at %s' % self._cmdline_file)
 
   @staticmethod

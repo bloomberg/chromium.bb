@@ -4,6 +4,8 @@
 
 
 import logging
+from pylib import android_commands
+from pylib.device import device_utils
 
 
 class PerfControl(object):
@@ -12,16 +14,20 @@ class PerfControl(object):
       '/sys/devices/system/cpu/cpu%d/cpufreq/scaling_governor')
   _KERNEL_MAX = '/sys/devices/system/cpu/kernel_max'
 
-  def __init__(self, adb):
-    self._adb = adb
-    kernel_max = self._adb.GetFileContents(PerfControl._KERNEL_MAX,
-                                           log_result=False)
+  def __init__(self, device):
+    # TODO(jbudorick) Remove once telemetry gets switched over.
+    if isinstance(device, android_commands.AndroidCommands):
+      device = device_utils.DeviceUtils(device)
+    self._device = device
+    kernel_max = self._device.old_interface.GetFileContents(
+        PerfControl._KERNEL_MAX, log_result=False)
     assert kernel_max, 'Unable to find %s' % PerfControl._KERNEL_MAX
     self._kernel_max = int(kernel_max[0])
     logging.info('Maximum CPU index: %d', self._kernel_max)
-    self._original_scaling_governor = self._adb.GetFileContents(
-        PerfControl._SCALING_GOVERNOR_FMT % 0,
-        log_result=False)[0]
+    self._original_scaling_governor = \
+        self._device.old_interface.GetFileContents(
+            PerfControl._SCALING_GOVERNOR_FMT % 0,
+            log_result=False)[0]
 
   def SetHighPerfMode(self):
     """Sets the highest possible performance mode for the device."""
@@ -29,7 +35,7 @@ class PerfControl(object):
 
   def SetDefaultPerfMode(self):
     """Sets the performance mode for the device to its default mode."""
-    product_model = self._adb.GetProductModel()
+    product_model = self._device.old_interface.GetProductModel()
     governor_mode = {
         'GT-I9300': 'pegasusq',
         'Galaxy Nexus': 'interactive',
@@ -46,7 +52,9 @@ class PerfControl(object):
   def _SetScalingGovernorInternal(self, value):
     for cpu in range(self._kernel_max + 1):
       scaling_governor_file = PerfControl._SCALING_GOVERNOR_FMT % cpu
-      if self._adb.FileExistsOnDevice(scaling_governor_file):
+      if self._device.old_interface.FileExistsOnDevice(scaling_governor_file):
         logging.info('Writing scaling governor mode \'%s\' -> %s',
                      value, scaling_governor_file)
-        self._adb.SetProtectedFileContents(scaling_governor_file, value)
+        self._device.old_interface.SetProtectedFileContents(
+            scaling_governor_file, value)
+

@@ -7,7 +7,7 @@ import psutil
 import signal
 
 from pylib import android_commands
-
+from pylib.device import device_utils
 
 def _KillWebServers():
   for s in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT, signal.SIGKILL]:
@@ -34,12 +34,13 @@ def CleanupLeftoverProcesses():
   """Clean up the test environment, restarting fresh adb and HTTP daemons."""
   _KillWebServers()
   did_restart_host_adb = False
-  for device in android_commands.GetAttachedDevices():
-    adb = android_commands.AndroidCommands(device)
+  for device_serial in android_commands.GetAttachedDevices():
+    device = device_utils.DeviceUtils(device_serial)
     # Make sure we restart the host adb server only once.
     if not did_restart_host_adb:
-      adb.RestartAdbServer()
+      device.old_interface.RestartAdbServer()
       did_restart_host_adb = True
-    adb.RestartAdbdOnDevice()
-    adb.EnableAdbRoot()
-    adb.WaitForDevicePm()
+    device.old_interface.RestartAdbdOnDevice()
+    device.old_interface.EnableAdbRoot()
+    device.old_interface.WaitForDevicePm()
+

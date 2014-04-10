@@ -224,8 +224,8 @@ def _GetTests(test_options, test_package, devices):
       def RunTest(self, _test):
         result = base_test_result.BaseTestResult(
             'gtest_list_tests', base_test_result.ResultType.PASS)
-        self.test_package.Install(self.adb)
-        result.test_list = self.test_package.GetAllTests(self.adb)
+        self.test_package.Install(self.device)
+        result.test_list = self.test_package.GetAllTests(self.device)
         results = base_test_result.TestRunResults()
         results.AddResult(result)
         return results, None

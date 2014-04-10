@@ -19,6 +19,7 @@ from pylib import android_commands
 from pylib import cmd_helper
 from pylib import constants
 from pylib import pexpect
+from pylib.device import device_utils
 from pylib.utils import time_profile
 
 import errors
@@ -106,7 +107,7 @@ def DeleteAllTempAVDs():
   If the test exits abnormally and some temporary AVDs created when testing may
   be left in the system. Clean these AVDs.
   """
-  avds = android_commands.GetAVDs()
+  avds = device_utils.GetAVDs()
   if not avds:
     return
   for avd_name in avds:
@@ -236,7 +237,7 @@ class Emulator(object):
     self.emulator = os.path.join(android_sdk_root, 'tools', 'emulator')
     self.android = os.path.join(android_sdk_root, 'tools', 'android')
     self.popen = None
-    self.device = None
+    self.device_serial = None
     self.abi = abi
     self.avd_name = avd_name
 
@@ -334,7 +335,7 @@ class Emulator(object):
     if kill_all_emulators:
       _KillAllEmulators()  # just to be sure
     self._AggressiveImageCleanup()
-    (self.device, port) = self._DeviceName()
+    (self.device_serial, port) = self._DeviceName()
     emulator_command = [
         self.emulator,
         # Speed up emulator launch by 40%.  Really.
@@ -393,7 +394,7 @@ class Emulator(object):
     """
     seconds_waited = 0
     number_of_waits = 2  # Make sure we can wfd twice
-    adb_cmd = "adb -s %s %s" % (self.device, 'wait-for-device')
+    adb_cmd = "adb -s %s %s" % (self.device_serial, 'wait-for-device')
     while seconds_waited < self._LAUNCH_TIMEOUT:
       try:
         run_command.RunCommand(adb_cmd,
@@ -404,7 +405,7 @@ class Emulator(object):
           break
       except errors.WaitForResponseTimedOutError:
         seconds_waited += self._WAITFORDEVICE_TIMEOUT
-        adb_cmd = "adb -s %s %s" % (self.device, 'kill-server')
+        adb_cmd = "adb -s %s %s" % (self.device_serial, 'kill-server')
         run_command.RunCommand(adb_cmd)
       self.popen.poll()
       if self.popen.returncode != None:
@@ -415,8 +416,8 @@ class Emulator(object):
     if wait_for_boot:
       # Now that we checked for obvious problems, wait for a boot complete.
       # Waiting for the package manager is sometimes problematic.
-      a = android_commands.AndroidCommands(self.device)
-      a.WaitForSystemBootCompleted(self._WAITFORBOOT_TIMEOUT)
+      d = device_utils.DeviceUtils(self.device_serial)
+      d.old_interface.WaitForSystemBootCompleted(self._WAITFORBOOT_TIMEOUT)
 
   def Shutdown(self):
     """Shuts down the process started by launch."""
