@@ -28,7 +28,8 @@ using web_modal::WebContentsModalDialogManager;
 
 ChromeWebContentsViewDelegateViews::ChromeWebContentsViewDelegateViews(
     content::WebContents* web_contents)
-    : web_contents_(web_contents) {
+    : ContextMenuDelegate(web_contents),
+      web_contents_(web_contents) {
   last_focused_view_storage_id_ =
       views::ViewStorage::GetInstance()->CreateStorageID();
 }
@@ -118,19 +119,28 @@ void ChromeWebContentsViewDelegateViews::RestoreFocus() {
   }
 }
 
-void ChromeWebContentsViewDelegateViews::ShowContextMenu(
-    content::RenderFrameHost* render_frame_host,
+scoped_ptr<RenderViewContextMenu> ChromeWebContentsViewDelegateViews::BuildMenu(
+    content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
+  scoped_ptr<RenderViewContextMenu> menu(
+      RenderViewContextMenuViews::Create(web_contents->GetFocusedFrame(),
+                                         params));
+  menu->Init();
+  return menu.Pass();
+}
+
+void ChromeWebContentsViewDelegateViews::ShowMenu(
+    scoped_ptr<RenderViewContextMenu> menu) {
+  DCHECK(menu.get());
+  context_menu_.reset(static_cast<RenderViewContextMenuViews*>(menu.release()));
+
   // Menus need a Widget to work. If we're not the active tab we won't
   // necessarily be in a widget.
   views::Widget* top_level_widget = GetTopLevelWidget();
   if (!top_level_widget)
     return;
 
-  context_menu_.reset(
-      RenderViewContextMenuViews::Create(render_frame_host, params));
-  context_menu_->Init();
-
+  const content::ContextMenuParams& params = context_menu_->params();
   // Don't show empty menus.
   if (context_menu_->menu_model().GetItemCount() == 0)
     return;
@@ -151,6 +161,14 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
   base::MessageLoop::ScopedNestableTaskAllower allow(
       base::MessageLoop::current());
   context_menu_->RunMenuAt(top_level_widget, screen_point, params.source_type);
+}
+
+void ChromeWebContentsViewDelegateViews::ShowContextMenu(
+    content::RenderFrameHost* render_frame_host,
+    const content::ContextMenuParams& params) {
+  ShowMenu(
+      BuildMenu(content::WebContents::FromRenderFrameHost(render_frame_host),
+                params));
 }
 
 void ChromeWebContentsViewDelegateViews::SizeChanged(const gfx::Size& size) {

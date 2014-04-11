@@ -33,6 +33,8 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
                               bool hidden,
                               const base::string16& title) OVERRIDE;
 
+  void Show();
+
  protected:
   // RenderViewContextMenu implementation.
   virtual void PlatformInit() OVERRIDE;

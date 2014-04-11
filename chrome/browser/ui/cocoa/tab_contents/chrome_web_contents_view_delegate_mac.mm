@@ -14,7 +14,8 @@
 
 ChromeWebContentsViewDelegateMac::ChromeWebContentsViewDelegateMac(
     content::WebContents* web_contents)
-    : bookmark_handler_(new WebDragBookmarkHandlerMac),
+    : ContextMenuDelegate(web_contents),
+      bookmark_handler_(new WebDragBookmarkHandlerMac),
       web_contents_(web_contents) {
 }
 
@@ -36,6 +37,16 @@ content::WebDragDestDelegate*
 void ChromeWebContentsViewDelegateMac::ShowContextMenu(
     content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
+  ShowMenu(
+      BuildMenu(content::WebContents::FromRenderFrameHost(render_frame_host),
+                params));
+}
+
+void ChromeWebContentsViewDelegateMac::ShowMenu(
+    scoped_ptr<RenderViewContextMenu> menu) {
+  DCHECK(menu.get());
+  context_menu_.reset(static_cast<RenderViewContextMenuMac*>(menu.release()));
+
   // The renderer may send the "show context menu" message multiple times, one
   // for each right click mouse event it receives. Normally, this doesn't happen
   // because mouse events are not forwarded once the context menu is showing.
@@ -47,9 +58,17 @@ void ChromeWebContentsViewDelegateMac::ShowContextMenu(
   if (widget_view && widget_view->IsShowingContextMenu())
     return;
 
-  context_menu_.reset(new RenderViewContextMenuMac(
-      render_frame_host, params, widget_view->GetNativeView()));
-  context_menu_->Init();
+  context_menu_->Show();
+}
+
+scoped_ptr<RenderViewContextMenu> ChromeWebContentsViewDelegateMac::BuildMenu(
+    content::WebContents* web_contents,
+    const content::ContextMenuParams& params) {
+  content::RenderWidgetHostView* widget_view = GetActiveRenderWidgetHostView();
+  scoped_ptr<RenderViewContextMenuMac> menu(new RenderViewContextMenuMac(
+      web_contents->GetFocusedFrame(), params, widget_view->GetNativeView()));
+  menu->Init();
+  return menu.PassAs<RenderViewContextMenu>();
 }
 
 content::RenderWidgetHostView*

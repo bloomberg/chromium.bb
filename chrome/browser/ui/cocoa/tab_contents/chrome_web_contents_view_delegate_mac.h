@@ -9,8 +9,10 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 
+class RenderViewContextMenu;
 class RenderViewContextMenuMac;
 class WebDragBookmarkHandlerMac;
 
@@ -22,7 +24,8 @@ class WebContents;
 // A chrome/ specific class that extends WebContentsViewMac with features that
 // live in chrome/.
 class ChromeWebContentsViewDelegateMac
-    : public content::WebContentsViewDelegate {
+    : public content::WebContentsViewDelegate,
+      public ContextMenuDelegate {
  public:
   explicit ChromeWebContentsViewDelegateMac(content::WebContents* web_contents);
   virtual ~ChromeWebContentsViewDelegateMac();
@@ -35,6 +38,12 @@ class ChromeWebContentsViewDelegateMac
   virtual void ShowContextMenu(
       content::RenderFrameHost* render_frame_host,
       const content::ContextMenuParams& params) OVERRIDE;
+
+  // Overridden from ContextMenuDelegate.
+  virtual scoped_ptr<RenderViewContextMenu> BuildMenu(
+      content::WebContents* web_contents,
+      const content::ContextMenuParams& params) OVERRIDE;
+  virtual void ShowMenu(scoped_ptr<RenderViewContextMenu> menu) OVERRIDE;
 
  private:
   content::RenderWidgetHostView* GetActiveRenderWidgetHostView();

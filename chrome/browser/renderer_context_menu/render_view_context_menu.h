@@ -142,6 +142,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   void Cancel();
 
   const ui::MenuModel& menu_model() const { return menu_model_; }
+  const content::ContextMenuParams& params() const { return params_; }
 
   // SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

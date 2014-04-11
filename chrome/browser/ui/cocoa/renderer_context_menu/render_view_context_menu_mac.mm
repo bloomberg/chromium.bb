@@ -64,6 +64,9 @@ RenderViewContextMenuMac::~RenderViewContextMenuMac() {
 
 void RenderViewContextMenuMac::PlatformInit() {
   InitPlatformMenu();
+}
+
+void RenderViewContextMenuMac::Show() {
   menu_controller_.reset(
       [[MenuController alloc] initWithModel:&menu_model_
                      useWithPopUpButtonCell:NO]);

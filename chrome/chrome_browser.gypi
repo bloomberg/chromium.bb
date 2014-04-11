@@ -1827,6 +1827,8 @@
         'browser/renderer_context_menu/context_menu_content_type_panel.h',
         'browser/renderer_context_menu/context_menu_content_type_platform_app.cc',
         'browser/renderer_context_menu/context_menu_content_type_platform_app.h',
+        'browser/renderer_context_menu/context_menu_delegate.cc',
+        'browser/renderer_context_menu/context_menu_delegate.h',
         'browser/renderer_context_menu/render_view_context_menu.cc',
         'browser/renderer_context_menu/render_view_context_menu.h',
         'browser/renderer_context_menu/render_view_context_menu_observer.cc',
