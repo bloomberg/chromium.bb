@@ -93,7 +93,6 @@ extern const char kDisableExtensionsHttpThrottling[];
 extern const char kDisableExtensionsResourceWhitelist[];
 extern const char kDisableExtensions[];
 extern const char kDisableFullscreenWithinTab[];
-extern const char kDisableImprovedDownloadProtection[];
 extern const char kDisableInfoBars[];
 extern const char kDisableIPv6[];
 extern const char kDisableMinimizeOnSecondLauncherItemClick[];

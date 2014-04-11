@@ -304,10 +304,6 @@ const char kDisableExtensionsResourceWhitelist[] =
 // a tab.  http://crbug.com/256870 and http://crbug.com/290403
 const char kDisableFullscreenWithinTab[] = "disable-fullscreen-within-tab";
 
-// Disables improved SafeBrowsing download protection.
-const char kDisableImprovedDownloadProtection[] =
-    "disable-improved-download-protection";
-
 // Prevent infobars from appearing.
 const char kDisableInfoBars[]               = "disable-infobars";
 
