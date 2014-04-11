@@ -48,6 +48,11 @@ group("root") {
     "//url",
   ]
 
+  if (is_posix) {  # TODO(brettw) should be use_openssl
+    deps += [
+      "//third_party/openssl",
+    ]
+  }
   if (is_linux) {
     deps += [
       "//third_party/freetype2",
