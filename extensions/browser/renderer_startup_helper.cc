@@ -5,7 +5,6 @@
 #include "extensions/browser/renderer_startup_helper.h"
 
 #include "base/values.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -42,10 +41,6 @@ void RendererStartupHelper::Observe(
       if (!ExtensionsBrowserClient::Get()->IsSameContext(
                browser_context_, process->GetBrowserContext()))
         break;
-
-      // Extensions need to know the channel for API restrictions.
-      process->Send(new ExtensionMsg_SetChannel(
-          extensions::GetCurrentChannel()));
 
       // Platform apps need to know the system font.
       scoped_ptr<base::DictionaryValue> fonts(new base::DictionaryValue);

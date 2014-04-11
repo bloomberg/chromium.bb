@@ -12,6 +12,10 @@
 
 class Browser;
 
+namespace content {
+class RenderProcessHost;
+}
+
 namespace extensions {
 
 // Observer for Chrome-specific notifications that need to be relayed to the
@@ -21,7 +25,9 @@ class ChromeNotificationObserver : public content::NotificationObserver {
   ChromeNotificationObserver();
   virtual ~ChromeNotificationObserver();
 
+  // IPC message handlers:
   void OnBrowserWindowReady(Browser* browser);
+  void OnRendererProcessCreated(content::RenderProcessHost* process);
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,

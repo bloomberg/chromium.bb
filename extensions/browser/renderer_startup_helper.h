@@ -19,7 +19,7 @@ class RenderProcessHost;
 
 namespace extensions {
 
-// Informs renderers about extensions-related data (channel, available
+// Informs renderers about extensions-related data (loaded extensions, available
 // functions, etc.) when they start. Sends this information to both extension
 // and non-extension renderers, as the non-extension renderers may have content
 // scripts. Lives on the UI thread. Shared between incognito and non-incognito

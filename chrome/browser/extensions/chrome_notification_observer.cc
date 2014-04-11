@@ -8,16 +8,23 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/extension_messages.h"
 
 namespace extensions {
 
 ChromeNotificationObserver::ChromeNotificationObserver() {
-  // Notifications for extensions::ProcessManager
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_BROWSER_WINDOW_READY,
                  content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 content::NOTIFICATION_RENDERER_PROCESS_CREATED,
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 ChromeNotificationObserver::~ChromeNotificationObserver() {}
@@ -50,6 +57,13 @@ void ChromeNotificationObserver::OnBrowserWindowReady(Browser* browser) {
   }
 }
 
+void ChromeNotificationObserver::OnRendererProcessCreated(
+    content::RenderProcessHost* process) {
+  // Extensions need to know the channel for API restrictions. Send the channel
+  // to all renderers, as the non-extension renderers may have content scripts.
+  process->Send(new ExtensionMsg_SetChannel(GetCurrentChannel()));
+}
+
 void ChromeNotificationObserver::Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
@@ -57,6 +71,13 @@ void ChromeNotificationObserver::Observe(int type,
     case chrome::NOTIFICATION_BROWSER_WINDOW_READY: {
       Browser* browser = content::Source<Browser>(source).ptr();
       OnBrowserWindowReady(browser);
+      break;
+    }
+
+    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
+      content::RenderProcessHost* process =
+          content::Source<content::RenderProcessHost>(source).ptr();
+      OnRendererProcessCreated(process);
       break;
     }
 
