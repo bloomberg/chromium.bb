@@ -95,9 +95,8 @@ bool TransientWindowStackingClient::AdjustStacking(
     Window** target,
     Window::StackDirection* direction) {
   const TransientWindowManager* transient_manager =
-      TransientWindowManager::Get((*child)->parent());
-  if (transient_manager &&
-      transient_manager->IsStackingTransient(*child, *target))
+      TransientWindowManager::Get(static_cast<const Window*>(*child));
+  if (transient_manager && transient_manager->IsStackingTransient(*target))
     return true;
 
   // For windows that have transient children stack the transient ancestors that

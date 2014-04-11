@@ -51,34 +51,23 @@ class WM_CORE_EXPORT TransientWindowManager : public aura::WindowObserver {
   aura::Window* transient_parent() { return transient_parent_; }
   const aura::Window* transient_parent() const { return transient_parent_; }
 
-  // Returns true if in the process of stacking |child| on top of |target|. That
-  // is, when the stacking order of a window changes (OnWindowStackingChanged())
-  // the transients may get restacked as well. This function can be used to
-  // detect if TransientWindowManager is in the process of stacking a transient
-  // as the result of window stacking changing.
-  bool IsStackingTransient(const aura::Window* child,
-                           const aura::Window* target) const;
+  // Returns true if in the process of stacking |window_| on top of |target|.
+  // That is, when the stacking order of a window changes
+  // (OnWindowStackingChanged()) the transients may get restacked as well. This
+  // function can be used to detect if TransientWindowManager is in the process
+  // of stacking a transient as the result of window stacking changing.
+  bool IsStackingTransient(const aura::Window* target) const;
 
  private:
-  // Used to identify when a stacking change needs to restack transients.
-  struct StackingPair {
-    StackingPair(const aura::Window* child, const aura::Window* target)
-        : child(child),
-          target(target) {}
-
-    // The window being moved.
-    const aura::Window* child;
-
-    // |child| is being stacked on top of this.
-    const aura::Window* target;
-  };
-
   explicit TransientWindowManager(aura::Window* window);
 
-  // Invoked whne |child|'s stacking order changes.
-  void OnChildStackingChanged(aura::Window* child);
+  // Stacks transient descendants of this window that are its siblings just
+  // above it.
+  void RestackTransientDescendants();
 
   // WindowObserver:
+  virtual void OnWindowParentChanged(aura::Window* window,
+                                     aura::Window* parent) OVERRIDE;
   virtual void OnWindowVisibilityChanging(aura::Window* window,
                                           bool visible) OVERRIDE;
   virtual void OnWindowStackingChanged(aura::Window* window) OVERRIDE;
@@ -89,8 +78,8 @@ class WM_CORE_EXPORT TransientWindowManager : public aura::WindowObserver {
   Windows transient_children_;
 
   // If non-null we're actively restacking transient as the result of a
-  // transient ancestor changing. This is a pointer to a value on the stack.
-  StackingPair* stacking_pair_;
+  // transient ancestor changing.
+  aura::Window* stacking_target_;
 
   ObserverList<TransientWindowObserver> observers_;
 

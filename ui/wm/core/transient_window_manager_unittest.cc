@@ -71,8 +71,8 @@ class TransientWindowManagerTest : public aura::test::AuraTestBase {
     window->set_id(id);
     window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     window->Init(aura::WINDOW_LAYER_TEXTURED);
-    aura::client::ParentWindowWithContext(window, root_window(), gfx::Rect());
     AddTransientChild(parent, window);
+    aura::client::ParentWindowWithContext(window, root_window(), gfx::Rect());
     return window;
   }
 
@@ -265,6 +265,36 @@ TEST_F(TransientWindowManagerTest, TransientChildrenGroupBelow) {
   parent->StackChildBelow(w213, w11);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
+}
+
+// Tests that transient windows are stacked properly when created.
+TEST_F(TransientWindowManagerTest, StackUponCreation) {
+  scoped_ptr<Window> window0(CreateTestWindowWithId(0, root_window()));
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
+
+  scoped_ptr<Window> window2(CreateTransientChild(2, window0.get()));
+  EXPECT_EQ("0 2 1", ChildWindowIDsAsString(root_window()));
+}
+
+// Tests that windows are restacked properly after a call to AddTransientChild()
+// or RemoveTransientChild().
+TEST_F(TransientWindowManagerTest, RestackUponAddOrRemoveTransientChild) {
+  scoped_ptr<Window> windows[4];
+  for (int i = 0; i < 4; i++)
+    windows[i].reset(CreateTestWindowWithId(i, root_window()));
+  EXPECT_EQ("0 1 2 3", ChildWindowIDsAsString(root_window()));
+
+  AddTransientChild(windows[0].get(), windows[2].get());
+  EXPECT_EQ("0 2 1 3", ChildWindowIDsAsString(root_window()));
+
+  AddTransientChild(windows[0].get(), windows[3].get());
+  EXPECT_EQ("0 2 3 1", ChildWindowIDsAsString(root_window()));
+
+  RemoveTransientChild(windows[0].get(), windows[2].get());
+  EXPECT_EQ("0 3 2 1", ChildWindowIDsAsString(root_window()));
+
+  RemoveTransientChild(windows[0].get(), windows[3].get());
+  EXPECT_EQ("0 3 2 1", ChildWindowIDsAsString(root_window()));
 }
 
 namespace {
