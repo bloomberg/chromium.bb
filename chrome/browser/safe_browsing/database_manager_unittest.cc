@@ -16,46 +16,14 @@
 
 using content::TestBrowserThreadBundle;
 
-namespace {
-
-class FakeSafeBrowsingService : public SafeBrowsingService {
- public:
-  FakeSafeBrowsingService() {}
- private:
-  virtual ~FakeSafeBrowsingService() {}
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);
-};
-
-// Factory that creates FakeSafeBrowsingService instances.
-class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
-  virtual SafeBrowsingService* CreateSafeBrowsingService() OVERRIDE {
-    return new FakeSafeBrowsingService();
-  }
-};
-
-}  // namespace
-
 class SafeBrowsingDatabaseManagerTest : public PlatformTest {
  public:
-
-  virtual void SetUp() OVERRIDE {
-    PlatformTest::SetUp();
-    SafeBrowsingService::RegisterFactory(&factory_);
-  }
-
-  virtual void TearDown() OVERRIDE {
-    SafeBrowsingService::RegisterFactory(NULL);
-    PlatformTest::TearDown();
-  }
-
   bool RunSBHashTest(const safe_browsing_util::ListType list_type,
                      const std::vector<SBThreatType>& expected_threats,
                      const std::string& result_list);
 
  private:
   TestBrowserThreadBundle thread_bundle_;
-  TestSafeBrowsingServiceFactory factory_;
 };
 
 bool SafeBrowsingDatabaseManagerTest::RunSBHashTest(
