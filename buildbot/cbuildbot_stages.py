@@ -17,7 +17,6 @@ import platform
 import re
 import shutil
 import sys
-import time
 from xml.etree import ElementTree
 
 from chromite.buildbot import builderstage as bs
@@ -1103,14 +1102,6 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
     else:
       self._SetPoolFromManifest(self.manifest_manager.GetLocalManifest())
 
-    # Because metadata is currently not surviving cbuildbot re-execution,
-    # re-record that patches were picked up in the non-skipped run of
-    # CommitQueueSync.
-    # TODO(akeshet): Remove this code once metadata is being pickled and passed
-    # across re-executions. See crbug.com/356930
-    if self._run.config.master:
-      self._RecordPatchesInMetadata(self.pool)
-
   def _ChangeFilter(self, pool, changes, non_manifest_changes):
     # First, look for changes that were tested by the Pre-CQ.
     changes_to_test = []
@@ -1160,8 +1151,6 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
             change_filter=self._ChangeFilter, throttled_ok=True,
             metadata=self._run.attrs.metadata)
 
-        self._RecordPatchesInMetadata(self.pool)
-
       except validation_pool.TreeIsClosedException as e:
         cros_build_lib.Warning(str(e))
         return None
@@ -1187,18 +1176,6 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
         self.pool.ApplyPoolIntoRepo()
 
       return manifest
-
-  # TODO(akeshet): Once builder run attributes such as metadata are being
-  # pickled and passed across cbuildbot re-executions, move this functionality
-  # out of cbuildbot_stages and into validation_pool.ValidationPool.
-  # See crbug.com/356930
-  def _RecordPatchesInMetadata(self, pool):
-    # If possible, use the timestamp at which the pool was acquired.
-    timestamp = pool.acquired_at_time or int(time.time())
-    for change in pool.changes:
-      self._run.attrs.metadata.RecordCLAction(change,
-                                              constants.CL_ACTION_PICKED_UP,
-                                              timestamp)
 
   def _RunPrePatchBuild(self):
     """Run through a pre-patch build to prepare for incremental build.

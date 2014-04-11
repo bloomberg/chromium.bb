@@ -1313,10 +1313,6 @@ class ValidationPool(object):
     # reason we can't try these again in the next run.
     self.changes_that_failed_to_apply_earlier = conflicting_changes or []
 
-    # Integer timestamp (i.e. int(time.time())) at which the changes in this
-    # pool were acquired. Set by AcquirePool or AcquirePoolFromManifest.
-    self.acquired_at_time = 0
-
     # Private vars only used for pickling.
     self._overlays = overlays
     self._build_number = build_number
@@ -1453,7 +1449,9 @@ class ValidationPool(object):
     """See ValidationPool.__init__ for arguments."""
     kwargs.setdefault('pre_cq', True)
     kwargs.setdefault('is_master', True)
-    return cls(*args, **kwargs)
+    pool = cls(*args, **kwargs)
+    pool.RecordPatchesInMetadata()
+    return pool
 
   @classmethod
   def AcquirePool(cls, overlays, repo, build_number, builder_name,
@@ -1571,7 +1569,7 @@ class ValidationPool(object):
                    time_left / 60)
       time.sleep(cls.SLEEP_TIMEOUT)
 
-    pool.acquired_at_time = int(time.time())
+    pool.RecordPatchesInMetadata()
     return pool
 
   @classmethod
@@ -1617,7 +1615,7 @@ class ValidationPool(object):
         raise NoMatchingChangeFoundException(
             'Could not find change defined by %s' % pending_commit)
 
-    pool.acquired_at_time = int(time.time())
+    pool.RecordPatchesInMetadata()
     return pool
 
   @classmethod
@@ -1815,6 +1813,12 @@ class ValidationPool(object):
     with open(filename, 'rb') as p_file:
       pool = cPickle.load(p_file)
       pool._metadata = metadata
+      # Because metadata is currently not surviving cbuildbot re-execution,
+      # re-record that patches were picked up in the non-skipped run of
+      # CommitQueueSync.
+      # TODO(akeshet): Remove this code once metadata is being pickled and
+      # passed across re-executions. See crbug.com/356930
+      pool.RecordPatchesInMetadata()
       return pool
 
   def Save(self, filename):
@@ -1969,6 +1973,13 @@ class ValidationPool(object):
 
     return errors
 
+  def RecordPatchesInMetadata(self):
+    """Mark all patches as having been picked up in metadata.json."""
+    if self._metadata:
+      timestamp = int(time.time())
+      for change in self.changes:
+        self._metadata.RecordCLAction(change, constants.CL_ACTION_PICKED_UP,
+                                      timestamp)
   @classmethod
   def ReloadChanges(cls, changes):
     """Reload the specified |changes| from the server.
