@@ -158,11 +158,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
       const SkBitmap& zoomed_bitmap) OVERRIDE;
 #endif  // defined(OS_ANDROID)
 
-#if defined(TOOLKIT_GTK)
-  virtual GdkEventButton* GetLastMouseDown() OVERRIDE;
-  virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
-#endif  // defined(TOOLKIT_GTK)
-
 #if defined(OS_WIN)
   virtual void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) OVERRIDE;

@@ -3333,7 +3333,7 @@ void RenderViewImpl::OnSetRendererPrefs(
       webview()->themeChanged();
     }
   }
-#endif  // defined(USE_DEFAULT_RENDER_THEME) || defined(TOOLKIT_GTK)
+#endif  // defined(USE_DEFAULT_RENDER_THEME)
 
   if (RenderThreadImpl::current())  // Will be NULL during unit tests.
     RenderThreadImpl::current()->SetFlingCurveParameters(

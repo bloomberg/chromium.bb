@@ -111,7 +111,7 @@ int RenderProcessImpl::GetEnabledBindings() const {
 // Platform specific code for dealing with bitmap transport...
 
 TransportDIB* RenderProcessImpl::CreateTransportDIB(size_t size) {
-#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
   // POSIX creates transport DIBs in the browser, so we need to do a sync IPC to
   // get one.  The TransportDIB is cached in the browser.
   TransportDIB::Handle handle;
@@ -122,8 +122,7 @@ TransportDIB* RenderProcessImpl::CreateTransportDIB(size_t size) {
     return NULL;
   return TransportDIB::Map(handle);
 #else
-  // Windows, legacy GTK and Android create transport DIBs inside the
-  // renderer.
+  // Windows and Android create transport DIBs inside the renderer.
   return TransportDIB::Create(size, transport_dib_next_sequence_number_++);
 #endif
 }
@@ -132,7 +131,7 @@ void RenderProcessImpl::FreeTransportDIB(TransportDIB* dib) {
   if (!dib)
     return;
 
-#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
   // On POSIX we need to tell the browser that it can drop a reference to the
   // shared memory.
   IPC::Message* msg = new ViewHostMsg_FreeTransportDIB(dib->id());

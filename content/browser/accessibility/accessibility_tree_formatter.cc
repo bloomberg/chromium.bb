@@ -92,8 +92,7 @@ void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
   }
 }
 
-#if (!defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
-     !defined(TOOLKIT_GTK))
+#if (!defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_ANDROID))
 void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
                                                base::DictionaryValue* dict) {
   dict->SetInteger("id", node.GetId());

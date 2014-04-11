@@ -10,10 +10,6 @@
 #include "base/strings/string_util.h"
 #include "content/test/plugin/plugin_client.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gdk/gdkx.h>
-#endif
-
 // NPEvent does not exist on the Mac.
 #if defined(OS_MACOSX)
 typedef NPCocoaEvent WindowlessPluginTestEvent;
@@ -37,8 +33,6 @@ bool IsPaintEvent(WindowlessPluginTestEvent* np_event) {
   return np_event->event == WM_PAINT;
 #elif defined(OS_MACOSX)
   return np_event->type == NPCocoaEventDrawRect;
-#elif defined(TOOLKIT_GTK)
-  return np_event->type == GraphicsExpose;
 #else
   NOTIMPLEMENTED();
   return false;

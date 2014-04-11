@@ -20,12 +20,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
-#if defined(USE_X11)
-#include "ui/base/x/x11_util.h"
-
-typedef struct _GdkDrawable GdkPixmap;
-#endif
-
 namespace base {
 class FilePath;
 }
@@ -198,12 +192,6 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   void CGPaint(CGContextRef context, const gfx::Rect& rect);
 #endif  // OS_MACOSX && !USE_AURA
 
-#if defined(USE_X11)
-  void SetWindowlessShmPixmap(XID shm_pixmap) {
-    windowless_shm_pixmap_ = shm_pixmap;
-  }
-#endif
-
  private:
   friend class base::DeleteHelper<WebPluginDelegateImpl>;
   friend class WebPluginDelegate;
@@ -318,27 +306,6 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // IMM32 functions.
   scoped_ptr<WebPluginIMEWin> plugin_ime_;
 #endif  // defined(OS_WIN)
-
-#if defined(USE_X11)
-  // The SHM pixmap for a windowless plugin.
-  XID windowless_shm_pixmap_;
-#endif
-
-#if defined(TOOLKIT_GTK)
-  // The pixmap we're drawing into, for a windowless plugin.
-  GdkPixmap* pixmap_;
-  double first_event_time_;
-
-  // On Linux some plugins assume that the GtkSocket container is in the same
-  // process. So we create a GtkPlug to plug into the browser's container, and
-  // a GtkSocket to hold the plugin. We then send the GtkPlug to the browser
-  // process.
-  GtkWidget* plug_;
-  GtkWidget* socket_;
-
-  // Ensure pixmap_ exists and is at least width by height pixels.
-  void EnsurePixmapAtLeastSize(int width, int height);
-#endif
 
   NPWindow window_;
   gfx::Rect window_rect_;

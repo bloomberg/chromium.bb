@@ -446,7 +446,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnAllocatedSharedBitmap)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedSharedBitmap,
                         OnDeletedSharedBitmap)
-#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocTransportDIB, OnAllocTransportDIB)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FreeTransportDIB, OnFreeTransportDIB)
 #endif
@@ -984,7 +984,7 @@ net::CookieStore* RenderMessageFilter::GetCookieStoreForURL(
   return request_context_->GetURLRequestContext()->cookie_store();
 }
 
-#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
 void RenderMessageFilter::OnAllocTransportDIB(
     uint32 size, bool cache_in_browser, TransportDIB::Handle* handle) {
   render_widget_helper_->AllocTransportDIB(size, cache_in_browser, handle);

@@ -97,7 +97,7 @@ RenderWidgetHelper::~RenderWidgetHelper() {
   // object, so we should not be destroyed unless pending_paints_ is empty!
   DCHECK(pending_paints_.empty());
 
-#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
   ClearAllocatedDIBs();
 #endif
 }
@@ -342,7 +342,7 @@ void RenderWidgetHelper::OnCreateFullscreenWidgetOnUI(int opener_id,
     host->CreateNewFullscreenWidget(route_id);
 }
 
-#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
 TransportDIB* RenderWidgetHelper::MapTransportDIB(TransportDIB::Id dib_id) {
   base::AutoLock locked(allocated_dibs_lock_);
 

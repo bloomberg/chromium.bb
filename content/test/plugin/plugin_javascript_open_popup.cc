@@ -7,9 +7,6 @@
 #include "build/build_config.h"
 #include "base/logging.h"
 
-#if defined(USE_X11)
-#include "third_party/npapi/bindings/npapi_x11.h"
-#endif
 #include "content/test/plugin/plugin_client.h"
 
 namespace NPAPIClient {
@@ -75,33 +72,6 @@ bool ExecuteJavascriptPopupWindowTargetPluginTest::CheckWindow(
   return false;
 }
 
-#elif defined(USE_X11)
-// This code blindly follows the same sorts of verifications done on
-// the Windows side.  Does it make sense on X?  Maybe not really, but
-// it can't hurt to do extra validations.
-bool ExecuteJavascriptPopupWindowTargetPluginTest::CheckWindow(
-    NPWindow* window) {
-  Window xwindow = reinterpret_cast<Window>(window->window);
-  // Grab a pointer to the extra SetWindow data so we can grab the display out.
-  NPSetWindowCallbackStruct* extra =
-      static_cast<NPSetWindowCallbackStruct*>(window->ws_info);
-
-  if (xwindow) {
-    Window root, parent;
-    Window* wins = NULL;
-    unsigned int num_child;
-    Status status = XQueryTree(extra->display, xwindow, &root, &parent,
-                               &wins, &num_child);
-    if (wins)
-      XFree(wins);
-    DCHECK(status != 0);
-    if (!parent || parent == root)
-      SetError("Windowed plugin instantiated with NULL parent");
-    return true;
-  }
-
-  return false;
-}
 #elif defined(OS_MACOSX)
 bool ExecuteJavascriptPopupWindowTargetPluginTest::CheckWindow(
     NPWindow* window) {

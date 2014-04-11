@@ -24,8 +24,6 @@ namespace content {
 class BrowserAccessibilityManager;
 #if defined(OS_WIN)
 class BrowserAccessibilityWin;
-#elif defined(TOOLKIT_GTK)
-class BrowserAccessibilityGtk;
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -184,8 +182,6 @@ class CONTENT_EXPORT BrowserAccessibility {
   BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa();
 #elif defined(OS_WIN)
   BrowserAccessibilityWin* ToBrowserAccessibilityWin();
-#elif defined(TOOLKIT_GTK)
-  BrowserAccessibilityGtk* ToBrowserAccessibilityGtk();
 #endif
 
   // Accessing accessibility attributes:

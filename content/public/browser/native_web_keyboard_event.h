@@ -28,7 +28,7 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
                          wchar_t character,
                          int state,
                          double time_stamp_seconds);
-#elif defined(OS_MACOSX) || defined(TOOLKIT_GTK)
+#elif defined(OS_MACOSX)
   // TODO(suzhe): Limit these constructors to Linux native Gtk port.
   // For Linux Views port, after using RenderWidgetHostViewViews to replace
   // RenderWidgetHostViewGtk, we can use constructors for TOOLKIT_VIEWS defined
@@ -67,7 +67,7 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
   // Currently, it's only used by Linux and Mac ports.
   bool skip_in_browser;
 
-#if defined(USE_AURA) || defined(TOOLKIT_GTK)
+#if defined(USE_AURA)
   // True if the key event matches an edit command. In order to ensure the edit
   // command always work in web page, the browser should not pre-handle this key
   // event as a reserved accelerator. See http://crbug.com/54573

@@ -79,10 +79,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual bool IsSpeaking() const OVERRIDE;
   virtual void StopSpeaking() OVERRIDE;
 #endif  // defined(OS_MACOSX)
-#if defined(TOOLKIT_GTK)
-  virtual GdkEventButton* GetLastMouseDown() OVERRIDE;
-  virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
-#endif  // defined(TOOLKIT_GTK)
   virtual void OnSwapCompositorFrame(
       uint32 output_surface_id,
       scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;

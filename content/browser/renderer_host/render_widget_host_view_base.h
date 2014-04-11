@@ -9,10 +9,6 @@
 #include <OpenGL/OpenGL.h>
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include <gdk/gdk.h>
-#endif
-
 #include <string>
 #include <vector>
 

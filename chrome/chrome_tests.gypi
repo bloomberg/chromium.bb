@@ -1887,11 +1887,16 @@
           ],
         }],
         ['OS!="android" and OS!="ios"', {
+          'dependencies': [
+            # build time dependency.
+            '../v8/src/d8.gyp:d8#host',
+          ],
+        }],
+        ['OS!="android" and OS!="ios" and OS!="linux"', {
           # npapi test plugin doesn't build on android or ios
           'dependencies': [
             # build time dependency.
             '../content/content_shell_and_tests.gyp:copy_npapi_test_plugin',
-            '../v8/src/d8.gyp:d8#host',
           ],
         }],
         ['enable_app_list==0', {

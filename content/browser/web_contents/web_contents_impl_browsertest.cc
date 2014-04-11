@@ -33,7 +33,7 @@ void ResizeWebContentsView(Shell* shell, const gfx::Size& size,
   // window on Linux because if we don't, the next layout of the unchanged shell
   // window will resize WebContentsView back to the previous size.
   // SizeContents is a hack and should not be relied on.
-#if defined(TOOLKIT_GTK) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   shell->SizeTo(size);
   // If |set_start_page| is true, start with blank page to make sure resize
   // takes effect.
@@ -41,7 +41,7 @@ void ResizeWebContentsView(Shell* shell, const gfx::Size& size,
     NavigateToURL(shell, GURL("about://blank"));
 #else
   shell->web_contents()->GetView()->SizeContents(size);
-#endif  // defined(TOOLKIT_GTK) || defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX)
 }
 
 class WebContentsImplBrowserTest : public ContentBrowserTest {
@@ -258,9 +258,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
 // TODO(shrikant): enable this for Windows when issue with
 // force-compositing-mode is resolved (http://crbug.com/281726).
-// For TOOLKIT_GTK failure, see http://crbug.com/351234.
 // Also crashes under ThreadSanitizer, http://crbug.com/356758.
-#if defined(OS_WIN) || defined(OS_ANDROID) || defined(TOOLKIT_GTK) \
+#if defined(OS_WIN) || defined(OS_ANDROID) \
     || defined(THREAD_SANITIZER)
 #define MAYBE_GetSizeForNewRenderView DISABLED_GetSizeForNewRenderView
 #else

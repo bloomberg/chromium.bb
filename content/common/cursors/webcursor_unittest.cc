@@ -31,13 +31,6 @@ TEST(WebCursorTest, OKCursorSerialization) {
   ok_custom_pickle.WriteUInt32(0);
   PickleIterator iter(ok_custom_pickle);
   EXPECT_TRUE(custom_cursor.Deserialize(&iter));
-
-#if defined(TOOLKIT_GTK)
-  // On GTK+ using platforms, we should get a real native GdkCursor object back
-  // (and the memory used should automatically be freed by the WebCursor object
-  // for valgrind tests).
-  EXPECT_TRUE(custom_cursor.GetCustomCursor());
-#endif
 }
 
 TEST(WebCursorTest, BrokenCursorSerialization) {
@@ -193,13 +186,6 @@ TEST(WebCursorTest, EmptyImage) {
   // cursor.
   PickleIterator iter(broken_cursor_pickle);
   ASSERT_TRUE(custom_cursor.Deserialize(&iter));
-
-#if defined(TOOLKIT_GTK)
-  // On GTK+ using platforms, we make sure that we get NULL back from this
-  // method; the relevant GDK methods take NULL as a request to use the default
-  // cursor.
-  EXPECT_EQ(NULL, custom_cursor.GetCustomCursor());
-#endif
 }
 
 TEST(WebCursorTest, Scale2) {
@@ -222,13 +208,6 @@ TEST(WebCursorTest, Scale2) {
   ok_custom_pickle.WriteUInt32(0);
   PickleIterator iter(ok_custom_pickle);
   EXPECT_TRUE(custom_cursor.Deserialize(&iter));
-
-#if defined(TOOLKIT_GTK)
-  // On GTK+ using platforms, we should get a real native GdkCursor object back
-  // (and the memory used should automatically be freed by the WebCursor object
-  // for valgrind tests).
-  EXPECT_TRUE(custom_cursor.GetCustomCursor());
-#endif
 }
 
 }  // namespace content

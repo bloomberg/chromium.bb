@@ -18,10 +18,6 @@
 #include "ui/gl/android/gl_jni_registrar.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include "ui/gfx/gtk_util.h"
-#endif
-
 int main(int argc, char** argv) {
 #if defined(OS_ANDROID)
   ui::gl::android::RegisterJni(base::android::AttachCurrentThread());
@@ -31,9 +27,6 @@ int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
-#endif
-#if defined(TOOLKIT_GTK)
-    gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
 #endif
   gfx::GLSurface::InitializeOneOff();
   ::gles2::Initialize();

@@ -578,13 +578,6 @@ void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
 #else
     accepts_input_events_ = false;
 
-#if defined(USE_X11)
-    // Tell the view delegate that the plugin window was created, so that it
-    // can create necessary container widgets.
-    render_frame_->Send(new ViewHostMsg_CreatePluginContainer(
-        render_frame_->GetRenderWidget()->routing_id(), window));
-#endif  // USE_X11
-
 #endif  // OS_MACOSX
   } else {
     DCHECK(!window_);  // Make sure not called twice.
@@ -600,13 +593,8 @@ void WebPluginImpl::SetAcceptsInputEvents(bool accepts) {
 void WebPluginImpl::WillDestroyWindow(gfx::PluginWindowHandle window) {
   DCHECK_EQ(window, window_);
   window_ = gfx::kNullPluginWindow;
-  if (render_view_.get()) {
-#if defined(USE_X11)
-    render_frame_->Send(new ViewHostMsg_DestroyPluginContainer(
-        render_frame_->GetRenderWidget()->routing_id(), window));
-#endif
+  if (render_view_.get())
     render_frame_->GetRenderWidget()->CleanupWindowInPluginMoves(window);
-  }
 }
 
 GURL WebPluginImpl::CompleteURL(const char* url) {

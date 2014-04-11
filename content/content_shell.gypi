@@ -173,7 +173,6 @@
         'shell/renderer/shell_render_process_observer.h',
         'shell/renderer/shell_render_view_observer.cc',
         'shell/renderer/shell_render_view_observer.h',
-        'shell/renderer/test_runner/key_code_mapping.cc',
         'shell/renderer/test_runner/key_code_mapping.h',
         'shell/renderer/test_runner/MockColorChooser.cpp',
         'shell/renderer/test_runner/MockColorChooser.h',
@@ -558,11 +557,11 @@
           },
           'msvs_large_pdb': 1,
         }],  # OS=="win"
-        ['OS == "win" or toolkit_uses_gtk == 1', {
+        ['OS == "win"', {
           'dependencies': [
             '../sandbox/sandbox.gyp:sandbox',
           ],
-        }],  # OS=="win" or toolkit_uses_gtk == 1
+        }],  # OS=="win"
         ['OS=="mac"', {
           'product_name': '<(content_shell_product_name)',
           'dependencies!': [

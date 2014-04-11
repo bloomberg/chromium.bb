@@ -108,7 +108,7 @@
 #include "third_party/WebKit/public/platform/win/WebSandboxSupport.h"
 #endif
 
-#if defined(TOOLKIT_GTK) || defined(USE_AURA)
+#if defined(USE_AURA)
 #include "content/renderer/webscrollbarbehavior_impl_gtkoraura.h"
 #elif !defined(OS_MACOSX)
 #include "third_party/WebKit/public/platform/WebScrollbarBehavior.h"

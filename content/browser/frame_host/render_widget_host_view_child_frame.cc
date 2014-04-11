@@ -301,16 +301,6 @@ void RenderWidgetHostViewChildFrame::ShowDisambiguationPopup(
 }
 #endif  // defined(OS_ANDROID)
 
-#if defined(TOOLKIT_GTK)
-GdkEventButton* RenderWidgetHostViewChildFrame::GetLastMouseDown() {
-  return NULL;
-}
-
-gfx::NativeView RenderWidgetHostViewChildFrame::BuildInputMethodsGtkMenu() {
-  return NULL;
-}
-#endif  // defined(TOOLKIT_GTK)
-
 BackingStore* RenderWidgetHostViewChildFrame::AllocBackingStore(
     const gfx::Size& size) {
   NOTREACHED();

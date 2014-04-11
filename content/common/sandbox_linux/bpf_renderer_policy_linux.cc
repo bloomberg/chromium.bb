@@ -18,18 +18,6 @@ using sandbox::SyscallSets;
 
 namespace content {
 
-namespace {
-
-inline bool IsUsingToolKitGtk() {
-#if defined(TOOLKIT_GTK)
-  return true;
-#else
-  return false;
-#endif
-}
-
-}  // namespace
-
 RendererProcessPolicy::RendererProcessPolicy() {}
 RendererProcessPolicy::~RendererProcessPolicy() {}
 
@@ -72,17 +60,6 @@ ErrorCode RendererProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
     case __NR_prlimit64:
       return ErrorCode(EPERM);  // See crbug.com/160157.
     default:
-      if (IsUsingToolKitGtk()) {
-#if defined(__x86_64__) || defined(__arm__)
-        if (SyscallSets::IsSystemVSharedMemory(sysno))
-          return ErrorCode(ErrorCode::ERR_ALLOWED);
-#endif
-#if defined(__i386__)
-        if (SyscallSets::IsSystemVIpc(sysno))
-          return ErrorCode(ErrorCode::ERR_ALLOWED);
-#endif
-      }
-
       // Default on the content baseline policy.
       return SandboxBPFBasePolicy::EvaluateSyscall(sandbox, sysno);
   }

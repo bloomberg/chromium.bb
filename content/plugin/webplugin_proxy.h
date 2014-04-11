@@ -23,9 +23,6 @@
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "url/gurl.h"
-#if defined(USE_X11)
-#include "ui/base/x/x11_util.h"
-#endif
 #include "ui/gl/gpu_preference.h"
 #include "ui/surface/transport_dib.h"
 
@@ -170,17 +167,6 @@ class WebPluginProxy : public WebPlugin,
       const gfx::Rect& window_rect,
       scoped_ptr<TransportDIB>* dib_out,
       base::ScopedCFTypeRef<CGContextRef>* cg_context_out);
-#elif defined(USE_X11)
-  static void CreateDIBAndCanvasFromHandle(
-      const TransportDIB::Handle& dib_handle,
-      const gfx::Rect& window_rect,
-      scoped_refptr<SharedTransportDIB>* dib_out,
-      skia::RefPtr<SkCanvas>* canvas);
-
-  static void CreateShmPixmapFromDIB(
-      TransportDIB* dib,
-      const gfx::Rect& window_rect,
-      XID* pixmap_out);
 #endif
 
   // Updates the shared memory sections where windowless plugins paint.
@@ -196,13 +182,6 @@ class WebPluginProxy : public WebPlugin,
   skia::RefPtr<SkCanvas> windowless_canvas() const {
     return windowless_canvases_[windowless_buffer_index_];
   }
-
-#if defined(USE_X11)
-  XID windowless_shm_pixmap() const {
-    return windowless_shm_pixmaps_[windowless_buffer_index_];
-  }
-#endif
-
 #endif
 
   typedef base::hash_map<int, WebPluginResourceClient*> ResourceClientMap;
@@ -230,15 +209,6 @@ class WebPluginProxy : public WebPlugin,
   scoped_ptr<WebPluginAcceleratedSurfaceProxy> accelerated_surface_;
 #else
   skia::RefPtr<SkCanvas> windowless_canvases_[2];
-
-#if defined(USE_X11)
-  scoped_refptr<SharedTransportDIB> windowless_dibs_[2];
-  // If we can use SHM pixmaps for windowless plugin painting or not.
-  bool use_shm_pixmap_;
-  // The SHM pixmaps for windowless plugin painting.
-  XID windowless_shm_pixmaps_[2];
-#endif
-
 #endif
 
   // Contains the routing id of the host render view.

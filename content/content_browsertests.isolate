@@ -34,7 +34,6 @@
           '<(PRODUCT_DIR)/libclearkeycdmadapter.so',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/plugins/libtest_netscape_plugin.so',
-          '<(PRODUCT_DIR)/plugins/libnpapi_test_plugin.so',
         ],
       },
     }],

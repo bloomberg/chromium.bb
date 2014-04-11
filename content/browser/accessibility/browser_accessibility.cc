@@ -15,10 +15,9 @@ namespace content {
 
 #if !defined(OS_MACOSX) && \
     !defined(OS_WIN) && \
-    !defined(TOOLKIT_GTK) && \
     !defined(OS_ANDROID)
-// We have subclassess of BrowserAccessibility on Mac, Linux/GTK,
-// and Win. For any other platform, instantiate the base class.
+// We have subclassess of BrowserAccessibility on Mac and Win. For any other
+// platform, instantiate the base class.
 // static
 BrowserAccessibility* BrowserAccessibility::Create() {
   return new BrowserAccessibility();

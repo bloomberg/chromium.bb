@@ -16,10 +16,9 @@ BrowserAccessibility* BrowserAccessibilityFactory::Create() {
 
 #if !defined(OS_MACOSX) && \
     !defined(OS_WIN) && \
-    !defined(TOOLKIT_GTK) && \
     !defined(OS_ANDROID) \
-// We have subclassess of BrowserAccessibilityManager on Mac, Linux/GTK,
-// and Win. For any other platform, instantiate the base class.
+// We have subclassess of BrowserAccessibilityManager on Mac, and Win. For any
+// other platform, instantiate the base class.
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXNodeData& src,

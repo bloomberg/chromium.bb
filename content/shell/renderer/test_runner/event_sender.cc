@@ -29,8 +29,6 @@
 #include "third_party/WebKit/public/web/mac/WebInputEventFactory.h"
 #elif defined(OS_ANDROID)
 #include "third_party/WebKit/public/web/android/WebInputEventFactory.h"
-#elif defined(TOOLKIT_GTK)
-#include "third_party/WebKit/public/web/gtk/WebInputEventFactory.h"
 #endif
 
 using blink::WebContextMenuData;
@@ -50,8 +48,7 @@ using blink::WebTouchPoint;
 using blink::WebVector;
 using blink::WebView;
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID) || \
-    defined(TOOLKIT_GTK)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
 using blink::WebInputEventFactory;
 #endif
 
@@ -1243,10 +1240,6 @@ void EventSender::KeyDown(const std::string& code_str,
   event_down.modifiers = modifiers;
   event_down.windowsKeyCode = code;
 
-#if defined(OS_LINUX) && defined(TOOLKIT_GTK)
-  event_down.nativeKeyCode = NativeKeyCodeForWindowsKeyCode(code);
-#endif
-
   if (generate_char) {
     event_down.text[0] = text;
     event_down.unmodifiedText[0] = text;
@@ -1254,8 +1247,7 @@ void EventSender::KeyDown(const std::string& code_str,
 
   event_down.setKeyIdentifierFromWindowsKeyCode();
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID) || \
-    defined(TOOLKIT_GTK)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
   if (event_down.modifiers != 0)
     event_down.isSystemKey = WebInputEventFactory::isSystemKeyEvent(event_down);
 #endif

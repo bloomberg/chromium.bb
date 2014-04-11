@@ -4,10 +4,6 @@
 
 #include "content/renderer/npapi/webplugin_delegate_proxy.h"
 
-#if defined(USE_X11)
-#include <cairo/cairo.h>
-#endif
-
 #include <algorithm>
 
 #include "base/auto_reset.h"
@@ -652,7 +648,7 @@ bool WebPluginDelegateProxy::CreateSharedBitmap(
   if (!memory->get())
     return false;
 #endif
-#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
   TransportDIB::Handle handle;
   IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(size, false, &handle);
   if (!RenderThreadImpl::current()->Send(msg))

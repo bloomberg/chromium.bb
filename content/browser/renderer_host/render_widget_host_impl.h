@@ -137,10 +137,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void LockBackingStore() OVERRIDE;
   virtual void UnlockBackingStore() OVERRIDE;
 #endif
-#if defined(TOOLKIT_GTK)
-  virtual bool CopyFromBackingStoreToGtkWindow(const gfx::Rect& dest_rect,
-                                               GdkWindow* target) OVERRIDE;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   virtual gfx::Size GetBackingStoreSize() OVERRIDE;
   virtual bool CopyFromBackingStoreToCGContext(const CGRect& dest_rect,
                                                CGContextRef target) OVERRIDE;

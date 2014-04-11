@@ -742,18 +742,6 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       rv = NPERR_NO_ERROR;
       break;
     }
-  #if defined(TOOLKIT_GTK)
-    case NPNVToolkit:
-      // Tell them we are GTK2.  (The alternative is GTK 1.2.)
-      *reinterpret_cast<int*>(value) = NPNVGtk2;
-      rv = NPERR_NO_ERROR;
-      break;
-
-    case NPNVSupportsXEmbedBool:
-      *reinterpret_cast<NPBool*>(value) = true;
-      rv = NPERR_NO_ERROR;
-      break;
-  #endif
     case NPNVSupportsWindowless: {
       NPBool* supports_windowless = reinterpret_cast<NPBool*>(value);
       *supports_windowless = true;

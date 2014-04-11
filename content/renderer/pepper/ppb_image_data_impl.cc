@@ -29,7 +29,7 @@ namespace {
 // Returns true if the ImageData shared memory should be allocated in the
 // browser process for the current platform.
 bool IsBrowserAllocated() {
-#if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
   // On the Mac, shared memory has to be created in the browser in order to
   // work in the sandbox.
   return true;
@@ -243,8 +243,6 @@ int32_t ImageDataPlatformBackend::GetSharedMemory(int* handle,
   *byte_count = dib_->size();
 #if defined(OS_WIN)
   *handle = reinterpret_cast<intptr_t>(dib_->handle());
-#elif defined(TOOLKIT_GTK)
-  *handle = static_cast<intptr_t>(dib_->handle());
 #else
   *handle = static_cast<intptr_t>(dib_->handle().fd);
 #endif

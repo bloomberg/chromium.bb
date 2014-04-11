@@ -331,9 +331,10 @@ IN_PROC_BROWSER_TEST_F(PluginTest,
 
 // If this flakes, reopen http://crbug.com/17645
 // As of 6 July 2011, this test is flaky on Windows (perhaps due to timing out).
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_LINUX)
 // Disabled on Mac because the plugin side isn't implemented yet, see
 // "TODO(port)" in plugin_javascript_open_popup.cc.
+// Disabled on Linux because we don't support NPAPI any more.
 IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(OpenPopupWindowWithPlugin)) {
   LoadAndWait(GetURL("get_javascript_open_popup_with_plugin.html"));
 }

@@ -16,9 +16,7 @@
 #include "ui/gfx/size.h"
 #include "ui/surface/transport_dib.h"
 
-#if defined(TOOLKIT_GTK)
-#include "ui/base/x/x11_util.h"
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #include "skia/ext/platform_device.h"
 #endif
 
@@ -193,11 +191,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   virtual void LockBackingStore() = 0;
   virtual void UnlockBackingStore() = 0;
 #endif
-#if defined(TOOLKIT_GTK)
-  // Paint the backing store into the target's |dest_rect|.
-  virtual bool CopyFromBackingStoreToGtkWindow(const gfx::Rect& dest_rect,
-                                               GdkWindow* target) = 0;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   virtual gfx::Size GetBackingStoreSize() = 0;
   virtual bool CopyFromBackingStoreToCGContext(const CGRect& dest_rect,
                                                CGContextRef target) = 0;

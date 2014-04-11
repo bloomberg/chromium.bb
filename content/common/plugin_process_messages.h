@@ -61,16 +61,6 @@ IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginWindowDestroyed,
                      HWND /* parent */)
 #endif
 
-#if defined(USE_X11)
-// On X11, the mapping between NativeViewId and X window ids
-// is known only to the browser.  This message lets the plugin process
-// ask about a NativeViewId that was provided by the renderer.
-// It will get 0 back if it's a bogus input.
-IPC_SYNC_MESSAGE_CONTROL1_1(PluginProcessHostMsg_MapNativeViewId,
-                           gfx::NativeViewId /* input: native view id */,
-                           gfx::PluginWindowHandle /* output: X window id */)
-#endif
-
 #if defined(OS_MACOSX)
 // On Mac OS X, we need the browser to keep track of plugin windows so
 // that it can add and remove them from stacking groups, hide and show the

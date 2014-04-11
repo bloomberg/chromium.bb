@@ -51,7 +51,7 @@
       # See comments about "xcode_settings" elsewhere in this file.
       'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
     }],
-    ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
+    ['chromeos==1 or (OS=="linux" and use_aura==1)', {
       'dependencies': [
         '<(src_dir)/build/linux/system.gyp:ssl',
       ],

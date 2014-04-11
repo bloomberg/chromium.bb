@@ -91,8 +91,6 @@ void WebUIImpl::RenderViewCreated(RenderViewHost* render_view_host) {
 
 #if defined(TOOLKIT_VIEWS)
   render_view_host->SetWebUIProperty("toolkit", "views");
-#elif defined(TOOLKIT_GTK)
-  render_view_host->SetWebUIProperty("toolkit", "GTK");
 #endif  // defined(TOOLKIT_VIEWS)
 }
 

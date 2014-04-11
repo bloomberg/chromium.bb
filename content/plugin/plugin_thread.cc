@@ -29,10 +29,6 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "ipc/ipc_channel_handle.h"
 
-#if defined(USE_X11)
-#include "ui/base/x/x11_util.h"
-#endif
-
 namespace content {
 
 namespace {

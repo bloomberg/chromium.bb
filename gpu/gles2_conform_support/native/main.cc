@@ -10,10 +10,6 @@
 #endif
 #include "ui/gl/gl_surface.h"
 
-#if defined(TOOLKIT_GTK)
-#include "ui/gfx/gtk_util.h"
-#endif
-
 extern "C" {
 #if defined(GLES2_CONFORM_SUPPORT_ONLY)
 #include "gpu/gles2_conform_support/gtf/gtf_stubs.h"
@@ -30,10 +26,6 @@ int main(int argc, char *argv[]) {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
-#if defined(TOOLKIT_GTK)
-  gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
-#endif
-
   GTFMain(argc, argv);
 
   return 0;

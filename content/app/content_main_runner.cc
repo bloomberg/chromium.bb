@@ -106,7 +106,9 @@ int tc_set_new_mode(int mode);
 namespace content {
 extern int GpuMain(const content::MainFunctionParams&);
 #if defined(ENABLE_PLUGINS)
+#if !defined(OS_LINUX)
 extern int PluginMain(const content::MainFunctionParams&);
+#endif
 extern int PpapiPluginMain(const MainFunctionParams&);
 extern int PpapiBrokerMain(const MainFunctionParams&);
 #endif
@@ -433,7 +435,9 @@ int RunNamedProcessTypeMain(
 #endif
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
 #if defined(ENABLE_PLUGINS)
+#if !defined(OS_LINUX)
     { switches::kPluginProcess,      PluginMain },
+#endif
     { switches::kWorkerProcess,      WorkerMain },
     { switches::kPpapiPluginProcess, PpapiPluginMain },
     { switches::kPpapiBrokerProcess, PpapiBrokerMain },

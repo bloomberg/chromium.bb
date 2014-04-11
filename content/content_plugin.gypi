@@ -4,7 +4,7 @@
 
 {
   'conditions': [
-    ['enable_plugins==1', {
+    ['enable_plugins==1 and OS!="linux"', {
       'dependencies': [
         '../skia/skia.gyp:skia',
         '../third_party/WebKit/public/blink.gyp:blink',
@@ -21,7 +21,6 @@
         'plugin/plugin_interpose_util_mac.mm',
         'plugin/plugin_interpose_util_mac.h',
         'plugin/plugin_main.cc',
-        'plugin/plugin_main_linux.cc',
         'plugin/plugin_main_mac.mm',
         'plugin/plugin_thread.cc',
         'plugin/plugin_thread.h',
@@ -36,19 +35,9 @@
       # These are layered in conditionals in the event other platforms
       # end up using this module as well.
       'conditions': [
-        ['os_bsd==1', {
-          'sources/': [
-            ['exclude', '^plugin/plugin_main_linux\\.cc$'],
-          ],
-        }],
         ['OS=="win"', {
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
-          ],
-        }],
-        ['use_x11 == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:xext',
           ],
         }],
       ],

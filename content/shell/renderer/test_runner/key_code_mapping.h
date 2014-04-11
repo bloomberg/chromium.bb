@@ -34,9 +34,6 @@ enum {
     VKEY_RMENU    = 0xA5,
 };
 
-// Map a windows keycode to a native keycode on defined(__linux__) && defined(TOOLKIT_GTK).
-int NativeKeyCodeForWindowsKeyCode(int keysym);
-
 }  // namespace content
 
 #endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_KEY_CODE_MAPPING_H_

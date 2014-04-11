@@ -745,12 +745,9 @@ void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {
   childs_lifeline_fd_ = pipefds[1];
 
   // We need to be monothreaded before we fork().
-#if !defined(TOOLKIT_GTK) && !defined(THREAD_SANITIZER)
-  // Exclude gtk port as TestSuite in base/tests/test_suite.cc is calling
-  // gtk_init.
-  // TODO(oshima): Remove ifdef when above issues are resolved.
+#if !defined(THREAD_SANITIZER)
   DCHECK_EQ(1, base::GetNumberOfThreads(base::GetCurrentProcessHandle()));
-#endif  // !defined(TOOLKIT_GTK) && !defined(THREAD_SANITIZER)
+#endif  // !defined(THREAD_SANITIZER)
   pid_ = fork();
   if (pid_ == 0) {
     if (IGNORE_EINTR(close(fds[0])) < 0)

@@ -88,11 +88,6 @@ bool SwappedOutMessages::CanHandleWhileSwappedOut(
     case ViewHostMsg_RequestMove::ID:
     // Sends an ACK.
     case AccessibilityHostMsg_Events::ID:
-#if defined(USE_X11)
-    // Synchronous message when leaving a page with plugin.  In this case,
-    // we want to destroy the plugin rather than return an error message.
-    case ViewHostMsg_DestroyPluginContainer::ID:
-#endif
       return true;
     default:
       break;

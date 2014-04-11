@@ -180,16 +180,6 @@ gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {
   return gfx::Rect();
 }
 
-#if defined(TOOLKIT_GTK)
-GdkEventButton* TestRenderWidgetHostView::GetLastMouseDown() {
-  return NULL;
-}
-
-gfx::NativeView TestRenderWidgetHostView::BuildInputMethodsGtkMenu() {
-  return NULL;
-}
-#endif  // defined(TOOLKIT_GTK)
-
 void TestRenderWidgetHostView::OnSwapCompositorFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {

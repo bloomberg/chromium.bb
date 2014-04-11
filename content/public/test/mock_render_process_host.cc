@@ -151,8 +151,6 @@ TransportDIB* MockRenderProcessHost::MapTransportDIB(TransportDIB::Id dib_id) {
                        &duped, 0, TRUE, DUPLICATE_SAME_ACCESS))
     duped = NULL;
   return TransportDIB::Map(duped);
-#elif defined(TOOLKIT_GTK)
-  return TransportDIB::Map(dib_id.shmkey);
 #elif defined(OS_ANDROID)
   // On Android, Handles and Ids are the same underlying type.
   return TransportDIB::Map(dib_id);

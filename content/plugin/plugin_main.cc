@@ -38,9 +38,6 @@ void TrimInterposeEnvironment();
 
 // Initializes the global Cocoa application object.
 void InitializeChromeApplication();
-#elif defined(OS_LINUX)
-// Work around an unimplemented instruction in 64-bit Flash.
-void WorkaroundFlashLAHF();
 #endif
 
 // main() routine for running as the plugin process.
@@ -60,13 +57,7 @@ int PluginMain(const MainFunctionParams& parameters) {
 
   const CommandLine& parsed_command_line = parameters.command_line;
 
-#if defined(OS_LINUX)
-
-#if defined(ARCH_CPU_64_BITS)
-  WorkaroundFlashLAHF();
-#endif
-
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   base::win::ScopedCOMInitializer com_initializer;
 #endif
 

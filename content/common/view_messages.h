@@ -1467,20 +1467,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_RequestPpapiBrokerPermission,
                     GURL /* document_url */,
                     base::FilePath /* plugin_path */)
 
-#if defined(USE_X11)
-// A renderer sends this when it needs a browser-side widget for
-// hosting a windowed plugin. id is the XID of the plugin window, for which
-// the container is created.
-IPC_SYNC_MESSAGE_ROUTED1_0(ViewHostMsg_CreatePluginContainer,
-                           gfx::PluginWindowHandle /* id */)
-
-// Destroy a plugin container previously created using CreatePluginContainer.
-// id is the XID of the plugin window corresponding to the container that is
-// to be destroyed.
-IPC_SYNC_MESSAGE_ROUTED1_0(ViewHostMsg_DestroyPluginContainer,
-                           gfx::PluginWindowHandle /* id */)
-#endif
-
 // Send the tooltip text for the current mouse position to the browser.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,
                     base::string16 /* tooltip text string */,

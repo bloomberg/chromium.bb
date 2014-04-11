@@ -259,7 +259,7 @@
             '../third_party/WebKit/public/blink.gyp:blink',
           ],
         }],
-        ['OS == "win" or toolkit_uses_gtk == 1', {
+        ['OS == "win"', {
           'dependencies': [
             '../sandbox/sandbox.gyp:sandbox',
           ],
@@ -1210,7 +1210,7 @@
                 ['exclude', '^browser/compositor/'],
               ],
             }],
-            ['OS!="android" and OS!="ios"', {
+            ['OS!="android" and OS!="ios" and OS!="linux"', {
               # npapi test plugin doesn't build on android or ios
               'dependencies': [
                 # Runtime dependencies
@@ -1651,7 +1651,7 @@
         },
       ],
     }],
-    ['OS!="android" and OS!="ios"', {
+    ['OS!="android" and OS!="ios" and OS!="linux"', {
       # npapi test plugin doesn't build on android or ios
       'targets': [
         {

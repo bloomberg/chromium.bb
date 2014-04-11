@@ -13,7 +13,7 @@ bool WebScrollbarBehaviorImpl::shouldCenterOnThumb(
       blink::WebScrollbarBehavior::Button mouseButton,
       bool shiftKeyPressed,
       bool altKeyPressed) {
-#if defined(TOOLKIT_GTK) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (mouseButton == blink::WebScrollbarBehavior::ButtonMiddle)
     return true;
 #endif
@@ -25,10 +25,6 @@ bool WebScrollbarBehaviorImpl::shouldSnapBackToDragOrigin(
     const blink::WebPoint& eventPoint,
     const blink::WebRect& scrollbarRect,
     bool isHorizontal) {
-#if defined(TOOLKIT_GTK)
-  return false;
-#endif
-
   // Constants used to figure the drag rect outside which we should snap the
   // scrollbar thumb back to its origin. These calculations are based on
   // observing the behavior of the MSVC8 main window scrollbar + some
