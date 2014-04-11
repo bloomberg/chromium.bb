@@ -9,8 +9,13 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "net/url_request/url_request_test_util.h"
+
+#if defined(OS_IOS)
+#include "ios/public/test/fake_profile_oauth2_token_service_ios_provider.h"
+#endif
 
 // An implementation of SigninClient for use in unittests. Instantiates test
 // versions of the various objects that SigninClient is required to provide as
@@ -50,6 +55,10 @@ class TestSigninClient : public SigninClient {
   virtual void SetCookieChangedCallback(const CookieChangedCallback& callback)
       OVERRIDE;
 
+#if defined(OS_IOS)
+  ios::FakeProfileOAuth2TokenServiceIOSProvider* GetIOSProviderAsFake();
+#endif
+
  private:
   // Loads the token database.
   void LoadDatabase();
@@ -57,6 +66,10 @@ class TestSigninClient : public SigninClient {
   base::ScopedTempDir temp_dir_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   scoped_refptr<TokenWebData> database_;
+
+#if defined(OS_IOS)
+  scoped_ptr<ios::FakeProfileOAuth2TokenServiceIOSProvider> iosProvider_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestSigninClient);
 };

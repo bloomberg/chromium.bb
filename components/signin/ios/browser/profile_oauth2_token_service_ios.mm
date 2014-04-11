@@ -453,6 +453,7 @@ void ProfileOAuth2TokenServiceIOS::AddOrUpdateAccount(
     const std::string& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!account_id.empty());
+  DCHECK(!use_legacy_token_service_);
 
   bool account_present = accounts_.count(account_id) > 0;
   if (account_present && accounts_[account_id]->GetAuthStatus().state() ==
@@ -476,6 +477,7 @@ void ProfileOAuth2TokenServiceIOS::RemoveAccount(
     const std::string& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!account_id.empty());
+  DCHECK(!use_legacy_token_service_);
 
   if (accounts_.count(account_id) > 0) {
     CancelRequestsForAccount(account_id);

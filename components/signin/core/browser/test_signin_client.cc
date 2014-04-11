@@ -9,6 +9,10 @@
 #include "components/webdata/common/web_database_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_IOS)
+#include "ios/public/test/fake_profile_oauth2_token_service_ios_provider.h"
+#endif
+
 TestSigninClient::TestSigninClient()
     : request_context_(new net::TestURLRequestContextGetter(
           base::MessageLoopProxy::current())) {
@@ -56,8 +60,14 @@ void TestSigninClient::SetCookieChangedCallback(
 
 #if defined(OS_IOS)
 ios::ProfileOAuth2TokenServiceIOSProvider* TestSigninClient::GetIOSProvider() {
-  // Just returns NULL for now. It should be changed to return an
-  // |ios::FakeProfileOAuth2TokenServiceIOSProvider|.
-  return NULL;
+  return GetIOSProviderAsFake();
+}
+
+ios::FakeProfileOAuth2TokenServiceIOSProvider*
+TestSigninClient::GetIOSProviderAsFake() {
+  if (!iosProvider_) {
+    iosProvider_.reset(new ios::FakeProfileOAuth2TokenServiceIOSProvider());
+  }
+  return iosProvider_.get();
 }
 #endif

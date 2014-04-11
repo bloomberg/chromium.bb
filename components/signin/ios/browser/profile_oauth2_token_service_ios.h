@@ -16,14 +16,17 @@ namespace ios{
 class ProfileOAuth2TokenServiceIOSProvider;
 }
 
-// A specialization of ProfileOAuth2TokenService for OS_IOS. It fetches access
-// tokens from the SSOAuth library if the user is signed in using shared
-// authentication or defaults to the parent class
-// |MutableProfileOAuth2TokenService| for pre-SSO signed in users.
+// A specialization of ProfileOAuth2TokenService that will be returned by
+// ProfileOAuth2TokenServiceFactory for OS_IOS when iOS authentication service
+// is used to lookup OAuth2 tokens.
 //
 // See |ProfileOAuth2TokenService| for usage details.
+//
+// Note: Requests should be started from the UI thread. To start a
+// request from aother thread, please use ProfileOAuth2TokenServiceRequest.
 class ProfileOAuth2TokenServiceIOS : public MutableProfileOAuth2TokenService {
  public:
+  ProfileOAuth2TokenServiceIOS();
   virtual ~ProfileOAuth2TokenServiceIOS();
 
   // KeyedService
@@ -84,10 +87,6 @@ class ProfileOAuth2TokenServiceIOS : public MutableProfileOAuth2TokenService {
   void ForceInvalidGrantResponses();
 
  protected:
-  friend class ProfileOAuth2TokenServiceFactory;
-
-  ProfileOAuth2TokenServiceIOS();
-
   virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,

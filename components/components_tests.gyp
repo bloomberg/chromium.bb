@@ -115,6 +115,7 @@
             'signin/core/browser/mutable_profile_oauth2_token_service_unittest.cc',
             'signin/core/browser/signin_error_controller_unittest.cc',
             'signin/core/browser/webdata/token_service_table_unittest.cc',
+            'signin/ios/browser/profile_oauth2_token_service_ios_unittest.mm',
             'storage_monitor/image_capture_device_manager_unittest.mm',
             'storage_monitor/media_storage_util_unittest.cc',
             'storage_monitor/media_transfer_protocol_device_observer_linux_unittest.cc',
@@ -297,6 +298,11 @@
                 ['include', '^sync_driver/'],
                 ['include', '^translate/'],
                 ['include', '^variations/'],
+              ],
+              'dependencies': [
+                # Dependencies of signin
+                'components.gyp:signin_ios_browser',
+                '../ios/ios_tests.gyp:test_support_ios',
               ],
               'actions': [
                 {

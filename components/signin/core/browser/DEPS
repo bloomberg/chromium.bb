@@ -1,0 +1,6 @@
+specific_include_rules = {
+  # Needed for test wire-up on iOS.
+  '.*test.*': [
+    "+ios/public/test/fake_profile_oauth2_token_service_ios_provider.h",
+  ],
+}
