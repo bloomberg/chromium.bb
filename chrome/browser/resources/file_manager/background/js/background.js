@@ -434,10 +434,12 @@ AppWindowWrapper.prototype.onClosed_ = function() {
  * @private
  */
 AppWindowWrapper.prototype.onBoundsChanged_ = function() {
-  var preferences = {};
-  preferences[Background.makeGeometryKey(this.url_)] =
-      this.window_.getBounds();
-  chrome.storage.local.set(preferences);
+  if (!this.window_.isMaximized()) {
+    var preferences = {};
+    preferences[Background.makeGeometryKey(this.url_)] =
+        this.window_.getBounds();
+    chrome.storage.local.set(preferences);
+  }
 };
 
 /**
