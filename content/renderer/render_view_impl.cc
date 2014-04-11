@@ -1624,8 +1624,11 @@ void RenderViewImpl::FrameDidStopLoading(WebFrame* frame) {
     load_progress_tracker_->DidStopLoading(
         RenderFrameImpl::FromWebFrame(frame)->GetRoutingID());
   }
+  // TODO(japhet): This should be a DCHECK, but the pdf plugin sometimes
+  // calls DidStopLoading() without a matching DidStartLoading().
+  if (frames_in_progress_ == 0)
+    return;
   frames_in_progress_--;
-  DCHECK_GE(frames_in_progress_, 0);
   if (frames_in_progress_ == 0) {
     DidStopLoadingIcons();
     FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStopLoading());

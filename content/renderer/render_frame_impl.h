@@ -473,7 +473,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   base::WeakPtr<RenderViewImpl> render_view_;
   int routing_id_;
-  bool is_loading_;
   bool is_swapped_out_;
   bool is_detaching_;
 

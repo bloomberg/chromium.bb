@@ -313,7 +313,6 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
     : frame_(NULL),
       render_view_(render_view->AsWeakPtr()),
       routing_id_(routing_id),
-      is_loading_(false),
       is_swapped_out_(false),
       is_detaching_(false),
       cookie_jar_(this),
@@ -2835,29 +2834,15 @@ WebElement RenderFrameImpl::GetFocusedElement() {
 }
 
 void RenderFrameImpl::didStartLoading(bool to_different_document) {
-  if (is_loading_) {
-    DVLOG(1) << "didStartLoading called while loading";
-    return;
-  }
-
-  is_loading_ = true;
-
   bool view_was_loading = render_view_->is_loading();
   render_view_->FrameDidStartLoading(frame_);
-
   if (!view_was_loading)
     Send(new FrameHostMsg_DidStartLoading(routing_id_, to_different_document));
 }
 
 void RenderFrameImpl::didStopLoading() {
-  if (!is_loading_) {
-    DVLOG(1) << "DidStopLoading called while not loading";
+  if (!render_view_->is_loading())
     return;
-  }
-
-  DCHECK(render_view_->is_loading());
-  is_loading_ = false;
-
   render_view_->FrameDidStopLoading(frame_);
 
   // NOTE: For now we're doing the safest thing, and sending out notification
@@ -2865,7 +2850,6 @@ void RenderFrameImpl::didStopLoading() {
   // displayed when done loading. Ideally we would send notification when
   // finished parsing the head, but webkit doesn't support that yet.
   // The feed discovery code would also benefit from access to the head.
-  // NOTE: Sending of the IPC message happens through the top-level frame.
   if (!render_view_->is_loading())
     Send(new FrameHostMsg_DidStopLoading(routing_id_));
 }
