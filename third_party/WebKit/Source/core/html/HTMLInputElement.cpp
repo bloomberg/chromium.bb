@@ -337,7 +337,7 @@ bool HTMLInputElement::shouldShowFocusRingOnMouseFocus() const
 void HTMLInputElement::updateFocusAppearance(bool restorePreviousSelection)
 {
     if (isTextField()) {
-        if (!restorePreviousSelection || !hasCachedSelection())
+        if (!restorePreviousSelection)
             select();
         else
             restoreCachedSelection();

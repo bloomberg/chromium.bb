@@ -53,8 +53,8 @@ using namespace std;
 HTMLTextFormControlElement::HTMLTextFormControlElement(const QualifiedName& tagName, Document& doc, HTMLFormElement* form)
     : HTMLFormControlElementWithState(tagName, doc, form)
     , m_lastChangeWasUserEdit(false)
-    , m_cachedSelectionStart(-1)
-    , m_cachedSelectionEnd(-1)
+    , m_cachedSelectionStart(0)
+    , m_cachedSelectionEnd(0)
     , m_cachedSelectionDirection(SelectionHasNoDirection)
 {
 }
@@ -335,7 +335,7 @@ int HTMLTextFormControlElement::selectionStart() const
 {
     if (!isTextFormControl())
         return 0;
-    if (document().focusedElement() != this && hasCachedSelection())
+    if (document().focusedElement() != this)
         return m_cachedSelectionStart;
 
     return computeSelectionStart();
@@ -355,7 +355,7 @@ int HTMLTextFormControlElement::selectionEnd() const
 {
     if (!isTextFormControl())
         return 0;
-    if (document().focusedElement() != this && hasCachedSelection())
+    if (document().focusedElement() != this)
         return m_cachedSelectionEnd;
     return computeSelectionEnd();
 }
@@ -393,7 +393,7 @@ const AtomicString& HTMLTextFormControlElement::selectionDirection() const
 {
     if (!isTextFormControl())
         return directionString(SelectionHasNoDirection);
-    if (document().focusedElement() != this && hasCachedSelection())
+    if (document().focusedElement() != this)
         return directionString(m_cachedSelectionDirection);
 
     return directionString(computeSelectionDirection());
@@ -423,7 +423,7 @@ static inline void setContainerAndOffsetForRange(Node* node, int offset, Node*& 
 
 PassRefPtrWillBeRawPtr<Range> HTMLTextFormControlElement::selection() const
 {
-    if (!renderer() || !isTextFormControl() || !hasCachedSelection())
+    if (!renderer() || !isTextFormControl())
         return nullptr;
 
     int start = m_cachedSelectionStart;

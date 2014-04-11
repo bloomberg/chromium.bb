@@ -95,13 +95,13 @@ protected:
 
     void cacheSelection(int start, int end, TextFieldSelectionDirection direction)
     {
+        ASSERT(start >= 0);
         m_cachedSelectionStart = start;
         m_cachedSelectionEnd = end;
         m_cachedSelectionDirection = direction;
     }
 
     void restoreCachedSelection();
-    bool hasCachedSelection() const { return m_cachedSelectionStart >= 0; }
 
     virtual void defaultEventHandler(Event*) OVERRIDE;
     virtual void subtreeHasChanged() = 0;

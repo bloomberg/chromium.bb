@@ -25,7 +25,7 @@ function log(message) {
 
 function runTest() {
     var textToDrag = document.getElementById("grabme");
-    textToDrag.focus();
+    textToDrag.select();
 
     if (!window.testRunner)
         return;
