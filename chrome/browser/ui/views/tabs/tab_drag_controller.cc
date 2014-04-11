@@ -44,6 +44,7 @@
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_modality_controller.h"
 
 #if defined(USE_ASH)
 #include "ash/accelerators/accelerator_commands.h"
@@ -925,9 +926,14 @@ TabStrip* TabDragController::GetTargetTabStripForPoint(
   }
   gfx::NativeWindow local_window =
       GetLocalProcessWindow(point_in_screen, is_dragging_window_);
-  TabStrip* tab_strip = GetTabStripForWindow(local_window);
-  if (tab_strip && DoesTabStripContain(tab_strip, point_in_screen))
-    return tab_strip;
+  // Do not allow dragging into a window with a modal dialog, it causes a weird
+  // behavior.  See crbug.com/336691
+  if (!wm::GetModalTransient(local_window)) {
+    TabStrip* tab_strip = GetTabStripForWindow(local_window);
+    if (tab_strip && DoesTabStripContain(tab_strip, point_in_screen))
+      return tab_strip;
+  }
+
   return is_dragging_window_ ? attached_tabstrip_ : NULL;
 }
 
