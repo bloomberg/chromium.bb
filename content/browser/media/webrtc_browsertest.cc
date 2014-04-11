@@ -120,11 +120,25 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
 #define MAYBE_CanForwardRemoteStream720p CanForwardRemoteStream720p
 #endif
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CanForwardRemoteStream) {
+#if defined (OS_ANDROID)
+  // This test fails on Nexus 5 devices.
+  // TODO: see http://crbug.com/362437 and http://crbug.com/359389
+  // for details.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableWebRtcHWDecoding);
+#endif
   MakeTypicalPeerConnectionCall(
       "callAndForwardRemoteStream({video: true, audio: false});");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CanForwardRemoteStream720p) {
+#if defined (OS_ANDROID)
+  // This test fails on Nexus 5 devices.
+  // TODO: see http://crbug.com/362437 and http://crbug.com/359389
+  // for details.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableWebRtcHWDecoding);
+#endif
   const std::string javascript = GenerateGetUserMediaCall(
       "callAndForwardRemoteStream", 1280, 1280, 720, 720, 10, 30);
   MakeTypicalPeerConnectionCall(javascript);
