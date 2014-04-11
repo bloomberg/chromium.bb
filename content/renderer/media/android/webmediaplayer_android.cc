@@ -677,7 +677,7 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
     needs_external_surface_ = true;
     if (!paused() && !manager_->IsInFullscreen(frame_))
       manager_->RequestExternalSurface(player_id_, last_computed_rect_);
-  } else if (stream_texture_factory_ && !stream_id_) {
+  } else if (stream_texture_proxy_ && !stream_id_) {
     // Do deferred stream texture creation finally.
     DoCreateStreamTexture();
     if (paused()) {
