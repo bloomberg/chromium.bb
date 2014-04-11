@@ -114,19 +114,13 @@ public class TracingControllerAndroid {
     }
 
     /**
-     * Start profiling to a new file in the Downloads directory.
-     *
-     * Calls #startTracing(String, boolean, String, boolean) with a new timestamped filename.
-     * @see #startTracing(String, boolean, String, boolean)
+     * Generates a unique filename to be used for tracing in the Downloads directory.
      */
-    public boolean startTracing(boolean showToasts, String categories,
-            boolean recordContinuously) {
-        mShowToasts = showToasts;
+    @CalledByNative
+    private static String generateTracingFilePath() {
         String state = Environment.getExternalStorageState();
         if (!Environment.MEDIA_MOUNTED.equals(state)) {
-            logAndToastError(
-                    mContext.getString(R.string.profiler_no_storage_toast));
-            return false;
+            return null;
         }
 
         // Generate a hopefully-unique filename using the UTC timestamp.
@@ -138,8 +132,25 @@ public class TracingControllerAndroid {
                 Environment.DIRECTORY_DOWNLOADS);
         File file = new File(
                 dir, "chrome-profile-results-" + formatter.format(new Date()));
+        return file.getPath();
+    }
 
-        return startTracing(file.getPath(), showToasts, categories, recordContinuously);
+    /**
+     * Start profiling to a new file in the Downloads directory.
+     *
+     * Calls #startTracing(String, boolean, String, boolean) with a new timestamped filename.
+     * @see #startTracing(String, boolean, String, boolean)
+     */
+    public boolean startTracing(boolean showToasts, String categories,
+            boolean recordContinuously) {
+        mShowToasts = showToasts;
+
+        String filePath = generateTracingFilePath();
+        if (filePath == null) {
+          logAndToastError(
+              mContext.getString(R.string.profiler_no_storage_toast));
+        }
+        return startTracing(filePath, showToasts, categories, recordContinuously);
     }
 
     /**
@@ -170,7 +181,7 @@ public class TracingControllerAndroid {
         if (mNativeTracingControllerAndroid == 0) {
             mNativeTracingControllerAndroid = nativeInit();
         }
-        if (!nativeStartTracing(mNativeTracingControllerAndroid, filename, categories,
+        if (!nativeStartTracing(mNativeTracingControllerAndroid, categories,
                 recordContinuously)) {
             logAndToastError(mContext.getString(R.string.profiler_error_toast));
             return false;
@@ -188,7 +199,7 @@ public class TracingControllerAndroid {
      */
     public void stopTracing() {
         if (isTracing()) {
-            nativeStopTracing(mNativeTracingControllerAndroid);
+            nativeStopTracing(mNativeTracingControllerAndroid, mFilename);
         }
     }
 
@@ -265,8 +276,8 @@ public class TracingControllerAndroid {
     private long mNativeTracingControllerAndroid;
     private native long nativeInit();
     private native void nativeDestroy(long nativeTracingControllerAndroid);
-    private native boolean nativeStartTracing(long nativeTracingControllerAndroid, String filename,
-            String categories, boolean recordContinuously);
-    private native void nativeStopTracing(long nativeTracingControllerAndroid);
+    private native boolean nativeStartTracing(
+            long nativeTracingControllerAndroid, String categories, boolean recordContinuously);
+    private native void nativeStopTracing(long nativeTracingControllerAndroid, String filename);
     private native String nativeGetDefaultCategories();
 }

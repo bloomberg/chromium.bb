@@ -19,17 +19,16 @@ class TracingControllerAndroid {
 
   bool StartTracing(JNIEnv* env,
                     jobject obj,
-                    jstring filename,
                     jstring categories,
                     jboolean record_continuously);
-  void StopTracing(JNIEnv* env, jobject obj);
+  void StopTracing(JNIEnv* env, jobject obj, jstring jfilepath);
+  static void GenerateTracingFilePath(base::FilePath* file_path);
 
  private:
   ~TracingControllerAndroid();
   void OnTracingStopped(const base::FilePath& file_path);
 
   JavaObjectWeakGlobalRef weak_java_object_;
-  base::FilePath file_path_;
   base::WeakPtrFactory<TracingControllerAndroid> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingControllerAndroid);

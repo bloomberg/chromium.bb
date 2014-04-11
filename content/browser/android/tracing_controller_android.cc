@@ -30,16 +30,13 @@ void TracingControllerAndroid::Destroy(JNIEnv* env, jobject obj) {
 
 bool TracingControllerAndroid::StartTracing(JNIEnv* env,
                                             jobject obj,
-                                            jstring jfilename,
                                             jstring jcategories,
                                             jboolean record_continuously) {
-  file_path_ = base::FilePath(
-      base::android::ConvertJavaStringToUTF8(env, jfilename));
   std::string categories =
       base::android::ConvertJavaStringToUTF8(env, jcategories);
 
   // This log is required by adb_profile_chrome.py.
-  LOG(WARNING) << "Logging performance trace to file: " << file_path_.value();
+  LOG(WARNING) << "Logging performance trace to file";
 
   return TracingController::GetInstance()->EnableRecording(
       categories,
@@ -48,14 +45,27 @@ bool TracingControllerAndroid::StartTracing(JNIEnv* env,
       TracingController::EnableRecordingDoneCallback());
 }
 
-void TracingControllerAndroid::StopTracing(JNIEnv* env, jobject obj) {
+void TracingControllerAndroid::StopTracing(JNIEnv* env,
+                                           jobject obj,
+                                           jstring jfilepath) {
+  base::FilePath file_path(
+      base::android::ConvertJavaStringToUTF8(env, jfilepath));
   if (!TracingController::GetInstance()->DisableRecording(
-      file_path_,
+      file_path,
       base::Bind(&TracingControllerAndroid::OnTracingStopped,
                  weak_factory_.GetWeakPtr()))) {
     LOG(ERROR) << "EndTracingAsync failed, forcing an immediate stop";
-    OnTracingStopped(file_path_);
+    OnTracingStopped(file_path);
   }
+}
+
+void TracingControllerAndroid::GenerateTracingFilePath(
+    base::FilePath* file_path) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jfilename =
+      Java_TracingControllerAndroid_generateTracingFilePath(env);
+  *file_path = base::FilePath(
+      base::android::ConvertJavaStringToUTF8(env, jfilename.obj()));
 }
 
 void TracingControllerAndroid::OnTracingStopped(
