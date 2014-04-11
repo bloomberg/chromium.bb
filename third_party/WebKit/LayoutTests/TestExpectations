@@ -1080,3 +1080,6 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/textIteratorNilRe
 
 crbug.com/362434 [ Mac ] compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
 crbug.com/362434 [ Mac ] virtual/gpu/compositedscrolling/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
+
+crbug.com/362499 [ Mac ] touchadjustment/context-menu-text-subtargets.html [ Failure Pass ]
+crbug.com/362499 [ Mac ] touchadjustment/touch-inlines.html [ Failure Pass ]
