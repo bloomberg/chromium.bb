@@ -3875,6 +3875,19 @@
                   }],
                 ],
               }],
+              # Newer gcc's support -fuse-ld, use the flag to force gold
+              # selection.
+              # gcc -- http://gcc.gnu.org/onlinedocs/gcc-4.8.0/gcc/Optimize-Options.html
+              # TODO(mithro): Watch for clang support at following thread:
+              # http://clang-developers.42468.n3.nabble.com/Adding-fuse-ld-support-to-clang-td4032180.html
+              ['gcc_version>=48', {
+                'cflags': [
+                  '-fuse-ld=gold',
+                ],
+                'ldflags': [
+                  '-fuse-ld=gold',
+                ],
+              }]
             ],
           }],
           ['linux_use_gold_binary==1', {
