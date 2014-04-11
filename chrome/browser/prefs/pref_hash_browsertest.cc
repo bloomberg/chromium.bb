@@ -133,21 +133,22 @@ class PrefHashBrowserTest : public InProcessBrowserTest,
 
  private:
   bool IsUnloadedProfileSeedingAllowed() const {
-    const bool allowed_from_param =
-        GetParam() !=
-            chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways &&
-        GetParam() != chrome_prefs::internals::
-                          kSettingsEnforcementGroupEnforceAlwaysWithExtensions;
-    const bool blocked_by_configuration =
 #if defined(OFFICIAL_BUILD)
-        // SettingsEnforcement can't be forced via --force-fieldtrials in
-        // official builds. And since the default is the strongest enforcement
-        // level, nothing is allowed.
-        true;
+  // SettingsEnforcement can't be forced via --force-fieldtrials in official
+  // builds. Explicitly return whether the default in
+  // chrome_pref_service_factory.cc allows unloaded profile seeding on this
+  // platform.
+#if defined(OS_WIN)
+    return false;
 #else
-        false;
-#endif
-    return allowed_from_param && !blocked_by_configuration;
+    return true;
+#endif  // defined(OS_WIN)
+#endif  // defined(OFFICIAL_BUILD)
+    return GetParam() != chrome_prefs::internals::
+                             kSettingsEnforcementGroupEnforceAlways &&
+           GetParam() !=
+               chrome_prefs::internals::
+                   kSettingsEnforcementGroupEnforceAlwaysWithExtensions;
   }
 };
 
