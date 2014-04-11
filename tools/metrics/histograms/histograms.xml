@@ -12888,6 +12888,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.StreamFrameDuplicatedLongConnection"
+    units="1/10th Percent">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The number of stream frames received which were duplicates, out of every
+    1000 stream frames received. Only for QUIC sessions which received at least
+    100 packets.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.StreamFrameDuplicatedPercentLongConnection">
   <owner>rch@chromium.org</owner>
   <summary>
@@ -12901,6 +12911,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     The percentage of stream frames received which were duplicates. Only for
     QUIC sessions which received fewer than 100 packets.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.StreamFrameDuplicatedShortConnection"
+    units="1/10th Percent">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The number of stream frames received which were duplicates, out of every
+    1000 stream frames received. Only for QUIC sessions which received fewer
+    than 100 packets.
   </summary>
 </histogram>
 

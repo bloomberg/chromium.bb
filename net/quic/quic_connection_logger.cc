@@ -322,16 +322,17 @@ QuicConnectionLogger::~QuicConnectionLogger() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.TruncatedAcksReceived",
                        num_truncated_acks_received_);
   if (num_frames_received_ > 0) {
-    int duplicate_stream_frame_percent =
-        num_duplicate_frames_received_ * 100 / num_frames_received_;
+    int duplicate_stream_frame_per_thousand =
+        num_duplicate_frames_received_ * 1000 / num_frames_received_;
     if (num_packets_received_ < 100) {
-      UMA_HISTOGRAM_COUNTS(
-          "Net.QuicSession.StreamFrameDuplicatedPercentShortConnection",
-          duplicate_stream_frame_percent);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Net.QuicSession.StreamFrameDuplicatedShortConnection",
+          duplicate_stream_frame_per_thousand, 1, 1000, 75);
     } else {
-      UMA_HISTOGRAM_COUNTS(
-          "Net.QuicSession.StreamFrameDuplicatedPercentLongConnection",
-          duplicate_stream_frame_percent);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Net.QuicSession.StreamFrameDuplicatedLongConnection",
+          duplicate_stream_frame_per_thousand, 1, 1000, 75);
+
     }
   }
 
