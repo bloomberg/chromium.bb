@@ -41,15 +41,15 @@ class EndureBrowserControlClick(_EndureBenchmark):
 
 
 class EndureGmailAltThreadlistConversation(_EndureBenchmark):
-  page_set = 'page_sets/gmail_alt_threadlist_conversation.json'
+  page_set = 'page_sets/gmail_alt_threadlist_conversation.py'
 
 
 class EndureGmailAltTwoLabels(_EndureBenchmark):
-  page_set = 'page_sets/gmail_alt_two_labels.json'
+  page_set = 'page_sets/gmail_alt_two_labels.py'
 
 
 class EndureGmailExpandCollapseConversation(_EndureBenchmark):
-  page_set = 'page_sets/gmail_expand_collapse_conversation.json'
+  page_set = 'page_sets/gmail_expand_collapse_conversation.py'
 
 
 class EndureIndexedDBOffline(_EndureBenchmark):
@@ -67,4 +67,4 @@ class EndureGmailRefresh(test.Test):
       'page_repeat': 20,
       'perf_stats_interval': 1
   }
-  page_set = 'page_sets/endure_gmail_refresh.json'
+  page_set = 'page_sets/endure_gmail_refresh.py'
