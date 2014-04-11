@@ -258,6 +258,11 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
                    << ", Protocol: " << alternate_protocol
                    << "].";
     }
+  } else {
+    // TODO(rch): Consider the case where multiple requests are started
+    // before the first completes. In this case, only one of the jobs
+    // would reach this code, whereas all of them should should have.
+    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING);
   }
 
   alternate_protocol_map_.Put(server, alternate);

@@ -92,6 +92,10 @@ class HttpStreamFactoryImpl::Job {
   // Indicates whether or not this Job has been orphaned by a Request.
   bool IsOrphaned() const;
 
+  // Called to indicate that this job succeeded, and some other jobs
+  // will be orphaned.
+  void ReportJobSuccededForRequest();
+
  private:
   enum State {
     STATE_START,
@@ -276,6 +280,9 @@ class HttpStreamFactoryImpl::Job {
   // True if this network transaction is using QUIC instead of HTTP.
   bool using_quic_;
   QuicStreamRequest quic_request_;
+
+  // True if this job used an existing QUIC session.
+  bool using_existing_quic_session_;
 
   // Force spdy for all connections.
   bool force_spdy_always_;

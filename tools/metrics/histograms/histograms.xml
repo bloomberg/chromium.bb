@@ -10466,6 +10466,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The scheme of the URL for each main-frame navigation.</summary>
 </histogram>
 
+<histogram name="Net.AlternateProtocolUsage" enum="AlternateProtocolUsage">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    Breakdown of how requests which could potentially make use of an alternate
+    protocol use or don't use the protocol.
+  </summary>
+</histogram>
+
 <histogram name="Net.AsyncResourceHandler_PendingDataCount">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -30095,6 +30103,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="Maximized"/>
   <int value="3" label="Fullscreen"/>
   <int value="4" label="Snapped"/>
+</enum>
+
+<enum name="AlternateProtocolUsage" type="int">
+  <int value="0" label="ALTERNATE_PROTOCOL_USAGE_NO_RACE"/>
+  <int value="1" label="ALTERNATE_PROTOCOL_USAGE_WON_RACE"/>
+  <int value="2" label="ALTERNATE_PROTOCOL_USAGE_LOST_RACE"/>
+  <int value="3" label="ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING"/>
+  <int value="4" label="ALTERNATE_PROTOCOL_USAGE_BROKEN"/>
 </enum>
 
 <enum name="AndroidActivityId" type="int">

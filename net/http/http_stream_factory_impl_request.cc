@@ -380,13 +380,17 @@ void HttpStreamFactoryImpl::Request::OnJobSucceeded(Job* job) {
     // they complete? Or do we want to prevent connecting a new SpdySession if
     // we've already got one available for a different hostname where the ip
     // address matches up?
-  } else if (!bound_job_.get()) {
+    return;
+  }
+  if (!bound_job_.get()) {
+    if (jobs_.size() > 1)
+      job->ReportJobSuccededForRequest();
     // We may have other jobs in |jobs_|. For example, if we start multiple jobs
     // for Alternate-Protocol.
     OrphanJobsExcept(job);
-  } else {
-    DCHECK(jobs_.empty());
+    return;
   }
+  DCHECK(jobs_.empty());
 }
 
 }  // namespace net

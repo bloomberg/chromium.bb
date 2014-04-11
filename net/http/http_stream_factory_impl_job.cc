@@ -98,6 +98,7 @@ HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
       using_spdy_(false),
       using_quic_(false),
       quic_request_(session_->quic_stream_factory()),
+      using_existing_quic_session_(false),
       force_spdy_always_(HttpStreamFactory::force_spdy_always()),
       force_spdy_over_ssl_(HttpStreamFactory::force_spdy_over_ssl()),
       spdy_certificate_error_(OK),
@@ -750,7 +751,9 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     int rv = quic_request_.Request(
         destination, secure_quic, request_info_.privacy_mode,
         request_info_.method, net_log_, io_callback_);
-    if (rv != OK) {
+    if (rv == OK) {
+      using_existing_quic_session_ = true;
+    } else {
       // OK, there's no available QUIC session. Let |waiting_job_| resume
       // if it's paused.
       if (waiting_job_) {
@@ -1445,6 +1448,21 @@ bool HttpStreamFactoryImpl::Job::IsPreconnecting() const {
 
 bool HttpStreamFactoryImpl::Job::IsOrphaned() const {
   return !IsPreconnecting() && !request_;
+}
+
+void HttpStreamFactoryImpl::Job::ReportJobSuccededForRequest() {
+  if (using_existing_quic_session_) {
+    // If an existing session was used, then no TCP connection was
+    // started.
+    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_NO_RACE);
+  } else if (original_url_) {
+    // This job was the alternate protocol job, and hence won the race.
+    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_WON_RACE);
+  } else {
+    // This job was the normal job, and hence the alternate protocol job lost
+    // the race.
+    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_LOST_RACE);
+  }
 }
 
 bool HttpStreamFactoryImpl::Job::IsRequestEligibleForPipelining() {

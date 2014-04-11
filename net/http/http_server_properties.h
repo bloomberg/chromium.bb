@@ -19,6 +19,26 @@
 
 namespace net {
 
+enum AlternateProtocolUsage {
+  // Alternate Protocol was used without racing a normal connection.
+  ALTERNATE_PROTOCOL_USAGE_NO_RACE = 0,
+  // Alternate Protocol was used by winning a race with a normal connection.
+  ALTERNATE_PROTOCOL_USAGE_WON_RACE = 1,
+  // Alternate Protocol was not used by losing a race with a normal connection.
+  ALTERNATE_PROTOCOL_USAGE_LOST_RACE = 2,
+  // Alternate Protocol was not used because no Alternate-Protocol information
+  // was available when the request was issued, but an Alternate-Protocol header
+  // was present in the response.
+  ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING = 3,
+  // Alternate Protocol was not used because it was marked broken.
+  ALTERNATE_PROTOCOL_USAGE_BROKEN = 4,
+  // Maximum value for the enum.
+  ALTERNATE_PROTOCOL_USAGE_MAX,
+};
+
+// Log a histogram to reflect |usage|.
+NET_EXPORT void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage);
+
 enum AlternateProtocol {
   DEPRECATED_NPN_SPDY_2 = 0,
   ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION = DEPRECATED_NPN_SPDY_2,

@@ -5,6 +5,7 @@
 #include "net/http/http_server_properties.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 
 namespace net {
@@ -30,6 +31,11 @@ COMPILE_ASSERT(
     kAlternateProtocolStringsSize_kNumValidAlternateProtocols_not_equal);
 
 }  // namespace
+
+void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage) {
+  UMA_HISTOGRAM_ENUMERATION("Net.AlternateProtocolUsage", usage,
+                            ALTERNATE_PROTOCOL_USAGE_MAX);
+}
 
 bool IsAlternateProtocolValid(AlternateProtocol protocol) {
   return protocol >= ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION &&

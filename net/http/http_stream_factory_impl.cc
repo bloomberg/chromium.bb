@@ -206,8 +206,10 @@ PortAlternateProtocolPair HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
 
   PortAlternateProtocolPair alternate =
       http_server_properties.GetAlternateProtocol(origin);
-  if (alternate.protocol == ALTERNATE_PROTOCOL_BROKEN)
+  if (alternate.protocol == ALTERNATE_PROTOCOL_BROKEN) {
+    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN);
     return kNoAlternateProtocol;
+  }
 
   if (!IsAlternateProtocolValid(alternate.protocol)) {
     NOTREACHED();
