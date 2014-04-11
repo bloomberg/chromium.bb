@@ -14,8 +14,7 @@ PermissionMenuModel::PermissionMenuModel(
     ContentSetting default_setting,
     ContentSetting current_setting)
     : ui::SimpleMenuModel(this),
-      delegate_(delegate),
-      site_url_(url) {
+      delegate_(delegate) {
   base::string16 label;
   switch (default_setting) {
     case CONTENT_SETTING_ALLOW:
@@ -30,10 +29,15 @@ PermissionMenuModel::PermissionMenuModel(
       label = l10n_util::GetStringUTF16(
           IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK);
       break;
+    case CONTENT_SETTING_NUM_SETTINGS:
+      // Do not add a default label if the default_setting is set invalid.
+      break;
     default:
       break;
   }
-  AddCheckItem(COMMAND_SET_TO_DEFAULT, label);
+  if (!label.empty()) {
+    AddCheckItem(COMMAND_SET_TO_DEFAULT, label);
+  }
 
   // Media only support COMMAND_SET_TO_ALLOW for https.
   if (type != CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
@@ -42,6 +46,7 @@ PermissionMenuModel::PermissionMenuModel(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
     AddCheckItem(COMMAND_SET_TO_ALLOW, label);
   }
+
   if (type != CONTENT_SETTINGS_TYPE_FULLSCREEN) {
     label = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK);

@@ -28,6 +28,9 @@ class PermissionMenuModel : public ui::SimpleMenuModel,
     virtual bool IsCommandIdChecked(int command_id) = 0;
   };
 
+  // Create a new menu model for permission settings. To restrict to
+  // simple allow/block settings, set the type to CONTENT_SETTINGS_TYPE_DEFAULT
+  // and the default setting to CONTENT_SETTING_NUM_SETTINGS.
   PermissionMenuModel(Delegate* delegate,
                       const GURL& url,
                       ContentSettingsType type,
@@ -45,9 +48,6 @@ class PermissionMenuModel : public ui::SimpleMenuModel,
  private:
   // The delegate of the |PermissionMenuModel|. |delegate_| can be NULL.
   Delegate* delegate_;
-
-  // The URL of the website for which to display site permissions.
-  GURL site_url_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionMenuModel);
 };

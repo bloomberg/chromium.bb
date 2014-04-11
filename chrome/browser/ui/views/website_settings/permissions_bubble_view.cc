@@ -40,6 +40,7 @@ const int kButtonBorderSize = 2;
 
 // Model for an Allow/Block combobox control. Each combobox has a separate
 // model, which remembers the index of the permission it is associated with.
+// TODO(gbillock): use a variant of the PermissionSelectorView for this.
 class PermissionComboboxModel : public ui::ComboboxModel {
  public:
   enum Item {
