@@ -43,9 +43,6 @@ namespace ui {
 
 // These functions cache their results ---------------------------------
 
-// Check if there's an open connection to an X server.
-UI_BASE_EXPORT bool XDisplayExists();
-
 // Returns true if the system supports XINPUT2.
 UI_BASE_EXPORT bool IsXInput2Available();
 
@@ -61,12 +58,6 @@ enum SharedMemorySupport {
 // Return the shared memory type of our X connection.
 UI_BASE_EXPORT SharedMemorySupport QuerySharedMemorySupport(XDisplay* dpy);
 
-// Return true iff the display supports Xrender
-UI_BASE_EXPORT bool QueryRenderSupport(XDisplay* dpy);
-
-// Return the default screen number for the display
-int GetDefaultScreen(XDisplay* display);
-
 // Returns an X11 Cursor, sharable across the process.
 // |cursor_shape| is an X font cursor shape, see XCreateFontCursor().
 UI_BASE_EXPORT ::Cursor GetXCursor(int cursor_shape);
@@ -75,7 +66,6 @@ UI_BASE_EXPORT ::Cursor GetXCursor(int cursor_shape);
 // the display.
 UI_BASE_EXPORT void ResetXCursorCache();
 
-#if defined(USE_AURA)
 // Creates a custom X cursor from the image. This takes ownership of image. The
 // caller must not free/modify the image. The refcount of the newly created
 // cursor is set to 1.
@@ -97,7 +87,6 @@ UI_BASE_EXPORT XcursorImage* SkBitmapToXcursorImage(const SkBitmap* bitmap,
 // |last_event|.
 UI_BASE_EXPORT int CoalescePendingMotionEvents(const XEvent* xev,
                                                XEvent* last_event);
-#endif
 
 // Hides the host cursor.
 UI_BASE_EXPORT void HideHostCursor();
@@ -201,12 +190,6 @@ UI_BASE_EXPORT void SetWindowRole(XDisplay* display,
                                   XID window,
                                   const std::string& role);
 
-// Get |window|'s parent window, or None if |window| is the root window.
-UI_BASE_EXPORT XID GetParentWindow(XID window);
-
-// Walk up |window|'s hierarchy until we find a direct child of |root|.
-XID GetHighestAncestorWindow(XID window, XID root);
-
 // Determine whether we should default to native decorations or the custom
 // frame based on the currently-running window manager.
 UI_BASE_EXPORT bool GetCustomFramePrefDefault();
@@ -244,19 +227,6 @@ UI_BASE_EXPORT void EnumerateTopLevelWindows(
 // order.
 UI_BASE_EXPORT bool GetXWindowStack(XID window, std::vector<XID>* windows);
 
-// Restack a window in relation to one of its siblings.  If |above| is true,
-// |window| will be stacked directly above |sibling|; otherwise it will stacked
-// directly below it.  Both windows must be immediate children of the same
-// window.
-void RestackWindow(XID window, XID sibling, bool above);
-
-// Return a handle to a X ShmSeg. |shared_memory_key| is a SysV
-// IPC key. The shared memory region must contain 32-bit pixels.
-UI_BASE_EXPORT XSharedMemoryId
-    AttachSharedMemory(XDisplay* display, int shared_memory_support);
-UI_BASE_EXPORT void DetachSharedMemory(XDisplay* display,
-                                       XSharedMemoryId shmseg);
-
 // Copies |source_bounds| from |drawable| to |canvas| at offset |dest_offset|.
 // |source_bounds| is in physical pixels, while |dest_offset| is relative to
 // the canvas's scale. Note that this function is slow since it uses
@@ -266,13 +236,6 @@ UI_BASE_EXPORT bool CopyAreaToCanvas(XID drawable,
                                      gfx::Rect source_bounds,
                                      gfx::Point dest_offset,
                                      gfx::Canvas* canvas);
-
-// Return a handle to an XRender picture where |pixmap| is a handle to a
-// pixmap containing Skia ARGB data.
-UI_BASE_EXPORT XID CreatePictureFromSkiaPixmap(XDisplay* display, XID pixmap);
-
-void FreePicture(XDisplay* display, XID picture);
-void FreePixmap(XDisplay* display, XID pixmap);
 
 enum WindowManagerName {
   WM_UNKNOWN,
@@ -291,9 +254,6 @@ enum WindowManagerName {
 // Attempts to guess the window maager. Returns WM_UNKNOWN if we can't
 // determine it for one reason or another.
 UI_BASE_EXPORT WindowManagerName GuessWindowManager();
-
-// Change desktop for |window| to the desktop of |destination| window.
-UI_BASE_EXPORT bool ChangeWindowDesktop(XID window, XID destination);
 
 // Enable the default X error handlers. These will log the error and abort
 // the process if called. Use SetX11ErrorHandlers() from x11_util_internal.h

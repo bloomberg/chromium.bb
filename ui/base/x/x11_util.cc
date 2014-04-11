@@ -21,7 +21,6 @@
 #include <X11/extensions/XInput2.h>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -64,30 +63,6 @@
 namespace ui {
 
 namespace {
-
-// Used to cache the XRenderPictFormat for a visual/display pair.
-struct CachedPictFormat {
-  bool equals(XDisplay* display, Visual* visual) const {
-    return display == this->display && visual == this->visual;
-  }
-
-  XDisplay* display;
-  Visual* visual;
-  XRenderPictFormat* format;
-};
-
-typedef std::list<CachedPictFormat> CachedPictFormats;
-
-// Returns the cache of pict formats.
-CachedPictFormats* get_cached_pict_formats() {
-  static CachedPictFormats* formats = NULL;
-  if (!formats)
-    formats = new CachedPictFormats();
-  return formats;
-}
-
-// Maximum number of CachedPictFormats we keep around.
-const size_t kMaxCacheSize = 5;
 
 int DefaultX11ErrorHandler(XDisplay* d, XErrorEvent* e) {
   if (base::MessageLoop::current()) {
@@ -256,10 +231,6 @@ bool IsShapeAvailable() {
 
 }  // namespace
 
-bool XDisplayExists() {
-  return (gfx::GetXDisplay() != NULL);
-}
-
 bool IsXInput2Available() {
   return DeviceDataManager::GetInstance()->IsXInput2Available();
 }
@@ -332,26 +303,6 @@ SharedMemorySupport QuerySharedMemorySupport(XDisplay* dpy) {
   shared_memory_support_cached = true;
 
   return shared_memory_support;
-}
-
-bool QueryRenderSupport(XDisplay* dpy) {
-  static bool render_supported = false;
-  static bool render_supported_cached = false;
-
-  if (render_supported_cached)
-    return render_supported;
-
-  // We don't care about the version of Xrender since all the features which
-  // we use are included in every version.
-  int dummy;
-  render_supported = XRenderQueryExtension(dpy, &dummy, &dummy);
-  render_supported_cached = true;
-
-  return render_supported;
-}
-
-int GetDefaultScreen(XDisplay* display) {
-  return XDefaultScreen(display);
 }
 
 ::Cursor GetXCursor(int cursor_shape) {
@@ -968,28 +919,6 @@ void SetWindowRole(XDisplay* display, XID window, const std::string& role) {
   }
 }
 
-XID GetParentWindow(XID window) {
-  XID root = None;
-  XID parent = None;
-  XID* children = NULL;
-  unsigned int num_children = 0;
-  XQueryTree(gfx::GetXDisplay(), window, &root, &parent, &children, &num_children);
-  if (children)
-    XFree(children);
-  return parent;
-}
-
-XID GetHighestAncestorWindow(XID window, XID root) {
-  while (true) {
-    XID parent = GetParentWindow(window);
-    if (parent == None)
-      return None;
-    if (parent == root)
-      return window;
-    window = parent;
-  }
-}
-
 bool GetCustomFramePrefDefault() {
   // Ideally, we'd use the custom frame by default and just fall back on using
   // system decorations for the few (?) tiling window managers where the custom
@@ -1136,45 +1065,6 @@ bool GetXWindowStack(Window window, std::vector<XID>* windows) {
   return result;
 }
 
-void RestackWindow(XID window, XID sibling, bool above) {
-  XWindowChanges changes;
-  changes.sibling = sibling;
-  changes.stack_mode = above ? Above : Below;
-  XConfigureWindow(gfx::GetXDisplay(), window, CWSibling | CWStackMode, &changes);
-}
-
-XSharedMemoryId AttachSharedMemory(XDisplay* display, int shared_memory_key) {
-  DCHECK(QuerySharedMemorySupport(display));
-
-  XShmSegmentInfo shminfo;
-  memset(&shminfo, 0, sizeof(shminfo));
-  shminfo.shmid = shared_memory_key;
-
-  // This function is only called if QuerySharedMemorySupport returned true. In
-  // which case we've already succeeded in having the X server attach to one of
-  // our shared memory segments.
-  if (!XShmAttach(display, &shminfo)) {
-    LOG(WARNING) << "X failed to attach to shared memory segment "
-                 << shminfo.shmid;
-    NOTREACHED();
-  } else {
-    VLOG(1) << "X attached to shared memory segment " << shminfo.shmid;
-  }
-
-  return shminfo.shmseg;
-}
-
-void DetachSharedMemory(XDisplay* display, XSharedMemoryId shmseg) {
-  DCHECK(QuerySharedMemorySupport(display));
-
-  XShmSegmentInfo shminfo;
-  memset(&shminfo, 0, sizeof(shminfo));
-  shminfo.shmseg = shmseg;
-
-  if (!XShmDetach(display, &shminfo))
-    NOTREACHED();
-}
-
 bool CopyAreaToCanvas(XID drawable,
                       gfx::Rect source_bounds,
                       gfx::Point dest_offset,
@@ -1221,21 +1111,6 @@ bool CopyAreaToCanvas(XID drawable,
   }
 
   return true;
-}
-
-XID CreatePictureFromSkiaPixmap(XDisplay* display, XID pixmap) {
-  XID picture = XRenderCreatePicture(
-      display, pixmap, GetRenderARGB32Format(display), 0, NULL);
-
-  return picture;
-}
-
-void FreePicture(XDisplay* display, XID picture) {
-  XRenderFreePicture(display, picture);
-}
-
-void FreePixmap(XDisplay* display, XID pixmap) {
-  XFreePixmap(display, pixmap);
 }
 
 bool GetWindowManagerName(std::string* wm_name) {
@@ -1300,29 +1175,6 @@ WindowManagerName GuessWindowManager() {
       return WM_XFWM4;
   }
   return WM_UNKNOWN;
-}
-
-bool ChangeWindowDesktop(XID window, XID destination) {
-  int desktop;
-  if (!GetWindowDesktop(destination, &desktop))
-    return false;
-
-  // If |window| is sticky, use the current desktop.
-  if (desktop == kAllDesktops &&
-      !GetCurrentDesktop(&desktop))
-    return false;
-
-  XEvent event;
-  event.xclient.type = ClientMessage;
-  event.xclient.window = window;
-  event.xclient.message_type = GetAtom("_NET_WM_DESKTOP");
-  event.xclient.format = 32;
-  event.xclient.data.l[0] = desktop;
-  event.xclient.data.l[1] = 1;  // source indication
-
-  int result = XSendEvent(gfx::GetXDisplay(), GetX11RootWindow(), False,
-                          SubstructureNotifyMask, &event);
-  return result == Success;
 }
 
 void SetDefaultX11ErrorHandlers() {
@@ -1448,43 +1300,6 @@ XRenderPictFormat* GetRenderARGB32Format(XDisplay* dpy) {
     // that they must support an ARGB32 format, so we can always return that.
     pictformat = XRenderFindStandardFormat(dpy, PictStandardARGB32);
     CHECK(pictformat) << "XRENDER ARGB32 not supported.";
-  }
-
-  return pictformat;
-}
-
-XRenderPictFormat* GetRenderVisualFormat(XDisplay* dpy, Visual* visual) {
-  DCHECK(QueryRenderSupport(dpy));
-
-  CachedPictFormats* formats = get_cached_pict_formats();
-
-  for (CachedPictFormats::const_iterator i = formats->begin();
-       i != formats->end(); ++i) {
-    if (i->equals(dpy, visual))
-      return i->format;
-  }
-
-  // Not cached, look up the value.
-  XRenderPictFormat* pictformat = XRenderFindVisualFormat(dpy, visual);
-  CHECK(pictformat) << "XRENDER does not support default visual";
-
-  // And store it in the cache.
-  CachedPictFormat cached_value;
-  cached_value.visual = visual;
-  cached_value.display = dpy;
-  cached_value.format = pictformat;
-  formats->push_front(cached_value);
-
-  if (formats->size() == kMaxCacheSize) {
-    formats->pop_back();
-    // We should really only have at most 2 display/visual combinations:
-    // one for normal browser windows, and possibly another for an argb window
-    // created to display a menu.
-    //
-    // If we get here it's not fatal, we just need to make sure we aren't
-    // always blowing away the cache. If we are, then we should figure out why
-    // and make it bigger.
-    NOTREACHED();
   }
 
   return pictformat;

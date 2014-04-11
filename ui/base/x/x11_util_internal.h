@@ -30,11 +30,6 @@ namespace ui {
 // NOTE:Currently this don't support multiple screens/displays.
 XRenderPictFormat* GetRenderARGB32Format(Display* dpy);
 
-// Get the XRENDER format id for the default visual on the first screen. This
-// is the format which our GTK window will have.
-UI_BASE_EXPORT XRenderPictFormat* GetRenderVisualFormat(Display* dpy,
-                                                        Visual* visual);
-
 // --------------------------------------------------------------------------
 // X11 error handling.
 // Sets the X Error Handlers. Passing NULL for either will enable the default
