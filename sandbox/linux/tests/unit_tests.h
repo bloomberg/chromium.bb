@@ -40,6 +40,8 @@ bool IsRunningOnValgrind();
 //       gtests's ASSERT_XXX() macros instead of SANDBOX_ASSERT(). See
 //       unit_tests.cc for examples.
 #define DEATH_SUCCESS() sandbox::UnitTests::DeathSuccess, NULL
+#define DEATH_SUCCESS_ALLOW_NOISE() \
+  sandbox::UnitTests::DeathSuccessAllowNoise, NULL
 #define DEATH_MESSAGE(msg)          \
   sandbox::UnitTests::DeathMessage, \
       static_cast<const void*>(static_cast<const char*>(msg))
@@ -67,6 +69,11 @@ bool IsRunningOnValgrind();
 // tests as a tool to isolate global changes from the rest of the tests.
 #define SANDBOX_TEST(test_case_name, test_name) \
   SANDBOX_DEATH_TEST(test_case_name, test_name, DEATH_SUCCESS())
+
+// SANDBOX_TEST_ALLOW_NOISE is just like SANDBOX_TEST, except it does not
+// consider log error messages printed by the test to be test failures.
+#define SANDBOX_TEST_ALLOW_NOISE(test_case_name, test_name) \
+  SANDBOX_DEATH_TEST(test_case_name, test_name, DEATH_SUCCESS_ALLOW_NOISE())
 
 // Simple assertion macro that is compatible with running inside of a death
 // test. We unfortunately cannot use any of the GTest macros.
@@ -108,6 +115,12 @@ class UnitTests {
   // This is the default test mode for SANDBOX_TEST(). The "aux" parameter
   // of this DeathCheck is unused (and thus unnamed)
   static void DeathSuccess(int status, const std::string& msg, const void*);
+
+  // A DeathCheck method that verifies that the test completed succcessfully
+  // allowing for log error messages.
+  static void DeathSuccessAllowNoise(int status,
+                                     const std::string& msg,
+                                     const void*);
 
   // A DeathCheck method that verifies that the test completed with error
   // code "1" and printed a message containing a particular substring. The

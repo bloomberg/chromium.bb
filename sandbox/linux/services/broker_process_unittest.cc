@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -21,11 +22,19 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/posix/unix_domain_socket_linux.h"
 #include "sandbox/linux/tests/test_utils.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
+
+class BrokerProcessTestHelper {
+ public:
+  static int get_ipc_socketpair(const BrokerProcess* broker) {
+    return broker->ipc_socketpair_;
+  }
+};
 
 namespace {
 
@@ -432,6 +441,56 @@ TEST(BrokerProcess, OpenComplexFlagsNoClientCheck) {
   TestOpenComplexFlags(false /* fast_check_in_client */);
   // Don't do anything here, so that ASSERT works in the subfunction as
   // expected.
+}
+
+// We need to allow noise because the broker will log when it receives our
+// bogus IPCs.
+SANDBOX_TEST_ALLOW_NOISE(BrokerProcess, RecvMsgDescriptorLeak) {
+  // Find the four lowest available file descriptors.
+  int available_fds[4];
+  SANDBOX_ASSERT(0 == pipe(available_fds));
+  SANDBOX_ASSERT(0 == pipe(available_fds + 2));
+
+  // Save one FD to send to the broker later, and close the others.
+  base::ScopedFD message_fd(available_fds[0]);
+  for (size_t i = 1; i < arraysize(available_fds); i++) {
+    SANDBOX_ASSERT(0 == IGNORE_EINTR(close(available_fds[i])));
+  }
+
+  // Lower our file descriptor limit to just allow three more file descriptors
+  // to be allocated.  (N.B., RLIMIT_NOFILE doesn't limit the number of file
+  // descriptors a process can have: it only limits the highest value that can
+  // be assigned to newly-created descriptors allocated by the process.)
+  const rlim_t fd_limit =
+      1 + *std::max_element(available_fds,
+                            available_fds + arraysize(available_fds));
+  const struct rlimit new_rlim = {fd_limit, fd_limit};
+  SANDBOX_ASSERT(0 == setrlimit(RLIMIT_NOFILE, &new_rlim));
+
+  static const char kCpuInfo[] = "/proc/cpuinfo";
+  std::vector<std::string> read_whitelist;
+  read_whitelist.push_back(kCpuInfo);
+
+  BrokerProcess open_broker(EPERM, read_whitelist, std::vector<std::string>());
+  SANDBOX_ASSERT(open_broker.Init(base::Bind(&NoOpCallback)));
+
+  const int ipc_fd = BrokerProcessTestHelper::get_ipc_socketpair(&open_broker);
+  SANDBOX_ASSERT(ipc_fd >= 0);
+
+  static const char kBogus[] = "not a pickle";
+  std::vector<int> fds;
+  fds.push_back(message_fd.get());
+
+  // The broker process should only have a couple spare file descriptors
+  // available, but for good measure we send it fd_limit bogus IPCs anyway.
+  for (rlim_t i = 0; i < fd_limit; ++i) {
+    SANDBOX_ASSERT(
+        UnixDomainSocket::SendMsg(ipc_fd, kBogus, sizeof(kBogus), fds));
+  }
+
+  const int fd = open_broker.Open(kCpuInfo, O_RDONLY);
+  SANDBOX_ASSERT(fd >= 0);
+  SANDBOX_ASSERT(0 == IGNORE_EINTR(close(fd)));
 }
 
 }  // namespace sandbox

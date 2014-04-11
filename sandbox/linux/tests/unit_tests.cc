@@ -208,6 +208,17 @@ void UnitTests::DeathSuccess(int status, const std::string& msg, const void*) {
   EXPECT_FALSE(subprocess_exited_but_printed_messages) << details;
 }
 
+void UnitTests::DeathSuccessAllowNoise(int status,
+                                       const std::string& msg,
+                                       const void*) {
+  std::string details(TestFailedMessage(msg));
+
+  bool subprocess_terminated_normally = WIFEXITED(status);
+  ASSERT_TRUE(subprocess_terminated_normally) << details;
+  int subprocess_exit_status = WEXITSTATUS(status);
+  ASSERT_EQ(kExpectedValue, subprocess_exit_status) << details;
+}
+
 void UnitTests::DeathMessage(int status,
                              const std::string& msg,
                              const void* aux) {

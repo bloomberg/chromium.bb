@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
@@ -31,6 +32,10 @@ SANDBOX_DEATH_TEST(UnitTests,
                    DeathBySignal,
                    DEATH_BY_SIGNAL(kExpectedSignalNumber)) {
   raise(kExpectedSignalNumber);
+}
+
+SANDBOX_TEST_ALLOW_NOISE(UnitTests, NoisyTest) {
+  LOG(ERROR) << "The cow says moo!";
 }
 
 // Test that a subprocess can be forked() and can use exit(3) instead of

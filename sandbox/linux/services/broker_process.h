@@ -97,6 +97,8 @@ class SANDBOX_EXPORT BrokerProcess {
   const std::vector<std::string> allowed_w_files_;  // Files allowed for write.
   int ipc_socketpair_;  // Our communication channel to parent or child.
   DISALLOW_IMPLICIT_CONSTRUCTORS(BrokerProcess);
+
+  friend class BrokerProcessTestHelper;
 };
 
 }  // namespace sandbox
