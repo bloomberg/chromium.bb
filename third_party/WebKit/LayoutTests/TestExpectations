@@ -1077,3 +1077,6 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bid
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bidi-listbox.html [ NeedsManualRebaseline ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bidi-menulist.html [ NeedsManualRebaseline ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/textIteratorNilRenderer.html [ NeedsManualRebaseline ]
+
+crbug.com/362434 [ Mac ] compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
+crbug.com/362434 [ Mac ] virtual/gpu/compositedscrolling/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
