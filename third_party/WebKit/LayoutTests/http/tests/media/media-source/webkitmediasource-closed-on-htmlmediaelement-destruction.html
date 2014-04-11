@@ -23,7 +23,7 @@
               vid = null;
 
               consoleWrite("Running the garbage collector.");
-              collectGarbage(function() {
+              asyncGC(function() {
                   MediaSourceTest.expectSourceState(ms, "closed");
 
                   try {

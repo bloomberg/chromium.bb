@@ -52,10 +52,11 @@ class ViewportConstraints;
 
 class ScrollingCoordinator {
 public:
-    static PassOwnPtr<ScrollingCoordinator> create(Page*);
     ~ScrollingCoordinator();
 
-    void pageDestroyed();
+    static PassOwnPtr<ScrollingCoordinator> create(Page*);
+
+    void willBeDestroyed();
 
     // Return whether this scrolling coordinator handles scrolling for the given frame view.
     bool coordinatesScrollingForFrameView(FrameView*) const;

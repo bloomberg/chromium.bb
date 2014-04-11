@@ -149,25 +149,6 @@ Page::Page(PageClients& pageClients)
 
 Page::~Page()
 {
-    // Disable all agents prior to resetting the frame view.
-    m_inspectorController->inspectedPageDestroyed();
-
-    m_mainFrame->setView(nullptr);
-    allPages().remove(this);
-    if (ordinaryPages().contains(this))
-        ordinaryPages().remove(this);
-
-    for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        frame->willDetachFrameHost();
-        frame->detachFromFrameHost();
-    }
-
-    if (m_scrollingCoordinator)
-        m_scrollingCoordinator->pageDestroyed();
-
-#ifndef NDEBUG
-    pageCounter.decrement();
-#endif
 }
 
 void Page::makeOrdinary()
@@ -534,6 +515,41 @@ PageLifecycleNotifier& Page::lifecycleNotifier()
 PassOwnPtr<LifecycleNotifier<Page> > Page::createLifecycleNotifier()
 {
     return PageLifecycleNotifier::create(this);
+}
+
+void Page::trace(Visitor* visitor)
+{
+    Supplementable<Page>::trace(visitor);
+}
+
+void Page::willBeDestroyed()
+{
+    // Disable all agents prior to resetting the frame view.
+    m_inspectorController->willBeDestroyed();
+
+    m_mainFrame->setView(nullptr);
+
+    allPages().remove(this);
+    if (ordinaryPages().contains(this))
+        ordinaryPages().remove(this);
+
+    for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        frame->willDetachFrameHost();
+        frame->detachFromFrameHost();
+    }
+
+    if (m_scrollingCoordinator)
+        m_scrollingCoordinator->willBeDestroyed();
+
+#ifndef NDEBUG
+    pageCounter.decrement();
+#endif
+
+    m_chrome->willBeDestroyed();
+    m_mainFrame.clear();
+    if (m_validationMessageClient)
+        m_validationMessageClient->willBeDestroyed();
+    Supplementable<Page>::willBeDestroyed();
 }
 
 Page::PageClients::PageClients()

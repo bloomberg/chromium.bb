@@ -30,10 +30,7 @@ public:
 
     blink::WebPushClient* client() const { return m_client; }
 
-    virtual void trace(Visitor*) OVERRIDE
-    {
-        // FIXME: Oilpan: Move Page to the managed heap before using this trace method.
-    }
+    virtual void trace(Visitor*) OVERRIDE { }
 
 private:
     explicit PushController(blink::WebPushClient*);

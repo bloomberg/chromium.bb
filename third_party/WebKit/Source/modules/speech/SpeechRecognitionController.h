@@ -48,10 +48,7 @@ public:
     static const char* supplementName();
     static SpeechRecognitionController* from(Page* page) { return static_cast<SpeechRecognitionController*>(Supplement<Page>::from(page, supplementName())); }
 
-    virtual void trace(Visitor*) OVERRIDE
-    {
-        // FIXME: Oilpan: Move Page to the managed heap before using this trace method.
-    }
+    virtual void trace(Visitor*) OVERRIDE { }
 
 private:
     explicit SpeechRecognitionController(PassOwnPtr<SpeechRecognitionClient>);

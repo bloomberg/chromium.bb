@@ -26,6 +26,8 @@
                 testRunner.setPopupBlockingEnabled(true);
                 testRunner.setCloseRemainingWindowsWhenComplete(true);
                 testRunner.waitUntilDone();
+
+                gc();
                 windowCount = testRunner.windowCount();
 
                 var button = document.getElementById("button");

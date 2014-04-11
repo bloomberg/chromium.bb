@@ -33,6 +33,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -169,7 +170,7 @@ private:
     RefPtr<Node> m_eventTargetNode;
     HighlightConfig m_nodeHighlightConfig;
     OwnPtr<FloatQuad> m_highlightQuad;
-    OwnPtr<Page> m_overlayPage;
+    OwnPtrWillBePersistent<Page> m_overlayPage;
     OwnPtr<EmptyChromeClient> m_overlayChromeClient;
     RefPtr<InspectorOverlayHost> m_overlayHost;
     HighlightConfig m_quadHighlightConfig;

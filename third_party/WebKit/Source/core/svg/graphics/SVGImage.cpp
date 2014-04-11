@@ -63,8 +63,9 @@ SVGImage::~SVGImage()
 {
     if (m_page) {
         // Store m_page in a local variable, clearing m_page, so that SVGImageChromeClient knows we're destructed.
-        OwnPtr<Page> currentPage = m_page.release();
+        OwnPtrWillBeRawPtr<Page> currentPage = m_page.release();
         currentPage->mainFrame()->loader().frameDetached(); // Break both the loader and view references to the frame
+        currentPage->willBeDestroyed();
     }
 
     // Verify that page teardown destroyed the Chrome
@@ -398,7 +399,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         // This will become an issue when SVGImage will be able to load other
         // SVGImage objects, but we're safe now, because SVGImage can only be
         // loaded by a top-level document.
-        OwnPtr<Page> page = adoptPtr(new Page(pageClients));
+        OwnPtrWillBeRawPtr<Page> page = adoptPtrWillBeNoop(new Page(pageClients));
         page->settings().setScriptEnabled(false);
         page->settings().setPluginsEnabled(false);
         page->settings().setAcceleratedCompositingEnabled(false);

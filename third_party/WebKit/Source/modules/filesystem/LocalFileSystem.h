@@ -57,10 +57,7 @@ public:
     static const char* supplementName();
     static LocalFileSystem* from(ExecutionContext&);
 
-    virtual void trace(Visitor*) OVERRIDE
-    {
-        // FIXME: Oilpan: Move Page to the managed heap before using this trace method.
-    }
+    virtual void trace(Visitor*) OVERRIDE { }
 
 protected:
     explicit LocalFileSystem(PassOwnPtr<FileSystemClient>);

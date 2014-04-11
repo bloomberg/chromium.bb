@@ -53,6 +53,7 @@ private:
     virtual void hideValidationMessage(const WebCore::Element& anchor) OVERRIDE;
     virtual bool isValidationMessageVisible(const WebCore::Element& anchor) OVERRIDE;
     virtual void documentDetached(const WebCore::Document&) OVERRIDE;
+    virtual void willBeDestroyed() OVERRIDE;
 
     WebViewImpl& m_webView;
     const WebCore::Element* m_currentAnchor;

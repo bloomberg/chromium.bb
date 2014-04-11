@@ -34,6 +34,7 @@
 #include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -70,7 +71,7 @@ public:
 private:
     explicit DummyPageHolder(const IntSize& initialViewSize);
 
-    OwnPtr<Page> m_page;
+    OwnPtrWillBePersistent<Page> m_page;
     RefPtr<LocalFrame> m_frame;
 
     Page::PageClients m_pageClients;

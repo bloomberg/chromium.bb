@@ -144,6 +144,7 @@ public:
     }
 
     virtual void trace(Visitor*) = 0;
+    virtual void willBeDestroyed() { }
 };
 
 template<typename T, bool>
@@ -185,6 +186,13 @@ public:
     }
 
     virtual void trace(Visitor* visitor) { visitor->trace(m_supplements); }
+
+    void willBeDestroyed()
+    {
+        typedef typename SupplementableTraits<T, isGarbageCollected>::SupplementMap::iterator SupplementIterator;
+        for (SupplementIterator it = m_supplements.begin(); it != m_supplements.end(); ++it)
+            it->value->willBeDestroyed();
+    }
 
 private:
     typename SupplementableTraits<T, isGarbageCollected>::SupplementMap m_supplements;

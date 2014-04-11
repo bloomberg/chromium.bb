@@ -253,6 +253,7 @@ InspectorOverlay::InspectorOverlay(Page* page, InspectorClient* client)
 
 InspectorOverlay::~InspectorOverlay()
 {
+    ASSERT(!m_overlayPage);
 }
 
 void InspectorOverlay::paint(GraphicsContext& context)
@@ -585,7 +586,7 @@ Page* InspectorOverlay::overlayPage()
     ASSERT(!m_overlayChromeClient);
     m_overlayChromeClient = adoptPtr(new InspectorOverlayChromeClient(m_page->chrome().client(), this));
     pageClients.chromeClient = m_overlayChromeClient.get();
-    m_overlayPage = adoptPtr(new Page(pageClients));
+    m_overlayPage = adoptPtrWillBeNoop(new Page(pageClients));
 
     Settings& settings = m_page->settings();
     Settings& overlaySettings = m_overlayPage->settings();
@@ -677,6 +678,7 @@ void InspectorOverlay::freePage()
         // FIXME: This logic is duplicated in SVGImage and WebViewImpl. Perhaps it can be combined
         // into Page's destructor.
         m_overlayPage->mainFrame()->loader().frameDetached();
+        m_overlayPage->willBeDestroyed();
         m_overlayPage.clear();
     }
     m_overlayChromeClient.clear();

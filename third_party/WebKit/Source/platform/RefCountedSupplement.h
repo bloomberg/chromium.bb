@@ -38,12 +38,11 @@ public:
     typedef RefCountedSupplement<T, S> ThisType;
 
     virtual ~RefCountedSupplement() { }
-    virtual void hostDestroyed() { }
 
     class Wrapper FINAL : public Supplement<T> {
     public:
         explicit Wrapper(PassRefPtr<ThisType> wrapped) : m_wrapped(wrapped) { }
-        virtual ~Wrapper() { m_wrapped->hostDestroyed();  }
+        virtual ~Wrapper() { }
 #if SECURITY_ASSERT_ENABLED
         virtual bool isRefCountedWrapper() const OVERRIDE { return true; }
 #endif

@@ -118,8 +118,6 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
 InspectorController::~InspectorController()
 {
-    m_instrumentingAgents->reset();
-    m_agents.discardAgents();
 }
 
 PassOwnPtr<InspectorController> InspectorController::create(Page* page, InspectorClient* client)
@@ -175,13 +173,14 @@ void InspectorController::initializeDeferredAgents()
     m_agents.append(InspectorInputAgent::create(m_page, m_inspectorClient));
 }
 
-void InspectorController::inspectedPageDestroyed()
+void InspectorController::willBeDestroyed()
 {
     disconnectFrontend();
     m_injectedScriptManager->disconnect();
     m_inspectorClient = 0;
     m_page = 0;
     m_instrumentingAgents->reset();
+    m_agents.discardAgents();
 }
 
 void InspectorController::registerModuleAgent(PassOwnPtr<InspectorAgent> agent)

@@ -56,7 +56,6 @@ Chrome::Chrome(Page* page, ChromeClient* client)
 
 Chrome::~Chrome()
 {
-    m_client->chromeDestroyed();
 }
 
 PassOwnPtr<Chrome> Chrome::create(Page* page, ChromeClient* client)
@@ -405,6 +404,11 @@ void Chrome::notifyPopupOpeningObservers() const
     const Vector<PopupOpeningObserver*> observers(m_popupOpeningObservers);
     for (size_t i = 0; i < observers.size(); ++i)
         observers[i]->willOpenPopup();
+}
+
+void Chrome::willBeDestroyed()
+{
+    m_client->chromeDestroyed();
 }
 
 } // namespace WebCore

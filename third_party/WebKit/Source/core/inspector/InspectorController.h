@@ -81,7 +81,7 @@ public:
     void setTextAutosizingEnabled(bool);
     void setDeviceScaleAdjustment(float);
 
-    void inspectedPageDestroyed();
+    void willBeDestroyed();
     void registerModuleAgent(PassOwnPtr<InspectorAgent>);
 
     void setInspectorFrontendClient(PassOwnPtr<InspectorFrontendClient>);

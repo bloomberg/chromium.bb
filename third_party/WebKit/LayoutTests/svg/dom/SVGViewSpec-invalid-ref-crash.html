@@ -18,7 +18,7 @@
     var svgView = document.getElementById("container").childNodes[0].currentView;
     document.getElementById("container").removeChild(document.getElementById("container").childNodes[0]);
 
-    collectGarbage(function() {
+    asyncGC(function() {
         shouldBeNull("viewPreserveAspectRatio = svgView.preserveAspectRatio;");
         shouldBeNull("viewTransform = svgView.transform;");
         shouldBeNull("viewViewTarget = svgView.viewTarget;");

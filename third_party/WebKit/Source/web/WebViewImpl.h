@@ -594,7 +594,7 @@ private:
     // The upper bound on the size when auto-resizing.
     WebCore::IntSize m_maxAutoSize;
 
-    OwnPtr<WebCore::Page> m_page;
+    OwnPtrWillBePersistent<WebCore::Page> m_page;
 
     // An object that can be used to manipulate m_page->settings() without linking
     // against WebCore. This is lazily allocated the first time GetWebSettings()

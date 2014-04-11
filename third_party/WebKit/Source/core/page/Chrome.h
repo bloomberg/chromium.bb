@@ -131,6 +131,8 @@ public:
     void registerPopupOpeningObserver(PopupOpeningObserver*);
     void unregisterPopupOpeningObserver(PopupOpeningObserver*);
 
+    void willBeDestroyed();
+
 private:
     Chrome(Page*, ChromeClient*);
     void notifyPopupOpeningObservers() const;

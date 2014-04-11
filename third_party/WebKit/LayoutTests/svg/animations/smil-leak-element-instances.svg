@@ -35,13 +35,13 @@ function createAnimatedRectInstance() {
 
 function cleanup() {
     // Collect garbage before recording starting live node count, in case there are live elements from previous tests.
-    collectGarbage(function() {
+    asyncGC(function() {
         var originalLiveElements = internals.numberOfLiveNodes();
 
         while (g.hasChildNodes())
             g.removeChild(g.lastChild);
 
-        collectGarbage(function() {
+        asyncGC(function() {
             // This is 400 instead of 200 as it creates shadow tree elements.
             var liveDelta = originalLiveElements - internals.numberOfLiveNodes() - 400;
             if (liveDelta == 0)

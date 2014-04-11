@@ -95,11 +95,6 @@ ScrollingCoordinator::ScrollingCoordinator(Page* page)
 
 ScrollingCoordinator::~ScrollingCoordinator()
 {
-    ASSERT(!m_page);
-    for (ScrollbarMap::iterator it = m_horizontalScrollbars.begin(); it != m_horizontalScrollbars.end(); ++it)
-        GraphicsLayer::unregisterContentsLayer(it->value->layer());
-    for (ScrollbarMap::iterator it = m_verticalScrollbars.begin(); it != m_verticalScrollbars.end(); ++it)
-        GraphicsLayer::unregisterContentsLayer(it->value->layer());
 }
 
 bool ScrollingCoordinator::touchHitTestingEnabled() const
@@ -671,10 +666,14 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainTh
     }
 }
 
-void ScrollingCoordinator::pageDestroyed()
+void ScrollingCoordinator::willBeDestroyed()
 {
     ASSERT(m_page);
     m_page = 0;
+    for (ScrollbarMap::iterator it = m_horizontalScrollbars.begin(); it != m_horizontalScrollbars.end(); ++it)
+        GraphicsLayer::unregisterContentsLayer(it->value->layer());
+    for (ScrollbarMap::iterator it = m_verticalScrollbars.begin(); it != m_verticalScrollbars.end(); ++it)
+        GraphicsLayer::unregisterContentsLayer(it->value->layer());
 }
 
 bool ScrollingCoordinator::coordinatesScrollingForFrameView(FrameView* frameView) const

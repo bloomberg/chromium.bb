@@ -96,7 +96,7 @@ private:
     WebWidgetClient* m_widgetClient;
     WebRect m_windowRectInScreen;
     WebViewImpl* m_webView;
-    OwnPtr<WebCore::Page> m_page;
+    OwnPtrWillBePersistent<WebCore::Page> m_page;
     OwnPtr<PagePopupChromeClient> m_chromeClient;
     WebCore::PagePopupClient* m_popupClient;
     bool m_closing;

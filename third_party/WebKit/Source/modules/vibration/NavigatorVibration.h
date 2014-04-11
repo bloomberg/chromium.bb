@@ -56,10 +56,7 @@ public:
 
     VibrationPattern pattern() const { return m_pattern; }
 
-    virtual void trace(Visitor*) OVERRIDE
-    {
-        // FIXME: Oilpan: Move Page to the managed heap before using this trace method.
-    }
+    virtual void trace(Visitor*) OVERRIDE { }
 
 private:
     explicit NavigatorVibration(Page&);

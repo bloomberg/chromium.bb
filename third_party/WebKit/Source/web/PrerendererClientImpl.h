@@ -51,10 +51,7 @@ public:
 
     void willAddPrerender(WebCore::Prerender*) OVERRIDE;
 
-    virtual void trace(WebCore::Visitor*) OVERRIDE
-    {
-        // FIXME: Oilpan: Move Page to the managed heap before using this trace method.
-    }
+    virtual void trace(WebCore::Visitor*) OVERRIDE { }
 
 private:
     WebPrerendererClient* m_client;

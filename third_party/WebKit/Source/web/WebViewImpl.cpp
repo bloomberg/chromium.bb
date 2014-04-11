@@ -384,7 +384,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     pageClients.spellCheckerClient = &m_spellCheckerClientImpl;
     pageClients.storageClient = &m_storageClientImpl;
 
-    m_page = adoptPtr(new Page(pageClients));
+    m_page = adoptPtrWillBeNoop(new Page(pageClients));
     provideUserMediaTo(*m_page, &m_userMediaClientImpl);
     MediaKeysController::provideMediaKeysTo(*m_page, &m_mediaKeysClientImpl);
     provideMIDITo(*m_page, MIDIClientProxy::create(client ? client->webMIDIClient() : 0));
@@ -1510,6 +1510,7 @@ void WebViewImpl::close()
         if (m_page->mainFrame())
             m_page->mainFrame()->loader().frameDetached();
 
+        m_page->willBeDestroyed();
         m_page.clear();
     }
 

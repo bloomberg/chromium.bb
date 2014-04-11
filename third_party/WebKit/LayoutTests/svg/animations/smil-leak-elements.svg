@@ -33,12 +33,12 @@ function createAnimatedRect() {
 
 function cleanup() {
     // Collect garbage before recording starting live node count, in case there are live elements from previous tests.
-    collectGarbage(function() {
+    asyncGC(function() {
         var originalLiveElements = internals.numberOfLiveNodes();
 
         while (g.hasChildNodes())
             g.removeChild(g.lastChild);
-        collectGarbage(function() {
+        asyncGC(function() {
             var liveDelta = originalLiveElements - internals.numberOfLiveNodes() - 200;
             if (liveDelta == 0)
                 log("PASS");

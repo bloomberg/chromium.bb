@@ -57,8 +57,6 @@ PassOwnPtr<ValidationMessageClientImpl> ValidationMessageClientImpl::create(WebV
 
 ValidationMessageClientImpl::~ValidationMessageClientImpl()
 {
-    if (m_currentAnchor)
-        hideValidationMessage(*m_currentAnchor);
 }
 
 FrameView* ValidationMessageClientImpl::currentView()
@@ -140,6 +138,12 @@ void ValidationMessageClientImpl::checkAnchorStatus(Timer<ValidationMessageClien
     m_lastAnchorRectInScreen = newAnchorRectInScreen;
     m_lastPageScaleFactor = m_webView.pageScaleFactor();
     m_webView.client()->moveValidationMessage(newAnchorRect);
+}
+
+void ValidationMessageClientImpl::willBeDestroyed()
+{
+    if (m_currentAnchor)
+        hideValidationMessage(*m_currentAnchor);
 }
 
 }

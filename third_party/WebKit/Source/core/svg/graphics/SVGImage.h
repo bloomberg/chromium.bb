@@ -28,6 +28,7 @@
 #define SVGImage_h
 
 #include "platform/graphics/Image.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 
@@ -101,7 +102,7 @@ private:
         CompositeOperator, const FloatRect&, blink::WebBlendMode, const IntSize& repeatSpacing);
 
     OwnPtr<SVGImageChromeClient> m_chromeClient;
-    OwnPtr<Page> m_page;
+    OwnPtrWillBePersistent<Page> m_page;
     IntSize m_intrinsicSize;
 };
 

@@ -12,7 +12,7 @@ if (!window.internals) {
     window.jsTestIsAsync = true;
     var documentsBefore;
     var documentsAfter;
-    collectGarbage(function() {
+    asyncGC(function() {
         documentsBefore = window.internals.numberOfLiveDocuments();
 
         var frame = document.getElementById('frame');
@@ -20,7 +20,7 @@ if (!window.internals) {
         document.body.removeChild(frame);
         frame = null;
 
-        collectGarbage(function() {
+        asyncGC(function() {
             documentsAfter = window.internals.numberOfLiveDocuments();
 
             // -1 is from removing frame itself.

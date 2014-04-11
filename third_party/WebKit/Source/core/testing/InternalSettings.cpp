@@ -119,10 +119,7 @@ public:
 #endif
     InternalSettings* internalSettings() const { return m_internalSettings.get(); }
 
-    virtual void trace(Visitor*) OVERRIDE
-    {
-        // FIXME: Oilpan: Move Page to the managed heap before using this trace method.
-    }
+    virtual void trace(Visitor*) OVERRIDE { }
 
 private:
     RefPtrWillBePersistent<InternalSettings> m_internalSettings;

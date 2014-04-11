@@ -52,7 +52,7 @@ DummyPageHolder::DummyPageHolder(const IntSize& initialViewSize)
     m_pageClients.inspectorClient = &m_inspectorClient;
     m_pageClients.backForwardClient = &m_backForwardClient;
 
-    m_page = adoptPtr(new Page(m_pageClients));
+    m_page = adoptPtrWillBeNoop(new Page(m_pageClients));
 
     m_frame = LocalFrame::create(&m_frameLoaderClient, &m_page->frameHost(), 0);
     m_frame->setView(FrameView::create(m_frame.get(), initialViewSize));
@@ -61,8 +61,11 @@ DummyPageHolder::DummyPageHolder(const IntSize& initialViewSize)
 
 DummyPageHolder::~DummyPageHolder()
 {
+    m_page->willBeDestroyed();
     m_page.clear();
+#if !ENABLE(OILPAN)
     ASSERT(m_frame->hasOneRef());
+#endif
     m_frame.clear();
 }
 

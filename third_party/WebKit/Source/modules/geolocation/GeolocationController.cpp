@@ -66,7 +66,10 @@ void GeolocationController::stopUpdatingIfNeeded()
 GeolocationController::~GeolocationController()
 {
     ASSERT(m_observers.isEmpty());
+}
 
+void GeolocationController::willBeDestroyed()
+{
     if (m_client)
         m_client->geolocationDestroyed();
 }

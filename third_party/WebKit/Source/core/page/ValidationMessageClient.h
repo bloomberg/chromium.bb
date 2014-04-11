@@ -51,6 +51,8 @@ public:
     virtual bool isValidationMessageVisible(const Element& anchor) = 0;
 
     virtual void documentDetached(const Document&) = 0;
+
+    virtual void willBeDestroyed() = 0;
 };
 
 }

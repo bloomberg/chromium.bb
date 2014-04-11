@@ -34,13 +34,13 @@ function createAnimatedRectInstance() {
 }
 
 function cleanup() {
-    collectGarbage(function() {
+    asyncGC(function() {
         var originalLiveElements = internals.numberOfLiveNodes();
 
         while (g.hasChildNodes())
             g.removeChild(g.lastChild);
 
-        collectGarbage(function() {
+        asyncGC(function() {
             // FIXME: Why 400 and not 200?
             var liveDelta = originalLiveElements - internals.numberOfLiveNodes() - 400;
             if (liveDelta == 0)

@@ -663,7 +663,7 @@ function shouldHaveHadError(message)
 // can artificially keep objects alive. Therefore, tests that need to check
 // that something is dead need to use this asynchronous collectGarbage
 // function.
-function collectGarbage(callback) {
+function asyncGC(callback) {
     GCController.collectAll();
     setTimeout(callback, 0);
 }
@@ -684,11 +684,12 @@ function gc() {
     }
 }
 
-function minorGC() {
+function asyncMinorGC(callback) {
     if (typeof GCController !== "undefined")
         GCController.minorCollect();
     else
         testFailed("Minor GC is available only when you enable the --expose-gc option in V8.");
+    setTimeout(callback, 0);
 }
 
 function isSuccessfullyParsed()
