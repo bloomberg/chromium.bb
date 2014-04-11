@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/bluetooth_gatt_characteristic_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor_chromeos.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_chromeos.h"
 
 namespace chromeos {
@@ -35,10 +36,28 @@ BluetoothRemoteGattCharacteristicChromeOS::
           weak_ptr_factory_(this) {
   VLOG(1) << "Creating remote GATT characteristic with identifier: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
+  DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->
+      AddObserver(this);
+
+  // Add all known GATT characteristic descriptors.
+  const std::vector<dbus::ObjectPath>& gatt_descs =
+      DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->
+          GetDescriptors();
+  for (std::vector<dbus::ObjectPath>::const_iterator iter = gatt_descs.begin();
+       iter != gatt_descs.end(); ++iter)
+    GattDescriptorAdded(*iter);
 }
 
 BluetoothRemoteGattCharacteristicChromeOS::
     ~BluetoothRemoteGattCharacteristicChromeOS() {
+  DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->
+      RemoveObserver(this);
+
+  // Clean up all the descriptors. There isn't much point in notifying service
+  // observers for each descriptor that gets removed, so just delete them.
+  for (DescriptorMap::iterator iter = descriptors_.begin();
+       iter != descriptors_.end(); ++iter)
+    delete iter->second;
 }
 
 std::string BluetoothRemoteGattCharacteristicChromeOS::GetIdentifier() const {
@@ -88,8 +107,11 @@ BluetoothRemoteGattCharacteristicChromeOS::GetPermissions() const {
 
 std::vector<device::BluetoothGattDescriptor*>
 BluetoothRemoteGattCharacteristicChromeOS::GetDescriptors() const {
-  // TODO(armansito): Return the actual descriptors here.
-  return std::vector<device::BluetoothGattDescriptor*>();
+  std::vector<device::BluetoothGattDescriptor*> descriptors;
+  for (DescriptorMap::const_iterator iter = descriptors_.begin();
+       iter != descriptors_.end(); ++iter)
+    descriptors.push_back(iter->second);
+  return descriptors;
 }
 
 bool BluetoothRemoteGattCharacteristicChromeOS::AddDescriptor(
@@ -144,6 +166,66 @@ void BluetoothRemoteGattCharacteristicChromeOS::WriteRemoteCharacteristic(
       base::Bind(&BluetoothRemoteGattCharacteristicChromeOS::OnSetValue,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback, error_callback));
+}
+
+void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorAdded(
+    const dbus::ObjectPath& object_path) {
+  if (descriptors_.find(object_path) != descriptors_.end()) {
+    VLOG(1) << "Remote GATT characteristic descriptor already exists: "
+            << object_path.value();
+    return;
+  }
+
+  BluetoothGattDescriptorClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->
+          GetProperties(object_path);
+  DCHECK(properties);
+  if (properties->characteristic.value() != object_path_) {
+    VLOG(2) << "Remote GATT descriptor does not belong to this characteristic.";
+    return;
+  }
+
+  VLOG(1) << "Adding new remote GATT descriptor for GATT characteristic: "
+          << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
+
+  BluetoothRemoteGattDescriptorChromeOS* descriptor =
+      new BluetoothRemoteGattDescriptorChromeOS(this, object_path);
+  descriptors_[object_path] = descriptor;
+  DCHECK(descriptor->GetIdentifier() == object_path.value());
+  DCHECK(descriptor->GetUUID().IsValid());
+  DCHECK(service_);
+  service_->NotifyServiceChanged();
+}
+
+void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorRemoved(
+    const dbus::ObjectPath& object_path) {
+  DescriptorMap::iterator iter = descriptors_.find(object_path);
+  if (iter == descriptors_.end()) {
+    VLOG(2) << "Unknown descriptor removed: " << object_path.value();
+    return;
+  }
+
+  VLOG(1) << "Removing remote GATT descriptor from characteristic: "
+          << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
+
+  BluetoothRemoteGattDescriptorChromeOS* descriptor = iter->second;
+  DCHECK(descriptor->object_path() == object_path);
+  descriptors_.erase(iter);
+  delete descriptor;
+
+  DCHECK(service_);
+  service_->NotifyServiceChanged();
+}
+
+void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorPropertyChanged(
+    const dbus::ObjectPath& object_path,
+    const std::string& property_name) {
+  DescriptorMap::const_iterator iter = descriptors_.find(object_path);
+  if (iter == descriptors_.end())
+    return;
+
+  VLOG(1) << "GATT descriptor property changed: " << object_path.value()
+          << ", property: " << property_name;
 }
 
 void BluetoothRemoteGattCharacteristicChromeOS::OnGetValue(

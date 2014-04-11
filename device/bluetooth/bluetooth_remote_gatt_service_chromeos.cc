@@ -39,7 +39,7 @@ BluetoothRemoteGattServiceChromeOS::BluetoothRemoteGattServiceChromeOS(
       AddObserver(this);
 
   // Add all known GATT characteristics.
-  const std::vector<dbus::ObjectPath> gatt_chars =
+  const std::vector<dbus::ObjectPath>& gatt_chars =
       DBusThreadManager::Get()->GetBluetoothGattCharacteristicClient()->
           GetCharacteristics();
   for (std::vector<dbus::ObjectPath>::const_iterator iter = gatt_chars.begin();
@@ -154,11 +154,15 @@ void BluetoothRemoteGattServiceChromeOS::Unregister(
   error_callback.Run();
 }
 
+void BluetoothRemoteGattServiceChromeOS::NotifyServiceChanged() {
+  FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
+                    GattServiceChanged(this));
+}
+
 void BluetoothRemoteGattServiceChromeOS::GattServicePropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name){
-  FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
-                    GattServiceChanged(this));
+  NotifyServiceChanged();
 }
 
 void BluetoothRemoteGattServiceChromeOS::GattCharacteristicAdded(
@@ -189,8 +193,7 @@ void BluetoothRemoteGattServiceChromeOS::GattCharacteristicAdded(
 
   FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
                     GattCharacteristicAdded(this, characteristic));
-  FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
-                    GattServiceChanged(this));
+  NotifyServiceChanged();
 }
 
 void BluetoothRemoteGattServiceChromeOS::GattCharacteristicRemoved(
@@ -210,8 +213,7 @@ void BluetoothRemoteGattServiceChromeOS::GattCharacteristicRemoved(
 
   FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
                     GattCharacteristicRemoved(this, characteristic));
-  FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
-                    GattServiceChanged(this));
+  NotifyServiceChanged();
 
   delete characteristic;
 }

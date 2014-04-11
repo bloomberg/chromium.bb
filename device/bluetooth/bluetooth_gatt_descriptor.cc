@@ -30,7 +30,8 @@ BluetoothGattDescriptor::~BluetoothGattDescriptor() {
 // static
 BluetoothGattDescriptor* BluetoothGattDescriptor::Create(
     const BluetoothUUID& uuid,
-    const std::vector<uint8>& value) {
+    const std::vector<uint8>& value,
+    BluetoothGattCharacteristic::Permissions permissions) {
   LOG(ERROR) << "Creating local GATT characteristic descriptors currently not "
              << "supported.";
   return NULL;

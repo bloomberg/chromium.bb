@@ -110,6 +110,7 @@ class CHROMEOS_EXPORT FakeBluetoothGattCharacteristicClient
   // Object paths of the exposed characteristics. If a characteristic is not
   // exposed, these will be empty.
   std::string heart_rate_measurement_path_;
+  std::string heart_rate_measurement_ccc_desc_path_;
   std::string body_sensor_location_path_;
   std::string heart_rate_control_point_path_;
 

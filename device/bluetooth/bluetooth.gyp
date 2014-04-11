@@ -62,6 +62,8 @@
         'bluetooth_profile_win.h',
         'bluetooth_remote_gatt_characteristic_chromeos.cc',
         'bluetooth_remote_gatt_characteristic_chromeos.h',
+        'bluetooth_remote_gatt_descriptor_chromeos.cc',
+        'bluetooth_remote_gatt_descriptor_chromeos.h',
         'bluetooth_remote_gatt_service_chromeos.cc',
         'bluetooth_remote_gatt_service_chromeos.h',
         'bluetooth_service_record.cc',

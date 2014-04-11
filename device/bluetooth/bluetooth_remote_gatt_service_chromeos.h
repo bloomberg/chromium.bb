@@ -62,6 +62,11 @@ class BluetoothRemoteGattServiceChromeOS
   // Object path of the underlying service.
   const dbus::ObjectPath& object_path() const { return object_path_; }
 
+  // Notifies its observers that the GATT service has changed. This is mainly
+  // used by BluetoothRemoteGattCharacteristicChromeOS instances to notify
+  // service observers when characteristic descriptors get added and removed.
+  void NotifyServiceChanged();
+
  private:
   friend class BluetoothDeviceChromeOS;
 

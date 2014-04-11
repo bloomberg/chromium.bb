@@ -5,10 +5,12 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_CHROMEOS_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_CHROMEOS_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "chromeos/dbus/bluetooth_gatt_descriptor_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -22,13 +24,15 @@ class BluetoothGattService;
 
 namespace chromeos {
 
+class BluetoothRemoteGattDescriptorChromeOS;
 class BluetoothRemoteGattServiceChromeOS;
 
 // The BluetoothRemoteGattCharacteristicChromeOS class implements
 // BluetoothGattCharacteristic for remote GATT characteristics on the Chrome OS
 // platform.
 class BluetoothRemoteGattCharacteristicChromeOS
-    : public device::BluetoothGattCharacteristic {
+    : public device::BluetoothGattCharacteristic,
+      public BluetoothGattDescriptorClient::Observer {
  public:
   // device::BluetoothGattCharacteristic overrides.
   virtual std::string GetIdentifier() const OVERRIDE;
@@ -62,6 +66,15 @@ class BluetoothRemoteGattCharacteristicChromeOS
       const dbus::ObjectPath& object_path);
   virtual ~BluetoothRemoteGattCharacteristicChromeOS();
 
+  // BluetoothGattDescriptorClient::Observer overrides.
+  virtual void GattDescriptorAdded(
+      const dbus::ObjectPath& object_path) OVERRIDE;
+  virtual void GattDescriptorRemoved(
+      const dbus::ObjectPath& object_path) OVERRIDE;
+  virtual void GattDescriptorPropertyChanged(
+      const dbus::ObjectPath& object_path,
+      const std::string& property_name) OVERRIDE;
+
   // Called by dbus:: on completion of the request to get the characteristic
   // value.
   void OnGetValue(const ValueCallback& callback,
@@ -79,6 +92,14 @@ class BluetoothRemoteGattCharacteristicChromeOS
 
   // The GATT service this GATT characteristic belongs to.
   BluetoothRemoteGattServiceChromeOS* service_;
+
+  // Mapping from GATT descriptor object paths to descriptor objects owned by
+  // this characteristic. Since the Chrome OS implementation uses object paths
+  // as unique identifiers, we also use this mapping to return descriptors by
+  // identifier.
+  typedef std::map<dbus::ObjectPath, BluetoothRemoteGattDescriptorChromeOS*>
+      DescriptorMap;
+  DescriptorMap descriptors_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

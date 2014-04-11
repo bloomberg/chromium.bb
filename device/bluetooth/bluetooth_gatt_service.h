@@ -136,10 +136,10 @@ class BluetoothGattService {
     // should read all GATT characteristic and descriptors objects and do any
     // necessary set up required for a changed service. This method may be
     // called several times, especially when the service is discovered for the
-    // first time. It will be called for each characteristic that is discovered
-    // or removed. Hence this method should be used to check whether or not all
-    // characteristics of a service have been discovered that correspond to the
-    // profile implemented by the Observer.
+    // first time. It will be called for each characteristic and characteristic
+    // descriptor that is discovered or removed. Hence this method should be
+    // used to check whether or not all characteristics of a service have been
+    // discovered that correspond to the profile implemented by the Observer.
     virtual void GattServiceChanged(BluetoothGattService* service) {}
 
     // Called when the remote GATT characteristic |characteristic| belonging to

@@ -9,11 +9,10 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
-
-class BluetoothGattCharacteristic;
 
 // BluetoothGattDescriptor represents a local or remote GATT characteristic
 // descriptor. A GATT characteristic descriptor provides further information
@@ -106,7 +105,7 @@ class BluetoothGattDescriptor {
   static const BluetoothUUID kCharacteristicAggregateFormatUuid;
 
   // The ErrorCallback is used by methods to asynchronously report errors.
-  typedef base::Callback<void(const std::string&)> ErrorCallback;
+  typedef base::Closure ErrorCallback;
 
   // The ValueCallback is used to return the value of a remote characteristic
   // descriptor upon a read request.
@@ -128,8 +127,17 @@ class BluetoothGattDescriptor {
   // |kCharacteristicPresentationFormat| are supported for locally hosted
   // descriptors. This method will return NULL if |uuid| is any one of the
   // unsupported predefined descriptor UUIDs.
-  static BluetoothGattDescriptor* Create(const BluetoothUUID& uuid,
-                                         const std::vector<uint8>& value);
+  static BluetoothGattDescriptor* Create(
+      const BluetoothUUID& uuid,
+      const std::vector<uint8>& value,
+      BluetoothGattCharacteristic::Permissions permissions);
+
+  // Identifier used to uniquely identify a GATT descriptorobject. This is
+  // different from the descriptor UUID: while multiple descriptors with the
+  // same UUID can exist on a Bluetooth device, the identifier returned from
+  // this method is unique among all descriptors of a device. The contents of
+  // the identifier are platform specific.
+  virtual std::string GetIdentifier() const = 0;
 
   // The Bluetooth-specific UUID of the characteristic descriptor.
   virtual BluetoothUUID GetUUID() const = 0;
@@ -148,6 +156,9 @@ class BluetoothGattDescriptor {
   // descriptor belongs to.
   virtual BluetoothGattCharacteristic* GetCharacteristic() const = 0;
 
+  // Returns the bitmask of characteristic descriptor attribute permissions.
+  virtual BluetoothGattCharacteristic::Permissions GetPermissions() const = 0;
+
   // Sends a read request to a remote characteristic descriptor to read its
   // value. |callback| is called to return the read value on success and
   // |error_callback| is called for failures.
@@ -155,12 +166,11 @@ class BluetoothGattDescriptor {
                                     const ErrorCallback& error_callback) = 0;
 
   // Sends a write request to a remote characteristic descriptor, to modify the
-  // value of the descriptor starting at offset |offset| with the new value
-  // |new_value|. |callback| is called to signal success and |error_callback|
-  // for failures. This method only applies to remote descriptors and will fail
-  // for those that are locally hosted.
+  // value of the descriptor with the new value |new_value|. |callback| is
+  // called to signal success and |error_callback| for failures. This method
+  // only applies to remote descriptors and will fail for those that are locally
+  // hosted.
   virtual void WriteRemoteDescriptor(
-      int offset,
       const std::vector<uint8>& new_value,
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
