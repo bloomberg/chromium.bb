@@ -441,14 +441,6 @@
             ],
           },
         }],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '<(DEPTH)/build/linux/system.gyp:gtk',
-          ],
-          'export_dependent_settings': [
-            '<(DEPTH)/build/linux/system.gyp:gtk',
-          ],
-        }],
         ['OS=="android"', {
           'sources/': [
             ['exclude', 'accessibility/'],
@@ -644,11 +636,6 @@
             ['exclude', 'Linux\\.cpp$'],
           ],
         }],
-        ['toolkit_uses_gtk == 0', {
-          'sources/': [
-            ['exclude', 'Gtk\\.cpp$'],
-          ],
-        }],
         ['OS=="android"', {
           'sources/': [
             ['include', 'rendering/RenderThemeChromiumFontProviderLinux\\.cpp$'],
@@ -686,11 +673,6 @@
         ['OS != "linux"', {
           'sources/': [
             ['exclude', 'Linux\\.cpp$'],
-          ],
-        }],
-        ['toolkit_uses_gtk == 0', {
-          'sources/': [
-            ['exclude', 'Gtk\\.cpp$'],
           ],
         }],
         ['OS=="android"', {

@@ -74,11 +74,6 @@
             ['exclude', 'Mac\\.mm$'],
           ],
         }],
-        ['<(toolkit_uses_gtk) != 1', {
-            'sources/': [
-              ['exclude', 'Gtk\\.cpp$']
-            ]
-        }],
         ['OS!="android"', {
           'sources/': [
             ['exclude', 'Android\\.cpp$'],

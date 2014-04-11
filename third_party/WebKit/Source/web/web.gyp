@@ -173,18 +173,6 @@
                         ['exclude', 'x11/'],
                     ]
                 }],
-                ['toolkit_uses_gtk == 1', {
-                    'dependencies': [
-                        '<(DEPTH)/build/linux/system.gyp:gtk',
-                    ],
-                    'include_dirs': [
-                        '../../public/web/gtk',
-                    ],
-                }, { # else: toolkit_uses_gtk != 1
-                    'sources/': [
-                        ['exclude', 'WebInputEventFactoryGtk.cpp$'],
-                    ],
-                }],
                 ['OS=="android"', {
                     'include_dirs': [
                         '../../public/web/android',

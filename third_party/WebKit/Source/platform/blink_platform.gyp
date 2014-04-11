@@ -422,7 +422,7 @@
       }],
       ['use_default_render_theme==0', {
         'sources/': [
-          ['exclude', 'scroll/ScrollbarThemeGtkOrAura\\.(cpp|h)'],
+          ['exclude', 'scroll/ScrollbarThemeAura\\.(cpp|h)'],
         ],
       }],
       ['"WTF_USE_WEBAUDIO_FFMPEG=1" in feature_defines', {

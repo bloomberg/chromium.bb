@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollbarThemeGtkOrAura_h
-#define ScrollbarThemeGtkOrAura_h
+#ifndef ScrollbarThemeAura_h
+#define ScrollbarThemeAura_h
 
 #include "platform/scroll/ScrollbarThemeNonMacCommon.h"
 
 namespace WebCore {
 
-class PLATFORM_EXPORT ScrollbarThemeGtkOrAura : public ScrollbarThemeNonMacCommon {
+class PLATFORM_EXPORT ScrollbarThemeAura : public ScrollbarThemeNonMacCommon {
 public:
     virtual int scrollbarThickness(ScrollbarControlSize) OVERRIDE;
 

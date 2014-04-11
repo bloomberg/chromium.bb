@@ -127,17 +127,6 @@
                         '<@(platform_web_unittest_files)',
                         '<@(web_unittest_files)',
                     ],
-                    'conditions': [
-                        ['toolkit_uses_gtk == 1', {
-                            'include_dirs': [
-                                '../../public/web/gtk',
-                            ],
-                            'variables': {
-                            # FIXME: Enable warnings on other platforms.
-                            'chromium_code': 1,
-                            },
-                        }],
-                    ],
                 }],
                 ['OS=="win" and component!="shared_library"', {
                     'configurations': {

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "platform/scroll/ScrollbarThemeGtkOrAura.h"
+#include "platform/scroll/ScrollbarThemeAura.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "platform/LayoutTestSupport.h"
@@ -55,11 +55,11 @@ ScrollbarTheme* ScrollbarTheme::nativeTheme()
         return &theme;
     }
 
-    DEFINE_STATIC_LOCAL(ScrollbarThemeGtkOrAura, theme, ());
+    DEFINE_STATIC_LOCAL(ScrollbarThemeAura, theme, ());
     return &theme;
 }
 
-int ScrollbarThemeGtkOrAura::scrollbarThickness(ScrollbarControlSize controlSize)
+int ScrollbarThemeAura::scrollbarThickness(ScrollbarControlSize controlSize)
 {
     // Horiz and Vert scrollbars are the same thickness.
     // In unit tests we don't have the mock theme engine (because of layering violations), so we hard code the size (see bug 327470).
@@ -69,7 +69,7 @@ int ScrollbarThemeGtkOrAura::scrollbarThickness(ScrollbarControlSize controlSize
     return scrollbarSize.width();
 }
 
-void ScrollbarThemeGtkOrAura::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
+void ScrollbarThemeAura::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
 {
     blink::WebThemeEngine::State state = scrollbar->hoveredPart() == partType ? blink::WebThemeEngine::StateHover : blink::WebThemeEngine::StateNormal;
 
@@ -87,7 +87,7 @@ void ScrollbarThemeGtkOrAura::paintTrackPiece(GraphicsContext* gc, ScrollbarThem
     blink::Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? blink::WebThemeEngine::PartScrollbarHorizontalTrack : blink::WebThemeEngine::PartScrollbarVerticalTrack, state, blink::WebRect(rect), &extraParams);
 }
 
-void ScrollbarThemeGtkOrAura::paintButton(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
+void ScrollbarThemeAura::paintButton(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
 {
     blink::WebThemeEngine::Part paintPart;
     blink::WebThemeEngine::State state = blink::WebThemeEngine::StateNormal;
@@ -130,7 +130,7 @@ void ScrollbarThemeGtkOrAura::paintButton(GraphicsContext* gc, ScrollbarThemeCli
     blink::Platform::current()->themeEngine()->paint(canvas, paintPart, state, blink::WebRect(rect), 0);
 }
 
-void ScrollbarThemeGtkOrAura::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeAura::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     blink::WebThemeEngine::State state;
     blink::WebCanvas* canvas = gc->canvas();
@@ -143,7 +143,7 @@ void ScrollbarThemeGtkOrAura::paintThumb(GraphicsContext* gc, ScrollbarThemeClie
     blink::Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? blink::WebThemeEngine::PartScrollbarHorizontalThumb : blink::WebThemeEngine::PartScrollbarVerticalThumb, state, blink::WebRect(rect), 0);
 }
 
-IntSize ScrollbarThemeGtkOrAura::buttonSize(ScrollbarThemeClient* scrollbar)
+IntSize ScrollbarThemeAura::buttonSize(ScrollbarThemeClient* scrollbar)
 {
     if (scrollbar->orientation() == VerticalScrollbar) {
         IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartScrollbarUpArrow);
@@ -155,7 +155,7 @@ IntSize ScrollbarThemeGtkOrAura::buttonSize(ScrollbarThemeClient* scrollbar)
     return IntSize(scrollbar->width() < 2 * size.width() ? scrollbar->width() / 2 : size.width(), size.height());
 }
 
-int ScrollbarThemeGtkOrAura::minimumThumbLength(ScrollbarThemeClient* scrollbar)
+int ScrollbarThemeAura::minimumThumbLength(ScrollbarThemeClient* scrollbar)
 {
     if (scrollbar->orientation() == VerticalScrollbar) {
         IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartScrollbarVerticalThumb);
