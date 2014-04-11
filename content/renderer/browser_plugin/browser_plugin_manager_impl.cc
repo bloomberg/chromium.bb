@@ -24,8 +24,9 @@ BrowserPluginManagerImpl::~BrowserPluginManagerImpl() {
 
 BrowserPlugin* BrowserPluginManagerImpl::CreateBrowserPlugin(
     RenderViewImpl* render_view,
-    blink::WebFrame* frame) {
-  return new BrowserPlugin(render_view, frame);
+    blink::WebFrame* frame,
+    bool auto_navigate) {
+  return new BrowserPlugin(render_view, frame, auto_navigate);
 }
 
 void BrowserPluginManagerImpl::AllocateInstanceID(

@@ -23,7 +23,8 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
   // BrowserPluginManager implementation.
   virtual BrowserPlugin* CreateBrowserPlugin(
       RenderViewImpl* render_view,
-      blink::WebFrame* frame) OVERRIDE;
+      blink::WebFrame* frame,
+      bool auto_navigate) OVERRIDE;
   virtual void AllocateInstanceID(
       const base::WeakPtr<BrowserPlugin>& browser_plugin) OVERRIDE;
 

@@ -45,7 +45,9 @@ class CONTENT_EXPORT BrowserPluginManager
   // BrowserPluginManager via AddBrowserPlugin. When it is destroyed, it is
   // responsible for removing its association via RemoveBrowserPlugin.
   virtual BrowserPlugin* CreateBrowserPlugin(
-      RenderViewImpl* render_view, blink::WebFrame* frame) = 0;
+      RenderViewImpl* render_view,
+      blink::WebFrame* frame,
+      bool auto_navigate) = 0;
 
   // Asynchronously requests a new browser-process-allocated instance ID.
   // After the browser process allocates an ID, it calls back into the

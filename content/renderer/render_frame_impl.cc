@@ -1212,7 +1212,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 
   if (base::UTF16ToASCII(params.mimeType) == kBrowserPluginMimeType) {
     return render_view_->GetBrowserPluginManager()->CreateBrowserPlugin(
-        render_view_.get(), frame);
+        render_view_.get(), frame, false);
   }
 
 #if defined(ENABLE_PLUGINS)
@@ -1224,6 +1224,12 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
       params.mimeType.utf8(), &found, &info, &mime_type));
   if (!found)
     return NULL;
+
+  if (info.type == content::WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
+    return render_view_->GetBrowserPluginManager()->CreateBrowserPlugin(
+        render_view_.get(), frame, true);
+  }
+
 
   WebPluginParams params_to_use = params;
   params_to_use.mimeType = WebString::fromUTF8(mime_type);

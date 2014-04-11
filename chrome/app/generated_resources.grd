@@ -5591,6 +5591,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PLUGINS_PPAPI_UNSANDBOXED" desc="Text that indicates the plugin is an unsandboxed out-of-process PPAPI plugin.">
           PPAPI (unsandboxed)
         </message>
+        <message name="IDS_PLUGINS_BROWSER_PLUGIN" desc="Text that indicates the plugin is a browser plugin.">
+          BROWSER PLUGIN
+        </message>
       </if>
 
       <!-- about:flags -->

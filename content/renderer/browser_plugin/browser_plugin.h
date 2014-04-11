@@ -214,7 +214,9 @@ class CONTENT_EXPORT BrowserPlugin :
   // does an initial navigation or is attached to a newly created guest, it
   // acquires a guest_instance_id as well. The guest instance ID uniquely
   // identifies a guest WebContents that's hosted by this BrowserPlugin.
-  BrowserPlugin(RenderViewImpl* render_view, blink::WebFrame* frame);
+  BrowserPlugin(RenderViewImpl* render_view,
+                blink::WebFrame* frame,
+                bool auto_navigate);
 
   virtual ~BrowserPlugin();
 
@@ -339,6 +341,9 @@ class CONTENT_EXPORT BrowserPlugin :
   // Tracks the visibility of the browser plugin regardless of the whole
   // embedder RenderView's visibility.
   bool visible_;
+
+  bool auto_navigate_;
+  std::string html_string_;
 
   WebCursor cursor_;
 

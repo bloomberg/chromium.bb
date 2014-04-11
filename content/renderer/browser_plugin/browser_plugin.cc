@@ -55,6 +55,8 @@ namespace content {
 
 namespace {
 
+const char* kCustomPersistPartition = "persist:custom_plugin";
+
 static std::string GetInternalEventName(const char* event_name) {
   return base::StringPrintf("-internal-%s", event_name);
 }
@@ -67,7 +69,8 @@ static base::LazyInstance<PluginContainerMap> g_plugin_container_map =
 }  // namespace
 
 BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
-                             blink::WebFrame* frame)
+                             blink::WebFrame* frame,
+                             bool auto_navigate)
     : guest_instance_id_(browser_plugin::kInstanceIDNone),
       attached_(false),
       render_view_(render_view->AsWeakPtr()),
@@ -84,6 +87,7 @@ BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
       content_window_routing_id_(MSG_ROUTING_NONE),
       plugin_focused_(false),
       visible_(true),
+      auto_navigate_(auto_navigate),
       before_first_navigation_(true),
       mouse_locked_(false),
       browser_plugin_manager_(render_view->GetBrowserPluginManager()),
@@ -379,6 +383,12 @@ void BrowserPlugin::OnInstanceIDAllocated(int guest_instance_id) {
   before_first_navigation_ = false;
   guest_instance_id_ = guest_instance_id;
   browser_plugin_manager()->AddBrowserPlugin(guest_instance_id, this);
+
+  if (auto_navigate_) {
+    scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+    Attach(params.Pass());
+    return;
+  }
 
   std::map<std::string, base::Value*> props;
   props[browser_plugin::kWindowID] =
@@ -750,7 +760,11 @@ bool BrowserPlugin::ParsePartitionAttribute(std::string* error_message) {
     return false;
   }
 
-  std::string input = GetPartitionAttribute();
+  std::string input;
+  if (auto_navigate_)
+    input = kCustomPersistPartition;
+  else
+    input = GetPartitionAttribute();
 
   // Since the "persist:" prefix is in ASCII, StartsWith will work fine on
   // UTF-8 encoded |partition_id|. If the prefix is a match, we can safely
@@ -890,7 +904,8 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
   if (!container)
     return false;
 
-  if (!GetContentClient()->renderer()->AllowBrowserPlugin(container))
+  if (!GetContentClient()->renderer()->AllowBrowserPlugin(container) &&
+      !auto_navigate_)
     return false;
 
   // Tell |container| to allow this plugin to use script objects.
@@ -1277,9 +1292,17 @@ void BrowserPlugin::didReceiveResponse(
 }
 
 void BrowserPlugin::didReceiveData(const char* data, int data_length) {
+  if (auto_navigate_) {
+    std::string value(data, data_length);
+    html_string_ += value;
+  }
 }
 
 void BrowserPlugin::didFinishLoading() {
+  if (auto_navigate_) {
+    UpdateDOMAttribute(content::browser_plugin::kAttributeSrc, html_string_);
+    ParseAttributes();
+  }
 }
 
 void BrowserPlugin::didFailLoading(const blink::WebURLError& error) {
