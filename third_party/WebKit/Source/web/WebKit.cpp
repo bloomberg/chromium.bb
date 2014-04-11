@@ -42,6 +42,7 @@
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
+#include "gin/public/v8_platform.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/Logging.h"
 #include "platform/graphics/ImageDecodingStore.h"
@@ -104,7 +105,9 @@ void initialize(Platform* platform)
 {
     initializeWithoutV8(platform);
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::V8::InitializePlatform(gin::V8Platform::Get());
+    v8::Isolate* isolate = v8::Isolate::New();
+    isolate->Enter();
     WebCore::V8Initializer::initializeMainThreadIfNeeded(isolate);
     v8::V8::SetEntropySource(&generateEntropy);
     v8::V8::SetArrayBufferAllocator(WebCore::v8ArrayBufferAllocator());
@@ -223,8 +226,10 @@ void shutdown()
     // so that the main thread won't get involved in a GC during the shutdown.
     WebCore::ThreadState::detachMainThread();
 
-    WebCore::V8PerIsolateData::dispose(WebCore::V8PerIsolateData::mainThreadIsolate());
-    v8::V8::Dispose();
+    v8::Isolate* isolate = WebCore::V8PerIsolateData::mainThreadIsolate();
+    WebCore::V8PerIsolateData::dispose(isolate);
+    isolate->Exit();
+    isolate->Dispose();
 
     shutdownWithoutV8();
 }
