@@ -30,6 +30,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/HTTPHeaderMap.h"
+#include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceLoadInfo.h"
 #include "platform/network/ResourceLoadTiming.h"
 #include "platform/weborigin/KURL.h"
@@ -103,11 +104,11 @@ public:
 
     // These functions return parsed values of the corresponding response headers.
     // NaN means that the header was not present or had invalid value.
-    bool cacheControlContainsNoCache() const;
-    bool cacheControlContainsNoStore() const;
-    bool cacheControlContainsMustRevalidate() const;
+    bool cacheControlContainsNoCache();
+    bool cacheControlContainsNoStore();
+    bool cacheControlContainsMustRevalidate();
     bool hasCacheValidatorFields() const;
-    double cacheControlMaxAge() const;
+    double cacheControlMaxAge();
     double date() const;
     double age() const;
     double expires() const;
@@ -187,7 +188,6 @@ public:
     static bool compare(const ResourceResponse&, const ResourceResponse&);
 
 private:
-    void parseCacheControlDirectives() const;
     void updateHeaderParsedState(const AtomicString& name);
 
     KURL m_url;
@@ -207,16 +207,12 @@ private:
 
     bool m_isNull : 1;
 
-    mutable bool m_haveParsedCacheControlHeader : 1;
+    CacheControlHeader m_cacheControlHeader;
+
     mutable bool m_haveParsedAgeHeader : 1;
     mutable bool m_haveParsedDateHeader : 1;
     mutable bool m_haveParsedExpiresHeader : 1;
     mutable bool m_haveParsedLastModifiedHeader : 1;
-
-    mutable bool m_cacheControlContainsNoCache : 1;
-    mutable bool m_cacheControlContainsNoStore : 1;
-    mutable bool m_cacheControlContainsMustRevalidate : 1;
-    mutable double m_cacheControlMaxAge;
 
     mutable double m_age;
     mutable double m_date;

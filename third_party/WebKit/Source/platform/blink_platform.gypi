@@ -904,6 +904,7 @@
       'graphics/test/MockDiscardablePixelRef.h',
       'mac/ScrollElasticityControllerTest.mm',
       'image-decoders/ImageDecoderTest.cpp',
+      'network/HTTPParsersTest.cpp',
       'testing/ArenaTestHelpers.h',
       'testing/TreeTestHelpers.cpp',
       'testing/TreeTestHelpers.h',

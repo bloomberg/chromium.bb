@@ -212,12 +212,13 @@ public:
     void registerHandle(ResourcePtrBase* h);
     void unregisterHandle(ResourcePtrBase* h);
 
-    bool canReuseRedirectChain() const;
-    bool mustRevalidateDueToCacheHeaders() const;
-    bool canUseCacheValidator() const;
+    bool canReuseRedirectChain();
+    bool mustRevalidateDueToCacheHeaders();
+    bool canUseCacheValidator();
     bool isCacheValidator() const { return m_resourceToRevalidate; }
     Resource* resourceToRevalidate() const { return m_resourceToRevalidate; }
     void setResourceToRevalidate(Resource*);
+    bool hasCacheControlNoStoreHeader();
 
     bool isPurgeable() const;
     bool wasPurged() const;
@@ -307,8 +308,8 @@ protected:
         {
         }
 
-        const ResourceRequest m_request;
-        const ResourceResponse m_redirectResponse;
+        ResourceRequest m_request;
+        ResourceResponse m_redirectResponse;
     };
     const Vector<RedirectPair>& redirectChain() const { return m_redirectChain; }
 
