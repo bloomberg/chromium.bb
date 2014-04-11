@@ -22,10 +22,9 @@ class CONTENT_EXPORT PepperNetworkMonitorHost
     : public ppapi::host::ResourceHost,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
-  PepperNetworkMonitorHost(
-      BrowserPpapiHostImpl* host,
-      PP_Instance instance,
-      PP_Resource resource);
+  PepperNetworkMonitorHost(BrowserPpapiHostImpl* host,
+                           PP_Instance instance,
+                           PP_Resource resource);
 
   virtual ~PepperNetworkMonitorHost();
 

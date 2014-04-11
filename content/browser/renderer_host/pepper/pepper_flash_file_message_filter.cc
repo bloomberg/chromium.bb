@@ -28,13 +28,13 @@ namespace content {
 namespace {
 
 bool CanRead(int process_id, const base::FilePath& path) {
-  return ChildProcessSecurityPolicyImpl::GetInstance()->
-      CanReadFile(process_id, path);
+  return ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(process_id,
+                                                                    path);
 }
 
 bool CanCreateReadWrite(int process_id, const base::FilePath& path) {
-  return ChildProcessSecurityPolicyImpl::GetInstance()->
-      CanCreateReadWriteFile(process_id, path);
+  return ChildProcessSecurityPolicyImpl::GetInstance()->CanCreateReadWriteFile(
+      process_id, path);
 }
 
 }  // namespace
@@ -60,8 +60,7 @@ PepperFlashFileMessageFilter::PepperFlashFileMessageFilter(
   }
 }
 
-PepperFlashFileMessageFilter::~PepperFlashFileMessageFilter() {
-}
+PepperFlashFileMessageFilter::~PepperFlashFileMessageFilter() {}
 
 // static
 base::FilePath PepperFlashFileMessageFilter::GetDataDirName(
@@ -84,24 +83,22 @@ PepperFlashFileMessageFilter::OverrideTaskRunnerForMessage(
 }
 
 int32_t PepperFlashFileMessageFilter::OnResourceMessageReceived(
-   const IPC::Message& msg,
-   ppapi::host::HostMessageContext* context) {
+    const IPC::Message& msg,
+    ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperFlashFileMessageFilter, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_OpenFile,
-                                      OnOpenFile)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_RenameFile,
-                                      OnRenameFile)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_DeleteFileOrDir,
-                                      OnDeleteFileOrDir)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_CreateDir,
-                                      OnCreateDir)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_QueryFile,
-                                      OnQueryFile)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_GetDirContents,
-                                      OnGetDirContents)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_FlashFile_CreateTemporaryFile,
-        OnCreateTemporaryFile)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_OpenFile, OnOpenFile)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_RenameFile,
+                                    OnRenameFile)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_DeleteFileOrDir,
+                                    OnDeleteFileOrDir)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_CreateDir,
+                                    OnCreateDir)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_QueryFile,
+                                    OnQueryFile)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_GetDirContents,
+                                    OnGetDirContents)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+      PpapiHostMsg_FlashFile_CreateTemporaryFile, OnCreateTemporaryFile)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -111,16 +108,14 @@ int32_t PepperFlashFileMessageFilter::OnOpenFile(
     const ppapi::PepperFilePath& path,
     int pp_open_flags) {
   base::FilePath full_path = ValidateAndConvertPepperFilePath(
-      path,
-      base::Bind(&CanOpenWithPepperFlags, pp_open_flags));
+      path, base::Bind(&CanOpenWithPepperFlags, pp_open_flags));
   if (full_path.empty()) {
-    return ppapi::FileErrorToPepperError(
-        base::File::FILE_ERROR_ACCESS_DENIED);
+    return ppapi::FileErrorToPepperError(base::File::FILE_ERROR_ACCESS_DENIED);
   }
 
   int platform_file_flags = 0;
-  if (!ppapi::PepperFileOpenFlagsToPlatformFileFlags(
-          pp_open_flags, &platform_file_flags)) {
+  if (!ppapi::PepperFileOpenFlagsToPlatformFileFlags(pp_open_flags,
+                                                     &platform_file_flags)) {
     return base::File::FILE_ERROR_FAILED;
   }
 
@@ -134,8 +129,7 @@ int32_t PepperFlashFileMessageFilter::OnOpenFile(
   base::File::Info info;
   if (!file.GetInfo(&info) || info.is_directory) {
     // When in doubt, throw it out.
-    return ppapi::FileErrorToPepperError(
-        base::File::FILE_ERROR_ACCESS_DENIED);
+    return ppapi::FileErrorToPepperError(base::File::FILE_ERROR_ACCESS_DENIED);
   }
 
   IPC::PlatformFileForTransit transit_file =
@@ -157,84 +151,77 @@ int32_t PepperFlashFileMessageFilter::OnRenameFile(
   base::FilePath to_full_path = ValidateAndConvertPepperFilePath(
       to_path, base::Bind(&CanCreateReadWrite));
   if (from_full_path.empty() || to_full_path.empty()) {
-    return ppapi::FileErrorToPepperError(
-        base::File::FILE_ERROR_ACCESS_DENIED);
+    return ppapi::FileErrorToPepperError(base::File::FILE_ERROR_ACCESS_DENIED);
   }
 
   bool result = base::Move(from_full_path, to_full_path);
-  return ppapi::FileErrorToPepperError(result ?
-      base::File::FILE_OK : base::File::FILE_ERROR_ACCESS_DENIED);
+  return ppapi::FileErrorToPepperError(
+      result ? base::File::FILE_OK : base::File::FILE_ERROR_ACCESS_DENIED);
 }
 
 int32_t PepperFlashFileMessageFilter::OnDeleteFileOrDir(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& path,
     bool recursive) {
-  base::FilePath full_path = ValidateAndConvertPepperFilePath(
-      path, base::Bind(&CanCreateReadWrite));
+  base::FilePath full_path =
+      ValidateAndConvertPepperFilePath(path, base::Bind(&CanCreateReadWrite));
   if (full_path.empty()) {
-    return ppapi::FileErrorToPepperError(
-        base::File::FILE_ERROR_ACCESS_DENIED);
+    return ppapi::FileErrorToPepperError(base::File::FILE_ERROR_ACCESS_DENIED);
   }
 
   bool result = base::DeleteFile(full_path, recursive);
-  return ppapi::FileErrorToPepperError(result ?
-      base::File::FILE_OK : base::File::FILE_ERROR_ACCESS_DENIED);
+  return ppapi::FileErrorToPepperError(
+      result ? base::File::FILE_OK : base::File::FILE_ERROR_ACCESS_DENIED);
 }
 int32_t PepperFlashFileMessageFilter::OnCreateDir(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& path) {
-  base::FilePath full_path = ValidateAndConvertPepperFilePath(
-      path, base::Bind(&CanCreateReadWrite));
+  base::FilePath full_path =
+      ValidateAndConvertPepperFilePath(path, base::Bind(&CanCreateReadWrite));
   if (full_path.empty()) {
-    return ppapi::FileErrorToPepperError(
-        base::File::FILE_ERROR_ACCESS_DENIED);
+    return ppapi::FileErrorToPepperError(base::File::FILE_ERROR_ACCESS_DENIED);
   }
 
   bool result = base::CreateDirectory(full_path);
-  return ppapi::FileErrorToPepperError(result ?
-      base::File::FILE_OK : base::File::FILE_ERROR_ACCESS_DENIED);
+  return ppapi::FileErrorToPepperError(
+      result ? base::File::FILE_OK : base::File::FILE_ERROR_ACCESS_DENIED);
 }
 
 int32_t PepperFlashFileMessageFilter::OnQueryFile(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& path) {
-  base::FilePath full_path = ValidateAndConvertPepperFilePath(
-      path, base::Bind(&CanRead));
+  base::FilePath full_path =
+      ValidateAndConvertPepperFilePath(path, base::Bind(&CanRead));
   if (full_path.empty()) {
-    return ppapi::FileErrorToPepperError(
-        base::File::FILE_ERROR_ACCESS_DENIED);
+    return ppapi::FileErrorToPepperError(base::File::FILE_ERROR_ACCESS_DENIED);
   }
 
   base::File::Info info;
   bool result = base::GetFileInfo(full_path, &info);
   context->reply_msg = PpapiPluginMsg_FlashFile_QueryFileReply(info);
-  return ppapi::FileErrorToPepperError(result ?
-      base::File::FILE_OK : base::File::FILE_ERROR_ACCESS_DENIED);
+  return ppapi::FileErrorToPepperError(
+      result ? base::File::FILE_OK : base::File::FILE_ERROR_ACCESS_DENIED);
 }
 
 int32_t PepperFlashFileMessageFilter::OnGetDirContents(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& path) {
-  base::FilePath full_path = ValidateAndConvertPepperFilePath(
-      path, base::Bind(&CanRead));
+  base::FilePath full_path =
+      ValidateAndConvertPepperFilePath(path, base::Bind(&CanRead));
   if (full_path.empty()) {
-    return ppapi::FileErrorToPepperError(
-        base::File::FILE_ERROR_ACCESS_DENIED);
+    return ppapi::FileErrorToPepperError(base::File::FILE_ERROR_ACCESS_DENIED);
   }
 
   ppapi::DirContents contents;
-  base::FileEnumerator enumerator(full_path, false,
-      base::FileEnumerator::FILES |
-      base::FileEnumerator::DIRECTORIES |
-      base::FileEnumerator::INCLUDE_DOT_DOT);
+  base::FileEnumerator enumerator(full_path,
+                                  false,
+                                  base::FileEnumerator::FILES |
+                                      base::FileEnumerator::DIRECTORIES |
+                                      base::FileEnumerator::INCLUDE_DOT_DOT);
 
   while (!enumerator.Next().empty()) {
     base::FileEnumerator::FileInfo info = enumerator.GetInfo();
-    ppapi::DirEntry entry = {
-      info.GetName(),
-      info.IsDirectory()
-    };
+    ppapi::DirEntry entry = {info.GetName(), info.IsDirectory()};
     contents.push_back(entry);
   }
 
@@ -244,21 +231,19 @@ int32_t PepperFlashFileMessageFilter::OnGetDirContents(
 
 int32_t PepperFlashFileMessageFilter::OnCreateTemporaryFile(
     ppapi::host::HostMessageContext* context) {
-  ppapi::PepperFilePath dir_path(
-      ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL, base::FilePath());
+  ppapi::PepperFilePath dir_path(ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL,
+                                 base::FilePath());
   base::FilePath validated_dir_path = ValidateAndConvertPepperFilePath(
       dir_path, base::Bind(&CanCreateReadWrite));
   if (validated_dir_path.empty() ||
       (!base::DirectoryExists(validated_dir_path) &&
        !base::CreateDirectory(validated_dir_path))) {
-    return ppapi::FileErrorToPepperError(
-        base::File::FILE_ERROR_ACCESS_DENIED);
+    return ppapi::FileErrorToPepperError(base::File::FILE_ERROR_ACCESS_DENIED);
   }
 
   base::FilePath file_path;
   if (!base::CreateTemporaryFileInDir(validated_dir_path, &file_path)) {
-    return ppapi::FileErrorToPepperError(
-        base::File::FILE_ERROR_FAILED);
+    return ppapi::FileErrorToPepperError(base::File::FILE_ERROR_FAILED);
   }
 
   base::File file(file_path,
@@ -293,8 +278,7 @@ base::FilePath PepperFlashFileMessageFilter::ValidateAndConvertPepperFilePath(
     case ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL:
       // This filter provides the module name portion of the path to prevent
       // plugins from accessing each other's data.
-      if (!plugin_data_directory_.empty() &&
-          !pepper_path.path().IsAbsolute() &&
+      if (!plugin_data_directory_.empty() && !pepper_path.path().IsAbsolute() &&
           !pepper_path.path().ReferencesParent())
         file_path = plugin_data_directory_.Append(pepper_path.path());
       break;

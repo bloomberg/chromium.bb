@@ -9,11 +9,9 @@
 
 namespace content {
 
-SSLContextHelper::SSLContextHelper() {
-}
+SSLContextHelper::SSLContextHelper() {}
 
-SSLContextHelper::~SSLContextHelper() {
-}
+SSLContextHelper::~SSLContextHelper() {}
 
 net::CertVerifier* SSLContextHelper::GetCertVerifier() {
   if (!cert_verifier_)

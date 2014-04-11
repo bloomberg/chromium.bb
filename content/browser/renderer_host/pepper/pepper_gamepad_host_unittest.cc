@@ -22,14 +22,11 @@ namespace content {
 
 namespace {
 
-class PepperGamepadHostTest
-    : public testing::Test,
-      public BrowserPpapiHostTest {
+class PepperGamepadHostTest : public testing::Test,
+                              public BrowserPpapiHostTest {
  public:
-  PepperGamepadHostTest() {
-  }
-  virtual ~PepperGamepadHostTest() {
-  }
+  PepperGamepadHostTest() {}
+  virtual ~PepperGamepadHostTest() {}
 
   void ConstructService(const blink::WebGamepads& test_data) {
     service_.reset(new GamepadServiceTestConstructor(test_data));
@@ -55,7 +52,7 @@ inline ptrdiff_t AddressDiff(const void* a, const void* b) {
 TEST_F(PepperGamepadHostTest, ValidateHardwareBuffersMatch) {
   // Hardware buffer.
   COMPILE_ASSERT(sizeof(ppapi::ContentGamepadHardwareBuffer) ==
-                 sizeof(GamepadHardwareBuffer),
+                     sizeof(GamepadHardwareBuffer),
                  gamepad_hardware_buffers_must_match);
   ppapi::ContentGamepadHardwareBuffer ppapi_buf;
   GamepadHardwareBuffer content_buf;
@@ -67,8 +64,7 @@ TEST_F(PepperGamepadHostTest, ValidateHardwareBuffersMatch) {
 
 TEST_F(PepperGamepadHostTest, ValidateGamepadsMatch) {
   // Gamepads.
-  COMPILE_ASSERT(sizeof(ppapi::WebKitGamepads) ==
-                 sizeof(blink::WebGamepads),
+  COMPILE_ASSERT(sizeof(ppapi::WebKitGamepads) == sizeof(blink::WebGamepads),
                  gamepads_data_must_match);
   ppapi::WebKitGamepads ppapi_gamepads;
   blink::WebGamepads web_gamepads;
@@ -88,8 +84,7 @@ TEST_F(PepperGamepadHostTest, ValidateGamepadsMatch) {
 
 TEST_F(PepperGamepadHostTest, ValidateGamepadMatch) {
   // Gamepad.
-  COMPILE_ASSERT(sizeof(ppapi::WebKitGamepad) ==
-                 sizeof(blink::WebGamepad),
+  COMPILE_ASSERT(sizeof(ppapi::WebKitGamepad) == sizeof(blink::WebGamepad),
                  gamepad_data_must_match);
   ppapi::WebKitGamepad ppapi_gamepad;
   blink::WebGamepad web_gamepad;
@@ -135,16 +130,15 @@ TEST_F(PepperGamepadHostTest, WaitForReply) {
 
   PP_Instance pp_instance = 12345;
   PP_Resource pp_resource = 67890;
-  PepperGamepadHost gamepad_host(gamepad_service(), GetBrowserPpapiHost(),
-                                 pp_instance, pp_resource);
+  PepperGamepadHost gamepad_host(
+      gamepad_service(), GetBrowserPpapiHost(), pp_instance, pp_resource);
 
   // Synthesize a request for gamepad data.
   ppapi::host::HostMessageContext context(
       ppapi::proxy::ResourceMessageCallParams(pp_resource, 1));
   EXPECT_EQ(PP_OK_COMPLETIONPENDING,
             gamepad_host.OnResourceMessageReceived(
-                PpapiHostMsg_Gamepad_RequestMemory(),
-                &context));
+                PpapiHostMsg_Gamepad_RequestMemory(), &context));
 
   // Wait for the gamepad background thread to read twice to make sure we
   // don't get a message yet (see below for why).
@@ -200,8 +194,7 @@ TEST_F(PepperGamepadHostTest, WaitForReply) {
   // Duplicate requests should be denied.
   EXPECT_EQ(PP_ERROR_FAILED,
             gamepad_host.OnResourceMessageReceived(
-                PpapiHostMsg_Gamepad_RequestMemory(),
-                &context));
+                PpapiHostMsg_Gamepad_RequestMemory(), &context));
 }
 
 }  // namespace content

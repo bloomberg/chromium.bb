@@ -40,8 +40,8 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
   virtual int32_t Rename(ppapi::host::ReplyMessageContext context,
                          PepperFileRefHost* new_file_ref) OVERRIDE;
   virtual int32_t Query(ppapi::host::ReplyMessageContext context) OVERRIDE;
-  virtual int32_t ReadDirectoryEntries(
-      ppapi::host::ReplyMessageContext context) OVERRIDE;
+  virtual int32_t ReadDirectoryEntries(ppapi::host::ReplyMessageContext context)
+      OVERRIDE;
   virtual int32_t GetAbsolutePath(ppapi::host::ReplyMessageContext context)
       OVERRIDE;
   virtual fileapi::FileSystemURL GetFileSystemURL() const OVERRIDE;
@@ -59,10 +59,9 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
                  base::File::Error error);
 
   // Operation specific callbacks.
-  void GetMetadataComplete(
-    ppapi::host::ReplyMessageContext reply_context,
-    base::File::Error error,
-    const base::File::Info& file_info);
+  void GetMetadataComplete(ppapi::host::ReplyMessageContext reply_context,
+                           base::File::Error error,
+                           const base::File::Info& file_info);
   void ReadDirectoryComplete(
       ppapi::host::ReplyMessageContext context,
       fileapi::FileSystemOperation::FileEntryList* accumulated_file_list,

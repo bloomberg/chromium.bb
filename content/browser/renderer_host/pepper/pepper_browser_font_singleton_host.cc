@@ -38,11 +38,9 @@ class FontMessageFilter : public ppapi::host::ResourceMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(FontMessageFilter);
 };
 
-FontMessageFilter::FontMessageFilter() {
-}
+FontMessageFilter::FontMessageFilter() {}
 
-FontMessageFilter::~FontMessageFilter() {
-}
+FontMessageFilter::~FontMessageFilter() {}
 
 scoped_refptr<base::TaskRunner> FontMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& msg) {
@@ -58,9 +56,9 @@ int32_t FontMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(FontMessageFilter, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_BrowserFontSingleton_GetFontFamilies,
-        OnHostMsgGetFontFamilies)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+      PpapiHostMsg_BrowserFontSingleton_GetFontFamilies,
+      OnHostMsgGetFontFamilies)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -105,7 +103,6 @@ PepperBrowserFontSingletonHost::PepperBrowserFontSingletonHost(
       new FontMessageFilter()));
 }
 
-PepperBrowserFontSingletonHost::~PepperBrowserFontSingletonHost() {
-}
+PepperBrowserFontSingletonHost::~PepperBrowserFontSingletonHost() {}
 
 }  // namespace content

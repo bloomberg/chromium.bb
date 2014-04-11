@@ -72,10 +72,9 @@ class CONTENT_EXPORT QuotaReservation
 
   // For unit testing only. A QuotaReservation intended for unit testing will
   // have file_system_context_ == NULL.
-  QuotaReservation(
-      scoped_refptr<fileapi::QuotaReservation> quota_reservation,
-      const GURL& origin_url,
-      fileapi::FileSystemType file_system_type);
+  QuotaReservation(scoped_refptr<fileapi::QuotaReservation> quota_reservation,
+                   const GURL& origin_url,
+                   fileapi::FileSystemType file_system_type);
 
   ~QuotaReservation();
 

@@ -63,10 +63,9 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
-  int32_t OnMsgSetOption(
-      const ppapi::host::HostMessageContext* context,
-      PP_UDPSocket_Option name,
-      const ppapi::SocketOptionData& value);
+  int32_t OnMsgSetOption(const ppapi::host::HostMessageContext* context,
+                         PP_UDPSocket_Option name,
+                         const ppapi::SocketOptionData& value);
   int32_t OnMsgBind(const ppapi::host::HostMessageContext* context,
                     const PP_NetAddress_Private& addr);
   int32_t OnMsgRecvFrom(const ppapi::host::HostMessageContext* context,

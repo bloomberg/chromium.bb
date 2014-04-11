@@ -20,19 +20,16 @@ PepperPrintingHost::PepperPrintingHost(
     scoped_ptr<PepperPrintSettingsManager> print_settings_manager)
     : ResourceHost(host, instance, resource),
       print_settings_manager_(print_settings_manager.Pass()),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
-PepperPrintingHost::~PepperPrintingHost() {
-}
+PepperPrintingHost::~PepperPrintingHost() {}
 
 int32_t PepperPrintingHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperPrintingHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_Printing_GetDefaultPrintSettings,
-        OnGetDefaultPrintSettings)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+      PpapiHostMsg_Printing_GetDefaultPrintSettings, OnGetDefaultPrintSettings)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -50,9 +47,9 @@ void PepperPrintingHost::PrintSettingsCallback(
     ppapi::host::ReplyMessageContext reply_context,
     PepperPrintSettingsManager::Result result) {
   reply_context.params.set_result(result.second);
-  host()->SendReply(reply_context,
+  host()->SendReply(
+      reply_context,
       PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply(result.first));
 }
-
 
 }  // namespace content

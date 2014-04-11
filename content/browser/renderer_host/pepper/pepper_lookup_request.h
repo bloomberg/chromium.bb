@@ -14,7 +14,7 @@
 
 namespace content {
 
-template<class T>
+template <class T>
 class PepperLookupRequest {
  public:
   typedef base::Callback<void(int, const net::AddressList&, const T&)>

@@ -38,22 +38,19 @@ namespace {
 const size_t kMaxSocketsAllowed = 1024;
 
 bool CanCreateSocket() {
-  return
-      PepperTCPServerSocketMessageFilter::GetNumInstances() +
-      PepperTCPSocketMessageFilter::GetNumInstances() +
-      PepperUDPSocketMessageFilter::GetNumInstances() <
-      kMaxSocketsAllowed;
+  return PepperTCPServerSocketMessageFilter::GetNumInstances() +
+             PepperTCPSocketMessageFilter::GetNumInstances() +
+             PepperUDPSocketMessageFilter::GetNumInstances() <
+         kMaxSocketsAllowed;
 }
 
 }  // namespace
 
 ContentBrowserPepperHostFactory::ContentBrowserPepperHostFactory(
     BrowserPpapiHostImpl* host)
-    : host_(host) {
-}
+    : host_(host) {}
 
-ContentBrowserPepperHostFactory::~ContentBrowserPepperHostFactory() {
-}
+ContentBrowserPepperHostFactory::~ContentBrowserPepperHostFactory() {}
 
 scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
     ppapi::host::PpapiHost* host,
@@ -69,13 +66,13 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
   // Public interfaces.
   switch (message.type()) {
     case PpapiHostMsg_FileIO_Create::ID: {
-      return scoped_ptr<ResourceHost>(new PepperFileIOHost(
-          host_, instance, params.pp_resource()));
+      return scoped_ptr<ResourceHost>(
+          new PepperFileIOHost(host_, instance, params.pp_resource()));
     }
     case PpapiHostMsg_FileSystem_Create::ID: {
       PP_FileSystemType file_system_type;
-      if (!ppapi::UnpackMessage<PpapiHostMsg_FileSystem_Create>(message,
-          &file_system_type)) {
+      if (!ppapi::UnpackMessage<PpapiHostMsg_FileSystem_Create>(
+              message, &file_system_type)) {
         NOTREACHED();
         return scoped_ptr<ResourceHost>();
       }
@@ -83,25 +80,27 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
           host_, instance, params.pp_resource(), file_system_type));
     }
     case PpapiHostMsg_Gamepad_Create::ID: {
-      return scoped_ptr<ResourceHost>(new PepperGamepadHost(
-          host_, instance, params.pp_resource()));
+      return scoped_ptr<ResourceHost>(
+          new PepperGamepadHost(host_, instance, params.pp_resource()));
     }
     case PpapiHostMsg_NetworkProxy_Create::ID: {
-      return scoped_ptr<ResourceHost>(new PepperNetworkProxyHost(
-          host_, instance, params.pp_resource()));
+      return scoped_ptr<ResourceHost>(
+          new PepperNetworkProxyHost(host_, instance, params.pp_resource()));
     }
     case PpapiHostMsg_HostResolver_Create::ID: {
       scoped_refptr<ResourceMessageFilter> host_resolver(
           new PepperHostResolverMessageFilter(host_, instance, false));
-      return scoped_ptr<ResourceHost>(new MessageFilterHost(
-          host_->GetPpapiHost(), instance, params.pp_resource(),
-          host_resolver));
+      return scoped_ptr<ResourceHost>(
+          new MessageFilterHost(host_->GetPpapiHost(),
+                                instance,
+                                params.pp_resource(),
+                                host_resolver));
     }
     case PpapiHostMsg_FileRef_CreateForFileAPI::ID: {
       PP_Resource file_system;
       std::string internal_path;
       if (!UnpackMessage<PpapiHostMsg_FileRef_CreateForFileAPI>(
-          message, &file_system, &internal_path)) {
+              message, &file_system, &internal_path)) {
         NOTREACHED();
         return scoped_ptr<ResourceHost>();
       }
@@ -135,9 +134,11 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
       case PpapiHostMsg_Printing_Create::ID: {
         scoped_ptr<PepperPrintSettingsManager> manager(
             new PepperPrintSettingsManagerImpl());
-        return scoped_ptr<ResourceHost>(new PepperPrintingHost(
-            host_->GetPpapiHost(), instance,
-            params.pp_resource(), manager.Pass()));
+        return scoped_ptr<ResourceHost>(
+            new PepperPrintingHost(host_->GetPpapiHost(),
+                                   instance,
+                                   params.pp_resource(),
+                                   manager.Pass()));
       }
       case PpapiHostMsg_TrueTypeFontSingleton_Create::ID: {
         return scoped_ptr<ResourceHost>(new PepperTrueTypeFontListHost(
@@ -171,16 +172,18 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
     if (CanCreateSocket()) {
       scoped_refptr<ResourceMessageFilter> tcp_server_socket(
           new PepperTCPServerSocketMessageFilter(this, host_, instance, true));
-      return scoped_ptr<ResourceHost>(new MessageFilterHost(
-          host_->GetPpapiHost(), instance, params.pp_resource(),
-          tcp_server_socket));
+      return scoped_ptr<ResourceHost>(
+          new MessageFilterHost(host_->GetPpapiHost(),
+                                instance,
+                                params.pp_resource(),
+                                tcp_server_socket));
     } else {
       return scoped_ptr<ResourceHost>();
     }
   }
   if (message.type() == PpapiHostMsg_TCPSocket_CreatePrivate::ID) {
-    return CreateNewTCPSocket(instance, params.pp_resource(),
-                              ppapi::TCP_SOCKET_VERSION_PRIVATE);
+    return CreateNewTCPSocket(
+        instance, params.pp_resource(), ppapi::TCP_SOCKET_VERSION_PRIVATE);
   }
   if (message.type() == PpapiHostMsg_UDPSocket_CreatePrivate::ID) {
     if (CanCreateSocket()) {
@@ -203,9 +206,11 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
       case PpapiHostMsg_FlashFile_Create::ID: {
         scoped_refptr<ResourceMessageFilter> file_filter(
             new PepperFlashFileMessageFilter(instance, host_));
-        return scoped_ptr<ResourceHost>(new MessageFilterHost(
-            host_->GetPpapiHost(), instance, params.pp_resource(),
-            file_filter));
+        return scoped_ptr<ResourceHost>(
+            new MessageFilterHost(host_->GetPpapiHost(),
+                                  instance,
+                                  params.pp_resource(),
+                                  file_filter));
       }
     }
   }
@@ -221,10 +226,10 @@ ContentBrowserPepperHostFactory::CreateAcceptedTCPSocket(
   if (!CanCreateSocket())
     return scoped_ptr<ResourceHost>();
   scoped_refptr<ResourceMessageFilter> tcp_socket(
-      new PepperTCPSocketMessageFilter(host_, instance, version,
-                                       socket.Pass()));
-  return scoped_ptr<ResourceHost>(new MessageFilterHost(
-      host_->GetPpapiHost(), instance, 0, tcp_socket));
+      new PepperTCPSocketMessageFilter(
+          host_, instance, version, socket.Pass()));
+  return scoped_ptr<ResourceHost>(
+      new MessageFilterHost(host_->GetPpapiHost(), instance, 0, tcp_socket));
 }
 
 scoped_ptr<ppapi::host::ResourceHost>
@@ -244,8 +249,8 @@ ContentBrowserPepperHostFactory::CreateNewTCPSocket(
       host_->GetPpapiHost(), instance, resource, tcp_socket));
 }
 
-const ppapi::PpapiPermissions&
-ContentBrowserPepperHostFactory::GetPermissions() const {
+const ppapi::PpapiPermissions& ContentBrowserPepperHostFactory::GetPermissions()
+    const {
   return host_->GetPpapiHost()->permissions();
 }
 

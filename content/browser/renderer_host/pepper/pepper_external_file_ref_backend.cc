@@ -20,16 +20,16 @@ namespace content {
 PepperExternalFileRefBackend::PepperExternalFileRefBackend(
     ppapi::host::PpapiHost* host,
     int render_process_id,
-    const base::FilePath& path) : host_(host),
-                                  path_(path),
-                                  render_process_id_(render_process_id),
-                                  weak_factory_(this) {
+    const base::FilePath& path)
+    : host_(host),
+      path_(path),
+      render_process_id_(render_process_id),
+      weak_factory_(this) {
   task_runner_ =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
 }
 
-PepperExternalFileRefBackend::~PepperExternalFileRefBackend() {
-}
+PepperExternalFileRefBackend::~PepperExternalFileRefBackend() {}
 
 int32_t PepperExternalFileRefBackend::MakeDirectory(
     ppapi::host::ReplyMessageContext reply_context,
@@ -88,7 +88,8 @@ int32_t PepperExternalFileRefBackend::ReadDirectoryEntries(
 
 int32_t PepperExternalFileRefBackend::GetAbsolutePath(
     ppapi::host::ReplyMessageContext reply_context) {
-  host_->SendReply(reply_context,
+  host_->SendReply(
+      reply_context,
       PpapiPluginMsg_FileRef_GetAbsolutePathReply(path_.AsUTF8Unsafe()));
 
   // Use PP_OK_COMPLETIONPENDING instead of PP_OK since we've already sent our
@@ -105,8 +106,8 @@ base::FilePath PepperExternalFileRefBackend::GetExternalFilePath() const {
 }
 
 int32_t PepperExternalFileRefBackend::CanRead() const {
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
-          CanReadFile(render_process_id_, path_)) {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+          render_process_id_, path_)) {
     return PP_ERROR_NOACCESS;
   }
   return PP_OK;
@@ -123,8 +124,8 @@ int32_t PepperExternalFileRefBackend::CanCreate() const {
 }
 
 int32_t PepperExternalFileRefBackend::CanReadWrite() const {
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
-          CanCreateReadWriteFile(render_process_id_, path_)) {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanCreateReadWriteFile(
+          render_process_id_, path_)) {
     return PP_ERROR_NOACCESS;
   }
   return PP_OK;
@@ -146,8 +147,8 @@ void PepperExternalFileRefBackend::GetMetadataComplete(
 
   PP_FileInfo pp_file_info;
   if (error == base::File::FILE_OK) {
-    ppapi::FileInfoToPepperFileInfo(file_info, PP_FILESYSTEMTYPE_EXTERNAL,
-                                    &pp_file_info);
+    ppapi::FileInfoToPepperFileInfo(
+        file_info, PP_FILESYSTEMTYPE_EXTERNAL, &pp_file_info);
   } else {
     memset(&pp_file_info, 0, sizeof(pp_file_info));
   }

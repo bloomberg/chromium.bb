@@ -18,8 +18,7 @@ namespace content {
 namespace {
 
 // Mock implementation of |PepperPrintSettingsManager| for test purposes.
-class MockPepperPrintSettingsManager
-    : public PepperPrintSettingsManager {
+class MockPepperPrintSettingsManager : public PepperPrintSettingsManager {
  public:
   MockPepperPrintSettingsManager(const PP_PrintSettings_Dev& settings);
   virtual ~MockPepperPrintSettingsManager() {}
@@ -27,6 +26,7 @@ class MockPepperPrintSettingsManager
   // PepperPrintSettingsManager implementation.
   virtual void GetDefaultPrintSettings(
       PepperPrintSettingsManager::Callback callback) OVERRIDE;
+
  private:
   PP_PrintSettings_Dev settings_;
 
@@ -35,23 +35,19 @@ class MockPepperPrintSettingsManager
 
 MockPepperPrintSettingsManager::MockPepperPrintSettingsManager(
     const PP_PrintSettings_Dev& settings)
-    : settings_(settings) {
-}
+    : settings_(settings) {}
 
 void MockPepperPrintSettingsManager::GetDefaultPrintSettings(
     PepperPrintSettingsManager::Callback callback) {
   callback.Run(PepperPrintSettingsManager::Result(settings_, PP_OK));
 }
 
-class PepperPrintingHostTest
-    : public testing::Test,
-      public BrowserPpapiHostTest {
+class PepperPrintingHostTest : public testing::Test,
+                               public BrowserPpapiHostTest {
  public:
-  PepperPrintingHostTest() {
-  }
+  PepperPrintingHostTest() {}
 
-  virtual ~PepperPrintingHostTest() {
-  }
+  virtual ~PepperPrintingHostTest() {}
 
   DISALLOW_COPY_AND_ASSIGN(PepperPrintingHostTest);
 };
@@ -61,9 +57,8 @@ bool PP_SizeEqual(const PP_Size& lhs, const PP_Size& rhs) {
 }
 
 bool PP_RectEqual(const PP_Rect& lhs, const PP_Rect& rhs) {
-  return lhs.point.x == rhs.point.x &&
-      lhs.point.y == rhs.point.y &&
-      PP_SizeEqual(lhs.size, rhs.size);
+  return lhs.point.x == rhs.point.x && lhs.point.y == rhs.point.y &&
+         PP_SizeEqual(lhs.size, rhs.size);
 }
 
 }  // namespace
@@ -71,22 +66,22 @@ bool PP_RectEqual(const PP_Rect& lhs, const PP_Rect& rhs) {
 TEST_F(PepperPrintingHostTest, GetDefaultPrintSettings) {
   PP_Instance pp_instance = 12345;
   PP_Resource pp_resource = 67890;
-  PP_PrintSettings_Dev expected_settings = {
-    { { 0, 0 }, { 500, 515 } },
-    { { 25, 35 }, { 300, 720 } },
-    { 600, 700 },
-    200,
-    PP_PRINTORIENTATION_NORMAL,
-    PP_PRINTSCALINGOPTION_NONE,
-    PP_FALSE,
-    PP_PRINTOUTPUTFORMAT_PDF
-  };
+  PP_PrintSettings_Dev expected_settings = {{{0, 0}, {500, 515}},
+                                            {{25, 35}, {300, 720}},
+                                            {600, 700},
+                                            200,
+                                            PP_PRINTORIENTATION_NORMAL,
+                                            PP_PRINTSCALINGOPTION_NONE,
+                                            PP_FALSE,
+                                            PP_PRINTOUTPUTFORMAT_PDF};
 
   // Construct the resource host.
   scoped_ptr<PepperPrintSettingsManager> manager(
       new MockPepperPrintSettingsManager(expected_settings));
   PepperPrintingHost printing(GetBrowserPpapiHost()->GetPpapiHost(),
-      pp_instance, pp_resource, manager.Pass());
+                              pp_instance,
+                              pp_resource,
+                              manager.Pass());
 
   // Simulate a message being received.
   ppapi::proxy::ResourceMessageCallParams call_params(pp_resource, 1);
@@ -99,7 +94,8 @@ TEST_F(PepperPrintingHostTest, GetDefaultPrintSettings) {
   ppapi::proxy::ResourceMessageReplyParams reply_params;
   IPC::Message reply_msg;
   ASSERT_TRUE(sink().GetFirstResourceReplyMatching(
-      PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply::ID, &reply_params,
+      PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply::ID,
+      &reply_params,
       &reply_msg));
 
   // Validation of reply.
@@ -115,8 +111,8 @@ TEST_F(PepperPrintingHostTest, GetDefaultPrintSettings) {
                            actual_settings.printable_area));
   EXPECT_TRUE(PP_RectEqual(expected_settings.content_area,
                            actual_settings.content_area));
-  EXPECT_TRUE(PP_SizeEqual(expected_settings.paper_size,
-                           actual_settings.paper_size));
+  EXPECT_TRUE(
+      PP_SizeEqual(expected_settings.paper_size, actual_settings.paper_size));
   EXPECT_EQ(expected_settings.dpi, actual_settings.dpi);
   EXPECT_EQ(expected_settings.orientation, actual_settings.orientation);
   EXPECT_EQ(expected_settings.print_scaling_option,

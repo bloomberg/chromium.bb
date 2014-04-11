@@ -25,8 +25,11 @@ BrowserPpapiHost* BrowserPpapiHost::CreateExternalPluginProcess(
     const base::FilePath& profile_directory) {
   // The plugin name and path shouldn't be needed for external plugins.
   BrowserPpapiHostImpl* browser_ppapi_host =
-      new BrowserPpapiHostImpl(sender, permissions, std::string(),
-                               base::FilePath(), profile_directory,
+      new BrowserPpapiHostImpl(sender,
+                               permissions,
+                               std::string(),
+                               base::FilePath(),
+                               profile_directory,
                                false /* in_process */,
                                true /* external_plugin */);
   browser_ppapi_host->set_plugin_process_handle(plugin_child_process);
@@ -128,7 +131,7 @@ GURL BrowserPpapiHostImpl::GetPluginURLForInstance(PP_Instance instance) {
 }
 
 void BrowserPpapiHostImpl::SetOnKeepaliveCallback(
-      const BrowserPpapiHost::OnKeepaliveCallback& callback) {
+    const BrowserPpapiHost::OnKeepaliveCallback& callback) {
   on_keepalive_callback_ = callback;
 }
 
@@ -151,9 +154,8 @@ void BrowserPpapiHostImpl::DeleteInstance(PP_Instance instance) {
 BrowserPpapiHostImpl::HostMessageFilter::HostMessageFilter(
     ppapi::host::PpapiHost* ppapi_host,
     BrowserPpapiHostImpl* browser_ppapi_host_impl)
-        : ppapi_host_(ppapi_host),
-          browser_ppapi_host_impl_(browser_ppapi_host_impl) {
-}
+    : ppapi_host_(ppapi_host),
+      browser_ppapi_host_impl_(browser_ppapi_host_impl) {}
 
 bool BrowserPpapiHostImpl::HostMessageFilter::OnMessageReceived(
     const IPC::Message& msg) {
@@ -163,11 +165,11 @@ bool BrowserPpapiHostImpl::HostMessageFilter::OnMessageReceived(
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPpapiHostImpl::HostMessageFilter, msg)
-    // Add necessary message handlers here.
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_Keepalive, OnKeepalive)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_LogInterfaceUsage,
-                        OnHostMsgLogInterfaceUsage)
-    IPC_MESSAGE_UNHANDLED(handled = ppapi_host_->OnMessageReceived(msg))
+  // Add necessary message handlers here.
+  IPC_MESSAGE_HANDLER(PpapiHostMsg_Keepalive, OnKeepalive)
+  IPC_MESSAGE_HANDLER(PpapiHostMsg_LogInterfaceUsage,
+                      OnHostMsgLogInterfaceUsage)
+  IPC_MESSAGE_UNHANDLED(handled = ppapi_host_->OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP();
   return handled;
 }
@@ -178,8 +180,7 @@ void BrowserPpapiHostImpl::HostMessageFilter::OnHostDestroyed() {
   browser_ppapi_host_impl_ = NULL;
 }
 
-BrowserPpapiHostImpl::HostMessageFilter::~HostMessageFilter() {
-}
+BrowserPpapiHostImpl::HostMessageFilter::~HostMessageFilter() {}
 
 void BrowserPpapiHostImpl::HostMessageFilter::OnKeepalive() {
   if (browser_ppapi_host_impl_)
@@ -203,8 +204,7 @@ void BrowserPpapiHostImpl::OnKeepalive() {
   if (on_keepalive_callback_.is_null())
     return;
 
-  BrowserPpapiHost::OnKeepaliveInstanceData
-      instance_data(instance_map_.size());
+  BrowserPpapiHost::OnKeepaliveInstanceData instance_data(instance_map_.size());
 
   InstanceMap::iterator instance = instance_map_.begin();
   int i = 0;

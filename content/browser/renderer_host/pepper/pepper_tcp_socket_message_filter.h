@@ -49,18 +49,16 @@ class ResourceContext;
 class CONTENT_EXPORT PepperTCPSocketMessageFilter
     : public ppapi::host::ResourceMessageFilter {
  public:
-  PepperTCPSocketMessageFilter(
-      ContentBrowserPepperHostFactory* factory,
-      BrowserPpapiHostImpl* host,
-      PP_Instance instance,
-      ppapi::TCPSocketVersion version);
+  PepperTCPSocketMessageFilter(ContentBrowserPepperHostFactory* factory,
+                               BrowserPpapiHostImpl* host,
+                               PP_Instance instance,
+                               ppapi::TCPSocketVersion version);
 
   // Used for creating already connected sockets.
-  PepperTCPSocketMessageFilter(
-      BrowserPpapiHostImpl* host,
-      PP_Instance instance,
-      ppapi::TCPSocketVersion version,
-      scoped_ptr<net::TCPSocket> socket);
+  PepperTCPSocketMessageFilter(BrowserPpapiHostImpl* host,
+                               PP_Instance instance,
+                               ppapi::TCPSocketVersion version,
+                               scoped_ptr<net::TCPSocket> socket);
 
   static size_t GetNumInstances();
 
@@ -106,9 +104,8 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
                  const std::string& host,
                  uint16_t port,
                  ResourceContext* resource_context);
-  void DoConnectWithNetAddress(
-      const ppapi::host::ReplyMessageContext& context,
-      const PP_NetAddress_Private& net_addr);
+  void DoConnectWithNetAddress(const ppapi::host::ReplyMessageContext& context,
+                               const PP_NetAddress_Private& net_addr);
   void DoWrite(const ppapi::host::ReplyMessageContext& context);
   void DoListen(const ppapi::host::ReplyMessageContext& context,
                 int32_t backlog);

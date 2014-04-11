@@ -13,7 +13,6 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 
-
 namespace content {
 
 namespace {
@@ -25,9 +24,11 @@ bool CanUseNetworkMonitor(bool external_plugin,
 
   SocketPermissionRequest request = SocketPermissionRequest(
       SocketPermissionRequest::NETWORK_STATE, std::string(), 0);
-  return pepper_socket_utils::CanUseSocketAPIs(
-      external_plugin, false /* private_api */, &request, render_process_id,
-      render_frame_id);
+  return pepper_socket_utils::CanUseSocketAPIs(external_plugin,
+                                               false /* private_api */,
+                                               &request,
+                                               render_process_id,
+                                               render_frame_id);
 }
 
 scoped_ptr<net::NetworkInterfaceList> GetNetworkList() {
@@ -38,22 +39,23 @@ scoped_ptr<net::NetworkInterfaceList> GetNetworkList() {
 
 }  // namespace
 
-PepperNetworkMonitorHost::PepperNetworkMonitorHost(
-    BrowserPpapiHostImpl* host,
-    PP_Instance instance,
-    PP_Resource resource)
+PepperNetworkMonitorHost::PepperNetworkMonitorHost(BrowserPpapiHostImpl* host,
+                                                   PP_Instance instance,
+                                                   PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       weak_factory_(this) {
   int render_process_id;
   int render_frame_id;
-  host->GetRenderFrameIDsForInstance(instance,
-                                     &render_process_id,
-                                     &render_frame_id);
+  host->GetRenderFrameIDsForInstance(
+      instance, &render_process_id, &render_frame_id);
 
   BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&CanUseNetworkMonitor, host->external_plugin(),
-                 render_process_id, render_frame_id),
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&CanUseNetworkMonitor,
+                 host->external_plugin(),
+                 render_process_id,
+                 render_frame_id),
       base::Bind(&PepperNetworkMonitorHost::OnPermissionCheckResult,
                  weak_factory_.GetWeakPtr()));
 }
@@ -62,9 +64,7 @@ PepperNetworkMonitorHost::~PepperNetworkMonitorHost() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
-void PepperNetworkMonitorHost::OnIPAddressChanged() {
-  GetAndSendNetworkList();
-}
+void PepperNetworkMonitorHost::OnIPAddressChanged() { GetAndSendNetworkList(); }
 
 void PepperNetworkMonitorHost::OnPermissionCheckResult(
     bool can_use_network_monitor) {
@@ -83,7 +83,8 @@ void PepperNetworkMonitorHost::GetAndSendNetworkList() {
 
   // Call GetNetworkList() on a thread that allows blocking IO.
   base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(), FROM_HERE,
+      BrowserThread::GetBlockingPool(),
+      FROM_HERE,
       base::Bind(&GetNetworkList),
       base::Bind(&PepperNetworkMonitorHost::SendNetworkList,
                  weak_factory_.GetWeakPtr()));

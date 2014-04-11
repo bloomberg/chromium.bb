@@ -49,8 +49,7 @@ static int CALLBACK EnumFontsInFamilyProc(ENUMLOGFONTEXW* logical_font,
         desc.style = PP_TRUETYPEFONTSTYLE_ITALIC;
       desc.weight = static_cast<PP_TrueTypeFontWeight_Dev>(lf.lfWeight);
       desc.width = PP_TRUETYPEFONTWIDTH_NORMAL;  // TODO(bbudge) support widths.
-      desc.charset =
-          static_cast<PP_TrueTypeFontCharset_Dev>(lf.lfCharSet);
+      desc.charset = static_cast<PP_TrueTypeFontCharset_Dev>(lf.lfCharSet);
       fonts_in_family->push_back(desc);
     }
   }
@@ -64,8 +63,11 @@ void GetFontFamilies_SlowBlocking(FontFamilyList* font_families) {
   memset(&logfont, 0, sizeof(logfont));
   logfont.lfCharSet = DEFAULT_CHARSET;
   base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
-  ::EnumFontFamiliesExW(hdc, &logfont, (FONTENUMPROCW)&EnumFontFamiliesProc,
-                        (LPARAM)font_families, 0);
+  ::EnumFontFamiliesExW(hdc,
+                        &logfont,
+                        (FONTENUMPROCW) & EnumFontFamiliesProc,
+                        (LPARAM)font_families,
+                        0);
 }
 
 void GetFontsInFamily_SlowBlocking(const std::string& family,
@@ -76,8 +78,11 @@ void GetFontsInFamily_SlowBlocking(const std::string& family,
   base::string16 family16 = base::UTF8ToUTF16(family);
   memcpy(&logfont.lfFaceName, &family16[0], sizeof(logfont.lfFaceName));
   base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
-  ::EnumFontFamiliesExW(hdc, &logfont, (FONTENUMPROCW)&EnumFontsInFamilyProc,
-                        (LPARAM)fonts_in_family, 0);
+  ::EnumFontFamiliesExW(hdc,
+                        &logfont,
+                        (FONTENUMPROCW) & EnumFontsInFamilyProc,
+                        (LPARAM)fonts_in_family,
+                        0);
 }
 
 }  // namespace content

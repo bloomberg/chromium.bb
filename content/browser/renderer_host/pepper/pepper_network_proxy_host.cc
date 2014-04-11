@@ -31,11 +31,11 @@ PepperNetworkProxyHost::PepperNetworkProxyHost(BrowserPpapiHostImpl* host,
       waiting_for_ui_thread_data_(true),
       weak_factory_(this) {
   int render_process_id(0), render_frame_id(0);
-  host->GetRenderFrameIDsForInstance(instance,
-                                    &render_process_id,
-                                    &render_frame_id);
+  host->GetRenderFrameIDsForInstance(
+      instance, &render_process_id, &render_frame_id);
   BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE,
+      BrowserThread::UI,
+      FROM_HERE,
       base::Bind(&GetUIThreadDataOnUIThread,
                  render_process_id,
                  render_frame_id,
@@ -55,12 +55,9 @@ PepperNetworkProxyHost::~PepperNetworkProxyHost() {
   }
 }
 
-PepperNetworkProxyHost::UIThreadData::UIThreadData()
-    : is_allowed(false) {
-}
+PepperNetworkProxyHost::UIThreadData::UIThreadData() : is_allowed(false) {}
 
-PepperNetworkProxyHost::UIThreadData::~UIThreadData() {
-}
+PepperNetworkProxyHost::UIThreadData::~UIThreadData() {}
 
 // static
 PepperNetworkProxyHost::UIThreadData
@@ -72,18 +69,19 @@ PepperNetworkProxyHost::GetUIThreadDataOnUIThread(int render_process_id,
   RenderProcessHost* render_process_host =
       RenderProcessHost::FromID(render_process_id);
   if (render_process_host && render_process_host->GetBrowserContext()) {
-    result.context_getter = render_process_host->GetBrowserContext()->
-        GetRequestContextForRenderProcess(render_process_id);
+    result.context_getter =
+        render_process_host->GetBrowserContext()
+            ->GetRequestContextForRenderProcess(render_process_id);
   }
 
   SocketPermissionRequest request(
       content::SocketPermissionRequest::RESOLVE_PROXY, std::string(), 0);
-  result.is_allowed = pepper_socket_utils::CanUseSocketAPIs(
-      is_external_plugin,
-      false /* is_private_api */,
-      &request,
-      render_process_id,
-      render_frame_id);
+  result.is_allowed =
+      pepper_socket_utils::CanUseSocketAPIs(is_external_plugin,
+                                            false /* is_private_api */,
+                                            &request,
+                                            render_process_id,
+                                            render_frame_id);
   return result;
 }
 
@@ -107,8 +105,8 @@ int32_t PepperNetworkProxyHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperNetworkProxyHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_NetworkProxy_GetProxyForURL, OnMsgGetProxyForURL)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_NetworkProxy_GetProxyForURL,
+                                    OnMsgGetProxyForURL)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -118,12 +116,11 @@ int32_t PepperNetworkProxyHost::OnMsgGetProxyForURL(
     const std::string& url) {
   GURL gurl(url);
   if (gurl.is_valid()) {
-    UnsentRequest request = { gurl, context->MakeReplyMessageContext() };
+    UnsentRequest request = {gurl, context->MakeReplyMessageContext()};
     unsent_requests_.push(request);
     TryToSendUnsentRequests();
   } else {
-    SendFailureReply(PP_ERROR_BADARGUMENT,
-                     context->MakeReplyMessageContext());
+    SendFailureReply(PP_ERROR_BADARGUMENT, context->MakeReplyMessageContext());
   }
   return PP_OK_COMPLETIONPENDING;
 }
@@ -142,7 +139,7 @@ void PepperNetworkProxyHost::TryToSendUnsentRequests() {
       // Everything looks valid, so try to resolve the proxy.
       net::ProxyInfo* proxy_info = new net::ProxyInfo;
       net::ProxyService::PacRequest* pending_request = NULL;
-      base::Callback<void (int)> callback =
+      base::Callback<void(int)> callback =
           base::Bind(&PepperNetworkProxyHost::OnResolveProxyCompleted,
                      weak_factory_.GetWeakPtr(),
                      request.reply_context,
@@ -184,9 +181,8 @@ void PepperNetworkProxyHost::SendFailureReply(
     int32_t error,
     ppapi::host::ReplyMessageContext context) {
   context.params.set_result(error);
-  host()->SendReply(context,
-                    PpapiPluginMsg_NetworkProxy_GetProxyForURLReply(
-                        std::string()));
+  host()->SendReply(
+      context, PpapiPluginMsg_NetworkProxy_GetProxyForURLReply(std::string()));
 }
 
 }  // namespace content

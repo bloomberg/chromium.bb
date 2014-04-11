@@ -31,24 +31,23 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   // when this object is created).
   // |external_plugin| signfies that this is a proxy created for an embedder's
   // plugin, i.e. using BrowserPpapiHost::CreateExternalPluginProcess.
-  BrowserPpapiHostImpl(
-      IPC::Sender* sender,
-      const ppapi::PpapiPermissions& permissions,
-      const std::string& plugin_name,
-      const base::FilePath& plugin_path,
-      const base::FilePath& profile_data_directory,
-      bool in_process,
-      bool external_plugin);
+  BrowserPpapiHostImpl(IPC::Sender* sender,
+                       const ppapi::PpapiPermissions& permissions,
+                       const std::string& plugin_name,
+                       const base::FilePath& plugin_path,
+                       const base::FilePath& profile_data_directory,
+                       bool in_process,
+                       bool external_plugin);
   virtual ~BrowserPpapiHostImpl();
 
   // BrowserPpapiHost.
   virtual ppapi::host::PpapiHost* GetPpapiHost() OVERRIDE;
   virtual base::ProcessHandle GetPluginProcessHandle() const OVERRIDE;
   virtual bool IsValidInstance(PP_Instance instance) const OVERRIDE;
-  virtual bool GetRenderFrameIDsForInstance(
-      PP_Instance instance,
-      int* render_process_id,
-      int* render_frame_id) const OVERRIDE;
+  virtual bool GetRenderFrameIDsForInstance(PP_Instance instance,
+                                            int* render_process_id,
+                                            int* render_frame_id) const
+      OVERRIDE;
   virtual const std::string& GetPluginName() OVERRIDE;
   virtual const base::FilePath& GetPluginPath() OVERRIDE;
   virtual const base::FilePath& GetProfileDataDirectory() OVERRIDE;

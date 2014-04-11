@@ -47,22 +47,22 @@ PepperInternalFileRefBackend::PepperInternalFileRefBackend(
     PpapiHost* host,
     int render_process_id,
     base::WeakPtr<PepperFileSystemBrowserHost> fs_host,
-    const std::string& path) : host_(host),
-                               render_process_id_(render_process_id),
-                               fs_host_(fs_host),
-                               fs_type_(fs_host->GetType()),
-                               path_(path),
-                               weak_factory_(this) {
+    const std::string& path)
+    : host_(host),
+      render_process_id_(render_process_id),
+      fs_host_(fs_host),
+      fs_type_(fs_host->GetType()),
+      path_(path),
+      weak_factory_(this) {
   ppapi::NormalizeInternalPath(&path_);
 }
 
-PepperInternalFileRefBackend::~PepperInternalFileRefBackend() {
-}
+PepperInternalFileRefBackend::~PepperInternalFileRefBackend() {}
 
 fileapi::FileSystemURL PepperInternalFileRefBackend::GetFileSystemURL() const {
   if (!fs_url_.is_valid() && fs_host_.get() && fs_host_->IsOpened()) {
-    GURL fs_path = fs_host_->GetRootUrl().Resolve(
-        net::EscapePath(path_.substr(1)));
+    GURL fs_path =
+        fs_host_->GetRootUrl().Resolve(net::EscapePath(path_.substr(1)));
     scoped_refptr<fileapi::FileSystemContext> fs_context =
         GetFileSystemContext();
     if (fs_context.get())
@@ -197,8 +197,8 @@ int32_t PepperInternalFileRefBackend::ReadDirectoryEntries(
   if (!GetFileSystemURL().is_valid())
     return PP_ERROR_FAILED;
 
-  fileapi::FileSystemOperation::FileEntryList* accumulated_file_list
-      = new fileapi::FileSystemOperation::FileEntryList;
+  fileapi::FileSystemOperation::FileEntryList* accumulated_file_list =
+      new fileapi::FileSystemOperation::FileEntryList;
   GetFileSystemContext()->operation_runner()->ReadDirectory(
       GetFileSystemURL(),
       base::Bind(&PepperInternalFileRefBackend::ReadDirectoryComplete,
@@ -214,8 +214,8 @@ void PepperInternalFileRefBackend::ReadDirectoryComplete(
     base::File::Error error,
     const fileapi::FileSystemOperation::FileEntryList& file_list,
     bool has_more) {
-  accumulated_file_list->insert(accumulated_file_list->end(),
-                                file_list.begin(), file_list.end());
+  accumulated_file_list->insert(
+      accumulated_file_list->end(), file_list.begin(), file_list.end());
   if (has_more)
     return;
 
@@ -230,7 +230,8 @@ void PepperInternalFileRefBackend::ReadDirectoryComplete(
 
     for (fileapi::FileSystemOperation::FileEntryList::const_iterator it =
              accumulated_file_list->begin();
-         it != accumulated_file_list->end(); ++it) {
+         it != accumulated_file_list->end();
+         ++it) {
       if (it->is_directory)
         file_types.push_back(PP_FILETYPE_DIRECTORY);
       else
@@ -247,14 +248,15 @@ void PepperInternalFileRefBackend::ReadDirectoryComplete(
     }
   }
 
-  host_->SendReply(context,
+  host_->SendReply(
+      context,
       PpapiPluginMsg_FileRef_ReadDirectoryEntriesReply(infos, file_types));
 }
 
 int32_t PepperInternalFileRefBackend::GetAbsolutePath(
     ppapi::host::ReplyMessageContext reply_context) {
   host_->SendReply(reply_context,
-      PpapiPluginMsg_FileRef_GetAbsolutePathReply(path_));
+                   PpapiPluginMsg_FileRef_GetAbsolutePathReply(path_));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -262,8 +264,8 @@ int32_t PepperInternalFileRefBackend::CanRead() const {
   fileapi::FileSystemURL url = GetFileSystemURL();
   if (!FileSystemURLIsValid(GetFileSystemContext().get(), url))
     return PP_ERROR_FAILED;
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
-          CanReadFileSystemFile(render_process_id_, url)) {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFileSystemFile(
+          render_process_id_, url)) {
     return PP_ERROR_NOACCESS;
   }
   return PP_OK;
@@ -273,8 +275,8 @@ int32_t PepperInternalFileRefBackend::CanWrite() const {
   fileapi::FileSystemURL url = GetFileSystemURL();
   if (!FileSystemURLIsValid(GetFileSystemContext().get(), url))
     return PP_ERROR_FAILED;
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
-          CanWriteFileSystemFile(render_process_id_, url)) {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanWriteFileSystemFile(
+          render_process_id_, url)) {
     return PP_ERROR_NOACCESS;
   }
   return PP_OK;
@@ -284,8 +286,8 @@ int32_t PepperInternalFileRefBackend::CanCreate() const {
   fileapi::FileSystemURL url = GetFileSystemURL();
   if (!FileSystemURLIsValid(GetFileSystemContext().get(), url))
     return PP_ERROR_FAILED;
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
-          CanCreateFileSystemFile(render_process_id_, url)) {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanCreateFileSystemFile(
+          render_process_id_, url)) {
     return PP_ERROR_NOACCESS;
   }
   return PP_OK;

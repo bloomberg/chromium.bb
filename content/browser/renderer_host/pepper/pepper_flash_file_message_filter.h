@@ -35,8 +35,7 @@ class BrowserPpapiHost;
 // All file messages are handled by BrowserThread's blocking pool.
 class PepperFlashFileMessageFilter : public ppapi::host::ResourceMessageFilter {
  public:
-  PepperFlashFileMessageFilter(PP_Instance instance,
-                               BrowserPpapiHost* host);
+  PepperFlashFileMessageFilter(PP_Instance instance, BrowserPpapiHost* host);
 
   static base::FilePath GetDataDirName(const base::FilePath& profile_path);
 

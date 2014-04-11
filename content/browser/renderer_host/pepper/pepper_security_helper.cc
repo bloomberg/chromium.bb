@@ -12,8 +12,10 @@ namespace content {
 
 namespace {
 
-template <typename CanRead, typename CanWrite,
-          typename CanCreate, typename CanCreateReadWrite,
+template <typename CanRead,
+          typename CanWrite,
+          typename CanCreate,
+          typename CanCreateReadWrite,
           typename FileID>
 bool CanOpenFileWithPepperFlags(CanRead can_read,
                                 CanWrite can_write,
@@ -58,27 +60,32 @@ bool CanOpenFileWithPepperFlags(CanRead can_read,
 
   return true;
 }
-
 }
 
-bool CanOpenWithPepperFlags(int pp_open_flags, int child_id,
+bool CanOpenWithPepperFlags(int pp_open_flags,
+                            int child_id,
                             const base::FilePath& file) {
   return CanOpenFileWithPepperFlags(
       &ChildProcessSecurityPolicyImpl::CanReadFile,
       &ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile,
       &ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile,
       &ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile,
-      pp_open_flags, child_id, file);
+      pp_open_flags,
+      child_id,
+      file);
 }
 
-bool CanOpenFileSystemURLWithPepperFlags(int pp_open_flags, int child_id,
+bool CanOpenFileSystemURLWithPepperFlags(int pp_open_flags,
+                                         int child_id,
                                          const fileapi::FileSystemURL& url) {
   return CanOpenFileWithPepperFlags(
       &ChildProcessSecurityPolicyImpl::CanReadFileSystemFile,
       &ChildProcessSecurityPolicyImpl::CanWriteFileSystemFile,
       &ChildProcessSecurityPolicyImpl::CanCreateFileSystemFile,
       &ChildProcessSecurityPolicyImpl::CanCreateReadWriteFileSystemFile,
-      pp_open_flags, child_id, url);
+      pp_open_flags,
+      child_id,
+      url);
 }
 
 }  // namespace content

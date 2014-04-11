@@ -23,8 +23,7 @@ PepperGamepadHost::PepperGamepadHost(BrowserPpapiHost* host,
       browser_ppapi_host_(host),
       gamepad_service_(GamepadService::GetInstance()),
       is_started_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 PepperGamepadHost::PepperGamepadHost(GamepadService* gamepad_service,
                                      BrowserPpapiHost* host,
@@ -34,8 +33,7 @@ PepperGamepadHost::PepperGamepadHost(GamepadService* gamepad_service,
       browser_ppapi_host_(host),
       gamepad_service_(gamepad_service),
       is_started_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 PepperGamepadHost::~PepperGamepadHost() {
   if (is_started_)
@@ -46,8 +44,8 @@ int32_t PepperGamepadHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperGamepadHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Gamepad_RequestMemory,
-                                        OnRequestMemory)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Gamepad_RequestMemory,
+                                      OnRequestMemory)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }

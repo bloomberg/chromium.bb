@@ -26,13 +26,12 @@ namespace pepper_socket_utils {
 SocketPermissionRequest CreateSocketPermissionRequest(
     SocketPermissionRequest::OperationType type,
     const PP_NetAddress_Private& net_addr) {
-  std::string host = ppapi::NetAddressPrivateImpl::DescribeNetAddress(net_addr,
-                                                                      false);
+  std::string host =
+      ppapi::NetAddressPrivateImpl::DescribeNetAddress(net_addr, false);
   int port = 0;
   std::vector<unsigned char> address;
-  ppapi::NetAddressPrivateImpl::NetAddressToIPEndPoint(net_addr,
-                                                       &address,
-                                                       &port);
+  ppapi::NetAddressPrivateImpl::NetAddressToIPEndPoint(
+      net_addr, &address, &port);
   return SocketPermissionRequest(type, host, port);
 }
 
@@ -73,43 +72,48 @@ bool GetCertificateFields(const net::X509Certificate& cert,
                           ppapi::PPB_X509Certificate_Fields* fields) {
   const net::CertPrincipal& issuer = cert.issuer();
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_ISSUER_COMMON_NAME,
-      new base::StringValue(issuer.common_name));
+                   new base::StringValue(issuer.common_name));
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_ISSUER_LOCALITY_NAME,
-      new base::StringValue(issuer.locality_name));
+                   new base::StringValue(issuer.locality_name));
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_ISSUER_STATE_OR_PROVINCE_NAME,
-      new base::StringValue(issuer.state_or_province_name));
+                   new base::StringValue(issuer.state_or_province_name));
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_ISSUER_COUNTRY_NAME,
-      new base::StringValue(issuer.country_name));
-  fields->SetField(PP_X509CERTIFICATE_PRIVATE_ISSUER_ORGANIZATION_NAME,
+                   new base::StringValue(issuer.country_name));
+  fields->SetField(
+      PP_X509CERTIFICATE_PRIVATE_ISSUER_ORGANIZATION_NAME,
       new base::StringValue(JoinString(issuer.organization_names, '\n')));
-  fields->SetField(PP_X509CERTIFICATE_PRIVATE_ISSUER_ORGANIZATION_UNIT_NAME,
+  fields->SetField(
+      PP_X509CERTIFICATE_PRIVATE_ISSUER_ORGANIZATION_UNIT_NAME,
       new base::StringValue(JoinString(issuer.organization_unit_names, '\n')));
 
   const net::CertPrincipal& subject = cert.subject();
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_SUBJECT_COMMON_NAME,
-      new base::StringValue(subject.common_name));
+                   new base::StringValue(subject.common_name));
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_SUBJECT_LOCALITY_NAME,
-      new base::StringValue(subject.locality_name));
+                   new base::StringValue(subject.locality_name));
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_SUBJECT_STATE_OR_PROVINCE_NAME,
-      new base::StringValue(subject.state_or_province_name));
+                   new base::StringValue(subject.state_or_province_name));
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_SUBJECT_COUNTRY_NAME,
-      new base::StringValue(subject.country_name));
-  fields->SetField(PP_X509CERTIFICATE_PRIVATE_SUBJECT_ORGANIZATION_NAME,
+                   new base::StringValue(subject.country_name));
+  fields->SetField(
+      PP_X509CERTIFICATE_PRIVATE_SUBJECT_ORGANIZATION_NAME,
       new base::StringValue(JoinString(subject.organization_names, '\n')));
-  fields->SetField(PP_X509CERTIFICATE_PRIVATE_SUBJECT_ORGANIZATION_UNIT_NAME,
+  fields->SetField(
+      PP_X509CERTIFICATE_PRIVATE_SUBJECT_ORGANIZATION_UNIT_NAME,
       new base::StringValue(JoinString(subject.organization_unit_names, '\n')));
 
   const std::string& serial_number = cert.serial_number();
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_SERIAL_NUMBER,
-      base::BinaryValue::CreateWithCopiedBuffer(serial_number.data(),
-                                                serial_number.length()));
+                   base::BinaryValue::CreateWithCopiedBuffer(
+                       serial_number.data(), serial_number.length()));
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_VALIDITY_NOT_BEFORE,
-      new base::FundamentalValue(cert.valid_start().ToDoubleT()));
+                   new base::FundamentalValue(cert.valid_start().ToDoubleT()));
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_VALIDITY_NOT_AFTER,
-      new base::FundamentalValue(cert.valid_expiry().ToDoubleT()));
+                   new base::FundamentalValue(cert.valid_expiry().ToDoubleT()));
   std::string der;
   net::X509Certificate::GetDEREncoded(cert.os_cert_handle(), &der);
-  fields->SetField(PP_X509CERTIFICATE_PRIVATE_RAW,
+  fields->SetField(
+      PP_X509CERTIFICATE_PRIVATE_RAW,
       base::BinaryValue::CreateWithCopiedBuffer(der.data(), der.length()));
   return true;
 }

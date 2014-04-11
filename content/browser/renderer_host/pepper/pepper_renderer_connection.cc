@@ -25,16 +25,12 @@ namespace content {
 
 namespace {
 
-const uint32 kFilteredMessageClasses[] = {
-  PpapiMsgStart,
-  ViewMsgStart,
-};
+const uint32 kFilteredMessageClasses[] = {PpapiMsgStart, ViewMsgStart, };
 
 // Responsible for creating the pending resource hosts, holding their IDs until
 // all of them have been created for a single message, and sending the reply to
 // say that the hosts have been created.
-class PendingHostCreator
-    : public base::RefCounted<PendingHostCreator> {
+class PendingHostCreator : public base::RefCounted<PendingHostCreator> {
  public:
   PendingHostCreator(BrowserPpapiHostImpl* host,
                      BrowserMessageFilter* connection,
@@ -91,8 +87,8 @@ PendingHostCreator::~PendingHostCreator() {
 }  // namespace
 
 PepperRendererConnection::PepperRendererConnection(int render_process_id)
-    : BrowserMessageFilter(
-          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
+    : BrowserMessageFilter(kFilteredMessageClasses,
+                           arraysize(kFilteredMessageClasses)),
       render_process_id_(render_process_id) {
   // Only give the renderer permission for stable APIs.
   in_process_host_.reset(new BrowserPpapiHostImpl(this,
@@ -104,8 +100,7 @@ PepperRendererConnection::PepperRendererConnection(int render_process_id)
                                                   false /* external_plugin */));
 }
 
-PepperRendererConnection::~PepperRendererConnection() {
-}
+PepperRendererConnection::~PepperRendererConnection() {}
 
 BrowserPpapiHostImpl* PepperRendererConnection::GetHostForChildProcess(
     int child_process_id) const {
@@ -144,13 +139,13 @@ bool PepperRendererConnection::OnMessageReceived(const IPC::Message& msg,
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(PepperRendererConnection, msg, *message_was_ok)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostsFromHost,
-                        OnMsgCreateResourceHostsFromHost)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidCreateInProcessInstance,
-                        OnMsgDidCreateInProcessInstance)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidDeleteInProcessInstance,
-                        OnMsgDidDeleteInProcessInstance)
-    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostsFromHost,
+                      OnMsgCreateResourceHostsFromHost)
+  IPC_MESSAGE_HANDLER(ViewHostMsg_DidCreateInProcessInstance,
+                      OnMsgDidCreateInProcessInstance)
+  IPC_MESSAGE_HANDLER(ViewHostMsg_DidDeleteInProcessInstance,
+                      OnMsgDidDeleteInProcessInstance)
+  IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
   return handled;
@@ -193,21 +188,18 @@ void PepperRendererConnection::OnMsgCreateResourceHostsFromHost(
         if (ppapi::UnpackMessage<PpapiHostMsg_FileSystem_CreateFromRenderer>(
                 nested_msg, &root_url, &file_system_type)) {
           PepperFileSystemBrowserHost* browser_host =
-              new PepperFileSystemBrowserHost(host,
-                                              instance,
-                                              params.pp_resource(),
-                                              file_system_type);
+              new PepperFileSystemBrowserHost(
+                  host, instance, params.pp_resource(), file_system_type);
           resource_host.reset(browser_host);
           // Open the file system resource host. This is an asynchronous
           // operation, and we must only add the pending resource host and
           // send the message once it completes.
           browser_host->OpenExisting(
               GURL(root_url),
-              base::Bind(
-                  &PendingHostCreator::AddPendingResourceHost,
-                  creator,
-                  i,
-                  base::Passed(&resource_host)));
+              base::Bind(&PendingHostCreator::AddPendingResourceHost,
+                         creator,
+                         i,
+                         base::Passed(&resource_host)));
           // Do not fall through; the fall-through case adds the pending
           // resource host to the list. We must do this asynchronously.
           continue;

@@ -39,8 +39,7 @@ class PepperFileRefBackend {
   virtual int32_t Query(ppapi::host::ReplyMessageContext context) = 0;
   virtual int32_t ReadDirectoryEntries(
       ppapi::host::ReplyMessageContext context) = 0;
-  virtual int32_t GetAbsolutePath(
-      ppapi::host::ReplyMessageContext context) = 0;
+  virtual int32_t GetAbsolutePath(ppapi::host::ReplyMessageContext context) = 0;
   virtual fileapi::FileSystemURL GetFileSystemURL() const = 0;
   virtual base::FilePath GetExternalFilePath() const = 0;
 

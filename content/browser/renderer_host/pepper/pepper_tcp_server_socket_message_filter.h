@@ -33,11 +33,10 @@ class ContentBrowserPepperHostFactory;
 class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
     : public ppapi::host::ResourceMessageFilter {
  public:
-  PepperTCPServerSocketMessageFilter(
-      ContentBrowserPepperHostFactory* factory,
-      BrowserPpapiHostImpl* host,
-      PP_Instance instance,
-      bool private_api);
+  PepperTCPServerSocketMessageFilter(ContentBrowserPepperHostFactory* factory,
+                                     BrowserPpapiHostImpl* host,
+                                     PP_Instance instance,
+                                     bool private_api);
 
   static size_t GetNumInstances();
 

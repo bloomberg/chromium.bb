@@ -33,8 +33,7 @@ class PepperFileSystemBrowserHost;
 class PepperFileIOHost : public ppapi::host::ResourceHost,
                          public base::SupportsWeakPtr<PepperFileIOHost> {
  public:
-  typedef base::Callback<void (base::File::Error)>
-      NotifyCloseFileCallback;
+  typedef base::Callback<void(base::File::Error)> NotifyCloseFileCallback;
 
   PepperFileIOHost(BrowserPpapiHostImpl* host,
                    PP_Instance instance,
@@ -52,6 +51,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
     base::ProcessId resolved_render_process_id;
     scoped_refptr<fileapi::FileSystemContext> file_system_context;
   };
+
  private:
   int32_t OnHostMsgOpen(ppapi::host::HostMessageContext* context,
                         PP_Resource file_ref_resource,
@@ -88,11 +88,10 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
       ppapi::host::ReplyMessageContext reply_context,
       int platform_file_flags,
       UIThreadStuff ui_thread_stuff);
-  void DidOpenInternalFile(
-      ppapi::host::ReplyMessageContext reply_context,
-      base::File::Error result,
-      base::PlatformFile file,
-      const base::Closure& on_close_callback);
+  void DidOpenInternalFile(ppapi::host::ReplyMessageContext reply_context,
+                           base::File::Error result,
+                           base::PlatformFile file,
+                           const base::Closure& on_close_callback);
   void GotResolvedRenderProcessId(
       ppapi::host::ReplyMessageContext reply_context,
       base::FilePath path,

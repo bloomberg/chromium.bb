@@ -86,11 +86,10 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
       ppapi::host::ReplyMessageContext reply_context,
       fileapi::FileSystemType file_system_type,
       scoped_refptr<fileapi::FileSystemContext> file_system_context);
-  void OpenFileSystemComplete(
-      ppapi::host::ReplyMessageContext reply_context,
-      const GURL& root,
-      const std::string& name,
-      base::File::Error error);
+  void OpenFileSystemComplete(ppapi::host::ReplyMessageContext reply_context,
+                              const GURL& root,
+                              const std::string& name,
+                              base::File::Error error);
   void OpenIsolatedFileSystem(
       ppapi::host::ReplyMessageContext reply_context,
       const std::string& fsid,
@@ -105,21 +104,18 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
       const std::string& fsid,
       base::File::Error error);
 
-  int32_t OnHostMsgOpen(
-      ppapi::host::HostMessageContext* context,
-      int64_t expected_size);
+  int32_t OnHostMsgOpen(ppapi::host::HostMessageContext* context,
+                        int64_t expected_size);
   int32_t OnHostMsgInitIsolatedFileSystem(
       ppapi::host::HostMessageContext* context,
       const std::string& fsid,
       PP_IsolatedFileSystemType_Private type);
-  int32_t OnHostMsgReserveQuota(
-      ppapi::host::HostMessageContext* context,
-      int64_t amount,
-      const ppapi::FileGrowthMap& file_growths);
+  int32_t OnHostMsgReserveQuota(ppapi::host::HostMessageContext* context,
+                                int64_t amount,
+                                const ppapi::FileGrowthMap& file_growths);
 
-  void SendReplyForFileSystem(
-      ppapi::host::ReplyMessageContext reply_context,
-      int32_t pp_error);
+  void SendReplyForFileSystem(ppapi::host::ReplyMessageContext reply_context,
+                              int32_t pp_error);
   void SendReplyForIsolatedFileSystem(
       ppapi::host::ReplyMessageContext reply_context,
       const std::string& fsid,
@@ -130,18 +126,15 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
 
   bool ShouldCreateQuotaReservation() const;
   void CreateQuotaReservation(const base::Closure& callback);
-  void GotQuotaReservation(
-      const base::Closure& callback,
-      scoped_refptr<QuotaReservation> quota_reservation);
+  void GotQuotaReservation(const base::Closure& callback,
+                           scoped_refptr<QuotaReservation> quota_reservation);
 
-  void GotReservedQuota(
-      ppapi::host::ReplyMessageContext reply_context,
-      int64_t amount,
-      const ppapi::FileSizeMap& file_sizes);
-  void DidOpenQuotaFile(
-      PP_Resource file_io_resource,
-      const OpenQuotaFileCallback& callback,
-      int64_t max_written_offset);
+  void GotReservedQuota(ppapi::host::ReplyMessageContext reply_context,
+                        int64_t amount,
+                        const ppapi::FileSizeMap& file_sizes);
+  void DidOpenQuotaFile(PP_Resource file_io_resource,
+                        const OpenQuotaFileCallback& callback,
+                        int64_t max_written_offset);
 
   std::string GetPluginMimeType() const;
 
@@ -152,7 +145,7 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
 
   PP_FileSystemType type_;
   bool called_open_;  // whether open has been called.
-  bool opened_;  // whether open succeeded.
+  bool opened_;       // whether open succeeded.
   GURL root_url_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 

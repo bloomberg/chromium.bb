@@ -15,9 +15,8 @@
 
 namespace content {
 
-class PepperFileSystemBrowserHostTest
-    : public testing::Test,
-      public BrowserPpapiHostTest {
+class PepperFileSystemBrowserHostTest : public testing::Test,
+                                        public BrowserPpapiHostTest {
  public:
   PepperFileSystemBrowserHostTest() {}
   virtual ~PepperFileSystemBrowserHostTest() {}
@@ -25,14 +24,13 @@ class PepperFileSystemBrowserHostTest
   virtual void SetUp() OVERRIDE {
     PP_Instance pp_instance = 12345;
     PP_Resource pp_resource = 67890;
-    host_.reset(new PepperFileSystemBrowserHost(
-        GetBrowserPpapiHost(), pp_instance, pp_resource,
-        PP_FILESYSTEMTYPE_ISOLATED));
+    host_.reset(new PepperFileSystemBrowserHost(GetBrowserPpapiHost(),
+                                                pp_instance,
+                                                pp_resource,
+                                                PP_FILESYSTEMTYPE_ISOLATED));
   }
 
-  virtual void TearDown() OVERRIDE {
-    host_.reset();
-  }
+  virtual void TearDown() OVERRIDE { host_.reset(); }
 
  protected:
   std::string GeneratePluginId(const std::string& mime_type) {
