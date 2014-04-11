@@ -156,7 +156,9 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   media::VideoCaptureFormat current_format_;
   blink::WebMediaConstraints current_constraints_;
-  gfx::Size frame_output_size_;
+  // |max_frame_output_size_| is the maximum frame size allowed by
+  // |current_constraints_|.
+  gfx::Size max_frame_output_size_;
 
   struct RequestedConstraints {
     RequestedConstraints(const blink::WebMediaConstraints& constraints,

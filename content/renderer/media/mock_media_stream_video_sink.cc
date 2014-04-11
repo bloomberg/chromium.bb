@@ -17,6 +17,7 @@ void MockMediaStreamVideoSink::OnVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
   ++number_of_frames_;
   format_ = frame->format();
+  frame_size_ = frame->visible_rect().size();
 }
 
 void MockMediaStreamVideoSink::OnReadyStateChanged(

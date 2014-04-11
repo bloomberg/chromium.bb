@@ -11,6 +11,7 @@
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_constraint_factory.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
+#include "content/renderer/media/mock_media_stream_video_sink.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -381,6 +382,58 @@ TEST_F(MediaStreamVideoSourceTest, DeliverSmallerSizeWhenTooLargeMax) {
   factory.AddOptional(MediaStreamVideoSource::kMinHeight, 720);
   TestSourceCropFrame(1280, 720, factory.CreateWebMediaConstraints(),
                       1280, 720);
+}
+
+// Test that a source can change the frame resolution on the fly and that
+// tracks sinks get the new frame size unless constraints force the frame to be
+// cropped.
+TEST_F(MediaStreamVideoSourceTest, SourceChangeFrameSize) {
+  MockMediaConstraintFactory factory;
+  factory.AddOptional(MediaStreamVideoSource::kMaxWidth, 800);
+  factory.AddOptional(MediaStreamVideoSource::kMaxHeight, 700);
+
+  // Expect the source to start capture with the supported resolution.
+  blink::WebMediaStreamTrack track =
+      CreateTrackAndStartSource(factory.CreateWebMediaConstraints(),
+                                640, 480, 30);
+
+  MockMediaStreamVideoSink sink;
+  MediaStreamVideoSink::AddToVideoTrack(&sink, track);
+  EXPECT_EQ(0, sink.number_of_frames());
+
+  {
+    scoped_refptr<media::VideoFrame> frame1 =
+        media::VideoFrame::CreateBlackFrame(gfx::Size(320, 240));
+    mock_source()->DeliverVideoFrame(frame1);
+  }
+  EXPECT_EQ(1, sink.number_of_frames());
+  // Expect the delivered frame to be passed unchanged since its smaller than
+  // max requested.
+  EXPECT_EQ(320, sink.frame_size().width());
+  EXPECT_EQ(240, sink.frame_size().height());
+
+  {
+    scoped_refptr<media::VideoFrame> frame2 =
+          media::VideoFrame::CreateBlackFrame(gfx::Size(640, 480));
+    mock_source()->DeliverVideoFrame(frame2);
+  }
+  EXPECT_EQ(2, sink.number_of_frames());
+  // Expect the delivered frame to be passed unchanged since its smaller than
+  // max requested.
+  EXPECT_EQ(640, sink.frame_size().width());
+  EXPECT_EQ(480, sink.frame_size().height());
+
+  {
+    scoped_refptr<media::VideoFrame> frame3 =
+          media::VideoFrame::CreateBlackFrame(gfx::Size(1280, 720));
+    mock_source()->DeliverVideoFrame(frame3);
+  }
+  EXPECT_EQ(3, sink.number_of_frames());
+  // Expect a frame to be cropped since its larger than max requested.
+  EXPECT_EQ(800, sink.frame_size().width());
+  EXPECT_EQ(700, sink.frame_size().height());
+
+  MediaStreamVideoSink::RemoveFromVideoTrack(&sink, track);
 }
 
 TEST_F(MediaStreamVideoSourceTest, IsConstraintSupported) {
