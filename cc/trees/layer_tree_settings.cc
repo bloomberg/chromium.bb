@@ -20,6 +20,7 @@ LayerTreeSettings::LayerTreeSettings()
       main_frame_before_draw_enabled(true),
       main_frame_before_activation_enabled(false),
       using_synchronous_renderer_compositor(false),
+      report_overscroll_only_for_scrollable_axes(false),
       per_tile_painting_enabled(false),
       partial_swap_enabled(false),
       accelerated_animation_enabled(true),

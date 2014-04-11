@@ -2315,6 +2315,13 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
         unused_root_delta.set_x(0.0f);
       if (std::abs(unused_root_delta.y()) < kEpsilon)
         unused_root_delta.set_y(0.0f);
+      // Disable overscroll on axes which is impossible to scroll.
+      if (settings_.report_overscroll_only_for_scrollable_axes) {
+        if (std::abs(active_tree_->TotalMaxScrollOffset().x()) <= kEpsilon)
+          unused_root_delta.set_x(0.0f);
+        if (std::abs(active_tree_->TotalMaxScrollOffset().y()) <= kEpsilon)
+          unused_root_delta.set_y(0.0f);
+      }
     }
 
     // If the layer wasn't able to move, try the next one in the hierarchy.

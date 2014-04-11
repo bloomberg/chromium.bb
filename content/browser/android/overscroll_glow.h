@@ -55,14 +55,6 @@ class OverscrollGlow {
   // Note: The effect will detach itself when no further animation is required.
   bool Animate(base::TimeTicks current_time);
 
-  // Horizontal overscroll will be ignored when false.
-  void set_horizontal_overscroll_enabled(bool enabled) {
-    horizontal_overscroll_enabled_ = enabled;
-  }
-  // Vertical overscroll will be ignored when false.
-  void set_vertical_overscroll_enabled(bool enabled) {
-    vertical_overscroll_enabled_ = enabled;
-  }
   // The size of the layer for which edges will be animated.
   void set_size(gfx::SizeF size) {
     size_ = size;
@@ -96,8 +88,6 @@ class OverscrollGlow {
   gfx::SizeF size_;
   gfx::Vector2dF old_overscroll_;
   gfx::Vector2dF old_velocity_;
-  bool horizontal_overscroll_enabled_;
-  bool vertical_overscroll_enabled_;
 
   scoped_refptr<cc::Layer> root_layer_;
 

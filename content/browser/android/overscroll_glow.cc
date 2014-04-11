@@ -97,10 +97,7 @@ scoped_ptr<OverscrollGlow> OverscrollGlow::Create(bool enabled) {
 }
 
 OverscrollGlow::OverscrollGlow(bool enabled)
-  : enabled_(enabled),
-    initialized_(false),
-    horizontal_overscroll_enabled_(true),
-    vertical_overscroll_enabled_(true) {}
+    : enabled_(enabled), initialized_(false) {}
 
 OverscrollGlow::~OverscrollGlow() {
   Detach();
@@ -134,15 +131,6 @@ bool OverscrollGlow::OnOverscrolled(cc::Layer* overscrolling_layer,
   // empty-sized effect is effectively disabled.
   if (size_.IsEmpty())
     return false;
-
-  if (!horizontal_overscroll_enabled_) {
-    overscroll.set_x(0);
-    velocity.set_x(0);
-  }
-  if (!vertical_overscroll_enabled_) {
-    overscroll.set_y(0);
-    velocity.set_y(0);
-  }
 
   // Ignore sufficiently small values that won't meaningfuly affect animation.
   overscroll = ZeroSmallComponents(overscroll);

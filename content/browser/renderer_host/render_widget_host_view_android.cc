@@ -962,13 +962,6 @@ bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
 
 void RenderWidgetHostViewAndroid::UpdateAnimationSize(
     const cc::CompositorFrameMetadata& frame_metadata) {
-  // Disable edge effects for axes on which scrolling is impossible.
-  gfx::SizeF ceiled_viewport_size =
-      gfx::ToCeiledSize(frame_metadata.viewport_size);
-  overscroll_effect_->set_horizontal_overscroll_enabled(
-      ceiled_viewport_size.width() < frame_metadata.root_layer_size.width());
-  overscroll_effect_->set_vertical_overscroll_enabled(
-      ceiled_viewport_size.height() < frame_metadata.root_layer_size.height());
   overscroll_effect_->set_size(content_size_in_layer_);
 }
 
