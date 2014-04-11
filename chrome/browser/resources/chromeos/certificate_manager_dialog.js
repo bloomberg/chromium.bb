@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var AlertOverlay = options.AlertOverlay;
 var OptionsPage = options.OptionsPage;
 var CertificateManager = options.CertificateManager;
 var CertificateRestoreOverlay = options.CertificateRestoreOverlay;
@@ -39,8 +40,10 @@ function load() {
 
   OptionsPage.isDialog = true;
   CertificateManager.getInstance().initializePage(true);
+  OptionsPage.registerOverlay(AlertOverlay.getInstance(),
+      CertificateManager.getInstance());
   OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance(),
-    CertificateManager.getInstance());
+      CertificateManager.getInstance());
   OptionsPage.registerOverlay(CertificateEditCaTrustOverlay.getInstance(),
       CertificateManager.getInstance());
   OptionsPage.registerOverlay(CertificateImportErrorOverlay.getInstance(),
