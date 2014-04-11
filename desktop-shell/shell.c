@@ -162,7 +162,7 @@ struct shell_surface {
 
 	const struct weston_shell_client *client;
 
-	struct {
+	struct surface_state {
 		bool maximized;
 		bool fullscreen;
 		bool relative;
@@ -351,14 +351,64 @@ shell_grab_start(struct shell_grab *grab,
 	}
 }
 
+static int
+get_output_panel_height(struct desktop_shell *shell,
+			struct weston_output *output)
+{
+	struct weston_view *view;
+	int panel_height = 0;
+
+	if (!output)
+		return 0;
+
+	wl_list_for_each(view, &shell->panel_layer.view_list, layer_link) {
+		if (view->surface->output == output) {
+			panel_height = view->surface->height;
+			break;
+		}
+	}
+
+	return panel_height;
+}
+
+static void
+send_configure_for_surface(struct shell_surface *shsurf)
+{
+	int32_t width, height;
+	struct surface_state *state;
+
+	if (shsurf->state_requested)
+		state = &shsurf->requested_state;
+	else if (shsurf->state_changed)
+		state = &shsurf->next_state;
+	else
+		state = &shsurf->state;
+
+	if (state->fullscreen) {
+		width = shsurf->output->width;
+		height = shsurf->output->height;
+	} else if (state->maximized) {
+		struct desktop_shell *shell;
+		uint32_t panel_height = 0;
+
+		shell = shell_surface_get_shell(shsurf);
+		panel_height = get_output_panel_height(shell, shsurf->output);
+
+		width = shsurf->output->width;
+		height = shsurf->output->height - panel_height;
+	} else {
+		width = 0;
+		height = 0;
+	}
+
+	shsurf->client->send_configure(shsurf->surface, width, height);
+}
+
 static void
 shell_surface_state_changed(struct shell_surface *shsurf)
 {
-	if (shell_surface_is_xdg_surface(shsurf)) {
-		shsurf->client->send_configure(shsurf->surface,
-					       shsurf->surface->width,
-					       shsurf->surface->height);
-	}
+	if (shell_surface_is_xdg_surface(shsurf))
+		send_configure_for_surface(shsurf);
 }
 
 static void
@@ -2122,26 +2172,6 @@ restore_all_output_modes(struct weston_compositor *compositor)
 		restore_output_mode(output);
 }
 
-static int
-get_output_panel_height(struct desktop_shell *shell,
-			struct weston_output *output)
-{
-	struct weston_view *view;
-	int panel_height = 0;
-
-	if (!output)
-		return 0;
-
-	wl_list_for_each(view, &shell->panel_layer.view_list, layer_link) {
-		if (view->surface->output == output) {
-			panel_height = view->surface->height;
-			break;
-		}
-	}
-
-	return panel_height;
-}
-
 /* The surface will be inserted into the list immediately after the link
  * returned by this function (i.e. will be stacked immediately above the
  * returned link). */
@@ -2343,19 +2373,13 @@ set_fullscreen(struct shell_surface *shsurf,
 	       struct weston_output *output)
 {
 	shell_surface_set_output(shsurf, output);
+	shsurf->type = SHELL_SURFACE_TOPLEVEL;
 
 	shsurf->fullscreen_output = shsurf->output;
 	shsurf->fullscreen.type = method;
 	shsurf->fullscreen.framerate = framerate;
 
-	shsurf->type = SHELL_SURFACE_TOPLEVEL;
-
-	shsurf->client->send_configure(shsurf->surface,
-				       shsurf->output->width,
-				       shsurf->output->height);
-
-	/* The layer_link is updated in set_surface_type(),
-	 * called from configure. */
+	send_configure_for_surface(shsurf);
 }
 
 static void
@@ -2414,10 +2438,9 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	shell_surface_set_parent(shsurf, NULL);
 
 	surface_clear_next_states(shsurf);
-	set_fullscreen(shsurf, method, framerate, output);
-
 	shsurf->next_state.fullscreen = true;
 	shsurf->state_changed = true;
+	set_fullscreen(shsurf, method, framerate, output);
 }
 
 static void
@@ -2463,19 +2486,10 @@ static void
 set_maximized(struct shell_surface *shsurf,
               struct weston_output *output)
 {
-	struct desktop_shell *shell;
-	uint32_t panel_height = 0;
-
 	shell_surface_set_output(shsurf, output);
-
-	shell = shell_surface_get_shell(shsurf);
-	panel_height = get_output_panel_height(shell, shsurf->output);
-
-	shsurf->client->send_configure(shsurf->surface,
-	                               shsurf->output->width,
-	                               shsurf->output->height - panel_height);
-
 	shsurf->type = SHELL_SURFACE_TOPLEVEL;
+
+	send_configure_for_surface(shsurf);
 }
 
 static void
@@ -3463,7 +3477,7 @@ xdg_surface_unset_maximized(struct wl_client *client,
 
 	shsurf->state_requested = true;
 	shsurf->requested_state.maximized = false;
-	shsurf->client->send_configure(shsurf->surface, 0, 0);
+	send_configure_for_surface(shsurf);
 }
 
 static void
@@ -3497,7 +3511,7 @@ xdg_surface_unset_fullscreen(struct wl_client *client,
 
 	shsurf->state_requested = true;
 	shsurf->requested_state.fullscreen = false;
-	shsurf->client->send_configure(shsurf->surface, 0, 0);
+	send_configure_for_surface(shsurf);
 }
 
 static void
