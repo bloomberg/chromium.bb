@@ -99,7 +99,7 @@ bool AvatarMenu::ShouldShowAvatarMenu() {
     // On ChromeOS the menu will not be shown.
     return false;
 #else
-    return switches::IsNewProfileManagement() ||
+    return switches::IsNewAvatarMenu() ||
            (g_browser_process->profile_manager() &&
             g_browser_process->profile_manager()->GetNumberOfProfiles() > 1);
 #endif

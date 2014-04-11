@@ -17,6 +17,9 @@ bool IsEnableWebBasedSignin();
 // Enables using GAIA information to populate profile name and icon.
 bool IsGoogleProfileInfo();
 
+// Shows the new avatar menu.
+bool IsNewAvatarMenu();
+
 // Use new profile management system, including profile sign-out and new
 // choosers.
 bool IsNewProfileManagement();

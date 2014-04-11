@@ -726,12 +726,7 @@ void AvatarMenuBubbleView::InitMenuContents(
     item_views_.push_back(item_view);
   }
 
-  if (switches::IsNewProfileManagement()) {
-    separator_ = new views::Separator(views::Separator::HORIZONTAL);
-    AddChildView(separator_);
-    buttons_view_ = new ActionButtonView(this, browser_->profile());
-    AddChildView(buttons_view_);
-  } else if (avatar_menu_->ShouldShowAddNewProfileLink()) {
+  if (avatar_menu_->ShouldShowAddNewProfileLink()) {
     views::Link* add_profile_link = new views::Link(
         l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_NEW_PROFILE_LINK));
     add_profile_link->set_listener(this);

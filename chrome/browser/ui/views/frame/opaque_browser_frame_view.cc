@@ -149,8 +149,7 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   window_title_->set_id(VIEW_ID_WINDOW_TITLE);
   AddChildView(window_title_);
 
-  if (browser_view->IsRegularOrGuestSession() &&
-      switches::IsNewProfileManagement())
+  if (browser_view->IsRegularOrGuestSession() && switches::IsNewAvatarMenu())
     UpdateNewStyleAvatarInfo(this, NewAvatarButton::THEMED_BUTTON);
   else
     UpdateAvatarInfo();
@@ -419,10 +418,11 @@ void OpaqueBrowserFrameView::Observe(
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
       if (browser_view() ->IsRegularOrGuestSession() &&
-          switches::IsNewProfileManagement())
+          switches::IsNewAvatarMenu()) {
         UpdateNewStyleAvatarInfo(this, NewAvatarButton::THEMED_BUTTON);
-      else
+      } else {
         UpdateAvatarInfo();
+      }
       break;
     default:
       NOTREACHED() << "Got a notification we didn't register for!";

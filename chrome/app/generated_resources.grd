@@ -11609,11 +11609,14 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_BUTTON" desc="Text of the ok button on the account removal view in the avatar menu bubble.">
         Remove account and relaunch
       </message>
-      <message name="IDS_PROFILES_SIGNIN_TUTORIAL_TITLE" desc="Title of the tutorial card in the avatar menu bubble view for a signed-in user.">
+      <message name="IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_TITLE" desc="Title of the tutorial card in the avatar menu bubble view shown when new profile management preview is enabled.">
         You're all set
       </message>
-      <message name="IDS_PROFILES_SIGNIN_TUTORIAL_OK_BUTTON" desc="Text of the ok button on the tutorial card in the avatar menu bubble view">
+      <message name="IDS_PROFILES_TUTORIAL_OK_BUTTON" desc="Text of the ok button on the tutorial card in the avatar menu bubble view">
         Ok, Got it!
+      </message>
+      <message name="IDS_PROFILES_TUTORIAL_TRY_BUTTON" desc="Text of the try button on the tutorial card in the avatar menu bubble view">
+        Try it out
       </message>
       <message name="IDS_PROFILES_NOT_YOU_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
         Not <ph name="PROFILE_DISPLAY_NAME">$1<ex>Jessica</ex></ph>?
@@ -11625,7 +11628,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to manage accounts for a profile.">
           Your accounts
         </message>
-        <message name="IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE" desc="The Learn More button in the avatar tutorial bubble.">
+        <message name="IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE" desc="The Learn More link in the avatar tutorial bubble.">
           Learn more
         </message>
       </if>
@@ -11636,7 +11639,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to manage accounts for a profile.">
           Your Accounts
         </message>
-        <message name="IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE" desc="The Learn More button in the avatar tutorial bubble.">
+        <message name="IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE" desc="The Learn More link in the avatar tutorial bubble.">
             Learn More
         </message>
       </if>
@@ -14171,6 +14174,13 @@ Do you accept?
     <message name="IDS_FLAGS_ENABLE_FAST_USER_SWITCHING_DESCRIPTION" desc="Description for the flag to enable fast user switching">
       Enables fast switching between users in the avatar menu.
     </message>
+    <message name="IDS_FLAGS_ENABLE_NEW_AVATAR_MENU_NAME" desc="Title for the flag to enable the new avatar menu.">
+      Enable the new avatar menu
+    </message>
+    <message name="IDS_FLAGS_ENABLE_NEW_AVATAR_MENU_DESCRIPTION" desc="Description for the flag to enable the new avatar menu.">
+      Enables the new avatar menu. When combined with new-profile-management, it simply shows the new profile management avatar menu. Otherwise it shows a redesigned avatar menu with the same functionality as the old one, plus a tutorial card at the top prompting the user to try out the new profile management UI.
+    </message>
+
     <message name="IDS_FLAGS_ENABLE_WEB_BASED_SIGNIN_NAME" desc="Title for the flag to enable web-based sign-in flows.">
       Enable pure web-based sign-in flows
     </message>

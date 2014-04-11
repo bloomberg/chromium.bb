@@ -397,7 +397,7 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
 }
 
 void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
-  DCHECK(switches::IsNewProfileManagement());
+  DCHECK(switches::IsNewAvatarMenu());
   if (!new_avatar_button_)
     return;
 
@@ -682,8 +682,7 @@ void OpaqueBrowserFrameViewLayout::Layout(views::View* host) {
   // on the trailing side.
   leading_button_start_++;
 
-  if (delegate_->IsRegularOrGuestSession() &&
-      switches::IsNewProfileManagement())
+  if (delegate_->IsRegularOrGuestSession() && switches::IsNewAvatarMenu())
     LayoutNewStyleAvatar(host);
   else
     LayoutAvatar(host);

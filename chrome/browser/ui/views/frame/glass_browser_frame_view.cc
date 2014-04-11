@@ -87,8 +87,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
   if (browser_view->ShouldShowWindowIcon())
     InitThrobberIcons();
 
-  if (browser_view->IsRegularOrGuestSession() &&
-      switches::IsNewProfileManagement())
+  if (browser_view->IsRegularOrGuestSession() && switches::IsNewAvatarMenu())
     UpdateNewStyleAvatarInfo(this, NewAvatarButton::NATIVE_BUTTON);
   else
     UpdateAvatarInfo();
@@ -113,7 +112,7 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
   // The new avatar button is optionally displayed to the left of the
   // minimize button.
   if (new_avatar_button()) {
-    DCHECK(switches::IsNewProfileManagement());
+    DCHECK(switches::IsNewAvatarMenu());
     minimize_button_offset -= new_avatar_button()->width();
   }
 
@@ -126,11 +125,12 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
   // a tab strip until the left end of this window without considering the size
   // of window controls in RTL languages.
   if (base::i18n::IsRTL()) {
-    if (!browser_view()->ShouldShowAvatar() && frame()->IsMaximized())
+    if (!browser_view()->ShouldShowAvatar() && frame()->IsMaximized()) {
       tabstrip_x += avatar_bounds_.x();
-    else if (browser_view()->IsRegularOrGuestSession() &&
-        switches::IsNewProfileManagement())
+    } else if (browser_view()->IsRegularOrGuestSession() &&
+               switches::IsNewAvatarMenu()) {
       tabstrip_x = width() - minimize_button_offset;
+    }
 
     minimize_button_offset = width();
   }
@@ -263,8 +263,7 @@ void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void GlassBrowserFrameView::Layout() {
-  if (browser_view()->IsRegularOrGuestSession() &&
-      switches::IsNewProfileManagement())
+  if (browser_view()->IsRegularOrGuestSession() && switches::IsNewAvatarMenu())
     LayoutNewStyleAvatar();
   else
     LayoutAvatar();
@@ -440,7 +439,7 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
 }
 
 void GlassBrowserFrameView::LayoutNewStyleAvatar() {
-  DCHECK(switches::IsNewProfileManagement());
+  DCHECK(switches::IsNewAvatarMenu());
   if (!new_avatar_button())
     return;
 
@@ -564,10 +563,11 @@ void GlassBrowserFrameView::Observe(
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
       if (browser_view()->IsRegularOrGuestSession() &&
-          switches::IsNewProfileManagement())
+          switches::IsNewAvatarMenu()) {
         UpdateNewStyleAvatarInfo(this, NewAvatarButton::NATIVE_BUTTON);
-      else
+      } else {
         UpdateAvatarInfo();
+      }
       break;
     default:
       NOTREACHED() << "Got a notification we didn't register for!";

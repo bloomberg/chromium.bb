@@ -143,7 +143,7 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
 void BrowserNonClientFrameView::UpdateNewStyleAvatarInfo(
     views::ButtonListener* listener,
     const NewAvatarButton::AvatarButtonStyle style) {
-  DCHECK(switches::IsNewProfileManagement());
+  DCHECK(switches::IsNewAvatarMenu());
   // This should never be called in incognito mode.
   DCHECK(browser_view_->IsRegularOrGuestSession());
 

@@ -110,6 +110,11 @@ void AvatarMenuButton::ShowAvatarBubble() {
         ProfileChooserView::BUBBLE_VIEW_MODE_PROFILE_CHOOSER,
         this, arrow, views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bounds,
         browser_);
+  } else if (switches::IsNewAvatarMenu()) {
+    ProfileChooserView::ShowBubble(
+        ProfileChooserView::BUBBLE_VIEW_MODE_NEW_PROFILE_MANAGEMENT_PREVIEW,
+        this, arrow, views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bounds,
+        browser_);
   } else {
     AvatarMenuBubbleView::ShowBubble(
         this, arrow, views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bounds,

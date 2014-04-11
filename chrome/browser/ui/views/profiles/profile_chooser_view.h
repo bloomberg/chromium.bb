@@ -57,7 +57,10 @@ class ProfileChooserView : public views::BubbleDelegateView,
     // Shows a web view for adding secondary accounts.
     BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT,
     // Shows a view for confirming account removal.
-    BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL
+    BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
+    // Shows a fast profile switcher view with a tutorial card that prompts the
+    // user to preview new profile management.
+    BUBBLE_VIEW_MODE_NEW_PROFILE_MANAGEMENT_PREVIEW
   };
 
   // Shows the bubble if one is not already showing.  This allows us to easily
@@ -134,11 +137,6 @@ class ProfileChooserView : public views::BubbleDelegateView,
   void ShowView(BubbleViewMode view_to_display,
                 AvatarMenu* avatar_menu);
 
-  // Creates a tutorial card for the profile |avatar_item|. |tutorial_shown|
-  // indicates if the tutorial card is already shown in the last active view.
-  views::View* CreateTutorialView(
-      const AvatarMenu::Item& current_avatar_item, bool tutorial_shown);
-
   // Creates the main profile card for the profile |avatar_item|. |is_guest|
   // is used to determine whether to show any Sign in/Sign out/Manage accounts
   // links.
@@ -165,7 +163,36 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // Creates a view to confirm account removal for |account_id_to_remove_|.
   views::View* CreateAccountRemovalView();
 
+  // Removes the currently selected account and attempts to restart Chrome.
   void RemoveAccount();
+
+  // Creates an avatar bubble view that shows a redesigned avatar menu with the
+  // same functionality as the old one, plus a tutorial card at the top
+  // prompting the user to try out the new profile management UI.
+  views::View* CreateNewProfileManagementPreviewView();
+
+  // Creates a tutorial card shown when new profile management preview is
+  // enabled. |current_avatar_item| indicates the current profile.
+  // |tutorial_shown| indicates if the tutorial card is already shown in the
+  // last active view.
+  views::View* CreatePreviewEnabledTutorialView(
+      const AvatarMenu::Item& current_avatar_item, bool tutorial_shown);
+
+  // Creates a tutorial card with the specified |title_text|, |context_text|,
+  // and a bottom row with a right-aligned link using the specified |link_text|,
+  // and a left aligned button using the specified |button_text|. The method
+  // sets |link| to point to the newly created link, and |button| to the newly
+  // created button.
+  views::View* CreateTutorialView(
+      const base::string16& title_text,
+      const base::string16& content_text,
+      const base::string16& link_text,
+      const base::string16& button_text,
+      views::Link** link,
+      views::LabelButton** button);
+
+  // Enables new profile management preview.
+  void EnableNewProfileManagementPreview();
 
   scoped_ptr<AvatarMenu> avatar_menu_;
   Browser* browser_;
@@ -179,6 +206,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // Links and buttons displayed in the tutorial card.
   views::Link* tutorial_learn_more_link_;
   views::LabelButton* tutorial_ok_button_;
+  views::LabelButton* tutorial_enable_new_profile_management_button_;
 
   // Links displayed in the active profile card.
   views::Link* manage_accounts_link_;

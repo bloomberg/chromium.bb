@@ -6,8 +6,10 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -20,6 +22,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
@@ -421,6 +424,7 @@ void ProfileChooserView::ResetView() {
   current_profile_name_ = NULL;
   tutorial_ok_button_ = NULL;
   tutorial_learn_more_link_ = NULL;
+  tutorial_enable_new_profile_management_button_ = NULL;
   account_removal_cancel_button_ = NULL;
   gaia_signin_cancel_button_ = NULL;
   open_other_profile_indexes_map_.clear();
@@ -476,13 +480,31 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
 
   if (view_mode_ == BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
       view_mode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
-      view_mode_ == BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL) {
-    bool is_removal_view = view_mode_ == BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL;
-    views::GridLayout* layout = CreateSingleColumnLayout(this,
-        is_removal_view ? kFixedAccountRemovalViewWidth : kFixedGaiaViewWidth);
+      view_mode_ == BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL ||
+      view_mode_ == BUBBLE_VIEW_MODE_NEW_PROFILE_MANAGEMENT_PREVIEW) {
+    views::GridLayout* layout;
+    views::View* sub_view;
+    switch (view_mode_) {
+      case BUBBLE_VIEW_MODE_GAIA_SIGNIN:
+      case BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
+        layout = CreateSingleColumnLayout(this, kFixedGaiaViewWidth);
+        sub_view = CreateGaiaSigninView(
+            view_mode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT);
+        break;
+      case BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL:
+        layout = CreateSingleColumnLayout(this, kFixedAccountRemovalViewWidth);
+        sub_view = CreateAccountRemovalView();
+        break;
+      case BUBBLE_VIEW_MODE_NEW_PROFILE_MANAGEMENT_PREVIEW:
+        layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
+        sub_view = CreateNewProfileManagementPreviewView();
+        break;
+      default:
+        NOTREACHED();
+        return;
+    }
     layout->StartRow(1, 0);
-    layout->AddView(is_removal_view ? CreateAccountRemovalView():
-        CreateGaiaSigninView(view_mode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT));
+    layout->AddView(sub_view);
     Layout();
     if (GetBubbleFrameView())
       SizeToContents();
@@ -501,7 +523,7 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
     if (item.active) {
       option_buttons_view = CreateOptionsView(item.signed_in);
       if (view_to_display == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
-        tutorial_view = CreateTutorialView(item, tutorial_shown);
+        tutorial_view = CreatePreviewEnabledTutorialView(item, tutorial_shown);
         current_profile_view = CreateCurrentProfileView(item, false);
       } else {
         current_profile_view = CreateCurrentProfileEditableView(item);
@@ -577,6 +599,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     browser_->profile()->GetPrefs()->SetInteger(
         prefs::kProfileAvatarTutorialShown, kProfileAvatarTutorialShowMax + 1);
     ShowView(BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
+  } else if (sender == tutorial_enable_new_profile_management_button_) {
+    EnableNewProfileManagementPreview();
   } else if (sender == remove_account_and_relaunch_button_) {
     RemoveAccount();
   } else if (sender == account_removal_cancel_button_) {
@@ -678,8 +702,9 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
   return false;
 }
 
-views::View* ProfileChooserView::CreateTutorialView(
-    const AvatarMenu::Item& current_avatar_item, bool tutorial_shown) {
+views::View* ProfileChooserView::CreatePreviewEnabledTutorialView(
+    const AvatarMenu::Item& current_avatar_item,
+    bool tutorial_shown) {
   if (!current_avatar_item.signed_in)
     return NULL;
 
@@ -698,6 +723,23 @@ views::View* ProfileChooserView::CreateTutorialView(
   }
   tutorial_showing_ = true;
 
+  return CreateTutorialView(
+      l10n_util::GetStringUTF16(IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_TITLE),
+      l10n_util::GetStringUTF16(
+          IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_CONTENT_TEXT),
+      l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE),
+      l10n_util::GetStringUTF16(IDS_PROFILES_TUTORIAL_OK_BUTTON),
+      &tutorial_learn_more_link_,
+      &tutorial_ok_button_);
+}
+
+views::View* ProfileChooserView::CreateTutorialView(
+    const base::string16& title_text,
+    const base::string16& content_text,
+    const base::string16& link_text,
+    const base::string16& button_text,
+    views::Link** link,
+    views::LabelButton** button) {
   views::View* view = new views::View();
   view->set_background(views::Background::CreateSolidBackground(
       profiles::kAvatarTutorialBackgroundColor));
@@ -709,8 +751,7 @@ views::View* ProfileChooserView::CreateTutorialView(
                     views::kButtonHEdgeMarginNew);
 
   // Adds title.
-  views::Label* title_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_TUTORIAL_TITLE));
+  views::Label* title_label = new views::Label(title_text);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label->SetAutoColorReadabilityEnabled(false);
   title_label->SetEnabledColor(SK_ColorWHITE);
@@ -720,8 +761,7 @@ views::View* ProfileChooserView::CreateTutorialView(
   layout->AddView(title_label);
 
   // Adds body content.
-  views::Label* content_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_TEXT));
+  views::Label* content_label = new views::Label(content_text);
   content_label->SetMultiLine(true);
   content_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   content_label->SetAutoColorReadabilityEnabled(false);
@@ -741,20 +781,17 @@ views::View* ProfileChooserView::CreateTutorialView(
       views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
   button_row->SetLayoutManager(button_layout);
 
-  tutorial_learn_more_link_ = CreateLink(
-      l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE),
-      this);
-  tutorial_learn_more_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  tutorial_learn_more_link_->SetAutoColorReadabilityEnabled(false);
-  tutorial_learn_more_link_->SetEnabledColor(SK_ColorWHITE);
+  *link = CreateLink(link_text, this);
+  (*link)->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  (*link)->SetAutoColorReadabilityEnabled(false);
+  (*link)->SetEnabledColor(SK_ColorWHITE);
   button_layout->StartRow(1, 0);
-  button_layout->AddView(tutorial_learn_more_link_);
+  button_layout->AddView(*link);
 
-  tutorial_ok_button_ = new views::LabelButton(
-      this, l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_TUTORIAL_OK_BUTTON));
-  tutorial_ok_button_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  tutorial_ok_button_->SetStyle(views::Button::STYLE_BUTTON);
-  button_layout->AddView(tutorial_ok_button_);
+  *button = new views::LabelButton(this, button_text);
+  (*button)->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  (*button)->SetStyle(views::Button::STYLE_BUTTON);
+  button_layout->AddView(*button);
 
   layout->StartRowWithPadding(1, 0, 0, views::kUnrelatedControlVerticalSpacing);
   layout->AddView(button_row);
@@ -1132,4 +1169,39 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
   }
 
   return view;
+}
+
+views::View* ProfileChooserView::CreateNewProfileManagementPreviewView() {
+  views::View* view = new views::View();
+  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
+
+  // Adds tutorial card.
+  layout->StartRow(1, 0);
+  layout->AddView(CreateTutorialView(
+      l10n_util::GetStringUTF16(IDS_PROFILES_PREVIEW_TUTORIAL_TITLE),
+      l10n_util::GetStringUTF16(IDS_PROFILES_PREVIEW_TUTORIAL_CONTENT_TEXT),
+      l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE),
+      l10n_util::GetStringUTF16(IDS_PROFILES_TUTORIAL_TRY_BUTTON),
+      &tutorial_learn_more_link_,
+      &tutorial_enable_new_profile_management_button_));
+
+  // TODO(guohui, noms): adds the current account card and fast profile switcher
+  // card.
+
+  return view;
+}
+
+void ProfileChooserView::EnableNewProfileManagementPreview() {
+  const char kNewProfileManagementExperimentInternalName[] =
+      "enable-new-profile-management";
+  about_flags::PrefServiceFlagsStorage flags_storage(
+      g_browser_process->local_state());
+  about_flags::SetExperimentEnabled(
+      &flags_storage,
+      kNewProfileManagementExperimentInternalName,
+      true);
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kNewProfileManagement);
+  chrome::ShowUserManager(base::FilePath());
 }

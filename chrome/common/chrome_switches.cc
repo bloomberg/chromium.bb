@@ -901,6 +901,12 @@ const char kMultiProfiles[]                 = "multi-profiles";
 // Intended primarily for use with --log-net-log.
 const char kNetLogLevel[]                   = "net-log-level";
 
+// Use new avatar menu. When combined with new-profile-management, it simply
+// shows the new profile management avatar menu. Otherwise it shows a redesigned
+// avatar menu with the same functionality as the old one, plus a tutorial card
+// at the top prompting the user to try out the new profile management UI.
+const char kNewAvatarMenu[]                 = "new-avatar-menu";
+
 // Use new profile management system, including profile sign-out and new
 // choosers.
 const char kNewProfileManagement[]          = "new-profile-management";

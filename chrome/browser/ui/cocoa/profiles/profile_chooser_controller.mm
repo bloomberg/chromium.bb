@@ -964,7 +964,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   base::scoped_nsobject<NSButton> tutorialOkButton([[HoverButton alloc]
       initWithFrame:NSZeroRect]);
   [tutorialOkButton setTitle:l10n_util::GetNSString(
-      IDS_PROFILES_SIGNIN_TUTORIAL_OK_BUTTON)];
+      IDS_PROFILES_TUTORIAL_OK_BUTTON)];
   [tutorialOkButton setTarget:self];
   [tutorialOkButton setAction:@selector(dismissTutorial:)];
   [tutorialOkButton sizeToFit];
@@ -985,7 +985,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   // Adds body content.
   NSTextField* contentLabel = BuildLabel(
-      l10n_util::GetNSString(IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_TEXT),
+      l10n_util::GetNSString(
+          IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_CONTENT_TEXT),
       NSMakePoint(kHorizontalSpacing, yOffset),
       tutorialBackgroundColor,
       gfx::SkColorToSRGBNSColor(profiles::kAvatarTutorialContentTextColor));
@@ -997,7 +998,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // Adds title.
   NSTextField* titleLabel =
       BuildLabel(
-          l10n_util::GetNSString(IDS_PROFILES_SIGNIN_TUTORIAL_TITLE),
+          l10n_util::GetNSString(IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_TITLE),
           NSMakePoint(kHorizontalSpacing, yOffset),
           tutorialBackgroundColor,
           [NSColor whiteColor] /* text_color */);

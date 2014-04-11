@@ -49,6 +49,12 @@ bool IsGoogleProfileInfo() {
   return CheckProfileManagementFlag(switches::kGoogleProfileInfo, true);
 }
 
+bool IsNewAvatarMenu() {
+  return
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewAvatarMenu) ||
+      IsNewProfileManagement();
+}
+
 bool IsNewProfileManagement() {
   return CheckProfileManagementFlag(switches::kNewProfileManagement, true);
 }

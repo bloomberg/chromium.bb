@@ -766,8 +766,14 @@ For Google Chrome, processes used to display diagnostics information (such as th
       </message>
 
       <!-- Tutorial card in the avatar menu bubble -->
-      <message name="IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_TEXT" desc="The main content of the tutorial card in the avatar menu bubble view for a signed-in user.">
-        You can add your other Google Accounts and lock your Chrome below.
+      <message name="IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_CONTENT_TEXT" desc="The main content of the tutorial card in the avatar menu bubble view shown when user enables the new profile management preview.">
+        You can add your other Google Accounts and lock your Chromium below.
+      </message>
+      <message name="IDS_PROFILES_PREVIEW_TUTORIAL_TITLE" desc="The title of the tutorial card in the avatar menu bubble view that asks the user to preview the new profile management UI.">
+        Preview the new Chrome
+      </message>
+      <message name="IDS_PROFILES_PREVIEW_TUTORIAL_CONTENT_TEXT" desc="The main content of the tutorial card in the avatar menu bubble view that asks the user to preview the new profile management UI.">
+       Try the new way to use Chrome with your Google Account and on shared computers.
       </message>
 
       <!-- Account removal view in the avatar menu bubble -->
