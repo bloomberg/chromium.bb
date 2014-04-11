@@ -56,6 +56,7 @@
             'v8/ScriptDebugServer.h',
             'v8/ScriptEventListener.cpp',
             'v8/ScriptEventListener.h',
+            'v8/ScriptFunction.cpp',
             'v8/ScriptFunction.h',
             'v8/ScriptFunctionCall.cpp',
             'v8/ScriptFunctionCall.h',

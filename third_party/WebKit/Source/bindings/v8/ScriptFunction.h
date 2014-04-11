@@ -32,48 +32,24 @@
 #define ScriptFunction_h
 
 #include "bindings/v8/ScriptValue.h"
-#include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8GarbageCollected.h"
 #include "wtf/RefCounted.h"
 #include <v8.h>
 
 namespace WebCore {
 
-class ScriptFunction;
-v8::Handle<v8::Function> adoptByGarbageCollector(PassOwnPtr<ScriptFunction>);
-
 class ScriptFunction : public V8GarbageCollected<ScriptFunction> {
 public:
     virtual ~ScriptFunction() { }
+    static v8::Handle<v8::Function> adoptByGarbageCollector(PassOwnPtr<ScriptFunction>);
 
 protected:
     ScriptFunction(v8::Isolate* isolate) : V8GarbageCollected<ScriptFunction>(isolate) { }
 
 private:
-    friend v8::Handle<v8::Function> adoptByGarbageCollector(PassOwnPtr<ScriptFunction>);
-
     virtual ScriptValue call(ScriptValue) = 0;
-
-    static void callCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
-    {
-        v8::Isolate* isolate = args.GetIsolate();
-        ASSERT(!args.Data().IsEmpty());
-        ScriptFunction* function = ScriptFunction::Cast(args.Data());
-        v8::Local<v8::Value> value = args.Length() > 0 ? args[0] : v8::Local<v8::Value>(v8::Undefined(isolate));
-
-        ScriptValue result = function->call(ScriptValue(value, isolate));
-
-        v8SetReturnValue(args, result.v8Value());
-    }
+    static void callCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
-
-inline v8::Handle<v8::Function> adoptByGarbageCollector(PassOwnPtr<ScriptFunction> function)
-{
-    if (!function)
-        return v8::Handle<v8::Function>();
-    v8::Isolate* isolate = function->isolate();
-    return createClosure(&ScriptFunction::callCallback, function.leakPtr()->releaseToV8GarbageCollector(), isolate);
-}
 
 } // namespace WebCore
 

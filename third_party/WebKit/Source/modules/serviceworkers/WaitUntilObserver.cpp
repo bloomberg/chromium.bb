@@ -8,6 +8,7 @@
 #include "bindings/v8/ScriptFunction.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/V8Binding.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/NotImplemented.h"
 #include "public/platform/WebServiceWorkerEventResult.h"

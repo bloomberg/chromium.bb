@@ -59,8 +59,8 @@ ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOw
         return ScriptPromise();
 
     v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
-    v8::Local<v8::Function> v8OnFulfilled = adoptByGarbageCollector(onFulfilled);
-    v8::Local<v8::Function> v8OnRejected = adoptByGarbageCollector(onRejected);
+    v8::Local<v8::Function> v8OnFulfilled = ScriptFunction::adoptByGarbageCollector(onFulfilled);
+    v8::Local<v8::Function> v8OnRejected = ScriptFunction::adoptByGarbageCollector(onRejected);
 
     if (V8PromiseCustom::isPromise(promise, isolate()))
         return ScriptPromise(V8PromiseCustom::then(promise, v8OnFulfilled, v8OnRejected, isolate()), isolate());

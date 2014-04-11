@@ -31,11 +31,9 @@
 #ifndef ScriptPromise_h
 #define ScriptPromise_h
 
-#include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptFunction.h"
 #include "bindings/v8/ScriptValue.h"
-#include "bindings/v8/V8ScriptRunner.h"
-#include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
 #include <v8.h>
 
 namespace WebCore {
