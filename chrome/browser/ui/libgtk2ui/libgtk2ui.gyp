@@ -84,8 +84,8 @@
       'conditions': [
         ['use_gconf==0', {
           'sources!': [
-            'gconf_titlebar_listener.cc',
-            'gconf_titlebar_listener.h',
+            'gconf_listener.cc',
+            'gconf_listener.h',
           ],
         }],
       ],
