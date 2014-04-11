@@ -1,0 +1,33 @@
+<!doctype html>
+<title>activation behavior in fullscreen</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<div id="log"></div>
+<video></video>
+<script>
+async_test(function(t)
+{
+    var v = document.querySelector("video");
+    v.src = findMediaFile("video", "content/test");
+
+    v.addEventListener("loadeddata", function()
+    {
+        document.onclick = function()
+        {
+            document.onclick = null;
+            v.webkitRequestFullScreen();
+        };
+        eventSender.mouseDown();
+        eventSender.mouseUp();
+    });
+
+    v.addEventListener("webkitfullscreenchange", function()
+    {
+        assert_true(v.paused, "paused state before click");
+        v.click();
+        assert_false(v.paused, "paused state after click");
+        t.done();
+    });
+});
+</script>
