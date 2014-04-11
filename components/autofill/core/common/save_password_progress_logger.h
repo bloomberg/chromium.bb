@@ -48,7 +48,6 @@ class SavePasswordProgressLogger {
                    const std::string& method,
                    const GURL& action);
   void LogURL(const std::string& message, const GURL& url);
-  void LogWhetherObjectExists(const std::string& message, const void* object);
   void LogBoolean(const std::string& message, bool value);
   void LogNumber(const std::string& message, int value);
   void LogNumber(const std::string& message, size_t value);
