@@ -75,7 +75,10 @@ def SplitUrlRevision(url):
     regex = r'(ssh://(?:[-.\w]+@)?[-\w:\.]+/[-~\w\./]+)(?:@(.+))?'
     components = re.search(regex, url).groups()
   else:
-    components = url.split('@', 1)
+    components = url.rsplit('@', 1)
+    if re.match(r'^\w+\@', url) and '@' not in components[0]:
+      components = [url]
+
     if len(components) == 1:
       components += [None]
   return tuple(components)

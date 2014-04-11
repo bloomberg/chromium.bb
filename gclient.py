@@ -435,7 +435,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     if isinstance(url, basestring):
       parsed_url = urlparse.urlparse(url)
-      if not parsed_url[0]:
+      if (not parsed_url[0] and
+          not re.match(r'^\w+\@[\w\.-]+\:[\w\/]+', parsed_url[2])):
         # A relative url. Fetch the real base.
         path = parsed_url[2]
         if not path.startswith('/'):

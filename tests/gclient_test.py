@@ -559,6 +559,15 @@ class GclientTest(trial_dir.TestCase):
       self.assertEqual(result, expected_deps)
       self.assertEqual(deps, orig_deps)
 
+
+  def testLateOverride(self):
+    """Verifies expected behavior of LateOverride."""
+    url = "git@github.com:dart-lang/spark.git"
+    d = gclient.Dependency(None, 'name', 'url',
+                           None, None, None, None, None, '', True)
+    late_url = d.LateOverride(url)
+    self.assertEquals(url, late_url)
+
   def testDepsOsOverrideDepsInDepsFile(self):
     """Verifies that a 'deps_os' path can override a 'deps' path. Also
     see testUpdateWithOsDeps above.
