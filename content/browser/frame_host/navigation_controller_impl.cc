@@ -1673,8 +1673,10 @@ void NavigationControllerImpl::DiscardNonCommittedEntriesInternal() {
 
 void NavigationControllerImpl::DiscardPendingEntry() {
   // It is not safe to call DiscardPendingEntry while NavigateToEntry is in
-  // progress, since this will cause a use-after-free.  http://crbug.com/347742.
-  CHECK(!in_navigate_to_pending_entry_);
+  // progress, since this will cause a use-after-free.  (We only allow this
+  // when the tab is being destroyed for shutdown, since it won't return to
+  // NavigateToEntry in that case.)  http://crbug.com/347742.
+  CHECK(!in_navigate_to_pending_entry_ || delegate_->IsBeingDestroyed());
 
   if (pending_entry_index_ == -1)
     delete pending_entry_;
