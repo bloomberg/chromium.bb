@@ -177,6 +177,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void RetireSyncPointOnGpuThread(uint32 sync_point);
   void SignalSyncPointOnGpuThread(uint32 sync_point,
                                   const base::Closure& callback);
+  void DestroyTransferBufferOnGputhread(int32 id);
 
   // Callbacks:
   void OnContextLost();

@@ -591,11 +591,17 @@ scoped_refptr<Buffer> InProcessCommandBuffer::CreateTransferBuffer(size_t size,
 
 void InProcessCommandBuffer::DestroyTransferBuffer(int32 id) {
   CheckSequencedThread();
-  base::Closure task = base::Bind(&CommandBuffer::DestroyTransferBuffer,
-                                  base::Unretained(command_buffer_.get()),
-                                  id);
+  base::Closure task =
+      base::Bind(&InProcessCommandBuffer::DestroyTransferBufferOnGputhread,
+                 base::Unretained(this),
+                 id);
 
   QueueTask(task);
+}
+
+void InProcessCommandBuffer::DestroyTransferBufferOnGputhread(int32 id) {
+  base::AutoLock lock(command_buffer_lock_);
+  command_buffer_->DestroyTransferBuffer(id);
 }
 
 gpu::Capabilities InProcessCommandBuffer::GetCapabilities() {
