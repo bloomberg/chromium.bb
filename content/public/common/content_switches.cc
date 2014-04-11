@@ -475,6 +475,12 @@ const char kEnableMapImage[]                = "enable-map-image";
 // Enables the memory benchmarking extension
 const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 
+// Make the values returned to window.performance.memory more granular and more
+// up to date in shared worker. Without this flag, the memory information is
+// still available, but it is bucketized and updated less frequently.
+const char kEnableSharedWorkerMemoryInfo[] =
+    "enable-shared-worker-memory-info";
+
 // On Windows, converts the page to the currently-installed monitor profile.
 // This does NOT enable color management for images. The source is still
 // assumed to be sRGB.

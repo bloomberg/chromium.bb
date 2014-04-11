@@ -155,6 +155,7 @@ CONTENT_EXPORT extern const char kEnableRegionBasedColumns[];
 CONTENT_EXPORT extern const char kEnableRepaintAfterLayout[];
 CONTENT_EXPORT extern const char kEnableSandboxLogging[];
 extern const char kEnableSeccompFilterSandbox[];
+extern const char kEnableSharedWorkerMemoryInfo[];
 extern const char kEnableSkiaBenchmarking[];
 CONTENT_EXPORT extern const char kEnableSmoothScrolling[];
 CONTENT_EXPORT extern const char kEnableSoftwareCompositing[];
