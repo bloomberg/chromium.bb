@@ -1103,7 +1103,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (NSView*)createGuestProfileView {
   gfx::Image guestIcon =
       ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-          IDR_LOGIN_GUEST);
+          profiles::GetPlaceholderAvatarIconResourceID());
   AvatarMenu::Item guestItem(std::string::npos, /* menu_index, not used */
                              std::string::npos, /* profile_index, not used */
                              guestIcon);

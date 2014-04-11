@@ -385,9 +385,6 @@
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_CARET" file="common/carrot_blue.png" />
       </if>
       <if expr="not is_android and not is_ios and not chromeos">
-        <!-- TODO(noms): Remove this once local profile avatars are migrated -->
-        <structure type="chrome_scaled_image" name="IDR_USER_MANAGER_DEFAULT_AVATAR" file="common/login_guest.png" />
-
         <!-- User Manager tutorial -->
         <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_WELCOME" file="common/user_manager_tutorial/welcome.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_YOUR_CHROME" file="common/user_manager_tutorial/your_chrome.png" />
@@ -509,7 +506,6 @@
         <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_32" file="avatar_upsidedown.png" />
         <structure type="chrome_scaled_image" name="IDR_LOGIN_PASSWORD_CAPS_LOCK" file="login_password_capslock.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_GUEST" file="common/login_guest.png" />
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_MANAGED_MODE_ICON" file="cros/managed_mode_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_KIOSK_APP_USER_POD_ICON" file="cros/kiosk_app_user_pod_icon.png" />
@@ -753,6 +749,7 @@
         <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_23" file="profile_avatar_margarita_mac.png" />
         <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_24" file="profile_avatar_note_mac.png" />
         <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_25" file="profile_avatar_sun_cloud_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_26" file="common/login_guest.png" />
       </if>
       <if expr="not is_macosx and not is_ios">
         <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_0" file="profile_avatar_generic.png" />
@@ -781,6 +778,7 @@
         <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_23" file="profile_avatar_margarita.png" />
         <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_24" file="profile_avatar_note.png" />
         <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_25" file="profile_avatar_sun_cloud.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_26" file="common/login_guest.png" />
       </if>
 
       <!-- New style avatar button -->

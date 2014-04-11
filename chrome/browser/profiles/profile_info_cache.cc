@@ -76,7 +76,8 @@ const int kDefaultNames[] = {
   IDS_DEFAULT_AVATAR_NAME_22,
   IDS_DEFAULT_AVATAR_NAME_23,
   IDS_DEFAULT_AVATAR_NAME_24,
-  IDS_DEFAULT_AVATAR_NAME_25
+  IDS_DEFAULT_AVATAR_NAME_25,
+  IDS_DEFAULT_AVATAR_NAME_26
 };
 
 typedef std::vector<unsigned char> ImageData;
@@ -394,6 +395,9 @@ const gfx::Image* ProfileInfoCache::GetHighResAvatarOfProfileAtIndex(
     size_t index) const {
   int avatar_index = GetAvatarIconIndexOfProfileAtIndex(index);
   std::string key = profiles::GetDefaultAvatarIconFileNameAtIndex(avatar_index);
+
+  if (!strcmp(key.c_str(), profiles::GetNoHighResAvatarFileName()))
+    return NULL;
 
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);

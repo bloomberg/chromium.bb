@@ -8,8 +8,10 @@
 #include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -220,9 +222,14 @@ void SwitchToGuestProfile(chrome::HostDesktopType desktop_type,
 void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type,
                                  ProfileSwitchingDoneCallback callback,
                                  ProfileMetrics::ProfileAdd metric) {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+
+  int placeholder_avatar_index = profiles::GetPlaceholderAvatarIndex();
   ProfileManager::CreateMultiProfileAsync(
-      base::string16(),
-      base::string16(),
+      cache.ChooseNameForNewProfile(placeholder_avatar_index),
+      base::UTF8ToUTF16(profiles::GetDefaultAvatarIconUrl(
+          placeholder_avatar_index)),
       base::Bind(&OpenBrowserWindowForProfile,
                  callback,
                  true,
