@@ -207,6 +207,7 @@ void DiscardableMemoryManager::PurgeLRUWithLockAcquiredUntilUsageIsWithin(
 
   lock_.AssertAcquired();
 
+  size_t bytes_allocated_before_purging = bytes_allocated_;
   for (AllocationMap::reverse_iterator it = allocations_.rbegin();
        it != allocations_.rend();
        ++it) {
@@ -222,7 +223,8 @@ void DiscardableMemoryManager::PurgeLRUWithLockAcquiredUntilUsageIsWithin(
     it->second.memory = NULL;
   }
 
-  BytesAllocatedChanged();
+  if (bytes_allocated_ != bytes_allocated_before_purging)
+    BytesAllocatedChanged();
 }
 
 void DiscardableMemoryManager::EnforcePolicyWithLockAcquired() {
