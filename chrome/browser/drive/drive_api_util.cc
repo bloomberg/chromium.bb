@@ -355,7 +355,6 @@ scoped_ptr<google_apis::FileResource> ConvertResourceEntryToFileResource(
         std::string file_id =
             drive::util::ExtractResourceIdFromUrl(link.href());
         parent.set_file_id(file_id);
-        parent.set_is_root(file_id == kWapiRootDirectoryResourceId);
         parents->push_back(parent);
         break;
       }

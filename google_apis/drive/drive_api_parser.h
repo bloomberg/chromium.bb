@@ -174,16 +174,6 @@ class AppResource {
   // Returns whether this application supports creating new objects.
   bool supports_create() const { return supports_create_; }
 
-  // Returns whether this application supports importing Google Docs.
-  bool supports_import() const { return supports_import_; }
-
-  // Returns whether this application is installed.
-  bool is_installed() const { return installed_; }
-
-  // Returns whether this application is authorized to access data on the
-  // user's Drive.
-  bool is_authorized() const { return authorized_; }
-
   // Returns whether this application is removable by apps.delete API.
   bool is_removable() const { return removable_; }
 
@@ -236,11 +226,6 @@ class AppResource {
   void set_supports_create(bool supports_create) {
     supports_create_ = supports_create;
   }
-  void set_supports_import(bool supports_import) {
-    supports_import_ = supports_import;
-  }
-  void set_installed(bool installed) { installed_ = installed; }
-  void set_authorized(bool authorized) { authorized_ = authorized; }
   void set_removable(bool removable) { removable_ = removable; }
   void set_primary_mimetypes(
       ScopedVector<std::string> primary_mimetypes) {
@@ -278,9 +263,6 @@ class AppResource {
   std::string object_type_;
   std::string product_id_;
   bool supports_create_;
-  bool supports_import_;
-  bool installed_;
-  bool authorized_;
   bool removable_;
   GURL create_url_;
   ScopedVector<std::string> primary_mimetypes_;
@@ -355,14 +337,10 @@ class ParentReference {
   // Returns the URL for the parent in Drive.
   const GURL& parent_link() const { return parent_link_; }
 
-  // Returns true if the reference is root directory.
-  bool is_root() const { return is_root_; }
-
   void set_file_id(const std::string& file_id) { file_id_ = file_id; }
   void set_parent_link(const GURL& parent_link) {
     parent_link_ = parent_link;
   }
-  void set_is_root(bool is_root) { is_root_ = is_root; }
 
  private:
   // Parses and initializes data members from content of |value|.
@@ -371,7 +349,6 @@ class ParentReference {
 
   std::string file_id_;
   GURL parent_link_;
-  bool is_root_;
 };
 
 // FileLabels represents labels for file or folder.
@@ -389,22 +366,10 @@ class FileLabels {
   // Creates about resource from parsed JSON.
   static scoped_ptr<FileLabels> CreateFrom(const base::Value& value);
 
-  // Whether this file is starred by the user.
-  bool is_starred() const { return starred_; }
-  // Whether this file is hidden from the user.
-  bool is_hidden() const { return hidden_; }
   // Whether this file has been trashed.
   bool is_trashed() const { return trashed_; }
-  // Whether viewers are prevented from downloading this file.
-  bool is_restricted() const { return restricted_; }
-  // Whether this file has been viewed by this user.
-  bool is_viewed() const { return viewed_; }
 
-  void set_starred(bool starred) { starred_ = starred; }
-  void set_hidden(bool hidden) { hidden_ = hidden; }
   void set_trashed(bool trashed) { trashed_ = trashed; }
-  void set_restricted(bool restricted) { restricted_ = restricted; }
-  void set_viewed(bool viewed) { viewed_ = viewed; }
 
  private:
   friend class FileResource;
@@ -413,11 +378,7 @@ class FileLabels {
   // Return false if parsing fails.
   bool Parse(const base::Value& value);
 
-  bool starred_;
-  bool hidden_;
   bool trashed_;
-  bool restricted_;
-  bool viewed_;
 };
 
 // ImageMediaMetadata represents image metadata for a file.
@@ -511,9 +472,6 @@ class FileResource {
   // Returns modified time of this file.
   const base::Time& modified_date() const { return modified_date_; }
 
-  // Returns modification time by the user.
-  const base::Time& modified_by_me_date() const { return modified_by_me_date_; }
-
   // Returns last access time by the user.
   const base::Time& last_viewed_by_me_date() const {
     return last_viewed_by_me_date_;
@@ -526,9 +484,6 @@ class FileResource {
 
   // Returns the 'shared' attribute of the file.
   bool shared() const { return shared_; }
-
-  // Returns the extension part of the filename.
-  const std::string& file_extension() const { return file_extension_; }
 
   // Returns MD5 checksum of this file.
   const std::string& md5_checksum() const { return md5_checksum_; }
@@ -572,9 +527,6 @@ class FileResource {
   void set_modified_date(const base::Time& modified_date) {
     modified_date_ = modified_date;
   }
-  void set_modified_by_me_date(const base::Time& modified_by_me_date) {
-    modified_by_me_date_ = modified_by_me_date;
-  }
   void set_last_viewed_by_me_date(const base::Time& last_viewed_by_me_date) {
     last_viewed_by_me_date_ = last_viewed_by_me_date;
   }
@@ -583,9 +535,6 @@ class FileResource {
   }
   void set_shared(bool shared) {
     shared_ = shared;
-  }
-  void set_file_extension(const std::string& file_extension) {
-    file_extension_ = file_extension;
   }
   void set_md5_checksum(const std::string& md5_checksum) {
     md5_checksum_ = md5_checksum;
@@ -618,11 +567,9 @@ class FileResource {
   ImageMediaMetadata image_media_metadata_;
   base::Time created_date_;
   base::Time modified_date_;
-  base::Time modified_by_me_date_;
   base::Time last_viewed_by_me_date_;
   base::Time shared_with_me_date_;
   bool shared_;
-  std::string file_extension_;
   std::string md5_checksum_;
   int64 file_size_;
   GURL alternate_link_;
@@ -648,13 +595,6 @@ class FileList {
   // Creates file list from parsed JSON.
   static scoped_ptr<FileList> CreateFrom(const base::Value& value);
 
-  // Returns the ETag of the list.
-  const std::string& etag() const { return etag_; }
-
-  // Returns the page token for the next page of files, if the list is large
-  // to fit in one response.  If this is empty, there is no more file lists.
-  const std::string& next_page_token() const { return next_page_token_; }
-
   // Returns a link to the next page of files.  The URL includes the next page
   // token.
   const GURL& next_link() const { return next_link_; }
@@ -662,12 +602,6 @@ class FileList {
   // Returns a set of files in this list.
   const ScopedVector<FileResource>& items() const { return items_; }
 
-  void set_etag(const std::string& etag) {
-    etag_ = etag;
-  }
-  void set_next_page_token(const std::string& next_page_token) {
-    next_page_token_ = next_page_token;
-  }
   void set_next_link(const GURL& next_link) {
     next_link_ = next_link;
   }
@@ -683,8 +617,6 @@ class FileList {
   // Return false if parsing fails.
   bool Parse(const base::Value& value);
 
-  std::string etag_;
-  std::string next_page_token_;
   GURL next_link_;
   ScopedVector<FileResource> items_;
 
@@ -774,13 +706,6 @@ class ChangeList {
   // Creates change list from parsed JSON.
   static scoped_ptr<ChangeList> CreateFrom(const base::Value& value);
 
-  // Returns the ETag of the list.
-  const std::string& etag() const { return etag_; }
-
-  // Returns the page token for the next page of files, if the list is large
-  // to fit in one response.  If this is empty, there is no more file lists.
-  const std::string& next_page_token() const { return next_page_token_; }
-
   // Returns a link to the next page of files.  The URL includes the next page
   // token.
   const GURL& next_link() const { return next_link_; }
@@ -791,12 +716,6 @@ class ChangeList {
   // Returns a set of changes in this list.
   const ScopedVector<ChangeResource>& items() const { return items_; }
 
-  void set_etag(const std::string& etag) {
-    etag_ = etag;
-  }
-  void set_next_page_token(const std::string& next_page_token) {
-    next_page_token_ = next_page_token;
-  }
   void set_next_link(const GURL& next_link) {
     next_link_ = next_link;
   }
@@ -815,8 +734,6 @@ class ChangeList {
   // Return false if parsing fails.
   bool Parse(const base::Value& value);
 
-  std::string etag_;
-  std::string next_page_token_;
   GURL next_link_;
   int64 largest_change_id_;
   ScopedVector<ChangeResource> items_;

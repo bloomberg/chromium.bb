@@ -50,9 +50,6 @@ TEST(DriveAPIParserTest, AppListParser) {
   EXPECT_EQ("Drive app 1", app1.name());
   EXPECT_EQ("", app1.object_type());
   EXPECT_TRUE(app1.supports_create());
-  EXPECT_TRUE(app1.supports_import());
-  EXPECT_TRUE(app1.is_installed());
-  EXPECT_FALSE(app1.is_authorized());
   EXPECT_TRUE(app1.is_removable());
   EXPECT_EQ("abcdefghabcdefghabcdefghabcdefgh", app1.product_id());
 
@@ -89,9 +86,6 @@ TEST(DriveAPIParserTest, AppListParser) {
   EXPECT_EQ("Drive app 2", app2.name());
   EXPECT_EQ("", app2.object_type());
   EXPECT_FALSE(app2.supports_create());
-  EXPECT_FALSE(app2.supports_import());
-  EXPECT_TRUE(app2.is_installed());
-  EXPECT_FALSE(app2.is_authorized());
   EXPECT_FALSE(app2.is_removable());
   EXPECT_EQ("hgfedcbahgfedcbahgfedcbahgfedcba", app2.product_id());
 
@@ -125,12 +119,6 @@ TEST(DriveAPIParserTest, FileListParser) {
   scoped_ptr<FileList> filelist(new FileList);
   EXPECT_TRUE(filelist->Parse(*document));
 
-  EXPECT_EQ("\"WtRjAPZWbDA7_fkFjc5ojsEvDEF/zyHTfoHpnRHovyi8bWpwK0DXABC\"",
-            filelist->etag());
-  EXPECT_EQ("EAIaggELEgA6egpi96It9mH_____f_8AAP__AAD_okhU-cHLz83KzszMxsjMzs_Ry"
-            "NGJnridyrbHs7u9tv8AAP__AP7__n__AP8AokhU-cHLz83KzszMxsjMzs_RyNGJnr"
-            "idyrbHs7u9tv8A__4QZCEiXPTi_wtIgTkAAAAAngnSXUgCDEAAIgsJPgart10AAAA"
-            "ABC", filelist->next_page_token());
   EXPECT_EQ(GURL("https://www.googleapis.com/drive/v2/files?pageToken=EAIaggEL"
                  "EgA6egpi96It9mH_____f_8AAP__AAD_okhU-cHLz83KzszMxsjMzs_RyNGJ"
                  "nridyrbHs7u9tv8AAP__AP7__n__AP8AokhU-cHLz83KzszMxsjMzs_RyNGJ"
@@ -146,11 +134,7 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_EQ("My first file data", file1.title());
   EXPECT_EQ("application/octet-stream", file1.mime_type());
 
-  EXPECT_FALSE(file1.labels().is_starred());
-  EXPECT_FALSE(file1.labels().is_hidden());
   EXPECT_FALSE(file1.labels().is_trashed());
-  EXPECT_FALSE(file1.labels().is_restricted());
-  EXPECT_TRUE(file1.labels().is_viewed());
   EXPECT_FALSE(file1.shared());
 
   EXPECT_EQ(640, file1.image_media_metadata().width());
@@ -166,16 +150,13 @@ TEST(DriveAPIParserTest, FileListParser) {
   ASSERT_TRUE(
       util::GetTimeFromString("2012-07-27T05:43:20.269Z", &modified_time));
   EXPECT_EQ(modified_time, file1.modified_date());
-  EXPECT_EQ(modified_time, file1.modified_by_me_date());
 
   ASSERT_EQ(1U, file1.parents().size());
   EXPECT_EQ("0B4v7G8yEYAWHYW1OcExsUVZLABC", file1.parents()[0].file_id());
   EXPECT_EQ(GURL("https://www.googleapis.com/drive/v2/files/"
                  "0B4v7G8yEYAWHYW1OcExsUVZLABC"),
             file1.parents()[0].parent_link());
-  EXPECT_FALSE(file1.parents()[0].is_root());
 
-  EXPECT_EQ("ext", file1.file_extension());
   EXPECT_EQ("d41d8cd98f00b204e9800998ecf8427e", file1.md5_checksum());
   EXPECT_EQ(1000U, file1.file_size());
 
@@ -192,11 +173,7 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_EQ("Test Google Document", file2.title());
   EXPECT_EQ("application/vnd.google-apps.document", file2.mime_type());
 
-  EXPECT_TRUE(file2.labels().is_starred());
-  EXPECT_TRUE(file2.labels().is_hidden());
   EXPECT_TRUE(file2.labels().is_trashed());
-  EXPECT_TRUE(file2.labels().is_restricted());
-  EXPECT_TRUE(file2.labels().is_viewed());
   EXPECT_TRUE(file2.shared());
 
   EXPECT_EQ(-1, file2.image_media_metadata().width());
@@ -224,7 +201,6 @@ TEST(DriveAPIParserTest, FileListParser) {
 
   ASSERT_EQ(1U, file3.parents().size());
   EXPECT_EQ("0AIv7G8yEYAWHUk9ABC", file3.parents()[0].file_id());
-  EXPECT_TRUE(file3.parents()[0].is_root());
   EXPECT_EQ(0U, file3.open_with_links().size());
 }
 
@@ -239,9 +215,6 @@ TEST(DriveAPIParserTest, ChangeListParser) {
   scoped_ptr<ChangeList> changelist(new ChangeList);
   EXPECT_TRUE(changelist->Parse(*document));
 
-  EXPECT_EQ("\"Lp2bjAtLP341hvGmYHhxjYyBPJ8/BWbu_eylt5f_aGtCN6mGRv9hABC\"",
-            changelist->etag());
-  EXPECT_EQ("8929", changelist->next_page_token());
   EXPECT_EQ("https://www.googleapis.com/drive/v2/changes?pageToken=8929",
             changelist->next_link().spec());
   EXPECT_EQ(13664, changelist->largest_change_id());

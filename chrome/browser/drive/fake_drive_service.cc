@@ -757,7 +757,6 @@ CancelCallback FakeDriveService::CopyResource(
     ParentReference parent;
     parent.set_file_id(parent_resource_id);
     parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
-    parent.set_is_root(parent_resource_id == GetRootResourceId());
     std::vector<ParentReference> parents;
     parents.push_back(parent);
     *new_file->mutable_parents() = parents;
@@ -816,7 +815,6 @@ CancelCallback FakeDriveService::UpdateResource(
       ParentReference parent;
       parent.set_file_id(parent_resource_id);
       parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
-      parent.set_is_root(parent_resource_id == GetRootResourceId());
 
       std::vector<ParentReference> parents;
       parents.push_back(parent);
@@ -882,7 +880,6 @@ CancelCallback FakeDriveService::AddResourceToDirectory(
     ParentReference parent;
     parent.set_file_id(parent_resource_id);
     parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
-    parent.set_is_root(parent_resource_id == GetRootResourceId());
     change->mutable_file()->mutable_parents()->push_back(parent);
 
     AddNewChangestamp(change);
@@ -1386,7 +1383,6 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
   else
     parent.set_file_id(parent_resource_id);
   parent.set_parent_link(GetFakeLinkUrl(parent.file_id()));
-  parent.set_is_root(parent.file_id() == GetRootResourceId());
   std::vector<ParentReference> parents;
   parents.push_back(parent);
   *new_file->mutable_parents() = parents;
