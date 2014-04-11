@@ -216,5 +216,4 @@ layer at (423,290) size 22x22 transparent
   RenderBlock {DIV} at (211,2) size 22x22
 layer at (182,337) size 11x11 transparent
   RenderBlock {DIV} at (152,1) size 11x11
-selection start: position 0 of child 0 {#text} of child 0 {DIV} of child 1 {DIV} of child 0 {DIV} of {#document-fragment} of child 10 {INPUT} of body
-selection end:   position 3 of child 0 {#text} of child 0 {DIV} of child 1 {DIV} of child 0 {DIV} of {#document-fragment} of child 10 {INPUT} of body
+caret: position 0 of child 0 {#text} of child 0 {DIV} of child 1 {DIV} of child 0 {DIV} of {#document-fragment} of child 10 {INPUT} of body

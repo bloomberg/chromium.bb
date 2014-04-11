@@ -28,5 +28,4 @@ layer at (152,47) size 100x13
       text run at (0,0) width 43: "this one"
 layer at (120,48) size 11x11 transparent
   RenderBlock {DIV} at (106,1) size 11x11
-selection start: position 0 of child 0 {#text} of child 0 {DIV} of child 1 {DIV} of child 0 {DIV} of {#document-fragment} of child 4 {INPUT} of body
-selection end:   position 8 of child 0 {#text} of child 0 {DIV} of child 1 {DIV} of child 0 {DIV} of {#document-fragment} of child 4 {INPUT} of body
+caret: position 0 of child 0 {#text} of child 0 {DIV} of child 1 {DIV} of child 0 {DIV} of {#document-fragment} of child 4 {INPUT} of body
