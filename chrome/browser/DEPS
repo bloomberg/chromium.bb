@@ -12,7 +12,6 @@ include_rules = [
   "+components/autofill/content/common",
   "+components/autofill/core/browser",
   "+components/autofill/core/common",
-  "+components/bookmarks",
   "+components/breakpad",
   "+components/dom_distiller",
   "+components/domain_reliability",
