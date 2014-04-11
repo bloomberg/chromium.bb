@@ -26,7 +26,7 @@
         # we use, so don't use system harfbuzz for official builds, unless we
         # are building for chrome os, where we have the system harfbuzz under
         # control as well.
-        'use_system_harfbuzz': '<!(python ../../build/check_return_value.py <(pkg-config) --atleast-version=1.31.0 pangoft2)',
+        'use_system_harfbuzz%': '<!(python ../../build/check_return_value.py <(pkg-config) --atleast-version=1.31.0 pangoft2)',
       }, {
         'use_system_harfbuzz': 0,
       }],
