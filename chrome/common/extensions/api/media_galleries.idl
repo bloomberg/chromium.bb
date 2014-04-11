@@ -57,7 +57,7 @@ namespace mediaGalleries {
       void ([instanceOf=DOMFileSystem] object[] mediaFileSystems,
             DOMString selectedFileSystemName);
 
-  callback DropPermissionForMediaFileSystemCallback = void (boolean wasDropped);
+  callback DropPermissionForMediaFileSystemCallback = void ();
 
   [inline_doc] dictionary MediaFileSystemMetadata {
     // The name of the file system.

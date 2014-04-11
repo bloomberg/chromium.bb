@@ -70,10 +70,12 @@ namespace {
 
 const char kDisallowedByPolicy[] =
     "Media Galleries API is disallowed by policy: ";
-const char kMissingEventListener[] =
-    "Missing event listener registration.";
-const char kNoScanPermission[] =
-    "No permission to scan.";
+const char kFailedToSetGalleryPermission[] =
+    "Failed to set gallery permission.";
+const char kInvalidGalleryId[] = "Invalid gallery id.";
+const char kMissingEventListener[] = "Missing event listener registration.";
+const char kNonExistentGalleryId[] = "Non-existent gallery id.";
+const char kNoScanPermission[] = "No permission to scan.";
 
 const char kDeviceIdKey[] = "deviceId";
 const char kGalleryIdKey[] = "galleryId";
@@ -656,34 +658,36 @@ bool MediaGalleriesDropPermissionForMediaFileSystemFunction::RunImpl() {
       DropPermissionForMediaFileSystem::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   MediaGalleryPrefId pref_id;
-  if (base::StringToUint64(params->gallery_id, &pref_id)) {
-    base::Closure callback = base::Bind(
-        &MediaGalleriesDropPermissionForMediaFileSystemFunction::
-            OnPreferencesInit,
-        this,
-        pref_id);
-    if (Setup(GetProfile(), &error_, callback))
-      return true;
+  if (!base::StringToUint64(params->gallery_id, &pref_id)) {
+    error_ = kInvalidGalleryId;
+    return false;
   }
 
-  scoped_ptr<base::ListValue> default_results(new base::ListValue());
-  default_results->AppendString(base::string16());
-  default_results->AppendBoolean(false);
-  SetResult(default_results.release());
-  return false;
+  base::Closure callback = base::Bind(
+      &MediaGalleriesDropPermissionForMediaFileSystemFunction::
+          OnPreferencesInit,
+      this,
+      pref_id);
+  return Setup(GetProfile(), &error_, callback);
 }
 
 void MediaGalleriesDropPermissionForMediaFileSystemFunction::OnPreferencesInit(
     MediaGalleryPrefId pref_id) {
   MediaGalleriesPreferences* preferences =
       media_file_system_registry()->GetPreferences(GetProfile());
+  if (!ContainsKey(preferences->known_galleries(), pref_id)) {
+    error_ = kNonExistentGalleryId;
+    SendResponse(false);
+    return;
+  }
+
   bool dropped = preferences->SetGalleryPermissionForExtension(
       *GetExtension(), pref_id, false);
-  scoped_ptr<base::ListValue> results(new base::ListValue());
-  results->AppendString(base::Uint64ToString(pref_id));
-  results->AppendBoolean(dropped);
-  SetResult(results.release());
-  SendResponse(true);
+  if (dropped)
+    SetResult(new base::StringValue(base::Uint64ToString(pref_id)));
+  else
+    error_ = kFailedToSetGalleryPermission;
+  SendResponse(dropped);
 }
 
 MediaGalleriesStartMediaScanFunction::~MediaGalleriesStartMediaScanFunction() {}

@@ -68,10 +68,9 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
 
   apiFunctions.setCustomCallback('dropPermissionForMediaFileSystem',
                                  function(name, request, response) {
-    var galleryId = response[0];
-    var result = response[1];
+    var galleryId = response;
 
-    if (galleryId && result) {
+    if (galleryId) {
       for (var key in mediaGalleriesMetadata) {
         if (mediaGalleriesMetadata[key].galleryId == galleryId) {
           delete mediaGalleriesMetadata[key];
@@ -80,7 +79,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
       }
     }
     if (request.callback)
-      request.callback(result);
+      request.callback();
     request.callback = null;
   });
 

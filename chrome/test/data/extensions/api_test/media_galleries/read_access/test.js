@@ -93,11 +93,11 @@ function DropPermissionForMediaFileSystemTest() {
     droppedFilesystem = filesystem;
     droppedGalleryId = metadata.galleryId;
     mediaGalleries.dropPermissionForMediaFileSystem(
-        droppedGalleryId, verifyDropPermissionSucceeded);
+        droppedGalleryId,
+        chrome.test.callbackPass(onDropPermissionSucceeded));
   }
 
-  function verifyDropPermissionSucceeded(dropped) {
-    chrome.test.assertTrue(dropped);
+  function onDropPermissionSucceeded() {
     var metadata = mediaGalleries.getMediaFileSystemMetadata(droppedFilesystem);
     var notFoundMetadata = {
       "name": "",
@@ -113,12 +113,23 @@ function DropPermissionForMediaFileSystemTest() {
   function verifyNoFileSystemAccess(results) {
     chrome.test.assertEq(0, results.length);
     mediaGalleries.dropPermissionForMediaFileSystem(
-        droppedGalleryId, verifyDropPermissionFailed);
+        droppedGalleryId,
+        chrome.test.callbackFail("Failed to set gallery permission.",
+                                 onDropPermissionFailed));
   }
 
-  function verifyDropPermissionFailed(dropped) {
-    chrome.test.assertFalse(dropped);
-    chrome.test.succeed();
+  function onDropPermissionFailed() {
+    mediaGalleries.dropPermissionForMediaFileSystem(
+        "badid",
+        chrome.test.callbackFail("Invalid gallery id.",
+                                 onDropPermissionFailedForInvalidGallery));
+  }
+
+  function onDropPermissionFailedForInvalidGallery() {
+    mediaGalleries.dropPermissionForMediaFileSystem(
+        "99999",
+        chrome.test.callbackFail("Non-existent gallery id.",
+                                 chrome.test.succeed));
   }
 
   TestFirstFilesystem(callDropPermission);
