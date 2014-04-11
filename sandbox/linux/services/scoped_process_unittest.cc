@@ -55,6 +55,7 @@ TEST(ScopedProcess, ScopedProcessNormalExit) {
 
 // Disable this test on Android, SIGABRT is funky there.
 TEST(ScopedProcess, DISABLE_ON_ANDROID(ScopedProcessAbort)) {
+  PCHECK(SIG_ERR != signal(SIGABRT, SIG_DFL));
   ScopedProcess process(base::Bind(&RaiseAndExit, SIGABRT));
   bool got_signaled = false;
   int exit_code = process.WaitForExit(&got_signaled);
