@@ -157,7 +157,6 @@ struct shell_surface {
 
 	struct weston_output *fullscreen_output;
 	struct weston_output *output;
-	struct weston_output *recommended_output;
 	struct wl_list link;
 
 	const struct weston_shell_client *client;
@@ -2483,16 +2482,6 @@ shell_surface_set_popup(struct wl_client *client,
 }
 
 static void
-set_maximized(struct shell_surface *shsurf,
-              struct weston_output *output)
-{
-	shell_surface_set_output(shsurf, output);
-	shsurf->type = SHELL_SURFACE_TOPLEVEL;
-
-	send_configure_for_surface(shsurf);
-}
-
-static void
 unset_maximized(struct shell_surface *shsurf)
 {
 	/* undo all maximized things here */
@@ -2568,18 +2557,21 @@ shell_surface_set_maximized(struct wl_client *client,
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_output *output;
 
+	surface_clear_next_states(shsurf);
+	shsurf->next_state.maximized = true;
+	shsurf->state_changed = true;
+
+	shsurf->type = SHELL_SURFACE_TOPLEVEL;
+	shell_surface_set_parent(shsurf, NULL);
+
 	if (output_resource)
 		output = wl_resource_get_user_data(output_resource);
 	else
 		output = NULL;
 
-	shell_surface_set_parent(shsurf, NULL);
+	shell_surface_set_output(shsurf, output);
 
-	surface_clear_next_states(shsurf);
-	set_maximized(shsurf, output);
-
-	shsurf->next_state.maximized = true;
-	shsurf->state_changed = true;
+	send_configure_for_surface(shsurf);
 }
 
 /* This is only ever called from set_surface_type(), so there’s no need to
@@ -3280,6 +3272,8 @@ create_common_surface(struct shell_client *owner, void *shell,
 	shsurf->fullscreen.black_view = NULL;
 	wl_list_init(&shsurf->fullscreen.transform.link);
 
+	shsurf->output = get_default_output(shsurf->shell->compositor);
+
 	wl_signal_init(&shsurf->destroy_signal);
 	shsurf->surface_destroy_listener.notify = shell_handle_surface_destroy;
 	wl_signal_add(&surface->destroy_signal,
@@ -3466,7 +3460,7 @@ xdg_surface_set_maximized(struct wl_client *client,
 
 	shsurf->state_requested = true;
 	shsurf->requested_state.maximized = true;
-	set_maximized(shsurf, NULL);
+ 	send_configure_for_surface(shsurf);
 }
 
 static void
@@ -3496,11 +3490,10 @@ xdg_surface_set_fullscreen(struct wl_client *client,
 	else
 		output = NULL;
 
-	shsurf->recommended_output = output;
+	shell_surface_set_output(shsurf, output);
+	shsurf->fullscreen_output = shsurf->output;
 
-	set_fullscreen(shsurf,
-		       WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-		       0, shsurf->recommended_output);
+	send_configure_for_surface(shsurf);
 }
 
 static void
@@ -4162,8 +4155,7 @@ maximize_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void 
 
 	shsurf->state_requested = true;
 	shsurf->requested_state.maximized = !shsurf->state.maximized;
-	if (shsurf->requested_state.maximized)
-		set_maximized(shsurf, NULL);
+	send_configure_for_surface(shsurf);
 }
 
 static void
@@ -4186,10 +4178,7 @@ fullscreen_binding(struct weston_seat *seat, uint32_t time, uint32_t button, voi
 
 	shsurf->state_requested = true;
 	shsurf->requested_state.fullscreen = !shsurf->state.fullscreen;
-	if (shsurf->requested_state.fullscreen)
-		set_fullscreen(shsurf,
-			       WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-			       0, shsurf->recommended_output);
+	send_configure_for_surface(shsurf);
 }
 
 static void
