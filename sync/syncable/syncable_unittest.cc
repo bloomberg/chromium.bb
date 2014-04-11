@@ -489,6 +489,14 @@ class SyncableDirectoryTest : public testing::Test {
     for (ModelTypeSet::Iterator it = types_to_purge.First();
          it.Good(); it.Inc()) {
       EXPECT_FALSE(dir_->InitialSyncEndedForType(it.Get()));
+      sync_pb::DataTypeProgressMarker progress;
+      dir_->GetDownloadProgress(it.Get(), &progress);
+      EXPECT_EQ("", progress.token());
+
+      ReadTransaction trans(FROM_HERE, dir_.get());
+      sync_pb::DataTypeContext context;
+      dir_->GetDataTypeContext(&trans, it.Get(), &context);
+      EXPECT_TRUE(context.SerializeAsString().empty());
     }
     EXPECT_FALSE(types_to_purge.Has(BOOKMARKS));
     EXPECT_TRUE(dir_->InitialSyncEndedForType(BOOKMARKS));
@@ -1686,6 +1694,20 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
   base::FilePath file_path_;
 };
 
+sync_pb::DataTypeProgressMarker BuildProgress(ModelType type) {
+  sync_pb::DataTypeProgressMarker progress;
+  progress.set_token("token");
+  progress.set_data_type_id(GetSpecificsFieldNumberFromModelType(type));
+  return progress;
+}
+
+sync_pb::DataTypeContext BuildContext(ModelType type) {
+  sync_pb::DataTypeContext context;
+  context.set_context("context");
+  context.set_data_type_id(GetSpecificsFieldNumberFromModelType(type));
+  return context;
+}
+
 TEST_F(OnDiskSyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
   sync_pb::EntitySpecifics bookmark_specs;
   sync_pb::EntitySpecifics autofill_specs;
@@ -1696,10 +1718,21 @@ TEST_F(OnDiskSyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
 
   ModelTypeSet types_to_purge(PREFERENCES, AUTOFILL);
 
+  dir_->SetDownloadProgress(BOOKMARKS,
+                            BuildProgress(BOOKMARKS));
+  dir_->SetDownloadProgress(PREFERENCES,
+                            BuildProgress(PREFERENCES));
+  dir_->SetDownloadProgress(AUTOFILL,
+                            BuildProgress(AUTOFILL));
+
   TestIdFactory id_factory;
   // Create some items for each type.
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+
+    dir_->SetDataTypeContext(&trans, BOOKMARKS, BuildContext(BOOKMARKS));
+    dir_->SetDataTypeContext(&trans, PREFERENCES, BuildContext(PREFERENCES));
+    dir_->SetDataTypeContext(&trans, AUTOFILL, BuildContext(AUTOFILL));
 
     // Make it look like these types have completed initial sync.
     CreateTypeRoot(&trans, dir_.get(), BOOKMARKS);

@@ -100,7 +100,7 @@ class SYNC_EXPORT Directory {
     // Set the |download_progress| entry for the given model to a
     // "first sync" start point.  When such a value is sent to the server,
     // a full download of all objects of the model will be initiated.
-    void reset_download_progress(ModelType model_type);
+    void ResetDownloadProgress(ModelType model_type);
 
     // Last sync timestamp fetched from the server.
     sync_pb::DataTypeProgressMarker download_progress[MODEL_TYPE_COUNT];

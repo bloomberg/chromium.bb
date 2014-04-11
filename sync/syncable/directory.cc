@@ -39,19 +39,22 @@ Directory::PersistedKernelInfo::PersistedKernelInfo()
   ModelTypeSet protocol_types = ProtocolTypes();
   for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
        iter.Inc()) {
-    reset_download_progress(iter.Get());
+    ResetDownloadProgress(iter.Get());
     transaction_version[iter.Get()] = 0;
   }
 }
 
 Directory::PersistedKernelInfo::~PersistedKernelInfo() {}
 
-void Directory::PersistedKernelInfo::reset_download_progress(
+void Directory::PersistedKernelInfo::ResetDownloadProgress(
     ModelType model_type) {
+  // Clear everything except the data type id field.
+  download_progress[model_type].Clear();
   download_progress[model_type].set_data_type_id(
       GetSpecificsFieldNumberFromModelType(model_type));
-  // An empty-string token indicates no prior knowledge.
-  download_progress[model_type].set_token(std::string());
+
+  // Explicitly set an empty token field to denote no progress.
+  download_progress[model_type].set_token("");
 }
 
 Directory::SaveChangesSnapshot::SaveChangesSnapshot()
@@ -716,10 +719,14 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
            it.Good(); it.Inc()) {
         kernel_->persisted_info.transaction_version[it.Get()] = 0;
 
-        // Don't discard progress markers for unapplied types.
-        if (!types_to_unapply.Has(it.Get()))
-          kernel_->persisted_info.reset_download_progress(it.Get());
+        // Don't discard progress markers or context for unapplied types.
+        if (!types_to_unapply.Has(it.Get())) {
+          kernel_->persisted_info.ResetDownloadProgress(it.Get());
+          kernel_->persisted_info.datatype_context[it.Get()].Clear();
+        }
       }
+
+      kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
     }
   }
   return true;
