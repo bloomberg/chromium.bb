@@ -359,7 +359,7 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
       return False
 
     return (
-        any((url in line) for url in ('http://', 'https://')) or
+      any((url in line) for url in ('file://', 'http://', 'https://')) or
         input_api.re.match(
           r'.*[A-Za-z][A-Za-z_0-9]{%d,}.*' % long_symbol, line))
 
