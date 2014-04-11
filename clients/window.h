@@ -219,6 +219,8 @@ typedef void (*window_fullscreen_handler_t)(struct window *window, void *data);
 
 typedef void (*window_output_handler_t)(struct window *window, struct output *output,
 					int enter, void *data);
+typedef void (*window_state_changed_handler_t)(struct window *window,
+					       void *data);
 
 typedef void (*widget_resize_handler_t)(struct widget *widget,
 					int32_t width, int32_t height,
@@ -381,6 +383,9 @@ window_is_maximized(struct window *window);
 void
 window_set_maximized(struct window *window, int maximized);
 
+int
+window_is_resizing(struct window *window);
+
 void
 window_set_minimized(struct window *window);
 
@@ -415,6 +420,9 @@ window_set_fullscreen_handler(struct window *window,
 void
 window_set_output_handler(struct window *window,
 			  window_output_handler_t handler);
+void
+window_set_state_changed_handler(struct window *window,
+				 window_state_changed_handler_t handler);
 
 void
 window_set_title(struct window *window, const char *title);

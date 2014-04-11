@@ -241,6 +241,7 @@ struct window {
 	window_close_handler_t close_handler;
 	window_fullscreen_handler_t fullscreen_handler;
 	window_output_handler_t output_handler;
+	window_state_changed_handler_t state_changed_handler;
 
 	struct surface *main_surface;
 	struct xdg_surface *xdg_surface;
@@ -3887,6 +3888,9 @@ handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
 	}
 
 	window->next_attach_serial = serial;
+
+	if (window->state_changed_handler)
+		window->state_changed_handler(window, window->user_data);
 }
 
 static void
@@ -4178,6 +4182,12 @@ window_set_maximized(struct window *window, int maximized)
 		xdg_surface_unset_maximized(window->xdg_surface);
 }
 
+int
+window_is_resizing(struct window *window)
+{
+	return window->resizing;
+}
+
 void
 window_set_minimized(struct window *window)
 {
@@ -4244,6 +4254,13 @@ window_set_output_handler(struct window *window,
 			  window_output_handler_t handler)
 {
 	window->output_handler = handler;
+}
+
+void
+window_set_state_changed_handler(struct window *window,
+				 window_state_changed_handler_t handler)
+{
+	window->state_changed_handler = handler;
 }
 
 void

@@ -834,12 +834,26 @@ terminal_resize_cells(struct terminal *terminal,
 }
 
 static void
+update_title(struct terminal *terminal)
+{
+	if (window_is_resizing(terminal->window)) {
+		char *p;
+		if (asprintf(&p, "%s — [%dx%d]", terminal->title, terminal->width, terminal->height) > 0) {
+			window_set_title(terminal->window, p);
+			free(p);
+		}
+	} else {
+		window_set_title(terminal->window, terminal->title);
+	}
+}
+
+static void
 resize_handler(struct widget *widget,
 	       int32_t width, int32_t height, void *data)
 {
 	struct terminal *terminal = data;
 	int32_t columns, rows, m;
-	char *p;
+
 	m = 2 * terminal->margin;
 	columns = (width - m) / (int32_t) terminal->average_width;
 	rows = (height - m) / (int32_t) terminal->extents.height;
@@ -849,14 +863,17 @@ resize_handler(struct widget *widget,
 		width = columns * terminal->average_width + m;
 		height = rows * terminal->extents.height + m;
 		widget_set_size(terminal->widget, width, height);
-		if (asprintf(&p, "%s — [%dx%d]", terminal->title, columns, rows) > 0) {
-		    window_set_title(terminal->window, p);
-		    terminal->size_in_title = 1;
-		    free(p);
-		}
 	}
 
 	terminal_resize_cells(terminal, columns, rows);
+	update_title(terminal);
+}
+
+static void
+state_changed_handler(struct window *window, void *data)
+{
+	struct terminal *terminal = data;
+	update_title(terminal);
 }
 
 static void
@@ -2745,14 +2762,6 @@ static int
 enter_handler(struct widget *widget,
 	      struct input *input, float x, float y, void *data)
 {
-	struct terminal *terminal = data;
-
-	/* Reset title to get rid of resizing '[WxH]' in titlebar */
-	if (terminal->size_in_title) {
-		window_set_title(terminal->window, terminal->title);
-		terminal->size_in_title = 0;
-	}
-
 	return CURSOR_IBEAM;
 }
 
@@ -2860,6 +2869,7 @@ terminal_create(struct display *display)
 	window_set_fullscreen_handler(terminal->window, fullscreen_handler);
 	window_set_output_handler(terminal->window, output_handler);
 	window_set_close_handler(terminal->window, close_handler);
+	window_set_state_changed_handler(terminal->window, state_changed_handler);
 
 	window_set_data_handler(terminal->window, data_handler);
 	window_set_drop_handler(terminal->window, drop_handler);
