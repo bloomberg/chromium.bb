@@ -51,7 +51,7 @@
             '../third_party/skia/src/opts/SkBlitRect_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkUtils_opts_SSE2.cpp',
-            '../third_party/skia/src/opts/SkXfermode_opts_none.cpp',
+            '../third_party/skia/src/opts/SkXfermode_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkBitmapFilter_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkMorphology_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkBlurImage_opts_SSE2.cpp',
