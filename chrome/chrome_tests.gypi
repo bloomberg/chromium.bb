@@ -999,6 +999,7 @@
         'browser/extensions/api/automation/automation_apitest.cc',
         'browser/extensions/api/autotest_private/autotest_private_apitest.cc',
         'browser/extensions/api/bluetooth/bluetooth_apitest.cc',
+        'browser/extensions/api/bluetooth/bluetooth_private_apitest.cc',
         'browser/extensions/api/bookmark_manager_private/bookmark_manager_private_apitest.cc',
         'browser/extensions/api/braille_display_private/braille_display_private_apitest.cc',
         'browser/extensions/api/braille_display_private/mock_braille_controller.cc',
