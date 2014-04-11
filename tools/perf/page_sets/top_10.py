@@ -1,26 +1,19 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-from telemetry.page.actions.navigate import NavigateAction
-from telemetry.page.actions.javascript import JavascriptAction
-from telemetry.page.actions.scroll import ScrollAction
-from telemetry.page.actions.wait import WaitAction
-from telemetry.page.page_set import PageSet
-from telemetry.page.page import Page
+# pylint: disable=W0401,W0614
+from telemetry.page.actions.all_page_actions import *
+from telemetry.page import page as page_module
+from telemetry.page import page_set as page_set_module
 
 
-class SimpleScrollPage(Page):
+class SimpleScrollPage(page_module.PageWithDefaultRunNavigate):
   def __init__(self, url, page_set, credentials=''):
     super(SimpleScrollPage, self).__init__(url, page_set=page_set)
     self.credentials = credentials
 
   def RunSmoothness(self, action_runner):
     action_runner.RunAction(ScrollAction())
-
-  def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
-
 
 class Google(SimpleScrollPage):
   def __init__(self, page_set):
@@ -93,7 +86,7 @@ class Facebook(SimpleScrollPage):
       {'condition': 'element', 'text': 'About'}))
 
 
-class Top10PageSet(PageSet):
+class Top10PageSet(page_set_module.PageSet):
   def __init__(self):
     super(Top10PageSet, self).__init__(
       description='10 Pages chosen from Alexa top sites',

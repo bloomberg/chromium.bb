@@ -8,13 +8,13 @@ from telemetry import test
 
 class PageCyclerBloat(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/page_cycler/bloat.json'
+  page_set = 'page_sets/page_cycler/bloat.py'
   options = {'pageset_repeat': 10}
 
 
 class PageCyclerDhtml(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/page_cycler/dhtml.json'
+  page_set = 'page_sets/page_cycler/dhtml.py'
   options = {'pageset_repeat': 10}
 
 
@@ -51,13 +51,13 @@ class PageCyclerIntlKoThVi(test.Test):
 
 class PageCyclerMorejs(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/page_cycler/morejs.json'
+  page_set = 'page_sets/page_cycler/morejs.py'
   options = {'pageset_repeat': 10}
 
 
 class PageCyclerMoz(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/page_cycler/moz.json'
+  page_set = 'page_sets/page_cycler/moz.py'
   options = {'pageset_repeat': 10}
 
 
