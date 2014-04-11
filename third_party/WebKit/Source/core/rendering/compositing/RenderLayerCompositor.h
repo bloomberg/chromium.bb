@@ -47,11 +47,11 @@ class StickyPositionViewportConstraints;
 
 enum CompositingUpdateType {
     CompositingUpdateNone,
-    CompositingUpdateAfterCanvasContextChange,
-    CompositingUpdateOnCompositedScroll,
     CompositingUpdateAfterStyleChange,
     CompositingUpdateAfterLayout,
     CompositingUpdateOnScroll,
+    CompositingUpdateOnCompositedScroll,
+    CompositingUpdateAfterCanvasContextChange,
 };
 
 // RenderLayerCompositor manages the hierarchy of

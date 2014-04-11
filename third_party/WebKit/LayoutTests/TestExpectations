@@ -1073,10 +1073,6 @@ crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
 
 crbug.com/361588 inspector/jump-to-previous-editing-location.html [ Pass Failure ]
 
-crbug.com/361795 [ Mac ] compositing/overflow/paint-neg-z-order-descendants-into-scrolling-contents-layer.html [ ImageOnlyFailure ]
-crbug.com/361795 [ Mac ] virtual/gpu/compositedscrolling/overflow/paint-neg-z-order-descendants-into-scrolling-contents-layer.html [ ImageOnlyFailure ]
-crbug.com/361795 [ Mac ] virtual/gpu/compositedscrolling/overflow/scroll-ancestor-update.html [ ImageOnlyFailure ]
-crbug.com/361795 [ Mac ] virtual/gpu/compositedscrolling/overflow/image-load-overflow-scrollbars.html [ ImageOnlyFailure Pass ]
 crbug.com/362047 [ Mac Linux ] mhtml/mhtml_in_iframe.html [ Crash Pass ]
 crbug.com/362050 [ Retina ] fast/repaint/block-layout-inline-children-replaced.html [ Failure ]
 crbug.com/362073 [ Mac Debug ] fast/dom/shadow/input-color-in-content.html [ Crash Pass ]
