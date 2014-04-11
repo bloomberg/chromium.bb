@@ -41,7 +41,7 @@ const base::FilePath::CharType kVoucherFilename[] =
     FILE_PATH_LITERAL("plugin.vch");
 }
 
-#if defined (OS_WIN)
+#if defined(OS_WIN)
 // Helper class to get the UI thread which monitor is showing the
 // window associated with the instance's render view. Since we get
 // called by the IO thread and we cannot block, the first answer is
@@ -53,8 +53,7 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
       : process_id_(process_id),
         render_frame_id_(render_frame_id),
         monitor_(NULL),
-        request_sent_(0) {
-  }
+        request_sent_(0) {}
 
   int64_t GetMonitor() {
     // We use |request_sent_| as an atomic boolean so that we
@@ -63,7 +62,8 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
     // to call and we can't cache the |monitor_| value.
     if (InterlockedCompareExchange(&request_sent_, 1, 0) == 0) {
       content::BrowserThread::PostTask(
-          content::BrowserThread::UI, FROM_HERE,
+          content::BrowserThread::UI,
+          FROM_HERE,
           base::Bind(&MonitorFinder::FetchMonitorFromWidget, this));
     }
     return reinterpret_cast<int64_t>(monitor_);
@@ -71,7 +71,7 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
 
  private:
   friend class base::RefCountedThreadSafe<MonitorFinder>;
-  ~MonitorFinder() { }
+  ~MonitorFinder() {}
 
   void FetchMonitorFromWidget() {
     InterlockedExchange(&request_sent_, 0);
@@ -89,7 +89,7 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
     HWND window = native_view;
 #endif
     HMONITOR monitor = ::MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-    InterlockedExchangePointer(reinterpret_cast<void* volatile *>(&monitor_),
+    InterlockedExchangePointer(reinterpret_cast<void* volatile*>(&monitor_),
                                monitor);
   }
 
@@ -102,12 +102,12 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
 // TODO(cpu): Support Linux someday.
 class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
  public:
-  MonitorFinder(int, int) { }
+  MonitorFinder(int, int) {}
   int64_t GetMonitor() { return 0; }
 
  private:
   friend class base::RefCountedThreadSafe<MonitorFinder>;
-  ~MonitorFinder() { }
+  ~MonitorFinder() {}
 };
 #endif
 
@@ -115,17 +115,16 @@ PepperFlashDRMHost::PepperFlashDRMHost(BrowserPpapiHost* host,
                                        PP_Instance instance,
                                        PP_Resource resource)
     : ppapi::host::ResourceHost(host->GetPpapiHost(), instance, resource),
-      weak_factory_(this){
+      weak_factory_(this) {
   // Grant permissions to read the flash voucher file.
   int render_process_id;
   int render_frame_id;
-  bool success =
-      host->GetRenderFrameIDsForInstance(
-          instance, &render_process_id, &render_frame_id);
+  bool success = host->GetRenderFrameIDsForInstance(
+      instance, &render_process_id, &render_frame_id);
   base::FilePath plugin_dir = host->GetPluginPath().DirName();
   DCHECK(!plugin_dir.empty() && success);
-  base::FilePath voucher_file = plugin_dir.Append(
-      base::FilePath(kVoucherFilename));
+  base::FilePath voucher_file =
+      plugin_dir.Append(base::FilePath(kVoucherFilename));
   content::ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
       render_process_id, voucher_file);
 
@@ -134,19 +133,18 @@ PepperFlashDRMHost::PepperFlashDRMHost(BrowserPpapiHost* host,
   monitor_finder_->GetMonitor();
 }
 
-PepperFlashDRMHost::~PepperFlashDRMHost() {
-}
+PepperFlashDRMHost::~PepperFlashDRMHost() {}
 
 int32_t PepperFlashDRMHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperFlashDRMHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FlashDRM_GetDeviceID,
-                                        OnHostMsgGetDeviceID)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FlashDRM_GetHmonitor,
-                                        OnHostMsgGetHmonitor)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FlashDRM_MonitorIsExternal,
-                                        OnHostMsgMonitorIsExternal)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FlashDRM_GetDeviceID,
+                                      OnHostMsgGetDeviceID)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FlashDRM_GetHmonitor,
+                                      OnHostMsgGetHmonitor)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FlashDRM_MonitorIsExternal,
+                                      OnHostMsgMonitorIsExternal)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }

@@ -15,11 +15,9 @@ MonitorFinder::MonitorFinder(int process_id, int render_frame_id)
     : process_id_(process_id),
       render_frame_id_(render_frame_id),
       request_sent_(false),
-      display_id_(kCGNullDirectDisplay) {
-}
+      display_id_(kCGNullDirectDisplay) {}
 
-MonitorFinder::~MonitorFinder() {
-}
+MonitorFinder::~MonitorFinder() {}
 
 int64_t MonitorFinder::GetMonitor() {
   {
@@ -31,8 +29,10 @@ int64_t MonitorFinder::GetMonitor() {
     request_sent_ = true;
   }
 
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-       base::Bind(&MonitorFinder::FetchMonitorFromWidget, this));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&MonitorFinder::FetchMonitorFromWidget, this));
   return display_id_;
 }
 

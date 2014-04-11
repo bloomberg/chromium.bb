@@ -38,23 +38,20 @@ class PepperExtensionsCommonMessageFilter::DispatcherOwner
       : content::WebContentsObserver(web_contents),
         render_frame_host_(frame_host),
         message_filter_(message_filter),
-        dispatcher_(profile, this) {
-  }
+        dispatcher_(profile, this) {}
 
-  virtual ~DispatcherOwner() {
-    message_filter_->DetachDispatcherOwner();
-  }
+  virtual ~DispatcherOwner() { message_filter_->DetachDispatcherOwner(); }
 
   // content::WebContentsObserver implementation.
-  virtual void RenderFrameDeleted(
-      content::RenderFrameHost* render_frame_host) OVERRIDE {
+  virtual void RenderFrameDeleted(content::RenderFrameHost* render_frame_host)
+      OVERRIDE {
     if (render_frame_host == render_frame_host_)
       delete this;
   }
 
   // extensions::ExtensionFunctionDispatcher::Delegate implementation.
-  virtual extensions::WindowController* GetExtensionWindowController(
-      ) const OVERRIDE {
+  virtual extensions::WindowController* GetExtensionWindowController() const
+      OVERRIDE {
     NOTREACHED();
     return NULL;
   }
@@ -83,18 +80,16 @@ PepperExtensionsCommonMessageFilter::Create(content::BrowserPpapiHost* host,
 
   int render_process_id = 0;
   int render_frame_id = 0;
-  if (!host->GetRenderFrameIDsForInstance(instance, &render_process_id,
-                                         &render_frame_id)) {
+  if (!host->GetRenderFrameIDsForInstance(
+          instance, &render_process_id, &render_frame_id)) {
     return NULL;
   }
 
   base::FilePath profile_directory = host->GetProfileDataDirectory();
   GURL document_url = host->GetDocumentURLForInstance(instance);
 
-  return new PepperExtensionsCommonMessageFilter(render_process_id,
-                                                 render_frame_id,
-                                                 profile_directory,
-                                                 document_url);
+  return new PepperExtensionsCommonMessageFilter(
+      render_process_id, render_frame_id, profile_directory, document_url);
 }
 
 PepperExtensionsCommonMessageFilter::PepperExtensionsCommonMessageFilter(
@@ -107,11 +102,9 @@ PepperExtensionsCommonMessageFilter::PepperExtensionsCommonMessageFilter(
       profile_directory_(profile_directory),
       document_url_(document_url),
       dispatcher_owner_(NULL),
-      dispatcher_owner_initialized_(false) {
-}
+      dispatcher_owner_initialized_(false) {}
 
-PepperExtensionsCommonMessageFilter::~PepperExtensionsCommonMessageFilter() {
-}
+PepperExtensionsCommonMessageFilter::~PepperExtensionsCommonMessageFilter() {}
 
 scoped_refptr<base::TaskRunner>
 PepperExtensionsCommonMessageFilter::OverrideTaskRunnerForMessage(
@@ -124,10 +117,8 @@ int32_t PepperExtensionsCommonMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperExtensionsCommonMessageFilter, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_ExtensionsCommon_Post,
-                                      OnPost)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_ExtensionsCommon_Call,
-                                      OnCall)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_ExtensionsCommon_Post, OnPost)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_ExtensionsCommon_Call, OnCall)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -159,8 +150,8 @@ void PepperExtensionsCommonMessageFilter::EnsureDispatcherOwnerInitialized() {
   dispatcher_owner_initialized_ = true;
 
   DCHECK(!dispatcher_owner_);
-  content::RenderFrameHost* frame_host = content::RenderFrameHost::FromID(
-      render_process_id_, render_frame_id_);
+  content::RenderFrameHost* frame_host =
+      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(frame_host);
 
@@ -173,8 +164,8 @@ void PepperExtensionsCommonMessageFilter::EnsureDispatcherOwnerInitialized() {
   Profile* profile = profile_manager->GetProfile(profile_directory_);
 
   // It will be automatically destroyed when |view_host| goes away.
-  dispatcher_owner_ = new DispatcherOwner(
-      this, profile, frame_host, web_contents);
+  dispatcher_owner_ =
+      new DispatcherOwner(this, profile, frame_host, web_contents);
 }
 
 void PepperExtensionsCommonMessageFilter::DetachDispatcherOwner() {
@@ -247,7 +238,8 @@ bool PepperExtensionsCommonMessageFilter::HandleRequest(
   }
 
   dispatcher_owner_->dispatcher()->DispatchWithCallback(
-      params, dispatcher_owner_->render_frame_host(),
+      params,
+      dispatcher_owner_->render_frame_host(),
       base::Bind(
           &PepperExtensionsCommonMessageFilter::OnExtensionFunctionCompleted,
           this,

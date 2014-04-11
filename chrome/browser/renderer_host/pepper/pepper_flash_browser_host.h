@@ -42,8 +42,7 @@ class PepperFlashBrowserHost : public ppapi::host::ResourceHost {
   int32_t OnGetLocalTimeZoneOffset(
       ppapi::host::HostMessageContext* host_context,
       const base::Time& t);
-  int32_t OnGetLocalDataRestrictions(
-      ppapi::host::HostMessageContext* context);
+  int32_t OnGetLocalDataRestrictions(ppapi::host::HostMessageContext* context);
 
   void GetLocalDataRestrictions(ppapi::host::ReplyMessageContext reply_context,
                                 const GURL& document_url,

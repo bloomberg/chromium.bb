@@ -84,7 +84,8 @@ bool WriteDataToPickle(const std::map<base::string16, std::string>& data,
                        Pickle* pickle) {
   pickle->WriteUInt64(data.size());
   for (std::map<base::string16, std::string>::const_iterator it = data.begin();
-       it != data.end(); ++it) {
+       it != data.end();
+       ++it) {
     if (!pickle->WriteString16(it->first))
       return false;
     if (!pickle->WriteString(it->second))
@@ -95,11 +96,9 @@ bool WriteDataToPickle(const std::map<base::string16, std::string>& data,
 
 }  // namespace
 
-PepperFlashClipboardMessageFilter::PepperFlashClipboardMessageFilter() {
-}
+PepperFlashClipboardMessageFilter::PepperFlashClipboardMessageFilter() {}
 
-PepperFlashClipboardMessageFilter::~PepperFlashClipboardMessageFilter() {
-}
+PepperFlashClipboardMessageFilter::~PepperFlashClipboardMessageFilter() {}
 
 scoped_refptr<base::TaskRunner>
 PepperFlashClipboardMessageFilter::OverrideTaskRunnerForMessage(
@@ -110,10 +109,10 @@ PepperFlashClipboardMessageFilter::OverrideTaskRunnerForMessage(
   if (msg.type() == PpapiHostMsg_FlashClipboard_WriteData::ID)
     return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
 
-  // Windows needs clipboard reads to be serviced from the IO thread because
-  // these are sync IPCs which can result in deadlocks with plugins if serviced
-  // from the UI thread. Note that Windows clipboard calls ARE thread-safe so it
-  // is ok for reads and writes to be serviced from different threads.
+// Windows needs clipboard reads to be serviced from the IO thread because
+// these are sync IPCs which can result in deadlocks with plugins if serviced
+// from the UI thread. Note that Windows clipboard calls ARE thread-safe so it
+// is ok for reads and writes to be serviced from different threads.
 #if !defined(OS_WIN)
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
 #else
@@ -125,21 +124,17 @@ int32_t PepperFlashClipboardMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperFlashClipboardMessageFilter, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_FlashClipboard_RegisterCustomFormat,
-        OnMsgRegisterCustomFormat);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_FlashClipboard_IsFormatAvailable,
-        OnMsgIsFormatAvailable);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_FlashClipboard_ReadData,
-        OnMsgReadData);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_FlashClipboard_WriteData,
-        OnMsgWriteData);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_FlashClipboard_GetSequenceNumber,
-        OnMsgGetSequenceNumber);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+      PpapiHostMsg_FlashClipboard_RegisterCustomFormat,
+      OnMsgRegisterCustomFormat);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+      PpapiHostMsg_FlashClipboard_IsFormatAvailable, OnMsgIsFormatAvailable);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashClipboard_ReadData,
+                                    OnMsgReadData);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashClipboard_WriteData,
+                                    OnMsgWriteData);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+      PpapiHostMsg_FlashClipboard_GetSequenceNumber, OnMsgGetSequenceNumber);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -190,8 +185,8 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgIsFormatAvailable(
       if (custom_formats_.IsFormatRegistered(format)) {
         std::string format_name = custom_formats_.GetFormatName(format);
         std::string clipboard_data;
-        clipboard->ReadData(
-            ui::Clipboard::GetPepperCustomDataFormatType(), &clipboard_data);
+        clipboard->ReadData(ui::Clipboard::GetPepperCustomDataFormatType(),
+                            &clipboard_data);
         Pickle pickle(clipboard_data.data(), clipboard_data.size());
         available =
             IsFormatAvailableInPickle(base::UTF8ToUTF16(format_name), pickle);
@@ -217,8 +212,8 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
   int32_t result = PP_ERROR_FAILED;
   switch (format) {
     case PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT: {
-      if (clipboard->IsFormatAvailable(
-          ui::Clipboard::GetPlainTextWFormatType(), type)) {
+      if (clipboard->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
+                                       type)) {
         base::string16 text;
         clipboard->ReadText(type, &text);
         if (!text.empty()) {
@@ -253,8 +248,8 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
       break;
     }
     case PP_FLASH_CLIPBOARD_FORMAT_RTF: {
-      if (!clipboard->IsFormatAvailable(
-          ui::Clipboard::GetRtfFormatType(), type)) {
+      if (!clipboard->IsFormatAvailable(ui::Clipboard::GetRtfFormatType(),
+                                        type)) {
         break;
       }
       result = PP_OK;
@@ -268,8 +263,8 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
         base::string16 format_name =
             base::UTF8ToUTF16(custom_formats_.GetFormatName(format));
         std::string clipboard_data;
-        clipboard->ReadData(
-            ui::Clipboard::GetPepperCustomDataFormatType(), &clipboard_data);
+        clipboard->ReadData(ui::Clipboard::GetPepperCustomDataFormatType(),
+                            &clipboard_data);
         Pickle pickle(clipboard_data.data(), clipboard_data.size());
         if (IsFormatAvailableInPickle(format_name, pickle)) {
           result = PP_OK;

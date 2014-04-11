@@ -45,11 +45,10 @@ class PepperIsolatedFileSystemMessageFilter
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
  private:
-  PepperIsolatedFileSystemMessageFilter(
-      int render_process_id,
-      const base::FilePath& profile_directory,
-      const GURL& document_url,
-      ppapi::host::PpapiHost* ppapi_host_);
+  PepperIsolatedFileSystemMessageFilter(int render_process_id,
+                                        const base::FilePath& profile_directory,
+                                        const GURL& document_url,
+                                        ppapi::host::PpapiHost* ppapi_host_);
 
   virtual ~PepperIsolatedFileSystemMessageFilter();
 

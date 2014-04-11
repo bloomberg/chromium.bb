@@ -37,8 +37,8 @@ namespace {
 // Get the CookieSettings on the UI thread for the given render process ID.
 scoped_refptr<CookieSettings> GetCookieSettings(int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  RenderProcessHost* render_process_host = RenderProcessHost::FromID(
-      render_process_id);
+  RenderProcessHost* render_process_host =
+      RenderProcessHost::FromID(render_process_id);
   if (render_process_host && render_process_host->GetBrowserContext()) {
     Profile* profile =
         Profile::FromBrowserContext(render_process_host->GetBrowserContext());
@@ -49,10 +49,9 @@ scoped_refptr<CookieSettings> GetCookieSettings(int render_process_id) {
 
 }  // namespace
 
-PepperFlashBrowserHost::PepperFlashBrowserHost(
-    BrowserPpapiHost* host,
-    PP_Instance instance,
-    PP_Resource resource)
+PepperFlashBrowserHost::PepperFlashBrowserHost(BrowserPpapiHost* host,
+                                               PP_Instance instance,
+                                               PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       host_(host),
       weak_factory_(this) {
@@ -60,20 +59,18 @@ PepperFlashBrowserHost::PepperFlashBrowserHost(
   host->GetRenderFrameIDsForInstance(instance, &render_process_id_, &unused);
 }
 
-PepperFlashBrowserHost::~PepperFlashBrowserHost() {
-}
+PepperFlashBrowserHost::~PepperFlashBrowserHost() {}
 
 int32_t PepperFlashBrowserHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperFlashBrowserHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Flash_UpdateActivity,
-                                        OnUpdateActivity);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_GetLocalTimeZoneOffset,
-                                      OnGetLocalTimeZoneOffset);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_Flash_GetLocalDataRestrictions,
-        OnGetLocalDataRestrictions);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Flash_UpdateActivity,
+                                      OnUpdateActivity);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_GetLocalTimeZoneOffset,
+                                    OnGetLocalTimeZoneOffset);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+      PpapiHostMsg_Flash_GetLocalDataRestrictions, OnGetLocalDataRestrictions);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -91,7 +88,7 @@ int32_t PepperFlashBrowserHost::OnUpdateActivity(
 #elif defined(OS_MACOSX)
   UpdateSystemActivity(OverallAct);
 #else
-  // TODO(brettw) implement this for other platforms.
+// TODO(brettw) implement this for other platforms.
 #endif
   return PP_OK;
 }
@@ -116,15 +113,20 @@ int32_t PepperFlashBrowserHost::OnGetLocalDataRestrictions(
   GURL document_url = host_->GetDocumentURLForInstance(pp_instance());
   GURL plugin_url = host_->GetPluginURLForInstance(pp_instance());
   if (cookie_settings_.get()) {
-    GetLocalDataRestrictions(context->MakeReplyMessageContext(), document_url,
-                             plugin_url, cookie_settings_);
+    GetLocalDataRestrictions(context->MakeReplyMessageContext(),
+                             document_url,
+                             plugin_url,
+                             cookie_settings_);
   } else {
-    BrowserThread::PostTaskAndReplyWithResult(BrowserThread::UI, FROM_HERE,
+    BrowserThread::PostTaskAndReplyWithResult(
+        BrowserThread::UI,
+        FROM_HERE,
         base::Bind(&GetCookieSettings, render_process_id_),
         base::Bind(&PepperFlashBrowserHost::GetLocalDataRestrictions,
                    weak_factory_.GetWeakPtr(),
                    context->MakeReplyMessageContext(),
-                   document_url, plugin_url));
+                   document_url,
+                   plugin_url));
   }
   return PP_OK_COMPLETIONPENDING;
 }
@@ -153,8 +155,9 @@ void PepperFlashBrowserHost::GetLocalDataRestrictions(
     else if (cookie_settings_->IsCookieSessionOnly(plugin_url))
       restrictions = PP_FLASHLSORESTRICTIONS_IN_MEMORY;
   }
-  SendReply(reply_context, PpapiPluginMsg_Flash_GetLocalDataRestrictionsReply(
-      static_cast<int32_t>(restrictions)));
+  SendReply(reply_context,
+            PpapiPluginMsg_Flash_GetLocalDataRestrictionsReply(
+                static_cast<int32_t>(restrictions)));
 }
 
 }  // namespace chrome

@@ -55,13 +55,11 @@ void GetMachineIDAsync(
 }  // namespace
 
 DeviceIDFetcher::DeviceIDFetcher(int render_process_id)
-    : in_progress_(false),
-      render_process_id_(render_process_id) {
+    : in_progress_(false), render_process_id_(render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
-DeviceIDFetcher::~DeviceIDFetcher() {
-}
+DeviceIDFetcher::~DeviceIDFetcher() {}
 
 bool DeviceIDFetcher::Start(const IDCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -73,7 +71,8 @@ bool DeviceIDFetcher::Start(const IDCallback& callback) {
   callback_ = callback;
 
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+      BrowserThread::UI,
+      FROM_HERE,
       base::Bind(&DeviceIDFetcher::CheckPrefsOnUIThread, this));
   return true;
 }
@@ -85,9 +84,7 @@ void DeviceIDFetcher::RegisterProfilePrefs(
                              true,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(
-      prefs::kDRMSalt,
-      "",
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      prefs::kDRMSalt, "", user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static
@@ -103,12 +100,11 @@ void DeviceIDFetcher::CheckPrefsOnUIThread() {
   RenderProcessHost* render_process_host =
       RenderProcessHost::FromID(render_process_id_);
   if (render_process_host && render_process_host->GetBrowserContext()) {
-    profile = Profile::FromBrowserContext(
-        render_process_host->GetBrowserContext());
+    profile =
+        Profile::FromBrowserContext(render_process_host->GetBrowserContext());
   }
 
-  if (!profile ||
-      profile->IsOffTheRecord() ||
+  if (!profile || profile->IsOffTheRecord() ||
       !profile->GetPrefs()->GetBoolean(prefs::kEnableDRM)) {
     RunCallbackOnIOThread(std::string(), PP_ERROR_NOACCESS);
     return;
@@ -131,11 +127,12 @@ void DeviceIDFetcher::CheckPrefsOnUIThread() {
       FROM_HERE,
       base::Bind(&DeviceIDFetcher::LegacyComputeOnBlockingPool,
                  this,
-                 profile->GetPath(), salt));
+                 profile->GetPath(),
+                 salt));
 #else
   // Get the machine ID and call ComputeOnUIThread with salt + machine_id.
-  GetMachineIDAsync(base::Bind(&DeviceIDFetcher::ComputeOnUIThread,
-                               this, salt));
+  GetMachineIDAsync(
+      base::Bind(&DeviceIDFetcher::ComputeOnUIThread, this, salt));
 #endif
 }
 
@@ -171,9 +168,8 @@ void DeviceIDFetcher::ComputeOnUIThread(const std::string& salt,
   input.append(kDRMIdentifierFile);
   input.append(id);
   crypto::SHA256HashString(input, &id_buf, sizeof(id_buf));
-  id = StringToLowerASCII(base::HexEncode(
-        reinterpret_cast<const void*>(id_buf),
-        sizeof(id_buf)));
+  id = StringToLowerASCII(
+      base::HexEncode(reinterpret_cast<const void*>(id_buf), sizeof(id_buf)));
 
   RunCallbackOnIOThread(id, PP_OK);
 }
@@ -197,17 +193,18 @@ void DeviceIDFetcher::LegacyComputeOnBlockingPool(
   // If we didn't find an ID, get the machine ID and call the new code path to
   // generate an ID.
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+      BrowserThread::UI,
+      FROM_HERE,
       base::Bind(&GetMachineIDAsync,
-                 base::Bind(&DeviceIDFetcher::ComputeOnUIThread,
-                            this, salt)));
+                 base::Bind(&DeviceIDFetcher::ComputeOnUIThread, this, salt)));
 }
 
 void DeviceIDFetcher::RunCallbackOnIOThread(const std::string& id,
                                             int32_t result) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+        BrowserThread::IO,
+        FROM_HERE,
         base::Bind(&DeviceIDFetcher::RunCallbackOnIOThread, this, id, result));
     return;
   }

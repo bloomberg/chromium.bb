@@ -63,8 +63,7 @@ class DeviceIDFetcher : public base::RefCountedThreadSafe<DeviceIDFetcher> {
 
   // Runs the callback passed into Start() on the IO thread with the device ID
   // or the empty string on failure.
-  void RunCallbackOnIOThread(const std::string& id,
-                             int32_t result);
+  void RunCallbackOnIOThread(const std::string& id, int32_t result);
 
   friend class base::RefCountedThreadSafe<DeviceIDFetcher>;
 

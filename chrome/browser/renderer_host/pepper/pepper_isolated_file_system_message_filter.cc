@@ -31,21 +31,20 @@ namespace chrome {
 namespace {
 
 const char* kPredefinedAllowedCrxFsOrigins[] = {
-  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/234789
-  "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see crbug.com/234789
+    "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/234789
+    "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see crbug.com/234789
 };
 
 }  // namespace
 
 // static
 PepperIsolatedFileSystemMessageFilter*
-PepperIsolatedFileSystemMessageFilter::Create(
-    PP_Instance instance, content::BrowserPpapiHost* host) {
+PepperIsolatedFileSystemMessageFilter::Create(PP_Instance instance,
+                                              content::BrowserPpapiHost* host) {
   int render_process_id;
   int unused_render_frame_id;
-  if (!host->GetRenderFrameIDsForInstance(instance,
-                                          &render_process_id,
-                                          &unused_render_frame_id)) {
+  if (!host->GetRenderFrameIDsForInstance(
+          instance, &render_process_id, &unused_render_frame_id)) {
     return NULL;
   }
   return new PepperIsolatedFileSystemMessageFilter(
@@ -69,8 +68,7 @@ PepperIsolatedFileSystemMessageFilter::PepperIsolatedFileSystemMessageFilter(
 }
 
 PepperIsolatedFileSystemMessageFilter::
-~PepperIsolatedFileSystemMessageFilter() {
-}
+    ~PepperIsolatedFileSystemMessageFilter() {}
 
 scoped_refptr<base::TaskRunner>
 PepperIsolatedFileSystemMessageFilter::OverrideTaskRunnerForMessage(
@@ -85,8 +83,8 @@ int32_t PepperIsolatedFileSystemMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperIsolatedFileSystemMessageFilter, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_IsolatedFileSystem_BrowserOpen, OnOpenFileSystem);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_IsolatedFileSystem_BrowserOpen,
+                                    OnOpenFileSystem);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -116,10 +114,10 @@ std::string PepperIsolatedFileSystemMessageFilter::CreateCrxFileSystem(
 
   // First level directory for isolated filesystem to lookup.
   std::string kFirstLevelDirectory("crxfs");
-  return fileapi::IsolatedContext::GetInstance()->
-      RegisterFileSystemForPath(fileapi::kFileSystemTypeNativeLocal,
-                                extension->path(),
-                                &kFirstLevelDirectory);
+  return fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
+      fileapi::kFileSystemTypeNativeLocal,
+      extension->path(),
+      &kFirstLevelDirectory);
 }
 
 int32_t PepperIsolatedFileSystemMessageFilter::OnOpenFileSystem(
@@ -144,8 +142,9 @@ int32_t PepperIsolatedFileSystemMessageFilter::OpenCrxFileSystem(
   Profile* profile = GetProfile();
   const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
-    extension_set = extensions::ExtensionSystem::Get(profile)->
-        extension_service()->extensions();
+    extension_set = extensions::ExtensionSystem::Get(profile)
+                        ->extension_service()
+                        ->extensions();
   }
   if (!IsExtensionOrSharedModuleWhitelisted(
           document_url_, extension_set, allowed_crxfs_origins_) &&

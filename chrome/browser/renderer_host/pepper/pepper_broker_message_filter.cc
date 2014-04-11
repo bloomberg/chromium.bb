@@ -24,16 +24,14 @@ using content::RenderProcessHost;
 
 namespace chrome {
 
-PepperBrokerMessageFilter::PepperBrokerMessageFilter(
-    PP_Instance instance,
-    BrowserPpapiHost* host)
+PepperBrokerMessageFilter::PepperBrokerMessageFilter(PP_Instance instance,
+                                                     BrowserPpapiHost* host)
     : document_url_(host->GetDocumentURLForInstance(instance)) {
   int unused;
   host->GetRenderFrameIDsForInstance(instance, &render_process_id_, &unused);
 }
 
-PepperBrokerMessageFilter::~PepperBrokerMessageFilter() {
-}
+PepperBrokerMessageFilter::~PepperBrokerMessageFilter() {}
 
 scoped_refptr<base::TaskRunner>
 PepperBrokerMessageFilter::OverrideTaskRunnerForMessage(
@@ -45,8 +43,8 @@ int32_t PepperBrokerMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperBrokerMessageFilter, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Broker_IsAllowed,
-                                        OnIsAllowed)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Broker_IsAllowed,
+                                      OnIsAllowed)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -65,7 +63,8 @@ int32_t PepperBrokerMessageFilter::OnIsAllowed(
   HostContentSettingsMap* content_settings =
       profile->GetHostContentSettingsMap();
   ContentSetting setting =
-      content_settings->GetContentSetting(document_url_, document_url_,
+      content_settings->GetContentSetting(document_url_,
+                                          document_url_,
                                           CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
                                           std::string());
   if (setting == CONTENT_SETTING_ALLOW)

@@ -117,7 +117,6 @@ PepperOutputProtectionMessageFilter::Delegate::Delegate(int render_process_id,
       client_id_(ui::DisplayConfigurator::kInvalidClientId),
       display_id_(0) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-
 }
 
 PepperOutputProtectionMessageFilter::Delegate::~Delegate() {
@@ -157,7 +156,8 @@ PepperOutputProtectionMessageFilter::Delegate::GetClientId() {
 }
 
 int32_t PepperOutputProtectionMessageFilter::Delegate::OnQueryStatus(
-    uint32_t* link_mask, uint32_t* protection_mask) {
+    uint32_t* link_mask,
+    uint32_t* protection_mask) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   content::RenderFrameHost* rfh =
@@ -176,8 +176,8 @@ int32_t PepperOutputProtectionMessageFilter::Delegate::OnQueryStatus(
   if (result) {
     const bool capture_detected =
         // Check for tab capture on the current tab.
-        content::WebContents::FromRenderFrameHost(rfh)->
-            GetCapturerCount() > 0 ||
+        content::WebContents::FromRenderFrameHost(rfh)->GetCapturerCount() >
+            0 ||
         // Check for desktop capture.
         MediaCaptureDevicesDispatcher::GetInstance()
             ->IsDesktopCaptureInProgress();
@@ -245,8 +245,8 @@ PepperOutputProtectionMessageFilter::PepperOutputProtectionMessageFilter(
 
 PepperOutputProtectionMessageFilter::~PepperOutputProtectionMessageFilter() {
 #if defined(OS_CHROMEOS)
-  content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
-                                     delegate_);
+  content::BrowserThread::DeleteSoon(
+      content::BrowserThread::UI, FROM_HERE, delegate_);
   delegate_ = NULL;
 #endif
 }
@@ -262,12 +262,10 @@ int32_t PepperOutputProtectionMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperOutputProtectionMessageFilter, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_OutputProtection_QueryStatus,
-        OnQueryStatus);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_OutputProtection_EnableProtection,
-        OnEnableProtection);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_OutputProtection_QueryStatus,
+                                      OnQueryStatus);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+      PpapiHostMsg_OutputProtection_EnableProtection, OnEnableProtection);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -281,10 +279,9 @@ int32_t PepperOutputProtectionMessageFilter::OnQueryStatus(
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
   reply_context.params.set_result(result);
-  SendReply(
-      reply_context,
-      PpapiPluginMsg_OutputProtection_QueryStatusReply(
-          link_mask, protection_mask));
+  SendReply(reply_context,
+            PpapiPluginMsg_OutputProtection_QueryStatusReply(link_mask,
+                                                             protection_mask));
   return PP_OK_COMPLETIONPENDING;
 #else
   NOTIMPLEMENTED();
@@ -300,9 +297,8 @@ int32_t PepperOutputProtectionMessageFilter::OnEnableProtection(
       context->MakeReplyMessageContext();
   int32_t result = delegate_->OnEnableProtection(desired_method_mask);
   reply_context.params.set_result(result);
-  SendReply(
-      reply_context,
-      PpapiPluginMsg_OutputProtection_EnableProtectionReply());
+  SendReply(reply_context,
+            PpapiPluginMsg_OutputProtection_EnableProtectionReply());
   return PP_OK_COMPLETIONPENDING;
 #else
   NOTIMPLEMENTED();
@@ -311,4 +307,3 @@ int32_t PepperOutputProtectionMessageFilter::OnEnableProtection(
 }
 
 }  // namespace chrome
-
