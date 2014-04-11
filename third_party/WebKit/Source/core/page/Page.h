@@ -118,6 +118,7 @@ public:
     FrameHost& frameHost() { return *m_frameHost; }
 
     void setNeedsRecalcStyleInAllFrames();
+    void updateAcceleratedCompositingSettings();
 
     ViewportDescription viewportDescription() const;
 

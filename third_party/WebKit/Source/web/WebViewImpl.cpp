@@ -3729,6 +3729,14 @@ void WebViewImpl::scheduleAnimation()
         m_client->scheduleAnimation();
 }
 
+void WebViewImpl::setCompositorCreationFailed(bool failed)
+{
+    m_compositorCreationFailed = failed;
+    // ChromeClientImpl::allowedCompositingTriggers reads this bit, so we need
+    // to update the composting triggers.
+    m_page->updateAcceleratedCompositingSettings();
+}
+
 void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
 {
     blink::Platform::current()->histogramEnumeration("GPU.setIsAcceleratedCompositingActive", active * 2 + m_isAcceleratedCompositingActive, 4);
@@ -3782,7 +3790,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             updateLayerTreeViewport();
             m_client->didActivateCompositor();
             m_isAcceleratedCompositingActive = true;
-            m_compositorCreationFailed = false;
+            setCompositorCreationFailed(false);
             if (m_pageOverlays)
                 m_pageOverlays->update();
             m_layerTreeView->setShowFPSCounter(m_showFPSCounter);
@@ -3793,7 +3801,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         } else {
             m_isAcceleratedCompositingActive = false;
             m_client->didDeactivateCompositor();
-            m_compositorCreationFailed = true;
+            setCompositorCreationFailed(true);
         }
     }
     if (page())
@@ -3853,7 +3861,7 @@ void WebViewImpl::didExitCompositingMode()
 {
     ASSERT(m_isAcceleratedCompositingActive);
     setIsAcceleratedCompositingActive(false);
-    m_compositorCreationFailed = true;
+    setCompositorCreationFailed(true);
     m_client->didInvalidateRect(IntRect(0, 0, m_size.width, m_size.height));
 
     // Force a style recalc to remove all the composited layers.

@@ -69,10 +69,10 @@ shouldPrintBackgrounds initial=false
 shouldClearDocumentBackground initial=true
 
 textAreasAreResizable initial=false, invalidate=Style
-acceleratedCompositingEnabled initial=true, invalidate=Style
+acceleratedCompositingEnabled initial=true, invalidate=AcceleratedCompositing
 
 # Debugging feature used for accelerated compositing layers.
-showRepaintCounter initial=false, invalidate=Style
+showRepaintCounter initial=false, invalidate=AcceleratedCompositing
 
 shrinksStandaloneImagesToFit initial=true
 
@@ -97,22 +97,22 @@ xssAuditorEnabled initial=false
 unsafePluginPastingEnabled initial=true
 treatIPAddressAsDomain initial=false
 
-acceleratedCompositingFor3DTransformsEnabled initial=true
-acceleratedCompositingForVideoEnabled initial=true
-acceleratedCompositingForPluginsEnabled initial=true
-acceleratedCompositingForCanvasEnabled initial=true
-acceleratedCompositingForAnimationEnabled initial=true
-acceleratedCompositingForFiltersEnabled initial=false
+acceleratedCompositingFor3DTransformsEnabled initial=true, invalidate=AcceleratedCompositing
+acceleratedCompositingForVideoEnabled initial=true, invalidate=AcceleratedCompositing
+acceleratedCompositingForPluginsEnabled initial=true, invalidate=AcceleratedCompositing
+acceleratedCompositingForCanvasEnabled initial=true, invalidate=AcceleratedCompositing
+acceleratedCompositingForAnimationEnabled initial=true, invalidate=AcceleratedCompositing
+acceleratedCompositingForFiltersEnabled initial=false, invalidate=AcceleratedCompositing
 acceleratedCompositingForFixedPositionEnabled initial=false
-acceleratedCompositingForOverflowScrollEnabled initial=false
+acceleratedCompositingForOverflowScrollEnabled initial=false, invalidate=AcceleratedCompositing
 acceleratedCompositingForFixedRootBackgroundEnabled initial=false
-acceleratedCompositingForGpuRasterizationHintEnabled initial=false
+acceleratedCompositingForGpuRasterizationHintEnabled initial=false, invalidate=AcceleratedCompositing
 
-forceCompositingMode initial=false
+forceCompositingMode initial=false, invalidate=AcceleratedCompositing
 
 # Works only in conjunction with forceCompositingMode.
 # crbug.com/304900 tracks removal once enabled on all platforms.
-acceleratedCompositingForScrollableFramesEnabled initial=false
+acceleratedCompositingForScrollableFramesEnabled initial=false, invalidate=AcceleratedCompositing
 compositedScrollingForFramesEnabled initial=false
 
 # 3D canvas (WebGL) support.
@@ -271,10 +271,9 @@ dnsPrefetchingEnabled initial=false, invalidate=DNSPrefetching
 
 touchEventEmulationEnabled initial=false
 
-
 # FIXME: This is a temporary flag and should be removed once
 # accelerated overflow scroll is ready (crbug.com/254111).
-compositorDrivenAcceleratedScrollingEnabled initial=false
+compositorDrivenAcceleratedScrollingEnabled initial=false, invalidate=AcceleratedCompositing
 
 # FIXME: This is a temporary flag and should be removed
 # when squashing is ready. (crbug.com/261605)

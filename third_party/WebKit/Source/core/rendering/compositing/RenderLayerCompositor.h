@@ -89,8 +89,10 @@ public:
 
     bool canRender3DTransforms() const;
 
+    void updateForceCompositingMode();
+
     // Copy the accelerated compositing related flags from Settings
-    void cacheAcceleratedCompositingFlags();
+    void updateAcceleratedCompositingSettings();
 
     // Called when the layer hierarchy needs to be updated (compositing layers have been
     // created, destroyed or re-parented).

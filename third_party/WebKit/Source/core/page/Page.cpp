@@ -495,6 +495,17 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
             frame->document()->styleEngine()->updateGenericFontFamilySettings();
         setNeedsRecalcStyleInAllFrames();
         break;
+    case SettingsDelegate::AcceleratedCompositingChange:
+        updateAcceleratedCompositingSettings();
+        break;
+    }
+}
+
+void Page::updateAcceleratedCompositingSettings()
+{
+    for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (FrameView* view = frame->view())
+            view->updateAcceleratedCompositingSettings();
     }
 }
 

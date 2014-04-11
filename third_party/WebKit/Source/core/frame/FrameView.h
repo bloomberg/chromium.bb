@@ -113,6 +113,7 @@ public:
 
     bool needsFullRepaint() const { return m_doFullRepaint; }
 
+    void updateAcceleratedCompositingSettings();
     void updateCompositingLayersAfterStyleChange();
     void updateCompositingLayersAfterLayout();
 

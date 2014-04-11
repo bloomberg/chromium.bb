@@ -606,6 +606,12 @@ void FrameView::calculateScrollbarModesForLayoutAndSetViewportRenderer(Scrollbar
     }
 }
 
+void FrameView::updateAcceleratedCompositingSettings()
+{
+    if (RenderView* renderView = this->renderView())
+        renderView->compositor()->updateAcceleratedCompositingSettings();
+}
+
 void FrameView::updateCompositingLayersAfterStyleChange()
 {
     TRACE_EVENT0("webkit", "FrameView::updateCompositingLayersAfterStyleChange");
@@ -620,9 +626,6 @@ void FrameView::updateCompositingLayersAfterStyleChange()
     // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
     // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
-
-    // This call will make sure the cached hasAcceleratedCompositing is updated from the pref
-    renderView->compositor()->cacheAcceleratedCompositingFlags();
 
     // Sometimes we will change a property (for example, z-index) that will not
     // cause a layout, but will require us to update compositing state. We only
@@ -644,8 +647,7 @@ void FrameView::updateCompositingLayersAfterLayout()
     // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
 
-    // This call will make sure the cached hasAcceleratedCompositing is updated from the pref
-    renderView->compositor()->cacheAcceleratedCompositingFlags();
+    renderView->compositor()->updateForceCompositingMode();
     renderView->compositor()->updateCompositingRequirementsState();
     renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterLayout);
 }

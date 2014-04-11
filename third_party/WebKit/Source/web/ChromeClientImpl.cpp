@@ -731,10 +731,10 @@ WebCore::CompositingTriggerFlags ChromeClientImpl::allowedCompositingTriggers() 
         flags |= WebCore::VideoTrigger;
     if (settings.acceleratedCompositingForPluginsEnabled())
         flags |= WebCore::PluginTrigger;
-    if (settings.acceleratedCompositingForAnimationEnabled())
-        flags |= WebCore::AnimationTrigger;
     if (settings.acceleratedCompositingForCanvasEnabled())
         flags |= WebCore::CanvasTrigger;
+    if (settings.acceleratedCompositingForAnimationEnabled())
+        flags |= WebCore::AnimationTrigger;
     if (settings.acceleratedCompositingForScrollableFramesEnabled())
         flags |= WebCore::ScrollableInnerFrameTrigger;
     if (settings.acceleratedCompositingForFiltersEnabled())

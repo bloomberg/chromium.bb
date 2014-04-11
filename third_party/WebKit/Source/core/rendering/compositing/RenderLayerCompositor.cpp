@@ -122,6 +122,7 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     , m_isTrackingRepaints(false)
     , m_rootLayerAttachment(RootLayerUnattached)
 {
+    updateAcceleratedCompositingSettings();
 }
 
 RenderLayerCompositor::~RenderLayerCompositor()
@@ -144,12 +145,26 @@ void RenderLayerCompositor::enableCompositingMode(bool enable)
     notifyIFramesOfCompositingChange();
 }
 
-void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
+void RenderLayerCompositor::updateForceCompositingMode()
+{
+    // FIXME: Can settings really be null here?
+    if (Settings* settings = m_renderView.document().settings()) {
+        bool forceCompositingMode = settings->forceCompositingMode() && m_hasAcceleratedCompositing;
+        if (forceCompositingMode && !isMainFrame())
+            forceCompositingMode = m_compositingReasonFinder.requiresCompositingForScrollableFrame();
+        if (forceCompositingMode != m_forceCompositingMode) {
+            setCompositingLayersNeedRebuild();
+            m_forceCompositingMode = forceCompositingMode;
+        }
+    }
+}
+
+void RenderLayerCompositor::updateAcceleratedCompositingSettings()
 {
     bool hasAcceleratedCompositing = false;
     bool showRepaintCounter = false;
-    bool forceCompositingMode = false;
 
+    // FIXME: Can settings really be null here?
     if (Settings* settings = m_renderView.document().settings()) {
         hasAcceleratedCompositing = settings->acceleratedCompositingEnabled();
 
@@ -161,18 +176,15 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
         }
 
         showRepaintCounter = settings->showRepaintCounter();
-        forceCompositingMode = settings->forceCompositingMode() && hasAcceleratedCompositing;
-
-        if (forceCompositingMode && !isMainFrame())
-            forceCompositingMode = m_compositingReasonFinder.requiresCompositingForScrollableFrame();
     }
 
-    if (hasAcceleratedCompositing != m_hasAcceleratedCompositing || showRepaintCounter != m_showRepaintCounter || forceCompositingMode != m_forceCompositingMode)
+    if (hasAcceleratedCompositing != m_hasAcceleratedCompositing || showRepaintCounter != m_showRepaintCounter)
         setCompositingLayersNeedRebuild();
 
     m_hasAcceleratedCompositing = hasAcceleratedCompositing;
     m_showRepaintCounter = showRepaintCounter;
-    m_forceCompositingMode = forceCompositingMode;
+
+    updateForceCompositingMode();
 }
 
 bool RenderLayerCompositor::layerSquashingEnabled() const

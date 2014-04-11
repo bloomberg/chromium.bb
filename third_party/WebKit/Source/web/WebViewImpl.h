@@ -540,6 +540,7 @@ private:
 
     void configureAutoResizeMode();
 
+    void setCompositorCreationFailed(bool);
     void setIsAcceleratedCompositingActive(bool);
     void doComposite();
     void doPixelReadbackToCanvas(WebCanvas*, const WebCore::IntRect&);

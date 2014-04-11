@@ -58,6 +58,7 @@ public:
         TextAutosizingChange,
         ScriptEnableChange,
         FontFamilyChange,
+        AcceleratedCompositingChange,
     };
 
     virtual void settingsChanged(ChangeType) = 0;
