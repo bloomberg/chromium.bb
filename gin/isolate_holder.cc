@@ -55,6 +55,7 @@ IsolateHolder::IsolateHolder(ScriptMode mode)
   isolate_ = v8::Isolate::New();
   v8::ResourceConstraints constraints;
   constraints.ConfigureDefaults(base::SysInfo::AmountOfPhysicalMemory(),
+                                base::SysInfo::AmountOfVirtualMemory(),
                                 base::SysInfo::NumberOfProcessors());
   v8::SetResourceConstraints(isolate_, &constraints);
   Init(ArrayBufferAllocator::SharedInstance());
