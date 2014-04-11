@@ -77,6 +77,7 @@ public:
 
     void continueFunction(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, ExceptionState&);
     void postSuccessHandlerCallback();
+    bool isDeleted() const;
     void close();
     void setValueReady(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
     PassRefPtr<IDBKey> idbPrimaryKey() const { return m_primaryKey; }
@@ -99,7 +100,6 @@ private:
     PassRefPtr<IDBObjectStore> effectiveObjectStore() const;
 
     void checkForReferenceCycle();
-    bool isDeleted() const;
 
     OwnPtr<blink::WebIDBCursor> m_backend;
     RefPtr<IDBRequest> m_request;

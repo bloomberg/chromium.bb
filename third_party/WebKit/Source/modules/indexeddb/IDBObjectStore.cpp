@@ -333,7 +333,7 @@ private:
 
         Vector<int64_t> indexIds;
         indexIds.append(m_indexMetadata.id);
-        if (cursor) {
+        if (cursor && !cursor->isDeleted()) {
             cursor->continueFunction(static_cast<IDBKey*>(0), static_cast<IDBKey*>(0), ASSERT_NO_EXCEPTION);
 
             RefPtr<IDBKey> primaryKey = cursor->idbPrimaryKey();
