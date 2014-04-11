@@ -8,7 +8,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
 using bookmarks_helper::AddURL;
-using bookmarks_helper::AllModelsMatch;
+using bookmarks_helper::AwaitAllModelsMatch;
 
 class MultipleClientBookmarksSyncTest : public SyncTest {
  public:
@@ -26,6 +26,5 @@ IN_PROC_BROWSER_TEST_F(MultipleClientBookmarksSyncTest, Sanity) {
     ASSERT_TRUE(AddURL(i, base::StringPrintf(L"Google URL %d", i),
         GURL(base::StringPrintf("http://www.google.com/%d", i))) != NULL);
   }
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(AwaitAllModelsMatch());
 }

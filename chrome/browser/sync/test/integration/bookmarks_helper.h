@@ -149,6 +149,11 @@ bool ModelsMatch(int profile_a, int profile_b) WARN_UNUSED_RESULT;
 // match.
 bool AllModelsMatch() WARN_UNUSED_RESULT;
 
+// Check if the bookmarks models of all sync profiles match each other, using
+// AllModelsMatch. Returns true if bookmark models match and don't timeout
+// while checking.
+bool AwaitAllModelsMatch() WARN_UNUSED_RESULT;
+
 // Checks if the bookmark model of profile |profile| contains any instances of
 // two bookmarks with the same URL under the same parent folder. Returns true
 // if even one instance is found.

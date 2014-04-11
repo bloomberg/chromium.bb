@@ -9,7 +9,7 @@
 #include "components/password_manager/core/browser/password_form_data.h"
 
 using passwords_helper::AddLogin;
-using passwords_helper::AllProfilesContainSamePasswordForms;
+using passwords_helper::AwaitAllProfilesContainSamePasswordForms;
 using passwords_helper::CreateTestPasswordForm;
 using passwords_helper::GetPasswordCount;
 using passwords_helper::GetPasswordStore;
@@ -32,8 +32,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientPasswordsSyncTest, Sanity) {
     PasswordForm form = CreateTestPasswordForm(i);
     AddLogin(GetPasswordStore(i), form);
   }
-  ASSERT_TRUE(AwaitQuiescence());
 
+  ASSERT_TRUE(AwaitAllProfilesContainSamePasswordForms());
   ASSERT_EQ(num_clients(), GetPasswordCount(0));
-  ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 }

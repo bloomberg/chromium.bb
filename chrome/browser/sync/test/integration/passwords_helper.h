@@ -75,6 +75,10 @@ bool AllProfilesContainSamePasswordFormsAsVerifier();
 // Returns true iff all profiles contain the same password forms.
 bool AllProfilesContainSamePasswordForms();
 
+// Returns true if all profiles contain the same password forms and
+// it doesn't time out.
+bool AwaitAllProfilesContainSamePasswordForms();
+
 // Returns the number of forms in the password store of the profile with index
 // |index|.
 int GetPasswordCount(int index);

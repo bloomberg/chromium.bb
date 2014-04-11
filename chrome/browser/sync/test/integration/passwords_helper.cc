@@ -12,6 +12,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -193,6 +194,41 @@ bool AllProfilesContainSamePasswordForms() {
     }
   }
   return true;
+}
+
+namespace {
+
+// Helper class used in the implementation of
+// AwaitAllProfilesContainSamePasswordForms.
+class SamePasswordFormsChecker : public MultiClientStatusChangeChecker {
+ public:
+  SamePasswordFormsChecker();
+  virtual ~SamePasswordFormsChecker();
+
+  virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual std::string GetDebugMessage() const OVERRIDE;
+};
+
+SamePasswordFormsChecker::SamePasswordFormsChecker()
+    : MultiClientStatusChangeChecker(
+        sync_datatype_helper::test()->GetSyncServices()) {}
+
+SamePasswordFormsChecker::~SamePasswordFormsChecker() {}
+
+bool SamePasswordFormsChecker::IsExitConditionSatisfied() {
+  return AllProfilesContainSamePasswordForms();
+}
+
+std::string SamePasswordFormsChecker::GetDebugMessage() const {
+  return "Waiting for matching passwords";
+}
+
+}  //  namespace
+
+bool AwaitAllProfilesContainSamePasswordForms() {
+  SamePasswordFormsChecker checker;
+  checker.Wait();
+  return !checker.TimedOut();
 }
 
 int GetPasswordCount(int index) {

@@ -9,7 +9,7 @@
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
-using sessions_helper::CheckForeignSessionsAgainst;
+using sessions_helper::AwaitCheckForeignSessionsAgainst;
 using sessions_helper::CheckInitialState;
 using sessions_helper::OpenTabAndGetLocalWindows;
 using sessions_helper::ScopedWindowMap;
@@ -50,13 +50,10 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest, MAYBE_AllChanged) {
     client_windows[i].Reset(&windows);
   }
 
-  // Wait for sync.
-  ASSERT_TRUE(AwaitQuiescence());
-
   // Get foreign session data from all clients and check it against all
   // client_windows.
   for (int i = 0; i < num_clients(); ++i) {
-    ASSERT_TRUE(CheckForeignSessionsAgainst(i, client_windows));
+    ASSERT_TRUE(AwaitCheckForeignSessionsAgainst(i, client_windows));
   }
 }
 
@@ -86,13 +83,10 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest,
     client_windows[i].Reset(&windows);
   }
 
-  // Wait for sync.
-  ASSERT_TRUE(AwaitQuiescence());
-
   // Get foreign session data from all clients and check it against all
   // client_windows.
   for (int i = 0; i < num_clients(); ++i) {
+    ASSERT_TRUE(AwaitCheckForeignSessionsAgainst(i, client_windows));
     ASSERT_TRUE(IsEncryptionComplete(i));
-    ASSERT_TRUE(CheckForeignSessionsAgainst(i, client_windows));
   }
 }

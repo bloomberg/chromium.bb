@@ -93,6 +93,12 @@ bool CheckForeignSessionsAgainst(
     int index,
     const std::vector<ScopedWindowMap>& windows);
 
+// Retrieves the foreign sessions for a particular profile and compares them
+// to the reference windows using CheckForeignSessionsAgains. Returns true if
+// they match and doesn't time out.
+bool AwaitCheckForeignSessionsAgainst(
+    int index, const std::vector<ScopedWindowMap>& windows);
+
 // Open a single tab and block until the session model associator is aware
 // of it. Returns true upon success, false otherwise.
 bool OpenTab(int index, const GURL& url);

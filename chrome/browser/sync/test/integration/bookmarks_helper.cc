@@ -23,6 +23,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
+#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -658,6 +659,41 @@ bool AllModelsMatch() {
   }
   return true;
 }
+
+namespace {
+
+// Helper class used in the implementation of AwaitAllModelsMatch.
+class AllModelsMatchChecker : public MultiClientStatusChangeChecker {
+ public:
+  AllModelsMatchChecker();
+  virtual ~AllModelsMatchChecker();
+
+  virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual std::string GetDebugMessage() const OVERRIDE;
+};
+
+AllModelsMatchChecker::AllModelsMatchChecker()
+    : MultiClientStatusChangeChecker(
+        sync_datatype_helper::test()->GetSyncServices()) {}
+
+AllModelsMatchChecker::~AllModelsMatchChecker() {}
+
+bool AllModelsMatchChecker::IsExitConditionSatisfied() {
+  return AllModelsMatch();
+}
+
+std::string AllModelsMatchChecker::GetDebugMessage() const {
+  return "Waiting for matching models";
+}
+
+}  //  namespace
+
+bool AwaitAllModelsMatch() {
+  AllModelsMatchChecker checker;
+  checker.Wait();
+  return !checker.TimedOut();
+}
+
 
 bool ContainsDuplicateBookmarks(int profile) {
   ui::TreeNodeIterator<const BookmarkNode> iterator(
