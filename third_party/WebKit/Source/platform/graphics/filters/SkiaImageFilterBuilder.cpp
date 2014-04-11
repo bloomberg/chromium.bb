@@ -38,16 +38,6 @@
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "public/platform/WebPoint.h"
 
-namespace {
-
-PassRefPtr<SkImageFilter> createMatrixImageFilter(SkScalar matrix[20], SkImageFilter* input)
-{
-    RefPtr<SkColorFilter> colorFilter(adoptRef(new SkColorMatrixFilter(matrix)));
-    return adoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), input));
-}
-
-};
-
 namespace WebCore {
 
 SkiaImageFilterBuilder::SkiaImageFilterBuilder()
@@ -99,12 +89,7 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
         return false;
 
     ColorSpace currentColorSpace = ColorSpaceDeviceRGB;
-
-    RefPtr<SkImageFilter> noopFilter;
-    SkScalar matrix[20];
-    memset(matrix, 0, 20 * sizeof(SkScalar));
-    matrix[0] = matrix[6] = matrix[12] = matrix[18] = 1.f;
-    noopFilter = createMatrixImageFilter(matrix, 0);
+    SkImageFilter* const nullFilter = 0;
 
     for (size_t i = 0; i < operations.size(); ++i) {
         const FilterOperation& op = *operations.at(i);
@@ -114,16 +99,16 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
             ReferenceFilter* referenceFilter = toReferenceFilterOperation(op).filter();
             if (referenceFilter && referenceFilter->lastEffect()) {
                 FilterEffect* filterEffect = referenceFilter->lastEffect();
-                // Link SourceGraphic to a noop filter that serves as a placholder for
-                // the previous filter in the chain. We don't know what color space the
-                // interior nodes will request, so we have to populate the map with both
-                // options. (Only one of these will actually have a color transform on it.)
+                // Prepopulate the map with two entries for SourceGraphic: one with a null
+                // image filter, and the other with a colorspace conversion filter.
+                // We don't know what color space the interior nodes will request, so we have to
+                // populate the map with both options.
                 FilterHashKey deviceKey(referenceFilter->sourceGraphic(), ColorSpaceDeviceRGB);
                 FilterHashKey linearKey(referenceFilter->sourceGraphic(), ColorSpaceLinearRGB);
                 FilterHashKey deviceKeyWithValidation(referenceFilter->sourceGraphic(), static_cast<int>(ColorSpaceDeviceRGB) | static_cast<int>(PMColorValidationFlag));
                 FilterHashKey linearKeyWithValidation(referenceFilter->sourceGraphic(), static_cast<int>(ColorSpaceLinearRGB) | static_cast<int>(PMColorValidationFlag));
-                RefPtr<SkImageFilter> deviceFilter = transformColorSpace(noopFilter.get(), currentColorSpace, ColorSpaceDeviceRGB);
-                RefPtr<SkImageFilter> linearFilter = transformColorSpace(noopFilter.get(), currentColorSpace, ColorSpaceLinearRGB);
+                RefPtr<SkImageFilter> deviceFilter = transformColorSpace(nullFilter, currentColorSpace, ColorSpaceDeviceRGB);
+                RefPtr<SkImageFilter> linearFilter = transformColorSpace(nullFilter, currentColorSpace, ColorSpaceLinearRGB);
                 m_map.set(deviceKey, deviceFilter);
                 m_map.set(linearKey, linearFilter);
                 // The PM color validated filters might be requested, but the SourceGraphic inputs are always valid,
@@ -206,10 +191,8 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
     }
     if (currentColorSpace != ColorSpaceDeviceRGB) {
         // Transform to device color space at the end of processing, if required
-        RefPtr<SkImageFilter> filter;
-        filter = transformColorSpace(noopFilter.get(), currentColorSpace, ColorSpaceDeviceRGB);
-        if (filter != noopFilter)
-            filters->appendReferenceFilter(filter.get());
+        RefPtr<SkImageFilter> filter = transformColorSpace(nullFilter, currentColorSpace, ColorSpaceDeviceRGB);
+        filters->appendReferenceFilter(filter.get());
     }
     return true;
 }
