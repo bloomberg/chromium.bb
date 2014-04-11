@@ -1056,6 +1056,9 @@ void CanvasRenderingContext2D::strokeInternal(const Path& path)
     if (!state().m_invertibleCTM) {
         return;
     }
+    FloatRect clipBounds;
+    if (!c->getTransformedClipBounds(&clipBounds))
+        return;
 
     // If gradient size is zero, then paint nothing.
     Gradient* gradient = c->strokeGradient();
@@ -1063,12 +1066,21 @@ void CanvasRenderingContext2D::strokeInternal(const Path& path)
         return;
     }
 
-    FloatRect bounds = path.boundingRect();
-    inflateStrokeRect(bounds);
-    FloatRect dirtyRect;
-    if (computeDirtyRect(bounds, &dirtyRect)) {
+    if (isFullCanvasCompositeMode(state().m_globalComposite)) {
+        fullCanvasCompositedStroke(path);
+        didDraw(clipBounds);
+    } else if (state().m_globalComposite == CompositeCopy) {
+        clearCanvas();
         c->strokePath(path);
-        didDraw(dirtyRect);
+        didDraw(clipBounds);
+    } else {
+        FloatRect bounds = path.boundingRect();
+        inflateStrokeRect(bounds);
+        FloatRect dirtyRect;
+        if (computeDirtyRect(bounds, &dirtyRect)) {
+            c->strokePath(path);
+            didDraw(dirtyRect);
+        }
     }
 }
 
@@ -1345,6 +1357,9 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
         return;
     if (!state().m_invertibleCTM)
         return;
+    FloatRect clipBounds;
+    if (!c->getTransformedClipBounds(&clipBounds))
+        return;
 
     // If gradient size is zero, then paint nothing.
     Gradient* gradient = c->strokeGradient();
@@ -1353,12 +1368,21 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
 
     FloatRect rect(x, y, width, height);
 
-    FloatRect boundingRect = rect;
-    boundingRect.inflate(state().m_lineWidth / 2);
-    FloatRect dirtyRect;
-    if (computeDirtyRect(boundingRect, &dirtyRect)) {
-        c->strokeRect(rect, state().m_lineWidth);
-        didDraw(dirtyRect);
+    if (isFullCanvasCompositeMode(state().m_globalComposite)) {
+        fullCanvasCompositedStroke(rect);
+        didDraw(clipBounds);
+    } else if (state().m_globalComposite == CompositeCopy) {
+        clearCanvas();
+        c->strokeRect(rect);
+        didDraw(clipBounds);
+    } else {
+        FloatRect boundingRect = rect;
+        boundingRect.inflate(state().m_lineWidth / 2);
+        FloatRect dirtyRect;
+        if (computeDirtyRect(boundingRect, &dirtyRect)) {
+            c->strokeRect(rect);
+            didDraw(dirtyRect);
+        }
     }
 }
 
@@ -1667,6 +1691,30 @@ template<class T> void CanvasRenderingContext2D::fullCanvasCompositedFill(const 
     CompositeOperator previousOperator = c->compositeOperation();
     c->setCompositeOperation(CompositeSourceOver);
     fillPrimitive(area, c);
+    c->setCompositeOperation(previousOperator);
+    c->endLayer();
+}
+
+static void strokePrimitive(const FloatRect& rect, GraphicsContext* context)
+{
+    context->strokeRect(rect);
+}
+
+static void strokePrimitive(const Path& path, GraphicsContext* context)
+{
+    context->strokePath(path);
+}
+
+template<class T> void CanvasRenderingContext2D::fullCanvasCompositedStroke(const T& area)
+{
+    ASSERT(isFullCanvasCompositeMode(state().m_globalComposite));
+
+    GraphicsContext* c = drawingContext();
+    ASSERT(c);
+    c->beginLayer(1, state().m_globalComposite);
+    CompositeOperator previousOperator = c->compositeOperation();
+    c->setCompositeOperation(CompositeSourceOver);
+    strokePrimitive(area, c);
     c->setCompositeOperation(previousOperator);
     c->endLayer();
 }

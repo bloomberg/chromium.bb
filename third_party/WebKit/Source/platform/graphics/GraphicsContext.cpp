@@ -1347,6 +1347,11 @@ void GraphicsContext::strokePath(const Path& pathToStroke)
     drawPath(path, immutableState()->strokePaint());
 }
 
+void GraphicsContext::strokeRect(const FloatRect& rect)
+{
+    strokeRect(rect, strokeThickness());
+}
+
 void GraphicsContext::strokeRect(const FloatRect& rect, float lineWidth)
 {
     if (paintingDisabled())

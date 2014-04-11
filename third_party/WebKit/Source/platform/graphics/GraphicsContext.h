@@ -242,6 +242,7 @@ public:
 
     void clearRect(const FloatRect&);
 
+    void strokeRect(const FloatRect&);
     void strokeRect(const FloatRect&, float lineWidth);
 
     void fillBetweenRoundedRects(const IntRect&, const IntSize& outerTopLeft, const IntSize& outerTopRight, const IntSize& outerBottomLeft, const IntSize& outerBottomRight,

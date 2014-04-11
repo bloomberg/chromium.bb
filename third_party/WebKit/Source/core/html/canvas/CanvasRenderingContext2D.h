@@ -329,6 +329,7 @@ private:
     void inflateStrokeRect(FloatRect&) const;
 
     template<class T> void fullCanvasCompositedFill(const T&);
+    template<class T> void fullCanvasCompositedStroke(const T&);
     template<class T> void fullCanvasCompositedDrawImage(T*, const FloatRect&, const FloatRect&, CompositeOperator);
 
     bool focusRingCallIsValid(const Path&, Element*);
