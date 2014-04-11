@@ -1,48 +1,61 @@
-<html>
-<head>
-<script src="/js-test-resources/js-test.js"></script>
-</head>
-<body>
+<!DOCTYPE html>
+<title>Service Worker: Registration</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <script>
-      description("Tests if ServiceWorker registration is working")
+(function() {
+    var t = async_test('Registering normal pattern');
+    t.step(function() {
+        navigator.serviceWorker.register(
+            'resources/registration-worker.js',
+            {scope: '/*'}
+        ).then(
+            t.step_func(function(worker) {
+                assert_true(!!worker, 'Successfully registered.');
+                t.done();
+            }),
+            t.step_func(function(reason) {
+                assert_unreached('Registration should succeed, but failed: ' + reason.name);
+            })
+        );
+    });
+}());
 
-      function test_registerBasics() {
-          debug("Registering normal pattern");
-          return navigator.serviceWorker.register("serviceworker.js", {scope:"/*"}).then(
-              function(worker) {
-                  debug("Successfully registered");
-                  return worker;
-              },
-              function(e) {
-                  regError = e;
-                  shouldBe("'DisabledError'", "regError.name");
-              });
-      }
-      function test_registerPatternOutsideDomain() {
-          debug("Registering pattern outside domain");
-          return navigator.serviceWorker.register("serviceworker.js", {scope:"http://foo.com/*"})
-              .catch(function(e) {
-                  regError = e;
-                  shouldBe("'SecurityError'", "regError.name");
-              });
-      }
-      function test_registerScriptOutsideDomain() {
-          debug("Registering pattern outside domain");
-          return navigator.serviceWorker.register("http://foo.com/serviceworker.js")
-              .catch(function(e) {
-                  regError = e;
-                  shouldBe("'SecurityError'", "regError.name");
-              });
-      }
-      var jsTestIsAsync = true;
-      test_registerBasics()
-      .then(test_registerPatternOutsideDomain)
-      .then(test_registerScriptOutsideDomain)
-      .then(finishJSTest, function(e) {
-          testFailed("Tests failed, exited with error:" + e.name + ": " + e.message);
-          finishJSTest();
-      });
+(function() {
+    var t = async_test('Registering scope outside domain');
+    t.step(function() {
+        navigator.serviceWorker.register(
+            'resources/registration-worker.js',
+            {scope: 'http://example.com/*'}
+        ).then(
+            t.step_func(function(worker) {
+                assert_unreached('Registration scope outside domain should fail.');
+            }),
+            t.step_func(function(reason) {
+                assert_equals(reason.name, 'SecurityError',
+                              'Registration scope outside domain should fail with SecurityError.');
+                t.done();
+            })
+        );
+    });
+}());
+
+(function() {
+    var t = async_test('Registering script outside domain');
+    t.step(function() {
+        navigator.serviceWorker.register(
+            'http://example.com/worker.js'
+        ).then(
+            t.step_func(function(worker) {
+                assert_unreached('Registration script outside domain should fail.');
+            }),
+            t.step_func(function(reason) {
+                assert_equals(reason.name, 'SecurityError',
+                             'Registration script outside domain should fail with SecurityError.');
+                t.done();
+            })
+        );
+    });
+}());
+
 </script>
-<script src="/js-test-resources/js-test-post.js"></script>
-</body>
-</html>

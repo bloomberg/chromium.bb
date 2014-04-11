@@ -1,57 +1,35 @@
 <!DOCTYPE html>
-<script src="/js-test-resources/js-test.js"></script>
+<title>Service Worker: Indexed DB</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <script>
+var test = async_test('Verify Indexed DB operation in a Service Worker');
+test.step(function() {
 
-description("Verify that IndexedDB is functional in a ServiceWorker");
-var jsTestIsAsync = true;
+    navigator.serviceWorker.register('resources/indexeddb-worker.js').then(
+        test.step_func(function(worker) {
+            var messageChannel = new MessageChannel();
+            messageChannel.port1.onmessage = test.step_func(onMessage);
 
-evalAndLog("messageChannel = new MessageChannel()");
-evalAndLog("messageChannel.port1.onmessage = onMessageHandler");
+            worker.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
+        }),
+        test.step_func(function(reason) {
+            assert_unreached('Registration should succeed, but failed: ' + reason.name);
+        }));
 
-debug("");
-evalAndLog("navigator.serviceWorker.register('indexeddb-worker.js')").then(
-    function(result) {
-        serviceWorker = result;
-        evalAndLog("serviceWorker.postMessage({port: messageChannel.port2}, [messageChannel.port2])");
-    },
-    function(reason) {
-        testFailed(reason.name);
-        finishJSTest();
-    });
-
-function onMessageHandler(e) {
-    var prefix = "[ServiceWorker] ";
-    message = e.data;
-    switch (message.action) {
-    case 'log':
-        debug(prefix + message.text);
-        break;
-    case 'pass':
-        testPassed(prefix + message.text);
-        break;
-    case 'fail':
-        testFailed(prefix + message.text);
-        break;
-    case 'quit':
-        verifyDatabase();
-        break;
+    function onMessage() {
+        var openRequest = indexedDB.open('db');
+        openRequest.onsuccess = test.step_func(function() {
+            var db = openRequest.result;
+            var tx = db.transaction('store');
+            var store = tx.objectStore('store');
+            var getRequest = store.get('key');
+            getRequest.onsuccess = test.step_func(function() {
+                assert_equals(getRequest.result, 'value',
+                              'The get() result should match what the worker put().');
+                test.done();
+            });
+        });
     }
-}
-
-function verifyDatabase() {
-    debug("");
-    debug("Verifying the database from the page");
-    debug("");
-    evalAndLog("request = indexedDB.open('db')");
-    request.onsuccess = function() {
-        evalAndLog("db = request.result");
-        evalAndLog("tx = db.transaction('store')");
-        evalAndLog("store = tx.objectStore('store')");
-        evalAndLog("request = store.get('key')");
-        request.onsuccess = function() {
-            shouldBe("request.result", "'value'");
-            finishJSTest();
-        };
-    };
-}
+});
 </script>

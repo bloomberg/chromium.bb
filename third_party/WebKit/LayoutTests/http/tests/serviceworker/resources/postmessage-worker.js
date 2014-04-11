@@ -12,8 +12,8 @@ self.onmessage = function(e) {
 self.addEventListener('message', function(e) {
     var message = e.data;
     if ('value' in message) {
-        port.postMessage("Acking value: " + message.value);
+        port.postMessage('Acking value: ' + message.value);
     } else if ('done' in message) {
-        port.postMessage("quit");
+        port.postMessage('quit');
     }
 });

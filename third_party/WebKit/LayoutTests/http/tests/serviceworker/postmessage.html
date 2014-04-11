@@ -1,34 +1,40 @@
 <!DOCTYPE html>
-<script src="/js-test-resources/js-test.js"></script>
+<title>Service Worker: postMessage</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <script>
+var test = async_test('postMessage to a ServiceWorker (and back via MessagePort)');
+test.step(function() {
 
-description("Tests postMessage to and from a ServiceWorker");
-var jsTestIsAsync = true;
+    navigator.serviceWorker.register('resources/postmessage-worker.js').then(
+        test.step_func(function(worker) {
+            var messageChannel = new MessageChannel();
+            messageChannel.port1.onmessage = test.step_func(onMessage);
 
-evalAndLog("messageChannel = new MessageChannel()");
-evalAndLog("messageChannel.port1.onmessage = onMessageHandler");
+            worker.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
 
-debug("");
-evalAndLog("navigator.serviceWorker.register('postmessage-worker.js')").then(
-    function(result) {
-        serviceWorker = result;
+            worker.postMessage({value: 1});
+            worker.postMessage({value: 2});
+            worker.postMessage({done: true});
+        }),
+        test.step_func(function(reason) {
+            assert_unreached('Registration should succeed, but failed: ' + reason.name);
+        }));
 
-        evalAndLog("serviceWorker.postMessage({port: messageChannel.port2}, [messageChannel.port2])");
-        evalAndLog("serviceWorker.postMessage({value: 1})");
-        evalAndLog("serviceWorker.postMessage({value: 2})");
-        evalAndLog("serviceWorker.postMessage({done: true})");
-    },
-    function(reason) {
-        testFailed(reason.name);
-        finishJSTest();
-    });
+    var result = [];
+    var expected = [
+        'Acking value: 1',
+        'Acking value: 2',
+    ];
 
-function onMessageHandler(e) {
-    message = e.data;
-    debug("");
-    debug("onMessageHandler: " + JSON.stringify(message));
-
-    if (message === "quit")
-        finishJSTest();
-}
+    function onMessage(e) {
+        var message = e.data;
+        if (message === 'quit') {
+            assert_array_equals(result, expected, 'Worker should post back expected values.');
+            test.done();
+        } else {
+            result.push(message);
+        }
+    };
+});
 </script>

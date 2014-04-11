@@ -1,14 +1,3 @@
-Verify that IndexedDB is functional in a ServiceWorker
 
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-messageChannel = new MessageChannel()
-messageChannel.port1.onmessage = onMessageHandler
-
-navigator.serviceWorker.register('indexeddb-worker.js')
-FAIL DisabledError
-PASS successfullyParsed is true
-
-TEST COMPLETE
+FAIL Verify Indexed DB operation in a Service Worker assert_unreached: Registration should succeed, but failed: DisabledError Reached unreachable code
 

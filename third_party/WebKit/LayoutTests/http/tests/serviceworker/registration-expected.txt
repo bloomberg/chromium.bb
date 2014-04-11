@@ -1,15 +1,5 @@
-Tests if ServiceWorker registration is working
 
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-Registering normal pattern
-PASS 'DisabledError' is regError.name
-Registering pattern outside domain
-PASS 'SecurityError' is regError.name
-Registering pattern outside domain
-PASS 'SecurityError' is regError.name
-PASS successfullyParsed is true
-
-TEST COMPLETE
+FAIL Registering normal pattern assert_unreached: Registration should succeed, but failed: DisabledError Reached unreachable code
+PASS Registering scope outside domain 
+PASS Registering script outside domain 
 
