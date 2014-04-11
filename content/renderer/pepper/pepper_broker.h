@@ -43,7 +43,7 @@ class CONTENT_EXPORT PepperBrokerDispatcherWrapper {
   scoped_ptr<ppapi::proxy::ProxyChannel::Delegate> dispatcher_delegate_;
 };
 
-class PepperBroker : public base::RefCountedThreadSafe<PepperBroker>{
+class PepperBroker : public base::RefCountedThreadSafe<PepperBroker> {
  public:
   explicit PepperBroker(PluginModule* plugin_module);
 
@@ -62,8 +62,7 @@ class PepperBroker : public base::RefCountedThreadSafe<PepperBroker>{
 
   // Called when we know whether permission to access the PPAPI broker was
   // granted.
-  void OnBrokerPermissionResult(PPB_Broker_Impl* client,
-                                bool result);
+  void OnBrokerPermissionResult(PPB_Broker_Impl* client, bool result);
 
  private:
   friend class base::RefCountedThreadSafe<PepperBroker>;

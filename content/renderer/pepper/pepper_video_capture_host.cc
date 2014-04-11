@@ -41,17 +41,13 @@ PepperVideoCaptureHost::PepperVideoCaptureHost(RendererPpapiHostImpl* host,
       renderer_ppapi_host_(host),
       buffer_count_hint_(0),
       status_(PP_VIDEO_CAPTURE_STATUS_STOPPED),
-      enumeration_helper_(
-          this,
-          PepperMediaDeviceManager::GetForRenderView(
-              host->GetRenderViewForInstance(pp_instance())),
-          PP_DEVICETYPE_DEV_VIDEOCAPTURE,
-          host->GetDocumentURL(instance)) {
-}
+      enumeration_helper_(this,
+                          PepperMediaDeviceManager::GetForRenderView(
+                              host->GetRenderViewForInstance(pp_instance())),
+                          PP_DEVICETYPE_DEV_VIDEOCAPTURE,
+                          host->GetDocumentURL(instance)) {}
 
-PepperVideoCaptureHost::~PepperVideoCaptureHost() {
-  Close();
-}
+PepperVideoCaptureHost::~PepperVideoCaptureHost() { Close(); }
 
 bool PepperVideoCaptureHost::Init() {
   return !!renderer_ppapi_host_->GetPluginInstance(pp_instance());
@@ -65,21 +61,14 @@ int32_t PepperVideoCaptureHost::OnResourceMessageReceived(
     return result;
 
   IPC_BEGIN_MESSAGE_MAP(PepperVideoCaptureHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_VideoCapture_Open,
-        OnOpen)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_VideoCapture_StartCapture,
-        OnStartCapture)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_VideoCapture_ReuseBuffer,
-        OnReuseBuffer)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_VideoCapture_StopCapture,
-        OnStopCapture)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_VideoCapture_Close,
-        OnClose)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoCapture_Open, OnOpen)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoCapture_StartCapture,
+                                      OnStartCapture)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoCapture_ReuseBuffer,
+                                    OnReuseBuffer)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoCapture_StopCapture,
+                                      OnStopCapture)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoCapture_Close, OnClose)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -126,12 +115,11 @@ void PepperVideoCaptureHost::PostErrorReply() {
   // conflicting "master" resolution), or because the browser failed to start
   // the capture.
   SetStatus(PP_VIDEO_CAPTURE_STATUS_STOPPED, true);
-  host()->SendUnsolicitedReply(pp_resource(),
-      PpapiPluginMsg_VideoCapture_OnError(PP_ERROR_FAILED));
+  host()->SendUnsolicitedReply(
+      pp_resource(), PpapiPluginMsg_VideoCapture_OnError(PP_ERROR_FAILED));
 }
 
-void PepperVideoCaptureHost::OnRemoved(media::VideoCapture* capture) {
-}
+void PepperVideoCaptureHost::OnRemoved(media::VideoCapture* capture) {}
 
 void PepperVideoCaptureHost::OnFrameReady(
     media::VideoCapture* capture,
@@ -168,21 +156,19 @@ void PepperVideoCaptureHost::OnFrameReady(
         }
       }
       buffers_[i].in_use = true;
-      host()->SendUnsolicitedReply(pp_resource(),
-          PpapiPluginMsg_VideoCapture_OnBufferReady(i));
+      host()->SendUnsolicitedReply(
+          pp_resource(), PpapiPluginMsg_VideoCapture_OnBufferReady(i));
       return;
     }
   }
 }
 
-void PepperVideoCaptureHost::AllocBuffers(
-    const gfx::Size& resolution,
-    int frame_rate) {
+void PepperVideoCaptureHost::AllocBuffers(const gfx::Size& resolution,
+                                          int frame_rate) {
   PP_VideoCaptureDeviceInfo_Dev info = {
-    static_cast<uint32_t>(resolution.width()),
-    static_cast<uint32_t>(resolution.height()),
-    static_cast<uint32_t>(frame_rate)
-  };
+      static_cast<uint32_t>(resolution.width()),
+      static_cast<uint32_t>(resolution.height()),
+      static_cast<uint32_t>(frame_rate)};
   ReleaseBuffers();
 
   const size_t size = media::VideoFrame::AllocationSize(
@@ -195,8 +181,7 @@ void PepperVideoCaptureHost::AllocBuffers(
   // for sending below.
   std::vector<HostResource> buffer_host_resources;
   buffers_.reserve(buffer_count_hint_);
-  ppapi::ResourceTracker* tracker =
-      HostGlobals::Get()->GetResourceTracker();
+  ppapi::ResourceTracker* tracker = HostGlobals::Get()->GetResourceTracker();
   ppapi::proxy::HostDispatcher* dispatcher =
       ppapi::proxy::HostDispatcher::GetForInstance(pp_instance());
   for (size_t i = 0; i < buffer_count_hint_; ++i) {
@@ -244,10 +229,8 @@ void PepperVideoCaptureHost::AllocBuffers(
 #else
 #error Not implemented.
 #endif
-      params.AppendHandle(
-          ppapi::proxy::SerializedHandle(
-              dispatcher->ShareHandleWithRemote(platform_file, false),
-              size));
+      params.AppendHandle(ppapi::proxy::SerializedHandle(
+          dispatcher->ShareHandleWithRemote(platform_file, false), size));
     }
   }
 
@@ -260,9 +243,10 @@ void PepperVideoCaptureHost::AllocBuffers(
     return;
   }
 
-  host()->Send(new PpapiPluginMsg_ResourceReply(
-      params, PpapiPluginMsg_VideoCapture_OnDeviceInfo(
-          info, buffer_host_resources, size)));
+  host()->Send(
+      new PpapiPluginMsg_ResourceReply(params,
+                                       PpapiPluginMsg_VideoCapture_OnDeviceInfo(
+                                           info, buffer_host_resources, size)));
 }
 
 int32_t PepperVideoCaptureHost::OnOpen(
@@ -283,8 +267,7 @@ int32_t PepperVideoCaptureHost::OnOpen(
       renderer_ppapi_host_->GetRenderViewForInstance(pp_instance()));
 
   platform_video_capture_ = new PepperPlatformVideoCapture(
-      render_view->AsWeakPtr(), device_id,
-      document_url, this);
+      render_view->AsWeakPtr(), device_id, document_url, this);
 
   open_reply_context_ = context->MakeReplyMessageContext();
 
@@ -358,7 +341,7 @@ void PepperVideoCaptureHost::ReleaseBuffers() {
 
 void PepperVideoCaptureHost::SendStatus() {
   host()->SendUnsolicitedReply(pp_resource(),
-      PpapiPluginMsg_VideoCapture_OnStatus(status_));
+                               PpapiPluginMsg_VideoCapture_OnStatus(status_));
 }
 
 void PepperVideoCaptureHost::SetRequestedInfo(
@@ -433,12 +416,8 @@ bool PepperVideoCaptureHost::SetStatus(PP_VideoCaptureStatus_Dev status,
 }
 
 PepperVideoCaptureHost::BufferInfo::BufferInfo()
-    : in_use(false),
-      data(NULL),
-      buffer() {
-}
+    : in_use(false), data(NULL), buffer() {}
 
-PepperVideoCaptureHost::BufferInfo::~BufferInfo() {
-}
+PepperVideoCaptureHost::BufferInfo::~BufferInfo() {}
 
 }  // namespace content

@@ -22,8 +22,7 @@
 
 namespace content {
 
-class PepperFileRefRendererHost
-    : public ppapi::host::ResourceHost {
+class PepperFileRefRendererHost : public ppapi::host::ResourceHost {
  public:
   PepperFileRefRendererHost(RendererPpapiHost* host,
                             PP_Instance instance,

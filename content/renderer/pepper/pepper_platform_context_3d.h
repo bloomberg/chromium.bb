@@ -54,8 +54,7 @@ class PlatformContext3D {
 
   // Set an optional callback that will be invoked when the context is lost
   // (e.g. gpu process crash). Takes ownership of the callback.
-  typedef base::Callback<void(const std::string&, int)>
-        ConsoleMessageCallback;
+  typedef base::Callback<void(const std::string&, int)> ConsoleMessageCallback;
   void SetContextLostCallback(const base::Closure& callback);
 
   // Set an optional callback that will be invoked when the GPU process

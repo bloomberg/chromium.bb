@@ -39,16 +39,17 @@ class PPB_VideoDecoder_Impl : public ppapi::PPB_VideoDecoder_Shared,
                             PP_VideoDecoder_Profile profile);
 
   // PPB_VideoDecoder_API implementation.
-  virtual int32_t Decode(
-      const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
-      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
-  virtual void AssignPictureBuffers(
-      uint32_t no_of_buffers, const PP_PictureBuffer_Dev* buffers) OVERRIDE;
+  virtual int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
+                         scoped_refptr<ppapi::TrackedCallback> callback)
+      OVERRIDE;
+  virtual void AssignPictureBuffers(uint32_t no_of_buffers,
+                                    const PP_PictureBuffer_Dev* buffers)
+      OVERRIDE;
   virtual void ReusePictureBuffer(int32_t picture_buffer_id) OVERRIDE;
-  virtual int32_t Flush(
-      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
-  virtual int32_t Reset(
-      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Flush(scoped_refptr<ppapi::TrackedCallback> callback)
+      OVERRIDE;
+  virtual int32_t Reset(scoped_refptr<ppapi::TrackedCallback> callback)
+      OVERRIDE;
   virtual void Destroy() OVERRIDE;
 
   // media::VideoDecodeAccelerator::Client implementation.
@@ -57,8 +58,7 @@ class PPB_VideoDecoder_Impl : public ppapi::PPB_VideoDecoder_Shared,
                                      uint32 texture_target) OVERRIDE;
   virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void PictureReady(const media::Picture& picture) OVERRIDE;
-  virtual void NotifyError(
-      media::VideoDecodeAccelerator::Error error) OVERRIDE;
+  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) OVERRIDE;
   virtual void NotifyFlushDone() OVERRIDE;
   virtual void NotifyEndOfBitstreamBuffer(int32 buffer_id) OVERRIDE;
   virtual void NotifyResetDone() OVERRIDE;

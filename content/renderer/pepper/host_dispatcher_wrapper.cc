@@ -25,11 +25,9 @@ HostDispatcherWrapper::HostDispatcherWrapper(
       peer_pid_(peer_pid),
       plugin_child_id_(plugin_child_id),
       permissions_(perms),
-      is_external_(is_external) {
-}
+      is_external_(is_external) {}
 
-HostDispatcherWrapper::~HostDispatcherWrapper() {
-}
+HostDispatcherWrapper::~HostDispatcherWrapper() {}
 
 bool HostDispatcherWrapper::Init(const IPC::ChannelHandle& channel_handle,
                                  PP_GetInterface_Func local_get_interface,
@@ -100,9 +98,7 @@ void HostDispatcherWrapper::RemoveInstance(PP_Instance instance) {
     RenderFrame* render_frame = host->GetRenderFrameForInstance(instance);
     if (render_frame) {
       render_frame->Send(new ViewHostMsg_DidDeleteOutOfProcessPepperInstance(
-          plugin_child_id_,
-          instance,
-          is_external_));
+          plugin_child_id_, instance, is_external_));
     }
   }
 }

@@ -57,8 +57,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
       ppapi::host::HostMessageContext* context) OVERRIDE;
   virtual bool IsGraphics2DHost() OVERRIDE;
 
-  bool ReadImageData(PP_Resource image,
-                     const PP_Point* top_left);
+  bool ReadImageData(PP_Resource image, const PP_Point* top_left);
   // Assciates this device with the given plugin instance. You can pass NULL
   // to clear the existing device. Returns true on success. In this case, a
   // repaint of the page will also be scheduled. Failure means that the device
@@ -123,10 +122,13 @@ class CONTENT_EXPORT PepperGraphics2DHost
   // the update that requires invalidation. If there were no pixels changed,
   // this rect can be untouched.
   void ExecutePaintImageData(PPB_ImageData_Impl* image,
-                             int x, int y,
+                             int x,
+                             int y,
                              const gfx::Rect& src_rect,
                              gfx::Rect* invalidated_rect);
-  void ExecuteScroll(const gfx::Rect& clip, int dx, int dy,
+  void ExecuteScroll(const gfx::Rect& clip,
+                     int dx,
+                     int dy,
                      gfx::Rect* invalidated_rect);
   void ExecuteReplaceContents(PPB_ImageData_Impl* image,
                               gfx::Rect* invalidated_rect,

@@ -38,9 +38,7 @@ class HostResourceVar : public ppapi::ResourceVar {
   virtual const IPC::Message* GetCreationMessage() const OVERRIDE;
   virtual bool IsPending() const OVERRIDE;
 
-  void set_pending_browser_host_id(int id) {
-    pending_browser_host_id_ = id;
-  }
+  void set_pending_browser_host_id(int id) { pending_browser_host_id_ = id; }
 
  protected:
   virtual ~HostResourceVar();

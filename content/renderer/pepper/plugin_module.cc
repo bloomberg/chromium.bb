@@ -187,9 +187,7 @@ void ReleaseResource(PP_Resource resource) {
   PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(resource);
 }
 
-PP_Time GetTime() {
-  return TimeToPPTime(base::Time::Now());
-}
+PP_Time GetTime() { return TimeToPPTime(base::Time::Now()); }
 
 PP_TimeTicks GetTickTime() {
   return TimeTicksToPPTimeTicks(base::TimeTicks::Now());
@@ -207,18 +205,14 @@ void CallOnMainThread(int delay_in_msec,
 }
 
 PP_Bool IsMainThread() {
-  return BoolToPPBool(PpapiGlobals::Get()->
-      GetMainThreadMessageLoop()->BelongsToCurrentThread());
+  return BoolToPPBool(PpapiGlobals::Get()
+                          ->GetMainThreadMessageLoop()
+                          ->BelongsToCurrentThread());
 }
 
-const PPB_Core core_interface = {
-  &AddRefResource,
-  &ReleaseResource,
-  &GetTime,
-  &GetTickTime,
-  &CallOnMainThread,
-  &IsMainThread
-};
+const PPB_Core core_interface = {&AddRefResource,   &ReleaseResource,
+                                 &GetTime,          &GetTickTime,
+                                 &CallOnMainThread, &IsMainThread};
 
 // PPB_Testing -----------------------------------------------------------------
 
@@ -246,9 +240,7 @@ uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {
       instance_id);
 }
 
-PP_Bool IsOutOfProcess() {
-  return PP_FALSE;
-}
+PP_Bool IsOutOfProcess() { return PP_FALSE; }
 
 void SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
   PepperPluginInstanceImpl* plugin_instance =
@@ -288,16 +280,11 @@ void SetMinimumArrayBufferSizeForShmem(PP_Instance /*instance*/,
 }
 
 const PPB_Testing_Private testing_interface = {
-  &ReadImageData,
-  &RunMessageLoop,
-  &QuitMessageLoop,
-  &GetLiveObjectsForInstance,
-  &IsOutOfProcess,
-  &SimulateInputEvent,
-  &GetDocumentURL,
-  &GetLiveVars,
-  &SetMinimumArrayBufferSizeForShmem
-};
+    &ReadImageData,                    &RunMessageLoop,
+    &QuitMessageLoop,                  &GetLiveObjectsForInstance,
+    &IsOutOfProcess,                   &SimulateInputEvent,
+    &GetDocumentURL,                   &GetLiveVars,
+    &SetMinimumArrayBufferSizeForShmem};
 
 // GetInterface ----------------------------------------------------------------
 
@@ -308,27 +295,27 @@ const void* InternalGetInterface(const char* name) {
   if (custom_interface)
     return custom_interface;
 
-  // TODO(brettw) put these in a hash map for better performance.
-  #define PROXIED_IFACE(iface_str, iface_struct) \
-      if (strcmp(name, iface_str) == 0) \
-        return ppapi::thunk::Get##iface_struct##_Thunk();
+// TODO(brettw) put these in a hash map for better performance.
+#define PROXIED_IFACE(iface_str, iface_struct) \
+  if (strcmp(name, iface_str) == 0)            \
+    return ppapi::thunk::Get##iface_struct##_Thunk();
 
-  #include "ppapi/thunk/interfaces_ppb_private.h"
-  #include "ppapi/thunk/interfaces_ppb_private_flash.h"
-  #include "ppapi/thunk/interfaces_ppb_private_no_permissions.h"
-  #include "ppapi/thunk/interfaces_ppb_public_dev.h"
-  #include "ppapi/thunk/interfaces_ppb_public_dev_channel.h"
-  #include "ppapi/thunk/interfaces_ppb_public_stable.h"
+#include "ppapi/thunk/interfaces_ppb_private.h"
+#include "ppapi/thunk/interfaces_ppb_private_flash.h"
+#include "ppapi/thunk/interfaces_ppb_private_no_permissions.h"
+#include "ppapi/thunk/interfaces_ppb_public_dev.h"
+#include "ppapi/thunk/interfaces_ppb_public_dev_channel.h"
+#include "ppapi/thunk/interfaces_ppb_public_stable.h"
 
-  #undef PROXIED_IFACE
+#undef PROXIED_IFACE
 
-  #define LEGACY_IFACE(iface_str, function_name) \
-      if (strcmp(name, iface_str) == 0) \
-        return function_name;
+#define LEGACY_IFACE(iface_str, function_name) \
+  if (strcmp(name, iface_str) == 0)            \
+    return function_name;
 
-  #include "ppapi/thunk/interfaces_legacy.h"
+#include "ppapi/thunk/interfaces_legacy.h"
 
-  #undef LEGACY_IFACE
+#undef LEGACY_IFACE
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface
@@ -350,9 +337,8 @@ const void* GetInterface(const char* name) {
 
 // Gets the PPAPI entry points from the given library and places them into the
 // given structure. Returns true on success.
-bool LoadEntryPointsFromLibrary(
-    const base::NativeLibrary& library,
-    PepperPluginInfo::EntryPoints* entry_points) {
+bool LoadEntryPointsFromLibrary(const base::NativeLibrary& library,
+                                PepperPluginInfo::EntryPoints* entry_points) {
   entry_points->get_interface =
       reinterpret_cast<PepperPluginInfo::GetInterfaceFunc>(
           base::GetFunctionPointerFromNativeLibrary(library,
@@ -389,9 +375,9 @@ void CreateHostForInProcessModule(RenderFrameImpl* render_frame,
       PepperPluginRegistry::GetInstance()->GetInfoForPlugin(webplugin_info);
   DCHECK(!info->is_out_of_process);
 
-  ppapi::PpapiPermissions perms(
-      PepperPluginRegistry::GetInstance()->GetInfoForPlugin(
-          webplugin_info)->permissions);
+  ppapi::PpapiPermissions perms(PepperPluginRegistry::GetInstance()
+                                    ->GetInfoForPlugin(webplugin_info)
+                                    ->permissions);
   RendererPpapiHostImpl* host_impl =
       RendererPpapiHostImpl::CreateOnModuleForInProcess(module, perms);
   render_frame->PepperPluginCreated(host_impl);
@@ -498,13 +484,11 @@ void PluginModule::InitAsProxied(
 }
 
 scoped_refptr<PluginModule>
-    PluginModule::CreateModuleForExternalPluginInstance() {
+PluginModule::CreateModuleForExternalPluginInstance() {
   // Create a new module, but don't set the lifetime delegate. This isn't a
   // plugin in the usual sense, so it isn't tracked by the browser.
   scoped_refptr<PluginModule> external_plugin_module(
-      new PluginModule(name_,
-                       path_,
-                       permissions_));
+      new PluginModule(name_, path_, permissions_));
   return external_plugin_module;
 }
 
@@ -522,9 +506,7 @@ PP_ExternalPluginResult PluginModule::InitAsProxiedExternalPlugin(
   return instance->ResetAsProxied(this);
 }
 
-bool PluginModule::IsProxied() const {
-  return !!host_dispatcher_wrapper_;
-}
+bool PluginModule::IsProxied() const { return !!host_dispatcher_wrapper_; }
 
 base::ProcessId PluginModule::GetPeerProcessId() {
   if (host_dispatcher_wrapper_)
@@ -539,9 +521,7 @@ int PluginModule::GetPluginChildId() {
 }
 
 // static
-const PPB_Core* PluginModule::GetCore() {
-  return &core_interface;
-}
+const PPB_Core* PluginModule::GetCore() { return &core_interface; }
 
 // static
 bool PluginModule::SupportsInterface(const char* name) {
@@ -600,7 +580,8 @@ void PluginModule::PluginCrashed() {
 
   // Notify all instances that they crashed.
   for (PluginInstanceSet::iterator i = instances_.begin();
-       i != instances_.end(); ++i)
+       i != instances_.end();
+       ++i)
     (*i)->InstanceCrashed();
 
   PepperPluginRegistry::GetInstance()->PluginModuleDead(this);
@@ -623,9 +604,7 @@ void PluginModule::SetBroker(PepperBroker* broker) {
   broker_ = broker;
 }
 
-PepperBroker* PluginModule::GetBroker() {
-  return broker_;
-}
+PepperBroker* PluginModule::GetBroker() { return broker_; }
 
 RendererPpapiHostImpl* PluginModule::CreateOutOfProcessModule(
     RenderFrameImpl* render_frame,
@@ -637,12 +616,8 @@ RendererPpapiHostImpl* PluginModule::CreateOutOfProcessModule(
     bool is_external) {
   scoped_refptr<PepperHungPluginFilter> hung_filter(new PepperHungPluginFilter(
       path, render_frame->GetRoutingID(), plugin_child_id));
-  scoped_ptr<HostDispatcherWrapper> dispatcher(
-      new HostDispatcherWrapper(this,
-                                peer_pid,
-                                plugin_child_id,
-                                permissions,
-                                is_external));
+  scoped_ptr<HostDispatcherWrapper> dispatcher(new HostDispatcherWrapper(
+      this, peer_pid, plugin_child_id, permissions, is_external));
   if (!dispatcher->Init(
           channel_handle,
           &GetInterface,

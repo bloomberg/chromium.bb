@@ -40,18 +40,16 @@ base::SyncSocket::Handle DuplicateHandle(base::SyncSocket::Handle handle) {
   // dup()ing and close()ing.
   out_handle = ::dup(handle);
 #else
-  #error Not implemented.
+#error Not implemented.
 #endif
   return out_handle;
 }
 
 }  // namespace
 
-PepperBrokerDispatcherWrapper::PepperBrokerDispatcherWrapper() {
-}
+PepperBrokerDispatcherWrapper::PepperBrokerDispatcherWrapper() {}
 
-PepperBrokerDispatcherWrapper::~PepperBrokerDispatcherWrapper() {
-}
+PepperBrokerDispatcherWrapper::~PepperBrokerDispatcherWrapper() {}
 
 bool PepperBrokerDispatcherWrapper::Init(
     base::ProcessId broker_pid,
@@ -66,8 +64,7 @@ bool PepperBrokerDispatcherWrapper::Init(
 #endif
 
   dispatcher_delegate_.reset(new PepperProxyChannelDelegateImpl);
-  dispatcher_.reset(
-      new ppapi::proxy::BrokerHostDispatcher());
+  dispatcher_.reset(new ppapi::proxy::BrokerHostDispatcher());
 
   if (!dispatcher_->InitBrokerWithChannel(dispatcher_delegate_.get(),
                                           broker_pid,
@@ -92,8 +89,8 @@ int32_t PepperBrokerDispatcherWrapper::SendHandleToBroker(
     return PP_ERROR_FAILED;
 
   int32_t result;
-  if (!dispatcher_->Send(
-      new PpapiMsg_ConnectToPlugin(instance, foreign_socket_handle, &result))) {
+  if (!dispatcher_->Send(new PpapiMsg_ConnectToPlugin(
+          instance, foreign_socket_handle, &result))) {
     // The plugin did not receive the handle, so it must be closed.
     // The easiest way to clean it up is to just put it in an object
     // and then close it. This failure case is not performance critical.
@@ -209,16 +206,15 @@ void PepperBroker::OnBrokerPermissionResult(PPB_Broker_Impl* client,
   entry->second.is_authorized = true;
 }
 
-PepperBroker::PendingConnection::PendingConnection() : is_authorized(false) {
-}
+PepperBroker::PendingConnection::PendingConnection() : is_authorized(false) {}
 
-PepperBroker::PendingConnection::~PendingConnection() {
-}
+PepperBroker::PendingConnection::~PendingConnection() {}
 
 void PepperBroker::ReportFailureToClients(int error_code) {
   DCHECK_NE(PP_OK, error_code);
   for (ClientMap::iterator i = pending_connects_.begin();
-       i != pending_connects_.end(); ++i) {
+       i != pending_connects_.end();
+       ++i) {
     base::WeakPtr<PPB_Broker_Impl>& weak_ptr = i->second.client;
     if (weak_ptr.get()) {
       weak_ptr->BrokerConnected(

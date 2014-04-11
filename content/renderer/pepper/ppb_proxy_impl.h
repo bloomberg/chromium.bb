@@ -17,4 +17,3 @@ class PPB_Proxy_Impl {
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PPB_PROXY_IMPL_H_
-

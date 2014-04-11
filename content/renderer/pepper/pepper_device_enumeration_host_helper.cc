@@ -26,9 +26,8 @@ class PepperDeviceEnumerationHostHelper::ScopedRequest
     : public base::SupportsWeakPtr<ScopedRequest> {
  public:
   // |owner| must outlive this object.
-  ScopedRequest(
-      PepperDeviceEnumerationHostHelper* owner,
-      const Delegate::EnumerateDevicesCallback& callback)
+  ScopedRequest(PepperDeviceEnumerationHostHelper* owner,
+                const Delegate::EnumerateDevicesCallback& callback)
       : owner_(owner),
         callback_(callback),
         requested_(false),
@@ -98,11 +97,9 @@ PepperDeviceEnumerationHostHelper::PepperDeviceEnumerationHostHelper(
     : resource_host_(resource_host),
       delegate_(delegate),
       device_type_(device_type),
-      document_url_(document_url) {
-}
+      document_url_(document_url) {}
 
-PepperDeviceEnumerationHostHelper::~PepperDeviceEnumerationHostHelper() {
-}
+PepperDeviceEnumerationHostHelper::~PepperDeviceEnumerationHostHelper() {}
 
 bool PepperDeviceEnumerationHostHelper::HandleResourceMessage(
     const IPC::Message& msg,
@@ -119,14 +116,13 @@ int32_t PepperDeviceEnumerationHostHelper::InternalHandleResourceMessage(
     bool* handled) {
   *handled = true;
   IPC_BEGIN_MESSAGE_MAP(PepperDeviceEnumerationHostHelper, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_DeviceEnumeration_EnumerateDevices, OnEnumerateDevices)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_DeviceEnumeration_MonitorDeviceChange,
-        OnMonitorDeviceChange)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_DeviceEnumeration_StopMonitoringDeviceChange,
-        OnStopMonitoringDeviceChange)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+      PpapiHostMsg_DeviceEnumeration_EnumerateDevices, OnEnumerateDevices)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+      PpapiHostMsg_DeviceEnumeration_MonitorDeviceChange, OnMonitorDeviceChange)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+      PpapiHostMsg_DeviceEnumeration_StopMonitoringDeviceChange,
+      OnStopMonitoringDeviceChange)
   IPC_END_MESSAGE_MAP()
 
   *handled = false;
@@ -156,7 +152,8 @@ int32_t PepperDeviceEnumerationHostHelper::OnMonitorDeviceChange(
   monitor_.reset(new ScopedRequest(
       this,
       base::Bind(&PepperDeviceEnumerationHostHelper::OnNotifyDeviceChange,
-                 base::Unretained(this), callback_id)));
+                 base::Unretained(this),
+                 callback_id)));
 
   return monitor_->requested() ? PP_OK : PP_ERROR_FAILED;
 }
@@ -187,9 +184,8 @@ void PepperDeviceEnumerationHostHelper::OnNotifyDeviceChange(
     const std::vector<ppapi::DeviceRefData>& devices) {
   resource_host_->host()->SendUnsolicitedReply(
       resource_host_->pp_resource(),
-      PpapiPluginMsg_DeviceEnumeration_NotifyDeviceChange(
-          callback_id,
-          devices));
+      PpapiPluginMsg_DeviceEnumeration_NotifyDeviceChange(callback_id,
+                                                          devices));
 }
 
 }  // namespace content

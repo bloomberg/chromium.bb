@@ -20,8 +20,7 @@ class RenderViewImpl;
 
 class ContentRendererPepperHostFactory : public ppapi::host::HostFactory {
  public:
-  explicit ContentRendererPepperHostFactory(
-      RendererPpapiHostImpl* host);
+  explicit ContentRendererPepperHostFactory(RendererPpapiHostImpl* host);
   virtual ~ContentRendererPepperHostFactory();
 
   virtual scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(

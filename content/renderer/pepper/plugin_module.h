@@ -58,9 +58,8 @@ struct WebPluginInfo;
 //
 // Note: to get from a PP_Instance to a PepperPluginInstance*, use the
 // ResourceTracker.
-class CONTENT_EXPORT PluginModule :
-    public base::RefCounted<PluginModule>,
-    public base::SupportsWeakPtr<PluginModule> {
+class CONTENT_EXPORT PluginModule : public base::RefCounted<PluginModule>,
+                                    public base::SupportsWeakPtr<PluginModule> {
  public:
   typedef std::set<PepperPluginInstanceImpl*> PluginInstanceSet;
 
@@ -138,10 +137,9 @@ class CONTENT_EXPORT PluginModule :
   const base::FilePath& path() const { return path_; }
   const ppapi::PpapiPermissions& permissions() const { return permissions_; }
 
-  PepperPluginInstanceImpl* CreateInstance(
-      RenderFrameImpl* render_frame,
-      blink::WebPluginContainer* container,
-      const GURL& plugin_url);
+  PepperPluginInstanceImpl* CreateInstance(RenderFrameImpl* render_frame,
+                                           blink::WebPluginContainer* container,
+                                           const GURL& plugin_url);
 
   // Returns "some" plugin instance associated with this module. This is not
   // guaranteed to be any one in particular. This is normally used to execute
@@ -178,8 +176,7 @@ class CONTENT_EXPORT PluginModule :
   // it exists to validate the ID. If the callback has not been set (such as
   // for in-process plugins), the Reserve function will assume that the ID is
   // usable and will return true.
-  void SetReserveInstanceIDCallback(
-      PP_Bool (*reserve)(PP_Module, PP_Instance));
+  void SetReserveInstanceIDCallback(PP_Bool (*reserve)(PP_Module, PP_Instance));
   bool ReserveInstanceID(PP_Instance instance);
 
   // These should only be called from the main thread.

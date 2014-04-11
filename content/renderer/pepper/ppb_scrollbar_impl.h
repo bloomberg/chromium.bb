@@ -46,8 +46,8 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
   // PPB_Widget private implementation.
   virtual PP_Bool PaintInternal(const gfx::Rect& rect,
                                 PPB_ImageData_Impl* image) OVERRIDE;
-  virtual PP_Bool HandleEventInternal(
-      const ppapi::InputEventData& data) OVERRIDE;
+  virtual PP_Bool HandleEventInternal(const ppapi::InputEventData& data)
+      OVERRIDE;
   virtual void SetLocationInternal(const PP_Rect* location) OVERRIDE;
 
   // blink::WebPluginScrollbarClient implementation.
@@ -55,9 +55,9 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
   virtual void overlayChanged(blink::WebPluginScrollbar* scrollbar) OVERRIDE;
   virtual void invalidateScrollbarRect(blink::WebPluginScrollbar* scrollbar,
                                        const blink::WebRect& rect) OVERRIDE;
-  virtual void getTickmarks(
-      blink::WebPluginScrollbar* scrollbar,
-      blink::WebVector<blink::WebRect>* tick_marks) const OVERRIDE;
+  virtual void getTickmarks(blink::WebPluginScrollbar* scrollbar,
+                            blink::WebVector<blink::WebRect>* tick_marks) const
+      OVERRIDE;
 
   void NotifyInvalidate();
 

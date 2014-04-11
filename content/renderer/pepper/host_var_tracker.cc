@@ -17,12 +17,9 @@ using ppapi::NPObjectVar;
 namespace content {
 
 HostVarTracker::HostVarTracker()
-  : VarTracker(SINGLE_THREADED),
-    last_shared_memory_map_id_(0) {
-}
+    : VarTracker(SINGLE_THREADED), last_shared_memory_map_id_(0) {}
 
-HostVarTracker::~HostVarTracker() {
-}
+HostVarTracker::~HostVarTracker() {}
 
 ArrayBufferVar* HostVarTracker::CreateArrayBuffer(uint32 size_in_bytes) {
   return new HostArrayBufferVar(size_in_bytes);
@@ -37,28 +34,29 @@ ArrayBufferVar* HostVarTracker::CreateShmArrayBuffer(
 void HostVarTracker::AddNPObjectVar(NPObjectVar* object_var) {
   CheckThreadingPreconditions();
 
-  InstanceMap::iterator found_instance = instance_map_.find(
-      object_var->pp_instance());
+  InstanceMap::iterator found_instance =
+      instance_map_.find(object_var->pp_instance());
   if (found_instance == instance_map_.end()) {
     // Lazily create the instance map.
     DCHECK(object_var->pp_instance() != 0);
-    found_instance = instance_map_.insert(std::make_pair(
-        object_var->pp_instance(),
-        linked_ptr<NPObjectToNPObjectVarMap>(new NPObjectToNPObjectVarMap))).
-            first;
+    found_instance =
+        instance_map_.insert(std::make_pair(
+                                 object_var->pp_instance(),
+                                 linked_ptr<NPObjectToNPObjectVarMap>(
+                                     new NPObjectToNPObjectVarMap))).first;
   }
   NPObjectToNPObjectVarMap* np_object_map = found_instance->second.get();
 
-  DCHECK(np_object_map->find(object_var->np_object()) ==
-         np_object_map->end()) << "NPObjectVar already in map";
+  DCHECK(np_object_map->find(object_var->np_object()) == np_object_map->end())
+      << "NPObjectVar already in map";
   np_object_map->insert(std::make_pair(object_var->np_object(), object_var));
 }
 
 void HostVarTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
   CheckThreadingPreconditions();
 
-  InstanceMap::iterator found_instance = instance_map_.find(
-      object_var->pp_instance());
+  InstanceMap::iterator found_instance =
+      instance_map_.find(object_var->pp_instance());
   if (found_instance == instance_map_.end()) {
     NOTREACHED() << "NPObjectVar has invalid instance.";
     return;

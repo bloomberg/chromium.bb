@@ -65,7 +65,6 @@ PP_Var NPObjectToPPVarImpl(PepperPluginInstanceImpl* instance,
   return object_var->GetPPVar();
 }
 
-
 }  // namespace
 
 // Utilities -------------------------------------------------------------------
@@ -211,8 +210,7 @@ PPResultAndExceptionToNPResult::PPResultAndExceptionToNPResult(
       np_result_(np_result),
       exception_(PP_MakeUndefined()),
       success_(false),
-      checked_exception_(false) {
-}
+      checked_exception_(false) {}
 
 PPResultAndExceptionToNPResult::~PPResultAndExceptionToNPResult() {
   // The user should have called SetResult or CheckExceptionForNoResult
@@ -228,7 +226,7 @@ PPResultAndExceptionToNPResult::~PPResultAndExceptionToNPResult() {
 // the JS engine. It will update the success flag and return it.
 bool PPResultAndExceptionToNPResult::SetResult(PP_Var result) {
   DCHECK(!checked_exception_);  // Don't call more than once.
-  DCHECK(np_result_);  // Should be expecting a result.
+  DCHECK(np_result_);           // Should be expecting a result.
 
   checked_exception_ = true;
 
@@ -256,7 +254,7 @@ bool PPResultAndExceptionToNPResult::SetResult(PP_Var result) {
 // The success flag will be returned.
 bool PPResultAndExceptionToNPResult::CheckExceptionForNoResult() {
   DCHECK(!checked_exception_);  // Don't call more than once.
-  DCHECK(!np_result_);  // Can't have a result when doing this.
+  DCHECK(!np_result_);          // Can't have a result when doing this.
 
   checked_exception_ = true;
 
@@ -306,8 +304,7 @@ PPVarArrayFromNPVariantArray::~PPVarArrayFromNPVariantArray() {
 
 PPVarFromNPObject::PPVarFromNPObject(PepperPluginInstanceImpl* instance,
                                      NPObject* object)
-    : var_(NPObjectToPPVar(instance, object)) {
-}
+    : var_(NPObjectToPPVar(instance, object)) {}
 
 PPVarFromNPObject::~PPVarFromNPObject() {
   PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(var_);
@@ -340,9 +337,7 @@ TryCatch::TryCatch(PP_Var* exception)
   WebBindings::pushExceptionHandler(&TryCatch::Catch, this);
 }
 
-TryCatch::~TryCatch() {
-  WebBindings::popExceptionHandler();
-}
+TryCatch::~TryCatch() { WebBindings::popExceptionHandler(); }
 
 void TryCatch::SetException(const char* message) {
   if (!has_exception()) {

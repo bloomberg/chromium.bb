@@ -31,19 +31,8 @@ void TrackedClassDeallocate(NPObject* npobject) {
 }
 
 NPClass g_tracked_npclass = {
-  NP_CLASS_STRUCT_VERSION,
-  NULL,
-  &TrackedClassDeallocate,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-};
+    NP_CLASS_STRUCT_VERSION, NULL, &TrackedClassDeallocate, NULL, NULL, NULL,
+    NULL,                    NULL, NULL,                    NULL, NULL, NULL, };
 
 // Returns a new tracked NPObject with a refcount of 1. You'll want to put this
 // in a NPObjectReleaser to free this ref when the test completes.
@@ -57,9 +46,7 @@ NPObject* NewTrackedNPObject() {
 }
 
 struct ReleaseNPObject {
-  void operator()(NPObject* o) const {
-    blink::WebBindings::releaseObject(o);
-  }
+  void operator()(NPObject* o) const { blink::WebBindings::releaseObject(o); }
 };
 
 // Handles automatically releasing a reference to the NPObject on destruction.
@@ -70,12 +57,9 @@ typedef scoped_ptr<NPObject, ReleaseNPObject> NPObjectReleaser;
 
 class HostVarTrackerTest : public PpapiUnittest {
  public:
-  HostVarTrackerTest() {
-  }
+  HostVarTrackerTest() {}
 
-  HostVarTracker& tracker() {
-    return *HostGlobals::Get()->host_var_tracker();
-  }
+  HostVarTracker& tracker() { return *HostGlobals::Get()->host_var_tracker(); }
 };
 
 TEST_F(HostVarTrackerTest, DeleteObjectVarWithInstance) {
@@ -118,8 +102,7 @@ TEST_F(HostVarTrackerTest, ReuseVar) {
   }
 
   // Remove both of the refs we made above.
-  ppapi::VarTracker* var_tracker =
-      ppapi::PpapiGlobals::Get()->GetVarTracker();
+  ppapi::VarTracker* var_tracker = ppapi::PpapiGlobals::Get()->GetVarTracker();
   var_tracker->ReleaseVar(static_cast<int32_t>(pp_object2.value.as_id));
   var_tracker->ReleaseVar(static_cast<int32_t>(pp_object1.value.as_id));
 

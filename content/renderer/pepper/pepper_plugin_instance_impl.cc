@@ -183,12 +183,21 @@ namespace content {
 
 #if defined(OS_WIN)
 // Exported by pdf.dll
-typedef bool (*RenderPDFPageToDCProc)(
-    const unsigned char* pdf_buffer, int buffer_size, int page_number, HDC dc,
-    int dpi_x, int dpi_y, int bounds_origin_x, int bounds_origin_y,
-    int bounds_width, int bounds_height, bool fit_to_bounds,
-    bool stretch_to_bounds, bool keep_aspect_ratio, bool center_in_bounds,
-    bool autorotate);
+typedef bool (*RenderPDFPageToDCProc)(const unsigned char* pdf_buffer,
+                                      int buffer_size,
+                                      int page_number,
+                                      HDC dc,
+                                      int dpi_x,
+                                      int dpi_y,
+                                      int bounds_origin_x,
+                                      int bounds_origin_y,
+                                      int bounds_width,
+                                      int bounds_height,
+                                      bool fit_to_bounds,
+                                      bool stretch_to_bounds,
+                                      bool keep_aspect_ratio,
+                                      bool center_in_bounds,
+                                      bool autorotate);
 
 void DrawEmptyRectangle(HDC dc) {
   // TODO(sanjeevr): This is a temporary hack. If we output a JPEG
@@ -204,22 +213,24 @@ void DrawEmptyRectangle(HDC dc) {
 namespace {
 
 // Check PP_TextInput_Type and ui::TextInputType are kept in sync.
-COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_NONE) == \
-    int(PP_TEXTINPUT_TYPE_NONE), mismatching_enums);
-COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_TEXT) == \
-    int(PP_TEXTINPUT_TYPE_TEXT), mismatching_enums);
-COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_PASSWORD) == \
-    int(PP_TEXTINPUT_TYPE_PASSWORD), mismatching_enums);
-COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_SEARCH) == \
-    int(PP_TEXTINPUT_TYPE_SEARCH), mismatching_enums);
-COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_EMAIL) == \
-    int(PP_TEXTINPUT_TYPE_EMAIL), mismatching_enums);
-COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_NUMBER) == \
-    int(PP_TEXTINPUT_TYPE_NUMBER), mismatching_enums);
-COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_TELEPHONE) == \
-    int(PP_TEXTINPUT_TYPE_TELEPHONE), mismatching_enums);
-COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_URL) == \
-    int(PP_TEXTINPUT_TYPE_URL), mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_NONE) == int(PP_TEXTINPUT_TYPE_NONE),
+               mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_TEXT) == int(PP_TEXTINPUT_TYPE_TEXT),
+               mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_PASSWORD) ==
+                   int(PP_TEXTINPUT_TYPE_PASSWORD),
+               mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_SEARCH) == int(PP_TEXTINPUT_TYPE_SEARCH),
+               mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_EMAIL) == int(PP_TEXTINPUT_TYPE_EMAIL),
+               mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_NUMBER) == int(PP_TEXTINPUT_TYPE_NUMBER),
+               mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_TELEPHONE) ==
+                   int(PP_TEXTINPUT_TYPE_TELEPHONE),
+               mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_URL) == int(PP_TEXTINPUT_TYPE_URL),
+               mismatching_enums);
 
 // The default text input type is to regard the plugin always accept text input.
 // This is for allowing users to use input methods even on completely-IME-
@@ -228,15 +239,14 @@ COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_URL) == \
 // that they don't accept texts.
 const ui::TextInputType kPluginDefaultTextInputType = ui::TEXT_INPUT_TYPE_TEXT;
 
-#define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, np_name) \
-    COMPILE_ASSERT(static_cast<int>(WebCursorInfo::webkit_name) \
-                       == static_cast<int>(np_name), \
-                   mismatching_enums)
+#define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, np_name)       \
+  COMPILE_ASSERT(static_cast<int>(WebCursorInfo::webkit_name) == \
+                     static_cast<int>(np_name),                  \
+                 mismatching_enums)
 
-#define COMPILE_ASSERT_PRINT_SCALING_MATCHING_ENUM(webkit_name, pp_name) \
-    COMPILE_ASSERT(static_cast<int>(webkit_name) \
-                       == static_cast<int>(pp_name), \
-                   mismatching_enums)
+#define COMPILE_ASSERT_PRINT_SCALING_MATCHING_ENUM(webkit_name, pp_name)     \
+  COMPILE_ASSERT(static_cast<int>(webkit_name) == static_cast<int>(pp_name), \
+                 mismatching_enums)
 
 // <embed>/<object> attributes.
 const char kWidth[] = "width";
@@ -313,7 +323,8 @@ COMPILE_ASSERT_PRINT_SCALING_MATCHING_ENUM(
     blink::WebPrintScalingOptionFitToPrintableArea,
     PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA);
 COMPILE_ASSERT_PRINT_SCALING_MATCHING_ENUM(
-    blink::WebPrintScalingOptionSourceSize, PP_PRINTSCALINGOPTION_SOURCE_SIZE);
+    blink::WebPrintScalingOptionSourceSize,
+    PP_PRINTSCALINGOPTION_SOURCE_SIZE);
 
 // Sets |*security_origin| to be the WebKit security origin associated with the
 // document containing the given plugin instance. On success, returns true. If
@@ -334,9 +345,9 @@ bool SecurityOriginForInstance(PP_Instance instance_id,
 // Convert the given vector to an array of C-strings. The strings in the
 // returned vector are only guaranteed valid so long as the vector of strings
 // is not modified.
-scoped_ptr<const char*[]> StringVectorToArgArray(
+scoped_ptr<const char* []> StringVectorToArgArray(
     const std::vector<std::string>& vector) {
-  scoped_ptr<const char*[]> array(new const char*[vector.size()]);
+  scoped_ptr<const char * []> array(new const char* [vector.size()]);
   for (size_t i = 0; i < vector.size(); ++i)
     array[i] = vector[i].c_str();
   return array.Pass();
@@ -378,12 +389,10 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
     plugin_->OnLockMouseACK(succeeded);
   }
 
-  virtual void OnMouseLockLost() OVERRIDE {
-    plugin_->OnMouseLockLost();
-  }
+  virtual void OnMouseLockLost() OVERRIDE { plugin_->OnMouseLockLost(); }
 
-  virtual bool HandleMouseLockedInputEvent(
-      const blink::WebMouseEvent &event) OVERRIDE {
+  virtual bool HandleMouseLockedInputEvent(const blink::WebMouseEvent& event)
+      OVERRIDE {
     plugin_->HandleMouseLockedInputEvent(event);
     return true;
   }
@@ -391,7 +400,6 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
  private:
   PepperPluginInstanceImpl* plugin_;
 };
-
 
 }  // namespace
 
@@ -407,27 +415,26 @@ PepperPluginInstanceImpl* PepperPluginInstanceImpl::Create(
       PPP_Instance_Combined::Create(get_plugin_interface_func);
   if (!ppp_instance_combined)
     return NULL;
-  return new PepperPluginInstanceImpl(render_frame, module,
-                                      ppp_instance_combined, container,
-                                      plugin_url);
+  return new PepperPluginInstanceImpl(
+      render_frame, module, ppp_instance_combined, container, plugin_url);
 }
 
 PepperPluginInstanceImpl::ExternalDocumentLoader::ExternalDocumentLoader()
-    : finished_loading_(false) {
-}
+    : finished_loading_(false) {}
 
-PepperPluginInstanceImpl::ExternalDocumentLoader::~ExternalDocumentLoader() {
-}
+PepperPluginInstanceImpl::ExternalDocumentLoader::~ExternalDocumentLoader() {}
 
 void PepperPluginInstanceImpl::ExternalDocumentLoader::ReplayReceivedData(
     WebURLLoaderClient* document_loader) {
-  for (std::list<std::string>::iterator it = data_.begin();
-       it != data_.end(); ++it) {
-    document_loader->didReceiveData(NULL, it->c_str(), it->length(),
-                                    0 /* encoded_data_length */);
+  for (std::list<std::string>::iterator it = data_.begin(); it != data_.end();
+       ++it) {
+    document_loader->didReceiveData(
+        NULL, it->c_str(), it->length(), 0 /* encoded_data_length */);
   }
   if (finished_loading_) {
-    document_loader->didFinishLoading(NULL, 0 /* finish_time */,
+    document_loader->didFinishLoading(
+        NULL,
+        0 /* finish_time */,
         blink::WebURLLoaderClient::kUnknownEncodedDataLength);
   }
   if (error_.get()) {
@@ -459,11 +466,9 @@ void PepperPluginInstanceImpl::ExternalDocumentLoader::didFail(
 }
 
 PepperPluginInstanceImpl::GamepadImpl::GamepadImpl()
-    : Resource(ppapi::Resource::Untracked()) {
-}
+    : Resource(ppapi::Resource::Untracked()) {}
 
-PepperPluginInstanceImpl::GamepadImpl::~GamepadImpl() {
-}
+PepperPluginInstanceImpl::GamepadImpl::~GamepadImpl() {}
 
 PPB_Gamepad_API* PepperPluginInstanceImpl::GamepadImpl::AsPPB_Gamepad_API() {
   return this;
@@ -474,8 +479,7 @@ void PepperPluginInstanceImpl::GamepadImpl::Sample(
     PP_GamepadsSampleData* data) {
   blink::WebGamepads webkit_data;
   RenderThreadImpl::current()->SampleGamepads(&webkit_data);
-  ConvertWebKitGamepadData(
-      bit_cast<ppapi::WebKitGamepads>(webkit_data), data);
+  ConvertWebKitGamepadData(bit_cast<ppapi::WebKitGamepads>(webkit_data), data);
 }
 
 PepperPluginInstanceImpl::PepperPluginInstanceImpl(
@@ -597,7 +601,8 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   PluginObjectSet plugin_object_copy;
   live_plugin_objects_.swap(plugin_object_copy);
   for (PluginObjectSet::iterator i = plugin_object_copy.begin();
-       i != plugin_object_copy.end(); ++i)
+       i != plugin_object_copy.end();
+       ++i)
     delete *i;
 
   if (TrackedCallback::IsPending(lock_mouse_callback_))
@@ -667,9 +672,7 @@ void PepperPluginInstanceImpl::Delete() {
   container_ = NULL;
 }
 
-bool PepperPluginInstanceImpl::is_deleted() const {
-  return is_deleted_;
-}
+bool PepperPluginInstanceImpl::is_deleted() const { return is_deleted_; }
 
 void PepperPluginInstanceImpl::Paint(WebCanvas* canvas,
                                      const gfx::Rect& plugin_rect,
@@ -695,8 +698,8 @@ void PepperPluginInstanceImpl::InvalidateRect(const gfx::Rect& rect) {
     else
       fullscreen_container_->InvalidateRect(rect);
   } else {
-    if (!container_ ||
-        view_data_.rect.size.width == 0 || view_data_.rect.size.height == 0)
+    if (!container_ || view_data_.rect.size.width == 0 ||
+        view_data_.rect.size.height == 0)
       return;  // Nothing to do.
     if (rect.IsEmpty())
       container_->invalidate();
@@ -769,8 +772,8 @@ void PepperPluginInstanceImpl::InstanceCrashed() {
 static void SetGPUHistogram(const ppapi::Preferences& prefs,
                             const std::vector<std::string>& arg_names,
                             const std::vector<std::string>& arg_values) {
-  // Calculate a histogram to let us determine how likely people are to try to
-  // run Stage3D content on machines that have it blacklisted.
+// Calculate a histogram to let us determine how likely people are to try to
+// run Stage3D content on machines that have it blacklisted.
 #if defined(OS_WIN)
   bool needs_gpu = false;
   bool is_xp = base::win::GetVersion() <= base::win::VERSION_XP;
@@ -792,8 +795,8 @@ static void SetGPUHistogram(const ppapi::Preferences& prefs,
   // 5 : No 3D content and GPU is not blacklisted on XP
   // 6 : 3D content but GPU is blacklisted on XP
   // 7 : 3D content and GPU is not blacklisted on XP
-  UMA_HISTOGRAM_ENUMERATION("Flash.UsesGPU",
-      is_xp * 4 + needs_gpu * 2 + prefs.is_webgl_supported, 8);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Flash.UsesGPU", is_xp * 4 + needs_gpu * 2 + prefs.is_webgl_supported, 8);
 #endif
 }
 
@@ -810,18 +813,17 @@ bool PepperPluginInstanceImpl::Initialize(
   UpdateTouchEventRequest();
   container_->setWantsWheelEvents(IsAcceptingWheelEvents());
 
-  SetGPUHistogram(ppapi::Preferences(
-      render_frame_->render_view()->webkit_preferences()),
-      arg_names, arg_values);
+  SetGPUHistogram(
+      ppapi::Preferences(render_frame_->render_view()->webkit_preferences()),
+      arg_names,
+      arg_values);
 
   argn_ = arg_names;
   argv_ = arg_values;
-  scoped_ptr<const char*[]> argn_array(StringVectorToArgArray(argn_));
-  scoped_ptr<const char*[]> argv_array(StringVectorToArgArray(argv_));
-  bool success =  PP_ToBool(instance_interface_->DidCreate(pp_instance(),
-                                                           argn_.size(),
-                                                           argn_array.get(),
-                                                           argv_array.get()));
+  scoped_ptr<const char * []> argn_array(StringVectorToArgArray(argn_));
+  scoped_ptr<const char * []> argv_array(StringVectorToArgArray(argv_));
+  bool success = PP_ToBool(instance_interface_->DidCreate(
+      pp_instance(), argn_.size(), argn_array.get(), argv_array.get()));
   if (success)
     message_channel_->StopQueueingJavaScriptMessages();
   return success;
@@ -883,20 +885,24 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
 }
 
 bool PepperPluginInstanceImpl::SendCompositionEventToPlugin(
-    PP_InputEvent_Type type, const base::string16& text) {
+    PP_InputEvent_Type type,
+    const base::string16& text) {
   std::vector<blink::WebCompositionUnderline> empty;
   return SendCompositionEventWithUnderlineInformationToPlugin(
-      type, text, empty, static_cast<int>(text.size()),
+      type,
+      text,
+      empty,
+      static_cast<int>(text.size()),
       static_cast<int>(text.size()));
 }
 
-bool PepperPluginInstanceImpl::
-    SendCompositionEventWithUnderlineInformationToPlugin(
-        PP_InputEvent_Type type,
-        const base::string16& text,
-        const std::vector<blink::WebCompositionUnderline>& underlines,
-        int selection_start,
-        int selection_end) {
+bool
+PepperPluginInstanceImpl::SendCompositionEventWithUnderlineInformationToPlugin(
+    PP_InputEvent_Type type,
+    const base::string16& text,
+    const std::vector<blink::WebCompositionUnderline>& underlines,
+    int selection_start,
+    int selection_end) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
 
@@ -910,8 +916,8 @@ bool PepperPluginInstanceImpl::
 
   ppapi::InputEventData event;
   event.event_type = type;
-  event.event_time_stamp = ppapi::TimeTicksToPPTimeTicks(
-      base::TimeTicks::Now());
+  event.event_time_stamp =
+      ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
 
   // Convert UTF16 text to UTF8 with offset conversion.
   std::vector<size_t> utf16_offsets;
@@ -925,14 +931,16 @@ bool PepperPluginInstanceImpl::
   event.character_text = base::UTF16ToUTF8AndAdjustOffsets(text, &utf8_offsets);
 
   // Set the converted selection range.
-  event.composition_selection_start = (utf8_offsets[0] == std::string::npos ?
-      event.character_text.size() : utf8_offsets[0]);
-  event.composition_selection_end = (utf8_offsets[1] == std::string::npos ?
-      event.character_text.size() : utf8_offsets[1]);
+  event.composition_selection_start =
+      (utf8_offsets[0] == std::string::npos ? event.character_text.size()
+                                            : utf8_offsets[0]);
+  event.composition_selection_end =
+      (utf8_offsets[1] == std::string::npos ? event.character_text.size()
+                                            : utf8_offsets[1]);
 
   // Set the converted segmentation points.
   // Be sure to add 0 and size(), and remove duplication or errors.
-  std::set<size_t> offset_set(utf8_offsets.begin()+2, utf8_offsets.end());
+  std::set<size_t> offset_set(utf8_offsets.begin() + 2, utf8_offsets.end());
   offset_set.insert(0);
   offset_set.insert(event.character_text.size());
   offset_set.erase(std::string::npos);
@@ -945,7 +953,7 @@ bool PepperPluginInstanceImpl::
       std::vector<uint32_t>::iterator it =
           std::find(event.composition_segment_offsets.begin(),
                     event.composition_segment_offsets.end(),
-                    utf8_offsets[2*i+2]);
+                    utf8_offsets[2 * i + 2]);
       if (it != event.composition_segment_offsets.end()) {
         event.composition_target_segment =
             it - event.composition_segment_offsets.begin();
@@ -988,7 +996,10 @@ bool PepperPluginInstanceImpl::HandleCompositionUpdate(
     int selection_end) {
   return SendCompositionEventWithUnderlineInformationToPlugin(
       PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE,
-      text, underlines, selection_start, selection_end);
+      text,
+      underlines,
+      selection_start,
+      selection_end);
 }
 
 bool PepperPluginInstanceImpl::HandleCompositionEnd(
@@ -998,8 +1009,7 @@ bool PepperPluginInstanceImpl::HandleCompositionEnd(
 }
 
 bool PepperPluginInstanceImpl::HandleTextInput(const base::string16& text) {
-  return SendCompositionEventToPlugin(PP_INPUTEVENT_TYPE_IME_TEXT,
-                                      text);
+  return SendCompositionEventToPlugin(PP_INPUTEVENT_TYPE_IME_TEXT, text);
 }
 
 void PepperPluginInstanceImpl::GetSurroundingText(base::string16* text,
@@ -1016,7 +1026,7 @@ void PepperPluginInstanceImpl::GetSurroundingText(base::string16* text,
 
 bool PepperPluginInstanceImpl::IsPluginAcceptingCompositionEvents() const {
   return (filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_IME) ||
-      (input_event_mask_ & PP_INPUTEVENT_CLASS_IME);
+         (input_event_mask_ & PP_INPUTEVENT_CLASS_IME);
 }
 
 gfx::Rect PepperPluginInstanceImpl::GetCaretBounds() const {
@@ -1024,7 +1034,8 @@ gfx::Rect PepperPluginInstanceImpl::GetCaretBounds() const {
     // If it is never set by the plugin, use the bottom left corner.
     return gfx::Rect(view_data_.rect.point.x,
                      view_data_.rect.point.y + view_data_.rect.size.height,
-                     0, 0);
+                     0,
+                     0);
   }
 
   // TODO(kinaba) Take CSS transformation into accont.
@@ -1068,7 +1079,7 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
     if ((filtered_input_event_mask_ & event_class) ||
         (input_event_mask_ & event_class)) {
       // Actually send the event.
-      std::vector< ppapi::InputEventData > events;
+      std::vector<ppapi::InputEventData> events;
       CreateInputEventData(event, &events);
 
       // Allow the user gesture to be pending after the plugin handles the
@@ -1089,8 +1100,8 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
         else
           rv = true;  // Unfiltered events are assumed to be handled.
         scoped_refptr<PPB_InputEvent_Shared> event_resource(
-            new PPB_InputEvent_Shared(ppapi::OBJECT_IS_IMPL,
-                                      pp_instance(), events[i]));
+            new PPB_InputEvent_Shared(
+                ppapi::OBJECT_IS_IMPL, pp_instance(), events[i]));
 
         rv |= PP_ToBool(plugin_input_event_interface_->HandleInputEvent(
             pp_instance(), event_resource->pp_resource()));
@@ -1140,8 +1151,8 @@ void PepperPluginInstanceImpl::ViewChanged(
   view_data_.rect = PP_FromGfxRect(position);
   view_data_.clip_rect = PP_FromGfxRect(clip);
   view_data_.device_scale = container_->deviceScaleFactor();
-  view_data_.css_scale = container_->pageZoomFactor() *
-                         container_->pageScaleFactor();
+  view_data_.css_scale =
+      container_->pageZoomFactor() * container_->pageScaleFactor();
 
   if (desired_fullscreen_state_ || view_data_.is_fullscreen) {
     WebElement element = container_->element();
@@ -1308,10 +1319,9 @@ bool PepperPluginInstanceImpl::StartFind(const base::string16& search_text,
     return false;
   find_identifier_ = identifier;
   return PP_ToBool(
-      plugin_find_interface_->StartFind(
-          pp_instance(),
-          base::UTF16ToUTF8(search_text).c_str(),
-          PP_FromBool(case_sensitive)));
+      plugin_find_interface_->StartFind(pp_instance(),
+                                        base::UTF16ToUTF8(search_text).c_str(),
+                                        PP_FromBool(case_sensitive)));
 }
 
 void PepperPluginInstanceImpl::SelectFindResult(bool forward) {
@@ -1335,9 +1345,8 @@ bool PepperPluginInstanceImpl::LoadFindInterface() {
   if (!module_->permissions().HasPermission(ppapi::PERMISSION_PRIVATE))
     return false;
   if (!plugin_find_interface_) {
-    plugin_find_interface_ =
-        static_cast<const PPP_Find_Private*>(module_->GetPluginInterface(
-            PPP_FIND_PRIVATE_INTERFACE));
+    plugin_find_interface_ = static_cast<const PPP_Find_Private*>(
+        module_->GetPluginInterface(PPP_FIND_PRIVATE_INTERFACE));
   }
 
   return !!plugin_find_interface_;
@@ -1346,9 +1355,8 @@ bool PepperPluginInstanceImpl::LoadFindInterface() {
 bool PepperPluginInstanceImpl::LoadInputEventInterface() {
   if (!checked_for_plugin_input_event_interface_) {
     checked_for_plugin_input_event_interface_ = true;
-    plugin_input_event_interface_ =
-        static_cast<const PPP_InputEvent*>(module_->GetPluginInterface(
-            PPP_INPUT_EVENT_INTERFACE));
+    plugin_input_event_interface_ = static_cast<const PPP_InputEvent*>(
+        module_->GetPluginInterface(PPP_INPUT_EVENT_INTERFACE));
   }
   return !!plugin_input_event_interface_;
 }
@@ -1356,18 +1364,16 @@ bool PepperPluginInstanceImpl::LoadInputEventInterface() {
 bool PepperPluginInstanceImpl::LoadMessagingInterface() {
   if (!checked_for_plugin_messaging_interface_) {
     checked_for_plugin_messaging_interface_ = true;
-    plugin_messaging_interface_ =
-        static_cast<const PPP_Messaging*>(module_->GetPluginInterface(
-            PPP_MESSAGING_INTERFACE));
+    plugin_messaging_interface_ = static_cast<const PPP_Messaging*>(
+        module_->GetPluginInterface(PPP_MESSAGING_INTERFACE));
   }
   return !!plugin_messaging_interface_;
 }
 
 bool PepperPluginInstanceImpl::LoadMouseLockInterface() {
   if (!plugin_mouse_lock_interface_) {
-    plugin_mouse_lock_interface_ =
-        static_cast<const PPP_MouseLock*>(module_->GetPluginInterface(
-            PPP_MOUSELOCK_INTERFACE));
+    plugin_mouse_lock_interface_ = static_cast<const PPP_MouseLock*>(
+        module_->GetPluginInterface(PPP_MOUSELOCK_INTERFACE));
   }
 
   return !!plugin_mouse_lock_interface_;
@@ -1376,9 +1382,8 @@ bool PepperPluginInstanceImpl::LoadMouseLockInterface() {
 bool PepperPluginInstanceImpl::LoadPdfInterface() {
   if (!checked_for_plugin_pdf_interface_) {
     checked_for_plugin_pdf_interface_ = true;
-    plugin_pdf_interface_ =
-        static_cast<const PPP_Pdf_1*>(module_->GetPluginInterface(
-            PPP_PDF_INTERFACE_1));
+    plugin_pdf_interface_ = static_cast<const PPP_Pdf_1*>(
+        module_->GetPluginInterface(PPP_PDF_INTERFACE_1));
   }
 
   return !!plugin_pdf_interface_;
@@ -1404,8 +1409,8 @@ bool PepperPluginInstanceImpl::LoadPrivateInterface() {
   //
   // If this is *not* a NaCl plugin, original_module_ will never be set; we talk
   // to the "real" module.
-  scoped_refptr<PluginModule> module = original_module_ ? original_module_ :
-                                                          module_;
+  scoped_refptr<PluginModule> module =
+      original_module_ ? original_module_ : module_;
   // Only check for the interface if the plugin has private permission.
   if (!module->permissions().HasPermission(ppapi::PERMISSION_PRIVATE))
     return false;
@@ -1419,18 +1424,16 @@ bool PepperPluginInstanceImpl::LoadPrivateInterface() {
 
 bool PepperPluginInstanceImpl::LoadSelectionInterface() {
   if (!plugin_selection_interface_) {
-    plugin_selection_interface_ =
-        static_cast<const PPP_Selection_Dev*>(module_->GetPluginInterface(
-            PPP_SELECTION_DEV_INTERFACE));
+    plugin_selection_interface_ = static_cast<const PPP_Selection_Dev*>(
+        module_->GetPluginInterface(PPP_SELECTION_DEV_INTERFACE));
   }
   return !!plugin_selection_interface_;
 }
 
 bool PepperPluginInstanceImpl::LoadTextInputInterface() {
   if (!plugin_textinput_interface_) {
-    plugin_textinput_interface_ =
-        static_cast<const PPP_TextInput_Dev*>(module_->GetPluginInterface(
-            PPP_TEXTINPUT_DEV_INTERFACE));
+    plugin_textinput_interface_ = static_cast<const PPP_TextInput_Dev*>(
+        module_->GetPluginInterface(PPP_TEXTINPUT_DEV_INTERFACE));
   }
 
   return !!plugin_textinput_interface_;
@@ -1438,9 +1441,8 @@ bool PepperPluginInstanceImpl::LoadTextInputInterface() {
 
 bool PepperPluginInstanceImpl::LoadZoomInterface() {
   if (!plugin_zoom_interface_) {
-    plugin_zoom_interface_ =
-        static_cast<const PPP_Zoom_Dev*>(module_->GetPluginInterface(
-            PPP_ZOOM_DEV_INTERFACE));
+    plugin_zoom_interface_ = static_cast<const PPP_Zoom_Dev*>(
+        module_->GetPluginInterface(PPP_ZOOM_DEV_INTERFACE));
   }
 
   return !!plugin_zoom_interface_;
@@ -1498,14 +1500,15 @@ void PepperPluginInstanceImpl::SendFocusChangeNotification() {
 void PepperPluginInstanceImpl::UpdateTouchEventRequest() {
   bool raw_touch = (filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH) ||
                    (input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH);
-  container_->requestTouchEventType(raw_touch ?
-      blink::WebPluginContainer::TouchEventRequestTypeRaw :
-      blink::WebPluginContainer::TouchEventRequestTypeSynthesizedMouse);
+  container_->requestTouchEventType(
+      raw_touch
+          ? blink::WebPluginContainer::TouchEventRequestTypeRaw
+          : blink::WebPluginContainer::TouchEventRequestTypeSynthesizedMouse);
 }
 
 bool PepperPluginInstanceImpl::IsAcceptingWheelEvents() const {
   return (filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_WHEEL) ||
-      (input_event_mask_ & PP_INPUTEVENT_CLASS_WHEEL);
+         (input_event_mask_ & PP_INPUTEVENT_CLASS_WHEEL);
 }
 
 void PepperPluginInstanceImpl::ScheduleAsyncDidChangeView() {
@@ -1541,17 +1544,16 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
   last_sent_view_data_ = view_data_;
   ScopedPPResource resource(
       ScopedPPResource::PassRef(),
-      (new PPB_View_Shared(ppapi::OBJECT_IS_IMPL,
-                           pp_instance(), view_data_))->GetReference());
+      (new PPB_View_Shared(ppapi::OBJECT_IS_IMPL, pp_instance(), view_data_))
+          ->GetReference());
 
   UpdateLayerTransform();
 
   // It's possible that Delete() has been called but the renderer hasn't
   // released its reference to this object yet.
   if (instance_interface_) {
-    instance_interface_->DidChangeView(pp_instance(), resource,
-                                       &view_data_.rect,
-                                       &view_data_.clip_rect);
+    instance_interface_->DidChangeView(
+        pp_instance(), resource, &view_data_.rect, &view_data_.clip_rect);
   }
 }
 
@@ -1608,11 +1610,10 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
   print_settings.dpi = print_params.printerDPI;
   print_settings.orientation = PP_PRINTORIENTATION_NORMAL;
   print_settings.grayscale = PP_FALSE;
-  print_settings.print_scaling_option = static_cast<PP_PrintScalingOption_Dev>(
-      print_params.printScalingOption);
+  print_settings.print_scaling_option =
+      static_cast<PP_PrintScalingOption_Dev>(print_params.printScalingOption);
   print_settings.format = format;
-  num_pages = plugin_print_interface_->Begin(pp_instance(),
-                                             &print_settings);
+  num_pages = plugin_print_interface_->Begin(pp_instance(), &print_settings);
   if (!num_pages)
     return 0;
   current_print_settings_ = print_settings;
@@ -1699,9 +1700,9 @@ void PepperPluginInstanceImpl::RotateView(WebPlugin::RotationType type) {
   if (!LoadPdfInterface())
     return;
   PP_PrivatePageTransformType transform_type =
-      type == WebPlugin::RotationType90Clockwise ?
-      PP_PRIVATEPAGETRANSFORMTYPE_ROTATE_90_CW :
-      PP_PRIVATEPAGETRANSFORMTYPE_ROTATE_90_CCW;
+      type == WebPlugin::RotationType90Clockwise
+          ? PP_PRIVATEPAGETRANSFORMTYPE_ROTATE_90_CW
+          : PP_PRIVATEPAGETRANSFORMTYPE_ROTATE_90_CCW;
   plugin_pdf_interface_->Transform(pp_instance(), transform_type);
   // NOTE: plugin instance may have been deleted.
 }
@@ -1726,9 +1727,9 @@ bool PepperPluginInstanceImpl::SetFullscreen(bool fullscreen) {
 
   if (!render_frame_)
     return false;
-  if (fullscreen &&
-      !render_frame_->render_view()->renderer_preferences().
-          plugin_fullscreen_allowed)
+  if (fullscreen && !render_frame_->render_view()
+                         ->renderer_preferences()
+                         .plugin_fullscreen_allowed)
     return false;
 
   // Check whether we are trying to switch while the state is in transition.
@@ -1822,9 +1823,8 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
   HMODULE pdf_module = GetModuleHandle(L"pdf.dll");
   if (!pdf_module)
     return false;
-  RenderPDFPageToDCProc render_proc =
-      reinterpret_cast<RenderPDFPageToDCProc>(
-          GetProcAddress(pdf_module, "RenderPDFPageToDC"));
+  RenderPDFPageToDCProc render_proc = reinterpret_cast<RenderPDFPageToDCProc>(
+      GetProcAddress(pdf_module, "RenderPDFPageToDC"));
   if (!render_proc)
     return false;
 #endif  // defined(OS_WIN)
@@ -1841,7 +1841,7 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
     ret = metafile->InitFromData(mapper.data(), mapper.size());
 #elif defined(OS_WIN)
   printing::Metafile* metafile =
-    printing::MetafileSkiaWrapper::GetMetafileFromCanvas(*canvas);
+      printing::MetafileSkiaWrapper::GetMetafileFromCanvas(*canvas);
   if (metafile) {
     // We only have a metafile when doing print preview, so we just want to
     // pass the PDF off to preview.
@@ -1852,10 +1852,10 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
     HDC dc = skia::BeginPlatformPaint(canvas);
     DrawEmptyRectangle(dc);
     gfx::Size size_in_pixels;
-    size_in_pixels.set_width(printing::ConvertUnit(
-        current_print_settings_.printable_area.size.width,
-        static_cast<int>(printing::kPointsPerInch),
-        current_print_settings_.dpi));
+    size_in_pixels.set_width(
+        printing::ConvertUnit(current_print_settings_.printable_area.size.width,
+                              static_cast<int>(printing::kPointsPerInch),
+                              current_print_settings_.dpi));
     size_in_pixels.set_height(printing::ConvertUnit(
         current_print_settings_.printable_area.size.height,
         static_cast<int>(printing::kPointsPerInch),
@@ -1870,10 +1870,10 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
     // original coordinates and we'll be able to print in full resolution.
     // Before playback we'll need to counter the scaling up that will happen
     // in the browser (printed_document_win.cc).
-    double dynamic_scale = gfx::CalculatePageScale(dc, size_in_pixels.width(),
-                                                   size_in_pixels.height());
+    double dynamic_scale = gfx::CalculatePageScale(
+        dc, size_in_pixels.width(), size_in_pixels.height());
     double page_scale = static_cast<double>(printing::kPointsPerInch) /
-        static_cast<double>(current_print_settings_.dpi);
+                        static_cast<double>(current_print_settings_.dpi);
 
     if (dynamic_scale < page_scale) {
       page_scale = dynamic_scale;
@@ -1883,10 +1883,21 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
 
     gfx::ScaleDC(dc, page_scale);
 
-    ret = render_proc(static_cast<unsigned char*>(mapper.data()), mapper.size(),
-                      0, dc, current_print_settings_.dpi,
-                      current_print_settings_.dpi, 0, 0, size_in_pixels.width(),
-                      size_in_pixels.height(), true, false, true, true, true);
+    ret = render_proc(static_cast<unsigned char*>(mapper.data()),
+                      mapper.size(),
+                      0,
+                      dc,
+                      current_print_settings_.dpi,
+                      current_print_settings_.dpi,
+                      0,
+                      0,
+                      size_in_pixels.width(),
+                      size_in_pixels.height(),
+                      true,
+                      false,
+                      true,
+                      true,
+                      true);
     skia::EndPlatformPaint(canvas);
   }
 #endif  // defined(OS_WIN)
@@ -1967,13 +1978,11 @@ bool PepperPluginInstanceImpl::PrepareTextureMailbox(
     bool use_shared_memory) {
   if (!bound_graphics_2d_platform_)
     return false;
-  return bound_graphics_2d_platform_->PrepareTextureMailbox(
-      mailbox, release_callback);
+  return bound_graphics_2d_platform_->PrepareTextureMailbox(mailbox,
+                                                            release_callback);
 }
 
-void PepperPluginInstanceImpl::OnDestruct() {
-  render_frame_ = NULL;
-}
+void PepperPluginInstanceImpl::OnDestruct() { render_frame_ = NULL; }
 
 void PepperPluginInstanceImpl::AddPluginObject(PluginObject* plugin_object) {
   DCHECK(live_plugin_objects_.find(plugin_object) ==
@@ -2036,7 +2045,8 @@ void PepperPluginInstanceImpl::SimulateInputEvent(
           view_data_.rect.point.x + view_data_.rect.size.width / 2,
           view_data_.rect.point.y + view_data_.rect.size.height / 2);
   for (std::vector<linked_ptr<WebInputEvent> >::iterator it = events.begin();
-      it != events.end(); ++it) {
+       it != events.end();
+       ++it) {
     web_view->handleInputEvent(*it->get());
   }
 }
@@ -2094,14 +2104,13 @@ void PepperPluginInstanceImpl::SimulateImeSetCompositionEvent(
 }
 
 ContentDecryptorDelegate*
-    PepperPluginInstanceImpl::GetContentDecryptorDelegate() {
+PepperPluginInstanceImpl::GetContentDecryptorDelegate() {
   if (content_decryptor_delegate_)
     return content_decryptor_delegate_.get();
 
   const PPP_ContentDecryptor_Private* plugin_decryption_interface =
       static_cast<const PPP_ContentDecryptor_Private*>(
-          module_->GetPluginInterface(
-              PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE));
+          module_->GetPluginInterface(PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE));
   if (!plugin_decryption_interface)
     return NULL;
 
@@ -2149,8 +2158,10 @@ PP_Bool PepperPluginInstanceImpl::BindGraphics(PP_Instance instance,
   }
 
   EnterResourceNoLock<PPB_Graphics3D_API> enter_3d(device, false);
-  PPB_Graphics3D_Impl* graphics_3d = enter_3d.succeeded() ?
-      static_cast<PPB_Graphics3D_Impl*>(enter_3d.object()) : NULL;
+  PPB_Graphics3D_Impl* graphics_3d =
+      enter_3d.succeeded()
+          ? static_cast<PPB_Graphics3D_Impl*>(enter_3d.object())
+          : NULL;
 
   if (graphics_2d) {
     if (graphics_2d->BindToInstance(this)) {
@@ -2234,11 +2245,11 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
   bool ok = false;
   if (IsProcessingUserGesture()) {
     blink::WebScopedUserGesture user_gesture(CurrentUserGestureToken());
-    ok = WebBindings::evaluate(NULL, frame->windowObject(), &np_script,
-                               &result);
+    ok =
+        WebBindings::evaluate(NULL, frame->windowObject(), &np_script, &result);
   } else {
-    ok = WebBindings::evaluate(NULL, frame->windowObject(), &np_script,
-                               &result);
+    ok =
+        WebBindings::evaluate(NULL, frame->windowObject(), &np_script, &result);
   }
   if (!ok) {
     // TryCatch doesn't catch the exceptions properly. Since this is only for
@@ -2339,7 +2350,6 @@ void PepperPluginInstanceImpl::DecoderResetDone(
   content_decryptor_delegate_->DecoderResetDone(decoder_type, request_id);
 }
 
-
 void PepperPluginInstanceImpl::DeliverFrame(
     PP_Instance instance,
     PP_Resource decrypted_frame,
@@ -2358,7 +2368,8 @@ void PepperPluginInstanceImpl::SetPluginToHandleFindRequests(
     PP_Instance instance) {
   if (!LoadFindInterface())
     return;
-  bool is_main_frame = render_frame_ &&
+  bool is_main_frame =
+      render_frame_ &&
       render_frame_->GetRenderView()->GetMainRenderFrame() == render_frame_;
   if (!is_main_frame)
     return;
@@ -2397,7 +2408,8 @@ void PepperPluginInstanceImpl::SetTickmarks(PP_Instance instance,
     tickmarks_converted[i] = blink::WebRect(tickmarks[i].point.x,
                                             tickmarks[i].point.y,
                                             tickmarks[i].size.width,
-                                            tickmarks[i].size.height);;
+                                            tickmarks[i].size.height);
+    ;
   }
   blink::WebFrame* frame = render_frame_->GetWebFrame();
   frame->setTickmarks(tickmarks_converted);
@@ -2501,8 +2513,8 @@ void PepperPluginInstanceImpl::ZoomLimitsChanged(PP_Instance instance,
   }
   double minimum_level = ZoomFactorToZoomLevel(minimum_factor);
   double maximum_level = ZoomFactorToZoomLevel(maximum_factor);
-  render_frame_->render_view()->webview()->zoomLimitsChanged(
-      minimum_level, maximum_level);
+  render_frame_->render_view()->webview()->zoomLimitsChanged(minimum_level,
+                                                             maximum_level);
 }
 
 void PepperPluginInstanceImpl::PostMessage(PP_Instance instance,
@@ -2649,8 +2661,7 @@ PP_Var PepperPluginInstanceImpl::ResolveRelativeToDocument(
   WebElement plugin_element = container()->element();
   GURL document_url = plugin_element.document().baseURL();
   return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(
-      document_url.Resolve(relative_string->value()),
-      components);
+      document_url.Resolve(relative_string->value()), components);
 }
 
 PP_Bool PepperPluginInstanceImpl::DocumentCanRequest(PP_Instance instance,
@@ -2695,8 +2706,7 @@ PP_Var PepperPluginInstanceImpl::GetDocumentURL(
 PP_Var PepperPluginInstanceImpl::GetPluginInstanceURL(
     PP_Instance instance,
     PP_URLComponents_Dev* components) {
-  return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(plugin_url_,
-                                                      components);
+  return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(plugin_url_, components);
 }
 
 PP_Var PepperPluginInstanceImpl::GetPluginReferrerURL(
@@ -2759,10 +2769,10 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
   plugin_zoom_interface_ = NULL;
 
   // Re-send the DidCreate event via the proxy.
-  scoped_ptr<const char*[]> argn_array(StringVectorToArgArray(argn_));
-  scoped_ptr<const char*[]> argv_array(StringVectorToArgArray(argv_));
-  if (!instance_interface_->DidCreate(pp_instance(), argn_.size(),
-                                      argn_array.get(), argv_array.get()))
+  scoped_ptr<const char * []> argn_array(StringVectorToArgArray(argn_));
+  scoped_ptr<const char * []> argv_array(StringVectorToArgArray(argv_));
+  if (!instance_interface_->DidCreate(
+          pp_instance(), argn_.size(), argn_array.get(), argv_array.get()))
     return PP_EXTERNAL_PLUGIN_ERROR_INSTANCE;
   message_channel_->StopQueueingJavaScriptMessages();
 
@@ -2790,13 +2800,10 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
 
 bool PepperPluginInstanceImpl::IsValidInstanceOf(PluginModule* module) {
   DCHECK(module);
-  return module == module_.get() ||
-         module == original_module_.get();
+  return module == module_.get() || module == original_module_.get();
 }
 
-NPP PepperPluginInstanceImpl::instanceNPP() {
-  return npp_.get();
-}
+NPP PepperPluginInstanceImpl::instanceNPP() { return npp_.get(); }
 
 PepperPluginInstance* PepperPluginInstance::Get(PP_Instance instance_id) {
   return HostGlobals::Get()->GetInstance(instance_id);
@@ -2810,17 +2817,13 @@ blink::WebPluginContainer* PepperPluginInstanceImpl::GetContainer() {
   return container_;
 }
 
-v8::Isolate* PepperPluginInstanceImpl::GetIsolate() const {
-  return isolate_;
-}
+v8::Isolate* PepperPluginInstanceImpl::GetIsolate() const { return isolate_; }
 
 ppapi::VarTracker* PepperPluginInstanceImpl::GetVarTracker() {
   return HostGlobals::Get()->GetVarTracker();
 }
 
-const GURL& PepperPluginInstanceImpl::GetPluginURL() {
-  return plugin_url_;
-}
+const GURL& PepperPluginInstanceImpl::GetPluginURL() { return plugin_url_; }
 
 base::FilePath PepperPluginInstanceImpl::GetModulePath() {
   return module_->path();
@@ -2833,14 +2836,12 @@ PP_Resource PepperPluginInstanceImpl::CreateImage(gfx::ImageSkia* source_image,
   if (image_skia_rep.is_null() || image_skia_rep.scale() != scale)
     return 0;
 
-  scoped_refptr<PPB_ImageData_Impl> image_data(new PPB_ImageData_Impl(
-      pp_instance(),
-      PPB_ImageData_Impl::PLATFORM));
-  if (!image_data->Init(
-          PPB_ImageData_Impl::GetNativeImageDataFormat(),
-          image_skia_rep.pixel_width(),
-          image_skia_rep.pixel_height(),
-          false)) {
+  scoped_refptr<PPB_ImageData_Impl> image_data(
+      new PPB_ImageData_Impl(pp_instance(), PPB_ImageData_Impl::PLATFORM));
+  if (!image_data->Init(PPB_ImageData_Impl::GetNativeImageDataFormat(),
+                        image_skia_rep.pixel_width(),
+                        image_skia_rep.pixel_height(),
+                        false)) {
     return 0;
   }
 
@@ -2870,14 +2871,13 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::SwitchToOutOfProcessProxy(
       module_->CreateModuleForExternalPluginInstance());
 
   RendererPpapiHostImpl* renderer_ppapi_host =
-      external_plugin_module->CreateOutOfProcessModule(
-          render_frame_,
-          file_path,
-          permissions,
-          channel_handle,
-          plugin_pid,
-          plugin_child_id,
-          true);
+      external_plugin_module->CreateOutOfProcessModule(render_frame_,
+                                                       file_path,
+                                                       permissions,
+                                                       channel_handle,
+                                                       plugin_pid,
+                                                       plugin_child_id,
+                                                       true);
   if (!renderer_ppapi_host) {
     DLOG(ERROR) << "CreateExternalPluginModule() failed";
     return PP_EXTERNAL_PLUGIN_ERROR_MODULE;
@@ -2919,9 +2919,9 @@ bool PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
 
   if (!render_frame_)
     return false;
-  if (fullscreen &&
-      !render_frame_->render_view()->renderer_preferences().
-          plugin_fullscreen_allowed)
+  if (fullscreen && !render_frame_->render_view()
+                         ->renderer_preferences()
+                         .plugin_fullscreen_allowed)
     return false;
 
   // Unbind current 2D or 3D graphics context.
@@ -2970,10 +2970,8 @@ int32_t PepperPluginInstanceImpl::Navigate(
   ppapi::URLRequestInfoData completed_request = request;
 
   WebURLRequest web_request;
-  if (!CreateWebURLRequest(pp_instance_,
-                           &completed_request,
-                           frame,
-                           &web_request)) {
+  if (!CreateWebURLRequest(
+          pp_instance_, &completed_request, frame, &web_request)) {
     return PP_ERROR_FAILED;
   }
   web_request.setFirstPartyForCookies(document.firstPartyForCookies());
@@ -2995,8 +2993,7 @@ int32_t PepperPluginInstanceImpl::Navigate(
   }
 
   // Only GETs and POSTs are supported.
-  if (web_request.httpMethod() != "GET" &&
-      web_request.httpMethod() != "POST")
+  if (web_request.httpMethod() != "GET" && web_request.httpMethod() != "POST")
     return PP_ERROR_BADARGUMENT;
 
   WebString target_str = WebString::fromUTF8(target);
@@ -3013,8 +3010,7 @@ int PepperPluginInstanceImpl::MakePendingFileRefRendererHost(
       scoped_ptr<ppapi::host::ResourceHost>(file_ref_host));
 }
 
-void PepperPluginInstanceImpl::SetEmbedProperty(PP_Var key,
-                                                PP_Var value) {
+void PepperPluginInstanceImpl::SetEmbedProperty(PP_Var key, PP_Var value) {
   message_channel_->SetReadOnlyProperty(key, value);
 }
 
@@ -3023,8 +3019,7 @@ bool PepperPluginInstanceImpl::CanAccessMainFrame() const {
     return false;
   blink::WebDocument containing_document = container_->element().document();
 
-  if (!containing_document.frame() ||
-      !containing_document.frame()->view() ||
+  if (!containing_document.frame() || !containing_document.frame()->view() ||
       !containing_document.frame()->view()->mainFrame()) {
     return false;
   }
@@ -3090,7 +3085,7 @@ bool PepperPluginInstanceImpl::LockMouse() {
 }
 
 MouseLockDispatcher::LockTarget*
-    PepperPluginInstanceImpl::GetOrCreateLockTargetAdapter() {
+PepperPluginInstanceImpl::GetOrCreateLockTargetAdapter() {
   if (!lock_target_.get()) {
     lock_target_.reset(new PluginInstanceLockTarget(this));
   }
@@ -3127,11 +3122,13 @@ void PepperPluginInstanceImpl::DidDataFromWebURLResponse(
     scoped_refptr<ppapi::proxy::URLLoaderResource> loader_resource(
         new ppapi::proxy::URLLoaderResource(
             host_impl->in_process_router()->GetPluginConnection(pp_instance()),
-            pp_instance(), pending_host_id, data));
+            pp_instance(),
+            pending_host_id,
+            data));
 
     PP_Resource loader_pp_resource = loader_resource->GetReference();
-    if (!instance_interface_->HandleDocumentLoad(
-            pp_instance(), loader_pp_resource))
+    if (!instance_interface_->HandleDocumentLoad(pp_instance(),
+                                                 loader_pp_resource))
       loader_resource->Close();
     // We don't pass a ref into the plugin, if it wants one, it will have taken
     // an additional one.

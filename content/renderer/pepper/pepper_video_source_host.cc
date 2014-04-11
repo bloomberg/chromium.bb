@@ -28,21 +28,16 @@ namespace content {
 PepperVideoSourceHost::FrameReceiver::FrameReceiver(
     const base::WeakPtr<PepperVideoSourceHost>& host)
     : host_(host),
-      main_message_loop_proxy_(base::MessageLoopProxy::current()) {
-}
+      main_message_loop_proxy_(base::MessageLoopProxy::current()) {}
 
-PepperVideoSourceHost::FrameReceiver::~FrameReceiver() {
-}
+PepperVideoSourceHost::FrameReceiver::~FrameReceiver() {}
 
 bool PepperVideoSourceHost::FrameReceiver::GotFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
   // It's not safe to access the host from this thread, so post a task to our
   // main thread to transfer the new frame.
   main_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&FrameReceiver::OnGotFrame,
-                 this,
-                 frame));
+      FROM_HERE, base::Bind(&FrameReceiver::OnGotFrame, this, frame));
 
   return true;
 }
@@ -58,10 +53,9 @@ void PepperVideoSourceHost::FrameReceiver::OnGotFrame(
   }
 }
 
-PepperVideoSourceHost::PepperVideoSourceHost(
-    RendererPpapiHost* host,
-    PP_Instance instance,
-    PP_Resource resource)
+PepperVideoSourceHost::PepperVideoSourceHost(RendererPpapiHost* host,
+                                             PP_Instance instance,
+                                             PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
       source_handler_(new VideoSourceHandler(NULL)),
@@ -70,20 +64,18 @@ PepperVideoSourceHost::PepperVideoSourceHost(
   frame_receiver_ = new FrameReceiver(weak_factory_.GetWeakPtr());
 }
 
-PepperVideoSourceHost::~PepperVideoSourceHost() {
-  Close();
-}
+PepperVideoSourceHost::~PepperVideoSourceHost() { Close(); }
 
 int32_t PepperVideoSourceHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperVideoSourceHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoSource_Open,
-                                      OnHostMsgOpen)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoSource_GetFrame,
-                                        OnHostMsgGetFrame)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoSource_Close,
-                                        OnHostMsgClose)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoSource_Open,
+                                    OnHostMsgOpen)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoSource_GetFrame,
+                                      OnHostMsgGetFrame)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoSource_Close,
+                                      OnHostMsgClose)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -148,7 +140,9 @@ void PepperVideoSourceHost::SendGetFrameReply() {
           PP_IMAGEDATAFORMAT_BGRA_PREMUL,
           PP_MakeSize(dst_width, dst_height),
           false /* init_to_zero */,
-          &image_desc, &image_handle, &byte_count));
+          &image_desc,
+          &image_handle,
+          &byte_count));
   if (!resource.get()) {
     SendGetFrameErrorReply(PP_ERROR_FAILED);
     return;
@@ -191,12 +185,12 @@ void PepperVideoSourceHost::SendGetFrameReply() {
   const int vert_crop = frame->visible_rect().y();
 
   const uint8* src_y = frame->data(media::VideoFrame::kYPlane) +
-      (src_width * vert_crop + horiz_crop);
+                       (src_width * vert_crop + horiz_crop);
   const int center = (src_width + 1) / 2;
   const uint8* src_u = frame->data(media::VideoFrame::kUPlane) +
-      (center * vert_crop + horiz_crop) / 2;
+                       (center * vert_crop + horiz_crop) / 2;
   const uint8* src_v = frame->data(media::VideoFrame::kVPlane) +
-      (center * vert_crop + horiz_crop) / 2;
+                       (center * vert_crop + horiz_crop) / 2;
 
   libyuv::I420ToBGRA(src_y,
                      frame->stride(media::VideoFrame::kYPlane),
@@ -204,8 +198,10 @@ void PepperVideoSourceHost::SendGetFrameReply() {
                      frame->stride(media::VideoFrame::kUPlane),
                      src_v,
                      frame->stride(media::VideoFrame::kVPlane),
-                     bitmap_pixels, bitmap->rowBytes(),
-                     dst_width, dst_height);
+                     bitmap_pixels,
+                     bitmap->rowBytes(),
+                     dst_width,
+                     dst_height);
 
   ppapi::HostResource host_resource;
   host_resource.SetHostResource(pp_instance(), resource.get());
@@ -218,9 +214,8 @@ void PepperVideoSourceHost::SendGetFrameReply() {
   reply_context_.params.AppendHandle(serialized_handle);
 
   host()->SendReply(reply_context_,
-                    PpapiPluginMsg_VideoSource_GetFrameReply(host_resource,
-                                                             image_desc,
-                                                             timestamp));
+                    PpapiPluginMsg_VideoSource_GetFrameReply(
+                        host_resource, image_desc, timestamp));
 
   reply_context_ = ppapi::host::ReplyMessageContext();
 
@@ -232,9 +227,8 @@ void PepperVideoSourceHost::SendGetFrameErrorReply(int32_t error) {
   reply_context_.params.set_result(error);
   host()->SendReply(
       reply_context_,
-      PpapiPluginMsg_VideoSource_GetFrameReply(ppapi::HostResource(),
-                                               PP_ImageDataDesc(),
-                                               0.0 /* timestamp */));
+      PpapiPluginMsg_VideoSource_GetFrameReply(
+          ppapi::HostResource(), PP_ImageDataDesc(), 0.0 /* timestamp */));
   reply_context_ = ppapi::host::ReplyMessageContext();
 }
 

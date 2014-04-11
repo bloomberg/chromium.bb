@@ -15,8 +15,7 @@ namespace content {
 class PPB_Flash_MessageLoop_Impl::State
     : public base::RefCounted<PPB_Flash_MessageLoop_Impl::State> {
  public:
-  State() : result_(PP_OK), run_called_(false), quit_called_(false) {
-  }
+  State() : result_(PP_OK), run_called_(false), quit_called_(false) {}
 
   int32_t result() const { return result_; }
   void set_result(int32_t result) { result_ = result; }
@@ -43,9 +42,7 @@ class PPB_Flash_MessageLoop_Impl::State
 };
 
 PPB_Flash_MessageLoop_Impl::PPB_Flash_MessageLoop_Impl(PP_Instance instance)
-    : Resource(ppapi::OBJECT_IS_IMPL, instance),
-      state_(new State()) {
-}
+    : Resource(ppapi::OBJECT_IS_IMPL, instance), state_(new State()) {}
 
 PPB_Flash_MessageLoop_Impl::~PPB_Flash_MessageLoop_Impl() {
   // It is a no-op if either Run() hasn't been called or Quit() has been called
@@ -59,7 +56,7 @@ PP_Resource PPB_Flash_MessageLoop_Impl::Create(PP_Instance instance) {
 }
 
 PPB_Flash_MessageLoop_API*
-    PPB_Flash_MessageLoop_Impl::AsPPB_Flash_MessageLoop_API() {
+PPB_Flash_MessageLoop_Impl::AsPPB_Flash_MessageLoop_API() {
   return this;
 }
 
@@ -72,9 +69,7 @@ void PPB_Flash_MessageLoop_Impl::RunFromHostProxy(
   InternalRun(callback);
 }
 
-void PPB_Flash_MessageLoop_Impl::Quit() {
-  InternalQuit(PP_OK);
-}
+void PPB_Flash_MessageLoop_Impl::Quit() { InternalQuit(PP_OK); }
 
 int32_t PPB_Flash_MessageLoop_Impl::InternalRun(
     const RunFromHostProxyCallback& callback) {

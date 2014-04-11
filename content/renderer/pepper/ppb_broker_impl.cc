@@ -47,9 +47,7 @@ PPB_Broker_Impl::~PPB_Broker_Impl() {
   ChildThread::current()->GetRouter()->RemoveRoute(routing_id_);
 }
 
-PPB_Broker_API* PPB_Broker_Impl::AsPPB_Broker_API() {
-  return this;
-}
+PPB_Broker_API* PPB_Broker_Impl::AsPPB_Broker_API() { return this; }
 
 int32_t PPB_Broker_Impl::Connect(
     scoped_refptr<TrackedCallback> connect_callback) {
@@ -78,8 +76,8 @@ int32_t PPB_Broker_Impl::Connect(
     broker_ = new PepperBroker(module);
 
     // Have the browser start the broker process for us.
-    RenderThreadImpl::current()->Send(new ViewHostMsg_OpenChannelToPpapiBroker(
-        routing_id_, broker_path));
+    RenderThreadImpl::current()->Send(
+        new ViewHostMsg_OpenChannelToPpapiBroker(routing_id_, broker_path));
   }
 
   RenderThreadImpl::current()->Send(
@@ -111,8 +109,7 @@ GURL PPB_Broker_Impl::GetDocumentUrl() {
 
 // Transfers ownership of the handle to the plugin.
 void PPB_Broker_Impl::BrokerConnected(int32_t handle, int32_t result) {
-  DCHECK(pipe_handle_ ==
-         PlatformFileToInt(base::kInvalidPlatformFileValue));
+  DCHECK(pipe_handle_ == PlatformFileToInt(base::kInvalidPlatformFileValue));
   DCHECK(result == PP_OK ||
          handle == PlatformFileToInt(base::kInvalidPlatformFileValue));
 
@@ -127,11 +124,11 @@ void PPB_Broker_Impl::BrokerConnected(int32_t handle, int32_t result) {
 bool PPB_Broker_Impl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Broker_Impl, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerChannelCreated,
-                        OnPpapiBrokerChannelCreated)
-    IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerPermissionResult,
-                        OnPpapiBrokerPermissionResult)
-    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerChannelCreated,
+                      OnPpapiBrokerChannelCreated)
+  IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerPermissionResult,
+                      OnPpapiBrokerPermissionResult)
+  IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }

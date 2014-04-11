@@ -31,7 +31,7 @@ class PPB_Widget_Impl : public ppapi::Resource,
   virtual ppapi::thunk::PPB_Widget_API* AsPPB_Widget_API() OVERRIDE;
 
   // PPB_WidgetAPI implementation.
-  virtual PP_Bool Paint(const PP_Rect* rect, PP_Resource ) OVERRIDE;
+  virtual PP_Bool Paint(const PP_Rect* rect, PP_Resource) OVERRIDE;
   virtual PP_Bool HandleEvent(PP_Resource pp_input_event) OVERRIDE;
   virtual PP_Bool GetLocation(PP_Rect* location) OVERRIDE;
   virtual void SetLocation(const PP_Rect* location) OVERRIDE;

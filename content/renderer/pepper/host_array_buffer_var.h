@@ -25,10 +25,10 @@ class HostArrayBufferVar : public ppapi::ArrayBufferVar {
   virtual void* Map() OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual uint32 ByteLength() OVERRIDE;
-  virtual bool CopyToNewShmem(
-      PP_Instance instance,
-      int* host_shm_handle_id,
-      base::SharedMemoryHandle* plugin_shm_handle) OVERRIDE;
+  virtual bool CopyToNewShmem(PP_Instance instance,
+                              int* host_shm_handle_id,
+                              base::SharedMemoryHandle* plugin_shm_handle)
+      OVERRIDE;
 
   blink::WebArrayBuffer& webkit_buffer() { return buffer_; }
 

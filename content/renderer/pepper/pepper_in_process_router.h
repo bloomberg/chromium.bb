@@ -69,11 +69,11 @@ class PepperInProcessRouter {
   static bool OnPluginMsgReceived(const IPC::Message& msg);
 
  private:
-  bool SendToHost(IPC::Message *msg);
-  bool SendToPlugin(IPC::Message *msg);
+  bool SendToHost(IPC::Message* msg);
+  bool SendToPlugin(IPC::Message* msg);
   void DispatchHostMsg(IPC::Message* msg);
   void DispatchPluginMsg(IPC::Message* msg);
-  bool SendToBrowser(IPC::Message *msg);
+  bool SendToBrowser(IPC::Message* msg);
 
   RendererPpapiHostImpl* host_impl_;
 

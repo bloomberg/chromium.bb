@@ -43,9 +43,7 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
   std::string buffer_;
 };
 
-bool IsRedirect(int32_t status) {
-  return status >= 300 && status <= 399;
-}
+bool IsRedirect(int32_t status) { return status >= 300 && status <= 399; }
 
 void DidCreateResourceHosts(const ppapi::URLResponseInfoData& in_data,
                             const base::FilePath& external_path,
@@ -60,11 +58,11 @@ void DidCreateResourceHosts(const ppapi::URLResponseInfoData& in_data,
 
   ppapi::URLResponseInfoData data = in_data;
 
-  data.body_as_file_ref = ppapi::MakeExternalFileRefCreateInfo(
-      external_path,
-      std::string(),
-      browser_pending_host_id,
-      renderer_pending_host_id);
+  data.body_as_file_ref =
+      ppapi::MakeExternalFileRefCreateInfo(external_path,
+                                           std::string(),
+                                           browser_pending_host_id,
+                                           renderer_pending_host_id);
   callback.Run(data);
 }
 
@@ -79,8 +77,8 @@ void DataFromWebURLResponse(RendererPpapiHostImpl* host_impl,
   data.status_code = response.httpStatusCode();
   data.status_text = response.httpStatusText().utf8();
   if (IsRedirect(data.status_code)) {
-    data.redirect_url = response.httpHeaderField(
-        WebString::fromUTF8("Location")).utf8();
+    data.redirect_url =
+        response.httpHeaderField(WebString::fromUTF8("Location")).utf8();
   }
 
   HeaderFlattener flattener;
@@ -100,18 +98,16 @@ void DataFromWebURLResponse(RendererPpapiHostImpl* host_impl,
 
     std::vector<IPC::Message> create_msgs;
     create_msgs.push_back(PpapiHostMsg_FileRef_CreateForRawFS(external_path));
-    host_impl->CreateBrowserResourceHosts(
-        pp_instance,
-        create_msgs,
-        base::Bind(&DidCreateResourceHosts,
-                   data,
-                   external_path,
-                   renderer_pending_host_id,
-                   callback));
+    host_impl->CreateBrowserResourceHosts(pp_instance,
+                                          create_msgs,
+                                          base::Bind(&DidCreateResourceHosts,
+                                                     data,
+                                                     external_path,
+                                                     renderer_pending_host_id,
+                                                     callback));
   } else {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, data));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, data));
   }
 }
 

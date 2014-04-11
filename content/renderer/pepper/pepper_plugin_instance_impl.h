@@ -125,11 +125,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // recent version of PPP_Instance possible by querying the given
   // get_plugin_interface function. If the plugin does not support any valid
   // PPP_Instance interface, returns NULL.
-  static PepperPluginInstanceImpl* Create(
-      RenderFrameImpl* render_frame,
-      PluginModule* module,
-      blink::WebPluginContainer* container,
-      const GURL& plugin_url);
+  static PepperPluginInstanceImpl* Create(RenderFrameImpl* render_frame,
+                                          PluginModule* module,
+                                          blink::WebPluginContainer* container,
+                                          const GURL& plugin_url);
   RenderFrameImpl* render_frame() const { return render_frame_; }
   PluginModule* module() const { return module_.get(); }
   MessageChannel& message_channel() { return *message_channel_; }
@@ -188,7 +187,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool HandleInputEvent(const blink::WebInputEvent& event,
                         blink::WebCursorInfo* cursor_info);
   PP_Var GetInstanceObject();
-  void ViewChanged(const gfx::Rect& position, const gfx::Rect& clip,
+  void ViewChanged(const gfx::Rect& position,
+                   const gfx::Rect& clip,
                    const std::vector<gfx::Rect>& cut_outs_rects);
 
   // Handlers for composition events.
@@ -321,8 +321,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // Simulates an IME event at the level of RenderView which sends it back up to
   // the plugin as if it came from the user.
   bool SimulateIMEEvent(const ppapi::InputEventData& input_event);
-  void SimulateImeSetCompositionEvent(
-      const ppapi::InputEventData& input_event);
+  void SimulateImeSetCompositionEvent(const ppapi::InputEventData& input_event);
 
   // The document loader is valid when the plugin is "full-frame" and in this
   // case is non-NULL as long as the corresponding loader resource is alive.
@@ -359,8 +358,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual int32_t Navigate(const ppapi::URLRequestInfoData& request,
                            const char* target,
                            bool from_user_action) OVERRIDE;
-  virtual int MakePendingFileRefRendererHost(
-      const base::FilePath& path) OVERRIDE;
+  virtual int MakePendingFileRefRendererHost(const base::FilePath& path)
+      OVERRIDE;
   virtual void SetEmbedProperty(PP_Var key, PP_Var value) OVERRIDE;
   virtual void SetSelectedText(const base::string16& selected_text) OVERRIDE;
   virtual void SetLinkUnderCursor(const std::string& url) OVERRIDE;
@@ -393,10 +392,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual PP_Bool IsFullscreen(PP_Instance instance) OVERRIDE;
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) OVERRIDE;
-  virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size)
-      OVERRIDE;
+  virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) OVERRIDE;
   virtual ppapi::Resource* GetSingletonResource(PP_Instance instance,
-      ppapi::SingletonResourceID id) OVERRIDE;
+                                                ppapi::SingletonResourceID id)
+      OVERRIDE;
   virtual int32_t RequestInputEvents(PP_Instance instance,
                                      uint32_t event_classes) OVERRIDE;
   virtual int32_t RequestFilteringInputEvents(PP_Instance instance,
@@ -412,9 +411,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                             PP_MouseCursor_Type type,
                             PP_Resource image,
                             const PP_Point* hot_spot) OVERRIDE;
-  virtual int32_t LockMouse(
-      PP_Instance instance,
-      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
+  virtual int32_t LockMouse(PP_Instance instance,
+                            scoped_refptr<ppapi::TrackedCallback> callback)
+      OVERRIDE;
   virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
   virtual void SetTextInputType(PP_Instance instance,
                                 PP_TextInput_Type type) OVERRIDE;
@@ -427,21 +426,21 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                                      const char* text,
                                      uint32_t caret,
                                      uint32_t anchor) OVERRIDE;
-  virtual PP_Var ResolveRelativeToDocument(
-      PP_Instance instance,
-      PP_Var relative,
-      PP_URLComponents_Dev* components) OVERRIDE;
+  virtual PP_Var ResolveRelativeToDocument(PP_Instance instance,
+                                           PP_Var relative,
+                                           PP_URLComponents_Dev* components)
+      OVERRIDE;
   virtual PP_Bool DocumentCanRequest(PP_Instance instance, PP_Var url) OVERRIDE;
   virtual PP_Bool DocumentCanAccessDocument(PP_Instance instance,
                                             PP_Instance target) OVERRIDE;
   virtual PP_Var GetDocumentURL(PP_Instance instance,
                                 PP_URLComponents_Dev* components) OVERRIDE;
-  virtual PP_Var GetPluginInstanceURL(
-      PP_Instance instance,
-      PP_URLComponents_Dev* components) OVERRIDE;
-  virtual PP_Var GetPluginReferrerURL(
-      PP_Instance instance,
-      PP_URLComponents_Dev* components) OVERRIDE;
+  virtual PP_Var GetPluginInstanceURL(PP_Instance instance,
+                                      PP_URLComponents_Dev* components)
+      OVERRIDE;
+  virtual PP_Var GetPluginReferrerURL(PP_Instance instance,
+                                      PP_URLComponents_Dev* components)
+      OVERRIDE;
 
   // PPB_ContentDecryptor_Private implementation.
   virtual void SessionCreated(PP_Instance instance,
@@ -474,10 +473,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
                             const PP_DecryptedFrameInfo* frame_info) OVERRIDE;
-  virtual void DeliverSamples(
-      PP_Instance instance,
-      PP_Resource audio_frames,
-      const PP_DecryptedSampleInfo* sample_info) OVERRIDE;
+  virtual void DeliverSamples(PP_Instance instance,
+                              PP_Resource audio_frames,
+                              const PP_DecryptedSampleInfo* sample_info)
+      OVERRIDE;
 
   // Reset this instance as proxied. Assigns the instance a new module, resets
   // cached interfaces to point to the out-of-process proxy and re-sends
@@ -549,6 +548,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
     virtual ppapi::thunk::PPB_Gamepad_API* AsPPB_Gamepad_API() OVERRIDE;
     virtual void Sample(PP_Instance instance,
                         PP_GamepadsSampleData* data) OVERRIDE;
+
    private:
     virtual ~GamepadImpl();
   };
@@ -618,9 +618,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void DoSetCursor(blink::WebCursorInfo* cursor);
 
   // Internal helper functions for HandleCompositionXXX().
-  bool SendCompositionEventToPlugin(
-      PP_InputEvent_Type type,
-      const base::string16& text);
+  bool SendCompositionEventToPlugin(PP_InputEvent_Type type,
+                                    const base::string16& text);
   bool SendCompositionEventWithUnderlineInformationToPlugin(
       PP_InputEvent_Type type,
       const base::string16& text,
@@ -651,10 +650,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   MouseLockDispatcher::LockTarget* GetOrCreateLockTargetAdapter();
   void UnSetAndDeleteLockTargetAdapter();
 
-  void DidDataFromWebURLResponse(
-      const blink::WebURLResponse& response,
-      int pending_host_id,
-      const ppapi::URLResponseInfoData& data);
+  void DidDataFromWebURLResponse(const blink::WebURLResponse& response,
+                                 int pending_host_id,
+                                 const ppapi::URLResponseInfoData& data);
 
   RenderFrameImpl* render_frame_;
   base::Closure instance_deleted_callback_;

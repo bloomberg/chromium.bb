@@ -20,14 +20,14 @@ class PPB_Flash_MessageLoop_Impl
   static PP_Resource Create(PP_Instance instance);
 
   // Resource.
-  virtual ppapi::thunk::PPB_Flash_MessageLoop_API*
-      AsPPB_Flash_MessageLoop_API() OVERRIDE;
+  virtual ppapi::thunk::PPB_Flash_MessageLoop_API* AsPPB_Flash_MessageLoop_API()
+      OVERRIDE;
 
   // PPB_Flash_MessageLoop_API implementation.
   virtual int32_t Run() OVERRIDE;
   virtual void Quit() OVERRIDE;
-  virtual void RunFromHostProxy(
-      const RunFromHostProxyCallback& callback) OVERRIDE;
+  virtual void RunFromHostProxy(const RunFromHostProxyCallback& callback)
+      OVERRIDE;
 
  private:
   class State;

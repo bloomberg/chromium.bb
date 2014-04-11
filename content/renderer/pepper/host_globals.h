@@ -35,8 +35,8 @@ class HostGlobals : public ppapi::PpapiGlobals {
   virtual ppapi::VarTracker* GetVarTracker() OVERRIDE;
   virtual ppapi::CallbackTracker* GetCallbackTrackerForInstance(
       PP_Instance instance) OVERRIDE;
-  virtual ppapi::thunk::PPB_Instance_API* GetInstanceAPI(
-      PP_Instance instance) OVERRIDE;
+  virtual ppapi::thunk::PPB_Instance_API* GetInstanceAPI(PP_Instance instance)
+      OVERRIDE;
   virtual ppapi::thunk::ResourceCreationAPI* GetResourceCreationAPI(
       PP_Instance instance) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
@@ -53,9 +53,7 @@ class HostGlobals : public ppapi::PpapiGlobals {
   virtual ppapi::MessageLoopShared* GetCurrentMessageLoop() OVERRIDE;
   virtual base::TaskRunner* GetFileTaskRunner() OVERRIDE;
 
-  HostVarTracker* host_var_tracker() {
-    return &host_var_tracker_;
-  }
+  HostVarTracker* host_var_tracker() { return &host_var_tracker_; }
 
   // PP_Modules ----------------------------------------------------------------
 
@@ -111,4 +109,4 @@ class HostGlobals : public ppapi::PpapiGlobals {
 
 }  // namespace content
 
-#endif   // CONTENT_RENDERER_PEPPER_HOST_GLOBALS_H_
+#endif  // CONTENT_RENDERER_PEPPER_HOST_GLOBALS_H_

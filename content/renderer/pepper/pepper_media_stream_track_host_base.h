@@ -44,7 +44,7 @@ class PepperMediaStreamTrackHostBase
 
   // Message handlers:
   int32_t OnHostMsgEnqueueBuffer(ppapi::host::HostMessageContext* context,
-                                int32_t index);
+                                 int32_t index);
   int32_t OnHostMsgClose(ppapi::host::HostMessageContext* context);
 
   RendererPpapiHost* host_;

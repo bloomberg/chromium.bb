@@ -34,25 +34,20 @@ class PepperInProcessRouter::Channel : public IPC::Sender {
   base::Callback<bool(IPC::Message*)> callback_;
 };
 
-PepperInProcessRouter::PepperInProcessRouter(
-    RendererPpapiHostImpl* host_impl)
+PepperInProcessRouter::PepperInProcessRouter(RendererPpapiHostImpl* host_impl)
     : host_impl_(host_impl),
       pending_message_id_(0),
       reply_result_(false),
       weak_factory_(this) {
-  browser_channel_.reset(
-      new Channel(base::Bind(&PepperInProcessRouter::SendToBrowser,
-                             base::Unretained(this))));
-  host_to_plugin_router_.reset(
-      new Channel(base::Bind(&PepperInProcessRouter::SendToPlugin,
-                             base::Unretained(this))));
-  plugin_to_host_router_.reset(
-      new Channel(base::Bind(&PepperInProcessRouter::SendToHost,
-                             base::Unretained(this))));
+  browser_channel_.reset(new Channel(base::Bind(
+      &PepperInProcessRouter::SendToBrowser, base::Unretained(this))));
+  host_to_plugin_router_.reset(new Channel(base::Bind(
+      &PepperInProcessRouter::SendToPlugin, base::Unretained(this))));
+  plugin_to_host_router_.reset(new Channel(
+      base::Bind(&PepperInProcessRouter::SendToHost, base::Unretained(this))));
 }
 
-PepperInProcessRouter::~PepperInProcessRouter() {
-}
+PepperInProcessRouter::~PepperInProcessRouter() {}
 
 IPC::Sender* PepperInProcessRouter::GetPluginToRendererSender() {
   return plugin_to_host_router_.get();
@@ -68,9 +63,8 @@ ppapi::proxy::Connection PepperInProcessRouter::GetPluginConnection(
   RenderFrame* frame = host_impl_->GetRenderFrameForInstance(instance);
   if (frame)
     routing_id = frame->GetRoutingID();
-  return ppapi::proxy::Connection(browser_channel_.get(),
-                                  plugin_to_host_router_.get(),
-                                  routing_id);
+  return ppapi::proxy::Connection(
+      browser_channel_.get(), plugin_to_host_router_.get(), routing_id);
 }
 
 // static
@@ -81,15 +75,15 @@ bool PepperInProcessRouter::OnPluginMsgReceived(const IPC::Message& msg) {
 
   if (msg.type() == PpapiPluginMsg_ResourceReply::ID) {
     // Resource reply from the renderer (no routing id).
-    if (!UnpackMessage<PpapiPluginMsg_ResourceReply>(msg, &reply_params,
-                                                     &nested_msg)) {
+    if (!UnpackMessage<PpapiPluginMsg_ResourceReply>(
+            msg, &reply_params, &nested_msg)) {
       NOTREACHED();
       return false;
     }
   } else if (msg.type() == PpapiHostMsg_InProcessResourceReply::ID) {
     // Resource reply from the browser (has a routing id).
-    if (!UnpackMessage<PpapiHostMsg_InProcessResourceReply>(msg, &reply_params,
-                                                            &nested_msg)) {
+    if (!UnpackMessage<PpapiHostMsg_InProcessResourceReply>(
+            msg, &reply_params, &nested_msg)) {
       NOTREACHED();
       return false;
     }
@@ -171,7 +165,7 @@ void PepperInProcessRouter::DispatchPluginMsg(IPC::Message* msg) {
   DCHECK(handled);
 }
 
-bool PepperInProcessRouter::SendToBrowser(IPC::Message *msg) {
+bool PepperInProcessRouter::SendToBrowser(IPC::Message* msg) {
   return RenderThread::Get()->Send(msg);
 }
 

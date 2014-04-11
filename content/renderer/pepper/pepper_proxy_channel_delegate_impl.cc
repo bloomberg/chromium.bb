@@ -9,8 +9,7 @@
 
 namespace content {
 
-PepperProxyChannelDelegateImpl::~PepperProxyChannelDelegateImpl() {
-}
+PepperProxyChannelDelegateImpl::~PepperProxyChannelDelegateImpl() {}
 
 base::MessageLoopProxy* PepperProxyChannelDelegateImpl::GetIPCMessageLoop() {
   // This is called only in the renderer so we know we have a child process.
@@ -28,8 +27,7 @@ PepperProxyChannelDelegateImpl::ShareHandleWithRemote(
     base::PlatformFile handle,
     base::ProcessId remote_pid,
     bool should_close_source) {
-  return BrokerGetFileHandleForProcess(handle, remote_pid,
-                                       should_close_source);
+  return BrokerGetFileHandleForProcess(handle, remote_pid, should_close_source);
 }
 
 }  // namespace content

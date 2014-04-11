@@ -31,26 +31,24 @@ class PepperPlatformVideoCapture
       public base::RefCounted<PepperPlatformVideoCapture>,
       public media::VideoCapture::EventHandler {
  public:
-  PepperPlatformVideoCapture(
-      const base::WeakPtr<RenderViewImpl>& render_view,
-      const std::string& device_id,
-      const GURL& document_url,
-      PepperVideoCaptureHost* handler);
+  PepperPlatformVideoCapture(const base::WeakPtr<RenderViewImpl>& render_view,
+                             const std::string& device_id,
+                             const GURL& document_url,
+                             PepperVideoCaptureHost* handler);
 
   // Detaches the event handler and stops sending notifications to it.
   void DetachEventHandler();
 
   // media::VideoCapture implementation.
-  virtual void StartCapture(
-      media::VideoCapture::EventHandler* handler,
-      const media::VideoCaptureParams& params) OVERRIDE;
+  virtual void StartCapture(media::VideoCapture::EventHandler* handler,
+                            const media::VideoCaptureParams& params) OVERRIDE;
   virtual void StopCapture(media::VideoCapture::EventHandler* handler) OVERRIDE;
   virtual bool CaptureStarted() OVERRIDE;
   virtual int CaptureFrameRate() OVERRIDE;
-  virtual void GetDeviceSupportedFormats(
-      const DeviceFormatsCallback& callback) OVERRIDE;
-  virtual void GetDeviceFormatsInUse(
-      const DeviceFormatsInUseCallback& callback) OVERRIDE;
+  virtual void GetDeviceSupportedFormats(const DeviceFormatsCallback& callback)
+      OVERRIDE;
+  virtual void GetDeviceFormatsInUse(const DeviceFormatsInUseCallback& callback)
+      OVERRIDE;
 
   // media::VideoCapture::EventHandler implementation
   virtual void OnStarted(VideoCapture* capture) OVERRIDE;
@@ -58,9 +56,9 @@ class PepperPlatformVideoCapture
   virtual void OnPaused(VideoCapture* capture) OVERRIDE;
   virtual void OnError(VideoCapture* capture, int error_code) OVERRIDE;
   virtual void OnRemoved(VideoCapture* capture) OVERRIDE;
-  virtual void OnFrameReady(
-      VideoCapture* capture,
-      const scoped_refptr<media::VideoFrame>& frame) OVERRIDE;
+  virtual void OnFrameReady(VideoCapture* capture,
+                            const scoped_refptr<media::VideoFrame>& frame)
+      OVERRIDE;
 
  protected:
   friend class base::RefCounted<PepperPlatformVideoCapture>;
@@ -69,9 +67,7 @@ class PepperPlatformVideoCapture
  private:
   void Initialize();
 
-  void OnDeviceOpened(int request_id,
-                      bool succeeded,
-                      const std::string& label);
+  void OnDeviceOpened(int request_id, bool succeeded, const std::string& label);
 
   PepperMediaDeviceManager* GetMediaDeviceManager();
 

@@ -43,7 +43,8 @@ namespace {
 // reference-count of 0. If |data| is NULL, sets |*resource| to NULL. Returns
 // true upon success and false if any error happened.
 bool MakeBufferResource(PP_Instance instance,
-                        const uint8* data, uint32_t size,
+                        const uint8* data,
+                        uint32_t size,
                         scoped_refptr<PPB_Buffer_Impl>* resource) {
   TRACE_EVENT0("media", "ContentDecryptorDelegate - MakeBufferResource");
   DCHECK(resource);
@@ -368,9 +369,7 @@ bool ContentDecryptorDelegate::Decrypt(
 
   SetBufferToFreeInTrackingInfo(&block_info.tracking_info);
 
-  plugin_decryption_interface_->Decrypt(pp_instance_,
-                                        pp_resource,
-                                        &block_info);
+  plugin_decryption_interface_->Decrypt(pp_instance_, pp_resource, &block_info);
   return true;
 }
 
@@ -431,9 +430,8 @@ bool ContentDecryptorDelegate::InitializeAudioDecoder(
   ScopedPPResource pp_resource(extra_data_resource.get());
 
   audio_decoder_init_cb_.Set(pp_decoder_config.request_id, init_cb);
-  plugin_decryption_interface_->InitializeAudioDecoder(pp_instance_,
-                                                       &pp_decoder_config,
-                                                       pp_resource);
+  plugin_decryption_interface_->InitializeAudioDecoder(
+      pp_instance_, &pp_decoder_config, pp_resource);
   return true;
 }
 
@@ -463,9 +461,8 @@ bool ContentDecryptorDelegate::InitializeVideoDecoder(
   video_decoder_init_cb_.Set(pp_decoder_config.request_id, init_cb);
   natural_size_ = decoder_config.natural_size();
 
-  plugin_decryption_interface_->InitializeVideoDecoder(pp_instance_,
-                                                       &pp_decoder_config,
-                                                       pp_resource);
+  plugin_decryption_interface_->InitializeVideoDecoder(
+      pp_instance_, &pp_decoder_config, pp_resource);
   return true;
 }
 
@@ -500,7 +497,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
   // This is enforced by the media pipeline.
   scoped_refptr<PPB_Buffer_Impl> encrypted_resource;
   if (!MakeMediaBufferResource(
-           Decryptor::kAudio, encrypted_buffer, &encrypted_resource)) {
+          Decryptor::kAudio, encrypted_buffer, &encrypted_resource)) {
     return false;
   }
 
@@ -525,10 +522,8 @@ bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
   audio_decode_cb_.Set(request_id, audio_decode_cb);
 
   ScopedPPResource pp_resource(encrypted_resource.get());
-  plugin_decryption_interface_->DecryptAndDecode(pp_instance_,
-                                                 PP_DECRYPTORSTREAMTYPE_AUDIO,
-                                                 pp_resource,
-                                                 &block_info);
+  plugin_decryption_interface_->DecryptAndDecode(
+      pp_instance_, PP_DECRYPTORSTREAMTYPE_AUDIO, pp_resource, &block_info);
   return true;
 }
 
@@ -540,7 +535,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
   // This is enforced by the media pipeline.
   scoped_refptr<PPB_Buffer_Impl> encrypted_resource;
   if (!MakeMediaBufferResource(
-           Decryptor::kVideo, encrypted_buffer, &encrypted_resource)) {
+          Decryptor::kVideo, encrypted_buffer, &encrypted_resource)) {
     return false;
   }
 
@@ -568,10 +563,8 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
 
   // TODO(tomfinegan): Need to get stream type from media stack.
   ScopedPPResource pp_resource(encrypted_resource.get());
-  plugin_decryption_interface_->DecryptAndDecode(pp_instance_,
-                                                 PP_DECRYPTORSTREAMTYPE_VIDEO,
-                                                 pp_resource,
-                                                 &block_info);
+  plugin_decryption_interface_->DecryptAndDecode(
+      pp_instance_, PP_DECRYPTORSTREAMTYPE_VIDEO, pp_resource, &block_info);
   return true;
 }
 
@@ -640,9 +633,9 @@ void ContentDecryptorDelegate::OnSessionError(uint32 session_id,
 }
 
 void ContentDecryptorDelegate::DecoderInitializeDone(
-     PP_DecryptorStreamType decoder_type,
-     uint32_t request_id,
-     PP_Bool success) {
+    PP_DecryptorStreamType decoder_type,
+    uint32_t request_id,
+    PP_Bool success) {
   if (decoder_type == PP_DECRYPTORSTREAMTYPE_AUDIO) {
     // If the request ID is not valid or does not match what's saved, do
     // nothing.
@@ -721,10 +714,10 @@ void ContentDecryptorDelegate::DeliverBlock(
   // TODO(tomfinegan): Find a way to take ownership of the shared memory
   // managed by the PPB_Buffer_Dev, and avoid the extra copy.
   scoped_refptr<media::DecoderBuffer> decrypted_buffer(
-      media::DecoderBuffer::CopyFrom(
-          static_cast<uint8*>(mapper.data()), block_info->data_size));
-  decrypted_buffer->set_timestamp(base::TimeDelta::FromMicroseconds(
-      block_info->tracking_info.timestamp));
+      media::DecoderBuffer::CopyFrom(static_cast<uint8*>(mapper.data()),
+                                     block_info->data_size));
+  decrypted_buffer->set_timestamp(
+      base::TimeDelta::FromMicroseconds(block_info->tracking_info.timestamp));
   decrypt_cb.Run(Decryptor::kSuccess, decrypted_buffer);
 }
 
@@ -929,8 +922,8 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
              << ((stream_type == Decryptor::kAudio) ? "audio" : "video")
              << " stream bumped to " << media_resource_size
              << " bytes to fit input.";
-    media_resource = PPB_Buffer_Impl::CreateResource(pp_instance_,
-                                                     media_resource_size);
+    media_resource =
+        PPB_Buffer_Impl::CreateResource(pp_instance_, media_resource_size);
     if (!media_resource.get())
       return false;
   }
@@ -990,8 +983,8 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
     return false;
 
   // Allocate space for the channel pointers given to AudioBuffer.
-  std::vector<const uint8*> channel_ptrs(
-      audio_channel_count_, static_cast<const uint8*>(NULL));
+  std::vector<const uint8*> channel_ptrs(audio_channel_count_,
+                                         static_cast<const uint8*>(NULL));
   do {
     int64 timestamp = 0;
     int64 frame_size = -1;

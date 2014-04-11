@@ -33,8 +33,8 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
   virtual void OnClose() OVERRIDE;
 
   // MediaStreamVideoSink overrides:
-  virtual void OnVideoFrame(
-      const scoped_refptr<media::VideoFrame>& frame) OVERRIDE;
+  virtual void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame)
+      OVERRIDE;
 
   // ResourceHost overrides:
   virtual void DidConnectPendingHostToResource() OVERRIDE;

@@ -31,8 +31,7 @@ namespace {
 
 class PepperFileChooserHostTest : public RenderViewTest {
  public:
-  PepperFileChooserHostTest()
-      : pp_instance_(123456) {}
+  PepperFileChooserHostTest() : pp_instance_(123456) {}
 
   virtual void SetUp() {
     SetContentClient(&client_);
@@ -121,8 +120,8 @@ TEST_F(PepperFileChooserHostTest, Show) {
   EXPECT_EQ(call_params.sequence(), reply_params.sequence());
   EXPECT_EQ(PP_OK, reply_params.result());
   PpapiPluginMsg_FileChooser_ShowReply::Schema::Param reply_msg_param;
-  ASSERT_TRUE(PpapiPluginMsg_FileChooser_ShowReply::Read(&reply_msg,
-                                                         &reply_msg_param));
+  ASSERT_TRUE(
+      PpapiPluginMsg_FileChooser_ShowReply::Read(&reply_msg, &reply_msg_param));
   const std::vector<ppapi::FileRefCreateInfo>& chooser_results =
       reply_msg_param.a;
   ASSERT_EQ(1u, chooser_results.size());

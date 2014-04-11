@@ -29,13 +29,14 @@ class PepperTrueTypeFontWin : public PepperTrueTypeFont {
 
   // PepperTrueTypeFont overrides.
   virtual bool IsValid() OVERRIDE;
-  virtual int32_t Describe(
-      ppapi::proxy::SerializedTrueTypeFontDesc* desc) OVERRIDE;
+  virtual int32_t Describe(ppapi::proxy::SerializedTrueTypeFontDesc* desc)
+      OVERRIDE;
   virtual int32_t GetTableTags(std::vector<uint32_t>* tags) OVERRIDE;
   virtual int32_t GetTable(uint32_t table_tag,
                            int32_t offset,
                            int32_t max_data_length,
                            std::string* data) OVERRIDE;
+
  private:
   DWORD GetFontData(HDC hdc,
                     DWORD table,
@@ -70,15 +71,15 @@ PepperTrueTypeFontWin::PepperTrueTypeFontWin(
   }
   // TODO(bbudge) support widths (extended, condensed).
 
-  font_ = CreateFont(0  /* height */,
-                     0  /* width */,
-                     0  /* escapement */,
-                     0  /* orientation */,
+  font_ = CreateFont(0 /* height */,
+                     0 /* width */,
+                     0 /* escapement */,
+                     0 /* orientation */,
                      desc.weight,  // our weight enum matches Windows.
                      (desc.style & PP_TRUETYPEFONTSTYLE_ITALIC) ? 1 : 0,
-                     0  /* underline */,
-                     0  /* strikeout */,
-                     desc.charset,  // our charset enum matches Windows.
+                     0 /* underline */,
+                     0 /* strikeout */,
+                     desc.charset,        // our charset enum matches Windows.
                      OUT_OUTLINE_PRECIS,  // truetype and other outline fonts
                      CLIP_DEFAULT_PRECIS,
                      DEFAULT_QUALITY,
@@ -86,15 +87,12 @@ PepperTrueTypeFontWin::PepperTrueTypeFontWin(
                      base::UTF8ToUTF16(desc.family).c_str());
 }
 
-PepperTrueTypeFontWin::~PepperTrueTypeFontWin() {
-}
+PepperTrueTypeFontWin::~PepperTrueTypeFontWin() {}
 
-bool PepperTrueTypeFontWin::IsValid() {
-  return font_ != NULL;
-}
+bool PepperTrueTypeFontWin::IsValid() { return font_ != NULL; }
 
 int32_t PepperTrueTypeFontWin::Describe(
-      ppapi::proxy::SerializedTrueTypeFontDesc* desc) {
+    ppapi::proxy::SerializedTrueTypeFontDesc* desc) {
   LOGFONT font_desc;
   if (!::GetObject(font_, sizeof(LOGFONT), &font_desc))
     return PP_ERROR_FAILED;
@@ -117,12 +115,11 @@ int32_t PepperTrueTypeFontWin::Describe(
       break;
   }
 
-  desc->style = font_desc.lfItalic ? PP_TRUETYPEFONTSTYLE_ITALIC :
-                                     PP_TRUETYPEFONTSTYLE_NORMAL;
+  desc->style = font_desc.lfItalic ? PP_TRUETYPEFONTSTYLE_ITALIC
+                                   : PP_TRUETYPEFONTSTYLE_NORMAL;
   desc->weight = static_cast<PP_TrueTypeFontWeight_Dev>(font_desc.lfWeight);
   desc->width = PP_TRUETYPEFONTWIDTH_NORMAL;
-  desc->charset =
-      static_cast<PP_TrueTypeFontCharset_Dev>(font_desc.lfCharSet);
+  desc->charset = static_cast<PP_TrueTypeFontCharset_Dev>(font_desc.lfCharSet);
 
   // To get the face name, select the font and query for the name. GetObject
   // doesn't fill in the name field of the LOGFONT structure.
@@ -184,9 +181,9 @@ int32_t PepperTrueTypeFontWin::GetTableTags(std::vector<uint32_t>* tags) {
   DWORD directory_size = num_tables * kDirectoryEntrySize;
   scoped_ptr<uint8_t[]> directory(new uint8_t[directory_size]);
   // Get the table directory entries after the font header.
-  if (GetFontData(hdc, 0 /* tag */, kFontHeaderSize,
-                  directory.get(),
-                  directory_size) == GDI_ERROR)
+  if (GetFontData(
+          hdc, 0 /* tag */, kFontHeaderSize, directory.get(), directory_size) ==
+      GDI_ERROR)
     return PP_ERROR_FAILED;
 
   tags->resize(num_tables);
@@ -194,7 +191,7 @@ int32_t PepperTrueTypeFontWin::GetTableTags(std::vector<uint32_t>* tags) {
     const uint8_t* entry = directory.get() + i * kDirectoryEntrySize;
     uint32_t tag = static_cast<uint32_t>(entry[0]) << 24 |
                    static_cast<uint32_t>(entry[1]) << 16 |
-                   static_cast<uint32_t>(entry[2]) << 8  |
+                   static_cast<uint32_t>(entry[2]) << 8 |
                    static_cast<uint32_t>(entry[3]);
     (*tags)[i] = tag;
   }
@@ -220,13 +217,15 @@ int32_t PepperTrueTypeFontWin::GetTable(uint32_t table_tag,
     return PP_ERROR_FAILED;
 
   DWORD safe_offset = std::min(static_cast<DWORD>(offset), table_size);
-  DWORD safe_length = std::min(table_size - safe_offset,
-                               static_cast<DWORD>(max_data_length));
+  DWORD safe_length =
+      std::min(table_size - safe_offset, static_cast<DWORD>(max_data_length));
   data->resize(safe_length);
   if (safe_length == 0) {
     table_size = 0;
   } else {
-    table_size = GetFontData(hdc, table_tag, safe_offset,
+    table_size = GetFontData(hdc,
+                             table_tag,
+                             safe_offset,
                              reinterpret_cast<uint8_t*>(&(*data)[0]),
                              safe_length);
     if (table_size == GDI_ERROR)

@@ -24,13 +24,10 @@ namespace content {
 
 HostArrayBufferVar::HostArrayBufferVar(uint32 size_in_bytes)
     : buffer_(WebArrayBuffer::create(size_in_bytes, 1 /* element_size */)),
-      valid_(true) {
-}
+      valid_(true) {}
 
 HostArrayBufferVar::HostArrayBufferVar(const WebArrayBuffer& buffer)
-    : buffer_(buffer),
-      valid_(true) {
-}
+    : buffer_(buffer), valid_(true) {}
 
 HostArrayBufferVar::HostArrayBufferVar(uint32 size_in_bytes,
                                        base::SharedMemoryHandle handle)
@@ -43,8 +40,7 @@ HostArrayBufferVar::HostArrayBufferVar(uint32 size_in_bytes,
   }
 }
 
-HostArrayBufferVar::~HostArrayBufferVar() {
-}
+HostArrayBufferVar::~HostArrayBufferVar() {}
 
 void* HostArrayBufferVar::Map() {
   if (!valid_)
@@ -56,17 +52,16 @@ void HostArrayBufferVar::Unmap() {
   // We do not used shared memory on the host side. Nothing to do.
 }
 
-uint32 HostArrayBufferVar::ByteLength() {
-  return buffer_.byteLength();
-}
+uint32 HostArrayBufferVar::ByteLength() { return buffer_.byteLength(); }
 
 bool HostArrayBufferVar::CopyToNewShmem(
     PP_Instance instance,
     int* host_shm_handle_id,
     base::SharedMemoryHandle* plugin_shm_handle) {
   scoped_ptr<base::SharedMemory> shm(
-      RenderThread::Get()->HostAllocateSharedMemoryBuffer(ByteLength()).
-          release());
+      RenderThread::Get()
+          ->HostAllocateSharedMemoryBuffer(ByteLength())
+          .release());
   if (!shm)
     return false;
 
@@ -79,7 +74,7 @@ bool HostArrayBufferVar::CopyToNewShmem(
   HostGlobals* hg = HostGlobals::Get();
   PluginModule* pm = hg->GetModule(hg->GetModuleForInstance(instance));
   base::ProcessId p = pm->GetPeerProcessId();
-  if (p  == base::kNullProcessId) {
+  if (p == base::kNullProcessId) {
     // In-process, clone for ourselves.
     p = base::GetCurrentProcId();
   }

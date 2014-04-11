@@ -45,13 +45,12 @@ namespace {
 
 // Appends the file ref given the Resource pointer associated with it to the
 // given HTTP body, returning true on success.
-bool AppendFileRefToBody(
-    PP_Instance instance,
-    PP_Resource resource,
-    int64_t start_offset,
-    int64_t number_of_bytes,
-    PP_Time expected_last_modified_time,
-    WebHTTPBody *http_body) {
+bool AppendFileRefToBody(PP_Instance instance,
+                         PP_Resource resource,
+                         int64_t start_offset,
+                         int64_t number_of_bytes,
+                         PP_Time expected_last_modified_time,
+                         WebHTTPBody* http_body) {
   base::FilePath platform_path;
   PepperPluginInstanceImpl* instance_impl =
       HostGlobals::Get()->GetInstance(instance);
@@ -83,11 +82,10 @@ bool AppendFileRefToBody(
     default:
       NOTREACHED();
   }
-  http_body->appendFileRange(
-      platform_path.AsUTF16Unsafe(),
-      start_offset,
-      number_of_bytes,
-      expected_last_modified_time);
+  http_body->appendFileRange(platform_path.AsUTF16Unsafe(),
+                             start_offset,
+                             number_of_bytes,
+                             expected_last_modified_time);
   return true;
 }
 
@@ -98,7 +96,7 @@ bool ValidateURLRequestData(const URLRequestInfoData& data) {
   if (data.prefetch_buffer_lower_threshold < 0 ||
       data.prefetch_buffer_upper_threshold < 0 ||
       data.prefetch_buffer_upper_threshold <=
-      data.prefetch_buffer_lower_threshold) {
+          data.prefetch_buffer_lower_threshold) {
     return false;
   }
   return true;
@@ -117,8 +115,7 @@ bool CreateWebURLRequest(PP_Instance instance,
     return false;
 
   dest->initialize();
-  dest->setURL(frame->document().completeURL(WebString::fromUTF8(
-      data->url)));
+  dest->setURL(frame->document().completeURL(WebString::fromUTF8(data->url)));
   dest->setDownloadToFile(data->stream_to_file);
   dest->setReportUploadProgress(data->record_upload_progress);
 
@@ -131,9 +128,8 @@ bool CreateWebURLRequest(PP_Instance instance,
   if (!headers.empty()) {
     net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n\r");
     while (it.GetNext()) {
-      dest->addHTTPHeaderField(
-          WebString::fromUTF8(it.name()),
-          WebString::fromUTF8(it.values()));
+      dest->addHTTPHeaderField(WebString::fromUTF8(it.name()),
+                               WebString::fromUTF8(it.values()));
     }
   }
 
@@ -187,11 +183,10 @@ bool CreateWebURLRequest(PP_Instance instance,
 }
 
 bool URLRequestRequiresUniversalAccess(const URLRequestInfoData& data) {
-  return
-      data.has_custom_referrer_url ||
-      data.has_custom_content_transfer_encoding ||
-      data.has_custom_user_agent ||
-      url_util::FindAndCompareScheme(data.url, "javascript", NULL);
+  return data.has_custom_referrer_url ||
+         data.has_custom_content_transfer_encoding ||
+         data.has_custom_user_agent ||
+         url_util::FindAndCompareScheme(data.url, "javascript", NULL);
 }
 
 }  // namespace content

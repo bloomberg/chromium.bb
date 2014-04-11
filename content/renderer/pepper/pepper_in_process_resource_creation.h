@@ -44,31 +44,25 @@ class PepperInProcessResourceCreation : public ResourceCreationImpl {
   virtual PP_Resource CreateBrowserFont(
       PP_Instance instance,
       const PP_BrowserFont_Trusted_Description* description) OVERRIDE;
-  virtual PP_Resource CreateFileChooser(
-      PP_Instance instance,
-      PP_FileChooserMode_Dev mode,
-      const PP_Var& accept_types) OVERRIDE;
+  virtual PP_Resource CreateFileChooser(PP_Instance instance,
+                                        PP_FileChooserMode_Dev mode,
+                                        const PP_Var& accept_types) OVERRIDE;
   virtual PP_Resource CreateFileIO(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateFileRef(
-      PP_Instance instance,
-      const ppapi::FileRefCreateInfo& create_info) OVERRIDE;
+  virtual PP_Resource CreateFileRef(PP_Instance instance,
+                                    const ppapi::FileRefCreateInfo& create_info)
+      OVERRIDE;
   virtual PP_Resource CreateFileSystem(PP_Instance instance,
                                        PP_FileSystemType type) OVERRIDE;
-  virtual PP_Resource CreateGraphics2D(
-      PP_Instance pp_instance,
-      const PP_Size* size,
-      PP_Bool is_always_opaque) OVERRIDE;
-  virtual PP_Resource CreatePrinting(
-      PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateGraphics2D(PP_Instance pp_instance,
+                                       const PP_Size* size,
+                                       PP_Bool is_always_opaque) OVERRIDE;
+  virtual PP_Resource CreatePrinting(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateTrueTypeFont(
       PP_Instance instance,
       const struct PP_TrueTypeFontDesc_Dev* desc) OVERRIDE;
-  virtual PP_Resource CreateURLLoader(
-      PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateURLRequestInfo(
-      PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateWebSocket(
-      PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateURLRequestInfo(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateWebSocket(PP_Instance instance) OVERRIDE;
 
  private:
   // Non-owning pointer to the host for the current plugin.

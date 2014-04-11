@@ -24,7 +24,7 @@ ppapi::DeviceRefData FromStreamDeviceInfo(const StreamDeviceInfo& info) {
 }  // namespace
 
 PepperMediaDeviceManager* PepperMediaDeviceManager::GetForRenderView(
-        RenderView* render_view) {
+    RenderView* render_view) {
   PepperMediaDeviceManager* handler =
       PepperMediaDeviceManager::Get(render_view);
   if (!handler)
@@ -35,8 +35,7 @@ PepperMediaDeviceManager* PepperMediaDeviceManager::GetForRenderView(
 PepperMediaDeviceManager::PepperMediaDeviceManager(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<PepperMediaDeviceManager>(render_view),
-      next_id_(1) {
-}
+      next_id_(1) {}
 
 PepperMediaDeviceManager::~PepperMediaDeviceManager() {
   DCHECK(enumerate_callbacks_.empty());
@@ -52,17 +51,17 @@ int PepperMediaDeviceManager::EnumerateDevices(
 
 #if defined(ENABLE_WEBRTC)
   GetRenderViewImpl()->media_stream_dispatcher()->EnumerateDevices(
-      request_id, AsWeakPtr(),
+      request_id,
+      AsWeakPtr(),
       PepperMediaDeviceManager::FromPepperDeviceType(type),
       document_url.GetOrigin());
 #else
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(
-          &PepperMediaDeviceManager::OnDevicesEnumerated,
-          AsWeakPtr(),
-          request_id,
-          StreamDeviceInfoArray()));
+      base::Bind(&PepperMediaDeviceManager::OnDevicesEnumerated,
+                 AsWeakPtr(),
+                 request_id,
+                 StreamDeviceInfoArray()));
 #endif
 
   return request_id;
@@ -83,22 +82,20 @@ void PepperMediaDeviceManager::StopEnumerateDevices(int request_id) {
 #endif
 }
 
-int PepperMediaDeviceManager::OpenDevice(
-    PP_DeviceType_Dev type,
-    const std::string& device_id,
-    const GURL& document_url,
-    const OpenDeviceCallback& callback) {
+int PepperMediaDeviceManager::OpenDevice(PP_DeviceType_Dev type,
+                                         const std::string& device_id,
+                                         const GURL& document_url,
+                                         const OpenDeviceCallback& callback) {
   open_callbacks_[next_id_] = callback;
   int request_id = next_id_++;
 
 #if defined(ENABLE_WEBRTC)
-  GetRenderViewImpl()->media_stream_dispatcher()->
-      OpenDevice(
-          request_id,
-          AsWeakPtr(),
-          device_id,
-          PepperMediaDeviceManager::FromPepperDeviceType(type),
-          document_url.GetOrigin());
+  GetRenderViewImpl()->media_stream_dispatcher()->OpenDevice(
+      request_id,
+      AsWeakPtr(),
+      device_id,
+      PepperMediaDeviceManager::FromPepperDeviceType(type),
+      document_url.GetOrigin());
 #else
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -114,8 +111,8 @@ void PepperMediaDeviceManager::CancelOpenDevice(int request_id) {
   open_callbacks_.erase(request_id);
 
 #if defined(ENABLE_WEBRTC)
-  GetRenderViewImpl()->media_stream_dispatcher()->CancelOpenDevice(
-      request_id, AsWeakPtr());
+  GetRenderViewImpl()->media_stream_dispatcher()->CancelOpenDevice(request_id,
+                                                                   AsWeakPtr());
 #endif
 }
 
@@ -148,18 +145,15 @@ void PepperMediaDeviceManager::OnStreamGenerated(
     int request_id,
     const std::string& label,
     const StreamDeviceInfoArray& audio_device_array,
-    const StreamDeviceInfoArray& video_device_array) {
-}
+    const StreamDeviceInfoArray& video_device_array) {}
 
 void PepperMediaDeviceManager::OnStreamGenerationFailed(
     int request_id,
-    content::MediaStreamRequestResult result) {
-}
+    content::MediaStreamRequestResult result) {}
 
 void PepperMediaDeviceManager::OnDeviceStopped(
     const std::string& label,
-    const StreamDeviceInfo& device_info) {
-}
+    const StreamDeviceInfo& device_info) {}
 
 void PepperMediaDeviceManager::OnDevicesEnumerated(
     int request_id,
@@ -175,8 +169,9 @@ void PepperMediaDeviceManager::OnDevicesEnumerated(
 
   std::vector<ppapi::DeviceRefData> devices;
   devices.reserve(device_array.size());
-  for (StreamDeviceInfoArray::const_iterator info =
-      device_array.begin(); info != device_array.end(); ++info) {
+  for (StreamDeviceInfoArray::const_iterator info = device_array.begin();
+       info != device_array.end();
+       ++info) {
     devices.push_back(FromStreamDeviceInfo(*info));
   }
   callback.Run(request_id, devices);
@@ -225,10 +220,9 @@ PP_DeviceType_Dev PepperMediaDeviceManager::FromMediaStreamType(
   }
 }
 
-void PepperMediaDeviceManager::NotifyDeviceOpened(
-    int request_id,
-    bool succeeded,
-    const std::string& label) {
+void PepperMediaDeviceManager::NotifyDeviceOpened(int request_id,
+                                                  bool succeeded,
+                                                  const std::string& label) {
   OpenCallbackMap::iterator iter = open_callbacks_.find(request_id);
   if (iter == open_callbacks_.end()) {
     // The callback may have been unregistered.

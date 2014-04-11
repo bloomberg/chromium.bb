@@ -49,6 +49,7 @@ class CONTENT_EXPORT PepperWebSocketHost
                         ClosingHandshakeCompletionStatus status,
                         unsigned short code,
                         const blink::WebString& reason);
+
  private:
   // IPC message handlers.
   int32_t OnHostMsgConnect(ppapi::host::HostMessageContext* context,

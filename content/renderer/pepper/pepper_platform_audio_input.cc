@@ -30,8 +30,12 @@ PepperPlatformAudioInput* PepperPlatformAudioInput::Create(
     PepperAudioInputHost* client) {
   scoped_refptr<PepperPlatformAudioInput> audio_input(
       new PepperPlatformAudioInput());
-  if (audio_input->Initialize(render_view, device_id, document_url,
-                              sample_rate, frames_per_buffer, client)) {
+  if (audio_input->Initialize(render_view,
+                              device_id,
+                              document_url,
+                              sample_rate,
+                              frames_per_buffer,
+                              client)) {
     // Balanced by Release invoked in
     // PepperPlatformAudioInput::ShutDownOnIOThread().
     audio_input->AddRef();
@@ -93,8 +97,12 @@ void PepperPlatformAudioInput::OnStreamCreated(
     // cleaned up on the main thread.
     main_message_loop_proxy_->PostTask(
         FROM_HERE,
-        base::Bind(&PepperPlatformAudioInput::OnStreamCreated, this,
-                   handle, socket_handle, length, total_segments));
+        base::Bind(&PepperPlatformAudioInput::OnStreamCreated,
+                   this,
+                   handle,
+                   socket_handle,
+                   length,
+                   total_segments));
   } else {
     // Must dereference the client only on the main thread. Shutdown may have
     // occurred while the request was in-flight, so we need to NULL check.
@@ -111,12 +119,9 @@ void PepperPlatformAudioInput::OnStreamCreated(
 void PepperPlatformAudioInput::OnVolume(double volume) {}
 
 void PepperPlatformAudioInput::OnStateChanged(
-    media::AudioInputIPCDelegate::State state) {
-}
+    media::AudioInputIPCDelegate::State state) {}
 
-void PepperPlatformAudioInput::OnIPCClosed() {
-  ipc_.reset();
-}
+void PepperPlatformAudioInput::OnIPCClosed() { ipc_.reset(); }
 
 PepperPlatformAudioInput::~PepperPlatformAudioInput() {
   // Make sure we have been shut down. Warning: this may happen on the I/O
@@ -136,8 +141,7 @@ PepperPlatformAudioInput::PepperPlatformAudioInput()
       io_message_loop_proxy_(ChildProcess::current()->io_message_loop_proxy()),
       create_stream_sent_(false),
       pending_open_device_(false),
-      pending_open_device_id_(-1) {
-}
+      pending_open_device_id_(-1) {}
 
 bool PepperPlatformAudioInput::Initialize(
     const base::WeakPtr<RenderViewImpl>& render_view,
@@ -151,15 +155,19 @@ bool PepperPlatformAudioInput::Initialize(
   if (!render_view.get() || !client)
     return false;
 
-  ipc_ = RenderThreadImpl::current()->audio_input_message_filter()->
-      CreateAudioInputIPC(render_view->GetRoutingID());
+  ipc_ = RenderThreadImpl::current()
+             ->audio_input_message_filter()
+             ->CreateAudioInputIPC(render_view->GetRoutingID());
 
   render_view_ = render_view;
   client_ = client;
 
   params_.Reset(media::AudioParameters::AUDIO_PCM_LINEAR,
-                media::CHANNEL_LAYOUT_MONO, ppapi::kAudioInputChannels, 0,
-                sample_rate, ppapi::kBitsPerAudioInputSample,
+                media::CHANNEL_LAYOUT_MONO,
+                ppapi::kAudioInputChannels,
+                0,
+                sample_rate,
+                ppapi::kBitsPerAudioInputSample,
                 frames_per_buffer);
 
   // We need to open the device and obtain the label and session ID before
@@ -208,8 +216,7 @@ void PepperPlatformAudioInput::ShutDownOnIOThread() {
   StopCaptureOnIOThread();
 
   main_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&PepperPlatformAudioInput::CloseDevice, this));
+      FROM_HERE, base::Bind(&PepperPlatformAudioInput::CloseDevice, this));
 
   Release();  // Release for the delegate, balances out the reference taken in
               // PepperPlatformAudioInput::Create.
@@ -233,7 +240,8 @@ void PepperPlatformAudioInput::OnDeviceOpened(int request_id,
       io_message_loop_proxy_->PostTask(
           FROM_HERE,
           base::Bind(&PepperPlatformAudioInput::InitializeOnIOThread,
-                     this, session_id));
+                     this,
+                     session_id));
     } else {
       // Shutdown has occurred.
       CloseDevice();

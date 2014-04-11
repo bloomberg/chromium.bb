@@ -28,7 +28,7 @@ namespace content {
 // The generated events will be filled into the given vector. On failure, no
 // events will ge generated and the vector will be empty.
 void CreateInputEventData(const blink::WebInputEvent& event,
-                          std::vector<ppapi::InputEventData >* pp_events);
+                          std::vector<ppapi::InputEventData>* pp_events);
 
 // Creates a WebInputEvent from the given PP_InputEvent.  If it fails, returns
 // NULL.  The caller owns the created object on success.

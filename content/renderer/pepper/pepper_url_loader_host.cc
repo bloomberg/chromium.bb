@@ -104,18 +104,14 @@ int32_t PepperURLLoaderHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperURLLoaderHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_URLLoader_Open,
-        OnHostMsgOpen)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_URLLoader_SetDeferLoading,
-        OnHostMsgSetDeferLoading)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_URLLoader_Close,
-        OnHostMsgClose);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_URLLoader_GrantUniversalAccess,
-        OnHostMsgGrantUniversalAccess)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_URLLoader_Open, OnHostMsgOpen)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_URLLoader_SetDeferLoading,
+                                    OnHostMsgSetDeferLoading)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_URLLoader_Close,
+                                      OnHostMsgClose);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+      PpapiHostMsg_URLLoader_GrantUniversalAccess,
+      OnHostMsgGrantUniversalAccess)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -179,7 +175,7 @@ void PepperURLLoaderHost::didFinishLoading(WebURLLoader* loader,
 }
 
 void PepperURLLoaderHost::didFail(WebURLLoader* loader,
-                                 const WebURLError& error) {
+                                  const WebURLError& error) {
   // Note that |loader| will be NULL for document loads.
   int32_t pp_error = PP_ERROR_FAILED;
   if (error.domain.equals(WebString::fromUTF8(net::kErrorDomain))) {
@@ -236,7 +232,9 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
   if (URLRequestRequiresUniversalAccess(filled_in_request_data) &&
       !has_universal_access_) {
     ppapi::PpapiGlobals::Get()->LogWithSource(
-        pp_instance(), PP_LOGLEVEL_ERROR, std::string(),
+        pp_instance(),
+        PP_LOGLEVEL_ERROR,
+        std::string(),
         "PPB_URLLoader.Open: The URL you're requesting is "
         " on a different security origin than your plugin. To request "
         " cross-origin resources, see "
@@ -252,10 +250,8 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
     return PP_ERROR_FAILED;
 
   WebURLRequest web_request;
-  if (!CreateWebURLRequest(pp_instance(),
-                           &filled_in_request_data,
-                           frame,
-                           &web_request)) {
+  if (!CreateWebURLRequest(
+          pp_instance(), &filled_in_request_data, frame, &web_request)) {
     return PP_ERROR_FAILED;
   }
 
@@ -401,7 +397,7 @@ void PepperURLLoaderHost::SaveResponse(const WebURLResponse& response) {
         pp_instance(),
         response,
         base::Bind(&PepperURLLoaderHost::DidDataFromWebURLResponse,
-            weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -421,10 +417,10 @@ void PepperURLLoaderHost::UpdateProgress() {
     // flag.
     ppapi::proxy::ResourceMessageReplyParams params;
     SendUpdateToPlugin(new PpapiPluginMsg_URLLoader_UpdateProgress(
-            record_upload ? bytes_sent_ : -1,
-            record_upload ? total_bytes_to_be_sent_ : -1,
-            record_download ? bytes_received_ : -1,
-            record_download ? total_bytes_to_be_received_ : -1));
+        record_upload ? bytes_sent_ : -1,
+        record_upload ? total_bytes_to_be_sent_ : -1,
+        record_download ? bytes_received_ : -1,
+        record_download ? total_bytes_to_be_received_ : -1));
   }
 }
 

@@ -27,8 +27,10 @@ PepperPlatformAudioOutput* PepperPlatformAudioOutput::Create(
     AudioHelper* client) {
   scoped_refptr<PepperPlatformAudioOutput> audio_output(
       new PepperPlatformAudioOutput());
-  if (audio_output->Initialize(sample_rate, frames_per_buffer,
-                               source_render_view_id, source_render_frame_id,
+  if (audio_output->Initialize(sample_rate,
+                               frames_per_buffer,
+                               source_render_view_id,
+                               source_render_frame_id,
                                client)) {
     // Balanced by Release invoked in
     // PepperPlatformAudioOutput::ShutDownOnIOThread().
@@ -68,8 +70,7 @@ void PepperPlatformAudioOutput::ShutDown() {
 }
 
 void PepperPlatformAudioOutput::OnStateChanged(
-    media::AudioOutputIPCDelegate::State state) {
-}
+    media::AudioOutputIPCDelegate::State state) {}
 
 void PepperPlatformAudioOutput::OnStreamCreated(
     base::SharedMemoryHandle handle,
@@ -85,21 +86,23 @@ void PepperPlatformAudioOutput::OnStreamCreated(
   DCHECK(length);
 
   if (base::MessageLoopProxy::current().get() ==
-          main_message_loop_proxy_.get()) {
+      main_message_loop_proxy_.get()) {
     // Must dereference the client only on the main thread. Shutdown may have
     // occurred while the request was in-flight, so we need to NULL check.
     if (client_)
       client_->StreamCreated(handle, length, socket_handle);
   } else {
-    main_message_loop_proxy_->PostTask(FROM_HERE,
-        base::Bind(&PepperPlatformAudioOutput::OnStreamCreated, this, handle,
-                   socket_handle, length));
+    main_message_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&PepperPlatformAudioOutput::OnStreamCreated,
+                   this,
+                   handle,
+                   socket_handle,
+                   length));
   }
 }
 
-void PepperPlatformAudioOutput::OnIPCClosed() {
-  ipc_.reset();
-}
+void PepperPlatformAudioOutput::OnIPCClosed() { ipc_.reset(); }
 
 PepperPlatformAudioOutput::~PepperPlatformAudioOutput() {
   // Make sure we have been shut down. Warning: this will usually happen on
@@ -114,29 +117,29 @@ PepperPlatformAudioOutput::PepperPlatformAudioOutput()
       io_message_loop_proxy_(ChildProcess::current()->io_message_loop_proxy()) {
 }
 
-bool PepperPlatformAudioOutput::Initialize(
-    int sample_rate,
-    int frames_per_buffer,
-    int source_render_view_id,
-    int source_render_frame_id,
-    AudioHelper* client) {
+bool PepperPlatformAudioOutput::Initialize(int sample_rate,
+                                           int frames_per_buffer,
+                                           int source_render_view_id,
+                                           int source_render_frame_id,
+                                           AudioHelper* client) {
   DCHECK(client);
   client_ = client;
 
   RenderThreadImpl* const render_thread = RenderThreadImpl::current();
-  ipc_ = render_thread->audio_message_filter()->
-      CreateAudioOutputIPC(source_render_view_id, source_render_frame_id);
+  ipc_ = render_thread->audio_message_filter()->CreateAudioOutputIPC(
+      source_render_view_id, source_render_frame_id);
   CHECK(ipc_);
 
-  media::AudioParameters params(
-      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      media::CHANNEL_LAYOUT_STEREO, sample_rate,
-      ppapi::kBitsPerAudioOutputSample, frames_per_buffer);
+  media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                media::CHANNEL_LAYOUT_STEREO,
+                                sample_rate,
+                                ppapi::kBitsPerAudioOutputSample,
+                                frames_per_buffer);
 
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&PepperPlatformAudioOutput::InitializeOnIOThread, this,
-                 params));
+      base::Bind(
+          &PepperPlatformAudioOutput::InitializeOnIOThread, this, params));
   return true;
 }
 

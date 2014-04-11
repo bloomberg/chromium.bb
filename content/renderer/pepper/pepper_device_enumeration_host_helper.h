@@ -42,8 +42,8 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
     virtual ~Delegate() {}
 
     typedef base::Callback<
-        void (int /* request_id */,
-              const std::vector<ppapi::DeviceRefData>& /* devices */)>
+        void(int /* request_id */,
+             const std::vector<ppapi::DeviceRefData>& /* devices */)>
         EnumerateDevicesCallback;
 
     // Enumerates devices of the specified type. The request ID passed into the
@@ -87,10 +87,9 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
   void OnEnumerateDevicesComplete(
       int request_id,
       const std::vector<ppapi::DeviceRefData>& devices);
-  void OnNotifyDeviceChange(
-      uint32_t callback_id,
-      int request_id,
-      const std::vector<ppapi::DeviceRefData>& devices);
+  void OnNotifyDeviceChange(uint32_t callback_id,
+                            int request_id,
+                            const std::vector<ppapi::DeviceRefData>& devices);
 
   // Non-owning pointers.
   ppapi::host::ResourceHost* resource_host_;

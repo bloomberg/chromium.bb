@@ -10,15 +10,10 @@
 
 namespace content {
 
-inline PP_Bool BoolToPPBool(bool value) {
-  return value ? PP_TRUE : PP_FALSE;
-}
+inline PP_Bool BoolToPPBool(bool value) { return value ? PP_TRUE : PP_FALSE; }
 
-inline bool PPBoolToBool(PP_Bool value) {
-  return (PP_TRUE == value);
-}
+inline bool PPBoolToBool(PP_Bool value) { return (PP_TRUE == value); }
 
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_COMMON_H_
-

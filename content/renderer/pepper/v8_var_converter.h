@@ -5,7 +5,6 @@
 #ifndef CONTENT_RENDERER_PEPPER_V8_VAR_CONVERTER_H
 #define CONTENT_RENDERER_PEPPER_V8_VAR_CONVERTER_H
 
-
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -27,9 +26,8 @@ class CONTENT_EXPORT V8VarConverter {
  public:
   explicit V8VarConverter(PP_Instance instance);
   // Constructor for testing.
-  V8VarConverter(
-      PP_Instance instance,
-      scoped_ptr<ResourceConverter> resource_converter);
+  V8VarConverter(PP_Instance instance,
+                 scoped_ptr<ResourceConverter> resource_converter);
   ~V8VarConverter();
 
   // Converts the given PP_Var to a v8::Value. True is returned upon success.

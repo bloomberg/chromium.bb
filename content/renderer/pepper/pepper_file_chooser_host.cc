@@ -25,8 +25,7 @@ class PepperFileChooserHost::CompletionHandler
     : public blink::WebFileChooserCompletion {
  public:
   explicit CompletionHandler(const base::WeakPtr<PepperFileChooserHost>& host)
-      : host_(host) {
-  }
+      : host_(host) {}
 
   virtual ~CompletionHandler() {}
 
@@ -50,8 +49,7 @@ class PepperFileChooserHost::CompletionHandler
       std::vector<PepperFileChooserHost::ChosenFileInfo> files;
       for (size_t i = 0; i < file_names.size(); i++) {
         files.push_back(PepperFileChooserHost::ChosenFileInfo(
-            file_names[i].path.utf8(),
-            file_names[i].displayName.utf8()));
+            file_names[i].path.utf8(), file_names[i].displayName.utf8()));
       }
       host_->StoreChosenFiles(files);
     }
@@ -69,29 +67,23 @@ class PepperFileChooserHost::CompletionHandler
 PepperFileChooserHost::ChosenFileInfo::ChosenFileInfo(
     const std::string& path,
     const std::string& display_name)
-    : path(path),
-      display_name(display_name) {
-}
+    : path(path), display_name(display_name) {}
 
-
-PepperFileChooserHost::PepperFileChooserHost(
-    RendererPpapiHost* host,
-    PP_Instance instance,
-    PP_Resource resource)
+PepperFileChooserHost::PepperFileChooserHost(RendererPpapiHost* host,
+                                             PP_Instance instance,
+                                             PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
       handler_(NULL),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
-PepperFileChooserHost::~PepperFileChooserHost() {
-}
+PepperFileChooserHost::~PepperFileChooserHost() {}
 
 int32_t PepperFileChooserHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperFileChooserHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileChooser_Show, OnShow)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileChooser_Show, OnShow)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -141,7 +133,7 @@ int32_t PepperFileChooserHost::OnShow(
 
   if (!host()->permissions().HasPermission(
           ppapi::PERMISSION_BYPASS_USER_GESTURE) &&
-       !renderer_ppapi_host_->HasUserGesture(pp_instance())) {
+      !renderer_ppapi_host_->HasUserGesture(pp_instance())) {
     return PP_ERROR_NO_USER_GESTURE;
   }
 
@@ -155,8 +147,8 @@ int32_t PepperFileChooserHost::OnShow(
   }
   std::vector<blink::WebString> mine_types(accept_mime_types.size());
   for (size_t i = 0; i < accept_mime_types.size(); i++) {
-    mine_types[i] = blink::WebString::fromUTF8(
-        accept_mime_types[i].data(), accept_mime_types[i].size());
+    mine_types[i] = blink::WebString::fromUTF8(accept_mime_types[i].data(),
+                                               accept_mime_types[i].size());
   }
   params.acceptTypes = mine_types;
   params.directory = false;
@@ -183,11 +175,8 @@ void PepperFileChooserHost::DidCreateResourceHosts(
 
   std::vector<ppapi::FileRefCreateInfo> chosen_files;
   for (size_t i = 0; i < browser_ids.size(); ++i) {
-    PepperFileRefRendererHost* renderer_host =
-        new PepperFileRefRendererHost(renderer_ppapi_host_,
-                                      pp_instance(),
-                                      0,
-                                      file_paths[i]);
+    PepperFileRefRendererHost* renderer_host = new PepperFileRefRendererHost(
+        renderer_ppapi_host_, pp_instance(), 0, file_paths[i]);
     int renderer_id =
         renderer_ppapi_host_->GetPpapiHost()->AddPendingResourceHost(
             scoped_ptr<ppapi::host::ResourceHost>(renderer_host));
@@ -204,4 +193,3 @@ void PepperFileChooserHost::DidCreateResourceHosts(
 }
 
 }  // namespace content
-

@@ -51,8 +51,7 @@ class HostVarTracker : public ppapi::VarTracker {
 
   // Returns the number of NPObjectVar's associated with the given instance.
   // Returns 0 if the instance isn't known.
-  CONTENT_EXPORT int GetLiveNPObjectVarsForInstance(
-      PP_Instance instance) const;
+  CONTENT_EXPORT int GetLiveNPObjectVarsForInstance(PP_Instance instance) const;
 
   // VarTracker public implementation.
   virtual PP_Var MakeResourcePPVarFromMessage(
@@ -73,10 +72,11 @@ class HostVarTracker : public ppapi::VarTracker {
 
  private:
   // VarTracker private implementation.
-  virtual ppapi::ArrayBufferVar* CreateArrayBuffer(
-      uint32 size_in_bytes) OVERRIDE;
+  virtual ppapi::ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes)
+      OVERRIDE;
   virtual ppapi::ArrayBufferVar* CreateShmArrayBuffer(
-      uint32 size_in_bytes, base::SharedMemoryHandle handle) OVERRIDE;
+      uint32 size_in_bytes,
+      base::SharedMemoryHandle handle) OVERRIDE;
 
   // Clear the reference count of the given object and remove it from
   // live_vars_.

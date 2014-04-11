@@ -44,18 +44,20 @@ namespace content {
 namespace {
 
 const char kPostMessage[] = "postMessage";
-const char kV8ToVarConversionError[] = "Failed to convert a PostMessage "
+const char kV8ToVarConversionError[] =
+    "Failed to convert a PostMessage "
     "argument from a JavaScript value to a PP_Var. It may have cycles or be of "
     "an unsupported type.";
-const char kVarToV8ConversionError[] = "Failed to convert a PostMessage "
+const char kVarToV8ConversionError[] =
+    "Failed to convert a PostMessage "
     "argument from a PP_Var to a Javascript value. It may have cycles or be of "
     "an unsupported type.";
 
 // Helper function to get the MessageChannel that is associated with an
 // NPObject*.
 MessageChannel* ToMessageChannel(NPObject* object) {
-  return static_cast<MessageChannel::MessageChannelNPObject*>(object)->
-      message_channel.get();
+  return static_cast<MessageChannel::MessageChannelNPObject*>(object)
+      ->message_channel.get();
 }
 
 NPObject* ToPassThroughObject(NPObject* object) {
@@ -89,8 +91,9 @@ PP_Var CopyPPVar(const PP_Var& var) {
       ArrayBufferVar* buffer = ArrayBufferVar::FromPPVar(var);
       if (!buffer)
         return PP_MakeUndefined();
-      PP_Var new_buffer_var = PpapiGlobals::Get()->GetVarTracker()->
-          MakeArrayBufferPPVar(buffer->ByteLength());
+      PP_Var new_buffer_var =
+          PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
+              buffer->ByteLength());
       DCHECK(new_buffer_var.type == PP_VARTYPE_ARRAY_BUFFER);
       if (new_buffer_var.type != PP_VARTYPE_ARRAY_BUFFER)
         return PP_MakeUndefined();
@@ -145,8 +148,10 @@ bool MessageChannelHasMethod(NPObject* np_obj, NPIdentifier name) {
   return false;
 }
 
-bool MessageChannelInvoke(NPObject* np_obj, NPIdentifier name,
-                          const NPVariant* args, uint32 arg_count,
+bool MessageChannelInvoke(NPObject* np_obj,
+                          NPIdentifier name,
+                          const NPVariant* args,
+                          uint32 arg_count,
                           NPVariant* result) {
   if (!np_obj)
     return false;
@@ -164,8 +169,8 @@ bool MessageChannelInvoke(NPObject* np_obj, NPIdentifier name,
   // Other method calls we will pass to the passthrough object, if we have one.
   NPObject* passthrough = ToPassThroughObject(np_obj);
   if (passthrough) {
-    return WebBindings::invoke(NULL, passthrough, name, args, arg_count,
-                               result);
+    return WebBindings::invoke(
+        NULL, passthrough, name, args, arg_count, result);
   }
   return false;
 }
@@ -180,8 +185,8 @@ bool MessageChannelInvokeDefault(NPObject* np_obj,
   // Invoke on the passthrough object, if we have one.
   NPObject* passthrough = ToPassThroughObject(np_obj);
   if (passthrough) {
-    return WebBindings::invokeDefault(NULL, passthrough, args, arg_count,
-                                      result);
+    return WebBindings::invokeDefault(
+        NULL, passthrough, args, arg_count, result);
   }
   return false;
 }
@@ -203,7 +208,8 @@ bool MessageChannelHasProperty(NPObject* np_obj, NPIdentifier name) {
   return false;
 }
 
-bool MessageChannelGetProperty(NPObject* np_obj, NPIdentifier name,
+bool MessageChannelGetProperty(NPObject* np_obj,
+                               NPIdentifier name,
                                NPVariant* result) {
   if (!np_obj)
     return false;
@@ -225,7 +231,8 @@ bool MessageChannelGetProperty(NPObject* np_obj, NPIdentifier name,
   return false;
 }
 
-bool MessageChannelSetProperty(NPObject* np_obj, NPIdentifier name,
+bool MessageChannelSetProperty(NPObject* np_obj,
+                               NPIdentifier name,
                                const NPVariant* variant) {
   if (!np_obj)
     return false;
@@ -241,8 +248,9 @@ bool MessageChannelSetProperty(NPObject* np_obj, NPIdentifier name,
   return false;
 }
 
-bool MessageChannelEnumerate(NPObject *np_obj, NPIdentifier **value,
-                             uint32_t *count) {
+bool MessageChannelEnumerate(NPObject* np_obj,
+                             NPIdentifier** value,
+                             uint32_t* count) {
   if (!np_obj)
     return false;
 
@@ -258,7 +266,7 @@ bool MessageChannelEnumerate(NPObject *np_obj, NPIdentifier **value,
         return false;
       NPIdentifier* new_array = static_cast<NPIdentifier*>(
           std::malloc(sizeof(NPIdentifier) * (*count + 1)));
-      std::memcpy(new_array, *value, sizeof(NPIdentifier)*(*count));
+      std::memcpy(new_array, *value, sizeof(NPIdentifier) * (*count));
       new_array[*count] = WebBindings::getStringIdentifier(kPostMessage);
       std::free(*value);
       *value = new_array;
@@ -275,38 +283,26 @@ bool MessageChannelEnumerate(NPObject *np_obj, NPIdentifier **value,
 }
 
 NPClass message_channel_class = {
-  NP_CLASS_STRUCT_VERSION,
-  &MessageChannelAllocate,
-  &MessageChannelDeallocate,
-  NULL,
-  &MessageChannelHasMethod,
-  &MessageChannelInvoke,
-  &MessageChannelInvokeDefault,
-  &MessageChannelHasProperty,
-  &MessageChannelGetProperty,
-  &MessageChannelSetProperty,
-  NULL,
-  &MessageChannelEnumerate,
-};
+    NP_CLASS_STRUCT_VERSION,      &MessageChannelAllocate,
+    &MessageChannelDeallocate,    NULL,
+    &MessageChannelHasMethod,     &MessageChannelInvoke,
+    &MessageChannelInvokeDefault, &MessageChannelHasProperty,
+    &MessageChannelGetProperty,   &MessageChannelSetProperty,
+    NULL,                         &MessageChannelEnumerate, };
 
 }  // namespace
 
 // MessageChannel --------------------------------------------------------------
 struct MessageChannel::VarConversionResult {
   VarConversionResult(const ppapi::ScopedPPVar& r, bool s)
-      : result(r),
-        success(s),
-        conversion_completed(true) {}
-  VarConversionResult()
-      : success(false),
-        conversion_completed(false) {}
+      : result(r), success(s), conversion_completed(true) {}
+  VarConversionResult() : success(false), conversion_completed(false) {}
   ppapi::ScopedPPVar result;
   bool success;
   bool conversion_completed;
 };
 
-MessageChannel::MessageChannelNPObject::MessageChannelNPObject() {
-}
+MessageChannel::MessageChannelNPObject::MessageChannelNPObject() {}
 
 MessageChannel::MessageChannelNPObject::~MessageChannelNPObject() {}
 
@@ -331,33 +327,34 @@ void MessageChannel::NPVariantToPPVar(const NPVariant* variant) {
       --converted_var_queue_.end();
   switch (variant->type) {
     case NPVariantType_Void:
-      NPVariantToPPVarComplete(result_iterator,
-          ppapi::ScopedPPVar(PP_MakeUndefined()), true);
+      NPVariantToPPVarComplete(
+          result_iterator, ppapi::ScopedPPVar(PP_MakeUndefined()), true);
       return;
     case NPVariantType_Null:
-      NPVariantToPPVarComplete(result_iterator,
-          ppapi::ScopedPPVar(PP_MakeNull()), true);
+      NPVariantToPPVarComplete(
+          result_iterator, ppapi::ScopedPPVar(PP_MakeNull()), true);
       return;
     case NPVariantType_Bool:
       NPVariantToPPVarComplete(result_iterator,
-          ppapi::ScopedPPVar(
-              PP_MakeBool(PP_FromBool(NPVARIANT_TO_BOOLEAN(*variant)))),
-          true);
+                               ppapi::ScopedPPVar(PP_MakeBool(PP_FromBool(
+                                   NPVARIANT_TO_BOOLEAN(*variant)))),
+                               true);
       return;
     case NPVariantType_Int32:
-      NPVariantToPPVarComplete(result_iterator,
-          ppapi::ScopedPPVar(
-              PP_MakeInt32(NPVARIANT_TO_INT32(*variant))),
+      NPVariantToPPVarComplete(
+          result_iterator,
+          ppapi::ScopedPPVar(PP_MakeInt32(NPVARIANT_TO_INT32(*variant))),
           true);
       return;
     case NPVariantType_Double:
-      NPVariantToPPVarComplete(result_iterator,
-          ppapi::ScopedPPVar(
-              PP_MakeDouble(NPVARIANT_TO_DOUBLE(*variant))),
+      NPVariantToPPVarComplete(
+          result_iterator,
+          ppapi::ScopedPPVar(PP_MakeDouble(NPVARIANT_TO_DOUBLE(*variant))),
           true);
       return;
     case NPVariantType_String:
-      NPVariantToPPVarComplete(result_iterator,
+      NPVariantToPPVarComplete(
+          result_iterator,
           ppapi::ScopedPPVar(ppapi::ScopedPPVar::PassRef(),
                              StringVar::StringToPPVar(
                                  NPVARIANT_TO_STRING(*variant).UTF8Characters,
@@ -368,15 +365,17 @@ void MessageChannel::NPVariantToPPVar(const NPVariant* variant) {
       // Calling WebBindings::toV8Value creates a wrapper around NPVariant so it
       // shouldn't result in a deep copy.
       v8::Handle<v8::Value> v8_value = WebBindings::toV8Value(variant);
-      V8VarConverter(instance_->pp_instance()).FromV8Value(
-          v8_value, v8::Isolate::GetCurrent()->GetCurrentContext(),
-          base::Bind(&MessageChannel::NPVariantToPPVarComplete,
-                     weak_ptr_factory_.GetWeakPtr(), result_iterator));
+      V8VarConverter(instance_->pp_instance())
+          .FromV8Value(v8_value,
+                       v8::Isolate::GetCurrent()->GetCurrentContext(),
+                       base::Bind(&MessageChannel::NPVariantToPPVarComplete,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  result_iterator));
       return;
     }
   }
-  NPVariantToPPVarComplete(result_iterator,
-      ppapi::ScopedPPVar(PP_MakeUndefined()), false);
+  NPVariantToPPVarComplete(
+      result_iterator, ppapi::ScopedPPVar(PP_MakeUndefined()), false);
 }
 
 void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
@@ -398,10 +397,12 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
   v8::Context::Scope context_scope(context);
 
   v8::Handle<v8::Value> v8_val;
-  if (!V8VarConverter(instance_->pp_instance()).ToV8Value(
-          message_data, context, &v8_val)) {
+  if (!V8VarConverter(instance_->pp_instance())
+           .ToV8Value(message_data, context, &v8_val)) {
     PpapiGlobals::Get()->LogWithSource(instance_->pp_instance(),
-        PP_LOGLEVEL_ERROR, std::string(), kVarToV8ConversionError);
+                                       PP_LOGLEVEL_ERROR,
+                                       std::string(),
+                                       kVarToV8ConversionError);
     return;
   }
 
@@ -458,7 +459,9 @@ void MessageChannel::NPVariantToPPVarComplete(
       PostMessageToNative(it->result.get());
     } else {
       PpapiGlobals::Get()->LogWithSource(instance()->pp_instance(),
-          PP_LOGLEVEL_ERROR, std::string(), kV8ToVarConversionError);
+                                         PP_LOGLEVEL_ERROR,
+                                         std::string(),
+                                         kV8ToVarConversionError);
     }
 
     converted_var_queue_.erase(it++);
@@ -497,13 +500,13 @@ void MessageChannel::PostMessageToJavaScriptImpl(
   WebDOMEvent event =
       container->element().document().createEvent("MessageEvent");
   WebDOMMessageEvent msg_event = event.to<WebDOMMessageEvent>();
-  msg_event.initMessageEvent("message",  // type
-                             false,  // canBubble
-                             false,  // cancelable
+  msg_event.initMessageEvent("message",     // type
+                             false,         // canBubble
+                             false,         // cancelable
                              message_data,  // data
-                             "",  // origin [*]
-                             NULL,  // source [*]
-                             "");  // lastEventId
+                             "",            // origin [*]
+                             NULL,          // source [*]
+                             "");           // lastEventId
   // [*] Note that the |origin| is only specified for cross-document and server-
   //     sent messages, while |source| is only specified for cross-document
   //     messages:
@@ -561,7 +564,7 @@ void MessageChannel::SetPassthroughObject(NPObject* passthrough) {
 }
 
 bool MessageChannel::GetReadOnlyProperty(NPIdentifier key,
-                                         NPVariant *value) const {
+                                         NPVariant* value) const {
   std::map<NPIdentifier, ppapi::ScopedPPVar>::const_iterator it =
       internal_properties_.find(key);
   if (it != internal_properties_.end()) {

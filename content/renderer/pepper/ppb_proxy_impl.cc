@@ -59,19 +59,12 @@ PP_Bool IsInModuleDestructor(PP_Module module) {
 }
 
 const PPB_Proxy_Private ppb_proxy = {
-  &PluginCrashed,
-  &GetInstanceForResource,
-  &SetReserveInstanceIDCallback,
-  &AddRefModule,
-  &ReleaseModule,
-  &IsInModuleDestructor
-};
+    &PluginCrashed, &GetInstanceForResource, &SetReserveInstanceIDCallback,
+    &AddRefModule,  &ReleaseModule,          &IsInModuleDestructor};
 
 }  // namespace
 
 // static
-const PPB_Proxy_Private* PPB_Proxy_Impl::GetInterface() {
-  return &ppb_proxy;
-}
+const PPB_Proxy_Private* PPB_Proxy_Impl::GetInterface() { return &ppb_proxy; }
 
 }  // namespace content

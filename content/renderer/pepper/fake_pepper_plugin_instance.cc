@@ -11,25 +11,17 @@ namespace content {
 
 FakePepperPluginInstance::~FakePepperPluginInstance() {}
 
-content::RenderView* FakePepperPluginInstance::GetRenderView() {
-  return NULL;
-}
+content::RenderView* FakePepperPluginInstance::GetRenderView() { return NULL; }
 
 blink::WebPluginContainer* FakePepperPluginInstance::GetContainer() {
   return NULL;
 }
 
-v8::Isolate* FakePepperPluginInstance::GetIsolate() const {
-  return NULL;
-}
+v8::Isolate* FakePepperPluginInstance::GetIsolate() const { return NULL; }
 
-ppapi::VarTracker* FakePepperPluginInstance::GetVarTracker() {
-  return NULL;
-}
+ppapi::VarTracker* FakePepperPluginInstance::GetVarTracker() { return NULL; }
 
-const GURL& FakePepperPluginInstance::GetPluginURL() {
-  return gurl_;
-}
+const GURL& FakePepperPluginInstance::GetPluginURL() { return gurl_; }
 
 base::FilePath FakePepperPluginInstance::GetModulePath() {
   return base::FilePath();
@@ -51,9 +43,7 @@ PP_ExternalPluginResult FakePepperPluginInstance::SwitchToOutOfProcessProxy(
 
 void FakePepperPluginInstance::SetAlwaysOnTop(bool on_top) {}
 
-bool FakePepperPluginInstance::IsFullPagePlugin() {
-  return false;
-}
+bool FakePepperPluginInstance::IsFullPagePlugin() { return false; }
 
 bool FakePepperPluginInstance::FlashSetFullscreen(bool fullscreen,
                                                   bool delay_report) {

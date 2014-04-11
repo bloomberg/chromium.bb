@@ -39,24 +39,19 @@ base::PlatformFile ConvertSharedMemoryHandle(
 
 }  // namespace
 
-PepperAudioInputHost::PepperAudioInputHost(
-    RendererPpapiHostImpl* host,
-    PP_Instance instance,
-    PP_Resource resource)
+PepperAudioInputHost::PepperAudioInputHost(RendererPpapiHostImpl* host,
+                                           PP_Instance instance,
+                                           PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
       audio_input_(NULL),
-      enumeration_helper_(
-          this,
-          PepperMediaDeviceManager::GetForRenderView(
-              host->GetRenderViewForInstance(pp_instance())),
-          PP_DEVICETYPE_DEV_AUDIOCAPTURE,
-          host->GetDocumentURL(instance)) {
-}
+      enumeration_helper_(this,
+                          PepperMediaDeviceManager::GetForRenderView(
+                              host->GetRenderViewForInstance(pp_instance())),
+                          PP_DEVICETYPE_DEV_AUDIOCAPTURE,
+                          host->GetDocumentURL(instance)) {}
 
-PepperAudioInputHost::~PepperAudioInputHost() {
-  Close();
-}
+PepperAudioInputHost::~PepperAudioInputHost() { Close(); }
 
 int32_t PepperAudioInputHost::OnResourceMessageReceived(
     const IPC::Message& msg,
@@ -66,11 +61,10 @@ int32_t PepperAudioInputHost::OnResourceMessageReceived(
     return result;
 
   IPC_BEGIN_MESSAGE_MAP(PepperAudioInputHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_AudioInput_Open, OnOpen)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_AudioInput_StartOrStop,
-                                      OnStartOrStop);
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_AudioInput_Close,
-                                        OnClose);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_AudioInput_Open, OnOpen)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_AudioInput_StartOrStop,
+                                    OnStartOrStop);
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_AudioInput_Close, OnClose);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -83,15 +77,16 @@ void PepperAudioInputHost::StreamCreated(
 }
 
 void PepperAudioInputHost::StreamCreationFailed() {
-  OnOpenComplete(PP_ERROR_FAILED, base::SharedMemory::NULLHandle(), 0,
+  OnOpenComplete(PP_ERROR_FAILED,
+                 base::SharedMemory::NULLHandle(),
+                 0,
                  base::SyncSocket::kInvalidHandle);
 }
 
-int32_t PepperAudioInputHost::OnOpen(
-    ppapi::host::HostMessageContext* context,
-    const std::string& device_id,
-    PP_AudioSampleRate sample_rate,
-    uint32_t sample_frame_count) {
+int32_t PepperAudioInputHost::OnOpen(ppapi::host::HostMessageContext* context,
+                                     const std::string& device_id,
+                                     PP_AudioSampleRate sample_rate,
+                                     uint32_t sample_frame_count) {
   if (open_context_)
     return PP_ERROR_INPROGRESS;
   if (audio_input_)
@@ -106,11 +101,13 @@ int32_t PepperAudioInputHost::OnOpen(
   RenderViewImpl* render_view = static_cast<RenderViewImpl*>(
       renderer_ppapi_host_->GetRenderViewForInstance(pp_instance()));
 
-  audio_input_ = PepperPlatformAudioInput::Create(
-      render_view->AsWeakPtr(), device_id,
-      document_url,
-      static_cast<int>(sample_rate),
-      static_cast<int>(sample_frame_count), this);
+  audio_input_ =
+      PepperPlatformAudioInput::Create(render_view->AsWeakPtr(),
+                                       device_id,
+                                       document_url,
+                                       static_cast<int>(sample_rate),
+                                       static_cast<int>(sample_frame_count),
+                                       this);
   if (audio_input_) {
     open_context_.reset(new ppapi::host::ReplyMessageContext(
         context->MakeReplyMessageContext()));
@@ -214,4 +211,3 @@ void PepperAudioInputHost::Close() {
 }
 
 }  // namespace content
-

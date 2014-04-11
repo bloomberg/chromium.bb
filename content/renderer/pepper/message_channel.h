@@ -68,16 +68,12 @@ class MessageChannel {
   // related to postMessage.  Note that this can be NULL;  it only gets set if
   // there is a scriptable 'InstanceObject' associated with this channel's
   // instance.
-  NPObject* passthrough_object() {
-    return passthrough_object_;
-  }
+  NPObject* passthrough_object() { return passthrough_object_; }
   void SetPassthroughObject(NPObject* passthrough);
 
   NPObject* np_object() { return np_object_; }
 
-  PepperPluginInstanceImpl* instance() {
-    return instance_;
-  }
+  PepperPluginInstanceImpl* instance() { return instance_; }
 
   // Messages sent to JavaScript are queued by default. After the DOM is
   // set up for the plugin, users of MessageChannel should call
@@ -126,10 +122,10 @@ class MessageChannel {
   // PluginInstance::ResetAsProxied() is gone.
   std::deque<blink::WebSerializedScriptValue> early_message_queue_;
   enum EarlyMessageQueueState {
-    QUEUE_MESSAGES,       // Queue JS messages.
-    SEND_DIRECTLY,        // Post JS messages directly.
-    DRAIN_PENDING,        // Drain queue, then transition to DIRECT.
-    DRAIN_CANCELLED       // Preempt drain, go back to QUEUE.
+    QUEUE_MESSAGES,  // Queue JS messages.
+    SEND_DIRECTLY,   // Post JS messages directly.
+    DRAIN_PENDING,   // Drain queue, then transition to DIRECT.
+    DRAIN_CANCELLED  // Preempt drain, go back to QUEUE.
   };
   EarlyMessageQueueState early_message_queue_state_;
 

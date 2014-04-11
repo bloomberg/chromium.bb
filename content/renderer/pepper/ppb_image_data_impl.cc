@@ -51,25 +51,24 @@ PPB_ImageData_Impl::PPB_ImageData_Impl(PP_Instance instance,
     case PPB_ImageData_Shared::SIMPLE:
       backend_.reset(new ImageDataSimpleBackend);
       return;
-    // No default: so that we get a compiler warning if any types are added.
+      // No default: so that we get a compiler warning if any types are added.
   }
   NOTREACHED();
 }
 
-PPB_ImageData_Impl::PPB_ImageData_Impl(PP_Instance instance,
-                                       ForTest)
+PPB_ImageData_Impl::PPB_ImageData_Impl(PP_Instance instance, ForTest)
     : Resource(ppapi::OBJECT_IS_IMPL, instance),
       format_(PP_IMAGEDATAFORMAT_BGRA_PREMUL),
       width_(0),
       height_(0) {
-    backend_.reset(new ImageDataPlatformBackend(false));
+  backend_.reset(new ImageDataPlatformBackend(false));
 }
 
-PPB_ImageData_Impl::~PPB_ImageData_Impl() {
-}
+PPB_ImageData_Impl::~PPB_ImageData_Impl() {}
 
 bool PPB_ImageData_Impl::Init(PP_ImageDataFormat format,
-                              int width, int height,
+                              int width,
+                              int height,
                               bool init_to_zero) {
   // TODO(brettw) this should be called only on the main thread!
   if (!IsImageDataFormatSupported(format))
@@ -92,20 +91,16 @@ PP_Resource PPB_ImageData_Impl::Create(PP_Instance instance,
                                        PP_ImageDataFormat format,
                                        const PP_Size& size,
                                        PP_Bool init_to_zero) {
-  scoped_refptr<PPB_ImageData_Impl>
-      data(new PPB_ImageData_Impl(instance, type));
+  scoped_refptr<PPB_ImageData_Impl> data(
+      new PPB_ImageData_Impl(instance, type));
   if (!data->Init(format, size.width, size.height, !!init_to_zero))
     return 0;
   return data->GetReference();
 }
 
-PPB_ImageData_API* PPB_ImageData_Impl::AsPPB_ImageData_API() {
-  return this;
-}
+PPB_ImageData_API* PPB_ImageData_Impl::AsPPB_ImageData_API() { return this; }
 
-bool PPB_ImageData_Impl::IsMapped() const {
-  return backend_->IsMapped();
-}
+bool PPB_ImageData_Impl::IsMapped() const { return backend_->IsMapped(); }
 
 TransportDIB* PPB_ImageData_Impl::GetTransportDIB() const {
   return backend_->GetTransportDIB();
@@ -119,13 +114,9 @@ PP_Bool PPB_ImageData_Impl::Describe(PP_ImageDataDesc* desc) {
   return PP_TRUE;
 }
 
-void* PPB_ImageData_Impl::Map() {
-  return backend_->Map();
-}
+void* PPB_ImageData_Impl::Map() { return backend_->Map(); }
 
-void PPB_ImageData_Impl::Unmap() {
-  backend_->Unmap();
-}
+void PPB_ImageData_Impl::Unmap() { backend_->Unmap(); }
 
 int32_t PPB_ImageData_Impl::GetSharedMemory(int* handle, uint32_t* byte_count) {
   return backend_->GetSharedMemory(handle, byte_count);
@@ -135,9 +126,7 @@ skia::PlatformCanvas* PPB_ImageData_Impl::GetPlatformCanvas() {
   return backend_->GetPlatformCanvas();
 }
 
-SkCanvas* PPB_ImageData_Impl::GetCanvas() {
-  return backend_->GetCanvas();
-}
+SkCanvas* PPB_ImageData_Impl::GetCanvas() { return backend_->GetCanvas(); }
 
 void PPB_ImageData_Impl::SetIsCandidateForReuse() {
   // Nothing to do since we don't support image data re-use in-process.
@@ -150,10 +139,7 @@ const SkBitmap* PPB_ImageData_Impl::GetMappedBitmap() const {
 // ImageDataPlatformBackend ----------------------------------------------------
 
 ImageDataPlatformBackend::ImageDataPlatformBackend(bool is_browser_allocated)
-    : width_(0),
-      height_(0),
-      is_browser_allocated_(is_browser_allocated) {
-}
+    : width_(0), height_(0), is_browser_allocated_(is_browser_allocated) {}
 
 // On POSIX, we have to tell the browser to free the transport DIB.
 ImageDataPlatformBackend::~ImageDataPlatformBackend() {
@@ -169,7 +155,8 @@ ImageDataPlatformBackend::~ImageDataPlatformBackend() {
 
 bool ImageDataPlatformBackend::Init(PPB_ImageData_Impl* impl,
                                     PP_ImageDataFormat format,
-                                    int width, int height,
+                                    int width,
+                                    int height,
                                     bool init_to_zero) {
   // TODO(brettw) use init_to_zero when we implement caching.
   width_ = width;
@@ -186,9 +173,8 @@ bool ImageDataPlatformBackend::Init(PPB_ImageData_Impl* impl,
     // TransportDIB is cached in the browser, and is freed (in typical cases) by
     // the TransportDIB's destructor.
     TransportDIB::Handle dib_handle;
-    IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(buffer_size,
-                                                          true,
-                                                          &dib_handle);
+    IPC::Message* msg =
+        new ViewHostMsg_AllocTransportDIB(buffer_size, true, &dib_handle);
     if (!RenderThreadImpl::current()->Send(msg))
       return false;
     if (!TransportDIB::is_valid_handle(dib_handle))
@@ -254,9 +240,7 @@ skia::PlatformCanvas* ImageDataPlatformBackend::GetPlatformCanvas() {
   return mapped_canvas_.get();
 }
 
-SkCanvas* ImageDataPlatformBackend::GetCanvas() {
-  return mapped_canvas_.get();
-}
+SkCanvas* ImageDataPlatformBackend::GetCanvas() { return mapped_canvas_.get(); }
 
 const SkBitmap* ImageDataPlatformBackend::GetMappedBitmap() const {
   if (!mapped_canvas_)
@@ -266,31 +250,27 @@ const SkBitmap* ImageDataPlatformBackend::GetMappedBitmap() const {
 
 // ImageDataSimpleBackend ------------------------------------------------------
 
-ImageDataSimpleBackend::ImageDataSimpleBackend()
-    : map_count_(0) {
-}
+ImageDataSimpleBackend::ImageDataSimpleBackend() : map_count_(0) {}
 
-ImageDataSimpleBackend::~ImageDataSimpleBackend() {
-}
+ImageDataSimpleBackend::~ImageDataSimpleBackend() {}
 
 bool ImageDataSimpleBackend::Init(PPB_ImageData_Impl* impl,
                                   PP_ImageDataFormat format,
-                                  int width, int height,
+                                  int width,
+                                  int height,
                                   bool init_to_zero) {
-  skia_bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
-                         impl->width(), impl->height());
-  shared_memory_.reset(RenderThread::Get()->HostAllocateSharedMemoryBuffer(
-      skia_bitmap_.getSize()).release());
+  skia_bitmap_.setConfig(
+      SkBitmap::kARGB_8888_Config, impl->width(), impl->height());
+  shared_memory_.reset(
+      RenderThread::Get()
+          ->HostAllocateSharedMemoryBuffer(skia_bitmap_.getSize())
+          .release());
   return !!shared_memory_.get();
 }
 
-bool ImageDataSimpleBackend::IsMapped() const {
-  return map_count_ > 0;
-}
+bool ImageDataSimpleBackend::IsMapped() const { return map_count_ > 0; }
 
-TransportDIB* ImageDataSimpleBackend::GetTransportDIB() const {
-  return NULL;
-}
+TransportDIB* ImageDataSimpleBackend::GetTransportDIB() const { return NULL; }
 
 void* ImageDataSimpleBackend::Map() {
   DCHECK(shared_memory_.get());

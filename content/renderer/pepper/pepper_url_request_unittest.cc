@@ -42,8 +42,7 @@ bool IsExpected(const WebString& web_string, const char* expected) {
 }
 
 // The base class destructor is protected, so derive.
-class TestWebFrameClient : public WebFrameClient {
-};
+class TestWebFrameClient : public WebFrameClient {};
 
 }  // namespace
 
@@ -54,8 +53,7 @@ namespace content {
 
 class URLRequestInfoTest : public RenderViewTest {
  public:
-  URLRequestInfoTest() : pp_instance_(1234) {
-  }
+  URLRequestInfoTest() : pp_instance_(1234) {}
 
   virtual void SetUp() OVERRIDE {
     RenderViewTest::SetUp();
@@ -64,9 +62,8 @@ class URLRequestInfoTest : public RenderViewTest {
     test_globals_.GetResourceTracker()->DidCreateInstance(pp_instance_);
 
     // This resource doesn't do IPC, so a null connection is fine.
-    info_ = new URLRequestInfoResource(ppapi::proxy::Connection(),
-                                       pp_instance_,
-                                       URLRequestInfoData());
+    info_ = new URLRequestInfoResource(
+        ppapi::proxy::Connection(), pp_instance_, URLRequestInfoData());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -141,79 +138,73 @@ TEST_F(URLRequestInfoTest, StreamToFile) {
 
   EXPECT_FALSE(GetDownloadToFile());
 
-  EXPECT_TRUE(SetBooleanProperty(
-      PP_URLREQUESTPROPERTY_STREAMTOFILE, true));
+  EXPECT_TRUE(SetBooleanProperty(PP_URLREQUESTPROPERTY_STREAMTOFILE, true));
   EXPECT_TRUE(GetDownloadToFile());
 
-  EXPECT_TRUE(SetBooleanProperty(
-      PP_URLREQUESTPROPERTY_STREAMTOFILE, false));
+  EXPECT_TRUE(SetBooleanProperty(PP_URLREQUESTPROPERTY_STREAMTOFILE, false));
   EXPECT_FALSE(GetDownloadToFile());
 }
 
 TEST_F(URLRequestInfoTest, FollowRedirects) {
   EXPECT_TRUE(info_->GetData().follow_redirects);
 
-  EXPECT_TRUE(SetBooleanProperty(
-      PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS, false));
+  EXPECT_TRUE(SetBooleanProperty(PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS, false));
   EXPECT_FALSE(info_->GetData().follow_redirects);
 
-  EXPECT_TRUE(SetBooleanProperty(
-      PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS, true));
+  EXPECT_TRUE(SetBooleanProperty(PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS, true));
   EXPECT_TRUE(info_->GetData().follow_redirects);
 }
 
 TEST_F(URLRequestInfoTest, RecordDownloadProgress) {
   EXPECT_FALSE(info_->GetData().record_download_progress);
 
-  EXPECT_TRUE(SetBooleanProperty(
-      PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS, true));
+  EXPECT_TRUE(
+      SetBooleanProperty(PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS, true));
   EXPECT_TRUE(info_->GetData().record_download_progress);
 
-  EXPECT_TRUE(SetBooleanProperty(
-      PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS, false));
+  EXPECT_TRUE(
+      SetBooleanProperty(PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS, false));
   EXPECT_FALSE(info_->GetData().record_download_progress);
 }
 
 TEST_F(URLRequestInfoTest, RecordUploadProgress) {
   EXPECT_FALSE(info_->GetData().record_upload_progress);
 
-  EXPECT_TRUE(SetBooleanProperty(
-      PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS, true));
+  EXPECT_TRUE(
+      SetBooleanProperty(PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS, true));
   EXPECT_TRUE(info_->GetData().record_upload_progress);
 
-  EXPECT_TRUE(SetBooleanProperty(
-      PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS, false));
+  EXPECT_TRUE(
+      SetBooleanProperty(PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS, false));
   EXPECT_FALSE(info_->GetData().record_upload_progress);
 }
 
 TEST_F(URLRequestInfoTest, AllowCrossOriginRequests) {
   EXPECT_FALSE(info_->GetData().allow_cross_origin_requests);
 
-  EXPECT_TRUE(SetBooleanProperty(
-      PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS, true));
+  EXPECT_TRUE(
+      SetBooleanProperty(PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS, true));
   EXPECT_TRUE(info_->GetData().allow_cross_origin_requests);
 
-  EXPECT_TRUE(SetBooleanProperty(
-      PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS, false));
+  EXPECT_TRUE(SetBooleanProperty(PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS,
+                                 false));
   EXPECT_FALSE(info_->GetData().allow_cross_origin_requests);
 }
 
 TEST_F(URLRequestInfoTest, AllowCredentials) {
   EXPECT_FALSE(info_->GetData().allow_credentials);
 
-  EXPECT_TRUE(SetBooleanProperty(
-      PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS, true));
+  EXPECT_TRUE(SetBooleanProperty(PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS, true));
   EXPECT_TRUE(info_->GetData().allow_credentials);
 
-  EXPECT_TRUE(SetBooleanProperty(
-      PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS, false));
+  EXPECT_TRUE(
+      SetBooleanProperty(PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS, false));
   EXPECT_FALSE(info_->GetData().allow_credentials);
 }
 
 TEST_F(URLRequestInfoTest, SetURL) {
   const char* url = "http://www.google.com/";
-  EXPECT_TRUE(SetStringProperty(
-      PP_URLREQUESTPROPERTY_URL, url));
+  EXPECT_TRUE(SetStringProperty(PP_URLREQUESTPROPERTY_URL, url));
   EXPECT_TRUE(IsExpected(GetURL(), url));
 }
 
@@ -227,27 +218,21 @@ TEST_F(URLRequestInfoTest, JavascriptURL) {
 TEST_F(URLRequestInfoTest, SetMethod) {
   // Test default method is "GET".
   EXPECT_TRUE(IsExpected(GetMethod(), "GET"));
-  EXPECT_TRUE(SetStringProperty(
-      PP_URLREQUESTPROPERTY_METHOD, "POST"));
+  EXPECT_TRUE(SetStringProperty(PP_URLREQUESTPROPERTY_METHOD, "POST"));
   EXPECT_TRUE(IsExpected(GetMethod(), "POST"));
 }
 
 TEST_F(URLRequestInfoTest, SetHeaders) {
   // Test default header field.
-  EXPECT_TRUE(IsExpected(
-      GetHeaderValue("foo"), ""));
+  EXPECT_TRUE(IsExpected(GetHeaderValue("foo"), ""));
   // Test that we can set a header field.
-  EXPECT_TRUE(SetStringProperty(
-      PP_URLREQUESTPROPERTY_HEADERS, "foo: bar"));
-  EXPECT_TRUE(IsExpected(
-      GetHeaderValue("foo"), "bar"));
+  EXPECT_TRUE(SetStringProperty(PP_URLREQUESTPROPERTY_HEADERS, "foo: bar"));
+  EXPECT_TRUE(IsExpected(GetHeaderValue("foo"), "bar"));
   // Test that we can set multiple header fields using \n delimiter.
-  EXPECT_TRUE(SetStringProperty(
-      PP_URLREQUESTPROPERTY_HEADERS, "foo: bar\nbar: baz"));
-  EXPECT_TRUE(IsExpected(
-      GetHeaderValue("foo"), "bar"));
-  EXPECT_TRUE(IsExpected(
-      GetHeaderValue("bar"), "baz"));
+  EXPECT_TRUE(
+      SetStringProperty(PP_URLREQUESTPROPERTY_HEADERS, "foo: bar\nbar: baz"));
+  EXPECT_TRUE(IsExpected(GetHeaderValue("foo"), "bar"));
+  EXPECT_TRUE(IsExpected(GetHeaderValue("bar"), "baz"));
 }
 
 // TODO(bbudge) Unit tests for AppendDataToBody, AppendFileToBody.

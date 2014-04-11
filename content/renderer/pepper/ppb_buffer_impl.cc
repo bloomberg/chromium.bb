@@ -20,13 +20,9 @@ using ppapi::thunk::PPB_Buffer_API;
 namespace content {
 
 PPB_Buffer_Impl::PPB_Buffer_Impl(PP_Instance instance)
-    : Resource(ppapi::OBJECT_IS_IMPL, instance),
-      size_(0),
-      map_count_(0) {
-}
+    : Resource(ppapi::OBJECT_IS_IMPL, instance), size_(0), map_count_(0) {}
 
-PPB_Buffer_Impl::~PPB_Buffer_Impl() {
-}
+PPB_Buffer_Impl::~PPB_Buffer_Impl() {}
 
 // static
 PP_Resource PPB_Buffer_Impl::Create(PP_Instance instance, uint32_t size) {
@@ -46,13 +42,9 @@ scoped_refptr<PPB_Buffer_Impl> PPB_Buffer_Impl::CreateResource(
   return buffer;
 }
 
-PPB_Buffer_Impl* PPB_Buffer_Impl::AsPPB_Buffer_Impl() {
-  return this;
-}
+PPB_Buffer_Impl* PPB_Buffer_Impl::AsPPB_Buffer_Impl() { return this; }
 
-PPB_Buffer_API* PPB_Buffer_Impl::AsPPB_Buffer_API() {
-  return this;
-}
+PPB_Buffer_API* PPB_Buffer_Impl::AsPPB_Buffer_API() { return this; }
 
 bool PPB_Buffer_Impl::Init(uint32_t size) {
   if (size == 0)
@@ -89,8 +81,7 @@ int32_t PPB_Buffer_Impl::GetSharedMemory(int* shm_handle) {
 #if defined(OS_POSIX)
   *shm_handle = shared_memory_->handle().fd;
 #elif defined(OS_WIN)
-  *shm_handle = reinterpret_cast<int>(
-      shared_memory_->handle());
+  *shm_handle = reinterpret_cast<int>(shared_memory_->handle());
 #else
 #error "Platform not supported."
 #endif

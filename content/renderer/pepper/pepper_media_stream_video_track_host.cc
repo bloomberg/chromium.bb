@@ -51,8 +51,7 @@ VideoFrame::Format FromPpapiFormat(PP_VideoFrame_Format format) {
 
 // Compute size base on the size of frame received from MediaStreamVideoSink
 // and size specified by plugin.
-gfx::Size GetTargetSize(const gfx::Size& source,
-                        const gfx::Size& plugin) {
+gfx::Size GetTargetSize(const gfx::Size& source, const gfx::Size& plugin) {
   return gfx::Size(plugin.width() ? plugin.width() : source.width(),
                    plugin.height() ? plugin.height() : source.height());
 }
@@ -68,8 +67,7 @@ void ConvertFromMediaVideoFrame(const scoped_refptr<media::VideoFrame>& src,
                                 PP_VideoFrame_Format dst_format,
                                 const gfx::Size& dst_size,
                                 uint8_t* dst) {
-  CHECK(src->format() == VideoFrame::YV12 ||
-        src->format() == VideoFrame::I420);
+  CHECK(src->format() == VideoFrame::YV12 || src->format() == VideoFrame::I420);
   if (dst_format == PP_VIDEOFRAME_FORMAT_BGRA) {
     if (src->coded_size() == dst_size) {
       libyuv::I420ToARGB(src->data(VideoFrame::kYPlane),
@@ -101,8 +99,10 @@ void ConvertFromMediaVideoFrame(const scoped_refptr<media::VideoFrame>& src,
   } else if (dst_format == PP_VIDEOFRAME_FORMAT_YV12 ||
              dst_format == PP_VIDEOFRAME_FORMAT_I420) {
     static const size_t kPlanesOrder[][3] = {
-      { VideoFrame::kYPlane, VideoFrame::kVPlane, VideoFrame::kUPlane }, // YV12
-      { VideoFrame::kYPlane, VideoFrame::kUPlane, VideoFrame::kVPlane }, // I420
+        {VideoFrame::kYPlane, VideoFrame::kVPlane,
+         VideoFrame::kUPlane},  // YV12
+        {VideoFrame::kYPlane, VideoFrame::kUPlane,
+         VideoFrame::kVPlane},  // I420
     };
     const int plane_order = (dst_format == PP_VIDEOFRAME_FORMAT_YV12) ? 0 : 1;
     int dst_width = dst_size.width();
@@ -111,7 +111,10 @@ void ConvertFromMediaVideoFrame(const scoped_refptr<media::VideoFrame>& src,
                        src->stride(kPlanesOrder[plane_order][0]),
                        src->coded_size().width(),
                        src->coded_size().height(),
-                       dst, dst_width, dst_width, dst_height,
+                       dst,
+                       dst_width,
+                       dst_width,
+                       dst_height,
                        kFilterMode);
     dst += dst_width * dst_height;
     const int src_halfwidth = (src->coded_size().width() + 1) >> 1;
@@ -120,14 +123,22 @@ void ConvertFromMediaVideoFrame(const scoped_refptr<media::VideoFrame>& src,
     const int dst_halfheight = (dst_height + 1) >> 1;
     libyuv::ScalePlane(src->data(kPlanesOrder[plane_order][1]),
                        src->stride(kPlanesOrder[plane_order][1]),
-                       src_halfwidth, src_halfheight,
-                       dst, dst_halfwidth, dst_halfwidth, dst_halfheight,
+                       src_halfwidth,
+                       src_halfheight,
+                       dst,
+                       dst_halfwidth,
+                       dst_halfwidth,
+                       dst_halfheight,
                        kFilterMode);
     dst += dst_halfwidth * dst_halfheight;
     libyuv::ScalePlane(src->data(kPlanesOrder[plane_order][2]),
                        src->stride(kPlanesOrder[plane_order][2]),
-                       src_halfwidth, src_halfheight,
-                       dst, dst_halfwidth, dst_halfwidth, dst_halfheight,
+                       src_halfwidth,
+                       src_halfheight,
+                       dst,
+                       dst_halfwidth,
+                       dst_halfwidth,
+                       dst_halfheight,
                        kFilterMode);
   } else {
     NOTREACHED();
@@ -162,14 +173,14 @@ void PepperMediaStreamVideoTrackHost::InitBuffers() {
   DCHECK(!size.IsEmpty());
 
   PP_VideoFrame_Format format =
-    GetTargetFormat(source_frame_format_, plugin_frame_format_);
+      GetTargetFormat(source_frame_format_, plugin_frame_format_);
   DCHECK_NE(format, PP_VIDEOFRAME_FORMAT_UNKNOWN);
 
   if (format == PP_VIDEOFRAME_FORMAT_BGRA) {
     frame_data_size_ = size.width() * size.height() * 4;
   } else {
-    frame_data_size_ = VideoFrame::AllocationSize(FromPpapiFormat(format),
-                                                  size);
+    frame_data_size_ =
+        VideoFrame::AllocationSize(FromPpapiFormat(format), size);
   }
 
   DCHECK_GT(frame_data_size_, 0U);
@@ -212,8 +223,8 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
   CHECK_EQ(ppformat, source_frame_format_) << "Frame format is changed.";
 
   gfx::Size size = GetTargetSize(source_frame_size_, plugin_frame_size_);
-  PP_VideoFrame_Format format = GetTargetFormat(source_frame_format_,
-                                                plugin_frame_format_);
+  PP_VideoFrame_Format format =
+      GetTargetFormat(source_frame_format_, plugin_frame_format_);
   ppapi::MediaStreamBuffer::Video* buffer =
       &(buffer_manager()->GetBufferPointer(index)->video);
   buffer->header.size = buffer_manager()->buffer_size();
@@ -238,9 +249,8 @@ int32_t PepperMediaStreamVideoTrackHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperMediaStreamVideoTrackHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_MediaStreamVideoTrack_Configure,
-        OnHostMsgConfigure)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+      PpapiHostMsg_MediaStreamVideoTrack_Configure, OnHostMsgConfigure)
   IPC_END_MESSAGE_MAP()
   return PepperMediaStreamTrackHostBase::OnResourceMessageReceived(msg,
                                                                    context);
@@ -255,13 +265,13 @@ int32_t PepperMediaStreamVideoTrackHost::OnHostMsgConfigure(
   gfx::Size new_size(attributes.width, attributes.height);
   if (GetTargetSize(source_frame_size_, plugin_frame_size_) !=
       GetTargetSize(source_frame_size_, new_size)) {
-      changed = true;
+    changed = true;
   }
   plugin_frame_size_ = new_size;
 
-  int32_t buffers = attributes.buffers ?
-      std::min(kMaxNumberOfBuffers, attributes.buffers) :
-      kDefaultNumberOfBuffers;
+  int32_t buffers = attributes.buffers
+                        ? std::min(kMaxNumberOfBuffers, attributes.buffers)
+                        : kDefaultNumberOfBuffers;
   if (buffers != number_of_buffers_)
     changed = true;
   number_of_buffers_ = buffers;

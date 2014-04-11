@@ -105,9 +105,8 @@ bool DOMFileSystemToResource(
   }
 
   *pending_renderer_id = host->GetPpapiHost()->AddPendingResourceHost(
-      scoped_ptr<ppapi::host::ResourceHost>(
-          new PepperFileSystemHost(host, instance, 0, root_url,
-              file_system_type)));
+      scoped_ptr<ppapi::host::ResourceHost>(new PepperFileSystemHost(
+          host, instance, 0, root_url, file_system_type)));
   if (*pending_renderer_id == 0)
     return false;
 
@@ -188,9 +187,7 @@ ResourceConverter::~ResourceConverter() {}
 
 ResourceConverterImpl::ResourceConverterImpl(PP_Instance instance,
                                              RendererPpapiHost* host)
-    : instance_(instance),
-      host_(host) {
-}
+    : instance_(instance), host_(host) {}
 
 ResourceConverterImpl::~ResourceConverterImpl() {
   // Verify Flush() was called.
@@ -213,8 +210,11 @@ bool ResourceConverterImpl::FromV8Value(v8::Handle<v8::Object> val,
     int pending_renderer_id;
     scoped_ptr<IPC::Message> create_message;
     scoped_ptr<IPC::Message> browser_host_create_message;
-    if (!DOMFileSystemToResource(instance_, host_, dom_file_system,
-                                 &pending_renderer_id, &create_message,
+    if (!DOMFileSystemToResource(instance_,
+                                 host_,
+                                 dom_file_system,
+                                 &pending_renderer_id,
+                                 &create_message,
                                  &browser_host_create_message)) {
       return false;
     }
@@ -233,13 +233,16 @@ bool ResourceConverterImpl::FromV8Value(v8::Handle<v8::Object> val,
   if (!dom_media_stream_track.isNull()) {
     int pending_renderer_id;
     scoped_ptr<IPC::Message> create_message;
-    if (!DOMMediaStreamTrackToResource(instance_, host_, dom_media_stream_track,
-                                       &pending_renderer_id, &create_message)) {
+    if (!DOMMediaStreamTrackToResource(instance_,
+                                       host_,
+                                       dom_media_stream_track,
+                                       &pending_renderer_id,
+                                       &create_message)) {
       return false;
     }
     DCHECK(create_message);
-    scoped_refptr<HostResourceVar> result_var = CreateResourceVar(
-        pending_renderer_id, *create_message);
+    scoped_refptr<HostResourceVar> result_var =
+        CreateResourceVar(pending_renderer_id, *create_message);
     *result = result_var->GetPPVar();
     *was_resource = true;
     return true;
@@ -282,8 +285,7 @@ bool ResourceConverterImpl::ToV8Value(const PP_Var& var,
     NOTREACHED();
     return false;
   }
-  ::ppapi::host::PpapiHost* ppapi_host =
-      renderer_ppapi_host->GetPpapiHost();
+  ::ppapi::host::PpapiHost* ppapi_host = renderer_ppapi_host->GetPpapiHost();
   ::ppapi::host::ResourceHost* resource_host =
       ppapi_host->GetResourceHost(resource_id);
   if (resource_host == NULL) {

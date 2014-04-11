@@ -42,8 +42,8 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
     explicit FrameReceiver(const base::WeakPtr<PepperVideoSourceHost>& host);
 
     // FrameReaderInterface implementation.
-    virtual bool GotFrame(
-        const scoped_refptr<media::VideoFrame>& frame) OVERRIDE;
+    virtual bool GotFrame(const scoped_refptr<media::VideoFrame>& frame)
+        OVERRIDE;
 
     void OnGotFrame(const scoped_refptr<media::VideoFrame>& frame);
 

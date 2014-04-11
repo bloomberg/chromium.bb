@@ -35,7 +35,9 @@ class PluginObject {
   PepperPluginInstanceImpl* instance() const { return instance_; }
 
   const PPP_Class_Deprecated* ppp_class() { return ppp_class_; }
-  void* ppp_class_data() { return ppp_class_data_; };
+  void* ppp_class_data() {
+    return ppp_class_data_;
+  };
 
   NPObject* GetNPObject() const;
 

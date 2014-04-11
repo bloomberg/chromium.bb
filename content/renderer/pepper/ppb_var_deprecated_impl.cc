@@ -109,8 +109,7 @@ bool PPVarToNPVariantNoCopy(PP_Var var, NPVariant* result) {
 class ObjectAccessorTryCatch : public TryCatch {
  public:
   ObjectAccessorTryCatch(PP_Var object, PP_Var* exception)
-      : TryCatch(exception),
-        object_(NPObjectVar::FromPPVar(object)) {
+      : TryCatch(exception), object_(NPObjectVar::FromPPVar(object)) {
     if (!object_.get()) {
       SetException(kInvalidObjectException);
     }
@@ -145,8 +144,7 @@ class ObjectAccessorWithIdentifierTryCatch : public ObjectAccessorTryCatch {
   ObjectAccessorWithIdentifierTryCatch(PP_Var object,
                                        PP_Var identifier,
                                        PP_Var* exception)
-      : ObjectAccessorTryCatch(object, exception),
-        identifier_(0) {
+      : ObjectAccessorTryCatch(object, exception), identifier_(0) {
     if (!has_exception()) {
       identifier_ = PPVarToNPIdentifier(identifier);
       if (!identifier_)
@@ -162,43 +160,36 @@ class ObjectAccessorWithIdentifierTryCatch : public ObjectAccessorTryCatch {
   DISALLOW_COPY_AND_ASSIGN(ObjectAccessorWithIdentifierTryCatch);
 };
 
-PP_Bool HasProperty(PP_Var var,
-                    PP_Var name,
-                    PP_Var* exception) {
+PP_Bool HasProperty(PP_Var var, PP_Var name, PP_Var* exception) {
   ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
   if (accessor.has_exception())
     return PP_FALSE;
-  return BoolToPPBool(WebBindings::hasProperty(NULL,
-                                               accessor.object()->np_object(),
-                                               accessor.identifier()));
+  return BoolToPPBool(WebBindings::hasProperty(
+      NULL, accessor.object()->np_object(), accessor.identifier()));
 }
 
-bool HasPropertyDeprecated(PP_Var var,
-                           PP_Var name,
-                           PP_Var* exception) {
+bool HasPropertyDeprecated(PP_Var var, PP_Var name, PP_Var* exception) {
   return PPBoolToBool(HasProperty(var, name, exception));
 }
 
-bool HasMethodDeprecated(PP_Var var,
-                         PP_Var name,
-                         PP_Var* exception) {
+bool HasMethodDeprecated(PP_Var var, PP_Var name, PP_Var* exception) {
   ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
   if (accessor.has_exception())
     return false;
-  return WebBindings::hasMethod(NULL, accessor.object()->np_object(),
-                                accessor.identifier());
+  return WebBindings::hasMethod(
+      NULL, accessor.object()->np_object(), accessor.identifier());
 }
 
-PP_Var GetProperty(PP_Var var,
-                   PP_Var name,
-                   PP_Var* exception) {
+PP_Var GetProperty(PP_Var var, PP_Var name, PP_Var* exception) {
   ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
   if (accessor.has_exception())
     return PP_MakeUndefined();
 
   NPVariant result;
-  if (!WebBindings::getProperty(NULL, accessor.object()->np_object(),
-                                accessor.identifier(), &result)) {
+  if (!WebBindings::getProperty(NULL,
+                                accessor.object()->np_object(),
+                                accessor.identifier(),
+                                &result)) {
     // An exception may have been raised.
     accessor.SetException(kUnableToGetPropertyException);
     return PP_MakeUndefined();
@@ -222,8 +213,8 @@ void EnumerateProperties(PP_Var var,
 
   NPIdentifier* identifiers = NULL;
   uint32_t count = 0;
-  if (!WebBindings::enumerate(NULL, accessor.object()->np_object(),
-                              &identifiers, &count)) {
+  if (!WebBindings::enumerate(
+          NULL, accessor.object()->np_object(), &identifiers, &count)) {
     accessor.SetException(kUnableToGetAllPropertiesException);
     return;
   }
@@ -252,20 +243,20 @@ void SetPropertyDeprecated(PP_Var var,
     accessor.SetException(kInvalidValueException);
     return;
   }
-  if (!WebBindings::setProperty(NULL, accessor.object()->np_object(),
-                                accessor.identifier(), &variant))
+  if (!WebBindings::setProperty(NULL,
+                                accessor.object()->np_object(),
+                                accessor.identifier(),
+                                &variant))
     accessor.SetException(kUnableToSetPropertyException);
 }
 
-void DeletePropertyDeprecated(PP_Var var,
-                              PP_Var name,
-                              PP_Var* exception) {
+void DeletePropertyDeprecated(PP_Var var, PP_Var name, PP_Var* exception) {
   ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
   if (accessor.has_exception())
     return;
 
-  if (!WebBindings::removeProperty(NULL, accessor.object()->np_object(),
-                                   accessor.identifier()))
+  if (!WebBindings::removeProperty(
+          NULL, accessor.object()->np_object(), accessor.identifier()))
     accessor.SetException(kUnableToRemovePropertyException);
 }
 
@@ -305,11 +296,15 @@ PP_Var InternalCallDeprecated(ObjectAccessorTryCatch* accessor,
 
   NPVariant result;
   if (identifier) {
-    ok = WebBindings::invoke(NULL, accessor->object()->np_object(),
-                             identifier, args.get(), argc, &result);
+    ok = WebBindings::invoke(NULL,
+                             accessor->object()->np_object(),
+                             identifier,
+                             args.get(),
+                             argc,
+                             &result);
   } else {
-    ok = WebBindings::invokeDefault(NULL, accessor->object()->np_object(),
-                                    args.get(), argc, &result);
+    ok = WebBindings::invokeDefault(
+        NULL, accessor->object()->np_object(), args.get(), argc, &result);
   }
 
   if (!ok) {
@@ -333,18 +328,14 @@ PP_Var CallDeprecated(PP_Var var,
     return PP_MakeUndefined();
   PepperPluginInstanceImpl* plugin = accessor.GetPluginInstance();
   if (plugin && plugin->IsProcessingUserGesture()) {
-    blink::WebScopedUserGesture user_gesture(
-        plugin->CurrentUserGestureToken());
-    return InternalCallDeprecated(&accessor, method_name, argc, argv,
-                                  exception);
+    blink::WebScopedUserGesture user_gesture(plugin->CurrentUserGestureToken());
+    return InternalCallDeprecated(
+        &accessor, method_name, argc, argv, exception);
   }
   return InternalCallDeprecated(&accessor, method_name, argc, argv, exception);
 }
 
-PP_Var Construct(PP_Var var,
-                 uint32_t argc,
-                 PP_Var* argv,
-                 PP_Var* exception) {
+PP_Var Construct(PP_Var var, uint32_t argc, PP_Var* argv, PP_Var* exception) {
   ObjectAccessorTryCatch accessor(var, exception);
   if (accessor.has_exception())
     return PP_MakeUndefined();
@@ -362,8 +353,8 @@ PP_Var Construct(PP_Var var,
   }
 
   NPVariant result;
-  if (!WebBindings::construct(NULL, accessor.object()->np_object(),
-                              args.get(), argc, &result)) {
+  if (!WebBindings::construct(
+          NULL, accessor.object()->np_object(), args.get(), argc, &result)) {
     // An exception may have been raised.
     accessor.SetException(kUnableToConstructException);
     return PP_MakeUndefined();
@@ -381,8 +372,8 @@ bool IsInstanceOfDeprecated(PP_Var var,
   if (!object.get())
     return false;  // Not an object at all.
 
-  return PluginObject::IsInstanceOf(object->np_object(),
-                                    ppp_class, ppp_class_data);
+  return PluginObject::IsInstanceOf(
+      object->np_object(), ppp_class, ppp_class_data);
 }
 
 PP_Var CreateObjectDeprecated(PP_Instance pp_instance,
@@ -403,8 +394,8 @@ PP_Var CreateObjectWithModuleDeprecated(PP_Module pp_module,
   PluginModule* module = HostGlobals::Get()->GetModule(pp_module);
   if (!module)
     return PP_MakeNull();
-  return PluginObject::Create(module->GetSomeInstance(),
-                              ppp_class, ppp_class_data);
+  return PluginObject::Create(
+      module->GetSomeInstance(), ppp_class, ppp_class_data);
 }
 
 }  // namespace
@@ -412,25 +403,23 @@ PP_Var CreateObjectWithModuleDeprecated(PP_Module pp_module,
 // static
 const PPB_Var_Deprecated* PPB_Var_Deprecated_Impl::GetVarDeprecatedInterface() {
   static const PPB_Var_Deprecated var_deprecated_interface = {
-    ppapi::PPB_Var_Shared::GetVarInterface1_0()->AddRef,
-    ppapi::PPB_Var_Shared::GetVarInterface1_0()->Release,
-    ppapi::PPB_Var_Shared::GetVarInterface1_0()->VarFromUtf8,
-    ppapi::PPB_Var_Shared::GetVarInterface1_0()->VarToUtf8,
-    &HasPropertyDeprecated,
-    &HasMethodDeprecated,
-    &GetProperty,
-    &EnumerateProperties,
-    &SetPropertyDeprecated,
-    &DeletePropertyDeprecated,
-    &CallDeprecated,
-    &Construct,
-    &IsInstanceOfDeprecated,
-    &CreateObjectDeprecated,
-    &CreateObjectWithModuleDeprecated,
-  };
+      ppapi::PPB_Var_Shared::GetVarInterface1_0()->AddRef,
+      ppapi::PPB_Var_Shared::GetVarInterface1_0()->Release,
+      ppapi::PPB_Var_Shared::GetVarInterface1_0()->VarFromUtf8,
+      ppapi::PPB_Var_Shared::GetVarInterface1_0()->VarToUtf8,
+      &HasPropertyDeprecated,
+      &HasMethodDeprecated,
+      &GetProperty,
+      &EnumerateProperties,
+      &SetPropertyDeprecated,
+      &DeletePropertyDeprecated,
+      &CallDeprecated,
+      &Construct,
+      &IsInstanceOfDeprecated,
+      &CreateObjectDeprecated,
+      &CreateObjectWithModuleDeprecated, };
 
   return &var_deprecated_interface;
 }
 
 }  // namespace content
-

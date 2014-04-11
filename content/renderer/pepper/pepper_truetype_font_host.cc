@@ -26,11 +26,9 @@ PepperTrueTypeFontHost::PepperTrueTypeFontHost(
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
       font_(PepperTrueTypeFont::Create(desc)),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
-PepperTrueTypeFontHost::~PepperTrueTypeFontHost() {
-}
+PepperTrueTypeFontHost::~PepperTrueTypeFontHost() {}
 
 int32_t PepperTrueTypeFontHost::OnResourceMessageReceived(
     const IPC::Message& msg,
@@ -39,12 +37,12 @@ int32_t PepperTrueTypeFontHost::OnResourceMessageReceived(
     return PP_ERROR_FAILED;
 
   IPC_BEGIN_MESSAGE_MAP(PepperTrueTypeFontHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_TrueTypeFont_Describe,
-                                        OnHostMsgDescribe)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_TrueTypeFont_GetTableTags,
-                                        OnHostMsgGetTableTags)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TrueTypeFont_GetTable,
-                                      OnHostMsgGetTable)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_TrueTypeFont_Describe,
+                                      OnHostMsgDescribe)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_TrueTypeFont_GetTableTags,
+                                      OnHostMsgGetTableTags)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TrueTypeFont_GetTable,
+                                    OnHostMsgGetTable)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -69,9 +67,8 @@ int32_t PepperTrueTypeFontHost::OnHostMsgGetTableTags(
   std::vector<uint32_t> tags;
   ReplyMessageContext reply_context = context->MakeReplyMessageContext();
   reply_context.params.set_result(font_->GetTableTags(&tags));
-  host()->SendReply(
-      reply_context,
-      PpapiPluginMsg_TrueTypeFont_GetTableTagsReply(tags));
+  host()->SendReply(reply_context,
+                    PpapiPluginMsg_TrueTypeFont_GetTableTagsReply(tags));
   return PP_OK_COMPLETIONPENDING;
 }
 

@@ -25,9 +25,8 @@ namespace content {
 
 class RendererPpapiHostImpl;
 
-class PepperURLLoaderHost
-    : public ppapi::host::ResourceHost,
-      public blink::WebURLLoaderClient {
+class PepperURLLoaderHost : public ppapi::host::ResourceHost,
+                            public blink::WebURLLoaderClient {
  public:
   // If main_document_loader is true, PP_Resource must be 0 since it will be
   // pending until the plugin resource attaches to it.

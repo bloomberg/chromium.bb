@@ -56,29 +56,30 @@ const int64 kOffscreenCallbackDelayMs = 1000 / 30;  // 30 fps
 // NULL to indicate it should be the entire image. If the rect is outside of
 // the image, this will do nothing and return false.
 bool ValidateAndConvertRect(const PP_Rect* rect,
-                            int image_width, int image_height,
+                            int image_width,
+                            int image_height,
                             gfx::Rect* dest) {
   if (!rect) {
     // Use the entire image area.
     *dest = gfx::Rect(0, 0, image_width, image_height);
   } else {
     // Validate the passed-in area.
-    if (rect->point.x < 0 || rect->point.y < 0 ||
-        rect->size.width <= 0 || rect->size.height <= 0)
+    if (rect->point.x < 0 || rect->point.y < 0 || rect->size.width <= 0 ||
+        rect->size.height <= 0)
       return false;
 
     // Check the max bounds, being careful of overflow.
     if (static_cast<int64>(rect->point.x) +
-        static_cast<int64>(rect->size.width) >
+            static_cast<int64>(rect->size.width) >
         static_cast<int64>(image_width))
       return false;
     if (static_cast<int64>(rect->point.y) +
-        static_cast<int64>(rect->size.height) >
+            static_cast<int64>(rect->size.height) >
         static_cast<int64>(image_height))
       return false;
 
-    *dest = gfx::Rect(rect->point.x, rect->point.y,
-                      rect->size.width, rect->size.height);
+    *dest = gfx::Rect(
+        rect->point.x, rect->point.y, rect->size.width, rect->size.height);
   }
   return true;
 }
@@ -101,8 +102,10 @@ void ConvertBetweenBGRAandRGBA(const uint32_t* input,
 // Converts ImageData from PP_IMAGEDATAFORMAT_BGRA_PREMUL to
 // PP_IMAGEDATAFORMAT_RGBA_PREMUL, or reverse. It's assumed that the
 // destination image is always mapped (so will have non-NULL data).
-void ConvertImageData(PPB_ImageData_Impl* src_image, const SkIRect& src_rect,
-                      PPB_ImageData_Impl* dest_image, const SkRect& dest_rect) {
+void ConvertImageData(PPB_ImageData_Impl* src_image,
+                      const SkIRect& src_rect,
+                      PPB_ImageData_Impl* dest_image,
+                      const SkRect& dest_rect) {
   ImageDataAutoMapper auto_mapper(src_image);
 
   DCHECK(src_image->format() != dest_image->format());
@@ -136,19 +139,10 @@ void ConvertImageData(PPB_ImageData_Impl* src_image, const SkIRect& src_rect,
 }  // namespace
 
 struct PepperGraphics2DHost::QueuedOperation {
-  enum Type {
-    PAINT,
-    SCROLL,
-    REPLACE,
-  };
+  enum Type { PAINT, SCROLL, REPLACE, };
 
   QueuedOperation(Type t)
-      : type(t),
-        paint_x(0),
-        paint_y(0),
-        scroll_dx(0),
-        scroll_dy(0) {
-  }
+      : type(t), paint_x(0), paint_y(0), scroll_dx(0), scroll_dy(0) {}
 
   Type type;
 
@@ -175,7 +169,8 @@ PepperGraphics2DHost* PepperGraphics2DHost::Create(
     scoped_refptr<PPB_ImageData_Impl> backing_store) {
   PepperGraphics2DHost* resource_host =
       new PepperGraphics2DHost(host, instance, resource);
-  if (!resource_host->Init(size.width, size.height,
+  if (!resource_host->Init(size.width,
+                           size.height,
                            PP_ToBool(is_always_opaque),
                            backing_store)) {
     delete resource_host;
@@ -211,7 +206,9 @@ bool PepperGraphics2DHost::Init(
   // The underlying PPB_ImageData_Impl will validate the dimensions.
   image_data_ = backing_store;
   if (!image_data_->Init(PPB_ImageData_Impl::GetNativeImageDataFormat(),
-                         width, height, true) ||
+                         width,
+                         height,
+                         true) ||
       !image_data_->Map()) {
     image_data_ = NULL;
     return false;
@@ -225,31 +222,23 @@ int32_t PepperGraphics2DHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperGraphics2DHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_Graphics2D_PaintImageData,
-        OnHostMsgPaintImageData)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_Graphics2D_Scroll,
-        OnHostMsgScroll)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_Graphics2D_ReplaceContents,
-        OnHostMsgReplaceContents)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_Graphics2D_Flush,
-        OnHostMsgFlush)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_Graphics2D_SetScale,
-        OnHostMsgSetScale)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_Graphics2D_ReadImageData,
-        OnHostMsgReadImageData)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Graphics2D_PaintImageData,
+                                    OnHostMsgPaintImageData)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Graphics2D_Scroll,
+                                    OnHostMsgScroll)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Graphics2D_ReplaceContents,
+                                    OnHostMsgReplaceContents)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Graphics2D_Flush,
+                                      OnHostMsgFlush)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Graphics2D_SetScale,
+                                    OnHostMsgSetScale)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Graphics2D_ReadImageData,
+                                    OnHostMsgReadImageData)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 
-bool PepperGraphics2DHost::IsGraphics2DHost() {
-  return true;
-}
+bool PepperGraphics2DHost::IsGraphics2DHost() { return true; }
 
 bool PepperGraphics2DHost::ReadImageData(PP_Resource image,
                                          const PP_Point* top_left) {
@@ -259,33 +248,30 @@ bool PepperGraphics2DHost::ReadImageData(PP_Resource image,
     return false;
   PPB_ImageData_Impl* image_resource =
       static_cast<PPB_ImageData_Impl*>(enter.object());
-  if (!PPB_ImageData_Impl::IsImageDataFormatSupported(
-          image_resource->format()))
+  if (!PPB_ImageData_Impl::IsImageDataFormatSupported(image_resource->format()))
     return false;  // Must be in the right format.
 
   // Validate the bitmap position.
   int x = top_left->x;
   if (x < 0 ||
       static_cast<int64>(x) + static_cast<int64>(image_resource->width()) >
-      image_data_->width())
+          image_data_->width())
     return false;
   int y = top_left->y;
   if (y < 0 ||
       static_cast<int64>(y) + static_cast<int64>(image_resource->height()) >
-      image_data_->height())
+          image_data_->height())
     return false;
 
   ImageDataAutoMapper auto_mapper(image_resource);
   if (!auto_mapper.is_valid())
     return false;
 
-  SkIRect src_irect = { x, y,
-                        x + image_resource->width(),
-                        y + image_resource->height() };
-  SkRect dest_rect = { SkIntToScalar(0),
-                       SkIntToScalar(0),
-                       SkIntToScalar(image_resource->width()),
-                       SkIntToScalar(image_resource->height()) };
+  SkIRect src_irect = {x, y, x + image_resource->width(),
+                       y + image_resource->height()};
+  SkRect dest_rect = {SkIntToScalar(0), SkIntToScalar(0),
+                      SkIntToScalar(image_resource->width()),
+                      SkIntToScalar(image_resource->height())};
 
   if (image_resource->format() != image_data_->format()) {
     // Convert the image data if the format does not match.
@@ -296,8 +282,8 @@ bool PepperGraphics2DHost::ReadImageData(PP_Resource image,
     // We want to replace the contents of the bitmap rather than blend.
     SkPaint paint;
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-    dest_canvas->drawBitmapRect(*image_data_->GetMappedBitmap(),
-                                &src_irect, dest_rect, &paint);
+    dest_canvas->drawBitmapRect(
+        *image_data_->GetMappedBitmap(), &src_irect, dest_rect, &paint);
   }
   return true;
 }
@@ -344,8 +330,8 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
   SkAutoCanvasRestore auto_restore(canvas, true);
   canvas->clipRect(sk_invalidate_rect);
   gfx::Size pixel_image_size(image_data_->width(), image_data_->height());
-  gfx::Size image_size = gfx::ToFlooredSize(
-      gfx::ScaleSize(pixel_image_size, scale_));
+  gfx::Size image_size =
+      gfx::ToFlooredSize(gfx::ScaleSize(pixel_image_size, scale_));
 
   PepperPluginInstance* plugin_instance =
       renderer_ppapi_host_->GetPluginInstance(pp_instance());
@@ -397,8 +383,7 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
   canvas->drawBitmap(image, pixel_origin.x(), pixel_origin.y(), &paint);
 }
 
-void PepperGraphics2DHost::ViewInitiatedPaint() {
-}
+void PepperGraphics2DHost::ViewInitiatedPaint() {}
 
 void PepperGraphics2DHost::ViewFlushedPaint() {
   TRACE_EVENT0("pepper", "PepperGraphics2DHost::ViewFlushedPaint");
@@ -408,17 +393,11 @@ void PepperGraphics2DHost::ViewFlushedPaint() {
   }
 }
 
-void PepperGraphics2DHost::SetScale(float scale) {
-  scale_ = scale;
-}
+void PepperGraphics2DHost::SetScale(float scale) { scale_ = scale; }
 
-float PepperGraphics2DHost::GetScale() const {
-  return scale_;
-}
+float PepperGraphics2DHost::GetScale() const { return scale_; }
 
-bool PepperGraphics2DHost::IsAlwaysOpaque() const {
-  return is_always_opaque_;
-}
+bool PepperGraphics2DHost::IsAlwaysOpaque() const { return is_always_opaque_; }
 
 PPB_ImageData_Impl* PepperGraphics2DHost::ImageData() {
   return image_data_.get();
@@ -457,11 +436,11 @@ int32_t PepperGraphics2DHost::OnHostMsgPaintImageData(
   int64 y64 = static_cast<int64>(top_left.y);
   if (x64 + static_cast<int64>(operation.paint_src_rect.x()) < 0 ||
       x64 + static_cast<int64>(operation.paint_src_rect.right()) >
-      image_data_->width())
+          image_data_->width())
     return PP_ERROR_BADARGUMENT;
   if (y64 + static_cast<int64>(operation.paint_src_rect.y()) < 0 ||
       y64 + static_cast<int64>(operation.paint_src_rect.bottom()) >
-      image_data_->height())
+          image_data_->height())
     return PP_ERROR_BADARGUMENT;
   operation.paint_x = top_left.x;
   operation.paint_y = top_left.y;
@@ -507,8 +486,7 @@ int32_t PepperGraphics2DHost::OnHostMsgReplaceContents(
   PPB_ImageData_Impl* image_resource =
       static_cast<PPB_ImageData_Impl*>(enter.object());
 
-  if (!PPB_ImageData_Impl::IsImageDataFormatSupported(
-          image_resource->format()))
+  if (!PPB_ImageData_Impl::IsImageDataFormatSupported(image_resource->format()))
     return PP_ERROR_BADARGUMENT;
 
   if (image_resource->width() != image_data_->width() ||
@@ -540,8 +518,7 @@ int32_t PepperGraphics2DHost::OnHostMsgFlush(
     // it back to the plugin for possible re-use. See ppb_image_data_proxy.cc
     // for a description how this process works.
     ppapi::HostResource old_image_data_host_resource;
-    old_image_data_host_resource.SetHostResource(pp_instance(),
-                                                 old_image_data);
+    old_image_data_host_resource.SetHostResource(pp_instance(), old_image_data);
     host()->Send(new PpapiMsg_PPBImageData_NotifyUnusedImageData(
         ppapi::API_ID_PPB_IMAGE_DATA, old_image_data_host_resource));
   }
@@ -618,7 +595,8 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
         break;
       case QueuedOperation::SCROLL:
         ExecuteScroll(operation.scroll_clip_rect,
-                      operation.scroll_dx, operation.scroll_dy,
+                      operation.scroll_dx,
+                      operation.scroll_dy,
                       &op_rect);
         break;
       case QueuedOperation::REPLACE:
@@ -643,8 +621,9 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
       gfx::Point scroll_delta(operation.scroll_dx, operation.scroll_dy);
       if (!ConvertToLogicalPixels(scale_,
                                   &op_rect,
-                                  operation.type == QueuedOperation::SCROLL ?
-                                      &scroll_delta : NULL)) {
+                                  operation.type == QueuedOperation::SCROLL
+                                      ? &scroll_delta
+                                      : NULL)) {
         // Conversion requires falling back to InvalidateRect.
         operation.type = QueuedOperation::PAINT;
       }
@@ -661,8 +640,8 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
       // Notify the plugin of the entire change (op_rect), even if it is
       // partially or completely off-screen.
       if (operation.type == QueuedOperation::SCROLL) {
-        bound_instance_->ScrollRect(scroll_delta.x(), scroll_delta.y(),
-                                    op_rect);
+        bound_instance_->ScrollRect(
+            scroll_delta.x(), scroll_delta.y(), op_rect);
       } else {
         if (!op_rect.IsEmpty())
           bound_instance_->InvalidateRect(op_rect);
@@ -688,25 +667,26 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
 }
 
 void PepperGraphics2DHost::ExecutePaintImageData(PPB_ImageData_Impl* image,
-                                                int x, int y,
-                                                const gfx::Rect& src_rect,
-                                                gfx::Rect* invalidated_rect) {
+                                                 int x,
+                                                 int y,
+                                                 const gfx::Rect& src_rect,
+                                                 gfx::Rect* invalidated_rect) {
   // Ensure the source image is mapped to read from it.
   ImageDataAutoMapper auto_mapper(image);
   if (!auto_mapper.is_valid())
     return;
 
   // Portion within the source image to cut out.
-  SkIRect src_irect = { src_rect.x(), src_rect.y(),
-                        src_rect.right(), src_rect.bottom() };
+  SkIRect src_irect = {src_rect.x(), src_rect.y(), src_rect.right(),
+                       src_rect.bottom()};
 
   // Location within the backing store to copy to.
   *invalidated_rect = src_rect;
   invalidated_rect->Offset(x, y);
-  SkRect dest_rect = { SkIntToScalar(invalidated_rect->x()),
-                       SkIntToScalar(invalidated_rect->y()),
-                       SkIntToScalar(invalidated_rect->right()),
-                       SkIntToScalar(invalidated_rect->bottom()) };
+  SkRect dest_rect = {SkIntToScalar(invalidated_rect->x()),
+                      SkIntToScalar(invalidated_rect->y()),
+                      SkIntToScalar(invalidated_rect->right()),
+                      SkIntToScalar(invalidated_rect->bottom())};
 
   if (image->format() != image_data_->format()) {
     // Convert the image data if the format does not match.
@@ -718,31 +698,30 @@ void PepperGraphics2DHost::ExecutePaintImageData(PPB_ImageData_Impl* image,
     // We want to replace the contents of the bitmap rather than blend.
     SkPaint paint;
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-    backing_canvas->drawBitmapRect(*image->GetMappedBitmap(),
-                                   &src_irect, dest_rect, &paint);
+    backing_canvas->drawBitmapRect(
+        *image->GetMappedBitmap(), &src_irect, dest_rect, &paint);
   }
 }
 
 void PepperGraphics2DHost::ExecuteScroll(const gfx::Rect& clip,
-                                        int dx, int dy,
-                                        gfx::Rect* invalidated_rect) {
-  gfx::ScrollCanvas(image_data_->GetCanvas(),
-                    clip, gfx::Vector2d(dx, dy));
+                                         int dx,
+                                         int dy,
+                                         gfx::Rect* invalidated_rect) {
+  gfx::ScrollCanvas(image_data_->GetCanvas(), clip, gfx::Vector2d(dx, dy));
   *invalidated_rect = clip;
 }
 
 void PepperGraphics2DHost::ExecuteReplaceContents(PPB_ImageData_Impl* image,
-                                                 gfx::Rect* invalidated_rect,
-                                                 PP_Resource* old_image_data) {
+                                                  gfx::Rect* invalidated_rect,
+                                                  PP_Resource* old_image_data) {
   if (image->format() != image_data_->format()) {
     DCHECK(image->width() == image_data_->width() &&
            image->height() == image_data_->height());
     // Convert the image data if the format does not match.
-    SkIRect src_irect = { 0, 0, image->width(), image->height() };
-    SkRect dest_rect = { SkIntToScalar(0),
-                         SkIntToScalar(0),
-                         SkIntToScalar(image_data_->width()),
-                         SkIntToScalar(image_data_->height()) };
+    SkIRect src_irect = {0, 0, image->width(), image->height()};
+    SkRect dest_rect = {SkIntToScalar(0), SkIntToScalar(0),
+                        SkIntToScalar(image_data_->width()),
+                        SkIntToScalar(image_data_->height())};
     ConvertImageData(image, src_irect, image_data_.get(), dest_rect);
   } else {
     // The passed-in image may not be mapped in our process, and we need to
@@ -754,13 +733,12 @@ void PepperGraphics2DHost::ExecuteReplaceContents(PPB_ImageData_Impl* image,
       *old_image_data = image_data_->GetReference();
     image_data_ = image;
   }
-  *invalidated_rect = gfx::Rect(0, 0,
-                                image_data_->width(), image_data_->height());
+  *invalidated_rect =
+      gfx::Rect(0, 0, image_data_->width(), image_data_->height());
 }
 
 void PepperGraphics2DHost::SendFlushAck() {
-  host()->SendReply(flush_reply_context_,
-                    PpapiPluginMsg_Graphics2D_FlushAck());
+  host()->SendReply(flush_reply_context_, PpapiPluginMsg_Graphics2D_FlushAck());
 }
 
 void PepperGraphics2DHost::SendOffscreenFlushAck() {
@@ -777,8 +755,7 @@ void PepperGraphics2DHost::ScheduleOffscreenFlushAck() {
   offscreen_flush_pending_ = true;
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&PepperGraphics2DHost::SendOffscreenFlushAck,
-                 AsWeakPtr()),
+      base::Bind(&PepperGraphics2DHost::SendOffscreenFlushAck, AsWeakPtr()),
       base::TimeDelta::FromMilliseconds(kOffscreenCallbackDelayMs));
 }
 
@@ -788,8 +765,8 @@ bool PepperGraphics2DHost::HasPendingFlush() const {
 
 // static
 bool PepperGraphics2DHost::ConvertToLogicalPixels(float scale,
-                                                 gfx::Rect* op_rect,
-                                                 gfx::Point* delta) {
+                                                  gfx::Rect* op_rect,
+                                                  gfx::Point* delta) {
   if (scale == 1.0f || scale <= 0.0f)
     return true;
 

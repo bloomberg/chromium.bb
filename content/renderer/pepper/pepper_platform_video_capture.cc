@@ -26,7 +26,8 @@ PepperPlatformVideoCapture::PepperPlatformVideoCapture(
       device_id_(device_id),
       session_id_(0),
       handler_proxy_(new media::VideoCaptureHandlerProxy(
-          this, base::MessageLoopProxy::current())),
+          this,
+          base::MessageLoopProxy::current())),
       handler_(handler),
       unbalanced_start_(false),
       pending_open_device_(false),
@@ -172,8 +173,7 @@ void PepperPlatformVideoCapture::OnDeviceOpened(int request_id,
     handler_->OnInitialized(this, succeeded);
 }
 
-PepperMediaDeviceManager*
-    PepperPlatformVideoCapture::GetMediaDeviceManager() {
+PepperMediaDeviceManager* PepperPlatformVideoCapture::GetMediaDeviceManager() {
   return PepperMediaDeviceManager::GetForRenderView(render_view_.get());
 }
 

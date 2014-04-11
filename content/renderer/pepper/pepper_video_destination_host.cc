@@ -20,28 +20,25 @@ using ppapi::host::ReplyMessageContext;
 
 namespace content {
 
-PepperVideoDestinationHost::PepperVideoDestinationHost(
-    RendererPpapiHost* host,
-    PP_Instance instance,
-    PP_Resource resource)
+PepperVideoDestinationHost::PepperVideoDestinationHost(RendererPpapiHost* host,
+                                                       PP_Instance instance,
+                                                       PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
-PepperVideoDestinationHost::~PepperVideoDestinationHost() {
-}
+PepperVideoDestinationHost::~PepperVideoDestinationHost() {}
 
 int32_t PepperVideoDestinationHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperVideoDestinationHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoDestination_Open,
-                                      OnHostMsgOpen)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoDestination_PutFrame,
-                                      OnHostMsgPutFrame)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoDestination_Close,
-                                        OnHostMsgClose)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoDestination_Open,
+                                    OnHostMsgOpen)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoDestination_PutFrame,
+                                    OnHostMsgPutFrame)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoDestination_Close,
+                                      OnHostMsgClose)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -54,17 +51,14 @@ int32_t PepperVideoDestinationHost::OnHostMsgOpen(
     return PP_ERROR_BADARGUMENT;
 
   FrameWriterInterface* frame_writer = NULL;
-  if (!VideoDestinationHandler::Open(NULL /* factory */,
-                                     NULL /* registry */,
-                                     gurl.spec(),
-                                     &frame_writer))
+  if (!VideoDestinationHandler::Open(
+          NULL /* factory */, NULL /* registry */, gurl.spec(), &frame_writer))
     return PP_ERROR_FAILED;
   frame_writer_.reset(frame_writer);
 
   ReplyMessageContext reply_context = context->MakeReplyMessageContext();
   reply_context.params.set_result(PP_OK);
-  host()->SendReply(reply_context,
-                    PpapiPluginMsg_VideoDestination_OpenReply());
+  host()->SendReply(reply_context, PpapiPluginMsg_VideoDestination_OpenReply());
   return PP_OK_COMPLETIONPENDING;
 }
 

@@ -35,21 +35,16 @@ using blink::WebPluginScrollbar;
 namespace content {
 
 // static
-PP_Resource PPB_Scrollbar_Impl::Create(PP_Instance instance,
-                                       bool vertical) {
-  scoped_refptr<PPB_Scrollbar_Impl> scrollbar(
-      new PPB_Scrollbar_Impl(instance));
+PP_Resource PPB_Scrollbar_Impl::Create(PP_Instance instance, bool vertical) {
+  scoped_refptr<PPB_Scrollbar_Impl> scrollbar(new PPB_Scrollbar_Impl(instance));
   scrollbar->Init(vertical);
   return scrollbar->GetReference();
 }
 
 PPB_Scrollbar_Impl::PPB_Scrollbar_Impl(PP_Instance instance)
-    : PPB_Widget_Impl(instance),
-      weak_ptr_factory_(this) {
-}
+    : PPB_Widget_Impl(instance), weak_ptr_factory_(this) {}
 
-PPB_Scrollbar_Impl::~PPB_Scrollbar_Impl() {
-}
+PPB_Scrollbar_Impl::~PPB_Scrollbar_Impl() {}
 
 void PPB_Scrollbar_Impl::Init(bool vertical) {
   PepperPluginInstanceImpl* plugin_instance =
@@ -62,25 +57,17 @@ void PPB_Scrollbar_Impl::Init(bool vertical) {
       static_cast<blink::WebPluginScrollbarClient*>(this)));
 }
 
-PPB_Scrollbar_API* PPB_Scrollbar_Impl::AsPPB_Scrollbar_API() {
-  return this;
-}
+PPB_Scrollbar_API* PPB_Scrollbar_Impl::AsPPB_Scrollbar_API() { return this; }
 
-void PPB_Scrollbar_Impl::InstanceWasDeleted() {
-  scrollbar_.reset();
-}
+void PPB_Scrollbar_Impl::InstanceWasDeleted() { scrollbar_.reset(); }
 
 uint32_t PPB_Scrollbar_Impl::GetThickness() {
   return WebPluginScrollbar::defaultThickness();
 }
 
-bool PPB_Scrollbar_Impl::IsOverlay() {
-  return scrollbar_->isOverlay();
-}
+bool PPB_Scrollbar_Impl::IsOverlay() { return scrollbar_->isOverlay(); }
 
-uint32_t PPB_Scrollbar_Impl::GetValue() {
-  return scrollbar_->value();
-}
+uint32_t PPB_Scrollbar_Impl::GetValue() { return scrollbar_->value(); }
 
 void PPB_Scrollbar_Impl::SetValue(uint32_t value) {
   if (scrollbar_)
@@ -101,7 +88,8 @@ void PPB_Scrollbar_Impl::SetTickMarks(const PP_Rect* tick_marks,
     tickmarks_[i] = WebRect(tick_marks[i].point.x,
                             tick_marks[i].point.y,
                             tick_marks[i].size.width,
-                            tick_marks[i].size.height);;
+                            tick_marks[i].size.height);
+    ;
   }
   PP_Rect rect = location();
   Invalidate(&rect);
@@ -111,8 +99,9 @@ void PPB_Scrollbar_Impl::ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier) {
   if (!scrollbar_)
     return;
 
-  WebScrollbar::ScrollDirection direction = multiplier >= 0 ?
-      WebScrollbar::ScrollForward : WebScrollbar::ScrollBackward;
+  WebScrollbar::ScrollDirection direction = multiplier >= 0
+                                                ? WebScrollbar::ScrollForward
+                                                : WebScrollbar::ScrollBackward;
   float fmultiplier = 1.0;
 
   WebScrollbar::ScrollGranularity granularity;
@@ -175,19 +164,18 @@ void PPB_Scrollbar_Impl::valueChanged(blink::WebPluginScrollbar* scrollbar) {
     return;
 
   const PPP_Scrollbar_Dev* ppp_scrollbar =
-      static_cast<const PPP_Scrollbar_Dev*>(plugin_module->GetPluginInterface(
-          PPP_SCROLLBAR_DEV_INTERFACE));
+      static_cast<const PPP_Scrollbar_Dev*>(
+          plugin_module->GetPluginInterface(PPP_SCROLLBAR_DEV_INTERFACE));
   if (!ppp_scrollbar) {
     // Try the old version. This is ok because the old interface is a subset of
     // the new one, and ValueChanged didn't change.
-    ppp_scrollbar =
-        static_cast<const PPP_Scrollbar_Dev*>(plugin_module->GetPluginInterface(
-            PPP_SCROLLBAR_DEV_INTERFACE_0_2));
+    ppp_scrollbar = static_cast<const PPP_Scrollbar_Dev*>(
+        plugin_module->GetPluginInterface(PPP_SCROLLBAR_DEV_INTERFACE_0_2));
     if (!ppp_scrollbar)
       return;
   }
-  ppp_scrollbar->ValueChanged(pp_instance(), pp_resource(),
-                              scrollbar_->value());
+  ppp_scrollbar->ValueChanged(
+      pp_instance(), pp_resource(), scrollbar_->value());
 }
 
 void PPB_Scrollbar_Impl::overlayChanged(WebPluginScrollbar* scrollbar) {
@@ -197,21 +185,18 @@ void PPB_Scrollbar_Impl::overlayChanged(WebPluginScrollbar* scrollbar) {
     return;
 
   const PPP_Scrollbar_Dev* ppp_scrollbar =
-      static_cast<const PPP_Scrollbar_Dev*>(plugin_module->GetPluginInterface(
-          PPP_SCROLLBAR_DEV_INTERFACE));
+      static_cast<const PPP_Scrollbar_Dev*>(
+          plugin_module->GetPluginInterface(PPP_SCROLLBAR_DEV_INTERFACE));
   if (!ppp_scrollbar)
     return;
-  ppp_scrollbar->OverlayChanged(pp_instance(), pp_resource(),
-                                PP_FromBool(IsOverlay()));
+  ppp_scrollbar->OverlayChanged(
+      pp_instance(), pp_resource(), PP_FromBool(IsOverlay()));
 }
 
 void PPB_Scrollbar_Impl::invalidateScrollbarRect(
     blink::WebPluginScrollbar* scrollbar,
     const blink::WebRect& rect) {
-  gfx::Rect gfx_rect(rect.x,
-                     rect.y,
-                     rect.width,
-                     rect.height);
+  gfx::Rect gfx_rect(rect.x, rect.y, rect.width, rect.height);
   dirty_.Union(gfx_rect);
   // Can't call into the client to tell them about the invalidate right away,
   // since the PPB_Scrollbar_Impl code is still in the middle of updating its

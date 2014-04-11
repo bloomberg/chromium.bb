@@ -35,8 +35,7 @@ PepperHungPluginFilter::PepperHungPluginFilter(
       io_loop_(ChildProcess::current()->io_message_loop_proxy()),
       pending_sync_message_count_(0),
       hung_plugin_showing_(false),
-      timer_task_pending_(false) {
-}
+      timer_task_pending_(false) {}
 
 void PepperHungPluginFilter::BeginBlockOnSyncMessage() {
   base::AutoLock lock(lock_);
@@ -56,8 +55,7 @@ void PepperHungPluginFilter::EndBlockOnSyncMessage() {
   MayHaveBecomeUnhung();
 }
 
-void PepperHungPluginFilter::OnFilterAdded(IPC::Channel* channel) {
-}
+void PepperHungPluginFilter::OnFilterAdded(IPC::Channel* channel) {}
 
 void PepperHungPluginFilter::OnFilterRemoved() {
   base::AutoLock lock(lock_);
@@ -85,7 +83,8 @@ void PepperHungPluginFilter::EnsureTimerScheduled() {
     return;
 
   timer_task_pending_ = true;
-  io_loop_->PostDelayedTask(FROM_HERE,
+  io_loop_->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&PepperHungPluginFilter::OnHangTimer, this),
       base::TimeDelta::FromSeconds(kHungThresholdSec));
 }
@@ -107,12 +106,13 @@ base::TimeTicks PepperHungPluginFilter::GetHungTime() const {
   DCHECK(!last_message_received_.is_null());
 
   // Always considered hung at the hard threshold.
-  base::TimeTicks hard_time = began_blocking_time_ +
+  base::TimeTicks hard_time =
+      began_blocking_time_ +
       base::TimeDelta::FromSeconds(kBlockedHardThresholdSec);
 
   // Hung after a soft threshold from last message of any sort.
-  base::TimeTicks soft_time = last_message_received_ +
-        base::TimeDelta::FromSeconds(kHungThresholdSec);
+  base::TimeTicks soft_time =
+      last_message_received_ + base::TimeDelta::FromSeconds(kHungThresholdSec);
 
   return std::min(soft_time, hard_time);
 }
@@ -140,7 +140,8 @@ void PepperHungPluginFilter::OnHangTimer() {
     // would not have scheduled one (we only have one out-standing timer at
     // a time).
     timer_task_pending_ = true;
-    io_loop_->PostDelayedTask(FROM_HERE,
+    io_loop_->PostDelayedTask(
+        FROM_HERE,
         base::Bind(&PepperHungPluginFilter::OnHangTimer, this),
         delay);
     return;

@@ -64,8 +64,8 @@ class PepperPlatformAudioInput
                                int length,
                                int total_segments) OVERRIDE;
   virtual void OnVolume(double volume) OVERRIDE;
-  virtual void OnStateChanged(
-      media::AudioInputIPCDelegate::State state) OVERRIDE;
+  virtual void OnStateChanged(media::AudioInputIPCDelegate::State state)
+      OVERRIDE;
   virtual void OnIPCClosed() OVERRIDE;
 
  protected:
@@ -76,13 +76,12 @@ class PepperPlatformAudioInput
 
   PepperPlatformAudioInput();
 
-  bool Initialize(
-      const base::WeakPtr<RenderViewImpl>& render_view,
-      const std::string& device_id,
-      const GURL& document_url,
-      int sample_rate,
-      int frames_per_buffer,
-      PepperAudioInputHost* client);
+  bool Initialize(const base::WeakPtr<RenderViewImpl>& render_view,
+                  const std::string& device_id,
+                  const GURL& document_url,
+                  int sample_rate,
+                  int frames_per_buffer,
+                  PepperAudioInputHost* client);
 
   // I/O thread backends to above functions.
   void InitializeOnIOThread(int session_id);
@@ -90,9 +89,7 @@ class PepperPlatformAudioInput
   void StopCaptureOnIOThread();
   void ShutDownOnIOThread();
 
-  void OnDeviceOpened(int request_id,
-                      bool succeeded,
-                      const std::string& label);
+  void OnDeviceOpened(int request_id, bool succeeded, const std::string& label);
   void CloseDevice();
   void NotifyStreamCreationFailed();
 

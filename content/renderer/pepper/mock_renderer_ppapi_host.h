@@ -22,8 +22,7 @@ class MockRendererPpapiHost : public RendererPpapiHost {
  public:
   // This function takes the RenderView and instance that the mock resource
   // host will be associated with.
-  MockRendererPpapiHost(RenderView* render_view,
-                        PP_Instance instance);
+  MockRendererPpapiHost(RenderView* render_view, PP_Instance instance);
   virtual ~MockRendererPpapiHost();
 
   ppapi::proxy::ResourceMessageTestSink& sink() { return sink_; }
@@ -35,20 +34,20 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   // RendererPpapiHost.
   virtual ppapi::host::PpapiHost* GetPpapiHost() OVERRIDE;
   virtual bool IsValidInstance(PP_Instance instance) const OVERRIDE;
-  virtual PepperPluginInstance* GetPluginInstance(
-      PP_Instance instance) const OVERRIDE;
-  virtual RenderFrame* GetRenderFrameForInstance(
-      PP_Instance instance) const OVERRIDE;
-  virtual RenderView* GetRenderViewForInstance(
-      PP_Instance instance) const OVERRIDE;
+  virtual PepperPluginInstance* GetPluginInstance(PP_Instance instance) const
+      OVERRIDE;
+  virtual RenderFrame* GetRenderFrameForInstance(PP_Instance instance) const
+      OVERRIDE;
+  virtual RenderView* GetRenderViewForInstance(PP_Instance instance) const
+      OVERRIDE;
   virtual blink::WebPluginContainer* GetContainerForInstance(
       PP_Instance instance) const OVERRIDE;
   virtual base::ProcessId GetPluginPID() const OVERRIDE;
   virtual bool HasUserGesture(PP_Instance instance) const OVERRIDE;
   virtual int GetRoutingIDForWidget(PP_Instance instance) const OVERRIDE;
-  virtual gfx::Point PluginPointToRenderFrame(
-      PP_Instance instance,
-      const gfx::Point& pt) const OVERRIDE;
+  virtual gfx::Point PluginPointToRenderFrame(PP_Instance instance,
+                                              const gfx::Point& pt) const
+      OVERRIDE;
   virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source) OVERRIDE;
@@ -56,8 +55,8 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   virtual void CreateBrowserResourceHosts(
       PP_Instance instance,
       const std::vector<IPC::Message>& nested_msgs,
-      const base::Callback<void(
-          const std::vector<int>&)>& callback) const OVERRIDE;
+      const base::Callback<void(const std::vector<int>&)>& callback) const
+      OVERRIDE;
   virtual GURL GetDocumentURL(PP_Instance instance) const OVERRIDE;
 
  private:

@@ -16,10 +16,8 @@ namespace ppapi {
 
 // NPObjectVar -----------------------------------------------------------------
 
-NPObjectVar::NPObjectVar(PP_Instance instance,
-                         NPObject* np_object)
-    : pp_instance_(instance),
-      np_object_(np_object) {
+NPObjectVar::NPObjectVar(PP_Instance instance, NPObject* np_object)
+    : pp_instance_(instance), np_object_(np_object) {
   WebBindings::retainObject(np_object_);
   content::HostGlobals::Get()->host_var_tracker()->AddNPObjectVar(this);
 }
@@ -30,13 +28,9 @@ NPObjectVar::~NPObjectVar() {
   WebBindings::releaseObject(np_object_);
 }
 
-NPObjectVar* NPObjectVar::AsNPObjectVar() {
-  return this;
-}
+NPObjectVar* NPObjectVar::AsNPObjectVar() { return this; }
 
-PP_VarType NPObjectVar::GetType() const {
-  return PP_VARTYPE_OBJECT;
-}
+PP_VarType NPObjectVar::GetType() const { return PP_VARTYPE_OBJECT; }
 
 void NPObjectVar::InstanceDeleted() {
   DCHECK(pp_instance_);

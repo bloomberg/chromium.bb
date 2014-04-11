@@ -30,9 +30,7 @@ namespace content {
 // PPB_Audio_Impl --------------------------------------------------------------
 
 PPB_Audio_Impl::PPB_Audio_Impl(PP_Instance instance)
-    : Resource(ppapi::OBJECT_IS_IMPL, instance),
-      audio_(NULL) {
-}
+    : Resource(ppapi::OBJECT_IS_IMPL, instance), audio_(NULL) {}
 
 PPB_Audio_Impl::~PPB_Audio_Impl() {
   // Calling ShutDown() makes sure StreamCreated cannot be called anymore and
@@ -46,9 +44,7 @@ PPB_Audio_Impl::~PPB_Audio_Impl() {
   }
 }
 
-PPB_Audio_API* PPB_Audio_Impl::AsPPB_Audio_API() {
-  return this;
-}
+PPB_Audio_API* PPB_Audio_Impl::AsPPB_Audio_API() { return this; }
 
 PP_Resource PPB_Audio_Impl::GetCurrentConfig() {
   // AddRef on behalf of caller, while keeping a ref for ourselves.
@@ -76,9 +72,8 @@ PP_Bool PPB_Audio_Impl::StopPlayback() {
   return PP_TRUE;
 }
 
-int32_t PPB_Audio_Impl::Open(
-    PP_Resource config,
-    scoped_refptr<TrackedCallback> create_callback) {
+int32_t PPB_Audio_Impl::Open(PP_Resource config,
+                             scoped_refptr<TrackedCallback> create_callback) {
   // Validate the config and keep a reference to it.
   EnterResourceNoLock<PPB_AudioConfig_API> enter(config, true);
   if (enter.failed())
@@ -113,8 +108,7 @@ int32_t PPB_Audio_Impl::GetSyncSocket(int* sync_socket) {
   return GetSyncSocketImpl(sync_socket);
 }
 
-int32_t PPB_Audio_Impl::GetSharedMemory(int* shm_handle,
-                                        uint32_t* shm_size) {
+int32_t PPB_Audio_Impl::GetSharedMemory(int* shm_handle, uint32_t* shm_size) {
   return GetSharedMemoryImpl(shm_handle, shm_size);
 }
 
@@ -123,8 +117,11 @@ void PPB_Audio_Impl::OnSetStreamInfo(
     size_t shared_memory_size,
     base::SyncSocket::Handle socket_handle) {
   EnterResourceNoLock<PPB_AudioConfig_API> enter(config_, true);
-  SetStreamInfo(pp_instance(), shared_memory_handle, shared_memory_size,
-                socket_handle, enter.object()->GetSampleRate(),
+  SetStreamInfo(pp_instance(),
+                shared_memory_handle,
+                shared_memory_size,
+                socket_handle,
+                enter.object()->GetSampleRate(),
                 enter.object()->GetSampleFrameCount());
 }
 

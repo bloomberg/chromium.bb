@@ -26,8 +26,7 @@ class AudioHelper {
                      size_t shared_memory_size_,
                      base::SyncSocket::Handle socket);
 
-  void SetCreateCallback(
-      scoped_refptr<ppapi::TrackedCallback> create_callback);
+  void SetCreateCallback(scoped_refptr<ppapi::TrackedCallback> create_callback);
 
  protected:
   // TODO(viettrungluu): This is all very poorly thought out. Refactor.

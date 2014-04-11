@@ -49,8 +49,7 @@ void WrapperClass_Deallocate(NPObject* np_object) {
   delete plugin_object;
 }
 
-void WrapperClass_Invalidate(NPObject* object) {
-}
+void WrapperClass_Invalidate(NPObject* object) {}
 
 bool WrapperClass_HasMethod(NPObject* object, NPIdentifier method_name) {
   NPObjectAccessorWithIdentifier accessor(object, method_name, false);
@@ -60,14 +59,17 @@ bool WrapperClass_HasMethod(NPObject* object, NPIdentifier method_name) {
   PPResultAndExceptionToNPResult result_converter(
       accessor.object()->GetNPObject(), NULL);
   bool rv = accessor.object()->ppp_class()->HasMethod(
-      accessor.object()->ppp_class_data(), accessor.identifier(),
+      accessor.object()->ppp_class_data(),
+      accessor.identifier(),
       result_converter.exception());
   result_converter.CheckExceptionForNoResult();
   return rv;
 }
 
-bool WrapperClass_Invoke(NPObject* object, NPIdentifier method_name,
-                         const NPVariant* argv, uint32_t argc,
+bool WrapperClass_Invoke(NPObject* object,
+                         NPIdentifier method_name,
+                         const NPVariant* argv,
+                         uint32_t argc,
                          NPVariant* result) {
   NPObjectAccessorWithIdentifier accessor(object, method_name, false);
   if (!accessor.is_valid())
@@ -75,8 +77,7 @@ bool WrapperClass_Invoke(NPObject* object, NPIdentifier method_name,
 
   PPResultAndExceptionToNPResult result_converter(
       accessor.object()->GetNPObject(), result);
-  PPVarArrayFromNPVariantArray args(accessor.object()->instance(),
-                                    argc, argv);
+  PPVarArrayFromNPVariantArray args(accessor.object()->instance(), argc, argv);
 
   // For the OOP plugin case we need to grab a reference on the plugin module
   // object to ensure that it is not destroyed courtsey an incoming
@@ -84,13 +85,18 @@ bool WrapperClass_Invoke(NPObject* object, NPIdentifier method_name,
   // dispatcher.
   scoped_refptr<PluginModule> ref(accessor.object()->instance()->module());
 
-  return result_converter.SetResult(accessor.object()->ppp_class()->Call(
-      accessor.object()->ppp_class_data(), accessor.identifier(),
-      argc, args.array(), result_converter.exception()));
+  return result_converter.SetResult(
+      accessor.object()->ppp_class()->Call(accessor.object()->ppp_class_data(),
+                                           accessor.identifier(),
+                                           argc,
+                                           args.array(),
+                                           result_converter.exception()));
 }
 
-bool WrapperClass_InvokeDefault(NPObject* np_object, const NPVariant* argv,
-                                uint32_t argc, NPVariant* result) {
+bool WrapperClass_InvokeDefault(NPObject* np_object,
+                                const NPVariant* argv,
+                                uint32_t argc,
+                                NPVariant* result) {
   PluginObject* obj = PluginObject::FromNPObject(np_object);
   if (!obj)
     return false;
@@ -104,9 +110,12 @@ bool WrapperClass_InvokeDefault(NPObject* np_object, const NPVariant* argv,
   // dispatcher.
   scoped_refptr<PluginModule> ref(obj->instance()->module());
 
-  result_converter.SetResult(obj->ppp_class()->Call(
-      obj->ppp_class_data(), PP_MakeUndefined(), argc, args.array(),
-      result_converter.exception()));
+  result_converter.SetResult(
+      obj->ppp_class()->Call(obj->ppp_class_data(),
+                             PP_MakeUndefined(),
+                             argc,
+                             args.array(),
+                             result_converter.exception()));
   return result_converter.success();
 }
 
@@ -118,13 +127,15 @@ bool WrapperClass_HasProperty(NPObject* object, NPIdentifier property_name) {
   PPResultAndExceptionToNPResult result_converter(
       accessor.object()->GetNPObject(), NULL);
   bool rv = accessor.object()->ppp_class()->HasProperty(
-      accessor.object()->ppp_class_data(), accessor.identifier(),
+      accessor.object()->ppp_class_data(),
+      accessor.identifier(),
       result_converter.exception());
   result_converter.CheckExceptionForNoResult();
   return rv;
 }
 
-bool WrapperClass_GetProperty(NPObject* object, NPIdentifier property_name,
+bool WrapperClass_GetProperty(NPObject* object,
+                              NPIdentifier property_name,
                               NPVariant* result) {
   NPObjectAccessorWithIdentifier accessor(object, property_name, true);
   if (!accessor.is_valid())
@@ -133,11 +144,13 @@ bool WrapperClass_GetProperty(NPObject* object, NPIdentifier property_name,
   PPResultAndExceptionToNPResult result_converter(
       accessor.object()->GetNPObject(), result);
   return result_converter.SetResult(accessor.object()->ppp_class()->GetProperty(
-      accessor.object()->ppp_class_data(), accessor.identifier(),
+      accessor.object()->ppp_class_data(),
+      accessor.identifier(),
       result_converter.exception()));
 }
 
-bool WrapperClass_SetProperty(NPObject* object, NPIdentifier property_name,
+bool WrapperClass_SetProperty(NPObject* object,
+                              NPIdentifier property_name,
                               const NPVariant* value) {
   NPObjectAccessorWithIdentifier accessor(object, property_name, true);
   if (!accessor.is_valid())
@@ -147,7 +160,9 @@ bool WrapperClass_SetProperty(NPObject* object, NPIdentifier property_name,
       accessor.object()->GetNPObject(), NULL);
   PP_Var value_var = NPVariantToPPVar(accessor.object()->instance(), value);
   accessor.object()->ppp_class()->SetProperty(
-      accessor.object()->ppp_class_data(), accessor.identifier(), value_var,
+      accessor.object()->ppp_class_data(),
+      accessor.identifier(),
+      value_var,
       result_converter.exception());
   PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(value_var);
   return result_converter.CheckExceptionForNoResult();
@@ -161,12 +176,14 @@ bool WrapperClass_RemoveProperty(NPObject* object, NPIdentifier property_name) {
   PPResultAndExceptionToNPResult result_converter(
       accessor.object()->GetNPObject(), NULL);
   accessor.object()->ppp_class()->RemoveProperty(
-      accessor.object()->ppp_class_data(), accessor.identifier(),
+      accessor.object()->ppp_class_data(),
+      accessor.identifier(),
       result_converter.exception());
   return result_converter.CheckExceptionForNoResult();
 }
 
-bool WrapperClass_Enumerate(NPObject* object, NPIdentifier** values,
+bool WrapperClass_Enumerate(NPObject* object,
+                            NPIdentifier** values,
                             uint32_t* count) {
   *values = NULL;
   *count = 0;
@@ -178,7 +195,8 @@ bool WrapperClass_Enumerate(NPObject* object, NPIdentifier** values,
   PP_Var* properties = NULL;  // Must be freed!
   PPResultAndExceptionToNPResult result_converter(obj->GetNPObject(), NULL);
   obj->ppp_class()->GetAllPropertyNames(obj->ppp_class_data(),
-                                        &property_count, &properties,
+                                        &property_count,
+                                        &properties,
                                         result_converter.exception());
 
   // Convert the array of PP_Var to an array of NPIdentifiers. If any
@@ -221,8 +239,10 @@ bool WrapperClass_Enumerate(NPObject* object, NPIdentifier** values,
   return result_converter.success();
 }
 
-bool WrapperClass_Construct(NPObject* object, const NPVariant* argv,
-                            uint32_t argc, NPVariant* result) {
+bool WrapperClass_Construct(NPObject* object,
+                            const NPVariant* argv,
+                            uint32_t argc,
+                            NPVariant* result) {
   PluginObject* obj = PluginObject::FromNPObject(object);
   if (!obj)
     return false;
@@ -230,25 +250,17 @@ bool WrapperClass_Construct(NPObject* object, const NPVariant* argv,
   PPVarArrayFromNPVariantArray args(obj->instance(), argc, argv);
   PPResultAndExceptionToNPResult result_converter(obj->GetNPObject(), result);
   return result_converter.SetResult(obj->ppp_class()->Construct(
-      obj->ppp_class_data(), argc, args.array(),
-      result_converter.exception()));
+      obj->ppp_class_data(), argc, args.array(), result_converter.exception()));
 }
 
 const NPClass wrapper_class = {
-  NP_CLASS_STRUCT_VERSION,
-  WrapperClass_Allocate,
-  WrapperClass_Deallocate,
-  WrapperClass_Invalidate,
-  WrapperClass_HasMethod,
-  WrapperClass_Invoke,
-  WrapperClass_InvokeDefault,
-  WrapperClass_HasProperty,
-  WrapperClass_GetProperty,
-  WrapperClass_SetProperty,
-  WrapperClass_RemoveProperty,
-  WrapperClass_Enumerate,
-  WrapperClass_Construct
-};
+    NP_CLASS_STRUCT_VERSION,     WrapperClass_Allocate,
+    WrapperClass_Deallocate,     WrapperClass_Invalidate,
+    WrapperClass_HasMethod,      WrapperClass_Invoke,
+    WrapperClass_InvokeDefault,  WrapperClass_HasProperty,
+    WrapperClass_GetProperty,    WrapperClass_SetProperty,
+    WrapperClass_RemoveProperty, WrapperClass_Enumerate,
+    WrapperClass_Construct};
 
 }  // namespace
 
@@ -293,9 +305,9 @@ PP_Var PluginObject::Create(PepperPluginInstanceImpl* instance,
   // This will internally end up calling our AllocateObjectWrapper via the
   // WrapperClass_Allocated function which will have created an object wrapper
   // appropriate for this class (derived from NPObject).
-  NPObjectWrapper* wrapper = static_cast<NPObjectWrapper*>(
-      WebBindings::createObject(instance->instanceNPP(),
-      const_cast<NPClass*>(&wrapper_class)));
+  NPObjectWrapper* wrapper =
+      static_cast<NPObjectWrapper*>(WebBindings::createObject(
+          instance->instanceNPP(), const_cast<NPClass*>(&wrapper_class)));
 
   // This object will register itself both with the NPObject and with the
   // PluginModule. The NPObject will normally handle its lifetime, and it
@@ -316,9 +328,7 @@ PP_Var PluginObject::Create(PepperPluginInstanceImpl* instance,
   return obj_var;
 }
 
-NPObject* PluginObject::GetNPObject() const {
-  return object_wrapper_;
-}
+NPObject* PluginObject::GetNPObject() const { return object_wrapper_; }
 
 // static
 bool PluginObject::IsInstanceOf(NPObject* np_object,
@@ -353,4 +363,3 @@ NPObject* PluginObject::AllocateObjectWrapper() {
 }
 
 }  // namespace content
-

@@ -18,10 +18,7 @@
 namespace content {
 
 PlatformContext3D::PlatformContext3D()
-    : has_alpha_(false),
-      command_buffer_(NULL),
-      weak_ptr_factory_(this) {
-}
+    : has_alpha_(false), command_buffer_(NULL), weak_ptr_factory_(this) {}
 
 PlatformContext3D::~PlatformContext3D() {
   if (command_buffer_) {
@@ -56,8 +53,7 @@ bool PlatformContext3D::Init(const int32* attrib_list,
   // interface to accept width and height in the attrib_list so that
   // we do not need to filter for width and height here.
   if (attrib_list) {
-    for (const int32_t* attr = attrib_list;
-         attr[0] != PP_GRAPHICS3DATTRIB_NONE;
+    for (const int32_t* attr = attrib_list; attr[0] != PP_GRAPHICS3DATTRIB_NONE;
          attr += 2) {
       switch (attr[0]) {
         case PP_GRAPHICS3DATTRIB_WIDTH:
@@ -68,8 +64,9 @@ bool PlatformContext3D::Init(const int32* attrib_list,
           break;
         case PP_GRAPHICS3DATTRIB_GPU_PREFERENCE:
           gpu_preference =
-              (attr[1] == PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_LOW_POWER) ?
-                  gfx::PreferIntegratedGpu : gfx::PreferDiscreteGpu;
+              (attr[1] == PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_LOW_POWER)
+                  ? gfx::PreferIntegratedGpu
+                  : gfx::PreferDiscreteGpu;
           break;
         case PP_GRAPHICS3DATTRIB_ALPHA_SIZE:
           has_alpha_ = attr[1] > 0;
@@ -91,11 +88,7 @@ bool PlatformContext3D::Init(const int32* attrib_list,
   }
 
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(
-      surface_size,
-      share_buffer,
-      attribs,
-      GURL::EmptyGURL(),
-      gpu_preference);
+      surface_size, share_buffer, attribs, GURL::EmptyGURL(), gpu_preference);
   if (!command_buffer_)
     return false;
   if (!command_buffer_->Initialize())
@@ -106,12 +99,10 @@ bool PlatformContext3D::Init(const int32* attrib_list,
   mailbox_ = mailbox;
   sync_point_ = command_buffer_->InsertSyncPoint();
 
-  command_buffer_->SetChannelErrorCallback(
-      base::Bind(&PlatformContext3D::OnContextLost,
-                 weak_ptr_factory_.GetWeakPtr()));
-  command_buffer_->SetOnConsoleMessageCallback(
-      base::Bind(&PlatformContext3D::OnConsoleMessage,
-                 weak_ptr_factory_.GetWeakPtr()));
+  command_buffer_->SetChannelErrorCallback(base::Bind(
+      &PlatformContext3D::OnContextLost, weak_ptr_factory_.GetWeakPtr()));
+  command_buffer_->SetOnConsoleMessageCallback(base::Bind(
+      &PlatformContext3D::OnConsoleMessage, weak_ptr_factory_.GetWeakPtr()));
 
   return true;
 }
@@ -136,9 +127,7 @@ gpu::CommandBuffer* PlatformContext3D::GetCommandBuffer() {
   return command_buffer_;
 }
 
-gpu::GpuControl* PlatformContext3D::GetGpuControl() {
-  return command_buffer_;
-}
+gpu::GpuControl* PlatformContext3D::GetGpuControl() { return command_buffer_; }
 
 int PlatformContext3D::GetCommandBufferRouteId() {
   DCHECK(command_buffer_);

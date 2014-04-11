@@ -82,7 +82,8 @@ void PepperPluginRegistry::PluginModuleDead(PluginModule* dead_module) {
   // Modules aren't destroyed very often and there are normally at most a
   // couple of them. So for now we just do a brute-force search.
   for (NonOwningModuleMap::iterator i = live_modules_.begin();
-       i != live_modules_.end(); ++i) {
+       i != live_modules_.end();
+       ++i) {
     if (i->second == dead_module) {
       live_modules_.erase(i);
       return;
@@ -100,8 +101,7 @@ PepperPluginRegistry::~PepperPluginRegistry() {
   DCHECK(live_modules_.empty());
 }
 
-PepperPluginRegistry::PepperPluginRegistry() {
-}
+PepperPluginRegistry::PepperPluginRegistry() {}
 
 void PepperPluginRegistry::Initialize() {
   ComputePepperPluginList(&plugin_list_);
@@ -115,9 +115,10 @@ void PepperPluginRegistry::Initialize() {
     if (current.is_out_of_process)
       continue;  // Out of process plugins need no special pre-initialization.
 
-    scoped_refptr<PluginModule> module = new PluginModule(
-        current.name, current.path,
-        ppapi::PpapiPermissions(current.permissions));
+    scoped_refptr<PluginModule> module =
+        new PluginModule(current.name,
+                         current.path,
+                         ppapi::PpapiPermissions(current.permissions));
     AddLiveModule(current.path, module.get());
     if (current.is_internal) {
       if (!module->InitAsInternalPlugin(current.internal_entry_points)) {

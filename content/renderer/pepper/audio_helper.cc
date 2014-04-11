@@ -15,11 +15,9 @@ namespace content {
 
 // AudioHelper -----------------------------------------------------------------
 
-AudioHelper::AudioHelper() : shared_memory_size_for_create_callback_(0) {
-}
+AudioHelper::AudioHelper() : shared_memory_size_for_create_callback_(0) {}
 
-AudioHelper::~AudioHelper() {
-}
+AudioHelper::~AudioHelper() {}
 
 int32_t AudioHelper::GetSyncSocketImpl(int* sync_socket) {
   if (socket_for_create_callback_) {
@@ -28,7 +26,7 @@ int32_t AudioHelper::GetSyncSocketImpl(int* sync_socket) {
 #elif defined(OS_WIN)
     *sync_socket = reinterpret_cast<int>(socket_for_create_callback_->handle());
 #else
-    #error "Platform not supported."
+#error "Platform not supported."
 #endif
     return PP_OK;
   }
@@ -40,10 +38,10 @@ int32_t AudioHelper::GetSharedMemoryImpl(int* shm_handle, uint32_t* shm_size) {
 #if defined(OS_POSIX)
     *shm_handle = shared_memory_for_create_callback_->handle().fd;
 #elif defined(OS_WIN)
-    *shm_handle = reinterpret_cast<int>(
-        shared_memory_for_create_callback_->handle());
+    *shm_handle =
+        reinterpret_cast<int>(shared_memory_for_create_callback_->handle());
 #else
-    #error "Platform not supported."
+#error "Platform not supported."
 #endif
     *shm_size = shared_memory_size_for_create_callback_;
     return PP_OK;
@@ -51,10 +49,9 @@ int32_t AudioHelper::GetSharedMemoryImpl(int* shm_handle, uint32_t* shm_size) {
   return PP_ERROR_FAILED;
 }
 
-void AudioHelper::StreamCreated(
-    base::SharedMemoryHandle shared_memory_handle,
-    size_t shared_memory_size,
-    base::SyncSocket::Handle socket_handle) {
+void AudioHelper::StreamCreated(base::SharedMemoryHandle shared_memory_handle,
+                                size_t shared_memory_size,
+                                base::SyncSocket::Handle socket_handle) {
   if (TrackedCallback::IsPending(create_callback_)) {
     // Trusted side of proxy can specify a callback to recieve handles. In
     // this case we don't need to map any data or start the thread since it

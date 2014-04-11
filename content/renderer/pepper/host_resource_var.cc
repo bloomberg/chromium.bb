@@ -20,9 +20,7 @@ HostResourceVar::HostResourceVar(int pending_renderer_host_id,
       pending_browser_host_id_(0),
       creation_message_(new IPC::Message(creation_message)) {}
 
-PP_Resource HostResourceVar::GetPPResource() const {
-  return pp_resource_;
-}
+PP_Resource HostResourceVar::GetPPResource() const { return pp_resource_; }
 
 int HostResourceVar::GetPendingRendererHostId() const {
   return pending_renderer_host_id_;

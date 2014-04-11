@@ -27,15 +27,15 @@ class PepperMediaDeviceManager
   virtual ~PepperMediaDeviceManager();
 
   // PepperDeviceEnumerationHostHelper::Delegate implementation:
-  virtual int EnumerateDevices(
-      PP_DeviceType_Dev type,
-      const GURL& document_url,
-      const EnumerateDevicesCallback& callback) OVERRIDE;
+  virtual int EnumerateDevices(PP_DeviceType_Dev type,
+                               const GURL& document_url,
+                               const EnumerateDevicesCallback& callback)
+      OVERRIDE;
   virtual void StopEnumerateDevices(int request_id) OVERRIDE;
 
-  typedef base::Callback<void (int /* request_id */,
-                               bool /* succeeded */,
-                               const std::string& /* label */)>
+  typedef base::Callback<void(int /* request_id */,
+                              bool /* succeeded */,
+                              const std::string& /* label */)>
       OpenDeviceCallback;
 
   // Opens the specified device. The request ID passed into the callback will be
@@ -65,13 +65,12 @@ class PepperMediaDeviceManager
       content::MediaStreamRequestResult result) OVERRIDE;
   virtual void OnDeviceStopped(const std::string& label,
                                const StreamDeviceInfo& device_info) OVERRIDE;
-  virtual void OnDevicesEnumerated(
-      int request_id,
-      const StreamDeviceInfoArray& device_array) OVERRIDE;
-  virtual void OnDeviceOpened(
-      int request_id,
-      const std::string& label,
-      const StreamDeviceInfo& device_info) OVERRIDE;
+  virtual void OnDevicesEnumerated(int request_id,
+                                   const StreamDeviceInfoArray& device_array)
+      OVERRIDE;
+  virtual void OnDeviceOpened(int request_id,
+                              const std::string& label,
+                              const StreamDeviceInfo& device_info) OVERRIDE;
   virtual void OnDeviceOpenFailed(int request_id) OVERRIDE;
 
   // Stream type conversion.

@@ -25,11 +25,9 @@ PepperMediaStreamTrackHostBase::PepperMediaStreamTrackHostBase(
     PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       host_(host),
-      buffer_manager_(this) {
-}
+      buffer_manager_(this) {}
 
-PepperMediaStreamTrackHostBase::~PepperMediaStreamTrackHostBase() {
-}
+PepperMediaStreamTrackHostBase::~PepperMediaStreamTrackHostBase() {}
 
 bool PepperMediaStreamTrackHostBase::InitBuffers(int32_t number_of_buffers,
                                                  int32_t buffer_size) {
@@ -50,21 +48,22 @@ bool PepperMediaStreamTrackHostBase::InitBuffers(int32_t number_of_buffers,
 
   base::SharedMemoryHandle shm_handle = shm->handle();
   if (!buffer_manager_.SetBuffers(
-        number_of_buffers, buffer_size, shm.Pass(), true)) {
+          number_of_buffers, buffer_size, shm.Pass(), true)) {
     return false;
   }
 
   base::PlatformFile platform_file =
 #if defined(OS_WIN)
-    shm_handle;
+      shm_handle;
 #elif defined(OS_POSIX)
-    shm_handle.fd;
+      shm_handle.fd;
 #else
 #error Not implemented.
 #endif
-  SerializedHandle handle(
-      host_->ShareHandleWithRemote(platform_file, false), size);
-  host()->SendUnsolicitedReplyWithHandles(pp_resource(),
+  SerializedHandle handle(host_->ShareHandleWithRemote(platform_file, false),
+                          size);
+  host()->SendUnsolicitedReplyWithHandles(
+      pp_resource(),
       PpapiPluginMsg_MediaStreamTrack_InitBuffers(number_of_buffers,
                                                   buffer_size),
       std::vector<SerializedHandle>(1, handle));
@@ -75,18 +74,18 @@ void PepperMediaStreamTrackHostBase::SendEnqueueBufferMessageToPlugin(
     int32_t index) {
   DCHECK_GE(index, 0);
   DCHECK_LT(index, buffer_manager_.number_of_buffers());
-  host()->SendUnsolicitedReply(pp_resource(),
-      PpapiPluginMsg_MediaStreamTrack_EnqueueBuffer(index));
+  host()->SendUnsolicitedReply(
+      pp_resource(), PpapiPluginMsg_MediaStreamTrack_EnqueueBuffer(index));
 }
 
 int32_t PepperMediaStreamTrackHostBase::OnResourceMessageReceived(
     const IPC::Message& msg,
     HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperMediaStreamTrackHostBase, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_MediaStreamTrack_EnqueueBuffer, OnHostMsgEnqueueBuffer)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_MediaStreamTrack_Close, OnHostMsgClose)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_MediaStreamTrack_EnqueueBuffer,
+                                    OnHostMsgEnqueueBuffer)
+  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_MediaStreamTrack_Close,
+                                      OnHostMsgClose)
   IPC_END_MESSAGE_MAP()
   return ppapi::host::ResourceHost::OnResourceMessageReceived(msg, context);
 }

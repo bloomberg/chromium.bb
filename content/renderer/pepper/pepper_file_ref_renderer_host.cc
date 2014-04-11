@@ -43,8 +43,7 @@ PepperFileRefRendererHost::PepperFileRefRendererHost(
     file_system_type_ = PP_FILESYSTEMTYPE_INVALID;
 }
 
-PepperFileRefRendererHost::~PepperFileRefRendererHost() {
-}
+PepperFileRefRendererHost::~PepperFileRefRendererHost() {}
 
 PP_FileSystemType PepperFileRefRendererHost::GetFileSystemType() const {
   return file_system_type_;
@@ -69,15 +68,13 @@ base::FilePath PepperFileRefRendererHost::GetExternalFilePath() const {
 }
 
 int32_t PepperFileRefRendererHost::OnResourceMessageReceived(
-      const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) {
+    const IPC::Message& msg,
+    ppapi::host::HostMessageContext* context) {
   // We don't handle any messages from the plugin in this host.
   NOTREACHED();
   return PP_ERROR_FAILED;
 }
 
-bool PepperFileRefRendererHost::IsFileRefHost() {
-  return true;
-}
+bool PepperFileRefRendererHost::IsFileRefHost() { return true; }
 
 }  // namespace content

@@ -24,13 +24,14 @@ class PepperTrueTypeFontLinux : public PepperTrueTypeFont {
 
   // PepperTrueTypeFont overrides.
   virtual bool IsValid() OVERRIDE;
-  virtual int32_t Describe(
-      ppapi::proxy::SerializedTrueTypeFontDesc* desc) OVERRIDE;
+  virtual int32_t Describe(ppapi::proxy::SerializedTrueTypeFontDesc* desc)
+      OVERRIDE;
   virtual int32_t GetTableTags(std::vector<uint32_t>* tags) OVERRIDE;
   virtual int32_t GetTable(uint32_t table_tag,
                            int32_t offset,
                            int32_t max_data_length,
                            std::string* data) OVERRIDE;
+
  private:
   // Save creation parameters here and use these to implement Describe.
   // TODO(bbudge) Modify content API to return results of font matching and
@@ -42,8 +43,8 @@ class PepperTrueTypeFontLinux : public PepperTrueTypeFont {
 };
 
 PepperTrueTypeFontLinux::PepperTrueTypeFontLinux(
-    const ppapi::proxy::SerializedTrueTypeFontDesc& desc) :
-    desc_(desc) {
+    const ppapi::proxy::SerializedTrueTypeFontDesc& desc)
+    : desc_(desc) {
   // If no face is provided, convert family to the platform defaults. These
   // names should be mapped by FontConfig to an appropriate default font.
   if (desc_.family.empty()) {
@@ -66,23 +67,19 @@ PepperTrueTypeFontLinux::PepperTrueTypeFontLinux(
     }
   }
 
-  fd_ = MatchFontWithFallback(
-      desc_.family.c_str(),
-      desc_.weight >= PP_TRUETYPEFONTWEIGHT_BOLD,
-      desc_.style & PP_TRUETYPEFONTSTYLE_ITALIC,
-      desc_.charset,
-      PP_BROWSERFONT_TRUSTED_FAMILY_DEFAULT);
+  fd_ = MatchFontWithFallback(desc_.family.c_str(),
+                              desc_.weight >= PP_TRUETYPEFONTWEIGHT_BOLD,
+                              desc_.style & PP_TRUETYPEFONTSTYLE_ITALIC,
+                              desc_.charset,
+                              PP_BROWSERFONT_TRUSTED_FAMILY_DEFAULT);
 }
 
-PepperTrueTypeFontLinux::~PepperTrueTypeFontLinux() {
-}
+PepperTrueTypeFontLinux::~PepperTrueTypeFontLinux() {}
 
-bool PepperTrueTypeFontLinux::IsValid() {
-  return fd_ != -1;
-}
+bool PepperTrueTypeFontLinux::IsValid() { return fd_ != -1; }
 
 int32_t PepperTrueTypeFontLinux::Describe(
-      ppapi::proxy::SerializedTrueTypeFontDesc* desc) {
+    ppapi::proxy::SerializedTrueTypeFontDesc* desc) {
   *desc = desc_;
   return PP_OK;
 }
@@ -120,7 +117,7 @@ int32_t PepperTrueTypeFontLinux::GetTableTags(std::vector<uint32_t>* tags) {
     uint8_t* entry = table_entries.get() + i * kTableEntrySize;
     uint32_t tag = static_cast<uint32_t>(entry[0]) << 24 |
                    static_cast<uint32_t>(entry[1]) << 16 |
-                   static_cast<uint32_t>(entry[2]) << 8  |
+                   static_cast<uint32_t>(entry[2]) << 8 |
                    static_cast<uint32_t>(entry[3]);
     (*tags)[i] = tag;
   }
@@ -141,7 +138,9 @@ int32_t PepperTrueTypeFontLinux::GetTable(uint32_t table_tag,
   // Only retrieve as much as the caller requested.
   table_size = std::min(table_size, static_cast<size_t>(max_data_length));
   data->resize(table_size);
-  if (!GetFontTable(fd_, table_tag, offset,
+  if (!GetFontTable(fd_,
+                    table_tag,
+                    offset,
                     reinterpret_cast<uint8_t*>(&(*data)[0]),
                     &table_size))
     return PP_ERROR_FAILED;
@@ -158,4 +157,3 @@ PepperTrueTypeFont* PepperTrueTypeFont::Create(
 }
 
 }  // namespace content
-

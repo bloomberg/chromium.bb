@@ -27,15 +27,24 @@ const int32_t kNumberOfBuffers = 4;
 // |PP_AudioBuffer_SampleRate|, otherwise false.
 PP_AudioBuffer_SampleRate GetPPSampleRate(int sample_rate) {
   switch (sample_rate) {
-    case 8000: return PP_AUDIOBUFFER_SAMPLERATE_8000;
-    case 16000: return PP_AUDIOBUFFER_SAMPLERATE_16000;
-    case 22050: return PP_AUDIOBUFFER_SAMPLERATE_22050;
-    case 32000: return PP_AUDIOBUFFER_SAMPLERATE_32000;
-    case 44100: return PP_AUDIOBUFFER_SAMPLERATE_44100;
-    case 48000: return PP_AUDIOBUFFER_SAMPLERATE_48000;
-    case 96000: return PP_AUDIOBUFFER_SAMPLERATE_96000;
-    case 192000: return PP_AUDIOBUFFER_SAMPLERATE_192000;
-    default: return PP_AUDIOBUFFER_SAMPLERATE_UNKNOWN;
+    case 8000:
+      return PP_AUDIOBUFFER_SAMPLERATE_8000;
+    case 16000:
+      return PP_AUDIOBUFFER_SAMPLERATE_16000;
+    case 22050:
+      return PP_AUDIOBUFFER_SAMPLERATE_22050;
+    case 32000:
+      return PP_AUDIOBUFFER_SAMPLERATE_32000;
+    case 44100:
+      return PP_AUDIOBUFFER_SAMPLERATE_44100;
+    case 48000:
+      return PP_AUDIOBUFFER_SAMPLERATE_48000;
+    case 96000:
+      return PP_AUDIOBUFFER_SAMPLERATE_96000;
+    case 192000:
+      return PP_AUDIOBUFFER_SAMPLERATE_192000;
+    default:
+      return PP_AUDIOBUFFER_SAMPLERATE_UNKNOWN;
   }
 }
 
@@ -48,8 +57,7 @@ PepperMediaStreamAudioTrackHost::AudioSink::AudioSink(
     : host_(host),
       buffer_data_size_(0),
       main_message_loop_proxy_(base::MessageLoopProxy::current()),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 PepperMediaStreamAudioTrackHost::AudioSink::~AudioSink() {
   DCHECK_EQ(main_message_loop_proxy_, base::MessageLoopProxy::current());
@@ -64,7 +72,8 @@ void PepperMediaStreamAudioTrackHost::AudioSink::EnqueueBuffer(int32_t index) {
 }
 
 void PepperMediaStreamAudioTrackHost::AudioSink::InitBuffersOnMainThread(
-    int32_t number_of_buffers, int32_t buffer_size) {
+    int32_t number_of_buffers,
+    int32_t buffer_size) {
   DCHECK_EQ(main_message_loop_proxy_, base::MessageLoopProxy::current());
   bool result = host_->InitBuffers(number_of_buffers, buffer_size);
   // TODO(penghuang): Send PP_ERROR_NOMEMORY to plugin.
@@ -77,8 +86,7 @@ void PepperMediaStreamAudioTrackHost::AudioSink::InitBuffersOnMainThread(
   }
 }
 
-void
-PepperMediaStreamAudioTrackHost::AudioSink::
+void PepperMediaStreamAudioTrackHost::AudioSink::
     SendEnqueueBufferMessageOnMainThread(int32_t index) {
   DCHECK_EQ(main_message_loop_proxy_, base::MessageLoopProxy::current());
   host_->SendEnqueueBufferMessageToPlugin(index);
@@ -118,7 +126,8 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnData(const int16* audio_data,
     main_message_loop_proxy_->PostTask(
         FROM_HERE,
         base::Bind(&AudioSink::SendEnqueueBufferMessageOnMainThread,
-                   weak_factory_.GetWeakPtr(), index));
+                   weak_factory_.GetWeakPtr(),
+                   index));
   }
   timestamp_ += buffer_duration_;
 }
@@ -129,7 +138,7 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnSetFormat(
   DCHECK_LE(params.GetBufferDuration().InMilliseconds(), kMaxDuration);
   DCHECK_EQ(params.bits_per_sample(), 16);
   DCHECK_NE(GetPPSampleRate(params.sample_rate()),
-                            PP_AUDIOBUFFER_SAMPLERATE_UNKNOWN);
+            PP_AUDIOBUFFER_SAMPLERATE_UNKNOWN);
 
   audio_params_ = params;
 
@@ -147,9 +156,8 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnSetFormat(
     original_audio_params_ = params;
     // The size is slightly bigger than necessary, because 8 extra bytes are
     // added into the struct. Also see |MediaStreamBuffer|.
-    size_t max_data_size =
-        params.sample_rate() * params.bits_per_sample() / 8 *
-        params.channels() * kMaxDuration / 1000;
+    size_t max_data_size = params.sample_rate() * params.bits_per_sample() / 8 *
+                           params.channels() * kMaxDuration / 1000;
     size_t size = sizeof(ppapi::MediaStreamBuffer::Audio) + max_data_size;
 
     main_message_loop_proxy_->PostTask(

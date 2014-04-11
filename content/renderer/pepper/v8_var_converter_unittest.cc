@@ -82,13 +82,13 @@ bool Equals(const PP_Var& var,
     return var.type == PP_VARTYPE_NULL;
   } else if (val->IsBoolean() || val->IsBooleanObject()) {
     return var.type == PP_VARTYPE_BOOL &&
-        PP_FromBool(val->ToBoolean()->Value()) == var.value.as_bool;
+           PP_FromBool(val->ToBoolean()->Value()) == var.value.as_bool;
   } else if (val->IsInt32()) {
     return var.type == PP_VARTYPE_INT32 &&
-        val->ToInt32()->Value() == var.value.as_int;
+           val->ToInt32()->Value() == var.value.as_int;
   } else if (val->IsNumber() || val->IsNumberObject()) {
     return var.type == PP_VARTYPE_DOUBLE &&
-        fabs(val->ToNumber()->Value() - var.value.as_double) <= 1.0e-4;
+           fabs(val->ToNumber()->Value() - var.value.as_double) <= 1.0e-4;
   } else if (val->IsString() || val->IsStringObject()) {
     if (var.type != PP_VARTYPE_STRING)
       return false;
@@ -133,8 +133,8 @@ bool Equals(const PP_Var& var,
 
         v8::String::Utf8Value name_utf8(key->ToString());
         ScopedPPVar release_key(ScopedPPVar::PassRef(),
-            StringVar::StringToPPVar(
-                std::string(*name_utf8, name_utf8.length())));
+                                StringVar::StringToPPVar(std::string(
+                                    *name_utf8, name_utf8.length())));
         if (!dict_var->HasKey(release_key.get()))
           return false;
         ScopedPPVar release_value(ScopedPPVar::PassRef(),
@@ -148,8 +148,7 @@ bool Equals(const PP_Var& var,
   return false;
 }
 
-bool Equals(const PP_Var& var,
-            v8::Handle<v8::Value> val) {
+bool Equals(const PP_Var& var, v8::Handle<v8::Value> val) {
   VarHandleMap var_handle_map;
   return Equals(var, val, &var_handle_map);
 }
@@ -157,8 +156,7 @@ bool Equals(const PP_Var& var,
 class V8VarConverterTest : public testing::Test {
  public:
   V8VarConverterTest()
-      : isolate_(v8::Isolate::GetCurrent()),
-        conversion_success_(false) {
+      : isolate_(v8::Isolate::GetCurrent()), conversion_success_(false) {
     PP_Instance dummy = 1234;
     converter_.reset(new V8VarConverter(
         dummy,
@@ -184,9 +182,11 @@ class V8VarConverterTest : public testing::Test {
                        v8::Handle<v8::Context> context,
                        PP_Var* result) {
     base::RunLoop loop;
-    converter_->FromV8Value(val, context, base::Bind(
-        &V8VarConverterTest::FromV8ValueComplete, base::Unretained(this),
-        loop.QuitClosure()));
+    converter_->FromV8Value(val,
+                            context,
+                            base::Bind(&V8VarConverterTest::FromV8ValueComplete,
+                                       base::Unretained(this),
+                                       loop.QuitClosure()));
     loop.Run();
     if (conversion_success_)
       *result = conversion_result_;
@@ -281,8 +281,8 @@ TEST_F(V8VarConverterTest, DictionaryArrayRoundTripTest) {
   EXPECT_TRUE(RoundTripAndCompare(array->GetPPVar()));
 
   // Array with 2 references to the same string.
-  ScopedPPVar release_string(
-      ScopedPPVar::PassRef(), StringVar::StringToPPVar("abc"));
+  ScopedPPVar release_string(ScopedPPVar::PassRef(),
+                             StringVar::StringToPPVar("abc"));
   array->Set(index++, release_string.get());
   array->Set(index++, release_string.get());
   EXPECT_TRUE(RoundTripAndCompare(array->GetPPVar()));
@@ -353,8 +353,8 @@ TEST_F(V8VarConverterTest, Cycles) {
 
     // Array <-> dictionary cycle.
     dictionary->SetWithStringKey("1", release_array.get());
-    ASSERT_FALSE(converter_->ToV8Value(release_dictionary.get(),
-                                       context, &v8_result));
+    ASSERT_FALSE(
+        converter_->ToV8Value(release_dictionary.get(), context, &v8_result));
     // Break the cycle.
     // TODO(raymes): We need some better machinery for releasing vars with
     // cycles. Remove the code below once we have that.
@@ -362,8 +362,8 @@ TEST_F(V8VarConverterTest, Cycles) {
 
     // Array with self reference.
     array->Set(0, release_array.get());
-    ASSERT_FALSE(converter_->ToV8Value(release_array.get(),
-                                       context, &v8_result));
+    ASSERT_FALSE(
+        converter_->ToV8Value(release_array.get(), context, &v8_result));
     // Break the self reference.
     array->Set(0, PP_MakeUndefined());
   }
@@ -407,14 +407,15 @@ TEST_F(V8VarConverterTest, StrangeDictionaryKeyTest) {
         v8::Local<v8::Context>::New(isolate_, context_);
     v8::Context::Scope context_scope(context);
 
-    const char* source = "(function() {"
+    const char* source =
+        "(function() {"
         "return {"
-          "1: 'foo',"
-          "'2': 'bar',"
-          "true: 'baz',"
-          "false: 'qux',"
-          "null: 'quux',"
-          "undefined: 'oops'"
+        "1: 'foo',"
+        "'2': 'bar',"
+        "true: 'baz',"
+        "false: 'qux',"
+        "null: 'quux',"
+        "undefined: 'oops'"
         "};"
         "})();";
 
@@ -424,8 +425,8 @@ TEST_F(V8VarConverterTest, StrangeDictionaryKeyTest) {
     ASSERT_FALSE(object.IsEmpty());
 
     PP_Var actual;
-    ASSERT_TRUE(FromV8ValueSync(object,
-        v8::Local<v8::Context>::New(isolate_, context_), &actual));
+    ASSERT_TRUE(FromV8ValueSync(
+        object, v8::Local<v8::Context>::New(isolate_, context_), &actual));
     ScopedPPVar release_actual(ScopedPPVar::PassRef(), actual);
 
     scoped_refptr<DictionaryVar> expected(new DictionaryVar);
@@ -441,8 +442,7 @@ TEST_F(V8VarConverterTest, StrangeDictionaryKeyTest) {
     expected->SetWithStringKey("null", quux.get());
     ScopedPPVar oops(ScopedPPVar::PassRef(), StringVar::StringToPPVar("oops"));
     expected->SetWithStringKey("undefined", oops.get());
-    ScopedPPVar release_expected(
-        ScopedPPVar::PassRef(), expected->GetPPVar());
+    ScopedPPVar release_expected(ScopedPPVar::PassRef(), expected->GetPPVar());
 
     ASSERT_TRUE(TestEqual(release_expected.get(), release_actual.get(), true));
   }

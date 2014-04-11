@@ -20,9 +20,8 @@ namespace content {
 class PepperPlatformVideoCapture;
 class RendererPpapiHostImpl;
 
-class PepperVideoCaptureHost
-  : public ppapi::host::ResourceHost,
-    public media::VideoCapture::EventHandler {
+class PepperVideoCaptureHost : public ppapi::host::ResourceHost,
+                               public media::VideoCapture::EventHandler {
  public:
   PepperVideoCaptureHost(RendererPpapiHostImpl* host,
                          PP_Instance instance,
@@ -44,9 +43,9 @@ class PepperVideoCaptureHost
   virtual void OnPaused(media::VideoCapture* capture) OVERRIDE;
   virtual void OnError(media::VideoCapture* capture, int error_code) OVERRIDE;
   virtual void OnRemoved(media::VideoCapture* capture) OVERRIDE;
-  virtual void OnFrameReady(
-      media::VideoCapture* capture,
-      const scoped_refptr<media::VideoFrame>& frame) OVERRIDE;
+  virtual void OnFrameReady(media::VideoCapture* capture,
+                            const scoped_refptr<media::VideoFrame>& frame)
+      OVERRIDE;
 
  private:
   int32_t OnOpen(ppapi::host::HostMessageContext* context,
@@ -62,8 +61,7 @@ class PepperVideoCaptureHost
   int32_t StopCapture();
   int32_t Close();
   void PostErrorReply();
-  void AllocBuffers(const gfx::Size& resolution,
-                    int frame_rate);
+  void AllocBuffers(const gfx::Size& resolution, int frame_rate);
   void ReleaseBuffers();
   void SendStatus();
 

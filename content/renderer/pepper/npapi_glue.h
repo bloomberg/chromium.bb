@@ -64,8 +64,8 @@ PP_Var NPIdentifierToPPVar(NPIdentifier id);
 // Note: this could easily be changed to take a PP_Instance instead if that
 // makes certain calls in the future easier. Currently all callers have a
 // PluginInstance so that's what we use here.
-CONTENT_EXPORT PP_Var NPObjectToPPVar(PepperPluginInstanceImpl* instance,
-                                      NPObject* object);
+CONTENT_EXPORT PP_Var
+    NPObjectToPPVar(PepperPluginInstanceImpl* instance, NPObject* object);
 
 // This version creates a default v8::Context rather than using the one from
 // the container of |instance|. It is only for use in unit tests, where we don't
@@ -112,9 +112,7 @@ class PPResultAndExceptionToNPResult {
 
   // Returns true if everything succeeded with no exception. This is valid only
   // after calling SetResult/CheckExceptionForNoResult.
-  bool success() const {
-    return success_;
-  }
+  bool success() const { return success_; }
 
   // Call this with the return value of the PPAPI function. It will convert
   // the result to the NPVariant output parameter and pass any exception on to
@@ -139,7 +137,7 @@ class PPResultAndExceptionToNPResult {
   NPObject* object_var_;  // Non-owning ref (see constructor).
   NPVariant* np_result_;  // Output value, possibly NULL (see constructor).
   PP_Var exception_;  // Exception set by the PPAPI call. We own a ref to it.
-  bool success_;  // See the success() function above.
+  bool success_;      // See the success() function above.
   bool checked_exception_;  // SetResult/CheckExceptionForNoResult was called.
 
   DISALLOW_COPY_AND_ASSIGN(PPResultAndExceptionToNPResult);

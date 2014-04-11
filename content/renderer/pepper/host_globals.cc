@@ -41,12 +41,11 @@ namespace {
 typedef std::set<WebPluginContainer*> ContainerSet;
 
 // Adds all WebPluginContainers associated with the given module to the set.
-void GetAllContainersForModule(PluginModule* module,
-                               ContainerSet* containers) {
-  const PluginModule::PluginInstanceSet& instances =
-      module->GetAllInstances();
+void GetAllContainersForModule(PluginModule* module, ContainerSet* containers) {
+  const PluginModule::PluginInstanceSet& instances = module->GetAllInstances();
   for (PluginModule::PluginInstanceSet::const_iterator i = instances.begin();
-       i != instances.end(); ++i) {
+       i != instances.end();
+       ++i) {
     WebPluginContainer* container = (*i)->container();
     // If "Delete" is called on an instance, the instance sets its container to
     // NULL, but the instance may actually outlive its container. Callers of
@@ -104,9 +103,7 @@ ppapi::ResourceTracker* HostGlobals::GetResourceTracker() {
   return &resource_tracker_;
 }
 
-ppapi::VarTracker* HostGlobals::GetVarTracker() {
-  return &host_var_tracker_;
-}
+ppapi::VarTracker* HostGlobals::GetVarTracker() { return &host_var_tracker_; }
 
 ppapi::CallbackTracker* HostGlobals::GetCallbackTrackerForInstance(
     PP_Instance instance) {
@@ -153,8 +150,11 @@ void HostGlobals::LogWithSource(PP_Instance instance,
   PepperPluginInstanceImpl* instance_object =
       HostGlobals::Get()->GetInstance(instance);
   if (instance_object) {
-    instance_object->container()->element().document().frame()->
-        addMessageToConsole(MakeLogMessage(level, source, value));
+    instance_object->container()
+        ->element()
+        .document()
+        .frame()
+        ->addMessageToConsole(MakeLogMessage(level, source, value));
   } else {
     BroadcastLogWithSource(0, level, source, value);
   }
@@ -174,17 +174,18 @@ void HostGlobals::BroadcastLogWithSource(PP_Module pp_module,
   } else {
     // Unknown module, get containers for all modules.
     for (ModuleMap::const_iterator i = module_map_.begin();
-         i != module_map_.end(); ++i) {
+         i != module_map_.end();
+         ++i) {
       GetAllContainersForModule(i->second, &containers);
     }
   }
 
   WebConsoleMessage message = MakeLogMessage(level, source, value);
-  for (ContainerSet::iterator i = containers.begin();
-       i != containers.end(); ++i) {
-     WebLocalFrame* frame = (*i)->element().document().frame();
-     if (frame)
-       frame->addMessageToConsole(message);
+  for (ContainerSet::iterator i = containers.begin(); i != containers.end();
+       ++i) {
+    WebLocalFrame* frame = (*i)->element().document().frame();
+    if (frame)
+      frame->addMessageToConsole(message);
   }
 }
 
@@ -192,15 +193,14 @@ base::TaskRunner* HostGlobals::GetFileTaskRunner() {
   return RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get();
 }
 
-ppapi::MessageLoopShared* HostGlobals::GetCurrentMessageLoop() {
-  return NULL;
-}
+ppapi::MessageLoopShared* HostGlobals::GetCurrentMessageLoop() { return NULL; }
 
 PP_Module HostGlobals::AddModule(PluginModule* module) {
 #ifndef NDEBUG
   // Make sure we're not adding one more than once.
   for (ModuleMap::const_iterator i = module_map_.begin();
-       i != module_map_.end(); ++i)
+       i != module_map_.end();
+       ++i)
     DCHECK(i->second != module);
 #endif
 
@@ -209,8 +209,7 @@ PP_Module HostGlobals::AddModule(PluginModule* module) {
   do {
     new_module = MakeTypedId(static_cast<PP_Module>(base::RandUint64()),
                              ppapi::PP_ID_TYPE_MODULE);
-  } while (!new_module ||
-           module_map_.find(new_module) != module_map_.end());
+  } while (!new_module || module_map_.find(new_module) != module_map_.end());
   module_map_[new_module] = module;
   return new_module;
 }
@@ -276,8 +275,6 @@ PepperPluginInstanceImpl* HostGlobals::GetInstance(PP_Instance instance) {
   return found->second;
 }
 
-bool HostGlobals::IsHostGlobals() const {
-  return true;
-}
+bool HostGlobals::IsHostGlobals() const { return true; }
 
 }  // namespace content
