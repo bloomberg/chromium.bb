@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/common/extensions/file_handler_info.h"
 #include "chrome/common/web_application_info.h"
 
 class Profile;
@@ -161,6 +162,7 @@ bool CreateShortcutsOnFileThread(
 bool CreatePlatformShortcuts(
     const base::FilePath& shortcut_data_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info,
     const ShellIntegration::ShortcutLocations& creation_locations,
     ShortcutCreationReason creation_reason);
 
@@ -177,7 +179,8 @@ void DeletePlatformShortcuts(
 void UpdatePlatformShortcuts(
     const base::FilePath& shortcut_data_path,
     const base::string16& old_app_title,
-    const ShellIntegration::ShortcutInfo& shortcut_info);
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info);
 
 // Delete all the shortcuts for an entire profile.
 // This is executed on the FILE thread.

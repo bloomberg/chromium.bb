@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/api/file_handlers/file_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -40,6 +41,9 @@
 using content::BrowserThread;
 
 namespace {
+
+typedef base::Callback<void(const ShellIntegration::ShortcutInfo&,
+                            const extensions::FileHandlersInfo&)> InfoCallback;
 
 #if defined(OS_MACOSX)
 const int kDesiredSizes[] = {16, 32, 128, 256, 512};
@@ -65,6 +69,21 @@ bool IconPrecedes(const WebApplicationInfo::IconInfo& left,
 }
 #endif
 
+bool CreateShortcutsWithInfoOnFileThread(
+    web_app::ShortcutCreationReason reason,
+    const ShellIntegration::ShortcutLocations& locations,
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  base::FilePath shortcut_data_dir =
+      web_app::GetWebAppDataDirectory(shortcut_info.profile_path,
+                                      shortcut_info.extension_id,
+                                      shortcut_info.url);
+  return web_app::internals::CreatePlatformShortcuts(
+      shortcut_data_dir, shortcut_info, file_handlers_info, locations, reason);
+}
+
 void DeleteShortcutsOnFileThread(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -77,28 +96,45 @@ void DeleteShortcutsOnFileThread(
 
 void UpdateShortcutsOnFileThread(
     const base::string16& old_app_title,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   base::FilePath shortcut_data_dir = web_app::GetWebAppDataDirectory(
       shortcut_info.profile_path, shortcut_info.extension_id, GURL());
   return web_app::internals::UpdatePlatformShortcuts(
-      shortcut_data_dir, old_app_title, shortcut_info);
+      shortcut_data_dir, old_app_title, shortcut_info, file_handlers_info);
 }
 
-void UpdateAllShortcutsForShortcutInfo(
-    const base::string16& old_app_title,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+void CreateShortcutsWithInfo(
+    web_app::ShortcutCreationReason reason,
+    const ShellIntegration::ShortcutLocations& locations,
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&UpdateShortcutsOnFileThread, old_app_title, shortcut_info));
+      base::Bind(
+          base::IgnoreResult(&CreateShortcutsWithInfoOnFileThread),
+          reason, locations, shortcut_info, file_handlers_info));
+}
+
+void UpdateAllShortcutsForShortcutInfo(
+    const base::string16& old_app_title,
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&UpdateShortcutsOnFileThread,
+                 old_app_title, shortcut_info, file_handlers_info));
 }
 
 void OnImageLoaded(ShellIntegration::ShortcutInfo shortcut_info,
-                   web_app::ShortcutInfoCallback callback,
+                   extensions::FileHandlersInfo file_handlers_info,
+                   InfoCallback callback,
                    const gfx::ImageFamily& image_family) {
   // If the image failed to load (e.g. if the resource being loaded was empty)
   // use the standard application icon.
@@ -118,7 +154,67 @@ void OnImageLoaded(ShellIntegration::ShortcutInfo shortcut_info,
     shortcut_info.favicon = image_family;
   }
 
-  callback.Run(shortcut_info);
+  callback.Run(shortcut_info, file_handlers_info);
+}
+
+void GetInfoForApp(const extensions::Extension* extension,
+                   Profile* profile,
+                   const InfoCallback& callback) {
+  ShellIntegration::ShortcutInfo shortcut_info =
+      web_app::ShortcutInfoForExtensionAndProfile(extension, profile);
+  extensions::FileHandlersInfo file_handlers_info(
+      extensions::FileHandlers::GetFileHandlers(extension));
+
+  std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
+  for (size_t i = 0; i < kNumDesiredSizes; ++i) {
+    int size = kDesiredSizes[i];
+    extensions::ExtensionResource resource =
+        extensions::IconsInfo::GetIconResource(
+            extension, size, ExtensionIconSet::MATCH_EXACTLY);
+    if (!resource.empty()) {
+      info_list.push_back(extensions::ImageLoader::ImageRepresentation(
+          resource,
+          extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
+          gfx::Size(size, size),
+          ui::SCALE_FACTOR_100P));
+    }
+  }
+
+  if (info_list.empty()) {
+    size_t i = kNumDesiredSizes - 1;
+    int size = kDesiredSizes[i];
+
+    // If there is no icon at the desired sizes, we will resize what we can get.
+    // Making a large icon smaller is preferred to making a small icon larger,
+    // so look for a larger icon first:
+    extensions::ExtensionResource resource =
+        extensions::IconsInfo::GetIconResource(
+            extension, size, ExtensionIconSet::MATCH_BIGGER);
+    if (resource.empty()) {
+      resource = extensions::IconsInfo::GetIconResource(
+          extension, size, ExtensionIconSet::MATCH_SMALLER);
+    }
+    info_list.push_back(extensions::ImageLoader::ImageRepresentation(
+        resource,
+        extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
+        gfx::Size(size, size),
+        ui::SCALE_FACTOR_100P));
+  }
+
+  // |info_list| may still be empty at this point, in which case
+  // LoadImageFamilyAsync will call the OnImageLoaded callback with an empty
+  // image and exit immediately.
+  extensions::ImageLoader::Get(profile)->LoadImageFamilyAsync(
+      extension,
+      info_list,
+      base::Bind(&OnImageLoaded, shortcut_info, file_handlers_info, callback));
+}
+
+void IgnoreFileHandlersInfo(
+    const web_app::ShortcutInfoCallback& shortcut_info_callback,
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info) {
+  shortcut_info_callback.Run(shortcut_info);
 }
 
 }  // namespace
@@ -151,11 +247,8 @@ bool CreateShortcutsOnFileThread(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  base::FilePath shortcut_data_dir = GetWebAppDataDirectory(
-      shortcut_info.profile_path, shortcut_info.extension_id,
-      shortcut_info.url);
-  return internals::CreatePlatformShortcuts(
-      shortcut_data_dir, shortcut_info, locations, reason);
+  return CreateShortcutsWithInfoOnFileThread(
+      reason, locations, shortcut_info, extensions::FileHandlersInfo(NULL));
 }
 
 }  // namespace internals
@@ -207,52 +300,9 @@ void UpdateShortcutInfoAndIconForApp(
     const extensions::Extension* extension,
     Profile* profile,
     const web_app::ShortcutInfoCallback& callback) {
-  ShellIntegration::ShortcutInfo shortcut_info =
-      ShortcutInfoForExtensionAndProfile(extension, profile);
-
-  std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
-  for (size_t i = 0; i < kNumDesiredSizes; ++i) {
-    int size = kDesiredSizes[i];
-    extensions::ExtensionResource resource =
-        extensions::IconsInfo::GetIconResource(
-            extension, size, ExtensionIconSet::MATCH_EXACTLY);
-    if (!resource.empty()) {
-      info_list.push_back(extensions::ImageLoader::ImageRepresentation(
-          resource,
-          extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
-          gfx::Size(size, size),
-          ui::SCALE_FACTOR_100P));
-    }
-  }
-
-  if (info_list.empty()) {
-    size_t i = kNumDesiredSizes - 1;
-    int size = kDesiredSizes[i];
-
-    // If there is no icon at the desired sizes, we will resize what we can get.
-    // Making a large icon smaller is preferred to making a small icon larger,
-    // so look for a larger icon first:
-    extensions::ExtensionResource resource =
-        extensions::IconsInfo::GetIconResource(
-            extension, size, ExtensionIconSet::MATCH_BIGGER);
-    if (resource.empty()) {
-      resource = extensions::IconsInfo::GetIconResource(
-          extension, size, ExtensionIconSet::MATCH_SMALLER);
-    }
-    info_list.push_back(extensions::ImageLoader::ImageRepresentation(
-        resource,
-        extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
-        gfx::Size(size, size),
-        ui::SCALE_FACTOR_100P));
-  }
-
-  // |info_list| may still be empty at this point, in which case
-  // LoadImageFamilyAsync will call the OnImageLoaded callback with an empty
-  // image and exit immediately.
-  extensions::ImageLoader::Get(profile)->LoadImageFamilyAsync(
-      extension,
-      info_list,
-      base::Bind(&OnImageLoaded, shortcut_info, callback));
+  GetInfoForApp(extension,
+                profile,
+                base::Bind(&IgnoreFileHandlersInfo, callback));
 }
 
 base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
@@ -343,10 +393,9 @@ void CreateShortcuts(
     const extensions::Extension* app) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  web_app::UpdateShortcutInfoAndIconForApp(
-      app,
-      profile,
-      base::Bind(&CreateShortcutsForShortcutInfo, reason, locations));
+  GetInfoForApp(app,
+                profile,
+                base::Bind(&CreateShortcutsWithInfo, reason, locations));
 }
 
 void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app) {
@@ -364,10 +413,9 @@ void UpdateAllShortcuts(const base::string16& old_app_title,
                         const extensions::Extension* app) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  web_app::UpdateShortcutInfoAndIconForApp(
-      app,
-      profile,
-      base::Bind(&UpdateAllShortcutsForShortcutInfo, old_app_title));
+  GetInfoForApp(app,
+                profile,
+                base::Bind(&UpdateAllShortcutsForShortcutInfo, old_app_title));
 }
 
 bool IsValidUrl(const GURL& url) {

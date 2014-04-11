@@ -16,6 +16,7 @@ namespace internals {
 bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info,
     const ShellIntegration::ShortcutLocations& creation_locations,
     ShortcutCreationReason /*creation_reason*/) {
 #if !defined(OS_CHROMEOS)
@@ -39,7 +40,8 @@ void DeletePlatformShortcuts(
 void UpdatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const base::string16& /*old_app_title*/,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -53,7 +55,10 @@ void UpdatePlatformShortcuts(
   // not show it in the menu.
   creation_locations.hidden = true;
 
-  CreatePlatformShortcuts(web_app_path, shortcut_info, creation_locations,
+  CreatePlatformShortcuts(web_app_path,
+                          shortcut_info,
+                          file_handlers_info,
+                          creation_locations,
                           SHORTCUT_CREATION_BY_USER);
 }
 

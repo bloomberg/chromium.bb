@@ -813,6 +813,7 @@ namespace internals {
 bool CreatePlatformShortcuts(
     const base::FilePath& app_data_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info,
     const ShellIntegration::ShortcutLocations& creation_locations,
     ShortcutCreationReason creation_reason) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
@@ -831,7 +832,8 @@ void DeletePlatformShortcuts(
 void UpdatePlatformShortcuts(
     const base::FilePath& app_data_path,
     const base::string16& old_app_title,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   WebAppShortcutCreator shortcut_creator(app_data_path, shortcut_info);
   shortcut_creator.UpdateShortcuts();

@@ -9,24 +9,11 @@
 #include <string>
 #include <vector>
 
+#include "chrome/common/extensions/file_handler_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"
 
 namespace extensions {
-
-struct FileHandlerInfo {
-  FileHandlerInfo();
-  ~FileHandlerInfo();
-
-  std::string id;
-  std::string title;
-
-  // File extensions associated with this handler.
-  std::set<std::string> extensions;
-
-  // MIME types associated with this handler.
-  std::set<std::string> types;
-};
 
 struct FileHandlers : public Extension::ManifestData {
   FileHandlers();

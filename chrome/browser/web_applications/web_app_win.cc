@@ -378,6 +378,7 @@ bool CheckAndSaveIcon(const base::FilePath& icon_file,
 bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info,
     const ShellIntegration::ShortcutLocations& creation_locations,
     ShortcutCreationReason creation_reason) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
@@ -419,7 +420,8 @@ bool CreatePlatformShortcuts(
 void UpdatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const base::string16& old_app_title,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   // Generates file name to use with persisted ico and shortcut file.

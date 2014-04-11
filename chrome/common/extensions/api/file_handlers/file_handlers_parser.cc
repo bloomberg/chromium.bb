@@ -19,9 +19,6 @@ namespace errors = manifest_errors;
 
 const int kMaxTypeAndExtensionHandlers = 200;
 
-FileHandlerInfo::FileHandlerInfo() {}
-FileHandlerInfo::~FileHandlerInfo() {}
-
 FileHandlers::FileHandlers() {}
 FileHandlers::~FileHandlers() {}
 
