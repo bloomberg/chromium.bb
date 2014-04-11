@@ -52,13 +52,40 @@ BreadcrumbsController.prototype.show = function(entry) {
   var error = false;
 
   // Obtain entries from the target entry to the root.
-  var loop;
-  var resolveParent = function(inEntry, callback) {
-    entries.unshift(inEntry);
-    if (!this.volumeManager_.getLocationInfo(inEntry).isRootEntry) {
-      inEntry.getParent(function(parent) {
-        resolveParent(parent, callback);
-      }, function() {
+  var resolveParent = function(currentEntry, previousEntry, callback) {
+    var entryLocationInfo = this.volumeManager_.getLocationInfo(currentEntry);
+    if (!entryLocationInfo) {
+      error = true;
+      callback();
+      return;
+    }
+
+    if (entryLocationInfo.isRootEntry &&
+        entryLocationInfo.rootType === RootType.DRIVE_OTHER) {
+      this.metadataCache_.getOne(previousEntry, 'drive', function(result) {
+        if (result && result.sharedWithMe) {
+          // Adds the shared-with-me entry instead.
+          var driveVolumeInfo = entryLocationInfo.volumeInfo;
+          var sharedWithMeEntry =
+              driveVolumeInfo.fakeEntries[RootType.DRIVE_SHARED_WITH_ME];
+          if (sharedWithMeEntry)
+            entries.unshift(sharedWithMeEntry);
+          else
+            error = true;
+        } else {
+          entries.unshift(currentEntry);
+        }
+        // Finishes traversal since the current is root.
+        callback();
+      });
+      return;
+    }
+
+    entries.unshift(currentEntry);
+    if (!entryLocationInfo.isRootEntry) {
+      currentEntry.getParent(function(parentEntry) {
+        resolveParent(parentEntry, currentEntry, callback);
+      }.bind(this), function() {
         error = true;
         callback();
       });
@@ -66,9 +93,9 @@ BreadcrumbsController.prototype.show = function(entry) {
       callback();
     }
   }.bind(this);
-  queue.run(resolveParent.bind(null, entry));
 
-  // Override DRIVE_OTHER root to DRIVE_SHARED_WITH_ME root.
+  queue.run(resolveParent.bind(this, entry, null));
+
   queue.run(function(callback) {
     // If an error was occured, just skip.
     if (error) {
@@ -79,30 +106,10 @@ BreadcrumbsController.prototype.show = function(entry) {
     // If the path is not under the drive other root, it is not needed to
     // override root type.
     var locationInfo = this.volumeManager_.getLocationInfo(entry);
-    if (!locationInfo) {
+    if (!locationInfo)
       error = true;
-      callback();
-      return;
-    }
-    if (locationInfo.rootType !== RootType.DRIVE_OTHER) {
-      callback();
-      return;
-    }
 
-    // Otherwise check the metadata of the directory localted at just under
-    // drive other.
-    if (!entries[1]) {
-      error = true;
-      callback();
-      return;
-    }
-    this.metadataCache_.getOne(entries[1], 'drive', function(result) {
-      if (result && result.sharedWithMe)
-        entries[0] = RootType.DRIVE_SHARED_WITH_ME;
-      else
-        entries.shift();
-      callback();
-    });
+    callback();
   }.bind(this));
 
   // Update DOM element.
@@ -116,9 +123,7 @@ BreadcrumbsController.prototype.show = function(entry) {
 
 /**
  * Updates the breadcrumb display.
- * TODO(mtomasz): Simplify by passing always Entries (or a fake).
- * @param {Array.<Entry|RootType>} entries Enries or root types on the target
- *     path.
+ * @param {Array.<Entry>} entries Entries on the target path.
  * @private
  */
 BreadcrumbsController.prototype.updateInternal_ = function(entries) {
@@ -129,14 +134,7 @@ BreadcrumbsController.prototype.updateInternal_ = function(entries) {
     var entry = entries[i];
     var div = doc.createElement('div');
     div.className = 'breadcrumb-path';
-    if (entry === RootType.DRIVE_SHARED_WITH_ME) {
-      div.textContent = PathUtil.getRootTypeLabel(
-          RootType.DRIVE_SHARED_WITH_ME);
-    } else {
-      var locationInfo = this.volumeManager_.getLocationInfo(entry);
-      div.textContent = (locationInfo && locationInfo.isRootEntry) ?
-          PathUtil.getRootTypeLabel(locationInfo.rootType) : entry.name;
-    }
+    div.textContent = util.getEntryLabel(this.volumeManager_, entry);
     div.entry = entry;
     this.bc_.appendChild(div);
 

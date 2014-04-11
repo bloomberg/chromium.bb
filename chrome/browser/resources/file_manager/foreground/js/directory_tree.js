@@ -29,13 +29,7 @@ DirectoryItemTreeBaseMethods.updateSubElementsFromList = function(recursive) {
   while (this.entries_[index]) {
     var currentEntry = this.entries_[index];
     var currentElement = this.items[index];
-
-    var locationInfo = tree.volumeManager_.getLocationInfo(currentEntry);
-    var label;
-    if (locationInfo && locationInfo.isRootEntry)
-      label = PathUtil.getRootTypeLabel(locationInfo.rootType);
-    else
-      label = currentEntry.name;
+    var label = util.getEntryLabel(tree.volumeManager_, currentEntry);
 
     if (index >= this.items.length) {
       var item = new DirectoryItem(label, currentEntry, this, tree);

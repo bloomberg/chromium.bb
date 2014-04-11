@@ -45,35 +45,6 @@ var RootType = Object.freeze({
 var PathUtil = {};
 
 /**
- * Returns the localized name for the root type. If not available, then returns
- * null.
- *
- * @param {RootType} rootType The root type.
- * @return {?string} The localized name, or null if not available.
- */
-PathUtil.getRootTypeLabel = function(rootType) {
-  var str = function(id) {
-    return loadTimeData.getString(id);
-  };
-
-  switch (rootType) {
-    case RootType.DOWNLOADS:
-      return str('DOWNLOADS_DIRECTORY_LABEL');
-    case RootType.DRIVE:
-      return str('DRIVE_MY_DRIVE_LABEL');
-    case RootType.DRIVE_OFFLINE:
-      return str('DRIVE_OFFLINE_COLLECTION_LABEL');
-    case RootType.DRIVE_SHARED_WITH_ME:
-      return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
-    case RootType.DRIVE_RECENT:
-      return str('DRIVE_RECENT_COLLECTION_LABEL');
-  }
-
-  // Translation not found.
-  return null;
-};
-
-/**
  * Extracts the extension of the path.
  *
  * Examples:

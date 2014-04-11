@@ -1342,3 +1342,36 @@ util.VolumeType = Object.freeze({
   CLOUD_DEVICE: 'cloud_device',
   MTP: 'mtp'
 });
+
+/**
+ * Returns the localized name of the entry.
+ *
+ * @param {VolumeManager} volumeManager The volume manager.
+ * @param {Entry} entry The entry to be retrieve the name of.
+ * @return {?string} The localized name.
+ */
+util.getEntryLabel = function(volumeManager, entry) {
+  var locationInfo = volumeManager.getLocationInfo(entry);
+
+  if (locationInfo && locationInfo.isRootEntry) {
+    switch (locationInfo.rootType) {
+      case RootType.DOWNLOADS:
+        return str('DOWNLOADS_DIRECTORY_LABEL');
+      case RootType.DRIVE:
+        return str('DRIVE_MY_DRIVE_LABEL');
+      case RootType.DRIVE_OFFLINE:
+        return str('DRIVE_OFFLINE_COLLECTION_LABEL');
+      case RootType.DRIVE_SHARED_WITH_ME:
+        return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
+      case RootType.DRIVE_RECENT:
+        return str('DRIVE_RECENT_COLLECTION_LABEL');
+      case RootType.ARCHIVE:
+        return entry.filesystem.name;
+      default:
+        console.error('Unsupported root type: ' + rootType);
+        return entry.filesystem.name;
+    }
+  }
+
+  return entry.name;
+};
