@@ -11,18 +11,13 @@ skia_support_gpu = !is_ios
 skia_support_pdf = !is_ios && enable_printing != 0
 
 # The list of Skia files is kept in skia_gn_files.gypi. Read it.
-gypi_values = exec_script("//build/gypi_to_gn.py",
-                          [ rebase_path("skia_gn_files.gypi") ],
-                          "scope",
-                          [ "skia_gn_files.gypi" ])
-
-# This files in the skia gypi file are relative to this directory.
-skia_dir = "//third_party/skia"
-
-# Same as skia_dir but relative to the current directory. This is what all
-# files will be prefixed to once we rebase them to be relative to our file. If
-# you need to filter out a file, prefix it with $skia_rel_dir.
-skia_rel_dir = rebase_path(".", ".", skia_dir)
+gypi_values = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("skia_gn_files.gypi"),
+      "--replace=<(skia_include_path)=//third_party/skia/include",
+      "--replace=<(skia_src_path)=//third_party/skia/src" ]
+    "scope",
+    [ "skia_gn_files.gypi" ])
 
 # External-facing config for dependent code.
 config("skia_config") {
@@ -221,14 +216,14 @@ component("skia") {
   ]
 
   # The skia gypi values are relative to the skia_dir, so we need to rebase.
-  sources += rebase_path(gypi_values.skia_core_sources, ".", skia_dir)
-  sources += rebase_path(gypi_values.skia_effects_sources, ".", skia_dir)
-  sources += rebase_path(gypi_values.skia_pdf_sources, ".", skia_dir)
-  sources += rebase_path(gypi_values.skia_library_sources, ".", skia_dir)
+  sources += gypi_values.skia_core_sources
+  sources += gypi_values.skia_effects_sources
+  sources += gypi_values.skia_pdf_sources
+  sources += gypi_values.skia_library_sources
 
   # GPU
   if (skia_support_gpu) {
-    sources += rebase_path(gypi_values.skia_gpu_sources, ".", skia_dir)
+    sources += gypi_values.skia_gpu_sources
   }
 
   # Fixup Chrome sources.
@@ -251,46 +246,46 @@ component("skia") {
   # Fixup skia library sources.
   if (is_win) {
     sources -= [
-      "$skia_rel_dir/src/ports/SkOSFile_posix.cpp",
-      "$skia_rel_dir/src/ports/SkTime_Unix.cpp",
-      "$skia_rel_dir/src/ports/SkTLS_pthread.cpp",
-      "$skia_rel_dir/src/ports/SkFontConfigInterface_direct.cpp",
-      "$skia_rel_dir/src/fonts/SkFontMgr_fontconfig.cpp",
+      "//third_party/skia/src/ports/SkOSFile_posix.cpp",
+      "//third_party/skia/src/ports/SkTime_Unix.cpp",
+      "//third_party/skia/src/ports/SkTLS_pthread.cpp",
+      "//third_party/skia/src/ports/SkFontConfigInterface_direct.cpp",
+      "//third_party/skia/src/fonts/SkFontMgr_fontconfig.cpp",
     ]
   } else {
     sources -= [
-      "$skia_rel_dir/src/ports/SkFontHost_win.cpp",
-      "$skia_rel_dir/src/ports/SkFontHost_win_dw.cpp",
-      "$skia_rel_dir/src/ports/SkFontMgr_default_gdi.cpp",
-      "$skia_rel_dir/src/ports/SkOSFile_win.cpp",
-      "$skia_rel_dir/src/ports/SkThread_win.cpp",
-      "$skia_rel_dir/src/ports/SkTLS_win.cpp",
-      "$skia_rel_dir/src/utils/SkThreadUtils_win.cpp",
+      "//third_party/skia/src/ports/SkFontHost_win.cpp",
+      "//third_party/skia/src/ports/SkFontHost_win_dw.cpp",
+      "//third_party/skia/src/ports/SkFontMgr_default_gdi.cpp",
+      "//third_party/skia/src/ports/SkOSFile_win.cpp",
+      "//third_party/skia/src/ports/SkThread_win.cpp",
+      "//third_party/skia/src/ports/SkTLS_win.cpp",
+      "//third_party/skia/src/utils/SkThreadUtils_win.cpp",
     ]
   }
   if (!is_android) {
     sources -= [
-      "$skia_rel_dir/src/ports/SkFontConfigInterface_android.cpp",
-      "$skia_rel_dir/src/ports/SkFontConfigParser_android.cpp",
+      "//third_party/skia/src/ports/SkFontConfigInterface_android.cpp",
+      "//third_party/skia/src/ports/SkFontConfigParser_android.cpp",
     ]
   }
   if (!is_mac) {
     sources -= [
-      "$skia_rel_dir/src/ports/SkFontHost_mac.cpp",
-      "$skia_rel_dir/src/utils/SkThreadUtils_pthread_mach.cpp",
+      "//third_party/skia/src/ports/SkFontHost_mac.cpp",
+      "//third_party/skia/src/utils/SkThreadUtils_pthread_mach.cpp",
     ]
   }
   if (!is_linux) {
     sources -= [
-      "$skia_rel_dir/src/ports/SkFontHost_FreeType.cpp",
-      "$skia_rel_dir/src/ports/SkFontHost_FreeType_common.cpp",
-      "$skia_rel_dir/src/ports/SkFontHost_fontconfig.cpp",
-      "$skia_rel_dir/src/ports/SkFontHost_linux.cpp",
+      "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
+      "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
+      "//third_party/skia/src/ports/SkFontHost_fontconfig.cpp",
+      "//third_party/skia/src/ports/SkFontHost_linux.cpp",
     ]
   } else if (!is_android) {
     sources -= [
-      "$skia_rel_dir/src/ports/SkFontConfigInterface_direct.cpp",
-      "$skia_rel_dir/src/fonts/SkFontMgr_fontconfig.cpp",
+      "//third_party/skia/src/ports/SkFontConfigInterface_direct.cpp",
+      "//third_party/skia/src/fonts/SkFontMgr_fontconfig.cpp",
     ]
   }
 
