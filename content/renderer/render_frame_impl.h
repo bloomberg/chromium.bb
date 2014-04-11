@@ -33,6 +33,7 @@ namespace blink {
 class WebInputEvent;
 class WebMouseEvent;
 class WebContentDecryptionModule;
+class WebNotificationPresenter;
 class WebSecurityOrigin;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
@@ -287,6 +288,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
                                      bool is_new_navigation);
   virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
+  virtual blink::WebNotificationPresenter* notificationPresenter();
   virtual void didChangeSelection(bool is_empty_selection);
   virtual blink::WebColorChooser* createColorChooser(
       blink::WebColorChooserClient* client,

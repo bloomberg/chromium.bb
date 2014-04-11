@@ -101,6 +101,10 @@ public:
     {
         Base::didFinishLoad(frame);
     }
+    virtual blink::WebNotificationPresenter* notificationPresenter()
+    {
+        return m_baseProxy->notificationPresenter();
+    }
     virtual void didChangeSelection(bool is_selection_empty) {
         m_baseProxy->didChangeSelection(is_selection_empty);
         Base::didChangeSelection(is_selection_empty);

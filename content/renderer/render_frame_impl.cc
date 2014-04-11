@@ -55,6 +55,7 @@
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/java/java_bridge_dispatcher.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
+#include "content/renderer/notification_provider.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -2031,6 +2032,10 @@ void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame) {
   // TODO(nasko): Move implementation here. Needed methods:
   // * StartNavStateSyncTimerIfNecessary
   render_view_->didUpdateCurrentHistoryItem(frame);
+}
+
+blink::WebNotificationPresenter* RenderFrameImpl::notificationPresenter() {
+  return render_view_->notification_provider_;
 }
 
 void RenderFrameImpl::didChangeSelection(bool is_empty_selection) {
