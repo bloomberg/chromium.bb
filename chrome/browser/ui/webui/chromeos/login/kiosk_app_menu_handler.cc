@@ -13,7 +13,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
@@ -75,6 +77,15 @@ void KioskAppMenuHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+// static
+bool KioskAppMenuHandler::EnableNewKioskUI() {
+  bool show_user_pods;
+  CrosSettings::Get()->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
+                                  &show_user_pods);
+  return !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableNewKioskUI) && show_user_pods;
+}
+
 void KioskAppMenuHandler::SendKioskApps() {
   if (!is_webui_initialized_)
     return;
@@ -114,9 +125,8 @@ void KioskAppMenuHandler::SendKioskApps() {
     apps_list.Append(app_info.release());
   }
 
-  bool new_kiosk_ui = !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableNewKioskUI);
-  web_ui()->CallJavascriptFunction(new_kiosk_ui ?
+
+  web_ui()->CallJavascriptFunction(EnableNewKioskUI() ?
       kKioskSetAppsNewAPI : kKioskSetAppsOldAPI,
       apps_list);
 }
@@ -143,8 +153,7 @@ void KioskAppMenuHandler::HandleCheckKioskAppLaunchError(
   KioskAppLaunchError::Clear();
 
   const std::string error_message = KioskAppLaunchError::GetErrorMessage(error);
-  bool new_kiosk_ui = !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableNewKioskUI);
+  bool new_kiosk_ui = EnableNewKioskUI();
   web_ui()->CallJavascriptFunction(new_kiosk_ui ?
       kKioskShowErrorNewAPI : kKioskShowErrorOldAPI,
       base::StringValue(error_message));

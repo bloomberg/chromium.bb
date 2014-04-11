@@ -30,6 +30,9 @@ class KioskAppMenuHandler : public content::WebUIMessageHandler,
   // content::WebUIMessageHandler overrides:
   virtual void RegisterMessages() OVERRIDE;
 
+  // Returns true if new kiosk UI is enabled.
+  static bool EnableNewKioskUI();
+
  private:
   // Sends all kiosk apps to webui.
   void SendKioskApps();

@@ -380,8 +380,7 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString("highlightStrength",
                                keyboard_driven_oobe ? "strong" : "normal");
 
-  bool new_kiosk_ui = !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableNewKioskUI);
+  bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
   localized_strings->SetString("newKioskUI", new_kiosk_ui ? "on" : "off");
 }
 
