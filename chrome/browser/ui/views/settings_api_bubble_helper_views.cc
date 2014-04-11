@@ -68,8 +68,8 @@ void MaybeShowExtensionControlledSearchNotification(
   return;
 #endif
 
-  if (match.provider &&
-      match.provider->type() == AutocompleteProvider::TYPE_SEARCH) {
+  if (AutocompleteMatch::IsSearchType(match.type) &&
+      match.type != AutocompleteMatchType::SEARCH_OTHER_ENGINE) {
     const extensions::Extension* extension =
         OverridesSearchEngine(profile, NULL);
     if (extension) {
