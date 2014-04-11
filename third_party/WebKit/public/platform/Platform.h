@@ -249,6 +249,10 @@ public:
     // Return the physical memory of the current machine, in MB.
     virtual size_t physicalMemoryMB() { return 0; }
 
+    // Return the available virtual memory of the current machine, in MB. Or
+    // zero, if there is no limit.
+    virtual size_t virtualMemoryLimitMB() { return 0; }
+
     // Return the number of of processors of the current machine.
     virtual size_t numberOfProcessors() { return 0; }
 
