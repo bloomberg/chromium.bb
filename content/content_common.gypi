@@ -452,7 +452,7 @@
     'port/common/input_event_ack_state.h',
   ],
   'target_conditions': [
-    ['OS=="android"', {
+    ['OS=="android" and <(use_seccomp_bpf)==1', {
       'sources/': [
         ['include', '^common/sandbox_linux/sandbox_bpf_base_policy_linux\\.cc$'],
         ['include', '^common/sandbox_linux/sandbox_bpf_base_policy_linux\\.h$'],
@@ -742,6 +742,8 @@
     }],
     ['use_seccomp_bpf==0', {
       'sources!': [
+        'common/sandbox_linux/android/sandbox_bpf_base_policy_android.cc',
+        'common/sandbox_linux/android/sandbox_bpf_base_policy_android.h',
         'common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.cc',
         'common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.h',
         'common/sandbox_linux/bpf_gpu_policy_linux.cc',
