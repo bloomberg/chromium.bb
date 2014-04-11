@@ -699,7 +699,9 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       next_snapshot_id_(0) {
 }
 
-void RenderViewImpl::Initialize(RenderViewImplParams* params) {
+void RenderViewImpl::Initialize(
+    RenderViewImplParams* params,
+    RenderFrameImpl* main_render_frame) {
   routing_id_ = params->routing_id;
   surface_id_ = params->surface_id;
   if (params->opener_id != MSG_ROUTING_NONE && params->is_renderer_created)
@@ -777,12 +779,9 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
 
   ApplyWebPreferences(webkit_preferences_, webview());
 
-  main_render_frame_.reset(
-      RenderFrameImpl::Create(this, params->main_frame_routing_id));
-  // The main frame WebLocalFrame object is closed by
-  // RenderFrameImpl::frameDetached().
-  webview()->setMainFrame(WebLocalFrame::create(main_render_frame_.get()));
-  main_render_frame_->SetWebFrame(webview()->mainFrame()->toWebLocalFrame());
+  main_render_frame_.reset(main_render_frame);
+  webview()->setMainFrame(main_render_frame_->GetWebFrame());
+  main_render_frame_->Initialize();
 
   if (switches::IsTouchDragDropEnabled())
     webview()->settings()->setTouchDragDropEnabled(true);
@@ -949,7 +948,15 @@ RenderViewImpl* RenderViewImpl::Create(
     render_view = g_create_render_view_impl(&params);
   else
     render_view = new RenderViewImpl(&params);
-  render_view->Initialize(&params);
+
+  RenderFrameImpl* main_frame = RenderFrameImpl::Create(
+      render_view, main_frame_routing_id);
+  // The main frame WebLocalFrame object is closed by
+  // RenderFrameImpl::frameDetached().
+  WebLocalFrame* web_frame = WebLocalFrame::create(main_frame);
+  main_frame->SetWebFrame(web_frame);
+
+  render_view->Initialize(&params, main_frame);
   return render_view;
 }
 

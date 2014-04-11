@@ -101,8 +101,13 @@ class CONTENT_EXPORT RenderFrameImpl
   RenderWidget* GetRenderWidget();
 
   // This is called right after creation with the WebLocalFrame for this
-  // RenderFrame.
+  // RenderFrame. It must be called before Initialize.
   void SetWebFrame(blink::WebLocalFrame* web_frame);
+
+  // This method must be called after the frame has been added to the frame
+  // tree. It creates all objects that depend on the frame being at its proper
+  // spot.
+  void Initialize();
 
   // Notification from RenderView.
   virtual void OnStop();

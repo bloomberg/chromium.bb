@@ -341,7 +341,9 @@ void RenderFrameImpl::SetWebFrame(blink::WebLocalFrame* web_frame) {
   CHECK(result.second) << "Inserting a duplicate item.";
 
   frame_ = web_frame;
+}
 
+void RenderFrameImpl::Initialize() {
 #if defined(ENABLE_PLUGINS)
   new PepperBrowserConnection(this);
 #endif
@@ -1330,11 +1332,15 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
     return NULL;
   }
 
+  // Create the RenderFrame and WebLocalFrame, linking the two.
   RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(
       render_view_.get(), child_routing_id);
   blink::WebLocalFrame* web_frame = WebLocalFrame::create(child_render_frame);
-  parent->appendChild(web_frame);
   child_render_frame->SetWebFrame(web_frame);
+
+  // Add the frame to the frame tree and initialize it.
+  parent->appendChild(web_frame);
+  child_render_frame->Initialize();
 
   return web_frame;
 }
