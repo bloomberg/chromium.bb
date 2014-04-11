@@ -26,7 +26,6 @@ future when a hypothetical VS2015 is released, the 2013 script will be
 maintained, and a new 2015 script would be added.
 """
 
-import ctypes.wintypes
 import hashlib
 import json
 import optparse
@@ -38,15 +37,17 @@ import time
 
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(BASEDIR, '..'))
+DEPOT_TOOLS_PATH = os.path.join(BASEDIR, '..')
+sys.path.append(DEPOT_TOOLS_PATH)
 import download_from_google_storage
 
-
-GetFileAttributes = ctypes.windll.kernel32.GetFileAttributesW
-GetFileAttributes.argtypes = (ctypes.wintypes.LPWSTR,)
-GetFileAttributes.restype = ctypes.wintypes.DWORD
-FILE_ATTRIBUTE_HIDDEN = 0x2
-FILE_ATTRIBUTE_SYSTEM = 0x4
+if sys.platform != 'cygwin':
+  import ctypes.wintypes
+  GetFileAttributes = ctypes.windll.kernel32.GetFileAttributesW
+  GetFileAttributes.argtypes = (ctypes.wintypes.LPWSTR,)
+  GetFileAttributes.restype = ctypes.wintypes.DWORD
+  FILE_ATTRIBUTE_HIDDEN = 0x2
+  FILE_ATTRIBUTE_SYSTEM = 0x4
 
 
 def IsHidden(file_path):
@@ -193,6 +194,17 @@ def main():
   parser.add_option('--output-json', metavar='FILE',
                     help='write information about toolchain to FILE')
   options, args = parser.parse_args()
+
+  if sys.platform == 'cygwin':
+    # This script requires Windows Python, so invoke with depot_tools' Python.
+    def winpath(path):
+      return subprocess.check_output(['cygpath', '-w', path]).strip()
+    python = os.path.join(DEPOT_TOOLS_PATH, 'python.bat')
+    cmd = [python, winpath(__file__)]
+    if options.output_json:
+      cmd.extend(['--output-json', winpath(options.output_json)])
+    cmd.extend(args)
+    sys.exit(subprocess.call(cmd))
 
   # We assume that the Pro hash is the first one.
   desired_hashes = args
