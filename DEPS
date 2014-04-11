@@ -35,7 +35,7 @@ vars = {
   "google_toolbox_for_mac_revision": "662",
   "libaddressinput_revision": "176",
   "libphonenumber_revision": "621",
-  "libvpx_revision": "261575",
+  "libvpx_revision": "263116",
   "lss_revision": "25",
 
   # These two FFmpeg variables must be updated together.  One is used for SVN
