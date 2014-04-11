@@ -52,21 +52,3 @@ static_library("snappy") {
   #        }],
   #    ],
 }
-
-test("snappy_unittest") {
-  sources = [
-    "src/snappy-test.cc",
-    "src/snappy-test.h",
-    "src/snappy_unittest.cc",
-  ]
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-
-  deps = [
-    ":snappy",
-    "//base",
-    "//testing/gtest",
-    "//third_party/zlib",
-  ]
-}
