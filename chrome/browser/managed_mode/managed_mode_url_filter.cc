@@ -89,11 +89,13 @@ bool FilterBuilder::AddPattern(const std::string& pattern, int site_id) {
   std::string host;
   uint16 port;
   std::string path;
+  std::string query;
   bool match_subdomains = true;
   URLBlacklist::SegmentURLCallback callback =
       static_cast<URLBlacklist::SegmentURLCallback>(URLFixerUpper::SegmentURL);
   if (!URLBlacklist::FilterToComponents(
-          callback, pattern, &scheme, &host, &match_subdomains, &port, &path)) {
+          callback, pattern,
+          &scheme, &host, &match_subdomains, &port, &path, &query)) {
     LOG(ERROR) << "Invalid pattern " << pattern;
     return false;
   }
@@ -101,7 +103,7 @@ bool FilterBuilder::AddPattern(const std::string& pattern, int site_id) {
   scoped_refptr<URLMatcherConditionSet> condition_set =
       URLBlacklist::CreateConditionSet(
           &contents_->url_matcher, ++matcher_id_,
-          scheme, host, match_subdomains, port, path);
+          scheme, host, match_subdomains, port, path, query, true);
   all_conditions_.push_back(condition_set);
   contents_->matcher_site_map[matcher_id_] = site_id;
   return true;

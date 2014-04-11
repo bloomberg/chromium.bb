@@ -77,17 +77,20 @@ class POLICY_EXPORT URLBlacklist {
   // of the hostname (if it is one.)
   // |port| is 0 if none is explicitly defined.
   // |path| does not include query parameters.
+  // |query| contains the query parameters ('?' not included).
   static bool FilterToComponents(SegmentURLCallback segment_url,
                                  const std::string& filter,
                                  std::string* scheme,
                                  std::string* host,
                                  bool* match_subdomains,
                                  uint16* port,
-                                 std::string* path);
+                                 std::string* path,
+                                 std::string* query);
 
   // Creates a condition set that can be used with the |url_matcher|. |id| needs
   // to be a unique number that will be returned by the |url_matcher| if the URL
-  // matches that condition set.
+  // matches that condition set. |allow| indicates if it is a white-list (true)
+  // or black-list (false) filter.
   static scoped_refptr<url_matcher::URLMatcherConditionSet> CreateConditionSet(
       url_matcher::URLMatcher* url_matcher,
       url_matcher::URLMatcherConditionSet::ID id,
@@ -95,7 +98,9 @@ class POLICY_EXPORT URLBlacklist {
       const std::string& host,
       bool match_subdomains,
       uint16 port,
-      const std::string& path);
+      const std::string& path,
+      const std::string& query,
+      bool allow);
 
  private:
   struct FilterComponents;

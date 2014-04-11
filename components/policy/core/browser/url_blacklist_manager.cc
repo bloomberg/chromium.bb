@@ -20,6 +20,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
+#include "url/url_parse.h"
 
 using url_matcher::URLMatcher;
 using url_matcher::URLMatcherCondition;
@@ -27,6 +28,7 @@ using url_matcher::URLMatcherConditionFactory;
 using url_matcher::URLMatcherConditionSet;
 using url_matcher::URLMatcherPortFilter;
 using url_matcher::URLMatcherSchemeFilter;
+using url_matcher::URLQueryElementMatcherCondition;
 
 namespace policy {
 
@@ -48,6 +50,54 @@ scoped_ptr<URLBlacklist> BuildBlacklist(
   return blacklist.Pass();
 }
 
+// Tokenise the parameter |query| and add appropriate query element matcher
+// conditions to the |query_conditions|.
+void ProcessQueryToConditions(
+    url_matcher::URLMatcherConditionFactory* condition_factory,
+    const std::string& query,
+    bool allow,
+    std::set<URLQueryElementMatcherCondition>* query_conditions) {
+  url_parse::Component query_left = url_parse::MakeRange(0, query.length());
+  url_parse::Component key;
+  url_parse::Component value;
+  // Depending on the filter type being black-list or white-list, the matcher
+  // choose any or every match. The idea is a URL should be black-listed if
+  // there is any occurrence of the key value pair. It should be white-listed
+  // only if every occurrence of the key is followed by the value. This avoids
+  // situations such as a user appending a white-listed video parameter in the
+  // end of the query and watching a video of his choice (the last parameter is
+  // ignored by some web servers like youtube's).
+  URLQueryElementMatcherCondition::Type match_type =
+      allow ? URLQueryElementMatcherCondition::MATCH_ALL
+            : URLQueryElementMatcherCondition::MATCH_ANY;
+
+  while (ExtractQueryKeyValue(query.data(), &query_left, &key, &value)) {
+    URLQueryElementMatcherCondition::QueryElementType query_element_type =
+        value.len ? URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE
+                  : URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY;
+    URLQueryElementMatcherCondition::QueryValueMatchType query_value_match_type;
+    if (!value.len && key.len && query[key.end() - 1] == '*') {
+      --key.len;
+      query_value_match_type =
+          URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX;
+    } else if (value.len && query[value.end() - 1] == '*') {
+      --value.len;
+      query_value_match_type =
+          URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX;
+    } else {
+      query_value_match_type =
+          URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT;
+    }
+    query_conditions->insert(
+        URLQueryElementMatcherCondition(query.substr(key.begin, key.len),
+                                        query.substr(value.begin, value.len),
+                                        query_value_match_type,
+                                        query_element_type,
+                                        match_type,
+                                        condition_factory));
+  }
+}
+
 }  // namespace
 
 struct URLBlacklist::FilterComponents {
@@ -58,6 +108,8 @@ struct URLBlacklist::FilterComponents {
   std::string host;
   uint16 port;
   std::string path;
+  std::string query;
+  int number_of_key_value_pairs;
   bool match_subdomains;
   bool allow;
 };
@@ -77,17 +129,31 @@ void URLBlacklist::AddFilters(bool allow,
     DCHECK(success);
     FilterComponents components;
     components.allow = allow;
-    if (!FilterToComponents(segment_url_, pattern, &components.scheme,
-                            &components.host, &components.match_subdomains,
-                            &components.port, &components.path)) {
+    if (!FilterToComponents(segment_url_,
+                            pattern,
+                            &components.scheme,
+                            &components.host,
+                            &components.match_subdomains,
+                            &components.port,
+                            &components.path,
+                            &components.query)) {
       LOG(ERROR) << "Invalid pattern " << pattern;
       continue;
     }
 
-    all_conditions.push_back(
-        CreateConditionSet(url_matcher_.get(), ++id_, components.scheme,
-                           components.host, components.match_subdomains,
-                           components.port, components.path));
+    scoped_refptr<URLMatcherConditionSet> condition_set =
+        CreateConditionSet(url_matcher_.get(),
+                           ++id_,
+                           components.scheme,
+                           components.host,
+                           components.match_subdomains,
+                           components.port,
+                           components.path,
+                           components.query,
+                           allow);
+    components.number_of_key_value_pairs =
+        condition_set->query_conditions().size();
+    all_conditions.push_back(condition_set);
     filters_[id_] = components;
   }
   url_matcher_->AddConditionSets(all_conditions);
@@ -133,7 +199,8 @@ bool URLBlacklist::FilterToComponents(SegmentURLCallback segment_url,
                                       std::string* host,
                                       bool* match_subdomains,
                                       uint16* port,
-                                      std::string* path) {
+                                      std::string* path,
+                                      std::string* query) {
   url_parse::Parsed parsed;
 
   if (segment_url(filter, &parsed) == kFileScheme) {
@@ -207,6 +274,13 @@ bool URLBlacklist::FilterToComponents(SegmentURLCallback segment_url,
   else
     path->clear();
 
+  if (query) {
+    if (parsed.query.is_nonempty())
+      query->assign(filter, parsed.query.begin, parsed.query.len);
+    else
+      query->clear();
+  }
+
   return true;
 }
 
@@ -218,13 +292,21 @@ scoped_refptr<URLMatcherConditionSet> URLBlacklist::CreateConditionSet(
     const std::string& host,
     bool match_subdomains,
     uint16 port,
-    const std::string& path) {
+    const std::string& path,
+    const std::string& query,
+    bool allow) {
   URLMatcherConditionFactory* condition_factory =
       url_matcher->condition_factory();
   std::set<URLMatcherCondition> conditions;
   conditions.insert(match_subdomains ?
       condition_factory->CreateHostSuffixPathPrefixCondition(host, path) :
       condition_factory->CreateHostEqualsPathPrefixCondition(host, path));
+
+  std::set<URLQueryElementMatcherCondition> query_conditions;
+  if (!query.empty()) {
+    ProcessQueryToConditions(
+        condition_factory, query, allow, &query_conditions);
+  }
 
   scoped_ptr<URLMatcherSchemeFilter> scheme_filter;
   if (!scheme.empty())
@@ -237,8 +319,11 @@ scoped_refptr<URLMatcherConditionSet> URLBlacklist::CreateConditionSet(
     port_filter.reset(new URLMatcherPortFilter(ranges));
   }
 
-  return new URLMatcherConditionSet(id, conditions,
-                                    scheme_filter.Pass(), port_filter.Pass());
+  return new URLMatcherConditionSet(id,
+                                    conditions,
+                                    query_conditions,
+                                    scheme_filter.Pass(),
+                                    port_filter.Pass());
 }
 
 // static
@@ -258,6 +343,9 @@ bool URLBlacklist::FilterTakesPrecedence(const FilterComponents& lhs,
   size_t other_path_length = rhs.path.length();
   if (path_length != other_path_length)
     return path_length > other_path_length;
+
+  if (lhs.number_of_key_value_pairs != rhs.number_of_key_value_pairs)
+    return lhs.number_of_key_value_pairs > rhs.number_of_key_value_pairs;
 
   if (lhs.allow && !rhs.allow)
     return true;
