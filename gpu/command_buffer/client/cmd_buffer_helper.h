@@ -102,7 +102,7 @@ class GPU_EXPORT CommandBufferHelper {
 
   // Called prior to each command being issued. Waits for a certain amount of
   // space to be available. Returns address of space.
-  CommandBufferEntry* GetSpace(int32 entries) {
+  void* GetSpace(int32 entries) {
 #if defined(CMD_HELPER_PERIODIC_FLUSH_CHECK)
     // Allow this command buffer to be pre-empted by another if a "reasonable"
     // amount of work has been done. On highend machines, this reduces the
@@ -140,7 +140,7 @@ class GPU_EXPORT CommandBufferHelper {
     COMPILE_ASSERT(T::kArgFlags == cmd::kFixed, Cmd_kArgFlags_not_kFixed);
     int32 space_needed = ComputeNumEntries(sizeof(T));
     void* data = GetSpace(space_needed);
-    return reinterpret_cast<T*>(data);
+    return static_cast<T*>(data);
   }
 
   // Typed version of GetSpace for immediate commands.
@@ -149,7 +149,7 @@ class GPU_EXPORT CommandBufferHelper {
     COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
     int32 space_needed = ComputeNumEntries(sizeof(T) + data_space);
     void* data = GetSpace(space_needed);
-    return reinterpret_cast<T*>(data);
+    return static_cast<T*>(data);
   }
 
   // Typed version of GetSpace for immediate commands.
@@ -158,7 +158,7 @@ class GPU_EXPORT CommandBufferHelper {
     COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
     int32 space_needed = ComputeNumEntries(total_space);
     void* data = GetSpace(space_needed);
-    return reinterpret_cast<T*>(data);
+    return static_cast<T*>(data);
   }
 
   int32 last_token_read() const {

@@ -131,7 +131,8 @@ class CommandBufferHelperTest : public testing::Test {
     CommandHeader header;
     header.size = arg_count + 1;
     header.command = command;
-    CommandBufferEntry* cmds = helper_->GetSpace(arg_count + 1);
+    CommandBufferEntry* cmds =
+        static_cast<CommandBufferEntry*>(helper_->GetSpace(arg_count + 1));
     CommandBufferOffset put = 0;
     cmds[put++].value_header = header;
     for (int ii = 0; ii < arg_count; ++ii) {
