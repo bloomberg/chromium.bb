@@ -608,11 +608,30 @@ void ServiceRuntime::StartSelLdrContinuation(int32_t pp_error,
   pp::Module::Get()->core()->CallOnMainThread(0, callback, pp_error);
 }
 
-void ServiceRuntime::WaitForSelLdrStart() {
+bool ServiceRuntime::WaitForSelLdrStart() {
+  // Time to wait on condvar (for browser to create a new sel_ldr process on
+  // our behalf). Use 6 seconds to be *fairly* conservative.
+  //
+  // On surfaway, the CallOnMainThread above may never get scheduled
+  // to unblock this condvar, or the IPC reply from the browser to renderer
+  // might get canceled/dropped. However, it is currently important to
+  // avoid waiting indefinitely because ~PnaclCoordinator will attempt to
+  // join() the PnaclTranslateThread, and the PnaclTranslateThread is waiting
+  // for the signal before exiting.
+  static int64_t const kWaitTimeMicrosecs = 6 * NACL_MICROS_PER_UNIT;
+  int64_t left_to_wait = kWaitTimeMicrosecs;
+  int64_t deadline = NaClGetTimeOfDayMicroseconds() + left_to_wait;
   nacl::MutexLocker take(&mu_);
-  while(!start_sel_ldr_done_) {
-    NaClXCondVarWait(&cond_, &mu_);
+  while(!start_sel_ldr_done_ && left_to_wait > 0) {
+    struct nacl_abi_timespec left_timespec;
+    left_timespec.tv_sec = left_to_wait / NACL_MICROS_PER_UNIT;
+    left_timespec.tv_nsec =
+        (left_to_wait % NACL_MICROS_PER_UNIT) * NACL_NANOS_PER_MICRO;
+    NaClXCondVarTimedWaitRelative(&cond_, &mu_, &left_timespec);
+    int64_t now = NaClGetTimeOfDayMicroseconds();
+    left_to_wait = deadline - now;
   }
+  return start_sel_ldr_done_;
 }
 
 void ServiceRuntime::SignalStartSelLdrDone() {

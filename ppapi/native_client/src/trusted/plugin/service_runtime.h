@@ -222,10 +222,13 @@ class ServiceRuntime {
                    pp::CompletionCallback callback);
 
   // If starting sel_ldr from a background thread, wait for sel_ldr to
-  // actually start.
-  void WaitForSelLdrStart();
+  // actually start. Returns |false| if timed out waiting for the process
+  // to start. Otherwise, returns |true| if StartSelLdr is complete
+  // (either successfully or unsuccessfully).
+  bool WaitForSelLdrStart();
 
-  // Signal to waiting threads that StartSelLdr is complete.
+  // Signal to waiting threads that StartSelLdr is complete (either
+  // successfully or unsuccessfully).
   // Done externally, in case external users want to write to shared
   // memory that is yet to be fenced.
   void SignalStartSelLdrDone();

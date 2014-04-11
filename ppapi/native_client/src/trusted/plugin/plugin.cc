@@ -217,7 +217,7 @@ bool Plugin::LoadNaClModuleFromBackgroundThread(
                  static_cast<void*>(service_runtime)));
 
   // Now start the SelLdr instance.  This must be created on the main thread.
-  bool service_runtime_started;
+  bool service_runtime_started = false;
   pp::CompletionCallback sel_ldr_callback =
       callback_factory_.NewCallback(&Plugin::SignalStartSelLdrDone,
                                     &service_runtime_started,
@@ -227,7 +227,11 @@ bool Plugin::LoadNaClModuleFromBackgroundThread(
                                     service_runtime, params,
                                     sel_ldr_callback);
   pp::Module::Get()->core()->CallOnMainThread(0, callback, 0);
-  service_runtime->WaitForSelLdrStart();
+  if (!service_runtime->WaitForSelLdrStart()) {
+    PLUGIN_PRINTF(("Plugin::LoadNaClModuleFromBackgroundThread "
+                   "WaitForSelLdrStart timed out!\n"));
+    return false;
+  }
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleFromBackgroundThread "
                  "(service_runtime_started=%d)\n",
                  service_runtime_started));
