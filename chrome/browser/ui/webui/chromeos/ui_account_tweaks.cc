@@ -26,8 +26,10 @@ void AddAccountUITweaksLocalizedValues(
       UserManager::Get()->GetUserDisplayEmail(owner_email);
   localized_strings->SetString("ownerUserId", display_email);
 
+  // TODO(pastarmovj): Replace this call with a multi-profile aware one.
+  // see http://crbug.com/362430
   localized_strings->SetBoolean("currentUserIsOwner",
-      ProfileHelper::IsOwnerProfile(profile));
+      UserManager::Get()->IsCurrentUserOwner());
 
   localized_strings->SetBoolean("loggedInAsGuest",
       UserManager::Get()->IsLoggedInAsGuest());
