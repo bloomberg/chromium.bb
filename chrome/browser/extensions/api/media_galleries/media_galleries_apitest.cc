@@ -43,6 +43,12 @@
 #include "chrome/browser/media_galleries/fileapi/iapps_finder_impl.h"
 #endif  // OS_MACOSX
 
+#if !defined(DISABLE_NACL)
+#include "base/command_line.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
+#endif
+
 using extensions::PlatformAppBrowserTest;
 using storage_monitor::StorageInfo;
 using storage_monitor::StorageMonitor;
@@ -421,6 +427,60 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   int test_jpg_size_;
   scoped_ptr<EnsureMediaDirectoriesExists> ensure_media_directories_exists_;
 };
+
+#if !defined(DISABLE_NACL)
+class MediaGalleriesPlatformAppPpapiTest
+    : public MediaGalleriesPlatformAppBrowserTest {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    MediaGalleriesPlatformAppBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnablePepperTesting);
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    MediaGalleriesPlatformAppBrowserTest::SetUpOnMainThread();
+
+    ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir_));
+    app_dir_ = app_dir_.AppendASCII("ppapi")
+                       .AppendASCII("tests")
+                       .AppendASCII("extensions")
+                       .AppendASCII("media_galleries")
+                       .AppendASCII("newlib");
+  }
+
+  const base::FilePath& app_dir() const {
+    return app_dir_;
+  }
+
+ private:
+  base::FilePath app_dir_;
+};
+
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppPpapiTest, SendFilesystem) {
+  RemoveAllGalleries();
+  MakeSingleFakeGallery(NULL);
+
+  const extensions::Extension* extension = LoadExtension(app_dir());
+  ASSERT_TRUE(extension);
+
+  ResultCatcher catcher;
+  AppLaunchParams params(browser()->profile(),
+                         extension,
+                         extensions::LAUNCH_CONTAINER_NONE,
+                         NEW_WINDOW);
+  params.command_line = *CommandLine::ForCurrentProcess();
+  OpenApplication(params);
+
+  bool result = true;
+  if (!catcher.GetNextResult()) {
+    message_ = catcher.message();
+    result = false;
+  }
+  content::RunAllPendingInMessageLoop();  // avoid race on exit in registry.
+  ASSERT_TRUE(result) << message_;
+}
+
+#endif  // !defined(DISABLE_NACL)
 
 // Test is flaky, it fails on certain bots, namely WinXP Tests(1) and Linux
 // (dbg)(1)(32).  See crbug.com/354425.

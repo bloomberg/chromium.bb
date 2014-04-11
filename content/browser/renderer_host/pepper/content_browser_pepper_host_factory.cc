@@ -97,10 +97,10 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
           host_->GetPpapiHost(), instance, params.pp_resource(),
           host_resolver));
     }
-    case PpapiHostMsg_FileRef_CreateInternal::ID: {
+    case PpapiHostMsg_FileRef_CreateForFileAPI::ID: {
       PP_Resource file_system;
       std::string internal_path;
-      if (!UnpackMessage<PpapiHostMsg_FileRef_CreateInternal>(
+      if (!UnpackMessage<PpapiHostMsg_FileRef_CreateForFileAPI>(
           message, &file_system, &internal_path)) {
         NOTREACHED();
         return scoped_ptr<ResourceHost>();

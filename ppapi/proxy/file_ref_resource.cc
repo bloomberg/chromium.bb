@@ -26,7 +26,7 @@ FileRefResource::FileRefResource(
     : PluginResource(connection, instance),
       create_info_(create_info),
       file_system_resource_(create_info.file_system_plugin_resource) {
-  if (create_info_.file_system_type != PP_FILESYSTEMTYPE_EXTERNAL) {
+  if (uses_internal_paths()) {
     // If path ends with a slash, then normalize it away unless path is
     // the root path.
     int path_size = create_info_.internal_path.size();
@@ -36,6 +36,8 @@ FileRefResource::FileRefResource(
     path_var_ = new StringVar(create_info_.internal_path);
     create_info_.display_name = GetNameForInternalFilePath(
         create_info_.internal_path);
+  } else {
+    DCHECK(!create_info_.display_name.empty());
   }
   name_var_ = new StringVar(create_info_.display_name);
 
@@ -45,13 +47,13 @@ FileRefResource::FileRefResource(
     AttachToPendingHost(RENDERER,
                         create_info_.renderer_pending_host_resource_id);
   } else {
-    CHECK(create_info_.browser_pending_host_resource_id == 0);
-    CHECK(create_info_.renderer_pending_host_resource_id == 0);
-    CHECK(create_info_.file_system_type != PP_FILESYSTEMTYPE_EXTERNAL);
-    SendCreate(BROWSER, PpapiHostMsg_FileRef_CreateInternal(
+    CHECK_EQ(0, create_info_.browser_pending_host_resource_id);
+    CHECK_EQ(0, create_info_.renderer_pending_host_resource_id);
+    CHECK(uses_internal_paths());
+    SendCreate(BROWSER, PpapiHostMsg_FileRef_CreateForFileAPI(
         create_info.file_system_plugin_resource,
         create_info.internal_path));
-    SendCreate(RENDERER, PpapiHostMsg_FileRef_CreateInternal(
+    SendCreate(RENDERER, PpapiHostMsg_FileRef_CreateForFileAPI(
         create_info.file_system_plugin_resource,
         create_info.internal_path));
   }
@@ -60,7 +62,7 @@ FileRefResource::FileRefResource(
 FileRefResource::~FileRefResource() {
 }
 
-//static
+// static
 PP_Resource FileRefResource::CreateFileRef(
     Connection connection,
     PP_Instance instance,
@@ -101,13 +103,13 @@ PP_Var FileRefResource::GetName() const {
 }
 
 PP_Var FileRefResource::GetPath() const {
-  if (create_info_.file_system_type == PP_FILESYSTEMTYPE_EXTERNAL)
+  if (!uses_internal_paths())
     return PP_MakeUndefined();
   return path_var_->GetPPVar();
 }
 
 PP_Resource FileRefResource::GetParent() {
-  if (create_info_.file_system_type == PP_FILESYSTEMTYPE_EXTERNAL)
+  if (!uses_internal_paths())
     return 0;
 
   size_t pos = create_info_.internal_path.rfind('/');
@@ -254,6 +256,11 @@ void FileRefResource::OnDirectoryEntriesReply(
     writer.StoreVector(entries);
   }
   callback->Run(params.result());
+}
+
+bool FileRefResource::uses_internal_paths() const {
+  return (create_info_.file_system_type != PP_FILESYSTEMTYPE_EXTERNAL) ||
+         !create_info_.internal_path.empty();
 }
 
 }  // namespace proxy

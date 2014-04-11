@@ -21,6 +21,7 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
 using fileapi::FileSystemOperationContext;
@@ -39,25 +40,23 @@ MTPDeviceAsyncDelegate* GetMTPDeviceDelegate(const FileSystemURL& url) {
 }
 
 // Called on a blocking pool thread to create a snapshot file to hold the
-// contents of |device_file_path|. The snapshot file is created in
-// "profile_path/kDeviceMediaAsyncFileUtilTempDir" directory. If the snapshot
-// file is created successfully, |snapshot_file_path| will be a non-empty file
-// path. In case of failure, the |snapshot_file_path| will be an empty file
-// path.
-void CreateSnapshotFileOnBlockingPool(
+// contents of |device_file_path|. The snapshot file is created in the
+// "profile_path/kDeviceMediaAsyncFileUtilTempDir" directory. Return the
+// snapshot file path or an empty path on failure.
+base::FilePath CreateSnapshotFileOnBlockingPool(
     const base::FilePath& device_file_path,
-    const base::FilePath& profile_path,
-    base::FilePath* snapshot_file_path) {
-  DCHECK(snapshot_file_path);
+    const base::FilePath& profile_path) {
+  base::FilePath snapshot_file_path;
   base::FilePath media_file_system_dir_path =
       profile_path.AppendASCII(kDeviceMediaAsyncFileUtilTempDir);
   if (!base::CreateDirectory(media_file_system_dir_path) ||
       !base::CreateTemporaryFileInDir(media_file_system_dir_path,
-                                      snapshot_file_path)) {
+                                      &snapshot_file_path)) {
     LOG(WARNING) << "Could not create media snapshot file "
                  << media_file_system_dir_path.value();
-    *snapshot_file_path = base::FilePath();
+    snapshot_file_path = base::FilePath();
   }
+  return snapshot_file_path;
 }
 
 }  // namespace
@@ -87,11 +86,23 @@ void DeviceMediaAsyncFileUtil::CreateOrOpen(
     int file_flags,
     const CreateOrOpenCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  NOTIMPLEMENTED();
-  base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
-  callback.Run(base::File::FILE_ERROR_SECURITY,
-               base::PassPlatformFile(&invalid_file),
-               base::Closure());
+  // Returns an error if any unsupported flag is found.
+  if (file_flags & ~(base::File::FLAG_OPEN |
+                     base::File::FLAG_READ |
+                     base::File::FLAG_WRITE_ATTRIBUTES)) {
+    base::PlatformFile invalid_file(base::kInvalidPlatformFileValue);
+    callback.Run(base::File::FILE_ERROR_SECURITY,
+                 base::PassPlatformFile(&invalid_file),
+                 base::Closure());
+    return;
+  }
+  CreateSnapshotFile(
+      context.Pass(),
+      url,
+      base::Bind(&NativeMediaFileUtil::CreatedSnapshotFileForCreateOrOpen,
+                 make_scoped_refptr(context->task_runner()),
+                 file_flags,
+                 callback));
 }
 
 void DeviceMediaAsyncFileUtil::EnsureFileExists(
@@ -245,21 +256,20 @@ void DeviceMediaAsyncFileUtil::CreateSnapshotFile(
     return;
   }
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner = context->task_runner();
-  base::FilePath* snapshot_file_path = new base::FilePath;
-  const bool success = task_runner->PostTaskAndReply(
-          FROM_HERE,
-          base::Bind(&CreateSnapshotFileOnBlockingPool,
-                     url.path(),
-                     profile_path_,
-                     base::Unretained(snapshot_file_path)),
-          base::Bind(&DeviceMediaAsyncFileUtil::OnSnapshotFileCreatedRunTask,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(&context),
-                     callback,
-                     url,
-                     base::Owned(snapshot_file_path)));
-  DCHECK(success);
+  // Grab the SequencedTaskRunner now because base::Passed(&context) will
+  // turn |context| empty before |task_runner| gets accessed.
+  scoped_refptr<base::SequencedTaskRunner> task_runner(context->task_runner());
+  base::PostTaskAndReplyWithResult(
+      task_runner,
+      FROM_HERE,
+      base::Bind(&CreateSnapshotFileOnBlockingPool,
+                 url.path(),
+                 profile_path_),
+      base::Bind(&DeviceMediaAsyncFileUtil::OnSnapshotFileCreatedRunTask,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&context),
+                 callback,
+                 url));
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>
@@ -350,9 +360,9 @@ void DeviceMediaAsyncFileUtil::OnSnapshotFileCreatedRunTask(
     scoped_ptr<FileSystemOperationContext> context,
     const AsyncFileUtil::CreateSnapshotFileCallback& callback,
     const FileSystemURL& url,
-    base::FilePath* snapshot_file_path) {
+    const base::FilePath& snapshot_file_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (!snapshot_file_path || snapshot_file_path->empty()) {
+  if (snapshot_file_path.empty()) {
     OnCreateSnapshotFileError(callback, base::File::FILE_ERROR_FAILED);
     return;
   }
@@ -363,7 +373,7 @@ void DeviceMediaAsyncFileUtil::OnSnapshotFileCreatedRunTask(
   }
   delegate->CreateSnapshotFile(
       url.path(),  // device file path
-      *snapshot_file_path,
+      snapshot_file_path,
       base::Bind(&DeviceMediaAsyncFileUtil::OnDidCreateSnapshotFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,

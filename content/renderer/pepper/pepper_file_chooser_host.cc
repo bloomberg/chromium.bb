@@ -24,7 +24,7 @@ namespace content {
 class PepperFileChooserHost::CompletionHandler
     : public blink::WebFileChooserCompletion {
  public:
-  CompletionHandler(const base::WeakPtr<PepperFileChooserHost>& host)
+  explicit CompletionHandler(const base::WeakPtr<PepperFileChooserHost>& host)
       : host_(host) {
   }
 
@@ -108,7 +108,7 @@ void PepperFileChooserHost::StoreChosenFiles(
     base::FilePath file_path(files[i].path);
 #endif
     file_paths.push_back(file_path);
-    create_msgs.push_back(PpapiHostMsg_FileRef_CreateExternal(file_path));
+    create_msgs.push_back(PpapiHostMsg_FileRef_CreateForRawFS(file_path));
     display_names.push_back(files[i].display_name);
   }
 

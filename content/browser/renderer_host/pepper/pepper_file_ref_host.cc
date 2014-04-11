@@ -64,8 +64,15 @@ PepperFileRefHost::PepperFileRefHost(BrowserPpapiHost* host,
   fs_type_ = file_system_host->GetType();
   if ((fs_type_ != PP_FILESYSTEMTYPE_LOCALPERSISTENT) &&
       (fs_type_ != PP_FILESYSTEMTYPE_LOCALTEMPORARY) &&
+      (fs_type_ != PP_FILESYSTEMTYPE_EXTERNAL) &&
       (fs_type_ != PP_FILESYSTEMTYPE_ISOLATED)) {
     DLOG(ERROR) << "Unsupported filesystem type: " << fs_type_;
+    return;
+  }
+  if ((fs_type_ == PP_FILESYSTEMTYPE_EXTERNAL) &&
+      (!file_system_host->GetRootUrl().is_valid())) {
+    DLOG(ERROR) << "Native external filesystems are not supported by this "
+                << "constructor.";
     return;
   }
 

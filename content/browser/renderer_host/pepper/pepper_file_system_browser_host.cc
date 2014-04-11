@@ -367,7 +367,7 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgReserveQuota(
     int64_t amount,
     const ppapi::FileGrowthMap& file_growths) {
   DCHECK(ChecksQuota());
-  DCHECK(amount > 0);
+  DCHECK_GT(amount, 0);
 
   if (reserving_quota_)
     return PP_ERROR_INPROGRESS;
@@ -410,7 +410,7 @@ void PepperFileSystemBrowserHost::SendReplyForIsolatedFileSystem(
 void PepperFileSystemBrowserHost::SetFileSystemContext(
     scoped_refptr<fileapi::FileSystemContext> file_system_context) {
   file_system_context_ = file_system_context;
-  if (type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
+  if (type_ != PP_FILESYSTEMTYPE_EXTERNAL || root_url_.is_valid()) {
     file_system_operation_runner_ =
         file_system_context_->CreateFileSystemOperationRunner();
   }

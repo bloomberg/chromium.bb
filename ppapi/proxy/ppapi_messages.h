@@ -1301,12 +1301,12 @@ IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileIO_GeneralReply)
 // FileRef
 // Creates a FileRef to a path on an external file system. This message may
 // only be sent from the renderer.
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileRef_CreateExternal,
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileRef_CreateForRawFS,
                      base::FilePath /* external_path */)
 
-// Creates a FileRef to a path on an internal file system. This message may
-// be sent from the renderer or the plugin.
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileRef_CreateInternal,
+// Creates a FileRef to a path on a file system that uses fileapi.
+// This message may be sent from the renderer or the plugin.
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileRef_CreateForFileAPI,
                      PP_Resource /* file_system */,
                      std::string /* internal_path */)
 

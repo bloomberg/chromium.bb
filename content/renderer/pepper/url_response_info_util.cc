@@ -52,7 +52,7 @@ void DidCreateResourceHosts(const ppapi::URLResponseInfoData& in_data,
                             int renderer_pending_host_id,
                             const DataFromWebURLResponseCallback& callback,
                             const std::vector<int>& browser_pending_host_ids) {
-  DCHECK(browser_pending_host_ids.size() == 1);
+  DCHECK_EQ(1U, browser_pending_host_ids.size());
   int browser_pending_host_id = 0;
 
   if (browser_pending_host_ids.size() == 1)
@@ -99,7 +99,7 @@ void DataFromWebURLResponse(RendererPpapiHostImpl* host_impl,
             scoped_ptr<ppapi::host::ResourceHost>(renderer_host));
 
     std::vector<IPC::Message> create_msgs;
-    create_msgs.push_back(PpapiHostMsg_FileRef_CreateExternal(external_path));
+    create_msgs.push_back(PpapiHostMsg_FileRef_CreateForRawFS(external_path));
     host_impl->CreateBrowserResourceHosts(
         pp_instance,
         create_msgs,

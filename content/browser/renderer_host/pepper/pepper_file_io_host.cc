@@ -161,9 +161,29 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
   file_system_type_ = file_ref_host->GetFileSystemType();
   file_system_url_ = file_ref_host->GetFileSystemURL();
 
-  if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
+  // For external file systems, if there is a valid FileSystemURL, then treat
+  // it like internal file systems and access it via the FileSystemURL.
+  bool is_internal_type = (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) ||
+      file_system_url_.is_valid();
+
+  if (is_internal_type) {
     if (!file_system_url_.is_valid())
       return PP_ERROR_BADARGUMENT;
+
+    // Not all external file systems are fully supported yet.
+    // Whitelist the supported ones.
+    if (file_system_url_.mount_type() == fileapi::kFileSystemTypeExternal) {
+      switch (file_system_url_.type()) {
+        case fileapi::kFileSystemTypeNativeMedia:
+        case fileapi::kFileSystemTypeDeviceMedia:
+        case fileapi::kFileSystemTypePicasa:
+        case fileapi::kFileSystemTypeItunes:
+        case fileapi::kFileSystemTypeIphoto:
+          break;
+        default:
+          return PP_ERROR_NOACCESS;
+      }
+    }
     if (!CanOpenFileSystemURLWithPepperFlags(open_flags,
                                              render_process_id_,
                                              file_system_url_))
@@ -364,7 +384,7 @@ void PepperFileIOHost::DidOpenQuotaFile(
       true);
 }
 
-void PepperFileIOHost::DidCloseFile(base::File::Error error) {
+void PepperFileIOHost::DidCloseFile(base::File::Error /*error*/) {
   // Silently ignore if we fail to close the file.
   if (!on_close_callback_.is_null()) {
     on_close_callback_.Run();

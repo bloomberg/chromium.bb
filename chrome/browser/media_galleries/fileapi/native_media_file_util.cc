@@ -46,6 +46,28 @@ base::File::Error IsMediaHeader(const char* buf, size_t length) {
   return base::File::FILE_ERROR_SECURITY;
 }
 
+void HoldFileRef(
+    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+}
+
+void DidOpenSnapshot(
+    const fileapi::AsyncFileUtil::CreateOrOpenCallback& callback,
+    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref,
+    base::File file) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  if (file.error_details() != base::File::FILE_OK) {
+    base::PlatformFile invalid_file(base::kInvalidPlatformFileValue);
+    callback.Run(file.error_details(),
+                 base::PassPlatformFile(&invalid_file),
+                 base::Closure());
+    return;
+  }
+  base::PlatformFile platform_file = file.TakePlatformFile();
+  callback.Run(base::File::FILE_OK,
+               base::PassPlatformFile(&platform_file),
+               base::Bind(&HoldFileRef, file_ref));
+}
+
 }  // namespace
 
 NativeMediaFileUtil::NativeMediaFileUtil(MediaPathFilter* media_path_filter)
@@ -79,17 +101,58 @@ base::File::Error NativeMediaFileUtil::BufferIsMediaHeader(
   return IsMediaHeader(buf->data(), length);
 }
 
+// static
+void NativeMediaFileUtil::CreatedSnapshotFileForCreateOrOpen(
+    base::SequencedTaskRunner* media_task_runner,
+    int file_flags,
+    const fileapi::AsyncFileUtil::CreateOrOpenCallback& callback,
+    base::File::Error result,
+    const base::File::Info& file_info,
+    const base::FilePath& platform_path,
+    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  if (result != base::File::FILE_OK) {
+    base::PlatformFile invalid_file(base::kInvalidPlatformFileValue);
+    callback.Run(result,
+                 base::PassPlatformFile(&invalid_file),
+                 base::Closure());
+    return;
+  }
+  base::PostTaskAndReplyWithResult(
+      media_task_runner,
+      FROM_HERE,
+      base::Bind(&fileapi::NativeFileUtil::CreateOrOpen,
+                 platform_path,
+                 file_flags),
+      base::Bind(&DidOpenSnapshot,
+                 callback,
+                 file_ref));
+}
+
 void NativeMediaFileUtil::CreateOrOpen(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     int file_flags,
     const CreateOrOpenCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  // Only called by NaCl, which should not have access to media file systems.
-  base::PlatformFile invalid_file(base::kInvalidPlatformFileValue);
-  callback.Run(base::File::FILE_ERROR_SECURITY,
-               base::PassPlatformFile(&invalid_file),
-               base::Closure());
+  // Returns an error if any unsupported flag is found.
+  if (file_flags & ~(base::File::FLAG_OPEN |
+                     base::File::FLAG_READ |
+                     base::File::FLAG_WRITE_ATTRIBUTES)) {
+    base::PlatformFile invalid_file(base::kInvalidPlatformFileValue);
+    callback.Run(base::File::FILE_ERROR_SECURITY,
+                 base::PassPlatformFile(&invalid_file),
+                 base::Closure());
+    return;
+  }
+  scoped_refptr<base::SequencedTaskRunner> task_runner = context->task_runner();
+  CreateSnapshotFile(
+      context.Pass(),
+      url,
+      base::Bind(&NativeMediaFileUtil::CreatedSnapshotFileForCreateOrOpen,
+                 task_runner,
+                 file_flags,
+                 callback));
 }
 
 void NativeMediaFileUtil::EnsureFileExists(

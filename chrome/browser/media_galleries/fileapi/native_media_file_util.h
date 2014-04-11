@@ -30,6 +30,17 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
   static base::File::Error BufferIsMediaHeader(net::IOBuffer* buf,
                                                      size_t length);
 
+  // Methods to support CreateOrOpen. Public so they can be shared with
+  // DeviceMediaAsyncFileUtil.
+  static void CreatedSnapshotFileForCreateOrOpen(
+      base::SequencedTaskRunner* media_task_runner,
+      int file_flags,
+      const fileapi::AsyncFileUtil::CreateOrOpenCallback& callback,
+      base::File::Error result,
+      const base::File::Info& file_info,
+      const base::FilePath& platform_path,
+      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+
   // AsyncFileUtil overrides.
   virtual void CreateOrOpen(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
@@ -187,7 +198,6 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
       base::FilePath* platform_path,
       scoped_refptr<webkit_blob::ShareableFileReference>* file_ref);
 
- protected:
   MediaPathFilter* media_path_filter() {
     return media_path_filter_;
   }

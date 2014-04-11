@@ -196,7 +196,7 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const AsyncFileUtil::CreateSnapshotFileCallback& callback,
       const fileapi::FileSystemURL& url,
-      base::FilePath* snapshot_file_path);
+      const base::FilePath& snapshot_file_path);
 
   // Profile path.
   const base::FilePath profile_path_;
