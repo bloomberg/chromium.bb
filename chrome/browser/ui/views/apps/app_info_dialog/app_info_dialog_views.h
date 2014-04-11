@@ -33,10 +33,7 @@ class AppInfoDialog : public views::DialogDelegateView {
 
   // Overridden from views::DialogDelegate:
   virtual bool Cancel() OVERRIDE;
-  virtual base::string16 GetDialogButtonLabel(ui::DialogButton button) const
-      OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
-  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
   virtual ui::ModalType GetModalType() const OVERRIDE;

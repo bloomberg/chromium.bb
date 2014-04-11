@@ -2208,9 +2208,6 @@ Even if you have downloaded files from this website before, the website might ha
 
       <!-- "Application Information" dialog -->
       <if expr="not use_titlecase">
-        <message name="IDS_APPLICATION_INFO_CLOSE_BUTTON" desc="Button in the Application Information Dialog that closes the dialog">
-          Close
-        </message>
         <message name="IDS_APPLICATION_INFO_SUMMARY_TAB_TITLE" desc="Title of the first tab in the dialog, which displays general summary information about the app. ">
           Summary
         </message>
@@ -2228,9 +2225,6 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_APPLICATION_INFO_CLOSE_BUTTON" desc="In Title Case: Button in the Application Information Dialog that closes the dialog">
-          Close
-        </message>
         <message name="IDS_APPLICATION_INFO_SUMMARY_TAB_TITLE" desc="In Title Case: Title of the first tab in the dialog, which displays general summary information about the app. ">
           Summary
         </message>
