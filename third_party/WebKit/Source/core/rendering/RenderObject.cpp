@@ -32,6 +32,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/ActiveAnimations.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/htmlediting.h"
@@ -2955,13 +2956,12 @@ PassRefPtr<RenderStyle> RenderObject::getUncachedPseudoStyle(const PseudoStyleRe
         parentStyle = style();
     }
 
-    // FIXME: This "find nearest element parent" should be a helper function.
-    Node* n = node();
-    while (n && !n->isElementNode())
-        n = n->parentNode();
-    if (!n)
+    if (!node())
         return nullptr;
-    Element* element = toElement(n);
+
+    Element* element = Traversal<Element>::firstAncestorOrSelf(*node());
+    if (!element)
+        return nullptr;
 
     if (pseudoStyleRequest.pseudoId == FIRST_LINE_INHERITED) {
         RefPtr<RenderStyle> result = document().ensureStyleResolver().styleForElement(element, parentStyle, DisallowStyleSharing);
