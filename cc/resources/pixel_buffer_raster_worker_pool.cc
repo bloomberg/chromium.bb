@@ -268,22 +268,20 @@ void PixelBufferRasterWorkerPool::CheckForCompletedTasks() {
 
 SkCanvas* PixelBufferRasterWorkerPool::AcquireCanvasForRaster(
     internal::RasterTask* task) {
-  RasterTaskState::Vector::iterator it =
-      std::find_if(raster_task_states_.begin(),
-                   raster_task_states_.end(),
-                   RasterTaskState::TaskComparator(task));
-  DCHECK(it != raster_task_states_.end());
+  DCHECK(std::find_if(raster_task_states_.begin(),
+                      raster_task_states_.end(),
+                      RasterTaskState::TaskComparator(task)) !=
+         raster_task_states_.end());
   resource_provider_->AcquirePixelRasterBuffer(task->resource()->id());
   return resource_provider_->MapPixelRasterBuffer(task->resource()->id());
 }
 
 void PixelBufferRasterWorkerPool::ReleaseCanvasForRaster(
     internal::RasterTask* task) {
-  RasterTaskState::Vector::iterator it =
-      std::find_if(raster_task_states_.begin(),
-                   raster_task_states_.end(),
-                   RasterTaskState::TaskComparator(task));
-  DCHECK(it != raster_task_states_.end());
+  DCHECK(std::find_if(raster_task_states_.begin(),
+                      raster_task_states_.end(),
+                      RasterTaskState::TaskComparator(task)) !=
+         raster_task_states_.end());
   resource_provider_->ReleasePixelRasterBuffer(task->resource()->id());
 }
 
