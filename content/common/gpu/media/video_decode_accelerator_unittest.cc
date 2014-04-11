@@ -407,8 +407,8 @@ class GLRenderingVDAClient
   int num_queued_fragments() { return num_queued_fragments_; }
   int num_decoded_frames();
   double frames_per_second();
-  // Return the median of the decode time of all decoded frames.
-  base::TimeDelta decode_time_median();
+  // Return the median of the decode time in milliseconds.
+  int decode_time_median();
   bool decoder_deleted() { return !decoder_.get(); }
 
  private:
@@ -950,15 +950,15 @@ double GLRenderingVDAClient::frames_per_second() {
   return num_decoded_frames() / delta.InSecondsF();
 }
 
-base::TimeDelta GLRenderingVDAClient::decode_time_median() {
+int GLRenderingVDAClient::decode_time_median() {
   if (decode_time_.size() == 0)
-    return base::TimeDelta();
+    return 0;
   std::sort(decode_time_.begin(), decode_time_.end());
   int index = decode_time_.size() / 2;
   if (decode_time_.size() % 2 != 0)
-    return decode_time_[index];
+    return decode_time_[index].InMilliseconds();
 
-  return (decode_time_[index] + decode_time_[index - 1]) / 2;
+  return (decode_time_[index] + decode_time_[index - 1]).InMilliseconds() / 2;
 }
 
 class VideoDecodeAcceleratorTest : public ::testing::Test {
@@ -1509,10 +1509,11 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
   CreateAndStartDecoder(client, note);
   WaitUntilDecodeFinish(note);
 
-  base::TimeDelta decode_time_median = client->decode_time_median();
-  std::string output_string = base::StringPrintf(
-      "Decode time median: %lld us", decode_time_median.InMicroseconds());
+  int decode_time_median = client->decode_time_median();
+  std::string output_string =
+      base::StringPrintf("Decode time median: %d ms", decode_time_median);
   VLOG(0) << output_string;
+  ASSERT_GT(decode_time_median, 0);
 
   if (g_output_log != NULL)
     OutputLogFile(g_output_log, output_string);
@@ -1550,8 +1551,9 @@ int main(int argc, char **argv) {
       content::g_test_video_data = it->second.c_str();
       continue;
     }
-    // The output log for VDA performance test.
-    if (it->first == "output_log") {
+    // TODO(wuchengli): remove frame_deliver_log after CrOS test get updated.
+    // See http://crosreview.com/175426.
+    if (it->first == "frame_delivery_log" || it->first == "output_log") {
       content::g_output_log = it->second.c_str();
       continue;
     }
