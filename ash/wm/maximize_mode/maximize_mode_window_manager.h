@@ -53,8 +53,8 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   virtual void OnDisplayRemoved(const gfx::Display& display) OVERRIDE;
 
   // ShellObserver overrides:
-  void OnOverviewModeStarted();
-  void OnOverviewModeEnded();
+  virtual void OnOverviewModeStarting() OVERRIDE;
+  virtual void OnOverviewModeEnding() OVERRIDE;
 
  protected:
   friend class ash::Shell;

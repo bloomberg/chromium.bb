@@ -40,7 +40,7 @@ void MaximizeModeWindowManager::WindowStateDestroyed(aura::Window* window) {
   window_state_map_.erase(it);
 }
 
-void MaximizeModeWindowManager::OnOverviewModeStarted() {
+void MaximizeModeWindowManager::OnOverviewModeStarting() {
   if (backdrops_hidden_)
     return;
 
@@ -48,7 +48,7 @@ void MaximizeModeWindowManager::OnOverviewModeStarted() {
   backdrops_hidden_ = true;
 }
 
-void MaximizeModeWindowManager::OnOverviewModeEnded() {
+void MaximizeModeWindowManager::OnOverviewModeEnding() {
   if (!backdrops_hidden_)
     return;
 
