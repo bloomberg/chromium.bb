@@ -19,27 +19,33 @@ namespace media {
 const int kMinFrameRate = 1;
 const int kMaxFrameRate = 30;
 
-// In QT device identifiers, the USB VID and PID are stored in 4 bytes each.
+// In device identifiers, the USB VID and PID are stored in 4 bytes each.
 const size_t kVidPidSize = 4;
 
-struct Resolution {
-  int width;
-  int height;
-};
+// Some devices are not correctly supported in AVFoundation, f.i. Blackmagic,
+// see http://crbug.com/347371. The devices are identified by USB Vendor ID and
+// by a characteristic substring of the name, usually the vendor's name.
+const struct NameAndVid {
+  const char* vid;
+  const char* name;
+} kBlacklistedCameras[] = { { "a82c", "Blackmagic" } };
 
-const Resolution kQVGA = { 320, 240 },
-                 kVGA = { 640, 480 },
-                 kHD = { 1280, 720 };
+const struct Resolution {
+  const int width;
+  const int height;
+} kQVGA = { 320, 240 },
+  kVGA = { 640, 480 },
+  kHD = { 1280, 720 };
 
-const Resolution* const kWellSupportedResolutions[] = {
-   &kQVGA,
-   &kVGA,
-   &kHD,
+const struct Resolution* const kWellSupportedResolutions[] = {
+  &kQVGA,
+  &kVGA,
+  &kHD,
 };
 
 // Rescaling the image to fix the pixel aspect ratio runs the risk of making
 // the aspect ratio worse, if QTKit selects a new source mode with a different
-// shape.  This constant ensures that we don't take this risk if the current
+// shape. This constant ensures that we don't take this risk if the current
 // aspect ratio is tolerable.
 const float kMaxPixelAspectRatio = 1.15;
 
@@ -63,29 +69,63 @@ void GetBestMatchSupportedResolution(int* width, int* height) {
   *height = matched_height;
 }
 
+//static
 void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
   // Loop through all available devices and add to |device_names|.
-  device_names->clear();
-
   NSDictionary* capture_devices;
   if (AVFoundationGlue::IsAVFoundationSupported()) {
+    bool is_any_device_blacklisted = false;
     DVLOG(1) << "Enumerating video capture devices using AVFoundation";
     capture_devices = [VideoCaptureDeviceAVFoundation deviceNames];
+    std::string device_vid;
+    // Enumerate all devices found by AVFoundation, translate the info for each
+    // to class Name and add it to |device_names|.
+    for (NSString* key in capture_devices) {
+      Name name([[capture_devices valueForKey:key] UTF8String],
+          [key UTF8String], Name::AVFOUNDATION);
+      device_names->push_back(name);
+      // Extract the device's Vendor ID and compare to all blacklisted ones.
+      device_vid = name.GetModel().substr(0, kVidPidSize);
+      for (size_t i = 0; i < arraysize(kBlacklistedCameras); ++i) {
+        is_any_device_blacklisted |= (device_vid == kBlacklistedCameras[i].vid);
+        if (is_any_device_blacklisted)
+          break;
+      }
+    }
+    // If there is any device blacklisted in the system, walk the QTKit device
+    // list and add those devices with a blacklisted name to the |device_names|.
+    // AVFoundation and QTKit device lists partially overlap, so add a "QTKit"
+    // prefix to the latter ones to distinguish them from the AVFoundation ones.
+    if (is_any_device_blacklisted) {
+      capture_devices = [VideoCaptureDeviceQTKit deviceNames];
+      for (NSString* key in capture_devices) {
+        NSString* device_name = [capture_devices valueForKey:key];
+        for (size_t i = 0; i < arraysize(kBlacklistedCameras); ++i) {
+          if ([device_name rangeOfString:@(kBlacklistedCameras[i].name)
+                                 options:NSCaseInsensitiveSearch].length != 0) {
+            DVLOG(1) << "Enumerated blacklisted " << [device_name UTF8String];
+            Name name("QTKit " + std::string([device_name UTF8String]),
+                [key UTF8String], Name::QTKIT);
+            device_names->push_back(name);
+          }
+        }
+      }
+    }
   } else {
     DVLOG(1) << "Enumerating video capture devices using QTKit";
     capture_devices = [VideoCaptureDeviceQTKit deviceNames];
-  }
-  for (NSString* key in capture_devices) {
-    Name name([[capture_devices valueForKey:key] UTF8String],
-              [key UTF8String]);
-    device_names->push_back(name);
+    for (NSString* key in capture_devices) {
+      Name name([[capture_devices valueForKey:key] UTF8String],
+          [key UTF8String], Name::QTKIT);
+      device_names->push_back(name);
+    }
   }
 }
 
 // static
 void VideoCaptureDevice::GetDeviceSupportedFormats(const Name& device,
     VideoCaptureFormats* formats) {
-  if (AVFoundationGlue::IsAVFoundationSupported()) {
+  if (device.capture_api_type() == Name::AVFOUNDATION) {
     DVLOG(1) << "Enumerating video capture capabilities, AVFoundation";
     [VideoCaptureDeviceAVFoundation getDevice:device
                              supportedFormats:formats];
@@ -219,7 +259,8 @@ bool VideoCaptureDeviceMac::Init() {
   if (it == device_names.end())
     return false;
 
-  if (AVFoundationGlue::IsAVFoundationSupported()) {
+  DCHECK_NE(it->capture_api_type(), Name::API_TYPE_UNKNOWN);
+  if (it->capture_api_type() == Name::AVFOUNDATION) {
     capture_device_ =
         [[VideoCaptureDeviceAVFoundation alloc] initWithFrameReceiver:this];
   } else {
