@@ -34,8 +34,8 @@ base::TaskRunner* ServiceWorkerMessageFilter::OverrideTaskRunnerForMessage(
 bool ServiceWorkerMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   if (IPC_MESSAGE_CLASS(msg) != ServiceWorkerMsgStart)
     return false;
-  ServiceWorkerDispatcher::ThreadSpecificInstance(thread_safe_sender_.get())
-      ->OnMessageReceived(msg);
+  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
+      thread_safe_sender_.get())->OnMessageReceived(msg);
   return true;
 }
 
@@ -49,13 +49,14 @@ void ServiceWorkerMessageFilter::OnStaleMessageReceived(
   IPC_END_MESSAGE_MAP()
 }
 
-void ServiceWorkerMessageFilter::OnStaleRegistered(int32 thread_id,
-                                                   int32 request_id,
-                                                   int handle_id) {
+void ServiceWorkerMessageFilter::OnStaleRegistered(
+    int32 thread_id,
+    int32 request_id,
+    const ServiceWorkerObjectInfo& info) {
   // Inform the browser that the context seems to have been destroyed
   // (so that it can delete the corresponding ServiceWorker handle).
   thread_safe_sender_->Send(
-      new ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed(handle_id));
+      new ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed(info.handle_id));
 }
 
 }  // namespace content

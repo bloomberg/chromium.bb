@@ -99,6 +99,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void AddLiveVersion(ServiceWorkerVersion* version);
   void RemoveLiveVersion(int64 registration_id);
 
+  // Returns new context-local unique ID for ServiceWorkerHandle.
+  int GetNewServiceWorkerHandleId();
+
  private:
   typedef IDMap<ServiceWorkerProviderHost, IDMapOwnPointer> ProviderMap;
   typedef IDMap<ProviderMap, IDMapOwnPointer> ProcessToProviderMap;
@@ -121,6 +124,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   scoped_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
   std::map<int64, ServiceWorkerRegistration*> live_registrations_;
   std::map<int64, ServiceWorkerVersion*> live_versions_;
+  int next_handle_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextCore);
 };

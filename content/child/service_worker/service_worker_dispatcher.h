@@ -13,6 +13,7 @@
 #include "content/child/worker_task_runner.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProvider.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerState.h"
 
 class GURL;
 
@@ -25,7 +26,9 @@ class Message;
 }
 
 namespace content {
+
 class ServiceWorkerMessageFilter;
+struct ServiceWorkerObjectInfo;
 class ThreadSafeSender;
 class WebServiceWorkerImpl;
 
@@ -60,30 +63,43 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
 
   // |thread_safe_sender| needs to be passed in because if the call leads to
   // construction it will be needed.
-  static ServiceWorkerDispatcher* ThreadSpecificInstance(
+  static ServiceWorkerDispatcher* GetOrCreateThreadSpecificInstance(
       ThreadSafeSender* thread_safe_sender);
 
+  // Unlike GetOrCreateThreadSpecificInstance() this doesn't create a new
+  // instance if thread-local instance doesn't exist.
+  static ServiceWorkerDispatcher* GetThreadSpecificInstance();
+
  private:
+  typedef IDMap<blink::WebServiceWorkerProvider::WebServiceWorkerCallbacks,
+      IDMapOwnPointer> CallbackMap;
   typedef std::map<int, blink::WebServiceWorkerProviderClient*> ScriptClientMap;
+  typedef std::map<int, WebServiceWorkerImpl*> ServiceWorkerMap;
+
+  friend class WebServiceWorkerImpl;
 
   // WorkerTaskRunner::Observer implementation.
   virtual void OnWorkerRunLoopStopped() OVERRIDE;
 
-  // The asynchronous success response to RegisterServiceWorker.
   void OnRegistered(int thread_id,
                     int request_id,
-                    int handle_id);
-  // The asynchronous success response to UregisterServiceWorker.
+                    const ServiceWorkerObjectInfo& info);
   void OnUnregistered(int thread_id,
                       int request_id);
   void OnRegistrationError(int thread_id,
                            int request_id,
                            blink::WebServiceWorkerError::ErrorType error_type,
                            const base::string16& message);
+  void OnServiceWorkerStateChanged(int handle_id,
+                                   blink::WebServiceWorkerState state);
 
-  IDMap<blink::WebServiceWorkerProvider::WebServiceWorkerCallbacks,
-        IDMapOwnPointer> pending_callbacks_;
+  // Keeps map from handle_id to ServiceWorker object.
+  void AddServiceWorker(int handle_id, WebServiceWorkerImpl* worker);
+  void RemoveServiceWorker(int handle_id);
+
+  CallbackMap pending_callbacks_;
   ScriptClientMap script_clients_;
+  ServiceWorkerMap service_workers_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 

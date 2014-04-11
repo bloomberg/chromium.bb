@@ -35,8 +35,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  // Returns a new handle id.
-  int RegisterServiceWorkerHandle(scoped_ptr<ServiceWorkerHandle> handle);
+  void RegisterServiceWorkerHandle(scoped_ptr<ServiceWorkerHandle> handle);
 
  protected:
   virtual ~ServiceWorkerDispatcherHost();

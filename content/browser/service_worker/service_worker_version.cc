@@ -169,8 +169,8 @@ ServiceWorkerVersion::ServiceWorkerVersion(
     : version_id_(version_id),
       registration_id_(kInvalidServiceWorkerVersionId),
       status_(NEW),
-      weak_factory_(this),
-      context_(context) {
+      context_(context),
+      weak_factory_(this) {
   DCHECK(context_);
   if (registration) {
     registration_id_ = registration->id();
@@ -191,6 +191,9 @@ ServiceWorkerVersion::~ServiceWorkerVersion() {
 }
 
 void ServiceWorkerVersion::SetStatus(Status status) {
+  if (status_ == status)
+    return;
+
   status_ = status;
 
   std::vector<base::Closure> callbacks;
@@ -199,6 +202,8 @@ void ServiceWorkerVersion::SetStatus(Status status) {
        i != callbacks.end(); ++i) {
     (*i).Run();
   }
+
+  FOR_EACH_OBSERVER(Listener, listeners_, OnVersionStateChanged(this));
 }
 
 void ServiceWorkerVersion::RegisterStatusChangeCallback(
@@ -370,6 +375,14 @@ void ServiceWorkerVersion::RemoveControllee(
   // TODO(kinuko): Fire NoControllees notification when the # of controllees
   // reaches 0, so that a new pending version can be activated (which will
   // deactivate this version).
+}
+
+void ServiceWorkerVersion::AddListener(Listener* listener) {
+  listeners_.AddObserver(listener);
+}
+
+void ServiceWorkerVersion::RemoveListener(Listener* listener) {
+  listeners_.RemoveObserver(listener);
 }
 
 void ServiceWorkerVersion::OnStarted() {

@@ -112,9 +112,10 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
   return handled;
 }
 
-int ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(
+void ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(
     scoped_ptr<ServiceWorkerHandle> handle) {
-  return handles_.Add(handle.release());
+  int handle_id = handle->handle_id();
+  handles_.AddWithID(handle.release(), handle_id);
 }
 
 void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
@@ -297,10 +298,11 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
   ServiceWorkerVersion* version = context_->GetLiveVersion(version_id);
   DCHECK(version);
   DCHECK_EQ(registration_id, version->registration_id());
-  int handle_id = RegisterServiceWorkerHandle(
-      ServiceWorkerHandle::Create(context_, this, thread_id, version));
+  scoped_ptr<ServiceWorkerHandle> handle =
+      ServiceWorkerHandle::Create(context_, this, thread_id, version);
   Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
-      thread_id, request_id, handle_id));
+      thread_id, request_id, handle->GetObjectInfo()));
+  RegisterServiceWorkerHandle(handle.Pass());
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerStarted(

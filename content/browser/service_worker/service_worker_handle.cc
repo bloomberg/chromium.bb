@@ -2,11 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_handle.h"
+
+#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/common/service_worker/service_worker_messages.h"
+#include "ipc/ipc_sender.h"
 
 namespace content {
+
+namespace {
+
+blink::WebServiceWorkerState
+GetWebServiceWorkerState(ServiceWorkerVersion* version) {
+  DCHECK(version);
+  switch (version->status()) {
+    case ServiceWorkerVersion::NEW:
+      if (version->running_status() == ServiceWorkerVersion::RUNNING)
+        return blink::WebServiceWorkerStateParsed;
+      else
+        return blink::WebServiceWorkerStateUnknown;
+    case ServiceWorkerVersion::INSTALLING:
+      return blink::WebServiceWorkerStateInstalling;
+    case ServiceWorkerVersion::INSTALLED:
+      return blink::WebServiceWorkerStateInstalled;
+    case ServiceWorkerVersion::ACTIVATING:
+      return blink::WebServiceWorkerStateActivating;
+    case ServiceWorkerVersion::ACTIVE:
+      return blink::WebServiceWorkerStateActive;
+    case ServiceWorkerVersion::DEACTIVATED:
+      return blink::WebServiceWorkerStateDeactivated;
+  }
+  NOTREACHED() << version->status();
+  return blink::WebServiceWorkerStateUnknown;
+}
+
+}  // namespace
 
 scoped_ptr<ServiceWorkerHandle> ServiceWorkerHandle::Create(
     base::WeakPtr<ServiceWorkerContextCore> context,
@@ -31,11 +62,14 @@ ServiceWorkerHandle::ServiceWorkerHandle(
     : context_(context),
       sender_(sender),
       thread_id_(thread_id),
+      handle_id_(context.get() ? context->GetNewServiceWorkerHandleId() : -1),
       registration_(registration),
       version_(version) {
+  version_->AddListener(this);
 }
 
 ServiceWorkerHandle::~ServiceWorkerHandle() {
+  version_->RemoveListener(this);
   // TODO(kinuko): At this point we can discard the registration if
   // all documents/handles that have a reference to the registration is
   // closed or freed up, but could also keep it alive in cache
@@ -44,7 +78,17 @@ ServiceWorkerHandle::~ServiceWorkerHandle() {
 }
 
 void ServiceWorkerHandle::OnVersionStateChanged(ServiceWorkerVersion* version) {
-  // TODO(kinuko): Implement.
+  sender_->Send(new ServiceWorkerMsg_ServiceWorkerStateChanged(
+      handle_id_, GetWebServiceWorkerState(version)));
+}
+
+ServiceWorkerObjectInfo ServiceWorkerHandle::GetObjectInfo() {
+  ServiceWorkerObjectInfo info;
+  info.handle_id = handle_id_;
+  info.scope = registration_->pattern();
+  info.url = registration_->script_url();
+  info.state = GetWebServiceWorkerState(version_);
+  return info;
 }
 
 }  // namespace content

@@ -24,7 +24,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     : storage_(new ServiceWorkerStorage(path, quota_manager_proxy)),
       embedded_worker_registry_(new EmbeddedWorkerRegistry(AsWeakPtr())),
       job_coordinator_(
-          new ServiceWorkerJobCoordinator(AsWeakPtr())) {}
+          new ServiceWorkerJobCoordinator(AsWeakPtr())),
+      next_handle_id_(0) {}
 
 ServiceWorkerContextCore::~ServiceWorkerContextCore() {
   providers_.Clear();
@@ -147,6 +148,10 @@ void ServiceWorkerContextCore::AddLiveVersion(ServiceWorkerVersion* version) {
 
 void ServiceWorkerContextCore::RemoveLiveVersion(int64 id) {
   live_versions_.erase(id);
+}
+
+int ServiceWorkerContextCore::GetNewServiceWorkerHandleId() {
+  return next_handle_id_++;
 }
 
 }  // namespace content

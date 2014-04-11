@@ -51,7 +51,8 @@ void WebServiceWorkerProviderImpl::unregisterServiceWorker(
 }
 
 ServiceWorkerDispatcher* WebServiceWorkerProviderImpl::GetDispatcher() {
-  return ServiceWorkerDispatcher::ThreadSpecificInstance(thread_safe_sender_);
+  return ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
+      thread_safe_sender_);
 }
 
 }  // namespace content

@@ -13,6 +13,7 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -172,6 +173,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void AddControllee(ServiceWorkerProviderHost* provider_host);
   void RemoveControllee(ServiceWorkerProviderHost* provider_host);
 
+  // Adds and removes Listeners.
+  void AddListener(Listener* listener);
+  void RemoveListener(Listener* listener);
+
   EmbeddedWorkerInstance* embedded_worker() { return embedded_worker_.get(); }
 
   // EmbeddedWorkerInstance::Observer overrides:
@@ -196,11 +201,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::vector<StatusCallback> stop_callbacks_;
   std::vector<base::Closure> status_change_callbacks_;
   IDMap<MessageCallback, IDMapOwnPointer> message_callbacks_;
-
   ProviderHostSet controllee_providers_;
+  base::WeakPtr<ServiceWorkerContextCore> context_;
+  ObserverList<Listener> listeners_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
-  base::WeakPtr<ServiceWorkerContextCore> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);
 };

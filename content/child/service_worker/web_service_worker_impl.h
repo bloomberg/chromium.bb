@@ -12,22 +12,38 @@
 #include "third_party/WebKit/public/platform/WebServiceWorker.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
+namespace blink {
+class WebServiceWorkerProxy;
+}
+
 namespace content {
+
 class ThreadSafeSender;
+struct ServiceWorkerObjectInfo;
 
 class WebServiceWorkerImpl
     : NON_EXPORTED_BASE(public blink::WebServiceWorker) {
  public:
-  WebServiceWorkerImpl(int handle_id,
+  WebServiceWorkerImpl(const ServiceWorkerObjectInfo& info,
                        ThreadSafeSender* thread_safe_sender);
   virtual ~WebServiceWorkerImpl();
 
+  void SetState(blink::WebServiceWorkerState new_state);
+
+  virtual void setProxy(blink::WebServiceWorkerProxy* proxy);
+  virtual blink::WebURL scope() const;
+  virtual blink::WebURL url() const;
+  virtual blink::WebServiceWorkerState state() const;
   virtual void postMessage(const blink::WebString& message,
                            blink::WebMessagePortChannelArray* channels);
 
  private:
   const int handle_id_;
+  const GURL scope_;
+  const GURL url_;
+  blink::WebServiceWorkerState state_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  blink::WebServiceWorkerProxy* proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerImpl);
 };
