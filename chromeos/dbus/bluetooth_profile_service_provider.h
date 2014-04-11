@@ -65,8 +65,10 @@ class CHROMEOS_EXPORT BluetoothProfileServiceProvider {
 
     // This method will be called when the profile is unregistered from the
     // Bluetooth daemon, generally at shutdown or at the applications' request.
-    // It may be used to perform cleanup tasks.
-    virtual void Release() = 0;
+    // It may be used to perform cleanup tasks. This corresponds to the
+    // org.bluez.Profile1.Release method and is renamed to avoid a conflict
+    // with base::Refcounted<T>.
+    virtual void Released() = 0;
 
     // This method will be called when a profile connection to the device
     // with object path |device_path| is established. |callback| must be called

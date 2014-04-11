@@ -34,7 +34,7 @@ FakeBluetoothAgentServiceProvider::~FakeBluetoothAgentServiceProvider() {
 
 void FakeBluetoothAgentServiceProvider::Release() {
   VLOG(1) << object_path_.value() << ": Release";
-  delegate_->Release();
+  delegate_->Released();
 }
 
 void FakeBluetoothAgentServiceProvider::RequestPinCode(

@@ -105,7 +105,7 @@ class BluetoothAdapterChromeOS
                                     const std::string& property_name) OVERRIDE;
 
   // BluetoothAgentServiceProvider::Delegate override.
-  virtual void Release() OVERRIDE;
+  virtual void Released() OVERRIDE;
   virtual void RequestPinCode(const dbus::ObjectPath& device_path,
                               const PinCodeCallback& callback) OVERRIDE;
   virtual void DisplayPinCode(const dbus::ObjectPath& device_path,

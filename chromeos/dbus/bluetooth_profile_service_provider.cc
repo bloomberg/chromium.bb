@@ -89,7 +89,7 @@ class BluetoothProfileServiceProviderImpl
     DCHECK(OnOriginThread());
     DCHECK(delegate_);
 
-    delegate_->Release();
+    delegate_->Released();
 
     response_sender.Run(dbus::Response::FromMethodCall(method_call));
   }

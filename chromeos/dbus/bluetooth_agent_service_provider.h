@@ -64,8 +64,10 @@ class CHROMEOS_EXPORT BluetoothAgentServiceProvider {
 
     // This method will be called when the agent is unregistered from the
     // Bluetooth daemon, generally at the end of a pairing request. It may be
-    // used to perform cleanup tasks.
-    virtual void Release() = 0;
+    // used to perform cleanup tasks. This corresponds to the
+    // org.bluez.Agent1.Release method and is renamed to avoid a conflict
+    // with base::Refcounted<T>.
+    virtual void Released() = 0;
 
     // This method will be called when the Bluetooth daemon requires a
     // PIN Code for authentication of the device with object path |device_path|,

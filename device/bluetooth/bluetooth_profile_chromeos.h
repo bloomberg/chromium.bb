@@ -56,7 +56,7 @@ class CHROMEOS_EXPORT BluetoothProfileChromeOS
             const ProfileCallback& callback);
 
   // BluetoothProfileServiceProvider::Delegate override.
-  virtual void Release() OVERRIDE;
+  virtual void Released() OVERRIDE;
   virtual void NewConnection(
       const dbus::ObjectPath& device_path,
       scoped_ptr<dbus::FileDescriptor> fd,

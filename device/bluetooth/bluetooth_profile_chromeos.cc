@@ -172,7 +172,7 @@ void BluetoothProfileChromeOS::OnGetAdapter(
                      callback));
 }
 
-void BluetoothProfileChromeOS::Release() {
+void BluetoothProfileChromeOS::Released() {
   VLOG(1) << object_path_.value() << ": Release";
 }
 

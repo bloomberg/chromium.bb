@@ -342,7 +342,7 @@ void BluetoothAdapterChromeOS::InputPropertyChanged(
     NotifyDeviceChanged(device_chromeos);
 }
 
-void BluetoothAdapterChromeOS::Release() {
+void BluetoothAdapterChromeOS::Released() {
   DCHECK(agent_.get());
   VLOG(1) << "Release";
 
