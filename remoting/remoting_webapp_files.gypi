@@ -84,6 +84,7 @@
       'webapp/menu_button.js',
       'webapp/ui_mode.js',
       'webapp/toolbar.js',
+      'webapp/feedback.js',
     ],
     # UI files for controlling the local machine as a host.
     'remoting_webapp_js_ui_host_control_files': [

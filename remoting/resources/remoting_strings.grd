@@ -414,9 +414,6 @@
         <message desc="Android action-bar menu item for showing the Help and Feedback screen" name="IDS_ACTIONBAR_HELP" formatter_data="android_java">
           Help &amp; feedback
         </message>
-        <message desc="Label for the Feedback button displayed in the Android Help screen. Pressing this button causes the Feedback screen to be shown." name="IDS_ACTIONBAR_FEEDBACK" formatter_data="android_java">
-          Feedback
-        </message>
         <message desc="Android action-bar menu item for viewing the Play Store page for the application" name="IDS_ACTIONBAR_PLAY_STORE" formatter_data="android_java">
           View in Google Play Store
         </message>
@@ -828,6 +825,9 @@ First release of Chrome Remote Desktop for Android.
       </message>
       <message desc="Menu option to open a new window." name="IDS_NEW_WINDOW">
         New window…
+      </message>
+      <message desc="Label for the Feedback button displayed in the Android Help screen. Pressing this button causes the Feedback screen to be shown." name="IDS_ACTIONBAR_FEEDBACK" formatter_data="android_java">
+        Feedback
       </message>
     </messages>
   </release>
