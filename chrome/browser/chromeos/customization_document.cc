@@ -158,10 +158,14 @@ class ServicesCustomizationExternalLoader
   virtual void StartLoading() OVERRIDE {
     if (!is_apps_set_) {
       ServicesCustomizationDocument::GetInstance()->StartFetching();
-      // No return here to call LoadFinished with empty list initially.
-      // When manifest is fetched, it will be called again with real list.
-      // It is safe to return empty list because this provider didn't install
-      // any app yet so no app can be removed due to returning empty list.
+      // In case of missing customization ID, SetCurrentApps will be called
+      // synchronously from StartFetching and this function will be called
+      // recursively so we need to return to don't call LoadFinished twice.
+      // In case of async load it is safe to return empty list because this
+      // provider didn't install any app yet so no app can be removed due to
+      // returning empty list.
+      if (is_apps_set_)
+        return;
     }
 
     prefs_.reset(apps_.DeepCopy());
@@ -383,13 +387,19 @@ void ServicesCustomizationDocument::RegisterProfilePrefs(
 // static
 bool ServicesCustomizationDocument::WasOOBECustomizationApplied() {
   PrefService* prefs = g_browser_process->local_state();
-  return prefs->GetBoolean(kServicesCustomizationAppliedPref);
+  // prefs can be NULL in some tests.
+  if (prefs)
+    return prefs->GetBoolean(kServicesCustomizationAppliedPref);
+  else
+    return false;
 }
 
 // static
 void ServicesCustomizationDocument::SetApplied(bool val) {
   PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(kServicesCustomizationAppliedPref, val);
+  // prefs can be NULL in some tests.
+  if (prefs)
+    prefs->SetBoolean(kServicesCustomizationAppliedPref, val);
 }
 
 void ServicesCustomizationDocument::StartFetching() {
@@ -405,6 +415,10 @@ void ServicesCustomizationDocument::StartFetching() {
         !customization_id.empty()) {
       url_ = GURL(base::StringPrintf(
           kManifestUrl, StringToLowerASCII(customization_id).c_str()));
+    } else {
+      // There is no customization ID in VPD remember that.
+      OnCustomizationNotFound();
+      return;
     }
   }
 

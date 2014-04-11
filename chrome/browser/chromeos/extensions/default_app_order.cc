@@ -167,6 +167,8 @@ void ExternalLoader::Load() {
         }
         oem_apps_folder_name_ = GetLocaleSpecificStringImpl(
             dict, locale, kLocalizedContentAttr, kNameAttr);
+      } else {
+        LOG(ERROR) << "Invalid entry in default_app_order.json";
       }
     }
   } else {

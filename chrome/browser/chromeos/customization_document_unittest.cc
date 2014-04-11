@@ -371,7 +371,8 @@ TEST_F(ServicesCustomizationDocumentTest, NoCustomizationIdInVpd) {
   Mock::VerifyAndClearExpectations(&visitor);
 
   RunUntilIdle();
-  EXPECT_FALSE(doc->IsReady());
+  // Empty customization is used when there is no customization ID in VPD.
+  EXPECT_TRUE(doc->IsReady());
 }
 
 TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
