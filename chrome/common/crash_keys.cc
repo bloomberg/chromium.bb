@@ -17,6 +17,10 @@
 #include "breakpad/src/common/simple_string_dictionary.h"
 #elif defined(OS_WIN)
 #include "breakpad/src/client/windows/common/ipc_protocol.h"
+#elif defined(OS_CHROMEOS)
+#include "chrome/common/chrome_switches.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
+#include "ui/gl/gl_switches.h"
 #endif
 
 namespace crash_keys {
@@ -257,6 +261,46 @@ static bool IsBoringSwitch(const std::string& flag) {
          // (If you need to know can always look at the PEB).
          flag == "--flag-switches-begin" ||
          flag == "--flag-switches-end";
+#elif defined(OS_CHROMEOS)
+  static const char* kIgnoreSwitches[] = {
+    ::switches::kEnableCompositingForFixedPosition,
+    ::switches::kEnableImplSidePainting,
+    ::switches::kEnableLogging,
+    ::switches::kFlagSwitchesBegin,
+    ::switches::kFlagSwitchesEnd,
+    ::switches::kLoggingLevel,
+    ::switches::kPpapiFlashArgs,
+    ::switches::kPpapiFlashPath,
+    ::switches::kRegisterPepperPlugins,
+    ::switches::kUIPrioritizeInGpuProcess,
+    ::switches::kUseGL,
+    ::switches::kUserDataDir,
+    ::switches::kV,
+    ::switches::kVModule,
+    // Cros/CC flgas are specified as raw strings to avoid dependency.
+    "ash-default-wallpaper-large",
+    "ash-default-wallpaper-small",
+    "ash-guest-wallpaper-large",
+    "ash-guest-wallpaper-small",
+    "enterprise-enable-forced-re-enrollment",
+    "enterprise-enrollment-initial-modulus",
+    "enterprise-enrollment-modulus-limit",
+    "login-profile",
+    "login-user",
+    "max-tiles-for-interest-area",
+    "max-unused-resource-memory-usage-percentage",
+    "termination-message-file",
+    "use-cras",
+  };
+  if (!StartsWithASCII(flag, "--", true))
+    return false;
+  std::size_t end = flag.find("=");
+  int len = (end == std::string::npos) ? flag.length() - 2 : end - 2;
+  for (size_t i = 0; i < arraysize(kIgnoreSwitches); ++i) {
+    if (flag.compare(2, len, kIgnoreSwitches[i]) == 0)
+      return true;
+  }
+  return false;
 #else
   return false;
 #endif

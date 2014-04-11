@@ -161,3 +161,26 @@ TEST_F(CrashKeysTest, Extensions) {
     }
   }
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(CrashKeysTest, IgnoreBoringFlags) {
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch("--enable-logging");
+  command_line.AppendSwitch("--user-data-dir=/tmp");
+  command_line.AppendSwitch("--v=1");
+  command_line.AppendSwitch("--ash-default-wallpaper-small=test.png");
+
+  command_line.AppendSwitch("--vv=1");
+  command_line.AppendSwitch("--vvv");
+  command_line.AppendSwitch("--enable-multi-profiles");
+  command_line.AppendSwitch("--device-management-url=https://foo/bar");
+
+  crash_keys::SetSwitchesFromCommandLine(&command_line);
+
+  EXPECT_EQ("--vv=1", GetKeyValue("switch-1"));
+  EXPECT_EQ("--vvv", GetKeyValue("switch-2"));
+  EXPECT_EQ("--enable-multi-profiles", GetKeyValue("switch-3"));
+  EXPECT_EQ("--device-management-url=https://foo/bar", GetKeyValue("switch-4"));
+  EXPECT_FALSE(HasCrashKey("switch-5"));
+}
+#endif
