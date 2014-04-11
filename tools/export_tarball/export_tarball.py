@@ -74,10 +74,6 @@ TESTDIRS = (
     'net/data',
 )
 
-PRUNEDDIRS = (
-    'courgette',
-)
-
 
 def GetSourceDirectory():
   return os.path.realpath(
@@ -103,7 +99,7 @@ class MyTarFile(tarfile.TarFile):
 
       # Remove contents of non-essential directories, but preserve gyp files,
       # so that build/gyp_chromium can work.
-      for nonessential_dir in (NONESSENTIAL_DIRS + TESTDIRS + PRUNEDDIRS):
+      for nonessential_dir in (NONESSENTIAL_DIRS + TESTDIRS):
         dir_path = os.path.join(GetSourceDirectory(), nonessential_dir)
         if (name.startswith(dir_path) and
             os.path.isfile(name) and
