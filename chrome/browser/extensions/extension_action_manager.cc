@@ -16,6 +16,7 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
@@ -64,11 +65,11 @@ ExtensionActionManagerFactory::GetInstance() {
 }  // namespace
 
 ExtensionActionManager::ExtensionActionManager(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      scoped_extension_registry_observer_(this) {
   CHECK_EQ(profile, profile->GetOriginalProfile())
       << "Don't instantiate this with an incognito profile.";
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile));
+  scoped_extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 }
 
 ExtensionActionManager::~ExtensionActionManager() {
@@ -80,20 +81,11 @@ ExtensionActionManager* ExtensionActionManager::Get(Profile* profile) {
   return ExtensionActionManagerFactory::GetForProfile(profile);
 }
 
-void ExtensionActionManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
-      page_actions_.erase(extension->id());
-      browser_actions_.erase(extension->id());
-      system_indicators_.erase(extension->id());
-      break;
-    }
-  }
+void ExtensionActionManager::OnExtensionUnloaded(
+    content::BrowserContext* browser_context, const Extension* extension) {
+  page_actions_.erase(extension->id());
+  browser_actions_.erase(extension->id());
+  system_indicators_.erase(extension->id());
 }
 
 namespace {
@@ -116,8 +108,7 @@ ExtensionAction* GetOrCreateOrNull(
 
   // Only create action info for enabled extensions.
   // This avoids bugs where actions are recreated just after being removed
-  // in response to NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED in
-  // ExtensionActionManager::Observe()
+  // in response to OnExtensionUnloaded().
   ExtensionService* service =
       ExtensionSystem::Get(profile)->extension_service();
   if (!service->GetExtensionById(extension_id, false))

@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/memory/linked_ptr.h"
+#include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class ExtensionAction;
 class Profile;
@@ -19,11 +19,12 @@ class Profile;
 namespace extensions {
 
 class Extension;
+class ExtensionRegistry;
 
 // Owns the ExtensionActions associated with each extension.  These actions live
 // while an extension is loaded and are destroyed on unload.
 class ExtensionActionManager : public KeyedService,
-                               public content::NotificationObserver {
+                               public ExtensionRegistryObserver {
  public:
   explicit ExtensionActionManager(Profile* profile);
   virtual ~ExtensionActionManager();
@@ -42,13 +43,15 @@ class ExtensionActionManager : public KeyedService,
       const extensions::Extension& extension) const;
 
  private:
-  // Implement content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Implement ExtensionRegistryObserver.
+  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                   const Extension* extension) OVERRIDE;
 
-  content::NotificationRegistrar registrar_;
   Profile* profile_;
+
+  // Listen to extension unloaded notifications.
+  ScopedObserver<ExtensionRegistry,
+                 ExtensionRegistryObserver> scoped_extension_registry_observer_;
 
   // Keyed by Extension ID.  These maps are populated lazily when their
   // ExtensionAction is first requested, and the entries are removed when the

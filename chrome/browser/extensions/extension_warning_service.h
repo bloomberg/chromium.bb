@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 // TODO(battre) Remove the Extension prefix.
 
@@ -26,11 +26,13 @@ class NotificationSource;
 
 namespace extensions {
 
+class ExtensionRegistry;
+
 // Manages a set of warnings caused by extensions. These warnings (e.g.
 // conflicting modifications of network requests by extensions, slow extensions,
 // etc.) trigger a warning badge in the UI and and provide means to resolve
 // them. This class must be used on the UI thread only.
-class ExtensionWarningService : public content::NotificationObserver,
+class ExtensionWarningService : public ExtensionRegistryObserver,
                                 public base::NonThreadSafe {
  public:
   class Observer {
@@ -71,17 +73,18 @@ class ExtensionWarningService : public content::NotificationObserver,
  private:
   void NotifyWarningsChanged();
 
-  // Implementation for content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                   const Extension* extension) OVERRIDE;
 
   // Currently existing warnings.
   ExtensionWarningSet warnings_;
 
-  content::NotificationRegistrar registrar_;
-
   Profile* profile_;
+
+  // Listen to extension unloaded notifications.
+  ScopedObserver<ExtensionRegistry,
+                 ExtensionRegistryObserver> scoped_extension_registry_observer_;
 
   ObserverList<Observer> observer_list_;
 };

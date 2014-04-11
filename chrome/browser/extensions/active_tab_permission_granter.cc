@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
@@ -28,10 +29,9 @@ namespace extensions {
 
 ActiveTabPermissionGranter::ActiveTabPermissionGranter(
     content::WebContents* web_contents, int tab_id, Profile* profile)
-    : WebContentsObserver(web_contents), tab_id_(tab_id) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile));
+    : WebContentsObserver(web_contents), tab_id_(tab_id),
+      scoped_extension_registry_observer_(this) {
+  scoped_extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 }
 
 ActiveTabPermissionGranter::~ActiveTabPermissionGranter() {}
@@ -93,13 +93,8 @@ void ActiveTabPermissionGranter::WebContentsDestroyed(
   ClearActiveExtensionsAndNotify();
 }
 
-void ActiveTabPermissionGranter::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED);
-  const Extension* extension =
-      content::Details<UnloadedExtensionInfo>(details)->extension;
+void ActiveTabPermissionGranter::OnExtensionUnloaded(
+    content::BrowserContext* browser_context, const Extension* extension) {
   // Note: don't need to clear the permissions (nor tell the renderer about it)
   // because it's being unloaded anyway.
   granted_extensions_.Remove(extension->id());

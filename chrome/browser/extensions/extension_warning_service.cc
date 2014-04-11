@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
@@ -20,11 +21,12 @@ using content::BrowserThread;
 namespace extensions {
 
 ExtensionWarningService::ExtensionWarningService(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      scoped_extension_registry_observer_(this) {
   DCHECK(CalledOnValidThread());
   if (profile_) {
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-        content::Source<Profile>(profile_->GetOriginalProfile()));
+    scoped_extension_registry_observer_.Add(
+        ExtensionRegistry::Get(profile_->GetOriginalProfile()));
   }
 }
 
@@ -119,26 +121,13 @@ void ExtensionWarningService::NotifyWarningsChanged() {
   FOR_EACH_OBSERVER(Observer, observer_list_, ExtensionWarningsChanged());
 }
 
-void ExtensionWarningService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<extensions::UnloadedExtensionInfo>(details)->
-          extension;
-      // Unloading one extension might have solved the problems of others.
-      // Therefore, we clear warnings of this type for all extensions.
-      std::set<ExtensionWarning::WarningType> warning_types =
-          GetWarningTypesAffectingExtension(extension->id());
-      ClearWarnings(warning_types);
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
+void ExtensionWarningService::OnExtensionUnloaded(
+    content::BrowserContext* browser_context, const Extension* extension) {
+  // Unloading one extension might have solved the problems of others.
+  // Therefore, we clear warnings of this type for all extensions.
+  std::set<ExtensionWarning::WarningType> warning_types =
+      GetWarningTypesAffectingExtension(extension->id());
+  ClearWarnings(warning_types);
 }
 
 }  // namespace extensions
