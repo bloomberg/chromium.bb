@@ -27,7 +27,9 @@ namespace message_center {
 
 class MessageCenterNotificationManagerTest : public testing::Test {
  protected:
-  MessageCenterNotificationManagerTest() {}
+  MessageCenterNotificationManagerTest() {
+    MessageCenterNotificationManager::RegisterPrefs(local_state_.registry());
+  }
 
   virtual void SetUp() {
     // Clear the preference and initialize.
