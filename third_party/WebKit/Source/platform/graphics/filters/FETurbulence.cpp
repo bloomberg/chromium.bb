@@ -416,7 +416,7 @@ SkShader* FETurbulence::createShader(const IntRect& filterRegion)
         SkPerlinNoiseShader::CreateFractalNoise(SkFloatToScalar(baseFrequencyX),
             SkFloatToScalar(baseFrequencyY), numOctaves(), SkFloatToScalar(seed()),
             stitchTiles() ? &size : 0) :
-        SkPerlinNoiseShader::CreateTubulence(SkFloatToScalar(baseFrequencyX),
+        SkPerlinNoiseShader::CreateTurbulence(SkFloatToScalar(baseFrequencyX),
             SkFloatToScalar(baseFrequencyY), numOctaves(), SkFloatToScalar(seed()),
             stitchTiles() ? &size : 0);
 }
