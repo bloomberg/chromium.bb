@@ -147,3 +147,5 @@ crbug.com/313338 inspector/sources/debugger/debugger-proto-property.html [ Slow 
 crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation.html [ Slow ]
+
+crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.html [ Slow ]
