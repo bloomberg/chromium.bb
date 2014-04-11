@@ -314,8 +314,6 @@ public class ContentViewCore
     // Native pointer to C++ ContentViewCoreImpl object which will be set by nativeInit().
     private long mNativeContentViewCore = 0;
 
-    private boolean mInForeground = false;
-
     private final ObserverList<GestureStateListener> mGestureStateListeners;
     private final RewindableIterator<GestureStateListener> mGestureStateListenersIterator;
     private ZoomControlsDelegate mZoomControlsDelegate;
@@ -1409,11 +1407,6 @@ public class ContentViewCore
      */
     public void onShow() {
         assert mNativeContentViewCore != 0;
-        if (!mInForeground) {
-            ChildProcessLauncher.getBindingManager().setInForeground(getCurrentRenderProcessId(),
-                    true);
-        }
-        mInForeground = true;
         nativeOnShow(mNativeContentViewCore);
         setAccessibilityState(mAccessibilityManager.isEnabled());
     }
@@ -1431,11 +1424,6 @@ public class ContentViewCore
      */
     public void onHide() {
         assert mNativeContentViewCore != 0;
-        if (mInForeground) {
-            ChildProcessLauncher.getBindingManager().setInForeground(getCurrentRenderProcessId(),
-                    false);
-        }
-        mInForeground = false;
         hidePopupDialog();
         setInjectedAccessibility(false);
         nativeOnHide(mNativeContentViewCore);
@@ -2568,14 +2556,7 @@ public class ContentViewCore
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onRenderProcessSwap(int oldPid, int newPid) {
-        if (!mInForeground) {
-            ChildProcessLauncher.getBindingManager().setInForeground(newPid, false);
-        } else if (oldPid != newPid) {
-            ChildProcessLauncher.getBindingManager().setInForeground(oldPid, false);
-            ChildProcessLauncher.getBindingManager().setInForeground(newPid, true);
-        }
-
+    private void onRenderProcessSwap() {
         attachImeAdapter();
     }
 

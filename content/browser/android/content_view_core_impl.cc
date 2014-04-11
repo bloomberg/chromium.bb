@@ -325,8 +325,7 @@ void ContentViewCoreImpl::Observe(int type,
         JNIEnv* env = AttachCurrentThread();
         ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
         if (!obj.is_null()) {
-          Java_ContentViewCore_onRenderProcessSwap(
-              env, obj.obj(), old_pid, new_pid);
+          Java_ContentViewCore_onRenderProcessSwap(env, obj.obj());
         }
       }
       SetFocusInternal(HasFocus());
@@ -342,12 +341,10 @@ void ContentViewCoreImpl::Observe(int type,
           web_contents_->GetRenderViewHost()->GetProcess();
 
       if (source_process_host == current_process_host) {
-        int pid = GetRenderProcessIdFromRenderViewHost(
-            web_contents_->GetRenderViewHost());
         JNIEnv* env = AttachCurrentThread();
         ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
         if (!obj.is_null()) {
-          Java_ContentViewCore_onRenderProcessSwap(env, obj.obj(), 0, pid);
+          Java_ContentViewCore_onRenderProcessSwap(env, obj.obj());
         }
       }
       break;

@@ -32,6 +32,9 @@ void StopChildProcess(base::ProcessHandle handle);
 
 bool IsChildProcessOomProtected(base::ProcessHandle handle);
 
+void SetChildProcessInForeground(base::ProcessHandle handle,
+                                 bool in_foreground);
+
 void RegisterViewSurface(int surface_id, jobject j_surface);
 
 void UnregisterViewSurface(int surface_id);

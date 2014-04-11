@@ -224,15 +224,12 @@ public class ChildProcessLauncher {
     private static Map<Pair<Integer, Integer>, Surface> sSurfaceTextureSurfaceMap =
             new ConcurrentHashMap<Pair<Integer, Integer>, Surface>();
 
-    static BindingManager getBindingManager() {
-        return sBindingManager;
-    }
-
     @VisibleForTesting
     public static void setBindingManagerForTesting(BindingManager manager) {
         sBindingManager = manager;
     }
 
+    /** @return true iff the child process is protected from out-of-memory killing */
     @CalledByNative
     private static boolean isOomProtected(int pid) {
         return sBindingManager.isOomProtected(pid);
@@ -259,6 +256,15 @@ public class ChildProcessLauncher {
     private static void unregisterSurfaceTexture(int surfaceTextureId, int childProcessId) {
         Pair<Integer, Integer> key = new Pair<Integer, Integer>(surfaceTextureId, childProcessId);
         sSurfaceTextureSurfaceMap.remove(key);
+    }
+
+    /**
+     * Sets the visibility of the child process when it changes or when it is determined for the
+     * first time.
+     */
+    @CalledByNative
+    public static void setInForeground(int pid, boolean inForeground) {
+        sBindingManager.setInForeground(pid, inForeground);
     }
 
     /**

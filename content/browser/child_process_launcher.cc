@@ -366,6 +366,9 @@ class ChildProcessLauncher::Context
                                      bool background) {
     base::Process process(handle);
     process.SetProcessBackgrounded(background);
+#if defined(OS_ANDROID)
+    SetChildProcessInForeground(handle, !background);
+#endif
   }
 
   static void TerminateInternal(

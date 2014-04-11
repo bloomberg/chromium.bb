@@ -140,6 +140,14 @@ bool IsChildProcessOomProtected(base::ProcessHandle handle) {
       static_cast<jint>(handle));
 }
 
+void SetChildProcessInForeground(base::ProcessHandle handle,
+    bool in_foreground) {
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(env);
+  return Java_ChildProcessLauncher_setInForeground(env,
+      static_cast<jint>(handle), static_cast<jboolean>(in_foreground));
+}
+
 void EstablishSurfacePeer(
     JNIEnv* env, jclass clazz,
     jint pid, jobject surface, jint primary_id, jint secondary_id) {
