@@ -69,7 +69,7 @@ class AwAutofillManagerDelegate
   virtual void ShowRequestAutocompleteDialog(
       const autofill::FormData& form,
       const GURL& source_url,
-      const base::Callback<void(const autofill::FormStructure*)>& callback)
+      const ResultCallback& callback)
       OVERRIDE;
   virtual void ShowAutofillPopup(
       const gfx::RectF& element_bounds,

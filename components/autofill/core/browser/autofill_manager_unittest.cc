@@ -2857,8 +2857,10 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
-      const base::Callback<void(const FormStructure*)>& callback) OVERRIDE {
-    callback.Run(user_supplied_data_.get());
+      const ResultCallback& callback) OVERRIDE {
+    callback.Run(user_supplied_data_ ? AutocompleteResultSuccess :
+                                       AutocompleteResultErrorDisabled,
+                 user_supplied_data_.get());
   }
 
   void SetUserSuppliedData(scoped_ptr<FormStructure> user_supplied_data) {
@@ -2868,7 +2870,7 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
  private:
   scoped_ptr<FormStructure> user_supplied_data_;
 
- DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
 };
 
 }  // namespace

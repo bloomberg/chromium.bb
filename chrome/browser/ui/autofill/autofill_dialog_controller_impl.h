@@ -8,7 +8,6 @@
 #include <set>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -88,7 +87,7 @@ class AutofillDialogControllerImpl
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const base::Callback<void(const FormStructure*)>& callback);
+      const AutofillManagerDelegate::ResultCallback& callback);
 
   // AutofillDialogController implementation.
   virtual void Show() OVERRIDE;
@@ -240,7 +239,7 @@ class AutofillDialogControllerImpl
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const base::Callback<void(const FormStructure*)>& callback);
+      const AutofillManagerDelegate::ResultCallback& callback);
 
   // Exposed for testing.
   AutofillDialogView* view() { return view_.get(); }
@@ -639,7 +638,7 @@ class AutofillDialogControllerImpl
   GURL source_url_;
 
   // The callback via which we return the collected data.
-  base::Callback<void(const FormStructure*)> callback_;
+  AutofillManagerDelegate::ResultCallback callback_;
 
   // The AccountChooserModel acts as the MenuModel for the account chooser,
   // and also tracks which data source the dialog is using.

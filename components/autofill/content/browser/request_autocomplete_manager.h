@@ -7,7 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/WebKit/public/web/WebFormElement.h"
+#include "components/autofill/core/browser/autofill_manager_delegate.h"
 
 class GURL;
 
@@ -32,24 +32,18 @@ class RequestAutocompleteManager {
 
  private:
   // Tells the renderer that the current interactive autocomplete dialog
-  // finished with the |result| saying if it was successfull or not, and
-  // |form_data| containing the filled form data.
+  // finished with the |result| saying if it was successful or not, and
+  // |form_structure| containing the filled form data.
   void ReturnAutocompleteResult(
-      blink::WebFormElement::AutocompleteResult result,
-      const FormData& form_data);
+      AutofillManagerDelegate::RequestAutocompleteResult result,
+      const FormStructure* form_structure);
 
   // Shows the requestAutocomplete dialog for |source_url| with data from |form|
   // and calls |callback| once the interaction is complete.
   void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
-      const base::Callback<void(const FormStructure*)>& callback);
-
-  // If |result| is not null, derives a FormData object from it and passes it
-  // back to the page along an |AutocompleteResultSuccess| result. Otherwise, it
-  // passes to the page an empty FormData along an
-  // |AutocompleteResultErrorCancel| result.
-  void ReturnAutocompleteData(const FormStructure* result);
+      const AutofillManagerDelegate::ResultCallback& callback);
 
   // The autofill driver owns and outlives |this|.
   ContentAutofillDriver* const autofill_driver_;  // weak.

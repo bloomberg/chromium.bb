@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
+#include "components/autofill/core/browser/autofill_manager_delegate.h"
 
 class Profile;
 
@@ -26,7 +27,7 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const base::Callback<void(const FormStructure*)>& callback);
+      const AutofillManagerDelegate::ResultCallback& callback);
 
   virtual ~AutofillDialogControllerAndroid();
 
@@ -54,7 +55,7 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
       content::WebContents* contents,
       const FormData& form_structure,
       const GURL& source_url,
-      const base::Callback<void(const FormStructure*)>& callback);
+      const AutofillManagerDelegate::ResultCallback& callback);
 
   const AutofillMetrics& GetMetricLogger() const {
     return metric_logger_;
@@ -87,7 +88,7 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
   GURL source_url_;
 
   // The callback via which we return the collected data.
-  base::Callback<void(const FormStructure*)> callback_;
+  AutofillManagerDelegate::ResultCallback callback_;
 
   // Whether |form_structure_| has asked for any details that would indicate
   // we should show a shipping section.

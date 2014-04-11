@@ -11,9 +11,34 @@
 #include "components/autofill/core/common/form_data.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/WebKit/public/web/WebFormElement.h"
 #include "url/gurl.h"
 
 namespace autofill {
+
+namespace {
+
+blink::WebFormElement::AutocompleteResult ToWebkitAutocompleteResult(
+    AutofillManagerDelegate::RequestAutocompleteResult result) {
+  switch(result) {
+    case AutofillManagerDelegate::AutocompleteResultSuccess:
+      return blink::WebFormElement::AutocompleteResultSuccess;
+    case AutofillManagerDelegate::AutocompleteResultErrorDisabled:
+      return blink::WebFormElement::AutocompleteResultErrorDisabled;
+    case AutofillManagerDelegate::AutocompleteResultErrorCancel:
+      return blink::WebFormElement::AutocompleteResultErrorCancel;
+    case AutofillManagerDelegate::AutocompleteResultErrorInvalid:
+      return blink::WebFormElement::AutocompleteResultErrorInvalid;
+    // TODO(estade): update this when Blink has the proper type.
+    case AutofillManagerDelegate::AutocompleteResultErrorUnsupported:
+      return blink::WebFormElement::AutocompleteResultErrorDisabled;
+  }
+
+  NOTREACHED();
+  return blink::WebFormElement::AutocompleteResultErrorDisabled;
+}
+
+}  // namespace
 
 RequestAutocompleteManager::RequestAutocompleteManager(
     ContentAutofillDriver* autofill_driver)
@@ -29,8 +54,8 @@ void RequestAutocompleteManager::OnRequestAutocomplete(
   if (!IsValidFormData(form))
     return;
 
-  base::Callback<void(const FormStructure*)> callback =
-      base::Bind(&RequestAutocompleteManager::ReturnAutocompleteData,
+  AutofillManagerDelegate::ResultCallback callback =
+      base::Bind(&RequestAutocompleteManager::ReturnAutocompleteResult,
                  weak_ptr_factory_.GetWeakPtr());
   ShowRequestAutocompleteDialog(form, frame_url, callback);
 }
@@ -41,8 +66,8 @@ void RequestAutocompleteManager::OnCancelRequestAutocomplete() {
 }
 
 void RequestAutocompleteManager::ReturnAutocompleteResult(
-    blink::WebFormElement::AutocompleteResult result,
-    const FormData& form_data) {
+    AutofillManagerDelegate::RequestAutocompleteResult result,
+    const FormStructure* form_structure) {
   // autofill_driver_->GetWebContents() will be NULL when the interactive
   // autocomplete is closed due to a tab or browser window closing.
   if (!autofill_driver_->GetWebContents())
@@ -53,26 +78,16 @@ void RequestAutocompleteManager::ReturnAutocompleteResult(
   if (!host)
     return;
 
-  host->Send(new AutofillMsg_RequestAutocompleteResult(host->GetRoutingID(),
-                                                       result,
-                                                       form_data));
-}
-
-void RequestAutocompleteManager::ReturnAutocompleteData(
-    const FormStructure* result) {
-  if (!result) {
-    ReturnAutocompleteResult(
-        blink::WebFormElement::AutocompleteResultErrorCancel, FormData());
-  } else {
-    ReturnAutocompleteResult(blink::WebFormElement::AutocompleteResultSuccess,
-                             result->ToFormData());
-  }
+  host->Send(new AutofillMsg_RequestAutocompleteResult(
+      host->GetRoutingID(),
+      ToWebkitAutocompleteResult(result),
+      form_structure ? form_structure->ToFormData() : FormData()));
 }
 
 void RequestAutocompleteManager::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,
-    const base::Callback<void(const FormStructure*)>& callback) {
+    const AutofillManagerDelegate::ResultCallback& callback) {
   AutofillManagerDelegate* delegate =
       autofill_driver_->autofill_manager()->delegate();
   delegate->ShowRequestAutocompleteDialog(form, source_url, callback);

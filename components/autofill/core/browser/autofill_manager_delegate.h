@@ -43,6 +43,19 @@ struct PasswordForm;
 // attached to).
 class AutofillManagerDelegate {
  public:
+  // Copy of blink::WebFormElement::AutocompleteResult.
+  enum RequestAutocompleteResult {
+      AutocompleteResultSuccess,
+      AutocompleteResultErrorDisabled,
+      AutocompleteResultErrorCancel,
+      AutocompleteResultErrorInvalid,
+      // TODO(estade): add this one to WebFormElement::AutocompleteResult.
+      AutocompleteResultErrorUnsupported,
+  };
+
+  typedef base::Callback<
+      void(RequestAutocompleteResult, const FormStructure*)> ResultCallback;
+
   virtual ~AutofillManagerDelegate() {}
 
   // Gets the PersonalDataManager instance associated with the delegate.
@@ -70,7 +83,7 @@ class AutofillManagerDelegate {
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,
-      const base::Callback<void(const FormStructure*)>& callback) = 0;
+      const ResultCallback& callback) = 0;
 
   // Shows an Autofill popup with the given |values|, |labels|, |icons|, and
   // |identifiers| for the element at |element_bounds|. |delegate| will be

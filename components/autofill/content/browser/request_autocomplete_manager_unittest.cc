@@ -48,12 +48,13 @@ class CustomTestAutofillManagerDelegate : public TestAutofillManagerDelegate {
     virtual void ShowRequestAutocompleteDialog(
         const FormData& form,
         const GURL& source_url,
-        const base::Callback<void(const FormStructure*)>& callback) OVERRIDE {
+        const ResultCallback& callback) OVERRIDE {
       if (should_simulate_success_) {
         FormStructure form_structure(form);
-        callback.Run(&form_structure);
+        callback.Run(AutocompleteResultSuccess, &form_structure);
       } else {
-        callback.Run(NULL);
+        callback.Run(AutofillManagerDelegate::AutocompleteResultErrorDisabled,
+                     NULL);
       }
     }
 
@@ -142,7 +143,7 @@ TEST_F(RequestAutocompleteManagerTest, OnRequestAutocompleteSuccess) {
   blink::WebFormElement::AutocompleteResult result;
   request_autocomplete_manager_->OnRequestAutocomplete(FormData(), GURL());
   EXPECT_TRUE(GetAutocompleteResultMessage(&result));
-  EXPECT_EQ(result, blink::WebFormElement::AutocompleteResultSuccess);
+  EXPECT_EQ(blink::WebFormElement::AutocompleteResultSuccess, result);
 }
 
 TEST_F(RequestAutocompleteManagerTest, OnRequestAutocompleteCancel) {
@@ -150,16 +151,18 @@ TEST_F(RequestAutocompleteManagerTest, OnRequestAutocompleteCancel) {
   manager_delegate_.set_should_simulate_success(false);
   request_autocomplete_manager_->OnRequestAutocomplete(FormData(), GURL());
   EXPECT_TRUE(GetAutocompleteResultMessage(&result));
-  EXPECT_EQ(result, blink::WebFormElement::AutocompleteResultErrorCancel);
+  EXPECT_EQ(blink::WebFormElement::AutocompleteResultErrorDisabled, result);
 }
 
+// Disabling autofill doesn't disable the dialog (it just disables the use of
+// autofill in the dialog).
 TEST_F(RequestAutocompleteManagerTest,
        OnRequestAutocompleteWithAutofillDisabled) {
   blink::WebFormElement::AutocompleteResult result;
   driver_->mock_autofill_manager()->set_autofill_enabled(false);
   request_autocomplete_manager_->OnRequestAutocomplete(FormData(), GURL());
   EXPECT_TRUE(GetAutocompleteResultMessage(&result));
-  EXPECT_EQ(result, blink::WebFormElement::AutocompleteResultSuccess);
+  EXPECT_EQ(blink::WebFormElement::AutocompleteResultSuccess, result);
 }
 
 }  // namespace autofill

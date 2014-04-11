@@ -142,7 +142,7 @@ base::WeakPtr<AutofillDialogController> AutofillDialogControllerAndroid::Create(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const base::Callback<void(const FormStructure*)>& callback) {
+    const AutofillManagerDelegate::ResultCallback& callback) {
   // AutofillDialogControllerAndroid owns itself.
   AutofillDialogControllerAndroid* autofill_dialog_controller =
       new AutofillDialogControllerAndroid(contents,
@@ -159,7 +159,7 @@ AutofillDialogController::Create(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const base::Callback<void(const FormStructure*)>& callback) {
+    const AutofillManagerDelegate::ResultCallback& callback) {
   return AutofillDialogControllerAndroid::Create(contents,
                                                  form_structure,
                                                  source_url,
@@ -206,7 +206,8 @@ void AutofillDialogControllerAndroid::Show() {
       !Java_AutofillDialogControllerAndroid_isDialogAllowed(
           env,
           invoked_from_same_origin_)) {
-    callback_.Run(NULL);
+    callback_.Run(AutofillManagerDelegate::AutocompleteResultErrorUnsupported,
+                  NULL);
     delete this;
     return;
   }
@@ -324,7 +325,8 @@ bool AutofillDialogControllerAndroid::
 void AutofillDialogControllerAndroid::DialogCancel(JNIEnv* env,
                                                    jobject obj) {
   LogOnCancelMetrics();
-  callback_.Run(NULL);
+  callback_.Run(AutofillManagerDelegate::AutocompleteResultErrorCancel,
+                NULL);
 }
 
 void AutofillDialogControllerAndroid::DialogContinue(
@@ -380,7 +382,8 @@ void AutofillDialogControllerAndroid::DialogContinue(
   LogOnFinishSubmitMetrics();
 
   // Callback should be called as late as possible.
-  callback_.Run(&form_structure_);
+  callback_.Run(AutofillManagerDelegate::AutocompleteResultSuccess,
+                &form_structure_);
 
   // This might delete us.
   Hide();
@@ -390,7 +393,7 @@ AutofillDialogControllerAndroid::AutofillDialogControllerAndroid(
     content::WebContents* contents,
     const FormData& form_structure,
     const GURL& source_url,
-    const base::Callback<void(const FormStructure*)>& callback)
+    const AutofillManagerDelegate::ResultCallback& callback)
     : profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
       contents_(contents),
       initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),

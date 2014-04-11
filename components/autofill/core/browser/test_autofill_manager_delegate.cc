@@ -32,7 +32,7 @@ void TestAutofillManagerDelegate::ConfirmSaveCreditCard(
 void TestAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,
-    const base::Callback<void(const FormStructure*)>& callback) {}
+    const ResultCallback& callback) {}
 
 void TestAutofillManagerDelegate::ShowAutofillPopup(
     const gfx::RectF& element_bounds,
