@@ -521,7 +521,9 @@ cr.define('print_preview', function() {
       this.isInKioskAutoPrintMode_ = settings.isInKioskAutoPrintMode;
 
       // The following components must be initialized in this order.
-      this.appState_.init(settings.serializedAppStateStr);
+      this.appState_.init(
+          settings.serializedAppStateStr,
+          settings.systemDefaultDestinationId);
       this.documentInfo_.init(
           settings.isDocumentModifiable,
           settings.documentTitle,
@@ -531,7 +533,7 @@ cr.define('print_preview', function() {
           settings.decimalDelimeter,
           settings.unitType,
           settings.selectionOnly);
-      this.destinationStore_.init(settings.systemDefaultDestinationId);
+      this.destinationStore_.init();
       this.appState_.setInitialized();
 
       $('document-title').innerText = settings.documentTitle;

@@ -278,19 +278,14 @@ cr.define('print_preview', function() {
      * destination. If any inserted destinations match this ID, that destination
      * will be automatically selected. This method must be called after the
      * print_preview.AppState has been initialized.
-     * @param {?string} systemDefaultDestinationId ID of the system default
-     *     destination.
      * @private
      */
-    init: function(systemDefaultDestinationId) {
+    init: function() {
       if (this.appState_.selectedDestinationId &&
           this.appState_.selectedDestinationOrigin) {
         this.initialDestinationId_ = this.appState_.selectedDestinationId;
         this.initialDestinationOrigin_ =
             this.appState_.selectedDestinationOrigin;
-      } else if (systemDefaultDestinationId) {
-        this.initialDestinationId_ = systemDefaultDestinationId;
-        this.initialDestinationOrigin_ = print_preview.Destination.Origin.LOCAL;
       }
       this.isInAutoSelectMode_ = true;
       if (!this.initialDestinationId_ || !this.initialDestinationOrigin_) {

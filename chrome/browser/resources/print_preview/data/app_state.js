@@ -38,7 +38,6 @@ cr.define('print_preview', function() {
     SELECTED_DESTINATION_ORIGIN: 'selectedDestinationOrigin',
     SELECTED_DESTINATION_CAPABILITIES: 'selectedDestinationCapabilities',
     SELECTED_DESTINATION_NAME: 'selectedDestinationName',
-    IS_SELECTED_DESTINATION_LOCAL: 'isSelectedDestinationLocal',  // Deprecated
     IS_GCP_PROMO_DISMISSED: 'isGcpPromoDismissed',
     MARGINS_TYPE: 'marginsType',
     CUSTOM_MARGINS: 'customMargins',
@@ -80,7 +79,7 @@ cr.define('print_preview', function() {
 
     /** @return {?print_preview.Cdd} CDD of the selected destination. */
     get selectedDestinationCapabilities() {
-      return this.state_[AppState.Field.SELECTED_DESTINATION_CAPBILITIES];
+      return this.state_[AppState.Field.SELECTED_DESTINATION_CAPABILITIES];
     },
 
     /** @return {?string} Name of the selected destination. */
@@ -120,24 +119,28 @@ cr.define('print_preview', function() {
      * layer.
      * @param {?string} serializedAppStateStr Serialized string representation
      *     of the app state.
+     * @param {?string} systemDefaultDestinationId ID of the system default
+     *     destination.
      */
-    init: function(serializedAppStateStr) {
+    init: function(serializedAppStateStr, systemDefaultDestinationId) {
       if (serializedAppStateStr) {
         var state = JSON.parse(serializedAppStateStr);
         if (state[AppState.Field.VERSION] == AppState.VERSION_) {
-          if (state.hasOwnProperty(
-              AppState.Field.IS_SELECTED_DESTINATION_LOCAL)) {
-            state[AppState.Field.SELECTED_DESTINATION_ORIGIN] =
-                state[AppState.Field.IS_SELECTED_DESTINATION_LOCAL] ?
-                print_preview.Destination.Origin.LOCAL :
-                print_preview.Destination.Origin.COOKIES;
-            delete state[AppState.Field.IS_SELECTED_DESTINATION_LOCAL];
-          }
           this.state_ = state;
         }
       } else {
         // Set some state defaults.
         this.state_[AppState.Field.IS_GCP_PROMO_DISMISSED] = false;
+      }
+      // Default to system destination, if no destination was selected.
+      if (!this.state_[AppState.Field.SELECTED_DESTINATION_ID] ||
+          !this.state_[AppState.Field.SELECTED_DESTINATION_ORIGIN]) {
+        if (systemDefaultDestinationId) {
+          this.state_[AppState.Field.SELECTED_DESTINATION_ID] =
+              systemDefaultDestinationId;
+          this.state_[AppState.Field.SELECTED_DESTINATION_ORIGIN] =
+              print_preview.Destination.Origin.LOCAL;
+        }
       }
     },
 
@@ -173,7 +176,7 @@ cr.define('print_preview', function() {
         return;
       this.state_[AppState.Field.SELECTED_DESTINATION_ID] = dest.id;
       this.state_[AppState.Field.SELECTED_DESTINATION_ORIGIN] = dest.origin;
-      this.state_[AppState.Field.SELECTED_DESTINATION_CAPBILITIES] =
+      this.state_[AppState.Field.SELECTED_DESTINATION_CAPABILITIES] =
           dest.capabilities;
       this.state_[AppState.Field.SELECTED_DESTINATION_NAME] = dest.displayName;
       this.persist_();
