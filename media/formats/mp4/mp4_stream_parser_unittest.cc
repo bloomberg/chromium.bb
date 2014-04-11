@@ -206,6 +206,13 @@ TEST_F(MP4StreamParserTest, NoMoovAfterFlush) {
                                  512));
 }
 
+// Test an invalid file where there are encrypted samples, but
+// SampleAuxiliaryInformation{Sizes|Offsets}Box (saiz|saio) are missing.
+// The parser should fail instead of crash. See http://crbug.com/361347
+TEST_F(MP4StreamParserTest, MissingSampleAuxInfo) {
+  ParseMP4File("bear-1280x720-a_frag-cenc_missing-saiz-saio.mp4", 512);
+}
+
 // TODO(strobe): Create and test media which uses CENC auxiliary info stored
 // inside a private box
 

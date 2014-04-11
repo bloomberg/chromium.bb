@@ -433,6 +433,12 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
   if (!audio && !video)
     runs_->AdvanceRun();
 
+  // AuxInfo is required for encrypted samples.
+  // See ISO Common Encryption spec: ISO/IEC FDIS 23001-7:2011(E);
+  // Section 7: Common Encryption Sample Auxiliary Information.
+  if (runs_->is_encrypted() && !runs_->aux_info_size())
+    return false;
+
   // Attempt to cache the auxiliary information first. Aux info is usually
   // placed in a contiguous block before the sample data, rather than being
   // interleaved. If we didn't cache it, this would require that we retain the
