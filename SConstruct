@@ -2578,14 +2578,22 @@ def SetUpAndroidEnv(env):
   if not ndk or not sdk:
     print 'Please define ANDROID_NDK_ROOT and ANDROID_SDK_ROOT'
     sys.exit(-1)
-  tc = '%s/toolchains/%s-%s/prebuilt/linux-x86_64/bin/' \
-      % (ndk, ndk_tctarget, ndk_version)
+  ndk_platform_path_map = {
+      pynacl.platform.OS_WIN : 'win',
+      pynacl.platform.OS_MAC: 'darwin',
+      pynacl.platform.OS_LINUX : 'linux'
+      }
+  ndk_platform_path = ndk_platform_path_map[pynacl.platform.GetOS()]
+  tc = '%s/toolchains/%s-%s/prebuilt/%s-x86_64/bin/' % (
+      ndk, ndk_tctarget, ndk_version, ndk_platform_path)
   tc_prefix = '%s/%s-' % (tc, ndk_target)
   platform_prefix = '%s/platforms/android-14/arch-%s' % (ndk, arch)
   stl_path =  '%s/sources/cxx-stl/gnu-libstdc++/%s' % (ndk, ndk_version)
   env.Replace(CC=tc_prefix + 'gcc',
               CXX=tc_prefix + 'g++',
               LD=tc_prefix + 'g++',
+              AR=tc_prefix + 'ar',
+              RANLIB=tc_prefix + 'ranlib',
               EMULATOR=sdk + '/tools/emulator',
               LIBPATH=['${LIB_DIR}',
                        '%s/libs/%s' % (stl_path, libarch),
