@@ -27372,6 +27372,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Tab.BackgroundLoadStatus" enum="TabBackgroundLoadStatus">
+  <owner>ppi@chromium.org</owner>
+  <summary>
+    Mobile-specific metric: when a tab that was opened in background (via
+    &quot;Open link in new tab&quot;) is switched to, we record whether the
+    eagerly loaded tab was still memory resident, or we lost the loaded page due
+    to memory pressure.
+  </summary>
+</histogram>
+
 <histogram name="Tab.FormActivityCountEvictedHistogram">
   <owner>lliabraa@chromium.org</owner>
   <summary>
@@ -41089,6 +41099,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="Configuration retry"/>
   <int value="4" label="Configuration failure"/>
   <int value="5" label="Actionable error"/>
+</enum>
+
+<enum name="TabBackgroundLoadStatus" type="int">
+  <int value="0" label="Loaded on creation and shown"/>
+  <int value="1" label="Loaded on creation and lost"/>
+  <int value="2" label="Not loaded on creation"/>
 </enum>
 
 <enum name="TabRestoreResult" type="int">
