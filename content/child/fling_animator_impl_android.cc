@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
-#include "ui/gfx/android/view_configuration.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/vector2d.h"
 
@@ -15,10 +14,16 @@ namespace content {
 
 namespace {
 
+// Value taken directly from Android's ViewConfiguration. As the value has not
+// changed in 4+ years, and does not depend on any device-specific configuration
+// parameters, copy it directly to avoid potential JNI interop issues in the
+// render process (see crbug.com/362614).
+const float kDefaultAndroidPlatformScrollFriction = 0.015f;
+
 gfx::Scroller::Config GetScrollerConfig() {
   gfx::Scroller::Config config;
   config.flywheel_enabled = false;
-  config.fling_friction = gfx::ViewConfiguration::GetScrollFriction();
+  config.fling_friction = kDefaultAndroidPlatformScrollFriction;
   return config;
 }
 
