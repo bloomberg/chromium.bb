@@ -47,7 +47,7 @@ run() {
 }
 
 comment() {
-  echo "# $@"
+  echo "###COMMENT### $@"
 }
 
 # run a silent command

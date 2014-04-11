@@ -1,3 +1,3 @@
-#!/bin/sh
+#!/bin/bash
 . demo_repo.sh
 run git map

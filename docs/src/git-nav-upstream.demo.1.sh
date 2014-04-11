@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 . demo_repo.sh
 
 silent git checkout subfeature

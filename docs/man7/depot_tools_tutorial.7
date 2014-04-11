@@ -376,10 +376,10 @@ It was a Domo\-Kuun\&.
 * \fB2250f53	\fR 2014\-04\-10 ~ ozone: evdev: Filter devices by path
 * \fB33a7a74	\fR 2014\-04\-10 ~ Always output seccomp error messages to stderr
 \fB$ git status\fR
-On branch fix_typo
-Your branch is ahead of \*(Aqorigin/master\*(Aq by 1 commit\&.
-  (use "git push" to publish your local commits)
-
+# On branch fix_typo
+# Your branch is ahead of \*(Aqorigin/master\*(Aq by 1 commit\&.
+#   (use "git push" to publish your local commits)
+#
 nothing to commit, working directory clean
 \fB$ git cl upload \-r domo@chromium\&.org \-\-send\-mail\fR
 \&.\&.\&. truncated output \&.\&.\&.
@@ -406,15 +406,15 @@ overhead, barely disturbing the thick cigarette smoke\&. No doubt was left about
 when the fan was last cleaned\&.
 EOF
 \fB$ git status\fR
-On branch chap2
-Your branch is up\-to\-date with \*(Aqorigin/master\*(Aq\&.
-
-Changes not staged for commit:
-  (use "git add <file>\&.\&.\&." to update what will be committed)
-  (use "git checkout \-\- <file>\&.\&.\&." to discard changes in working directory)
-
-	modified:   build/whitespace_file\&.txt
-
+# On branch chap2
+# Your branch is up\-to\-date with \*(Aqorigin/master\*(Aq\&.
+#
+# Changes not staged for commit:
+#   (use "git add <file>\&.\&.\&." to update what will be committed)
+#   (use "git checkout \-\- <file>\&.\&.\&." to discard changes in working directory)
+#
+#	modified:   build/whitespace_file\&.txt
+#
 no changes added to commit (use "git add" and/or "git commit \-a")
 .fi
 .if n \{\
@@ -640,7 +640,7 @@ We haven\*(Aqt updated the code in a while, so let\*(Aqs do that now\&.
 .nf
 \fB$ git rebase\-update\fR
 Fetching origin
-From /Users/iannucci/chromium/depot_tools/docs/src/demo_repo
+From https://upstream
    beec6f4\&.\&.59cdb73  master     \-> origin/master
 Rebasing: chap2
 Rebasing: fix_typo
@@ -690,7 +690,7 @@ Someone on IRC mentions that they actually landed a chapter 3 already! We should
 .nf
 \fB$ git rebase\-update\fR
 Fetching origin
-From /Users/iannucci/chromium/depot_tools/docs/src/demo_repo
+From https://upstream
    5d26fec\&.\&.59cdb73  master     \-> origin/master
 Rebasing: chap2
 \&.\&.\&. lots of output, it\*(Aqs a conflict alright :(\&.\&.\&.

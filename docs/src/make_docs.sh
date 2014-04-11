@@ -41,6 +41,8 @@ then
 fi
 echo Asciidoc up to date at $ASCIIDOC_HASH \($BRANCH\)
 
+export PATH=`pwd`/asciidoc:$PATH
+
 # We pull ansi2hash to convert demo script output
 BRANCH=1.0.6
 ANSI2HTML_HASH=6282ab7a24a5a7eab2e0b23bb0055234c533a6e9

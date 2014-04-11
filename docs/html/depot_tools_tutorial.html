@@ -1047,10 +1047,10 @@ It was a Domo-Kuun.
 * <span style="font-weight: bold; color: #e42e16">2250f53	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ ozone: evdev: Filter devices by path
 * <span style="font-weight: bold; color: #e42e16">33a7a74	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Always output seccomp error messages to stderr
 <span style="font-weight: bold; color: #ffffff">$ git status</span>
-On branch fix_typo
-Your branch is ahead of 'origin/master' by 1 commit.
-  (use "git push" to publish your local commits)
-
+# On branch fix_typo
+# Your branch is ahead of 'origin/master' by 1 commit.
+#   (use "git push" to publish your local commits)
+#
 nothing to commit, working directory clean
 <span style="font-weight: bold; color: #ffffff">$ git cl upload -r domo@chromium.org --send-mail</span>
 ... truncated output ...
@@ -1066,15 +1066,15 @@ overhead, barely disturbing the thick cigarette smoke. No doubt was left about
 when the fan was last cleaned.
 EOF
 <span style="font-weight: bold; color: #ffffff">$ git status</span>
-On branch chap2
-Your branch is up-to-date with 'origin/master'.
-
-Changes not staged for commit:
-  (use "git add &lt;file&gt;..." to update what will be committed)
-  (use "git checkout -- &lt;file&gt;..." to discard changes in working directory)
-
-	<span style="color: #e42e16">modified:   build/whitespace_file.txt</span>
-
+# On branch chap2
+# Your branch is up-to-date with 'origin/master'.
+#
+# Changes not staged for commit:
+#   (use "git add &lt;file&gt;..." to update what will be committed)
+#   (use "git checkout -- &lt;file&gt;..." to discard changes in working directory)
+#
+#	<span style="color: #e42e16">modified:   build/whitespace_file.txt</span>
+#
 no changes added to commit (use "git add" and/or "git commit -a")
 </code></pre></div></div><p><div class="paragraph"> Someone on the code review pointed out that our typo-fix has a typo :( We're still working on 'chap2' but we really want to land 'fix_typo', so let's switch over and fix it.</p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git freeze</span>
 <span style="font-weight: bold; color: #ffffff">$ git checkout fix_typo</span>
@@ -1223,7 +1223,7 @@ EOF
 * <span style="font-weight: bold; color: #e42e16">33a7a74	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Always output seccomp error messages to stderr
 </code></pre></div></div><p><div class="paragraph"> We haven't updated the code in a while, so let's do that now.</p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git rebase-update</span>
 Fetching origin
-From /Users/iannucci/chromium/depot_tools/docs/src/demo_repo
+From https://upstream
    beec6f4..59cdb73  master     -&gt; origin/master
 Rebasing: chap2
 Rebasing: fix_typo
@@ -1251,7 +1251,7 @@ Deleted branch chap2 (was 5d26fec).
 * <span style="font-weight: bold; color: #e42e16">33a7a74	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Always output seccomp error messages to stderr
 </code></pre></div></div><p><div class="paragraph"> Someone on IRC mentions that they actually landed a chapter 3 already! We should pull their changes before continuing. Brace for a code conflict!</p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git rebase-update</span>
 Fetching origin
-From /Users/iannucci/chromium/depot_tools/docs/src/demo_repo
+From https://upstream
    5d26fec..59cdb73  master     -&gt; origin/master
 Rebasing: chap2
 ... lots of output, it's a conflict alright :(...

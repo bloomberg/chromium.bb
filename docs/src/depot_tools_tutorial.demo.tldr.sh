@@ -23,7 +23,7 @@ ed_ws() {
   echo -ne "\x1B[37;1m$ echo -e "
   echo -n "'$1'"
   echo -e " | ed $WS\x1B[m"
-  echo -e "$1" | ed $WS
+  echo -e "$1" | ed $WS 2>&1
 }
 
 # needs an extra echo afterwards
@@ -117,7 +117,7 @@ map
 comment "We haven't updated the code in a while, so let's do that now."
 pcommand git rebase-update
 echo Fetching origin
-git fetch origin 2>&1 | grep -v 'stage'
+git fetch origin 2>&1 | grep -v 'stage' | sed 's+From.*+From https://upstream+'
 silent git update-ref refs/remotes/origin/master stage_2
 silent git tag -d $(git tag -l 'stage_*')
 git rebase-update --no_fetch
@@ -132,7 +132,7 @@ comment "We should pull their changes before continuing. Brace for"
 comment "a code conflict!"
 pcommand git rebase-update
 echo Fetching origin
-git fetch origin 2>&1 | grep -v 'stage'
+git fetch origin 2>&1 | grep -v 'stage' | sed 's+From.*+From https://upstream+'
 silent git tag -d $(git tag -l 'stage_*')
 echo Rebasing: chap2
 silent git rebase-update

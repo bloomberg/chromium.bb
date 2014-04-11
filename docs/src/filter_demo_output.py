@@ -77,6 +77,8 @@ def main():
 
   w = sys.stdout.write
 
+  comment_marker = '###COMMENT###'
+
   callout_counter = 1
   if backend == 'xhtml11':
     preamble = (
@@ -88,11 +90,11 @@ def main():
     in_code = False
     body = c.convert(output, full=False)
     for i, line in enumerate(body.splitlines()):
-      if line.startswith('# '):
+      if line.startswith(comment_marker):
         if in_code:
           w(postamble)
           in_code = False
-        w(line[1:])
+        w(line[len(comment_marker):])
       else:
         if not in_code:
           w(preamble)
@@ -115,11 +117,11 @@ def main():
     in_code = False
     body = simpleXML(output)
     for i, line in enumerate(body.splitlines()):
-      if line.startswith('# '):
+      if line.startswith(comment_marker):
         if in_code:
           w(postamble)
           in_code = False
-        w(line[1:])
+        w(line[len(comment_marker):])
       else:
         if not in_code:
           w(preamble)
