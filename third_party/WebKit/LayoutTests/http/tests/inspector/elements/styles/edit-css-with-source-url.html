@@ -40,7 +40,7 @@ function test()
             }
 
             var fileSystemPath = "/var/www";
-            var fileSystemProjectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
+            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
             var files = {"/foo.css": styleText};
             createObjects();
             InspectorTest.addResult("Adding file system.");

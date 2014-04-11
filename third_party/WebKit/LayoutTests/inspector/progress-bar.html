@@ -20,6 +20,7 @@ InspectorTest.MockProgressIndicator.prototype = {
     done: function()
     {
         InspectorTest.addResult("progress indicator: done");
+        this.dispatchEventToListeners(WebInspector.Progress.Events.Done);
     },
 
     setTotalWork: function(totalWork)
@@ -61,105 +62,139 @@ InspectorTest.MockProgressIndicator.prototype = {
     },
     
     addEventListener: function(eventType, listener, thisObject) { },
+
+    __proto__: WebInspector.Object.prototype
 }
 
 }
 
 var test = function()
 {
-    (function testOneSubProgress()
+    function installProgressListeners(progressName, progress)
     {
-        var indicator = new InspectorTest.MockProgressIndicator();
-        var composite = new WebInspector.CompositeProgress(indicator);
-        var subProgress = composite.createSubProgress();
+        function onDone()
+        {
+            InspectorTest.addResult("Progress " + progressName + " dispatched Done event.");
+        }
 
-        InspectorTest.addResult("Testing CompositeProgress with a single subprogress:");
-        indicator.dump();
-        subProgress.setTitle("cuckooing");
-        subProgress.setWorked(10);
-        indicator.dump();
-        subProgress.setTotalWork(100);
-        indicator.dump();
-        subProgress.setWorked(20, "meowing");
-        indicator.dump();
-        subProgress.done();
-        indicator.dump();
-    })();
+        function onCanceled()
+        {
+            InspectorTest.addResult("Progress " + progressName + " dispatched Canceled event.");
+        }
 
-    (function testMultipleSubProgresses()
-    {
-        var indicator = new InspectorTest.MockProgressIndicator();
-        var composite = new WebInspector.CompositeProgress(indicator);
-        var subProgress1 = composite.createSubProgress();
-        var subProgress2 = composite.createSubProgress(3);
+        progress.addEventListener(WebInspector.Progress.Events.Done, onDone);
+        progress.addEventListener(WebInspector.Progress.Events.Canceled, onCanceled);
+    }
+    
+    InspectorTest.runTestSuite([
+        function testOneSubProgress(next)
+        {
+            var indicator = new InspectorTest.MockProgressIndicator();
+            var composite = new WebInspector.CompositeProgress(indicator);
+            var subProgress = composite.createSubProgress();
+            installProgressListeners("composite", composite);
+            installProgressListeners("subProgress", subProgress);
 
-        InspectorTest.addResult("Testing CompositeProgress with multiple subprogresses:");
-        indicator.dump();
+            InspectorTest.addResult("Testing CompositeProgress with a single subprogress:");
+            indicator.dump();
+            subProgress.setTitle("cuckooing");
+            subProgress.setWorked(10);
+            indicator.dump();
+            subProgress.setTotalWork(100);
+            indicator.dump();
+            subProgress.setWorked(20, "meowing");
+            indicator.dump();
+            subProgress.done();
+            indicator.dump();
+            next();
+        },
 
-        subProgress1.setTitle("cuckooing");
-        subProgress1.setTotalWork(100);
-        subProgress1.setWorked(20);
-        indicator.dump();
+        function testMultipleSubProgresses(next)
+        {
+            var indicator = new InspectorTest.MockProgressIndicator();
+            var composite = new WebInspector.CompositeProgress(indicator);
+            var subProgress1 = composite.createSubProgress();
+            var subProgress2 = composite.createSubProgress(3);
+            installProgressListeners("composite", composite);
+            installProgressListeners("subProgress1", subProgress1);
+            installProgressListeners("subProgress2", subProgress2);
 
-        subProgress2.setWorked(10);
-        indicator.dump();
+            InspectorTest.addResult("Testing CompositeProgress with multiple subprogresses:");
+            indicator.dump();
 
-        subProgress2.setTotalWork(10);
-        subProgress2.setWorked(3, "barking");
-        indicator.dump();
+            subProgress1.setTitle("cuckooing");
+            subProgress1.setTotalWork(100);
+            subProgress1.setWorked(20);
+            indicator.dump();
 
-        subProgress1.setWorked(50, "meowing");
-        subProgress2.setWorked(5);
-        indicator.dump();
+            subProgress2.setWorked(10);
+            indicator.dump();
 
-        subProgress2.done();
-        indicator.dump();
+            subProgress2.setTotalWork(10);
+            subProgress2.setWorked(3, "barking");
+            indicator.dump();
 
-        subProgress1.done();
-        indicator.dump();
-    })();
+            subProgress1.setWorked(50, "meowing");
+            subProgress2.setWorked(5);
+            indicator.dump();
 
-    (function testCancel()
-    {
-        var indicator = new InspectorTest.MockProgressIndicator();
-        var composite = new WebInspector.CompositeProgress(indicator);
-        var subProgress1 = composite.createSubProgress();
+            subProgress2.done();
+            indicator.dump();
 
-        InspectorTest.addResult("Testing isCanceled:");
-        InspectorTest.assertTrue(!subProgress1.isCanceled(), "progress should not be canceled");
-        indicator.cancel();
-        InspectorTest.assertTrue(subProgress1.isCanceled(), "progress should be canceled");
-    })();
+            subProgress1.done();
+            indicator.dump();
+            next();
+        },
 
-    (function testNested()
-    {
-        var indicator = new InspectorTest.MockProgressIndicator();
-        var composite0 = new WebInspector.CompositeProgress(indicator);
-        var subProgress01 = composite0.createSubProgress();
-        var composite1 = new WebInspector.CompositeProgress(subProgress01);
-        var subProgress11 = composite1.createSubProgress(10); // Weight should have no effect.
+        function testCancel(next)
+        {
+            var indicator = new InspectorTest.MockProgressIndicator();
+            var composite = new WebInspector.CompositeProgress(indicator);
+            var subProgress = composite.createSubProgress();
+            installProgressListeners("composite", composite);
+            installProgressListeners("subProgress", subProgress);
 
-        InspectorTest.addResult("Testing nested subprogresses:");
-        indicator.dump();
+            InspectorTest.addResult("Testing isCanceled:");
+            InspectorTest.assertTrue(!subProgress.isCanceled(), "progress should not be canceled");
+            indicator.cancel();
+            InspectorTest.assertTrue(subProgress.isCanceled(), "progress should be canceled");
+            next();
+        },
 
-        subProgress11.setWorked(10);
-        indicator.dump();
+        function testNested(next)
+        {
+            var indicator = new InspectorTest.MockProgressIndicator();
+            var composite0 = new WebInspector.CompositeProgress(indicator);
+            var subProgress01 = composite0.createSubProgress();
+            var composite1 = new WebInspector.CompositeProgress(subProgress01);
+            var subProgress11 = composite1.createSubProgress(10); // Weight should have no effect.
 
-        subProgress11.setTotalWork(100);
-        indicator.dump();
+            installProgressListeners("composite0", composite0);
+            installProgressListeners("composite1", composite1);
+            installProgressListeners("subProgress01", subProgress01);
+            installProgressListeners("subProgress11", subProgress11);
 
-        subProgress11.setWorked(50, "meowing");
-        indicator.dump();
+            InspectorTest.addResult("Testing nested subprogresses:");
+            indicator.dump();
 
-        InspectorTest.assertTrue(!subProgress11.isCanceled());
-        indicator.cancel();
-        InspectorTest.assertTrue(subProgress11.isCanceled());
+            subProgress11.setWorked(10);
+            indicator.dump();
 
-        subProgress11.done();
-        indicator.dump();
-    })();
+            subProgress11.setTotalWork(100);
+            indicator.dump();
 
-    InspectorTest.completeTest();
+            subProgress11.setWorked(50, "meowing");
+            indicator.dump();
+
+            InspectorTest.assertTrue(!subProgress11.isCanceled());
+            indicator.cancel();
+            InspectorTest.assertTrue(subProgress11.isCanceled());
+
+            subProgress11.done();
+            indicator.dump();
+            next();
+        }
+    ]);
 }
 
 </script>

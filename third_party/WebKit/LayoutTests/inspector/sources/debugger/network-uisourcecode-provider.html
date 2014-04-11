@@ -71,7 +71,7 @@ function test()
         target.debuggerModel._registerScript = function(){};
         WebInspector.resourceTreeModel = target.resourceTreeModel;
         WebInspector.debuggerModel = target.debuggerModel;
-        var networkUISourceCodeProvider = new WebInspector.NetworkUISourceCodeProvider(InspectorTest.testNetworkWorkspaceProvider, InspectorTest.testWorkspace);
+        var networkUISourceCodeProvider = new WebInspector.NetworkUISourceCodeProvider(InspectorTest.testNetworkWorkspaceBinding, InspectorTest.testWorkspace);
         networkUISourceCodeProvider.targetAdded(target);
         return networkUISourceCodeProvider;
     }

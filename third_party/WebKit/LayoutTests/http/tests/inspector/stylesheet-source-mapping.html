@@ -13,7 +13,7 @@ function test()
     InspectorTest.createWorkspace();
     var cssModel = new WebInspector.CSSStyleModel(WebInspector.targetManager.activeTarget(), InspectorTest.testWorkspace);
     WebInspector.targetManager.activeTarget().cssModel = cssModel;
-    var mapping = new WebInspector.CSSStyleSheetMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceProvider);
+    var mapping = new WebInspector.CSSStyleSheetMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceBinding);
 
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);
     const styleSheetURL = "http://localhost:8000/inspector/resources/example.css";

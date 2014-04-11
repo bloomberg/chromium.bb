@@ -7,43 +7,27 @@ function test()
 {
     var uiSourceCodes = {};
     var projectDelegates = {};
+    var projectStores = {};
     function createUISourceCode(projectId, path)
     {
-        var projectDelegate = projectDelegates[projectId];
-        if (!projectDelegates[projectId]) {
-            projectDelegate = new MockProjectDelegate(projectId);
-            workspace.addProject(projectDelegate);
-            projectDelegates[projectId] = projectDelegate;
+        var projectStore = projectStores[projectId];
+        if (!projectStores[projectId]) {
+            projectStore = workspace.addProject(projectId, new MockProjectDelegate());
+            projectStores[projectId] = projectStore;
         }
 
-        projectDelegate.addUISourceCode(path);
+        var parentPath = path.substring(0, path.lastIndexOf("/"));
+        var name = path.substring(path.lastIndexOf("/") + 1);
+        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, path, path, WebInspector.resourceTypes.Script, true, false);
+        projectStore.addFile(fileDescriptor);
     }
 
-    function MockProjectDelegate(id)
-    {
-        this._id = id;
-    }
-
-    MockProjectDelegate.prototype = {
-        id: function() {
-            return this._id;
-        },
-
-        displayName: function() {},
-
-        addUISourceCode: function(path) {
-            var parentPath = path.substring(0, path.lastIndexOf("/"));
-            var name = path.substring(path.lastIndexOf("/") + 1);
-            var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, path, path, WebInspector.resourceTypes.Script, true, false);
-            this.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.FileAdded, fileDescriptor);
-        },
-
-        __proto__: WebInspector.Object.prototype
-    };
+    function MockProjectDelegate() {}
+    MockProjectDelegate.prototype.displayName = function() {};
 
     var fileSystemMapping = new WebInspector.FileSystemMapping();
     var fileSystemPath = "/var/www";
-    var projectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
+    var projectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
     fileSystemMapping.addFileSystem("/var/www");
     fileSystemMapping.addFileMapping("/var/www", "http://localhost/", "/localhost/");
     var workspace = new WebInspector.Workspace(fileSystemMapping);

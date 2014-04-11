@@ -14,7 +14,7 @@ function test()
     function createCompilerScriptMapping()
     {
         InspectorTest.createWorkspace();
-        var compilerScriptMapping = new WebInspector.CompilerScriptMapping(WebInspector.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceProvider);
+        var compilerScriptMapping = new WebInspector.CompilerScriptMapping(WebInspector.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceBinding);
         resourceScriptMapping = new WebInspector.ResourceScriptMapping(WebInspector.debuggerModel, InspectorTest.testWorkspace);
         defaultScriptMapping = new WebInspector.DefaultScriptMapping(WebInspector.debuggerModel, InspectorTest.testWorkspace);
         return compilerScriptMapping;
@@ -368,7 +368,7 @@ function test()
             WebInspector.settings.jsSourceMapsEnabled.get = function() { return true; }
             WebInspector.debuggerModel._reset();
             InspectorTest.createWorkspace();
-            var debuggerScriptMapping = new WebInspector.DebuggerScriptMapping(WebInspector.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceProvider);
+            var debuggerScriptMapping = new WebInspector.DebuggerScriptMapping(WebInspector.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceBinding);
 
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(compiledUISourceCodeAdded);
             var script = InspectorTest.createScriptMock("compiled.js", 0, 0, true, "");
