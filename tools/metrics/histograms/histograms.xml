@@ -10466,6 +10466,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The scheme of the URL for each main-frame navigation.</summary>
 </histogram>
 
+<histogram name="Net.AlternateProtocolBrokenLocation"
+    enum="BrokenAlternateProtocolLocation">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    Breakdown of the locations when SetBrokenAlternateProtocol is called.
+  </summary>
+</histogram>
+
 <histogram name="Net.AlternateProtocolUsage" enum="AlternateProtocolUsage">
   <owner>rch@chromium.org</owner>
   <summary>
@@ -30856,6 +30864,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanWiped" type="int">
   <int value="0" label="Re-enabled"/>
   <int value="1" label="Wiped out"/>
+</enum>
+
+<enum name="BrokenAlternateProtocolLocation" type="int">
+  <int value="0" label="HTTP_STREAM_FACTORY_IMPL_JOB"/>
+  <int value="1" label="QUIC_STREAM_FACTORY"/>
 </enum>
 
 <enum name="CanvasContextType" type="int">

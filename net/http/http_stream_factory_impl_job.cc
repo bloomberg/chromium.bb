@@ -978,6 +978,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   }
 
   if (!ssl_started && result < 0 && original_url_.get()) {
+    HistogramBrokenAlternateProtocolLocation(
+        BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB);
     // Mark the alternate protocol as broken and fallback.
     session_->http_server_properties()->SetBrokenAlternateProtocol(
         HostPortPair::FromURL(*original_url_));

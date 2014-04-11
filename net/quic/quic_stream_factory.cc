@@ -563,6 +563,8 @@ void QuicStreamFactory::OnSessionGoingAway(QuicClientSession* session) {
       // packets from the peer, we should consider blacklisting this
       // differently so that we still race TCP but we don't consider the
       // session connected until the handshake has been confirmed.
+      HistogramBrokenAlternateProtocolLocation(
+          BROKEN_ALTERNATE_PROTOCOL_LOCATION_QUIC_STREAM_FACTORY);
       http_server_properties_->SetBrokenAlternateProtocol(it->host_port_pair());
       UMA_HISTOGRAM_COUNTS("Net.QuicHandshakeNotConfirmedNumPacketsReceived",
                            stats.packets_received);

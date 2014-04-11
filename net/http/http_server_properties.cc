@@ -37,6 +37,12 @@ void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage) {
                             ALTERNATE_PROTOCOL_USAGE_MAX);
 }
 
+void HistogramBrokenAlternateProtocolLocation(
+    BrokenAlternateProtocolLocation location){
+  UMA_HISTOGRAM_ENUMERATION("Net.AlternateProtocolBrokenLocation", location,
+                            BROKEN_ALTERNATE_PROTOCOL_LOCATION_MAX);
+}
+
 bool IsAlternateProtocolValid(AlternateProtocol protocol) {
   return protocol >= ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION &&
       protocol <= ALTERNATE_PROTOCOL_MAXIMUM_VALID_VERSION;

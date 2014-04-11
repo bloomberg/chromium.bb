@@ -39,6 +39,16 @@ enum AlternateProtocolUsage {
 // Log a histogram to reflect |usage|.
 NET_EXPORT void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage);
 
+enum BrokenAlternateProtocolLocation {
+  BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB = 0,
+  BROKEN_ALTERNATE_PROTOCOL_LOCATION_QUIC_STREAM_FACTORY = 1,
+  BROKEN_ALTERNATE_PROTOCOL_LOCATION_MAX,
+};
+
+// Log a histogram to reflect |location|.
+NET_EXPORT void HistogramBrokenAlternateProtocolLocation(
+    BrokenAlternateProtocolLocation location);
+
 enum AlternateProtocol {
   DEPRECATED_NPN_SPDY_2 = 0,
   ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION = DEPRECATED_NPN_SPDY_2,
