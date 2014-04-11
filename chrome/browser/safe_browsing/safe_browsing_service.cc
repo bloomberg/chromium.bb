@@ -355,14 +355,10 @@ SafeBrowsingProtocolConfig SafeBrowsingService::GetProtocolConfig() const {
   config.disable_auto_update =
       cmdline->HasSwitch(switches::kSbDisableAutoUpdate) ||
       cmdline->HasSwitch(switches::kDisableBackgroundNetworking);
-  if (cmdline->HasSwitch(switches::kSbURLPrefix)) {
-    config.url_prefix = cmdline->GetSwitchValueASCII(switches::kSbURLPrefix);
-  } else {
-    config.url_prefix = kSbDefaultURLPrefix;
-    config.backup_connect_error_url_prefix = kSbBackupConnectErrorURLPrefix;
-    config.backup_http_error_url_prefix = kSbBackupHttpErrorURLPrefix;
-    config.backup_network_error_url_prefix = kSbBackupNetworkErrorURLPrefix;
-  }
+  config.url_prefix = kSbDefaultURLPrefix;
+  config.backup_connect_error_url_prefix = kSbBackupConnectErrorURLPrefix;
+  config.backup_http_error_url_prefix = kSbBackupHttpErrorURLPrefix;
+  config.backup_network_error_url_prefix = kSbBackupNetworkErrorURLPrefix;
 
   return config;
 }

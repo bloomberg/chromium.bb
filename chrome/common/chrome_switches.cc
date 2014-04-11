@@ -1125,10 +1125,6 @@ const char kRestoreLastSession[]            = "restore-last-session";
 // See http://crbug.com/120416 for how to remove this switch.
 const char kSavePageAsMHTML[]               = "save-page-as-mhtml";
 
-// URL prefix used by safebrowsing to fetch hash, download data and report
-// malware.
-const char kSbURLPrefix[]                   = "safebrowsing-url-prefix";
-
 // If present, safebrowsing only performs update when
 // SafeBrowsingProtocolManager::ForceScheduleNextUpdate() is explicitly called.
 // This is used for testing only.

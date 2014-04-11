@@ -108,6 +108,43 @@ bool ParsePhishingUrls(const std::string& data,
   return true;
 }
 
+class FakeSafeBrowsingService : public SafeBrowsingService {
+ public:
+  explicit FakeSafeBrowsingService(const std::string& url_prefix)
+      : url_prefix_(url_prefix) {}
+
+  virtual SafeBrowsingProtocolConfig GetProtocolConfig() const OVERRIDE {
+    SafeBrowsingProtocolConfig config;
+    config.url_prefix = url_prefix_;
+    // Makes sure the auto update is not triggered. The tests will force the
+    // update when needed.
+    config.disable_auto_update = true;
+    config.client_name = "browser_tests";
+    return config;
+  }
+
+ private:
+  virtual ~FakeSafeBrowsingService() {}
+
+  std::string url_prefix_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);
+};
+
+// Factory that creates FakeSafeBrowsingService instances.
+class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
+ public:
+  explicit TestSafeBrowsingServiceFactory(const std::string& url_prefix)
+      : url_prefix_(url_prefix) {}
+
+  virtual SafeBrowsingService* CreateSafeBrowsingService() OVERRIDE {
+    return new FakeSafeBrowsingService(url_prefix_);
+  }
+
+ private:
+  std::string url_prefix_;
+};
+
 }  // namespace
 
 // This starts the browser and keeps status of states related to SafeBrowsing.
@@ -216,7 +253,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
     return safe_browsing_service_ != NULL;
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     base::FilePath datafile_path;
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &datafile_path));
 
@@ -228,10 +265,21 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
     ASSERT_TRUE(test_server_->Start());
     LOG(INFO) << "server is " << test_server_->host_port_pair().ToString();
 
-    // Makes sure the auto update is not triggered. This test will force the
-    // update when needed.
-    command_line->AppendSwitch(switches::kSbDisableAutoUpdate);
+    // Point to the testing server for all SafeBrowsing requests.
+    std::string url_prefix = test_server_->GetURL("safebrowsing").spec();
+    sb_factory_.reset(new TestSafeBrowsingServiceFactory(url_prefix));
+    SafeBrowsingService::RegisterFactory(sb_factory_.get());
 
+    InProcessBrowserTest::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    InProcessBrowserTest::TearDown();
+
+    SafeBrowsingService::RegisterFactory(NULL);
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // This test uses loopback. No need to use IPv6 especially it makes
     // local requests slow on Windows trybot when ipv6 local address [::1]
     // is not setup.
@@ -253,10 +301,6 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
     // TODO(tburkard): Generate new testing data that includes the side-effect
     // free whitelist.
     command_line->AppendSwitch(switches::kSbDisableSideEffectFreeWhitelist);
-
-    // Point to the testing server for all SafeBrowsing requests.
-    std::string url_prefix = test_server_->GetURL("safebrowsing").spec();
-    command_line->AppendSwitchASCII(switches::kSbURLPrefix, url_prefix);
   }
 
   void SetTestStep(int step) {
@@ -265,6 +309,8 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
   }
 
  private:
+  scoped_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
+
   SafeBrowsingService* safe_browsing_service_;
 
   scoped_ptr<net::SpawnedTestServer> test_server_;

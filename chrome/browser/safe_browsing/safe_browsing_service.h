@@ -81,7 +81,7 @@ class SafeBrowsingService
   bool DownloadBinHashNeeded() const;
 
   // Create a protocol config struct.
-  SafeBrowsingProtocolConfig GetProtocolConfig() const;
+  virtual SafeBrowsingProtocolConfig GetProtocolConfig() const;
 
   bool enabled() const { return enabled_; }
 

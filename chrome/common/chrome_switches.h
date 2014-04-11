@@ -307,7 +307,6 @@ extern const char kResetAppListInstallState[];
 extern const char kResetVariationState[];
 extern const char kRestoreLastSession[];
 extern const char kSavePageAsMHTML[];
-extern const char kSbURLPrefix[];
 extern const char kSbDisableAutoUpdate[];
 extern const char kSbDisableDownloadProtection[];
 extern const char kSbDisableExtensionBlacklist[];

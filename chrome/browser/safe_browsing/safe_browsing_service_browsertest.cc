@@ -9,7 +9,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
@@ -36,7 +35,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -62,7 +60,42 @@ void InvokeFullHashCallback(
   callback.Run(result, true);
 }
 
-}  // namespace
+class FakeSafeBrowsingService : public SafeBrowsingService {
+ public:
+  explicit FakeSafeBrowsingService(const std::string& url_prefix)
+      : url_prefix_(url_prefix) {}
+
+  virtual SafeBrowsingProtocolConfig GetProtocolConfig() const OVERRIDE {
+    SafeBrowsingProtocolConfig config;
+    config.url_prefix = url_prefix_;
+    // Makes sure the auto update is not triggered. The tests will force the
+    // update when needed.
+    config.disable_auto_update = true;
+    config.client_name = "browser_tests";
+    return config;
+  }
+
+ private:
+  virtual ~FakeSafeBrowsingService() {}
+
+  std::string url_prefix_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);
+};
+
+// Factory that creates FakeSafeBrowsingService instances.
+class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
+ public:
+  explicit TestSafeBrowsingServiceFactory(const std::string& url_prefix)
+      : url_prefix_(url_prefix) {}
+
+  virtual SafeBrowsingService* CreateSafeBrowsingService() OVERRIDE {
+    return new FakeSafeBrowsingService(url_prefix_);
+  }
+
+ private:
+  std::string url_prefix_;
+};
 
 // A SafeBrowingDatabase class that allows us to inject the malicious URLs.
 class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
@@ -326,6 +359,8 @@ MATCHER_P(IsUnsafeResourceFor, url, "") {
           arg.threat_type != SB_THREAT_TYPE_SAFE);
 }
 
+}  // namespace
+
 // Tests the safe browsing blocking page in a browser.
 class SafeBrowsingServiceTest : public InProcessBrowserTest {
  public:
@@ -356,6 +391,9 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   virtual void SetUp() {
     // InProcessBrowserTest::SetUp() instantiates SafebrowsingService and
     // RegisterFactory has to be called before SafeBrowsingService is created.
+    sb_factory_.reset(new TestSafeBrowsingServiceFactory(
+        "https://definatelynotarealdomain/safebrowsing"));
+    SafeBrowsingService::RegisterFactory(sb_factory_.get());
     SafeBrowsingDatabase::RegisterFactory(&db_factory_);
     SafeBrowsingProtocolManager::RegisterFactory(&pm_factory_);
     InProcessBrowserTest::SetUp();
@@ -368,13 +406,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     // (which destructs SafeBrowsingService).
     SafeBrowsingDatabase::RegisterFactory(NULL);
     SafeBrowsingProtocolManager::RegisterFactory(NULL);
-  }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    // Makes sure the auto update is not triggered during the test.
-    // This test will fill up the database using testing prefixes
-    // and urls.
-    command_line->AppendSwitch(switches::kSbDisableAutoUpdate);
+    SafeBrowsingService::RegisterFactory(NULL);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
@@ -469,6 +501,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
  private:
+  scoped_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
   TestSafeBrowsingDatabaseFactory db_factory_;
   TestSBProtocolManagerFactory pm_factory_;
 
@@ -863,20 +896,25 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
  public:
   SafeBrowsingDatabaseManagerCookieTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     // We need to start the test server to get the host&port in the url.
     ASSERT_TRUE(test_server()->Start());
-
-    // Makes sure the auto update is not triggered. This test will force the
-    // update when needed.
-    command_line->AppendSwitch(switches::kSbDisableAutoUpdate);
 
     // Point to the testing server for all SafeBrowsing requests.
     GURL url_prefix = test_server()->GetURL(
         "expect-and-set-cookie?expect=a%3db"
         "&set=c%3dd%3b%20Expires=Fri,%2001%20Jan%202038%2001:01:01%20GMT"
         "&data=foo#");
-    command_line->AppendSwitchASCII(switches::kSbURLPrefix, url_prefix.spec());
+    sb_factory_.reset(new TestSafeBrowsingServiceFactory(url_prefix.spec()));
+    SafeBrowsingService::RegisterFactory(sb_factory_.get());
+
+    InProcessBrowserTest::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    InProcessBrowserTest::TearDown();
+
+    SafeBrowsingService::RegisterFactory(NULL);
   }
 
   virtual bool SetUpUserDataDirectory() OVERRIDE {
@@ -963,6 +1001,8 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
   scoped_refptr<SafeBrowsingService> sb_service_;
 
  private:
+  scoped_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseManagerCookieTest);
 };
 
