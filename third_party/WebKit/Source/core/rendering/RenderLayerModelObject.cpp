@@ -99,8 +99,9 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
         // Do a repaint with the old style first through RenderLayerRepainter.
         // RenderObject::styleWillChange takes care of repainting objects without RenderLayers.
         if (parent() && diff == StyleDifferenceRepaintLayer) {
-            layer()->repainter().repaintIncludingDescendants();
-            if (oldStyle->clip() != newStyle.clip())
+            layer()->repainter().repaintIncludingNonCompositingDescendants(containerForRepaint());
+            if (oldStyle->hasClip() != newStyle.hasClip()
+                || oldStyle->clip() != newStyle.clip())
                 layer()->clipper().clearClipRectsIncludingDescendants();
         }
 
@@ -119,7 +120,7 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
                         || oldStyle->opacity() != newStyle.opacity()
                         || oldStyle->transform() != newStyle.transform()
                         || oldStyle->filter() != newStyle.filter())
-                    layer()->repainter().repaintIncludingDescendants();
+                        layer()->repainter().repaintIncludingNonCompositingDescendants(containerForRepaint());
                 }
             } else if (newStyle.hasTransform() || newStyle.opacity() < 1 || newStyle.hasFilter()) {
                 // If we don't have a layer yet, but we are going to get one because of transform or opacity,

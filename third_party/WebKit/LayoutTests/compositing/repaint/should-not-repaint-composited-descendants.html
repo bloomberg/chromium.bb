@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<!-- Difference between this test and should-not-repaint-composited-style.html is that
+     this test only changes styles that won't trigger layout to test the non-layout
+     path of composited layer repaint. -->
+<style>
+    .spacer {
+        width: 100px;
+        height: 100px;
+    }
+    .container {
+        -webkit-transform: translateZ(0);
+        position: relative;
+        left: 0;
+        top: 0;
+        height: 100px;
+        overflow: hidden;
+    }
+    .child {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        border: 1px black solid;
+        background-color: yellow;
+    }
+    .composited {
+        -webkit-transform: translateZ(0);
+    }
+</style>
+<style id="old-style">
+    .clip { clip: rect(200px, 100px, 100px, 200px); }
+    .container { width: 100px; }
+    .position { position: relative; }
+    .zindex { z-index: 0; }
+    .opacity { opacity: 0.99; }
+    .transform { -webkit-transform: translateZ(10px); }
+    .filter { -webkit-filter: invert(70%); }
+</style>
+<style id="new-style">
+    .clip { clip: rect(100px, 200px, 200px, 100px); }
+    .container { width: 100%; }
+    .position { position: static; }
+    .zindex { z-index: 1; }
+    .opacity { opacity: 0.5; }
+    .transform { -webkit-transform: translateZ(20px); }
+    .filter { -webkit-filter: invert(100%); }
+</style>
+<script src="../../resources/run-after-display.js"></script>
+<script>
+    var oldStyle = document.getElementById('old-style');
+    var newStyle = document.getElementById('new-style');
+    newStyle.disabled = true;
+
+    function doTest() {
+        internals.startTrackingRepaints(document);
+        newStyle.disabled = false;
+        oldStyle.disabled = true;
+        document.getElementById("console").textContent = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+        testRunner.notifyDone();
+    }
+
+    if (window.testRunner && window.internals) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+        runAfterDisplay(doTest);
+    }
+</script>
+<h1>position change with composited child</h1>
+<div class="spacer"><div class="container position"><div class="child composited"></div></div></div>
+<h1>position change with non-composited child</h1>
+<div class="spacer"><div class="container position"><div class="child"></div></div></div>
+<h1>z-index change with composited child</h1>
+<div class="spacer"><div class="container zindex"><div class="child composited"></div></div></div>
+<h1>z-index change with non-composited child</h1>
+<div class="spacer"><div class="container zindex"><div class="child"></div></div></div>
+<h1>opacity change with composited child</h1>
+<div class="spacer"><div class="container opacity"><div class="child composited"></div></div></div>
+<h1>opacity change with non-composited child</h1>
+<div class="spacer"><div class="container opacity"><div class="child"></div></div></div>
+<h1>transform change with composited child</h1>
+<div class="spacer"><div class="container transform"><div class="child composited"></div></div></div>
+<h1>transform change with non-composited child</h1>
+<div class="spacer"><div class="container transform"><div class="child"></div></div></div>
+<h1>filter change with composited child</h1>
+<div class="spacer"><div class="container filter"><div class="child composited"></div></div></div>
+<h1>filter change with non-composited child</h2>
+<div class="spacer"><div class="container filter"><div class="child"></div></div></div>
+<h1>clip change with composited child</h1>
+<div class="spacer"><div class="container clip"><div class="child composited"></div></div></div>
+<h1>clip change with non-composited child</h1>
+<div class="spacer"><div class="container clip"><div class="child"></div></div></div>
+<pre id="console"></pre>

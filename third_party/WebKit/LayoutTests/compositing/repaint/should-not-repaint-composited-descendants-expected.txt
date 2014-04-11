@@ -1,0 +1,197 @@
+position change with composited child
+
+position change with non-composited child
+
+z-index change with composited child
+
+z-index change with non-composited child
+
+opacity change with composited child
+
+opacity change with non-composited child
+
+transform change with composited child
+
+transform change with non-composited child
+
+filter change with composited child
+
+filter change with non-composited child
+
+clip change with composited child
+
+clip change with non-composited child
+
+(GraphicsLayer
+  (bounds 785.00 2172.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 785.00 2172.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (children 12
+        (GraphicsLayer
+          (position 8.00 80.00)
+          (bounds 100.00 100.00)
+          (children 1
+            (GraphicsLayer
+              (bounds 100.00 100.00)
+              (children 1
+                (GraphicsLayer
+                  (bounds 152.00 152.00)
+                  (contentsOpaque 1)
+                  (drawsContent 1)
+                  (backgroundColor #FFFF00)
+                )
+              )
+            )
+          )
+        )
+        (GraphicsLayer
+          (position 8.00 260.00)
+          (bounds 100.00 100.00)
+          (drawsContent 1)
+          (repaint rects
+            (rect 0.00 0.00 100.00 100.00)
+          )
+        )
+        (GraphicsLayer
+          (position 8.00 799.00)
+          (bounds 100.00 100.00)
+          (opacity 0.50)
+          (children 1
+            (GraphicsLayer
+              (bounds 100.00 100.00)
+              (children 1
+                (GraphicsLayer
+                  (bounds 152.00 152.00)
+                  (contentsOpaque 1)
+                  (drawsContent 1)
+                  (backgroundColor #FFFF00)
+                )
+              )
+            )
+          )
+        )
+        (GraphicsLayer
+          (position 8.00 979.00)
+          (bounds 100.00 100.00)
+          (opacity 0.50)
+          (drawsContent 1)
+          (repaint rects
+            (rect 0.00 0.00 100.00 100.00)
+          )
+        )
+        (GraphicsLayer
+          (position 8.00 1159.00)
+          (bounds 100.00 100.00)
+          (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 20.00 1.00])
+          (children 1
+            (GraphicsLayer
+              (bounds 100.00 100.00)
+              (children 1
+                (GraphicsLayer
+                  (bounds 152.00 152.00)
+                  (contentsOpaque 1)
+                  (drawsContent 1)
+                  (backgroundColor #FFFF00)
+                )
+              )
+            )
+          )
+        )
+        (GraphicsLayer
+          (position 8.00 1339.00)
+          (bounds 100.00 100.00)
+          (drawsContent 1)
+          (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 20.00 1.00])
+          (repaint rects
+            (rect 0.00 0.00 100.00 100.00)
+          )
+        )
+        (GraphicsLayer
+          (position 8.00 1519.00)
+          (bounds 100.00 100.00)
+          (drawsContent 1)
+          (repaint rects
+            (rect 0.00 0.00 100.00 100.00)
+          )
+          (children 1
+            (GraphicsLayer
+              (bounds 100.00 100.00)
+              (children 1
+                (GraphicsLayer
+                  (bounds 152.00 152.00)
+                  (contentsOpaque 1)
+                  (drawsContent 1)
+                  (backgroundColor #FFFF00)
+                )
+              )
+            )
+          )
+        )
+        (GraphicsLayer
+          (position 8.00 1699.00)
+          (bounds 100.00 100.00)
+          (drawsContent 1)
+          (repaint rects
+            (rect 0.00 0.00 100.00 100.00)
+          )
+        )
+        (GraphicsLayer
+          (position 8.00 1879.00)
+          (bounds 100.00 100.00)
+          (children 1
+            (GraphicsLayer
+              (bounds 100.00 100.00)
+              (children 1
+                (GraphicsLayer
+                  (bounds 152.00 152.00)
+                  (contentsOpaque 1)
+                  (drawsContent 1)
+                  (backgroundColor #FFFF00)
+                )
+              )
+            )
+          )
+        )
+        (GraphicsLayer
+          (position 8.00 2059.00)
+          (bounds 100.00 100.00)
+          (drawsContent 1)
+          (repaint rects
+            (rect 0.00 0.00 100.00 100.00)
+            (rect 0.00 0.00 100.00 100.00)
+            (rect 0.00 0.00 100.00 100.00)
+          )
+        )
+        (GraphicsLayer
+          (position 8.00 440.00)
+          (bounds 100.00 100.00)
+          (children 1
+            (GraphicsLayer
+              (bounds 100.00 100.00)
+              (children 1
+                (GraphicsLayer
+                  (bounds 152.00 152.00)
+                  (contentsOpaque 1)
+                  (drawsContent 1)
+                  (backgroundColor #FFFF00)
+                )
+              )
+            )
+          )
+        )
+        (GraphicsLayer
+          (position 8.00 620.00)
+          (bounds 100.00 100.00)
+          (drawsContent 1)
+          (repaint rects
+            (rect 0.00 0.00 100.00 100.00)
+          )
+        )
+      )
+    )
+  )
+)
+

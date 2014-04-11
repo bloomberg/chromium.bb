@@ -216,13 +216,6 @@ void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
     }
 }
 
-void RenderLayerRepainter::repaintIncludingDescendants()
-{
-    m_renderer->repaint();
-    for (RenderLayer* curr = m_renderer->layer()->firstChild(); curr; curr = curr->nextSibling())
-        curr->repainter().repaintIncludingDescendants();
-}
-
 void RenderLayerRepainter::setFilterBackendNeedsRepaintingInRect(const LayoutRect& rect)
 {
     if (rect.isEmpty())

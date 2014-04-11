@@ -71,7 +71,6 @@ public:
 
     void repaintAfterLayout(RenderGeometryMap*, bool shouldCheckForRepaint);
     void repaintIncludingNonCompositingDescendants(RenderLayerModelObject* repaintContainer);
-    void repaintIncludingDescendants();
 
     void setRepaintStatus(RepaintStatus status) { m_repaintStatus = status; }
 
