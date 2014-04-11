@@ -2,7 +2,6 @@ Name: SwiftShader software renderer.
 Short Name: SwiftShader
 URL: http://transgaming.com/business/swiftshader
 License: Proprietary
-Required Text: required.html
 Security Critical: yes
 Version: unknown
 
