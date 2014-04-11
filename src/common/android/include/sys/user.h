@@ -143,6 +143,28 @@ struct user_fpregs_struct {
   unsigned int fir;
 };
 
+#elif defined(__x86_64__)
+#include <sys/types.h>
+#include_next <sys/user.h>
+
+// This struct is essentially the same as user_i387_struct in sys/user.h
+// except that the struct name and individual field names are chosen here
+// to match the ones used in breakpad for other x86_64 platforms.
+
+struct user_fpregs_struct {
+  __u16 cwd;
+  __u16 swd;
+  __u16 ftw;
+  __u16 fop;
+  __u64 rip;
+  __u64 rdp;
+  __u32 mxcsr;
+  __u32 mxcr_mask;
+  __u32 st_space[32];   /* 8*16 bytes for each FP-reg = 128 bytes */
+  __u32 xmm_space[64];  /* 16*16 bytes for each XMM-reg = 256 bytes */
+  __u32 padding[24];
+};
+
 #else
 #  error "Unsupported Android CPU ABI"
 #endif

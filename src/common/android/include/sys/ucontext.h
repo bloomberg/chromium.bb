@@ -175,6 +175,73 @@ typedef struct ucontext {
   // Other fields are not used by Google Breakpad. Don't define them.
 } ucontext_t;
 
+#elif defined(__x86_64__)
+enum {
+  REG_R8 = 0,
+  REG_R9,
+  REG_R10,
+  REG_R11,
+  REG_R12,
+  REG_R13,
+  REG_R14,
+  REG_R15,
+  REG_RDI,
+  REG_RSI,
+  REG_RBP,
+  REG_RBX,
+  REG_RDX,
+  REG_RAX,
+  REG_RCX,
+  REG_RSP,
+  REG_RIP,
+  REG_EFL,
+  REG_CSGSFS,
+  REG_ERR,
+  REG_TRAPNO,
+  REG_OLDMASK,
+  REG_CR2,
+  NGREG
+};
+
+// This struct is essentially the same as _fpstate in asm/sigcontext.h
+// except that the individual field names are chosen here to match the
+// ones used in breakpad for other x86_64 platforms.
+struct _libc_fpstate {
+  /* 64-bit FXSAVE format.  */
+  uint16_t cwd;
+  uint16_t swd;
+  uint16_t ftw;
+  uint16_t fop;
+  uint64_t rip;
+  uint64_t rdp;
+  uint32_t mxcsr;
+  uint32_t mxcr_mask;
+  uint32_t _st[32];      // 128 bytes for the ST/MM registers 0-7
+  uint32_t _xmm[64];     // 256 bytes for the XMM registers 0-7
+  uint32_t padding[24];  //  96 bytes
+};
+
+typedef long greg_t;
+typedef greg_t gregset_t[NGREG];
+
+typedef struct _libc_fpstate* fpregset_t;
+
+typedef struct {
+  gregset_t gregs;
+  fpregset_t fpregs;
+  uint64_t __reserved1[8];
+} mcontext_t;
+
+typedef struct ucontext {
+  unsigned long uc_flags;
+  struct ucontext* uc_link;
+  stack_t uc_stack;
+  mcontext_t uc_mcontext;
+  sigset_t uc_sigmask;
+  uint64_t __padding[15];
+  _libc_fpstate __fpregs_mem;
+} ucontext_t;
+
 #else
 #  error "Unsupported Android CPU ABI!"
 #endif

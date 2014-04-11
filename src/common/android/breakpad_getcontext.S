@@ -305,6 +305,87 @@ NESTED (breakpad_getcontext, FRAME_SIZE, ra)
 
 END (breakpad_getcontext)
 
+#elif defined(__x86_64__)
+/* The x64 implementation of breakpad_getcontext was derived in part
+   from the implementation of libunwind which requires the following
+   notice. */
+/* libunwind - a platform-independent unwind library
+   Copyright (C) 2008 Google, Inc
+	Contributed by Paul Pluzhnikov <ppluzhnikov@google.com>
+   Copyright (C) 2010 Konstantin Belousov <kib@freebsd.org>
+
+This file is part of libunwind.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+
+  .text
+  .global breakpad_getcontext
+  .hidden breakpad_getcontext
+  .align 4
+  .type breakpad_getcontext, @function
+
+breakpad_getcontext:
+  .cfi_startproc
+
+  /* Callee saved: RBX, RBP, R12-R15  */
+  movq %r12, MCONTEXT_GREGS_R12(%rdi)
+  movq %r13, MCONTEXT_GREGS_R13(%rdi)
+  movq %r14, MCONTEXT_GREGS_R14(%rdi)
+  movq %r15, MCONTEXT_GREGS_R15(%rdi)
+  movq %rbp, MCONTEXT_GREGS_RBP(%rdi)
+  movq %rbx, MCONTEXT_GREGS_RBX(%rdi)
+
+  /* Save argument registers (not strictly needed, but setcontext
+     restores them, so don't restore garbage).  */
+  movq %r8,  MCONTEXT_GREGS_R8(%rdi)
+  movq %r9,  MCONTEXT_GREGS_R9(%rdi)
+  movq %rdi, MCONTEXT_GREGS_RDI(%rdi)
+  movq %rsi, MCONTEXT_GREGS_RSI(%rdi)
+  movq %rdx, MCONTEXT_GREGS_RDX(%rdi)
+  movq %rax, MCONTEXT_GREGS_RAX(%rdi)
+  movq %rcx, MCONTEXT_GREGS_RCX(%rdi)
+
+  /* Save fp state (not needed, except for setcontext not
+     restoring garbage).  */
+  leaq MCONTEXT_FPREGS_MEM(%rdi),%r8
+  movq %r8, MCONTEXT_FPREGS_PTR(%rdi)
+  fnstenv (%r8)
+  stmxcsr FPREGS_OFFSET_MXCSR(%r8)
+
+  leaq 8(%rsp), %rax /* exclude this call.  */
+  movq %rax, MCONTEXT_GREGS_RSP(%rdi)
+
+  movq 0(%rsp), %rax
+  movq %rax, MCONTEXT_GREGS_RIP(%rdi)
+
+  /* Save signal mask: sigprocmask(SIGBLOCK, NULL, &uc->uc_sigmask) */
+  leaq UCONTEXT_SIGMASK_OFFSET(%rdi), %rdx  // arg3
+  xorq %rsi, %rsi  // arg2 NULL
+  xorq %rdi, %rdi  // arg1 SIGBLOCK == 0
+  call sigprocmask@PLT
+
+  /* Always return 0 for success, even if sigprocmask failed. */
+  xorl %eax, %eax
+  ret
+  .cfi_endproc
+  .size breakpad_getcontext, . - breakpad_getcontext
 
 #else
 #error "This file has not been ported for your CPU!"
