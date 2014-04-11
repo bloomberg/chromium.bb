@@ -142,6 +142,33 @@ class TestServiceLoader : public ServiceLoader {
   DISALLOW_COPY_AND_ASSIGN(TestServiceLoader);
 };
 
+class TestServiceInterceptor : public ServiceManager::Interceptor {
+ public:
+  TestServiceInterceptor() : call_count_(0) {}
+
+  virtual ScopedMessagePipeHandle OnConnectToClient(
+      const GURL& url, ScopedMessagePipeHandle handle) OVERRIDE {
+    ++call_count_;
+    url_ = url;
+    return handle.Pass();
+  }
+
+  std::string url_spec() const {
+    if (!url_.is_valid())
+      return "invalid url";
+    return url_.spec();
+  }
+
+  int call_count() const {
+    return call_count_;
+  }
+
+ private:
+  int call_count_;
+  GURL url_;
+  DISALLOW_COPY_AND_ASSIGN(TestServiceInterceptor);
+};
+
 TEST_F(ServiceManagerTest, Basic) {
   test_client_->Test("test");
   loop_.Run();
@@ -188,6 +215,21 @@ TEST_F(ServiceManagerTest, SetLoaders) {
   sm.Connect(GURL("http:test1"), pipe3.handle_to_peer.Pass());
   EXPECT_EQ(1, url_loader.num_loads());
   EXPECT_EQ(1, scheme_loader.num_loads());
+  EXPECT_EQ(1, default_loader.num_loads());
+}
+
+TEST_F(ServiceManagerTest, Interceptor) {
+  ServiceManager sm;
+  TestServiceLoader default_loader;
+  TestServiceInterceptor interceptor;
+  sm.set_default_loader(&default_loader);
+  sm.SetInterceptor(&interceptor);
+
+  std::string url("test:test3");
+  InterfacePipe<TestService, AnyInterface> pipe1;
+  sm.Connect(GURL(url), pipe1.handle_to_peer.Pass());
+  EXPECT_EQ(1, interceptor.call_count());
+  EXPECT_EQ(url, interceptor.url_spec());
   EXPECT_EQ(1, default_loader.num_loads());
 }
 
