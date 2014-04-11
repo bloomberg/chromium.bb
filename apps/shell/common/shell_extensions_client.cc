@@ -4,7 +4,7 @@
 
 #include "apps/shell/common/shell_extensions_client.h"
 
-#include "apps/shell/browser/shell_app_runtime_api.h"
+#include "apps/shell/common/shell_app_runtime.h"
 #include "base/logging.h"
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
@@ -159,7 +159,7 @@ bool ShellExtensionsClient::IsAPISchemaGenerated(
   // have the Chrome app APIs available.
   return extensions::api::GeneratedSchemas::IsGenerated(name) ||
          extensions::core_api::GeneratedSchemas::IsGenerated(name) ||
-         name == extensions::ShellAppRuntimeAPI::GetName();
+         name == extensions::ShellAppRuntime::GetName();
 }
 
 base::StringPiece ShellExtensionsClient::GetAPISchema(
@@ -170,8 +170,8 @@ base::StringPiece ShellExtensionsClient::GetAPISchema(
     return extensions::api::GeneratedSchemas::Get(name);
 
   // Special-case our simplified app.runtime implementation.
-  if (name == extensions::ShellAppRuntimeAPI::GetName())
-    return extensions::ShellAppRuntimeAPI::GetSchema();
+  if (name == extensions::ShellAppRuntime::GetName())
+    return extensions::ShellAppRuntime::GetSchema();
 
   return extensions::core_api::GeneratedSchemas::Get(name);
 }

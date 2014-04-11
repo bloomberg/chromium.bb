@@ -15,12 +15,6 @@ class Extension;
 // A simplified implementation of the chrome.app.runtime API.
 class ShellAppRuntimeAPI {
  public:
-  // Returns the API name.
-  static const char* GetName();
-
-  // Returns a simplified schema for the API.
-  static const char* GetSchema();
-
   // Dispatches the onLaunched event.
   static void DispatchOnLaunchedEvent(EventRouter* event_router,
                                       const Extension* extension);

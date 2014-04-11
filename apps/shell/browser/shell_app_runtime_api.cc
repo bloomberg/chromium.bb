@@ -12,36 +12,6 @@
 namespace extensions {
 
 // static
-const char* ShellAppRuntimeAPI::GetName() { return "app.runtime"; }
-
-// static
-const char* ShellAppRuntimeAPI::GetSchema() {
-  return "["
-         "  {"
-         "    \"compiler_options\": {},"
-         "    \"functions\": [],"
-         "    \"deprecated\": null,"
-         "    \"nodoc\": false,"
-         "    \"platforms\": null,"
-         "    \"internal\": false,"
-         "    \"namespace\": \"app.runtime\","
-         "    \"events\": ["
-         "      {"
-         "        \"type\": \"function\","
-         "        \"name\": \"onLaunched\","
-         "        \"parameters\": ["
-         "          {"
-         "            \"optional\": true,"
-         "            \"name\": \"launchDataPlaceholder\""  // No launch data.
-         "          }"
-         "        ]"
-         "      }"
-         "    ]"
-         "  }"
-         "]";
-}
-
-// static
 void ShellAppRuntimeAPI::DispatchOnLaunchedEvent(EventRouter* event_router,
                                                  const Extension* extension) {
   // This is similar to apps::AppEventRouter::DispatchOnLaunchedEvent but

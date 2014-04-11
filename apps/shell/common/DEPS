@@ -6,10 +6,3 @@ include_rules = [
 
   "+webkit/common/user_agent/user_agent_util.h",
 ]
-
-# Temporary deps; these should be removed.
-specific_include_rules = {
-  "^shell_extensions_client\.cc$": [
-    "+apps/shell/browser/shell_app_runtime_api.h"
-  ]
-}
