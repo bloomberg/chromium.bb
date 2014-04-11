@@ -169,7 +169,7 @@ $(TEST_EXE): $(ALL_OBJECTS)
 
 $(OBJDIR)/%.o : src/%.cc
 	mkdir -p $(OBJDIR) $(DEPDIR) || true
-	$(CXX) $(CXXFLAGS) -MD -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -c -o $@ $<
 	@mv $(@:$.o=$.d) $(DEPDIR)
 
 LIBDIR = /usr/lib
