@@ -88,8 +88,8 @@
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "chromeos/ime/ime_keyboard.h"
 #include "chromeos/ime/input_method_manager.h"
-#include "chromeos/ime/xkeyboard.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
@@ -289,7 +289,9 @@ class DBusServices {
 
     if (base::SysInfo::IsRunningOnChromeOS()) {
       // Disable Num Lock on X start up for http://crosbug.com/29169.
-      input_method::InputMethodManager::Get()->GetXKeyboard()->DisableNumLock();
+      input_method::InputMethodManager::Get()
+          ->GetImeKeyboard()
+          ->DisableNumLock();
     }
 
     // Initialize the device settings service so that we'll take actions per

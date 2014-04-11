@@ -10,8 +10,8 @@
 #include <X11/XKBlib.h>
 #undef Status
 
+#include "chromeos/ime/ime_keyboard.h"
 #include "chromeos/ime/input_method_manager.h"
-#include "chromeos/ime/xkeyboard.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/platform_event_source.h"
 
@@ -94,7 +94,7 @@ void SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
       if (xkey_event->state.mods) {
         // TODO(yusukes,adlr): Let the user know that num lock is unsupported.
         // Force turning off Num Lock (crosbug.com/29169)
-        input_method_manager->GetXKeyboard()->DisableNumLock();
+        input_method_manager->GetImeKeyboard()->DisableNumLock();
       }
     }
   }

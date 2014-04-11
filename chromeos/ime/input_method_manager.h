@@ -22,7 +22,7 @@ class ComponentExtensionIMEManager;
 class InputMethodEngineInterface;
 namespace input_method {
 class InputMethodUtil;
-class XKeyboard;
+class ImeKeyboard;
 
 // This class manages input methodshandles.  Classes can add themselves as
 // observers. Clients can get an instance of this library class by:
@@ -163,7 +163,7 @@ class CHROMEOS_EXPORT InputMethodManager {
 
   // Returns an X keyboard object which could be used to change the current XKB
   // layout, change the caps lock status, and set the auto repeat rate/interval.
-  virtual XKeyboard* GetXKeyboard() = 0;
+  virtual ImeKeyboard* GetImeKeyboard() = 0;
 
   // Returns an InputMethodUtil object.
   virtual InputMethodUtil* GetInputMethodUtil() = 0;

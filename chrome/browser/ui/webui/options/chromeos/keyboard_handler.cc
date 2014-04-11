@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/ime/xkeyboard.h"
+#include "chromeos/ime/ime_keyboard.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

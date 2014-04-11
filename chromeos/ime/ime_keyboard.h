@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_IME_XKEYBOARD_H_
-#define CHROMEOS_IME_XKEYBOARD_H_
+#ifndef CHROMEOS_IME_IME_KEYBOARD_H_
+#define CHROMEOS_IME_IME_KEYBOARD_H_
 
 #include <string>
 #include <vector>
@@ -34,7 +34,7 @@ enum ModifierKey {
 
 class InputMethodUtil;
 
-class CHROMEOS_EXPORT XKeyboard {
+class CHROMEOS_EXPORT ImeKeyboard {
  public:
   class Observer {
    public:
@@ -42,7 +42,7 @@ class CHROMEOS_EXPORT XKeyboard {
     virtual void OnCapsLockChanged(bool enabled) = 0;
   };
 
-  virtual ~XKeyboard() {}
+  virtual ~ImeKeyboard() {}
 
   // Adds/removes observer.
   virtual void AddObserver(Observer* observer) = 0;
@@ -109,11 +109,11 @@ class CHROMEOS_EXPORT XKeyboard {
       const std::string& layout_name);
 
   // Note: At this moment, classes other than InputMethodManager should not
-  // instantiate the XKeyboard class.
-  static XKeyboard* Create();
+  // instantiate the ImeKeyboard class.
+  static ImeKeyboard* Create();
 };
 
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROMEOS_IME_XKEYBOARD_H_
+#endif  // CHROMEOS_IME_IME_KEYBOARD_H_

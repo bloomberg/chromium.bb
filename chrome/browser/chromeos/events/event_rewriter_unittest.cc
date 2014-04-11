@@ -25,7 +25,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/ime/fake_xkeyboard.h"
+#include "chromeos/ime/fake_ime_keyboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
@@ -1526,11 +1526,11 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   search.Init(prefs::kLanguageRemapSearchKeyTo, &prefs);
   search.SetValue(chromeos::input_method::kCapsLockKey);
 
-  chromeos::input_method::FakeXKeyboard xkeyboard;
+  chromeos::input_method::FakeImeKeyboard keyboard;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
-  rewriter.set_xkeyboard_for_testing(&xkeyboard);
-  EXPECT_FALSE(xkeyboard.caps_lock_is_enabled_);
+  rewriter.set_keyboard_for_testing(&keyboard);
+  EXPECT_FALSE(keyboard.caps_lock_is_enabled_);
 
   // Press Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
@@ -1546,7 +1546,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                                       keycode_super_l_,
                                       0U));
   // Confirm that the Caps Lock status is changed.
-  EXPECT_TRUE(xkeyboard.caps_lock_is_enabled_);
+  EXPECT_TRUE(keyboard.caps_lock_is_enabled_);
 
   // Release Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
@@ -1562,7 +1562,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                                       keycode_super_l_,
                                       Mod4Mask | LockMask));
   // Confirm that the Caps Lock status is not changed.
-  EXPECT_TRUE(xkeyboard.caps_lock_is_enabled_);
+  EXPECT_TRUE(keyboard.caps_lock_is_enabled_);
 
   // Press Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
@@ -1578,7 +1578,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                                       keycode_super_l_,
                                       LockMask));
   // Confirm that the Caps Lock status is changed.
-  EXPECT_FALSE(xkeyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(keyboard.caps_lock_is_enabled_);
 
   // Release Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
@@ -1594,7 +1594,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                                       keycode_super_l_,
                                       Mod4Mask | LockMask));
   // Confirm that the Caps Lock status is not changed.
-  EXPECT_FALSE(xkeyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(keyboard.caps_lock_is_enabled_);
 
   // Press Caps Lock (on an external keyboard).
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
@@ -1611,9 +1611,9 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                                       0U));
 
   // Confirm that calling RewriteForTesting() does not change the state of
-  // |xkeyboard|. In this case, X Window system itself should change the
+  // |keyboard|. In this case, X Window system itself should change the
   // Caps Lock state, not ash::EventRewriter.
-  EXPECT_FALSE(xkeyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(keyboard.caps_lock_is_enabled_);
 
   // Release Caps Lock (on an external keyboard).
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
@@ -1628,7 +1628,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                                       ui::ET_KEY_RELEASED,
                                       keycode_caps_lock_,
                                       LockMask));
-  EXPECT_FALSE(xkeyboard.caps_lock_is_enabled_);
+  EXPECT_FALSE(keyboard.caps_lock_is_enabled_);
 }
 
 TEST_F(EventRewriterTest, DISABLED_TestRewriteCapsLock) {
@@ -1639,11 +1639,11 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteCapsLock) {
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
 
-  chromeos::input_method::FakeXKeyboard xkeyboard;
+  chromeos::input_method::FakeImeKeyboard keyboard;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
-  rewriter.set_xkeyboard_for_testing(&xkeyboard);
-  EXPECT_FALSE(xkeyboard.caps_lock_is_enabled_);
+  rewriter.set_keyboard_for_testing(&keyboard);
+  EXPECT_FALSE(keyboard.caps_lock_is_enabled_);
 
   // On Chrome OS, CapsLock is mapped to F16 with Mod3Mask.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
@@ -1658,7 +1658,7 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteCapsLock) {
                                       ui::ET_KEY_PRESSED,
                                       keycode_launch7_,
                                       0U));
-  EXPECT_TRUE(xkeyboard.caps_lock_is_enabled_);
+  EXPECT_TRUE(keyboard.caps_lock_is_enabled_);
 }
 
 TEST_F(EventRewriterTest, DISABLED_TestRewriteDiamondKey) {
@@ -1667,10 +1667,10 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteDiamondKey) {
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
 
-  chromeos::input_method::FakeXKeyboard xkeyboard;
+  chromeos::input_method::FakeImeKeyboard keyboard;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
-  rewriter.set_xkeyboard_for_testing(&xkeyboard);
+  rewriter.set_keyboard_for_testing(&keyboard);
 
   // F15 should work as Ctrl when --has-chromeos-diamond-key is not specified.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
@@ -1712,10 +1712,10 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteDiamondKeyWithFlag) {
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
 
-  chromeos::input_method::FakeXKeyboard xkeyboard;
+  chromeos::input_method::FakeImeKeyboard keyboard;
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
-  rewriter.set_xkeyboard_for_testing(&xkeyboard);
+  rewriter.set_keyboard_for_testing(&keyboard);
 
   // By default, F15 should work as Control.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,

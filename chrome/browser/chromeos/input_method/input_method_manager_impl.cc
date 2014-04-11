@@ -23,9 +23,9 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
-#include "chromeos/ime/fake_xkeyboard.h"
+#include "chromeos/ime/fake_ime_keyboard.h"
+#include "chromeos/ime/ime_keyboard.h"
 #include "chromeos/ime/input_method_delegate.h"
-#include "chromeos/ime/xkeyboard.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "ui/base/accelerators/accelerator.h"
 
@@ -393,7 +393,7 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
   }
 
   // Change the keyboard layout to a preferred layout for the input method.
-  if (!xkeyboard_->SetCurrentKeyboardLayoutByName(
+  if (!keyboard_->SetCurrentKeyboardLayoutByName(
           current_input_method_.GetPreferredKeyboardLayout())) {
     LOG(ERROR) << "Failed to change keyboard layout to "
                << current_input_method_.GetPreferredKeyboardLayout();
@@ -716,15 +716,15 @@ InputMethodDescriptor InputMethodManagerImpl::GetCurrentInputMethod() const {
 }
 
 bool InputMethodManagerImpl::IsISOLevel5ShiftUsedByCurrentInputMethod() const {
-  return xkeyboard_->IsISOLevel5ShiftAvailable();
+  return keyboard_->IsISOLevel5ShiftAvailable();
 }
 
 bool InputMethodManagerImpl::IsAltGrUsedByCurrentInputMethod() const {
-  return xkeyboard_->IsAltGrAvailable();
+  return keyboard_->IsAltGrAvailable();
 }
 
-XKeyboard* InputMethodManagerImpl::GetXKeyboard() {
-  return xkeyboard_.get();
+ImeKeyboard* InputMethodManagerImpl::GetImeKeyboard() {
+  return keyboard_.get();
 }
 
 InputMethodUtil* InputMethodManagerImpl::GetInputMethodUtil() {
@@ -751,9 +751,9 @@ void InputMethodManagerImpl::Init(base::SequencedTaskRunner* ui_task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (base::SysInfo::IsRunningOnChromeOS())
-    xkeyboard_.reset(XKeyboard::Create());
+    keyboard_.reset(ImeKeyboard::Create());
   else
-    xkeyboard_.reset(new FakeXKeyboard());
+    keyboard_.reset(new FakeImeKeyboard());
 
   // We can't call impl->Initialize here, because file thread is not available
   // at this moment.
@@ -769,8 +769,8 @@ void InputMethodManagerImpl::SetCandidateWindowControllerForTesting(
   candidate_window_controller_->AddObserver(this);
 }
 
-void InputMethodManagerImpl::SetXKeyboardForTesting(XKeyboard* xkeyboard) {
-  xkeyboard_.reset(xkeyboard);
+void InputMethodManagerImpl::SetImeKeyboardForTesting(ImeKeyboard* keyboard) {
+  keyboard_.reset(keyboard);
 }
 
 void InputMethodManagerImpl::InitializeComponentExtensionForTesting(

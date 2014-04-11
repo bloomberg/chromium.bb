@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/ime/xkeyboard.h"
+#include "chromeos/ime/ime_keyboard.h"
 
 #include <algorithm>
 #include <set>
@@ -20,20 +20,20 @@ namespace input_method {
 
 namespace {
 
-class XKeyboardTest : public testing::Test {
+class ImeKeyboardTest : public testing::Test {
  public:
-  XKeyboardTest() {
+  ImeKeyboardTest() {
   }
 
   virtual void SetUp() {
-    xkey_.reset(XKeyboard::Create());
+    xkey_.reset(ImeKeyboard::Create());
   }
 
   virtual void TearDown() {
     xkey_.reset();
   }
 
-  scoped_ptr<XKeyboard> xkey_;
+  scoped_ptr<ImeKeyboard> xkey_;
 
   base::MessageLoopForUI message_loop_;
 };
@@ -46,32 +46,32 @@ bool DisplayAvailable() {
 }  // namespace
 
 // Tests CheckLayoutName() function.
-TEST_F(XKeyboardTest, TestCheckLayoutName) {
+TEST_F(ImeKeyboardTest, TestCheckLayoutName) {
   // CheckLayoutName should not accept non-alphanumeric characters
   // except "()-_".
-  EXPECT_FALSE(XKeyboard::CheckLayoutNameForTesting("us!"));
-  EXPECT_FALSE(XKeyboard::CheckLayoutNameForTesting("us; /bin/sh"));
-  EXPECT_TRUE(XKeyboard::CheckLayoutNameForTesting("ab-c_12"));
+  EXPECT_FALSE(ImeKeyboard::CheckLayoutNameForTesting("us!"));
+  EXPECT_FALSE(ImeKeyboard::CheckLayoutNameForTesting("us; /bin/sh"));
+  EXPECT_TRUE(ImeKeyboard::CheckLayoutNameForTesting("ab-c_12"));
 
   // CheckLayoutName should not accept upper-case ascii characters.
-  EXPECT_FALSE(XKeyboard::CheckLayoutNameForTesting("US"));
+  EXPECT_FALSE(ImeKeyboard::CheckLayoutNameForTesting("US"));
 
   // CheckLayoutName should accept lower-case ascii characters.
   for (int c = 'a'; c <= 'z'; ++c) {
-    EXPECT_TRUE(XKeyboard::CheckLayoutNameForTesting(std::string(3, c)));
+    EXPECT_TRUE(ImeKeyboard::CheckLayoutNameForTesting(std::string(3, c)));
   }
 
   // CheckLayoutName should accept numbers.
   for (int c = '0'; c <= '9'; ++c) {
-    EXPECT_TRUE(XKeyboard::CheckLayoutNameForTesting(std::string(3, c)));
+    EXPECT_TRUE(ImeKeyboard::CheckLayoutNameForTesting(std::string(3, c)));
   }
 
   // CheckLayoutName should accept a layout with a variant name.
-  EXPECT_TRUE(XKeyboard::CheckLayoutNameForTesting("us(dvorak)"));
-  EXPECT_TRUE(XKeyboard::CheckLayoutNameForTesting("jp"));
+  EXPECT_TRUE(ImeKeyboard::CheckLayoutNameForTesting("us(dvorak)"));
+  EXPECT_TRUE(ImeKeyboard::CheckLayoutNameForTesting("jp"));
 }
 
-TEST_F(XKeyboardTest, TestSetCapsLockEnabled) {
+TEST_F(ImeKeyboardTest, TestSetCapsLockEnabled) {
   if (!DisplayAvailable()) {
     // Do not fail the test to allow developers to run unit_tests without an X
     // server (e.g. via ssh). Note that both try bots and waterfall always have
@@ -91,38 +91,38 @@ TEST_F(XKeyboardTest, TestSetCapsLockEnabled) {
   xkey_->SetCapsLockEnabled(initial_lock_state);
 }
 
-TEST_F(XKeyboardTest, TestSetAutoRepeatEnabled) {
+TEST_F(ImeKeyboardTest, TestSetAutoRepeatEnabled) {
   if (!DisplayAvailable()) {
     DVLOG(1) << "X server is not available. Skip the test.";
     return;
   }
-  const bool state = XKeyboard::GetAutoRepeatEnabledForTesting();
+  const bool state = ImeKeyboard::GetAutoRepeatEnabledForTesting();
   xkey_->SetAutoRepeatEnabled(!state);
-  EXPECT_EQ(!state, XKeyboard::GetAutoRepeatEnabledForTesting());
+  EXPECT_EQ(!state, ImeKeyboard::GetAutoRepeatEnabledForTesting());
   // Restore the initial state.
   xkey_->SetAutoRepeatEnabled(state);
-  EXPECT_EQ(state, XKeyboard::GetAutoRepeatEnabledForTesting());
+  EXPECT_EQ(state, ImeKeyboard::GetAutoRepeatEnabledForTesting());
 }
 
-TEST_F(XKeyboardTest, TestSetAutoRepeatRate) {
+TEST_F(ImeKeyboardTest, TestSetAutoRepeatRate) {
   if (!DisplayAvailable()) {
     DVLOG(1) << "X server is not available. Skip the test.";
     return;
   }
   AutoRepeatRate rate;
-  EXPECT_TRUE(XKeyboard::GetAutoRepeatRateForTesting(&rate));
+  EXPECT_TRUE(ImeKeyboard::GetAutoRepeatRateForTesting(&rate));
 
   AutoRepeatRate tmp(rate);
   ++tmp.initial_delay_in_ms;
   ++tmp.repeat_interval_in_ms;
   EXPECT_TRUE(xkey_->SetAutoRepeatRate(tmp));
-  EXPECT_TRUE(XKeyboard::GetAutoRepeatRateForTesting(&tmp));
+  EXPECT_TRUE(ImeKeyboard::GetAutoRepeatRateForTesting(&tmp));
   EXPECT_EQ(rate.initial_delay_in_ms + 1, tmp.initial_delay_in_ms);
   EXPECT_EQ(rate.repeat_interval_in_ms + 1, tmp.repeat_interval_in_ms);
 
   // Restore the initial state.
   EXPECT_TRUE(xkey_->SetAutoRepeatRate(rate));
-  EXPECT_TRUE(XKeyboard::GetAutoRepeatRateForTesting(&tmp));
+  EXPECT_TRUE(ImeKeyboard::GetAutoRepeatRateForTesting(&tmp));
   EXPECT_EQ(rate.initial_delay_in_ms, tmp.initial_delay_in_ms);
   EXPECT_EQ(rate.repeat_interval_in_ms, tmp.repeat_interval_in_ms);
 }

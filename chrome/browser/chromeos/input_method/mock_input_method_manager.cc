@@ -153,9 +153,7 @@ bool MockInputMethodManager::IsAltGrUsedByCurrentInputMethod() const {
   return false;
 }
 
-XKeyboard* MockInputMethodManager::GetXKeyboard() {
-  return &xkeyboard_;
-}
+ImeKeyboard* MockInputMethodManager::GetImeKeyboard() { return &keyboard_; }
 
 InputMethodUtil* MockInputMethodManager::GetInputMethodUtil() {
   return &util_;

@@ -7,8 +7,8 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
+#include "chromeos/ime/fake_ime_keyboard.h"
 #include "chromeos/ime/fake_input_method_delegate.h"
-#include "chromeos/ime/fake_xkeyboard.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/input_method_whitelist.h"
 
@@ -61,7 +61,7 @@ class MockInputMethodManager : public InputMethodManager {
   virtual InputMethodDescriptor GetCurrentInputMethod() const OVERRIDE;
   virtual bool IsISOLevel5ShiftUsedByCurrentInputMethod() const OVERRIDE;
   virtual bool IsAltGrUsedByCurrentInputMethod() const OVERRIDE;
-  virtual XKeyboard* GetXKeyboard() OVERRIDE;
+  virtual ImeKeyboard* GetImeKeyboard() OVERRIDE;
   virtual InputMethodUtil* GetInputMethodUtil() OVERRIDE;
   virtual ComponentExtensionIMEManager*
       GetComponentExtensionIMEManager() OVERRIDE;
@@ -94,7 +94,7 @@ class MockInputMethodManager : public InputMethodManager {
   InputMethodWhitelist whitelist_;
   FakeInputMethodDelegate delegate_;  // used by util_
   InputMethodUtil util_;
-  FakeXKeyboard xkeyboard_;
+  FakeImeKeyboard keyboard_;
   bool mod3_used_;
   scoped_ptr<ComponentExtensionIMEManager> comp_ime_manager_;
 

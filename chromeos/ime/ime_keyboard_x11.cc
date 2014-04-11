@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/ime/xkeyboard.h"
+#include "chromeos/ime/ime_keyboard.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -112,16 +112,16 @@ bool CheckLayoutName(const std::string& layout_name) {
   return true;
 }
 
-class XKeyboardImpl : public XKeyboard {
+class ImeKeyboardX11 : public ImeKeyboard {
  public:
-  XKeyboardImpl();
-  virtual ~XKeyboardImpl() {}
+  ImeKeyboardX11();
+  virtual ~ImeKeyboardX11() {}
 
   // Adds/removes observer.
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
 
-  // Overridden from XKeyboard:
+  // ImeKeyboard:
   virtual bool SetCurrentKeyboardLayoutByName(
       const std::string& layout_name) OVERRIDE;
   virtual bool ReapplyCurrentKeyboardLayout() OVERRIDE;
@@ -171,14 +171,14 @@ class XKeyboardImpl : public XKeyboard {
 
   base::ThreadChecker thread_checker_;
 
-  base::WeakPtrFactory<XKeyboardImpl> weak_factory_;
+  base::WeakPtrFactory<ImeKeyboardX11> weak_factory_;
 
   ObserverList<Observer> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(XKeyboardImpl);
+  DISALLOW_COPY_AND_ASSIGN(ImeKeyboardX11);
 };
 
-XKeyboardImpl::XKeyboardImpl()
+ImeKeyboardX11::ImeKeyboardX11()
     : is_running_on_chrome_os_(base::SysInfo::IsRunningOnChromeOS()),
       weak_factory_(this) {
   // X must be already initialized.
@@ -199,15 +199,15 @@ XKeyboardImpl::XKeyboardImpl()
   current_caps_lock_status_ = CapsLockIsEnabled();
 }
 
-void XKeyboardImpl::AddObserver(XKeyboard::Observer* observer) {
+void ImeKeyboardX11::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void XKeyboardImpl::RemoveObserver(XKeyboard::Observer* observer) {
+void ImeKeyboardX11::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-unsigned int XKeyboardImpl::GetNumLockMask() {
+unsigned int ImeKeyboardX11::GetNumLockMask() {
   DCHECK(thread_checker_.CalledOnValidThread());
   static const unsigned int kBadMask = 0;
 
@@ -241,7 +241,7 @@ unsigned int XKeyboardImpl::GetNumLockMask() {
   return real_mask;
 }
 
-void XKeyboardImpl::SetLockedModifiers(bool caps_lock_enabled) {
+void ImeKeyboardX11::SetLockedModifiers(bool caps_lock_enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Always turn off num lock.
@@ -255,8 +255,8 @@ void XKeyboardImpl::SetLockedModifiers(bool caps_lock_enabled) {
   XkbLockModifiers(GetXDisplay(), XkbUseCoreKbd, affect_mask, value_mask);
 }
 
-bool XKeyboardImpl::SetLayoutInternal(const std::string& layout_name,
-                                      bool force) {
+bool ImeKeyboardX11::SetLayoutInternal(const std::string& layout_name,
+                                       bool force) {
   if (!is_running_on_chrome_os_) {
     // We should not try to change a layout on Linux or inside ui_tests. Just
     // return true.
@@ -289,7 +289,7 @@ bool XKeyboardImpl::SetLayoutInternal(const std::string& layout_name,
 // Executes 'setxkbmap -layout ...' command asynchronously using a layout name
 // in the |execute_queue_|. Do nothing if the queue is empty.
 // TODO(yusukes): Use libxkbfile.so instead of the command (crosbug.com/13105)
-void XKeyboardImpl::MaybeExecuteSetLayoutCommand() {
+void ImeKeyboardX11::MaybeExecuteSetLayoutCommand() {
   if (execute_queue_.empty())
     return;
   const std::string layout_to_set = execute_queue_.front();
@@ -310,12 +310,12 @@ void XKeyboardImpl::MaybeExecuteSetLayoutCommand() {
 
   PollUntilChildFinish(handle);
 
-  DVLOG(1) << "ExecuteSetLayoutCommand: "
-           << layout_to_set << ": pid=" << base::GetProcId(handle);
+  DVLOG(1) << "ExecuteSetLayoutCommand: " << layout_to_set
+           << ": pid=" << base::GetProcId(handle);
 }
 
 // Delay and loop until child process finishes and call the callback.
-void XKeyboardImpl::PollUntilChildFinish(const base::ProcessHandle handle) {
+void ImeKeyboardX11::PollUntilChildFinish(const base::ProcessHandle handle) {
   int exit_code;
   DVLOG(1) << "PollUntilChildFinish: poll for pid=" << base::GetProcId(handle);
   switch (base::GetTerminationStatus(handle, &exit_code)) {
@@ -323,8 +323,9 @@ void XKeyboardImpl::PollUntilChildFinish(const base::ProcessHandle handle) {
       DVLOG(1) << "PollUntilChildFinish: Try waiting again";
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&XKeyboardImpl::PollUntilChildFinish,
-                 weak_factory_.GetWeakPtr(), handle),
+          base::Bind(&ImeKeyboardX11::PollUntilChildFinish,
+                     weak_factory_.GetWeakPtr(),
+                     handle),
           base::TimeDelta::FromMilliseconds(kSetLayoutCommandCheckDelayMs));
       return;
 
@@ -345,14 +346,14 @@ void XKeyboardImpl::PollUntilChildFinish(const base::ProcessHandle handle) {
   }
 }
 
-bool XKeyboardImpl::CapsLockIsEnabled() {
+bool ImeKeyboardX11::CapsLockIsEnabled() {
   DCHECK(thread_checker_.CalledOnValidThread());
   XkbStateRec status;
   XkbGetState(GetXDisplay(), XkbUseCoreKbd, &status);
   return (status.locked_mods & LockMask);
 }
 
-bool XKeyboardImpl::IsISOLevel5ShiftAvailable() const {
+bool ImeKeyboardX11::IsISOLevel5ShiftAvailable() const {
   for (size_t i = 0; i < arraysize(kISOLevel5ShiftLayoutIds); ++i) {
     if (current_layout_name_ == kISOLevel5ShiftLayoutIds[i])
       return true;
@@ -360,7 +361,7 @@ bool XKeyboardImpl::IsISOLevel5ShiftAvailable() const {
   return false;
 }
 
-bool XKeyboardImpl::IsAltGrAvailable() const {
+bool ImeKeyboardX11::IsAltGrAvailable() const {
   for (size_t i = 0; i < arraysize(kAltGrLayoutIds); ++i) {
     if (current_layout_name_ == kAltGrLayoutIds[i])
       return true;
@@ -368,8 +369,7 @@ bool XKeyboardImpl::IsAltGrAvailable() const {
   return false;
 }
 
-
-bool XKeyboardImpl::SetAutoRepeatEnabled(bool enabled) {
+bool ImeKeyboardX11::SetAutoRepeatEnabled(bool enabled) {
   if (enabled)
     XAutoRepeatOn(GetXDisplay());
   else
@@ -378,7 +378,7 @@ bool XKeyboardImpl::SetAutoRepeatEnabled(bool enabled) {
   return true;
 }
 
-bool XKeyboardImpl::SetAutoRepeatRate(const AutoRepeatRate& rate) {
+bool ImeKeyboardX11::SetAutoRepeatRate(const AutoRepeatRate& rate) {
   DVLOG(1) << "Set auto-repeat rate to: "
            << rate.initial_delay_in_ms << " ms delay, "
            << rate.repeat_interval_in_ms << " ms interval";
@@ -391,16 +391,16 @@ bool XKeyboardImpl::SetAutoRepeatRate(const AutoRepeatRate& rate) {
   return true;
 }
 
-void XKeyboardImpl::SetCapsLockEnabled(bool enable_caps_lock) {
+void ImeKeyboardX11::SetCapsLockEnabled(bool enable_caps_lock) {
   bool old_state = current_caps_lock_status_;
   SetLockedModifiers(enable_caps_lock);
   if (old_state != enable_caps_lock) {
-    FOR_EACH_OBSERVER(XKeyboard::Observer, observers_,
+    FOR_EACH_OBSERVER(ImeKeyboard::Observer, observers_,
                       OnCapsLockChanged(enable_caps_lock));
   }
 }
 
-bool XKeyboardImpl::SetCurrentKeyboardLayoutByName(
+bool ImeKeyboardX11::SetCurrentKeyboardLayoutByName(
     const std::string& layout_name) {
   if (SetLayoutInternal(layout_name, false)) {
     current_layout_name_ = layout_name;
@@ -409,7 +409,7 @@ bool XKeyboardImpl::SetCurrentKeyboardLayoutByName(
   return false;
 }
 
-bool XKeyboardImpl::ReapplyCurrentKeyboardLayout() {
+bool ImeKeyboardX11::ReapplyCurrentKeyboardLayout() {
   if (current_layout_name_.empty()) {
     DVLOG(1) << "Can't reapply XKB layout: layout unknown";
     return false;
@@ -417,15 +417,15 @@ bool XKeyboardImpl::ReapplyCurrentKeyboardLayout() {
   return SetLayoutInternal(current_layout_name_, true /* force */);
 }
 
-void XKeyboardImpl::ReapplyCurrentModifierLockStatus() {
+void ImeKeyboardX11::ReapplyCurrentModifierLockStatus() {
   SetLockedModifiers(current_caps_lock_status_);
 }
 
-void XKeyboardImpl::DisableNumLock() {
+void ImeKeyboardX11::DisableNumLock() {
   SetCapsLockEnabled(current_caps_lock_status_);
 }
 
-void XKeyboardImpl::OnSetLayoutFinish() {
+void ImeKeyboardX11::OnSetLayoutFinish() {
   if (execute_queue_.empty()) {
     DVLOG(1) << "OnSetLayoutFinish: execute_queue_ is empty. "
              << "base::LaunchProcess failed?";
@@ -438,28 +438,27 @@ void XKeyboardImpl::OnSetLayoutFinish() {
 }  // namespace
 
 // static
-bool XKeyboard::GetAutoRepeatEnabledForTesting() {
+bool ImeKeyboard::GetAutoRepeatEnabledForTesting() {
   XKeyboardState state = {};
   XGetKeyboardControl(GetXDisplay(), &state);
   return state.global_auto_repeat != AutoRepeatModeOff;
 }
 
 // static
-bool XKeyboard::GetAutoRepeatRateForTesting(AutoRepeatRate* out_rate) {
-  return XkbGetAutoRepeatRate(GetXDisplay(), XkbUseCoreKbd,
+bool ImeKeyboard::GetAutoRepeatRateForTesting(AutoRepeatRate* out_rate) {
+  return XkbGetAutoRepeatRate(GetXDisplay(),
+                              XkbUseCoreKbd,
                               &(out_rate->initial_delay_in_ms),
                               &(out_rate->repeat_interval_in_ms)) == True;
 }
 
 // static
-bool XKeyboard::CheckLayoutNameForTesting(const std::string& layout_name) {
+bool ImeKeyboard::CheckLayoutNameForTesting(const std::string& layout_name) {
   return CheckLayoutName(layout_name);
 }
 
 // static
-XKeyboard* XKeyboard::Create() {
-  return new XKeyboardImpl();
-}
+ImeKeyboard* ImeKeyboard::Create() { return new ImeKeyboardX11(); }
 
 }  // namespace input_method
 }  // namespace chromeos

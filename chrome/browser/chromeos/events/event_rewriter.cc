@@ -28,8 +28,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/ime/ime_keyboard.h"
 #include "chromeos/ime/input_method_manager.h"
-#include "chromeos/ime/xkeyboard.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -133,7 +133,7 @@ namespace chromeos {
 
 EventRewriter::EventRewriter()
     : last_device_id_(kBadDeviceId),
-      xkeyboard_for_testing_(NULL),
+      keyboard_for_testing_(NULL),
       keyboard_driven_event_rewriter_(new KeyboardDrivenEventRewriter),
       pref_service_for_testing_(NULL) {
   ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
@@ -521,10 +521,10 @@ bool EventRewriter::RewriteModifiers(XEvent* event) {
   if (event->type == KeyPress &&
       original_keycode != ui::VKEY_CAPITAL &&
       remapped_keycode == ui::VKEY_CAPITAL) {
-    input_method::XKeyboard* xkeyboard = xkeyboard_for_testing_ ?
-        xkeyboard_for_testing_ :
-        input_method::InputMethodManager::Get()->GetXKeyboard();
-    xkeyboard->SetCapsLockEnabled(!xkeyboard->CapsLockIsEnabled());
+    input_method::ImeKeyboard* keyboard = keyboard_for_testing_ ?
+        keyboard_for_testing_ :
+        input_method::InputMethodManager::Get()->GetImeKeyboard();
+    keyboard->SetCapsLockEnabled(!keyboard->CapsLockIsEnabled());
   }
 
   OverwriteEvent(event, remapped_native_keycode, remapped_native_modifiers);

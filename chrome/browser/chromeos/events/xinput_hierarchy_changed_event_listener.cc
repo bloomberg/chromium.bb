@@ -7,8 +7,8 @@
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
 
+#include "chromeos/ime/ime_keyboard.h"
 #include "chromeos/ime/input_method_manager.h"
-#include "chromeos/ime/xkeyboard.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/platform_event_source.h"
 
@@ -41,10 +41,10 @@ void HandleHierarchyChangedEvent(
   if (update_keyboard_status) {
     chromeos::input_method::InputMethodManager* input_method_manager =
         chromeos::input_method::InputMethodManager::Get();
-    chromeos::input_method::XKeyboard* xkeyboard =
-        input_method_manager->GetXKeyboard();
-    xkeyboard->ReapplyCurrentModifierLockStatus();
-    xkeyboard->ReapplyCurrentKeyboardLayout();
+    chromeos::input_method::ImeKeyboard* keyboard =
+        input_method_manager->GetImeKeyboard();
+    keyboard->ReapplyCurrentModifierLockStatus();
+    keyboard->ReapplyCurrentKeyboardLayout();
   }
 }
 

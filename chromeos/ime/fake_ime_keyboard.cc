@@ -2,62 +2,62 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/ime/fake_xkeyboard.h"
+#include "chromeos/ime/fake_ime_keyboard.h"
 
 namespace chromeos {
 namespace input_method {
 
-FakeXKeyboard::FakeXKeyboard()
+FakeImeKeyboard::FakeImeKeyboard()
     : set_current_keyboard_layout_by_name_count_(0),
       caps_lock_is_enabled_(false),
       auto_repeat_is_enabled_(false) {
 }
 
-void FakeXKeyboard::AddObserver(XKeyboard::Observer* observer) {
+void FakeImeKeyboard::AddObserver(Observer* observer) {
 }
 
-void FakeXKeyboard::RemoveObserver(XKeyboard::Observer* observer) {
+void FakeImeKeyboard::RemoveObserver(Observer* observer) {
 }
 
-bool FakeXKeyboard::SetCurrentKeyboardLayoutByName(
+bool FakeImeKeyboard::SetCurrentKeyboardLayoutByName(
     const std::string& layout_name) {
   ++set_current_keyboard_layout_by_name_count_;
   last_layout_ = layout_name;
   return true;
 }
 
-bool FakeXKeyboard::ReapplyCurrentKeyboardLayout() {
+bool FakeImeKeyboard::ReapplyCurrentKeyboardLayout() {
   return true;
 }
 
-void FakeXKeyboard::ReapplyCurrentModifierLockStatus() {
+void FakeImeKeyboard::ReapplyCurrentModifierLockStatus() {
 }
 
-void FakeXKeyboard::DisableNumLock() {
+void FakeImeKeyboard::DisableNumLock() {
 }
 
-void FakeXKeyboard::SetCapsLockEnabled(bool enable_caps_lock) {
+void FakeImeKeyboard::SetCapsLockEnabled(bool enable_caps_lock) {
   caps_lock_is_enabled_ = enable_caps_lock;
 }
 
-bool FakeXKeyboard::CapsLockIsEnabled() {
+bool FakeImeKeyboard::CapsLockIsEnabled() {
   return caps_lock_is_enabled_;
 }
 
-bool FakeXKeyboard::IsISOLevel5ShiftAvailable() const {
+bool FakeImeKeyboard::IsISOLevel5ShiftAvailable() const {
   return false;
 }
 
-bool FakeXKeyboard::IsAltGrAvailable() const {
+bool FakeImeKeyboard::IsAltGrAvailable() const {
   return false;
 }
 
-bool FakeXKeyboard::SetAutoRepeatEnabled(bool enabled) {
+bool FakeImeKeyboard::SetAutoRepeatEnabled(bool enabled) {
   auto_repeat_is_enabled_ = enabled;
   return true;
 }
 
-bool FakeXKeyboard::SetAutoRepeatRate(const AutoRepeatRate& rate) {
+bool FakeImeKeyboard::SetAutoRepeatRate(const AutoRepeatRate& rate) {
   last_auto_repeat_rate_ = rate;
   return true;
 }

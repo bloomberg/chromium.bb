@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_IME_FAKE_XKEYBOARD_H_
-#define CHROMEOS_IME_FAKE_XKEYBOARD_H_
+#ifndef CHROMEOS_IME_FAKE_IME_KEYBOARD_H_
+#define CHROMEOS_IME_FAKE_IME_KEYBOARD_H_
 
-#include "chromeos/ime/xkeyboard.h"
+#include "chromeos/ime/ime_keyboard.h"
 
 #include <string>
 
@@ -15,10 +15,10 @@
 namespace chromeos {
 namespace input_method {
 
-class CHROMEOS_EXPORT FakeXKeyboard : public XKeyboard {
+class CHROMEOS_EXPORT FakeImeKeyboard : public ImeKeyboard {
  public:
-  FakeXKeyboard();
-  virtual ~FakeXKeyboard() {}
+  FakeImeKeyboard();
+  virtual ~FakeImeKeyboard() {}
 
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
@@ -42,10 +42,10 @@ class CHROMEOS_EXPORT FakeXKeyboard : public XKeyboard {
   // TODO(yusukes): Add more variables for counting the numbers of the API calls
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeXKeyboard);
+  DISALLOW_COPY_AND_ASSIGN(FakeImeKeyboard);
 };
 
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROMEOS_IME_FAKE_XKEYBOARD_H_
+#endif  // CHROMEOS_IME_FAKE_IME_KEYBOARD_H_

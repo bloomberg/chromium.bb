@@ -23,7 +23,7 @@ class ComponentExtensionIMEManagerDelegate;
 class InputMethodEngine;
 namespace input_method {
 class InputMethodDelegate;
-class XKeyboard;
+class ImeKeyboard;
 
 // The implementation of InputMethodManager.
 class InputMethodManagerImpl : public InputMethodManager,
@@ -34,7 +34,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   explicit InputMethodManagerImpl(scoped_ptr<InputMethodDelegate> delegate);
   virtual ~InputMethodManagerImpl();
 
-  // Attach CandidateWindowController, and XKeyboard objects to the
+  // Attach CandidateWindowController, and ImeKeyboard objects to the
   // InputMethodManagerImpl object. You don't have to call this
   // function if you attach them yourself (e.g. in unit tests) using
   // the protected setters.
@@ -84,7 +84,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   virtual bool IsISOLevel5ShiftUsedByCurrentInputMethod() const OVERRIDE;
   virtual bool IsAltGrUsedByCurrentInputMethod() const OVERRIDE;
 
-  virtual XKeyboard* GetXKeyboard() OVERRIDE;
+  virtual ImeKeyboard* GetImeKeyboard() OVERRIDE;
   virtual InputMethodUtil* GetInputMethodUtil() OVERRIDE;
   virtual ComponentExtensionIMEManager*
       GetComponentExtensionIMEManager() OVERRIDE;
@@ -96,8 +96,8 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Sets |candidate_window_controller_|.
   void SetCandidateWindowControllerForTesting(
       CandidateWindowController* candidate_window_controller);
-  // Sets |xkeyboard_|.
-  void SetXKeyboardForTesting(XKeyboard* xkeyboard);
+  // Sets |keyboard_|.
+  void SetImeKeyboardForTesting(ImeKeyboard* keyboard);
   // Initialize |component_extension_manager_|.
   void InitializeComponentExtensionForTesting(
       scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate);
@@ -196,7 +196,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   InputMethodWhitelist whitelist_;
 
   // An object which provides miscellaneous input method utility functions. Note
-  // that |util_| is required to initialize |xkeyboard_|.
+  // that |util_| is required to initialize |keyboard_|.
   InputMethodUtil util_;
 
   // An object which provides component extension ime management functions.
@@ -204,7 +204,7 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   // An object for switching XKB layouts and keyboard status like caps lock and
   // auto-repeat interval.
-  scoped_ptr<XKeyboard> xkeyboard_;
+  scoped_ptr<ImeKeyboard> keyboard_;
 
   std::string pending_input_method_;
 

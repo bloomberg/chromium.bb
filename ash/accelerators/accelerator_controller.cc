@@ -74,8 +74,8 @@
 #include "ash/session_state_delegate.h"
 #include "ash/system/chromeos/keyboard_brightness_controller.h"
 #include "base/sys_info.h"
+#include "chromeos/ime/ime_keyboard.h"
 #include "chromeos/ime/input_method_manager.h"
-#include "chromeos/ime/xkeyboard.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -645,10 +645,10 @@ bool HandleDisableCapsLock(ui::KeyboardCode key_code,
   base::RecordAction(UserMetricsAction("Accel_Disable_Caps_Lock"));
   chromeos::input_method::InputMethodManager* ime =
       chromeos::input_method::InputMethodManager::Get();
-  chromeos::input_method::XKeyboard* xkeyboard =
-      ime ? ime->GetXKeyboard() : NULL;
-  if (xkeyboard && xkeyboard->CapsLockIsEnabled()) {
-    xkeyboard->SetCapsLockEnabled(false);
+  chromeos::input_method::ImeKeyboard* keyboard =
+      ime ? ime->GetImeKeyboard() : NULL;
+  if (keyboard && keyboard->CapsLockIsEnabled()) {
+    keyboard->SetCapsLockEnabled(false);
     return true;
   }
   return false;
@@ -669,10 +669,10 @@ bool HandleToggleCapsLock(ui::KeyboardCode key_code,
   base::RecordAction(UserMetricsAction("Accel_Toggle_Caps_Lock"));
   chromeos::input_method::InputMethodManager* ime =
       chromeos::input_method::InputMethodManager::Get();
-  chromeos::input_method::XKeyboard* xkeyboard =
-      ime ? ime->GetXKeyboard() : NULL;
-  if (xkeyboard)
-    xkeyboard->SetCapsLockEnabled(!xkeyboard->CapsLockIsEnabled());
+  chromeos::input_method::ImeKeyboard* keyboard =
+      ime ? ime->GetImeKeyboard() : NULL;
+  if (keyboard)
+    keyboard->SetCapsLockEnabled(!keyboard->CapsLockIsEnabled());
   return true;
 }
 

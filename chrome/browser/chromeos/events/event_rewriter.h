@@ -14,6 +14,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/device_hierarchy_observer.h"
+#include "chromeos/ime/ime_keyboard.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform/platform_event_observer.h"
 
@@ -23,7 +24,7 @@ typedef union _XEvent XEvent;
 namespace chromeos {
 class KeyboardDrivenEventRewriter;
 namespace input_method {
-class XKeyboard;
+class ImeKeyboard;
 }
 
 class EventRewriter : public DeviceHierarchyObserver,
@@ -52,8 +53,8 @@ class EventRewriter : public DeviceHierarchyObserver,
   void set_pref_service_for_testing(const PrefService* pref_service) {
     pref_service_for_testing_ = pref_service;
   }
-  void set_xkeyboard_for_testing(input_method::XKeyboard* xkeyboard) {
-    xkeyboard_for_testing_ = xkeyboard;
+  void set_keyboard_for_testing(input_method::ImeKeyboard* keyboard) {
+    keyboard_for_testing_ = keyboard;
   }
 
   // Gets DeviceType from the |device_name|.
@@ -190,7 +191,7 @@ class EventRewriter : public DeviceHierarchyObserver,
   // A set of device IDs whose press event has been rewritten.
   std::set<int> pressed_device_ids_;
 
-  input_method::XKeyboard* xkeyboard_for_testing_;
+  input_method::ImeKeyboard* keyboard_for_testing_;
 
   scoped_ptr<KeyboardDrivenEventRewriter>
       keyboard_driven_event_rewriter_;

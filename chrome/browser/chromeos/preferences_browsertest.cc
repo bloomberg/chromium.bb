@@ -22,7 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/ime/fake_xkeyboard.h"
+#include "chromeos/ime/fake_ime_keyboard.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
@@ -40,7 +40,7 @@ class PreferencesTest : public LoginManagerTest {
   PreferencesTest()
       : LoginManagerTest(true),
         input_settings_(NULL),
-        xkeyboard_(NULL) {}
+        keyboard_(NULL) {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     LoginManagerTest::SetUpCommandLine(command_line);
@@ -52,10 +52,10 @@ class PreferencesTest : public LoginManagerTest {
     LoginManagerTest::SetUpOnMainThread();
     input_settings_ = new system::FakeInputDeviceSettings();
     system::InputDeviceSettings::SetSettingsForTesting(input_settings_);
-    xkeyboard_ = new input_method::FakeXKeyboard();
+    keyboard_ = new input_method::FakeImeKeyboard();
     static_cast<input_method::InputMethodManagerImpl*>(
         input_method::InputMethodManager::Get())
-        ->SetXKeyboardForTesting(xkeyboard_);
+        ->SetImeKeyboardForTesting(keyboard_);
     CrosSettings::Get()->SetString(kDeviceOwner, kTestUsers[0]);
   }
 
@@ -97,8 +97,8 @@ class PreferencesTest : public LoginManagerTest {
     EXPECT_EQ(prefs->GetBoolean(prefs::kTouchHudProjectionEnabled),
               ash::Shell::GetInstance()->is_touch_hud_projection_enabled());
     EXPECT_EQ(prefs->GetBoolean(prefs::kLanguageXkbAutoRepeatEnabled),
-              xkeyboard_->auto_repeat_is_enabled_);
-    input_method::AutoRepeatRate rate = xkeyboard_->last_auto_repeat_rate_;
+              keyboard_->auto_repeat_is_enabled_);
+    input_method::AutoRepeatRate rate = keyboard_->last_auto_repeat_rate_;
     EXPECT_EQ(prefs->GetInteger(prefs::kLanguageXkbAutoRepeatDelay),
               (int)rate.initial_delay_in_ms);
     EXPECT_EQ(prefs->GetInteger(prefs::kLanguageXkbAutoRepeatInterval),
@@ -127,7 +127,7 @@ class PreferencesTest : public LoginManagerTest {
 
  private:
   system::FakeInputDeviceSettings* input_settings_;
-  input_method::FakeXKeyboard* xkeyboard_;
+  input_method::FakeImeKeyboard* keyboard_;
 
   DISALLOW_COPY_AND_ASSIGN(PreferencesTest);
 };
