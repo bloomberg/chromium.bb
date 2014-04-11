@@ -1037,7 +1037,7 @@ void CanvasRenderingContext2D::fill(Path2D* domPath, ExceptionState& exceptionSt
 void CanvasRenderingContext2D::fill(Path2D* domPath, const String& windingRuleString, ExceptionState& exceptionState)
 {
     if (!domPath) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
         return;
     }
 
@@ -1080,7 +1080,7 @@ void CanvasRenderingContext2D::stroke()
 void CanvasRenderingContext2D::stroke(Path2D* domPath, ExceptionState& exceptionState)
 {
     if (!domPath) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
         return;
     }
 
@@ -1119,7 +1119,7 @@ void CanvasRenderingContext2D::clip(Path2D* domPath, ExceptionState& exceptionSt
 void CanvasRenderingContext2D::clip(Path2D* domPath, const String& windingRuleString, ExceptionState& exceptionState)
 {
     if (!domPath) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
         return;
     }
 
@@ -1139,7 +1139,7 @@ bool CanvasRenderingContext2D::isPointInPath(Path2D* domPath, const float x, con
 bool CanvasRenderingContext2D::isPointInPath(Path2D* domPath, const float x, const float y, const String& windingRuleString, ExceptionState& exceptionState)
 {
     if (!domPath) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
         return false;
     }
 
@@ -1175,7 +1175,7 @@ bool CanvasRenderingContext2D::isPointInStroke(const float x, const float y)
 bool CanvasRenderingContext2D::isPointInStroke(Path2D* domPath, const float x, const float y, ExceptionState& exceptionState)
 {
     if (!domPath) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
         return false;
     }
 
@@ -1213,7 +1213,7 @@ void CanvasRenderingContext2D::scrollPathIntoView()
 void CanvasRenderingContext2D::scrollPathIntoView(Path2D* path2d, ExceptionState& exceptionState)
 {
     if (!path2d) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path2D"));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "Path2D"));
         return;
     }
 
@@ -1472,7 +1472,7 @@ static bool checkImageSource(CanvasImageSource* imageSource, ExceptionState& exc
 {
     if (!imageSource) {
         // FIXME: Message should mention ImageBitmap once that feature ships.
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, String("HTMLImageElement, HTMLCanvasElement or HTMLVideoElement")));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, String("HTMLImageElement, HTMLCanvasElement or HTMLVideoElement")));
         return false;
     }
     return true;
@@ -1900,7 +1900,7 @@ PassRefPtrWillBeRawPtr<ImageData> CanvasRenderingContext2D::getImageData(float s
 void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, ExceptionState& exceptionState)
 {
     if (!data) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "ImageData"));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "ImageData"));
         return;
     }
     putImageData(data, dx, dy, 0, 0, data->width(), data->height(), exceptionState);
@@ -1910,7 +1910,7 @@ void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy,
     float dirtyWidth, float dirtyHeight, ExceptionState& exceptionState)
 {
     if (!data)
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "ImageData"));
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "ImageData"));
     else if (!std::isfinite(dx))
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dx, "dx"));
     else if (!std::isfinite(dy))

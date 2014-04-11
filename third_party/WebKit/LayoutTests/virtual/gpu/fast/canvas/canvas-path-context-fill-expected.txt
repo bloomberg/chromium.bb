@@ -39,12 +39,12 @@ PASS pixelDataAtPoint()[1] is within 5 of 0
 PASS pixelDataAtPoint()[2] is within 5 of 0
 PASS pixelDataAtPoint()[3] is within 5 of 255
 
-PASS ctx.fill(null) threw exception TypeMismatchError: Failed to execute 'fill' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
+PASS ctx.fill(null) threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
 PASS ctx.fill(null, null) threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': parameter 2 ('null') is not a valid enum value..
-PASS ctx.fill(null, 'nonzero') threw exception TypeMismatchError: Failed to execute 'fill' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
+PASS ctx.fill(null, 'nonzero') threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
 PASS ctx.fill([], 'nonzero') threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS ctx.fill({}, 'nonzero') threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
-PASS ctx.fill(null, 'evenodd') threw exception TypeMismatchError: Failed to execute 'fill' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
+PASS ctx.fill(null, 'evenodd') threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
 PASS ctx.fill([], 'evenodd') threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS ctx.fill({}, 'evenodd') threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS successfullyParsed is true

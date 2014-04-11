@@ -57,7 +57,7 @@ public:
     void addPath(Path2D* path, SVGMatrixTearOff* transform, ExceptionState& exceptionState)
     {
         if (!path) {
-            exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
+            exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
             return;
         }
         Path src = path->path();

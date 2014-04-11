@@ -24,7 +24,7 @@ PASS ctx.isPointInStroke(path,NaN,122) is false
 PASS ctx.isPointInStroke(path,18,NaN) is false
 
 Check null and invalid type
-PASS ctx.isPointInStroke(null,70,20) threw exception TypeMismatchError: Failed to execute 'isPointInStroke' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
+PASS ctx.isPointInStroke(null,70,20) threw exception TypeError: Failed to execute 'isPointInStroke' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
 PASS ctx.isPointInStroke([],20,70) threw exception TypeError: Failed to execute 'isPointInStroke' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS ctx.isPointInStroke({},120,70) threw exception TypeError: Failed to execute 'isPointInStroke' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 

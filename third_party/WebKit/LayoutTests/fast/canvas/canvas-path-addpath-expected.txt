@@ -34,9 +34,9 @@ PASS imgdata[2] is 0
 PASS imgdata[3] is 255
 
 Test addPath() with path as null and invalid type
-PASS p7.addPath(null, m) threw exception TypeMismatchError: Failed to execute 'addPath' on 'Path2D': The 1st argument provided is either null, or an invalid Path object..
-PASS p7.addPath([], m) threw exception TypeMismatchError: Failed to execute 'addPath' on 'Path2D': The 1st argument provided is either null, or an invalid Path object..
-PASS p7.addPath({}, m) threw exception TypeMismatchError: Failed to execute 'addPath' on 'Path2D': The 1st argument provided is either null, or an invalid Path object..
+PASS p7.addPath(null, m) threw exception TypeError: Failed to execute 'addPath' on 'Path2D': The 1st argument provided is either null, or an invalid Path object..
+PASS p7.addPath([], m) threw exception TypeError: Failed to execute 'addPath' on 'Path2D': The 1st argument provided is either null, or an invalid Path object..
+PASS p7.addPath({}, m) threw exception TypeError: Failed to execute 'addPath' on 'Path2D': The 1st argument provided is either null, or an invalid Path object..
 
 PASS successfullyParsed is true
 
