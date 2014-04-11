@@ -259,8 +259,6 @@ class RenderWidgetHostViewAndroid
   void AttachLayers();
   void RemoveLayers();
 
-  void UpdateAnimationSize(const cc::CompositorFrameMetadata& frame_metadata);
-
   // Called after async screenshot task completes. Scales and crops the result
   // of the copy.
   static void PrepareTextureCopyOutputResult(

@@ -21,6 +21,7 @@ namespace content {
  * resources directly, while this version simply applies the effect to
  * existing resources. Conscious tradeoffs were made to align this as closely
  * as possible with the original Android java version.
+ * All coordinates and dimensions are in device pixels.
  */
 class EdgeEffect {
 public:
@@ -43,7 +44,11 @@ public:
   void Finish();
   bool IsFinished() const;
 
-  void ApplyToLayers(gfx::SizeF size, Edge edge);
+  void ApplyToLayers(gfx::SizeF window_size,
+                     Edge edge,
+                     float edge_height,
+                     float glow_height,
+                     float offset);
 
 private:
 
@@ -78,8 +83,6 @@ private:
   State state_;
 
   float pull_distance_;
-
-  float dpi_scale_;
 
   DISALLOW_COPY_AND_ASSIGN(EdgeEffect);
 };

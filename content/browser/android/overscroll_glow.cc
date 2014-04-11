@@ -20,6 +20,10 @@ namespace content {
 namespace {
 
 const float kEpsilon = 1e-3f;
+const int kScaledEdgeHeight = 12;
+const int kScaledGlowHeight = 64;
+const float kEdgeHeightAtMdpi = 12.f;
+const float kGlowHeightAtMdpi = 128.f;
 
 SkBitmap CreateSkBitmapFromAndroidResource(const char* name, gfx::Size size) {
   base::android::ScopedJavaLocalRef<jobject> jobj =
@@ -41,14 +45,14 @@ class OverscrollResources {
     TRACE_EVENT0("browser", "OverscrollResources::Create");
     edge_bitmap_ =
         CreateSkBitmapFromAndroidResource("android:drawable/overscroll_edge",
-                                          gfx::Size(128, 12));
+                                          gfx::Size(128, kScaledEdgeHeight));
     glow_bitmap_ =
         CreateSkBitmapFromAndroidResource("android:drawable/overscroll_glow",
-                                          gfx::Size(128, 64));
+                                          gfx::Size(128, kScaledGlowHeight));
   }
 
-  const SkBitmap& edge_bitmap() { return edge_bitmap_; }
-  const SkBitmap& glow_bitmap() { return glow_bitmap_; }
+  const SkBitmap& edge_bitmap() const { return edge_bitmap_; }
+  const SkBitmap& glow_bitmap() const { return glow_bitmap_; }
 
  private:
   SkBitmap edge_bitmap_;
@@ -129,7 +133,7 @@ bool OverscrollGlow::OnOverscrolled(cc::Layer* overscrolling_layer,
 
   // The size of the glow determines the relative effect of the inputs; an
   // empty-sized effect is effectively disabled.
-  if (size_.IsEmpty())
+  if (display_params_.size.IsEmpty())
     return false;
 
   // Ignore sufficiently small values that won't meaningfuly affect animation.
@@ -180,15 +184,14 @@ bool OverscrollGlow::Animate(base::TimeTicks current_time) {
     return false;
   }
 
-  const gfx::SizeF sizes[EdgeEffect::EDGE_COUNT] = {
-    size_, gfx::SizeF(size_.height(), size_.width()),
-    size_, gfx::SizeF(size_.height(), size_.width())
-  };
-
   for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
     if (edge_effects_[i]->Update(current_time)) {
-      edge_effects_[i]->ApplyToLayers(sizes[i],
-                                      static_cast<EdgeEffect::Edge>(i));
+      edge_effects_[i]->ApplyToLayers(
+          display_params_.size,
+          static_cast<EdgeEffect::Edge>(i),
+          kEdgeHeightAtMdpi * display_params_.device_scale_factor,
+          kGlowHeightAtMdpi * display_params_.device_scale_factor,
+          display_params_.edge_offsets[i]);
     }
   }
 
@@ -198,6 +201,10 @@ bool OverscrollGlow::Animate(base::TimeTicks current_time) {
   }
 
   return true;
+}
+
+void OverscrollGlow::UpdateDisplayParameters(const DisplayParameters& params) {
+  display_params_ = params;
 }
 
 bool OverscrollGlow::NeedsAnimate() const {
@@ -262,14 +269,15 @@ void OverscrollGlow::Pull(base::TimeTicks current_time,
   if (overscroll_delta.IsZero())
     return;
 
-  gfx::Vector2dF overscroll_pull = gfx::ScaleVector2d(overscroll_delta,
-                                                      1.f / size_.width(),
-                                                      1.f / size_.height());
+  gfx::Vector2dF overscroll_pull =
+      gfx::ScaleVector2d(overscroll_delta,
+                         1.f / display_params_.size.width(),
+                         1.f / display_params_.size.height());
   float edge_overscroll_pull[EdgeEffect::EDGE_COUNT] = {
-    min(overscroll_pull.y(), 0.f), // Top
-    min(overscroll_pull.x(), 0.f), // Left
-    max(overscroll_pull.y(), 0.f), // Bottom
-    max(overscroll_pull.x(), 0.f)  // Right
+    min(overscroll_pull.y(), 0.f),  // Top
+    min(overscroll_pull.x(), 0.f),  // Left
+    max(overscroll_pull.y(), 0.f),  // Bottom
+    max(overscroll_pull.x(), 0.f)   // Right
   };
 
   for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
@@ -337,5 +345,9 @@ EdgeEffect* OverscrollGlow::GetOppositeEdge(int edge_index) {
   return edge_effects_[(edge_index + 2) % EdgeEffect::EDGE_COUNT].get();
 }
 
-}  // namespace content
+OverscrollGlow::DisplayParameters::DisplayParameters()
+    : device_scale_factor(1) {
+  edge_offsets[0] = edge_offsets[1] = edge_offsets[2] = edge_offsets[3] = 0.f;
+}
 
+}  // namespace content

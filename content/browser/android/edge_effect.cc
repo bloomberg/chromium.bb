@@ -5,7 +5,6 @@
 #include "content/browser/android/edge_effect.h"
 
 #include "cc/layers/layer.h"
-#include "ui/gfx/screen.h"
 
 namespace content {
 
@@ -42,6 +41,8 @@ const float kMaxVelocity = 10000.f;
 
 const float kEpsilon = 0.001f;
 
+const float kGlowHeightToWidthRatio = 0.25f;
+
 // How much dragging should effect the height of the edge image.
 // Number determined by user testing.
 const int kPullDistanceEdgeFactor = 7;
@@ -76,21 +77,44 @@ T Damp(T input, T factor) {
 }
 
 gfx::Transform ComputeTransform(EdgeEffect::Edge edge,
-                                gfx::SizeF size, int height) {
+                                const gfx::SizeF& window_size,
+                                int offset,
+                                int height) {
+  // Edge effects that require rotation are translated to the center about which
+  // the layer should be rotated to align with the corresponding edge.
   switch (edge) {
-    default:
     case EdgeEffect::EDGE_TOP:
-      return gfx::Transform(1, 0, 0, 1, 0, 0);
+      return gfx::Transform(1, 0, 0, 1, 0, offset);
     case EdgeEffect::EDGE_LEFT:
       return gfx::Transform(0, 1, -1, 0,
-                            (-size.width() + height) / 2 ,
-                            (size.width() - height) / 2);
+                            (-window_size.height() + height) / 2.f + offset,
+                            (window_size.height() - height) / 2.f);
     case EdgeEffect::EDGE_BOTTOM:
-      return gfx::Transform(-1, 0, 0, -1, 0, size.height() - height);
+      return gfx::Transform(-1, 0, 0, -1,
+                            0, window_size.height() - height + offset);
     case EdgeEffect::EDGE_RIGHT:
       return gfx::Transform(0, -1, 1, 0,
-                            (-size.width() - height) / 2 + size.height(),
-                            (size.width() - height) / 2);
+          (-window_size.height() - height) / 2.f + window_size.width() + offset,
+          (window_size.height() - height) / 2.f);
+    default:
+      NOTREACHED() << "Invalid edge: " << edge;
+      return gfx::Transform();
+  };
+}
+
+gfx::Size ComputeBounds(EdgeEffect::Edge edge,
+                        const gfx::SizeF& window_size,
+                        int height) {
+  switch (edge) {
+    case EdgeEffect::EDGE_TOP:
+    case EdgeEffect::EDGE_BOTTOM:
+      return gfx::Size(window_size.width(), height);
+    case EdgeEffect::EDGE_LEFT:
+    case EdgeEffect::EDGE_RIGHT:
+      return gfx::Size(window_size.height(), height);
+    default:
+      NOTREACHED() << "Invalid edge: " << edge;
+      return gfx::Size();
   };
 }
 
@@ -103,13 +127,14 @@ void DisableLayer(cc::Layer* layer) {
 
 void UpdateLayer(cc::Layer* layer,
                  EdgeEffect::Edge edge,
-                 gfx::SizeF size,
+                 const gfx::SizeF& window_size,
+                 int offset,
                  int height,
                  float opacity) {
   DCHECK(layer);
   layer->SetIsDrawable(true);
-  layer->SetTransform(ComputeTransform(edge, size, height));
-  layer->SetBounds(gfx::Size(size.width(), height));
+  layer->SetTransform(ComputeTransform(edge, window_size, offset, height));
+  layer->SetBounds(ComputeBounds(edge, window_size, height));
   layer->SetOpacity(Clamp(opacity, 0.f, 1.f));
 }
 
@@ -132,14 +157,10 @@ EdgeEffect::EdgeEffect(scoped_refptr<cc::Layer> edge,
   , glow_scale_y_start_(0)
   , glow_scale_y_finish_(0)
   , state_(STATE_IDLE)
-  , pull_distance_(0)
-  , dpi_scale_(1) {
+  , pull_distance_(0) {
   // Prevent the provided layers from drawing until the effect is activated.
   DisableLayer(edge_.get());
   DisableLayer(glow_.get());
-
-  dpi_scale_ =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().device_scale_factor();
 }
 
 EdgeEffect::~EdgeEffect() { }
@@ -167,7 +188,6 @@ void EdgeEffect::Pull(base::TimeTicks current_time, float delta_distance) {
   start_time_ = current_time;
   duration_ = base::TimeDelta::FromMilliseconds(kPullTime);
 
-  delta_distance *= dpi_scale_;
   float abs_delta_distance = std::abs(delta_distance);
   pull_distance_ += delta_distance;
   float distance = std::abs(pull_distance_);
@@ -220,8 +240,7 @@ void EdgeEffect::Release(base::TimeTicks current_time) {
 
 void EdgeEffect::Absorb(base::TimeTicks current_time, float velocity) {
   state_ = STATE_ABSORB;
-  float scaled_velocity =
-      dpi_scale_ * Clamp(std::abs(velocity), kMinVelocity, kMaxVelocity);
+  velocity = Clamp(std::abs(velocity), kMinVelocity, kMaxVelocity);
 
   start_time_ = current_time;
   // This should never be less than 1 millisecond.
@@ -238,9 +257,9 @@ void EdgeEffect::Absorb(base::TimeTicks current_time, float velocity) {
 
   // Factor the velocity by 8. Testing on device shows this works best to
   // reflect the strength of the user's scrolling.
-  edge_alpha_finish_ = Clamp(scaled_velocity * kVelocityEdgeFactor, 0.f, 1.f);
+  edge_alpha_finish_ = Clamp(velocity * kVelocityEdgeFactor, 0.f, 1.f);
   // Edge should never get larger than the size of its asset.
-  edge_scale_y_finish_ = Clamp(scaled_velocity * kVelocityEdgeFactor,
+  edge_scale_y_finish_ = Clamp(velocity * kVelocityEdgeFactor,
                                kHeldEdgeScaleY, 1.f);
 
   // Growth for the size of the glow should be quadratic to properly
@@ -248,10 +267,10 @@ void EdgeEffect::Absorb(base::TimeTicks current_time, float velocity) {
   // to a user's scrolling speed. The faster the scrolling speed, the more
   // intense the effect should be for both the size and the saturation.
   glow_scale_y_finish_ = std::min(
-      0.025f + (scaled_velocity * (scaled_velocity / 100) * 0.00015f), 1.75f);
+      0.025f + (velocity * (velocity / 100) * 0.00015f), 1.75f);
   // Alpha should change for the glow as well as size.
   glow_alpha_finish_ = Clamp(glow_alpha_start_,
-                             scaled_velocity * kVelocityGlowFactor * .00001f,
+                             velocity * kVelocityGlowFactor * .00001f,
                              kMaxAlpha);
 }
 
@@ -302,18 +321,16 @@ bool EdgeEffect::Update(base::TimeTicks current_time) {
         glow_alpha_finish_ = 0.f;
         glow_scale_y_finish_ = 0.f;
         break;
-      case STATE_PULL_DECAY:
-        {
-          // When receding, we want edge to decrease more slowly
-          // than the glow.
-          float factor = glow_scale_y_finish_ != 0 ?
-              1 / (glow_scale_y_finish_ * glow_scale_y_finish_) :
-              std::numeric_limits<float>::max();
-          edge_scale_y_ = edge_scale_y_start_ +
-              (edge_scale_y_finish_ - edge_scale_y_start_) * interp * factor;
-          state_ = STATE_RECEDE;
-        }
-        break;
+      case STATE_PULL_DECAY: {
+        // When receding, we want edge to decrease more slowly
+        // than the glow.
+        const float factor = glow_scale_y_finish_ != 0 ?
+            1 / (glow_scale_y_finish_ * glow_scale_y_finish_) :
+            std::numeric_limits<float>::max();
+        edge_scale_y_ = edge_scale_y_start_ +
+            (edge_scale_y_finish_ - edge_scale_y_start_) * interp * factor;
+        state_ = STATE_RECEDE;
+      } break;
       case STATE_RECEDE:
         Finish();
         break;
@@ -328,41 +345,33 @@ bool EdgeEffect::Update(base::TimeTicks current_time) {
   return !IsFinished();
 }
 
-void EdgeEffect::ApplyToLayers(gfx::SizeF size, Edge edge) {
+void EdgeEffect::ApplyToLayers(gfx::SizeF window_size,
+                               Edge edge,
+                               float edge_height,
+                               float glow_height,
+                               float offset) {
   if (IsFinished())
     return;
 
-  // An empty effect size, while meaningless, is also relatively harmless, and
+  // An empty window size, while meaningless, is also relatively harmless, and
   // will simply prevent any drawing of the layers.
-  if (size.IsEmpty()) {
+  if (window_size.IsEmpty()) {
     DisableLayer(edge_.get());
     DisableLayer(glow_.get());
     return;
   }
 
-  float dummy_scale_x, dummy_scale_y;
-
   // Glow
-  gfx::Size glow_image_bounds;
-  glow_->CalculateContentsScale(1.f, 1.f, 1.f, 0.f, false,
-                                &dummy_scale_x, &dummy_scale_y,
-                                &glow_image_bounds);
-  const int glow_height = glow_image_bounds.height();
-  const int glow_width = glow_image_bounds.width();
-  const int glow_bottom = static_cast<int>(std::min(
-      glow_height * glow_scale_y_ * glow_height / glow_width * 0.6f,
-      glow_height * kMaxGlowHeight) * dpi_scale_ + 0.5f);
-  UpdateLayer(glow_.get(), edge, size, glow_bottom, glow_alpha_);
+  const int scaled_glow_height = static_cast<int>(
+      std::min(glow_height * glow_scale_y_ * kGlowHeightToWidthRatio * 0.6f,
+               glow_height * kMaxGlowHeight) + 0.5f);
+  UpdateLayer(
+      glow_.get(), edge, window_size, offset, scaled_glow_height, glow_alpha_);
 
   // Edge
-  gfx::Size edge_image_bounds;
-  edge_->CalculateContentsScale(1.f, 1.f, 1.f, 0.f, false,
-                                &dummy_scale_x, &dummy_scale_y,
-                                &edge_image_bounds);
-  const int edge_height = edge_image_bounds.height();
-  const int edge_bottom = static_cast<int>(
-      edge_height * edge_scale_y_ * dpi_scale_);
-  UpdateLayer(edge_.get(), edge, size, edge_bottom, edge_alpha_);
+ const int scaled_edge_height = static_cast<int>(edge_height * edge_scale_y_);
+  UpdateLayer(
+      edge_.get(), edge, window_size, offset, scaled_edge_height, edge_alpha_);
 }
 
 } // namespace content

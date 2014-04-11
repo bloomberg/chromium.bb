@@ -22,7 +22,7 @@ namespace content {
 
 /* |OverscrollGlow| mirrors its Android counterpart, OverscrollGlow.java.
  * Conscious tradeoffs were made to align this as closely as possible with the
- * original Android java version.
+ * original Android Java version.
  */
 class OverscrollGlow {
  public:
@@ -43,8 +43,9 @@ class OverscrollGlow {
   void Disable();
 
   // Effect layers will be attached to |overscrolling_layer| if necessary.
-  // |overscroll| is the accumulated overscroll for the current gesture.
-  // |velocity| is the instantaneous velocity for the overscroll.
+  // |overscroll| is the accumulated overscroll for the current gesture, in
+  // device pixels.  |velocity| is the instantaneous velocity of the overscroll,
+  // in device pixels / second.
   // Returns true if the effect still needs animation ticks.
   bool OnOverscrolled(cc::Layer* overscrolling_layer,
                       base::TimeTicks current_time,
@@ -55,10 +56,16 @@ class OverscrollGlow {
   // Note: The effect will detach itself when no further animation is required.
   bool Animate(base::TimeTicks current_time);
 
-  // The size of the layer for which edges will be animated.
-  void set_size(gfx::SizeF size) {
-    size_ = size;
-  }
+  // Update the effect according to the most recent display parameters,
+  // Note: All dimensions are in device pixels.
+  struct DisplayParameters {
+    DisplayParameters();
+    gfx::SizeF size;
+    float edge_offsets[EdgeEffect::EDGE_COUNT];
+    float device_scale_factor;
+  };
+  void UpdateDisplayParameters(const DisplayParameters& params);
+
 
  private:
   enum Axis { AXIS_X, AXIS_Y };
@@ -83,11 +90,11 @@ class OverscrollGlow {
 
   scoped_ptr<EdgeEffect> edge_effects_[EdgeEffect::EDGE_COUNT];
 
-  bool enabled_;
-  bool initialized_;
-  gfx::SizeF size_;
+  DisplayParameters display_params_;
   gfx::Vector2dF old_overscroll_;
   gfx::Vector2dF old_velocity_;
+  bool enabled_;
+  bool initialized_;
 
   scoped_refptr<cc::Layer> root_layer_;
 

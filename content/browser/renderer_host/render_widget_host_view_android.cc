@@ -104,6 +104,33 @@ ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
   return latency_info;
 }
 
+OverscrollGlow::DisplayParameters CreateOverscrollDisplayParameters(
+    const cc::CompositorFrameMetadata& frame_metadata) {
+  const float scale_factor =
+      frame_metadata.page_scale_factor * frame_metadata.device_scale_factor;
+
+  // Compute the size and offsets for each edge, where each effect is sized to
+  // the viewport and offset by the distance of each viewport edge to the
+  // respective content edge.
+  OverscrollGlow::DisplayParameters params;
+  params.size = gfx::ScaleSize(frame_metadata.viewport_size, scale_factor);
+  params.edge_offsets[EdgeEffect::EDGE_TOP] =
+      -frame_metadata.root_scroll_offset.y() * scale_factor;
+  params.edge_offsets[EdgeEffect::EDGE_LEFT] =
+      -frame_metadata.root_scroll_offset.x() * scale_factor;
+  params.edge_offsets[EdgeEffect::EDGE_BOTTOM] =
+      (frame_metadata.root_layer_size.height() -
+       frame_metadata.root_scroll_offset.y() -
+       frame_metadata.viewport_size.height()) * scale_factor;
+  params.edge_offsets[EdgeEffect::EDGE_RIGHT] =
+      (frame_metadata.root_layer_size.width() -
+       frame_metadata.root_scroll_offset.x() -
+       frame_metadata.viewport_size.width()) * scale_factor;
+  params.device_scale_factor = frame_metadata.device_scale_factor;
+
+  return params;
+}
+
 }  // anonymous namespace
 
 RenderWidgetHostViewAndroid::LastFrameInfo::LastFrameInfo(
@@ -787,8 +814,9 @@ void RenderWidgetHostViewAndroid::ComputeContentsSize(
   content_size_in_layer_ =
       gfx::Size(texture_size_in_layer_.width() - offset.x(),
                 texture_size_in_layer_.height() - offset.y());
-  // Content size changes should be reflected in associated animation effects.
-  UpdateAnimationSize(frame_metadata);
+
+  overscroll_effect_->UpdateDisplayParameters(
+      CreateOverscrollDisplayParameters(frame_metadata));
 }
 
 void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
@@ -958,11 +986,6 @@ void RenderWidgetHostViewAndroid::RemoveLayers() {
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
   return overscroll_effect_->Animate(frame_time);
-}
-
-void RenderWidgetHostViewAndroid::UpdateAnimationSize(
-    const cc::CompositorFrameMetadata& frame_metadata) {
-  overscroll_effect_->set_size(content_size_in_layer_);
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfacePostSubBuffer(
@@ -1197,10 +1220,12 @@ void RenderWidgetHostViewAndroid::OnOverscrolled(
   if (!content_view_core_ || !layer_ || !is_showing_)
     return;
 
-  if (overscroll_effect_->OnOverscrolled(content_view_core_->GetLayer(),
-                                         base::TimeTicks::Now(),
-                                         accumulated_overscroll,
-                                         current_fling_velocity)) {
+  const float device_scale_factor = content_view_core_->GetDpiScale();
+  if (overscroll_effect_->OnOverscrolled(
+          content_view_core_->GetLayer(),
+          base::TimeTicks::Now(),
+          gfx::ScaleVector2d(accumulated_overscroll, device_scale_factor),
+          gfx::ScaleVector2d(current_fling_velocity, device_scale_factor))) {
     content_view_core_->SetNeedsAnimate();
   }
 }
