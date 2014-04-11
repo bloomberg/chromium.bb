@@ -5,7 +5,6 @@
 #include "extensions/browser/extension_function.h"
 
 #include "base/logging.h"
-#include "base/metrics/sparse_histogram.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -126,8 +125,6 @@ void ExtensionFunction::SetError(const std::string& error) {
 }
 
 void ExtensionFunction::Run() {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.FunctionCalls", histogram_value());
-
   if (!RunImpl())
     SendResponse(false);
 }

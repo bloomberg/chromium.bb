@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/process/process.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -271,6 +272,8 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                             params.name,
                             args.Pass(),
                             static_cast<content::BrowserContext*>(profile_id));
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.FunctionCalls",
+                                function->histogram_value());
     function->Run();
   } else {
     function->OnQuotaExceeded(violation_error);
@@ -377,6 +380,8 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
 
     NotifyApiFunctionCalled(
         extension->id(), params.name, args.Pass(), browser_context_);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.FunctionCalls",
+                                function->histogram_value());
     function->Run();
   } else {
     function->OnQuotaExceeded(violation_error);
