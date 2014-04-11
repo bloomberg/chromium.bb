@@ -30,7 +30,6 @@
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/gpu_support.h"
 #include "ash/high_contrast/high_contrast_controller.h"
-#include "ash/host/window_tree_host_factory.h"
 #include "ash/keyboard_uma_event_filter.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -838,10 +837,9 @@ void Shell::Init() {
   focus_cycler_.reset(new FocusCycler());
 
   screen_position_controller_.reset(new ScreenPositionController);
-  window_tree_host_factory_.reset(delegate_->CreateWindowTreeHostFactory());
 
   display_controller_->Start();
-  display_controller_->InitPrimaryDisplay();
+  display_controller_->CreatePrimaryHost();
   aura::Window* root_window = display_controller_->GetPrimaryRootWindow();
   target_root_window_ = root_window;
 
@@ -977,12 +975,7 @@ void Shell::Init() {
                  base::Unretained(system_tray_delegate_.get()))));
 #endif
 
-  // TODO(oshima): Initialize all RootWindowControllers once, and
-  // initialize controller/delegates above when initializing the
-  // primary root window controller.
-  RootWindowController::CreateForPrimaryDisplay(root_window->GetHost());
-
-  display_controller_->InitSecondaryDisplays();
+  display_controller_->InitDisplays();
 
   // It needs to be created after RootWindowController has been created
   // (which calls OnWindowResized has been called, otherwise the

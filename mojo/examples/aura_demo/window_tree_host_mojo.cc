@@ -71,10 +71,6 @@ void WindowTreeHostMojo::Hide() {
   window()->Hide();
 }
 
-void WindowTreeHostMojo::ToggleFullScreen() {
-  NOTIMPLEMENTED();
-}
-
 gfx::Rect WindowTreeHostMojo::GetBounds() const {
   return bounds_;
 }
@@ -82,15 +78,6 @@ gfx::Rect WindowTreeHostMojo::GetBounds() const {
 void WindowTreeHostMojo::SetBounds(const gfx::Rect& bounds) {
   AllocationScope scope;
   native_viewport_->SetBounds(bounds);
-}
-
-gfx::Insets WindowTreeHostMojo::GetInsets() const {
-  NOTIMPLEMENTED();
-  return gfx::Insets();
-}
-
-void WindowTreeHostMojo::SetInsets(const gfx::Insets& insets) {
-  NOTIMPLEMENTED();
 }
 
 gfx::Point WindowTreeHostMojo::GetLocationOnNativeScreen() const {
@@ -108,15 +95,6 @@ void WindowTreeHostMojo::ReleaseCapture() {
 bool WindowTreeHostMojo::QueryMouseLocation(gfx::Point* location_return) {
   NOTIMPLEMENTED() << "QueryMouseLocation";
   return false;
-}
-
-bool WindowTreeHostMojo::ConfineCursorToRootWindow() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void WindowTreeHostMojo::UnConfineCursor() {
-  NOTIMPLEMENTED();
 }
 
 void WindowTreeHostMojo::PostNativeEvent(

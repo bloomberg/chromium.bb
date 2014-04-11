@@ -449,10 +449,6 @@ void DesktopWindowTreeHostWin::Hide() {
     message_handler_->Hide();
 }
 
-void DesktopWindowTreeHostWin::ToggleFullScreen() {
-  SetWindowTransparency();
-}
-
 // GetBounds and SetBounds work in pixel coordinates, whereas other get/set
 // methods work in DIP.
 
@@ -500,13 +496,6 @@ void DesktopWindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
     HandleClientSizeChanged(new_expanded.size());
 }
 
-gfx::Insets DesktopWindowTreeHostWin::GetInsets() const {
-  return gfx::Insets();
-}
-
-void DesktopWindowTreeHostWin::SetInsets(const gfx::Insets& insets) {
-}
-
 gfx::Point DesktopWindowTreeHostWin::GetLocationOnNativeScreen() const {
   return GetBounds().origin();
 }
@@ -531,16 +520,6 @@ bool DesktopWindowTreeHostWin::QueryMouseLocation(gfx::Point* location_return) {
   *location_return =
       gfx::Point(static_cast<int>(pt.x), static_cast<int>(pt.y));
   return true;
-}
-
-bool DesktopWindowTreeHostWin::ConfineCursorToRootWindow() {
-  RECT window_rect = window()->GetBoundsInScreen().ToRECT();
-  ::ClipCursor(&window_rect);
-  return true;
-}
-
-void DesktopWindowTreeHostWin::UnConfineCursor() {
-  ::ClipCursor(NULL);
 }
 
 void DesktopWindowTreeHostWin::PostNativeEvent(

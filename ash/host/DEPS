@@ -1,0 +1,6 @@
+include_rules = [
+  "-ash",
+  "+ash/host",
+  "+ash/ash_export.h",
+  "+ash/ash_switches.h",
+]

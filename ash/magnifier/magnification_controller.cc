@@ -8,12 +8,14 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
 #include "ash/display/root_window_transformers.h"
+#include "ash/host/ash_window_tree_host.h"
+#include "ash/host/root_window_transformer.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
 #include "ui/aura/client/cursor_client.h"
-#include "ui/aura/root_window_transformer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_tree_host.h"
@@ -270,9 +272,10 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
 
   gfx::Display display =
       Shell::GetScreen()->GetDisplayNearestWindow(root_window_);
-  scoped_ptr<aura::RootWindowTransformer> transformer(
+  scoped_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(root_window_, display));
-  root_window_->GetHost()->SetRootWindowTransformer(transformer.Pass());
+  GetRootWindowController(root_window_)->ash_host()->SetRootWindowTransformer(
+      transformer.Pass());
 
   if (animate)
     is_on_animation_ = true;

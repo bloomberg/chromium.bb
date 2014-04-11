@@ -47,6 +47,7 @@ class ScopedCaptureClient;
 }
 
 namespace ash {
+class AshWindowTreeHost;
 class AlwaysOnTopController;
 class AnimatingDesktopController;
 class DesktopBackgroundWidgetController;
@@ -80,14 +81,14 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
  public:
 
   // Creates and Initialize the RootWindowController for primary display.
-  static void CreateForPrimaryDisplay(aura::WindowTreeHost* host);
+  static void CreateForPrimaryDisplay(AshWindowTreeHost* host);
 
   // Creates and Initialize the RootWindowController for secondary displays.
-  static void CreateForSecondaryDisplay(aura::WindowTreeHost* host);
+  static void CreateForSecondaryDisplay(AshWindowTreeHost* host);
 
   // Creates and Initialize the RootWindowController for virtual
   // keyboard displays.
-  static void CreateForVirtualKeyboardDisplay(aura::WindowTreeHost* host);
+  static void CreateForVirtualKeyboardDisplay(AshWindowTreeHost* host);
 
   // Returns a RootWindowController that has a shelf for given
   // |window|. This returns the RootWindowController for the |window|'s
@@ -106,10 +107,13 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   virtual ~RootWindowController();
 
-  aura::Window* root_window() { return host_->window(); }
-  const aura::Window* root_window() const { return host_->window(); }
-  aura::WindowTreeHost* host() { return host_.get(); }
-  const aura::WindowTreeHost* host() const { return host_.get(); }
+  AshWindowTreeHost* ash_host() { return ash_host_.get(); }
+  const AshWindowTreeHost* ash_host() const { return ash_host_.get(); }
+
+  aura::WindowTreeHost* GetHost();
+  const aura::WindowTreeHost* GetHost() const;
+  aura::Window* GetRootWindow();
+  const aura::Window* GetRootWindow() const;
 
   RootWindowLayoutManager* root_window_layout() { return root_window_layout_; }
 
@@ -235,7 +239,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   bool IsVirtualKeyboardWindow(aura::Window* window);
 
  private:
-  explicit RootWindowController(aura::WindowTreeHost* host);
+  explicit RootWindowController(AshWindowTreeHost* host);
   enum RootWindowType {
     PRIMARY,
     SECONDARY,
@@ -267,7 +271,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;
   virtual void OnTouchHudProjectionToggled(bool enabled) OVERRIDE;
 
-  scoped_ptr<aura::WindowTreeHost> host_;
+  scoped_ptr<AshWindowTreeHost> ash_host_;
   RootWindowLayoutManager* root_window_layout_;
 
   scoped_ptr<StackingController> stacking_controller_;

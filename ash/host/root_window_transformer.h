@@ -1,11 +1,11 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_ROOT_WINDOW_TRANSFORMER_H_
-#define UI_AURA_ROOT_WINDOW_TRANSFORMER_H_
+#ifndef ASH_HOST_ROOT_WINDOW_TRANSFORMER_H_
+#define ASH_HOST_ROOT_WINDOW_TRANSFORMER_H_
 
-#include "ui/aura/aura_export.h"
+#include "ash/ash_export.h"
 
 namespace gfx {
 class Insets;
@@ -14,11 +14,11 @@ class Size;
 class Transform;
 }
 
-namespace aura {
+namespace ash {
 
 // RootWindowTransformer controls how RootWindow should be placed and
 // transformed inside the host window.
-class AURA_EXPORT RootWindowTransformer {
+class ASH_EXPORT RootWindowTransformer {
  public:
   virtual ~RootWindowTransformer() {}
 
@@ -40,6 +40,6 @@ class AURA_EXPORT RootWindowTransformer {
   virtual gfx::Insets GetHostInsets() const = 0;
 };
 
-}  // namespace aura
+}  // namespace ash
 
-#endif  // UI_AURA_ROOT_WINDOW_TRANSFORMER_H_
+#endif  // ASH_HOST_ROOT_WINDOW_TRANSFORMER_H_

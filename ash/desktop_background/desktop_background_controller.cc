@@ -258,10 +258,10 @@ bool DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
     DesktopBackgroundWidgetController* desktop_controller =
         root_window_controller->wallpaper_controller();
     if (desktop_controller) {
-      moved |= desktop_controller->Reparent(
-          root_window_controller->root_window(),
-          src_container,
-          dst_container);
+      moved |=
+          desktop_controller->Reparent(root_window_controller->GetRootWindow(),
+                                       src_container,
+                                       dst_container);
     }
     // During desktop show animations the controller lives in
     // AnimatingDesktopController owned by RootWindowController.
@@ -275,7 +275,7 @@ bool DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
         NULL;
     if (animating_controller) {
       moved |= animating_controller->Reparent(
-          root_window_controller->root_window(),
+          root_window_controller->GetRootWindow(),
           src_container,
           dst_container);
     }

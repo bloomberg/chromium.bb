@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace aura {
-class RootWindowTransformer;
 class Window;
 class WindowTreeHost;
 }
@@ -19,6 +18,8 @@ class Point;
 }
 
 namespace ash {
+class RootWindowTransformer;
+
 namespace test {
 
 class MirrorWindowTestApi {
@@ -32,8 +33,7 @@ class MirrorWindowTestApi {
   const gfx::Point& GetCursorHotPoint() const;
   const aura::Window* GetCursorWindow() const;
 
-  scoped_ptr<aura::RootWindowTransformer>
-      CreateCurrentRootWindowTransformer() const;
+  scoped_ptr<RootWindowTransformer> CreateCurrentRootWindowTransformer() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MirrorWindowTestApi);

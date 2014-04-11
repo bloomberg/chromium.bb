@@ -211,7 +211,7 @@ void MaximizeModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(
        iter != controllers.end(); ++iter) {
     RootWindowController* controller = *iter;
     aura::Window* container = Shell::GetContainer(
-        controller->root_window(), kShellWindowId_DefaultContainer);
+        controller->GetRootWindow(), kShellWindowId_DefaultContainer);
     controller->workspace_controller()->SetMaximizeBackdropDelegate(
         scoped_ptr<WorkspaceLayoutManagerDelegate>(
             enable ? new WorkspaceBackdropDelegate(container) : NULL));

@@ -8,7 +8,6 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window_transformer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
@@ -35,47 +34,6 @@ float GetDeviceScaleFactorFromDisplay(Window* window) {
   DCHECK(display.is_valid());
   return display.device_scale_factor();
 }
-
-class SimpleRootWindowTransformer : public RootWindowTransformer {
- public:
-  SimpleRootWindowTransformer(const Window* root_window,
-                              const gfx::Transform& transform)
-      : root_window_(root_window),
-        transform_(transform) {
-  }
-
-  // RootWindowTransformer overrides:
-  virtual gfx::Transform GetTransform() const OVERRIDE {
-    return transform_;
-  }
-
-  virtual gfx::Transform GetInverseTransform() const OVERRIDE {
-    gfx::Transform invert;
-    if (!transform_.GetInverse(&invert))
-      return transform_;
-    return invert;
-  }
-
-  virtual gfx::Rect GetRootWindowBounds(
-      const gfx::Size& host_size) const OVERRIDE {
-    gfx::Rect bounds(host_size);
-    gfx::RectF new_bounds(ui::ConvertRectToDIP(root_window_->layer(), bounds));
-    transform_.TransformRect(&new_bounds);
-    return gfx::Rect(gfx::ToFlooredSize(new_bounds.size()));
-  }
-
-  virtual gfx::Insets GetHostInsets() const OVERRIDE {
-    return gfx::Insets();
-  }
-
- private:
-  virtual ~SimpleRootWindowTransformer() {}
-
-  const Window* root_window_;
-  const gfx::Transform transform_;
-
-  DISALLOW_COPY_AND_ASSIGN(SimpleRootWindowTransformer);
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, public:
@@ -113,8 +71,6 @@ void WindowTreeHost::InitCompositor() {
   compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
                                GetBounds().size());
   compositor_->SetRootLayer(window()->layer());
-  transformer_.reset(
-      new SimpleRootWindowTransformer(window(), gfx::Transform()));
 }
 
 void WindowTreeHost::AddObserver(WindowTreeHostObserver* observer) {
@@ -129,40 +85,32 @@ ui::EventProcessor* WindowTreeHost::event_processor() {
   return dispatcher();
 }
 
-void WindowTreeHost::SetRootWindowTransformer(
-    scoped_ptr<RootWindowTransformer> transformer) {
-  transformer_ = transformer.Pass();
-  SetInsets(transformer_->GetHostInsets());
-  window()->SetTransform(transformer_->GetTransform());
-  // If the layer is not animating, then we need to update the root window
-  // size immediately.
-  if (!window()->layer()->GetAnimator()->is_animating())
-    UpdateRootWindowSize(GetBounds().size());
-}
-
 gfx::Transform WindowTreeHost::GetRootTransform() const {
   float scale = ui::GetDeviceScaleFactor(window()->layer());
   gfx::Transform transform;
   transform.Scale(scale, scale);
-  transform *= transformer_->GetTransform();
+  transform *= window()->layer()->transform();
   return transform;
 }
 
-void WindowTreeHost::SetTransform(const gfx::Transform& transform) {
-  scoped_ptr<RootWindowTransformer> transformer(
-      new SimpleRootWindowTransformer(window(), transform));
-  SetRootWindowTransformer(transformer.Pass());
+void WindowTreeHost::SetRootTransform(const gfx::Transform& transform) {
+  window()->SetTransform(transform);
+  UpdateRootWindowSize(GetBounds().size());
 }
 
 gfx::Transform WindowTreeHost::GetInverseRootTransform() const {
-  float scale = ui::GetDeviceScaleFactor(window()->layer());
-  gfx::Transform transform;
-  transform.Scale(1.0f / scale, 1.0f / scale);
-  return transformer_->GetInverseTransform() * transform;
+  gfx::Transform invert;
+  gfx::Transform transform = GetRootTransform();
+  if (!transform.GetInverse(&invert))
+    return transform;
+  return invert;
 }
 
 void WindowTreeHost::UpdateRootWindowSize(const gfx::Size& host_size) {
-  window()->SetBounds(transformer_->GetRootWindowBounds(host_size));
+  gfx::Rect bounds(host_size);
+  gfx::RectF new_bounds(ui::ConvertRectToDIP(window()->layer(), bounds));
+  GetRootTransform().TransformRect(&new_bounds);
+  window()->SetBounds(gfx::Rect(gfx::ToFlooredSize(new_bounds.size())));
 }
 
 void WindowTreeHost::ConvertPointToNativeScreen(gfx::Point* point) const {

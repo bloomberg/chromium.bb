@@ -145,7 +145,6 @@ class WebNotificationTray;
 class WindowCycleController;
 class WindowPositioner;
 class WindowSelectorController;
-class WindowTreeHostFactory;
 
 namespace shell {
 class WindowWatcher;
@@ -515,10 +514,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   }
 #endif  // defined(OS_CHROMEOS)
 
-  WindowTreeHostFactory* window_tree_host_factory() {
-    return window_tree_host_factory_.get();
-  }
-
   ShelfModel* shelf_model() {
     return shelf_model_.get();
   }
@@ -652,12 +647,12 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   scoped_ptr<AutoclickController> autoclick_controller_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
   aura::client::ActivationClient* activation_client_;
+
   scoped_ptr<MouseCursorEventFilter> mouse_cursor_filter_;
   scoped_ptr<ScreenPositionController> screen_position_controller_;
   scoped_ptr<SystemModalContainerEventFilter> modality_filter_;
   scoped_ptr<EventClientImpl> event_client_;
   scoped_ptr<EventTransformationHandler> event_transformation_handler_;
-  scoped_ptr<WindowTreeHostFactory> window_tree_host_factory_;
 
   // An event filter that pre-handles key events while the partial
   // screenshot UI or the keyboard overlay is active.

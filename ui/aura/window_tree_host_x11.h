@@ -5,23 +5,19 @@
 #ifndef UI_AURA_WINDOW_TREE_HOST_X11_H_
 #define UI_AURA_WINDOW_TREE_HOST_X11_H_
 
-#include <X11/Xlib.h>
-
-#include <vector>
-
-// Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
-#undef RootWindow
-
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/env_observer.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/events/event_source.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+
+// X forward decls to avoid including Xlib.h in a header file.
+typedef struct _XDisplay XDisplay;
+typedef unsigned long XID;
+typedef XID Window;
 
 namespace ui {
 class MouseEvent;
@@ -35,8 +31,8 @@ class TouchEventCalibrate;
 
 class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
                                       public ui::EventSource,
-                                      public ui::PlatformEventDispatcher,
-                                      public EnvObserver {
+                                      public ui::PlatformEventDispatcher {
+
  public:
   explicit WindowTreeHostX11(const gfx::Rect& bounds);
   virtual ~WindowTreeHostX11();
@@ -49,29 +45,33 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
-  virtual void ToggleFullScreen() OVERRIDE;
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual gfx::Insets GetInsets() const OVERRIDE;
-  virtual void SetInsets(const gfx::Insets& insets) OVERRIDE;
   virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
   virtual void SetCapture() OVERRIDE;
   virtual void ReleaseCapture() OVERRIDE;
   virtual bool QueryMouseLocation(gfx::Point* location_return) OVERRIDE;
-  virtual bool ConfineCursorToRootWindow() OVERRIDE;
-  virtual void UnConfineCursor() OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void SetCursorNative(gfx::NativeCursor cursor_type) OVERRIDE;
   virtual void MoveCursorToNative(const gfx::Point& location) OVERRIDE;
   virtual void OnCursorVisibilityChangedNative(bool show) OVERRIDE;
 
-  // EnvObserver overrides.
-  virtual void OnWindowInitialized(Window* window) OVERRIDE;
-  virtual void OnHostInitialized(WindowTreeHost* host) OVERRIDE;
-
   // ui::EventSource overrides.
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
+
+ protected:
+  // Called when X Configure Notify event is recevied.
+  virtual void OnConfigureNotify();
+
+  // Translates the native mouse location into screen coordinates and and
+  // dispatches the event via WindowEventDispatcher.
+  virtual void TranslateAndDispatchLocatedEvent(ui::LocatedEvent* event);
+
+  ::Window x_root_window() { return x_root_window_; }
+  XDisplay* xdisplay() { return xdisplay_; }
+  const gfx::Rect bounds() const { return bounds_; }
+  ui::X11AtomCache* atom_cache() { return &atom_cache_; }
 
  private:
   // Dispatches XI2 events. Note that some events targetted for the X root
@@ -88,17 +88,6 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   // |current_cursor_|.
   void SetCursorInternal(gfx::NativeCursor cursor);
 
-  // Translates the native mouse location into screen coordinates and and
-  // dispatches the event via WindowEventDispatcher.
-  void TranslateAndDispatchMouseEvent(ui::MouseEvent* event);
-
-  // Update is_internal_display_ based on delegate_ state
-  void UpdateIsInternalDisplay();
-
-  // Set the CrOS touchpad "tap paused" property. It is used to temporarily
-  // turn off the Tap-to-click feature when the mouse pointer is invisible.
-  void SetCrOSTapPaused(bool state);
-
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_;
   ::Window xwindow_;
@@ -114,16 +103,6 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
 
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
-
-  // The insets that specifies the effective area within the |window_|.
-  gfx::Insets insets_;
-
-  // True if the root host resides on the internal display
-  bool is_internal_display_;
-
-  scoped_ptr<XID[]> pointer_barriers_;
-
-  scoped_ptr<internal::TouchEventCalibrate> touch_calibrate_;
 
   ui::X11AtomCache atom_cache_;
 

@@ -63,9 +63,8 @@
         'input_state_lookup_win.h',
         'layout_manager.cc',
         'layout_manager.h',
-        'remote_window_tree_host_win.cc',
+        'remote_window_tree_host_win.cc',	
         'remote_window_tree_host_win.h',
-        'root_window_transformer.h',
         'scoped_window_targeter.cc',
         'scoped_window_targeter.h',
         'window.cc',
@@ -117,7 +116,6 @@
         ['use_x11==1', {
           'dependencies': [
             '../../build/linux/system.gyp:x11',
-            '../../build/linux/system.gyp:xfixes',
             '../../build/linux/system.gyp:xrandr',
             '../../build/linux/system.gyp:xi',
           ],
@@ -261,7 +259,6 @@
       ],
       'sources': [
         'gestures/gesture_recognizer_unittest.cc',
-        'window_tree_host_x11_unittest.cc',
         'window_event_dispatcher_unittest.cc',
         'test/run_all_unittests.cc',
         'window_targeter_unittest.cc',

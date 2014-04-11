@@ -15,7 +15,8 @@
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/root_window_transformers.h"
 #include "ash/display/virtual_keyboard_window_controller.h"
-#include "ash/host/window_tree_host_factory.h"
+#include "ash/host/ash_window_tree_host.h"
+#include "ash/host/root_window_transformer.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/screen_util.h"
@@ -27,11 +28,11 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/root_window_transformer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/gfx/display.h"
@@ -76,9 +77,10 @@ DisplayManager* GetDisplayManager() {
   return Shell::GetInstance()->display_manager();
 }
 
-void SetDisplayPropertiesOnHost(aura::WindowTreeHost* host,
+void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
                                 const gfx::Display& display) {
   DisplayInfo info = GetDisplayManager()->GetDisplayInfo(display.id());
+  aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   // Native window property (Atom in X11) that specifies the display's
   // rotation, scale factor and if it's internal display.  They are
@@ -116,9 +118,9 @@ void SetDisplayPropertiesOnHost(aura::WindowTreeHost* host,
                      kCARDINAL,
                      100 * display.device_scale_factor());
 #endif
-  scoped_ptr<aura::RootWindowTransformer> transformer(
+  scoped_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(host->window(), display));
-  host->SetRootWindowTransformer(transformer.Pass());
+  ash_host->SetRootWindowTransformer(transformer.Pass());
 
   DisplayMode mode;
   if (GetDisplayManager()->GetSelectedModeForDisplayId(display.id(), &mode) &&
@@ -127,6 +129,10 @@ void SetDisplayPropertiesOnHost(aura::WindowTreeHost* host,
         base::TimeDelta::FromMicroseconds(
             base::Time::kMicrosecondsPerSecond / mode.refresh_rate));
   }
+}
+
+aura::Window* GetWindow(AshWindowTreeHost* ash_host) {
+  return ash_host->AsWindowTreeHost()->window();
 }
 
 }  // namespace
@@ -218,7 +224,7 @@ bool DisplayController::DisplayChangeLimiter::IsThrottled() const {
 // DisplayController
 
 DisplayController::DisplayController()
-    : primary_root_window_for_replace_(NULL),
+    : primary_tree_host_for_replace_(NULL),
       focus_activation_store_(new FocusActivationStore()),
       cursor_window_controller_(new CursorWindowController()),
       mirror_window_controller_(new MirrorWindowController()) {
@@ -257,28 +263,34 @@ void DisplayController::Shutdown() {
   Shell::GetScreen()->RemoveObserver(this);
   // Delete all root window controllers, which deletes root window
   // from the last so that the primary root window gets deleted last.
-  for (std::map<int64, aura::Window*>::const_reverse_iterator it =
-           root_windows_.rbegin(); it != root_windows_.rend(); ++it) {
-    RootWindowController* controller = GetRootWindowController(it->second);
+  for (WindowTreeHostMap::const_reverse_iterator it =
+           window_tree_hosts_.rbegin();
+       it != window_tree_hosts_.rend();
+       ++it) {
+    RootWindowController* controller =
+        GetRootWindowController(GetWindow(it->second));
     DCHECK(controller);
     delete controller;
   }
 }
 
-void DisplayController::InitPrimaryDisplay() {
+void DisplayController::CreatePrimaryHost() {
   const gfx::Display& primary_candidate =
       GetDisplayManager()->GetPrimaryDisplayCandidate();
   primary_display_id = primary_candidate.id();
   AddWindowTreeHostForDisplay(primary_candidate);
 }
 
-void DisplayController::InitSecondaryDisplays() {
+void DisplayController::InitDisplays() {
+  RootWindowController::CreateForPrimaryDisplay(
+      window_tree_hosts_[primary_display_id]);
+
   DisplayManager* display_manager = GetDisplayManager();
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
     const gfx::Display& display = display_manager->GetDisplayAt(i);
     if (primary_display_id != display.id()) {
-      aura::WindowTreeHost* host = AddWindowTreeHostForDisplay(display);
-      RootWindowController::CreateForSecondaryDisplay(host);
+      AshWindowTreeHost* ash_host = AddWindowTreeHostForDisplay(display);
+      RootWindowController::CreateForSecondaryDisplay(ash_host);
     }
   }
   UpdateHostWindowNames();
@@ -298,18 +310,19 @@ int64 DisplayController::GetPrimaryDisplayId() {
 }
 
 aura::Window* DisplayController::GetPrimaryRootWindow() {
-  DCHECK(!root_windows_.empty());
-  return root_windows_[primary_display_id];
+  return GetRootWindowForDisplayId(primary_display_id);
 }
 
 aura::Window* DisplayController::GetRootWindowForDisplayId(int64 id) {
-  return root_windows_[id];
+  DCHECK_EQ(1u, window_tree_hosts_.count(id));
+  return GetWindow(window_tree_hosts_[id]);
 }
 
 void DisplayController::CloseChildWindows() {
-  for (std::map<int64, aura::Window*>::const_iterator it =
-           root_windows_.begin(); it != root_windows_.end(); ++it) {
-    aura::Window* root_window = it->second;
+  for (WindowTreeHostMap::const_iterator it = window_tree_hosts_.begin();
+       it != window_tree_hosts_.end();
+       ++it) {
+    aura::Window* root_window = GetWindow(it->second);
     RootWindowController* controller = GetRootWindowController(root_window);
     if (controller) {
       controller->CloseChildWindows();
@@ -324,11 +337,12 @@ void DisplayController::CloseChildWindows() {
 
 aura::Window::Windows DisplayController::GetAllRootWindows() {
   aura::Window::Windows windows;
-  for (std::map<int64, aura::Window*>::const_iterator it =
-           root_windows_.begin(); it != root_windows_.end(); ++it) {
+  for (WindowTreeHostMap::const_iterator it = window_tree_hosts_.begin();
+       it != window_tree_hosts_.end();
+       ++it) {
     DCHECK(it->second);
-    if (GetRootWindowController(it->second))
-      windows.push_back(it->second);
+    if (GetRootWindowController(GetWindow(it->second)))
+      windows.push_back(GetWindow(it->second));
   }
   return windows;
 }
@@ -345,9 +359,11 @@ void DisplayController::SetOverscanInsets(int64 display_id,
 std::vector<RootWindowController*>
 DisplayController::GetAllRootWindowControllers() {
   std::vector<RootWindowController*> controllers;
-  for (std::map<int64, aura::Window*>::const_iterator it =
-           root_windows_.begin(); it != root_windows_.end(); ++it) {
-    RootWindowController* controller = GetRootWindowController(it->second);
+  for (WindowTreeHostMap::const_iterator it = window_tree_hosts_.begin();
+       it != window_tree_hosts_.end();
+       ++it) {
+    RootWindowController* controller =
+        GetRootWindowController(GetWindow(it->second));
     if (controller)
       controllers.push_back(controller);
   }
@@ -423,39 +439,41 @@ void DisplayController::SetPrimaryDisplay(
   }
 
   if (primary_display_id == new_primary_display.id() ||
-      root_windows_.size() < 2) {
+      window_tree_hosts_.size() < 2) {
     return;
   }
 
-  aura::Window* non_primary_root = root_windows_[new_primary_display.id()];
-  LOG_IF(ERROR, !non_primary_root)
+  AshWindowTreeHost* non_primary_host =
+      window_tree_hosts_[new_primary_display.id()];
+  LOG_IF(ERROR, !non_primary_host)
       << "Unknown display is requested in SetPrimaryDisplay: id="
       << new_primary_display.id();
-  if (!non_primary_root)
+  if (!non_primary_host)
     return;
 
   gfx::Display old_primary_display = Shell::GetScreen()->GetPrimaryDisplay();
 
   // Swap root windows between current and new primary display.
-  aura::Window* primary_root = root_windows_[primary_display_id];
-  DCHECK(primary_root);
-  DCHECK_NE(primary_root, non_primary_root);
+  AshWindowTreeHost* primary_host = window_tree_hosts_[primary_display_id];
+  DCHECK(primary_host);
+  DCHECK_NE(primary_host, non_primary_host);
 
-  root_windows_[new_primary_display.id()] = primary_root;
-  GetRootWindowSettings(primary_root)->display_id = new_primary_display.id();
+  window_tree_hosts_[new_primary_display.id()] = primary_host;
+  GetRootWindowSettings(GetWindow(primary_host))->display_id =
+      new_primary_display.id();
 
-  root_windows_[old_primary_display.id()] = non_primary_root;
-  GetRootWindowSettings(non_primary_root)->display_id =
+  window_tree_hosts_[old_primary_display.id()] = non_primary_host;
+  GetRootWindowSettings(GetWindow(non_primary_host))->display_id =
       old_primary_display.id();
 
   primary_display_id = new_primary_display.id();
   GetDisplayManager()->layout_store()->UpdatePrimaryDisplayId(
       display_manager->GetCurrentDisplayIdPair(), primary_display_id);
 
-  UpdateWorkAreaOfDisplayNearestWindow(
-      primary_root, old_primary_display.GetWorkAreaInsets());
-  UpdateWorkAreaOfDisplayNearestWindow(
-      non_primary_root, new_primary_display.GetWorkAreaInsets());
+  UpdateWorkAreaOfDisplayNearestWindow(GetWindow(primary_host),
+                                       old_primary_display.GetWorkAreaInsets());
+  UpdateWorkAreaOfDisplayNearestWindow(GetWindow(non_primary_host),
+                                       new_primary_display.GetWorkAreaInsets());
 
   // Update the dispay manager with new display info.
   std::vector<DisplayInfo> display_info_list;
@@ -529,67 +547,69 @@ void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
   const DisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display.id());
   DCHECK(!display_info.bounds_in_native().IsEmpty());
-  aura::WindowTreeHost* host = root_windows_[display.id()]->GetHost();
-  host->SetBounds(display_info.bounds_in_native());
-  SetDisplayPropertiesOnHost(host, display);
+  AshWindowTreeHost* ash_host = window_tree_hosts_[display.id()];
+  ash_host->AsWindowTreeHost()->SetBounds(display_info.bounds_in_native());
+  SetDisplayPropertiesOnHost(ash_host, display);
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
-  if (primary_root_window_for_replace_) {
-    DCHECK(root_windows_.empty());
+  if (primary_tree_host_for_replace_) {
+    DCHECK(window_tree_hosts_.empty());
     primary_display_id = display.id();
-    root_windows_[display.id()] = primary_root_window_for_replace_;
-    GetRootWindowSettings(primary_root_window_for_replace_)->display_id =
-        display.id();
-    primary_root_window_for_replace_ = NULL;
+    window_tree_hosts_[display.id()] = primary_tree_host_for_replace_;
+    GetRootWindowSettings(GetWindow(primary_tree_host_for_replace_))
+        ->display_id = display.id();
+    primary_tree_host_for_replace_ = NULL;
     const DisplayInfo& display_info =
         GetDisplayManager()->GetDisplayInfo(display.id());
-    aura::WindowTreeHost* host = root_windows_[display.id()]->GetHost();
-    host->SetBounds(display_info.bounds_in_native());
-    SetDisplayPropertiesOnHost(host, display);
+    AshWindowTreeHost* ash_host = window_tree_hosts_[display.id()];
+    ash_host->AsWindowTreeHost()->SetBounds(display_info.bounds_in_native());
+    SetDisplayPropertiesOnHost(ash_host, display);
   } else {
     if (primary_display_id == gfx::Display::kInvalidDisplayID)
       primary_display_id = display.id();
-    DCHECK(!root_windows_.empty());
-    aura::WindowTreeHost* host = AddWindowTreeHostForDisplay(display);
-    RootWindowController::CreateForSecondaryDisplay(host);
+    DCHECK(!window_tree_hosts_.empty());
+    AshWindowTreeHost* ash_host = AddWindowTreeHostForDisplay(display);
+    RootWindowController::CreateForSecondaryDisplay(ash_host);
   }
 }
 
 void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
-  aura::Window* root_to_delete = root_windows_[display.id()];
-  DCHECK(root_to_delete) << display.ToString();
+  AshWindowTreeHost* host_to_delete = window_tree_hosts_[display.id()];
+  DCHECK(host_to_delete) << display.ToString();
 
   // Display for root window will be deleted when the Primary RootWindow
   // is deleted by the Shell.
-  root_windows_.erase(display.id());
+  window_tree_hosts_.erase(display.id());
 
   // When the primary root window's display is removed, move the primary
   // root to the other display.
   if (primary_display_id == display.id()) {
     // Temporarily store the primary root window in
     // |primary_root_window_for_replace_| when replacing the display.
-    if (root_windows_.size() == 0) {
+    if (window_tree_hosts_.size() == 0) {
       primary_display_id = gfx::Display::kInvalidDisplayID;
-      primary_root_window_for_replace_ = root_to_delete;
+      primary_tree_host_for_replace_ = host_to_delete;
       return;
     }
-    DCHECK_EQ(1U, root_windows_.size());
+    DCHECK_EQ(1U, window_tree_hosts_.size());
     primary_display_id = ScreenUtil::GetSecondaryDisplay().id();
-    aura::Window* primary_root = root_to_delete;
+    AshWindowTreeHost* primary_host = host_to_delete;
 
-    // Delete the other root instead.
-    root_to_delete = root_windows_[primary_display_id];
-    GetRootWindowSettings(root_to_delete)->display_id = display.id();
+    // Delete the other host instead.
+    host_to_delete = window_tree_hosts_[primary_display_id];
+    GetRootWindowSettings(GetWindow(host_to_delete))->display_id = display.id();
 
     // Setup primary root.
-    root_windows_[primary_display_id] = primary_root;
-    GetRootWindowSettings(primary_root)->display_id = primary_display_id;
+    window_tree_hosts_[primary_display_id] = primary_host;
+    GetRootWindowSettings(GetWindow(primary_host))->display_id =
+        primary_display_id;
 
     OnDisplayBoundsChanged(
         GetDisplayManager()->GetDisplayForId(primary_display_id));
   }
-  RootWindowController* controller = GetRootWindowController(root_to_delete);
+  RootWindowController* controller =
+      GetRootWindowController(GetWindow(host_to_delete));
   DCHECK(controller);
   controller->MoveWindowsTo(GetPrimaryRootWindow());
   // Delete most of root window related objects, but don't delete
@@ -679,15 +699,15 @@ void DisplayController::PostDisplayConfigurationChange() {
   EnsurePointerInDisplays();
 }
 
-aura::WindowTreeHost* DisplayController::AddWindowTreeHostForDisplay(
+AshWindowTreeHost* DisplayController::AddWindowTreeHostForDisplay(
     const gfx::Display& display) {
   static int host_count = 0;
   const DisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display.id());
   const gfx::Rect& bounds_in_native = display_info.bounds_in_native();
-  aura::WindowTreeHost* host =
-      Shell::GetInstance()->window_tree_host_factory()->CreateWindowTreeHost(
-          bounds_in_native);
+  AshWindowTreeHost* ash_host = AshWindowTreeHost::Create(bounds_in_native);
+  aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
+
   host->window()->SetName(base::StringPrintf("RootWindow-%d", host_count++));
   host->compositor()->SetBackgroundColor(SK_ColorBLACK);
   // No need to remove our observer observer because the DisplayController
@@ -696,17 +716,17 @@ aura::WindowTreeHost* DisplayController::AddWindowTreeHostForDisplay(
   InitRootWindowSettings(host->window())->display_id = display.id();
   host->InitHost();
 
-  root_windows_[display.id()] = host->window();
-  SetDisplayPropertiesOnHost(host, display);
+  window_tree_hosts_[display.id()] = ash_host;
+  SetDisplayPropertiesOnHost(ash_host, display);
 
 #if defined(OS_CHROMEOS)
   static bool force_constrain_pointer_to_root =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshConstrainPointerToRoot);
   if (base::SysInfo::IsRunningOnChromeOS() || force_constrain_pointer_to_root)
-    host->ConfineCursorToRootWindow();
+    ash_host->ConfineCursorToRootWindow();
 #endif
-  return host;
+  return ash_host;
 }
 
 void DisplayController::OnFadeOutForSwapDisplayFinished() {

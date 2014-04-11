@@ -8,12 +8,12 @@
 
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
+#include "ash/host/root_window_transformer.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
-#include "ui/aura/root_window_transformer.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
 #include "ui/compositor/dip_util.h"
@@ -123,7 +123,7 @@ gfx::Transform CreateInsetsAndScaleTransform(const gfx::Insets& insets,
 }
 
 // RootWindowTransformer for ash environment.
-class AshRootWindowTransformer : public aura::RootWindowTransformer {
+class AshRootWindowTransformer : public RootWindowTransformer {
  public:
   AshRootWindowTransformer(aura::Window* root,
                            const gfx::Display& display)
@@ -139,7 +139,6 @@ class AshRootWindowTransformer : public aura::RootWindowTransformer {
         CreateRotationTransform(root, display);
     transform_ = root_window_bounds_transform_ * CreateMagnifierTransform(root);
     CHECK(transform_.GetInverse(&invert_transform_));
-
   }
 
   // aura::RootWindowTransformer overrides:
@@ -201,7 +200,7 @@ class AshRootWindowTransformer : public aura::RootWindowTransformer {
 // texture (bitmap) of the source display into the mirror window, so
 // the root window bounds is the same as the source display's
 // pixel size (excluding overscan insets).
-class MirrorRootWindowTransformer : public aura::RootWindowTransformer {
+class MirrorRootWindowTransformer : public RootWindowTransformer {
  public:
   MirrorRootWindowTransformer(const DisplayInfo& source_display_info,
                               const DisplayInfo& mirror_display_info) {
@@ -267,13 +266,13 @@ class MirrorRootWindowTransformer : public aura::RootWindowTransformer {
 
 }  // namespace
 
-aura::RootWindowTransformer* CreateRootWindowTransformerForDisplay(
+RootWindowTransformer* CreateRootWindowTransformerForDisplay(
     aura::Window* root,
     const gfx::Display& display) {
   return new AshRootWindowTransformer(root, display);
 }
 
-aura::RootWindowTransformer* CreateRootWindowTransformerForMirroredDisplay(
+RootWindowTransformer* CreateRootWindowTransformerForMirroredDisplay(
     const DisplayInfo& source_display_info,
     const DisplayInfo& mirror_display_info) {
   return new MirrorRootWindowTransformer(source_display_info,

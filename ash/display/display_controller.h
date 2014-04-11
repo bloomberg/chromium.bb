@@ -37,6 +37,7 @@ class Insets;
 }
 
 namespace ash {
+class AshWindowTreeHost;
 class CursorWindowController;
 class DisplayInfo;
 class DisplayManager;
@@ -91,11 +92,11 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
     return virtual_keyboard_window_controller_.get();
   }
 
-  // Initializes primary display.
-  void InitPrimaryDisplay();
+  // Create a WindowTreeHost for the primary display.
+  void CreatePrimaryHost();
 
-  // Initialize secondary displays.
-  void InitSecondaryDisplays();
+  // Initializes all displays.
+  void InitDisplays();
 
   // Add/Remove observers.
   void AddObserver(Observer* observer);
@@ -166,10 +167,9 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   friend class DisplayManager;
   friend class MirrorWindowController;
 
-  // Creates a WindowTreeHost for |display| and stores it in the |root_windows_|
-  // map.
-  aura::WindowTreeHost* AddWindowTreeHostForDisplay(
-      const gfx::Display& display);
+  // Creates a WindowTreeHost for |display| and stores it in the
+  // |window_tree_hosts_| map.
+  AshWindowTreeHost* AddWindowTreeHostForDisplay(const gfx::Display& display);
 
   void OnFadeOutForSwapDisplayFinished();
 
@@ -195,14 +195,15 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // change the display configuration.
   scoped_ptr<DisplayChangeLimiter> limiter_;
 
-  // The mapping from display ID to its root window.
-  std::map<int64, aura::Window*> root_windows_;
+  typedef std::map<int64, AshWindowTreeHost*> WindowTreeHostMap;
+  // The mapping from display ID to its window tree host.
+  WindowTreeHostMap window_tree_hosts_;
 
   ObserverList<Observer> observers_;
 
-  // Store the primary root window temporarily while replacing
+  // Store the primary window tree host temporarily while replacing
   // display.
-  aura::Window* primary_root_window_for_replace_;
+  AshWindowTreeHost* primary_tree_host_for_replace_;
 
   scoped_ptr<FocusActivationStore> focus_activation_store_;
 

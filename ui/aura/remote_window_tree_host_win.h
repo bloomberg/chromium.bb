@@ -107,9 +107,14 @@ class AURA_EXPORT RemoteWindowTreeHostWin
       public ui::internal::RemoteInputMethodDelegateWin {
  public:
   // Returns the only RemoteWindowTreeHostWin, if this is the first time
-  // this function is called, it will call Create() wiht empty bounds.
+  // this function is called and the instance have never set by SetInstance,
+  // it will call Create() wiht empty bounds.
   static RemoteWindowTreeHostWin* Instance();
-  static RemoteWindowTreeHostWin* Create(const gfx::Rect& bounds);
+
+  // Manually sets the instance to be used as a return value of |Instance()|
+  // method above. This should not be called if the instance has already
+  // been set or created, and doing so will result in CHECK failure.
+  static void SetInstance(RemoteWindowTreeHostWin* instance);
 
   // Returns true if there is a RemoteWindowTreeHostWin and it has a valid
   // HWND. A return value of false typically indicates we're not in metro mode.
@@ -171,10 +176,11 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   // OS.
   bool IsForegroundWindow();
 
- private:
+ protected:
   explicit RemoteWindowTreeHostWin(const gfx::Rect& bounds);
   virtual ~RemoteWindowTreeHostWin();
 
+ private:
   // IPC message handing methods:
   void OnMouseMoved(int32 x, int32 y, int32 flags);
   void OnMouseButton(const MetroViewerHostMsg_MouseButtonParams& params);
@@ -219,17 +225,12 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
-  virtual void ToggleFullScreen() OVERRIDE;
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual gfx::Insets GetInsets() const OVERRIDE;
-  virtual void SetInsets(const gfx::Insets& insets) OVERRIDE;
   virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
   virtual void SetCapture() OVERRIDE;
   virtual void ReleaseCapture() OVERRIDE;
   virtual bool QueryMouseLocation(gfx::Point* location_return) OVERRIDE;
-  virtual bool ConfineCursorToRootWindow() OVERRIDE;
-  virtual void UnConfineCursor() OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void SetCursorNative(gfx::NativeCursor cursor) OVERRIDE;

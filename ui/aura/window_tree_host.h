@@ -28,7 +28,6 @@ class ViewProp;
 }
 
 namespace aura {
-class RootWindowTransformer;
 class WindowEventDispatcher;
 class WindowTreeHostObserver;
 
@@ -66,16 +65,14 @@ class AURA_EXPORT WindowTreeHost {
 
   ui::Compositor* compositor() { return compositor_.get(); }
 
-  void SetRootWindowTransformer(scoped_ptr<RootWindowTransformer> transformer);
-  gfx::Transform GetRootTransform() const;
-
-  void SetTransform(const gfx::Transform& transform);
-
-  gfx::Transform GetInverseRootTransform() const;
+  // Gets/Sets the root window's transform.
+  virtual gfx::Transform GetRootTransform() const;
+  virtual void SetRootTransform(const gfx::Transform& transform);
+  virtual gfx::Transform GetInverseRootTransform() const;
 
   // Updates the root window's size using |host_size|, current
   // transform and insets.
-  void UpdateRootWindowSize(const gfx::Size& host_size);
+  virtual void UpdateRootWindowSize(const gfx::Size& host_size);
 
   // Returns the actual size of the screen.
   // (gfx::Screen only reports on the virtual desktop exposed by Aura.)
@@ -123,17 +120,9 @@ class AURA_EXPORT WindowTreeHost {
   // Hides the WindowTreeHost.
   virtual void Hide() = 0;
 
-  // Toggles the host's full screen state.
-  virtual void ToggleFullScreen() = 0;
-
   // Gets/Sets the size of the WindowTreeHost.
   virtual gfx::Rect GetBounds() const = 0;
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
-
-  // Sets/Gets the insets that specifies the effective root window area
-  // in the host window.
-  virtual gfx::Insets GetInsets() const = 0;
-  virtual void SetInsets(const gfx::Insets& insets) = 0;
 
   // Sets the OS capture to the root window.
   virtual void SetCapture() = 0;
@@ -148,14 +137,6 @@ class AURA_EXPORT WindowTreeHost {
   // |location_return|.
   // This method is expensive, instead use gfx::Screen::GetCursorScreenPoint().
   virtual bool QueryMouseLocation(gfx::Point* location_return) = 0;
-
-  // Clips the cursor to the bounds of the root window until UnConfineCursor().
-  // We would like to be able to confine the cursor to that window. However,
-  // currently, we do not have such functionality in X. So we just confine
-  // to the root window. This is ok because this option is currently only
-  // being used in fullscreen mode, so root_window bounds = window bounds.
-  virtual bool ConfineCursorToRootWindow() = 0;
-  virtual void UnConfineCursor() = 0;
 
   // Posts |native_event| to the platform's event queue.
   virtual void PostNativeEvent(const base::NativeEvent& native_event) = 0;
@@ -207,8 +188,6 @@ class AURA_EXPORT WindowTreeHost {
   scoped_ptr<WindowEventDispatcher> dispatcher_;
 
   scoped_ptr<ui::Compositor> compositor_;
-
-  scoped_ptr<RootWindowTransformer> transformer_;
 
   // Last cursor set.  Used for testing.
   gfx::NativeCursor last_cursor_;

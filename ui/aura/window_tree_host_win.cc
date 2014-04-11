@@ -41,10 +41,7 @@ gfx::Size WindowTreeHost::GetNativeScreenSize() {
 }
 
 WindowTreeHostWin::WindowTreeHostWin(const gfx::Rect& bounds)
-    : fullscreen_(false),
-      has_capture_(false),
-      saved_window_style_(0),
-      saved_window_ex_style_(0) {
+    : has_capture_(false) {
   if (use_popup_as_root_window_for_test)
     set_window_style(WS_POPUP);
   Init(NULL, bounds);
@@ -70,38 +67,6 @@ void WindowTreeHostWin::Hide() {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostWin::ToggleFullScreen() {
-  gfx::Rect target_rect;
-  if (!fullscreen_) {
-    fullscreen_ = true;
-    saved_window_style_ = GetWindowLong(hwnd(), GWL_STYLE);
-    saved_window_ex_style_ = GetWindowLong(hwnd(), GWL_EXSTYLE);
-    GetWindowRect(hwnd(), &saved_window_rect_);
-    SetWindowLong(hwnd(), GWL_STYLE,
-                  saved_window_style_ & ~(WS_CAPTION | WS_THICKFRAME));
-    SetWindowLong(hwnd(), GWL_EXSTYLE,
-                  saved_window_ex_style_ & ~(WS_EX_DLGMODALFRAME |
-                      WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
-
-    MONITORINFO mi;
-    mi.cbSize = sizeof(mi);
-    GetMonitorInfo(MonitorFromWindow(hwnd(), MONITOR_DEFAULTTONEAREST), &mi);
-    target_rect = gfx::Rect(mi.rcMonitor);
-  } else {
-    fullscreen_ = false;
-    SetWindowLong(hwnd(), GWL_STYLE, saved_window_style_);
-    SetWindowLong(hwnd(), GWL_EXSTYLE, saved_window_ex_style_);
-    target_rect = gfx::Rect(saved_window_rect_);
-  }
-  SetWindowPos(hwnd(),
-               NULL,
-               target_rect.x(),
-               target_rect.y(),
-               target_rect.width(),
-               target_rect.height(),
-               SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-}
-
 gfx::Rect WindowTreeHostWin::GetBounds() const {
   RECT r;
   GetClientRect(hwnd(), &r);
@@ -109,11 +74,6 @@ gfx::Rect WindowTreeHostWin::GetBounds() const {
 }
 
 void WindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
-  if (fullscreen_) {
-    saved_window_rect_.right = saved_window_rect_.left + bounds.width();
-    saved_window_rect_.bottom = saved_window_rect_.top + bounds.height();
-    return;
-  }
   RECT window_rect;
   window_rect.left = bounds.x();
   window_rect.top = bounds.y();
@@ -139,13 +99,6 @@ void WindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
       GetDisplayNearestWindow(window()).device_scale_factor();
   if (current_scale != new_scale)
     OnHostResized(bounds.size());
-}
-
-gfx::Insets WindowTreeHostWin::GetInsets() const {
-  return gfx::Insets();
-}
-
-void WindowTreeHostWin::SetInsets(const gfx::Insets& insets) {
 }
 
 gfx::Point WindowTreeHostWin::GetLocationOnNativeScreen() const {
@@ -185,16 +138,6 @@ bool WindowTreeHostWin::QueryMouseLocation(gfx::Point* location_return) {
                  max(0, min(size.height(), static_cast<int>(pt.y))));
   return (pt.x >= 0 && static_cast<int>(pt.x) < size.width() &&
           pt.y >= 0 && static_cast<int>(pt.y) < size.height());
-}
-
-bool WindowTreeHostWin::ConfineCursorToRootWindow() {
-  RECT window_rect;
-  GetWindowRect(hwnd(), &window_rect);
-  return ClipCursor(&window_rect) != 0;
-}
-
-void WindowTreeHostWin::UnConfineCursor() {
-  ClipCursor(NULL);
 }
 
 void WindowTreeHostWin::SetCursorNative(gfx::NativeCursor native_cursor) {

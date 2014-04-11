@@ -48,7 +48,7 @@ void TestScreen::SetDeviceScaleFactor(float device_scale_factor) {
 void TestScreen::SetDisplayRotation(gfx::Display::Rotation rotation) {
   display_.set_rotation(rotation);
   // TODO(oshima|mukai): Update the display_ as well.
-  host_->SetTransform(GetRotationTransform() * GetUIScaleTransform());
+  host_->SetRootTransform(GetRotationTransform() * GetUIScaleTransform());
 }
 
 void TestScreen::SetUIScale(float ui_scale) {
@@ -57,7 +57,7 @@ void TestScreen::SetUIScale(float ui_scale) {
   gfx::Rect new_bounds = gfx::ToNearestRect(
       gfx::ScaleRect(bounds_in_pixel, 1.0f / ui_scale));
   display_.SetScaleAndBounds(display_.device_scale_factor(), new_bounds);
-  host_->SetTransform(GetRotationTransform() * GetUIScaleTransform());
+  host_->SetRootTransform(GetRotationTransform() * GetUIScaleTransform());
 }
 
 gfx::Transform TestScreen::GetRotationTransform() const {

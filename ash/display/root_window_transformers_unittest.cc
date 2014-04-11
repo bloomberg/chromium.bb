@@ -6,6 +6,7 @@
 
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
+#include "ash/host/root_window_transformer.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -16,7 +17,6 @@
 #include "ash/test/mirror_window_test_api.h"
 #include "base/synchronization/waitable_event.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window_transformer.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
@@ -397,7 +397,7 @@ TEST_F(RootWindowTransformersTest, LetterBoxPillarBox) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("400x200,500x500");
-  scoped_ptr<aura::RootWindowTransformer> transformer(
+  scoped_ptr<RootWindowTransformer> transformer(
       test_api.CreateCurrentRootWindowTransformer());
   // Y margin must be margin is (500 - 500/400 * 200) / 2 = 125.
   EXPECT_EQ("0,125,0,125", transformer->GetHostInsets().ToString());

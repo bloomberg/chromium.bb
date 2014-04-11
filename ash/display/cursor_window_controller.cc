@@ -117,9 +117,10 @@ void CursorWindowController::UpdateContainer() {
   if (is_cursor_compositing_enabled_) {
     SetDisplay(display_);
   } else {
-    aura::WindowTreeHost* mirror_host = Shell::GetInstance()->
-        display_controller()->mirror_window_controller()->host();
-    SetContainer(mirror_host ? mirror_host->window() : NULL);
+    SetContainer(Shell::GetInstance()->
+                 display_controller()->
+                 mirror_window_controller()->
+                 GetWindow());
   }
 }
 

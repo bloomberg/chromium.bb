@@ -8,7 +8,8 @@
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/root_window_transformers.h"
-#include "ash/host/window_tree_host_factory.h"
+#include "ash/host/ash_window_tree_host.h"
+#include "ash/host/root_window_transformer.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
@@ -16,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window_transformer.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -43,26 +43,25 @@ void VirtualKeyboardWindowController::UpdateWindow(
   static int virtual_keyboard_host_count = 0;
   if (!root_window_controller_.get()) {
     const gfx::Rect& bounds_in_native = display_info.bounds_in_native();
-    aura::WindowTreeHost* host =
-        Shell::GetInstance()->window_tree_host_factory()->CreateWindowTreeHost(
-            bounds_in_native);
-    host->window()->SetName(
-        base::StringPrintf("VirtualKeyboardRootWindow-%d",
-                           virtual_keyboard_host_count++));
+    AshWindowTreeHost* ash_host = AshWindowTreeHost::Create(bounds_in_native);
+    aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
+
+    host->window()->SetName(base::StringPrintf("VirtualKeyboardRootWindow-%d",
+                                               virtual_keyboard_host_count++));
 
     // No need to remove WindowTreeHostObserver because the DisplayController
     // outlives the host.
     host->AddObserver(Shell::GetInstance()->display_controller());
     InitRootWindowSettings(host->window())->display_id = display_info.id();
     host->InitHost();
-    RootWindowController::CreateForVirtualKeyboardDisplay(host);
+    RootWindowController::CreateForVirtualKeyboardDisplay(ash_host);
     root_window_controller_.reset(GetRootWindowController(host->window()));
-    root_window_controller_->host()->Show();
+    root_window_controller_->GetHost()->Show();
     root_window_controller_->ActivateKeyboard(
         keyboard::KeyboardController::GetInstance());
     FlipDisplay();
   } else {
-    aura::WindowTreeHost* host = root_window_controller_->host();
+    aura::WindowTreeHost* host = root_window_controller_->GetHost();
     GetRootWindowSettings(host->window())->display_id = display_info.id();
     host->SetBounds(display_info.bounds_in_native());
   }
@@ -70,7 +69,7 @@ void VirtualKeyboardWindowController::UpdateWindow(
 
 void VirtualKeyboardWindowController::Close() {
   if (root_window_controller_.get()) {
-    root_window_controller_->host()->RemoveObserver(
+    root_window_controller_->GetHost()->RemoveObserver(
         Shell::GetInstance()->display_controller());
     root_window_controller_->Shutdown();
     root_window_controller_.reset();
@@ -87,11 +86,12 @@ void VirtualKeyboardWindowController::FlipDisplay() {
   display_manager->SetDisplayRotation(
       display_manager->non_desktop_display().id(), gfx::Display::ROTATE_180);
 
-  aura::WindowTreeHost* host = root_window_controller_->host();
-  scoped_ptr<aura::RootWindowTransformer> transformer(
+  aura::WindowTreeHost* host = root_window_controller_->GetHost();
+  scoped_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(
           host->window(), display_manager->non_desktop_display()));
-  host->SetRootWindowTransformer(transformer.Pass());
+  root_window_controller_->ash_host()->SetRootWindowTransformer(
+      transformer.Pass());
 }
 
 void VirtualKeyboardWindowController::OnMaximizeModeStarted() {

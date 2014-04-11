@@ -7,16 +7,19 @@
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/mirror_window_controller.h"
+#include "ash/host/root_window_transformer.h"
 #include "ash/shell.h"
-#include "ui/aura/root_window_transformer.h"
 #include "ui/gfx/point.h"
 
 namespace ash {
 namespace test {
 
 const aura::WindowTreeHost* MirrorWindowTestApi::GetHost() const {
-  return Shell::GetInstance()->display_controller()->
-      mirror_window_controller()->host_.get();
+  aura::Window* window = Shell::GetInstance()
+                             ->display_controller()
+                             ->mirror_window_controller()
+                             ->GetWindow();
+  return window ? window->GetHost() : NULL;
 }
 
 int MirrorWindowTestApi::GetCurrentCursorType() const {
@@ -34,7 +37,7 @@ const aura::Window* MirrorWindowTestApi::GetCursorWindow() const {
       cursor_window_controller()->cursor_window_.get();
 }
 
-scoped_ptr<aura::RootWindowTransformer>
+scoped_ptr<RootWindowTransformer>
 MirrorWindowTestApi::CreateCurrentRootWindowTransformer() const {
   return Shell::GetInstance()->display_controller()->
       mirror_window_controller()->CreateRootWindowTransformer();

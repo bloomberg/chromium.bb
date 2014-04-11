@@ -14,4 +14,11 @@ include_rules = [
   "+net",
   "+ui",
   "+win8",
+  "-ash/host",
 ]
+
+specific_include_rules = {
+  "root_window_controller\.*": [
+    "+ash/host"
+  ],
+}

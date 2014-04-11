@@ -59,17 +59,9 @@ void WindowTreeHostOzone::Show() { NOTIMPLEMENTED(); }
 
 void WindowTreeHostOzone::Hide() { NOTIMPLEMENTED(); }
 
-void WindowTreeHostOzone::ToggleFullScreen() { NOTIMPLEMENTED(); }
-
 gfx::Rect WindowTreeHostOzone::GetBounds() const { return bounds_; }
 
 void WindowTreeHostOzone::SetBounds(const gfx::Rect& bounds) {
-  NOTIMPLEMENTED();
-}
-
-gfx::Insets WindowTreeHostOzone::GetInsets() const { return gfx::Insets(); }
-
-void WindowTreeHostOzone::SetInsets(const gfx::Insets& insets) {
   NOTIMPLEMENTED();
 }
 
@@ -85,13 +77,6 @@ bool WindowTreeHostOzone::QueryMouseLocation(gfx::Point* location_return) {
   NOTIMPLEMENTED();
   return false;
 }
-
-bool WindowTreeHostOzone::ConfineCursorToRootWindow() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void WindowTreeHostOzone::UnConfineCursor() { NOTIMPLEMENTED(); }
 
 void WindowTreeHostOzone::PostNativeEvent(
     const base::NativeEvent& native_event) {

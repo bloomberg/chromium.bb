@@ -42,7 +42,6 @@ namespace ash {
 class AccessibilityDelegate;
 class MediaDelegate;
 class NewWindowDelegate;
-class WindowTreeHostFactory;
 class SessionStateDelegate;
 class ShelfDelegate;
 class ShelfItemDelegate;
@@ -145,10 +144,6 @@ class ASH_EXPORT ShellDelegate {
       aura::Window* root_window,
       ash::ShelfItemDelegate* item_delegate,
       ash::ShelfItem* item) = 0;
-
-  // Creates a root window host factory. Shell takes ownership of the returned
-  // value.
-  virtual WindowTreeHostFactory* CreateWindowTreeHostFactory() = 0;
 
   // Creates a GPU support object. Shell takes ownership of the object.
   virtual GPUSupport* CreateGPUSupport() = 0;

@@ -762,10 +762,6 @@ void DesktopWindowTreeHostX11::Hide() {
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
 }
 
-void DesktopWindowTreeHostX11::ToggleFullScreen() {
-  NOTIMPLEMENTED();
-}
-
 gfx::Rect DesktopWindowTreeHostX11::GetBounds() const {
   return bounds_;
 }
@@ -807,13 +803,6 @@ void DesktopWindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
     OnHostResized(bounds.size());
   else
     compositor()->ScheduleRedrawRect(gfx::Rect(bounds.size()));
-}
-
-gfx::Insets DesktopWindowTreeHostX11::GetInsets() const {
-  return gfx::Insets();
-}
-
-void DesktopWindowTreeHostX11::SetInsets(const gfx::Insets& insets) {
 }
 
 gfx::Point DesktopWindowTreeHostX11::GetLocationOnNativeScreen() const {
@@ -865,15 +854,6 @@ bool DesktopWindowTreeHostX11::QueryMouseLocation(
       std::max(0, std::min(bounds_.height(), win_y_return)));
   return (win_x_return >= 0 && win_x_return < bounds_.width() &&
           win_y_return >= 0 && win_y_return < bounds_.height());
-}
-
-bool DesktopWindowTreeHostX11::ConfineCursorToRootWindow() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void DesktopWindowTreeHostX11::UnConfineCursor() {
-  NOTIMPLEMENTED();
 }
 
 void DesktopWindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {

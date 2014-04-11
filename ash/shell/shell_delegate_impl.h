@@ -62,7 +62,6 @@ class ShellDelegateImpl : public ash::ShellDelegate {
       aura::Window* root_window,
       ash::ShelfItemDelegate* item_delegate,
       ash::ShelfItem* item) OVERRIDE;
-  virtual WindowTreeHostFactory* CreateWindowTreeHostFactory() OVERRIDE;
   virtual GPUSupport* CreateGPUSupport() OVERRIDE;
   virtual base::string16 GetProductName() const OVERRIDE;
 
