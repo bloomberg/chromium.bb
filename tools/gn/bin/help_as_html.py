@@ -12,17 +12,13 @@
 # - Spit out other similar formats like wiki, markdown, whatever.
 
 import cgi
-import re
 import subprocess
 import sys
 
 
 def GetOutput(*args):
   try:
-    # TODO: Remove ansi escape code stripping if crbug.com/362239 gets fixed.
-    ansi_escape = re.compile(r'\x1b[^m]*m')
-    return ansi_escape.sub(
-        '', subprocess.check_output([sys.argv[1]] + list(args)))
+    return subprocess.check_output([sys.argv[1]] + list(args))
   except subprocess.CalledProcessError:
     return ''
 

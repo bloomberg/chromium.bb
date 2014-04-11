@@ -131,7 +131,7 @@ void OutputString(const std::string& output, TextDecoration dec) {
 
   WriteToStdOut(output.data());
 
-  if (dec != DECORATION_NONE)
+  if (is_console && dec != DECORATION_NONE)
     WriteToStdOut("\e[0m");
 }
 
