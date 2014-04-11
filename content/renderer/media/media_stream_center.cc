@@ -52,12 +52,7 @@ void CreateNativeVideoMediaStreamTrack(
   DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeVideo);
   MediaStreamVideoSource* native_source =
       MediaStreamVideoSource::GetVideoSource(source);
-  if (!native_source) {
-    // TODO(perkj): Implement support for sources from
-    // remote MediaStreams.
-    NOTIMPLEMENTED();
-    return;
-  }
+  DCHECK(native_source);
   blink::WebMediaStreamTrack writable_track(track);
   writable_track.setExtraData(
       new MediaStreamVideoTrack(native_source, source.constraints(),

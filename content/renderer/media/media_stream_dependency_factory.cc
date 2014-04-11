@@ -678,24 +678,20 @@ MediaStreamDependencyFactory::CreateAudioCapturer(
                                              GetWebRtcAudioDevice());
 }
 
-void MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(
+void MediaStreamDependencyFactory::AddNativeAudioTrackToBlinkTrack(
     webrtc::MediaStreamTrackInterface* native_track,
     const blink::WebMediaStreamTrack& webkit_track,
     bool is_local_track) {
   DCHECK(!webkit_track.isNull() && !webkit_track.extraData());
+  DCHECK_EQ(blink::WebMediaStreamSource::TypeAudio,
+            webkit_track.source().type());
   blink::WebMediaStreamTrack track = webkit_track;
 
-  if (track.source().type() == blink::WebMediaStreamSource::TypeVideo) {
-    DVLOG(1) << "AddNativeTrackToBlinkTrack() video";
-    track.setExtraData(new WebRtcMediaStreamVideoTrack(
-        static_cast<webrtc::VideoTrackInterface*>(native_track)));
-  } else {
-    DVLOG(1) << "AddNativeTrackToBlinkTrack() audio";
-    track.setExtraData(
-        new MediaStreamTrack(
-            static_cast<webrtc::AudioTrackInterface*>(native_track),
-            is_local_track));
-  }
+  DVLOG(1) << "AddNativeTrackToBlinkTrack() audio";
+  track.setExtraData(
+      new MediaStreamTrack(
+          static_cast<webrtc::AudioTrackInterface*>(native_track),
+          is_local_track));
 }
 
 bool MediaStreamDependencyFactory::OnControlMessageReceived(

@@ -18,7 +18,7 @@
 
 namespace content {
 
-class RemoteMediaStreamTrackObserver;
+class RemoteMediaStreamTrackAdapter;
 
 // RemoteMediaStreamImpl serves as a container and glue between remote webrtc
 // MediaStreams and WebKit MediaStreams. For each remote MediaStream received
@@ -39,8 +39,8 @@ class CONTENT_EXPORT RemoteMediaStreamImpl
   virtual void OnChanged() OVERRIDE;
 
   scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream_;
-  ScopedVector<RemoteMediaStreamTrackObserver> audio_track_observers_;
-  ScopedVector<RemoteMediaStreamTrackObserver> video_track_observers_;
+  ScopedVector<RemoteMediaStreamTrackAdapter> video_track_observers_;
+  ScopedVector<RemoteMediaStreamTrackAdapter> audio_track_observers_;
   blink::WebMediaStream webkit_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteMediaStreamImpl);
