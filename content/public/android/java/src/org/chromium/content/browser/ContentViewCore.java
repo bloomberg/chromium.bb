@@ -1464,10 +1464,7 @@ public class ContentViewCore
     }
 
     private void hidePopupDialog() {
-        if (mSelectPopupDialog != null) {
-            mSelectPopupDialog.hide();
-            mSelectPopupDialog = null;
-        }
+        hideSelectPopup();
         hideHandles();
         hideSelectActionBar();
     }
