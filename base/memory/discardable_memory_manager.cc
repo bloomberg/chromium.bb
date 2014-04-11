@@ -30,6 +30,7 @@ DiscardableMemoryManager::DiscardableMemoryManager()
       discardable_memory_limit_(kDefaultDiscardableMemoryLimit),
       bytes_to_keep_under_moderate_pressure_(
           kDefaultBytesToKeepUnderModeratePressure) {
+  BytesAllocatedChanged();
 }
 
 DiscardableMemoryManager::~DiscardableMemoryManager() {
@@ -88,6 +89,7 @@ void DiscardableMemoryManager::Unregister(
     size_t bytes = it->second.bytes;
     DCHECK_LE(bytes, bytes_allocated_);
     bytes_allocated_ -= bytes;
+    BytesAllocatedChanged();
     free(it->second.memory);
   }
   allocations_.Erase(it);
@@ -130,6 +132,8 @@ scoped_ptr<uint8, FreeDeleter> DiscardableMemoryManager::Acquire(
     return scoped_ptr<uint8, FreeDeleter>();
 
   bytes_allocated_ += bytes;
+  BytesAllocatedChanged();
+
   *purged = true;
   return memory.Pass();
 }
@@ -217,10 +221,19 @@ void DiscardableMemoryManager::PurgeLRUWithLockAcquiredUntilUsageIsWithin(
     free(it->second.memory);
     it->second.memory = NULL;
   }
+
+  BytesAllocatedChanged();
 }
 
 void DiscardableMemoryManager::EnforcePolicyWithLockAcquired() {
   PurgeLRUWithLockAcquiredUntilUsageIsWithin(discardable_memory_limit_);
+}
+
+void DiscardableMemoryManager::BytesAllocatedChanged() const {
+  TRACE_COUNTER_ID1("base",
+                    "DiscardableMemoryUsage",
+                    this,
+                    bytes_allocated_);
 }
 
 }  // namespace internal

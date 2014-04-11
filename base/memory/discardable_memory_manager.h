@@ -121,6 +121,9 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryManager {
   // Caller must acquire |lock_| prior to calling this function.
   void EnforcePolicyWithLockAcquired();
 
+  // Called when a change to |bytes_allocated_| has been made.
+  void BytesAllocatedChanged() const;
+
   // Needs to be held when accessing members.
   mutable Lock lock_;
 
