@@ -520,9 +520,9 @@ void VectorPlatformDeviceEmf::drawPosText(const SkDraw& draw,
   SkGDIFontSetup setup;
   bool useDrawText = true;
 
-  if (2 == scalarsPerPos
-      && SkPaint::kUTF8_TextEncoding != paint.getTextEncoding()
-      && setup.useGDI(hdc_, paint)) {
+  if (scalarsPerPos == 2 && len >= 2 &&
+      SkPaint::kUTF8_TextEncoding != paint.getTextEncoding() &&
+      setup.useGDI(hdc_, paint)) {
     int startX = SkScalarRoundToInt(pos[0]);
     int startY = SkScalarRoundToInt(pos[1] + getAscent(paint));
     const int count = len >> 1;
@@ -532,6 +532,7 @@ void VectorPlatformDeviceEmf::drawPosText(const SkDraw& draw,
       advances[i] = SkScalarRoundToInt(pos[2] - pos[0]);
       pos += 2;
     }
+    advances[count - 1] = 0;
     useDrawText = !EnsureExtTextOut(hdc_, startX, startY,
         getTextOutOptions(paint), 0, reinterpret_cast<const wchar_t*>(text),
         count, advances, paint.getTypeface());
