@@ -1560,9 +1560,12 @@ class BisectPerformanceMetrics(object):
     return False
 
   def IsDownloadable(self, depot):
-    """Checks if we can download builds for the depot from cloud."""
-    return (depot == 'chromium' or 'chromium' in DEPOT_DEPS_NAME[depot]['from']
-        or 'v8' in DEPOT_DEPS_NAME[depot]['from'])
+    """Checks if build is downloadable based on target platform and depot."""
+    if self.opts.target_platform in ['chromium'] and self.opts.gs_bucket:
+      return (depot == 'chromium' or
+              'chromium' in DEPOT_DEPS_NAME[depot]['from'] or
+              'v8' in DEPOT_DEPS_NAME[depot]['from'])
+    return False
 
   def UpdateDeps(self, revision, depot, deps_file):
     """Updates DEPS file with new revision of dependency repository.
@@ -1749,7 +1752,7 @@ class BisectPerformanceMetrics(object):
     os.chdir(self.src_cwd)
     # Fetch build archive for the given revision from the cloud storage when
     # the storage bucket is passed.
-    if self.IsDownloadable(depot) and self.opts.gs_bucket and revision:
+    if self.IsDownloadable(depot) and revision:
       deps_patch = None
       if depot != 'chromium':
         # Create a DEPS patch with new revision for dependency repository.
@@ -2260,7 +2263,7 @@ class BisectPerformanceMetrics(object):
                                                            metric)
           # Restore build output directory once the tests are done, to avoid
           # any descrepancy.
-          if depot == 'chromium' and self.opts.gs_bucket and revision:
+          if self.IsDownloadable(depot) and revision:
             self.BackupOrRestoreOutputdirectory(restore=True)
 
           if results[1] == 0:
