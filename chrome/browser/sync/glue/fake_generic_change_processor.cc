@@ -55,6 +55,12 @@ syncer::SyncError FakeGenericChangeProcessor::GetAllSyncDataReturnError(
   return get_sync_data_for_type_error_;
 }
 
+bool FakeGenericChangeProcessor::GetDataTypeContext(
+    syncer::ModelType type,
+    std::string* context) const {
+  return false;
+}
+
 int FakeGenericChangeProcessor::GetSyncCountForType(syncer::ModelType type) {
   return 0;
 }

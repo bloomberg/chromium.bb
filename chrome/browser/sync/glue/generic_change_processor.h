@@ -79,6 +79,12 @@ class GenericChangeProcessor : public ChangeProcessor,
       syncer::ModelType type,
       syncer::SyncDataList* data) const;
 
+  // If a datatype context associated with |type| exists, fills |context| and
+  // returns true. Otheriwse, if there has not been a context set, returns
+  // false.
+  virtual bool GetDataTypeContext(syncer::ModelType type,
+                                  std::string* context) const;
+
   // Returns the number of items for this type.
   virtual int GetSyncCountForType(syncer::ModelType type);
 

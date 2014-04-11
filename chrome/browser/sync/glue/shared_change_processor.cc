@@ -183,6 +183,17 @@ bool SharedChangeProcessor::CryptoReadyIfNecessary() {
   return generic_change_processor_->CryptoReadyIfNecessary(type_);
 }
 
+bool SharedChangeProcessor::GetDataTypeContext(std::string* context) const {
+  DCHECK(backend_loop_.get());
+  DCHECK(backend_loop_->BelongsToCurrentThread());
+  AutoLock lock(monitor_lock_);
+  if (disconnected_) {
+    LOG(ERROR) << "Change processor disconnected.";
+    return false;
+  }
+  return generic_change_processor_->GetDataTypeContext(type_, context);
+}
+
 void SharedChangeProcessor::ActivateDataType(
     syncer::ModelSafeGroup model_safe_group) {
   DCHECK(backend_loop_.get());

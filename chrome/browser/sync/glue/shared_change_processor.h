@@ -94,6 +94,11 @@ class SharedChangeProcessor
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
   virtual bool CryptoReadyIfNecessary();
 
+  // If a datatype context associated with the current type exists, fills
+  // |context| and returns true. Otheriwse, if there has not been a context
+  // set, returns false.
+  virtual bool GetDataTypeContext(std::string* context) const;
+
   // Register |generic_change_processor_| as the change processor for the
   // current type on |model_safe_group|.
   // Does nothing if |disconnected_| is true.

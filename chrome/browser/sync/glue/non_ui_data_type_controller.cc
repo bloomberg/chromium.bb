@@ -379,6 +379,12 @@ void NonUIDataTypeController::
     return;
   }
 
+  std::string datatype_context;
+  if (shared_change_processor_->GetDataTypeContext(&datatype_context)) {
+    local_service_->UpdateDataTypeContext(
+        type(), syncer::SyncChangeProcessor::NO_REFRESH, datatype_context);
+  }
+
   syncer_merge_result.set_num_items_before_association(
       initial_sync_data.size());
   // Passes a reference to |shared_change_processor|.

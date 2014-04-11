@@ -233,6 +233,21 @@ syncer::SyncError GenericChangeProcessor::GetAllSyncDataReturnError(
   return syncer::SyncError();
 }
 
+bool GenericChangeProcessor::GetDataTypeContext(syncer::ModelType type,
+                                                std::string* context) const {
+  syncer::ReadTransaction trans(FROM_HERE, share_handle());
+  sync_pb::DataTypeContext context_proto;
+  trans.GetDataTypeContext(type, &context_proto);
+  if (!context_proto.has_context())
+    return false;
+
+  DCHECK_EQ(type,
+            syncer::GetModelTypeFromSpecificsFieldNumber(
+                context_proto.data_type_id()));
+  *context = context_proto.context();
+  return true;
+}
+
 int GenericChangeProcessor::GetSyncCountForType(syncer::ModelType type) {
   syncer::ReadTransaction trans(FROM_HERE, share_handle());
   syncer::ReadNode root(&trans);

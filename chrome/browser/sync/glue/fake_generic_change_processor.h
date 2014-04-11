@@ -31,6 +31,8 @@ class FakeGenericChangeProcessor : public GenericChangeProcessor {
   virtual syncer::SyncError GetAllSyncDataReturnError(
       syncer::ModelType type,
       syncer::SyncDataList* data) const OVERRIDE;
+  virtual bool GetDataTypeContext(syncer::ModelType type,
+                                  std::string* context) const OVERRIDE;
   virtual int GetSyncCountForType(syncer::ModelType type) OVERRIDE;
   virtual bool SyncModelHasUserCreatedNodes(syncer::ModelType type,
                                             bool* has_nodes) OVERRIDE;

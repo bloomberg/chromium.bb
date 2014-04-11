@@ -13,6 +13,10 @@ namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
 
+namespace sync_pb {
+class DataTypeContext;
+}
+
 namespace syncer {
 
 struct UserShare;
@@ -35,7 +39,11 @@ class SYNC_EXPORT ReadTransaction : public BaseTransaction {
 
   // Return |transaction_version| of |type| stored in sync directory's
   // persisted info.
-  int64 GetModelVersion(ModelType type);
+  int64 GetModelVersion(ModelType type) const;
+
+  // Fills |context| with the datatype context associated with |type|.
+  void GetDataTypeContext(ModelType type,
+                          sync_pb::DataTypeContext* context) const;
 
  private:
   void* operator new(size_t size);  // Transaction is meant for stack use only.

@@ -34,6 +34,7 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
   MOCK_METHOD1(SyncModelHasUserCreatedNodes,
                bool(bool*));
   MOCK_METHOD0(CryptoReadyIfNecessary, bool());
+  MOCK_CONST_METHOD1(GetDataTypeContext, bool(std::string*));
   MOCK_METHOD1(ActivateDataType,
                void(syncer::ModelSafeGroup));
 
