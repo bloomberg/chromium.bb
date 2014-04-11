@@ -1083,3 +1083,5 @@ crbug.com/362434 [ Mac ] virtual/gpu/compositedscrolling/overflow/do-not-paint-o
 
 crbug.com/362499 [ Mac ] touchadjustment/context-menu-text-subtargets.html [ Failure Pass ]
 crbug.com/362499 [ Mac ] touchadjustment/touch-inlines.html [ Failure Pass ]
+
+crbug.com/362501 [ Mac ] svg/text/obb-paintserver.html [ ImageOnlyFailure Crash Pass ]
