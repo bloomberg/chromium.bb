@@ -503,6 +503,283 @@ TEST(URLMatcherConditionSetTest, Matching) {
   EXPECT_TRUE(condition_set7->IsMatch(matching_patterns, url1));
 }
 
+namespace {
+
+bool IsQueryMatch(
+    const std::string& url_query,
+    const std::string& key,
+    URLQueryElementMatcherCondition::QueryElementType query_element_type,
+    const std::string& value,
+    URLQueryElementMatcherCondition::QueryValueMatchType query_value_match_type,
+    URLQueryElementMatcherCondition::Type match_type) {
+  URLMatcherConditionFactory factory;
+
+  URLMatcherCondition m1 = factory.CreateHostSuffixCondition("example.com");
+  URLMatcherCondition m2 = factory.CreatePathContainsCondition("foo");
+  URLMatcherConditionSet::Conditions conditions;
+  conditions.insert(m1);
+  conditions.insert(m2);
+
+  URLQueryElementMatcherCondition q1(key,
+                                     value,
+                                     query_value_match_type,
+                                     query_element_type,
+                                     match_type,
+                                     &factory);
+  URLMatcherConditionSet::QueryConditions query_conditions;
+  query_conditions.insert(q1);
+
+  scoped_ptr<URLMatcherSchemeFilter> scheme_filter;
+  scoped_ptr<URLMatcherPortFilter> port_filter;
+
+  scoped_refptr<URLMatcherConditionSet> condition_set(
+      new URLMatcherConditionSet(1,
+                                 conditions,
+                                 query_conditions,
+                                 scheme_filter.Pass(),
+                                 port_filter.Pass()));
+
+  GURL url("http://www.example.com/foo?" + url_query);
+
+  URLMatcher matcher;
+  URLMatcherConditionSet::Vector vector;
+  vector.push_back(condition_set);
+  matcher.AddConditionSets(vector);
+
+  return matcher.MatchURL(url).size() == 1;
+}
+
+}  // namespace
+
+TEST(URLMatcherConditionSetTest, QueryMatching) {
+  EXPECT_TRUE(
+      IsQueryMatch("a=foo&b=foo&a=barr",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "bar",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX,
+                   URLQueryElementMatcherCondition::MATCH_ANY));
+  EXPECT_FALSE(
+      IsQueryMatch("a=foo&b=foo&a=barr",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "bar",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_ANY));
+  EXPECT_TRUE(
+      IsQueryMatch("a=foo&b=foo&a=barr",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "bar",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX,
+                   URLQueryElementMatcherCondition::MATCH_ANY));
+  EXPECT_FALSE(
+      IsQueryMatch("a=foo&b=foo&a=barr",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "bar",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_ANY));
+  EXPECT_TRUE(
+      IsQueryMatch("a&b=foo&a=barr",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "bar",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_ANY));
+  EXPECT_FALSE(
+      IsQueryMatch("a=foo&b=foo&a=barr",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "bar",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_ANY));
+
+  EXPECT_FALSE(
+      IsQueryMatch("a=foo&b=foo&a=bar",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "bar",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_ALL));
+  EXPECT_TRUE(
+      IsQueryMatch("a=bar&b=foo&a=bar",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "bar",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_ALL));
+  EXPECT_TRUE(
+      IsQueryMatch("a=bar&b=foo&a=bar",
+                   "b",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_ALL));
+  EXPECT_FALSE(
+      IsQueryMatch("a=bar&b=foo&a=bar",
+                   "b",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "goo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_ALL));
+  EXPECT_FALSE(
+      IsQueryMatch("a=bar&b=foo&a=bar",
+                   "c",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "goo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_ALL));
+  EXPECT_TRUE(
+      IsQueryMatch("a=foo1&b=foo&a=foo2",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX,
+                   URLQueryElementMatcherCondition::MATCH_ALL));
+  EXPECT_FALSE(
+      IsQueryMatch("a=foo1&b=foo&a=fo02",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX,
+                   URLQueryElementMatcherCondition::MATCH_ALL));
+  EXPECT_TRUE(
+      IsQueryMatch("a&b=foo&a",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX,
+                   URLQueryElementMatcherCondition::MATCH_ALL));
+  EXPECT_TRUE(
+      IsQueryMatch("alt&b=foo",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX,
+                   URLQueryElementMatcherCondition::MATCH_ALL));
+  EXPECT_TRUE(
+      IsQueryMatch("b=foo&a",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX,
+                   URLQueryElementMatcherCondition::MATCH_ALL));
+  EXPECT_FALSE(
+      IsQueryMatch("b=foo",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX,
+                   URLQueryElementMatcherCondition::MATCH_ALL));
+  EXPECT_TRUE(
+      IsQueryMatch("b=foo&a",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_ALL));
+
+  EXPECT_TRUE(
+      IsQueryMatch("a=foo&b=foo&a=bar",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_FIRST));
+  EXPECT_FALSE(
+      IsQueryMatch("a=foo&b=foo&a=bar",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "bar",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_FIRST));
+  EXPECT_TRUE(
+      IsQueryMatch("a=foo1&b=foo&a=bar",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX,
+                   URLQueryElementMatcherCondition::MATCH_FIRST));
+  EXPECT_FALSE(
+      IsQueryMatch("a=foo1&b=foo&a=bar",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_FIRST));
+  EXPECT_TRUE(
+      IsQueryMatch("a&b=foo&a=bar",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_FIRST));
+  EXPECT_TRUE(
+      IsQueryMatch("alt&b=foo&a=bar",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX,
+                   URLQueryElementMatcherCondition::MATCH_FIRST));
+  EXPECT_FALSE(
+      IsQueryMatch("alt&b=foo&a=bar",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_FIRST));
+
+  EXPECT_FALSE(
+      IsQueryMatch("a=foo&b=foo&a=bar",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_LAST));
+  EXPECT_TRUE(
+      IsQueryMatch("a=foo&b=foo&a=bar",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "bar",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_LAST));
+  EXPECT_FALSE(
+      IsQueryMatch("a=foo1&b=foo&a=bar",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX,
+                   URLQueryElementMatcherCondition::MATCH_LAST));
+  EXPECT_TRUE(
+      IsQueryMatch("a=foo1&b=foo&a=bar1",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY_VALUE,
+                   "bar",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX,
+                   URLQueryElementMatcherCondition::MATCH_LAST));
+  EXPECT_FALSE(
+      IsQueryMatch("a&b=foo&a=bar",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_LAST));
+  EXPECT_TRUE(
+      IsQueryMatch("b=foo&alt",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_PREFIX,
+                   URLQueryElementMatcherCondition::MATCH_LAST));
+  EXPECT_FALSE(
+      IsQueryMatch("b=foo&alt",
+                   "a",
+                   URLQueryElementMatcherCondition::ELEMENT_TYPE_KEY,
+                   "foo",
+                   URLQueryElementMatcherCondition::QUERY_VALUE_MATCH_EXACT,
+                   URLQueryElementMatcherCondition::MATCH_LAST));
+}
 
 //
 // URLMatcher

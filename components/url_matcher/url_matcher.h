@@ -193,6 +193,11 @@ class URL_MATCHER_EXPORT URLMatcherConditionFactory {
   // Prepends a "." to the hostname if it does not start with one.
   std::string CanonicalizeHostname(const std::string& hostname) const;
 
+  // Convert the query string to canonical form suitable for key token search.
+  std::string CanonicalizeQuery(std::string query,
+                                bool prepend_beginning_of_query_component,
+                                bool append_end_of_query_component) const;
+
   // Counter that ensures that all created StringPatterns have unique IDs.
   // Note that substring patterns and regex patterns will use different IDs.
   int id_counter_;
@@ -211,6 +216,53 @@ class URL_MATCHER_EXPORT URLMatcherConditionFactory {
   PatternSingletons origin_and_path_regex_pattern_singletons_;
 
   DISALLOW_COPY_AND_ASSIGN(URLMatcherConditionFactory);
+};
+
+// This class represents a single URL query matching condition. The query
+// matching is done as a search for a key and optionally a value.
+// The matching makes use of CanonicalizeURLForComponentSearches to ensure that
+// the key starts and ends (optionally) with the right marker.
+class URL_MATCHER_EXPORT URLQueryElementMatcherCondition {
+ public:
+  // Multiple occurrences of the same key can happen in a URL query. The type
+  // ensures that every (MATCH_ALL), any (MATCH_ANY), first (MATCH_FIRST) or
+  // last (MATCH_LAST) instance of the key occurrence matches the value.
+  enum Type { MATCH_ANY, MATCH_FIRST, MATCH_LAST, MATCH_ALL };
+
+  // Allows the match to be exact (QUERY_VALUE_MATCH_EXACT, starts and ends with
+  // a delimiter or a border) or simply a prefix (QUERY_VALUE_MATCH_PREFIX,
+  // starts with a delimiter or a border).
+  enum QueryValueMatchType {
+    QUERY_VALUE_MATCH_EXACT,
+    QUERY_VALUE_MATCH_PREFIX
+  };
+
+  // Used to indicate if the query parameter is of type &key=value&
+  // (ELEMENT_TYPE_KEY_VALUE) or simply &key& (ELEMENT_TYPE_KEY).
+  enum QueryElementType { ELEMENT_TYPE_KEY_VALUE, ELEMENT_TYPE_KEY };
+
+  URLQueryElementMatcherCondition(const std::string& key,
+                                  const std::string& value,
+                                  QueryValueMatchType query_value_match_type,
+                                  QueryElementType query_element_type,
+                                  Type match_type,
+                                  URLMatcherConditionFactory* factory);
+  ~URLQueryElementMatcherCondition();
+
+  bool operator<(const URLQueryElementMatcherCondition& rhs) const;
+
+  // Returns whether the URL query satisfies the key value constraint.
+  bool IsMatch(const std::string& canonical_url_query) const;
+
+  const StringPattern* string_pattern() const { return string_pattern_; }
+
+ private:
+  Type match_type_;
+  std::string key_;
+  std::string value_;
+  size_t key_length_;
+  size_t value_length_;
+  const StringPattern* string_pattern_;
 };
 
 // This class represents a filter for the URL scheme to be hooked up into a
@@ -256,6 +308,7 @@ class URL_MATCHER_EXPORT URLMatcherConditionSet
  public:
   typedef int ID;
   typedef std::set<URLMatcherCondition> Conditions;
+  typedef std::set<URLQueryElementMatcherCondition> QueryConditions;
   typedef std::vector<scoped_refptr<URLMatcherConditionSet> > Vector;
 
   // Matches if all conditions in |conditions| are fulfilled.
@@ -268,17 +321,33 @@ class URL_MATCHER_EXPORT URLMatcherConditionSet
                          scoped_ptr<URLMatcherSchemeFilter> scheme_filter,
                          scoped_ptr<URLMatcherPortFilter> port_filter);
 
+  // Matches if all conditions in |conditions|, |query_conditions|,
+  // |scheme_filter| and |port_filter| are fulfilled. |scheme_filter| and
+  // |port_filter| may be NULL, in which case, no restrictions are imposed on
+  // the scheme/port of a URL.
+  URLMatcherConditionSet(ID id,
+                         const Conditions& conditions,
+                         const QueryConditions& query_conditions,
+                         scoped_ptr<URLMatcherSchemeFilter> scheme_filter,
+                         scoped_ptr<URLMatcherPortFilter> port_filter);
+
   ID id() const { return id_; }
   const Conditions& conditions() const { return conditions_; }
+  const QueryConditions& query_conditions() const { return query_conditions_; }
 
   bool IsMatch(const std::set<StringPattern::ID>& matching_patterns,
                const GURL& url) const;
+
+  bool IsMatch(const std::set<StringPattern::ID>& matching_patterns,
+               const GURL& url,
+               const std::string& url_for_component_searches) const;
 
  private:
   friend class base::RefCounted<URLMatcherConditionSet>;
   ~URLMatcherConditionSet();
   ID id_;
   Conditions conditions_;
+  QueryConditions query_conditions_;
   scoped_ptr<URLMatcherSchemeFilter> scheme_filter_;
   scoped_ptr<URLMatcherPortFilter> port_filter_;
 
