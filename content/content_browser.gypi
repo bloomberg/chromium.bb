@@ -566,6 +566,8 @@
     'browser/frame_host/render_frame_host_manager.h',
     'browser/frame_host/render_frame_message_filter.cc',
     'browser/frame_host/render_frame_message_filter.h',
+    'browser/frame_host/render_frame_proxy_host.cc',
+    'browser/frame_host/render_frame_proxy_host.h',
     'browser/frame_host/render_widget_host_view_child_frame.cc',
     'browser/frame_host/render_widget_host_view_child_frame.h',
     'browser/frame_host/render_widget_host_view_guest.cc',
