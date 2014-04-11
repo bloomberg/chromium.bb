@@ -62,7 +62,13 @@ void WindowTreeHostOzone::Hide() { NOTIMPLEMENTED(); }
 gfx::Rect WindowTreeHostOzone::GetBounds() const { return bounds_; }
 
 void WindowTreeHostOzone::SetBounds(const gfx::Rect& bounds) {
-  NOTIMPLEMENTED();
+  bool origin_changed = bounds_.origin() != bounds.origin();
+  bool size_changed = bounds_.size() != bounds.size();
+  bounds_ = bounds;
+  if (size_changed)
+    OnHostResized(bounds_.size());
+  if (origin_changed)
+    OnHostMoved(bounds_.origin());
 }
 
 gfx::Point WindowTreeHostOzone::GetLocationOnNativeScreen() const {
