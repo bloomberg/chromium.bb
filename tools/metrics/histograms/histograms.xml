@@ -13816,6 +13816,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The time spent in closesocket call in UDPSocketWin::Close.</summary>
 </histogram>
 
+<histogram name="Net.WebSocket.HandshakeResult"
+    enum="WebSocketNewHandshakeResult">
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
+  <summary>
+    Results of WebSocket handshakes. Use this histogram as a baseline for
+    investigating feature usage counters.
+  </summary>
+</histogram>
+
 <histogram name="Net.Wifi.InterfaceCount">
   <owner>mvanouwerkerk@chromium.org</owner>
   <summary>
@@ -41734,6 +41745,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Normal"/>
   <int value="2" label="Failed"/>
   <int value="3" label="Connected"/>
+</enum>
+
+<enum name="WebSocketNewHandshakeResult" type="int">
+  <int value="0" label="INCOMPLETE">Incomplete</int>
+  <int value="1" label="CONNECTED">Connected</int>
+  <int value="2" label="FAILED">Failed</int>
 </enum>
 
 <enum name="WebSocketPerMessageDeflateContextTakeOverMode" type="int">
