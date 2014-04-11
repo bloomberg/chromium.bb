@@ -42,6 +42,7 @@
 #include <freerdp/codec/color.h>
 #include <freerdp/codec/rfx.h>
 #include <freerdp/codec/nsc.h>
+#include <freerdp/locale/keyboard.h>
 #include <winpr/input.h>
 
 #include "compositor.h"
@@ -618,21 +619,127 @@ xf_peer_capabilities(freerdp_peer* client)
 	return TRUE;
 }
 
-
 struct rdp_to_xkb_keyboard_layout {
 	UINT32 rdpLayoutCode;
-	char *xkbLayout;
+	const char *xkbLayout;
+	const char *xkbVariant;
 };
 
-/* picked from http://technet.microsoft.com/en-us/library/cc766503(WS.10).aspx */
-static struct rdp_to_xkb_keyboard_layout rdp_keyboards[] = {
-	{0x00000406, "dk"},
-	{0x00000407, "de"},
-	{0x00000409, "us"},
-	{0x0000040c, "fr"},
-	{0x00000410, "it"},
-	{0x00000813, "be"},
-	{0x00000000, 0},
+/* table reversed from
+	https://github.com/awakecoding/FreeRDP/blob/master/libfreerdp/locale/xkb_layout_ids.c#L811 */
+static
+struct rdp_to_xkb_keyboard_layout rdp_keyboards[] = {
+	{KBD_ARABIC_101, "ara", 0},
+	{KBD_BULGARIAN, 0, 0},
+	{KBD_CHINESE_TRADITIONAL_US, 0},
+	{KBD_CZECH, "cz", 0},
+	{KBD_CZECH_PROGRAMMERS, "cz", "bksl"},
+	{KBD_CZECH_QWERTY, "cz", "qwerty"},
+	{KBD_DANISH, "dk", 0},
+	{KBD_GERMAN, "de", 0},
+	{KBD_GERMAN_NEO, "de", "neo"},
+	{KBD_GERMAN_IBM, "de", "qwerty"},
+	{KBD_GREEK, "gr", 0},
+	{KBD_GREEK_220, "gr", "simple"},
+	{KBD_GREEK_319, "gr", "extended"},
+	{KBD_GREEK_POLYTONIC, "gr", "polytonic"},
+	{KBD_US, "us", 0},
+	{KBD_US_ENGLISH_TABLE_FOR_IBM_ARABIC_238_L, "ara", "buckwalter"},
+	{KBD_SPANISH, "es", 0},
+	{KBD_SPANISH_VARIATION, "es", "nodeadkeys"},
+	{KBD_FINNISH, "fi", 0},
+	{KBD_FRENCH, "fr", 0},
+	{KBD_HEBREW, "il", 0},
+	{KBD_HUNGARIAN, "hu", 0},
+	{KBD_HUNGARIAN_101_KEY, "hu", "standard"},
+	{KBD_ICELANDIC, "is", 0},
+	{KBD_ITALIAN, "it", 0},
+	{KBD_ITALIAN_142, "it", "nodeadkeys"},
+	{KBD_JAPANESE, "jp", 0},
+	{KBD_JAPANESE_INPUT_SYSTEM_MS_IME2002, "jp", "kana"},
+	{KBD_KOREAN, "kr", 0},
+	{KBD_KOREAN_INPUT_SYSTEM_IME_2000, "kr", "kr104"},
+	{KBD_DUTCH, "nl", 0},
+	{KBD_NORWEGIAN, "no", 0},
+	{KBD_POLISH_PROGRAMMERS, "pl", 0},
+	{KBD_POLISH_214, "pl", "qwertz"},
+	// {KBD_PORTUGUESE_BRAZILIAN_ABN0416, 0},
+	{KBD_ROMANIAN, "ro", 0},
+	{KBD_RUSSIAN, "ru", 0},
+	{KBD_RUSSIAN_TYPEWRITER, "ru", "typewriter"},
+	{KBD_CROATIAN, "hr", 0},
+	{KBD_SLOVAK, "sk", 0},
+	{KBD_SLOVAK_QWERTY, "sk", "qwerty"},
+	{KBD_ALBANIAN, 0, 0},
+	{KBD_SWEDISH, "se", 0},
+	{KBD_THAI_KEDMANEE, "th", 0},
+	{KBD_THAI_KEDMANEE_NON_SHIFTLOCK, "th", "tis"},
+	{KBD_TURKISH_Q, "tr", 0},
+	{KBD_TURKISH_F, "tr", "f"},
+	{KBD_URDU, "in", "urd-phonetic3"},
+	{KBD_UKRAINIAN, "ua", 0},
+	{KBD_BELARUSIAN, "by", 0},
+	{KBD_SLOVENIAN, "si", 0},
+	{KBD_ESTONIAN, "ee", 0},
+	{KBD_LATVIAN, "lv", 0},
+	{KBD_LITHUANIAN_IBM, "lt", "ibm"},
+	{KBD_FARSI, "af", 0},
+	{KBD_VIETNAMESE, "vn", 0},
+	{KBD_ARMENIAN_EASTERN, "am", 0},
+	{KBD_AZERI_LATIN, 0, 0},
+	{KBD_FYRO_MACEDONIAN, "mk", 0},
+	{KBD_GEORGIAN, "ge", 0},
+	{KBD_FAEROESE, 0, 0},
+	{KBD_DEVANAGARI_INSCRIPT, 0, 0},
+	{KBD_MALTESE_47_KEY, 0, 0},
+	{KBD_NORWEGIAN_WITH_SAMI, "no", "smi"},
+	{KBD_KAZAKH, "kz", 0},
+	{KBD_KYRGYZ_CYRILLIC, "kg", "phonetic"},
+	{KBD_TATAR, "ru", "tt"},
+	{KBD_BENGALI, "bd", 0},
+	{KBD_BENGALI_INSCRIPT, "bd", "probhat"},
+	{KBD_PUNJABI, 0, 0},
+	{KBD_GUJARATI, "in", "guj"},
+	{KBD_TAMIL, "in", "tam"},
+	{KBD_TELUGU, "in", "tel"},
+	{KBD_KANNADA, "in", "kan"},
+	{KBD_MALAYALAM, "in", "mal"},
+	{KBD_HINDI_TRADITIONAL, "in", 0},
+	{KBD_MARATHI, 0, 0},
+	{KBD_MONGOLIAN_CYRILLIC, "mn", 0},
+	{KBD_UNITED_KINGDOM_EXTENDED, "gb", "intl"},
+	{KBD_SYRIAC, "syc", 0},
+	{KBD_SYRIAC_PHONETIC, "syc", "syc_phonetic"},
+	{KBD_NEPALI, "np", 0},
+	{KBD_PASHTO, "af", "ps"},
+	{KBD_DIVEHI_PHONETIC, 0, 0},
+	{KBD_LUXEMBOURGISH, 0, 0},
+	{KBD_MAORI, "mao", 0},
+	{KBD_CHINESE_SIMPLIFIED_US, 0, 0},
+	{KBD_SWISS_GERMAN, "ch", "de_nodeadkeys"},
+	{KBD_UNITED_KINGDOM, "gb", 0},
+	{KBD_LATIN_AMERICAN, "latam", 0},
+	{KBD_BELGIAN_FRENCH, "be", 0},
+	{KBD_BELGIAN_PERIOD, "be", "oss_sundeadkeys"},
+	{KBD_PORTUGUESE, "pt", 0},
+	{KBD_SERBIAN_LATIN, "rs", 0},
+	{KBD_AZERI_CYRILLIC, "az", "cyrillic"},
+	{KBD_SWEDISH_WITH_SAMI, "se", "smi"},
+	{KBD_UZBEK_CYRILLIC, "af", "uz"},
+	{KBD_INUKTITUT_LATIN, "ca", "ike"},
+	{KBD_CANADIAN_FRENCH_LEGACY, "ca", "fr-legacy"},
+	{KBD_SERBIAN_CYRILLIC, "rs", 0},
+	{KBD_CANADIAN_FRENCH, "ca", "fr-legacy"},
+	{KBD_SWISS_FRENCH, "ch", "fr"},
+	{KBD_BOSNIAN, "ba", 0},
+	{KBD_IRISH, 0, 0},
+	{KBD_BOSNIAN_CYRILLIC, "ba", "us"},
+	{KBD_UNITED_STATES_DVORAK, "us", "dvorak"},
+	{KBD_PORTUGUESE_BRAZILIAN_ABNT2, "br", "nativo"},
+	{KBD_CANADIAN_MULTILINGUAL_STANDARD, "ca", "multix"},
+	{KBD_GAELIC, "ie", "CloGaelach"},
+
+	{0x00000000, 0, 0},
 };
 
 /* taken from 2.2.7.1.6 Input Capability Set (TS_INPUT_CAPABILITYSET) */
@@ -711,9 +818,10 @@ xf_peer_post_connect(freerdp_peer* client)
 	memset(&xkbRuleNames, 0, sizeof(xkbRuleNames));
 	if (settings->KeyboardType <= 7)
 		xkbRuleNames.model = rdp_keyboard_types[settings->KeyboardType];
-	for(i = 0; rdp_keyboards[i].xkbLayout; i++) {
+	for(i = 0; rdp_keyboards[i].rdpLayoutCode; i++) {
 		if (rdp_keyboards[i].rdpLayoutCode == settings->KeyboardLayout) {
 			xkbRuleNames.layout = rdp_keyboards[i].xkbLayout;
+			xkbRuleNames.variant = rdp_keyboards[i].xkbVariant;
 			break;
 		}
 	}
