@@ -12,6 +12,8 @@
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
@@ -110,15 +112,15 @@ class SyncEngineTest
         new drive::FakeDriveService);
 
     sync_engine_.reset(new drive_backend::SyncEngine(
-        profile_dir_.path(),
-        base::MessageLoopProxy::current(),
-        fake_drive_service.PassAs<drive::DriveServiceInterface>(),
-        scoped_ptr<drive::DriveUploaderInterface>(),
         NULL /* notification_manager */,
         extension_service_.get(),
-        NULL /* signin_manager */,
-        in_memory_env_.get()));
-    sync_engine_->Initialize();
+        NULL /* signin_manager */));
+    sync_engine_->Initialize(
+        profile_dir_.path(),
+        fake_drive_service.PassAs<drive::DriveServiceInterface>(),
+        scoped_ptr<drive::DriveUploaderInterface>(),
+        base::MessageLoopProxy::current(),
+        in_memory_env_.get());
     sync_engine_->SetSyncEnabled(true);
     base::RunLoop().RunUntilIdle();
   }
@@ -137,7 +139,7 @@ class SyncEngineTest
   }
 
   SyncTaskManager* GetSyncEngineTaskManager() {
-    return sync_engine_->task_manager_.get();
+    return sync_engine_->GetSyncTaskManagerForTesting();
   }
 
   void CheckServiceState(SyncStatusCode expected_sync_status,

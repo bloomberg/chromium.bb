@@ -2363,6 +2363,8 @@
         'browser/sync_file_system/drive_backend/sync_task_manager.h',
         'browser/sync_file_system/drive_backend/sync_task_token.cc',
         'browser/sync_file_system/drive_backend/sync_task_token.h',
+        'browser/sync_file_system/drive_backend/sync_worker.cc',
+        'browser/sync_file_system/drive_backend/sync_worker.h',
         'browser/sync_file_system/drive_backend/task_dependency_manager.cc',
         'browser/sync_file_system/drive_backend/task_dependency_manager.h',
         'browser/sync_file_system/drive_backend/tracker_id_set.cc',
