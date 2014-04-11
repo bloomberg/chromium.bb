@@ -822,6 +822,8 @@ xf_peer_post_connect(freerdp_peer* client)
 		if (rdp_keyboards[i].rdpLayoutCode == settings->KeyboardLayout) {
 			xkbRuleNames.layout = rdp_keyboards[i].xkbLayout;
 			xkbRuleNames.variant = rdp_keyboards[i].xkbVariant;
+			weston_log("%s: matching layout=%s variant=%s\n", __FUNCTION__,
+					xkbRuleNames.layout, xkbRuleNames.variant);
 			break;
 		}
 	}
@@ -952,17 +954,6 @@ xf_input_synchronize_event(rdpInput *input, UINT32 flags)
 	pixman_region32_fini(&damage);
 }
 
-extern DWORD KEYCODE_TO_VKCODE_EVDEV[];
-static uint32_t vk_to_keycode[256];
-static void
-init_vk_translator(void)
-{
-	int i;
-
-	memset(vk_to_keycode, 0, sizeof(vk_to_keycode));
-	for(i = 0; i < 256; i++)
-		vk_to_keycode[KEYCODE_TO_VKCODE_EVDEV[i] & 0xff] = i-8;
-}
 
 static void
 xf_input_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
@@ -986,17 +977,15 @@ xf_input_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 			full_code |= KBD_FLAGS_EXTENDED;
 
 		vk_code = GetVirtualKeyCodeFromVirtualScanCode(full_code, 4);
-		if (vk_code > 0xff) {
-			weston_log("invalid vk_code %x", vk_code);
-			return;
-		}
-		scan_code = vk_to_keycode[vk_code];
+		if(flags & KBD_FLAGS_EXTENDED)
+			vk_code |= KBDEXT;
 
+		scan_code = GetKeycodeFromVirtualKeyCode(vk_code, KEYCODE_TYPE_EVDEV);
 
 		/*weston_log("code=%x ext=%d vk_code=%x scan_code=%x\n", code, (flags & KBD_FLAGS_EXTENDED) ? 1 : 0,
 				vk_code, scan_code);*/
 		notify_key(&peerContext->item.seat, weston_compositor_get_time(),
-					scan_code, keyState, STATE_UPDATE_AUTOMATIC);
+					scan_code - 8, keyState, STATE_UPDATE_AUTOMATIC);
 	}
 }
 
@@ -1188,7 +1177,6 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 
 	freerdp_get_version(&major, &minor, &revision);
 	weston_log("using FreeRDP version %d.%d.%d\n", major, minor, revision);
-	init_vk_translator();
 
 	const struct weston_option rdp_options[] = {
 		{ WESTON_OPTION_BOOLEAN, "env-socket", 0, &config.env_socket },
