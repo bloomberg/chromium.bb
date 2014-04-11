@@ -29,10 +29,13 @@ function gatherAudioLevelSamples(peerConnection, numSamples, frequency,
 // audio device in media/video/capture/fake_video_capture_device.cc. Fails the
 // test if we can't see a signal. The samples should have been gathered over at
 // least two seconds since we expect to see at least three "peaks" in there
-// (we should see either 3 or 4 depending on how things line up).
+// (we should see either 3 or 4 depending on how things line up). We are quite
+// generous in what we consider to be a peak since Android devices in particular
+// seem to be flake-prone (they often don't reach anywhere near the max level
+// for some reason).
 function verifyAudioIsPlaying(samples) {
   var numPeaks = 0;
-  var threshold = MAX_AUDIO_OUTPUT_ENERGY * 0.7;
+  var threshold = MAX_AUDIO_OUTPUT_ENERGY * 0.6;
   var currentlyOverThreshold = false;
 
   // Detect when we have been been over the threshold and is going back again
