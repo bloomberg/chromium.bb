@@ -1688,7 +1688,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ScreenCoordinates) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognition) {
+// crbug/360448
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_SpeechRecognition) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   content::WebContents* guest_web_contents = LoadGuest(
       "/extensions/platform_apps/web_view/speech/guest.html",

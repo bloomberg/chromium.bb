@@ -105,12 +105,15 @@ SpeechRecognitionManager*
 // another test here to check that when speech recognition is in progress and
 // a renderer crashes, we get a call to
 // SpeechRecognitionManager::CancelAllRequestsWithDelegate.
-IN_PROC_BROWSER_TEST_F(InputTagSpeechBrowserTest, TestBasicRecognition) {
+// crbug/360448
+IN_PROC_BROWSER_TEST_F(InputTagSpeechBrowserTest,
+    DISABLED_TestBasicRecognition) {
   RunSpeechRecognitionTest("basic_recognition.html");
   EXPECT_TRUE(fake_speech_recognition_manager_.grammar().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(InputTagSpeechBrowserTest, GrammarAttribute) {
+// crbug/360448
+IN_PROC_BROWSER_TEST_F(InputTagSpeechBrowserTest, DISABLED_GrammarAttribute) {
   RunSpeechRecognitionTest("grammar_attribute.html");
   EXPECT_EQ("http://example.com/grammar.xml",
             fake_speech_recognition_manager_.grammar());
