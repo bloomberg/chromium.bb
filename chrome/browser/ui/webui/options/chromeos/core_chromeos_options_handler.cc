@@ -182,9 +182,7 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     if (connector->IsEnterpriseManaged())
       controlled_by = "policy";
-    // TODO(pastarmovj): Replace this call with a multi-profile aware one.
-    // see http://crbug.com/362430
-    else if (!UserManager::Get()->IsCurrentUserOwner())
+    else if (!ProfileHelper::IsOwnerProfile(Profile::FromWebUI(web_ui())))
       controlled_by = "owner";
   }
   dict->SetBoolean("disabled", !controlled_by.empty());
