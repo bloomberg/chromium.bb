@@ -13,7 +13,9 @@ from .utils import cipherfactory
 # RC4 is preferred as faster in Python, works in SSL3, and immune to CBC
 # issues such as timing attacks
 CIPHER_NAMES = ["rc4", "aes256", "aes128", "3des"]
-MAC_NAMES = ["sha"] # "md5" is allowed
+MAC_NAMES = ["sha"] # Don't allow "md5" by default.
+ALL_MAC_NAMES = ["sha", "md5"]
+KEY_EXCHANGE_NAMES = ["rsa", "dhe_rsa", "srp_sha", "srp_sha_rsa", "dh_anon"]
 CIPHER_IMPLEMENTATIONS = ["openssl", "pycrypto", "python"]
 CERTIFICATE_TYPES = ["x509"]
 
@@ -102,6 +104,7 @@ class HandshakeSettings(object):
         self.maxKeySize = 8193
         self.cipherNames = CIPHER_NAMES
         self.macNames = MAC_NAMES
+        self.keyExchangeNames = KEY_EXCHANGE_NAMES
         self.cipherImplementations = CIPHER_IMPLEMENTATIONS
         self.certificateTypes = CERTIFICATE_TYPES
         self.minVersion = (3,0)
@@ -116,6 +119,7 @@ class HandshakeSettings(object):
         other.maxKeySize = self.maxKeySize
         other.cipherNames = self.cipherNames
         other.macNames = self.macNames
+        other.keyExchangeNames = self.keyExchangeNames
         other.cipherImplementations = self.cipherImplementations
         other.certificateTypes = self.certificateTypes
         other.minVersion = self.minVersion
@@ -148,6 +152,12 @@ class HandshakeSettings(object):
         for s in other.cipherNames:
             if s not in CIPHER_NAMES:
                 raise ValueError("Unknown cipher name: '%s'" % s)
+        for s in other.macNames:
+            if s not in ALL_MAC_NAMES:
+                raise ValueError("Unknown MAC name: '%s'" % s)
+        for s in other.keyExchangeNames:
+            if s not in KEY_EXCHANGE_NAMES:
+                raise ValueError("Unknown key exchange name: '%s'" % s)
         for s in other.cipherImplementations:
             if s not in CIPHER_IMPLEMENTATIONS:
                 raise ValueError("Unknown cipher implementation: '%s'" % s)

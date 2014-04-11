@@ -30,3 +30,4 @@ Local Modifications:
   client_cipher_preferences.patch.
 - patches/fix_test_file.patch: Fix #! line in random test file to appease our
   presubmit checks.
+- patches/dhe_rsa.patch: Implement DHE_RSA-based cipher suites.

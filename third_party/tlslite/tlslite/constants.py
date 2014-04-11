@@ -143,6 +143,10 @@ class CipherSuite:
     
     TLS_RSA_WITH_RC4_128_MD5 = 0x0004
 
+    TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA = 0x0016
+    TLS_DHE_RSA_WITH_AES_128_CBC_SHA = 0x0033
+    TLS_DHE_RSA_WITH_AES_256_CBC_SHA = 0x0039
+
     TLS_DH_ANON_WITH_AES_128_CBC_SHA = 0x0034
     TLS_DH_ANON_WITH_AES_256_CBC_SHA = 0x003A
 
@@ -150,17 +154,20 @@ class CipherSuite:
     tripleDESSuites.append(TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA)
     tripleDESSuites.append(TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA)
     tripleDESSuites.append(TLS_RSA_WITH_3DES_EDE_CBC_SHA)
+    tripleDESSuites.append(TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA)
 
     aes128Suites = []
     aes128Suites.append(TLS_SRP_SHA_WITH_AES_128_CBC_SHA)
     aes128Suites.append(TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA)
     aes128Suites.append(TLS_RSA_WITH_AES_128_CBC_SHA)
+    aes128Suites.append(TLS_DHE_RSA_WITH_AES_128_CBC_SHA)
     aes128Suites.append(TLS_DH_ANON_WITH_AES_128_CBC_SHA)
 
     aes256Suites = []
     aes256Suites.append(TLS_SRP_SHA_WITH_AES_256_CBC_SHA)
     aes256Suites.append(TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA)
     aes256Suites.append(TLS_RSA_WITH_AES_256_CBC_SHA)
+    aes256Suites.append(TLS_DHE_RSA_WITH_AES_256_CBC_SHA)
     aes256Suites.append(TLS_DH_ANON_WITH_AES_256_CBC_SHA)
 
     rc4Suites = []
@@ -178,6 +185,9 @@ class CipherSuite:
     shaSuites.append(TLS_RSA_WITH_AES_128_CBC_SHA)
     shaSuites.append(TLS_RSA_WITH_AES_256_CBC_SHA)
     shaSuites.append(TLS_RSA_WITH_RC4_128_SHA)
+    shaSuites.append(TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA)
+    shaSuites.append(TLS_DHE_RSA_WITH_AES_128_CBC_SHA)
+    shaSuites.append(TLS_DHE_RSA_WITH_AES_256_CBC_SHA)
     shaSuites.append(TLS_DH_ANON_WITH_AES_128_CBC_SHA)
     shaSuites.append(TLS_DH_ANON_WITH_AES_256_CBC_SHA)
     
@@ -188,6 +198,7 @@ class CipherSuite:
     def _filterSuites(suites, settings):
         macNames = settings.macNames
         cipherNames = settings.cipherNames
+        keyExchangeNames = settings.keyExchangeNames
         macSuites = []
         if "sha" in macNames:
             macSuites += CipherSuite.shaSuites
@@ -204,7 +215,20 @@ class CipherSuite:
         if "rc4" in cipherNames:
             cipherSuites += CipherSuite.rc4Suites
 
-        return [s for s in suites if s in macSuites and s in cipherSuites]
+        keyExchangeSuites = []
+        if "rsa" in keyExchangeNames:
+            keyExchangeSuites += CipherSuite.certSuites
+        if "dhe_rsa" in keyExchangeNames:
+            keyExchangeSuites += CipherSuite.dheCertSuites
+        if "srp_sha" in keyExchangeNames:
+            keyExchangeSuites += CipherSuite.srpSuites
+        if "srp_sha_rsa" in keyExchangeNames:
+            keyExchangeSuites += CipherSuite.srpCertSuites
+        if "dh_anon" in keyExchangeNames:
+            keyExchangeSuites += CipherSuite.anonSuites
+
+        return [s for s in suites if s in macSuites and
+                s in cipherSuites and s in keyExchangeSuites]
 
     srpSuites = []
     srpSuites.append(TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA)
@@ -236,11 +260,21 @@ class CipherSuite:
     certSuites.append(TLS_RSA_WITH_AES_256_CBC_SHA)
     certSuites.append(TLS_RSA_WITH_RC4_128_SHA)
     certSuites.append(TLS_RSA_WITH_RC4_128_MD5)
-    certAllSuites = srpCertSuites + certSuites
     
     @staticmethod
     def getCertSuites(settings):
         return CipherSuite._filterSuites(CipherSuite.certSuites, settings)
+
+    dheCertSuites = []
+    dheCertSuites.append(TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA)
+    dheCertSuites.append(TLS_DHE_RSA_WITH_AES_128_CBC_SHA)
+    dheCertSuites.append(TLS_DHE_RSA_WITH_AES_256_CBC_SHA)
+
+    @staticmethod
+    def getDheCertSuites(settings):
+        return CipherSuite._filterSuites(CipherSuite.dheCertSuites, settings)
+
+    certAllSuites = srpCertSuites + certSuites + dheCertSuites
 
     anonSuites = []
     anonSuites.append(TLS_DH_ANON_WITH_AES_128_CBC_SHA)
@@ -249,6 +283,8 @@ class CipherSuite:
     @staticmethod
     def getAnonSuites(settings):
         return CipherSuite._filterSuites(CipherSuite.anonSuites, settings)
+
+    dhAllSuites = dheCertSuites + anonSuites
 
     @staticmethod
     def canonicalCipherName(ciphersuite):

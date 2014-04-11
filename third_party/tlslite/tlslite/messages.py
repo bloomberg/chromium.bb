@@ -533,31 +533,31 @@ class ServerKeyExchange(HandshakeMsg):
         p.stopLengthCheck()
         return self
 
-    def write(self):
+    def write_params(self):
         w = Writer()
         if self.cipherSuite in CipherSuite.srpAllSuites:
             w.addVarSeq(numberToByteArray(self.srp_N), 1, 2)
             w.addVarSeq(numberToByteArray(self.srp_g), 1, 2)
             w.addVarSeq(self.srp_s, 1, 1)
             w.addVarSeq(numberToByteArray(self.srp_B), 1, 2)
-            if self.cipherSuite in CipherSuite.srpCertSuites:
-                w.addVarSeq(self.signature, 1, 2)
-        elif self.cipherSuite in CipherSuite.anonSuites:
+        elif self.cipherSuite in CipherSuite.dhAllSuites:
             w.addVarSeq(numberToByteArray(self.dh_p), 1, 2)
             w.addVarSeq(numberToByteArray(self.dh_g), 1, 2)
             w.addVarSeq(numberToByteArray(self.dh_Ys), 1, 2)
-            if self.cipherSuite in []: # TODO support for signed_params
-                w.addVarSeq(self.signature, 1, 2)
+        else:
+            assert(False)
+        return w.bytes
+
+    def write(self):
+        w = Writer()
+        w.bytes += self.write_params()
+        if self.cipherSuite in CipherSuite.certAllSuites:
+            w.addVarSeq(self.signature, 1, 2)
         return self.postWrite(w)
 
     def hash(self, clientRandom, serverRandom):
-        oldCipherSuite = self.cipherSuite
-        self.cipherSuite = None
-        try:
-            bytes = clientRandom + serverRandom + self.write()[4:]
-            return MD5(bytes) + SHA1(bytes)
-        finally:
-            self.cipherSuite = oldCipherSuite
+        bytes = clientRandom + serverRandom + self.write_params()
+        return MD5(bytes) + SHA1(bytes)
 
 class ServerHelloDone(HandshakeMsg):
     def __init__(self):
@@ -607,7 +607,7 @@ class ClientKeyExchange(HandshakeMsg):
                     p.getFixBytes(len(p.bytes)-p.index)
             else:
                 raise AssertionError()
-        elif self.cipherSuite in CipherSuite.anonSuites:
+        elif self.cipherSuite in CipherSuite.dhAllSuites:
             self.dh_Yc = bytesToNumber(p.getVarBytes(2))            
         else:
             raise AssertionError()
