@@ -1191,6 +1191,7 @@ chrome_info_no_pdf = chrome_info.derive(
 chrome_perf = chrome_info.derive(
   description='Chrome Performance test bot',
   vm_tests=[],
+  unittests=False,
   upload_hw_test_artifacts=True,
   hw_tests=[HWTestConfig('perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
                          timeout=90 * 60, critical=True, num=1)],
