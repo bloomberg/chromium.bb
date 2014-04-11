@@ -87,10 +87,22 @@ WebScrollbarLayer* WebCompositorSupportImpl::createScrollbarLayer(
 }
 
 WebScrollbarLayer* WebCompositorSupportImpl::createSolidColorScrollbarLayer(
-      WebScrollbar::Orientation orientation, int thumb_thickness,
-      bool is_left_side_vertical_scrollbar) {
-  return new WebScrollbarLayerImpl(orientation, thumb_thickness,
-      is_left_side_vertical_scrollbar);
+    WebScrollbar::Orientation orientation,
+    int thumb_thickness,
+    int track_start,
+    bool is_left_side_vertical_scrollbar) {
+  return new WebScrollbarLayerImpl(orientation,
+                                   thumb_thickness,
+                                   track_start,
+                                   is_left_side_vertical_scrollbar);
+}
+
+WebScrollbarLayer* WebCompositorSupportImpl::createSolidColorScrollbarLayer(
+    WebScrollbar::Orientation orientation,
+    int thumb_thickness,
+    bool is_left_side_vertical_scrollbar) {
+  return new WebScrollbarLayerImpl(
+      orientation, thumb_thickness, 0, is_left_side_vertical_scrollbar);
 }
 
 WebAnimation* WebCompositorSupportImpl::createAnimation(

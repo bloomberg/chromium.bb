@@ -29,6 +29,7 @@ class ScrollbarAnimationControllerThinningTest : public testing::Test {
 
     const int kId = 2;
     const int kThumbThickness = 10;
+    const int kTrackStart = 0;
     const bool kIsLeftSideVerticalScrollbar = false;
     const bool kIsOverlayScrollbar = true;
     scrollbar_layer_ =
@@ -36,6 +37,7 @@ class ScrollbarAnimationControllerThinningTest : public testing::Test {
                                              kId,
                                              HORIZONTAL,
                                              kThumbThickness,
+                                             kTrackStart,
                                              kIsLeftSideVerticalScrollbar,
                                              kIsOverlayScrollbar);
 

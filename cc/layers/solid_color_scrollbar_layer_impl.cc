@@ -15,6 +15,7 @@ scoped_ptr<SolidColorScrollbarLayerImpl> SolidColorScrollbarLayerImpl::Create(
     int id,
     ScrollbarOrientation orientation,
     int thumb_thickness,
+    int track_start,
     bool is_left_side_vertical_scrollbar,
     bool is_overlay) {
   return make_scoped_ptr(
@@ -22,6 +23,7 @@ scoped_ptr<SolidColorScrollbarLayerImpl> SolidColorScrollbarLayerImpl::Create(
                                        id,
                                        orientation,
                                        thumb_thickness,
+                                       track_start,
                                        is_left_side_vertical_scrollbar,
                                        is_overlay));
 }
@@ -34,6 +36,7 @@ scoped_ptr<LayerImpl> SolidColorScrollbarLayerImpl::CreateLayerImpl(
                                               id(),
                                               orientation(),
                                               thumb_thickness_,
+                                              track_start_,
                                               is_left_side_vertical_scrollbar(),
                                               is_overlay_scrollbar())
       .PassAs<LayerImpl>();
@@ -44,6 +47,7 @@ SolidColorScrollbarLayerImpl::SolidColorScrollbarLayerImpl(
     int id,
     ScrollbarOrientation orientation,
     int thumb_thickness,
+    int track_start,
     bool is_left_side_vertical_scrollbar,
     bool is_overlay)
     : ScrollbarLayerImplBase(tree_impl,
@@ -52,6 +56,7 @@ SolidColorScrollbarLayerImpl::SolidColorScrollbarLayerImpl(
                              is_left_side_vertical_scrollbar,
                              is_overlay),
       thumb_thickness_(thumb_thickness),
+      track_start_(track_start),
       color_(tree_impl->settings().solid_color_scrollbar_color) {}
 
 void SolidColorScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
@@ -76,14 +81,12 @@ int SolidColorScrollbarLayerImpl::ThumbLength() const {
 
 float SolidColorScrollbarLayerImpl::TrackLength() const {
   if (orientation() == HORIZONTAL)
-    return bounds().width();
+    return bounds().width() - TrackStart() * 2;
   else
-    return bounds().height() + vertical_adjust();
+    return bounds().height() + vertical_adjust() - TrackStart() * 2;
 }
 
-int SolidColorScrollbarLayerImpl::TrackStart() const {
-  return 0;
-}
+int SolidColorScrollbarLayerImpl::TrackStart() const { return track_start_; }
 
 bool SolidColorScrollbarLayerImpl::IsThumbResizable() const {
   return true;

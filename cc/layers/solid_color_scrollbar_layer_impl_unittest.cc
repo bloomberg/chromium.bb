@@ -18,6 +18,7 @@ TEST(SolidColorScrollbarLayerImplTest, Occlusion) {
 
   ScrollbarOrientation orientation = VERTICAL;
   int thumb_thickness = layer_size.width();
+  int track_start = 0;
   bool is_left_side_vertical_scrollbar = false;
   bool is_overlay = false;
 
@@ -25,6 +26,7 @@ TEST(SolidColorScrollbarLayerImplTest, Occlusion) {
       impl.AddChildToRoot<SolidColorScrollbarLayerImpl>(
           orientation,
           thumb_thickness,
+          track_start,
           is_left_side_vertical_scrollbar,
           is_overlay);
   scrollbar_layer_impl->SetAnchorPoint(gfx::PointF());

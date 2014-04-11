@@ -17,6 +17,7 @@ class CC_EXPORT SolidColorScrollbarLayerImpl : public ScrollbarLayerImplBase {
       int id,
       ScrollbarOrientation orientation,
       int thumb_thickness,
+      int track_start,
       bool is_left_side_vertical_scrollbar,
       bool is_overlay);
   virtual ~SolidColorScrollbarLayerImpl();
@@ -35,6 +36,7 @@ class CC_EXPORT SolidColorScrollbarLayerImpl : public ScrollbarLayerImplBase {
                                int id,
                                ScrollbarOrientation orientation,
                                int thumb_thickness,
+                               int track_start,
                                bool is_left_side_vertical_scrollbar,
                                bool is_overlay);
 
@@ -47,6 +49,7 @@ class CC_EXPORT SolidColorScrollbarLayerImpl : public ScrollbarLayerImplBase {
 
  private:
   int thumb_thickness_;
+  int track_start_;
   SkColor color_;
 };
 

@@ -28,6 +28,7 @@ class WebScrollbarLayerImpl : public blink::WebScrollbarLayer {
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebScrollbarLayerImpl(
       blink::WebScrollbar::Orientation orientation,
       int thumb_thickness,
+      int track_start,
       bool is_left_side_vertical_scrollbar);
   virtual ~WebScrollbarLayerImpl();
 

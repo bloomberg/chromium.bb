@@ -33,20 +33,22 @@
 namespace cc {
 namespace {
 
-LayerImpl* LayerImplForScrollAreaAndScrollbar(
-    FakeLayerTreeHost* host,
-    scoped_ptr<Scrollbar> scrollbar,
-    bool reverse_order,
-    bool use_solid_color_scrollbar,
-    int thumb_thickness) {
+LayerImpl* LayerImplForScrollAreaAndScrollbar(FakeLayerTreeHost* host,
+                                              scoped_ptr<Scrollbar> scrollbar,
+                                              bool reverse_order,
+                                              bool use_solid_color_scrollbar,
+                                              int thumb_thickness,
+                                              int track_start) {
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   scoped_refptr<Layer> child1 = Layer::Create();
   scoped_refptr<Layer> child2;
   if (use_solid_color_scrollbar) {
     const bool kIsLeftSideVerticalScrollbar = false;
-    child2 = SolidColorScrollbarLayer::Create(
-        scrollbar->Orientation(), thumb_thickness,
-        kIsLeftSideVerticalScrollbar, child1->id());
+    child2 = SolidColorScrollbarLayer::Create(scrollbar->Orientation(),
+                                              thumb_thickness,
+                                              track_start,
+                                              kIsLeftSideVerticalScrollbar,
+                                              child1->id());
   } else {
     child2 = PaintedScrollbarLayer::Create(scrollbar.Pass(), child1->id());
   }
@@ -60,7 +62,7 @@ TEST(ScrollbarLayerTest, ResolveScrollLayerPointer) {
   scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
   scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);
   LayerImpl* layer_impl_tree_root = LayerImplForScrollAreaAndScrollbar(
-      host.get(), scrollbar.Pass(), false, false, 0);
+      host.get(), scrollbar.Pass(), false, false, 0, 0);
 
   LayerImpl* cc_child1 = layer_impl_tree_root->children()[0];
   PaintedScrollbarLayerImpl* cc_child2 =
@@ -75,7 +77,7 @@ TEST(ScrollbarLayerTest, ResolveScrollLayerPointer_ReverseOrder) {
   scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
   scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);
   LayerImpl* layer_impl_tree_root = LayerImplForScrollAreaAndScrollbar(
-      host.get(), scrollbar.Pass(), true, false, 0);
+      host.get(), scrollbar.Pass(), true, false, 0, 0);
 
   PaintedScrollbarLayerImpl* cc_child1 =
       static_cast<PaintedScrollbarLayerImpl*>(
@@ -92,7 +94,7 @@ TEST(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   // Create and attach a non-overlay scrollbar.
   scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);
   LayerImpl* layer_impl_tree_root = LayerImplForScrollAreaAndScrollbar(
-      host.get(), scrollbar.Pass(), false, false, 0);
+      host.get(), scrollbar.Pass(), false, false, 0, 0);
   PaintedScrollbarLayerImpl* scrollbar_layer_impl =
       static_cast<PaintedScrollbarLayerImpl*>(
           layer_impl_tree_root->children()[1]);
@@ -108,7 +110,7 @@ TEST(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   scrollbar.reset(new FakeScrollbar(false, false, true));
 
   layer_impl_tree_root = LayerImplForScrollAreaAndScrollbar(
-      host.get(), scrollbar.Pass(), false, false, 0);
+      host.get(), scrollbar.Pass(), false, false, 0, 0);
   scrollbar_layer_impl = static_cast<PaintedScrollbarLayerImpl*>(
       layer_impl_tree_root->children()[1]);
 
@@ -271,6 +273,7 @@ TEST(ScrollbarLayerTest, ThumbRect) {
 
 TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
   const int kThumbThickness = 3;
+  const int kTrackStart = 0;
   const int kTrackLength = 100;
 
   LayerTreeSettings layer_tree_settings;
@@ -279,7 +282,7 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
 
   scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar(false, true, true));
   LayerImpl* layer_impl_tree_root = LayerImplForScrollAreaAndScrollbar(
-      host.get(), scrollbar.Pass(), false, true, kThumbThickness);
+      host.get(), scrollbar.Pass(), false, true, kThumbThickness, kTrackStart);
   ScrollbarLayerImplBase* scrollbar_layer_impl =
       static_cast<SolidColorScrollbarLayerImpl*>(
           layer_impl_tree_root->children()[1]);
@@ -333,6 +336,7 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
 
 TEST(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
   const int kThumbThickness = 3;
+  const int kTrackStart = 0;
   const int kTrackLength = 10;
 
   LayerTreeSettings layer_tree_settings;
@@ -350,6 +354,7 @@ TEST(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
     const bool kIsLeftSideVerticalScrollbar = false;
     child2 = SolidColorScrollbarLayer::Create(scrollbar->Orientation(),
                                               kThumbThickness,
+                                              kTrackStart,
                                               kIsLeftSideVerticalScrollbar,
                                               child1->id());
     child2->ToScrollbarLayer()->SetScrollLayer(scroll_layer->id());
@@ -394,6 +399,7 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
         layer_tree_settings, &proxy_, &shared_bitmap_manager_));
 
     const int kThumbThickness = 3;
+    const int kTrackStart = 0;
     const bool kIsLeftSideVerticalScrollbar = false;
     const bool kIsOverlayScrollbar = false;
 
@@ -402,6 +408,7 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
                                              1,
                                              HORIZONTAL,
                                              kThumbThickness,
+                                             kTrackStart,
                                              kIsLeftSideVerticalScrollbar,
                                              kIsOverlayScrollbar);
     vertical_scrollbar_layer_ =
@@ -409,6 +416,7 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
                                              2,
                                              VERTICAL,
                                              kThumbThickness,
+                                             kTrackStart,
                                              kIsLeftSideVerticalScrollbar,
                                              kIsOverlayScrollbar);
   }
@@ -624,10 +632,12 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
     scoped_refptr<Layer> scrollbar_layer;
     if (use_solid_color_scrollbar) {
       const int kThumbThickness = 3;
+      const int kTrackStart = 0;
       const bool kIsLeftSideVerticalScrollbar = false;
       scrollbar_layer =
           SolidColorScrollbarLayer::Create(scrollbar->Orientation(),
                                            kThumbThickness,
+                                           kTrackStart,
                                            kIsLeftSideVerticalScrollbar,
                                            layer_tree_root->id());
     } else {

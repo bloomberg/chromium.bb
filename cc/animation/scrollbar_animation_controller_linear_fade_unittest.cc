@@ -21,6 +21,7 @@ class ScrollbarAnimationControllerLinearFadeTest : public testing::Test {
  protected:
   virtual void SetUp() {
     const int kThumbThickness = 10;
+    const int kTrackStart = 0;
     const bool kIsLeftSideVerticalScrollbar = false;
     const bool kIsOverlayScrollbar = true;  // Allow opacity animations.
 
@@ -31,6 +32,7 @@ class ScrollbarAnimationControllerLinearFadeTest : public testing::Test {
                                              2,
                                              HORIZONTAL,
                                              kThumbThickness,
+                                             kTrackStart,
                                              kIsLeftSideVerticalScrollbar,
                                              kIsOverlayScrollbar);
     clip_layer_ = LayerImpl::Create(host_impl_.active_tree(), 3);

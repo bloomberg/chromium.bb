@@ -36,7 +36,14 @@ class WebCompositorSupportImpl : public blink::WebCompositorSupport {
       blink::WebScrollbarThemePainter painter,
       blink::WebScrollbarThemeGeometry*);
   virtual blink::WebScrollbarLayer* createSolidColorScrollbarLayer(
-      blink::WebScrollbar::Orientation orientation, int thumb_thickness,
+      blink::WebScrollbar::Orientation orientation,
+      int thumb_thickness,
+      int track_start,
+      bool is_left_side_vertical_scrollbar);
+  // FIXME(aelias): Delete this after Blink roll.
+  virtual blink::WebScrollbarLayer* createSolidColorScrollbarLayer(
+      blink::WebScrollbar::Orientation orientation,
+      int thumb_thickness,
       bool is_left_side_vertical_scrollbar);
   virtual blink::WebAnimation* createAnimation(
       const blink::WebAnimationCurve& curve,
