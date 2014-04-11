@@ -72,7 +72,7 @@ void CloseBalloon(const std::string& balloon_id) {
       g_browser_process->notification_ui_manager();
   bool cancelled ALLOW_UNUSED = notification_ui_manager->CancelById(balloon_id);
 #if defined(ENABLE_NOTIFICATIONS)
-  if (cancelled && message_center::IsRichNotificationEnabled()) {
+  if (cancelled) {
     // TODO(dewittj): Add this functionality to the notification UI manager's
     // API.
     g_browser_process->message_center()->SetVisibility(

@@ -8271,9 +8271,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_NOTIFICATIONS_HEADER" desc="Label for Notifications exception management page on Content Settings dialog">
         Notifications exceptions
       </message>
-      <message name="IDS_NOTIFICATIONS_SETTINGS_BUTTON" desc="Label for the Settings button for Notifications tab of Content Settings dialog.">
-        Settings...
-      </message>
       <message name="IDS_NOTIFICATIONS_ALLOW_RADIO" desc="A radio button in Content Settings dialog to allow all sites to show notifications.">
         Allow all sites to show desktop notifications
       </message>
@@ -12871,29 +12868,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_NOTIFICATION_OPTIONS_MENU_LABEL" desc="Text for the menu option">
           Options
         </message>
-        <message name="IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE" desc="Text for the menu option to revoke notification permission.">
-          Disable notifications from <ph name="site">$1<ex>mail.google.com</ex></ph>
-        </message>
         <message name="IDS_NOTIFICATION_BALLOON_ENABLE_MESSAGE" desc="Text for the menu option to enable notification permission.">
           Enable notifications from <ph name="site">$1<ex>mail.google.com</ex></ph>
-        </message>
-        <message name="IDS_NOTIFICATION_CHOOSE_POSITION" desc="Menu label for position choice submenu.">
-          Choose position
-        </message>
-        <message name="IDS_NOTIFICATION_POSITION_DEFAULT" desc="Menu label for positioning in default location">
-          Use default
-        </message>
-        <message name="IDS_NOTIFICATION_POSITION_LOWER_LEFT" desc="Menu label for positioning in lower left corner">
-          Lower left
-        </message>
-        <message name="IDS_NOTIFICATION_POSITION_LOWER_RIGHT" desc="Menu label for positioning in lower right corner">
-          Lower right
-        </message>
-        <message name="IDS_NOTIFICATION_POSITION_UPPER_LEFT" desc="Menu label for positioning in upper left corner">
-          Upper left
-        </message>
-        <message name="IDS_NOTIFICATION_POSITION_UPPER_RIGHT" desc="Menu label for positioning in upper right corner">
-          Upper right
         </message>
         <message name="IDS_NOTIFICATION_WELCOME_BODY" desc="Notification body for the Welcome Notification">
           Stay connected to what you need to know, across all devices.

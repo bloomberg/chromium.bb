@@ -207,7 +207,6 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest,
                        ManuallyCloseMessageCenter) {
   NotificationUIManager* manager = g_browser_process->notification_ui_manager();
-  ASSERT_TRUE(manager->DelegatesToMessageCenter());
   MessageCenterNotificationManager* mc_manager =
       static_cast<MessageCenterNotificationManager*>(manager);
 

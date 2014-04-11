@@ -29,10 +29,6 @@ namespace {
 const int kNotificationPriority = static_cast<int>(
     message_center::LOW_PRIORITY);
 
-bool UseRichNotifications() {
-  return message_center::IsRichNotificationEnabled();
-}
-
 }  // namespace
 
 namespace notifier {
@@ -257,10 +253,6 @@ TEST_F(SyncedNotificationTest, UpdateTest) {
 }
 
 TEST_F(SyncedNotificationTest, ShowTest) {
-
-  if (!UseRichNotifications())
-    return;
-
   // Call the method under test using the pre-populated data.
   notification1_->Show(NULL);
 
@@ -278,9 +270,6 @@ TEST_F(SyncedNotificationTest, ShowTest) {
 }
 
 TEST_F(SyncedNotificationTest, DismissTest) {
-
-  if (!UseRichNotifications())
-    return;
 
   // Call the method under test using a dismissed notification.
   notification4_->Show(NULL);
@@ -304,9 +293,6 @@ TEST_F(SyncedNotificationTest, CreateBitmapFetcherTest) {
 }
 
 TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
-  if (!UseRichNotifications())
-    return;
-
   // Set up the internal state that FetchBitmaps() would have set.
   notification1_->notification_manager_ = notification_manager();
 
@@ -357,9 +343,6 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
 
 // TODO(petewil): Empty bitmap should count as a successful fetch.
 TEST_F(SyncedNotificationTest, EmptyBitmapTest) {
-  if (!UseRichNotifications())
-    return;
-
   // Set up the internal state that FetchBitmaps() would have set.
   notification1_->notification_manager_ = notification_manager();
 
@@ -406,9 +389,6 @@ TEST_F(SyncedNotificationTest, EmptyBitmapTest) {
 }
 
 TEST_F(SyncedNotificationTest, ShowIfNewlyEnabledTest) {
-  if (!UseRichNotifications())
-    return;
-
   // Call the method using the wrong app id, nothing should get shown.
   notification1_->ShowAllForAppId(NULL, kAppId2);
 
@@ -433,9 +413,6 @@ TEST_F(SyncedNotificationTest, ShowIfNewlyEnabledTest) {
 }
 
 TEST_F(SyncedNotificationTest, HideIfNewlyRemovedTest) {
-  if (!UseRichNotifications())
-    return;
-
   // Add the notification to the notification manger, so it exists before we
   // we remove it.
   notification1_->Show(NULL);

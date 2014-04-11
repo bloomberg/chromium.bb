@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -88,6 +89,12 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
 
 MessageCenterNotificationManager::~MessageCenterNotificationManager() {
   message_center_->RemoveObserver(this);
+}
+
+void MessageCenterNotificationManager::RegisterPrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kMessageCenterShowedFirstRunBalloon,
+                                false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

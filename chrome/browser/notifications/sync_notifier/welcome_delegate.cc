@@ -22,12 +22,10 @@ namespace {
 void UpdateMessageCenter() {
   NotificationUIManager* notification_ui_manager =
       g_browser_process->notification_ui_manager();
-  if (notification_ui_manager->DelegatesToMessageCenter()) {
-    MessageCenterNotificationManager* message_center_notification_manager =
-        static_cast<MessageCenterNotificationManager*>(notification_ui_manager);
+  MessageCenterNotificationManager* message_center_notification_manager =
+      static_cast<MessageCenterNotificationManager*>(notification_ui_manager);
 
-    message_center_notification_manager->EnsureMessageCenterClosed();
-  }
+  message_center_notification_manager->EnsureMessageCenterClosed();
 }
 }  // namespace
 

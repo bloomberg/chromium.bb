@@ -384,33 +384,6 @@ base::string16 DesktopNotificationService::CreateDataUrl(
 }
 
 // static
-std::string DesktopNotificationService::AddNotification(
-    const GURL& origin_url,
-    const base::string16& title,
-    const base::string16& message,
-    const GURL& icon_url,
-    const base::string16& replace_id,
-    NotificationDelegate* delegate,
-    Profile* profile) {
-  if (message_center::IsRichNotificationEnabled()) {
-    // For message center create a non-HTML notification with |icon_url|.
-    Notification notification(origin_url, icon_url, title, message,
-                              blink::WebTextDirectionDefault,
-                              base::string16(), replace_id, delegate);
-    g_browser_process->notification_ui_manager()->Add(notification, profile);
-    return notification.notification_id();
-  }
-
-  // Generate a data URL embedding the icon URL, title, and message.
-  GURL content_url(CreateDataUrl(
-      icon_url, title, message, blink::WebTextDirectionDefault));
-  Notification notification(
-      GURL(), content_url, base::string16(), replace_id, delegate);
-  g_browser_process->notification_ui_manager()->Add(notification, profile);
-  return notification.notification_id();
-}
-
-// static
 std::string DesktopNotificationService::AddIconNotification(
     const GURL& origin_url,
     const base::string16& title,
@@ -419,26 +392,11 @@ std::string DesktopNotificationService::AddIconNotification(
     const base::string16& replace_id,
     NotificationDelegate* delegate,
     Profile* profile) {
-  if (message_center::IsRichNotificationEnabled()) {
-    // For message center create a non-HTML notification with |icon|.
-    Notification notification(origin_url, icon, title, message,
-                              blink::WebTextDirectionDefault,
-                              base::string16(), replace_id, delegate);
-    g_browser_process->notification_ui_manager()->Add(notification, profile);
-    return notification.notification_id();
-  }
-
-  GURL icon_url;
-  if (!icon.IsEmpty())
-    icon_url = GURL(webui::GetBitmapDataUrl(*icon.ToSkBitmap()));
-  return AddNotification(
-      origin_url, title, message, icon_url, replace_id, delegate, profile);
-}
-
-// static
-void DesktopNotificationService::RemoveNotification(
-    const std::string& notification_id) {
-    g_browser_process->notification_ui_manager()->CancelById(notification_id);
+  Notification notification(origin_url, icon, title, message,
+                            blink::WebTextDirectionDefault,
+                            base::string16(), replace_id, delegate);
+  g_browser_process->notification_ui_manager()->Add(notification, profile);
+  return notification.notification_id();
 }
 
 DesktopNotificationService::DesktopNotificationService(
@@ -635,10 +593,7 @@ bool DesktopNotificationService::ShowDesktopNotification(
 base::string16 DesktopNotificationService::DisplayNameForOriginInProcessId(
     const GURL& origin, int process_id) {
   // If the source is an extension, lookup the display name.
-  // Message center prefers to use extension name if the notification
-  // is allowed by an extension.
-  if (NotificationUIManager::DelegatesToMessageCenter() ||
-      origin.SchemeIs(extensions::kExtensionScheme)) {
+  if (origin.SchemeIs(extensions::kExtensionScheme)) {
     extensions::InfoMap* extension_info_map =
         extensions::ExtensionSystem::Get(profile_)->info_map();
     if (extension_info_map) {
@@ -746,8 +701,7 @@ void DesktopNotificationService::SetNotifierEnabled(
 
 void DesktopNotificationService::ShowWelcomeNotificationIfNecessary(
     const Notification& notification) {
-  if (!chrome_now_welcome_notification_ &&
-      message_center::IsRichNotificationEnabled()) {
+  if (!chrome_now_welcome_notification_) {
     chrome_now_welcome_notification_ =
         ExtensionWelcomeNotification::Create(kChromeNowExtensionID, profile_);
   }

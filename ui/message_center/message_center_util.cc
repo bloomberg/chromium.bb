@@ -9,16 +9,6 @@
 
 namespace message_center {
 
-// TODO(dimich): remove this function when balloon notifications are removed
-// completely.
-bool IsRichNotificationEnabled() {
-#if defined(OS_MACOSX) || defined(USE_AURA)
-  return true;
-#else
-  return false;
-#endif
-}
-
 MessageCenterShowState GetMessageCenterShowState() {
 #if defined(OS_MACOSX)
   std::string tray_behavior =

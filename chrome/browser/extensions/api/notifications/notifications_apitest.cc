@@ -456,16 +456,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestCSP) {
   ASSERT_TRUE(RunExtensionTest("notifications/api/csp")) << message_;
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_TestByUser TestByUser
-#else
-#define MAYBE_TestByUser DISABLED_TestByUser
-#endif
-
-IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestByUser) {
-  ASSERT_TRUE(message_center::IsRichNotificationEnabled());
-
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestByUser) {
   const extensions::Extension* extension =
       LoadExtensionAndWait("notifications/api/by_user");
   ASSERT_TRUE(extension) << message_;
@@ -626,13 +617,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestProgressNotification) {
   }
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_TestPartialUpdate TestPartialUpdate
-#else
-#define MAYBE_TestPartialUpdate DISABLED_TestPartialUpdate
-#endif
-IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestPartialUpdate) {
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
   scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
 
   // Create a new notification.
@@ -726,14 +711,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestPartialUpdate) {
   EXPECT_EQ(0u, notification->buttons().size());
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_TestGetPermissionLevel TestGetPermissionLevel
-#else
-#define MAYBE_TestGetPermissionLevel DISABLED_TestGetPermissionLevel
-#endif
-
-IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestGetPermissionLevel) {
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestGetPermissionLevel) {
   scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
 
   // Get permission level for the extension whose notifications are enabled.
@@ -786,15 +764,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestGetPermissionLevel) {
   }
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_TestOnPermissionLevelChanged TestOnPermissionLevelChanged
-#else
-#define MAYBE_TestOnPermissionLevelChanged DISABLED_TestOnPermissionLevelChanged
-#endif
-
-IN_PROC_BROWSER_TEST_F(NotificationsApiTest,
-                       MAYBE_TestOnPermissionLevelChanged) {
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestOnPermissionLevelChanged) {
   const extensions::Extension* extension =
       LoadExtensionAndWait("notifications/api/permission");
   ASSERT_TRUE(extension) << message_;

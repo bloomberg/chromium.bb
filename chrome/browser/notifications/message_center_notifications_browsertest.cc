@@ -152,28 +152,17 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
 #if !defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, RetrieveBaseParts) {
-  // Make sure comamnd-line switch has an effect.
-  EXPECT_EQ(NotificationUIManager::DelegatesToMessageCenter(),
-            message_center::IsRichNotificationEnabled());
   EXPECT_TRUE(manager());
   EXPECT_TRUE(message_center());
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_BasicAddCancel BasicAddCancel
-#else
-#define MAYBE_BasicAddCancel DISABLED_BasicAddCancel
-#endif
-
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, MAYBE_BasicAddCancel) {
+IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicAddCancel) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
-  EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
   // Someone may create system notifications like "you're in multi-profile
   // mode..." or something which may change the expectation.
   // TODO(mukai): move this to SetUpOnMainThread() after fixing the side-effect
@@ -185,21 +174,13 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, MAYBE_BasicAddCancel) {
   EXPECT_EQ(0u, message_center()->NotificationCount());
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_BasicDelegate BasicDelegate
-#else
-#define MAYBE_BasicDelegate DISABLED_BasicDelegate
-#endif
-
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, MAYBE_BasicDelegate) {
+IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, BasicDelegate) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
-  EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("hey", &delegate), profile());
   // Verify that delegate accumulated correct log of events.
@@ -210,22 +191,13 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, MAYBE_BasicDelegate) {
   delegate->Release();
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_ButtonClickedDelegate ButtonClickedDelegate
-#else
-#define MAYBE_ButtonClickedDelegate DISABLED_ButtonClickedDelegate
-#endif
-
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
-                       MAYBE_ButtonClickedDelegate) {
+IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, ButtonClickedDelegate) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
-  EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("n", &delegate), profile());
   message_center()->ClickOnNotificationButton("n", 1);
@@ -234,22 +206,14 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   delegate->Release();
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_UpdateExistingNotification UpdateExistingNotification
-#else
-#define MAYBE_UpdateExistingNotification DISABLED_UpdateExistingNotification
-#endif
-
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
-                       MAYBE_UpdateExistingNotification) {
+                       UpdateExistingNotification) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
-  EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("n", &delegate), profile());
   TestDelegate* delegate2;
@@ -263,22 +227,13 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   delegate2->Release();
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_QueueWhenCenterVisible QueueWhenCenterVisible
-#else
-#define MAYBE_QueueWhenCenterVisible DISABLED_QueueWhenCenterVisible
-#endif
-
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
-                       MAYBE_QueueWhenCenterVisible) {
+IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, QueueWhenCenterVisible) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
-  EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
   TestAddObserver observer(message_center());
 
   TestDelegate* delegate;
@@ -300,24 +255,14 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   delegate2->Release();
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_UpdateNonProgressNotificationWhenCenterVisible \
-    UpdateNonProgressNotificationWhenCenterVisible
-#else
-#define MAYBE_UpdateNonProgressNotificationWhenCenterVisible \
-    DISABLED_UpdateNonProgressNotificationWhenCenterVisible
-#endif
-
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
-                       MAYBE_UpdateNonProgressNotificationWhenCenterVisible) {
+                       UpdateNonProgressNotificationWhenCenterVisible) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
-  EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
   TestAddObserver observer(message_center());
 
   TestDelegate* delegate;
@@ -341,25 +286,15 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   delegate->Release();
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_UpdateNonProgressToProgressNotificationWhenCenterVisible \
-    UpdateNonProgressToProgressNotificationWhenCenterVisible
-#else
-#define MAYBE_UpdateNonProgressToProgressNotificationWhenCenterVisible \
-    DISABLED_UpdateNonProgressToProgressNotificationWhenCenterVisible
-#endif
-
 IN_PROC_BROWSER_TEST_F(
     MessageCenterNotificationsTest,
-    MAYBE_UpdateNonProgressToProgressNotificationWhenCenterVisible) {
+    UpdateNonProgressToProgressNotificationWhenCenterVisible) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
-  EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
   TestAddObserver observer(message_center());
 
   TestDelegate* delegate;
@@ -383,24 +318,14 @@ IN_PROC_BROWSER_TEST_F(
   delegate->Release();
 }
 
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_UpdateProgressNotificationWhenCenterVisible \
-    UpdateProgressNotificationWhenCenterVisible
-#else
-#define MAYBE_UpdateProgressNotificationWhenCenterVisible \
-    DISABLED_UpdateProgressNotificationWhenCenterVisible
-#endif
-
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
-                       MAYBE_UpdateProgressNotificationWhenCenterVisible) {
+                       UpdateProgressNotificationWhenCenterVisible) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
-  EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
   TestAddObserver observer(message_center());
 
   TestDelegate* delegate;
@@ -422,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   delegate->Release();
 }
 
-#if !defined(OS_CHROMEOS) && defined(RUN_MESSAGE_CENTER_TESTS)
+#if !defined(OS_CHROMEOS)
 #define MAYBE_HideWhenFullscreenEnabled HideWhenFullscreenEnabled
 #else
 #define MAYBE_HideWhenFullscreenEnabled DISABLED_HideWhenFullscreenEnabled
@@ -430,8 +355,6 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
                        MAYBE_HideWhenFullscreenEnabled) {
-  EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
-
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("n", &delegate), profile());
 

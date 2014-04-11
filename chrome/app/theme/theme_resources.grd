@@ -114,9 +114,6 @@
         <structure type="chrome_scaled_image" name="IDR_BACK_H" file="common/browser_back_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_BACK_P" file="common/browser_back_pressed.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_BALLOON_WRENCH" file="notification_wrench.png" />
-      <structure type="chrome_scaled_image" name="IDR_BALLOON_WRENCH_H" file="notification_wrench_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_BALLOON_WRENCH_P" file="notification_wrench_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_COOKIES" file="common/blocked_cookies.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_DOWNLOADS" file="common/blocked_downloads.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_IMAGES" file="common/blocked_images.png" />

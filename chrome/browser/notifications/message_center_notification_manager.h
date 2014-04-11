@@ -27,6 +27,7 @@
 
 class MessageCenterSettingsController;
 class Notification;
+class PrefRegistrySimple;
 class PrefService;
 class Profile;
 
@@ -47,6 +48,9 @@ class MessageCenterNotificationManager
       PrefService* local_state,
       scoped_ptr<message_center::NotifierSettingsProvider> settings_provider);
   virtual ~MessageCenterNotificationManager();
+
+  // Registers preferences.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // NotificationUIManager
   virtual void Add(const Notification& notification,

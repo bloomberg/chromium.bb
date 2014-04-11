@@ -50,7 +50,7 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/network_time/network_time_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/notification_prefs_manager.h"
+#include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
@@ -261,7 +261,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif
 
 #if defined(ENABLE_NOTIFICATIONS)
-  NotificationPrefsManager::RegisterPrefs(registry);
+  MessageCenterNotificationManager::RegisterPrefs(registry);
 #endif
 
 #if defined(ENABLE_PLUGINS)

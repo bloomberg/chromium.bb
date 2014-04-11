@@ -334,7 +334,6 @@ extern const char kDefaultBrowserSettingEnabled[];
 extern const char kShowUpdatePromotionInfoBar[];
 #endif
 extern const char kUseCustomChromeFrame[];
-extern const char kDesktopNotificationPosition[];
 extern const char kDefaultContentSettings[];
 extern const char kContentSettingsClearOnExitMigrated[];
 extern const char kContentSettingsVersion[];

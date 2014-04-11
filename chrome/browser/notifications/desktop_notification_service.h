@@ -105,20 +105,7 @@ class DesktopNotificationService : public KeyedService,
   static base::string16 CreateDataUrl(int resource,
                                 const std::vector<std::string>& subst);
 
-  // Add a desktop notification. On non-Ash platforms this will generate a HTML
-  // notification from the input parameters. On Ash it will generate a normal
-  // ash notification. Returns the notification id.
-  // TODO(mukai): remove these methods. HTML notifications are no longer
-  // supported.
-  static std::string AddNotification(const GURL& origin_url,
-                                     const base::string16& title,
-                                     const base::string16& message,
-                                     const GURL& icon_url,
-                                     const base::string16& replace_id,
-                                     NotificationDelegate* delegate,
-                                     Profile* profile);
-
-  // Same as above, but takes a gfx::Image for the icon instead.
+  // Add a desktop notification.
   static std::string AddIconNotification(const GURL& origin_url,
                                          const base::string16& title,
                                          const base::string16& message,
@@ -126,9 +113,6 @@ class DesktopNotificationService : public KeyedService,
                                          const base::string16& replace_id,
                                          NotificationDelegate* delegate,
                                          Profile* profile);
-
-  // Remove any active notification corresponding to |notification_id|.
-  static void RemoveNotification(const std::string& notification_id);
 
   // The default content setting determines how to handle origins that haven't
   // been allowed or denied yet. If |provider_id| is not NULL, the id of the

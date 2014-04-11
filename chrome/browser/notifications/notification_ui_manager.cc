@@ -13,41 +13,14 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "ui/message_center/message_center_util.h"
 
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
-#endif
-
-// static
-bool NotificationUIManager::DelegatesToMessageCenter() {
-  // In ChromeOS, it always uses MessageCenterNotificationManager. The flag of
-  // --enable-rich-notifications switches the contents and behaviors inside of
-  // the message center.
-#if defined(OS_CHROMEOS)
-  return true;
-#endif
-  return message_center::IsRichNotificationEnabled();
-}
-
 // static
 NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
-  if (DelegatesToMessageCenter()) {
-    ProfileInfoCache* profile_info_cache =
-        &g_browser_process->profile_manager()->GetProfileInfoCache();
-    scoped_ptr<message_center::NotifierSettingsProvider> settings_provider(
-        new MessageCenterSettingsController(profile_info_cache));
-    return new MessageCenterNotificationManager(
-        g_browser_process->message_center(),
-        local_state,
-        settings_provider.Pass());
-  }
-
-#if defined(TOOLKIT_GTK)
-  BalloonNotificationUIManager* balloon_manager =
-      new BalloonNotificationUIManager(local_state);
-  balloon_manager->SetBalloonCollection(BalloonCollection::Create());
-  return balloon_manager;
-#else
-  CHECK(false);
-  return NULL;
-#endif
+  ProfileInfoCache* profile_info_cache =
+      &g_browser_process->profile_manager()->GetProfileInfoCache();
+  scoped_ptr<message_center::NotifierSettingsProvider> settings_provider(
+      new MessageCenterSettingsController(profile_info_cache));
+  return new MessageCenterNotificationManager(
+      g_browser_process->message_center(),
+      local_state,
+      settings_provider.Pass());
 }

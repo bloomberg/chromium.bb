@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_prefs_manager.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -28,9 +27,7 @@ namespace message_center {
 
 class MessageCenterNotificationManagerTest : public testing::Test {
  protected:
-  MessageCenterNotificationManagerTest() {
-    NotificationPrefsManager::RegisterPrefs(local_state_.registry());
-  }
+  MessageCenterNotificationManagerTest() {}
 
   virtual void SetUp() {
     // Clear the preference and initialize.

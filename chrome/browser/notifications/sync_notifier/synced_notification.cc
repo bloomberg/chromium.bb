@@ -37,10 +37,6 @@ const char kDefaultSyncedNotificationScheme[] = "https:";
 // try to supply them with more than this number of buttons.
 const unsigned int kMaxNotificationButtonIndex = 2;
 
-bool UseRichNotifications() {
-  return message_center::IsRichNotificationEnabled();
-}
-
 // Schema-less specs default badly in windows.  If we find one, add the schema
 // we expect instead of allowing windows specific GURL code to make it default
 // to "file:".
@@ -100,7 +96,7 @@ void SyncedNotification::Show(Profile* profile) {
   }
 
   // |notifier_service| can be NULL in tests.
-  if (UseRichNotifications() && notifier_service_) {
+  if (notifier_service_) {
     notifier_service_->ShowWelcomeToastIfNecessary(this, notification_manager_);
   }
 
@@ -123,117 +119,103 @@ void SyncedNotification::Show(Profile* profile) {
       new ChromeNotifierDelegate(GetKey(), notifier_service_);
 
   // Some inputs and fields are only used if there is a notification center.
-  if (UseRichNotifications()) {
-    base::Time creation_time =
-        base::Time::FromDoubleT(static_cast<double>(GetCreationTime()));
-    int priority = GetPriority();
-    unsigned int button_count = GetButtonCount();
+  base::Time creation_time =
+      base::Time::FromDoubleT(static_cast<double>(GetCreationTime()));
+  int priority = GetPriority();
+  unsigned int button_count = GetButtonCount();
 
-    // Deduce which notification template to use from the data.
-    message_center::NotificationType notification_type =
-        message_center::NOTIFICATION_TYPE_BASE_FORMAT;
-    if (!image_url.is_empty()) {
-      notification_type = message_center::NOTIFICATION_TYPE_IMAGE;
-    } else if (button_count > 0) {
-      notification_type = message_center::NOTIFICATION_TYPE_BASE_FORMAT;
-    }
-
-    // Fill the optional fields with the information we need to make a
-    // notification.
-    message_center::RichNotificationData rich_notification_data;
-    rich_notification_data.timestamp = creation_time;
-    if (priority != SyncedNotification::kUndefinedPriority)
-      rich_notification_data.priority = priority;
-
-    // Fill in the button data.
-    // TODO(petewil): Today Rich notifiations are limited to two buttons.
-    // When rich notifications supports more, remove the
-    // "&& i < kMaxNotificationButtonIndex" clause below.
-    for (unsigned int i = 0;
-         i < button_count
-         && i < button_bitmaps_.size()
-         && i < kMaxNotificationButtonIndex;
-         ++i) {
-      // Stop at the first button with no title
-      std::string title = GetButtonTitle(i);
-      if (title.empty())
-        break;
-      message_center::ButtonInfo button_info(base::UTF8ToUTF16(title));
-      if (!button_bitmaps_[i].IsEmpty())
-        button_info.icon = button_bitmaps_[i];
-      rich_notification_data.buttons.push_back(button_info);
-    }
-
-    // Fill in the bitmap images.
-    if (!image_bitmap_.IsEmpty())
-      rich_notification_data.image = image_bitmap_;
-
-    if (!app_icon_bitmap_.IsEmpty()) {
-      // Since we can't control the size of images we download, resize using a
-      // high quality filter down to the appropriate icon size.
-      // TODO(dewittj): Remove this when correct resources are sent via the
-      // protobuf.
-      SkBitmap new_app_icon =
-          skia::ImageOperations::Resize(app_icon_bitmap_.AsBitmap(),
-                                        skia::ImageOperations::RESIZE_BEST,
-                                        message_center::kSmallImageSize,
-                                        message_center::kSmallImageSize);
-
-      // The app icon should be in grayscale.
-      // TODO(dewittj): Remove this when correct resources are sent via the
-      // protobuf.
-      color_utils::HSL shift = {-1, 0, 0.6};
-      SkBitmap grayscale =
-          SkBitmapOperations::CreateHSLShiftedBitmap(new_app_icon, shift);
-      gfx::Image small_image =
-          gfx::Image(gfx::ImageSkia(gfx::ImageSkiaRep(grayscale, 1.0f)));
-      rich_notification_data.small_image = small_image;
-    }
-
-    // Set the ContextMessage inside the rich notification data for the
-    // annotation.
-    rich_notification_data.context_message = annotation;
-
-    // Set the clickable flag to change the cursor on hover if a valid
-    // destination is found.
-    rich_notification_data.clickable = GetDefaultDestinationUrl().is_valid();
-
-    // If there is at least one person sending, use the first picture.
-    // TODO(petewil): Someday combine multiple profile photos here.
-    gfx::Image icon_bitmap = app_icon_bitmap_;
-    if (GetProfilePictureCount() >= 1)  {
-      icon_bitmap = sender_bitmap_;
-    }
-
-    Notification ui_notification(notification_type,
-                                 GetOriginUrl(),
-                                 notification_heading,
-                                 notification_text,
-                                 icon_bitmap,
-                                 blink::WebTextDirectionDefault,
-                                 message_center::NotifierId(GetOriginUrl()),
-                                 display_source,
-                                 replace_key,
-                                 rich_notification_data,
-                                 delegate.get());
-    // In case the notification is not supposed to be toasted, pretend that it
-    // has already been shown.
-    ui_notification.set_shown_as_popup(!toast_state_);
-
-    notification_manager_->Add(ui_notification, profile);
-  } else {
-    // In this case we have a Webkit Notification, not a Rich Notification.
-    Notification ui_notification(GetOriginUrl(),
-                                 GetAppIconUrl(),
-                                 notification_heading,
-                                 notification_text,
-                                 blink::WebTextDirectionDefault,
-                                 display_source,
-                                 replace_key,
-                                 delegate.get());
-
-    notification_manager_->Add(ui_notification, profile);
+  // Deduce which notification template to use from the data.
+  message_center::NotificationType notification_type =
+      message_center::NOTIFICATION_TYPE_BASE_FORMAT;
+  if (!image_url.is_empty()) {
+    notification_type = message_center::NOTIFICATION_TYPE_IMAGE;
+  } else if (button_count > 0) {
+    notification_type = message_center::NOTIFICATION_TYPE_BASE_FORMAT;
   }
+
+  // Fill the optional fields with the information we need to make a
+  // notification.
+  message_center::RichNotificationData rich_notification_data;
+  rich_notification_data.timestamp = creation_time;
+  if (priority != SyncedNotification::kUndefinedPriority)
+    rich_notification_data.priority = priority;
+
+  // Fill in the button data.
+  // TODO(petewil): Today Rich notifiations are limited to two buttons.
+  // When rich notifications supports more, remove the
+  // "&& i < kMaxNotificationButtonIndex" clause below.
+  for (unsigned int i = 0;
+        i < button_count
+        && i < button_bitmaps_.size()
+        && i < kMaxNotificationButtonIndex;
+        ++i) {
+    // Stop at the first button with no title
+    std::string title = GetButtonTitle(i);
+    if (title.empty())
+      break;
+    message_center::ButtonInfo button_info(base::UTF8ToUTF16(title));
+    if (!button_bitmaps_[i].IsEmpty())
+      button_info.icon = button_bitmaps_[i];
+    rich_notification_data.buttons.push_back(button_info);
+  }
+
+  // Fill in the bitmap images.
+  if (!image_bitmap_.IsEmpty())
+    rich_notification_data.image = image_bitmap_;
+
+  if (!app_icon_bitmap_.IsEmpty()) {
+    // Since we can't control the size of images we download, resize using a
+    // high quality filter down to the appropriate icon size.
+    // TODO(dewittj): Remove this when correct resources are sent via the
+    // protobuf.
+    SkBitmap new_app_icon =
+        skia::ImageOperations::Resize(app_icon_bitmap_.AsBitmap(),
+                                      skia::ImageOperations::RESIZE_BEST,
+                                      message_center::kSmallImageSize,
+                                      message_center::kSmallImageSize);
+
+    // The app icon should be in grayscale.
+    // TODO(dewittj): Remove this when correct resources are sent via the
+    // protobuf.
+    color_utils::HSL shift = {-1, 0, 0.6};
+    SkBitmap grayscale =
+        SkBitmapOperations::CreateHSLShiftedBitmap(new_app_icon, shift);
+    gfx::Image small_image =
+        gfx::Image(gfx::ImageSkia(gfx::ImageSkiaRep(grayscale, 1.0f)));
+    rich_notification_data.small_image = small_image;
+  }
+
+  // Set the ContextMessage inside the rich notification data for the
+  // annotation.
+  rich_notification_data.context_message = annotation;
+
+  // Set the clickable flag to change the cursor on hover if a valid
+  // destination is found.
+  rich_notification_data.clickable = GetDefaultDestinationUrl().is_valid();
+
+  // If there is at least one person sending, use the first picture.
+  // TODO(petewil): Someday combine multiple profile photos here.
+  gfx::Image icon_bitmap = app_icon_bitmap_;
+  if (GetProfilePictureCount() >= 1)  {
+    icon_bitmap = sender_bitmap_;
+  }
+
+  Notification ui_notification(notification_type,
+                                GetOriginUrl(),
+                                notification_heading,
+                                notification_text,
+                                icon_bitmap,
+                                blink::WebTextDirectionDefault,
+                                message_center::NotifierId(GetOriginUrl()),
+                                display_source,
+                                replace_key,
+                                rich_notification_data,
+                                delegate.get());
+  // In case the notification is not supposed to be toasted, pretend that it
+  // has already been shown.
+  ui_notification.set_shown_as_popup(!toast_state_);
+
+  notification_manager_->Add(ui_notification, profile);
 
   DVLOG(1) << "Showing Synced Notification! " << heading << " " << text
            << " " << GetAppIconUrl() << " " << replace_key << " "
@@ -265,13 +247,6 @@ void SyncedNotification::HideAllForAppId(std::string app_id_name) {
 void SyncedNotification::QueueBitmapFetchJobs(
     ChromeNotifierService* notifier_service,
     Profile* profile) {
-  // If we are not using the MessageCenter, call show now, and the existing
-  // code will handle the bitmap fetch for us.
-  if (!UseRichNotifications()) {
-    Show(profile);
-    return;
-  }
-
   // Save off the arguments for the call to Show.
   notifier_service_ = notifier_service;
   profile_ = profile;

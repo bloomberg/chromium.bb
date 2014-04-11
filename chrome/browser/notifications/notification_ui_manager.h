@@ -58,13 +58,6 @@ class NotificationUIManager {
   // Used when the app is terminating.
   virtual void CancelAll() = 0;
 
-  // Temporary, while we have two implementations of Notifications UI Managers.
-  // One is older BalloonCollection-based and uses renderers to show
-  // notifications, another delegates to the new MessageCenter and uses native
-  // UI widgets.
-  // TODO(dimich): remove these eventually.
-  static bool DelegatesToMessageCenter();
-
  protected:
   NotificationUIManager() {}
 

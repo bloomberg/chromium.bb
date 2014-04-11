@@ -590,20 +590,6 @@ enum NotificationType {
   // found update.
   NOTIFICATION_EXTENSION_UPDATE_FOUND,
 
-  // Desktop Notifications ---------------------------------------------------
-
-  // This notification is sent when a balloon is connected to a renderer
-  // process to render the balloon contents.  The source is a
-  // Source<BalloonHost> with a pointer to the the balloon.  A
-  // NOTIFY_BALLOON_DISCONNECTED is guaranteed before the source pointer
-  // becomes junk. No details expected.
-  NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
-
-  // This message is sent after a balloon is disconnected from the renderer
-  // process. The source is a Source<BalloonHost> with a pointer to the
-  // balloon host (the pointer is usable). No details are expected.
-  NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
-
   // Upgrade notifications ---------------------------------------------------
 
   // Sent when Chrome believes an update has been installed and available for

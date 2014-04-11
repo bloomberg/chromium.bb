@@ -16,10 +16,6 @@
 
 namespace message_center {
 
-bool IsRichNotificationEnabled() {
-  return false;
-}
-
 // static
 void MessageCenter::Initialize() {
 }

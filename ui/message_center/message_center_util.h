@@ -9,14 +9,6 @@
 
 namespace message_center {
 
-MESSAGE_CENTER_EXPORT bool IsRichNotificationEnabled();
-
-// If Rich Notificaitons are enabled by default on a platform, run the
-// corresponding tests on that platform.
-#if defined(OS_WIN) || defined(USE_AURA) || defined(OS_MACOSX)
-#define RUN_MESSAGE_CENTER_TESTS 1
-#endif
-
 enum MessageCenterShowState {
   MESSAGE_CENTER_SHOW_NEVER = 0,
   MESSAGE_CENTER_SHOW_UNREAD,

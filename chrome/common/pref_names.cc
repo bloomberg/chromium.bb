@@ -1029,10 +1029,6 @@ const char kShowUpdatePromotionInfoBar[] =
 // true, we draw a custom chrome frame (thicker title bar and blue border).
 const char kUseCustomChromeFrame[] = "browser.custom_chrome_frame";
 
-// The preferred position (which corner of screen) for desktop notifications.
-const char kDesktopNotificationPosition[] =
-    "browser.desktop_notification_position";
-
 // Dictionary of content settings applied to all hosts by default.
 const char kDefaultContentSettings[] = "profile.default_content_settings";
 

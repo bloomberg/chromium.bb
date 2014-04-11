@@ -83,14 +83,6 @@ Notification::Notification(
       delegate_(delegate) {
   // It's important to leave |icon_url_| empty with rich notifications enabled,
   // to prevent "Downloading" the data url and overwriting the existing |icon|.
-  if (!message_center::IsRichNotificationEnabled()) {
-    // "Upconvert" the string parameters to a data: URL.  Some balloon views
-    // require content URL to render anything, so this serves as a backup.
-    if (!icon.IsEmpty())
-      icon_url_ = GURL(webui::GetBitmapDataUrl(*icon.ToSkBitmap()));
-    content_url_ = GURL(
-        DesktopNotificationService::CreateDataUrl(icon_url_, title, body, dir));
-  }
 }
 
 Notification::Notification(const GURL& origin_url,
