@@ -221,7 +221,7 @@ private:
 
     void updateCompositingLayersAfterScroll();
     virtual void updateNeedsCompositedScrolling() OVERRIDE;
-    bool setNeedsCompositedScrolling(bool);
+    void setNeedsCompositedScrolling(bool needsCompositedScrolling) { m_needsCompositedScrolling = needsCompositedScrolling; }
 
     void setForceNeedsCompositedScrolling(ForceNeedsCompositedScrollingMode);
 

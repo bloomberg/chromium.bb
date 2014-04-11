@@ -1454,23 +1454,14 @@ void RenderLayerScrollableArea::updateNeedsCompositedScrolling()
         needsCompositedScrolling |= needsToBeStackingContainer;
     }
 
-    const bool needsCompositedScrollingDidChange = setNeedsCompositedScrolling(needsCompositedScrolling);
-    if (needsToBeStackingContainerDidChange || needsCompositedScrollingDidChange) {
+    if (needsToBeStackingContainerDidChange || this->needsCompositedScrolling() != needsCompositedScrolling) {
+        setNeedsCompositedScrolling(needsCompositedScrolling);
         // Note, the z-order lists may need to be rebuilt, but our code guarantees
         // that we have not affected stacking, so we will not dirty
         // m_descendantsAreContiguousInStackingOrder for either us or our stacking
         // context or container.
         layer()->didUpdateNeedsCompositedScrolling();
     }
-}
-
-bool RenderLayerScrollableArea::setNeedsCompositedScrolling(bool needsCompositedScrolling)
-{
-    if (this->needsCompositedScrolling() == needsCompositedScrolling)
-        return false;
-
-    m_needsCompositedScrolling = needsCompositedScrolling;
-    return true;
 }
 
 void RenderLayerScrollableArea::updateCompositingLayersAfterScroll()
