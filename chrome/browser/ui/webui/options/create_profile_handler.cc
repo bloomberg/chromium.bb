@@ -23,7 +23,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/options/options_handlers_helper.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -411,11 +410,6 @@ bool CreateProfileHandler::IsValidExistingManagedUserId(
     const std::string& existing_managed_user_id) const {
   if (existing_managed_user_id.empty())
     return true;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableCreateExistingManagedUsers)) {
-    return false;
-  }
 
   Profile* profile = Profile::FromWebUI(web_ui());
   const base::DictionaryValue* dict =

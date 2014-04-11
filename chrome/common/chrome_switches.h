@@ -26,7 +26,6 @@ namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
-extern const char kAllowCreateExistingManagedUsers[];
 extern const char kAllowCrossOriginAuthPrompt[];
 extern const char kAllowFileAccess[];
 extern const char kAllowHttpScreenCapture[];
@@ -84,7 +83,6 @@ extern const char kDisableClientSidePhishingDetection[];
 extern const char kDisableComponentExtensionsWithBackgroundPages[];
 extern const char kDisableComponentUpdate[];
 extern const char kDisableCRLSets[];
-extern const char kDisableCreateExistingManagedUsers[];
 extern const char kDisableDefaultApps[];
 extern const char kDisableDeviceDiscovery[];
 extern const char kDisableDeviceDiscoveryNotifications[];

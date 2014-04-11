@@ -152,10 +152,8 @@ function load() {
   if (!cr.isChromeOS) {
     OptionsPage.registerOverlay(ManagedUserCreateConfirmOverlay.getInstance(),
                                 BrowserOptions.getInstance());
-    if (!loadTimeData.getBoolean('disableCreateExistingManagedUsers')) {
-      OptionsPage.registerOverlay(ManagedUserImportOverlay.getInstance(),
-                                  CreateProfileOverlay.getInstance());
-    }
+    OptionsPage.registerOverlay(ManagedUserImportOverlay.getInstance(),
+                                CreateProfileOverlay.getInstance());
     OptionsPage.registerOverlay(ManagedUserLearnMoreOverlay.getInstance(),
                                 CreateProfileOverlay.getInstance());
   }

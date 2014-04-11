@@ -334,9 +334,7 @@ cr.define('options', function() {
      */
     updateCreateOrImport_: function(mode) {
       // In 'create' mode, check for existing managed users with the same name.
-      if (mode == 'create' &&
-          !loadTimeData.getBoolean('disableCreateExistingManagedUsers') &&
-          $('create-profile-managed').checked) {
+      if (mode == 'create' && $('create-profile-managed').checked) {
         options.ManagedUserListData.requestExistingManagedUsers().then(
             this.receiveExistingManagedUsers_.bind(this),
             this.onSigninError_.bind(this));
@@ -639,11 +637,9 @@ cr.define('options', function() {
 
       $('create-profile-managed').checked = false;
       $('import-existing-managed-user-link').hidden = true;
-      if (!loadTimeData.getBoolean('disableCreateExistingManagedUsers')) {
-        $('create-profile-managed').onchange = function() {
-          ManageProfileOverlay.getInstance().updateCreateOrImport_('create');
-        };
-      }
+      $('create-profile-managed').onchange = function() {
+        ManageProfileOverlay.getInstance().updateCreateOrImport_('create');
+      };
       $('create-profile-managed-signed-in').disabled = true;
       $('create-profile-managed-signed-in').hidden = true;
       $('create-profile-managed-not-signed-in').hidden = true;
@@ -791,9 +787,6 @@ cr.define('options', function() {
      * @private
      */
     updateImportExistingManagedUserLink_: function(enable) {
-      if (loadTimeData.getBoolean('disableCreateExistingManagedUsers'))
-        return;
-
       var importManagedUserElement = $('import-existing-managed-user-link');
       importManagedUserElement.hidden = false;
       importManagedUserElement.disabled = !enable || this.createInProgress_;

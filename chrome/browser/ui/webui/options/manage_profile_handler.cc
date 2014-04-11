@@ -29,7 +29,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/options/options_handlers_helper.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -130,11 +129,6 @@ void ManageProfileHandler::GetLocalizedValues(
 
   localized_strings->SetBoolean("profileShortcutsEnabled",
                                 ProfileShortcutManager::IsFeatureEnabled());
-
-  localized_strings->SetBoolean(
-      "disableCreateExistingManagedUsers",
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableCreateExistingManagedUsers));
 
   localized_strings->SetString("enterpriseManagedAccountHelpURL",
                                chrome::kEnterpriseManagedAccountHelpURL);

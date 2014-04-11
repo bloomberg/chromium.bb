@@ -21,11 +21,6 @@ namespace switches {
 // all work out.
 // -----------------------------------------------------------------------------
 
-// Allows choosing an existing managed user profile during the managed
-// user creation flow. Is only used on ChromeOS.
-const char kAllowCreateExistingManagedUsers[] =
-    "allow-create-existing-managed-users";
-
 // Allows third-party content included on a page to prompt for a HTTP basic
 // auth username/password pair.
 const char kAllowCrossOriginAuthPrompt[]    = "allow-cross-origin-auth-prompt";
@@ -270,11 +265,6 @@ const char kDisableComponentUpdate[]        = "disable-component-update";
 // Disables establishing certificate revocation information by downloading a
 // set of CRLs rather than performing on-line checks.
 const char kDisableCRLSets[]                = "disable-crl-sets";
-
-// Disables choosing an existing managed user profile during the managed
-// user creation flow.
-const char kDisableCreateExistingManagedUsers[] =
-    "disable-create-exsting-managed-users";
 
 // Disables installation of default apps on first run. This is used during
 // automated testing.
