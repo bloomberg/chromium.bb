@@ -24,7 +24,7 @@ class MEDIA_EXPORT MidiManagerMac : public MidiManager {
   virtual ~MidiManagerMac();
 
   // MidiManager implementation.
-  virtual bool Initialize() OVERRIDE;
+  virtual MidiResult Initialize() OVERRIDE;
   virtual void DispatchSendMidiData(MidiManagerClient* client,
                                     uint32 port_index,
                                     const std::vector<uint8>& data,

@@ -18,23 +18,26 @@ MidiManager* MidiManager::Create() {
 #endif
 
 MidiManager::MidiManager()
-    : initialized_(false) {
+    : initialized_(false),
+      result_(MIDI_NOT_SUPPORTED) {
 }
 
 MidiManager::~MidiManager() {
 }
 
-bool MidiManager::StartSession(MidiManagerClient* client) {
+void MidiManager::StartSession(MidiManagerClient* client, int client_id) {
   // Lazily initialize the MIDI back-end.
-  if (!initialized_)
-    initialized_ = Initialize();
+  if (!initialized_) {
+    initialized_ = true;
+    result_ = Initialize();
+  }
 
-  if (initialized_) {
+  if (result_ == MIDI_OK) {
     base::AutoLock auto_lock(clients_lock_);
     clients_.insert(client);
   }
-
-  return initialized_;
+  // TODO(toyoshim): Make Initialize() asynchronous.
+  client->CompleteStartSession(client_id, result_);
 }
 
 void MidiManager::EndSession(MidiManagerClient* client) {
@@ -51,9 +54,9 @@ void MidiManager::DispatchSendMidiData(MidiManagerClient* client,
   NOTREACHED();
 }
 
-bool MidiManager::Initialize() {
+MidiResult MidiManager::Initialize() {
   TRACE_EVENT0("midi", "MidiManager::Initialize");
-  return false;
+  return MIDI_NOT_SUPPORTED;
 }
 
 void MidiManager::AddInputPort(const MidiPortInfo& info) {

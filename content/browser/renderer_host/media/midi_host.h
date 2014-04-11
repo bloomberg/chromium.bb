@@ -36,6 +36,8 @@ class CONTENT_EXPORT MidiHost
                                  bool* message_was_ok) OVERRIDE;
 
   // MidiManagerClient implementation.
+  virtual void CompleteStartSession(int client_id,
+                                    media::MidiResult result) OVERRIDE;
   virtual void ReceiveMidiData(uint32 port,
                                const uint8* data,
                                size_t length,

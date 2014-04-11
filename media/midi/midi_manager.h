@@ -12,6 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/media_export.h"
 #include "media/midi/midi_port_info.h"
+#include "media/midi/midi_result.h"
 
 namespace media {
 
@@ -20,7 +21,11 @@ namespace media {
 // for details.
 class MEDIA_EXPORT MidiManagerClient {
  public:
-   virtual ~MidiManagerClient() {}
+  virtual ~MidiManagerClient() {}
+
+  // CompleteStartSession() is called when platform dependent preparation is
+  // finished.
+  virtual void CompleteStartSession(int client_id, MidiResult result) = 0;
 
   // ReceiveMidiData() is called when MIDI data has been received from the
   // MIDI system.
@@ -51,10 +56,11 @@ class MEDIA_EXPORT MidiManager {
   // A client calls StartSession() to receive and send MIDI data.
   // If the session is ready to start, the MIDI system is lazily initialized
   // and the client is registered to receive MIDI data.
-  // Returns |true| if the session succeeds to start.
-  bool StartSession(MidiManagerClient* client);
+  // CompleteStartSession() is called with MIDI_OK if the session is started.
+  // Otherwise CompleteStartSession() is called with proper MidiResult code.
+  void StartSession(MidiManagerClient* client, int client_id);
 
-  // A client calls ReleaseSession() to stop receiving MIDI data.
+  // A client calls EndSession() to stop receiving MIDI data.
   void EndSession(MidiManagerClient* client);
 
   // DispatchSendMidiData() is called when MIDI data should be sent to the MIDI
@@ -84,7 +90,7 @@ class MEDIA_EXPORT MidiManager {
  protected:
   // Initializes the MIDI system, returning |true| on success.
   // The default implementation is for unsupported platforms.
-  virtual bool Initialize();
+  virtual MidiResult Initialize();
 
   void AddInputPort(const MidiPortInfo& info);
   void AddOutputPort(const MidiPortInfo& info);
@@ -96,6 +102,7 @@ class MEDIA_EXPORT MidiManager {
                        double timestamp);
 
   bool initialized_;
+  MidiResult result_;
 
   // Keeps track of all clients who wish to receive MIDI data.
   typedef std::set<MidiManagerClient*> ClientList;

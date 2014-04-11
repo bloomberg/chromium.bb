@@ -34,10 +34,10 @@ MidiManagerUsb::MidiManagerUsb(scoped_ptr<UsbMidiDevice::Factory> factory)
 MidiManagerUsb::~MidiManagerUsb() {
 }
 
-bool MidiManagerUsb::Initialize() {
+MidiResult MidiManagerUsb::Initialize() {
   TRACE_EVENT0("midi", "MidiManagerUsb::Initialize");
   Initialize(base::Bind(Noop));
-  return true;
+  return MIDI_OK;
 }
 
 void MidiManagerUsb::Initialize(base::Callback<void(bool result)> callback) {

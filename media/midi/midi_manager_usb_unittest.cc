@@ -73,6 +73,9 @@ class FakeMidiManagerClient : public MidiManagerClient {
   explicit FakeMidiManagerClient(Logger* logger) : logger_(logger) {}
   virtual ~FakeMidiManagerClient() {}
 
+  virtual void CompleteStartSession(int client_id, MidiResult result) OVERRIDE {
+  }
+
   virtual void ReceiveMidiData(uint32 port_index,
                                const uint8* data,
                                size_t size,
@@ -300,7 +303,7 @@ TEST_F(MidiManagerUsbTest, Receive) {
   ASSERT_TRUE(initialize_callback_run_);
   ASSERT_TRUE(initialize_result_);
 
-  manager_->StartSession(&client);
+  manager_->StartSession(&client, 0);
   manager_->ReceiveUsbMidiData(device_raw, 2, data, arraysize(data), 0);
   manager_->EndSession(&client);
 

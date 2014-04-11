@@ -36,7 +36,7 @@ MidiManagerMac::MidiManagerMac()
       send_thread_("MidiSendThread") {
 }
 
-bool MidiManagerMac::Initialize() {
+MidiResult MidiManagerMac::Initialize() {
   TRACE_EVENT0("midi", "MidiManagerMac::Initialize");
 
   // CoreMIDI registration.
@@ -48,7 +48,7 @@ bool MidiManagerMac::Initialize() {
       &midi_client_);
 
   if (result != noErr)
-    return false;
+    return MIDI_INITIALIZATION_ERROR;
 
   coremidi_input_ = 0;
 
@@ -60,14 +60,14 @@ bool MidiManagerMac::Initialize() {
       this,
       &coremidi_input_);
   if (result != noErr)
-    return false;
+    return MIDI_INITIALIZATION_ERROR;
 
   result = MIDIOutputPortCreate(
       midi_client_,
       CFSTR("MIDI Output"),
       &coremidi_output_);
   if (result != noErr)
-    return false;
+    return MIDI_INITIALIZATION_ERROR;
 
   uint32 destination_count = MIDIGetNumberOfDestinations();
   destinations_.resize(destination_count);
@@ -102,7 +102,7 @@ bool MidiManagerMac::Initialize() {
   packet_list_ = reinterpret_cast<MIDIPacketList*>(midi_buffer_);
   midi_packet_ = MIDIPacketListInit(packet_list_);
 
-  return true;
+  return MIDI_OK;
 }
 
 void MidiManagerMac::DispatchSendMidiData(MidiManagerClient* client,

@@ -501,7 +501,7 @@ MidiManagerWin::MidiManagerWin()
     : send_thread_("MidiSendThread") {
 }
 
-bool MidiManagerWin::Initialize() {
+MidiResult MidiManagerWin::Initialize() {
   TRACE_EVENT0("midi", "MidiManagerWin::Initialize");
   const UINT num_in_devices = midiInGetNumDevs();
   in_devices_.reserve(num_in_devices);
@@ -548,7 +548,7 @@ bool MidiManagerWin::Initialize() {
     out_devices_.push_back(out_port.Pass());
   }
 
-  return true;
+  return MIDI_OK;
 }
 
 MidiManagerWin::~MidiManagerWin() {

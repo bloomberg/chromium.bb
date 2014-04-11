@@ -127,7 +127,7 @@ MidiManagerAlsa::MidiManagerAlsa()
     pipe_fd_[i] = -1;
 }
 
-bool MidiManagerAlsa::Initialize() {
+MidiResult MidiManagerAlsa::Initialize() {
   // TODO(toyoshim): Make Initialize() asynchronous.
   // See http://crbug.com/339746.
   TRACE_EVENT0("midi", "MidiManagerAlsa::Initialize");
@@ -188,14 +188,14 @@ bool MidiManagerAlsa::Initialize() {
 
   if (pipe(pipe_fd_) < 0) {
     VPLOG(1) << "pipe() failed";
-    return false;
+    return MIDI_INITIALIZATION_ERROR;
   }
   event_thread_.Start();
   event_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&MidiManagerAlsa::EventReset, base::Unretained(this)));
 
-  return true;
+  return MIDI_OK;
 }
 
 MidiManagerAlsa::~MidiManagerAlsa() {

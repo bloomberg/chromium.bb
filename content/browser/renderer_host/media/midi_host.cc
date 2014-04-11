@@ -80,30 +80,8 @@ bool MidiHost::OnMessageReceived(const IPC::Message& message,
 }
 
 void MidiHost::OnStartSession(int client_id) {
-  MidiPortInfoList input_ports;
-  MidiPortInfoList output_ports;
-
-  // Initialize devices and register to receive MIDI data.
-  bool success = false;
-  if (midi_manager_) {
-    success = midi_manager_->StartSession(this);
-    if (success) {
-      input_ports = midi_manager_->input_ports();
-      output_ports = midi_manager_->output_ports();
-      received_messages_queues_.clear();
-      received_messages_queues_.resize(input_ports.size());
-      // ChildSecurityPolicy is set just before OnStartSession by
-      // MidiDispatcherHost. So we can safely cache the policy.
-      has_sys_ex_permission_ = ChildProcessSecurityPolicyImpl::GetInstance()->
-          CanSendMidiSysExMessage(renderer_process_id_);
-    }
-  }
-
-  Send(new MidiMsg_SessionStarted(
-       client_id,
-       success,
-       input_ports,
-       output_ports));
+  if (midi_manager_)
+    midi_manager_->StartSession(this, client_id);
 }
 
 void MidiHost::OnSendData(uint32 port,
@@ -138,6 +116,29 @@ void MidiHost::OnSendData(uint32 port,
     sent_bytes_in_flight_ += data.size();
   }
   midi_manager_->DispatchSendMidiData(this, port, data, timestamp);
+}
+
+void MidiHost::CompleteStartSession(int client_id, media::MidiResult result) {
+  MidiPortInfoList input_ports;
+  MidiPortInfoList output_ports;
+
+  // TODO(toyoshim): Report what error happens back to blink.
+  bool success = result == media::MIDI_OK;
+  if (success) {
+    input_ports = midi_manager_->input_ports();
+    output_ports = midi_manager_->output_ports();
+    received_messages_queues_.clear();
+    received_messages_queues_.resize(input_ports.size());
+    // ChildSecurityPolicy is set just before OnStartSession by
+    // MidiDispatcherHost. So we can safely cache the policy.
+    has_sys_ex_permission_ = ChildProcessSecurityPolicyImpl::GetInstance()->
+        CanSendMidiSysExMessage(renderer_process_id_);
+  }
+
+  Send(new MidiMsg_SessionStarted(client_id,
+                                  success,
+                                  input_ports,
+                                  output_ports));
 }
 
 void MidiHost::ReceiveMidiData(
