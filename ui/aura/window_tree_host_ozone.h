@@ -16,9 +16,9 @@
 
 namespace aura {
 
-class WindowTreeHostOzone : public WindowTreeHost,
-                            public ui::EventSource,
-                            public ui::PlatformEventDispatcher {
+class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
+                                        public ui::EventSource,
+                                        public ui::PlatformEventDispatcher {
  public:
   explicit WindowTreeHostOzone(const gfx::Rect& bounds);
   virtual ~WindowTreeHostOzone();
