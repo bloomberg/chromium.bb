@@ -800,40 +800,48 @@ verify that the conflict diff is what you expected (and then skip it with
 <div class="sect1">
 <h2 id="_example">EXAMPLE</h2>
 <div class="sectionbody">
-<div class="listingblock">
-<div class="content">
-<pre><code><strong><span class="white">$ git map</span></strong>
-<span class="white blue-background">*</span>&#8203;<strong><span class="blue-background red"> 7dcfe47       </span></strong> <span class="green">(</span>&#8203;<strong><span class="aqua">frozen_changes</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-12</span> ~ FREEZE.unindexed
-* <strong><span class="red">4b0c180</span></strong>        <span class="yellow">2014-03-12</span> ~ modfile
-* <strong><span class="red">59a7cca</span></strong>        <span class="yellow">2014-03-12</span> ~ a deleted file
-* <strong><span class="red">6bec695</span></strong>        <span class="green">(</span>&#8203;<span class="red">origin/master</span>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Add neat feature    <strong><span class="white">&lt;(frozen_changes)</span></strong>
-* <strong><span class="red">d15a38a</span></strong>        <span class="yellow">2014-03-11</span> ~ Epic README update
-* <strong><span class="red">d559894</span></strong>        <span class="green">(</span>&#8203;<strong><span class="lime">master</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Important upstream change
-<span class="red">|</span> * <strong><span class="red">9c311fd</span></strong>      <span class="green">(</span>&#8203;<strong><span class="lime">cool_feature</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Respond to CL comments
-<span class="red">|</span> <span class="green">|</span> * <strong><span class="red">2a1eeb2</span></strong>    <span class="green">(</span>&#8203;<strong><span class="lime">subfeature</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ integrate with CoolService
-<span class="red">|</span> <span class="green">|</span> * <strong><span class="red">d777af6</span></strong>    <span class="yellow">2014-03-11</span> ~ slick commenting action
-<span class="red">|</span> <span class="green">|/</span>
-<span class="red">|</span> * <strong><span class="red">265803a</span></strong>      <span class="yellow">2014-03-11</span> ~ another improvement    <strong><span class="white">&lt;(subfeature)</span></strong>
-<span class="red">|</span> * <strong><span class="red">6d831ac</span></strong>      <span class="green">(</span>&#8203;<strong><span class="fuchsia">spleen_tag</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Refactor spleen
-<span class="red">|</span> * <strong><span class="red">82e74ab</span></strong>      <span class="yellow">2014-03-11</span> ~ Add widget
-<span class="red">|/</span>
-* <strong><span class="red">d08c5b3</span></strong>        <span class="green">(</span>&#8203;<strong><span class="lime">bogus_noparent</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Wonderful beginnings    <strong><span class="white">&lt;(cool_feature)</span></strong>
-<strong><span class="white">$ git squash-branch "cool squash demo"</span></strong>
-<strong><span class="white">$ git map</span></strong>
-<span class="white blue-background">*</span>&#8203;<strong><span class="blue-background red"> 2c81508       </span></strong> <span class="green">(</span>&#8203;<strong><span class="aqua">frozen_changes</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-22</span> ~ cool squash demo
-* <strong><span class="red">6bec695</span></strong>        <span class="green">(</span>&#8203;<span class="red">origin/master</span>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Add neat feature    <strong><span class="white">&lt;(frozen_changes)</span></strong>
-* <strong><span class="red">d15a38a</span></strong>        <span class="yellow">2014-03-11</span> ~ Epic README update
-* <strong><span class="red">d559894</span></strong>        <span class="green">(</span>&#8203;<strong><span class="lime">master</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Important upstream change
-<span class="red">|</span> * <strong><span class="red">9c311fd</span></strong>      <span class="green">(</span>&#8203;<strong><span class="lime">cool_feature</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Respond to CL comments
-<span class="red">|</span> <span class="green">|</span> * <strong><span class="red">2a1eeb2</span></strong>    <span class="green">(</span>&#8203;<strong><span class="lime">subfeature</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ integrate with CoolService
-<span class="red">|</span> <span class="green">|</span> * <strong><span class="red">d777af6</span></strong>    <span class="yellow">2014-03-11</span> ~ slick commenting action
-<span class="red">|</span> <span class="green">|/</span>
-<span class="red">|</span> * <strong><span class="red">265803a</span></strong>      <span class="yellow">2014-03-11</span> ~ another improvement    <strong><span class="white">&lt;(subfeature)</span></strong>
-<span class="red">|</span> * <strong><span class="red">6d831ac</span></strong>      <span class="green">(</span>&#8203;<strong><span class="fuchsia">spleen_tag</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Refactor spleen
-<span class="red">|</span> * <strong><span class="red">82e74ab</span></strong>      <span class="yellow">2014-03-11</span> ~ Add widget
-<span class="red">|/</span>
-* <strong><span class="red">d08c5b3</span></strong>        <span class="green">(</span>&#8203;<strong><span class="lime">bogus_noparent</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Wonderful beginnings    <strong><span class="white">&lt;(cool_feature)</span></strong></code></pre>
-</div></div>
+<div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git map</span>
+<span style="background-color: #492ee1"></span><span style="font-weight: bold; background-color: #492ee1">* </span><span style="font-weight: bold; color: #e42e16; background-color: #492ee1">a8f0220	</span><span style="color: #19c518"> (</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">frozen_branch</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ FREEZE.unindexed
+* <span style="font-weight: bold; color: #e42e16">c382556	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ modfile
+* <span style="font-weight: bold; color: #e42e16">06e399f	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ a deleted file
+* <span style="font-weight: bold; color: #e42e16">20494d2	</span><span style="color: #19c518"> (</span><span style="color: #19c518"></span><span style="font-weight: bold; color: #19c518">fixit</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Add neat feature<span style="font-weight: bold"></span><span style="font-weight: bold; color: #ffffff">    &lt;(frozen_branch)</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span>
+* <span style="font-weight: bold; color: #e42e16">f734bbf	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Epic README update
+<span style="color: #e42e16">|</span> * <span style="font-weight: bold; color: #e42e16">983a7b8	</span><span style="color: #19c518"> (</span><span style="color: #19c518"></span><span style="font-weight: bold; color: #19c518">cool_feature</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Respond to CL comments
+<span style="color: #e42e16">|</span> <span style="color: #19c518">|</span> * <span style="font-weight: bold; color: #e42e16">2f53c1f	</span><span style="color: #19c518"> (</span><span style="color: #19c518"></span><span style="font-weight: bold; color: #19c518">subfeature</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ integrate with CoolService
+<span style="color: #e42e16">|</span> <span style="color: #19c518">|</span> * <span style="font-weight: bold; color: #e42e16">b4e5087	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ slick commenting action
+<span style="color: #e42e16">|</span> <span style="color: #19c518">|</span><span style="color: #19c518">/</span>
+<span style="color: #e42e16">|</span> * <span style="font-weight: bold; color: #e42e16">ac10591	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ another improvement<span style="font-weight: bold"></span><span style="font-weight: bold; color: #ffffff">    &lt;(subfeature)</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span>
+<span style="color: #e42e16">|</span> * <span style="font-weight: bold; color: #e42e16">088691d	</span><span style="color: #19c518"> (</span><span style="color: #d338d3"></span><span style="font-weight: bold; color: #d338d3">spleen_tag</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Refactor spleen
+<span style="color: #e42e16">|</span> * <span style="font-weight: bold; color: #e42e16">206ceb2	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Add widget
+<span style="color: #e42e16">|</span><span style="color: #e42e16">/</span>
+* <span style="font-weight: bold; color: #e42e16">619ccc9	</span><span style="color: #19c518"> (</span><span style="color: #e42e16">origin/master</span><span style="color: #19c518">, </span><span style="color: #e42e16">origin/HEAD</span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Make ReflectorImpl use mailboxes<span style="font-weight: bold"></span><span style="font-weight: bold; color: #ffffff">    &lt;(cool_feature, fixit)</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span>
+* <span style="font-weight: bold; color: #e42e16">40b838e	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ don't use glibc-specific execinfo.h on uclibc builds
+* <span style="font-weight: bold; color: #e42e16">65db351	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ [fsp] Add requestUnmount() method together with the request manager.
+* <span style="font-weight: bold; color: #e42e16">c1923e0	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ linux_aura: Use system configuration for middle clicking the titlebar.
+* <span style="font-weight: bold; color: #e42e16">ccaca03	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ ContentView-&gt;ContentViewCore in ContentViewRenderView
+* <span style="font-weight: bold; color: #e42e16">9b1c1ab	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ ozone: evdev: Filter devices by path
+* <span style="font-weight: bold; color: #e42e16">a91bbf9	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Always output seccomp error messages to stderr
+<span style="font-weight: bold; color: #ffffff">$ git squash-branch -m 'cool squash demo'</span>
+<span style="font-weight: bold; color: #ffffff">$ git map</span>
+<span style="background-color: #492ee1"></span><span style="font-weight: bold; background-color: #492ee1">* </span><span style="font-weight: bold; color: #e42e16; background-color: #492ee1">5b451bd	</span><span style="color: #19c518"> (</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">frozen_branch</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ cool squash demo
+* <span style="font-weight: bold; color: #e42e16">20494d2	</span><span style="color: #19c518"> (</span><span style="color: #19c518"></span><span style="font-weight: bold; color: #19c518">fixit</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Add neat feature<span style="font-weight: bold"></span><span style="font-weight: bold; color: #ffffff">    &lt;(frozen_branch)</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span>
+* <span style="font-weight: bold; color: #e42e16">f734bbf	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Epic README update
+<span style="color: #e42e16">|</span> * <span style="font-weight: bold; color: #e42e16">983a7b8	</span><span style="color: #19c518"> (</span><span style="color: #19c518"></span><span style="font-weight: bold; color: #19c518">cool_feature</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Respond to CL comments
+<span style="color: #e42e16">|</span> <span style="color: #19c518">|</span> * <span style="font-weight: bold; color: #e42e16">2f53c1f	</span><span style="color: #19c518"> (</span><span style="color: #19c518"></span><span style="font-weight: bold; color: #19c518">subfeature</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ integrate with CoolService
+<span style="color: #e42e16">|</span> <span style="color: #19c518">|</span> * <span style="font-weight: bold; color: #e42e16">b4e5087	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ slick commenting action
+<span style="color: #e42e16">|</span> <span style="color: #19c518">|</span><span style="color: #19c518">/</span>
+<span style="color: #e42e16">|</span> * <span style="font-weight: bold; color: #e42e16">ac10591	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ another improvement<span style="font-weight: bold"></span><span style="font-weight: bold; color: #ffffff">    &lt;(subfeature)</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span>
+<span style="color: #e42e16">|</span> * <span style="font-weight: bold; color: #e42e16">088691d	</span><span style="color: #19c518"> (</span><span style="color: #d338d3"></span><span style="font-weight: bold; color: #d338d3">spleen_tag</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Refactor spleen
+<span style="color: #e42e16">|</span> * <span style="font-weight: bold; color: #e42e16">206ceb2	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Add widget
+<span style="color: #e42e16">|</span><span style="color: #e42e16">/</span>
+* <span style="font-weight: bold; color: #e42e16">619ccc9	</span><span style="color: #19c518"> (</span><span style="color: #e42e16">origin/master</span><span style="color: #19c518">, </span><span style="color: #e42e16">origin/HEAD</span><span style="color: #19c518">) </span><span style="color: #e7e71c">2014-04-10</span> ~ Make ReflectorImpl use mailboxes<span style="font-weight: bold"></span><span style="font-weight: bold; color: #ffffff">    &lt;(cool_feature, fixit)</span><span style="font-weight: bold"></span><span style="font-weight: bold"></span>
+* <span style="font-weight: bold; color: #e42e16">40b838e	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ don't use glibc-specific execinfo.h on uclibc builds
+* <span style="font-weight: bold; color: #e42e16">65db351	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ [fsp] Add requestUnmount() method together with the request manager.
+* <span style="font-weight: bold; color: #e42e16">c1923e0	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ linux_aura: Use system configuration for middle clicking the titlebar.
+* <span style="font-weight: bold; color: #e42e16">ccaca03	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ ContentView-&gt;ContentViewCore in ContentViewRenderView
+* <span style="font-weight: bold; color: #e42e16">9b1c1ab	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ ozone: evdev: Filter devices by path
+* <span style="font-weight: bold; color: #e42e16">a91bbf9	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Always output seccomp error messages to stderr
+</code></pre></div></div><p><div class="paragraph"></p></div>
 </div>
 </div>
 <div class="sect1">
@@ -857,7 +865,7 @@ file.</p></div>
 <div class="sect1">
 <h2 id="_chromium_depot_tools">CHROMIUM DEPOT_TOOLS</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>Part of the chromium <a href="depot_tools.html">depot_tools(1)</a> suite. These tools are meant to
+<div class="paragraph"><p>Part of the chromium <a href="depot_tools.html">depot_tools(7)</a> suite. These tools are meant to
 assist with the development of chromium and related projects. Download the tools
 from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">here</a>.</p></div>
 </div>
@@ -866,7 +874,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-03-25 15:09:11 PDT
+Last updated 2014-04-10 14:23:11 PDT
 </div>
 </div>
 </body>

@@ -56,42 +56,10 @@ defaults to 'origin/master'.  This is considered to be the 'root' branch.
 
 EXAMPLE
 -------
+demo:1[]
 
-[subs="specialcharacters,quotes,attributes,callouts"]
-----
-[white]**$ git map-branches**
-[red]#origin/master#
-  [green]#cool_feature#
-    [green]#subfeature#
-  [aqua]#frozen_changes *#
-[white]**$ git new-branch independent_cl**
-[white]**$ git map-branches**
-[red]#origin/master#
-  [green]#cool_feature#
-    [green]#subfeature#
-  [green]#frozen_changes#
-  [aqua]#independent_cl *#
-[white]**$ git new-branch --upstream subfeature nested_cl**
-[white]**$ git map-branches**
-[red]#origin/master#
-  [green]#cool_feature#
-    [aqua]#subfeature#  <1>
-      [aqua]#nested_cl *#
-  [green]#frozen_changes#
-  [green]#independent_cl#
-[white]**$ git checkout cool_feature**
-[white]**$ git new-branch --upstream_current cl_depends_on_cool_feature**
-[white]**$ git map-branches**
-[red]#origin/master#
-  [aqua]#cool_feature#
-    [aqua]#cl_depends_on_cool_feature *#
-    [green]#subfeature#
-      [green]#nested_cl#
-  [green]#frozen_changes#
-  [green]#independent_cl#
-----
-<1> Note that both branches are cyan because they are currently the same
-'commit' object. See linkgit::git-map-branches[1] for more detail.
+1. Note that both branches are cyan because they are currently the same
+'commit' object. See linkgit:git-map-branches[1] for more detail.
 
 include::_aliases.txt[]
 

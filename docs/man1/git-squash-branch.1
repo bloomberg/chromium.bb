@@ -2,12 +2,12 @@
 .\"     Title: git-squash-branch
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 03/25/2014
+.\"      Date: 04/10/2014
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 207bff1
+.\"    Source: depot_tools 68b1017
 .\"  Language: English
 .\"
-.TH "GIT\-SQUASH\-BRANCH" "1" "03/25/2014" "depot_tools 207bff1" "Chromium depot_tools Manual"
+.TH "GIT\-SQUASH\-BRANCH" "1" "04/10/2014" "depot_tools 68b1017" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -48,41 +48,53 @@ Optional message to use for the first line of the squashed commit\&. If omitted,
 .RE
 .SH "EXAMPLE"
 .sp
+
+.sp
 .if n \{\
 .RS 4
 .\}
 .nf
 \fB$ git map\fR
-*\:\fB 7dcfe47       \fR (\:\fBfrozen_changes\fR\:) 2014\-03\-12 ~ FREEZE\&.unindexed
-* \fB4b0c180\fR        2014\-03\-12 ~ modfile
-* \fB59a7cca\fR        2014\-03\-12 ~ a deleted file
-* \fB6bec695\fR        (\:origin/master\:) 2014\-03\-11 ~ Add neat feature    \fB<(frozen_changes)\fR
-* \fBd15a38a\fR        2014\-03\-11 ~ Epic README update
-* \fBd559894\fR        (\:\fBmaster\fR\:) 2014\-03\-11 ~ Important upstream change
-| * \fB9c311fd\fR      (\:\fBcool_feature\fR\:) 2014\-03\-11 ~ Respond to CL comments
-| | * \fB2a1eeb2\fR    (\:\fBsubfeature\fR\:) 2014\-03\-11 ~ integrate with CoolService
-| | * \fBd777af6\fR    2014\-03\-11 ~ slick commenting action
+\fB* a8f0220	\fR (\fBfrozen_branch\fR) 2014\-04\-10 ~ FREEZE\&.unindexed
+* \fBc382556	\fR 2014\-04\-10 ~ modfile
+* \fB06e399f	\fR 2014\-04\-10 ~ a deleted file
+* \fB20494d2	\fR (\fBfixit\fR) 2014\-04\-10 ~ Add neat feature\fB    <(frozen_branch)\fR
+* \fBf734bbf	\fR 2014\-04\-10 ~ Epic README update
+| * \fB983a7b8	\fR (\fBcool_feature\fR) 2014\-04\-10 ~ Respond to CL comments
+| | * \fB2f53c1f	\fR (\fBsubfeature\fR) 2014\-04\-10 ~ integrate with CoolService
+| | * \fBb4e5087	\fR 2014\-04\-10 ~ slick commenting action
 | |/
-| * \fB265803a\fR      2014\-03\-11 ~ another improvement    \fB<(subfeature)\fR
-| * \fB6d831ac\fR      (\:\fBspleen_tag\fR\:) 2014\-03\-11 ~ Refactor spleen
-| * \fB82e74ab\fR      2014\-03\-11 ~ Add widget
+| * \fBac10591	\fR 2014\-04\-10 ~ another improvement\fB    <(subfeature)\fR
+| * \fB088691d	\fR (\fBspleen_tag\fR) 2014\-04\-10 ~ Refactor spleen
+| * \fB206ceb2	\fR 2014\-04\-10 ~ Add widget
 |/
-* \fBd08c5b3\fR        (\:\fBbogus_noparent\fR\:) 2014\-03\-11 ~ Wonderful beginnings    \fB<(cool_feature)\fR
-\fB$ git squash\-branch "cool squash demo"\fR
+* \fB619ccc9	\fR (origin/master, origin/HEAD) 2014\-04\-10 ~ Make ReflectorImpl use mailboxes\fB    <(cool_feature, fixit)\fR
+* \fB40b838e	\fR 2014\-04\-10 ~ don\*(Aqt use glibc\-specific execinfo\&.h on uclibc builds
+* \fB65db351	\fR 2014\-04\-10 ~ [fsp] Add requestUnmount() method together with the request manager\&.
+* \fBc1923e0	\fR 2014\-04\-10 ~ linux_aura: Use system configuration for middle clicking the titlebar\&.
+* \fBccaca03	\fR 2014\-04\-10 ~ ContentView\->ContentViewCore in ContentViewRenderView
+* \fB9b1c1ab	\fR 2014\-04\-10 ~ ozone: evdev: Filter devices by path
+* \fBa91bbf9	\fR 2014\-04\-10 ~ Always output seccomp error messages to stderr
+\fB$ git squash\-branch \-m \*(Aqcool squash demo\*(Aq\fR
 \fB$ git map\fR
-*\:\fB 2c81508       \fR (\:\fBfrozen_changes\fR\:) 2014\-03\-22 ~ cool squash demo
-* \fB6bec695\fR        (\:origin/master\:) 2014\-03\-11 ~ Add neat feature    \fB<(frozen_changes)\fR
-* \fBd15a38a\fR        2014\-03\-11 ~ Epic README update
-* \fBd559894\fR        (\:\fBmaster\fR\:) 2014\-03\-11 ~ Important upstream change
-| * \fB9c311fd\fR      (\:\fBcool_feature\fR\:) 2014\-03\-11 ~ Respond to CL comments
-| | * \fB2a1eeb2\fR    (\:\fBsubfeature\fR\:) 2014\-03\-11 ~ integrate with CoolService
-| | * \fBd777af6\fR    2014\-03\-11 ~ slick commenting action
+\fB* 5b451bd	\fR (\fBfrozen_branch\fR) 2014\-04\-10 ~ cool squash demo
+* \fB20494d2	\fR (\fBfixit\fR) 2014\-04\-10 ~ Add neat feature\fB    <(frozen_branch)\fR
+* \fBf734bbf	\fR 2014\-04\-10 ~ Epic README update
+| * \fB983a7b8	\fR (\fBcool_feature\fR) 2014\-04\-10 ~ Respond to CL comments
+| | * \fB2f53c1f	\fR (\fBsubfeature\fR) 2014\-04\-10 ~ integrate with CoolService
+| | * \fBb4e5087	\fR 2014\-04\-10 ~ slick commenting action
 | |/
-| * \fB265803a\fR      2014\-03\-11 ~ another improvement    \fB<(subfeature)\fR
-| * \fB6d831ac\fR      (\:\fBspleen_tag\fR\:) 2014\-03\-11 ~ Refactor spleen
-| * \fB82e74ab\fR      2014\-03\-11 ~ Add widget
+| * \fBac10591	\fR 2014\-04\-10 ~ another improvement\fB    <(subfeature)\fR
+| * \fB088691d	\fR (\fBspleen_tag\fR) 2014\-04\-10 ~ Refactor spleen
+| * \fB206ceb2	\fR 2014\-04\-10 ~ Add widget
 |/
-* \fBd08c5b3\fR        (\:\fBbogus_noparent\fR\:) 2014\-03\-11 ~ Wonderful beginnings    \fB<(cool_feature)\fR
+* \fB619ccc9	\fR (origin/master, origin/HEAD) 2014\-04\-10 ~ Make ReflectorImpl use mailboxes\fB    <(cool_feature, fixit)\fR
+* \fB40b838e	\fR 2014\-04\-10 ~ don\*(Aqt use glibc\-specific execinfo\&.h on uclibc builds
+* \fB65db351	\fR 2014\-04\-10 ~ [fsp] Add requestUnmount() method together with the request manager\&.
+* \fBc1923e0	\fR 2014\-04\-10 ~ linux_aura: Use system configuration for middle clicking the titlebar\&.
+* \fBccaca03	\fR 2014\-04\-10 ~ ContentView\->ContentViewCore in ContentViewRenderView
+* \fB9b1c1ab	\fR 2014\-04\-10 ~ ozone: evdev: Filter devices by path
+* \fBa91bbf9	\fR 2014\-04\-10 ~ Always output seccomp error messages to stderr
 .fi
 .if n \{\
 .RE
@@ -108,7 +120,7 @@ Some common short\-hand aliases\&. Feel free to add these to your \fI~/\&.gitcon
 \fBgit-rebase-update\fR(1)
 .SH "CHROMIUM DEPOT_TOOLS"
 .sp
-Part of the chromium \fBdepot_tools\fR(1) suite\&. These tools are meant to assist with the development of chromium and related projects\&. Download the tools from \m[blue]\fBhere\fR\m[]\&\s-2\u[1]\d\s+2\&.
+Part of the chromium \fBdepot_tools\fR(7) suite\&. These tools are meant to assist with the development of chromium and related projects\&. Download the tools from \m[blue]\fBhere\fR\m[]\&\s-2\u[1]\d\s+2\&.
 .SH "NOTES"
 .IP " 1." 4
 here

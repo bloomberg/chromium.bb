@@ -41,7 +41,25 @@ then
 fi
 echo Asciidoc up to date at $ASCIIDOC_HASH \($BRANCH\)
 
-export PATH=`pwd`/asciidoc:$PATH
+# We pull ansi2hash to convert demo script output
+BRANCH=1.0.6
+ANSI2HTML_HASH=6282ab7a24a5a7eab2e0b23bb0055234c533a6e9
+if [[ ! -d ansi2html || $(git -C ansi2html rev-parse HEAD) != $ANSI2HTML_HASH ]]
+then
+  echo Cloning ansi2html
+  rm -rf ansi2html
+  git clone  --single-branch --branch $BRANCH --depth 1 \
+    https://github.com/ralphbean/ansi2html.git 2> /dev/null
+  curl https://bitbucket.org/gutworth/six/raw/a875ac34c777fe801569c6c5299bf1a35aa578cd/six.py > \
+    ansi2html/ansi2html/six.py
+  ed ansi2html/ansi2html/converter.py <<EOF
+/version_str
+s/pkg.*$/'cool version bro'
+wq
+EOF
+fi
+
+echo ansi2html up to date at $ANSI2HTML_HASH \($BRANCH\)
 
 # We pull git to get its documentation toolchain
 BRANCH=v1.9.0
@@ -105,8 +123,22 @@ j
 wq
 EOF
 
+  cat >> git/Documentation/asciidoc.conf <<EOF
+
+[macros]
+(?su)[\\\\]?(?P<name>demo):(?P<target>\S*?)\[\]=
+
+[demo-inlinemacro]
+{sys3:cd $(pwd); ./{docname}.demo.{target}.sh | python filter_demo_output.py {backend} }
+EOF
+
 fi
 echo Git up to date at $GITHASH \($BRANCH\)
+
+if [[ ! -d demo_repo ]]
+then
+  ./prep_demo_repo.sh
+fi
 
 # build directory files for 'essential' and 'helper' sections of the depot_tools
 # manpage.
@@ -130,6 +162,7 @@ do
           echo -n -
         done
         echo
+        cat _${category}_prefix.txt 2> /dev/null || true
         echo
       fi
 
@@ -145,9 +178,10 @@ do
   } > __${category}.txt
 done
 
-JOBS=0
+JOBS=1
 HTML_TARGETS=()
-MAN_TARGETS=()
+MAN1_TARGETS=()
+MAN7_TARGETS=()
 for x in *.txt *.css
 do
   TO="git/Documentation/$x"
@@ -155,21 +189,29 @@ do
   then
     echo \'$x\' differs
     cp $x "$TO"
-  fi
-  # Exclude files beginning with _ from the target list. This is useful to have
-  # includable snippet files.
-  if [[ ${x:0:1} != _ && ${x:(-4)} == .txt ]]
-  then
-    HTML_TARGETS+=("${x%%.txt}.html")
-    if [[ ${x:0:3} == git ]]
+    # Exclude files beginning with _ from the target list. This is useful to
+    # have includable snippet files.
+    if [[ ${x:0:1} != _ && ${x:(-4)} == .txt ]]
     then
-      MAN1_TARGETS+=("${x%%.txt}.1")
-    else
-      MAN7_TARGETS+=("${x%%.txt}.7")
+      HTML_TARGETS+=("${x%%.txt}.html")
+      if [[ ! "$NOMAN" ]]
+      then
+        if [[ ${x:0:3} == git ]]
+        then
+          MAN1_TARGETS+=("${x%%.txt}.1")
+        else
+          MAN7_TARGETS+=("${x%%.txt}.7")
+        fi
+      fi
+      JOBS=$[$JOBS + 2]
     fi
-    JOBS=$[$JOBS + 2]
   fi
 done
+
+if [[ ${#HTML_TARGETS} == 0 && ${#MAN1_TARGETS} == 0 && ${#MAN7_TARGETS} == 0 ]]
+then
+  exit
+fi
 
 VER="v$(git rev-parse --short HEAD)"
 if [[ ! -f git/version ]] || ! cmp --silent git/version <(echo "$VER")

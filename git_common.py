@@ -473,7 +473,7 @@ def run_stream(*cmd, **kwargs):
   """
   kwargs.setdefault('stderr', subprocess2.VOID)
   kwargs.setdefault('stdout', subprocess2.PIPE)
-  cmd = (GIT_EXE,) + cmd
+  cmd = (GIT_EXE, '-c', 'color.ui=never') + cmd
   proc = subprocess2.Popen(cmd, **kwargs)
   return proc.stdout
 
@@ -493,7 +493,7 @@ def run_with_stderr(*cmd, **kwargs):
   autostrip = kwargs.pop('autostrip', True)
   indata = kwargs.pop('indata', None)
 
-  cmd = (GIT_EXE,) + cmd
+  cmd = (GIT_EXE, '-c', 'color.ui=never') + cmd
   proc = subprocess2.Popen(cmd, **kwargs)
   ret, err = proc.communicate(indata)
   retcode = proc.wait()

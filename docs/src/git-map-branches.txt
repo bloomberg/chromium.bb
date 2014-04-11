@@ -35,18 +35,7 @@ Given the hypothetical demo repo in linkgit:git-map[1]\'s EXAMPLE section, and
 assuming that the `frozen_changes` branch was currently checked out, running
 'git map-branches' would result in an output like:
 
-[subs="quotes"]
-----
-[white]**$ git map-branches**
-[red]#origin/master#
-  [green]#cool_feature#
-    [green]#subfeature#
-  [aqua]#frozen_changes *#
-  [green]#master#
-[fuchsia]#{NO UPSTREAM}#
-  [green]#bogus_noparent#
-  [aqua]#duplicate_cool_feature_no_upstream#
-----
+demo:1[]
 
 include::_aliases.txt[]
 

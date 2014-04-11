@@ -778,49 +778,47 @@ time you ran git freeze (freshly modified files, new files, etc.).</p></div>
 <div class="sect1">
 <h2 id="_example">EXAMPLE</h2>
 <div class="sectionbody">
-<div class="listingblock">
-<div class="content">
-<pre><code><strong><span class="white">$ git status --short</span></strong>
-<span class="green">A</span>  added_file
-<span class="green">A</span>&#8203;<span class="red">M</span> added_file_with_unstaged_changes
-<span class="green">D</span>  deleted_file
- <span class="red">M</span> modified_file
- <span class="red">D</span> unstaged_deleted_file
-<span class="red">??</span> unadded_file
-<strong><span class="white">$ git freeze</span></strong>
-<strong><span class="white">$ git status --short</span></strong>
-<strong><span class="white">$ git log -n 2 --stat</span></strong>
-<span class="yellow">commit 182eccae8e385acba21c9ff2713e98ff4b7e17cd</span>
-Author: Robert Iannucci &lt;iannucci@chromium.org&gt;
-Date:   Thu Mar 13 17:42:37 2014 -0700
+<div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git status --short</span>
+<span style="color: #19c518">A</span>  added_file
+<span style="color: #19c518">A</span><span style="color: #e42e16">M</span> added_file_with_unstaged_changes
+<span style="color: #19c518">D</span>  deleted_file
+ <span style="color: #e42e16">M</span> modified_file
+ <span style="color: #e42e16">D</span> unstaged_deleted_file
+<span style="color: #e42e16">??</span> unadded_file
+<span style="font-weight: bold; color: #ffffff">$ git freeze</span>
+<span style="font-weight: bold; color: #ffffff">$ git status --short</span>
+<span style="font-weight: bold; color: #ffffff">$ git log -n 2 --stat</span>
+<span style="color: #e7e71c">commit 2903a59a5323dd12438a9b3912a878a546b5d68a</span>
+Author: local &lt;local@chromium.org&gt;
+Date:   Thu Apr 10 08:54:56 2014 +0000
 
     FREEZE.unindexed
 
- added_file_with_unstaged_changes | 3 <span class="green">++</span>&#8203;<span class="red">-</span>
- modified_file                    | 4 <span class="green">+++</span>&#8203;<span class="red">-</span>
- unadded_file                     | 3 <span class="green">+++</span>
- unstaged_deleted_file            | 1 <span class="red">-</span>
- 4 files changed, 8 insertions(+), 3 deletions(-)
+ added_file_with_unstaged_changes | 1 <span style="color: #19c518">+</span>
+ modified_file                    | 1 <span style="color: #19c518">+</span>
+ unadded_file                     | 0
+ unstaged_deleted_file            | 1 <span style="color: #e42e16">-</span>
+ 4 files changed, 2 insertions(+), 1 deletion(-)
 
-<span class="yellow">commit ce07bdc49a61f54e6142b4bba5cc517cf6802bd4</span>
-Author: Robert Iannucci &lt;iannucci@chromium.org&gt;
-Date:   Thu Mar 13 17:42:37 2014 -0700
+<span style="color: #e7e71c">commit 19e09ed3f4a23417cf46ce0961fc7434132d0295</span>
+Author: local &lt;local@chromium.org&gt;
+Date:   Thu Apr 10 08:54:56 2014 +0000
 
     FREEZE.indexed
 
- added_file                       | 3 <span class="green">+++</span>
- added_file_with_unstaged_changes | 1 <span class="green">+</span>
- deleted_file                     | 1 <span class="red">-</span>
- 3 files changed, 4 insertions(+), 1 deletion(-)
-<strong><span class="white">$ git thaw</span></strong>
-<strong><span class="white">$ git status --short</span></strong>
-<span class="green">A</span>  added_file
-<span class="green">A</span>&#8203;<span class="red">M</span> added_file_with_unstaged_changes
-<span class="green">D</span>  deleted_file
- <span class="red">M</span> modified_file
- <span class="red">D</span> unstaged_deleted_file
-<span class="red">??</span> unadded_file</code></pre>
-</div></div>
+ added_file                       | 1 <span style="color: #19c518">+</span>
+ added_file_with_unstaged_changes | 1 <span style="color: #19c518">+</span>
+ deleted_file                     | 1 <span style="color: #e42e16">-</span>
+ 3 files changed, 2 insertions(+), 1 deletion(-)
+<span style="font-weight: bold; color: #ffffff">$ git thaw</span>
+<span style="font-weight: bold; color: #ffffff">$ git status --short</span>
+<span style="color: #19c518">A</span>  added_file
+<span style="color: #19c518">A</span><span style="color: #e42e16">M</span> added_file_with_unstaged_changes
+<span style="color: #19c518">D</span>  deleted_file
+ <span style="color: #e42e16">M</span> modified_file
+ <span style="color: #e42e16">D</span> unstaged_deleted_file
+<span style="color: #e42e16">??</span> unadded_file
+</code></pre></div></div><p><div class="paragraph"></p></div>
 </div>
 </div>
 <div class="sect1">
@@ -832,7 +830,7 @@ Date:   Thu Mar 13 17:42:37 2014 -0700
 <div class="sect1">
 <h2 id="_chromium_depot_tools">CHROMIUM DEPOT_TOOLS</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>Part of the chromium <a href="depot_tools.html">depot_tools(1)</a> suite. These tools are meant to
+<div class="paragraph"><p>Part of the chromium <a href="depot_tools.html">depot_tools(7)</a> suite. These tools are meant to
 assist with the development of chromium and related projects. Download the tools
 from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">here</a>.</p></div>
 </div>
@@ -841,7 +839,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-03-25 15:09:11 PDT
+Last updated 2014-04-10 14:23:11 PDT
 </div>
 </div>
 </body>

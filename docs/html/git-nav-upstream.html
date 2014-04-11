@@ -770,26 +770,44 @@ checks that out.</p></div>
 <div class="sect1">
 <h2 id="_example">EXAMPLE</h2>
 <div class="sectionbody">
-<div class="listingblock">
-<div class="content">
-<pre><code><strong><span class="white">$ git map-branches</span></strong>
-<span class="red">origin/master</span>
-  <span class="green">cool_feature</span>
-    <strong><span class="aqua">subfeature *&#8203;</span></strong>
-  <span class="green">frozen_changes</span>
-  <span class="green">master</span>
-<span class="fuchsia">{NO UPSTREAM}</span>
-  <span class="green">bogus_noparent</span>
-<strong><span class="white">$ git nav-upstream</span></strong>
-<strong><span class="white">$ git map-branches</span></strong>
-<span class="red">origin/master</span>
-  <strong><span class="aqua">cool_feature *&#8203;</span></strong>
-    <span class="green">subfeature</span>
-  <span class="green">frozen_changes</span>
-  <span class="green">master</span>
-<span class="fuchsia">{NO UPSTREAM}</span>
-  <span class="green">bogus_noparent</span></code></pre>
-</div></div>
+<div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
+<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master
+</span><span style="color: #19c518"></span><span style="color: #19c518">  cool_feature
+</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">    subfeature *
+</span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">  fixit
+</span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch
+</span><span style="font-weight: bold; color: #ffffff">$ git nav-upstream</span>
+Switched to branch 'cool_feature'
+Your branch is ahead of 'origin/master' by 4 commits.
+  (use "git push" to publish your local commits)
+<span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
+<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master
+</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">  cool_feature *
+</span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">    subfeature
+</span><span style="color: #19c518"></span><span style="color: #19c518">  fixit
+</span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch
+</span><span style="font-weight: bold; color: #ffffff">$ git nav-upstream</span>
+Note: checking out 'origin/master'.
+
+You are in 'detached HEAD' state. You can look around, make experimental</span> <b>&lt;1&gt;</b><span>
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+  git checkout -b new_branch_name
+
+HEAD is now at 619ccc9... Make ReflectorImpl use mailboxes
+<span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
+<span style="color: #e42e16"></span><span style="font-weight: bold; color: #e42e16">origin/master *
+</span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">  cool_feature
+</span><span style="color: #19c518"></span><span style="color: #19c518">    subfeature
+</span><span style="color: #19c518"></span><span style="color: #19c518">  fixit
+</span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch</span>
+</code></pre></div></div><p><div class="paragraph">
+1. Note that being in a <em>detached HEAD</em> state is OK. You&#8217;ll just want to create
+a <a href="git-new-branch.html">git-new-branch(1)</a> from here.</p></div>
 </div>
 </div>
 <div class="sect1">
@@ -813,7 +831,7 @@ file.</p></div>
 <div class="sect1">
 <h2 id="_chromium_depot_tools">CHROMIUM DEPOT_TOOLS</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>Part of the chromium <a href="depot_tools.html">depot_tools(1)</a> suite. These tools are meant to
+<div class="paragraph"><p>Part of the chromium <a href="depot_tools.html">depot_tools(7)</a> suite. These tools are meant to
 assist with the development of chromium and related projects. Download the tools
 from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">here</a>.</p></div>
 </div>
@@ -822,7 +840,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-03-25 15:09:11 PDT
+Last updated 2014-04-10 14:57:27 PDT
 </div>
 </div>
 </body>

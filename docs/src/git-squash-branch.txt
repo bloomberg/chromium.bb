@@ -39,41 +39,8 @@ OPTIONS
 
 EXAMPLE
 -------
+demo:1[]
 
-[subs="specialcharacters,quotes,attributes"]
-----
-[white]**$ git map**
-[white blue-background]##\*##{zwsp}[blue-background red]** 7dcfe47       ** [green]##(##{zwsp}[aqua]**frozen_changes**{zwsp}[green]##)## [yellow]##2014-03-12## \~ FREEZE.unindexed
-* [red]**4b0c180**        [yellow]##2014-03-12## \~ modfile
-* [red]**59a7cca**        [yellow]##2014-03-12## \~ a deleted file
-* [red]**6bec695**        [green]##(##{zwsp}[red]##origin/master##{zwsp}[green]##)## [yellow]##2014-03-11## \~ Add neat feature    [white]**<(frozen_changes)**
-* [red]**d15a38a**        [yellow]##2014-03-11## \~ Epic README update
-* [red]**d559894**        [green]##(##{zwsp}[lime]**master**{zwsp}[green]##)## [yellow]##2014-03-11## \~ Important upstream change
-[red]##|## * [red]**9c311fd**      [green]##(##{zwsp}[lime]**cool_feature**{zwsp}[green]##)## [yellow]##2014-03-11## \~ Respond to CL comments
-[red]##|## [green]##|## * [red]**2a1eeb2**    [green]##(##{zwsp}[lime]**subfeature**{zwsp}[green]##)## [yellow]##2014-03-11## \~ integrate with CoolService
-[red]##|## [green]##|## * [red]**d777af6**    [yellow]##2014-03-11## \~ slick commenting action
-[red]##|## [green]##|/##
-[red]##|## * [red]**265803a**      [yellow]##2014-03-11## \~ another improvement    [white]**<(subfeature)**
-[red]##|## * [red]**6d831ac**      [green]##(##{zwsp}[fuchsia]**spleen_tag**{zwsp}[green]##)## [yellow]##2014-03-11## \~ Refactor spleen
-[red]##|## * [red]**82e74ab**      [yellow]##2014-03-11## \~ Add widget
-[red]##|/##
-* [red]**d08c5b3**        [green]##(##{zwsp}[lime]**bogus_noparent**{zwsp}[green]##)## [yellow]##2014-03-11## \~ Wonderful beginnings    [white]**<(cool_feature)**
-[white]**$ git squash-branch "cool squash demo"**
-[white]**$ git map**
-[white blue-background]##*##{zwsp}[blue-background red]** 2c81508       ** [green]##(##{zwsp}[aqua]**frozen_changes**{zwsp}[green]##)## [yellow]##2014-03-22## \~ cool squash demo
-* [red]**6bec695**        [green]##(##{zwsp}[red]##origin/master##{zwsp}[green]##)## [yellow]##2014-03-11## \~ Add neat feature    [white]**<(frozen_changes)**
-* [red]**d15a38a**        [yellow]##2014-03-11## \~ Epic README update
-* [red]**d559894**        [green]##(##{zwsp}[lime]**master**{zwsp}[green]##)## [yellow]##2014-03-11## \~ Important upstream change
-[red]##|## * [red]**9c311fd**      [green]##(##{zwsp}[lime]**cool_feature**{zwsp}[green]##)## [yellow]##2014-03-11## \~ Respond to CL comments
-[red]##|## [green]##|## * [red]**2a1eeb2**    [green]##(##{zwsp}[lime]**subfeature**{zwsp}[green]##)## [yellow]##2014-03-11## \~ integrate with CoolService
-[red]##|## [green]##|## * [red]**d777af6**    [yellow]##2014-03-11## \~ slick commenting action
-[red]##|## [green]##|/##
-[red]##|## * [red]**265803a**      [yellow]##2014-03-11## \~ another improvement    [white]**<(subfeature)**
-[red]##|## * [red]**6d831ac**      [green]##(##{zwsp}[fuchsia]**spleen_tag**{zwsp}[green]##)## [yellow]##2014-03-11## \~ Refactor spleen
-[red]##|## * [red]**82e74ab**      [yellow]##2014-03-11## \~ Add widget
-[red]##|/##
-* [red]**d08c5b3**        [green]##(##{zwsp}[lime]**bogus_noparent**{zwsp}[green]##)## [yellow]##2014-03-11## ~ Wonderful beginnings    [white]**<(cool_feature)**
-----
 
 include::_aliases.txt[]
 

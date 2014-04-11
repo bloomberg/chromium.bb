@@ -19,27 +19,9 @@ checks that out.
 
 EXAMPLE
 -------
-
-[subs="quotes,attributes"]
-----
-[white]**$ git map-branches**
-[red]##origin/master##
-  [green]#cool_feature#
-    [aqua]**subfeature *{zwsp}**
-  [green]#frozen_changes#
-  [green]#master#
-[fuchsia]#{NO UPSTREAM}#
-  [green]#bogus_noparent#
-[white]**$ git nav-upstream**
-[white]**$ git map-branches**
-[red]##origin/master##
-  [aqua]**cool_feature *{zwsp}**
-    [green]#subfeature#
-  [green]#frozen_changes#
-  [green]#master#
-[fuchsia]#{NO UPSTREAM}#
-  [green]#bogus_noparent#
-----
+demo:1[]
+1. Note that being in a 'detached HEAD' state is OK. You'll just want to create
+a linkgit:git-new-branch[1] from here.
 
 include::_aliases.txt[]
 

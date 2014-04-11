@@ -9,13 +9,20 @@ is more than one downstream branch, then this script will prompt you to select
 which branch.
 """
 
+import argparse
 import sys
 
-from git_common import current_branch, branches, upstream, run, hash_one
+from git_common import current_branch, branches, upstream, run_stream, hash_one
 
 
-def main(argv):
-  assert len(argv) == 1, "No arguments expected"
+def main(args):
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--pick',
+                      help=(
+                          'The number to pick if this command would '
+                          'prompt'))
+  opts = parser.parse_args(args)
+
   upfn = upstream
   cur = current_branch()
   if cur == 'HEAD':
@@ -29,21 +36,26 @@ def main(argv):
   if not downstreams:
     return "No downstream branches"
   elif len(downstreams) == 1:
-    run('checkout', downstreams[0])
+    run_stream('checkout', downstreams[0], stdout=sys.stdout, stderr=sys.stderr)
   else:
     high = len(downstreams) - 1
-    print
     while True:
       print "Please select a downstream branch"
       for i, b in enumerate(downstreams):
         print "  %d. %s" % (i, b)
-      r = raw_input("Selection (0-%d)[0]: " % high).strip() or '0'
+      prompt = "Selection (0-%d)[0]: " % high
+      r = opts.pick
+      if r:
+        print prompt + r
+      else:
+        r = raw_input(prompt).strip() or '0'
       if not r.isdigit() or (0 > int(r) > high):
         print "Invalid choice."
       else:
-        run('checkout', downstreams[int(r)])
+        run_stream('checkout', downstreams[int(r)], stdout=sys.stdout,
+                   stderr=sys.stderr)
         break
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv[1:]))

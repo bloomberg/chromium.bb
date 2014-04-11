@@ -819,18 +819,15 @@ Branches which have this as their parent are usually misconfigured, and
 <div class="paragraph"><p>Given the hypothetical demo repo in <a href="git-map.html">git-map(1)</a>'s EXAMPLE section, and
 assuming that the <code>frozen_changes</code> branch was currently checked out, running
 <em>git map-branches</em> would result in an output like:</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><code><strong><span class="white">$ git map-branches</span></strong>
-<span class="red">origin/master</span>
-  <span class="green">cool_feature</span>
-    <span class="green">subfeature</span>
-  <span class="aqua">frozen_changes *</span>
-  <span class="green">master</span>
-<span class="fuchsia">{NO UPSTREAM}</span>
-  <span class="green">bogus_noparent</span>
-  <span class="aqua">duplicate_cool_feature_no_upstream</span></code></pre>
-</div></div>
+<div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
+<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master
+</span><span style="color: #19c518"></span><span style="color: #19c518">  cool_feature
+</span><span style="color: #19c518"></span><span style="color: #19c518">    subfeature
+</span><span style="color: #19c518"></span><span style="color: #19c518">  fixit
+</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">    frozen_branch *
+</span><span style="font-weight: bold; color: #d338d3"></span><span style="color: #d338d3">{NO UPSTREAM}
+</span><span style="color: #19c518"></span><span style="color: #19c518">  no_upstream</span>
+</code></pre></div></div><p><div class="paragraph"></p></div>
 </div>
 </div>
 <div class="sect1">
@@ -854,7 +851,7 @@ file.</p></div>
 <div class="sect1">
 <h2 id="_chromium_depot_tools">CHROMIUM DEPOT_TOOLS</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>Part of the chromium <a href="depot_tools.html">depot_tools(1)</a> suite. These tools are meant to
+<div class="paragraph"><p>Part of the chromium <a href="depot_tools.html">depot_tools(7)</a> suite. These tools are meant to
 assist with the development of chromium and related projects. Download the tools
 from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">here</a>.</p></div>
 </div>
@@ -863,7 +860,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-03-25 15:09:11 PDT
+Last updated 2014-04-10 14:23:11 PDT
 </div>
 </div>
 </body>

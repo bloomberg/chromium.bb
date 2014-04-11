@@ -772,32 +772,39 @@ command will prompt you with a selection of the branches.</p></div>
 <div class="sect1">
 <h2 id="_example">EXAMPLE</h2>
 <div class="sectionbody">
-<div class="listingblock">
-<div class="content">
-<pre><code><strong><span class="white">$ git map-branches</span></strong>
-<strong><span class="red">origin/master *&#8203;</span></strong>
-  <span class="green">cool_feature</span>
-    <span class="green">subfeature</span>
-  <span class="green">frozen_changes</span>
-  <span class="green">master</span>
-<span class="fuchsia">{NO UPSTREAM}</span>
-  <span class="green">bogus_noparent</span>
-<strong><span class="white">$ git nav-downstream</span></strong>
-
+<div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
+<span style="color: #e42e16"></span><span style="font-weight: bold; color: #e42e16">origin/master *
+</span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">  cool_feature
+</span><span style="color: #19c518"></span><span style="color: #19c518">    subfeature
+</span><span style="color: #19c518"></span><span style="color: #19c518">  fixit
+</span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch
+</span><span style="font-weight: bold; color: #ffffff">$ git nav-downstream</span>
 Please select a downstream branch
   0. cool_feature
-  1. frozen_changes
-  2. master
-Selection (0-2)[0]: 0
-<strong><span class="white">$ git map-branches</span></strong>
-<span class="red">origin/master</span>
-  <strong><span class="aqua">cool_feature *&#8203;</span></strong>
-    <span class="green">subfeature</span>
-  <span class="green">frozen_changes</span>
-  <span class="green">master</span>
-<span class="fuchsia">{NO UPSTREAM}</span>
-  <span class="green">bogus_noparent</span></code></pre>
-</div></div>
+  1. fixit
+Selection (0-1)[0]: 0
+Previous HEAD position was 619ccc9... Make ReflectorImpl use mailboxes
+Switched to branch 'cool_feature'
+Your branch is ahead of 'origin/master' by 4 commits.
+  (use "git push" to publish your local commits)
+<span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
+<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master
+</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">  cool_feature *
+</span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">    subfeature
+</span><span style="color: #19c518"></span><span style="color: #19c518">  fixit
+</span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch
+</span><span style="font-weight: bold; color: #ffffff">$ git nav-downstream</span>
+Switched to branch 'subfeature'
+Your branch and 'cool_feature' have diverged,
+and have 2 and 1 different commit each, respectively.
+  (use "git pull" to merge the remote branch into yours)
+<span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
+<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master
+</span><span style="color: #19c518"></span><span style="color: #19c518">  cool_feature
+</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">    subfeature *
+</span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">  fixit
+</span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch</span>
+</code></pre></div></div><p><div class="paragraph"></p></div>
 </div>
 </div>
 <div class="sect1">
@@ -821,7 +828,7 @@ file.</p></div>
 <div class="sect1">
 <h2 id="_chromium_depot_tools">CHROMIUM DEPOT_TOOLS</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>Part of the chromium <a href="depot_tools.html">depot_tools(1)</a> suite. These tools are meant to
+<div class="paragraph"><p>Part of the chromium <a href="depot_tools.html">depot_tools(7)</a> suite. These tools are meant to
 assist with the development of chromium and related projects. Download the tools
 from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">here</a>.</p></div>
 </div>
@@ -830,7 +837,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-03-25 15:09:11 PDT
+Last updated 2014-04-10 14:56:15 PDT
 </div>
 </div>
 </body>
