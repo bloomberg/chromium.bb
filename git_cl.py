@@ -1744,7 +1744,7 @@ def IsSubmoduleMergeCommit(ref):
 def SendUpstream(parser, args, cmd):
   """Common code for CmdPush and CmdDCommit
 
-  Squashed commit into a single.
+  Squashes branch into a single commit.
   Updates changelog with metadata (e.g. pointer to review).
   Pushes/dcommits the code upstream.
   Updates review and closes.
@@ -1762,6 +1762,21 @@ def SendUpstream(parser, args, cmd):
   add_git_similarity(parser)
   (options, args) = parser.parse_args(args)
   cl = Changelist()
+
+  current = cl.GetBranch()
+  remote, upstream_branch = cl.FetchUpstreamTuple(cl.GetBranch())
+  if not settings.GetIsGitSvn() and remote == '.':
+    print
+    print 'Attempting to push branch %r into another local branch!' % current
+    print
+    print 'Either reparent this branch on top of origin/master:'
+    print '  git reparent-branch --root'
+    print
+    print 'OR run `git rebase-update` if you think the parent branch is already'
+    print 'committed.'
+    print
+    print '  Current parent: %r' % upstream_branch
+    return 1
 
   if not args or cmd == 'push':
     # Default to merging against our best guess of the upstream branch.
