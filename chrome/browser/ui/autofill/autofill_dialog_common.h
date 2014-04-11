@@ -45,10 +45,13 @@ bool IsCreditCardType(ServerFieldType type);
 
 // Constructs |inputs| from template data for a given |dialog_section|.
 // |country_country| specifies the country code that the inputs should be built
-// for.
+// for. Sets the |language_code| to be used for address formatting, if
+// internationalized address input is enabled. The |language_code| parameter can
+// be NULL.
 void BuildInputsForSection(DialogSection dialog_section,
                            const std::string& country_code,
-                           DetailInputs* inputs);
+                           DetailInputs* inputs,
+                           std::string* language_code);
 
 // Returns the AutofillMetrics::DIALOG_UI_*_ITEM_ADDED metric corresponding
 // to the |section|.

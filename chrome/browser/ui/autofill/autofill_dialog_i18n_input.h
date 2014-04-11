@@ -27,12 +27,20 @@ class CreditCard;
 
 namespace i18ninput {
 
-// Builds internationalized address input fields for |country_code| and adds
-// them (at most 13) to |inputs|. |address_type| is which kind of address to
-// build (e.g. billing or shipping).
+// Builds internationalized address input fields for |address_type| (e.g.
+// billing or shipping) in |country_code| (e.g. "US" or "CH").
+//
+// The |inputs| and |language_code| are output-only parameters.
+//
+// The function adds the fields (at most 13) to |inputs|. This parameter should
+// not be NULL.
+//
+// The function sets the |language_code| to be used for address formatting. This
+// parameter can be NULL.
 void BuildAddressInputs(common::AddressType address_type,
                         const std::string& country_code,
-                        DetailInputs* inputs);
+                        DetailInputs* inputs,
+                        std::string* language_code);
 
 // Returns whether the given card is complete and verified (i.e. was reviewed
 // by the user and not just automatically aggregated).

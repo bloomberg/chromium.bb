@@ -40,6 +40,7 @@ message AutofillProfileSpecifics {
   optional string address_home_street_address = 17;
   optional string address_home_sorting_code = 18;
   optional string address_home_dependent_locality = 19;
+  optional string address_home_language_code = 20;
 
   // Phone.
   repeated string phone_home_whole_number = 13;

@@ -696,7 +696,9 @@ void AutofillDialogControllerImpl::Show() {
       country_code = model->GetDefaultCountryCode();
 
     DetailInputs* inputs = MutableRequestedFieldsForSection(section);
-    common::BuildInputsForSection(section, country_code, inputs);
+    common::BuildInputsForSection(
+        section, country_code, inputs,
+        MutableAddressLanguageCodeForSection(section));
   }
 
   // Test whether we need to show the shipping section. If filling that section
@@ -1849,6 +1851,7 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
     AddressData address_data;
     i18ninput::CreateAddressData(base::Bind(&GetInfoFromProfile, profile),
                                  &address_data);
+    address_data.language_code = AddressLanguageCodeForSection(section);
 
     AddressProblems problems;
     status = GetValidator()->ValidateAddress(address_data,
@@ -3046,7 +3049,8 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
 
   DetailInputs inputs;
   std::string country_code = CountryCodeForSection(section);
-  common::BuildInputsForSection(section, country_code, &inputs);
+  common::BuildInputsForSection(section, country_code, &inputs,
+                                MutableAddressLanguageCodeForSection(section));
   std::vector<ServerFieldType> types = common::TypesFromInputs(inputs);
 
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
@@ -3100,6 +3104,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     } else {
       AutofillProfile profile;
       FillFormGroupFromOutputs(output, &profile);
+      profile.set_language_code(AddressLanguageCodeForSection(section));
 
       if (ShouldSaveDetailsLocally()) {
         profile.set_origin(RulesAreLoaded(section) ?
@@ -3248,6 +3253,7 @@ void AutofillDialogControllerImpl::GetI18nValidatorSuggestions(
   AddressData user_input;
   i18ninput::CreateAddressData(
       base::Bind(&GetInfoFromProfile, profile), &user_input);
+  user_input.language_code = AddressLanguageCodeForSection(section);
 
   static const size_t kSuggestionsLimit = 10;
   AddressValidator::Status status = GetValidator()->GetSuggestions(
@@ -3283,6 +3289,27 @@ void AutofillDialogControllerImpl::GetI18nValidatorSuggestions(
 DetailInputs* AutofillDialogControllerImpl::MutableRequestedFieldsForSection(
     DialogSection section) {
   return const_cast<DetailInputs*>(&RequestedFieldsForSection(section));
+}
+
+std::string* AutofillDialogControllerImpl::MutableAddressLanguageCodeForSection(
+    DialogSection section) {
+  switch (section) {
+    case SECTION_BILLING:
+    case SECTION_CC_BILLING:
+      return &billing_address_language_code_;
+    case SECTION_SHIPPING:
+      return &shipping_address_language_code_;
+    case SECTION_CC:
+      return NULL;
+  }
+  NOTREACHED();
+  return NULL;
+}
+
+std::string AutofillDialogControllerImpl::AddressLanguageCodeForSection(
+    DialogSection section) {
+  std::string* language_code = MutableAddressLanguageCodeForSection(section);
+  return language_code != NULL ? *language_code : std::string();
 }
 
 std::vector<ServerFieldType> AutofillDialogControllerImpl::
@@ -3330,7 +3357,8 @@ bool AutofillDialogControllerImpl::RebuildInputsForCountry(
 
   DetailInputs* inputs = MutableRequestedFieldsForSection(section);
   inputs->clear();
-  common::BuildInputsForSection(section, country_code, inputs);
+  common::BuildInputsForSection(section, country_code, inputs,
+                                MutableAddressLanguageCodeForSection(section));
   return true;
 }
 
@@ -3588,6 +3616,7 @@ scoped_ptr<wallet::Address>AutofillDialogControllerImpl::
 
   AutofillProfile profile;
   FillFormGroupFromOutputs(output, &profile);
+  profile.set_language_code(shipping_address_language_code_);
   CanonicalizeState(validator_.get(), &profile);
 
   return scoped_ptr<wallet::Address>(new wallet::Address(profile));
@@ -3908,6 +3937,7 @@ void AutofillDialogControllerImpl::MaybeShowCreditCardBubble() {
       view_->GetUserInput(SECTION_BILLING, &outputs);
       billing_profile.reset(new AutofillProfile);
       FillFormGroupFromOutputs(outputs, billing_profile.get());
+      billing_profile->set_language_code(billing_address_language_code_);
     } else {
       // Just snag the currently suggested profile.
       std::string item_key = SuggestionsMenuModelForSection(SECTION_BILLING)->

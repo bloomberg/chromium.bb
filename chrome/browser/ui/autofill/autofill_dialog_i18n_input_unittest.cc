@@ -23,16 +23,19 @@ const size_t kNumberOfAddressLinesUS = 6;
 
 TEST(AutofillDialogI18nInput, USShippingAddress) {
   DetailInputs inputs;
-  BuildAddressInputs(common::ADDRESS_TYPE_SHIPPING, "US", &inputs);
+  std::string language_code;
+  BuildAddressInputs(common::ADDRESS_TYPE_SHIPPING, "US", &inputs,
+                     &language_code);
 
   ASSERT_EQ(kNumberOfAddressLinesUS, inputs.size());
   EXPECT_EQ(NAME_FULL, inputs[0].type);
   EXPECT_EQ(ADDRESS_HOME_COUNTRY, inputs[kNumberOfAddressLinesUS - 1].type);
+  EXPECT_EQ("en", language_code);
 }
 
 TEST(AutofillDialogI18nInput, USBillingAddress) {
   DetailInputs inputs;
-  BuildAddressInputs(common::ADDRESS_TYPE_BILLING, "US", &inputs);
+  BuildAddressInputs(common::ADDRESS_TYPE_BILLING, "US", &inputs, NULL);
 
   ASSERT_EQ(kNumberOfAddressLinesUS, inputs.size());
   EXPECT_EQ(NAME_BILLING_FULL, inputs[0].type);
@@ -41,7 +44,7 @@ TEST(AutofillDialogI18nInput, USBillingAddress) {
 
 TEST(AutofillDialogI18nInput, USCityStateAndZipCodeShareInputRow) {
   DetailInputs inputs;
-  BuildAddressInputs(common::ADDRESS_TYPE_SHIPPING, "US", &inputs);
+  BuildAddressInputs(common::ADDRESS_TYPE_SHIPPING, "US", &inputs, NULL);
   ASSERT_EQ(kNumberOfAddressLinesUS, inputs.size());
 
 #if defined(OS_MACOSX)
@@ -70,10 +73,13 @@ TEST(AutofillDialogI18nInput, USCityStateAndZipCodeShareInputRow) {
 
 TEST(AutofillDialogI18nInput, IvoryCoastNoStreetLine2) {
   DetailInputs inputs;
-  BuildAddressInputs(common::ADDRESS_TYPE_SHIPPING, "CI", &inputs);
+  std::string language_code;
+  BuildAddressInputs(common::ADDRESS_TYPE_SHIPPING, "CI", &inputs,
+                     &language_code);
   for (size_t i = 0; i < inputs.size(); ++i) {
     EXPECT_NE(ADDRESS_HOME_LINE2, inputs[i].type);
   }
+  EXPECT_EQ("fr", language_code);
 }
 
 TEST(AutofillDialogI18nInput, FullySupportedCountries) {

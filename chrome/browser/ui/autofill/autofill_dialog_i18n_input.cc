@@ -38,12 +38,12 @@ DetailInput::Length LengthFromHint(AddressUiComponent::LengthHint hint) {
 
 void BuildAddressInputs(common::AddressType address_type,
                         const std::string& country_code,
-                        DetailInputs* inputs) {
-  // TODO(rouslan): Store the language code for the autofill profile.
-  // http://crbug.com/354955
+                        DetailInputs* inputs,
+                        std::string* language_code) {
   std::vector<AddressUiComponent> components(
       ::i18n::addressinput::BuildComponents(
-          country_code, g_browser_process->GetApplicationLocale(), NULL));
+          country_code, g_browser_process->GetApplicationLocale(),
+          language_code));
 
   const bool billing = address_type == common::ADDRESS_TYPE_BILLING;
 

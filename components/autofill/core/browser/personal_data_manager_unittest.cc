@@ -2539,4 +2539,29 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromProfiles) {
   EXPECT_EQ("MX", personal_data_->GetDefaultCountryCodeForNewAddress());
 }
 
+TEST_F(PersonalDataManagerTest, UpdateLanguageCodeInProfile) {
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile,
+      "Marion", "Mitchell", "Morrison",
+      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+      "91601", "US", "12345678910");
+  personal_data_->AddProfile(profile);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  profile.set_language_code("en");
+  personal_data_->UpdateProfile(profile);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, profile.Compare(*results[0]));
+  EXPECT_EQ("en", results[0]->language_code());
+}
+
 }  // namespace autofill

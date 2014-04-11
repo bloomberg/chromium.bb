@@ -59,6 +59,7 @@ bool DataModelWrapper::GetDisplayText(
   i18ninput::CreateAddressData(
       base::Bind(&DataModelWrapper::GetInfo, base::Unretained(this)),
       &address_data);
+  address_data.language_code = GetLanguageCode();
   std::vector<std::string> lines;
   address_data.FormatForDisplay(&lines);
 
@@ -72,8 +73,7 @@ bool DataModelWrapper::GetDisplayText(
 
   // The separator is locale-specific.
   std::string compact_separator =
-      ::i18n::addressinput::GetCompactAddressLinesSeparator(
-          g_browser_process->GetApplicationLocale());
+      ::i18n::addressinput::GetCompactAddressLinesSeparator(GetLanguageCode());
   *vertically_compact =
       base::UTF8ToUTF16(JoinString(lines, compact_separator)) +
           non_address_info;
@@ -81,6 +81,10 @@ bool DataModelWrapper::GetDisplayText(
       non_address_info;
 
   return true;
+}
+
+const std::string& DataModelWrapper::GetLanguageCode() const {
+  return g_browser_process->GetApplicationLocale();
 }
 
 bool DataModelWrapper::FillFormStructure(
@@ -148,6 +152,10 @@ base::string16 AutofillProfileWrapper::GetInfoForDisplay(
   }
 
   return DataModelWrapper::GetInfoForDisplay(type);
+}
+
+const std::string& AutofillProfileWrapper::GetLanguageCode() const {
+  return profile_->language_code();
 }
 
 size_t AutofillProfileWrapper::GetVariantForType(const AutofillType& type)
@@ -361,6 +369,10 @@ base::string16 I18nAddressDataWrapper::GetInfo(const AutofillType& type) const {
   }
 
   return base::UTF8ToUTF16(address_->GetFieldValue(field));
+}
+
+const std::string& I18nAddressDataWrapper::GetLanguageCode() const {
+  return address_->language_code;
 }
 
 }  // namespace autofill

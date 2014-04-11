@@ -400,7 +400,7 @@ void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
     return;
 
   // Don't overwrite the origin for a profile that is already stored.
-  if (existing_profile->Compare(profile) == 0)
+  if (existing_profile->EqualsSansOrigin(profile))
     return;
 
   if (profile.IsEmpty(app_locale_)) {

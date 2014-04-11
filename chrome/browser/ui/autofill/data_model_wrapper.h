@@ -69,6 +69,11 @@ class DataModelWrapper {
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact);
 
+  // Returns the BCP 47 language code that should be used for formatting the
+  // data for display. The default implementation returns the current browser
+  // locale.
+  virtual const std::string& GetLanguageCode() const;
+
   // Fills in |form_structure| with the data that this model contains. |inputs|
   // and |comparator| are used to determine whether each field in the
   // FormStructure should be filled in or left alone. Returns whether any fields
@@ -97,6 +102,7 @@ class AutofillProfileWrapper : public DataModelWrapper {
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
   virtual base::string16 GetInfoForDisplay(const AutofillType& type) const
       OVERRIDE;
+  virtual const std::string& GetLanguageCode() const OVERRIDE;
 
  protected:
   // Returns the variant that should be used when dealing with an element that
@@ -219,6 +225,7 @@ class I18nAddressDataWrapper : public DataModelWrapper {
   virtual ~I18nAddressDataWrapper();
 
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
+  virtual const std::string& GetLanguageCode() const OVERRIDE;
 
  private:
   const ::i18n::addressinput::AddressData* address_;

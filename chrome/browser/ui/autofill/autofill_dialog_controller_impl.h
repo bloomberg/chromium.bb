@@ -478,6 +478,15 @@ class AutofillDialogControllerImpl
   // Like RequestedFieldsForSection, but returns a pointer.
   DetailInputs* MutableRequestedFieldsForSection(DialogSection section);
 
+  // Returns a pointer to the language code that should be used for formatting
+  // the address in |section| for display. Returns NULL for a non-address
+  // |section|.
+  std::string* MutableAddressLanguageCodeForSection(DialogSection section);
+
+  // Returns the language code that should be used for formatting the address in
+  // |section|. Returns an empty string for a non-address |section|.
+  std::string AddressLanguageCodeForSection(DialogSection section);
+
   // Returns just the |type| attributes of RequestedFieldsForSection(section).
   std::vector<ServerFieldType> RequestedTypesForSection(DialogSection section)
       const;
@@ -694,6 +703,10 @@ class AutofillDialogControllerImpl
   DetailInputs requested_billing_fields_;
   DetailInputs requested_cc_billing_fields_;
   DetailInputs requested_shipping_fields_;
+
+  // The BCP 47 language codes used for formatting the addresses for display.
+  std::string billing_address_language_code_;
+  std::string shipping_address_language_code_;
 
   // Models for the credit card expiration inputs.
   MonthComboboxModel cc_exp_month_combobox_model_;

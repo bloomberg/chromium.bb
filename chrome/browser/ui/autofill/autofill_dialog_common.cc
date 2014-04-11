@@ -96,18 +96,21 @@ bool IsI18nInputEnabled() {
 
 void BuildI18nAddressInputs(AddressType address_type,
                             const std::string& country_code,
-                            DetailInputs* inputs) {
+                            DetailInputs* inputs,
+                            std::string* language_code) {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
-  i18ninput::BuildAddressInputs(address_type, country_code, inputs);
+  i18ninput::BuildAddressInputs(address_type, country_code, inputs,
+                                language_code);
 #endif
 }
 
 // Constructs |inputs| from template data for a given |dialog_section|.
 void BuildInputsForSection(DialogSection dialog_section,
                            const std::string& country_code,
-                           DetailInputs* inputs) {
+                           DetailInputs* inputs,
+                           std::string* language_code) {
   using l10n_util::GetStringUTF16;
 
   const DetailInput kCCInputs[] = {
@@ -195,10 +198,12 @@ void BuildInputsForSection(DialogSection dialog_section,
       break;
 
     case SECTION_BILLING:
-      if (IsI18nInputEnabled())
-        BuildI18nAddressInputs(ADDRESS_TYPE_BILLING, country_code, inputs);
-      else
+      if (IsI18nInputEnabled()) {
+        BuildI18nAddressInputs(ADDRESS_TYPE_BILLING, country_code, inputs,
+                               language_code);
+      } else {
         BuildInputs(kBillingInputs, arraysize(kBillingInputs), inputs);
+      }
 
       BuildInputs(kBillingPhoneInputs, arraysize(kBillingPhoneInputs), inputs);
       BuildInputs(kEmailInputs, arraysize(kEmailInputs), inputs);
@@ -212,7 +217,8 @@ void BuildInputsForSection(DialogSection dialog_section,
         const std::string hardcoded_country_code = "US";
         BuildI18nAddressInputs(ADDRESS_TYPE_BILLING,
                                hardcoded_country_code,
-                               inputs);
+                               inputs,
+                               language_code);
         DCHECK_EQ(inputs->back().type, ADDRESS_BILLING_COUNTRY);
         inputs->back().length = DetailInput::NONE;
         const std::string& app_locale =
@@ -227,10 +233,12 @@ void BuildInputsForSection(DialogSection dialog_section,
       break;
 
     case SECTION_SHIPPING:
-      if (IsI18nInputEnabled())
-        BuildI18nAddressInputs(ADDRESS_TYPE_SHIPPING, country_code, inputs);
-      else
+      if (IsI18nInputEnabled()) {
+        BuildI18nAddressInputs(ADDRESS_TYPE_SHIPPING, country_code, inputs,
+                               language_code);
+      } else {
         BuildInputs(kShippingInputs, arraysize(kShippingInputs), inputs);
+      }
 
       BuildInputs(
           kShippingPhoneInputs, arraysize(kShippingPhoneInputs), inputs);

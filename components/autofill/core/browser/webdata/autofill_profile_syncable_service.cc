@@ -316,7 +316,7 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
     AutofillProfile* profile,
     const std::string& app_locale) {
   bool diff = false;
-  if (profile->origin() != specifics.origin()) {
+  if (specifics.has_origin() && profile->origin() != specifics.origin()) {
     bool was_verified = profile->IsVerified();
     profile->set_origin(specifics.origin());
     diff = true;
@@ -374,6 +374,15 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
     diff = UpdateField(ADDRESS_HOME_LINE2,
                        specifics.address_home_line2(), profile) || diff;
   }
+
+  // Update the BCP 47 language code that can be used to format the address for
+  // display.
+  if (specifics.has_address_home_language_code() &&
+      specifics.address_home_language_code() != profile->language_code()) {
+    profile->set_language_code(specifics.address_home_language_code());
+    diff = true;
+  }
+
   return diff;
 }
 
@@ -431,6 +440,7 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
   specifics->set_address_home_dependent_locality(
       LimitData(
           UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY))));
+  specifics->set_address_home_language_code(LimitData(profile.language_code()));
 
   profile.GetRawMultiInfo(EMAIL_ADDRESS, &values);
   for (size_t i = 0; i < values.size(); ++i) {
@@ -486,7 +496,9 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
       autofill_specifics.guid(), autofill_specifics.origin());
   OverwriteProfileWithServerData(autofill_specifics, new_profile, app_locale_);
 
-  // Check if profile appears under a different guid.
+  // Check if profile appears under a different guid. Compares only profile
+  // contents. (Ignores origin and language code in comparison.)
+  //
   // Unverified profiles should never overwrite verified ones.
   for (GUIDToProfileMap::iterator it = profile_map->begin();
        it != profile_map->end(); ++it) {
@@ -625,9 +637,10 @@ bool AutofillProfileSyncableService::MergeProfile(
     const AutofillProfile& merge_from,
     AutofillProfile* merge_into,
     const std::string& app_locale) {
+  // Overwrites all single values and adds to mutli-values. Does not overwrite
+  // GUID.
   merge_into->OverwriteWithOrAddTo(merge_from, app_locale);
-  return (merge_into->Compare(merge_from) != 0 ||
-          merge_into->origin() != merge_from.origin());
+  return !merge_into->EqualsSansGuid(merge_from);
 }
 
 AutofillTable* AutofillProfileSyncableService::GetAutofillTable() const {

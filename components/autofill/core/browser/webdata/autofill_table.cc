@@ -91,6 +91,7 @@ void BindAutofillProfileToStatement(const AutofillProfile& profile,
   s->BindString16(index++, GetInfo(profile, ADDRESS_HOME_COUNTRY));
   s->BindInt64(index++, Time::Now().ToTimeT());
   s->BindString(index++, profile.origin());
+  s->BindString(index++, profile.language_code());
 }
 
 scoped_ptr<AutofillProfile> AutofillProfileFromStatement(
@@ -112,6 +113,7 @@ scoped_ptr<AutofillProfile> AutofillProfileFromStatement(
   // Intentionally skip column 9, which stores the profile's modification date.
   index++;
   profile->set_origin(s.ColumnString(index++));
+  profile->set_language_code(s.ColumnString(index++));
 
   return profile.Pass();
 }
@@ -442,6 +444,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 55:
       *update_compatible_version = true;
       return MigrateToVersion55MergeAutofillDatesTable();
+    case 56:
+      *update_compatible_version = true;
+      return MigrateToVersion56AddProfileLanguageCodeForFormatting();
   }
   return true;
 }
@@ -549,7 +554,7 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
       // Precisely, compute the average amount of time between increments to the
       // count in the original range [date_created, date_last_used]:
       //   avg_delta = (date_last_used_orig - date_created_orig) / (count - 1)
-      // The count can be exressed as
+      // The count can be expressed as
       //   count = 1 + (date_last_used - date_created) / avg_delta
       // Hence, update the count to
       //   count_new = 1 + (date_last_used_new - date_created_new) / avg_delta
@@ -803,8 +808,9 @@ bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT INTO autofill_profiles"
       "(guid, company_name, street_address, dependent_locality, city, state,"
-      " zipcode, sorting_code, country_code, date_modified, origin)"
-      "VALUES (?,?,?,?,?,?,?,?,?,?,?)"));
+      " zipcode, sorting_code, country_code, date_modified, origin,"
+      " language_code)"
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"));
   BindAutofillProfileToStatement(profile, &s);
 
   if (!s.Run())
@@ -819,7 +825,8 @@ bool AutofillTable::GetAutofillProfile(const std::string& guid,
   DCHECK(profile);
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, company_name, street_address, dependent_locality, city,"
-      " state, zipcode, sorting_code, country_code, date_modified, origin "
+      " state, zipcode, sorting_code, country_code, date_modified, origin,"
+      " language_code "
       "FROM autofill_profiles "
       "WHERE guid=?"));
   s.BindString(0, guid);
@@ -876,18 +883,17 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
 
   // Preserve appropriate modification dates by not updating unchanged profiles.
   scoped_ptr<AutofillProfile> old_profile(tmp_profile);
-  if (old_profile->Compare(profile) == 0 &&
-      old_profile->origin() == profile.origin())
+  if (*old_profile == profile)
     return true;
 
   sql::Statement s(db_->GetUniqueStatement(
       "UPDATE autofill_profiles "
       "SET guid=?, company_name=?, street_address=?, dependent_locality=?, "
       "    city=?, state=?, zipcode=?, sorting_code=?, country_code=?, "
-      "    date_modified=?, origin=? "
+      "    date_modified=?, origin=?, language_code=? "
       "WHERE guid=?"));
   BindAutofillProfileToStatement(profile, &s);
-  s.BindString(11, profile.guid());
+  s.BindString(12, profile.guid());
 
   bool result = s.Run();
   DCHECK_GT(db_->GetLastChangeCount(), 0);
@@ -1271,7 +1277,8 @@ bool AutofillTable::InitProfilesTable() {
                       "sorting_code VARCHAR, "
                       "country_code VARCHAR, "
                       "date_modified INTEGER NOT NULL DEFAULT 0, "
-                      "origin VARCHAR DEFAULT '')")) {
+                      "origin VARCHAR DEFAULT '', "
+                      "language_code VARCHAR)")) {
       NOTREACHED();
       return false;
     }
@@ -2258,6 +2265,11 @@ bool AutofillTable::MigrateToVersion55MergeAutofillDatesTable() {
 
 
   return transaction.Commit();
+}
+
+bool AutofillTable::MigrateToVersion56AddProfileLanguageCodeForFormatting() {
+  return db_->Execute("ALTER TABLE autofill_profiles "
+                      "ADD COLUMN language_code VARCHAR");
 }
 
 }  // namespace autofill

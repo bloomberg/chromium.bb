@@ -69,6 +69,11 @@ struct FormFieldData;
 //                      Added in version 30.
 //   origin             The domain of origin for this profile.
 //                      Added in version 50.
+//   language_code      The BCP 47 language code used to format the address for
+//                      display. For example, a JP address with "ja" language
+//                      code starts with the postal code, but a JP address with
+//                      "ja-latn" language code starts with the recipient name.
+//                      Added in version 56.
 //
 // autofill_profile_names
 //                      This table contains the multi-valued name fields
@@ -278,6 +283,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion51AddOriginColumn();
   bool MigrateToVersion54AddI18nFieldsAndRemoveDeprecatedFields();
   bool MigrateToVersion55MergeAutofillDatesTable();
+  bool MigrateToVersion56AddProfileLanguageCodeForFormatting();
 
   // Max data length saved in the table;
   static const size_t kMaxDataLength;

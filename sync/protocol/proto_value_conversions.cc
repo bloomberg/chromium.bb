@@ -438,6 +438,7 @@ base::DictionaryValue* AutofillProfileSpecificsToValue(
   SET_STR(address_home_street_address);
   SET_STR(address_home_sorting_code);
   SET_STR(address_home_dependent_locality);
+  SET_STR(address_home_language_code);
 
   SET_STR_REP(phone_home_whole_number);
   return value;

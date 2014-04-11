@@ -78,14 +78,21 @@ class AutofillProfile : public AutofillDataModel {
   // Comparison for Sync.  Returns 0 if the profile is the same as |this|,
   // or < 0, or > 0 if it is different.  The implied ordering can be used for
   // culling duplicates.  The ordering is based on collation order of the
-  // textual contents of the fields.
-  // GUIDs and origins are not compared, only the values of the contents
-  // themselves.  Full profile comparision, comparison includes multi-valued
-  // fields.
+  // textual contents of the fields. Full profile comparison, comparison
+  // includes multi-valued fields.
+  //
+  // GUIDs, origins, and language codes are not compared, only the contents
+  // themselves.
   int Compare(const AutofillProfile& profile) const;
 
-  // Equality operators compare GUIDs, origins, and the contents in the
-  // comparison.
+  // Same as operator==, but ignores differences in origin.
+  bool EqualsSansOrigin(const AutofillProfile& profile) const;
+
+  // Same as operator==, but ignores differences in GUID.
+  bool EqualsSansGuid(const AutofillProfile& profile) const;
+
+  // Equality operators compare GUIDs, origins, language code, and the contents
+  // in the comparison.
   bool operator==(const AutofillProfile& profile) const;
   virtual bool operator!=(const AutofillProfile& profile) const;
 
@@ -131,6 +138,11 @@ class AutofillProfile : public AutofillDataModel {
       ServerFieldType excluded_field,
       size_t minimal_fields_shown,
       std::vector<base::string16>* labels);
+
+  const std::string& language_code() const { return language_code_; }
+  void set_language_code(const std::string& language_code) {
+    language_code_ = language_code;
+  }
 
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
@@ -185,6 +197,9 @@ class AutofillProfile : public AutofillDataModel {
   CompanyInfo company_;
   std::vector<PhoneNumber> phone_number_;
   Address address_;
+
+  // The BCP 47 language code that can be used to format |address_| for display.
+  std::string language_code_;
 };
 
 // So we can compare AutofillProfiles with EXPECT_EQ().

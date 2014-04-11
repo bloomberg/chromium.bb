@@ -650,6 +650,7 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   home_profile.SetRawInfo(ADDRESS_HOME_SORTING_CODE, ASCIIToUTF16("MAGIC ###"));
   home_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   home_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
+  home_profile.set_language_code("en");
 
   Time pre_creation_time = Time::Now();
   EXPECT_TRUE(table_->AddAutofillProfile(home_profile));
@@ -1053,6 +1054,7 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
   profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
+  profile.set_language_code("en");
   table_->AddAutofillProfile(profile);
 
   // Set a mocked value for the profile's creation time.

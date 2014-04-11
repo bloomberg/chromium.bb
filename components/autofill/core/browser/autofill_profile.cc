@@ -262,6 +262,7 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
     phone_number_[i].set_profile(this);
 
   address_ = profile.address_;
+  set_language_code(profile.language_code());
 
   return *this;
 }
@@ -401,7 +402,6 @@ bool AutofillProfile::IsPresentButInvalid(ServerFieldType type) const {
   }
 }
 
-
 int AutofillProfile::Compare(const AutofillProfile& profile) const {
   const ServerFieldType single_value_types[] = {
     COMPANY_NAME,
@@ -447,10 +447,20 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
   return 0;
 }
 
-bool AutofillProfile::operator==(const AutofillProfile& profile) const {
+bool AutofillProfile::EqualsSansOrigin(const AutofillProfile& profile) const {
   return guid() == profile.guid() &&
-         origin() == profile.origin() &&
+         language_code() == profile.language_code() &&
          Compare(profile) == 0;
+}
+
+bool AutofillProfile::EqualsSansGuid(const AutofillProfile& profile) const {
+  return origin() == profile.origin() &&
+         language_code() == profile.language_code() &&
+         Compare(profile) == 0;
+}
+
+bool AutofillProfile::operator==(const AutofillProfile& profile) const {
+  return guid() == profile.guid() && EqualsSansGuid(profile);
 }
 
 bool AutofillProfile::operator!=(const AutofillProfile& profile) const {
@@ -500,6 +510,7 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
   // Verified profiles should never be overwritten with unverified data.
   DCHECK(!IsVerified() || profile.IsVerified());
   set_origin(profile.origin());
+  set_language_code(profile.language_code());
 
   ServerFieldTypeSet field_types;
   profile.GetNonEmptyTypes(app_locale, &field_types);
@@ -844,6 +855,8 @@ std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
       << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE))
       << " "
       << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))
+      << " "
+      << profile.language_code()
       << " "
       << UTF16ToUTF8(MultiString(profile, PHONE_HOME_WHOLE_NUMBER));
 }

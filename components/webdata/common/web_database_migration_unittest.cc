@@ -257,7 +257,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 55;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 56;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -2606,5 +2606,68 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion54ToCurrent) {
 
     // No more entries expected.
     ASSERT_FALSE(s.Step());
+  }
+}
+
+// Tests that migrating from version 55 to version 56 adds the language_code
+// column to autofill_profiles table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion55ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_55.sql")));
+
+  // Verify pre-conditions. These are expectations for version 55 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    EXPECT_FALSE(
+        connection.DoesColumnExist("autofill_profiles", "language_code"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions. These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // The language_code column should have been added to autofill_profiles
+    // table.
+    EXPECT_TRUE(
+        connection.DoesColumnExist("autofill_profiles", "language_code"));
+
+    // Data should have been preserved. Language code should have been set to
+    // empty string.
+    sql::Statement s_profiles(
+        connection.GetUniqueStatement(
+            "SELECT guid, company_name, street_address, dependent_locality,"
+            " city, state, zipcode, sorting_code, country_code, date_modified,"
+            " origin, language_code "
+            "FROM autofill_profiles"));
+
+    ASSERT_TRUE(s_profiles.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000001",
+              s_profiles.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16("Google Inc"), s_profiles.ColumnString16(1));
+    EXPECT_EQ(ASCIIToUTF16("340 Main St"),
+              s_profiles.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(3));
+    EXPECT_EQ(ASCIIToUTF16("Los Angeles"), s_profiles.ColumnString16(4));
+    EXPECT_EQ(ASCIIToUTF16("CA"), s_profiles.ColumnString16(5));
+    EXPECT_EQ(ASCIIToUTF16("90291"), s_profiles.ColumnString16(6));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(7));
+    EXPECT_EQ(ASCIIToUTF16("US"), s_profiles.ColumnString16(8));
+    EXPECT_EQ(1395948829, s_profiles.ColumnInt(9));
+    EXPECT_EQ(ASCIIToUTF16("Chrome settings"), s_profiles.ColumnString16(10));
+    EXPECT_EQ(std::string(), s_profiles.ColumnString(11));
+
+    // No more entries expected.
+    ASSERT_FALSE(s_profiles.Step());
   }
 }
