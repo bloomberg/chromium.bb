@@ -507,22 +507,10 @@ INSTANTIATE_TEST_CASE_P(MSE_Widevine,
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
-#if defined(WIDEVINE_CDM_AVAILABLE)
-  if (IsWidevine(CurrentKeySystem())) {
-    VLOG(0) << "Test disabled on Widevine key system, crbug.com/349526.";
-    return;
-  }
-#endif
   TestSimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioClearVideo_WebM) {
-#if defined(WIDEVINE_CDM_AVAILABLE)
-  if (IsWidevine(CurrentKeySystem())) {
-    VLOG(0) << "Test disabled on Widevine key system, crbug.com/349526.";
-    return;
-  }
-#endif
   TestSimplePlayback("bear-320x240-av-enc_a.webm", kWebMAudioVideo);
 }
 
