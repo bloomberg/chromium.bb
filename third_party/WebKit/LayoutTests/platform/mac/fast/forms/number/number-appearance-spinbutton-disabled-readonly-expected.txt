@@ -10,40 +10,39 @@ layer at (0,0) size 800x600
         RenderInline {LABEL} at (0,0) size 304x18
           RenderTextControl {INPUT} at (2,2) size 216x29 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderFlexibleBox {DIV} at (3,3) size 210x23
-              RenderBlock {DIV} at (0,0) size 191x23
+              RenderBlock {DIV} at (0,0) size 197x23
+              RenderBlock {DIV} at (197,4) size 13x15
           RenderText {#text} at (220,10) size 84x18
             text run at (220,10) width 84: " Normal state"
       RenderBlock {DIV} at (0,67) size 784x33
         RenderInline {LABEL} at (0,0) size 312x18
           RenderTextControl {INPUT} at (2,2) size 216x29 [color=#545454] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderFlexibleBox {DIV} at (3,3) size 210x23
-              RenderBlock {DIV} at (0,0) size 191x23
+              RenderBlock {DIV} at (0,0) size 197x23
           RenderText {#text} at (220,10) size 92x18
             text run at (220,10) width 92: " Disabled state"
       RenderBlock {DIV} at (0,100) size 784x33
         RenderInline {LABEL} at (0,0) size 322x18
           RenderTextControl {INPUT} at (2,2) size 216x29 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderFlexibleBox {DIV} at (3,3) size 210x23
-              RenderBlock {DIV} at (0,0) size 191x23
+              RenderBlock {DIV} at (0,0) size 197x23
           RenderText {#text} at (220,10) size 102x18
             text run at (220,10) width 102: " Read-only state"
-layer at (13,47) size 191x23
-  RenderBlock {DIV} at (0,0) size 191x23
+layer at (13,47) size 197x23
+  RenderBlock {DIV} at (0,0) size 197x23
     RenderText {#text} at (0,0) size 13x23
       text run at (0,0) width 13: "0"
-layer at (13,80) size 191x23
-  RenderBlock {DIV} at (0,0) size 191x23
+layer at (13,80) size 197x23
+  RenderBlock {DIV} at (0,0) size 197x23
     RenderText {#text} at (0,0) size 13x23
       text run at (0,0) width 13: "0"
-layer at (13,113) size 191x23
-  RenderBlock {DIV} at (0,0) size 191x23
+layer at (13,113) size 197x23
+  RenderBlock {DIV} at (0,0) size 197x23
     RenderText {#text} at (0,0) size 13x23
       text run at (0,0) width 13: "0"
-layer at (205,46) size 19x25
-  RenderBlock (relative positioned) {DIV} at (192,-1) size 19x25
-layer at (205,79) size 19x25 transparent
-  RenderBlock (relative positioned) {DIV} at (192,-1) size 19x25
-layer at (205,112) size 19x25 transparent
-  RenderBlock (relative positioned) {DIV} at (192,-1) size 19x25
+layer at (210,84) size 13x15 transparent
+  RenderBlock {DIV} at (197,4) size 13x15
+layer at (210,117) size 13x15 transparent
+  RenderBlock {DIV} at (197,4) size 13x15
 selection start: position 0 of child 0 {#text} of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 0 {INPUT} of child 0 {LABEL} of child 9 {DIV} of body
 selection end:   position 1 of child 0 {#text} of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 0 {INPUT} of child 0 {LABEL} of child 9 {DIV} of body

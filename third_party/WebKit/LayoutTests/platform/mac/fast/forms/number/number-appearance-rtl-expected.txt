@@ -22,6 +22,7 @@ layer at (0,0) size 800x328
         RenderTextControl {INPUT} at (2,2) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (3,3) size 117x13
             RenderBlock {DIV} at (13,0) size 104x13
+            RenderBlock {DIV} at (0,-1) size 13x15
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,156) size 784x23
@@ -78,20 +79,18 @@ layer at (26,294) size 104x13
   RenderBlock {DIV} at (0,0) size 104x13
     RenderText {#text} at (97,0) size 7x13
       text run at (97,0) width 7: "8"
-layer at (669,20) size 13x15 transparent
-  RenderBlock (relative positioned) {DIV} at (-1,-1) size 13x15
-layer at (669,59) size 13x15 transparent
-  RenderBlock (relative positioned) {DIV} at (-1,-1) size 13x15
-layer at (12,98) size 13x15 transparent
-  RenderBlock (relative positioned) {DIV} at (-1,-1) size 13x15
-layer at (12,137) size 13x15
-  RenderBlock (relative positioned) {DIV} at (-1,-1) size 13x15
-layer at (118,176) size 13x15 transparent
-  RenderBlock (relative positioned) {DIV} at (105,-1) size 13x15
-layer at (118,215) size 13x15 transparent
-  RenderBlock (relative positioned) {DIV} at (105,-1) size 13x15
-layer at (12,254) size 13x15 transparent
-  RenderBlock (relative positioned) {DIV} at (-1,-1) size 13x15
-layer at (12,293) size 13x15 transparent
-  RenderBlock (relative positioned) {DIV} at (-1,-1) size 13x15
+layer at (670,20) size 13x15 transparent
+  RenderBlock {DIV} at (0,-1) size 13x15
+layer at (670,59) size 13x15 transparent
+  RenderBlock {DIV} at (0,-1) size 13x15
+layer at (13,98) size 13x15 transparent
+  RenderBlock {DIV} at (0,-1) size 13x15
+layer at (117,176) size 13x15 transparent
+  RenderBlock {DIV} at (104,-1) size 13x15
+layer at (117,215) size 13x15 transparent
+  RenderBlock {DIV} at (104,-1) size 13x15
+layer at (13,254) size 13x15 transparent
+  RenderBlock {DIV} at (0,-1) size 13x15
+layer at (13,293) size 13x15 transparent
+  RenderBlock {DIV} at (0,-1) size 13x15
 caret: position 4 of child 0 {#text} of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 0 {INPUT} of child 6 {P} of body
