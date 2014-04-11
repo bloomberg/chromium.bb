@@ -106,7 +106,7 @@ html[dir=rtl] #account-picture-wrapper {
 }
 
 #profiles-list > * {
-  height: 47px;
+  height: 40px;
 }
 
 #profiles-list:focus {
@@ -114,7 +114,7 @@ html[dir=rtl] #account-picture-wrapper {
 }
 
 .profile-img {
-  height: 38px;
+  height: 31px;
   padding: 3px;
   vertical-align: middle;
   width: 38px;

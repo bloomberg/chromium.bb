@@ -107,7 +107,7 @@ std::string GetAvatarImageAtIndex(
   if (avatar_image.Width() <= profiles::kAvatarIconWidth ||
       avatar_image.Height() <= profiles::kAvatarIconHeight ) {
     avatar_image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        profiles::GetPlaceholderAvatarIconResourceID());
+        IDR_USER_MANAGER_DEFAULT_AVATAR);
   }
   gfx::Image resized_image = profiles::GetSizedAvatarIconWithBorder(
       avatar_image, is_gaia_picture, kAvatarIconSize, kAvatarIconSize);

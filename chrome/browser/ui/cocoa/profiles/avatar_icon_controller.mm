@@ -99,8 +99,8 @@ const CGFloat kAvatarLabelRightSpacing = 2;
     Profile* profile = browser_->profile();
 
     if (profile->IsOffTheRecord() || profile->IsGuestSession()) {
-      const int icon_id = profile->IsGuestSession() ?
-          profiles::GetPlaceholderAvatarIconResourceID() : IDR_OTR_ICON;
+      const int icon_id = profile->IsGuestSession() ? IDR_LOGIN_GUEST :
+                                                      IDR_OTR_ICON;
       NSImage* icon = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
           icon_id).ToNSImage();
       [self setImage:[self compositeImageWithShadow:icon]];

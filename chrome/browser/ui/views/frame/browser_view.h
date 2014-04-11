@@ -206,6 +206,10 @@ class BrowserView : public BrowserWindow,
   // which layout is being shown and whether we are full-screen.
   int GetOTRIconResourceID() const;
 
+  // Returns the resource ID to use for the Guest icon, which may depend on
+  // which layout is being shown and whether we are full-screen.
+  int GetGuestIconResourceID() const;
+
   // Returns true if the non-client view should render an avatar icon.
   bool ShouldShowAvatar() const;
 

@@ -177,7 +177,7 @@ void AvatarImageSource::Draw(gfx::Canvas* canvas) {
 namespace profiles {
 
 const int kAvatarIconWidth = 38;
-const int kAvatarIconHeight = 38;
+const int kAvatarIconHeight = 31;
 const int kAvatarIconPadding = 2;
 const SkColor kAvatarTutorialBackgroundColor = SkColorSetRGB(0x42, 0x85, 0xf4);
 const SkColor kAvatarTutorialContentTextColor = SkColorSetRGB(0xc6, 0xda, 0xfc);
@@ -213,11 +213,7 @@ const int kDefaultAvatarIconResources[] = {
   IDR_PROFILE_AVATAR_23,
   IDR_PROFILE_AVATAR_24,
   IDR_PROFILE_AVATAR_25,
-  IDR_PROFILE_AVATAR_26,
 };
-
-// This avatar does not exist on the server, the high res copy is in the build.
-const char* kNoHighResAvatar = "NothingToDownload";
 
 // File names for the high-res avatar icon resources. In the same order as
 // the avatars in kDefaultAvatarIconResources.
@@ -248,7 +244,6 @@ const char* kDefaultAvatarIconResourceFileNames[] = {
   "avatar_margarita.png",
   "avatar_note.png",
   "avatar_sun_cloud.png",
-  kNoHighResAvatar,
 };
 
 const size_t kDefaultAvatarIconsCount = arraysize(kDefaultAvatarIconResources);
@@ -256,42 +251,35 @@ const size_t kDefaultAvatarIconsCount = arraysize(kDefaultAvatarIconResources);
 // The first 8 icons are generic.
 const size_t kGenericAvatarIconsCount = 8;
 
-// The avatar used as a placeholder (grey silhouette).
-const int kPlaceholderAvatarIcon = 26;
-
 gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
-                                        bool is_gaia_image,
+                                        bool is_rectangle,
                                         int width, int height) {
-  // The image requires no border or resizing.
-  if (!is_gaia_image && image.Height() <= height)
+  if (!is_rectangle)
     return image;
 
   gfx::Size size(width, height);
 
-  // Source for a centered, sized icon.
-  // GAIA images get a border.
+  // Source for a centered, sized icon with a border.
   scoped_ptr<gfx::ImageSkiaSource> source(
       new AvatarImageSource(
           *image.ToImageSkia(),
           size,
           std::min(width, height),
           AvatarImageSource::POSITION_CENTER,
-          is_gaia_image ? AvatarImageSource::BORDER_NORMAL :
-              AvatarImageSource::BORDER_NONE));
+          AvatarImageSource::BORDER_NORMAL));
 
   return gfx::Image(gfx::ImageSkia(source.release(), size));
 }
 
 gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
-                                bool is_gaia_image) {
+                                bool is_rectangle) {
   return GetSizedAvatarIconWithBorder(
-      image, is_gaia_image, kAvatarIconWidth, kAvatarIconHeight);
+      image, is_rectangle, kAvatarIconWidth, kAvatarIconHeight);
 }
 
 gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
-                                 bool is_gaia_image) {
-  // The image requires no border or resizing.
-  if (!is_gaia_image && image.Height() <= kAvatarIconHeight)
+                                 bool is_rectangle) {
+  if (!is_rectangle)
     return image;
 
   gfx::Size size(kAvatarIconWidth, kAvatarIconHeight);
@@ -309,11 +297,10 @@ gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
 }
 
 gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
-                                    bool is_gaia_image,
+                                    bool is_rectangle,
                                     int dst_width,
                                     int dst_height) {
-  // The image requires no border or resizing.
-  if (!is_gaia_image && image.Height() <= kAvatarIconHeight)
+  if (!is_rectangle)
     return image;
 
   int size = std::min(std::min(kAvatarIconWidth, kAvatarIconHeight),
@@ -321,15 +308,14 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
   gfx::Size dst_size(dst_width, dst_height);
 
   // Source for a sized icon drawn at the bottom center of the canvas,
-  // with an etched border (for GAIA images).
+  // with an etched border.
   scoped_ptr<gfx::ImageSkiaSource> source(
       new AvatarImageSource(
           *image.ToImageSkia(),
           dst_size,
           size,
           AvatarImageSource::POSITION_BOTTOM_CENTER,
-          is_gaia_image ? AvatarImageSource::BORDER_ETCHED :
-              AvatarImageSource::BORDER_NONE));
+          AvatarImageSource::BORDER_ETCHED));
 
   return gfx::Image(gfx::ImageSkia(source.release(), dst_size));
 }
@@ -343,14 +329,6 @@ size_t GetGenericAvatarIconCount() {
   return kGenericAvatarIconsCount;
 }
 
-int GetPlaceholderAvatarIndex() {
-  return kPlaceholderAvatarIcon;
-}
-
-int GetPlaceholderAvatarIconResourceID() {
-  return IDR_PROFILE_AVATAR_26;
-}
-
 int GetDefaultAvatarIconResourceIDAtIndex(size_t index) {
   DCHECK(IsDefaultAvatarIconIndex(index));
   return kDefaultAvatarIconResources[index];
@@ -358,10 +336,6 @@ int GetDefaultAvatarIconResourceIDAtIndex(size_t index) {
 
 const char* GetDefaultAvatarIconFileNameAtIndex(size_t index) {
   return kDefaultAvatarIconResourceFileNames[index];
-}
-
-const char* GetNoHighResAvatarFileName() {
-  return kNoHighResAvatar;
 }
 
 std::string GetDefaultAvatarIconUrl(size_t index) {

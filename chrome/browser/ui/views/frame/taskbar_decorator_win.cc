@@ -43,15 +43,32 @@ void SetOverlayIcon(HWND hwnd, scoped_ptr<SkBitmap> bitmap) {
 
   base::win::ScopedGDIObject<HICON> icon;
   if (bitmap.get()) {
-    const size_t kOverlayIconSize = 16;
-    const SkBitmap* source_bitmap = bitmap.get();
+    const SkBitmap* source_bitmap = NULL;
+    SkBitmap squarer_bitmap;
+    if ((bitmap->width() == profiles::kAvatarIconWidth) &&
+        (bitmap->height() == profiles::kAvatarIconHeight)) {
+      // Shave a couple of columns so the bitmap is more square. So when
+      // resized to a square aspect ratio it looks pretty.
+      int x = 2;
+      bitmap->extractSubset(&squarer_bitmap, SkIRect::MakeXYWH(x, 0,
+          profiles::kAvatarIconWidth - x * 2, profiles::kAvatarIconHeight));
+      source_bitmap = &squarer_bitmap;
+    } else {
+      // The image's size has changed. Resize what we have.
+      source_bitmap = bitmap.get();
+    }
 
-    // Maintain aspect ratio on resize. Image is assumed to be square.
+    // Maintain aspect ratio on resize. It is assumed that the image is wider
+    // than it is tall.
+    const size_t kOverlayIconSize = 16;
+    size_t resized_height =
+        source_bitmap->height() * kOverlayIconSize / source_bitmap->width();
+    DCHECK_GE(kOverlayIconSize, resized_height);
     // Since the target size is so small, we use our best resizer.
     SkBitmap sk_icon = skia::ImageOperations::Resize(
         *source_bitmap,
         skia::ImageOperations::RESIZE_LANCZOS3,
-        kOverlayIconSize, kOverlayIconSize);
+        kOverlayIconSize, resized_height);
 
     // Paint the resized icon onto a 16x16 canvas otherwise Windows will badly
     // hammer it to 16x16.
@@ -59,7 +76,7 @@ void SetOverlayIcon(HWND hwnd, scoped_ptr<SkBitmap> bitmap) {
     offscreen_bitmap.allocN32Pixels(kOverlayIconSize, kOverlayIconSize);
     SkCanvas offscreen_canvas(offscreen_bitmap);
     offscreen_canvas.clear(SK_ColorTRANSPARENT);
-    offscreen_canvas.drawBitmap(sk_icon, 0, 0);
+    offscreen_canvas.drawBitmap(sk_icon, 0, kOverlayIconSize - resized_height);
 
     icon.Set(IconUtil::CreateHICONFromSkBitmap(offscreen_bitmap));
     if (!icon.Get())

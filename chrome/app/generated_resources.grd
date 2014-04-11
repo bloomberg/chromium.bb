@@ -11726,9 +11726,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_DEFAULT_AVATAR_NAME_25" desc="The default name given to a newly created profile with the sun and cloud avatar.">
         Shady
       </message>
-      <message name="IDS_DEFAULT_AVATAR_NAME_26" desc="The default name given to a newly created profile with the default placeholder avatar.">
-        Shadow
-      </message>
 
       <if expr="not use_titlecase">
         <message name="IDS_PROFILES_CUSTOMIZE_PROFILE" desc="Customize profile menu item and button title.">
