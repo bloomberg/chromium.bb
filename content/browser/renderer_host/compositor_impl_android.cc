@@ -57,23 +57,6 @@ class JavaBitmap;
 
 namespace {
 
-// Used for drawing directly to the screen. Bypasses resizing and swaps.
-class DirectOutputSurface : public cc::OutputSurface {
- public:
-  DirectOutputSurface(
-      const scoped_refptr<cc::ContextProvider>& context_provider)
-      : cc::OutputSurface(context_provider) {
-    capabilities_.adjust_deadline_for_parent = false;
-  }
-
-  virtual void Reshape(const gfx::Size& size, float scale_factor) OVERRIDE {
-    surface_size_ = size;
-  }
-  virtual void SwapBuffers(cc::CompositorFrame*) OVERRIDE {
-    context_provider_->ContextGL()->ShallowFlushCHROMIUM();
-  }
-};
-
 // Used to override capabilities_.adjust_deadline_for_parent to false
 class OutputSurfaceWithoutParent : public cc::OutputSurface {
  public:
