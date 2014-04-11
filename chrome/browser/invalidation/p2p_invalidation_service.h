@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -11,11 +12,13 @@
 #ifndef CHROME_BROWSER_INVALIDATION_P2P_INVALIDATION_SERVICE_H_
 #define CHROME_BROWSER_INVALIDATION_P2P_INVALIDATION_SERVICE_H_
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace syncer {
 class P2PInvalidator;
 }
-
-class Profile;
 
 namespace invalidation {
 
@@ -28,9 +31,10 @@ class P2PInvalidationService
     : public base::NonThreadSafe,
       public InvalidationService {
  public:
-  P2PInvalidationService(Profile* profile,
-                         scoped_ptr<InvalidationAuthProvider> auth_provider,
-                         syncer::P2PNotificationTarget notification_target);
+  P2PInvalidationService(
+      scoped_ptr<InvalidationAuthProvider> auth_provider,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context,
+      syncer::P2PNotificationTarget notification_target);
   virtual ~P2PInvalidationService();
 
   // Overrides KeyedService method.

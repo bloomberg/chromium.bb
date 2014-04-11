@@ -7,10 +7,10 @@
 #include "base/command_line.h"
 #include "chrome/browser/invalidation/invalidation_auth_provider.h"
 #include "chrome/browser/invalidation/invalidation_service_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/push_client.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "sync/notifier/p2p_invalidator.h"
 
 namespace net {
@@ -20,13 +20,13 @@ class URLRequestContextGetter;
 namespace invalidation {
 
 P2PInvalidationService::P2PInvalidationService(
-    Profile* profile,
     scoped_ptr<InvalidationAuthProvider> auth_provider,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context,
     syncer::P2PNotificationTarget notification_target)
     : auth_provider_(auth_provider.Pass()) {
   notifier::NotifierOptions notifier_options =
       ParseNotifierOptions(*CommandLine::ForCurrentProcess());
-  notifier_options.request_context_getter = profile->GetRequestContext();
+  notifier_options.request_context_getter = request_context;
   invalidator_id_ = GenerateInvalidatorClientId();
   invalidator_.reset(new syncer::P2PInvalidator(
           notifier::PushClient::CreateDefault(notifier_options),

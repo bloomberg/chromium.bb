@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -140,12 +141,12 @@ KeyedService* BuildP2PInvalidationService(
     syncer::P2PNotificationTarget notification_target) {
   Profile* profile = static_cast<Profile*>(context);
   return new invalidation::P2PInvalidationService(
-      profile,
       scoped_ptr<invalidation::InvalidationAuthProvider>(
           new invalidation::ProfileInvalidationAuthProvider(
               SigninManagerFactory::GetForProfile(profile),
               ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
               LoginUIServiceFactory::GetForProfile(profile))),
+      profile->GetRequestContext(),
       notification_target);
 }
 
