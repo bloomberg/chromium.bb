@@ -387,13 +387,6 @@ void BluetoothDeviceChromeOS::Forget(const ErrorCallback& error_callback) {
                      error_callback));
 }
 
-void BluetoothDeviceChromeOS::ConnectToService(
-    const device::BluetoothUUID& service_uuid,
-    const SocketCallback& callback) {
-  // TODO(keybuk): implement
-  callback.Run(scoped_refptr<device::BluetoothSocket>());
-}
-
 void BluetoothDeviceChromeOS::ConnectToProfile(
     device::BluetoothProfile* profile,
     const base::Closure& callback,

@@ -183,12 +183,6 @@ void BluetoothDeviceWin::Forget(const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceWin::ConnectToService(
-    const device::BluetoothUUID& service_uuid,
-    const SocketCallback& callback) {
-  NOTIMPLEMENTED();
-}
-
 void BluetoothDeviceWin::ConnectToProfile(
     device::BluetoothProfile* profile,
     const base::Closure& callback,

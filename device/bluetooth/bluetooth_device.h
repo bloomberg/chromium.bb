@@ -344,15 +344,6 @@ class BluetoothDevice {
   // before that callback would be called.
   virtual void Forget(const ErrorCallback& error_callback) = 0;
 
-  // Attempts to open a socket to a service matching |uuid| on this device.  If
-  // the connection is successful, |callback| is called with a BluetoothSocket.
-  // Otherwise |callback| is called with NULL.  The socket is closed as soon as
-  // all references to the BluetoothSocket are released.  Note that the
-  // BluetoothSocket object can outlive both this BluetoothDevice and the
-  // BluetoothAdapter for this device.
-  virtual void ConnectToService(const BluetoothUUID& service_uuid,
-                                const SocketCallback& callback) = 0;
-
   // Attempts to initiate an outgoing connection to this device for the profile
   // identified by |profile|, on success the profile's connection callback
   // will be called as well as |callback|; on failure |error_callback| will be

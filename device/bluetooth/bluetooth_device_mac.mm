@@ -35,32 +35,6 @@
 
 #endif  // MAC_OS_X_VERSION_10_7
 
-namespace {
-
-// Converts |uuid| to a IOBluetoothSDPUUID instance.
-//
-// |uuid| must be in the format of XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.
-IOBluetoothSDPUUID* GetIOBluetoothSDPUUID(const std::string& uuid) {
-  DCHECK(uuid.size() == 36);
-  DCHECK(uuid[8] == '-');
-  DCHECK(uuid[13] == '-');
-  DCHECK(uuid[18] == '-');
-  DCHECK(uuid[23] == '-');
-  std::string numbers_only = uuid;
-  numbers_only.erase(23, 1);
-  numbers_only.erase(18, 1);
-  numbers_only.erase(13, 1);
-  numbers_only.erase(8, 1);
-  std::vector<uint8> uuid_bytes_vector;
-  base::HexStringToBytes(numbers_only, &uuid_bytes_vector);
-  DCHECK(uuid_bytes_vector.size() == 16);
-
-  return [IOBluetoothSDPUUID uuidWithBytes:&uuid_bytes_vector[0]
-                                    length:uuid_bytes_vector.size()];
-}
-
-}  // namespace
-
 namespace device {
 
 BluetoothDeviceMac::BluetoothDeviceMac(
@@ -192,20 +166,6 @@ void BluetoothDeviceMac::Disconnect(
 
 void BluetoothDeviceMac::Forget(const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
-}
-
-void BluetoothDeviceMac::ConnectToService(
-    const device::BluetoothUUID& service_uuid,
-    const SocketCallback& callback) {
-  IOBluetoothSDPServiceRecord* record =
-      [device_ getServiceRecordForUUID:GetIOBluetoothSDPUUID(
-          service_uuid.canonical_value())];
-  if (record != nil) {
-    scoped_refptr<BluetoothSocket> socket(
-        BluetoothSocketMac::CreateBluetoothSocket(ui_task_runner_, record));
-    if (socket.get() != NULL)
-      callback.Run(socket);
-  }
 }
 
 void BluetoothDeviceMac::ConnectToProfile(
