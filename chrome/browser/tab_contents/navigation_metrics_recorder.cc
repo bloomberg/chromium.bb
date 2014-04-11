@@ -35,14 +35,17 @@ void NavigationMetricsRecorder::DidNavigateMainFrame(
 void NavigationMetricsRecorder::DidStartLoading(
     content::RenderViewHost* render_view_host) {
 #if defined(OS_WIN) && defined(USE_ASH)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    gfx::NativeView view = render_view_host->GetView()->GetNativeView();
-    if (view) {
-      chrome::HostDesktopType desktop =
-          chrome::GetHostDesktopTypeForNativeView(view);
-      UMA_HISTOGRAM_ENUMERATION("Win8.PageLoad",
-                                chrome::GetWin8Environment(desktop),
-                                chrome::WIN_8_ENVIRONMENT_MAX);
+  if (render_view_host && base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    content::RenderWidgetHostView* rwhv = render_view_host->GetView();
+    if (rwhv) {
+      gfx::NativeView native_view = rwhv->GetNativeView();
+      if (native_view) {
+        chrome::HostDesktopType desktop =
+            chrome::GetHostDesktopTypeForNativeView(native_view);
+        UMA_HISTOGRAM_ENUMERATION("Win8.PageLoad",
+                                  chrome::GetWin8Environment(desktop),
+                                  chrome::WIN_8_ENVIRONMENT_MAX);
+      }
     }
   }
 #endif
