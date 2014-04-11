@@ -31,7 +31,8 @@
     <output filename="remoting/resources/ko.pak" lang="ko" type="data_package"/>
     <output filename="remoting/resources/lt.pak" lang="lt" type="data_package"/>
     <output filename="remoting/resources/lv.pak" lang="lv" type="data_package"/>
-    <output filename="remoting/resources/nb.pak" lang="nb" type="data_package"/>
+    <!-- The translation console uses 'no' for Norwegian (Bokmål), but we use 'nb'. -->
+    <output filename="remoting/resources/nb.pak" lang="no" type="data_package"/>
     <output filename="remoting/resources/nl.pak" lang="nl" type="data_package"/>
     <output filename="remoting/resources/pl.pak" lang="pl" type="data_package"/>
     <output filename="remoting/resources/pt-BR.pak" lang="pt-BR" type="data_package"/>
@@ -74,7 +75,8 @@
     <output filename="remoting/webapp/_locales/ko/messages.json" lang="ko" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/lt/messages.json" lang="lt" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/lv/messages.json" lang="lv" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/nb/messages.json" lang="nb" type="chrome_messages_json"/>
+    <!-- The translation console uses 'no' for Norwegian (Bokmål), but Chrome uses 'nb'. -->
+    <output filename="remoting/webapp/_locales/nb/messages.json" lang="no" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/nl/messages.json" lang="nl" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/pl/messages.json" lang="pl" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/pt_BR/messages.json" lang="pt-BR" type="chrome_messages_json"/>
@@ -109,18 +111,19 @@
       <output filename="remoting/android/res/values-fi/remoting_strings.xml" lang="fi" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-tl/remoting_strings.xml" lang="fil" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-fr/remoting_strings.xml" lang="fr" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-he/remoting_strings.xml" lang="he" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-hi/remoting_strings.xml" lang="hi" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-hr/remoting_strings.xml" lang="hr" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-hu/remoting_strings.xml" lang="hu" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-in/remoting_strings.xml" lang="id" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-it/remoting_strings.xml" lang="it" type="android" context="android_java"/>
-      <output filename="remoting/android/res/values-iw/remoting_strings.xml" lang="he" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-ja/remoting_strings.xml" lang="ja" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-ko/remoting_strings.xml" lang="ko" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-lt/remoting_strings.xml" lang="lt" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-lv/remoting_strings.xml" lang="lv" type="android" context="android_java"/>
-      <output filename="remoting/android/res/values-nl/remoting_strings.xml" lang="nl" type="android" context="android_java"/>
+    <!-- The translation console uses 'no' for Norwegian (Bokmål), but Android uses 'nb'. -->
       <output filename="remoting/android/res/values-nb/remoting_strings.xml" lang="no" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-nl/remoting_strings.xml" lang="nl" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-pl/remoting_strings.xml" lang="pl" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-pt-rBR/remoting_strings.xml" lang="pt-BR" type="android" context="android_java"/>
       <output filename="remoting/android/res/values-pt-rPT/remoting_strings.xml" lang="pt-PT" type="android" context="android_java"/>
@@ -155,7 +158,8 @@
     <file lang="fi" path="remoting_strings_fi.xtb"/>
     <file lang="fil" path="remoting_strings_fil.xtb"/>
     <file lang="fr" path="remoting_strings_fr.xtb"/>
-    <file lang="he" path="remoting_strings_he.xtb"/>
+    <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
+    <file lang="he" path="remoting_strings_iw.xtb"/>
     <file lang="hi" path="remoting_strings_hi.xtb"/>
     <file lang="hr" path="remoting_strings_hr.xtb"/>
     <file lang="hu" path="remoting_strings_hu.xtb"/>
@@ -165,7 +169,7 @@
     <file lang="ko" path="remoting_strings_ko.xtb"/>
     <file lang="lt" path="remoting_strings_lt.xtb"/>
     <file lang="lv" path="remoting_strings_lv.xtb"/>
-    <file lang="nb" path="remoting_strings_nb.xtb"/>
+    <file lang="no" path="remoting_strings_no.xtb"/>
     <file lang="nl" path="remoting_strings_nl.xtb"/>
     <file lang="pl" path="remoting_strings_pl.xtb"/>
     <file lang="pt-BR" path="remoting_strings_pt-BR.xtb"/>
