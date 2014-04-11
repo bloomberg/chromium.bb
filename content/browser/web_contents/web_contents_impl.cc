@@ -58,7 +58,6 @@
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/download_manager.h"
@@ -300,6 +299,19 @@ class WebContentsImpl::DestructionObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
 };
 
+WebContentsImpl::ColorChooserInfo::ColorChooserInfo(int render_process_id,
+                                                    int render_frame_id,
+                                                    ColorChooser* chooser,
+                                                    int identifier)
+    : render_process_id(render_process_id),
+      render_frame_id(render_frame_id),
+      chooser(chooser),
+      identifier(identifier) {
+}
+
+WebContentsImpl::ColorChooserInfo::~ColorChooserInfo() {
+}
+
 // WebContentsImpl -------------------------------------------------------------
 
 WebContentsImpl::WebContentsImpl(
@@ -335,7 +347,6 @@ WebContentsImpl::WebContentsImpl(
       temporary_zoom_settings_(false),
       totalPinchGestureAmount_(0),
       currentPinchZoomStepDelta_(0),
-      color_chooser_identifier_(0),
       render_view_message_source_(NULL),
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE),
       is_subframe_(false),
@@ -367,8 +378,8 @@ WebContentsImpl::~WebContentsImpl() {
   if (dialog_manager_)
     dialog_manager_->WebContentsDestroyed(this);
 
-  if (color_chooser_)
-    color_chooser_->End();
+  if (color_chooser_info_.get())
+    color_chooser_info_->chooser->End();
 
   NotifyDisconnected();
 
@@ -486,15 +497,19 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_PluginCrashed, OnPluginCrashed)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
+                        OnDocumentLoadedInFrame)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishLoad, OnDidFinishLoad)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_OpenColorChooser, OnOpenColorChooser)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_EndColorChooser, OnEndColorChooser)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SetSelectedColorInColorChooser,
+                        OnSetSelectedColorInColorChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidDisplayInsecureContent,
                         OnDidDisplayInsecureContent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidRunInsecureContent,
                         OnDidRunInsecureContent)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
-                        OnDocumentLoadedInFrame)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_EnumerateDirectory, OnEnumerateDirectory)
@@ -502,10 +517,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnRegisterProtocolHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenColorChooser, OnOpenColorChooser)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_EndColorChooser, OnEndColorChooser)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetSelectedColorInColorChooser,
-                        OnSetSelectedColorInColorChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
@@ -515,14 +526,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                                 OnBrowserPluginMessage(message))
     IPC_MESSAGE_HANDLER(ImageHostMsg_DidDownloadImage, OnDidDownloadImage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FindMatchRects_Reply,
-                        OnFindMatchRectsReply)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog,
-                        OnOpenDateTimeDialog)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(JavaBridgeHostMsg_GetChannelHandle,
-                                    OnJavaBridgeGetChannelHandle)
-#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaPlayingNotification,
                         OnMediaPlayingNotification)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaPausedNotification,
@@ -535,6 +538,14 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnHideValidationMessage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MoveValidationMessage,
                         OnMoveValidationMessage)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FindMatchRects_Reply,
+                        OnFindMatchRectsReply)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog,
+                        OnOpenDateTimeDialog)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(JavaBridgeHostMsg_GetChannelHandle,
+                                    OnJavaBridgeGetChannelHandle)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   render_view_message_source_ = NULL;
@@ -2184,15 +2195,30 @@ bool WebContentsImpl::HasOpener() const {
 }
 
 void WebContentsImpl::DidChooseColorInColorChooser(SkColor color) {
-  Send(new ViewMsg_DidChooseColorResponse(
-      GetRoutingID(), color_chooser_identifier_, color));
+  if (!color_chooser_info_.get())
+    return;
+  RenderFrameHost* rfh = RenderFrameHost::FromID(
+      color_chooser_info_->render_process_id,
+      color_chooser_info_->render_frame_id);
+  if (!rfh)
+    return;
+
+  rfh->Send(new FrameMsg_DidChooseColorResponse(
+      rfh->GetRoutingID(), color_chooser_info_->identifier, color));
 }
 
 void WebContentsImpl::DidEndColorChooser() {
-  Send(new ViewMsg_DidEndColorChooser(GetRoutingID(),
-                                      color_chooser_identifier_));
-  color_chooser_.reset();
-  color_chooser_identifier_ = 0;
+  if (!color_chooser_info_.get())
+    return;
+  RenderFrameHost* rfh = RenderFrameHost::FromID(
+      color_chooser_info_->render_process_id,
+      color_chooser_info_->render_frame_id);
+  if (!rfh)
+    return;
+
+  rfh->Send(new FrameMsg_DidEndColorChooser(
+      rfh->GetRoutingID(), color_chooser_info_->identifier));
+  color_chooser_info_.reset();
 }
 
 int WebContentsImpl::DownloadImage(const GURL& url,
@@ -2655,30 +2681,34 @@ void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,
 }
 
 void WebContentsImpl::OnOpenColorChooser(
-      int color_chooser_id,
-      SkColor color,
-      const std::vector<ColorSuggestion>& suggestions) {
+    int color_chooser_id,
+    SkColor color,
+    const std::vector<ColorSuggestion>& suggestions) {
   ColorChooser* new_color_chooser =
       delegate_->OpenColorChooser(this, color, suggestions);
   if (!new_color_chooser)
     return;
-  if (color_chooser_)
-    color_chooser_->End();
-  color_chooser_.reset(new_color_chooser);
-  color_chooser_identifier_ = color_chooser_id;
+  if (color_chooser_info_.get())
+    color_chooser_info_->chooser->End();
+
+  color_chooser_info_.reset(new ColorChooserInfo(
+      render_frame_message_source_->GetProcess()->GetID(),
+      render_frame_message_source_->GetRoutingID(),
+      new_color_chooser,
+      color_chooser_id));
 }
 
 void WebContentsImpl::OnEndColorChooser(int color_chooser_id) {
-  if (color_chooser_ &&
-      color_chooser_id == color_chooser_identifier_)
-    color_chooser_->End();
+  if (color_chooser_info_ &&
+      color_chooser_id == color_chooser_info_->identifier)
+    color_chooser_info_->chooser->End();
 }
 
 void WebContentsImpl::OnSetSelectedColorInColorChooser(int color_chooser_id,
                                                        SkColor color) {
-  if (color_chooser_ &&
-      color_chooser_id == color_chooser_identifier_)
-    color_chooser_->SetSelectedColor(color);
+  if (color_chooser_info_ &&
+      color_chooser_id == color_chooser_info_->identifier)
+    color_chooser_info_->chooser->SetSelectedColor(color);
 }
 
 // This exists for render views that don't have a WebUI, but do have WebUI

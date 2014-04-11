@@ -2059,7 +2059,7 @@ blink::WebColorChooser* RenderFrameImpl::createColorChooser(
     const blink::WebColor& initial_color,
     const blink::WebVector<blink::WebColorSuggestion>& suggestions) {
   RendererWebColorChooserImpl* color_chooser =
-      new RendererWebColorChooserImpl(render_view_.get(), client);
+      new RendererWebColorChooserImpl(this, client);
   std::vector<content::ColorSuggestion> color_suggestions;
   for (size_t i = 0; i < suggestions.size(); i++) {
     color_suggestions.push_back(content::ColorSuggestion(suggestions[i]));

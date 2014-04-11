@@ -10,6 +10,7 @@
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_param.h"
 #include "content/common/navigation_gesture.h"
+#include "content/public/common/color_suggestion.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -31,6 +32,11 @@ IPC_ENUM_TRAITS_MAX_VALUE(FrameMsg_Navigate_Type::Value,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::MediaType,
                           blink::WebContextMenuData::MediaTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
+
+IPC_STRUCT_TRAITS_BEGIN(content::ColorSuggestion)
+  IPC_STRUCT_TRAITS_MEMBER(color)
+  IPC_STRUCT_TRAITS_MEMBER(label)
+IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ContextMenuParams)
   IPC_STRUCT_TRAITS_MEMBER(media_type)
@@ -342,6 +348,12 @@ IPC_MESSAGE_ROUTED2(FrameMsg_ExtendSelectionAndDelete,
 IPC_MESSAGE_ROUTED1(FrameMsg_Reload,
                     bool /* ignore_cache */)
 
+// Notifies the color chooser client that the user selected a color.
+IPC_MESSAGE_ROUTED2(FrameMsg_DidChooseColorResponse, unsigned, SkColor)
+
+// Notifies the color chooser client that the color chooser has ended.
+IPC_MESSAGE_ROUTED1(FrameMsg_DidEndColorChooser, unsigned)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -542,3 +554,17 @@ IPC_SYNC_MESSAGE_ROUTED3_2(FrameHostMsg_RunBeforeUnloadConfirm,
                            bool            /* in - is a reload */,
                            bool            /* out - success */,
                            base::string16  /* out - This is ignored.*/)
+
+// Asks the browser to open the color chooser.
+IPC_MESSAGE_ROUTED3(FrameHostMsg_OpenColorChooser,
+                    int /* id */,
+                    SkColor /* color */,
+                    std::vector<content::ColorSuggestion> /* suggestions */)
+
+// Asks the browser to end the color chooser.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_EndColorChooser, int /* id */)
+
+// Change the selected color in the color chooser.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_SetSelectedColorInColorChooser,
+                    int /* id */,
+                    SkColor /* color */)

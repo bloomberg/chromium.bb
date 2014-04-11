@@ -19,8 +19,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
-// TODO(jam): remove this header after the blink roll.
-#include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
@@ -39,11 +37,6 @@ class WebSecurityOrigin;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
-
-// TODO(jam): remove this after blink roll
-class WebColorChooser;
-class WebColorChooserClient;
-struct WebColorSuggestion;
 }
 
 namespace gfx {
