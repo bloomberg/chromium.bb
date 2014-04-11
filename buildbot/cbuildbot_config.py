@@ -1201,6 +1201,7 @@ chrome_perf = chrome_info.derive(
 )
 
 chrome_perf.add_config('daisy-chrome-perf',
+  arm,
   boards=['daisy'],
   trybot_list=True,
 )
