@@ -93,7 +93,7 @@ WebContentsModalDialogManager::WebContentsModalDialogManager(
 WebContentsModalDialogManager::DialogState::DialogState(
     NativeWebContentsModalDialog dialog)
     : dialog(dialog),
-#if defined(OS_WIN) || defined(USE_AURA)
+#if defined(USE_AURA)
       close_on_interstitial_webui(true)
 #else
       // TODO(wittman): Test that closing on interstitial webui works properly

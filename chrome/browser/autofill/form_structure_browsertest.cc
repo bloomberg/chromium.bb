@@ -104,7 +104,7 @@ std::string FormStructureBrowserTest::FormStructuresToString(
 // Heuristics tests timeout on Windows.  See http://crbug.com/85276
 // Also on ChromeOS/Aura. See crbug.com/173621
 // On Linux too. See crbug.com/323093
-#if defined(OS_WIN) || defined(USE_AURA) || defined(OS_LINUX)
+#if defined(USE_AURA)
 #define MAYBE_DataDrivenHeuristics(n) DISABLED_DataDrivenHeuristics##n
 #else
 #define MAYBE_DataDrivenHeuristics(n) DataDrivenHeuristics##n

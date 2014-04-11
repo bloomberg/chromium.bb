@@ -70,7 +70,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
                                     ui::TextInputMode input_mode,
                                     bool can_compose_inline) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
+#if defined(OS_MACOSX) || defined(USE_AURA)
   virtual void ImeCompositionRangeChanged(
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) OVERRIDE;
@@ -126,11 +126,11 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
-#if defined(OS_WIN) || defined(USE_AURA)
+#if defined(USE_AURA)
   virtual void ProcessAckedTouchEvent(
       const TouchEventWithLatencyInfo& touch,
       InputEventAckState ack_result) OVERRIDE;
-#endif  // defined(OS_WIN) || defined(USE_AURA)
+#endif  // defined(USE_AURA)
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
 

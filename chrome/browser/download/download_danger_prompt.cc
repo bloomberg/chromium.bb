@@ -230,7 +230,7 @@ void DownloadDangerPromptImpl::RunDone(Action action) {
 
 }  // namespace
 
-#if !(defined(OS_WIN) || defined(USE_AURA))
+#if !defined(USE_AURA)
 // static
 DownloadDangerPrompt* DownloadDangerPrompt::Create(
     content::DownloadItem* item,

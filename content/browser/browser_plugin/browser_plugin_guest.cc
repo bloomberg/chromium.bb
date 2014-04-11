@@ -1249,7 +1249,7 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
                         OnTextInputTypeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCancelComposition,
                         OnImeCancelComposition)
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
+#if defined(OS_MACOSX) || defined(USE_AURA)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCompositionRangeChanged,
                         OnImeCompositionRangeChanged)
 #endif
@@ -1908,7 +1908,7 @@ void BrowserPluginGuest::OnImeCancelComposition() {
       web_contents()->GetRenderWidgetHostView())->ImeCancelComposition();
 }
 
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
+#if defined(OS_MACOSX) || defined(USE_AURA)
 void BrowserPluginGuest::OnImeCompositionRangeChanged(
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) {

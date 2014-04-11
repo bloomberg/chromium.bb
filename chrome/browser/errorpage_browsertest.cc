@@ -281,7 +281,7 @@ void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
 }
 
 // See crbug.com/109669
-#if defined(USE_AURA) || defined(OS_WIN)
+#if defined(USE_AURA)
 #define MAYBE_DNSError_Basic DISABLED_DNSError_Basic
 #else
 #define MAYBE_DNSError_Basic DNSError_Basic

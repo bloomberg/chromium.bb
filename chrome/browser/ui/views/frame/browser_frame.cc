@@ -291,11 +291,9 @@ NewAvatarButton* BrowserFrame::GetNewAvatarMenuButton() {
   return browser_frame_view_->new_avatar_button();
 }
 
-#if !defined(OS_WIN) || defined(USE_AURA)
 bool BrowserFrame::ShouldLeaveOffsetNearTopBorder() {
   return !IsMaximized();
 }
-#endif  // OS_WIN
 
 void BrowserFrame::OnUseCustomChromeFrameChanged() {
   // Tell the window manager to add or remove system borders.

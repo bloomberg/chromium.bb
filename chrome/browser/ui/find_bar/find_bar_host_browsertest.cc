@@ -992,9 +992,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
   EXPECT_EQ(position.x(), start_position.x());
 }
 
-// FindNextInNewTabUsesPrepopulate times-out on Mac, Windows and Aura.
+// FindNextInNewTabUsesPrepopulate times-out on Mac and Aura.
 // See http://crbug.com/43070
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
+#if defined(OS_MACOSX) || defined(USE_AURA)
 #define MAYBE_FindNextInNewTabUsesPrepopulate \
     DISABLED_FindNextInNewTabUsesPrepopulate
 #else

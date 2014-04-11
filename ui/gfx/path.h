@@ -32,7 +32,7 @@ class GFX_EXPORT Path : public SkPath {
 
   ~Path();
 
-#if defined(USE_AURA) || defined(OS_WIN) || defined(USE_X11)
+#if defined(USE_AURA) || defined(USE_X11)
   // Creates a NativeRegion from the path. The caller is responsible for freeing
   // resources used by this region. This only supports polygon paths.
   NativeRegion CreateNativeRegion() const;

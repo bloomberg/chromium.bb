@@ -39,7 +39,7 @@
 #include "ui/compositor/test/in_process_context_factory.h"
 #endif
 
-#if defined(OS_WIN) || defined(USE_AURA)
+#if defined(USE_AURA)
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "ui/events/event.h"
 #endif

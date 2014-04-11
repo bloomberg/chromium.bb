@@ -510,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 
 // Fails a DCHECK on Aura and Linux: http://crbug.com/169622
 // Failing on Windows: http://crbug.com/232340
-#if defined(USE_AURA) || defined(OS_WIN) || defined(OS_LINUX)
+#if defined(USE_AURA)
 #define MAYBE_ReloadTabsWithBackgroundPage DISABLED_ReloadTabsWithBackgroundPage
 #else
 #define MAYBE_ReloadTabsWithBackgroundPage ReloadTabsWithBackgroundPage

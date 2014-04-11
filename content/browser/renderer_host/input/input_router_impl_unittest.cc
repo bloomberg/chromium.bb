@@ -24,7 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-#if defined(OS_WIN) || defined(USE_AURA)
+#if defined(USE_AURA)
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "ui/events/event.h"
 #endif
@@ -76,7 +76,7 @@ void ExpectIPCMessageWithArg2(const IPC::Message* msg,
   EXPECT_EQ(arg2, param.b);
 }
 
-#if defined(OS_WIN) || defined(USE_AURA)
+#if defined(USE_AURA)
 bool TouchEventsAreEquivalent(const ui::TouchEvent& first,
                               const ui::TouchEvent& second) {
   if (first.type() != second.type())
@@ -104,7 +104,7 @@ bool EventListIsSubset(const ScopedVector<ui::TouchEvent>& subset,
 
   return true;
 }
-#endif  // defined(OS_WIN) || defined(USE_AURA)
+#endif  // defined(USE_AURA)
 
 }  // namespace
 
@@ -619,7 +619,7 @@ TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
   EXPECT_FALSE(input_router_->ShouldForwardTouchEvent());
 }
 
-#if defined(OS_WIN) || defined(USE_AURA)
+#if defined(USE_AURA)
 // Tests that the acked events have correct state. (ui::Events are used only on
 // windows and aura)
 TEST_F(InputRouterImplTest, AckedTouchEventState) {
@@ -704,7 +704,7 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   EXPECT_TRUE(TouchEventQueueEmpty());
   EXPECT_EQ(0U, expected_events.size());
 }
-#endif  // defined(OS_WIN) || defined(USE_AURA)
+#endif  // defined(USE_AURA)
 
 TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
   // Simulate wheel events.

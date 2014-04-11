@@ -1867,8 +1867,8 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_FreeTransportDIB,
                      TransportDIB::Id /* DIB id */)
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
-// On MACOSX, WIN and AURA IME can request composition character bounds
+#if defined(OS_MACOSX) || defined(USE_AURA)
+// On Mac and Aura IME can request composition character bounds
 // synchronously (see crbug.com/120597). This IPC message sends the character
 // bounds after every composition change to always have correct bound info.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeCompositionRangeChanged,

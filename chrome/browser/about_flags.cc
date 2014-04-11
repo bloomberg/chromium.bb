@@ -1692,7 +1692,7 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(autofill::switches::kDisableIgnoreAutocompleteOff)
   },
-#if defined(USE_AURA) || defined(OS_WIN)
+#if defined(USE_AURA)
   {
     "enable-permissions-bubbles",
     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_NAME,

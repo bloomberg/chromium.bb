@@ -43,7 +43,7 @@ class CONTENT_EXPORT WebContentsViewDelegate {
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
                                const ContextMenuParams& params) = 0;
 
-#if defined(OS_WIN) || defined(USE_AURA)
+#if defined(USE_AURA)
   // These methods allow the embedder to intercept WebContentsViewWin's
   // implementation of these WebContentsView methods. See the WebContentsView
   // interface documentation for more information about these methods.
