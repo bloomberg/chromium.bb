@@ -2812,50 +2812,6 @@ TEST_P(ResourceProviderTest, PixelBuffer_GLTexture) {
   Mock::VerifyAndClearExpectations(context);
 }
 
-TEST_P(ResourceProviderTest, PixelBuffer_Bitmap) {
-  if (GetParam() != ResourceProvider::Bitmap)
-    return;
-  FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::CreateSoftware(make_scoped_ptr(
-          new SoftwareOutputDevice)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
-
-  gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
-  ResourceProvider::ResourceId id = 0;
-  const uint32_t kBadBeef = 0xbadbeef;
-
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1));
-
-  id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
-  resource_provider->AcquirePixelRasterBuffer(id);
-
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(size.width(), size.height());
-  *(bitmap.getAddr32(0, 0)) = kBadBeef;
-  SkCanvas* canvas = resource_provider->MapPixelRasterBuffer(id);
-  canvas->writePixels(bitmap, 0, 0);
-  resource_provider->UnmapPixelRasterBuffer(id);
-
-  resource_provider->BeginSetPixels(id);
-  EXPECT_TRUE(resource_provider->DidSetPixelsComplete(id));
-
-  resource_provider->ReleasePixelRasterBuffer(id);
-
-  {
-    ResourceProvider::ScopedReadLockSoftware lock(resource_provider.get(), id);
-    const SkBitmap* sk_bitmap = lock.sk_bitmap();
-    EXPECT_EQ(sk_bitmap->width(), size.width());
-    EXPECT_EQ(sk_bitmap->height(), size.height());
-    EXPECT_EQ(*sk_bitmap->getAddr32(0, 0), kBadBeef);
-  }
-
-  resource_provider->DeleteResource(id);
-}
-
 TEST_P(ResourceProviderTest, ForcingAsyncUploadToComplete) {
   // Only for GL textures.
   if (GetParam() != ResourceProvider::GLTexture)

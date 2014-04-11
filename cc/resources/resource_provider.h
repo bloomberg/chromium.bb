@@ -412,7 +412,6 @@ class CC_EXPORT ResourceProvider {
     TextureMailbox mailbox;
     ReleaseCallback release_callback;
     uint8_t* pixels;
-    uint8_t* pixel_buffer;
     int lock_for_read_count;
     int imported_count;
     int exported_count;
