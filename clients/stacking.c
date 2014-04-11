@@ -64,7 +64,7 @@ new_window(struct stacking *stacking, struct window *parent_window)
 	struct widget *new_widget;
 
 	new_window = window_create(stacking->display);
-	window_set_transient_for(new_window, parent_window);
+	window_set_parent(new_window, parent_window);
 
 	new_widget = window_frame_create(new_window, new_window);
 
@@ -230,7 +230,7 @@ draw_string(cairo_t *cr,
 static void
 set_window_background_colour(cairo_t *cr, struct window *window)
 {
-	if (window_get_transient_for(window))
+	if (window_get_parent(window))
 		cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 0.4);
 	else if (window_is_maximized(window))
 		cairo_set_source_rgba(cr, 1.0, 1.0, 0.0, 0.6);
@@ -276,7 +276,7 @@ redraw_handler(struct widget *widget, void *data)
 	            "      (n)ew window, (p)opup,\n"
 	            "      (q)uit, (t)ransient window\n",
 	            window, window_is_fullscreen(window),
-	            window_is_maximized(window), window_get_transient_for(window) ? 1 : 0);
+	            window_is_maximized(window), window_get_parent(window) ? 1 : 0);
 
 	cairo_destroy(cr);
 }

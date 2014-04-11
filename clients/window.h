@@ -275,9 +275,9 @@ struct window *
 window_create_custom(struct display *display);
 
 void
-window_set_transient_for(struct window *window, struct window *parent_window);
+window_set_parent(struct window *window, struct window *parent_window);
 struct window *
-window_get_transient_for(struct window *window);
+window_get_parent(struct window *window);
 
 int
 window_has_focus(struct window *window);

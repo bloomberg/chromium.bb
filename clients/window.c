@@ -244,7 +244,7 @@ struct window {
 	struct xdg_surface *xdg_surface;
 	struct xdg_popup *xdg_popup;
 
-	struct window *transient_for;
+	struct window *parent;
 
 	struct window_frame *frame;
 
@@ -3912,19 +3912,19 @@ static const struct xdg_surface_listener xdg_surface_listener = {
 };
 
 static void
-window_sync_transient_for(struct window *window)
+window_sync_parent(struct window *window)
 {
 	struct wl_surface *parent_surface;
 
 	if (!window->xdg_surface)
 		return;
 
-	if (window->transient_for)
-		parent_surface = window->transient_for->main_surface->surface;
+	if (window->parent)
+		parent_surface = window->parent->main_surface->surface;
 	else
 		parent_surface = NULL;
 
-	xdg_surface_set_transient_for(window->xdg_surface, parent_surface);
+	xdg_surface_set_parent(window->xdg_surface, parent_surface);
 }
 
 static void
@@ -3955,7 +3955,7 @@ window_flush(struct window *window)
 
 	if (!window->custom) {
 		if (window->xdg_surface) {
-			window_sync_transient_for(window);
+			window_sync_parent(window);
 			window_sync_margin(window);
 		}
 	}
@@ -4428,17 +4428,17 @@ window_create_custom(struct display *display)
 }
 
 void
-window_set_transient_for(struct window *window,
-			 struct window *parent_window)
+window_set_parent(struct window *window,
+		  struct window *parent_window)
 {
-	window->transient_for = parent_window;
-	window_sync_transient_for(window);
+	window->parent = parent_window;
+	window_sync_parent(window);
 }
 
 struct window *
-window_get_transient_for(struct window *window)
+window_get_parent(struct window *window)
 {
-	return window->transient_for;
+	return window->parent;
 }
 
 static void
