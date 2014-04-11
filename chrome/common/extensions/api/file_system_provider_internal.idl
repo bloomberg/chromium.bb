@@ -18,9 +18,7 @@ namespace fileSystemProviderInternal {
     static void unmountRequestedError(
         long fileSystemId,
         long requestId,
-        // TODO(mtomasz): Use FileSystemProvider::ProviderError when namespaces
-        // are fully implemented in IDL.
-        DOMString error);
+        fileSystemProvider.ProviderError error);
   };
 };
 

@@ -183,18 +183,10 @@ bool FileSystemProviderInternalUnmountRequestedErrorFunction::RunImpl() {
       chromeos::file_system_provider::Service::Get(GetProfile());
   DCHECK(service);
 
-  // Currently it is not possible to refer to types/enums defined in a different
-  // IDL file. Therefore we need to convert DOMString to ProviderError, since
-  // UnmountRequestedErrorFunction() is defined in a different namespace than
-  // ProvidedError.
-  // TODO(mtomasz): Remove this trick, once IDL supports namespaces correctly.
-  const api::file_system_provider::ProviderError provider_error =
-      api::file_system_provider::ParseProviderError(params->error);
-
   if (!service->RejectRequest(extension_id(),
                               params->file_system_id,
                               params->request_id,
-                              ProviderErrorToFileError(provider_error))) {
+                              ProviderErrorToFileError(params->error))) {
     // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
     base::ListValue* result = new base::ListValue();
     result->Append(
