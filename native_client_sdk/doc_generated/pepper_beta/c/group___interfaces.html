@@ -13,6 +13,7 @@ Data Structures</h2><table class="memberdecls">
 
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___audio__1__1.html">PPB_Audio</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_Audio</code> interface contains pointers to several functions for handling audio resources.  <a href="struct_p_p_b___audio__1__1.html#details">More...</a><br /></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___audio_buffer__0__1.html">PPB_AudioBuffer</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___audio_config__1__1.html">PPB_AudioConfig</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_AudioConfig</code> interface contains pointers to several functions for establishing your audio configuration within the browser.  <a href="struct_p_p_b___audio_config__1__1.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___console__1__0.html">PPB_Console</a></td></tr>
@@ -20,8 +21,10 @@ Data Structures</h2><table class="memberdecls">
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_Core</code> interface contains pointers to functions related to memory management, time, and threads on the browser.  <a href="struct_p_p_b___core__1__0.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___file_i_o__1__1.html">PPB_FileIO</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_FileIO</code> struct is used to operate on a regular file (PP_FileType_Regular).  <a href="struct_p_p_b___file_i_o__1__1.html#details">More...</a><br /></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___file_ref__1__1.html">PPB_FileRef</a></td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_FileRef</code> struct represents a "weak pointer" to a file in a file system.  <a href="struct_p_p_b___file_ref__1__1.html#details">More...</a><br /></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___file_mapping__0__1.html">PPB_FileMapping</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">PPB_FileMapping contains functions for mapping and unmapping files into and out of memory.  <a href="struct_p_p_b___file_mapping__0__1.html#details">More...</a><br /></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___file_ref__1__2.html">PPB_FileRef</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_FileRef</code> struct represents a "weak pointer" to a file in a file system.  <a href="struct_p_p_b___file_ref__1__2.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___file_system__1__0.html">PPB_FileSystem</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_FileSystem</code> struct identifies the file system type associated with a file.  <a href="struct_p_p_b___file_system__1__0.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___fullscreen__1__0.html">PPB_Fullscreen</a></td></tr>
@@ -42,13 +45,15 @@ Data Structures</h2><table class="memberdecls">
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_MouseInputEvent</code> interface contains pointers to several functions related to mouse input events.  <a href="struct_p_p_b___mouse_input_event__1__1.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___wheel_input_event__1__0.html">PPB_WheelInputEvent</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_WheelIputEvent</code> interface contains pointers to several functions related to wheel input events.  <a href="struct_p_p_b___wheel_input_event__1__0.html#details">More...</a><br /></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___keyboard_input_event__1__0.html">PPB_KeyboardInputEvent</a></td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_KeyboardInputEvent</code> interface contains pointers to several functions related to keyboard input events.  <a href="struct_p_p_b___keyboard_input_event__1__0.html#details">More...</a><br /></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___keyboard_input_event__1__2.html">PPB_KeyboardInputEvent</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_KeyboardInputEvent</code> interface contains pointers to several functions related to keyboard input events.  <a href="struct_p_p_b___keyboard_input_event__1__2.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___touch_input_event__1__0.html">PPB_TouchInputEvent</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_TouchInputEvent</code> interface contains pointers to several functions related to touch events.  <a href="struct_p_p_b___touch_input_event__1__0.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___i_m_e_input_event__1__0.html">PPB_IMEInputEvent</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___instance__1__0.html">PPB_Instance</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The PPB_Instance interface contains pointers to functions related to the module instance on a web page.  <a href="struct_p_p_b___instance__1__0.html#details">More...</a><br /></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html">PPB_MediaStreamAudioTrack</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___media_stream_video_track__0__1.html">PPB_MediaStreamVideoTrack</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___message_loop__1__0.html">PPB_MessageLoop</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">A message loop allows PPAPI calls to be issued on a thread.  <a href="struct_p_p_b___message_loop__1__0.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___messaging__1__0.html">PPB_Messaging</a></td></tr>
@@ -77,13 +82,14 @@ Data Structures</h2><table class="memberdecls">
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_URLRequestInfo</code> interface is used to create and handle URL requests.  <a href="struct_p_p_b___u_r_l_request_info__1__0.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___u_r_l_response_info__1__0.html">PPB_URLResponseInfo</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The PPB_URLResponseInfo interface contains APIs for examining URL responses.  <a href="struct_p_p_b___u_r_l_response_info__1__0.html#details">More...</a><br /></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___var__1__1.html">PPB_Var</a></td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">PPB_Var API.  <a href="struct_p_p_b___var__1__1.html#details">More...</a><br /></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___var__1__2.html">PPB_Var</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">PPB_Var API.  <a href="struct_p_p_b___var__1__2.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___var_array__1__0.html">PPB_VarArray</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___var_array_buffer__1__0.html">PPB_VarArrayBuffer</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_VarArrayBuffer</code> interface provides a way to interact with JavaScript ArrayBuffers, which represent a contiguous sequence of bytes.  <a href="struct_p_p_b___var_array_buffer__1__0.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___var_dictionary__1__0.html">PPB_VarDictionary</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">A dictionary var contains key-value pairs with unique keys.  <a href="struct_p_p_b___var_dictionary__1__0.html#details">More...</a><br /></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___video_frame__0__1.html">PPB_VideoFrame</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___view__1__1.html">PPB_View</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight"><code>PPB_View</code> represents the state of the view of an instance.  <a href="struct_p_p_b___view__1__1.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___web_socket__1__0.html">PPB_WebSocket</a></td></tr>
@@ -104,7 +110,7 @@ Typedefs</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___console__1__0.html">PPB_Console</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gab38f2ca92926b53d58d1cf2ce6320ebb">PPB_Console</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___core__1__0.html">PPB_Core</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#ga34a986157c49afcad3537479bc5361e9">PPB_Core</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___file_i_o__1__1.html">PPB_FileIO</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#ga7b7a4f4317a5af9982ba79d60f04db69">PPB_FileIO</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___file_ref__1__1.html">PPB_FileRef</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#ga5b136f4f49e5e5ee175eae61d86fcb34">PPB_FileRef</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___file_ref__1__2.html">PPB_FileRef</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gaafdfc08014561cc1479f7f1424e4c4ab">PPB_FileRef</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___file_system__1__0.html">PPB_FileSystem</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gae5ad593b6aff864c6bd0acc09d6cc5e9">PPB_FileSystem</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___fullscreen__1__0.html">PPB_Fullscreen</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#ga965dcf552ef79d1a41e0c24db2cf5c3c">PPB_Fullscreen</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___gamepad__1__0.html">PPB_Gamepad</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#ga57baea75086a666a92489da807f16f2a">PPB_Gamepad</a></td></tr>
@@ -118,7 +124,7 @@ Typedefs</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <br class="typebreak" />
 <a class="el" href="struct_p_p_b___wheel_input_event__1__0.html">PPB_WheelInputEvent</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gaaefb7f24240d14faa56dfdba8c116889">PPB_WheelInputEvent</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <br class="typebreak" />
-<a class="el" href="struct_p_p_b___keyboard_input_event__1__0.html">PPB_KeyboardInputEvent</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gad245b3100fef75b215d6ba60cccd626e">PPB_KeyboardInputEvent</a></td></tr>
+<a class="el" href="struct_p_p_b___keyboard_input_event__1__2.html">PPB_KeyboardInputEvent</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#ga65db91594ac92762680dc3cdff4f14c1">PPB_KeyboardInputEvent</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <br class="typebreak" />
 <a class="el" href="struct_p_p_b___touch_input_event__1__0.html">PPB_TouchInputEvent</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#ga3d25b1582fc1e6b94f53ecfb21422d6c">PPB_TouchInputEvent</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <br class="typebreak" />
@@ -142,7 +148,7 @@ Typedefs</h2><table class="memberdecls">
 <a class="el" href="struct_p_p_b___u_r_l_request_info__1__0.html">PPB_URLRequestInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gad60387934d9e235d3d145ee5a1fb4e74">PPB_URLRequestInfo</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <br class="typebreak" />
 <a class="el" href="struct_p_p_b___u_r_l_response_info__1__0.html">PPB_URLResponseInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gad63e57584aea115126b6922b141cf745">PPB_URLResponseInfo</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___var__1__1.html">PPB_Var</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#ga7363a88a6e5058841915641c1b2923ad">PPB_Var</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___var__1__2.html">PPB_Var</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#ga1c3a6780ef84f66ac77dc1af656a8c40">PPB_Var</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___var_array__1__0.html">PPB_VarArray</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gaad75327f1ecc75e58c2805fc4740d3c6">PPB_VarArray</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <br class="typebreak" />
 <a class="el" href="struct_p_p_b___var_array_buffer__1__0.html">PPB_VarArrayBuffer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gab26d5bb032f5438d02faf5bdf7b208cb">PPB_VarArrayBuffer</a></td></tr>
@@ -217,12 +223,12 @@ Typedefs</h2><table class="memberdecls">
 <div class="memdoc">
 </div>
 </div>
-<a class="anchor" id="ga5b136f4f49e5e5ee175eae61d86fcb34"></a><!-- doxytag: member="ppb_file_ref.h::PPB_FileRef" ref="ga5b136f4f49e5e5ee175eae61d86fcb34" args="" -->
+<a class="anchor" id="gaafdfc08014561cc1479f7f1424e4c4ab"></a><!-- doxytag: member="ppb_file_ref.h::PPB_FileRef" ref="gaafdfc08014561cc1479f7f1424e4c4ab" args="" -->
 <div class="memitem">
 <div class="memproto">
 <table class="memname">
 <tr>
-<td class="memname">typedef struct <a class="el" href="struct_p_p_b___file_ref__1__1.html">PPB_FileRef</a> <a class="el" href="group___interfaces.html#ga5b136f4f49e5e5ee175eae61d86fcb34">PPB_FileRef</a></td>
+<td class="memname">typedef struct <a class="el" href="struct_p_p_b___file_ref__1__2.html">PPB_FileRef</a> <a class="el" href="group___interfaces.html#gaafdfc08014561cc1479f7f1424e4c4ab">PPB_FileRef</a></td>
 </tr>
 </table>
 </div>
@@ -349,12 +355,12 @@ Typedefs</h2><table class="memberdecls">
 <div class="memdoc">
 </div>
 </div>
-<a class="anchor" id="gad245b3100fef75b215d6ba60cccd626e"></a><!-- doxytag: member="ppb_input_event.h::PPB_KeyboardInputEvent" ref="gad245b3100fef75b215d6ba60cccd626e" args="" -->
+<a class="anchor" id="ga65db91594ac92762680dc3cdff4f14c1"></a><!-- doxytag: member="ppb_input_event.h::PPB_KeyboardInputEvent" ref="ga65db91594ac92762680dc3cdff4f14c1" args="" -->
 <div class="memitem">
 <div class="memproto">
 <table class="memname">
 <tr>
-<td class="memname">typedef struct <a class="el" href="struct_p_p_b___keyboard_input_event__1__0.html">PPB_KeyboardInputEvent</a> <a class="el" href="group___interfaces.html#gad245b3100fef75b215d6ba60cccd626e">PPB_KeyboardInputEvent</a></td>
+<td class="memname">typedef struct <a class="el" href="struct_p_p_b___keyboard_input_event__1__2.html">PPB_KeyboardInputEvent</a> <a class="el" href="group___interfaces.html#ga65db91594ac92762680dc3cdff4f14c1">PPB_KeyboardInputEvent</a></td>
 </tr>
 </table>
 </div>
@@ -553,12 +559,12 @@ Typedefs</h2><table class="memberdecls">
 <div class="memdoc">
 </div>
 </div>
-<a class="anchor" id="ga7363a88a6e5058841915641c1b2923ad"></a><!-- doxytag: member="ppb_var.h::PPB_Var" ref="ga7363a88a6e5058841915641c1b2923ad" args="" -->
+<a class="anchor" id="ga1c3a6780ef84f66ac77dc1af656a8c40"></a><!-- doxytag: member="ppb_var.h::PPB_Var" ref="ga1c3a6780ef84f66ac77dc1af656a8c40" args="" -->
 <div class="memitem">
 <div class="memproto">
 <table class="memname">
 <tr>
-<td class="memname">typedef struct <a class="el" href="struct_p_p_b___var__1__1.html">PPB_Var</a> <a class="el" href="group___interfaces.html#ga7363a88a6e5058841915641c1b2923ad">PPB_Var</a></td>
+<td class="memname">typedef struct <a class="el" href="struct_p_p_b___var__1__2.html">PPB_Var</a> <a class="el" href="group___interfaces.html#ga1c3a6780ef84f66ac77dc1af656a8c40">PPB_Var</a></td>
 </tr>
 </table>
 </div>

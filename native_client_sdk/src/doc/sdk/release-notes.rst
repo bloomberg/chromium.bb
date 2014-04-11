@@ -4,8 +4,41 @@
 Release Notes
 #############
 
-Chrome/Pepper 33 (branched on 16 December 2013)
-===============================================
+Chrome/Pepper 35 (31 Mar 2014)
+==============================
+
+PNaCl
+-----
+* Upgraded LLVM to version 3.4.
+* Translation now uses dynamic load balancing, making translation time faster.
+* Unstable pexes (i.e. non-finalized) with debug information can be loaded by
+  Chrome, simplifying debugging with PNaCl. See :ref:`Debugging PNaCl pexes
+  <debugging_pnacl_pexes>`
+
+
+Chrome/Pepper 34 (20 Feb 2014)
+==============================
+
+Pepper
+------
+* Filesystems can now be passed from JavaScript to NaCl. The resulting
+  ``pp::Var`` will contain a ``pp::Resource`` that can be given to the
+  ``pp::FileSystem`` constructor.
+* New Audio and Video input APIs have been added as dev interfaces. See
+  `pp::MediaStreamAudioTrack
+  </native-client/pepper_dev/cpp/classpp_1_1_media_stream_audio_track>`_ and
+  `pp::MediaStreamVideoTrack
+  </native-client/pepper_dev/cpp/classpp_1_1_media_stream_video_track>`_ for
+  more details.
+
+PNaCl
+-----
+* Parallel translation: at least 1.7x faster, even with older pexes.
+* Intelligent abbreviations in the bitcode: 20% reduction in binary size using
+  the :ref:`pnacl-compress <pnacl_compress>` tool.
+
+Chrome/Pepper 33 (16 Dec 2013)
+==============================
 
 Portable Native Client
 ----------------------

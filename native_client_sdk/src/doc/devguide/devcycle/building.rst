@@ -326,6 +326,7 @@ The ``create_nmf.py`` tool helps generate an ``.nmf`` file, but ``.nmf``
 files can also be written by hand.
 
 
+.. _pnacl_compress:
 
 Compressing the **pexe** for deployment
 ---------------------------------------

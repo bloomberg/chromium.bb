@@ -30,8 +30,7 @@ Public Member Functions</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpp_1_1_var.html">Var</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_file_ref.html#acb186b79d906675e288ff5d0d0a7eab2">GetName</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpp_1_1_var.html">Var</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_file_ref.html#a657da250b3ff47ca8f1c616f9ebee6a0">GetPath</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpp_1_1_file_ref.html">FileRef</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_file_ref.html#a514534c1a31732e328e062bdaa194919">GetParent</a> () const </td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_file_ref.html#a4efd10cfc69432acb57b2315c5aba44e">MakeDirectory</a> (const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a> &amp;cc)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_file_ref.html#acf2f9918c2d1b95e64243a2097f2b5ff">MakeDirectoryIncludingAncestors</a> (const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a> &amp;cc)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_file_ref.html#afb1a20f9864801457db28d32ab1d7104">MakeDirectory</a> (int32_t make_directory_flags, const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a> &amp;cc)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_file_ref.html#ab8e5d24d96c7408b140b74aa0ed8d7ca">Touch</a> (PP_Time last_access_time, PP_Time last_modified_time, const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a> &amp;cc)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_file_ref.html#abfdb9c3db04b0ef2591953f79c255873">Delete</a> (const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a> &amp;cc)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_file_ref.html#ab1d7f8a63643561a6529952faa881505">Rename</a> (const <a class="el" href="classpp_1_1_file_ref.html">FileRef</a> &amp;new_file_ref, const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a> &amp;cc)</td></tr>
@@ -267,54 +266,40 @@ Public Member Functions</h2><table class="memberdecls">
 <dl class="return"><dt><b>Returns:</b></dt><dd>A <code><a class="el" href="classpp_1_1_var.html" title="A generic type used for passing data types between the module and the page.">Var</a></code> containing the absolute path of the file. This function fails if the file system type is <code>PP_FileSystemType_External</code>. </dd></dl>
 </div>
 </div>
-<a class="anchor" id="a4efd10cfc69432acb57b2315c5aba44e"></a><!-- doxytag: member="pp::FileRef::MakeDirectory" ref="a4efd10cfc69432acb57b2315c5aba44e" args="(const CompletionCallback &amp;cc)" -->
+<a class="anchor" id="afb1a20f9864801457db28d32ab1d7104"></a><!-- doxytag: member="pp::FileRef::MakeDirectory" ref="afb1a20f9864801457db28d32ab1d7104" args="(int32_t make_directory_flags, const CompletionCallback &amp;cc)" -->
 <div class="memitem">
 <div class="memproto">
 <table class="memname">
 <tr>
-<td class="memname">int32_t <a class="el" href="classpp_1_1_file_ref.html#a4efd10cfc69432acb57b2315c5aba44e">pp::FileRef::MakeDirectory</a> </td>
+<td class="memname">int32_t <a class="el" href="classpp_1_1_file_ref.html#afb1a20f9864801457db28d32ab1d7104">pp::FileRef::MakeDirectory</a> </td>
 <td>(</td>
-<td class="paramtype">const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a> &amp;&#160;</td>
-<td class="paramname"><em>cc</em></td><td>)</td>
-<td></td>
+<td class="paramtype">int32_t&#160;</td>
+<td class="paramname"><em>make_directory_flags</em>, </td>
 </tr>
-</table>
-</div>
-<div class="memdoc">
-<p><a class="el" href="classpp_1_1_file_ref.html#a4efd10cfc69432acb57b2315c5aba44e" title="MakeDirectory() makes a new directory in the file system.">MakeDirectory()</a> makes a new directory in the file system. </p>
-<p>It is not valid to make a directory in the external file system. <b>Note:</b> Use <a class="el" href="classpp_1_1_file_ref.html#acf2f9918c2d1b95e64243a2097f2b5ff" title="MakeDirectoryIncludingAncestors() makes a new directory in the file system as well as any parent dire...">MakeDirectoryIncludingAncestors()</a> to create parent directories.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-<table class="params">
-<tr><td class="paramdir">[in]</td><td class="paramname">cc</td><td>A <code><a class="el" href="classpp_1_1_completion_callback.html" title="This API enables you to implement and receive callbacks when Pepper operations complete asynchronousl...">CompletionCallback</a></code> to be called upon completion of <a class="el" href="classpp_1_1_file_ref.html#a4efd10cfc69432acb57b2315c5aba44e" title="MakeDirectory() makes a new directory in the file system.">MakeDirectory()</a>.</td></tr>
-</table>
-</dd>
-</dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code>pp_errors.h</code>. Succeeds if the directory already exists. Fails if ancestor directortories do not exist (see MakeDirectoryIncludingAncestors for the alternative). </dd></dl>
-</div>
-</div>
-<a class="anchor" id="acf2f9918c2d1b95e64243a2097f2b5ff"></a><!-- doxytag: member="pp::FileRef::MakeDirectoryIncludingAncestors" ref="acf2f9918c2d1b95e64243a2097f2b5ff" args="(const CompletionCallback &amp;cc)" -->
-<div class="memitem">
-<div class="memproto">
-<table class="memname">
 <tr>
-<td class="memname">int32_t <a class="el" href="classpp_1_1_file_ref.html#acf2f9918c2d1b95e64243a2097f2b5ff">pp::FileRef::MakeDirectoryIncludingAncestors</a> </td>
-<td>(</td>
-<td class="paramtype">const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a> &amp;&#160;</td>
-<td class="paramname"><em>cc</em></td><td>)</td>
+<td class="paramkey"></td>
 <td></td>
+<td class="paramtype">const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a> &amp;&#160;</td>
+<td class="paramname"><em>cc</em>&#160;</td>
+</tr>
+<tr>
+<td></td>
+<td>)</td>
+<td></td><td></td>
 </tr>
 </table>
 </div>
 <div class="memdoc">
-<p><a class="el" href="classpp_1_1_file_ref.html#acf2f9918c2d1b95e64243a2097f2b5ff" title="MakeDirectoryIncludingAncestors() makes a new directory in the file system as well as any parent dire...">MakeDirectoryIncludingAncestors()</a> makes a new directory in the file system as well as any parent directories. </p>
+<p><a class="el" href="classpp_1_1_file_ref.html#afb1a20f9864801457db28d32ab1d7104" title="MakeDirectory() makes a new directory in the file system according to the given make_directory_flags...">MakeDirectory()</a> makes a new directory in the file system according to the given <code>make_directory_flags</code>, which is a bit-mask of the <code>PP_MakeDirectoryFlags</code> values. </p>
 <p>It is not valid to make a directory in the external file system.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
-<tr><td class="paramdir">[in]</td><td class="paramname">cc</td><td>A <code><a class="el" href="classpp_1_1_completion_callback.html" title="This API enables you to implement and receive callbacks when Pepper operations complete asynchronousl...">CompletionCallback</a></code> to be called upon completion of <a class="el" href="classpp_1_1_file_ref.html#acf2f9918c2d1b95e64243a2097f2b5ff" title="MakeDirectoryIncludingAncestors() makes a new directory in the file system as well as any parent dire...">MakeDirectoryIncludingAncestors()</a>.</td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">make_directory_flags</td><td>A bit-mask of the <code>PP_MakeDirectoryFlags</code> values. See <code>ppb_file_ref.h</code> for more details. </td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">cc</td><td>A <code><a class="el" href="classpp_1_1_completion_callback.html" title="This API enables you to implement and receive callbacks when Pepper operations complete asynchronousl...">CompletionCallback</a></code> to be called upon completion of <a class="el" href="classpp_1_1_file_ref.html#afb1a20f9864801457db28d32ab1d7104" title="MakeDirectory() makes a new directory in the file system according to the given make_directory_flags...">MakeDirectory()</a>.</td></tr>
 </table>
 </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code>pp_errors.h</code>. Succeeds if the directory already exists. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing an error code from <code>pp_errors.h</code>. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="a6de22adc35e4485dfba663dad64c15fb"></a><!-- doxytag: member="pp::FileRef::Query" ref="a6de22adc35e4485dfba663dad64c15fb" args="(const CompletionCallbackWithOutput&lt; PP_FileInfo &gt; &amp;callback)" -->

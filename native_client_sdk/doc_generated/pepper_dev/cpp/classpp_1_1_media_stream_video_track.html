@@ -193,7 +193,7 @@ Static Public Member Functions</h2><table class="memberdecls">
 </div>
 <div class="memdoc">
 <p>Configures underlying frame buffers for incoming frames. </p>
-<p>If the application doesn't want to drop frames, then the <code>PP_MEDIASTREAMVIDEOTRACK_ATTRIB_BUFFERED_FRAMES</code> should be chosen such that inter-frame processing time variability won't overrun the input buffer. If the buffer is overfilled, then frames will be dropped. The application can detect this by examining the timestamp on returned frames. If <code><a class="el" href="classpp_1_1_media_stream_video_track.html#a1a7050062a28190a931e4b70b0e0b04d" title="Configures underlying frame buffers for incoming frames.">Configure()</a></code> is not called, default settings will be used. Example usage from plugin code: </p>
+<p>If the application doesn't want to drop frames, then the <code>PP_MEDIASTREAMVIDEOTRACK_ATTRIB_BUFFERED_FRAMES</code> should be chosen such that inter-frame processing time variability won't overrun the input buffer. If the buffer is overfilled, then frames will be dropped. The application can detect this by examining the timestamp on returned frames. If some attributes are not specified, default values will be used for those unspecified attributes. If <code><a class="el" href="classpp_1_1_media_stream_video_track.html#a1a7050062a28190a931e4b70b0e0b04d" title="Configures underlying frame buffers for incoming frames.">Configure()</a></code> is not called, default settings will be used. Example usage from plugin code: </p>
 <div class="fragment"><pre class="fragment"> int32_t attribs[] = {
      PP_MEDIASTREAMVIDEOTRACK_ATTRIB_BUFFERED_FRAMES, 4,
      PP_MEDIASTREAMVIDEOTRACK_ATTRIB_NONE};
@@ -205,7 +205,7 @@ Static Public Member Functions</h2><table class="memberdecls">
 </table>
 </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing a result code from <code>pp_errors.h</code>. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing a result code from <code>pp_errors.h</code>. Returns <code>PP_ERROR_INPROGRESS</code> if there is a pending call of <code><a class="el" href="classpp_1_1_media_stream_video_track.html#a1a7050062a28190a931e4b70b0e0b04d" title="Configures underlying frame buffers for incoming frames.">Configure()</a></code> or <code><a class="el" href="classpp_1_1_media_stream_video_track.html#aeea5ef2549e1caeddea6ed783d0efe32" title="Gets the next video frame from the MediaStream track.">GetFrame()</a></code>, or the plugin holds some frames which are not recycled with <code><a class="el" href="classpp_1_1_media_stream_video_track.html#ab3df0710c423f1c2b1e45da957bc65e4" title="Recycles a frame returned by GetFrame(), so the track can reuse the underlying buffer of this frame...">RecycleFrame()</a></code>. If an error is returned, all attributes and the underlying buffer will not be changed. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="a583de5b5879d53faf118713b1c4c7e63"></a><!-- doxytag: member="pp::MediaStreamVideoTrack::GetAttrib" ref="a583de5b5879d53faf118713b1c4c7e63" args="(PP_MediaStreamVideoTrack_Attrib attrib, int32_t *value)" -->

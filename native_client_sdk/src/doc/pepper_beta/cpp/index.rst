@@ -6,12 +6,14 @@
 Pepper C++ API Reference (Beta)
 ############################################
 
-This page lists the C++ API for Pepper 33. Apps that use this API can
-run in Chrome 33 or higher.
+This page lists the C++ API for Pepper 35. Apps that use this API can
+run in Chrome 35 or higher.
 
 `Classes <inherits.html>`_
 ==========================
   * `Audio <classpp_1_1_audio.html>`_
+
+  * `AudioBuffer <classpp_1_1_audio_buffer.html>`_
 
   * `AudioConfig <classpp_1_1_audio_config.html>`_
 
@@ -54,6 +56,10 @@ run in Chrome 33 or higher.
   * `InstanceHandle <classpp_1_1_instance_handle.html>`_
 
   * `KeyboardInputEvent <classpp_1_1_keyboard_input_event.html>`_
+
+  * `MediaStreamAudioTrack <classpp_1_1_media_stream_audio_track.html>`_
+
+  * `MediaStreamVideoTrack <classpp_1_1_media_stream_video_track.html>`_
 
   * `MessageLoop <classpp_1_1_message_loop.html>`_
 
@@ -107,6 +113,8 @@ run in Chrome 33 or higher.
 
   * `VarDictionary <classpp_1_1_var_dictionary.html>`_
 
+  * `VideoFrame <classpp_1_1_video_frame.html>`_
+
   * `View <classpp_1_1_view.html>`_
 
   * `WebSocket <classpp_1_1_web_socket.html>`_
@@ -123,6 +131,8 @@ run in Chrome 33 or higher.
 Files
 =====
   * `audio.h <audio_8h.html>`_
+
+  * `audio_buffer.h <audio__buffer_8h.html>`_
 
   * `audio_config.h <audio__config_8h.html>`_
 
@@ -159,6 +169,10 @@ Files
   * `instance_handle.h <instance__handle_8h.html>`_
 
   * `logging.h <logging_8h.html>`_
+
+  * `media_stream_audio_track.h <media__stream__audio__track_8h.html>`_
+
+  * `media_stream_video_track.h <media__stream__video__track_8h.html>`_
 
   * `message_loop.h <message__loop_8h.html>`_
 
@@ -211,6 +225,8 @@ Files
   * `var_array_buffer.h <var__array__buffer_8h.html>`_
 
   * `var_dictionary.h <var__dictionary_8h.html>`_
+
+  * `video_frame.h <video__frame_8h.html>`_
 
   * `view.h <view_8h.html>`_
 

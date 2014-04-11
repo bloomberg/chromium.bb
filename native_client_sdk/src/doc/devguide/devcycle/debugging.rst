@@ -214,6 +214,8 @@ whether built using newlib or glibc for x86-32, x86-64 or ARM.  In the SDK,
 ``i686-nacl-gdb`` is an alias for ``x86_64-nacl-gdb``, and the ``newlib``
 and ``glibc`` toolchains both contain the same version of GDB.
 
+.. _debugging_pnacl_pexes:
+
 Debugging PNaCl pexes (with Pepper 35+)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

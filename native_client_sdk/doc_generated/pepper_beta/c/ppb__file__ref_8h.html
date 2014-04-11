@@ -19,15 +19,21 @@ Include dependency graph for ppb_file_ref.h:</div>
 </div><h2>
 Data Structures</h2><table class="memberdecls">
 
-<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___file_ref__1__1.html">PPB_FileRef</a></td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_FileRef</code> struct represents a "weak pointer" to a file in a file system.  <a href="struct_p_p_b___file_ref__1__1.html#details">More...</a><br /></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___file_ref__1__2.html">PPB_FileRef</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_FileRef</code> struct represents a "weak pointer" to a file in a file system.  <a href="struct_p_p_b___file_ref__1__2.html#details">More...</a><br /></td></tr>
 </table><h2>
 Defines</h2><table class="memberdecls">
-<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ppb__file__ref_8h.html#a153d480ed8be5b5c1e918f8b234c1c22">PPB_FILEREF_INTERFACE</a>&#160;&#160;&#160;&quot;PPB_FileRef;1.1&quot;</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ppb__file__ref_8h.html#a00615ce99f7d6774b0fc5c8f0326f0ba">PPB_FILEREF_INTERFACE</a>&#160;&#160;&#160;<a class="el" href="ppb__file__ref_8h.html#a153d480ed8be5b5c1e918f8b234c1c22">PPB_FILEREF_INTERFACE</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ppb__file__ref_8h.html#a4752245ebf41b0ebee2c50019ec2bbe4">PPB_FILEREF_INTERFACE</a>&#160;&#160;&#160;&quot;PPB_FileRef;1.2&quot;</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ppb__file__ref_8h.html#a00615ce99f7d6774b0fc5c8f0326f0ba">PPB_FILEREF_INTERFACE</a>&#160;&#160;&#160;<a class="el" href="ppb__file__ref_8h.html#a4752245ebf41b0ebee2c50019ec2bbe4">PPB_FILEREF_INTERFACE</a></td></tr>
 </table><h2>
 Typedefs</h2><table class="memberdecls">
-<tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___file_ref__1__1.html">PPB_FileRef</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#ga5b136f4f49e5e5ee175eae61d86fcb34">PPB_FileRef</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___file_ref__1__2.html">PPB_FileRef</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gaafdfc08014561cc1479f7f1424e4c4ab">PPB_FileRef</a></td></tr>
+</table><h2>
+Enumerations</h2><table class="memberdecls">
+<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gadcb0a92e6ca510586c3f34088d35dc9f">PP_MakeDirectoryFlags</a> { <a class="el" href="group___enums.html#ggadcb0a92e6ca510586c3f34088d35dc9fafeeef418b62780276c4671a57196ad3f">PP_MAKEDIRECTORYFLAG_NONE</a> =  0 &lt;&lt; 0, 
+<a class="el" href="group___enums.html#ggadcb0a92e6ca510586c3f34088d35dc9fa5c7f89c8784c9d8abfaeae51d9cb84ba">PP_MAKEDIRECTORYFLAG_WITH_ANCESTORS</a> =  1 &lt;&lt; 0, 
+<a class="el" href="group___enums.html#ggadcb0a92e6ca510586c3f34088d35dc9fa34dd5b5ba9af9e5c820d3c6e21fc2094">PP_MAKEDIRECTORYFLAG_EXCLUSIVE</a> =  1 &lt;&lt; 1
+ }</td></tr>
 </table>
 <hr /><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>This file defines the API to create a file reference or "weak pointer" to a file in a file system. </p>
@@ -37,19 +43,19 @@ Typedefs</h2><table class="memberdecls">
 <div class="memproto">
 <table class="memname">
 <tr>
-<td class="memname">#define <a class="el" href="ppb__file__ref_8h.html#a00615ce99f7d6774b0fc5c8f0326f0ba">PPB_FILEREF_INTERFACE</a>&#160;&#160;&#160;<a class="el" href="ppb__file__ref_8h.html#a153d480ed8be5b5c1e918f8b234c1c22">PPB_FILEREF_INTERFACE</a></td>
+<td class="memname">#define <a class="el" href="ppb__file__ref_8h.html#a00615ce99f7d6774b0fc5c8f0326f0ba">PPB_FILEREF_INTERFACE</a>&#160;&#160;&#160;<a class="el" href="ppb__file__ref_8h.html#a4752245ebf41b0ebee2c50019ec2bbe4">PPB_FILEREF_INTERFACE</a></td>
 </tr>
 </table>
 </div>
 <div class="memdoc">
 </div>
 </div>
-<a class="anchor" id="a153d480ed8be5b5c1e918f8b234c1c22"></a><!-- doxytag: member="ppb_file_ref.h::PPB_FILEREF_INTERFACE" ref="a153d480ed8be5b5c1e918f8b234c1c22" args="" -->
+<a class="anchor" id="a4752245ebf41b0ebee2c50019ec2bbe4"></a><!-- doxytag: member="ppb_file_ref.h::PPB_FILEREF_INTERFACE" ref="a4752245ebf41b0ebee2c50019ec2bbe4" args="" -->
 <div class="memitem">
 <div class="memproto">
 <table class="memname">
 <tr>
-<td class="memname">#define <a class="el" href="ppb__file__ref_8h.html#a153d480ed8be5b5c1e918f8b234c1c22">PPB_FILEREF_INTERFACE</a>&#160;&#160;&#160;&quot;PPB_FileRef;1.1&quot;</td>
+<td class="memname">#define <a class="el" href="ppb__file__ref_8h.html#a4752245ebf41b0ebee2c50019ec2bbe4">PPB_FILEREF_INTERFACE</a>&#160;&#160;&#160;&quot;PPB_FileRef;1.2&quot;</td>
 </tr>
 </table>
 </div>

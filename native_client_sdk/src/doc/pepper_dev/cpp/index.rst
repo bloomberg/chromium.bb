@@ -6,8 +6,8 @@
 Pepper C++ API Reference (Dev)
 ############################################
 
-This page lists the C++ API for Pepper 34. Apps that use this API can
-run in Chrome 34 or higher.
+This page lists the C++ API for Pepper 36. Apps that use this API can
+run in Chrome 36 or higher.
 
 `Classes <inherits.html>`_
 ==========================

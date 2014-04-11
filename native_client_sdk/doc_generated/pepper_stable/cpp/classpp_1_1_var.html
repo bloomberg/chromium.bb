@@ -35,6 +35,7 @@ Public Member Functions</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_var.html#a9bbdfd7d1aa2bd6c8d526ff5f6a2c035">Var</a> (double d)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_var.html#a24ae309e6e0335d2b16aab6039c231fa">Var</a> (const char *utf8_str)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_var.html#a4b0c8c5ef714c9444cfd8f1dd4a9fb25">Var</a> (const std::string &amp;utf8_str)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_var.html#a7a9b5f09aa3c5f6f6ca961904c7d87ba">Var</a> (const <a class="el" href="classpp_1_1_resource.html">pp::Resource</a> &amp;resource)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_var.html#a64a857e38d59b1e012a02d7b8f98680f">Var</a> (<a class="el" href="namespacepp.html#a339083c1beec620267bf8b3c55decaa5">PassRef</a>, const PP_Var &amp;var)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_var.html#a52415e7de337c97b08eb70b06e0cda4b">Var</a> (const PP_Var &amp;var)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_var.html#a2356640f40527226f295cc15ec01f302">Var</a> (<a class="el" href="structpp_1_1_var_1_1_dont_manage.html">DontManage</a>, const PP_Var &amp;var)</td></tr>
@@ -58,6 +59,7 @@ Public Member Functions</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_var.html#ad31cdb379b6ceaae967125e358c81d16">AsInt</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_var.html#a8a798b08e197948c161737fc7b745af6">AsDouble</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_var.html#a22a1e3b2a0783b949bedcdae49c07c97">AsString</a> () const </td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpp_1_1_resource.html">pp::Resource</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_var.html#a0346197dfa6ba350c6d9e3c85cc0ce80">AsResource</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const PP_Var &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_var.html#ad828439641c93930ff188b45b45b4261">pp_var</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">PP_Var&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_var.html#a84a725a42640a63747f7f6bc252b65d4">Detach</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_var.html#a835b1e5a601d6e5ceb9a7d1b5fb7a66f">DebugString</a> () const </td></tr>
@@ -204,6 +206,23 @@ Protected Attributes</h2><table class="memberdecls">
 </div>
 <div class="memdoc">
 <p>A constructor used to create a UTF-8 character <code><a class="el" href="classpp_1_1_var.html" title="A generic type used for passing data types between the module and the page.">Var</a></code>. </p>
+</div>
+</div>
+<a class="anchor" id="a7a9b5f09aa3c5f6f6ca961904c7d87ba"></a><!-- doxytag: member="pp::Var::Var" ref="a7a9b5f09aa3c5f6f6ca961904c7d87ba" args="(const pp::Resource &amp;resource)" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname"><a class="el" href="classpp_1_1_var.html#af571fae55754a20ae95ffd140726d04c">pp::Var::Var</a> </td>
+<td>(</td>
+<td class="paramtype">const <a class="el" href="classpp_1_1_resource.html">pp::Resource</a> &amp;&#160;</td>
+<td class="paramname"><em>resource</em></td><td>)</td>
+<td><code> [explicit]</code></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>A constructor used to create a resource <code><a class="el" href="classpp_1_1_var.html" title="A generic type used for passing data types between the module and the page.">Var</a></code>. </p>
 </div>
 </div>
 <a class="anchor" id="a64a857e38d59b1e012a02d7b8f98680f"></a><!-- doxytag: member="pp::Var::Var" ref="a64a857e38d59b1e012a02d7b8f98680f" args="(PassRef, const PP_Var &amp;var)" -->
@@ -373,6 +392,24 @@ Protected Attributes</h2><table class="memberdecls">
 <p>This function is required because JavaScript doesn't have a concept of ints and doubles, only numbers. The distinction between the two is an optimization inside the compiler. Since converting from a double to an int may be lossy, if you care about the distinction, either always work in doubles, or check !is_double() before calling <a class="el" href="classpp_1_1_var.html#ad31cdb379b6ceaae967125e358c81d16" title="AsInt() converts this Var to an int32_t.">AsInt()</a>.</p>
 <p>These functions will assert in debug mode and return 0 if the internal representation is not <a class="el" href="classpp_1_1_var.html#ae803a32764804c873dd16c48bd4fdc83" title="This function determines if this Var is a number.">is_number()</a>.</p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t version of this <code><a class="el" href="classpp_1_1_var.html" title="A generic type used for passing data types between the module and the page.">Var</a></code>. </dd></dl>
+</div>
+</div>
+<a class="anchor" id="a0346197dfa6ba350c6d9e3c85cc0ce80"></a><!-- doxytag: member="pp::Var::AsResource" ref="a0346197dfa6ba350c6d9e3c85cc0ce80" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname"><a class="el" href="classpp_1_1_resource.html">pp::Resource</a> <a class="el" href="classpp_1_1_var.html#a0346197dfa6ba350c6d9e3c85cc0ce80">pp::Var::AsResource</a> </td>
+<td>(</td>
+<td class="paramname"></td><td>)</td>
+<td> const</td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>Gets the resource contained in the var. </p>
+<p>If this object is not a resource, it will assert in debug mode, and return a null resource.</p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>The <code><a class="el" href="classpp_1_1_resource.html" title="A reference counted module resource.">pp::Resource</a></code> that is contained in the var. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="a22a1e3b2a0783b949bedcdae49c07c97"></a><!-- doxytag: member="pp::Var::AsString" ref="a22a1e3b2a0783b949bedcdae49c07c97" args="() const " -->

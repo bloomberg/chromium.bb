@@ -2,8 +2,38 @@
 
 <section id="release-notes">
 <span id="sdk-release-notes"></span><h1 id="release-notes"><span id="sdk-release-notes"></span>Release Notes</h1>
-<section id="chrome-pepper-33-branched-on-16-december-2013">
-<h2 id="chrome-pepper-33-branched-on-16-december-2013">Chrome/Pepper 33 (branched on 16 December 2013)</h2>
+<section id="chrome-pepper-35-31-mar-2014">
+<h2 id="chrome-pepper-35-31-mar-2014">Chrome/Pepper 35 (31 Mar 2014)</h2>
+<section id="pnacl">
+<h3 id="pnacl">PNaCl</h3>
+<ul class="small-gap">
+<li>Upgraded LLVM to version 3.4.</li>
+<li>Translation now uses dynamic load balancing, making translation time faster.</li>
+<li>Unstable pexes (i.e. non-finalized) with debug information can be loaded by
+Chrome, simplifying debugging with PNaCl. See <a class="reference internal" href="/native-client/devguide/devcycle/debugging.html#debugging-pnacl-pexes"><em>Debugging PNaCl pexes</em></a></li>
+</ul>
+</section></section><section id="chrome-pepper-34-20-feb-2014">
+<h2 id="chrome-pepper-34-20-feb-2014">Chrome/Pepper 34 (20 Feb 2014)</h2>
+<section id="pepper">
+<h3 id="pepper">Pepper</h3>
+<ul class="small-gap">
+<li>Filesystems can now be passed from JavaScript to NaCl. The resulting
+<code>pp::Var</code> will contain a <code>pp::Resource</code> that can be given to the
+<code>pp::FileSystem</code> constructor.</li>
+<li>New Audio and Video input APIs have been added as dev interfaces. See
+<a class="reference external" href="/native-client/pepper_dev/cpp/classpp_1_1_media_stream_audio_track">pp::MediaStreamAudioTrack</a> and
+<a class="reference external" href="/native-client/pepper_dev/cpp/classpp_1_1_media_stream_video_track">pp::MediaStreamVideoTrack</a> for
+more details.</li>
+</ul>
+</section><section id="id1">
+<h3 id="id1">PNaCl</h3>
+<ul class="small-gap">
+<li>Parallel translation: at least 1.7x faster, even with older pexes.</li>
+<li>Intelligent abbreviations in the bitcode: 20% reduction in binary size using
+the <a class="reference internal" href="/native-client/devguide/devcycle/building.html#pnacl-compress"><em>pnacl-compress</em></a> tool.</li>
+</ul>
+</section></section><section id="chrome-pepper-33-16-dec-2013">
+<h2 id="chrome-pepper-33-16-dec-2013">Chrome/Pepper 33 (16 Dec 2013)</h2>
 <section id="portable-native-client">
 <h3 id="portable-native-client">Portable Native Client</h3>
 <ul class="small-gap">
@@ -135,8 +165,8 @@ for an application can specify a source file to compile such as
 <p>The Pepper 26 bundle includes a new HTTP filesystem type in the nacl_mounts
 library (which has been renamed nacl_io), changes to the example Makefiles, a
 simple new 3D example, and a threaded file IO example.</p>
-<section id="id1">
-<h3 id="id1">Build tools and toolchains</h3>
+<section id="id2">
+<h3 id="id2">Build tools and toolchains</h3>
 <ul class="small-gap">
 <li><p class="first">Makefiles have been changed significantly:</p>
 <ul class="small-gap">
@@ -156,16 +186,16 @@ with all toolchains.</li>
 the same set of header files as host builds. Previously host and NaCl builds
 used different headers, which could cause build problems.</li>
 </ul>
-</section><section id="id2">
-<h3 id="id2">Libraries</h3>
+</section><section id="id3">
+<h3 id="id3">Libraries</h3>
 <ul class="small-gap">
 <li>The nacl_mounts library has been renamed <strong>nacl_io</strong>, and has been expanded
 with a new type of mount, httpfs, which can be used to read URLs via HTTP.
 For details see <code>include/nacl_io/nacl_io.h</code>, as well as the
 <code>hello_nacl_io</code> example.</li>
 </ul>
-</section><section id="id3">
-<h3 id="id3">Examples</h3>
+</section><section id="id4">
+<h3 id="id4">Examples</h3>
 <ul class="small-gap">
 <li>A new example, <strong>hello_world_instance3d</strong>, has been added to demonstrate a
 simplified 3D app.</li>
@@ -189,8 +219,8 @@ which provides a virtual file system that you can use with standard C file
 operations, and ppapi_main, which lets you implement a Native Client module
 using a simple ppapi_main function), and two new examples that demonstrate how
 to use the nacl_mounts and ppapi_main libraries.</p>
-<section id="id4">
-<h3 id="id4">Build tools and toolchains</h3>
+<section id="id5">
+<h3 id="id5">Build tools and toolchains</h3>
 <ul class="small-gap">
 <li><p class="first">The SDK includes a new toolchain to build Native Client executables (.nexe
 files) for <strong>ARM devices</strong>.</p>
@@ -228,8 +258,8 @@ see <code>pepper_25/include/ppapi/utility/threading/simple_thread.h</code>. Note
 you cannot make asynchronous PPAPI calls on a background thread without
 creating and using a message loop.</li>
 </ul>
-</section><section id="id5">
-<h3 id="id5">Libraries</h3>
+</section><section id="id6">
+<h3 id="id6">Libraries</h3>
 <p>The SDK includes two new libraries:</p>
 <ul class="small-gap">
 <li><p class="first">The <strong>nacl_mounts</strong> library provides a virtual file system that your module
@@ -263,8 +293,8 @@ how to use ppapi_main, see examples/hello_world_stdio.</li>
 <p>Header files for the new libraries are in the <code>include/</code> directory, source
 files are in the <code>src/</code> directory, and compiled libraries are in the <code>lib/</code>
 directory.</p>
-</section><section id="id6">
-<h3 id="id6">Examples</h3>
+</section><section id="id7">
+<h3 id="id7">Examples</h3>
 <ul class="small-gap">
 <li><p class="first">The SDK includes two new examples:</p>
 <ul class="small-gap">
@@ -306,8 +336,8 @@ source dependencies, and invokes the build rules in a separate file
 for &#8220;Portable Native Client&#8221;), a new library (pthreads-win32) for the Windows
 SDK, and an expanded list of attributes for Pepper 3D contexts that lets
 applications specify a GPU preference for low power or performance.</p>
-<section id="id7">
-<h3 id="id7">Build tools and toolchains</h3>
+<section id="id8">
+<h3 id="id8">Build tools and toolchains</h3>
 <ul class="small-gap">
 <li>The SDK includes a new, experimental toolchain called <a class="reference external" href="http://nativeclient.googlecode.com/svn/data/site/pnacl.pdf">PNaCl</a> (pronounced
 &#8220;pinnacle&#8221;). The PNaCl toolchain produces architecture-independent executable
@@ -323,8 +353,8 @@ determine the architecture of .nexe files. That means you can change the
 names of your .nexe files and <code>create_nmf.py</code> will still be able to
 generate the appropriate Native Client manifest file for your application.</li>
 </ul>
-</section><section id="id8">
-<h3 id="id8">Examples</h3>
+</section><section id="id10">
+<h3 id="id10">Examples</h3>
 <ul class="small-gap">
 <li>The SDK examples now build with four toolchains: the glibc and newlib
 toolchains, the experimental PNaCl toolchain, and the hosted toolchain on
@@ -335,8 +365,8 @@ builds both a debug and a release version.</li>
 drawing function is now set up as the Flush() callback, which allows 2D
 drawing to occur as quickly as possible.</li>
 </ul>
-</section><section id="id9">
-<h3 id="id9">PPAPI</h3>
+</section><section id="id11">
+<h3 id="id11">PPAPI</h3>
 <ul class="small-gap">
 <li>When creating a 3D rendering context, the <a class="reference external" href="https://developers.google.com/native-client/dev/pepperc/group___enums#ga7df48e1c55f6401beea2a1b9c07967e8">attribute list</a>
 for the context can specify whether to prefer low power or performance for
@@ -412,8 +442,8 @@ Note that you must set the <code>CHROME_PATH</code> environment variable and sta
 </ul>
 </li>
 </ul>
-</section><section id="id10">
-<h3 id="id10">Examples</h3>
+</section><section id="id12">
+<h3 id="id12">Examples</h3>
 <ul class="small-gap">
 <li>On Linux and Windows systems, most of the examples now build with three
 toolchains: the Native Client glibc and newlib toolchains, and the native
@@ -429,8 +459,8 @@ onclick=&quot;...&quot;&gt;</code>).  See <a class="reference external" href="ht
 changes between version 1 and version 2 of the manifest file format, and a
 support schedule for applications that use version 1.</li>
 </ul>
-</section><section id="id11">
-<h3 id="id11">PPAPI</h3>
+</section><section id="id13">
+<h3 id="id13">PPAPI</h3>
 <ul class="small-gap">
 <li><a class="reference external" href="https://developers.google.com/native-client/pepper23/pepperc/group___enums#ga21b811ac0484a214a8751aa3e1c959d9">PP_InputEvent_Modifier</a>
 has two new enum values (_ISLEFT and _ISRIGHT).</li>
@@ -442,16 +472,16 @@ API has been fixed.</li>
 <p>The Pepper 22 bundle includes a <strong>command-line debugger</strong>, resources to enable
 <strong>hosted development on Windows</strong>, and changes to the example Makefiles (each
 example now builds both a debug and a release version).</p>
-<section id="id12">
-<h3 id="id12">Tools</h3>
+<section id="id14">
+<h3 id="id14">Tools</h3>
 <ul class="small-gap">
 <li>The SDK now includes a <strong>command-line debugger</strong> that you can use to debug
 Native Client modules. See <a class="reference internal" href="/native-client/devguide/devcycle/debugging.html#devcycle-debugging"><em>Debugging with nacl-gdb</em></a> for instructions on how to use this debugger. For now,
 nacl-gdb only works on 64-bit Windows, 64-bit Linux, and 32-bit Linux
 systems. Support for Mac and 32-bit Windows systems will be added soon.</li>
 </ul>
-</section><section id="id13">
-<h3 id="id13">Windows SDK</h3>
+</section><section id="id15">
+<h3 id="id15">Windows SDK</h3>
 <ul class="small-gap">
 <li><p class="first">Developers using the Windows SDK can now <strong>build a module as a Pepper
 plugin</strong> (sometimes called a &#8220;trusted&#8221; or &#8220;in-process&#8221; plugin) using the
@@ -499,8 +529,8 @@ or <a class="reference external" href="http://www.chromium.org/nativeclient/how-
 In the future, the SDK will include resources for hosted development on Mac
 and Linux as well as Windows.
 </aside>
-</section><section id="id14">
-<h3 id="id14">Examples</h3>
+</section><section id="id16">
+<h3 id="id16">Examples</h3>
 <ul class="small-gap">
 <li>Each example in the SDK now builds both a debug and a release version. As
 before, most examples also build newlib and glibc versions, which means that
@@ -514,8 +544,8 @@ in each example&#8217;s web page, attaches event listeners to monitor the loadin
 of the module, and implements handleMessage() to respond to messages sent
 from the NaCl module to the JavaScript side of the application</li>
 </ul>
-</section><section id="id15">
-<h3 id="id15">PPAPI</h3>
+</section><section id="id17">
+<h3 id="id17">PPAPI</h3>
 <ul class="small-gap">
 <li>The <code>CompletionCallbackFactory</code> class template now takes a thread traits
 class as its second parameter. For details see the <a class="reference external" href="https://developers.google.com/native-client/pepper22/peppercpp/classpp_1_1_completion_callback_factory#details">CompletionCallbackFactory

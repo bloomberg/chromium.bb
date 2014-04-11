@@ -117,6 +117,23 @@ Enumerations</h2><table class="memberdecls">
 <a class="el" href="group___enums.html#gga9815041477d810724e44da862f9852eda898e69540595e8b95681d850ddecc7f1">PP_VARTYPE_RESOURCE</a> =  10
 <br />
  }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga78757d4be14d14d17708071a9466afbd">PP_AudioBuffer_SampleRate</a> { <br />
+&#160;&#160;<a class="el" href="group___enums.html#gga78757d4be14d14d17708071a9466afbdace5d37815e444b494434d9418a8dfb81">PP_AUDIOBUFFER_SAMPLERATE_UNKNOWN</a> =  0, 
+<a class="el" href="group___enums.html#gga78757d4be14d14d17708071a9466afbda7a10ada2c776cf2ca4fa5a220ab23f4f">PP_AUDIOBUFFER_SAMPLERATE_8000</a> =  8000, 
+<a class="el" href="group___enums.html#gga78757d4be14d14d17708071a9466afbdaa3205a867c6b7f54a735ba1e5e602839">PP_AUDIOBUFFER_SAMPLERATE_16000</a> =  16000, 
+<a class="el" href="group___enums.html#gga78757d4be14d14d17708071a9466afbda934a834bf3ac58e69a7df1abc41a57ea">PP_AUDIOBUFFER_SAMPLERATE_22050</a> =  22050, 
+<br />
+&#160;&#160;<a class="el" href="group___enums.html#gga78757d4be14d14d17708071a9466afbda439854e1f66e4e92af5d257b93da5483">PP_AUDIOBUFFER_SAMPLERATE_32000</a> =  32000, 
+<a class="el" href="group___enums.html#gga78757d4be14d14d17708071a9466afbdaef0fd009c55740284bcf6e60344395ac">PP_AUDIOBUFFER_SAMPLERATE_44100</a> =  44100, 
+<a class="el" href="group___enums.html#gga78757d4be14d14d17708071a9466afbda09d65e0a6d8ed28ae2fc784569b9123a">PP_AUDIOBUFFER_SAMPLERATE_48000</a> =  48000, 
+<a class="el" href="group___enums.html#gga78757d4be14d14d17708071a9466afbdaf52f1115d22dfbf1cc4a24f20b9e664b">PP_AUDIOBUFFER_SAMPLERATE_96000</a> =  96000, 
+<br />
+&#160;&#160;<a class="el" href="group___enums.html#gga78757d4be14d14d17708071a9466afbda18d94d8af683f06d4d7718fb788b7361">PP_AUDIOBUFFER_SAMPLERATE_192000</a> =  192000
+<br />
+ }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga2ba5c3a8eed23fa49a73b218b1bce044">PP_AudioBuffer_SampleSize</a> { <a class="el" href="group___enums.html#gga2ba5c3a8eed23fa49a73b218b1bce044a1bc7fa3874cd1ccee3cfa00e23bea379">PP_AUDIOBUFFER_SAMPLESIZE_UNKNOWN</a> =  0, 
+<a class="el" href="group___enums.html#gga2ba5c3a8eed23fa49a73b218b1bce044a0cc6b2d53c4c3bc5d3f19f809a1ce6c8">PP_AUDIOBUFFER_SAMPLESIZE_16_BITS</a> =  2
+ }</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="group___enums.html#ggadf764cbdea00d65edcd07bb9953ad2b7a9bf932735e301eeecf183a9defc378b3">PP_AUDIOMINSAMPLEFRAMECOUNT</a> =  64, 
 <a class="el" href="group___enums.html#ggadf764cbdea00d65edcd07bb9953ad2b7a335c882fde010a0515ec5678a7003ce4">PP_AUDIOMAXSAMPLEFRAMECOUNT</a> =  32768
  }</td></tr>
@@ -138,6 +155,17 @@ Enumerations</h2><table class="memberdecls">
 &#160;&#160;<a class="el" href="group___enums.html#gga4c87e6dd19c1d49b66a9b37136a82e82a3ffa615692f3b3a2da0f1e04903eefce">PP_FILEOPENFLAG_EXCLUSIVE</a> =  1 &lt;&lt; 4, 
 <a class="el" href="group___enums.html#gga4c87e6dd19c1d49b66a9b37136a82e82a78c13cbbccebfa9c2b8b2f758397795c">PP_FILEOPENFLAG_APPEND</a> =  1 &lt;&lt; 5
 <br />
+ }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga07cb383dee51bc7e8e1f234068652668">PP_FileMapProtection</a> { <a class="el" href="group___enums.html#gga07cb383dee51bc7e8e1f234068652668a88619572d7d081c4b657fd8087a164fb">PP_FILEMAPPROTECTION_READ</a> =  1u &lt;&lt; 0, 
+<a class="el" href="group___enums.html#gga07cb383dee51bc7e8e1f234068652668aadebe6625bb49b575195f0d4d165c27e">PP_FILEMAPPROTECTION_WRITE</a> =  1u &lt;&lt; 1
+ }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga47ce032e16d18ba6fc6c16bbe8939bad">PP_FileMapFlags</a> { <a class="el" href="group___enums.html#gga47ce032e16d18ba6fc6c16bbe8939bada9233097e19d068b7d4ad0ac00140d03c">PP_FILEMAPFLAG_SHARED</a> =  1u &lt;&lt; 0, 
+<a class="el" href="group___enums.html#gga47ce032e16d18ba6fc6c16bbe8939bada74f65f6fbedce77b36bda16beab65a03">PP_FILEMAPFLAG_PRIVATE</a> =  1u &lt;&lt; 1, 
+<a class="el" href="group___enums.html#gga47ce032e16d18ba6fc6c16bbe8939badae37402f728fae4078d76a006d36bc26e">PP_FILEMAPFLAG_FIXED</a> =  1u &lt;&lt; 2
+ }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gadcb0a92e6ca510586c3f34088d35dc9f">PP_MakeDirectoryFlags</a> { <a class="el" href="group___enums.html#ggadcb0a92e6ca510586c3f34088d35dc9fafeeef418b62780276c4671a57196ad3f">PP_MAKEDIRECTORYFLAG_NONE</a> =  0 &lt;&lt; 0, 
+<a class="el" href="group___enums.html#ggadcb0a92e6ca510586c3f34088d35dc9fa5c7f89c8784c9d8abfaeae51d9cb84ba">PP_MAKEDIRECTORYFLAG_WITH_ANCESTORS</a> =  1 &lt;&lt; 0, 
+<a class="el" href="group___enums.html#ggadcb0a92e6ca510586c3f34088d35dc9fa34dd5b5ba9af9e5c820d3c6e21fc2094">PP_MAKEDIRECTORYFLAG_EXCLUSIVE</a> =  1 &lt;&lt; 1
  }</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gadb4b8db19266831040fc604f73c83a25">PP_HostResolver_Flag</a> { <a class="el" href="group___enums.html#ggadb4b8db19266831040fc604f73c83a25a1fc5655c5b292459d24dc035e930e75e">PP_HOSTRESOLVER_FLAG_CANONNAME</a> =  1 &lt;&lt; 0
  }</td></tr>
@@ -207,6 +235,25 @@ Enumerations</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gad5885a239d04166c8777432c81e39d0a">PP_TouchListType</a> { <a class="el" href="group___enums.html#ggad5885a239d04166c8777432c81e39d0aa739dfd65f4cd719996f20bdd2e7db4ca">PP_TOUCHLIST_TYPE_TOUCHES</a> =  0, 
 <a class="el" href="group___enums.html#ggad5885a239d04166c8777432c81e39d0aa89d31d55d67fa0746d1f3bf4050eafff">PP_TOUCHLIST_TYPE_CHANGEDTOUCHES</a> =  1, 
 <a class="el" href="group___enums.html#ggad5885a239d04166c8777432c81e39d0aa0682e6c428fed9b900e3d9e56aaa8fca">PP_TOUCHLIST_TYPE_TARGETTOUCHES</a> =  2
+ }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga2f729c238ba74adc778c0d0bc17c453f">PP_MediaStreamAudioTrack_Attrib</a> { <br />
+&#160;&#160;<a class="el" href="group___enums.html#gga2f729c238ba74adc778c0d0bc17c453fa5f1f0d353fe407fe10ac3c0e908aba4f">PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE</a> =  0, 
+<a class="el" href="group___enums.html#gga2f729c238ba74adc778c0d0bc17c453fae157f98fb5bc32ca0e193e5b8198c7dc">PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS</a> =  1, 
+<a class="el" href="group___enums.html#gga2f729c238ba74adc778c0d0bc17c453fa5b0cf01bda3aa2bbcff7b41ffb96c425">PP_MEDIASTREAMAUDIOTRACK_ATTRIB_SAMPLE_RATE</a> =  2, 
+<a class="el" href="group___enums.html#gga2f729c238ba74adc778c0d0bc17c453faacb4f8d7388db7fdbeb96aa6e6309e13">PP_MEDIASTREAMAUDIOTRACK_ATTRIB_SAMPLE_SIZE</a> =  3, 
+<br />
+&#160;&#160;<a class="el" href="group___enums.html#gga2f729c238ba74adc778c0d0bc17c453faa9fe8e2346974581d302372f844e7ef8">PP_MEDIASTREAMAUDIOTRACK_ATTRIB_CHANNELS</a> =  4, 
+<a class="el" href="group___enums.html#gga2f729c238ba74adc778c0d0bc17c453fa13c3fa0a2740301acda8b218bac8b972">PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION</a> =  5
+<br />
+ }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga49cd0a65c15c8a91959310699afc36b7">PP_MediaStreamVideoTrack_Attrib</a> { <br />
+&#160;&#160;<a class="el" href="group___enums.html#gga49cd0a65c15c8a91959310699afc36b7a0d5a46a7dbdfc72630e58159a4ac7c50">PP_MEDIASTREAMVIDEOTRACK_ATTRIB_NONE</a> =  0, 
+<a class="el" href="group___enums.html#gga49cd0a65c15c8a91959310699afc36b7a82a5dbfcbfa8f78e80ccf2c5607bf327">PP_MEDIASTREAMVIDEOTRACK_ATTRIB_BUFFERED_FRAMES</a> =  1, 
+<a class="el" href="group___enums.html#gga49cd0a65c15c8a91959310699afc36b7a6ed25ce915df51b4c927d03e88932a5c">PP_MEDIASTREAMVIDEOTRACK_ATTRIB_WIDTH</a> =  2, 
+<a class="el" href="group___enums.html#gga49cd0a65c15c8a91959310699afc36b7abda9111782f26174aaeada7dfe7cc197">PP_MEDIASTREAMVIDEOTRACK_ATTRIB_HEIGHT</a> =  3, 
+<br />
+&#160;&#160;<a class="el" href="group___enums.html#gga49cd0a65c15c8a91959310699afc36b7acc27d12b7e95806c1af435cf2b9cdb9a">PP_MEDIASTREAMVIDEOTRACK_ATTRIB_FORMAT</a> =  4
+<br />
  }</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gac53273018386c1db9542d2a06bbe118b">PP_MouseCursor_Type</a> { <br />
 &#160;&#160;<a class="el" href="group___enums.html#ggac53273018386c1db9542d2a06bbe118ba1360614abe2d2c3838a42238f75e9ec1">PP_MOUSECURSOR_TYPE_CUSTOM</a> =  -1, 
@@ -328,6 +375,15 @@ Enumerations</h2><table class="memberdecls">
 <a class="el" href="group___enums.html#gga642e6199b27df69aad84aff5597041e0a45c014f3cb40e884677387855c3d977b">PP_URLRESPONSEPROPERTY_HEADERS</a> =  5
 <br />
  }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga4e7cf746d8acbfa268db1f5ebe8061bf">PP_VideoFrame_Format</a> { <br />
+&#160;&#160;<a class="el" href="group___enums.html#gga4e7cf746d8acbfa268db1f5ebe8061bfa203cae6273b31da926c199ff4d27183a">PP_VIDEOFRAME_FORMAT_UNKNOWN</a> =  0, 
+<a class="el" href="group___enums.html#gga4e7cf746d8acbfa268db1f5ebe8061bfa6ff238ffd3c807c510712ae56e051e3a">PP_VIDEOFRAME_FORMAT_YV12</a> =  1, 
+<a class="el" href="group___enums.html#gga4e7cf746d8acbfa268db1f5ebe8061bfa0f72b9ac0cba278aab35e7a975624f76">PP_VIDEOFRAME_FORMAT_I420</a> =  2, 
+<a class="el" href="group___enums.html#gga4e7cf746d8acbfa268db1f5ebe8061bfa453d0201b2c7207ef58067ae7693ecfb">PP_VIDEOFRAME_FORMAT_BGRA</a> =  3, 
+<br />
+&#160;&#160;<a class="el" href="group___enums.html#gga4e7cf746d8acbfa268db1f5ebe8061bfa9c2ef109d6a4b3f32ab8c10b260aeab4">PP_VIDEOFRAME_FORMAT_LAST</a> =  PP_VIDEOFRAME_FORMAT_BGRA
+<br />
+ }</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gade61cdf6a7470769b571925694d91a89">PP_WebSocketReadyState</a> { <br />
 &#160;&#160;<a class="el" href="group___enums.html#ggade61cdf6a7470769b571925694d91a89a6c603b9df214e22d8b8202431866b26b">PP_WEBSOCKETREADYSTATE_INVALID</a> =  -1, 
 <a class="el" href="group___enums.html#ggade61cdf6a7470769b571925694d91a89a9ad491ea639e22b598d4e8cab463acd9">PP_WEBSOCKETREADYSTATE_CONNECTING</a> =  0, 
@@ -375,6 +431,8 @@ Variables</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gaee750c350655f2fb0fe04c04029e0ff8">PP_AudioSampleRate</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gac39067c0883ec80b94290dd2a3bae440">PP_LogLevel</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga4c87e6dd19c1d49b66a9b37136a82e82">PP_FileOpenFlags</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga07cb383dee51bc7e8e1f234068652668">PP_FileMapProtection</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga47ce032e16d18ba6fc6c16bbe8939bad">PP_FileMapFlags</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gadb4b8db19266831040fc604f73c83a25">PP_HostResolver_Flag</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga2ee7ad01799553e5f17bdaa35dd952ee">PP_ImageDataFormat</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gaca7296cfec99fcb6646b7144d1d6a0c5">PP_InputEvent_Type</a></td></tr>
@@ -553,6 +611,62 @@ Variables</h2><table class="memberdecls">
 </dl>
 </div>
 </div>
+<a class="anchor" id="ga78757d4be14d14d17708071a9466afbd"></a><!-- doxytag: member="ppb_audio_buffer.h::PP_AudioBuffer_SampleRate" ref="ga78757d4be14d14d17708071a9466afbd" args="" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">enum <a class="el" href="group___enums.html#ga78757d4be14d14d17708071a9466afbd">PP_AudioBuffer_SampleRate</a></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>PP_AudioBuffer_SampleRate is an enumeration of the different audio sample rates. </p>
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="gga78757d4be14d14d17708071a9466afbdace5d37815e444b494434d9418a8dfb81"></a><!-- doxytag: member="PP_AUDIOBUFFER_SAMPLERATE_UNKNOWN" ref="gga78757d4be14d14d17708071a9466afbdace5d37815e444b494434d9418a8dfb81" args="" -->PP_AUDIOBUFFER_SAMPLERATE_UNKNOWN</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga78757d4be14d14d17708071a9466afbda7a10ada2c776cf2ca4fa5a220ab23f4f"></a><!-- doxytag: member="PP_AUDIOBUFFER_SAMPLERATE_8000" ref="gga78757d4be14d14d17708071a9466afbda7a10ada2c776cf2ca4fa5a220ab23f4f" args="" -->PP_AUDIOBUFFER_SAMPLERATE_8000</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga78757d4be14d14d17708071a9466afbdaa3205a867c6b7f54a735ba1e5e602839"></a><!-- doxytag: member="PP_AUDIOBUFFER_SAMPLERATE_16000" ref="gga78757d4be14d14d17708071a9466afbdaa3205a867c6b7f54a735ba1e5e602839" args="" -->PP_AUDIOBUFFER_SAMPLERATE_16000</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga78757d4be14d14d17708071a9466afbda934a834bf3ac58e69a7df1abc41a57ea"></a><!-- doxytag: member="PP_AUDIOBUFFER_SAMPLERATE_22050" ref="gga78757d4be14d14d17708071a9466afbda934a834bf3ac58e69a7df1abc41a57ea" args="" -->PP_AUDIOBUFFER_SAMPLERATE_22050</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga78757d4be14d14d17708071a9466afbda439854e1f66e4e92af5d257b93da5483"></a><!-- doxytag: member="PP_AUDIOBUFFER_SAMPLERATE_32000" ref="gga78757d4be14d14d17708071a9466afbda439854e1f66e4e92af5d257b93da5483" args="" -->PP_AUDIOBUFFER_SAMPLERATE_32000</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga78757d4be14d14d17708071a9466afbdaef0fd009c55740284bcf6e60344395ac"></a><!-- doxytag: member="PP_AUDIOBUFFER_SAMPLERATE_44100" ref="gga78757d4be14d14d17708071a9466afbdaef0fd009c55740284bcf6e60344395ac" args="" -->PP_AUDIOBUFFER_SAMPLERATE_44100</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga78757d4be14d14d17708071a9466afbda09d65e0a6d8ed28ae2fc784569b9123a"></a><!-- doxytag: member="PP_AUDIOBUFFER_SAMPLERATE_48000" ref="gga78757d4be14d14d17708071a9466afbda09d65e0a6d8ed28ae2fc784569b9123a" args="" -->PP_AUDIOBUFFER_SAMPLERATE_48000</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga78757d4be14d14d17708071a9466afbdaf52f1115d22dfbf1cc4a24f20b9e664b"></a><!-- doxytag: member="PP_AUDIOBUFFER_SAMPLERATE_96000" ref="gga78757d4be14d14d17708071a9466afbdaf52f1115d22dfbf1cc4a24f20b9e664b" args="" -->PP_AUDIOBUFFER_SAMPLERATE_96000</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga78757d4be14d14d17708071a9466afbda18d94d8af683f06d4d7718fb788b7361"></a><!-- doxytag: member="PP_AUDIOBUFFER_SAMPLERATE_192000" ref="gga78757d4be14d14d17708071a9466afbda18d94d8af683f06d4d7718fb788b7361" args="" -->PP_AUDIOBUFFER_SAMPLERATE_192000</em>&nbsp;</td><td>
+</td></tr>
+</table>
+</dd>
+</dl>
+</div>
+</div>
+<a class="anchor" id="ga2ba5c3a8eed23fa49a73b218b1bce044"></a><!-- doxytag: member="ppb_audio_buffer.h::PP_AudioBuffer_SampleSize" ref="ga2ba5c3a8eed23fa49a73b218b1bce044" args="" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">enum <a class="el" href="group___enums.html#ga2ba5c3a8eed23fa49a73b218b1bce044">PP_AudioBuffer_SampleSize</a></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>PP_AudioBuffer_SampleSize is an enumeration of the different audio sample sizes. </p>
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="gga2ba5c3a8eed23fa49a73b218b1bce044a1bc7fa3874cd1ccee3cfa00e23bea379"></a><!-- doxytag: member="PP_AUDIOBUFFER_SAMPLESIZE_UNKNOWN" ref="gga2ba5c3a8eed23fa49a73b218b1bce044a1bc7fa3874cd1ccee3cfa00e23bea379" args="" -->PP_AUDIOBUFFER_SAMPLESIZE_UNKNOWN</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga2ba5c3a8eed23fa49a73b218b1bce044a0cc6b2d53c4c3bc5d3f19f809a1ce6c8"></a><!-- doxytag: member="PP_AUDIOBUFFER_SAMPLESIZE_16_BITS" ref="gga2ba5c3a8eed23fa49a73b218b1bce044a0cc6b2d53c4c3bc5d3f19f809a1ce6c8" args="" -->PP_AUDIOBUFFER_SAMPLESIZE_16_BITS</em>&nbsp;</td><td>
+</td></tr>
+</table>
+</dd>
+</dl>
+</div>
+</div>
 <a class="anchor" id="gaee750c350655f2fb0fe04c04029e0ff8"></a><!-- doxytag: member="ppb_audio_config.h::PP_AudioSampleRate" ref="gaee750c350655f2fb0fe04c04029e0ff8" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -620,6 +734,59 @@ Variables</h2><table class="memberdecls">
 <p>This flag allows any method taking such callback to complete synchronously and not call the callback if the operation would not block. </p>
 <p>This is useful when performance is an issue, and the operation bandwidth should not be limited to the processing speed of the message loop.</p>
 <p>On synchronous method completion, the completion result will be returned by the method itself. Otherwise, the method will return PP_OK_COMPLETIONPENDING, and the callback will be invoked asynchronously on the same thread on which the method was invoked. If there is no valid PPB_MessageLoop attached to that thread, and the callback would normally run asynchronously, the invoked method will return PP_ERROR_NO_MESSAGE_LOOP. </p>
+</td></tr>
+</table>
+</dd>
+</dl>
+</div>
+</div>
+<a class="anchor" id="ga47ce032e16d18ba6fc6c16bbe8939bad"></a><!-- doxytag: member="ppb_file_mapping.h::PP_FileMapFlags" ref="ga47ce032e16d18ba6fc6c16bbe8939bad" args="" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">enum <a class="el" href="group___enums.html#ga47ce032e16d18ba6fc6c16bbe8939bad">PP_FileMapFlags</a></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>The PP_FileMapFlags contain flag values for use with Map(). </p>
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="gga47ce032e16d18ba6fc6c16bbe8939bada9233097e19d068b7d4ad0ac00140d03c"></a><!-- doxytag: member="PP_FILEMAPFLAG_SHARED" ref="gga47ce032e16d18ba6fc6c16bbe8939bada9233097e19d068b7d4ad0ac00140d03c" args="" -->PP_FILEMAPFLAG_SHARED</em>&nbsp;</td><td>
+<p>Requests a shared mapping. </p>
+<p>If this flag is set, changes written to the memory region will be reflected in the underlying file and will thus eventually be visible to other processes which have opened the file. The file may not actually be updated until Unmap() is called. This is only valid if the PPB_FileIO resource was opened with write permission. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga47ce032e16d18ba6fc6c16bbe8939bada74f65f6fbedce77b36bda16beab65a03"></a><!-- doxytag: member="PP_FILEMAPFLAG_PRIVATE" ref="gga47ce032e16d18ba6fc6c16bbe8939bada74f65f6fbedce77b36bda16beab65a03" args="" -->PP_FILEMAPFLAG_PRIVATE</em>&nbsp;</td><td>
+<p>Requests a copy-on-write mapping. </p>
+<p>If this flag is set, changes are not written to the underlying file, but only in the memory of the process (copy-on-write). </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga47ce032e16d18ba6fc6c16bbe8939badae37402f728fae4078d76a006d36bc26e"></a><!-- doxytag: member="PP_FILEMAPFLAG_FIXED" ref="gga47ce032e16d18ba6fc6c16bbe8939badae37402f728fae4078d76a006d36bc26e" args="" -->PP_FILEMAPFLAG_FIXED</em>&nbsp;</td><td>
+<p>Forces Map() to map the file contents at the provided |address|. </p>
+<p>If Map() can not comply, Map() will fail. </p>
+</td></tr>
+</table>
+</dd>
+</dl>
+</div>
+</div>
+<a class="anchor" id="ga07cb383dee51bc7e8e1f234068652668"></a><!-- doxytag: member="ppb_file_mapping.h::PP_FileMapProtection" ref="ga07cb383dee51bc7e8e1f234068652668" args="" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">enum <a class="el" href="group___enums.html#ga07cb383dee51bc7e8e1f234068652668">PP_FileMapProtection</a></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>The PP_FileMapProtection values indicate the permissions requested for the file mapping. </p>
+<p>These should be used in a uint32_t bitfield. </p>
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="gga07cb383dee51bc7e8e1f234068652668a88619572d7d081c4b657fd8087a164fb"></a><!-- doxytag: member="PP_FILEMAPPROTECTION_READ" ref="gga07cb383dee51bc7e8e1f234068652668a88619572d7d081c4b657fd8087a164fb" args="" -->PP_FILEMAPPROTECTION_READ</em>&nbsp;</td><td>
+<p>Requests read access to the mapped address. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga07cb383dee51bc7e8e1f234068652668aadebe6625bb49b575195f0d4d165c27e"></a><!-- doxytag: member="PP_FILEMAPPROTECTION_WRITE" ref="gga07cb383dee51bc7e8e1f234068652668aadebe6625bb49b575195f0d4d165c27e" args="" -->PP_FILEMAPPROTECTION_WRITE</em>&nbsp;</td><td>
+<p>Requests write access to the mapped address. </p>
 </td></tr>
 </table>
 </dd>
@@ -1067,6 +1234,109 @@ Variables</h2><table class="memberdecls">
 <tr><td valign="top"><em><a class="anchor" id="ggac39067c0883ec80b94290dd2a3bae440a66a3c4f684827eb994093dea14284aaf"></a><!-- doxytag: member="PP_LOGLEVEL_WARNING" ref="ggac39067c0883ec80b94290dd2a3bae440a66a3c4f684827eb994093dea14284aaf" args="" -->PP_LOGLEVEL_WARNING</em>&nbsp;</td><td>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggac39067c0883ec80b94290dd2a3bae440a5854926dface39f205d138d9e47c37eb"></a><!-- doxytag: member="PP_LOGLEVEL_ERROR" ref="ggac39067c0883ec80b94290dd2a3bae440a5854926dface39f205d138d9e47c37eb" args="" -->PP_LOGLEVEL_ERROR</em>&nbsp;</td><td>
+</td></tr>
+</table>
+</dd>
+</dl>
+</div>
+</div>
+<a class="anchor" id="gadcb0a92e6ca510586c3f34088d35dc9f"></a><!-- doxytag: member="ppb_file_ref.h::PP_MakeDirectoryFlags" ref="gadcb0a92e6ca510586c3f34088d35dc9f" args="" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">enum <a class="el" href="group___enums.html#gadcb0a92e6ca510586c3f34088d35dc9f">PP_MakeDirectoryFlags</a></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>The <code>PP_MakeDirectoryFlags</code> enum contains flags used to control behavior of <code><a class="el" href="struct_p_p_b___file_ref__1__2.html#a829f880110d9d0756552a7070a08ed33" title="MakeDirectory() makes a new directory in the file system according to the given make_directory_flags...">PPB_FileRef.MakeDirectory()</a></code>. </p>
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="ggadcb0a92e6ca510586c3f34088d35dc9fafeeef418b62780276c4671a57196ad3f"></a><!-- doxytag: member="PP_MAKEDIRECTORYFLAG_NONE" ref="ggadcb0a92e6ca510586c3f34088d35dc9fafeeef418b62780276c4671a57196ad3f" args="" -->PP_MAKEDIRECTORYFLAG_NONE</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggadcb0a92e6ca510586c3f34088d35dc9fa5c7f89c8784c9d8abfaeae51d9cb84ba"></a><!-- doxytag: member="PP_MAKEDIRECTORYFLAG_WITH_ANCESTORS" ref="ggadcb0a92e6ca510586c3f34088d35dc9fa5c7f89c8784c9d8abfaeae51d9cb84ba" args="" -->PP_MAKEDIRECTORYFLAG_WITH_ANCESTORS</em>&nbsp;</td><td>
+<p>Requests that ancestor directories are created if they do not exist. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggadcb0a92e6ca510586c3f34088d35dc9fa34dd5b5ba9af9e5c820d3c6e21fc2094"></a><!-- doxytag: member="PP_MAKEDIRECTORYFLAG_EXCLUSIVE" ref="ggadcb0a92e6ca510586c3f34088d35dc9fa34dd5b5ba9af9e5c820d3c6e21fc2094" args="" -->PP_MAKEDIRECTORYFLAG_EXCLUSIVE</em>&nbsp;</td><td>
+<p>Requests that the <a class="el" href="struct_p_p_b___file_ref__1__2.html#a829f880110d9d0756552a7070a08ed33" title="MakeDirectory() makes a new directory in the file system according to the given make_directory_flags...">PPB_FileRef.MakeDirectory()</a> call fails if the directory already exists. </p>
+</td></tr>
+</table>
+</dd>
+</dl>
+</div>
+</div>
+<a class="anchor" id="ga2f729c238ba74adc778c0d0bc17c453f"></a><!-- doxytag: member="ppb_media_stream_audio_track.h::PP_MediaStreamAudioTrack_Attrib" ref="ga2f729c238ba74adc778c0d0bc17c453f" args="" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">enum <a class="el" href="group___enums.html#ga2f729c238ba74adc778c0d0bc17c453f">PP_MediaStreamAudioTrack_Attrib</a></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>This enumeration contains audio track attributes which are used by <code>Configure()</code>. </p>
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="gga2f729c238ba74adc778c0d0bc17c453fa5f1f0d353fe407fe10ac3c0e908aba4f"></a><!-- doxytag: member="PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE" ref="gga2f729c238ba74adc778c0d0bc17c453fa5f1f0d353fe407fe10ac3c0e908aba4f" args="" -->PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE</em>&nbsp;</td><td>
+<p>Attribute list terminator. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga2f729c238ba74adc778c0d0bc17c453fae157f98fb5bc32ca0e193e5b8198c7dc"></a><!-- doxytag: member="PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS" ref="gga2f729c238ba74adc778c0d0bc17c453fae157f98fb5bc32ca0e193e5b8198c7dc" args="" -->PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS</em>&nbsp;</td><td>
+<p>The maximum number of buffers to hold audio samples. </p>
+<p>Note: this is only used as advisory; the browser may allocate more or fewer based on available resources. How many buffers depends on usage - request at least 2 to make sure latency doesn't cause lost samples. If the plugin expects to hold on to more than one buffer at a time (e.g. to do multi-buffer processing), it should request that many more. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga2f729c238ba74adc778c0d0bc17c453fa5b0cf01bda3aa2bbcff7b41ffb96c425"></a><!-- doxytag: member="PP_MEDIASTREAMAUDIOTRACK_ATTRIB_SAMPLE_RATE" ref="gga2f729c238ba74adc778c0d0bc17c453fa5b0cf01bda3aa2bbcff7b41ffb96c425" args="" -->PP_MEDIASTREAMAUDIOTRACK_ATTRIB_SAMPLE_RATE</em>&nbsp;</td><td>
+<p>The sample rate of audio data in buffers. </p>
+<p>The attribute value is a <code>PP_AudioBuffer_SampleRate</code>. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga2f729c238ba74adc778c0d0bc17c453faacb4f8d7388db7fdbeb96aa6e6309e13"></a><!-- doxytag: member="PP_MEDIASTREAMAUDIOTRACK_ATTRIB_SAMPLE_SIZE" ref="gga2f729c238ba74adc778c0d0bc17c453faacb4f8d7388db7fdbeb96aa6e6309e13" args="" -->PP_MEDIASTREAMAUDIOTRACK_ATTRIB_SAMPLE_SIZE</em>&nbsp;</td><td>
+<p>The sample size of audio data in buffers in bytes. </p>
+<p>The attribute value is a <code>PP_AudioBuffer_SampleSize</code>. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga2f729c238ba74adc778c0d0bc17c453faa9fe8e2346974581d302372f844e7ef8"></a><!-- doxytag: member="PP_MEDIASTREAMAUDIOTRACK_ATTRIB_CHANNELS" ref="gga2f729c238ba74adc778c0d0bc17c453faa9fe8e2346974581d302372f844e7ef8" args="" -->PP_MEDIASTREAMAUDIOTRACK_ATTRIB_CHANNELS</em>&nbsp;</td><td>
+<p>The number of channels in audio buffers. </p>
+<p>Supported values: 1, 2 </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga2f729c238ba74adc778c0d0bc17c453fa13c3fa0a2740301acda8b218bac8b972"></a><!-- doxytag: member="PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION" ref="gga2f729c238ba74adc778c0d0bc17c453fa13c3fa0a2740301acda8b218bac8b972" args="" -->PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION</em>&nbsp;</td><td>
+<p>The duration of an audio buffer in milliseconds. </p>
+<p>Valid range: 10 to 10000 </p>
+</td></tr>
+</table>
+</dd>
+</dl>
+</div>
+</div>
+<a class="anchor" id="ga49cd0a65c15c8a91959310699afc36b7"></a><!-- doxytag: member="ppb_media_stream_video_track.h::PP_MediaStreamVideoTrack_Attrib" ref="ga49cd0a65c15c8a91959310699afc36b7" args="" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">enum <a class="el" href="group___enums.html#ga49cd0a65c15c8a91959310699afc36b7">PP_MediaStreamVideoTrack_Attrib</a></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>This enumeration contains video track attributes which are used by <code>Configure()</code>. </p>
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="gga49cd0a65c15c8a91959310699afc36b7a0d5a46a7dbdfc72630e58159a4ac7c50"></a><!-- doxytag: member="PP_MEDIASTREAMVIDEOTRACK_ATTRIB_NONE" ref="gga49cd0a65c15c8a91959310699afc36b7a0d5a46a7dbdfc72630e58159a4ac7c50" args="" -->PP_MEDIASTREAMVIDEOTRACK_ATTRIB_NONE</em>&nbsp;</td><td>
+<p>Attribute list terminator. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga49cd0a65c15c8a91959310699afc36b7a82a5dbfcbfa8f78e80ccf2c5607bf327"></a><!-- doxytag: member="PP_MEDIASTREAMVIDEOTRACK_ATTRIB_BUFFERED_FRAMES" ref="gga49cd0a65c15c8a91959310699afc36b7a82a5dbfcbfa8f78e80ccf2c5607bf327" args="" -->PP_MEDIASTREAMVIDEOTRACK_ATTRIB_BUFFERED_FRAMES</em>&nbsp;</td><td>
+<p>The maximum number of frames to hold in the input buffer. </p>
+<p>Note: this is only used as advisory; the browser may allocate more or fewer based on available resources. How many frames to buffer depends on usage - request at least 2 to make sure latency doesn't cause lost frames. If the plugin expects to hold on to more than one frame at a time (e.g. to do multi-frame processing), it should request that many more. If this attribute is not specified or value 0 is specified for this attribute, the default value will be used. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga49cd0a65c15c8a91959310699afc36b7a6ed25ce915df51b4c927d03e88932a5c"></a><!-- doxytag: member="PP_MEDIASTREAMVIDEOTRACK_ATTRIB_WIDTH" ref="gga49cd0a65c15c8a91959310699afc36b7a6ed25ce915df51b4c927d03e88932a5c" args="" -->PP_MEDIASTREAMVIDEOTRACK_ATTRIB_WIDTH</em>&nbsp;</td><td>
+<p>The width of video frames in pixels. </p>
+<p>It should be a multiple of 4. If the specified size is different from the video source (webcam), frames will be scaled to specified size. If this attribute is not specified or value 0 is specified, the original frame size of the video track will be used.</p>
+<p>Maximum value: 4096 (4K resolution). </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga49cd0a65c15c8a91959310699afc36b7abda9111782f26174aaeada7dfe7cc197"></a><!-- doxytag: member="PP_MEDIASTREAMVIDEOTRACK_ATTRIB_HEIGHT" ref="gga49cd0a65c15c8a91959310699afc36b7abda9111782f26174aaeada7dfe7cc197" args="" -->PP_MEDIASTREAMVIDEOTRACK_ATTRIB_HEIGHT</em>&nbsp;</td><td>
+<p>The height of video frames in pixels. </p>
+<p>It should be a multiple of 4. If the specified size is different from the video source (webcam), frames will be scaled to specified size. If this attribute is not specified or value 0 is specified, the original frame size of the video track will be used.</p>
+<p>Maximum value: 4096 (4K resolution). </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga49cd0a65c15c8a91959310699afc36b7acc27d12b7e95806c1af435cf2b9cdb9a"></a><!-- doxytag: member="PP_MEDIASTREAMVIDEOTRACK_ATTRIB_FORMAT" ref="gga49cd0a65c15c8a91959310699afc36b7acc27d12b7e95806c1af435cf2b9cdb9a" args="" -->PP_MEDIASTREAMVIDEOTRACK_ATTRIB_FORMAT</em>&nbsp;</td><td>
+<p>The format of video frames. </p>
+<p>The attribute value is a <code>PP_VideoFrame_Format</code>. If the specified format is different from the video source (webcam), frames will be converted to specified format. If this attribute is not specified or value <code>PP_VIDEOFRAME_FORMAT_UNKNOWN</code> is specified, the orignal frame format of the video track will be used. </p>
 </td></tr>
 </table>
 </dd>
@@ -1558,6 +1828,37 @@ Variables</h2><table class="memberdecls">
 </dl>
 </div>
 </div>
+<a class="anchor" id="ga4e7cf746d8acbfa268db1f5ebe8061bf"></a><!-- doxytag: member="ppb_video_frame.h::PP_VideoFrame_Format" ref="ga4e7cf746d8acbfa268db1f5ebe8061bf" args="" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">enum <a class="el" href="group___enums.html#ga4e7cf746d8acbfa268db1f5ebe8061bf">PP_VideoFrame_Format</a></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="gga4e7cf746d8acbfa268db1f5ebe8061bfa203cae6273b31da926c199ff4d27183a"></a><!-- doxytag: member="PP_VIDEOFRAME_FORMAT_UNKNOWN" ref="gga4e7cf746d8acbfa268db1f5ebe8061bfa203cae6273b31da926c199ff4d27183a" args="" -->PP_VIDEOFRAME_FORMAT_UNKNOWN</em>&nbsp;</td><td>
+<p>Unknown format value. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4e7cf746d8acbfa268db1f5ebe8061bfa6ff238ffd3c807c510712ae56e051e3a"></a><!-- doxytag: member="PP_VIDEOFRAME_FORMAT_YV12" ref="gga4e7cf746d8acbfa268db1f5ebe8061bfa6ff238ffd3c807c510712ae56e051e3a" args="" -->PP_VIDEOFRAME_FORMAT_YV12</em>&nbsp;</td><td>
+<p>12bpp YVU planar 1x1 Y, 2x2 VU samples. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4e7cf746d8acbfa268db1f5ebe8061bfa0f72b9ac0cba278aab35e7a975624f76"></a><!-- doxytag: member="PP_VIDEOFRAME_FORMAT_I420" ref="gga4e7cf746d8acbfa268db1f5ebe8061bfa0f72b9ac0cba278aab35e7a975624f76" args="" -->PP_VIDEOFRAME_FORMAT_I420</em>&nbsp;</td><td>
+<p>12bpp YUV planar 1x1 Y, 2x2 UV samples. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4e7cf746d8acbfa268db1f5ebe8061bfa453d0201b2c7207ef58067ae7693ecfb"></a><!-- doxytag: member="PP_VIDEOFRAME_FORMAT_BGRA" ref="gga4e7cf746d8acbfa268db1f5ebe8061bfa453d0201b2c7207ef58067ae7693ecfb" args="" -->PP_VIDEOFRAME_FORMAT_BGRA</em>&nbsp;</td><td>
+<p>32bpp BGRA. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4e7cf746d8acbfa268db1f5ebe8061bfa9c2ef109d6a4b3f32ab8c10b260aeab4"></a><!-- doxytag: member="PP_VIDEOFRAME_FORMAT_LAST" ref="gga4e7cf746d8acbfa268db1f5ebe8061bfa9c2ef109d6a4b3f32ab8c10b260aeab4" args="" -->PP_VIDEOFRAME_FORMAT_LAST</em>&nbsp;</td><td>
+<p>The last format. </p>
+</td></tr>
+</table>
+</dd>
+</dl>
+</div>
+</div>
 <a class="anchor" id="ga8458f33f09ecc56fcf486c60b844678d"></a><!-- doxytag: member="ppb_websocket.h::PP_WebSocketCloseCode" ref="ga8458f33f09ecc56fcf486c60b844678d" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -1722,6 +2023,30 @@ Variables</h2><table class="memberdecls">
 <table class="memname">
 <tr>
 <td class="memname"><a class="el" href="group___enums.html#ga7610f0fba2396d46384859caa4d91798">PP_CompletionCallback_Flag</a></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+</div>
+</div>
+<a class="anchor" id="ga47ce032e16d18ba6fc6c16bbe8939bad"></a><!-- doxytag: member="ppb_file_mapping.h::PP_FileMapFlags" ref="ga47ce032e16d18ba6fc6c16bbe8939bad" args="" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname"><a class="el" href="group___enums.html#ga47ce032e16d18ba6fc6c16bbe8939bad">PP_FileMapFlags</a></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+</div>
+</div>
+<a class="anchor" id="ga07cb383dee51bc7e8e1f234068652668"></a><!-- doxytag: member="ppb_file_mapping.h::PP_FileMapProtection" ref="ga07cb383dee51bc7e8e1f234068652668" args="" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname"><a class="el" href="group___enums.html#ga07cb383dee51bc7e8e1f234068652668">PP_FileMapProtection</a></td>
 </tr>
 </table>
 </div>

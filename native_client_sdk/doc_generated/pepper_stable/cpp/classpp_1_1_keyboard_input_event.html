@@ -24,8 +24,10 @@ Public Member Functions</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_keyboard_input_event.html#a07197d3bf22df18ab201dd593ec14b46">KeyboardInputEvent</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_keyboard_input_event.html#ae0817f051306805db56dbbf837da57bb">KeyboardInputEvent</a> (const <a class="el" href="classpp_1_1_input_event.html">InputEvent</a> &amp;event)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_keyboard_input_event.html#a3adab90fc81122554ec878ab2fb8d506">KeyboardInputEvent</a> (const <a class="el" href="classpp_1_1_instance_handle.html">InstanceHandle</a> &amp;instance, PP_InputEvent_Type type, PP_TimeTicks time_stamp, uint32_t modifiers, uint32_t key_code, const <a class="el" href="classpp_1_1_var.html">Var</a> &amp;character_text)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_keyboard_input_event.html#a95f16a4bee09b84cb38614f457038dca">KeyboardInputEvent</a> (const <a class="el" href="classpp_1_1_instance_handle.html">InstanceHandle</a> &amp;instance, PP_InputEvent_Type type, PP_TimeTicks time_stamp, uint32_t modifiers, uint32_t key_code, const <a class="el" href="classpp_1_1_var.html">Var</a> &amp;character_text, const <a class="el" href="classpp_1_1_var.html">Var</a> &amp;code)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_keyboard_input_event.html#a5d6c799091a2adce32d3e20fd1a63017">GetKeyCode</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpp_1_1_var.html">Var</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_keyboard_input_event.html#a343bd835af56bd7875b0d82361680e4a">GetCharacterText</a> () const </td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpp_1_1_var.html">Var</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_keyboard_input_event.html#ad65274e6cb38165fa7bb5d03f2a76b93">GetCode</a> () const </td></tr>
 </table>
 <hr /><h2>Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a07197d3bf22df18ab201dd593ec14b46"></a><!-- doxytag: member="pp::KeyboardInputEvent::KeyboardInputEvent" ref="a07197d3bf22df18ab201dd593ec14b46" args="()" -->
@@ -130,6 +132,75 @@ Public Member Functions</h2><table class="memberdecls">
 </dl>
 </div>
 </div>
+<a class="anchor" id="a95f16a4bee09b84cb38614f457038dca"></a><!-- doxytag: member="pp::KeyboardInputEvent::KeyboardInputEvent" ref="a95f16a4bee09b84cb38614f457038dca" args="(const InstanceHandle &amp;instance, PP_InputEvent_Type type, PP_TimeTicks time_stamp, uint32_t modifiers, uint32_t key_code, const Var &amp;character_text, const Var &amp;code)" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname"><a class="el" href="classpp_1_1_keyboard_input_event.html#a07197d3bf22df18ab201dd593ec14b46">pp::KeyboardInputEvent::KeyboardInputEvent</a> </td>
+<td>(</td>
+<td class="paramtype">const <a class="el" href="classpp_1_1_instance_handle.html">InstanceHandle</a> &amp;&#160;</td>
+<td class="paramname"><em>instance</em>, </td>
+</tr>
+<tr>
+<td class="paramkey"></td>
+<td></td>
+<td class="paramtype">PP_InputEvent_Type&#160;</td>
+<td class="paramname"><em>type</em>, </td>
+</tr>
+<tr>
+<td class="paramkey"></td>
+<td></td>
+<td class="paramtype">PP_TimeTicks&#160;</td>
+<td class="paramname"><em>time_stamp</em>, </td>
+</tr>
+<tr>
+<td class="paramkey"></td>
+<td></td>
+<td class="paramtype">uint32_t&#160;</td>
+<td class="paramname"><em>modifiers</em>, </td>
+</tr>
+<tr>
+<td class="paramkey"></td>
+<td></td>
+<td class="paramtype">uint32_t&#160;</td>
+<td class="paramname"><em>key_code</em>, </td>
+</tr>
+<tr>
+<td class="paramkey"></td>
+<td></td>
+<td class="paramtype">const <a class="el" href="classpp_1_1_var.html">Var</a> &amp;&#160;</td>
+<td class="paramname"><em>character_text</em>, </td>
+</tr>
+<tr>
+<td class="paramkey"></td>
+<td></td>
+<td class="paramtype">const <a class="el" href="classpp_1_1_var.html">Var</a> &amp;&#160;</td>
+<td class="paramname"><em>code</em>&#160;</td>
+</tr>
+<tr>
+<td></td>
+<td>)</td>
+<td></td><td></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>Constructs a keyboard input even from the given parameters. </p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+<table class="params">
+<tr><td class="paramdir">[in]</td><td class="paramname">instance</td><td>The instance for which this event occurred.</td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>A <code>PP_InputEvent_Type</code> identifying the type of input event.</td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">time_stamp</td><td>A <code>PP_TimeTicks</code> indicating the time when the event occurred.</td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">modifiers</td><td>A bit field combination of the <code>PP_InputEvent_Modifier</code> flags.</td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">key_code</td><td>This value reflects the DOM KeyboardEvent <code>keyCode</code> field. Chrome populates this with the Windows-style Virtual Key code of the key.</td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">character_text</td><td>This value represents the typed character as a UTF-8 string.</td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">code</td><td>This value reflects the DOM KeyboardEvent <code>code</code> field, which identifies the physical key associated with the event. </td></tr>
+</table>
+</dd>
+</dl>
+</div>
+</div>
 <hr /><h2>Member Function Documentation</h2>
 <a class="anchor" id="a343bd835af56bd7875b0d82361680e4a"></a><!-- doxytag: member="pp::KeyboardInputEvent::GetCharacterText" ref="a343bd835af56bd7875b0d82361680e4a" args="() const " -->
 <div class="memitem">
@@ -146,6 +217,23 @@ Public Member Functions</h2><table class="memberdecls">
 <div class="memdoc">
 <p>Returns the typed character for the given character event. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>A string var representing a single typed character for character input events. For non-character input events the return value will be an undefined var. </dd></dl>
+</div>
+</div>
+<a class="anchor" id="ad65274e6cb38165fa7bb5d03f2a76b93"></a><!-- doxytag: member="pp::KeyboardInputEvent::GetCode" ref="ad65274e6cb38165fa7bb5d03f2a76b93" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname"><a class="el" href="classpp_1_1_var.html">Var</a> <a class="el" href="classpp_1_1_keyboard_input_event.html#ad65274e6cb38165fa7bb5d03f2a76b93">pp::KeyboardInputEvent::GetCode</a> </td>
+<td>(</td>
+<td class="paramname"></td><td>)</td>
+<td> const</td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>Returns the DOM |code| for the keyboard event. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A string var representing a physical key that was pressed to generate this event. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="a5d6c799091a2adce32d3e20fd1a63017"></a><!-- doxytag: member="pp::KeyboardInputEvent::GetKeyCode" ref="a5d6c799091a2adce32d3e20fd1a63017" args="() const " -->
