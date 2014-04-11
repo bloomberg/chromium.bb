@@ -186,7 +186,7 @@ void GCMClientImpl::Initialize(
   chrome_build_proto_.CopyFrom(chrome_build_proto);
   account_ids_ = account_ids;
 
-  gcm_store_.reset(new GCMStoreImpl(false, path, blocking_task_runner));
+  gcm_store_.reset(new GCMStoreImpl(path, blocking_task_runner));
 
   delegate_ = delegate;
 

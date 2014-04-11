@@ -4,11 +4,12 @@
 
 #include "google_apis/gcm/gcm_client_impl.h"
 
+#include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/os_crypt_switches.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/fake_connection_factory.h"
@@ -267,6 +268,11 @@ GCMClientImplTest::GCMClientImplTest()
 GCMClientImplTest::~GCMClientImplTest() {}
 
 void GCMClientImplTest::SetUp() {
+  testing::Test::SetUp();
+#if defined(OS_MACOSX)
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      os_crypt::switches::kUseMockKeychain);
+#endif  // OS_MACOSX
   ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
   run_loop_.reset(new base::RunLoop);
   BuildGCMClient();
@@ -361,11 +367,6 @@ void GCMClientImplTest::InitializeGCMClient() {
                           message_loop_.message_loop_proxy(),
                           url_request_context_getter_,
                           this);
-
-#if defined(OS_MACOSX)
-  // On OSX, prevent the Keychain permissions popup during unit tests.
-  OSCrypt::UseMockKeychain(true);  // Must be after Initialize.
-#endif
 
   // Start loading and check-in.
   gcm_client_->Load();

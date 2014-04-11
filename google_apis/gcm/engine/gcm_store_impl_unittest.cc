@@ -8,12 +8,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/os_crypt/os_crypt_switches.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
@@ -43,6 +45,8 @@ class GCMStoreImplTest : public testing::Test {
   GCMStoreImplTest();
   virtual ~GCMStoreImplTest();
 
+  virtual void SetUp() OVERRIDE;
+
   scoped_ptr<GCMStore> BuildGCMStore();
 
   std::string GetNextPersistentId();
@@ -70,9 +74,16 @@ GCMStoreImplTest::GCMStoreImplTest()
 
 GCMStoreImplTest::~GCMStoreImplTest() {}
 
+void GCMStoreImplTest::SetUp() {
+  testing::Test::SetUp();
+#if defined(OS_MACOSX)
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      os_crypt::switches::kUseMockKeychain);
+#endif  // OS_MACOSX
+}
+
 scoped_ptr<GCMStore> GCMStoreImplTest::BuildGCMStore() {
   return scoped_ptr<GCMStore>(new GCMStoreImpl(
-      true,
       temp_directory_.path(),
       message_loop_.message_loop_proxy()));
 }
