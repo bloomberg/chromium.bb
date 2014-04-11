@@ -5,9 +5,12 @@
 #include "chrome/browser/ui/views/website_settings/permissions_bubble_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
+#include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -21,6 +24,7 @@
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
@@ -38,77 +42,134 @@ const int kButtonBorderSize = 2;
 
 }  // namespace
 
-// Model for an Allow/Block combobox control. Each combobox has a separate
-// model, which remembers the index of the permission it is associated with.
-// TODO(gbillock): use a variant of the PermissionSelectorView for this.
-class PermissionComboboxModel : public ui::ComboboxModel {
+// This class is a MenuButton which is given a PermissionMenuModel. It
+// shows the current checked item in the menu model, and notifies its listener
+// about any updates to the state of the selection.
+// TODO: refactor PermissionMenuButton to work like this and re-use?
+class PermissionCombobox : public views::MenuButton,
+                           public views::MenuButtonListener,
+                           public PermissionMenuModel::Delegate {
  public:
-  enum Item {
-    STATE_ALLOW = 0,
-    STATE_BLOCK = 1
+  // Get notifications when the selection changes.
+  class Listener {
+   public:
+    virtual void PermissionSelectionChanged(int index, bool allowed) = 0;
   };
 
-  PermissionComboboxModel(int index, Item default_item);
-  virtual ~PermissionComboboxModel() {}
+  PermissionCombobox(Listener* listener,
+                     int index,
+                     const GURL& url,
+                     ContentSettingsType type,
+                     ContentSetting default_setting,
+                     ContentSetting current_setting);
+  virtual ~PermissionCombobox();
 
-  virtual int GetItemCount() const OVERRIDE;
-  virtual base::string16 GetItemAt(int index) OVERRIDE;
-  virtual int GetDefaultIndex() const OVERRIDE;
+  int index() const { return index_; }
 
-  // Return the item index this combobox is the model for.
-  int index() { return index_; }
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+
+  // MenuButtonListener:
+  virtual void OnMenuButtonClicked(View* source,
+                                   const gfx::Point& point) OVERRIDE;
+
+  // PermissionMenuModel::Delegate:
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) OVERRIDE;
+
 
  private:
   int index_;
-  int default_item_;
+  Listener* listener_;
+  scoped_ptr<PermissionMenuModel> model_;
+  int current_command_id_;
+  scoped_ptr<views::MenuRunner> menu_runner_;
 };
 
-PermissionComboboxModel::PermissionComboboxModel(int index, Item default_item)
-    : index_(index), default_item_(default_item) {}
-
-int PermissionComboboxModel::GetItemCount() const {
-  return 2;  // 'allow' and 'block'
+PermissionCombobox::PermissionCombobox(
+    Listener* listener,
+    int index,
+    const GURL& url,
+    ContentSettingsType type,
+    ContentSetting default_setting,
+    ContentSetting current_setting)
+    : MenuButton(NULL, base::string16(), this, true),
+      index_(index),
+      listener_(listener),
+      model_(new PermissionMenuModel(
+          this, url, type, default_setting, current_setting)),
+      current_command_id_(current_setting == CONTENT_SETTING_ALLOW ?
+                          PermissionMenuModel::COMMAND_SET_TO_ALLOW :
+                          PermissionMenuModel::COMMAND_SET_TO_BLOCK) {
+  SetText(model_->GetLabelAt(model_->GetIndexOfCommandId(current_command_id_)));
+  SizeToPreferredSize();
 }
 
-base::string16 PermissionComboboxModel::GetItemAt(int index) {
-  if (index == 0)
-    return l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW);
-  else
-    return l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
+PermissionCombobox::~PermissionCombobox() {}
+
+void PermissionCombobox::GetAccessibleState(ui::AXViewState* state) {
+  MenuButton::GetAccessibleState(state);
+  state->value = text();
 }
 
-int PermissionComboboxModel::GetDefaultIndex() const {
-  return default_item_;
+void PermissionCombobox::OnMenuButtonClicked(View* source,
+                                             const gfx::Point& point) {
+  menu_runner_.reset(new views::MenuRunner(model_.get()));
+
+  gfx::Point p(point);
+  p.Offset(-source->width(), 0);
+  if (menu_runner_->RunMenuAt(
+          source->GetWidget()->GetTopLevelWidget(),
+          this,
+          gfx::Rect(p, gfx::Size()),
+          views::MenuItemView::TOPLEFT,
+          ui::MENU_SOURCE_NONE,
+          views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
+    return;
 }
 
-class CustomizeDenyComboboxModel : public ui::ComboboxModel {
+void PermissionCombobox::ExecuteCommand(int command_id) {
+  current_command_id_ = command_id;
+  SetText(model_->GetLabelAt(model_->GetIndexOfCommandId(current_command_id_)));
+  SizeToPreferredSize();
+
+  listener_->PermissionSelectionChanged(index_,
+        IsCommandIdChecked(PermissionMenuModel::COMMAND_SET_TO_ALLOW));
+}
+
+bool PermissionCombobox::IsCommandIdChecked(int command_id) {
+  return current_command_id_ == command_id;
+}
+
+// A combobox originating on the Allow button allowing for customization
+// of permissions.
+class CustomizeAllowComboboxModel : public ui::ComboboxModel {
  public:
   enum Item {
-    INDEX_DENY = 0,
+    INDEX_ALLOW = 0,
     INDEX_CUSTOMIZE = 1
   };
 
-  CustomizeDenyComboboxModel() {}
-  virtual ~CustomizeDenyComboboxModel() {}
+  CustomizeAllowComboboxModel() {}
+  virtual ~CustomizeAllowComboboxModel() {}
 
   virtual int GetItemCount() const OVERRIDE;
   virtual base::string16 GetItemAt(int index) OVERRIDE;
   virtual int GetDefaultIndex() const OVERRIDE;
 };
 
-int CustomizeDenyComboboxModel::GetItemCount() const {
+int CustomizeAllowComboboxModel::GetItemCount() const {
   return 2;
 }
 
-base::string16 CustomizeDenyComboboxModel::GetItemAt(int index) {
-  if (index == INDEX_DENY)
-    return l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
+base::string16 CustomizeAllowComboboxModel::GetItemAt(int index) {
+  if (index == INDEX_ALLOW)
+    return l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW);
   else
     return l10n_util::GetStringUTF16(IDS_PERMISSION_CUSTOMIZE);
 }
 
-int CustomizeDenyComboboxModel::GetDefaultIndex() const {
-  return INDEX_DENY;
+int CustomizeAllowComboboxModel::GetDefaultIndex() const {
+  return INDEX_ALLOW;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -116,7 +177,8 @@ int CustomizeDenyComboboxModel::GetDefaultIndex() const {
 
 class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
                                       public views::ButtonListener,
-                                      public views::ComboboxListener {
+                                      public views::ComboboxListener,
+                                      public PermissionCombobox::Listener {
  public:
   PermissionsBubbleDelegateView(
       views::View* anchor,
@@ -142,13 +204,18 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
   // ComboboxListener:
   virtual void OnPerformAction(views::Combobox* combobox) OVERRIDE;
 
+  // PermissionCombobox::Listener:
+  virtual void PermissionSelectionChanged(int index, bool allowed) OVERRIDE;
+
  private:
   PermissionBubbleViewViews* owner_;
   views::Button* allow_;
   views::Button* deny_;
-  views::Combobox* deny_combobox_;
+  views::Combobox* allow_combobox_;
   base::string16 title_;
   std::string hostname_;
+  scoped_ptr<PermissionMenuModel> menu_button_model_;
+  std::vector<PermissionCombobox*> customize_comboboxes_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionsBubbleDelegateView);
 };
@@ -163,10 +230,11 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
       owner_(owner),
       allow_(NULL),
       deny_(NULL),
-      deny_combobox_(NULL) {
+      allow_combobox_(NULL) {
   DCHECK(!requests.empty());
 
   RemoveAllChildViews(true);
+  customize_comboboxes_.clear();
   set_close_on_esc(false);
   set_close_on_deactivate(false);
 
@@ -208,12 +276,15 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
     row_layout->AddView(label_container);
 
     if (customization_mode) {
-      views::Combobox* combobox = new views::Combobox(
-          new PermissionComboboxModel(index,
-              accept_state[index] ? PermissionComboboxModel::STATE_ALLOW
-                                  : PermissionComboboxModel::STATE_BLOCK));
-      combobox->set_listener(this);
+      PermissionCombobox* combobox = new PermissionCombobox(
+          this,
+          index,
+          requests[index]->GetRequestingHostname(),
+          CONTENT_SETTINGS_TYPE_DEFAULT,
+          CONTENT_SETTING_NUM_SETTINGS,
+          accept_state[index] ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
       row_layout->AddView(combobox);
+      customize_comboboxes_.push_back(combobox);
     } else {
       row_layout->AddView(new views::View());
     }
@@ -251,31 +322,32 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
                      0, views::GridLayout::USE_PREF, 0, 0);
   button_layout->StartRow(0, 0);
 
-  base::string16 allow_text = l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW);
-  views::LabelButton* allow_button = new views::LabelButton(this, allow_text);
-  allow_button->SetStyle(views::Button::STYLE_BUTTON);
-  allow_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
-  button_layout->AddView(allow_button);
-  allow_ = allow_button;
-
-  // Deny button is a regular button when there's only one option, and a
+  // Allow button is a regular button when there's only one option, and a
   // STYLE_ACTION Combobox when there are more than one option and
   // customization is an option.
-  base::string16 deny_text = l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
+
+  base::string16 allow_text = l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW);
   if (requests.size() == 1) {
-    views::LabelButton* deny_button = new views::LabelButton(this, deny_text);
-    deny_button->SetStyle(views::Button::STYLE_BUTTON);
-    deny_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
-    button_layout->AddView(deny_button);
-    deny_ = deny_button;
+    views::LabelButton* allow_button = new views::LabelButton(this, allow_text);
+    allow_button->SetStyle(views::Button::STYLE_BUTTON);
+    allow_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
+    button_layout->AddView(allow_button);
+    allow_ = allow_button;
   } else {
-    views::Combobox* deny_combobox = new views::Combobox(
-        new CustomizeDenyComboboxModel());
-    deny_combobox->set_listener(this);
-    deny_combobox->SetStyle(views::Combobox::STYLE_ACTION);
-    button_layout->AddView(deny_combobox);
-    deny_combobox_ = deny_combobox;
+    views::Combobox* allow_combobox = new views::Combobox(
+        new CustomizeAllowComboboxModel());
+    allow_combobox->set_listener(this);
+    allow_combobox->SetStyle(views::Combobox::STYLE_ACTION);
+    button_layout->AddView(allow_combobox);
+    allow_combobox_ = allow_combobox;
   }
+
+  base::string16 deny_text = l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
+  views::LabelButton* deny_button = new views::LabelButton(this, deny_text);
+  deny_button->SetStyle(views::Button::STYLE_BUTTON);
+  deny_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
+  button_layout->AddView(deny_button);
+  deny_ = deny_button;
 
   button_layout->AddPaddingRow(0, kBubbleOuterMargin);
 }
@@ -330,21 +402,21 @@ void PermissionsBubbleDelegateView::ButtonPressed(views::Button* button,
     owner_->Deny();
 }
 
+void PermissionsBubbleDelegateView::PermissionSelectionChanged(
+    int index, bool allowed) {
+  owner_->Toggle(index, allowed);
+}
+
 void PermissionsBubbleDelegateView::OnPerformAction(
     views::Combobox* combobox) {
-  if (combobox == deny_combobox_) {
+  if (combobox == allow_combobox_) {
     if (combobox->selected_index() ==
-        CustomizeDenyComboboxModel::INDEX_CUSTOMIZE)
+        CustomizeAllowComboboxModel::INDEX_CUSTOMIZE)
       owner_->SetCustomizationMode();
     else if (combobox->selected_index() ==
-             CustomizeDenyComboboxModel::INDEX_DENY)
-      owner_->Deny();
-    return;
+             CustomizeAllowComboboxModel::INDEX_ALLOW)
+      owner_->Accept();
   }
-
-  PermissionComboboxModel* model =
-      static_cast<PermissionComboboxModel*>(combobox->model());
-  owner_->Toggle(model->index(), combobox->selected_index() == 0);
 }
 
 //////////////////////////////////////////////////////////////////////////////
