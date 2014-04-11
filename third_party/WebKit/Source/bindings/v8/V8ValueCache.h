@@ -26,7 +26,7 @@
 #ifndef V8ValueCache_h
 #define V8ValueCache_h
 
-#include "bindings/v8/UnsafePersistent.h"
+#include "bindings/v8/V8PersistentValueMap.h"
 #include <v8.h>
 #include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"
@@ -35,15 +35,39 @@
 
 namespace WebCore {
 
+class StringCacheMapTraits : public V8PersistentValueMapTraits<StringImpl*, v8::String, true> {
+public:
+    // Weak traits:
+    typedef StringImpl WeakCallbackDataType;
+    typedef v8::PersistentValueMap<StringImpl*, v8::String, StringCacheMapTraits> MapType;
+
+    static WeakCallbackDataType* WeakCallbackParameter(
+        MapType* map, StringImpl* key, v8::Local<v8::String>& value) { return key; }
+    static void DisposeCallbackData(WeakCallbackDataType* callbackData) { }
+
+    static MapType* MapFromWeakCallbackData(
+        const v8::WeakCallbackData<v8::String, WeakCallbackDataType>&);
+
+    static StringImpl* KeyFromWeakCallbackData(
+        const v8::WeakCallbackData<v8::String, WeakCallbackDataType>& data)
+    {
+        return data.GetParameter();
+    }
+
+    static void Dispose(v8::Isolate*, v8::UniquePersistent<v8::String> value, StringImpl* key);
+};
+
+
 class StringCache {
 public:
-    StringCache() { }
+    StringCache(v8::Isolate* isolate) : m_stringCache(isolate) { }
+    ~StringCache();
 
     v8::Handle<v8::String> v8ExternalString(StringImpl* stringImpl, v8::Isolate* isolate)
     {
         ASSERT(stringImpl);
         if (m_lastStringImpl.get() == stringImpl)
-            return m_lastV8String.newLocal(isolate);
+            return m_lastV8String.NewLocal(isolate);
         return v8ExternalStringSlow(stringImpl, isolate);
     }
 
@@ -51,20 +75,22 @@ public:
     {
         ASSERT(stringImpl);
         if (m_lastStringImpl.get() == stringImpl)
-            returnValue.Set(*m_lastV8String.persistent());
+            m_lastV8String.SetReturnValue(returnValue);
         else
             setReturnValueFromStringSlow(returnValue, stringImpl);
     }
 
-private:
-    static void setWeakCallback(const v8::WeakCallbackData<v8::String, StringImpl>&);
+    friend class StringCacheMapTraits;
 
+private:
     v8::Handle<v8::String> v8ExternalStringSlow(StringImpl*, v8::Isolate*);
     void setReturnValueFromStringSlow(v8::ReturnValue<v8::Value>, StringImpl*);
     v8::Local<v8::String> createStringAndInsertIntoCache(StringImpl*, v8::Isolate*);
+    void InvalidateLastString();
 
-    HashMap<StringImpl*, UnsafePersistent<v8::String> > m_stringCache;
-    UnsafePersistent<v8::String> m_lastV8String;
+    StringCacheMapTraits::MapType m_stringCache;
+    StringCacheMapTraits::MapType::PersistentValueReference m_lastV8String;
+
     // Note: RefPtr is a must as we cache by StringImpl* equality, not identity
     // hence lastStringImpl might be not a key of the cache (in sense of identity)
     // and hence it's not refed on addition.

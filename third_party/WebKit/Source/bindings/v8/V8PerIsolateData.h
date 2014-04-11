@@ -28,7 +28,6 @@
 
 #include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScopedPersistent.h"
-#include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "gin/public/gin_embedders.h"

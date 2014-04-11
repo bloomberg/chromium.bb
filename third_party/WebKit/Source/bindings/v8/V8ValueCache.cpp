@@ -31,6 +31,29 @@
 
 namespace WebCore {
 
+StringCacheMapTraits::MapType* StringCacheMapTraits::MapFromWeakCallbackData(
+    const v8::WeakCallbackData<v8::String, WeakCallbackDataType>& data)
+{
+    return &(V8PerIsolateData::from(data.GetIsolate())->stringCache()->m_stringCache);
+}
+
+
+void StringCacheMapTraits::Dispose(
+    v8::Isolate* isolate, v8::UniquePersistent<v8::String> value, StringImpl* key)
+{
+    V8PerIsolateData::from(isolate)->stringCache()->InvalidateLastString();
+    key->deref();
+}
+
+
+StringCache::~StringCache()
+{
+    // The MapType::Dispose callback calls StringCache::InvalidateLastString,
+    // which will only work while the destructor has not yet finished. Thus,
+    // we need to clear the map before the destructor has completed.
+    m_stringCache.Clear();
+}
+
 static v8::Local<v8::String> makeExternalString(const String& string, v8::Isolate* isolate)
 {
     if (string.is8Bit()) {
@@ -53,11 +76,11 @@ v8::Handle<v8::String> StringCache::v8ExternalStringSlow(StringImpl* stringImpl,
     if (!stringImpl->length())
         return v8::String::Empty(isolate);
 
-    UnsafePersistent<v8::String> cachedV8String = m_stringCache.get(stringImpl);
-    if (!cachedV8String.isEmpty()) {
+    StringCacheMapTraits::MapType::PersistentValueReference cachedV8String = m_stringCache.GetReference(stringImpl);
+    if (!cachedV8String.IsEmpty()) {
         m_lastStringImpl = stringImpl;
         m_lastV8String = cachedV8String;
-        return cachedV8String.newLocal(isolate);
+        return m_lastV8String.NewLocal(isolate);
     }
 
     return createStringAndInsertIntoCache(stringImpl, isolate);
@@ -70,11 +93,11 @@ void StringCache::setReturnValueFromStringSlow(v8::ReturnValue<v8::Value> return
         return;
     }
 
-    UnsafePersistent<v8::String> cachedV8String = m_stringCache.get(stringImpl);
-    if (!cachedV8String.isEmpty()) {
+    StringCacheMapTraits::MapType::PersistentValueReference cachedV8String = m_stringCache.GetReference(stringImpl);
+    if (!cachedV8String.IsEmpty()) {
         m_lastStringImpl = stringImpl;
         m_lastV8String = cachedV8String;
-        returnValue.Set(*cachedV8String.persistent());
+        m_lastV8String.SetReturnValue(returnValue);
         return;
     }
 
@@ -83,34 +106,27 @@ void StringCache::setReturnValueFromStringSlow(v8::ReturnValue<v8::Value> return
 
 v8::Local<v8::String> StringCache::createStringAndInsertIntoCache(StringImpl* stringImpl, v8::Isolate* isolate)
 {
-    ASSERT(!m_stringCache.contains(stringImpl));
+    ASSERT(!m_stringCache.Contains(stringImpl));
     ASSERT(stringImpl->length());
 
     v8::Local<v8::String> newString = makeExternalString(String(stringImpl), isolate);
     if (newString.IsEmpty())
         return newString;
 
-    v8::Persistent<v8::String> wrapper(isolate, newString);
+    v8::UniquePersistent<v8::String> wrapper(isolate, newString);
 
     stringImpl->ref();
     wrapper.MarkIndependent();
-    wrapper.SetWeak(stringImpl, &setWeakCallback);
-    m_lastV8String = UnsafePersistent<v8::String>(wrapper);
+    m_stringCache.Set(stringImpl, wrapper.Pass(), &m_lastV8String);
     m_lastStringImpl = stringImpl;
-    m_stringCache.set(stringImpl, m_lastV8String);
 
     return newString;
 }
 
-void StringCache::setWeakCallback(const v8::WeakCallbackData<v8::String, StringImpl>& data)
+void StringCache::InvalidateLastString()
 {
-    StringCache* stringCache = V8PerIsolateData::from(data.GetIsolate())->stringCache();
-    stringCache->m_lastStringImpl = nullptr;
-    stringCache->m_lastV8String.clear();
-    ASSERT(stringCache->m_stringCache.contains(data.GetParameter()));
-    stringCache->m_stringCache.get(data.GetParameter()).dispose();
-    stringCache->m_stringCache.remove(data.GetParameter());
-    data.GetParameter()->deref();
+    m_lastStringImpl = nullptr;
+    m_lastV8String.Reset();
 }
 
 } // namespace WebCore

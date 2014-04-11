@@ -43,7 +43,7 @@ static V8PerIsolateData* mainThreadPerIsolateData = 0;
 V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     : m_isolate(isolate)
     , m_isolateHolder(adoptPtr(new gin::IsolateHolder(m_isolate, v8ArrayBufferAllocator())))
-    , m_stringCache(adoptPtr(new StringCache()))
+    , m_stringCache(adoptPtr(new StringCache(m_isolate)))
     , m_hiddenValue(adoptPtr(new V8HiddenValue()))
     , m_constructorMode(ConstructorMode::CreateNewObject)
     , m_recursionLevel(0)
