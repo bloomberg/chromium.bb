@@ -166,11 +166,7 @@ void RenderLayerCompositor::updateAcceleratedCompositingSettings()
 
     // FIXME: Can settings really be null here?
     if (Settings* settings = m_renderView.document().settings()) {
-        hasAcceleratedCompositing = settings->acceleratedCompositingEnabled();
-
-        // We allow the chrome to override the settings, in case the page is rendered
-        // on a chrome that doesn't allow accelerated compositing.
-        if (hasAcceleratedCompositing) {
+        if (settings->acceleratedCompositingEnabled()) {
             m_compositingReasonFinder.updateTriggers();
             hasAcceleratedCompositing = m_compositingReasonFinder.hasTriggers();
         }
