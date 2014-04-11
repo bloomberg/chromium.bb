@@ -492,8 +492,10 @@ function processServerResponse(response) {
     response.groups = {};
     // Google Now was enabled; now it's disabled. This is a state change.
     onStateChange();
-    // Allow this to continue. We still need to do work here to clear
-    // the cards and schedule the next opt-in poll.
+    // Start the Google Now Disabled polling period.
+    scheduleNextPoll({}, false);
+    // Stop processing now. The state change will clear the cards.
+    return Promise.reject();
   }
 
   var receivedGroups = response.groups;
@@ -968,8 +970,7 @@ function startPollingCards() {
 function stopPollingCards() {
   console.log('stopPollingCards');
   updateCardsAttempts.stop();
-  removeAllCards();
-  // Since we're stopping everything, clear all runtime storage too.
+  // Since we're stopping everything, clear all runtime storage.
   // We don't clear localStorage since those values are still relevant
   // across Google Now start-stop events.
   chrome.storage.local.clear();
@@ -984,7 +985,7 @@ function initialize() {
 }
 
 /**
- * Starts or stops the polling of cards.
+ * Starts or stops the main pipeline for polling cards.
  * @param {boolean} shouldPollCardsRequest true to start and
  *     false to stop polling cards.
  */
@@ -1065,11 +1066,11 @@ function updateRunningState(
 
   var shouldPollCards = false;
   var shouldSetBackground = false;
+  var shouldClearCards = true;
 
   if (signedIn && notificationEnabled) {
-    if (canEnableBackground && googleNowEnabled)
-      shouldSetBackground = true;
-
+    shouldClearCards = !googleNowEnabled;
+    shouldSetBackground = canEnableBackground && googleNowEnabled;
     shouldPollCards = true;
   } else {
     recordEvent(GoogleNowEvent.STOPPED);
@@ -1079,10 +1080,14 @@ function updateRunningState(
 
   console.log(
       'Requested Actions shouldSetBackground=' + shouldSetBackground + ' ' +
-      'setShouldPollCards=' + shouldPollCards);
+      'setShouldPollCards=' + shouldPollCards + ' ' +
+      'shouldClearCards=' + shouldClearCards);
 
   setBackgroundEnable(shouldSetBackground);
   setShouldPollCards(shouldPollCards);
+  if (shouldClearCards) {
+    removeAllCards();
+  }
 }
 
 /**

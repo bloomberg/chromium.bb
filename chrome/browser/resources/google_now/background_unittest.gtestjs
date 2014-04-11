@@ -532,8 +532,10 @@ TEST_F(TEST_NAME, 'CombineGroup', function() {
 function mockInitializeDependencies(fixture) {
   fixture.makeAndRegisterMockGlobals([
     'recordEvent',
+    'removeAllCards',
     'setBackgroundEnable',
-    'startPollingCards'
+    'startPollingCards',
+    'stopPollingCards'
   ]);
   fixture.makeAndRegisterMockApis([
     'authenticationManager.isSignedIn',
@@ -598,8 +600,13 @@ function expectStateMachineCalls(
       {googleNowEnabled: false},
       {googleNowEnabled: testGoogleNowEnabled});
 
-  fixture.mockGlobals.expects(once()).
-      setBackgroundEnable(ANYTHING);
+  var updateCardsAttemptsIsRunningSavedArgs = new SaveMockArguments();
+  fixture.mockApis.expects(once()).
+      updateCardsAttempts_isRunning(
+          updateCardsAttemptsIsRunningSavedArgs.match(ANYTHING)).
+      will(
+          invokeCallback(
+              updateCardsAttemptsIsRunningSavedArgs, 0, undefined));
 }
 
 /**
@@ -609,23 +616,24 @@ function expectStateMachineCalls(
  * outside of this context with the same argument matchers.
  * expects() calls cannot be chained with the same argument matchers.
  */
-function expectInitialization(mockApisObj) {
+function expectInitialization(fixture) {
   var tasksAddSavedArgs = new SaveMockArguments();
-  mockApisObj.expects(once()).
+  fixture.mockApis.expects(once()).
       tasks_add(
           tasksAddSavedArgs.match(ANYTHING),
           tasksAddSavedArgs.match(ANYTHING)).
       will(invokeCallback(tasksAddSavedArgs, 1, function() {}));
-  var updateCardsAttemptsIsRunningSavedArgs = new SaveMockArguments();
-  mockApisObj.expects(once()).
-      updateCardsAttempts_isRunning(
-          updateCardsAttemptsIsRunningSavedArgs.match(ANYTHING)).
-      will(
-          invokeCallback(
-             updateCardsAttemptsIsRunningSavedArgs, 0, false));
+
+  // The ordering here between stubs and expects is important.
+  // We only care about the EXTENSION_START event. The other events are covered
+  // by the NoCards tests below. Reversing the calls will cause all recordEvent
+  // calls to be unexpected.
+  fixture.mockGlobals.stubs().recordEvent(ANYTHING);
+  fixture.mockGlobals.
+      expects(once()).recordEvent(GoogleNowEvent.EXTENSION_START);
 }
 
-TEST_F(TEST_NAME,'Initialize_ToastStateEmpty', function() {
+TEST_F(TEST_NAME,'Initialize_SignedOut', function() {
   // Tests the case when getAuthToken fails most likely because the user is
   // not signed in. In this case, the function should quietly exit after
   // finding out that getAuthToken fails.
@@ -638,14 +646,7 @@ TEST_F(TEST_NAME,'Initialize_ToastStateEmpty', function() {
 
   mockInitializeDependencies(this);
 
-  this.mockGlobals.expects(once()).recordEvent(GoogleNowEvent.EXTENSION_START);
-
-  this.mockGlobals.expects(once()).recordEvent(GoogleNowEvent.STOPPED);
-
-  this.mockGlobals.expects(once()).recordEvent(
-      GoogleNowEvent.SIGNED_OUT);
-
-  expectInitialization(this.mockApis);
+  expectInitialization(this);
 
   expectStateMachineCalls(
       this,
@@ -653,6 +654,98 @@ TEST_F(TEST_NAME,'Initialize_ToastStateEmpty', function() {
       testExperimentVariationParams,
       testNotificationPermissionLevel,
       testGoogleNowEnabled);
+
+  this.mockGlobals.expects(once()).setBackgroundEnable(false);
+  this.mockGlobals.expects(never()).startPollingCards();
+  this.mockGlobals.expects(once()).stopPollingCards();
+  this.mockGlobals.expects(once()).removeAllCards();
+
+  // Invoking the tested function.
+  initialize();
+});
+
+TEST_F(TEST_NAME,'Initialize_NotificationDisabled', function() {
+  // Tests the case when Google Now is disabled in the notifications center.
+
+  // Setup and expectations.
+  var testIdentityToken = 'some identity token';
+  var testExperimentVariationParams = {};
+  var testNotificationPermissionLevel = 'denied';
+  var testGoogleNowEnabled = undefined;
+
+  mockInitializeDependencies(this);
+
+  expectInitialization(this);
+
+  expectStateMachineCalls(
+      this,
+      testIdentityToken,
+      testExperimentVariationParams,
+      testNotificationPermissionLevel,
+      testGoogleNowEnabled);
+
+  this.mockGlobals.expects(once()).setBackgroundEnable(false);
+  this.mockGlobals.expects(never()).startPollingCards();
+  this.mockGlobals.expects(once()).stopPollingCards();
+  this.mockGlobals.expects(once()).removeAllCards();
+
+  // Invoking the tested function.
+  initialize();
+});
+
+TEST_F(TEST_NAME, 'Initialize_NoBackground', function() {
+  // Tests when the no background variation is received.
+
+  // Setup and expectations.
+  var testIdentityToken = 'some identity token';
+  var testExperimentVariationParams = {canEnableBackground: 'false'};
+  var testNotificationPermissionLevel = 'granted';
+  var testGoogleNowEnabled = true;
+
+  mockInitializeDependencies(this);
+
+  expectInitialization(this);
+
+  expectStateMachineCalls(
+      this,
+      testIdentityToken,
+      testExperimentVariationParams,
+      testNotificationPermissionLevel,
+      testGoogleNowEnabled);
+
+  this.mockGlobals.expects(once()).setBackgroundEnable(false);
+  this.mockGlobals.expects(once()).startPollingCards();
+  this.mockGlobals.expects(never()).stopPollingCards();
+  this.mockGlobals.expects(never()).removeAllCards();
+
+  // Invoking the tested function.
+  initialize();
+});
+
+TEST_F(TEST_NAME, 'Initialize_GoogleNowDisabled', function() {
+  // Tests when the user has Google Now disabled.
+
+  // Setup and expectations.
+  var testIdentityToken = 'some identity token';
+  var testExperimentVariationParams = {};
+  var testNotificationPermissionLevel = 'granted';
+  var testGoogleNowEnabled = false;
+
+  mockInitializeDependencies(this);
+
+  expectInitialization(this);
+
+  expectStateMachineCalls(
+      this,
+      testIdentityToken,
+      testExperimentVariationParams,
+      testNotificationPermissionLevel,
+      testGoogleNowEnabled);
+
+  this.mockGlobals.expects(once()).setBackgroundEnable(false);
+  this.mockGlobals.expects(once()).startPollingCards();
+  this.mockGlobals.expects(never()).stopPollingCards();
+  this.mockGlobals.expects(once()).removeAllCards();
 
   // Invoking the tested function.
   initialize();
@@ -670,9 +763,7 @@ TEST_F(TEST_NAME, 'Initialize_RunGoogleNow', function() {
 
   mockInitializeDependencies(this);
 
-  this.mockGlobals.expects(once()).recordEvent(GoogleNowEvent.EXTENSION_START);
-
-  expectInitialization(this.mockApis);
+  expectInitialization(this);
 
   expectStateMachineCalls(
       this,
@@ -681,7 +772,10 @@ TEST_F(TEST_NAME, 'Initialize_RunGoogleNow', function() {
       testNotificationPermissionLevel,
       testGoogleNowEnabled);
 
+  this.mockGlobals.expects(once()).setBackgroundEnable(true);
   this.mockGlobals.expects(once()).startPollingCards();
+  this.mockGlobals.expects(never()).stopPollingCards();
+  this.mockGlobals.expects(never()).removeAllCards();
 
   // Invoking the tested function.
   initialize();
@@ -696,9 +790,11 @@ TEST_F(TEST_NAME, 'NoCardsSignedOut', function() {
   var googleNowEnabled = false;
   this.makeAndRegisterMockGlobals([
       'recordEvent',
+      'removeAllCards',
       'setBackgroundEnable',
       'setShouldPollCards']);
 
+  this.mockGlobals.stubs().removeAllCards();
   this.mockGlobals.stubs().setBackgroundEnable(ANYTHING);
   this.mockGlobals.stubs().setShouldPollCards(ANYTHING);
 
@@ -719,9 +815,11 @@ TEST_F(TEST_NAME, 'NoCardsNotificationsDisabled', function() {
   var googleNowEnabled = false;
   this.makeAndRegisterMockGlobals([
       'recordEvent',
+      'removeAllCards',
       'setBackgroundEnable',
       'setShouldPollCards']);
 
+  this.mockGlobals.stubs().removeAllCards();
   this.mockGlobals.stubs().setBackgroundEnable(ANYTHING);
   this.mockGlobals.stubs().setShouldPollCards(ANYTHING);
 
@@ -742,9 +840,11 @@ TEST_F(TEST_NAME, 'NoCardsGoogleNowDisabled', function() {
   var googleNowEnabled = false;
   this.makeAndRegisterMockGlobals([
       'recordEvent',
+      'removeAllCards',
       'setBackgroundEnable',
       'setShouldPollCards']);
 
+  this.mockGlobals.stubs().removeAllCards();
   this.mockGlobals.stubs().setBackgroundEnable(ANYTHING);
   this.mockGlobals.stubs().setShouldPollCards(ANYTHING);
 
@@ -765,9 +865,11 @@ TEST_F(TEST_NAME, 'NoCardsEverythingEnabled', function() {
   var googleNowEnabled = true;
   this.makeAndRegisterMockGlobals([
       'recordEvent',
+      'removeAllCards',
       'setBackgroundEnable',
       'setShouldPollCards']);
 
+  this.mockGlobals.stubs().removeAllCards();
   this.mockGlobals.stubs().setBackgroundEnable(ANYTHING);
   this.mockGlobals.stubs().setShouldPollCards(ANYTHING);
 
@@ -1142,17 +1244,6 @@ TEST_F(TEST_NAME, 'ProcessServerResponseGoogleNowDisabled', function() {
       chrome_storage_local_set(eqJSON({googleNowEnabled: false}));
 
   this.mockGlobals.expects(once()).onStateChange();
-
-  expectChromeLocalStorageGet(
-      this,
-      {
-        notificationGroups: {},
-        recentDismissals: {}
-      },
-      {
-        notificationGroups: {},
-        recentDismissals: {}
-      });
 
   this.mockGlobals.expects(once()).scheduleNextPoll(eqJSON({}), false);
 
