@@ -42,7 +42,19 @@ def GenerateUpdateId(target, src, key, for_vm):
 
 
 class DevServerException(Exception):
-  """Thrown when the devserver fails to start up or responds with an error."""
+  """Base exception class of devserver errors."""
+
+
+class DevServerStartupError(DevServerException):
+  """Thrown when the devserver fails to start up."""
+
+
+class DevServerResponseError(DevServerException):
+  """Thrown when the devserver responds with an error."""
+
+
+class DevServerConnectionError(DevServerException):
+  """Thrown when unable to connect to devserver."""
 
 
 class DevServerWrapper(multiprocessing.Process):
@@ -118,11 +130,11 @@ class DevServerWrapper(multiprocessing.Process):
       res = urllib2.urlopen(url, timeout=timeout)
     except urllib2.HTTPError as e:
       logging.error('Devserver responsded with an error!')
-      raise DevServerException(e)
+      raise DevServerResponseError(e)
     except (urllib2.URLError, socket.timeout) as e:
       if not ignore_url_error:
         logging.error('Cannot connect to devserver!')
-        raise DevServerException(e)
+        raise DevServerConnectionError(e)
     else:
       return res.read()
 
@@ -149,7 +161,8 @@ class DevServerWrapper(multiprocessing.Process):
     cros_build_lib.Info('Cleaning up previously generated payloads.')
     cmd = [devserver_bin, '--clear_cache', '--exit']
     if static_dir:
-      cmd.append('--static_dir=%s' % static_dir)
+      cmd.append('--static_dir=%s' % cros_build_lib.ToChrootPath(static_dir))
+
     cros_build_lib.SudoRunCommand(
         cmd, enter_chroot=True, print_cmd=False, combine_stdout_stderr=True,
         redirect_stdout=True, redirect_stderr=True, cwd=constants.SOURCE_ROOT)
@@ -157,7 +170,7 @@ class DevServerWrapper(multiprocessing.Process):
   def IsReady(self):
     """Check if devserver is up and running."""
     if not self.is_alive():
-      raise DevServerException('Devserver terminated unexpectedly!')
+      raise DevServerStartupError('Devserver terminated unexpectedly!')
 
     url = os.path.join('http://%s:%d' % (remote_access.LOCALHOST_IP, self.port),
                        'check_health')
@@ -185,7 +198,7 @@ class DevServerWrapper(multiprocessing.Process):
                                       period=5)
     except timeout_util.TimeoutError:
       self.terminate()
-      raise DevServerException('Devserver did not start')
+      raise DevServerStartupError('Devserver did not start')
 
   def run(self):
     """Kicks off devserver in a separate process and waits for it to finish."""
@@ -335,7 +348,7 @@ You can fix this with one of the following three options:
   def IsReady(self):
     """Returns True if devserver is ready to accept requests."""
     if not self.is_alive():
-      raise DevServerException('Devserver terminated unexpectedly!')
+      raise DevServerStartupError('Devserver terminated unexpectedly!')
 
     url = os.path.join('http://127.0.0.1:%d' % self.port, 'check_health')
     # Running wget through ssh because the port on the device is not

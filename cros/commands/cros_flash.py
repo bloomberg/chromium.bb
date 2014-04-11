@@ -37,6 +37,38 @@ IMAGE_TYPE_TO_NAME = {
     'recovery': 'recovery_image.bin',
 }
 
+XBUDDY_REMOTE = 'remote'
+XBUDDY_LOCAL = 'local'
+
+
+def ConvertTranslatedPath(original_path, translated_path):
+  """Converts a translated xbuddy path to an xbuddy path.
+
+  Devserver/xbuddy does not accept requests with translated xbuddy
+  path (build-id/version/image-name). This function converts such a
+  translated path to an xbuddy path that is suitable to used in
+  devserver requests.
+
+  Args:
+    original_path: the xbuddy path before translation.
+      (e.g., remote/peppy/latest-canary).
+    translated_path: the translated xbuddy path
+      (e.g., peppy-release/R36-5760.0.0).
+
+  Returns:
+    A xbuddy path uniquely identifies a build and can be used in devserver
+      requests: {local|remote}/build-id/version/image_type
+  """
+  chunks = translated_path.split(os.path.sep)
+  chunks[-1] = IMAGE_NAME_TO_TYPE[chunks[-1]]
+
+  if _GetXbuddyPath(original_path).startswith(XBUDDY_REMOTE):
+    chunks = [XBUDDY_REMOTE] + chunks
+  else:
+    chunks = [XBUDDY_LOCAL] + chunks
+
+  return os.path.sep.join(chunks)
+
 
 def _GetXbuddyPath(path):
   """A helper function to parse an xbuddy path.
@@ -63,6 +95,37 @@ def _GetXbuddyPath(path):
     raise ValueError('Do not support scheme %s.', parsed.scheme)
 
 
+def TranslateImagePath(path, board):
+  """Start devserver to translate the xbuddy |path|.
+
+  Args:
+    path: The xbuddy path.
+    board: The default board to use if board is not specified in |path|.
+
+  Returns:
+    A translated path that uniquely identifies one build:
+      build-id/version/image_name
+  """
+  ds = ds_wrapper.DevServerWrapper(static_dir=DEVSERVER_STATIC_DIR,
+                                   board=board)
+  req = GenerateXbuddyRequest(path, 'translate')
+  logging.info('Starting local devserver to get image path...')
+  try:
+    ds.Start()
+    return ds.OpenURL(ds.GetDevServerURL(sub_dir=req), timeout=60 * 15)
+
+  except ds_wrapper.DevServerResponseError:
+    logging.error('Unable to translate the image path: %s. Are you sure the '
+                  'image path is correct? The board %s is used when no board '
+                  'name is included in the image path.', path, board)
+    raise ValueError('Cannot locate image: %s' % path)
+  except ds_wrapper.DevServerException:
+    logging.error(ds.TailLog() or 'No devserver log is available.')
+    raise
+  finally:
+    ds.Stop()
+
+
 def GenerateXbuddyRequest(path, req_type):
   """Generate an xbuddy request used to retreive payloads.
 
@@ -73,7 +136,7 @@ def GenerateXbuddyRequest(path, req_type):
 
   Args:
     path: An xbuddy path (with or without xbuddy://).
-    req_type: xbuddy request type ('update' or 'image').
+    req_type: xbuddy request type ('update', 'image', or 'translate').
 
   Returns:
     A xbuddy request.
@@ -82,6 +145,8 @@ def GenerateXbuddyRequest(path, req_type):
     return 'xbuddy/%s?for_update=true&return_dir=true' % _GetXbuddyPath(path)
   elif req_type == 'image':
     return 'xbuddy/%s?return_dir=true' % _GetXbuddyPath(path)
+  elif req_type == 'translate':
+    return 'xbuddy_translate/%s' % _GetXbuddyPath(path)
   else:
     raise ValueError('Does not support xbuddy request type %s' % req_type)
 
@@ -208,35 +273,25 @@ class USBImager(object):
     Returns:
       A local path to the image.
     """
-    static_dir = DEVSERVER_STATIC_DIR
-    try:
-      osutils.SafeMakedirsNonRoot(static_dir)
-    except OSError:
-      logging.error('Failed to create %s', static_dir)
-
-    ds = ds_wrapper.DevServerWrapper(static_dir=static_dir, board=self.board)
+    ds = ds_wrapper.DevServerWrapper(static_dir=DEVSERVER_STATIC_DIR,
+                                     board=self.board)
     req = GenerateXbuddyRequest(path, 'image')
-    logging.info('Starting local devserver to get image path...')
+    logging.info('Starting a local devserver to stage image...')
     try:
       ds.Start()
       url = ds.OpenURL(ds.GetDevServerURL(sub_dir=req), timeout=60 * 15)
 
-    except ds_wrapper.DevServerException:
-      logging.error('Could not find or download %s.', path)
-      ds_log = ds.TailLog()
-      if ds_log:
-        logging.error(ds_log)
+    except ds_wrapper.DevServerResponseError:
+      logging.error('Could not download %s.', path)
+      logging.error(ds.TailLog() or 'No devserver log is available.')
       raise
     else:
       # Print out the log when debug is on.
-      if self.debug:
-        ds_log = ds.TailLog()
-        if ds_log:
-          logging.error(ds_log)
+      logging.debug(ds.TailLog() or 'No devserver log is available.')
     finally:
       ds.Stop()
 
-    return DevserverURLToLocalPath(url, static_dir,
+    return DevserverURLToLocalPath(url, DEVSERVER_STATIC_DIR,
                                    path.rsplit(os.path.sep)[-1])
 
   def ChooseImageFromDirectory(self, dir_path):
@@ -255,13 +310,21 @@ class USBImager(object):
 
   def _GetImagePath(self):
     """Returns the image path to use."""
+    image_path = translated_path = None
     if os.path.isfile(self.image):
-      return self.image
+      image_path = self.image
     elif os.path.isdir(self.image):
       # Ask user which image (*.bin) in the folder to use.
-      return self.ChooseImageFromDirectory(self.image)
+      image_path = self.ChooseImageFromDirectory(self.image)
     else:
-      return self.GetImagePathFromDevserver(self.image)
+      # Translate the xbuddy path to get the exact image to use.
+      translated_path = TranslateImagePath(self.image, self.board)
+      # Convert the translated path to be used in a request.
+      xbuddy_path = ConvertTranslatedPath(self.image, translated_path)
+      image_path = self.GetImagePathFromDevserver(xbuddy_path)
+
+    logging.info('Using image %s', translated_path or image_path)
+    return image_path
 
   def Run(self):
     """Image the removable device."""
@@ -285,7 +348,6 @@ class USBImager(object):
       cros_build_lib.Die('No removable devices detected.')
 
     image_path = self._GetImagePath()
-    logging.info('Using image %s', image_path)
     try:
       self.CopyImageToDevice(image_path, self.DeviceNameToPath(target))
     except cros_build_lib.RunCommandError:
@@ -299,7 +361,6 @@ class FileImager(USBImager):
   def Run(self):
     """Copy the image to the path specified by self.device."""
     image_path = self._GetImagePath()
-    logging.info('Using image %s', image_path)
     if os.path.isdir(self.device):
       logging.info('Copying to %s',
                    os.path.join(self.device, os.path.basename(image_path)))
@@ -328,7 +389,7 @@ class RemoteDeviceUpdater(object):
   # stateful partition and thus has enough space to store the payloads.
   DEVICE_BASE_DIR = '/mnt/stateful_partition/cros-flash'
 
-  def __init__(self, ssh_hostname, ssh_port, image_path, stateful_update=True,
+  def __init__(self, ssh_hostname, ssh_port, image, stateful_update=True,
                rootfs_update=True, clobber_stateful=False, reboot=True,
                board=None, src_image_to_delta=None, wipe=True, debug=False,
                yes=False):
@@ -339,7 +400,7 @@ class RemoteDeviceUpdater(object):
     self.tempdir = tempfile.mkdtemp(prefix='cros-flash')
     self.ssh_hostname = ssh_hostname
     self.ssh_port = ssh_port
-    self.image_path = image_path
+    self.image = image
     self.board = board
     self.src_image_to_delta = src_image_to_delta
     self.do_stateful_update = stateful_update
@@ -498,9 +559,7 @@ class RemoteDeviceUpdater(object):
       ds.Stop()
     except Exception:
       logging.error('Rootfs update failed.')
-      ds_log = ds.TailLog()
-      if ds_log:
-        logging.error(ds_log)
+      logging.error(ds.TailLog() or 'No devserver log is available.')
       raise
     finally:
       ds.Stop()
@@ -511,30 +570,19 @@ class RemoteDeviceUpdater(object):
                             follow_symlinks=True,
                             error_code_ok=True)
 
-  def ConvertLocalPathToXbuddyPath(self, path, static_dir):
+  def ConvertLocalPathToXbuddyPath(self, path):
     """Converts |path| to an xbuddy path.
 
-    If |path| is a local image path, this function copies the image
-    into a temprary directory in chroot and creates a symlink in
-    |static_dir| for devserver/xbuddy to access.
+    This function copies the image into a temprary directory in chroot
+    and creates a symlink in static_dir for devserver/xbuddy to
+    access.
 
     Args:
-      path: Either a local path to an image or an xbuddy path (with or without
-        xbuddy://).
-      static_dir: static directory of the local devserver.
+      path: Path to an image.
 
     Returns:
-      If |path| does not exist, returns |path|. Otherwise, returns the xbuddy
-      path for |path|.
+      The xbuddy path for |path|.
     """
-    if not os.path.exists(path):
-      # For xbuddy paths, we should do a sanity check / confirmation
-      # when the xbuddy board doesn't match the board on the
-      # device. Unfortunately this isn't currently possible since we
-      # don't want to duplicate xbuddy code.  TODO(sosa):
-      # crbug.com/340722 and use it to compare boards.
-      return path
-
     self.image_tempdir = osutils.TempDir(
         base_dir=cros_build_lib.FromChrootPath('/tmp'),
         prefix='cros_flash_local_image',
@@ -550,12 +598,12 @@ class RemoteDeviceUpdater(object):
     # folder, so that xbuddy/devserver can understand the path.
     # Alternatively, we can to pass '--image' at devserver startup,
     # but this flag is deprecated.
-    self.static_tempdir = osutils.TempDir(base_dir=static_dir,
+    self.static_tempdir = osutils.TempDir(base_dir=DEVSERVER_STATIC_DIR,
                                           prefix='local_image',
                                           sudo_rm=True)
     relative_dir = os.path.join(os.path.basename(self.static_tempdir.tempdir),
                                 'link')
-    symlink_path = os.path.join(static_dir, relative_dir)
+    symlink_path = os.path.join(DEVSERVER_STATIC_DIR, relative_dir)
     logging.info('Creating a symlink %s -> %s', symlink_path, chroot_path)
     os.symlink(chroot_path, symlink_path)
     return os.path.join(relative_dir,
@@ -566,46 +614,26 @@ class RemoteDeviceUpdater(object):
     """Launch devserver to get the update payloads.
 
     Args:
-      path: The image or xbuddy path.
+      path: The xbuddy path.
       payload_dir: The directory to store the payloads.
       board: The default board to use when |path| is None.
       src_image_to_delta: Image used as the base to generate the delta payloads.
       timeout: Timeout for launching devserver (seconds).
     """
-    static_dir = DEVSERVER_STATIC_DIR
-    # SafeMakedirsNonroot has a side effect that 'chown' an existing
-    # root-owned directory with a non-root user. This makes sure
-    # we can write to static_dir later.
-    try:
-      osutils.SafeMakedirsNonRoot(static_dir)
-    except OSError:
-      logging.error('Failed to create %s', static_dir)
-
-    ds = ds_wrapper.DevServerWrapper(
-        static_dir=static_dir, src_image=src_image_to_delta, board=board)
-    req = GenerateXbuddyRequest(
-        self.ConvertLocalPathToXbuddyPath(path, static_dir), 'update')
+    ds = ds_wrapper.DevServerWrapper(static_dir=DEVSERVER_STATIC_DIR,
+                                     src_image=src_image_to_delta, board=board)
+    req = GenerateXbuddyRequest(path, 'update')
     logging.info('Starting local devserver to generate/serve payloads...')
     try:
       ds.Start()
       url = ds.OpenURL(ds.GetDevServerURL(sub_dir=req), timeout=timeout)
-      # Prints the board/version.
-      logging.info('Using image from %s',
-                   os.path.join(*url.split(os.path.sep)[-2:]))
       ds.DownloadFile(os.path.join(url, self.ROOTFS_FILENAME), payload_dir)
       ds.DownloadFile(os.path.join(url, self.STATEFUL_FILENAME), payload_dir)
     except ds_wrapper.DevServerException:
-      ds_log = ds.TailLog()
-      if ds_log:
-        logging.error(ds_log)
+      logging.error(ds.TailLog() or 'No devserver log is available.')
       raise
     else:
-      # If we're running in debug, also print out the log even if we didn't get
-      # an exception.
-      if self.debug:
-        ds_log = ds.TailLog()
-        if ds_log:
-          logging.error(ds_log)
+      logging.debug(ds.TailLog() or 'No devserver log is available.')
     finally:
       ds.Stop()
       if os.path.exists(ds.log_filename):
@@ -694,18 +722,37 @@ class RemoteDeviceUpdater(object):
                                         force=self.yes)
         logging.info('Board is %s', board)
 
-        # If the given path is a directory, we use the pre-generated
-        # update payload(s) in the directory.
-        if os.path.isdir(self.image_path):
-          payload_dir = self.image_path
-          logging.info('Using payloads in %s', payload_dir)
+        if os.path.isdir(self.image):
+          # If the given path is a directory, we use the provided
+          # update payload(s) in the directory.
+          payload_dir = self.image
+          logging.info('Using provided payloads in %s', payload_dir)
         else:
+          if os.path.isfile(self.image):
+            # If the given path is an image, make sure devserver can
+            # access it and generate payloads.
+            logging.info('Using image %s', self.image)
+            image_path = self.ConvertLocalPathToXbuddyPath(self.image)
+          else:
+            # For xbuddy paths, we should do a sanity check / confirmation
+            # when the xbuddy board doesn't match the board on the
+            # device. Unfortunately this isn't currently possible since we
+            # don't want to duplicate xbuddy code.  TODO(sosa):
+            # crbug.com/340722 and use it to compare boards.
+
+            # Translate the xbuddy path to get the exact image to use.
+            translated_path = TranslateImagePath(self.image, board)
+            logging.info('Using image %s', translated_path)
+            # Convert the translated path to be used in the update request.
+            image_path = ConvertTranslatedPath(self.image, translated_path)
+
           # Launch a local devserver to generate/serve update payloads.
           payload_dir = self.tempdir
-          self.GetUpdatePayloads(self.image_path, payload_dir,
+          self.GetUpdatePayloads(image_path, payload_dir,
                                  board=board,
                                  src_image_to_delta=self.src_image_to_delta)
 
+        # Verify that all required payloads are in the payload directory.
         self._CheckPayloads(payload_dir)
 
         restore_stateful = False
@@ -901,9 +948,15 @@ Examples:
   def Run(self):
     """Perfrom the cros flash command."""
     self.options.Freeze()
+
     if self.options.clear_cache:
       logging.info('Clearing the cache...')
       ds_wrapper.DevServerWrapper.WipeStaticDirectory(DEVSERVER_STATIC_DIR)
+
+    try:
+      osutils.SafeMakedirsNonRoot(DEVSERVER_STATIC_DIR)
+    except OSError:
+      logging.error('Failed to create %s', DEVSERVER_STATIC_DIR)
 
     self._ParseDevice(self.options.device)
     try:
@@ -938,8 +991,10 @@ Examples:
       elif self.run_mode == self.FILE_MODE:
         logging.info('Preparing to copy image to %s', self.copy_path)
         imager = FileImager(self.copy_path,
+                            self.options.board,
                             self.options.image,
-                            debug=self.options.debug)
+                            debug=self.options.debug,
+                            yes=self.options.yes)
         imager.Run()
 
     except (Exception, KeyboardInterrupt) as e:
