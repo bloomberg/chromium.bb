@@ -30,7 +30,6 @@ class NavigationEntryImpl;
 class RenderFrameHostDelegate;
 class RenderFrameHostImpl;
 class RenderFrameHostManagerTest;
-class RenderFrameProxyHost;
 class RenderViewHost;
 class RenderViewHostImpl;
 class RenderWidgetHostDelegate;
@@ -269,10 +268,9 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   bool IsOnSwappedOutList(RenderFrameHostImpl* rfh) const;
 
   // Returns the swapped out RenderViewHost or RenderFrameHost for the given
-  // SiteInstance, if any. This method is *deprecated* and
-  // GetRenderFrameProxyHost should be used.
+  // SiteInstance, if any.
   RenderViewHostImpl* GetSwappedOutRenderViewHost(SiteInstance* instance) const;
-  RenderFrameProxyHost* GetRenderFrameProxyHost(
+  RenderFrameHostImpl* GetSwappedOutRenderFrameHost(
       SiteInstance* instance) const;
 
   // Runs the unload handler in the current page, when we know that a pending
@@ -333,10 +331,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
     bool should_replace_current_entry;
   };
 
-  // Used with FrameTree::ForEach to erase RenderFrameProxyHosts from a
+  // Used with FrameTree::ForEach to erase inactive RenderFrameHosts from a
   // FrameTreeNode's RenderFrameHostManager.
-  static bool ClearProxiesInSiteInstance(int32 site_instance_id,
-                                         FrameTreeNode* node);
+  static bool ClearSwappedOutRFHsInSiteInstance(int32 site_instance_id,
+                                                FrameTreeNode* node);
 
   // Returns whether this tab should transition to a new renderer for
   // cross-site URLs.  Enabled unless we see the --process-per-tab command line
@@ -369,11 +367,11 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
       bool force_browsing_instance_swap);
 
   // Creates a RenderFrameHost and corresponding RenderViewHost if necessary.
-  scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(SiteInstance* instance,
-                                                        int view_routing_id,
-                                                        int frame_routing_id,
-                                                        bool swapped_out,
-                                                        bool hidden);
+  RenderFrameHostImpl* CreateRenderFrameHost(SiteInstance* instance,
+                                             int view_routing_id,
+                                             int frame_routing_id,
+                                             bool swapped_out,
+                                             bool hidden);
 
   // Sets up the necessary state for a new RenderViewHost with the given opener,
   // if necessary.  Returns early if the RenderViewHost has already been
@@ -449,9 +447,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   scoped_ptr<WebUIImpl> pending_web_ui_;
   base::WeakPtr<WebUIImpl> pending_and_current_web_ui_;
 
-  // A map of site instance ID to RenderFrameProxyHosts.
-  typedef base::hash_map<int32, RenderFrameProxyHost*> RenderFrameProxyHostMap;
-  RenderFrameProxyHostMap proxy_hosts_;
+  // A map of site instance ID to swapped out RenderFrameHosts.  This may
+  // include pending_render_frame_host_ for navigations to existing entries.
+  typedef base::hash_map<int32, RenderFrameHostImpl*> RenderFrameHostMap;
+  RenderFrameHostMap swapped_out_hosts_;
 
   // A map of RenderFrameHosts pending shutdown.
   typedef base::hash_map<int32, linked_ptr<RenderFrameHostImpl> >
