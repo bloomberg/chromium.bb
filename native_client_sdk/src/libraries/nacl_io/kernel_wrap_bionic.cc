@@ -197,7 +197,7 @@ int WRAP(fsync)(int fd) NOTHROW {
   return (ki_fsync(fd)) ? errno : 0;
 }
 
-char* WRAP(getcwd)(char* buf, size_t size) {
+int WRAP(getcwd)(char* buf, size_t size) {
   if (ki_getcwd(buf, size) == NULL)
     return errno;
   return 0;
