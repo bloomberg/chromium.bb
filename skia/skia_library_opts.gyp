@@ -60,7 +60,6 @@
             'skia_opts_ssse3',
           ],
         }],
-        # TODO(rmcilroy): Add neon support for arm64 - http://crbug.com/354405
         [ 'target_arch == "arm"', {
           'conditions': [
             [ 'arm_version >= 7 and arm_neon == 1', {
@@ -142,16 +141,21 @@
             '../third_party/skia/src/opts/SkBlurImage_opts_none.cpp',
           ],
         }],
-        [ 'target_arch == "arm64"',{
-          # TODO(rmcilroy): Update this once http://crrev.com/143423004/ lands.
+        [ 'target_arch == "arm64"', {
           'sources': [
-            '../third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp',
-            '../third_party/skia/src/opts/SkBlitMask_opts_none.cpp',
+            '../third_party/skia/src/opts/SkBitmapProcState_arm_neon.cpp',
+            '../third_party/skia/src/opts/SkBitmapProcState_matrixProcs_neon.cpp',
+            '../third_party/skia/src/opts/SkBitmapProcState_opts_arm.cpp',
+            '../third_party/skia/src/opts/SkBlitMask_opts_arm.cpp',
+            '../third_party/skia/src/opts/SkBlitMask_opts_arm_neon.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
+            '../third_party/skia/src/opts/SkBlurImage_opts_arm.cpp',
+            '../third_party/skia/src/opts/SkBlurImage_opts_neon.cpp',
+            '../third_party/skia/src/opts/SkMorphology_opts_arm.cpp',
+            '../third_party/skia/src/opts/SkMorphology_opts_neon.cpp',
             '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
-            '../third_party/skia/src/opts/SkXfermode_opts_none.cpp',
-            '../third_party/skia/src/opts/SkMorphology_opts_none.cpp',
-            '../third_party/skia/src/opts/SkBlurImage_opts_none.cpp',
+            '../third_party/skia/src/opts/SkXfermode_opts_arm.cpp',
+            '../third_party/skia/src/opts/SkXfermode_opts_arm_neon.cpp',
           ],
         }],
       ],
