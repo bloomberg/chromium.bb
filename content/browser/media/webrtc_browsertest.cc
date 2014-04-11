@@ -294,8 +294,17 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
   MakeTypicalPeerConnectionCall("callAndEnsureAudioIsPlaying();");
 }
 
+#if defined(OS_ANDROID)
+// Flaky on Android: http://crbug.com/362432
+#define MAYBE_EstablishAudioVideoCallAndVerifyMutingWorks \
+    FLAKY_EstablishAudioVideoCallAndVerifyMutingWorks
+#else
+#define MAYBE_EstablishAudioVideoCallAndVerifyMutingWorks \
+    EstablishAudioVideoCallAndVerifyMutingWorks
+#endif
+
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
-                       EstablishAudioVideoCallAndVerifyMutingWorks) {
+                       MAYBE_EstablishAudioVideoCallAndVerifyMutingWorks) {
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
     // Bots with no output devices will force the audio code into a different
     // path where it doesn't manage to set either the low or high latency path.
