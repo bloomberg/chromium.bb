@@ -74,6 +74,10 @@
 
 namespace WebCore {
 
+// We will only allow squashing if the bbox-area:squashed-area doesn't exceed
+// the ratio |gSquashingSparsityTolerance|:1.
+static uint64_t gSquashingSparsityTolerance = 6;
+
 using namespace HTMLNames;
 
 class DeprecatedDirtyCompositingDuringCompositingUpdate {
@@ -601,8 +605,6 @@ bool RenderLayerCompositor::updateSquashingAssignment(RenderLayer* layer, Squash
 
         bool changedSquashingLayer =
             squashingState.mostRecentMapping->updateSquashingLayerAssignment(layer, offsetFromSquashingCLM, squashingState.nextSquashedLayerIndex);
-        squashingState.nextSquashedLayerIndex++;
-
         if (!changedSquashingLayer)
             return true;
 
@@ -633,6 +635,7 @@ bool RenderLayerCompositor::updateSquashingAssignment(RenderLayer* layer, Squash
         layer->setLostGroupedMapping(false);
         return true;
     }
+
     return false;
 }
 
@@ -650,8 +653,21 @@ bool RenderLayerCompositor::updateLayerIfViewportConstrained(RenderLayer* layer)
     return false;
 }
 
+bool RenderLayerCompositor::squashingWouldExceedSparsityTolerance(const RenderLayer* candidate, const RenderLayerCompositor::SquashingState& squashingState)
+{
+    IntRect bounds = candidate->ancestorDependentProperties().clippedAbsoluteBoundingBox;
+    IntRect newBoundingRect = squashingState.boundingRect;
+    newBoundingRect.unite(bounds);
+    const uint64_t newBoundingRectArea = newBoundingRect.size().area_safe();
+    const uint64_t newSquashedArea = squashingState.totalAreaOfSquashedRects + bounds.size().area_safe();
+    return newBoundingRectArea > gSquashingSparsityTolerance * newSquashedArea;
+}
+
 bool RenderLayerCompositor::canSquashIntoCurrentSquashingOwner(const RenderLayer* layer, const RenderLayerCompositor::SquashingState& squashingState)
 {
+    if (squashingWouldExceedSparsityTolerance(layer, squashingState))
+        return false;
+
     // FIXME: this is not efficient, since it walks up the tree . We should store these values on the AncestorDependentPropertiesCache.
     ASSERT(squashingState.hasMostRecentMapping);
     const RenderLayer& squashingLayer = squashingState.mostRecentMapping->owningLayer();
@@ -833,6 +849,14 @@ void RenderLayerCompositor::assignLayersToBackingsInternal(RenderLayer* layer, S
     if (layerSquashingEnabled()) {
         if (updateSquashingAssignment(layer, squashingState, compositedLayerUpdate))
             layersChanged = true;
+
+        const bool layerIsSquashed = compositedLayerUpdate == PutInSquashingLayer || (compositedLayerUpdate == NoCompositingStateChange && layer->groupedMapping());
+        if (layerIsSquashed) {
+            squashingState.nextSquashedLayerIndex++;
+            IntRect layerBounds = layer->ancestorDependentProperties().clippedAbsoluteBoundingBox;
+            squashingState.totalAreaOfSquashedRects += layerBounds.size().area();
+            squashingState.boundingRect.unite(layerBounds);
+        }
     }
 
     if (layer->stackingNode()->isStackingContainer()) {

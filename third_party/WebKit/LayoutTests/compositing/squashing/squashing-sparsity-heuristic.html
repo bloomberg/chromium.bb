@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+div {
+  position: absolute;
+  z-index: 1;
+  width: 10px;
+  height: 10px;
+}
+
+.composited {
+  -webkit-transform: translatez(0);
+  top: 60px;
+  left: 60px;
+  width: 400px;
+  height: 400px;
+  background-color: gray;
+}
+
+.overlap1 {
+  top: 140px;
+  left: 140px;
+  background-color: blue;
+}
+
+.overlap2 {
+  top: 220px;
+  left: 220px;
+  background-color: lime;
+}
+</style>
+<script>
+    if (window.testRunner)
+        testRunner.dumpAsText();
+
+    if (window.internals)
+        internals.settings.setLayerSquashingEnabled(true);
+
+    function dump() {
+        if (!window.internals)
+            return;
+        var layers = document.createElement('pre');
+        layers.innerHTML = window.internals.layerTreeAsText(document);
+        document.body.appendChild(layers);
+    }
+
+    window.onload = dump;
+</script>
+</head>
+
+<body>
+  <!-- 
+  If this test is working correctly, then the following two layers should not
+  squash together (as they would create a layer that's too sparse).
+  -->
+  <div class="composited"></div>
+  <div id="A" class="overlap1"></div>
+  <div id="B" class="overlap2"></div>
+</body>
+</html>

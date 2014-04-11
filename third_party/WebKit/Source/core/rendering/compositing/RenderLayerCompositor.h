@@ -211,7 +211,8 @@ private:
         SquashingState()
             : mostRecentMapping(0)
             , hasMostRecentMapping(false)
-            , nextSquashedLayerIndex(0) { }
+            , nextSquashedLayerIndex(0)
+            , totalAreaOfSquashedRects(0) { }
 
         void updateSquashingStateForNewMapping(CompositedLayerMappingPtr, bool hasNewCompositedLayerMapping, LayoutPoint newOffsetFromAbsoluteForSquashingCLM);
 
@@ -225,10 +226,18 @@ private:
 
         // Counter that tracks what index the next RenderLayer would be if it gets squashed to the current squashing layer.
         size_t nextSquashedLayerIndex;
+
+        // The absolute bounding rect of all the squashed layers.
+        IntRect boundingRect;
+
+        // This is simply the sum of the areas of the squashed rects. This can be very skewed if the rects overlap,
+        // but should be close enough to drive a heuristic.
+        uint64_t totalAreaOfSquashedRects;
     };
 
     bool hasUnresolvedDirtyBits();
 
+    bool squashingWouldExceedSparsityTolerance(const RenderLayer* candidate, const SquashingState&);
     bool canSquashIntoCurrentSquashingOwner(const RenderLayer* candidate, const SquashingState&);
 
     CompositingStateTransitionType computeCompositedLayerUpdate(RenderLayer*);
