@@ -94,7 +94,7 @@ void CompositorPendingAnimations::notifyCompositorAnimationStarted(double monoto
 {
     for (size_t i = 0; i < m_waitingForCompositorAnimationStart.size(); ++i) {
         AnimationPlayer* player = m_waitingForCompositorAnimationStart[i].get();
-        player->setStartTime(monotonicAnimationStartTime - player->timeline()->zeroTime());
+        player->setStartTime(monotonicAnimationStartTime - player->timeline()->zeroTime(), true);
         player->update(AnimationPlayer::UpdateOnDemand);
     }
 

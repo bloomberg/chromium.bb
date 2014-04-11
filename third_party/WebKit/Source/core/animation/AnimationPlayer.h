@@ -86,7 +86,7 @@ public:
 
     bool hasStartTime() const { return !isNull(m_startTime); }
     double startTime() const { return m_startTime; }
-    void setStartTime(double);
+    void setStartTime(double, bool isUpdateFromCompositor = false);
 
     const TimedItem* source() const { return m_content.get(); }
     TimedItem* source() { return m_content.get(); }
