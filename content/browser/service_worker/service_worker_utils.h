@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UTILS_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UTILS_H_
 
+#include "content/common/content_export.h"
 #include "webkit/common/resource_type.h"
 
 namespace content {
@@ -23,6 +24,9 @@ class ServiceWorkerUtils {
   // Returns true if the feature is enabled (or not disabled) by command-line
   // flag.
   static bool IsFeatureEnabled();
+
+  // Returns true if |scope| matches |url|.
+  CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);
 };
 
 }  // namespace content

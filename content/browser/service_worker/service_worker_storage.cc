@@ -6,9 +6,9 @@
 
 #include <string>
 #include "base/message_loop/message_loop.h"
-#include "base/strings/string_util.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 
@@ -66,7 +66,7 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
            registration_by_pattern_.begin();
        it != registration_by_pattern_.end();
        ++it) {
-    if (PatternMatches(it->first, document_url)) {
+    if (ServiceWorkerUtils::ScopeMatches(it->first, document_url)) {
       status = SERVICE_WORKER_OK;
       found = it->second;
       break;
@@ -147,19 +147,6 @@ int64 ServiceWorkerStorage::NewRegistrationId() {
 
 int64 ServiceWorkerStorage::NewVersionId() {
   return ++last_version_id_;
-}
-
-bool ServiceWorkerStorage::PatternMatches(const GURL& pattern,
-                                          const GURL& url) {
-  // This is a really basic, naive
-  // TODO(alecflett): Formalize what pattern matches mean.
-  // Temporarily borrowed directly from appcache::Namespace::IsMatch().
-  // We have to escape '?' characters since MatchPattern also treats those
-  // as wildcards which we don't want here, we only do '*'s.
-  std::string pattern_spec(pattern.spec());
-  if (pattern.has_query())
-    ReplaceSubstringsAfterOffset(&pattern_spec, 0, "?", "\\?");
-  return MatchPattern(url.spec(), pattern_spec);
 }
 
 }  // namespace content

@@ -25,23 +25,4 @@ class ServiceWorkerStorageTest : public testing::Test {
   scoped_ptr<ServiceWorkerStorage> storage_;
 };
 
-TEST_F(ServiceWorkerStorageTest, PatternMatches) {
-  ASSERT_TRUE(ServiceWorkerStorage::PatternMatches(
-      GURL("http://www.example.com/*"), GURL("http://www.example.com/")));
-  ASSERT_TRUE(ServiceWorkerStorage::PatternMatches(
-      GURL("http://www.example.com/*"),
-      GURL("http://www.example.com/page.html")));
-
-  ASSERT_FALSE(ServiceWorkerStorage::PatternMatches(
-      GURL("http://www.example.com/*"), GURL("https://www.example.com/")));
-  ASSERT_FALSE(ServiceWorkerStorage::PatternMatches(
-      GURL("http://www.example.com/*"),
-      GURL("https://www.example.com/page.html")));
-
-  ASSERT_FALSE(ServiceWorkerStorage::PatternMatches(
-      GURL("http://www.example.com/*"), GURL("http://www.foo.com/")));
-  ASSERT_FALSE(ServiceWorkerStorage::PatternMatches(
-      GURL("http://www.example.com/*"), GURL("https://www.foo.com/page.html")));
-}
-
 }  // namespace content

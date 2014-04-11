@@ -70,13 +70,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   int64 NewVersionId();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStorageTest, PatternMatches);
-
   // TODO(michaeln,kinuko): Make this not own ServiceWorkerRegistration.
   typedef std::map<GURL, scoped_refptr<ServiceWorkerRegistration> >
       PatternToRegistrationMap;
-
-  static bool PatternMatches(const GURL& pattern, const GURL& script_url);
 
   // This is the in-memory registration. Eventually the registration will be
   // persisted to disk.
