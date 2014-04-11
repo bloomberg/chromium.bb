@@ -152,8 +152,9 @@ void MediaGalleriesDialogCocoa::InitDialogControls() {
   main_container_.reset([[NSBox alloc] init]);
   [main_container_ setBoxType:NSBoxCustom];
   [main_container_ setBorderType:NSLineBorder];
-  [main_container_ setBorderWidth:0];
+  [main_container_ setBorderWidth:1];
   [main_container_ setCornerRadius:0];
+  [main_container_ setContentViewMargins:NSZeroSize];
   [main_container_ setTitlePosition:NSNoTitle];
   [main_container_ setBorderColor:[NSColor colorWithCalibratedRed:0.625
                                                             green:0.625
@@ -174,7 +175,7 @@ void MediaGalleriesDialogCocoa::InitDialogControls() {
   checkboxes_.reset([[NSMutableArray alloc] init]);
   [scroll_view setDocumentView:checkbox_container_];
 
-  CGFloat y_pos = kCheckboxMargin;
+  CGFloat y_pos = 0;
 
   y_pos = CreateAttachedCheckboxes(y_pos, controller_->AttachedPermissions());
 
@@ -194,8 +195,7 @@ void MediaGalleriesDialogCocoa::InitDialogControls() {
     [scroll_view setFrame:scroll_frame];
   }
 
-  [main_container_ setFrame:NSMakeRect(
-      0, 0, kCheckboxMaxWidth, NSHeight(scroll_frame))];
+  [main_container_ setFrameFromContentFrame:scroll_frame];
   [alert_ setAccessoryView:main_container_];
 
   // As a safeguard against the user skipping reading over the dialog and just
