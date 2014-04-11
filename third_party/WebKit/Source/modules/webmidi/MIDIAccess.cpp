@@ -31,9 +31,9 @@
 #include "config.h"
 #include "modules/webmidi/MIDIAccess.h"
 
-#include "bindings/v8/MIDIAccessResolver.h"
+#include "bindings/v8/ScriptFunction.h"
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
@@ -86,8 +86,6 @@ MIDIAccess::MIDIAccess(const MIDIOptions& options, ExecutionContext* context)
     , m_weakPtrFactory(this)
     , m_options(options)
     , m_sysexEnabled(false)
-    , m_asyncResolveRunner(this, &MIDIAccess::resolveNow)
-    , m_asyncRejectRunner(this, &MIDIAccess::rejectNow)
 {
     ScriptWrappable::init(this);
     m_accessor = MIDIAccessor::create(this);
@@ -99,7 +97,7 @@ void MIDIAccess::setSysexEnabled(bool enable)
     if (enable) {
         m_accessor->startSession();
     } else {
-        reject(DOMError::create("SecurityError"));
+        m_resolver->reject(DOMError::create("SecurityError"));
     }
 }
 
@@ -122,9 +120,9 @@ void MIDIAccess::didStartSession(bool success)
 {
     ASSERT(isMainThread());
     if (success)
-        resolve();
+        m_resolver->resolve(this);
     else
-        reject(DOMError::create("InvalidStateError"));
+        m_resolver->reject(DOMError::create("InvalidStateError"));
 }
 
 void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
@@ -166,26 +164,11 @@ void MIDIAccess::sendMIDIData(unsigned portIndex, const unsigned char* data, siz
     }
 }
 
-void MIDIAccess::suspend()
-{
-    m_asyncResolveRunner.suspend();
-    m_asyncRejectRunner.suspend();
-}
-
-void MIDIAccess::resume()
-{
-    m_asyncResolveRunner.resume();
-    m_asyncRejectRunner.resume();
-}
-
 void MIDIAccess::stop()
 {
     if (m_state == Stopped)
         return;
-    m_error.clear();
     m_accessor.clear();
-    m_asyncResolveRunner.stop();
-    m_asyncRejectRunner.stop();
     m_weakPtrFactory.revokeAll();
     if (m_state == Requesting) {
         Document* document = toDocument(executionContext());
@@ -205,12 +188,12 @@ bool MIDIAccess::hasPendingActivity() const
 void MIDIAccess::permissionDenied()
 {
     ASSERT(isMainThread());
-    reject(DOMError::create("SecurityError"));
+    m_resolver->reject(DOMError::create("SecurityError"));
 }
 
 ScriptPromise MIDIAccess::startRequest()
 {
-    m_resolver = MIDIAccessResolver::create(ScriptPromiseResolver::create(executionContext()), toIsolate(executionContext()));
+    m_resolver = ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(executionContext())));
     ScriptPromise promise = m_resolver->promise();
     promise.then(PostAction::create(toIsolate(executionContext()), m_weakPtrFactory.createWeakPtr(), Resolved),
         PostAction::create(toIsolate(executionContext()), m_weakPtrFactory.createWeakPtr(), Stopped));
@@ -225,38 +208,15 @@ ScriptPromise MIDIAccess::startRequest()
     if (controller) {
         controller->requestSysexPermission(this);
     } else {
-        reject(DOMError::create("SecurityError"));
+        m_resolver->reject(DOMError::create("SecurityError"));
     }
     return promise;
-}
-
-void MIDIAccess::resolve()
-{
-    m_asyncResolveRunner.runAsync();
-}
-
-void MIDIAccess::reject(PassRefPtrWillBeRawPtr<DOMError> error)
-{
-    m_error = error;
-    m_asyncRejectRunner.runAsync();
-}
-
-void MIDIAccess::resolveNow()
-{
-    m_resolver->resolve(this, executionContext());
-}
-
-void MIDIAccess::rejectNow()
-{
-    m_resolver->reject(m_error.get(), executionContext());
-    m_error.clear();
 }
 
 void MIDIAccess::doPostAction(State state)
 {
     ASSERT(m_state == Requesting);
     ASSERT(state == Resolved || state == Stopped);
-    m_error.clear();
     if (state == Stopped) {
         m_accessor.clear();
     }
@@ -268,7 +228,6 @@ void MIDIAccess::trace(Visitor* visitor)
 {
     visitor->trace(m_inputs);
     visitor->trace(m_outputs);
-    visitor->trace(m_error);
 }
 
 } // namespace WebCore

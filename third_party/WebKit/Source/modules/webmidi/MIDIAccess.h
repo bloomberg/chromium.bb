@@ -31,8 +31,8 @@
 #ifndef MIDIAccess_h
 #define MIDIAccess_h
 
-#include "bindings/v8/MIDIAccessResolver.h"
 #include "bindings/v8/ScriptPromise.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
@@ -72,8 +72,6 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
 
     // ActiveDOMObject
-    virtual void suspend() OVERRIDE;
-    virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
     virtual bool hasPendingActivity() const OVERRIDE;
 
@@ -101,10 +99,6 @@ private:
 
     void permissionDenied();
 
-    void resolve();
-    void reject(PassRefPtrWillBeRawPtr<DOMError>);
-    void resolveNow();
-    void rejectNow();
     // Called when the promise is resolved or rejected.
     void doPostAction(State);
 
@@ -113,12 +107,9 @@ private:
     MIDIInputVector m_inputs;
     MIDIOutputVector m_outputs;
     OwnPtr<MIDIAccessor> m_accessor;
-    OwnPtr<MIDIAccessResolver> m_resolver;
     MIDIOptions m_options;
     bool m_sysexEnabled;
-    AsyncMethodRunner<MIDIAccess> m_asyncResolveRunner;
-    AsyncMethodRunner<MIDIAccess> m_asyncRejectRunner;
-    RefPtrWillBeMember<DOMError> m_error;
+    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
 };
 
 } // namespace WebCore

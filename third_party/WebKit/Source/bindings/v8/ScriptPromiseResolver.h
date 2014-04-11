@@ -58,7 +58,8 @@ class ExecutionContext;
 //
 // Most methods including constructors must be called within a v8 context.
 // To use ScriptPromiseResolver out of a v8 context the caller must
-// enter a v8 context, for example by using ScriptScope and ScriptState.
+// enter a v8 context. ScriptPromiseResolverWithContext provides such
+// functionality.
 //
 // To prevent memory leaks, you should release the reference manually
 // by calling resolve or reject.
@@ -85,8 +86,6 @@ public:
     ScriptPromise promise();
 
     // To use following template methods, T must be a DOM class.
-
-    // This method will be implemented by the code generator.
     template<typename T>
     void resolve(T* value, v8::Handle<v8::Object> creationContext) { resolve(toV8NoInline(value, creationContext, m_isolate)); }
     template<typename T>
@@ -139,12 +138,12 @@ public:
 
     v8::Isolate* isolate() const { return m_isolate; }
 
+    void resolve(v8::Handle<v8::Value>);
+    void reject(v8::Handle<v8::Value>);
+
 private:
     ScriptPromiseResolver(ExecutionContext*);
     ScriptPromiseResolver(v8::Isolate*);
-
-    void resolve(v8::Handle<v8::Value>);
-    void reject(v8::Handle<v8::Value>);
 
     v8::Isolate* m_isolate;
     // Used when scriptPromiseOnV8Promise is disabled.
