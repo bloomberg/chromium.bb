@@ -51,6 +51,7 @@ const char kExternalClearKeyCrashKeySystem[] =
 // Supported media types.
 const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
 const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
+const char kWebMVP9VideoOnly[] = "video/webm; codecs=\"vp9\"";
 const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
 #if defined(USE_PROPRIETARY_CODECS)
 const char kMP4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
@@ -524,6 +525,18 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM) {
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
   TestSimplePlayback("bear-320x240-av-enc_v.webm", kWebMAudioVideo);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Video_WebM) {
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  // TODO(xhwang): Remove this once VP9 is supported by Widevine CDM.
+  // See http://crbug.com/361318.
+  if (IsWidevine(CurrentKeySystem())) {
+    VLOG(0) << "VP9 not supported in Widevine CDM.";
+    return;
+  }
+#endif
+  TestSimplePlayback("bear-320x240-v-vp9-enc_v.webm", kWebMVP9VideoOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, InvalidResponseKeyError) {

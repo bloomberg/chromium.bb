@@ -51,6 +51,8 @@ static AVCodecID CdmVideoCodecToCodecID(
       return AV_CODEC_ID_VP8;
     case cdm::VideoDecoderConfig::kCodecH264:
       return AV_CODEC_ID_H264;
+    case cdm::VideoDecoderConfig::kCodecVp9:
+      return AV_CODEC_ID_VP9;
     case cdm::VideoDecoderConfig::kUnknownVideoCodec:
     default:
       NOTREACHED() << "Unsupported cdm::VideoCodec: " << video_codec;
@@ -61,8 +63,10 @@ static AVCodecID CdmVideoCodecToCodecID(
 static int CdmVideoCodecProfileToProfileID(
     cdm::VideoDecoderConfig::VideoCodecProfile profile) {
   switch (profile) {
-    case cdm::VideoDecoderConfig::kVp8ProfileMain:
-      return FF_PROFILE_UNKNOWN;  // VP8 does not define an FFmpeg profile.
+    case cdm::VideoDecoderConfig::kProfileNotNeeded:
+      // For codecs that do not need a profile (e.g. VP8/VP9), does not define
+      // an FFmpeg profile.
+      return FF_PROFILE_UNKNOWN;
     case cdm::VideoDecoderConfig::kH264ProfileBaseline:
       return FF_PROFILE_H264_BASELINE;
     case cdm::VideoDecoderConfig::kH264ProfileMain:

@@ -146,6 +146,8 @@ PP_VideoCodec MediaVideoCodecToPpVideoCodec(media::VideoCodec codec) {
       return PP_VIDEOCODEC_VP8;
     case media::kCodecH264:
       return PP_VIDEOCODEC_H264;
+    case media::kCodecVP9:
+      return PP_VIDEOCODEC_VP9;
     default:
       return PP_VIDEOCODEC_UNKNOWN;
   }
@@ -154,8 +156,11 @@ PP_VideoCodec MediaVideoCodecToPpVideoCodec(media::VideoCodec codec) {
 PP_VideoCodecProfile MediaVideoCodecProfileToPpVideoCodecProfile(
     media::VideoCodecProfile profile) {
   switch (profile) {
+    // TODO(xhwang): VP8 and VP9 do not have profiles. Clean up
+    // media::VideoCodecProfile and remove these two cases.
     case media::VP8PROFILE_MAIN:
-      return PP_VIDEOCODECPROFILE_VP8_MAIN;
+    case media::VP9PROFILE_MAIN:
+      return PP_VIDEOCODECPROFILE_NOT_NEEDED;
     case media::H264PROFILE_BASELINE:
       return PP_VIDEOCODECPROFILE_H264_BASELINE;
     case media::H264PROFILE_MAIN:

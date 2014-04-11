@@ -31,7 +31,8 @@ scoped_ptr<CdmVideoDecoder> CreateVideoDecoder(
 #else
 
 #if defined(CLEAR_KEY_CDM_USE_LIBVPX_DECODER)
-  if (config.codec == cdm::VideoDecoderConfig::kCodecVp8) {
+  if (config.codec == cdm::VideoDecoderConfig::kCodecVp8 ||
+      config.codec == cdm::VideoDecoderConfig::kCodecVp9) {
     video_decoder.reset(new LibvpxCdmVideoDecoder(host));
 
     if (!video_decoder->Initialize(config))

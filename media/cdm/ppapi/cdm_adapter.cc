@@ -154,6 +154,8 @@ cdm::VideoDecoderConfig::VideoCodec PpVideoCodecToCdmVideoCodec(
       return cdm::VideoDecoderConfig::kCodecVp8;
     case PP_VIDEOCODEC_H264:
       return cdm::VideoDecoderConfig::kCodecH264;
+    case PP_VIDEOCODEC_VP9:
+      return cdm::VideoDecoderConfig::kCodecVp9;
     default:
       return cdm::VideoDecoderConfig::kUnknownVideoCodec;
   }
@@ -162,8 +164,8 @@ cdm::VideoDecoderConfig::VideoCodec PpVideoCodecToCdmVideoCodec(
 cdm::VideoDecoderConfig::VideoCodecProfile PpVCProfileToCdmVCProfile(
     PP_VideoCodecProfile profile) {
   switch (profile) {
-    case PP_VIDEOCODECPROFILE_VP8_MAIN:
-      return cdm::VideoDecoderConfig::kVp8ProfileMain;
+    case PP_VIDEOCODECPROFILE_NOT_NEEDED:
+      return cdm::VideoDecoderConfig::kProfileNotNeeded;
     case PP_VIDEOCODECPROFILE_H264_BASELINE:
       return cdm::VideoDecoderConfig::kH264ProfileBaseline;
     case PP_VIDEOCODECPROFILE_H264_MAIN:
