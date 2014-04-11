@@ -2209,6 +2209,9 @@ _AddGroupConfig('rambi-b', 'gnawty', (
     'winky',
 ))
 
+_AddGroupConfig('rambi-c', 'swanky', (
+))
+
 # daisy-based boards
 _AddGroupConfig('daisy', 'daisy', (
     'daisy_spring',
