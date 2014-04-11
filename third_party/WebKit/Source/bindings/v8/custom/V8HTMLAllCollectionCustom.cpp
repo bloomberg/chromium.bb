@@ -62,7 +62,7 @@ static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v
 {
     v8::Local<v8::Uint32> index = argument->ToArrayIndex();
     if (index.IsEmpty()) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, name, argument, v8::Undefined(info.GetIsolate()));
+        TOSTRING_BOOL(V8StringResource<>, name, argument, v8::Undefined(info.GetIsolate()));
         v8::Handle<v8::Value> result = getNamedItems(collection, name, info);
 
         if (result.IsEmpty())
@@ -97,7 +97,7 @@ void V8HTMLAllCollection::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Va
     }
 
     // If there is a second argument it is the index of the item we want.
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, info[0]);
+    TOSTRING_VOID(V8StringResource<>, name, info[0]);
     v8::Local<v8::Uint32> index = info[1]->ToArrayIndex();
     if (index.IsEmpty())
         return;

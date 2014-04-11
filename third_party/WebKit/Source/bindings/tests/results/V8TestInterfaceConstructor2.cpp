@@ -48,7 +48,7 @@ template <typename T> void V8_USE(T) { }
 static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, info[0]);
+    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
     RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(stringArg);
 
     v8::Handle<v8::Object> wrapper = info.Holder();
@@ -60,11 +60,11 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor2", info.Holder(), isolate);
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
-    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[1], exceptionState), exceptionState);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, defaultUndefinedOptionalStringArg, info[2]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, defaultNullStringOptionalStringArg, argumentOrNull(info, 3));
-    V8TRYCATCH_VOID(Dictionary, defaultUndefinedOptionalDictionaryArg, Dictionary(info[4], info.GetIsolate()));
+    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[1], exceptionState), exceptionState);
+    TOSTRING_VOID(V8StringResource<>, defaultUndefinedOptionalStringArg, info[2]);
+    TOSTRING_VOID(V8StringResource<>, defaultNullStringOptionalStringArg, argumentOrNull(info, 3));
+    TONATIVE_VOID(Dictionary, defaultUndefinedOptionalDictionaryArg, Dictionary(info[4], info.GetIsolate()));
     if (!defaultUndefinedOptionalDictionaryArg.isUndefinedOrNull() && !defaultUndefinedOptionalDictionaryArg.isObject()) {
         exceptionState.throwTypeError("parameter 5 ('defaultUndefinedOptionalDictionaryArg') is not an object.");
         exceptionState.throwIfNeeded();
@@ -77,7 +77,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         v8SetReturnValue(info, wrapper);
         return;
     }
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, optionalStringArg, info[5]);
+    TOSTRING_VOID(V8StringResource<>, optionalStringArg, info[5]);
     RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg, optionalStringArg);
 
     v8::Handle<v8::Object> wrapper = info.Holder();

@@ -33,38 +33,20 @@
 
 namespace WebCore {
 
-#define V8TRYCATCH(type, var, value)     \
-    type var;                            \
-    {                                    \
-        v8::TryCatch block;              \
-        var = (value);                   \
-        if (UNLIKELY(block.HasCaught())) \
-            return block.ReThrow();      \
+// Naming scheme:
+// TO*_RETURNTYPE[_ARGTYPE]...
+// ...removing RETURNTYPE/ARGTYPE duplicate if an argument is simply returned
+
+#define TONATIVE_EXCEPTION(type, var, value) \
+    type var;                                  \
+    {                                          \
+        v8::TryCatch block;                    \
+        var = (value);                         \
+        if (UNLIKELY(block.HasCaught()))       \
+            return block.ReThrow();            \
     }
 
-#define V8TRYCATCH_RETURN(type, var, value, retVal) \
-    type var;                                       \
-    {                                               \
-        v8::TryCatch block;                         \
-        var = (value);                              \
-        if (UNLIKELY(block.HasCaught())) {          \
-            block.ReThrow();                        \
-            return retVal;                          \
-        }                                           \
-    }
-
-#define V8TRYCATCH_EXCEPTION_RETURN(type, var, value, exceptionState, retVal) \
-    type var;                                                                 \
-    {                                                                         \
-        v8::TryCatch block;                                                   \
-        var = (value);                                                        \
-        if (UNLIKELY(block.HasCaught()))                                      \
-            exceptionState.rethrowV8Exception(block.Exception());             \
-        if (UNLIKELY(exceptionState.throwIfNeeded()))                         \
-            return retVal;                                                    \
-    }
-
-#define V8TRYCATCH_VOID(type, var, value)  \
+#define TONATIVE_VOID(type, var, value)  \
     type var;                              \
     {                                      \
         v8::TryCatch block;                \
@@ -75,26 +57,51 @@ namespace WebCore {
         }                                  \
     }
 
-#define V8TRYCATCH_EXCEPTION_VOID(type, var, value, exceptionState) \
-    type var;                                                       \
-    {                                                               \
-        v8::TryCatch block;                                         \
-        var = (value);                                              \
-        if (UNLIKELY(block.HasCaught()))                            \
-            exceptionState.rethrowV8Exception(block.Exception());   \
-        if (UNLIKELY(exceptionState.throwIfNeeded()))               \
-            return;                                                 \
+#define TONATIVE_BOOL(type, var, value, retVal) \
+    type var;                                     \
+    {                                             \
+        v8::TryCatch block;                       \
+        var = (value);                            \
+        if (UNLIKELY(block.HasCaught())) {        \
+            block.ReThrow();                      \
+            return retVal;                        \
+        }                                         \
     }
 
-#define V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(type, var, value, retVal) \
-    type var(value);                                                     \
-    if (UNLIKELY(!var.prepare()))                                        \
-        return retVal;
+#define TONATIVE_VOID_EXCEPTIONSTATE(type, var, value, exceptionState) \
+    type var;                                                            \
+    {                                                                    \
+        v8::TryCatch block;                                              \
+        var = (value);                                                   \
+        if (UNLIKELY(block.HasCaught()))                                 \
+            exceptionState.rethrowV8Exception(block.Exception());        \
+        if (UNLIKELY(exceptionState.throwIfNeeded()))                    \
+            return;                                                      \
+    }
 
-#define V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(type, var, value) \
-    type var(value);                                           \
-    if (UNLIKELY(!var.prepare()))                              \
+#define TONATIVE_BOOL_EXCEPTIONSTATE(type, var, value, exceptionState, retVal) \
+    type var;                                                                 \
+    {                                                                         \
+        v8::TryCatch block;                                                   \
+        var = (value);                                                        \
+        if (UNLIKELY(block.HasCaught()))                                      \
+            exceptionState.rethrowV8Exception(block.Exception());             \
+        if (UNLIKELY(exceptionState.throwIfNeeded()))                         \
+            return retVal;                                                    \
+    }
+
+// type is an instance of class template V8StringResource<>,
+// but Mode argument varies; using type (not Mode) for consistency
+// with other macros and ease of code generation
+#define TOSTRING_VOID(type, var, value) \
+    type var(value);                    \
+    if (UNLIKELY(!var.prepare()))       \
         return;
+
+#define TOSTRING_BOOL(type, var, value, retVal) \
+    type var(value);                                 \
+    if (UNLIKELY(!var.prepare()))                    \
+        return retVal;
 
 } // namespace WebCore
 

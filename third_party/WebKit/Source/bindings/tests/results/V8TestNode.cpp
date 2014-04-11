@@ -61,7 +61,7 @@ static void hrefAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Property
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestNode* impl = V8TestNode::toNative(holder);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     impl->setHref(cppValue);
 }
 
@@ -91,7 +91,7 @@ static void hrefThrowsAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Pr
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "hrefThrows", "TestNode", holder, info.GetIsolate());
     TestNode* impl = V8TestNode::toNative(holder);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     impl->setHrefThrows(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -121,7 +121,7 @@ static void hrefCallWithAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestNode* impl = V8TestNode::toNative(holder);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     impl->setHrefCallWith(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 

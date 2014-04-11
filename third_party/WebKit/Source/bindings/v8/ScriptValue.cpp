@@ -109,7 +109,7 @@ static PassRefPtr<JSONValue> v8ToJSONValue(v8::Handle<v8::Value> value, int maxD
             RefPtr<JSONValue> propertyValue = v8ToJSONValue(object->Get(name), maxDepth, isolate);
             if (!propertyValue)
                 return nullptr;
-            V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<WithNullCheck>, nameString, name, nullptr);
+            TOSTRING_BOOL(V8StringResource<WithNullCheck>, nameString, name, nullptr);
             jsonObject->setValue(nameString, propertyValue);
         }
         return jsonObject;

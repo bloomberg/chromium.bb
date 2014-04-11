@@ -65,7 +65,7 @@ static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceNode* impl = V8TestInterfaceNode::toNative(holder);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     impl->setStringAttribute(cppValue);
 }
 
@@ -165,7 +165,7 @@ static void reflectStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
 {
     v8::Handle<v8::Object> holder = info.Holder();
     Element* impl = V8Element::toNative(holder);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     impl->setAttribute(HTMLNames::reflectstringattributeAttr, cppValue);
 }
 
@@ -195,7 +195,7 @@ static void reflectUrlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
 {
     v8::Handle<v8::Object> holder = info.Holder();
     Element* impl = V8Element::toNative(holder);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     impl->setAttribute(HTMLNames::reflecturlstringattributeAttr, cppValue);
 }
 
@@ -253,7 +253,7 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(con
         v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()), impl);
         return;
     }
-    V8TRYCATCH_VOID(bool, optionalBooleanArgument, info[0]->BooleanValue());
+    TONATIVE_VOID(bool, optionalBooleanArgument, info[0]->BooleanValue());
     v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument)), impl);
 }
 
@@ -271,7 +271,7 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForM
         v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()));
         return;
     }
-    V8TRYCATCH_VOID(bool, optionalBooleanArgument, info[0]->BooleanValue());
+    TONATIVE_VOID(bool, optionalBooleanArgument, info[0]->BooleanValue());
     v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument)));
 }
 

@@ -134,7 +134,7 @@ OwnPtr<{{argument.idl_type}}> {{argument.name}} = {% if argument.is_nullable %}i
 {% elif argument.is_clamp %}{# argument.is_callback_interface #}
 {# NaN is treated as 0: http://www.w3.org/TR/WebIDL/#es-type-mapping #}
 {{argument.cpp_type}} {{argument.name}} = 0;
-V8TRYCATCH_VOID(double, {{argument.name}}NativeValue, info[{{argument.index}}]->NumberValue());
+TONATIVE_VOID(double, {{argument.name}}NativeValue, info[{{argument.index}}]->NumberValue());
 if (!std::isnan({{argument.name}}NativeValue))
     {# IDL type is used for clamping, for the right bounds, since different
        IDL integer types have same internal C++ type (int or unsigned) #}

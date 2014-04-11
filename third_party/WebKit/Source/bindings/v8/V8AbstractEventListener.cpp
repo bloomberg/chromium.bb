@@ -146,7 +146,7 @@ void V8AbstractEventListener::invokeEventHandler(ExecutionContext* context, Even
         return;
 
     if (m_isAttribute && !returnValue->IsNull() && !returnValue->IsUndefined() && event->isBeforeUnloadEvent()) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringReturnValue, returnValue);
+        TOSTRING_VOID(V8StringResource<>, stringReturnValue, returnValue);
         toBeforeUnloadEvent(event)->setReturnValue(stringReturnValue);
     }
 

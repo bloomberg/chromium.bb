@@ -50,7 +50,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwArityTypeErrorForConstructor("TestInterfaceConstructor3", 1, info.Length(), info.GetIsolate());
         return;
     }
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, info[0]);
+    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
     RefPtr<TestInterfaceConstructor3> impl = TestInterfaceConstructor3::create(stringArg);
 
     v8::Handle<v8::Object> wrapper = info.Holder();

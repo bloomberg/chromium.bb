@@ -92,7 +92,7 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(Exec
         v8::Handle<v8::Function> originalFunction = getBoundFunction(handlerFunction);
         v8::ScriptOrigin origin = originalFunction->GetScriptOrigin();
         if (!origin.ResourceName().IsEmpty()) {
-            V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringResourceName, origin.ResourceName(), v8::Local<v8::Value>());
+            TOSTRING_BOOL(V8StringResource<>, stringResourceName, origin.ResourceName(), v8::Local<v8::Value>());
             resourceName = stringResourceName;
             lineNumber = originalFunction->GetScriptLineNumber() + 1;
         }

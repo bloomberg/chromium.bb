@@ -77,7 +77,7 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    V8TRYCATCH_VOID(TestInterfaceImplementation*, cppValue, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
+    TONATIVE_VOID(TestInterfaceImplementation*, cppValue, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
     impl->setTestInterfaceAttribute(WTF::getPtr(cppValue));
 }
 
@@ -102,7 +102,7 @@ static void staticStringAttributeAttributeGetterCallback(v8::Local<v8::String>, 
 
 static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     TestInterfaceImplementation::setStaticStringAttribute(cppValue);
 }
 
@@ -131,7 +131,7 @@ static void perWorldBindingsStringAttributeAttributeSetter(v8::Local<v8::Value> 
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     impl->setPerWorldBindingsStringAttribute(cppValue);
 }
 
@@ -160,7 +160,7 @@ static void perWorldBindingsStringAttributeAttributeSetterForMainWorld(v8::Local
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     impl->setPerWorldBindingsStringAttribute(cppValue);
 }
 
@@ -197,7 +197,7 @@ static void implementsStaticStringAttributeAttributeGetterCallback(v8::Local<v8:
 
 static void implementsStaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     TestInterfaceImplementation::setImplementsStaticStringAttribute(cppValue);
 }
 
@@ -240,7 +240,7 @@ static void implementsStringAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     impl->setImplementsStringAttribute(cppValue);
 }
 
@@ -275,7 +275,7 @@ static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
+    TONATIVE_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
     impl->setImplementsNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -340,7 +340,7 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::V
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
+    TONATIVE_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
     impl->setImplementsRuntimeEnabledNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -375,7 +375,7 @@ static void implementsPerContextEnabledNodeAttributeAttributeSetter(v8::Local<v8
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
+    TONATIVE_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
     impl->setImplementsPerContextEnabledNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -400,7 +400,7 @@ static void implements2StaticStringAttributeAttributeGetterCallback(v8::Local<v8
 
 static void implements2StaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     TestImplements2::setImplements2StaticStringAttribute(cppValue);
 }
 
@@ -431,7 +431,7 @@ static void implements2StringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     TestImplements2::setImplements2StringAttribute(*impl, cppValue);
 }
 
@@ -462,7 +462,7 @@ static void implements3StringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     TestImplements3Implementation::setImplements3StringAttribute(*impl, cppValue);
 }
 
@@ -487,7 +487,7 @@ static void implements3StaticStringAttributeAttributeGetterCallback(v8::Local<v8
 
 static void implements3StaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     TestImplements3Implementation::setImplements3StaticStringAttribute(cppValue);
 }
 
@@ -524,7 +524,7 @@ static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
-    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
     TestPartialInterface::setPartialLongAttribute(*impl, cppValue);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
@@ -558,7 +558,7 @@ static void partialStaticLongAttributeAttributeGetterCallback(v8::Local<v8::Stri
 static void partialStaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialStaticLongAttribute", "TestInterface", holder, info.GetIsolate());
-    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
     TestPartialInterface::setPartialStaticLongAttribute(cppValue);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
@@ -599,7 +599,7 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Loca
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialCallWithExecutionContextLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
-    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     TestPartialInterface::setPartialCallWithExecutionContextLongAttribute(scriptContext, *impl, cppValue);
 }
@@ -639,7 +639,7 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     String string = cppValue;
     if (!(string == "foo" || string == "bar"))
         return;
@@ -677,7 +677,7 @@ static void partial2LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     ExceptionState exceptionState(ExceptionState::SetterContext, "partial2LongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
-    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
     TestPartialInterfaceImplementation::setPartial2LongAttribute(*impl, cppValue);
 }
 
@@ -703,7 +703,7 @@ static void partial2StaticLongAttributeAttributeGetterCallback(v8::Local<v8::Str
 static void partial2StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "partial2StaticLongAttribute", "TestInterface", holder, info.GetIsolate());
-    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
+    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
     TestPartialInterfaceImplementation::setPartial2StaticLongAttribute(cppValue);
 }
 
@@ -745,7 +745,7 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
         throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterface", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
         return;
     }
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     impl->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -803,13 +803,13 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
+    TOSTRING_VOID(V8StringResource<>, strArg, info[0]);
     if (info.Length() > 1 && !V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate())) {
         exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
         exceptionState.throwIfNeeded();
         return;
     }
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
+    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestInterfaceEmpty> result = impl->implementsComplexMethod(scriptContext, strArg, testInterfaceEmptyArg, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -926,7 +926,7 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
+    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     ASSERT(impl);
     TestPartialInterface::partialVoidMethodLongArg(*impl, longArg);
 }
@@ -971,7 +971,7 @@ static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(ScriptValue, partialCallbackTypeArg, ScriptValue(info[0], info.GetIsolate()));
+    TONATIVE_VOID(ScriptValue, partialCallbackTypeArg, ScriptValue(info[0], info.GetIsolate()));
     ASSERT(impl);
     TestPartialInterface::partialVoidMethodPartialCallbackTypeArg(*impl, partialCallbackTypeArg);
 }
@@ -1031,7 +1031,7 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, propertyValue, v8Value);
     bool result = impl->anonymousIndexedSetter(index, propertyValue);
     if (!result)
         return;
@@ -1090,8 +1090,8 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
         return;
 
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, propertyName, name);
+    TOSTRING_VOID(V8StringResource<>, propertyValue, v8Value);
     bool result = impl->anonymousNamedSetter(propertyName, propertyValue);
     if (!result)
         return;

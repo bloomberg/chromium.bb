@@ -35,7 +35,7 @@ namespace WebCore {
 void V8DeviceOrientationEvent::initDeviceOrientationEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     DeviceOrientationEvent* impl = V8DeviceOrientationEvent::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
+    TOSTRING_VOID(V8StringResource<>, type, info[0]);
     bool bubbles = info[1]->BooleanValue();
     bool cancelable = info[2]->BooleanValue();
     // If alpha, beta, gamma or absolute are null or undefined, mark them as not provided.

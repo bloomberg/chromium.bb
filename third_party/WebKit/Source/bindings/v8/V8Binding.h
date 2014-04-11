@@ -180,7 +180,7 @@ inline AtomicString toCoreAtomicString(v8::Handle<v8::String> value)
 
 // This method will return a null String if the v8::Value does not contain a v8::String.
 // It will not call ToString() on the v8::Value. If you want ToString() to be called,
-// please use the V8TRYCATCH_FOR_V8STRINGRESOURCE_*() macros instead.
+// please use the TONATIVE_FOR_V8STRINGRESOURCE_*() macros instead.
 inline String toCoreStringWithUndefinedOrNullCheck(v8::Handle<v8::Value> value)
 {
     if (value.IsEmpty() || !value->IsString())
@@ -449,7 +449,7 @@ template<>
 struct NativeValueTraits<String> {
     static inline String nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
     {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, value, String());
+        TOSTRING_BOOL(V8StringResource<>, stringValue, value, String());
         return stringValue;
     }
 };
@@ -635,14 +635,14 @@ inline v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value> value, uint32_t&
     // FIXME: The specification states that the length property should be used as fallback, if value
     // is not a platform object that supports indexed properties. If it supports indexed properties,
     // length should actually be one greater than value’s maximum indexed property index.
-    V8TRYCATCH(v8::Local<v8::Value>, lengthValue, object->Get(lengthSymbol));
+    TONATIVE_EXCEPTION(v8::Local<v8::Value>, lengthValue, object->Get(lengthSymbol));
 
     if (lengthValue->IsUndefined() || lengthValue->IsNull()) {
         // The caller is responsible for reporting a TypeError.
         return v8Undefined();
     }
 
-    V8TRYCATCH(uint32_t, sequenceLength, lengthValue->Int32Value());
+    TONATIVE_EXCEPTION(uint32_t, sequenceLength, lengthValue->Int32Value());
     length = sequenceLength;
     return v8Value;
 }

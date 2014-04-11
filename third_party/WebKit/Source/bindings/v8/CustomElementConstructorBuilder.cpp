@@ -268,10 +268,10 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& in
     }
 
     Document* document = V8Document::toNative(V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Callee(), V8HiddenValue::customElementDocument(isolate)).As<v8::Object>());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, V8HiddenValue::getHiddenValue(isolate, info.Callee(), V8HiddenValue::customElementNamespaceURI(isolate)));
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, tagName, V8HiddenValue::getHiddenValue(isolate, info.Callee(), V8HiddenValue::customElementTagName(isolate)));
+    TOSTRING_VOID(V8StringResource<>, namespaceURI, V8HiddenValue::getHiddenValue(isolate, info.Callee(), V8HiddenValue::customElementNamespaceURI(isolate)));
+    TOSTRING_VOID(V8StringResource<>, tagName, V8HiddenValue::getHiddenValue(isolate, info.Callee(), V8HiddenValue::customElementTagName(isolate)));
     v8::Handle<v8::Value> maybeType = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Callee(), V8HiddenValue::customElementType(isolate));
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, maybeType);
+    TOSTRING_VOID(V8StringResource<>, type, maybeType);
 
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "CustomElement", info.Holder(), info.GetIsolate());
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;

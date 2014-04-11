@@ -128,7 +128,7 @@ String eventListenerHandlerBody(Document* document, EventListener* listener)
     if (function.IsEmpty())
         return "";
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<WithNullCheck>, functionString, function, "");
+    TOSTRING_BOOL(V8StringResource<WithNullCheck>, functionString, function, "");
     return functionString;
 }
 

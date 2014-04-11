@@ -54,7 +54,7 @@
 #include "wtf/PassOwnPtr.h"
 #include <v8.h>
 
-#define V8TRYCATCH_VOID_EMPTY(type, var, value)    \
+#define TONATIVE_VOID_EMPTY(type, var, value)    \
     type var;                                      \
     {                                              \
         v8::TryCatch block;                        \
@@ -523,9 +523,9 @@ void V8Promise::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& inf
         return;
     }
     v8::Local<v8::Function> init = info[0].As<v8::Function>();
-    V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Object>, promise, V8PromiseCustom::createPromise(info.Holder(), isolate));
-    V8TRYCATCH_VOID_EMPTY(v8::Handle<v8::Value>, resolve, createClosure(promiseResolveCallback, promise, isolate));
-    V8TRYCATCH_VOID_EMPTY(v8::Handle<v8::Value>, reject, createClosure(promiseRejectCallback, promise, isolate));
+    TONATIVE_VOID_EMPTY(v8::Local<v8::Object>, promise, V8PromiseCustom::createPromise(info.Holder(), isolate));
+    TONATIVE_VOID_EMPTY(v8::Handle<v8::Value>, resolve, createClosure(promiseResolveCallback, promise, isolate));
+    TONATIVE_VOID_EMPTY(v8::Handle<v8::Value>, reject, createClosure(promiseRejectCallback, promise, isolate));
     v8::Handle<v8::Value> argv[] = { resolve, reject };
     v8::TryCatch trycatch;
     if (V8ScriptRunner::callFunction(init, currentExecutionContext(isolate), v8::Undefined(isolate), WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty()) {
@@ -544,7 +544,7 @@ void V8Promise::thenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info
         onFulfilled = info[0].As<v8::Function>();
     if (info.Length() > 1 && info[1]->IsFunction())
         onRejected = info[1].As<v8::Function>();
-    V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Value>, newPromise, V8PromiseCustom::then(info.Holder(), onFulfilled, onRejected, isolate));
+    TONATIVE_VOID_EMPTY(v8::Local<v8::Value>, newPromise, V8PromiseCustom::then(info.Holder(), onFulfilled, onRejected, isolate));
     v8SetReturnValue(info, newPromise);
 }
 
@@ -557,7 +557,7 @@ void V8Promise::castMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info
     if (info.Length() > 0)
         result = info[0];
 
-    V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Value>, cast, V8PromiseCustom::toPromise(result, isolate));
+    TONATIVE_VOID_EMPTY(v8::Local<v8::Value>, cast, V8PromiseCustom::toPromise(result, isolate));
     v8SetReturnValue(info, cast);
 }
 
@@ -573,7 +573,7 @@ void V8Promise::catchMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& inf
         }
         onRejected = info[0].As<v8::Function>();
     }
-    V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Value>, newPromise, V8PromiseCustom::then(info.Holder(), onFulfilled, onRejected, isolate));
+    TONATIVE_VOID_EMPTY(v8::Local<v8::Value>, newPromise, V8PromiseCustom::then(info.Holder(), onFulfilled, onRejected, isolate));
     v8SetReturnValue(info, newPromise);
 }
 
@@ -586,7 +586,7 @@ void V8Promise::resolveMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& i
     if (info.Length() > 0)
         result = info[0];
 
-    V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Object>, promise, V8PromiseCustom::createPromise(info.Holder(), isolate));
+    TONATIVE_VOID_EMPTY(v8::Local<v8::Object>, promise, V8PromiseCustom::createPromise(info.Holder(), isolate));
     V8PromiseCustom::resolve(promise, result, isolate);
     v8SetReturnValue(info, promise);
 }
@@ -600,7 +600,7 @@ void V8Promise::rejectMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& in
     if (info.Length() > 0)
         result = info[0];
 
-    V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Object>, promise, V8PromiseCustom::createPromise(info.Holder(), isolate));
+    TONATIVE_VOID_EMPTY(v8::Local<v8::Object>, promise, V8PromiseCustom::createPromise(info.Holder(), isolate));
     V8PromiseCustom::reject(promise, result, isolate);
     v8SetReturnValue(info, promise);
 }
@@ -608,7 +608,7 @@ void V8Promise::rejectMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& in
 void V8Promise::raceMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
-    V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Object>, promise, V8PromiseCustom::createPromise(info.Holder(), isolate));
+    TONATIVE_VOID_EMPTY(v8::Local<v8::Object>, promise, V8PromiseCustom::createPromise(info.Holder(), isolate));
 
     if (!info.Length() || !info[0]->IsArray()) {
         v8SetReturnValue(info, promise);
@@ -617,14 +617,14 @@ void V8Promise::raceMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info
 
     // FIXME: Now we limit the iterable type to the Array type.
     v8::Local<v8::Array> iterable = info[0].As<v8::Array>();
-    V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Function>, onFulfilled, createClosure(promiseResolveCallback, promise, isolate));
-    V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Function>, onRejected, createClosure(promiseRejectCallback, promise, isolate));
+    TONATIVE_VOID_EMPTY(v8::Local<v8::Function>, onFulfilled, createClosure(promiseResolveCallback, promise, isolate));
+    TONATIVE_VOID_EMPTY(v8::Local<v8::Function>, onRejected, createClosure(promiseRejectCallback, promise, isolate));
 
     for (unsigned i = 0, length = iterable->Length(); i < length; ++i) {
         // Array-holes should not be skipped by for-of iteration semantics.
-        V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Value>, nextValue, iterable->Get(i));
-        V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Object>, nextPromise, V8PromiseCustom::toPromise(nextValue, isolate));
-        V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Value>, unused, V8PromiseCustom::then(nextPromise, onFulfilled, onRejected, isolate));
+        TONATIVE_VOID_EMPTY(v8::Local<v8::Value>, nextValue, iterable->Get(i));
+        TONATIVE_VOID_EMPTY(v8::Local<v8::Object>, nextPromise, V8PromiseCustom::toPromise(nextValue, isolate));
+        TONATIVE_VOID_EMPTY(v8::Local<v8::Value>, unused, V8PromiseCustom::then(nextPromise, onFulfilled, onRejected, isolate));
     }
     v8SetReturnValue(info, promise);
 }
@@ -632,7 +632,7 @@ void V8Promise::raceMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info
 void V8Promise::allMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
-    V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Object>, promise, V8PromiseCustom::createPromise(info.Holder(), isolate));
+    TONATIVE_VOID_EMPTY(v8::Local<v8::Object>, promise, V8PromiseCustom::createPromise(info.Holder(), isolate));
     v8::Local<v8::Array> results = v8::Array::New(info.GetIsolate());
 
     if (!info.Length() || !info[0]->IsArray()) {
@@ -651,17 +651,17 @@ void V8Promise::allMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
 
     v8::Local<v8::ObjectTemplate> objectTemplate = primitiveWrapperObjectTemplate(isolate);
-    V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Object>, countdownWrapper, objectTemplate->NewInstance());
+    TONATIVE_VOID_EMPTY(v8::Local<v8::Object>, countdownWrapper, objectTemplate->NewInstance());
     countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(isolate, iterable->Length()));
 
-    V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Function>, onRejected, createClosure(promiseRejectCallback, promise, isolate));
+    TONATIVE_VOID_EMPTY(v8::Local<v8::Function>, onRejected, createClosure(promiseRejectCallback, promise, isolate));
     for (unsigned i = 0, length = iterable->Length(); i < length; ++i) {
         // Array-holes should not be skipped by for-of iteration semantics.
-        V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Object>, environment, promiseAllEnvironment(promise, countdownWrapper, i, results, isolate));
-        V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Function>, onFulfilled, createClosure(promiseAllFulfillCallback, environment, isolate));
-        V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Value>, nextValue, iterable->Get(i));
-        V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Object>, nextPromise, V8PromiseCustom::toPromise(nextValue, isolate));
-        V8TRYCATCH_VOID_EMPTY(v8::Local<v8::Value>, unused, V8PromiseCustom::then(nextPromise, onFulfilled, onRejected, isolate));
+        TONATIVE_VOID_EMPTY(v8::Local<v8::Object>, environment, promiseAllEnvironment(promise, countdownWrapper, i, results, isolate));
+        TONATIVE_VOID_EMPTY(v8::Local<v8::Function>, onFulfilled, createClosure(promiseAllFulfillCallback, environment, isolate));
+        TONATIVE_VOID_EMPTY(v8::Local<v8::Value>, nextValue, iterable->Get(i));
+        TONATIVE_VOID_EMPTY(v8::Local<v8::Object>, nextPromise, V8PromiseCustom::toPromise(nextValue, isolate));
+        TONATIVE_VOID_EMPTY(v8::Local<v8::Value>, unused, V8PromiseCustom::then(nextPromise, onFulfilled, onRejected, isolate));
     }
     v8SetReturnValue(info, promise);
 }

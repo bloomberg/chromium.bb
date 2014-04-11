@@ -90,7 +90,7 @@ AtomicString V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
     if (tryCatch.HasCaught())
         return nullAtom;
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<WithNullCheck>, returnString, retval, nullAtom);
+    TOSTRING_BOOL(V8StringResource<WithNullCheck>, returnString, retval, nullAtom);
     return returnString;
 }
 

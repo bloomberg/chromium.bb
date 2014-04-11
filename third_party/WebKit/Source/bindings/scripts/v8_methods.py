@@ -249,16 +249,17 @@ def v8_value_to_local_cpp_value(argument, index):
     name = argument.name
     if argument.is_variadic:
         vector_type = v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.gc_type)
-        return 'V8TRYCATCH_VOID({vector_type}<{cpp_type}>, {name}, toNativeArguments<{cpp_type}>(info, {index}))'.format(
-                cpp_type=idl_type.cpp_type, name=name, index=index, vector_type=vector_type)
+        return 'TONATIVE_VOID({vector_type}<{cpp_type}>, {name}, toNativeArguments<{cpp_type}>(info, {index}))'.format(
+            vector_type=vector_type, cpp_type=idl_type.cpp_type, name=name,
+            index=index)
     # [Default=NullString]
     if (argument.is_optional and idl_type.name == 'String' and
         extended_attributes.get('Default') == 'NullString'):
         v8_value = 'argumentOrNull(info, %s)' % index
     else:
         v8_value = 'info[%s]' % index
-    return idl_type.v8_value_to_local_cpp_value(argument.extended_attributes,
-                                                v8_value, name, index=index)
+    return idl_type.v8_value_to_local_cpp_value(extended_attributes, v8_value,
+                                                name, index=index)
 
 
 ################################################################################

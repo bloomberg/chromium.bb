@@ -217,7 +217,7 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
     // During the frame teardown, there may not be a valid context.
     if (ExecutionContext* context = currentExecutionContext(isolate)) {
         String errorMessage = toCoreString(message->Get());
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, sourceURL, message->GetScriptResourceName());
+        TOSTRING_VOID(V8StringResource<>, sourceURL, message->GetScriptResourceName());
 
         RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, message->GetLineNumber(), message->GetStartColumn() + 1, &DOMWrapperWorld::current(isolate));
         AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;

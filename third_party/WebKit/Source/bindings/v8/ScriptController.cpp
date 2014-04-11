@@ -150,7 +150,7 @@ static bool resourceInfo(const v8::Handle<v8::Function> function, String& resour
         resourceName = "undefined";
         lineNumber = 1;
     } else {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringResourceName, origin.ResourceName(), false);
+        TOSTRING_BOOL(V8StringResource<>, stringResourceName, origin.ResourceName(), false);
         resourceName = stringResourceName;
         lineNumber = function->GetScriptLineNumber() + 1;
     }

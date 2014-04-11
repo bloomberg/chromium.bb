@@ -51,7 +51,7 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     TestSpecialOperations* impl = V8TestSpecialOperations::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, info[0]);
+    TOSTRING_VOID(V8StringResource<>, name, info[0]);
     bool result0Enabled = false;
     RefPtr<Node> result0;
     bool result1Enabled = false;
@@ -107,8 +107,8 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
 static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestSpecialOperations* impl = V8TestSpecialOperations::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
-    V8TRYCATCH_VOID(Node*, propertyValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
+    TOSTRING_VOID(V8StringResource<>, propertyName, name);
+    TONATIVE_VOID(Node*, propertyValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
     bool result = impl->anonymousNamedSetter(propertyName, propertyValue);
     if (!result)
         return;

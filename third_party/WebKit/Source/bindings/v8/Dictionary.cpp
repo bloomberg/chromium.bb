@@ -176,7 +176,7 @@ bool Dictionary::get(const String& key, double& value, bool& hasValue) const
     }
 
     hasValue = true;
-    V8TRYCATCH_RETURN(v8::Local<v8::Number>, v8Number, v8Value->ToNumber(), false);
+    TONATIVE_BOOL(v8::Local<v8::Number>, v8Number, v8Value->ToNumber(), false);
     if (v8Number.IsEmpty())
         return false;
     value = v8Number->Value();
@@ -208,7 +208,7 @@ inline bool Dictionary::getStringType(const String& key, StringType& value) cons
     if (!getKey(key, v8Value))
         return false;
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, v8Value, false);
+    TOSTRING_BOOL(V8StringResource<>, stringValue, v8Value, false);
     value = stringValue;
     return true;
 }
@@ -231,7 +231,7 @@ bool Dictionary::convert(ConversionContext& context, const String& key, String& 
     if (!getKey(key, v8Value))
         return true;
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, v8Value, false);
+    TOSTRING_BOOL(V8StringResource<>, stringValue, v8Value, false);
     value = stringValue;
     return true;
 }
@@ -312,7 +312,7 @@ bool Dictionary::get(const String& key, unsigned long long& value) const
     if (!getKey(key, v8Value))
         return false;
 
-    V8TRYCATCH_RETURN(v8::Local<v8::Number>, v8Number, v8Value->ToNumber(), false);
+    TONATIVE_BOOL(v8::Local<v8::Number>, v8Number, v8Value->ToNumber(), false);
     if (v8Number.IsEmpty())
         return false;
     double d = v8Number->Value();
@@ -383,7 +383,7 @@ bool Dictionary::get(const String& key, HashSet<AtomicString>& value) const
     v8::Local<v8::Array> v8Array = v8::Local<v8::Array>::Cast(v8Value);
     for (size_t i = 0; i < v8Array->Length(); ++i) {
         v8::Local<v8::Value> indexedValue = v8Array->Get(v8::Integer::New(m_isolate, i));
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, indexedValue, false);
+        TOSTRING_BOOL(V8StringResource<>, stringValue, indexedValue, false);
         value.add(stringValue);
     }
 
@@ -415,7 +415,7 @@ bool Dictionary::getWithUndefinedOrNullCheck(const String& key, String& value) c
     if (!getKey(key, v8Value) || WebCore::isUndefinedOrNull(v8Value))
         return false;
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, v8Value, false);
+    TOSTRING_BOOL(V8StringResource<>, stringValue, v8Value, false);
     value = stringValue;
     return true;
 }
@@ -600,7 +600,7 @@ bool Dictionary::get(const String& key, Vector<String>& value) const
     v8::Local<v8::Array> v8Array = v8::Local<v8::Array>::Cast(v8Value);
     for (size_t i = 0; i < v8Array->Length(); ++i) {
         v8::Local<v8::Value> indexedValue = v8Array->Get(v8::Uint32::New(m_isolate, i));
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, indexedValue, false);
+        TOSTRING_BOOL(V8StringResource<>, stringValue, indexedValue, false);
         value.append(stringValue);
     }
 
@@ -701,8 +701,8 @@ bool Dictionary::getOwnPropertiesAsStringHashMap(HashMap<String, String>& hashMa
             continue;
 
         v8::Local<v8::Value> value = options->Get(key);
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringKey, key, false);
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, value, false);
+        TOSTRING_BOOL(V8StringResource<>, stringKey, key, false);
+        TOSTRING_BOOL(V8StringResource<>, stringValue, value, false);
         if (!static_cast<const String&>(stringKey).isEmpty())
             hashMap.set(stringKey, stringValue);
     }
@@ -726,7 +726,7 @@ bool Dictionary::getOwnPropertyNames(Vector<String>& names) const
         v8::Local<v8::String> key = properties->Get(i)->ToString();
         if (!options->Has(key))
             continue;
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringKey, key, false);
+        TOSTRING_BOOL(V8StringResource<>, stringKey, key, false);
         names.append(stringKey);
     }
 

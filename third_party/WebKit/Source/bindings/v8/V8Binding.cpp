@@ -206,7 +206,7 @@ static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfi
     }
 
     // Can the value be converted to a number?
-    V8TRYCATCH_EXCEPTION_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
+    TONATIVE_BOOL_EXCEPTIONSTATE(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
     if (numberObject.IsEmpty()) {
         exceptionState.throwTypeError("Not convertible to a number value (of type '" + String(typeName) + "'.");
         return 0;
@@ -243,7 +243,7 @@ static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConf
     }
 
     // Can the value be converted to a number?
-    V8TRYCATCH_EXCEPTION_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
+    TONATIVE_BOOL_EXCEPTIONSTATE(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
     if (numberObject.IsEmpty()) {
         exceptionState.throwTypeError("Not convertible to a number value (of type '" + String(typeName) + "'.");
         return 0;
@@ -315,7 +315,7 @@ int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
         return value->Int32Value();
 
     // Can the value be converted to a number?
-    V8TRYCATCH_EXCEPTION_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
+    TONATIVE_BOOL_EXCEPTIONSTATE(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
     if (numberObject.IsEmpty()) {
         exceptionState.throwTypeError("Not convertible to a number value (of type 'long'.)");
         return 0;
@@ -332,7 +332,7 @@ int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
     if (configuration == Clamp)
         return clampTo<int32_t>(numberObject->Value());
 
-    V8TRYCATCH_EXCEPTION_RETURN(int32_t, result, numberObject->Int32Value(), exceptionState, 0);
+    TONATIVE_BOOL_EXCEPTIONSTATE(int32_t, result, numberObject->Int32Value(), exceptionState, 0);
     return result;
 }
 
@@ -361,7 +361,7 @@ uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
     }
 
     // Can the value be converted to a number?
-    V8TRYCATCH_EXCEPTION_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
+    TONATIVE_BOOL_EXCEPTIONSTATE(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
     if (numberObject.IsEmpty()) {
         exceptionState.throwTypeError("Not convertible to a number value (of type 'unsigned long'.)");
         return 0;
@@ -378,7 +378,7 @@ uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
     if (configuration == Clamp)
         return clampTo<uint32_t>(numberObject->Value());
 
-    V8TRYCATCH_RETURN(uint32_t, result, numberObject->Uint32Value(), 0);
+    TONATIVE_BOOL(uint32_t, result, numberObject->Uint32Value(), 0);
     return result;
 }
 
@@ -395,7 +395,7 @@ int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
         return value->Int32Value();
 
     // Can the value be converted to a number?
-    V8TRYCATCH_EXCEPTION_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
+    TONATIVE_BOOL_EXCEPTIONSTATE(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
     if (numberObject.IsEmpty()) {
         exceptionState.throwTypeError("Not convertible to a number value (of type 'long long'.)");
         return 0;
@@ -441,7 +441,7 @@ uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
     }
 
     // Can the value be converted to a number?
-    V8TRYCATCH_EXCEPTION_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
+    TONATIVE_BOOL_EXCEPTIONSTATE(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
     if (numberObject.IsEmpty()) {
         exceptionState.throwTypeError("Not convertible to a number value (of type 'unsigned long long'.)");
         return 0;
@@ -470,7 +470,7 @@ uint64_t toUInt64(v8::Handle<v8::Value> value)
 
 float toFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    V8TRYCATCH_EXCEPTION_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
+    TONATIVE_BOOL_EXCEPTIONSTATE(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
     return numberObject->NumberValue();
 }
 

@@ -104,7 +104,7 @@ void V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(const v8::FunctionCa
 {
     DeviceMotionEvent* impl = V8DeviceMotionEvent::toNative(info.Holder());
     v8::Isolate* isolate = info.GetIsolate();
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
+    TOSTRING_VOID(V8StringResource<>, type, info[0]);
     bool bubbles = info[1]->BooleanValue();
     bool cancelable = info[2]->BooleanValue();
     RefPtrWillBeRawPtr<DeviceMotionData::Acceleration> acceleration = readAccelerationArgument(info[3], isolate);

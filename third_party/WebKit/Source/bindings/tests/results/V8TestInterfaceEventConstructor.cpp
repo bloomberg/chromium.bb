@@ -256,11 +256,11 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
+    TOSTRING_VOID(V8StringResource<>, type, info[0]);
     v8::Local<v8::Value> initializedByEventConstructorReadonlyAnyAttribute;
     TestInterfaceEventConstructorInit eventInit;
     if (info.Length() >= 2) {
-        V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], isolate));
+        TONATIVE_VOID(Dictionary, options, Dictionary(info[1], isolate));
         if (!initializeTestInterfaceEventConstructor(eventInit, options, exceptionState, info)) {
             exceptionState.throwIfNeeded();
             return;

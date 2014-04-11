@@ -67,7 +67,7 @@ static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "uLongLongAttribute", "TestTypedefs", holder, info.GetIsolate());
     TestTypedefs* impl = V8TestTypedefs::toNative(holder);
-    V8TRYCATCH_EXCEPTION_VOID(unsigned long long, cppValue, toUInt64(v8Value, exceptionState), exceptionState);
+    TONATIVE_VOID_EXCEPTIONSTATE(unsigned long long, cppValue, toUInt64(v8Value, exceptionState), exceptionState);
     impl->setULongLongAttribute(cppValue);
 }
 
@@ -105,7 +105,7 @@ static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::V
         impl->voidMethodArrayOfLongsArg();
         return;
     }
-    V8TRYCATCH_VOID(Vector<int>, arrayOfLongsArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
+    TONATIVE_VOID(Vector<int>, arrayOfLongsArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
     impl->voidMethodArrayOfLongsArg(arrayOfLongsArg);
 }
 
@@ -123,8 +123,8 @@ static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8:
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    V8TRYCATCH_VOID(float, floatArg, static_cast<float>(info[0]->NumberValue()));
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, info[1]);
+    TONATIVE_VOID(float, floatArg, static_cast<float>(info[0]->NumberValue()));
+    TOSTRING_VOID(V8StringResource<>, stringArg, info[1]);
     impl->voidMethodFloatArgStringArg(floatArg, stringArg);
 }
 
@@ -164,7 +164,7 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::Fun
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    V8TRYCATCH_VOID(Vector<RefPtr<TestInterfaceEmpty> >, testInterfaceEmptyTypeSequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
+    TONATIVE_VOID(Vector<RefPtr<TestInterfaceEmpty> >, testInterfaceEmptyTypeSequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
     v8SetReturnValue(info, static_cast<double>(impl->uLongLongMethodTestInterfaceEmptyTypeSequenceArg(testInterfaceEmptyTypeSequenceArg)));
 }
 
@@ -208,7 +208,7 @@ static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallba
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    V8TRYCATCH_VOID(Vector<String>, arrayOfStringsArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
+    TONATIVE_VOID(Vector<String>, arrayOfStringsArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
     v8SetReturnValue(info, v8Array(impl->arrayOfStringsMethodArrayOfStringsArg(arrayOfStringsArg), info.GetIsolate()));
 }
 
@@ -226,7 +226,7 @@ static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    V8TRYCATCH_VOID(Vector<String>, stringArrayArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
+    TONATIVE_VOID(Vector<String>, stringArrayArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
     v8SetReturnValue(info, v8Array(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.GetIsolate()));
 }
 
@@ -244,7 +244,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwArityTypeErrorForConstructor("TestTypedefs", 1, info.Length(), info.GetIsolate());
         return;
     }
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, info[0]);
+    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
     RefPtr<TestTypedefs> impl = TestTypedefs::create(stringArg);
 
     v8::Handle<v8::Object> wrapper = info.Holder();

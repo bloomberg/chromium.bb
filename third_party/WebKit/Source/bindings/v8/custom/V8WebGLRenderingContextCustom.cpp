@@ -358,7 +358,7 @@ void V8WebGLRenderingContext::getExtensionMethodCustom(const v8::FunctionCallbac
         exceptionState.throwIfNeeded();
         return;
     }
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, info[0]);
+    TOSTRING_VOID(V8StringResource<>, name, info[0]);
     RefPtr<WebGLExtension> extension(impl->getExtension(name));
     v8SetReturnValue(info, toV8Object(extension.get(), info.Holder(), info.GetIsolate()));
 }

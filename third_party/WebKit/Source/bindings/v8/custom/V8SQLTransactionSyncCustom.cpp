@@ -53,7 +53,7 @@ void V8SQLTransactionSync::executeSqlMethodCustom(const v8::FunctionCallbackInfo
         return;
     }
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, statement, info[0]);
+    TOSTRING_VOID(V8StringResource<>, statement, info[0]);
 
     Vector<SQLValue> sqlValues;
 
@@ -66,7 +66,7 @@ void V8SQLTransactionSync::executeSqlMethodCustom(const v8::FunctionCallbackInfo
 
         uint32_t sqlArgsLength = 0;
         v8::Local<v8::Object> sqlArgsObject = info[1]->ToObject();
-        V8TRYCATCH_VOID(v8::Local<v8::Value>, length, sqlArgsObject->Get(v8AtomicString(info.GetIsolate(), "length")));
+        TONATIVE_VOID(v8::Local<v8::Value>, length, sqlArgsObject->Get(v8AtomicString(info.GetIsolate(), "length")));
 
         if (isUndefinedOrNull(length))
             sqlArgsLength = sqlArgsObject->GetPropertyNames()->Length();
@@ -75,15 +75,15 @@ void V8SQLTransactionSync::executeSqlMethodCustom(const v8::FunctionCallbackInfo
 
         for (unsigned i = 0; i < sqlArgsLength; ++i) {
             v8::Handle<v8::Integer> key = v8::Integer::New(info.GetIsolate(), i);
-            V8TRYCATCH_VOID(v8::Local<v8::Value>, value, sqlArgsObject->Get(key));
+            TONATIVE_VOID(v8::Local<v8::Value>, value, sqlArgsObject->Get(key));
 
             if (value.IsEmpty() || value->IsNull())
                 sqlValues.append(SQLValue());
             else if (value->IsNumber()) {
-                V8TRYCATCH_VOID(double, sqlValue, value->NumberValue());
+                TONATIVE_VOID(double, sqlValue, value->NumberValue());
                 sqlValues.append(SQLValue(sqlValue));
             } else {
-                V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, sqlValue, value);
+                TOSTRING_VOID(V8StringResource<>, sqlValue, value);
                 sqlValues.append(SQLValue(sqlValue));
             }
         }

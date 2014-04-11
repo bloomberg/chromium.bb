@@ -435,14 +435,14 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index)
     args = [this_cpp_type, variable_name, cpp_value]
     if idl_type.base_type == 'DOMString' and not idl_type.array_or_sequence_type:
-        v8trycatch_void = 'V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID'
+        macro = 'TOSTRING_VOID'
     elif idl_type.is_integer_type:
-        v8trycatch_void = 'V8TRYCATCH_EXCEPTION_VOID'
+        macro = 'TONATIVE_VOID_EXCEPTIONSTATE'
         args.append('exceptionState')
     else:
-        v8trycatch_void = 'V8TRYCATCH_VOID'
+        macro = 'TONATIVE_VOID'
 
-    return '%s(%s)' % (v8trycatch_void, ', '.join(args))
+    return '%s(%s)' % (macro, ', '.join(args))
 
 IdlType.v8_value_to_local_cpp_value = v8_value_to_local_cpp_value
 IdlUnionType.v8_value_to_local_cpp_value = v8_value_to_local_cpp_value

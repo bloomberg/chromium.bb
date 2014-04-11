@@ -65,7 +65,7 @@ void V8File::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
         }
     }
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, fileName, info[1]);
+    TOSTRING_VOID(V8StringResource<>, fileName, info[1]);
 
     V8BlobCustomHelpers::ParsedProperties properties(true);
     if (info.Length() > 2) {

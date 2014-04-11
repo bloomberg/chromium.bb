@@ -56,7 +56,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
-    V8TRYCATCH_EXCEPTION_VOID(unsigned, index, toUInt32(info[0], exceptionState), exceptionState);
+    TONATIVE_VOID_EXCEPTIONSTATE(unsigned, index, toUInt32(info[0], exceptionState), exceptionState);
     RefPtr<TestInterfaceEmpty> result = impl->item(index, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -78,8 +78,8 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
-    V8TRYCATCH_EXCEPTION_VOID(unsigned, index, toUInt32(info[0], exceptionState), exceptionState);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, value, info[1]);
+    TONATIVE_VOID_EXCEPTIONSTATE(unsigned, index, toUInt32(info[0], exceptionState), exceptionState);
+    TOSTRING_VOID(V8StringResource<>, value, info[1]);
     String result = impl->setItem(index, value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -101,7 +101,7 @@ static void deleteItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
-    V8TRYCATCH_EXCEPTION_VOID(unsigned, index, toUInt32(info[0], exceptionState), exceptionState);
+    TONATIVE_VOID_EXCEPTIONSTATE(unsigned, index, toUInt32(info[0], exceptionState), exceptionState);
     bool result = impl->deleteItem(index, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -123,7 +123,7 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, info[0]);
+    TOSTRING_VOID(V8StringResource<>, name, info[0]);
     RefPtr<TestInterfaceEmpty> result = impl->namedItem(name, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -145,8 +145,8 @@ static void setNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, info[0]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, value, info[1]);
+    TOSTRING_VOID(V8StringResource<>, name, info[0]);
+    TOSTRING_VOID(V8StringResource<>, value, info[1]);
     String result = impl->setNamedItem(name, value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -168,7 +168,7 @@ static void deleteNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& inf
         return;
     }
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, info[0]);
+    TOSTRING_VOID(V8StringResource<>, name, info[0]);
     bool result = impl->deleteNamedItem(name, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -213,7 +213,7 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, propertyValue, v8Value);
     ExceptionState exceptionState(ExceptionState::IndexedSetterContext, "TestInterface2", info.Holder(), info.GetIsolate());
     bool result = impl->setItem(index, propertyValue, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -282,8 +282,8 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
         return;
 
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, v8Value);
+    TOSTRING_VOID(V8StringResource<>, propertyName, name);
+    TOSTRING_VOID(V8StringResource<>, propertyValue, v8Value);
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *namedProperty, "TestInterface2", info.Holder(), info.GetIsolate());
     bool result = impl->setNamedItem(propertyName, propertyValue, exceptionState);

@@ -46,13 +46,13 @@ void V8Element::scrollLeftAttributeSetterCustom(v8::Local<v8::Value> value, cons
     Element* impl = V8Element::toNative(info.Holder());
 
     if (RuntimeEnabledFeatures::cssomSmoothScrollEnabled() && value->IsObject()) {
-        V8TRYCATCH_VOID(Dictionary, scrollOptionsHorizontal, Dictionary(value, info.GetIsolate()));
+        TONATIVE_VOID(Dictionary, scrollOptionsHorizontal, Dictionary(value, info.GetIsolate()));
         impl->setScrollLeft(scrollOptionsHorizontal, exceptionState);
         exceptionState.throwIfNeeded();
         return;
     }
 
-    V8TRYCATCH_EXCEPTION_VOID(int, position, toInt32(value, exceptionState), exceptionState);
+    TONATIVE_VOID_EXCEPTIONSTATE(int, position, toInt32(value, exceptionState), exceptionState);
     impl->setScrollLeft(position);
 }
 
@@ -62,13 +62,13 @@ void V8Element::scrollTopAttributeSetterCustom(v8::Local<v8::Value> value, const
     Element* impl = V8Element::toNative(info.Holder());
 
     if (RuntimeEnabledFeatures::cssomSmoothScrollEnabled() && value->IsObject()) {
-        V8TRYCATCH_VOID(Dictionary, scrollOptionsVertical, Dictionary(value, info.GetIsolate()));
+        TONATIVE_VOID(Dictionary, scrollOptionsVertical, Dictionary(value, info.GetIsolate()));
         impl->setScrollTop(scrollOptionsVertical, exceptionState);
         exceptionState.throwIfNeeded();
         return;
     }
 
-    V8TRYCATCH_EXCEPTION_VOID(int, position, toInt32(value, exceptionState), exceptionState);
+    TONATIVE_VOID_EXCEPTIONSTATE(int, position, toInt32(value, exceptionState), exceptionState);
     impl->setScrollTop(position);
 }
 

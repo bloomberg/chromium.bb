@@ -136,12 +136,12 @@ void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8
 void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     MessageEvent* event = V8MessageEvent::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, typeArg, info[0]);
-    V8TRYCATCH_VOID(bool, canBubbleArg, info[1]->BooleanValue());
-    V8TRYCATCH_VOID(bool, cancelableArg, info[2]->BooleanValue());
+    TOSTRING_VOID(V8StringResource<>, typeArg, info[0]);
+    TONATIVE_VOID(bool, canBubbleArg, info[1]->BooleanValue());
+    TONATIVE_VOID(bool, cancelableArg, info[2]->BooleanValue());
     v8::Handle<v8::Value> dataArg = info[3];
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, originArg, info[4]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, lastEventIdArg, info[5]);
+    TOSTRING_VOID(V8StringResource<>, originArg, info[4]);
+    TOSTRING_VOID(V8StringResource<>, lastEventIdArg, info[5]);
     DOMWindow* sourceArg = toDOMWindow(info[6], info.GetIsolate());
     OwnPtr<MessagePortArray> portArray;
     const int portArrayIndex = 7;

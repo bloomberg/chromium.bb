@@ -61,7 +61,7 @@ static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::Propert
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toNative(holder);
-    V8TRYCATCH_VOID(TestInterfaceWillBeGarbageCollected*, cppValue, V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
+    TONATIVE_VOID(TestInterfaceWillBeGarbageCollected*, cppValue, V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
     impl->setAttr1(WTF::getPtr(cppValue));
 }
 
@@ -79,7 +79,7 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceWillBeGarbageCollected*, arg, V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TONATIVE_VOID(TestInterfaceWillBeGarbageCollected*, arg, V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     impl->func(arg);
 }
 
@@ -97,7 +97,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwArityTypeErrorForConstructor("TestInterfaceWillBeGarbageCollected", 1, info.Length(), info.GetIsolate());
         return;
     }
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str, info[0]);
+    TOSTRING_VOID(V8StringResource<>, str, info[0]);
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> impl = TestInterfaceWillBeGarbageCollected::create(str);
 
     v8::Handle<v8::Object> wrapper = info.Holder();
