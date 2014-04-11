@@ -5165,41 +5165,37 @@ debugHook ()
 
 static logcallback logCallbackFunction;
 void EXPORT_CALL lou_registerLogCallback(logcallback callback)
-  {
-    logCallbackFunction = callback;
-  }
+{
+  logCallbackFunction = callback;
+}
 
 static int logLevel = LOG_INFO;
 void EXPORT_CALL lou_setLogLevel(int level)
-  {
-    logLevel = level;
-  }
+{
+  logLevel = level;
+}
 
 void EXPORT_CALL lou_log(int level, const char *format, ...)
-  {
-    if (format == NULL)
-      {
-	return;
-      }
-    if (level < logLevel)
-      {
-	return;
-      }
-    if (logCallbackFunction != 0)
-      {
-	char *s;
-	size_t len;
-	va_list argp;
-	va_start(argp, format);
-	len = vsnprintf(0, 0, format, argp);
-	va_end(argp);
-	if ((s = malloc(len+1)) != 0)
-	  {
-	    va_start(argp, format);
-	    vsnprintf(s, len+1, format, argp);
-	    va_end(argp);
-	    logCallbackFunction(level, s);
-	    free(s);
-	  }
-      }
-  }
+{
+  if (format == NULL)
+      return;
+  if (level < logLevel)
+      return;
+  if (logCallbackFunction != 0)
+    {
+      char *s;
+      size_t len;
+      va_list argp;
+      va_start(argp, format);
+      len = vsnprintf(0, 0, format, argp);
+      va_end(argp);
+      if ((s = malloc(len+1)) != 0)
+        {
+          va_start(argp, format);
+          vsnprintf(s, len+1, format, argp);
+          va_end(argp);
+          logCallbackFunction(level, s);
+          free(s);
+        }
+    }
+}
