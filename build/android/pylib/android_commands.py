@@ -27,6 +27,7 @@ import constants
 import screenshot
 import system_properties
 from utils import host_utils
+from device import device_utils
 
 try:
   from pylib import pexpect
@@ -1721,7 +1722,7 @@ class AndroidCommands(object):
     Returns:
       Resulting host file name of the screenshot.
     """
-    return screenshot.TakeScreenshot(self, host_file)
+    return screenshot.TakeScreenshot(device_utils.DeviceUtils(self), host_file)
 
   def PullFileFromDevice(self, device_file, host_file):
     """Download |device_file| on the device from to |host_file| on the host.
