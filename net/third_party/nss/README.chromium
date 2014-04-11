@@ -96,6 +96,10 @@ Patches:
     patches/nssrwlock.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=957812
 
+  * Use the IANA-assigned value for the TLS padding extension.
+    patches/paddingextvalue.patch
+    https://bugzilla.mozilla.org/show_bug.cgi?id=994883
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 

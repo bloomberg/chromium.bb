@@ -46,3 +46,5 @@ patch -p4 < $patches_dir/fallbackscsv.patch
 patch -p4 < $patches_dir/sessioncache.patch
 
 patch -p4 < $patches_dir/nssrwlock.patch
+
+patch -p4 < $patches_dir/paddingextvalue.patch
