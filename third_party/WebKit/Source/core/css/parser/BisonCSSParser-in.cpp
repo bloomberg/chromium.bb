@@ -900,60 +900,117 @@ static bool parseTransformTranslateArguments(CharType*& pos, CharType* end, unsi
 }
 
 template <typename CharType>
-static PassRefPtrWillBeRawPtr<CSSTransformValue> parseTranslateTransformValue(CharType*& pos, CharType* end)
+static bool parseTransformNumberArguments(CharType*& pos, CharType* end, unsigned expectedCount, CSSTransformValue* transformValue)
+{
+    while (expectedCount) {
+        size_t delimiter = WTF::find(pos, end - pos, expectedCount == 1 ? ')' : ',');
+        if (delimiter == kNotFound)
+            return false;
+        unsigned argumentLength = static_cast<unsigned>(delimiter);
+        bool ok;
+        double number = charactersToDouble(pos, argumentLength, &ok);
+        if (!ok)
+            return false;
+        transformValue->append(cssValuePool().createValue(number, CSSPrimitiveValue::CSS_NUMBER));
+        pos += argumentLength + 1;
+        --expectedCount;
+    }
+    return true;
+}
+
+template <typename CharType>
+static PassRefPtrWillBeRawPtr<CSSTransformValue> parseSimpleTransformValue(CharType*& pos, CharType* end)
 {
     static const int shortestValidTransformStringLength = 12;
 
     if (end - pos < shortestValidTransformStringLength)
         return nullptr;
 
-    if ((pos[0] != 't' && pos[0] != 'T')
-        || (pos[1] != 'r' && pos[1] != 'R')
-        || (pos[2] != 'a' && pos[2] != 'A')
-        || (pos[3] != 'n' && pos[3] != 'N')
-        || (pos[4] != 's' && pos[4] != 'S')
-        || (pos[5] != 'l' && pos[5] != 'L')
-        || (pos[6] != 'a' && pos[6] != 'A')
-        || (pos[7] != 't' && pos[7] != 'T')
-        || (pos[8] != 'e' && pos[8] != 'E'))
-        return nullptr;
+    const bool isTranslate = toASCIILower(pos[0]) == 't'
+        && toASCIILower(pos[1]) == 'r'
+        && toASCIILower(pos[2]) == 'a'
+        && toASCIILower(pos[3]) == 'n'
+        && toASCIILower(pos[4]) == 's'
+        && toASCIILower(pos[5]) == 'l'
+        && toASCIILower(pos[6]) == 'a'
+        && toASCIILower(pos[7]) == 't'
+        && toASCIILower(pos[8]) == 'e';
 
-    CSSTransformValue::TransformOperationType transformType;
-    unsigned expectedArgumentCount = 1;
-    unsigned argumentStart = 11;
-    if ((pos[9] == 'x' || pos[9] == 'X') && pos[10] == '(') {
-        transformType = CSSTransformValue::TranslateXTransformOperation;
-    } else if ((pos[9] == 'y' || pos[9] == 'Y') && pos[10] == '(') {
-        transformType = CSSTransformValue::TranslateYTransformOperation;
-    } else if ((pos[9] == 'z' || pos[9] == 'Z') && pos[10] == '(') {
-        transformType = CSSTransformValue::TranslateZTransformOperation;
-    } else if (pos[9] == '(') {
-        transformType = CSSTransformValue::TranslateTransformOperation;
-        expectedArgumentCount = 2;
-        argumentStart = 10;
-    } else if (pos[9] == '3' && (pos[10] == 'd' || pos[10] == 'D') && pos[11] == '(') {
-        transformType = CSSTransformValue::Translate3DTransformOperation;
-        expectedArgumentCount = 3;
-        argumentStart = 12;
-    } else {
-        return nullptr;
+    if (isTranslate) {
+        CSSTransformValue::TransformOperationType transformType;
+        unsigned expectedArgumentCount = 1;
+        unsigned argumentStart = 11;
+        CharType c9 = toASCIILower(pos[9]);
+        if (c9 == 'x' && pos[10] == '(') {
+            transformType = CSSTransformValue::TranslateXTransformOperation;
+        } else if (c9 == 'y' && pos[10] == '(') {
+            transformType = CSSTransformValue::TranslateYTransformOperation;
+        } else if (c9 == 'z' && pos[10] == '(') {
+            transformType = CSSTransformValue::TranslateZTransformOperation;
+        } else if (c9 == '(') {
+            transformType = CSSTransformValue::TranslateTransformOperation;
+            expectedArgumentCount = 2;
+            argumentStart = 10;
+        } else if (c9 == '3' && toASCIILower(pos[10]) == 'd' && pos[11] == '(') {
+            transformType = CSSTransformValue::Translate3DTransformOperation;
+            expectedArgumentCount = 3;
+            argumentStart = 12;
+        } else {
+            return nullptr;
+        }
+        pos += argumentStart;
+        RefPtrWillBeRawPtr<CSSTransformValue> transformValue = CSSTransformValue::create(transformType);
+        if (!parseTransformTranslateArguments(pos, end, expectedArgumentCount, transformValue.get()))
+            return nullptr;
+        return transformValue.release();
     }
-    pos += argumentStart;
 
-    RefPtrWillBeRawPtr<CSSTransformValue> transformValue = CSSTransformValue::create(transformType);
-    if (!parseTransformTranslateArguments(pos, end, expectedArgumentCount, transformValue.get()))
-        return nullptr;
-    return transformValue.release();
+    const bool isMatrix3d = toASCIILower(pos[0]) == 'm'
+        && toASCIILower(pos[1]) == 'a'
+        && toASCIILower(pos[2]) == 't'
+        && toASCIILower(pos[3]) == 'r'
+        && toASCIILower(pos[4]) == 'i'
+        && toASCIILower(pos[5]) == 'x'
+        && pos[6] == '3'
+        && toASCIILower(pos[7]) == 'd'
+        && pos[8] == '(';
+
+    if (isMatrix3d) {
+        pos += 9;
+        RefPtrWillBeRawPtr<CSSTransformValue> transformValue = CSSTransformValue::create(CSSTransformValue::Matrix3DTransformOperation);
+        if (!parseTransformNumberArguments(pos, end, 16, transformValue.get()))
+            return nullptr;
+        return transformValue.release();
+    }
+
+    const bool isScale3d = toASCIILower(pos[0]) == 's'
+        && toASCIILower(pos[1]) == 'c'
+        && toASCIILower(pos[2]) == 'a'
+        && toASCIILower(pos[3]) == 'l'
+        && toASCIILower(pos[4]) == 'e'
+        && pos[5] == '3'
+        && toASCIILower(pos[6]) == 'd'
+        && pos[7] == '(';
+
+    if (isScale3d) {
+        pos += 8;
+        RefPtrWillBeRawPtr<CSSTransformValue> transformValue = CSSTransformValue::create(CSSTransformValue::Scale3DTransformOperation);
+        if (!parseTransformNumberArguments(pos, end, 3, transformValue.get()))
+            return nullptr;
+        return transformValue.release();
+    }
+
+    return nullptr;
 }
 
 template <typename CharType>
-static PassRefPtrWillBeRawPtr<CSSValueList> parseTranslateTransformList(CharType*& pos, CharType* end)
+static PassRefPtrWillBeRawPtr<CSSValueList> parseSimpleTransformList(CharType*& pos, CharType* end)
 {
     RefPtrWillBeRawPtr<CSSValueList> transformList = nullptr;
     while (pos < end) {
         while (pos < end && isCSSSpace(*pos))
             ++pos;
-        RefPtrWillBeRawPtr<CSSTransformValue> transformValue = parseTranslateTransformValue(pos, end);
+        RefPtrWillBeRawPtr<CSSTransformValue> transformValue = parseSimpleTransformValue(pos, end);
         if (!transformValue)
             return nullptr;
         if (!transformList)
@@ -967,7 +1024,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> parseTranslateTransformList(CharType
     return transformList.release();
 }
 
-static bool parseTranslateTransform(MutableStylePropertySet* properties, CSSPropertyID propertyID, const String& string, bool important)
+static bool parseSimpleTransform(MutableStylePropertySet* properties, CSSPropertyID propertyID, const String& string, bool important)
 {
     if (propertyID != CSSPropertyTransform && propertyID != CSSPropertyWebkitTransform)
         return false;
@@ -977,13 +1034,13 @@ static bool parseTranslateTransform(MutableStylePropertySet* properties, CSSProp
     if (string.is8Bit()) {
         const LChar* pos = string.characters8();
         const LChar* end = pos + string.length();
-        transformList = parseTranslateTransformList(pos, end);
+        transformList = parseSimpleTransformList(pos, end);
         if (!transformList)
             return false;
     } else {
         const UChar* pos = string.characters16();
         const UChar* end = pos + string.length();
-        transformList = parseTranslateTransformList(pos, end);
+        transformList = parseSimpleTransformList(pos, end);
         if (!transformList)
             return false;
     }
@@ -1050,7 +1107,7 @@ bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropert
 
     if (parseKeywordValue(declaration, propertyID, string, important, context))
         return true;
-    if (parseTranslateTransform(declaration, propertyID, string, important))
+    if (parseSimpleTransform(declaration, propertyID, string, important))
         return true;
 
     BisonCSSParser parser(context);
