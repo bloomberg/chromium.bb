@@ -17,7 +17,6 @@
 #include "ppapi/c/private/ppb_uma_private.h"
 
 #include "ppapi/native_client/src/trusted/plugin/manifest.h"
-#include "ppapi/native_client/src/trusted/plugin/nacl_http_response_headers.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
 #include "ppapi/native_client/src/trusted/plugin/pnacl_translate_thread.h"
@@ -473,8 +472,6 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
   // get the cache key from the response headers and from the
   // compiler's version metadata.
   nacl::string headers = streaming_downloader_->GetResponseHeaders();
-  NaClHttpResponseHeaders parser;
-  parser.Parse(headers);
 
   temp_nexe_file_.reset(new TempFile(plugin_));
   pp::CompletionCallback cb =
@@ -487,10 +484,7 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
           // rolls in from NaCl.
           1,
           pnacl_options_.opt_level(),
-          parser.GetHeader("last-modified").c_str(),
-          parser.GetHeader("etag").c_str(),
-          PP_FromBool(parser.CacheControlNoStore()),
-          plugin_->nacl_interface()->GetSandboxArch(),
+          headers.c_str(),
           "", // No extra compile flags yet.
           &is_cache_hit_,
           temp_nexe_file_->existing_handle(),

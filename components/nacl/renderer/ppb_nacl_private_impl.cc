@@ -24,6 +24,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "net/http/http_response_headers.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
@@ -354,10 +355,7 @@ int32_t GetNexeFd(PP_Instance instance,
                   const char* pexe_url,
                   uint32_t abi_version,
                   uint32_t opt_level,
-                  const char* last_modified,
-                  const char* etag,
-                  PP_Bool has_no_store_header,
-                  const char* sandbox_isa,
+                  const char* http_headers_param,
                   const char* extra_flags,
                   PP_Bool* is_hit,
                   PP_FileHandle* handle,
@@ -365,24 +363,38 @@ int32_t GetNexeFd(PP_Instance instance,
   ppapi::thunk::EnterInstance enter(instance, callback);
   if (enter.failed())
     return enter.retval();
-  if (!pexe_url || !last_modified || !etag || !is_hit || !handle)
+  if (!pexe_url || !is_hit || !handle)
     return enter.SetResult(PP_ERROR_BADARGUMENT);
   if (!InitializePnaclResourceHost())
     return enter.SetResult(PP_ERROR_FAILED);
 
+  scoped_refptr<net::HttpResponseHeaders> http_headers(
+      new net::HttpResponseHeaders(http_headers_param));
+  std::string last_modified;
+  std::string etag;
+  http_headers->EnumerateHeader(NULL, "last-modified", &last_modified);
+  http_headers->EnumerateHeader(NULL, "etag", &etag);
+
+  std::string cache_control;
+  bool has_no_store_header = false;
+  if (http_headers->EnumerateHeader(NULL, "cache-control", &cache_control)) {
+    if (cache_control.find("no-store") != std::string::npos)
+      has_no_store_header = true;
+  }
+
   base::Time last_modified_time;
   // If FromString fails, it doesn't touch last_modified_time and we just send
   // the default-constructed null value.
-  base::Time::FromString(last_modified, &last_modified_time);
+  base::Time::FromString(last_modified.c_str(), &last_modified_time);
 
   nacl::PnaclCacheInfo cache_info;
   cache_info.pexe_url = GURL(pexe_url);
   cache_info.abi_version = abi_version;
   cache_info.opt_level = opt_level;
   cache_info.last_modified = last_modified_time;
-  cache_info.etag = std::string(etag);
-  cache_info.has_no_store_header = PP_ToBool(has_no_store_header);
-  cache_info.sandbox_isa = std::string(sandbox_isa);
+  cache_info.etag = etag;
+  cache_info.has_no_store_header = has_no_store_header;
+  cache_info.sandbox_isa = nacl::GetSandboxArch();
   cache_info.extra_flags = std::string(extra_flags);
 
   g_pnacl_resource_host.Get()->RequestNexeFd(

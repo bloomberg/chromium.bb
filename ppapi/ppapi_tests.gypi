@@ -155,21 +155,8 @@
         '../testing/gtest.gyp:gtest',
         '../ui/surface/surface.gyp:surface',
       ],
-      # For the nacl_http_response_headers_unittest below.
-      'include_dirs': [
-        '../ppapi',
-      ],
       'sources': [
         'host/resource_message_filter_unittest.cc',
-        # Piggy back on ppapi_unittests for a simple NaCl unittest,
-        # which must not have dependencies on anything other than stdlibs.
-        # We add the source file, not just the test to ensure that the object
-        # is built.  Otherwise, we would need to depend on the NaCl trusted
-        # plugin being built to build the object.
-        # TODO(jvoung): move this to unit_tests instead of ppapi_unittests
-        # once this moves into chrome.
-        'native_client/src/trusted/plugin/nacl_http_response_headers.cc',
-        'native_client/src/trusted/plugin/nacl_http_response_headers_unittest.cc',
         'proxy/device_enumeration_resource_helper_unittest.cc',
         'proxy/file_chooser_resource_unittest.cc',
         'proxy/file_system_resource_unittest.cc',

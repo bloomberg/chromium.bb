@@ -1,5 +1,6 @@
 include_rules = [
   "+content/public/renderer",
+  "+net/http",
   "+ppapi/c",
   "+ppapi/native_client/src/trusted/plugin/nacl_entry_points.h",  # For NaCl registration.
   "+ppapi/proxy",

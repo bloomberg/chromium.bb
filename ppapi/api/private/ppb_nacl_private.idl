@@ -215,25 +215,20 @@ interface PPB_NaCl_Private {
   /* Create a temporary file, which will be deleted by the time the
    * last handle is closed (or earlier on POSIX systems), to use for
    * the nexe with the cache information given by |pexe_url|,
-   * |abi_version|, |opt_level|, |last_modified|, |etag|, and
-   * |has_no_store_header|. If the nexe is already present in the
-   * cache, |is_hit| is set to PP_TRUE and the contents of the nexe
-   * will be copied into the temporary file. Otherwise |is_hit| is set
-   * to PP_FALSE and the temporary file will be writeable.  Currently
-   * the implementation is a stub, which always sets is_hit to false
-   * and calls the implementation of CreateTemporaryFile. In a
-   * subsequent CL it will call into the browser which will remember
-   * the association between the cache key and the fd, and copy the
-   * nexe into the cache after the translation finishes.
+   * |abi_version|, |opt_level|, and |headers|.  If the nexe is already present
+   * in the cache, |is_hit| is set to PP_TRUE and the contents of the nexe will
+   * be copied into the temporary file. Otherwise |is_hit| is set to PP_FALSE
+   * and the temporary file will be writeable.  Currently the implementation is
+   * a stub, which always sets is_hit to false and calls the implementation of
+   * CreateTemporaryFile. In a subsequent CL it will call into the browser
+   * which will remember the association between the cache key and the fd, and
+   * copy the nexe into the cache after the translation finishes.
    */
   int32_t GetNexeFd([in] PP_Instance instance,
                     [in] str_t pexe_url,
                     [in] uint32_t abi_version,
                     [in] uint32_t opt_level,
-                    [in] str_t last_modified,
-                    [in] str_t etag,
-                    [in] PP_Bool has_no_store_header,
-                    [in] str_t sandbox_isa,
+                    [in] str_t headers,
                     [in] str_t extra_flags,
                     [out] PP_Bool is_hit,
                     [out] PP_FileHandle nexe_handle,

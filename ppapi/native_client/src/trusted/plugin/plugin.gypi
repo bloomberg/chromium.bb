@@ -10,7 +10,6 @@
       'file_utils.cc',
       'json_manifest.cc',
       'module_ppapi.cc',
-      'nacl_http_response_headers.cc',
       'nacl_subprocess.cc',
       'plugin.cc',
       'pnacl_coordinator.cc',
