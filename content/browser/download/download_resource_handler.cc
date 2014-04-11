@@ -25,6 +25,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/power_save_blocker.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
@@ -129,6 +130,9 @@ DownloadResourceHandler::DownloadResourceHandler(
                                        request_info->GetRouteID(),
                                        request_info->GetRequestID()),
                  tab_info_));
+  power_save_blocker_ = PowerSaveBlocker::Create(
+      PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+      "Download in progress");
 }
 
 bool DownloadResourceHandler::OnUploadProgress(int request_id,

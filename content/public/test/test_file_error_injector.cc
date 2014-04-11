@@ -14,7 +14,6 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/power_save_blocker.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -36,7 +35,6 @@ class DownloadFileWithErrors: public DownloadFileImpl {
       bool calculate_hash,
       scoped_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
-      scoped_ptr<PowerSaveBlocker> power_save_blocker,
       base::WeakPtr<DownloadDestinationObserver> observer,
       const TestFileErrorInjector::FileErrorInfo& error_info,
       const ConstructionCallback& ctor_callback,
@@ -111,15 +109,13 @@ DownloadFileWithErrors::DownloadFileWithErrors(
     bool calculate_hash,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
-    scoped_ptr<PowerSaveBlocker> power_save_blocker,
     base::WeakPtr<DownloadDestinationObserver> observer,
     const TestFileErrorInjector::FileErrorInfo& error_info,
     const ConstructionCallback& ctor_callback,
     const DestructionCallback& dtor_callback)
         : DownloadFileImpl(
             save_info.Pass(), default_download_directory, url, referrer_url,
-            calculate_hash, stream.Pass(), bound_net_log,
-            power_save_blocker.Pass(), observer),
+            calculate_hash, stream.Pass(), bound_net_log, observer),
           source_url_(url),
           error_info_(error_info),
           destruction_callback_(dtor_callback) {
@@ -315,11 +311,6 @@ DownloadFile* DownloadFileWithErrorsFactory::CreateFile(
     injected_errors_[url.spec()] = err_info;
   }
 
-  scoped_ptr<PowerSaveBlocker> psb(
-      PowerSaveBlocker::Create(
-          PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-          "Download in progress"));
-
   return new DownloadFileWithErrors(
       save_info.Pass(),
       default_download_directory,
@@ -328,7 +319,6 @@ DownloadFile* DownloadFileWithErrorsFactory::CreateFile(
       calculate_hash,
       stream.Pass(),
       bound_net_log,
-      psb.Pass(),
       observer,
       injected_errors_[url.spec()],
       construction_callback_,

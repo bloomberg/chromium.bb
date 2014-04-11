@@ -22,7 +22,6 @@ namespace content {
 class ByteStreamReader;
 class DownloadDestinationObserver;
 class DownloadManager;
-class PowerSaveBlocker;
 struct DownloadCreateInfo;
 
 class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
@@ -43,7 +42,6 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
     bool calculate_hash,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
-    scoped_ptr<PowerSaveBlocker> power_save_blocker,
     base::WeakPtr<DownloadDestinationObserver> observer);
 
   virtual ~DownloadFileImpl();
@@ -104,9 +102,6 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
   base::WeakPtr<DownloadDestinationObserver> observer_;
 
   base::WeakPtrFactory<DownloadFileImpl> weak_factory_;
-
-  // RAII handle to keep the system from sleeping while we're downloading.
-  scoped_ptr<PowerSaveBlocker> power_save_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileImpl);
 };

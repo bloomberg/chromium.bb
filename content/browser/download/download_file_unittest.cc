@@ -14,7 +14,6 @@
 #include "content/public/browser/download_destination_observer.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/power_save_blocker.h"
 #include "content/public/test/mock_download_manager.h"
 #include "net/base/file_stream.h"
 #include "net/base/mock_file_stream.h"
@@ -116,7 +115,7 @@ class DownloadFileTest : public testing::Test {
     *reason_p = reason;
   }
 
-  virtual bool CreateDownloadFile(int offset, bool calculate_hash) {
+  bool CreateDownloadFile(int offset, bool calculate_hash) {
     // There can be only one.
     DCHECK(!download_file_.get());
 
@@ -137,7 +136,6 @@ class DownloadFileTest : public testing::Test {
                              calculate_hash,
                              scoped_ptr<ByteStreamReader>(input_stream_),
                              net::BoundNetLog(),
-                             scoped_ptr<PowerSaveBlocker>().Pass(),
                              observer_factory_.GetWeakPtr()));
     download_file_->SetClientGuid(
         "12345678-ABCD-1234-DCBA-123456789ABC");
@@ -159,7 +157,7 @@ class DownloadFileTest : public testing::Test {
     return result == DOWNLOAD_INTERRUPT_REASON_NONE;
   }
 
-  virtual void DestroyDownloadFile(int offset) {
+  void DestroyDownloadFile(int offset) {
     EXPECT_FALSE(download_file_->InProgress());
 
     // Make sure the data has been properly written to disk.

@@ -187,8 +187,7 @@ DownloadFileWithDelay::DownloadFileWithDelay(
     base::WeakPtr<DownloadFileWithDelayFactory> owner)
     : DownloadFileImpl(
         save_info.Pass(), default_download_directory, url, referrer_url,
-        calculate_hash, stream.Pass(), bound_net_log,
-        power_save_blocker.Pass(), observer),
+        calculate_hash, stream.Pass(), bound_net_log, observer),
       owner_(owner) {}
 
 DownloadFileWithDelay::~DownloadFileWithDelay() {}
@@ -283,8 +282,7 @@ class CountingDownloadFile : public DownloadFileImpl {
     base::WeakPtr<DownloadDestinationObserver> observer)
       : DownloadFileImpl(save_info.Pass(), default_downloads_directory,
                          url, referrer_url, calculate_hash,
-                         stream.Pass(), bound_net_log,
-                         power_save_blocker.Pass(), observer) {}
+                         stream.Pass(), bound_net_log, observer) {}
 
   virtual ~CountingDownloadFile() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));

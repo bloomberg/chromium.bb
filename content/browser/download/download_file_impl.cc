@@ -18,7 +18,6 @@
 #include "content/browser/download/download_stats.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_destination_observer.h"
-#include "content/public/browser/power_save_blocker.h"
 #include "net/base/io_buffer.h"
 
 namespace content {
@@ -36,7 +35,6 @@ DownloadFileImpl::DownloadFileImpl(
     bool calculate_hash,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
-    scoped_ptr<PowerSaveBlocker> power_save_blocker,
     base::WeakPtr<DownloadDestinationObserver> observer)
         : file_(save_info->file_path,
                 url,
@@ -51,8 +49,7 @@ DownloadFileImpl::DownloadFileImpl(
           bytes_seen_(0),
           bound_net_log_(bound_net_log),
           observer_(observer),
-          weak_factory_(this),
-          power_save_blocker_(power_save_blocker.Pass()) {
+          weak_factory_(this) {
 }
 
 DownloadFileImpl::~DownloadFileImpl() {
