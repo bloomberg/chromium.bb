@@ -34,6 +34,7 @@
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderImage.h"
+#include "platform/LengthFunctions.h"
 
 namespace WebCore {
 
@@ -123,7 +124,9 @@ const Shape& ShapeOutsideInfo::computedShape() const
     const RenderStyle& containingBlockStyle = *m_renderer.containingBlock()->style();
 
     WritingMode writingMode = containingBlockStyle.writingMode();
-    Length margin = style.shapeMargin();
+    LayoutUnit maximumValue = m_renderer.containingBlock() ? m_renderer.containingBlock()->contentWidth() : LayoutUnit();
+    float margin = floatValueForLength(m_renderer.style()->shapeMargin(), maximumValue.toFloat());
+
     float shapeImageThreshold = style.shapeImageThreshold();
     ASSERT(style.shapeOutside());
     const ShapeValue& shapeValue = *style.shapeOutside();
