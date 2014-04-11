@@ -32902,7 +32902,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="307" label="BROWSERACTION_SETICON"/>
   <int value="308" label="EXPERIMENTAL_ACCESSIBILITY_SETACCESSIBILITYENABLED"/>
   <int value="309" label="DELETED_FILEBROWSERPRIVATE_VIEWFILES"/>
-  <int value="310" label="BLUETOOTH_GETSERVICES"/>
+  <int value="310" label="DELETED_BLUETOOTH_GETSERVICES"/>
   <int value="311" label="TABS_UPDATE"/>
   <int value="312" label="BROWSINGDATA_REMOVEFORMDATA"/>
   <int value="313" label="DELETED_FILEBROWSERPRIVATE_RELOADDRIVE"/>
@@ -33047,7 +33047,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="452" label="LOCATION_CLEARWATCH"/>
   <int value="453" label="BLUETOOTH_ADDPROFILE"/>
   <int value="454" label="BLUETOOTH_REMOVEPROFILE"/>
-  <int value="455" label="BLUETOOTH_GETPROFILES"/>
+  <int value="455" label="DELETED_BLUETOOTH_GETPROFILES"/>
   <int value="456" label="EXPERIMENTAL_IDENTITY_REMOVECACHEDAUTHTOKEN"/>
   <int value="457" label="AUDIO_GETINFO"/>
   <int value="458" label="AUDIO_SETACTIVEDEVICES"/>
