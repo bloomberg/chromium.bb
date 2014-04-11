@@ -57,16 +57,20 @@ void DeleteUrlFromHistory(int index, const GURL& url);
 void DeleteUrlsFromHistory(int index, const std::vector<GURL>& urls);
 
 // Returns true if all clients match the verifier profile.
-void AssertAllProfilesHaveSameURLsAsVerifier();
+bool CheckAllProfilesHaveSameURLsAsVerifier();
+
+// Returns true if all clients match the verifier profile and if the
+// verification doesn't time out.
+bool AwaitCheckAllProfilesHaveSameURLsAsVerifier();
 
 // Checks that the two vectors contain the same set of URLRows (possibly in
 // a different order).
-void AssertURLRowVectorsAreEqual(const history::URLRows& left,
-                                 const history::URLRows& right);
+bool CheckURLRowVectorsAreEqual(const history::URLRows& left,
+                                const history::URLRows& right);
 
 // Checks that the passed URLRows are equivalent.
-void AssertURLRowsAreEqual(const history::URLRow& left,
-                           const history::URLRow& right);
+bool CheckURLRowsAreEqual(const history::URLRow& left,
+                          const history::URLRow& right);
 
 // Returns true if two sets of visits are equivalent.
 bool AreVisitsEqual(const history::VisitVector& visit1,

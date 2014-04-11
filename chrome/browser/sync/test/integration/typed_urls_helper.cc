@@ -15,6 +15,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
@@ -308,22 +309,26 @@ void DeleteUrlsFromHistory(int index, const std::vector<GURL>& urls) {
   WaitForHistoryDBThread(index);
 }
 
-void AssertURLRowVectorsAreEqual(const history::URLRows& left,
-                                 const history::URLRows& right) {
-  ASSERT_EQ(left.size(), right.size());
+bool CheckURLRowVectorsAreEqual(const history::URLRows& left,
+                                const history::URLRows& right) {
+  if (left.size() != right.size())
+    return false;
   for (size_t i = 0; i < left.size(); ++i) {
     // URLs could be out-of-order, so look for a matching URL in the second
     // array.
     bool found = false;
     for (size_t j = 0; j < right.size(); ++j) {
       if (left[i].url() == right[j].url()) {
-        AssertURLRowsAreEqual(left[i], right[j]);
-        found = true;
-        break;
+        if (CheckURLRowsAreEqual(left[i], right[j])) {
+          found = true;
+          break;
+        }
       }
     }
-    ASSERT_TRUE(found);
+    if (!found)
+      return false;
   }
+  return true;
 }
 
 bool AreVisitsEqual(const history::VisitVector& visit1,
@@ -349,17 +354,17 @@ bool AreVisitsUnique(const history::VisitVector& visits) {
   return true;
 }
 
-void AssertURLRowsAreEqual(
+bool CheckURLRowsAreEqual(
     const history::URLRow& left, const history::URLRow& right) {
-  ASSERT_EQ(left.url(), right.url());
-  ASSERT_EQ(left.title(), right.title());
-  ASSERT_EQ(left.visit_count(), right.visit_count());
-  ASSERT_EQ(left.typed_count(), right.typed_count());
-  ASSERT_EQ(left.last_visit(), right.last_visit());
-  ASSERT_EQ(left.hidden(), right.hidden());
+  return (left.url() == right.url()) &&
+      (left.title() == right.title()) &&
+      (left.visit_count() == right.visit_count()) &&
+      (left.typed_count() == right.typed_count()) &&
+      (left.last_visit() == right.last_visit()) &&
+      (left.hidden() == right.hidden());
 }
 
-void AssertAllProfilesHaveSameURLsAsVerifier() {
+bool CheckAllProfilesHaveSameURLsAsVerifier() {
   HistoryService* verifier_service =
       HistoryServiceFactory::GetForProfile(test()->verifier(),
                                            Profile::IMPLICIT_ACCESS);
@@ -367,8 +372,45 @@ void AssertAllProfilesHaveSameURLsAsVerifier() {
       GetTypedUrlsFromHistoryService(verifier_service);
   for (int i = 0; i < test()->num_clients(); ++i) {
     history::URLRows urls = GetTypedUrlsFromClient(i);
-    AssertURLRowVectorsAreEqual(verifier_urls, urls);
+    if (!CheckURLRowVectorsAreEqual(verifier_urls, urls))
+      return false;
   }
+  return true;
+}
+
+namespace {
+
+// Helper class used in the implementation of
+// AwaitCheckAllProfilesHaveSameURLsAsVerifier.
+class ProfilesHaveSameURLsChecker : public MultiClientStatusChangeChecker {
+ public:
+  ProfilesHaveSameURLsChecker();
+  virtual ~ProfilesHaveSameURLsChecker();
+
+  virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual std::string GetDebugMessage() const OVERRIDE;
+};
+
+ProfilesHaveSameURLsChecker::ProfilesHaveSameURLsChecker()
+    : MultiClientStatusChangeChecker(
+        sync_datatype_helper::test()->GetSyncServices()) {}
+
+ProfilesHaveSameURLsChecker::~ProfilesHaveSameURLsChecker() {}
+
+bool ProfilesHaveSameURLsChecker::IsExitConditionSatisfied() {
+  return CheckAllProfilesHaveSameURLsAsVerifier();
+}
+
+std::string ProfilesHaveSameURLsChecker::GetDebugMessage() const {
+  return "Waiting for matching typed urls profiles";
+}
+
+}  //  namespace
+
+bool AwaitCheckAllProfilesHaveSameURLsAsVerifier() {
+  ProfilesHaveSameURLsChecker checker;
+  checker.Wait();
+  return !checker.TimedOut();
 }
 
 }  // namespace typed_urls_helper

@@ -12,7 +12,7 @@
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 
 using typed_urls_helper::AddUrlToHistory;
-using typed_urls_helper::AssertAllProfilesHaveSameURLsAsVerifier;
+using typed_urls_helper::AwaitCheckAllProfilesHaveSameURLsAsVerifier;
 using typed_urls_helper::GetTypedUrlsFromClient;
 
 class MultipleClientTypedUrlsSyncTest : public SyncTest {
@@ -37,11 +37,8 @@ IN_PROC_BROWSER_TEST_F(MultipleClientTypedUrlsSyncTest, AddToOne) {
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(new_url, urls[0].url());
 
-  // Let sync finish.
-  ASSERT_TRUE(GetClient(0)->AwaitGroupSyncCycleCompletion(clients()));
-
   // All clients should have this URL.
-  AssertAllProfilesHaveSameURLsAsVerifier();
+  ASSERT_TRUE(AwaitCheckAllProfilesHaveSameURLsAsVerifier());
 }
 
 IN_PROC_BROWSER_TEST_F(MultipleClientTypedUrlsSyncTest, AddToAll) {
@@ -63,9 +60,6 @@ IN_PROC_BROWSER_TEST_F(MultipleClientTypedUrlsSyncTest, AddToAll) {
     ASSERT_EQ(new_url, urls[0].url());
   }
 
-  // Wait for sync.
-  ASSERT_TRUE(AwaitQuiescence());
-
   // Verify that all clients have all urls.
-  AssertAllProfilesHaveSameURLsAsVerifier();
+  ASSERT_TRUE(AwaitCheckAllProfilesHaveSameURLsAsVerifier());
 }

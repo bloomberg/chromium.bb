@@ -11,7 +11,6 @@
 #include "sync/sessions/sync_session_context.h"
 
 using typed_urls_helper::AddUrlToHistory;
-using typed_urls_helper::AssertAllProfilesHaveSameURLsAsVerifier;
 using typed_urls_helper::DeleteUrlsFromHistory;
 using typed_urls_helper::GetTypedUrlsFromClient;
 
