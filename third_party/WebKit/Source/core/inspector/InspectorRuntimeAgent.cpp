@@ -187,6 +187,8 @@ void InspectorRuntimeAgent::disable(ErrorString* errorString)
 {
     if (!m_enabled)
         return;
+
+    m_scriptStateToId.clear();
     m_enabled = false;
     m_state->setBoolean(InspectorRuntimeAgentState::runtimeEnabled, false);
 }
@@ -194,6 +196,7 @@ void InspectorRuntimeAgent::disable(ErrorString* errorString)
 void InspectorRuntimeAgent::addExecutionContextToFrontend(ScriptState* scriptState, bool isPageContext, const String& name, const String& frameId)
 {
     int executionContextId = injectedScriptManager()->injectedScriptIdFor(scriptState);
+    m_scriptStateToId.set(scriptState, executionContextId);
     m_frontend->executionContextCreated(ExecutionContextDescription::create()
         .setId(executionContextId)
         .setIsPageContext(isPageContext)

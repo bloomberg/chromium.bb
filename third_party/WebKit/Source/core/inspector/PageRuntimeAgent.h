@@ -53,6 +53,7 @@ public:
 
     void didClearWindowObjectInMainWorld(LocalFrame*);
     void didCreateIsolatedContext(LocalFrame*, ScriptState*, SecurityOrigin*);
+    void frameWindowDiscarded(DOMWindow*);
 
 private:
     PageRuntimeAgent(InjectedScriptManager*, ScriptDebugServer*, Page*, InspectorPageAgent*);

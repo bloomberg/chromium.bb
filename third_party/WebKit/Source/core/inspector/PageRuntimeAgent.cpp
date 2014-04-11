@@ -33,6 +33,7 @@
 
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InjectedScript.h"
@@ -139,6 +140,20 @@ void PageRuntimeAgent::reportExecutionContextCreation()
             addExecutionContextToFrontend(isolatedContexts[i].first, false, isolatedContexts[i].second->toRawString(), frameId);
         isolatedContexts.clear();
     }
+}
+
+void PageRuntimeAgent::frameWindowDiscarded(DOMWindow* window)
+{
+    Vector<ScriptState*> scriptStatesToRemove;
+    for (ScriptStateToId::iterator it = m_scriptStateToId.begin(); it != m_scriptStateToId.end(); ++it) {
+        ScriptState* scriptState = it->key;
+        if (window == scriptState->domWindow()) {
+            scriptStatesToRemove.append(scriptState);
+            m_frontend->executionContextDestroyed(it->value);
+        }
+    }
+    for (size_t i = 0; i < scriptStatesToRemove.size(); i++)
+        m_scriptStateToId.remove(scriptStatesToRemove[i]);
 }
 
 } // namespace WebCore

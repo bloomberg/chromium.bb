@@ -112,7 +112,7 @@ interface InspectorInstrumentation {
     [CSS, Inline=FastReturn]
     void activeStyleSheetsUpdated([Keep] Document*);
 
-    [Console]
+    [Console, PageRuntime]
     void frameWindowDiscarded(LocalFrame*, DOMWindow* domWindow);
 
     [CSS, Inline=FastReturn]
