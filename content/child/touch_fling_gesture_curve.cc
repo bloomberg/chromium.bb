@@ -125,12 +125,14 @@ TouchFlingGestureCurve::~TouchFlingGestureCurve() {
 }
 
 bool TouchFlingGestureCurve::apply(double time, WebGestureCurveTarget* target) {
+  // If the fling has yet to start, simply return and report true to prevent
+  // fling termination.
+  if (time <= 0)
+    return true;
+
   float displacement;
   float speed;
-  if (time < 0) {
-    displacement = 0.f;
-    speed = 0.f;
-  } else if (time + time_offset_ < curve_duration_) {
+  if (time + time_offset_ < curve_duration_) {
     displacement =
         position(time + time_offset_, coefficients_) - position_offset_;
     speed = velocity(time + time_offset_, coefficients_);

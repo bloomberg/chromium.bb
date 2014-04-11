@@ -32,6 +32,10 @@ namespace {
 // Validate provided event timestamps that interact with animation timestamps.
 const double kBadTimestampDeltaFromNowInS = 60. * 60. * 24. * 7.;
 
+// Threshold for determining whether a fling scroll delta should have caused the
+// client to scroll.
+const float kScrollEpsilon = 0.1f;
+
 double InSecondsF(const base::TimeTicks& time) {
   return (time - base::TimeTicks()).InSecondsF();
 }
@@ -486,9 +490,12 @@ bool InputHandlerProxy::scrollBy(const WebFloatSize& increment,
     clipped_velocity.height = velocity.height;
   }
 
-  current_fling_velocity_ = clipped_velocity;
+  current_fling_velocity_ = ToClientScrollIncrement(clipped_velocity);
+
+  // Early out if the increment is zero, but avoid early terimination if the
+  // velocity is still non-zero.
   if (clipped_increment == WebFloatSize())
-    return false;
+    return clipped_velocity != WebFloatSize();
 
   TRACE_EVENT2("input",
                "InputHandlerProxy::scrollBy",
@@ -505,7 +512,6 @@ bool InputHandlerProxy::scrollBy(const WebFloatSize& increment,
       break;
     case WebGestureEvent::Touchscreen:
       clipped_increment = ToClientScrollIncrement(clipped_increment);
-      clipped_velocity = ToClientScrollIncrement(clipped_velocity);
       did_scroll = input_handler_->ScrollBy(fling_parameters_.point,
                                             clipped_increment);
       break;
@@ -515,6 +521,13 @@ bool InputHandlerProxy::scrollBy(const WebFloatSize& increment,
     fling_parameters_.cumulativeScroll.width += clipped_increment.width;
     fling_parameters_.cumulativeScroll.height += clipped_increment.height;
   }
+
+  // It's possible the provided |increment| is sufficiently small as to not
+  // trigger a scroll, e.g., with a trivial time delta between fling updates.
+  // Return true in this case to prevent early fling termination.
+  if (std::abs(clipped_increment.width) < kScrollEpsilon &&
+      std::abs(clipped_increment.height) < kScrollEpsilon)
+    return true;
 
   return did_scroll;
 }

@@ -102,8 +102,7 @@ class FakeWebGestureCurve : public blink::WebGestureCurve {
     cumulative_scroll_ = displacement;
     // scrollBy() could delete this curve if the animation is over, so don't
     // touch any member variables after making that call.
-    target->scrollBy(increment, velocity_);
-    return true;
+    return target->scrollBy(increment, velocity_);
   }
 
  private:
@@ -528,7 +527,6 @@ TEST_F(InputHandlerProxyTest, GestureFlingAnimatesTouchpad) {
   // We also should pass the current fling parameters out to the client so the
   // rest of the fling can be
   // transferred to the main thread.
-  EXPECT_CALL(mock_input_handler_, ScheduleAnimation());
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(cc::InputHandler::ScrollOnMainThread));
   EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_, testing::_)).Times(0);
@@ -636,7 +634,6 @@ TEST_F(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   // We also should pass the current fling parameters out to the client so the
   // rest of the fling can be
   // transferred to the main thread.
-  EXPECT_CALL(mock_input_handler_, ScheduleAnimation());
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(cc::InputHandler::ScrollOnMainThread));
   EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_, testing::_)).Times(0);
@@ -738,7 +735,6 @@ TEST_F(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 
   // Then abort the second fling.
-  EXPECT_CALL(mock_input_handler_, ScheduleAnimation());
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillOnce(testing::Return(cc::InputHandler::ScrollOnMainThread));
   EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_, testing::_)).Times(0);
@@ -1098,7 +1094,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
                                  testing::Eq(latest_overscroll_delta)),
                   testing::Field(
                       &DidOverscrollParams::current_fling_velocity,
-                      testing::Property(&gfx::Vector2dF::y, testing::Gt(0))))));
+                      testing::Property(&gfx::Vector2dF::y, testing::Lt(0))))));
   input_handler_->DidOverscroll(accumulated_overscroll,
                                 latest_overscroll_delta);
 
@@ -1114,6 +1110,87 @@ TEST_F(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
   time += base::TimeDelta::FromMilliseconds(100);
   input_handler_->Animate(time);
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+}
+
+TEST_F(InputHandlerProxyTest, GestureFlingNotCancelledBySmallTimeDelta) {
+  // We shouldn't send any events to the widget for this gesture.
+  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
+  VERIFY_AND_RESET_MOCKS();
+
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
+
+  gesture_.type = WebInputEvent::GestureScrollBegin;
+  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // On the fling start, we should schedule an animation but not actually start
+  // scrolling.
+  base::TimeDelta time_offset = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks time = base::TimeTicks() + time_offset;
+  gesture_.type = WebInputEvent::GestureFlingStart;
+  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  WebPoint fling_point = WebPoint(7, 13);
+  WebPoint fling_global_point = WebPoint(17, 23);
+  int modifiers = WebInputEvent::ControlKey;
+  gesture_.timeStampSeconds = time_offset.InSecondsF();
+  gesture_.data.flingStart.velocityX = fling_delta.x;
+  gesture_.data.flingStart.velocityY = fling_delta.y;
+  gesture_.sourceDevice = WebGestureEvent::Touchscreen;
+  gesture_.x = fling_point.x;
+  gesture_.y = fling_point.y;
+  gesture_.globalX = fling_global_point.x;
+  gesture_.globalY = fling_global_point.y;
+  gesture_.modifiers = modifiers;
+  EXPECT_CALL(mock_input_handler_, ScheduleAnimation());
+  EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
+      .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  // With an animation timestamp equivalent to the starting timestamp, the
+  // animation will simply be rescheduled.
+  EXPECT_CALL(mock_input_handler_, ScheduleAnimation());
+  input_handler_->Animate(time);
+
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+
+  // A small time delta should not stop the fling, even if the client
+  // reports no scrolling.
+  EXPECT_CALL(mock_input_handler_, ScheduleAnimation());
+  EXPECT_CALL(mock_input_handler_,
+              ScrollBy(testing::_,
+                       testing::Property(&gfx::Vector2dF::x, testing::Lt(0))))
+      .WillOnce(testing::Return(false));
+  time += base::TimeDelta::FromMicroseconds(5);
+  input_handler_->Animate(time);
+
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+
+  // A time delta of zero should not stop the fling, and neither should it
+  // trigger scrolling on the client.
+  EXPECT_CALL(mock_input_handler_, ScheduleAnimation());
+  input_handler_->Animate(time);
+
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+
+  // Lack of movement on the client, with a non-trivial scroll delta, should
+  // terminate the fling.
+  EXPECT_CALL(mock_input_handler_, ScrollEnd());
+  EXPECT_CALL(mock_input_handler_,
+              ScrollBy(testing::_,
+                       testing::Property(&gfx::Vector2dF::x, testing::Lt(1))))
+      .WillOnce(testing::Return(false));
+  time += base::TimeDelta::FromMilliseconds(100);
+  input_handler_->Animate(time);
+
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  EXPECT_FALSE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
 }
 
 TEST_F(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
@@ -1167,7 +1244,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
                                  testing::Eq(latest_overscroll_delta)),
                   testing::Field(
                       &DidOverscrollParams::current_fling_velocity,
-                      testing::Property(&gfx::Vector2dF::y, testing::Gt(0))))));
+                      testing::Property(&gfx::Vector2dF::y, testing::Lt(0))))));
   input_handler_->DidOverscroll(accumulated_overscroll,
                                 latest_overscroll_delta);
 
@@ -1192,7 +1269,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
                                  testing::Eq(latest_overscroll_delta)),
                   testing::Field(
                       &DidOverscrollParams::current_fling_velocity,
-                      testing::Property(&gfx::Vector2dF::x, testing::Gt(0))))));
+                      testing::Property(&gfx::Vector2dF::x, testing::Lt(0))))));
   input_handler_->DidOverscroll(accumulated_overscroll,
                                 latest_overscroll_delta);
   // The next call to animate will no longer scroll horizontally or vertically,
