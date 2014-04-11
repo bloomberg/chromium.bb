@@ -357,7 +357,7 @@ deps_os = {
         'src/third_party/nss':
             Var('git_url') + '/chromium/deps/nss.git@494b6787f175f59018d1018ad7fb51f94a549f95',
         'src/third_party/pefile':
-            Var('git_url') + '/external/pefile.git@d0ca75794f69f1d09fd6d31d40ba2f1e9b3b7fb4',
+            Var('git_url') + '/external/pefile.git@1ceaa279daa62b71e3431e58f68be6a96dd1519a',
         'src/third_party/perl':
             Var('git_url') + '/chromium/deps/perl.git@ac0d98b5cee6c024b0cffeb4f8f45b6fc5ccdb78',
         'src/third_party/psyco_win32':
