@@ -45,7 +45,7 @@ class NativeDisplayEventDispatcherX11;
 class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
  public:
   // Helper class that allows NativeDisplayEventDispatcherX11 and
-  // NativeDisplayDelegateX11::MessagePumpObserverX11 to interact with this
+  // NativeDisplayDelegateX11::PlatformEventObserverX11 to interact with this
   // class or with mocks in tests.
   class HelperDelegate {
    public:
@@ -95,7 +95,7 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
 
  private:
   class HelperDelegateX11;
-  class MessagePumpObserverX11;
+  class PlatformEventObserverX11;
 
   // Parses all the modes made available by |screen_|.
   void InitModes();
@@ -143,7 +143,7 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   scoped_ptr<NativeDisplayEventDispatcherX11> platform_event_dispatcher_;
 
   // Processes X11 display events that have no X11 window associated with it.
-  scoped_ptr<MessagePumpObserverX11> message_pump_observer_;
+  scoped_ptr<PlatformEventObserverX11> platform_event_observer_;
 
   // List of observers waiting for display configuration change events.
   ObserverList<NativeDisplayObserver> observers_;

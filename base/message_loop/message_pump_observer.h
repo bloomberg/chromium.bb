@@ -8,16 +8,16 @@
 #include "base/base_export.h"
 #include "base/event_types.h"
 
+#if !defined(OS_WIN)
+#error Should not be here.
+#endif
+
 namespace base {
 
 // A MessagePumpObserver is an object that receives global
-// notifications from the UI MessageLoop with MessagePumpWin or
-// MessagePumpX11.
+// notifications from the UI MessageLoop with MessagePumpWin.
 //
 // NOTE: An Observer implementation should be extremely fast!
-//
-// For use with MessagePumpX11, please see message_pump_glib.h for more
-// info about how this is invoked in this environment.
 class BASE_EXPORT MessagePumpObserver {
  public:
   // This method is called before processing a NativeEvent.

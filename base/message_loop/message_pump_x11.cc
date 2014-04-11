@@ -60,20 +60,4 @@ MessagePumpX11* MessagePumpX11::Current() {
 }
 #endif
 
-void MessagePumpX11::AddObserver(MessagePumpObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void MessagePumpX11::RemoveObserver(MessagePumpObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-void MessagePumpX11::WillProcessXEvent(XEvent* xevent) {
-  FOR_EACH_OBSERVER(MessagePumpObserver, observers_, WillProcessEvent(xevent));
-}
-
-void MessagePumpX11::DidProcessXEvent(XEvent* xevent) {
-  FOR_EACH_OBSERVER(MessagePumpObserver, observers_, DidProcessEvent(xevent));
-}
-
 }  // namespace base

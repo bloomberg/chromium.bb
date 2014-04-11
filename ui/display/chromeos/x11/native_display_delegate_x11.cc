@@ -13,8 +13,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_x11.h"
 #include "base/stl_util.h"
 #include "ui/display/chromeos/native_display_observer.h"
 #include "ui/display/chromeos/x11/display_mode_x11.h"
@@ -22,8 +20,10 @@
 #include "ui/display/chromeos/x11/display_util_x11.h"
 #include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
 #include "ui/display/x11/edid_parser_x11.h"
+#include "ui/events/platform/platform_event_observer.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/x11_error_tracker.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace ui {
 
@@ -102,32 +102,33 @@ class NativeDisplayDelegateX11::HelperDelegateX11
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeDisplayDelegateX11::MessagePumpObserverX11
+// NativeDisplayDelegateX11::PlatformEventObserverX11
 
-class NativeDisplayDelegateX11::MessagePumpObserverX11
-    : public base::MessagePumpObserver {
+class NativeDisplayDelegateX11::PlatformEventObserverX11
+    : public PlatformEventObserver {
  public:
-  MessagePumpObserverX11(HelperDelegate* delegate);
-  virtual ~MessagePumpObserverX11();
+  PlatformEventObserverX11(HelperDelegate* delegate);
+  virtual ~PlatformEventObserverX11();
 
-  // base::MessagePumpObserver overrides:
-  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
+  // PlatformEventObserverX11:
+  virtual void WillProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const ui::PlatformEvent& event) OVERRIDE;
 
  private:
   HelperDelegate* delegate_;  // Not owned.
 
-  DISALLOW_COPY_AND_ASSIGN(MessagePumpObserverX11);
+  DISALLOW_COPY_AND_ASSIGN(PlatformEventObserverX11);
 };
 
-NativeDisplayDelegateX11::MessagePumpObserverX11::MessagePumpObserverX11(
+NativeDisplayDelegateX11::PlatformEventObserverX11::PlatformEventObserverX11(
     HelperDelegate* delegate)
     : delegate_(delegate) {}
 
-NativeDisplayDelegateX11::MessagePumpObserverX11::~MessagePumpObserverX11() {}
+NativeDisplayDelegateX11::PlatformEventObserverX11::
+    ~PlatformEventObserverX11() {}
 
-void NativeDisplayDelegateX11::MessagePumpObserverX11::WillProcessEvent(
-    const base::NativeEvent& event) {
+void NativeDisplayDelegateX11::PlatformEventObserverX11::WillProcessEvent(
+    const ui::PlatformEvent& event) {
   // XI_HierarchyChanged events are special. There is no window associated with
   // these events. So process them directly from here.
   if (event->type == GenericEvent &&
@@ -139,14 +140,14 @@ void NativeDisplayDelegateX11::MessagePumpObserverX11::WillProcessEvent(
   }
 }
 
-void NativeDisplayDelegateX11::MessagePumpObserverX11::DidProcessEvent(
-    const base::NativeEvent& event) {}
+void NativeDisplayDelegateX11::PlatformEventObserverX11::DidProcessEvent(
+    const ui::PlatformEvent& event) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeDisplayDelegateX11 implementation:
 
 NativeDisplayDelegateX11::NativeDisplayDelegateX11()
-    : display_(base::MessagePumpX11::GetDefaultXDisplay()),
+    : display_(gfx::GetXDisplay()),
       window_(DefaultRootWindow(display_)),
       screen_(NULL) {}
 
@@ -154,8 +155,9 @@ NativeDisplayDelegateX11::~NativeDisplayDelegateX11() {
   if (ui::PlatformEventSource::GetInstance()) {
     ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(
         platform_event_dispatcher_.get());
+    ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(
+        platform_event_observer_.get());
   }
-  base::MessagePumpX11::Current()->RemoveObserver(message_pump_observer_.get());
 
   STLDeleteContainerPairSecondPointers(modes_.begin(), modes_.end());
 }
@@ -168,16 +170,18 @@ void NativeDisplayDelegateX11::Initialize() {
   helper_delegate_.reset(new HelperDelegateX11(this));
   platform_event_dispatcher_.reset(new NativeDisplayEventDispatcherX11(
       helper_delegate_.get(), xrandr_event_base));
-  message_pump_observer_.reset(
-      new MessagePumpObserverX11(helper_delegate_.get()));
+  platform_event_observer_.reset(
+      new PlatformEventObserverX11(helper_delegate_.get()));
 
   if (ui::PlatformEventSource::GetInstance()) {
     ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(
         platform_event_dispatcher_.get());
+
+    // We can't do this with a root window listener because XI_HierarchyChanged
+    // messages don't have a target window.
+    ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(
+        platform_event_observer_.get());
   }
-  // We can't do this with a root window listener because XI_HierarchyChanged
-  // messages don't have a target window.
-  base::MessagePumpX11::Current()->AddObserver(message_pump_observer_.get());
 }
 
 void NativeDisplayDelegateX11::GrabServer() {

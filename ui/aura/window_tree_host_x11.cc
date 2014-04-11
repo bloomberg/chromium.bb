@@ -20,7 +20,6 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -41,6 +40,7 @@
 #include "ui/events/event_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/platform/platform_event_observer.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/x/device_data_manager.h"
 #include "ui/events/x/device_list_cache_x.h"
@@ -116,14 +116,15 @@ namespace internal {
 //    where they can be calibrated later.
 // 2. Has the Calibrate method that does the actual bezel calibration,
 //    when invoked from X root window's event dispatcher.
-class TouchEventCalibrate : public base::MessagePumpObserver {
+class TouchEventCalibrate : public ui::PlatformEventObserver {
  public:
   TouchEventCalibrate()
     : left_(0),
       right_(0),
       top_(0),
       bottom_(0) {
-    base::MessageLoopForUI::current()->AddObserver(this);
+    if (ui::PlatformEventSource::GetInstance())
+      ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
 #if defined(USE_XI2_MT)
     std::vector<std::string> parts;
     if (Tokenize(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -141,7 +142,8 @@ class TouchEventCalibrate : public base::MessagePumpObserver {
   }
 
   virtual ~TouchEventCalibrate() {
-    base::MessageLoopForUI::current()->RemoveObserver(this);
+    if (ui::PlatformEventSource::GetInstance())
+      ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);
   }
 
   // Modify the location of the |event|,
@@ -207,8 +209,8 @@ class TouchEventCalibrate : public base::MessagePumpObserver {
   }
 
  private:
-  // Overridden from base::MessagePumpObserver:
-  virtual void WillProcessEvent(const base::NativeEvent& event) OVERRIDE {
+  // ui::PlatformEventObserver:
+  virtual void WillProcessEvent(const ui::PlatformEvent& event) OVERRIDE {
 #if defined(USE_XI2_MT)
     if (event->type == GenericEvent &&
         (event->xgeneric.evtype == XI_TouchBegin ||
@@ -222,8 +224,7 @@ class TouchEventCalibrate : public base::MessagePumpObserver {
 #endif  // defined(USE_XI2_MT)
   }
 
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
-  }
+  virtual void DidProcessEvent(const ui::PlatformEvent& event) OVERRIDE {}
 
   // The difference in screen's native resolution pixels between
   // the border of the touchscreen and the border of the screen,

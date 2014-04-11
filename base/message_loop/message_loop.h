@@ -93,8 +93,7 @@ class WaitableEvent;
 //
 class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
  public:
-
-#if defined(USE_AURA)
+#if defined(OS_WIN)
   typedef MessagePumpObserver Observer;
 #elif defined(USE_GTK_MESSAGE_PUMP)
   typedef MessagePumpGdkObserver Observer;
@@ -577,10 +576,8 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
   void Start();
 #endif
 
-#if !defined(OS_NACL) && (defined(TOOLKIT_GTK) || \
-                          defined(OS_WIN) || defined(USE_X11))
-  // Please see message_pump_win/message_pump_glib for definitions of these
-  // methods.
+#if !defined(OS_NACL) && defined(OS_WIN)
+  // Please see message_pump_win for definitions of these methods.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 #endif
