@@ -224,6 +224,21 @@ void nestedBoxes(SkCanvas *canvas,
     box(canvas, lirect, innerColor);
 }
 
+void insetBox(SkCanvas* canvas,
+              SkIRect irect,
+              int indentLeft,
+              int indentTop,
+              int indentRight,
+              int indentBottom,
+              SkColor color) {
+  SkIRect lirect;
+  lirect.set(irect.fLeft + indentLeft,
+             irect.fTop + indentTop,
+             irect.fRight - indentRight,
+             irect.fBottom - indentBottom);
+  box(canvas, lirect, color);
+}
+
 void markState(SkCanvas *canvas, SkIRect irect, WebThemeEngine::State state)
 {
     int left = irect.fLeft;
@@ -409,16 +424,23 @@ void WebTestThemeEngineMock::paint(
     case WebThemeEngine::PartScrollbarHorizontalTrack: {
         int longOffset = halfHeight - notchLongOffset;
         int shortOffset = irect.width() - notchShortOffset;
-        if (extraParams->scrollbarTrack.isBack) {
-            // back, notch on left
-            nestedBoxes(canvas, irect, noOffset, longOffset, shortOffset,
-                longOffset, bgColors(state), edgeColor);
-        } else {
-            // forward, notch on right
-            nestedBoxes(canvas, irect, shortOffset, longOffset, noOffset,
-                longOffset, bgColors(state), edgeColor);
-        }
-
+        box(canvas, irect, bgColors(state));
+        // back, notch on right
+        insetBox(canvas,
+                 irect,
+                 noOffset,
+                 longOffset,
+                 shortOffset,
+                 longOffset,
+                 edgeColor);
+        // forward, notch on right
+        insetBox(canvas,
+                 irect,
+                 shortOffset,
+                 longOffset,
+                 noOffset,
+                 longOffset,
+                 edgeColor);
         markState(canvas, irect, state);
         break;
     }
@@ -426,16 +448,23 @@ void WebTestThemeEngineMock::paint(
     case WebThemeEngine::PartScrollbarVerticalTrack: {
         int longOffset = halfWidth - notchLongOffset;
         int shortOffset = irect.height() - notchShortOffset;
-        if (extraParams->scrollbarTrack.isBack) {
-            // back, notch at top
-            nestedBoxes(canvas, irect, longOffset, noOffset, longOffset,
-                shortOffset, bgColors(state), edgeColor);
-        } else {
-            // forward, notch at bottom
-            nestedBoxes(canvas, irect, longOffset, shortOffset, longOffset,
-                noOffset, bgColors(state), edgeColor);
-        }
-
+        box(canvas, irect, bgColors(state));
+        // back, notch at top
+        insetBox(canvas,
+                 irect,
+                 longOffset,
+                 noOffset,
+                 longOffset,
+                 shortOffset,
+                 edgeColor);
+        // forward, notch at bottom
+        insetBox(canvas,
+                 irect,
+                 longOffset,
+                 shortOffset,
+                 longOffset,
+                 noOffset,
+                 edgeColor);
         markState(canvas, irect, state);
         break;
     }
