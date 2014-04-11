@@ -159,12 +159,13 @@ typedef void (*logcallback)(int level, const char *message);
 
   typedef enum
   {
-    ALL = -2147483648,
-    DEBUG = 10000,
-    INFO = 20000,
-    WARN = 30000,
-    ERROR = 40000,
-    FATAL = 50000
+    LOG_ALL = -2147483648,
+    LOG_DEBUG = 10000,
+    LOG_INFO = 20000,
+    LOG_WARN = 30000,
+    LOG_ERROR = 40000,
+    LOG_FATAL = 50000,
+    LOG_OFF = 2147483647
   } logLevels;
   void EXPORT_CALL lou_setLogLevel(int level);
   void lou_log(int level, const char *format, ...);
