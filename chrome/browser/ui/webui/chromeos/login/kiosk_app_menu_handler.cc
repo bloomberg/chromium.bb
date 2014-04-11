@@ -13,9 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
@@ -79,11 +77,9 @@ void KioskAppMenuHandler::RegisterMessages() {
 
 // static
 bool KioskAppMenuHandler::EnableNewKioskUI() {
-  bool show_user_pods;
-  CrosSettings::Get()->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
-                                  &show_user_pods);
-  return !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableNewKioskUI) && show_user_pods;
+  // Turn off new kiosk UI for M34/35.
+  // TODO(xiyuan, nkostylev): Revist for http://crbug.com/362062.
+  return false;
 }
 
 void KioskAppMenuHandler::SendKioskApps() {

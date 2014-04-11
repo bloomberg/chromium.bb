@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -282,8 +283,7 @@ class KioskTest : public OobeBaseTest {
   }
 
   void LaunchApp(const std::string& app_id, bool diagnostic_mode) {
-    bool new_kiosk_ui = !CommandLine::ForCurrentProcess()->
-        HasSwitch(switches::kDisableNewKioskUI);
+    bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
     GetLoginUI()->CallJavascriptFunction(new_kiosk_ui ?
         kLaunchAppForTestNewAPI : kLaunchAppForTestOldAPI,
         base::StringValue(app_id),
@@ -316,8 +316,12 @@ class KioskTest : public OobeBaseTest {
       login_signal.Wait();
     } else {
       // No wizard and running with an existing profile and it should land
-      // on account picker.
-      OobeScreenWaiter(OobeDisplay::SCREEN_ACCOUNT_PICKER).Wait();
+      // on account picker when new kiosk UI is enabled. Otherwise, just
+      // wait for the login signal from Gaia.
+      if (KioskAppMenuHandler::EnableNewKioskUI())
+        OobeScreenWaiter(OobeDisplay::SCREEN_ACCOUNT_PICKER).Wait();
+      else
+        login_signal.Wait();
     }
 
     // Wait for the Kiosk App configuration to reload.
@@ -642,8 +646,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchInDiagnosticMode) {
 
   content::WebContents* login_contents = GetLoginUI()->GetWebContents();
 
-  bool new_kiosk_ui = !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableNewKioskUI);
+  bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
   JsConditionWaiter(login_contents, new_kiosk_ui ?
       kCheckDiagnosticModeNewAPI : kCheckDiagnosticModeOldAPI).Wait();
 
