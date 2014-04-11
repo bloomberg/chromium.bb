@@ -6154,9 +6154,6 @@
    bug_340752
    Memcheck:Uninitialized
    ...
-   fun:_ZN7WebCore17HeapContainsCache*
-   fun:_ZN7WebCore11ThreadState19heapPageFromAddressEPh
-   fun:_ZN7WebCore11ThreadState19checkAndMarkPointerEPNS_7VisitorEPh
    fun:_ZN7WebCore4Heap19checkAndMarkPointerEPNS_7VisitorEPh
    fun:_ZN7WebCore11ThreadState10visitStackEPNS_7VisitorE
    fun:_ZN7WebCore11ThreadState5traceEPNS_7VisitorE
