@@ -5740,27 +5740,35 @@ shell_reposition_view_on_output_destroy(struct weston_view *view)
 	}
 }
 
-static void
-shell_reposition_views_on_output_destroy(struct shell_output *shell_output)
+void
+shell_for_each_layer(struct desktop_shell *shell,
+		     shell_for_each_layer_func_t func, void *data)
 {
-	struct desktop_shell *shell = shell_output->shell;
-	struct weston_output *output = shell_output->output;
-	struct weston_layer *layer;
+	struct workspace **ws;
+
+	func(shell, &shell->fullscreen_layer, data);
+	func(shell, &shell->panel_layer, data);
+	func(shell, &shell->background_layer, data);
+	func(shell, &shell->lock_layer, data);
+	func(shell, &shell->input_panel_layer, data);
+
+	wl_array_for_each(ws, &shell->workspaces.array)
+		func(shell, &(*ws)->layer, data);
+}
+
+static void
+shell_output_destroy_move_layer(struct desktop_shell *shell,
+				struct weston_layer *layer,
+				void *data)
+{
+	struct weston_output *output = data;
 	struct weston_view *view;
 
-	/* Move all views in the layers owned by the shell */
-	wl_list_for_each(layer, shell->fullscreen_layer.link.prev, link) {
-		wl_list_for_each(view, &layer->view_list, layer_link) {
-			if (view->output != output)
-				continue;
+	wl_list_for_each(view, &layer->view_list, layer_link) {
+		if (view->output != output)
+			continue;
 
-			shell_reposition_view_on_output_destroy(view);
-		}
-
-		/* We don't start from the beggining of the layer list, so
-		 * make sure we don't wrap around it. */
-		if (layer == &shell->background_layer)
-			break;
+		shell_reposition_view_on_output_destroy(view);
 	}
 }
 
@@ -5769,8 +5777,10 @@ handle_output_destroy(struct wl_listener *listener, void *data)
 {
 	struct shell_output *output_listener =
 		container_of(listener, struct shell_output, destroy_listener);
+	struct weston_output *output = output_listener->output;
+	struct desktop_shell *shell = output_listener->shell;
 
-	shell_reposition_views_on_output_destroy(output_listener);
+	shell_for_each_layer(shell, shell_output_destroy_move_layer, output);
 
 	wl_list_remove(&output_listener->destroy_listener.link);
 	wl_list_remove(&output_listener->link);
@@ -5806,34 +5816,32 @@ handle_output_create(struct wl_listener *listener, void *data)
 }
 
 static void
-handle_output_move(struct wl_listener *listener, void *data)
+handle_output_move_layer(struct desktop_shell *shell,
+			 struct weston_layer *layer, void *data)
 {
-	struct desktop_shell *shell;
-	struct weston_output *output;
-	struct weston_layer *layer;
+	struct weston_output *output = data;
 	struct weston_view *view;
 	float x, y;
 
+	wl_list_for_each(view, &layer->view_list, layer_link) {
+		if (view->output != output)
+			continue;
+
+		x = view->geometry.x + output->move_x;
+		y = view->geometry.y + output->move_y;
+		weston_view_set_position(view, x, y);
+	}
+}
+
+static void
+handle_output_move(struct wl_listener *listener, void *data)
+{
+	struct desktop_shell *shell;
+
 	shell = container_of(listener, struct desktop_shell,
 			     output_move_listener);
-	output = data;
 
-	/* Move all views in the layers owned by the shell */
-	wl_list_for_each(layer, shell->fullscreen_layer.link.prev, link) {
-		wl_list_for_each(view, &layer->view_list, layer_link) {
-			if (view->output != output)
-				continue;
-
-			x = view->geometry.x + output->move_x;
-			y = view->geometry.y + output->move_y;
-			weston_view_set_position(view, x, y);
-		}
-
-		/* We don't start from the beggining of the layer list, so
-		 * make sure we don't wrap around it. */
-		if (layer == &shell->background_layer)
-			break;
-	}
+	shell_for_each_layer(shell, handle_output_move_layer, data);
 }
 
 static void

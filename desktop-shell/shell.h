@@ -236,3 +236,11 @@ int
 input_panel_setup(struct desktop_shell *shell);
 void
 input_panel_destroy(struct desktop_shell *shell);
+
+typedef void (*shell_for_each_layer_func_t)(struct desktop_shell *,
+					    struct weston_layer *, void *);
+
+void
+shell_for_each_layer(struct desktop_shell *shell,
+		     shell_for_each_layer_func_t func,
+		     void *data);
