@@ -255,7 +255,7 @@ static void SetUpGLibLogHandler() {
 #endif
 
 void OnStoppedStartupTracing(const base::FilePath& trace_file) {
-  LOG(INFO) << "Completed startup tracing to " << trace_file.value();
+  VLOG(0) << "Completed startup tracing to " << trace_file.value();
 }
 
 }  // namespace
