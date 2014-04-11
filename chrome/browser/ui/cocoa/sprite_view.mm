@@ -54,7 +54,9 @@ static const CGFloat kFrameDuration = 0.03;  // 30ms for each animation frame.
                name:NSWindowDidDeminiaturizeNotification
              object:newWindow];
   }
+}
 
+- (void)viewDidMoveToWindow {
   [self updateAnimation:nil];
 }
 
