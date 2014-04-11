@@ -156,10 +156,8 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
         // We allow the chrome to override the settings, in case the page is rendered
         // on a chrome that doesn't allow accelerated compositing.
         if (hasAcceleratedCompositing) {
-            if (page()) {
-                m_compositingReasonFinder.updateTriggers();
-                hasAcceleratedCompositing = m_compositingReasonFinder.hasTriggers();
-            }
+            m_compositingReasonFinder.updateTriggers();
+            hasAcceleratedCompositing = m_compositingReasonFinder.hasTriggers();
         }
 
         showRepaintCounter = settings->showRepaintCounter();
