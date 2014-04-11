@@ -341,7 +341,6 @@ void Gtk2UI::Initialize() {
                     G_CALLBACK(&OnStyleSetThunk), this);
 
   LoadGtkValues();
-  SetXDGIconTheme();
 
   printing::PrintingContextLinux::SetCreatePrintDialogFunction(
       &PrintDialogGtk2::CreatePrintDialog);
@@ -806,15 +805,6 @@ void Gtk2UI::GetScrollbarColors(GdkColor* thumb_active_color,
     *track_color = *theme_trough_color;
     gdk_color_free(theme_trough_color);
   }
-}
-
-void Gtk2UI::SetXDGIconTheme() {
-  gchar* gtk_theme_name;
-  g_object_get(gtk_settings_get_default(),
-               "gtk-icon-theme-name",
-               &gtk_theme_name, NULL);
-  base::nix::SetIconThemeName(gtk_theme_name);
-  g_free(gtk_theme_name);
 }
 
 void Gtk2UI::LoadGtkValues() {

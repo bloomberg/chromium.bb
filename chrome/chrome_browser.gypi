@@ -870,7 +870,6 @@
         'browser/icon_loader_android.cc',
         'browser/icon_loader_auralinux.cc',
         'browser/icon_loader_chromeos.cc',
-        'browser/icon_loader_linux.cc',
         'browser/icon_loader_mac.mm',
         'browser/icon_loader_win.cc',
         'browser/icon_manager.cc',
@@ -2978,8 +2977,6 @@
             'browser/first_run/upgrade_util.h',
             'browser/first_run/upgrade_util_linux.cc',
             'browser/icon_loader_auralinux.cc',
-            'browser/icon_loader_linux.cc',
-            'browser/icon_manager_linux.cc',
             'browser/idle_linux.cc',
             'browser/password_manager/native_backend_gnome_x.cc',
             'browser/password_manager/native_backend_gnome_x.h',
@@ -3043,7 +3040,6 @@
         }],
         ['use_aura==1', {
           'sources/': [
-            ['exclude', '^browser/icon_loader_linux.cc'],
             ['exclude', '^browser/lifetime/application_lifetime_stub.cc'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views*'],
           ],
