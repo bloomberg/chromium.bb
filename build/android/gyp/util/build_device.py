@@ -19,7 +19,7 @@ sys.path.append(BUILD_ANDROID_DIR)
 from pylib import android_commands
 from pylib.device import device_utils
 
-GetAttachedDevices = android_commands.GetAttachedDevices()
+GetAttachedDevices = android_commands.GetAttachedDevices
 
 
 class BuildDevice(object):

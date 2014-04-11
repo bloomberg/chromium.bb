@@ -20,7 +20,7 @@ class DeviceUtils(object):
 
   def __init__(self, device):
     self.old_interface = None
-    if isinstance(device, str):
+    if isinstance(device, basestring):
       self.old_interface = pylib.android_commands.AndroidCommands(device)
     elif isinstance(device, adb_wrapper.AdbWrapper):
       self.old_interface = pylib.android_commands.AndroidCommands(str(device))
