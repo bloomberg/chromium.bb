@@ -290,67 +290,67 @@ layer at (393,311) size 208x27 scrollWidth 391
   RenderBlock {DIV} at (0,0) size 208x27
     RenderText {#text} at (0,0) size 390x26
       text run at (0,0) width 390: "012345678901234567890123456789"
-layer at (95,49) size 15x12 transparent
-  RenderBlock (relative positioned) {DIV} at (82,-1) size 15x12
-layer at (95,65) size 15x12 transparent
-  RenderBlock (relative positioned) {DIV} at (82,-1) size 15x12
-layer at (98,81) size 15x14 transparent
-  RenderBlock (relative positioned) {DIV} at (85,-1) size 15x14
-layer at (98,99) size 15x14 transparent
-  RenderBlock (relative positioned) {DIV} at (85,-1) size 15x14
-layer at (101,117) size 15x15 transparent
-  RenderBlock (relative positioned) {DIV} at (88,-1) size 15x15
-layer at (101,136) size 15x15 transparent
-  RenderBlock (relative positioned) {DIV} at (88,-1) size 15x15
-layer at (124,157) size 15x16 transparent
-  RenderBlock (relative positioned) {DIV} at (109,-1) size 15x16
-layer at (124,181) size 15x16 transparent
-  RenderBlock (relative positioned) {DIV} at (109,-1) size 15x16
-layer at (127,205) size 15x17 transparent
-  RenderBlock (relative positioned) {DIV} at (112,-1) size 15x17
-layer at (127,230) size 15x17 transparent
-  RenderBlock (relative positioned) {DIV} at (112,-1) size 15x17
-layer at (149,255) size 15x18 transparent
-  RenderBlock (relative positioned) {DIV} at (134,-1) size 15x18
-layer at (149,281) size 15x18 transparent
-  RenderBlock (relative positioned) {DIV} at (134,-1) size 15x18
-layer at (151,307) size 15x18 transparent
-  RenderBlock (relative positioned) {DIV} at (136,-1) size 15x18
-layer at (151,333) size 15x18 transparent
-  RenderBlock (relative positioned) {DIV} at (136,-1) size 15x18
-layer at (336,54) size 15x19 transparent
-  RenderBlock (relative positioned) {DIV} at (158,-1) size 15x19
-layer at (336,81) size 15x19 transparent
-  RenderBlock (relative positioned) {DIV} at (158,-1) size 15x19
-layer at (339,108) size 15x21 transparent
-  RenderBlock (relative positioned) {DIV} at (161,-1) size 15x21
-layer at (339,137) size 15x21 transparent
-  RenderBlock (relative positioned) {DIV} at (161,-1) size 15x21
-layer at (360,166) size 15x22 transparent
-  RenderBlock (relative positioned) {DIV} at (182,-1) size 15x22
-layer at (360,196) size 15x22 transparent
-  RenderBlock (relative positioned) {DIV} at (182,-1) size 15x22
-layer at (363,226) size 15x24 transparent
-  RenderBlock (relative positioned) {DIV} at (185,-1) size 15x24
-layer at (363,258) size 15x24 transparent
-  RenderBlock (relative positioned) {DIV} at (185,-1) size 15x24
-layer at (366,290) size 15x25 transparent
-  RenderBlock (relative positioned) {DIV} at (188,-1) size 15x25
-layer at (366,323) size 15x25 transparent
-  RenderBlock (relative positioned) {DIV} at (188,-1) size 15x25
-layer at (602,63) size 15x26 transparent
-  RenderBlock (relative positioned) {DIV} at (209,-1) size 15x26
-layer at (602,97) size 15x26 transparent
-  RenderBlock (relative positioned) {DIV} at (209,-1) size 15x26
-layer at (605,131) size 15x27 transparent
-  RenderBlock (relative positioned) {DIV} at (212,-1) size 15x27
-layer at (605,166) size 15x27 transparent
-  RenderBlock (relative positioned) {DIV} at (212,-1) size 15x27
-layer at (627,201) size 15x28 transparent
-  RenderBlock (relative positioned) {DIV} at (234,-1) size 15x28
-layer at (627,237) size 15x28 transparent
-  RenderBlock (relative positioned) {DIV} at (234,-1) size 15x28
-layer at (629,273) size 15x29 transparent
-  RenderBlock (relative positioned) {DIV} at (236,-1) size 15x29
-layer at (629,310) size 15x29 transparent
-  RenderBlock (relative positioned) {DIV} at (236,-1) size 15x29
+layer at (95,50) size 15x10 transparent
+  RenderBlock {DIV} at (82,0) size 15x10
+layer at (95,66) size 15x10 transparent
+  RenderBlock {DIV} at (82,0) size 15x10
+layer at (98,82) size 15x12 transparent
+  RenderBlock {DIV} at (85,0) size 15x12
+layer at (98,100) size 15x12 transparent
+  RenderBlock {DIV} at (85,0) size 15x12
+layer at (101,118) size 15x13 transparent
+  RenderBlock {DIV} at (88,0) size 15x13
+layer at (101,137) size 15x13 transparent
+  RenderBlock {DIV} at (88,0) size 15x13
+layer at (124,158) size 15x14 transparent
+  RenderBlock {DIV} at (109,0) size 15x14
+layer at (124,182) size 15x14 transparent
+  RenderBlock {DIV} at (109,0) size 15x14
+layer at (127,206) size 15x15 transparent
+  RenderBlock {DIV} at (112,0) size 15x15
+layer at (127,231) size 15x15 transparent
+  RenderBlock {DIV} at (112,0) size 15x15
+layer at (149,256) size 15x16 transparent
+  RenderBlock {DIV} at (134,0) size 15x16
+layer at (149,282) size 15x16 transparent
+  RenderBlock {DIV} at (134,0) size 15x16
+layer at (151,308) size 15x16 transparent
+  RenderBlock {DIV} at (136,0) size 15x16
+layer at (151,334) size 15x16 transparent
+  RenderBlock {DIV} at (136,0) size 15x16
+layer at (336,55) size 15x17 transparent
+  RenderBlock {DIV} at (158,0) size 15x17
+layer at (336,82) size 15x17 transparent
+  RenderBlock {DIV} at (158,0) size 15x17
+layer at (339,109) size 15x19 transparent
+  RenderBlock {DIV} at (161,0) size 15x19
+layer at (339,138) size 15x19 transparent
+  RenderBlock {DIV} at (161,0) size 15x19
+layer at (360,167) size 15x20 transparent
+  RenderBlock {DIV} at (182,0) size 15x20
+layer at (360,197) size 15x20 transparent
+  RenderBlock {DIV} at (182,0) size 15x20
+layer at (363,227) size 15x22 transparent
+  RenderBlock {DIV} at (185,0) size 15x22
+layer at (363,259) size 15x22 transparent
+  RenderBlock {DIV} at (185,0) size 15x22
+layer at (366,291) size 15x23 transparent
+  RenderBlock {DIV} at (188,0) size 15x23
+layer at (366,324) size 15x23 transparent
+  RenderBlock {DIV} at (188,0) size 15x23
+layer at (602,64) size 15x24 transparent
+  RenderBlock {DIV} at (209,0) size 15x24
+layer at (602,98) size 15x24 transparent
+  RenderBlock {DIV} at (209,0) size 15x24
+layer at (605,132) size 15x25 transparent
+  RenderBlock {DIV} at (212,0) size 15x25
+layer at (605,167) size 15x25 transparent
+  RenderBlock {DIV} at (212,0) size 15x25
+layer at (627,202) size 15x26 transparent
+  RenderBlock {DIV} at (234,0) size 15x26
+layer at (627,238) size 15x26 transparent
+  RenderBlock {DIV} at (234,0) size 15x26
+layer at (629,274) size 15x27 transparent
+  RenderBlock {DIV} at (236,0) size 15x27
+layer at (629,311) size 15x27 transparent
+  RenderBlock {DIV} at (236,0) size 15x27

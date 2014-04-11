@@ -573,8 +573,8 @@ input[type="datetime-local"]::-webkit-inner-spin-button,
 input[type="month"]::-webkit-inner-spin-button,
 input[type="time"]::-webkit-inner-spin-button,
 input[type="week"]::-webkit-inner-spin-button {
-    display: inline-block;
-    position: static;
+    /* FIXME: Remove height. */
+    height: 1.5em;
     -webkit-margin-start: 2px;
 }
 
@@ -601,15 +601,10 @@ input::-webkit-date-and-time-value {
 
 input::-webkit-inner-spin-button {
     -webkit-appearance: inner-spin-button;
-    display: block;
-    position: relative;
+    display: inline-block;
     cursor: default;
-    /* This height property is ignored for input type "number" and others which
-     * use RenderTextControlSingleLine as renderer which sets height of spin
-     * button in layout(). */
-    height: 1.5em;
-    vertical-align: top;
     flex: none;
+    align-self: stretch;
     -webkit-user-select: none;
     -webkit-user-modify: read-only !important;
     opacity: 0;

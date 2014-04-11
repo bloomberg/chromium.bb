@@ -892,7 +892,6 @@ crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-003.html [ Failure ]
 crbug.com/353727 virtual/threaded/animations/keyframe-timing-functions-multiple-properties.html [ Pass Timeout ]
 crbug.com/24182 [ Win ] jquery/manipulation.html [ Pass Timeout ]
-crbug.com/353736 [ Linux ] fast/forms/number/number-appearance-spinbutton-disabled-readonly.html [ Pass ImageOnlyFailure ]
 crbug.com/353736 [ Linux ] fast/forms/select/listbox-appearance-basic.html [ Pass ImageOnlyFailure ]
 crbug.com/353751 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-same-in-same-none-block.html [ Pass Failure ]
 crbug.com/353763 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-same-in-same-url-block.html [ Pass Failure ]
@@ -910,7 +909,12 @@ crbug.com/354791 [ Mac ] virtual/threaded/transitions/webkit-clip-path-equality.
 crbug.com/355463 [ Linux Win ] css3/flexbox/repaint.html [ Pass Failure ]
 crbug.com/356957 [ Win Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Pass Timeout ]
 crbug.com/355489 media/activation-behavior.html [ Pass Failure Timeout ]
-
+crbug.com/356939 fast/forms/number/number-appearance-spinbutton-layer.html [ NeedsRebaseline ]
+crbug.com/356939 fast/forms/number/number-appearance-rtl.html [ NeedsRebaseline ]
+crbug.com/356939 fast/forms/number/number-appearance-spinbutton-disabled-readonly.html [ NeedsRebaseline ]
+crbug.com/356939 fast/speech/input-appearance-numberandspeech.html [ NeedsRebaseline ]
+crbug.com/356939 fast/forms/number/number-appearance-datalist.html [ NeedsRebaseline ]
+crbug.com/356939 fast/forms/date/date-appearance-basic.html [ NeedsRebaseline ]
 crbug.com/356148 media/audio-delete-while-slider-thumb-clicked.html [ Pass Crash ]
 
 crbug.com/344238 inspector/timeline/timeline-auto-record.html [ Pass Failure ]

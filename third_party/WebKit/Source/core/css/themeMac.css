@@ -14,3 +14,7 @@ select[size][multiple] {
     background: white;
     border: 1px inset gray;
 }
+
+input::-webkit-inner-spin-button {
+    align-self: center;
+}

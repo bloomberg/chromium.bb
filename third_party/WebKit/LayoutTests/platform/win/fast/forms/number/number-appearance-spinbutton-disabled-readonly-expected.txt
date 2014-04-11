@@ -11,6 +11,7 @@ layer at (0,0) size 800x600
           RenderTextControl {INPUT} at (2,2) size 228x30 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderFlexibleBox {DIV} at (2,3) size 224x24
               RenderBlock {DIV} at (0,0) size 209x24
+              RenderBlock {DIV} at (209,0) size 15x24
           RenderText {#text} at (232,9) size 82x19
             text run at (232,9) width 82: " Normal state"
       RenderBlock {DIV} at (0,70) size 784x34
@@ -39,11 +40,9 @@ layer at (12,117) size 209x24
   RenderBlock {DIV} at (0,0) size 209x24
     RenderText {#text} at (0,0) size 11x23
       text run at (0,0) width 11: "0"
-layer at (221,48) size 15x26
-  RenderBlock (relative positioned) {DIV} at (209,-1) size 15x26
-layer at (221,82) size 15x26 transparent
-  RenderBlock (relative positioned) {DIV} at (209,-1) size 15x26
-layer at (221,116) size 15x26 transparent
-  RenderBlock (relative positioned) {DIV} at (209,-1) size 15x26
+layer at (221,83) size 15x24 transparent
+  RenderBlock {DIV} at (209,0) size 15x24
+layer at (221,117) size 15x24 transparent
+  RenderBlock {DIV} at (209,0) size 15x24
 selection start: position 0 of child 0 {#text} of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 0 {INPUT} of child 0 {LABEL} of child 9 {DIV} of body
 selection end:   position 1 of child 0 {#text} of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 0 {INPUT} of child 0 {LABEL} of child 9 {DIV} of body

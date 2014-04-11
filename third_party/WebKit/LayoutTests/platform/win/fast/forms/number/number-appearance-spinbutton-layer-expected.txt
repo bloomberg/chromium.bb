@@ -20,7 +20,7 @@ layer at (12,13) size 134x16
   RenderBlock {DIV} at (0,0) size 134x16
     RenderText {#text} at (0,0) size 14x16
       text run at (0,0) width 14: "10"
-layer at (146,12) size 15x18 transparent
-  RenderBlock (relative positioned) {DIV} at (134,-1) size 15x18
-layer at (146,38) size 15x18 transparent
-  RenderBlock (relative positioned) {DIV} at (134,-1) size 15x18
+layer at (146,13) size 15x16 transparent
+  RenderBlock {DIV} at (134,0) size 15x16
+layer at (146,39) size 15x16 transparent
+  RenderBlock {DIV} at (134,0) size 15x16

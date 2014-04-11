@@ -493,9 +493,9 @@ static const IntSize* stepperSizes()
 static NSControlSize stepperControlSizeForFont(const FontDescription& fontDescription)
 {
     int fontSize = fontDescription.computedPixelSize();
-    if (fontSize >= 18)
+    if (fontSize >= 27)
         return NSRegularControlSize;
-    if (fontSize >= 13)
+    if (fontSize >= 22)
         return NSSmallControlSize;
     return NSMiniControlSize;
 }
