@@ -46,10 +46,12 @@ android_envsetup_main() {
   # Add Chromium Android development scripts to system path.
   # Must be after CHROME_SRC is set.
   export PATH=$PATH:${CHROME_SRC}/build/android
+
+  export ENVSETUP_GYP_CHROME_SRC=${CHROME_SRC}  # TODO(thakis): Remove.
 }
 android_envsetup_main
 
 android_gyp() {
   echo "Please call build/gyp_chromium instead. android_gyp is going away."
-  "${CHROME_SRC}/build/gyp_chromium" --depth="${CHROME_SRC}" --check "$@"
+  "${ENVSETUP_GYP_CHROME_SRC}/build/gyp_chromium" --depth="${ENVSETUP_GYP_CHROME_SRC}" --check "$@"
 }
