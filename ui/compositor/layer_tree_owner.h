@@ -18,6 +18,12 @@ class COMPOSITOR_EXPORT LayerTreeOwner {
   explicit LayerTreeOwner(Layer* root);
   ~LayerTreeOwner();
 
+  Layer* release() WARN_UNUSED_RESULT {
+    Layer* root = root_;
+    root_ = NULL;
+    return root;
+  }
+
   Layer* root() { return root_; }
   const Layer* root() const { return root_; }
 

@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/frame/contents_web_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/scroll_end_effect_controller.h"
+#include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/load_complete_listener.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -57,6 +58,7 @@ class TabStrip;
 class TabStripModel;
 class ToolbarView;
 class TopContainerView;
+class WebContentsCloseHandler;
 
 #if defined(OS_WIN)
 class JumpList;
@@ -400,6 +402,8 @@ class BrowserView : public BrowserWindow,
                              int index) OVERRIDE;
   virtual void TabDeactivated(content::WebContents* contents) OVERRIDE;
   virtual void TabStripEmpty() OVERRIDE;
+  virtual void WillCloseAllTabs() OVERRIDE;
+  virtual void CloseAllTabsCanceled() OVERRIDE;
 
   // Overridden from ui::AcceleratorProvider:
   virtual bool GetAcceleratorForCommandId(int command_id,
@@ -735,6 +739,8 @@ class BrowserView : public BrowserWindow,
   scoped_ptr<ScrollEndEffectController> scroll_end_effect_controller_;
 
   gfx::ScopedSysColorChangeListener color_change_listener_;
+
+  scoped_ptr<WebContentsCloseHandler> web_contents_close_handler_;
 
   mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_;
 

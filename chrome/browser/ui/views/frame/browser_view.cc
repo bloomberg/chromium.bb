@@ -72,6 +72,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -852,6 +853,7 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   UpdateDevToolsForContents(new_contents, !change_tab_contents);
 
   if (change_tab_contents) {
+    web_contents_close_handler_->ActiveTabChanged();
     contents_web_view_->SetWebContents(new_contents);
     // The second layout update should be no-op. It will just set the
     // DevTools WebContents.
@@ -1474,6 +1476,7 @@ void BrowserView::TabInsertedAt(WebContents* contents,
         window, root_window, root_window->GetBoundsInScreen());
     DCHECK(contents->GetView()->GetNativeView()->GetRootWindow());
   }
+  web_contents_close_handler_->TabInserted();
 }
 
 void BrowserView::TabDetachedAt(WebContents* contents, int index) {
@@ -1487,6 +1490,7 @@ void BrowserView::TabDetachedAt(WebContents* contents, int index) {
     // We need to reset the current tab contents to NULL before it gets
     // freed. This is because the focus manager performs some operations
     // on the selected WebContents when it is removed.
+    web_contents_close_handler_->ActiveTabChanged();
     contents_web_view_->SetWebContents(NULL);
     infobar_container_->ChangeInfoBarManager(NULL);
     UpdateDevToolsForContents(NULL, true);
@@ -1509,6 +1513,14 @@ void BrowserView::TabStripEmpty() {
   // there will be consequences (since our view hierarchy will still have
   // references to freed views).
   UpdateUIForContents(NULL);
+}
+
+void BrowserView::WillCloseAllTabs() {
+  web_contents_close_handler_->WillCloseAllTabs();
+}
+
+void BrowserView::CloseAllTabsCanceled() {
+  web_contents_close_handler_->CloseAllTabsCanceled();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1959,6 +1971,9 @@ void BrowserView::InitViews() {
   contents_web_view_->SetEmbedFullscreenWidgetMode(
       implicit_cast<content::WebContentsDelegate*>(browser_.get())->
           EmbedsFullscreenWidget());
+
+  web_contents_close_handler_.reset(
+      new WebContentsCloseHandler(contents_web_view_));
 
   devtools_web_view_ = new views::WebView(browser_->profile());
   devtools_web_view_->set_id(VIEW_ID_DEV_TOOLS_DOCKED);
