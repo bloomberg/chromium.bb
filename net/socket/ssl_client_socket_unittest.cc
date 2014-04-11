@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -327,144 +328,195 @@ class FakeBlockingStreamSocket : public WrappedStreamSocket {
   // Socket implementation:
   virtual int Read(IOBuffer* buf,
                    int buf_len,
-                   const CompletionCallback& callback) OVERRIDE {
-    return read_state_.RunWrappedFunction(buf, buf_len, callback);
-  }
+                   const CompletionCallback& callback) OVERRIDE;
   virtual int Write(IOBuffer* buf,
                     int buf_len,
-                    const CompletionCallback& callback) OVERRIDE {
-    return write_state_.RunWrappedFunction(buf, buf_len, callback);
-  }
+                    const CompletionCallback& callback) OVERRIDE;
 
   // Causes the next call to Read() to return ERR_IO_PENDING, not completing
   // (invoking the callback) until UnblockRead() has been called and the
   // underlying transport has completed.
-  void SetNextReadShouldBlock() { read_state_.SetShouldBlock(); }
-  void UnblockRead() { read_state_.Unblock(); }
+  void SetNextReadShouldBlock();
+  void UnblockRead();
 
-  // Causes the next call to Write() to return ERR_IO_PENDING, not completing
-  // (invoking the callback) until UnblockWrite() has been called and the
-  // underlying transport has completed.
-  void SetNextWriteShouldBlock() { write_state_.SetShouldBlock(); }
-  void UnblockWrite() { write_state_.Unblock(); }
+  // Waits for the blocked Read() call to be complete at the underlying
+  // transport.
+  void WaitForRead();
+
+  // Causes the next call to Write() to return ERR_IO_PENDING, not beginning the
+  // underlying transport until UnblockWrite() has been called.
+  void SetNextWriteShouldBlock();
+  void UnblockWrite();
+
+  // Waits for the blocked Write() call to be scheduled.
+  void WaitForWrite();
 
  private:
-  // Tracks the state for simulating a blocking Read/Write operation.
-  class BlockingState {
-   public:
-    // Wrapper for the underlying Socket function to call (ie: Read/Write).
-    typedef base::Callback<int(IOBuffer*, int, const CompletionCallback&)>
-        WrappedSocketFunction;
+  // Handles completion from the underlying transport read.
+  void OnReadCompleted(int result);
 
-    explicit BlockingState(const WrappedSocketFunction& function);
-    ~BlockingState() {}
+  // True if read callbacks are blocked.
+  bool should_block_read_;
 
-    // Sets the next call to RunWrappedFunction() to block, returning
-    // ERR_IO_PENDING and not invoking the user callback until Unblock() is
-    // called.
-    void SetShouldBlock();
+  // The user callback for the pending read call.
+  CompletionCallback pending_read_callback_;
 
-    // Unblocks the currently blocked pending function, invoking the user
-    // callback if the results are immediately available.
-    // Note: It's not valid to call this unless SetShouldBlock() has been
-    // called beforehand.
-    void Unblock();
+  // The result for the blocked read callback, or ERR_IO_PENDING if not
+  // completed.
+  int pending_read_result_;
 
-    // Performs the wrapped socket function on the underlying transport. If
-    // configured to block via SetShouldBlock(), then |user_callback| will not
-    // be invoked until Unblock() has been called.
-    int RunWrappedFunction(IOBuffer* buf,
-                           int len,
-                           const CompletionCallback& user_callback);
+  // WaitForRead() wait loop.
+  scoped_ptr<base::RunLoop> read_loop_;
 
-   private:
-    // Handles completion from the underlying wrapped socket function.
-    void OnCompleted(int result);
+  // True if write calls are blocked.
+  bool should_block_write_;
 
-    WrappedSocketFunction wrapped_function_;
-    bool should_block_;
-    bool have_result_;
-    int pending_result_;
-    CompletionCallback user_callback_;
-  };
+  // The buffer for the pending write, or NULL if not scheduled.
+  scoped_refptr<IOBuffer> pending_write_buf_;
 
-  BlockingState read_state_;
-  BlockingState write_state_;
+  // The callback for the pending write call.
+  CompletionCallback pending_write_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeBlockingStreamSocket);
+  // The length for the pending write, or -1 if not scheduled.
+  int pending_write_len_;
+
+  // WaitForWrite() wait loop.
+  scoped_ptr<base::RunLoop> write_loop_;
 };
 
 FakeBlockingStreamSocket::FakeBlockingStreamSocket(
     scoped_ptr<StreamSocket> transport)
     : WrappedStreamSocket(transport.Pass()),
-      read_state_(base::Bind(&Socket::Read,
-                             base::Unretained(transport_.get()))),
-      write_state_(base::Bind(&Socket::Write,
-                              base::Unretained(transport_.get()))) {}
+      should_block_read_(false),
+      pending_read_result_(ERR_IO_PENDING),
+      should_block_write_(false),
+      pending_write_len_(-1) {}
 
-FakeBlockingStreamSocket::BlockingState::BlockingState(
-    const WrappedSocketFunction& function)
-    : wrapped_function_(function),
-      should_block_(false),
-      have_result_(false),
-      pending_result_(OK) {}
+int FakeBlockingStreamSocket::Read(IOBuffer* buf,
+                                   int len,
+                                   const CompletionCallback& callback) {
+  if (!should_block_read_)
+    return transport_->Read(buf, len, callback);
 
-void FakeBlockingStreamSocket::BlockingState::SetShouldBlock() {
-  DCHECK(!should_block_);
-  should_block_ = true;
+  DCHECK(pending_read_callback_.is_null());
+  DCHECK_EQ(ERR_IO_PENDING, pending_read_result_);
+
+  int rv = transport_->Read(buf, len, base::Bind(
+      &FakeBlockingStreamSocket::OnReadCompleted, base::Unretained(this)));
+  if (rv == ERR_IO_PENDING) {
+    pending_read_callback_ = callback;
+  } else {
+    OnReadCompleted(rv);
+  }
+  return ERR_IO_PENDING;
 }
 
-void FakeBlockingStreamSocket::BlockingState::Unblock() {
-  DCHECK(should_block_);
-  should_block_ = false;
+int FakeBlockingStreamSocket::Write(IOBuffer* buf,
+                                   int len,
+                                   const CompletionCallback& callback) {
+  DCHECK(buf);
+  DCHECK_LE(0, len);
+
+  if (!should_block_write_)
+    return transport_->Write(buf, len, callback);
+
+  // Schedule the write, but do nothing.
+  DCHECK(!pending_write_buf_);
+  DCHECK_EQ(-1, pending_write_len_);
+  DCHECK(pending_write_callback_.is_null());
+  pending_write_buf_ = buf;
+  pending_write_len_ = len;
+  pending_write_callback_ = callback;
+
+  // Stop the write loop, if any.
+  if (write_loop_)
+    write_loop_->Quit();
+  return ERR_IO_PENDING;
+}
+
+void FakeBlockingStreamSocket::SetNextReadShouldBlock() {
+  DCHECK(!should_block_read_);
+  should_block_read_ = true;
+}
+
+void FakeBlockingStreamSocket::UnblockRead() {
+  DCHECK(should_block_read_);
+  should_block_read_ = false;
 
   // If the operation is still pending in the underlying transport, immediately
-  // return - OnCompleted() will handle invoking the callback once the transport
-  // has completed.
-  if (!have_result_)
+  // return - OnReadCompleted() will handle invoking the callback once the
+  // transport has completed.
+  if (pending_read_result_ == ERR_IO_PENDING)
+    return;
+  int result = pending_read_result_;
+  pending_read_result_ = ERR_IO_PENDING;
+  base::ResetAndReturn(&pending_read_callback_).Run(result);
+}
+
+void FakeBlockingStreamSocket::WaitForRead() {
+  DCHECK(should_block_read_);
+  DCHECK(!read_loop_);
+
+  if (pending_read_result_ != ERR_IO_PENDING)
+    return;
+  read_loop_.reset(new base::RunLoop);
+  read_loop_->Run();
+  read_loop_.reset();
+  DCHECK_NE(ERR_IO_PENDING, pending_read_result_);
+}
+
+void FakeBlockingStreamSocket::SetNextWriteShouldBlock() {
+  DCHECK(!should_block_write_);
+  should_block_write_ = true;
+}
+
+void FakeBlockingStreamSocket::UnblockWrite() {
+  DCHECK(should_block_write_);
+  should_block_write_ = false;
+
+  // Do nothing if UnblockWrite() was called after SetNextWriteShouldBlock(),
+  // without a Write() in between.
+  if (!pending_write_buf_)
     return;
 
-  have_result_ = false;
-
-  base::ResetAndReturn(&user_callback_).Run(pending_result_);
-}
-
-int FakeBlockingStreamSocket::BlockingState::RunWrappedFunction(
-    IOBuffer* buf,
-    int len,
-    const CompletionCallback& callback) {
-
-  // The callback to be called by the underlying transport. Either forward
-  // directly to the user's callback if not set to block, or intercept it with
-  // OnCompleted so that the user's callback is not invoked until Unblock() is
-  // called.
-  CompletionCallback transport_callback =
-      !should_block_ ? callback : base::Bind(&BlockingState::OnCompleted,
-                                             base::Unretained(this));
-  int rv = wrapped_function_.Run(buf, len, transport_callback);
-  if (should_block_) {
-    user_callback_ = callback;
-    // May have completed synchronously.
-    have_result_ = (rv != ERR_IO_PENDING);
-    pending_result_ = rv;
-    return ERR_IO_PENDING;
+  int rv = transport_->Write(pending_write_buf_, pending_write_len_,
+                             pending_write_callback_);
+  pending_write_buf_ = NULL;
+  pending_write_len_ = -1;
+  if (rv == ERR_IO_PENDING) {
+    pending_write_callback_.Reset();
+  } else {
+    base::ResetAndReturn(&pending_write_callback_).Run(rv);
   }
-
-  return rv;
 }
 
-void FakeBlockingStreamSocket::BlockingState::OnCompleted(int result) {
-  if (should_block_) {
+void FakeBlockingStreamSocket::WaitForWrite() {
+  DCHECK(should_block_write_);
+  DCHECK(!write_loop_);
+
+  if (pending_write_buf_)
+    return;
+  write_loop_.reset(new base::RunLoop);
+  write_loop_->Run();
+  write_loop_.reset();
+  DCHECK(pending_write_buf_);
+}
+
+void FakeBlockingStreamSocket::OnReadCompleted(int result) {
+  if (should_block_read_) {
     // Store the result so that the callback can be invoked once Unblock() is
     // called.
-    have_result_ = true;
-    pending_result_ = result;
+    pending_read_result_ = result;
+
+    // Stop the WaitForRead() call if any.
+    if (read_loop_)
+      read_loop_->Quit();
     return;
   }
 
   // Otherwise, the Unblock() function was called before the underlying
   // transport completed, so run the user's callback immediately.
-  base::ResetAndReturn(&user_callback_).Run(result);
+  base::ResetAndReturn(&pending_read_callback_).Run(result);
 }
 
 // CompletionCallback that will delete the associated StreamSocket when
@@ -562,6 +614,93 @@ class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
     EXPECT_FALSE(sock->IsConnected());
 
     return request_info;
+  }
+};
+
+class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
+ protected:
+  void TestFalseStart(const SpawnedTestServer::SSLOptions& server_options,
+                      const SSLConfig& client_config,
+                      bool expect_false_start) {
+    SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
+                                  server_options,
+                                  base::FilePath());
+    ASSERT_TRUE(test_server.Start());
+
+    AddressList addr;
+    ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+    TestCompletionCallback callback;
+    scoped_ptr<StreamSocket> real_transport(
+        new TCPClientSocket(addr, NULL, NetLog::Source()));
+    scoped_ptr<FakeBlockingStreamSocket> transport(
+        new FakeBlockingStreamSocket(real_transport.Pass()));
+    int rv = callback.GetResult(transport->Connect(callback.callback()));
+    EXPECT_EQ(OK, rv);
+
+    FakeBlockingStreamSocket* raw_transport = transport.get();
+    scoped_ptr<SSLClientSocket> sock(
+        CreateSSLClientSocket(transport.PassAs<StreamSocket>(),
+                              test_server.host_port_pair(),
+                              client_config));
+
+    // Connect. Stop before the client processes the first server leg
+    // (ServerHello, etc.)
+    raw_transport->SetNextReadShouldBlock();
+    rv = sock->Connect(callback.callback());
+    EXPECT_EQ(ERR_IO_PENDING, rv);
+    raw_transport->WaitForRead();
+
+    // Release the ServerHello and wait for the client to write
+    // ClientKeyExchange, etc. (A proxy for waiting for the entirety of the
+    // server's leg to complete, since it may span multiple reads.)
+    EXPECT_FALSE(callback.have_result());
+    raw_transport->SetNextWriteShouldBlock();
+    raw_transport->UnblockRead();
+    raw_transport->WaitForWrite();
+
+    // And, finally, release that and block the next server leg
+    // (ChangeCipherSpec, Finished). Note: callback.have_result() may or may not
+    // be true at this point depending on whether the SSL implementation waits
+    // for the client second leg to clear the internal write buffer and hit the
+    // network.
+    raw_transport->SetNextReadShouldBlock();
+    raw_transport->UnblockWrite();
+
+    if (expect_false_start) {
+      // When False Starting, the handshake should complete before receiving the
+      // Change Cipher Spec and Finished messages.
+      rv = callback.GetResult(rv);
+      EXPECT_EQ(OK, rv);
+      EXPECT_TRUE(sock->IsConnected());
+
+      const char request_text[] = "GET / HTTP/1.0\r\n\r\n";
+      static const int kRequestTextSize =
+          static_cast<int>(arraysize(request_text) - 1);
+      scoped_refptr<IOBuffer> request_buffer(new IOBuffer(kRequestTextSize));
+      memcpy(request_buffer->data(), request_text, kRequestTextSize);
+
+      // Write the request.
+      rv = callback.GetResult(sock->Write(request_buffer.get(),
+                                          kRequestTextSize,
+                                          callback.callback()));
+      EXPECT_EQ(kRequestTextSize, rv);
+
+      // The read will hang; it's waiting for the peer to complete the
+      // handshake, and the handshake is still blocked.
+      scoped_refptr<IOBuffer> buf(new IOBuffer(4096));
+      rv = sock->Read(buf.get(), 4096, callback.callback());
+
+      // After releasing reads, the connection proceeds.
+      raw_transport->UnblockRead();
+      rv = callback.GetResult(rv);
+      EXPECT_LT(0, rv);
+    } else {
+      // False Start is not enabled, so the handshake will not complete because
+      // the server second leg is blocked.
+      base::RunLoop().RunUntilIdle();
+      EXPECT_FALSE(callback.have_result());
+    }
   }
 };
 
@@ -2181,6 +2320,45 @@ TEST_F(SSLClientSocketTest, ReuseStates) {
   // SSL implementation's internal buffers. Either call PR_Available and
   // SSL_pending, although the former isn't actually implemented or perhaps
   // attempt to read one byte extra.
+}
+
+// This test is only enabled on NSS until False Start support is added for
+// OpenSSL.  http://crbug.com/354132
+#if defined(USE_NSS)
+#define MAYBE_FalseStartEnabled FalseStartEnabled
+#else
+#define MAYBE_FalseStartEnabled DISABLED_FalseStartEnabled
+#endif  // USE_NSS
+TEST_F(SSLClientSocketFalseStartTest, MAYBE_FalseStartEnabled) {
+  // False Start requires NPN and a forward-secret cipher suite.
+  SpawnedTestServer::SSLOptions server_options;
+  server_options.key_exchanges =
+      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
+  server_options.enable_npn = true;
+  SSLConfig client_config;
+  client_config.next_protos.push_back("http/1.1");
+  TestFalseStart(server_options, client_config, true);
+}
+
+// Test that False Start is disabled without NPN.
+TEST_F(SSLClientSocketFalseStartTest, NoNPN) {
+  SpawnedTestServer::SSLOptions server_options;
+  server_options.key_exchanges =
+      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
+  SSLConfig client_config;
+  client_config.next_protos.clear();
+  TestFalseStart(server_options, client_config, false);
+}
+
+// Test that False Start is disabled without a forward-secret cipher suite.
+TEST_F(SSLClientSocketFalseStartTest, NoForwardSecrecy) {
+  SpawnedTestServer::SSLOptions server_options;
+  server_options.key_exchanges =
+      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA;
+  server_options.enable_npn = true;
+  SSLConfig client_config;
+  client_config.next_protos.push_back("http/1.1");
+  TestFalseStart(server_options, client_config, false);
 }
 
 }  // namespace net
