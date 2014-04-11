@@ -259,7 +259,7 @@ KURL KURL::copy() const
     result.m_protocolIsInHTTPFamily = m_protocolIsInHTTPFamily;
     result.m_parsed = m_parsed;
     result.m_string = m_string.isolatedCopy();
-    if (result.m_innerURL)
+    if (m_innerURL)
         result.m_innerURL = adoptPtr(new KURL(m_innerURL->copy()));
     return result;
 }

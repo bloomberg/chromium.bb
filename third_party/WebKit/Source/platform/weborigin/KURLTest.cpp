@@ -601,6 +601,18 @@ TEST(KURLTest, DeepCopy)
     EXPECT_NE(dest.string().impl(), src.string().impl());
 }
 
+TEST(KURLTest, DeepCopyInnerURL)
+{
+    const char url[] = "filesystem:http://www.google.com/temporary/test.txt";
+    const char innerURL[] = "http://www.google.com/temporary";
+    WebCore::KURL src(WebCore::ParsedURLString, url);
+    EXPECT_TRUE(src.string() == url);
+    EXPECT_TRUE(src.innerURL()->string() == innerURL);
+    WebCore::KURL dest = src.copy();
+    EXPECT_TRUE(dest.string() == url);
+    EXPECT_TRUE(dest.innerURL()->string() == innerURL);
+}
+
 TEST(KURLTest, LastPathComponent)
 {
     WebCore::KURL url1(WebCore::ParsedURLString, "http://host/path/to/file.txt");
