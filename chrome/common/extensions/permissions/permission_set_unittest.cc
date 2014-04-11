@@ -670,6 +670,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kSystemStorage);
   skip.insert(APIPermission::kTts);
   skip.insert(APIPermission::kUnlimitedStorage);
+  skip.insert(APIPermission::kWebcamPrivate);
   skip.insert(APIPermission::kWebView);
   skip.insert(APIPermission::kWindowShape);
 

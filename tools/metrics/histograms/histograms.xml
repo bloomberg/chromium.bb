@@ -33281,6 +33281,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="717" label="FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDSUCCESS"/>
   <int value="718" label="FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDERROR"/>
   <int value="719" label="MEDIAGALLERIES_DROPPERMISSIONFORMEDIAFILESYSTEM"/>
+  <int value="720" label="WEBCAMPRIVATE_SET"/>
+  <int value="721" label="WEBCAMPRIVATE_RESET"/>
+  <int value="722" label="WEBCAMPRIVATE_GET"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

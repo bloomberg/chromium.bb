@@ -1,0 +1,23 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Webcam Private API.
+namespace webcamPrivate {
+  dictionary WebcamConfiguration {
+    double? pan;
+    double? zoom;
+    double? tilt;
+  };
+
+  callback WebcamConfigurationCallback =
+      void(WebcamConfiguration configuration);
+
+  interface Functions {
+    static void get(DOMString webcamId, WebcamConfigurationCallback callback);
+    static void set(DOMString webcamId, WebcamConfiguration config);
+    static void reset(DOMString webcamId, WebcamConfiguration config);
+
+  };
+};
+

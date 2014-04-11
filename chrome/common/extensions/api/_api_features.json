@@ -459,6 +459,10 @@
     "extension_types": ["extension", "legacy_packaged_app"],
     "contexts": ["blessed_extension"]
   },
+  "webcamPrivate": {
+    "dependencies": ["permission:webcamPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "management": {
     "dependencies": ["permission:management"],
     "contexts": ["blessed_extension"]

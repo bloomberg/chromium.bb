@@ -164,6 +164,7 @@
               'screenlock_private.idl',
               'wallpaper.json',
               'wallpaper_private.json',
+              'webcam_private.idl',
             ],
           }],
           ['enable_webrtc==1', {

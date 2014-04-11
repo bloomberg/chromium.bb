@@ -946,6 +946,8 @@
             'browser/extensions/api/terminal/terminal_extension_helper.h',
             'browser/extensions/api/terminal/terminal_private_api.cc',
             'browser/extensions/api/terminal/terminal_private_api.h',
+            'browser/extensions/api/webcam_private/webcam_private_api.h',
+            'browser/extensions/api/webcam_private/webcam_private_api.cc',
             'browser/extensions/updater/extension_cache_impl.cc',
             'browser/extensions/updater/extension_cache_impl.h',
             'browser/extensions/updater/local_extension_cache.cc',
