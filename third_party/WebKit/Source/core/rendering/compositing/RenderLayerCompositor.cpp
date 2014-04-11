@@ -656,8 +656,8 @@ bool RenderLayerCompositor::squashingWouldExceedSparsityTolerance(const RenderLa
     IntRect bounds = candidate->ancestorDependentProperties().clippedAbsoluteBoundingBox;
     IntRect newBoundingRect = squashingState.boundingRect;
     newBoundingRect.unite(bounds);
-    const uint64_t newBoundingRectArea = newBoundingRect.size().area_safe();
-    const uint64_t newSquashedArea = squashingState.totalAreaOfSquashedRects + bounds.size().area_safe();
+    const uint64_t newBoundingRectArea = newBoundingRect.size().area();
+    const uint64_t newSquashedArea = squashingState.totalAreaOfSquashedRects + bounds.size().area();
     return newBoundingRectArea > gSquashingSparsityTolerance * newSquashedArea;
 }
 

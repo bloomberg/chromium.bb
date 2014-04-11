@@ -98,13 +98,8 @@ public:
             m_height = minimumSize.height();
     }
 
-    int area() const
-    {
-        return m_width * m_height;
-    }
-
     // Return area in a uint64_t to avoid overflow.
-    uint64_t area_safe() const
+    uint64_t area() const
     {
         return static_cast<uint64_t>(width()) * height();
     }
