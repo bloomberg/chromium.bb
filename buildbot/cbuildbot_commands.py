@@ -1346,13 +1346,13 @@ def UpdateUploadedList(last_uploaded, archive_path, upload_url,
 
 def UploadArchivedFile(archive_path, upload_url, filename, debug,
                        update_list=False, timeout=2 * 60 * 60, acl=None):
-  """Upload the specified tarball from the archive dir to Google Storage.
+  """Upload the specified file from the archive dir to Google Storage.
 
   Args:
     archive_path: Path to archive dir.
-    upload_url: Location where tarball should be uploaded.
+    upload_url: Location where file should be uploaded.
     debug: Whether we are in debug mode.
-    filename: Filename of the tarball to upload.
+    filename: Filename of the file to upload.
     update_list: Flag to update the list of uploaded files.
     timeout: Raise an exception if the upload takes longer than this timeout.
     acl: Canned gsutil acl to use (e.g. 'public-read'), otherwise the internal
