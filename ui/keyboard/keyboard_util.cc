@@ -72,11 +72,13 @@ namespace keyboard {
 gfx::Rect DefaultKeyboardBoundsFromWindowBounds(
     const gfx::Rect& window_bounds) {
   const float kKeyboardHeightRatio = GetKeyboardHeightRatio();
+  int keyboard_height =
+      static_cast<int>(window_bounds.height() * kKeyboardHeightRatio);
   return gfx::Rect(
       window_bounds.x(),
-      window_bounds.y() + window_bounds.height() * (1 - kKeyboardHeightRatio),
+      window_bounds.y() + window_bounds.height() - keyboard_height,
       window_bounds.width(),
-      window_bounds.height() * kKeyboardHeightRatio);
+      keyboard_height);
 }
 
 void SetAccessibilityKeyboardEnabled(bool enabled) {
