@@ -434,11 +434,12 @@ shared_output_get_shm_buffer(struct shared_output *so)
 	data = mmap(NULL, height * stride, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 	if (data == MAP_FAILED) {
 		weston_log("mmap: %m");
-		close(fd);
-		return NULL;
+		goto out_close;
 	}
 
 	sb = zalloc(sizeof *sb);
+	if (!sb)
+		goto out_unmap;
 
 	sb->output = so;
 	wl_list_init(&sb->free_link);
@@ -457,14 +458,26 @@ shared_output_get_shm_buffer(struct shared_output *so)
 	wl_buffer_add_listener(sb->buffer, &buffer_listener, sb);
 	wl_shm_pool_destroy(pool);
 	close(fd);
+	fd = -1;
 
 	memset(data, 0, sb->size);
 
 	sb->pm_image =
 		pixman_image_create_bits(PIXMAN_a8r8g8b8, width, height,
 					 (uint32_t *)data, stride);
+	if (!sb->pm_image)
+		goto out_pixman_error;
 
 	return sb;
+
+out_pixman_error:
+	pixman_region32_fini(&sb->damage);
+out_unmap:
+	munmap(data, height * stride);
+out_close:
+	if (fd != -1)
+		close(fd);
+	return NULL;
 }
 
 static void
