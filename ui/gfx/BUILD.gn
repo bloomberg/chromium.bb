@@ -361,6 +361,17 @@ component("gfx") {
   }
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
+  } else {
+    sources -= [
+      "path_x11.cc",
+      "path_x11.h",
+      "x/x11_atom_cache.cc",
+      "x/x11_atom_cache.h",
+      "x/x11_error_tracker.cc",
+      "x/x11_error_tracker.h",
+      "x/x11_types.cc",
+      "x/x11_types.h",
+    ]
   }
   if (use_pango) {
     sources -= [
@@ -368,6 +379,15 @@ component("gfx") {
       "render_text_ozone.cc",
     ]
     configs += [ "//build/config/linux:pangocairo" ]
+  } else {
+    sources -= [
+      "pango_util.cc",
+      "pango_util.h",
+      "platform_font_pango.cc",
+      "platform_font_pango.h",
+      "render_text_pango.cc",
+      "render_text_pango.h",
+    ]
   }
 }
 

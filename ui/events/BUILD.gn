@@ -54,6 +54,17 @@ component("events_base") {
 
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
+  } else {
+    sources -= [
+      "keycodes/keyboard_code_conversion_x.cc",
+      "keycodes/keyboard_code_conversion_x.h",
+      "x/device_data_manager.cc",
+      "x/device_data_manager.h",
+      "x/device_list_cache_x.cc",
+      "x/device_list_cache_x.h",
+      "x/touch_factory_x11.cc",
+      "x/touch_factory_x11.h",
+    ]
   }
 }
 

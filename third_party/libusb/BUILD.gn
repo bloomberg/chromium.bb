@@ -91,6 +91,10 @@ static_library("libusb") {
 
   if (is_win) {
     include_dirs += [ "src/msvc" ]
+    sources -= [
+      "src/libusb/os/poll_posix.c",
+      "src/libusb/os/threads_posix.c",
+    ]
   } else {
     include_dirs += [ "src" ]
     sources -= [

@@ -789,7 +789,6 @@
     '<(skia_src_path)/ports/SkOSFile_posix.cpp',
     '<(skia_src_path)/ports/SkOSFile_stdio.cpp',
     '<(skia_src_path)/ports/SkOSFile_win.cpp',
-    '<(skia_src_path)/ports/SkThread_win.cpp',
     '<(skia_src_path)/ports/SkTime_Unix.cpp',
     '<(skia_src_path)/ports/SkTLS_pthread.cpp',
     '<(skia_src_path)/ports/SkTLS_win.cpp',

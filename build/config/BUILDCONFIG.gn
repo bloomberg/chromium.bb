@@ -200,6 +200,8 @@ if (is_win) {
 # muct match the pattern (so you need "*.cc" to match all .cc files, for
 # example).
 
+# DO NOT ADD MORE PATTERNS TO THIS LIST, see set_sources_assignment_filter call
+# below.
 windows_sources_filters = [
   "*_win.cc",
   "*_win.h",
@@ -240,8 +242,6 @@ linux_sources_filters = [
   "*_linux_unittest.h",
   "*_linux_unittest.cc",
   "*\blinux/*",
-  "*_x11.cc",
-  "*_x11.h",
 ]
 android_sources_filters = [
   "*_android.h",
@@ -257,6 +257,8 @@ posix_sources_filters = [
   "*_posix_unittest.cc",
   "*\bposix/*",
 ]
+# DO NOT ADD MORE PATTERNS TO THIS LIST, see set_sources_assignment_filter call
+# below.
 
 # Construct the full list of sources we're using for this platform.
 sources_assignment_filter = []
@@ -281,7 +283,20 @@ if (!is_android) {
   sources_assignment_filter += android_sources_filters
 }
 
-# This is the actual set.
+# Actually save this list.
+#
+# DO NOT ADD MORE PATTERNS TO THIS LIST.
+#
+# These patterns are executed for every file in the source tree of every run.
+# Therefore, adding more patterns slows down the build for everybody. We should
+# only add automatic patterns for configurations affecting hundreds of files
+# across many projects in the tree.
+#
+# Therefore, we only add rules to this list corresponding to platforms on the
+# Chromium waterfall.  This is not for non-officially-supported platforms
+# (FreeBSD, etc.) toolkits, (X11, GTK, etc.), or features. For these cases,
+# write a conditional in the target to remove the file(s) from the list when
+# your platform/toolkit/feature doesn't apply.
 set_sources_assignment_filter(sources_assignment_filter)
 
 # =============================================================================
