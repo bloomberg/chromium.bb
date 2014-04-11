@@ -51,6 +51,8 @@ public:
         return adoptRef(new DescendantInvalidationSet);
     }
 
+    bool invalidatesElement(Element&) const;
+
     void combine(const DescendantInvalidationSet& other);
 
     void addClass(const AtomicString& className);
@@ -58,23 +60,13 @@ public:
     void addTagName(const AtomicString& tagName);
     void addAttribute(const AtomicString& attributeLocalName);
 
-    // Appends the classes in this DescendantInvalidationSet to the vector.
-    void getClasses(Vector<AtomicString>& classes) const;
-
-    // Appends the attributes in this DescendantInvalidationSet to the vector.
-    void getAttributes(Vector<AtomicString>& attributes) const;
-
-    // Appends the ids in this DescendantInvalidationSet to the vector.
-    void getIds(Vector<AtomicString>& ids) const;
-
-    // Appends the tag names in this DescendantInvalidationSet to the vector.
-    void getTagNames(Vector<AtomicString>& tagNames) const;
-
     void setWholeSubtreeInvalid();
     bool wholeSubtreeInvalid() const { return m_allDescendantsMightBeInvalid; }
 
     void setCustomPseudoInvalid() { m_customPseudoInvalid = true; }
     bool customPseudoInvalid() const { return m_customPseudoInvalid; }
+
+    bool isEmpty() const { return !m_classes && !m_ids && !m_tagNames && !m_attributes; }
 
 private:
     DescendantInvalidationSet();

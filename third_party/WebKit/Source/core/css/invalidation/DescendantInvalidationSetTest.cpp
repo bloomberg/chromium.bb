@@ -18,10 +18,7 @@ TEST(DescendantInvalidationSetTest, SubtreeInvalid_AddBefore)
     set->addClass("a");
     set->setWholeSubtreeInvalid();
 
-    Vector<AtomicString> classes;
-    set->getClasses(classes);
-
-    ASSERT_TRUE(classes.isEmpty());
+    ASSERT_TRUE(set->isEmpty());
 }
 
 // Don't (re)create HashSets if we've already setWholeSubtreeInvalid.
@@ -29,12 +26,9 @@ TEST(DescendantInvalidationSetTest, SubtreeInvalid_AddAfter)
 {
     RefPtr<DescendantInvalidationSet> set = DescendantInvalidationSet::create();
     set->setWholeSubtreeInvalid();
-    set->addClass("a");
+    set->addTagName("a");
 
-    Vector<AtomicString> classes;
-    set->getClasses(classes);
-
-    ASSERT_TRUE(classes.isEmpty());
+    ASSERT_TRUE(set->isEmpty());
 }
 
 // No need to keep the HashSets when combining with a wholeSubtreeInvalid set.
@@ -43,16 +37,13 @@ TEST(DescendantInvalidationSetTest, SubtreeInvalid_Combine_1)
     RefPtr<DescendantInvalidationSet> set1 = DescendantInvalidationSet::create();
     RefPtr<DescendantInvalidationSet> set2 = DescendantInvalidationSet::create();
 
-    set1->addClass("a");
+    set1->addId("a");
     set2->setWholeSubtreeInvalid();
 
     set1->combine(*set2);
 
-    Vector<AtomicString> classes;
-    set1->getClasses(classes);
-
     ASSERT_TRUE(set1->wholeSubtreeInvalid());
-    ASSERT_TRUE(classes.isEmpty());
+    ASSERT_TRUE(set1->isEmpty());
 }
 
 // No need to add HashSets from combining set when we already have wholeSubtreeInvalid.
@@ -62,15 +53,12 @@ TEST(DescendantInvalidationSetTest, SubtreeInvalid_Combine_2)
     RefPtr<DescendantInvalidationSet> set2 = DescendantInvalidationSet::create();
 
     set1->setWholeSubtreeInvalid();
-    set2->addClass("a");
+    set2->addAttribute("a");
 
     set1->combine(*set2);
 
-    Vector<AtomicString> classes;
-    set1->getClasses(classes);
-
     ASSERT_TRUE(set1->wholeSubtreeInvalid());
-    ASSERT_TRUE(classes.isEmpty());
+    ASSERT_TRUE(set1->isEmpty());
 }
 
 } // namespace

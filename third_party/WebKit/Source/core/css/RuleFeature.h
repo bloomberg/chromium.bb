@@ -22,7 +22,6 @@
 #ifndef RuleFeature_h
 #define RuleFeature_h
 
-#include "core/css/invalidation/DescendantInvalidationSet.h"
 #include "core/css/invalidation/StyleInvalidator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
@@ -32,6 +31,7 @@ namespace WebCore {
 
 class CSSSelector;
 class CSSSelectorList;
+class DescendantInvalidationSet;
 class Document;
 class Node;
 class QualifiedName;
@@ -55,6 +55,7 @@ struct RuleFeature {
 class RuleFeatureSet {
 public:
     RuleFeatureSet();
+    ~RuleFeatureSet();
 
     void add(const RuleFeatureSet&);
     void clear();

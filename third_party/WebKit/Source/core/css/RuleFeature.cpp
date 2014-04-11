@@ -34,6 +34,7 @@
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/RuleSet.h"
+#include "core/css/invalidation/DescendantInvalidationSet.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "wtf/BitVector.h"
@@ -163,6 +164,10 @@ void RuleFeatureSet::extractInvalidationSetFeature(const CSSSelector& selector, 
 
 RuleFeatureSet::RuleFeatureSet()
     : m_targetedStyleRecalcEnabled(RuntimeEnabledFeatures::targetedStyleRecalcEnabled())
+{
+}
+
+RuleFeatureSet::~RuleFeatureSet()
 {
 }
 

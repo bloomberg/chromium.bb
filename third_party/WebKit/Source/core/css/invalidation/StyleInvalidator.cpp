@@ -7,6 +7,7 @@
 
 #include "core/css/invalidation/StyleInvalidator.h"
 
+#include "core/css/invalidation/DescendantInvalidationSet.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
@@ -53,42 +54,29 @@ void StyleInvalidator::clearPendingInvalidations()
 }
 
 StyleInvalidator::StyleInvalidator()
-{ }
+{
+}
+
+StyleInvalidator::~StyleInvalidator()
+{
+}
 
 void StyleInvalidator::RecursionData::pushInvalidationSet(const DescendantInvalidationSet& invalidationSet)
 {
-    invalidationSet.getClasses(m_invalidationClasses);
-    invalidationSet.getAttributes(m_invalidationAttributes);
-    invalidationSet.getIds(m_invalidationIds);
-    invalidationSet.getTagNames(m_invalidationTagNames);
+    m_invalidationSets.append(&invalidationSet);
     m_invalidateCustomPseudo = invalidationSet.customPseudoInvalid();
     m_foundInvalidationSet = true;
 }
 
 bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSets(Element& element)
 {
-    if (element.hasClass()) {
-        const SpaceSplitString& classNames = element.classNames();
-        for (Vector<AtomicString>::const_iterator it = m_invalidationClasses.begin(); it != m_invalidationClasses.end(); ++it) {
-            if (classNames.contains(*it))
-                return true;
-        }
-    }
-    if (element.hasAttributes()) {
-        for (Vector<AtomicString>::const_iterator it = m_invalidationAttributes.begin(); it != m_invalidationAttributes.end(); ++it) {
-            if (element.hasAttribute(*it))
-                return true;
-        }
-    }
-    if (element.hasID()) {
-        const AtomicString& id = element.idForStyleResolution();
-        if (m_invalidationIds.contains(id))
-            return true;
-    }
-    if (!m_invalidationTagNames.isEmpty() && m_invalidationTagNames.contains(element.tagQName().localName()))
-        return true;
     if (m_invalidateCustomPseudo && element.shadowPseudoId() != nullAtom)
         return true;
+
+    for (InvalidationSets::iterator it = m_invalidationSets.begin(); it != m_invalidationSets.end(); ++it) {
+        if ((*it)->invalidatesElement(element))
+            return true;
+    }
 
     return false;
 }
