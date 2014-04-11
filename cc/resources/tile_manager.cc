@@ -1289,10 +1289,8 @@ void TileManager::GetPairedPictureLayers(
        ++it) {
     PictureLayerImpl* layer = *it;
 
-    // This is a recycle tree layer, so it shouldn't be included in the raster
-    // tile generation.
-    // TODO(vmpstr): We need these layers for eviction, so they should probably
-    // go into a separate vector as an output.
+    // This is a recycle tree layer, we can safely skip since the tiles on this
+    // layer have to be accessible via the active tree.
     if (!layer->IsOnActiveOrPendingTree())
       continue;
 
@@ -1473,19 +1471,6 @@ TileManager::RasterTileIterator::RasterOrderComparator::RasterOrderComparator(
     TreePriority tree_priority)
     : tree_priority_(tree_priority) {}
 
-bool TileManager::RasterTileIterator::RasterOrderComparator::ComparePriorities(
-    const TilePriority& a_priority,
-    const TilePriority& b_priority,
-    bool prioritize_low_res) const {
-  if (b_priority.resolution != a_priority.resolution) {
-    return (prioritize_low_res && b_priority.resolution == LOW_RESOLUTION) ||
-           (!prioritize_low_res && b_priority.resolution == HIGH_RESOLUTION) ||
-           (a_priority.resolution == NON_IDEAL_RESOLUTION);
-  }
-
-  return b_priority.IsHigherPriorityThan(a_priority);
-}
-
 bool TileManager::RasterTileIterator::RasterOrderComparator::operator()(
     PairedPictureLayerIterator* a,
     PairedPictureLayerIterator* b) const {
@@ -1502,24 +1487,184 @@ bool TileManager::RasterTileIterator::RasterOrderComparator::operator()(
   Tile* a_tile = **a_pair.first;
   Tile* b_tile = **b_pair.first;
 
-  switch (tree_priority_) {
-    case SMOOTHNESS_TAKES_PRIORITY:
-      return ComparePriorities(a_tile->priority(ACTIVE_TREE),
-                               b_tile->priority(ACTIVE_TREE),
-                               true /* prioritize low res */);
-    case NEW_CONTENT_TAKES_PRIORITY:
-      return ComparePriorities(a_tile->priority(PENDING_TREE),
-                               b_tile->priority(PENDING_TREE),
-                               false /* prioritize low res */);
-    case SAME_PRIORITY_FOR_BOTH_TREES:
-      return ComparePriorities(a_tile->priority(a_pair.second),
-                               b_tile->priority(b_pair.second),
-                               false /* prioritize low res */);
+  const TilePriority& a_priority =
+      a_tile->priority_for_tree_priority(tree_priority_);
+  const TilePriority& b_priority =
+      b_tile->priority_for_tree_priority(tree_priority_);
+  bool prioritize_low_res = tree_priority_ == SMOOTHNESS_TAKES_PRIORITY;
+
+  if (b_priority.resolution != a_priority.resolution) {
+    return (prioritize_low_res && b_priority.resolution == LOW_RESOLUTION) ||
+           (!prioritize_low_res && b_priority.resolution == HIGH_RESOLUTION) ||
+           (a_priority.resolution == NON_IDEAL_RESOLUTION);
   }
 
-  NOTREACHED();
-  // Keep the compiler happy.
-  return false;
+  return b_priority.IsHigherPriorityThan(a_priority);
+}
+
+TileManager::EvictionTileIterator::EvictionTileIterator()
+    : comparator_(SAME_PRIORITY_FOR_BOTH_TREES) {}
+
+TileManager::EvictionTileIterator::EvictionTileIterator(
+    TileManager* tile_manager,
+    TreePriority tree_priority)
+    : tree_priority_(tree_priority), comparator_(tree_priority) {
+  std::vector<TileManager::PairedPictureLayer> paired_layers;
+
+  tile_manager->GetPairedPictureLayers(&paired_layers);
+
+  paired_iterators_.reserve(paired_layers.size());
+  iterator_heap_.reserve(paired_layers.size());
+  for (std::vector<TileManager::PairedPictureLayer>::iterator it =
+           paired_layers.begin();
+       it != paired_layers.end();
+       ++it) {
+    PairedPictureLayerIterator paired_iterator;
+    if (it->active_layer) {
+      paired_iterator.active_iterator =
+          PictureLayerImpl::LayerEvictionTileIterator(it->active_layer,
+                                                      tree_priority_);
+    }
+
+    if (it->pending_layer) {
+      paired_iterator.pending_iterator =
+          PictureLayerImpl::LayerEvictionTileIterator(it->pending_layer,
+                                                      tree_priority_);
+    }
+
+    if (paired_iterator.PeekTile(tree_priority_) != NULL) {
+      paired_iterators_.push_back(paired_iterator);
+      iterator_heap_.push_back(&paired_iterators_.back());
+    }
+  }
+
+  std::make_heap(iterator_heap_.begin(), iterator_heap_.end(), comparator_);
+}
+
+TileManager::EvictionTileIterator::~EvictionTileIterator() {}
+
+TileManager::EvictionTileIterator& TileManager::EvictionTileIterator::
+operator++() {
+  std::pop_heap(iterator_heap_.begin(), iterator_heap_.end(), comparator_);
+  PairedPictureLayerIterator* paired_iterator = iterator_heap_.back();
+  iterator_heap_.pop_back();
+
+  paired_iterator->PopTile(tree_priority_);
+  if (paired_iterator->PeekTile(tree_priority_) != NULL) {
+    iterator_heap_.push_back(paired_iterator);
+    std::push_heap(iterator_heap_.begin(), iterator_heap_.end(), comparator_);
+  }
+  return *this;
+}
+
+TileManager::EvictionTileIterator::operator bool() const {
+  return !iterator_heap_.empty();
+}
+
+Tile* TileManager::EvictionTileIterator::operator*() {
+  DCHECK(*this);
+  return iterator_heap_.front()->PeekTile(tree_priority_);
+}
+
+TileManager::EvictionTileIterator::PairedPictureLayerIterator::
+    PairedPictureLayerIterator() {}
+
+TileManager::EvictionTileIterator::PairedPictureLayerIterator::
+    ~PairedPictureLayerIterator() {}
+
+Tile* TileManager::EvictionTileIterator::PairedPictureLayerIterator::PeekTile(
+    TreePriority tree_priority) {
+  PictureLayerImpl::LayerEvictionTileIterator* next_iterator =
+      NextTileIterator(tree_priority);
+  if (!next_iterator)
+    return NULL;
+
+  DCHECK(*next_iterator);
+  DCHECK(std::find(returned_shared_tiles.begin(),
+                   returned_shared_tiles.end(),
+                   **next_iterator) == returned_shared_tiles.end());
+  return **next_iterator;
+}
+
+void TileManager::EvictionTileIterator::PairedPictureLayerIterator::PopTile(
+    TreePriority tree_priority) {
+  PictureLayerImpl::LayerEvictionTileIterator* next_iterator =
+      NextTileIterator(tree_priority);
+  DCHECK(next_iterator);
+  DCHECK(*next_iterator);
+  returned_shared_tiles.push_back(**next_iterator);
+  ++(*next_iterator);
+
+  next_iterator = NextTileIterator(tree_priority);
+  while (next_iterator &&
+         std::find(returned_shared_tiles.begin(),
+                   returned_shared_tiles.end(),
+                   **next_iterator) != returned_shared_tiles.end()) {
+    ++(*next_iterator);
+    next_iterator = NextTileIterator(tree_priority);
+  }
+}
+
+PictureLayerImpl::LayerEvictionTileIterator*
+TileManager::EvictionTileIterator::PairedPictureLayerIterator::NextTileIterator(
+    TreePriority tree_priority) {
+  // If both iterators are out of tiles, return NULL.
+  if (!active_iterator && !pending_iterator)
+    return NULL;
+
+  // If we only have one iterator with tiles, return it.
+  if (!active_iterator)
+    return &pending_iterator;
+  if (!pending_iterator)
+    return &active_iterator;
+
+  Tile* active_tile = *active_iterator;
+  Tile* pending_tile = *pending_iterator;
+  if (active_tile == pending_tile)
+    return &active_iterator;
+
+  const TilePriority& active_priority =
+      active_tile->priority_for_tree_priority(tree_priority);
+  const TilePriority& pending_priority =
+      pending_tile->priority_for_tree_priority(tree_priority);
+
+  if (pending_priority.IsHigherPriorityThan(active_priority))
+    return &active_iterator;
+  return &pending_iterator;
+}
+
+TileManager::EvictionTileIterator::EvictionOrderComparator::
+    EvictionOrderComparator(TreePriority tree_priority)
+    : tree_priority_(tree_priority) {}
+
+bool TileManager::EvictionTileIterator::EvictionOrderComparator::operator()(
+    PairedPictureLayerIterator* a,
+    PairedPictureLayerIterator* b) const {
+  PictureLayerImpl::LayerEvictionTileIterator* a_iterator =
+      a->NextTileIterator(tree_priority_);
+  DCHECK(a_iterator);
+  DCHECK(*a_iterator);
+
+  PictureLayerImpl::LayerEvictionTileIterator* b_iterator =
+      b->NextTileIterator(tree_priority_);
+  DCHECK(b_iterator);
+  DCHECK(*b_iterator);
+
+  Tile* a_tile = **a_iterator;
+  Tile* b_tile = **b_iterator;
+
+  const TilePriority& a_priority =
+      a_tile->priority_for_tree_priority(tree_priority_);
+  const TilePriority& b_priority =
+      b_tile->priority_for_tree_priority(tree_priority_);
+  bool prioritize_low_res = tree_priority_ != SMOOTHNESS_TAKES_PRIORITY;
+
+  if (b_priority.resolution != a_priority.resolution) {
+    return (prioritize_low_res && b_priority.resolution == LOW_RESOLUTION) ||
+           (!prioritize_low_res && b_priority.resolution == HIGH_RESOLUTION) ||
+           (a_priority.resolution == NON_IDEAL_RESOLUTION);
+  }
+  return a_priority.IsHigherPriorityThan(b_priority);
 }
 
 }  // namespace cc

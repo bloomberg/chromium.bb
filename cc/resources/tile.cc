@@ -24,16 +24,16 @@ Tile::Tile(TileManager* tile_manager,
            int layer_id,
            int source_frame_number,
            int flags)
-  : RefCountedManaged<Tile>(tile_manager),
-    tile_manager_(tile_manager),
-    tile_size_(tile_size),
-    content_rect_(content_rect),
-    contents_scale_(contents_scale),
-    opaque_rect_(opaque_rect),
-    layer_id_(layer_id),
-    source_frame_number_(source_frame_number),
-    flags_(flags),
-    id_(s_next_id_++) {
+    : RefCountedManaged<Tile>(tile_manager),
+      tile_manager_(tile_manager),
+      tile_size_(tile_size),
+      content_rect_(content_rect),
+      contents_scale_(contents_scale),
+      opaque_rect_(opaque_rect),
+      layer_id_(layer_id),
+      source_frame_number_(source_frame_number),
+      flags_(flags),
+      id_(s_next_id_++) {
   set_picture_pile(picture_pile);
 }
 

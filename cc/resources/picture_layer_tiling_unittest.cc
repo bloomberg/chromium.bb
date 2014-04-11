@@ -949,7 +949,8 @@ TEST(PictureLayerTilingTest, TilingEvictionTileIteratorStaticViewport) {
 
   std::vector<Tile*> all_tiles = tiling->AllTilesForTesting();
 
-  PictureLayerTiling::TilingEvictionTileIterator it(tiling.get(), ACTIVE_TREE);
+  PictureLayerTiling::TilingEvictionTileIterator it(tiling.get(),
+                                                    SMOOTHNESS_TAKES_PRIORITY);
 
   // Tiles don't have resources to evict.
   EXPECT_FALSE(it);
@@ -961,8 +962,8 @@ TEST(PictureLayerTilingTest, TilingEvictionTileIteratorStaticViewport) {
 
   std::set<Tile*> all_tiles_set(all_tiles.begin(), all_tiles.end());
 
-  it =
-      PictureLayerTiling::TilingEvictionTileIterator(tiling.get(), ACTIVE_TREE);
+  it = PictureLayerTiling::TilingEvictionTileIterator(
+      tiling.get(), SMOOTHNESS_TAKES_PRIORITY);
   EXPECT_TRUE(it);
 
   std::set<Tile*> eviction_tiles;

@@ -58,7 +58,8 @@ class CC_EXPORT PictureLayerImpl
   class CC_EXPORT LayerEvictionTileIterator {
    public:
     LayerEvictionTileIterator();
-    explicit LayerEvictionTileIterator(PictureLayerImpl* layer);
+    LayerEvictionTileIterator(PictureLayerImpl* layer,
+                              TreePriority tree_priority);
     ~LayerEvictionTileIterator();
 
     Tile* operator*();

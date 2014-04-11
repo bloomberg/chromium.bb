@@ -22,12 +22,15 @@ namespace {
 
 class TileEvictionOrder {
  public:
-  explicit TileEvictionOrder(WhichTree tree) : tree_(tree) {}
+  explicit TileEvictionOrder(TreePriority tree_priority)
+      : tree_priority_(tree_priority) {}
   ~TileEvictionOrder() {}
 
   bool operator()(const Tile* a, const Tile* b) {
-    const TilePriority& a_priority = a->priority(tree_);
-    const TilePriority& b_priority = b->priority(tree_);
+    const TilePriority& a_priority =
+        a->priority_for_tree_priority(tree_priority_);
+    const TilePriority& b_priority =
+        b->priority_for_tree_priority(tree_priority_);
 
     if (a_priority.priority_bin == b_priority.priority_bin &&
         a->required_for_activation() != b->required_for_activation()) {
@@ -37,7 +40,7 @@ class TileEvictionOrder {
   }
 
  private:
-  WhichTree tree_;
+  TreePriority tree_priority_;
 };
 }  // namespace
 
@@ -59,7 +62,8 @@ PictureLayerTiling::PictureLayerTiling(float contents_scale,
       client_(client),
       tiling_data_(gfx::Size(), gfx::Size(), true),
       last_impl_frame_time_in_seconds_(0.0),
-      eviction_tiles_cache_valid_(false) {
+      eviction_tiles_cache_valid_(false),
+      eviction_cache_tree_priority_(SAME_PRIORITY_FOR_BOTH_TREES) {
   gfx::Size content_bounds =
       gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale));
   gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
@@ -768,8 +772,10 @@ gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
   return result;
 }
 
-void PictureLayerTiling::UpdateEvictionCacheIfNeeded(WhichTree tree) {
-  if (eviction_tiles_cache_valid_)
+void PictureLayerTiling::UpdateEvictionCacheIfNeeded(
+    TreePriority tree_priority) {
+  if (eviction_tiles_cache_valid_ &&
+      eviction_cache_tree_priority_ == tree_priority)
     return;
 
   eviction_tiles_cache_.clear();
@@ -782,8 +788,9 @@ void PictureLayerTiling::UpdateEvictionCacheIfNeeded(WhichTree tree) {
 
   std::sort(eviction_tiles_cache_.begin(),
             eviction_tiles_cache_.end(),
-            TileEvictionOrder(tree));
+            TileEvictionOrder(tree_priority));
   eviction_tiles_cache_valid_ = true;
+  eviction_cache_tree_priority_ = tree_priority;
 }
 
 PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator()
@@ -886,8 +893,8 @@ PictureLayerTiling::TilingEvictionTileIterator::TilingEvictionTileIterator()
 
 PictureLayerTiling::TilingEvictionTileIterator::TilingEvictionTileIterator(
     PictureLayerTiling* tiling,
-    WhichTree tree)
-    : is_valid_(false), tiling_(tiling), tree_(tree) {}
+    TreePriority tree_priority)
+    : is_valid_(false), tiling_(tiling), tree_priority_(tree_priority) {}
 
 PictureLayerTiling::TilingEvictionTileIterator::~TilingEvictionTileIterator() {}
 
@@ -922,7 +929,7 @@ void PictureLayerTiling::TilingEvictionTileIterator::Initialize() {
   if (!tiling_)
     return;
 
-  tiling_->UpdateEvictionCacheIfNeeded(tree_);
+  tiling_->UpdateEvictionCacheIfNeeded(tree_priority_);
   tile_iterator_ = tiling_->eviction_tiles_cache_.begin();
   is_valid_ = true;
   if (tile_iterator_ != tiling_->eviction_tiles_cache_.end() &&

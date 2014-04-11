@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_TILE_MANAGER_H_
 #define CC_RESOURCES_TILE_MANAGER_H_
 
+#include <deque>
 #include <queue>
 #include <set>
 #include <utility>
@@ -94,9 +95,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
                       PairedPictureLayerIterator* b) const;
 
      private:
-      bool ComparePriorities(const TilePriority& a_priority,
-                             const TilePriority& b_priority,
-                             bool prioritize_low_res) const;
       TreePriority tree_priority_;
     };
 
@@ -104,6 +102,50 @@ class CC_EXPORT TileManager : public RasterizerClient,
     std::vector<PairedPictureLayerIterator*> iterator_heap_;
     TreePriority tree_priority_;
     RasterOrderComparator comparator_;
+  };
+
+  struct CC_EXPORT EvictionTileIterator {
+   public:
+    EvictionTileIterator();
+    EvictionTileIterator(TileManager* tile_manager, TreePriority tree_priority);
+    ~EvictionTileIterator();
+
+    EvictionTileIterator& operator++();
+    operator bool() const;
+    Tile* operator*();
+
+   private:
+    struct PairedPictureLayerIterator {
+      PairedPictureLayerIterator();
+      ~PairedPictureLayerIterator();
+
+      Tile* PeekTile(TreePriority tree_priority);
+      void PopTile(TreePriority tree_priority);
+
+      PictureLayerImpl::LayerEvictionTileIterator* NextTileIterator(
+          TreePriority tree_priority);
+
+      PictureLayerImpl::LayerEvictionTileIterator active_iterator;
+      PictureLayerImpl::LayerEvictionTileIterator pending_iterator;
+
+      std::vector<Tile*> returned_shared_tiles;
+    };
+
+    class EvictionOrderComparator {
+     public:
+      explicit EvictionOrderComparator(TreePriority tree_priority);
+
+      bool operator()(PairedPictureLayerIterator* a,
+                      PairedPictureLayerIterator* b) const;
+
+     private:
+      TreePriority tree_priority_;
+    };
+
+    std::vector<PairedPictureLayerIterator> paired_iterators_;
+    std::vector<PairedPictureLayerIterator*> iterator_heap_;
+    TreePriority tree_priority_;
+    EvictionOrderComparator comparator_;
   };
 
   static scoped_ptr<TileManager> Create(
@@ -158,6 +200,15 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
       bytes_releasable_ += BytesConsumedIfAllocated(tiles[i]);
       ++resources_releasable_;
+    }
+  }
+
+  void ReleaseTileResourcesForTesting(const std::vector<Tile*>& tiles) {
+    for (size_t i = 0; i < tiles.size(); ++i) {
+      Tile* tile = tiles[i];
+      for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+        FreeResourceForTile(tile, static_cast<RasterMode>(mode));
+      }
     }
   }
 

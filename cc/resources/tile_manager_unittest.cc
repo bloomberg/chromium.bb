@@ -971,5 +971,165 @@ TEST_F(TileManagerTileIteratorTest, RasterTileIterator) {
   EXPECT_GT(increasing_distance_tiles, 3 * tile_count / 4);
 }
 
+TEST_F(TileManagerTileIteratorTest, EvictionTileIterator) {
+  SetupDefaultTrees(gfx::Size(1000, 1000));
+  TileManager* tile_manager = TileManagerTileIteratorTest::tile_manager();
+  EXPECT_TRUE(tile_manager);
+
+  active_layer_->CreateDefaultTilingsAndTiles();
+  pending_layer_->CreateDefaultTilingsAndTiles();
+
+  std::vector<TileManager::PairedPictureLayer> paired_layers;
+  tile_manager->GetPairedPictureLayers(&paired_layers);
+  EXPECT_EQ(1u, paired_layers.size());
+
+  TileManager::EvictionTileIterator it(tile_manager,
+                                       SAME_PRIORITY_FOR_BOTH_TREES);
+  EXPECT_FALSE(it);
+  std::set<Tile*> all_tiles;
+  size_t tile_count = 0;
+
+  for (TileManager::RasterTileIterator raster_it(tile_manager,
+                                                 SAME_PRIORITY_FOR_BOTH_TREES);
+       raster_it;
+       ++raster_it) {
+    ++tile_count;
+    EXPECT_TRUE(*raster_it);
+    all_tiles.insert(*raster_it);
+  }
+
+  EXPECT_EQ(tile_count, all_tiles.size());
+  EXPECT_EQ(17u, tile_count);
+
+  tile_manager->InitializeTilesWithResourcesForTesting(
+      std::vector<Tile*>(all_tiles.begin(), all_tiles.end()));
+
+  it = TileManager::EvictionTileIterator(tile_manager,
+                                         SAME_PRIORITY_FOR_BOTH_TREES);
+  EXPECT_TRUE(it);
+
+  // Sanity check, all tiles should be visible.
+  std::set<Tile*> smoothness_tiles;
+  for (TileManager::EvictionTileIterator it(tile_manager,
+                                            SMOOTHNESS_TAKES_PRIORITY);
+       it;
+       ++it) {
+    Tile* tile = *it;
+    EXPECT_TRUE(tile);
+    EXPECT_EQ(TilePriority::NOW, tile->priority(ACTIVE_TREE).priority_bin);
+    EXPECT_EQ(TilePriority::NOW, tile->priority(PENDING_TREE).priority_bin);
+    EXPECT_TRUE(tile->HasResources());
+    smoothness_tiles.insert(tile);
+  }
+  EXPECT_EQ(all_tiles, smoothness_tiles);
+
+  tile_manager->ReleaseTileResourcesForTesting(
+      std::vector<Tile*>(all_tiles.begin(), all_tiles.end()));
+
+  Region invalidation(gfx::Rect(0, 0, 500, 500));
+
+  // Invalidate the pending tree.
+  pending_layer_->set_invalidation(invalidation);
+  pending_layer_->HighResTiling()->Invalidate(invalidation);
+  pending_layer_->LowResTiling()->Invalidate(invalidation);
+
+  active_layer_->ResetAllTilesPriorities();
+  pending_layer_->ResetAllTilesPriorities();
+
+  // Renew all of the tile priorities.
+  gfx::Rect viewport(50, 50, 100, 100);
+  pending_layer_->HighResTiling()->UpdateTilePriorities(
+      PENDING_TREE, viewport, 1.0f, 1.0);
+  pending_layer_->LowResTiling()->UpdateTilePriorities(
+      PENDING_TREE, viewport, 1.0f, 1.0);
+  active_layer_->HighResTiling()->UpdateTilePriorities(
+      ACTIVE_TREE, viewport, 1.0f, 1.0);
+  active_layer_->LowResTiling()->UpdateTilePriorities(
+      ACTIVE_TREE, viewport, 1.0f, 1.0);
+
+  // Populate all tiles directly from the tilings.
+  all_tiles.clear();
+  std::vector<Tile*> pending_high_res_tiles =
+      pending_layer_->HighResTiling()->AllTilesForTesting();
+  for (size_t i = 0; i < pending_high_res_tiles.size(); ++i)
+    all_tiles.insert(pending_high_res_tiles[i]);
+
+  std::vector<Tile*> pending_low_res_tiles =
+      pending_layer_->LowResTiling()->AllTilesForTesting();
+  for (size_t i = 0; i < pending_low_res_tiles.size(); ++i)
+    all_tiles.insert(pending_low_res_tiles[i]);
+
+  std::vector<Tile*> active_high_res_tiles =
+      active_layer_->HighResTiling()->AllTilesForTesting();
+  for (size_t i = 0; i < active_high_res_tiles.size(); ++i)
+    all_tiles.insert(active_high_res_tiles[i]);
+
+  std::vector<Tile*> active_low_res_tiles =
+      active_layer_->LowResTiling()->AllTilesForTesting();
+  for (size_t i = 0; i < active_low_res_tiles.size(); ++i)
+    all_tiles.insert(active_low_res_tiles[i]);
+
+  tile_manager->InitializeTilesWithResourcesForTesting(
+      std::vector<Tile*>(all_tiles.begin(), all_tiles.end()));
+
+  Tile* last_tile = NULL;
+  smoothness_tiles.clear();
+  tile_count = 0;
+  // Here we expect to get increasing ACTIVE_TREE priority_bin.
+  for (TileManager::EvictionTileIterator it(tile_manager,
+                                            SMOOTHNESS_TAKES_PRIORITY);
+       it;
+       ++it) {
+    Tile* tile = *it;
+    EXPECT_TRUE(tile);
+    EXPECT_TRUE(tile->HasResources());
+
+    if (!last_tile)
+      last_tile = tile;
+
+    EXPECT_GE(last_tile->priority(ACTIVE_TREE).priority_bin,
+              tile->priority(ACTIVE_TREE).priority_bin);
+    if (last_tile->priority(ACTIVE_TREE).priority_bin ==
+        tile->priority(ACTIVE_TREE).priority_bin) {
+      EXPECT_GE(last_tile->priority(ACTIVE_TREE).distance_to_visible,
+                tile->priority(ACTIVE_TREE).distance_to_visible);
+    }
+
+    last_tile = tile;
+    ++tile_count;
+    smoothness_tiles.insert(tile);
+  }
+
+  EXPECT_EQ(tile_count, smoothness_tiles.size());
+  EXPECT_EQ(all_tiles, smoothness_tiles);
+
+  std::set<Tile*> new_content_tiles;
+  last_tile = NULL;
+  // Here we expect to get increasing PENDING_TREE priority_bin.
+  for (TileManager::EvictionTileIterator it(tile_manager,
+                                            NEW_CONTENT_TAKES_PRIORITY);
+       it;
+       ++it) {
+    Tile* tile = *it;
+    EXPECT_TRUE(tile);
+
+    if (!last_tile)
+      last_tile = tile;
+
+    EXPECT_GE(last_tile->priority(PENDING_TREE).priority_bin,
+              tile->priority(PENDING_TREE).priority_bin);
+    if (last_tile->priority(PENDING_TREE).priority_bin ==
+        tile->priority(PENDING_TREE).priority_bin) {
+      EXPECT_GE(last_tile->priority(PENDING_TREE).distance_to_visible,
+                tile->priority(PENDING_TREE).distance_to_visible);
+    }
+
+    last_tile = tile;
+    new_content_tiles.insert(tile);
+  }
+
+  EXPECT_EQ(tile_count, new_content_tiles.size());
+  EXPECT_EQ(all_tiles, new_content_tiles);
+}
 }  // namespace
 }  // namespace cc

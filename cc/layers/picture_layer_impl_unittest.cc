@@ -2068,7 +2068,8 @@ TEST_F(PictureLayerImplTest, LayerEvictionTileIterator) {
   EXPECT_FALSE(it);
 
   // Tiles don't have resources yet.
-  it = PictureLayerImpl::LayerEvictionTileIterator(pending_layer_);
+  it = PictureLayerImpl::LayerEvictionTileIterator(
+      pending_layer_, SAME_PRIORITY_FOR_BOTH_TREES);
   EXPECT_FALSE(it);
 
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
@@ -2079,7 +2080,9 @@ TEST_F(PictureLayerImplTest, LayerEvictionTileIterator) {
   bool reached_visible = false;
   bool reached_required = false;
   Tile* last_tile = NULL;
-  for (it = PictureLayerImpl::LayerEvictionTileIterator(pending_layer_); it;
+  for (it = PictureLayerImpl::LayerEvictionTileIterator(
+           pending_layer_, SAME_PRIORITY_FOR_BOTH_TREES);
+       it;
        ++it) {
     Tile* tile = *it;
     if (!last_tile)
