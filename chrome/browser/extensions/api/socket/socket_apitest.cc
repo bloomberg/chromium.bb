@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -19,6 +18,12 @@
 #include "extensions/browser/api/socket/socket_api.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+
+#if !defined(DISABLE_NACL)
+#include "base/command_line.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
+#endif
 
 using extensions::Extension;
 
@@ -68,18 +73,18 @@ class SocketPpapiTest : public SocketApiTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     SocketApiTest::SetUpCommandLine(command_line);
-    // TODO(yzshen): It is better to use switches::kEnablePepperTesting.
-    // However, that requires adding a new DEPS entry. Considering that we are
-    // going to move the Pepper API tests to a new place, use a string literal
-    // for now.
-    command_line->AppendSwitch("enable-pepper-testing");
+    command_line->AppendSwitch(switches::kEnablePepperTesting);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
     SocketApiTest::SetUpOnMainThread();
 
-    PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir_);
-    app_dir_ = app_dir_.AppendASCII("ppapi/tests/extensions/socket/newlib");
+    ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir_));
+    app_dir_ = app_dir_.AppendASCII("ppapi")
+                       .AppendASCII("tests")
+                       .AppendASCII("extensions")
+                       .AppendASCII("socket")
+                       .AppendASCII("newlib");
   }
 
  protected:
@@ -98,7 +103,7 @@ class SocketPpapiTest : public SocketApiTest {
  private:
   base::FilePath app_dir_;
 };
-#endif
+#endif  // !defined(DISABLE_NACL)
 
 }  // namespace
 
@@ -115,9 +120,9 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPCreateGood) {
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
   base::DictionaryValue *value =
       static_cast<base::DictionaryValue*>(result.get());
-  int socketId = -1;
-  EXPECT_TRUE(value->GetInteger("socketId", &socketId));
-  EXPECT_TRUE(socketId > 0);
+  int socket_id = -1;
+  EXPECT_TRUE(value->GetInteger("socketId", &socket_id));
+  EXPECT_GT(socket_id, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPCreateGood) {
@@ -133,9 +138,9 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPCreateGood) {
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
   base::DictionaryValue *value =
       static_cast<base::DictionaryValue*>(result.get());
-  int socketId = -1;
-  EXPECT_TRUE(value->GetInteger("socketId", &socketId));
-  ASSERT_TRUE(socketId > 0);
+  int socket_id = -1;
+  EXPECT_TRUE(value->GetInteger("socketId", &socket_id));
+  ASSERT_GT(socket_id, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, GetNetworkList) {
@@ -153,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, GetNetworkList) {
   // If we're invoking socket tests, all we can confirm is that we have at
   // least one address, but not what it is.
   base::ListValue *value = static_cast<base::ListValue*>(result.get());
-  ASSERT_TRUE(value->GetSize() > 0);
+  ASSERT_GT(value->GetSize(), 0U);
 }
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPExtension) {
@@ -166,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPExtension) {
 
   net::HostPortPair host_port_pair = test_server->host_port_pair();
   int port = host_port_pair.port();
-  ASSERT_TRUE(port > 0);
+  ASSERT_GT(port, 0);
 
   // Test that sendTo() is properly resolving hostnames.
   host_port_pair.set_host("LOCALhost");
@@ -194,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPExtension) {
 
   net::HostPortPair host_port_pair = test_server->host_port_pair();
   int port = host_port_pair.port();
-  ASSERT_TRUE(port > 0);
+  ASSERT_GT(port, 0);
 
   // Test that connect() is properly resolving hostnames.
   host_port_pair.set_host("lOcAlHoSt");
@@ -268,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(SocketPpapiTest, MAYBE_UDP) {
 
   net::HostPortPair host_port_pair = test_server->host_port_pair();
   int port = host_port_pair.port();
-  ASSERT_TRUE(port > 0);
+  ASSERT_GT(port, 0);
 
   // Test that sendTo() is properly resolving hostnames.
   host_port_pair.set_host("LOCALhost");
@@ -303,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(SocketPpapiTest, MAYBE_TCP) {
 
   net::HostPortPair host_port_pair = test_server->host_port_pair();
   int port = host_port_pair.port();
-  ASSERT_TRUE(port > 0);
+  ASSERT_GT(port, 0);
 
   // Test that connect() is properly resolving hostnames.
   host_port_pair.set_host("lOcAlHoSt");
