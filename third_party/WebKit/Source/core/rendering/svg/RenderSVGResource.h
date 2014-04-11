@@ -43,6 +43,7 @@ enum RenderSVGResourceMode {
     ApplyToStrokeMode  = 1 << 2,
     ApplyToTextMode    = 1 << 3 // used in combination with ApplyTo{Fill|Stroke}Mode
 };
+typedef unsigned RenderSVGResourceModeFlags;
 
 class Color;
 class FloatRect;
