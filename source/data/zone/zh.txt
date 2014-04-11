@@ -1822,10 +1822,14 @@ zh{
         "meta:Tahiti"{
             ls{"塔希提岛时间"}
         }
+        // Chromium patch: Add short names
         "meta:Taipei"{
             ld{"台北夏令时间"}
             lg{"台北时间"}
             ls{"台北标准时间"}
+            sd{"台北"}
+            sg{"台北"}
+            ss{"台北"}
         }
         "meta:Tajikistan"{
             ls{"塔吉克斯坦时间"}

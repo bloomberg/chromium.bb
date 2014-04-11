@@ -56,6 +56,7 @@ LANG_SOURCE =\
  lv.txt\
  ml.txt\
  mr.txt\
+ ms.txt\
  nb.txt\
  nl.txt\
  pl.txt\
@@ -100,7 +101,6 @@ LANG_SOURCE =\
  mg.txt\
  mk.txt\
  mo.txt\
- ms.txt\
  mt.txt\
  ne.txt\
  nn.txt\

@@ -149,7 +149,8 @@ es{
             symbols{
                 decimal{","}
                 exponential{"E"}
-                group{" "}
+                // Chromium patch: see unicode.org/cldr/trac/ticket/6852
+                group{"."}
                 infinity{"∞"}
                 list{";"}
                 minusSign{"-"}

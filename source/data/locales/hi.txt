@@ -22,6 +22,7 @@ hi{
     ExemplarCharacters{
         "[\u093C ॐ \u0902 \u0901 ः अ आ इ ई उ ऊ ऋ ऌ ऍ ए ऐ ऑ ओ औ क ख ग घ ङ च छ ज झ ञ ट "
         "ठ ड ढ ण त थ द ध न प फ ब भ म य र ल ळ व श ष स ह ऽ ा ि ी \u0941 \u0942 \u0943 "
+        "\u200C \u200D"
         "\u0944 \u0945 \u0947 \u0948 ॉ ो ौ \u094D]"
     }
     ExemplarCharactersIndex{
@@ -334,13 +335,15 @@ hi{
             }
         }
         gregorian{
+            // Chromium patch taken from http://b/5948448.
+            // Use 'am' and 'pm' instead of native markers.
             AmPmMarkers{
-                "पूर्वाह्न",
-                "अपराह्न",
+                "am",
+                "pm",
             }
             AmPmMarkersNarrow{
-                "पू",
-                "अ",
+                "am",
+                "pm",
             }
             DateTimePatterns{
                 "h:mm:ss a zzzz",

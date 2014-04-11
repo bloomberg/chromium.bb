@@ -906,7 +906,7 @@ ko{
                     y{"y. M. d. (E) ~ y. M. d. (E)"}
                 }
                 yMMM{
-                    M{"y년 M월~M월"}
+                    M{"y년 M월 ~ M월"}
                     y{"y년 M월 ~ y년 M월"}
                 }
                 yMMMEEEEd{
@@ -920,12 +920,12 @@ ko{
                     y{"y년 M월 d일 (E) ~ y년 M월 d일 (E)"}
                 }
                 yMMMM{
-                    M{"y년 MM월 ~ MM월"}
-                    y{"y년 MM월 ~ y년 MM월"}
+                    M{"y년 M월 ~ M월"}
+                    y{"y년 M월 ~ y년 M월"}
                 }
                 yMMMd{
                     M{"y년 M월 d일 ~ M월 d일"}
-                    d{"y년 M월 d일~d일"}
+                    d{"y년 M월 d일 ~ d일"}
                     y{"y년 M월 d일 ~ y년 M월 d일"}
                 }
                 yMd{

@@ -1823,10 +1823,14 @@ zh_Hant{
         "meta:Tahiti"{
             ls{"大溪地時間"}
         }
+        // Chromium patch: Add short names.
         "meta:Taipei"{
             ld{"台北夏令時間"}
             lg{"台北時間"}
             ls{"台北標準時間"}
+            sd{"台北"}
+            sg{"台北"}
+            ss{"台北"}
         }
         "meta:Tajikistan"{
             ls{"塔吉克時間"}

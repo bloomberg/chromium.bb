@@ -21,6 +21,7 @@ ta{
     }
     ExemplarCharacters{
         "[அ ஆ இ ஈ உ ஊ எ ஏ ஐ ஒ ஓ ஔ ஃ க ங ச ஞ ட ண த ந ப ம ய ர ல வ ழ ள ற ன ஜ ஷ ஸ ஹ ா ி "
+	"\u200C \u200D"
         "\u0BC0 ு ூ ெ ே ை ொ ோ ௌ \u0BCD]"
     }
     ExemplarCharactersIndex{
@@ -423,9 +424,10 @@ ta{
             }
         }
         gregorian{
+            // Chromium patch: use 'AM' and 'PM' instead of native names.
             AmPmMarkers{
-                "முற்பகல்",
-                "பிற்பகல்",
+                "AM",
+                "PM",
             }
             AmPmMarkersNarrow{
                 "AM",
