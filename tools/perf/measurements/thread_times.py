@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 from measurements import timeline_controller
 from metrics import timeline
+from metrics import timeline_interaction_record
 from telemetry.page import page_measurement
 
 class ThreadTimes(page_measurement.PageMeasurement):
@@ -39,15 +40,21 @@ class ThreadTimes(page_measurement.PageMeasurement):
     self._timeline_controller.Stop(tab)
 
   def MeasurePage(self, page, tab, results):
-    metric = timeline.ThreadTimesTimelineMetric(
-      self._timeline_controller.model,
-      self._timeline_controller.renderer_process,
-      self._timeline_controller.action_ranges)
+    metric = timeline.ThreadTimesTimelineMetric()
+    renderer_thread = \
+        self._timeline_controller.model.GetRendererThreadFromTab(tab)
+    assert len(self._timeline_controller.action_ranges) == 1
+    record = timeline_interaction_record.TimelineInteractionRecord(
+      "action_interaction",
+      self._timeline_controller.action_ranges[0].min,
+      self._timeline_controller.action_ranges[0].max)
     if self.options.report_silk_results:
       metric.results_to_report = timeline.ReportSilkResults
     if self.options.report_silk_details:
       metric.details_to_report = timeline.ReportSilkDetails
-    metric.AddResults(tab, results)
+    metric.AddResults(self._timeline_controller.model, renderer_thread,
+                      record, results)
+
 
   def CleanUpAfterPage(self, _, tab):
     self._timeline_controller.CleanUp(tab)

@@ -4,6 +4,9 @@
 
 import re
 
+from telemetry import decorators
+import telemetry.core.timeline.bounds as timeline_bounds
+
 
 def IsTimelineInteractionRecord(event_name):
   return event_name.startswith('Interaction.')
@@ -80,3 +83,10 @@ class TimelineInteractionRecord(object):
 
   def GetResultNameFor(self, result_name):
     return "%s-%s" % (self.logical_name, result_name)
+
+  @decorators.Cache
+  def GetBounds(self):
+    bounds = timeline_bounds.Bounds()
+    bounds.AddValue(self.start)
+    bounds.AddValue(self.end)
+    return bounds

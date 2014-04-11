@@ -3,47 +3,32 @@
 # found in the LICENSE file.
 import collections
 
-from metrics import Metric
-from telemetry.core.timeline import bounds
+from metrics import timeline_based_metric
 
 
-class TimelineMetric(Metric):
-  def __init__(self, model=None, renderer_process=None, action_ranges=None):
-    """ Initializes a TimelineMetric object.
-    """
-    super(TimelineMetric, self).__init__()
-    self._model = model
-    self._renderer_process = renderer_process
-    self._action_ranges = action_ranges if action_ranges else []
-
-  def AddResults(self, tab, results):
-    return
-
-
-class LoadTimesTimelineMetric(TimelineMetric):
-  def __init__(self, model=None, renderer_process=None, action_ranges=None):
-    super(LoadTimesTimelineMetric, self).__init__(model, renderer_process,
-                                                  action_ranges)
+class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
+  def __init__(self):
+    super(LoadTimesTimelineMetric, self).__init__()
     self.report_main_thread_only = True
 
-  def AddResults(self, _, results):
-    assert self._model
+  def AddResults(self, model, renderer_thread, interaction_record, results):
+    assert model
     if self.report_main_thread_only:
       thread_filter = 'CrRendererMain'
     else:
       thread_filter = None
 
     events_by_name = collections.defaultdict(list)
+    renderer_process = renderer_thread.parent
 
-    for thread in self._renderer_process.threads.itervalues():
+    for thread in renderer_process.threads.itervalues():
 
       if thread_filter and not thread.name in thread_filter:
         continue
 
       thread_name = thread.name.replace('/','_')
-      events = thread.all_slices
-
-      for e in events:
+      for e in thread.IterAllSlicesInRange(interaction_record.start,
+                                           interaction_record.end):
         events_by_name[e.name].append(e)
 
       for event_name, event_group in events_by_name.iteritems():
@@ -59,7 +44,7 @@ class LoadTimesTimelineMetric(TimelineMetric):
         results.Add(full_name + '_max', 'ms', biggest_jank)
         results.Add(full_name + '_avg', 'ms', total / len(times))
 
-    for counter_name, counter in self._renderer_process.counters.iteritems():
+    for counter_name, counter in renderer_process.counters.iteritems():
       total = sum(counter.totals)
 
       # Results objects cannot contain the '.' character, so remove that here.
@@ -68,7 +53,6 @@ class LoadTimesTimelineMetric(TimelineMetric):
       results.Add(sanitized_counter_name, 'count', total)
       results.Add(sanitized_counter_name + '_avg', 'count',
                   total / float(len(counter.totals)))
-
 
 # We want to generate a consistant picture of our thread usage, despite
 # having several process configurations (in-proc-gpu/single-proc).
@@ -145,12 +129,12 @@ def ThreadDetailResultName(thread_category, detail):
 
 
 class ResultsForThread(object):
-  def __init__(self, model, action_ranges, name):
+  def __init__(self, model, record_ranges, name):
     self.model = model
     self.toplevel_slices = []
     self.all_slices = []
     self.name = name
-    self.action_ranges = action_ranges
+    self.record_ranges = record_ranges
 
   @property
   def clock_time(self):
@@ -178,8 +162,8 @@ class ResultsForThread(object):
   def SlicesInActions(self, slices):
     slices_in_actions = []
     for event in slices:
-      for action_range in self.action_ranges:
-        if action_range.Contains(bounds.Bounds.CreateFromEvent(event)):
+      for record_range in self.record_ranges:
+        if record_range.ContainsInterval(event.start, event.end):
           slices_in_actions.append(event)
           break
     return slices_in_actions
@@ -204,17 +188,17 @@ class ResultsForThread(object):
       results.Add(ThreadDetailResultName(self.name, category),
                   'ms', self_time_result)
     all_measured_time = sum(all_self_times)
-    all_action_time = sum([action.bounds for action in self.action_ranges])
+    all_action_time = \
+        sum([record_range.bounds for record_range in self.record_ranges])
     idle_time = max(0, all_action_time - all_measured_time)
     idle_time_result = (float(idle_time) / num_frames) if num_frames else 0
     results.Add(ThreadDetailResultName(self.name, "idle"),
                 'ms', idle_time_result)
 
 
-class ThreadTimesTimelineMetric(TimelineMetric):
-  def __init__(self, model=None, renderer_process=None, action_ranges=None):
-    super(ThreadTimesTimelineMetric, self).__init__(model, renderer_process,
-                                                    action_ranges)
+class ThreadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
+  def __init__(self):
+    super(ThreadTimesTimelineMetric, self).__init__()
     # Minimal traces, for minimum noise in CPU-time measurements.
     self.results_to_report = AllThreads
     self.details_to_report = NoThreads
@@ -226,28 +210,24 @@ class ThreadTimesTimelineMetric(TimelineMetric):
         count += 1
     return count
 
-  def AddResults(self, tab, results):
-    # We need at least one action or we won't count any slices.
-    assert len(self._action_ranges) > 0
-
+  def AddResults(self, model, _, interaction_record, results):
     # Set up each thread category for consistant results.
     thread_category_results = {}
     for name in TimelineThreadCategories.values():
-      thread_category_results[name] = ResultsForThread(self._model,
-                                                       self._action_ranges,
-                                                       name)
+      thread_category_results[name] = ResultsForThread(
+        model, [interaction_record.GetBounds()], name)
 
     # Group the slices by their thread category.
-    for thread in self._model.GetAllThreads():
+    for thread in model.GetAllThreads():
       thread_category = ThreadCategoryName(thread.name)
       thread_category_results[thread_category].AppendThreadSlices(thread)
 
     # Group all threads.
-    for thread in self._model.GetAllThreads():
+    for thread in model.GetAllThreads():
       thread_category_results['total_all'].AppendThreadSlices(thread)
 
     # Also group fast-path threads.
-    for thread in self._model.GetAllThreads():
+    for thread in model.GetAllThreads():
       if ThreadCategoryName(thread.name) in FastPathThreads:
         thread_category_results['total_fast_path'].AppendThreadSlices(thread)
 

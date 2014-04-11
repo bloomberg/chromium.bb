@@ -4,6 +4,7 @@
 from measurements import timeline_controller
 from metrics import loading
 from metrics import timeline
+from metrics import timeline_interaction_record
 from telemetry.page import page_measurement
 
 class LoadingTrace(page_measurement.PageMeasurement):
@@ -28,11 +29,16 @@ class LoadingTrace(page_measurement.PageMeasurement):
     self._timeline_controller.Stop(tab)
 
     loading.LoadingMetric().AddResults(tab, results)
-    timeline_metric = timeline.LoadTimesTimelineMetric(
+    timeline_metric = timeline.LoadTimesTimelineMetric()
+    renderer_thread = \
+        self._timeline_controller.model.GetRendererThreadFromTab(tab)
+    record = timeline_interaction_record.TimelineInteractionRecord(
+      "loading_trace_interaction", 0, float('inf'))
+    timeline_metric.AddResults(
       self._timeline_controller.model,
-      self._timeline_controller.renderer_process,
-      self._timeline_controller.action_ranges)
-    timeline_metric.AddResults(tab, results)
+      renderer_thread,
+      record,
+      results)
 
   def CleanUpAfterPage(self, _, tab):
     self._timeline_controller.CleanUp(tab)

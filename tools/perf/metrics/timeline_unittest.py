@@ -6,15 +6,19 @@ import unittest
 
 from metrics import test_page_measurement_results
 from metrics import timeline
-from telemetry.core.timeline import bounds
+from metrics import timeline_interaction_record
 from telemetry.core.timeline import model as model_module
+
+def _GetInteractionRecord(start, end):
+  return timeline_interaction_record.TimelineInteractionRecord("test-record",
+                                                               start, end)
+
 
 
 class LoadTimesTimelineMetric(unittest.TestCase):
-  def GetResults(self, metric):
+  def GetResults(self, metric, model, renderer_thread, interaction_record):
     results = test_page_measurement_results.TestPageMeasurementResults(self)
-    tab = None
-    metric.AddResults(tab, results)
+    metric.AddResults(model, renderer_thread, interaction_record, results)
     return results
 
   def testSanitizing(self):
@@ -28,14 +32,42 @@ class LoadTimesTimelineMetric(unittest.TestCase):
     renderer_main.EndSlice(20, 20)
     model.FinalizeImport()
 
-    metric = timeline.LoadTimesTimelineMetric(model, renderer_main.parent)
-    results = self.GetResults(metric)
+    metric = timeline.LoadTimesTimelineMetric()
+    results = self.GetResults(
+      metric, model=model, renderer_thread=renderer_main,
+      interaction_record=_GetInteractionRecord(0, float('inf')))
     results.AssertHasPageSpecificScalarValue(
       'CrRendererMain|x_y', 'ms', 10)
     results.AssertHasPageSpecificScalarValue(
       'CrRendererMain|x_y_max', 'ms', 10)
     results.AssertHasPageSpecificScalarValue(
       'CrRendererMain|x_y_avg', 'ms', 10)
+
+  def testTimelineBetweenRange(self):
+    model = model_module.TimelineModel()
+    renderer_main = model.GetOrCreateProcess(1).GetOrCreateThread(2)
+    renderer_main.name = 'CrRendererMain'
+
+    #   [          X         ]    [       Z      ]
+    #           [  Y  ]               [   T    ]
+    #   [ interaction record ]
+    renderer_main.BeginSlice('cat1', 'x.y', 10, 0)
+    renderer_main.EndSlice(20, 20)
+    renderer_main.BeginSlice('cat1', 'z.t', 30, 0)
+    renderer_main.EndSlice(35, 35)
+    model.FinalizeImport()
+
+    metric = timeline.LoadTimesTimelineMetric()
+    results = self.GetResults(metric, model=model,
+                              renderer_thread=renderer_main,
+                              interaction_record=_GetInteractionRecord(10, 20))
+    results.AssertHasPageSpecificScalarValue(
+      'CrRendererMain|x_y', 'ms', 10)
+    results.AssertHasPageSpecificScalarValue(
+      'CrRendererMain|x_y_max', 'ms', 10)
+    results.AssertHasPageSpecificScalarValue(
+      'CrRendererMain|x_y_avg', 'ms', 10)
+
 
   def testCounterSanitizing(self):
     model = model_module.TimelineModel()
@@ -48,8 +80,10 @@ class LoadTimesTimelineMetric(unittest.TestCase):
     x_counter.timestamps += [0, 1]
     model.FinalizeImport()
 
-    metric = timeline.LoadTimesTimelineMetric(model, renderer_main.parent)
-    results = self.GetResults(metric)
+    metric = timeline.LoadTimesTimelineMetric()
+    results = self.GetResults(
+      metric, model=model, renderer_thread=renderer_main,
+      interaction_record=_GetInteractionRecord(0, float('inf')))
     results.AssertHasPageSpecificScalarValue(
       'cat_x_y', 'count', 3)
     results.AssertHasPageSpecificScalarValue(
@@ -57,27 +91,21 @@ class LoadTimesTimelineMetric(unittest.TestCase):
 
 
 class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
-  def GetResults(self, metric):
+  def GetResults(self, metric, model, renderer_thread, interaction_record):
     results = test_page_measurement_results.TestPageMeasurementResults(self)
-    tab = None
-    metric.AddResults(tab, results)
+    metric.AddResults(model, renderer_thread, interaction_record,
+                                results)
     return results
-
-  def GetActionRange(self, start, end):
-    action_range = bounds.Bounds()
-    action_range.AddValue(start)
-    action_range.AddValue(end)
-    return action_range
 
   def testResults(self):
     model = model_module.TimelineModel()
     renderer_main = model.GetOrCreateProcess(1).GetOrCreateThread(2)
     renderer_main.name = 'CrRendererMain'
 
-    metric = timeline.ThreadTimesTimelineMetric(model, renderer_main.parent,
-                                                [self.GetActionRange(1, 2)])
+    metric = timeline.ThreadTimesTimelineMetric()
     metric.details_to_report = timeline.ReportMainThreadOnly
-    results = self.GetResults(metric)
+    results = self.GetResults(metric, model, renderer_main.parent,
+                              _GetInteractionRecord(1,2))
 
     # Test that all result thread categories exist
     for name in timeline.TimelineThreadCategories.values():
@@ -107,10 +135,11 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     model.FinalizeImport()
 
     # Exclude 'Z' using an action-range.
-    metric = timeline.ThreadTimesTimelineMetric(
-      model, renderer_main.parent, action_ranges=[self.GetActionRange(10, 30)])
+    metric = timeline.ThreadTimesTimelineMetric()
     metric.details_to_report = timeline.ReportMainThreadOnly
-    results = self.GetResults(metric)
+    results = self.GetResults(metric, model, renderer_main.parent,
+                              _GetInteractionRecord(10, 30))
+
 
     # Test a couple specific results.
     assert_results = {
@@ -144,10 +173,10 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     model.FinalizeImport()
 
     # Include everything in an action-range.
-    metric = timeline.ThreadTimesTimelineMetric(
-      model, renderer_main.parent, action_ranges=[self.GetActionRange(10, 30)])
+    metric = timeline.ThreadTimesTimelineMetric()
     metric.details_to_report = timeline.ReportMainThreadOnly
-    results = self.GetResults(metric)
+    results = self.GetResults(metric, model, renderer_main.parent,
+                              _GetInteractionRecord(10, 30))
 
     # Test a couple specific results.
     assert_results = {
