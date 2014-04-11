@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/common/favicon/favicon_types.h"
-#include "chrome/common/ref_counted_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/layout.h"
 
