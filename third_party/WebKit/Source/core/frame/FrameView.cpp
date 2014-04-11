@@ -888,6 +888,7 @@ void FrameView::layout(bool allowSubtree)
         return;
     }
 
+    bool shouldDoFullLayout = false;
     FontCachePurgePreventer fontCachePurgePreventer;
     RenderLayer* layer;
     {
@@ -913,7 +914,7 @@ void FrameView::layout(bool allowSubtree)
         ScrollbarMode vMode;
         calculateScrollbarModesForLayoutAndSetViewportRenderer(hMode, vMode);
 
-        bool shouldDoFullRepaint = !inSubtreeLayout && (m_firstLayout || toRenderView(rootForThisLayout)->document().printing());
+        shouldDoFullLayout = !inSubtreeLayout && (m_firstLayout || toRenderView(rootForThisLayout)->document().printing());
 
         if (!inSubtreeLayout) {
             // Now set our scrollbar state for the layout.
@@ -946,15 +947,7 @@ void FrameView::layout(bool allowSubtree)
             m_size = LayoutSize(layoutSize().width(), layoutSize().height());
 
             if (oldSize != m_size) {
-                // It's hard to predict here which of full repaint or per-descendant repaint costs less.
-                // For vertical writing mode or width change, it's more likely that per-descendant repaint
-                // eventually turns out to be full repaint but with the cost to handle layout states and
-                // discrete repaint rects, so marking full repaint here is more likely to cost less.
-                // For height only changes, per-descendant repaint is more likely to avoid unnecessary
-                // full repaints.
-                if (!renderView()->style()->isHorizontalWritingMode() || oldSize.width() != m_size.width())
-                    shouldDoFullRepaint = true;
-
+                shouldDoFullLayout = true;
                 if (!m_firstLayout) {
                     RenderBox* rootRenderer = document->documentElement() ? document->documentElement()->renderBox() : 0;
                     RenderBox* bodyRenderer = rootRenderer && document->body() ? document->body()->renderBox() : 0;
@@ -970,7 +963,7 @@ void FrameView::layout(bool allowSubtree)
 
         // We need to set m_doFullRepaint before triggering layout as RenderObject::checkForRepaint
         // checks the boolean to disable local repaints.
-        m_doFullRepaint |= shouldDoFullRepaint;
+        m_doFullRepaint |= shouldDoFullLayout;
 
         performLayout(rootForThisLayout, inSubtreeLayout);
 
@@ -1739,10 +1732,7 @@ void FrameView::contentsResized()
     }
 
     ScrollView::contentsResized();
-    if (RenderView* renderView = this->renderView()) {
-        // Don't directly repaint layer in setNeedsLayout. We'll handle repaint in layout().
-        renderView->setNeedsLayout(MarkContainingBlockChain, 0, DontRepaintLayer);
-    }
+    setNeedsLayout();
 }
 
 void FrameView::scrollbarExistenceDidChange()
