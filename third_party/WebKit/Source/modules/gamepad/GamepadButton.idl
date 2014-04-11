@@ -4,7 +4,7 @@
 
 [
     NoInterfaceObject,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface GamepadButton {
     readonly attribute boolean pressed;
     readonly attribute float value;

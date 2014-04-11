@@ -201,7 +201,7 @@ RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.num
 {% if method.idl_type == 'void' %}
 {{cpp_value}};
 {% elif method.is_constructor %}
-{{ref_ptr}}<{{cpp_class}}> impl = {{cpp_value}};
+{{method.cpp_type}} impl = {{cpp_value}};
 {% elif method.is_call_with_script_state or method.is_call_with_new_script_state or method.is_raises_exception %}
 {# FIXME: consider always using a local variable #}
 {{method.cpp_type}} result = {{cpp_value}};
@@ -390,7 +390,7 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
     {% if is_constructor_call_with_document %}
     Document& document = *toDocument(currentExecutionContext(isolate));
     {% endif %}
-    {{ref_ptr}}<{{cpp_class}}> impl = {{cpp_class}}::create({{constructor.argument_list | join(', ')}});
+    {{constructor.cpp_type}} impl = {{cpp_class}}::create({{constructor.argument_list | join(', ')}});
     {% if is_constructor_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -450,7 +450,7 @@ static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::V
     {% for argument in constructor.arguments %}
     {{generate_argument(constructor, argument) | indent}}
     {% endfor %}
-    {{ref_ptr}}<{{cpp_class}}> impl = {{cpp_class}}::createForJSConstructor({{constructor.argument_list | join(', ')}});
+    {{constructor.cpp_type}} impl = {{cpp_class}}::createForJSConstructor({{constructor.argument_list | join(', ')}});
     {% if is_constructor_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;

@@ -93,7 +93,7 @@ public:
     bool get(const String&, RefPtrWillBeMember<SpeechRecognitionError>&) const;
     bool get(const String&, RefPtrWillBeMember<SpeechRecognitionResult>&) const;
     bool get(const String&, RefPtrWillBeMember<SpeechRecognitionResultList>&) const;
-    bool get(const String&, RefPtrWillBeMember<Gamepad>&) const;
+    bool get(const String&, Member<Gamepad>&) const;
     bool get(const String&, RefPtr<MediaStream>&) const;
     bool get(const String&, RefPtr<EventTarget>&) const;
     bool get(const String&, HashSet<AtomicString>&) const;

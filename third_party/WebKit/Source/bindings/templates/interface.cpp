@@ -1260,7 +1260,7 @@ v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creation
 {##############################################################################}
 {% block create_wrapper %}
 {% if not has_custom_to_v8 %}
-v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_ref_ptr}}<{{cpp_class}}> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_cpp_type}} impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<{{v8_class}}>(impl.get(), isolate));
@@ -1308,11 +1308,13 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_ref_ptr}}<{{cpp_class}
 {% block deref_object_and_to_v8_no_inline %}
 void {{v8_class}}::derefObject(void* object)
 {
-{% set oilpan_conditional = '' if gc_type == 'RefCountedObject'
-                               else '!ENABLE(OILPAN)' %}
-{% filter conditional(oilpan_conditional) %}
+{% if gc_type == 'RefCountedObject' %}
+    fromInternalPointer(object)->deref();
+{% elif gc_type == 'WillBeGarbageCollectedObject' %}
+{% filter conditional('!ENABLE(OILPAN)') %}
     fromInternalPointer(object)->deref();
 {% endfilter %}
+{% endif %}
 }
 
 template<>

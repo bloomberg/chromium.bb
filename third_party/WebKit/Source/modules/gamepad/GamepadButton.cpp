@@ -7,9 +7,9 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<GamepadButton> GamepadButton::create()
+GamepadButton* GamepadButton::create()
 {
-    return adoptRefWillBeNoop(new GamepadButton());
+    return new GamepadButton();
 }
 
 GamepadButton::GamepadButton()

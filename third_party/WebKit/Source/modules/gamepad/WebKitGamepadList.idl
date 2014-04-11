@@ -4,7 +4,7 @@
 
 [
     NoInterfaceObject,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface WebKitGamepadList {
     readonly attribute unsigned long length;
     getter WebKitGamepad item([Default=Undefined] optional unsigned long index);

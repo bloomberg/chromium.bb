@@ -37,7 +37,7 @@ GamepadList::~GamepadList()
 {
 }
 
-void GamepadList::set(unsigned index, PassRefPtrWillBeRawPtr<Gamepad> gamepad)
+void GamepadList::set(unsigned index, Gamepad* gamepad)
 {
     if (index >= blink::WebGamepads::itemsLengthCap)
         return;

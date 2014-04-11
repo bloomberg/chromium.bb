@@ -16,7 +16,7 @@ WebKitGamepadList::~WebKitGamepadList()
 {
 }
 
-void WebKitGamepadList::set(unsigned index, PassRefPtrWillBeRawPtr<WebKitGamepad> gamepad)
+void WebKitGamepadList::set(unsigned index, WebKitGamepad* gamepad)
 {
     if (index >= blink::WebGamepads::itemsLengthCap)
         return;

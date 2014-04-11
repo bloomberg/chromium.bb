@@ -13,7 +13,7 @@ namespace WebCore {
 struct GamepadEventInit : public EventInit {
     GamepadEventInit();
 
-    RefPtrWillBeMember<Gamepad> gamepad;
+    Member<Gamepad> gamepad;
 };
 
 class GamepadEvent FINAL : public Event {
@@ -22,7 +22,7 @@ public:
     {
         return adoptRefWillBeNoop(new GamepadEvent);
     }
-    static PassRefPtrWillBeRawPtr<GamepadEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Gamepad> gamepad)
+    static PassRefPtrWillBeRawPtr<GamepadEvent> create(const AtomicString& type, bool canBubble, bool cancelable, Gamepad* gamepad)
     {
         return adoptRefWillBeNoop(new GamepadEvent(type, canBubble, cancelable, gamepad));
     }
@@ -40,10 +40,10 @@ public:
 
 private:
     GamepadEvent();
-    GamepadEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Gamepad>);
+    GamepadEvent(const AtomicString& type, bool canBubble, bool cancelable, Gamepad*);
     GamepadEvent(const AtomicString&, const GamepadEventInit&);
 
-    RefPtrWillBeMember<Gamepad> m_gamepad;
+    Member<Gamepad> m_gamepad;
 };
 
 } // namespace WebCore

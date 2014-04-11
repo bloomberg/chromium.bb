@@ -90,6 +90,7 @@ source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
 INHERITED_EXTENDED_ATTRIBUTES = set([
     'ActiveDOMObject',
     'DependentLifetime',
+    'GarbageCollected',
     'WillBeGarbageCollected',
 ])
 

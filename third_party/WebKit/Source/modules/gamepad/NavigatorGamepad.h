@@ -82,8 +82,8 @@ private:
     virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE FINAL;
     virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE FINAL;
 
-    RefPtrWillBeMember<GamepadList> m_gamepads;
-    RefPtrWillBeMember<WebKitGamepadList> m_webkitGamepads;
+    PersistentWillBeMember<GamepadList> m_gamepads;
+    PersistentWillBeMember<WebKitGamepadList> m_webkitGamepads;
 };
 
 } // namespace WebCore

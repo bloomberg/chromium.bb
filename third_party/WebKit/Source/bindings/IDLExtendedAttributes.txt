@@ -56,7 +56,7 @@ DoNotCheckSignature
 EnforceRange
 EventConstructor
 ExposeJSAccessors
-WillBeGarbageCollected
+GarbageCollected
 GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGlobalScope|ServiceWorkerGlobalScope
 Immutable
 ImplementedAs=*
@@ -94,3 +94,4 @@ TreatReturnedNullStringAs=Null|Undefined
 TreatUndefinedAs=NullString
 URL
 Unforgeable
+WillBeGarbageCollected

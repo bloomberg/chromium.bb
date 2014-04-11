@@ -39,9 +39,9 @@ import v8_attributes
 from v8_globals import includes
 import v8_methods
 import v8_types
-from v8_types import cpp_ptr_type
+from v8_types import cpp_ptr_type, cpp_template_type
 import v8_utilities
-from v8_utilities import capitalize, conditional_string, cpp_name, has_extended_attribute_value, runtime_enabled_function_name
+from v8_utilities import capitalize, conditional_string, cpp_name, gc_type, has_extended_attribute_value, runtime_enabled_function_name
 
 
 INTERFACE_H_INCLUDES = frozenset([
@@ -128,22 +128,18 @@ def generate_interface(interface):
     for special_wrap_interface in special_wrap_for:
         v8_types.add_includes_for_interface(special_wrap_interface)
 
-    # [WillBeGarbageCollected]
-    if 'WillBeGarbageCollected' in extended_attributes:
-        gc_type = 'WillBeGarbageCollectedObject'
-    else:
-        gc_type = 'RefCountedObject'
-
     # [Custom=Wrap], [SetWrapperReferenceFrom]
     has_visit_dom_wrapper = (
         has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
         reachable_node_function or
         set_wrapper_reference_to_list)
 
+    this_gc_type = gc_type(interface)
+
     template_contents = {
         'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class': cpp_name(interface),
-        'gc_type': gc_type,
+        'gc_type': this_gc_type,
         'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
         'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
         'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]
@@ -160,9 +156,10 @@ def generate_interface(interface):
         'is_node': inherits_interface(interface.name, 'Node'),
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'parent_interface': parent_interface,
-        'pass_ref_ptr': cpp_ptr_type('PassRefPtr', 'RawPtr', gc_type),
+        'pass_cpp_type': cpp_template_type(
+            cpp_ptr_type('PassRefPtr', 'RawPtr', this_gc_type),
+            cpp_name(interface)),
         'reachable_node_function': reachable_node_function,
-        'ref_ptr': cpp_ptr_type('RefPtr', 'RawPtr', gc_type),
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
         'set_wrapper_reference_to_list': set_wrapper_reference_to_list,
         'special_wrap_for': special_wrap_for,
@@ -455,6 +452,9 @@ def generate_constructor(interface, constructor):
         'argument_list': constructor_argument_list(interface, constructor),
         'arguments': [constructor_argument(interface, constructor, argument, index)
                       for index, argument in enumerate(constructor.arguments)],
+        'cpp_type': cpp_template_type(
+            cpp_ptr_type('RefPtr', 'RawPtr', gc_type(interface)),
+            cpp_name(interface)),
         'has_exception_state':
             # [RaisesException=Constructor]
             interface.extended_attributes.get('RaisesException') == 'Constructor' or

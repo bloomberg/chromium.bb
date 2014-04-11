@@ -510,7 +510,7 @@ bool Dictionary::get(const String& key, RefPtrWillBeMember<SpeechRecognitionResu
     return true;
 }
 
-bool Dictionary::get(const String& key, RefPtrWillBeMember<Gamepad>& value) const
+bool Dictionary::get(const String& key, Member<Gamepad>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))

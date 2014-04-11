@@ -166,7 +166,7 @@ public:
 private:
     {% if not has_custom_to_v8 %}
     friend v8::Handle<v8::Object> wrap({{cpp_class}}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-    static v8::Handle<v8::Object> createWrapper({{pass_ref_ptr}}<{{cpp_class}}>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    static v8::Handle<v8::Object> createWrapper({{pass_cpp_type}}, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     {% endif %}
 };
 
@@ -254,28 +254,30 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}
 }
 {% endif %}{# has_custom_to_v8 #}
 
-inline v8::Handle<v8::Value> toV8({{pass_ref_ptr}}<{{cpp_class}}> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{% if gc_type != 'GarbageCollectedObject' %}
+inline v8::Handle<v8::Value> toV8({{pass_cpp_type}} impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{pass_ref_ptr}}<{{cpp_class}}> impl)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{pass_cpp_type}} impl)
 {
     v8SetReturnValue(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, {{pass_ref_ptr}}<{{cpp_class}}> impl)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, {{pass_cpp_type}} impl)
 {
     v8SetReturnValueForMainWorld(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{pass_ref_ptr}}<{{cpp_class}}> impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{pass_cpp_type}} impl, Wrappable* wrappable)
 {
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
+{% endif %}{# if gc_type != 'GarbageCollectedObject' #}
 
 {% if has_event_constructor %}
 bool initialize{{cpp_class}}({{cpp_class}}Init&, const Dictionary&, ExceptionState&, const v8::FunctionCallbackInfo<v8::Value>& info, const String& = "");

@@ -35,11 +35,11 @@
 
 namespace WebCore {
 
-class Gamepad FINAL : public RefCountedWillBeGarbageCollectedFinalized<Gamepad>, public GamepadCommon, public ScriptWrappable {
+class Gamepad FINAL : public GarbageCollectedFinalized<Gamepad>, public GamepadCommon, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<Gamepad> create()
+    static Gamepad* create()
     {
-        return adoptRefWillBeNoop(new Gamepad);
+        return new Gamepad;
     }
     ~Gamepad();
 

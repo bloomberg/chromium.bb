@@ -61,13 +61,13 @@ static void sampleGamepads(ListType* into)
     for (unsigned i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
         blink::WebGamepad& webGamepad = gamepads.items[i];
         if (i < gamepads.length && webGamepad.connected) {
-            RefPtrWillBeRawPtr<GamepadType> gamepad = into->item(i);
+            GamepadType* gamepad = into->item(i);
             if (!gamepad)
                 gamepad = GamepadType::create();
             sampleGamepad(i, *gamepad, webGamepad);
             into->set(i, gamepad);
         } else {
-            into->set(i, nullptr);
+            into->set(i, 0);
         }
     }
 }
@@ -142,14 +142,14 @@ void NavigatorGamepad::didConnectOrDisconnectGamepad(unsigned index, const blink
     if (!m_gamepads)
         m_gamepads = GamepadList::create();
 
-    RefPtrWillBeRawPtr<Gamepad> gamepad = m_gamepads->item(index);
+    Gamepad* gamepad = m_gamepads->item(index);
     if (!gamepad)
         gamepad = Gamepad::create();
     sampleGamepad(index, *gamepad, webGamepad);
     m_gamepads->set(index, gamepad);
 
     const AtomicString& eventName = connected ? EventTypeNames::gamepadconnected : EventTypeNames::gamepaddisconnected;
-    RefPtrWillBeRawPtr<GamepadEvent> event = GamepadEvent::create(eventName, false, true, gamepad.get());
+    RefPtrWillBeRawPtr<GamepadEvent> event = GamepadEvent::create(eventName, false, true, gamepad);
     window()->dispatchEvent(event);
 }
 

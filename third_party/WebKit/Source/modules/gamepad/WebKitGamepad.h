@@ -13,11 +13,11 @@
 
 namespace WebCore {
 
-class WebKitGamepad FINAL : public RefCountedWillBeGarbageCollectedFinalized<WebKitGamepad>, public GamepadCommon, public ScriptWrappable {
+class WebKitGamepad FINAL : public GarbageCollectedFinalized<WebKitGamepad>, public GamepadCommon, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<WebKitGamepad> create()
+    static WebKitGamepad* create()
     {
-        return adoptRefWillBeNoop(new WebKitGamepad);
+        return new WebKitGamepad();
     }
     ~WebKitGamepad();
 
