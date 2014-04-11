@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -27,6 +28,13 @@ namespace {
 // Should match kSelectionHandlePadding in touch_selection_controller.
 const int kPadding = 10;
 
+// Should match kSelectionHandleBarMinHeight in touch_selection_controller.
+const int kBarMinHeight = 5;
+
+// Should match kSelectionHandleBarBottomAllowance in
+// touch_selection_controller.
+const int kBarBottomAllowance = 3;
+
 gfx::Image* GetHandleImage() {
   static gfx::Image* handle_image = NULL;
   if (!handle_image) {
@@ -46,7 +54,8 @@ namespace views {
 class TouchSelectionControllerImplTest : public ViewsTestBase {
  public:
   TouchSelectionControllerImplTest()
-      : widget_(NULL),
+      : textfield_widget_(NULL),
+        widget_(NULL),
         textfield_(NULL),
         views_tsc_factory_(new ViewsTouchSelectionControllerFactory) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -59,6 +68,8 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
   }
 
   virtual void TearDown() {
+    if (textfield_widget_)
+      textfield_widget_->Close();
     if (widget_)
       widget_->Close();
     ViewsTestBase::TearDown();
@@ -66,22 +77,36 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
 
   void CreateTextfield() {
     textfield_ = new Textfield();
-    widget_ = new Widget;
+    textfield_widget_ = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(0, 0, 200, 200);
-    widget_->Init(params);
+    textfield_widget_->Init(params);
     View* container = new View();
-    widget_->SetContentsView(container);
+    textfield_widget_->SetContentsView(container);
     container->AddChildView(textfield_);
 
     textfield_->SetBoundsRect(params.bounds);
     textfield_->set_id(1);
-    widget_->Show();
+    textfield_widget_->Show();
 
     textfield_->RequestFocus();
   }
 
+  void CreateWidget() {
+    widget_ = new Widget;
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+    params.bounds = gfx::Rect(0, 0, 200, 200);
+    widget_->Init(params);
+    widget_->Show();
+  }
+
  protected:
+  static bool IsCursorHandleVisibleFor(
+      ui::TouchSelectionController* controller) {
+    return static_cast<TouchSelectionControllerImpl*>(
+        controller)->IsCursorHandleVisible();
+  }
+
   gfx::Point GetCursorPosition(const gfx::SelectionModel& sel) {
     gfx::RenderText* render_text = textfield_->GetRenderText();
     gfx::Rect cursor_bounds = render_text->GetCursorBounds(sel, true);
@@ -138,6 +163,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     return textfield_->GetRenderText();
   }
 
+  Widget* textfield_widget_;
   Widget* widget_;
 
   Textfield* textfield_;
@@ -207,11 +233,11 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInTextfieldTest) {
   VERIFY_HANDLE_POSITIONS(false);
 
   // Test with lost focus.
-  widget_->GetFocusManager()->ClearFocus();
+  textfield_widget_->GetFocusManager()->ClearFocus();
   EXPECT_FALSE(GetSelectionController());
 
   // Test with focus re-gained.
-  widget_->GetFocusManager()->SetFocusedView(textfield_);
+  textfield_widget_->GetFocusManager()->SetFocusedView(textfield_);
   EXPECT_FALSE(GetSelectionController());
   textfield_->OnGestureEvent(&tap);
   VERIFY_HANDLE_POSITIONS(false);
@@ -485,6 +511,137 @@ TEST_F(TouchSelectionControllerImplTest,
   generator.GestureTapAt(cursor_pos);
   EXPECT_TRUE(textfield_->HasSelection());
   VERIFY_HANDLE_POSITIONS(false);
+}
+
+// A simple implementation of TouchEditable that allows faking cursor position
+// inside its boundaries.
+class TestTouchEditable : public ui::TouchEditable {
+ public:
+  explicit TestTouchEditable(aura::Window* window)
+      : window_(window) {
+    DCHECK(window);
+  }
+
+  void set_bounds(const gfx::Rect& bounds) {
+    bounds_ = bounds;
+  }
+
+  void set_cursor_rect(const gfx::Rect& cursor_rect) {
+    cursor_rect_ = cursor_rect;
+  }
+
+  virtual ~TestTouchEditable() {}
+
+ private:
+  // Overridden from ui::TouchEditable.
+  virtual void SelectRect(
+      const gfx::Point& start, const gfx::Point& end) OVERRIDE {
+    NOTREACHED();
+  }
+  virtual void MoveCaretTo(const gfx::Point& point) OVERRIDE {
+    NOTREACHED();
+  }
+  virtual void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) OVERRIDE {
+    *p1 = *p2 = cursor_rect_;
+  }
+  virtual gfx::Rect GetBounds() OVERRIDE {
+    return gfx::Rect(bounds_.size());
+  }
+  virtual gfx::NativeView GetNativeView() const OVERRIDE {
+    return window_;
+  }
+  virtual void ConvertPointToScreen(gfx::Point* point) OVERRIDE {
+    aura::client::ScreenPositionClient* screen_position_client =
+        aura::client::GetScreenPositionClient(window_->GetRootWindow());
+    if (screen_position_client)
+      screen_position_client->ConvertPointToScreen(window_, point);
+  }
+  virtual void ConvertPointFromScreen(gfx::Point* point) OVERRIDE {
+    aura::client::ScreenPositionClient* screen_position_client =
+        aura::client::GetScreenPositionClient(window_->GetRootWindow());
+    if (screen_position_client)
+      screen_position_client->ConvertPointFromScreen(window_, point);
+  }
+  virtual bool DrawsHandles() OVERRIDE {
+    return false;
+  }
+  virtual void OpenContextMenu(const gfx::Point& anchor) OVERRIDE {
+    NOTREACHED();
+  }
+
+  // Overridden from ui::SimpleMenuModel::Delegate.
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
+    NOTREACHED();
+    return false;
+  }
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
+    NOTREACHED();
+    return false;
+  }
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE {
+    NOTREACHED();
+    return false;
+  }
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
+    NOTREACHED();
+  }
+
+  aura::Window* window_;
+
+  // Boundaries of the client view.
+  gfx::Rect bounds_;
+
+  // Cursor position inside the client view.
+  gfx::Rect cursor_rect_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTouchEditable);
+};
+
+// Tests if the touch editing handle is shown or hidden properly according to
+// the cursor position relative to the client boundaries.
+TEST_F(TouchSelectionControllerImplTest,
+       VisibilityOfHandleRegardingClientBounds) {
+  CreateWidget();
+
+  TestTouchEditable touch_editable(widget_->GetNativeView());
+  scoped_ptr<ui::TouchSelectionController> touch_selection_controller(
+      ui::TouchSelectionController::create(&touch_editable));
+
+  touch_editable.set_bounds(gfx::Rect(0, 0, 100, 20));
+
+  // Put the cursor completely inside the client bounds. Handle should be
+  // visible.
+  touch_editable.set_cursor_rect(gfx::Rect(2, 0, 1, 20));
+  touch_selection_controller->SelectionChanged();
+  EXPECT_TRUE(IsCursorHandleVisibleFor(touch_selection_controller.get()));
+
+  // Move the cursor up such that |kBarMinHeight| pixels are still in the client
+  // bounds. Handle should still be visible.
+  touch_editable.set_cursor_rect(gfx::Rect(2, kBarMinHeight - 20, 1, 20));
+  touch_selection_controller->SelectionChanged();
+  EXPECT_TRUE(IsCursorHandleVisibleFor(touch_selection_controller.get()));
+
+  // Move the cursor up such that less than |kBarMinHeight| pixels are in the
+  // client bounds. Handle should be hidden.
+  touch_editable.set_cursor_rect(gfx::Rect(2, kBarMinHeight - 20 - 1, 1, 20));
+  touch_selection_controller->SelectionChanged();
+  EXPECT_FALSE(IsCursorHandleVisibleFor(touch_selection_controller.get()));
+
+  // Move the Cursor down such that |kBarBottomAllowance| pixels are out of the
+  // client bounds. Handle should be visible.
+  touch_editable.set_cursor_rect(gfx::Rect(2, kBarBottomAllowance, 1, 20));
+  touch_selection_controller->SelectionChanged();
+  EXPECT_TRUE(IsCursorHandleVisibleFor(touch_selection_controller.get()));
+
+  // Move the cursor down such that more than |kBarBottomAllowance| pixels are
+  // out of the client bounds. Handle should be hidden.
+  touch_editable.set_cursor_rect(gfx::Rect(2, kBarBottomAllowance + 1, 1, 20));
+  touch_selection_controller->SelectionChanged();
+  EXPECT_FALSE(IsCursorHandleVisibleFor(touch_selection_controller.get()));
+
+  touch_selection_controller.reset();
 }
 
 }  // namespace views

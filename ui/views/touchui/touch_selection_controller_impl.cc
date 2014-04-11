@@ -60,6 +60,13 @@ const int kContextMenuTimoutMs = 200;
 
 const int kSelectionHandleQuickFadeDurationMs = 50;
 
+// Minimum height for selection handle bar. If the bar height is going to be
+// less than this value, handle will not be shown.
+const int kSelectionHandleBarMinHeight = 5;
+// Maximum amount that selection handle bar can stick out of client view's
+// boundaries.
+const int kSelectionHandleBarBottomAllowance = 3;
+
 // Creates a widget to host SelectionHandleView.
 views::Widget* CreateTouchSelectionPopupWidget(
     gfx::NativeView context,
@@ -99,14 +106,19 @@ gfx::Rect Union(const gfx::Rect& r1, const gfx::Rect& r2) {
   return gfx::Rect(rx, ry, rr - rx, rb - ry);
 }
 
-// Convenience method to convert a |rect| from screen to the |client|'s
-// coordinate system.
+// Convenience methods to convert a |rect| from screen to the |client|'s
+// coordinate system and vice versa.
 // Note that this is not quite correct because it does not take into account
 // transforms such as rotation and scaling. This should be in TouchEditable.
 // TODO(varunjain): Fix this.
 gfx::Rect ConvertFromScreen(ui::TouchEditable* client, const gfx::Rect& rect) {
   gfx::Point origin = rect.origin();
   client->ConvertPointFromScreen(&origin);
+  return gfx::Rect(origin, rect.size());
+}
+gfx::Rect ConvertToScreen(ui::TouchEditable* client, const gfx::Rect& rect) {
+  gfx::Point origin = rect.origin();
+  client->ConvertPointToScreen(&origin);
   return gfx::Rect(origin, rect.size());
 }
 
@@ -331,21 +343,26 @@ TouchSelectionControllerImpl::~TouchSelectionControllerImpl() {
 void TouchSelectionControllerImpl::SelectionChanged() {
   gfx::Rect r1, r2;
   client_view_->GetSelectionEndPoints(&r1, &r2);
-  gfx::Point screen_pos_1(r1.origin());
-  client_view_->ConvertPointToScreen(&screen_pos_1);
-  gfx::Point screen_pos_2(r2.origin());
-  client_view_->ConvertPointToScreen(&screen_pos_2);
-  gfx::Rect screen_rect_1(screen_pos_1, r1.size());
-  gfx::Rect screen_rect_2(screen_pos_2, r2.size());
-  if (screen_rect_1 == selection_end_point_1_ &&
-      screen_rect_2 == selection_end_point_2_)
+  gfx::Rect screen_rect_1 = ConvertToScreen(client_view_, r1);
+  gfx::Rect screen_rect_2 = ConvertToScreen(client_view_, r2);
+  gfx::Rect client_bounds = client_view_->GetBounds();
+  if (r1.y() < client_bounds.y())
+    r1.Inset(0, client_bounds.y() - r1.y(), 0, 0);
+  if (r2.y() < client_bounds.y())
+    r2.Inset(0, client_bounds.y() - r2.y(), 0, 0);
+  gfx::Rect screen_rect_1_clipped = ConvertToScreen(client_view_, r1);
+  gfx::Rect screen_rect_2_clipped = ConvertToScreen(client_view_, r2);
+  if (screen_rect_1_clipped == selection_end_point_1_clipped_ &&
+      screen_rect_2_clipped == selection_end_point_2_clipped_)
     return;
 
   selection_end_point_1_ = screen_rect_1;
   selection_end_point_2_ = screen_rect_2;
+  selection_end_point_1_clipped_ = screen_rect_1_clipped;
+  selection_end_point_2_clipped_ = screen_rect_2_clipped;
 
   if (client_view_->DrawsHandles()) {
-    UpdateContextMenu(r1.origin(), r2.origin());
+    UpdateContextMenu();
     return;
   }
   if (dragging_handle_) {
@@ -356,14 +373,14 @@ void TouchSelectionControllerImpl::SelectionChanged() {
     // If the new location of this handle is out of client view, its widget
     // should not get hidden, since it should still receive touch events.
     // Hence, we are not using |SetHandleSelectionRect()| method here.
-    dragging_handle_->SetSelectionRectInScreen(screen_rect_2);
+    dragging_handle_->SetSelectionRectInScreen(screen_rect_2_clipped);
 
     // Temporary fix for selection handle going outside a window. On a webpage,
     // the page should scroll if the selection handle is dragged outside the
     // window. That does not happen currently. So we just hide the handle for
     // now.
     // TODO(varunjain): Fix this: crbug.com/269003
-    dragging_handle_->SetDrawInvisible(!client_view_->GetBounds().Contains(r2));
+    dragging_handle_->SetDrawInvisible(!ShouldShowHandleFor(r2));
 
     if (dragging_handle_ != cursor_handle_.get()) {
       // The non-dragging-handle might have recently become visible.
@@ -374,23 +391,27 @@ void TouchSelectionControllerImpl::SelectionChanged() {
         // selection and the other handle to the start of selection.
         selection_end_point_1_ = screen_rect_2;
         selection_end_point_2_ = screen_rect_1;
+        selection_end_point_1_clipped_ = screen_rect_2_clipped;
+        selection_end_point_2_clipped_ = screen_rect_1_clipped;
       }
-      SetHandleSelectionRect(non_dragging_handle, r1, screen_rect_1);
+      SetHandleSelectionRect(non_dragging_handle, r1, screen_rect_1_clipped);
     }
   } else {
-    UpdateContextMenu(r1.origin(), r2.origin());
+    UpdateContextMenu();
 
     // Check if there is any selection at all.
-    if (screen_pos_1 == screen_pos_2) {
+    if (screen_rect_1.origin() == screen_rect_2.origin()) {
       selection_handle_1_->SetWidgetVisible(false, false);
       selection_handle_2_->SetWidgetVisible(false, false);
-      SetHandleSelectionRect(cursor_handle_.get(), r1, screen_rect_1);
+      SetHandleSelectionRect(cursor_handle_.get(), r1, screen_rect_1_clipped);
       return;
     }
 
     cursor_handle_->SetWidgetVisible(false, false);
-    SetHandleSelectionRect(selection_handle_1_.get(), r1, screen_rect_1);
-    SetHandleSelectionRect(selection_handle_2_.get(), r2, screen_rect_2);
+    SetHandleSelectionRect(selection_handle_1_.get(), r1,
+                           screen_rect_1_clipped);
+    SetHandleSelectionRect(selection_handle_2_.get(), r2,
+                           screen_rect_2_clipped);
   }
 }
 
@@ -453,9 +474,18 @@ void TouchSelectionControllerImpl::SetHandleSelectionRect(
     EditingHandleView* handle,
     const gfx::Rect& rect,
     const gfx::Rect& rect_in_screen) {
-  handle->SetWidgetVisible(client_view_->GetBounds().Contains(rect), false);
+  handle->SetWidgetVisible(ShouldShowHandleFor(rect), false);
   if (handle->IsWidgetVisible())
     handle->SetSelectionRectInScreen(rect_in_screen);
+}
+
+bool TouchSelectionControllerImpl::ShouldShowHandleFor(
+    const gfx::Rect& rect) const {
+  if (rect.height() < kSelectionHandleBarMinHeight)
+    return false;
+  gfx::Rect bounds = client_view_->GetBounds();
+  bounds.Inset(0, 0, 0, -kSelectionHandleBarBottomAllowance);
+  return bounds.Contains(rect);
 }
 
 bool TouchSelectionControllerImpl::IsCommandIdEnabled(int command_id) const {
@@ -499,11 +529,11 @@ void TouchSelectionControllerImpl::ContextMenuTimerFired() {
   gfx::Rect end_rect_1_in_screen;
   gfx::Rect end_rect_2_in_screen;
   if (cursor_handle_->IsWidgetVisible()) {
-    end_rect_1_in_screen = selection_end_point_1_;
+    end_rect_1_in_screen = selection_end_point_1_clipped_;
     end_rect_2_in_screen = end_rect_1_in_screen;
   } else {
-    end_rect_1_in_screen = selection_end_point_1_;
-    end_rect_2_in_screen = selection_end_point_2_;
+    end_rect_1_in_screen = selection_end_point_1_clipped_;
+    end_rect_2_in_screen = selection_end_point_2_clipped_;
   }
 
   // Convert from screen to client.
@@ -514,13 +544,12 @@ void TouchSelectionControllerImpl::ContextMenuTimerFired() {
   // in the middle of the end points on the top. Else, we show it above the
   // visible handle. If no handle is visible, we do not show the menu.
   gfx::Rect menu_anchor;
-  gfx::Rect client_bounds = client_view_->GetBounds();
-  if (client_bounds.Contains(end_rect_1) &&
-      client_bounds.Contains(end_rect_2))
+  if (ShouldShowHandleFor(end_rect_1) &&
+      ShouldShowHandleFor(end_rect_2))
     menu_anchor = Union(end_rect_1_in_screen,end_rect_2_in_screen);
-  else if (client_bounds.Contains(end_rect_1))
+  else if (ShouldShowHandleFor(end_rect_1))
     menu_anchor = end_rect_1_in_screen;
-  else if (client_bounds.Contains(end_rect_2))
+  else if (ShouldShowHandleFor(end_rect_2))
     menu_anchor = end_rect_2_in_screen;
   else
     return;
@@ -540,8 +569,7 @@ void TouchSelectionControllerImpl::StartContextMenuTimer() {
       &TouchSelectionControllerImpl::ContextMenuTimerFired);
 }
 
-void TouchSelectionControllerImpl::UpdateContextMenu(const gfx::Point& p1,
-                                                     const gfx::Point& p2) {
+void TouchSelectionControllerImpl::UpdateContextMenu() {
   // Hide context menu to be shown when the timer fires.
   HideContextMenu();
   StartContextMenuTimer();

@@ -52,6 +52,10 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   void SetHandleSelectionRect(EditingHandleView* handle, const gfx::Rect& rect,
                               const gfx::Rect& rect_in_screen);
 
+  // Checks if handle should be shown for a selection end-point at |rect|.
+  // |rect| should be the clipped version of the selection end-point.
+  bool ShouldShowHandleFor(const gfx::Rect& rect) const;
+
   // Overridden from TouchEditingMenuController.
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
@@ -71,7 +75,7 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   void StartContextMenuTimer();
 
   // Convenience method to update the position/visibility of the context menu.
-  void UpdateContextMenu(const gfx::Point& p1, const gfx::Point& p2);
+  void UpdateContextMenu();
 
   // Convenience method for hiding context menu.
   void HideContextMenu();
@@ -106,6 +110,9 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   // position of handles which might be invalid when handles are hidden.
   gfx::Rect selection_end_point_1_;
   gfx::Rect selection_end_point_2_;
+  // Selection end points, clipped to client view's boundaries.
+  gfx::Rect selection_end_point_1_clipped_;
+  gfx::Rect selection_end_point_2_clipped_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerImpl);
 };
