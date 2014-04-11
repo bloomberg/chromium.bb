@@ -899,12 +899,6 @@ crbug.com/353763 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/f
 crbug.com/353754 fast/scrolling/hover-during-scroll.html [ Pass Failure ]
 crbug.com/353790 [ Linux Win ] virtual/threaded/animations/import.html [ Pass Timeout ]
 
-crbug.com/358206 svg/foreignObject/svg-document-in-html-document.svg [ NeedsRebaseline ]
-crbug.com/358206 svg/dynamic-updates/SVGForeignObjectElement-svgdom-width-prop.html [ NeedsRebaseline ]
-crbug.com/358206 svg/dynamic-updates/SVGForeignObjectElement-dom-width-attr.html [ NeedsRebaseline ]
-crbug.com/358206 svg/dynamic-updates/SVGForeignObjectElement-svgdom-height-prop.html [ NeedsRebaseline ]
-crbug.com/358206 svg/dynamic-updates/SVGForeignObjectElement-dom-height-attr.html [ NeedsRebaseline ]
-
 crbug.com/355274 http/tests/navigation/same-and-different-back.html [ Pass Failure ]
 
 crbug.com/354785 [ Win Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure ]
