@@ -75,8 +75,10 @@ def TemporaryDirectory():
     Simple backport of tempfile.TemporaryDirectory from Python 3.2.
     """
     name = tempfile.mkdtemp()
-    yield name
-    shutil.rmtree(name)
+    try:
+        yield name
+    finally:
+        shutil.rmtree(name)
 
 
 def generate_interface_dependencies():
