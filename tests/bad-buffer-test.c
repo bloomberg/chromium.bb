@@ -25,6 +25,8 @@
 
 #include <unistd.h>
 #include <sys/types.h>
+#include <stdio.h>
+#include <signal.h>
 
 #include "../shared/os-compatibility.h"
 #include "weston-test-client-helper.h"
@@ -58,18 +60,46 @@ create_bad_shm_buffer(struct client *client, int width, int height)
 	return buffer;
 }
 
+static void sighandler(int signum)
+{
+	/* this means failure */
+	exit(0);
+}
+
 FAIL_TEST(test_truncated_shm_file)
 {
 	struct client *client;
 	struct wl_buffer *bad_buffer;
 	struct wl_surface *surface;
 	int frame;
+	struct sigaction new_action, old_action;
+
+	/* until the bad buffer creation, the SIGABRT or SIGSEGV signals
+	 * should fail the test. That means returning 0 */
+	new_action.sa_handler = sighandler;
+	sigemptyset(&new_action.sa_mask);
+	new_action.sa_flags = 0;
+
+	if (sigaction(SIGSEGV, &new_action, NULL) != 0) {
+		fprintf(stderr, "Failed setting new sigaction for SIGSEGV");
+		exit(0);
+	}
+	if (sigaction(SIGABRT, &new_action, &old_action) != 0) {
+		fprintf(stderr, "Failed setting new sigaction for SIGABRT");
+		exit(0);
+	}
 
 	client = client_create(46, 76, 111, 134);
 	assert(client);
 	surface = client->surface->wl_surface;
 
 	bad_buffer = create_bad_shm_buffer(client, 200, 200);
+
+	/* from this point we expect the signal */
+	if (sigaction(SIGABRT, &old_action, NULL) != 0) {
+		fprintf(stderr, "Failed setting old sigaction for SIGABRT");
+		exit(0);
+	}
 
 	wl_surface_attach(surface, bad_buffer, 0, 0);
 	wl_surface_damage(surface, 0, 0, 200, 200);
