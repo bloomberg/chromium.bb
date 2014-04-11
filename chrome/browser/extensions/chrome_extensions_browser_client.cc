@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/url_request_util.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -110,6 +111,30 @@ bool ChromeExtensionsBrowserClient::CanExtensionCrossIncognito(
     content::BrowserContext* context) const {
   return IsGuestSession(context)
       || util::CanCrossIncognito(extension, context);
+}
+
+net::URLRequestJob*
+ChromeExtensionsBrowserClient::MaybeCreateResourceBundleRequestJob(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const base::FilePath& directory_path,
+    const std::string& content_security_policy,
+    bool send_cors_header) {
+  return url_request_util::MaybeCreateURLRequestResourceBundleJob(
+      request,
+      network_delegate,
+      directory_path,
+      content_security_policy,
+      send_cors_header);
+}
+
+bool ChromeExtensionsBrowserClient::AllowCrossRendererResourceLoad(
+    net::URLRequest* request,
+    bool is_incognito,
+    const Extension* extension,
+    InfoMap* extension_info_map) {
+  return url_request_util::AllowCrossRendererResourceLoad(
+      request, is_incognito, extension, extension_info_map);
 }
 
 PrefService* ChromeExtensionsBrowserClient::GetPrefServiceForContext(

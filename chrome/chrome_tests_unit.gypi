@@ -537,6 +537,7 @@
         '../extensions/browser/extension_error_test_util.cc',
         '../extensions/browser/extension_error_test_util.h',
         '../extensions/browser/extension_pref_value_map_unittest.cc',
+        '../extensions/browser/extension_protocols_unittest.cc',
         '../extensions/browser/extension_registry_unittest.cc',
         '../extensions/browser/file_highlighter_unittest.cc',
         '../extensions/browser/file_reader_unittest.cc',
@@ -929,7 +930,6 @@
         'browser/extensions/extension_message_bubble_controller_unittest.cc',
         'browser/extensions/extension_prefs_unittest.cc',
         'browser/extensions/extension_prefs_unittest.h',
-        'browser/extensions/extension_protocols_unittest.cc',
         'browser/extensions/extension_service_unittest.cc',
         'browser/extensions/extension_service_unittest.h',
         'browser/extensions/extension_special_storage_policy_unittest.cc',
@@ -2053,7 +2053,6 @@
           ],
           'sources!': [
             'browser/extensions/extension_context_menu_model_unittest.cc',
-            'browser/extensions/extension_protocols_unittest.cc',
             'browser/extensions/extension_ui_unittest.cc',
             'browser/extensions/extension_web_ui_unittest.cc',
             'browser/extensions/pack_extension_unittest.cc',

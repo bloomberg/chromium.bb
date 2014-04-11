@@ -83,6 +83,24 @@ bool TestExtensionsBrowserClient::CanExtensionCrossIncognito(
   return false;
 }
 
+net::URLRequestJob*
+TestExtensionsBrowserClient::MaybeCreateResourceBundleRequestJob(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const base::FilePath& directory_path,
+    const std::string& content_security_policy,
+    bool send_cors_header) {
+  return NULL;
+}
+
+bool TestExtensionsBrowserClient::AllowCrossRendererResourceLoad(
+    net::URLRequest* request,
+    bool is_incognito,
+    const Extension* extension,
+    InfoMap* extension_info_map) {
+  return false;
+}
+
 PrefService* TestExtensionsBrowserClient::GetPrefServiceForContext(
     BrowserContext* context) {
   return NULL;

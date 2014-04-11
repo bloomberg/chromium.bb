@@ -30,7 +30,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_resource_protocols.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_device_id_salt.h"
@@ -55,6 +54,7 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
+#include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
@@ -1038,10 +1038,12 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
   DCHECK(set_protocol);
 
   DCHECK(extension_info_map_.get());
+  // Check only for incognito (and not Chrome OS guest mode GUEST_PROFILE).
+  bool is_incognito = profile_type() == Profile::INCOGNITO_PROFILE;
   set_protocol = job_factory->SetProtocolHandler(
       extensions::kExtensionScheme,
-      CreateExtensionProtocolHandler(profile_type(),
-                                     extension_info_map_.get()));
+      extensions::CreateExtensionProtocolHandler(is_incognito,
+                                                 extension_info_map_.get()));
   DCHECK(set_protocol);
   set_protocol = job_factory->SetProtocolHandler(
       extensions::kExtensionResourceScheme,

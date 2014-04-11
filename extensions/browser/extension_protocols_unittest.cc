@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/url_constants.h"
+//#include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -89,8 +89,9 @@ scoped_refptr<Extension> CreateTestResponseHeaderExtension() {
 class ExtensionProtocolTest : public testing::Test {
  public:
   ExtensionProtocolTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-      resource_context_(&test_url_request_context_) {}
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        old_factory_(NULL),
+        resource_context_(&test_url_request_context_) {}
 
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
@@ -106,12 +107,12 @@ class ExtensionProtocolTest : public testing::Test {
     request_context->set_job_factory(old_factory_);
   }
 
-  void SetProtocolHandler(Profile::ProfileType profile_type) {
+  void SetProtocolHandler(bool is_incognito) {
     net::URLRequestContext* request_context =
         resource_context_.GetRequestContext();
     job_factory_.SetProtocolHandler(
         kExtensionScheme,
-        CreateExtensionProtocolHandler(profile_type,
+        CreateExtensionProtocolHandler(is_incognito,
                                        extension_info_map_.get()));
     request_context->set_job_factory(&job_factory_);
   }
@@ -145,7 +146,7 @@ class ExtensionProtocolTest : public testing::Test {
 // extension).
 TEST_F(ExtensionProtocolTest, IncognitoRequest) {
   // Register an incognito extension protocol handler.
-  SetProtocolHandler(Profile::INCOGNITO_PROFILE);
+  SetProtocolHandler(true);
 
   struct TestCase {
     // Inputs.
@@ -224,7 +225,7 @@ void CheckForContentLengthHeader(net::URLRequest* request) {
 // the extension is enabled and when it is disabled.
 TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
   // Register a non-incognito extension protocol handler.
-  SetProtocolHandler(Profile::REGULAR_PROFILE);
+  SetProtocolHandler(false);
 
   scoped_refptr<Extension> extension = CreateWebStoreExtension();
   extension_info_map_->AddExtension(extension.get(),
@@ -261,7 +262,7 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
 // expected response headers.
 TEST_F(ExtensionProtocolTest, ResourceRequestResponseHeaders) {
   // Register a non-incognito extension protocol handler.
-  SetProtocolHandler(Profile::REGULAR_PROFILE);
+  SetProtocolHandler(false);
 
   scoped_refptr<Extension> extension = CreateTestResponseHeaderExtension();
   extension_info_map_->AddExtension(extension.get(),
@@ -299,7 +300,7 @@ TEST_F(ExtensionProtocolTest, ResourceRequestResponseHeaders) {
 // succeeds, but subresources fail. See http://crbug.com/312269.
 TEST_F(ExtensionProtocolTest, AllowFrameRequests) {
   // Register a non-incognito extension protocol handler.
-  SetProtocolHandler(Profile::REGULAR_PROFILE);
+  SetProtocolHandler(false);
 
   scoped_refptr<Extension> extension = CreateTestExtension("foo", false);
   extension_info_map_->AddExtension(extension.get(),

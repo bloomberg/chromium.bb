@@ -7,11 +7,14 @@ include_rules = [
   "+apps/shell/common",
   "+apps/shell/test",
 
+  # Do not add dependencies on Chrome. Talk to OWNERS about how to refactor
+  # the code you need to a shared location.
+  "-chrome",
+
   # Real DEPS go in subdirectories, for example apps/shell/browser/DEPS.
   # Temporary exceptions for app_shell bring-up go here.
   # TODO(jamescook): Remove these. http://crbug.com/305404
-  "!chrome/browser/extensions/extension_protocols.h",
-  "!chrome/browser/extensions/extension_resource_protocols.h",
+  "!chrome/browser/chrome_notification_types.h",
   "!chrome/common/extensions/api/generated_api.h",
   "!chrome/common/extensions/api/generated_schemas.h",
   "!chrome/common/extensions/api/sockets/sockets_manifest_handler.h",

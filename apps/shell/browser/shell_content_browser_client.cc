@@ -8,8 +8,6 @@
 #include "apps/shell/browser/shell_browser_main_parts.h"
 #include "apps/shell/browser/shell_extension_system.h"
 #include "base/command_line.h"
-#include "chrome/browser/extensions/extension_protocols.h"
-#include "chrome/browser/extensions/extension_resource_protocols.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
@@ -17,6 +15,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "extensions/browser/extension_message_filter.h"
+#include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_map.h"
@@ -79,16 +78,15 @@ net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
     content::BrowserContext* content_browser_context,
     content::ProtocolHandlerMap* protocol_handlers,
     content::ProtocolHandlerScopedVector protocol_interceptors) {
-  // Handle chrome-extension: and chrome-extension-resource: requests.
+  // Handle only chrome-extension:// requests. app_shell does not support
+  // chrome-extension-resource:// requests (it does not store shared extension
+  // data in its installation directory).
   extensions::InfoMap* extension_info_map =
       browser_main_parts_->extension_system()->info_map();
   (*protocol_handlers)[extensions::kExtensionScheme] =
       linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-          CreateExtensionProtocolHandler(Profile::REGULAR_PROFILE,
-                                         extension_info_map));
-  (*protocol_handlers)[extensions::kExtensionResourceScheme] =
-      linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-          CreateExtensionResourceProtocolHandler());
+          extensions::CreateExtensionProtocolHandler(false /* is_incognito */,
+                                                     extension_info_map));
   // Let content::ShellBrowserContext handle the rest of the setup.
   return browser_main_parts_->browser_context()->CreateRequestContext(
       protocol_handlers, protocol_interceptors.Pass());

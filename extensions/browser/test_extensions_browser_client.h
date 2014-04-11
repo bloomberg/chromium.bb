@@ -42,6 +42,17 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
   virtual bool CanExtensionCrossIncognito(
       const extensions::Extension* extension,
       content::BrowserContext* context) const OVERRIDE;
+  virtual net::URLRequestJob* MaybeCreateResourceBundleRequestJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      const base::FilePath& directory_path,
+      const std::string& content_security_policy,
+      bool send_cors_header) OVERRIDE;
+  virtual bool AllowCrossRendererResourceLoad(net::URLRequest* request,
+                                              bool is_incognito,
+                                              const Extension* extension,
+                                              InfoMap* extension_info_map)
+      OVERRIDE;
   virtual PrefService* GetPrefServiceForContext(
       content::BrowserContext* context) OVERRIDE;
   virtual void GetEarlyExtensionPrefsObservers(
