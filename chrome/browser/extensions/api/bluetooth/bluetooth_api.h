@@ -204,17 +204,6 @@ class BluetoothRemoveProfileFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class BluetoothGetProfilesFunction : public BluetoothExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetooth.getProfiles", BLUETOOTH_GETPROFILES)
-
- protected:
-  virtual ~BluetoothGetProfilesFunction() {}
-
-  // BluetoothExtensionFunction:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
-};
-
 class BluetoothConnectFunction : public BluetoothExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.connect", BLUETOOTH_CONNECT)
