@@ -190,6 +190,8 @@ class LocalInputMonitorMac::Core
   // and session disconnect requests.
   base::WeakPtr<ClientSessionControl> client_session_control_;
 
+  webrtc::DesktopVector mouse_position_;
+
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
@@ -251,6 +253,15 @@ void LocalInputMonitorMac::Core::StopOnUiThread() {
 
 void LocalInputMonitorMac::Core::OnLocalMouseMoved(
     const webrtc::DesktopVector& position) {
+  // In some cases OS may emit bogus mouse-move events even when cursor is not
+  // actually moving. To handle this case properly verify that mouse position
+  // has changed. See crbug.com/360912 .
+  if (position.equals(mouse_position_)) {
+    return;
+  }
+
+  mouse_position_ = position;
+
   caller_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ClientSessionControl::OnLocalMouseMoved,
                             client_session_control_,
