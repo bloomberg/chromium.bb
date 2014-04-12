@@ -104,6 +104,10 @@ bool FilePathPrefMatches(const char* pref_name) WARN_UNUSED_RESULT;
 // hasn't been called.
 bool ListPrefMatches(const char* pref_name) WARN_UNUSED_RESULT;
 
+// This is the version of ListPrefMatches that waits for the preference list
+// to match in all profiles. Returns false if this operation times out.
+bool AwaitListPrefMatches(const char* pref_name) WARN_UNUSED_RESULT;
+
 }  // namespace preferences_helper
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_PREFERENCES_HELPER_H_

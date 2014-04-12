@@ -8,6 +8,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -214,6 +215,44 @@ bool ListPrefMatches(const char* pref_name) {
     }
   }
   return true;
+}
+
+
+namespace {
+
+// Helper class used in the implementation of AwaitListPrefMatches.
+class ListPrefMatchStatusChecker : public MultiClientStatusChangeChecker {
+ public:
+  explicit ListPrefMatchStatusChecker(const char* pref_name);
+  virtual ~ListPrefMatchStatusChecker();
+
+  virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual std::string GetDebugMessage() const OVERRIDE;
+ private:
+  const char* pref_name_;
+};
+
+ListPrefMatchStatusChecker::ListPrefMatchStatusChecker(const char* pref_name)
+    : MultiClientStatusChangeChecker(
+        sync_datatype_helper::test()->GetSyncServices()),
+      pref_name_(pref_name) {}
+
+ListPrefMatchStatusChecker::~ListPrefMatchStatusChecker() {}
+
+bool ListPrefMatchStatusChecker::IsExitConditionSatisfied() {
+  return ListPrefMatches(pref_name_);
+}
+
+std::string ListPrefMatchStatusChecker::GetDebugMessage() const {
+  return "Waiting for matching preferences";
+}
+
+}  //  namespace
+
+bool AwaitListPrefMatches(const char* pref_name) {
+  ListPrefMatchStatusChecker checker(pref_name);
+  checker.Wait();
+  return !checker.TimedOut();
 }
 
 }  // namespace preferences_helper

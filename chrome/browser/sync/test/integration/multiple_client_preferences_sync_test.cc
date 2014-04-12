@@ -9,7 +9,7 @@
 #include "chrome/common/pref_names.h"
 
 using preferences_helper::ChangeListPref;
-using preferences_helper::ListPrefMatches;
+using preferences_helper::AwaitListPrefMatches;
 
 class MultipleClientPreferencesSyncTest : public SyncTest {
  public:
@@ -31,6 +31,5 @@ IN_PROC_BROWSER_TEST_F(MultipleClientPreferencesSyncTest, Sanity) {
     ChangeListPref(i, prefs::kURLsToRestoreOnStartup, urls);
   }
 
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(ListPrefMatches(prefs::kURLsToRestoreOnStartup));
+  ASSERT_TRUE(AwaitListPrefMatches(prefs::kURLsToRestoreOnStartup));
 }
