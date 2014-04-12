@@ -40,9 +40,10 @@ static void CreateChannelOnIOThread(
   system::MessageInTransit::EndpointId endpoint_id =
       channel_info->channel->AttachMessagePipeEndpoint(message_pipe, 1);
   DCHECK_EQ(endpoint_id, system::Channel::kBootstrapEndpointId);
-  channel_info->channel->RunMessagePipeEndpoint(
+  success = channel_info->channel->RunMessagePipeEndpoint(
       system::Channel::kBootstrapEndpointId,
       system::Channel::kBootstrapEndpointId);
+  DCHECK(success);  // This shouldn't fail.
 
   // Hand the channel back to the embedder.
   if (callback_thread_task_runner) {

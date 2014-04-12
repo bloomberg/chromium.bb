@@ -78,7 +78,12 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
   DVLOG(2) << "Deserializing message pipe dispatcher (remote ID = "
            << remote_id << ", new local ID = " << local_id << ")";
 
-  channel->RunMessagePipeEndpoint(local_id, remote_id);
+  if (!channel->RunMessagePipeEndpoint(local_id, remote_id)) {
+    // In general, this shouldn't fail, since we generated |local_id| locally.
+    NOTREACHED();
+    return scoped_refptr<MessagePipeDispatcher>();
+  }
+
   // TODO(vtl): FIXME -- Need some error handling here.
   channel->RunRemoteMessagePipeEndpoint(local_id, remote_id);
   return remote_message_pipe.first;

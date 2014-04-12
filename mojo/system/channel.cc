@@ -102,7 +102,7 @@ MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
   return local_id;
 }
 
-void Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
+bool Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
                                      MessageInTransit::EndpointId remote_id) {
   EndpointInfo endpoint_info;
   {
@@ -110,15 +110,15 @@ void Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
 
     IdToEndpointInfoMap::const_iterator it =
         local_id_to_endpoint_info_map_.find(local_id);
-    // TODO(vtl): FIXME -- This check is wrong if this is in response to a
-    // |kSubtypeChannelRunMessagePipeEndpoint| message. We should report error.
-    CHECK(it != local_id_to_endpoint_info_map_.end());
+    if (it == local_id_to_endpoint_info_map_.end())
+      return false;
     endpoint_info = it->second;
   }
 
   // TODO(vtl): FIXME -- We need to handle the case that message pipe is already
   // running when we're here due to |kSubtypeChannelRunMessagePipeEndpoint|).
   endpoint_info.message_pipe->Run(endpoint_info.port, remote_id);
+  return true;
 }
 
 void Channel::RunRemoteMessagePipeEndpoint(
@@ -251,12 +251,15 @@ void Channel::OnReadMessageForDownstream(
 
   // We need to duplicate the message, because |EnqueueMessage()| will take
   // ownership of it.
-  // TODO(vtl): Need to enforce limits on message size and handle count.
   scoped_ptr<MessageInTransit> message(new MessageInTransit(message_view));
   message->DeserializeDispatchers(this);
   MojoResult result = endpoint_info.message_pipe->EnqueueMessage(
       MessagePipe::GetPeerPort(endpoint_info.port), message.Pass(), NULL);
   if (result != MOJO_RESULT_OK) {
+    // TODO(vtl): This might be a "non-error", e.g., if the destination endpoint
+    // has been closed (in an unavoidable race). This might also be a "remote"
+    // error, e.g., if the remote side is sending invalid control messages (to
+    // the message pipe).
     HandleLocalError(base::StringPrintf(
         "Failed to enqueue message to local destination ID %u (result %d)",
         static_cast<unsigned>(local_id), static_cast<int>(result)));
@@ -275,8 +278,9 @@ void Channel::OnReadMessageForChannel(
       DVLOG(2) << "Handling channel message to run message pipe (local ID = "
                << message_view.destination_id() << ", remote ID = "
                << message_view.source_id() << ")";
-      RunMessagePipeEndpoint(message_view.destination_id(),
-                             message_view.source_id());
+      if (!RunMessagePipeEndpoint(message_view.destination_id(),
+                                  message_view.source_id()))
+        HandleRemoteError("Received invalid channel run message pipe message");
       break;
     default:
       HandleRemoteError("Received invalid channel message");

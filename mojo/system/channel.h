@@ -73,9 +73,17 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // |kBootstrapEndpointId| as its local ID. (For bootstrapping, this occurs on
   // both sides, so one should use |kBootstrapEndpointId| for the remote ID for
   // the first message pipe across a channel.)
+  // TODO(vtl): Maybe limit the number of attached message pipes and allow this
+  // to fail.
   MessageInTransit::EndpointId AttachMessagePipeEndpoint(
       scoped_refptr<MessagePipe> message_pipe, unsigned port);
-  void RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
+
+  // Runs the message pipe with the given |local_id| (previously attached), with
+  // the given |remote_id| (negotiated using some other means, e.g., over an
+  // existing message pipe; see comments above for the bootstrap case). Returns
+  // false on failure, in particular if no message pipe with |local_id| is
+  // attached.
+  bool RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
                               MessageInTransit::EndpointId remote_id);
 
   // Tells the other side of the channel to run a message pipe endpoint (which
