@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 var assertEq = chrome.test.assertEq;
+var assertFalse = chrome.test.assertFalse;
 var assertTrue = chrome.test.assertTrue;
 
 // Do not test orientation or hover attributes (similar to exclusions on native
@@ -93,6 +94,79 @@ var allTests = [
           chrome.runtime.onMessage.removeListener(listener);
         });
       });
+    });
+  },
+  function testEventListenerTarget() {
+    chrome.automation.getTree(function(tree) {
+      var cancelButton = tree.root.firstChild().children()[2];
+      assertEq('Cancel', cancelButton.attributes['ax_attr_name']);
+      var eventListenerCalledAlready = false;
+      cancelButton.addEventListener('focus', function onFocus(event) {
+        if (eventListenerCalledAlready)
+          chrome.test.fail('Event listener called twice');
+        eventListenerCalledAlready = true;
+        window.setTimeout(function() {
+          chrome.test.succeed();
+          cancelButton.removeEventListener('focus', onFocus);
+        }, 0);
+      });
+      cancelButton.focus();
+    });
+  },
+  function testEventListenerBubble() {
+    chrome.automation.getTree(function(tree) {
+      var cancelButton = tree.root.firstChild().children()[2];
+      assertEq('Cancel', cancelButton.attributes['ax_attr_name']);
+      var cancelButtonGotEvent = false;
+      cancelButton.addEventListener('focus', function onFocus(event) {
+        cancelButtonGotEvent = true;
+        cancelButton.removeEventListener('focus', onFocus);
+      });
+      tree.root.addEventListener('focus', function onFocusRoot(event) {
+        assertEq('focus', event.type);
+        assertEq(cancelButton, event.target);
+        assertTrue(cancelButtonGotEvent);
+        tree.root.removeEventListener('focus', onFocusRoot);
+        chrome.test.succeed();
+      });
+      cancelButton.focus();
+    });
+  },
+  function testStopPropagation() {
+     chrome.automation.getTree(function(tree) {
+      var cancelButton = tree.root.firstChild().children()[2];
+      assertEq('Cancel', cancelButton.attributes['ax_attr_name']);
+      cancelButton.addEventListener('focus', function onFocus(event) {
+        cancelButton.removeEventListener('focus', onFocus);
+        event.stopPropagation();
+        window.setTimeout(chrome.test.succeed.bind(this), 0);
+      });
+      tree.root.addEventListener('focus', function onFocusRoot(event) {
+        tree.root.removeEventListener('focus', onFocusRoot);
+        chrome.test.fail("Focus event was propagated to root");
+      });
+      cancelButton.focus();
+    });
+  },
+  function testEventListenerCapture() {
+    chrome.automation.getTree(function(tree) {
+      var cancelButton = tree.root.firstChild().children()[2];
+      assertEq('Cancel', cancelButton.attributes['ax_attr_name']);
+      var cancelButtonGotEvent = false;
+      cancelButton.addEventListener('focus', function onFocus(event) {
+        cancelButtonGotEvent = true;
+        cancelButton.removeEventListener('focus', onFocus);
+        chrome.test.fail("Focus event was not captured by root");
+      });
+      tree.root.addEventListener('focus', function onFocusRoot(event) {
+        assertEq('focus', event.type);
+        assertEq(cancelButton, event.target);
+        assertFalse(cancelButtonGotEvent);
+        event.stopPropagation();
+        tree.root.removeEventListener('focus', onFocusRoot);
+        window.setTimeout(chrome.test.succeed.bind(this), 0);
+      }, true);
+      cancelButton.focus();
     });
   },
   function testSimpleAction() {

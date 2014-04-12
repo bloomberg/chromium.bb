@@ -174,7 +174,7 @@ AutomationTreeImpl.prototype = {
       }
       privates(node).impl.childIds = newChildIDs;
       this.axNodeDataCache_[node.id] = node;
-      privates(node).impl.notifyEventListeners(data.eventType);
+      privates(node).impl.dispatchEvent(data.eventType);
     }
     return true;
   }

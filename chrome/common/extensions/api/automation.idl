@@ -8,9 +8,21 @@
 // <em>semantic</em> structure of a page, and can be used to programmatically
 // interact with a page.
 [nocompile] namespace automation {
-  // TODO(dtseng/aboxhall): Make this take an |automation.Event| param.
+  // An event in the Automation tree.
+  [nocompile] dictionary AutomationEvent {
+    // The $(ref:automation.AutomationNode) to which the event was targeted.
+    AutomationNode target;
+
+    // The type of the event.
+    DOMString type;
+
+    // Prevents all other event listeners from being triggered for this event
+    // dispatch.
+    static void stopPropagation();
+  };
+
   // A listener for events on an <code>AutomationNode</code>.
-  callback AutomationListener = void();
+  callback AutomationListener = void(AutomationEvent event);
 
   // A single node in an <code>AutomationTree</code>.
   [nocompile] dictionary AutomationNode {
