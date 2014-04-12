@@ -464,8 +464,14 @@ SANDBOX_TEST_ALLOW_NOISE(BrokerProcess, RecvMsgDescriptorLeak) {
   const rlim_t fd_limit =
       1 + *std::max_element(available_fds,
                             available_fds + arraysize(available_fds));
-  const struct rlimit new_rlim = {fd_limit, fd_limit};
-  SANDBOX_ASSERT(0 == setrlimit(RLIMIT_NOFILE, &new_rlim));
+
+  // Valgrind doesn't allow changing the hard descriptor limit, so we only
+  // change the soft descriptor limit here.
+  struct rlimit rlim;
+  SANDBOX_ASSERT(0 == getrlimit(RLIMIT_NOFILE, &rlim));
+  SANDBOX_ASSERT(fd_limit <= rlim.rlim_cur);
+  rlim.rlim_cur = fd_limit;
+  SANDBOX_ASSERT(0 == setrlimit(RLIMIT_NOFILE, &rlim));
 
   static const char kCpuInfo[] = "/proc/cpuinfo";
   std::vector<std::string> read_whitelist;
