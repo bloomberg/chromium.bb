@@ -198,6 +198,9 @@ class ChromeDriver(object):
   def SwitchToMainFrame(self):
     self.SwitchToFrame(None)
 
+  def SwitchToParentFrame(self):
+    self.ExecuteCommand(Command.SWITCH_TO_PARENT_FRAME)
+
   def GetTitle(self):
     return self.ExecuteCommand(Command.GET_TITLE)
 

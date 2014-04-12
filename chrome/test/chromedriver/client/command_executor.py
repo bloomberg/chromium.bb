@@ -70,6 +70,7 @@ class Command(object):
   DELETE_ALL_COOKIES = (_Method.DELETE, '/session/:sessionId/cookie')
   DELETE_COOKIE = (_Method.DELETE, '/session/:sessionId/cookie/:name')
   SWITCH_TO_FRAME = (_Method.POST, '/session/:sessionId/frame')
+  SWITCH_TO_PARENT_FRAME = (_Method.POST, '/session/:sessionId/frame/parent')
   SWITCH_TO_WINDOW = (_Method.POST, '/session/:sessionId/window')
   GET_WINDOW_SIZE = (
       _Method.GET, '/session/:sessionId/window/:windowHandle/size')

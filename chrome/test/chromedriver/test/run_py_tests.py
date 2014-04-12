@@ -322,6 +322,18 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.SwitchToFrame(self._driver.FindElement('tag name', 'iframe'))
     self.assertTrue(self._driver.ExecuteScript('return window.top != window'))
 
+  def testSwitchToParentFrame(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/nested.html'))
+    self.assertTrue('One' in self._driver.GetPageSource())
+    self._driver.SwitchToFrameByIndex(0)
+    self.assertTrue('Two' in self._driver.GetPageSource())
+    self._driver.SwitchToFrameByIndex(0)
+    self.assertTrue('Three' in self._driver.GetPageSource())
+    self._driver.SwitchToParentFrame()
+    self.assertTrue('Two' in self._driver.GetPageSource())
+    self._driver.SwitchToParentFrame()
+    self.assertTrue('One' in self._driver.GetPageSource())
+
   def testExecuteInRemovedFrame(self):
     self._driver.ExecuteScript(
         'var frame = document.createElement("iframe");'

@@ -60,6 +60,13 @@ Status ExecuteSwitchToFrame(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Change focus to the parent frame.
+Status ExecuteSwitchToParentFrame(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 // Get the current page title.
 Status ExecuteGetTitle(
     Session* session,

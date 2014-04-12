@@ -56,3 +56,48 @@ TEST(Session, GetTargetWindowTargetWindowStillOpen) {
   ASSERT_EQ(kOk, session.GetTargetWindow(&web_view).code());
   ASSERT_TRUE(web_view);
 }
+
+TEST(Session, SwitchToParentFrame) {
+  scoped_ptr<Chrome> chrome(new MockChrome());
+  Session session("1", chrome.Pass());
+
+  // Initial frame should be top frame.
+  ASSERT_EQ(std::string(), session.GetCurrentFrameId());
+
+  // Switching to parent frame should be a no-op.
+  session.SwitchToParentFrame();
+  ASSERT_EQ(std::string(), session.GetCurrentFrameId());
+
+  session.SwitchToSubFrame("1.1", std::string());
+  ASSERT_EQ("1.1", session.GetCurrentFrameId());
+  session.SwitchToParentFrame();
+  ASSERT_EQ(std::string(), session.GetCurrentFrameId());
+
+  session.SwitchToSubFrame("2.1", std::string());
+  ASSERT_EQ("2.1", session.GetCurrentFrameId());
+  session.SwitchToSubFrame("2.2", std::string());
+  ASSERT_EQ("2.2", session.GetCurrentFrameId());
+  session.SwitchToParentFrame();
+  ASSERT_EQ("2.1", session.GetCurrentFrameId());
+  session.SwitchToParentFrame();
+  ASSERT_EQ(std::string(), session.GetCurrentFrameId());
+}
+
+TEST(Session, SwitchToTopFrame) {
+  scoped_ptr<Chrome> chrome(new MockChrome());
+  Session session("1", chrome.Pass());
+
+  // Initial frame should be top frame.
+  ASSERT_EQ(std::string(), session.GetCurrentFrameId());
+
+  // Switching to top frame should be a no-op.
+  session.SwitchToTopFrame();
+  ASSERT_EQ(std::string(), session.GetCurrentFrameId());
+
+  session.SwitchToSubFrame("3.1", std::string());
+  ASSERT_EQ("3.1", session.GetCurrentFrameId());
+  session.SwitchToSubFrame("3.2", std::string());
+  ASSERT_EQ("3.2", session.GetCurrentFrameId());
+  session.SwitchToTopFrame();
+  ASSERT_EQ(std::string(), session.GetCurrentFrameId());
+}

@@ -355,6 +355,15 @@ Status ExecuteSwitchToFrame(
   return Status(kOk);
 }
 
+Status ExecuteSwitchToParentFrame(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  session->SwitchToParentFrame();
+  return Status(kOk);
+}
+
 Status ExecuteGetTitle(
     Session* session,
     WebView* web_view,

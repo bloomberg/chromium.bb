@@ -69,6 +69,11 @@ void Session::SwitchToTopFrame() {
   frames.clear();
 }
 
+void Session::SwitchToParentFrame() {
+  if (!frames.empty())
+    frames.pop_back();
+}
+
 void Session::SwitchToSubFrame(const std::string& frame_id,
                                const std::string& chromedriver_frame_id) {
   std::string parent_frame_id;

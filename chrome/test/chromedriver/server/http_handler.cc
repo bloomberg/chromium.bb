@@ -303,6 +303,11 @@ HttpHandler::HttpHandler(
           WrapToCommand("SwitchToFrame", base::Bind(&ExecuteSwitchToFrame))),
       CommandMapping(
           kPost,
+          "session/:sessionId/frame/parent",
+          WrapToCommand("SwitchToParentFrame",
+                        base::Bind(&ExecuteSwitchToParentFrame))),
+      CommandMapping(
+          kPost,
           "session/:sessionId/window",
           WrapToCommand("SwitchToWindow", base::Bind(&ExecuteSwitchToWindow))),
       CommandMapping(

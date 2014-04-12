@@ -45,6 +45,7 @@ struct Session {
   Status GetTargetWindow(WebView** web_view);
 
   void SwitchToTopFrame();
+  void SwitchToParentFrame();
   void SwitchToSubFrame(const std::string& frame_id,
                         const std::string& chromedriver_frame_id);
   std::string GetCurrentFrameId() const;
