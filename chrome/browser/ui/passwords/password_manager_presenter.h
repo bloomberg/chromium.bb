@@ -41,10 +41,10 @@ class PasswordManagerPresenter
   void Initialize();
 
   // Gets the password entry at |index|.
-  const autofill::PasswordForm& GetPassword(size_t index);
+  const autofill::PasswordForm* GetPassword(size_t index);
 
   // Gets the password exception entry at |index|.
-  const autofill::PasswordForm& GetPasswordException(size_t index);
+  const autofill::PasswordForm* GetPasswordException(size_t index);
 
   // Removes the saved password entry at |index|.
   // |index| the entry index to be removed.

@@ -60,19 +60,27 @@ void PasswordUIViewAndroid::UpdatePasswordLists(JNIEnv* env, jobject) {
 
 ScopedJavaLocalRef<jobject>
 PasswordUIViewAndroid::GetSavedPasswordEntry(JNIEnv* env, jobject, int index) {
-  const autofill::PasswordForm& form =
+  const autofill::PasswordForm* form =
       password_manager_presenter_.GetPassword(index);
+  if (!form) {
+    return Java_PasswordUIView_createSavedPasswordEntry(
+        env,
+        ConvertUTF8ToJavaString(env, std::string()).obj(),
+        ConvertUTF16ToJavaString(env, base::string16()).obj());
+  }
   return Java_PasswordUIView_createSavedPasswordEntry(
       env,
-      ConvertUTF8ToJavaString(env, form.origin.spec()).obj(),
-      ConvertUTF16ToJavaString(env, form.username_value).obj());
+      ConvertUTF8ToJavaString(env, form->origin.spec()).obj(),
+      ConvertUTF16ToJavaString(env, form->username_value).obj());
 }
 
 ScopedJavaLocalRef<jstring> PasswordUIViewAndroid::GetSavedPasswordException(
     JNIEnv* env, jobject, int index) {
-  const autofill::PasswordForm& form =
+  const autofill::PasswordForm* form =
       password_manager_presenter_.GetPasswordException(index);
-  return ConvertUTF8ToJavaString(env, form.origin.spec());
+  if (!form)
+    return ConvertUTF8ToJavaString(env, std::string());
+  return ConvertUTF8ToJavaString(env, form->origin.spec());
 }
 
 void PasswordUIViewAndroid::HandleRemoveSavedPasswordEntry(

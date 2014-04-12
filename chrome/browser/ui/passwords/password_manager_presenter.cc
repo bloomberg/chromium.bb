@@ -81,7 +81,12 @@ void PasswordManagerPresenter::UpdatePasswordLists() {
 }
 
 void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
-  DCHECK_LT(index, password_list_.size());
+  if (index >= password_list_.size()) {
+    // |index| out of bounds might come from a compromised renderer, don't let
+    // it crash the browser. http://crbug.com/362054
+    NOTREACHED();
+    return;
+  }
   PasswordStore* store = GetPasswordStore();
   if (!store)
     return;
@@ -91,7 +96,12 @@ void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
 }
 
 void PasswordManagerPresenter::RemovePasswordException(size_t index) {
-  DCHECK_LT(index, password_exception_list_.size());
+  if (index >= password_exception_list_.size()) {
+    // |index| out of bounds might come from a compromised renderer, don't let
+    // it crash the browser. http://crbug.com/362054
+    NOTREACHED();
+    return;
+  }
   PasswordStore* store = GetPasswordStore();
   if (!store)
     return;
@@ -102,7 +112,12 @@ void PasswordManagerPresenter::RemovePasswordException(size_t index) {
 
 void PasswordManagerPresenter::RequestShowPassword(size_t index) {
 #if !defined(OS_ANDROID) // This is never called on Android.
-  DCHECK_LT(index, password_list_.size());
+  if (index >= password_list_.size()) {
+    // |index| out of bounds might come from a compromised renderer, don't let
+    // it crash the browser. http://crbug.com/362054
+    NOTREACHED();
+    return;
+  }
   if (IsAuthenticationRequired()) {
     if (password_manager_util::AuthenticateUser(
         password_view_->GetNativeWindow()))
@@ -115,16 +130,26 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
 #endif
 }
 
-const autofill::PasswordForm& PasswordManagerPresenter::GetPassword(
+const autofill::PasswordForm* PasswordManagerPresenter::GetPassword(
     size_t index) {
-  DCHECK_LT(index, password_list_.size());
-  return *password_list_[index];
+  if (index >= password_list_.size()) {
+    // |index| out of bounds might come from a compromised renderer, don't let
+    // it crash the browser. http://crbug.com/362054
+    NOTREACHED();
+    return NULL;
+  }
+  return password_list_[index];
 }
 
-const autofill::PasswordForm& PasswordManagerPresenter::GetPasswordException(
+const autofill::PasswordForm* PasswordManagerPresenter::GetPasswordException(
     size_t index) {
-  DCHECK_LT(index, password_exception_list_.size());
-  return *password_exception_list_[index];
+  if (index >= password_exception_list_.size()) {
+    // |index| out of bounds might come from a compromised renderer, don't let
+    // it crash the browser. http://crbug.com/362054
+    NOTREACHED();
+    return NULL;
+  }
+  return password_exception_list_[index];
 }
 
 void PasswordManagerPresenter::SetPasswordList() {
