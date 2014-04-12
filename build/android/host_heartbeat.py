@@ -22,7 +22,7 @@ def main():
     try:
       devices = android_commands.GetAttachedDevices()
       for device_serial in devices:
-        device_utils.DeviceUtils(device_serial).RunShellCommand(
+        device_utils.DeviceUtils(device_serial).old_interface.RunShellCommand(
             'touch /sdcard/host_heartbeat')
     except:
       # Keep the heatbeat running bypassing all errors.

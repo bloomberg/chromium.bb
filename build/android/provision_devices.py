@@ -111,7 +111,7 @@ def WipeDeviceData(device):
     device.old_interface.RunShellCommandWithSU('mkdir -p %s' % dir_path)
     adb_keys = device.old_interface.RunShellCommand(
       'echo %s > %s' % (adb_keys, constants.ADB_KEYS_FILE))
-  device.Reboot()
+  device.old_interface.Reboot()
 
 
 def ProvisionDevices(options):

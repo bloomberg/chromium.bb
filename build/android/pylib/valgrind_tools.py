@@ -173,7 +173,7 @@ class ValgrindTool(BaseTool):
   def CleanUpEnvironment(self):
     """Cleans up device environment."""
     for prop in self._wrap_properties:
-      self._device.RunShellCommand('setprop %s ""' % (prop,))
+      self._device.old_interface.RunShellCommand('setprop %s ""' % (prop,))
     SetChromeTimeoutScale(self._device, None)
 
   def GetFilesForTool(self):
