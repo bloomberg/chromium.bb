@@ -575,6 +575,8 @@
         'wm/lock_state_observer.h',
         'wm/maximize_mode/maximize_mode_controller.cc',
         'wm/maximize_mode/maximize_mode_controller.h',
+        'wm/maximize_mode/maximize_mode_event_blocker.cc',
+        'wm/maximize_mode/maximize_mode_event_blocker.h',
         'wm/maximize_mode/maximize_mode_window_manager.cc',
         'wm/maximize_mode/maximize_mode_window_manager.h',
         'wm/maximize_mode/maximize_mode_window_state.cc',

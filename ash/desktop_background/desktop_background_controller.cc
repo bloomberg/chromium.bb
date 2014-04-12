@@ -48,10 +48,12 @@ DesktopBackgroundController::DesktopBackgroundController()
       desktop_background_mode_(BACKGROUND_NONE),
       wallpaper_reload_delay_(kWallpaperReloadDelayMs) {
   Shell::GetInstance()->display_controller()->AddObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 DesktopBackgroundController::~DesktopBackgroundController() {
   Shell::GetInstance()->display_controller()->RemoveObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 gfx::ImageSkia DesktopBackgroundController::GetWallpaper() const {
@@ -74,23 +76,6 @@ WallpaperLayout DesktopBackgroundController::GetWallpaperLayout() const {
   if (current_wallpaper_)
     return current_wallpaper_->layout();
   return WALLPAPER_LAYOUT_CENTER_CROPPED;
-}
-
-void DesktopBackgroundController::OnRootWindowAdded(aura::Window* root_window) {
-  // The background hasn't been set yet.
-  if (desktop_background_mode_ == BACKGROUND_NONE)
-    return;
-
-  // Handle resolution change for "built-in" images.
-  gfx::Size max_display_size = GetMaxDisplaySizeInNative();
-  if (current_max_display_size_ != max_display_size) {
-    current_max_display_size_ = max_display_size;
-    if (desktop_background_mode_ == BACKGROUND_IMAGE &&
-        current_wallpaper_.get())
-      UpdateWallpaper();
-  }
-
-  InstallDesktopController(root_window);
 }
 
 bool DesktopBackgroundController::SetWallpaperImage(const gfx::ImageSkia& image,
@@ -167,6 +152,23 @@ void DesktopBackgroundController::OnDisplayConfigurationChanged() {
                    &DesktopBackgroundController::UpdateWallpaper);
     }
   }
+}
+
+void DesktopBackgroundController::OnRootWindowAdded(aura::Window* root_window) {
+  // The background hasn't been set yet.
+  if (desktop_background_mode_ == BACKGROUND_NONE)
+    return;
+
+  // Handle resolution change for "built-in" images.
+  gfx::Size max_display_size = GetMaxDisplaySizeInNative();
+  if (current_max_display_size_ != max_display_size) {
+    current_max_display_size_ = max_display_size;
+    if (desktop_background_mode_ == BACKGROUND_IMAGE &&
+        current_wallpaper_.get())
+      UpdateWallpaper();
+  }
+
+  InstallDesktopController(root_window);
 }
 
 // static

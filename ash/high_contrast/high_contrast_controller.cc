@@ -12,6 +12,11 @@ namespace ash {
 
 HighContrastController::HighContrastController()
     : enabled_(false) {
+  Shell::GetInstance()->AddShellObserver(this);
+}
+
+HighContrastController::~HighContrastController() {
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void HighContrastController::SetEnabled(bool enabled) {
@@ -25,12 +30,12 @@ void HighContrastController::SetEnabled(bool enabled) {
   }
 }
 
-void HighContrastController::OnRootWindowAdded(aura::Window* root_window) {
-  UpdateDisplay(root_window);
-}
-
 void HighContrastController::UpdateDisplay(aura::Window* root_window) {
   root_window->layer()->SetLayerInverted(enabled_);
+}
+
+void HighContrastController::OnRootWindowAdded(aura::Window* root_window) {
+  UpdateDisplay(root_window);
 }
 
 }  // namespace ash

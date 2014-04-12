@@ -29,6 +29,9 @@ class ASH_EXPORT ShellObserver {
   // unlocked.
   virtual void OnLockStateChanged(bool locked) {}
 
+  // Invoked after a non-primary root window is created.
+  virtual void OnRootWindowAdded(aura::Window* root_window) {}
+
   // Invoked when the shelf alignment in |root_window| is changed.
   virtual void OnShelfAlignmentChanged(aura::Window* root_window) {}
 

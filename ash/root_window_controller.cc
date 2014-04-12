@@ -721,13 +721,14 @@ void RootWindowController::Init(RootWindowType root_window_type,
       shell->InitKeyboard();
   } else {
     root_window_layout()->OnWindowResized();
-    shell->desktop_background_controller()->OnRootWindowAdded(root_window);
-    shell->high_contrast_controller()->OnRootWindowAdded(root_window);
     ash_host_->AsWindowTreeHost()->Show();
 
     // Create a shelf if a user is already logged in.
     if (shell->session_state_delegate()->NumberOfLoggedInUsers())
       shelf()->CreateShelf();
+
+    // Notify shell observers about new root window.
+    shell->OnRootWindowAdded(root_window);
   }
 }
 

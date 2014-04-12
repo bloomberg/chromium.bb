@@ -7,6 +7,7 @@
 #include "ash/accelerometer/accelerometer_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
+#include "ash/wm/maximize_mode/maximize_mode_event_blocker.h"
 #include "ui/gfx/vector3d_f.h"
 
 namespace ash {
@@ -113,9 +114,11 @@ void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
       angle > kFullyOpenAngleErrorTolerance &&
       angle < kExitMaximizeModeAngle) {
     Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+    event_blocker_.reset();
   } else if (!maximize_mode_engaged &&
       angle > kEnterMaximizeModeAngle) {
     Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+    event_blocker_.reset(new MaximizeModeEventBlocker);
   }
 }
 

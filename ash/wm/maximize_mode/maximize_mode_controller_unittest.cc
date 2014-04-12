@@ -9,6 +9,8 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ui/aura/test/event_generator.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/vector3d_f.h"
 
 namespace ash {
@@ -16,6 +18,39 @@ namespace ash {
 namespace {
 
 const float kDegreesToRadians = 3.14159265f / 180.0f;
+
+// Filter to count the number of events seen.
+class EventCounter : public ui::EventHandler {
+ public:
+  EventCounter();
+  virtual ~EventCounter();
+
+  // Overridden from ui::EventHandler:
+  virtual void OnEvent(ui::Event* event) OVERRIDE;
+
+  void reset() {
+    event_count_ = 0;
+  }
+
+  size_t event_count() const { return event_count_; }
+
+ private:
+  size_t event_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventCounter);
+};
+
+EventCounter::EventCounter() : event_count_(0) {
+  Shell::GetInstance()->AddPreTargetHandler(this);
+}
+
+EventCounter::~EventCounter() {
+  Shell::GetInstance()->RemovePreTargetHandler(this);
+}
+
+void EventCounter::OnEvent(ui::Event* event) {
+  event_count_++;
+}
 
 }  // namespace
 
@@ -230,6 +265,52 @@ TEST_F(MaximizeModeControllerTest, RotationOnlyInMaximizeMode) {
                              gfx::Vector3dF(-0.3f, 0.8f, 0.0f));
   ASSERT_FALSE(IsMaximizeModeStarted());
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
+}
+
+// Tests that maximize mode blocks keyboard events but not touch events. Mouse
+// events are blocked too but EventGenerator does not construct mouse events
+// with a NativeEvent so they would not be blocked in testing.
+TEST_F(MaximizeModeControllerTest, BlocksKeyboard) {
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  aura::test::EventGenerator event_generator(root, root);
+  EventCounter counter;
+
+  event_generator.PressKey(ui::VKEY_ESCAPE, 0);
+  event_generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
+  EXPECT_GT(counter.event_count(), 0u);
+  counter.reset();
+
+  event_generator.PressTouch();
+  event_generator.ReleaseTouch();
+  EXPECT_GT(counter.event_count(), 0u);
+  counter.reset();
+
+  // Open up 270 degrees.
+  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, 1.0f),
+                             gfx::Vector3dF(1.0f, 0.0f, 0.0f));
+  ASSERT_TRUE(IsMaximizeModeStarted());
+
+  event_generator.PressKey(ui::VKEY_ESCAPE, 0);
+  event_generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
+  EXPECT_EQ(0u, counter.event_count());
+  counter.reset();
+
+ // Touch should not be blocked.
+  event_generator.PressTouch();
+  event_generator.ReleaseTouch();
+  EXPECT_GT(counter.event_count(), 0u);
+  counter.reset();
+
+  gfx::Vector3dF base;
+
+  // Lid open 90 degrees.
+  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, 1.0f),
+                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+
+  event_generator.PressKey(ui::VKEY_ESCAPE, 0);
+  event_generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
+  EXPECT_GT(counter.event_count(), 0u);
+  counter.reset();
 }
 
 }  // namespace ash

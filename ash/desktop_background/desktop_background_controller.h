@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/display_controller.h"
+#include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -46,7 +47,8 @@ class WallpaperResizer;
 
 // Updates background layer if necessary.
 class ASH_EXPORT DesktopBackgroundController
-    : public DisplayController::Observer {
+    : public DisplayController::Observer,
+      public ShellObserver {
  public:
   class TestAPI;
 
@@ -72,9 +74,6 @@ class ASH_EXPORT DesktopBackgroundController
 
   WallpaperLayout GetWallpaperLayout() const;
 
-  // Initialize root window's background.
-  void OnRootWindowAdded(aura::Window* root_window);
-
   // Sets wallpaper. This is mostly called by WallpaperManager to set
   // the default or user selected custom wallpaper.
   // Returns true if new image was actually set. And false when duplicate set
@@ -99,8 +98,11 @@ class ASH_EXPORT DesktopBackgroundController
   // Returns true if the desktop moved.
   bool MoveDesktopToUnlockedContainer();
 
-  // Overrides DisplayController::Observer:
+  // DisplayController::Observer:
   virtual void OnDisplayConfigurationChanged() OVERRIDE;
+
+  // ShellObserver:
+  virtual void OnRootWindowAdded(aura::Window* root_window) OVERRIDE;
 
   // Returns the maximum size of all displays combined in native
   // resolutions.  Note that this isn't the bounds of the display who

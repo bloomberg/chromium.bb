@@ -301,6 +301,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // their original position.
   void OnMaximizeModeEnded();
 
+  // Called when a root window is created.
+  void OnRootWindowAdded(aura::Window* root_window);
+
   // Initializes |shelf_|.  Does nothing if it's already initialized.
   void CreateShelf();
 

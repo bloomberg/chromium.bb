@@ -7,8 +7,11 @@
 
 #include "ash/accelerometer/accelerometer_observer.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace ash {
+
+class MaximizeModeEventBlocker;
 
 // MaximizeModeController listens to accelerometer events and automatically
 // enters and exits maximize mode when the lid is opened beyond the triggering
@@ -18,6 +21,7 @@ class MaximizeModeController : public AccelerometerObserver {
   MaximizeModeController();
   virtual ~MaximizeModeController();
 
+  // AccelerometerObserver:
   virtual void OnAccelerometerUpdated(const gfx::Vector3dF& base,
                                       const gfx::Vector3dF& lid) OVERRIDE;
  private:
@@ -29,6 +33,10 @@ class MaximizeModeController : public AccelerometerObserver {
   // Detect screen rotation from |lid| accelerometer and automatically rotate
   // screen.
   void HandleScreenRotation(const gfx::Vector3dF& lid);
+
+  // An event handler which traps mouse and keyboard events while maximize
+  // mode is engaged.
+  scoped_ptr<MaximizeModeEventBlocker> event_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeController);
 };

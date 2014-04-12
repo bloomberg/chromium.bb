@@ -396,6 +396,10 @@ void Shell::OnMaximizeModeEnded() {
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnMaximizeModeEnded());
 }
 
+void Shell::OnRootWindowAdded(aura::Window* root_window) {
+  FOR_EACH_OBSERVER(ShellObserver, observers_, OnRootWindowAdded(root_window));
+}
+
 void Shell::CreateShelf() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
@@ -698,6 +702,7 @@ Shell::~Shell() {
   video_activity_notifier_.reset();
 #endif  // defined(OS_CHROMEOS)
   video_detector_.reset();
+  high_contrast_controller_.reset();
 
   shadow_controller_.reset();
   resize_shadow_controller_.reset();

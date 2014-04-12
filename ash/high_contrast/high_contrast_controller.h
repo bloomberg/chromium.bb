@@ -6,26 +6,25 @@
 #define ASH_HIGH_CONTRAST_HIGH_CONTRAST_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/shell_observer.h"
 #include "base/basictypes.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 }
 
 namespace ash {
 
-class ASH_EXPORT HighContrastController {
+class ASH_EXPORT HighContrastController : public ShellObserver {
  public:
   HighContrastController();
-
-  ~HighContrastController() {}
+  virtual ~HighContrastController();
 
   // Set high contrast mode and update all available displays.
   void SetEnabled(bool enabled);
 
-  // Update high contrast mode on the just added display.
-  void OnRootWindowAdded(aura::Window* root_window);
+  // ShellObserver:
+  virtual void OnRootWindowAdded(aura::Window* root_window) OVERRIDE;
 
  private:
   // Update high contrast mode on the passed display.
