@@ -363,6 +363,11 @@ public:
         WebTestProxyBase::didStartProvisionalLoad(frame);
         Base::didStartProvisionalLoad(frame);
     }
+    virtual void didReceiveServerRedirectForProvisionalLoad(blink::WebLocalFrame* frame)
+    {
+        WebTestProxyBase::didReceiveServerRedirectForProvisionalLoad(frame);
+        Base::didReceiveServerRedirectForProvisionalLoad(frame);
+    }
     virtual void didFailProvisionalLoad(blink::WebLocalFrame* frame, const blink::WebURLError& error)
     {
         // If the test finished, don't notify the embedder of the failed load,
@@ -400,6 +405,31 @@ public:
     {
         WebTestProxyBase::didFinishLoad(frame);
         Base::didFinishLoad(frame);
+    }
+    virtual void didDetectXSS(blink::WebLocalFrame* frame, const blink::WebURL& insecureURL, bool didBlockEntirePage)
+    {
+        WebTestProxyBase::didDetectXSS(frame, insecureURL, didBlockEntirePage);
+        Base::didDetectXSS(frame, insecureURL, didBlockEntirePage);
+    }
+    virtual void willRequestResource(blink::WebLocalFrame* frame, const blink::WebCachedURLRequest& request)
+    {
+        WebTestProxyBase::willRequestResource(frame, request);
+        Base::willRequestResource(frame, request);
+    }
+    virtual void willSendRequest(blink::WebLocalFrame* frame, unsigned identifier, blink::WebURLRequest& request, const blink::WebURLResponse& redirectResponse)
+    {
+        WebTestProxyBase::willSendRequest(frame, identifier, request, redirectResponse);
+        Base::willSendRequest(frame, identifier, request, redirectResponse);
+    }
+    virtual void didReceiveResponse(blink::WebLocalFrame* frame, unsigned identifier, const blink::WebURLResponse& response)
+    {
+        WebTestProxyBase::didReceiveResponse(frame, identifier, response);
+        Base::didReceiveResponse(frame, identifier, response);
+    }
+    virtual void didChangeResourcePriority(blink::WebLocalFrame* frame, unsigned identifier, const blink::WebURLRequest::Priority& priority, int intra_priority_value)
+    {
+        WebTestProxyBase::didChangeResourcePriority(frame, identifier, priority, intra_priority_value);
+        Base::didChangeResourcePriority(frame, identifier, priority, intra_priority_value);
     }
     virtual void didFinishResourceLoad(blink::WebLocalFrame* frame, unsigned identifier)
     {
