@@ -68,10 +68,11 @@ message PowerManagementPolicy {
     optional int64 screen_lock_ms = 4;
 
     // Delay after which an IdleActionImminent signal will be emitted, in
-    // milliseconds.  If the inactivity timeout is then reset before the
-    // idle action is performed, an IdleActionDeferred signal will be
-    // emitted.  0 disables the signal.  Capped to be less than or equal to
-    // |idle_ms|.
+    // milliseconds. If the inactivity timeout is then reset before the idle
+    // action is performed, an IdleActionDeferred signal will be emitted. If the
+    // idle delay is changed after IdleActionImminent has been emitted, an
+    // additional signal will be emitted. 0 disables the signal. Capped to be
+    // less than or equal to |idle_ms|.
     optional int64 idle_warning_ms = 5;
 
     // Next ID to use: 6
@@ -145,4 +146,11 @@ message PowerManagementPolicy {
   optional string reason = 8;
 
   // Next ID to use: 15
+}
+
+// Message included in IdleActionImminent signals.
+message IdleActionImminent {
+  // Time until the idle action will be performed as given by
+  // base::TimeDelta::ToInternalValue().
+  optional int64 time_until_idle_action = 1;
 }
