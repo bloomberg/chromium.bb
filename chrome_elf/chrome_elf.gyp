@@ -57,7 +57,12 @@
       ],
       'msvs_settings': {
         'VCLinkerTool': {
-          'BaseAddress': '0x01c20000',
+          'conditions': [
+            ['target_arch=="ia32"', {
+              # Don't set an x64 base address (to avoid breaking HE-ASLR).
+              'BaseAddress': '0x01c20000',
+            }],
+          ],
           # Set /SUBSYSTEM:WINDOWS.
           'SubSystem': '2',
           'AdditionalDependencies!': [
@@ -192,7 +197,12 @@
           ],
           'msvs_settings': {
             'VCLinkerTool': {
-              'BaseAddress': '0x01c10000',
+              'conditions': [
+                ['target_arch=="ia32"', {
+                  # Don't set an x64 base address (to avoid breaking HE-ASLR).
+                  'BaseAddress': '0x01c20000',
+                }],
+              ],
               # Set /SUBSYSTEM:WINDOWS.
               'SubSystem': '2',
             },

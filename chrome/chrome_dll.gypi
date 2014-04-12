@@ -144,7 +144,6 @@
               },
               'msvs_settings': {
                 'VCLinkerTool': {
-                  'BaseAddress': '0x01c30000',
                   'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
                   # Set /SUBSYSTEM:WINDOWS for chrome.dll (for consistency).
                   'SubSystem': '2',
@@ -154,6 +153,8 @@
                       'UseLibraryDependencyInputs': "true",
                     }],
                     ['target_arch=="ia32"', {
+                      # Don't set an x64 base address (to avoid breaking HE-ASLR).
+                      'BaseAddress': '0x01c30000',
                       # Link against the XP-constrained user32 import library
                       # instead of the platform-SDK provided one to avoid
                       # inadvertently taking dependencies on post-XP user32
