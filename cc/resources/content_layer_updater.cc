@@ -47,9 +47,8 @@ void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
                     SkFloatToScalar(-content_rect.y()));
 
   // The |canvas| backing should be sized to hold the |content_rect|.
-  SkISize size = canvas->getBaseLayerSize();
-  CHECK_EQ(content_rect.width(), size.width());
-  CHECK_EQ(content_rect.height(), size.height());
+  DCHECK_EQ(content_rect.width(), canvas->getBaseLayerSize().width());
+  DCHECK_EQ(content_rect.height(), canvas->getBaseLayerSize().height());
 
   gfx::Rect layer_rect = content_rect;
   if (contents_width_scale != 1.f || contents_height_scale != 1.f) {
