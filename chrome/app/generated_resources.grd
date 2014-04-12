@@ -5814,12 +5814,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DEBUG_SHORTCUTS_DESCRIPTION" desc="Description of the 'Debugging keyboard shortcuts' lab.">
         Enables additional keyboard shortcuts that are useful for debugging Chromium.
       </message>
-      <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_NAME" desc="Name of the 'Force compositing mode' lab.">
-        GPU compositing on all pages
-      </message>
-      <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_DESCRIPTION" desc="Description of the 'Force compositing mode' lab.">
-        Uses GPU accelerated compositing on all pages, not just those that include GPU-accelerated layers.
-      </message>
       <message name="IDS_FLAGS_FORCE_HIGH_DPI_NAME" desc="Name of the 'Force high DPI mode' lab.">
         Force high DPI mode
       </message>

@@ -201,8 +201,7 @@ bool IsThreadedCompositingEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   // Command line switches take precedence over blacklist.
-  if (command_line.HasSwitch(switches::kDisableForceCompositingMode) ||
-      command_line.HasSwitch(switches::kDisableThreadedCompositing))
+  if (command_line.HasSwitch(switches::kDisableThreadedCompositing))
     return false;
   if (command_line.HasSwitch(switches::kEnableThreadedCompositing))
     return true;
@@ -224,8 +223,6 @@ bool IsForceCompositingModeEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   // Command line switches take precedence over blacklisting.
-  if (command_line.HasSwitch(switches::kDisableForceCompositingMode))
-    return false;
   if (command_line.HasSwitch(switches::kForceCompositingMode))
     return true;
 

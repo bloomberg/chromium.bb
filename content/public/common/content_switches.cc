@@ -169,10 +169,6 @@ const char kDisableFlash3d[]                = "disable-flash-3d";
 // Disable Stage3D inside of flapper.
 const char kDisableFlashStage3d[]           = "disable-flash-stage3d";
 
-// This flag disables force compositing mode and prevents it from being enabled
-// via field trials.
-const char kDisableForceCompositingMode[]   = "disable-force-compositing-mode";
-
 // Disable deferral of scroll-ending gesture events when a scroll is active.
 const char kDisableGestureDebounce[]        = "disable-gesture-debounce";
 
