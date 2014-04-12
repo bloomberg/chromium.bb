@@ -25,6 +25,7 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
+#include "ui/wm/core/shadow_types.h"
 
 #if defined(OS_LINUX)
 #include "chrome/browser/shell_integration_linux.h"
@@ -246,6 +247,17 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
       widget()->CenterWindow(window_bounds.size());
     else
       widget()->SetBounds(window_bounds);
+  }
+
+  if (IsFrameless() &&
+      init_params.opacity == views::Widget::InitParams::TRANSLUCENT_WINDOW &&
+      !create_params.resizable) {
+    // The given window is most likely not rectangular since it uses
+    // transparency, has no standard frame and the user cannot resize it using
+    // the OS supplied methods. Therefore we do not use a shadow for it.
+    // TODO(skuhne): If we run into an application which should have a shadow
+    // but does not have, a new attribute has to be added.
+    wm::SetShadowType(widget()->GetNativeWindow(), wm::SHADOW_TYPE_NONE);
   }
 
   // Register accelarators supported by app windows.
