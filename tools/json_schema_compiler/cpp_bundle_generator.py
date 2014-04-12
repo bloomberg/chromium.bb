@@ -274,10 +274,15 @@ class _SchemasCCGenerator(object):
       json_content = json.dumps([_RemoveDescriptions(api)],
                                 separators=(',', ':'))
       # Escape all double-quotes and backslashes. For this to output a valid
-      # JSON C string, we need to escape \ and ".
-      json_content = json_content.replace('\\', '\\\\').replace('"', '\\"')
+      # JSON C string, we need to escape \ and ". Note that some schemas are
+      # too large to compile on windows. Split the JSON up into several
+      # strings, since apparently that helps.
+      max_length = 8192
+      segments = [json_content[i:i + max_length].replace('\\', '\\\\')
+                                                .replace('"', '\\"')
+                  for i in xrange(0, len(json_content), max_length)]
       c.Append('const char %s[] = "%s";' %
-          (_FormatNameAsConstant(namespace.name), json_content))
+          (_FormatNameAsConstant(namespace.name), '" "'.join(segments)))
     c.Append('}')
     c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
     c.Append()
