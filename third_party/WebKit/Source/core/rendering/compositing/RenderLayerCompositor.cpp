@@ -358,6 +358,14 @@ void RenderLayerCompositor::updateIfNeeded()
     if (m_forceCompositingMode && !m_compositing)
         enableCompositingMode(true);
 
+    {
+        // Notice that we call this function before checking the dirty bits below.
+        // We'll need to remove DeprecatedDirtyCompositingDuringCompositingUpdate
+        // before moving this function after checking the dirty bits.
+        DeprecatedDirtyCompositingDuringCompositingUpdate marker(lifecycle());
+        updateCompositingRequirementsState();
+    }
+
     if (!m_needsToRecomputeCompositingRequirements && !m_compositing)
         return;
 

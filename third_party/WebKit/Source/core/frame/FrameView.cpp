@@ -627,12 +627,6 @@ void FrameView::updateCompositingLayersAfterStyleChange()
     // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
 
-    // Sometimes we will change a property (for example, z-index) that will not
-    // cause a layout, but will require us to update compositing state. We only
-    // need to do this if a layout is not already scheduled.
-    if (!needsLayout())
-        renderView->compositor()->updateCompositingRequirementsState();
-
     renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterStyleChange);
 }
 
@@ -648,7 +642,6 @@ void FrameView::updateCompositingLayersAfterLayout()
     DisableCompositingQueryAsserts disabler;
 
     renderView->compositor()->updateForceCompositingMode();
-    renderView->compositor()->updateCompositingRequirementsState();
     renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterLayout);
 }
 

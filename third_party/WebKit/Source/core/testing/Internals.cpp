@@ -1753,7 +1753,7 @@ bool Internals::isUnclippedDescendant(Element* element, ExceptionState& exceptio
         return 0;
     }
 
-    element->document().updateLayout();
+    element->document().view()->updateLayoutAndStyleForPainting();
 
     RenderObject* renderer = element->renderer();
     if (!renderer || !renderer->isBox()) {
@@ -1777,7 +1777,7 @@ bool Internals::needsCompositedScrolling(Element* element, ExceptionState& excep
         return 0;
     }
 
-    element->document().updateLayout();
+    element->document().view()->updateLayoutAndStyleForPainting();
 
     RenderObject* renderer = element->renderer();
     if (!renderer || !renderer->isBox()) {

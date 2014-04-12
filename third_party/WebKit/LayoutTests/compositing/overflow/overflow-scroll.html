@@ -35,8 +35,12 @@
         scrollables[i].scrollTop = 50;
       }
 
-      if (window.testRunner)
-        testRunner.notifyDone();
+      requestAnimationFrame(function() {
+        setTimeout(function() {
+          if (window.testRunner)
+            testRunner.notifyDone();
+        });
+      });
     }
 
     window.addEventListener('load', doTest, false);
