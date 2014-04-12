@@ -98,7 +98,7 @@ int check_with_mode(
   int expectedlen = strlen(expected);
 
   inlen = strlen(str);
-  outlen = inlen * 2;
+  outlen = inlen * 10;
   inbuf = malloc(sizeof(widechar) * inlen);
   outbuf = malloc(sizeof(widechar) * outlen);
   if (typeform != NULL)
