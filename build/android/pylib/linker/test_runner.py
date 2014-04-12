@@ -71,7 +71,7 @@ class LinkerTestRunner(base_test_runner.BaseTestRunner):
       raise Exception('%s not found, please build it' % apk_path)
 
     package_name = apk_helper.GetPackageName(apk_path)
-    self.adb.ManagedInstall(apk_path, package_name)
+    self.device.old_interface.ManagedInstall(apk_path, package_name)
 
   #override
   def RunTest(self, test):

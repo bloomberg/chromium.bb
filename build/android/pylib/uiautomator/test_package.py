@@ -23,5 +23,6 @@ class TestPackage(test_jar.TestJar):
     return os.path.basename(self._jar_path)
 
   # Override.
-  def Install(self, adb):
-    adb.PushIfNeeded(self._jar_path, constants.TEST_EXECUTABLE_DIR)
+  def Install(self, device):
+    device.old_interface.PushIfNeeded(self._jar_path,
+                                      constants.TEST_EXECUTABLE_DIR)

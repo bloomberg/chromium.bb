@@ -30,7 +30,7 @@ class TestException(Exception):
 class MockRunner(object):
   """A mock TestRunner."""
   def __init__(self, device='0', shard_index=0):
-    self.device = device
+    self.device_serial = device
     self.shard_index = shard_index
     self.setups = 0
     self.teardowns = 0
@@ -133,7 +133,7 @@ class TestThreadGroupFunctions(unittest.TestCase):
     runners = test_dispatcher._CreateRunners(MockRunner, ['0', '1'])
     for runner in runners:
       self.assertEqual(runner.setups, 1)
-    self.assertEqual(set([r.device for r in runners]),
+    self.assertEqual(set([r.device_serial for r in runners]),
                      set(['0', '1']))
     self.assertEqual(set([r.shard_index for r in runners]),
                      set([0, 1]))

@@ -141,6 +141,9 @@ class Forwarder(object):
       device: A DeviceUtils instance.
       port_pairs: A list of tuples (device_port, host_port) to unmap.
     """
+    # TODO(jbudorick) Remove once telemetry gets switched over.
+    if isinstance(device, pylib.android_commands.AndroidCommands):
+      device = pylib.device.device_utils.DeviceUtils(device)
     with _FileLock(Forwarder._LOCK_PATH):
       if not Forwarder._instance:
         return

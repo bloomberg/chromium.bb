@@ -50,6 +50,7 @@ class HostDrivenTestCase(object):
       instrumentation_options: An InstrumentationOptions object.
     """
     class_name = self.__class__.__name__
+    self.adb = None
     self.cleanup_test_files = False
     self.device = None
     self.device_id = ''
@@ -74,6 +75,7 @@ class HostDrivenTestCase(object):
     self.device_id = device
     self.shard_index = shard_index
     self.device = device_utils.DeviceUtils(self.device_id)
+    self.adb = self.device.old_interface
     self.push_deps = push_deps
     self.cleanup_test_files = cleanup_test_files
     if ports_to_forward:

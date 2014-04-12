@@ -44,13 +44,13 @@ class TestRunner(instr_test_runner.TestRunner):
     cmdline_file = constants.PACKAGE_INFO[test_options.package].cmdline_file
     self.flags = None
     if cmdline_file:
-      self.flags = flag_changer.FlagChanger(self.adb, cmdline_file)
+      self.flags = flag_changer.FlagChanger(self.device, cmdline_file)
     self._package = constants.PACKAGE_INFO[test_options.package].package
     self._activity = constants.PACKAGE_INFO[test_options.package].activity
 
   #override
   def InstallTestPackage(self):
-    self.test_pkg.Install(self.adb)
+    self.test_pkg.Install(self.device)
 
   #override
   def PushDataDeps(self):
@@ -58,16 +58,16 @@ class TestRunner(instr_test_runner.TestRunner):
 
   #override
   def _RunTest(self, test, timeout):
-    self.adb.ClearApplicationState(self._package)
+    self.device.old_interface.ClearApplicationState(self._package)
     if self.flags:
       if 'Feature:FirstRunExperience' in self.test_pkg.GetTestAnnotations(test):
         self.flags.RemoveFlags(['--disable-fre'])
       else:
         self.flags.AddFlags(['--disable-fre'])
-    self.adb.StartActivity(self._package,
+    self.device.old_interface.StartActivity(self._package,
                            self._activity,
                            wait_for_completion=True,
                            action='android.intent.action.MAIN',
                            force_stop=True)
-    return self.adb.RunUIAutomatorTest(
+    return self.device.old_interface.RunUIAutomatorTest(
         test, self.test_pkg.GetPackageName(), timeout)
