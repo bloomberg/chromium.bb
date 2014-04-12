@@ -343,6 +343,7 @@ function requestFromServer(method, handlerName, opt_contentType) {
  * @return {Promise} A promise to show the notification groups as cards.
  */
 function showNotificationGroups(notificationGroups, opt_onCardShown) {
+  /** @type {Object.<ChromeNotificationId, CombinedCard>} */
   var cards = combineCardsFromGroups(notificationGroups);
   console.log('showNotificationGroups ' + JSON.stringify(cards));
 
@@ -358,7 +359,7 @@ function showNotificationGroups(notificationGroups, opt_onCardShown) {
         cards[chromeNotificationId] = cards[chromeNotificationId] || [];
       }
 
-      /** @type {Object.<string, NotificationDataEntry>} */
+      /** @type {Object.<ChromeNotificationId, NotificationDataEntry>} */
       var notificationsData = {};
 
       // Create/update/delete notifications.
@@ -503,21 +504,21 @@ function processServerResponse(response) {
   return fillFromChromeLocalStorage({
     /** @type {Object.<string, StoredNotificationGroup>} */
     notificationGroups: {},
-    /** @type {Object.<NotificationId, number>} */
+    /** @type {Object.<ServerNotificationId, number>} */
     recentDismissals: {}
   }).then(function(items) {
     console.log('processServerResponse-get ' + JSON.stringify(items));
 
     // Build a set of non-expired recent dismissals. It will be used for
     // client-side filtering of cards.
-    /** @type {Object.<NotificationId, number>} */
+    /** @type {Object.<ServerNotificationId, number>} */
     var updatedRecentDismissals = {};
     var now = Date.now();
-    for (var notificationId in items.recentDismissals) {
-      var dismissalAge = now - items.recentDismissals[notificationId];
+    for (var serverNotificationId in items.recentDismissals) {
+      var dismissalAge = now - items.recentDismissals[serverNotificationId];
       if (dismissalAge < DISMISS_RETENTION_TIME_MS) {
-        updatedRecentDismissals[notificationId] =
-            items.recentDismissals[notificationId];
+        updatedRecentDismissals[serverNotificationId] =
+            items.recentDismissals[serverNotificationId];
       }
     }
 
@@ -799,7 +800,7 @@ function processPendingDismissals() {
   return fillFromChromeLocalStorage({
     /** @type {Array.<PendingDismissal>} */
     pendingDismissals: [],
-    /** @type {Object.<NotificationId, number>} */
+    /** @type {Object.<ServerNotificationId, number>} */
     recentDismissals: {}
   }).then(function(items) {
     console.log(
@@ -879,7 +880,7 @@ function openUrl(url) {
  */
 function onNotificationClicked(chromeNotificationId, selector) {
   fillFromChromeLocalStorage({
-    /** @type {Object.<string, NotificationDataEntry>} */
+    /** @type {Object.<ChromeNotificationId, NotificationDataEntry>} */
     notificationsData: {}
   }).then(function(items) {
     /** @type {(NotificationDataEntry|undefined)} */
@@ -914,7 +915,7 @@ function onNotificationClosed(chromeNotificationId, byUser) {
     fillFromChromeLocalStorage({
       /** @type {Array.<PendingDismissal>} */
       pendingDismissals: [],
-      /** @type {Object.<string, NotificationDataEntry>} */
+      /** @type {Object.<ChromeNotificationId, NotificationDataEntry>} */
       notificationsData: {},
       /** @type {Object.<string, StoredNotificationGroup>} */
       notificationGroups: {}
