@@ -1152,6 +1152,10 @@ SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
       return SourceBufferStream::kConfigChange;
     }
 
+    // Every pre splice buffer must have the same splice_timestamp().
+    DCHECK(splice_buffer_->splice_timestamp() ==
+           splice_buffers[splice_buffers_index_]->splice_timestamp());
+
     *out_buffer = splice_buffers[splice_buffers_index_++];
     return SourceBufferStream::kSuccess;
   }
@@ -1169,6 +1173,7 @@ SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
   // always issued prior to handing out this buffer, any changes in config id
   // have been inherently handled.
   DCHECK_GE(splice_buffers_index_, splice_buffers.size());
+  DCHECK(splice_buffers.back()->splice_timestamp() == kNoTimestamp());
   *out_buffer = splice_buffers.back();
   splice_buffer_ = NULL;
   splice_buffers_index_ = 0;

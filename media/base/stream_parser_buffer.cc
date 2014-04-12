@@ -27,6 +27,7 @@ static scoped_refptr<StreamParserBuffer> CopyBuffer(
   copied_buffer->set_timestamp(buffer.timestamp());
   copied_buffer->set_duration(buffer.duration());
   copied_buffer->set_discard_padding(buffer.discard_padding());
+  copied_buffer->set_splice_timestamp(buffer.splice_timestamp());
   const DecryptConfig* decrypt_config = buffer.decrypt_config();
   if (decrypt_config) {
     copied_buffer->set_decrypt_config(
@@ -105,6 +106,7 @@ void StreamParserBuffer::ConvertToSpliceBuffer(
 
   // Make a copy of this first, before making any changes.
   scoped_refptr<StreamParserBuffer> overlapping_buffer = CopyBuffer(*this);
+  overlapping_buffer->set_splice_timestamp(kNoTimestamp());
 
   const scoped_refptr<StreamParserBuffer>& first_splice_buffer =
       pre_splice_buffers.front();
@@ -140,8 +142,8 @@ void StreamParserBuffer::ConvertToSpliceBuffer(
     const scoped_refptr<StreamParserBuffer>& buffer = *it;
     DCHECK(!buffer->end_of_stream());
     DCHECK(buffer->get_splice_buffers().empty());
-    buffer->set_splice_timestamp(splice_timestamp());
     splice_buffers_.push_back(CopyBuffer(*buffer));
+    splice_buffers_.back()->set_splice_timestamp(splice_timestamp());
   }
 
   splice_buffers_.push_back(overlapping_buffer);

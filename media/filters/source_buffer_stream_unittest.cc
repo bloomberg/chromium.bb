@@ -254,6 +254,7 @@ class SourceBufferStreamTest : public testing::Test {
     base::SplitString(expected, ' ', &timestamps);
     std::stringstream ss;
     const SourceBufferStream::Type type = stream_->GetType();
+    base::TimeDelta active_splice_timestamp = kNoTimestamp();
     for (size_t i = 0; i < timestamps.size(); i++) {
       scoped_refptr<StreamParserBuffer> buffer;
       SourceBufferStream::Status status = stream_->GetNextBuffer(&buffer);
@@ -288,6 +289,17 @@ class SourceBufferStreamTest : public testing::Test {
       ss << buffer->GetDecodeTimestamp().InMilliseconds();
       if (buffer->IsKeyframe())
         ss << "K";
+
+      // Until the last splice frame is seen, indicated by a matching timestamp,
+      // all buffers must have the same splice_timestamp().
+      if (buffer->timestamp() == active_splice_timestamp) {
+        ASSERT_EQ(buffer->splice_timestamp(), kNoTimestamp());
+      } else {
+        ASSERT_TRUE(active_splice_timestamp == kNoTimestamp() ||
+                    active_splice_timestamp == buffer->splice_timestamp());
+      }
+
+      active_splice_timestamp = buffer->splice_timestamp();
     }
     EXPECT_EQ(expected, ss.str());
   }
