@@ -29,9 +29,9 @@ class LoggingImpl {
                         CastLoggingEvent event, uint32 rtp_timestamp,
                         uint32 frame_id);
 
-  void InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
-                                CastLoggingEvent event, uint32 rtp_timestamp,
-                                uint32 frame_id, int frame_size);
+  void InsertEncodedFrameEvent(const base::TimeTicks& time_of_event,
+                               CastLoggingEvent event, uint32 rtp_timestamp,
+                               uint32 frame_id, int frame_size, bool key_frame);
 
   void InsertFrameEventWithDelay(const base::TimeTicks& time_of_event,
                                  CastLoggingEvent event, uint32 rtp_timestamp,

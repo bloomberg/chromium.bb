@@ -91,7 +91,8 @@ EventMediaType GetEventMediaType(CastLoggingEvent event) {
 }
 
 FrameEvent::FrameEvent()
-    : rtp_timestamp(0u), frame_id(kFrameIdUnknown), size(0u), type(kUnknown) {}
+    : rtp_timestamp(0u), frame_id(kFrameIdUnknown), size(0u), type(kUnknown),
+      key_frame(false) {}
 FrameEvent::~FrameEvent() {}
 
 PacketEvent::PacketEvent()

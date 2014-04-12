@@ -30,12 +30,14 @@ class LoggingRaw : public base::NonThreadSafe {
                         CastLoggingEvent event, uint32 rtp_timestamp,
                         uint32 frame_id);
 
-  // Size - Inserting the size implies that this is an encoded frame.
   // This function is only applicable for the following frame events:
   // kAudioFrameEncoded, kVideoFrameEncoded
-  void InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
+  // |size| - Size of encoded frame.
+  // |key_frame| - Whether the frame is a key frame. This field is only
+  //               applicable for kVideoFrameEncoded event.
+  void InsertEncodedFrameEvent(const base::TimeTicks& time_of_event,
                                 CastLoggingEvent event, uint32 rtp_timestamp,
-                                uint32 frame_id, int size);
+                                uint32 frame_id, int size, bool key_frame);
 
   // Render/playout delay
   // This function is only applicable for the following frame events:
@@ -70,7 +72,7 @@ class LoggingRaw : public base::NonThreadSafe {
   void InsertBaseFrameEvent(const base::TimeTicks& time_of_event,
                             CastLoggingEvent event, uint32 frame_id,
                             uint32 rtp_timestamp, base::TimeDelta delay,
-                            int size);
+                            int size, bool key_frame);
 
   // List of subscriber pointers. This class does not own the subscribers.
   std::vector<RawEventSubscriber*> subscribers_;

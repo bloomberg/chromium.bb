@@ -82,9 +82,9 @@ TEST_F(LoggingImplTest, FrameLoggingWithSize) {
     int size = kBaseFrameSizeBytes +
         base::RandInt(-kRandomSizeInterval, kRandomSizeInterval);
     sum_size += static_cast<size_t>(size);
-    logging_.InsertFrameEventWithSize(testing_clock_.NowTicks(),
-                                       kAudioFrameCaptured, rtp_timestamp,
-                                       frame_id, size);
+    logging_.InsertEncodedFrameEvent(testing_clock_.NowTicks(),
+                                     kVideoFrameEncoded, rtp_timestamp,
+                                     frame_id, size, true);
     testing_clock_.Advance(base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
     rtp_timestamp += kFrameIntervalMs * 90;
     ++frame_id;
@@ -135,9 +135,9 @@ TEST_F(LoggingImplTest, MultipleEventFrameLogging) {
                                rtp_timestamp, frame_id);
     ++num_events;
     if (frame_id % 2) {
-      logging_.InsertFrameEventWithSize(testing_clock_.NowTicks(),
-                                         kAudioFrameEncoded, rtp_timestamp,
-                                         frame_id, 1500);
+      logging_.InsertEncodedFrameEvent(testing_clock_.NowTicks(),
+                                       kAudioFrameEncoded, rtp_timestamp,
+                                       frame_id, 1500, true);
     } else if (frame_id % 3) {
       logging_.InsertFrameEvent(testing_clock_.NowTicks(), kVideoFrameDecoded,
                                  rtp_timestamp, frame_id);

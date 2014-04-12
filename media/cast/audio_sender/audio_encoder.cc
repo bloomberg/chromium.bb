@@ -30,6 +30,18 @@ void LogAudioFrameEvent(
       event_time, event_type, rtp_timestamp, frame_id);
 }
 
+void LogAudioFrameEncodedEvent(
+    const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
+    base::TimeTicks event_time,
+    media::cast::CastLoggingEvent event_type,
+    media::cast::RtpTimestamp rtp_timestamp,
+    uint32 frame_id,
+    size_t frame_size) {
+  cast_environment->Logging()->InsertEncodedFrameEvent(
+      event_time, event_type, rtp_timestamp, frame_id,
+      static_cast<int>(frame_size), /* key_frame - unused */ false);
+}
+
 }  // namespace
 
 namespace media {
@@ -109,12 +121,13 @@ class AudioEncoder::ImplBase
           cast_environment_->PostTask(
               CastEnvironment::MAIN,
               FROM_HERE,
-              base::Bind(&LogAudioFrameEvent,
+              base::Bind(&LogAudioFrameEncodedEvent,
                          cast_environment_,
                          cast_environment_->Clock()->NowTicks(),
                          kAudioFrameEncoded,
                          audio_frame->rtp_timestamp,
-                         audio_frame->frame_id));
+                         audio_frame->frame_id,
+                         audio_frame->data.size()));
           // Compute an offset to determine the recorded time for the first
           // audio sample in the buffer.
           const base::TimeDelta buffer_time_offset =

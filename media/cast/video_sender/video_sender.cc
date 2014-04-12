@@ -168,10 +168,10 @@ void VideoSender::SendEncodedVideoFrameMainThread(
   }
 
   uint32 frame_id = encoded_frame->frame_id;
-  cast_environment_->Logging()->InsertFrameEvent(last_send_time_,
-                                                 kVideoFrameEncoded,
-                                                 encoded_frame->rtp_timestamp,
-                                                 frame_id);
+  cast_environment_->Logging()->InsertEncodedFrameEvent(
+      last_send_time_, kVideoFrameEncoded, encoded_frame->rtp_timestamp,
+      frame_id, static_cast<int>(encoded_frame->data.size()),
+      encoded_frame->key_frame);
 
   // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
   TRACE_EVENT_INSTANT1(

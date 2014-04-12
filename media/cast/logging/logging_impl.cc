@@ -25,13 +25,14 @@ void LoggingImpl::InsertFrameEvent(const base::TimeTicks& time_of_event,
   raw_.InsertFrameEvent(time_of_event, event, rtp_timestamp, frame_id);
 }
 
-void LoggingImpl::InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
-                                           CastLoggingEvent event,
-                                           uint32 rtp_timestamp,
-                                           uint32 frame_id, int frame_size) {
+void LoggingImpl::InsertEncodedFrameEvent(const base::TimeTicks& time_of_event,
+                                          CastLoggingEvent event,
+                                          uint32 rtp_timestamp,
+                                          uint32 frame_id, int frame_size,
+                                          bool key_frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  raw_.InsertFrameEventWithSize(time_of_event, event, rtp_timestamp, frame_id,
-                                frame_size);
+  raw_.InsertEncodedFrameEvent(time_of_event, event, rtp_timestamp, frame_id,
+                               frame_size, key_frame);
 }
 
 void LoggingImpl::InsertFrameEventWithDelay(

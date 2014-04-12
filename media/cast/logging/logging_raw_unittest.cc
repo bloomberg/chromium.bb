@@ -48,14 +48,15 @@ TEST_F(LoggingRawTest, FrameEvent) {
   EXPECT_EQ(base::TimeDelta(), frame_events_[0].delay_delta);
 }
 
-TEST_F(LoggingRawTest, FrameEventWithSize) {
+TEST_F(LoggingRawTest, EncodedFrameEvent) {
   CastLoggingEvent event_type = kVideoFrameEncoded;
   uint32 frame_id = 456u;
   RtpTimestamp rtp_timestamp = 123u;
   base::TimeTicks timestamp = base::TimeTicks();
   int size = 1024;
-  raw_.InsertFrameEventWithSize(timestamp, event_type, rtp_timestamp, frame_id,
-                                size);
+  bool key_frame = true;
+  raw_.InsertEncodedFrameEvent(timestamp, event_type, rtp_timestamp, frame_id,
+                               size, key_frame);
 
   event_subscriber_.GetPacketEventsAndReset(&packet_events_);
   EXPECT_TRUE(packet_events_.empty());
@@ -71,6 +72,7 @@ TEST_F(LoggingRawTest, FrameEventWithSize) {
   EXPECT_EQ(timestamp, frame_events_[0].timestamp);
   EXPECT_EQ(event_type, frame_events_[0].type);
   EXPECT_EQ(base::TimeDelta(), frame_events_[0].delay_delta);
+  EXPECT_EQ(key_frame, frame_events_[0].key_frame);
 }
 
 TEST_F(LoggingRawTest, FrameEventWithDelay) {

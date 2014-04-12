@@ -20,15 +20,15 @@ void LoggingRaw::InsertFrameEvent(const base::TimeTicks& time_of_event,
                                   CastLoggingEvent event, uint32 rtp_timestamp,
                                   uint32 frame_id) {
   InsertBaseFrameEvent(time_of_event, event, frame_id, rtp_timestamp,
-                       base::TimeDelta(), 0);
+                       base::TimeDelta(), 0, false);
 }
 
-void LoggingRaw::InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
-                                          CastLoggingEvent event,
-                                          uint32 rtp_timestamp, uint32 frame_id,
-                                          int size) {
+void LoggingRaw::InsertEncodedFrameEvent(const base::TimeTicks& time_of_event,
+                                         CastLoggingEvent event,
+                                         uint32 rtp_timestamp, uint32 frame_id,
+                                         int size, bool key_frame) {
   InsertBaseFrameEvent(time_of_event, event, frame_id, rtp_timestamp,
-                       base::TimeDelta(), size);
+                       base::TimeDelta(), size, key_frame);
 }
 
 void LoggingRaw::InsertFrameEventWithDelay(const base::TimeTicks& time_of_event,
@@ -37,13 +37,14 @@ void LoggingRaw::InsertFrameEventWithDelay(const base::TimeTicks& time_of_event,
                                            uint32 frame_id,
                                            base::TimeDelta delay) {
   InsertBaseFrameEvent(time_of_event, event, frame_id, rtp_timestamp, delay,
-                       0);
+                       0, false);
 }
 
 void LoggingRaw::InsertBaseFrameEvent(const base::TimeTicks& time_of_event,
                                       CastLoggingEvent event, uint32 frame_id,
                                       uint32 rtp_timestamp,
-                                      base::TimeDelta delay, int size) {
+                                      base::TimeDelta delay, int size,
+                                      bool key_frame) {
   FrameEvent frame_event;
   frame_event.rtp_timestamp = rtp_timestamp;
   frame_event.frame_id = frame_id;
@@ -51,6 +52,7 @@ void LoggingRaw::InsertBaseFrameEvent(const base::TimeTicks& time_of_event,
   frame_event.timestamp = time_of_event;
   frame_event.type = event;
   frame_event.delay_delta = delay;
+  frame_event.key_frame = key_frame;
   for (std::vector<RawEventSubscriber*>::const_iterator it =
            subscribers_.begin();
        it != subscribers_.end(); ++it) {

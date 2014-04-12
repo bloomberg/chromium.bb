@@ -73,7 +73,8 @@ struct FrameEvent {
 
   RtpTimestamp rtp_timestamp;
   uint32 frame_id;
-  size_t size;  // Encoded size only.
+  // Size of encoded frame. Only set for kVideoFrameEncoded event.
+  size_t size;
 
   // Time of event logged.
   base::TimeTicks timestamp;
@@ -82,6 +83,9 @@ struct FrameEvent {
   // Render / playout delay. Only set for kAudioPlayoutDelay and
   // kVideoRenderDelay events.
   base::TimeDelta delay_delta;
+
+  // Whether the frame is a key frame. Only set for kVideoFrameEncoded event.
+  bool key_frame;
 };
 
 struct PacketEvent {

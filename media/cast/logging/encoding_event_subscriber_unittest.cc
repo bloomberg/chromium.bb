@@ -209,6 +209,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEventDelay) {
 
   EXPECT_EQ(0, event->encoded_frame_size());
   EXPECT_EQ(100, event->delay_millis());
+  EXPECT_FALSE(event->has_key_frame());
 }
 
 TEST_F(EncodingEventSubscriberTest, FrameEventSize) {
@@ -216,9 +217,10 @@ TEST_F(EncodingEventSubscriberTest, FrameEventSize) {
   base::TimeTicks now(testing_clock_->NowTicks());
   RtpTimestamp rtp_timestamp = 100;
   int size = 123;
-  cast_environment_->Logging()->InsertFrameEventWithSize(
+  bool key_frame = true;
+  cast_environment_->Logging()->InsertEncodedFrameEvent(
       now, kVideoFrameEncoded, rtp_timestamp,
-      /*frame_id*/ 0, size);
+      /*frame_id*/ 0, size, key_frame);
 
   GetEventsAndReset();
 
@@ -239,6 +241,8 @@ TEST_F(EncodingEventSubscriberTest, FrameEventSize) {
 
   EXPECT_EQ(size, event->encoded_frame_size());
   EXPECT_EQ(0, event->delay_millis());
+  EXPECT_TRUE(event->has_key_frame());
+  EXPECT_EQ(key_frame, event->key_frame());
 }
 
 TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
@@ -252,9 +256,9 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
 
   testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now2(testing_clock_->NowTicks());
-  cast_environment_->Logging()->InsertFrameEventWithSize(
+  cast_environment_->Logging()->InsertEncodedFrameEvent(
       now2, kAudioFrameEncoded, rtp_timestamp2,
-      /*frame_id*/ 0, /*size*/ 123);
+      /*frame_id*/ 0, /*size*/ 123, /* key_frame - unused */ false );
 
   testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now3(testing_clock_->NowTicks());
@@ -281,6 +285,8 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
   EXPECT_EQ(InMilliseconds(now1), event->event_timestamp_ms(0));
   EXPECT_EQ(InMilliseconds(now3), event->event_timestamp_ms(1));
 
+  EXPECT_FALSE(event->has_key_frame());
+
   relative_rtp_timestamp = rtp_timestamp2 - first_rtp_timestamp_;
   it = frame_events_.find(relative_rtp_timestamp);
   ASSERT_TRUE(it != frame_events_.end());
@@ -294,6 +300,8 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
 
   ASSERT_EQ(1, event->event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now2), event->event_timestamp_ms(0));
+
+  EXPECT_FALSE(event->has_key_frame());
 }
 
 TEST_F(EncodingEventSubscriberTest, PacketEvent) {

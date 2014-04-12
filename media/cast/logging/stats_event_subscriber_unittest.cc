@@ -57,8 +57,8 @@ TEST_F(StatsEventSubscriberTest, FrameStats) {
         now, kVideoFrameReceived, rtp_timestamp, frame_id);
     testing_clock_->Advance(base::TimeDelta::FromMilliseconds(30));
 
-    cast_environment_->Logging()->InsertFrameEventWithSize(
-        now, kVideoFrameEncoded, rtp_timestamp, i, frame_size);
+    cast_environment_->Logging()->InsertEncodedFrameEvent(
+        now, kVideoFrameEncoded, rtp_timestamp, i, frame_size, true);
     testing_clock_->Advance(base::TimeDelta::FromMilliseconds(30));
 
     cast_environment_->Logging()->InsertFrameEventWithDelay(

@@ -77,11 +77,14 @@ message AggregatedFrameEvent {
   repeated EventType event_type = 2 [packed = true];
   repeated int64 event_timestamp_ms = 3 [packed = true];
 
-  // Size is set only for kAudioFrameEncoded and kVideoFrameEncoded.
+  // Only set if there is a kAudioFrameEncoded and kVideoFrameEncoded event.
   optional int32 encoded_frame_size = 4;
 
-  // Delay is only set for kAudioPlayoutDelay and kVideoRenderDelay.
+  // Only set if there is a kAudioPlayoutDelay or kVideoRenderDelay event.
   optional int32 delay_millis = 5;
+
+  // Only set if there is a kVideoFrameEncoded event.
+  optional bool key_frame = 6;
 };
 
 message BasePacketEvent {
